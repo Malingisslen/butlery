@@ -1,7 +1,7 @@
 ---
 paths:
   - ".claude/hooks/**"
-  - ".claude/skills/**"
+  - ".claude/commands/**"
   - ".claude/workflows/**"
 ---
 

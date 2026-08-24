@@ -1,8 +1,5 @@
-/// Content card facade for unified multi-type display (recipes, friends, menus, shopping lists).
-/// **Modes:** Detailed/Compact/Grid. **Types:** Recipe/Friend/Menu/ShoppingList/FriendRequest cards.
-/// ```dart
-/// ContentCard(item: recipe, type: ContentCardType.recipe, style: ContentCardStyle.detailed,
-///   onTap: () => navigate(recipe.id));
+/// Content card facade for unified multi-type display (recipes, friends, menus,
+/// shopping lists). Modes: detailed / compact / grid.
 
 import 'package:flutter/material.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -57,43 +54,13 @@ enum ContentCardStyle {
   grid,
 }
 
-/// Comprehensive content card facade implementing unified interface for multi-type content display with delegation architecture.
-/// This widget serves as the primary facade for displaying various content types through specialized
-/// card modules while maintaining consistent API and backward compatibility. It implements intelligent
-/// delegation to focused single-responsibility card components, providing optimal performance and
-/// maintainability through modular architecture patterns.
-/// **Core Features:**
-/// - **Type Safety**: Strict content type validation with compile-time type checking
-/// - **Responsive Design**: Adaptive styling for different screen sizes and orientations
-/// - **Modular Architecture**: Delegation to specialized card modules for optimal maintainability
-/// - **Backward Compatibility**: Legacy API support for seamless migration paths
-/// - **Performance Optimization**: Lazy loading and efficient rendering through focused modules
-/// **Content Type Support:**
-/// - Recipe cards with complete cooking information and social features
-/// - Friend cards with user profiles and relationship management
-/// - Menu cards with meal planning and collaborative features
-/// - Shopping list cards with item management and sharing capabilities
-/// - Friend request cards with specialized social interaction patterns
-/// **Usage Patterns:**
-/// ```dart
-/// // Standard recipe display
-/// ContentCard(
-///   item: recipe,
-///   type: ContentCardType.recipe,
-///   style: ContentCardStyle.detailed,
-///   onTap: () => navigateToRecipeDetail(recipe.id),
-///   showTags: true,
-///   showMetadata: true,
-/// );
-/// // Compact friend display for lists
-/// ContentCard(
-///   item: userProfile,
-///   type: ContentCardType.friend,
-///   style: ContentCardStyle.compact,
-///   showOnlineStatus: true,
-///   trailing: IconButton(icon: Icon(Icons.message)),
-/// );
-/// ```
+/// Facade that renders one of five content types through a focused card module.
+///
+/// Delegation only: every visual decision lives in the specialised card
+/// ([RecipeCard], [FriendCard], [MenuCard], [ShoppingListCard],
+/// [FriendRequestCard]). This class just maps the shared parameters onto
+/// whichever one [type] selects, so a caller can swap content types without
+/// learning five APIs.
 class ContentCard extends StatelessWidget {
   /// Content item to display - type depends on ContentCardType specified
   final dynamic item;
@@ -143,6 +110,26 @@ class ContentCard extends StatelessWidget {
   /// User dietary preferences for filtering displayed dietary badges (recipe cards only)
   final Set<String>? userDietaryPrefs;
 
+  /// Whether the recipe card renders allergen badges. Null — the default —
+  /// derives it from [userAllergenPrefs]: handing a card a preference set is
+  /// itself the decision to show badges, and dropping that decision is what
+  /// kept the badges invisible on every card (BUT-1780). Passing `false`
+  /// alongside a preference set suppresses them; passing `true` without one
+  /// falls back to the badge row's own default allergens.
+  ///
+  /// One asymmetry to know before "harmonising" this with the card: an EMPTY
+  /// set derives `true` here, because the question this facade answers is "did
+  /// the caller opt in". `RecipeCard` deliberately reads the same empty set as
+  /// "asked for nothing" and stays silent — it answers a different question,
+  /// "is there anything to say". Both readings are correct for their own layer
+  /// and the rendered result is identical; changing this one to match the card
+  /// would not remove the card's own need for the check, since `RecipeCard` can
+  /// be built directly.
+  final bool? showAllergenBadges;
+
+  /// Same contract as [showAllergenBadges], derived from [userDietaryPrefs].
+  final bool? showDietaryBadges;
+
   /// Favorite toggle handler for recipe cards
   final VoidCallback? onFavoriteToggle;
 
@@ -161,26 +148,7 @@ class ContentCard extends StatelessWidget {
   /// Decline action handler specifically for friend request cards
   final VoidCallback? onDecline;
 
-  /// Creates a content card with specified content type and display configuration.
-  /// This constructor provides comprehensive configuration options for displaying various
-  /// content types through the unified card interface. It validates required parameters
-  /// and provides sensible defaults for optional display and interaction settings.
-  /// [item] The content object to display - must match the specified [type]
-  /// [type] The content type determining which specialized card module to use
-  /// [style] Display style controlling appearance and information density
-  /// [onTap] Primary interaction handler for navigation and content access
-  /// [onLongPress] Context menu handler for advanced interactions
-  /// [margin] External spacing around the card widget
-  /// [padding] Internal spacing within the card content area
-  /// [showImage] Controls visibility of primary visual elements
-  /// [showTags] Controls display of content tags and categories
-  /// [showMetadata] Controls display of metadata like dates and statistics
-  /// [showOnlineStatus] Controls online/offline status indicators
-  /// [showSharingStatus] Controls sharing and collaboration status indicators
-  /// [trailing] Optional custom widget for additional actions
-  /// [subtitle] Optional context information text
-  /// [onAccept] Accept handler for friend request interactions
-  /// [onDecline] Decline handler for friend request interactions
+  /// [item] must match [type] — the delegating builder asserts it.
   const ContentCard({
     super.key,
     required this.item,
@@ -199,6 +167,8 @@ class ContentCard extends StatelessWidget {
     this.subtitle,
     this.userAllergenPrefs,
     this.userDietaryPrefs,
+    this.showAllergenBadges,
+    this.showDietaryBadges,
     this.onFavoriteToggle,
     this.matchPercent,
     this.pooledStats,
@@ -206,16 +176,6 @@ class ContentCard extends StatelessWidget {
     this.onDecline,
   });
 
-  /// Builds the appropriate specialized card widget based on the specified content type.
-  /// This method implements the core delegation logic of the facade pattern, routing
-  /// to specialized card modules based on the ContentCardType. Each content type is
-  /// handled by a focused single-responsibility widget optimized for that specific
-  /// content display requirements and interaction patterns.
-  /// Returns the appropriate specialized card widget configured with current parameters
-  /// **Performance Notes:**
-  /// - Delegates immediately to specialized modules for optimal rendering performance
-  /// - No intermediate widget creation or unnecessary abstraction layers
-  /// - Leverages Flutter's build optimization through focused widget trees
   @override
   Widget build(BuildContext context) {
     // Delegate to the appropriate focused module based on content type
@@ -258,6 +218,8 @@ class ContentCard extends StatelessWidget {
       style: _mapToRecipeCardStyle(style),
       userAllergenPrefs: userAllergenPrefs,
       userDietaryPrefs: userDietaryPrefs,
+      showAllergenBadges: showAllergenBadges ?? userAllergenPrefs != null,
+      showDietaryBadges: showDietaryBadges ?? userDietaryPrefs != null,
       matchPercent: matchPercent,
       pooledStats: pooledStats,
     );

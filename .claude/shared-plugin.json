@@ -43,7 +43,7 @@
       ".claude/rules/workflow-discipline.md"
     ],
     "memoryIndex": "C:/Users/malla/.claude/projects/C--Butlery-butlery/memory/MEMORY.md",
-    "budgetChars": 21000,
+    "budgetChars": 57000,
     "neverMove": [
       "allergen",
       "TriState",
@@ -83,6 +83,15 @@
   "pushGate": { "agent": "integration-reviewer" },
   "reviewGates": [
     {
+      "//exact-agents": "2026-08-23, Malin's decision, mirroring the fix made in Synat the same day (c5ab880). The six `.claude/agents/<gate>.md` files are the INSTRUCTIONS each gate agent runs on, and they reached no gate at all. So a change that narrowed a reviewer's checklist — or emptied it — could be committed with no review, and the next review would run on the weakened instruction. Proven against the real hook in both directions: with the previous config the gate exits 0 and names nothing, with this one it exits 2 and names the file. COUPLED HALF, in this same commit: `.claude/agents/code-reviewer.md`'s `description:` line — what the dispatcher reads to decide whether to invoke the agent — now names the class, and the file gains a lens for it. Deliberately NOT the `*.knowledge*.md` files beside them: commit-gate reviewers run CONCURRENTLY and each records lessons into its own file, so gating them would ask one agent to read the post-edit bytes of files a sibling is still writing, and every review that records a lesson would cost a second round forever. ⚠ The residual is real: a knowledge file is read IN FULL before every review and carries do-not-re-file suppressors, so an edit there silences a finding class as effectively as deleting a checklist item, and only convention protects it. Deliberately code-reviewer only, so the push gate (`pushGate.agent`, which carries no `exact`) still never sees these files. ⚠ The gap that leaves is the SPLIT-ACROSS-BATCHES case: one batch widens the config, another edits the `description:` line, each commit gate sees half and no gate sees the pair. That matters more here than in Synat, because this repo's sprint engine commits batch by batch as its normal mode and the push gate is the only whole-range pass. Raised, not taken — Malin's decision. ⚠ STILL OPEN and not fixed here: `.claude/shared-plugin.json` itself reaches no gate in this repo. It is the file that decides which reviews apply at all, and Synat put it on this same list for that reason (BIN-696). Raised rather than widened, because it is a separate decision.",
+      "exact": [
+        ".claude/agents/code-reviewer.md",
+        ".claude/agents/testing-specialist.md",
+        ".claude/agents/firebase-backend-security.md",
+        ".claude/agents/cloud-functions-specialist.md",
+        ".claude/agents/firestore-rules-tester.md",
+        ".claude/agents/integration-reviewer.md"
+      ],
       "agent": "code-reviewer",
       "marker": "code-review-done.marker",
       "patterns": [
@@ -151,9 +160,10 @@
     "digestFiles": [
       ".claude/rules/lessons-digest.md",
       ".claude/rules/lessons-digest-delivery.md",
-      ".claude/rules/lessons-digest-testing.md"
+      ".claude/rules/lessons-digest-testing.md",
+      ".claude/rules/lessons-digest-flutter.md"
     ],
-    "digestCoreMaxChars": 7500
+    "digestCoreMaxChars": 14000
   },
   "docsSweep": {
     "exemptGlobs": [

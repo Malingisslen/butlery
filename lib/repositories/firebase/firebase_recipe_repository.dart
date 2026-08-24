@@ -93,7 +93,6 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
       getCollectionForUser: getCollectionForUser,
     );
     _gdprExportOperations = RecipeGdprExportOperations(
-      firestore: firestore,
       getCollectionForUser: getCollectionForUser,
       requireCurrentUserId: requireCurrentUserId,
       validateOwnership: validateOwnership,
@@ -1059,17 +1058,6 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
     String userId, {
     int maxDocuments = 1000,
   }) => _gdprExportOperations.exportPersonalRecipesByUser(
-    userId,
-    maxDocuments: maxDocuments,
-  );
-
-  /// BUT-501: Export every top-level `recipes` doc owned by [userId]
-  /// (legacy `userId` field). Used alongside [exportPersonalRecipesByUser]
-  /// to fully cover both storage shapes.
-  Future<List<Map<String, dynamic>>> exportTopLevelRecipesByOwner(
-    String userId, {
-    int maxDocuments = 1000,
-  }) => _gdprExportOperations.exportTopLevelRecipesByOwner(
     userId,
     maxDocuments: maxDocuments,
   );

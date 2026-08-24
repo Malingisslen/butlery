@@ -26,6 +26,20 @@ class WeeklyMenuDistributionResult {
   });
 }
 
+/// Outcome of a weekly-plan read (BUT-1928).
+///
+/// [plan] is always usable — the saved week, or an empty plan when the week has
+/// none. [readFailed] is the part a bare [WeeklyMenuPlan] cannot carry: an empty
+/// plan means "nothing saved yet" AND "the fetch never answered", and a caller
+/// that saves on top of the second one upserts an empty week over a full one.
+/// Display may ignore the flag; anything that WRITES must not.
+class WeeklyMenuPlanRead {
+  final WeeklyMenuPlan plan;
+  final bool readFailed;
+
+  const WeeklyMenuPlanRead({required this.plan, required this.readFailed});
+}
+
 class WeeklyMenuPlanService extends BaseService {
   final WeeklyMenuPlanRepository _repository;
   final UserService _userService;
@@ -43,26 +57,48 @@ class WeeklyMenuPlanService extends BaseService {
 
   /// Loads the saved plan for the ISO week containing [date], or returns
   /// an empty plan if none exists.
+  ///
+  /// A failed read is reported as an empty plan here, which is fine for display
+  /// and unsafe for a caller about to save.
   Future<WeeklyMenuPlan> getWeek(DateTime date) async {
-    return await executeServiceOperation<WeeklyMenuPlan>(
-          () async {
-            final userId = _currentUserId;
-            if (userId == null) {
-              throw StateError('No authenticated user for getWeek');
-            }
-            final weekStart = IsoWeekUtils.weekStartOf(date);
-            final saved = await _repository.fetchForWeek(
-              userId: userId,
-              weekStart: weekStart,
-            );
-            return saved ??
-                WeeklyMenuPlan.empty(userId: userId, date: weekStart);
-          },
-          operationName: 'getWeek',
-        ) ??
-        WeeklyMenuPlan.empty(
-          userId: _currentUserId ?? 'anonymous',
-          date: IsoWeekUtils.weekStartOf(date),
+    return (await readWeek(date)).plan;
+  }
+
+  /// [getWeek] plus the one bit it cannot return: whether the fetch actually
+  /// answered (BUT-1928).
+  ///
+  /// `readFailed` is true when the wrapped read did not answer — a throwing
+  /// repository or a failed auth pre-flight — because either leaves the caller
+  /// holding an empty plan that does not describe what is saved. A repository
+  /// that maps an unreachable week to null rather than throwing is NOT covered:
+  /// that route reports `readFailed: false` and is indistinguishable here from
+  /// a week with nothing saved.
+  Future<WeeklyMenuPlanRead> readWeek(DateTime date) async {
+    final weekStart = IsoWeekUtils.weekStartOf(date);
+    final read = await executeServiceOperation<WeeklyMenuPlanRead>(
+      () async {
+        final userId = _currentUserId;
+        if (userId == null) {
+          throw StateError('No authenticated user for getWeek');
+        }
+        final saved = await _repository.fetchForWeek(
+          userId: userId,
+          weekStart: weekStart,
+        );
+        return WeeklyMenuPlanRead(
+          plan: saved ?? WeeklyMenuPlan.empty(userId: userId, date: weekStart),
+          readFailed: false,
+        );
+      },
+      operationName: 'getWeek',
+    );
+    return read ??
+        WeeklyMenuPlanRead(
+          plan: WeeklyMenuPlan.empty(
+            userId: _currentUserId ?? 'anonymous',
+            date: weekStart,
+          ),
+          readFailed: true,
         );
   }
 

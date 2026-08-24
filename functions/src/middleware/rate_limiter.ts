@@ -81,11 +81,10 @@ interface StoredRateLimit {
  *
  * Exported (BUT-1573) so the production `dailyLimit` values are pinned by a
  * test — deleting or weakening one now regresses rate-limiter-daily-cap.test.ts
- * instead of shipping silently. All FOUR are pinned: the three LLM-spend caps
- * and, since BUT-1838, `createChatGroup`. Add a fifth and pin it in the same
- * edit — this sentence QUANTIFIES, so it goes stale by addition with its own
- * bytes untouched, which is how it was wrong between BUT-1838 shipping and
- * BUT-1838's own follow-up catching it.
+ * instead of shipping silently. EVERY entry carrying a `dailyLimit` is pinned
+ * there, and adding one without its pin is what the test's own coverage check
+ * fails on. The previous wording counted them ("All FOUR"), which went stale by
+ * addition with its own bytes untouched — twice.
  */
 export const RATE_LIMIT_CONFIGS: Record<string, RateLimitConfig> = {
   // LLM Operations (expensive - strict limits)
@@ -118,8 +117,8 @@ export const RATE_LIMIT_CONFIGS: Record<string, RateLimitConfig> = {
   // is capped separately by MAX_CHAT_GROUP_MEMBERS.
   //
   // Creating groups carries a daily cap as well: a group create writes a group
-  // document, a conversation, N roster rows and a system message, so it is the
-  // most write-amplified of the three and the obvious one to abuse.
+  // document, a conversation, N roster rows and a system message, so it is
+  // write-amplified and an obvious one to abuse.
   createChatGroup: {
     maxTokens: 5,
     refillRate: 5,
@@ -139,6 +138,16 @@ export const RATE_LIMIT_CONFIGS: Record<string, RateLimitConfig> = {
     maxTokens: 20,
     refillRate: 10,
     refillIntervalMs: 60000,
+  },
+  // BUT-1856. Same numbers as `createChatGroup` on purpose: this callable can
+  // create a group and does so through `createChatGroupWithDeps`, bypassing the
+  // create bucket entirely, so anything looser here would quietly raise the
+  // real ceiling on group creation.
+  ensureCategoryChat: {
+    maxTokens: 5,
+    refillRate: 5,
+    refillIntervalMs: 60000,
+    dailyLimit: 50,
   },
 
   // Notification Operations

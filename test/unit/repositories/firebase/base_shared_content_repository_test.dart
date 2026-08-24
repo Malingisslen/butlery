@@ -254,6 +254,36 @@ void main() {
       final doc = await firestore.collection('shared_content').doc(id).get();
       expect(doc.data()?['sharedToUserIds'], ['friend-1', 'friend-2']);
     });
+
+    /// BUT-1812. `firestore.rules` requires `sharedToUserIds` on a
+    /// `shared_content` create. No content model's `toFirestore` emits it, and
+    /// the menu repository, the shopping-list repository and the share-dialog
+    /// coordinator all call this method with no initial list — so while the
+    /// stamp was conditional, every menu and shopping-list share was denied
+    /// outright while recipe sharing (the one caller that passes a list) worked.
+    ///
+    /// No fake evaluates rules, so the assertion is on the FIELD, which is what
+    /// the rule reads. If this reverts to `if (initialSharedToUserIds != null)`,
+    /// the key disappears and this test is the only thing that says so.
+    test(
+      'a create with no initial list still stamps sharedToUserIds',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        final repo = _repo(firestore);
+
+        final id = await repo.createSharedContent(_list());
+
+        final doc = await firestore.collection('shared_content').doc(id).get();
+        expect(
+          doc.data()?['sharedToUserIds'],
+          [_userId],
+          reason:
+              'seeded with the sharer, who is the only member the row has '
+              'before addMember runs — the recipients arrive by arrayUnion, '
+              'exactly as they did before the stamp became unconditional',
+        );
+      },
+    );
   });
 
   group('BaseSharedContentRepository — members subcollection', () {

@@ -1138,9 +1138,7 @@ Helper note: the BUT-930 group's "real adder" pattern (stub `mockMenuService.add
 - **Win pattern (keep doing this):** `cooking_mode_active_timers_strip_test.dart` extracts a private view widget into a PUBLIC one *specifically* to pin its behaviour with a real `StepTimerService` instead of reaching into private `_InstructionsPanelState`. Tap test asserts the `step-N`-derived index, NOT the row ordinal — exactly the right contract. Reuse this extract-to-test pattern for other private view sub-widgets.
 - **Gap caught:** `ActiveTimersStrip.stepIndexOf()` returns null for non-`step-` ids (legacy `_default` timer); the null-guard branch (tap must do nothing) is untested. Add: tap on a non-step chip fires no `onTapTimer`.
 - **Gap caught:** `LocalTimerNotificationService._initializePlugin()` + iOS-permission request (new in BUT-1242 iOS half) has ZERO coverage. The plugin is injectable via the constructor (`plugin:` param) — mock `FlutterLocalNotificationsPlugin`, force a mobile path, verify `initialize` is called once before `zonedSchedule`, and that an `initialize` throw is swallowed (warned) so scheduling still proceeds. Existing test only covers the VM off-device no-op, so `isPrepared` never goes true and the new init ordering is never exercised. NOTE: `_isMobile` reads `Platform.isAndroid/isIOS` which a pure-VM test cannot flip — true init-path coverage needs the platform check refactored to be injectable, or an emulator/integration lane. Flag rather than fake the platform.
-- **Helper note:** `flutter test` on this Windows box needs a .bat wrapper that sets PATH to include `C:\Windows\System32\WindowsPowerShell
-1.0` (flutter tooling shells out to PowerShell) plus `C:	ools
-lutterin`, calls `flutter.bat` by absolute path, and redirects to a file; invoke the .bat by absolute path with sandbox disabled. `cmd.exe /c` from this shell prints the banner but silently drops the trailing command.
+- **Helper note:** `flutter test` on this Windows box needs a .bat wrapper that sets PATH to include `C:\Windows\System32\WindowsPowerShell\v1.0` (flutter tooling shells out to PowerShell) plus `C:\tools\flutter\bin`, calls `flutter.bat` by absolute path, and redirects to a file; invoke the .bat by absolute path with sandbox disabled. `cmd.exe /c` from this shell prints the banner but silently drops the trailing command.
 
 ### 2026-06-14 — toFirestoreEditable() merge-write subset: the hiddenAt clobber path had no guard
 **Trigger:** Reviewing commit 22ab49ae9 (BUT-734 user-repo split + BUT-1285 merge-write). New `UserProfile.toFirestoreEditable()` removes three server-owned keys (`friendsCount`, `isHidden`, `hiddenAt`) so a stale owner save can't clobber them via `set(merge:true)`.
@@ -20991,3 +20989,4411 @@ at 503; this change pushes it further over. Filed Medium — the surplus is dupl
 
 Closing state: `flutter analyze lib/widgets/common/content_card.dart` → no issues;
 `flutter test test/widget/common/content_card_test.dart` → 39/39. Verdict pass, 0 blocking.
+
+## 2026-08-16 — BUT-1812/BUT-1832/BUT-1801 fix-round re-review (7 lib files)
+
+Trigger: "these files were just changed by an automated fix round — attack the fix".
+Scope: `firestore_collections.dart`, `firebase_recipe_repository.dart`,
+`message_mutation_module.dart`, `message_query_module.dart`,
+`recipe_gdpr_export_operations.dart`, `content_export_manager.dart`,
+`recipe_sharing_manager.dart`. Index == worktree for all seven
+(`git show :<f> | diff --strip-trailing-cr -` → SAME), md5 stable across the round.
+
+**1. BUT-1812 — `shared_content` recipe rows move from `doc(recipeId)` to `doc()` auto-id.**
+Graded against `firestore.rules`:776-780: create requires
+`['sharedByUserId','contentType','sharedAt','sharedToUserIds']` plus `sharedToUserIds is list`;
+the payload emits all four, so the now-unconditional `sharedAt` is required, not optional. The
+two sibling writers (`social_menu_operations.dart`:123-124,
+`shopping_social_share_module.dart`:96-97) already use `.doc()`, so the fix converges rather
+than diverges, and `FirestoreRepository.collection()` (`firestore_repository.dart`:125) returns
+a real `CollectionReference`, so no-arg `doc()` exists through the seam.
+
+What the ID change costs, and what no suite sees: `recipe_service_adapter.dart`:173-176 cleans
+up on recipe deletion with `where('originalRecipeId', isEqualTo: recipeId)` — a field this
+writer has NEVER emitted (it writes `'recipeId'`). Before, the row at least had a deterministic
+address; now it has neither an address nor a matching field, and there are N of them instead of
+1. Separately `FirebaseGroupSharedContentRepository._mergeChunks` dedupes by DOC ID, so two
+shares of one recipe used to collapse into one feed card and now render twice. Filed Medium
+(leak amplified, not created; the duplicate card is Malin's decided one-row-per-share).
+
+**2. BUT-1832 — poll votes move to `messages/{id}/poll_votes/{voterUid}`.** Write payload
+`{voterId, optionIds, votedAt}` matches `isValidVote()`'s `hasOnly` allow-list exactly
+(`firestore.rules`:2084-2087); `firestore.indexes.json`:750-757 carries the
+`poll_votes/voterId` override at BOTH `COLLECTION` and `COLLECTION_GROUP` scope, which the
+Art. 17 sweep (`account-deletion-cascade.ts`:1532) needs. Toggle semantics are equivalent to
+the deleted inline version on both branches (single-choice re-tap nets to "stays voted" because
+the old code stripped-then-added). `closePoll` is safe: it rewrites metadata read from the RAW
+doc, so hydrated `voterIds` are never persisted back into the message.
+
+Two gaps found by reading the file's own comment against the file. (a) The header states
+"Anything that hands out a poll message must hydrate" and `searchMessages` (same file, :265)
+does not; its callers are "rensa chatt" (deletes, never renders) and
+`MessagingService.searchMessages` (renders) — filed Low. (b) `_pollIds` caps with `.take(20)`
+over a list already reversed to oldest-first, so the 20 hydrated polls are the OLDEST on the
+page and the newest — bottom of the screen, still open — show "0 röster". Filed Medium.
+
+**3. BUT-1801 — `exportTopLevelRecipesByOwner` deleted.** The justifying claim is checkable and
+true: `grep "match /recipes" firestore.rules` returns exactly one hit, :360, nested under
+`users/{userId}`; no top-level block ⇒ default deny ⇒ the probe threw inside the single
+try/catch and discarded the personal recipes already collected. `grep -rn
+exportTopLevelRecipesByOwner --include=*.dart .` is empty, so nothing dangles.
+
+Closing state: `flutter analyze` over the 7 files → no issues (2.9 s); the five sibling suites
+(`message_mutation_module_test`, `message_query_module_test`,
+`recipe_gdpr_export_operations_test`, `content_export_manager_test`,
+`recipe_sharing_manager_test`) → 111/111 green. Verdict pass, 0 blocking.
+
+## 2026-08-17 — BUT-1832 / BUT-1801 / BUT-1812 gate review (second pass, 4 suites + 5 prod files)
+
+Scope handed over: `base_shared_content_repository.dart`, `firebase_data_export_repository.dart`,
+`social_export_manager.dart`, `recipe_gdpr_export_operations.dart`, `content_export_manager.dart`
+and four suites. A PRIOR round on an overlapping fileset closed `pass, 0 blocking` (entry above,
+7 files / 111 tests). This round found three blocking items that round did not, all by mutation
+rather than reading. Baseline: 103/103 green over the four suites; `dart analyze --fatal-infos`
+over the five production files → "No issues found!".
+
+**M1 — `exportRecipes`'s `truncated` flag survives being stuck TRUE.** Mutant:
+`content_export_manager.dart:160` `if (truncated) 'truncated': true,` → unconditional. Result
+`00:00 +43: All tests passed!`. BUT-1801 deleted the two-leg test "does not stamp truncated when
+two complete sub-queries happen to sum past the cap", which held the section's ONLY
+`containsKey('truncated'), isFalse`. The deletion RATIONALE is half right: the two-leg FIXTURE is
+genuinely unstageable with one source, but the ASSERTION is not — a below-cap/at-cap single-leg
+pair reproduces it, and the pantry section in the same file (:684-724) already ships exactly that
+below/at/over trio while the shared-list section ships the at-cap control (:1188). Recipes is now
+the only capped section in the file with no recall control.
+
+**M4 — same shape, new code: `poll_votes_truncated` survives being stuck TRUE.** Mutant:
+`firebase_data_export_repository.dart:455` `var pollVotesTruncated = false;` → `= true;`. Result
+`00:00 +9: All tests passed!`. Nothing asserts the flag ABSENT on a complete conversation, and
+`DataExportService`'s nested walk lifts any `*_truncated` into the bundle's truncation notice, so
+a stuck flag tells every data subject their export is clipped — the BUT-1721 false-positive
+direction whose fix is the TOP half of this very file, which does carry its at-cap control
+(:98-118). One test closes it.
+
+**M2 — `_hasPoll`'s named test tests neither half of its own name.** Mutant:
+`if (_hasPoll(msgDoc.data()))` → `if (true)`. RED, but the single failure is
+`BUT-1832: past the lookup cap the conversation reports itself clipped` — the test
+"a message with no poll is not probed and carries no vote key" passed unchanged. Mechanism:
+with the guard gone, `msg-0` IS probed, `messages/msg-0/poll_votes/user-abc` does not exist,
+`voteDoc.exists` is false, no key is written. "Guard held" and "probe found nothing" are one
+observable. So `_hasPoll`'s only guard is an INCIDENTAL kill inside the cap test, which depends
+on that fixture keeping a non-poll message ordered first; retune it and `_hasPoll` is
+deletable-green. Repair is the decoy-retarget shape: seed a trap row at
+`messages/msg-0/poll_votes/{userId}` — production's `votePoll` only ever writes under a poll
+message, so the row is a shape production never writes — and assert the key still absent.
+M3 (control, `poll_votes_truncated` key deleted) → RED, so that emission itself is pinned.
+
+**Zero-token finding: the whole `SocialExportManager` half of BUT-1832 is untested.**
+`grep -rl your_poll_vote test/` → the repository suite only; `poll_votes_error_code` and
+`conversation-poll-votes-read-failed` → ZERO files. Three new blocks
+(`social_export_manager.dart` :253-260, :275-281, :282-290) and the seam already exists:
+`social_export_manager_test.dart:23` has `_FakeDataExportRepository` overriding
+`exportConversationsAndMessages` (:122) and a `messages_truncated` pass-through test (:1097-1155)
+that is a line-for-line template. Sharpest sub-item: every real vote row carries `votedAt` as a
+`serverTimestamp` (`message_mutation_module.dart:548`), so `sanitizeForJson(msg['your_poll_vote'])`
+is the only thing between a live poll vote and `JsonEncoder.convert` at
+`data_export_service.dart:415`; delete that call and nothing reddens, though the two sibling
+"a Timestamp cannot break jsonEncode" tests in `content_export_manager_test` exist for precisely
+this. The repository-level `poll_votes_error_code` catch is NOT stageable (the fake cannot fire
+`permission-denied`) — which is exactly why the manager-level test is the one that must exist.
+Also unasserted: the precedence between `error_code ??=` (:289) and the unconditional
+`error_code =` (:305), i.e. the messages code always wins across conversations.
+
+**Endorsed as correct:** the five `exportTopLevelRecipesByOwner` tests. The header's argument
+("a fake-backed test is evidence about the query, never about the permission") is TRUE but is not
+the operative reason — the method and the module's `firestore` constructor param are both gone,
+so the tests cannot compile, and compiler enforcement is strictly stronger than a counter-test.
+`grep -rn exportTopLevelRecipesByOwner lib/ test/ functions/` is empty. No re-introduction guard
+is owed or possible: the module has no `FirebaseFirestore` handle left to reach a top-level
+collection with. Worth one clause in the header so a future reader does not generalise it into
+"fake-backed repository tests may be deleted".
+
+**Endorsed as correct:** BUT-1812's new
+`base_shared_content_repository_test.dart` case. Both arms of
+`initialSharedToUserIds ?? <String>[uid]` are pinned over one fixture (the pre-existing
+explicit-list test asserts `['friend-1','friend-2']`, the new one asserts `[_userId]`), the
+assertion is on the FIELD the create rule reads (`firestore.rules`:777-780,
+`hasRequiredFields([... 'sharedToUserIds'])` + `is list`), and a revert to the conditional makes
+the key vanish. Non-vacuous analytically, no mutant owed. Checked the `??`-catches-null-but-not-
+empty trap: the only caller passing a list is `firebase_shared_recipe_repository.dart:262` with
+`[sharedByUserId]`; nobody passes `[]`, which would satisfy `hasRequiredFields` and still leave
+the row unlistable.
+
+**Fixture realism:** vote-row shape `{voterId, optionIds, votedAt}` matches the writer exactly
+(`message_mutation_module.dart:542-549`), and `metadata.poll.options[].voterIds: []` matches the
+"written empty and never updated" reality — good. Two small ones: `seedPollMessage` gives both
+poll messages an identical `sentAt` (`DateTime.utc(2026,1,2)`), so which one the cap consumes is
+undefined (harmless today, a coin flip for any future per-poll assertion); and `seedConversation`
+writes a conversation carrying only `participantIds`, so the `memberSince` group-history branch
+(:416-426) has no fixture in this file — pre-existing BUT-1838, not caused by this diff.
+
+**Deviation check:** `docs/architecture/ACCEPTED_DEVIATIONS.md`:260-262 records poll
+`metadata.options[].voterIds` as a decided KEEP. BUT-1832 does not violate it (the field is still
+exported inside `data`) but it now records nothing, and the new leg exports only the requester's
+own row — stricter than the decided balance, correctly explained at
+`social_export_manager.dart`:331-338. That entry also says "Both halves are pinned by unit tests
+in `social_export_manager_test.dart`, in both directions", which a reader will over-read as
+covering the poll leg beside them. A dated amendment belongs with the fix.
+
+Probe hygiene: both drivers backed up with `cp`, restored in `finally` AND on
+SIGINT/SIGTERM/SIGBREAK, md5 re-verified equal after every arm; `git status --porcelain` shows
+all five production files back at `M ` (staged, worktree clean), index untouched. Closing state:
+4 suites 103/103 green, analyze clean. Verdict: fail, 3 blocking.
+
+## 2026-08-17 — BUT-1832 re-review round 3 (poll votes: export facade, repo leg, hydration cap)
+
+Trigger: gate re-review of the staged test+production files after three blocking gaps
+(H1 SocialExportManager facade untested, H2 exportRecipes truncation recall control lost,
+H3 poll_votes_truncated recall control) plus M-1 (the "not probed" test tested neither
+half of its name) were reported closed, with one NEW production fix on top
+(`message_query_module._pollIds` capped from the HEAD of an oldest-first list).
+
+Files read: the four staged suites + `social_export_manager.dart`,
+`content_export_manager.dart`, and (for the attack) `message_query_module.dart`,
+`firebase_data_export_repository.dart` (poll leg), `export_pagination_helper.dart`.
+
+Run: `flutter test` on the four suites -> 122 passed. `dart analyze --fatal-infos` on the
+two managers -> No issues found.
+
+### The newest test, attacked as asked (`the cap hydrates the NEWEST polls, not the oldest`)
+
+Probe: three scratchpad replicas of `MessageQueryModule` (control; `.reversed` deleted;
+hydration short-circuited), graded per assertion so neither aborts the other, run in ONE
+`flutter test` on an absolute scratchpad path (production is staged, so no `lib/` mutant).
+Output:
+
+    page order (control): [poll-0, poll-1, poll-2] ... poll-20 (len 21)
+    CONTROL          -> {newest hydrated: true,  oldest NOT hydrated: true}
+    MUTANT head-take -> {newest hydrated: false, oldest NOT hydrated: false}
+    MUTANT no-hydrate-> {newest hydrated: false, oldest NOT hydrated: true}
+    CONTROL rev-insert-> {newest hydrated: true, oldest NOT hydrated: true}
+
+Reads: the fix is pinned at BOTH ends (head-selection breaks both assertions, not one);
+an unhydrated page cannot satisfy the pair, because the positive assertion is the control;
+and seeding in reverse insertion order changes nothing, so the outcome is decided by the
+`sentAt` orderBy, not by fixture order or the fake's document iteration. The claim
+"reddens exactly that test" also holds analytically — every other poll fixture in the file
+has one poll, i.e. under the cap, where both selections agree. Probes deleted in the same
+call; `git status --porcelain` shows no scratchpad residue and no `lib/` motion.
+
+### The one blocking residual
+
+`social_export_manager.dart:289` — `messagesData['error_code'] ??=
+'conversation-poll-votes-read-failed';` — is NEW in this diff and asserted NOWHERE.
+`grep -rn conversation-poll-votes-read-failed test/` returns two hits, both inside the H1
+test: the fixture map it seeds, and the assertion on the CONVERSATION-level copy. By the
+production comment's own account (repo lines 515-519) and the `messages_truncated` test's
+comment (lines 1105-1110), the conversation-level key lives inside the `conversations`
+LIST and `DataExportService`'s nested walk reaches only `section.values.whereType<Map>()`
+and only keys on `*_truncated` — so the copy the test pins reaches no user, and the root
+lift it does not pin is the only path into `export_metadata.warnings`. Deleting line 289
+leaves the whole suite green. The chat-groups test's `containsKey('error_code'), isFalse`
+is the recall control for the healthy path, not the true direction. One line closes it in
+the existing H1 test. Same shape, one branch below and pre-existing (BUT-1838):
+`conversation-messages-read-failed` has ZERO hits anywhere under `test/`.
+
+### Advisories
+
+- The M-1 trap seeds `firestore.collection('messages').doc('msg-0').collection('poll_votes')`
+  with string literals while the rest of that file uses `FirestoreCollections.messages` /
+  `.pollVotes`. Values agree today (verified). If either constant is re-spelled, production
+  moves and the trap sits at a dead path — the test silently returns to the vacuity it was
+  written to close.
+- H1 asserts `vote['votedAt'], isNot(isA<Timestamp>())`. `sanitizeForJson` maps Timestamp ->
+  ISO String, so it does kill the named mutant; the section contract's fourth proof
+  (`expect(() => json.encode(result), returnsNormally)`, as `content_export_manager_test`
+  writes it) additionally survives a half-fix converting to `DateTime`.
+- H2 and H3 verified analytically: an unconditional `'truncated': true` reddens the new
+  below/at-cap pair; `var pollVotesTruncated = true` reddens the complete-conversation
+  control and nothing else.
+- ACCEPTED_LARGE_FILES: HEAD line counts were 499 and 497 (now 528 / 501), so both
+  "crossed the limit in this change" claims are true, and the content growth really is
+  BUT-1801's removal + doc comment (read the diff). Content rationale fine. The social row
+  is sound on substance but one sentence mis-cites its own evidence: BUT-1801's defect was
+  two reads sharing ONE catch, i.e. too little separation, so it does not argue against
+  splitting. Unmentioned natural extraction: `_redactOtherParticipants` + the conversation
+  loop as a `ConversationExport`, mirroring the already-extracted `ChatGroupExport`.
+
+Closing state: `social_export_manager.dart` 528 lines, `content_export_manager.dart` 501,
+`message_query_module.dart` 335; the four suites 1786 / 1491 / 418 / 638 lines. Worktree
+clean apart from two `MM` knowledge files belonging to a parallel agent.
+
+## 2026-08-17 — BUT-1832 re-review round 4 (write side, shared constant, two comment-only files)
+
+Trigger: final gate pass. Round 3's one blocking item and both advisories reported closed;
+four files named that no testing reviewer had read at these bytes.
+
+Closures verified byte-wise, not taken on trust:
+`social_export_manager_test.dart`:1247 now holds `expect(result['error_code'],
+'conversation-poll-votes-read-failed')` with a comment stating why the per-conversation
+copy is not the user-visible half; the conversations trap row now reads
+`FirestoreCollections.messages` / `.pollVotes` (lines 322-324); the allowlist row no longer
+cites BUT-1801 against splitting and names the `_redactOtherParticipants` + conversation-loop
+extraction as the candidate.
+
+Runs: `flutter test` on message_mutation / base_shared_content / recipe_gdpr_export -> 76
+passed. `dart analyze --fatal-infos` on the four production files -> No issues found.
+
+### The poll write suite, attacked (11 cases, `FakeFirebaseFirestore`)
+
+Switchable-mutant replica of `MessageMutationModule` in the scratchpad (production staged,
+so no `lib/` mutant), 11 shipped cases mirrored as named checks, one run:
+
+    NONE (control)     -> reddens: NOTHING
+    shared-doc         -> reddens: v1, v2, v3, v4, v5, v6, v7
+    no-voterid-field   -> reddens: v1, v2
+    keep-empty         -> reddens: v7, v8
+    single-toggle      -> reddens: v5
+    no-creator-check   -> reddens: c2
+
+No dead case (c1 and c3 are closePoll's own positive/no-op controls, killed by mutants not
+worth running: "close writes nothing" and removing the `!doc.exists` guard). Answers to
+"which can pass with the feature broken", in the two senses the fake cannot stage:
+(1) ALL ELEVEN are green if `firestore.rules` refuses the write — the exact BUT-1832
+defect. Covered in another lane; `functions/src/__tests__/poll-votes-rules.test.ts` is new
+in this diff, so the division is real and not a hole.
+(2) ALL EIGHT votePoll cases are green with `runTransaction` replaced by a plain
+read-modify-write — analytic from the fake's documented passthrough, no probe owed. The
+group header says exactly this in its own words, which is the right call while the emulator
+lane does not run in CI.
+The residual is naming: `one voter cannot disturb another voter row` pins the per-voter
+DOC KEYING (kills `shared-doc` only, a strict subset of v1's set through the same seam) and
+is best kept as the two-voter CONTROL for the pre-fix clobber class, under a name that does
+not read as isolation. Same class one group up: `atomically writes message + conversation
+update + sender rate-limit doc` and the file header's "atomic 3-doc batch" — the fake cannot
+fail a batch, so what is proven is that three documents land at their exact paths. The
+repo's own testing digest forbids exactly that wording on a fake-backed test.
+
+### The three smaller files
+
+- `firestore_collections.dart`: `pollVotes = 'poll_votes'` — value matches every speaker
+  (writer, reader, export repo, and the trap row that now uses the constant). Doc comment
+  accurate.
+- `base_shared_content_repository.dart`: the corrected comment's arithmetic CHECKS OUT, and
+  I checked rather than assumed. Three no-arg call sites — `firebase_shared_menu_repository`
+  :200, `firebase_shared_shopping_repository`:201, `base_social_coordinator`:166 — and
+  `firebase_shared_recipe_repository`:262 is the one that passes a list. `grep "'sharedToUserIds'"
+  lib/models/` is empty, so "no content model's toFirestore emits it" holds. The suite's own
+  comment (lines 258-263) tells the same story with the same count, so the two did not drift.
+- `recipe_gdpr_export_operations_test.dart` header: states the narrow claim I asked for —
+  "a fake-backed test is evidence about the query, never about the permission" — and does
+  NOT generalise to "fake-backed tests may be deleted". Caveat honoured.
+
+Verdict: pass, 0 blocking, two naming advisories. Closing bytes: message_mutation_module
+579 lines, base_shared_content_repository 799, firestore_collections 166,
+recipe_gdpr_export_operations 70; suites 822 / 76-case run. Probes deleted in the same call.
+
+## 2026-08-17 — BUT-1832 round 5 (final pass: a rename, a comment, two files I had never opened)
+
+Trigger: three files moved after the round-4 pass; last stop before commit.
+
+1. **The rename.** `one voter cannot disturb another voter row` -> `each vote lands in its
+OWN row, keyed by the voter` (message_mutation_module_test.dart:592). Off the isolation
+wording, matching what the round-4 kill matrix showed it actually pins (the `doc(voterId)`
+derivation). The coordinator's first attempt put an apostrophe inside a single-quoted Dart
+string and stopped the file compiling; that is why the rule above exists. Verified at these
+bytes: `dart analyze --fatal-infos` on the TEST FILE ITSELF is clean, the three suites run
+together green (64 tests), and `grep -rn disturb test/ lib/ docs/ .claude/` finds no stale
+citation of the retired name. The group header two hundred lines up still disclaims
+concurrency, so header and name now say the same thing.
+
+2. **The reworded fail-open comment** (`message_query_module.dart`, `_withLivePollVotes`).
+Every limb checked against `firestore.rules`:2062-2142, because a comment about another
+file is a claim with a verification cost:
+   · "`allow read` never calls `pollIsOpen()`" — :2142 is `isAuthenticated() &&
+     inPollConversation()`. TRUE, so metadata SHAPE genuinely cannot deny a read.
+   · "a deleted message makes `pollMessage().data` null and the read denies on a CEL error"
+     — `inPollConversation()` (:2081) dereferences `pollMessage().data.conversationId`.
+     TRUE, and reachable: an orphaned vote row outliving its message is the case.
+   · "a removed participant fails the membership test" — same line, `uid in participantIds`.
+     TRUE.
+   · "`firestore.rules` records the same mistake being corrected in this very commit" —
+     :2115-2118 does, in those words. TRUE, and both files are staged together.
+   Executable lines unchanged from the round-1 read (same `onErrorReturnWith` -> null,
+   same `whereType` filter), so this really is comment-only.
+
+3. **The two files described to me as "unchanged beyond formatting".** I had never opened
+either, so there was nothing to compare against — said so rather than confirming it. What
+they contain now: `firebase_recipe_repository.dart` drops the `firestore:` argument and the
+wrapper for the deleted `exportTopLevelRecipesByOwner` (no caller remains anywhere —
+grep + analyze), consistent with `recipe_gdpr_export_operations.dart` and with
+`ContentExportManager.exportRecipes`. `recipe_sharing_manager.dart` is NOT formatting: it is
+the BUT-1812 document-id scheme change, deterministic `doc(recipeId)` -> `doc()` auto-id,
+with `sharedAt` now unconditional and `SetOptions(merge: true)` dropped. That is the exact
+shape the "DOCUMENT-ID SCHEME" principle in the knowledge file was written for, and its
+suite does cover it (`recipe_sharing_manager_test.dart`: unconditional create + `sharedAt`
+stamped, "exactly one auto-id create", fresh-vs-old row). Cascade side still queries
+`shared_content` by `sharedToUserIds` array-contains, which the payload writes, so the
+id change costs the erasure sweep no address.
+
+Runs: `dart analyze --fatal-infos` on the renamed test + both message modules + the two
+files above + recipe_gdpr_export -> No issues found. `flutter test` on
+message_mutation + message_query + recipe_sharing_manager -> 64 passed.
+
+Verdict: pass, 0 blocking, nothing outstanding. Probes: none written this round.
+
+### 2026-08-17 — round 5 addendum: sign-off read of `message_query_module.dart`
+
+Full-file Read at md5 `b3e7a7a40b3055d2bc651807c70e5807` (worktree AND `git show :` index —
+identical, and the same hash `firebase-backend-security` recorded). Everything concluded in
+rounds 1-5 holds at these bytes; nothing new found. What the FULL read added over the
+targeted ones:
+· the `searchMessages` carve-out comment ("no view, viewmodel or widget calls it… only the
+  service passthrough and rensa chatt, which deletes rather than draws") is TRUE — one grep:
+  hits are the repository passthrough, the interface declaration, `messaging_service`, and
+  `message_management_operations`:112, which is the delete path (`query: ''`, limit 1000,
+  BUT-1838 `historyStart`). Zero hits under views/viewmodels/widgets. A carve-out comment is
+  a claim about callers and this one pays.
+· `onErrorReturnWith(... => null)` does double duty nobody wrote down: besides the fail-open
+  tally, it converts an inner error into an EMISSION, so a failing poll stream cannot kill
+  the CombineLatestStream and take the whole message list down with it. Worth knowing before
+  anyone "simplifies" it back to rethrowing.
+· `_tally` keys the voter off `doc.id` (what the rule guarantees) and skips a non-List
+  `optionIds`; `_merge`'s three shape guards fail open toward the stored message. Both pinned
+  by `message_query_module_test.dart`.
+
+### 2026-08-17 — full pre-compaction snapshot of testing-specialist.knowledge.md (verbatim, NO-LOSS restructure)
+
+The knowledge file had regrown to 162,426 chars (md5 8007d76165b52aa15d947b28e9248892) despite the
+2026-08-09 compaction that left it at 112,000 — not through dated log entries (this file has never
+used `## <date>` headers; it is already principle-shaped) but through individual principles ballooning
+with embedded worked-example detail. This entry is the FULL VERBATIM byte content of the file at that
+size, preserved before the 2026-08-17 restructure merged/sharpened its principles down to the file
+that replaced it. Every fact, number, ticket citation, test name, and worked example below survives
+here even where the live knowledge file now states only the compressed rule. Grep this block for the
+BUT-#### or filename you need the full detail on.
+
+<details><summary>testing-specialist.knowledge.md @ 2026-08-17, pre-restructure, verbatim</summary>
+
+````markdown
+# testing-specialist — accumulated knowledge
+
+Read as Step 0 of every testing task; update when you discover a pattern,
+find a helper, or are corrected. `testing-specialist.md` holds the durable
+rules (DO-WRITE / DO-NOT-WRITE, production→test path map, Mock-vs-Fake).
+This file holds **what was learned since**, as principles — never a log.
+
+## How to update this file
+
+- **PRINCIPLES only.** Fold new learning into the matching section as a 1-4
+  line rule (merge with an existing bullet if it restates it). A principle
+  earns its place only if a future run would act DIFFERENTLY — not "we once
+  saw X." Append into the RIGHT SECTION, never onto the end.
+- **Raw narrative goes to `testing-specialist.knowledge.archive.md`** under a
+  new `## <date> — <title>` heading, then fold the one-line lesson in here.
+  A dated "what happened today" entry never belongs in THIS file — that is
+  what caused the 2026-07-24 rewrite (432K chars restating ~15 patterns).
+- **Budget ~120,000 chars, and the number is not the real control.** The
+  binding rule is the one above it: a bullet is 1-4 lines. The file drifted to
+  262,000 not by holding too many rules but by letting ten of them grow into
+  essays, the longest 14,324 characters. Compacted 2026-08-09 to 112,000 with
+  every one of ~338 rules intact and no bullet over 813 characters.
+- **The old 35,000 budget was retired because it had become unfollowable, and
+  an unfollowable rule is how this file drifted twice.** It was written on
+  2026-07-24 for ~15 patterns; at 338 it allows 103 characters per rule, which
+  keeps the trap and deletes the fix. Do not restore it.
+- **The real trigger is the Read tool, not a character count.** Past ~250,000
+  this file cannot be opened in one call and Step 0 silently degrades to
+  grepping — that is the failure, and it is what prompted the 2026-08-09 pass.
+  When it next approaches that, SPLIT rather than compress again:
+  `### Vacuity patterns` is ~24,000 on its own and is the natural extraction.
+- **`### Coverage decisions` currently misfiles the OCR/layout-geometry cluster**
+  (~35 rules, BUT-1816 era) — that material is mutation-testing craft, not
+  coverage. Move it when something else touches that section; it is the single
+  largest body of situation-specific material here and the first candidate if
+  retiring rules is ever authorised.
+
+## When to consult the archive
+
+The archive is the full dated history, verbatim and chronological. Grep it
+when a principle here is too terse to act on and you need the worked example
+(test code, line numbers, failure output); when you hit an unfamiliar
+mocktail stub mismatch, `MissingStubError` or fake-vs-real-Firestore
+discrepancy not named below; when an emulator-lane setup fails (full
+Windows/emulator runbooks live there); when you want a ticket's or area's
+full review history (grep the BUT-#### or area name); or when a principle
+cites "verified non-vacuous by X" and you want the revert-probe that proved
+it, to reuse the technique.
+
+---
+
+## Principles
+
+### Re-review economics (when asked to re-review "after automated fixes")
+- **Confirm the tree MOVED before re-reviewing.** md5 each in-scope file against the hashes your last entry closed with; mtime lies (`cp -p`, formatters). Nothing moved = say so, then spend the round on a probe earlier rounds did not run.
+- **Close every archive entry with `md5sum` + `wc -l` per in-scope file**, and re-hash + re-count at the END of the round too — mid-round arrivals are the least-tested code in the diff, and `wc -l` separates a staged edit from a CRLF rewrite.
+- **An empty `git diff <path>` does not mean unmoved** — `M`/`A` in status column 1 means the other session STAGED, so only `git diff HEAD` shows it. `git show :<path> | diff --strip-trailing-cr -` settles worktree-vs-index.
+- **The TASK BRIEF is pinned to a hash and expires with it** — behaviours it names may already be deleted. Tell: `sed -n` printing different content at the same lines. Re-Read, rebuild the mutant list, discard the battery. Conversely a brief may be anchored to your FIRST closing, not the revised one: if the hash is UNCHANGED, do NOT re-run mutants already measured on those bytes.
+- **The motion check is the round's MAP: cross moved PRODUCTION files against SUITES that did not move.** That intersection is unasserted lines by construction. **A suite that READS a file at runtime (a source-text guard over `firestore.rules`) has that file as an INPUT — hash it too, and re-derive every number the suite asserts when it moves, even though the suite itself is byte-identical.** A brief listing "unchanged" files rarely lists the input.
+- **A mid-round production file whose SUITE did not move: `git show :<path>` is a free exact pre-fix mutant** — run it as a renamed `test/`-side replica beside the live class. Proves non-vacuity AND that production must be staged WITH the tests.
+- **The fix loop consumes Critical/High only**, so an all-Low/Medium re-review returns unchanged forever. Apply zero-risk TEST-ONLY fixes yourself; file only production-behaviour items; never edit production in a review pass.
+- **"Which of these N tests is a DUPLICATE" is measurable:** copy the ONE expression they surround into a probe, write each test's assertions as named checks, run against every plausible mutant. A kill set that is a strict subset of another's **through the same seam** is deletable — the seam clause stops you deleting the only test reaching a real fail-closed lookup. Second exception: a subset test that is another test's CONTROL — the readable-founder row beside the blanked clock-skewed one, without which the blank is equally explained by "founders are blanked". Ask what each candidate's SIBLING would prove alone. Leave a pointer comment naming the survivor. **Two SUITES for one class: grade by what only ONE holds, and expect the keeper to be the one at the NON-mirroring path** — the tidy path-mirroring suite is the exhaustive render/validator sweep, while the "stale duplicate" carries the security-regression group and the a11y group nobody re-wrote (`test/widget/dialogs/dialog_form_fields_test.dart` vs `test/widget/common/dialogs/`). Never retire one by path convention alone.
+- **Re-verify the archive's claims, and any TWIN-SITE suspicion of your own, with a live probe** — "the sibling has the same bug" is a hypothesis until you call its public api on both inputs and diff.
+- **A verifier's RED COUNT fingerprints the SOURCE it ran, and "N tests red" is often the PRE-fix signature.** Mutate the fix out yourself and compare: a match means the reporter read stale bytes, and that is the finding. Same for counts a brief hands you — staged bytes with unstaged work on top differ, and `MM` means the change you were asked to judge may live ONLY in the worktree. In a COMMENT-ONLY diff that split is invisible to every gate: the index can still hold the exact sentence this round replaced, so grade the worktree, then name which hunks are unstaged and that a bare `git commit` ships the old claim.
+- **A mutation battery run beside a live parallel session yields FALSE KILLS, which nobody re-checks** — the red belonged to their edit (an exception RE-TYPE reddens a test in another group entirely), so you credit coverage that does not exist. Read the failing test's NAME against the mutant's blast radius; re-hash and re-run every kill before writing the verdict, and re-Read any file whose bytes moved.
+- **An IDENTICAL md5 with a minutes-fresh mtime is a mutate-and-restore, not an unmoved file** — a parallel session's battery leaves no diff, only a timestamp. When its mutant reddens the very test you were asked to grade, that red IS the test's kill proof, free; attribute from mtime + the mutant's blast radius, re-run, and never write the verdict off the first run. **A DIFFERENT md5 whose new line CONTRADICTS the comment directly above it is the same thing caught mid-flight** (`return null` under "this must not degrade the roster") — re-Read before filing; it reverted within minutes. Their battery also poisons YOURS: a suite red under every one of your mutants is their edit, not your kill, and your own `finally` restore will CLOBBER their in-flight write. Beside a live session, prefer a production-free `test/`-side probe.
+- **A COSMETIC last-minute edit is still a code change, and must be analyzed on THE FILE EDITED.** A test rename, a reworded `reason:`, a comment — an apostrophe inside a single-quoted Dart string stops the file compiling, and "analyze was clean" on its SIBLINGS plus "the suite passed in isolation" is evidence about neither. Close a rename round with `dart analyze --fatal-infos <the edited file>` plus one run of the edited suite ALONGSIDE its neighbour, and grep the retired NAME across `test/ lib/ docs/ .claude/` — a renamed test is a retired consumer, and the comment citing it lives somewhere else.
+- **The tree can move DURING your round — a Critical is a claim until you re-read the file as you file it.** Report a transient artefact as evidence the SUITE could not see it, never as a live bug. Back up and `cmp`-restore your own probes in the same Bash call. **The cheapest motion detector is a STACK-TRACE LINE NUMBER disagreeing with the file you read minutes ago** — it fires before any re-hash and it fired first in BUT-1838. A file can also go ` M` BETWEEN two of your own test runs (green in batch 1, red in batch 2, no edit of yours between), and a `M `→`MM` transition means the bytes you were asked to grade are still GREEN: settle it with `git show :<path> | grep -c <retired token>` and say the red exists only against the worktree. Do NOT rewrite the other session's now-red test — you would be writing against bytes that will not be there in ten minutes.
+- **"It was only `dart format`" is PROVABLE in one script, not a thing to take on trust — git keeps the pre-format blob.** Walk `git cat-file --batch-all-objects`, keep blobs within ~25 % of the file's size, and compare `re.sub(r'\s+','',body)` against the current file: a size-different, whitespace-identical blob IS the pre-format version, and loose-object MTIME orders the chain so you can diff the immediately-preceding one. Two traps: git stores LF while a CRLF worktree differs by exactly one byte per line (so compare blob-to-blob, not blob-to-disk), and **the formatter INSERTS a trailing comma when it wraps an argument list, so a genuinely format-only file can fail a naive token-signature match** — fall back to the raw `diff`, which shows the wrap. Verified on 5 files, BUT-1838.
+- **A brief promising the tree is FROZEN has a shelf life of minutes, and the cheapest detector is `wc -l` disagreeing with the line count of a `Read` you did in the same round** — it fires before any re-hash and caught two writes mid-round in BUT-1858. Re-Read the moved file and re-grade; a fix landing WHILE you review is not a finding.
+- **A green suite that reddens ONCE is usually a free revert-probe, not a flake — attribute from the failure VALUE.** The kernel cache is timestamp-keyed, so a run seconds after a parallel `lib/` rewrite compiles pre-fix bytes. `+N -1` where N = every pre-existing test means the red is your own new test, i.e. its mutation proof for free.
+- **"Staging — resolved" is not resolved until `git show :<path> | diff - <path>` is empty, and on a comment-only round it regresses silently**: BUT-1858's index sat BEHIND the graded bytes in two consecutive rounds, still holding the exact false sentence the round had replaced. Close every round by naming the unstaged hunks and that a bare `git commit` ships the old claim — a review verdict is scoped to bytes, and only the index pins them.
+- **Any analyze finding CONTRADICTING the source you just read means re-`md5sum` first** — files whose flagged `unused_import`s are exactly the ones the fix ADDED are a revert-probe. A timestamp-preserving restore also lets a suite pass against bytes the analyzer says cannot compile; bracket every claim with md5 on BOTH the `lib/` file and the suite.
+- **A probe RECONSTRUCTED from a `git diff` read minutes ago, disagreeing with the live class, is tree motion — not a finding.** Dart drops unrecognised string escapes SILENTLY, so any regex built from a NON-RAW literal is a live hazard worth grepping for.
+- **When the parallel session lands a test for the SAME guard, delete YOURS**, with a pointer comment. A compile error in a fixture parameter you did not write is the first sign you are both in the file.
+- **A MEASUREMENT quoted in a comment is one command to verify wherever a shipped tool prints it** — three files agreeing only proves one was copied. A figure quoted WITHOUT its source's caveat is an advisory, not a false claim: say which.
+- **For "would the RULES allow this?", the emulator settles it in one run and needs no plan** — a throwaway `functions/src/__tests__/_zz_probe_*.ts` under `npx firebase emulators:exec --only firestore --project demo-test` names the RULE LINE in ~90 s. Add a control arm so a wiring failure cannot masquerade as a denial.
+
+### Project-specific test infrastructure (full detail in `testing-specialist.md`)
+- Production ServiceLocator bridge: `production.ServiceLocator.initialize(DIContainer())` in `setUpAll`. Both ServiceLocator classes share one `GetIt.instance`.
+- `MockUnifiedRecipeService.setRecipeState()` defaults `isInitialized: false` — always pass it explicitly.
+- Debounced VM methods need `fakeAsync` + `async.elapse(300ms)`; `executeDebounced` fires 3 notifications (setLoading + operation + setSuccess).
+- Per-view mechanical tests were deleted (BUT-387 Ph6) — `test/views/` is journey-test territory (owned by `e2e-test-specialist`).
+- **A repoint to `collectionGroup(...)` is HALF a fix:** automatic single-field indexes are collection-scoped, so a filtered group query needs a `fieldOverride` with `queryScope: COLLECTION_GROUP` or it FAILED_PRECONDITIONs, and `deploy --force` prunes anything absent from `firestore.indexes.json`.
+- **That declaration suite needs three arms** (template `recipe-collection-group-indexes.test.ts`): the override exists at group scope; the EXACT SET of overrides for that group (a count survives delete+add); the source still spells the field, anchored on `.where("core.x"` not `src.includes(...)`. Add the old wrong path as a regression arm.
+- **Register the npm `test:*` script in the same edit** — `run-all-tests.js` auto-discovers, so an unregistered suite is an orphan nothing runs.
+- **Source-text assertion suites must strip comments before matching** (`/\/\*[\s\S]*?\*\//g` then `/(^|[^:])\/\/.*$/gm`) — authors explain `retry: true` in prose beside it, so a bare `includes` stays green after the setting is deleted. Probe non-vacuity with a STRING mutant (`.replace()` the setting out of the file's text), never a file mutant.
+- **A mocktail matcher goes vacuous only when a new named argument's value stops equalling its DEFAULT** — noSuchMethod fills omitted named params in, so `f(any())` still matches a call carrying `layout: null`. Repairing to `any(named:)` is stronger; prove with a 4-arm probe. "Mocktail matches on the key set" is false — the key set is always complete both sides. **The dangerous direction is `verifyNever`:** where production fills a named param with a NON-default (`unit:'st'`, `location:pantry` against `null` defaults), the omitted-param form can never match, so the guard is UNFAILABLE and reads as routing coverage — spell every named param, settled by reading the callee's DECLARATION line for the full param set. Yield stays small beside a positive `verify(...).called(1)`, which already kills every REDIRECT mutant: the repaired guard only adds the DUPLICATE-write one.
+- **A poll-until-condition loop discriminates only if the ASSERTION sits after it**, and must poll the LAST observable step of an async teardown or the tail stays unbounded. A `Stopwatch` ceiling is what `check_test_real_time.sh` allows; its `DateTime.now()` rule matches TEXTUALLY (comments too) and its delay rule fires only on `seconds|minutes|hours`.
+- **`retry: true` owes a REACHABILITY read of its own bound** — v2 triggers default retry OFF, so these ship with an `isCascadeEventExpired(event.time)` guard, and a `event.data!.before.data()` deref above it escapes the bound entirely. The guard must be the handler's FIRST statement.
+
+### Coverage decisions
+Codecov: 60% project / 70% new patches / 2% drop tolerance — floors, not targets. Project floor DECIDED at 55% (2026-07-11); don't file generic "raise coverage" tickets.
+- **When a fix SPLITS one recorded event across two destinations, grep the destination that LOST a value** — the sibling suite pins only the one that gained. The test belongs at the layer owning the counter; pin the user-visible end too. A lazily-built counter map makes `expect(usage['x'], 0)` a null-compare, not an assertion.
+- **A CROSS-LANGUAGE literal contract (a marker a CF writes and Dart matches) is pinned consumer-side only; the producer's literal is the surviving mutant.** When a doc comment claims two files stay in sync, grep for the test enforcing it — none means it is a comment, not a contract.
+- **When a round is told "X was REPOINTED", run X's own suite even if the ticket never listed it — a repoint's existing suite is by construction written against the retired behaviour.** It rarely just fails: half of it passes VACUOUSLY, because the retired seam is no longer called and the fixture that fed it was never seeded elsewhere, so a negative assertion is satisfied by absence instead of by the guard ("returns null on readFn exception" stayed green with `readFn` uncalled and the doc unseeded — two failure paths, one observable). The tell is in the test NAMES: one that states the old delegation ("returns whatever readFn returns") is asserting the bug. Rewrite against the shipped contract with the fixture where the two sources DISAGREE — seed the new one, have the retired one answer null, which IS the production defect — and add "the retired seam is never invoked", or a revert plus a helpful re-wiring passes anyway (BUT-1838: reverting reddened 6 of 6 after, 0 before). **When the follow-up DELETES the seam's parameter, that test must go — the compiler enforces it, strictly stronger than a counter — and deleting it costs nothing. What the same edit silently breaks is the SIBLING test that staged an in-memory DECOY through the seam: nothing can pass the decoy any more, so `isNot(same(decoy))` is unfailable and the test name still promises a discriminator. Retarget the decoy to the retired PATH (seed `users/{uid}/<coll>/{id}` as a trap beside the top-level doc); that is the one thing a revert can still get wrong.**
+- **When a fix DELETES one of two SOURCES that OR into a flag, the fixture dies but the RECALL CONTROL does not — rebuild it single-legged in the same edit.** The deleted test is usually the "two complete legs sum past the cap, so the section must NOT claim truncated" one, and it holds the section's only `containsKey('truncated'), isFalse`; the surviving clipped-leg test pins only the true direction, so an unconditional `'truncated': true` ships green and every Art. 15 bundle claims to be clipped. Measured, BUT-1801: mutant survived 43/43. The same shape is born with any NEW capped probe — a stuck-true `*_truncated` survives when only the over-cap fixture exists (BUT-1832, 9/9). Grade a capped section by asking for the below/at/over trio, and grade a deletion rationale by splitting "this FIXTURE is unstageable now" (often true) from "this ASSERTION is" (usually false).
+- **Open a coverage review by grepping each NEW TOKEN across `test/` into a token→files table** (~30 s, `grep -rl`). Zero files IS the finding, and one file is usually a fixture rather than a test of the thing. It also names the suites that ALREADY EXISTED and the change never opened — the recurring gap shape, invisible to every lint: BUT-1838 added a `copyWith` carry, a DTO read-but-never-write asymmetry and a query filter while `conversation_test`, `conversation_dto_test` and `message_query_module_test` all sat untouched. Do this before reading the diff a second time. **Hits ONLY in the extracted class's own suite (plus a fixture in the caller's) IS the finding, not coverage:** when a leg moves to its own class and is composed back with one `addAll`/`compose` line, that line is observable from nothing — the new suite constructs the class directly. Close it in the CALLER's suite with the section key's payload plus `containsKey('error_code'), isFalse`.
+- **When a fix teaches ONE method to maintain a new side-field, the ticket owes every WRITER of that field, and the audit is a grep of the field name inside each writer's SUITE, not inside `lib/`.** Expect the list to grow while the ticket is open (BUT-1797: 3→7→8, two arriving mid-round). For a genuinely DEAD writer, file a deletion ticket — a test there pins dead code.
+- **A change to a collection's DOCUMENT-ID SCHEME (deterministic id → auto-id) is a change to every reader that addresses or DEDUPES by that id, and no suite sees it** — grep the collection constant and grade three classes separately: writers keyed on `doc(x)`, mergers doing `byId[doc.id] = doc` (two rows that used to collapse now render twice), and CLEANUP/cascade queries keyed on a FIELD, which now have no address at all if the writer's field spelling never matched theirs (`'recipeId'` written, `where('originalRecipeId')` swept — BUT-1812). The rules half is one read: the create block's `hasRequiredFields` set must be satisfiable by the new payload, since an id change usually makes a conditional stamp unconditional.
+- **A FAN-OUT loop and its ACCUMULATOR are ONE untested input.** Any `for (x in result.list)` whose every fixture makes that list a singleton is pinned by nothing, and the singleton is the unrealistic case. Close at the OUTER layer with 2-cut + 1-retained and one unordered-set assertion.
+- **A fan-out is pinned by a CAPTURE-RECORDER plus one set-equality assertion, never `verifyNever` beside a positive.** Prove discrimination by running the MATCHER over each mutant's capture shape, not by mutating production. `unorderedEquals` survives a map-order refactor and still fails on an extra or missing element. A recorder scoped to ONE notification method cannot see a switch-helper mutant.
+- **DEAD WORK reads as coverage and no lint sees it** (a helper whose caller reads only `.keys`; a map assembled and never read) — a production observation and a deletion ticket, in its own ticket if the shape predates the fix.
+- **The two halves of ONE guarded line-block need SEPARATE inputs, and the same guard on TWO branches is two tests.** Before crediting either, name the OTHER mechanism that could satisfy the assertion — an upstream caller often already does. Same for ONE variable passed at N CALL SITES: a write-leg proof measured on the edit branch says nothing about the add branches, where the sibling routing tests match the argument with `any(named:)` and every mutant survives — closed by BUT-1858 tests 1 and 10 — analytic, no mutant owed (BUT-1849 `_unit`).
+- **A comment naming TWO input shapes one guard catches is two claims, and the second is often UNREACHABLE-but-true — the separating mutant is a REORDER, not a deletion.** Reachability is a PRODUCER question. Right-sized fix is a TOKEN appended to the existing fixture, verified with a with/without control pair on a replica.
+- **THE fixture-shape family: the fixture's own shape answers for the code.** An accumulator seeded off `.first` hides its loop unless the first item is INTERIOR on every accumulated axis; an order statistic or median cannot see a filter or a slide when the retained values are all EQUAL or in reading order; a fixture HELPER deriving several fields from one parameter makes every field-swap mutant invisible. Enumerate every field the PRODUCTION CODE READS, give each its own override, and let no two numbers in one fixture be equal.
+- **A repository suite where every fixture lives in ONE scope cannot see its scoping `where`** — the one thing the fake proves exactly (query shape) goes unpinned, and the discriminating doc is one belonging to the OTHER scope but the SAME user, so no downstream roster/consent filter can be what excluded it. Same suite habitually tests the bespoke finders and leaves the INHERITED CRUD surface (`read`, `readCacheFirst`, `readAll`, `watchAll`) untested and unfenced, though it skips every filter the finders apply. Where the class OVERRIDES them — a FILTER (`_onlyConsented`) or a FENCE (`throw UnsupportedError`) — every override is deletable-green and three cheap tests close the set: filter-applies, its positive control, and both fences in one. It reaches COUNT/badge methods too: an unread predicate asks nothing about membership and reads a stranger's document (no `lastReadTimestamps` entry for you) as UNREAD, so a group where every seeded conversation is the user's own leaves `arrayContains` deletable-green in every test at once — one foreign unread doc closes it.
+- **When a defective SHORTCUT is deleted, pinning its absence needs the shortcut's OWN NUMBER to differ from the right answer, and one fixture the shortcut's source cannot see.** A fixture seeding N index rows and expecting N kills only the original expression: every re-reading of the index (`rows.length`, `where((r) => !r.flag)`) still answers N — add one row whose conversation is READ. And the plausible half-fix is keeping the index as a SELECTOR (fetch what it names, filter correctly after), which survives every fixture where all counted docs carry rows; the discriminating one is a doc the index never got a row for. That is why the "group has no membership row" test is NOT a duplicate of the direct-chat one even though both redden on a straight revert — measure the two kill sets before deleting either.
+- **A defensive DECODE helper's NULL branch is unreachable from every natural fixture** — mutate the ABSENCE (`'${json['k']}'`), not the value, and append a field-less row AND a wrong-TYPE row to the malformed-input test; a null-test and a type-test are different contracts.
+- **A DETERMINISTIC composite id (`{a}_{b}`) plus a body-vs-path check makes every downstream "stored identity == payload identity" conjunct a TAUTOLOGY** — unreachable-as-false, so no fixture can kill it and the honest output is a comment, not a test. Isolate the ONE conjunct that can still decide (usually the membership/roster lookup) and test only that; check too whether the suite's identity test calls a `validate*Permission` the class never invokes because it fully overrode the base method.
+- **A fail-loud parser is protective on READ and an Art. 17 defect on DELETE: any `validateDeletePermission` deriving ownership by parsing the stored body makes the forged/corrupt row the ONE document its owner cannot erase.** Decide erasure from the PATH where the id is composite. Fixture: seed a body naming someone else at your own id, `revoke()`, assert gone — it kills the body-reading version and nothing else does. Sibling gap: a DELIBERATE asymmetry ("ownership only, no membership conjunct — do not harmonise") is mutation-dead while every delete actor is a current member, so the removed-member erasure needs its own test (confirm the BASE `delete` actually calls `validateDeletePermission`, or the test proves nothing). Separating `endsWith` from `contains` needs the caller's uid in the PREFIX slot — but first check whether either id half can CONTAIN the separator: uuid v4 + Firebase uid cannot, so the `contains` mutant is unreachable and the honest output is verifying the invariant's SOURCE, not inventing a fixture. **A DOCUMENTED skip-vs-fail-loud asymmetry cuts the same way:** where one reader SKIPS a corrupt row and its sibling FAILS LOUD on the identical shape, the skip gets the test and the loud half gets none — yet the loud half's mutant (a try/catch answering null) is what turns a broken document into a silent opt-out of your own Art. 9 data. The fixture already exists inside the skipping test; point it at the sibling.
+- **Guard-chain subsumption, three directions.** BACKWARD: an earlier guard is pinned by nothing because a later one already refuses everything it does (tell: a fixture tripping two rules at once). FORWARD: every guard in a fail-closed chain returns the same observable, so a fixture must clear every DOWNSTREAM refusal — with SLACK, never at an exact tie, which pins `>` vs `>=` by accident. SIDEWAYS: a new guard can UNPIN an older filter downstream of it. Where subsumption is TOTAL the guard is unreachable as a decider — a comment, never a test.
+- **Run the "which mutants did NOTHING kill" sweep once per file, and the mirror sweep for tests that never appear as a red**, then ask of each survivor whether it is a fixture bug or a dead line — identical in the matrix.
+- **A guard added INSIDE A LOOP has a POSITION as well as a condition** (`continue` before vs after the accumulator update). Where the loop also writes a document-level reference, the fixture must make the refused element the EXTREME one on that axis. **Same for a guard inserted ABOVE a pre-existing EARLY-RETURN branch: every fixture that falls THROUGH that branch is position-blind, and those are all the fixtures an author writes.** The discriminating one takes the lower branch — and it is usually the worst leak, because such branches return raw content unfiltered (a pre-join SYSTEM row previews `message.content` verbatim, carrying a display name and the group name). Owe it a readable twin as control, or the blank is equally explained by a broken branch. BUT-1838: sinking the cut-off below `isSystemMessage` reddened 1 of 10.
+- **For a two-constant "narrow/wide relative to the body" rule, one fixture per constant with the disqualified population in the MAJORITY** — medians are robust, and the catastrophic mutant needs a WIDE outside element to be visible.
+- **A dropdown WIDENED to keep an off-vocabulary stored value (`unitOptions`/`mealTypeOptions`: prepend if absent, `selected: null` when empty) needs FOUR fixtures, and two of them look redundant until you name the separating mutant.** Off-list-untouched pins the widening and the no-rewrite save; off-list-pick-something-else-then-pick-back is the ONLY killer of keying the item list off the CURRENT selection instead of the STORED value (every other fixture has stored ∈ vocabulary ∪ {''} or never picks, so both arguments give the same list at every build) and its final save assertion is the only killer of an `onChanged` that sanitises the pick; empty-stored pins `selected: null` surviving as the stored value; and the vocabulary itself needs a literal pin, or every list assertion comparing against the constant is circular. Reverse direction, so neither is deletable: restoring the initState clamp under an intact widening reddens BOTH untouched fixtures — off-list and empty (`offeredUnits.contains('')` is false too, so the empty case clamps to 'st' as well) — but not the pick-back one. Whether the injected row survives a pick is a CALL-SITE property (which value is passed), not a property of the shared function — say "keyed on".
+- **A flag SELECTING BETWEEN TWO VALUES is pinned by both arms over ONE fixture, and the values must DIFFER observably.** No production mutant needed — the flag IS the seam. **A nullable OVERRIDE flag whose default DERIVES from a nullable payload (`showAllergenBadges ?? userAllergenPrefs != null`) owes a third arm the author never writes: the EMPTY payload**, the one input where the derivation and the model's own predicate (`hasTrackedAllergens`) disagree — `{}` is non-null, so the flag reads TRUE and the consumer renders nothing while the parent has already emitted its spacer.
+- **Three more arms belong with any remote flag:** the LITERAL Remote Config key verified on the real-lookup path (a drifted key cannot be turned off from the console; a `Mock` stubbing only the OLD flag THROWS on the new one); the `?? false` fail-closed arm with the service ABSENT, carrying a `tryGet<T>() isNull` PREMISE assertion; and the null-fallback arm staged with the flag ON. `??` catches null but NOT empty.
+- **A "declines / falls back" test asserting only `hasLength(1)` cannot see a TRUNCATED answer — assert `equals([input])`.** Falling back means handing the input back UNTOUCHED. Same family: **a test whose NAME names an INPUT ("with explicit timestamp") must assert that input's VALUE** — `isNotNull` over a `x != null ? Timestamp.fromDate(x) : serverTimestamp()` ternary is green on BOTH arms, so the named arm is the unpinned one and its sibling test is its only witness.
+- **A negative containment must anchor on the next block's FIRST row**, or an end off-by-one of a few rows kills nothing.
+- **A per-page index conversion is invisible on ONE page, and the obvious two-page fixture still kills nothing** — the separator shift lands on a blank row that `.trim()` erases, so the page-2 heading must not be its first line. Any separator-plus-trim pipeline absorbs exactly the off-by-one it exposes.
+- **`continue` vs `return null` for a REJECTED element is unpinned when every fixture rejects ALL or NONE** — one fixture with a bad element beside good ones also pins that its text is silently DROPPED.
+- **A cap needs its ACCEPTING side.** Pinning a MINIMUM from above needs a fixture within a few characters and reddens on a reword — pin from below and say so.
+- **When the change ADDS AN OPTIONAL PARAMETER, `f(x, param: null) == f(x)` is a TAUTOLOGY** (null is the default). Keep the behavioural half and point at the suite owning the old path.
+- **A LINT-DRIVEN REWRITE (`?? ''` → `.orEmpty()`, BUT-581) is behaviour-identical and owes no test for the equivalence — the extension's own suite already pins it — but it moves the call site into an extension FAMILY whose siblings all typecheck there (`orDefault('x')`, `orEmptyTrimmed()`), so the one-word swap becomes the cheapest live mutant.** Grade it by asking what the DEFAULT PATH (the null input) renders and whether anything asserts that output: in BUT-1858 every add-mode test read the SELECTION and none read the dropdown's ITEM LIST, so a bogus default row was invisible. Where the sibling's difference (a `trim`) has no proven producer, the honest output is a comment at the call site naming the invariant — the two call sites must pass the SAME stored string — not a fixture.
+- **A CONTROL can hold while its stated reason is FALSE** — call the named predicate and print it, because the fixture edit that flips it is the "make it realistic" tweak a later session reaches for.
+- **A NORMALISER is tested by RATIOS, and a ratio between two fixtures in the SAME bucket is decided by the bucket table — so it can pass BECAUSE of a defect in the table.** Print the divisor per fixture before writing the expectation; pick inputs differing on the axis under test and agreeing on every other; enumerate the buckets no fixture reaches. A control built from the SAME string at two sizes is a tautology, and a routing control needs its sides to disagree in BUCKET, not spelling.
+- **A one-sided bound pins a swept constant from below only** — use two-sided `closeTo`, or it drifts across a boundary the file itself names.
+- **"This test kills nothing" is a statement about YOUR MUTANT SET first** — write the mutant each test's comment DESCRIBES before calling it vacuous. The real vacuity signal is an IDENTICAL kill set through the SAME SEAM; a subsumed-but-different-seam pair should stay. A rewrite justified by a kill-set claim owes a re-run of the ORIGINAL mutant against it.
+- **A measured claim inside a comment is checkable and rots predictably.** A kill count expires silently when the group grows — write "reddens N assertions, these ones", never "passes the suite" (the sharpest case expires in the same edit: "leaves all N tests green" is falsified by the fixture it introduces). A list of SURVIVING mutants also claims a shared MECHANISM, and a survivor saved by a DIFFERENT gate goes live when that gate changes. "Deleting this reddens nothing" is a claim about the DOCUMENT SHAPES the fixtures use — write it as the guards' EQUIVALENCE DOMAIN. "Reddens the sibling test above" is ambiguous by construction: name the FILE.
+- **A sentence justifying a hazard by naming a DOWNSTREAM guard is a claim about that guard's PREDICATE** — call the guard on the very shapes the paragraph calls hazardous; the counter-example is usually printed one paragraph up. **Trace each side's HANDLE, not only its predicate:** where the caller derives the guarded field from the SAME live source the downstream check reads (two getters onto one auth uid), that layer is structurally blind to the divergence the caller's guard prevents, so "the repository and the rules refuse it anyway" is false and the caller's guard is the only layer — which makes it a guard owing a fixture, not defence in depth. Tell: the stale handle feeds the PAYLOAD (a profile's allergens) while the fresh one feeds the IDENTITY. Likewise an "only X stays under the bar" claim must be checked against the FULL ENUMERABLE bucket set: enumerate before writing "only", since the error direction is to overstate the hazard, which reads as rigour. **A facade's "nothing else in `<dir>/` is routed through here" is a TRANSITIVE claim the moment the same sentence invokes REACHABILITY** — grep each wrapped module's own imports: `input_components.dart` names four and reaches nine, and three of the five unnamed (`shopping_list_card`, `shopping_list_actions`, `editable_menu_items_preview_dialog`) have NO route except this facade, so the bounding sentence would retire exactly the files it hides. Say "imports directly" or enumerate the closure. The repair that PASSES states the direct count and the transitive count separately ("four imported directly, five more pulled in BY those four") and claims nothing about facade-EXCLUSIVITY — grade it with one per-file intra-directory import grep and a 4+5+4=13 partition, since two of the five (`portion_scaler_logic`, `portion_scaler_ui`) do have other routes and a stronger sentence would have been false again.
+- **Retiring a named consumer does not license RE-POINTING the comment at another one.** Grep the phrase — the same justification normally lives in TWO files and a fix lands on one copy. **A repair round fixes the copies you NAMED; the survivor is usually INLINE in the very test the repaired header describes**, so the file now contradicts itself a few hundred lines apart ("does NOT discriminate `groupId == null` from `!isGroup`" in the header vs "a guard keyed on `isGroup` would blank this row" over the same fixture). Grep the PHRASE across the whole file before accepting a fix, and re-grade the fixture's flag pair yourself — a pure predicate settles it by reading, no probe needed. When no consumer survives, say so; a fidelity rationale names NO reader, and inventing a victim is how the next round inherits a false claim. **A "deleted by BUT-####" claim MIGRATES when the flagged copy is repaired but the deletion is still unstaged** — BUT-1849's false line left the test header and reappeared in a `lib/` comment, so grepping the file you flagged shows it fixed. Settle any deletion claim against the TREE, not the diff: `git cat-file -e HEAD:<path>` plus `git ls-files --stage`, since a file absent from `git status` is absent because nothing touched it. A PROVENANCE DISCLAIMER is a claim too: trace the label to the tool that produced the figure and say which figures are engine-INDEPENDENT. Root cause worth knowing: a `git rm` CHAINED with its `git commit` in ONE shell string is refused WHOLE by the commit gate, so the rm never runs either and the file stays tracked under a comment saying it is gone — settle it on the INDEX (`git diff --cached --name-status` showing `D`, `git ls-files --stage` empty, `git cat-file -e HEAD:<path>` still present) and say the claim is only true if the `D` rides in the SAME commit, since a pathspec-scoped commit can drop it.
+- **When a stale JUSTIFICATION is rewritten, keep the sentence saying why the TEST exists**, or a test holding only a decision record reads as a deletion candidate. Check the replacement for over-claiming the other way, and settle "nothing downstream does X" by grepping downstream. **When a finding is resolved by DELETING the production mechanism rather than repairing it, every comment that justified it goes false in the same edit, on BOTH sides — grep the mechanism's NAME across production and suite at the final bytes.** The assertion normally survives while its stated reason does not (`getForUser` called once per mount is still worth pinning; "because `didChangeDependencies` fires after `initState`" is now fiction), and any flag the deleted caller made load-bearing is dead state wearing a live-sounding comment. **A deletion comment naming a SUCCESSOR SUITE is the same claim in its most trusted form — grade it CASE BY CASE against that file, never as a whole.** Two of three cases were absent when BUT-1838 wrote one, and the surviving one is not like-for-like: the deleted model preview prefixed the sender on a DIRECT chat and had ONE empty string, while the widget prefixes only in groups and has THREE. Name the successor tests, and say which behaviours deliberately did NOT move.
+- **INSERTING a clause into an existing comment paragraph re-points every PRONOUN after it, so a true sentence can go false without being edited.** Naming a second subject mid-paragraph ("a THIRD spelling exists: the export repo reads `memberSince` off a raw map") leaves the following "It fails closed twice" attached to the newcomer, which does the OPPOSITE (no stamp ⇒ no filter at all). Re-read the whole paragraph after an insertion and re-anchor the pronoun to its class/method name; grading only the inserted sentence passes it.
+- **Two sibling comments quoting DIFFERENT numbers for a same-sounding metric is usually an INPUT difference, not a stale figure — run BOTH arms before filing the contradiction.**
+- **Read the plugin's own field declaration before filing an "unreachable branch"** — a non-nullable `Rect` means absence arrives as a DEGENERATE value, which belongs to the model's handling, not the adapter's.
+- **Any "picks the LAST/FIRST/largest X" test needs at least two X**, and state a repaired fixture's invariant as NECESSARY, not sufficient, with the measured table beside it — a RENAME is what the comment must survive.
+- **A wiring line passing the TRIMMED artefact instead of the stale input is pinned by NOTHING** — not the unit suite, not an eval arm that pairs the two itself. Grade it by MEASURING the mutant's blast radius: a downstream gate can make it byte-identical, i.e. silent but fail-safe, which is an advisory not a block. Block COUNT never separates correct from stale; only the boundary does.
+- **A REORDER fix at a CALL SITE is unpinned unless a test drives the CALLER.** A regression test in the new function's own suite proves the FUNCTION; reverting the caller to the old composition then reddens nothing, and the pre-existing wiring fixture is usually order-INSENSITIVE — settle it in 20 s by running both compositions over that fixture and comparing outputs (identical = unpinned). Close it by replaying the regression fixture through the caller's spy suite, not by a second unit test.
+- **Splitting a rule into DECISION + APPLIER so a composer can take both decisions untainted leaves the COMPOSER's own branches mutation-dead:** every firing fixture fires BOTH rules, so `&&`→`||` on its early return and its CROSSING guard (reachable exactly when one heading is both `first` and `last`) survive the whole suite — and the crossing mutant returns an EMPTY document that still satisfies the row-count invariant. Owe head-only, tail-only and cuts-meet fixtures, the last asserting byte-equality with the winning rule run alone.
+- **A WITHDRAWN figure is a claim too, and its premise is "no shipped command emits this" — read the emitter before accepting the withdrawal.** Where the emitting loop already holds the per-element values (a `--trim` arm computing per-page token hits it only sums), the honest repair is three lines of print, not deleting the sentence: withdrawing it leaves behind exactly the aggregate the rule below distrusts. A replica probe does NOT make a figure re-derivable — that is the deleted-throwaway-probe defect under a new name.
+- **A corpus POPULATION claim (`N of 242 verified entries`, `11 sit on 8 pages`) is one script walking the gold files with the loader's OWN entry-selection rule** — mirror the flat-vs-block choice, don't count files. Cheapest check in a measurement review, and it also settles overlap claims ("only one of the 11 sits on a trimmed page") by set intersection.
+- **An AGGREGATE quoted as proof (`X -> X`, "counts unchanged") is only checked PER ELEMENT.** Re-run the measurement with a per-row print: "0 rows lost, 0 gained" is the claim; a matching total also fits one loss plus one gain, and a count matching gold never says WHICH items came out. Cheap, and it is where the real finding lives.
+- **Partition every sentence of a comment-only diff into COVERAGE, REACHABILITY and MECHANISM.** Answer the first two from the kill matrix, the third with a constructed WITNESS plus a CONTROL. A mechanism claim needs no test when its outcome is a documented fail-safe.
+- **Run mutation batteries SERIALLY** — three `flutter test` processes on one checkout deadlock, and a driver killed outside its `finally` leaves `lib/` mutated. A quoted heredoc still collapses `"\\n"`: build backslash anchors from `chr(92)`, or write the driver with the Write tool.
+- **When COPY changes because BEHAVIOUR changed, the guarded half is the confirm dialog and the unguarded half is the RESULT message** — the snackbar needs the service registered AND the dialog confirmed, one step past the assertion everyone writes.
+- **Assert copy by ROUTING: resolve strings from the panel's own `AppLocalizations` via a `Builder`, assert right key present / wrong key absent, so rewording is free.** Then ONE narrow negative anchor on the RETRACTED sentence. A NARROWED claim earns no anchor — it is true-but-incomplete, and any test catching it locks a phrase legitimate rewording breaks; control it with the ARB `@description` plus the behavioural pins.
+- **Generated `lib/l10n/*.dart` needs no unit test but does need a sync check** — a missing key fails `gen-l10n`, a STALE VALUE compiles clean, and the only guard is a non-blocking hook. Regen + `md5sum` is strongest; where regenerating is a forbidden tree write (a read-only gate round), a VALUE-level ARB↔Dart diff over every simple key is decisive and has found a live one — compare CODE POINTS at the first difference, since `\"`-escaping yields ~16 false positives per pass. Copy asserted by ROUTING through the generated getter can never see this: both sides read the same getter and move together, so a legally-pinned string (a DPIA-approved consent body) is unguarded by construction. **Against the APPROVED SOURCE, compare code points STRICTLY — never normalise quote style**: the approved annex is markdown, so it authors `"x"` where the ARB ships `”x”`/`“x”`, and a comparison that folds those away also folds away the `„` that caused the bug. Un-wrap the blockquote (strip `> `, join wrapped lines, split on blank) and fix the ANNEX to carry the shipped code points, so the check can stay strict.
+- **A private static mapper behind a PLATFORM gate is unreachable from a VM host — prove it with a two-line reachability probe, not a source read.** Check the INPUT side separately: plugin model classes are often plain Dart with public constructors, so only the seam is missing. Ask for `@visibleForTesting` as a filed finding, justified with a `test/`-side replica plus mutants.
+- **Once a seam is granted, separate load-bearing assertions from IMPLIED ones — the implied read as the rigorous ones.** A row-by-row equality against a join the model itself performs kills nothing; that law belongs to the model's suite, and a deleted copy of it usually survives in a SIBLING test (grep the twin in the same edit). What no content assertion covers is ORDER: print the second block HIGHER than the first.
+- **Put a mapper's whole mutant set in ONE throwaway probe printing failing check names per mutant, then re-run it verbatim on later rounds** — 30 s converts "the adapter moved under me" into a fact about coverage.
+- **A FAKE's difference shape is a STAND-IN, not a reproduction, and the comment must say which**; when production gains a SECOND difference the comment owes WHICH HALF the fake models. Don't chase fidelity in a frozen-bytes round. A retired premise is rarely in one place — grep the CLAIM's wording, not the section you just edited. **A caller's suite staging a dependency's failure with a DIFFERENT EXCEPTION TYPE than production throws is the same defect wearing a fixture:** behind a catch-all it is invisible, and it green-lights narrowing the catch to the type only the test throws. Throw the production type AND its `code`; where the production file's own comment forbids a type ("NOT a StateError"), a fixture using that type is the tell.
+- **A comment at a CALLER claiming "this transformation cannot change X" is a test at the layer that OWNS the transformation, plus ONE composition test whose fixture carries every excluded hazard SEPARATELY.** One blank row kills a trim mutant but not a blank-run collapse: use a LEADING blank row, a TWO-row blank run, and byte-changing characters in the LAST row. Assert `rows.length` against the layout's own `lines.length`, never a restated literal.
+- **A SYMMETRIC operation cannot stage an asymmetric hazard** — `f(own.trim())` cannot separate the two ends, and the LEADING shift is the worse one. Append one `f(own.trimLeft())` assertion, never a second test for the same intent.
+- **A method whose reason to sit on the DOCUMENT is the per-page separator needs a COMPLETE MULTI-PAGE fixture**; a complete document of one BLANK page has ONE empty row — not null, not zero rows.
+- **When the mutant is a pure predicate over PUBLIC getters, the probe is an EXTENSION over the real class, not a replica.** Include the semantically EQUIVALENT mutant as a positive control: it must fail nothing.
+- **A fixture constant CLAIMING to be another function's output must be checked against that function's own table, in the comment beside it** — read the map or regex, never infer it from the glyph.
+- **A `\uXXXX` sequence typed into a tool call reaches disk as the CHARACTER**, so "documenting" an escape plants a raw BEL or homoglyph in a comment. Spell code points as prose, keep escapes only where the LANGUAGE parses them, and close such an edit with a non-ASCII/control-char scan.
+
+### Helpers that exist (grep before writing a new one)
+| Helper | Path |
+|---|---|
+| `setupUnit()`, `teardownUnit()`, `setupUnitWithProductionLocator()` | `test/test_support/base_unit_test.dart` |
+| `TestTimestampProvider`, matchers | `test/test_support/timestamp_test_helper.dart` |
+| `useEmulatorLane`, `firestoreForLane()`, `clearLane()`, `emulatorOnlySkip` | `test/test_support/emulator_lane.dart` |
+| `butleryGolden(...)` | `test/widget/golden/golden_helper.dart` |
+| `createLocalizedTestApp(...)` | `test/infrastructure/helpers/widget_test_app.dart` |
+| All production mocks | `test/infrastructure/mocks/production_mocks.dart` |
+| Typed mock factory | `test/infrastructure/factories/mock_factory.dart` |
+| `MockMenuService` (NOT in production_mocks.dart) | `test/infrastructure/mocks/service_mocks.dart` |
+
+### FakeFirebaseFirestore vs emulator decision tree
+| Behaviour under test | Use |
+|---|---|
+| Plain reads/writes/queries, `collectionGroup`+equality, `orderBy` on a present field | `FakeFirebaseFirestore()` in `setUp` |
+| `FieldValue.increment`, `serverTimestamp` (usually), transactional writes, security rules | Emulator lane, or `firestore-rules-tester` |
+| `GetOptions.source` | NOT testable — the fake ignores `source`, and real Firestore THROWS `unavailable` on a cache MISS instead of `exists:false`, so any `if (!cached.exists) throw NotFound` branch is DEAD in production. Assert the outcome contract only. |
+| `snapshot.metadata.isFromCache` | NOT reachable — the fake answers every read `false`, so each guard is dead across the suite though it is usually the whole premise of its gate. `grep isFromCache <new suite>` → zero hits IS the finding. Stage via the sealed-class mock trick on snapshot + metadata, with a COMPLETE-looking payload. |
+| A read of a doc that may NOT EXIST, in a rules-guarded collection | NOT testable, and the fake's answer is the OPPOSITE of production's. A rule dereferencing `resource.data` DENIES a `get` on a missing doc, so a CREATE-vs-UPDATE existence probe is denied on exactly the case it detects — inside the writer's try/catch the create never happens. Any "probe A, fall through to B" helper takes its CATCH branch on every B-shaped id: check it falls THROUGH (template `FirebaseShoppingRepository.read()`), test with a ref whose `.get()` throws, never pin the fake's fall-through answer as the contract. |
+| Service that wraps Firestore | Mock at the repository interface |
+| Dotted-path `update({'core.x': v})`, `update()` on a MISSING doc | **Faithful.** Dotted keys write a nested map with siblings preserved; `FieldValue.delete()` removes a PRESENT nested key but is a silent no-op on an absent one, so a clear-the-field test MUST seed the field. `update()` on a missing doc throws and creates nothing — so a companion `expect(oldPathDoc.exists, isFalse)` is a PERMANENT PASS: documentation, never coverage. |
+| A NULL-VALUED KEY through `set(..., merge: true)` (incl. inside a `batch`) | **Faithful, and a `containsKey` assertion is therefore real coverage.** 4.1.1's `_applyValues` writes `document[key] = null` — the key is PRESENT, the value null, siblings preserved, and a null OVERWRITES a stored map rather than deleting or being skipped (only `FieldValue.delete()` removes). So "the writer must emit the key even when null" (a rules `!('k' in data)` disjunct, BUT-1830) is testable at the module level; omitting the key really does leave `containsKey` false. Verified by probe, 2026-08-13. |
+| A query PREDICATE SHAPE, incl. `where('<map>.<uid>', isNull: false)` | **Exact.** Build the REAL repository over the fake, one included + one excluded doc per probe; dotted map keys, `isNull` and `arrayContains` all work. The buggy `isNotEqualTo: null` adds NO condition in the real SDK (an unfiltered sweep the rules refuse) and makes the fake THROW. Never accept a header comment saying map-path keys are unsupported. |
+- **A negative "gets nothing" test has mutation value only when the SUT does NOT swallow errors** — behind a catch-all `return []` it is a recall control and the positive test is the whole guard. Say which beside the test.
+- **A per-ROW transactional write (one doc per actor, doc id == uid) is the shape to ask about, because the transaction wrapper is deletable-green on the fake by construction — what the suite really pins is the DOC-ID DERIVATION.** Measure it: a `doc(voterId)` -> `doc('votes')` mutant reddens nearly every case in the group, so the two-actor test's kill set is a strict SUBSET through the same seam. Keep it anyway as the CONTROL for the pre-fix defect class (one actor's write clobbering another's) and say so, or a dedupe round deletes it; but rename it off any isolation wording, and put the permission half in the rules lane — under the fake every such case is green while `firestore.rules` refuses the write, which is usually the whole ticket. Verified BUT-1832: 5 behavioural mutants, one red set each, no dead case.
+- **`FakeFirebaseFirestore.runTransaction` is a NO-OP PASSTHROUGH and can never prove atomicity** — dummy transaction, handler once, plain `get()`, immediate writes, `SetOptions` DROPPED, `timeout`/`maxAttempts` ignored. Replace it with a bare read-modify-write before crediting any atomicity fix; a truly interleaved two-writer test FAILS on the fake while passing in production. Keep such tests (they prove the base came from a server read), never label one a race test.
+- **Nothing in CI passes `--dart-define=USE_EMULATOR=true` over `test/integration`, so every lane test is skipped everywhere — never coverage.** Do not re-derive and do not accept "just add the flag": `run_e2e_tests.sh` hardcodes `test/e2e`, `test.yml` runs the dir with no define, and adding it fails with a plugin channel error because `flutter test` is a plugin-less VM host. The lane needs an `integration_test` host — a project. Document it in the skip reason, lane header and CI step, and ticket it. Declare the `firebase` tag in `dart_test.yaml` or files quietly drop it.
+- **`serverTimestamp()` in `batch.set(..., merge:true)` trips the fake on some write shapes, and that is NEVER a valid `skip:`** — it is `FieldValueFactoryPlatform.instance = MockFieldValueFactoryPlatform();` at the top of `setUp` (with `// ignore: implementation_imports`; not exported from the package root).
+- Fake cannot fire `permission-denied` — skip only when the branch is a single `if (e.code=='permission-denied') return null;` above a rethrow with no side effects.
+- A seeded fixture must include every field an `orderBy` reads — the fake silently drops docs missing it, which masquerades as a query bug.
+- `collectionGroup` on the fake is safe for index-free `.limit(N).get()` without `where()`, and (^4.1.0+1) for plain `collectionGroup`+equality.
+
+### Conscious-skip taxonomy (each discriminant is distinct)
+- Static-method orchestrator: skip only when ALL hold — ≤3 calls, no injection seam, each in its own try/catch, no branching beyond the catches.
+- Static disclosure whose sync contract is compiler-enforced (a renamed `AnalyticsEvents.*`/l10n constant fails analyze/gen-l10n first).
+- Pure-nav affordance (`pushNamed(<const route>)`) — the route constant is compile-checked.
+- Nth surface adopting an already-proven predicate: prove via `git diff --staged --name-only` — no new surface if the pure-logic file is absent.
+- Mechanical `AppColors→theme` swap: skip only if finder-level assertions are unaffected.
+- `SemanticsService.announce` in a fire-and-forget handler is skippable UNTIL the view gains a DI seam — a conscious skip is dated, not permanent.
+- A comment-only diff owes no new test IF the claim is already pinned by a spy/Fake that fails loud — verify, don't trust.
+- **A "sole guard"/"bypass not possible" comment is a claim until a test enters that exact branch — and so is a KNOWN-GAPS doc block shipped with a data-path fix.** Verify each listed gap against the model's SERIALIZER; never read `firestore.rules` declaring a subcollection, or a cascade sweeping it defensively, as evidence the client writes it. No test can catch a false comment.
+- **A rationale citing a BACKEND PROPAGATOR or DELETION CASCADE as covering a field is two greps, and both usually fail.** Resolve the collection CONSTANT, not the prose name, then grep the cascade's query field — a cascade keyed on uid erases regardless of the value's SOURCE. A false limb also HIDES the real gap it denies.
+- **A pure REMOVAL of dead code owes no test when a repo-walking structural lint holds the invariant** — the lint IS the regression test. Verify the lint file is BYTE-IDENTICAL to HEAD (weakening a lint looks identical in a green run) and that the pre-fix set had exactly ONE element.
+- **A behaviour-NEUTRAL respelling owes no behavioural test — earn that by MUTATION-COUNTING the existing suite, then fix the comment the respelling falsified.** Check the reds against the file's prefix/range/cascade SIBLINGS, whose alarm may live elsewhere, and re-read the suite header: "fails if the bound regresses to `'x_'`" goes false once correct code also RENDERS as `'x_'`.
+
+### Vacuity patterns — the recurring ways a "passing" test proves nothing
+The single most repeated finding across two months of review. Check every new test against this list.
+- **MASTER RULE: name every OTHER mechanism that could satisfy the assertion, then build the fixture where they DISAGREE.** Everything below is an instance.
+- **A rules-gated value DENORMALISED onto a parent document is ungated by construction** (a `lastMessage` preview on the conversation doc: rules cannot gate a field inside a document the reader may read), so the display surface owes its own guard on the SAME predicate — and the discriminating fixtures separate that predicate from its NEAR-TWIN. Three no autopilot writes: the hidden item stamped strictly BETWEEN the parent's `createdAt` and the member's stamp (kills a guard comparing the wrong one); the case where the query predicate and its display sibling DISAGREE (`historyQueryStartFor` vs `joinedLaterAt` — a founder whose message predates the group by clock skew); and the stamp PRESENT while the selector is absent (`groupId` null on a direct chat), which kills a guard reading the raw map or keyed on `isGroup`. Straddle the rule's own `>=`: `sentAt == stamp` must RENDER. BUT-1838 — three mutants, one red each, six tests.
+- **A visibility guard added inside a FILTER predicate has TWO spellings — blank the FIELD, or drop the ROW — and they are one observation on every fixture whose hidden row fails the other match axis.** So the over-fix (`return false` for the whole item) ships green through a full mutation round, and it is usually the WORSE regression: a late joiner losing their own group from the search box beats the preview leak the guard closes. Fixture: pair the unreadable content with an OTHER-axis value that DOES match (a matching TITLE over a hidden message), asserting the row is still returned. BUT-1838 follow-up — killed 1 of 5; the four probes the round already had all survived it.
+- **A comment MAPPING each assertion to the mutant it catches is itself an untested assertion, and backwards is the dangerous direction** — it nominates the load-bearing one for deletion. Read the mapping off the kill matrix, never off the reading order, and say which assertion goes VACUOUS under which mutant (a key-ABSENCE mutant makes every `isNull` on that key pass for free, so the `containsKey` half is the only guard against it). I graded an inverted one "correct as written" with my own probe output saying otherwise.
+- **Circular determinism** — calling the same pure function twice, or deriving the expected value from the const the test guards. Pin the literal OUTPUT, plus one literal pin for any cost/safety cap.
+- **Sibling-OR-branch short-circuit** — for `if (A) return true; if (B) return true;`, read the SUT's early-return list and check no POSITIVE fixture satisfies a branch other than the named one.
+- **Fake-default-same-as-expected** — if a Fake's optional-param default equals the "forwarded" value asserted, omitting the arg still passes. Use a sentinel no real caller would pass (`maxDocuments = -1`).
+- **DESERIALIZER-DEFAULT vacuity: a save-and-retrieve test asserting a value that equals the PARSER's `defaultValue` is unfailable, because a missing doc, a dropped write and an empty map all answer the same.** Read `fromMap`/`fromJson` per asserted field before crediting one (`safeBool(..., defaultValue: true)` eats every `isTrue`). The mechanical tell needs no mutant: the suite's own **"returns defaults when none exist"** test has a BYTE-IDENTICAL assertion list — two tests with opposite premises and the same expectations means neither discriminates. Repair with a field whose default differs from the fixture (`digestFrequency: 'weekly'` vs `'never'`).
+- **Grading a FIELD-DELETION diff is per-test, not per-line: for each touched test ask which ASSERTED field still differs from `defaults()`.** A deleted "// Changed" discriminator is harmless where a sibling non-default field is also asserted, and no amount of deleted lines matters where none is. Say the count per test — losing redundancy is not losing discrimination.
+- **Production twin: a "must not OVERWRITE" test whose fixture holds the value the code would write.** For any `putIfAbsent`/`??=`/`containsKey` preserve-guard, read the default and make the fixture DISAGREE with it. Same for `x?.field ?? SomeClass.defaults.field`: when the fixture builds its object with the CLASS's own default, both arms write the same value and the only assertion on that field pins nothing — a hardcoded constant survives too. Read the model's constructor default, set the fixture to the OTHER value, and keep the fallback arm's test as the opposite pin (BUT-1693 `includeUnknownInMenu`). Widest instance is the UNTOUCHED-SAVE test over `copyWith(f: _selection)`: dropping the `f:` argument PRESERVES the stored value, which is exactly the expectation, so only a fixture where picked ≠ stored can see that write leg — and the recurring false comment is the one beside such a test claiming it catches "if the write stopped sending it" (BUT-1858 test 7; the sibling test's comment in the same file states the rule correctly).
+- **A NULLABILITY WIDENING (`T x = d` -> `T? x = d`) trades a COMPILE-TIME guarantee for a test, and owes two sentences: which fixture now pins the initialiser, and what the mutant ACTUALLY does downstream.** Trace the `??` chain before writing the consequence — a null `_unit` reaches `addItemFromText(unit: null)` -> `unit ?? match?.typicalUnit` -> `_buildItem`'s `unit ?? 'st'`, so dropping the initialiser stores a SILENTLY DERIVED unit that disagrees with the blank control, NOT "no unit". The same edit also falsifies any older "always sends a non-null X" header: after the widening that is true per-BRANCH only (add paths yes, the `copyWith` edit path no) (BUT-1858 test 2).
+- **A COLLECTION-SHAPE assertion instead of the skipped element's VALUE.** A `Map` cannot hold a duplicate key, so "appears exactly once" is unfailable and `length == 2` holds whether the loop skipped the creator or overwrote them. Pin the VALUE the skip protects, plus a positive control that the loop ran.
+- **A Fake whose two BRANCH methods both answer the same success value, driven by a UI picking API and message from the SAME flag, eats a routing test whole.** Tell: a `_shouldSucceed` knob no test sets false. Fix is one test on the FAILURE arm; a copy test cannot see the branch, because copy is chosen upstream of the call.
+- **An enum-driven `defaults()` factory owes a KEY-SET-COMPLETENESS test** — a forgotten member is not "off by default": readers take it through `orFalse`/`safeBool`, so the class is dead for new users and every corrupt-cache fallback. `expect(p.keys.toSet(), Enum.values.toSet())` is literal-vs-enum, not circular.
+- **Negative-scope claims need a negative assertion** — "never includes email/phone" must assert ABSENCE from `toMap().keys`.
+- **"X does NOT happen" needs proof the code reached the point X could have** — two failure paths share one negative observable. "No write was issued" is the commonest instance: before/after data cannot tell "skipped the write" from "wrote identical values". Count writes (`snapshots()` emissions — an empty `update({})` still fires the fake's listener), with the positive control in the SAME test.
+- **A guard that SKIPS a per-parent subcollection probe is unfailable on any fixture where the probed document does not exist** — "the guard held" and "the probe found nothing" write the same absent key, so the test named after the guard passes under its own deletion. Repair is a TRAP row at the path production never writes (a `poll_votes/{uid}` under a non-poll message, since only `votePoll` writes there), asserting the key still absent. Check what DOES kill the mutant before rating it: BUT-1832's was killed only INCIDENTALLY, by the read-budget test's `probed` count, which depends on that fixture ordering a non-probed message first — retune it and the guard is deletable-green. **Spell the trap's path with the production CONSTANTS the writer uses, never string literals** — a literal trap sits at a dead path the day the collection is re-spelled, and the test returns to the exact vacuity it was written to close, still green.
+- **`findsNothing` needs a co-asserted positive render**, else an upstream build crash explains the absence too.
+- **A widget whose only access control is an early-return guard, while every parent builds it unconditionally, is untested when every pump uses the same actor.** Tell: every `setPermissionState(currentUserId:)` in the file passes the same constant.
+- **The ORDERING half of a "resolve A BEFORE opening B" fix is mutation-dead whenever the suite INJECTS A** — the constructor parameter that makes the VM testable (`initialConversation`, a seeded cache, a pre-stubbed profile) resolves A synchronously, so reverting to the old fire-and-forget order changes nothing observable. Tell, and it needs no mutant: grep the injected parameter's name against the count of SUT constructions in the file (BUT-1838: 11 of 14, and the revert left all 45 tests green while production would have failed the whole query). The argument passed to B is a SEPARATE pin from WHEN B is called; one test omitting the injection, asserting B's argument, closes it.
+- **When a method's ONLY authorization is inherited from a sibling whose return it DISCARDS, no test can see it while the permission fake sits at `defaultHasPermission: true`.** Tell: tests that change `currentUserId` on one double and not on the permission double. Check `git grep` for live callers before rating severity.
+- **A flag-LIFTING aggregator owes an EXACT-SET assertion, not `contains`, plus an absence control on the happy path.** Check the emitters first and say which mutant a control does and does not kill — where every flag is written under an `if`, no section can carry `false`. A metadata field CONCATENATING independent sentences needs one fixture per arm.
+- **A two-LAYER fix (N emitters + one chokepoint) is only tested at the chokepoint, which is a control, not coverage** — each emitter owes a test in ITS OWN suite (tell: `grep <new token> <manager>_test.dart` empty while the diff adds tokens). Then ENUMERATE twice: call sites against the cases list, and the SIBLING the sweep skipped, or the aggregator's test reaches for that sibling as its leak FIXTURE. A premise assertion that a section leaks is a finding, not a fixture.
+- **A write the SECURITY RULES refuse is 100%-green under mocks, and its TWINS stay refused after the fix — grep the file, not the ticket.** For every field the write touches, grep `firestore.rules` for an `affectedKeys().hasAny([...])` deny or a `uid == resource.data.<x>` bind, and for `senderId`/`ownerId` literals the client hardcodes. Each surviving twin owes a comment naming the rule LINE and what green therefore means. **How OFTEN it is refused is answerable from the WIRING and should not be left open:** a module whose read seam is bound to a USER-SCOPED `read` while its write targets the TOP-LEVEL collection gets null on every call, so the "rare repair path" IS the only path — trace the seam's argument to its `getCollectionRef()` before grading a "this fails today" comment as over-claimed.
+- **A source-text guard pinning a rules `keys().hasOnly([...])` against its writer has five vacuity seams; three are fixture-shape.** Where `sent == allowed` exactly, non-vacuity is ANALYTIC (any key deletion reddens) and no mutation run is owed. (1) Fixture must be the WIDEST payload — a conditional `if (x != null)` key vanishes from a convenient one, which is how the original drift stayed green. (2) WRITER SET must be complete: `request.resource.data.keys()` on an UPDATE is the POST-WRITE document, so the allowlist covers the union of every writer that ever touched the doc, forever — subclasses, a second client, a CF. (3) An anchor-scanning extractor needs its `mustContain` sentinel checked against the NEXT `hasOnly(` it scans into, not global uniqueness. (4) A one-direction `sent ⊆ allowed` guard is blind to the `hasAll`/`hasRequiredFields` mirror, which denies just as silently when the model STOPS emitting a key. (5) The CENSUS counting allowlists cannot see a SWAP (one deleted, one added, total unchanged) among its knowingly-uncovered entries — naming them is diagnosability, not detection; assert each excluded entry's ANCHOR still appears. Prove the sentinel by neutralising the target call (`hasOnly`→`hasAll`) and watching the WRONG-LIST message fire, not the key diff. Full worked case: archive, BUT-1830.
+- **The client-side twin is worse: a write behind an injected `Future<bool> Function(T)` seam stubbed `true` cannot show that the function PRODUCTION binds rejects the very type the module operates on.** For each such constructor param, resolve the ARGUMENT at the construction site to its terminal implementation and read its first guard. Tell: two seams of the same shape wired to DIFFERENT functions in one initializer. Owed once per SPRINT — a sprint can fix a feature end to end while every write is still refused.
+- **The persist-FAILED arm of such a seam is untested across a whole family at once**, and the mutant that matters is the notification fan-out moving ABOVE the `if (!success)` guard. One fixture with the seam false plus `verifyNever(<the method production calls>)`.
+- **A recorder installed in `setUp` with no assertion reads as coverage to reviewers and to grep, and is worse than no recorder** — write-site count with zero `expect` hits IS the finding.
+- **A chain of one-line passthroughs owes ONE end-to-end pin, never a test per hop.**
+- **A CF split into a PURE core + a DI'd orchestrator ships the orchestrator untested** — a `noop` verdict cannot see "writes no second message", and a denial fixture failing BOTH branches leaves one mutation-dead (discriminator: a creator who has LEFT). The happy-path/noop pair is its own positive control.
+- **A NO-ORACLE early gate hides every branch BELOW it, because the only fixtures reaching them are outsiders and the gate eats them.** The missing fixture is a caller who IS a member of the refused variant. Tell: if the fixtures reaching a post-gate line share one field value, that line is mutation-dead in one direction.
+- **A guard REPLICATED across sibling FIELDS is tested on one field only** — enumerate the FIELDS a redaction/normalisation helper touches, not its branches, one fixture per field per branch. Any helper setting a degraded/`*_fell_back` FLAG also needs a happy-path fixture asserting it ABSENT.
+- **To find such a clause fast, read the fix's DOC COMMENT and grep the suite for the concrete bad input it names** — that is the fixture the author reasoned about but did not write, while the surrounding "corrupt input" tests cover a different rejection path. **The SUITE HEADER is the same claim in reverse and is trusted more: when it names a ticket ("covers the BUT-517 follow-up that customValidator no longer bypasses contentFilter"), grep that FILE for the ticket's bad INPUT — the profane token, the malformed row. Zero hits IS the finding and NO mutant is owed, because a validator chain that never sees a dirty fixture cannot observe whether the filter still runs; every clean-input test is green under the pre-fix `customValidator ?? combine([...])` too.**
+- **`SerializationUtils.hasRequiredFields` checks `containsKey` + non-null ONLY, never TYPE** — every shape check on it needs a companion `is! Map`/`is! List`, and that companion is the untested one (a String value yields an all-defaults object indistinguishable from an opt-out, persisted on write-back). Probe by calling `fromMap` with the post-guard payload; loop one corrupt field at a time, with non-default values OUTSIDE the guarded maps.
+- **When one fix lands the same new FIELD in two writers, diff the suites' assertion sets — the second habitually omits it, and no fake can stage the consequence.** `grep '<new field>' test/` across the writers' suites is the whole check; enumerate every caller of the collection CONSTANT first, because "two writers" is routinely an undercount.
+- **The in-memory version DELETES data rather than failing to write it: a MODEL field plus N field-by-field rebuilds of its owner.** `grep -n '<ModelName>('` the blast radius, pin the construction site the ticket did NOT touch, and assert an UNTOUCHED member's value. The durable fix is `copyWith`, which cannot forget what it never enumerates.
+- **Notification assertions written as `when(...)` stubs are not coverage** — `send*Safely` swallows everything including `MissingStubError`, so a stub on the wrong method reads as coverage while a deleted notification is equally invisible. Grep the wrapper for the method production reaches; only `verify(...).called(n)` on that one counts, paired with `verifyNever` on the retained member.
+- **The caller's DERIVATION of an identity/path key is a separate pin from the callee's use of it** — make the fixture's current user DIFFER from the owner.
+- **A test passing an OPTIONAL override bypasses the default branch the fix changed** — grep every call site in the suite for the override. Worst instance is a REMOTE KILL SWITCH, where the override is in every test by construction: the real lookup body and the defaults-map entry are executed by no test, and the flag can be turned neither on nor off remotely.
+- **A DEFENSIVE BOUND on an injected collaborator is mutation-dead whenever every fake answers immediately** — `grep 'fakeAsync\|Completer\|TimeoutException' <suite>` returning zero IS the finding. Fixture: a fake returning `Completer().future` under `fakeAsync`, straddling the bound, plus the arm pinning what the stall CLASSIFIES as.
+- **A comment saying two counters are "kept separate" is unpinned until a test asserts each LITERAL name plus the ZERO on its sibling** — `map[p] = (map[p] ?? 0) + 1` creates a new key on a typo silently. The fold-mutant's real killer is usually the behavioural sibling test.
+- **A NEW CONJUNCT beside an existing gate is born mutation-dead** — it needs one fixture passing the OLD gate and failing ONLY the new one, found at the step function, premise PROVED by a probe. Run that probe on any sibling whose comment says "the fixture clears guard X so the fall-through must be Y": clearing ONE guard does not attribute the rejection, and usually a third guard rejects it anyway.
+- **The CONDITIONAL-IMPORT SEAM is its own blind spot** — `flutter test` has `dart.library.io == true`, so the NATIVE branch compiles into every unit test and the web stub into none, yet every service test injects a fake through the `_testX` seam, so the shipping implementation runs in zero tests. Judge by whether a mutant is OBSERVABLE. "Returns null without touching the plugin" is VACUOUS as usually written — the deleted guard just throws into the file's own catch; the discriminator is a working `PathProviderPlatform.instance` fake, which is also the only way to pin a `finally` temp-file delete. Same for any `Platform.isX` seam: the host's answer is FIXED, so guard and no-guard agree on every observable that does not count calls.
+- **A production comment saying "no unit test can see this" is a CLAIM — split the untestable PREMISE from the testable BEHAVIOUR** and look for the injection seam in the same constructor. A rules DENIAL is unstageable; the CATCH is not.
+- **When a widget declares a value ALSO held in a display-only copy, the fixture must make the two DIFFER.** `copyWith(x: <mutable field>)` stores the REFERENCE, so a fake recording successive bases records N aliases of one map — always ALSO assert the discriminating key. The legacy shape is the realistic fixture, since the production code exists only because such documents do.
+- **A dialog helper whose fix is "branch on the bool instead of always calling `onSuccess`" is tested through the CALLBACKS** — `createLocalizedTestApp` + a button invoking the static helper with `successes.add`/`errors.add`, driving the real `DialogFactory`. Three tests (refused, success, cancelled), and assert the VM was actually CALLED. Use `extends Fake implements <ViewModel>`, never a mocktail `Mock`.
+- **Boundary tests must straddle the EXACT flip point** — for `.inDays > N` that is `inDays==N` vs `N+1`, not `N-1`/`N+2`.
+- **A new rule-file's suite claiming to "follow [sibling]'s conventions" inherits the FIXTURE BUILDERS, not the DISCIPLINE** — re-run the exact mutants the sibling's own comments name as previously-vacuous: a `.first`-vs-`.last` (or min-vs-max) index selector needs a TWO-candidate fixture, since every single-candidate one makes both agree; the tunable constant needs its exact boundary pinned, not just "well under" / "well over"; a field carried through a rebuilt value object (`imageWidth`/`imageHeight` on a trimmed `PageLayout`) needs one fixture setting it non-default plus an assertion reading it back. `leading_noise_test.dart` (mirroring `orphan_tail_test.dart`) shipped none of the three — confirmed live by mutating `headings.first`→`.last`, the budget constant, and dropping the `imageWidth`/`imageHeight` args: all 9 tests stayed green on each (BUT — leading-noise trim review, 2026-08-12).
+- **For a CALENDAR-day guard the flip is MIDNIGHT, not a duration.** Pin `23:59:59Z → 00:00:01Z` (MUST act) and `00:00:01Z → 23:59:59Z` (must NOT); fixtures hours apart cannot tell the rule from an elapsed-time budget, and the same pair kills a dropped zone normalisation at any non-zero UTC offset while passing TZ-independently on correct code.
+- **A `DateTime` zone normalisation is unasserted whenever the fixture is `DateTime.utc(...)`** — Firestore DateTimes arrive LOCAL-flagged via `Timestamp.toDate()`, so a UTC fixture makes `.toUtc()` a no-op. Feed `Timestamp.fromDate(instant).toDate()`. For an ISO-8601 serializer the TZ-independent discriminator is `restored.isUtc` on a LOCAL fixture, and since `DateTime ==` compares `isUtc`, use `isAtSameMomentAs`.
+- **Generalise: ANY normalizer/sanitizer/redactor is the IDENTITY on a fixture already in normal form, and the fixtures an author reaches for are realistic, i.e. already clean.** Read the helper's body, enumerate what it changes, plant one instance of each. Tell: grep the new branch token across `test/` and check whether any hit asserts the SANITIZED OUTPUT rather than only routing. Pair absence assertions with a positive control that the branch under test answered, and spell the ASSERTION literals as escapes too.
+- **A MEASUREMENT HARNESS or eval CLI is reviewable test code, and its failure mode is a confident number from a broken rig.** Demand a positive control that the engine produced anything at all (a model that never downloaded scores 0.0 and prints the same verdict as real quality loss), and that the harness scores the function that SHIPS. A harness/CLI pair owes a grep that something writes the file the CLI reads. Thin `main()` over a testable `*_core.dart`; inline logic in `main()` is untestable by construction, which is how a blank-read exclusion silently biases a gate upward.
+- **A hand-rolled double that MODELS a write's effect instead of APPLYING its payload is blind to field NAMES — and a migration IS its field name.** Union under `Object.keys(op.data)[0]`, plus one test asserting the key set equals the field the CONSUMER queries. If the double never reads `data`'s keys, no test in the file can fail on a rename, a typo or a wrong dotted path.
+- **A double that COMPUTES a discriminator it never READS turns an injection knob into a silent no-op**, and a diff editing that dead discriminator reads as load-bearing. Grep the double's fields for a READ.
+- **A COPY test that stops at the confirmation dialog pins the words and not the branch**, and the clause carrying the DECISION usually lives on a surface it never renders. Enumerate every string the decision speaks through — title, body, confirm button, both snackbars. A phrase BOTH branches could carry discriminates nothing.
+- **A `MaterialApp(routes: {...})` map NEVER reads `settings.arguments`, so any nav test on it pins the argument SHAPE vacuously.** Push through an `onGenerateRoute` mirroring the router's decode, plus a control pushing the OLD argument and asserting the error marker. The real router cannot be delegated to for authenticated routes (it touches `FirebaseAuth` and converts the throw into an error route); tell the two apart by the returned route's `settings`.
+- **Two l10n keys with the SAME translated string make `find.text` unfalsifiable** — grep the ARB for siblings carrying the identical string and neutralise them, or scope the finder. Asserting `context.l10n.<key>` does not save you: the collision is in the VALUE.
+- **"Returns null on permission denial" needs a positive control in the SAME fixture** — the null could come from an unrelated failure further down the path.
+- **A RETURN-NULL failure and a THROW are two branches, and a suite whose only error test uses `thenThrow` leaves the null one mutation-dead.** Where every layer below swallows (query module catches → null, service catches → null), null IS the normal shape of permission-denied, offline and deleted-document, so the caller's `if (x == null) setError(...)` is the whole user-visible difference between an error screen and a permanent spinner — and no wildcard `thenAnswer` in a `setUp` ever produces it. Grep the suite for `async => null` on the loader; zero hits IS the finding. Assert `hasError` (the flag the widget waits on) AND `isLoading == false` (what separates "reported" from "still waiting"), plus a premise that the value really is null.
+- **Last-wins/correction tests must assert the LOSER is absent**, not just the winner present.
+- **Precedence/weighting tests need inputs where the WRONG alternative gives a DIFFERENT number**, ideally opposite-direction; same-value inputs cannot distinguish precedence from averaging.
+- **A drift guard walking only `vocab → mapping exists` catches forward drift, not reverse** — add a POSITIVE test driving the real producer, asserting emitted set == vocabulary.
+- **A partition/uniqueness test derived from the SAME curated list the impl was written from cannot fail.** Probe every sibling name in the real vocabulary; in an ORDERED first-match-wins chain also probe for entries SHADOWED by an earlier rule — dead code that reads as coverage. A shadow fix is per-ENTRY: re-run the probe over the WHOLE chain after it.
+- **A golden-corpus diff adding only the exact inputs the fix targeted is that same vacuity** — add one ADJACENT compound per rule touched, including rules the ticket never named, then audit the corpus against the LITERAL strings the ACs name, one grep each.
+- **When a probe shows the code disagrees with an AC, a passing-id snapshot gives a third option beyond "encode the code's answer" or "stop":** add the case with the CORRECT expectation and leave its id OUT of `_expectedPassing`. Set-equality still passes, the miss shows in the nightly artifact, and nobody can read it as intended behaviour. Say so beside the omitted id.
+- **A "does less work now" claim needs a discriminator test, not a convergence test** — seed something only the naive path would pull in, assert it is absent.
+- **When the saving is COALESCING ACROSS CALLS, no fixture whose injected reader returns a CONSTANT can see it** — the second call short-circuits only because the real reader re-reads the doc the first call wrote. Add one test whose reader models the production read, drive N calls on an advancing clock, assert the stored value equals the FIRST call's timestamp.
+- **A PARAMETERISED loop over failure codes proves one leg N times when its fixture starts EMPTY.** Where a fast path is selected by a property of the FIXTURE (length, emptiness, key presence), every loop over the slow path needs a fixture failing the fast path's predicate, plus one assertion naming which leg ran.
+- **A guard classifying a mutation by comparing OLD vs NEW is untested when every fixture's base is EMPTY or the same LENGTH** — the comparison loop never runs. The discriminating fixture is the MIXED case (append AND edit in one mutator).
+- **Same blindness for a FIELD-EXCLUSION decision** — "this key is stripped from the payload" and "this field is deliberately NOT in the drift set" are invisible while every fixture round-trips that field byte-identically. One pin each, and never write it against two `clock.now()` reads microseconds apart.
+- **Same blindness for an INDEX re-found after an `await`** — re-finding by id is identical to a stale index whenever the collection holds ONE element. Count the fixture's COLLECTION length, not its item list; the seam is the injected `notifyListeners` callback firing before the await, from which you can reorder or shrink the shared collection. Assert the OTHER list is untouched: a stale index writes one list's rows into another.
+- **A predicate's SCOPE guard (single-word-only, suffix-not-substring, prefix-excluded) ships untested, because the fixture chosen to ILLUSTRATE it sits outside the predicate's vocabulary entirely.** The discriminating fixture satisfies the POSITIVE half and fails ONLY on the guarded shape; for a suffix rule only a compound carrying the word as a PREFIX separates `endsWith` from `contains`. Where a rule deliberately over-captures, pin that with a comment naming the safe DIRECTION, or a later tidy-up narrows it into the unsafe one.
+- **Round-trips must drive the REAL serializer, never `copyWith`**, and a model with two legs needs a non-null value asserted through BOTH. A DateTime SENTINEL compared for EXACT equality must be zone-normalised, and only a round-trip sees it — parsing the field-MISSING direction alone pins the sentinel's value and still misses that a persisted sentinel re-reads unequal to it.
+- **A test title claiming something the fixture cannot distinguish** ("SCALED line", "dest wins", "caught by the compiler") — trace whether the fixture is at the identity config or the branch is unreachable. Audit names against bodies, and grep test names against what the bodies call (a "round trip" that never calls the read side).
+- **A two-sided guard needs a discriminator PER SIDE, and a TIGHTENING needs a recall control.** For Swedish boundaries, classify each fixture by WHERE å/ä/ö sits: BEFORE the token exercises only the lookBEHIND, AFTER it only the lookAHEAD. Assert the negative fixture CONTAINS the token, and never conflate mutation value with regression value — a fixture has THREE histories (matched by old `\b` and by the fix; matched by neither until now; never matched). Print each candidate pattern and run all three over every fixture before writing rationale.
+- **A token flanked by letters on BOTH sides survives every one-sided deletion** — a both-sides-gone recall control with no regression value, not a discriminator. The killer fixture needs a NON-letter on the side under test.
+- **Which boundary shape is correct is decided by the CONSUMER, not by tidiness.** This repo holds both, both right: a detector feeding checkbox PRE-selection is two-sided (a false negative costs one tick), while a detector with no fallback branch stays trailing-only (a false negative DELETES an allergen-bearing line). Never "harmonise" them. Name each mutant by the fixture group it must flip and assert the WHOLE group — `isNotEmpty` masks a partial flip, and it is easy to pair the mutants backwards.
+- **A HAND-BUILT narrow write payload needs BOTH halves pinned — the keys it carries AND the keys it deliberately omits.** Make the fixture's stored value DIFFER from the expected one; for the omission half drive a mutator that moves an excluded key, as the OWNER, so an escalation guard's early return cannot be what preserves it. Walk every real mutator before rating a dropped field live.
+- **When a normalization fix's POINT is that two inputs must COLLIDE, pinning the normalized string and re-pinning the golden hash leaves the invariant unasserted.** Assert the collision at the KEY level the consumer uses, paired with a recall control where one input genuinely differs, or "equal" is also satisfied by a fingerprint gone blind.
+- **Firestore numeric aggregates landing on a whole number are stored as `int`** — a parser using `as double?` throws and silently drops the row; add one whole-number case.
+- **A `continue`-style SKIP-LIST disagrees with its absence ONLY where a skipped token shares a LINE with a matched one.** If the one shape where it fires also loses the real answer, the honest output is a design finding, not a missing test. Truncation variant: a "cut the tail at X" guard is invisible on every fixture where the matched label's value sits BEFORE the cut.
+- **A `??` wiring (`New.extract(t) ?? oldPath(t)`) needs one fixture where the arms DISAGREE** — replicate the old function in a probe and run both over the real corpus to find it.
+- **An "inserted `\n`" assertion at END OF STRING is swallowed by the function's own trailing `.trim()`** — append trailing text. For a Swedish boundary fix the TRAILING å/ä/ö direction can be unreachable in the language (compounds insert a linking `-s-`); use a real å-initial second element or rename the test to what it proves.
+- **A PLACEMENT claim is un-pinnable when the wrong placement is BENIGN — say so in the comment instead of demanding a test**, and check the comment names the consequence honestly.
+- **Narrowing an `@override`'s signature opens no coverage gap by construction** — the analyzer binds it or errors. The reviewable question is whether the DISPATCHER calls the narrowed overload, which a 2-arm replica settles in 10 s. For any signature-only cleanup, probe the dispatch path, not the base class's source.
+- **A guard whose predicate spans TWO user-facing shapes ships pinned on one, and the diff's own "accepted consequence" sentence names the unpinned shape** (an editable field pinned, a `readOnly` one not). The realistic future mutant is a REFINEMENT that every shipped test survives.
+
+### Fake/Mock idioms + the ServiceLocator/GetIt bridge
+- `class X implements Y` with concrete bodies is a legitimate Fake. The mocktail ban is specifically a concrete `@override` on `extends Mock` (blocks `when()`) — narrow exception: a pure call-count counting fake never `when()`-stubbed on that method, or a non-nullable getter a bare Mock would noSuchMethod-crash on.
+- `extends <ConcreteClass>` with an `@override` body is a legitimate SUBCLASS SPY, not the banned pattern.
+- **`verifyNever(() => mock.f(any()))` is UNFAILABLE against a call carrying non-default NAMED arguments** — the noSuchMethod forwarder fills every OMITTED named param with its DECLARED DEFAULT, so the verification invocation carries `unit: null, location: null` while production sent `unit: 'st', location: pantry`, and the two never match. So the NEGATIVE half of a routing contract ("…and not the other method") reads as coverage while proving nothing; repeat each named param as `any(named: 'x')` in the `verifyNever` too. Probe-verified 2026-08-15, BUT-1858 (the positive `verify` is unaffected — it spells the named args out).
+- **mocktail is LAST-REGISTERED-WINS, so `when(f(any())).thenReturn(false)` then `when(f(<the constant>)).thenReturn(true)` is a genuine REPOINT discriminator** — production reading a different flag falls through to the wildcard, so every ON-path assertion reddens. Reversing the two lines silently turns the whole group into a second copy of the OFF test and NOTHING enforces the order: assert the premise inside the helper (`expect(flags.isEnabled(<constant>), enabled)`). A `Mock` stubbed only for the target also reddens a repoint through the REAL service — the unstubbed key throws, `isEnabled` falls back to `_defaults`, and the decoy's default is usually true.
+- **When production adds a call to a NEW repository method, every existing suite over a hand-rolled `extends Fake` silently grades that leg's CATCH branch** — noSuchMethod throws, the leg swallows, and a section-root `error_code` rides along beside a perfectly good payload with nothing asserting it. Fail-quiet in a file whose whole convention is fail-loud sentinels. Fix is the override PLUS one assertion on the healthy composition; a fixture comment saying "left unset, `Fake` throws" is not the guard. Grep the new method name across `test/`: zero overrides while production calls it IS the finding.
+- **A `-1` sentinel default on a Fake means two different things and only one is self-proving** — "a dropped forward must be visible" (asserted against `cap + 1`) and "nothing is forwarded here, deliberately" (asserted as `-1`, documenting an implicit cap with no truncation probe). Unasserted it is neither, just a recorder nobody reads; pick the arm and write the expectation.
+- Lazy `tryGet` fields cache on construction — register fakes BEFORE constructing the SUT.
+- **`verify(f(captureAny()))` marks those calls VERIFIED, so a later `verifyInOrder` covering the same method fails with "Matching call #N not found" over an all-`[VERIFIED]` list** — that red is the test's own bookkeeping, not a production ordering bug. Capture THROUGH the ordering check instead: `verifyInOrder([...])` returns one `VerificationResult` per entry, each with its own `.captured`.
+- Callback-based async APIs: capture the named callback via `invocation.namedArguments[#name]`, invoke synchronously inside `thenAnswer`.
+- Fire-and-forget writes to `FakeFirebaseFirestore` need microtask draining — two `await Future.delayed(Duration.zero)` or `pumpEventQueue()`; not the banned real-time wait.
+- **The GetIt→DIContainer bridge gotcha (recurring: analytics, tag-overrides, correction-snapshot, import chokepoints).** Many singletons resolve via the PRODUCTION `ServiceLocator` (a `DIContainer` over `GetIt.instance`), NOT `TestServiceLocator.initialize()`. A mock registered only through `TestServiceLocator` is INVISIBLE there, captured events stay empty, and the test silently proves nothing. Fix: `prod.ServiceLocator.initialize(DIContainer())`, then register into `GetIt.instance` AFTER; tearDown unregisters + resets. Check what else on that path touches the locator before bridging into an existing file.
+- **A hand-rolled CF Firestore query double must be IMMUTABLE the moment a helper takes a `CollectionReference` and calls `.where()` on it more than once** — a single mutable `q` aliases both legs, fully masked while every fixture is single-page. Each builder returns a new query from prior state, mirroring the real SDK.
+- **A hand-rolled CF stub keyed on flat `"col/id"` paths CANNOT represent a subcollection**, so any "reads the top-level, not the subcollection" scenario written against it is a duplicate with a false docstring — the pre-fix code throws `is not a function` and crashes the whole run, which is what actually reddens. Either give the stub a real `ref.collection()` or drop the scenario and say the collection choice is guarded by the crash.
+- **A new fire-and-forget telemetry call at a chokepoint reliably ships with ZERO tests.** Add a capture test: fires-once-with-params on the happy path, fires-nothing on the negative. "Just telemetry, no seam" is usually false — trace the resolution chain. When the writer swallows its own errors, the seam is the ONLY way to see it, and a helper reaching for `admin.firestore()` while its module already exports a `__setFirestoreForTest`/`getFirestore()` pair is the whole bug.
+- **The test that matters passes NO injected seam** — an injected-seam case pins only the seam's SIGNATURE, so a caller reverting to a local throw keeps every injected case green while dropping the audit row. Assert the ROW (count, its `operationType`) and assert the privacy shape as an ABSENCE (`userIdHash !== the raw uid`), never as "non-empty".
+- **When such a write has N OUTCOME LITERALS, demand one fixture per literal — the FAILURE arm is the one that ships untested**, because the suite's only throwing test throws BEFORE the `try` it lives in. Stage it by making a later step throw out of the operation.
+- **A funnel-ATTRIBUTION fix has TWO failure directions.** Grep every producer of the event before believing the ticket is closed. An idempotent regenerate path that logs "added" events re-counts every unchanged line — assert the second run logs only the DELTA, and assert the EVENT COUNT as hard as the parameters. The suppression half ("only a genuine creation logs") is the cheapest VM test and the most often skipped. `grep <event method> test/` returning zero IS the finding.
+- **A DEFAULTED `String source = 'manual'` param is worse than silence: a path nobody enumerated now emits a CONFIDENTLY WRONG tag.** After such a fix, grep the CALLERS of the newly-tagged method — not the ticket's named path — and read what each one actually is. Prefer a required/nullable source, pin each caller's tag, and fix the doc comment that asserts the opposite, or the next session re-closes the ticket without looking.
+- **When a telemetry block sits behind a nullable `?? ServiceLocator.tryGet<T>()` field, a GREEN happy path is itself proof the block is dead** — the production locator is uninitialised under `TestServiceLocator`, so the field is null; had it resolved, the unstubbed `Mock` would have thrown `MissingStubError` inside the caller's own `try`. Inject the collaborator through the constructor param that already exists.
+- **A safety-critical method covered ONLY via `verify()` in a caller's test proves WIRING, never the wrapped CONTRACT** — grep for the method NAME at its own service/repo layer. The same hole opens whenever a change introduces a new RESULT TYPE: consumers hand-construct fixtures, so the PRODUCER — often the single line that emits the interesting value — ships deletable-green. Grep for the TRUE-direction assertion, never just the type name.
+- **The mirror image, an OPT-IN parameter, fails the other way: the tests prove the CONTRACT and nothing proves the WIRING.** A guard added as `{X? optIn}` whose tests hand-pass it is green while zero production callers do, so the else-branch is what ships. Demand both a NAMED entry point (so a forgotten argument cannot be the failure mode) and one test driving THAT method with no test-only argument in sight. Verify by mutating the pass-through and counting reds.
+- **A REQUIRED param is the cheap structural close, and it moves the review job from "is it wired" to "is the DECLARED value the right one"** — what still needs tests is the UI layer's CHOICE of value (the copy it RENDERED, not the live stream copy) and its REBASE after each change it makes itself, or the second change in one dialog session is refused as drift the user caused seconds ago.
+- **A new DEFENSIVE line whose obvious assertion is already satisfied by pre-existing code one branch earlier is the shape a review round misses, because the test LOOKS right.** Name the OTHER mechanism; if one exists, the fixture must be where the two DISAGREE. Merge-arm twin: when a helper takes `(existing, new)` and one call site passes `null`, every first-share fixture leaves the merge arm unexecuted — and `copyWith` here is SENTINEL-based, so an explicit null ERASES rather than preserves.
+
+### Disposal & lifecycle guard idioms (BaseViewModel family)
+- `BaseViewModel` already guards disposal TWICE (`clearError()`, `notifyListeners()`), so a subclass's own third guard is usually untestable-to-fail. Only test a disposal guard protecting an OBSERVABLE effect no base guard blocks — e.g. a late stream emission mutating a private field BEFORE the guarded notify; assert the STATE stays unchanged.
+- Two quadrants when sweeping a guard across VMs: (A) delegate disposed BY this VM's `dispose()` → test `returnsNormally` + `notified==0`; (B) delegate is a SHARED SERVICE outliving the VM → `returnsNormally` is VACUOUS, assert the service's error SURVIVES the VM's disposal.
+- A class with BOTH a local `_isDisposed` (set at the START of its own dispose) and inherited `isDisposed` (flips inside `super.dispose()`, often LAST) must have any new guard use the SAME flag its own callbacks use. Migrating `ChangeNotifier`→`BaseViewModel` turns a `throwsFlutterError` post-dispose test into `returnsNormally` — also assert the listener was NOT invoked, or it cannot tell "no-op" from "leaked".
+- A VM shadowing `error`/`hasError` must be proven by driving a FAILED base `executeAsync`; seeding only a service-level error cannot catch a dropped override. First check the VM calls base `executeAsync` at all.
+- `executeAsync` RETHROWS on failure (not null) — prove it indirectly via a caller that only retries on THROW; a bare try/catch around the call is vacuous.
+- **A `dispose()` that clears DATA (not just controllers/timers) creates a use-after-dispose window for any long-running op still holding the object.** Read the collaborator's dispose body before trusting "just a leak fix": dispose mid-operation, assert the WRITE still carries the user's data. Check whether the op's own `if (_disposed)` guards are even live — a manager the owner never disposes has permanently-false guards.
+- **A "disposes its children" test asserting only `returnsNormally` is vacuous.** Materialize the child before dispose, then assert it is dead (`addListener` → `throwsFlutterError`), which flips when the dispose line is reverted.
+- **A suite whose every stub for the subscribed stream is a COMPLETING stream (`Stream.value(...)`, `const Stream.empty()`) can pin no cancellation at all** — the stream is done before `dispose()` runs, so there is nothing left to cancel however many dispose tests exist. That is the mechanical tell, cheaper than a mutant, and it hid a leak fix that was deletable-green in a class extracted specifically because the first version leaked. Fixture: a `StreamController`, `expect(c.hasListener, isTrue)` BEFORE the act as the load-bearing premise (an unsubscribed watch also shows `false`), then `isFalse` after. Its twin lives in the same extracted class: a `sync()` called on every upstream emission is deduped by a `_watchedIdField` guard the suite splits in half — the test that `verify(...).called(1)` never emits, the tests that emit never verify — so emit TWICE then verify, with the second emission's value asserted as the premise.
+- **A new throw-on-disposed guard inside a shared builder is only safe at callers that catch** — it converts silent corruption into an uncaught exception everywhere else. Enumerate call sites yourself; "every caller sits inside a safeExecute" is a claim. Two things make a caller look safe when it is not: its own `_disposed` flag can be dead (grep that someone calls `dispose()`, and re-grep after the fix), and `notifyListeners()` after dispose is a DEBUG-ONLY assert, so a post-dispose chain that "throws in tests" runs straight through in release. Never conclude "unreachable — it would have thrown earlier" from a debug-mode trace.
+- **A disposal guard added to one method is unfinished until its TWIN on the same class is audited** — grep the class for every `_state.set*`/`notifyListeners` outside a `!_disposed` check. The failure arm exercises more setters than the success arm, so drive the FAILURE.
+- **A `manager.dispose()` fix has TWO halves and the wiring half ships untested** — a manager-level test proves the guard, never that the owner calls it. Probe by deleting the owner's `dispose()` line: if every suite stays green, the whole fix is deletable. Two traps: "no write reaches the service" is NOT the discriminator (the disposed state throws first); the observable that flips is the returned future THROWING instead of resolving null. And you need an await seam the owner's constructor actually exposes — pair it with a positive control that the seam was reached.
+- **A queue/`Completer` whose `.future` is never awaited is dead plumbing** — grep for `.future` before believing a "waits for the in-flight op" comment. A polling loop returning a cached `_lastResult` drops the second caller's work and can hand back a previous operation's result; `completeError` on an unlistened completer raises an uncaught async error. Watch the dispose exit: `if (_disposed) return false` drops the waiter out early, returning the PREVIOUS save's result while the UI reports success.
+- **Any concurrency fix needs the second caller actually launched.** Recipe: a WARM-UP cycle first (so a stale-cache regression has a wrong value to hand back), gate the write on a `Completer`, launch caller B, settle. Three assertions for three mutants: `same(inFlight, queued)` + no error catches a re-inserted double-complete; `queued == null` after `dispose()` catches both a dropped `_completePendingSaveOperations(null)` (the test HANGS — that timeout IS the red) and a reinstated `_lastSaveResult`. Close with a capture asserting the overlapping pair produced exactly ONE persisted id.
+
+### Contract pinning: selectors, ordering, equality, revert
+- Every `field == expected` selector needs THREE pins: matched-key reused, unmarked-collision untouched, marked-for-different-key untouched + new created.
+- `==`/`hashCode` tests need an equal pair (equal + same hashCode) AND a deliberately-unequal instance — equal-pair-only passes even if `==` regressed to `=> true`. Watch `hashCode` hashing a collection field by IDENTITY while `==` compares by CONTENT; share instances so the tested field is the only variable.
+- **A numeric TUNING constant is pinnable in the direction that DELETES real content; the permissive direction may legitimately stay unpinned.** A fixture proves the CLAUSE exists; a fixture proving 0.12 rather than 0.5 would encode a threshold no user experiences and the next tuning pass rightly breaks. Accept the residual, name which mutant survives, and say what covers that direction instead. Never manufacture a threshold fixture to satisfy a mutant.
+- **A COLOUR pin is legitimate when the row's semantics ARE the colour (caution-vs-failure, WCAG contrast) and the expectation names the TOKEN the theme registers** (`ButleryColors.light.warning`, or better `context.butleryColors.x` via a `Builder`) — a retune then moves both sides and nothing reddens; a raw `Color(0xFF..)` or `AppColors.x` is the banned form. Discriminate with a `test/`-side REPLICA row rendering the PRE-FIX colours through the same finders, asserting each `expect` throws `TestFailure` — no `lib/` mutant, ~60 s. Check the expectation equals no `ColorScheme` role, or a swap to one stays green — and grep the HEX across the extension's OWN fields too: `ButleryColors.light.warning` and `categoryDairy` are the same `0xFFD4A03C`, so that one sibling swap survives and no pin can see it.
+- **`tester.widget<T>(find.byIcon(...))` enforces "exactly one" as a StateError, not a clean red** — scope it (`find.descendant(of: <the tile>, ...)`) whenever the same glyph appears in another state of the SAME widget (a dialog `titleIcon`), or a later test-order change turns a colour assert into a crash.
+- Ordering contracts need `verifyInOrder`, not call-count.
+- A revert-to-start test must mutate first, THEN revert, then assert.
+- Method removed + replaced: audit the deleted group with a test-by-test successor map — auth/permission branches are easiest to silently drop.
+- `expect(() => asyncFn(), throwsA(...))` without `await` reads as spurious, but MEASURE before filing it: package:test's `Throws` handles a Function returning a Future and registers an outstanding callback, so three guard-deletion mutants reddened all five such tests in one suite (2026-08-12). Style finding, not vacuity — `await expectLater(...)` is still the form to write.
+- **A `void Function(...)` → `Future<void> Function(...)` callback fix is pinned PER CALL SITE, not per type.** Dart accepts an async implementation behind a `void` parameter and silently drops the future, so the whole fix is "N call sites now `await`", and one dropped `await` is invisible to every test that does not make the injected sink FAIL. The harness change is compiler-forced and proves nothing. Recipe: an optional `Object? sinkThrows` on the harness factory, then one `await expectLater(..., throwsA(...))` per write path. Count converted call sites across ALL files in the diff against the number of throwing-sink tests; the difference is the finding.
+
+### Import & correction-capture pipeline
+- SSRF host-filtering and decompression-bomb caps are running invariants across every import surface.
+- A CTA/UI test proves the LABEL, not the ACTION — assert wire-level dispatch separately (extract a `@visibleForTesting` pure helper) when a shared widget hardcodes an attribution tag for "the common case".
+- **Correction-snapshot/parse-cache keys sharing a placeholder across unrelated imports silently collide** — test two same-kind imports in sequence and assert retrieval returns the FIRST's data.
+- **A wizard rebuilding an editable buffer from a prior step on forward-nav loses edits on back-then-forward.** Forward-only suites are structurally blind — add one back→edit→forward preservation test, guarded by a "did selection actually change" check.
+- **An ASCII-`\b` fix is a per-REGEX fix, not a per-file one, and the lefthook `swedish-boundary-guard` cannot find them** — it greps for a literal `\b` touching å/ä/ö, so `RegExp(r'\b' + unit + r'\b')` is invisible to it, and so is a literal `\b`-wrapped ALTERNATION of all-ASCII tokens. Grep the raw escape across `lib` yourself and read every token list, including files the sweep already "fixed".
+- **Single-letter units (`l`, `g`, `st`) under `\b` misfire on any å/ä/ö neighbour, and so do MULTI-letter units flanked on both sides** (`\bdl\b` matched "rö|dl|ök"). A fixture list of trailing-letter cases misses that shape.
+- **Check for a diacritic FOLD before calling a `\b` site broken** — a regex running on already-folded text has no å/ä/ö left to open a boundary. And Dart's `caseSensitive: false` DOES fold Å/Ä/Ö against a lowercase `[a-zåäö0-9]` class, so a bounded regex may legitimately be matched against original-case text.
+- **A tightening suite MIXES discriminators with recall controls — measure and state the count** ("reverting reddens exactly these four"), because "reddens every case below" is usually false for most of the list.
+- **Decide severity by the DIRECTION the misfire falls, and check what the fix MOVES.** Repairing a guard that failed OPEN can silently move rows out of the flat list tagging reads — that is a ticket naming the tradeoff, never a test pinning today's accidental answer.
+- **A boundary or ORDERING repair usually INVERTS a narrower input class rather than only widening.** Before crediting it, print an OLD-vs-NEW output table over a fixture FAMILY, not the ticket's own string: mutate the line back in a scratch copy and run the same probe twice. Run the residual through the real consumer to get the user-visible number, then decide ticket-vs-blocker on the input's realism.
+- **A safety carve-out implemented as `return null` grows a SECOND public entry point the moment one caller lacks the fallback, and that second derivation is an untested drift surface.** Three tests no enumerated fixture list gives you: every vocabulary entry is REACHABLE (an entry with a space or uppercase is dead on arrival under a lone-word guard and reads as coverage); every entry × surface form agrees on both halves (the "candidate true, label non-null" disagreement is what silently re-deletes the row); plus a recall control that a real heading is NOT a candidate, without which a `return true` mutant satisfies the group. Drive the vocabulary set itself and pin the ticket's premise, or every "→ null" fixture passes for the wrong reason once the set is emptied.
+- **A "keep the row instead of deleting it" carve-out is only as good as the SHAPE of the re-inserted string — run it through the CONSUMER's normalizer and assert the resolved KEY, never membership in a list.** A `bool` rescue predicate hands the caller no cleaned label, so the caller re-inserts the raw line and the lookup key keeps its colon, resolving UNKNOWN. Prefer a `String?` rescue returning the cleaned label. Where the artefact ships anyway, keep the assertion but say in the comment that it is a KNOWN unresolvable key with a ticket, not the desired shape.
+- **A boundary repair inside a shared predicate changes behaviour at EVERY call site — enumerate them before scoping tests to the ticket's sentence.** Some call sites decide the OPPOSITE of the predicate's name, and one may COUNT matches against a threshold, so a recall-widening fix moves where documents split. Also grep for COMPENSATING WORKAROUNDS whose comments now assert the fixed bug as live — a stale comment of that shape is how a future session re-adds the workaround.
+- **Rate-limit metering: enumerate ALL call sites of the limited operation** — assisted-import, cache-hit and social-platform paths have each silently bypassed or double-charged the same bucket.
+- **A circuit-breaker over a parallel `Future.wait` batch must not discard already-materialized results** when it trips mid-batch.
+- **A "retry" wrapper keyed on THROWN exceptions is dead over an API signalling failure by return value**, and wrapping an ALREADY-STARTED `Future` can never re-run it.
+- **A cross-copy "single source of truth" test must actually READ every copy it claims to unify** — an unexported duplicate elsewhere still drifts.
+- Windows `flutter test`: `/c/tools/flutter/bin/flutter test <forward-slash-path>` via the Bash tool works directly, no wrapper needed.
+
+### GDPR / export section contract
+- Every export section needs THREE proofs: seeded → count present AND the genuine PII field round-trips verbatim; ownership-negative → a doc owned by ANOTHER uid is absent; empty-safe → `total==0` AND `containsKey('error') isFalse` (every manager wraps its body in try/catch→`{'error':e}`, so this catches a silent degrade).
+- **A FOURTH proof belongs beside those three: the section is JSON-ENCODABLE — `expect(() => json.encode(section), returnsNormally)`, never "the field is a `String`".** `jsonEncode` runs ONCE after every section is gathered, so a raw Firestore `Timestamp` anywhere means the data subject receives NO FILE, and no try/catch inside the section can catch it — which is precisely why a type assertion passes on a half-fix. Drive it through the REAL repository over `FakeFirebaseFirestore` so the value genuinely IS a `Timestamp`; a hand-typed fixture handed to a repo `Fake` cannot stage it. Pin the EXACT KEY SET too, since a projection is a decision and a key appearing silently is how it becomes a dump. Compare any sanitised timestamp with `isAtSameMomentAs`, not a literal: `sanitizeForJson` renders `Timestamp.toDate()`, which is LOCAL-flagged, so a UTC literal fails on a runner in another zone.
+- **A refactor collapsing N copied redaction blocks into ONE loop over a literal field list moves the whole contract into THE LIST, and a name dropped from it fails OPEN** — the field ships unredacted while `data_minimisation` still claims it was removed. Owe one NARROWING case per field name, not just the fail-closed case, and prove the set by deleting each name in turn (BUT-1838: `memberSince` had no coverage at all, `perUserSettings` only fail-closed). Same shape for any allowlist a loop reads.
+- **Before crediting a REDACTION added to an export leg, check that leg's QUERY against the WRITERS** — a strip on a leg that structurally returns zero rows is dead code with a green test, AND an Art. 15 gap. Grep the repository method's collection + filter field, then every `lib/` writer of that field. Two field spellings in one collection is the tell. Build the guard on the REAL repository over `FakeFirebaseFirestore` seeded with the WRITER's payload, never a hand-typed fixture handed to a repo `Fake`.
+- **A GDPR rationale naming a Cloud Function is a claim about code in another language — grep `functions/src` for the FIELD before it ships, especially when it is being copied into `ACCEPTED_DEVIATIONS.md`.** The fix direction can be right and the reason still false; a false reason in the deviations file is what the next session cites.
+- **The bundle AGGREGATOR needs its own two tests.** A flag nested inside a LIST of maps is invisible to a `values` + `is Map` pass — it needs a depth-bounded recursive walk, tested with a subclassed repository RETURNING the clipped shape rather than seeding 1000+ rows. And the warnings lift must key on `error` as well as `error_code`, because most catch blocks set only the first, so a whole Art. 15 section can be missing under metadata claiming completeness.
+- **When you fix that, SCOPE each warnings assertion to its own section rather than relaxing the contract** — a partially-wired fixture legitimately fails many sections. Check the fixture defect underneath too: `MockUser` stubs only `uid`/`email`/`displayName`, and mocktail throws on any other non-nullable getter, which had been failing the `profile` section in every test in the file.
+- **Once the aggregator DERIVES the lifted message instead of copying it, the aggregator half needs no mutant** — assert the premise (the section's own `error` really carries a foreign uid / a `create_composite` URL), then `isNot(contains(...))` on the root, then a positive control on the derived token. The MANAGER half then has no test at all, and the aggregator's test cannot cover it because it deliberately drives a still-leaky sibling. Grep the manager suites for any assertion on a catch's return value; zero hits IS the finding.
+- **A derived message must not be worded from the FAILURE case alone** — `error_code` also marks PARTIAL success, so a flat "could not be exported" is factually wrong in an Art. 15 artifact. Branch on `error` present vs `error_code`-only.
+- **A field ADDED to an existing scrub/cascade ships untested precisely because the suite around it looks covering — audit the FIXTURE's fields, not the test names.** Extending an existing emulator fixture is the cheapest test in the file: add the keys, one assertion per key, plus one negative proving the field deliberately RETAINED (nulling an ownerId would orphan the doc for remaining members). **Same shape for a new GUARD keyed on a field no fixture sets** (`if (data()['groupId'] is String) return;` — every seed omitted it, so the line was deletable-green). Write the new fixture as an exact ONE-FIELD delta from an existing test whose outcome is the OPPOSITE: the pair then proves the guard analytically, no mutant run owed, and the seed helper must OMIT the key rather than store null so absent and null cannot diverge. Put the positive control (the cascade still did its erasure work) BEFORE the survival assertion, or "the doc survived" is equally satisfied by never visiting it.
+- **When a follow-up adds a QUERYABLE ERASURE HANDLE (a flat array written client-side so the cascade can find a doc the user has LEFT), the CF half tests well and the CLIENT half is where coverage stops.** Three hand checks the erasure suite cannot see: every write path that stamps attribution must union the handle (a comment naming one path "the one chokepoint" is a claim); the OFFLINE leg has TWO payload builders and needs one test each; and the one-shot BACKFILL ships with zero tests while its own header cites an npm script that was never added — its reconstruction function is pure and its "exclude the deleted sentinel" line is the security-relevant one.
+- **A cascade step deleting a PARENT doc does NOT delete its subcollections, and the residual probe beside it counts TOP-LEVEL docs only — so a new step routinely ships a false `gdprCompliant: true`.** Grep `firestore.rules` for `match /<collection>/{id}/<sub>` and the client repos for `.doc(x).collection(y)`, then check each sub for a uid (a MAP KEY counts). Also: the probe must cover EVERY handle the deleter uses, and a new Art. 17 step breaks the Art. 15 ⊇ Art. 17 invariant unless the bundle gained a matching section — grep the export builder for the collection name.
+- **An audit row written for an UNAUTHENTICATED actor can never land** (`audit_logs` binds `userId == request.auth.uid`), so a spy test pins wiring for a rejected write. Keep the assertion if the local log is the deliverable, but say so in the `reason`. Same fix's companion trap: a `hasLength(1)` "one row per REQUEST" cannot guard a per-record regression when the spy is the SERVICE's own repository instance.
+- Redaction paths (FCM token → 10-char prefix + `[redacted]`) are the SECURITY invariant and outrank another happy-path test — check these first when reviewing a partial export manager.
+- Where counterparty data is a DECIDED inclusion, write the test that PROVES inclusion, with a comment citing the decision.
+- A two-query union+de-dup section needs FOUR fixtures: sent-only, received-only, self (both legs match the SAME doc — the only row catching a de-dup regression), foreign.
+- Derive caps (`getLimitForType('<type>')`) for both fixture size and assertion — never hardcode. Two-leg fixtures derive per-leg from the cap and ASSERT the premise.
+- **Truncation flags need all THREE boundary points AND a positive control per source leg** — below-cap, exactly-at-cap (flag ABSENT), cap+1 (flag present, payload trimmed). A "does NOT stamp truncated" test alone is vacuous; the dangerous direction is a clipped bundle claiming completeness. An N-leg OR needs N positive tests: covering only the LAST catches collapse-to-first but never collapse-to-last.
+- **Two the boundary triple misses:** `total_count` must be asserted EQUAL to the shipped payload's length (a regression counting the pre-trim fetch ships `cap` records under a `cap+1` manifest); and for a multi-leg section where each leg carries the cap independently, the highest-value case is **neither leg over cap but COMBINED over cap → flag ABSENT**, which no per-leg test can reach.
+- **The strongest forwarding assertion is one WHOLE-MAP equality on a per-method capture** (`expect(repo.capturedMax, {m1: cap+1, m2: cap+1})`) — it proves per-leg forwarding AND that no other capped read fired. Keep the sentinel default on every override; with the expectation derived from `getLimitForType`, it also catches a typo'd `type:` falling through to the default batch size. Give trim assertions a per-index id row so they can name the PROBE row, not just a length.
+- **Two extensions that close that map's blind spots:** record the UNPROBED read into the SAME map with its sentinel, so a known gap becomes a tripwire rather than a comment nobody greps (better than `containsKey isFalse`, which any new read satisfies); and a read taking N>1 caps cannot live in a method-keyed int map at all — give it dedicated sentinel fields, because the map's "everything is accounted for" reading silently exempts exactly the read whose repo defaults sit BELOW the declared limits.
+- **A degradation branch inside a section's CATCH is unfalsifiable when both arms' prose shares the asserted substring, and the FLAG the branch also sets is what nobody pins.** Assert the substring UNIQUE to each arm, and assert `containsKey('error_code')` on BOTH sides — the flag is the half that reaches `export_metadata.warnings`, i.e. the half a data subject can act on.
+- **The one-line map entry wiring a section into the bundle is itself deletable green** unless a bundle-level test asserts `data['<section>']`. Grep the section KEY across `test/`; zero hits outside the manager's own suite IS the finding. Same rule for any section-level flag: a flag the aggregator's walk cannot reach is dead code that reads as coverage, and stays dead because it is ungreppable. **Where one `if` writes BOTH a per-record key inside a LIST and a SECTION-ROOT `??=` lift, they are two tests, and the root one is the half that ships unasserted** — the nested walk only reaches `section.values.whereType<Map>()` and only keys on `*_truncated`, so the list copy reaches no user while the root value is the sole path into `export_metadata.warnings`. A healthy-path `containsKey('error_code'), isFalse` beside it is the RECALL CONTROL, not coverage of the true direction; grep the literal token across `test/` — hits only inside a fixture map IS the finding (BUT-1832 `conversation-poll-votes-read-failed`, and its untested BUT-1838 sibling one branch below).
+- **A section-root flag ORed over M reads while the section AGGREGATES N>M record types is worse than no flag** — it asserts completeness for data never probed. Count the section's reads, not the ticket's.
+- **Watch cap-TYPE reuse across sections** — retuning a cap for one feature silently moves an unrelated section's completeness boundary, and every test deriving from `getLimitForType` follows in silence. One literal pin per "cap equals the repository default" claim is the only thing that catches it.
+- **When a sweep extracts a shared capped-read primitive, test the primitive directly** (probe size, trim, both boundary sides, unknown-type fallback, error propagation); per-section tests then prove only WIRING. Spend the rest on sections with new logic and on any leg whose fetch param is NOT the usual name — a rename-shaped slip drops the cap silently, so pair it with a sentinel-default fake.
+- **Four audits such a sweep hides:** grep the WHOLE swept file for the old pattern (un-swept siblings emit NO `truncated` key, i.e. silent clipping, worse than the bug being fixed); grep the method name across `test/` PER SWEPT FILE, not per ticket, where zero hits IS the finding and beats a mutation run (reverting a call nothing invokes provably cannot go red); check whether `cap + 1` FANS OUT into a subquery per extra doc; and re-read the primitive's doc comment, which that usually falsifies. The discriminator is one grep into the repo method's body — a plain `.limit(n).get()` makes "exactly one extra document read" literally true, while anything looping in `batchSize` steps without trimming over-reads and can return more than `cap+1`.
+- **Filling a coverage hole across sections is cheap and table-driven:** one record per section (cap type, payload key, seed closure, invoke closure) looped into a `group`, times the three boundary tests. Keep the shared `extends Fake` seeding each section's rows in a SEPARATE nullable field that throws when unseeded — a test wired to the wrong sibling method then fails loudly instead of passing on another section's rows, which is what makes a table safe to loop.
+
+### Settings-hydration & sentinel-parameter template (recurring: BUT-1220, 674, 1322, 1610)
+Any field persisted via a private settings sub-doc needs: (1) a hydration test seeding the sub-doc DIRECTLY; (2) a corrupt-value test that ALSO asserts a SIBLING merged field survives (the merge is one `copyWith` in one try/catch, so a naive parse can abort the WHOLE merge); (3) a save-path test asserting the settings doc has it and the public doc does NOT, plus a round trip; (4) one test per serialization surface if the field has three (Firestore/JSON-cache/copyWith).
+Sentinel-parameter contracts (`Object? field = _unset`) need both quadrants where omission is possible: omit→preserved, explicit-null→cleared. Prefer capturing the forwarded ARGUMENT IDENTITY against the sentinel over a downstream no-op — a regressed VM forwarding an in-memory null can coincidentally suppress the same effect.
+
+### Age/maturity/consent gates
+- A field moved client→CF-authoritative: invert the old round-trip into an ABSENCE assertion on EVERY client-write surface — verify non-vacuous by confirming the field still appears in base `toFirestore()`, so it COULD leak.
+- "Infra error" vs "explicit rejection" needs a TYPED discriminator flag asserted on BOTH branches — a bare boolean cannot tell them apart.
+- "Must NOT re-fire on resume/already-verified" needs BOTH `verifyNever(gate call)` AND the positive downstream effect in the SAME test — asserting only the return value is green-blind when the stub defaults to success.
+- A "quiet/never-throws" method's contract is proven by asserting the user-facing error field stays null on EVERY failure branch.
+
+### Menu & tagging domain
+- Weighted-random selectors: assert WEIGHT MATH via a `@visibleForTesting debug*` hook, never the sampled outcome. Pair with: unrated equals the 1★ value (never-penalized, not just selectable); ceilings pinned via `closeTo` at extreme inputs so a no-op multiplier fails.
+- **Any feature persisting entity ids later intersected with a live collection needs a ZERO-INTERSECTION test** — stale ids usually fail OPEN (empty filter = no filtering), the dangerous direction for allergen safety.
+- **A "conservative fallback" to a shared `defaults` const is only conservative if that const is a SUPERSET of what the happy path would produce — open the const and check.** Test the abort path against the *readable* members' allergens, not only the unreadable one's.
+- **A widen-not-replace fallback needs its PASSTHROUGH half asserted, not only its added half** — a test pinning "the safety floor got added" stays green if a preserved field is quietly swapped for an empty default. Assert every field the degraded object claims to carry forward. Same sweep for a complete-vs-degraded discriminator flag: check EVERY early-return, not just the ones the ticket touched.
+- **Anchor/cursor guards (`if (index < anchorIndex) continue;`) need a test AT the anchor, and the fixture must make the two code paths land on DIFFERENT days** — with a single recipe the chronological fill also targets the anchor day, so an off-by-one is invisible.
+- Feature-flag OFF paths are a systemic blind spot: `tryGet<FeatureFlagService>() ?? true` leaves the OFF branch untested unless a fake flag service is explicitly registered false.
+- A config-version-gated rebuild guard needs both directions (newer→rebuild, same→no-rebuild). If a version is captured once but RE-DERIVED later instead of threaded through, a concurrent run can stamp the wrong version.
+- An "X lands first" ordering comment is unproven without a two-candidate COMPETING test.
+- Denormalized-projection tests: capture via `captureAny()` + `.captured.last`; cover the NULL-CLAMP arm (removing the last vote → null, not 0); prove EQUAL-WEIGHTING with ASYMMETRIC inputs.
+- A repo→VM re-key seam (poolKey→recipeId) is the highest-value untested point when the repo test asserts one key-shape and the widget test injects the other directly.
+- Adding a versioning field to old fixtures is usually INTENT-PRESERVING under a new staleness guard, not weakening — audit ALL fixtures of that type when such a guard lands.
+
+### Firestore cost, index & cascade patterns
+- A declared composite index needs its own assertion (the index array, in a test) — fakes cannot catch a missing composite. Assert `queryScope` alongside field order.
+- A merged/idempotent cascade batch that unconditionally `update()`s a doc it assumes exists can throw NOT_FOUND and fail the WHOLE batch — test the gating doc exists but the TARGET does not.
+- A denormalization write via dotted-path transactional `update` needs a test asserting an UNRELATED sibling field SURVIVES — proves scoped merge, not whole-doc rewrite.
+- A CF trusting a doc field for a security decision is only as strong as the Firestore RULE validating that field on create — confirm the rule pins it before crediting a "backstop for tampered clients".
+
+### CF/TS-specific
+- A new emulator-integration test must be wired into CI on THREE fronts: the granular `test:integration:*` script, the composite chain CI actually runs, and the workflow's `paths:` trigger list — unit runners auto-discover `test:*` but EXCLUDE the `test:integration:`/`test:rules` prefixes.
+- In integration tests, order the existence assert BEFORE the first dereference of a possibly-missing doc — a `data()!` throws a raw TypeError one line before the friendly assert.
+- **A fix swapping a hand-rolled throw for a shared enforcer ships deletable-green whenever the suite injects that enforcer as a seam, and the AUDIT ROW is the half nobody can assert.** Two greps decide it: the audit `type:` string across the CF tests, and whether the logger uses the module's own test seam — a helper calling `admin.firestore()` directly while its sibling goes through `getFirestore()`/`__setFirestoreForTest` makes the row UNASSERTABLE until that one production-identical line is routed through the seam. Demand both halves: one case with NO seam injected (assert the thrown message names the operation) plus the row itself.
+- **A relational CONFIG pin (`batch.maxTokens == MAX_BATCH_NOTIFICATIONS`) stays green when both numbers move together, which is the actual cost decision — always anchor one literal.**
+- **A ts-node mutant removing the LAST use of an import does not compile** (`TS6133`), and ZERO test lines print, which reads as "the whole suite died". Keep the symbol used. Restore with `shutil.copyfile` on ABSOLUTE paths, because the Bash cwd persists between calls. The classifier may DENY a python heredoc mutating `functions/src` — fall back to an in-TEST positive control.
+- **A retired-collection RE-POINT is proven by seeding the RETIRED path as a trap in the same run, never by asserting the live path alone.** Assert live-flips AND retired-untouched; keep the in-memory double's default branch generically addressable, since narrowing it to a `throw` makes the trap unwritable. Then check the OPPOSITE-branch test: a leg newly added inside an `if (nameChanged)`-style guard is absent from the "avatar-only change" fixture, so moving it out of the guard stays green — seed its collection there too, assert zero writes, and pair with a same-fixture positive control.
+
+### Multi-select / bulk-action wiring
+- VM tests + card tests can pass while the GLUE (snapshot/order/callback) is untested at widget level.
+- Selection-guard tests need the owner's OWN tile, not all-strangers. Clear-on-cancel: assert the count returns to the ORIGINAL, not zero.
+- Copy-paste id-field mismatches are invisible unless a fixture makes the two fields DIFFER.
+- Async error stubs: `thenAnswer((_) => Future<int>.error(...))` — never `thenThrow` (sync) nor `async => throw` (type-erased).
+
+### Extraction seams & duplicated-logic-across-surfaces
+- Pure decisions locked in a DI-heavy widget → extract `@visibleForTesting static` instead of a DI bridge.
+- A "pure structural split" makes private behaviour a public in→out contract — that is when tests newly apply.
+- **When the SAME behaviour is independently re-implemented in 2+ classes, grep every copy and demand a test PER COPY** — copies WILL diverge silently (one gains a range guard the other lacks).
+- **An OPT-IN parameter gating a SECURITY behaviour is OFF everywhere until a `lib/` caller passes it — grep the parameter NAME across `lib/` and `test/` separately, and treat "test-only hits" as the finding.** The tell is in the DIFF of the test file: when a fix's own suite gains the new argument on the tests whose comments name the live feature, the argument was added to keep the suite green and the production wiring is the missing half. One test driving the exact production call shape closes it.
+- **LIVE-PATH CHECK — do this BEFORE reviewing or writing any test for a bug fix.** Grep the call chain from the actual view down to the write and confirm the fixed method is ON it; a fix landing on a parallel facade with no `lib/` callers passes its own test and ships nothing. Where tests drive one method but production calls another, make the live path DELEGATE to the tested tail. Then check the rewired layer has its OWN test file — grep the CLASS NAME across `test/`, zero hits is the finding. A well-tested caller and a well-tested callee do not add up to a tested seam.
+- **An OPTIONAL nullable callback seam ("so the module stays constructible in tests") is invisible: every harness omits it, so the reporting body is a silent no-op across the whole suite while looking wired.** When a fix's own comment names the live path, grep the injected seam's NAME across `test/` — zero hits IS the finding, and the one new test usually drives the other path.
+- **A new error/message seam is only as good as its READERS** — grep every caller of the failing method for an ignored bool. A caller that awaits and then shows the SUCCESS snackbar unconditionally means the recorded message is never shown *and* never cleared, and a stale `_error` on a service-lifetime field can later flip the UI into an error screen on an unrelated empty emission.
+- **Enumerate OPTIMISTIC-ROLLBACK SIBLINGS by their shape, not the ticket's wording** — grep the module for `catch` blocks that restore local state and `return false`, and check each one both REPORTS and has a reader. The count of such blocks is the finding; a fix landing on the two the ticket named leaves the same bug reachable from a neighbouring menu item.
+- **When a data-loss ticket ships ROOT CAUSE + SAFETY GATE, the gate gets the tests and the root cause gets none** — the gate is a pure function with an injected seam so the diff looks covered, while the root cause usually sits on a class with no test file at all. Grep the CLASS name of the root-cause file across `test/`, not the ticket's method names. A new safety gate also needs its flip point straddled, and any "generous default" added to a shared `setUp` so old tests keep passing is precisely what hides that.
+- **The THIRD untested layer in that shape is the VIEW's outcome→message branch, and it is the one the user experiences.** Grep the VIEW-layer class name (the dialog/operations helper). Two things make the test durable: assert the INVARIANT (`onSuccess` is never called) rather than the wording, and be CHANNEL-AGNOSTIC — collect both the error callback and every rendered `Text` and assert over the merged result, because snackbar-vs-dialog is a live UX decision. Pair with a recall control, or an unconditional warning passes.
+- **A "reads live state, not the caller's cache" contract is only tested if the fixture makes the two DIFFER.** Cached copy = what the read returns; stored doc = cached PLUS a tick on one item PLUS an item the cache never saw. Both deltas matter — the extra item catches add/remove, the tick catches update, and an update aimed AT the cache-invisible item is the sharpest case. Stamp fields need a THIRD actor seeded so neither party's assertion is vacuous.
+- **An atomicity fix is tested at the layer that OWNS the atomicity, and on the fake that layer is UNREACHABLE.** Stubbing the service seam and applying the mutator by hand proves only that the mutator is a pure function. A transaction-runner typedef injected as a constructor seam IS legitimate — it is the only way to raise the platform codes the fake cannot — but it seams out the RUNNER, not the transaction, so pair it with one emulator-lane test or the production binding ships unproven. Exceptions thrown INSIDE the handler propagate as themselves, so an `on FirebaseException` fallback cannot swallow a permission exception; assert it.
+- **A permission/escalation guard added to ONE method of a pair must be checked on its sibling** — an arbitrary-callback API is the EASIER bypass, not the harder one. Before rating it Critical, read the matching Firestore rule: a `affectedKeys().hasAny([...])` clause makes it defence-in-depth asymmetry rather than an exploit.
+- **The same sweep for an ATTRIBUTION-field fix must include the MODEL FACTORIES** — a factory copying one display name into another field means the FIRST stamp on every shared doc came from a different source than every later one. Enumerate writers by the FIELD name, and check `copyWith`'s `?? this.x` null-preservation at each.
+- **A fix SPLITTING one source in two (profile-only for anything PERSISTED as attribution vs an Auth-handle fallback for display) owes three things a diff review misses:** the new getter IS the whole fix and ships untested (discriminator: an EMPTY profile name with a non-empty Auth handle, asserted on BOTH getters, plus a real-name control); a grep of the OLD getter across `lib/` classifying every remaining site render-vs-persist, because the new doc comment's own rule is typically violated one grep away; and the now-common NULL stamp makes the rendering fallback load-bearing, so its test must give every OTHER row a real name or it cannot fail.
+- **Converting a per-item write into a per-item TRANSACTION makes every existing parallel fan-out over the SAME document pathological** — grep the callers for `Future.wait` before approving: N concurrent transactions contend, exhaust `maxAttempts`, throw `aborted`, and an all-or-nothing caller rolls its optimistic UI back though some writes landed.
+- **The bulk replacement then has TWO legs and only the ticket's own leg gets tested.** Test both plus the chunk boundary, and read the doc comment against each — `batch.update` raises NOT_FOUND on a deleted row, so "items not present are ignored" is true of the transactional leg only. When a later round adds a THROW to one leg's "nothing to write" case, re-read the comment claiming the legs agree: a leg-parity test is one `test()` per leg over the SAME input. Check the message the throw resolves to as well, and when one bulk method gains chunking, grep its SIBLINGS for the chunk constant.
+- **`runTransaction(timeout:)` bounds only the DART handler, NOT the server round-trip** — shortening it does not make an offline write fail faster; do not let a test or comment claim it does.
+- **A shared cache reused by a STRICTER new reader launders the weakest writer's output.** When a new method promotes a cached object into an authoritative status ("absence is now a user DECLARATION"), enumerate every writer into that cache — a batch roster read that never merges the private settings sub-doc can re-cache a settings-less copy of the signed-in user. Test shape: seed the cache through the OTHER writer, then assert the new reader's status.
+- Consolidating duplicated per-caller logic into ONE shared widget/helper: test the LOGIC on the shared host once, plus a cheap render+side-effect test on each OLD host proving it still embeds the shared one.
+- A crash-safety invariant behind heavy widget scaffolding is better pinned via a small extracted `@visibleForTesting` pure helper than a brittle full-pump assertion.
+
+- **A `didChangeDependencies` RETRY on a widget whose failure state renders `SizedBox.shrink()` is DEAD, and the comment above it is the finding.** The early return happens before any `Theme.of`/`context.l10n`, so the element registers no inherited dependency and nothing can ever notify it again; only a REMOUNT recovers. Measure it — heal the stubbed failure, then pump a theme, a MediaQuery and a locale change and count reads (stayed 1/1 in BUT-1693). Its twin: an in-flight `_resolving` bool guarding re-entry leaks `true` forever if an early `return` sits ABOVE the `try/finally`, which is invisible exactly while the retry is dead.
+
+### One-off gotchas, Windows/runner notes, and the revert-probe technique
+- **An overflow/layout probe MUST mount `AppTheme.lightTheme`** — the bare `MaterialApp` default typography is smaller, and the same dialog that overflows by 38px under the app theme reports NO exception without it. Pin a dialog's scroll fix with SYNTHETIC tall content at a fixed phone surface (`view.physicalSize` + dpr 1.0), never the real ARB copy: the copy is what the headroom depends on, and it dies with the feature flag. Two assertions, both proven on a `test/`-side pre-fix replica: `takeException() isNull`, and after `ensureVisible` the tail's `getRect(...).bottom <= screen height`.
+- **A PAGE-SIZE guard (`items.length < _pageLimit`) is only testable on a TALL surface** (`tester.view.physicalSize = Size(800, 14000)`, dpr 1.0, `addTearDown` both) — the list auto-scrolls to the bottom, so item 0, where a top divider lives, leaves the built range and `findsNothing` passes for the wrong reason. Straddle the flip point with ONE item between the arms, and stub the realtime stream `Stream.empty()`: an emission runs the incremental merge, which REMOVES anything absent from the snapshot and moves the page size under the assertion. Mount the real ViewModel via `ChangeNotifierProvider.value` over the production-locator bridge; a scratchpad replica of the widget then yields a one-red-per-mutant matrix in ~90 s.
+- `Semantics(label:)` wrapping a tooltip'd button MERGES into one node with a concatenated label — match with `RegExp`, and bracket `bySemanticsLabel` with `ensureSemantics()`/`handle.dispose()` in the SAME test.
+- Optional-override params with an l10n `??` default: assert the injected override renders AND `find.textContaining(<default's unique substring>)` findsNothing.
+- A `GlobalKey` preventing State recreation is tested behaviourally — drive the event that WOULD recreate it and assert continuity survives; never assert on the key.
+- "Derives from a scaled/filtered list" claims need the list to provably DIFFER from its source (factor ≠ 1.0) — testing at the identity config is structural blindness.
+- A copy-SPLIT (two strings sharing a suffix) needs an assertion on the substring UNIQUE to each.
+- Real `.xlsx` stores text via shared-strings (`t="s"`), not `inlineStr`.
+- Age-boundary tests must pin the exact legal threshold on BOTH sides.
+- `export 'stub' if (dart.library.js_interop)` services: test only the stub's no-op contract; the web state machine is unreachable from VM tests.
+- A `TimeoutException ... during "loading"` with 0 tests run is compile-bound (~12 min shared `lib/` compile), not a hung test — split the invocation per file to confirm.
+- **THE PROBE LADDER, cheapest first.** (1) Analytic discrimination — make the fixture's two sources DIFFERENT literals so a revert cannot coincide with the expected value. (2) A SCRATCHPAD replica run with `dart.bat --packages=<repo>/.dart_tool/package_config.json`: `package:butlery/...` resolves from outside the tree, so nothing in the repo is written and no parallel session can delete it mid-run. Works for any Flutter-free file. To re-derive a doc's TABLE that sweeps a PRIVATE tuned constant, copy the function into that replica with the constant as a PARAMETER — every row checks in one run, with zero `lib/` mutation and no "restore the file" risk. (3) A `test/`-side replica. (4) Mutate the INJECTION. (5) Only then a real `lib/` revert.
+- **Copy the function with a `Set<String> off` parameter gating EACH guard, replicate every test's assertions as named checks, and print the whole GUARD × TEST kill matrix in ONE run** — 12 guards × 13 tests in ~15 s, against 26 serial `flutter test` runs for the same answer.
+- **Cheapest probe of all when the SUT already injects the collaborator: mutate the INJECTION, not `lib/`.** Feeding the mutator the wrong value through the existing constructor seam reproduces the buggy output exactly with the REAL production bodies running — no replica, no control test needed.
+- **When the thing under test is reached through an INJECTABLE SEAM, stage the mutant AS THE SEAM.** If the seam's type still admits the buggy implementation, pass that lambda in a throwaway probe and run both arms in one process. This sidesteps both the "never edit production in a review pass" rule and the auto-mode refusal, and is strictly better evidence than a source read.
+- **Writing a mutant into `lib/` or `functions/src` is REFUSED by the auto-mode classifier, and the refusal lands on the TEST RUN as well as the write** — it is content-sensitive, not command-sensitive, so the Edit tool applies the mutant without complaint and the next run of that suite is refused. Never route around it. On a DIRTY production file budget for "mutant staged, unrunnable": `cp -p` first, restore with the reverse Edit, `cmp`/md5 against the backup, then fall back to a `test/`-side probe plus analytic discrimination.
+- **A CLEAN `lib/` file is the cheapest real mutation target** — `git status --porcelain <path>` empty is your licence: Edit-mutate, restore with `git checkout --`, and EXPECT the md5 to come back different, because `core.autocrlf=true` writes CRLF on checkout. Verify with `git status`/`git diff --stat`, not md5, after a checkout-restore.
+- **Revert-probe mechanics:** copy the file to scratch, string-replace the fix OUT, run the affected suite, confirm EXACTLY the expected tests go red at a unique assertion, restore and byte-verify with `cmp`. Construct the REAL object under the exact constructor wiring the bug lived in. Batch probes in one run only when each fails uniquely.
+- **Assert the search text occurs EXACTLY ONCE before writing, and let that assert be your tree-motion detector** — it fired twice in one round and neither time was the mutant wrong: once the file was CRLF while its sibling in the same repo was LF (`group_detail_viewmodel.dart` vs `conversation.dart` — never assume a repo-wide line ending), once a parallel session had rewritten the file since the md5 you recorded. Both times nothing had been written yet, which is the whole point of ordering the assert first. Corollary for an APPEND-shaped mutant (insert a line after an anchor): the search text is still present afterwards, so `assert needle not in mutated` reports a false "did not apply" — compare against the ORIGINAL bytes instead.
+- **Three mechanics that survive a live parallel session.** Do the whole cycle in ONE Bash call, driven by a tiny script reading the OLD/NEW text from FILES — the only way a Dart snippet with backslashes survives the shell — and assert the search text occurs exactly ONCE before writing. On Windows read/replace/WRITE IN BINARY, since Python text mode rewrites CRLF→LF and breaks byte-exactness while `git diff` still reads clean. And a mutated token MISSING at the end of the round is not automatically a failed restore — the other session may have refactored it away; distinguish by mtime + `git diff` of the region, and re-run the affected suites against the FINAL tree before reporting green.
+- **A WHOLE-CLASS replica scales the technique:** `cp lib/X.dart test/.../zz_scratch_x_replica.dart`, rename only the class and its constructor, `cp` the real suite beside it and repoint the one import. Every `package:butlery/...` import resolves unchanged from `test/`, so the replica is byte-faithful — run the copied suite once UNMUTATED as the control, then mutate. Blocked only when a mixin declares the type. Delete the scratch pair and re-grep the production file for the mutated token afterwards.
+- **Put that replica in the SESSION SCRATCHPAD, not under `test/`** — `package:butlery/...` still resolves from an absolute path outside the tree, so `flutter test <abs path>` runs it, and nothing can outlive the round in the repo. This is the ONLY mutation route open when the `lib/` file is STAGED (`M `/`A `) or the brief forbids production edits, i.e. every read-only review round. Two-file chain works too: replicate the owner AND its collaborator, then repoint the owner's single `package:` import at the local replica. Patch with a byte-level python script that asserts each search string occurs exactly ONCE before writing.
+- **READ THE MUTATED LINE BACK before believing a mutant's red count** — patching a Dart file from a shell heredoc mangles backslashes silently (a reverted `'\\b...\\b'` became a literal U+0008). A mutant reddening far MORE than the comment claims is the tell that you built the wrong mutant, not that the comment is wrong.
+- **Write throwaway probes with the Write tool, never a bash heredoc, and use RAW Dart strings.** Backslashes die crossing the Bash layer even inside a quoted heredoc — always `print(re.pattern)` in a regex probe and eyeball it before trusting a single result.
+- **Never pipe a mutation driver into `head`** — SIGPIPE kills it before its cleanup, and its own "probe files removed" line is a lie you never see. Pipe to `tail`, redirect to a file, or re-run whole.
+- **A probe file does not live in the repo tree — write it to the session scratchpad and hand `flutter test` that absolute path.** A `// delete after` header is not a deletion: two probes under `test/` outlived their round and Malin removed them by hand, which the 2026-08-12 archive entry mis-recorded as "the environment ate my files" and answered by writing them FASTER. Never route around that cleanup. If a probe must sit in `test/` (a harness that only discovers its own directory), create-run-delete it in ONE Bash call, and close every probe round with `git status --porcelain` on the directory, never with the driver's own claim.
+- **When the test reads a FILE PATH rather than calling code (registry/structural lints, declared-index asserts), the mutant is a GIT REVISION** — `git show HEAD:<path> > scratch/`, then a throwaway replica of the test's own walk parameterised on the path, run twice. The cheapest probe in the ladder and the only one available when the "fix" is a deletion. Assert the mutant's exact expected set, not just non-emptiness.
+- **A DELETION mutant on a line inside a fluent chain does not compile** — dropping a `.where(...)` runs the next argument into the collection ref, and the resulting `loading … [E]` reads as "everything reddened", which is the tell for a broken mutant. Substitute an always-true equivalent (`.where('name', isNull: false)`) — same "lost its scoping" semantics, valid syntax, and the failure prints the extra ids.
+- **For a multi-probe query file, seed a FOURTH "stranger" doc no probe should match and add a PARTITION test over the union of all probes** — each per-probe test then owns a negative half, and any probe widening into a sibling's territory reddens twice. That artefact (mutants reddening exactly one test each) is what proves the guard/cap/predicate tests are not piggy-backing on one fixture, and it upgrades a suite from "pins the SPELLING" to "pins the SCOPING".
+- **A GENERATED file in a diff is verified by re-running its generator, not by reading it** — `cp -r` to scratch, regenerate, byte-compare. The load-bearing step is the mtime check: a byte comparison proves nothing if the generator silently skipped the files, so the outputs must show the run's timestamp while the inputs stay untouched. These outputs are CRLF on Windows while `.arb` sources are LF — compare in BINARY and do not read that as drift.
+- **A one-character change inside a string literal cannot be reviewed from `git diff` — `od -c` the BEFORE side, or you will invent the bug.** A private-use sentinel already present as a LITERAL in HEAD makes a prefix range read as degenerate on both sides of the diff; behaviourally a no-op, so the finding is a FALSE one. Habits in order: `od -c`/`git show HEAD:` any one-char literal diff; grep the ARCHIVE for the FILE NAME whenever a diff surprises you; and never trust a grep for the escaped notation, which measures NOTATION not semantics. **The Grep TOOL's rendered output is not bytes either** — it printed `\ comment` where the file holds `// comment`, on scattered lines of an otherwise correct dump, which reads exactly like a corrupted source file. `Read` the region before filing it.
+- **The byte-form grep FALSE-NEGATIVES silently too** — a `\x`-byte pattern matches CHARACTERS under a UTF-8 locale and reports a live file clean, and `LC_ALL=C grep -P` is refused here. Only three things work: the CODEPOINT form `grep -nP '\x{F8FF}'`, a Python sweep against `chr(0xF8FF)`, and `cat -A`. The char also survives being TYPED as an escape into a tool call — write `chr(0xF8FF)`/`U+F8FF` in prose only, then grep your own artefact.
+- **A new grep guard in `lefthook.yml` is not a CI control, and its path handling needs one probe.** lefthook renders `{staged_files}` as REPO-RELATIVE paths, so a guard whose comment-skip filter anchors past a `path:line:` prefix is safe under the hook and false-FAILS on a manually passed Windows absolute path (`C:/…` splits at the drive colon). Anchor on the LAST `:<digits>:`. And a guard wired ONLY pre-commit is bypassed by `LEFTHOOK_EXCLUDE`, a checkout without `lefthook install`, and any merge — grep the workflows before crediting a guard as a control.
+
+### Firestore-rules `.ts` suites (emulator-gated)
+- Every `&&` clause in an `allow` rule gets a failing test; every `cannotModify`/`hasRequiredFields` list needs a test PER FIELD.
+- A failure-only update suite can be silently over-restrictive — pair denials with an `assertSucceeds` on a mutable field.
+- The emulator persists docs ACROSS invocations — suffix create-test ids with a per-run `RUN = Date.now().toString(36)`, or a fixed-id create silently becomes an update on the 2nd run.
+- These are hand-rolled `npx ts-node` runners against `127.0.0.1:8080` and time out without the firestore emulator running first. `functions/tsconfig.json` is `include: ["src"]`, so `npx tsc --noEmit` DOES typecheck `src/__tests__` under `strict` — a free non-emulator check on a rules suite you cannot run.
+- **A client-side filter test on the fake says NOTHING about whether the server accepts that query, and a single-doc `get()` deny test cannot see the query branch either — rules are not filters, so the engine refuses a whole QUERY when any candidate doc fails the read rule.** A membership-filtered collection read owes THREE rules assertions: filtered-ALLOW using the SDK's own spelling, plus a non-empty premise check so it cannot pass vacuously; unfiltered-DENY whose ONLY delta is the missing `where()`, with one foreign doc seeded so there is something to refuse; and filtered-ALLOW-but-empty for a member of nothing, proving the shape is safe for every actor. Pick an actor no other test seats as owner or member — the emulator persists, so reusing the "stranger" uid makes the empty-result assertion flake.
+
+````
+
+</details>
+
+### 2026-08-17 — BUT-1860/1873/1874 review: shopping-item dialog suite (24 tests, 2 files)
+
+Trigger: review of `test/widget/views/unified_shopping/shopping_item_dialogs_test.dart` (314
+lines, new) and `test/unit/views/unified_shopping/category_suggester_test.dart` (156 lines,
+new) against `lib/views/unified_shopping/widgets/dialogs/shopping_item_dialogs.dart` and
+`lib/models/unified/unified_shopping_item.dart`. Requester had already measured: 24/24 green,
+`dart analyze --fatal-infos` clean, and one mutation probe (`note: clearNote ? null : (note ??
+this.note)` -> `note: note ?? this.note`) reddening exactly one test, `an emptied note saves as
+cleared`. Asked for mutation reasoning over the REST of the suite. No `lib/` mutants written
+(concurrent reviewers on the shared checkout); everything below is analytic except the one
+scratchpad probe named at the end.
+
+**The deletion-fix vacuity (BUT-1873).** The fix DELETES `_priceController` (an orphan
+controller no `StyledInput` was ever bound to) and its read, rather than adding the missing
+field. `git show HEAD:` confirms five `StyledInput`s per dialog BEFORE and after — the widget
+tree is byte-identical across the fix. So:
+- `no price field is offered and no price is saved`: `findsNWidgets(5)` holds under a full
+  revert (the restored controller renders nothing), and `savedArgs()[#estimatedPrice] isNull`
+  holds too (the restored controller is empty and no field can fill it). The test IS failable —
+  a sixth input reddens it — but only FORWARD, never for the bug its comment names, and the
+  `isNull` half is a tautology over `UnifiedShoppingItem.basic`'s own default: no add-path
+  change short of inventing a default price can make it fail.
+- `an existing price survives an edit`: pre-fix the edit dialog seeded `_priceController` from
+  `widget.item.estimatedPrice?.toString()`, so 12.5 -> '12.5' -> 12.5 either way. Green under
+  revert. It does kill one real MODEL mutant (dropping `?? this.estimatedPrice` inside
+  `copyWith`), so it is not vacuous — it is just pinned to a different file than its comment
+  claims.
+Generalised into the knowledge file as: a deletion fix is mutation-dead by construction; pin
+only the forward direction and never also assert the value the deleted code could not produce.
+
+**Note tests (BUT-1874).** `a note left alone survives the save` is green under revert of BOTH
+fixes (dialog passes 'Ekologisk', `note ?? this.note` returns it) but kills the over-fix
+(`clearNote: true` unconditionally) — it is the required control for the one measured red, and
+earns its place. `an untouched note saves as no note` is green under every revert but kills a
+`note: _noteController.text.trim()` mutant that would send `''` on the ADD path, where the
+convention is deliberately the opposite of the edit path's. Both fine; neither pins the fix.
+
+**The fix's other half is untested and invisible from here.** `notes: result.note ?? ''` only
+clears anything because `ShoppingItemManagementModule.updateItemInActiveList` does
+`note: notes ?? currentItem.note` — `''` is non-null, so it overwrites. Verified by reading the
+module. `grep -n note test/unit/services/unified/modules/shopping_item_management_module_test.dart`
+returns ZERO lines. So a plausible tidy ("don't store empty strings":
+`notes?.isNotEmpty == true ? notes : currentItem.note`) re-opens BUT-1874 with all 24 new tests
+green. Widest lesson of the round, and now a principle under the sentinel template.
+
+**`category_suggester_test.dart` tests production, not a replica** — every case drives the real
+private `_CategorySuggester` through the real dialog and reads the field the user sees; the
+`byBucket` map is expected OUTPUTS spelled as `ShoppingCategory.*` constants, not a
+reimplementation of the substring loop. `a suggestion refines as the name grows`
+('Kaffe'->drinks, 'Kaffebröd'->bread_grain, because breadGrain precedes drinks in the map) is
+the strongest test in the batch: it is the only killer of removing the two
+`_categoryManuallyEdited = false` resets around the suggester's own write, which is the whole
+"don't latch on your own output" bug.
+`an empty name suggests nothing` is a permanent pass against the guard it names: both the
+`if (name.isEmpty) return;` early return AND `suggest('')` (no keyword is a substring of `''`)
+leave the field untouched, and `enterText(field, '')` on an already-empty field may not even
+notify. It does kill an inverted-containment mutant (`keyword.contains(lowerName)`), but so
+does the mid-phrase test. Documentation, not coverage.
+
+**Branches this harness cannot stage as written**: all three `if (context.mounted)` false arms
+(the harness never pops the trigger route mid-save), and — reachable but never exercised — the
+`success == false` arm and the `catch (e)` -> `SnackBarUtils.userFriendlyMessage` arm. The
+`errors` recorder is wired into both dialog calls and only ever asserted `isEmpty`: a recorder
+nobody reads. Deleting the whole `else onError(...)` limb keeps all 24 green. Inverting
+`if (success)` IS caught, by `expect(successes, hasLength(1))`.
+
+**Real product bug found while grading the gap — measured, not reasoned.** The "Mängd" field
+passes `keyboardType: TextInputType.number`, and `StyledInput` answers that with
+`FilteringTextInputFormatter.digitsOnly`. Scratchpad probe (`flutter test <abs scratch path>`,
+no repo writes): typing `1,5` leaves `"15"` in the controller, and `1.5` also leaves `"15"`.
+So the dialogs' `double.tryParse(text.replaceAll(',', '.'))` can never see a separator, and a
+user buying 1,5 liter mjölk stores 15. Pre-existing on main (the `keyboardType` line is
+untouched by this diff), inside the exact 579 reachable lines BUT-1860 said had no tests, and
+the new 314-line suite never types into that field at all. Owed: a ticket, and one test typing
+a decimal.
+
+Other gaps named in the report, in value order: the add dialog's own
+`category.isEmpty -> other` fallback and the suggester's contribution never reach a save
+assertion (only the edit twin is pinned); no test asserts the amount at all on either path,
+including the add-vs-edit fallback asymmetry (`1.0` vs `widget.item.amount`); the
+onSuccess/onError STRINGS are counted, never read, so swapping `shoppingItemAdded` for
+`shoppingItemUpdated` ships green (BUT-1846's lesson, again); the empty-name test proves the
+save was blocked but not that the user was TOLD — and that message comes from the global
+`AppLocale.current`, the one piece of copy in this dialog that does not come from
+`context.l10n`. Also noted, non-test: `_AddItemDialog`/`_EditItemDialog` take a `viewModel` and
+never reference it (dead plumbing), the category field shows the raw storage key ('dairy',
+'bread_grain') to a Swedish user, and the suggester's unbounded substring match over 2-letter
+keywords ('te', 'öl', 'fil', 'ost', 'ris') misfires on ordinary words — the suite's own comment
+records discovering 'Diskborste' -> drinks and routes the fixture around it rather than
+ticketing it.
+
+Verdict: pass, 0 blocking. Findings were Medium (overclaiming names on two mutation-dead
+tests), plus the coverage gaps above.
+
+### 2026-08-17 — BUT-1874 gate re-review: `?? ''` -> `.orEmpty()` in shopping_item_dialogs (trigger: content-addressed gate re-review after an arch-guard fix)
+
+One production line moved since the previous pass (`pass (0 blocking)`): line 86 of
+`lib/views/unified_shopping/widgets/dialogs/shopping_item_dialogs.dart` went from
+`notes: result.note ?? ''` to `notes: result.note.orEmpty()` because `tools/check_staged_arch_guards.sh`
+refused the commit (BUT-581 ban on raw `?? ''` under `lib/`). Three questions asked; all three
+resolved without writing a mutant into `lib/`.
+
+1. IS THE SUBSTITUTION AN IDENTITY? Yes, by definition, not by fixture:
+`StringDefaults.orEmpty()` in `lib/core/extensions/default_value_extensions.dart:9` is literally
+`String orEmpty() => this ?? '';`. Scratchpad probe (`dart` on the session scratchpad, no repo
+writes) over null / '' / 'Ekologisk' / ' ': same value every time. Resolution is unambiguous —
+`ListDefaults`/`MapDefaults` also declare `orEmpty()`, but the static type is `String?`, so only
+the String extension applies. The dialog is the only reachable producer and it can only emit null
+or a non-empty trimmed string (`_onSave`: `note: note.isEmpty ? null : note, clearNote: note.isEmpty`;
+`copyWith` line 599 `note: clearNote ? null : (note ?? this.note)`), so no reachable input separates
+the two spellings. Nothing can test the difference, and nothing should: this is the
+"behaviour-neutral respelling" case.
+
+2. IS THE PIN STILL LIVE? Yes, and it is not vacuous. `an emptied note saves as cleared`
+(`test/widget/views/unified_shopping/shopping_item_dialogs_test.dart:257`) asserts
+`savedArgs()[#notes]` is `isEmpty`. I had assumed matcher's `isEmpty` returns false on null;
+it does not — matcher-0.12.19 `core_matchers.dart:17` is `(item as dynamic).isEmpty as bool`,
+so null THROWS NoSuchMethodError. Probed: `isEmpty('') = true`, `isEmpty(null) THREW`,
+`isEmpty('Ekologisk') = false`. Either way the test reddens if the coalesce is dropped, which is
+the only realistic mis-substitution (a slip to `.orEmptyTrimmed()` is also an identity here, since
+the dialog already trimmed). Its twin `a note left alone survives the save` is the always-clear
+control, unaffected.
+
+3. IS THE CROSS-LAYER CONTRACT INTACT? Yes. The dialog still hands `''` down for an emptied note,
+which is exactly the input `an empty note CLEARS the stored note` and `a null note leaves the
+stored note alone` (`test/unit/services/unified/modules/shopping_item_management_module_test.dart:641,659`)
+describe from below. Those two are untouched and answer for `updateItemInActiveList`'s
+`note: notes ?? currentItem.note`, so the BUT-1892 successor signal has its control.
+
+4. WAS THE VIOLATION REACHABLE BY THE SUITE? Yes — and I nearly reported the opposite. The ban is
+`test('no raw `?? ''` in lib/ — use .orEmpty() (BUT-581)')` in
+`test/architecture/architecture_test.dart:663`, a repo-walking source lint run by
+`.github/workflows/architecture-validation.yml:154` and `build-validation.yml:63`, with an
+allowlist of ~40 pre-existing path::line strings (`shopping_item_dialogs.dart` is NOT in it — the
+line was fixed, not allowlisted). The pre-commit grep exists only to convert a red-main
+fix-forward into a commit-time refusal (its own header names three incidents: BUT-1049, BUT-1203,
+BUT-901). So the division of labour is correct as built: a source-text lint is the ONLY instrument
+that can see a behaviour-preserving respelling, and asking a behavioural suite for one would be
+the "line 13-24" anti-pattern.
+
+Measured: `flutter test` over both suites, 53/53 green (11 dialog + 42 module). `flutter analyze`
+not re-run — the changed line compiles by inspection (the extension import sits at line 10 and
+line 295 of the same file already called `.orEmpty()` on the same nullable type before this diff).
+
+Verdict: pass, 0 blocking. No findings at any severity. Category-suggester suite
+(`test/unit/views/unified_shopping/category_suggester_test.dart`) and
+`lib/models/unified/unified_shopping_item.dart` re-read and unchanged in substance from the
+previous pass; the known defects they pin (BUT-1890) and the decimal-input defect recorded in the
+2026-08-17 BUT-1860 entry above are both still open and untouched by this diff.
+
+### 2026-08-18 — BUT-1780 / BUT-1869 / BUT-1870 card-badge tests (review, 0 blocking)
+
+Trigger: review of the uncommitted diff over `lib/widgets/common/content_card.dart`,
+`lib/widgets/recipe/recipe_card.dart` and their two widget suites. Follow-on from BUT-1871,
+whose finding was that the previous attempt pinned the DIFF (ContentCard deriving two boolean
+flags) while nothing in the suite ever rendered a badge.
+
+Measured: `flutter test` over both suites 85/85 green; `flutter analyze --fatal-infos` over all
+four files clean. No mutant written into `lib/` (shared checkout, concurrent reviewers) — mutant
+kill sets below are ANALYTIC, derived from reading the full chain: card guard ->
+`CompactAllergenRow`/`CompactDietaryRow` -> `_getBadgesToShow` -> `_defaultAllergens` /
+`DietaryConfig.allKeys`, plus `TagResult.getAllergenStatus` returning `unknown` for a missing key.
+
+1. The new group is non-vacuous in BOTH directions. Positive: prefs {gluten, mjolk} over a
+   fixture with gluten=contains, mjolk=free -> row + badges; dies on `showAllergenBadges: false`
+   (the parent measured this). Negative (`no preferences means no badge row`): with null prefs
+   an always-on derivation would build the row with `userPrefs: null`, which falls back to
+   `_defaultAllergens` {gluten, mjolk, notter, agg} and — because `_getBadgesToShow` includes
+   UNKNOWN as well as contains/free — paints 4 badges, so `findsNothing` reddens. It also has a
+   positive control on the SAME fixture builder in the SAME group, so "nothing rendered at all"
+   cannot explain the pass.
+
+2. The three RecipeCard cases. `empty allergen set` and `empty dietary set` each kill the
+   deletion of their own conjunct — and they kill it only because they assert the ROW WIDGET
+   TYPE: with an empty (non-null) pref set the rebuilt row computes zero badges and draws
+   `SizedBox.shrink()`, so a badge-level assertion would have been vacuous there. New principle,
+   recorded in the Vacuity section. `null prefs still render both rows` is NOT "passes either
+   way": it is the SOLE killer of the over-suppression mutant `(prefs?.isNotEmpty ?? false)`
+   (equivalently `prefs != null && prefs.isNotEmpty`), which every other test in both suites
+   survives — and that is the natural mis-write of this very fix, warned about in the production
+   comment. It IS vacuous against the conjunct-DELETION mutant, i.e. it is a control there. The
+   earlier analysis was half right and should be corrected in the record.
+
+3. The three older flag-prop cases are NOT redundant. The rendered group passes only
+   `userAllergenPrefs`, so the entire DIETARY half of the diff
+   (`showDietaryBadges ?? userDietaryPrefs != null`) is pinned nowhere except those prop tests,
+   and `explicit badge flags override the derivation` has no rendered counterpart at all. The
+   allergen-derivation fact is now pinned twice, but the kill sets are not a strict subset, so
+   by the duplicate-test rule they stay. Adding one rendered dietary case would make
+   `badge flags derive from the preference sets` a strict subset and retirable.
+
+4. Uncovered, named: (a) `MinaReceptRecipeCard` (`lib/views/mina_recept/recipe_card_widget.dart`)
+   has ZERO tests anywhere — grep of the class name across `test/` returns nothing — so the real
+   end of the chain, `allergenPrefs.showOnCards ? trackedAllergens : null`, is unpinned; a revert
+   to passing the prefs unconditionally, or to always-null, is invisible to the whole suite.
+   (b) The GRID layout renders no badge block at all (`_buildGridLayout` has neither row), and
+   `mina_recept_view.dart` uses grid style whenever `viewModel.isGridView` — nothing asserts that
+   the derivation is deliberately a no-op there. (c) `UserAllergenPreferences.defaults` has a
+   non-empty `trackedAllergens`, so the default user does get badges post-fix; the empty case
+   BUT-1869 fixes is reachable only by unticking every allergen, and no test spans setting ->
+   card. (d) The ContentCard doc comment blesses `showAllergenBadges: true` with null prefs
+   falling back to DEFAULT allergens — i.e. a caller could override a user's "off" setting with
+   four allergens they never chose; no `lib/` caller does this today and nothing guards it.
+
+5. `RecipeBuilder` over `RecipeFactory` is the right call and the reason belongs in the record:
+   `RecipeFactory.build` has no `tagResult` parameter, so every tagging-gated render is
+   unreachable from a factory fixture. Recommended (non-blocking) that `RecipeFactory` gain
+   optional `tagResult`/`tagOverrides` — purely additive, null default, no call site changes —
+   because the wall's failure mode for the next author is a vacuously-green test, not a compile
+   error. The two suites keep near-duplicate local `taggedRecipe()` builders with deliberately
+   MIRRORED statuses (content_card: gluten contains / mjolk free; recipe_card: gluten free /
+   mjolk contains); both produce badges, so neither is at risk, but a "harmonisation" should not
+   collapse them into one shared fixture — that would couple the facade suite to the card suite.
+
+Low findings, non-blocking: the `content_card_test.dart` header still declares "Out of scope: the
+visual rendering of each specialized card", which the new group deliberately contradicts (the
+justification is inline at the group, not in the header); and both RecipeCard test NAMES say
+"and its spacer" while only the row's absence is asserted — true today because spacer and row sit
+in one collection-if, false the moment someone lifts the spacer out.
+
+Verdict: pass, 0 blocking.
+
+### 2026-08-18 — "Ej bedömd" marker, FINAL gate round (BUT-1869 / BUT-1780 follow-on)
+
+Trigger: final gate review of the staged card/tagging diff after the round grew by an
+"Ej bedömd" chip (Malin's call on the Creative Director's blocking condition), two new tests
+in `recipe_card_test.dart`, an inter-row spacing bump and three comment corrections. Files
+opened: the three widget suites, `recipe_card.dart`, `tag_result_display.dart`,
+`content_card.dart`, `app_sv.arb` + the generated `app_localizations_sv.dart`.
+
+**1. `a card with nothing to say explains itself` — non-vacuous, and for the right reason.**
+`find.text('Ej bedömd')` is a raw Swedish literal, which IS this repo's widget-test
+convention (`'Acceptera'`, `'Avvisa'`, `find.textContaining('familj' | 'alla' | '12 betyg')`,
+`'45 min · 4 port'`). Checked the standing duplicate-string trap: `grep '": "Ej bedömd"'
+app_sv.arb` returns exactly ONE key, so `find.text` is falsifiable. Cannot pass for an
+unrelated reason — `find.text` is an exact match on `Text.data`, the fixture's other Text
+nodes are the title, the description and the completeness chip, and the untagged indicator
+(the only sibling that could speak) renders 'Analys misslyckades'/'Analyseras...'.
+
+**2. `badges turned off means no marker either` — WAS vacuous for its named claim; fixed.**
+It ran on `taggedRecipe()`, which draws badges (`badgesFor` over the default set:
+mjölk CONTAINS + gluten FREE = 2). So `_allergenBadges.isEmpty` was already false and the
+marker was withheld by the SECOND conjunct; deleting `showAllergenBadges &&` would have left
+it GREEN. The parent's mutation proof (force `_showUnassessedIndicator` false) cannot see
+this — that direction can never redden a `findsNothing` test; the discriminating mutant is
+dropping the conjunct. Repaired test-side only: hoisted a shared `unassessedRecipe()` fixture,
+repointed the test to it, and added an in-test PREMISE assert
+(`CompactAllergenRow.badgesFor(...)` is `isEmpty`) so the rig can never silently drift back.
+No coverage lost: the tagged+off row-gate case it used to cover is already held at the facade
+seam by `content_card_test.dart`'s 'no preferences means no badge row'.
+
+**3. Third conjunct `!_showUntaggedIndicator` — DORMANT, not untestable.** `grep
+showAnalysisStatus lib/` returns only its own declaration and use inside `recipe_card.dart`;
+zero callers set it true, and `ContentCard` does not forward it at all. So the untagged
+indicator never speaks in production and the conjunct is a no-op today. Testable in one pump,
+but pinning it would be coverage over dead code. Resolved during the round by the parallel
+session, which documented it honestly in the getter's doc ("DORMANT ... do not read it as a
+promise that is currently being kept") — verified that claim by the same grep.
+
+**4. Copy over-assertion — 2 tests, which is the right number.** One positive, one negative,
+both in `recipe_card_test.dart`; a reword of "Ej bedömd" breaks exactly those two. Gap worth
+noting: `recipeAllergensUnassessedA11y` is asserted NOWHERE. The chip's `Semantics(label:)`
+blocks the visible Text from merging, so that string is the entire content for a
+screen-reader user, and nothing catches it being dropped or mis-keyed.
+
+**5. The finding that mattered — and the tree moving under the round.** Traced the ONLY
+production producer of card-level prefs: `MinaReceptRecipeCard` passes
+`showOnCards ? trackedAllergens : null` into `ContentCard`, which derives
+`showAllergenBadges: userAllergenPrefs != null`. An EMPTY-but-non-null tracked set (reachable:
+`untrackAllergen` down to zero, `_parseStringSet([])` returns `{}` not null, and
+`UserAllergenPreferences` models `hasTrackedAllergens` as a first-class state) therefore gave
+`showAllergenBadges: true` + `badgesFor({}) == []` ⇒ the marker fired on EVERY card, announcing
+"Allergener är inte bedömda för det här receptet" over FULLY ASSESSED recipes — a false claim
+on the app's safety-facing surface, and a direct contradiction of the widget's own doc ("Not
+shown when the user has turned badges off"). Was going to file this blocking. Mid-round a
+PARALLEL SESSION landed exactly that fix — `(userAllergenPrefs?.isNotEmpty ?? true)` plus a
+discriminating test `tracking no allergens means no marker either` (fully-assessed fixture,
+empty prefs) — so it closed as fixed rather than as a finding. Two independent gates reaching
+the same defect is the useful signal here.
+
+Collision cost, recorded because it will recur: their edit landed BETWEEN my read and my edit,
+and the merge left MY comment block sitting above THEIR test, describing a test two positions
+further down. Repaired by moving the block. Also: their `git add` swept my test edit into the
+index. Re-read every file after every such collision; `git status` twice, minutes apart, gave
+`MM` then `M ` for the same files.
+
+**6. Two broken measurement rigs in one round (the durable lesson).** Checking whether the
+staged blobs were `dart format`-clean, I twice got a confident "0 changed lines" that meant
+nothing: first because `dart format --output=none` REPORTS without writing the file I then
+diffed, and second because I had copied the originals INTO the directory being formatted, so
+the tool rewrote both sides. Only a deliberately-malformed control file
+(`void main(  ) {\n   var x=1;\n}`) exposed it — it read 0 too. With the rig fixed, both the
+staged and the worktree bytes differ from `/c/tools/flutter/bin/dart format` 3.1.3-wip output,
+i.e. that binary is NOT the repo's formatter; lefthook runs `dart format {staged_files} &&
+git add {staged_files}` with whatever `dart` is first on PATH, so the PostToolUse hook's
+reflow of ~30 pre-existing lines normalises at commit time and is noise, not a defect.
+
+Also verified during the round: the corrected `badgesFor` comment now cites commit `668a68b25`
+for when the detail view's USER-PREFS branch started filtering UNKNOWN — real commit
+(2026-02-09 ui-redesign) and it does add that exact line, so the correction of the earlier
+"has always filtered them out" claim is accurate.
+
+Measured: 107 tests green across the three suites after the repair (48 in `recipe_card_test`
+alone); `flutter analyze --fatal-infos` clean on the edited suite.
+
+Verdict: pass, 0 blocking.
+
+### 2026-08-20 — BUT-1847 review: a five-file figure with nothing pinning it (trigger: commit-gate review of a comment-only diff)
+
+Staged: `lib/services/import/layout/orphan_tail.dart`, `lib/services/feature_flags/feature_flag_service.dart`,
+`tools/corpus_split_eval.dart`, `docs/architecture/ACCEPTED_DEVIATIONS.md`,
+`.claude/rules/accepted-deviations-ocr.md`, new `docs/testing/cookbook-corpus-gold-grading.md`.
+The ticket re-graded the external cookbook corpus's `frameCut` marker 14 -> 23 entries
+(12 `fragment` / 11 `tail`) and rewrote every figure derived from it.
+
+**No logic changed — verified mechanically, not from the diff's prose.** `git diff --cached -U0`
+filtered through `grep -vE '^[+-]\s*(///|//)'` left exactly four lines, all inside a
+`StringBuffer.writeln` banner. `_tailBudget` reads 120 in BOTH `git show HEAD:` and
+`git show :` (it had been swung to 60 and 200 for the sweep). Diffing every
+`const`/`final` declaration line HEAD-vs-index across all three .dart files: identical.
+The control-char sweep (`git ls-files -z | xargs -0 grep -laP '[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]'`)
+returned exactly the one known OCR fixture — no invisible codepoints from this edit.
+
+**Test selection.** One suite was missed: `test/unit/services/feature_flags/feature_flag_service_dedup_test.dart`,
+the only test that constructs `FeatureFlagService`. Ran it with `leading_noise_test.dart`
+(which does NOT import `orphan_tail.dart` — `frame_trim_test.dart` is the file that carries
+that seam, and it was run) and `test/corpus/corpus_multi_layout_test.dart`: 26 passed.
+`test/tools/corpus_eval_core_test.dart` had been run as the tool's proxy, but it covers
+`tools/corpus/corpus_eval_core.dart` — a DIFFERENT file. **No test imports
+`tools/corpus_split_eval.dart` at all**; only `flutter analyze` guards it.
+
+**The absence worth recording.** `grep -rn frameCut test/` returns ZERO hits. The in-repo
+fixture corpus (`test/fixtures/corpus/testbok/`, 8 files, 3 recipes) carries no `frameCut`
+field, no layout JSON and no capture — so the 14 -> 23 re-grade could not have moved a
+fixture and there was no assertion to update. `_frameCutOf`, the `dropFrameCut` filter in
+`_loadPages`, the gold-vs-gold movement table and the stated invariant ("the 12 fragments sit
+on 9 pages and each keeps a non-fragment entry") are pinned by nothing but a human reading
+stdout. Not blockable on a comment-only diff, and not cheaply closeable either: the logic is
+private inside a `main()` script, so closing it is an extraction to `tools/corpus/` plus a
+temp-dir corpus test in the shape `corpus_multi_layout_test.dart` already uses.
+
+**What IS pinned:** `_tailBudget = 120` has a real boundary pair in `orphan_tail_test.dart`
+("a 119-character tail is furniture and goes" / "a 120-character tail is content and stays"),
+with a fixture comment recording why the filler is `l` and not `x` (an `x` row measures 70.0
+against a 72.41 heading bar — 3.3 % of margin living on two constants in two files). That is
+the claim a drift to 200 would redden, and it survived the sweep.
+
+**One finding, non-blocking, prose only.** The stated deltas admit two readings and only one
+reconciles with the 12/11 split now hardcoded in the tool's banner and in `_loadPages`'s
+comment. `orphan_tail.dart` says "confirmed all 14, re-labelled one (`Inlagd sill`,
+`fragment` -> `tail`) and added nine"; `ACCEPTED_DEVIATIONS.md` says "confirmed all 14,
+re-labelled `Inlagd sill` ... and added eight `tail`s and one `fragment`". Read as a relabel
+of one of the 14, fragments go 11 - 1 + 1 = 11, contradicting the 12 everywhere else. The
+arithmetic only closes because `Inlagd sill` is NOT in BUT-1818's listed 11 fragments (that
+list is in `ACCEPTED_DEVIATIONS.md` and does not name it) — it is one of the NINE ADDED, and
+was corrected `fragment` -> `tail` within BUT-1847's own pass, which
+`cookbook-corpus-gold-grading.md` states plainly ("called `fragment` on a first pass and
+corrected the same day"). Then 11 + 1 = 12 fragment, 3 + 8 = 11 tail, 23 total. Every number
+in all six files is right; two sentences describe the relabel as if it were separate from the
+nine.
+
+**Second observation, optional.** The banner strings now hardcode `23` and `12` while the
+same run computes and prints the true dropped count at `_loadPages`'s tail. Making the `12`
+derived needs the fragment count taken UNCONDITIONALLY — today `dropped` is only incremented
+when `--no-frame-cut` is passed, so the default arm has no runtime number to interpolate.
+
+Verdict: pass, 0 blocking.
+
+### 2026-08-20 — BUT-1847 RE-REVIEW after the gold re-grade: a counterfactual nobody measured (trigger: second commit-gate pass, bytes changed under the first verdict)
+
+Same seven-file batch as the 2026-08-20 entry above, re-reviewed because one gold label was
+settled the other way (`Inlagd sill` `tail` -> `fragment`, so the split moved 12/11 -> 13/10)
+and every de-biased figure was re-measured. `tasks/lessons.md` joined the diff.
+
+**"No logic changed" proved by SKELETON DIFF, not by reading the diff.** Wrote a ~60-line
+Python Dart-tokeniser to scratch that strips comments and replaces string-literal CONTENT with
+`<S>` while KEEPING `${...}`/`$ident` interpolation verbatim (that half is real code), then
+collapses whitespace. HEAD-vs-index skeletons: IDENTICAL for all three .dart files. Two
+positive controls (`_tailBudget` 120->60, `_evaluatedTuplesMaxSize` 256->512) both printed
+DIFFERS with the exact line, so the comparison is non-vacuous. This is strictly stronger than
+the previous pass's `grep -vE '^[+-]\s*(///|//)'` filter, and it is the right tool whenever a
+diff's claim is "comments and printed strings only".
+`_tailBudget` reads 120 in the index; `orphan_tail_test.dart`'s `119 goes / 120 stays` pair
+still passes (16/16 green) and reddens in BOTH directions (at 60 the 119 test fails, at 200 the
+120 test fails), so the constant is genuinely pinned, not just unchanged.
+
+**BLOCKING finding — three of the five copies price a state that was never measured.**
+`orphan_tail.dart` :126, `ACCEPTED_DEVIATIONS.md` :1167-68 and `accepted-deviations-ocr.md` :62
+all say "had the PAIR gone the other way the row would read 23 tokens instead of 9", the pair
+being `Inlagd sill` + `Mixade vitaminer`. But:
+- `ACCEPTED_DEVIATIONS.md` :1078 lists `Mixade vitaminer` inside BUT-1818's ELEVEN fragments,
+  and :1068 says BUT-1847 "confirmed all 14 unchanged" — its label was never in play.
+- `Inlagd sill` is one of the NINE ADDED, first read `tail`, settled `fragment`.
+- `cookbook-corpus-gold-grading.md` :60 prices exactly that: "9 ... with `Inlagd sill` a
+  fragment and 23 with it a tail". `lessons.md` :1959 agrees ("It moves the headline figure
+  from 23 to 9"), and the PREVIOUS review pass measured the 12/11 state at 23.
+So 23 is the measured cost of flipping ONE label. A joint flip would cost 23 + `Mixade
+vitaminer`'s own unique tokens, i.e. strictly more unless that entry contributes exactly zero —
+a coincidence nothing states. `orphan_tail.dart` :124 even opens the paragraph with "That 9 is
+sensitive to ONE borderline label" three lines above "had the pair" — the author knew.
+Repair is one clause ("had `Inlagd sill` gone the other way"), in three files.
+
+**The five-file checklist is right for four entries and wrong for the fifth.** Entry 5 is
+`corpus_split_eval.dart`, whose counts are hardcoded in two `StringBuffer.writeln` banners
+(:600-607, `13` twice and `23` twice). Verified the seam precisely: `_loadPages` :1084 reads
+`if (dropFrameCut && _frameCutOf(...) == 'fragment')`, so on the DEFAULT run Dart short-circuits
+and nothing counts anything — the `13` prints with no runtime counterpart. On `--no-frame-cut`
+the run self-checks, because :1130-35 prints the true `dropped` a few lines earlier. The
+`tail` total (23) is computed by nothing on either arm. Recommendation filed: tally
+fragment/tail UNCONDITIONALLY in `_loadPages` (one extra JSON parse per entry on an offline
+CLI that already parses each gold file twice) and interpolate. That deletes the drift class
+rather than adding it to a checklist, and makes any test of it a tautology — which is why "this
+has crossed into should-be-a-test" is the wrong call here. No test can hold the FIGURE anyway:
+`grep -rn frameCut test/` is still ZERO, and the corpus lives outside the repo under
+`BUTLERY_CORPUS_DIR`.
+
+**Second finding, non-blocking — the checklist misses a SIXTH copy.**
+`.claude/rules/lessons-digest.md` :64 is the one-liner for this lesson and still carries the
+retired item-3 wording ("When a label decides what LEAVES the denominator, the safe error keeps
+the row"), which the diff replaced with "argue it from a written criterion" — and the settled
+call went the OTHER way (`fragment`, which removes the row). Not false (the asymmetry survives
+in `cookbook-corpus-gold-grading.md` :63-65 as a last-resort tiebreak) but stale in emphasis,
+in an ALWAYS-ON file, against CLAUDE.md rule #9's same-edit sync contract. A figure-carrying
+checklist should be built by grepping the ticket id, not by listing the files you edited.
+
+**Arithmetic that DID close** (recomputed against every copy): 11+2=13, 3+7=10, 14+9=23 on 20
+pages; 13 fragments on 10 pages, 8 move (7 gained + 1 lost) + 2 wrong under both golds;
+139+6=145; 15925/17378=91.638->91.64, 16121/17611=91.539->91.54, 16118/17611=91.522->91.52,
+15916/17378=91.587->91.59, 16085/17611=91.335->91.33, 36-9=27; BUT-1818's 144 -> now 145
+because the two added fragments moved one page right; 19 pages at 200 minus 10 at 120 = the
+band's 9 tails; 7 added tails = 4 potatisratter + 1 tårt + 2 ordinary; 23-13=10 invisible to
+the generous screen. Every one reconciles.
+
+Verdict: fail, 1 blocking.
+
+### 2026-08-20 — BUT-1847 final pass: de-numbering the banner falsified the prose that justified it
+
+Trigger: re-review of the frozen 8-file staged batch after both prior findings were taken.
+Bytes verified frozen (index == worktree, all 8 hashes matched the brief).
+
+**Skeleton diff (comments stripped; run twice, once collapsing string contents and once
+keeping them).** `orphan_tail.dart` and `feature_flag_service.dart`: IDENTICAL to HEAD on
+both passes — their entire 125- and 25-line diffs are comment. `_tailBudget` confirmed
+`const int _tailBudget = 120;` (line 287), i.e. restored after the 60/200 re-measurement
+sweep. `corpus_split_eval.dart` differs by EXACTLY four hunks and nothing else:
+1. `_formatTrim`'s two banner branches — literals `14` and `11` replaced by
+   `${_frameCutCensus.fragment}` / `.tail` / `.marked`, and `tail` newly named on the
+   default branch.
+2. `class _FrameCutCensus` + `final _frameCutCensus`.
+3. `_frameCutCensus.reset();` at the top of `_loadPages`.
+4. `_frameCutOf` hoisted out of the `dropFrameCut &&` short-circuit into a local, two
+   tallies, condition rewritten against the local.
+
+Worth recording: the two REPLACED literals were themselves stale. `14` and `11` were
+BUT-1818's numbers; the grading has stood at 23 marked / 13 fragment since the BUT-1847
+re-grade. So the de-numbering repaired two live misstatements, not merely a drift risk.
+
+**Census judged on the three questions asked.** Double-count: impossible for three
+independent reasons — one call site (`main`), `reset()` at the top, and each `gold.json`
+visited once (`recipeEntries` returns flat XOR `recipe-NN/` blocks via an exclusive
+`useBlocks` branch; `books()` is a directory listing). Divergence from what
+`--no-frame-cut` drops: impossible and STRONGER than before — `dropped` and
+`census.fragment` now test the same hoisted local in the same iteration, and the census
+increments BEFORE the `continue`, so they are equal by construction; previously the typed
+`11`/`14` had no relationship to `dropped` at all, which is why they went stale. Scored
+figures: unchanged — `_frameCutOf` is pure (existsSync + read + jsonDecode, all failures
+caught to null) and nothing downstream reads the tally; `byImage`, `goldByImage`,
+`goldShortByImage`, `droppedByImage` and `_Page.frameCutDropped` are untouched. Cost is one
+extra read+parse per verified entry on default runs, on an offline CLI.
+Nuance stated to the user: the census counts VERIFIED GOLD ENTRIES corpus-wide, not entries
+on scored pages, so a fragment on a page that later drops out (no capture / empty text) is
+still counted. Correct for the banner's wording and matching the 23-of-242 denominator, and
+the pre-existing `dropped` line already had the property — but banner and headline page
+count are two populations one screen apart.
+
+"Both arms reproduce the published table" is NECESSARY BUT NOT SUFFICIENT here, and the
+reason generalises: the arm whose behaviour changed is the DEFAULT one (it now calls
+`_frameCutOf` where it previously did not), while most of the published table is the
+`--no-frame-cut` column. Reproduction alone under-tests the changed path; what closes it is
+the purity read plus the skeleton diff bounding the change.
+
+**BLOCKING FINDING (1, two sites).** De-numbering the banner falsified the prose that
+explained why the banner was safe, in the same commit, in two NEW lines (both `+` lines /
+added file — wrong on arrival, not decay):
+- `docs/architecture/ACCEPTED_DEVIATIONS.md:1158` — "reproduce unchanged, as they must: the
+  default arm never reads `frameCut`."
+- `docs/testing/cookbook-corpus-gold-grading.md:160` — "The default arm ignores `frameCut`
+  entirely, so every biased figure keeps reproducing. Only `--no-frame-cut` moves."
+Both false against the staged tool, which reads the field on every verified entry regardless
+of the flag — and `corpus_split_eval.dart`'s own comment says so explicitly ("Read
+unconditionally, so the DEFAULT arm has a count of its own too"). The grading doc also
+contradicts ITSELF 24 lines later (183-185: the banners "now COUNT the markings while the
+gold loads"). The VERDICT survives (`frameCut` still scopes the population only under the
+flag); only the stated reason is wrong. Blocking because site 1 is the document the commit
+gate names in every block message, site 2 is the runbook section governing the exact
+operation that would expose it, and shipping a fresh instance of the defect class is what
+the batch exists to retire.
+
+**Explicit NON-repair, recorded so a later sweep does not "fix" it:** `tasks/lessons.md`
+item 4 carries the same sentence and is an UNCHANGED context line in this diff. It is exempt
+by the grading doc's own decision (lines 197-198: a dated record edited to match today stops
+being one), and it was true of HEAD on 2026-08-19. Three grep hits, two repairs.
+
+**Arithmetic across the five carriers — every figure reconciles.** 11+2=13 fragment;
+3+7=10 tail; 14+9=23 marked (the split is now spelled out, closing the "two readings whose
+splits differ" ambiguity flagged in the previous round); 9+4=13 screen recovery and
+23-13=10 invisible; 19@200 - 10@120 = 9 band tails; 27+9=36 biased token cost;
+15925-15916=9 de-biased; 15925->15925 = 0 at both 60 and 120; 16121->16118 = 3 for the
+biased trim delta; 166-159 = "seven characters apart". BUT-1818's superseded de-biased
+column (15974/17441/144) is retained as history and correctly attributed rather than
+deleted.
+
+**Prior blocking finding CLOSED.** The counterfactual is repaired in all three sites
+(`orphan_tail.dart` 123-134, `accepted-deviations-ocr.md` 60-66, `ACCEPTED_DEVIATIONS.md`
+1160-1175): each now names `Inlagd sill` as the sole label ever in play, states the
+23-token state WAS measured, and marks the both-flipped state unmeasured and only bounded
+("more than 23"). The lessons-digest one-liner (the sixth stale copy) is rewritten and now
+carries the discipline rather than the retired item-3 wording.
+
+**No test owed, and the reason is now stronger than "the corpus is outside the repo".**
+The drift class is IMPOSSIBLE rather than watched — no literal remains. A test would derive
+its expectation either from the corpus (outside the repo, absent in CI) or from the census
+itself (circular determinism), i.e. a tautology either way. No seam: `_FrameCutCensus`,
+`_frameCutCensus`, `_loadPages` and `_frameCutOf` are library-private in a `tools/` script
+whose only entry point is `main(List<String>)`; reaching them is an extraction ticket that a
+6-line tally class does not pay for. `grep -rn frameCut test/` re-run: zero hits, and that
+IS the correct state. The one pinnable invariant (`census.fragment == dropped`) is true from
+one hoisted local on adjacent lines.
+Corollary reported to the user: because both `lib/` files are comment-only, the 35 passing
+tests are a CONTROL (nothing regressed), not evidence for this diff; and no test reaches the
+tool at all. The change is proven by the skeleton diff plus the purity read, not by the suite.
+
+Low, non-blocking: (a) `_FrameCutCensus`'s doc says the census "costs one already-open JSON
+parse per entry" — nothing is held open; it is a third full read+parse of the same file
+after `_isVerified` and `_goldTextOf`. (b) `orphan_tail.dart`'s library doc carries two
+different 9s ~110 lines apart — "9 tails in the 120-200 band" (19-10) and "9 real gold
+tokens" (15925-15916) — independently derived and both correct, but a reader conflating them
+gets "each band tail costs one token".
+
+Housekeeping: `testing-specialist.knowledge.md` stands at ~55K against the ~25K budget its
+own header states. Not addressed in this pass; this round's merge was kept net-neutral by
+trimming worked-example detail out of the same principle.
+
+`dart analyze` on the three Dart files: "No issues found!" — confirms the user's claim.
+
+Verdict: fail, 1 blocking (2 sites, one clause each).
+
+### 2026-08-20 — BUT-1847 round 4: the de-numbering fix's own "there are no numbers here" was the last stale sentence
+
+Trigger: fourth commit-gate pass on the frozen 8-file staged batch, after the round-3
+blocking finding was taken. Bytes re-verified frozen — all 8 `git rev-parse :<path>` hashes
+equal `git hash-object <path>` and equal the hashes named in the brief.
+
+**Method note, cost me one cycle.** The comment-stripping script written into a quoted bash
+heredoc lost a backslash (the escape-char literal collapsed to one char), so Python died
+with a SyntaxError and BOTH skeleton files came out EMPTY — which `diff` then reported as
+"IDENTICAL" for all three files, including the one that genuinely differs. An empty-vs-empty
+pass reads exactly like a clean pass. Rewrote the script with the Write tool and printed
+skeleton LINE COUNTS beside each verdict as the tell (52/52, 223/223, 819/852). This is the
+knowledge file's existing "never write a probe through a bash heredoc" rule collecting its
+second scalp; the new part is that the failure mode was a FALSE GREEN, not a crash I would
+have noticed. It bit twice in one session — the archive append below also had to move to
+the Write tool.
+
+**Skeleton diff, second run.** `orphan_tail.dart` 52/52 lines and
+`feature_flag_service.dart` 223/223 — byte-identical skeletons, so both are comment-only
+against HEAD despite 131- and 25-line raw diffs. `_tailBudget` is `const int _tailBudget =
+120;` in both HEAD and index (moved 226 -> 293 by the inserted prose, value untouched).
+`corpus_split_eval.dart` 819 -> 852: the two banner branches, `class _FrameCutCensus` (now
+with `unrecognised`), the `reset()`, the hoisted local with the if/else-if chain, and the
+new warning block. Nothing else rode along. Control-char sweep over all 8 staged files:
+clean.
+
+**Correcting my own round-3 entry.** That entry says `dropped` and `census.fragment` "are
+equal by construction". Unqualified, that is FALSE, and the user repeated it back to me this
+round as a thing to confirm. The precise statement: `census.fragment++` fires on
+`frameCut == 'fragment'`; `dropped++` fires on `dropFrameCut && frameCut == 'fragment'`.
+So they are equal **iff `dropFrameCut`**, and on the DEFAULT arm `dropped == 0` while
+`census.fragment == 13`. That inequality is the entire point of the fix — the default banner
+had no number of its own before. Verified no site conflates them: `dropped` is printed only
+inside `if (dropFrameCut)` (lines 1183-1188), and the default banner interpolates
+`_frameCutCensus.fragment`/`.tail`, never `dropped`. Generalised into the principle as: a
+hoisted tally is population-independent, so `gateCounter == tally` holds only on the gated
+arm — check the OTHER arm's banner reads the tally, not the zero counter.
+
+**The if/else-if restructure judged.** `frameCut` is one `String?`, so `== 'fragment'` and
+`== 'tail'` are mutually exclusive for EVERY input, not merely well-formed gold — a String
+cannot equal two distinct literals. Converting two independent `if`s into `if/else if` is
+therefore behaviour-identical on all inputs, and `else if (frameCut != null)` is a pure
+addition firing only where both previously incremented nothing. Stronger than the property
+the user asked me to confirm. Also checked: the census is counted BEFORE the `continue` and
+before the `layoutMode` page filters, so it is identical on both arms and across repeated
+calls — `reset()` is defensive (one call site, `main` line 222), not load-bearing. The
+warning block sits OUTSIDE `if (dropFrameCut)`, so it fires on both arms; correct, since the
+default banner now interpolates census numbers too.
+
+**BLOCKING FINDING (1, two sites): "this file now contains no grading count at all" is
+literally false, and it is the sentence that justifies a structural exclusion.**
+`tools/corpus_split_eval.dart:115` still reads "BUT-1818 graded **14** verified gold entries
+against their PHOTOGRAPHS and marked them `frameCut`" — eleven words before the same comment
+asserts "**No count is written here on purpose**" (line 117). And
+`docs/testing/cookbook-corpus-gold-grading.md:193` states "The file now contains no grading
+count at all, which is the only form of 'not a carrier' worth claiming", using that as the
+reason the tool is absent from the doc's five-file hand-carrier list.
+Swept the whole tool for surviving grading counts: three numeric hits in prose, and only
+line 115 is one (line 197's `181 -> 178` and line 349's `496 rows on these 181 pages` are
+population/row figures a re-grade does not move).
+The engineering is RIGHT and the exclusion is RIGHT: the surviving `14` is anchored to
+BUT-1818, a past event, so it cannot drift — unlike the two current-set counts that were
+removed. Only the absolutes are wrong. Fix is one qualifier at each site ("no count of the
+CURRENT set"), no code, no re-measurement.
+Blocking on the same reasoning as round 3: the doc's own lines 174-175 say "Naming only two
+of them is exactly how a stale sentence survived inside the BUT-1847 batch itself", and a
+re-grader who follows the doc's instruction and then greps `14` out of the tool has to
+re-derive from scratch whether the doc or the code is stale — the exact cost the doc was
+added to remove. Same defect class as round 3 (a sentence about code, unverified), one round
+later, in the file that exists to retire it.
+
+**The `unrecognised` counter: does it re-open the "no test owed" verdict?** Partly — the
+ROUND-3 REASONING does not cover it, though the verdict survives on a different reason, and
+conflating those is how this gets re-litigated. Round 3 argued the drift class was
+IMPOSSIBLE (no literal remains, so any test is a tautology). That argument is about the
+interpolation and does not reach a guard over MALFORMED EXTERNAL DATA:
+`else if (frameCut != null) unrecognised++` plus `if (unrecognised > 0) print` is a live
+branch with a discriminating input, i.e. watched, not impossible. The reason it still owes
+no test is STRUCTURAL: `_frameCutOf`, `_loadPages` and `_FrameCutCensus` are library-private
+in a `tools/` script whose only public top-level symbol is `main(List<String>)` (verified by
+enumeration), so `test/` cannot reach them; `CorpusPaths` (`tools/corpus/corpus_paths.dart`)
+IS public, so a tmp-dir fixture corpus is constructible and the test becomes cheap and owed
+the moment the helpers are extracted. Told the user the manual mutation probe is the
+stronger evidence here anyway, because it ran against the REAL corpus, where a synthetic
+fixture would only exercise the half that cannot break.
+
+Lows, non-blocking, reported: (a) the warning prints a COUNT and no PATH, so a grader chasing
+the typo greps the corpus by hand — the offending `goldPath` would make it one step. The
+user's report said the probe "named exactly one entry"; it named a count of one. (b) The
+warning's text generalises to "a `frameCut` value that is neither `fragment` nor `tail`", but
+`_frameCutOf` returns null for an EMPTY STRING and for any non-String, so `frameCut: ""` or
+`frameCut: true` falls in no bucket AND triggers no warning. The empty-string case is
+arguably correct (`isNotEmpty` deliberately reads empty as unlabelled, same as deleting the
+key); the non-String case is a genuine silent hole, and much less likely than the
+`"Fragment"`/`"fragmnet"` typos the inline comment at 1132-1134 correctly scopes itself to.
+(c) `.claude/rules/lessons-digest.md` carries grading figures ("14 -> 23 entries ... recovers
+only 9 of them, 13 at its most generous") and is not on the five-file list. Judged correctly
+absent: those state a past DELTA, which stays true after a third grading, unlike the five
+carriers' undated present tense. Worth one clause in the doc beside the `tasks/lessons.md`
+exemption so the next reviewer does not re-derive it.
+
+Round-3 lows all closed: the "already-open JSON parse" now reads "a third read-and-parse ...
+nothing is held open" (lines 1067-1069); the two unrelated 9s now carry "this 9 is gold
+TOKENS — not to be read against the 9 band tails ... which are pages" (orphan_tail.dart
+117-118). Round-3 blocking finding closed at both named sites —
+`ACCEPTED_DEVIATIONS.md:1160-1161` now reads "The default arm does READ the field — it
+tallies the census it prints — but nothing downstream of that tally touches a score", and
+`cookbook-corpus-gold-grading.md:162-163` reads "reads `frameCut` only to tally the census it
+prints, never to scope the population". `tasks/lessons.md` item 4 verified UNCHANGED in the
+diff, as instructed.
+
+Cross-carrier arithmetic re-reconciled on the frozen bytes: 11+2=13, 3+7=10, 14+9=23,
+13 fragments on 10 pages + 10 tails = 20 marked pages, 19@200 - 10@120 = 9 band tails,
+27+9=36, 15925-15916=9, 145-144=1. All five carriers agree on 23/13/10/145/15925/17378.
+
+Verified rather than accepted from the brief: `flutter analyze --no-pub` on the three Dart
+files — "No issues found! (ran in 115.8s)"; `flutter test` on `orphan_tail_test.dart` +
+`import_manager_orphan_tail_test.dart` — 21/21 pass. Both `lib/` files are comment-only, so
+the suite is a CONTROL, not evidence for this diff.
+
+Housekeeping, still outstanding: `testing-specialist.knowledge.md` is ~56.5K against the
+~25K its header calls a budget. Deliberately NOT split this round — the header names the real
+trigger as ~250K (where Step 0's Read degrades to grepping) and prescribes splitting
+`Vacuity patterns` out at that point, so acting at 56K would trade a working Step 0 for a
+second file no instruction tells a future run to open. This round's merge extended one
+existing BUT-1847 principle rather than adding a section.
+
+Verdict: fail, 1 blocking (2 sites, one qualifier each).
+
+### 2026-08-20 — BUT-1847 round 5 (frozen batch, 8 files): sentinel judged, one blocking doc re-parent
+
+Trigger: re-review of the staged BUT-1847 batch after round-4's blocker (the de-numbering's
+own unqualified absolute) and three lows were fixed. Bytes declared frozen; verified — all
+eight blob hashes match the brief EXACTLY and `git rev-parse :<path>` == `git hash-object
+<path>` for every one (accepted-deviations-ocr 8d680e84, lessons-digest 6daa1157,
+ACCEPTED_DEVIATIONS 791f9a72, cookbook-corpus-gold-grading 794abc16, feature_flag_service
+9593ec5c, orphan_tail 72b90c0e, lessons c66d4cda, corpus_split_eval b25184ce).
+
+**Two-pass skeleton diff.** Pass 1: comments stripped, blank-collapsed, whitespace-normalised,
+diffed against `git show HEAD:<path>`. Both `lib/` files IDENTICAL — comment-only confirmed.
+Pass 2: raw `git diff HEAD` changed lines, every one a line comment or doc comment; a grep for
+a `//` sequence inside a string literal found none that could fool the stripper. `_tailBudget`
+still `const int _tailBudget = 120;` (orphan_tail.dart:293), and its only two readers (line 90
+doc, line 356 `if (tailChars >= _tailBudget)`) unmoved.
+
+`corpus_split_eval.dart`'s code-only diff is EXACTLY the five claimed items and nothing else:
+`_FrameCutCensus` class + `final _frameCutCensus`, the `unrecognised` counter, the `offenders`
+list, the `_frameCutMalformed` sentinel in `_frameCutOf`, and the warning block — plus the
+banner interpolation that was round 3's fix. No fourth arm, no scoring change, no population
+change.
+
+**Sentinel judged (question 2), by return-table equality rather than by probe.**
+- Well-formed gold, `frameCut` ABSENT: old ternary sees `null is String == false` -> null.
+  New `if (v == null) return null`. IDENTICAL.
+- Well-formed gold, non-empty String: old returns `v`, new returns `v`. IDENTICAL.
+  So for every well-formed input the function is bit-identical and no count can move.
+- Leak check: `_frameCutMalformed` is `'<malformed>'`, which equals neither `'fragment'` nor
+  `'tail'`, so at the three comparison sites (1143, 1145, 1154) it takes the
+  `frameCut != null` arm -> `unrecognised++` + `offenders.add`, and the
+  `dropFrameCut && frameCut == 'fragment'` test stays false. Malformed rows were NOT dropped
+  before the fix (null) and are NOT dropped after. The guard is observability-only; the scored
+  population is provably unchanged.
+- Ordering, which no probe on a fixed corpus would surface: `_loadPages` (populating the
+  census) runs at main:224, `_formatTrim` (interpolating it) at main:270. Called exactly once,
+  so `reset()` is defensive only.
+- Free invariant worth more than the probe: `dropped++` and `fragment++` fire under the same
+  predicate, so on any `--no-frame-cut` run `dropped == _frameCutCensus.fragment` BY
+  CONSTRUCTION — the banner's "13 of the 23" can never disagree with the "dropped 13" line
+  printed above it.
+- Round-4's own worry discharged by reading: the DEFAULT arm's banner (613-614) interpolates
+  `_frameCutCensus.fragment`/`.tail`, not the `dropped` counter that stays 0 there.
+
+**Probe adequacy (question 3) — adequate for this batch, with two qualifications.**
+1. The reported `dropped` 13 -> 12 is NOT evidence for the sentinel. Injecting `true` over a
+   `"fragment"` label removes a fragment, and HEAD would have moved the same counter the same
+   way. The discriminator is the WARNING NAMING THE PATH, which HEAD could not print at all.
+   Cite that half, not the 13 -> 12, or a future round credits the wrong fact.
+2. The probe covers `frameCut: true` (wrong type) and not `frameCut: ""` (empty string). The
+   guard's own comment names BOTH shapes, so it is two claims with one probed; mutating the
+   `|| v.isEmpty` disjunct away survives the injection performed. Correct by inspection, so Low.
+
+**My round-4 structural claim was too strong, and I am correcting it rather than repeating
+it.** "Private helpers behind `main()` are unreachable from `test/`" is literally true of the
+symbols but wrong as a justification. `main` is public; what actually blocks a test is that
+`CorpusPaths.resolve()` reads `BUTLERY_CORPUS_DIR` from `Platform.environment`, which a
+same-process test cannot set — so the only in-repo route is a `Process.run` subprocess E2E
+over a synthetic corpus. And one directory over, `test/corpus/corpus_multi_layout_test.dart`
+ALREADY builds a synthetic corpus in `Directory.systemTemp.createTempSync` and constructs
+`CorpusPaths(tmp.path)` directly, testing `tools/corpus/corpus_paths.dart` — it works because
+those symbols are public and take the root as an argument. So the honest classification is
+"one ~10-line extraction into `tools/corpus/` away, with the fixture template already in the
+repo", not "untestable by construction". Still not blocking (observability-only guard, on a
+CLI whose input lives outside version control), but the extraction ticket should say the
+former.
+
+**BLOCKING (1): the sentinel's own declaration re-parented `_frameCutOf`'s doc comment.**
+At HEAD the three-line doc ("`fragment`, `tail`, or null. Written by hand against the
+PHOTOGRAPH...") sat directly on `String? _frameCutOf` (HEAD:932-935). The batch inserted
+`const String _frameCutMalformed = '<malformed>';` BETWEEN that comment and the function and
+appended two lines describing the const. Result at staged 947-954: the CONST carries a
+five-line doc whose first three lines describe a different symbol's return contract and
+BUT-1818's grading provenance, and `_frameCutOf` — the function — has NO doc comment at all.
+The orphaned line is also STALE for the function it was written for: `_frameCutOf` no longer
+returns "fragment, tail, or null", it can return `_frameCutMalformed`, and it is the same edit
+that made it false. Exactly the defect class rounds 3 and 4 blocked on ("the default arm never
+reads the marker"), now in code rather than prose, and introduced by this batch's own new
+declaration. Fix (two lines of motion, no behaviour): put the two sentinel lines on the const,
+and give `_frameCutOf` back a doc naming all FOUR outcomes — fragment, tail,
+[_frameCutMalformed] (present but unusable), or null (absent) — keeping the "graded from the
+PHOTOGRAPH, never inferred from the text" sentence with the function. Not applied here: bytes
+frozen, and a review pass does not edit production.
+
+**Round-3 freeze on `tasks/lessons.md` item 4: I was WRONG and the reversal was right.** The
+dated-record exemption protects a FIGURE that a later re-grade falsifies (a 2026-08-19 record
+saying 23 stays a true record after a 2026-09 re-grade). "The default arm never reads the
+marker" was not a figure going stale — it was FALSE ON ITS OWN DATE, because the batch the
+lesson documents is the batch that made the read unconditional. Both siblings
+(`ACCEPTED_DEVIATIONS.md:1160-1161` and `cookbook-corpus-gold-grading.md:162-164`) had been
+corrected, so freezing item 4 would have shipped two answers to one question inside one batch.
+The correction as landed keeps the lesson (the conclusion is still true, for a slightly
+different reason: the read exists, nothing downstream of the tally touches a score) and adds
+the parenthetical explaining that it escaped three sweeps by spelling the field "the marker".
+That parenthetical is the transferable part, and it retires my own "grep the FIELD NAME"
+instruction — which is precisely the instruction that failed.
+
+**Cross-carrier arithmetic re-reconciled on the frozen bytes** (the review a test cannot do):
+11+2=13, 3+7=10, 14+9=23; 13 fragments on 10 pages, 23 marked on 20 pages; 19@200 - 10@120 = 9
+band tails; 9+4=13 and 13+10=23 for the terminal-punctuation screen; 27+9=36 biased-token
+split; 15925-15916=9; 145-144=1; 139+7-1=145; 7+1+2=10 pages carrying a dropped fragment;
+5+2=7 new tails by mechanism; the eleven BUT-1818 fragments and three tails both count out by
+name. Percentages recompute from the raw integers: 15925/17378=91.639 -> "91.64",
+15916/17378=91.588 -> "91.59", 16121/17611=91.539 -> "91.54", 16118/17611=91.522 -> "91.52",
+15974/17441=91.59. Carrier set verified COMPLETE by ripgrep: `frameCut|no-frame-cut` hits
+exactly the five hand-carriers named in the grading doc, plus the tool and the two
+deliberately-exempt dated records.
+
+Verified rather than accepted from the brief: `dart analyze` on all three Dart files — "No
+issues found!"; a control-character sweep over all eight frozen files — clean.
+
+Verdict: fail, 1 blocking (the re-parented doc comment at corpus_split_eval.dart:947-954).
+
+### 2026-08-20 — BUT-1847 round 6: the comment-only fix re-typed the number the round-5 fix removed
+
+Trigger: re-review of the staged BUT-1847 batch. Seven of eight blobs frozen at the round-5
+hashes; only `tools/corpus_split_eval.dart` moved (`b25184ce` -> `b6df445f`).
+
+Motion check, as asked. Comment-stripped skeleton (`grep -vE '^[[:space:]]*(//|$)'` +
+trailing-whitespace strip) of both blobs: 866 lines each, md5
+`19032e79b7bb6c9fb503282cad316df0` on BOTH. Full files 1373 -> 1383 lines, so all ten added
+lines are comment. **Delta is comment-only; no behaviour rode along with the doc move.**
+`git diff --stat -- tools/corpus_split_eval.dart` empty, so index == worktree.
+
+Round-5 blocker RESOLVED. `_frameCutMalformed` (line 951) keeps only its own doc;
+`_frameCutOf` (line 959) has its contract back at 953-958, extended to four states
+(`fragment`, `tail`, `_frameCutMalformed`, null) with the PHOTOGRAPH sentence on the
+function where it belongs.
+
+Checked the two integration-reviewer clauses against the code rather than the brief:
+- "An explicit JSON `frameCut: null` is NOT one of these: it means no marking, same as an
+  absent key" — TRUE. `jsonDecode` yields Dart null for both, and `if (v == null) return
+  null` at 965 treats them identically.
+- `_frameCutOf`'s "(no key at all)" also silently covers explicit-null, missing file and
+  parse-throw. Not a finding: `_isVerified` gates and `continue`s at 1132, so from the sole
+  call site the file-missing and throw routes are unreachable, and the sibling doc names the
+  explicit-null case.
+
+**BLOCKING (1) — `tools/corpus_split_eval.dart:1147-1151` re-introduces a hard-coded count
+of the CURRENT frame-cut set, contradicting two explicit rules in its own file.**
+New text: "Equal today — all 23 markings sit on scored pages". 23 is exactly
+`_frameCutCensus.marked` (`fragment` 13 + `tail` 10, BUT-1847's live re-grade; confirmed
+against staged `accepted-deviations-ocr.md:36` "23 of 242 graded, of which 13 bias recall"
+and `ACCEPTED_DEVIATIONS.md:1054`).
+
+Against, in the same file:
+- Header line 117: "**No count of the CURRENT set is written here on purpose**" ... "so this
+  file cannot go stale against a corpus it does not contain." That sentence is THIS batch's
+  own round-N correction — the fix I graded earlier as right ("no count of the CURRENT set",
+  not a deletion). It is now false, 1030 lines below itself.
+- `_FrameCutCensus` doc, line 1079: "**Never type these counts into a string.**" Reason
+  given there: the corpus is re-graded from the photographs, a hard-coded copy makes the
+  tool misreport its own input, silently, since no test can reach a corpus outside the repo.
+  The new comment sits ~30 lines above the loop that computes the value.
+- The header's carve-out saves BUT-1818's "14" precisely because it is attributed to a
+  ticket and superseded in the same breath. The new 23 has no ticket and no date, and
+  14 -> 23 in this very batch is the proof re-grades happen.
+
+Grep for the drift class: line 1149 is the ONLY bare current-set count in the tool's
+comments. Line 380's "24 of its 25 rows" is dated in situ ("measured 2026-08-08", 379) and
+attributed to a different quantity, so it sits inside the file's own convention.
+
+Second half of the same defect, which points at the repair: the claim is not derivable from
+anything the tool prints. `dropped` is ENTRY-scoped (incremented at 1165, inside the entry
+loop, before the page filter in `byImage.forEach` at 1178) and `pages.length` is
+POPULATION-scoped, so the two numbers printed on the same line at 1211-1214 cannot settle
+the equality the comment asserts. The comment advises "Check that before quoting one against
+the other" while itself quoting a reading obtained by an unstated check.
+
+Repair, one clause, preferred form (a):
+(a) drop the number — "Equal on the current corpus — every marking sits on a scored page —".
+(b) attribute + date it the way the carve-out permits — "Equal as of BUT-1847's 2026-08-19
+    grading, when all 23 markings sat on scored pages".
+(a) is better: the file's whole thesis is re-derivability, and (b) still leaves a figure a
+reader will quote.
+
+Test-side, unchanged and correct: `grep -rn frameCut test/` returns ZERO hits. Nothing is
+owed in this commit — the census is private and reachable only through a `main()` resolving
+its data root from the environment. The extraction remains the follow-up, ~10 lines into
+`tools/corpus/`, template confirmed live at
+`test/corpus/corpus_multi_layout_test.dart:23` (`CorpusPaths(tmp.path.replaceAll(...))`).
+Comment-only delta, so nothing became testable and nothing testable became unasserted.
+
+Both round-5 corrections from the caller accepted and folded into the principle: the
+sentinel's discriminating evidence is the WARNING naming the path (an observable HEAD cannot
+emit), never `dropped` 13 -> 12 which moves at HEAD too; and the shadow-corpus probe planting
+`""`, `true` and `"Fragment"` closes the `v.isEmpty` disjunct my own probe missed.
+
+Lesson for the principles file: a correction that REMOVES a number installs a standing
+invariant the same batch can violate in a later comment-only round. Re-grep the VALUE, not
+the phrase, every round.
+
+Verdict: fail, 1 blocking (`tools/corpus_split_eval.dart:1147-1151`).
+
+### 2026-08-20 — BUT-1847 round 7: the round-6 blocker repaired as predicted, plus a doc contract that was one state short (trigger: re-review after a comment-only fix)
+
+Scope: ONE file moved, `tools/corpus_split_eval.dart` `b6df445f` -> `2a168141`. The other
+seven blobs re-hashed unchanged at the values the brief named
+(`8d680e84 6daa1157 791f9a72 794abc16 9593ec5c 72b90c0e c66d4cda`), so they carried forward
+cleared. `git hash-object` on worktree == `git show :` on index == `2a168141`; the file is
+absent from `git diff --name-only`, so index == worktree. Frozen as stated.
+
+Comment-only, PROVEN not assumed: stripping every line whose first non-space is `//` or
+`///` and every blank line leaves 866 code lines on BOTH blobs, byte-identical under
+difflib. The raw unified diff is two hunks and every changed line in both is a comment.
+`dart analyze tools/corpus_split_eval.dart` — No issues found.
+
+**Blocker cleared, repair (a) as recommended.** The undated live `23` at old-1147..1151
+("Equal today — all 23 markings sit on scored pages") is gone. The clause now reads "Equal
+on the current corpus — every marking sits on a scored page" and then states the thing the
+round-6 entry identified as the second half of the defect: "nothing the run PRINTS can
+settle it: the dropped count is entry-scoped and the page count population-scoped. Check it
+directly before quoting one against the other. (No count written here on purpose, for the
+reason the file header gives.)" That underivability re-verified from the source this round:
+`dropped` increments per ENTRY at 1173 and equals `_frameCutCensus.fragment` by construction
+on any `--no-frame-cut` run (same loop, same `_isVerified` gate), while `pages.length`
+(1221) and each arm's `scored` are PAGE-scoped, and `moved.length` in `_formatTrim` is pages
+carrying >=1 dropped fragment — so no printed pair can decide entry-vs-page equality. The
+comment's stated reason is exactly right.
+
+Re-grepped the VALUE, not the phrase, per the round-6 lesson. Every number and every
+spelled-out number in every comment line enumerated by script. `23`, `242`, `13`, `10` as
+bare tokens: zero hits outside `take(10)` code literals. The survivors are all inside the
+file's own convention — `14` (BUT-1818, attributed and declared superseded in situ, header
+115/118); `0 of 247 ... 34` (dated 2026-08-08 with "the corpus is live, so date any count
+taken from it" one line above); `24 of its 25` / `62` (dated 2026-08-08, 379-385);
+`181 -> 178` and "BUT-1818's three `tail` entries" (197-199, attributed and scoped to an
+earlier DRAFT, not to the current set — the current tail count is 10 per
+`ACCEPTED_DEVIATIONS.md:1066`); `150/177/151/237/233` (the line-count retractions, each
+named as wrong); `139 -> 139` (518, an illustrative aggregate); `91.56 -> 91.54` (1001);
+"all ten tails" (523, the trimmed-page set, not the census). None is a bare current-set
+frameCut count.
+
+Cross-checked the surviving qualitative claim rather than taking it: "every marking sits on
+a scored page" is corroborated by `ACCEPTED_DEVIATIONS.md:1066` ("23 marked entries on 20
+pages") and 1139 ("No page is ALL fragment ... worth re-checking after any re-grade"),
+against the 181-page population. So the assertion is checkable at the record even though it
+is not derivable from the tool's output — which is what the comment now tells you to do.
+
+**The `_frameCutOf` doc contract, graded by RUNNING it.** Old text: "`fragment`, `tail`,
+[_frameCutMalformed] ..., or null ... **Four states, not three**". It reads exhaustive and
+is one short — the PASS-THROUGH return (`return v` for any non-empty String) is the state a
+hand-graded typo lands in, and it is the state the sentinel exists to make visible. New text
+enumerates "ANY OTHER non-empty string verbatim (a hand-graded typo such as `Tail` — the
+census buckets it as unrecognised)", drops the count, says outright that `else { /* absent
+*/ }` at a call site is how a typo disappears into the absent bucket, and records that the
+sole caller tests `!= null`.
+
+Verified with a scratchpad replica (`frame_cut_probe.dart`, function body byte-copied from
+2a168141 + the caller's 1161-1171 chain, run under `dart run`, deleted after), 13 real
+temp-file inputs:
+
+    fragment          -> "fragment"     bucket=fragment
+    tail              -> "tail"         bucket=tail
+    "Tail"            -> "Tail"         bucket=unrecognised   <- verbatim, caught by != null
+    "fragmnet"        -> "fragmnet"     bucket=unrecognised
+    ""                -> "<malformed>"  bucket=unrecognised
+    true / 3 / [list] -> "<malformed>"  bucket=unrecognised
+    explicit null     -> null           bucket=absent
+    key absent        -> null           bucket=absent
+    unparseable       -> null           bucket=absent
+    top-level list    -> null           bucket=absent
+    file missing      -> null           bucket=absent
+
+Both of the caller's asks confirmed: a non-empty non-`fragment`/`tail` string IS returned
+verbatim, and it IS caught by the caller's terminal `!= null`. Sole caller confirmed by
+repo-wide grep — `_frameCutOf` appears at its declaration (963), in one prose mention (1149)
+and at exactly one call (1160).
+
+Third hunk change: "Tallied per VERIFIED ENTRY (this sits below the `_isVerified` gate)".
+Accurate — the loop's first statement is `if (!_isVerified(entry.goldPath)) continue;`
+(1136), the census runs at 1160-1171, and the page-level drops happen later in
+`byImage.forEach` (1186+). The old "corpus-wide" was one axis short exactly as the caller
+described.
+
+Not filed, deliberately, and recorded so a round 8 does not re-file them:
+- The `_frameCutOf` doc's null list ("no key, no file, or nothing parseable") omits an
+  explicit JSON `frameCut: null`. Not a falsehood, and the `_frameCutMalformed` doc five
+  lines above states that case explicitly ("is NOT one of these ... treated so"), which the
+  new text links into. Omission covered by the adjacent doc; not worth a round.
+- "Equal on the current corpus" is still a claim a reader in three months will read as
+  theirs. It is immediately followed by "Check it directly", so the comment does not invite
+  trust, and it was the repair I asked for. Re-filing it would be the retry loop the rules
+  forbid.
+
+Test side unchanged from round 6 and still correct: `grep -rn frameCut test/` is ZERO hits,
+nothing is owed on a comment-only delta, and the census stays unreachable from a test while
+it lives in a `main()`-rooted private helper. The extraction into `tools/corpus/` remains
+the standing follow-up, template at `test/corpus/corpus_multi_layout_test.dart`.
+
+Lessons for the principles file: (1) removing a stale figure is half a repair — the other
+half is naming what the run cannot print, or it gets re-derived and re-typed, which is
+precisely what happened between rounds 5 and 6; (2) an enumerating doc comment is a claim
+with a vacuity mode of its own, and the missed state is the pass-through return; (3) a
+13-case scratchpad replica of function + caller chain grades a private `tools/` return
+contract in ~30 seconds, which is the only instrument available there.
+
+Verdict: pass, 0 blocking.
+
+### 2026-08-20 — BUT-1847 round 8 (final): my round-7 "underivable" confirmation was too broad
+
+Trigger: reviewer disagreement resolved against me. In round 7 I confirmed a census comment's
+claim that "nothing the run PRINTS can settle" whether a `frameCut` marking sits on a scored
+page, reasoning that `dropped` is entry-scoped and `pages.length` population-scoped — true of
+that PAIR, which is the pair the sentence named. The integration reviewer found a third printed
+artifact: `_formatTrim`'s `--no-frame-cut` gold-vs-gold movement table, whose per-page
+`gold biased -> now` deltas each equal that page's `frameCutDropped`. Summed, they equal
+`_frameCutCensus.fragment` exactly, and the sum is monotone (each page appears at most once in
+the id-keyed map, and every non-admitted page contributes 0), so a fragment on an unscored page
+can only make the sum SHORT — visibly. Print therefore settles the FRAGMENT half. It does not
+settle the TAIL half: `frameCutDropped` increments only for fragments, tails are never dropped,
+so no per-page tail information is printed anywhere. The shipped narrower wording is correct and
+I withdraw the round-7 confirmation of the broad form.
+
+Lesson: when grading a "nothing printed can settle this" claim, enumerate every printed artifact
+in the file (banners, per-page lists, JSON summary keys), not just the counters the sentence
+cites. A claim about the absence of evidence is a claim about a whole output surface.
+
+Also verified this round (hashes pinned, index == worktree):
+- `tools/corpus_split_eval.dart` `2a168141` -> `0fb8231c`: comment-only. Proved by stripping all
+  `//` and `///` lines from both blobs and diffing — identical. +7 lines, both hunks prose.
+- `_frameCutOf`'s new contract paragraph checks out against its ONE caller (line 1167): the
+  else-if chain matches `'fragment'`/`'tail'` by equality and its FINAL limb tests `!= null`,
+  so a hand-graded typo (`Tail`) lands in `unrecognised`; `_frameCutMalformed` (a non-empty
+  sentinel string) lands there too. The five-state return list is complete against the body.
+- `_tailBudget` still `120` (`lib/services/import/layout/orphan_tail.dart:293`).
+- Seven cleared blobs unmoved at the stated hashes.
+
+Non-blocking wording note filed, not re-filed as a defect: "the movement table's page count and
+its per-page gold deltas both reconcile against the banner's fragment count" is true of the
+DELTAS (sum == 13 on the reproducing arm) but the page COUNT is 10, not 13 — rows are <= the
+fragment count because a page can carry two. An equality reading of "page count reconciles"
+would be false; the pairing reading is true.
+
+### 2026-08-20 — BUT-1847 round 6: the one file a passing round told me to take as cleared
+
+Trigger: user correction. A prior round of mine ended `pass` while treating the batch's
+unchanged files as cleared on instruction, so the commit gate recorded them as reviewed
+without my having opened them. Re-review of exactly one file, in full:
+`lib/services/feature_flags/feature_flag_service.dart`, staged blob `9593ec5c`.
+
+Bytes confirmed frozen and comment-only, re-derived rather than accepted from the brief:
+`git rev-parse :<path>` == 9593ec5ce6869b81ba323a9b0578a19bb25ae9fc; skeleton (comments
+stripped, blank lines dropped, whitespace removed) md5 IDENTICAL staged-vs-HEAD
+(a359888cc07686e5f8133cafb58436d1); 25 raw diff lines, every one prefixed `//`; staged blob
+== worktree bytes modulo CRLF. No control characters. `flutter analyze --no-pub` on the
+file: "No issues found! (ran in 105.8s)".
+
+Cross-carrier arithmetic re-reconciled on the frozen bytes, against `orphan_tail.dart`,
+`ACCEPTED_DEVIATIONS.md:1020-1241`, `accepted-deviations-ocr.md` and
+`docs/testing/cookbook-corpus-gold-grading.md` (which names this file as hand-carrier #4):
+11+2=13 fragment, 3+7=10 tail, 14+9=23 of 242 verified; 13 fragments on 10 pages, exactly
+ONE (`Mandelforell`) on a page the shipped 120 budget trims; `--trim --no-frame-cut`
+15925 -> 15925 of 17378; blocks 139 -> 145 between golds, trim's own delta 139 -> 139 and
+145 -> 145; 200-budget 15925 -> 15916 = 9 real gold tokens and 145 -> 144. Every figure in
+the staged comment agrees with all four siblings. "Both are floors rather than counts"
+survives the exhaustive image grading as a deliberate conservatism, stated identically in
+ACCEPTED_DEVIATIONS, and its direction is safe (an unfound fragment only makes the trim look
+worse).
+
+Mechanism claims in the same block spot-verified rather than trusted, since the ask was
+"nothing false or stale": `fetchAndActivate` has exactly TWO call sites in `lib/`, both in
+this file (202 is the comment itself); `layout: useLayout ? raw?.layout : null` present
+verbatim at `lib/services/ocr_extraction_service.dart:574` (the file is at `lib/services/`,
+not `lib/services/ocr/` — the comment claims no path); `_layoutEnabled`, `withoutFrameNoise`,
+`matchesLineCountOf`, `orphanTailCutRow` all live; `_tailBudget`=120, `_leadingBudget`=60
+(read at `leading_noise.dart:193`, with the `_looksLikeRecipeContent` refusal the comment
+credits), `_minLayoutBlockChars`=200; `MaintenanceModeGate` returned from inside
+`MaterialApp.builder` at `lib/app/butlery_app.dart:757`.
+
+No test is owed: comment-only delta, and `grep -rn frameCut test/` is still ZERO hits by
+design — the in-repo fixture corpus carries no `frameCut` field, so there was never an
+assertion to move. The three suites that could redden here are a CONTROL, not evidence.
+
+Two Low, non-blocking findings, both created by WHERE the new sentence was inserted rather
+than by what it says:
+(a) "**Two of the nine are `frameCut: fragment`**" — "the nine" has no antecedent anywhere in
+this file (`grep "9 tails|nine tails"` is empty); both siblings write "of the nine tails in
+the 120-200 band". Worse here than elsewhere because the SAME sentence ends "priced at 9 real
+gold tokens", and `orphan_tail.dart:117-118` carries an explicit warning against reading those
+two nines against each other (a Low I filed on that file in an earlier round, since repaired
+there). The conflation now has two adjacent sentences to live in, not ~110 lines.
+(b) The insert was pushed ABOVE the standing retraction "(An earlier version of this line
+called those tails 'subheadings inside a recipe' ... wrong on both examples it named.)". The
+two examples that retraction means are `I stället för sås` and `Chokladkräm`
+(ACCEPTED_DEVIATIONS:1196-1198); the pair now sitting immediately before it is `Mixade
+vitaminer` / `Inlagd sill`. Nothing false — but a reader attaches "both examples it named" to
+the pair just named.
+Neither is blocking: no statement in the file is false or stale.
+
+Verdict: pass, 0 blocking.
+
+### 2026-08-20 — BUT-1897 / BUT-1891 commit-gate review, TESTING batch A (three claims probed)
+
+Files: `lib/core/exceptions/permission_exceptions.dart`, `lib/core/utils/log_sanitizer.dart`,
+`lib/core/utils/logger.dart`, `lib/core/utils/swedish_decimal_input.dart` and the two staged
+suites. All 81 tests green across the four related suites; `flutter analyze --fatal-infos`
+clean on all six files.
+
+Probe method: whole-class scratchpad replica (regexes and `toString()` bodies copied
+verbatim), run under `dart run`. `lib/` is STAGED, so no mutant was written there. A parallel
+session overwrote the first probe file mid-round — results were already captured; re-probed
+under a session-unique filename rather than contesting the file.
+
+**Claim 1 — "removing `LogSanitizer.maskIdentifiers(...)` from the toString methods reddened
+4 cases." Measured: TRUE only at single-class scope.**
+
+    A: shipped fix (lookarounds)  [control]: 0 RED of 24
+    C: mask removed entirely      [family]:  8 RED of 24
+       uid in userId field / uid in MESSAGE / uid in resource PATH /
+       DM conversation id hashed / subclass masks in its own right /
+       uid in COMPOSITE document id / SVE masks details / AUE masks details
+    mask removed from PermissionDeniedException ALONE:  4 RED
+       userId field, MESSAGE, resource PATH, COMPOSITE
+
+So the number is right for one class and understates the family by half. Per-class mutant
+map: PermissionDenied 4 killers, StaleAccessControlBase 1, ResourceNotFound 1,
+SecurityViolation 1, Authentication 1, **ValidationException 0**.
+
+`ValidationException.toString()`'s masking call is DELETABLE-GREEN. Its five tests are exact
+literals over short tokens plus `isNot(contains('@'))` on
+`value: '<an email address>'` — and that one is satisfied by `Value: <String>` alone,
+i.e. by the type-description branch, not by the mask. Remedy is one fixture:
+`ValidationException('Ogiltig mottagare $uid', field: 'recipient')` asserting
+`isNot(contains(uid))`.
+
+**Claim 2 — "`maskIdentifiers` has no test in `log_sanitizer_test.dart`; covered indirectly."
+Confirmed and judged NOT a real gap today, with a named decay path.** `grep maskIdentifiers
+test/` returns zero. Coverage runs through `AppLogger.sanitizeForCrashlyticsForTesting`, a
+one-line `@visibleForTesting` delegate, whose suite pins the whole regex contract by exact
+value: 19/20/28/29 boundaries, `replaceAllMapped` all-occurrences, the `redirect_` left
+boundary, group-id passthrough, and both rules on one message. That is CONTRACT coverage
+through a pass-through, not the wiring-only case the "covered via a caller's verify()"
+principle warns about. Decay path: the regex contract for a PUBLIC `LogSanitizer` API is held
+entirely in another class's file, and `web_error_reporter.dart` is now a THIRD caller — if
+`_sanitizeForCrashlytics` is ever re-inlined, the logger suite follows the logger and
+`maskIdentifiers` is left with only `isNot(contains(uid))` assertions, which see none of the
+boundaries.
+
+Verified the `\b`→lookaround change breaks no existing assertion: all ten logger_test cases
+re-derived. `redirect_<28>_<28>` DOES change output (now `redirect_aBcD***_zZyY***`, was
+untouched) but its test only asserts `isNot(contains('#'))`, so it is blind to it — safe
+direction, weak assertion.
+
+**Claim 3 — "the composite case fails without the lookaround fix." Measured: TRUE, and it is
+the sole guard repo-wide.**
+
+    B: pre-fix \b uid rule: 1 RED of 24 — "uid inside a COMPOSITE document id"
+    fixed:    User AbCd*** may not read WeeklyMenuPlan AbCd***_2026-W34
+    boundary: User AbCd*** may not read WeeklyMenuPlan AbCdEfGhIjKlMnOpQrStUvWx1234_2026-W34
+
+No logger_test or log_sanitizer_test case reddens under `\b`. Note the fixture is
+over-determined (the message carries a bare uid AND the composite); it is only the composite
+copy that discriminates, and the bare case is isolated by a sibling test, so acceptable.
+
+**Independent findings on `swedish_decimal_input.dart` (new file, my batch).**
+
+Live-path check passed — `shopping_item_dialogs.dart` passes
+`inputFormatters: const [SwedishDecimalInputFormatter()]` explicitly, and `StyledInput`
+resolves `inputFormatters ?? (number ? digitsOnly : ...)`, so the explicit list REPLACES the
+implicit `digitsOnly` that caused BUT-1891. The fix is wired, not dead.
+
+Domain gaps the fixture list cannot see (measured, `double` domain, no `maxLength` on the field):
+
+    0.00000015 typed -> stored 1.5e-7 -> formatSwedishDecimal -> "1,5e-7"
+        -> retyped through the formatter -> "1,57"   SILENT WRONG NUMBER
+    1e21   -> round() SATURATES -> "9223372036854775807"  (no throw)
+    infinity -> THROWS "Unsupported operation: Infinity or NaN toInt"  (crash in build())
+    NaN    -> "NaN", parses back to null
+
+`double.tryParse` of ~310 digits returns Infinity and the field caps nothing, so
+`formattedAmount` (`unified_shopping_item.dart:437`) can throw during render. The exponential
+case is the same CLASS of defect the file's own comment names ("a wrong number the user
+cannot see, which is worse than a refusal"), reached by ordinary typing.
+
+Caret comment measured false for its fixture: `1x5` at offset 2 gives counted=1, **delta=1**,
+naive=2. The test discriminates the naive strategy only; counted and length-delta separate
+only when a character is dropped AFTER the caret (`1x5y` at offset 2: counted=1, delta=0).
+
+Verdict: pass, 0 blocking. Findings filed Medium (ValidationException mutant gap, decimal
+domain) and Low (caret comment, `redirect_` assertion weakness).
+
+### 2026-08-20 — BUT-1895/BUT-1891 batch C commit-gate review (grid badges, showOnCards, UNKNOWN filter, shopping dialogs)
+
+Trigger: commit-gate TESTING review, 7 staged production files + 5 suites. Four claims were
+handed to me to CHECK rather than accept. All four hold; one is understated in a source
+comment.
+
+**Claim 1 — the geometry group's asymmetric per-width limit.** The group imports
+`AppDimensions.recipeGridAspectRatio` (test line 294) rather than restating the formula, so
+a retuned factor cannot leave it green against a stale copy. It pins `cleanUpTo: 2.0` for a
+360dp phone and `1.0` for a 320dp phone, skipping the rest with `continue`.
+
+I did not take the comment's word for the asymmetry. Probe: a throwaway
+`test/widget/recipe/zz_tmp_probe_grid_residual_test.dart` running ALL ten (width x scale)
+combinations and printing CLEAN/OVERFLOW instead of asserting, deleted in the same Bash
+call (`git status --porcelain test/widget/recipe/` afterwards shows only the staged file).
+Measured:
+
+    360dp @ 1.0 1.3 1.5 1.75 2.0 -> CLEAN (all five)
+    320dp @ 1.0                  -> CLEAN
+    320dp @ 1.3 1.5 1.75 2.0     -> OVERFLOW
+
+So the limit is a MEASURED boundary, not a shaped one, and the single executed 320dp case
+sits exactly on the flip point (clean at 1.0, dirty at 1.3) — the strongest one case
+available. Verdict: honest coverage.
+
+What it does NOT hold: the residual is un-pinned in the reverse direction. If someone
+retunes the 0.25 factor so 320dp goes clean at 1.5, nothing reddens and nothing tells them
+to raise `cleanUpTo`. Offered (not required) an xfail-style arm asserting the skipped
+scales still overflow.
+
+**Claim 2 — the `showOnCards` mutation probe.** Not re-run (the file is staged, and a
+`lib/` mutant is refused by the auto-mode classifier). Confirmed by construction instead,
+tracing the whole chain: `recipe_card_widget.dart:53` `allergenPrefs.showOnCards ?
+trackedAllergens : null` -> `content_card.dart:221` `showAllergenBadges ?? userAllergenPrefs
+!= null` -> `RecipeCard._allergenBadges` non-empty on the `assessed()` fixture (gluten FREE
++ mjölk CONTAINS) in BOTH the detailed and the new grid layout. Deleting the gate makes the
+prefs non-null, which makes `showAllergenBadges` true, which draws the row — so both "off"
+cases redden necessarily. Claim stands.
+
+**Claim 3 — the UNKNOWN case's rewrite.** Confirmed. `_getAllergensToShow` on the
+user-prefs branch filters `!= TriState.unknown`; deleting that filter returns `['gluten']`,
+which builds an `AllergenStatusBadge` with UNKNOWN status, so `findsNothing` on the BADGE
+TYPE goes red. The first version asserted on `check_circle_outline` / `warning_amber` and
+was deletable-green because UNKNOWN renders a THIRD icon (`help_outline`) — a textbook
+sibling-branch short-circuit. The added settled-FREE control (same allergen, same tracked
+set) is what stops the negative passing against a row that draws nothing at all.
+
+**Claim 4 — field text AND saved value.** Holds for the comma path on both dialogs
+(`'the comma is still in the field after typing it'` + `savedArgs()[#amount] == 1.5`; edit
+side: `'a stored decimal prefills with a comma'` + `#quantity == 0.5`). ONE gap: the test
+named `'a typed period is shown back as a comma and saved as a decimal'` asserts only the
+save — the "shown back as a comma" half is unasserted at this call site. Not a hole, since
+`swedish_decimal_input_test.dart:38` pins `typed('1.5') == '1,5'` at formatter level and the
+comma case already proves the formatter is wired here; filed Low.
+
+**Vacuity seam found (the one I was asked for).** The geometry cases assert
+`expect(tester.takeException(), isNull)` with no premise assertion that the tile actually
+rendered the allergen row. An empty or collapsed tile satisfies "no overflow" for free, so
+a regression in `ContentCard`'s `showAllergenBadges ?? userAllergenPrefs != null`
+derivation would turn the whole geometry group green while measuring the wrong tile. The
+premise is guarded in two OTHER files this batch (`mina_recept_recipe_card_test`, and the
+first group of the same file), which is why this is Low rather than blocking — but a suite
+should not borrow its own premise from a sibling file. One line
+(`expect(find.byType(CompactAllergenRow), findsWidgets)`) closes it.
+
+**Documentation finding, Medium.** `app_dimensions.dart:622` says "Both ends are covered by
+the geometry cases", and the KNOWN RESIDUAL paragraph above it names only the 2x clamp /
+iOS-3x residual. The nearer residual — a 320dp phone clipping from 1.3x, which is an
+ordinary user at an ordinary text size — is stated accurately in the TEST file (with
+BUT-1911) and not in the source file a reader of the formula will open first. "Covered"
+reads as "proven clean" and is true only of the 360dp end.
+
+**Checks that came back clean.** `gridAspectRatio` (0.75) has no other consumer, so no twin
+surface was left behind by the fix. `AllergenStatusBadge.coveragePercent` has zero
+constructing call sites in `lib/` exactly as its new doc claims — every other
+`coveragePercent` hit is the same-named getter on `TagResult` or an unrelated local, which
+is the trap the doc explicitly disambiguates. `formattedAmount`'s switch to a decimal comma
+reaches only display/export consumers (`displayText` is never re-parsed anywhere in `lib/`).
+Both new suites use `RecipeBuilder().withTagResult(...)`, not `RecipeFactory.build`, so the
+badge rows are genuinely reachable. No structural/topology asserts, no hardcoded theme
+colours, no `Future.delayed`, no concrete `@override` on a `Mock`.
+
+Runs: 27 tests green across the three badge suites; 126 green across the shopping dialog,
+styled-input, model and formatter suites.
+
+Verdict: pass, 0 blocking. Findings filed Medium (the "both ends are covered" sentence) and
+Low (geometry premise assertion, unasserted period-to-comma field half, list-mode
+tablet/desktop grid unexercised).
+
+### 2026-08-20 — BUT-1897 confirming pass: the family is pinned, the "removed" false comment was not removed
+
+**Trigger:** re-review of `lib/core/exceptions/permission_exceptions.dart` +
+`test/unit/core/exceptions/permission_exceptions_test.dart` after three reported landings.
+
+**Probe (six mutants, one per `toString()` mask call, backup + signal-safe restore, md5 verified):**
+every mask call is killed. `PermissionDeniedException` -> 4 red (userId field / uid in MESSAGE /
+uid in resource PATH / COMPOSITE `<uid>_<weekKey>`); `StaleAccessControlBaseException`,
+`ResourceNotFoundException`, `SecurityViolationException`, `AuthenticationException`,
+`ValidationException` -> exactly 1 red each. Baseline 28/28 green; analyze clean.
+The ValidationException case the previous round asked for (`'Ogiltig mottagare $uid'`) reproduces
+the reported result exactly: 1 red where the class previously had 0.
+Note the subclass does NOT redden under the parent's mutant — it overrides `toString()`, so the
+two mask calls are independently pinned, which is what the "in its own right" test buys.
+
+**Finding (blocking):** claim 2 of the brief — removal of the false sentence
+"has the most throw sites of the family" about `SecurityViolationException` — did NOT land.
+The string is live in BOTH `permission_exceptions.dart:241` and
+`permission_exceptions_test.dart:187`, in the worktree AND in `git show :<path>` (staged).
+Measured throw sites: SecurityViolation 20, PermissionDenied 90, ResourceNotFound 30,
+Authentication 23, Validation 9, StaleAccessControlBase 1. The claim is false for the family
+and the test-file copy repeats it as the test's stated justification.
+Why the motion check missed it: the file legitimately MOVED for the other two edits (the
+`final body = ...` rewrite), so hash/mtime/diff-vs-HEAD all say "reviewed bytes are new".
+A reported removal needs the removed STRING grepped, in both worktree and index.
+
+**Tooling trap (cost me two runs):** patching a probe script's `subprocess.run` line through
+`sed` wrote a literal TAB and FORMFEED for `\t`/`\f` in the Windows path — the digest's
+"edit through another language inherits its escape rules" lesson, hit in the scratchpad rather
+than in source. The repair then truncated because Python's `str.splitlines()` ALSO splits on
+`\f` (0x0c), so the matched "line" was only the fragment before it. Rewrite the whole script;
+use forward slashes for Windows paths in Python. `flutter` on PATH is a bash script — Python's
+`subprocess` needs `C:/tools/flutter/bin/flutter.bat`.
+
+**CORRECTION (same round, ~25 min later): the finding RESOLVED ITSELF while I was verifying it.**
+A parallel session landed the comment fix in the WORKTREE mid-round — first the production
+file, then the test file, between two of my own greps, so one grep printed the claim present
+in both files and the next printed it absent. The staged copies still carried it at that
+moment. Final worktree state: absent from both; replaced with "over 170 in `lib/`, measured
+2026-08-20", which matches my count (90+30+20+23+9+1 = 173). Suite 28/28, analyze clean on the
+new bytes; the deltas were comment-only, so the six mutant results measured on the older bytes
+still hold.
+Two things this sharpens: (1) the removal check must be re-run AT VERDICT TIME, not at read
+time — the answer changed twice inside one round; (2) worktree-vs-index is a real split here,
+so state WHICH copy a finding is against, since the parent commits the INDEX.
+Also: my probe held the production file for ~25s across six mutants while another session was
+writing it. It restored to the bytes it read, so a concurrent write in that window would have
+been silently reverted. Nothing was lost this time (their edit landed after my last restore),
+but a `test/`-side probe would have avoided the exposure entirely.
+
+### 2026-08-20 — Commit-gate TESTING review, batch B (BUT-1897 masking, BUT-1883 comment correction, `_scrubStack`)
+
+Trigger: commit-gate review of four staged production files plus one staged test file —
+`message_deletion_module.dart`, `message_query_module.dart`, `web_error_reporter.dart`,
+`conversations_viewmodel.dart`, `web_error_reporter_test.dart`.
+
+**Probe method.** Scratchpad replica (probe ladder step 2, no repo writes) of
+`WebErrorReporter._scrubStack` + `LogSanitizer.maskIdentifiers`, `scrubPii` stubbed to the
+identity after reading `pii_scrubber.dart` and confirming none of the fixtures carry an
+email/personnummer/phone/address/relation-name shape. Four regex variants compared per
+fixture: `full` (shipped), `noV8` (`at \S` alternative deleted), `dartV8` (the `fn@url`
+alternative deleted), `maskAll` (mask the entire stack, no split).
+
+Measured output, the two rows that decided the review:
+
+    --- test4 head + dart frame ('#0      MessagingService.send ...')
+      full     : StateError: conversation direct_#HASH is gone | #0  MessagingService.send (...)
+      maskAll  : StateError: conversation direct_#HASH is gone | #0  MessagingService.send (...)
+
+    --- UNTESTED v8 shape ('    at AllergenPreferencesViewModel.build (http://...)')
+      full     : Error: conversation direct_#HASH is gone |     at AllergenPreferencesViewModel.build (...)
+      noV8     : Error: conversation direct_#HASH is gone |     at Alle***.build (...)
+
+Finding 1 (Medium, fixed): test 'but the stack HEAD is masked' was byte-identical under the
+whole-stack mutant. `MessagingService` is 16 characters, below the identifier rule's {20,28}
+window, so it survived masking for a reason unrelated to the split — while the assertion's
+own `reason:` read "masking the head must not cost the frames", the one thing that fixture
+could not show. Repaired by swapping the frame identifier to
+`AllergenPreferencesViewModel.build` (28 chars); `maskAll` then renders `Alle***.build` and
+the assertion reddens. The author's stated probes ("masking the whole stack reddens one",
+"never masking the head reddens one") were both true — of tests 2/3 and of test 4's *uid*
+assertions respectively — which is exactly how the third assertion's vacuity survived a
+mutation round: a stated red count must name WHICH assertion it reddened.
+
+Finding 2 (Medium, fixed): the frame splitter's doc comment enumerates three stack spellings
+and only two were pinned. `noV8` reddened nothing in the suite as staged. A V8 frame line
+carries no `#0 ` and no `@`, so deleting `at \S` makes `indexOf` return -1 and the WHOLE
+trace is treated as message head — every frame mangled on Chrome and Edge, the majority
+browser, i.e. the largest-traffic case was the unpinned one. Added
+'a V8 (Chrome/Edge) trace keeps its frames too', which also pins the head-mask on that shape.
+The mirror probe (`dartV8`) confirmed the author's Firefox claim: exactly one of the two
+added alternatives was pinned.
+
+Finding 3 (BLOCKING, fixed): `message_query_module_test.dart`'s poll-hydration group header
+still carried, verbatim, the sentence BUT-1883 exists to correct — "makes `closePoll` resolve
+every poll to its first option". Verified false against the code, not reasoned:
+`MessagingService._resolveWinner` ends `if (best == null || best.voteCount == 0) return null;`,
+so an unhydrated poll writes no plan at all. Both `lib/` copies were corrected in this batch;
+the third copy sat in the suite that COVERS the corrected file. The false version had already
+cost a ticket specifying a guard against a state the code cannot enter. Rewrote the header
+with the corrected mechanism (display harm: close button drawn over "0 röster", close re-reads
+on its own uncapped path and resolves the real winner). The neighbouring comment at the
+`getMessage` hydration test ("closePoll reads the poll through getMessage and picks the winner
+by vote count") is TRUE and was kept.
+
+Finding 4 (Medium, NOT fixed — pre-existing, reported): `ConversationsViewModel.leaveGroup`'s
+`firstWhere(..., orElse: () => throw StateError(...))` branch has no test at all — not the
+masking, not the behaviour. Seven `leaveGroup` calls in the suite, every one against a loaded
+id. Cheap to close: call `leaveGroup('unknown')` on a VM whose stream never emitted, assert
+`isFalse` + `verifyNever(removeMember)`. The sprint brief called these throws "hard-to-reach";
+the branch is trivially reachable, what is unreachable is OBSERVING the masked string.
+
+Verdicts on "is a masking test owed" (asked explicitly by the brief):
+- `MessageDeletionModule` — NO. Verified no `lib/` caller (`deleteAllMessagesForUser` exists
+  only on the module, the repository facade and the interface; the production erasure path is
+  the Admin-SDK CF cascade). The residual branch is also unstageable: `batchDeleteDocs` on
+  `FakeFirebaseFirestore` always succeeds, so `residual.docs` is always empty, and a
+  firestore double whose delete silently no-ops would be a fixture manufactured to satisfy a
+  mutant.
+- `ConversationsViewModel` — NO for the MASKING, YES for the branch's behaviour. The StateError
+  is caught in-method; `ChatGroupErrorMapper.map` returns the generic Swedish fallback for a
+  non-`FirebaseFunctionsException`, so the id never reaches `errorMessage` and
+  `expect(errorMessage, isNot(contains(id)))` would be satisfied by the fallback alone. The
+  only sink is `AppLogger.error('...', e)`, which sanitizes the MESSAGE argument and passes
+  the error OBJECT raw to `recordError` — so the production comment is accurate, and the
+  masking is pinned only at `LogSanitizer` level. Durable pin would be a source lint in
+  `test/architecture/architecture_test.dart` (a raw `$conversationId` inside a throw string),
+  not a fixture.
+
+`message_query_module.dart` after the BUT-1883 correction: the existing suite still describes
+reality apart from finding 3 — the `historyStart` boundary group, the fail-open merge and the
+newest-not-oldest cap test are all unaffected by a comment change.
+
+Verification: `flutter test` on both suites 38/38 green after the fixes (37 before, +1 new);
+`flutter analyze --fatal-infos` clean on both. Both test files were left DIRTY in the working
+tree over their staged copies — the parent must re-stage before committing.
+
+Verdict: fail, 1 blocking (finding 3), fixed in the working tree but not staged.
+
+### 2026-08-20 — BUT-1897/BUT-1891/BUT-1895 FINAL confirming pass (staging fix + three test-surface changes)
+
+**Trigger:** final commit-gate TESTING pass over 10 staged files, after the previous round's
+one blocking finding (a comment fix living in the worktree but not the index) was staged.
+
+**Staging finding CLOSED, verified against the index and not the worktree.**
+`git show :lib/core/exceptions/permission_exceptions.dart | grep "most throw sites"` returns
+nothing (exit 1). The replacement claim in the test file — "over 170 in `lib/`, measured
+2026-08-20" — re-measured today: 90 PermissionDenied + 30 ResourceNotFound + 23 Authentication
++ 20 SecurityViolation + 9 Validation + 1 StaleAccessControlBase = **173**. True.
+Also swept `git diff --numstat` over all 12 reviewed paths: 0 lines each, so index == worktree
+and the verdict is against the bytes the parent commits. Index copy holds **6**
+`LogSanitizer.maskIdentifiers` calls — one per class, matching the six mutants the previous
+round killed. Deltas since that probe were comment-only, so those results still hold.
+
+**The exception family is still fully pinned.** Six classes, six mask calls, and each class
+carries at least one fixture where a uid is present in the string and asserted absent —
+PermissionDenied (userId / MESSAGE / resource PATH / composite `<uid>_<weekKey>`), the
+subclass "in its own right", ResourceNotFound (`direct_<a>_<b>`), SecurityViolation
+(`details:`), Authentication (`details:`), Validation (`'Ogiltig mottagare $uid'`, the case
+the earlier round asked for). Suite green: 91/91 across the three unit files, analyze clean.
+Note the DM case is not over-determined into vacuity: `isNot(contains(uid))` alone would be
+satisfied by the generic 20-28 rule masking each half (the underscore is outside
+`[a-zA-Z0-9]`, so both lookarounds pass), but `contains('direct_#')` can only come from the
+`maskConversationId` limb. Both assertions are there.
+
+**Change 1 (named skips) — works, verified by running it.** `+32 ~4`: the four impossible
+grid-geometry cases now print in every run as
+`KNOWN RESIDUAL (BUT-1911): a 320dp phone still clips at text scale 1.3 — ...`. This is the
+answer to the reverse-direction residual I offered an xfail arm for last round: the team chose
+VISIBILITY over reverse-pinning. Acceptable. `testWidgets`' `skip:` is a bool with no reason
+slot, which is why the reason is in the name — worth remembering.
+
+**Change 3 (premise assert) — closes the seam it names, and not one inch more.**
+`expect(find.byType(CompactAllergenRow), findsWidgets)` before
+`expect(tester.takeException(), isNull)`. It genuinely discriminates: the row IS found today,
+so a regression in `ContentCard`'s badge derivation reddens it, and the "tile rendered
+nothing at all" case reddens it too. The collapse-to-empty variant is closed by construction
+rather than by this line — the `unassessed()` case proves the card omits `CompactAllergenRow`
+entirely when there is nothing to draw, so an empty row cannot masquerade as a present one.
+NOT closed, and the honest limit: a tile that fits because something ELSE shrank (title stops
+wrapping, image dropped) still passes both assertions. Non-blocking — the row is the variable
+this change introduced, and pixel-height assertions would be brittle.
+
+**Change 2 (period-to-comma) — the name's second claim is now asserted.** The case asserts
+`textIn(tester, 'Mängd') == '2,5'` AND `savedArgs()[#amount] == 2.5`. Correct repair of a
+"test named after two things, asserting one" defect.
+
+**Non-blocking residuals restated, both already filed and both still open.**
+(1) The decimal notation boundary (filed Medium, batch A). Re-measured with a scratchpad
+replica today: `0,0000001` is TYPEABLE through the formatter, parses to `1e-7`,
+`formatSwedishDecimal` returns `"1e-7"` (no `.` to swap), and re-typing that through the
+formatter yields `"17"`. So the file's own unqualified doc claim — "what this writes into a
+field must be what `parseSwedishDecimal` can read back out of it" — is false below 1e-6, and
+`'what it writes is also typeable into the field'` asserts that invariant over three friendly
+fixtures (1.5, 0.5, 2.25) that cannot see it. Also confirmed `1e21` SATURATES via `round()`
+to `9223372036854775807` rather than throwing. Unchanged grade: Medium, not blocking — seven
+decimal places on a shopping quantity is not a real user path, but the doc sentence should
+carry the qualifier.
+(2) `permission_exceptions_test.dart` 'toString omits value when null but describes it when
+0' asserts only the `value: 0` half. The omit-when-null half is covered by a sibling test
+('toString without field/value is bare'), so nothing is unpinned — but it is the SAME defect
+class change 2 was made to fix, one file over. One line closes it.
+(3) `unified_shopping_item_test.dart` 'should handle null and out-of-range priorities': the
+`copyWith(priority: null)` arm cannot produce a null priority (`priority ?? this.priority`,
+and the fixture's priority is 3), so its comment describes an unreachable state. The `0` and
+`10` arms beside it do reach the `default:` branch, so the group is not vacuous. Pre-existing,
+untouched by this diff.
+
+**Verdict: pass, 0 blocking.** Three findings carried forward at Medium/Low, none new.
+
+### 2026-08-20 — BUT-1897 final pass: the V8 `at ` alternative is now pinned, and the matrix that proves it
+
+Trigger: final review pass over the eight-file residue of the 2026-08-20 sprint
+(`logger.dart`, `app_dimensions.dart`, `recipe_card.dart`, `tag_result_display.dart`,
+`message_deletion_module.dart`, `message_query_module.dart`, `web_error_reporter.dart`,
+`conversations_viewmodel.dart`). The batch B verdict had said `WebErrorReporter._frameStart`
+enumerated three stack-frame spellings in its own doc comment while only two had fixtures,
+and a test for the V8 spelling was added.
+
+**Confirmed present**: `test/unit/services/monitoring/web_error_reporter_test.dart`,
+`'a V8 (Chrome/Edge) trace keeps its frames too'`.
+
+**Confirmed discriminating, measured not reasoned.** Probe ladder rung 2 — a scratchpad
+replica of `_scrubStack` + `_frameStart`, run under
+`dart.exe --packages=<repo>/.dart_tool/package_config.json`, importing the REAL
+`LogSanitizer.maskIdentifiers` and `scrubPii`. Four regex variants (full, minus each
+alternative) × the four fixtures the suite actually uses:
+
+```
+fixture          FULL   -#N     -at     -fn@      (frames_readable)
+dart-no-head     true   FALSE   true    true
+dart-with-head   true   FALSE   true    true
+firefox          true   true    true    FALSE
+v8               true   true    FALSE   true
+```
+
+Every alternative is killed by at least one fixture and no fixture is redundant with
+another's kill. `#\d+\s` is pinned twice, `at \S` and `[^\s@]*@\S+:\d+:\d+` once each. So:
+**no spelling of `_frameStart` is left unpinned.**
+
+Why the V8 fixture works where the earlier head test did not: its frame identifier is
+`AllergenPreferencesViewModel`, 28 characters, i.e. INSIDE `maskIdentifiers`' {20,28}
+window. Delete `at \S` and `indexOf` returns -1, the whole trace is treated as message head,
+the class name masks to `Alle***`, and `contains('AllergenPreferencesViewModel')` reddens.
+This is the same lesson the file's own comment records about `MessagingService` (16 chars,
+below the window, therefore byte-identical under a mask-everything mutant) — the fixture must
+be computed against the guard's BOUNDS.
+
+Second measurement, worth keeping: `uid_leaked` was FALSE in all sixteen cells. The V8
+test's `isNot(contains(uid))` assertion is therefore satisfied under every frame-split
+mutant — a no-match falls back to masking the entire trace, which is MORE masking, not less.
+It is a control against a mutant that removes head masking altogether, not evidence about the
+split. In any mask-head/preserve-frames splitter, the PRESERVE assertion is the pin and the
+MASK assertion is the control.
+
+Cross-copy check on the other correction in this batch: `app_dimensions.dart`'s new
+second-residual paragraph ("a 360dp phone is clean to 2x, but a 320dp phone still clips from
+1.3x") matches `recipe_card_grid_badges_test.dart` exactly — `cleanUpTo: 2.0` / `1.0`, and
+the test's own comment measures 0.07px of overflow at 1.3x on 320dp. The doc's qualification
+that "covered by a test" means the boundary is RECORDED rather than clean matches the four
+named `skip:` cases the runner prints every run.
+
+Runs: `flutter test test/unit/services/monitoring/web_error_reporter_test.dart
+test/widget/recipe/recipe_card_grid_badges_test.dart` → `+28 ~4 All tests passed!` (the four
+`~` are the BUT-1911 named residual skips, by design). `git diff --numstat` over all eight
+reviewed files plus the test: empty — the index the parent will commit is the copy reviewed.
+Scratch probe deleted; `git status --porcelain` unchanged at 37 entries.
+
+No blocking findings.
+
+### 2026-08-20 — BUT-1912 confirming pass: the round-trip correction blamed the parser, and the parser works
+
+**Trigger:** one-file confirming pass on `lib/core/utils/swedish_decimal_input.dart`, whose
+`formatSwedishDecimal` doc had been rewritten in response to my own earlier finding that
+`formatSwedishDecimal(1e-7)` emits exponent notation. Asked to confirm (a) the 1e-6 boundary
+is not off by an order of magnitude and (b) the test `'what it writes is also typeable into
+the field'` is honestly scoped now that its limit is documented.
+
+**The doc under review (lines 81-90):**
+
+> That holds down to about 1e-6 and no further. Below it `toString()` switches
+> to exponent notation, which has no `.` to swap and which the parser cannot
+> read — `1e-7` comes back out of the field as `17`. Seven decimal places on a
+> shopping quantity is not a real path, so this is stated rather than guarded;
+> BUT-1912 carries the fix.
+
+**Method.** Scratchpad Dart replica of all three components (`formatSwedishDecimal`,
+`parseSwedishDecimal`, and the `SwedishDecimalInputFormatter` transform minus caret) run over
+a fixture list enumerating the notation boundaries — 1e-5, 9e-6, 1.5e-6, 1e-6, 9.99e-7, 5e-7,
+1e-7, 1.5e-7, 1e-8 — plus the int64 end (1e21, 1.5e21). Two round trips measured per value:
+`parse(format(x))` and `parse(field(format(x)))`. No `lib/` write.
+
+**Result table (abridged):**
+
+```
+x          fmt            parse(fmt)   directRT   field(fmt)   parse(field)  fieldRT
+1.5e-6     0,0000015      1.5e-6       OK         0,0000015    1.5e-6        OK
+1e-6       0,000001       1e-6         OK         0,000001     1e-6          OK
+9.99e-7    9,99e-7        9.99e-7      OK         9,997        9.997         BREAK
+5e-7       5e-7           5e-7         OK         57           57.0          BREAK
+1e-7       1e-7           1e-7         OK         17           17.0          BREAK
+1.5e-7     1,5e-7         1.5e-7       OK         1,57         1.57          BREAK
+1e-8       1e-8           1e-8         OK         18           18.0          BREAK
+1e21       9223372036854775807  9.22e18 BREAK     (same)       9.22e18       BREAK
+```
+
+**Finding 1 (BLOCKING) — "which the parser cannot read" is measured false.**
+`directRT=OK` at every magnitude down to 1e-8: `parseSwedishDecimal('1e-7')` returns exactly
+1e-7, because `double.tryParse` accepts Dart's exponent grammar and the string never hits the
+`startsWith('.')`/`endsWith('.')` padding. The clause "which has no `.` to swap" is true but
+causally irrelevant — having no period is harmless. The component that loses the value is the
+input FORMATTER: `_isDigit(char) || isSeparator` drops `e` and `-`, so "1e-7" collapses to
+"17". The example sentence ("comes back out of the field as `17`") is correct and does say
+"out of the field"; the clause immediately before it names the wrong component, and the
+paragraph's subject sentence is the parser round trip, so the paragraph as a whole reads as
+`parse(format(1e-7)) != 1e-7` — which I measured equal.
+
+Why it is blocking rather than pedantic: `grep` of the callers shows no production line pairs
+the two functions directly. `shopping_item_dialogs.dart:301` seeds the edit controller with
+`formatSwedishDecimal(widget.item.amount)`, line 351 puts `SwedishDecimalInputFormatter` on
+that same field, and line 401 parses the controller text. The real contract is
+format → FIELD → parse; format → parse is a path production never takes. So the doc states the
+qualifier against the seam that does not exist and blames the component that works, and a
+BUT-1912 fix written from it would be applied to the parser, where it is a no-op.
+
+**Finding 2 (BLOCKING) — the test's name is an unqualified universal the doc now denies.**
+`'what it writes is also typeable into the field'` runs `[1.5, 0.5, 2.25]` and asserts
+`typed(written) == written`. It is the only test in the suite modelling the real production
+seam, and it is exactly the "friendly fixtures prove none of it" shape already recorded under
+BUT-1891. No fixture in the file sits anywhere near the flip point. Documented-limit in
+production + universal claim in the test name is the two-answers-to-one-question split
+(cf. BUT-1883). Repair, test-side, to land in the same edit as the doc fix: qualify the name
+to the shopping-quantity domain, and add the straddling pair — 1e-6 (holds) beside 5e-7
+(breaks) — pinned as the known limit and tagged BUT-1912 so it reddens when the fix lands
+instead of staying silently green. Not applied here: the doc half is production, and the two
+halves are one claim.
+
+**Confirmed correct.** The 1e-6 boundary is exact, not off by an order of magnitude: 1e-6 and
+1.5e-6 both format decimal and survive the field; 9.99e-7 is the first magnitude below that
+flips to exponent notation. This matches the ECMAScript-style rule Dart follows (exponential
+when the decimal-point position n satisfies n <= -6). "Seven decimal places" is also the right
+threshold description — 5e-7 (7 places) breaks, 1e-6 (6 places) holds. And "not a real path"
+is a sound mitigation call for a shopping quantity.
+
+**Non-blocking notes.** (a) The single `1e-7` → `17` example understates the harm: 5e-7 reads
+back as 57.0, eight orders of magnitude high, and the direction is not always "digits
+concatenated" (9.99e-7 → 9.997). (b) There is a second, undocumented round-trip break at the
+LARGE end — `round()` saturates at int64, so `formatSwedishDecimal(1e21)` returns
+`9223372036854775807`. The doc's sentence is scoped to the small end so it is incomplete
+rather than false, and 1e21 is even less real than 1e-7. (c) The claim has exactly one copy —
+grep for the prose across `test/` found no drift into the suite's group headers, so BUT-1883's
+third-copy hazard did not fire here.
+
+**Lesson merged into the knowledge file** under the existing BUT-1891 double-round-trip
+principle: a UI-value round trip is TWO seams, resolve which one the doc means by grepping the
+callers, and the test modelling the real seam is the one that owes the straddling fixture.
+
+### 2026-08-20 — BUT-1912 re-review: the field seam's trigger is a keystroke, not the dialog
+
+Trigger: re-review of `lib/core/utils/swedish_decimal_input.dart` +
+`test/unit/core/utils/swedish_decimal_input_test.dart` after a `fail (2 blocking)` verdict
+(doc blamed `parseSwedishDecimal`; a defect test carried an unqualified universal name).
+Both fixes verified good. Verdict: pass.
+
+Re-measured every factual claim in the repaired doc rather than trusting the report
+(`dart run` probe over the real expression `v == v.roundToDouble() ? v.round().toString() :
+v.toString().replaceAll('.', ',')`):
+
+```
+1e+21   | whole=true  | toString=1e+21      | format=9223372036854775807
+1e+20   | whole=true  | toString=1e+20      | format=9223372036854775807
+9.99e-7 | whole=false | toString=9.99e-7    | format=9,99e-7
+5e-7    | whole=false | toString=5e-7       | format=5e-7
+1e-6    | whole=false | toString=0.000001   | format=0,000001
+1.5e-6  | whole=false | toString=0.0000015  | format=0,0000015
+```
+
+All 17 tests green. `flutter analyze --fatal-infos` on both files: clean. Production chain
+confirmed by reading `shopping_item_dialogs.dart` — the EDIT dialog seeds
+`_amountController` from `formatSwedishDecimal` (initState), the field carries
+`SwedishDecimalInputFormatter`, and `_onSave` calls `parseSwedishDecimal`. So
+format -> FIELD -> parse is the real trip and the doc's causal claim is correct. The ADD
+dialog has no format leg (hint `'1'`), which is why the test's comment scoping the claim to
+the edit dialog matters.
+
+The one thing neither file proved, and the reason this entry exists — a throwaway widget
+probe (written under `test/`, run, deleted in the same Bash call):
+
+```
+SEEDED-AFTER-PUMP:   "5e-7" parse=5e-7
+AFTER-ONE-KEYSTROKE: "571"  parse=571.0
+```
+
+`inputFormatters` are applied by `EditableText._formatAndSetValue` on input-connection
+updates; a `TextEditingController(text: ...)` set in `initState` never passes through them.
+So opening the edit dialog on a 5e-7 item and pressing Save preserves the value exactly.
+The corruption needs the user to touch the amount field — and then ANY keystroke, including
+one aimed at a different part of the number, rewrites the whole string (hence `571`, not
+`57`: the probe appended `1`). The doc's sentence "`5e-7` comes back out of the field as
+`57`" names the right mechanism and the right repair site but omits that trigger; filed
+NON-BLOCKING, since it only overstates when the bug fires, not what causes it or where the
+fix goes.
+
+Non-vacuity of the new case checked by hand, not assumed:
+- `typed(formatSwedishDecimal(5e-7)) == '57'` reddens under EITHER repair (formatter
+  preserving `e`/`-` -> `'5e-7'`; formatter emitting decimal notation -> `'0,0000005'`), so
+  it is a real receipt for BUT-1912 rather than a restatement.
+- The parser assertion beside it (`parseSwedishDecimal(formatSwedishDecimal(5e-7)) == 5e-7`)
+  is what discriminates the two seams: a fix aimed at the parser leaves the `'57'`
+  assertion red, which is exactly the signal the previous doc suppressed.
+- BUT-1849 check (a test written to be deleted must ship the assertion that outlives it):
+  when BUT-1912 lands this case is EDITED, not deleted, and the general guard
+  ('an ordinary shopping quantity is typeable back into the field') is a separate test, so
+  nothing goes unguarded.
+- The caret test's comment was re-derived: previous `'15'`, new `'1x5'`, incoming offset 2.
+  Length-delta gives 2 + (2-3) = 1, the counted strategy gives 1 — they AGREE, naive gives
+  2. The comment's own admission that it discriminates only the naive strategy is correct.
+
+Doc claims graded and found true: `round()` saturates at int64 (1e21 -> 9223372036854775807
+— note 1e20 saturates too, and the doc names 1e21 as an example, not a threshold, so no
+false quantifier); `toString()` goes exponential strictly below 1e-6 (Dart uses the
+JS-style exponent < -6 rule, so no sub-1e-6 double survives, and 1.5e-6 does); "eight orders
+of magnitude high" for 57 vs 5e-7 is 1.14e8, correct.
+
+### 2026-08-20 — BUT-1897: a class-level mask makes every per-site mask assertion vacuous; and reviewing a file under concurrent edit
+
+Reviewing the BUT-1897 batch (8 files). Three questions asked: are the two repaired BUT-1872
+tests discriminating, is the new type-label test non-vacuous, and is any assertion held up by
+something other than what it names.
+
+**Probes run (backup immediately before each mutation, restore from an EXIT/INT/TERM/HUP trap,
+md5 verified identical after every one).**
+
+1. Strip all `.maskedConversationId` from `message_mutation_module.dart` → RED, exactly one
+   test, on exactly the intended assertion:
+   `Expected: contains 'direct_#' / Actual: 'ResourceNotFoundException: Conversation not
+   found, Type: conversation, ID: direct_abc'`. Same probe on
+   `conversation_mutation_module.dart` → RED, one test. So both repaired tests ARE
+   discriminating, and pass for the stated reason.
+2. Neuter the type-label preservation in `WebErrorReporter._scrubThrownHead` → RED, the new
+   test, `Actual: 'Perm***: denied, User: AbCd***'`. Non-vacuous. (`PermissionDeniedException`
+   is 25 chars, inside `maskIdentifiers`' {20,28} window.)
+3. **Strip `.maskedUserId` from BOTH throw sites (lines 86 and 394) → GREEN.** The `outsider`
+   assertion does NOT discriminate the per-site call; the class-level mask in
+   `PermissionDeniedException.toString()` holds it up. The comment then in the file claimed
+   "The `outsider` assertion still does discriminate" and then, in the same sentence, gave the
+   reason it does not. A parallel session corrected it to the measured wording at 17:32:52
+   while this review was running.
+
+**Why the one-segment discriminator is fragile.** `maskConversationId` hashes anything starting
+`direct_`; `maskIdentifiers` rule 1 requires TWO segments
+(`(?<![a-zA-Z0-9_])direct_[a-zA-Z0-9]+_[a-zA-Z0-9]+`). So `direct_abc` is hashed by the helper
+and untouched by the class rule — which is the whole discriminator. `log_sanitizer.dart`'s own
+doc calls that divergence a shape "nothing mints". Both repaired tests therefore hang on a
+value production cannot produce; harmonising the two functions reddens them with no privacy
+regression. The durable pin is the exception FIELD (`.resourceId`, `.userId`), which
+discriminates on the real two-segment id and on `.maskedUserId`.
+
+**Reviewing a moving target.** The eight files moved repeatedly DURING the review:
+`web_error_reporter.dart` 17:30 and 17:32, its test 17:28:59, `message_mutation_module_test.dart`
+17:32:52, `log_sanitizer.dart` 17:25 and 17:33. Consequences actually hit:
+- A hypothesis I formed by reading (the label regex was `^[A-Za-z_$][A-Za-z0-9_$]*: `, so a
+  leading raw uid would be exempted as a "type label") was already fixed to `^[A-Z][A-Za-z$]*: `
+  before I could file it — plus two new tests. Probing before filing is what caught this;
+  reading alone would have produced a false finding against bytes that no longer existed.
+- My probe3 restore wrote back a snapshot taken ~90s earlier. md5s happened to line up, but this
+  is exactly the clobber hazard already recorded in the knowledge file. Beside a live session,
+  probe `test/`-side or not at all.
+- A baseline run of `web_error_reporter_test.dart` read RED (+19 -1) at 17:31 and GREEN (+20) at
+  17:33 on byte-identical code.
+
+**Unattributed intermittent reds.** Two spurious failures across ~35 `flutter test` runs, in two
+DIFFERENT suites (`message_mutation_module_test.dart` BUT-1872, and `web_error_reporter_test.dart`),
+neither reproducible (0/12 and 0/6 targeted re-runs, incl. forced cold recompile), no error text
+captured either time. Not attributed — most consistent with harness/environment on this box under
+repeated runs. Methodological consequence: a single-shot mutation probe's red is not by itself
+proof; the probes above were trusted because each failure text named the predicted mechanism.
+
+**False alarm worth recording.** `Grep` context output rendered a `//` comment as `\ up:`, which
+reads exactly like the BUT-1901 control-byte signature. `cat -A` showed clean bytes — it was a
+tool rendering artifact. Byte-check before filing a control-byte finding.
+
+Non-blocking findings filed: the fragile one-segment discriminator (above); "the write must not
+TOUCH `participantIds`/`createdAt`" comments in both module tests sit above value-level
+assertions that a whole-document rewrite round-tripping identically would satisfy (suggested
+fixture: seed `createdAt` as `Timestamp(sec, 123456789)` — a DTO round trip through `DateTime`
+truncates to microseconds, making the assertion actually discriminate "touched");
+`_scrubStack`'s frameless fail-safe branch masks the type label while `_scrubThrownHead`
+preserves it, an inconsistency nothing pins.
+
+### 2026-08-20 — Trigger: final review pass on the BUT-1897 identifier-masking batch [Verification + guard blind spot]
+
+**Staging.** Prior block was staging-only and is closed: `git diff --numstat` over the eight
+reviewed `lib/` paths is empty, and `git diff --numstat` tree-wide is empty, so the index
+IS the worktree for everything reviewed. Verified by running the probes below against the
+worktree and confirming byte-identical restore plus an empty numstat afterwards.
+
+**Non-vacuity, mutation-proven (backup + `trap ... EXIT INT TERM HUP QUIT` restore, md5
+compared before/after, numstat re-checked):**
+
+- Mutant A — `web_error_reporter.dart` `_scrubThrownHead` loop `i < 2` → `i < 1` (single
+  peel). Reddens exactly `a V8 head keeps the INNER type name too`, 19 pass / 1 fail. With
+  one peel, `Error: PermissionDeniedException: …` leaves the 25-char type name inside the
+  masked span and `maskIdentifiers` eats it to `Perm***`.
+- Mutant B — `_leadingTypeLabel` `RegExp(r'[A-Z][A-Za-z$]*: ')` → `[A-Z][A-Za-z0-9$]*: `.
+  Reddens exactly `an identifier at the head is NOT exempted as a type label`, 19/1. The
+  fixture uid `AbCdEfGhIjKlMnOpQrStUvWx1234` is excluded by the NO-DIGITS clause; the
+  second half of the same test (`direct_<a>_<b>: `) is excluded by the no-underscore clause
+  and the initial-capital clause. Both clauses therefore have a fixture.
+- Mutant C — `conversation_mutation_module.dart` `resourceId: conversationId
+  .maskedConversationId` → `resourceId: conversationId`. Reddens `BUT-1872: the thrown
+  exception carries no raw conversation id`. So the one-segment `direct_abc` discriminator
+  DOES currently catch removal of the per-site call; BUT-1913's concern is fragility (it
+  works only because `maskIdentifiers` rule 1 needs two segments), not vacuity. Same shape
+  in `message_mutation_module_test.dart`.
+
+`flutter test` over the five identifier suites: 109 pass / 1 skip.
+`flutter analyze --fatal-infos` over the 8 lib files + the 3 test paths: clean (94s).
+
+**Finding (non-blocking, pre-existing, out of BUT-1897's stated scope).**
+`test/architecture/architecture_test.dart:407` is titled "no raw $userId / $uid interpolated
+into AppLogger calls in lib/" and its `reason` says "Raw user ids in logs are a privacy
+leak". Its pattern is
+`AppLogger\.\w+\([^;]*(\$userId\b|\$\{userId\}|\$uid\b|\$\{uid\})`. A DM's conversation id
+IS two raw user ids, and `$conversationId` matches none of those alternatives, so it passes
+the guard. Present in at least 9 `lib/` files (`conversation_mutation_module.dart`,
+`conversation_action_operations.dart`, `message_management_operations.dart`,
+`message_sending_operations.dart`, `messaging_service.dart`, `chat_viewmodel.dart`,
+`conversations_viewmodel.dart`, `create_group_conversation_viewmodel.dart`,
+`chat_action_handler.dart`) — a single-line grep undercounts, because
+`message_query_module.dart:42` and `:62` put the interpolation on a different physical line
+from `AppLogger.info(`. In `conversations_viewmodel.dart` this sits four lines from the
+masked `StateError`: `leaveGroup` masks the throw at 235/242 and logs the raw id at 254.
+
+Not a BUT-1897 regression: `AppLogger.success/info/debug` reach `developer.log` only —
+only `AppLogger.error` forwards to Crashlytics, and the exception classes now mask their own
+`toString()`. So nothing leaves the device by this route. It does contradict
+`logger.dart`'s sentence that per-call-site masking "is what makes the LOCAL `developer.log`
+output safe" — for conversation ids, locally, it does not. Worth its own ticket, either as
+a widened guard alternative (`\$conversationId`) or as a decision that on-device logs keep
+raw ids.
+
+**Comment claims spot-checked and TRUE:** `logger.dart`'s "both have zero callers repo-wide
+today" for `setUserIdentifier`/`setCrashlyticsKey` (repo-wide grep excluding `logger.dart`:
+zero). `swedish_decimal_input.dart`'s 1e-6 boundary is PINNED, not comment-only
+(`swedish_decimal_input_test.dart:164-182` straddles `1e-6` and `5e-7`).
+
+### 2026-08-20 — web_error_reporter.dart comment-only closing read (BUT-1897)
+
+Trigger: closing review of a comment-only round on
+`lib/services/monitoring/web_error_reporter.dart`, repairing four non-blocking findings from
+two peers (stale "negligible" residual, a class-name count, an over-broad 19-char-cap
+sentence, a false universal about SDK exception heads). No code changed; suite 20/20 green.
+
+**Blocking finding — the repaired residual paragraph introduced a NEW false claim.** It now
+reads "What actually closes it is POSITION... The token has to be the very first thing in the
+string and be followed by `": "`, and nothing mints a head of that shape: every project
+exception prefixes its own class name." `_scrubThrownHead` peels the label TWICE (deliberately
+— the comment 20 lines below says "Peeled TWICE, because V8 nests them"), so a digit-free,
+capital-initial 20-28 char token in the SECOND label slot is exempted as well. Measured with a
+scratchpad replica of `_leadingTypeLabel` + the peel loop + a stand-in for `maskIdentifiers`
+rule 2, over an 8-row lattice:
+
+```
+IN : Error: AbCdEfGhIjKlMnOpQrStUvWxYzAb: went wrong
+OUT: Error: AbCdEfGhIjKlMnOpQrStUvWxYzAb: went wrong        <- kept RAW, slot 2
+IN : Error: PermissionDeniedException: AbCdEfGhIjKlMnOpQrStUvWxYzAb failed
+OUT: Error: PermissionDeniedException: AbCd*** failed        <- slot 3 masked
+IN : AbCdEfGhIjKlMnOpQrStUvWx1234: went wrong
+OUT: AbCd***: went wrong                                     <- digits are what save a real uid
+IN : _PrivateException: denied for <uid>
+OUT: _PrivateException: denied for AbCd***                   <- 17 chars, survives for an
+                                                                UNRELATED reason
+IN : Error: _RetryableExtractionFailure: x
+OUT: Error: _Retr***: x                                      <- the real private-class degrade
+```
+
+Live exposure stays ~nil (a project exception's `toString()` starts with its own class name,
+putting a uid at slot 3+), but the sentence states a bound the code does not enforce, and the
+argument it replaced was retracted for the same class of error. One-sentence fix: "within the
+first two label slots" + keep the "every project exception prefixes its class name" clause,
+which is what actually closes it.
+
+Non-blocking, all measured:
+- "most of this app's exception names are exactly that shape" (`_scrubThrownHead` doc) — 12 of
+  31 `*Exception`/`*Error` class names in `lib/` sit in the 20-28 window (39%); 10 of 22 among
+  names actually thrown. TRUE only weighted by throw sites: 201 of 322 (`PermissionDeniedException`
+  alone has 90). Same count class the round removed from the sibling doc.
+- Library header (lines 13-17) still describes scrubbing as reuse of `pii_scrubber.dart` alone
+  and says "every text field passed to the function is scrubbed" — two scrubbers now, with one
+  deliberate carve-out (the kept label span skips `scrubPii`).
+- "a stack head on Chrome or Edge always does" / "under dart2js a thrown object is wrapped in a
+  JS `Error`" — unverifiable in-repo (`flutter test` has no dart2js; every fixture is
+  `StackTrace.fromString`). Nothing behavioural rests on it; the peel loop breaks early and
+  `_scrubStack` has a no-head arm. Same "always" class as the universal just deleted.
+- Frames are scrubbed by `scrubPii` ONLY, so `maskIdentifiers` never runs on a frame span — a
+  uid or `direct_` id inside a frame line would ship raw. Correct by design (readability) and
+  unmintable in practice, but the file states every other residual explicitly.
+- Test-side: the "scrub BEFORE truncate" rationale is UNPINNED. Both truncation tests use
+  `'A'*5000` / `'S'*20000` — runs longer than 28 chars, which `maskIdentifiers` never touches —
+  so swapping the two operations leaves the suite green. The fixture that reddens it is a uid
+  straddling the 2000-char cut, which is the exact failure the comment names.
+- "roughly 1 in 300" is right for the CONJUNCTION (digit-free AND capital-initial:
+  (52/62)^28 x 1/2 ~ 1/276); digit-free alone is ~1/138. Don't "correct" it to the latter.
+
+Verified TRUE by measurement, listed so a later round does not re-derive them: `direct_a_b` ->
+`direct_#` + 12 hex = 20 chars (rule 1's halves are unbounded; the untouched shape is
+`direct_abc`, a single segment); 13-char personnummer -> `[PERSONNUMMER]` = 14; 647 class names
+in `lib/` sit in the 20-28 window, digit-free and capital-initial, out of 2374 ("hundreds");
+`AllergenPreferencesViewModel` is 28 and the class exists; `ValidationException` is exactly 19,
+so it survives a <=19 cap and is below the masking window; `scrubPii` really does scrub LLM
+prompts, via `llm_service.dart:361 scrubPayload` -> `_scrubStringLeaf`; no other `pii_scrubber`
+rule (email/pnr/phone/address) can match a lone `Word: ` token, so the "name rule needs a
+relation trigger" clause is sufficient; all three `_frameStart` alternatives plus the no-frame
+fail-safe arm each have their own test, and the frame fixture is 28 chars so the PRESERVE
+assertion is not vacuous.
+
+### 2026-08-20 — BUT-1897 closing read: the truncation test discriminates; the repaired positional claim does not (trigger: review of a fixed blocking finding + a taken-up offer)
+
+Scope: `lib/services/monitoring/web_error_reporter.dart`,
+`test/unit/services/monitoring/web_error_reporter_test.dart`,
+`test/unit/core/exceptions/permission_exceptions_test.dart`. All four files staged; worktree
+== index at verdict time (`git diff --quiet` clean, md5 `3766712df00839dec7177eb7041d6e3d`
+before and after every probe).
+
+**1. The scrub-before-truncate test (the offer) genuinely discriminates. Measured, not read.**
+Fixture: `error: '${'x ' * 995}$uid tail'`, assertion `isNot(contains(uid.substring(0, 8)))`.
+Probe: swapped the message line to `_scrubThrownHead(_truncate(error.toString(), 2000))`.
+Result `+20 -1` — the ONLY red was `a uid straddling the truncation cut is still masked`. So it
+is both non-vacuous AND the sole guard of the ordering. Restored, md5 identical.
+
+Byte-level positive probe (throwaway `test/zz_tmp_probe_test.dart`, deleted in the same call):
+```
+RAW_LEN=2023 FILLER_LEN=1990
+OUT_LEN=2000
+OUT_TAIL=[x x x x x AbCd*** ta]
+HAS_MASK=true HAS_P8=false HAS_P10=false HAS_P11=false
+```
+Confirms every clause of the v3 rationale: the filler is exactly 1990 (so exactly 10 uid chars
+survive a truncate-first cut), the space-separated filler does not merge with the uid, and
+production really leaves `AbCd***` inside the kept 2000. Both earlier failures the sprint
+reported are reproduced by that table: `HAS_P11=false` under production and (by construction)
+under the mutant is the v1 "absent under both orders" defect; a letter filler would have made
+one 2000-char run, outside {20,28}, which is v2.
+
+Wording nit, non-blocking: the `reason:` says "a longer prefix is absent under BOTH orders and
+pins nothing". True only for >10. Prefixes of 9 and 10 also discriminate (the mutant leaves
+`AbCdEfGhIj` verbatim). Read as "longer than ten" it is correct; read as "longer than eight"
+it is false. The valid window is 5..10 — below 5 collides with production's own `AbCd***`.
+
+**2. The repaired positional claim is now TRUE and UNPINNED — the finding of this round.**
+The doc now says the token must occupy "one of the first two label slots". Graded by mutating
+the peel loop:
+- `i < 1` -> `+20 -1`, the single red being `a V8 head keeps the INNER type name too`. Lower
+  bound pinned.
+- `i < 4` -> **all 21 green.** Upper bound pinned by nothing.
+So the exemption can widen to slot 3, 4, N with a fully green suite, and the sentence the block
+was about is the one sentence no test holds. Killer fixture: a digit-free 20-28 LETTER token,
+capital-initial, followed by `": "`, sitting one slot past the last legitimate label — e.g.
+stack head `Error: SomeException: Abcdefghijklmnopqrstuvwx: boom` + a frame line; assert
+`isNot(contains('Abcdefghijklmnopqrstuvwx'))`. Reddens at `i < 3`, passes at `i < 2`.
+
+**3. Instrumentation defect that nearly produced two false findings.** Running the four
+peel-count probes as a `for` LOOP inside one Bash call gave phantom results: the `i < 4`
+iteration reported the V8 test red, and the `i < 1` iteration additionally reported the
+TRUNCATION test red — a test whose fixture (`'x '...`, lowercase) cannot enter the label branch
+at any peel count. Re-run individually in their own calls, `i < 4` is all-green and `i < 1` has
+exactly one red. Cause: `sed -i` mutate + restore + mutate within the same second, so
+`flutter test`'s incremental kernel cache served the previous mutant's build. The tell is a red
+test the mutation cannot reach. One probe per Bash call from now on; re-run any surprising red
+alone before filing it.
+
+**4. Measured claims in the two files, all verified.**
+- `PermissionDeniedException` is 90 of 173 throw sites — exact
+  (`grep -rEo "throw (…)" lib/ | sort | uniq -c`: 90 / 30 / 23 / 20 / 9 / 1 = 173). The
+  most-THROWN rewrite is the durable spelling; the earlier "most of this app's exception names"
+  was a claim about the NAME population (12/31) and read as ~62% by exposure.
+- The header's "over 170 in `lib/`, measured 2026-08-20" — same 173.
+- The peer's scope caveat is correct: `PermissionDeniedException.toString()` applies
+  `LogSanitizer.maskIdentifiers` ONLY. `logger.dart:263` does the same and hands the exception
+  OBJECT to `recordError`, so an email interpolated into an exception MESSAGE does reach
+  Crashlytics unscrubbed on the native path. `scrubPii` runs only on the web reporter's
+  payload. The narrowed group name is therefore honest, not merely tidier.
+
+**5. Group-rename defect (non-blocking, cosmetic, mechanical).** The hoist of the uid fixture
+to file level was done with a blind replacement: the group is named
+`_uid-shaped identifiers are masked in toString` and five test names read `a _uid in the
+userId field is truncated`, `a _uid inside the MESSAGE…`, `a _uid inside a resource PATH…`,
+`a _uid inside a COMPOSITE document id…`, plus a comment "a _uid is 28". Confirmed from the
+runner's own output. The intended name was `uid-shaped…`; the Dart private-identifier
+underscore leaked into prose. Also `ValidationException`'s masking test re-aliases the hoisted
+constant (`const uid = _uid;`), which the hoist was meant to remove.
+
+**6. Scope check on the renamed group — honest.** Every test in it uses a uid or a
+uid-derived `direct_<a>_<b>`. Two members assert the COMPLEMENT (`the exception TYPE survives
+the mask`, `the raw values stay on the fields`); both are about the boundary of the same mask,
+so they sit correctly. `a _uid inside a COMPOSITE document id is truncated` looks
+over-determined — the fixture holds the uid twice, standalone and composite — but is not:
+under the `\b` variant the standalone copy is masked and the composite one is NOT, so
+`isNot(contains(_uid))` still reddens. Verified by reading the anchors in
+`log_sanitizer.dart:151`, not by assumption.
+
+**7. Held up by something other than what it names — one, already self-declared.**
+`ValidationException`'s `a free-text value never reaches the string` asserts
+`isNot(contains('@'))`, which the `Value: <${value.runtimeType}>` branch satisfies with the
+mask deleted. The test's NAME is accurate (a free-text value really never reaches the string)
+and the comment above the sibling test says so outright, so this is documented vacuity rather
+than a hidden one. No change owed.
+
+Verification run: 49/49 green across both suites; `flutter analyze --fatal-infos` over all
+four files, "No issues found". Verdict: pass, 0 blocking.
+
+---
+
+## 2026-08-20 — BUT-1897 final pre-commit read (trigger: gate re-read after comment/number corrections)
+
+Five files re-read at the committing bytes: `lib/core/exceptions/permission_exceptions.dart`,
+`lib/core/utils/logger.dart`, `lib/services/monitoring/web_error_reporter.dart` and their two
+suites. 50/50 green (was 49 — the new upper-bound case), `flutter analyze --fatal-infos` clean
+over all five.
+
+**1. The new upper-bound test is non-vacuous, and pins ONE side each way.** Probed the real
+file (backup taken immediately before, restored from a `finally`+signal trap, md5 identical
+both times, `git status` still `M ` i.e. worktree == index):
+- `i < 2` -> `i < 3`: exactly ONE test reddens, `the exemption stops after TWO label slots`,
+  and the failure output shows the token surviving VERBATIM inside the kept span
+  (`Actual: 'Error: SomeException: Abcdefghijklmnopqrstuvwx: boom\n'`). So it fails for the
+  reason its name gives, not by some other removal.
+- `i < 2` -> `i < 1`: exactly ONE test reddens, `a V8 head keeps the INNER type name too`.
+Both bounds are now pinned by a single discriminating case each. Baseline masking of the
+fixture is real: 24 letters, preceded by a space and followed by `:`, so rule 2's lookarounds
+both hold and it becomes `Abcd***`.
+
+**2. Every load-bearing number in the committing bytes re-measured independently.** Balanced-paren
+scan over `lib/`, comment lines dropped, definition file excluded, `throw|return|=>` prefix required:
+family construction sites **90** (89 `PermissionDeniedException` + 1 `StaleAccessControlBaseException`);
+whole-family constructions **168** (naive grep says 173; the 5 extras are four switch-PATTERN arms in
+`shopping_failure_message.dart` and one substring sibling, `TagConfigValidationException`);
+`userId:` sites **31**; uid-interpolated MESSAGE sites **25**, of which **8** in
+`base_firebase_repository`; interpolated-`resource` sites carrying a uid **5** (three in
+`base_storage_repository`, two in `firebase_storage_repository`, all `storage/$path` where
+`path` is guarded by `path.startsWith('users/$userId/')` — so the comment's "the id is not the
+thing interpolated" is exactly right, and a uid-NAMED-variable scan returns 0 there).
+Odds check: digit-free over 62 chars at 28 = (52/62)^28 = 1 in 138 ("about 1 in 140"); with
+capital initial = (26/62)(52/62)^27 = 1 in 275 ("about 1 in 280"). Both hold.
+
+**3. The `recordError` claim verified against the LOCKED SDK, not from memory.**
+`firebase_crashlytics-5.2.5/lib/src/firebase_crashlytics.dart:129` passes
+`exception: exception.toString()` with the stack going separately as `stackTraceElements`.
+So the corrected paragraphs in `logger.dart` and the exception file are true, and the retracted
+"grouping needs the object" claim was indeed false.
+
+**4. One non-blocking attribution nit.** `web_error_reporter.dart` says
+"`PermissionDeniedException` ... accounts for 90 of the 168 throw sites". 90 is the FAMILY;
+the class alone is 89, and the one subclass site carries a different 31-character label.
+The sibling file states it correctly ("the 90 `PermissionDenied`-family throw sites"). Same
+qualifier-scope failure mode the digest already names — true per family, false per class.
+
+**5. Knowledge-file correction owed by me.** The principle recorded from the previous pass said
+"the measured pair (90 of 173), verifiable in one `grep -c`". Both halves were wrong in the same
+direction: 173 is the naive count, and one `grep -c` is precisely what produces it. Principle
+updated in the same edit as this entry.
+
+Verdict: pass, 0 blocking.
+
+### 2026-08-20 — BUT-1897 closing read: grading a comment that names WHICH test guards a rule ORDER (trigger: two peer-driven comment corrections in log_sanitizer.dart / logger.dart)
+
+Files read: `lib/core/utils/log_sanitizer.dart`, `lib/core/utils/logger.dart`,
+`test/unit/core/utils/log_sanitizer_test.dart`, `test/unit/core/utils/logger_test.dart`,
+`test/unit/utils/log_sanitizer_test.dart`. All four production/test files staged; worktree
+== index at verdict time (`git diff --numstat` empty on each).
+
+**The claim under review.** `maskIdentifiers`' ordering paragraph previously said the closest
+guard against a rule-2-before-rule-1 swap "pins the literal `direct_#` output". The peer said
+that was wrong and repointed it to the MINTED-SHAPE test, adding the parenthetical that the
+literal-hash cases "call the helper directly and are invariant under a reorder — they are not
+the guard here."
+
+**Measured, not reasoned.** Backup taken immediately before the edit
+(`md5 bd0d498deb07ebd197eb84006ea3b44a`), the two `replaceAllMapped` calls swapped by a Python
+script asserting both search strings present, four suites run, file restored by `cp` and
+re-md5'd to the same value; `git diff --numstat` then 0 lines, so the index copy is intact.
+
+Baseline: 88/88 green across `log_sanitizer_test`, `logger_test`, `permission_exceptions_test`,
+`web_error_reporter_test`. With the rules swapped: `83 +, 5 -`, exactly
+
+1. `log_sanitizer_test` — "the helper and the chokepoint agree on every id of the MINTED shape,
+   at any half-length"
+2. `logger_test` — "redacts a direct conversation id, which hides TWO uids"
+3. `logger_test` — "a bare uid and a direct id in one message each get their own rule"
+4. `permission_exceptions_test` — "a DM conversation id is hashed, not printed"
+5. `web_error_reporter_test` — "a uid and a DM id are masked in the message"
+
+So "five cases across four suites redden, the closest being `log_sanitizer_test.dart`'s
+minted-shape test" is exactly right, ticket-for-ticket. The two literal-hash cases
+(`maskConversationId(directId) == 'direct_#12fc49f947ab'` and the extension-getter case) stayed
+GREEN, confirming the parenthetical: both call the helper, which the swap does not touch.
+
+**Why the minted-shape test is not itself luck.** Of its three fixtures only the middle one
+(28+28 halves) discriminates — under the swap rule 2 masks each half to `aBcD***_zZyY***`,
+after which rule 1's `direct_[a-zA-Z0-9]+_[a-zA-Z0-9]+` can no longer match, so the chokepoint
+returns `direct_aBcD***_zZyY***` while the helper still returns the hash. `direct_abc_def` has
+no 20-28 run and `direct_<40 a>_<40 b>` exceeds the ceiling, so both survive the swap unchanged.
+The test's own comment claims the fixtures cover the short/long gap, which is true for the
+gap it was written for, but only the realistic-length fixture pins the ORDER.
+
+**Second claim checked: "pinned by a literal in both languages' tests."**
+`test/unit/core/utils/log_sanitizer_test.dart:134` and
+`functions/src/__tests__/enforce-group-minor-membership.test.ts:301` both carry
+`direct_#12fc49f947ab`. Same literal, both sides. True.
+
+**Third: `maskConversationId`'s repointed reference.** "a 20-char group id still matches rule 2
+of [maskIdentifiers]" — the rule numbering matches the doc's own enumerated list in
+`maskIdentifiers`, and the rule now lives in `LogSanitizer`, so the old "`AppLogger`'s bare-token
+rule" wording was stale. Correct as repaired.
+
+**Fourth: `logger.dart`'s feeder sentence.** "`WebErrorReporter` is the web sink, and `AppLogger`
+is not among its feeders — those are the uncaught handlers and, on web,
+`AppMonitoringService.recordError`." Both feeders confirmed at source: `WebErrorReporter.install()`
+hooks `FlutterError.onError` + `PlatformDispatcher.instance.onError` (`main.dart:237`), and
+`AppMonitoringService.recordError`'s `kIsWeb` branch calls `_webErrorReporter?.reportError`
+(`app_monitoring_service.dart:94`). No `WebErrorReporter` reference in `logger.dart` outside
+comments. True.
+
+**Non-blocking observations.**
+- `test/unit/utils/log_sanitizer_test.dart` is a strictly weaker twin of
+  `test/unit/core/utils/log_sanitizer_test.dart` — same class, no conversation-id or
+  `maskIdentifiers` coverage, and its extension tests are the self-comparison shape the newer
+  file explicitly warns against (`expect('x'.maskedEmail, LogSanitizer.maskEmail('x'))`).
+  Pre-existing, untouched by this change; per the duplicate-test rule it holds no strict
+  superset, so it is a retirement candidate, not a finding here.
+- The doc's "a 20-char group id arrives as `abcd***`" is stated in two places but not pinned by
+  any fixture — `logger_test`'s group case uses a dashed uuid, whose hyphens are what keep it
+  whole. If rule 2's window ever moved, both sentences would go stale silently. Cheap fixture
+  if anyone touches the bound; not owed by a comment-only diff.
+
+Analyze clean on all four files; `log_sanitizer_test` + `logger_test` 38/38 after restore.
+
+Verdict: pass, 0 blocking.
+
+### 2026-08-21 — BUT-1897 comment-only re-review: a repaired attribution fails on quantifier SCOPE
+
+Trigger: parent reported three comment-only edits after my previous pass and asked me to
+confirm the new reorder attribution matched what I had measured twice, and that nothing in
+the three files claims a guard it does not have. Files reviewed (all opened with Read):
+`lib/core/exceptions/permission_exceptions.dart`,
+`test/unit/core/utils/log_sanitizer_test.dart`,
+`test/widget/views/unified_shopping/shopping_item_dialogs_test.dart`.
+
+**Attribution: CORRECT, and independently re-derivable without re-running the swap.**
+`grep -n` shows `AppLogger.sanitizeForCrashlyticsForTesting` appears exactly ONCE in
+`log_sanitizer_test.dart` (line 186), so that file has one caller of the mutated seam. Of
+that test's three fixtures only the 28+28 one (`direct_aBcDeFgHiJkLmNoPqRsTuVwXyZ12_...O3456`,
+counted: 28 and 28) lands in rule 2's {20,28} window — `direct_abc_def` is below it and the
+40+40 one cannot match at all, because the lookarounds require a full alphanumeric run. So
+"the minted-shape test's 28+28 fixture is the file's only reorder guard" is sound by static
+reasoning, and matches the archived measurement (5 red across 4 suites, literal-hash pins
+green, knowledge file line ~320).
+
+**BLOCKING — false quantifier, `log_sanitizer_test.dart:89-91.`** The repaired comment says
+"Every test in this group calls `maskConversationId` directly, never the chokepoint, so a
+rule reorder cannot move any of them", then two sentences later names "the minted-shape test
+... further down" as the file's only reorder guard. Group boundaries are lines 75-198; the
+minted-shape test is lines 165-191 — INSIDE the group. "Further down" reads as another
+group and is not. The true scope is the FIXTURE: the four tests using `uidA`/`uidB`/`directId`
+(107, 114, 128, 193) all call the helper directly; the fifth test in the group does not.
+Hazard is concrete: the paragraph ends "Do not trim that list to the cases that look
+interesting", while the false universal invites deleting the one test that is the guard.
+Same failure mode as the digest's BUT-1838 line — a repaired comment going wrong the second
+time on the qualifier.
+
+**Every count in `permission_exceptions.dart` verified by script (comments stripped,
+paren-balanced constructor bodies):**
+- 94 constructor call sites, 90 preceded by `throw` -> "the 90 family throw sites" EXACT.
+- 27 interpolate a uid-ish var into `message` -> the 25->27 correction is EXACT, and the two
+  beyond 25 are precisely the `actorId` sites in `group_weekly_menu_plan_service.dart`
+  ('User $actorId lacks edit/admin permission on plan ${plan.id}'), matching the stated reason.
+- 5 pass an interpolated `resource:` in the storage repos (3 in `base_storage_repository.dart`,
+  2 in `firebase_storage_repository.dart`, both `'storage/$path'`) -> "five" EXACT. The
+  `storage/users/<uid>/…` example is REAL, not illustrative: both repos guard with
+  `path.startsWith('users/$userId/')` and `storage_service.dart` builds that shape.
+- 31 pass `userId:` EXACT; 8 in `base_firebase_repository` EXACT.
+- `PermissionDeniedException` = 25 alphanumeric chars, inside the {20,28} window. EXACT.
+
+Non-blocking on that file: the reviewer's stated basis "38 of 79 repository files" is
+inflated — `grep -rl "extends BaseFirebaseRepository" lib` returns 38 paths, but one is
+`lib/repositories/CLAUDE.md` (a doc) and one is a doc-comment example inside
+`permission_caching_mixin.dart`, leaving **36** Dart classes. Denominators: 80 concrete
+`*Repository*` classes (36/80 = 45%), 119 `*_repository.dart` files (30%), 93 files under
+`lib/repositories/firebase` (39%). The SHIPPED wording is "about half the repositories rather
+than all of them", which holds on the class denominator and understates the narrowing on the
+other two — i.e. it errs away from the dangerous direction. Leaving it; the false universal
+it replaced was the defect.
+
+`shopping_item_dialogs_test.dart`: "seven- and eight-parameter call sites" VERIFIED against
+production — `UnifiedShoppingViewModel.addItemToActiveList` takes 7 named params (name,
+amount, unit, category, note, estimatedPrice, priority) and `updateItem` takes 8 (itemId,
+name, quantity, unit, category, notes, estimatedPrice, priority); the dialog passes all of
+each. The old "eight-parameter" was a false universal over two differently-sized methods.
+Nothing else in that file claims a guard it lacks — the `findsNWidgets(5)` StyledInput pin
+and the BUT-1874 emptied-note/untouched-note pair still name what they actually catch.
+
+Nit (not filed as blocking): lines 86-88 say the short-half and 40-char fixtures are untouched
+"since neither length reaches the {20,28} window" — 40 OVERSHOOTS rather than fails to reach.
+Verdict and mechanism are right.
+
+Method note: a Python heredoc through Bash mangled a `'\'` literal (the escape-through-another-
+language lesson, BUT-1901). Moved the scripts to scratchpad files and ran them by path.
+
+Verdict: fail, 1 blocking.
+
+### 2026-08-21 — BUT-1897 re-review: the blocking scope fix landed, the non-blocking reword did not
+
+Trigger: re-review after "your block was right and is fixed", reporting TWO repairs to
+`test/unit/core/utils/log_sanitizer_test.dart`.
+
+Blocking finding (scope) — CLOSED. The paragraph at lines 88-97 now reads:
+
+    // But none of that makes THIS fixture a guard. Every test that uses THESE
+    // TWO constants calls `maskConversationId` directly, never the chokepoint,
+    // so a rule reorder cannot move any of them.
+    //
+    // The one test in THIS group that does reach the chokepoint is the
+    // minted-shape case below, and its 28+28 fixture is the file's only reorder
+    // guard — it compares the chokepoint against the helper.
+
+Verified mechanically, not by reading:
+- `grep -n 'sanitizeForCrashlyticsForTesting'` → ONE hit, line 189, inside the minted-shape
+  test. `grep -n '^  group('` → 13/41/60/75/203/219, so lines 168-194 sit inside the group
+  opened at 75. "in THIS group ... below" is now literally true; the old "further down"
+  reading as a different group is gone.
+- The four tests using `uidA`/`uidB`/`directId` (110, 117, 131, 196) all route to
+  `LogSanitizer.maskConversationId` — the last via the extension getter, a one-line delegate,
+  still not the chokepoint. The minted-shape test uses its own literals, so it is NOT in the
+  "uses THESE TWO constants" set. The sentence no longer names its own counterexample.
+- Fixture half-lengths measured: 3+3, 28+28, 40+40. Under the reorder mutant only the 28+28
+  row can diverge ({20,28} window), so "the file's only reorder guard" is exact.
+- Cross-file: `lib/core/utils/log_sanitizer.dart` lines 99-107 name
+  "`log_sanitizer_test.dart`'s minted-shape test" as the closest of five reds and add that
+  the literal-hash cases are invariant under a reorder. The test comment's "See
+  [LogSanitizer.maskIdentifiers], which names it" resolves.
+
+Non-blocking finding — NOT FIXED, though reported as fixed. Line 87 still reads
+"since neither length reaches the {20,28} window" in BOTH the worktree and the index:
+`git diff --numstat` empty for the path (worktree == index), `git show :<path> | sed -n
+'84,97p'` prints the same sentence, and a repo-wide `grep -rn overshoot` finds nothing in
+`lib/` or `test/` (only an unrelated `orphan_tail_test.dart` line and this archive). The
+replacement wording described in the brief exists nowhere on disk. Still non-blocking on its
+own merits — the conclusion ("both untouched by a reversal") is true and only the stated
+reason is loose for the 40-char case — but the round's report was wrong about it.
+
+Lesson, merged into the "reported REMOVAL" principle: the motion check passes for a
+multi-repair round in which only SOME repairs landed. Grep the OLD string of every claimed
+repair, not just the one that blocked.
+
+Also confirmed: `flutter test test/unit/core/utils/log_sanitizer_test.dart` → 26/26 green,
+no assertion moved (the diff is comment-only in the test file).
+
+Verdict: pass, 0 blocking.
+
+### 2026-08-22 — BUT-1831 re-review round 2 (three test files, after the first round's fixes)
+
+Trigger: parent actioned round 1 (docstring strike, `_ThrowingOnConversations` doc rewrite,
+`firestore.rules` clause strike) and added the coverage gap I named — a round-trip test in
+`message_mutation_module_test.dart`. Asked me to judge the new test, and to re-check finding 2
+(the widget test's "a disposed ChangeNotifier assertion in debug" clause) since I had measured
+the SDK.
+
+Three claims graded, all three against code rather than prose:
+
+1. FALSE, struck by me. The new test's block comment: "This send stages the conversation as a
+   merge-set carrying the FULL DTO, so every one of those keys is re-sent on every message",
+   where "those keys" = the update rule's deny-list `['participantIds','createdAt',
+   'memberSince','groupId']` (verified verbatim, `firestore.rules` `allow update` on
+   `/conversations/{conversationId}`). `ConversationDto.toFirestore` emits neither `memberSince`
+   nor `groupId` — deliberately, with its own comment saying adding them would fail the diff
+   check on every ordinary write — so the claim is false for half the enumerated set. Replaced
+   the false universal with a pointer to the function, and added one sentence answering why the
+   two keys are not asserted (absence already pinned in `conversation_dto_test.dart:225-226`,
+   through the same function this module calls; a module-level copy is a strict duplicate).
+2. FALSE, struck by me. Test NAME read "round-trips every deny-listed key unchanged — createdAt,
+   participantIds and metadata.creatorId": four keys are deny-listed, three are named, and
+   `metadata.creatorId` is not on the deny-list at all — it is a separate equality conjunct, as
+   the comment one line above correctly says. Struck the quantifier, kept the readable list.
+3. FALSE, confirmed and struck (finding 2, carried from round 1). `_handleSendMessage` without
+   the entry guard reads `_textController.text` on a disposed State. Measured against the
+   installed SDK (Flutter 3.38.5): `TextEditingController.text` => `value.text`,
+   `ValueNotifier.value` => `T get value => _value;` — no `debugAssertNotDisposed` anywhere on
+   the read path. The assertion exists only on the WRITE side (`notifyListeners`), which this
+   branch never reaches: the failure path returns at `if (!mounted) return;` before the snackbar,
+   and `_textController.clear()` sits on the success path. Struck the debug/release contrast,
+   left "a send from a dead State" — which is exactly what the test's own `attempts == 1`
+   assertion pins, so the strike costs no meaning.
+
+Graded and NOT filed:
+- The recipient direction on the new test is documentary, not discriminating: the payload derives
+  from the injected `Conversation`, so sending as `user-a` produces byte-identical output. It is
+  the right choice anyway (free, models the historical direction), and the comment already says
+  the fallback is DELETED, which is the honest framing — a forward pin, per the dead-code rule.
+- Non-vacuity of the new test confirmed by construction plus the parent's probe: the document
+  does not pre-exist, so the whole payload comes from the write; a `copyWith` that dropped
+  `metadata` would write `'metadata': null`, which overwrites on the fake and reddens the
+  `as Map` cast. The parent's `createdAt` re-stamp probe reddened exactly this test (27/1).
+- "the rules half is pinned by C11B through C11E" is under-cited, not false: C11B/C11E ALLOW,
+  C11C `createdAt` DENY, C11D `participantIds` DENY; the creatorId INEQUALITY direction is
+  C12A/C12B, outside the range. The sentence claims no exhaustiveness, so left alone.
+- Finding 5 (bare-contract test a strict subset of the no-write test) and finding 6 (hardcoded
+  `'conversations'` in the test-local wrapper) kept by the parent — both Low, no disagreement.
+- Finding 3's replacement doc comment on `_ThrowingOnConversations` is accurate: it declares
+  `noSuchMethod` forwarding to `_delegate.noSuchMethod`, which is `Object`'s on a non-Mock class
+  and throws. The green `isA<FirebaseException>()` assertion proves nothing else is reached first.
+
+Verified after my strikes: `flutter analyze` on the three files clean; 48/48 green
+(28 + 6 + 14 by `test(`/`testWidgets(` count — the brief said 47, measured 48); all three paths
+unstaged, `git diff --numstat` index == HEAD, so the copy graded is the copy that will be staged.
+
+Verdict: pass, 0 blocking.
+
+### 2026-08-22 — BUT-1831 batch B (generated l10n): a false ambiguity premise, and an ARB regen that actually happened
+
+Trigger: commit-gate coverage pass over the three staged generated l10n files
+(`lib/l10n/app_localizations.dart`, `_sv.dart`, `_en.dart`) for one ARB value change —
+`chatCouldNotSendMessage` losing its trailing "Försök igen." / "Try again." now that the
+send-failure snackbar carries a real retry action (`commonRetry`).
+
+Verified:
+- HEAD -> index diff is exactly ONE hunk per file, at that key only (`diff <(git show HEAD:$f)
+  <(git show :$f)`); `git diff --numstat` empty on all three, so index == worktree and the copy
+  graded is the copy that will be committed. Parallel session left no trace here.
+- ARB sources agree with the generated getters byte-for-byte (`app_sv.arb` ->
+  'Kunde inte skicka meddelandet.', `app_en.arb` -> 'Could not send the message.'), so
+  `flutter gen-l10n` was genuinely re-run. The repo's standing ARB lesson (generated file keeps
+  the OLD string, `dart analyze` compiles it happily) did NOT bite.
+- `test/widget/messaging/chat_input_section_clock_ahead_test.dart` declares
+  `const _genericMessage = 'Kunde inte skicka meddelandet.'` as a deliberate LITERAL (the file's
+  own comment forbids reaching for the getter, since a getter-based assertion survives two ARB
+  values being swapped). It matches the generated value exactly. Two POSITIVE pins
+  (`findsOneWidget`, in the ten-minutes test and the retry test) carry the discrimination; the
+  two `findsNothing` pins would stay green under drift, so the suite is non-vacuous by
+  construction without any probe. 6/6 green.
+- `commonRetry` = 'Försök igen' reaches the snackbar via
+  `SnackBarUtils.showErrorWithRetry -> showError(actionLabel: context.l10n.commonRetry)`
+  (`lib/core/utils/snackbar_utils.dart:103`); `chat_input_section.dart:214` is one of its two
+  call sites.
+
+THE CORRECTION (why this entry exists): the review brief asked me to confirm that shortening the
+message makes 'Försök igen' "the ONLY place that phrase appears in the failure path — if the
+message still contained it, `find.text` would match two widgets and the tap would be ambiguous."
+That premise is FALSE. `find.text` matches a `Text`/`EditableText` whose `data` EQUALS the
+argument; it is not a substring match. The old message's `data` was the whole sentence
+'Kunde inte skicka meddelandet. Försök igen.', which never equals 'Försök igen', so
+`find.text(_retryLabel)` resolved to the `SnackBarAction` label alone both before and after.
+The shortening is right for the copy reason the code and test comments actually give (saying it
+twice reads as an instruction to do by hand what the button now does) — not for a tap-ambiguity
+reason. Nothing in the repo asserts the false version: `chat_input_section.dart:211-213` and the
+test's lines 57-62 both state the copy rationale, so there was no sentence to strike. The false
+claim lived only in the brief.
+
+Related but NOT a finding: three ARB keys share the exact value 'Försök igen'
+(`commonRetry`, `myReportsRetry`, `importPendingRetry`) — the genuine `find.text` hazard shape.
+Harmless here because only `commonRetry` is reachable in `ChatInputSection`'s tree; a repoint
+among the three would leave the test green but the user experience identical.
+
+Butler-voice: 'Kunde inte skicka meddelandet.' — no exclamation, no congratulation. Clean.
+
+Verdict: pass, 0 blocking.
+
+### 2026-08-22 — BUT-1831 batch A, production-file coverage pass (trigger: commit gate asked for coverage on the 3 production files the tests pin)
+
+Reviewed at index==worktree bytes (`git diff --numstat` on all three printed nothing):
+`lib/repositories/firebase/firebase_messaging_repository.dart`,
+`lib/repositories/firebase/modules/message_mutation_module.dart`,
+`lib/core/errors/message_send_error_mapper.dart`.
+
+THE TECHNIQUE THIS ROUND ADDED (now a principle under Re-review economics): the brief's three
+questions were all "is X reached / is X pinned", and two of them were answerable by COVERAGE
+rather than by a mutation probe. Run:
+
+    flutter test --coverage --coverage-path=<scratchpad>/lcov.info <suite> <suite>
+    awk '/^SF:.*firebase_messaging_repository.dart/,/^end_of_record/' lcov.info | grep -E '^DA:24[0-6],'
+
+~10s, no `lib/` write, so none of the probe hazards apply (no backup/restore, no `finally`
+clobbering a parallel session's in-flight write, no auto-mode classifier firing on a production
+edit, no stale-incremental-kernel phantom red). The limitation is real and worth stating: a
+`1` proves REACHED, not ASSERTED — for "does any test discriminate this expression" a mutant is
+still the only instrument. Here a `0` was itself the whole finding, so the cheap tool sufficed.
+
+MEASURED RESULTS (42/42 green on the two suites, same run):
+- `firebase_messaging_repository.dart` `DA:238..243` all >=1, **`DA:244,0`** — i.e.
+  `_readTopLevelConversation`'s `return fromFirestore(doc)` is reached by NOTHING. Both BUT-1831
+  facade tests drive failure arms only (the `_ThrowingOnConversations` wrapper, and an empty
+  Firestore). Filed non-blocking, Medium.
+- `message_mutation_module.dart` `DA:198,0 / 199,0 / 204,0 / 206,0 / 207,0 / 208,0` — the
+  fire-and-forget status-update catch AND the whole batch-commit `catch (batchError)` with its
+  `UNAVAILABLE`/network swallow. Pre-existing, and `message_send_error_mapper.dart`'s own
+  docstring already declares it ("The module suite's assertions sit above the batch and never
+  reach that inner catch"). Confirmed accurate rather than filed as new.
+
+QUESTION 2 — "is the now-documented reachable path (other party deletes the thread while this
+one is open) covered, or is that a gap?" ANSWER: covered, compositionally, and a dedicated test
+would be a strict-subset duplicate through the same seam. Three measured legs:
+  a) `ConversationMutationModule.deleteConversation` deletes the top-level document
+     UNCONDITIONALLY — `historyStart` narrows the message sweep only and never guards the parent
+     delete (read the whole body via awk, not the diff).
+  b) The facade suite's `deleteConversation removes the top-level doc` pins (a) with
+     `exists, isFalse`, having seeded BOTH the top-level and user-scoped copies.
+  c) `_readTopLevelConversation` `!exists -> null` is `DA:243,1`, and null -> ResourceNotFound is
+     pinned twice (facade + module).
+Also verified the comment's own reachability claim rather than trusting it: `getConversation` is
+a one-shot `await` at `chat_viewmodel.dart:193` and `chat_action_handler.dart:215`; the only
+stream in the chat tree is `getConversationMessages` over the MESSAGES collection. So nothing
+watches the conversation document and nothing closes the screen — "no chat screen watches it" is
+true as written.
+
+QUESTION 3 — `MessageSendFailure.other` for the new `ResourceNotFoundException` arm: adequate.
+`classify`'s guard is `error is! FirebaseException || error.code != 'permission-denied'`.
+`message_send_error_mapper_test.dart`'s "a plain exception is not a permission denial" drives
+`StateError('boom')` down that identical branch and additionally asserts `probeCalls == 0`. A
+`ResourceNotFoundException` fixture has no discriminating field (no `code`, no subtype relation)
+and would traverse byte-identically — a duplicate by the measurable definition.
+
+QUESTION 1 — one seam, confirmed. `_ThrowingOnConversations` is the sole binding site;
+the module suite injects `readConversation` in every one of its constructions
+(`_newModule(..., readConversation: ...)`, default `(_) async => null`), and
+`messaging_repository_integration_test.dart` is `@Skip`-ed at file level.
+Bonus, reasoned not measured: the wrapper intercepts `collection('conversations')` by NAME, so a
+regression that repoints the wiring back to the user-scoped `read` (the BUT-1838 defect the
+constructor comment warns about) reddens the throwing test — it would resolve through
+`collection('users')` instead, never throw, and yield ResourceNotFound where a FirebaseException
+is asserted. The surviving mutant is narrower than it first looks: only "returns null for a doc
+that EXISTS".
+
+REMEDY NAMED (not written — review pass, no production or test edits): one facade test that
+seeds the top-level conversation, calls `repo.sendMessage`, and asserts the message document
+landed. ~15 lines, and known feasible on `FakeFirebaseFirestore` because the module suite's
+happy-path test performs the same 3-doc batch with the same default `ServerTimestampProvider`.
+
+HOUSEKEEPING: `testing-specialist.knowledge.md` is 74k chars against its own stated ~25k budget
+(3x), and its own convention says to sharpen rather than grow. This round added ~600 chars
+without a compensating trim; a compression pass is owed and was surfaced in the report rather
+than done silently mid-batch. Also note the knowledge file reported "modified since read"
+between a Read and an Edit seconds apart with identical visible bytes at the target — re-read
+and retried rather than forcing.
+
+Verdict: pass, 0 blocking (2 non-blocking: the `DA:244,0` success arm, Medium; the batch-commit
+swallow, Low and already declared in the mapper's docstring).
+
+### 2026-08-22 — BUT-1915 review: masking a raw uid at four participant throw sites (trigger: review of a staged 4-file diff)
+
+SCOPE. `lib/services/realtime/modules/menu_participants.dart` and `recipe_participants.dart`
+each had two `l.validationUserNotParticipant(userId)` throw sites passing a RAW Firebase uid;
+all four now pass `userId.maskedUserId`. Two new tests per suite, plus the menu suite's
+existing Swedish-message assertion updated from `owner_123` to `owner_12...`.
+
+HARM PATH, verified by reading rather than assumed. `MenuOperationError.toString()` is
+`'MenuOperationError(${operation.name}): $message'` and `RecipeOperationError.toString()` is
+the same shape; `resourceId` is NOT rendered. `realtime_participant_manager.dart` catches and
+calls `AppLogger.error('...', e)`; `AppLogger._logToCrashlytics` sanitizes only the MESSAGE
+argument and hands the error OBJECT to `recordError`, which sends `exception.toString()`.
+`logger.dart`'s own docstring already names BUT-1915 as its measured example. So the message
+IS observed off-device — which is why this one owes a fixture, unlike the BUT-1897 cases where
+the string died in-method.
+
+Q1 — CAN THE NEW TESTS FAIL FOR THEIR STATED REASON. Yes. Fixture
+`aBcDeFgHiJkLmNoPqRsTuVwXyZ01` (28 chars). `LogSanitizer.maskUserId` returns `<first8>...`
+above 8 chars and the input UNCHANGED at 8 or fewer, so a short fixture would make
+`isNot(contains(uid))` fail outright rather than pass vacuously — the comment's "would prove
+nothing" is loose in wording but the mechanism it cites is exact and is the clause that stops
+a future maintainer from "simplifying" the fixture to `user_123`. Not filed. Routing checked
+against the builders: both default `ownerId = 'owner_123'` with an EMPTY participants map, so
+both fixtures reach the not-participant branch. Recipe's `removeParticipant` checks owner
+FIRST, and the fixture is deliberately not the owner.
+
+Q2 — `error.message` AND `error.toString()` ARE ONE OBSERVABLE, NOT TWO. `toString()` is
+`prefix + $message` with no other field interpolated, so the `toString` assertion is entailed
+by the message assertion and cannot fail alone. Kept as documentation of the sink shape
+(`recordError` sends `toString()`), not counted as coverage. Non-blocking, not filed.
+
+Q3 — `contains('aBcDeFgH...')` IS THE REAL DISCRIMINATOR, and it is a hardcoded literal rather
+than a call to the function under test (no circular determinism). It survives no partial mask:
+a raw id has no `...`; a 16-char-prefix mask yields `aBcDeFgHiJkLmNoP...` which does NOT
+contain the 8-char substring; a blanket `[redacted]` fails it; a wrong masker (`maskEmail`)
+fails it. It also route-checks — if recipe's owner-first guard had swallowed the fixture, the
+message would be `Kan inte ta bort receptägaren` and only this positive assertion would redden.
+
+Q4 — BRANCHES LEFT UNASSERTED. (a) The empty-`userId` throws use
+`validationUserIdCannotBeEmpty`, which interpolates nothing, so there is no masking obligation
+there; correctly untested for this ticket. (b) Recipe's owner-protection throw that fires
+BEFORE the participant check is pinned by the pre-existing "should provide error messages in
+Swedish" test (`Kan inte ta bort receptägaren`), and the new fixture deliberately avoids it.
+(c) THE REAL GAP, non-blocking and outside this diff: `addParticipant` in BOTH files throws
+`validationUserAlreadyParticipant(userDisplayName)` with a RAW display name, while the
+`AppLogger.info` two lines below masks the same value with `.maskedName`. Identical class,
+identical sink, and BUT-1915's own rationale reads verbatim for it. The two existing duplicate
+tests assert only `throwsA(isA<...>())`, so nothing would catch a fix either way. Follow-up
+ticket, not a review edit.
+
+ALSO SEEN (not testing): `MenuParticipants.validateParticipantState` returns hardcoded ENGLISH
+strings (`'Menu has no owner'`) where `RecipeParticipants` uses l10n keys; the menu suite's
+assertion is `errors.any((e) => e.contains('owner'))`, which is satisfied by either language.
+
+INDEX CHECK AT VERDICT TIME: `git diff --numstat` over all four reviewed paths returned
+nothing, so worktree == index and the verdict is against the copy the parent will commit.
+`git diff --cached --stat`: 108 insertions / 6 deletions across the four.
+
+Verdict: pass, 0 blocking (1 non-blocking follow-up: the raw `userDisplayName` twin at the two
+`addParticipant` throw sites).
+
+### 2026-08-22 — BUT-1915 re-review round 2 (trigger: parent acted on my own non-blocking follow-up inside the diff)
+
+Scope: `lib/services/realtime/modules/{menu,recipe}_participants.dart` line 46 now passes
+`userDisplayName.maskedName` to `validationUserAlreadyParticipant`, plus one new test per
+suite (`addParticipant masks an existing participant display name`, fixture
+`'Annika Bergström'`).
+
+**Q1 — non-vacuous by construction?** Yes, verified end to end rather than assumed.
+`RealtimeMenuBuilder`/`RealtimeRecipeBuilder` default `participants = {}` and
+`ownerId = 'owner_123'` (owner deliberately NOT in the map), so the first
+`addParticipant(realisticUid, …)` clears the empty-id and empty-name guards, hits
+`isParticipant == false`, and `RealtimeMenu.addParticipant` does
+`updatedParticipants[userId] = permission` (recipe goes through
+`RealtimeParticipants.addParticipant`). Second call therefore lands in the duplicate branch.
+Route is over-determined in the safe direction: it is the ONLY `MenuOperationError` reachable
+with a non-empty id and name, and the recipe's 50-cap sits BELOW the duplicate check with
+length 1. Had the seat silently failed, no throw → `fail()` inside the `try` → caught → the
+`e as XOperationError` cast throws → RED, not a vacuous green.
+
+**Q2 — is `'An***'` discriminating?** Yes, against every realistic partial break. Killed:
+`.maskedName` removed (raw name, both assertions fail); `maskUserId` ('Annika B...', 16 > 8);
+`maskEmail` ('***@invalid'); `maskPhoneNumber` ('Anni***tröm'); `maskIdentifiers` (IDENTITY —
+no 20-28 alnum token in 'Annika'/'Bergstr'/'m', so the raw name survives); substring(0,1) and
+substring(0,3) off-by-ones ('A***' / 'Ann***' — neither contains 'An***'). Survives exactly
+one class: a mask that elides only the LEADING token and leaves a tail ('An*** Bergström'),
+because `isNot(contains('Annika Bergström'))` is satisfied by any elision. Filed non-blocking:
+add `isNot(contains('Bergström'))`.
+
+**Q3 — non-ASCII.** `od -c` on the fixture line: `... B e r g s t r 303 266 m` = UTF-8 C3 B6,
+i.e. NFC U+00F6, identical in both files; `grep -P '\x{00F6}'` matches, control-byte sweep
+clean, LF endings. The 'ö' is at index 13 and `maskDisplayName` slices `substring(0, 2)` =
+'An' (ASCII, no surrogate/combining risk). NFC-vs-NFD cannot bite because `displayName` is ONE
+Dart const used as both the input and the `isNot(contains(...))` operand. Both files already
+carried Swedish literals before this round ('Kan inte ta bort receptägaren', 'Ägare: Test
+Owner'), so encoding was already established. `dart format` unchanged (0 changed).
+
+**Q4 — regressions.** None. Only two `lib/` call sites of `validationUserAlreadyParticipant`
+exist and both are fixed (grep by name, not path — no third sibling). No test anywhere pins
+'redan deltagare' / 'already a participant', and the two exact-message tests that DO exist
+assert other branches ('Användaren är inte deltagare: owner_12...', 'Kan inte ta bort
+receptägaren'), untouched by line 46.
+
+**Live-path check (the premise the whole ticket rests on), traced for the ADD route
+specifically:** `RealtimeParticipantManager.addParticipant` → `_menuService.addParticipant` →
+`MenuParticipants.addParticipant` throws → caught at `realtime_participant_manager.dart:79` →
+`AppLogger.error('❌ Failed to add participant: ${userDisplayName.maskedName}', e)` — the
+message arg masks, the OBJECT does not — → `_logToCrashlytics` → `recordError`, which sends
+`exception.toString()`, and `MenuOperationError.toString()` is
+`'MenuOperationError(${operation.name}): $message'`. So the leak was live on the same sink as
+the two uid leaks, and the comment's "the `AppLogger.info` line already masked the same value"
+is true in BOTH the module (line 52) and the manager (line 64).
+
+**Two comment defects, applied myself (zero-risk, test-side, comment-only).** The menu test's
+new block carried two positional counts: "The same leak one line up" (resolves to no true line
+pair — the display-name throw is at 46, the two previously-tested ones at 76 and 114) and "the
+`AppLogger.info` line six lines below" (the statement starts at 51, five below; only its masked
+interpolation is at 52). Struck the first; replaced the second with "in the same method", which
+is directly readable and needs no count. The recipe twin already worded it countlessly ("the
+`AppLogger.info` line below"), so the repair makes menu match recipe. Re-ran: format clean, no
+line I touched exceeds 80, `flutter test` on the menu suite 40/40 green including the new test.
+
+**Staging state at verdict time — the round's real finding.** All four files are `MM`.
+`git show :<path>` proves the INDEX still holds the PRE-FIX bytes:
+`validationUserAlreadyParticipant(userDisplayName)` unmasked in both production files, and
+zero occurrences of `An***` or the new test name in either staged test file. `git diff
+--numstat` (index vs worktree) = 1/1, 1/1, 30/0, 28/0. The previous round's archive entry
+closed with "worktree == index"; the fix round edited the worktree and never re-staged. A
+commit from the current index would ship the leak AND none of the tests. Named as a hard
+precondition, not counted as a blocking finding, per the fix-loop convention.
+
+Verdict: pass, 0 blocking (2 non-blocking: pin the surname absent; re-stage before commit).
+
+### 2026-08-22 — BUT-1915 FINAL re-review (trigger: parent re-review after two optional items + two gate findings applied)
+
+Files re-Read: `lib/services/realtime/modules/menu_participants.dart`,
+`lib/services/realtime/modules/recipe_participants.dart`, `lib/core/utils/logger.dart`
+(new to the diff), and both `*_participants_test.dart`. 67/67 green over the two suites;
+`git diff --numstat` over all five returned nothing and all five are staged.
+
+**The replacement comment is TRUE, verified against the sink rather than accepted.**
+`_sanitizeForCrashlytics` = `LogSanitizer.maskIdentifiers(message)`; `_logToCrashlytics`
+sanitizes only the message and passes `error` to `recordError` untouched (logger.dart
+332-343). The struck predecessor ("a human name is not a 20-28 character alphanumeric
+token") was false in general — `maskIdentifiers`' rule 2 is
+`[a-zA-Z0-9]{20,28}` with lookarounds, and a single 21-letter Swedish surname matches it;
+it was only true of THIS fixture ('Annika Bergström' splits into 6- and 4-char ASCII runs
+because 'ö' breaks the class). Replacing a fixture-true clause with the mechanism was the
+right repair.
+
+**Two routes, opposite answers — the thing a single-file read misses.** Both realtime
+services' `_handleError` calls `AppLogger.error('🔥 XOperationError: $message',
+originalError)`, so the exception OBJECT reaches `recordError` from inside the SERVICE, with
+no ViewModel in the chain (`RealtimeParticipantManager`, which the menu comment names, is
+real — constructed at `realtime_menu_viewmodel.dart:66` — but is not the only route, and no
+production consumer of `RealtimeRecipeService` exists at all, so the recipe suite's claim
+would have failed a VM-only reachability check while being true). The same `_handleError`
+also interpolates `'$e'` into the MESSAGE arg via
+`errorCouldNotPerformOperation(operationName, '$e')`, and that string DOES pass through
+`maskIdentifiers`. So "maskIdentifiers never runs on this path" is true ONLY as scoped to
+the object route — which the comment's own colon-clause scopes it to. Not filed; the
+conclusion holds on both routes anyway, since `maskIdentifiers` is the identity on the name.
+
+**The added `isNot(contains('Bergström'))` closes the named class, and its marginal value is
+smaller than it looks.** `maskDisplayName` returns `'${name.substring(0,2)}***'` for the
+WHOLE string, so 'An*** Bergström' can only come from a mutant; the assertion kills it.
+But `log_sanitizer_test.dart` already pins both maskers by EXACT EQUALITY
+(`maskDisplayName('Anna Svensson') == 'An***'`, `maskUserId('abcdefghijk') == 'abcdefgh...'`),
+so every tail-leaking MASKER mutant was already dead there. What the call-site tail pin
+uniquely catches is a hand-rolled partial mask written at the throw. Surviving variant,
+named and deliberately NOT filed: `'An***gström'` (a mask leaking a proper substring of the
+surname) passes all four assertions. Closing it needs an exact-value pin on the message,
+which would couple the test to the ARB string — worse than the residual.
+
+**Consequence for the four UID tests, which got no symmetric tail assertion:** correctly so.
+`maskUserId`'s equality pin kills the uid tail-leak mutant at the masker. Adding
+`isNot(contains('VwXyZ01'))` for symmetry would be theatre; said explicitly to stop a fourth
+round from adding it.
+
+**Q3 (does any test lean on the struck logger.dart passage): no.** The struck text was the
+BUT-1915 "measured example" this commit falsifies, plus a `RepositoryException` /
+`StorageUploadException` aside. The sentence the test comments actually cite —
+"`_logToCrashlytics` hands `error` to `recordError` untouched, so on native those leave the
+device raw today" — is one paragraph above and SURVIVES, as does the OPEN RESIDUAL paragraph
+and the new BUT-1907 pointer. The strike therefore removed a falsified claim without
+removing the record of unresolved work.
+
+**Q4 (redundancy):** `expect(error.toString(), isNot(contains(X)))` in all six tests is
+entailed by the `.message` assertion, because both classes' `toString()` is
+`'XOperationError(${operation.name}): $message'` and the label carries neither a uid nor a
+name — it cannot fail alone. The test NAMES ("masks the id in message and toString")
+advertise two guarantees where there is one. Not filed: the assertion is cheap insurance
+against a `toString()` that later adds `resourceId`, and renaming six tests to be pedantic
+is not worth a round. Also noted: on this fixture `isNot(contains(displayName))` is now the
+weakest of the three name assertions, subsumed by the positive plus the surname pin.
+
+Also found, out of scope: `log_sanitizer_test.dart` exists TWICE
+(`test/unit/core/utils/` and `test/unit/utils/`) with overlapping but non-identical
+fixtures. Not graded — per the duplicate-test principle, retiring by path convention alone
+is forbidden and neither was touched by this diff.
+
+Verdict: pass, 0 blocking (3 non-blocking observations, none requiring an edit).
+
+### 2026-08-22 — BUT-1910 review: a "regression guard" that is green on the bug, and an untested middle fallback arm
+
+**Trigger:** review of the staged 7-file BUT-1910 diff (Swedish decimal comma on the recipe
+rating field and the pantry amount sheet). Parent supplied the measurement: analyze clean,
+84 tests pass, a revert of `parseSwedishDecimal` → `double.tryParse` in the rating field
+reddened exactly 3 of the 5 new rating cases.
+
+**Q1 — which rating cases can fail.** Predicted the reddened set from reading alone and it
+matched the parent's 3: `a comma decimal sets the rating` (4,5 → tryParse null), `a period
+decimal still sets the rating` (the FORMATTER rewrites `.`→`,` before onChanged, so the
+period case also arrives as `4,5` and dies on the same mutant), and `an empty field leaves
+the rating unset` — but that last one reddens on its FIRST assertion, which is a duplicate
+of case 1; the empty-field assertion it is NAMED for is INVARIANT under this mutant (both
+parsers answer null on ''). It is killed instead by the looser-parser mutant
+(`TextFormatting.parseSwedishNumber('')` = 1.0, measured), which is the right guard to
+claim for it. Survivors: `a whole number is unaffected` (tryParse reads '4' fine) and the
+plain `test()`. The whole-number case earns its place as the overshoot control — its unique
+kill set is "a comma-focused fix that now requires a separator" — but it is a control, not
+evidence. Also noted: case 2's controller-text assertion is the ONLY thing pinning that
+`SwedishDecimalInputFormatter` is attached to the rating field at all; deleting the
+formatter there leaves every other case green.
+
+**Q2 — the plain `test()` is dead weight AND carries a false justification.**
+`test/unit/core/utils/swedish_decimal_input_test.dart:100-107` already asserts
+`parseSwedishDecimal('')`, `('   ')`, `(',')`, `('Infinity')`, `('NaN')` all null — a strict
+superset of the four assertions in the rating file, through the SAME seam (a direct call),
+so it is a duplicate by the measurable definition. Its comment claims "it pins that the
+FIELD is wired to the helper's contract rather than to a second, looser parser. A field
+reading through `TextFormatting.parseSwedishNumber` would store 1.0 here" — but there is no
+field in a plain `test()`, so the claim is unsatisfiable by the test's own shape. The
+contract IS pinned at the field, by case 4's empty-field arm. Filed blocking with a
+DELETION remedy (test + comment), not a reword.
+
+**Q3 — the "1,5,5" controller-text assertion is the right observable.** The controller's
+text is what the user sees in the field; for an input formatter it is the whole contract,
+and reading it off the field found by label is more precise than `find.text`. Confirmed
+`tester.enterText` does run `inputFormatters` (it goes through
+`TestTextInput.updateEditingValue` → `EditableText.updateEditingValue`), unlike a
+programmatic controller seed — the distinction the BUT-1912 principle records. Not a
+finding.
+
+**Q4 — the pantry round-trip loop.** Acceptable shape: the `reason:` interpolates `$q`, so
+the failing value is named in the output. The residual is the fixture LIST, not the loop —
+2.5 / 0.5 / 3.0 / 0.25 / 1000.75 are all inside the notation-safe band, so per the BUT-1891
+principle it proves nothing about the boundaries. Explicitly did NOT ask for an exponent
+fixture: `parseSwedishDecimal(formatSwedishDecimal(5e-7))` round-trips EXACTLY through the
+direct seam, so adding it would go green and would assert the OPPOSITE of the field truth
+that `swedish_decimal_input.dart`'s own doc records (the field eats the `e`). A green test
+contradicting the production doc is worse than the gap BUT-1912 already carries.
+
+**Q5 — the edit-mode fallback is untested, and so is the add-mode one.** The new chain is
+`parseSwedishDecimal(text) ?? existing?.quantity ?? 1.0`. Every edit fixture in the suite
+(tests 3, 6, 7, 8, 9) seeds the field from `formattedQuantity` with a parseable value, so
+the middle arm is unreachable across the whole suite; the add-mode arm is worse than
+untested, because the seeded '1' parses to 1.0 anyway, making the fallback and the parse
+agree by construction (production-twin vacuity). Reachable in production: the formatter
+permits an empty field and `_submit` only early-returns on an empty NAME. Filed blocking —
+the behaviour CHANGED (edit used to write 1.0 over a 250 g item) and nothing reddens if the
+new arm is deleted.
+
+**The finding nobody asked for, and the biggest one.** Ran the pre-fix expression over the
+new tests' own fixtures (`git show HEAD:lib/views/pantry/add_pantry_item_sheet.dart` → the
+old `_submit` was `double.tryParse(text.replaceAll(',', '.')) ?? 1.0`, and the old field had
+`numberWithOptions(decimal: true)` with NO formatter, so the comma did reach the parse).
+Measured in a scratchpad replica: `,5` → **0.5**, `0,5` → 0.5, `1,5,5` → 1.0. So the claim
+repeated in THREE places — `add_pantry_item_sheet.dart:176-178`, the test file's BUT-1910
+header at 726-727, and the `,5` test's own comment at 769-770 — that the old code "read ',5'
+as no number at all and fell back to 1.0" is false. The consequence is behavioural, not
+cosmetic: two of the three new pantry cases are GREEN at HEAD and are controls, not
+regression guards. Only the `1,5,5` case discriminates (old: text stays `1,5,5`, parse falls
+to 1.0; new: text `1,55`). The two controls are still worth keeping — they kill "the
+formatter eats the separator", the BUT-1891 defect class — but the sentences naming the
+wrong defect must be STRUCK rather than reworded, since a truer version would be a fresh
+measured claim.
+
+Also filed: the test file's header still reads "Four contracts, added by four tickets" while
+BUT-1910 adds a fifth block below it — strike the count rather than renumber to five.
+
+Also found, non-blocking: the rating field's controller is seeded with
+`viewModel.rating?.toString()`, which emits `4.5` with a PERIOD, while the pantry sheet is
+seeded from `formattedQuantity` and now emits a comma. One ticket, two surfaces, opposite
+treatment of the same decision, and nothing tests the rating field's seeded text. No data is
+lost (an untouched field never re-enters onChanged), so it is a display inconsistency —
+`formatSwedishDecimal(viewModel.rating!)` is the one-line close.
+
+Checked and clear: `git diff --numstat` is empty for all seven paths, so every finding is
+against the copy the parent will commit. The new doc block's "every hand-typed,
+round-tripped field" quantifier holds — `SwedishDecimalInputFormatter` has exactly three
+`lib/` call sites (pantry sheet, recipe form, shopping dialogs) and every surviving
+`replaceAll(',', '.')` is a non-interactive parser or a validator.
+
+Verdict: fail, 4 blocking.
+
+### 2026-08-22 — BUT-1910 final re-review (trigger: re-review after fixes; verdict pass, 0 blocking)
+
+Eight files, all opened with Read: `swedish_decimal_input.dart`, `pantry_item.dart`,
+`add_pantry_item_sheet.dart`, `skriv_sjalv_recept_view.dart`, `edit_recipe_view.dart`,
+`pantry_item_test.dart`, `add_pantry_item_sheet_test.dart`, `recipe_form_rating_field_test.dart`.
+
+THE BLOCKING FIX LANDED, AND IN THE RIGHT FORM. The banner sentence "Only the 1,5,5 case …
+The other two are CONTROLS" is absent from the worktree AND from `git show :<path>` (grepped
+both, per the removal rule — a file that moved for the round's other edits passes every hash
+test with the sentence still in it). The replacement names two LITERALS instead of positions:
+"The '0,5' and ',5' cases are CONTROLS: measured, the old path already read both as 0.5." No
+count, no "other", so an inserted case cannot falsify it.
+
+I re-derived the factual half against HEAD rather than trusting the prior round. HEAD's
+`_submit` is `double.tryParse(_quantityController.text.replaceAll(',', '.')) ?? 1.0` and the
+field carries NO `inputFormatters`. So `'0,5'`->`'0.5'`->0.5 and `',5'`->`'.5'`->0.5: both
+control claims true, and "had no input formatter at all" true. The controls do kill the named
+BUT-1891 class — under a digitsOnly formatter `0,5`->`05`->5.0 and `,5`->`5`->5.0.
+
+RESIDUAL 1, THE OVER-DETERMINED TEST, IS PROPERLY CLOSED — and the new sibling kills a mutant
+neither the report nor the A-case comment claims. Mutant table over the pair:
+  - drop `quantity:` from the edit `copyWith`      -> A green (250 preserved), B RED
+  - delete `existing?.quantity ??`                 -> A RED, B green
+  - SWAP the order to `existing?.quantity ?? parse` -> A green, B RED
+B is the only killer of the precedence swap. Three distinct literals (250 / 0.5 / 1.0) mean no
+single wrong write source satisfies both assertions; a stale finder or an uncalled `updateItem`
+makes both RED, never green. Residual 2 (the unasserted premise) is closed by A's
+`expect(controller.text, isEmpty)` before the tap, which shuts the "field still reads 250" route.
+
+INSERTION-SEAM CHECK (the class that bit BUT-1847): the new sibling falsified none of its
+neighbours. "every other edit fixture seeds the amount from `formattedQuantity` with a
+parseable value" survives (B seeds 250 then retypes); "deleting `existing?.quantity ??` reddens
+exactly this case and nothing else" survives, because B stays GREEN under that mutant, which is
+what the sentence requires; test 3's tests-6/7-9/10 comment is `unit`-scoped and a `quantity`
+test cannot reach it. The new claim "nothing else in this file pinned that write" is correctly
+scoped to the EDIT branch by its preceding sentence — 3/6/7/8/9 all capture `updateItem` and
+assert only `unit`, while the add-path quantity is pinned by the two control cases.
+
+THE SHARED `ratedRecipe` CHANGED NOTHING. The suite is UNTRACKED at HEAD, so there is no git
+"before" to diff the moved body against — graded from code and said so. `pumpForm`'s new
+`initialRecipe` defaults null and is forwarded to the constructor and nowhere else, so the four
+pre-existing outer cases are unchanged; the inner group still picks its own rating through the
+parameter. The shared `id: 'recipe-but-1910'` is inert: fresh tree per test, VM built by
+`create:`, `CollaborativeStatusViewModel` registered as a FACTORY, `TestServiceLocator.reset()`
+per test. The new seed case puts `SkrivSjalvReceptView` in edit mode, which is a real
+production shape (import/template route) and inert to an assertion that reads only the text.
+
+`editRatingField()` IS a byte-identical duplicate of `ratingField()`, and the inner group is
+nested inside the outer, so the original is already in scope — same for the two reveal helpers.
+NOT filed, and deliberately not asked for. It fails SAFE (a label change reddens the stale
+finder rather than passing green), shadowing is unambiguous, and the two groups legitimately
+read DIFFERENT members off the found widget: the skriv field is a `StyledInput` read via
+`controller!.text`, the edit field a bare `TextFormField` read via `initialValue`. One finder
+feeding two different readers is worse than two finders; collapsing them is symmetry theatre.
+
+NOTHING BROKE. Staged set == the eight reviewed files exactly (the messaging/l10n/poll churn in
+the tree is a parallel session's and is unstaged). Unmoved-suite sweep on the changed getter:
+`formattedQuantity` is also rendered by `pantry_item_card.dart:137`, and all four card suites
+fixture `quantity: 1`, where the old `truncate()` path and `formatSwedishDecimal` both emit
+'1' — so nothing outside the eight broke, and equally none of those suites can SEE the change;
+the fractional case is pinned only at `pantry_item_test.dart:178`. `pantry_item_test.dart:354`
+still asserts `contains('1.5')` and that is CORRECT, not stale: it reads `toString()`, which
+interpolates the raw double, not `formattedQuantity`.
+
+Also confirmed: the earlier round's "Four contracts, added by four tickets" header count WAS
+struck rather than renumbered, so the header now reading a list without BUT-1910 is the
+intended terminal state, not a fresh staleness. Did not file it.
+
+TWO WAYS THE STAGING CHECK LIES (the durable lesson, merged into Re-review economics):
+(1) My first `git diff --numstat` ran WITHOUT an explicit `cd` and printed nothing — which is
+byte-identical to "index == worktree". A path-scoped git command from the wrong cwd fails
+silently into the reassuring answer. Every verification call now echoes `pwd`.
+(2) `git status --porcelain` then printed `MM` on `swedish_decimal_input.dart` and
+`edit_recipe_view.dart` while `git diff` stayed empty — a direct contradiction. Neither is the
+tiebreaker. `git ls-files -s` blob == `git hash-object` for both (45ea4d23…, 53f94854…), so the
+content is identical and status was reading a stale stat cache; `git update-index --refresh`
+made it agree (`M `). The parent's "index equals worktree for all eight" is TRUE, and the bytes
+graded are the bytes that will be committed.
+
+Verdict: pass, 0 blocking.
+
+### 2026-08-22 — BUT-1910 SHIP re-review, round 3 (rating/quantity Swedish decimals)
+
+Trigger: re-review after four code-reviewer findings were acted on. Eight files, all opened
+with Read. Judged the four questions the brief posed.
+
+Q1 — is the new `1,5,5` edit-screen case observing the FORMATTER? YES, and the parser alone
+cannot satisfy it. Mutant table, reasoned then cross-checked against the brief's own probe:
+
+| mutant | TA `4,5`→4.5 | TB `1,5,5`→'1,55'/1.55 | TC seed `4,5` |
+|---|---|---|---|
+| delete edit `inputFormatters` | green | **RED (both asserts)** | green |
+| edit `onChanged` parse → `double.tryParse` | RED | RED (rating half) | green |
+| edit seed `formatSwedishDecimal` → `toString()` | green | green | **RED** |
+
+`enterText` flows through `EditableText._formatAndSetValue`, so formatters DO run; formatter
+over "1,5,5" with the caret at end yields '1,55' (second separator dropped, digits kept), and
+`parseSwedishDecimal('1,55')` is 1.55. So TB is the sole killer of the formatter line — matches
+the reported probe.
+
+Q2 — `EditableText.controller` vs `TextFormField.controller`: correct observable. A
+`TextFormField` seeded with `initialValue` has a NULL `.controller` (the FormField owns a
+private one), which is why the first attempt died on a null check. `EditableText` is stable
+public Flutter API present under every text field, and the descendant lookup is unique here
+(the sibling tests already do `tester.widget<TextFormField>(ratingField())`, which throws on
+multiples). Rot risk low. `find.text('1,55')` would have worked too; not better.
+
+Q3 — duplication: full kill-set walk over all eight cases. Uniquely-killing pairs: T3 (period
+on skriv-sjalv) is the sole killer of THAT screen's formatter; T2/TC the two seed lines; T5 a
+parser fallback; T4 ("whole number", labelled CONTROL) the sole killer of a parser that starts
+demanding a separator, so it is not kill-set-empty. Only TA's kill set is a strict subset of
+TB's. Kept deliberately: TA is the named-defect fixture on the twin screen and TB's own comment
+depends on TA existing; TB's fixture is not something a user types. Not filed.
+
+Q4 — header: "It turns on ONE property" is gone; "Each entry carries the property that decides
+it" is verifiable by reading the three entries (returns NULL / falls back to 1.0 + rounds to 2
+/ forces one decimal) and adds no unmeasured claim. Spot-verified all three against source:
+`formatRatingComma` = `toStringAsFixed(1)`, `parseSwedishNumber` returns 1.0 on failure,
+`formatFractional` = `toStringAsFixed(2)`, `FormValidators.numberRange` does its own
+`replaceAll(',', '.')`. Observation, NOT filed (pre-existing, unmoved bytes): `parseSwedishNumber`
+has ZERO `lib/` callers — only its own suite — so calling it "non-interactive recipe-text
+parsing" describes intent, not a live route.
+
+Q5 — THE ROUND'S FINDING, and how it resolved. Item 3's repair swapped a measured count ("six")
+for a QUANTIFIER: "this screen is what the app opens for an EXISTING recipe, from every list
+and detail surface", in both the production comment and the test group header. That universal
+is FALSE, and the falsifier is in the code, no counting needed:
+`recipe_detail_view.dart:1046` asserts `!widget.readOnly, 'edit must be unreachable in readOnly
+mode'` — a DETAIL surface that deliberately opens no edit — and the shared-with-me, public-profile
+and weekly-menu recipe lists carry no `Routes.editRecipe` push at all (the full entry set is six
+route pushes: recipe_card_widget ×2, quick_capture, recipe_management_handler,
+recipe_detail_shared_widgets, collection_stats — two of which are neither a list nor a detail).
+
+THE TREE MOVED THREE TIMES DURING THE ROUND. `edit_recipe_view.dart` mtime jumped to 18:13 while
+I was reading; `git diff` then showed index (the copy I had Read) 4 lines behind the worktree;
+minutes later BOTH carriers had a further unstaged edit; by verdict time all eight were staged,
+index == worktree, and both copies of the false phrase were GONE. Verified with `git show :<path>
+| grep -c`, never from the worktree alone. Diffed the originally-graded blobs (53f94854e,
+daff1e587) against the staged ones: comment-only, so the brief's analyze/89-tests/format
+measurements still hold. Re-Read both moved files rather than re-stamping the earlier read.
+
+Left as NON-blocking, phrased as a strike: `recipe_form_rating_field_test.dart:245` still reads
+"i.e. the original defect back on the screen this diff argues matters most" — a dangling
+reference, since the strike removed every place the diff argued that. Delete the trailing clause;
+do not reword it into a new claim. Did NOT edit it myself: a live session had written to that
+file twice in the preceding ten minutes and a write would risk clobbering an in-flight edit.
+
+Verdict: pass, 0 blocking (against the INDEX, which is what the parent commits).
+
+### 2026-08-22 — BUT-1908/BUT-1909 poll-close guard: review of five suites (trigger: commit gate, twelve files)
+
+Reviewed the unstaged worktree for the poll-hydration marker (BUT-1908) and the blocked-ballot
+filter (BUT-1909). Seven production files + five suites, all opened with Read. Did NOT run
+mutation probes — concurrent gate reviewers shared the checkout — so every claim below is
+reasoned from the code and paired with the probe that would settle it.
+
+WHAT DISCRIMINATES. The close-refusal group in `messaging_service_close_poll_test.dart` is the
+strongest thing in the diff: `ok` control + `capped` + `failed` + absent-marker, each able to
+redden on its own mutant, and `isUnread` covering both non-ok members is pinned by the pair
+(mutate `isUnread` to `this == capped` and only the `failed` case reddens). The blocked-majority
+fixture genuinely discriminates: 2 blocked ballots vs 1 clean, `_resolveWinner` takes strictly-
+greater with first-wins ties, so filtered → `recipe-clean` and unfiltered → `recipe-blocked`, and
+the control beside it pins the unfiltered answer so the filtered assertion cannot be satisfied by
+a winner resolution that never worked. The two omissions each refusal asserts ARE two observables:
+a guard narrowed to the creator block (`&& !hydration.isUnread`, throw deleted) reddens the
+`messagingRepo.closePoll` verifyNever alone, while moving the throw below the plan block reddens
+the `groupPlanService.save` verifyNever alone. The widget suite's `ok` control + non-creator
+control bracket the gate from both sides.
+
+WHAT CANNOT FAIL. `message_query_module_test.dart`'s "a poll past the cap ... keeps its stored
+votes" asserts `isEmpty` over a fixture whose stored `voterIds` is ALREADY empty — the classic
+identity-on-a-normal-fixture; a `_markUnread` that blanked every option stays green. "A non-poll
+message is never marked" seeds a text row with NO metadata at all, and `_markUnread` returns
+early on `metadata == null`, so a mark-everything mutant (`if (_isPoll(m))` → `if (true)`) stays
+green too. And `fromMetadata` has no `'ok' =>` arm — a written 'ok' falls through the same
+default an ABSENT key does — so "a poll whose votes WERE read is marked ok" is byte-identical in
+outcome to the zero-votes test beside it, and the `..[metadataKey] = ok.name` write in `_merge`
+is mutation-dead by construction (behaviour-neutral, like a dead-code deletion; say so rather
+than manufacture an assertion).
+
+THE `failed` STATE IS NEVER PRODUCED BELOW THE SERVICE. Both `_markUnread(m, failed)` branches
+(the one-shot `catch`, and the live stream's `onErrorReturnWith` → null) need `poll_votes.get()`
+/ `.snapshots()` to throw, which `FakeFirebaseFirestore` never does. The group header claims
+"one green test per state" over three tests covering two states. The module takes `messagesRef`
+as a plain `CollectionReference`, so a delegating wrapper whose `.doc(id).collection(...)` throws
+is the available seam.
+
+THE SEAM NOBODY TOUCHES. `grep -rn "onPollClose\|SnackBarUtils.showError" test/` returns nothing,
+and no test file names `MessageContentBuilder`. So `_buildPollContent`'s
+`voteHydration: PollVoteHydration.fromMetadata(message.metadata)` is deletable-green — deleting it
+falls back to the widget's `ok` default and redraws the close button on a capped poll, i.e. the
+exact BUT-1908 UI harm — and `ChatMessageStream._closePoll`'s snackbar is the reader for the
+Swedish sentence the whole ViewModel change exists to produce. `chat_message_stream_joined_divider_test.dart`
+already renders the real widget over a mocked `MessagingService`, so both are ~30 lines away.
+
+TWO FALSE SENTENCES, SAME SHAPE, THREE COPIES. `messaging_service_test.dart`'s new group says
+that without its `production.ServiceLocator.initialize(DIContainer())` the group would be "every
+case green, including the one that is supposed to strip a voter", and that a `FakeMessage`
+fixture would have "passed while asserting the opposite". Traced both: with the bridge missing,
+`tryGet` returns null, `_filterBlocked` returns the page unfiltered, and the strip test asserts
+`['clean-1']` against `['blocked-1','clean-1']` — RED, not green. With `FakeMessage`, the control
+takes `_withoutBlockedBallots`' `blockedIds.isEmpty` early return (no `copyWith`, passes for the
+right reason), the throwing-filter case throws before any `copyWith`, and only the strip case
+reaches `copyWith` and goes RED. No test in the group both passes and asserts the opposite. The
+first sentence's mechanism half is TRUE and verified (`TestServiceLocator.initialize` never calls
+the production locator; `BaseUnitTest.setupUnit` doesn't either — `setupUnitWithProductionLocator`
+is the helper that does); only the consequence clause is false. Same false clause is a third copy
+in `.claude/rules/lessons-digest-testing.md` ("every case green, measuring nothing"). Filed as
+strikes, not rewordings.
+
+UNTESTED INTERACTION BETWEEN THE TWO TICKETS. `_stripBlockedBallots` rebuilds metadata with
+`Map<String, dynamic>.from(metadata)..['poll'] = rebuiltPoll`, and `Message.copyWith(metadata:)`
+REPLACES wholesale — so the BUT-1908 marker survives the BUT-1909 strip only because that copy is
+whole-map. Nothing asserts it. A strip written as `{'poll': rebuiltPoll}` drops the marker,
+`fromMetadata` falls back to `ok`, and a capped poll gets its close button back on screen.
+
+VERIFIED IN PASSING: the four new Swedish strings are unique values in `app_sv.arb`;
+"Stäng omröstning" is two keys (`pollClose`, `pollCloseAction`) but they never co-occur in the
+poll widget's tree, so the finder is unambiguous — it pins the STRING, not the key.
+
+Verdict: fail, 6 blocking.
+
+### 2026-08-22 — BUT-1908/BUT-1909 final re-review (7 test files, 8 production files)
+
+Round 3. The two blocking findings from round 2 were struck as reported, verified against the
+worktree AND `git show :<path>`: "the `capped` and `failed` markers could never reach this
+widget" is absent from `chat_message_stream_metadata_refresh_test.dart` (HEAD still carries
+nothing of the sort; the file is new), and "reddens this test and nothing else" is gone from
+`message_query_module_test.dart` — the staged copy (== HEAD, nothing is staged this round) still
+shows it at line 608, the worktree does not. Both non-blocking control-scope rewords also
+landed: the close-poll control now reads "the two refusal cases below" (exactly the two refusal
+tests: `capped`, `failed`; the fourth case is the no-marker default, correctly excluded), and the
+blocked-ballot control no longer claims what the cases below it are satisfied by.
+
+TWO NEW SECURITY CASES, BOTH NON-VACUOUS. `a watch error invalidates instead of freezing the
+cache` drives a real `BlockedUserFilter` over a counting repo mock: fetch → latch → subscribe →
+`addError` → `onError` → `_invalidate` → second `requireBlockedIds` refetches, `fetches == 2`.
+Deleting `_invalidate()` from `onError` leaves `_initialized` true and the second read serves the
+cache, `fetches == 1` → red. `concurrent first callers open exactly one watch` launches three
+overlapping calls (two `currentBlockedIds`, one `requireBlockedIds`) against a 5ms fetch;
+`currentBlockedIds` is `async` and runs synchronously to its first await, so all three reach
+`_inFlight ??=` before it resolves. Deleting the guard gives three fetches and three watches →
+red on both verifies. Neither measures its own stub — the throwing/counting is at the REPOSITORY,
+which is what round 2's blocking finding on the old `currentBlockedIds()`-stub test demanded.
+
+THE OPEN-CONTROLLER FIXTURE CHANGES NOTHING ELSE. `openWatch()` is used by exactly two cases
+(`concurrent first callers`, `a successful lookup IS cached`). It is REQUIRED for the caching
+case now: `const Stream.empty()` completes immediately, fires the new `onDone: _invalidate`, and
+the second read would refetch — the case would be red against correct code. The three cases still
+on `const Stream.empty()` are unaffected, each for its own reason: the CONTROL asserts the value
+`_fetchAndWatch` returns, computed BEFORE the subscription; `currentBlockedIds degrades to an
+empty set` never subscribes at all (the fetch throws first); and `a failed lookup does not latch`
+still kills the latch-before-fetch mutant, because call 1 throws above the subscribe and call 2's
+assertion is read before any `onDone` can matter. Also verified the caching case's new
+`verify(watchBlockedUserIds).called(1)` is the line that kills "caches the fetch but re-subscribes
+per read".
+
+`onDone: _invalidate` IS MUTATION-DEAD, AND IS REACHABLE. Walked every case: the two open-
+controller fixtures close only in `addTearDown`, and the three empty-stream fixtures never read
+the cache after completion — so deleting the limb leaves all 13 cases green. Reachability is not
+hypothetical: `FirebaseBlockRepository.watchBlockedUserIds()` returns `Stream.value({})` when
+`currentUserId == null` (line 124), which emits `{}` into the listener (overwriting the just-
+fetched real set) and then COMPLETES. Without `onDone` that empty set is latched for the session —
+the same frozen-empty-list fail-open the other two layers just closed. Recommended, not blocked:
+the trigger is a sign-out race between the fetch and the subscribe, and `dispose()` clears
+`_cached`. Fixture is two lines on the existing helper (`await watch.close()`, re-read, assert
+`fetches == 2`).
+
+TWO BLOCKING, BOTH FALSE MEASURED CLAIMS, BOTH THIS DIFF'S.
+(1) `chat_viewmodel_test.dart:470` — "left all 45 tests in this file green". Counted: HEAD 47,
+worktree 51 (`grep -cE '^ *test\('`). Already off by two at HEAD; this diff's four new closePoll
+cases took it to 51. Exactly the insertion seam `lessons-digest-testing.md` recorded the day
+before (BUT-1910). Strike the count; the paragraph's load-bearing half — the sibling test passes
+`initialConversation`, so it resolves synchronously and cannot see WHEN the stream opens — is
+directly readable two tests above and survives without a number. Do not write "all 51".
+(2) `blocked_user_filter_test.dart:4-6` — "Tests cover the static helpers; cache behavior is
+covered indirectly by the integration-style tests in `comment_crud_operations_test.dart` (and
+similar for messaging)." Both clauses false. The first was TRUE at HEAD and was falsified by this
+diff's own +183-line `currentBlockedIds vs requireBlockedIds` group. The second is falsified by
+`grep -in block test/unit/services/unified/operations/modules/comment_crud_operations_test.dart`
+→ zero lines; that file does not touch `BlockedUserFilter` at all, indirectly or otherwise. Strike
+both clauses rather than re-inventorying — a replacement inventory has the same seam.
+
+NON-BLOCKING, TWIN OF AN ALREADY-ACCEPTED FINDING. `chat_viewmodel_test.dart:850` — "Without it
+every case below is satisfied by a method that returns a message unconditionally." True of the
+three closePoll refusal/failure cases, false of the three cases that follow them in the same
+group (`votePoll` no-op ×2, `closePoll delegates`), none of which that mutant satisfies. Same
+phrase and same over-reach as the close-poll control the parent fixed this round; graded
+non-blocking to match how that copy was graded.
+
+ROUND-2 CARRY-OVERS RE-GRADED, ALL STAY NON-BLOCKING. Marker-survival through the strip: still
+unpinned, but `_stripBlockedBallots` rebuilds via `Map<String, dynamic>.from(metadata)`, which
+cannot forget a key it never enumerates, so only a deliberate rewrite to a literal map would
+redden — and the security round did not touch that method. `verifyNever(planService.save(any()))`:
+positional arg, so the named-arg `verifyNever` trap does not apply, and the 1:1 sibling test is
+its mirror. VM generic-arm `isNotNull`: matches its own title ("rather than swallowing"), and the
+two refusal cases pin their own sentences; demanding a third literal is symmetry theatre. Case
+4's duplicated `pumpChat` body: semantically byte-identical to `await pumpChat(tester,
+pollMessage(const []))`, so it is drift risk, not a correctness gap.
+
+VERIFIED IN PASSING. "Every `failed` in `test/` is injected at the service or the widget"
+(`message_query_module_test.dart:657`) — measured true, exactly two sites
+(`messaging_service_close_poll_test.dart:723`, `poll_message_widget_hydration_test.dart:111,120`).
+"Deleting `.reversed` from `_pollIds` reddens this test" — true by inspection, the cap would keep
+the oldest 20 and both end assertions flip. `poll.dart`'s "the repository's `closePoll` re-reads
+the RAW document before writing... it writes the whole `metadata` map" — true,
+`MessageMutationModule.closePoll` does `messageRef.get()` then `update({'metadata': metadata})`,
+so the in-memory hydration marker never round-trips. `chat_message_stream.dart`'s "`mapEquals` is
+SHALLOW... answers false every emission on a poll message" — true, nested maps compare by
+identity; the flat share-card metadata it claims to benefit really is flat Strings. Nothing is
+staged (`git diff --cached` empty), so every finding is against the worktree, which is the copy
+the parent will add.
+
+Verdict: fail, 2 blocking.
+
+### 2026-08-22 — BUT-1908/1909 SHIP re-review: a production edit rots comments in files it never touched
+
+Trigger: third review round on the poll-hydration + blocked-ballot batch. My two prior
+blocking findings (a "all 45 tests" count, a false coverage pointer to
+`comment_crud_operations_test.dart`) were struck correctly. Three production changes landed
+between rounds; two of them silently falsified sentences in files those changes did not edit.
+
+**Shape 1 — DEFAULTED -> REQUIRED kills the named mutant.**
+`PollMessageWidget.voteHydration` went from `this.voteHydration = PollVoteHydration.ok` to
+`required this.voteHydration`. `test/widget/messaging/chat_message_stream_metadata_refresh_test.dart`
+(NEW in the same batch) carried:
+
+    // `MessageContentBuilder` is what carries the hydration marker off the
+    // message and into the widget. Delete that one argument and the widget falls
+    // back to its `ok` default: the close button reappears on a poll whose votes
+    // were never read, which is the user-visible harm BUT-1908 exists to stop.
+
+Deleting the argument is now a COMPILE ERROR, and there is no `ok` default. The sentence
+asserts the exact fail-open property the round removed on purpose (one-way-door gate, one
+production call site), so it licenses re-adding it. The test itself is fine and
+non-vacuous: the surviving true mutant is "hardcode `voteHydration: PollVoteHydration.ok`
+in `MessageContentBuilder._buildPollContent`", which the capped case reddens. Only the
+sentence naming the mutant is wrong.
+
+**Shape 2 — a new gate at layer N falsifies every "only this layer" sentence.**
+Same batch added `ChatViewModel.closePoll`'s local hydration gate. Three copies resulted:
+
+- `lib/models/messaging/poll.dart` (votesUnread doc): "the gate lives in the widget and in
+  `ChatViewModel.closePoll`, **both** of which hold the copy the user saw."  — CORRECT
+- `lib/services/messaging_service.dart` closePoll: "caught by `ChatViewModel.closePoll` and
+  by the widget's own gate, which are **the two layers** still holding the copy" — CORRECT
+- `lib/viewmodels/chat_viewmodel.dart:494`: "**Only this layer** still holds the copy that
+  says the votes were never read" — FALSE
+- `test/unit/viewmodels/chat_viewmodel_test.dart:857,860`: "this layer is **the only one**
+  that can catch it" / "**Only** the viewmodel still holds the copy" — FALSE
+
+The counterexample is one file away and green: `poll_message_widget_hydration_test.dart`
+'does not offer the close action' pumps `PollVoteHydration.capped` and asserts the button is
+absent. Harm direction is concrete — a later run reads "the VM is the only layer that can
+catch it", removes the widget's `!votesUnread` conjunct as redundant, and the close button
+reappears over "Rösterna har inte hämtats", which is the whole BUT-1908 harm.
+
+**Non-blocking count/quantifier residue found the same round** (all recommended as STRIKES,
+never re-counts):
+- `chat_viewmodel_test.dart:850` "the control for **the two** refusal cases below" — three
+  refusal tests sit below it, all added in the same hunk. Defensible only if "the two" means
+  the two `PollCloseRefusal` enum values, which is not what "cases below" reads as.
+- `messaging_service_close_poll_test.dart:617` "**each test below** asserts BOTH omissions" —
+  two of the group's four tests are positive controls asserting the poll DID close. Same
+  in-group-counterexample shape as BUT-1897's "every test in this group".
+- `messaging_service_close_poll_test.dart:11` "Scenarios covered:" lists five, file now has
+  two further groups (7 tests). The header-insertion seam again, this time as a stale
+  enumeration rather than a false pointer.
+- `blocked_user_filter.dart:86` + `blocked_user_filter_test.dart:261` "the neutral-value trap
+  this file has been caught by **three times**" — the round's own new `onDone` test frames
+  itself as another instance of the same fail-open ("the frozen-empty-list fail-open the
+  other two layers just closed, arriving through the door nobody was watching"), which makes
+  it four. An unattributed, undatable tally: strike the numeral in both copies.
+
+**Things that graded CLEAN and are worth remembering as the good shape:**
+- The new VM gate test is non-vacuous and discriminates from the two service-side refusal
+  tests beside it on two axes: `verifyNever(closePoll)` (which a service-side test cannot
+  assert, since it needs the service CALLED), and a fixture whose service stub SUCCEEDS, so
+  the only route to a non-null return is the local gate. Its `verifyNever` spells the one
+  named param, so it is not the unfailable form.
+- The dispose test's two futures are backed by ONE `_inFlight` future but are TWO observables:
+  `expect(await pending, isEmpty)` uniquely kills "drop `currentBlockedIds`' catch";
+  `expectLater(pendingRequire, throwsStateError)` uniquely kills "generation guard returns an
+  empty set instead of throwing" (the fail-open variant the round replaced). The trailing
+  re-fetch assertion is a third. Neither is entailed by the other.
+- Making `voteHydration` required left BOTH updated suites
+  (`poll_message_widget_recipe_test.dart` +3, `chunk9_semantics_a11y_test.dart` +2) testing
+  exactly what they tested before: every added line is a literal `PollVoteHydration.ok`,
+  byte-equivalent to the removed default. The builder's CHOICE of value — the job the
+  required-ness moves the burden to — is separately pinned by the new
+  `chat_message_stream_metadata_refresh_test.dart` wiring group.
+- The `onDone` limb's production reachability claim checks out:
+  `FirebaseBlockRepository.watchBlockedUserIds` returns `Stream.value({})` for a null uid,
+  which emits an empty set and then COMPLETES.
+
+**Mechanical note:** `lib/models/messaging/poll.dart` and
+`lib/repositories/firebase/modules/message_query_module.dart` were `MM` — comment-only
+worktree edits sitting ABOVE the index, and both of those edits fix real over-claims (the
+`options is! List` hole in `fromMetadata`'s safety argument, and `_merge`'s third early
+return). Verdict was given against the WORKTREE. Committing the index alone would ship the
+weaker sentences. `git diff --numstat` read 10/6 and 9/3 on those two paths, 0 on the other
+nine.
+
+### 2026-08-22 — BUT-1856 (trigger: review of new tests for the meal-vote poll rewrite)
+
+**Diff reviewed:** `startMealVotePoll` repointed from `createGroupConversation` (a new,
+undeletable chat per poll, roster built from `_members`) to a single `ensureCategoryChat`
+callable that resolves the roster server-side; `MessagingService.ensureCategoryChat`
+delegation; `FirebaseChatGroupRepository.ensureCategoryChat` callable wrapper;
+`ChatGroupErrorMapper`'s new `failed-precondition`/`group-too-small` branch; the view's
+snackbar now reads `_viewModel.errorMessage ?? l10n.errorServiceUnavailable`.
+Tests: 6 new VM cases (the method had ZERO before), 1 service delegation case, 2 mapper cases.
+
+**The blocking finding — two arguments, one literal.** The VM sends
+`ensureCategoryChat(ownerId: group.ownerId, categoryId: group.id)`. In the suite's fixture
+`testGroup.ownerId == testUserId == mockPermissionService.currentUserId == 'test_user_123'`,
+so `verify(ensureCategoryChat(ownerId: testUserId, ...)).called(2)` cannot distinguish
+`group.ownerId` from `currentUserId`. Analytic, no probe run or needed: two expressions with
+the same value in every fixture are one observable. Harm is real — `ensure-category-chat.ts`
+reads `users/{ownerId}/friend_categories/{categoryId}`, i.e. the OWNER's path (the file's own
+comment notes a transferred category keeps the old owner's path), so the mutant breaks the
+meal vote for every non-owner member while leaving the owner's path green. Fix is one line:
+a case that flips `currentUserId` to `otherUserId` after `loadGroupData()` and keeps the
+`ownerId: testUserId` verify. `categoryId` is safe — `testGroupId != testUserId`.
+
+**Graded non-vacuous:**
+- The two error cases. `chatGroupNeedsAnotherMember`, `mealVotePollFailed` and
+  `errorServiceUnavailable` are three distinct ARB values (checked in `app_sv.arb`), so
+  `equals(AppLocale.current.X)` discriminates. The parent's reported rethrow-mutant
+  (exactly these two red) matches.
+- All four `verifyNever`s spell EVERY named param (`createGroupConversation` has exactly the
+  four; `sendPollMessage` exactly two; `ensureCategoryChat` exactly two), so none is in the
+  unfailable omitted-named-arg form.
+- The mapper's `failed-precondition` pair: the negative arm sends BOTH a no-details and a
+  wrong-reason error, which is the structured-detail read the branch's own comment claims.
+- The service delegation case uses exact-value matchers, so an argument SWAP inside
+  `MessagingService.ensureCategoryChat` becomes a MissingStubError, not a silent pass.
+
+**Weak but NOT deletable:** "a member profile that fails to load no longer shrinks the chat"
+(`setUserState(users: {})`). The historical bug it names cannot be re-expressed — the fix
+DELETED the client-side roster and `ensureCategoryChat` takes no list — so it is
+mutation-dead in the backward direction, per the "a fix that deletes dead code" principle.
+It does kill one forward mutant nobody should reintroduce: a client-side
+`if (_members.length < 2) return null` guard derived from loaded profiles, which is precisely
+the class of decision BUT-1856 moved to the server. Keep it; do not retire it as a duplicate
+of the `verifyNever(createGroupConversation)` case.
+
+**Named gaps, non-blocking:**
+- `pollData` is `any(named:)` in every case — nothing captures it. `question`,
+  the option texts/recipeIds/portions, and `allowMultipleChoices` (never passed `true`
+  anywhere) are all unpinned, and that block MOVED in this diff. One `captureAny(named:
+  'pollData')` in the happy-path case plus a second arm with `allowMultipleChoices: true`
+  closes it.
+- Nothing pins that `MessagingService.ensureCategoryChat` rethrows the callable's
+  `FirebaseFunctionsException` UNWRAPPED. It is a bare delegation today (no
+  `executeServiceOperation`, no try/catch), and that is load-bearing: wrap it and the
+  mapper's whole `error is FirebaseFunctionsException` switch falls to the generic fallback
+  with nothing red. The VM suite cannot see it — it mocks `MessagingService` and throws the
+  typed exception directly. One `thenThrow` case in `messaging_service_test.dart`.
+- `FirebaseChatGroupRepository` has NO suite at all (`grep -rln FirebaseChatGroupRepository
+  test/` → only mocks and two consumer suites), so the callable NAME `'ensureCategoryChat'`,
+  the payload keys, the `'conversationId'` response key and the new
+  `is! String || isEmpty → ResourceNotFoundException` guard are unpinned on the Dart side —
+  a cross-language literal contract pinned on NEITHER side in this language. Pre-existing
+  shape (the `createGroup` twin is equally unpinned), so it is a ticket, not a blocker.
+- Stale-error window the view change introduced: `executeAsync(clearErrorOnStart: true)`
+  clears the previous message, but the two EARLY RETURNS (`group == null`, `currentUserId ==
+  null`) return null BEFORE it, so a mapped message from an earlier failed poll survives and
+  the snackbar re-shows it. Cheap pin: assert `errorMessage` in the unauthenticated case.
+
+**Widget test for the view: no.** `test/views/social/group_detail_view_test.dart` exists but
+deliberately stops at the early-return states and the app-bar facade — its own header records
+why ("~6 extra services the full loaded body pulls in (PingService /
+GroupSharedContentService / the shared-content VMs), which would be brittle scaffolding").
+Reaching the snackbar means a loaded body, non-empty `pickMealVoteSuggestions()` (MenuGenerator
++ recipe/user services) and driving `PollCreationDialog` to a submit. The channel-agnostic
+version of the same invariant sits at the VM for one line, and `test/views/` is
+`e2e-test-specialist` territory besides.
+
+**Test-name over-claim (non-blocking, strike not reword):** "two polls land in the SAME chat"
+is not observable here — both ids come from ONE stub, and the reuse decision is the
+callable's. The test's own inline comment already scopes it correctly; the claim in the NAME
+is the part with nothing behind it.
+
+### 2026-08-23 — BUT-1908/1909 poll hydration + close refusal: review of a parallel session's diff (trigger: coverage review of 3 production files before a shared commit)
+
+Reviewed `lib/models/messaging/poll.dart`, `lib/repositories/firebase/modules/message_query_module.dart`,
+`lib/viewmodels/chat_viewmodel.dart` against five suites. All green: 92 unit
+(`message_query_module_test`, `chat_viewmodel_test`, `messaging_service_close_poll_test`),
+11 widget (`poll_message_widget_hydration_test`, `chat_message_stream_metadata_refresh_test`).
+
+**What was covered well, and worth copying as a shape.**
+- `PollVoteHydration` is exercised at four layers with a CONTROL at each: module (ok /
+  capped, plus "genuinely zero votes is still ok"), service (ok / capped / failed / marker
+  ABSENT), widget (ok / capped / failed, each with the close-button assertion separate from
+  the text assertion), and viewmodel.
+- The `.isUnread` conjunct in `ChatViewModel.closePoll` would have been deletable-green from
+  the VM suite alone — every VM closePoll case runs with `_messages` EMPTY, so `onScreen` is
+  null and the conjunct is never evaluated in the allow direction. The ALLOW arm is pinned
+  instead in `chat_message_stream_metadata_refresh_test.dart` ("a well-read poll still
+  closes, through the real screen"), which had to emit on the stream first because
+  `ChatMessageStream` seeds its own list from the page read while the viewmodel's stays
+  empty — a tap in that window skips the gate entirely. Its own comment records the trap.
+- `voteHydration` is a REQUIRED param on `PollMessageWidget`, so the "optional param no
+  caller passes" class is closed by the compiler (two unrelated widget suites had to be
+  updated, which is the tell).
+- The module suite carries a source-text LAYERING guard ("the module knows nothing about
+  blocking") that greps for symbol names, not the word "blocked" — deliberately so an honest
+  comment about staying ignorant cannot redden it.
+- `messaging_service_close_poll_test`'s block-list case uses a REAL `BlockedUserFilter` over
+  a throwing `_MockBlockRepo`, after an earlier version stubbed `currentBlockedIds()` to
+  throw — a method that catches internally and cannot throw, so it measured its own mock
+  while production failed open. Recorded in the test's own comment.
+
+**The measured gap (non-blocking, one missing test).**
+`_withLivePollVotes`'s capped/failed marking is UNREACHED. lcov over the three unit suites:
+
+    DA:303,2  DA:304,1  DA:308,1     one-shot  (_hydratePollVotes)   covered
+    DA:355,0  DA:356,0  DA:362,0     live stream (_withLivePollVotes) DARK
+
+The two methods carry byte-identical branches; the stream is the path the open chat renders
+from, so deleting its `capped.contains(m.id)` branch leaves all five suites green and
+restores the BUT-1908 harm (>20 polls: the oldest draw stored numbers with no marker and a
+live close button) on the PRIMARY path. Suggested fixture, mirroring the existing page-reader
+case: seed `maxHydratedPolls + 1` polls ascending, `await module.getConversationMessages(...)
+.first`, assert `stateOf(oldest) == capped` and `stateOf(newest) == ok`.
+
+**Named, correctly, as untestable on the fake.** `failed` needs `poll_votes.get()`/
+`.snapshots()` to throw and `FakeFirebaseFirestore` never does (`DA:295,0`, `DA:343,0` — both
+warning logs dark). The suite says so in a comment and names the delegating
+`CollectionReference` that would stage it, rather than implying coverage by a count. The
+STATE itself is pinned at service and widget level, so only the module's two stamping lines
+are unproven.
+
+**Known gap left as a production comment, agreed:** `_merge`'s third early return (a stored
+poll whose `options` is not a List) leaves the marker unset, i.e. `ok`, so the widget offers
+close on a tally never read. Reachable only from a malformed stored document, and
+`_resolveWinner` writes no plan, so the harm stops at a burnt poll.
+
+**Doc claim verified rather than trusted.** `poll.dart` states the marker never reaches
+Firestore because "the repository's `closePoll` re-reads the RAW document before writing".
+True — `message_mutation_module.dart:475` does `messageRef.get()` and rebuilds the map from
+`doc.data()`, never from a hydrated `Message`. No strike owed.
+
+**Minor:** the VM's generic-catch case asserts only `isNotNull`, so a mutant returning
+`pollCloseRefusedVotesUnread` from that arm survives; asserting the `pollCloseFailed` string
+closes it. `PollCloseRefusedException.toString()` is untested and does not need to be — enum
+name only, log sink, no PII.
+
+**Process note.** Did not apply the missing test myself: the suite file belongs to a live
+parallel session and is heading into a shared commit whose review marker pins staged bytes,
+so an edit landing mid-gate would invalidate their marker. Reported with the fixture instead.
+
+### 2026-08-23 — BUT-1908 poll UI layer: coverage review of the 3 widget/view files (trigger: parallel session's staged diff, second pass after the model/repo/VM one above)
+
+Reviewed `lib/views/messaging/chat_view/chat_message_stream.dart`,
+`lib/widgets/messaging/builders/message_content_builder.dart` and
+`lib/widgets/messaging/poll_message_widget.dart` against four suites
+(`poll_message_widget_hydration_test`, `chat_message_stream_metadata_refresh_test`,
+`poll_message_widget_recipe_test`, `chunk9_semantics_a11y_test`). 16/16 green, plus the
+divider suite in the coverage run (19/19). `flutter analyze --fatal-infos` clean on all five.
+Graded copy = the INDEX: `git diff --numstat` empty on every reviewed path, all seven staged.
+
+**The question asked: is there a dark path like `_withLivePollVotes`? No.** lcov over the
+five suites, every line the diff ADDS is executed:
+
+    chat_message_stream.dart  DA:236-239,5  DA:240,2   the metadata conjunct + the replace
+                              DA:283-285,1  DA:286,2   _closePoll, both arms
+    message_content_builder   DA:399,2                 the voteHydration wiring line
+    poll_message_widget       DA:95-100 / 107-110 / 124-130 / 141-144, all >0
+
+The two candidate twins were checked and are not twins. (1) `_refreshMessages` calls the SAME
+`_updateMessagesIncremental`, not a copy — one method, two call sites, so the stream test
+covers the guard for both (the refresh CALL PATH itself is `DA:252,0`, pre-existing).
+(2) `ChatViewModel` keeps a SECOND copy of the message list off the same stream, which is the
+shape that would carry a duplicated staleness filter — it does `_messages = messages;`
+wholesale (line 306), no filter, nothing to drift.
+
+**Non-vacuity, the parts that could have been fake.**
+- The hydration suite's fixture has TWO real voterIds, so the suppressed string ("2 röster")
+  is one the widget would genuinely render — capped/failed are distinguished from "the count
+  was 0 anyway". Production never mints that shape (stored `voterIds` are written empty and
+  never updated, per `firebase_data_export_repository.dart:467`), which is fine: the branch
+  does not read `totalVotes`, so the unrealistic fixture is a strictly stronger mutant.
+- The close-button gate is asserted with every OTHER conjunct satisfied (creator, active,
+  `onClose` non-null) and with an `ok` control and a non-creator control — the MIRROR rule's
+  requirement, met.
+- Deleting `voteHydration:` from the builder is a COMPILE error (required param), so the
+  wiring test's real job is killing a hardcoded value; both arms exist (capped→hidden,
+  ok→shown), so either constant reddens.
+- The tap test's dependence on the VM list being populated was the one thing unassertable
+  from the widget. Settled by `DA:499,3` on the RHS of `onScreen != null && ...isUnread` —
+  the RHS only evaluates when the LHS was true. New probe technique; promoted to a principle.
+
+**One comment quantifier that is false (Low, non-blocking, no behavioural consequence).**
+`chat_message_stream.dart:229-231`: "`metadata['poll']` is a nested map compared by identity —
+so on a poll message it answers false every emission". True for a HYDRATED poll (`_merge`
+rebuilds the map), false for a capped/failed one: `_markUnread` does
+`Map<String, dynamic>.from(metadata)` — a shallow copy over the SAME `Message` object the
+`CombineLatestStream` re-maps each emission — so `metadata['poll']` is the identical instance
+and `mapEquals` answers TRUE. Harmless (nothing about a capped poll changes between those
+emissions), but the sentence is an unmeasured "every". Repair is to STRIKE the "every
+emission" clause, not to re-derive it.
+
+**Not covered, judged acceptable, listed so a later run does not re-derive them.**
+- `_closePoll`'s `!mounted` arm (dispose mid-close) — no observable beyond the absent snackbar.
+- The other two strings `_closePoll` can show (`pollCloseRefusedVotesUnread` from the VM's
+  local gate, `pollCloseFailed` from its generic catch) reach the screen through the SAME two
+  lines the blockList case pins; `DA:500,0`/`DA:515,0` confirm those VM arms are dark in the
+  widget suites and they belong to the VM suite. The local-gate string is additionally near
+  unreachable THROUGH this screen — the widget hides the button on its own copy, so the two
+  copies must disagree first.
+- `poll_message_widget.dart:113-115` (the "Stängd" closed-poll label) is `DA:0` — pre-existing,
+  no suite renders a closed poll; unchanged by this diff.
+- `DA:379-382,0`: `onLongPress`/`onReply`/`onPollVote` lambdas in the item builder are never
+  invoked by any test. Pre-existing wiring, untouched here.
+
+**Watch, not a finding:** the hydration suite's header says "from the 21st down", derived from
+`maxHydratedPolls = 20`. Correct today and the constant is named in the same sentence, but the
+ordinal is a second copy of the number and goes stale silently if the cap moves.
+
+**Process note.** Edited nothing outside my own two knowledge files: the seven reviewed files
+are staged by a live parallel session heading into a shared commit.
+
+### 2026-08-23 — trigger: re-review of `lib/services/messaging_service.dart` after a strike-only fix round (BUT-1909 / BUT-1925)
+
+The round's brief: three false "reshares the plan with the group" copies had been struck, plus
+two more strikes from a parallel code review (`closePoll`'s "writes to the creator's own plan",
+`_appendWinnerToGroupPlan`'s "logical ownership"). Asked to confirm no surviving test name,
+header or assertion claims something the file no longer says. Both suites green, 74 tests.
+
+**The worktree was clean. The INDEX was not, and it is what ships.**
+`git status --porcelain` printed `MM` for all three reviewed paths, and `git diff --numstat`
+(worktree vs index) read 38/19, 9/8 and 69/0 — real content, not a stat-cache artifact. Every
+struck sentence was still in `git show :<path>`:
+
+- `:lib/services/messaging_service.dart` — L710 "and reshares the plan with the group",
+  L714 "MVP scope: writes to the poll creator's own plan", L890 "and reshares with the group"
+  (`_appendWinnerToWeeklyPlanAndShare`), L957 "…ownership of the resolution".
+- `:test/…/messaging_service_close_poll_test.dart` — L15 "`shareMenuWithFriends` fire, group
+  service untouched" (the Scenarios line), L353 the old test NAME "shares with the other
+  participant, group service untouched", and the pre-repair group header quantifier
+  "each test below asserts BOTH omissions".
+
+The index was one ROUND behind, not one feature behind: `_stripBlockedBallots` (3 hits), the
+two refusal groups and the read-path group are all present in the staged copies. So the motion
+check passes, the suites compile and pass, and only the comment/name repairs are missing —
+which is precisely the state a verdict-time grep of the worktree cannot see. Recorded as a
+sharpening of the existing "Staging — resolved" principle: for a REPORTED STRIKE, grep
+`git show :<path>`, never the worktree.
+
+**Second blocking finding — two answers to one question inside the reviewed file.**
+The round rewrote `closePoll`'s doc to say the pre-read "is the ONLY such guard and it is not
+atomic … a retry after a half-failed close can plant the same recipe in a second slot
+(BUT-1925)". Ten lines below, the inline comment at L748-750 (both copies) still ends
+"…skip both the repo close and the plan write so auto-resolution fires exactly once." False
+even inside its own stated scope: two concurrent callers can both read `isClosed == false`.
+Remedy is a strike of the trailing clause, not a reword; BUT-1925 is already named above it,
+so nothing unresolved is lost. `L813`'s "the pre-read `isClosed` guard above is the idempotency
+anchor" is NOT the same defect — it describes the mechanism and agrees with the new doc.
+
+**Claims graded and found TRUE (so a later round does not re-derive them).**
+- `1:1 direct conversation → writes to the creator's personal plan, group service untouched`
+  and `group conversation → … personal plan service is never touched` — match the
+  `isGroup` branch.
+- Cross-file coverage pointer "the repository stays ignorant of blocking — pinned separately in
+  `message_query_module_test.dart`" RESOLVES: `test('the module knows nothing about blocking
+  (BUT-1909)')` with source-text asserts on `BlockedUserFilter` / `blockedIds` /
+  `currentBlockedIds`.
+- "`ChatViewModel.closePoll` is where the capped case is really caught" — live at
+  `chat_viewmodel.dart:499`; the widget's own gate is live too (`poll_message_widget.dart:50`),
+  so the comment is partial, not false. No action.
+- "the real `currentBlockedIds` CANNOT throw" — true, it catches and returns an empty set;
+  `requireBlockedIds` is the propagating variant `closePoll` calls.
+- "a message with no marker at all is treated as read" — `PollVoteHydration.fromMetadata`'s
+  `_ => ok` arm (`poll.dart:144`).
+- The read-path group's setUp comment ("without this the whole group would measure a service
+  that never found a block list at all") is the CORRECTED wording — it no longer claims every
+  case would be green, which is the version `lessons-digest-testing.md` records as false.
+
+**Non-blocking.** The close-poll suite's `Scenarios covered:` list still enumerates only the
+five BUT-340/405 scenarios while the file has since gained two groups, and `History:` stops at
+BUT-405. Not false, just an enumeration with an insertion seam — the durable fix is to STRIKE
+the list (the group names below carry the same information and cannot drift), never to
+re-enumerate it.
+
+**Process note.** Edited nothing but my own two knowledge files, as instructed.
+
+### 2026-08-23 — BUT-1911 commit-gate review: ContentSizedGrid + recipe grid card (trigger: review round 3, "check the fixes, not just the original code")
+
+Files reviewed (all opened with Read): `lib/widgets/common/content_sized_grid.dart` (new),
+`lib/widgets/recipe/recipe_card.dart`, `test/widget/common/content_sized_grid_test.dart` (new),
+`test/widget/recipe/recipe_card_grid_badges_test.dart`. Suites green: 56/56.
+
+**Measured with a throwaway `test/_zz_probe_but1911_test.dart` (deleted at the end of the
+round; no `lib/` write, so the auto-mode classifier never fired).**
+
+1. **Two-axis parameter, one axis pinned.** Copied `ContentSizedGrid` into the probe file as
+   `MutantGrid` with `if (column > 0) SizedBox(width: spacing)` DELETED, and re-ran all six
+   assertions of `content_sized_grid_test.dart` against it. **6/6 green.** The between-column
+   half of `spacing` is unpinned, and the recipe geometry suite cannot see it either (wider
+   tiles overflow LESS, so `takeException(), isNull` gets easier). Production doc claims both
+   axes: "Used between columns AND between rows, so a caller cannot set the two to different
+   values by accident." Why the six survive: the short-last-row case compares `last.width` to
+   `first.width` (both move together), `last.left` to `first.left` (both 0), the row-spacing
+   case measures the vertical axis, the one-column case never enters `column > 0`, and the
+   empty/laziness cases are blind by construction.
+
+2. **The 48/52 measurement in the geometry group's header is TRUE.** Doubted it from
+   arithmetic (116 card − 32 margin − 32 padding = 52, not 48) and measured instead: at 280dp
+   with columns FORCED to 2, `RecipeCard` outer width = 116.0, the title `Row` = **48.0**, and
+   two `RenderFlex overflowed by 4.0 pixels on the right`. The missing 4 is
+   `InputThemes.recipeCardDecoration`'s left border, which a `BoxDecoration` border deducts
+   from the container's inner box. `AppDimensions.recipeGridColumns` at 280dp measured = 1.
+   Recording this because the arithmetic route gave the wrong answer twice; measure the row,
+   don't sum the constants.
+
+3. **Vacuity the author had not probed: the geometry premise cannot see the badge COUNT.**
+   `expect(find.byType(CompactAllergenRow), findsWidgets)` proves the row is in the tree.
+   `CompactAllergenRow.build` returns `SizedBox.shrink()` on an empty badge list, and the card
+   gates on the same `badgesFor`, so today the row implies >=1 badge — but never FOUR. The
+   `assessed()` fixture comment exists specifically to guarantee four settled allergens
+   ("a fixture that settles two while the harness tracks four measures a two-badge row under a
+   four-badge name"), and `children: badges.take(maxBadges)` is what decides it. Drop
+   `maxBadges` from 4 to 2 in `_buildGridLayout` and all twenty assessed cases stay green while
+   measuring exactly the row the comment forbids. One-line remedy: co-assert
+   `find.byType(AllergenStatusBadge)` (already imported in the file).
+
+4. **The `unassessed()` premises are sound** — the author asked directly. Both are co-asserted
+   (`find.textContaining('bedömda') findsWidgets` + `find.byType(CompactAllergenRow)
+   findsNothing`), `_showUnassessedIndicator`'s third conjunct `!_showUntaggedIndicator` cannot
+   flip on this fixture (`tagResult` non-null, `hasFailed` false), and `ContentCard`'s
+   `showAllergenBadges ?? userAllergenPrefs != null` derivation is caught by the premise if it
+   changes. One fragility worth naming: `'bedömda'` is a SUBSTRING finder and the fixture title
+   is `'Obedömd rätt'` — no trailing 'a', so it misses by one character. `grep 'bedömd'
+   app_sv.arb` returns exactly the two marker keys.
+
+**False sentences filed (remedy is a strike, not a reword).**
+- Suite header, `recipe_card_grid_badges_test.dart` lines 8-13: "A grid tile's height comes
+  from the delegate's aspect ratio, so it cannot grow the way the detailed Column can" —
+  present tense, and this diff is what removed the delegate. It contradicts
+  `content_sized_grid.dart`'s doc in the same commit: two answers to one question.
+- Line 413-416: "a mutation probe that restores the old `Expanded` image leaves the twenty
+  no-overflow cases GREEN and reddens only this one." The round's own new group makes it
+  FORTY (20 assessed + 20 unassessed), and the probe is absent from the author's stated
+  measured set of five. Same insertion-seam shape as BUT-1910's counted comment.
+
+**Claims checked and TRUE** (recording so a later round does not re-spend them): "its only
+production caller" (grep: `mina_recept_view.dart:560` alone); "`recipeGridAspectRatio` remains
+live for the list toggle's tablet grid" (`mina_recept_view.dart:671`, inside the non-grid
+branch's `responsiveListGrid`); the scroll arithmetic 40+24+40=104, 104−60=44, +24=68;
+`ContentCard` really forwards `onFavoriteToggle` to the 32px title-row button
+(`content_card.dart:210`); the view really calls `AppDimensions.recipeGridColumns`
+(`mina_recept_view.dart:569`), so the harness and production agree on the column rule.
+
+**The source-text guard** (`test('the view still builds its grid from ContentSizedGrid')`,
+reading `lib/views/mina_recept_view.dart` as text). Verdict: the NEGATIVE half earns its
+brittleness — a silent return to a fixed tile height is exactly the regression every other
+case is blind to — but it is in the wrong home and wrong shape. It does not strip comments, so
+`contains('ContentSizedGrid(')` is satisfiable by a doc comment (the file already carries
+`/// [ContentSizedGrid]` at line 552 and "Kept from the GridView this replaced" at 561), and
+`isNot(contains('SliverGridDelegate'))` reddens on a comment that merely NAMES the retired
+delegate — false in both directions. `test/architecture/architecture_test.dart` already runs 14
+file-reading lints, in two CI workflows plus the `tools/check_staged_arch_guards.sh`
+pre-commit twin; there it fires on every commit instead of only when someone runs one widget
+suite.
+
+**Coverage `ContentSizedGrid` still lacks with all six green**: every cell in the suite is a
+fixed-height `SizedBox`, so nothing exercises the one thing the widget exists for — a cell
+whose height is a FUNCTION of the width the row hands it (a wrapping `Text`, a `Wrap`). The
+killer fixture is two cells of wrapping text in a 2-column grid, asserting the row height
+equals the taller cell's wrapped height at the COLUMN width, not the full width. `padding` and
+`primary` are forwarded and never asserted; `assert(columns > 0)` is untested.
+
+**Verdict: fail (3 blocking)** — the unpinned column spacing, the unpinned badge count, and
+the two false comment sentences.
+
+### 2026-08-23 — BUT-1928 review: fail-loud menu-plan reads, and the wrapper that hollowed the suite
+
+**Trigger:** review of `lib/core/exceptions/menu_plan_read_exception.dart`,
+`lib/services/menu/weekly_menu_plan_service.dart`,
+`lib/services/menu/group_weekly_menu_plan_service.dart` (staged), plus their two staged suites.
+
+The fix: both `getWeek` methods stopped going through `executeServiceOperation` and now
+try/catch into a new `MenuPlanReadException`. Before, a failed read and an unplanned week
+shared ONE value (an empty plan / `null`), so `load → mutate → save` wrote a blank week over
+a real one. Live sequences: `MessagingService._appendWinnerToWeeklyPlanAndShare` +
+`_appendWinnerToGroupPlan` (poll close) and `OnboardingViewModel._seedSampleMenu`.
+
+**Non-vacuity, proved analytically with no `lib/` write.** `safeExecute`
+(`lib/core/mixins/error_handling_mixin.dart:125-138`) is `try { return await operation(); }
+catch { … return defaultValue; }` — a total catch. So NOTHING can escape
+`executeServiceOperation`, and therefore no `throwsA(isA<MenuPlanReadException>())` test can
+pass at HEAD. All 5 new personal tests and 3 of 4 new group tests discriminate; the two
+"returns null / empty when the week has no plan" tests are the deliberate positive controls.
+
+**The second half, which is the reusable bit.** Neither suite stands up a DI harness, so at
+HEAD `_isAuthenticated()` → `ServiceLocator.get<AuthRepository>()` → throws → caught →
+`false` → `executeServiceOperation` returned `defaultValue` WITHOUT EVER CALLING THE REPO.
+The pre-existing group test `getOrBuildWeek returns the existing plan …` asserted
+`expect(result.groupId, groupId)` — satisfied by the fabricated empty plan the fallback
+produced. The diff correctly tightened it to `expect(result, same(existing))`, which FAILS at
+HEAD. So an auth-gated wrapper in a raw-mock file is a two-way vacuity source, and stripping
+it is what makes the surrounding assertions mean anything.
+
+**Sibling disagreements found (both filed non-blocking):**
+1. `lib/repositories/firebase/firebase_weekly_menu_plan_repository.dart:92-94` claims a
+   never-cached week "falls back to server and (if unavailable) returns null via the !exists
+   check below rather than letting a server read stall/throw". False: `getDocCacheFirst`
+   (`base_firebase_repository.dart:373-383`) catches only the CACHE `get`; the
+   `Source.serverAndCache` read below it throws `unavailable`. That sentence is the exact
+   premise BUT-1928 disproves, and it now contradicts the new `getWeek` doc two files away —
+   two answers to one question, and the one that licenses reverting the fix. Remedy: STRIKE
+   the clause, do not reword.
+2. `save()` in BOTH reviewed services still runs through `executeServiceOperation`, so a
+   failed save is SWALLOWED. That falsifies `messaging_service.dart:810-813` — "If the plan
+   save fails, the poll stays open so the creator can retry" — because `closePoll` runs
+   regardless. Pre-existing, untouched by this diff, own ticket. It is the WRITE half of the
+   same silent-failure class the READ half just closed.
+
+**Verified-and-clean, for the record:** the two repository INTERFACES both already say
+"Returns `null` when no document exists yet — callers should treat that as an empty plan, not
+an error", so the new null-means-absent contract agrees with its siblings.
+`_loadPlanForWrite` never had the wrapper, so every bulk write path was already fail-loud.
+`AppLogger.error('…: $e', stackTrace)` puts the StackTrace in the `error` positional slot
+(signature is `error(String, [Object?, String?, StackTrace?])`) — but that matches 26+ call
+sites including `base_firebase_repository.dart` and `error_handling_mixin.dart`, so it is a
+repo-wide convention, NOT a defect of this diff. Do not file it here.
+
+56/56 green in the two suites; `test/unit/viewmodels/menu`, `test/unit/services/messaging`,
+`test/unit/services/shopping`, `test/widget/menu` and the slot-picker widget test = 350/350
+green; `flutter analyze --fatal-infos` clean over all three changed paths.

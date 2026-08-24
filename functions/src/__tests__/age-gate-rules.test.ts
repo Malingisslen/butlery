@@ -722,11 +722,30 @@ test(
   }
 );
 
+// C2/C3 carry the MATURED presets on purpose. `recipe_comments` create gates on
+// `isAgeCompliant()` and, since BUT-1419, `isAccountMatured()`. Neither test used to
+// carry a MATURITY claim — C2 passed no claims at all, C3 passed only
+// `ageCompliant: false` — so the deny was OVER-DETERMINED. Not an ordering
+// story: `isAgeCompliant()` is the EARLIER conjunct here and did fire. But
+// `isAccountMatured()` failed as well, so deleting the age gate left the deny
+// standing. Measured: with `isAgeCompliant()` removed from that rule, both
+// still passed, and the suite reported green over a removed age gate on public
+// comments. Satisfying `email_verified` leaves the age claim as the only
+// variable, which is the whole point of a deny test. Re-measured after the fix:
+// the same deletion now reddens both.
+//
+// Do not carry this paragraph's wording to the messages block below. These two
+// collections gate on the same two helpers in OPPOSITE order — comments read
+// age then maturity, messages read membership, then maturity, then age — so a
+// sentence about which of THOSE conjuncts denied first is true for one and
+// false for the other. That substitution is what an earlier draft of this
+// comment got wrong.
+//
 // C2: NO ageCompliant claim -> comment create DENIED (fails closed).
 test(
   "recipe_comments: author without ageCompliant claim cannot create a comment",
   async () => {
-    const ctx = env.authenticatedContext(USER_UID);
+    const ctx = env.authenticatedContext(USER_UID, MATURED_ONLY);
     await assertFails(
       ctx
         .firestore()
@@ -740,7 +759,7 @@ test(
 test(
   "recipe_comments: author with ageCompliant=false cannot create a comment",
   async () => {
-    const ctx = env.authenticatedContext(USER_UID, { ageCompliant: false });
+    const ctx = env.authenticatedContext(USER_UID, AGE_FALSE_MATURED);
     await assertFails(
       ctx
         .firestore()
@@ -752,10 +771,47 @@ test(
 
 // --- messages ---
 
+// Seat the sender in the conversation `messageBody` posts into.
+//
+// Not optional scaffolding, and not only for the ALLOW case. BUT-1838
+// (d627daf25) added
+// `request.auth.uid in convOf(conversationId).data.participantIds` to message
+// create. Before it, `conversations/conv-1` never had to exist and this suite
+// never seeded it; afterwards the rule `get()`s a document that is not there,
+// so M1 flipped to DENY. That commit predates the first RED rules run, which is
+// 2026-08-15, with no rules run in between — so the commit date and the date
+// the suite went red are two different facts, and the commit's own date moves
+// by a day between local time and UTC. Cite the sha, not the arithmetic.
+//
+// M2 and M3 call it too, so each test states its own precondition instead of
+// inheriting one. Measured, because the emulator makes this easy to get wrong:
+// the seed PERSISTS across tests in a run, so deleting M2's call alone changes
+// nothing while M1 runs first and seeds it.
+//
+// What the seed buys them is non-vacuity, and that was measured too. With the
+// seed removed EVERYWHERE and M2 handed a valid `ageCompliant` claim, M2 still
+// PASSES — it was being denied on membership before the age gate was ever
+// consulted, so it proved nothing about the thing it is named for. With the
+// seed in place the same mutation reddens it. M3 behaves the same way.
+// The three calls are what keeps that true under REORDERING. M1 seeds first
+// today, so M2 and M3 would inherit it — but a reorder, or M1 being deleted,
+// would hollow them out silently. Their own calls remove that dependency.
+// (Taking the seed out of all three does not hide anything: M1 fails, which
+// is the red this commit repairs.)
+//
+// If you re-run that probe: deleting the three CALLS does not work. tsconfig
+// sets `noUnusedLocals`, so ts-node aborts on TS6133 before a single test
+// runs, and an exit code read on its own looks exactly like a red assertion.
+// Delete the declaration too, or mutate the seeded `participantIds`.
+async function seatSenderInConversation(): Promise<void> {
+  await seedDoc("conversations/conv-1", { participantIds: [USER_UID] });
+}
+
 // M1: age-compliant (and matured) sender can create a message.
 test(
   "messages: age-compliant matured sender can create a message",
   async () => {
+    await seatSenderInConversation();
     const ctx = env.authenticatedContext(USER_UID, AGE_OK_MATURED);
     await assertSucceeds(
       ctx
@@ -770,6 +826,7 @@ test(
 test(
   "messages: matured sender without ageCompliant claim cannot create a message",
   async () => {
+    await seatSenderInConversation();
     const ctx = env.authenticatedContext(USER_UID, MATURED_ONLY);
     await assertFails(
       ctx
@@ -784,6 +841,7 @@ test(
 test(
   "messages: matured sender with ageCompliant=false cannot create a message",
   async () => {
+    await seatSenderInConversation();
     const ctx = env.authenticatedContext(USER_UID, AGE_FALSE_MATURED);
     await assertFails(
       ctx

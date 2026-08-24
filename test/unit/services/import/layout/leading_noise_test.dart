@@ -16,7 +16,12 @@ OcrLine line(String text, {required double wordHeight, int words = 4}) {
   final tokens = text.trim().split(RegExp(r'\s+'));
   return OcrLine(
     text: text,
-    box: LayoutBox(left: 0, top: 0, width: text.length * 18, height: wordHeight),
+    box: LayoutBox(
+      left: 0,
+      top: 0,
+      width: text.length * 18,
+      height: wordHeight,
+    ),
     words: [
       for (var i = 0; i < words; i++)
         OcrWord(

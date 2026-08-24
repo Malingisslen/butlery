@@ -93,6 +93,99 @@ void main() {
       expect(output, equals('uid=abcd*** logged in'));
     });
 
+    /// BUT-1872. The hole this group did not have a case for, and the reason
+    /// it went unnoticed: a bare uid IS redacted by the rule above, so the
+    /// safety net looked like it worked. But an UNDERSCORE is a word
+    /// character, so the `\b` anchors never fire inside `direct_<a>_<b>` —
+    /// the id a direct conversation derives from its two members. The whole
+    /// 64-char token then fails the {20,28} length test and passes through
+    /// untouched, with BOTH uids in clear text, on its way to Crashlytics.
+    ///
+    /// Measured before the fix: the composite string came out byte-identical
+    /// to the input while a bare uid one word away became `aBcD***`.
+    test('redacts a direct conversation id, which hides TWO uids', () {
+      const uidA = 'aBcDeFgHiJkLmNoPqRsTuVwXyZ12';
+      const uidB = 'zZyYxXwWvVuUtTsSrRqQpPoO3456';
+      final output = AppLogger.sanitizeForCrashlyticsForTesting(
+        'Failed to read conversation direct_${uidA}_$uidB',
+      );
+
+      expect(
+        output.contains(uidA),
+        isFalse,
+        reason: 'the first uid must not survive; before the fix it did',
+      );
+      expect(output.contains(uidB), isFalse, reason: 'nor the second');
+      expect(
+        output,
+        matches(RegExp(r'^Failed to read conversation direct_#[0-9a-f]{12}$')),
+        reason:
+            'hashed, not blanked — these are error logs, and one '
+            'conversation failing nine times must stay distinguishable from '
+            'nine conversations failing once',
+      );
+    });
+
+    /// Both rules on ONE message, asserted by exact equality — the only shape
+    /// that can catch the two of them interfering.
+    ///
+    /// Written after a review found the first attempt vacuous: it fed a
+    /// direct id alone and asserted `isNot(contains('***'))`, which is green
+    /// whenever the composite rule is DELETED as well, since the bare-uid rule
+    /// provably cannot match inside `direct_a_b` in any order. It could not
+    /// fail on the mutant it was named for.
+    test(
+      'a bare uid and a direct id in one message each get their own rule',
+      () {
+        const bare = 'qQwWeErRtTyYuUiIoOpP12345678';
+        const uidA = 'aBcDeFgHiJkLmNoPqRsTuVwXyZ12';
+        const uidB = 'zZyYxXwWvVuUtTsSrRqQpPoO3456';
+        final output = AppLogger.sanitizeForCrashlyticsForTesting(
+          'user $bare in conversation direct_${uidA}_$uidB',
+        );
+
+        expect(
+          output,
+          matches(
+            RegExp(r'^user qQwW\*\*\* in conversation direct_#[0-9a-f]{12}$'),
+          ),
+          reason:
+              'the bare uid gets the 4-char prefix, the composite id gets '
+              'the hash, and neither rule consumes what the other one needs',
+        );
+      },
+    );
+
+    /// Guards the COMPOSITE rule against over-reaching: a group id carries no
+    /// member identity, so the direct-id rule must not touch it.
+    ///
+    /// It does NOT claim group ids survive this function. A group conversation
+    /// id minted since BUT-1838 is a 20-char Firestore auto-id, which the
+    /// bare-token rule below masks to `abcd***` — the hyphens in this uuid
+    /// fixture are what keep it whole, not any rule about groups. Only DIRECT
+    /// ids read identically here and in the Cloud Functions log.
+    test('the composite rule does not reach a group conversation id', () {
+      const groupId = '7f3a91c2-4bde-4a11-9c33-1e2f0a8b5d77';
+      expect(
+        AppLogger.sanitizeForCrashlyticsForTesting('conversation $groupId'),
+        equals('conversation $groupId'),
+      );
+    });
+
+    /// The composite pattern has a left boundary, so the `direct_` buried
+    /// inside an ordinary English word is not treated as the start of an id.
+    /// Without it, `redirect_<a>_<b>` hashed a SUBSTRING — a value
+    /// `LogSanitizer.maskConversationId` would never produce for that token.
+    test('does not hash the direct_ inside a word like redirect_', () {
+      const uidA = 'aBcDeFgHiJkLmNoPqRsTuVwXyZ12';
+      const uidB = 'zZyYxXwWvVuUtTsSrRqQpPoO3456';
+      final output = AppLogger.sanitizeForCrashlyticsForTesting(
+        'redirect_${uidA}_$uidB',
+      );
+
+      expect(output, isNot(contains('#')));
+    });
+
     /// Boundary: 19 chars is below the regex floor → must NOT redact.
     /// (Otherwise short ids like 19-char correlation ids would be scrubbed.)
     test('does NOT redact 19-char tokens (below the regex floor)', () {

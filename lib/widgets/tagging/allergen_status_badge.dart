@@ -35,6 +35,19 @@ class AllergenStatusBadge extends StatelessWidget {
 
   /// Optional coverage percentage (0-100) shown alongside UNKNOWN badges.
   /// When provided and status is UNKNOWN, appends "(X% täckning)" to the label.
+  ///
+  /// No call site in `lib/` constructs THIS widget with it (the same name on
+  /// `TagResult` and in the tagging phases is a different thing), and that is by
+  /// design rather than by neglect: both rows that
+  /// build allergen badges filter UNKNOWN out (Malin, 2026-08-18), so nothing
+  /// can construct the badge this argument decorates. The UNKNOWN cases in
+  /// `allergen_status_badge_test.dart` still redden if the widget breaks, but
+  /// they no longer stand for anything a user can reach — do not read them as
+  /// coverage of a live path.
+  ///
+  /// Kept rather than deleted because the removal is its own decision: the
+  /// filtering was a display call, not a statement that uncertainty stops being
+  /// worth rendering (BUT-1895 item 4).
   final int? coveragePercent;
 
   /// Optional callback to show tag decision audit trail.

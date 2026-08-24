@@ -7,6 +7,11 @@ set -euo pipefail
 
 JSON=$(cat)
 
+# Dispatcher fast path — see post-edit-dispatch.sh. Falls back to parsing stdin
+# itself so this script stays runnable standalone.
+if [[ "${BUTLERY_HOOK_DISPATCH:-}" == "1" ]]; then
+  FILE="${BUTLERY_HOOK_FILE:-}"
+else
 FILE=$(printf '%s' "$JSON" | python3 -c "
 import sys, json
 try:
@@ -15,6 +20,7 @@ except Exception:
     sys.exit(0)
 print(d.get('tool_input',{}).get('file_path','') or d.get('tool_response',{}).get('filePath',''))
 " 2>/dev/null || true)
+fi
 
 [[ -z "${FILE:-}" ]] && exit 0
 

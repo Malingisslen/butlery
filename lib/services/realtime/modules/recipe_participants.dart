@@ -43,7 +43,7 @@ class RecipeParticipants {
     if (isParticipant(recipe, userId)) {
       throw RecipeOperationError(
         operation: RecipeOperationType.addParticipant,
-        message: l.validationUserAlreadyParticipant(userDisplayName),
+        message: l.validationUserAlreadyParticipant(userDisplayName.maskedName),
         resourceId: recipe.id,
       );
     }
@@ -91,7 +91,7 @@ class RecipeParticipants {
     if (!isParticipant(recipe, userId)) {
       throw RecipeOperationError(
         operation: RecipeOperationType.removeParticipant,
-        message: l.validationUserNotParticipant(userId),
+        message: l.validationUserNotParticipant(userId.maskedUserId),
         resourceId: recipe.id,
       );
     }
@@ -120,7 +120,7 @@ class RecipeParticipants {
     if (!isParticipant(recipe, userId)) {
       throw RecipeOperationError(
         operation: RecipeOperationType.updatePermissions,
-        message: l.validationUserNotParticipant(userId),
+        message: l.validationUserNotParticipant(userId.maskedUserId),
         resourceId: recipe.id,
       );
     }

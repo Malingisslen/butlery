@@ -115,10 +115,15 @@ class MessageDeletionModule {
 
       final residual = await ownMessagesIn(convoDoc.id).get();
       if (residual.docs.isNotEmpty) {
+        // Both ids masked, not one. The uid on the line above was masked and
+        // the conversation id beside it was not — and a DM's id is
+        // `direct_<uidA>_<uidB>`, i.e. the id was the leakier of the two
+        // (BUT-1897). A `StateError` is not covered by the exception classes
+        // that mask themselves, so this one masks at the throw.
         throw StateError(
           'GDPR cascade incomplete: ${residual.docs.length} message(s) still '
           'carry senderId for user ${userId.maskedUserId} in conversation '
-          '${convoDoc.id}',
+          '${convoDoc.id.maskedConversationId}',
         );
       }
     }

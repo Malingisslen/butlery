@@ -2094,3 +2094,760 @@ re-check G11's payload against it.
 Nothing was staged, committed or edited by this pass; `functions/src/__tests__/chat-groups-rules.test.ts`
 was already staged by the earlier session in this shared checkout and was left byte-identical, which
 is what keeps the reviewed bytes and the staged bytes the same object.
+
+### 2026-08-16 — poll_votes + message receipts + shared_content create (BUT-1832/BUT-1812)
+
+Reviewed `firestore.rules` (whole file, read in four chunks) and the new
+`functions/src/__tests__/poll-votes-rules.test.ts`. Suite is registered correctly (script,
+`test:rules:all`, BOTH `paths:` blocks — `node scripts/check-test-registration.js` OK) and runs
+21/21 green against the live emulator.
+
+**BLOCKING (Critical).** The new `hasRequiredFields([... 'sharedToUserIds'])` conjunct on
+`shared_content` create (firestore.rules:768) denies the MENU and SHOPPING-LIST share flows.
+The rules comment claims "All three writers (recipe, menu, shopping list) already stamp it" —
+false. Only `firebase_shared_recipe_repository.dart:260-263` passes `initialSharedToUserIds`;
+`firebase_shared_menu_repository.dart:200`, `firebase_shared_shopping_repository.dart:201` and
+`base_social_coordinator.dart:166` call `createSharedContent(entity)` with no initial list, and
+neither `BaseSharedContentModel.getCommonFirestoreFields()` (:52-62) nor the three models'
+`toFirestore()` emits the field (`createSharedContent` only sets it `if
+(initialSharedToUserIds != null)`, base_shared_content_repository.dart:134-136). Proved on the
+emulator with the exact SharedMenu key set: DENY without the field, ALLOW with it (control).
+Same BUT-1482 class as the `configRevision` incident — a rules `hasRequiredFields`/`hasOnly`
+change is a WRITER change, and the writers must be grepped per COLLECTION, not per feature.
+
+**Mutation-probe map** (env-var seam `PROBE_RULES_PATH`/`PROBE_PROJECT_ID` present in the new
+suite, so no file was ever written; `git status` confirms `firestore.rules` byte-unchanged):
+- receipt `allow update` statement → `if false`: R1, R2 redden (allow proven).
+- receipt `affectedKeys().hasOnly([...])` dropped: R3, R6 redden.
+- receipt membership conjunct dropped: R4 alone reddens.
+- `pollIsOpen()` dropped (both create+update, /g): V7 alone.
+- `uid == voterId` dropped: V3 alone. `voterId == <path>` dropped: V4 alone.
+- vote `keys().hasOnly` dropped: V10 alone.
+- **poll_votes `allow update` → `if false`: NOTHING reddens.** Every vote after the first is an
+  UPDATE in rules terms (`transaction.set` on the voter's existing row,
+  message_mutation_module.dart:542) — the live path has no allow test.
+- `optionIds is list && size() <= 20` dropped: nothing reddens.
+- `'sharedToUserIds'` dropped from hasRequiredFields: nothing reddens; `is list` dropped alone:
+  nothing reddens; BOTH dropped: S2 reddens. S2 guards the PAIR — the absent-key CEL error in
+  `is list` masks the required-field conjunct.
+
+**Live probe of the three-state map on `pollIsOpen()`** (throwaway script under `functions/src/`,
+deleted in the same Bash call): `metadata: null` → vote DENY (CEL error through
+`.get('metadata', {}).get('poll', {})`), `metadata` ABSENT → ALLOW, `metadata: {poll: null}` →
+DENY, populated → ALLOW; READ is unaffected in all four (the read rule never calls `pollIsOpen`).
+`MessageDto.toFirestore:127` emits `'metadata': message.metadata` unconditionally on a nullable
+field, so the stored shape for a plain message is present-with-null — i.e. the rules comment at
+:2060-2065 describes the ABSENT case only and its "AND unreadable" half is wrong outright. Not a
+live break: a poll message always carries `metadata: {'poll': …}` (messaging_service.dart:603).
+
+### 2026-08-16 — BUT-1832/BUT-1812 fix-round review: five mutation probes on poll_votes, message receipts and shared_content
+
+Reviewed `firestore.rules` + `functions/src/__tests__/poll-votes-rules.test.ts` as they stood
+after the automated fix round. Suite green 26/26 against the real rules
+(`npm run test:rules:poll-votes`). Probes run via the `PROBE_RULES_PATH` / `PROBE_PROJECT_ID`
+seam (real rules file md5-unchanged, mutants written to the scratchpad):
+
+- M1 — receipt `allow update` (rules L2035-2038) neutralised by rewriting its
+  `affectedKeys().hasOnly([...])` to `hasOnly(['zzzDisabled'])`: 24/26, reds = R1 (read receipt)
+  and R2 (delivery receipt) exactly. The new statement is load-bearing and covered.
+- M6 — dropped `request.auth.uid in convOf(resource.data.conversationId).data.participantIds`
+  from the SAME statement (anchored on the following `&& request.resource.data.diff` line, since
+  the identical text also appears in the read rule at L1981): 25/26, red = R4 (stranger stamps a
+  receipt) exactly. Roster gate covered.
+- M2 — `poll_votes` `allow update` → `if false`: 25/26, red = V13 exactly. This closes the gap
+  recorded in the previous round ("mutating allow update to if false reddened 0/21").
+- M3 — dropped `request.auth.uid == voterId` from `poll_votes` `allow create` ONLY: 26/26 GREEN.
+  Cause: `seed()` pre-creates `poll_votes/{OTHER_MEMBER_UID}`, so V3's `.set()` is an UPDATE and
+  is refused by the update limb's copy of the same conjunct. M3b (dropped from BOTH limbs)
+  flipped V3 to "Expected request to fail, but it succeeded" — so V3 guards the PAIR, and the
+  create limb's identity check has no test of its own. Reported Medium.
+- M4 — dropped `request.resource.data.sharedToUserIds is list` (rules L779): 26/26 GREEN. Both
+  malformed shared_content tests (S2, S6) delete the key outright, which `hasRequiredFields`
+  already denies, so the type conjunct is masked. Reported Medium. Mechanical note: the literal
+  `request.resource.data.sharedToUserIds is list` occurs TWICE in the file (L779 and L890 under
+  `/menus`) — the mutator's count==1 assertion caught it; anchor on the preceding
+  `'sharedAt', 'sharedToUserIds'])` line.
+
+Cross-checks done on the fix round's claims rather than trusting the comments:
+`MessageMutationModule.votePoll` writes exactly `{voterId, optionIds, votedAt}` to
+`messages/{id}/poll_votes/{voterId}` (matches `voteBody`); `updateMessageStatus` /
+`batchMarkAsDelivered` write exactly `{status, updatedAt, readAt|deliveredAt}` (matches the
+receipt rule's four-key `hasOnly` and R1/R2's payloads);
+`BaseSharedContentRepository.createSharedContent` now stamps
+`sharedToUserIds = initialSharedToUserIds ?? [uid]` unconditionally, and none of the three
+models' `toFirestore` emits the field — so the rewritten rules comment at L769-775 is accurate
+where its predecessor ("all three writers already stamp it") was not. `getCommonFirestoreFields`
+and `SharedMenu.toFirestore` key sets match the S4/S5 payloads verbatim.
+`node scripts/check-test-registration.js` → OK, 40 rules suites across both `paths:` blocks.
+
+Uncovered branches left standing (all Medium/Info, none blocking): `optionIds is list` and
+`optionIds.size() <= 20`; the create-limb voter identity check (above); `sharedToUserIds is list`
+(above); the receipt statement carries no `memberSince` clause, so a late-joining group member may
+stamp receipts on messages predating their join (write-only, no disclosure).
+
+### 2026-08-17 — BUT-1832 poll_votes + message receipts: first real review of a HELD batch
+
+Context: the sprint ledger recorded `firestore.rules` and `poll-votes-rules.test.ts` as
+passed WITHOUT the files being opened. This was the first actual read.
+
+Suite result: **26/26 pass** (`npm run test:rules:poll-votes`).
+
+RULE VERDICT — sound. 13 behavioural probes, all matching prediction:
+- separate `allow update` statements (L2014 sender / L2035 receipt) evaluate independently;
+  the emulator prints both verdicts, confirming no `||` sinking.
+- `match /poll_votes/{voterId}` exists; no `{path=**}` catch-all covers `poll_votes`;
+  everything else falls to the default deny at L3094.
+- a participant CANNOT seat another member's vote row (probe F), CANNOT rewrite
+  `metadata` via the receipt branch (probe L), CANNOT vote on a closed poll.
+- `poll_votes.voterId` has a COLLECTION_GROUP index (firestore.indexes.json:751), so
+  `deletePollVotes` (account-deletion-cascade.ts:1560) can actually run.
+- deleted helpers `isDocumentOwner` / `isAddingSelfToList`: zero live callers repo-wide;
+  the emulator log's own "Unused function" WARNINGs corroborate.
+
+COVERAGE GAPS found by mutation probe (each mutant left the suite fully green):
+- `request.auth.uid == voterId` dropped from `allow create` only -> 26/26. V3's target row
+  is pre-seeded by `seed()`, so V3 lands on UPDATE.
+- `.hasOnly([...,'metadata'])` on the receipt branch -> 26/26. See the principle added
+  for why this is the expensive one.
+- `optionIds is list` dropped -> 26/26. `optionIds.size() <= 20` dropped -> 26/26.
+Mutants that DID redden (so these are genuinely pinned): poll_votes `allow update: if false`
+-> V13; receipt participant check -> R4; receipt allow-list + `content` -> R3 and R6.
+
+THE NULL-METADATA FINDING (trap 1, present but benign):
+`pollIsOpen()` uses the naive `pollMessage().data.get('metadata', {}).get('poll', {})...`
+chain, NOT the `is map` ternary BUT-1788 established. `MessageDto.toFirestore`
+(message_dto.dart:127,157) emits `'metadata': message.metadata` unconditionally, so every
+ordinary message stores `metadata: null` — a PRESENT key, so `.get('metadata', {})` returns
+null and the next `.get` is a CEL error. Measured: probe A (metadata NULL) DENIES a vote,
+probe B (metadata ABSENT — the shape the suite seeds) ALLOWS one. Opposite verdicts, neither
+tested. Benign today because a real poll message always carries a metadata map, but (a) the
+rules comment at L2070-2075 asserts the chain "keeps the branch evaluable", which is false
+for every message the app writes, and (b) the same comment claims a missing metadata would
+make the poll "unreadable" — `allow read` never calls `pollIsOpen()`, and probe E confirms
+the read succeeds. Two false sentences in one comment beside a correct rule.
+
+Minor, measured: `status` accepts any string on the receipt branch (probe K); the receipt
+branch has no `memberSince` cut-off, unlike the message read rule, so a late-joining group
+member can stamp receipts on messages they cannot read; `votedAt` is optional (probe I);
+a participant can create junk `poll_votes` rows on any metadata-ABSENT non-poll message.
+
+Mechanics that cost time: the mutator's replacement string must contain NO newline escape —
+`String.replace` does not interpret `\n`, and the emitted literal `\n` produced
+"Error compiling rules: Unexpected 'n'" twice. Rewrote every mutant as a same-line
+substitution (`&& X` -> `&& true`) with the preceding line captured to disambiguate the
+create limb from the update limb. Also: a git-bash `/c/Users/...` path is not readable by
+node — pass `C:/Users/...`. `firestore.rules` was never written (env-var probe seam);
+verified comment-stripped md5 identical, 1378 non-comment lines both sides.
+
+### 2026-08-17 — poll_votes fix-round re-review: absent vs null metadata carry opposite verdicts
+
+Re-reviewed the five tests + comment rewrite answering the BUT-1801 review findings
+(`functions/src/__tests__/poll-votes-rules.test.ts`, comment-only edit to `firestore.rules`).
+Baseline 31/31. Six single-token mutants built in the scratchpad and run through the
+`PROBE_RULES_PATH` / `PROBE_PROJECT_ID` seam; `firestore.rules` never written
+(md5 6c659fe7b6eed1f0aea050f74d4879d2 before and after every probe).
+
+Attribution measured, each mutant reddening exactly one test (30/31):
+- widen receipt `hasOnly` with `'metadata'` -> R3b alone. Proves R3b denies on the
+  allow-list, not on the roster conjunct and not via the sender branch (under the
+  mutant the write SUCCEEDS, so `metadata` is provably in `affectedKeys()`).
+- drop `optionIds is list` -> V10b alone. drop `size() <= 20` -> V10c alone.
+- drop `request.auth.uid == voterId` from the CREATE limb only -> V3b alone.
+- `is map ? … : {}` repair of `pollIsOpen()` -> V10d alone; `is map ? … : null` -> 31/31.
+
+The finding the probes surfaced: a throwaway probe voting on three message shapes in one
+conversation returned ABSENT metadata -> ALLOWED, NULL -> denied, real open poll -> ALLOWED,
+identically under the current chain and under the owed `: null` ternary. So the defaulting
+chain's only reachable effect on a non-poll message is to permit a `poll_votes` row, the
+rules comment defends those defaults as preventing an unwanted deny three lines above
+calling that same deny "the outcome we want anyway", and the absent branch has no test.
+Low product harm (own-uid row, membership-gated read, swept by the Art. 17 cascade); the
+cost is that the owed repair will read as closure it does not deliver.
+
+Comment claims checked against the cited files: `MessageDto.toFirestore`:127 does emit
+`'metadata'` unconditionally (true). `message_query_module.dart`:174 is
+`if (optionIds is! List) continue;`, so V10b's "the hydration iterates it" is false — the
+real consequence is `message_mutation_module.dart`:510's `as List<dynamic>?` cast on the
+writer. `MessageDto.toFirestore`:133 already emits a top-level `reactions` key and
+`reactions` appears 0 times in `firestore.rules`, so R3b's "a reactions ticket would write
+`metadata`" names the wrong key and leaves the plausible widening unpinned. `isValidVote()`
+contains no `request.auth.uid`, so V3b's comment names the wrong masker (it is the UPDATE
+limb's own uid conjunct). `allow read` genuinely never calls `pollIsOpen()`, so the removed
+"unreadable" claim was rightly removed.
+
+Comment-only verified two ways: `git diff -U0` non-comment lines empty, and code-only md5
+identical index vs worktree (1720ff7e4e0d8c5f1c823b3e215ab096, 1378 lines both sides; the
+file contains no `://` so the strip is safe).
+
+### 2026-08-17 — BUT-1832 poll_votes, third review round: the FOURTH metadata shape [Bug found] [Pattern discovered]
+
+Third pass over the staged `firestore.rules` + `poll-votes-rules.test.ts`. Suite: **32/32**
+green against the real rules (`npm run test:rules:poll-votes`). `firestore.rules` never
+written — all four mutants were scratchpad COPIES driven through the suite's
+`PROBE_RULES_PATH` / `PROBE_PROJECT_ID` seam; md5 `a3ea115f0fc9367debb6b76c3229018f` at both
+ends of the session.
+
+Probes run (each mutant a copy, fresh projectId, one per shell call):
+- `is map ? … : null` (the repair the comment names) → **32/32 green**. V10e (absent-metadata
+  ALLOW) does NOT redden.
+- `is map ? … : {}` → **31/32**, V10d (null denies) alone reddens. Confirms the rules
+  comment's stated measurement on the current 32-test suite.
+- A repair that also CLOSES absent (`is map && 'poll' in metadata && …`) → **31/32**, V10e
+  alone reddens. So the V10e pin costs the repair exactly one deliberate line and blocks
+  nothing.
+- Drop `request.auth.uid == voterId` from the CREATE limb only → **31/32**, V3b alone
+  reddens. The new create-limb test is non-vacuous and correctly attributed.
+
+**The finding.** `pollIsOpen()`'s defaulting chain has FOUR shapes, not the three the rules
+comment tabulates. A standalone throwaway probe (written under `functions/src/__tests__/`,
+deleted in the same Bash call, `zz-` count verified 0 afterwards) seeded a message whose
+`metadata` is a MAP WITH NO `poll` KEY — `writeGroupSystemMessage`'s exact shape — and the
+vote was **ALLOWED**. Grepping the writers then showed the same shape is written by three
+ordinary CLIENT factories: `Message.recipeShare`, `Message.menuShare`,
+`Message.shoppingListShare` (`lib/models/messaging/message.dart`:212/242/273), each storing
+`{'recipeId': …}`-style maps. So:
+- "The FIRST row is the real gap" is false by exclusivity — the map-without-poll shape is
+  live, needs no tampered client, and is far more common than an absent key.
+- "the common non-poll message denies" is false for every share card in every chat.
+- An `is map` guard cannot close it: a map without the key IS a map.
+Harm is still low (row keyed to the caller's own uid, read membership-gated, `isValidVote`
+bounds it to 3 keys / ≤20 optionIds, and `deletePollVotes`' collectionGroup sweep on
+`voterId` erases it wherever it sits) — so "pin, don't fix, on a salvage commit" remains the
+right call. What must change is the DESCRIPTION, and the pin should sit on the shape
+production actually writes (a `recipeShare`-metadata fixture), not on the absent key.
+
+Two further false sentences, both in the test file:
+- V10e: "this test will demand the decision by going red" — measured false for the repair the
+  rules comment names (`: null` → 32/32, V10e green). It registers a decision once made; it
+  does not demand one.
+- V10d: "the rule's own comment claims the `{}` defaults prevent exactly this" — stale. The
+  rules comment now explicitly RETRACTS that claim two paragraphs above the function.
+
+Mechanics confirmed this round: `withSecurityRulesDisabled` is a try/finally around an
+"owner"-token context (`@firebase/rules-unit-testing/dist/index.cjs.js`:224-242), so V3b's
+pre-`assertFails` existence check propagates a throw as a loud FAIL and can never turn a
+failing assertion into a pass; and because it passed, `snap.exists` behaved as a compat
+BOOLEAN (the modular API's `exists` is a function and would always be truthy, i.e. always
+throw), so the guard is live rather than vacuous.
+
+### 2026-08-17 — BUT-1832 final gate: verifying a four-row comment table, and the memberSince parity claim
+
+Third and final review pass over the staged `firestore.rules` (comment-only) +
+`functions/src/__tests__/poll-votes-rules.test.ts`. Suite: **33/33**.
+
+**The rules diff was provably comment-only.** Five distinct blobs of `firestore.rules`
+exist in the object store carrying the poll_votes rules, at 155433 / 156104 / 157298 /
+157622 / 158492 bytes — one per review round — and ALL FIVE share the comment-stripped
+md5 `1720ff7e4e0d8c5f1c823b3e215ab096` (1378 code lines). Cross-checked with
+`git diff -U0 <prev-blob> <staged> | grep '^[+-]' | grep -v '^[+-][[:space:]]*//'`, empty.
+Note the size filter: the file is stored CRLF, so it is ~158 KB, not the ~85 KB an
+LF-era filter finds — an earlier sweep at `70000<size<90000` returned only ancient
+revisions and looked like "no prior version exists".
+
+**The four-row `pollIsOpen()` table was verified two ways.** (1) Every row has a green
+assertion pointing at it in the same file — row 1 absent/V10e, row 2 null/V10d, row 3
+map-without-poll/V10f, row 4 real poll/V1+V2. That is what makes a transcription error
+unhideable, and it is the property to demand of any table a comment draws. (2) A
+standalone probe measured ELEVEN shapes, not four:
+
+```
+ALLOW  metadata ABSENT                    DENY   metadata: "a string" (non-map)
+DENY   metadata: null                     DENY   metadata: {poll: null}
+ALLOW  metadata: {recipeId,recipeTitle}   ALLOW  metadata: {poll: {}}  (no isClosed)
+ALLOW  metadata: {poll:{isClosed:false}}  DENY   metadata: {poll: "notamap"}
+DENY   metadata: {poll:{isClosed:true}}   DENY   metadata: {poll:{isClosed:"true"}}
+                                          ALLOW  metadata: {} (empty map)
+```
+
+Every unenumerated state either falls inside row 3's already-named class (a map with no
+usable poll → ALLOW) or fails CLOSED. Notably `isClosed:"true"` DENIES, so a tampered
+client cannot force the branch open with a non-bool. The table is correct and complete
+for the decision it exists to inform.
+
+**Writer claims re-verified at source** (not from the prose): `Message.recipeShare`
+(`lib/models/messaging/message.dart`:212), `menuShare` (:242) and `shoppingListShare`
+(:273) each store a two-key map with no `poll`; `writeGroupSystemMessage`
+(`functions/src/groups/group-system-message.ts`:80) stores `{systemEvent, subjectUserId}`.
+Row 3 is live on four writers.
+
+**Three mutation probes, all via `PROBE_RULES_PATH` against copies in the scratchpad —
+`firestore.rules` md5 `37acb535…` identical before and after, by construction:**
+
+| mutant of `pollIsOpen()` | result | what it proves |
+|---|---|---|
+| the OWED repair (`is map && 'poll' in metadata && …`) | **31/33, exactly V10e + V10f** | both known-gap tests are non-vacuous AND keyed on poll-PRESENCE; the real repair breaks nothing else |
+| `is map ? metadata : null` (the ternary the comment names) | 33/33 | comment's "stays green" is true |
+| `is map ? metadata : {}` | 32/33, exactly V10d | the else branch is the security decision, as claimed |
+
+Probing the OWED repair (not only the forbidden one) is what converts "these tests
+document a gap" from a promise into a measurement. It also retired the last pass's
+blocking finding: the comment no longer claims the tests go red on their own.
+
+**One blocking finding, and it is a comment, not a rule.** `inPollConversation()` is
+introduced as "the same membership test the message read rule uses, one document further
+out". Measured against a group conversation whose `memberSince` postdates the poll:
+
+```
+DENY   late joiner reads the POLL MESSAGE       (memberSince cut-off, BUT-1838)
+ALLOW  late joiner reads the POLL_VOTES TALLY   (inPollConversation only)
+ALLOW  late joiner CASTS a vote on it           (inPollConversation only)
+```
+
+The membership test *is* the same; the sibling rule's history cut-off is not, so the
+sentence reads as parity beside a measured divergence, with no record of it anywhere in
+the file. The WRITE half is new — earlier passes framed this as a read leak only, and a
+late joiner voting in a pre-join poll is the part a read-focused reading misses.
+Deferring the RULES change is right (salvage scope); shipping the parity sentence beside
+it is not.
+
+**Low:** the V10e/V10f comment says the `: null` spelling leaves "the suite … 32/32".
+Measured 33/33 — the count went stale the moment V10f was added, and it is
+self-inconsistent (a 33-test suite cannot stay 32/32 while its 33rd test stays green).
+Name which tests redden, never how many pass.
+
+**Fixture check:** `SHARE_META_MSG_ID` disturbs nothing. It is referenced only at its
+declaration, in `seed()`, and in V10f; the suite contains no collection-group query and no
+`collection("messages")` scan, and the tally tests (V11/V12) address
+`messages/{POLL_MSG_ID}/poll_votes` alone. The vote row V10f leaves behind is never read.
+
+### 2026-08-17 — BUT-1832 poll_votes final gate pass: re-verifying a decision record's quoted figures [Pattern discovered]
+
+Final review round on the staged `firestore.rules` + `functions/src/__tests__/poll-votes-rules.test.ts`.
+Both prior findings had been taken (the `inPollConversation()` parity sentence rewritten; the stale
+`32/32` replaced by a per-test list), and two dated deviation entries had been added to
+`.claude/rules/accepted-deviations.md` and `docs/architecture/ACCEPTED_DEVIATIONS.md` quoting THIS
+agent's measurements. The task was to check whether the records misstate what was measured.
+
+Suite: **33/33 passed** (`npm run test:rules:poll-votes`), emulator 127.0.0.1:8080.
+
+Every figure in the records re-measured against the CURRENT 33-test file, all via
+`PROBE_RULES_PATH` pointed at mutated COPIES in the scratchpad — `firestore.rules` md5
+`45e5a55f36762d34f36e02c7807a7922` before and after, never written:
+
+| mutant on `pollIsOpen()` | result | record says |
+| -- | -- | -- |
+| `is map && 'poll' in metadata && …` (owed repair) | 31/33, FAIL = V10e + V10f only | 31/33, exactly V10e+V10f ✓ |
+| `is map ? … : null` | 33/33 | 33/33, gap stays open ✓ |
+| `is map ? … : {}` | 32/33, FAIL = V10d | 32/33, reddens V10d ✓ |
+| receipt `hasOnly([… ,'metadata'])` | 32/33, FAIL = R3b | R3b's own comment ✓ (R3b is load-bearing) |
+
+The records' figures had been WRITTEN against a 31-test run and restated as `/33` after V10b/V10c
+were added. The restatement was arithmetic; it happened to hold, because neither added test moves
+under any of these mutants. Re-running is what turned it into a measurement.
+
+`memberSince` divergence re-measured with a throwaway probe (deleted in the same Bash call, `trap
+… EXIT INT TERM`, `ls | grep -c zz` = 0): group conversation carrying `groupId` + a `memberSince`
+map whose stamp for the late joiner postdates the poll →
+
+```
+late joiner reads the poll MESSAGE: DENIED
+late joiner reads the TALLY:        ALLOWED
+late joiner CASTS a vote:           ALLOWED
+CONTROL early member reads MESSAGE: ALLOWED   <- proves the deny is the cut-off, not the roster
+```
+
+The control is the part worth copying: without it the first line is just "a deny", and the whole
+entry rests on WHY it denied.
+
+Cross-file claims in the records, each checked in its own file rather than believed:
+- four writers of a `poll`-less metadata map — `Message.recipeShare` (`{recipeId, recipeTitle}`),
+  `Message.menuShare` (`{menuId, menuTitle}`), `Message.shoppingListShare` (`{listId, listTitle}`),
+  and `writeGroupSystemMessage` (`metadata.subjectUserId`). ✓
+- "no UI renders it": `MessageQueryModule._isPoll` = `message.metadata?['poll'] is Map`, and only
+  polls get hydrated, so a junk row on a share card is never read back. ✓
+- Art. 15/17 asymmetry: `FirebaseDataExportRepository._hasPoll` = `metadata['poll'] is Map`
+  (export skips the junk row) while `deletePollVotes` sweeps
+  `collectionGroup('poll_votes').where('voterId','==',uid)` regardless of parent shape (erasure
+  reaches it). ✓ — capped at `MAX_POLL_VOTE_SWEEP_ROWS` with a decline-and-report-incomplete path,
+  which the harm bound does not overstate.
+- `BUT-1835` in the rules comment is the erasure ticket, not a typo for 1832/1801. ✓
+- BUT-1833's helper removals (`isDocumentOwner`, `isAddingSelfToList`) leave no references; the
+  ruleset compiles, which the emulator load proves independently of grep.
+
+Verdict: nothing in either deviation entry misstates the measurements. Remaining uncovered
+branches are the ones the records already name (the `reactions` key on the receipt allow-list; the
+`memberSince` cut-off on read + create/update), plus an unauthenticated TALLY-read test that does
+not exist (V6 covers unauth create, V12 covers an authenticated stranger's read) — Low.
+
+
+### 2026-08-17 -- knowledge-diet restructuring migration: "Principles (durable guidance, not a log)" section, pre-restructuring text, verbatim
+
+Migrated verbatim during the BUT-1858-era knowledge-diet pass applied to this agent (mirrors the firebase-backend-security and cloud-functions-specialist restructures). This is the exact pre-restructuring "## Principles" section body -- the grouped date-range distillations that had accumulated in the live knowledge file -- byte-identical to what shipped in the file before this pass. The knowledge file now carries only the re-organized, sharpened principles distilled from this text; every fact below is preserved for the raw multi-round narrative it summarizes (the individual dated incidents it distills are themselves already archived above under the "Archived 2026-07-24" and per-date headings).
+
+## Principles (durable guidance, not a log)
+
+Every dated entry this file has ever accumulated is distilled below and archived
+verbatim in `firestore-rules-tester.knowledge.archive.md` — nothing is lost, only
+relocated (round 1 = pre-2026-06-24 entries; round 2 = the rest, both under
+"Archived 2026-07-24" headings). Distillation is by SHAPE now, not recency: fold
+a new dated entry into a principle at write time rather than letting it accumulate
+as a story-of-the-day log.
+
+**Distilled from 2026-04-25 → 2026-06-03 (20 entries):**
+- Seed conventions; moderation-rules (BUT-511/728); rate-limit deny via `rate_limits` subcollection (seed field name must be `lastWrite`); userId-switch attack pattern for `set()` collections (pin both resource.data and request.resource.data userId in one test); menus-rules (BUT-746/747) recipient self-scrub + paired `removeAll()` anti-griefing (BUT-749, reusable on any "leave a shared list-of-UIDs" rule); Sprint G defence-in-depth denies (seed via `withSecurityRulesDisabled` before any read-deny test); symmetric-difference + isInList membership gates (BUT-464); same-actor rate-limit collisions (use a distinct uid per test); `members` collection-group catch-all needs both a canary-user test and a path-agnostic test (BUT-463).
+- `allow list` recipient-branch rules must be exercised with a query whose `where()` guarantees every matched doc satisfies the rule (e.g. `array-contains`); an unfiltered `.collection().get()` must still deny. Storage rules pattern: `initializeTestEnvironment({storage:...})`, modular `firebase/storage` client, most-specific match wins; `recipe_comments` imageUrls validator can bound list size/type but not per-element type (documented gap, not a miss). **EMULATOR PERSISTS DATA ACROSS `npm run` INVOCATIONS** — suffix every create-allow doc id with a per-run token or a 2nd run silently becomes update-not-create and fails wrong; CI is unaffected (fresh emulator per job), so "fails locally, green in CI" means clear-and-retry, not a regression. Admin-SDK cascade integration: point `FIRESTORE_EMULATOR_HOST` at the emulator before importing `firebase-admin`, no `withSecurityRulesDisabled` needed (Admin SDK bypasses rules), always pair a positive delete/scrub with a negative control-doc-untouched assertion; author field differs by collection (`pings.fromUserId`, `comments.commentedBy`, `ratings.ratedBy`) and top-level `recipe_comments.authorId` is anonymized while collectionGroup `comments` is hard-deleted — same-verb assumption across fields is the trap.
+
+**Distilled from 2026-06-10 → 2026-06-21:**
+
+- **Verify the actual collection→test-file map before reusing an old pointer** — a prior note routing `cook_snaps` to `moderation-rules.test.ts` was stale; it lives in `cook-snaps-and-message-mod-rules.test.ts` (project `butlery-rules-cook-snaps-and-message-mod`). `rateLimitWrite('cook_snaps', 5)` is app-written only, so repeated creates by the same actor pass unless a test seeds `users/{uid}/rate_limits/cook_snaps`.
+- **CRITICAL (BUT-1214) — back-compat presence-check clauses in a READ rule open the collection-group/list query path even when they look safe on a single `get()`.** `!('field' in resource.data)` and `.get('field', default)` both evaluate their fallback branch as satisfied for an unconstrained query, so Firestore ALLOWS the query and returns real docs whose `field` holds the secret value — rules aren't filters. The only shape that closes the query path is strict equality (`resource.data.field == 'safeValue'`). Cost: docs missing the field become unreadable via that branch too, so any such fix needs a **backfill run BEFORE the rules deploy** (see `functions/scripts/backfill-cook-snap-visibility.js`). Treat any `!('x' in ...)` / `.get('x', default)` clause in a visibility/privacy-enum read rule as a leak candidate and demand a collection-group-query deny test, not just a `get()` deny test.
+- **Probing a candidate rules fix without touching `firestore.rules`:** load the rules text, `rules.replace(clauseRegex, candidate)` with a whitespace-tolerant regex (literal template strings miss on indentation), pass the patched string to `initializeTestEnvironment` under a fresh projectId per candidate — lets you report "fix A verified green, fix B verified leaky" instead of speculating.
+- **`count()` aggregate rule tests need the MODULAR `firebase/firestore` helpers** (`getCountFromServer`, `collection`, `query`, `where`) cast over `ctx.firestore()` — the compat API has no `.count()` (first seen on `recipe_cook_events`, BUT-838). Append-only `update: if false` collections need proof with BOTH a partial `.update()` and a full-body `.set()` on an existing doc — the set-on-existing path is what a buggy client retry hits.
+- **A collection with no root-level `keys().hasOnly()` validator silently accepts new top-level fields** (e.g. `users/{uid}/recipes/{recipeId}`'s `schemaVersion`, BUT-1249) — pin a regression test that fails if a future `hasOnly([...])` is added without the field, rather than relying on the absence of a validator to stay noticed.
+- **Coverage checklist for an actor-gated collection with `cannotModify` immutable fields** (activity_events, BUT-1294, and the general shape): (1) at least one update-ALLOW test, not just cannotModify-denies — a blanket-deny regression passes every deny test with zero allow proof; (2) one deny per immutable-field anchor, not just the first; (3) required-field-present AND is-string branches each proven; (4) the rate-limit clause proven via a seeded `users/{uid}/rate_limits/{collection}` doc (app-written only, so other actors' creates don't trip it unless seeded).
+- **Collection-group read rules UNION with the specific match they overlay, all-or-nothing per doc** — `match /{path=**}/recipes/{recipeId} { allow read: if isAdmin() }` grants admin BOTH the `collectionGroup("recipes")` query AND a direct `get()` on any single owner-scoped recipe doc; there's no way to express "admin can query but not direct-get" with this shape (admin-dashboard-rules, 2026-06-19).
+- **Chained `.get(field, default)` on a nested map is safe-by-construction against an absent parent map, and CEL `in` on a map checks KEYS only (not values)** — verified for the `socialData.memberPermissions` shared-read gate (2026-06-21); still pin an explicit unauthenticated-deny and a missing-parent-field stranger-deny for any privacy-sensitive read-widening of this shape, since the "safe by CEL analysis" argument is not itself a test.
+- **`/parse_events` admin-read** (import-health drill-down) lives in `admin-dashboard-rules.test.ts`, `allow read: if isAdmin()` only — confirmed via probe that anon read + any non-admin write/delete all fall through to the global default-deny.
+
+**Distilled from 2026-06-27 → 2026-07-18:**
+
+- **Numeric-floor change on a rule** (e.g. `settings/{settingId}` birthYear minimum age 13→15, BUT-1384): needs allow-at-floor, deny-at-floor+1, AND an update-branch allow at the same boundary — a create-only deny test lets a blanket-deny update regression through unnoticed.
+- **`isAgeCompliant()`** = `isAuthenticated() && request.auth.token.ageCompliant == true` — fails CLOSED (no claim → CEL undefined → `==true` is false → deny, not an error). Seed via `authenticatedContext(uid, {ageCompliant:true})`. `birthYear` is CF-only-written on BOTH `users/{uid}` and `users/{uid}/settings/{settingId}`: create requires `get('birthYear', null) == null` (absent); update requires the value unchanged. Four UGC create paths carry `&& isAgeCompliant()`: recipe_comments, messages, social_requests, recipe_ratings (last two also need `isAccountMatured()` + `email_verified:true`). **Adding a gate to an existing create rule fails closed every prior create-allow test lacking the new claim** — grep `authenticatedContext(<actor>)` for that collection whenever a gate is added (recurred at BUT-1418/1419). rules-unit-testing contexts are the CLIENT SDK — seed `new Date()`, never admin Timestamps.
+- **Fail-closed proof for any gate-deny test**: re-run the IDENTICAL body+id with the gate satisfied (throwaway probe) and assert SUCCESS — if the probe also fails, the deny was about body/id/persistence, not the gate. `isAccountMatured()` needs `{email_verified:true}` OR an aged `users/{uid}` doc; a fresh-account deny test needs BOTH `email_verified:false` AND no seeded profile doc, or a doc persisted from a prior run makes the deny pass by accident. `curl -X DELETE .../databases/(default)/documents` from Bash silently no-ops (parens glob-expand, exit 7) — use each test file's own `clearFirestore()` helper.
+- **Household membership** (`households`, `diner_profiles`, `family_ratings`) is a DOC-READ gate: `isHouseholdMember(hid)` = `get(households/{hid})` + `auth.uid in doc.data.memberUserIds` — not a path segment, so every test must seed the household first. Household-admin (`memberPermissions[uid]=='admin'`) is separate from the app-level `/admins` isAdmin(). Create is projection-strict: `memberUserIds.toSet()==memberPermissions.keys().toSet()` is the load-bearing deny. **`dinerConsentValid` (GDPR Art. 9)** ANDs a minority gate (`ageBand=='adult' || guardianConsent != null`) with an allergen gate (`!dinerHasAllergenData(data) || guardianConsent.get('includesAllergenConsent', false)==true` — the default fails a MISSING consent map too); both re-run on update. `family_ratings` pins `enteredByUid == request.auth.uid` on CREATE only. A deny test's CEL `evaluation error` is an expected `assertFails` pass, not a bug.
+- **Optional-list field validator shape**: `!('field' in request.resource.data) || (request.resource.data.field is list && request.resource.data.field.size() <= N)` (e.g. `attendeeMemberIds<=50` on `recipe_cook_events`). Reusable 5-test cluster: present+valid, present+empty (size 0), present+at-cap (boundary inclusive), present+over-cap (deny), present+wrong-type (deny) — the absent case is already covered by the baseline create-allow test.
+- **Never import server-value sentinels (`serverTimestamp`, `increment`, `arrayUnion`, `deleteField`) from `firebase-admin/firestore` in a `*-rules.test.ts`** — `ctx.firestore()` there is the CLIENT SDK; an admin sentinel throws `invalid-argument` at `.set()` before any rule runs, which ALSO fails `assertFails` deny tests. Always `import {serverTimestamp} from "firebase/firestore"`. Broke on a firebase-admin 12→13 bump (pure test-harness bug, zero prod impact — real clients always use the client SDK). Grep `from "firebase-admin/firestore"` across `__tests__/*-rules.test.ts` after any firebase-admin major bump.
+- **Deny-all server-only collection shape** (`allow read, write: if false`, e.g. `/llm_response_samples`, BUT-1451; same as SPRINT-G D1–D11): matrix {read,create,update,delete} × {unauth, non-admin, admin} — admin-still-denied is the load-bearing case — plus one Admin-SDK-bypass write that succeeds. A single-segment top-level collection can't match any `{path=**}/<name>/{id}` collection-group catch-all (those require a trailing named subcollection segment) — check the catch-all list for union-safety rather than reading the new rule in isolation.
+- **1:1 DM minor gate on `conversations/{id}` create (BUT-674)**: `passesMinorDmGate(ids)` = `ids.size()!=2 || !otherIsMinor(otherParticipant(ids)) || creatorIsFriendOf(otherParticipant(ids))`. `otherIsMinor(uid)` = `exists(users/{uid}) && get(users/{uid}).data.get('isMinor', false)==true` — **the `exists()` guard is load-bearing**, a bare `get().data.get()` CEL-errors on a missing profile; guarding it fails OPEN as non-minor (same pattern reused for `accountIsMinor` on `public_profiles`). **Group conversations (size>2) are deliberately ungated** — rules can't iterate a participant list; group-minor protection is the separate `enforceGroupMinorMembership` Cloud Function, not this rule — don't file a "group DM has no minor gate" finding. Reusable pattern for any "allowed only if a seeded relationship doc exists" gate: pair a no-relationship-doc deny with the identical actor+body succeeding once the doc is seeded.
+- **`isMinor` write-protection mirrors `birthYear`** on BOTH `users/{uid}` (profile) and `users/{uid}/settings/{settingId}`: create requires `request.resource.data.get('isMinor', null) == null` (absent — CF-only via `verifySignupAge`, Admin SDK bypasses rules); update requires the post-write value equal the pre-write value (immutable). **Load-bearing test**: an update touching an unrelated field (`isSearchable`, `notificationsEnabled`) while `isMinor` is preserved must ALLOW — without it, a blanket-deny regression of the update rule passes every isMinor-immutability deny test.
+- **Server-authoritative pooled-ratings homes** (`users/{userId}/canonical_rating_events/{poolKey}`, `canonical_recipe_stats/{poolKey}`, decision 10): both `create,update,delete: if false` (CF/Admin-SDK-only); read is owner-only for events (`auth.uid==userId`), any-authed for stats (anonymous aggregate). **Collection-group leak guard is the load-bearing test for any owner-scoped subcollection**: `collectionGroup(name).get()` by a non-owner must DENY — the engine can't prove every matched doc satisfies the owner predicate for an unconstrained collection-group query, so a single-doc deny test alone is not proof.
+- **Five owner-shaped `{path=**}/<name>/{id}` collection-group catch-alls** beyond the `members` suite (BUT-463): `engagements` (doc-ID), `comments` (`commentedBy`), `ratings` (`ratedBy`), `recipes` (isAdmin-only read), `pings` (`fromUserId||toUserId`). **Idempotent-without-clearFirestore pattern**: a suite that only reads/deletes pre-seeded docs (re-`seed()` via `withSecurityRulesDisabled` every test) is re-run-safe on a persistent emulator with no namespace clear — the persistence gotcha only bites suites with un-reseeded create-allow doc ids.
+- **`/tag_overrides_log/{entryId}` (BUT-1473) is a byte-for-byte contract mirror of `/parsing_corrections`**: owner-or-admin read, owner-only authed create + `hasRequiredFields`, `update: if false` (append-only), owner-only delete (GDPR Art. 17). Reusable coverage shape for any such own-data append-only log: create {owner-allow, cross-user-deny, unauth-deny, missing-field-deny × 2 keys}, read {owner-allow, admin-allow, stranger-deny, unauth-deny}, update {partial-deny AND set-on-existing-deny — a buggy client retry hits the set path}, delete {owner-allow, stranger-deny, unauth-deny}.
+- **`public_profiles/{userId}` minor-searchability**: create denies `isSearchable:true` for a minor (`accountIsMinor(userId)`, same exists-guarded pattern as `otherIsMinor`); update gates on the DIFF (`!diff.affectedKeys().hasAny(['isSearchable']) || isSearchable!=true || !accountIsMinor(userId)`) so a minor can still edit unrelated fields. **Load-bearing contrast**: minor + `isSearchable:false` must ALLOW, proving the deny is the true+minor combination, not a blanket write-block. Group-minor protection is the separate `enforceGroupMinorMembership` CF — its decision core is unit-tested, its I/O wrapper (delete-vs-update, field cleanup) has no emulator integration test (Medium gap, matches sibling-trigger convention).
+- **`conversations/{id}` create binds `metadata.creatorId` to the caller** (`!('metadata' in ...) || !('creatorId' in ...metadata) || ...metadata.creatorId == request.auth.uid`) — closes a spoof where a tampered client forges `creatorId` to a friend of a minor to slip a non-friend group-add past `enforceGroupMinorMembership`'s friend check. Isolate the binding from the minor-DM gate by testing an ADULT 1:1 target (so `passesMinorDmGate` passes regardless) and varying only `creatorId`. **The UPDATE half (BUT-1788) is where the landmine is: `.get('k', default)` returns the default ONLY when the key is ABSENT — a key PRESENT with a null value returns null, and chaining `.get()` onto that null is a CEL error, i.e. a blanket deny of every update.** `ConversationDto.toFirestore` emits `'metadata': conversation.metadata` unconditionally, so the client sends `metadata: null` on every message send (`batch.set(convRef, dto, merge:true)`, atomic with the message write — the deny kills the message too) and freezes every doc whose stored metadata is null or absent. Verified spelling that survives it: `(x.get('metadata', {}) is map ? x.get('metadata', {}).get('creatorId', null) : null)` on BOTH sides — 0/13 mismatches vs 3/13 for the naive chain. Treat any `a.get(k, d).get(k2, d2)` in a rules diff as a deny-everything candidate until probed with a PRESENT-BUT-NULL parent. **A subcollection rule that attests via `get(parent)` must first be checked against WHERE the parent is actually written** (2026-08-12, `conversations/{id}/participants`): `FirebaseMessagingRepository` mixes in `UserScopedFirebaseRepository`, so a GROUP's conversation doc lands on `users/{creator}/conversations/{id}` and the TOP-LEVEL doc does not exist until the first message (BUT-1795) — a parent-attesting rule denies every group create permanently, not just during the batch. Shipped shape, reusable for any "roster written before its parent is visible" path: `attestedWriter()` (parent names writer AND subject) OR `rosterUnclaimed()` (parent == null, bootstrap), with READ falling back to `exists(.../{own uid})` (recipePresence pattern, safe for LIST since it touches no `resource.data`), DELETE deliberately NARROWER than create (self-only — no caller deletes another's row, and the CF does it under the Admin SDK), and the payload's id fields pinned to the path so they are immutable on update for free. Prove such a design with the writer's REAL WriteBatch (roster rows + membership rows in one commit): a batch is all-or-nothing, so it is the only test that proves two rule blocks cooperate — and when it denies, attribute the deny with a probe, because the emulator prints a `false for 'create'` verdict for EVERY document in a failed batch, including ones that are allowed on their own. **A branch keyed on `parentDoc() == null` reads DESTROYED as NOT-YET-CREATED, so reviewing it means enumerating EVERY deleter of the parent — client `allow delete`, each CF, AND the GDPR account-deletion cascade, which is the one everybody forgets (`account-deletion-cascade.ts` deletes ≤2-participant conversations whole and never touches the subcollection). Rules cannot fix any of them; only code can, and a residual paragraph that names two deleters out of three under-states its own hole.** Scope note: a `direct_`-style id exclusion added to the WRITE branch does not exist on the READ branch, so a deleted DM still hands its roster to whoever holds a row — check both verbs when an id-shape exclusion is the control. **A rules COMMENT asserting what a Cloud Function does with the document is a claim about another file's boolean — read that line, not the prose**: `enforceGroupMinorMembership` computes `isGroup = data.isGroup === true || len > 2` and returns on `!isGroup || len <= 2`, so "returns early on `isGroup: false`" is true only because the payload ALSO has one participant; a false flag with >2 does not. Same cluster, verified 2026-08-13: the create rule's `!('creatorId' in …metadata)` denies `metadata: null` by CEL evaluation error, and harmonising it to the update rule's `is map` ternary reddens EXACTLY one test (47/48, C7B) — that is what "mutation-proven" has to mean before a comment may claim it, and the deny is a bound on OUR client only, never on a tampered one.
+
+**Distilled from 2026-07-28:**
+
+- **Append-only ARRAY guard** (`/unified_shared_shopping_lists.contributorUserIds`, BUT-1725, GDPR Art. 17 erasure trail): `request.resource.data.get(f,[]).hasAll(resource.data.get(f,[])) && request.resource.data.get(f,[]).size() <= N`, ANDed OUTSIDE the `(owner || member)` parenthesis so the owner is bound too. `hasAll` is SET-semantics — a client rebuilding the array from a Dart `Set` reorders it and must still ALLOW (pin that test; it is the difference between this and an equality check). Rules see the POST-transform value, so `arrayUnion` allows and `arrayRemove` denies with no special handling. The `get(f,[])` default makes both legacy (field-absent) docs and older clients writable. **The bound is on `request.resource` only, so a doc already over N is FROZEN — every update denies, including an items-only one** (Admin-SDK backfills bypass rules and can create that state); pin it as a documented consequence, not a silent one.
+- **A guard ANDed onto an existing `allow update` is a blanket-deny risk, not a leak risk** — lead the suite with allow paths (untouched-field update, owner branch, whole-doc write-back, legacy doc) before any deny. **Builder timestamps must be CONSTANTS, not `new Date()`**, whenever the member branch forbids touching `createdAt`: a re-stamped builder makes every whole-document write deny for an unrelated reason and reads as a rule defect (cost one false FAIL here). Emulator PERMISSION_DENIED prints TWO passes; the first is routinely `evaluation error` (first pass has no `resource`, only short-circuits like `isAuthenticated()` avoid it) — read the SECOND verdict, which is the real one.
+- **Mutation-probe the guard before reporting green** (`rules.replace(...)` in memory, fresh projectId — never touch the file): removing the predicate must FLIP every deny test. Two mechanics that cost a run each: the probe script must sit UNDER `functions/src/` (from the OS temp dir `npx ts-node` resolves neither `@firebase/rules-unit-testing` nor the tsconfig, so it dies on TS2307 + implicit-any) and delete it in the SAME Bash call — note `cd functions` earlier in that call makes a later `rm functions/src/...` silently miss; and **`firestore.rules` is CRLF**, so a literal template-string `includes()` never matches — use a whitespace-tolerant regex, assert the match COUNT is 1, and re-read the file at the end to prove it is byte-unchanged. **Probe WITHOUT touching the file at all**: `sed` a copy of the suite into `functions/src/__tests__/zz-<probe>.test.ts` whose `PROJECT_ID` is fresh and whose `RULES_PATH` is `process.env.PROBE_RULES ?? <original>` (keep the `??` fallback — dropping the `path` import trips `noUnusedLocals` and the run dies silently under a `grep`), point it at a mutated copy in the scratchpad, and `rm` the probe in the same call under a `trap ... EXIT INT TERM`. That is how "removing X flips EXACTLY test Y" gets measured (verified: dropping `parentDoc() == null` → 46/47, P12B alone). **A "comment-only" rules diff is provable, not eyeballable**: `git fsck --unreachable` + `git cat-file --batch-all-objects --batch-check` recovers every previously-staged revision of `firestore.rules`, so you can diff against the exact bytes a prior review saw; then strip `//` comments from both (`sed 's|//.*$||'`, safe only after grepping the file for `://`) and compare md5s. **Strip BLANK lines too (`grep -vE '^[[:space:]]*$'`) and `tr -d '\r'`** — any comment edit that changes the LINE COUNT (14/6 is typical) leaves a different number of now-empty lines, so the naive strip reports a mismatch on a diff that is provably comment-only; print the surviving line count alongside the md5 so "identical" is visibly non-vacuous. Cheap independent cross-check, worth running as the pair: `git diff -U0 | grep '^[+-]' | grep -v '^[+-][[:space:]]*//'` must come back EMPTY. Two agreeing methods beat one, because each fails differently (the md5 catches a reordering the line filter would miss; the line filter catches a `//` inside a string literal the md5 strip would mangle). Distinct code-md5s among those blobs are RESTORED MUTATION PROBES, not history — confirm the staged blob matches the reviewed one. Use a **`/g` flag** when the mutated literal appears more than once — the create-side bound and the function's bound are textually identical here, and a non-global replace silently patches only the first, producing a "still denied" that looks like a rule finding but is a probe bug.
+- **A PERMISSION_DENIED verdict string can never prove two deny tests are DIFFERENT tests.** On `unified_shared_shopping_lists` a non-member's update and a REVOKED member's update (in `contributorUserIds`, absent from `memberPermissions`) print byte-identical `evaluation error at L1642:24 for 'update' @ L1642, false for 'update' @ L1642` — the first-pass evaluation error is just "no `resource` in pass 1", so it fingerprints the RULE LINE, never the actor. Only two things prove non-vacuity: (a) a **fail-closed probe** — same doc body, same doc id, same actor, same payload, with only the gate satisfied (seat the actor in `memberPermissions`) → must ALLOW; and (b) a **discriminating mutation** — rewrite the gate so the two actors' fates diverge (grant the member branch by `contributorUserIds` instead: the revoked actor FLIPS to allow, the stranger stays denied). Same shape applies to any pair of deny tests separated by document STATE rather than by actor identity.
+- **A decision record that asserts a rules predicate is a coverage lead, not evidence.** ADR-002 states "firestore.rules forbids a non-owner from touching `ownerId` or `memberPermissions`" — grep the suite for that predicate before believing it is pinned; there it was not (only the third privileged key, `createdAt`, had a test). For any `!diff(resource.data).affectedKeys().hasAny([a,b,c])` conjunct, coverage is one deny per anchor **plus** the OWNER-branch ALLOW for the same key — the owner branch usually has no diff restriction, so the member-deny and the owner-allow are two different rules and a blanket-deny regression on the key passes every deny test while making the app's grant/revoke flow impossible.
+- **A rules suite whose only route into a state is `withSecurityRulesDisabled` has not proven the state is REACHABLE.** Revoked-member tests seeded the revoked document with the Admin SDK, so nothing proved a client owner could actually perform the revoking write.
+- **A `get()`-only read suite has NOT tested the read rule.** For any collection whose read gate reads `uid in resource.data.<map>` (`unified_shared_shopping_lists`, BUT-1746), the LIST path is a separate branch: the engine evaluates the predicate per candidate document and refuses the WHOLE query if one fails. So pin three things — the client's exact filter ALLOWED (returning a non-empty result; assert non-emptiness or a broken filter passes vacuously), the UNFILTERED `collection().limit(N).get()` DENIED with a foreign doc seeded in the same test, and the same filter by a member-of-nothing ALLOWED-but-empty. Dart `isNull: false` compiles to `where(f,'!=',null)` (`query.dart:676-682`) — that is the JS spelling to pin; `isNotEqualTo: null` builds NO condition at all (`if (isNotEqualTo != null)`, `query.dart:659`), so the "filter" becomes an unfiltered sweep and the symptom is "my list will not load", never an over-share. Guarded repo-side by `tools/check_null_filter.sh` (pre-commit only, no CI lane; `-H` now forces grep's `path:line:` prefix so the SINGLE-file lefthook case skips comments correctly, but the `^[^:]*:[0-9]+:` anchor still assumes a COLON-FREE path — a `C:/`-shaped argument flags the 12 WHY-comments naming the banned spelling, and the unbounded `null` in its pattern also false-positives on `isNotEqualTo: nullableVar`; both fail closed, probed 2026-07-30). **A query test asserting an EMPTY result needs an actor no other test ever seats** — a sibling deny test's `withSecurityRulesDisabled` fixture persists on the emulator and will make that actor a member.
+- **An ALLOW test must send the DTO's REAL payload, not a minimal hand-written one.** A hand-written `update({lastMessage: ...})` omits keys the app always writes, so it can pass while the identical production write denies — BUT-1788's C11 ("no-metadata doc is still updatable") went green on a payload with no `metadata` key while the app's own `ConversationDto.toFirestore` always includes it and was denied. Read the DTO/`toFirestore` for the collection and mirror its FULL key set in at least one allow test per write path (send + mark-as-read), and note that `set(..., merge:true)` DEEP-MERGES nested maps — a payload "dropping" a nested key does not drop it, so a takeover-by-omission test must use `update()`, not a merge-set, or it proves nothing.
+- **A nullable map/field has FOUR stored states — absent, present-with-null, present-as-a-map-WITHOUT-the-key-you-chain-into, and fully populated — and each is a separate rule branch needing its own fixture.** The third is the one a three-row comment omits and the one PRODUCTION writes most often: `Message.recipeShare/menuShare/shoppingListShare` and the Admin-SDK `writeGroupSystemMessage` all store `metadata` as a map with no `poll` key, so `pollIsOpen()` defaults its way to ALLOW on every share card and every "X har lagts till i gruppen" row (measured 2026-08-17, standalone probe). Enumerate the shapes by GREPPING THE WRITERS of the field, never from the two shapes a null-safety discussion suggests — and note an `is map` guard does nothing for this state, because a map without the key IS a map. Absent is the state a suite reaches for by habit and the one a naive `.get(k, default)` handles CORRECTLY, so an absent-only fixture set goes green over a live blanket-deny (BUT-1788, `conversations.metadata`: the app writes `null`, never absent). **The two "empty" states can carry OPPOSITE VERDICTS, so covering one hides the other (measured 2026-08-17, `poll_votes.pollIsOpen()`).** In a defaulting CHAIN `d.get('metadata',{}).get('poll',{}).get('isClosed',false) == false`, ABSENT cascades the defaults to a falsy leaf and the predicate comes back TRUE — i.e. ALLOW, a vote seated on a message with no poll at all — while NULL dies on a CEL error and denies. A suite that pins only the null case reads as coverage and leaves a live allow. Pin absent AND null on every defaulting chain, and state each verdict, because "both are empty" is the intuition that loses. **Corollary for the `is map` repair: the ELSE branch is the security decision, not the `is map` guard.** `… is map ? …get('isClosed',false) : null` keeps the null deny (probe: 31/31 green); `… is map ? … : {}` re-defaults to falsy and flips null to ALLOW (probe: the null test alone reddens). Neither closes the ABSENT hole, so a comment calling the ternary "the repair" promises a closure it does not deliver — probe both spellings before any comment names one. Pin the allow on the null doc AND the deny (e.g. creatorId injection) on BOTH the absent and the null doc. Under a request-side-triggered CEL error the *request* payload's null is enough on its own — a real-DTO allow test on the ABSENT doc also reddens, which is a bonus, not a substitute. **Corollary that bites: an ALLOW test landing a real payload MUTATES its fixture** — a merge-set carrying `metadata: null` turns the absent-metadata doc into a null-metadata doc, so any deny test that depends on the pre-write state needs its own write-once document, not the one the allow test just overwrote. **When a comment TABULATES these states, demand two things before believing it (2026-08-17):** every row must have a green assertion in the same file pointing at it (that is what makes a transcription error unhideable), and the UNENUMERATED states must be swept once by probe — eleven shapes measured on `pollIsOpen()`, and every state outside the table either falls in an already-named row's class or fails CLOSED (`{poll: null}`, a non-map `metadata`, and even `isClosed: "true"` all DENY, so a tampered client cannot force the branch open). **Probe the OWED repair, not only the forbidden edit** — mutating `pollIsOpen()` into the real fix (`is map && 'poll' in metadata && …`) reddened EXACTLY the two known-gap tests and nothing else, which is what turns "these tests document a gap" from a promise into a measurement; a comment claiming a suite COUNT (`stays 32/32`) goes stale the day a test is added, so name which tests redden instead. **A DECISION RECORD that quotes probe figures inherits that staleness at one remove** — a record written against a 31-test run and later restated as `/33` is arithmetic, not measurement, so re-run every quoted mutant against the CURRENT file before signing the record off (2026-08-17, all three reproduced: owed repair 31/33 reddening exactly V10e+V10f, `: null` 33/33, `: {}` 32/33 reddening V10d; a fourth, widening the receipt `hasOnly` with `'metadata'`, reddens exactly R3b). A cross-file claim inside such a record is a claim like any other: verify the WRITERS it names (all three `Message.*Share` factories and the group system-message CF store a metadata map with no `poll` key) and the readers it exonerates (`_isPoll`/`_hasPoll` both test `metadata['poll'] is Map`, so a junk row is never hydrated or exported).
+- **A per-key immutability guard needs an ALLOW that changes a NEIGHBOURING key in the same map** (BUT-1788 C14: rename the group via `metadata.title` with `creatorId` carried through). Every deny in the cluster survives a future blanket freeze of the whole map; only that allow reddens. State in the test's comment which key is pinned and that the rest stays mutable — otherwise the next reader reads the deny cluster as "this map is protected".
+- **`test:rules:all` is not runnable from the Firestore hook alone**: `comment-images-storage-rules` needs the STORAGE emulator (9199) and hard-fails `ECONNREFUSED`, aborting the `&&` chain mid-list so every later suite silently never runs — check WHERE the chain stopped before reporting a pass count, and re-run the tail individually. (`moderate-upload.integration` probes and prints a SKIP banner instead; the rules suite does not.)
+- **A rules change that TIGHTENS an existing gate silently makes every OLDER test on that path vacuous, and the deny tests are the ones that hide it** (BUT-1838, conversations/messages/roster). When a new conjunct is added ABOVE the one a test was written for, that test still denies — for the new reason — and would stay green with its original target deleted. Mechanical sweep after any tightening: for every deny test on the touched path, ask which conjunct now fires FIRST, and give the test a payload/id/fixture that satisfies everything except its own target. Here that meant a conforming `direct_<a>_<b>` id and a conforming `metadata` map on all eight legacy create tests, and re-pointing seven roster-validator tests from a now-denied parentless fixture to an attested one. **The intended FLIPS are the cheap part** (allow→deny: C5 group create, P1 bootstrap seat, P3B pre-seat, P14 own-row read, P24 group batch) — write the flip's reason at its own site, name it as the ticket's intended signal, and say what a future re-flip would mean. **The expensive part is that a flipped test usually had a SECOND job**: P3B was also P3's fail-closed control, so flipping it left every attestation deny unattributable until a replacement allow (same actor, same body, same id shape, attested parent) was added.
+- **A MUTATION PROBE THAT REDDENS NOTHING IS THE MOST VALUABLE RESULT** — it means a comment, not the code, is wrong. Probing the edit `firestore.rules` explicitly forbids ("harmonising the create rule's `metadata` spelling with the update rule's `is map` ternary would disarm test C7B") came back 77/77 GREEN: the warning was true of the pre-BUT-1838 conjunct (`!('metadata' in d) || !('creatorId' in d.metadata) || … == uid`, whose `||` hatches allowed an absent creator, so only the CEL null-error stood in the way) and is stale against the bare-equality replacement, where a ternary resolving `null` still fails `null == uid`. Deleting the conjunct outright reddened exactly three (C6, C6B, C7B), which is what proves the assertion is load-bearing. So: run BOTH the "forbidden edit" probe AND the "delete it" probe — the first tests the COMMENT, the second tests the TEST. Never let a rules comment's claim about a mutation stand unrun.
+- **Probe by ENV VAR, not by a copied test file.** Ship `const PROJECT_ID = process.env.PROBE_PROJECT_ID ?? "<real>"` and `RULES_PATH = process.env.PROBE_RULES_PATH ?? <real>` in the suite itself, mutate a COPY of `firestore.rules` in the scratchpad, and run `PROBE_RULES_PATH=… PROBE_PROJECT_ID=… npx ts-node <suite>`. `firestore.rules` is never written (md5 identical by construction, not by a restore that a timeout can skip), no `zz-*.test.ts` can be left behind, and a fresh projectId keeps the mutant's writes out of the real namespace. The mutator asserts its match COUNT is 1 and prints a `diff` of the mutant against the original, so a regex that silently matched nothing cannot be read as "the rule holds".
+- **A single-conjunct probe that reddens NOTHING can mean the conjunct is MASKED, not that the test is vacuous.** In `A && B`, if B raises a CEL evaluation error whenever A is false, dropping A changes no verdict: on `chat_groups` (BUT-1838) dropping `isAuthenticated()` from the read rule reddened 0/27 (`request.auth.uid in …` errors on null auth), and dropping `name is string` reddened 0/27 (`.size()` on an int errors). Neither test is dead — both flip under a COMBINED mutation (`read: if true`; drop all three name conjuncts). So attribute a masked test with the smallest mutation that DOES flip it, and report it as "guards the pair", never as "proven load-bearing on its own". The same probe run also fingerprints the split between guards that ARE independent (drop `uid in adminIds` → exactly the three rename-actor denies; drop `hasOnly` → exactly the six admin-actor diff denies; the two membership-lock tests whose actor is a non-admin need BOTH dropped) — that map is the report, not a pass count. A deny against `allow x: if false` is unflippable by removal by construction: probe it by OPENING the rule (`if isAuthenticated()`), which is the regression those tests actually guard.
+- **`{"error":{"code":500,"status":"UNKNOWN"}}` from `loadFirestoreRules` is emulator flake, not a rules syntax error** — it fires when several probe runs load rulesets back-to-back under fresh project ids, and it looks exactly like a compile failure (the run prints the suite banner, then dies before test 1). Disprove it in one command by PUTting the same file to `/emulator/v1/projects/<pid>:securityRules`: a 200 with only `severity: WARNING` issues means it compiles. Space probes at one or two per shell call; a retry loop inside the same call does NOT clear it. Never read the aborted run as "nothing reddened" — grep for the summary line's absence, not just for `FAIL`.
+- **A `rateLimitWrite(...)` conjunct appended to a new rule is invisible to the whole suite** unless a test seeds `users/{uid}/rate_limits/{collection}` (it is `!exists(limitsPath) || …`, and no Butlery client writes those docs). Its removal reddens nothing, so it needs an explicit seeded-doc deny test or it must be reported as an uncovered branch — silence there is not coverage.
+- **A conjunct ADDED to `hasRequiredFields`/`hasOnly` is a claim about EVERY writer of that COLLECTION, and the rules comment beside it is not evidence.** BUT-1812 added `'sharedToUserIds'` to the `shared_content` create allow-list under a comment saying "all three writers already stamp it"; only the RECIPE repo does (`initialSharedToUserIds`), while the menu, shopping-list and social-coordinator paths call `createSharedContent(entity)` and no `toFirestore()` emits the field — so menu and list sharing were denied outright (BUT-1482's disease, second occurrence). Grep the WRITERS by collection constant before believing the sentence, and prove the verdict with a probe that sends the writer's REAL key set plus a same-payload control carrying the new field. **Two new conjuncts can also MASK each other**: dropping the required-key alone reddened nothing because the neighbouring `x is list` CEL-errors on the absent key — a suite whose only malformed test is "field missing" pins the PAIR, so add a WRONG-TYPE case to pin `is list` on its own.
+- **An `allow update` that is textually identical to its `allow create` still needs its own allow test** — a client `set()` on an existing doc is an UPDATE, so a toggle/edit path lives entirely there. On `poll_votes` (BUT-1832) mutating `allow update` to `if false` reddened 0/21 while every vote after the voter's first goes through it; a later revision added that allow test (V13) and the same probe now reddens exactly 1/26. Probe every verb of a new subcollection with the `if false` mutation; the one that reddens nothing is the uncovered one. **The mirror trap on the DENY side (re-verified 2026-08-17, still open): when create and update carry the SAME conjunct, a deny test whose target document is PRE-SEEDED by `seed()` lands on UPDATE, so it proves nothing about the create limb** — dropping `request.auth.uid == voterId` from `allow create` alone reddens 0/26. A cross-actor deny must therefore exist twice, or once against a path no fixture has written (a participant seeded into `participantIds` but never given a row). Same run: a `X is list` conjunct sitting next to `hasRequiredFields([... 'X'])` is MASKED by every "field missing" test (removing it reddened 0/26), and so is a neighbouring `size() <= N` cap — the wrong-TYPE and over-cap payloads are the only things that pin either. **Both were added 2026-08-17 and each reddens ALONE (30/31), because a STRING has `.size()` in CEL: with `is list` gone, `"opt-a".size()==5 <= 20` passes, so the cap never catches a wrong type and the two tests are genuinely independent — do not drop one as redundant.** The reserved-fixture fix for the create-limb trap works (a poll seeded with no vote rows makes the seat-a-row deny redden alone under a create-only mutation) but its create-ness is CONVENTION: `clearFirestore()` plus a per-run id token close the cross-run hazard, while nothing stops a future test writing into the fixture, after which the deny silently lands on UPDATE and still passes. Make it self-checking — assert the row does not exist via `withSecurityRulesDisabled` before the `assertFails`.
+- **An `affectedKeys().hasOnly([...])` allow-list needs one deny test PER KEY THE APP MIGHT PLAUSIBLY ADD, not one per key a test happened to try.** The messages RECEIPT branch (BUT-1832) is pinned only against `content`: widening it to `[... , 'metadata']` — a one-token edit a future "let participants react" ticket would make — leaves 26/26 GREEN while handing every participant the poll question, `isClosed`, and `metadata.poll.options[].voterIds`, i.e. the entire inline vote store the ticket existed to abandon. `hasOnly` is TOP-LEVEL, so a nested rewrite is caught only because the parent key is listed; that protection is invisible to a suite that never names the parent. Enumerate the top-level keys the collection actually stores and pin the privileged ones by name.
+- **A comment saying a rule uses "the same test as" a SIBLING RULE is a parity claim, and parity is measured, never read** (2026-08-17, `poll_votes`). `inPollConversation()` was introduced as "the same membership test the message read rule uses, one document further out": the membership half is identical, but the `messages` read rule also carries BUT-1838's `memberSince` cut-off, and the subcollection does not. Measured on a group conversation whose `memberSince` postdates the poll — late joiner DENIED the poll message, ALLOWED the tally read, and ALLOWED to CAST a vote in it. **Check the WRITE verb too**: a read-focused reading of this divergence names the tally leak and misses that the same predicate gates `create`. Generalises the older "a rules comment asserting what a Cloud Function does is a claim about another file's boolean" — a sibling rule ten lines away is exactly as unread as another file. A parent rule and its subcollection are two rules; enumerate every conjunct on the parent and ask which the child dropped.
+- **A "comment-only" rules diff is provable across MANY rounds at once**: `git cat-file --batch-all-objects` finds every previously-staged revision, and all of them sharing one comment-stripped md5 proves the code never moved through the whole review. Size-filter on the CRLF size (~158 KB here, not the ~85 KB an LF-era guess finds) or the sweep silently returns only ancient revisions and reads as "no prior version exists".
+- **Registering a new rules suite has FOUR mechanical steps** (`functions/scripts/check-test-registration.js` fails the commit otherwise): the `test:rules:<name>` script, an entry in the `test:rules:all` chain, AND the path in **both** `paths:` blocks of `.github/workflows/firestore-rules.yml` (pull_request + push). Verify with `node scripts/check-test-registration.js`.
+
+## 2026-08-18 — comment-drift sweep on `isAccountMatured()`: name corrected, value re-verified
+
+Nightly comment sweep changed exactly one word in `firestore.rules`:
+`kAccountMaturityMinutes` -> `kAccountMaturityWindow` in the comment above
+`isAccountMatured()`. Gate review, no emulator run (no rule change to prove).
+
+Mechanical comment-only proof (both methods from the principles file):
+- `git diff -U0 -- firestore.rules | grep '^[+-]' | grep -v '^[+-][+-]' | grep -v '^[+-][[:space:]]*//'`
+  -> empty.
+- Comment-stripped + CRLF-stripped + blank-stripped md5 of `HEAD:firestore.rules` vs
+  worktree: identical (`1720ff7e...`), 1378 surviving lines on both sides, so the
+  equality is visibly non-vacuous.
+
+Name claim: `kAccountMaturityMinutes` matches NOWHERE in the repo after the edit (rg,
+whole tree). `lib/services/auth/account_maturity_helper.dart:8` declares
+`const Duration kAccountMaturityWindow = Duration(minutes: 60)` — path in the comment
+is correct.
+
+Value claim (the part a name-only fix would have missed): rules use
+`>= 60 * 60 * 1000` ms = 60 min; Dart is `Duration(minutes: 60)`. Agree. A THIRD mirror
+the comment does not name also agrees:
+`functions/src/ratings/canonical-rating-aggregation.ts:67`
+`export const kAccountMaturityWindowMs = 60 * 60 * 1000`. Had any of the three
+disagreed, the corrected comment would itself have been false and the sweep would have
+had to BLOCK rather than commit a tidier-looking lie.
+
+Lesson merged into the principles file (Rule parity / comments bullet): a "kept in sync
+with X" comment asserts both the SYMBOL and the VALUE; a drift sweep that repairs only
+the symbol can leave the stronger claim broken.
+
+Verdict: PASS, 0 blocking.
+
+---
+
+## 2026-08-22 — BUT-1831: conversations update deny-list (C11C/C11D/C11E)
+
+Scope: ONE file, `functions/src/__tests__/conversations-rules.test.ts`.
+`firestore.rules` unchanged (`git status --short firestore.rules` empty, re-verified
+after the probe). Three tests added to close a stated gap: every prior update test built
+`conversationDtoPayload(null)` with FIXTURE_CREATED_AT against fixtures seeded with the
+same FIXTURE_CREATED_AT, so `createdAt` was never varied on the update path and
+`participantIds` was never attacked there at all — the two keys BUT-1831's client defect
+turned on.
+
+Run: 87/87 pass. C11C, C11D, C11E all green by name.
+
+Mutation probe (env-var seam, mutant copy in scratchpad, real file byte-identical
+throughout): drop `'participantIds', 'createdAt'` from the conversations update
+`.hasAny([...])` deny-list -> 85/87, reddening EXACTLY C11C and C11D; C11E stays green.
+So both denies are attributable to the deny-list and the ALLOW control is not a
+by-product of it. First mutator attempt produced `[memberSince, groupId]` — bash ate the
+single quotes inside a `node -e '...'` string, yielding undefined CEL identifiers, i.e. a
+deny-everything mutant that would have "reddened" plenty and proved nothing. Caught by
+diffing the mutant; write the mutator to a heredoc FILE, and diff before running.
+
+Fixture isolation (asked, and load-bearing): a direct id is a pure function of its two
+uids, so DIRECT_CONVO could only be safe if no other fixture names the same pair. Grepped
+every `conversations/` path in the file: DIRECT_CONVO appears at exactly three sites (the
+seed, C11D, C11E). Every other `directId()` call pairs STRANGER/MINOR/FRIEND/ADULT or a
+`peer("cNN")` tag; neither `dm-init` nor `dm-recip` recurs, and both uids embed RUN. The
+in-file comment records that the FIRST draft reused ADULT_UID/STRANGER_UID, collided with
+`seedMessageFixtures`' MSG_DIRECT (seeded later in `run()`), and the overwrite made the
+ALLOW control deny — verified as mechanism: MSG_DIRECT stores no `metadata` key, so the
+control's `{creatorId: ...}` would resolve non-null == null and deny. Accurate.
+
+C11E does control for C11D: same actor, same document, same merge-set, same `createdAt`,
+same `metadata`; the ONLY difference is the array order, and `updatedAt` (not deny-listed,
+not read by any conjunct). Single-variable. C11B is the equivalent control for C11C.
+
+THREE FALSE SENTENCES FOUND AND STRUCK in the diff's own new/rewrapped comment text.
+All three were claims about rules or Cloud Function behaviour, none was a code defect:
+
+1. C7B: "a hand-rolled create carrying a real metadata map is allowed today and ends the
+   window irreversibly (BUT-1830)". Refuted by C5 and C5B IN THE SAME FILE, both passing:
+   `directIdBinds` requires `p.size() == 2` and an id derived from the pair, so a client
+   cannot create a group conversation at any id. `firestore.rules` says so itself ("not
+   merely bounded, it is unreachable"), and the same comment contradicts it four
+   paragraphs later ("refused by the presence requirement ... binds a tampered one too").
+   The diff had also deleted the sentence that gave "the window" its antecedent, so the
+   phrase dangled.
+2. C7B: the `enforceGroupMinorMembership` harm paragraph — "trips BOTH halves of the
+   trigger's guard (`isGroup: false` AND a single participant)" and "`onDocumentCreated`
+   cannot fire twice". The live function is `onDocumentWritten` on `chat_groups/{groupId}`
+   with neither guard; its own file header calls the `onDocumentCreated` trigger on
+   `conversations/{id}` the OLD one, in the past tense. Present-tense claim about a live
+   symbol that has not behaved that way since BUT-1838.
+3. C11C: "the one deny-listed key this section never moved". The deny-list holds four keys
+   and, pre-diff, the BUT-1788 section moved NONE of them — `participantIds` least of all,
+   since it is the second key this very commit adds a test for (C11D, eight lines below).
+   The same sentence's "nothing in the file varied `createdAt` at all" is an unscoped
+   quantifier falsified by `convBody`'s `createdAt: new Date()` on the create path.
+
+All three struck rather than reworded: a truer count would have needed measuring, and
+(2) would have needed a new claim about what the OLD trigger did, sourced from git
+history. Re-ran after the edits: 87/87.
+
+Verdict: PASS, 0 blocking (the three defects were fixed in this run, not left open).
+
+---
+
+## 2026-08-22 — BUT-1831 re-verify: `firestore.rules` comment-only diff (conversations)
+
+Second pass on the same ticket, this time with `firestore.rules` in the diff. Nine lines,
+all comment, in two hunks: the `allow create` limb of `match /conversations/{conversationId}`
+and the `participants` roster read-rule comment. Both struck sentences named
+`MessageMutationModule`'s deleted fallback in the present tense.
+
+**Inertness, proven two ways** (the principle held, no change needed): `grep -c '://'` = 0,
+so `//`-stripping is safe; comment-stripped + blank-stripped + CR-stripped HEAD vs worktree
+gave md5 `9442377d4eb0e38b260852f067f3ca39` on both sides over 1380 surviving code lines,
+and `git diff -U0 | grep '^[+-]' | grep -v '^[+-][[:space:]]*//'` came back empty. Index
+matched HEAD (` M`), so HEAD→worktree is the whole shippable change.
+
+**The replacement text judged.** "A create carrying `metadata: null` denies here, and test
+C7B pins it. The assertion rests on a TAMPERED client: BUT-1831 deleted the app's only
+writer of that shape, so no shipped code sends it any more."
+- Deny is real: the conjunct is a bare `request.resource.data.metadata.creatorId ==
+  request.auth.uid`, and `.creatorId` on null is a CEL error.
+- "C7B pins it" is attributable, not vacuous: C7B's fixture uses `directId(STRANGER_UID,
+  peer("c7b"))`, so `directIdBinds` passes and the metadata conjunct is the failing one;
+  C7 is its single-variable ALLOW control. The recorded probe (delete the conjunct → C6,
+  C6B, C7B redden) agrees.
+- It does NOT re-introduce the sentence I struck last run ("a hand-rolled create carrying a
+  real metadata map is allowed today"). It makes no claim about what a tampered create is
+  ALLOWED to do — only about who can still emit the denied shape.
+- The fallback really is gone: `message_mutation_module.dart` now throws
+  `ResourceNotFoundException` on `conversation == null`.
+
+**The one soft spot, and the new principle.** "the app's only writer of that shape" is a
+quantifier over writers, so I measured it — four `ConversationDto.toFirestore` call sites:
+`conversation_mutation_module.dart:111` (create, ships `metadata: {'creatorId': user1Id}`),
+`firebase_messaging_repository.dart:101` (base-class override, path-rewritten by
+`UserScopedFirebaseRepository` to `users/{uid}/conversations/{id}`, a different rule block),
+a doc comment, and `message_mutation_module.dart:140` — a `set(..., SetOptions(merge: true))`
+which is an UPDATE only while the document exists. Firestore evaluates a merge-set against
+an ABSENT document as a CREATE, so a read-then-delete race still routes shipped code into
+the create rule with `metadata` = whatever was stored (null on a legacy pre-BUT-1830 row;
+`chat-group-writes.ts:154` stamps a map on every group conversation, and the create rule
+forces one on every new direct, so live nulls are legacy-only). Doubly conditional, fails
+closed, and identical in substance to the wording already accepted in the test file's own
+C7B comment last run — reported as an observation, not a block. Generalised into
+"Proving a deny test is not vacuous" in the knowledge file: a merge-set is a create when
+the doc is absent, so "no shipped code sends X on create" must enumerate merge-sets too.
+
+**The orphaned paragraph.** With its "Still true:" lead-in struck, the roster block's
+"NOT still true, and corrected above on the same day: that the create and update rules must
+keep DIFFERENT null-metadata spellings…" stands alone and reads correctly; "corrected above"
+resolves to the create-limb `CORRECTED 2026-08-13` paragraph, and "the same day" to the
+2026-08-13 dates in the paragraph immediately above it. Ragged line wrap only.
+
+**Run:** `npm run test:rules:conversations` → 87/87, reproducing the founder's figure.
+
+**Deferral confirmed as correct.** The update rule's `request.auth.uid in
+resource.data.participantIds`, plus `allow read` and `allow delete` on the conversation
+document, still have no deny test anywhere (every C8–C14/U1–U6 actor is a participant; no
+test reads or deletes a conversation document). Pre-existing, untouched by a comment-only
+diff, and the ticket needs allow controls built alongside the denies — `read` and `delete`
+have neither today.
+
+Verdict: PASS, 0 blocking.
+
+## 2026-08-22 — BUT-1831 third pass: the rewritten create-limb comment, and its un-swept twin
+
+Same ticket, same file, now STAGED. The soft spot from the previous entry ("BUT-1831 deleted
+the app's **only** writer of that shape") has been rewritten; my recorded coverage was against
+the pre-rewrite bytes, hence a third pass.
+
+**Inertness, re-proven at the staged bytes.** `git show HEAD:firestore.rules` vs
+`git show :firestore.rules`, both CR-stripped, `//`-stripped and blank-stripped: md5
+`6cf1210c689e2c7143c3cf21104a2369` on both sides over 1380 surviving lines. `grep -c '://'`
+= 0 on the index copy, so the naive strip is sound. `git diff --cached -U0 | grep '^[+-]' |
+grep -v '^[+-][[:space:]]*//'` returned nothing. Twelve changed lines, all comment, two hunks.
+
+**The replacement text judged: accurate, and not an overcorrection.** It now reads "…the
+assertion mainly binds a tampered client now — but do not read it as unreachable by shipped
+code: a `merge: true` set is a CREATE when the document is absent, so any merge-set carrying
+a null metadata still arrives at this limb. It fails closed either way."
+- The mechanism is real and reachable at the current bytes:
+  `MessageMutationModule.sendMessage` step 2 merge-sets the WHOLE conversation document
+  (`ConversationDto.toFirestore(updatedConversation)`, `SetOptions(merge: true)`), and
+  `toFirestore` emits `'metadata': conversation.metadata` unconditionally with
+  `Map<String, dynamic>?` nullable — so a conversation stored with a null metadata (the very
+  population BUT-1788's `is map` ternary exists for) yields a payload carrying `metadata:
+  null`. If the document is deleted between the module's existence read and the batch commit,
+  that merge-set lands on `allow create` and is denied. The module's own new comment names
+  that race ("the other party deleting the thread while this one is open").
+- It states a RULE (merge-set-is-a-create) rather than naming one call site, so it does not
+  rot when the call site moves. No count, no "only", no line number, no suite total — nothing
+  that would need re-measuring. Hedged with "mainly", which is the honest quantifier.
+- `conversation_mutation_module.dart`'s merge-set is the harmless twin: it ships
+  `metadata: {'creatorId': user1Id}`, so it satisfies the limb rather than tripping it. The
+  comment correctly does not claim otherwise.
+
+**The finding this round: the same claim survived in the TEST file.** C7B's comment in
+`functions/src/__tests__/conversations-rules.test.ts` is NEW text in this staged diff and
+says "It no longer stops OUR client, because our client no longer sends it… The assertion
+stands on the tampered-client case alone, which is why it is not weakened by that deletion."
+That is the struck sentence's claim, verbatim in substance, in the file that pins the rule.
+Reported as non-blocking (a comment, not logic — same severity call as the rules-side
+sentence last round) with a STRIKE, not a rewrite: a truer version would have to re-measure
+the merge-set population, and the corrected explanation already lives at the rules limb.
+Generalised into the knowledge file: a reachability claim about a rule lives in TWO files,
+and a finding filed against one is half-fixed until the other is swept.
+
+**The orphaned paragraph, re-checked at the staged bytes.** "NOT still true, and corrected
+above on the same day: that the create and update rules must keep DIFFERENT null-metadata
+spellings…" stands alone correctly; "corrected above" resolves to the create-limb
+`CORRECTED 2026-08-13` block in the same match. Ragged wrap only, no dangling referent.
+
+**Run:** `npm run test:rules:conversations` → 87/87, unchanged.
+
+**Gap carried, not re-filed:** no non-participant deny on the conversations `update`/`read`/
+`delete` rules — six tests, not three, since `read` and `delete` have no ALLOW controls
+either. On BUT-1831 as follow-up #4.
+
+Verdict: PASS, 0 blocking.
+
+---
+
+## 2026-08-22 — BUT-1831, coverage re-read #3: the twinned claim, resolved by strike-and-point
+
+**Scope.** Staged diff, `firestore.rules` + `functions/src/__tests__/conversations-rules.test.ts`.
+Both opened with Read in full. Re-review of my own prior finding after it was actioned.
+
+**Retired verbatim from the knowledge file** (superseded in place by the bullet quoting this
+entry; kept here because the archive is the audit trail):
+
+> **A reachability claim about a rule usually exists in TWO files — the rules comment and the
+> pinning test's comment — so a finding filed against one is only half-fixed until the other
+> is swept: BUT-1831's rules-side sentence was struck while the identical claim rode into the
+> same commit at test C7B.** Grep the test file for the claim's keywords whenever a rules
+> comment is corrected, and the reverse.
+
+**What was actioned.** C7B's comment now reads: "BUT-1831 deleted the `MessageMutationModule`
+fallback that built a creator-less `Conversation` with no metadata and staged a top-level
+create. The corrected account of who can still reach this limb lives at the rule itself; do
+not restate it here, where nothing keeps the copy honest." Struck, not reworded: both
+sentences I flagged ("It no longer stops OUR client, because our client no longer sends it";
+"The assertion stands on the tampered-client case alone…") are gone.
+
+**Judgment 1 — new unmeasured claims?** None. Three claims, each directly readable from the
+staged Dart diff, none requiring a count:
+- "BUT-1831 deleted the `MessageMutationModule` fallback" — the whole `if (conversation ==
+  null) { … conversation = Conversation(…) }` block is removed in
+  `lib/repositories/firebase/modules/message_mutation_module.dart`.
+- "creator-less … with no metadata" — the deleted constructor call passes id,
+  participantIds, participantDisplayNames, participantAvatarUrls, lastReadTimestamps,
+  isGroup, createdAt, updatedAt. No `metadata:` argument, and the deleted comment beside it
+  said so explicitly ("DO NOT give this conversation a `metadata.creatorId`").
+- "staged a top-level create" — the fabricated conversation flowed into the atomic batch's
+  merge-set on `conversations/{id}`, which is a CREATE when the document is absent, i.e.
+  exactly C7B's case.
+
+This also resolves the cloud-functions gate's Low on the same paragraph without inheriting
+it: the old text rendered the deleted code as `Conversation(participantIds: [senderId],
+isGroup: false)`, which was only the branch where the id fails to split (the real list was
+`[message.senderId, ?otherUserId]`). "Creator-less" drops the spelling entirely rather than
+correcting it — the right move, since the correct spelling was a thing you had to read the
+deleted code to write, and it would rot the moment anyone described the branch differently.
+
+**Judgment 2 — does the pointer resolve?** YES, and this is the part worth generalising. The
+account is at the `allow create` limb of `match /conversations/{conversationId}` (immediately
+above `request.resource.data.metadata.creatorId == request.auth.uid`, inside the create
+statement that runs lines 1592–1623 at these bytes — cited by match pattern, not line):
+"A create carrying `metadata: null` denies here, and test C7B pins it. BUT-1831 deleted the
+branch that sent that shape deliberately, so the assertion mainly binds a tampered client
+now — but do not read it as unreachable by shipped code: a `merge: true` set is a CREATE when
+the document is absent, so any merge-set carrying a null metadata still arrives at this limb.
+It fails closed either way."
+
+Re-checked that this is still true after the Dart deletion, since the deletion is what could
+have hollowed it: `conversation_mutation_module.dart:107-113`
+(`createDirectConversation`) still merge-sets the conversation after a swallowed
+existence-read, but ships `metadata: {'creatorId': user1Id}` — the harmless twin, satisfying
+the limb rather than tripping it. The rules comment does not claim a specific live null-
+metadata caller; it states the merge-set RULE and refuses to assert unreachability, which is
+the safe direction and needs no re-measuring. Hedge "mainly" is the honest quantifier.
+
+**Judgment 3 — rules unchanged since the last pass.** Proven two independent ways rather than
+eyeballed, per the probe-mechanics principle and the 2026-08-22 parallel-session lesson (a
+reverted file also shows as `M `):
+- Comment-only: `git show HEAD:firestore.rules` vs `git show :firestore.rules`, CR stripped,
+  `//` comments and blank lines removed → **1380 surviving lines on both sides, md5
+  `9442377d4eb0e38b260852f067f3ca39` on both**. Grep for `://` first returned nothing, so no
+  URL inside a string literal was eaten by the comment strip.
+- Line filter: `git diff --cached -U0 | grep '^[+-]' | grep -v '^[+-][[:space:]]*//'` → empty.
+- Worktree == index (`git diff --stat` on both files → empty), and the two corrected
+  passages were confirmed BY CONTENT during the Read, not inferred from the status letter.
+The staged rules diff is exactly the two comment hunks I passed last round: nothing touched
+it this round.
+
+**Run.** `npm run test:rules:conversations` → **87/87 passed**, zero failures. 87 `test("`
+declarations in the file, so nothing was skipped; the three BUT-1831 tests (C11C re-stamped
+createdAt deny, C11D reversed participantIds deny, C11E its single-variable ALLOW control)
+are among them and green.
+
+**Durable rule extracted.** The sweep of a twinned claim is a STRIKE-AND-POINT, not a matching
+correction written into both files. Correcting both is what created the twin in the first
+place: two copies of one measured fact, each free to rot separately, and the second copy is
+the one nobody re-checks. The repair keeps ONE canonical site (the rule, where the code that
+falsifies it lives) and makes the other a pointer that carries no claim. The pointer itself
+needs verifying — open the named limb and confirm it actually carries the account — or a
+false claim has merely become a dangling one.
+
+**Gap carried, not re-filed (third time):** no non-participant deny on the conversations
+`update`/`read`/`delete` rules — six tests, not three, since `read` and `delete` have no
+ALLOW controls either. On BUT-1831 as follow-up #4. Pre-existing, out of this diff's scope.
+
+Verdict: PASS, 0 blocking.

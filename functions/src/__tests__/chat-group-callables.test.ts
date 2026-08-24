@@ -28,6 +28,8 @@ import { FakeFirestore } from "./_fake-firestore";
 import { createChatGroupWithDeps } from "../groups/create-chat-group";
 import { addChatGroupMembersWithDeps } from "../groups/add-chat-group-members";
 import { removeChatGroupMemberWithDeps } from "../groups/remove-chat-group-member";
+import { stageMemberRemoval } from "../groups/chat-group-writes";
+import { stageBackstopRemovals } from "../messaging/enforce-group-minor-membership";
 import { MAX_CHAT_GROUP_MEMBERS } from "../groups/minor-membership-gate";
 
 if (!admin.apps.length) {
@@ -475,6 +477,96 @@ const cases: UnitCase[] = [
         "the roster mirror is written from the same value",
       );
       assertEqual(messagePaths(fake).length, 1, "one system message for one addition");
+    },
+  },
+
+  // --- the departure tombstone (BUT-1856) -----------------------------------
+  {
+    // `departedUserIds` sits on a document every member can read, and the
+    // meal-vote sync consults it so "leave the chat" cannot be undone by the
+    // next poll. The safety property is the PAIRING: it may only ever hold
+    // departures that also produce a visible `memberLeft` row. Hold that, and
+    // the array says nothing the group did not already see in the thread; break
+    // it, and the difference between the two lists is the set of accounts the
+    // child-safety backstop evicted — a durable, queryable claim that someone
+    // is a minor.
+    name: "a departure that people can SEE is the only kind that is tombstoned",
+    fn: async () => {
+      const fake = new FakeFirestore();
+      seedExistingGroup(fake, ["admin", "leaver"], ["admin"]);
+
+      await removeChatGroupMemberWithDeps(fake.db, "leaver", "g1", "leaver");
+
+      assertEqual(
+        ((fake.read("chat_groups/g1")?.departedUserIds as string[]) ?? []).join(","),
+        "leaver",
+        "tombstoned",
+      );
+      const systemRows = messagePaths(fake)
+        .map((p) => fake.read(p)?.metadata as { subjectUserId?: string } | undefined)
+        .filter((m) => m?.subjectUserId === "leaver");
+      assertEqual(systemRows.length, 1, "…and it is visible in the thread");
+    },
+  },
+  {
+    // The one that matters, and the one an assertion on the callee's DEFAULT
+    // cannot make: the backstop's omission is a decision at ITS call site.
+    // Restoring `tombstone: true` there left every suite green until this case
+    // existed.
+    name: "the minor backstop evicts without leaving a tombstone",
+    fn: async () => {
+      const fake = new FakeFirestore();
+      seedExistingGroup(fake, ["adder", "minor"], ["adder"]);
+
+      await fake.db.runTransaction(async (tx) => {
+        stageBackstopRemovals(tx as never, {
+          db: fake.db,
+          groupId: "g1",
+          conversationId: "c1",
+          uids: ["minor"],
+          removedAt: admin.firestore.Timestamp.now(),
+        });
+      });
+
+      assertEqual(
+        fake.read("chat_groups/g1")?.departedUserIds,
+        undefined,
+        "no departedUserIds field",
+      );
+      assertEqual(
+        ((fake.read("chat_groups/g1")?.memberIds as string[]) ?? []).join(","),
+        "adder",
+        "…while the eviction itself landed",
+      );
+    },
+  },
+  {
+    // The callee's default, which is also what the deletion cascade takes.
+    name: "a removal staged WITHOUT the flag leaves no tombstone",
+    fn: async () => {
+      const fake = new FakeFirestore();
+      seedExistingGroup(fake, ["admin", "gone"], ["admin"]);
+
+      await fake.db.runTransaction(async (tx) => {
+        stageMemberRemoval(tx as never, {
+          db: fake.db,
+          groupId: "g1",
+          conversationId: "c1",
+          uid: "gone",
+          removedAt: admin.firestore.Timestamp.now(),
+        });
+      });
+
+      assertEqual(
+        fake.read("chat_groups/g1")?.departedUserIds,
+        undefined,
+        "no departedUserIds field",
+      );
+      assertEqual(
+        ((fake.read("chat_groups/g1")?.memberIds as string[]) ?? []).join(","),
+        "admin",
+        "…while the removal itself landed",
+      );
     },
   },
 

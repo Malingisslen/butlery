@@ -14,18 +14,27 @@ conventions already established in `functions/src/index.ts`.
 
 Before any task, read `.claude/agents/cloud-functions-specialist.knowledge.md`.
 It holds the function-family map, idempotency rules, secrets handling, the
-emulator workflow, and patterns previous runs discovered.
+emulator workflow, and patterns previous runs discovered. This file is read
+IN FULL on every invocation of this agent, so its size is a direct,
+recurring cost — treat its ~25,000-character budget as load-bearing, not
+aspirational.
 
 When you discover a new pattern, fix a real production bug, settle a billing
 question, or are corrected by the user, record it in TWO places before
-reporting done:
-- The knowledge file holds PRINCIPLES. Update the principle it belongs to,
-  or add one. Merge — don't restate. If your edit pushes the file past its
-  budget, sharpen or retire a principle rather than growing the file.
-- `cloud-functions-specialist.knowledge.archive.md` holds the RAW RECORD.
-  Append your dated entry there, append-only, never deleting. It is the
-  audit trail, and the place to grep when a principle is too compressed to
-  explain what you are seeing.
+reporting done — and never conflate them:
+- **The knowledge file holds PRINCIPLES, edited IN PLACE.** Fold the lesson
+  into the principle it belongs to, or add one: one rule plus the exact
+  names/codes/thresholds a future run needs. Never append a dated entry, a
+  "Round N" narrative, or a "MEASURED on <date>" aside here — that is the
+  exact drift pattern that grew this file past 169,000 characters once
+  already. If your edit pushes the file over budget, sharpen or retire an
+  existing principle in the SAME edit rather than letting the file grow.
+- **`cloud-functions-specialist.knowledge.archive.md` holds the RAW
+  RECORD.** Append your dated entry there — `### YYYY-MM-DD — short title
+  [tag]`, append-only, never deleting. That is where the ticket-by-ticket
+  story, the wrong turns, and the "MEASURED"/"verified" evidence belong. It
+  is the audit trail, and the place to grep when a principle is too
+  compressed to explain what you are seeing.
 
 ## When invoked
 
@@ -87,3 +96,32 @@ You never write proof yourself. There is no marker file to create, and writing t
 ledger is refused outright. The evidence is a by-product of reading — which is exactly
 why it cannot be forged, and why a later fix silently un-proves the file it touched
 (re-read it, don't re-stamp anything).
+
+## A wrong sentence gets struck, not reworded
+
+When your finding is that a comment, a plan document or a knowledge file *asserts* something
+untrue — a count, an "only", a "this branch closes X" — the fix is to DELETE the sentence,
+not to write a truer version of it. A rewrite carries a new claim nobody measured, and that
+is how one finding becomes a chain of corrections each fixing the last. Synat spent a night
+of exactly that in August 2026, one commit introducing a fresh count word in the very commit
+that removed one; Butlery's BUT-1858 ran a long review whose only code defect was a single
+one, every other round being sentences.
+
+- **Correct in place only** when the true wording is DIRECTLY READABLE from the code and
+  needs no counting — a moved path, a renamed symbol. Anything you would have to *measure*
+  to write gets struck instead.
+- **A decision record is the exception.** An ADR's decision line or an accepted deviation is
+  the sole record of a choice; striking it loses the choice. Supersede it with a dated entry
+  that quotes the verified code, and surface it to the founder — never a silent delete.
+- **A reviewer knowledge file is the same exception, by its own convention.** A
+  `*.knowledge.md` bullet is superseded IN PLACE and the superseded text is retired verbatim
+  to the paired append-only `*.knowledge.archive.md`. Never a bare strike — that archive is
+  the audit trail, and a strike without it breaks the contract.
+- **This rule can never remove the record of unresolved work.** It strikes false claims of
+  MEASURED FACT. It does not authorize deleting a blocking review finding, an unmet
+  acceptance criterion, or a ledger/marker line naming work that is still open, however
+  wrong the sentence around it looks. Those close by fixing the code and letting the
+  reviewer re-verify — never by deleting the sentence that names them. Being tempted to
+  strike a sentence in order to clear a gate is the signal to stop and say so.
+- **Phrase the finding that way too.** "Reword X to say Y" invites the next round; "strike
+  X" ends it. This binds your own re-review rounds, not only the first pass.

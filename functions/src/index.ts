@@ -31,7 +31,32 @@ import {
   shouldRecomputeOnFamilyRatingUpdate,
 } from "./ratings/family-rating-recompute";
 
-setGlobalOptions({ region: "europe-west1" });
+// `maxInstances` here is not performance tuning — it is what makes the project
+// deployable at all. Cloud Run admits a new revision only if the sum of
+// `cpu x maxInstances` across every service in the region fits the project's CPU
+// quota, and leaving the ceiling unset does not mean "no reservation": it means
+// the platform default of 100 per function. Multiplied across this project's
+// gen2 services that is thousands of vCPU, and the 2026-08-17 deploy failed on
+// 53 of them with "Quota exceeded for total allowable CPU per project per
+// region" — each one surfacing the symptom as `Container Healthcheck failed`,
+// which reads like broken code and is not. (The service COUNT is deliberately
+// not written here: nothing asserts it, so it goes stale by ADDITION every time
+// an export lands, with its own bytes untouched.)
+//
+// This is a cap on INSTANCES, not on in-flight requests: `concurrency` is a
+// separate option that defaults to 80 at cpu >= 1, so the real ceiling per
+// function is ~800 simultaneous requests, not 10. A function that genuinely
+// needs more raises `maxInstances` in its OWN options object, which wins over
+// this one key-by-key. Raising it globally re-arms the same wall, and the wall
+// is invisible until a deploy is already half-applied.
+//
+// Does NOT reach `onUserDeleted`: that is a gen1 auth trigger, which v2
+// `setGlobalOptions` cannot configure — verified in the compiled manifest,
+// where it is the one export reporting `platform: "gcfv1"`. Gen1 is understood
+// not to draw on the Cloud Run CPU pool this cap protects, so it is left out of
+// the arithmetic above; that part is a platform property, not something the SDK
+// or this repo can prove.
+setGlobalOptions({ region: "europe-west1", maxInstances: 10 });
 
 admin.initializeApp();
 
@@ -62,8 +87,8 @@ export { syncConversationLastMessage } from "./messaging/sync-conversation-last-
 export { enforceGroupMinorMembership } from "./messaging/enforce-group-minor-membership";
 
 // BUT-1838: chat groups. Membership lives on a shared `chat_groups` document
-// that no client may write, so every add/remove goes through one of these three
-// callables — which is what lets the minor-membership gate run at INVITE time
+// that no client may write, so every add/remove goes through one of the
+// callables below — which is what lets the minor-membership gate run at INVITE time
 // instead of once, at chat creation, as an after-the-fact trigger. Replaces
 // `leaveGroupConversation` (BUT-1788), deleted in the same change rather than
 // left beside them: two homes for one membership operation is the failure
@@ -71,6 +96,10 @@ export { enforceGroupMinorMembership } from "./messaging/enforce-group-minor-mem
 export { createChatGroup } from "./groups/create-chat-group";
 export { addChatGroupMembers } from "./groups/add-chat-group-members";
 export { removeChatGroupMember } from "./groups/remove-chat-group-member";
+// BUT-1856: the meal-vote poll's entry point. Resolve-or-create, so a social
+// group gets ONE chat instead of one per poll. It creates through
+// `createChatGroupWithDeps`, so the gate above binds it too.
+export { ensureCategoryChat } from "./groups/ensure-category-chat";
 
 // Cleanup Functions - Event-triggered
 export { onRecipeDeleted } from "./cleanup/cleanup-recipe-storage";
@@ -169,8 +198,8 @@ export { suppressLowPerformers } from "./analytics/suppress-low-performers";
 // DO NOT hoist this into a top-of-file `import`. `onSchedule` reads
 // `getGlobalOptions()` EAGERLY at module-eval time (firebase-functions 7.2.5),
 // and `export … from` compiles to a `require` at this source position — i.e.
-// AFTER the `setGlobalOptions({ region: "europe-west1" })` call above. Moving
-// it above that line silently deploys all three dispatchers to us-central1.
+// AFTER the `setGlobalOptions(...)` call above. Moving it above that line
+// silently deploys all three dispatchers to us-central1.
 // Verify against `functions/lib/index.js`, not the TypeScript source.
 export {
   dailyAnalytics,

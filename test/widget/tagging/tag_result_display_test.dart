@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
+import 'package:butlery/widgets/tagging/allergen_status_badge.dart';
 import 'package:butlery/widgets/tagging/tag_result_display.dart';
 
 import '../../infrastructure/helpers/tagging_test_helper.dart';
@@ -184,6 +185,67 @@ void main() {
 
       // Only gluten badge should be shown (mjölk and ägg filtered out)
       // AllergenStatusBadge renders check_circle_outline for FREE
+      expect(find.byIcon(Icons.check_circle_outline), findsOneWidget);
+    });
+
+    // BUT-1895 item 3. Dropping UNKNOWN from the detail view is a decided call
+    // (ACCEPTED_DEVIATIONS.md, 2026-06-22), and until now no test
+    // fed an UNKNOWN status in and checked that nothing was drawn for it — so
+    // restoring the grey badges here would have stayed green while silently
+    // breaking a written decision.
+    //
+    // The discriminating pair is the point: the SAME allergen, tracked by the
+    // SAME user, drawn when FREE and absent when UNKNOWN. A one-sided test
+    // passes just as well against a row that draws nothing at all.
+    testWidgets('a tracked allergen with UNKNOWN status draws no badge', (
+      tester,
+    ) async {
+      final unknown = TaggingTestHelper.createTagResult(
+        allergenStatus: const {'gluten': TriState.unknown},
+      );
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          wrapInScrollView: true,
+          child: TagResultDisplay(
+            tagResult: unknown,
+            userAllergenPrefs: const {'gluten'},
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Asserted on the BADGE, not on the FREE/CONTAINS icons. The first
+      // version of this case checked those two icons and survived deleting the
+      // filter outright: an UNKNOWN badge renders its own third icon, so
+      // "neither of the two settled icons is present" is true whether the row
+      // filtered the allergen out or drew a grey question mark for it.
+      expect(find.byType(AllergenStatusBadge), findsNothing);
+    });
+
+    testWidgets('the same tracked allergen DOES draw when it is settled', (
+      tester,
+    ) async {
+      final settled = TaggingTestHelper.createTagResult(
+        allergenStatus: const {'gluten': TriState.free},
+      );
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          wrapInScrollView: true,
+          child: TagResultDisplay(
+            tagResult: settled,
+            userAllergenPrefs: const {'gluten'},
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        find.byType(AllergenStatusBadge),
+        findsOneWidget,
+        reason:
+            'without this control the UNKNOWN case above would pass against a '
+            'row that had stopped drawing anything',
+      );
       expect(find.byIcon(Icons.check_circle_outline), findsOneWidget);
     });
 

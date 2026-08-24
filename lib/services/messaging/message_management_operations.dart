@@ -1,6 +1,7 @@
 // lib/services/messaging/message_management_operations.dart
 
 import 'package:butlery/repositories/interfaces/messaging_repository.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart'
     as auth_repo;
 import 'package:butlery/models/messaging/conversation.dart';
@@ -46,7 +47,7 @@ class MessageManagementOperations {
         throw PermissionDeniedException(
           'Can only edit own messages',
           resource: 'message:$messageId',
-          userId: currentUserId,
+          userId: currentUserId.maskedUserId,
         );
       }
 
@@ -80,7 +81,7 @@ class MessageManagementOperations {
         throw PermissionDeniedException(
           'Can only delete own messages',
           resource: 'message:$messageId',
-          userId: currentUserId,
+          userId: currentUserId.maskedUserId,
         );
       }
 
@@ -103,7 +104,7 @@ class MessageManagementOperations {
       if (currentUserId == null) {
         throw PermissionDeniedException(
           'Must be logged in to delete messages',
-          resource: 'conversation:$conversationId',
+          resource: 'conversation:${conversationId.maskedConversationId}',
           userId: null,
         );
       }
@@ -153,7 +154,8 @@ class MessageManagementOperations {
       );
     } catch (e) {
       AppLogger.error(
-        '❌ Failed to delete all messages in conversation $conversationId',
+        '❌ Failed to delete all messages in conversation '
+        '${conversationId.maskedConversationId}',
         e,
       );
       rethrow;
@@ -170,7 +172,7 @@ class MessageManagementOperations {
       if (currentUserId == null) {
         throw PermissionDeniedException(
           'Must be logged in to delete conversations',
-          resource: 'conversation:$conversationId',
+          resource: 'conversation:${conversationId.maskedConversationId}',
           userId: null,
         );
       }
@@ -181,7 +183,7 @@ class MessageManagementOperations {
         throw ResourceNotFoundException(
           'Conversation not found',
           resourceType: 'conversation',
-          resourceId: conversationId,
+          resourceId: conversationId.maskedConversationId,
         );
       }
 
@@ -189,8 +191,8 @@ class MessageManagementOperations {
       if (!conversation.participantIds.contains(currentUserId)) {
         throw PermissionDeniedException(
           'Cannot delete conversation - not a participant',
-          resource: 'conversation:$conversationId',
-          userId: currentUserId,
+          resource: 'conversation:${conversationId.maskedConversationId}',
+          userId: currentUserId.maskedUserId,
         );
       }
 
@@ -212,7 +214,10 @@ class MessageManagementOperations {
 
       AppLogger.success('✅ Successfully deleted conversation $conversationId');
     } catch (e) {
-      AppLogger.error('❌ Failed to delete conversation $conversationId', e);
+      AppLogger.error(
+        '❌ Failed to delete conversation ${conversationId.maskedConversationId}',
+        e,
+      );
       rethrow;
     }
   }

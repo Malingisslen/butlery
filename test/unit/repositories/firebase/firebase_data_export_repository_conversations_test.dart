@@ -193,5 +193,225 @@ void main() {
         );
       },
     );
+
+    /// BUT-1832. A poll vote used to live inside the message document, in
+    /// `metadata.poll.options[].voterIds`, and therefore left with the message.
+    /// It now lives at `messages/{id}/poll_votes/{voterUid}` — a path the rules,
+    /// the collection-group index and the Art. 17 deletion sweep all reached,
+    /// and Art. 15 did not. The message's own `voterIds` arrays are no longer
+    /// written by anyone, so without this leg a data subject's bundle shows
+    /// their votes as empty arrays.
+    Future<void> seedPollMessage(
+      String messageId, {
+      required Map<String, Map<String, dynamic>> votes,
+    }) async {
+      await firestore
+          .collection(FirestoreCollections.messages)
+          .doc(messageId)
+          .set(<String, dynamic>{
+            'conversationId': conversationId,
+            'content': 'Vad ska vi äta?',
+            'senderId': 'other-user',
+            'sentAt': Timestamp.fromDate(DateTime.utc(2026, 1, 2)),
+            'metadata': <String, dynamic>{
+              'poll': <String, dynamic>{
+                'question': 'Vad ska vi äta?',
+                'options': <Map<String, dynamic>>[
+                  {'id': 'opt-a', 'text': 'Tacos', 'voterIds': <String>[]},
+                  {'id': 'opt-b', 'text': 'Pasta', 'voterIds': <String>[]},
+                ],
+              },
+            },
+          });
+      for (final entry in votes.entries) {
+        await firestore
+            .collection(FirestoreCollections.messages)
+            .doc(messageId)
+            .collection(FirestoreCollections.pollVotes)
+            .doc(entry.key)
+            .set(entry.value);
+      }
+    }
+
+    test(
+      "BUT-1832: the requester's own poll vote is exported with the message",
+      () async {
+        await seedConversation(1);
+        await seedPollMessage(
+          'msg-poll',
+          votes: <String, Map<String, dynamic>>{
+            userId: <String, dynamic>{
+              'voterId': userId,
+              'optionIds': <String>['opt-b'],
+              'votedAt': Timestamp.fromDate(DateTime.utc(2026, 1, 3)),
+            },
+          },
+        );
+
+        final result = await repository.exportConversationsAndMessages(userId);
+        final messages = (result.single['messages'] as List<dynamic>)
+            .cast<Map<String, dynamic>>();
+        final poll = messages.firstWhere((m) => m['id'] == 'msg-poll');
+
+        expect(
+          poll['your_poll_vote'],
+          isA<Map<String, dynamic>>().having(
+            (v) => v['optionIds'],
+            'optionIds',
+            equals(<String>['opt-b']),
+          ),
+          reason:
+              'The vote is the only record of a choice the requester made. It '
+              'is erased by the Art. 17 cascade, so Art. 15 has to be able to '
+              'show it.',
+        );
+        expect(
+          ((poll['data'] as Map<String, dynamic>)['metadata']
+              as Map<String, dynamic>)['poll'],
+          isNotNull,
+          reason:
+              'the vote rides BESIDE the stored document, never merged into it '
+              '— `data` stays the message as Firestore holds it',
+        );
+      },
+    );
+
+    test(
+      'BUT-1832: another participant\'s vote row is NOT exported',
+      () async {
+        await seedConversation(1);
+        await seedPollMessage(
+          'msg-poll',
+          votes: <String, Map<String, dynamic>>{
+            'other-user': <String, dynamic>{
+              'voterId': 'other-user',
+              'optionIds': <String>['opt-a'],
+              'votedAt': Timestamp.fromDate(DateTime.utc(2026, 1, 3)),
+            },
+          },
+        );
+
+        final result = await repository.exportConversationsAndMessages(userId);
+        final messages = (result.single['messages'] as List<dynamic>)
+            .cast<Map<String, dynamic>>();
+        final poll = messages.firstWhere((m) => m['id'] == 'msg-poll');
+
+        expect(
+          poll.containsKey('your_poll_vote'),
+          isFalse,
+          reason:
+              'How somebody else voted is third-party behaviour. Reading the '
+              'whole subcollection would put every participant\'s uid and '
+              'choice in the requester\'s bundle.',
+        );
+      },
+    );
+
+    test(
+      'BUT-1832: a message with no poll is not probed and carries no vote key',
+      () async {
+        await seedConversation(1);
+        // A TRAP row, at a path production never writes: `votePoll` only ever
+        // writes under a poll message. Without it this test asserted nothing —
+        // with `_hasPoll` deleted the probe simply found no document, so "guard
+        // held" and "probe found nothing" were the same observable and the
+        // mutant survived. Now the guard is the ONLY thing keeping this key
+        // out, and removing it reddens here directly instead of incidentally
+        // tripping the cap test next door.
+        await firestore
+            .collection(FirestoreCollections.messages)
+            .doc('msg-0')
+            .collection(FirestoreCollections.pollVotes)
+            .doc(userId)
+            .set(<String, dynamic>{
+              'voterId': userId,
+              'optionIds': <String>['opt-a'],
+            });
+
+        final result = await repository.exportConversationsAndMessages(userId);
+        final messages = (result.single['messages'] as List<dynamic>)
+            .cast<Map<String, dynamic>>();
+
+        expect(messages.single.containsKey('your_poll_vote'), isFalse);
+      },
+    );
+
+    test(
+      'BUT-1832: a complete conversation carries no poll_votes_truncated flag',
+      () async {
+        // Recall control. `DataExportService`'s nested walk lifts any
+        // `*_truncated` into the bundle's truncation notice, so a flag stuck
+        // true tells every data subject their export is incomplete when it is
+        // not — the BUT-1721 false-positive direction, whose fix is the top
+        // half of this very file. Measured: without this, initialising the flag
+        // to `true` left the whole suite green.
+        await seedConversation(1);
+        await seedPollMessage(
+          'msg-poll-only',
+          votes: <String, Map<String, dynamic>>{
+            userId: <String, dynamic>{
+              'voterId': userId,
+              'optionIds': <String>['opt-a'],
+            },
+          },
+        );
+
+        final result = await repository.exportConversationsAndMessages(userId);
+
+        expect(result.single.containsKey('poll_votes_truncated'), isFalse);
+        // Positive control: the absence above is not an export that fell over
+        // before it ever reached a poll.
+        final messages = (result.single['messages'] as List<dynamic>)
+            .cast<Map<String, dynamic>>();
+        expect(
+          messages.any((m) => m.containsKey('your_poll_vote')),
+          isTrue,
+          reason:
+              'the vote overlay must have run for the absence to mean '
+              'anything',
+        );
+      },
+    );
+
+    test(
+      'BUT-1832: past the lookup cap the conversation reports itself clipped',
+      () async {
+        await seedConversation(1);
+        for (var i = 0; i < 2; i++) {
+          await seedPollMessage(
+            'msg-poll-$i',
+            votes: <String, Map<String, dynamic>>{
+              userId: <String, dynamic>{
+                'voterId': userId,
+                'optionIds': <String>['opt-a'],
+                'votedAt': Timestamp.fromDate(DateTime.utc(2026, 1, 3)),
+              },
+            },
+          );
+        }
+
+        final capped = FirebaseDataExportRepository(
+          firestore: firestore,
+          authRepository: auth,
+          maxPollVoteLookupsPerConversation: 1,
+        );
+        final result = await capped.exportConversationsAndMessages(userId);
+        final messages = (result.single['messages'] as List<dynamic>)
+            .cast<Map<String, dynamic>>();
+        final probed = messages
+            .where((m) => m.containsKey('your_poll_vote'))
+            .length;
+
+        expect(probed, 1, reason: 'the cap is a read budget, and it holds');
+        expect(
+          result.single['poll_votes_truncated'],
+          isTrue,
+          reason:
+              'A silently short bundle is the failure mode this key exists to '
+              'prevent — `DataExportService` lifts any `*_truncated` flag into '
+              'the truncation notice the data subject reads.',
+        );
+      },
+    );
   });
 }

@@ -28,7 +28,10 @@ class MessageMutationModule {
     this.timestampProvider = const ServerTimestampProvider(),
   });
 
-  /// Send message with atomic conversation update (complex 175-line operation).
+  CollectionReference<Map<String, dynamic>> pollVotesRef(String messageId) =>
+      messagesRef.doc(messageId).collection(FirestoreCollections.pollVotes);
+
+  /// Send message with atomic conversation update.
   Future<void> sendMessage(Message message) async {
     try {
       AppLogger.info(
@@ -41,156 +44,74 @@ class MessageMutationModule {
       AppLogger.debug('📤 [MessageMutation] Sender ID: ${message.senderId}');
       AppLogger.debug('📤 [MessageMutation] Content: "${message.content}"');
 
-      // Read conversation (required for atomic update)
+      // Read conversation (required for atomic update).
+      //
+      // BUT-1831: a read that FAILS propagates untouched. It used to be
+      // swallowed — HERE for a `direct_` id, and in the wired callback for
+      // every id, which made this catch unreachable — turning a momentary read
+      // failure into "this conversation does not exist" and sending the send
+      // down the repair path the absence check below replaces. Nothing may
+      // wrap it either: `MessageSendErrorMapper.classify` needs the raw
+      // `FirebaseException` to tell a clock-skew denial from anything else.
+      // That file's own docstring carries the unwrap chain; do not restate it
+      // here, where nothing keeps the copy honest.
       AppLogger.debug('📤 [MessageMutation] Reading conversation...');
-      Conversation? conversation;
-      try {
-        conversation = await readConversation(message.conversationId);
-      } catch (e) {
-        AppLogger.warning(
-          '⚠️ [MessageMutation] Could not read conversation: $e',
-        );
-        // For deterministic IDs, conversation might not exist yet - that's OK
-        if (!message.conversationId.startsWith('direct_')) {
-          throw ResourceNotFoundException(
-            'Conversation not found',
-            resourceType: 'conversation',
-            resourceId: message.conversationId,
-          );
-        }
-      }
+      final conversation = await readConversation(message.conversationId);
 
-      // Validate participant if conversation exists
-      if (conversation != null) {
-        AppLogger.debug(
-          '📤 [MessageMutation] Conversation found: ${conversation.id}',
-        );
-
-        if (!conversation.isParticipant(message.senderId)) {
-          AppLogger.error(
-            '❌ [MessageMutation] User ${message.senderId} is not a participant',
-          );
-          throw PermissionDeniedException(
-            'User is not a participant in this conversation',
-            resource: 'conversation:${message.conversationId}',
-            userId: message.senderId,
-          );
-        }
-        AppLogger.debug(
-          '📤 [MessageMutation] User is participant - authorized',
-        );
-      }
-
-      // Handle missing conversation with smart fallback using message sender data
+      // A conversation that is genuinely ABSENT is an error, not something to
+      // paper over.
+      //
+      // BUT-1831: this replaces a branch that fabricated a `Conversation` from
+      // the message's own sender data and merge-set it beside the message. That
+      // write is refused by `firestore.rules` on BOTH horns:
+      //
+      //   update (document exists) - the rebuilt DTO re-stamps `createdAt`,
+      //     and the conversations update rule deny-lists it. When the RECIPIENT
+      //     sends, the rebuilt `participantIds` also comes out in the opposite
+      //     order to the stored array, which the same deny-list refuses.
+      //   create (document absent)  - the create rule requires
+      //     `metadata.creatorId == request.auth.uid`, and the fallback has no
+      //     creator to name because its caller is not one.
+      //
+      // Because the batch is atomic, the refusal took the MESSAGE document with
+      // it. Nothing is lost by removing the branch; a send that reaches here
+      // with no conversation had no working outcome available to it.
+      //
+      // This branch IS reachable, and an earlier version of this comment said
+      // otherwise — the sentence a future author would have acted on.
+      // `deleteConversation` removes the shared top-level document and no chat
+      // screen watches it, so the other party deleting the thread while this
+      // one is open lands here on the next send. The repair, if that case is
+      // ever given one, is to CALL `createDirectConversation` (which writes its
+      // own `metadata.creatorId`), never to rebuild a payload rules refuse.
       if (conversation == null) {
-        AppLogger.warning(
-          '⚠️ [MessageMutation] Conversation not found locally: ${message.conversationId}',
-        );
-        AppLogger.info(
-          '📝 [MessageMutation] Creating fallback conversation with complete participant data',
-        );
-
-        // Parse deterministic conversation ID to extract other participant
-        final conversationId = message.conversationId;
-        String? otherUserId;
-
-        if (conversationId.startsWith('direct_')) {
-          final parts = conversationId.split('_');
-          if (parts.length == 3) {
-            final userId1 = parts[1];
-            final userId2 = parts[2];
-            otherUserId = (userId1 == message.senderId) ? userId2 : userId1;
-          }
-        }
-
-        // Fetch other participant's profile from Firestore users collection
-        String? otherUserDisplayName;
-        String? otherUserAvatarUrl;
-
-        if (otherUserId != null) {
-          try {
-            AppLogger.debug(
-              '📝 [MessageMutation] Fetching profile for user: $otherUserId',
-            );
-            final userDoc = await firestore
-                .collection(FirestoreCollections.users)
-                .doc(otherUserId)
-                .get();
-            if (userDoc.exists) {
-              final userData = userDoc.data();
-              otherUserDisplayName = userData?['displayName'] as String?;
-              otherUserAvatarUrl = userData?['avatarUrl'] as String?;
-              AppLogger.success(
-                '✅ [MessageMutation] Fetched other participant profile: $otherUserDisplayName',
-              );
-            } else {
-              AppLogger.warning(
-                '⚠️ [MessageMutation] User profile not found for: $otherUserId',
-              );
-            }
-          } catch (e) {
-            AppLogger.warning(
-              '⚠️ [MessageMutation] Could not fetch user profile: $e',
-            );
-          }
-        }
-
-        // Create fallback conversation with BOTH participant names
-        // DO NOT give this conversation a `metadata.creatorId`, however
-        // obviously right that looks — but the REASON changed on 2026-08-13
-        // (BUT-1838) and the old one is worth not repeating.
-        //
-        // It used to be a CEL accident: the create rule read
-        // `'creatorId' in request.resource.data.metadata`, an `in` on a null is
-        // an evaluation error, and that error was the only thing stopping a
-        // non-creator from materialising a group's top-level document by
-        // sending the first message — which would have permanently disarmed the
-        // `onDocumentCreated` child-safety trigger.
-        //
-        // None of that is the situation any more. The create rule is a bare
-        // `request.resource.data.metadata.creatorId == request.auth.uid`, which
-        // denies an absent or null creator cleanly rather than by error; a
-        // client cannot create a GROUP conversation at all (`directIdBinds`);
-        // and the safety gate runs before the write, in the `chat_groups`
-        // callables, with the trigger repointed at `chat_groups` as a backstop.
-        //
-        // What survives: this fallback must still send no creator, because the
-        // caller is not one — and `ConversationDto.toFirestore` still emits the
-        // key unconditionally, so a "don't write nulls" tidy would change a
-        // write path the rules govern. Test C7B pins the deny; the DTO's own
-        // emission is pinned in message_mutation_module_test.dart.
-        conversation = Conversation(
-          id: conversationId,
-          participantIds: [
-            message.senderId,
-            ?otherUserId,
-          ],
-          participantDisplayNames: {
-            message.senderId: message.senderDisplayName,
-            if (otherUserId != null && otherUserDisplayName != null)
-              otherUserId: otherUserDisplayName,
-          },
-          participantAvatarUrls: {
-            message.senderId: message.senderAvatarUrl,
-            if (otherUserId != null && otherUserAvatarUrl != null)
-              otherUserId: otherUserAvatarUrl,
-          },
-          lastReadTimestamps: {},
-          isGroup: false,
-          // BUT-1831: this re-stamp is why the write is DENIED against any
-          // conversation that already exists — the DTO emits createdAt
-          // unconditionally, the write is a merge-set, and the update rule
-          // pins that field. Establish how often this branch runs before
-          // changing it; the fix differs completely between "a rare repair
-          // path is broken" and "every DM send takes a denied write".
-          createdAt: clock.now().toUtc(),
-          updatedAt: clock.now().toUtc(),
-        );
-
-        AppLogger.success(
-          '✅ [MessageMutation] Fallback conversation created with complete participant data',
+        throw ResourceNotFoundException(
+          'Conversation not found',
+          resourceType: 'conversation',
+          // This exception's toString() reaches Crashlytics through
+          // recordError, which sanitises nothing, and a `direct_` id is two
+          // raw uids.
+          resourceId: message.conversationId.maskedConversationId,
         );
       }
+
+      AppLogger.debug(
+        '📤 [MessageMutation] Conversation found: ${conversation.id}',
+      );
+
+      if (!conversation.isParticipant(message.senderId)) {
+        AppLogger.error(
+          '❌ [MessageMutation] User ${message.senderId.maskedUserId} is '
+          'not a participant',
+        );
+        throw PermissionDeniedException(
+          'User is not a participant in this conversation',
+          resource:
+              'conversation:${message.conversationId.maskedConversationId}',
+          userId: message.senderId.maskedUserId,
+        );
+      }
+      AppLogger.debug('📤 [MessageMutation] User is participant - authorized');
 
       // ATOMIC OPERATION: Write message + update conversation in single batch
       AppLogger.debug(
@@ -373,15 +294,15 @@ class MessageMutationModule {
         throw ResourceNotFoundException(
           'Conversation not found',
           resourceType: 'conversation',
-          resourceId: conversationId,
+          resourceId: conversationId.maskedConversationId,
         );
       }
 
       if (!conversation.isParticipant(userId)) {
         throw PermissionDeniedException(
           'User is not a participant in this conversation',
-          resource: 'conversation:$conversationId',
-          userId: userId,
+          resource: 'conversation:${conversationId.maskedConversationId}',
+          userId: userId.maskedUserId,
         );
       }
 
@@ -409,7 +330,8 @@ class MessageMutationModule {
       );
     } catch (e) {
       AppLogger.error(
-        'Failed to mark conversation as read: $conversationId',
+        'Failed to mark conversation as read: '
+        '${conversationId.maskedConversationId}',
         e,
       );
       rethrow;
@@ -477,54 +399,73 @@ class MessageMutationModule {
     }
   }
 
-  /// Vote on a poll option in a message.
+  /// Vote on (or toggle off) a poll option.
+  ///
+  /// Writes `messages/{messageId}/poll_votes/{voterId}` — one row per voter,
+  /// doc id == voter uid — never the message document (BUT-1832). Casting a
+  /// vote used to be an update of `metadata.poll.options[].voterIds` on the
+  /// message, and `firestore.rules` lets only a message's SENDER update it, so
+  /// every vote by anyone other than the poll's own author was denied. The
+  /// permission is not something a wider message rule could grant: a rule
+  /// cannot walk a list of maps, so "change only your own entry inside
+  /// options[i].voterIds" is not expressible, while any rule loose enough to
+  /// permit the write would also let a participant rewrite the question and
+  /// everybody else's votes. With the voter in the PATH the rule is exact.
+  ///
+  /// The transaction is on the voter's own row, so two people voting at once no
+  /// longer contend for one document the way the old whole-metadata rewrite did.
   Future<void> votePoll({
     required String messageId,
     required String optionId,
     required String voterId,
     required bool allowMultiple,
   }) async {
-    final messageRef = messagesRef.doc(messageId);
+    final voteRef = pollVotesRef(messageId).doc(voterId);
 
     await firestore.runTransaction((transaction) async {
-      final doc = await transaction.get(messageRef);
-      if (!doc.exists) return;
+      final doc = await transaction.get(voteRef);
+      final existing = doc.exists
+          ? List<String>.from(
+              (doc.data()?['optionIds'] as List<dynamic>? ?? const [])
+                  .whereType<String>(),
+            )
+          : <String>[];
 
-      final data = doc.data()!;
-      final metadata = Map<String, dynamic>.from(data['metadata'] ?? {});
-      final pollMap = Map<String, dynamic>.from(metadata['poll'] ?? {});
-      final options =
-          (pollMap['options'] as List<dynamic>?)
-              ?.map((o) => Map<String, dynamic>.from(o as Map))
-              .toList() ??
-          [];
-
-      // Remove user from all options if single choice
-      if (!allowMultiple) {
-        for (final option in options) {
-          final voters = List<String>.from(option['voterIds'] ?? []);
-          voters.remove(voterId);
-          option['voterIds'] = voters;
+      // Behaviour preserved from the inline version, both branches:
+      //   multi-choice — tapping an option toggles it, leaving the others alone;
+      //   single-choice — the pick REPLACES the previous one, and re-tapping
+      //   your current choice leaves it selected rather than clearing it. The
+      //   old code reached that second one by stripping every option and then
+      //   adding back, which nets to "stays voted"; stated directly here so it
+      //   reads as the decision it is and not as a missing toggle.
+      final List<String> next;
+      if (allowMultiple) {
+        next = List<String>.from(existing);
+        if (next.contains(optionId)) {
+          next.remove(optionId);
+        } else {
+          next.add(optionId);
         }
+      } else {
+        next = <String>[optionId];
       }
 
-      // Toggle vote on target option
-      for (final option in options) {
-        if (option['id'] == optionId) {
-          final voters = List<String>.from(option['voterIds'] ?? []);
-          if (voters.contains(voterId)) {
-            voters.remove(voterId);
-          } else {
-            voters.add(voterId);
-          }
-          option['voterIds'] = voters;
-          break;
-        }
+      if (next.isEmpty) {
+        // No selection left. Delete rather than keep an empty row: an empty row
+        // is still a uid on a document other participants read, and Art. 17
+        // should not have to erase what carries no information.
+        if (doc.exists) transaction.delete(voteRef);
+        return;
       }
 
-      pollMap['options'] = options;
-      metadata['poll'] = pollMap;
-      transaction.update(messageRef, {'metadata': metadata});
+      transaction.set(voteRef, {
+        // Duplicated from the doc id on purpose — the erasure sweep queries by
+        // FIELD (`collectionGroup('poll_votes').where('voterId', ...)`), and a
+        // document id is not a field any query or `hasOnly` can see.
+        'voterId': voterId,
+        'optionIds': next,
+        'votedAt': timestampProvider.serverTimestamp(),
+      });
     });
 
     AppLogger.debug('Poll vote recorded for message $messageId');

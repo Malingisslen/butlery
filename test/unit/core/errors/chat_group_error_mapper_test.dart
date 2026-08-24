@@ -1,11 +1,11 @@
 /// Unit tests for [ChatGroupErrorMapper] (BUT-1838).
 ///
-/// Three ViewModels route every chat-group callable failure through this one
-/// switch, so each branch here decides what a user is told after "Skapa
-/// grupp" / "Lägg till medlemmar" / "Lämna gruppen" fails. The ViewModel
-/// suites drive three of the branches indirectly; the ones that decide
-/// whether a specific message is shown AT ALL — the details-shape guards and
-/// the `retryAfterSeconds` fallbacks — are only reachable here.
+/// Every ViewModel that calls a chat-group callable routes its failures
+/// through this one switch, so each branch here decides what a user is told
+/// after that operation fails. The ViewModel suites drive some branches
+/// indirectly; the ones that decide whether a specific message is shown AT
+/// ALL — the details-shape guards and the `retryAfterSeconds` fallbacks — are
+/// only reachable here.
 ///
 /// Every test passes a SENTINEL fallback string that no ARB key could hold,
 /// so "returned the fallback" can never coincide with a real message.
@@ -212,6 +212,51 @@ void main() {
         equals(_fallback),
       );
     });
+  });
+
+  group('failed-precondition (the meal-vote group is too small)', () {
+    test('a structured group-too-small reason gets its own message', () {
+      final message = _map(
+        FirebaseFunctionsException(
+          code: 'failed-precondition',
+          message: 'This group has no other members.',
+          details: const {'reason': 'group-too-small'},
+        ),
+      );
+
+      expect(message, equals(AppLocale.current.chatGroupNeedsAnotherMember));
+      expect(message, isNot(equals(_fallback)));
+    });
+
+    test(
+      'a failed-precondition WITHOUT that reason falls back to generic',
+      () {
+        // The callables raise this code for other states too — "Group has no
+        // conversation.", "Group no longer exists." — and telling that caller
+        // to invite someone would be nonsense. Unlike the member cap above,
+        // this branch reads a STRUCTURED detail rather than sniffing the
+        // English message, which is why it can tell them apart at all.
+        expect(
+          _map(
+            FirebaseFunctionsException(
+              code: 'failed-precondition',
+              message: 'Group no longer exists.',
+            ),
+          ),
+          equals(_fallback),
+        );
+        expect(
+          _map(
+            FirebaseFunctionsException(
+              code: 'failed-precondition',
+              message: 'This group has no other members.',
+              details: const {'reason': 'something-else'},
+            ),
+          ),
+          equals(_fallback),
+        );
+      },
+    );
   });
 
   group('everything else', () {

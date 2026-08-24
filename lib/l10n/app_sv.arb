@@ -870,6 +870,8 @@
   "recipeAnalyzing": "Analyseras...",
   "recipeAnalysisFailedA11y": "Ingrediensanalys misslyckades",
   "recipeAnalyzingA11y": "Ingredienser analyseras",
+  "recipeAllergensUnassessed": "Allergener ej bedömda",
+  "recipeAllergensUnassessedA11y": "Allergener är inte bedömda för det här receptet",
   "recipeSearchHint": "sök bland recepten...",
   "recipeShowMore": "Visa fler recept",
   "recipeCountBadge": "{count, plural, =0{Inga recept} =1{1 recept} other{{count} recept}}",
@@ -3932,7 +3934,8 @@
   "chatAttachments": "Bilagor",
   "chatAttachmentTypes": "Bilagor: Recept, Meny, Handlingslista, Foto",
   "chatCannotMessageNonFriend": "Du kan inte skicka meddelanden till denna person",
-  "chatCouldNotSendMessage": "Kunde inte skicka meddelandet. Försök igen.",
+  "chatCouldNotSendMessage": "Kunde inte skicka meddelandet.",
+  "chatSendFailedDeviceClockAhead": "Kunde inte skicka. Telefonens klocka ligger för långt fram — kontrollera datum och tid i inställningarna.",
   "chatLoadingMessages": "Laddar meddelanden...",
   "chatNoMessages": "Inga meddelanden än",
   "chatSend": "Skicka",
@@ -9706,6 +9709,34 @@
   "pollVoteSingular": "röst",
   "pollVotePlural": "röster",
   "pollClosed": "Avslutad",
+  "pollVotesNotLoadedShort": "Rösterna har inte hämtats",
+  "@pollVotesNotLoadedShort": {
+    "description": "Shown in place of a vote count when the poll was past the hydration cap (BUT-1908)."
+  },
+  "pollVotesFailedShort": "Rösterna kunde inte läsas",
+  "@pollVotesFailedShort": {
+    "description": "Shown in place of a vote count when reading the poll's votes errored (BUT-1908)."
+  },
+  "pollVotesNotLoadedHint": "Öppna chatten igen för att hämta dem.",
+  "@pollVotesNotLoadedHint": {
+    "description": "Second line under pollVotesNotLoadedShort — a re-read repairs this case."
+  },
+  "pollVotesFailedHint": "Försök igen om en stund.",
+  "@pollVotesFailedHint": {
+    "description": "Second line under pollVotesFailedShort — this case may be persistent."
+  },
+  "pollCloseRefusedVotesUnread": "Omröstningen avslutades inte — rösterna har inte hämtats, och den får inte stängas på siffror som inte är lästa. Öppna chatten igen och försök på nytt.",
+  "@pollCloseRefusedVotesUnread": {
+    "description": "Snackbar when closePoll refused because the tally was never read."
+  },
+  "pollCloseRefusedBlockList": "Omröstningen avslutades inte — din blockeringslista kunde inte läsas, så blockerade röster går inte att räkna bort. Försök igen.",
+  "@pollCloseRefusedBlockList": {
+    "description": "Snackbar when closePoll refused because the viewer's block list was unreadable."
+  },
+  "pollCloseFailed": "Omröstningen kunde inte avslutas. Försök igen.",
+  "@pollCloseFailed": {
+    "description": "Snackbar for any other failure to close a poll."
+  },
   "pollCloseAction": "Stäng omröstning",
   "chatGroupChatDefault": "Gruppchatt",
   "chatGroupCreatedMessage": "{name} skapade gruppen \"{title}\"",
@@ -11945,6 +11976,8 @@
   },
   "chatGroupAddMembersBlocked": "Några personer kunde inte läggas till i gruppen.",
   "chatGroupAddMembersFailed": "Det gick inte att lägga till medlemmar. Försök igen.",
+  "chatGroupNeedsAnotherMember": "Gruppen behöver minst en medlem till innan ni kan rösta om mat.",
+  "mealVotePollFailed": "Det gick inte att starta omröstningen. Försök igen.",
   "chatGroupCreateFailed": "Det gick inte att skapa gruppen. Försök igen.",
   "chatGroupTooManyMembers": "En grupp kan ha högst {max} medlemmar.",
   "@chatGroupTooManyMembers": {

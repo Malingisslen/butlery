@@ -78,7 +78,10 @@ class ConversationQueryModule {
       if (!doc.exists) return null;
       return fromFirestore(doc);
     } catch (e) {
-      AppLogger.error('Failed to get conversation $conversationId', e);
+      AppLogger.error(
+        'Failed to get conversation ${conversationId.maskedConversationId}',
+        e,
+      );
       return null;
     }
   }
@@ -95,7 +98,8 @@ class ConversationQueryModule {
       return conversation?.participantIds ?? [];
     } catch (e) {
       AppLogger.error(
-        'Failed to get conversation participants: $conversationId',
+        'Failed to get conversation participants: '
+        '${conversationId.maskedConversationId}',
         e,
       );
       return [];

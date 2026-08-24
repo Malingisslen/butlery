@@ -40,6 +40,8 @@ import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/group_invitation.dart';
 import 'package:butlery/models/messaging/poll.dart';
 import 'package:butlery/core/events/group_events.dart';
+import 'package:butlery/core/errors/chat_group_error_mapper.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/mixins/async_operation_mixin.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/mixins/state_notifier_mixin.dart';
@@ -436,71 +438,82 @@ class SocialGroupDetailViewModel extends ChangeNotifier
     return picked;
   }
 
-  /// Create a group chat conversation with [recipes] as a poll and return
-  /// the conversation id. Pushes the Poll via MessagingService.sendPollMessage.
-  /// Returns null on failure (error state set on this VM).
+  /// Post [recipes] as a poll in this social group's chat and return the
+  /// conversation id, or null on failure with [errorMessage] set.
+  ///
+  /// BUT-1856: the chat is created on the FIRST poll and reused by every later
+  /// one. The roster comes from the social group, resolved server-side — this
+  /// method deliberately does not read [members], because that list is built
+  /// from profiles that may fail to load, and a profile that failed used to
+  /// silently shrink the chat.
+  ///
+  /// The try/catch is load-bearing: `executeAsync` sets the error AND rethrows,
+  /// so without it this method throws instead of returning null and the view's
+  /// null branch never runs.
   Future<String?> startMealVotePoll({
     required String question,
     required List<Recipe> recipes,
     bool allowMultipleChoices = false,
   }) async {
-    if (_group == null) {
+    // Both early returns clear first: they sit ABOVE `executeAsync`, so its
+    // clear-on-start never runs for them, and the view now renders
+    // `errorMessage` — a message from an earlier failed poll would otherwise be
+    // shown again for an unrelated refusal.
+    final group = _group;
+    if (group == null) {
+      clearError();
       AppLogger.warning('Cannot start meal vote: group not loaded');
       return null;
     }
     final currentUserId = _permissionService.currentUserId;
     if (currentUserId == null) {
+      clearError();
       AppLogger.warning('Cannot start meal vote: not authenticated');
       return null;
     }
 
-    String? conversationId;
-    await executeAsync(() async {
-      final messagingService = ServiceLocator.get<MessagingService>();
-      final memberProfiles = _members;
+    try {
+      return await executeAsync(() async {
+        final messagingService = ServiceLocator.get<MessagingService>();
 
-      final participantIds = <String>[
-        for (final m in memberProfiles)
-          if (m.uid != currentUserId) m.uid,
-      ];
-      final displayNames = <String, String>{
-        for (final m in memberProfiles) m.uid: m.displayName,
-      };
-      final avatarUrls = <String, String?>{
-        for (final m in memberProfiles) m.uid: m.avatarUrl,
-      };
+        final conversationId = await messagingService.ensureCategoryChat(
+          ownerId: group.ownerId,
+          categoryId: group.id,
+        );
 
-      conversationId = await messagingService.createGroupConversation(
-        participantIds: participantIds,
-        participantDisplayNames: displayNames,
-        participantAvatarUrls: avatarUrls,
-        title: _group!.name,
+        final options = recipes
+            .map(
+              (r) => PollOption.create(
+                text: r.title,
+                recipeId: r.id,
+                recipeImageUrl: r.primaryImageUrl,
+                recipePortions: r.portions,
+              ),
+            )
+            .toList();
+
+        final poll = Poll.fromOptions(
+          question: question,
+          options: options,
+          creatorId: currentUserId,
+          allowMultipleChoices: allowMultipleChoices,
+        );
+
+        await messagingService.sendPollMessage(
+          conversationId: conversationId,
+          pollData: poll.toMap(),
+        );
+        return conversationId;
+      });
+    } catch (e) {
+      setError(
+        ChatGroupErrorMapper.map(
+          e,
+          genericFallback: AppLocale.current.mealVotePollFailed,
+        ),
       );
-
-      final options = recipes
-          .map(
-            (r) => PollOption.create(
-              text: r.title,
-              recipeId: r.id,
-              recipeImageUrl: r.primaryImageUrl,
-              recipePortions: r.portions,
-            ),
-          )
-          .toList();
-
-      final poll = Poll.fromOptions(
-        question: question,
-        options: options,
-        creatorId: currentUserId,
-        allowMultipleChoices: allowMultipleChoices,
-      );
-
-      await messagingService.sendPollMessage(
-        conversationId: conversationId!,
-        pollData: poll.toMap(),
-      );
-    });
-    return conversationId;
+      return null;
+    }
   }
 
   @override

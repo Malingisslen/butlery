@@ -88,6 +88,10 @@ function directId(a: string, b: string): string {
 // exists()-guarded and fails OPEN to "adult", so an unseeded uid is a valid
 // adult DM target — and a per-test uid keeps every create test on its OWN
 // document id, so an earlier ALLOW never turns a later create into an update.
+//
+// BUT-1831 also uses one as an authenticated ACTOR (`authenticatedContext`),
+// not only as a DM target. Sound on paths where no conjunct reads
+// `users/{uid}` — check that before reusing it as an actor on a rule that does.
 function peer(tag: string): string {
   return `conv-peer-${tag}`;
 }
@@ -330,9 +334,8 @@ test("conversations: a create with no metadata key at all is denied", async () =
   );
 });
 
-// C7B: DENY — a create carrying `metadata: null`, which is the ONLY shape the
-// non-creator fallback writer sends, and the shape this whole suite never put
-// through the CREATE rule (C1-C5 omit the key, C6/C7 send a map, and every
+// C7B: DENY — a create carrying `metadata: null`, the shape this whole suite
+// never put through the CREATE rule (C1-C5 omit the key, C6/C7 send a map, and every
 // `conversationDtoPayload(null)` write is a merge-set onto a seeded document,
 // i.e. an update).
 //
@@ -343,18 +346,10 @@ test("conversations: a create with no metadata key at all is denied", async () =
 // `in` on a null is a CEL EVALUATION ERROR, which denies. The named equality
 // conjunct below it is never reached.
 //
-// That evaluation error is currently the only thing stopping a NON-CREATOR from
-// materialising a group's top-level conversation document THROUGH THE APP. It is
-// not a security bound — a hand-rolled create carrying a real metadata map is
-// allowed today and ends the window irreversibly (BUT-1830). What it stops is
-// our own client: `MessageMutationModule` falls through to a fallback that builds
-// `Conversation(participantIds: [senderId], isGroup: false)` with no metadata and
-// stages a top-level create. If it landed, `enforceGroupMinorMembership` would
-// return early on it — that payload trips BOTH halves of the trigger's guard
-// (`isGroup: false` AND a single participant), so do not read the flag alone as
-// sufficient: a false flag with >2 participants does not return early — and
-// `onDocumentCreated` cannot fire
-// twice, so the child-safety cut would never run for that group at all.
+// BUT-1831 deleted the `MessageMutationModule` fallback that built a
+// creator-less `Conversation` with no metadata and staged a top-level create.
+// The corrected account of who can still reach this limb lives at the rule
+// itself; do not restate it here, where nothing keeps the copy honest.
 //
 // WHAT THE MUTATION PROBE ACTUALLY SAYS, measured 2026-08-13 against the
 // BUT-1838 rule and recorded here because the paragraph above is inherited from
@@ -372,12 +367,13 @@ test("conversations: a create with no metadata key at all is denied", async () =
 //     C6B (74/77).
 //
 // So the ASSERTION is load-bearing and the deny is attributable — the emulator
-// prints `Null value error. for 'create' @ L1565` — but the stated MECHANISM has
-// changed. The `metadata: null` fallback from `MessageMutationModule` is now
-// refused by the presence requirement, not only by a CEL accident, which is a
-// stronger bound: a CEL accident binds our own client, a presence requirement
-// binds a tampered one too. Reported against the rule comment, which still
-// claims harmonising the spellings would disarm this.
+// names the `allow create` limb of `match /conversations/{conversationId}` (it
+// prints a line number, which moves; cite the match pattern) — but the stated
+// MECHANISM has changed. The shape is now refused by the presence requirement,
+// not only by a CEL accident, which is a stronger bound: a CEL accident binds
+// our own client, a presence requirement binds a tampered one too. The rule
+// comment has since been corrected and no longer claims harmonising the
+// spellings would disarm this.
 //
 // BUT-1838, 2026-08-13 — the ASSERTION is untouched (still DENY) and the reason
 // is untouched (still the CEL evaluation error on a null `metadata`), but the
@@ -577,6 +573,52 @@ const NO_METADATA_INJECT_GROUP = `c-no-metadata-inject-${RUN}`;
 const FIXTURE_CREATED_AT = new Date("2026-01-15T09:00:00.000Z");
 const FIXTURE_PARTICIPANTS = [ADULT_UID, STRANGER_UID, FRIEND_UID];
 
+// BUT-1831: a DIRECT conversation, which the group fixtures above cannot stand
+// in for, for two reasons that survive independently:
+//   * FIDELITY — C11D stages what a RECIPIENT's client sends when a merge-set
+//     rebuilds the array: TWO elements, opposite order to the stored one.
+//     `createDirectConversation` writes [user1Id, user2Id], and its
+//     existence-read fall-through can still merge-set over it; the deleted
+//     `sendMessage` fallback used to as well. A three-person group fixture
+//     cannot express that shape at all.
+//   * CONTROL — C11E needs a document no other test writes. Share it with the
+//     metadata fixtures and any write of theirs changes what C11E asserts
+//     against, at which point the ALLOW control stops being a control.
+// Creation order here is [initiator, recipient].
+//
+// `directIdBinds` is NOT the reason, however much it looks like one: it is
+// called only from `allow create`, so it never runs on C11D or C11E, which are
+// updates against a rules-disabled seed. An earlier version of this comment
+// said otherwise, and a reader who believed it would conclude the update path
+// is already id-bound and that `participantIds` is redundant in the deny-list
+// — which is the exact regression C11D exists to catch.
+//
+// BOTH uids are dedicated, per the `peer()` convention above, and the id
+// carries RUN. A direct id is a pure function of its two participants, so any
+// two fixtures naming the same pair ARE the same document — measured: the
+// first draft reused ADULT_UID/STRANGER_UID, `seedMessageFixtures` seeds
+// `MSG_DIRECT` at that same pair and runs after `seedUpdateFixtures`, and the
+// overwrite made the ALLOW control deny. C11D would have stayed green on its
+// own and pinned nothing, which is the whole failure mode this trio exists to
+// close.
+const DM_INITIATOR = peer(`dm-init-${RUN}`);
+const DM_RECIPIENT = peer(`dm-recip-${RUN}`);
+const DIRECT_PARTICIPANTS = [DM_INITIATOR, DM_RECIPIENT];
+const DIRECT_CONVO = `direct_${DM_INITIATOR}_${DM_RECIPIENT}`;
+
+function directConvoPayload(
+  extra: Record<string, unknown> = {}
+): Record<string, unknown> {
+  return {
+    participantIds: [...DIRECT_PARTICIPANTS],
+    createdAt: FIXTURE_CREATED_AT,
+    updatedAt: new Date(),
+    isGroup: false,
+    metadata: { creatorId: DM_INITIATOR },
+    ...extra,
+  };
+}
+
 // The payload a real client actually sends, mirroring
 // ConversationDto.toFirestore (lib/repositories/firebase/dtos/conversation_dto.dart
 // :128-145) key for key, with lastMessage mirroring MessageDto.toMap
@@ -665,6 +707,9 @@ async function seedUpdateFixtures(): Promise<void> {
       isGroup: true,
       metadata: null,
     });
+    // BUT-1831: the direct conversation C11D/C11E use. DM_INITIATOR created
+    // it, so the stored array order is [DM_INITIATOR, DM_RECIPIENT].
+    await db.doc(`conversations/${DIRECT_CONVO}`).set(directConvoPayload());
   });
 }
 
@@ -756,6 +801,60 @@ test("conversations: a conversation whose stored metadata is null is still updat
       .firestore()
       .doc(`conversations/${NULL_METADATA_GROUP}`)
       .set(conversationDtoPayload(null), { merge: true })
+  );
+});
+
+// C11C: DENY — a re-stamped `createdAt`, the gap BUT-1831 named. C11 and C11B
+// hold FIXTURE_CREATED_AT on BOTH the fixture and the payload, so neither of
+// them moves the key; they remain sound for the metadata cases they describe.
+// The call is otherwise identical to C11B's, which is what makes this deny
+// attributable: C11B is its single-variable ALLOW control.
+test("conversations: a merge-set that re-stamps createdAt is denied, even when metadata round-trips untouched", async () => {
+  const ctx = env.authenticatedContext(STRANGER_UID);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`conversations/${NULL_METADATA_GROUP}`)
+      .set(
+        conversationDtoPayload(null, {
+          createdAt: new Date("2026-02-20T09:00:00.000Z"),
+        }),
+        { merge: true }
+      )
+  );
+});
+
+// C11D: DENY — the RECIPIENT's reversed participantIds, on a direct
+// conversation. `createdAt` is held at the fixture instant on purpose: this
+// test must fail for the array and nothing else, or it duplicates C11C.
+// Sent as the recipient, because that is the only party whose client produced
+// the opposite order.
+test("conversations: the recipient cannot send back participantIds in the opposite order", async () => {
+  const ctx = env.authenticatedContext(DM_RECIPIENT);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`conversations/${DIRECT_CONVO}`)
+      .set(
+        directConvoPayload({
+          participantIds: [DM_RECIPIENT, DM_INITIATOR],
+        }),
+        { merge: true }
+      )
+  );
+});
+
+// C11E: ALLOW — the control. Same document, same sender, same everything, with
+// the stored order kept. Without it C11D proves only that SOMETHING about a
+// recipient writing to a direct conversation is refused, which is the failure
+// mode the whole BUT-1831 gap was made of.
+test("conversations: the same recipient write SUCCEEDS when participantIds keeps the stored order", async () => {
+  const ctx = env.authenticatedContext(DM_RECIPIENT);
+  await assertSucceeds(
+    ctx
+      .firestore()
+      .doc(`conversations/${DIRECT_CONVO}`)
+      .set(directConvoPayload(), { merge: true })
   );
 });
 
@@ -1168,6 +1267,176 @@ test("messages: the same actor can create a message in a conversation they are i
       .firestore()
       .doc(`messages/m-send-ok2-${RUN}`)
       .set(messageBody(MSG_DIRECT, STRANGER_UID, new Date()))
+  );
+});
+
+// M10: DENY — a STRING where the timestamp belongs. Before BUT-1896 this
+// SUCCEEDED: `hasRequiredFields` pins the key, never the type, and nothing else
+// in the create rule looked at `sentAt`.
+//
+// It is not a cosmetic malformation. Firestore orders values by TYPE and puts
+// strings ABOVE every timestamp, so this row wins `orderBy('sentAt','desc')`
+// outright — and a DM's message query carries no range filter on the field
+// (only a group's memberSince cut-off adds one). One planted message therefore
+// pins itself to the top of both participants' history for good.
+//
+// M9 above is the ALLOW control that makes this deny attributable to the type:
+// same actor, same claims, same conversation, same body shape. Only `sentAt`
+// differs.
+test("messages: a string sentAt is refused (it would win orderBy desc)", async () => {
+  const ctx = env.authenticatedContext(STRANGER_UID, MSG_CLAIMS);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`messages/m-sentat-string-${RUN}`)
+      .set({
+        ...messageBody(MSG_DIRECT, STRANGER_UID, new Date()),
+        sentAt: "nope",
+      })
+  );
+});
+
+// M11: DENY — a NUMBER, the other shape a hand-rolled client reaches for.
+// `hasRequiredFields` accepts it too.
+//
+// NOT for the reason the first draft of this comment gave. It claimed the
+// client cannot parse an int and substitutes `clock.now()`; measured against
+// `SerializationUtils.parseDateTimeValue:104`, an int parses fine
+// (`DateTime.fromMillisecondsSinceEpoch`). That `clock.now()` fallback belongs
+// to the STRING and MISSING cases, i.e. M10 and M12 — the claim was
+// transplanted from the Cloud Function's comment, where it is about a missing
+// stamp and correct.
+//
+// The real cost of a number: it sorts BELOW every timestamp, so the message
+// buries itself out of the `limit(50)` window instead of pinning, and in a
+// group it makes the read rule's `sentAt >= memberSince` a cross-type
+// comparison.
+test("messages: a numeric sentAt is refused", async () => {
+  const ctx = env.authenticatedContext(STRANGER_UID, MSG_CLAIMS);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`messages/m-sentat-number-${RUN}`)
+      .set({
+        ...messageBody(MSG_DIRECT, STRANGER_UID, new Date()),
+        sentAt: 1755561600000,
+      })
+  );
+});
+
+// M12: DENY — the key missing entirely.
+//
+// This test pins BEHAVIOUR, and it does NOT guard the required-fields list.
+// The first draft claimed the opposite ("if someone trims that list this is
+// what goes red"), and the rules gate disproved it by running the mutation:
+// drop `'sentAt'` from `hasRequiredFields` and NOTHING reddens — not this test
+// and not M10, M11 or M13 either. (The first correction wrote a suite total
+// here, and it was stale by the time it landed, because M13 arrived in the
+// same commit. Name the tests that move; a total is a fact about the file's
+// length.) The new
+// type conjunct now masks the missing case — indexing an absent key is a CEL
+// evaluation error, which denies — so the older conjunct beside it has become
+// invisible to this test.
+//
+// Masking runs in both directions, which is the general lesson: a NEW conjunct
+// can hide an OLD one standing next to it. A future editor who trims the list,
+// sees green and believes M12 covered them is the specific harm.
+test("messages: a missing sentAt is refused", async () => {
+  const ctx = env.authenticatedContext(STRANGER_UID, MSG_CLAIMS);
+  const body = messageBody(MSG_DIRECT, STRANGER_UID, new Date());
+  delete body.sentAt;
+  await assertFails(
+    ctx.firestore().doc(`messages/m-sentat-missing-${RUN}`).set(body)
+  );
+});
+
+// M13: DENY — a MAP shaped like a serialised Timestamp,
+// `{seconds, nanoseconds}`.
+//
+// That is the RAW FIRESTORE map shape, which is what `parseDateTimeValue`'s
+// own comment calls it. It is not what a JS SDK emits: measured on the
+// installed SDK, `Timestamp.toJSON()` produces a three-key map with a `type`
+// field, and the Dart-flavoured variant uses `_seconds`/`_nanoseconds`. All
+// three are maps and `is timestamp` denies them identically, so coverage is
+// unaffected — but the first draft credited the wrong producer, which is the
+// same transplanted-rationale slip M11 records.
+//
+// The rules gate flagged this as the case a hand-rolled client reaches for
+// FIRST, and the worst pin shape of the three: maps sit at the very top of
+// Firestore's type order — above strings — and `parseDateTimeValue` parses
+// this one happily, so it renders as a perfectly normal message while sitting
+// permanently at the head of the list. The shipped conjunct closes it, because
+// `is timestamp` is false for a map; nothing pinned that until now.
+test("messages: a Timestamp-shaped MAP is refused", async () => {
+  const ctx = env.authenticatedContext(STRANGER_UID, MSG_CLAIMS);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`messages/m-sentat-map-${RUN}`)
+      .set({
+        ...messageBody(MSG_DIRECT, STRANGER_UID, new Date()),
+        sentAt: { seconds: 1755561600, nanoseconds: 0 },
+      })
+  );
+});
+
+// M14-M16: BUT-1903, the VALUE route. M10-M13 above all attack the TYPE, and
+// the conjunct that stops them says nothing about which instant a well-typed
+// Timestamp names. A future one is worse than the string M10 plants: it wins
+// the same `orderBy('sentAt','desc')` in a DM AND, being a real timestamp,
+// clears the group `memberSince` cut-off and the client's range filter that
+// the string tripped over. `shouldReplaceLastMessage` compares with `>=`, so it
+// also freezes the chat-list preview every participant sees without opening
+// the thread.
+//
+// The bound is ONE HOUR. It is a chosen ceiling, not a measured skew figure —
+// `Message` stamps the device clock, so a tighter number risks locking a real
+// user out of chat entirely.
+//
+// M15 and M16 build their fixtures from `Date.now()` AT TEST-RUN TIME, unlike
+// the fixed ISO constants most of this file uses. That is deliberate: they test
+// a ROLLING window against `request.time`, and a hardcoded date would silently
+// change what it means as real time passes. Do not "fix" them to constants.
+// M14 can be a literal, because 9999-12-31 denies whenever it runs.
+
+// M14: DENY — the ticket's own case, a timestamp nine thousand years out.
+test("messages: a far-future sentAt is refused", async () => {
+  const ctx = env.authenticatedContext(STRANGER_UID, MSG_CLAIMS);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`messages/m-sentat-year9999-${RUN}`)
+      .set(
+        messageBody(MSG_DIRECT, STRANGER_UID, new Date("9999-12-31T00:00:00Z"))
+      )
+  );
+});
+
+// M15: DENY — one minute PAST the bound. This is the case that makes the
+// conjunct's NUMBER load-bearing rather than its mere existence: M14 would
+// still fail under a bound of a century.
+test("messages: a sentAt just outside the one-hour bound is refused", async () => {
+  const ctx = env.authenticatedContext(STRANGER_UID, MSG_CLAIMS);
+  const justOutside = new Date(Date.now() + 61 * 60 * 1000);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`messages/m-sentat-outside-${RUN}`)
+      .set(messageBody(MSG_DIRECT, STRANGER_UID, justOutside))
+  );
+});
+
+// M16: ALLOW — inside the bound. Without it, tightening the bound to zero would
+// pass every other test in this block, and a device running a few minutes fast
+// would be locked out of chat with nothing red to show for it.
+test("messages: a sentAt inside the one-hour bound is allowed", async () => {
+  const ctx = env.authenticatedContext(STRANGER_UID, MSG_CLAIMS);
+  const justInside = new Date(Date.now() + 55 * 60 * 1000);
+  await assertSucceeds(
+    ctx
+      .firestore()
+      .doc(`messages/m-sentat-inside-${RUN}`)
+      .set(messageBody(MSG_DIRECT, STRANGER_UID, justInside))
   );
 });
 

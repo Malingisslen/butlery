@@ -16,29 +16,37 @@
 /// them — retyping is the mechanism that let all five through, including the
 /// hand-written fixture in the rules suite that was supposed to catch it.
 ///
-/// **It does not cover every allowlist.** `firestore.rules` carries twelve. Five
-/// of the six here are the ones an actual drift was found in: `isValidTagResult`,
-/// `counters`, `conversation_memberships`, `notification_history` and the
-/// deep-link `clicks`. The sixth, `participants`, never drifted and could not
-/// have — its `match` block is NEW in this same sprint, so those writes were
-/// failing on default-deny, not on a stale allowlist. It is guarded here because
-/// a brand-new allowlist is the likeliest of all to drift next.
+/// **It does not cover every allowlist.** `firestore.rules` carries thirteen.
+/// Five of the seven here are the ones an actual drift was found in:
+/// `isValidTagResult`, `counters`, `conversation_memberships`,
+/// `notification_history` and the deep-link `clicks`. The remaining two,
+/// `participants` and the poll vote, never drifted and could not have — each
+/// `match` block was new when it was added here, so those writes were failing on
+/// default-deny, not on a stale allowlist. Both are guarded because a brand-new
+/// allowlist is the likeliest of all to drift next.
+///
+/// The poll vote is also the census earning its keep: it shipped UNGUARDED on
+/// 2026-08-17 and nothing said so, because this test was already red over an
+/// unrelated count and a red test cannot demand a decision. Chronic red disarms
+/// the guard, which is the lesson, not a footnote.
 ///
 /// The other six were each checked against their writer on 2026-08-12 and none
 /// had drifted — but "checked once" is not "guarded", which is why the census
-/// test below fails the moment a thirteenth appears, forcing a decision instead
+/// test below fails the moment a fourteenth appears, forcing a decision instead
 /// of a silent omission.
 ///
-/// **Scope, stated honestly: THREE of the six key sets are hand-assembled**, not
-/// derived, because their writer builds its map inline in a repository with no
-/// model to call — the notification-history row, the deep-link click, and the
-/// share counters. The counters entry looks derived and is only half so: the
-/// field NAMES come from `UserCounterIncrements`, but WHICH keys the writer
-/// sends is read off `base_shared_content_repository.dart` and retyped, so
-/// adding a key to that `set({...})` leaves this guard green. Each of the three
-/// names its writer's file and line for that reason. Genuinely deriving the
-/// counters set means driving `incrementUnreadCounter` against a fake Firestore
-/// and reading the written document back; worth doing, not done here.
+/// **Scope, stated honestly: FOUR of the seven key sets are hand-assembled**,
+/// not derived, because their writer builds its map inline in a repository with
+/// no model to call — the notification-history row, the deep-link click, the
+/// poll vote, and the share counters. The counters entry looks derived and is
+/// only half so: the field NAMES come from `UserCounterIncrements`, but WHICH
+/// keys the writer sends is read off `base_shared_content_repository.dart` and
+/// retyped, so adding a key to that `set({...})` leaves this guard green. Every
+/// hand-assembled set names its writer's file AND the method that builds the
+/// payload, never a line number — a method name survives the edits a line
+/// number does not. Genuinely deriving the counters set means driving
+/// `incrementUnreadCounter` against a fake Firestore and reading the written
+/// document back; worth doing, not done here.
 ///
 /// **This guard checks ONE DIRECTION on purpose: every key the writer sends is
 /// allowed.** It does not assert the reverse. `sent` not in `allowed` is a fact
@@ -149,22 +157,47 @@ const _allowlists = <_Allowlist>[
     mustContain: 'notificationId',
     anchor: 'match /notification_history/{notificationId}',
     writer:
-        'lib/repositories/firebase/firebase_notification_history_repository.dart'
-        ':92 (create), plus the markNotificationDelivered / '
-        'markNotificationOpened updates below it',
+        'lib/repositories/firebase/firebase_notification_history_repository.dart '
+        'recordNotification (create), plus the markNotificationDelivered and '
+        'markNotificationOpened updates',
   ),
   _Allowlist(
     label: 'deep_links/{linkId}/clicks',
     mustContain: 'timestamp',
     anchor: 'match /clicks/{clickId}',
-    writer: 'lib/repositories/firebase/firebase_deeplink_repository.dart:203',
+    writer:
+        'lib/repositories/firebase/firebase_deeplink_repository.dart '
+        'trackUrlClick — the clicks .add after the counter update',
+  ),
+  // Anchored on the FUNCTION, not the `match /poll_votes/{voterId}` block: the
+  // block declares `pollMessage()`, `inPollConversation()` and `pollIsOpen()`
+  // above `isValidVote()`, and a forward-scanning extractor anchored on the
+  // match line would bind to whichever of them acquires a `hasOnly` first.
+  //
+  // Both probes measured, because a guard nobody reddened is a hypothesis:
+  // dropping `votedAt` from the rules list reddens the comparison naming the
+  // missing key, and dropping `optionIds` reddens the sentinel instead, whose
+  // message says "pointing at the WRONG list". That second message is the
+  // wrong diagnosis for a real deletion — true of every sentinel in this file,
+  // not of this entry alone. It still prints the extracted list, so a reader
+  // sees what happened; a better instrument would be a separate assertion, not
+  // a sentinel chosen to dodge the overlap.
+  _Allowlist(
+    label: 'messages/{messageId}/poll_votes',
+    mustContain: 'optionIds',
+    anchor: 'function isValidVote',
+    writer:
+        'lib/repositories/firebase/modules/message_mutation_module.dart '
+        'votePoll — the transaction.set at the end of the method (named, not '
+        'line-numbered: a method name survives the edits a line number does '
+        'not)',
   ),
 ];
 
 /// The keys each writer really sends.
 ///
-/// Derived by calling the model where one exists. The two hand-built maps carry
-/// their writer's line in [_allowlists] instead.
+/// Derived by calling the model where one exists. The hand-assembled sets carry
+/// their writer's file and method in [_allowlists] instead.
 Map<String, Set<String>> _writtenKeys() => {
   // WIDEST set, not a convenient one. `TagResult.empty()` leaves
   // `configRevision` and `errorReason` null, and `toFirestore` emits both only
@@ -272,6 +305,17 @@ Map<String, Set<String>> _writtenKeys() => {
     'expireAt',
   },
   'deep_links/{linkId}/clicks': {'userId', 'timestamp'},
+  // `votePoll` writes the row with a bare `set` — no merge — so the keys the
+  // rule sees are exactly these three and nothing widens them elsewhere. The
+  // other branch of the method DELETES the row when the last option is
+  // deselected, and a delete carries no `request.resource.data`, so it cannot
+  // contribute a key. `voterId` duplicates the document id deliberately: the
+  // Art. 17 sweep queries by field, and `hasOnly` cannot see a document id.
+  'messages/{messageId}/poll_votes': {
+    'voterId',
+    'optionIds',
+    'votedAt',
+  },
 };
 
 /// Pulls the first `hasOnly([...])` list appearing after [anchor].
@@ -328,7 +372,7 @@ class _Uncovered {
 /// allowlist and add another in the same commit and the total is unchanged, so
 /// the guard stays green over a list nobody has ever compared.
 ///
-/// Two earlier versions of this docstring were wrong about its own strength.
+/// Three earlier versions of this docstring were wrong about its own strength.
 /// The first claimed NAMING the six was enough to survive a swap; names never
 /// resolved against the file buy diagnosability, not detection. The second added
 /// the anchor and claimed that closed it; it caught a block that DISAPPEARS and
@@ -398,26 +442,30 @@ void main() {
   });
 
   test('every keys().hasOnly allowlist is guarded here or knowingly excluded', () {
-    // The census. Without it, a thirteenth allowlist lands unguarded and
+    // The census. Without it, a fourteenth allowlist lands unguarded and
     // nothing says so — which is precisely how the five drifts of 2026-08-12
     // happened, one silent omission at a time.
-    // Scope: `keys().hasOnly` only. Of the 30 `hasOnly(` calls in the file, 12
-    // are this form; 14 are `affectedKeys().hasOnly` update restrictions, one
-    // is `values().hasOnly`, two are set differences and one sits in a comment.
+    // Scope: `keys().hasOnly` only. Of the 34 `hasOnly(` calls in the file, 13
+    // are this form; 16 are `affectedKeys().hasOnly` update restrictions, one
+    // is `values().hasOnly`, two are set differences and two sit in comments.
     // The update restrictions deny just as silently, but they pin a DIFF, not a
     // payload, so a writer-derived key set is the wrong instrument for them.
     // They want a second guard, not a wider count here.
+    // The two newest `affectedKeys` restrictions — the admin group rename and
+    // the message read/delivery receipts — moved this total without touching
+    // anything the per-entry comparisons below can see. That is the census
+    // doing its job: a number that only ever moves for a reason.
     // Assert the FULL classification, not just this guard's slice. A rule
     // written as `let k = data.keys(); … k.hasOnly([...])` would slip past
-    // `_allowlistCall` with the count still 12; it cannot slip past the total.
+    // `_allowlistCall` with the count still 13; it cannot slip past the total.
     expect(
       'hasOnly('.allMatches(rules).length,
-      29,
+      32,
       reason:
           'the `hasOnly(` population changed. Reclassify before touching the '
-          'numbers below: 12 keys().hasOnly + 14 affectedKeys().hasOnly + 1 '
-          'values().hasOnly + 2 set differences. (29, not 30: the file also '
-          'carries one inside a COMMENT, and this text is comment-stripped — '
+          'numbers below: 13 keys().hasOnly + 16 affectedKeys().hasOnly + 1 '
+          'values().hasOnly + 2 set differences. (32, not 34: the file also '
+          'carries two inside COMMENTS, and this text is comment-stripped — '
           'which is the whole reason a commented-out allowlist cannot satisfy '
           'anything here.) If the new one is a keys() allowlist written in a '
           'form the regex cannot see, this is the only assertion that says so.',

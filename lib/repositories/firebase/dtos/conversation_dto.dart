@@ -162,7 +162,9 @@ class ConversationDto {
       // null keys is still a behaviour change on a write path rules govern —
       // but do not repeat the old disjunct argument, and do not "restore" the
       // `||` hatches to make it true again. Pinned by
-      // message_mutation_module_test.dart.
+      // conversation_dto_test.dart — BUT-1831 deleted the assertions in
+      // message_mutation_module_test.dart along with the fallback writer they
+      // sat inside.
       'metadata': conversation.metadata,
       // NOT written here, and that is deliberate: `groupId` and `memberSince`
       // are server-owned (BUT-1838), and the conversations UPDATE rule denies

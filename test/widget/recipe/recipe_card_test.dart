@@ -2,9 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/widgets/recipe/recipe_card.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/tagging/tag_result.dart';
+import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/repositories/interfaces/ratings_repository.dart';
+import 'package:butlery/widgets/tagging/allergen_status_badge.dart';
+import 'package:butlery/widgets/tagging/dietary_status_badge.dart';
+import 'package:butlery/widgets/tagging/tag_result_display.dart';
 import 'package:butlery/widgets/common/icons/adaptive_icon.dart';
 import 'package:butlery/widgets/common/illustrations/vegetable_illustration.dart';
+import '../../infrastructure/builders/recipe_builder.dart';
 import '../../infrastructure/factories/recipe_factory.dart';
 import '../../infrastructure/helpers/widget_test_app.dart';
 import '../../test_support/base_unit_test.dart';
@@ -200,11 +206,20 @@ void main() {
         await tester.pumpWidget(
           createLocalizedTestApp(
             wrapInScaffold: false,
-            child: SizedBox(
-              width: 200,
-              child: RecipeCard(
-                recipe: testRecipe,
-                style: RecipeCardStyle.grid,
+            // topLeft, so the card is given a LOOSE height and takes the one
+            // its content needs — which is how the grid lays it out
+            // (BUT-1911). A tight box would measure the card's willingness to
+            // be squeezed, and it is no longer willing: the recipe photo used
+            // to be the slack and gave up its whole height before anything
+            // complained.
+            child: Align(
+              alignment: Alignment.topLeft,
+              child: SizedBox(
+                width: 200,
+                child: RecipeCard(
+                  recipe: testRecipe,
+                  style: RecipeCardStyle.grid,
+                ),
               ),
             ),
           ),
@@ -223,11 +238,20 @@ void main() {
         await tester.pumpWidget(
           createLocalizedTestApp(
             wrapInScaffold: false,
-            child: SizedBox(
-              width: 200,
-              child: RecipeCard(
-                recipe: testRecipe,
-                style: RecipeCardStyle.grid,
+            // topLeft, so the card is given a LOOSE height and takes the one
+            // its content needs — which is how the grid lays it out
+            // (BUT-1911). A tight box would measure the card's willingness to
+            // be squeezed, and it is no longer willing: the recipe photo used
+            // to be the slack and gave up its whole height before anything
+            // complained.
+            child: Align(
+              alignment: Alignment.topLeft,
+              child: SizedBox(
+                width: 200,
+                child: RecipeCard(
+                  recipe: testRecipe,
+                  style: RecipeCardStyle.grid,
+                ),
               ),
             ),
           ),
@@ -1013,6 +1037,283 @@ void main() {
           expect(familyText.style?.color, cs.onSurfaceVariant);
         },
       );
+    });
+
+    // BUT-1869. A user who unticks every allergen reaches the card with an
+    // EMPTY set, not null. CompactAllergenRow then draws SizedBox.shrink(),
+    // but the card had already emitted the spacer above it — a dead gap on
+    // every card. Null keeps meaning "no explicit prefs", which the row fills
+    // with its own four default allergens, so that case must still render.
+    group('Badge rows and empty preference sets', () {
+      Recipe taggedRecipe() =>
+          (RecipeBuilder()
+                ..id = 'tagged_recipe'
+                ..title = 'Taggad rätt'
+                ..imageUrls = []
+                ..withTagResult(
+                  TagResult(
+                    tags: const {},
+                    allergenStatus: const {
+                      'gluten': TriState.free,
+                      'mjölk': TriState.contains,
+                    },
+                    dietaryStatus: const {'vegansk': TriState.free},
+                    coverage: 1.0,
+                    generatedAt: DateTime(2026, 1, 1),
+                    generatorVersion: '1.0',
+                    hasCoverageAnomaly: false,
+                  ),
+                ))
+              .build();
+
+      /// A recipe the tagger settled NOTHING about: every allergen lookup
+      /// returns UNKNOWN, and UNKNOWN is not drawn, so `badgesFor` comes back
+      /// empty. That is what makes it the right fixture for the two marker tests that use it —
+      /// with nothing to draw, `showAllergenBadges` is the only conjunct left
+      /// that can decide whether the marker appears.
+      Recipe unassessedRecipe() =>
+          (RecipeBuilder()
+                ..id = 'unassessed_recipe'
+                ..title = 'Obedömd rätt'
+                ..imageUrls = []
+                ..withTagResult(
+                  TagResult(
+                    tags: const {},
+                    allergenStatus: const {},
+                    dietaryStatus: const {},
+                    coverage: 0.0,
+                    generatedAt: DateTime(2026, 1, 1),
+                    generatorVersion: '1.0',
+                    hasCoverageAnomaly: false,
+                  ),
+                ))
+              .build();
+
+      Future<void> pumpCard(
+        WidgetTester tester, {
+        Set<String>? allergenPrefs,
+        Set<String>? dietaryPrefs,
+      }) async {
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            wrapInScaffold: false,
+            child: Scaffold(
+              body: RecipeCard(
+                recipe: taggedRecipe(),
+                style: RecipeCardStyle.detailed,
+                showAllergenBadges: true,
+                userAllergenPrefs: allergenPrefs,
+                showDietaryBadges: true,
+                userDietaryPrefs: dietaryPrefs,
+              ),
+            ),
+          ),
+        );
+      }
+
+      testWidgets('an empty allergen set drops the row and its spacer', (
+        tester,
+      ) async {
+        await pumpCard(tester, allergenPrefs: const <String>{});
+
+        expect(find.byType(CompactAllergenRow), findsNothing);
+      });
+
+      testWidgets('an empty dietary set drops the row and its spacer', (
+        tester,
+      ) async {
+        await pumpCard(tester, dietaryPrefs: const <String>{});
+
+        expect(find.byType(CompactDietaryRow), findsNothing);
+      });
+
+      testWidgets('null prefs still render both rows from their defaults', (
+        tester,
+      ) async {
+        await pumpCard(tester);
+
+        // Not just present — actually drawing, so the guard cannot be
+        // "fixed" by suppressing the null case too.
+        expect(find.byType(CompactAllergenRow), findsOneWidget);
+        expect(find.byType(AllergenStatusBadge), findsWidgets);
+        expect(find.byType(CompactDietaryRow), findsOneWidget);
+        expect(find.byType(DietaryStatusBadge), findsOneWidget);
+        // The ONLY fixture in any suite where badges are actually drawn AND
+        // the marker is asserted. Without this line the `_allergenBadges.isEmpty`
+        // conjunct is deletable-green: remove it and every fully assessed card
+        // announces "Allergener ej bedömda" beside its own green FREE badges —
+        // a false statement to an allergy user, and the exact mirror of the bug
+        // this round fixed. Nothing else can see that conjunct.
+        expect(
+          find.text('Allergener ej bedömda'),
+          findsNothing,
+          reason: 'the marker must never sit beside a verdict it contradicts',
+        );
+      });
+
+      // Malin's call, 2026-08-18, and the reason the gate above asks the ROW
+      // rather than the preference set.
+      //
+      // An untagged or badly-tagged recipe is the common case, not the edge
+      // one: every allergen the tagger could not settle returns UNKNOWN, and
+      // UNKNOWN is no longer drawn. So a non-empty preference set is NO LONGER
+      // a guarantee that anything appears — which is exactly the assumption
+      // the first version of BUT-1869's guard was built on.
+      //
+      // Same story on the dietary side without any of that: only FREE diets
+      // get a badge, so an ordinary meat recipe against {vegetarisk, vegansk}
+      // draws nothing while holding a perfectly non-empty set.
+      testWidgets(
+        'a recipe with nothing settled drops both rows, despite full prefs',
+        (tester) async {
+          final untagged =
+              (RecipeBuilder()
+                    ..id = 'untagged_recipe'
+                    ..title = 'Otaggad rätt'
+                    ..imageUrls = []
+                    ..withTagResult(
+                      TagResult(
+                        // Nothing settled: every lookup returns UNKNOWN, and the
+                        // one diet present is CONTAINS rather than FREE.
+                        tags: const {},
+                        allergenStatus: const {},
+                        dietaryStatus: const {'vegansk': TriState.contains},
+                        coverage: 0.0,
+                        generatedAt: DateTime(2026, 1, 1),
+                        generatorVersion: '1.0',
+                        hasCoverageAnomaly: false,
+                      ),
+                    ))
+                  .build();
+
+          await tester.pumpWidget(
+            createLocalizedTestApp(
+              wrapInScaffold: false,
+              child: Scaffold(
+                body: RecipeCard(
+                  recipe: untagged,
+                  style: RecipeCardStyle.detailed,
+                  showAllergenBadges: true,
+                  userAllergenPrefs: const {'gluten', 'mjölk'},
+                  showDietaryBadges: true,
+                  userDietaryPrefs: const {'vegansk'},
+                ),
+              ),
+            ),
+          );
+
+          expect(
+            find.byType(CompactAllergenRow),
+            findsNothing,
+            reason:
+                'the prefs are non-empty, so the OLD guard would have let '
+                'the spacer and an empty row through — that is the dead gap',
+          );
+          expect(
+            find.byType(CompactDietaryRow),
+            findsNothing,
+            reason:
+                'CONTAINS is not FREE, so the dietary row has nothing to '
+                'draw even though its preference set is full',
+          );
+          expect(find.byType(AllergenStatusBadge), findsNothing);
+          expect(find.byType(DietaryStatusBadge), findsNothing);
+        },
+      );
+
+      // Malin's call, 2026-08-18. Silence on a card meant four different
+      // things, one of them "the analysis failed", on a list where most cards
+      // show green FREE badges — so silence read as "nothing flagged".
+      testWidgets('a card with nothing to say explains itself', (tester) async {
+        final untagged = unassessedRecipe();
+
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            wrapInScaffold: false,
+            child: Scaffold(
+              body: RecipeCard(
+                recipe: untagged,
+                style: RecipeCardStyle.detailed,
+                showAllergenBadges: true,
+                userAllergenPrefs: const {'gluten', 'mjölk'},
+              ),
+            ),
+          ),
+        );
+
+        expect(find.byType(AllergenStatusBadge), findsNothing);
+        expect(
+          find.text('Allergener ej bedömda'),
+          findsOneWidget,
+          reason:
+              'the card must say it has nothing to report, rather than '
+              'letting an empty row be read as "nothing found"',
+        );
+      });
+
+      // The state two independent gates caught, and the reason the marker has a
+      // conjunct that looks redundant. An EMPTY tracked set is not "no opinion"
+      // — it is the user having untracked every allergen, which is the same
+      // choice as switching the badges off. Without the guard this fired on
+      // EVERY card forever, announcing "Allergener ej bedömda" over fully
+      // assessed recipes, because `badgesFor` checks an empty candidate set and
+      // returns [] for everything while `ContentCard` still derives the flag
+      // true from the set being non-null. Reachable straight from onboarding:
+      // "vegan, no allergies" persists {} with the card setting left on.
+      testWidgets('tracking no allergens means no marker either', (
+        tester,
+      ) async {
+        await pumpCard(tester, allergenPrefs: const <String>{});
+
+        expect(
+          find.text('Allergener ej bedömda'),
+          findsNothing,
+          reason:
+              'an empty tracked set is a choice, not a gap — and this '
+              'fixture IS fully assessed, so the claim would be false too',
+        );
+        expect(find.byType(AllergenStatusBadge), findsNothing);
+      });
+
+      // The other direction, and the one that keeps the marker honest: a user
+      // who turned badges OFF chose the silence and must not be nagged.
+      //
+      // The fixture has to be the one with NOTHING to draw. Run this on
+      // `taggedRecipe()` and it proves the wrong half of the condition: those
+      // badges are non-empty, so `_allergenBadges.isEmpty` already withholds
+      // the marker and deleting the `showAllergenBadges &&` conjunct leaves
+      // this green. On `unassessedRecipe()` that conjunct is the only thing
+      // standing between the user and a marker they opted out of.
+      testWidgets('badges turned off means no marker either', (tester) async {
+        final recipe = unassessedRecipe();
+        expect(
+          CompactAllergenRow.badgesFor(recipe.tagResult!, const {
+            'gluten',
+            'mjölk',
+          }),
+          isEmpty,
+          reason:
+              'premise: with badges to draw, the assertions below would pass '
+              'for a reason that has nothing to do with the flag',
+        );
+
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            wrapInScaffold: false,
+            child: Scaffold(
+              body: RecipeCard(
+                recipe: recipe,
+                style: RecipeCardStyle.detailed,
+                showAllergenBadges: false,
+                userAllergenPrefs: const {'gluten', 'mjölk'},
+              ),
+            ),
+          ),
+        );
+
+        expect(find.text('Allergener ej bedömda'), findsNothing);
+        expect(find.byType(AllergenStatusBadge), findsNothing);
+      });
     });
   });
 }

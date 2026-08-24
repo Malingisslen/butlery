@@ -63,6 +63,16 @@ ExtractionMeta _meta() => const ExtractionMeta(
   confidence: 0.95,
 );
 
+/// A `cachedAt` for the tests that assert PRESENCE rather than age.
+///
+/// It must be derived from `clock.now()`, never written as a literal date. Six
+/// of these seeds carried `DateTime.utc(2026, 5, 20)` against the default
+/// 90-day TTL, so on 2026-08-18 the entries expired for real and the six
+/// assertions started reading `null` — a red suite with no commit behind it.
+/// The expiry-boundary tests are the ones that pin an absolute instant, and
+/// they do it inside `withClock` so the arithmetic is closed.
+DateTime _freshlyCached() => clock.now().subtract(const Duration(days: 1));
+
 /// Write a `CacheEntry`-shaped document directly to fake firestore so we
 /// can control `cachedAt` precisely — production code's `toFirestore()`
 /// uses `serverTimestamp()`, which the fake resolves opaquely. For
@@ -179,7 +189,7 @@ void main() {
         urlHash: hash,
         contentFingerprint: 'abc123',
         domain: 'example.com',
-        cachedAt: DateTime.utc(2026, 5, 20),
+        cachedAt: _freshlyCached(),
       );
 
       final result = await cache.findByUrl('https://example.com/recipe/1');
@@ -204,7 +214,7 @@ void main() {
         docId: hash,
         urlHash: hash,
         contentFingerprint: 'abc123',
-        cachedAt: DateTime.utc(2026, 5, 20),
+        cachedAt: _freshlyCached(),
       );
 
       final variants = <String>[
@@ -248,7 +258,7 @@ void main() {
         docId: hashA,
         urlHash: hashA,
         contentFingerprint: 'order-test',
-        cachedAt: DateTime.utc(2026, 5, 20),
+        cachedAt: _freshlyCached(),
       );
 
       final hit = await cache.findByUrl(b);
@@ -351,7 +361,7 @@ void main() {
         urlHash: 'irrelevant',
         contentFingerprint: 'fp-match',
         domain: 'example.com',
-        cachedAt: DateTime.utc(2026, 5, 20),
+        cachedAt: _freshlyCached(),
       );
 
       final result = await cache.findByFingerprint('fp-match');
@@ -399,7 +409,7 @@ void main() {
         docId: 'doc-content',
         urlHash: 'h',
         contentFingerprint: fp!,
-        cachedAt: DateTime.utc(2026, 5, 20),
+        cachedAt: _freshlyCached(),
       );
 
       final result = await cache.findByContent(
@@ -845,7 +855,7 @@ void main() {
             'instructions': ['y'],
           },
           // extractionMeta intentionally omitted
-          'cachedAt': Timestamp.fromDate(DateTime.utc(2026, 5, 20)),
+          'cachedAt': Timestamp.fromDate(_freshlyCached()),
           'ttlDays': 90,
           'accessCount': 1,
         });

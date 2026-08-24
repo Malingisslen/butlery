@@ -685,55 +685,34 @@ class RecipeSharingManager {
       // Ensure owner is included in sharedToUserIds along with members
       final allUserIds = {currentUserId, ...memberIds}.toList();
 
+      // BUT-1812, Malin's decision 2026-08-16: every share writes its OWN
+      // auto-id document, exactly like `SocialMenuOperations.shareMenuWithFriends`
+      // and `ShoppingSocialShareModule`. This writer used to key the row on the
+      // recipeId, which made a second share of the same recipe an UPDATE — and
+      // an update of whoever's row already sat at that id.
+      //
+      // Two failures came out of that, and only the second one is fixable by a
+      // payload. The first was ours: `sharedAt` was stamped unconditionally, a
+      // resolved serverTimestamp never equals the stored one, and
+      // `cannotModify([..., 'sharedAt'])` refused the whole write. The second
+      // could not be worked around at all — if the row belonged to ANOTHER user,
+      // `allow get` and `allow update` are both false for us by design, so no
+      // payload and no retry could add our recipients to `sharedToUserIds`, and
+      // they got neither the read grant nor their Art. 15 row.
+      //
+      // With an auto-id there is no shared slot to collide over, so the probe
+      // that guessed create-vs-update is gone with it (it had its own denial
+      // mode: `allow get` dereferences `resource.data` and `resource` is null
+      // for a document that does not exist, so the FIRST share denied too). This
+      // is always a create, and `sharedAt` is always stamped.
+      //
+      // The alternative Malin was shown and declined was widening `allow update`
+      // to let anyone already in `sharedToUserIds` extend that list. It fixes
+      // re-sharing by making the recipient list writable by its own members,
+      // which is a strictly worse trade than one row per share.
       final sharedContentRef = _firestoreRepository
           .collection(FirestoreCollections.sharedContent)
-          .doc(recipeId);
-      // Re-sharing the same recipe is an UPDATE, and `firestore.rules` :733
-      // guards it with `cannotModify([... , 'sharedAt'])`. A resolved
-      // serverTimestamp NEVER equals the stored one, so stamping it
-      // unconditionally put `sharedAt` in `affectedKeys()` and the rules engine
-      // refused the WHOLE write — silently, because the catch below only warns.
-      // Every share after the first therefore added nobody to
-      // `sharedToUserIds`, which is exactly the field the recipient's `allow
-      // list` grant and their Art. 15 bundle depend on. Create-only stamping is
-      // also the correct semantics: `sharedAt` is when the recipe was first
-      // shared, and the create rule's `hasRequiredFields` still gets it.
-      //
-      // The probe must fail OPEN toward "new". The `allow get` branch in
-      // `firestore.rules` (:724) dereferences `resource.data.sharedByUserId`
-      // at :725, and on a document that does not exist `resource` is null — so the very FIRST share of a recipe gets
-      // PERMISSION_DENIED here, the catch below swallows it, and the row is never
-      // created. That is the exact failure create-only stamping exists to prevent,
-      // just moved one line up. `fake_cloud_firestore` evaluates no rules, so no
-      // unit test can PROVOKE the denial — but the catch is reachable by
-      // injecting one through the constructor's `firestoreRepository` seam, and
-      // `recipe_sharing_manager_test.dart` does exactly that.
-      //
-      // Do NOT "fix" this in the rules by adding `resource == null` to `allow get`:
-      // today not-found and not-yours are indistinguishable, and separating them
-      // would turn shared_content into an existence oracle over recipeIds.
-      //
-      // A DENIED probe is not always the first-share case, and the other case
-      // cannot be rescued here. `allow get` (:724) passes for the sharer, a
-      // shared member, or anyone in `sharedToUserIds`; `allow update` (:733)
-      // passes only for the sharer or a shared member. So a denied read PROVES
-      // both update predicates are false — if the document already exists and
-      // belongs to someone else, no payload we send can be written, with or
-      // without `sharedAt`. Re-sharing a recipe another user already wrote to
-      // `shared_content` therefore does not add our recipients to
-      // `sharedToUserIds`, and they get neither the read grant nor the Art. 15
-      // row. That is BUT-1812, not something a retry can paper over.
-      var isNew = true;
-      try {
-        isNew = !(await sharedContentRef.get()).exists;
-      } on FirebaseException catch (e) {
-        if (e.code != 'permission-denied') rethrow;
-        AppLogger.debug(
-          'shared_content probe denied for $recipeId — treating as new; if the '
-          'document exists and is another user\'s, the write below cannot '
-          'succeed under any payload (BUT-1812)',
-        );
-      }
+          .doc();
 
       final cleanText = sanitizeSharedRecipeText(
         recipeTitle,
@@ -781,12 +760,16 @@ class RecipeSharingManager {
             ? recipeData.imageUrls.first
             : null,
         'mealType': recipeData.mealType,
+        // Always stamped, never conditionally: this row IS this share, so
+        // `sharedAt` is its own moment and there is no earlier value to
+        // preserve. It is also required by `allow create`.
+        'sharedAt': FieldValue.serverTimestamp(),
       };
-      if (isNew) {
-        payload['sharedAt'] = FieldValue.serverTimestamp();
-      }
 
-      await sharedContentRef.set(payload, SetOptions(merge: true));
+      // A plain create — no `SetOptions(merge: true)`. Merge existed to fold
+      // into a pre-existing row at the recipeId slot; against a fresh auto-id
+      // it would only hide a bug, since there is nothing to merge with.
+      await sharedContentRef.set(payload);
 
       AppLogger.debug(
         '✅ Recipe written to shared_content collection for group discovery',

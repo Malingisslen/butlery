@@ -40,8 +40,17 @@ void main() {
     butleryGolden(
       'recipe card grid style matches golden',
       file: 'goldens/recipe_card_grid.png',
-      // Grid cards flow inside a GridView in production and aren't height-
-      // constrained, so use intrinsic height to avoid RenderFlex overflow.
+      // No height: a grid card sizes to its own content since BUT-1911, and
+      // the row it sits in takes the height of its tallest card. Pinning one
+      // here would measure a card the screen never draws.
+      //
+      // The pixels were re-pinned in that commit. Note for whoever reads a
+      // failure here: this suite cannot currently report one — `butleryGolden`
+      // silences `FlutterError.onError` immediately before `expectLater`, and
+      // the comparator throws through that, so a mismatch writes
+      // `failures/*_{master,test}Image.png` and still reports a pass. Filed
+      // separately as BUT-1931; the silencing is unconditional, so it affects
+      // every golden that goes through `butleryGolden`, not just this one.
       width: 180,
       height: null,
       target: find.byType(ContentCard),

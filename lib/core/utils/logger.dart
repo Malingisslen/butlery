@@ -40,6 +40,8 @@
 
 import 'dart:async';
 import 'dart:developer' as developer;
+
+import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:flutter/foundation.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:butlery/core/utils/correlation_id.dart';
@@ -204,12 +206,100 @@ class AppLogger {
   }
 
   /// Redact Firebase UIDs and other PII before sending to Crashlytics.
-  static String _sanitizeForCrashlytics(String message) {
-    return message.replaceAllMapped(
-      RegExp(r'\b[a-zA-Z0-9]{20,28}\b'),
-      (m) => '${m.group(0)!.substring(0, 4)}***',
-    );
-  }
+  ///
+  /// BUT-1872: a `direct_<a>_<b>` id — the id a direct conversation derives from
+  /// its two members — once reached Crashlytics with BOTH uids in clear text,
+  /// while a bare uid one word away was correctly masked. Measured before the
+  /// fix, not reasoned:
+  ///
+  ///     'conversation aBcDeFgHiJkLmNoPqRsTuVwXyZ12'      -> 'conversation aBcD***'
+  ///     'conversation direct_aBcDeF..._zZyYxX...'        -> unchanged
+  ///
+  /// It now reads `conversation direct_#<12 hex>`.
+  ///
+  /// The rules themselves, and the reason their ORDER is load-bearing, live in
+  /// [LogSanitizer.maskIdentifiers] — this function is a delegate. Stated there
+  /// rather than restated here: two copies of one decision is how they drift,
+  /// and the sentence that used to sit at this spot outlived the rule it
+  /// described (BUT-1897).
+  ///
+  /// Hashed rather than blanked because these are ERROR logs: telling "one
+  /// conversation failed nine times" from "nine conversations failed once" is
+  /// why the id is in the message at all. The hash itself is NOT computed
+  /// here — it delegates to `LogSanitizer.maskConversationId`, so the
+  /// `direct_#` format has ONE definition in Dart, and that one mirrors the
+  /// Cloud Functions `logSafeConversationId`.
+  ///
+  /// This is the chokepoint for the MESSAGE, and only for the message. Every
+  /// sink IN THIS CLASS that carries a message off the device runs it through
+  /// here, so a call site added tomorrow has its message covered whether or not
+  /// its author remembers. (`WebErrorReporter` is a separate off-device sink
+  /// and does not come through here; it applies the same `LogSanitizer` rule by
+  /// its own route.)
+  /// Per-call-site masking is still worth doing: it is what makes the LOCAL
+  /// `developer.log` output safe, and that one never passes through here.
+  ///
+  /// Two other things leave the device without touching this function, and
+  /// neither is a message: `setUserIdentifier` and `setCrashlyticsKey` send
+  /// their values raw. Both have zero callers repo-wide today.
+  ///
+  /// What it does NOT cover: the raw `error` OBJECT handed to
+  /// `FirebaseCrashlytics.recordError`. It is not sanitized here because the
+  /// exception classes mask at BUILD time instead — see below — and because the
+  /// label's position is what carries grouping.
+  ///
+  /// An earlier version of this paragraph gave the WRONG REASON: it claimed
+  /// sanitizing here would "group every report under type `String` and lose the
+  /// stack association". Both clauses are false against the locked
+  /// `firebase_crashlytics`, whose `recordError` already sends
+  /// `exception.toString()` and takes the stack as a separate argument, so
+  /// nothing collapses to `String` and nothing loses its stack.
+  ///
+  /// The real cost is the LABEL. Masking a second time here runs
+  /// [LogSanitizer.maskIdentifiers] over a string whose label the class
+  /// deliberately built OUTSIDE its own masked span — putting it back inside
+  /// one. Most of these class names fall in the masker's window, so those
+  /// reports would arrive truncated — `Perm***: …`. That is exactly the
+  /// regression the web sink had to grow `_scrubThrownHead` to avoid, because
+  /// it has no build-time alternative.
+  ///
+  /// OPEN RESIDUAL on the NATIVE path: any exception whose CLASS the masker
+  /// does not own. That is every third-party one — build-time masking cannot
+  /// reach an object this app does not construct — and, just as live, every
+  /// app-owned class outside `core/exceptions/permission_exceptions.dart` that
+  /// never grew a mask. `_logToCrashlytics` hands `error` to `recordError`
+  /// untouched, so on native those leave the device raw today.
+  ///
+  /// "Third-party" was the wrong boundary and is worth correcting, because the
+  /// app-owned half is both reachable and the cheaper fix. BUT-1907 carries the
+  /// architecture-test arm that finds the rest.
+  ///
+  /// On WEB none of this applies, for a reason unrelated to any of it:
+  /// `_safeCrashlytics` returns on `kIsWeb`, so this route is simply dead
+  /// there. `WebErrorReporter` is the web sink, and `AppLogger` is not among
+  /// its feeders — those are the uncaught handlers and, on web,
+  /// `AppMonitoringService.recordError`. Its `_scrubThrownHead` is what
+  /// a sink-level mask has to look like: it had to buy a label exemption to
+  /// afford one. Said explicitly because an earlier version called the residual
+  /// uncovered everywhere, which would invite adding a plain mask here and
+  /// re-buying that regression.
+  ///
+  /// Do not read the paragraph below as closing the native case.
+  ///
+  /// That object is covered instead where it is BUILT. The exception classes in
+  /// `core/exceptions/permission_exceptions.dart` mask inside their own
+  /// `toString()` using the same [LogSanitizer.maskIdentifiers] rule this
+  /// function now delegates to — which reaches every throw site of those classes
+  /// at once, and
+  /// also reaches the paths that never come through here at all: an UNCAUGHT
+  /// exception goes straight to `recordError` from `main.dart`, and on web
+  /// Crashlytics is skipped entirely. The type Crashlytics groups on survives
+  /// because those classes build their label OUTSIDE their masked span — not
+  /// because the object is passed through, since `recordError` sends
+  /// `exception.toString()` and the object never crosses. Still grep `resourceId:` before putting an
+  /// id into an exception the masker does not own (BUT-1897).
+  static String _sanitizeForCrashlytics(String message) =>
+      LogSanitizer.maskIdentifiers(message);
 
   /// Test-only wrapper around `_sanitizeForCrashlytics` so logger_test.dart
   /// can pin the PII-redaction contract without a Crashlytics channel mock.
@@ -268,11 +358,20 @@ class AppLogger {
       // Use Future.microtask to avoid blocking the error logging
       Future.microtask(() async {
         try {
+          // Sanitized, like the Crashlytics path. This sink is a second way
+          // off the device and took the message raw.
+          //
+          // It is DORMANT and always has been: nothing in the repo calls
+          // `configureAnalytics`, so `_analyticsCallback` is null on every
+          // platform and the guard above returns first. Nothing has actually
+          // left this way — sanitizing now means wiring it later cannot
+          // reopen the hole. It matters most on web, where Crashlytics is
+          // skipped entirely and this would be the only route (BUT-1872).
           await _analyticsCallback!(
             name ?? 'app_error',
             error?.runtimeType.toString() ?? 'unknown',
-            message,
-            error?.toString(),
+            _sanitizeForCrashlytics(message),
+            error == null ? null : _sanitizeForCrashlytics(error.toString()),
           );
         } catch (e) {
           // Silently fail if analytics callback throws

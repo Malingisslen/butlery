@@ -1,6 +1,6 @@
 /// Behavioral widget tests for AddPantryItemSheet.
 ///
-/// Four contracts, added by four tickets:
+/// Contracts added by successive tickets:
 ///   - BUT-1344 COOK-07 — the *routing decision* _submit() makes: an
 ///     autocomplete pick goes to addItemFromIngredient, a raw name to
 ///     addItemFromText, and edit mode to updateItem. Both add branches write
@@ -26,7 +26,7 @@
 ///     wildcard `unit` matcher, which is all they had before, cannot tell a
 ///     forwarded selection from a hardcoded default.
 ///
-/// None of these are structural tests. Two disclosed reads of internals: the
+/// None of these are structural tests. Disclosed reads of internals: the
 /// OFFERED LIST is read off `DropdownButton<String>.items`,
 /// which is `DropdownButtonFormField`'s internal composition (tests 7-9), and
 /// the SELECTION is read off the FormField's own `initialValue` (tests 2, 7,
@@ -717,5 +717,166 @@ void main() {
         note: any(named: 'note'),
       ),
     ).called(1);
+  });
+  // ────────────────────────────────────────────────────────────────────────────
+  // BUT-1910 — the amount field speaks Swedish
+  //
+  // The field parsed with a hand-rolled `replaceAll(',', '.')` and had no input
+  // formatter at all, so it was a spelling of a decision BUT-1891 already
+  // made for the shopping surface.
+  //
+  // The "0,5" and ",5" cases are CONTROLS: measured, the old path already read
+  // both as 0.5. They are kept because they kill the BUT-1891 defect class — a
+  // formatter that eats the separator — which is how this fix could go wrong.
+  // ────────────────────────────────────────────────────────────────────────────
+  testWidgets('a comma decimal reaches the view model as a fraction', (
+    tester,
+  ) async {
+    await tester.pumpWidget(buildSheet());
+
+    await tester.enterText(
+      find.widgetWithText(TextField, 'Ingrediens'),
+      'Mjölk',
+    );
+    await tester.enterText(find.widgetWithText(TextField, 'Mängd'), '0,5');
+    await tester.pump();
+
+    await tester.tap(find.text('LÄGG TILL'));
+    await tester.pump();
+
+    verify(
+      () => vm.addItemFromText(
+        'Mjölk',
+        quantity: 0.5,
+        unit: any(named: 'unit'),
+        location: any(named: 'location'),
+        expiryDate: any(named: 'expiryDate'),
+        note: any(named: 'note'),
+      ),
+    ).called(1);
+  });
+
+  testWidgets('a leading comma is 0.5, not the 1.0 fallback', (tester) async {
+    await tester.pumpWidget(buildSheet());
+
+    await tester.enterText(
+      find.widgetWithText(TextField, 'Ingrediens'),
+      'Mjölk',
+    );
+    await tester.enterText(find.widgetWithText(TextField, 'Mängd'), ',5');
+    await tester.pump();
+
+    await tester.tap(find.text('LÄGG TILL'));
+    await tester.pump();
+
+    // 1.0 here would mean the parse failed and the default took over. A control,
+    // not a regression test: the old path got this right too.
+    verify(
+      () => vm.addItemFromText(
+        'Mjölk',
+        quantity: 0.5,
+        unit: any(named: 'unit'),
+        location: any(named: 'location'),
+        expiryDate: any(named: 'expiryDate'),
+        note: any(named: 'note'),
+      ),
+    ).called(1);
+  });
+
+  testWidgets('the field refuses a second separator', (tester) async {
+    await tester.pumpWidget(buildSheet());
+
+    await tester.enterText(find.widgetWithText(TextField, 'Mängd'), '1,5,5');
+    await tester.pump();
+
+    // The formatter keeps the first separator and drops the second, so the
+    // digits after it join the fraction rather than producing an unparseable
+    // string. Asserting the FIELD, not the submit, because this is the
+    // formatter's job and the parser never sees the rejected keystroke.
+    final field = tester.widget<TextField>(
+      find.widgetWithText(TextField, 'Mängd'),
+    );
+    expect(field.controller!.text, '1,55');
+  });
+  // The arm the fix ADDED, and the one nothing else in this file can reach:
+  // every other edit fixture seeds the amount from `formattedQuantity` with a
+  // parseable value, so `existing?.quantity` is never consulted. It is reachable
+  // in production — the formatter permits an empty field and `_submit` only
+  // early-returns on an empty NAME — and clearing the amount on a 250 g item
+  // used to write 1.0.
+  //
+  // Deleting `existing?.quantity ??` from the fallback chain reddens exactly
+  // this case and nothing else.
+  testWidgets('clearing the amount in edit mode keeps the stored quantity', (
+    tester,
+  ) async {
+    final existing = PantryItem(
+      id: 'p_43',
+      ingredientName: 'Smör',
+      quantity: 250,
+      unit: 'g',
+      location: PantryLocation.fridge,
+      addedAt: DateTime(2026, 1, 1),
+    );
+
+    await tester.pumpWidget(buildSheet(existingItem: existing));
+
+    await tester.enterText(find.widgetWithText(TextField, 'Mängd'), '');
+    await tester.pump();
+
+    // The premise, asserted rather than assumed: if the formatter refused the
+    // empty string the field would still read 250, the fallback would never be
+    // reached, and this test would pass for the wrong reason.
+    expect(
+      tester
+          .widget<TextField>(find.widgetWithText(TextField, 'Mängd'))
+          .controller!
+          .text,
+      isEmpty,
+    );
+
+    await tester.tap(find.text('Spara'));
+    await tester.pump();
+
+    final saved =
+        verify(() => vm.updateItem(captureAny())).captured.single as PantryItem;
+    expect(
+      saved.quantity,
+      250.0,
+      reason:
+          'an unreadable amount on EDIT means the amount the item already had, '
+          'not the add-mode default of 1',
+    );
+  });
+
+  // The sibling the case above cannot be without. On its own, "saved 250" is
+  // over-determined: dropping `quantity:` from the edit branch's `copyWith`
+  // also yields 250, so it cannot tell a working fallback from an edit path
+  // that stopped writing the amount at all. Nothing else in this file pinned
+  // that write — the same gap test 6 closed for `unit`, still open for
+  // `quantity` until now.
+  testWidgets('a typed amount in edit mode reaches the saved item', (
+    tester,
+  ) async {
+    final existing = PantryItem(
+      id: 'p_44',
+      ingredientName: 'Smör',
+      quantity: 250,
+      unit: 'g',
+      location: PantryLocation.fridge,
+      addedAt: DateTime(2026, 1, 1),
+    );
+
+    await tester.pumpWidget(buildSheet(existingItem: existing));
+
+    await tester.enterText(find.widgetWithText(TextField, 'Mängd'), '0,5');
+    await tester.pump();
+
+    await tester.tap(find.text('Spara'));
+    await tester.pump();
+
+    final saved =
+        verify(() => vm.updateItem(captureAny())).captured.single as PantryItem;
+    expect(saved.quantity, 0.5);
   });
 }

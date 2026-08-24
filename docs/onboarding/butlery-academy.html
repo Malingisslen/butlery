@@ -449,7 +449,7 @@ flutter analyze</pre>
       </ul>
 
       <h3>Skills — fyra familjer</h3>
-      <p>Skills bor i <code>.claude/skills/</code> och faller i fyra familjer:</p>
+      <p>Skills bor i <code>.claude/commands/</code> — mappen heter <em>commands</em>, men en fil där och en skill är samma sak för Claude Code; en platt <code>.md</code> i <code>.claude/skills/</code> laddas däremot inte alls, vilket är varför alla ligger här. De faller i fyra familjer:</p>
       <ul>
         <li><strong>Generators</strong> skapar ny kod som redan följer husreglerna (<code>repository-generator</code>, <code>viewmodel-generator</code>, <code>serialization-generator</code>, <code>permission-test-generator</code>).</li>
         <li><strong>Validators</strong> fångar farliga mönster (<code>tri-state-validator</code>, <code>data-source-enforcer</code>, <code>responsive-layout-validator</code>, <code>facade-pattern-detector</code>, <code>mixin-advisor</code>).</li>
@@ -472,7 +472,7 @@ flutter analyze</pre>
 
       <h2>Riktiga referenser</h2>
       <div class="files">
-        <div class="file-chip"><span class="path">.claude/skills/</span><span class="role">Alla skills; t.ex. butlery-architecture.md, data-source-enforcer.md, tri-state-validator.md, mixin-advisor.md</span></div>
+        <div class="file-chip"><span class="path">.claude/commands/</span><span class="role">Alla skills; t.ex. butlery-architecture.md, data-source-enforcer.md, tri-state-validator.md, mixin-advisor.md</span></div>
         <div class="file-chip"><span class="path">.claude/agents/</span><span class="role">code-reviewer.md, testing-specialist.md, firebase-backend-security.md, firestore-rules-tester.md, debugger.md</span></div>
         <div class="file-chip"><span class="path">.claude/hooks/</span><span class="role">require-review-before-commit.sh, file-size-guard.sh, regenerate-l10n.sh, safety-skill-trigger.sh</span></div>
         <div class="file-chip"><span class="path">.claude/settings.json</span><span class="role">Kopplar varje hook till en händelse + matcher</span></div>
@@ -505,7 +505,7 @@ PostToolUse → matcher "Write|Edit" → regenerate-l10n.sh</pre>
 
       <div class="callout try">
         <div class="head">▶ Prova nu</div>
-        <p>Öppna <code>.claude/skills/viewmodel-generator.md</code> och <code>.claude/skills/drift-migration.md</code> sida vid sida och läs ENDAST frontmatter (mellan <code>---</code>-raderna). Hitta <code>disable-model-invocation: true</code> i den ena. Förutsäg: om du säger "skapa en ny ViewModel", vilken laddas automatiskt och vilken måste du anropa med <code>/drift-migration</code>?</p>
+        <p>Öppna <code>.claude/commands/viewmodel-generator.md</code> och <code>.claude/commands/drift-migration.md</code> sida vid sida och läs ENDAST frontmatter (mellan <code>---</code>-raderna). Hitta <code>disable-model-invocation: true</code> i den ena. Förutsäg: om du säger "skapa en ny ViewModel", vilken laddas automatiskt och vilken måste du anropa med <code>/drift-migration</code>?</p>
       </div>
 
       <div class="quiz">
@@ -1157,7 +1157,7 @@ for (final batch in userIds.chunked(kFirestoreWhereInLimit)) {
         <div class="file-chip"><span class="path">lib/services/permissions/recipe_permission_module.dart</span><span class="role">Fail-closed-exempel (isRecipeOwner ~rad 244–268)</span></div>
         <div class="file-chip"><span class="path">lib/services/account/account_deletion_service.dart</span><span class="role">GDPR Art. 17</span></div>
         <div class="file-chip"><span class="path">.claude/agents/firestore-rules-tester.md</span><span class="role">Agenten som bevisar rules</span></div>
-        <div class="file-chip"><span class="path">.claude/skills/data-source-enforcer.md</span><span class="role">Data-source-regeln</span></div>
+        <div class="file-chip"><span class="path">.claude/commands/data-source-enforcer.md</span><span class="role">Data-source-regeln</span></div>
       </div>
 
       <h2>Kodexempel</h2>
@@ -1238,7 +1238,7 @@ catch (e) { return false; /* default till säkert (neka åtkomst) */ }</pre>
         <div class="file-chip"><span class="path">lib/l10n/app_en.arb</span><span class="role">Engelsk ARB</span></div>
         <div class="file-chip"><span class="path">lib/l10n/app_localizations.dart</span><span class="role">GENERERAD, rör ej</span></div>
         <div class="file-chip"><span class="path">.claude/hooks/regenerate-l10n.sh</span><span class="role">Auto-gen-l10n</span></div>
-        <div class="file-chip"><span class="path">.claude/skills/mixin-advisor.md</span><span class="role">Mixin-uppslagstabeller</span></div>
+        <div class="file-chip"><span class="path">.claude/commands/mixin-advisor.md</span><span class="role">Mixin-uppslagstabeller</span></div>
         <div class="file-chip"><span class="path">lib/viewmodels/recipe_form/</span><span class="role">Facade-exemplet (9 managers)</span></div>
         <div class="file-chip"><span class="path">lib/views/recipe_detail/recipe_detail_shared_widgets.dart</span><span class="role">Tre konventioner i en fil (.toLowerCase() rad 54, .withValues rad 161, fyrkantig border)</span></div>
       </div>

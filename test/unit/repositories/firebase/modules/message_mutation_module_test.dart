@@ -2,7 +2,7 @@
 ///
 /// Targets the sendMessage write module that handles its atomic
 /// 3-doc batch + poll mutation. Tests focus on the documented contracts
-/// (atomic write, fallback conversation construction, permission gates,
+/// (atomic write, a missing or unreadable conversation, permission gates,
 /// poll vote toggling) rather than method-call presence.
 library;
 
@@ -129,109 +129,89 @@ void main() {
       );
     });
 
+    // The SURVIVING happy path, and the assertion that guards the whole
+    // feature. The conversations update rule deny-lists `participantIds`,
+    // `createdAt`, `memberSince` and `groupId` on any diff, and separately
+    // requires `metadata.creatorId` to compare equal before and after. This
+    // send stages the conversation as a merge-set carrying
+    // `ConversationDto.toFirestore`, so every key that DTO emits is re-sent on
+    // every message. They must round-trip byte-identically or the rules refuse
+    // the batch — and because the batch is atomic, that takes the message with
+    // it.
+    //
+    // `memberSince` and `groupId` are absent from the assertions below because
+    // that DTO does not write them at all; the omission is pinned in
+    // `conversation_dto_test.dart`, through the same function this module
+    // calls, so re-asserting it here would be a second copy of one decision.
+    //
+    // No fake can rule on any of this (rules are not modelled here), so this
+    // test pins the INPUT half — that the module hands the rules back exactly
+    // what it was given. The rules half is pinned on the emulator in
+    // `conversations-rules.test.ts`.
     test(
-      'falls back to constructed conversation when readConversation returns null '
-      '— for ANY id; the direct_ check lives only in the catch, so a null RETURN '
-      'reaches the fallback whatever the id looks like. This case uses a direct_ '
-      'id because it also exercises the other-participant profile fetch',
+      'the conversation merge-set round-trips createdAt, participantIds and '
+      'metadata.creatorId unchanged',
       () async {
         final firestore = FakeFirebaseFirestore();
-        // Pre-seed the other user's public profile doc.
-        await firestore.collection('users').doc('user-b').set({
-          'displayName': 'B from profile',
-          'avatarUrl': 'https://x/b.png',
-        });
-
+        final convo = Conversation(
+          id: 'direct_user-a_user-b',
+          participantIds: const ['user-a', 'user-b'],
+          participantDisplayNames: const {'user-a': 'A', 'user-b': 'B'},
+          participantAvatarUrls: const {},
+          lastReadTimestamps: const {},
+          isGroup: false,
+          createdAt: DateTime.utc(2026, 1, 1),
+          updatedAt: DateTime.utc(2026, 1, 1),
+          metadata: const {'creatorId': 'user-a'},
+        );
         final module = _newModule(
           firestore,
-          readConversation: (_) async => null, // simulate missing conversation
+          readConversation: (id) async => id == convo.id ? convo : null,
         );
 
-        final msg = _textMessage(
-          conversationId: 'direct_user-a_user-b',
-          senderId: 'user-a',
+        // Sent by the RECIPIENT, because that is the direction the deleted
+        // fallback got wrong: it rebuilt the array as [sender, other], the
+        // opposite of the stored order, and the deny-list refuses that.
+        await module.sendMessage(
+          _textMessage(conversationId: convo.id, senderId: 'user-b'),
         );
 
-        await module.sendMessage(msg);
+        final data =
+            (await firestore.collection(_convoCollection).doc(convo.id).get())
+                .data()!;
 
-        // The fallback conversation should have been merged in with both
-        // participants' display names populated.
-        final convoDoc = await firestore
-            .collection(_convoCollection)
-            .doc('direct_user-a_user-b')
-            .get();
-        expect(convoDoc.exists, isTrue);
-        final participantNames = Map<String, dynamic>.from(
-          convoDoc.data()?['participantDisplayNames'] as Map,
-        );
-        expect(participantNames['user-a'], equals('A'));
-        expect(participantNames['user-b'], equals('B from profile'));
-
-        // The fallback must write `metadata` PRESENT and NULL. Both halves are
-        // load-bearing, and neither is obvious, which is why this is a test and
-        // not only a comment.
-        //
-        // WHY, restated for BUT-1838 — the old reason is retired and repeating
-        // it would mislead. It used to be that the conversations CREATE rule
-        // read `'creatorId' in request.resource.data.metadata`, that an `in` on
-        // a null was an evaluation error, and that this error was the only
-        // thing stopping a non-creator from materialising a group's top-level
-        // document and thereby disarming an `onDocumentCreated` child-safety
-        // trigger. The rule is now a bare
-        // `request.resource.data.metadata.creatorId == request.auth.uid`, a
-        // client cannot create a group conversation at all, and the safety gate
-        // runs before the write in the `chat_groups` callables.
-        //
-        // What still holds, and what these two assertions pin:
-        //   1. stamping `metadata: {'creatorId': senderId}` here would claim a
-        //      creator this caller is not — the second assertion catches it,
-        //      because the VALUE stops being null;
-        //   2. making `ConversationDto.toFirestore` skip a null metadata (the
-        //      standard "don't write nulls" cleanup) changes a write path the
-        //      rules govern — the first assertion catches it, because the KEY
-        //      disappears.
-        // That way round, and it is worth stating because getting it backwards
-        // is how the load-bearing one gets deleted: under (1) the key is still
-        // present so `containsKey` does not fire; under (2) the key is absent
-        // and `data()['metadata']` returns null, so `isNull` passes VACUOUSLY.
-        // Measured, not reasoned: each mutant reddens exactly one of them.
-        //
-        // AND: green here is the FAKE, not production. This payload is still
-        // refused against the real rules, now by the bare equality on create
-        // and by the update rule's `createdAt` pin when the document exists
-        // (BUT-1831). Do not read this passing test as proof the fallback
-        // works.
         expect(
-          convoDoc.data()!.containsKey('metadata'),
-          isTrue,
-          reason:
-              'the metadata KEY must be written even when null — omitting it '
-              "satisfies the rule's !(metadata in data) disjunct and lets a "
-              "non-creator's conversation create land",
+          data['participantIds'],
+          equals(['user-a', 'user-b']),
+          reason: 'the STORED creation order, not the sender-first order',
         );
         expect(
-          convoDoc.data()!['metadata'],
-          isNull,
+          (data['createdAt'] as Timestamp).toDate().toUtc(),
+          equals(DateTime.utc(2026, 1, 1)),
+          reason: 'a re-stamp here denies every send in this conversation',
+        );
+        expect(
+          (data['metadata'] as Map)['creatorId'],
+          equals('user-a'),
           reason:
-              'the fallback conversation must record NO creator — a creatorId '
-              'here makes the create land and disarms the minor-eviction '
-              'trigger for that group',
+              'the update rule compares creatorId before and after; the sender '
+              'is not the creator and must not become one',
         );
       },
     );
 
-    // The SAME invariant on a GROUP-shaped id, and it is not redundant.
-    //
-    // The test above reaches the fallback through a `direct_` id, so its payload
-    // has two participants. The payload the invariant is actually about is the
-    // one-participant shape a group id produces — `otherUserId` is parsed only
-    // from a `direct_` id, so it stays null. Without this fixture a
-    // BRANCH-CONDITIONAL disarming edit survives the whole suite: stamping a
-    // creatorId only when the id does NOT start with `direct_` is mutant (1)
-    // applied exactly where it matters, and every other test stays green.
+    // BUT-1831 replaced three tests here that pinned a fabricate-a-conversation
+    // fallback. They were sound descriptions of what the code did and are gone
+    // with it, not weakened: `firestore.rules` refuses that write on both
+    // horns, so what they certified is a shape the server declines. The
+    // `metadata` invariant they carried has two halves and two homes — the
+    // RULES half is C6B (key absent) and C7B (key present, null) in
+    // `conversations-rules.test.ts`, which a fake Firestore cannot rule on;
+    // the DTO half, that the key is emitted even when the value is null, is
+    // `conversation_dto_test.dart`.
     test(
-      'the fallback records no creator and keeps the metadata key for a '
-      'GROUP-shaped id too — the one-participant payload the squat is about',
+      'throws ResourceNotFoundException when the conversation is ABSENT, and '
+      'for a direct_ id too — the id no longer selects a softer path',
       () async {
         final firestore = FakeFirebaseFirestore();
         final module = _newModule(
@@ -239,51 +219,98 @@ void main() {
           readConversation: (_) async => null,
         );
 
-        await module.sendMessage(
-          _textMessage(conversationId: 'group-abc', senderId: 'user-a'),
+        await expectLater(
+          module.sendMessage(
+            _textMessage(
+              conversationId: 'direct_user-a_user-b',
+              senderId: 'user-a',
+            ),
+          ),
+          throwsA(isA<ResourceNotFoundException>()),
         );
-
-        final convoDoc = await firestore
-            .collection(_convoCollection)
-            .doc('group-abc')
-            .get();
-        expect(convoDoc.exists, isTrue);
-        expect(
-          convoDoc.data()!['participantIds'],
-          equals(['user-a']),
-          reason:
-              'a group id yields no otherUserId, so the fallback builds a '
-              'ONE-participant conversation — the exact shape that makes '
-              'enforceGroupMinorMembership return early',
-        );
-        expect(convoDoc.data()!['isGroup'], isFalse);
-        expect(
-          convoDoc.data()!.containsKey('metadata'),
-          isTrue,
-          reason:
-              'same invariant as the direct_ case, on the shape it matters for',
-        );
-        expect(convoDoc.data()!['metadata'], isNull);
       },
     );
 
     test(
-      'throws ResourceNotFoundException when conversation missing AND id is '
-      'not a deterministic direct_ id',
+      'writes NOTHING when the conversation is absent — the batch is atomic, so '
+      'a message must not survive a send that could not name its conversation',
       () async {
         final firestore = FakeFirebaseFirestore();
         final module = _newModule(
           firestore,
-          // Throwing read short-circuits to the not-found branch since the id
-          // doesn't start with `direct_`.
-          readConversation: (_) async => throw StateError('not found'),
+          readConversation: (_) async => null,
         );
-
-        final msg = _textMessage(conversationId: 'random-uuid-not-direct');
+        final msg = _textMessage(
+          conversationId: 'direct_user-a_user-b',
+          senderId: 'user-a',
+        );
 
         await expectLater(
           module.sendMessage(msg),
           throwsA(isA<ResourceNotFoundException>()),
+        );
+
+        final convoDoc = await firestore
+            .collection(_convoCollection)
+            .doc('direct_user-a_user-b')
+            .get();
+        expect(
+          convoDoc.exists,
+          isFalse,
+          reason: 'no conversation may be materialised by a send',
+        );
+        expect(
+          (await firestore.collection(_messagesPath).doc(msg.id).get()).exists,
+          isFalse,
+          reason: 'the message must not outlive the refusal that killed it',
+        );
+      },
+    );
+
+    // The other half of the BUT-1831 split, and the one that was the live
+    // defect: a read that FAILS is not a read that found nothing.
+    test(
+      'propagates a FAILING read unchanged, for a direct_ id too — a momentary '
+      'failure must not be laundered into "this conversation does not exist"',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        final module = _newModule(
+          firestore,
+          readConversation: (_) async => throw StateError('transient'),
+        );
+
+        // `isA<StateError>()`, not merely "it threw": the error must arrive
+        // WRAPPED IN NOTHING. `MessageSendErrorMapper.classify` reads the
+        // concrete `FirebaseException` to tell a clock-skew denial from
+        // anything else, so a repackaging here would silently downgrade every
+        // failed send to the generic message.
+        await expectLater(
+          module.sendMessage(
+            _textMessage(
+              conversationId: 'direct_user-a_user-b',
+              senderId: 'user-a',
+            ),
+          ),
+          throwsA(isA<StateError>()),
+        );
+      },
+    );
+
+    test(
+      'a failing read on a NON-direct id propagates too — the surviving '
+      'ResourceNotFoundException is now the absence signal only',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        final module = _newModule(
+          firestore,
+          readConversation: (_) async => throw StateError('transient'),
+        );
+
+        await expectLater(
+          module.sendMessage(
+            _textMessage(conversationId: 'random-uuid-not-direct'),
+          ),
+          throwsA(isA<StateError>()),
         );
       },
     );
@@ -438,6 +465,104 @@ void main() {
         throwsA(isA<PermissionDeniedException>()),
       );
     });
+
+    test(
+      'BUT-1872: neither thrown exception carries a raw id',
+      () async {
+        // The exception OBJECT is the one channel AppLogger cannot sanitize —
+        // `recordError(error, ...)` masks only the reason string, while
+        // `PermissionDeniedException.toString()` prints both `Resource:` and
+        // `User:`, and `ResourceNotFoundException.toString()` prints `ID:`.
+        // Both throws below are caught by this method's own handler, which
+        // logs the exception object at error level.
+        //
+        // Two assertions per throw, because the two fields were masked in
+        // separate passes: the conversation id was caught by one reviewer and
+        // the uid by another, a line apart, in the same hunk.
+        //
+        // Since BUT-1897 the exception CLASS masks inside its own `toString()`,
+        // so the id assertions below no longer discriminate the throw site's
+        // `.maskedConversationId` on their own — the class rule would hold them
+        // up anyway. Nor does the `outsider` assertion — a bare uid passed as
+        // `userId:` is masked by the class rule too, measured: deleting
+        // `.maskedUserId` from the throw site leaves this suite green.
+        //
+        // The one-segment check at the end of this test is the ONLY assertion
+        // here that pins a per-site call, because the class rule's composite
+        // pattern needs TWO segments and cannot hash `direct_abc`.
+        const uidA = 'aBcDeFgHiJkLmNoPqRsTuVwXyZ12';
+        const uidB = 'zZyYxXwWvVuUtTsSrRqQpPoO3456';
+        const directId = 'direct_${uidA}_$uidB';
+        const outsider = 'qQwWeErRtTyYuUiIoOpP12345678';
+
+        Future<String> renderedThrowFrom(Future<void> Function() op) async {
+          try {
+            await op();
+          } catch (e) {
+            return e.toString();
+          }
+          throw StateError('expected a throw');
+        }
+
+        final missing = await renderedThrowFrom(
+          () =>
+              _newModule(
+                FakeFirebaseFirestore(),
+                readConversation: (_) async => null,
+              ).markConversationAsRead(
+                conversationId: directId,
+                userId: outsider,
+              ),
+        );
+        expect(missing, isNot(contains(uidA)));
+        expect(missing, isNot(contains(uidB)));
+        expect(missing, contains('direct_#'));
+
+        final convo = _twoPersonConvo();
+        final denied = await renderedThrowFrom(
+          () =>
+              _newModule(
+                FakeFirebaseFirestore(),
+                readConversation: (_) async => convo,
+              ).markConversationAsRead(
+                conversationId: directId,
+                userId: outsider,
+              ),
+        );
+        expect(denied, isNot(contains(uidA)));
+        expect(denied, isNot(contains(uidB)));
+        expect(
+          denied,
+          isNot(contains(outsider)),
+          reason:
+              'the CALLER uid too — it rode in on `userId:` for a week '
+              'after the conversation id beside it was masked',
+        );
+        expect(denied, contains('direct_#'));
+
+        // The discriminating half. A one-segment `direct_` id is hashed by
+        // `maskConversationId` at the throw site and NOT by the class-level
+        // rule, which matches two segments — so this is what reddens if the
+        // per-site masking is removed.
+        final shortId = await renderedThrowFrom(
+          () =>
+              _newModule(
+                FakeFirebaseFirestore(),
+                readConversation: (_) async => null,
+              ).markConversationAsRead(
+                conversationId: 'direct_abc',
+                userId: outsider,
+              ),
+        );
+        expect(
+          shortId,
+          contains('direct_#'),
+          reason:
+              'a one-segment id is masked only by the throw site, so this is '
+              'what proves the per-site call is still there',
+        );
+      },
+    );
   });
 
   group('MessageMutationModule.updateMessageContent', () {
@@ -502,20 +627,50 @@ void main() {
     });
   });
 
-  group('MessageMutationModule.votePoll', () {
-    test('adds a voter to the target option (single-choice)', () async {
+  group('MessageMutationModule.votePoll (BUT-1832)', () {
+    // Votes live at `messages/{messageId}/poll_votes/{voterUid}` — one row per
+    // voter, doc id == voter — because only a message's SENDER may update the
+    // message, so the inline `metadata.poll.options[].voterIds` write was
+    // denied for everyone except the poll's own author. The message document is
+    // now NEVER touched by a vote, which is what these tests assert first.
+    //
+    // `FakeFirebaseFirestore.runTransaction` is a no-op passthrough with no
+    // isolation and no retry, so nothing here says anything about concurrency;
+    // it exercises the read-modify-write shape only.
+
+    Future<Map<String, dynamic>?> voteRow(
+      FakeFirebaseFirestore firestore,
+      String messageId,
+      String voterId,
+    ) async {
+      final doc = await firestore
+          .collection(_messagesPath)
+          .doc(messageId)
+          .collection('poll_votes')
+          .doc(voterId)
+          .get();
+      return doc.exists ? doc.data() : null;
+    }
+
+    Future<void> seedPoll(FakeFirebaseFirestore firestore) =>
+        firestore.collection(_messagesPath).doc('msg-1').set({
+          'senderId': 'author-uid',
+          'metadata': {
+            'poll': {
+              'options': [
+                {'id': 'opt-a', 'voterIds': <String>[]},
+                {'id': 'opt-b', 'voterIds': <String>[]},
+              ],
+            },
+          },
+        });
+
+    test('writes the voter row and leaves the message untouched', () async {
       final firestore = FakeFirebaseFirestore();
       final module = _newModule(firestore);
-      await firestore.collection(_messagesPath).doc('msg-1').set({
-        'metadata': {
-          'poll': {
-            'options': [
-              {'id': 'opt-a', 'voterIds': <String>[]},
-              {'id': 'opt-b', 'voterIds': <String>[]},
-            ],
-          },
-        },
-      });
+      await seedPoll(firestore);
+      final before =
+          (await firestore.collection(_messagesPath).doc('msg-1').get()).data();
 
       await module.votePoll(
         messageId: 'msg-1',
@@ -524,189 +679,209 @@ void main() {
         allowMultiple: false,
       );
 
-      final doc = await firestore.collection(_messagesPath).doc('msg-1').get();
-      final opts = (doc.data()?['metadata']['poll']['options'] as List)
-          .cast<Map<String, dynamic>>();
-      expect(
-        opts.firstWhere((o) => o['id'] == 'opt-a')['voterIds'],
-        equals(['user-1']),
-      );
-      expect(opts.firstWhere((o) => o['id'] == 'opt-b')['voterIds'], isEmpty);
+      expect(await voteRow(firestore, 'msg-1', 'user-1'), {
+        'voterId': 'user-1',
+        'optionIds': ['opt-a'],
+        'votedAt': anything,
+      });
+      // The whole point of the ticket: a vote is not a message update.
+      final after =
+          (await firestore.collection(_messagesPath).doc('msg-1').get()).data();
+      expect(after, equals(before));
     });
 
-    test(
-      'multi-choice: second vote on the SAME option toggles the vote off',
-      () async {
-        // Single-choice runs strip-then-add and net-zeros to "user stays
-        // voted" on a same-option re-vote (see the strip-all-options branch
-        // in votePoll). The honest toggle-off contract lives on the
-        // multi-choice path, which skips the strip.
-        final firestore = FakeFirebaseFirestore();
-        final module = _newModule(firestore);
-        await firestore.collection(_messagesPath).doc('msg-1').set({
-          'metadata': {
-            'poll': {
-              'options': [
-                {
-                  'id': 'opt-a',
-                  'voterIds': <String>['user-1'],
-                },
-              ],
-            },
-          },
-        });
-
-        await module.votePoll(
-          messageId: 'msg-1',
-          optionId: 'opt-a',
-          voterId: 'user-1',
-          allowMultiple: true,
-        );
-
-        final doc = await firestore
-            .collection(_messagesPath)
-            .doc('msg-1')
-            .get();
-        final opts = (doc.data()?['metadata']['poll']['options'] as List)
-            .cast<Map<String, dynamic>>();
-        expect(opts.first['voterIds'], isEmpty);
-      },
-    );
-
-    test(
-      'single-choice: re-vote on already-selected option is a no-op '
-      '(strip-then-add nets to staying voted)',
-      () async {
-        final firestore = FakeFirebaseFirestore();
-        final module = _newModule(firestore);
-        await firestore.collection(_messagesPath).doc('msg-1').set({
-          'metadata': {
-            'poll': {
-              'options': [
-                {
-                  'id': 'opt-a',
-                  'voterIds': <String>['user-1'],
-                },
-              ],
-            },
-          },
-        });
-
-        await module.votePoll(
-          messageId: 'msg-1',
-          optionId: 'opt-a',
-          voterId: 'user-1',
-          allowMultiple: false,
-        );
-
-        final doc = await firestore
-            .collection(_messagesPath)
-            .doc('msg-1')
-            .get();
-        final opts = (doc.data()?['metadata']['poll']['options'] as List)
-            .cast<Map<String, dynamic>>();
-        expect(opts.first['voterIds'], equals(['user-1']));
-      },
-    );
-
-    test(
-      'single-choice vote removes user from previous option before adding new',
-      () async {
-        final firestore = FakeFirebaseFirestore();
-        final module = _newModule(firestore);
-        await firestore.collection(_messagesPath).doc('msg-1').set({
-          'metadata': {
-            'poll': {
-              'options': [
-                {
-                  'id': 'opt-a',
-                  'voterIds': <String>['user-1'],
-                },
-                {'id': 'opt-b', 'voterIds': <String>[]},
-              ],
-            },
-          },
-        });
-
-        await module.votePoll(
-          messageId: 'msg-1',
-          optionId: 'opt-b',
-          voterId: 'user-1',
-          allowMultiple: false,
-        );
-
-        final doc = await firestore
-            .collection(_messagesPath)
-            .doc('msg-1')
-            .get();
-        final opts = (doc.data()?['metadata']['poll']['options'] as List)
-            .cast<Map<String, dynamic>>();
-        expect(opts.firstWhere((o) => o['id'] == 'opt-a')['voterIds'], isEmpty);
-        expect(
-          opts.firstWhere((o) => o['id'] == 'opt-b')['voterIds'],
-          equals(['user-1']),
-        );
-      },
-    );
-
-    test(
-      'multi-choice vote leaves the previous option intact',
-      () async {
-        final firestore = FakeFirebaseFirestore();
-        final module = _newModule(firestore);
-        await firestore.collection(_messagesPath).doc('msg-1').set({
-          'metadata': {
-            'poll': {
-              'options': [
-                {
-                  'id': 'opt-a',
-                  'voterIds': <String>['user-1'],
-                },
-                {'id': 'opt-b', 'voterIds': <String>[]},
-              ],
-            },
-          },
-        });
-
-        await module.votePoll(
-          messageId: 'msg-1',
-          optionId: 'opt-b',
-          voterId: 'user-1',
-          allowMultiple: true,
-        );
-
-        final doc = await firestore
-            .collection(_messagesPath)
-            .doc('msg-1')
-            .get();
-        final opts = (doc.data()?['metadata']['poll']['options'] as List)
-            .cast<Map<String, dynamic>>();
-        expect(
-          opts.firstWhere((o) => o['id'] == 'opt-a')['voterIds'],
-          equals(['user-1']),
-        );
-        expect(
-          opts.firstWhere((o) => o['id'] == 'opt-b')['voterIds'],
-          equals(['user-1']),
-        );
-      },
-    );
-
-    test('silently no-ops when message does not exist', () async {
+    test('the row carries voterId as a FIELD, not only as the doc id', () async {
+      // The Art. 17 sweep is `collectionGroup('poll_votes').where('voterId',
+      // '==', uid)`. A document id is invisible to any query, so dropping this
+      // field would leave the erasure cascade matching nothing — silently.
       final firestore = FakeFirebaseFirestore();
       final module = _newModule(firestore);
+      await seedPoll(firestore);
 
-      // The transaction returns early without writing; just assert no throw.
-      await expectLater(
-        module.votePoll(
-          messageId: 'missing',
+      await module.votePoll(
+        messageId: 'msg-1',
+        optionId: 'opt-a',
+        voterId: 'user-1',
+        allowMultiple: false,
+      );
+
+      final swept = await firestore
+          .collection(_messagesPath)
+          .doc('msg-1')
+          .collection('poll_votes')
+          .where('voterId', isEqualTo: 'user-1')
+          .get();
+      expect(swept.docs.map((d) => d.id), ['user-1']);
+    });
+
+    test('each vote lands in its OWN row, keyed by the voter', () async {
+      final firestore = FakeFirebaseFirestore();
+      final module = _newModule(firestore);
+      await seedPoll(firestore);
+
+      await module.votePoll(
+        messageId: 'msg-1',
+        optionId: 'opt-a',
+        voterId: 'user-1',
+        allowMultiple: false,
+      );
+      await module.votePoll(
+        messageId: 'msg-1',
+        optionId: 'opt-b',
+        voterId: 'user-2',
+        allowMultiple: false,
+      );
+
+      expect((await voteRow(firestore, 'msg-1', 'user-1'))?['optionIds'], [
+        'opt-a',
+      ]);
+      expect((await voteRow(firestore, 'msg-1', 'user-2'))?['optionIds'], [
+        'opt-b',
+      ]);
+    });
+
+    test('single-choice: a new pick REPLACES the previous one', () async {
+      final firestore = FakeFirebaseFirestore();
+      final module = _newModule(firestore);
+      await seedPoll(firestore);
+
+      await module.votePoll(
+        messageId: 'msg-1',
+        optionId: 'opt-a',
+        voterId: 'user-1',
+        allowMultiple: false,
+      );
+      await module.votePoll(
+        messageId: 'msg-1',
+        optionId: 'opt-b',
+        voterId: 'user-1',
+        allowMultiple: false,
+      );
+
+      expect((await voteRow(firestore, 'msg-1', 'user-1'))?['optionIds'], [
+        'opt-b',
+      ]);
+    });
+
+    test(
+      'single-choice: re-picking the current option leaves it selected',
+      () async {
+        // Preserved from the inline implementation, which stripped every option
+        // then added back, netting to "stays voted". Not a toggle — asserted
+        // here so that making it one is a deliberate act with a red test first.
+        final firestore = FakeFirebaseFirestore();
+        final module = _newModule(firestore);
+        await seedPoll(firestore);
+
+        await module.votePoll(
+          messageId: 'msg-1',
           optionId: 'opt-a',
           voterId: 'user-1',
           allowMultiple: false,
-        ),
-        completes,
+        );
+        await module.votePoll(
+          messageId: 'msg-1',
+          optionId: 'opt-a',
+          voterId: 'user-1',
+          allowMultiple: false,
+        );
+
+        expect((await voteRow(firestore, 'msg-1', 'user-1'))?['optionIds'], [
+          'opt-a',
+        ]);
+      },
+    );
+
+    test('multi-choice: a second option is added, not replaced', () async {
+      final firestore = FakeFirebaseFirestore();
+      final module = _newModule(firestore);
+      await seedPoll(firestore);
+
+      await module.votePoll(
+        messageId: 'msg-1',
+        optionId: 'opt-a',
+        voterId: 'user-1',
+        allowMultiple: true,
       );
+      await module.votePoll(
+        messageId: 'msg-1',
+        optionId: 'opt-b',
+        voterId: 'user-1',
+        allowMultiple: true,
+      );
+
+      expect((await voteRow(firestore, 'msg-1', 'user-1'))?['optionIds'], [
+        'opt-a',
+        'opt-b',
+      ]);
     });
+
+    test(
+      'multi-choice: re-tapping toggles off, and the last one deletes the row',
+      () async {
+        // An empty row is still a uid on a document every participant reads, so
+        // "no selection" must leave nothing behind rather than an empty list.
+        final firestore = FakeFirebaseFirestore();
+        final module = _newModule(firestore);
+        await seedPoll(firestore);
+
+        await module.votePoll(
+          messageId: 'msg-1',
+          optionId: 'opt-a',
+          voterId: 'user-1',
+          allowMultiple: true,
+        );
+        await module.votePoll(
+          messageId: 'msg-1',
+          optionId: 'opt-b',
+          voterId: 'user-1',
+          allowMultiple: true,
+        );
+        await module.votePoll(
+          messageId: 'msg-1',
+          optionId: 'opt-a',
+          voterId: 'user-1',
+          allowMultiple: true,
+        );
+
+        expect((await voteRow(firestore, 'msg-1', 'user-1'))?['optionIds'], [
+          'opt-b',
+        ]);
+
+        await module.votePoll(
+          messageId: 'msg-1',
+          optionId: 'opt-b',
+          voterId: 'user-1',
+          allowMultiple: true,
+        );
+
+        expect(await voteRow(firestore, 'msg-1', 'user-1'), isNull);
+      },
+    );
+
+    test(
+      'multi-choice: toggling off a vote that was never cast writes nothing',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        final module = _newModule(firestore);
+        await seedPoll(firestore);
+
+        await module.votePoll(
+          messageId: 'msg-1',
+          optionId: 'opt-a',
+          voterId: 'user-1',
+          allowMultiple: true,
+        );
+        await module.votePoll(
+          messageId: 'msg-1',
+          optionId: 'opt-a',
+          voterId: 'user-1',
+          allowMultiple: true,
+        );
+
+        expect(await voteRow(firestore, 'msg-1', 'user-1'), isNull);
+      },
+    );
   });
 
   group('MessageMutationModule.closePoll', () {

@@ -21,11 +21,11 @@ import 'package:butlery/repositories/mixins/permission_validation_mixin.dart';
 ///
 /// It carries [PermissionValidationMixin] like every other repository
 /// (CLAUDE.md rule 3), in the same CLASS shape as `BaseMetadataRepository` —
-/// but stated plainly: that class also calls `logPermissionCheck` on every
-/// operation and this one calls nothing from the mixin at all. The membership
-/// decisions happen server-side, in the callables, and the audit trail for them
-/// is an open gap rather than something this class provides. Do not read the
-/// precedent as a claim that this logs.
+/// but stated plainly: that class also calls `logPermissionCheck` and this one
+/// calls nothing from the mixin at all. The membership decisions happen
+/// server-side, in the callables, and the audit trail for them is an open gap
+/// rather than something this class provides. Do not read the precedent as a
+/// claim that this logs.
 class FirebaseChatGroupRepository
     with PermissionValidationMixin
     implements ChatGroupRepository {
@@ -111,6 +111,26 @@ class FirebaseChatGroupRepository
       );
     }
     return groupId;
+  }
+
+  @override
+  Future<String> ensureCategoryChat({
+    required String ownerId,
+    required String categoryId,
+  }) async {
+    _requireUserId();
+    final response = await _call('ensureCategoryChat', {
+      'ownerId': ownerId,
+      'categoryId': categoryId,
+    });
+    final conversationId = response['conversationId'];
+    if (conversationId is! String || conversationId.isEmpty) {
+      throw ResourceNotFoundException(
+        'ensureCategoryChat returned no conversation id',
+        resourceType: 'chat_group',
+      );
+    }
+    return conversationId;
   }
 
   @override

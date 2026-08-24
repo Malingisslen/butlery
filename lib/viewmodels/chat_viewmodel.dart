@@ -17,6 +17,7 @@ import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/mixins/state_notifier_mixin.dart';
 import 'package:butlery/core/mixins/async_operation_mixin.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/models/messaging/poll.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/services/moderation/content_filter_service.dart';
@@ -472,14 +473,47 @@ class ChatViewModel extends ChangeNotifier
     }
   }
 
-  /// Close a poll (creator-only; gating enforced by the poll widget).
-  Future<void> closePoll(String messageId) async {
-    if (_isDisposed) return;
+  /// Closes a poll. Returns null on success, or the Swedish sentence to show
+  /// the user.
+  ///
+  /// BUT-1908: this used to swallow every exception into a log line. That made
+  /// the refusals `MessagingService.closePoll` now raises invisible — the user
+  /// would tap "avsluta", see nothing happen, and have no way to tell a refusal
+  /// from a slow network. A guard built without changing this method would be
+  /// exactly the silent failure it was meant to replace.
+  Future<String?> closePoll(String messageId) async {
+    if (_isDisposed) return null;
+
+    final l = AppLocale.current;
+
+    // Checked HERE, against the message the user was actually looking at.
+    //
+    // The service cannot do this for the `capped` case, and believing it could
+    // was a wrong comment on the widget's own gate: `closePoll` re-reads
+    // through `MessageQueryModule.getMessage`, whose list holds ONE message, so
+    // the cap is a no-op there and the marker always comes back `ok`. This
+    // layer and the widget both hold a copy that still says the votes were
+    // never read; the service does not. Raised by the code-reviewer gate.
+    final onScreen = _messages.where((m) => m.id == messageId).firstOrNull;
+    if (onScreen != null &&
+        PollVoteHydration.fromMetadata(onScreen.metadata).isUnread) {
+      AppLogger.debug('Poll close refused locally: votes were never read');
+      return l.pollCloseRefusedVotesUnread;
+    }
 
     try {
       await _messagingService.closePoll(messageId: messageId);
+      return null;
+    } on PollCloseRefusedException catch (e) {
+      // Deliberately not logged as an error: a refusal is the guard working.
+      AppLogger.debug('Poll close refused (${e.reason.name})');
+      return switch (e.reason) {
+        PollCloseRefusal.votesUnread => l.pollCloseRefusedVotesUnread,
+        PollCloseRefusal.blockListUnknown => l.pollCloseRefusedBlockList,
+      };
     } catch (e) {
       AppLogger.error('Failed to close poll', e);
+      return l.pollCloseFailed;
     }
   }
 

@@ -30,11 +30,19 @@
  * 30-day TTL parallel to `notification_send_events`. GDPR cascade lives
  * in `on-user-deleted.ts`.
  *
- * **Manual setup required (one-shot, per environment)**: this module
- * guarantees `expireAt` is written, but the policy that actually deletes
- * expired docs has to be enabled separately:
- *   `gcloud firestore fields ttls update expireAt \
- *      --collection-group=notification_opened_events --enable-ttl`
+ * **The TTL policy is DECLARED, not manual (BUT-1792).** This block used to
+ * tell the reader to run a one-shot `gcloud firestore fields ttls update`
+ * per environment. Nobody ever did, so `expireAt` was stamped on every row for
+ * the life of the feature and nothing but the account-deletion cascade ever
+ * deleted one — a row belonging to a LIVE user was never deleted, however old.
+ * (`on-user-deleted.ts` purges this collection per uid; that is the cascade
+ * named a few lines up, and it erases by owner, not by age.) The manual
+ * instruction is what made the gap look intended rather than broken. The policy
+ * now lives in `firestore.indexes.json` as a `fieldOverride` with `ttl: true`
+ * and arms on `firebase deploy --only firestore:indexes`;
+ * `firestore-ttl-policies.test.ts` reddens if the entry is dropped or if the
+ * assignment below stops writing the field the entry names. Never deploy
+ * indexes with `--force`: it PRUNES any policy absent from that file.
  */
 
 import { onCall, HttpsError, CallableRequest } from "firebase-functions/v2/https";

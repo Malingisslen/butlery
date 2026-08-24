@@ -103,14 +103,35 @@ class ContentExportManager {
     return {'error': 'Could not export $section.', 'error_code': code};
   }
 
-  /// Export all user recipes (personal subcollection + top-level legacy shape).
+  /// Export all user recipes.
+  ///
+  /// One source, `users/{userId}/recipes`. A second probe used to read a
+  /// top-level `recipes` collection as a "legacy shape"; no rule grants a client
+  /// that read, so it threw `permission-denied` INSIDE this try — discarding the
+  /// personal recipes already collected above it and returning
+  /// `recipes-export-failed` for the whole section. Deterministic, not
+  /// intermittent: a list query against a collection with no matching rule is
+  /// denied even when it holds nothing (BUT-1801).
+  ///
+  /// It could never have returned a row for THIS client either: the only rule
+  /// reaching that path is the admin-only READ-ONLY collection-group catch-all,
+  /// `match /{path=**}/recipes/{recipeId}`, and every recipe the app writes goes
+  /// to `users/{userId}/recipes`. An earlier version of this comment said the
+  /// rule was "absent" and that this stopped writes — neither is true, and a
+  /// read grant would not govern writes in any case. (Cited by match pattern:
+  /// the correction before this one cited a line number that had already moved.)
+  ///
+  /// The amplifier is the shape to watch, not the dead probe: two reads under
+  /// one catch means a refusal in the second discards the first's rows.
+  /// `exportMenus` below still has it (benign — its second query is granted),
+  /// and `shared_shopping_list_export.dart` shows the fix: give a refusable
+  /// probe its own inner try.
   Future<Map<String, dynamic>> exportRecipes(String userId) async {
     try {
       final recipes = <Map<String, dynamic>>[];
-      // Each sub-query carries its own cap, so truncation is the OR of the two
-      // probes — comparing the MERGED length to one cap would stamp a complete
-      // export as truncated as soon as the two halves happened to add up to
-      // the cap (BUT-1662).
+      // The cap belongs to the query, not to the merged list — comparing a
+      // merged length to one cap stamps a complete export as truncated
+      // (BUT-1662). Kept as a variable so a second source can OR into it.
       var truncated = false;
 
       // Personal recipes in user's subcollection — RecipeRepository concrete.
@@ -128,23 +149,6 @@ class ContentExportManager {
           recipes.add({
             'recipe_id': entry['id'],
             'type': 'personal',
-            'data': sanitizeForJson(entry['data']),
-          });
-        }
-
-        // Top-level recipes where user is owner (legacy `userId` field).
-        final unified = await ExportPaginationHelper.fetchCapped(
-          type: 'recipes',
-          fetch: (max) => repoConcrete.exportTopLevelRecipesByOwner(
-            userId,
-            maxDocuments: max,
-          ),
-        );
-        truncated = truncated || unified.truncated;
-        for (final entry in unified.items) {
-          recipes.add({
-            'recipe_id': entry['id'],
-            'type': 'unified',
             'data': sanitizeForJson(entry['data']),
           });
         }

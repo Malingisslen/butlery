@@ -99,5 +99,8 @@
     "workflow-guards@malin-plugins": true,
     "role-org@malin-plugins": true,
     "delivery@malin-plugins": true
-  }
+  },
+  "spinnerTipsEnabled": false,
+  "prefersReducedMotion": true,
+  "outputStyle": "Concise"
 }

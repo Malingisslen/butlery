@@ -78,12 +78,11 @@ class FirebaseMessagingRepository extends BaseFirebaseRepository<Conversation>
       messagesRef: _messagesRef,
       // BUT-1838: the TOP-LEVEL read, not `read` — this class mixes in
       // `UserScopedFirebaseRepository`, which rewrites every path to
-      // `users/{uid}/conversations/{id}`. A chat group's conversation is
-      // written only at the top level by `createChatGroup`, so `read` returned
-      // null for every group, for everyone. `sendMessage` would then take its
-      // fabricate-a-conversation fallback on EVERY send, and the batch that
-      // carries it is refused by the conversations update rule — so the
-      // message died with it.
+      // `users/{uid}/conversations/{id}`. Neither a direct conversation nor a
+      // chat group is ever written there, so `read` returns null for all of
+      // them, for everyone. Anything the module does on a null conversation is
+      // therefore reached on every send unless this stays pointed at the
+      // top-level document.
       readConversation: _readTopLevelConversation,
       timestampProvider: timestampProvider,
     );
@@ -226,18 +225,23 @@ class FirebaseMessagingRepository extends BaseFirebaseRepository<Conversation>
   ///
   /// Deliberately not `read`: see the note where this is wired in. Mirrors
   /// `ConversationQueryModule.getConversation`, which had the same bug.
+  ///
+  /// BUT-1831: `null` reports a `!exists` SNAPSHOT — which offline may be
+  /// answered from cache, so it is a strong signal of absence rather than a
+  /// proof of it. A read that FAILS throws instead, because that is a different
+  /// fact and only the caller knows what to do with each. Both fail closed at
+  /// the send. Collapsing them into one `null` here is what let
+  /// a momentary read failure look identical to a conversation that was never
+  /// created — and `sendMessage` answered that by fabricating a replacement
+  /// for a conversation that existed. A caller that genuinely does not care
+  /// swallows it at its own call site, where the choice is visible.
   Future<Conversation?> _readTopLevelConversation(String conversationId) async {
-    try {
-      final doc = await firestore
-          .collection(collectionName)
-          .doc(conversationId)
-          .get();
-      if (!doc.exists) return null;
-      return fromFirestore(doc);
-    } catch (e) {
-      AppLogger.error('Failed to read conversation $conversationId', e);
-      return null;
-    }
+    final doc = await firestore
+        .collection(collectionName)
+        .doc(conversationId)
+        .get();
+    if (!doc.exists) return null;
+    return fromFirestore(doc);
   }
 
   @override

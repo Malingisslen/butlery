@@ -291,7 +291,7 @@ void main() {
         final decimal = testItem.copyWith(amount: 1.5);
 
         // Assert
-        expect(decimal.formattedAmount, equals('1.5'));
+        expect(decimal.formattedAmount, equals('1,5'));
       });
 
       test('should handle small amounts', () {
@@ -299,7 +299,7 @@ void main() {
         final smallAmount = testItem.copyWith(amount: 0.5);
 
         // Assert
-        expect(smallAmount.formattedAmount, equals('0.5'));
+        expect(smallAmount.formattedAmount, equals('0,5'));
       });
 
       test('should format multiple decimal places', () {
@@ -307,7 +307,7 @@ void main() {
         final precise = testItem.copyWith(amount: 1.75);
 
         // Assert
-        expect(precise.formattedAmount, equals('1.75'));
+        expect(precise.formattedAmount, equals('1,75'));
       });
     });
 
@@ -355,7 +355,7 @@ void main() {
     group('Display Text', () {
       test('should generate display text with amount and unit', () {
         // With amount and unit
-        expect(testItem.displayText, equals('1.5 l Mjölk'));
+        expect(testItem.displayText, equals('1,5 l Mjölk'));
 
         // Whole number
         final whole = testItem.copyWith(amount: 2.0, unit: 'styck');
@@ -662,11 +662,11 @@ void main() {
 
         // Very small amount
         final tiny = testItem.copyWith(amount: 0.001);
-        expect(tiny.formattedAmount, equals('0.001'));
+        expect(tiny.formattedAmount, equals('0,001'));
 
         // Very large amount
         final huge = testItem.copyWith(amount: 999999.99);
-        expect(huge.formattedAmount, equals('999999.99'));
+        expect(huge.formattedAmount, equals('999999,99'));
       });
 
       test('should handle edge case prices', () {

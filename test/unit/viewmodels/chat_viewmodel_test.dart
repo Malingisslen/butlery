@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:butlery/viewmodels/chat_viewmodel.dart';
+import 'package:butlery/models/messaging/poll.dart';
 import 'package:butlery/models/messaging/conversation.dart';
 import 'package:butlery/models/messaging/message.dart';
 import 'package:butlery/models/user_profile.dart';
@@ -466,8 +467,7 @@ void main() {
       // `initialConversation`, which resolves the conversation synchronously
       // and so cannot see WHEN the stream is opened — measured: reverting
       // `_initializeChat` to the old fire-and-forget
-      // `_loadConversation(); _loadMessages();` left all 45 tests in this file
-      // green. On a COLD open (no initialConversation — how the chat is
+      // `_loadConversation(); _loadMessages();` left this file green. On a COLD open (no initialConversation — how the chat is
       // actually entered from the conversations list) that revert opens the
       // message stream before `memberSince` is known, so the cut-off is null,
       // the query returns rows firestore.rules refuses, and the WHOLE query
@@ -833,6 +833,101 @@ void main() {
           ).called(1);
         },
       );
+
+      // ── BUT-1908: closePoll must stop swallowing ──────────────────────
+      //
+      // It used to catch everything into a log line, which made the refusals
+      // `MessagingService.closePoll` now raises invisible: the user taps
+      // "avsluta", nothing happens, and there is no way to tell a refusal from
+      // a slow network. A guard built without changing this method would BE the
+      // silent failure it was meant to replace.
+      //
+      // The viewmodel returns the sentence to show and never rethrows — the
+      // caller is a tap handler, and an uncaught async throw there is a crash.
+
+      test('closePoll returns null when the poll actually closed', () async {
+        // The control for the refusal cases below: without it, a method that
+        // returned a message unconditionally would satisfy them.
+        expect(await viewModel.closePoll('p1'), isNull);
+      });
+
+      test(
+        'closePoll refuses locally when the poll on screen was never read',
+        () async {
+          // The CAPPED case, which the SERVICE cannot catch:
+          // `MessagingService.closePoll` re-reads through `getMessage`, whose
+          // list holds ONE message, so the cap is a no-op there and the poll
+          // arrives marked `ok`. The widget hides the button on this state too
+          // (`poll_message_widget_hydration_test.dart`); this gate is what
+          // stops a close that reaches the viewmodel by any other route.
+          final poll = buildPollMessage(
+            id: 'p_capped',
+            allowMultipleChoices: false,
+          );
+          messagesStreamController.add([
+            poll.copyWith(
+              metadata: <String, dynamic>{
+                ...?poll.metadata,
+                PollVoteHydration.metadataKey: PollVoteHydration.capped.name,
+              },
+            ),
+          ]);
+          await Future.delayed(const Duration(milliseconds: 50));
+
+          final message = await viewModel.closePoll('p_capped');
+
+          expect(message, contains('rösterna har inte hämtats'));
+          verifyNever(
+            () => mockMessagingService.closePoll(
+              messageId: any(named: 'messageId'),
+            ),
+          );
+        },
+      );
+
+      test('closePoll surfaces the unread-votes refusal in Swedish', () async {
+        when(
+          () => mockMessagingService.closePoll(
+            messageId: any(named: 'messageId'),
+          ),
+        ).thenThrow(
+          const PollCloseRefusedException(PollCloseRefusal.votesUnread),
+        );
+
+        final message = await viewModel.closePoll('p1');
+
+        expect(message, isNotNull);
+        expect(message, contains('rösterna har inte hämtats'));
+      });
+
+      test('closePoll tells the two refusals apart', () async {
+        // The whole reason the refusal carries a reason. One sentence for both
+        // would be wrong for whichever user got the other one.
+        when(
+          () => mockMessagingService.closePoll(
+            messageId: any(named: 'messageId'),
+          ),
+        ).thenThrow(
+          const PollCloseRefusedException(PollCloseRefusal.blockListUnknown),
+        );
+
+        final message = await viewModel.closePoll('p1');
+
+        expect(message, contains('blockeringslista'));
+        expect(message, isNot(contains('rösterna har inte hämtats')));
+      });
+
+      test('closePoll reports an unexpected failure rather than swallowing '
+          'it', () async {
+        // The arm that existed before and produced nothing at all.
+        when(
+          () => mockMessagingService.closePoll(
+            messageId: any(named: 'messageId'),
+          ),
+        ).thenThrow(Exception('boom'));
+
+        expect(await viewModel.closePoll('p1'), isNotNull);
+      });
 
       test('votePoll is a no-op when the message is not in the list', () async {
         // Act — vote for a message id that never arrived

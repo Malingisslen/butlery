@@ -308,7 +308,27 @@ void main() {
         expect(badges[3].status, TriState.free);
       });
 
-      testWidgets('should order CONTAINS before FREE before UNKNOWN', (
+      // REWRITTEN 2026-08-18. This case used to assert
+      // CONTAINS-before-FREE-before-UNKNOWN and pinned four badges. UNKNOWN is
+      // no longer drawn at all — Malin's call, made when BUT-1780 put this row
+      // on every recipe card for the first time and the grey question marks
+      // became visible to a real user.
+      //
+      // The rewrite is deliberate, not a test bent to fit a change: her reason
+      // was that a grey badge reads as a verdict when it is the absence of one.
+      // (An earlier draft of this comment added that they "crowded out the real
+      // answers" — false: UNKNOWN sorted last and the take() runs after, so it
+      // could never displace one. The true cost is that on an untagged recipe
+      // the four grey badges WERE the whole row — 'untagged' is the wrong word for
+      // it, since a null tagResult never built the row at all.) The decision was already
+      // recorded UNSCOPED in ACCEPTED_DEVIATIONS.md — so this row was not outside a
+      // detail-view rule, it was in violation of a general one ("UNKNOWN
+      // allergen status is intentionally hidden"); this row was the odd one
+      // out, invisibly, because until BUT-1780 nothing constructed it.
+      //
+      // What is still pinned: the ORDER of what remains, which is the half of
+      // the original intent that survives — a warning must precede good news.
+      testWidgets('should order CONTAINS before FREE, and drop UNKNOWN', (
         WidgetTester tester,
       ) async {
         final tagResult = _buildTagResult(
@@ -335,14 +355,27 @@ void main() {
             .widgetList<AllergenStatusBadge>(find.byType(AllergenStatusBadge))
             .toList();
 
-        expect(badges.length, 4);
-        // CONTAINS first
+        expect(
+          badges.length,
+          2,
+          reason:
+              'the two UNKNOWN allergens must not be drawn — the fixture '
+              'has four, and a regression restoring them shows 4 here',
+        );
         expect(badges[0].status, TriState.contains);
-        // FREE second
         expect(badges[1].status, TriState.free);
-        // UNKNOWN last
-        expect(badges[2].status, TriState.unknown);
-        expect(badges[3].status, TriState.unknown);
+        expect(
+          badges.every((b) => b.status != TriState.unknown),
+          isTrue,
+          // Deliberately redundant: `expect` throws on the first failure, so
+          // the count above always reddens first and this line can never be
+          // the one that fails. It is here to name the intent at the failure
+          // site, not to guard anything the count does not already guard —
+          // said plainly because the previous wording claimed otherwise.
+          reason:
+              'names what the count is really about; not an independent '
+              'guard',
+        );
       });
     });
 
@@ -506,11 +539,20 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        // All default allergens return UNKNOWN from tagResult (not in map),
-        // so they DO show (UNKNOWN is included in the ordering)
-        // However they must have status in the map -- getAllergenStatus
-        // returns UNKNOWN for missing keys, which IS included in the output
-        expect(find.byType(AllergenStatusBadge), findsNWidgets(4));
+        // REWRITTEN 2026-08-18, same decision as the ordering case above.
+        // `getAllergenStatus` returns UNKNOWN for a key that is not in the map,
+        // so an empty TagResult used to paint all four default allergens as
+        // grey question marks. It now paints nothing, and the row collapses to
+        // SizedBox.shrink() — which is what makes the card's spacer gate
+        // (BUT-1869) necessary rather than decorative: an untagged recipe is
+        // the common case, not the edge one.
+        expect(
+          find.byType(AllergenStatusBadge),
+          findsNothing,
+          reason:
+              'an untagged recipe says nothing, rather than saying '
+              '"unknown" four times',
+        );
       });
 
       testWidgets('should use compact mode and hide labels', (

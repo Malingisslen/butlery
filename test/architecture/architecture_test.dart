@@ -368,6 +368,46 @@ void main() {
     // regression — `EdgeInsets.only(left:)` / `(right:)` is LTR-fixed and
     // breaks RTL languages (Arabic, Hebrew). The directional variant flips
     // automatically when the ambient `Directionality` is RTL.
+    test("Mina recept's grid toggle does not go back to a grid delegate", () {
+      // A grid delegate has to be told each tile's height BEFORE it lays
+      // anything out, and neither answer it accepts can be right for a card
+      // carrying text: a ratio of the tile's own width is wrong at one end
+      // whatever it is set to, and a fixed number has to predict every Wrap
+      // inside the card. When the prediction came out short the tile clipped,
+      // silently — a release build draws no overflow stripes (BUT-1911).
+      //
+      // The widget suite cannot see this. Its geometry cases construct
+      // `ContentSizedGrid` themselves, so a view that regressed to a
+      // `GridView` would leave all of them green while the app clipped again.
+      // The ingredients are still in the tree: `recipeGridAspectRatio` stays
+      // live for the LIST toggle's tablet grid.
+      //
+      // It lives here rather than in that suite so it runs on every commit,
+      // and it asserts the IMPORT rather than a constructor spelling —
+      // an import cannot be satisfied by prose.
+      final view = File('lib/views/mina_recept_view.dart');
+      expect(view.existsSync(), isTrue, reason: 'the guard has lost its file');
+
+      final stripped = view
+          .readAsStringSync()
+          .replaceAll(RegExp(r'/\*[\s\S]*?\*/'), '')
+          .replaceAll(RegExp(r'//.*'), '');
+
+      expect(
+        stripped,
+        contains('widgets/common/content_sized_grid.dart'),
+        reason:
+            'the grid toggle must keep building rows that size to their '
+            'tallest card',
+      );
+      expect(
+        stripped,
+        isNot(contains('SliverGridDelegate')),
+        reason: 'a grid delegate needs a tile height before layout',
+      );
+      expect(stripped, isNot(contains('GridView.builder')));
+    });
+
     test('no LTR-fixed EdgeInsets.only(left:|right:) in lib/ '
         '(use EdgeInsetsDirectional.only)', () {
       final pattern = RegExp(r'EdgeInsets\.only\([^)]*\b(left|right):');
@@ -430,6 +470,62 @@ void main() {
         reason:
             'Raw user ids in logs are a privacy leak. Mask with '
             '`\${userId.maskedUserId}` (log_sanitizer.dart).\n'
+            'Violations:\n${violations.join('\n')}',
+      );
+    });
+
+    // BUT-1872: the same rule for CONVERSATION ids, scoped to the calls that
+    // actually leave the device. A direct conversation's id is
+    // `direct_<uidA>_<uidB>` — two raw uids — so it is uid-grade PII wearing a
+    // different field name, which is exactly why the uid arm above never
+    // caught it.
+    //
+    // Scoped to `AppLogger.error` on purpose, and that is narrower than the
+    // uid arm above, which bans a raw uid at EVERY level. The two rules
+    // therefore disagree about identical bytes — a direct id IS two raw uids
+    // — and that asymmetry is not a policy anyone decided. Only `error`
+    // reaches Crashlytics, so `error` is where the leak was. Forty-odd
+    // non-`error` sites (`info`, `debug`, `success`, `warning`) still print
+    // raw ids; they are device-local, and BUT-1872 masked one of them anyway,
+    // so "unswept" describes them better than any policy does.
+    // BUT-1897 owns reconciling them. Counting them precisely has now been
+    // wrong twice in this comment's history — measure before quoting a
+    // number, or leave it approximate as it is here.
+    //
+    // KNOWN GAPS, same spirit as the uid arm's own list above. This matches
+    // the bare identifier only, so an error log written as
+    // `${message.conversationId}`, `${conversation.id}` or `${convId}` is
+    // invisible to it — zero instances today, checked. And it cannot see the
+    // channel that actually leaked in BUT-1872: the exception OBJECT handed
+    // to `recordError`, which no regex anchored on `AppLogger.error(` can
+    // reach. So this catches the sixteenth LOG SITE, not the sixteenth leak.
+    test('no raw \$conversationId interpolated into AppLogger.error calls in '
+        'lib/ (use .maskedConversationId)', () {
+      final pattern = RegExp(
+        r'AppLogger\.error\([^;]*(\$conversationId\b|\$\{conversationId\})',
+      );
+
+      final violations = <String>[];
+
+      for (final file in dartFiles) {
+        final relPath = relPathOf(file);
+        final content = file.readAsStringSync();
+        final stripped = content
+            .replaceAll(RegExp(r'/\*[\s\S]*?\*/'), '')
+            .replaceAll(RegExp(r'//.*'), '');
+
+        if (pattern.hasMatch(stripped)) {
+          violations.add(relPath);
+        }
+      }
+
+      expect(
+        violations,
+        isEmpty,
+        reason:
+            'A direct conversation id is `direct_<uidA>_<uidB>` — two raw '
+            'user ids. Mask with `\${conversationId.maskedConversationId}` '
+            '(log_sanitizer.dart).\n'
             'Violations:\n${violations.join('\n')}',
       );
     });

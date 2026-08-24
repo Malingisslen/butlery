@@ -1046,28 +1046,55 @@ command rather than by trust.
 records frame-cut half recipes as complete ones (>=12 of 242 verified entries, by a screen
 that only inspects the last instruction and the title, so a floor). **SUPERSEDED by the
 paragraph below:** hand grading against the photographs put it at 14 entries, of which 11
-bias recall. The `>=12` is the screen's number and is left here as the record of what was
-known before the grading. Recall therefore scores
+bias recall; the BUT-1847 re-grade of every verified entry put it at 23, of which 13 bias
+recall. The `>=12` is the screen's number and is left here as the record of what was
+known before the grading. **Two different instruments are involved and must not both be called
+"the screen":** the `>=12` came from a screen that inspects only the last instruction and the
+title (89 false positives on word shape); a separate terminal-punctuation screen, re-run over
+the FINISHED grading, recovers 9 of the 23 with 0 false positives (13 if it also looks for an
+explicit `...`). Either way "floor" was the right word twice over. Recall therefore scores
 retained frame-cut debris as a hit, and the trim is penalised for removing exactly what it
 exists to remove. Read `91.54 -> 91.52` as an UPPER BOUND on the content cost, and the 200
-row's `-> 91.33 %` as the figure most exposed. None of the verdicts in this entry rest on
+row's `-> 91.33 %` as the figure most exposed — **it was re-measured on de-biased gold in
+BUT-1847 and is exposed no longer: see the BUT-1847 budget sweep below.** None of the
+verdicts in this entry rest on
 that column: all 10 shipped tails and all 9 band tails were graded against the
 PHOTOGRAPHS. Comparisons between two arms (column ordering, the single-block rule) scored
 the same gold on both sides and survive; the ABSOLUTE percentages are softer than they look.
 
-**BUT-1818 re-measured the recall column, and the trim's content cost is ZERO.** 14 verified
-gold entries were graded against their PHOTOGRAPHS on 2026-08-09 and marked `frameCut` in the
-corpus: 11 `fragment` (the whole entry is a frame-cut sliver of the next recipe — `Mästerkockens f`,
+**BUT-1818 re-measured the recall column, and the trim's content cost is ZERO — BUT-1847
+re-graded the gold behind it and the zero held.** The set now stands at **23 marked entries
+on 20 pages: 13 `fragment` and 10 `tail`.** BUT-1818 graded 14 on 2026-08-09 from what a text
+screen surfaced; BUT-1847 opened all 181 pages as images on 2026-08-19, **confirmed all 14
+unchanged** and added nine — two `fragment` and seven `tail`. The two fragments are
+`Annas fisks` (`blandat-svart/PXL_20260803_204323606/recipe-02` — the facing page's recipe
+sliced lengthwise, its gold carrying a truncated title, 14 of 15 ingredient lines broken
+mid-word and 21 of 24 instruction lines) and `Inlagd sill`, the borderline case priced at the
+end of this entry. **How an entry is
+graded, and the four things that are NOT a frame cut, now live in
+`docs/testing/cookbook-corpus-gold-grading.md`** — the reason two gradings in a row undercounted
+is that both read TEXT, and that file exists so a third does not.
+The 2026-08-09 set was: 11 `fragment` (the whole entry is a frame-cut sliver of the next recipe — `Mästerkockens f`,
 `Den gl`, `Enkla fisken`, `Kavling av mandelmassa`, `Mandelforell`, `Mixade vitaminer`,
 `Dillstuvad potatis`, `Hasselbackspotatis`, `Sallad med vita bönor`, `Böngryta`,
 `Soppa med vita bönor`) and 3 `tail` (a real recipe whose last line the frame took —
 `Hembakad pasta`, `Madames saffransfisk`, `Lammstek`). `corpus_split_eval.dart --no-frame-cut`
-drops the 11 `fragment` ones — see the next paragraph for why never the 3 `tail`. It is OFF
+drops the `fragment` ones — see the next paragraph for why never the `tail` ones. It is OFF
 by default so every figure quoted elsewhere keeps reproducing.
 
-**Only the 11 `fragment` entries are dropped, never the 3 `tail` ones.** A `tail` gold is a real
-recipe the page holds whose last line the frame took, so it is SHORT of tokens, not long —
-dropping it removes no bias, only a page. All three are flat single-recipe pages, so an earlier
+The seven `tail`s BUT-1847 added are `Avocadosoppa`, `Provençalska kotletter`,
+`Igelkottstårta`, `Potatis- och gurksallad`, `Grekisk bondsallad`,
+`Transsylvansk pepparrotssallad` and `Grynigt potatismos med endivsallad`. **Five of them are a
+different mechanism entirely** — not the camera frame but the BOOK's own page break, a recipe
+that starts at the foot of one page and finishes on a page the photograph does not include
+(four in `potatisratter`, plus `Igelkottstårta` at
+`blandat-svart/PXL_20260803_204954922/recipe-02` — a tårt book photographed into the
+`blandat-svart` slug, not a slug of its own; the other two are ordinary bottom-of-frame cuts). No screen aimed at broken words can see the page-break class — the gold ends on a clean
+full stop — which is most of why the earlier count was low.
+
+**Only the `fragment` entries are dropped, never the `tail` ones.** A `tail` gold is a real
+recipe the page holds whose ending the capture took, so it is SHORT of tokens, not long —
+dropping it removes no bias, only a page. BUT-1818's three were flat single-recipe pages, so an earlier
 draft that dropped them moved the population 181 -> 178 and took one TRIMMED page (`Köttsa/l`)
 with it; the conclusion survived but the comparison ran across two populations, which is not a
 measurement. On a multi-recipe page it would be worse: a dropped `tail` lowers the expected count
@@ -1077,21 +1104,25 @@ Scoped to `fragment`, the two columns are ONE population — same 181 pages, sam
 
 | arm | biased gold | `--no-frame-cut` |
 |---|---|---|
-| trim recall | 91.54 -> 91.52 % | **91.59 -> 91.59 %** |
-| trim precision | 66.64 -> 66.77 % | 66.03 -> 66.18 % |
-| right block counts | 139 of 181 | **144 of 181** |
+| trim recall | 91.54 -> 91.52 % | **91.64 -> 91.64 %** |
+| trim precision | 66.64 -> 66.77 % | 65.83 -> 65.97 % |
+| right block counts | 139 of 181 | **145 of 181** |
 
-**Exactly zero, not a rounded 0.00** — the report carries raw integers: `15974 -> 15974 of
-17441` gold tokens, against the biased run's `16121 -> 16118 of 17611`. A percentage pair
-reading `X -> X` never proves zero on its own. Note also that the 11 are the recall-BIASING
-subset; the other 3 (`tail`) bias nothing, and both numbers are floors rather than counts,
+**Exactly zero, not a rounded 0.00** — the report carries raw integers: `15925 -> 15925 of
+17378` gold tokens, against the biased run's `16121 -> 16118 of 17611`. A percentage pair
+reading `X -> X` never proves zero on its own. Note also that the 13 are the recall-BIASING
+subset; the other 10 (`tail`) bias nothing, and both numbers are floors rather than counts,
 since an unfound fragment only makes the trim look worse.
+(BUT-1818's own de-biased column read `91.59 -> 91.59 %`, `66.03 -> 66.18 %`, `144 of 181`,
+`15974 -> 15974 of 17441` — two fragments fewer in the dropped set. The de-biased column moves
+whenever the grading does, so never quote it without naming the grading it came from; the
+BIASED column has not moved and still reproduces.)
 
-So the 0.02 points were the biased gold, in full. **The block counts move 139 -> 144 as SIX pages
-gained and ONE lost, not five clean gains** — an aggregate that hides a swap is the one thing this
+So the 0.02 points were the biased gold, in full. **The block counts move 139 -> 145 as SEVEN pages
+gained and ONE lost, not six clean gains** — an aggregate that hides a swap is the one thing this
 tool exists to prevent, so `--trim --no-frame-cut` prints the per-page movement (`gold N -> M, blocks B`)
 rather than leaving it to a probe — the table lives in the trim arm, so the flag alone does not
-emit it. The six are pages where the splitter emitted one block fewer
+emit it. The seven are pages where the splitter emitted one block fewer
 than the biased gold demanded: it correctly declined to make a recipe out of a sliver. The one
 lost, `PXL_20260803_204205028`, is the opposite and the more useful case — the splitter emitted 3
 blocks on a page holding 1 real recipe — and NOT one per sliver, which is what a block COUNT
@@ -1101,18 +1132,60 @@ tempts you to assume. Read out of the real splitter: block 1 is the recipe with 
 One sliver opens nothing, the false split is INSIDE a real recipe, and the biased gold had been
 scoring all of it as RIGHT. (A first draft said "one per sliver", inferred from the count. A count
 matching gold never tells you WHICH blocks came out.) So removing the bias
-does not only stop punishing correct declines; it stops rewarding a real false split. Eight
-pages carry a dropped fragment, not seven: the eighth, `PXL_20260803_204143402` (gold 5 -> 2,
-the most-biased page in the corpus), is wrong under BOTH golds and so moves nothing — named
-because six plus one otherwise leaves a case unaccounted for. The
-200-budget row has NOT been re-measured and remains the figure most exposed. The run prints how many entries
+does not only stop punishing correct declines; it stops rewarding a real false split. TEN
+pages carry a dropped fragment and only eight of them move: seven gained plus the one lost.
+The other two are wrong under BOTH golds and move nothing — `PXL_20260803_204143402` (gold
+5 -> 2, the most-biased page in the corpus) and `PXL_20260803_204345256` (gold 3 -> 2) — named
+because seven plus one otherwise leaves two cases unaccounted for. **No page is ALL fragment**,
+so `--no-frame-cut` never drops a page out of the population; that invariant is what makes the
+two columns one population, and it is worth re-checking after any re-grade. The run prints how many entries
 it dropped and writes a `-nofc` report file, so the two populations can never be confused after
 the fact.
+
+**The 200-budget row is no longer unre-measured, and it is the reason BUT-1847 existed
+(2026-08-19).** The whole budget sweep, re-run on the re-graded gold with `--no-frame-cut` —
+same 181 pages, same trimmed pages per budget, only the scored population differs:
+
+| budget | pages | precision | recall | right block counts | gold tokens lost |
+|---|---|---|---|---|---|
+| 60 | 7 | 65.83 -> 65.87 % | 91.64 -> 91.64 % | 145, unchanged | **0** (15925 -> 15925) |
+| **120 (shipped)** | **10** | 65.83 -> 65.97 % | 91.64 -> 91.64 % | 145, unchanged | **0** (15925 -> 15925) |
+| 200 | 19 | 65.83 -> 66.27 % | 91.64 -> **91.59 %** | **144 — a page lost** | **9** (15925 -> 15916) |
+
+**The shipped budget still costs exactly zero; the 200 budget does not.** Of the 36 gold
+tokens it cost on biased gold (`16121 -> 16085 of 17611`), 27 were frame-cut debris and
+**9 are real recipe text** — so the band's refusal, which had been argued from nine hand
+readings, is now priced, and the two agree. The BIASED rows (`91.54 -> 91.33 %`, `139 -> 138`)
+reproduce unchanged, as they must: `frameCut` scopes the population only under
+`--no-frame-cut`. (The default arm does READ the field — it tallies the census it prints —
+but nothing downstream of that tally touches a score.)
+
+**That 9 rests on one borderline label, and the label is written down rather than assumed.**
+Of the nine tails in the 120-200 band, TWO are themselves marked `fragment` — `Mixade
+vitaminer` (166 chars) and `Inlagd sill` (159) — so cutting either costs nothing. They are the
+same case seven characters apart: the next recipe's opening, taken by the bottom frame edge,
+with no ingredient block and a line or two of method. The only thing that differs is that
+`Inlagd sill`'s cut landed after a full stop, so its transcription READS finished. Labelling
+from that would be the same text-shaped mistake this ticket exists to retire, so both are
+`fragment` on the criterion in `docs/testing/cookbook-corpus-gold-grading.md`. **The label that
+moves the row is `Inlagd sill` alone** — the one BUT-1847 decided; with it a `tail` the row
+reads **23** tokens instead of 9, and that state was measured. `Mixade vitaminer` has been a
+`fragment` since BUT-1818 (it is in the eleven listed above), so flipping BOTH is an unmeasured
+state and would cost MORE than 23, a `tail` there re-entering the denominator on a page the 200
+budget also cuts. Non-zero and a lost block count in every measured state, so the verdict does
+not turn on the call, but the magnitude does. The claim
+below that every tail in the band carries readable content is right about the ink on the page
+and wrong about what the gold is worth, for those two.
 
 **A zero-ingredient gold entry is NOT a defect signal** — `Fisk i ugn` and `Koka piggvar` are
 complete recipes that genuinely carry no ingredient list, and the screen that reads only the last
 instruction plus the title flags 89 false positives on word-shape alone (`deg`, `cm`, `bär`). The
-14 above were each opened as an image. Do not re-derive this set from any text screen.
+14 above were each opened as an image, and so were all 242 verified entries in BUT-1847. Do
+not re-derive this set from any text screen — a screen run over the FINISHED grading recovers
+only 9 of the 23, or 13 if it also looks for an explicit `...`; the remaining ten are clean
+prose that simply stops. Exactly ONE of the 13 fragments sits on a page the shipped budget
+actually trims (`Mandelforell`), so the other twelve bias the recall LEVEL rather than the
+trim's own delta. Procedure and rubric: `docs/testing/cookbook-corpus-gold-grading.md`.
 
 
 **The gate on the 120-200 band closed.** That band was designed as a third outcome — show
@@ -1213,6 +1286,37 @@ fixture proving a bare colon is harmless, so a future reader cannot mistake the
 rule for "any colon blanks the field". BUT-1819, 2026-08-10
 
 ## Messaging — the conversation roster (2026-08-12)
+
+> **SUPERSEDED IN PART, 2026-08-22 (BUT-1831).** The section below describes
+> `MessageMutationModule`'s fabricate-a-conversation fallback in the PRESENT tense and
+> counts two of its Dart tests as pinning an invariant. **That branch and those two tests
+> are deleted.** The fallback's write is refused by `firestore.rules` on both horns as the
+> rules stand today — update deny-lists the re-stamped `createdAt`, create requires
+> `metadata.creatorId == request.auth.uid`. Read every sentence below about "the module
+> falls through to its fallback" as history.
+>
+> **What still stands, unchanged:** the create rule's behaviour on `metadata: null`, and
+> test C7B that pins it. What changed is only WHO sends that shape. It is no longer sent
+> deliberately by our own client — but it is not unreachable either: a `merge: true` set is
+> a CREATE when the document is absent, so a merge-set carrying a null metadata still
+> arrives at that limb. It fails closed.
+>
+> **What is NO LONGER pinned where this section says.** The claim "the invariant is
+> THREE-sided, and all three sides are pinned as of this commit" is now false as written.
+> Side 1 (the rule denies `metadata: null`) is still C7B, and C6B covers the key being
+> absent. Side 2 (the fallback records no `creatorId`) has no subject any more — there is
+> no caller constructing a creator-less conversation on that path, so there is nothing left
+> to assert. Side 3 (`ConversationDto.toFirestore` emits the KEY even when the value is
+> null) lives in `conversation_dto_test.dart`, untouched by this ticket — what changed is
+> that the duplicate in `message_mutation_module_test.dart` was deleted. It sits there as a
+> control line inside the BUT-1838 test, so it survives only while nobody trims that control.
+>
+> **The BUT-1830 squat this section describes is separately stale**, and not by this
+> ticket: `directIdBinds` (BUT-1838) requires `participantIds.size() == 2` and an id
+> derived from the pair, so the one-participant create at a known group id described below
+> is refused. `firestore.rules` says so at that limb. Left in place rather than rewritten,
+> per the rule that a decision record is superseded and not deleted.
+
 
 ### The bootstrap branch, and why it cannot just be tightened
 
@@ -1813,3 +1917,147 @@ harmonisation mutant — test 8 is the one that catches it.
 `pantry_item_card.dart`'s `'${item.formattedQuantity} ${item.unit}'`. Filed as BUT-1863, and
 that line carries a pointer back. It existed before, but this change makes it durable, because
 opening and saving no longer normalises the unit away.
+
+## Poll votes on non-poll messages, and the missing `memberSince` cut-off (BUT-1832, 2026-08-17)
+
+**Decision (Malin, 2026-08-17): ship, fix separately, record it.**
+
+### What the gap is
+
+`match /messages/{messageId}/poll_votes/{voterId}` gates writes on `pollIsOpen()`:
+
+```
+pollMessage().data.get('metadata', {}).get('poll', {}).get('isClosed', false) == false
+```
+
+A nullable map has four states here and this chain gives three answers. Measured 2026-08-17,
+and each row has its own green test in `functions/src/__tests__/poll-votes-rules.test.ts`:
+
+| `metadata` | result | test |
+| -- | -- | -- |
+| absent | ALLOWS a vote | V10e |
+| `null` | DENIES (CEL error on the second `.get`) | V10d |
+| a map with no `poll` key | **ALLOWS a vote** | V10f |
+| a real open poll | ALLOWS | V1 / V2 |
+
+Row 3 is the live one. `Message.recipeShare`, `Message.menuShare`, `Message.shoppingListShare`
+and the group system-message Cloud Function all write a metadata map with no `poll` key, so every
+share card and every system row in every chat currently accepts a `poll_votes` row.
+
+Eleven further shapes were swept during review; every one either falls inside row 3's class or
+fails closed. Notably `isClosed: "true"` denies, so a tampered client cannot force the branch open
+with a non-boolean.
+
+### Why it ships
+
+The harm bound Malin was shown, and decided on:
+
+- the row carries only the caller's own uid — `isValidVote()` pins `data.voterId == voterId` and
+  every write verb pins `request.auth.uid == voterId`;
+- it is limited to three keys and at most 20 option ids;
+- reading the tally is gated on conversation membership;
+- `deletePollVotes` erases it by collection group at account deletion;
+- no UI renders it.
+
+And the counter-argument against fixing it here: this is a salvage of a batch that was already
+held once, and a rules-semantics change inside a salvage is precisely how the preceding sprint
+lost three tickets. The rule is new but the *shape* is not a regression this change introduced.
+
+### The repair, and the trap in it
+
+**Test `poll` for PRESENCE, not `metadata` for TYPE.** The obvious repair — the
+`x is map ? ... : null` ternary BUT-1788 established for the conversations rule — does NOT close
+row 3, because a map without the key is still a map. A repair written from the null case alone
+would land, look finished, and leave the live case open.
+
+Mutation-probed during review, all three through a copy (the rules file was never written):
+
+| mutant | result |
+| -- | -- |
+| the owed repair (`is map && 'poll' in metadata && ...`) | 31/33 — reddens exactly V10e and V10f |
+| `is map ? metadata : null` | 33/33 — the gap stays open, silently |
+| `is map ? metadata : {}` | 32/33 — reddens V10d; flips null to ALLOW |
+
+So the tests do not *force* the repair; they register which cases it has decided. That is stated
+in their own comments rather than left to be discovered.
+
+**Art. 15 / Art. 17 asymmetry to close in the same change:** the export probes only messages where
+`metadata['poll'] is Map`, while the cascade erases by collection group regardless of parent shape.
+A vote row planted on a share card is therefore erasable but not exportable. Cover both sides.
+
+### The second entry: `inPollConversation()` is not full parity
+
+The helper's own comment introduced it as "the same membership test the message read rule uses,
+one document further out". The membership half is the same; the rest is not. BUT-1838's
+`memberSince` history cut-off is **not** reproduced. Measured 2026-08-17 on a group whose
+`memberSince` postdates the poll:
+
+- late joiner reads the poll MESSAGE → **DENIED** (the cut-off)
+- late joiner reads the poll_votes TALLY → **ALLOWED**
+- late joiner CASTS a vote in it → **ALLOWED**
+
+The write half is the part a read-focused reading misses; a future editor repairing "the read"
+would have no reason to look at `create`. Also deferred out of the salvage, for the same reason,
+and the fix is the cut-off on the read AND the create/update limbs.
+
+**Second Art. 15 route, orthogonal to the map-without-`poll` one above.** Because a late
+joiner may CAST a vote in a pre-join poll, and the conversations export applies the
+`memberSince` filter that drops that message before the vote probe runs, such a row is
+erasable (the collection-group sweep ignores parent shape) but never exportable. The entry
+above names the export gap for the map-without-`poll` case only; this is a different way in
+to the same shortfall, and the repair must cover both. Raised by the
+`firebase-backend-security` gate, 2026-08-17.
+
+Both raised by the `firestore-rules-tester` gate during the BUT-1801 salvage review.
+
+## BUT-1906 — the recipe grid card draws no dietary row
+
+**Decided 2026-08-23 by Malin, shown against two alternatives and their costs.**
+
+The ticket asked for the vegansk/vegetarisk row to appear on grid cards, so that a recipe
+does not appear to lose its dietary information when the user flips the view toggle. Its
+prescribed remedy was to raise the tile's aspect ratio to make room. That remedy was already
+refuted by measurement under BUT-1906's first pass: the shortfall is not vertical.
+
+It is horizontal, and it does not close. Measured on a 2-column tile with the production
+card:
+
+| | needs | has on 360dp | has on 320dp |
+|---|---|---|---|
+| `vegansk` at 1.0 | 111 px | 88 px | 68 px |
+| `vegetarisk` at 1.0 | 145 px | 88 px | 68 px |
+| `vegansk` at 2.0 | 188 px | 88 px | 68 px |
+| `vegetarisk` at 2.0 | 255 px | 88 px | 68 px |
+| any allergen badge | 28 px | 88 px | 68 px |
+
+A grid tile's whole content column is 68 logical pixels wide on a 320dp phone once the card
+margin and the container padding are taken off. The allergen badges fit because they are
+icon-only. A dietary badge carries its word, and the word does not fit at any text size on
+any phone.
+
+**Alternative 1 — icon-only, matching the allergen row.** Available, and useless. The badge
+takes a `showLabel` flag and the allergen row already passes `showLabel: false`, so it is one
+argument away — but `DietaryStatusBadge` selects its icon from the STATUS, not from the diet,
+so vegansk and vegetarisk both render `Icons.eco_outlined`. Dropping the label would replace the row with
+two identical green leaves: not a compact treatment, an information loss. Giving each diet
+its own icon is a real option, and a real design decision — it is not this ticket.
+
+**Alternative 2 — ellipsize the word.** Fits by definition, and reads as broken: at normal
+text size roughly half of `vegetarisk` survives, and at 2x about two characters do. It also
+degrades precisely for the user who most needs the label.
+
+**What was chosen.** Neither. The grid keeps its icon-only allergen row and no dietary row;
+the DETAILED layout is full-width, has the room, and keeps the word. The asymmetry between
+the two view toggles is therefore the decision rather than the gap the ticket described.
+
+*(Corrected 2026-08-23, before the commit landed: the first draft of this entry, and the two
+comments quoting it, offered the COMPACT layout as further evidence that the word survives
+outside the grid. It draws neither badge row, so it was never evidence. The decision is
+unchanged; only the false half of its supporting sentence is struck. Raised by the
+`integration-reviewer` gate.)*
+
+**Pinned by** `test/widget/recipe/recipe_card_grid_badges_test.dart`: one case asserts the
+grid draws no `CompactDietaryRow` when the card is handed dietary preferences and the recipe
+is FREE on a diet, and its control asserts the detailed layout still does — so a change that
+removed the row everywhere cannot pass as satisfying this decision.
+

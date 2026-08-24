@@ -14,6 +14,7 @@
 
 import {
   MAX_ROSTER_ROWS,
+  logSafeConversationId,
   tryClearRoster,
 } from "../messaging/enforce-group-minor-membership";
 import { isValidDocId } from "../shared/valid-doc-id";
@@ -277,6 +278,36 @@ async function rosterTests(): Promise<void> {
       `verdict=${verdict} attempts=${attempts.length}`,
     );
   }
+}
+
+console.log("");
+console.log("logSafeConversationId — cross-language parity (BUT-1872)");
+
+// The Dart client masks the same ids through
+// `LogSanitizer.maskConversationId` (lib/core/utils/log_sanitizer.dart), so
+// ONE conversation reads the same in a Crashlytics report and in a Cloud
+// Logging line. Neither compiler can see the other language, so a pinned
+// literal is the only thing that can hold that promise — and it has to be
+// pinned on BOTH sides or only one direction of drift ever reddens.
+//
+// The identical literal lives in
+// `test/unit/core/utils/log_sanitizer_test.dart`. IF THIS FAILS, one of the
+// two sides drifted: fix the drift, do NOT re-baseline the literal.
+{
+  const directId = "direct_aBcDeFgHiJkLmNoPqRsT_zYxWvUtSrQpOnMlKjIhG";
+  const masked = logSafeConversationId(directId);
+  check(
+    "a direct id hashes to the value the Dart side also pins",
+    masked === "direct_#12fc49f947ab",
+    `got ${masked}`,
+  );
+  // A 20-char Firestore auto-id, the shape `createChatGroup` actually mints —
+  // not the uuid this fixture used to carry.
+  const groupId = "kPq7Rw2LmNc4Xy9Zt1Bv";
+  check(
+    "a group id passes through untouched",
+    logSafeConversationId(groupId) === groupId,
+  );
 }
 
 void rosterTests().then(() => {

@@ -599,6 +599,80 @@ void main() {
       expect(fakeRepo.updatedItems.single.priority, 5);
       expect(notifyCalls, 1);
     });
+
+    /// BUT-1874's fix is a CROSS-LAYER contract, and this is the half of it that
+    /// lives here. The dialog can only clear a note by sending an EMPTY STRING,
+    /// because `updateItemInActiveList`'s `note: notes ?? currentItem.note` reads
+    /// a null as "leave alone" — so `''` must survive to the repo untouched while
+    /// `null` must still preserve. Both halves below. (Named by expression, not
+    /// by line number: a line number in a comment rots on the next edit above it.)
+    ///
+    /// BUT-1892 will replace the empty-string signal with a real one. When it
+    /// lands, `an empty note CLEARS the stored note` must be rewritten to the new
+    /// signal and must STAY mutation-sensitive — it is the only control that
+    /// catches the fix being backed out.
+    ///
+    /// Why it is worth its own test rather than trusting the widget test: the
+    /// obvious defensive tidy here — `(notes?.isNotEmpty ?? false) ? notes :
+    /// currentItem.note` — looks like an improvement, re-opens BUT-1874 exactly,
+    /// and leaves every one of the dialog's own tests green. Nothing below the
+    /// dialog asserted this before (BUT-1874 review, 2026-08-17).
+    /// The two halves are SEPARATE tests on purpose. Written first as one test
+    /// with two legs, it failed — the clearing leg mutates the module's own list
+    /// state, so the second leg then read the already-cleared note as "current"
+    /// and preserving it correctly returned ''. The test was wrong, not the code.
+    /// Shared state between legs is how a passing assertion measures the leg
+    /// before it rather than the code under test.
+    UnifiedShoppingItem seedNoted() {
+      final item = UnifiedShoppingItem(
+        name: 'Mjölk',
+        amount: 1,
+        unit: 'l',
+        category: ShoppingCategory.dairy,
+        note: 'Ekologisk',
+      );
+      lists
+        ..clear()
+        ..add(_seedList(id: 'L', items: [item]));
+      activeListId = 'L';
+      return item;
+    }
+
+    test('an empty note CLEARS the stored note', () async {
+      final existing = seedNoted();
+
+      final ok = await buildModule().updateItemInActiveList(
+        itemId: existing.id,
+        notes: '',
+      );
+
+      expect(ok, isTrue);
+      expect(
+        fakeRepo.updatedItems.single.note,
+        isEmpty,
+        reason:
+            'an empty note is the only clearing signal this layer accepts — '
+            'coercing it back to the stored note is BUT-1874, reopened',
+      );
+    });
+
+    test('a null note leaves the stored note alone', () async {
+      final existing = seedNoted();
+
+      final ok = await buildModule().updateItemInActiveList(
+        itemId: existing.id,
+        name: 'Standardmjölk',
+      );
+
+      expect(ok, isTrue);
+      expect(
+        fakeRepo.updatedItems.single.note,
+        'Ekologisk',
+        reason:
+            'a null note means "unchanged", not "clear" — without this half the '
+            'clearing fix could be satisfied by always clearing',
+      );
+    });
   });
 
   // -------------------------------------------------------------------------

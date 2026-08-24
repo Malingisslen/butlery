@@ -5,28 +5,25 @@ import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Maps a `ChatGroupRepository` callable's failure to a Swedish message,
-/// shared by every ViewModel that calls `createGroup` / `addMembers` /
-/// `removeMember` (BUT-1838).
+/// shared by every ViewModel that calls one (BUT-1838).
 ///
-/// One place so the three callables' error shapes — the minor-membership
-/// gate's `blockedUserIds`, the rate limiter's `resource-exhausted`, the
-/// member cap's `invalid-argument` — are read identically everywhere they're
-/// caught, instead of drifting between the add-members flow and the
-/// create-group flow.
+/// One place so the callables' error shapes — the minor-membership gate's
+/// `blockedUserIds`, the rate limiter's `resource-exhausted`, the member cap's
+/// `invalid-argument` — are read identically everywhere they're caught,
+/// instead of drifting between the flows that catch them.
 class ChatGroupErrorMapper {
   ChatGroupErrorMapper._();
 
-  /// The member-cap value the three callables enforce
+  /// The member-cap value the callables enforce
   /// (`MAX_CHAT_GROUP_MEMBERS` in `functions/src/groups/minor-membership-gate.ts`).
   /// Not read from the error — the callable's message states it in English
   /// prose, not a structured field — so it is pinned here instead of parsed.
   static const int maxMembers = 100;
 
   /// [genericFallback] is the operation-specific "something else went wrong"
-  /// message — `chatGroupAddMembersFailed` for add, `chatGroupCreateFailed`
-  /// for create, or whatever the caller already shows for remove/leave. Never
-  /// the reason a member was blocked: that reason is a minor's age, and the
-  /// caller's business ends at "who", never "why".
+  /// message the caller already shows. Never the reason a member was blocked:
+  /// that reason is a minor's age, and the caller's business ends at "who",
+  /// never "why".
   static String map(Object error, {required String genericFallback}) {
     if (error is FirebaseFunctionsException) {
       switch (error.code) {
@@ -43,6 +40,17 @@ class ChatGroupErrorMapper {
         case 'invalid-argument':
           if (error.message?.contains('members') ?? false) {
             return AppLocale.current.chatGroupTooManyMembers(maxMembers);
+          }
+          break;
+        case 'failed-precondition':
+          // BUT-1856. Read from a STRUCTURED detail rather than the message,
+          // unlike the member cap above: that one has to sniff prose because
+          // the callable states the number in English, and repeating the
+          // mistake in a new branch is how it becomes the house style.
+          final preconditionDetails = error.details;
+          if (preconditionDetails is Map &&
+              preconditionDetails['reason'] == 'group-too-small') {
+            return AppLocale.current.chatGroupNeedsAnotherMember;
           }
           break;
       }

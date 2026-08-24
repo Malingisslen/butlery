@@ -18,6 +18,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/core/utils/swedish_decimal_input.dart';
 import 'package:butlery/services/upload/upload_models.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/styled/styled_input.dart';
@@ -122,7 +123,13 @@ class _SkrivSjalvReceptViewContentState
       text: (viewModel.timeMinutes?.toString()).orEmpty(),
     );
     _ratingController = TextEditingController(
-      text: (viewModel.rating?.toString()).orEmpty(),
+      // BUT-1910: `toString()` seeds "4.5" with a PERIOD, which is the same
+      // cross-screen inconsistency `PantryItem.formattedQuantity` was changed
+      // to remove. Harmless to the stored value — an untouched field never
+      // re-enters `onChanged` — but the user reads it.
+      text: viewModel.rating == null
+          ? ''
+          : formatSwedishDecimal(viewModel.rating!),
     );
     _sourceUrlController = TextEditingController(
       text: viewModel.sourceUrl.orEmpty(),
@@ -670,9 +677,18 @@ class _SkrivSjalvReceptViewContentState
                             keyboardType: const TextInputType.numberWithOptions(
                               decimal: true,
                             ),
+                            inputFormatters: const [
+                              SwedishDecimalInputFormatter(),
+                            ],
                             textInputAction: TextInputAction.next,
+                            // BUT-1910: `double.tryParse` returns null on a
+                            // comma, so "8,5" set no rating at all and said
+                            // nothing. The validator was never the problem —
+                            // `FormValidators.rating()` does its own
+                            // comma-aware parse, so the field looked valid
+                            // while the value was silently dropped.
                             onChanged: (value) =>
-                                viewModel.setRating(double.tryParse(value)),
+                                viewModel.setRating(parseSwedishDecimal(value)),
                             validator: FormValidators.rating(),
                           ),
                           const SizedBox(height: AppDimensions.spacingXl),

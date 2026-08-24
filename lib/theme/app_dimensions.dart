@@ -598,6 +598,62 @@ class AppDimensions {
     );
   }
 
+  /// Below this screen width a recipe grid drops to a single column.
+  ///
+  /// Measured, and it is the TITLE ROW that decides it, not the photo: on a
+  /// 280dp screen a two-column tile leaves that row 48 logical pixels, while
+  /// the visibility icon and the favourite button alone need 52 — so the row
+  /// overflowed by 4 pixels at NORMAL text size, before the title had a
+  /// character in it. One column gives the card the full width and the
+  /// question does not arise (BUT-1911).
+  static const double recipeGridMinTwoColumnWidth = 300.0;
+
+  /// How many recipe cards sit side by side.
+  ///
+  /// Lives here rather than in the view so the widget test can build its grid
+  /// from the SAME rule the app uses. A test that hardcodes two columns claims
+  /// coverage at a width the app renders differently.
+  static int recipeGridColumns(BuildContext context) {
+    if (MediaQuery.sizeOf(context).width < recipeGridMinTwoColumnWidth) {
+      return 1;
+    }
+    return Breakpoints.valueFor<int>(
+      context: context,
+      mobile: 2,
+      tablet: 3,
+      desktop: 4,
+    );
+  }
+
+  /// The recipe photo's shape on a grid tile.
+  ///
+  /// A shape rather than a height, because the tile's width is decided by the
+  /// column count and the screen. Nothing below the photo is measured against
+  /// it — that content sizes to itself and the row sizes to its tallest card —
+  /// so this number decides how much picture a grid tile shows and nothing
+  /// else (BUT-1911).
+  static const double recipeGridImageAspectRatio = 4 / 3;
+
+  /// How tall a card is relative to its width, in the LIST toggle's grid.
+  ///
+  /// One caller: `LayoutComponents.responsiveListGrid` on Mina recept, which
+  /// lays out DETAILED cards in a grid on tablet and desktop and a plain list
+  /// on a phone. The grid toggle no longer reads it — that layout sizes each
+  /// row to its tallest card and needs no ratio at all (BUT-1911).
+  ///
+  /// The growth factor came from measuring the GRID card, which is a different
+  /// card in a different layout. Whether it is right for a detailed card on a
+  /// tablet has not been measured, and no test pins it. Named rather than
+  /// tuned blind: BUT-1911 scoped it out deliberately.
+  ///
+  /// What the factor does: a constant ratio cannot hold text that scales, so
+  /// the box grows with the text scale, clamped at 2x. Past 2x it freezes while
+  /// the text keeps growing.
+  static double recipeGridAspectRatio(BuildContext context) {
+    final textScale = MediaQuery.textScalerOf(context).scale(1).clamp(1.0, 2.0);
+    return gridAspectRatio / (1 + (textScale - 1) * 0.25);
+  }
+
   /// Get responsive card padding
   /// Returns padding for cards:
   /// - Mobile: 16px

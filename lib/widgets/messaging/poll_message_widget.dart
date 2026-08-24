@@ -16,6 +16,14 @@ class PollMessageWidget extends StatelessWidget {
   final void Function(String optionId)? onVote;
   final VoidCallback? onClose;
 
+  /// Whether the vote counts below were actually read (BUT-1908).
+  ///
+  /// REQUIRED, not defaulted. There is one production call site and it passes
+  /// the real value; a default of `ok` on a one-way-door gate would only ever
+  /// serve a future second call site that forgot, by drawing the close button
+  /// over votes nobody read.
+  final PollVoteHydration voteHydration;
+
   /// Called when a recipe-backed option is tapped (vs voted on). When null,
   /// recipe options behave like plain-text options (tap = vote).
   final void Function(String recipeId)? onRecipeTap;
@@ -28,6 +36,7 @@ class PollMessageWidget extends StatelessWidget {
     this.onVote,
     this.onClose,
     this.onRecipeTap,
+    required this.voteHydration,
   });
 
   @override
@@ -38,6 +47,7 @@ class PollMessageWidget extends StatelessWidget {
     final subtleColor = isFromCurrentUser
         ? cs.onPrimary.withValues(alpha: AppDimensions.opacityDark)
         : cs.onSurfaceVariant;
+    final votesUnread = voteHydration.isUnread;
 
     return Container(
       constraints: const BoxConstraints(maxWidth: 280),
@@ -77,10 +87,27 @@ class PollMessageWidget extends StatelessWidget {
           const SizedBox(height: AppDimensions.spacingXs),
           Row(
             children: [
-              Text(
-                '$totalVotes ${totalVotes == 1 ? context.l10n.pollVoteSingular : context.l10n.pollVotePlural}',
-                style: AppTextStyles.labelSmall.copyWith(color: subtleColor),
-              ),
+              // BUT-1908: "0 röster" is a claim about the votes, and it must
+              // not be made about votes nobody read. The two unread states get
+              // DIFFERENT text because they mean different things to the user —
+              // one is repaired by reopening the chat, the other may not be.
+              if (votesUnread)
+                Expanded(
+                  child: Text(
+                    voteHydration == PollVoteHydration.capped
+                        ? context.l10n.pollVotesNotLoadedShort
+                        : context.l10n.pollVotesFailedShort,
+                    style: AppTextStyles.labelSmall.copyWith(
+                      color: subtleColor,
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                )
+              else
+                Text(
+                  '$totalVotes ${totalVotes == 1 ? context.l10n.pollVoteSingular : context.l10n.pollVotePlural}',
+                  style: AppTextStyles.labelSmall.copyWith(color: subtleColor),
+                ),
               if (!poll.isActive) ...[
                 const SizedBox(width: AppDimensions.spacingSm),
                 Text(
@@ -94,9 +121,26 @@ class PollMessageWidget extends StatelessWidget {
             ],
           ),
 
-          // Close button for creator
+          if (votesUnread) ...[
+            const SizedBox(height: AppDimensions.spacingXs),
+            Text(
+              voteHydration == PollVoteHydration.capped
+                  ? context.l10n.pollVotesNotLoadedHint
+                  : context.l10n.pollVotesFailedHint,
+              style: AppTextStyles.labelSmall.copyWith(color: subtleColor),
+            ),
+          ],
+
+          // Close button for creator.
+          //
+          // BUT-1908: gated on `!votesUnread` as well. Closing is a one-way
+          // door that writes the winning recipe into the household's week, and
+          // the harm this ticket exists for is precisely that the button was
+          // drawn on a poll showing "0 röster" while the close path re-read the
+          // real votes on its own route.
           if (poll.isActive &&
               poll.creatorId == currentUserId &&
+              !votesUnread &&
               onClose != null) ...[
             const SizedBox(height: AppDimensions.spacingSm),
             Semantics(

@@ -33,6 +33,7 @@ GENERIC_DIRS = {
     "", "lib", "lib/services", "lib/views", "lib/viewmodels", "lib/widgets",
     "lib/widgets/common", "lib/models", "lib/repositories", "lib/core",
     "lib/l10n", "functions/src", ".claude", ".claude/rules", ".claude/hooks",
+    ".claude/commands",
     "docs", "docs/architecture", "assets", "tools", "test",
 }
 

@@ -250,6 +250,13 @@ class SocialExportManager with SocialExportRedaction {
           messagesList.add({
             'message_id': msg['id'],
             'data': messageData,
+            // BUT-1832. Kept OUT of `data`, which is the stored message
+            // document verbatim; the vote is a separate document under it
+            // (`messages/{id}/poll_votes/{uid}`) and folding it in would make
+            // the bundle describe a shape Firestore does not hold. Only the
+            // requester's own row is read, so nothing here needs redacting.
+            if (msg['your_poll_vote'] != null)
+              'your_poll_vote': sanitizeForJson(msg['your_poll_vote']),
           });
         }
 
@@ -264,6 +271,22 @@ class SocialExportManager with SocialExportRedaction {
         };
         if (convo['messages_truncated'] == true) {
           conversationData['messages_truncated'] = true;
+        }
+        // BUT-1832: the vote overlay clipped, while the messages themselves did
+        // not. `DataExportService`'s nested walk lifts any `*_truncated` flag,
+        // so naming it this way is what puts it in the bundle's truncation
+        // notice.
+        if (convo['poll_votes_truncated'] == true) {
+          conversationData['poll_votes_truncated'] = true;
+        }
+        // Its own key, never folded into `error_code` below: that one says the
+        // conversation's MESSAGES could not be read, and the section sentence
+        // it triggers says exactly that. A vote row that failed while every
+        // message came through is a different and smaller claim.
+        if (convo['poll_votes_error_code'] is String) {
+          conversationData['poll_votes_error_code'] =
+              convo['poll_votes_error_code'];
+          messagesData['error_code'] ??= 'conversation-poll-votes-read-failed';
         }
         // BUT-1838: carry the per-conversation failure marker UP. The
         // repository's new per-conversation catch stops one unreadable
@@ -290,7 +313,7 @@ class SocialExportManager with SocialExportRedaction {
 
       // BUT-1838: the one fact a group holds that the conversation does not —
       // who added you. Its own class so a failure there cannot take this
-      // section down, and so this facade stays under the 500-line limit.
+      // section down.
       messagesData.addAll(await ChatGroupExport(_exports).export(userId));
 
       // Section level, matching SharedShoppingListExport, rather than duplicated
@@ -300,10 +323,16 @@ class SocialExportManager with SocialExportRedaction {
       // enumerated: the sibling section shipped a positive list that named four
       // of six fields and thereby made the bundle state something false about
       // itself, and this document carries more than the obvious keeps —
-      // `lastReadTimestamps`, `reactions` and poll `voterIds` among them. A list
-      // that must stay exhaustive to stay true is a list that will stop being
-      // true. Both drops are named because BUT-1774 made `perUserSettings` a
-      // decided removal; a bundle that redacts silently states something false.
+      // `lastReadTimestamps` and `reactions` among them. A list that must stay
+      // exhaustive to stay true is a list that will stop being true. Both drops
+      // are named because BUT-1774 made `perUserSettings` a decided removal; a
+      // bundle that redacts silently states something false.
+      //
+      // BUT-1832 is why that list no longer says "poll `voterIds`": votes moved
+      // to `messages/{id}/poll_votes/{uid}` and no live writer puts one back in
+      // the message copy, so naming that array would point at a field recording
+      // nothing. The requester's own vote is exported beside each poll message
+      // as `your_poll_vote`, which keeps the sentence below true.
       messagesData['data_minimisation'] =
           "Other participants' profile pictures have been removed, as have "
           'their own notification settings for this conversation (muted, '

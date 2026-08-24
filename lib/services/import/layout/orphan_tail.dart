@@ -101,15 +101,62 @@
 /// `_tailBudget` edited and `--trim` re-run — same caveat `heading_detector.dart`
 /// carries on its own tables.
 ///
-/// **The RECALL column is biased AGAINST this rule, by 11 known cases
-/// corpus-wide — BUT-1818.** The gold records frame-cut half recipes as complete
-/// ones. 14 of the 242 verified entries were graded that way against their
-/// photographs, of which **11 bias recall** (`frameCut: fragment`, debris of
-/// the KIND this trim removes — though only ONE of the 11 sits on a page the
-/// trim actually cuts; the other ten bias the recall LEVEL and the block counts,
-/// not the trim's before/after delta); the other 3 are `tail` and bias nothing.
-/// Both numbers are FLOORS, not counts — they came from a hand grading of what a
-/// text screen surfaced, and an unfound fragment only makes the trim look worse.
+/// **The same sweep on gold that is not frame-cut debris — BUT-1847, and the
+/// row that decides the ceiling is the 200 one, measured here for the first
+/// time.** Same command plus `--no-frame-cut`, same 181 pages, same trimmed
+/// pages; only the POPULATION of scored gold entries differs (see the next
+/// section for what was dropped and why):
+///
+/// | budget | pages | precision       | recall          | right block counts | gold tokens lost |
+/// |--------|-------|-----------------|-----------------|--------------------|------------------|
+/// | 60     | 7     | 65.83 -> 65.87 %| 91.64 -> 91.64 %| 145, unchanged     | **0** (15925 -> 15925) |
+/// | **120**| **10**| 65.83 -> 65.97 %| 91.64 -> 91.64 %| 145, unchanged     | **0** (15925 -> 15925) |
+/// | 200    | 19    | 65.83 -> 66.27 %| 91.64 -> **91.59 %** | **144 — a page lost** | **9** (15925 -> 15916) |
+///
+/// So the shipped budget's content cost is zero under BOTH golds, and the 200
+/// budget's is NOT (this 9 is gold TOKENS — not to be read against the 9 band
+/// tails counted further down, which are pages; the two are unrelated):
+/// of the 36 gold tokens it costs on biased gold
+/// (`16121 -> 16085 of 17611`), 27 were frame-cut debris and **9 are real recipe
+/// text**. The band's refusal was argued from the photographs (below) before it
+/// could be priced; it is now priced, and the two agree.
+/// Read the biased table as an upper bound and this one as the cost.
+///
+/// **That 9 is sensitive to ONE borderline label, which is why the label is
+/// written down rather than assumed.** `Inlagd sill` and `Mixade vitaminer` are
+/// the same case at 159 and 166 characters, and both are `fragment`. The label
+/// that moves the row is `Inlagd sill`, which is the one BUT-1847 decided:
+/// with it a `tail` the row reads 23 tokens instead of 9, and that state WAS
+/// measured. `Mixade vitaminer` has been a `fragment` since BUT-1818 and flipping
+/// BOTH was never measured — it would cost more than 23, since a `tail` there
+/// re-enters the denominator on a page the 200 budget also cuts. Non-zero and a
+/// lost block count in every state measured, so the verdict does not turn on the
+/// call — the number does. The criterion that decides the pair is in
+/// `docs/testing/cookbook-corpus-gold-grading.md`; do not re-decide it from how
+/// the transcription happens to read.
+///
+/// **The RECALL column is biased AGAINST this rule, by 13 known cases
+/// corpus-wide — BUT-1818, re-graded BUT-1847.** The gold records frame-cut half
+/// recipes as complete ones. 23 of the 242 verified entries are graded that way
+/// against their photographs, of which **13 bias recall** (`frameCut: fragment`,
+/// debris of the KIND this trim removes — though only ONE of the 13 sits on a
+/// page the trim actually cuts; the other twelve bias the recall LEVEL and the
+/// block counts, not the trim's before/after delta); the other 10 are `tail` and
+/// bias nothing.
+/// The BUT-1818 figures were 11 and 3, from a hand grading of what a TEXT screen
+/// surfaced; BUT-1847 opened all 181 pages as images, confirmed all 14 unchanged
+/// and added nine — two `fragment` and seven `tail`. A DIFFERENT instrument — a
+/// terminal-punctuation screen, not the word-shape one that surfaced BUT-1818's
+/// candidates — recovers 9 of the 23 over the finished set (13 if it also looks
+/// for an explicit `...`, because four more carry that marker; the remaining ten
+/// are invisible to either, being clean prose that simply stops). Do NOT read
+/// that as the word-shape screen's own score: it carries 89 false positives and
+/// its own finds are all inside the 23, so re-running IT would recover far more
+/// than 9 and prove nothing. Treat any count taken from text as a floor, and
+/// grade from the photographs.
+/// **The procedure, the fragment-vs-tail rubric and the traps are in
+/// `docs/testing/cookbook-corpus-gold-grading.md`; read it before re-grading.**
+/// An unfound fragment only makes the trim look worse.
 /// Recall therefore scores retained debris as a hit, and the trim is penalised
 /// for removing precisely what it exists to remove.
 ///
@@ -121,33 +168,37 @@
 /// tokens corpus-wide (16121 -> 16118 of 17611) — `mandelforell`, `räkna`,
 /// `rensad` — every one of them carried by that same tail.
 ///
-/// **BUT-1818 has since MEASURED it, and the cost is zero.** 14 gold entries
-/// were graded against their photographs and marked `frameCut`: 11 `fragment`
-/// (the whole entry is a sliver of the next recipe) and 3 `tail` (a real recipe
-/// whose last line the frame took). `--no-frame-cut` drops the 11 — and ONLY
-/// the 11, because a `tail` gold is SHORT of tokens rather than long, so
-/// dropping it would remove no bias and would remove a whole page. Same 181
-/// pages, same 10 trimmed pages, so the two columns are one population:
+/// **BUT-1818 MEASURED it and the cost is zero; BUT-1847's re-grade moved the
+/// figures and left that verdict standing.** 23 gold entries are graded against
+/// their photographs and marked `frameCut`: 13 `fragment` (the whole entry is a
+/// sliver of the next recipe) and 10 `tail` (a real recipe whose ending the
+/// capture took). `--no-frame-cut` drops the 13 — and ONLY the 13, because a
+/// `tail` gold is SHORT of tokens rather than long, so dropping it would remove
+/// no bias and would remove a whole page. Same 181 pages, same 10 trimmed pages,
+/// so the two columns are one population:
 ///
 /// |            | biased gold | `--no-frame-cut` |
 /// |------------|-------------|------------------|
-/// | recall     | 91.54 -> 91.52 % | **91.59 -> 91.59 %** |
-/// | precision  | 66.64 -> 66.77 % | 66.03 -> 66.18 % |
-/// | right block counts | 139 of 181 | **144 of 181** |
+/// | recall     | 91.54 -> 91.52 % | **91.64 -> 91.64 %** |
+/// | precision  | 66.64 -> 66.77 % | 65.83 -> 65.97 % |
+/// | right block counts | 139 of 181 | **145 of 181** |
 ///
 /// And it is exactly zero, not a rounded 0.00: the report carries the raw
-/// integers, **15974 -> 15974 of 17441** gold tokens, against the biased run's
+/// integers, **15925 -> 15925 of 17378** gold tokens, against the biased run's
 /// 16121 -> 16118 of 17611. A percentage pair reading `X -> X` never proves
-/// zero on its own; read the numerator. (A draft added "and per page, zero pages lose
+/// zero on its own; read the numerator. (BUT-1818's own column read
+/// 15974 -> 15974 of 17441 with 144 of 181 blocks — two fragments fewer in the
+/// dropped set. The de-biased column moves whenever the grading does, which is
+/// why the run that produced it has to be named.) (A draft added "and per page, zero pages lose
 /// a gold token and zero gain one" — true when measured, but NO shipped command
 /// emits it, and this file's own rule is that a figure must stay re-derivable.
 /// The integers above are emitted; that sentence was not, so it is gone.)
 ///
 /// So the 0.02 points were the biased gold, in full. The block counts move
-/// 139 -> 144 as **SIX pages gained and ONE lost**, not five clean gains — the
+/// 139 -> 145 as **SEVEN pages gained and ONE lost**, not six clean gains — the
 /// aggregate is a masked swap, and `--trim --no-frame-cut` now prints the
 /// per-page movement so it stays re-derivable (the table lives in the trim
-/// arm, so the flag alone does not emit it). The six are pages where the splitter
+/// arm, so the flag alone does not emit it). The seven are pages where the splitter
 /// emitted one block fewer than the biased gold demanded: it correctly declined
 /// to make a recipe out of a sliver. The one lost,
 /// `PXL_20260803_204205028`, is the opposite and the more useful case — the
@@ -164,16 +215,19 @@
 /// A first draft of this sentence said "one block per sliver", inferred from
 /// the count. **A count that matches gold never tells you WHICH blocks came
 /// out** — print them, or run the splitter.
-/// (Eight pages carry a dropped fragment, not seven: the eighth,
-/// `PXL_20260803_204143402`, is the most-biased page in the corpus — gold 5 -> 2
-/// — and is wrong under BOTH golds, so it moves nothing. Named because six
-/// plus one leaves a case unaccounted for, and this file's whole discipline is
-/// that an aggregate must not hide one.)
-/// The BUDGET table at the top of this section (not the comparison just above)
-/// keeps the biased figures because
+/// (TEN pages carry a dropped fragment, and only eight of them move: seven gained
+/// plus the one lost. The other two are wrong under BOTH golds and move nothing —
+/// `PXL_20260803_204143402`, the most-biased page in the corpus at gold 5 -> 2, and
+/// `PXL_20260803_204345256` at gold 3 -> 2. Named because seven plus one leaves two
+/// cases unaccounted for, and this file's whole discipline is that an aggregate
+/// must not hide one. No page is ALL fragment, so none leaves the population —
+/// check that invariant after any re-grade.)
+/// The FIRST budget table at the top of this section (not the comparison just
+/// above) keeps the biased figures because
 /// they are what every other document quotes and they still reproduce with the
-/// flag off; read them as the UPPER BOUND they are. The 200 row is
-/// unre-measured and stays the figure most exposed. **An earlier draft of this
+/// flag off; read them as the UPPER BOUND they are. The 200 row was the figure
+/// most exposed and is no longer unre-measured — the de-biased table beside it
+/// prices it at 9 real gold tokens. **An earlier draft of this
 /// paragraph compared 181 pages against 178** — it dropped the `tail` entries
 /// too, which took three whole pages out, one of them a trimmed one. Same
 /// conclusion, but across two different populations, which is not a
@@ -187,6 +241,19 @@
 /// sill`, `Mixade vitaminer`), or a tip section with its own list (`I stället
 /// för sås`). So the band above 120 is deliberately left alone, and this file
 /// has two outcomes rather than the three an earlier draft designed.
+///
+/// **TWO of those nine are debris by the corpus's own grading, and the verdict
+/// survives them (BUT-1847).** `Mixade vitaminer` (166 chars) and `Inlagd sill`
+/// (159) both carry `frameCut: fragment`, so cutting either costs nothing. The
+/// claim above that every tail in the band carries coherent text under the
+/// heading is right about the ink on the page and wrong about what the GOLD is
+/// worth, for those two — they are the same case at seven characters' distance,
+/// and the label is argued in `docs/testing/cookbook-corpus-gold-grading.md`
+/// rather than from how their transcriptions happen to read. The band was argued
+/// on nine readings before any of it was priced; the de-biased 200 row now prices
+/// it at 9 real gold tokens and one lost block count, the same answer reached by
+/// measurement rather than by reading. Do not use the two debris cases to reopen
+/// the band without re-running that row.
 ///
 /// The budget is a PROXY, and the property it proxies is the one a future reader
 /// needs: below 120 the corpus holds only frame-cut debris; above it, content.

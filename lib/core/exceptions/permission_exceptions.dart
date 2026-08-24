@@ -108,6 +108,8 @@
 /// access control throughout the Swedish cooking application while providing comprehensive error
 /// context for development, monitoring, and security analysis purposes.
 
+import 'package:butlery/core/utils/log_sanitizer.dart';
+
 /// Comprehensive exception class for permission and access control violations with detailed context information.
 /// This exception is thrown when a user lacks the necessary permissions to perform a specific operation
 /// on a resource. It provides detailed context including the specific resource, operation, and user
@@ -125,15 +127,52 @@ class PermissionDeniedException implements Exception {
     this.userId,
   });
 
+  /// Masked at the STRING boundary, not in the fields.
+  ///
+  /// `toString()` is what leaves the device: `AppLogger` hands the exception
+  /// OBJECT to `FirebaseCrashlytics.recordError` unchanged, an uncaught
+  /// exception reaches `recordError` from `main.dart` without passing any
+  /// logger at all, and on web Crashlytics is skipped so the scrubbed web
+  /// reporter reads `error.toString()` directly. All three go through here.
+  ///
+  /// The fields keep their raw values, so a debugger and any local handler are
+  /// unaffected (BUT-1897).
+  ///
+  /// Crashlytics still groups these reports by type — but NOT because the
+  /// object is passed through: `recordError` sends `exception.toString()`, so
+  /// the object never crosses the channel and `runtimeType` is not what the
+  /// grouping sees. It survives because the type LABEL is built outside the
+  /// masked span, immediately below. That distinction matters: it means the
+  /// label's position is load-bearing, not incidental.
+  ///
+  /// The exception's own NAME stays OUTSIDE the mask, and that is not cosmetic:
+  /// `PermissionDeniedException` is 25 alphanumeric characters, which falls
+  /// inside the masker's 20-28 window, so masking the label along with the body
+  /// turned every one of these into `Perm***`. (A Firebase uid is 28; it is the
+  /// WINDOW they share, not the length. Narrowing the rule to exactly 28 would
+  /// quietly re-open the label case.) Caught by the existing tests on the first
+  /// run.
+  ///
+  /// The whole joined string is masked rather than the id fields alone, because
+  /// a uid reaches this text by routes a named-field rule cannot see: some sites
+  /// interpolate it into `message` ("User $userId does not have permission…")
+  /// and some put it inside `resource` (`storage/users/<uid>/…`). Masking only
+  /// the named field would leave both open.
+  ///
+  /// No counts here on purpose. Every number this paragraph has carried was
+  /// wrong at least once and corrected at least twice; the rule is what a reader
+  /// needs, and the rule does not rot.
+  ///
   @override
   String toString() {
     final parts = [
-      'PermissionDeniedException: $message',
+      message,
       if (operation != null) 'Operation: $operation',
       if (resource != null) 'Resource: $resource',
       if (userId != null) 'User: $userId',
     ];
-    return parts.join(', ');
+    return 'PermissionDeniedException: '
+        '${LogSanitizer.maskIdentifiers(parts.join(', '))}';
   }
 }
 
@@ -160,12 +199,18 @@ class StaleAccessControlBaseException extends PermissionDeniedException {
   /// server's copy — for the audit trail, never for the user-facing message.
   final List<String> driftedFields;
 
+  /// Overrides its parent's `toString()`, so it needs the mask in its own
+  /// right — inheriting the reasoning does not inherit the call.
   @override
-  String toString() =>
-      'StaleAccessControlBaseException: $message'
-      '${driftedFields.isEmpty ? '' : ', Drifted: ${driftedFields.join(", ")}'}'
-      '${resource == null ? '' : ', Resource: $resource'}'
-      '${userId == null ? '' : ', User: $userId'}';
+  String toString() {
+    final body =
+        '$message'
+        '${driftedFields.isEmpty ? '' : ', Drifted: ${driftedFields.join(", ")}'}'
+        '${resource == null ? '' : ', Resource: $resource'}'
+        '${userId == null ? '' : ', User: $userId'}';
+    return 'StaleAccessControlBaseException: '
+        '${LogSanitizer.maskIdentifiers(body)}';
+  }
 }
 
 /// Exception thrown when attempting to access a resource that doesn't exist
@@ -180,14 +225,18 @@ class ResourceNotFoundException implements Exception {
     this.resourceId,
   });
 
+  /// See [PermissionDeniedException.toString] for why the mask sits here.
+  /// `resourceId` is the field that started BUT-1897: it can hold a DM's
+  /// `direct_<uidA>_<uidB>`, which is a social-graph edge rather than an id.
   @override
   String toString() {
     final parts = [
-      'ResourceNotFoundException: $message',
+      message,
       if (resourceType != null) 'Type: $resourceType',
       if (resourceId != null) 'ID: $resourceId',
     ];
-    return parts.join(', ');
+    return 'ResourceNotFoundException: '
+        '${LogSanitizer.maskIdentifiers(parts.join(', '))}';
   }
 }
 
@@ -198,9 +247,14 @@ class SecurityViolationException implements Exception {
 
   SecurityViolationException(this.message, {this.details});
 
+  /// Masked like its siblings: `details:` is free text a caller fills in, and an
+  /// id is a natural thing to put there. Left out of the first pass and it
+  /// should not have been (BUT-1897).
   @override
   String toString() {
-    return 'SecurityViolationException: $message${details != null ? ' - $details' : ''}';
+    final body = '$message${details != null ? ' - $details' : ''}';
+    return 'SecurityViolationException: '
+        '${LogSanitizer.maskIdentifiers(body)}';
   }
 }
 
@@ -211,9 +265,14 @@ class AuthenticationException implements Exception {
 
   AuthenticationException(this.message, {this.details});
 
+  /// Masked for the same reason as its siblings — `details:` is free text a
+  /// caller fills in, and "which user was not signed in" is a natural thing to
+  /// put there.
   @override
   String toString() {
-    return 'AuthenticationException: $message${details != null ? ' - $details' : ''}';
+    final body = '$message${details != null ? ' - $details' : ''}';
+    return 'AuthenticationException: '
+        '${LogSanitizer.maskIdentifiers(body)}';
   }
 }
 
@@ -225,13 +284,21 @@ class ValidationException implements Exception {
 
   ValidationException(this.message, {this.field, this.value});
 
+  /// The rejected VALUE is described, never quoted.
+  ///
+  /// It is whatever the user typed — a comment body, a recipe title, an email
+  /// into a form — so on the Crashlytics path it is free-text personal data
+  /// that no identifier rule can recognise. Which field failed, and what kind
+  /// of thing was in it, is what a crash report needs; the content is not
+  /// (BUT-1897).
   @override
   String toString() {
     final parts = [
-      'ValidationException: $message',
+      message,
       if (field != null) 'Field: $field',
-      if (value != null) 'Value: $value',
+      if (value != null) 'Value: <${value.runtimeType}>',
     ];
-    return parts.join(', ');
+    return 'ValidationException: '
+        '${LogSanitizer.maskIdentifiers(parts.join(', '))}';
   }
 }

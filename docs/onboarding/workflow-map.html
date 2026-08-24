@@ -1668,6 +1668,12 @@
       "path": "lib/services/messaging_service.dart"
     },
     {
+      "id": "svc-blocked-user-filter",
+      "label": "BlockedUserFilter",
+      "context": "service",
+      "path": "lib/services/social/blocking/blocked_user_filter.dart"
+    },
+    {
       "id": "svc-group-shared-content",
       "label": "GroupSharedContentService",
       "context": "service",
@@ -1729,7 +1735,7 @@
     },
     {
       "id": "cf-chat-group-membership",
-      "label": "createChatGroup / addChatGroupMembers / removeChatGroupMember",
+      "label": "createChatGroup / addChatGroupMembers / removeChatGroupMember / ensureCategoryChat",
       "context": "cloud-function",
       "path": "functions/src/groups/create-chat-group.ts"
     },
@@ -2806,7 +2812,7 @@
     {
       "id": "flow5",
       "label": "GDPR-dataexport",
-      "description": "Hela exporten byggs klientsidigt i ett anrop — ingen e-post, ingen serverfil. Enda serverhoppet är audit-loggarna, som är admin-läsbara och därför kräver en callable. Rå motparts-UID i notification_delivery exporteras medvetet (beslutad avvikelse). Increment 5: en ny sektion pooled_rating_events (users/{uid}/canonical_rating_events) exporteras nu också — pseudonyma poolade betygshändelser som raderingskaskaden tar bort, så Art. 15 kräver att de finns i exporten. BUT-1732 (2026-07-30): en ny sektion shared_shopping_lists (SharedShoppingListExport, delegerad från ContentExportManager) läser tre separata frågor — ägd, medlem, bidragit till — mot unified_shared_shopping_lists; tidigare täckte exporten bara den PERSONLIGA shopping_lists-subkollektionen medan raderingskaskaden redan skrubbade de delade listorna, så Art. 15 saknade det Art. 17 tog bort. Andra medlemmars cachade visningsnamn minimeras bort (BUT-1450-precedent), deras user-ID:n behålls. BUT-1721 (2026-07-30): export_metadata sammanställs nu i ETT djupbegränsat svep över bundlen — truncated_collections hittar även flaggor som ligger i en LISTA av kartor (messages.conversations[i].messages_truncated), vilket den gamla ettnivåkontrollen aldrig kunde se, så en bundle som tappat en konversations meddelanden inte längre rapporterar sig komplett; och warnings utlöses av `error` och inte bara `error_code`, så en sektion som havererat helt (vänner, recept, preferenser) inte längre kan se komplett ut. Varningstexten HÄRLEDS ur sektionsnamnet och kopierar aldrig sektionens `error` upp till bundlens rot, eftersom ett rått undantag kan bära en annan användares uid, en create_composite-URL eller interna collection-vägar (BUT-1732).",
+      "description": "Hela exporten byggs klientsidigt i ett anrop — ingen e-post, ingen serverfil. Enda serverhoppet är audit-loggarna, som är admin-läsbara och därför kräver en callable. Rå motparts-UID i notification_delivery exporteras medvetet (beslutad avvikelse). Increment 5: en ny sektion pooled_rating_events (users/{uid}/canonical_rating_events) exporteras nu också — pseudonyma poolade betygshändelser som raderingskaskaden tar bort, så Art. 15 kräver att de finns i exporten. BUT-1732 (2026-07-30): en ny sektion shared_shopping_lists (SharedShoppingListExport, delegerad från ContentExportManager) läser tre separata frågor — ägd, medlem, bidragit till — mot unified_shared_shopping_lists; tidigare täckte exporten bara den PERSONLIGA shopping_lists-subkollektionen medan raderingskaskaden redan skrubbade de delade listorna, så Art. 15 saknade det Art. 17 tog bort. Andra medlemmars cachade visningsnamn minimeras bort (BUT-1450-precedent), deras user-ID:n behålls. BUT-1721 (2026-07-30): export_metadata sammanställs nu i ETT djupbegränsat svep över bundlen — truncated_collections hittar även flaggor som ligger i en LISTA av kartor (messages.conversations[i].messages_truncated), vilket den gamla ettnivåkontrollen aldrig kunde se, så en bundle som tappat en konversations meddelanden inte längre rapporterar sig komplett; och warnings utlöses av `error` och inte bara `error_code`, så en sektion som havererat helt (vänner, recept, preferenser) inte längre kan se komplett ut. Varningstexten HÄRLEDS ur sektionsnamnet och kopierar aldrig sektionens `error` upp till bundlens rot, eftersom ett rått undantag kan bära en annan användares uid, en create_composite-URL eller interna collection-vägar (BUT-1732). BUT-1832 (2026-08-16): omröstningsröster flyttade från meddelandedokumentet till messages/{id}/poll_votes/{uid} — reglerna, indexet och raderingskaskaden följde med, men inte exporten, så användarens egna röster hade fallit ur bundlen medan meddelandets kvarvarande voterIds-listor står tomma. Varje exporterad omröstning bär nu den begärandes EGEN röstrad som your_poll_vote, aldrig någon annans; läsningen sker ett meddelande i taget, eftersom collectionGroup('poll_votes') saknar regelblock och nekas, och den har ett läsbudgettak per konversation som rapporterar sig via poll_votes_truncated. BUT-1801 (2026-08-17): receptsektionen hade ALDRIG levererat en enda rad — exportRecipes läste först users/{uid}/recipes och därefter en toppnivåsamling recipes som ingen regel ger en klient läsrätt till, och båda låg i SAMMA try, så permission-denied från den andra kastade bort de personliga recept den första redan hämtat och hela sektionen returnerade recipes-export-failed. Den andra läsningen är borttagen; sektionen har nu EN källa. Mönstret att se upp med är inte den döda frågan utan förstärkaren: två läsningar under ett try betyder att ett nekande i den andra kastar den förstas rader.",
       "steps": [
         {
           "from": "v-data-export",
@@ -6072,7 +6078,7 @@
     {
       "id": "flow-grp-5",
       "label": "Måltidsomröstning",
-      "description": "Skapa och rösta i en middagsomröstning i gruppchatten, med automatisk planering vid stängning",
+      "description": "Skapa och rösta i en middagsomröstning i gruppchatten, med automatisk planering vid stängning. BUT-1856: omröstningen återanvänder EN chatt per social grupp — den skapas vid första omröstningen och rostern synkas mot gruppen vid varje senare, i stället för en ny oraderbar gruppchatt per omröstning. BUT-1908/BUT-1909: en omröstning vars röster aldrig lästes ritar ingen avsluta-knapp, en stängning som inte kan läsa blockeringslistan vägras med ett svenskt besked i stället för att gissa en vinnare, och blockerade personers röster räknas varken i siffran på skärmen eller när vinnaren avgörs.",
       "features": [
         "GRP-09"
       ],
@@ -6101,8 +6107,29 @@
         {
           "from": "vm-social-group-detail",
           "to": "svc-messaging",
-          "payload": "createGroupConversation + sendPollMessage(pollData)",
+          "payload": "ensureCategoryChat(ownerId, categoryId) + sendPollMessage(pollData)",
           "transport": "call",
+          "verified": true
+        },
+        {
+          "from": "svc-messaging",
+          "to": "repo-chat-group",
+          "payload": "ensureCategoryChat — hämtar eller skapar gruppens ENDA chatt",
+          "transport": "call",
+          "verified": true
+        },
+        {
+          "from": "repo-chat-group",
+          "to": "cf-chat-group-membership",
+          "payload": "ensureCategoryChat callable — roster från friend_categories, minderårighetsgrind mot anroparen",
+          "transport": "callable",
+          "verified": true
+        },
+        {
+          "from": "cf-chat-group-membership",
+          "to": "ds-chat-groups",
+          "payload": "sourceCategoryId + sourceCategoryOwnerId vid skapande, annars rosterjustering",
+          "transport": "write",
           "verified": true
         },
         {
@@ -6157,14 +6184,21 @@
         {
           "from": "v-poll-message-widget",
           "to": "vm-chat",
-          "payload": "closePoll(messageId) (endast skapare)",
+          "payload": "closePoll(messageId) — endast skaparen, och bara när rösterna verkligen lästes",
           "transport": "call",
           "verified": true
         },
         {
           "from": "vm-chat",
           "to": "svc-messaging",
-          "payload": "closePoll — beräknar vinnare, lägger till i grupp-/veckoplan, delar med gruppen",
+          "payload": "closePoll — kräver blockeringslistan, räknar bort blockerade röster, beräknar vinnare, lägger till i grupp-/veckoplan, delar med gruppen",
+          "transport": "call",
+          "verified": true
+        },
+        {
+          "from": "svc-messaging",
+          "to": "svc-blocked-user-filter",
+          "payload": "requireBlockedIds() — vägrar stängningen om listan inte går att läsa",
           "transport": "call",
           "verified": true
         },
@@ -6180,6 +6214,13 @@
           "to": "ds-messages",
           "payload": "poll.isClosed=true",
           "transport": "write",
+          "verified": true
+        },
+        {
+          "from": "vm-chat",
+          "to": "v-chat-view",
+          "payload": "svensk vägran-text vid PollCloseRefusedException (snackbar)",
+          "transport": "call",
           "verified": true
         }
       ],

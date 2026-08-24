@@ -1,710 +1,771 @@
-# SPRINT 2026-08-16 — Agents C & D: recipe-safety-ui + social-messaging-client
+# PLAN 2026-08-22 — sprint (--pick malin): six tickets Malin chose in session
 
-Plan section for THIS run, written before any work starts. This is the record the sprint is
-graded against. 4 tickets, 2 agents, 2 area-clusters (separate worktrees — no file overlap
-between them).
+Selected interactively 2026-08-22 via `/delivery:sprint-execute --pick malin`. Malin picked
+all four offered clusters, which resolve to six tickets. Every premise below was checked
+against CURRENT `main` (working tree at 52a6f8e9e), not against the ticket text.
 
-**Heading note:** the run was told to use the heading `# SPRINT 2026-08-16`, but the previous
-section (immediately below) already opens with that exact string, so a bare heading would not
-identify this run. The agent/area suffix above is the disambiguator; grade against this
-section, not the one below it.
+Router (`python tools/stakeholder_router.py --json`) returned tier **single** for all five
+path-groups — no `full-panel`, so nothing is pulled from the sprint on the dispatch gate.
+Panel policy is `park`: a contested outcome goes to In Review rather than auto-closing.
 
-**Criteria-availability note:** this run was told BUT-1780 and BUT-1853 carry fewer than two
-gradable acceptance criteria. Read against Linear, that is not the case — BUT-1853 has an
-explicit `## Acceptance` block with three checkable items, and BUT-1780's Finding/Suggested Fix
-sections state four. All criteria below are the ticket's own wording; none were softened and
-none were invented to reach the two-criteria floor.
+## Selection record
 
-## Agent C — recipe-safety-ui (1 ticket)
+| Ticket | Disposition | Tier | Router | Owning role(s) |
+| --- | --- | --- | --- | --- |
+| BUT-1908 poll shows "0 röster", closes on real votes | build | C (repo + service + VM + widget) | single | Trust & Safety |
+| BUT-1909 blocking does not reach poll votes | build | C (same module, security) | single | Trust & Safety |
+| BUT-1915 raw uid into Crashlytics via MenuOperationError | build | A | single | Localization / i18n |
+| BUT-1910 rating field drops the comma | build | A | single | Localization / i18n |
+| BUT-1906 diet badges missing in grid view | build-review | B (UI-visual) | single | Creative Director / Brand Lead |
+| BUT-1894 real-time-guard costs 859 s per commit | build | A | single | Software Architect |
 
-Area: `lib/widgets/common/content_card.dart` + `lib/widgets/recipe/recipe_card.dart` and a new
-widget test. Client-only, no Firestore/rules/CF surface.
+BUT-1894 carries a **recorded decision** (Linear comment, 2026-08-18): the earlier rewrite
+was torn down because it failed OPEN on two cases. Those two cases are copied into its
+acceptance criteria below and are binding.
 
-- [ ] **BUT-1780** — Allergenmärkena visas aldrig på receptkorten — inställningen är på som
-  standard men flaggan når aldrig fram.
-  **Blast-radius tier (recorded on the ticket):** `Tier: single — Creative Director / Brand
-  Lead`. The ticket adds that the allergen-safety framing makes a product-side look worth
-  having before the "clean cards by default" intent is overridden.
-  **What changes:** add `showAllergenBadges` / `showDietaryBadges` passthrough parameters to
-  `ContentCard` (constructor at `content_card.dart:184-207`, which has no such parameter today)
-  and forward them into the `RecipeCard(...)` call at `content_card.dart:246` — or derive them
-  from `userAllergenPrefs != null` / `userDietaryPrefs != null`, which
-  `lib/views/mina_recept/recipe_card_widget.dart:53-58` already populates from
-  `allergenPrefs.showOnCards`. The gates being unblocked are `recipe_card.dart:223` (allergen)
-  and `:232` (dietary); the defaults at `:80` / `:82` are what nothing in the repo ever sets.
-  **Acceptance criteria (from the ticket):**
-  1. A recipe card in a list or grid renders its allergen badge when the current user's
-     `allergenPrefs.showOnCards` is true and the recipe has a tracked allergen.
-  2. A recipe card renders its dietary badge under the same condition for tracked diets.
-  3. A widget test renders a card with a tracked allergen and asserts the badge is present,
-     pinning the regression.
-  4. The hidden-UNKNOWN-badge mockup departure in `.claude/rules/accepted-deviations.md` is
-     left untouched — only CONTAINS/FREE rendering is fixed.
+### Step-0 premise check (grep of main, not of `git log`)
 
-## Agent D — social-messaging-client (3 tickets)
+* BUT-1908 — `maxHydratedPolls = 20` at `message_query_module.dart:23`, `_pollIds` still
+  `.take()`s, `poll_message_widget.dart:98-100` still gates only on
+  `poll.isActive && poll.creatorId == currentUserId`. **Premise holds.**
+* BUT-1909 — `_tally()` at `:194` reads every `poll_votes` row with no block filter;
+  `BlockedUserFilter` is applied only in `messaging_service.dart:254 _filterBlocked`, on
+  `m.senderId`. **Premise holds.**
+* BUT-1915 — `menu_participants.dart:112` still throws
+  `MenuOperationError(message: l.validationUserNotParticipant(userId))` with the raw uid.
+  **Premise holds.**
+* BUT-1910 — `skriv_sjalv_recept_view.dart:677` still calls `double.tryParse(value)`;
+  `lib/core/utils/swedish_decimal_input.dart` exists. **Premise holds.**
+* BUT-1906 — `lib/widgets/recipe/recipe_card.dart` still carries the "deliberately NOT
+  here" note in the grid layout. **Premise holds.**
+* BUT-1894 — `scripts/check_test_real_time.sh` unchanged since 2026-06-22. **Premise holds.**
 
-Area: chat client navigation, the `sync-conversation-last-message` Cloud Function, and
-shopping-dialog tests. BUT-1853 touches `functions/src`, so the Cloud Functions review gate
-fires for this batch; BUT-1860 is test-only.
+## Risky-ticket plan expansion (Phase 1.5 fired for 1908, 1909, 1915, 1894)
 
-- [ ] **BUT-1857** — Gruppinfo from the conversations list crashes — wrong argument, wrong
-  screen.
-  **Blast-radius tier:** none recorded on the ticket. Client navigation only.
-  **What changes:** fix `ConversationsListView._navigateToGroupInfo` (and its route
-  registration) to push the chat's group detail screen — not the social-group detail view —
-  with the same argument shape the working in-chat Gruppinfo navigation already uses, instead
-  of passing a `Map` to a handler that casts the argument `as String?`.
-  **Acceptance criteria (from the ticket):**
-  1. Gruppinfo from the conversations list opens the same screen as Gruppinfo from inside the
-     chat, with the same argument shape and no cast error.
-  2. A navigation test asserts the pushed route name and its argument type from both entry
-     points, and fails if the two diverge.
+### BUT-1908 + BUT-1909 — one implementation, two tickets
 
-- [ ] **BUT-1853** — A missing `sentAt` makes the chat history cut-off fail OPEN.
-  **Blast-radius tier:** none recorded on the ticket; it does record that the fix is
-  server-side and "belongs behind the Cloud Functions gate rather than in the client DTO"
-  (labels: social, security).
-  **What changes:** in `projectLastMessage`
-  (`functions/src/messaging/sync-conversation-last-message.ts`, delete-recompute path at
-  `:119-135`), skip the projection — or clear `lastMessage` outright — when the surviving
-  message's `sentAt` is missing, so `Conversation.canReadMessageAt`'s two inputs
-  (`memberSince`, `lastMessage.sentAt`) fail in the same, closed direction instead of opposite
-  ones. Today `message_dto.dart:94-95` turns an absent stamp into `clock.now()`, which is true
-  against every stamp and renders the pre-join preview. Whether that DTO's `?? clock.now()`
-  should become `?? null` is explicitly a wider blast radius and stays out of this ticket.
-  **Acceptance criteria (from the ticket's `## Acceptance`):**
-  1. A message document with no `sentAt` cannot become a conversation's `lastMessage` via the
-     delete-recompute path.
-  2. A CF unit test covers the delete-recompute path with a `sentAt`-less survivor and is
-     mutation-proven — it goes red when the guard is removed.
-  3. A comment at `canReadMessageAt` records that both of its inputs now fail in the same
-     direction.
+They touch the same tally and must agree on one answer, so they ship together.
 
-- [ ] **BUT-1860** — Inköpslistans riktiga varudialog har noll tester — 579 nåbara rader,
-  inklusive en bugg som redan varit ute en gång.
-  **Blast-radius tier:** none recorded on the ticket. Test-only (labels: autonomous, shopping,
-  test-gap).
-  **What changes:** add widget tests for the add/edit flow of
-  `lib/views/unified_shopping/widgets/dialogs/shopping_item_dialogs.dart` (name, note and price
-  survive save) and unit tests for `_CategorySuggester.suggest`. The DI rig to copy is
-  `test/widget/views/recipe_form_meal_type_dropdown_test.dart` (BUT-1845).
-  **Acceptance criteria (from the ticket):**
-  1. A widget test proves a written name, a note and a price all survive save, through both the
-     add and the edit flow.
-  2. Unit tests cover `_CategorySuggester.suggest` over a handful of representative item names.
-  3. Removing the `copyWith` line at `:239-259` that preserves note/price — the previously
-     shipped bug the comment there remembers — turns the new test red; the mutation-probe
-     output is pasted as evidence.
-  4. No production file is modified; this ticket is test-only.
+**Blast radius:** `lib/repositories/firebase/modules/message_query_module.dart`,
+`lib/services/messaging_service.dart`, `lib/viewmodels/chat_viewmodel.dart`,
+`lib/widgets/messaging/poll_message_widget.dart`,
+`lib/widgets/messaging/builders/message_content_builder.dart`, the two ARB files,
+plus tests.
 
-## Utfall, 2026-08-16 — 4 valda, 0 levererade, körningen stoppade sig själv
+**Design — hydration state (1908).** The client cannot today tell "zero votes" from "the
+votes were never read". Both are `voterIds == []`. A boolean is not enough: past-the-cap is
+a client choice a re-read repairs, a failed read may be permanent, and the two need
+different Swedish text. So hydration writes a marker into the IN-MEMORY metadata only:
 
-Ingen av de fyra rutorna ovan är ikryssad, och ingen ska kryssas. `git rev-parse HEAD` stod
-kvar på sprintbasen `7b8ca0ec3` när körningen slutade; ingenting committades, ingenting
-pushades, ingen Linear-övergång gjordes.
+    metadata['pollVoteHydration'] = 'ok' | 'capped' | 'failed'
 
-Kedjan, i ordning:
+Safe to add because nothing round-trips a hydrated `Message` back to Firestore: the repo's
+`closePoll` (`message_mutation_module.dart:475-497`) re-reads the raw document and writes
+`isClosed` alone, and no other writer sends a hydrated metadata map. Verified by grep of
+every `'metadata':` write under `lib/repositories/`.
 
-1. **BUT-1780 byggdes** och tre specialistgranskare släppte igenom bytena. Slutverifieraren
-   underkände dem på två av tre linser — `correctness=fail`, `data-safety=pass`,
-   `intent=fail`. Kärnan i båda: de tre nya testen läser `card.showAllergenBadges` av den
-   konstruerade widgeten i stället för att leta upp ett renderat märke, och `RecipeFactory`
-   kan inte sätta `tagResult`, så gaten på `recipe_card.dart:223` är alltid falsk. Testen
-   förblir gröna om hela märkesblocket raderas. Kriterium 3 var alltså inte uppfyllt.
-2. **Batchen lades i stash** (`stash@{0}` / `590a45347`, 2 filer, 62 rader) enligt regeln att
-   underkänd kod aldrig når en commit.
-3. **Trädet var inte rent efteråt** — fyra orelaterade filer var redan modifierade. Motorn
-   stannade hellre än att låta nästa batch bygga ovanpå oredovisat material. Rätt beslut.
-4. **Agent D hann bli klar ändå** och lämnade `.claude/state/sprint-patches/batch-1-20260816-153706.patch`
-   (5 filer, 632 rader) för BUT-1857 / BUT-1853 / BUT-1860. Den applicerades aldrig och är
-   OGRANSKAD. Körningens egen rapport kallar de tre "tysta bortfall" och säger att ingenting
-   producerades — det stämmer inte, och patchen är den enda kopian.
+**Design — blocked voters (1909).** Filtering belongs in the SERVICE, not the repository:
+blocking is viewer-scoped, `MessagingService` already owns `BlockedUserFilter`, and the
+repository has no business knowing who the viewer blocked. One helper strips blocked uids
+from every option's `voterIds`, and it runs on BOTH surfaces so the number on screen and
+the winner can never disagree:
 
-### Avvikelselogg
+1. `_filterBlocked` (covers the live stream at `:222` and the page at `:239`), and
+2. `closePoll`, which reads through `_messagingRepository.getMessage` directly and would
+   otherwise bypass the filter entirely.
 
-- **Fyra falska rader i `docs/org/metrics/events.jsonl`.** Skrivna 13:13:57 med
-  `outcome: "declined-unattended-shipped"` och texten "BUILT and committed … then parked In
-  Review" för alla fyra biljetterna. Varje sats var osann. Rättade 2026-08-16 till
-  `declined-unattended` med ett `corrected`-fält som namnger felet; BUT-1865 bär historiken.
-  Raderna hann aldrig committas, så inget mätvärde hann påverkas.
-- **Post-sprint-steg 1, 2 och 7 kördes aldrig** (full `dart analyze`, uppföljningsbiljetter före
-  commit, rapport till Malin). Steg 2 och 7 togs i efterhand samma dag: tio uppföljningar
-  filade (BUT-1865 t.o.m. BUT-1874) och rapporten levererad.
-- **Två granskarfynd stod okvitterade** när körningen slutade — den döda luckan vid tomt
-  allergenval och `content_card.dart` på 503 rader utan post i `ACCEPTED_LARGE_FILES.md`.
-  Nu BUT-1869 och BUT-1870.
+**Design — the close path (1908 items 3-5).** `closePoll` refuses when the tally was not
+read: no plan write, no `isClosed` flip, throw a typed failure. `ChatViewModel.closePoll`
+returns a result instead of swallowing, and the chat view shows the Swedish reason. The cap
+logs when it excludes a poll.
 
-### Besluten som togs efteråt, 2026-08-16
+**Rollback shape:** every change is additive and in-memory; reverting the commit restores
+the previous behaviour with no data migration, because nothing new is persisted.
 
-Malin frågades ut om samtliga öppna val samma kväll. Sju beslut, vart och ett inskrivet i sin
-egen biljett — det är biljetterna som är protokollet, inte den här filen:
+**Acceptance criteria**
 
-- **BUT-1780** — bygg märkena, men `showOnCards` byter default till **av**. Ytor: listvyn i
-  Mina Recept + ingredienssöket. UNKNOWN-märket ska filtreras bort i `CompactAllergenRow`
-  också. Testet måste hitta märkeswidgeten i det renderade trädet.
-- **BUT-1867** (rutnät/kompakt) och **BUT-1868** (arkivimport-halvan) — avböjda, stängda.
-- **BUT-1832** — rösterna flyttas till `messages/{messageId}/poll_votes/{voterUid}`, inte
-  enradaren. Byggs ihop med **BUT-1835**.
-- **BUT-1801**, **BUT-1835**, **BUT-1833** — grönt ljus, bromsarna släppta.
-- **BUT-1812** — egen auto-id-rad per delning; samordnas med BUT-1809:s backfill.
-- **BUT-1792** — alla fyra TTL-policyer slås på, presence inkluderad.
-- **BUT-1873** — priskontrollerna tas bort ur båda varudialogerna.
+BUT-1908
+1. `diff` — Hydration records three distinguishable states, and a poll excluded by the cap
+   or failed on read is NOT reported as `ok`. Pinned by a test per state.
+2. `diff` — `PollMessageWidget` does not draw an ENABLED close button on a poll whose votes
+   were not read, and shows Swedish text saying so instead of a bare "0 röster". Two tests:
+   capped and failed.
+3. `diff` — `MessagingService.closePoll` throws rather than flipping `isClosed` or writing a
+   plan when the poll it read was not hydrated. Test asserts BOTH omissions, not just one.
+4. `diff` — `ChatViewModel.closePoll` no longer swallows: it surfaces the failure to the
+   caller. Test asserts the failure reaches the viewmodel's consumer.
+5. `diff` — The cap logs the ids it excluded. **Negative constraint:** the log must not
+   print a raw conversation id or uid.
 
----
+BUT-1909
+1. `diff` — A blocked voter is excluded from the tally on the DISPLAY path and on the CLOSE
+   path, proven by one test each.
+2. `diff` — Displayed count and resolved winner are computed from the SAME filtered tally.
+   A test with a blocked majority asserts the number on screen and the winner agree.
+3. `diff` — Fail-open is preserved: a block-list lookup error serves the unfiltered tally
+   rather than blanking the poll, matching `_filterBlocked`'s existing contract.
+4. `diff` — **Negative constraint:** the repository module gains no knowledge of blocking.
+   `message_query_module.dart` must not import or reference `BlockedUserFilter`.
 
-# SPRINT 2026-08-16 — poll/GDPR full-panel backlog unstuck, chat-client bugs, shopping test-gap
+### BUT-1915 — raw uid into a crash report
 
-Selection phase only (Phase 1 of sprint-execute). Linear is up. 10 tickets across 4 batches.
-2 tickets found already shipped under a different/no ticket tag — filed here as obsolete.
+**Blast radius:** `lib/services/realtime/modules/menu_participants.dart`, the two ARB files
+(if the placeholder is dropped), plus a test.
 
-## Step-0 catch: obsolete tickets (fix already shipped, ticket never closed)
+Scope is the FIRST item of the ticket only — mask at the throw, as the neighbouring
+`AppLogger.info` line already does. The ticket's item 2 (should `MenuOperationError`,
+`RepositoryException` and `StorageUploadException` mask in their own `toString()`) is a
+design decision that belongs with BUT-1907's architecture-test arm; it gets a follow-up, not
+a guess inside this sprint.
 
-- **BUT-1845** (måltidstyp: tre vyer, två listor, ett fritextfält) — fixed in `8343d74e5`.
-  `RecipeFormState.mealTypeOptions(storedValue)` now does the tolerant listing Malin decided
-  on 2026-08-14; her own comment on the ticket documents the build and the mutation proof.
-  The ticket is still open only because nobody closed it after the fix landed.
-- **BUT-1838** (gruppchatt-epicet: barnsäkerhetsgrinden vid varje inbjudan) — implemented.
-  `functions/src/groups/minor-membership-gate.ts` exists and is exactly the shared module the
-  ticket asked for; the app-side chat-group module, the roster-orphan fix, and the unread-badge
-  fix all shipped tagged `(BUT-1838)` (`faaba5978`, `c7fc9dd6b`, `d627daf25`, `8db7800e7`,
-  `18cf5e97c`, `370a0f679`). Nine follow-up tickets (BUT-1840 through BUT-1863) already refer to
-  it in the past tense as the thing that surfaced them. Recommend closing citing those commits.
+**Acceptance criteria**
+1. `diff` — The uid in `validationUserNotParticipant` is masked at the throw site, using the
+   same masking the neighbouring log line uses.
+2. `diff` — A test proves `MenuOperationError.toString()` on that path contains no raw uid.
+3. `diff` — **Negative constraint:** no change to `permission_exceptions.dart` and no new
+   masking added to `MenuOperationError.toString()` itself — that is BUT-1907's call, and
+   deciding it here would pre-empt the architecture test that is meant to find the rest.
 
-## Note on 5 tickets already in Todo since 2026-08-13
+## Stakeholder critiques folded in (Phase 1.4, tier `single`)
 
-BUT-1832, BUT-1835, BUT-1833, BUT-1801, BUT-1792 each carry an automated "picked up, then set
-down" comment from 2026-08-13, written when this repo's stakeholder-router `panelPolicy` was
-`block` — a full-panel ticket could not be built at all. `shared-plugin.json`'s own `_panelPolicy`
-note records that this exact batch (six tickets, one already fixed as BUT-1822) is *why* the
-policy was changed to `park`: build the ticket, land it in In Review, let the specialist gates
-plus her review do the work the panel would have. That change supersedes the 2026-08-13 notes —
-they describe a policy this repo no longer runs. Treated as ordinary `build` candidates below,
-not as a parking brake (none of the five asks a question only Malin can answer; every one waits
-on a review mechanism, and the mechanism now runs at commit time instead of blocking selection).
-BUT-1832 additionally carries Malin's own explicit "fix it, not remove the button" — quoted in
-full in that ticket's acceptance criteria below.
+Each is ONE blind critique from the owning role, run before any code was written. Every
+MUST-HAVE below is now a binding acceptance criterion.
 
-## Agent A — backend-security-gdpr (5 tickets, Tier C, full-panel router tier)
+### Creative Director / Brand Lead — BUT-1906
 
-Area: firestore.rules + functions/src (poll votes, account-deletion cascade, TTL indexes,
-top-level recipe reads). All five share `firestore.rules` and/or `account-deletion-cascade.ts`,
-so they run as ONE batch/worktree. `requiresPlanMode: true` on every ticket (full-panel).
+* **Badge-weight mismatch, not in the original plan.** The grid's allergen row draws
+  ICON-ONLY compact chips (`recipe_card.dart:372-376`, `showLabel: false`), while the
+  dietary row is called elsewhere with `showLabel: true` (`recipe_card.dart:258-262`),
+  i.e. full Swedish words. Stacking narrow icon chips over wide text chips on a ~160-180dp
+  tile is two densities on one card. Either the grid's dietary row also goes icon-only, or
+  the two-labelled-badge case is explicitly tested and accepted. Not decided implicitly by
+  `CompactDietaryRow`'s default.
+* Fixtures must include the TWO-badge worst case (`maxBadges: 2`), not one diet tag — that
+  is the case that wraps at 1.75-2x and eats BUT-1895's remaining margin.
+* Row order stays allergen (hazard) above dietary (preference), matching the detailed
+  layout at `recipe_card.dart:237-263`.
+* Badges are not shrunk to fit. Reaffirmed: a shrunk badge is worse for a colour-blind user
+  who relies on its shape than a slightly taller card.
+* `_buildCompactLayout` staying badge-free is accepted for this ticket, and is noted as a
+  standing third-spelling drift risk rather than a fix owed here.
 
-- [ ] **BUT-1832** [build — Malin's decision is in the ticket: "fix it... not to remove the
-  button"] Poll voting denied for everyone but the poll's author (`firestore.rules`
-  messages-update rule keys on `senderId`). Ship the read-receipt fields
-  (`markMessageAsRead`, `batchMarkAsDelivered`) in the same change — same rule, same trap.
-  Design fully spec'd in the ticket by `firebase-backend-security` + `firestore-rules-tester`:
-  move votes to `messages/{id}/poll_votes/{voterUid}` (doc id == voter, provable one-liner
-  rule) rather than a `hasOnly(['metadata'])` grant that cannot be scoped inside a list of
-  maps; separate `allow update` statements per branch (never OR'd — a CEL error in one
-  operand can sink the others); `.get(k,{}) is map ? ... : null` for `metadata` (the
-  BUT-1788 null-trap recurs here). Files: `firestore.rules`,
-  `lib/repositories/firebase/modules/message_mutation_module.dart`,
-  `functions/src/__tests__/*-rules.test.ts`.
-- [ ] **BUT-1835** [build — ship WITH BUT-1832, not after; the ticket's own timing argument]
-  Poll voter uids survive account erasure inside the messages the cascade anonymises.
-  Today the residual is bounded to the poll author only *because* BUT-1832 is broken — fixing
-  voting without this widens a live Art. 17 gap the same day. Cascade leg 1 must rewrite
-  `metadata.poll.creatorId` → `"deleted"` and strip the deleted uid from every option's
-  `voterIds`, in the same batch that already holds the doc (`own.docs`), zero extra reads.
-  Files: `functions/src/account/account-deletion-cascade.ts`.
-- [ ] **BUT-1833** [build] Delete two dead `firestore.rules` helpers — `isAddingSelfToList`
-  (harmless) and `isDocumentOwner` (a trap: reads `resource.data` on `allow create`, which
-  doesn't exist yet, so any future caller gets a silent blanket deny). Two lines each, no
-  behaviour change. Files: `firestore.rules`.
-- [ ] **BUT-1801** [build] Six more sites read recipes from the empty top-level `recipes`
-  collection instead of `users/{uid}/recipes` — including the GDPR export (Art. 15) and the
-  deletion cascade (Art. 17). Sites: `bulk-retag.ts:252,418`,
-  `compute-feature-retention.ts:338`, `canonical-rating-aggregation.ts:157`,
-  `account-deletion-cascade.ts:375`, `recipe_gdpr_export_operations.dart:66`. Check each
-  against `firestore.rules` for a real `match` block, and whether a collection-group index is
-  needed (BUT-1781's `fieldOverrides` may not cover all six).
-- [ ] **BUT-1792** [build] Three more collections stamp `expireAt` with no TTL policy
-  (`notification_opened_events`, `report_processing_markers`, `system_ip_audit_caps`), plus
-  presence (`activeUsers.expiresAt` — different field name, don't copy the others' command).
-  Declare `fieldOverrides` with `"ttl": true` (never `false` — that disables a live policy
-  with no warning; never bare) in `firestore.indexes.json`, update `EXPECTED_TTL_GROUPS` in
-  `firestore-ttl-policies.test.ts`, replace the now-false "Manual setup required" heading in
-  `record-notification-opened.ts`. Never `--force` deploy — 13+ live TTL policies are missing
-  from the file. Count documents in all three collections before deploy; don't assume empty.
+### Localization / i18n — BUT-1910 and BUT-1915
 
-## Agent B — recipe-social-sharing (1 ticket)
+* **BUT-1910: the rating validator is not in conflict.** `FormValidators.rating()`
+  (`form_validators.dart:160-166`) delegates to `numberRange(min: 0, max: 5)`, which does
+  its OWN comma-aware parse at `:116`. So `"4,5"` passes the validator today while
+  `setRating` gets `null` from `double.tryParse` — the validator owns range, the parser
+  only has to read the value. No bounds work is owed to `parseSwedishDecimal`.
+* **BUT-1910: the pantry display round trip is safe, verified.** `formattedQuantity`
+  (`pantry_item.dart:154-156`) is read back into an editable field at exactly one site,
+  `add_pantry_item_sheet.dart:99`, and `_submit()` at `:176-178` already comma-normalises.
+  A comma round-trips.
+* **BUT-1910: the selection sentence must be falsifiable, and the load-bearing fact is
+  DEFAULT-vs-NULL.** `parseSwedishNumber`'s silent `1.0` fallback would corrupt a rating
+  field invisibly. The sentence says: `parseSwedishDecimal`/`formatSwedishDecimal` for any
+  hand-typed, round-tripped field, because they return `null` and let the caller decide;
+  `TextFormatting.parseSwedishNumber`/`formatFractional` for non-interactive recipe-text
+  parsing, where the `1.0` fallback is an accepted default rather than a form value;
+  `formatRatingComma` for the rating pills, which need a fixed decimal place. It is a
+  ROUTING rule and must not carry a COUNT of the formatters — the first draft said "a third
+  formatter and a second parser", "truncates", and "pooled-rating display only", and the
+  code-reviewer gate measured all three false.
+* **BUT-1915: the Swedish sentence question is moot — the string never reaches a user.**
+  `RealtimeMenuViewModel._onServiceStateChanged` (`:361-364`) runs the error through
+  `sanitizeErrorForUser`, which returns a generic localized message. The interpolated uid's
+  only destinations are `AppLogger.error` and `MenuOperationError.toString()`. So the ARB
+  placeholder STAYS and no ARB edit is needed; this is a log/crash-report fix only.
+* **BUT-1915 MUST-HAVE: the twin class is outside the plan's stated blast radius.**
+  `lib/services/realtime/modules/recipe_participants.dart:92-96` and `:121-125` throw
+  `RecipeOperationError(message: l.validationUserNotParticipant(userId), ...)` — identical
+  unmasked-uid shape, same family. Both throw sites join the diff with their own test.
+  This is the repo's standing "a boundary bug has a TWIN CLASS" rule, met head-on.
 
-Area: recipe sharing doc-id scheme. Router: single (Software Architect, Product).
-`requiresPlanMode: true` (priority High).
+### Software Architect — BUT-1894
 
-- [ ] **BUT-1812** [build-review — genuine design choice] Re-sharing a recipe someone else
-  already shared silently adds nobody: `shared_content` uses `recipeId` as the doc id, and
-  the second sharer is denied both the read-probe and the write. Two candidate fixes in the
-  ticket; **recommend Option 2** (stop reusing `recipeId` as the doc id — auto-id documents,
-  matching `social_menu_operations` and `shopping_social_share_module`) over widening the
-  rule — more consistent with the sibling writers, and it avoids a `firestore.rules` edit
-  that would conflict with Agent A's batch. Needs a migration story for existing rows before
-  BUT-1809's backfill runs. Files:
-  `lib/services/unified/operations/modules/recipe_sharing_manager.dart`. Signoff: which fix
-  approach, and the backfill/migration shape for existing `shared_content` rows.
+* **Root cause MEASURED, and it is not the grep.** The two `grep -rEn` calls
+  (`check_test_real_time.sh:89`) finish in ~0.4 s total. `DateTime.now()` alone matches
+  **1,066 lines** under `test/unit`, and every matched line spawns `is_suppressed` (an `awk`,
+  `:60-63`) plus, in baseline mode, `is_baselined` (`echo|sed|sed` + `grep -qxF`, `:49-55`)
+  — about **four processes per match, ~4,300 in total**. On Windows/Git-Bash process
+  creation is the expensive primitive, and 4,300 spawns lands in the measured 646-859 s
+  band. **Binding: the rewrite must remove per-match subprocess spawns** (one `awk`/`perl`
+  pass per file, reading suppression and baseline once), not "optimise the grep".
+* **Shape verdict: the check stays pre-commit; the full-tree scan is what is wrong.**
+  `lefthook.yml:93-95` already glob-gates on `*_test.dart`, then greps all of `test/`
+  anyway. Every other gate in that file takes `{staged_files}`. Moving it to CI would only
+  delay the same design flaw. Scope it to the staged files.
+* **Fixture layout is binding**, at `scripts/__tests__/check_test_real_time/fixtures/`:
+  (a) a real BINARY `*_test.dart` blob → exit 1; (b) a baselined file holding only comments
+  and blank lines → exit 0, not a `set -e` death; (c) a suppressed violation → exit 0;
+  (d) an un-baselined `DateTime.now()` → exit 1; (e) a long `Future.delayed` inside each
+  `DELAYED_SCOPE` dir → exit 1 regardless of baseline. Driven by
+  `scripts/__tests__/check_test_real_time_test.sh`, which runs the REAL script and asserts
+  exit codes. Confirmed by the reviewer: no fixture test for this script exists anywhere in
+  the repo today, which is how the fail-open rewrite got as far as it did.
+* **Strike the false comment at `lefthook.yml:87`**, do not soften it. "Usually fast" is the
+  same false claim restated. It carries the measured number and a date.
 
-## Agent C — recipe-safety-ui (1 ticket)
+### Trust & Safety / Content Moderation — BUT-1908 + BUT-1909
 
-Area: recipe cards / allergen safety. Router: single (Creative Director / Brand Lead).
-`requiresPlanMode: true` (priority High).
+Verdict: the service-not-repository layering is right and the negative constraint stands.
+Two binding changes, because as first written the design shipped a DISPLAY fix labelled as
+a blocking fix, and its fail-open clause let a blocked person decide a household artifact.
 
-- [ ] **BUT-1780** [build-review — UI/safety tradeoff, signoff named in the ticket itself]
-  Allergen/dietary badges never render on any recipe card in any list or grid —
-  `showAllergenBadges`/`showDietaryBadges` default `false` and nothing in the repo ever
-  passes `true`, despite the user-facing setting (`showOnCards`) defaulting ON. Add the
-  passthrough on `ContentCard` (or derive from `userAllergenPrefs`/`userDietaryPrefs != null`,
-  which `recipe_card_widget.dart` already populates) and forward into the `RecipeCard(...)`
-  call at `content_card.dart:246`. Files: `lib/widgets/common/content_card.dart`,
-  `lib/widgets/recipe/recipe_card.dart`. Signoff: does turning badges on override the
-  deliberate "clean list cards by default" redesign intent (comment at `recipe_card.dart:80`)?
+* **MUST-HAVE — fail-open is SPLIT BY SURFACE. This REPLACES BUT-1909's acceptance
+  criterion 3 as originally written.** Fail-open is correct on DISPLAY. On the CLOSE path it
+  means: the block-list fetch fails, `BlockedUserFilter._cached` stays `{}`
+  (`blocked_user_filter.dart:52-55`), the blocked ballot resolves the winner at
+  `messaging_service.dart:689`, and it lands in a plan other members see. So when the block
+  list is UNKNOWN — `ServiceLocator.tryGet` returned null, or the fetch threw — `closePoll`
+  REFUSES: no plan write, no `isClosed` flip, and the retry reason is surfaced. One test
+  asserts both omissions.
+* **MUST-HAVE — no disclosure of the filtering in group-visible output.** The winner write
+  stays recipe-id-only (it is today, `:853-893`). Nothing in the plan entry, the share
+  message or any log may say the tally was filtered or by how much — publishing that leaks
+  who the creator has blocked. This is a negative constraint beside BUT-1908's criterion 5.
+* **MUST-HAVE — say plainly, in the ticket, that this is NOT block enforcement.**
+  `firestore.rules` still lets a blocked user write `poll_votes` on my message, every OTHER
+  member's screen still counts them, and `getBlockedUserIds`
+  (`firebase_block_repository.dart:112-127`) is one-directional, so someone who blocked ME
+  is unfiltered in my own poll. Store policy (Apple 1.2, Play UGC) reads "block" as CANNOT
+  INTERACT. A follow-up ticket for rules-level enforcement on `poll_votes` create is owed.
+  BUT-1832's accepted deviation covers the VOTABILITY of share cards, not this.
+* Creator's-list-decides is endorsed: the closer is the actor, and the alternative
+  reproduces the exact BUT-1908 harm of screen and write disagreeing. The residual — other
+  members cannot reproduce the margin — is smaller than the harm avoided.
+* On the three states: as a SAFETY control they are ceremony, because `capped` and `failed`
+  must disable close identically. So the close gate tests `ok` / not-`ok`, and the third
+  value survives to drive the Swedish text and the log, not the gate.
+* Noted, not owed here: `closePoll` re-reads at `:670` rather than acting on the displayed
+  tally, so a vote landing between render and tap still writes a winner the creator never
+  saw; and `searchMessages` (`:495-511`) applies no block filter at all. Both get follow-ups.
 
-## Agent D — social-messaging-client (3 tickets, disjoint files from Agent A)
+## Non-risky tickets
 
-Area: chat client bugs + shopping test coverage, all found by the BUT-1838 whole-range review.
+### BUT-1910 — rating field drops the comma
 
-- [ ] **BUT-1857** [build] `requiresPlanMode: true` (High priority, chat-safety-adjacent
-  screen). Gruppinfo from the conversations list crashes — pushes a route with a `Map`
-  argument while the handler casts `as String?`, and targets the social-group detail view
-  instead of the chat's group detail. Copy the working navigation pattern used from inside
-  the chat itself. Files: `ConversationsListView._navigateToGroupInfo` + route registration
-  (`lib/views/messaging/...`, `lib/core/navigation/app_router.dart` or equivalent).
-- [ ] **BUT-1853** [build] `requiresPlanMode: true` (security label, High priority, Cloud
-  Functions data write). A missing `sentAt` makes the chat-history cut-off (`memberSince`
-  vs. `lastMessage.sentAt` in `canReadMessageAt`) fail OPEN instead of closed: the
-  delete-recompute path in `sync-conversation-last-message.ts` can project a survivor with no
-  `sentAt`, and `?? clock.now()` then makes every stamp comparison pass. Skip the projection
-  (or clear `lastMessage`) when `sentAt` is missing. Files:
-  `functions/src/messaging/sync-conversation-last-message.ts`.
-- [ ] **BUT-1860** [build] `requiresPlanMode: false` (test-only, no production behaviour
-  change). The shopping item add/edit dialog users actually reach
-  (`shopping_item_dialogs.dart`, 579 lines) has zero tests, including its `copyWith` fix for a
-  previously-shipped bug where a written note/price silently vanished. Add widget tests
-  (name/note/price survive save) and unit tests for `_CategorySuggester.suggest`.
-  Mutation-prove the `copyWith` regression test by removing the line it protects and
-  confirming red. Files: `test/widget/views/unified_shopping/shopping_item_dialogs_test.dart`
-  (new), `test/unit/...` for `_CategorySuggester` (new).
+1. `diff` — `skriv_sjalv_recept_view.dart` parses the rating through `parseSwedishDecimal`;
+   typing `8,5` sets the rating to 8.5. Test pins it.
+2. `diff` — `add_pantry_item_sheet.dart` uses the same helper, so `,5` and `1,5,5` behave as
+   they do on the shopping surface. Test pins both.
+3. `diff` — `pantry_item.dart:154` displays the quantity with a comma, so a shopping item and
+   a pantry item no longer spell the same number two ways.
+4. `diff` — `swedish_decimal_input.dart` states in one sentence which of the three formatters
+   applies when and why they are not merged.
 
-## Not selected this round (capacity, not doubt)
+### BUT-1906 — diet badges in the grid card (Tier B, parks In Review)
 
-Real, buildable, all confirmed still open by grep:
+1. `diff` — The dietary row renders in `_buildGridLayout`, after the allergen row.
+2. `diff` — `recipe_card_grid_badges_test.dart` fixtures carry diet tags and the overflow
+   cases pass up to 2x text scale.
+3. `diff` — If it does not fit, `_gridAspectRatio` in `mina_recept_view.dart` is raised and
+   the new number is pinned by a test. **Negative constraint:** the badges are not shrunk.
+4. `diff` — The "deliberately NOT here — see BUT-1906" comment is removed, not reworded.
 
-- **BUT-1854** (GDPR export contradicts itself on a late joiner's `lastMessage`) —
-  build-review, genuine two-option decision (ticket recommends A: apply the cut-off). Not
-  picked up to keep N at 10; next in line.
-- **BUT-1850** (`conversation_memberships` write-only PII, no reader) — build-review,
-  two-option decision (ticket recommends Option 2: delete it). Held back because Option 2
-  would touch `firestore.rules`, which would conflict with Agent A's batch this round.
-- **BUT-1856** (a meal-vote poll now mints a permanent, undeletable group chat) —
-  build-review, explicit product decision (ticket recommends Option B: one persistent chat
-  per social group). Not a bug; deferred for capacity.
-- **BUT-1795 / BUT-1830 / BUT-1831 / BUT-1796 / BUT-1828 / BUT-1825 / BUT-1829 / BUT-1823 /
-  BUT-1824 / BUT-1827 / BUT-1834 / BUT-1716** — all still open, all worth building, all
-  excluded because they would collide with Agent A's `firestore.rules` /
-  `account-deletion-cascade.ts` edits or because they need their own dedicated session
-  (BUT-1795 is the root two-storage-locations cause behind most of the others). Recommend a
-  dedicated messaging/rules sprint next, seeded from BUT-1795.
+## Needs you (Tier D)
 
-## Needs Malin (not built, ops/deploy access this loop doesn't have)
-
-- **BUT-1731** — deploy-day ops task (`backfillSharedListContributors` + delete the stale
-  export). Needs production access.
-- **BUT-1747** — GDPR export missing shopping lists the user LEFT. Real gap; her own prior
-  comment recommends bundling the deploy with BUT-1731's.
-
-## Post-sprint (mandatory)
-
-1. Full `dart analyze --fatal-infos`.
-2. File follow-up tickets for anything deferred mid-batch before commit.
-3. Commit through the review gates named in `shared-plugin.json → reviewGates` — Agent A's
-   batch triggers `firebase-backend-security`, `firestore-rules-tester`, and
-   `cloud-functions-specialist` at minimum given the full-panel router tier.
-4. Push (push does not trigger deploy in this repo — `ship.pushTriggersDeploy: false`).
-5. Transition: Tier A build + all-pass → Done. Tier B/C, build-review, or any failed/unclear
-   criterion → In Review + plain-language comment + PushNotification.
-6. Close BUT-1845 and BUT-1838 as obsolete, citing the commits above.
-7. Report written for Malin: plain-language paragraph per shipped ticket.
+None in this batch. BUT-1894's timing measurement is a `run` criterion, not Tier D.
 
 ## Deviation log
 
-(append here as execution diverges from plan)
+- [discovery] BUT-1910: the ticket's own worked example is wrong twice. "8,5" is outside the
+  field's 0-5 range, and the claim that ",5 fell back to 1.0" is REFUTED — measured with
+  `dart run`, the old path read ",5" and "0,5" as 0.5 perfectly well. The real defects were
+  "1,5,5" being typeable (parse null, fallback 1.0), the period on the pantry display, and
+  the rating field dropping any comma. Two of the three new pantry cases are therefore
+  CONTROLS, and their comments now say so.
+- [deviation] BUT-1910: `edit_recipe_view.dart` joined the diff. It carried the IDENTICAL
+  rating field and it is the screen the app opens for an EXISTING recipe, from every list
+  and detail surface — `SkrivSjalvReceptView` is reached only when writing, importing or
+  forking. The fix as planned was on the wrong screen for most users. Raised as BLOCKING by
+  `integration-reviewer`; this is the repo's standing twin-class rule, met head-on.
+- [discovery] BUT-1910: my own comment shipped SIX false claims across three rounds — "a
+  third comma formatter", "a second parser", "truncates to two decimals", "pooled-rating
+  display only", "Only the 1,5,5 case discriminates", "the other two are controls". Each was
+  measured false by a gate. One repair silently did not land at all: a multi-edit script
+  asserted on a later anchor and aborted before its single write, discarding the earlier
+  edits — the repo's own lesson, hit live. Every strike is now grep-verified.
+- [discovery] BUT-1909: the display-path test passed while measuring nothing. The fixture
+  used this suite's `FakeMessage`, which has no `copyWith`, so the strip threw and
+  `_filterBlocked`'s fail-open catch swallowed it and served the page unfiltered — i.e. the
+  test measured the CATCH and would have gone green asserting the opposite. Fixed by using a
+  real `Message`. The same suite also skips production `ServiceLocator` init, so
+  `tryGet<BlockedUserFilter>` returned null until the group initialised its own container.
+
+- [needs-human] BUT-1906 NOT SHIPPED — the ticket's REMEDY is refuted, its problem is not.
+  Building it and measuring gave three results, in this order:
+  (1) Adding the dietary row to `_buildGridLayout` overflows the tile at EVERY 360dp text
+      scale, which was clean to 2x before. The two-badge worst case the Creative Director
+      asked for is what exposed it; the one-badge fixture the suite already had did not.
+  (2) The ticket's prescribed fix — raise `_gridAspectRatio` — changes NOTHING. Measured at
+      0.75 / 0.70 / 0.66 / 0.62: five 360dp failures at every value. That matches what
+      `recipe_card_grid_badges_test.dart` already records, that closing the residual needs an
+      absolute `mainAxisExtent` rather than a ratio, which is BUT-1911.
+  (3) The Creative Director's alternative — icon-only badges for spatial parity with the
+      allergen row — is not available. `DietaryStatusBadge` picks its icon from the STATUS,
+      not the diet, so vegansk and vegetarisk both render the same green `Icons.eco_outlined`.
+      Icon-only would put two identical leaves on the card, which is information loss, not a
+      compact treatment.
+  Reverted to keep main clean; a 23px silent clip is worse than the missing badge. BUT-1906
+  is BLOCKED ON BUT-1911 and parks In Review for Malin.
+
+- [discovery] BUT-1894: the recorded decision and the Software Architect critique disagreed
+  on ONE fixture. Malin's comment says a comment-only baseline must still make the guard
+  exit non-zero; the critique's fixture (b) asked for exit 0. Resolved by splitting it,
+  because the two were describing different inputs: a comment-only baseline is now an EMPTY
+  allow-list, so a violation beside it still exits 1 (her case, pinned), while a clean tree
+  beside it exits 0 (the old script died there under `set -e` and failed commits that had
+  done nothing wrong). Both directions have a fixture. Nothing was made more permissive.
+- [discovery] BUT-1894: the root cause was NOT what the ticket guessed. The ticket said the
+  script "does a full-tree search" and proposed scoping it. Scoping was right but is worth
+  ~0.1 s; the 859 s was ~4,300 subprocess spawns, four per matched line. Both were done.
+- [deviation] BUT-1915: the code-reviewer and testing-specialist gates INDEPENDENTLY found a
+  second leak in the same two files — `validationUserAlreadyParticipant` carried a raw
+  DISPLAY NAME to the same Crashlytics sink. Both recommended a follow-up ticket. Fixed in
+  this commit instead: same defect class, same files, same sink, one token each, and this
+  repo's standing rule is that a twin class ships in the same commit. Shipping a PII fix
+  while leaving a known cleartext PII leak in the same method was the worse option.
+- [deviation] BUT-1915: `lib/core/utils/logger.dart` joined the diff. It carried a doc
+  comment citing this exact defect as its live "measured example", which the fix falsifies.
+  Struck rather than reworded, per code-style. Raised as BLOCKING by `integration-reviewer`.
+- [discovery] BUT-1910: the ticket's worked example "8,5" is out of range. The field is
+  labelled "Betyg (0-5)" and `FormValidators.rating()` bounds it to 0-5, so 8,5 fails
+  whichever separator is typed. The defect is the separator, not the magnitude, so the tests
+  use 4,5. The ticket text is not wrong about the bug, only about its example.
+- [discovery] BUT-1910: the pantry sheet's unreadable-field fallback now differs by mode —
+  1.0 on add, the item's existing quantity on edit. That is what `parseSwedishDecimal`'s own
+  doc comment specifies and what the shopping dialogs already do; the sheet had a single
+  `?? 1.0` for both, so an unreadable edit silently reset the amount to 1.
+
 
 ---
 
-# ARCHIVE — SPRINT 2026-08-13 — poll/GDPR rules gaps, wrong-collection recipe reads, allergen badges
+# ARCHIVED — previous sprint plan (2026-08-20)
 
-Selection phase only (Phase 1 of sprint-execute). 8 tickets across 3 batches. Linear is up;
-selected tickets transitioned to Todo. 8 tickets found already fixed on `main` under a
-different commit than their own — filed here as obsolete, not re-built.
+# PLAN 2026-08-20 — sprint (--pick malin): four tickets Malin chose in session
 
-**Outcome, recorded 2026-08-16:** of the 8 batched tickets (BUT-1832, BUT-1835, BUT-1833,
-BUT-1822, BUT-1801, BUT-1792, BUT-1812, BUT-1780), only **BUT-1822** actually shipped
-(`370a0f679`) — under the `panelPolicy: block` router setting then in force, the other five
-full-panel tickets were picked up and set back down unbuilt (see the note atop the current
-sprint above), and BUT-1812/BUT-1780 were never picked up at all before this session's work
-shifted to the BUT-1838 chat-groups effort. All 7 non-obsolete tickets are re-selected in the
-2026-08-16 sprint above under the now-current `panelPolicy: park`.
+Selected interactively 2026-08-20 via `/delivery:sprint-execute --pick malin`. Malin picked
+all four offered candidates. Every premise below was checked against CURRENT `main`, not
+against the ticket text.
 
-## Step-0 catch: obsolete tickets (fix already shipped, ticket never closed)
+The router (`python tools/stakeholder_router.py --json`) returned tier **single** for all
+four, so each gets ONE blind critique from its owning role before implementation. Panel
+policy is `park`, so a contested outcome goes to In Review rather than auto-closing.
 
-Confirmed by reading the current code, not just `git log`:
+## Selection record
 
-- **BUT-1779** (handwritten-recipe save → error screen) — fixed in `3e1c193dc`.
-  `RecipeSaveNavigation.afterSuccessfulSave` passes `savedRecipe`, not a bare id.
-- **BUT-1782** (notification-prefs local cache was a stub) — fixed in `3e1c193dc`.
-  `NotificationPreferences.toJson`/`tryFromJson` are real now, with a BUT-1799 follow-up note.
-- **BUT-1784** ("Listan skapad" shown on a failed create) — fixed in `3e1c193dc`.
-  `showCreateListDialog` checks `createPersonalList`'s bool before the success snackbar.
-- **BUT-1791** (retention job measured only the first 4.5h of its day) — fixed in `3e1c193dc`.
-  `compute-feature-retention.ts` now bases everything on the previous full UTC day.
-- **BUT-1789** (feature-retention per-user rows never erased) — fixed in `3e1c193dc`.
-  `deleteFeatureRetentionFlags` in `account-deletion-cascade.ts` sweeps them.
-- **BUT-1777** (shared-list permission dialog used the live, not opened, base) — fixed in
-  `3e1c193dc`. `viewedBase` doc comment names the ticket directly.
-- **BUT-1788** (leave group / remove member always denied) — the dedicated
-  `leave-group-conversation.ts` Cloud Function (wired to the client at
-  `conversation_mutation_module.dart:339`) now owns this server-side, reading/writing the
-  canonical top-level `conversations` doc. Shipped across `3e1c193dc` / `cf5cfdc0b`.
-- **BUT-1819** (sanitized title/description discarded when a new recipe needed ingredient
-  normalization) — fixed in `cc45d5c83`. `FirebaseRecipeRepository.create` now rebuilds from
-  `recipeToSave`, with a comment citing the ticket.
+| Ticket | Disposition | Tier | Router | Owning role |
+| --- | --- | --- | --- | --- |
+| BUT-1891 decimal quantity | build | A | single | Product Designer / UX |
+| BUT-1895 grid allergen badges | build-review | B (UI-visual) | single | Creative Director / Brand Lead |
+| BUT-1897 PII via exception object | build | C (security, multi-file) | single | Trust & Safety |
+| BUT-1883 poll cap / closePoll | build | A | single | Trust & Safety |
 
-None of these were re-selected. Recommend closing all eight citing the commits above.
+Closed during selection: **BUT-1887** — Malin recorded the close decision in a comment on
+2026-08-19; the ticket had simply never been transitioned out of Backlog.
 
-## Agent A — backend-security-gdpr (6 tickets, Tier C, full-panel router tier)
-
-Area: firestore.rules + functions/src (account deletion cascade, TTL indexes) + the messages
-repository module. All six share files, so they run as one batch/worktree, not six.
-Router (`tools/stakeholder_router.py`) returns **full-panel** on `firestore.rules` +
-`account-deletion-cascade.ts` — Security Architect, Privacy/DPO, Trust & Safety, Database
-Admin, Software Architect, Legal, Product, FinOps. `requiresPlanMode: true` on every ticket
-in this batch.
-
-- [x] **BUT-1832** — carried forward, unbuilt. See 2026-08-16 sprint above.
-- [x] **BUT-1835** — carried forward, unbuilt. See 2026-08-16 sprint above.
-- [x] **BUT-1833** — carried forward, unbuilt. See 2026-08-16 sprint above.
-- [x] **BUT-1822** — DONE, `370a0f679`.
-- [x] **BUT-1801** — carried forward, unbuilt. See 2026-08-16 sprint above.
-- [x] **BUT-1792** — carried forward, unbuilt. See 2026-08-16 sprint above.
-
-## Agent B — recipe-social-sharing (1 ticket)
-
-- [x] **BUT-1812** — never picked up. Carried forward. See 2026-08-16 sprint above.
-
-## Agent C — recipe-safety-ui (1 ticket)
-
-- [x] **BUT-1780** — never picked up. Carried forward. See 2026-08-16 sprint above.
-
-## Not selected this sprint — real work, deferred for batch-conflict / capacity reasons
-
-All confirmed still open (not obsolete), all worth building, all excluded only because they'd
-collide with Agent A's `firestore.rules` / `account-deletion-cascade.ts` edits or because N
-is capped at 8 this round: **BUT-1795** (the root two-storage-locations fix — High, Tier C,
-needs its own dedicated session), **BUT-1830** (Urgent — conversation-id squatting, same
-root cause as 1795), **BUT-1831** (Urgent — DM send fails on every attempt for 3 independent
-reasons, root fix is reading the top-level conversation), **BUT-1796**/**BUT-1828** (add-member
-to a group has never worked), **BUT-1825**, **BUT-1829**, **BUT-1823**, **BUT-1824**,
-**BUT-1827**, **BUT-1834**, **BUT-1716** (second shared-shopping write path with no
-attribution). Recommend a dedicated messaging/rules sprint next, seeded from BUT-1795.
-
-## Needs Malin (not built)
-
-- **BUT-1747** — GDPR export missing shopping lists the user LEFT. Real gap, but needs a new
-  server-side Cloud Function and a deploy slot; her own prior comment recommends bundling the
-  deploy with BUT-1731's. Not squeezed into this round.
-- **BUT-1731** — deploy-day ops task (`backfillSharedListContributors` + delete the stale
-  export). Needs production access this loop doesn't have.
-- **BUT-1693** — Part 2 of household allergen sharing. Malin approved the DPIA/consent/policy
-  2026-08-12 (data layer shipped), but the ticket's own "Sequence" section requires
-  `/stakeholder-review` + `/interview` before any code, AND its next step (the `firestore.rules`
-  match block) would collide with Agent A's rules edits this round regardless.
-
-## Post-sprint (mandatory)
-
-1. Full `dart analyze --fatal-infos`.
-2. File follow-up tickets for anything deferred mid-batch before commit.
-3. Commit through the review gates named in `shared-plugin.json → reviewGates` — Agent A's
-   batch triggers `firebase-backend-security`, `firestore-rules-tester`, and
-   `cloud-functions-specialist` at minimum given the full-panel router tier.
-4. Push (push does not trigger deploy in this repo — `ship.pushTriggersDeploy: false`).
-5. Transition: Tier A/build + all-pass → Done. build-review or any failed/unclear criterion →
-   In Review + plain-language comment + PushNotification.
-6. Close the 8 obsolete tickets above, citing their resolving commits.
-7. Report written for Malin: plain-language paragraph per shipped ticket.
+Not selected, and why: the `need-malin` lane (BUT-1878, 1885, 1880, 1904, 1731, 1838, 1848)
+is Phase 3.6 decision-queue material, not build material.
 
 ---
 
-# ARCHIVE — IN EXECUTION 2026-08-12 — the rules/model drift sprint
+## BUT-1891 — you cannot type a decimal in a shopping quantity  [Tier A]
 
-Malin: "planera och fixa alla fyra i en sprint" (2026-08-12). Fem stycken, inte
-fyra — granskningen hittade en latent till efter att hon sa det.
+**Premise: HOLDS.** `lib/widgets/styled/styled_input.dart:297-301` still applies
+`FilteringTextInputFormatter.digitsOnly` whenever `keyboardType == TextInputType.number` and
+no explicit `inputFormatters` is passed. Both quantity fields in `shopping_item_dialogs.dart`
+(`:199`, `:333`) hit that default.
 
-## Context
+**Blast radius — CORRECTED after review, and the first version was wrong.** The plan listed
+eight call sites as reaching `StyledInput`'s digits-only default. Measured properly, only
+ONE production file does: `skriv_sjalv_recept_view.dart:584,598` (portions and time). The
+others — `edit_recipe_view`, `heirloom_section`, `mfa_settings_view`,
+`assisted_import_dialog`, `rule_condition_card` — set `TextInputType.number` on a bare
+`TextField`/`TextFormField` and never touch `StyledInput`, so that default protects nothing
+in them. `StyledInput.number` has no production caller at all.
 
-`f3db9261e` fixade en produktionsincident: att spara ett recept hade nekats av
-databasens säkerhetsregler i tre veckor, för att ett nytt fält lagts i modellen
-utan att läggas i reglernas lista över tillåtna fältnamn. Ingen märkte det, för
-ingen sparade ett recept under de veckorna.
+The two shopping quantity fields are the third and fourth, and they are the bug.
 
-Granskningen av den fixen ställde följdfrågan: **finns samma glapp någon
-annanstans?** Den jämförde varje `hasOnly`-lista i `firestore.rules` mot vad
-koden faktiskt skickar. Fyra levande träffar till, plus en latent. Tre av dem
-har jag själv bevisat mot emulatorn.
+Callers already on `numberWithOptions(decimal: true)` do NOT satisfy the
+`== TextInputType.number` equality, so they get `null` formatters today and no option below
+touches them.
 
-`hasOnly` är den farligaste formen i filen: den **failar stängt, tyst**, på
-SKRIVNINGEN. Ingen kompilator, ingen analys, inget felmeddelande användaren
-skulle rapportera — funktionen slutar bara fungera.
+**Chosen shape — do NOT change the shared default.** Add a decimal-permitting formatter and
+pass it explicitly from the two shopping quantity fields. Changing `StyledInput`'s default
+would admit a decimal point into servings, minutes and an MFA code.
 
-## De fem
+**Acceptance criteria**
+1. (diff) Typing `1,5` into a shopping-item quantity field leaves `1,5` in the field and
+   `1.5` reaches the save call.
+2. (diff) A test proves an integer-only field still refuses both a comma and a period.
+3. (diff) `replaceAll(',', '.')` in the dialogs is reachable — proven by the AC1 test — or
+   deleted. It is not left as dead code that looks like handling.
+4. (diff) NEGATIVE CONSTRAINT: `StyledInput`'s default formatter branch is byte-identical
+   to main.
 
-| # | vad som är trasigt | status | vad användaren märker |
-|---|---|---|---|
-| **D1** | `users/{uid}/counters` — reglerna tillåter `shared_recipes`, koden skickar `unreadSharedRecipes`. Två olika ordförråd för samma sak | **bevisad DENIED** | märket "nytt delat recept" räknas aldrig upp |
-| **D2** | `conversation_memberships` — modellen skickar 9 fält, reglerna tillåter 7 (`isMuted`, `isPinned` saknas). OCH `conversations/{id}/participants` saknar `match`-block helt | **bevisad DENIED, båda** | att skapa en konversation kastar |
-| **D3** | `notification_history` — skribenten stämplar `expireAt` (90-dagars TTL), listan saknar det | granskarens nyckeljämförelse | notishistorik sparas aldrig |
-| **D4** | `deep_links/{id}/clicks` — reglerna vill ha `clickedAt` + `referrer`, koden skickar `timestamp` | granskarens nyckeljämförelse | klickstatistik för delningslänkar saknas |
-| **D5** | `TagResult.decisions` skrevs av `toFirestore(includeDecisions: true)` och stod inte i listan | **latent, nu åtgärdad** — parametern borttagen | slog någon på flaggan var receptsparningen nere igen |
+---
 
-**D2 är värst och tas först.** De andra fyra sväljs av en `catch` och loggar en
-varning; D2 gör det inte — `addParticipants` har ingen lokal catch, så
-`batch.commit()` kastar uppåt genom `createDirectConversation` /
-`createGroupConversation`, som kastar vidare. Och den är gatad på
-`enable_subcollection_participants`, som **defaultar till true**.
+## BUT-1895 — the allergen marks are missing in grid view  [Tier B — parks In Review]
 
-## Bygget
+**Premise: HOLDS.** `recipe_card.dart` draws the allergen row, the dietary row and the
+unassessed indicator ONLY inside `_buildDetailedLayout` (`:237-260`). `_buildGridLayout`
+(`:323-346`) and `_buildCompactLayout` (`:288-321`) draw none of them.
+`MinaReceptRecipeCard` (`recipe_card_widget.dart:47-57`) selects `ContentCardStyle.grid`
+whenever `viewModel.isGridView`, and it passes the preferences correctly — so the data
+arrives and the layout drops it.
 
-Ordningen är vald så att varje steg går att verifiera för sig.
+**The product decision inside this ticket** (its item 1): nothing in the code says whether
+grid-without-badges was a design call or an oversight. Best guess to build: allergen
+information is safety-visible and must not depend on which view toggle happens to be saved,
+so the grid gets the allergen row. This is exactly the case where the outcome is Malin's to
+sign off → In Review, never auto-Done.
 
-### ⓪ Skyddet först, inte sist
+**Scope**
+- Item 1: allergen badges in `_buildGridLayout`. The COMPACT layout stays out of scope this
+  run (a 60px row is a separate design call) — stated in the close-out, not left silent.
+- Item 2: first tests for `MinaReceptRecipeCard` — pin `showOnCards == false` ⇒ no badges and
+  `showOnCards == true` ⇒ badges. It lives under `lib/views/`, so the tests belong to
+  `e2e-test-specialist` and `test/views/`; the ticket records that this drifted past the
+  wrong agent twice already.
+- Item 3: a distinguishing test that `TagResultDisplay._getAllergensToShow` drops UNKNOWN.
+- Item 5: correct the over-promising `reason` string in `compact_tag_rows_test.dart`.
+- Item 4 (the producer-less `coveragePercent` arm on `AllergenStatusBadge`): comment it as
+  producer-less rather than deleting it. Deleting is its own call and the widget test still
+  guards the widget.
+- Point 8 from the ticket's comment thread (the `recipeAllergensUnassessedA11y` screen-reader
+  label) is included: it is the only user-visible surface of the BUT-1780 change with no
+  coverage at all.
 
-Ett test som jämför VARJE `hasOnly`-lista i `firestore.rules` mot de nycklar
-skribenten faktiskt skickar. Det är det enda steget som gör att en sjätte inte
-uppstår, och det ska skrivas FÖRE fixarna så att det rödnar på alla fem och
-sedan grönar en i taget. Utan den ordningen bevisar det ingenting.
+**Acceptance criteria**
+1. (diff) A widget test renders `RecipeCard` in grid style with a tracked allergen and finds
+   the badge; the same assertion in detailed style still passes.
+2. (diff) A test file for `MinaReceptRecipeCard` exists and reddens if `showOnCards` stops
+   gating `userAllergenPrefs`.
+3. (diff) A test feeds a `TagResult` carrying an UNKNOWN allergen status and asserts no badge
+   is drawn for it.
+4. (diff) `find.bySemanticsLabel` covers `recipeAllergensUnassessedA11y`.
+5. (diff) NEGATIVE CONSTRAINT: `_buildCompactLayout` is unchanged, and the change is reported
+   as grid-only.
 
-形: en emulatorsvit som för varje samling skickar den VERKLIGA nyttolasten
-(hämtad från modellens `toFirestore()` eller repositoryts literal, aldrig
-handskriven) och hävdar ALLOWED. Handskrivna nyttolaster är precis
-mekanismen som lät alla fem glida — granskaren påpekade att även min egen nya
-`R4b` är handskriven.
+---
 
-### ① D2 — meddelanden
+## BUT-1897 — a crash report can carry a person's id  [Tier C — security, multi-file]
 
-Två fel i en: lägg `isMuted` + `isPinned` i listan, och **skriv ett
-`match`-block för `conversations/{id}/participants/{uid}`** som i dag saknas
-helt och därför faller på default-deny. Det senare är en ny regel för en väg
-som redan används, så den behöver egen genomgång av vem som får läsa och
-skriva — inte bara "tillåt deltagaren".
+**Premise: re-verified at Step 0 before anything is written**, because the ticket was last
+edited 2026-08-19 and the tree has moved since. Two claims to check: (a) `AppLogger` still
+hands the raw `error` object to `recordError`, (b) the six repositories the ticket names
+still pass `userId: currentUser` raw into `PermissionDeniedException`.
 
-### ② D1 — delningsräknarna
+**The decision the ticket leaves open** is one choke point (wrap the error object before
+`recordError`) versus N throw sites. A wrapper loses the exception TYPE, which is what makes
+a Crashlytics report groupable. Planned shape: fix the throw sites AND add the
+architecture-test arm — the arm is what stops the next one, and a runtime choke point cannot
+be proven by a test that only reads source.
 
-Reglerna får de fältnamn koden använder. **Byt inte i koden i stället:** fälten
-läses av `UserCounters`-modellen och av vyer, och konstanterna i
-`UserCounterIncrements` är sanningen. Kontrollera samtidigt om
-`unreadMessages` och `pendingFriendRequests` skrivs till samma dokument — de
-står i samma konstantklass men jag hittade ingen skribent, och en oskriven
-konstant är inte samma sak som ett fält som inte finns.
+**Acceptance criteria**
+1. (diff) The architecture test gains an arm over exception CONSTRUCTION: raw identifiers
+   passed to `resourceId:` / `resource:` / `userId:`, or interpolated into a `StateError(` /
+   `Exception(` message, under `lib/repositories/` and `lib/services/`.
+2. (diff) That arm is proven to fire — it reddens against the `message_deletion_module`
+   `StateError` exactly as that line stands on main today, before any fix.
+3. (diff) Every site the arm flags is either masked or explicitly allow-listed with a written
+   reason.
+4. (diff) NEGATIVE CONSTRAINT: no change to what `AppLogger` sends as the error OBJECT unless
+   the critique asks for it — the type is load-bearing for Crashlytics grouping.
 
-### ③ D3 + D4 — ett fält var
+---
 
-`expireAt` till notishistorikens lista (dess två systersamlingar har det redan,
-med TTL-kommentar). `deep_links`-klicken: reglerna får `timestamp`, och
-`referrer` tas bort ur listan om ingen skriver det — men först kontrolleras
-vilken sida som är rätt, för här kan koden vara den som har fel.
+## BUT-1883 — a poll past the cap can close on the wrong option  [Tier A]
 
-### ④ D5 — det latenta
+**Premise: PLAN-STALE — half of it already shipped, and the ticket does not say so.**
+Checked on `main` 2026-08-20:
 
-Antingen tillåts `decisions` med en storleksgräns, eller så tas parametern
-`includeDecisions` bort. **Det är ett val, inte en fix:** parametern finns för
-felsökning, och att tillåta fältet innebär att spara beslutsloggar per recept i
-databasen. Jag lutar åt att ta bort parametern — den har noll anropare och dess
-enda effekt i dag är att vara en fälla.
+- The cap still exists (`message_query_module.dart:23`, `:177`).
+- A test DOES now exist (`message_query_module_test.dart:604`). It pins that the cap keeps
+  the NEWEST polls rather than the oldest, which closes the "0 röster on screen" half: the
+  dropped poll is now one scrolled off the top.
+- **Still open, and it is the dangerous half:** nothing stops `closePoll` from acting on a
+  poll whose votes were never hydrated. The module's own comment (`:150-158`) still names the
+  consequence — the wrong recipe written into the week's plan.
 
-## Verifiering
+So the remaining work is one guard plus its test, not the two items the ticket lists. The
+ticket body is corrected before implementation (Phase 2 "plan-stale" branch).
 
-- ⓪ måste rödna på alla fem innan någon fix skrivs, och sedan gröna en per fix.
-  Det är stegets enda existensberättigande.
-- Varje fix får ett ALLOW-test som skiljer sig från ett redan passerande test
-  med **exakt den nya nyckeln**. Ett deny-test kan inte pinna en utvidgning:
-  med utvidgningen återställd är det fortfarande grönt, nekat av `hasOnly` i
-  stället, och två Firestore-nekanden går inte att skilja på i texten.
-- D2 får dessutom ett riktigt test av deltagarvägen, inte bara medlemskapet.
-- `firebase deploy --only firestore:rules` efter varje steg, och **aldrig**
-  `--force` på index — projektminnet har 13 levande TTL-regler som saknas i
-  filen.
-- Slutkontroll på riktig enhet: skapa en konversation, dela ett recept, och se
-  att räknaren tickar upp.
+**Acceptance criteria**
+1. (diff) `closePoll` refuses to resolve a winner from a poll whose votes were never
+   hydrated, instead of falling through to the first option.
+2. (diff) A test proves the refusal, and it reddens if the guard is removed.
+3. (diff) The refusal is visible to the user in Swedish, not a silent no-op.
+4. (diff) The Linear ticket body is corrected to record that the newest-first half already
+   shipped.
 
-## Filer
+---
 
-`firestore.rules` (fem ställen), `functions/src/__tests__/` (⓪ plus ett test
-per fix), och för D5 antingen `firestore.rules` eller
-`lib/models/tagging/tag_result.dart`.
+## Needs you (Tier D)
 
-## Öppna frågor — båda besvarade i den här committen
+None in this batch — all four are code-only.
 
-1. **D5: flaggan togs bort.** `includeDecisions` hade noll anropare och dess
-   enda effekt var att vara en fälla, så parametern är borta ur
-   `TagResult.toFirestore`. `decisions` finns kvar i minnet och i `toJson`.
-2. **D4: reglerna hade fel.** Skribenten skickar `timestamp` och `userId`;
-   reglerna ville ha `clickedAt` och `referrer`, som ingen skickar. Reglerna
-   fick skribentens namn, och `referrer` togs bort — ingenting läser den
-   samlingen, så skribenten är sanningen här.
+## Post-sprint steps
 
-## Kvar efter sprinten, medvetet inte gjort
+1. Full `dart analyze --fatal-infos` on the changed files.
+2. File follow-up Linear tickets BEFORE the commit.
+3. Commit through the review gates (`code-reviewer`, `testing-specialist`,
+   `firebase-backend-security` where repositories are touched, `integration-reviewer`).
+4. Push to main.
+5. Transition: BUT-1891 / BUT-1897 / BUT-1883 → Done on an all-pass; BUT-1895 → In Review.
+6. Phase 3.6 decision queue (`malin` was passed).
 
-- **KLART i den här committen: bootstrap-residualen står nu i beslutsloggen.**
-  Den låg länge här som "medvetet inte gjort", eftersom båda
-  `accepted-deviations.md`-filerna var ändrade av en parallell session (BUT-1693)
-  och att staga dem hade svept in deras arbete i min commit. Deras ändring
-  landade som `638c5cf9c`, filerna blev fria, och entryn ligger nu i båda —
-  tillsammans med de två andra residualerna och nollmedlems-skalet. Tröskeln för
-  att stänga hålet helt är fortfarande BUT-1795. Punkten står kvar som synligt
-  avklarad hellre än raderad, för det var den som höll den öppen i ett dygn.
-- **Tre av de fem fixarna saknar ett ALLOW-test mot emulatorn, tvärtemot
-  planens acceptanskriterium.** `counters`, `notification_history` och
-  `deep_links/{id}/clicks` skyddas bara av textjämförelsen i det nya Dart-testet
-  — och det testet säger själv i sin rubrik att det inte kan bevisa att regeln
-  UTVÄRDERAS, bara att listan innehåller rätt fält. För räknarna är det extra
-  tunt: samma regel bär också `isServerTimestamp('lastUpdated')` och
-  `rateLimitWrite`, som ingen textjämförelse ser. Planen krävde ett ALLOW-test
-  per fix som skiljer sig från ett redan passerande test med exakt den nya
-  nyckeln. Det är inte gjort, och det står här i stället för att jag låtsas att
-  textguarden räcker. Ligger i BUT-1823.
-- **Omröstningar i chatten: bara den som skapade omröstningen kan rösta.**
-  `votePoll` uppdaterar meddelandets `metadata`, och meddelanderegeln tillåter
-  bara en uppdatering från den som skickade meddelandet. Alla andra nekas, och
-  `votePoll` har ingen catch — felet går hela vägen upp i vyn. Samma sjukdom som
-  D1-D5: skribent och regel är oense, och ingen märker det. **BUT-1832**, och
-  **Malin har beslutat att den ska lagas** (2026-08-13). Läskvitton
-  (`markMessageAsRead`, `batchMarkAsDelivered`) nekas av samma regel och tas i
-  samma ändring om formen är densamma.
-- **Två döda hjälpfunktioner i reglerna, varav en är en fälla.**
-  `isDocumentOwner` har noll anropare och läser `resource.data`, som inte finns
-  vid en nyskapning — den som i god tro anropar den på en `allow create` får ett
-  blankt nej. Utrullningen varnar för båda; varningarna om "ogiltigt
-  variabelnamn" är brus och det är nu bevisat. **BUT-1833.**
-- **Två levande buggar av samma sjukdom hittades under granskningen, ingen av
-  dem fixad här.** BUT-1826: den delade receptcachen har aldrig accepterat en
-  klientskrivning — reglerna kräver fyra fält skribenten inte skickar, felet
-  sväljs två gånger, och utåt ser det ut som låg träffkvot. Det är spegelbilden
-  av hela sprinten (ett fält som SAKNAS i stället för ett för mycket) och den
-  första konkreta instansen av luckan i BUT-1823. BUT-1827: om raderingen av
-  konversationen misslyckas permanent i utkastningsfunktionens kollapsgren
-  landar aldrig utkastningen av de minderåriga. Djupt hörn, ingen trolig orsak,
-  men fixen är en extra skrivning på en barnsäkerhetsväg och förtjänar ett eget
-  beslut.
-- **Två kommentarnyanser medvetet inte lagade, för att inte köra om grindarna
-  en gång till.** I skyddet står "var och en namnger sin skribents fil OCH
-  RAD" — sant för två av tre, eftersom den tredje just bytte till metodnamn
-  (raderna var fel med ett). Och regelfilens motsvarande pekare
-  (`base_shared_content_repository.dart:59-63`) är fel på samma sätt och nämner
-  bara en av tre skribentmetoder. Båda är en mening var, båda i filer som öppnas
-  igen inom timmar för BUT-1831, och att laga dem hade ogiltigförklarat tre
-  granskningar. Görs där.
-- **Skyddet ser bara ena riktningen — spegelfamiljen är otäckt.** Reglerna
-  kräver också att vissa fält FINNS (`keys().hasAll`, `hasRequiredFields`), och
-  en modell som SLUTAR skicka ett obligatoriskt fält nekas precis lika tyst som
-  en som lägger till ett okänt. Det nya skyddet jämför bara "allt som skickas är
-  tillåtet" och kan strukturellt inte se det. Fixturen finns redan i huvudet:
-  jämför andra hållet. Ska bli ett EGET test, inte ett andra påstående i det
-  befintliga — en röd lampa ska betyda en sak. BUT-1823.
-- **Meddelande-reservvägen stämplar om `createdAt`, så dess skrivning nekas mot
-  varje konversation som redan finns.** `ConversationDto` skickar `createdAt`
-  ovillkorligt, skrivningen är en merge-set, och uppdateringsregeln nekar varje
-  diff som rör det fältet. Vägen är inte sällsynt: `readConversation` läser den
-  användarskopade kopian, medan `createDirectConversation` bara skriver den
-  översta — så för ett DM finns aldrig den användarskopade kopian och grenen
-  körs vid varje sändning. Regeltestet kan inte se det: C11/C11B håller
-  `createdAt` konstant, alltså skickar inget test det produktion skickar.
-  **BUT-1831.** Omfattningen är FASTSTÄLLD 2026-08-13, mätt mot
-  emulatorn med den verkliga nyttolasten: det är varje sändning, och det finns
-  TRE oberoende orsaker (null-metadata, omstämplat `createdAt`, och omvänd
-  deltagarordning när mottagaren svarar). Enda kombinationen som går igenom är
-  den koden aldrig skickar. Kvar att bekräfta: vad användaren faktiskt ser på
-  riktig telefon. Riktig fix är att läsa den ÖVRE konversationen i stället, vilket
-  tar bort alla tre på en gång.
-- **Anpassningen som gör den övre konversationen ockuperbar är egen och akut:
-  BUT-1830.** Vem som helst som känner till ett grupp-id kan skriva den översta
-  konversationen med sig själv som enda deltagare, och då körs utkastningen av
-  minderåriga aldrig för den gruppen. Inte orsakad av den här sprinten; reglerna
-  för att skapa konversationer är oförändrade. Står i båda beslutsloggarna.
-- **Att lägga till en medlem i en gruppchatt man redan skrivit i fungerar inte,
-  och kan inte fungera från appen.** Deltagarraden kräver att den översta
-  konversationen redan namnger personen, och ingen klient får någonsin skriva i
-  den listan — det är själva regeln som gör gruppmedlemskap oföränderligt från
-  klienten. Så knappen i gruppvyn kastar. **Inte orsakad av den här sprinten**:
-  vägen var stängd av default-deny förut också. Kräver en molnfunktion som äger
-  "lägg till medlem", eller BUT-1795. **BUT-1828.**
-- **Kontoradering städar INTE bort deltagarraden — ny GDPR-lucka, och den blev
-  levande i dag.** `account-deletion-cascade.ts:1911-1926` raderar
-  `users/{uid}/conversation_memberships` men ingenting någonstans raderar
-  `conversations/{id}/participants/{uid}`, som bär den raderade användarens
-  visningsnamn och avatar. Det var ofarligt så länge sökvägen var stängd i
-  reglerna — då fanns inga rader — men den här sprinten öppnade den, så rader
-  börjar skapas nu. Samma sjukdom som allt annat i sprinten: ett tvåvägsindex
-  där bara ena halvan städas. Fixen är ett `collectionGroup("participants")`-ben
-  i kaskaden plus ett i residualsonden, och ett `fieldOverride` för
-  collection-group-index. Kunskapen fanns redan i koden —
-  `admin/reset-user-data.ts:92` räknar upp `participants` som en
-  konversationsunder­samling. **BUT-1822, hög prioritet**, och den ska
-  granskas av `firebase-backend-security`.
-- **Kollapsgrenens felväg är prövad, men inte mot emulatorn.** Grenen KASTAR
-  inte — en tidig version gjorde det, och den här raden beskrev den versionen i
-  flera timmar efter att den ersattes. Den RAPPORTERAR: `tryClearRoster`
-  returnerar `false` och anroparen går över till uppdateringsgrenen i stället,
-  så konversationen står kvar i stället för att raderas ovanpå rader som
-  överlevde. Att bevisa det kräver att man får en radering att misslyckas mot
-  emulatorn — Admin-SDK:n går förbi reglerna och en radering av något som inte
-  finns lyckas. Löst i enhetslagret i stället, med en fejkad databas där en
-  radering vägrar. **Uppräkningen** är mutationsbevisad. **Ordningen** (rader
-  före förälder) är det INTE och kan inte bli det mot emulatorn: barnstädningen
-  fungerar likadant efter att föräldern är borta, så att byta plats på de två
-  raderna ger ett bit-identiskt slutläge och sviten förblir grön. Den första
-  versionen av den här raden påstod att ordningen var bevisad. Det var fel.
-- **En raderad konversation lämnar sin deltagarlista föräldralös.** Reglerna kan
-  inte skilja "föräldern finns inte än" från "föräldern är raderad", så den
-  bootstrap-gren som gruppskapandet behöver öppnar sig igen för en konversation
-  som HAR funnits. Två vägar dit: molnfunktionen som vräker minderåriga raderar
-  hela konversationen när den kollapsar under två medlemmar — **den vägen är
-  lagad i dag**, funktionen städar nu bort raderna, och
-  integrationstestet pinnar det (ingen siffra här — de två föregående
-  påståendena om antal var båda inaktuella inom ett dygn) — och användarens egen "radera konversation" i
-  listvyn, som **inte** är lagad: raderingsregeln kaskaderar inte, och en medlem
-  får bara radera sin EGEN rad, så klienten kan inte städa åt de andra. Vad det
-  kostar i praktiken: en före detta gruppmedlem som kan sitt konversations-id
-  kan sätta sig i den övergivna listan och läsa namn och avatarer på personer
-  hen redan chattat med. Id:t är en UUIDv4, alltså inte gissningsbart för en
-  utomstående. Stängs helt av BUT-1795, som tar bort grenen. BUT-1825.
-- **Den döda `UserCounters.toFirestore` är samma fälla som D5.** Klassen har
-  ingen produktionsanropare, men dess serialisering skickar sju nycklar varav
-  två — `unreadMessages` och `pendingFriendRequests` — reglerna nekar. Kopplar
-  någon in den slutar räknarna fungera tyst. Ta bort serialiseringen eller lägg
-  till fälten medvetet. Skyddet ser den inte: det härleder från
-  `UserCounterIncrements`, inte från den metoden. BUT-1824.
-- **Uppdateringsgrenen för `lastReadAt` är oprövad.** Den ligger bredvid den
-  bredare medlemsgrenen, så varje test vars aktör ÄR medlem godkänns av den
-  andra grenen — tar man bort den självskopade grenen förblir hela sviten grön (ingen siffra — den har varit inaktuell tre gånger).
-  Dess enda unika effekt är att en BORTTAGEN medlem stämplar sin föräldralösa
-  rad (BUT-1823 samlar den). Fixturen som pinnar den: en konversation vars `participantIds` INTE
-  nämner aktören men som ändå har en rad för hen. Det är samma sjukdom som hela
-  sprinten handlar om, så det ska göras — men det är en Medium på en regel som
-  redan är korrekt och utrullad, och det står här hellre än att jag låtsas att
-  det är klart.
-- **`conversation_memberships` låter vilken inloggad användare som helst skriva
-  vilken annans medlemsrad som helst** (ingen `isOwner`). Modulen skriver
-  faktiskt medparternas rader, så det ser avsiktligt ut — men det är
-  odokumenterat, och en främling kan plantera en falsk konversationspost i
-  någons inkorgsindex. BUT-1829.
+## Outcome verification (Phase 2.7)
 
-## Vad det betyder på vanlig svenska
+Graded by fresh-context verifiers that saw only the criteria, the scoped diff and the tests
+— not by the implementer.
 
-- **Fyra saker i appen har varit tysta trasiga**, av exakt samma skäl som att
-  spara recept var det: ett fält bytte namn eller tillkom på ena sidan men inte
-  på den andra, och databasen svarar med att bara vägra.
-- **Den värsta är meddelanden** — att starta en konversation kastar ett fel i
-  stället för att svälja det.
-- **Den viktigaste delen av sprinten är inte de fyra fixarna**, utan testet som
-  gör att en femte inte kan uppstå tyst. Det skrivs först.
-- Du får två frågor under bygget, inte fler. Båda står ovan.
+- **BUT-1891** — 5/5 PASS. Also confirmed independently: `StyledInput` is byte-identical to
+  main, `formattedAmount` has exactly one consumer and it is display-only, and the
+  `replaceAll(',', '.')` dead code is gone rather than left looking like handling.
+- **BUT-1895** — 6/6 PASS. The verifier found one real gap the criteria did not cover: the
+  tile's aspect-ratio formula was hardcoded a second time inside its own test, so a retuned
+  production value would have left the test green against its own stale copy. Moved to
+  `AppDimensions.recipeGridAspectRatio` and imported — which immediately reddened, because
+  the delegate had been reading `MediaQuery` from a context ABOVE the test's own override.
+  Every "2x" case had been measuring a 1x tile.
+- **BUT-1897** — 7/8 PASS, one FAIL, fixed. `SecurityViolationException` and
+  `AuthenticationException` were in the same file and were not masked, and both have throw
+  sites that put an id in `details:`. The verifier also found the composite-id hole
+  (`<uid>_2026-W34` escapes a `\b`-bounded rule) and two false-positive regressions
+  (the type label, and class names in web stack frames). All four fixed and pinned.
+- **BUT-1883** — NOT GRADED, because nothing was built. See the deviation log.
+
+## Review gate
+
+Seven specialist runs. Two blocked and were fixed rather than argued with:
+
+- `code-reviewer` on the widgets: a doc comment I inserted swallowed the neighbouring
+  function's, and a "correction" I wrote made a positional claim that was false. Both fixed;
+  re-review passed.
+- `firebase-backend-security` on the web sink: the stack carve-out re-exported the message it
+  had just masked, because under dart2js the first line of a stack IS the exception's
+  `toString()`. Split at the first frame instead; re-review passed, then found that Firefox
+  and Safari emit a third frame shape the splitter did not know, which is now covered.
+
+Every fix in this sprint was mutation-probed — the fix is reverted and the test watched to
+redden — including one test that turned out VACUOUS on the first probe (the UNKNOWN-allergen
+case passed with the filter deleted, because an UNKNOWN badge draws a third icon the
+assertion never named).
+
+## Deviation log
+
+- [discovery] BUT-1891: plan said "add a formatter at the two call sites" → found the
+  DISPLAY half open too (`formattedAmount` returned `amount.toString()`, i.e. "1.5", under a
+  doc comment promising "1,5 l Mjölk") → fixed both, because the input fix alone is undone
+  one screen later. Raised by the Product Designer critique, verified in the code.
+- [discovery] BUT-1891: `StyledInput.number` has NO production caller — only tests. The
+  shared default is still untouched, and now has a case pinning that it refuses both
+  separators.
+- [deviation] BUT-1895: plan said "add the allergen row to the grid" → the grid tile
+  ALREADY overflowed its own box by 70px at 1x and 175px at 2x, for every recipe, measured.
+  Adding a row to a container that clips was not possible → the image became the layout's
+  slack (`Expanded`) and the tile height now scales with the text size
+  (`_gridAspectRatio`). Conservative in the sense that it fixes the container rather than
+  shrinking the content, which is what the Creative Director's must-have required.
+- [deviation] BUT-1895: the unassessed marker was NOT in the plan's grid scope. Added on the
+  Creative Director's blocking condition — shipping the badges without it recreates, in the
+  grid, the "silence reads as safe" bug the marker exists to close.
+- [discovery] BUT-1895 item 5 (the over-promising `reason` in `compact_tag_rows_test.dart`)
+  was already corrected on main. Nothing done; recorded so it is not re-filed.
+- [deviation] BUT-1897: plan said "fix the throw sites AND add an architecture-test arm" →
+  the Trust & Safety critique showed the arm is the WEAKER control (it reads source; the
+  leak is a runtime value) and that ~50 sites is the wrong count anyway (53 across 22 files).
+  Took the choke point instead: the exception classes mask inside their own `toString()`.
+  That also covers two paths no throw-site sweep reaches — an uncaught exception going
+  straight to `recordError` from `main.dart`, and the web sink where Crashlytics is skipped.
+  The arm is filed as BUT-1907 with the conditions it must meet.
+- [discovery] BUT-1897: masking the whole joined string turned `PermissionDeniedException`
+  into `Perm***` — the class name is 25 alphanumeric characters, the exact shape of a uid.
+  Caught by the existing tests on the first run; the type label now sits outside the mask
+  and a case pins it.
+- [needs-human] BUT-1883: the ticket's premise is REFUTED, not stale. `closePoll` re-reads
+  the single message on an uncapped path, and `_resolveWinner` returns null on a zero-vote
+  poll — so the "wrong recipe in the week's plan" it specifies cannot happen. No guard was
+  built. The two false comments that caused the ticket were corrected, the real (inverted)
+  defect is BUT-1908, and the blocking gap the critique found is BUT-1909.
+- [discovery] A `\b` written through a Python heredoc landed as a literal BACKSPACE byte in
+  `log_sanitizer.dart` — the exact shape of the BUT-1901/1902 lesson. Caught by reading the
+  bytes back, repaired with `chr(92)`, and the file is control-byte clean.
+
+
+
+---
+
+# PLAN 2026-08-17 — get the functions deploy through, then remove the dead functions
+
+Approved by Malin in-session (AskUserQuestion, 2026-08-17): "Sätt tak på 10 instanser".
+The cleanup half is her follow-up ask ("men kanske också radera gamla engångsgrejer när vi
+ändå håller på?") and is scoped below with one question left to her.
+
+## Background — what is actually broken
+
+The `firestore:indexes` deploy succeeded earlier today (19/19 TTL policies ACTIVE, verified).
+The `functions` deploy then failed on 53 of 71 functions. Every failure reported
+`Container Healthcheck failed`, which reads like broken code and is not — the real line is:
+
+    Quota exceeded for total allowable CPU per project per region.
+
+Measured, not assumed:
+- 71 Cloud Run services in europe-west1, every one at `cpu=1`.
+- `maxInstances` is set **nowhere** in `functions/src` (grep: 0 hits), and
+  `setGlobalOptions` sets only `region`. Unset means the platform default of 100.
+- So the project reserves ~7100 vCPU of admission headroom before a single request arrives.
+- Nothing was deleted or corrupted by the failed deploy. The three new BUT-1838 group
+  callables DID get created and are ACTIVE (`createChatGroup`, `addChatGroupMembers`,
+  `removeChatGroupMember`); every other function still runs its previous revision.
+- `leaveGroupConversation` is still deployed. Firebase skipped the delete because the
+  updates failed ("Deploys failed. Skipping deletes.").
+
+Honest gap: the quota value gcloud reports for `CpuAllocPerProjectRegion` in europe-west1 is
+20000, which does **not** obviously conflict with 7100. I could not reconcile the exact
+accounting from the quota API, so the deploy itself is the test of the fix rather than a
+calculation I can show. If step 1 does not clear it, the fallback is a quota increase
+request, and I will say so rather than keep guessing.
+
+## What the review changed (recorded here because two of my claims were wrong)
+
+`cloud-functions-specialist` passed with 0 blocking, having dumped the compiled
+`__endpoint` manifest rather than reasoning about the SDK. It corrected two things:
+
+- **70 gen2 services, not 71.** `onUserDeleted` is a gen1 auth trigger — v2
+  `setGlobalOptions` cannot configure it and it consumes no Cloud Run CPU. That also answers
+  the open question below about its blank `state`: gen1 reports `status`, not `state`, so the
+  blank is the API shape, not a failed deploy. The reservation is ~7000 vCPU, not ~7100.
+- **"10 concurrent" was the wrong mental model in my own head.** `concurrency` is a separate
+  option defaulting to 80 at cpu >= 1, so the real ceiling is ~800 in-flight requests per
+  function. Verified there is no fan-out victim: scheduled sweeps get one invocation per tick,
+  notification fan-out is in-process (`MAX_PER_RUN = 200` under one `Promise.all`), and the
+  two ingredient triggers that could genuinely queue both carry `retry: true`, so throttled
+  events are redelivered rather than dropped.
+
+It also found the change was pinned by no test, which turned out to matter more than it
+sounded — see below.
+
+## Step 1 — cap the instances (unblocks the deploy)
+
+1. `functions/src/index.ts`: `setGlobalOptions({ region: "europe-west1", maxInstances: 10 })`,
+   with a comment stating the RULE (an unset ceiling reserves 100 per function and the wall
+   only appears mid-deploy), not just the current numbers.
+1b. `functions/src/__tests__/deploy-manifest.test.ts` (new) pins BOTH invariants against the
+   compiled deploy manifest: every gen2 export in `europe-west1`, and every one carrying an
+   instance ceiling. The region hazard was previously guarded by a comment in `index.ts` and
+   nothing else, and a comment does not redden.
+   **The first version of this suite contained a vacuous assertion and the mutation probe is
+   the only thing that caught it.** `firebase-functions` does not leave an unset
+   `maxInstances` as null — it stores a sentinel object whose `toJSON` renders as `null`, so
+   `JSON.stringify` printed "null", `"maxInstances" in endpoint` was true, and `x == null` was
+   FALSE. The presence check stayed green under a mutant that stripped the option from all 70
+   functions. Now tested as `typeof x === "number"`. Do not "simplify" it back to a null check.
+   Probed 2026-08-17: healthy 4/4; ceiling removed reddens the presence check naming all 70;
+   region changed reddens the region check naming 64; `index.ts` restored byte-identical
+   (md5 compared).
+1c. `functions/src/ingredients/on-ingredient-soft-deleted.ts:40` said `setGlobalOptions` "sets
+   the region and nothing else" — true when written, false as of this change, and it is the
+   recorded BUT-1781 rationale for a local timeout. Rewritten to state the rule. Grepped the
+   whole tree for the same phrasing: one occurrence, fixed.
+   - Per-function options win over global ones, so any function that later needs more
+     concurrency raises its own. None sets `maxInstances` today, so nothing is overridden.
+   - Pre-launch, zero users: 10 is far above real demand and doubles as a cost ceiling
+     (CLAUDE.md cost principles).
+2. `npx tsc --noEmit` in `functions/`.
+3. `cloud-functions-specialist` review (commit gate for `functions/src`).
+4. Commit, push to main.
+5. `firebase deploy --only functions --force --project butlery-app-1`.
+   `--force` is required for two reasons, both verified as intended:
+   - `onIngredientPropertiesChanged` now carries `retry: true`, which is deliberate and
+     documented in its own source with an event-age guard bounding the retry window.
+   - it auto-confirms deleting `leaveGroupConversation`, removed on purpose in BUT-1838 and
+     replaced by the three group callables. Verified zero callers anywhere in the repo.
+6. **Verify per-function `state` from the API, not from `functions:list` names** — a deploy
+   that removes Cloud Run services can leave a replacement `FAILED` while the name still
+   lists (repo lesson, 2026-08-03). Expect 71 ACTIVE and no `leaveGroupConversation`.
+   Note `onUserDeleted` reports an empty `state`; confirm whether it is a 1st-gen function
+   (which reports `status`, not `state`) rather than treating the blank as a failure.
+
+## Step 2 — CORRECTED: none of the five is safe to delete, and my evidence was bad
+
+I told Malin these five were "one-shot migrations, safe to remove" on the strength of a
+whole-repo grep showing zero callers. She approved on that basis. **The premise was wrong**,
+and the error is the one the digest already names: "unreferenced" proven against code cannot
+see a function a HUMAN invokes. An admin callable has zero callers BY DESIGN.
+
+Reading what each one actually is, rather than counting references to it:
+
+- **`bulkMarkForRetagging` / `getRetagStatus`** — not a migration at all. Its own header calls
+  it "the operator escape hatch that DRAINS the `stale-ingredient` / `stale-properties`
+  markers the ingredient cascades write". That is the manual recovery path for exactly the
+  failure `concurrency: 1` was added tonight to prevent, and `on-ingredient-soft-deleted.ts:63`
+  names it as such. Deleting it would remove the repair tool in the same change that hardened
+  the thing it repairs.
+- **`seedSiteConfigs` / `getSiteConfigStats`** — an ongoing ops tool, not a one-shot. It seeds
+  the CSS selectors that let a new Swedish recipe site be supported WITHOUT an app release.
+- **`backfillCanonicalRatings`** — carries a hard gate refusing to run until
+  `enable_pooled_ratings` is on in prod and the privacy-policy pooling disclosure has shipped.
+  It has never run, so it is PENDING, not spent.
+- **`backfillRecipeCommentsDenorm`** and **`backfillSharedListContributors`** — the only two
+  that really are one-shot, and both carry an explicit lifecycle contract naming the two
+  conditions for their own deletion: a successful invocation returning `hasMore: false`, then
+  a 30-day soak. Neither has been invoked (the only log lines are today's deploy). By their own
+  written rule they must NOT be deleted yet.
+
+Two of the five also share a module with a function I had put in the KEEP column, so "delete
+five files" was never the shape of the change either.
+
+**Recommendation: delete nothing.** The reason to delete was quota pressure, and that is gone
+— the reservation went 7100 -> 700 vCPU, and these five cost 50 of it. Deleting now trades a
+real recovery path and a pending migration for no benefit.
+
+The five were removed from PRODUCTION earlier tonight to break the quota deadlock, and the
+deploy has since recreated all of them. Production and source agree again.
+
+## Open questions
+
+Blast-radius ranked. Only one, and it is deferrable without blocking step 1:
+
+1. **Does 2b go or stay?** Highest blast radius of the two, because it deletes working
+   admin tooling rather than spent migrations. Asked after step 1 ships; default is KEEP.
+
+No architecture-changing unknowns. Assumptions stated: (a) `maxInstances: 10` is above any
+real pre-launch demand — the app has no users; (b) the failed deploy left production
+consistent, which was verified by reading every function's state, not inferred.
+
+## Step 1½ — a red GDPR test, found on the way, fixed here
+
+`test:request-account-deletion` was RED on main before this change (it came in with
+`a329de0f5`, today's salvage commit). It is not caused by this work and it is not a
+production defect, but it had to be understood before deploying, because the cascade code it
+covers is on main and NOT yet in production — the deploy is what would make it live.
+
+Root cause: the suite's local fake Firestore had no `limit()` on its query object, so the
+`chat_groups` and `messages` steps threw `where(...).limit is not a function`. The production
+code is correct; real Firestore has `.limit`. But the consequence was real — **those two GDPR
+erasure steps were being exercised by nothing in that suite**, and the failure was reported as
+"step failed", which reads like a broken cascade.
+
+Fixed by giving the fake a `limit()` (the same precedent the file's own `listDocuments` note
+records), and by making the assertion print `result.errors` instead of only the collection
+names — the old message sent the reader to the whole cascade rather than to the line that
+threw. Suite is 4/4 and the full CF lane is 88/88.
+
+## Acceptance criteria
+
+- [x] `npx tsc --noEmit` clean.
+- [x] Full CF unit lane green: **88/88 suites (346s)**, up from 87/88 with
+      `test:request-account-deletion` red.
+- [x] The new deploy-manifest suite is non-vacuous — mutation-probed both ways, `index.ts`
+      restored byte-identical (md5 compared).
+- [ ] `cloud-functions-specialist` opened the FINAL bytes and passed (the first review graded
+      an earlier version; every later edit un-proves it).
+- [ ] `firebase deploy --only functions` exits 0 with zero failed functions.
+- [ ] Per-function `state` read back from the API: every function ACTIVE, count matches
+      source exports, `leaveGroupConversation` gone.
+- [x] `onUserDeleted`'s blank state explained: it is gen1, which reports `status` rather than
+      `state`. Not a failed deploy.
+- [ ] BUT-1792 closed (its two remaining criteria were the TTL deploy, now done).

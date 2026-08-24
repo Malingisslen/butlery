@@ -11,7 +11,7 @@
  * - On message update: same, so an edit also refreshes the preview.
  * - On message delete: if the deleted message WAS the lastMessage, recompute
  *   from the remaining messages (or clear `lastMessage` if the conversation
- *   is now empty).
+ *   is now empty, or if the surviving message carries no resolved `sentAt`).
  *
  * Idempotent. Uses a Firestore transaction so concurrent message writes for
  * the same conversation can't clobber each other into a stale state.
@@ -25,6 +25,9 @@
 import { onDocumentWritten } from "firebase-functions/v2/firestore";
 import { logger } from "firebase-functions/logger";
 import * as admin from "firebase-admin";
+// BUT-1872: a DIRECT conversation id is `direct_<uidA>_<uidB>` — two raw uids.
+// One helper, so every logger on a conversation path hashes it the same way.
+import { logSafeConversationId } from "./enforce-group-minor-membership";
 
 interface MessageWireFields {
   conversationId?: string;
@@ -40,18 +43,44 @@ interface MessageWireFields {
  * lastMessage. Newer `sentAt` wins; ties (same timestamp) prefer the candidate
  * — message edits land with the same `sentAt` and need to overwrite the
  * stored snapshot to refresh the preview text.
+ *
+ * `current.sentAt` is typed as a Timestamp but is read back off a stored
+ * document, so it can be anything a past write left there. Measured
+ * 2026-08-19: a stored STRING is truthy, so the old `!current?.sentAt` test
+ * let it through to `current.sentAt.toMillis()` and threw — which froze that
+ * conversation's preview permanently, since every later message write hit the
+ * same line. An unusable stored stamp is now always replaceable, so a real
+ * message heals the document instead of dying on it.
+ *
+ * That heal is TYPE-SCOPED and stops there — do not read the sentence above as
+ * "a real message always heals the preview". A stored stamp that IS a Timestamp
+ * but sits far in the future is never replaced, because the comparison below is
+ * `>=`. `conversations.lastMessage` is a denormalised copy of `sentAt` that the
+ * conversations update rule does not name, so a participant can plant exactly
+ * that state directly, without going near the messages create rule and its
+ * BUT-1903 bound. Raised by the firestore-rules-tester gate; its own ticket.
+ * The client's own next send does clear it: `MessageMutationModule` merge-sets
+ * `lastMessage` with no comparison at all, and `MessageDto.toMap` emits `sentAt`
+ * unconditionally, so the poisoned stamp is overwritten. (A merge is DEEP, so
+ * only the keys that map emits are replaced — `sentAt` always is, which is what
+ * makes this hold.) The freeze therefore lasts until the next message in that
+ * conversation rather than forever — indefinite in a quiet one.
  */
 export function shouldReplaceLastMessage(
   current: { sentAt?: admin.firestore.Timestamp } | null | undefined,
   candidateSentAt: admin.firestore.Timestamp
 ): boolean {
-  if (!current?.sentAt) return true;
+  if (!(current?.sentAt instanceof admin.firestore.Timestamp)) return true;
   return candidateSentAt.toMillis() >= current.sentAt.toMillis();
 }
 
 /**
  * Build the embedded `lastMessage` map written to the conversation doc.
  * Mirrors the shape `MessageDto.fromMap` reads on the client.
+ *
+ * Call it only with a resolved `sentAt` (BUT-1853): the client substitutes
+ * `clock.now()` for a missing one, which defeats the group history cut-off.
+ * The `?? null` below is a type fallback, not a licence to skip that check.
  */
 function projectLastMessage(messageId: string, data: MessageWireFields) {
   return {
@@ -65,6 +94,98 @@ function projectLastMessage(messageId: string, data: MessageWireFields) {
   };
 }
 
+/**
+ * BUT-1903's measuring instrument, and the ONLY reason it exists.
+ *
+ * The create rule now refuses a `sentAt` more than an hour ahead of the server.
+ * That hour is a chosen ceiling, not a measured skew figure — there is no field
+ * data, because the app has no users. This line collects the data that lets a
+ * follow-up ticket replace the guess with a number.
+ *
+ * REMOVAL IS NOT A JUDGEMENT CALL: delete this function and its call site in the
+ * SAME change that tightens the bound. Left in place it is a per-message log
+ * line billed forever for a question already answered.
+ *
+ * What it can and cannot see. A message the rule DENIES is never written, so
+ * this post-write trigger cannot observe the denied population at all — it
+ * measures the ALLOWED distribution, which is what decides whether an hour is
+ * too tight or too loose. The denied side is covered by the client's own
+ * breadcrumb (`MessageSendErrorMapper`). Do not cite this log alone.
+ *
+ * CREATE ONLY. The trigger is `onDocumentWritten` and an edit keeps the
+ * original `sentAt`, so an ungated line would re-log the same delta on every
+ * edit and bias the distribution it exists to measure.
+ *
+ * Bucket label only — no uid, no conversation id, no message id. A `direct_`
+ * conversation id is two raw uids (accepted-deviations, BUT-1822), and a
+ * distribution needs none of them.
+ *
+ * Reading the output: `createTime` is assigned at COMMIT, strictly after the
+ * `request.time` the rule compares against, so a rule-admitted message cannot
+ * produce a delta above the hour. `ahead_gt_1h` should therefore be EMPTY, and
+ * a sample in it means a rules-BYPASSING create — an Admin-SDK writer that is
+ * not a system row, a one-shot backfill script being the realistic one; a
+ * MANAGED Firestore import fires no triggers at all and so cannot produce a
+ * sample either way. Never a device that beat the rule.
+ *
+ * That claim was narrower than a first draft said, and applying the system-row
+ * gate below is what narrowed it: the gate excludes the only Admin-SDK creator
+ * of `messages` rows this repo has, and a row predating BUT-1903 can never be
+ * sampled at all, because this fires at CREATE and an existing document is
+ * never re-created.
+ *
+ * The `min <= 60` boundary in `clockSkewBucket` is load-bearing for that claim,
+ * not merely a bucketing choice — and the reason is narrower than it looks.
+ * Because `createTime` is assigned strictly AFTER `request.time`, a bound-
+ * admitted message's delta is at most 60 minutes and usually just under; it
+ * reaches exactly 60 only when the two stamps truncate to the same millisecond,
+ * which they can, since `toMillis()` drops nanoseconds. That case is the whole
+ * coupling: flipping the comparison to `< 60` would file it under
+ * `ahead_gt_1h` and make the paragraph above false.
+ */
+function clockSkewBucket(deltaMs: number): string {
+  const min = deltaMs / 60000;
+  if (min < -60) return "behind_gt_1h";
+  if (min < -5) return "behind_5m_1h";
+  if (min < -1) return "behind_1m_5m";
+  if (min <= 1) return "within_1m";
+  if (min <= 5) return "ahead_1m_5m";
+  if (min <= 60) return "ahead_5m_1h";
+  return "ahead_gt_1h";
+}
+
+function logClockSkewOnCreate(
+  event: { data?: { after?: { createTime?: admin.firestore.Timestamp } } },
+  before: MessageWireFields | undefined,
+  after: MessageWireFields | undefined
+): void {
+  if (before || !after) return;
+  // Admin-SDK system rows must not be sampled. `writeGroupSystemMessage`
+  // (groups/group-system-message.ts) writes into this same collection with
+  // `sentAt: serverTimestamp()`, resolved server-side at commit, so its delta
+  // is ~0 BY CONSTRUCTION and always lands in the middle bucket — one row per
+  // group create, per member added, and per leave OR admin removal (both go
+  // through the same `memberLeft` event). BUT-1903 wants the spread of DEVICE
+  // clocks; an unknown fraction of guaranteed-zero server rows would pull the
+  // histogram toward "no skew" and make the hour look more generous than it is.
+  //
+  // Discriminated on `senderId` ALONE, deliberately. The messages create rule
+  // pins `request.auth.uid == senderId` but places no constraint on `type`, so
+  // a `type === "system"` test would be client-forgeable — a hand-rolled client
+  // could opt itself out of the histogram. Every row `writeGroupSystemMessage`
+  // produces carries the senderId, so nothing is lost by dropping the type half.
+  if (after.senderId === "system") return;
+  if (!(after.sentAt instanceof admin.firestore.Timestamp)) return;
+  // Mirrors `selfCreatedAtMs` in social/duplicate-content-guard.ts — the
+  // sibling trigger on this same collection reads the snapshot's own
+  // server-assigned createTime exactly this way.
+  const serverMs = event.data?.after?.createTime?.toMillis();
+  if (serverMs === undefined) return;
+  logger.info("[syncConversationLastMessage] clock skew sample (BUT-1903)", {
+    bucket: clockSkewBucket(after.sentAt.toMillis() - serverMs),
+  });
+}
+
 export const syncConversationLastMessage = onDocumentWritten(
   {
     document: "messages/{messageId}",
@@ -74,6 +195,8 @@ export const syncConversationLastMessage = onDocumentWritten(
     const messageId = event.params.messageId;
     const before = event.data?.before?.data() as MessageWireFields | undefined;
     const after = event.data?.after?.data() as MessageWireFields | undefined;
+
+    logClockSkewOnCreate(event, before, after);
 
     const conversationId = after?.conversationId ?? before?.conversationId;
     if (!conversationId) {
@@ -93,7 +216,7 @@ export const syncConversationLastMessage = onDocumentWritten(
       if (!convDoc.exists) {
         logger.warn(
           "[syncConversationLastMessage] conversation not found, skipping",
-          { messageId, conversationId }
+          { messageId, conversationId: logSafeConversationId(conversationId) }
         );
         return;
       }
@@ -127,25 +250,109 @@ export const syncConversationLastMessage = onDocumentWritten(
           return;
         }
         const replacementDoc = replacement.docs[0];
+        const replacementData = replacementDoc.data() as MessageWireFields;
+        // BUT-1853, STRENGTHENED 2026-08-19. A truthiness check is NOT enough
+        // here, and the gap is reachable by any participant rather than by
+        // accident. Measured against the live rules on the emulator:
+        //
+        //   · the messages CREATE rule USED TO check only that the key
+        //     `sentAt` EXISTS, never what TYPE it holds — `sentAt: "nope"`
+        //     returned ALLOW. Closed by BUT-1896 on 2026-08-19;
+        //   · Firestore's type ordering sorts STRINGS above every timestamp,
+        //     measured `string > new ts > old ts > null`.
+        //
+        // So a planted string WINS `orderBy('sentAt','desc').limit(1)` outright
+        // and walks straight past `!data.sentAt`. Anyone in a group could make
+        // their own message the permanent recomputed preview for everyone else.
+        // Require a real Timestamp; anything else clears.
+        //
+        // The rules-side close LANDED (BUT-1896, 2026-08-19):
+        // `request.resource.data.sentAt is timestamp` on the create, with
+        // M10-M13 beside the older M1-M9 — string, number, missing and
+        // Timestamp-shaped map. This paragraph said the opposite for a few
+        // hours, because it was written in the same session that then filed
+        // and built the rule.
+        //
+        // This guard STAYS, and not out of caution: the rule bounds what can
+        // be WRITTEN from today, and says nothing about rows already on disk
+        // from before it. Do not delete it because the rule exists.
+        //
+        // The future-dated variant is BOUNDED as of BUT-1903 — not eliminated.
+        // The create rule now also caps the VALUE at `request.time + 1h`, a
+        // chosen ceiling rather than a measured one, so a stamp inside that
+        // hour still writes and still wins `orderBy('sentAt','desc')` until
+        // real time catches up. And it does not reach rows written before it
+        // either, which is the second reason this TYPE guard survives any
+        // rules change.
+        if (
+          !(replacementData.sentAt instanceof admin.firestore.Timestamp)
+        ) {
+          // A projection with an unusable `sentAt` fails OPEN on the
+          // client — `MessageDto.fromMap` substitutes `clock.now()` for a
+          // missing stamp, which always clears `Conversation.canReadMessageAt`,
+          // so a member added to a running group would see a preview of a
+          // message sent before they joined. Clear instead of projecting: the
+          // preview is worth less than the cut-off, and the next message write
+          // restores it. (The query can return such a row because Firestore
+          // orders an explicit null lowest rather than excluding it.)
+          logger.warn(
+            "[syncConversationLastMessage] replacement has no sentAt; clearing lastMessage",
+            {
+              messageId,
+              replacementId: replacementDoc.id,
+              conversationId: logSafeConversationId(conversationId),
+            }
+          );
+          tx.update(conversationRef, {
+            lastMessage: null,
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          });
+          return;
+        }
         tx.update(conversationRef, {
-          lastMessage: projectLastMessage(
-            replacementDoc.id,
-            replacementDoc.data() as MessageWireFields
-          ),
+          lastMessage: projectLastMessage(replacementDoc.id, replacementData),
           updatedAt: admin.firestore.FieldValue.serverTimestamp(),
         });
         return;
       }
 
       // Create or update path.
-      if (!after?.sentAt) {
-        // serverTimestamp not yet resolved — onDocumentWritten fires twice
-        // for that case; the second invocation has the resolved Timestamp
-        // and will catch up. Log so a sustained spike (e.g. clients writing
-        // null sentAt) is observable.
+      // The TYPE test, not a truthiness test, and the two rejected cases are
+      // different animals:
+      //
+      //  · MISSING — a malformed write, and NOTHING catches up. This comment
+      //    used to say a serverTimestamp sentinel resolves on a follow-up
+      //    write; measured against the emulator 2026-08-19, that is false for
+      //    every writer this trigger has. `writeGroupSystemMessage` uses the
+      //    Admin SDK, whose serverTimestamp is resolved server-side at commit,
+      //    so the stored value is already a real Timestamp and the document is
+      //    written once; `MessageDto.toFirestore` writes a concrete
+      //    `Timestamp.fromDate`. Skipping is the fail-closed choice: the
+      //    preview waits for the next well-formed message, which is what test
+      //    I7 pins.
+      //  · WRONG TYPE — nothing catches up, ever. `sentAt: "nope"` USED TO
+      //    pass the create rule, which tested only that the key exists;
+      //    BUT-1896 closed that on 2026-08-19. The guard stays for the two
+      //    reasons the delete branch above gives: the rule bounds what can be
+      //    WRITTEN from now on and says nothing about rows already on disk.
+      //    (The future-dated hole that used to be named here is BOUNDED, not
+      //    closed, as of BUT-1903: the create rule caps `sentAt` at
+      //    `request.time + 1h`, so a stamp inside that hour still lands here
+      //    and the `>=` in `shouldReplaceLastMessage` holds the preview until
+      //    real time catches up.) The string was truthy, so it reached
+      //    `candidateSentAt.toMillis()` and threw; measured
+      //    2026-08-19 by the integration test below. Worse, when the
+      //    conversation had no lastMessage the string was PROJECTED, after
+      //    which every later write in that conversation threw on the stored
+      //    value. Refusing it here is what keeps that out of the document.
+      //
+      // Logged as one line either way: the log is for spotting a sustained
+      // spike, and both shapes mean the same thing to whoever reads it —
+      // messages arriving without a usable stamp.
+      if (!(after?.sentAt instanceof admin.firestore.Timestamp)) {
         logger.warn(
-          "[syncConversationLastMessage] after.sentAt unresolved; awaiting follow-up write",
-          { messageId, conversationId }
+          "[syncConversationLastMessage] after.sentAt missing or not a Timestamp; skipping",
+          { messageId, conversationId: logSafeConversationId(conversationId) }
         );
         return;
       }

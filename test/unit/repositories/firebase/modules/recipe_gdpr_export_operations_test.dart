@@ -1,11 +1,16 @@
 /// Unit tests for RecipeGdprExportOperations.
 ///
-/// The module exposes the two BUT-501 GDPR Article 20 export paths —
-/// per-user subcollection `users/{userId}/recipes` and the legacy
-/// top-level `recipes` collection filtered by the `userId` field.
-/// Both methods validate ownership before reading, and both honour the
-/// `maxDocuments` cap. Tests drive each path end-to-end against
-/// `FakeFirebaseFirestore`.
+/// The module exposes ONE BUT-501 GDPR Article 20 export path: the per-user
+/// subcollection `users/{userId}/recipes`. It validates ownership before
+/// reading and honours the `maxDocuments` cap; both are driven end-to-end here
+/// against `FakeFirebaseFirestore`.
+///
+/// A second method used to read a top-level `recipes` collection as a "legacy
+/// shape", and the five tests for it passed happily because `FakeFirebaseFirestore`
+/// evaluates no rules — while in production that collection has no `match` block,
+/// so the real query was denied and took the whole recipes section of the export
+/// down with it (BUT-1801). A fake-backed test is evidence about the query, never
+/// about the permission.
 library;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -36,7 +41,6 @@ RecipeGdprExportOperations _ops(
   bool ownershipThrows = false,
 }) {
   return RecipeGdprExportOperations(
-    firestore: firestore,
     getCollectionForUser: (uid) => _userRecipes(firestore, uid),
     requireCurrentUserId: () => currentUid ?? _userId,
     validateOwnership:
@@ -117,82 +121,6 @@ void main() {
           firestore,
           ownershipThrows: true,
         ).exportPersonalRecipesByUser(_userId),
-        throwsA(isA<PermissionDeniedException>()),
-      );
-    });
-  });
-
-  group('exportTopLevelRecipesByOwner', () {
-    test('returns only docs whose userId field matches the owner', () async {
-      final firestore = FakeFirebaseFirestore();
-      await firestore.collection('recipes').doc('mine-1').set({
-        'userId': _userId,
-        'title': 'Pasta',
-      });
-      await firestore.collection('recipes').doc('mine-2').set({
-        'userId': _userId,
-        'title': 'Soup',
-      });
-      // not mine — must be excluded
-      await firestore.collection('recipes').doc('theirs').set({
-        'userId': 'bob',
-        'title': 'Bob recipe',
-      });
-
-      final export = await _ops(
-        firestore,
-      ).exportTopLevelRecipesByOwner(_userId);
-
-      expect(export, hasLength(2));
-      expect(export.map((e) => e['id']).toSet(), {'mine-1', 'mine-2'});
-    });
-
-    test('returns empty list when no docs match', () async {
-      final firestore = FakeFirebaseFirestore();
-      await firestore.collection('recipes').doc('x').set({'userId': 'bob'});
-      expect(
-        await _ops(firestore).exportTopLevelRecipesByOwner(_userId),
-        isEmpty,
-      );
-    });
-
-    test('honours maxDocuments cap', () async {
-      final firestore = FakeFirebaseFirestore();
-      for (var i = 0; i < 5; i++) {
-        await firestore.collection('recipes').doc('r$i').set({
-          'userId': _userId,
-          'title': 'r$i',
-        });
-      }
-      final export = await _ops(
-        firestore,
-      ).exportTopLevelRecipesByOwner(_userId, maxDocuments: 2);
-      expect(export, hasLength(2));
-    });
-
-    test('validates ownership before querying', () async {
-      final firestore = FakeFirebaseFirestore();
-      final calls = <_OwnershipCall>[];
-      await _ops(
-        firestore,
-        ownershipCalls: calls,
-      ).exportTopLevelRecipesByOwner(_userId);
-      expect(calls.single.resourceOwnerId, _userId);
-      expect(calls.single.resourceType, 'recipes');
-    });
-
-    test('throws (no data leak) when ownership check rejects', () async {
-      final firestore = FakeFirebaseFirestore();
-      await firestore.collection('recipes').doc('x').set({
-        'userId': _userId,
-        'leak': true,
-      });
-
-      await expectLater(
-        () => _ops(
-          firestore,
-          ownershipThrows: true,
-        ).exportTopLevelRecipesByOwner(_userId),
         throwsA(isA<PermissionDeniedException>()),
       );
     });

@@ -113,16 +113,25 @@
 /// The only flag that changes the POPULATION rather than the algorithm, which
 /// is why it is documented here and not just where it is parsed. BUT-1818
 /// graded 14 verified gold entries against their PHOTOGRAPHS and marked them
-/// `frameCut`. This drops the 11 `fragment` ones — an entry that is not a
-/// recipe the page holds at all, just the sliver of the next one — and keeps
-/// the 3 `tail` ones, which are real recipes whose last line the frame took.
+/// `frameCut`; BUT-1847 re-graded every verified entry the same way and the set
+/// grew. **No count of the CURRENT set is written here on purpose** (BUT-1818's
+/// own 14 above stays: it is attributed to that ticket and superseded in the
+/// same breath, so no re-grade can falsify it) — the run tallies the markings
+/// as it loads the gold and prints what it found, so this file cannot go stale
+/// against a corpus it does not contain. (Both counts that used to sit here had
+/// already gone stale once.) This drops the `fragment` ones — an entry that is
+/// not a recipe the page holds at all, just the sliver of the next one — and
+/// keeps the `tail` ones, which are real recipes whose ending the capture took.
 /// Off by default, so every figure quoted elsewhere keeps reproducing.
+/// The rubric that decides which of the two an entry is, and the traps that make
+/// a text-only grading undercount, are in
+/// `docs/testing/cookbook-corpus-gold-grading.md`.
 ///
 /// Prints how many entries it dropped and how many pages remain; add `--trim`
 /// and that arm also prints the per-page gold-vs-gold movement for every page
 /// that lost a fragment, and carries it in the report. That last table
-/// exists because the aggregate lies: `139 -> 144` is six pages gained and one
-/// lost, and the lost one is the case worth reading.
+/// exists because the aggregate lies: a net block-count gain is pages gained
+/// MINUS pages lost, and the lost ones are the cases worth reading.
 ///
 /// ## Size
 ///
@@ -174,8 +183,9 @@ import 'package:butlery/services/ocr/text_layout.dart';
 import 'corpus/corpus_paths.dart';
 
 void main(List<String> args) {
-  // BUT-1818: the gold records 11 frame-cut SLIVERS as complete recipes
-  // (`frameCut: fragment`, graded against the photographs 2026-08-09). Scoring
+  // BUT-1818/BUT-1847: the gold records frame-cut SLIVERS as complete recipes
+  // (`frameCut: fragment`, graded against the photographs 2026-08-09, re-graded
+  // over every verified entry 2026-08-19). Scoring
   // them rewards KEEPING debris, which is the opposite of what the splitter and
   // the orphan-tail trim are for. Off by default so every figure already quoted
   // in the docs keeps reproducing; pass the flag to see the run without that
@@ -184,7 +194,8 @@ void main(List<String> args) {
   // **`frameCut: tail` is NOT dropped, and that is the whole design.** A `tail`
   // entry is a real recipe the page holds whose LAST LINE the frame took, so its
   // gold is SHORT of tokens, not long — dropping it removes no bias. It would
-  // only remove a page: all three `tail` entries are flat single-recipe pages,
+  // only remove a page: BUT-1818's three `tail` entries were all flat
+  // single-recipe pages,
   // so an earlier draft that dropped them took the population 181 -> 178 and
   // took one TRIMMED page (`Köttsa/l`) with it, which made the two columns of
   // the comparison different populations. Worse on a multi-recipe page: a
@@ -591,14 +602,18 @@ void main(List<String> args) {
     ..writeln(
       dropFrameCut
           ? '  --no-frame-cut is ON: the `frameCut: fragment` gold entries'
-                ' are excluded, so the figures below carry no KNOWN frame-cut'
-                ' bias — 14 were found by hand and that is a floor, not a'
-                ' count. Residual bias only makes the trim look WORSE.'
+                ' are excluded — ${_frameCutCensus.fragment} of the'
+                ' ${_frameCutCensus.marked} entries graded frameCut by hand —'
+                ' so the figures below carry no KNOWN frame-cut bias, and'
+                ' ${_frameCutCensus.marked} is'
+                ' a floor, not a count. Residual bias only makes the trim look WORSE.'
                 ' `frameCut: tail` entries are still scored, on purpose.'
           : '  recall is biased AGAINST the trim — the gold records'
                 ' frame-cut slivers as complete recipes, so retained debris'
-                ' scores as a hit. 11 are marked `frameCut: fragment`'
-                ' (BUT-1818); pass --no-frame-cut to drop them. The figures'
+                ' scores as a hit. ${_frameCutCensus.fragment} are marked'
+                ' `frameCut: fragment` and ${_frameCutCensus.tail} `frameCut: tail`'
+                ' (BUT-1818/BUT-1847); pass --no-frame-cut to drop the fragments.'
+                ' The figures'
                 ' below KEEP that bias and are an upper bound on the cost.',
     )
     ..writeln()
@@ -622,8 +637,8 @@ void main(List<String> args) {
   // Gold-vs-gold movement, printed rather than left to a probe. The shipped
   // fixed/broke counters compare BEFORE and AFTER the trim within ONE gold;
   // this is the other axis — the same blocks scored against the biased count
-  // and the unbiased one. Without it `139 -> 144` reads as five clean gains
-  // when it is six gained and one lost, and the one lost is the informative
+  // and the unbiased one. Without it a net gain reads as that many clean gains
+  // when it is more gained and some lost, and the lost ones are the informative
   // case — the biased gold was scoring a real false split as RIGHT.
   // `orphan_tail.dart` and the BUT-1818 entry in
   // `docs/architecture/ACCEPTED_DEVIATIONS.md` carry the block-by-block reading
@@ -929,16 +944,38 @@ String _goldTextOf(String goldPath) {
   }
 }
 
-/// `fragment`, `tail`, or null. Written by hand against the PHOTOGRAPH, never
-/// inferred from the text — the whole point of BUT-1818 is that a text-only
-/// reading is what recorded these as complete recipes in the first place.
+/// Sentinel for a `frameCut` key that is present with a value that is not a
+/// usable string — `""`, a number, a bool. Kept distinct from Dart `null` so
+/// [_FrameCutCensus] can count it. An explicit JSON `frameCut: null` is NOT one
+/// of these: it means "no marking", same as an absent key, and is treated so.
+const String _frameCutMalformed = '<malformed>';
+
+/// `fragment`, `tail`, ANY OTHER non-empty string verbatim (a hand-graded typo
+/// such as `Tail` — the census buckets it as unrecognised), [_frameCutMalformed]
+/// when the key is present but unusable, or null when there is no key, no file,
+/// or nothing parseable. **Do not read the first two as the whole set**: writing
+/// `else { /* absent */ }` at a call site is how a typo disappears into the
+/// absent bucket. Two different mechanisms keep that from happening and it is
+/// worth not confusing them — the sentinel covers a present-but-unusable VALUE,
+/// while a typo is caught by the caller's FINAL branch, which tests `!= null`
+/// rather than assuming a closed set. (Its earlier branches do match `fragment`
+/// and `tail` by equality; it is the fall-through that has to stay open.)
+/// Written by hand against
+/// the PHOTOGRAPH, never inferred from the text — the whole point of BUT-1818 is
+/// that a text-only reading is what recorded these as complete recipes in the
+/// first place.
 String? _frameCutOf(String goldPath) {
   final f = File(goldPath);
   if (!f.existsSync()) return null;
   try {
     final m = jsonDecode(f.readAsStringSync()) as Map<String, dynamic>;
     final v = m['frameCut'];
-    return v is String && v.isNotEmpty ? v : null;
+    if (v == null) return null;
+    // Present but unusable — `frameCut: ""`, `frameCut: true`. Returning null
+    // here would make it indistinguishable from ABSENT, which is how the census
+    // would under-report a malformed corpus while claiming to be computed.
+    if (v is! String || v.isEmpty) return _frameCutMalformed;
+    return v;
   } catch (_) {
     return null;
   }
@@ -986,8 +1023,8 @@ class _Page {
 
   /// How many `frameCut: fragment` entries `--no-frame-cut` removed from THIS
   /// page. Zero on a default run. Carried so the arm can print the gold-vs-gold
-  /// movement instead of leaving it to a probe — an aggregate `139 -> 144` is a
-  /// MASKED SWAP (measured: six pages gained, one lost), and this file's whole
+  /// movement instead of leaving it to a probe — a net block-count gain is a
+  /// MASKED SWAP (pages gained minus pages lost), and this file's whole
   /// thesis is that an average must never hide the trade.
   final int frameCutDropped;
   final String ocrText;
@@ -1044,6 +1081,42 @@ class _Scored {
   };
 }
 
+/// The run's OWN tally of how the corpus gold is graded, counted while loading
+/// it and interpolated into the banners.
+///
+/// **Never type these counts into a string.** They live in the corpus, which is
+/// re-graded from the photographs from time to time (BUT-1818, BUT-1847), and a
+/// hard-coded copy makes this tool misreport its own input the moment that
+/// happens — silently, since no test can reach a corpus that lives outside the
+/// repo. Reading them costs a third read-and-parse of each gold file on an
+/// offline CLI that already does two (`_isVerified`, `_goldTextOf`) — nothing is
+/// held open. Populated by [_loadPages]; reset there so a second call cannot
+/// double.
+class _FrameCutCensus {
+  int fragment = 0;
+  int tail = 0;
+
+  /// A `frameCut` value that is neither — a typo in hand-edited gold, or a key
+  /// present with a non-string value. Counted so it cannot hide inside a floor
+  /// these docs treat as authoritative BECAUSE it is computed.
+  int unrecognised = 0;
+
+  /// WHICH files, not just how many: a bare count leaves the next grader
+  /// grepping a corpus of several hundred gold files by hand.
+  final List<String> offenders = <String>[];
+
+  int get marked => fragment + tail;
+
+  void reset() {
+    fragment = 0;
+    tail = 0;
+    unrecognised = 0;
+    offenders.clear();
+  }
+}
+
+final _frameCutCensus = _FrameCutCensus();
+
 /// Groups `recipeEntries` back up to the PAGE level — the eval engine flattens
 /// a spread into one entry per recipe, but a splitter is judged per page.
 List<_Page> _loadPages(
@@ -1055,6 +1128,7 @@ List<_Page> _loadPages(
   // Printed below. A run whose POPULATION changed silently is the one mistake
   // this whole file exists to prevent — see the header.
   var dropped = 0;
+  _frameCutCensus.reset();
   for (final bookDir in paths.books()) {
     final bookSlug = _basename(bookDir.path);
     final byImage = <String, int>{};
@@ -1072,10 +1146,37 @@ List<_Page> _loadPages(
       //
       // A page whose EVERY verified entry is a fragment would leave the
       // population entirely, breaking the one-population property this scoping
-      // exists to protect. None today — the 11 fragments sit on 8 pages and
-      // each keeps a non-fragment entry — and the printed page count is the
-      // guard: if it ever falls below the default run's, that is why.
-      if (dropFrameCut && _frameCutOf(entry.goldPath) == 'fragment') {
+      // exists to protect. No page is all-fragment today, and the PRINTED page
+      // count is the guard rather than any number typed here: if it ever falls
+      // below the default run's, that is why.
+      // Read unconditionally, so the DEFAULT arm has a count of its own too —
+      // the old `dropFrameCut && _frameCutOf(...)` short-circuited, which is why
+      // its banner had to hard-code one.
+      // Tallied per VERIFIED ENTRY (this sits below the `_isVerified` gate) and
+      // before pages without a usable capture drop out below, so the census spans
+      // the whole corpus's verified gold while the report around it is population-
+      // scoped. A marking on an unscored page would make the banner and the table
+      // describe different sets. **Print settles half of that and only half.** For
+      // FRAGMENTS it does: the `--no-frame-cut` movement table's page count and
+      // its per-page gold deltas both reconcile against the banner's fragment
+      // count, so a fragment on an unscored page would show up as a mismatch.
+      // TAILS never enter that table — they are never dropped — so nothing
+      // printed reaches them; check those directly before quoting the banner
+      // against the report. (No count written here on purpose, for the reason
+      // the file header gives.)
+      final frameCut = _frameCutOf(entry.goldPath);
+      if (frameCut == 'fragment') {
+        _frameCutCensus.fragment++;
+      } else if (frameCut == 'tail') {
+        _frameCutCensus.tail++;
+      } else if (frameCut != null) {
+        // Neither bucket AND not dropped — invisible in the one number these docs
+        // call trustworthy because it is computed. The gold is hand-edited, so
+        // `"Tail"`, `"fragmnet"` or a non-string are all live possibilities.
+        _frameCutCensus.unrecognised++;
+        _frameCutCensus.offenders.add(entry.goldPath);
+      }
+      if (dropFrameCut && frameCut == 'fragment') {
         dropped++;
         droppedByImage[entry.imageId] =
             (droppedByImage[entry.imageId] ?? 0) + 1;
@@ -1126,6 +1227,22 @@ List<_Page> _loadPages(
       '  --no-frame-cut: dropped $dropped `frameCut: fragment` gold entries; '
       '${pages.length} pages scored.',
     );
+  }
+  if (_frameCutCensus.unrecognised > 0) {
+    stdout.writeln(
+      '  WARNING: ${_frameCutCensus.unrecognised} gold entries carry a '
+      '`frameCut` value that is neither `fragment` nor `tail`. They fall in no '
+      'bucket and are dropped by nothing — fix the gold; every frameCut figure '
+      'in the docs is a floor until you do:',
+    );
+    for (final path in _frameCutCensus.offenders.take(10)) {
+      stdout.writeln('    $path');
+    }
+    if (_frameCutCensus.offenders.length > 10) {
+      stdout.writeln(
+        '    ... and ${_frameCutCensus.offenders.length - 10} more',
+      );
+    }
   }
   return pages.values.toList()..sort(
     (a, b) =>

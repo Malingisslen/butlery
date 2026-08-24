@@ -72,7 +72,14 @@
         "https://support.google.com/googleplay/android-developer/answer/16550159": "2026-08-24: egress-blocked/403 again; cross-checked via the sibling developer.android.com/distribute/play-policies page (direct WebFetch succeeded this cycle) — same item set as baseline with dates now spelled out per-policy: Families/Age-Restricted (Aug26 2026, N/A — not a chat app), Foreground-Services geofencing removal (Aug26 2026, N/A), Android Developer Verification (Sep30 2026, already filed as issue #223), Child Safety Standards (Oct28 2026, N/A), Contacts/Location/SMS-CallLog Permissions (all Jan27 2027, N/A — AndroidManifest.xml has none of these permissions). No new item since 2026-08-10.",
         "https://github.com/ggml-org/whisper.cpp/releases.atom": "2026-08-24: direct fetch succeeded — new release v1.9.3 (2026-08-20): fixes two memory-safety bugs — heap buffer over-read in log-mel spectrogram on very short audio clips, and stack buffer overflow from unvalidated tensor dimensions in model file headers — both on the native FFI audio/model-parsing surface KB-Whisper uses. pubspec.yaml pins whisper_ggml_plus 1.5.2, which vendors whisper.cpp 1.8.3 (predates the fix). MATERIAL — filed as issue #234."
       },
-      "_lastScanCoverage": "5/8 sources reached directly via WebFetch (talsec, owasp-mastg, apple-upcoming, whisper.cpp, and google-play-policy via its distribute/play-policies sibling), the remaining 3 (ghsa-pub, gcp-bulletins, dart-pub-advisories) via WebSearch fallback after 406/egress-block, 0 unreachable, no material findings this cycle (two upstream releases noted — freeRASP 8.1.0 and whisper.cpp v1.9.2 — neither meets the auto-ticket bar: no CVE, no breaking API change, no documented memory-safety fix)."
+      "_lastScanCoverage": "5/8 sources reached directly via WebFetch (talsec, owasp-mastg, apple-upcoming, whisper.cpp, and google-play-policy via its distribute/play-policies sibling), the remaining 3 (ghsa-pub, gcp-bulletins, dart-pub-advisories) via WebSearch fallback after 406/egress-block, 0 unreachable, no material findings this cycle (two upstream releases noted — freeRASP 8.1.0 and whisper.cpp v1.9.2 — neither meets the auto-ticket bar: no CVE, no breaking API change, no documented memory-safety fix).",
+      "_janitorLeanScans": [
+        {
+          "date": "2026-08-17",
+          "via": "weekly-janitor-sweep",
+          "note": "Lean WebSearch check of top CVE/policy surfaces (pub CVEs, freeRASP release, App Store/Play policy churn). No material delta vs 2026-08-10 baseline. Full per-source snapshot not refreshed this cycle."
+        }
+      ]
     },
     {
       "role": "Legal Counsel",
@@ -199,7 +206,14 @@
         "https://support.google.com/googleplay/android-developer/answer/10787469": "2026-08-24: egress-blocked/403 again. WebSearch: no Data-Safety-form-specific update found beyond already-known items (precise/approximate-location disclosure guidance, Jul 2026; Android ID device-identifier classification, Apr 2025), both pre-dating this baseline. No new form or deadline change found.",
         "https://play.google.com/about/developer-content-policy/": "2026-08-24: egress-blocked/403 again. WebSearch reaffirms the 2026-07-15 update only (User Data/third-party AI — already issue #220, 30-day compliance window already elapsed; AI-Generated Content policy still targets apps that produce/distribute AI content for others, not Butlery's internal recipe-parsing/OCR use case). No new update found."
       },
-      "_lastScanCoverage": "4/7 sources reached directly via WebFetch this cycle (apple-news-rss — recovered from last cycle's 500, apple-upcoming-requirements, play-policies, releases.rss), the remaining 3 (privacy-manifest doc, data-safety form, developer-content-policy) via WebSearch fallback after JS-render/403/egress-block; no new material item this cycle, everything reconfirms baseline or the already-filed issues #215/#220/#223."
+      "_lastScanCoverage": "4/7 sources reached directly via WebFetch this cycle (apple-news-rss — recovered from last cycle's 500, apple-upcoming-requirements, play-policies, releases.rss), the remaining 3 (privacy-manifest doc, data-safety form, developer-content-policy) via WebSearch fallback after JS-render/403/egress-block; no new material item this cycle, everything reconfirms baseline or the already-filed issues #215/#220/#223.",
+      "_janitorLeanScans": [
+        {
+          "date": "2026-08-17",
+          "via": "weekly-janitor-sweep",
+          "note": "Lean WebSearch check of top CVE/policy surfaces (pub CVEs, freeRASP release, App Store/Play policy churn). No material delta vs 2026-08-10 baseline. Full per-source snapshot not refreshed this cycle."
+        }
+      ]
     }
   ]
 }

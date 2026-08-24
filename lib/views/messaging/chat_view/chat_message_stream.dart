@@ -4,6 +4,7 @@
 /// concerns with real-time message updates.
 
 import 'dart:async';
+import 'package:flutter/foundation.dart' show mapEquals;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/models/messaging/message.dart';
@@ -19,6 +20,7 @@ import 'package:butlery/widgets/common/state/loading_states.dart';
 import 'package:butlery/widgets/common/state/empty_states.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 
 /// Message stream widget with real-time updates (50 message limit)
 class ChatMessageStream extends StatefulWidget {
@@ -213,10 +215,26 @@ class _ChatMessageStreamState extends State<ChatMessageStream> {
     for (var newMsg in newMessages) {
       final index = _messages.indexWhere((m) => m.id == newMsg.id);
       if (index != -1) {
-        // Only update if message content actually changed
+        // Only update if the message actually changed.
+        //
+        // BUT-1908: `metadata` belongs in this test. A poll vote changes
+        // NOTHING else, so without it the tally and the hydration marker froze
+        // at whatever the first render saw — and `_refreshMessages` runs this
+        // same method, so pull-to-refresh did not repair it either. Only
+        // reopening the chat did. That reproduced the ticket's own harm without
+        // the cap being involved: the creator watches "0 röster" while members
+        // vote, taps avsluta, and `closePoll` re-reads the message on its own
+        // uncapped path and writes the real winner into the week's plan.
+        //
+        // `mapEquals` is SHALLOW, and `metadata['poll']` is a nested map
+        // compared by identity, so on a poll message whose map was rebuilt it
+        // answers false exactly as a bare `!=` would.
+        // Replacing one element is cheap either way: `setState` already fires
+        // unconditionally in the stream listener.
         if (_messages[index].content != newMsg.content ||
             _messages[index].status != newMsg.status ||
-            _messages[index].readAt != newMsg.readAt) {
+            _messages[index].readAt != newMsg.readAt ||
+            !mapEquals(_messages[index].metadata, newMsg.metadata)) {
           _messages[index] = newMsg;
         }
       }
@@ -252,6 +270,18 @@ class _ChatMessageStreamState extends State<ChatMessageStream> {
         });
       }
     }
+  }
+
+  /// BUT-1908: `closePoll` can now REFUSE, and a refusal that nobody shows is
+  /// the same silent failure the guard was built to replace. The viewmodel
+  /// returns the Swedish sentence, or null when there is nothing to show.
+  ///
+  /// `mounted` is checked after the await because a snackbar outlives its
+  /// route, and this widget can be disposed while the close is in flight.
+  Future<void> _closePoll(ChatViewModel viewModel, String messageId) async {
+    final problem = await viewModel.closePoll(messageId);
+    if (!mounted || problem == null) return;
+    SnackBarUtils.showError(context, problem);
   }
 
   @override
@@ -348,7 +378,7 @@ class _ChatMessageStreamState extends State<ChatMessageStream> {
                 onReply: () => viewModel.setReplyToMessage(message),
                 onPollVote: (optionId) =>
                     viewModel.votePoll(message.id, optionId),
-                onPollClose: () => viewModel.closePoll(message.id),
+                onPollClose: () => _closePoll(viewModel, message.id),
               );
             },
           ),

@@ -125,6 +125,73 @@ void main() {
       },
     );
 
+    test(
+      'BUT-1872: the thrown exception carries no raw conversation id',
+      () async {
+        // The exception OBJECT is the one channel AppLogger cannot sanitize:
+        // `recordError(error, ...)` masks only the reason string, and
+        // `ResourceNotFoundException.toString()` prints `ID: <resourceId>`.
+        // So a raw direct id here reaches Crashlytics with both uids in it,
+        // in the very report whose reason was masked.
+        //
+        // That WAS this test's only barrier. It is not any more: since
+        // BUT-1897 the exception class masks inside its own `toString()`, so
+        // the three assertions below now hold whether or not the throw site
+        // calls `.maskedConversationId`. Said plainly rather than left as a
+        // stale boast — the sentence here used to claim the opposite.
+        //
+        // The per-site call still does something the class rule does not: it
+        // hashes a ONE-SEGMENT `direct_abc`, which the class rule's composite
+        // pattern (two segments) leaves alone. That is the discriminating
+        // assertion at the end.
+        const uidA = 'aBcDeFgHiJkLmNoPqRsTuVwXyZ12';
+        const uidB = 'zZyYxXwWvVuUtTsSrRqQpPoO3456';
+        const directId = 'direct_${uidA}_$uidB';
+
+        final module = ConversationMutationModule(
+          firestore: FakeFirebaseFirestore(),
+          collectionName: _convoCollection,
+        );
+
+        Object? thrown;
+        try {
+          await module.updateConversation(
+            conversationId: directId,
+            title: 'New Title',
+          );
+        } catch (e) {
+          thrown = e;
+        }
+
+        expect(thrown, isA<ResourceNotFoundException>());
+        final rendered = thrown.toString();
+        expect(rendered, isNot(contains(uidA)));
+        expect(rendered, isNot(contains(uidB)));
+        expect(rendered, contains('direct_#'));
+
+        // The discriminating half. A one-segment id is hashed by
+        // `maskConversationId` at the throw site and NOT by the class-level
+        // rule, so this is the assertion that reddens if the throw site stops
+        // masking.
+        Object? shortThrown;
+        try {
+          await module.updateConversation(
+            conversationId: 'direct_abc',
+            title: 'New Title',
+          );
+        } catch (e) {
+          shortThrown = e;
+        }
+        expect(
+          shortThrown.toString(),
+          contains('direct_#'),
+          reason:
+              'a one-segment id is masked only by the throw site, so this is '
+              'what proves the per-site call is still there',
+        );
+      },
+    );
+
     // BUT-1838: the contract CHANGED here, and both halves of the change are
     // load-bearing, so both are pinned.
     //

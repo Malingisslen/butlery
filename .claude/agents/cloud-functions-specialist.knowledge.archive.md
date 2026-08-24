@@ -10847,3 +10847,3863 @@ That check is what the verdict rests on, not the wording.
 now reads against the new clause — the entry carries a cap that charges nothing; and this test
 file's docstring line 2, "per-user daily cap on LLM-backed operations", which the non-LLM
 `createChatGroup` pin (added round 12) made imprecise, and which the runner-label fix did not reach.
+
+### 2026-08-16 — BUT-1835 poll-vote erasure review [Pattern discovered]
+
+Reviewed the fix round on `deletePollVotes` (`account-deletion-cascade.ts`:1525-1567),
+`Collections.pollVotes`, the `record-notification-opened.ts` TTL docstring, and the three
+suites. Ran everything: `test:account-deletion-cascade` 105/105, `test:firestore-ttl-policies`
+13/13, `npm run build` clean, and `test:rules:poll-votes` 26/26 against the live emulator.
+Proved the two closed-poll rules cases non-vacuous with the file's own `PROBE_RULES_PATH`
+seam — a scratchpad copy of `firestore.rules` with `pollIsOpen()` mutated to `return true`
+reddens EXACTLY V7 and V14 (24/26), so the "evaluation error at L2093/L2099" noise in the
+emulator log is not what produces those denies. Repo tree untouched by the probe.
+
+Verified rather than assumed: the Dart writer stamps `voterId` as a FIELD as well as the doc
+id (`message_mutation_module.dart`:546), `FirestoreCollections.pollVotes == 'poll_votes'`, the
+`poll_votes`/`voterId` fieldOverride carries a `COLLECTION_GROUP` scope
+(`firestore.indexes.json`:750-757), `metadata.poll.creatorId` is the real path
+(`message.dart`:364), and both `activeUsers` writers (recipe + shopping presence) stamp
+`expiresAt` via `PresenceTtl.computeExpiresAt()`, so the shared collection-group id is safe
+for the new TTL.
+
+THE FINDING WORTH KEEPING (now folded into idempotency rule 10). The new comment at :1370-1376
+justifies calling `deletePollVotes` from inside `deleteMessages` as "sequential-after is the
+only deterministic order" — true of `deleteMessages`' own 1:1 thread delete, and NOT true of
+the parallel Tier-1 sibling `deleteChatGroupMemberships`, which deletes a whole thread at
+:2443-2447 when the erased user was a group's last member. The authorship update is a batch,
+batches are atomic, and `strict:false` swallows the chunk: one NOT_FOUND from that race drops
+up to 499 other polls' `metadata.poll.creatorId` scrubs with a warn, and the step still
+returns true. Same exposure already exists on `anonymizeOwnMessages` (:1207), so the class is
+pre-existing — filed Medium, not blocking.
+
+Second Medium: `probeResidualData` gained an uncapped `count()` leg for `participants` in
+BUT-1822 precisely so a swallowed delete stays loud; `poll_votes` got no such leg, so only the
+CAP decline (2001+ rows) is reported, not a failed sweep.
+
+Low: the docstring's "no code writes that array any more" about
+`metadata.poll.options[].voterIds` is false as written — `PollOption.toMap`
+(`lib/models/messaging/poll.dart`:64) still writes it, always EMPTY, and the Dart-side sibling
+comment (`firebase_data_export_repository.dart`:455) states it correctly. The paragraph's
+conclusion survives; the premise does not.
+
+Operational note for the deploy: the `poll_votes.voterId` COLLECTION_GROUP override must be
+deployed with/before the functions, or every erasure's `messages` step throws
+FAILED_PRECONDITION (loud — `runStep` catches it into `failedCollections`, so no false
+all-clear), and `--force` on an index deploy still prunes all 19 TTL policies.
+
+### 2026-08-16 — BUT-1835/BUT-1792/BUT-1801 held-batch re-review (three files) [Bug fixed] [Pattern discovered]
+
+Reviewed the uncommitted worktree of `account/account-deletion-cascade.ts`,
+`shared/collections.ts`, `notifications/record-notification-opened.ts`. `npx tsc --noEmit`
+exit 0; `npx tsx src/__tests__/account-deletion-cascade.test.ts` → `107/107 passing`,
+exit 0 — both confirm the author's measured figures.
+
+**Blocking 1 — `deletePollVotes` ships with no `probeResidualData` leg.** Both its writes
+go through `commitInChunks(..., strict:false)` (`shared/batch-update.ts`:258-271 swallows
+the whole chunk with `v1Logger.warn(label, { err })`, and an Error nested in a payload
+serialises to `{}`), and it returns `complete`, which only the CAP can falsify. So a failed
+chunk leaves up to 500 vote rows (doc id == the erased uid, plus a `voterId` field) or 500
+messages carrying `metadata.poll.creatorId: <raw uid>`, the step reports success, and
+nothing in the probe contradicts it → audit row `gdprCompliant: true`. Enumerated the whole
+probe: 6 top-level userId, the new `users/{uid}/recipes` count, `notification_delivery`
+×2, the 12-entry owner-keyed loop, `canonical_rating_events`, `unified_shopping_lists`,
+`unified_shared_shopping_lists` ×2, contributor/lastActivity ×2, `feature_retention`,
+collectionGroup `participants`. Every one has a matching deleter; `poll_votes` and
+`metadata.poll.creatorId` are the only deleter legs with no probe.
+
+**Blocking 2 — the "no race" comment is false, again.** `request-account-deletion.ts`:207-226
+puts `chat_groups` and `messages` in ONE `Promise.all`, and
+`deleteChatGroupMemberships`:2478-2482 deletes an emptied group's whole thread. So the
+`anonymizePollCreators` `batch.update()` can hit a concurrently deleted message → NOT_FOUND
+→ atomic chunk fails → swallowed → true. Being sequential-after the conversation loop
+bounds nothing outside its own step. Identical to the shape already recorded under
+idempotency rule 10.
+
+**Blocking 3 — the index was stale against the worktree.** `git diff --cached --stat` = 98
+insertions (BUT-1835 only); worktree-vs-HEAD = 138 insertions (BUT-1835 + the BUT-1801 fix).
+`md5sum` worktree `8b1884832781bd80e57d056c5b1f2434` vs `git show :<path>` →
+`998bc8ec4357d8f3b12cf5ea58b322c5`. A commit made against that index ships the poll work
+without the recipes fix, and the ledger would pin bytes I never read.
+
+**Verified TRUE (the author asked for these to be attacked):**
+- BUT-1801(b) both halves. `firestore.indexes.json` declares exactly three recipes
+  COLLECTION_GROUP overrides — `core.ingredientsNormalized`, `core.tagResult.generatorVersion`,
+  `core.createdBy` (pinned as an exact set by `recipe-collection-group-indexes.test.ts`) —
+  none on `userId`; and no recipe writer emits a top-level `userId` (ownership is
+  `core.createdBy`). `count()` is also the right shape here: unlike
+  `unified_shopping_lists`, a user recipe has NO subcollection (rules:360 block holds no
+  nested `match`), so there is no missing-parent-with-children case to miss.
+- BUT-1801(a) substantively. No writer of a top-level `recipes` collection exists in `lib/`
+  or `functions/src`; every access is `users/{uid}/recipes` or `collectionGroup("recipes")`.
+  The removed query was dead.
+- BUT-1792. `firestore.indexes.json`:711-713 carries the `notification_opened_events` /
+  `expireAt` / `ttl:true` override, `firestore-ttl-policies.test.ts` pins group+field+source
+  and the write regex `expireAt:\s*admin\.firestore\.Timestamp\.`, and
+  `cleanup-old-notifications.ts`:110-112 sweeps three sibling collections but NOT this one —
+  so "nothing deleted any of them" is true of the code.
+- `Collections.pollVotes === 'poll_votes'` matches `FirestoreCollections.pollVotes`
+  (`lib/core/constants/firestore_collections.dart`:23), the rules path (:2059) and the index
+  (:751). New suite is wired: `test:rules:poll-votes` exists, is chained into
+  `test:rules:all`, and appears in both `paths:` blocks of `firestore-rules.yml`.
+
+**FALSE claims found (this is the recurring tax):**
+- `deleteRecipes`' new comment: "it has no `match` block in `firestore.rules`, so the default
+  deny stops the app writing there". There IS one — `match /{path=**}/recipes/{recipeId}`
+  (rules:2748), and under `rules_version = '2'` a recursive wildcard matches ZERO or more
+  segments, so it reaches a top-level `/recipes/{id}`. The conclusion survives because that
+  block grants only `read: isAdmin()`, but the reason as written is wrong. Correct form:
+  "the only rule reaching that path is the admin-only read-only collection-group catch-all
+  at rules:2748, and no writer exists in `lib/` or `functions/src`."
+- The cap rationale — see the new principle 11.
+- "no code writes that array any more" (`metadata.poll.options[].voterIds`): `PollOption.toMap`
+  (`lib/models/messaging/poll.dart`:64) still writes it, always EMPTY and never updated
+  (`firebase_data_export_repository.dart`:451-457 says so). No uid residual, so the decision
+  is right; the sentence is not.
+
+Also filed: the new recipes probe catch uses `{ err }` (records nothing) beside siblings on
+`{errCode, errName}`; the `authored` query is uncapped while the vote sweep is capped; and
+the two thread-delete sites (`deleteMessages`:1318-1322, `deleteChatGroupMemberships`:2478-2482)
+orphan `poll_votes` subcollections — unreadable forever (the read rule resolves through
+`get(messages/{messageId})`, a CEL error on a missing parent), though a third party's own
+later erasure still reaches them by collection group.
+
+No mutation probe was written; `git status --porcelain` on the three files was unchanged
+across the whole review.
+
+### 2026-08-17 — BUT-1801/BUT-1835 fix-round re-review (account-deletion-cascade) [Bug fixed] [User correction]
+
+Re-review of the H1/H2/M1/M2/M3 responses on
+`functions/src/account/account-deletion-cascade.ts` + its unit suite. Measured, not argued:
+`npx tsc --noEmit` exit 0; `npx tsx src/__tests__/account-deletion-cascade.test.ts` →
+**110/110 passing** (matches the requester's figure). Two mutation probes, backup + restore,
+file md5 `2fe8431a44f375a2e8e4aaa61c158e91` before and after both.
+
+**What was RIGHT.** H1's two probe legs are real and non-vacuous — deleting the
+`[Collections.messages, "metadata.poll.creatorId", "=="]` row reddens exactly ONE test
+(109/110), and the collection-group `poll_votes.voterId` count leg is backed by a declared
+`COLLECTION_GROUP` fieldOverride in `firestore.indexes.json`:751-756. The nested-equality
+claim is true on the merits (automatic single-field indexes cover map subfields), though
+"its sibling two entries up" is off by ten — `metadata.subjectUserId` is entry 2 of 12 and
+the new row is entry 12. H2's tolerance is NOT backwards: `commitInChunks(strict:false)`
+swallowed EVERY failure and still returned success, so the new "code 5 only" is strictly
+stricter, `Promise.allSettled` never rejects, and a non-object `reason` falls to the loud
+side. grpc 5 is the right code and `(err as {code?:number}).code` the right place to read it.
+M1's substance is right (create/update/delete on `poll_votes/{voterId}` all require
+`request.auth.uid == voterId`; `isValidVote()` pins the field). M3 landed.
+
+**Blocking findings.**
+
+1. *(High)* **H2's uncapped fan-out rests on a false claim, and it is the mirror of the
+   error M1 just fixed.** "the rows are self-bounded — only this user can author this user's
+   polls" — the `messages` create rule uses `hasRequiredFields([...])` with no `hasOnly`
+   (firestore.rules:2003-2011), so any participant may plant
+   `metadata.poll.creatorId: <victimUid>`. The same FILE says so 300 lines up, in
+   `anonymizeSystemMessagesAboutUser`'s log comment about `metadata.subjectUserId`
+   ("a sender can plant that field on a message in their own DM"). `rateLimitWrite('messages', 5)`
+   reads a self-written bucket. So a peer chooses N, and N is now N individual write RPCs in
+   one unbounded `Promise.allSettled` where it used to be ceil(N/500) batched commits — and
+   the previous review had already filed the uncapped `authored` query. Remedy: `.limit(MAX+1)`
+   + decline like the vote sweep, plus waves of 10 (the file's own convention in
+   `deleteMessages`/`scrubLastEditor`) or `db.bulkWriter()` with `onWriteError` tolerating 5.
+
+2. *(High)* **The tolerance branch is untested and the fake cannot stage it.**
+   `FakeFirestore.applyUpdate` is `if (!existing) return;`, so `doc.ref.update()` on a missing
+   doc RESOLVES. MEASURED: inverting `?.code !== 5` to `?.code === 5` leaves the suite
+   **110/110 GREEN**. This is exactly the "passes because the fake is permissive" mode the
+   requester asked about.
+
+3. *(High)* **The `deleteRecipes` top-level removal breaks a registered emulator suite, and
+   M2's second half is false.** `functions/src/__tests__/request-account-deletion.integration.test.ts`:152
+   writes `recipes/r-own-<RUN>` and :724 asserts it is deleted; the file is unmodified in this
+   diff and is registered in `test:rules:all` and both `paths:` blocks of `firestore-rules.yml`.
+   So "no writer … exists anywhere in `lib/` or `functions/src` (verified by grep)" is false,
+   and the grep that disproves it is the one the comment claims to have run.
+
+**Comment falsehoods shipped by the fix round itself.**
+
+- Probe row comment (`:259-264`): "`anonymizePollCreators` rewrites this field … it commits
+  through `strict:false`, which swallows a failed chunk and still lets the step return
+  success". H2 deleted that label (grep finds it only in this comment and in this archive)
+  and removed the swallow. The justification for the leg is now false in both halves.
+- Test docstring `scenario_probeSeesLeftoverRecipes`: "`firestore.rules` has no `match` block
+  for it, so the app cannot write there" — the disproved claim the production comment was
+  corrected for, re-introduced in the SAME round, in the suite file. Under
+  `rules_version='2'` `{path=**}` matches zero segments, so the catch-all does reach
+  `recipes/{id}`. Also "No such collection exists" — the integration fixture creates it.
+- `firestore.rules:2748` — wrong in every version (HEAD 2636, index 2738, worktree 2766;
+  2748 is inside the `comments` catch-all). The number came from THIS agent's own previous
+  archive entry. `:2093-2108` is wrong too: the write verbs are at 2111/2117/2126.
+
+**Fixture quality.** The three poll fixtures are well separated (the leftover-vote message
+carries `creatorId: OTHER`, the leftover-author message carries no vote row), the clean case
+seats OTHER's row so a uid-blind sweep would cry wolf, and the fake's `collectionGroup`
+(second-to-last segment) and `readField` (dotted path walk) model the real semantics. One
+weakness: every assertion is on the aggregate `residual_data_detected` flag rather than on
+which leg fired, so attribution rests on the mutation probes rather than on the assertions.
+
+Probes restored; `git status --porcelain -- functions/` unchanged across the review; no
+MUTANT/THROWAWAY residue.
+
+### 2026-08-17 — BUT-1801 review round 3 (poll cascade + recipes revert) [Pattern discovered]
+
+Third pass over the same three files (`account-deletion-cascade.ts`,
+`account-deletion-cascade.test.ts`, `poll-votes-rules.test.ts`). Measured: `npx tsc
+--noEmit` clean, `npx tsx src/__tests__/account-deletion-cascade.test.ts` **114/114**.
+No production code mutated by this review; `git status --porcelain` unchanged.
+
+**Round-2 findings verified CLOSED.**
+- H3 (top-level `recipes` leg): restored. `request-account-deletion.integration.test.ts`:152
+  plants `recipes/r-own-<RUN>` and :724 asserts the delete; the deleter now reads BOTH
+  shapes and the probe reads only `users/{uid}/recipes`. Superset invariant (deleter ⊇
+  probe) intact. The asymmetry is DEFENSIBLE, not untidy: `probeResidualData` is a
+  highest-risk sample, not a per-leg mirror — `menus`, `weekly_menu_plans`, `cook_snaps`,
+  `activity_events`, `pantry` and `households` have no probe row either.
+- H1 (self-bounded false): authorship scrub now `.limit(MAX+1)` + decline above the cap,
+  with the rules-derived rationale (the `messages` create rule has `hasRequiredFields` and
+  NO `hasOnly`, verified at firestore.rules `allow create` under `match
+  /messages/{messageId}`). The honest "the `.limit()` itself is not pinned" note in the
+  scenario docstring is correct.
+- H2 (tolerance untestable): closed by `FakeFirestore.updateFailures` (path -> grpc code,
+  thrown from `makeRef().update`), both directions asserted. Verified the seam cannot
+  change any existing scenario: the map is empty by default AND `batch().update` writes
+  through `applyUpdate` directly, never through `makeRef`.
+- Rules claims re-derived from the file, not the diff: every write verb under `match
+  /poll_votes/{voterId}` (create/update/delete) requires `request.auth.uid == voterId`, and
+  `isValidVote()` pins `request.resource.data.voterId == voterId`. TRUE as written.
+- Tier-1 race claim TRUE: `request-account-deletion.ts`'s tier1 array holds `chat_groups`
+  and `messages` in the same `Promise.all`.
+- Wiring complete: `test:rules:poll-votes` script, appended to `test:rules:all`, and in
+  BOTH `paths:` blocks of `firestore-rules.yml`.
+
+**New finding (blocking): the replacement sentence's COUNT.** `account-deletion-cascade.ts`:546
+says "all three `FirestoreCollections.recipes` sites in `lib/` resolve there". `grep -r
+"FirestoreCollections\.recipes" lib/ --include=*.dart` returns **5** sites in 5 files; four
+BUILD a path (`firebase_recipe_repository.collectionName` via `UserScopedFirebaseRepository`,
+`firestore_repository.userRecipesCollection` — whose live caller is
+`offline_sync_manager.dart`:103 — `family_rating_service.dart`:146,
+`rating_statistics.dart`:276) and the fifth,
+`recipe_stats_repository.dart`:35, is `collectionGroup(FirestoreCollections.recipes)`, which
+resolves to no path at all and SPANS the top-level collection the sentence is arguing about.
+No reading yields three. The twin is `account-deletion-cascade.test.ts`:1538 ("every
+… site in `lib/` resolves to `users/{uid}/recipes`"), false for that same collectionGroup
+site. The SUBSTANCE — no production writer puts a recipe in the top-level collection — was
+verified true across all four writers.
+
+**Other comment nits reported (non-blocking).**
+- `:1668` "this file says so 300 lines down" — the `hasOnly` sentence is at `:1828`, 159
+  lines down. Only two `hasOnly` mentions exist in the file; cite
+  `anonymizeSystemMessagesAboutUser` by name.
+- "no code writes that array any more" (`metadata.poll.options[].voterIds`, prod `:1621` and
+  test `:2107`): `PollOption.toFirestore` (`lib/models/messaging/poll.dart`:64) still emits
+  `voterIds`, and `closePoll` (`message_mutation_module.dart`:575) rewrites the whole
+  `metadata` map — always EMPTY, never a uid (verified: `closePoll` reads the raw snapshot,
+  not the hydrated model, so `MessageQueryModule._merge`'s display tally cannot round-trip).
+  Substance safe, wording checkable-false.
+- Seam docstring should say `batch().update` bypasses it, or a future injection test on a
+  `commitInChunks` path passes vacuously.
+
+**Ops note.** The `poll_votes/voterId` COLLECTION_GROUP fieldOverride must be READY before
+these functions deploy: the SWEEP (not only the probe) is a collection-group query, so while
+the index builds every `deleteMessages` throws FAILED_PRECONDITION into `runStep`.
+
+**Pre-existing gap, not introduced here.** Both thread deletes (`deleteMessages`' ≤2 branch
+and `deleteChatGroupMemberships`' emptied-group branch) `batchDeleteAll` message documents
+without touching their `poll_votes` children, so OTHER participants' vote rows orphan under
+deleted parents — the BUT-1825 class. The erased user's own rows are safe (a collection-group
+query returns children of an absent parent). `deleteRealtimeDocsWithChildren` is the
+in-file shape for fixing it.
+
+### 2026-08-17 — BUT-1801/BUT-1835 gate review, round 4 (final) [User correction / Pattern discovered]
+
+Files: `functions/src/account/account-deletion-cascade.ts`,
+`functions/src/__tests__/account-deletion-cascade.test.ts`,
+`functions/src/__tests__/poll-votes-rules.test.ts` (staged bytes).
+Measured: `npx tsc --noEmit` clean; `npx tsx src/__tests__/account-deletion-cascade.test.ts`
+**114/114 passing**.
+
+**Round-3 fixes verified TRUE.**
+- The recipes enumeration is now a PROPERTY and it is complete: `grep -rn
+  "FirestoreCollections\.recipes" lib/` returns exactly 5 sites in 5 files —
+  `rating_statistics.dart`:276 (`users/{ownerId}/recipes`), `family_rating_service.dart`:146
+  (`users/{uid}/recipes`), `firestore_repository.dart`:121 (`userRecipesCollection`, builds
+  `users/{uid}/recipes`), `firebase_recipe_repository.dart`:106 (`collectionName`, and the
+  class declares `with StreamManagementMixin, UserScopedFirebaseRepository<Recipe>`), and
+  `recipe_stats_repository.dart`:35 (`collectionGroup`, builds no path). The sibling constant
+  `FirestoreCollections.userRecipes` ('recipes', firestore_collections.dart:90) has one path
+  site, `report_service.dart`:277, also `users/{ownerId}/recipes` — so the wider claim
+  ("`users/{uid}/recipes` is the only shape any production writer uses") survives it too.
+  Top-level rules check: the only `match` reaching it is `match /{path=**}/recipes/{recipeId}
+  { allow read: if isAdmin(); }` (firestore.rules:2785) — admin-only, read-only. TRUE.
+- "300 lines down" → `anonymizeSystemMessagesAboutUser` by name: the named function's own log
+  comment does carry the no-`hasOnly`/plant-in-a-DM claim (`:1839-1842`). TRUE.
+- Seam docstring's `batch().update` caveat: verified against the fake — `batch()` takes the
+  ref object and calls `this.applyUpdate(ref.path, ...)` directly, never `makeRef().update`.
+  TRUE.
+- Rules claims re-read: create/update/delete under `match /poll_votes/{voterId}` all carry
+  `request.auth.uid == voterId` (2130-2145) and `isValidVote()` pins
+  `request.resource.data.voterId == voterId` (2120-2125). `messages` create is
+  `hasRequiredFields([...])` with NO `hasOnly` (metadata unconstrained). TRUE.
+
+**Blocking 1 — the correction stopped one file short.** The production docstring was fixed to
+"That array is still EMITTED …", and the TEST twin
+(`account-deletion-cascade.test.ts`:2112-2115) still reads "no code writes that array any
+more, so a cascade scrubbing it would be erasing a field nothing produces". FALSE, and now
+contradicted by the production file in the SAME diff: `PollOption.toMap`
+(`poll.dart`:60-69) emits `voterIds`, `Poll.toMap` maps every option through it (:175), the
+live poll-create path serialises with `poll.toMap()`
+(`social_group_detail_viewmodel.dart`:500, `chat_input_section.dart`:189 →
+`messaging_service.dart`:603), and `closePoll` rewrites the whole `metadata` map
+(`message_mutation_module.dart`:565-575).
+
+**Blocking 2 — "only ever EMPTY" is a claim about DISK, not about code.** Same paragraph,
+production side: "it is only ever EMPTY … A cascade that scrubbed it would be erasing a field
+that never carries personal data". The mechanism half is right (verified: `closePoll` reads
+the RAW snapshot, so `MessageQueryModule._merge`'s display tally cannot round-trip). But the
+writer this very diff REPLACES did store uids there: `git show
+HEAD:lib/repositories/firebase/modules/message_mutation_module.dart` lines 505-520 write
+`option['voterIds']`, and HEAD's `messages` update rule (`request.auth.uid ==
+resource.data.senderId`) allowed exactly one voter through it — the poll's own author. So a
+pre-BUT-1832 poll can hold its author's raw uid in `metadata.poll.options[].voterIds`, the
+scrub rewrites only `metadata.poll.creatorId`, and BOTH probe legs then read zero (creatorId
+is now "deleted", no `poll_votes` row exists) — a certified-clean erasure over a raw uid.
+Scope: dev/test data only, app not live, same reasoning that closed BUT-1839 unbuilt; the
+remedy asked for is the qualification, not code.
+
+**Blocking 3 — a stale suite-size count in the rules suite.**
+`poll-votes-rules.test.ts`:482 says the null-ternary repair leaves "the suite … 32/32 and
+both stay green", while the file now declares **33** tests (`grep -c "^test("`), because the
+same review round added the `SHARE_META_MSG_ID` case the sentence's "both" refers to. The
+runner prints `${tests.length - failed}/${tests.length}`, so no run of these bytes can print
+32/32. Substance holds (a map without `poll` still takes the ternary's map branch → `{}` →
+open → ALLOW), only the count is false.
+
+**Earlier non-blocking notes, re-graded on request.**
+- `probeResidualData`'s "must never be added back" + "counted a collection with no
+  documents": stays NON-blocking. The code is right (deleter ⊇ probe holds; the probe is a
+  highest-risk SAMPLE, not a per-leg mirror), and no erasure outcome changes. The wording is
+  in tension with the deleter comment's own "an Admin-SDK writer needs no rule", so the
+  honest form is "no PRODUCTION writer puts one there" + "do not swap the subcollection leg
+  for it".
+- Ops sequencing (poll_votes/voterId COLLECTION_GROUP index READY before the functions
+  deploy): stays NON-blocking, because both legs fail CLOSED — the sweep throws into
+  `runStep` (`failedCollections`) and the probe's catch adds `residual += 1`. It is a
+  deploy-order instruction, not a defect.
+- Orphaned `poll_votes` under deleted message parents: stays NON-blocking and pre-existing.
+  The erased user's own rows are still reachable (a collection-group query returns children
+  of an absent parent); what orphans is OTHER participants' rows, i.e. the BUT-1825 class.
+- Item 5's `SHARE_META_MSG_ID` fixture does not disturb the cascade suite: different file,
+  different runner, no shared state — 114/114 with it in the tree.
+
+### 2026-08-17 — BUT-1792 TTL declarations: the four never-reviewed files [Pattern discovered]
+
+Gate review of `record-notification-opened.ts`, `shared/collections.ts`,
+`__tests__/firestore-ttl-policies.test.ts` and the staged `firestore.indexes.json` — the
+original sprint output that every earlier round skipped in favour of the deletion cascade.
+Verdict PASS, 0 blocking. `npx tsc --noEmit` exit 0; `npx tsx
+src/__tests__/firestore-ttl-policies.test.ts` 13/13.
+
+**Item 1 — the field-name trap, checked against each WRITER, not the ticket's table.**
+`notification_opened_events` → `record-notification-opened.ts:124`
+`expireAt: admin.firestore.Timestamp.fromDate(expireAt)`; `report_processing_markers` →
+`feedback/on-report-created.ts:105`; `system_ip_audit_caps` →
+`account/verify-signup-age.ts:381`; `activeUsers` → `'expiresAt':
+PresenceTtl.computeExpiresAt()` at `firebase_recipe_presence_repository.dart:79,145` AND
+`firebase_shopping_presence_repository.dart:67,118`. All four declarations
+(`firestore.indexes.json:711,721,731,741`) match. Mutation probe: flipping the `activeUsers`
+fieldPath to `expireAt` gives exactly one FAIL, exit 1, message naming the trap; restore
+md5-identical (`9bdc8c47…`), tree byte-clean, no untracked probe files.
+
+**Item 2 — no policy deletes live data.** `system_ip_audit_caps` keys on
+`hashUid(ip)_<floor(now/1h)>` and re-stamps `expireAt = now + 2h` on every hit, so the
+earliest expiry is 1h past the end of the bucket's own consultation window — the cap cannot
+be reset while live. `report_processing_markers` is an eventId idempotency marker at 180d
+against a ≤7d trigger-retry ceiling. `notification_opened_events`' 30d exactly matches
+`suppressLowPerformers`' `openedAt >= now-30d` window, and TTL deletion lags expiry, so it is
+always the trailing side; both CTR numerator and denominator expire on the same rule.
+`activeUsers` heartbeats every 30s (`PresenceTtl.ttl = 60s`, refresh ttl/2) and readers
+already drop stale rows in memory (`filterStaleRows`), so the policy is pure GC.
+
+**Item 3 — the suite pins group + field + write site.** `match.fieldPath === target.field`
+plus a per-target `stamp` RegExp anchored on the assignment (not `src.includes`, the vacuous
+form BUT-1699 proved). Gap found: only ONE of `activeUsers`' four write sites is anchored —
+the shopping presence repo is unpinned, so a rename there stays green. Filed Medium.
+
+**Item 4 — the replacement header.** True on every mechanical claim (policy in
+`firestore.indexes.json` with `ttl: true`, arms on `--only firestore:indexes`, suite reddens
+on drop or rename, `--force` prunes). One unqualified quantifier: "nothing deleted any of
+them" is false of `cleanup/on-user-deleted.ts:430`, which purges this collection for a deleted
+user — and the same docstring names that cascade 12 lines above. Filed Low; the true form is
+"nothing but the account-deletion cascade".
+
+**Item 5 — `poll_votes`, four definitions, all agreeing.**
+`functions/src/shared/collections.ts:31`, `lib/core/constants/firestore_collections.dart:23`,
+`firestore.rules:2059` (`match /poll_votes/{voterId}`), `firestore.indexes.json:751`. The
+`voterId` FIELD the collection-group index targets is really written
+(`message_mutation_module.dart:546`, duplicated from the doc id on purpose).
+
+**Deploy order — AGREED, and it belongs in the release note.** The
+`poll_votes`/`voterId` COLLECTION_GROUP override must be READY before the functions deploy:
+`firebase deploy --only firestore:indexes` returns before the build finishes, and
+`deletePollVotes` (`account-deletion-cascade.ts:1668`) is an unguarded `.get()` that throws
+FAILED_PRECONDITION until then. Both legs fail CLOSED (sweep → `runStep`/`failedCollections`;
+probe → `residual += 1`), so this is an ordering instruction, not a defect — but a deletion
+run in the gap reports INCOMPLETE and needs a rerun. The `--force` warning is likewise
+correct and now load-bearing over 19 policies rather than 15.
+
+### 2026-08-17 — BUT-1792/1801/1835 final CF pass (five files) [Pattern discovered]
+
+`npx tsc --noEmit` exit 0; TTL suite 15/15; `account-deletion-cascade.test.ts` 114/114.
+One Low, nothing blocking.
+
+**The second `activeUsers` TARGETS entry is correct** — the shopping-presence stamp
+(`firebase_shopping_presence_repository.dart`:67,118) matches the same regex, and the
+suite went 13→15 (one new stamp check, one duplicate declaration check, since both entries
+resolve the same `overrides.find`). LOW: the comment beside it, "Every entry above names a
+single writer because its collection has one", is false under the plain reading — enumerated
+each of the five: `scheduled_notifications` is also written by
+`deliver-scheduled-notifications.ts` (`tx.update` :91, `doc.ref.update` :120) and three of
+them are deleted by `on-user-deleted.ts`. True only of writers that STAMP the field. One-word
+fix ("a single STAMPING writer"); the pin itself is right.
+
+**`record-notification-opened.ts` header verified TRUE, no new false clause.**
+`on-user-deleted.ts`:427-438 deletes `notification_opened_events` with
+`where("userId","==",userId)` — per uid, by owner, not by age, exactly as the parenthetical
+says. Enumerated every reference to the collection across `functions/src` + `lib`: one writer
+(this file), one reader (`suppress-low-performers.ts`), one deleter (that cascade). So
+"nothing but the account-deletion cascade ever deleted one" holds.
+
+**Cascade docstrings — every external claim checked, all TRUE.** The `recipes` PROPERTY
+claim: `grep FirestoreCollections.recipes lib` returns exactly 5; the four path-builders
+(`firebase_recipe_repository.collectionName`, `firestore_repository.userRecipesCollection`,
+`family_rating_service`:146, `rating_statistics`:276) all build `users/{uid}/recipes` — read
+each; the fifth (`recipe_stats_repository`:35) is a `collectionGroup`. The top-level rules
+claim: `firestore.rules`:360 is NESTED under `users/{userId}`, and the only rule reaching the
+top-level collection is :2799 `match /{path=**}/recipes/{recipeId} { allow read: if isAdmin(); }`
+— admin-only, read-only. The cap docstring cites by match pattern and `isValidVote()` rather
+than line numbers (principle 12 applied) and is accurate: create/update/delete all require
+`request.auth.uid == voterId`, `isValidVote()` pins `data.voterId == voterId` and
+`optionIds.size() <= 20`. The forward-only tense qualification is right too: `closePoll`
+(`message_mutation_module.dart`:556-578) reads `doc.data()!` and rewrites `metadata` from the
+RAW snapshot, and the only other `metadata` writers are `MessageDto.toFirestore`/`toMap`,
+both create-path — so no hydrated tally can round-trip.
+
+**The `updateFailures` seam is the shape principle 13 prescribed, and it is NOT vacuous
+here** — the poll-creator scrub uses `doc.ref.update()`, which is the verb the seam
+intercepts, and both directions are asserted (code 5 ⇒ complete, code 13 ⇒ incomplete). The
+authorship-cap scenario also states honestly what it does NOT pin (`.limit(MAX+1)` is
+invisible from the assertion).
+
+**CI wiring complete** for `poll-votes-rules.test.ts`: `test:rules:poll-votes`, inside
+`test:rules:all`, and BOTH `paths:` blocks of `firestore-rules.yml` (:45, :100) — the
+recurring trap, checked rather than assumed.
+
+Deploy-order and `--force` findings from the previous pass are unchanged and still belong in
+the release note.
+
+### 2026-08-17 — knowledge-file restructure carry-forward: PII scrubbing + GDPR cascade design, full prior narrative [Pattern discovered] [Bug fixed]
+
+Verbatim retirement of the "### PII scrubbing + GDPR cascade design" subsection from cloud-functions-specialist.knowledge.md (dated 2026-04-25 to 2026-08-17 internally, per its own Round/CLOSED/MEASURED markers), moved here unedited during the 2026-08-17 no-loss restructure that cut the knowledge file from ~169K to ~25K chars. The distilled principles now live in the knowledge file under the same heading; this is the full evidentiary trail.
+
+### PII scrubbing + GDPR cascade design
+- Cross-port heuristic vectors (TS↔Dart) live in one shared JSON fixture;
+  the "Dart copies this" note goes in a `_header` field.
+- **PROMOTING a per-section field to the ROOT of an Art. 15 bundle changes its
+  blast radius, so the root value must be DERIVED, never copied.** A chokepoint
+  aggregator cannot tell an authored sentence from an `e.toString()`, and a raw
+  Firestore string carries another data subject's uid (composite doc ids like
+  `blocks/<uid>_<otherUid>`), a `create_composite` URL embedding the project id +
+  a `memberPermissions.<uid>` field path, or internal collection paths.
+  `data_export_service.dart` now builds `warnings[].message` itself and defaults
+  `error_code` to `'<section>-export-failed'`, which also stops a NEW manager
+  going silent at bundle level by forgetting the token. Two corollaries: an
+  aggregator keyed on `error_code` ALONE misses every section that fails with
+  `{'error': …}` (most of them), so a whole missing section reported the bundle
+  complete; and defending at the chokepoint does NOT clear the SECTION body —
+  `content_export_manager.dart` (12 sites) and `preferences_export_manager.dart`
+  (10) still `return {'error': e.toString()}` INSIDE the exported artifact
+  (open as of 2026-07-30). A completeness walk over the bundle must also handle
+  a flag nested in a LIST (`messages.conversations[i].messages_truncated`) —
+  iterating `value.values` and requiring each to be a Map silently skips it.
+- JS `\b` misfires before å/ä/ö — use `(?<=^|[^A-Za-zÅÄÖåäö])`, never lead a
+  Swedish-letter regex with `\b`. Case-insensitive trigger words: per-letter
+  classes (`[Mm]ormor`), not `/i`. Possessive titles ("Janssons frestelse")
+  are pinned NEGATIVE vectors — never generalize to bare capitalized-word NER.
+- Cascade purges: discover children via `rootRef.listCollections()`, never
+  hard-coded names. Gate root-doc deletes on `exists`. New cascade steps are
+  BEST-EFFORT (catch+warn+partial) — a rethrow re-runs the WHOLE cascade,
+  double-applying non-idempotent steps like `increment(-1)`.
+- **A merged batch mixing `batch.delete` (safe on missing) with
+  `batch.update` (throws NOT_FOUND on missing) can have the update's
+  absence abort the whole batch, including deletes that would've
+  succeeded.** Fix: piggyback the update-target's existence probe onto the
+  SAME `getAll` already used for the idempotency gate, skip the update
+  (never `set(merge)` — resurrects a deleted peer) when absent.
+- **When one function SKIPS a doc in step A and DELETES it in step B, an
+  assertion of the doc's ABSENCE cannot pin the skip** — the delete erases the
+  difference, so the test passes with the skip removed. Live case (BUT-1798,
+  `removeFromSharedContent`): the membership scrub skips `sharedByUserId === uid`
+  because those docs are hard-deleted 30 lines later, and the scenario's check is
+  `!db.has("shared_content/owned-by-deleted")` — green either way. What IS pinned by
+  that check is the coupling "skipped ⇒ deleted" (the skip predicate and the delete
+  query must stay the same field), and that half is worth keeping. To pin the skip
+  itself, record `batch.update` PATHS on the fake and assert the owned doc never
+  appears — the property is a WRITE that must not happen, so only a write log can
+  express it. Same shape for any wasted-write / NOT_FOUND-poison-pill rationale: the
+  hazard is invisible to a fake whose `applyUpdate` silently returns on a missing
+  path instead of throwing grpc 5.
+- **A destructive delete driven by "not present in a live roster query"
+  must guard against the query itself being under-populated** — a
+  transiently empty/incomplete read must not permanently delete regulated
+  data.
+- Cross-check the identity field **and the COLLECTION NAME** a cascade
+  filters on across all legs (Dart repo `collectionName`/`getUserCollection`,
+  `firestore.rules` match block, deleter, export, probe) before trusting a
+  query matches real docs — a wrong field or a pre-rename name deletes
+  NOTHING, silently. Two live examples: `realtime_recipes` (`userId` vs
+  `ownerId`) and `users/{uid}/shopping_lists` vs the real
+  `unified_shopping_lists` (which also owns a per-list `items` subcollection
+  needing its own sweep, and whose Art. 15 export read the same dead name).
+  **A missing `match` block for the queried path in `firestore.rules` is
+  proof the path holds no client-written data** — the cheapest check there
+  is. `admin/reset-user-data.ts` listing two names for one thing is the tell.
+  Every GDPR-deletion test needs a POSITIVE "owned doc is gone" assertion,
+  not just "control survives." **Fixing a dead collection name in ONE consumer
+  does not fix the rename** — sweep EVERY consumer in the same change
+  (deleter, probe, Art. 15 export, denorm propagation, analytics/retention
+  probes, Dart repo constants). The `unified_shopping_lists` rename sweep is
+  CLOSED as of BUT-1724 (last two readers: the `shopped` probe in
+  `analytics/compute-feature-retention.ts` and `on-profile-updated.ts`'s
+  personal-list leg). `shopping_lists` now survives only as DELIBERATE legacy
+  safety nets (`account-deletion-cascade.ts`, `admin/reset-user-data.ts`) plus
+  one Dart negative-assertion test — don't re-file those as dead reads.
+  The `recipes` twin (BUT-1781, 2026-08-01): recipes exist ONLY at
+  `users/{uid}/recipes/{recipeId}` (`firestore.rules:356`; the only other
+  `match` is the admin-only collection-group catch-all at `:2217`), so every
+  `db.collection("recipes")` matched zero docs. Fixed in both ingredient
+  cascades + `cleanup-deleted-ingredients.ts` via `collectionGroup("recipes")`.
+  SWEEP CLOSED 2026-08-01: `admin/bulk-retag.ts` (an EXPORTED callable, `index.ts:127`,
+  the operator escape hatch that DRAINS the markers those cascades write) now routes
+  both callables through one `recipesGroup()` helper; `grep -rn 'collection("recipes")'
+  functions/src` leaves only correctly-chained `users/{uid}/recipes` reads plus
+  `account-deletion-cascade.ts:413`, a DELIBERATE legacy net beside the real
+  subcollection read at `:412` — don't re-file it. Three things a
+  `collection(` → `collectionGroup(` repoint drags along: (a) the COLLECTION_GROUP
+  single-field `fieldOverrides` must be READY BEFORE the code deploys, or every query
+  FAILED_PRECONDITIONs into a caught-and-rethrown drop (`firestore:indexes` first, poll
+  to READY, then `--only functions`) — and a CONTAINS-only override REPLACES that
+  field's automatic ASC/DESC entries, so prove nothing orders or equality-filters it
+  first; (b) an ADMIN-SDK stamp onto a rules-validated doc must be checked against that
+  validator — `isValidTagResult` (`firestore.rules:157`) constrains `tagResult.keys()`,
+  coverage and TriState but NOT `generatorVersion` VALUES, so the `stale-*` stamp does
+  not lock the owner out of their next update; (c) a marker set spanning TS and Dart is
+  checked along the whole CHAIN, not at the producer — `STALE_TAG_MARKERS` (both
+  markers) → `offline_user_storage._needsRetagging` (both) → `TagResult.needsRetagging`
+  (covered by the version-mismatch branch) → `isAllUnknown`, which is
+  `generatorVersion == 'all_unknown'`, i.e. version-string based, so a CF-created stub
+  tagResult is NOT skipped by the scheduler. The chain has a FOURTH link nobody
+  checks: the operator drain writes a marker of its own (`"outdated"`), and that
+  value is absent from `STALE_TAG_MARKERS`, so `countStaleRecipes` /
+  `getDeletedIngredientStats` read ZERO the moment an operator drains — the
+  dashboard says "nothing stale" while N recipes still await a client retag.
+  A list whose docstring claims "every value that means X" is checkable in 60s:
+  grep every WRITER of that field, not just the ones the list already names.
+  Index/retry halves CLOSED 2026-08-01:
+  `recipe-collection-group-indexes.test.ts` pins the three `recipes` fieldOverrides
+  (`core.ingredientsNormalized` CONTAINS, `core.tagResult.generatorVersion` ASC,
+  `core.createdBy` ASC) as an EXACT SET *and* re-greps each querier's
+  `.where("<path>"` + `collectionGroup(` — 26/26 as of 2026-08-01, after BUT-1794
+  added behavioural `ingredientMatchVariants` cases,
+  and `cascade-retry-semantics.test.ts` (11/11) pins `retry:true` +
+  `timeoutSeconds: CASCADE_TIMEOUT_SECONDS` + the `isCascadeEventExpired` bound — both
+  read source with COMMENTS STRIPPED, because each file explains its own settings in prose
+  and the first version of the retry suite was 11/11 green with `retry: true` deleted.
+- **Repointing the COLLECTION is only HALF a dead-read fix — the VALUE the query
+  searches for must match what the PRODUCER actually writes, and that is a separate
+  proof.** BUT-1781's ingredient cascades were repointed to
+  `collectionGroup("recipes")` while still searching
+  `stripDiacritics(swedish.toLowerCase())`: `core.ingredientsNormalized` is written by
+  Dart `IngredientProcessor.normalizeIngredientsForRecipe`, which lowercases and strips
+  descriptors but KEEPS å/ä/ö (measured: `2 dl mjöl` → `"mjöl"`, `3 st ägg` → `"ägg"`).
+  So `array-contains "mjolk"` matched nothing for 8 of the 14 EU allergens (mjölk, ägg,
+  nötter, jordnötter, vetemjöl, sesamfrön, kräftdjur, blötdjur) — a silent zero surviving
+  the very ticket filed to kill it, under a code comment ASSERTING the opposite
+  ("ingredientsNormalized stores Swedish-normalized names (å→a…)"). Two traps generalise:
+  (a) `stripDiacritics` in this repo belongs to the INGREDIENT-side lookup surface
+  (`sync-ingredients-core.ts` `normalizedNames`, for the alias/allergen gate in
+  `analyze-corrections.ts`) — reusing it for RECIPE matching mixes two normalization
+  domains that were never the same; (b) the corpus is MIXED, because the retired
+  `admin/backfill-ingredients-normalized` (still present as `functions/lib/*.js`) wrote
+  the STRIPPED form, so a fix must query BOTH forms (two sequential idempotent
+  `batchUpdateQueryPaginated` passes, or one `array-contains-any` of the deduped
+  variants), not just swap one for the other. Review move that settles it in 60s: run the
+  producer and PRINT what it emits (a 10-line throwaway `flutter test`), never read the
+  normalizer's source or its docstring examples.
+  STATUS 2026-08-01: STILL OPEN, ticketed BUT-1794 (Urgent) and NOT fixed by the
+  2026-08-01 sprint. Both cascades still call
+  `normalizeSwedish = stripDiacritics(text.toLowerCase())` and pass ONE value to
+  `array-contains`, and the false comment survives verbatim at
+  `on-ingredient-soft-deleted.ts:102`. The Dart chain is confirmed diacritic-preserving by
+  code read too, not only by measurement: `IngredientProcessor.normalizeIngredientsForRecipe`
+  → `parseAndNormalize` → `IngredientNormalizer` imports no folding helper, and
+  `SwedishCharacterNormalizer` (the only å/ä/ö→a/a/o folder in `lib/`) is used ONLY by
+  `search_service.dart` and the shopping aggregators — grep that class name to settle the
+  question without running Flutter. The index side of the union is already paid for: the
+  `core.ingredientsNormalized` fieldOverride declares CONTAINS at both COLLECTION and
+  COLLECTION_GROUP scope, and nothing in `lib/` or `functions/src` orders or
+  equality-filters that field, so an `array-contains-any` of the deduped variants needs no
+  new index and no re-deploy ordering.
+  Corollary for any dead-read fix on an ANALYTICS probe: the stored history
+  keeps the structural zeros, so a rollup that ORs prior per-day flag docs
+  (`compute-feature-retention`'s wau7d/wau28d) ramps in over its whole window
+  after the fix; say so in the write-up instead of letting the dashboard read
+  as a launch. CLOSED 2026-07-31: the `compute-feature-retention.ts` header now
+  carries the ramp-in as KNOWN GAP 3, naming every ramp-triggering deploy
+  (BUT-1724 personal, BUT-1761 collaborative, BUT-1762 personal item activity —
+  the latest sets the 28-day clock) in dashboard-reader language. Before
+  worrying that such a step change trips the anomaly job, check the list: the
+  five `MONITORED_SERIES` in `detect-anomalies.ts` are
+  `import_health_totalFailure`, `recipes_total`, `parsing_corrections_total`,
+  `ops_totalEvents`, `feedback_total` — NO feature-retention flag is watched, so
+  a `shopped`/`cooked`/etc. step change cannot raise a z-score alert (verified
+  2026-07-31; re-grep before repeating the claim, it is a one-line list).
+  `shopped`'s remaining gap is GAP 1 only: the COLLABORATIVE leg is
+  last-writer-only, because `lastActivityByUserId` on `UnifiedShoppingList` is a
+  single scalar every mutation overwrites (`_withItems`,
+  `shopping_item_operations_module.dart`) — still a lower bound for shared-list
+  participants, no longer one for personal-only users.
+- **One logical field can have TWO stores; only the READER decides which is
+  authoritative.** Personal `unified_shopping_lists` keep items BOTH embedded
+  in the list doc (written by `repository.update`) and in an `items`
+  subcollection (written by the item-ops module) — and
+  `ShoppingRepositoryQueryModule.readAll` does `list.copyWith(items:
+  <subcollection>)`, so the doc array is silently discarded on every reload.
+  When sizing a cascade/export/analytics leg, prove which store the app READS
+  (a 20-line fake-Firestore round-trip settles it) instead of trusting the
+  writer you happened to open. A cascade must erase BOTH stores.
+- **Deleting a parent doc after a BEST-EFFORT (`strict:false`) sweep of its
+  subcollection strands unreachable child PII**: the swallowed chunk failure
+  is warn-only, the parent goes anyway, the retry has lost its handle, and a
+  probe that counts only parent docs reports 0. Children of a to-be-deleted
+  parent use `strict:true` (the `deleteFamilyData` household precedent) so the
+  step fails loudly and the parent survives for the retry. Corollary: that
+  strict child sweep now THROWS, so it must not sit in front of a
+  higher-value leg in the same step — a legacy/pre-rename path swept before
+  the live one can abort the step before the live data is ever touched. Order
+  the live path first.
+- **A parent-with-subcollection deleted by a plain client `doc(id).delete()`
+  leaves an orphan the server cannot QUERY.** `get()` returns only existing
+  docs and `count()` reports 0, so both a sweep and a residual probe certify
+  a clean erasure while every child doc is still on disk. `listDocuments()`
+  is the only Admin-SDK call that returns refs for MISSING documents that
+  still own subcollections — use it on both the sweep and the probe wherever
+  the client deletes a parent without recursing. `batch.delete(ref)` on such
+  a phantom ref is a safe no-op, so the parent leg needs no exists-gate.
+  **MEASURED 2026-08-12 against the emulator (probe, not inference): an absent
+  PARENT document hides nothing.** Both `listDocuments()` AND a plain `.get()`
+  on `conversations/{id}/participants` return every child row after the parent
+  is deleted, and before it was ever written; a repeat `delete()` on the same
+  ref resolves. So `listDocuments()` is required for PHANTOM DOCS only — where
+  the children own no subcollections a paged `.limit()/startAfter` query is
+  available, and that is how you BOUND an enumeration. Review corollary: a
+  "delete the children BEFORE the parent" ORDERING cannot be pinned by an
+  emulator test — swapping the two statements leaves an identical final state,
+  because the child sweep works just as well once the parent is gone. The
+  ordering protects only the crash-in-between window, which no suite can
+  observe; never let a plan or a comment record it as mutation-proven.
+- **A "shared" collection also holds SOLO-owner docs, which are pure own-data
+  and must be DELETED, not scrubbed.** A scrub-only loop over
+  `where(memberPermissions.{uid} != null)` retains a collaborative list the
+  deleted user created and never invited anyone to — item names and all,
+  readable by nobody, invisible to every probe. Inside the same loop: delete
+  when `ownerId === uid` and no other `memberPermissions` key remains.
+- **Scrubbing a deleted user off a SHARED doc must enumerate every
+  {uid, displayName} pair on the MODEL, including pairs inside embedded array
+  elements — not just the pairs the profile-propagation CF writes.** That CF
+  is a subset (owner + last-activity); the client stamps more
+  (`addedBy*`, `lastModifiedBy*` on `UnifiedShoppingItem`). Also delete the
+  `memberPermissions.{uid}` key like `deleteWeeklyMenuPlans`/
+  `deleteFamilyData` do — in the SAME atomic per-doc `update()`, since that
+  key is the step's re-entry query handle.
+- **Anonymizing a CHILD collection is not done until the PARENT's
+  denormalised preview copy and its per-uid MAP fields are scrubbed too, and
+  the cheapest way to enumerate them is to read what the Art. 15 EXPORT
+  already redacts about OTHER people.** Whatever the export must hide about a
+  third party on a doc, the cascade must erase about the departing user on the
+  same doc. CLOSED 2026-07-30 (BUT-1766/BUT-1768, 26/26 green): the GROUP leg
+  now does one `update()` per conversation covering `participantIds`,
+  `participantDisplayNames.{uid}`, `participantAvatarUrls.{uid}`,
+  `lastReadTimestamps.{uid}`, `perUserSettings.{uid}` AND a `lastMessage.*`
+  tombstone (only when `lastMessage.senderId === uid`) — `messages.metadata`
+  and `reactions` are still open gaps, not covered by this pass.
+  `deleteRealtimeMenus`/`deleteRealtimeRecipes` got the same treatment
+  (`scrubLastEditor` + `removeRealtimeParticipation` + child-subcollection
+  sweep via `deleteRealtimeDocsWithChildren`) and `realtime_menus` got a tier
+  entry for the first time ever.
+- **A cascade write built from a QUERY-TIME snapshot and applied via a plain
+  (non-transactional) `.update()` is a lost-update hazard against the exact
+  thing a "realtime"/collaborative surface exists to do: a concurrent edit by
+  a DIFFERENT, non-deleted user.** A literal-value field overwrite decided from
+  a stale read is the tell; an atomic op (`arrayRemove`, `FieldValue.delete()`)
+  needs no fix, since Firestore applies those against the live document
+  regardless of what was read. CLOSED 2026-07-30/31 for both instances found in
+  the BUT-1766/1768 diff: `buildGroupDepartureUpdate` (the `lastMessage.*`
+  tombstone) and `scrubLastEditor` (`lastEditedBy`/`lastEditedByDisplayName`)
+  now each wrap their write in `db.runTransaction`, `tx.get()` the doc fresh,
+  skip on `!fresh.exists`, and derive every literal-value field from `fresh`
+  only — the outer query's `convoDoc`/`doc` snapshot is used for `.ref` alone,
+  never `.data()`, which is the structural proof the fix is real (grep for a
+  literal-value field sourced from the outer snapshot inside a
+  post-transactional-rewrite step; finding one is the regression). `scrubLastEditor`
+  additionally re-checks `lastEditedBy === uid` inside the transaction before
+  writing — the query-time membership can go stale the same way `lastMessage`
+  did. Real Firestore transaction semantics (auto-retry on a conflicting write
+  to a doc read inside the transaction) close the race for both; this is proven
+  by code inspection against documented SDK behaviour, not by the test suite —
+  **the hand-rolled `FakeFirestore.runTransaction` passthrough (`get`/`update`
+  hit the same in-memory store as everywhere else, no isolation, no retry,
+  single-threaded so nothing can interleave) cannot simulate an actual
+  concurrent writer, and says so in its own docstring.** The 26/26 green suite
+  is real evidence for a different, still-valuable property — that the
+  transaction-wrapped code computes the SAME correct scrub/tombstone values as
+  before (no regression in the field-path/FieldValue-marker logic) — not for
+  concurrency-safety itself. Don't let a green suite substitute for the code-read
+  when reviewing a *future* transactional fix in this file; check `fresh` vs the
+  outer snapshot by eye every time.
+- A batch built from a query snapshot that reaches `batch.update()` on a doc a
+  DIFFERENT actor concurrently deleted fails the WHOLE chunk (up to 500 docs)
+  with NOT_FOUND, silently, under `commitInChunks({strict:false})` — the
+  merged-batch abort rule applies to a uniform batch of updates, not only a
+  mixed delete+update batch. `probeResidualData` is the backstop IF the
+  scrubbed field is itself probed (`realtime_menus.lastEditedBy`/
+  `.participantIds` are; the `participants.{uid}` MAP KEY is not, by design —
+  unqueryable). Low real risk here specifically (a user's realtime-doc
+  participation count is small), but the failure mode is silent, so say so in
+  review rather than assuming the probe always catches it.
+- **Rules are not filters on the DELETE path either: a CLIENT-side cascade can
+  only query on the field the read rule authorizes.** `match /messages` grants
+  read via `get(conversations/$(resource.data.conversationId)).data
+  .participantIds`, so a client `where("senderId","==",uid)` list over the whole
+  collection (a) is denied wholesale the moment one matched doc sits in a
+  conversation the user has LEFT, and (b) blows the rules limit of **10
+  `get()`/`exists()` access calls per query request** as soon as the matches
+  span >10 distinct conversations (identical paths are cached, so a
+  `where("conversationId","==",x)` read costs exactly 1 and is fine).
+  `fake_cloud_firestore` evaluates no rules, so a Dart unit test asserting
+  "messages in a conversation the user already LEFT are still deleted" is green
+  and meaningless. Only the Admin SDK can key an erasure on the sender.
+- **A cascade step that read-then-rewrites a whole embedded array via a
+  serial `ref.update()` loop has two defects at once**: NOT_FOUND on a
+  concurrently deleted doc aborts every remaining doc in the loop, and the
+  full-array write is a lost update against live editors. Per-doc
+  `runTransaction` (re-read inside, `if (!snap.exists) return`) fixes both —
+  but ONLY for NOT_FOUND. Every other transaction error (ABORTED after
+  contention retries, DEADLINE_EXCEEDED) still escapes the `await` and aborts
+  the rest of the loop, and contention is the LIKELIER failure on a live
+  shared doc. Wrap each per-doc transaction in its own try/catch, collect the
+  failures, throw once after the loop. Two corollaries, both missed on the
+  first fix pass: (a) apply it to EVERY serial loop in the step, not only the
+  one under review — a `for (ref of refs) await deleteChildren(ref)` whose
+  child sweep is `strict:true` aborts on item 1 and skips every later item PLUS
+  every leg after it (`deleteShoppingLists`' personal-items loop still does
+  this while the shared loop below it accumulates); (b) converting abort-early
+  → accumulate makes an UNCONDITIONAL downstream write unsafe, because the
+  abort used to protect it for free — after accumulating item-sweep failures
+  you must filter those ids out of the parent-delete batch, or you delete the
+  parent whose children just failed and strand them unreachable. The
+  accumulation itself is invisible to a suite with no failure injection: only a
+  seam that makes ONE iteration throw distinguishes it from the aborting
+  version — and that seam needs NO production code change. Pass the step a
+  `Proxy` over `db` whose `batch()` records each `delete(ref).path` and throws
+  on `commit()` when a path matches the child collection (`/items/`); real
+  transactions and parent deletes still run, so one ~20-line script proves the
+  later legs execute (done for `deleteShoppingLists`: parent kept, items kept,
+  shared scrub applied, count-only throw, remediation re-run clean).
+  Corollary (c): converting abort-early → accumulate moves the CAUSE out of
+  `runStep`'s `result.errors` (which used to receive the raw `err.message` in
+  the audit row) into a per-iteration log line — so the aggregate throw stays
+  count-only for PII and the log line MUST carry the error code, or the
+  failure is diagnosable nowhere.
+- A denorm-name propagation step querying a name as a TOP-LEVEL collection
+  when it is a user SUBCOLLECTION updates zero docs, silently — and still bills
+  a read per pass. **The shape that HIDES it is a shared fan-out helper
+  parameterized by collection NAME** (`db.collection(name)` inside), which
+  cannot express a subcollection at all; make such a helper take a
+  `CollectionReference` (BUT-1724 fixed `paginatedDualUpdate` that way) and the
+  bug becomes unwritable. A `collectionGroup` fix instead needs `fieldOverrides`
+  with `queryScope:"COLLECTION_GROUP"`; a per-user subcollection query does NOT
+  (auto single-field indexes cover equality + `__name__` ASC per collection ID —
+  verify no `fieldOverrides` exemption exists for that id).
+- **PROPAGATION coverage is not ERASURE coverage — they are two separate
+  tables, and a docstring that says "the CF maintains this copy and account
+  deletion scrubs it" is asserting BOTH.** Grep the collection in
+  `on-profile-updated.ts` AND in `account-deletion-cascade.ts` /
+  `request-account-deletion.ts`'s step table before letting such a sentence
+  stand (CLAUDE.md's "a decision record that asserts something about code has
+  an expiry"). Live asymmetry as of 2026-07-30: `on-profile-updated.ts:143`
+  propagates owner + last-editor names to BOTH `realtime_recipes` and
+  `realtime_menus`, while the cascade has only `deleteRealtimeRecipes`
+  (`ownerId == uid`) — `realtime_menus` appears nowhere in either account file,
+  and neither collection scrubs a `lastEditedBy*` stamp the deleted user left on
+  SOMEONE ELSE's doc. Fix shape: a `deleteRealtimeMenus` twin plus a
+  `lastEditedBy == uid → lastEditedByDisplayName: null` scrub leg on both, each
+  with its own `probeResidualData` leg. The asymmetry also runs the OTHER way,
+  and shopping lists were the live case: the cascade scrubbed ITEM-level
+  `addedByDisplayName`/`lastModifiedByDisplayName` while `on-profile-updated.ts`
+  updated only the LIST-level `ownerDisplayName`/`lastActivityByDisplayName`, so
+  a rename left every "X la till mjölk" row showing the old name forever.
+  BUT-1770 closed it (2026-07-30) and the CLOSING SHAPE is the reusable part:
+  `collectionGroup("items").where("addedByUserId"|"lastModifiedByUserId","==",uid)`
+  through `batchUpdateQueryPaginated`, plus a per-list transaction for the
+  EMBEDDED `items` ARRAY on `unified_shared_shopping_lists` (an array element's
+  field is neither queryable nor patchable — read-modify-write, and rewrite only
+  the rows whose own `*ByUserId` is this uid, or you stamp your name on someone
+  else's row). `items` is a shopping-only collection id — the ONLY `match /items`
+  blocks in `firestore.rules` are `users/{uid}/unified_shopping_lists/{listId}/items`
+  and `shared_content/{contentId}/items` — so the collection group has no
+  cross-feature blast radius; re-verify that before adding a third leg. Whenever
+  a leg reasons about "which stamps must move", check the DOC MODEL's full
+  {uid, displayName} pair set, not the stamps the leg already knows about.
+  **The residual, and the general rule: a rename leg and an erasure leg over the
+  same docs must use the SAME scoping union, and a docstring claiming they do is
+  checkable in 60 seconds.** BUT-1770's embedded-array leg scopes on
+  `contributorUserIds` array-contains ALONE while `deleteShoppingLists`
+  (`account-deletion-cascade.ts:571-588`) unions FOUR queries over that same
+  collection — `memberPermissions.{uid}`, `ownerId == uid`,
+  `contributorUserIds array-contains uid`, `lastActivityByUserId == uid` — dedup'd
+  into one `Map<docId, ref>`, precisely because membership/ownership/activity are
+  each things a user can stop having while their name stays on the doc. The
+  rename leg's own docstring asserts "the deletion cascade uses the same handle
+  for the same reason", which is false; the gap is pre-BUT-1725 rows on lists
+  never touched since (the trail is unioned by the client on every item write,
+  and `backfillSharedListContributors` is the shape that cannot finish above its
+  scan cap). Copy the cascade's four-query union + dedup, don't re-derive.
+- **`probeResidualData` must not be BROADER than the deleter** — a probe leg
+  the cascade has no path to clear makes the canary permanently red. The
+  shared-shopping-list orphan probe counts `ownerId == uid` with no other
+  member, while the deleter is keyed only on `memberPermissions.{uid}`; a doc
+  with `ownerId == uid` and no such key (tampered client — the owner branch of
+  the update rule carries no `cannotModify`) is retained own-data the probe
+  reports forever. Make the deleter's scoping a SUPERSET of every probe leg —
+  literally union the probe's own queries and dedup by doc id. The property
+  is PROVABLE, not just assertable: delete one union leg and the suite must
+  redden BOTH the targeted fixture test AND the `no failed collections` test
+  (the probe flagging its own uncleaable residual). If only one reddens, the
+  probe and the deleter are not actually coupled.
+- A forged/rushed commit-gate marker does NOT imply bad code — always
+  re-review the real diff regardless of how the marker was created.
+- **On a "re-review after automated fixes" the FIRST read of a file can return
+  PRE-FIX bytes** — measured 2026-08-01 on `leave-group-conversation.ts` (427
+  lines returned vs 426 on disk) and its suite (565 vs 623), where the stale copy
+  still held the `throw new HttpsError("not-found")` the fix had replaced. Two
+  tells, both cheap: the returned line CONTRADICTS the comment directly above it
+  (a header promising "one indistinguishable answer" over a branch that throws
+  three), and the suite's PASS names include cases absent from the text you
+  "read". So on any re-review, run the suite FIRST and diff its test names and
+  count against the file, then re-read at an offset around the disputed lines
+  before filing anything. Filing the stale branch as Critical would have been a
+  false report on code that was already correct.
+  **"Is the logic unchanged since the revision I passed?" is MECHANICAL, not a
+  matter of trusting the write-up.** `.claude/state/review-ledger.jsonl`'s `sha`
+  IS the git BLOB hash (verified 2026-08-12: `git hash-object <file>` reproduces
+  it and `git cat-file -t <sha>` answers `blob`), and a blob written by an earlier
+  `git add` survives in the object store even with no commit referencing it. So
+  `git cat-file -p <sha-from-my-last-pass> > old && diff -u old <file>` prints the
+  exact diff since that pass — "comment-only" becomes PROVEN, and an unchanged
+  file shows up as an identical hash with no diff to read at all. Read the ledger
+  with the **Grep tool**: a Bash `grep` on that path is refused by the hook that
+  owns it, and the refusal is about WRITING, so do not read it as unreadable.
+
+
+
+### 2026-08-17 — knowledge-file restructure carry-forward: Test seams, emulator infra and non-vacuity, full prior narrative [Pattern discovered]
+
+Verbatim retirement of the "### Test seams, emulator infra & non-vacuity" subsection from cloud-functions-specialist.knowledge.md, moved here unedited during the 2026-08-17 no-loss restructure. See the 2026-08-17 PII-scrubbing carry-forward entry above for the restructure context.
+
+### Test seams, emulator infra & non-vacuity
+- v2 exports carry `.run(event)` — call it with a typed payload to test
+  triggers without firebase-functions-test. Build `Change` payloads from
+  REAL emulator snapshots; `.data()` on a missing snapshot returns
+  undefined exactly like prod.
+- `onSchedule`/v1-auth bodies with no seam: extract an exported async core,
+  wrapper stays a one-line delegate. Module-level `db = admin.firestore()`:
+  set `FIRESTORE_EMULATOR_HOST` before `admin.initializeApp`, `require()`
+  after. Parent docs must be explicitly seeded for `orderBy("__name__")`
+  scans — a subcollection write alone doesn't make the parent exist.
+- **When only one collaborator in a sequence is seam-injectable, spy on its
+  earliest side effect to pin ORDER** — a boolean flipped on its first line
+  is enough to redden a reverted order without a full seam.
+- **A wrapper/gate test is non-vacuous only if breaking the gate produces a
+  DIFFERENT observable result than any other failure mode** — check this
+  deliberately before trusting a green wrapper suite. The recurring form:
+  ONE failure code emitted from TWO branches. `check-test-registration.js`
+  raises `RULES_TRIGGERS` both for "block lists no test files at all" and for
+  "this chained suite is missing from the block"; the fixture set the other
+  trigger to `["firestore.rules"]` (zero test entries), so it exercised the
+  wrong branch and `if (!matchesAny(...))` → `if (false)` left the suite
+  **14/14 green**. Rule: build the fixture so only the targeted branch CAN
+  fire, and assert on branch-unique message text, not the shared code. A
+  criterion is pinned only when you have watched it go red. Corollary for a
+  NEGATIVE test whose comment states what it CANNOT catch: walk EVERY case in
+  the suite under the hypothetical regression before trusting the claim —
+  measured 2026-08-13, reverting `CONSENT_OPERATIONS` membership to
+  `startsWith('consent_')` leaves all NINE `purge-audit-logs` tests green, so
+  "nothing in the suite catches that" is exact, not modest. **Same walk for a comment
+  naming which test reddens under a proposed RE-INTRODUCTION**: "re-introduce the roster
+  read fallback unscoped and this reddens ALONE" is false in `conversations-rules.test.ts`
+  — P12B (own row, live parent excludes you) and P14 (own row, parent ABSENT) both stage
+  the mutated predicate's input, so both flip; only the SCOPED
+  (`parentDoc() == null`) re-introduction reddens P14 alone. Grep the fixture constants
+  (`P_EVICTED`, `P_READ_FRESH`) before naming a count. And a TS comment
+  naming what a DART writer emits is true only if that file sits in the SAME
+  INDEX — check `git show :<path>`, never the worktree (HEAD still wrote
+  `consent_deleted` while the worktree wrote `consent_revoked`).
+- **Some guards are only reachable on a SECOND invocation, so only a
+  re-run test can pin them.** Firestore `update(ref, {})` throws "At least
+  one field must be updated", so an idempotent scrub's
+  `if (Object.keys(update).length > 0)` guard is dead code on run 1 (every
+  matched doc still has something to change) and load-bearing on run 2. A
+  `<step> is idempotent on re-run (retry-safe)` test that simply calls the
+  exported step a second time and awaits it catches that class outright —
+  verified by mutation, it was the ONLY red in a 58-test suite. Give every
+  re-enterable cascade step one.
+- **An unsimulated fake stub must THROW, not answer.** A hand-rolled
+  `runTransaction` whose `tx.get` hard-returns `{exists:false}` is safe only
+  while no fixture reaches it; the day one is seeded, the SUT's
+  `if (!snap.exists) return` early-exits and the test PASSES having scrubbed
+  nothing. Same for a `listDocuments()` returning `[]`. Answer with a throw
+  naming the right lane ("seed the emulator suite"), and never let the stub's
+  comment claim it protects a future fixture.
+- **A `?? {}` read of a document is VACUOUS for exactly the mutant that DELETES that
+  document, so every key-ABSENCE assertion over one needs a sibling that requires the
+  document to EXIST.** Measured 2026-08-13 on the BUT-1822 cascade suite (shadow-copy
+  mutant: gate neutralised to `rosterClear = true`, parent deleted anyway):
+  `(convo.participantDisplayNames)?.[uid] === undefined` stayed GREEN — an absent
+  document has no name to find — while `Array.isArray(convo.participantIds) &&
+  !includes(uid)` and "the partner's name is still Partner" both reddened. The `?? {}`
+  itself is right (reading through an absent doc would TypeError and kill a hand-rolled
+  runner, losing every later assertion); the fix is the sibling plus a comment naming
+  which assertion is vacuous under which mutant.
+- **A fake's `listDocuments()` that returns only STORED docs cannot represent a PHANTOM
+  parent — the one state production uses `listDocuments()` instead of `count()` to
+  see.** `probeResidualData`'s `unified_shopping_lists` leg exists because a deleted list
+  doc can still own live `items`; a stub that maps stored paths answers `[]` there, so
+  the probe reads CLEAN in the suite and RESIDUAL in production. Derive the ids from
+  deeper paths (`new Set(p.split('/').slice(0, depth).join('/'))`) rather than listing
+  the map, or the method's presence is the only thing the suite proves.
+- **Rules are not filters, so a client query built with NO condition is DENIED
+  wholesale on a member-scoped collection** — the symptom of a no-op client
+  filter (`isNotEqualTo: null` builds no condition: `cloud_firestore`
+  `query.dart` guards every operator with `if (arg != null)`; `isNull:
+  false/true` is the working spelling) is "the screen will not load", never an
+  over-share. That branch is provable ONLY on the emulator rules lane —
+  `fake_cloud_firestore` evaluates no rules, so a Dart unit test proves the
+  filter shape and says nothing about the server's verdict. Pin all three:
+  filtered query allowed + returns rows, UNFILTERED query denied, filtered
+  query by a non-member allowed-and-empty.
+- **The rules emulator KEEPS data across `npm run` invocations, so a later
+  test's seeded foreign doc leaks backwards into any actor-scoped
+  expect-empty assertion.** An "actor is a member of nothing" fixture must use
+  a uid no other test ever seeds (`list-nobody-uid`), not a `STRANGER`
+  constant another test makes an owner. Per-run doc-id tokens fix create
+  collisions only — and they are what makes the collection GROW ~3 docs a run.
+  So a QUERY deny test whose denial rests on one unreadable doc being inside
+  `.limit(N)` has a shelf life, and it is COMPUTABLE — enumerate the corpus,
+  find the unreadable fixture's `__name__` position, divide the remaining window
+  by the per-run growth. `unified_shared_shopping_lists` (still unfixed as of
+  2026-07-30): 56 docs after 9 runs, +3/run (`create-{seat,absent,at-cap}-<RUN>`;
+  the deny-side creates persist nothing), order `create-*` < `del-editor` <
+  `query-foreign` < `query-mine` < `read-*`, and every `create-*` doc IS readable
+  by the querying actor — so the sole unreadable doc sits at ~29 of a `.limit(200)`
+  window and SSL38's `assertFails` flips red in ~57 more runs (red, not a false
+  green). Give the unreadable fixture a doc id that sorts FIRST (`00-query-foreign`),
+  or drop the limit — never rely on `__name__` order against a growing corpus. Verify
+  the corpus with `curl -H "Authorization: Bearer owner"
+  "http://127.0.0.1:8080/v1/projects/<pid>/databases/(default)/documents/<col>"`
+  — without that header the REST read is rules-evaluated and 403s.
+- **An `evaluation error at L<n>` in a rules-test PERMISSION_DENIED trace is NOT
+  proof the deny came from an error.** The emulator prints MULTIPLE evaluation rounds
+  per write and joins them with commas: an `update()` against an existing doc emits
+  `evaluation error at L1544:24 for 'update'` (the round where `resource` is not yet
+  resolved, so `resource.data.participantIds` throws) AND, later in the same string,
+  `false for 'update' @ L1544` — the real verdict. Read the WHOLE trace and look for
+  the paired `false for '<op>' @ L<n>` before filing "this deny fires for the wrong
+  reason"; a `set()` on a missing doc legitimately shows the update-rule error beside
+  the create-rule `false`. Measured 2026-08-01 on `conversations-rules.test.ts`
+  (18/18), whose six metadata denies all read as errors at first glance and are all
+  genuinely `false` on the resolved round.
+- **A `src.includes("<fieldName>")` assertion over a source file is vacuous
+  whenever that file's own DOCSTRING names the field** — and a header
+  documenting the schema always does. Mutation-proven on BUT-1699: renaming
+  the written field to `expiresAt` in `notification-send-events.ts` (the exact
+  drift that silently inerts a TTL policy) left the suite 5/5 GREEN. Assert the
+  WRITE, not the mention: match the payload spelling (`/expireAt:\s*admin\./`)
+  or, better, call the exported writer against a fake db and assert the key on
+  the recorded payload. Same trap for any "the writer still stamps X" or "the
+  file still calls Y" file-text guard.
+- **Asserting a literal-typed `export const X = 90` with `X === 90` is NOT
+  compile-time-erased and is NOT silent** — measured 2026-08-04: tsc emits
+  `DEFAULT_TTL_DAYS === 90` into the JS and it evaluates at runtime, and drifting
+  the constant makes the comparison a TS2367 COMPILE error ("types '90' and '80'
+  have no overlap"), i.e. the suite fails loudly. Behavioural bracketing fixtures
+  are still the better assertion (they pin what the constant DOES), but do not let
+  a comment justify them by claiming the direct comparison asserts nothing at
+  runtime — that is itself a false claim about the toolchain.
+- **A COUNT-of-entries tripwire over a config file catches a net LOSS, not a
+  SWAP** (one entry deleted + one added in the same edit stays green). Where
+  the entries are named — TTL `fieldOverrides`, index specs, allowlists — assert
+  the exact SET, then the count is implied.
+- **A fix living in the I/O wrapper / handler-level gate can't be pinned by
+  a pure-core unit suite.** Check which side of the pure-core/handler seam a
+  fix landed on before crediting a suite with covering it. A test asserting
+  on a literal built in the test file, or on an input pre-transformed the
+  same way the SUT would, tests the fixture, not the code.
+- **A fake whose `commit()` RE-DERIVES the intended effect instead of
+  APPLYING the recorded write payload makes the whole write vacuous.** The
+  sentinel is not actually opaque: `FieldValue.arrayUnion(...)` is an
+  `ArrayUnionTransform` whose `elements` is a PUBLIC own property and whose
+  `isEqual` works with no initialized app (order-sensitive) — so a double can
+  apply the payload it was handed and throw when the shape is unrecognised,
+  instead of recomputing the intended effect. Pair that with an explicit
+  `sentinel.isEqual(FieldValue.arrayUnion(...expected))` assertion: field name,
+  sentinel type and value set all pinned at once. Any hand-rolled
+  batch/transaction double.
+  **Closing shape, reusable: `src/__tests__/_fake-firestore.ts` (BUT-1838).** An
+  in-memory store that APPLIES the payload — dot-path keys address one literal
+  key, `arrayRemove` really shrinks the array, `FieldValue.delete()` really
+  removes the entry — dispatching on the transform's `constructor.name`
+  (`ArrayUnionTransform`/`ArrayRemoveTransform`/`DeleteTransform`/
+  `ServerTimestampTransform`) and THROWING on any other `instanceof FieldValue`.
+  Three properties earn their keep and each was load-bearing for a real
+  assertion: `update()` on a MISSING document rejects with grpc 5 (a silent no-op
+  hides every NOT_FOUND poison pill); `runTransaction` BUFFERS and applies only
+  after the callback RESOLVES, so "a denied call writes nothing" is an assertion
+  about the store rather than about ordering luck, and the update-target existence
+  check runs over the whole batch first so a failing commit is all-or-nothing;
+  every unmodelled method (`batch`, `collectionGroup`) throws by name. Clone plain
+  containers only — deep-cloning a `Timestamp` into an object literal breaks every
+  `isEqual` assertion downstream. It is NOT a concurrency instrument: one callback
+  invocation, no isolation, no retry, no rules.
+  **That last clause has a COST, and it lands on exactly the fix a race review asks
+  for.** A double that calls the transaction callback ONCE can never make a
+  re-read inside the closure differ from the pre-read outside it, so every
+  "hoist the result out of the closure, last assignment wins" fix ships with zero
+  coverage while the suite reads as thorough. Measured 2026-08-14 on
+  `addChatGroupMembers` (shadow-copy mutant reverting `seated = stillNew` to
+  `seated = members` plus the matching count): **14/14 GREEN**. Cheap lever, and it
+  is the fake's to grow, not the SUT's: `retryTransactions?: number` +
+  `onTransactionAttempt?(attempt, store)`, running the callback N times and
+  applying only the LAST run's buffered writes — the between-attempt hook seats a
+  concurrent write into the store, and the fixture then asserts the response and
+  the announcement fan-out follow the winning attempt. Until that exists, say
+  "correct by construction, unpinned" rather than crediting the suite.
+- **Mutating a `Collections.x` reference to a bare literal to prove a test
+  non-vacuous can break the BUILD instead** (the import goes unused →
+  `noUnusedLocals` TSError, which reads as a red suite for the wrong reason).
+  Keep the symbol referenced: `.collection(Collections.x ? "old_name" : "y")`.
+  Verified on BUT-1724 — the first mutation attempt produced a TSError, the
+  reworked one reddened exactly the one targeted test. Same trap on a
+  destructured `Promise.all` result: deleting a leg from the OR it feeds
+  (`shopped: a || b` → `a`) orphans `b` and yields the same TSError; neutralise
+  instead (`[b].length > 99 ? true : a`). **Third form, hit again 2026-08-13:
+  neutralising a GATE — `if (!cleared) { … return; }` → `if (false)` — orphans
+  the `const cleared` above it (TS6133), which reads as a red suite for the wrong
+  reason. Spell it `if (!cleared && [1].length > 9)`: the local stays read, the
+  branch is dead, and the red is attributable.** Likewise a mutated SHADOW COPY
+  of a callable module must keep its `export const <fn> = onCall(...)` exported;
+  renaming it to a local to avoid a duplicate export orphans it the same way.
+- **A fake query whose `.where()` ignores the FIELD ARGUMENT pins the
+  collection but not the field, and a paired "the composite is declared in
+  `firestore.indexes.json`" test does NOT close the gap** — it pins the INDEX
+  side of the pair while the QUERY side stays free to drift, which is the
+  silent-zero bug class itself. Measured on BUT-1761: swapping the new probe's
+  `.where("lastActivityByUserId","==",uid)` for `ownerId` left
+  `compute-feature-retention` 11/11 GREEN, though in production it matches no
+  declared composite → FAILED_PRECONDITION → swallowed by `safeProbe` → the
+  flag re-zeroes. (The COLLECTION name IS pinned when the fake's
+  `collection()` throws on an unmodelled name — keep that branch.) Fix the
+  fake: record the equality/range field names on the query object and throw on
+  an unexpected one, or assert them in the index test alongside the JSON.
+- **Refactoring a fan-out helper from a collection NAME to a
+  `CollectionReference` couples its legs inside any hand-rolled Firestore
+  double whose `.where()/.orderBy()/.limit()/.startAfter()` MUTATE and return
+  `this`** — real Firestore returns a fresh immutable `Query`, `db.collection(x)`
+  called twice did not. `paginatedDualUpdate` (BUT-1724) receives ONE ref and
+  calls `.where()` on it twice, so a mutating `makeFakeDb` had the second call
+  overwrite the first's predicate — passing only because `async get()` has no
+  `await` before it filters, so leg A's first page was captured synchronously
+  before leg B mutated; leg A's SECOND page would have used leg B's predicate.
+  CLOSED 2026-07-30: `on-profile-updated.test.ts`'s `makeQuery` now threads an
+  immutable `QueryState` and returns a NEW query from every builder call. Fix
+  the double, never the SUT. Residual: still no `>BATCH_LIMIT` dual-field
+  fixture, so the dual-field writer is proven CORRECT but not proven PAGED.
+- **A mutation applied by string-replace against a CRLF worktree file silently
+  no-ops** — the replace returns the input, the suite stays green, and you
+  write up "criterion unpinned" about a mutation that never happened. Every
+  mutation harness must assert `s.includes(target)` and `out !== s` (match on
+  LF after `raw.replace(/\r\n/g,"\n")`, restore endings on write), and finish
+  with an md5 check that the source is byte-identical again. A mutation whose
+  reds are all in OTHER tests is also suspect: check it failed for the intended
+  reason (keying a `Map` on `ref.id` when the fake's ref carries `__id` broke
+  five unrelated tests and left the targeted one green).
+- **Mutate a SHADOW COPY, never the tracked file, in a live parallel-session
+  worktree.** Write `src/<dir>/_cfs_mut_<x>.ts` (mutated) plus
+  `src/__tests__/_cfs_mut_<x>.test.ts` (the suite with only its import/`require`
+  path rewritten), run the copy, delete both, then `git status --porcelain` to
+  prove nothing tracked moved. Relative imports still resolve because the copy
+  sits in the same directory, and no restore step can fail half-way — which is
+  the whole risk of in-place mutation next to another session's commit. Assert
+  the substitution landed (`out !== s`) before running, or a silent no-op reads
+  as "the criterion is pinned".
+  **A CF rules suite is shadow-mutatable too, because it reads `firestore.rules`
+  by PATH** — write the mutated rules to the scratchpad and copy the test with
+  only `RULES_PATH` and `PROJECT_ID` rewritten (a distinct project id keeps the
+  probe's `clearFirestore` off the real fixtures). Three traps, all measured
+  2026-08-12: spell it `path.resolve("<abs>")`, since a bare string literal
+  orphans the `path` import into a TS6133 that reads as a red suite; a Windows
+  `path.join` result carries backslashes, so self-check on a distinctive
+  substring rather than the whole path; and run an UNMUTATED shadow as a CONTROL
+  first (47/47) — without it a mutant's red is not attributable to the mutation.
+
+
+
+### 2026-08-17 — knowledge-file restructure carry-forward: Idempotency rules items 10-14, full prior narrative [Pattern discovered] [Bug fixed]
+
+Verbatim retirement of idempotency-rule list items 10-14 (the account-deletion-cascade Tier-1 race analysis, the MAX_POLL_VOTE_SWEEP_ROWS threat-model correction, the rules-line-number-in-comments trap, the fake update() NOT_FOUND-staging gap, and the deleteRecipes cascade-leg removal/restoration) from cloud-functions-specialist.knowledge.md, moved here unedited during the 2026-08-17 no-loss restructure.
+
+10. **"Sequential-after, so no race" is a claim about ONE step; the cascade's
+    Tier 1 runs `Promise.all` over ~25 of them, and more than one writes
+    `messages`.** `deleteChatGroupMemberships` deletes a whole thread when the
+    erased user was the last member (`account-deletion-cascade.ts`:2443-2447),
+    so anything sequenced inside `deleteMessages` still races it. Consequence
+    for an UPDATE leg: a batch is atomic, so one NOT_FOUND fails the whole
+    ≤500-doc chunk, and `commitInChunks(..., strict:false)` warns and moves on
+    — every other doc in that chunk is silently un-erased while the step still
+    returns true. Before writing "deterministic order", grep the OTHER Tier-1
+    entries for writers of the same collection; make an anonymising leg
+    NOT_FOUND-tolerant per document, and give every new sweep an uncapped
+    `count()` leg in `probeResidualData` (the `participants` leg at :424 is the
+    shape) so a swallowed chunk cannot certify `gdprCompliant: true`.
+    **Re-verified 2026-08-16 (BUT-1835): the same diff repeated BOTH halves.**
+    `deletePollVotes` was sequenced inside `deleteMessages` under a comment saying
+    "Sequential-after is the only deterministic order" — false for the same reason
+    as before, `deleteChatGroupMemberships` deletes whole `messages` threads from
+    the sibling Tier-1 slot — and it shipped with NO probe leg while both its
+    writes are `commitInChunks(strict:false)`. So make it a two-item checklist on
+    any new erasure leg: (a) grep the OTHER Tier-1 entries for writers of the same
+    collection before writing "no race"; (b) the probe leg lands in the SAME edit
+    as the deleter, or the swallow is invisible. The `chat_groups` leg (BUT-1838)
+    is the worked example of doing it right — its probe row carries a comment
+    saying it ships in the same edit as its deleter.
+11. **A sweep CAP's stated threat model must be re-derived from the write RULE of
+    the collection it bounds, never copied from the cap beside it.**
+    `MAX_POLL_VOTE_SWEEP_ROWS` was documented "Same contract as
+    `MAX_ROSTER_SWEEP_ROWS` … the row count is chosen by OTHER PEOPLE. Anyone who
+    can start a conversation with this user can post polls into it" — false twice:
+    every verb on `poll_votes/{voterId}` requires `request.auth.uid == voterId`
+    plus `isValidVote()`'s `data.voterId == voterId` (firestore.rules:2085-2108),
+    so no peer can seat a row keyed on this uid, and posting a poll creates ZERO
+    rows (a row exists only when this user votes). The roster cap's peer-writable
+    argument (`attestedWriter()` on `direct_A_B`) does NOT transfer. The cap still
+    earns its place — self-inflation and a non-standard Admin-SDK writer — so fix
+    the RATIONALE, not the number, and grep the phrase across `__tests__` too: the
+    false sentence was in the suite's scenario docstring as well.
+    **The FIX ROUND then made the MIRROR error one hunk away (2026-08-17), which is
+    the durable half.** Having correctly narrowed the cap's threat model, the same
+    diff justified leaving the poll-CREATOR scrub UNCAPPED with "the rows are
+    self-bounded — only this user can author this user's polls". False: the
+    `messages` create rule (firestore.rules, `allow create` under
+    `match /messages/{messageId}`) has `hasRequiredFields([...])` and NO `hasOnly`,
+    so any participant may plant `metadata.poll.creatorId: <victimUid>` on a message
+    in their own DM — and this same FILE already says so, 300 lines up, in
+    `anonymizeSystemMessagesAboutUser`'s log comment about `metadata.subjectUserId`.
+    So: a bound's absence needs the write rule read exactly as hard as a bound's
+    presence, `hasRequiredFields` is not `hasOnly`, and the cheapest check is
+    grepping the collection name in the FILE YOU ARE EDITING before writing
+    "self-bounded". Rate limits do not rescue it: `rateLimitWrite('messages', 5)`
+    reads a SELF-WRITTEN bucket.
+12. **A rules LINE NUMBER inside a `functions/src` comment is wrong on arrival and
+    wronger every commit.** Both citations shipped by the 2026-08-17 fix round were
+    wrong against every version of the file: `firestore.rules:2748` for the
+    `match /{path=**}/recipes/{recipeId}` catch-all (HEAD 2636, index 2738, worktree
+    2766 — and 2748 is inside the `comments` block), and `:2093-2108` for "every
+    write verb on `poll_votes/{voterId}`" (the write verbs are 2111/2117/2126; the
+    named range stops before all three). The first number came from THIS agent's own
+    archive entry, i.e. a reviewer's suggested wording is a coordinate you still owe
+    a check. Cite the `match` pattern or the rule FUNCTION name (`isValidVote()`),
+    never a line — greppable, and it cannot drift.
+13. **A fake whose `update()` resolves on a missing document cannot stage NOT_FOUND,
+    so every grpc-code-5 tolerance branch written against it is untested and looks
+    covered.** `FakeFirestore.applyUpdate` is `if (!existing) return;`
+    (`account-deletion-cascade.test.ts`), which is the whole point of the
+    `updatedPaths` array beside it — yet the 2026-08-17 round moved the poll-creator
+    scrub from `commitInChunks(strict:false)` to per-document
+    `Promise.allSettled` + "tolerate code 5, fail on anything else" and shipped it
+    with no fixture. MEASURED: inverting the predicate to `?.code === 5` (tolerate
+    everything EXCEPT the one case it was written for) leaves the suite **110/110
+    GREEN**. Any NOT_FOUND-tolerance leg needs either a seam that rejects with
+    `{code:5}` / another code, or the emulator lane — and until it has one, do not
+    let the comment claim "every other error marks the step incomplete".
+    **CLOSED 2026-08-17, and the closing shape is reusable:** a
+    `readonly updateFailures = new Map<path, grpcCode>()` on the fake, thrown from
+    `makeRef().update` before `applyUpdate`, with BOTH directions asserted (code 5 ⇒
+    step stays complete, code 13 ⇒ step reports incomplete). Empty by default, so no
+    existing scenario moves. Two things to state when you add one: it sits on the REF
+    verb only — `batch().update` goes straight to `applyUpdate`, so an injection on a
+    `commitInChunks` path passes VACUOUSLY — and the mutant that proves it is inverting
+    the predicate, not deleting it.
+14. **Deleting a cascade LEG needs a `__tests__` grep for writers of that path, and
+    the fixture you find is both the counterexample and the alarm.** The 2026-08-17
+    round removed `deleteRecipes`' top-level `recipes` read under a comment reading
+    "no writer of a top-level `recipes` collection exists anywhere in `lib/` or
+    `functions/src` (verified by grep)" — while
+    `functions/src/__tests__/request-account-deletion.integration.test.ts`:152 does
+    `db.collection("recipes").doc('r-own-…').set({userId: TARGET})` and :724 asserts
+    `!exists('recipes/r-own-…')`. That suite is registered in `test:rules:all` AND in
+    both `paths:` blocks of `firestore-rules.yml`, so the removal turns a green
+    emulator lane red, and the grep that would have caught it is the same one the
+    comment claims to have run. Two rules: an unqualified "nothing writes X" must be
+    greped INCLUDING `__tests__` (say "no PRODUCTION writer" if that is what you
+    mean), and a leg is only dead once its integration fixture and assertion are
+    retired in the SAME edit.
+    **CLOSED 2026-08-17 (leg restored, wording corrected) — and the REPLACEMENT sentence
+    then failed on its COUNT, which is the durable half.** "All three
+    `FirestoreCollections.recipes` sites in `lib/` resolve there" is false under every
+    reading: the grep returns FIVE, four build a path (including
+    `firestore_repository.userRecipesCollection`, whose live caller is
+    `offline_sync_manager.dart`), and the fifth is a
+    `collectionGroup(FirestoreCollections.recipes)` that resolves to NO path and SPANS the
+    top-level collection the sentence is arguing about. So when you defend a leg by
+    enumerating its writers, paste the grep and count it — and prefer the PROPERTY
+    ("every production writer is user-scoped") over a tally that a new call site falsifies.
+    Related: `probeResidualData` is a highest-risk SAMPLE, not a per-leg mirror (`menus`,
+    `cook_snaps`, `pantry`, `households` have no row either), so the invariant is
+    "deleter ⊇ probe" — an unprobed deleter leg is not a coverage gap on its own.
+    **Round 4 (2026-08-17) — the corrected sentence's TWIN, and its neighbouring COUNT.**
+    Fixing the property in the production docstring left the test file's paraphrase ("no code
+    writes `metadata.poll.options[].voterIds` any more") standing, so one diff asserted both
+    sides of the same fact; grep the distinctive phrase across `functions/src` INCLUDING
+    `__tests__` before calling such a correction taken. Two more shapes from the same round:
+    a claim that a field "is only ever EMPTY / never carries personal data" is about DISK, so
+    read the writer the diff REPLACES (`git show HEAD:<file>` + HEAD's rules) — the old inline
+    vote path stored the poll author's own uid there, which the new scrub and both probe legs
+    miss; and a suite-size figure in a comment ("stays 32/32") is falsified by the very
+    fixture the same review asked you to add, so re-count `grep -c "^test("` in the edit that
+    adds one.
+
+
+### 2026-08-17 — knowledge-file restructure carry-forward: Cost and cold-start section, full prior narrative [Pattern discovered] [Bug fixed] [Cost finding]
+
+Verbatim retirement of the bulk of the "## Cost & cold-start" section from cloud-functions-specialist.knowledge.md (the CASCADE_TIMEOUT_MS/timeoutSeconds pairing saga, the `||` DEFAULT rewrite non-preservation finding, and the retry:true roster-cleanup cap saga spanning tryClearRoster/MAX_ROSTER_SWEEP_ROWS/MAX_ROSTER_ROWS through 15 correction rounds), moved here unedited during the 2026-08-17 no-loss restructure. Only the "Scheduled jobs run hourly" one-liner and the Secrets/Test-commands headers were left in place in the knowledge file.
+
+## Cost & cold-start
+
+- Billed per ms × memory + per-invocation. Cold start ≈500–2000ms; each
+  extra large SDK import adds ~200ms.
+- Narrow imports (`from "firebase-functions/v2/https"`), not `import *`.
+- LLM functions: `timeoutSeconds:540` (v2 callable max), `memory` sized to
+  measurement, not guessed.
+- **An in-code timeout guard longer than the function's PLATFORM timeout is
+  dead code.** `setGlobalOptions` (`index.ts:41`) sets only `region`, so every
+  v2 event function runs at the 60s default while
+  `CASCADE_TIMEOUT_MS = 120000` (`shared/with-timeout.ts`) claimed 2 minutes —
+  the instance is killed first, with no error log, a partially applied fan-out,
+  and (no `retry:true`, no persisted cursor) no resume. Whenever a
+  previously-dead query is repaired into a real fan-out, re-check
+  `timeoutSeconds`/`memory` on that trigger in the SAME change.
+  CLOSED 2026-08-01 (BUT-1781) and the CLOSING SHAPE is reusable: export the
+  guard and the platform limit as a PAIR from one module
+  (`CASCADE_TIMEOUT_MS = 500000` + `CASCADE_TIMEOUT_SECONDS = 540`, the v2 event
+  max), have every trigger declare `timeoutSeconds: CASCADE_TIMEOUT_SECONDS`,
+  and keep the guard ~40s under so the failure is a logged error rather than a
+  silent kill. Two residuals to state rather than assume away: `withTimeout`
+  RACES, it does not cancel — the cascade keeps committing batches for those 40s
+  while the log already says "timed out"; and `batchUpdateQueryPaginated` still
+  restarts at page 1, so any page-level failure (a `batch.update()` NOT_FOUND
+  from a concurrently deleted doc fails the whole 500-doc chunk) silently drops
+  every later page. Fix shape for that: accumulate per-page failures and throw
+  once, or set `retry:true` — safe here because the write is a static idempotent
+  field stamp on a doc that must exist to have matched.
+  **Pin that pairing at the DECLARATION SITE, not constant-to-constant.** A
+  `GUARD_MS < LIMIT_SECONDS * 1000` test stays green when someone deletes
+  `timeoutSeconds` from the wrapper — the guard silently becomes dead code again.
+  Assert the deploy manifest instead: every v2 export carries `__endpoint`, which
+  is the SDK's OWN discovery contract (`firebase-functions/lib/runtime/loader.js:33`
+  reads exactly that property to emit functions.yaml), so it cannot move quietly
+  under a version bump without breaking deploys. Measured on 7.2.5: omitting
+  `timeoutSeconds` yields `__endpoint.timeoutSeconds === ResetValue{}` (prints as
+  `null`), so `=== SECONDS` reddens. Two caveats: read it OPTIONALLY
+  (`__endpoint?: {...}` + `endpoint?.timeoutSeconds`) or a future shape change
+  throws a TypeError that aborts the remaining test functions and suppresses the
+  `N/M checks passed` line instead of failing one check; and a suite importing the
+  function module directly never runs `index.ts`'s `setGlobalOptions`, so the
+  manifest's `region` is empty there — that probe pins per-function opts only.
+  Keep the weaker constant-vs-constant check beside it: it pins the ORDERING
+  relation the manifest probe does not. Both halves MEASURED 2026-08-04 on
+  `cleanup-cache` (7.2.5, shadow-copy mutants): deleting `timeoutSeconds` from the
+  wrapper gives exactly one named FAIL whose detail prints
+  `"timeoutSeconds":null` and the other 19 checks still run; an absent
+  `__endpoint` gives one FAIL and the four later test functions still run. Make
+  the null-endpoint detail string SAY "SDK shape change, NOT a timeout
+  regression" — the two failures are otherwise indistinguishable to whoever
+  reads CI.
+- **A `x || DEFAULT` → `typeof x === "number" && x > 0 ? x : DEFAULT` rewrite is
+  NOT semantics-preserving, and "behaviour unchanged" comments say it is.** `||`
+  falls back only on the FALSY set (`0`, `""`, `NaN`, `null`, `undefined`,
+  `false`) and passes NEGATIVES, strings and `true` straight through to
+  arithmetic: `ttlDays: -5` expired a row instantly, `"30"` coerced to 30 days,
+  `"abc"` made the expiry `NaN` so the row was NEVER deleted, `true` meant 1 day.
+  The typed guard maps all four to the default. The rewrite is the better code —
+  fix the PROSE, not the predicate — but check the falsy-set boundary before
+  letting a refactor claim parity, especially where `firestore.rules` constrains
+  only field PRESENCE (`hasRequiredFields([...])`) and no field TYPE, which is
+  what makes those values writable in the first place.
+- **A `retry:true` trigger that ENUMERATES a client-writable collection has an
+  unbounded fan-out the bounded one beside it already refuses.**
+  `enforceGroupMinorMembership` caps its read fan-out at
+  `MAX_GROUP_PARTICIPANTS = 100` over `participantIds`, with a comment saying why
+  (retry replays the bill) — then the 2026-08-12 roster cleanup enumerates
+  `conversations/{id}/participants` via `listDocuments()` and fires every
+  `delete()` in one uncapped `Promise.all`. `firestore.rules`' `rosterUnclaimed()`
+  LET any signed-in user seat rows there while the parent document was absent,
+  with no rate limit on the subcollection, so N was attacker-chosen (BUT-1838
+  deleted that branch on 2026-08-13; the cap still stands on three OTHER sources —
+  see the arithmetic below, and never re-justify it by `rosterUnclaimed`). N large ⇒ the
+  60s platform default (this trigger declares no `timeoutSeconds`) ⇒ a
+  deterministic retry loop — the exact shape the new comment claims cannot exist.
+  Whenever a cleanup switches from a known-length uid list to an ENUMERATION,
+  re-ask who may WRITE that collection and re-apply the cap: chunk the deletes
+  (or `db.bulkWriter()`), and prefer a bounded FALLBACK (take the
+  non-destructive branch and keep the parent alive, since a live parent is often
+  what keeps rules denying the read) over a throw — under `retry:true` the throw
+  IS the loop.
+  **CLOSED 2026-08-12, and the closing shape is the reusable part:** a
+  `tryClearRoster(db, id): Promise<boolean>` that (a) reads with
+  `.limit(CAP + 1).get()` — the cap must bound the READ, not just the delete, and
+  `listDocuments()` cannot do that because it buffers every ref (it is required
+  ONLY for phantom parents; children of a merely-absent parent come back from a
+  plain query, measured); (b) refuses outright above the cap; (c) deletes in
+  chunks with a per-delete `.catch` that records the grpc CODE only; (d) never
+  throws, so the caller's NOT_FOUND branch cannot be turned back into a poison
+  pill. The caller then reads
+  `cleared = collapses && (await tryClearRoster(...))` and a FALSE verdict falls
+  through to the non-destructive branch.
+- **A boolean verdict that GATES a destructive delete is invisible to any suite
+  whose fixtures all make the verdict TRUE — and that is the one property the
+  whole design rests on.** Measured 2026-08-12 by shadow-copy mutation on
+  `enforceGroupMinorMembership`: neutralising the gate to
+  `((await tryClearRoster(...)) || true)` — i.e. delete the parent even when
+  rows survived — left the integration suite **4/4 GREEN**, and the unit suite
+  cannot see it at all (it imports the helper, never the handler). Fake-db unit
+  tests proving the helper RETURNS false prove nothing about the caller
+  OBEYING it. Force the false verdict in a handler-level fixture — the cheapest
+  lever is the helper's own refusal cap (seed `CAP + 1` rows) — and assert the
+  parent SURVIVES with the safety cut still applied. Same blind spot for the
+  concurrent-delete (grpc 5) leg: an `update()` NOT_FOUND branch is unreachable
+  from a suite that never deletes the parent between snapshot and run, so seed,
+  `get()`, `delete()`, THEN `.run(event)`.
+  **CLOSED 2026-08-12, both legs, and re-measured on the shipped bytes:** each
+  mutant now reddens EXACTLY ONE test (6/6 → 5/6) — `|| true` on the gate hits
+  only the unclearable-roster fixture, and `void 0` for the code-5 leg's
+  `tryClearRoster` hits only the mid-flight-delete fixture. Reusable lever: the
+  cheapest way to force a FALSE verdict is the helper's own refusal cap — seeding
+  `CAP + 1` rows is two `batch.commit()`s, no fake, no seam, no error injection.
+  **That lever usually stages a state the CALLER cannot reach, so the fixture must say
+  SYNTHETIC.** For a `direct_` conversation the seeded roster is unreachable, and
+  since BUT-1838 it is unreachable by ARITHMETIC — the durable form of the argument,
+  re-derived 2026-08-15 and worth re-deriving rather than quoting: a client-created
+  conversation must satisfy `directIdBinds` (EXACTLY 2 `participantIds`, rules:1528)
+  and the update rule denies any diff touching `participantIds` (:1615), while the
+  roster's `attestedWriter()` requires `parentNames(participantId)` (:1702) — so a
+  direct roster holds at most TWO client-writable rows, EVER, and a group roster holds
+  NONE (`mayWriteRoster()`'s `!('groupId' in parentDoc().data)`, and
+  `stageGroupCreation` stamps `groupId` on every group conversation). Therefore the
+  production-reachable false verdict is a transient read/delete failure, not 501 rows,
+  and **"a partner planted rows" is not a route to it** — a comment saying so is a new
+  false claim, not a hedge (it also cannot cause a false verdict at all: `false` needs
+  a read failure, `> MAX_ROSTER_ROWS`, or a delete failure). What DOES survive to
+  justify the cascade's cross-conversation `MAX_ROSTER_SWEEP_ROWS`: pre-BUT-1838 rows
+  still on disk (backfill closed unbuilt, BUT-1839), a non-standard Admin-SDK writer,
+  and SELF-inflation — and it is UNRATED, not 1/10s. **A `rateLimitWrite(bucket, n)`
+  conjunct binds only if some writer STAMPS `users/{uid}/rate_limits/<bucket>`; the
+  helper is `!exists(limitsPath) || …` (rules:213-217), so an unstamped bucket is
+  permanently true.** Verified 2026-08-15: exactly SIX buckets are stamped anywhere in
+  `lib/` — `activity_events`, `comments`, `social_requests`, `messages`, `imports`,
+  `friendSearchMigrated` (grep `userRateLimits`; the constants file is the 7th hit) — so
+  `('conversations', 10)`, `('conversation_membership', 5)` and every other bucket in the
+  20-odd call sites are INERT, and the bucket is self-written (`allow read, write:
+  isOwner`, rules:522-524) so a tampered client would omit the stamp anyway. Never cite a
+  `rateLimitWrite` as a bound without grepping its bucket name first; "1/10s" and any
+  duration derived from it (">2000 rows in ~6h") are false.
+  Against a CHOSEN victim it is TWO rows per distinct peer account — `directIdBinds`
+  accepts BOTH id orderings for one pair (rules:1530-1531), so A can create `direct_A_V`
+  and `direct_V_A` and seat V's row in each (2001 rows ⇒ ~1000 accounts, not 2001). Use the
+  cap as the fixture lever anyway (it is the only cheap one),
+  but a docstring reading "staged the way production reaches it" is a false claim
+  contradicting the SUT's own comment 20 lines away. Write "synthetic; production
+  reaches this verdict via <the real route>" instead.
+  **The parent predicate is PER-VERB, and "orphaned rows are unreachable" overstates it.**
+  Only READ, CREATE and the (u2) whole-row UPDATE route through `parentDoc()`; `allow
+  delete` is bare `participantId == request.auth.uid` and the (u1) self-update is
+  `hasOnly(['lastReadAt'])` (rules:1853-1870, pinned by rules test P30) — neither reads the
+  parent. So deleting a conversation leaves its rows UNREADABLE (the disclosure argument,
+  and all the rules file itself claims), not unreachable: the row's own subject keeps a
+  delete and a cursor stamp. "Nobody can read, update or delete them, ever" is a false claim
+  about firestore.rules — it landed in three comment sites at once on 2026-08-15, each
+  replacing correct bootstrap-era text. Enumerate the four verbs before writing that
+  sentence; the never-orphan ORDERING is unaffected either way.
+  **Round 7 (2026-08-15): the production sites were fixed correctly and the TEST file's
+  PARAPHRASE re-introduced the same idea in weaker form** — "reachable afterwards only by an
+  Admin-SDK collection-group sweep" (`enforce-group-minor-membership.test.ts`:95) against the
+  same diff's own "Not unreachable: `allow delete` and the `hasOnly(['lastReadAt'])` branch key
+  on the subject's uid alone". When a diff DEFINES a term, every site in it owes that term the
+  same reading. "Only by X" is the shape that goes wrong: the Admin SDK also reaches those rows
+  BY PATH (`admin/reset-user-data.ts` recursive-deletes `conversations/{id}` + `participants`),
+  so the true form is "nothing in production reaches them except <sweep>, and no client flow
+  uses the two verbs the subject keeps".
+  **Round 8 (2026-08-15) settled the SHAPE of that sentence, and my round-7 wording was itself
+  wrong** — "nothing in production reaches them" is false of `admin/reset-user-data.ts`, which is
+  production code. The form that survives splits two verbs and scopes the second: **REACH**
+  (unbounded — the Admin SDK addresses any path, and this script names `participants` under a
+  recursive `conversations` target) vs **FIND**, and FIND is claimable only of AUTOMATIC paths,
+  because that script is human-run behind a typed confirmation phrase. It would in fact find
+  them: `deleteWithSubcollections` enumerates `db.collection("conversations").listDocuments()`,
+  which returns PHANTOM parents, then recurses via `listCollections()` — so the `subcollections:`
+  array is a reader's inventory that does not drive the delete, and "lists X under a recursive
+  delete" is the only accurate way to cite it. The verified all-clear for the orphan claim, in
+  one place: read denied for EVERYONE including the subject (`allow read: parentNames(uid)`,
+  rules:1843, null parent ⇒ false; no collectionGroup match block, so that route is denied too);
+  exactly TWO client verbs survive, `allow delete` (:1873) and the u1 `hasOnly(['lastReadAt'])`
+  update (:1857-1864), neither touching `parentDoc()` and both callerless in Dart
+  (`ConversationParticipantModule.removeParticipant` / `.updateLastRead` have no caller outside
+  their module); and nothing probes ANOTHER user's row — both `deleteOwnRosterRows` (:1446) and
+  the uncapped `count()` probe (:425) key on `participantId == uid`.
+  **The read verb is also NOT ROW-SCOPED** — `parentNames(request.auth.uid)` alone, so a live
+  parent grants LIST over the WHOLE roster to every uid it still names. Both careless
+  generalisations of that are in the tree: "a live parent that no longer names the erased user
+  denies those rows to everyone" is false whenever a CO-PARTICIPANT survives (a 1:1 departure
+  update leaves the partner listing every row), and "keeping the parent alive is what keeps
+  those rows reachable" is false for an EMPTIED group, whose zero-member shell names nobody.
+  Name the uids the parent still names; the two sentences are true in opposite scenarios.
+  **Round 9 (2026-08-15) is the MIRROR error and its verification recipe: a comment that scopes
+  a branch by the ID SHAPE its prose is about, when the gate never reads the id.**
+  `deleteMessages`' `participants.length <= 2` branch fires on ANY conversation without a
+  `groupId`, so "for a `direct_` id this branch means a transient roster failure" was true and
+  read as total. Settle such a scope with two DATED greps, never from today's rules file:
+  `git log -S<field> -- <model>` dates the field that would exclude the document (`groupId` and
+  `directIdBinds` BOTH arrived with BUT-1838, so a non-direct non-group conversation is
+  necessarily LEGACY), and `git show <sha>^:firestore.rules` gives the write rule that governed
+  the rows still on disk (the pre-BUT-1838 create rule bound neither the id nor a size floor,
+  and `rosterUnclaimed()` excluded `direct_` — so bootstrap-planted rows are exactly the
+  non-direct population and >`MAX_ROSTER_ROWS` on one id was reachable, parent created
+  afterwards). Today's rules answer what may be WRITTEN, never what is already STORED.
+  **Both corrections then failed in the OPPOSITE direction (round 4, 2026-08-15), which is the
+  durable half of this principle.** The first kept its false head clause and appended the
+  refutation ("a live parent … denies those rows to the erased user's peers — the read rule is
+  not row-scoped, so the SURVIVING partner … can list what is left"): a sentence containing its
+  own negation reads as a hedge and is simply false. The second universalised the EMPTIED-group
+  case over a helper with THREE callers ("the surviving shell names nobody") — true for
+  `deleteEmptyGroup` and `deleteChatGroupMemberships`, false for `deleteMessages`, whose 1:1
+  branch leaves the partner named by `buildGroupDepartureUpdate` (`arrayRemove(uid)` only). A
+  claim in a HELPER's file must hold for every caller or name the caller it holds for. Third
+  new falsehood from the same edit: "keeping the parent alive keeps the rows addressable for a
+  future Admin-SDK sweep, which deleting the parent would foreclose" — the Admin SDK reaches
+  children of an absent parent by path AND by `collectionGroup` (that IS `deleteOwnRosterRows`,
+  and this very file's docstring says a plain query returns them), so deleting the parent costs
+  an orphaned RESIDUAL, never access.
+  **The cap lever is OFF BY N whenever the caller deletes rows before the clearer
+  reads.** `deleteChatGroupMemberships` removes the erased user's own roster row
+  inside its removal transaction and only then calls `tryClearRoster`, so seeding
+  `CAP + 1` rows INCLUDING that one leaves `CAP` at read time and the clearer
+  succeeds — the fixture then measures the happy path under a name promising the
+  refusal. Count the rows that survive to the READ, not the rows seeded (measured
+  2026-08-14: the 1:1 fixture two functions away legitimately counts its own rows
+  because that branch deletes nothing first).
+  **When the gate MOVES, its false-verdict fixture moves with it, or the coverage
+  evaporates silently.** BUT-1838 repointed `enforceGroupMinorMembership` to
+  `chat_groups` and left it no collapse branch at all — `tryClearRoster`'s only
+  gating caller is now `removeChatGroupMember.deleteEmptyGroup`. Deleting the old
+  integration cases was right; deleting them without re-homing the FALSE-verdict
+  case would have retired the single assertion that a destructive delete obeys its
+  guard. Cheapest lever at the new site is not the refusal cap but a failing
+  DELETE (`failDeleteAt` on one roster row) — a fake can inject it in one line,
+  and the assertion is "both documents SURVIVE + the membership cut still landed".
+  Re-measured 2026-08-13: neutralising the gate reddens exactly that one test.
+  So on any trigger repointing, enumerate the branches the OLD suite covered and
+  name, per branch, either its new home or why it cannot exist any more — in the
+  new file's header, where the next reader looks.
+  **And re-derive the helper's CALLER-INVENTORY docstring by grep, not memory — the COUNT,
+  the MODULE, and each caller's KEY SPACE.** `tryClearRoster`'s header opened "TWO CALLERS …
+  this trigger's collapse branch" months after BUT-1838 left the trigger no collapse branch,
+  while `grep -rn tryClearRoster` finds THREE call sites in two other modules
+  (`deleteMessages`, `deleteChatGroupMemberships`, `removeChatGroupMember.deleteEmptyGroup`)
+  and NONE in the file that defines it. A header saying "anyone changing this contract must
+  check the other caller" is a safety instruction, so a stale count costs more than ordinary
+  rot — and each rewrite so far has re-broken it one level down: first "THIS file's own
+  caller — `deleteEmptyGroup`" (it lives in `groups/`), then "the account cascade's two call
+  sites are handed direct ids" (2026-08-15) — FALSE, because `deleteChatGroupMemberships`
+  takes `conversationId` off a `chat_groups` document and is therefore group-side exactly
+  like `deleteEmptyGroup`; only `deleteMessages` is direct-side, and provably so by its own
+  `typeof groupId === "string"` early return. So per caller, state which ids it can hand
+  over — a direct/group split decides whether `mayWriteRoster()`'s `!('groupId' in
+  parentDoc().data)` already denies the client write the paragraph is bounding.
+  **Second trap in the same shape: fixing the paragraph you were pointed at while the
+  NEIGHBOURING docstring keeps asserting the opposite.** `MAX_ROSTER_ROWS`'s header still
+  says the bound is unreachable ("refused by this trigger before this helper is reachable
+  at all", "nothing caps a group's size") 40 lines above a freshly written "THE BOUND STAYS,
+  for three reasons" — and the stale half is the one inviting its deletion. When a review
+  fixes a claim, re-read every OTHER docstring in the file that names the same constant or
+  code path; they were written in the same state of belief.
+  **Round 4 (2026-08-15) proved that trap recurs INSIDE the rewritten paragraph and across
+  files.** `MAX_ROSTER_ROWS`'s replacement imported the guard comment's own false line — "No
+  rule reads `chat_groups` membership" — and pointed at it ("see the comment on the guard
+  itself"). FALSE: `firestore.rules:1897` gates the group's read on `uid in memberIds` and
+  :1905 its rename on `uid in adminIds`. The TRUE form, and the one that kills the padding
+  attack, is narrower: no rule reads that list for a SIZE/threshold decision (unlike
+  `passesMinorDmGate`, which fires at raw `size() == 2`), and `allow create, delete: if false`
+  plus an `hasOnly(['name','updatedAt'])` update means no client can write it at all. Same
+  round, `conversations-rules.test.ts`'s P12B kept "The scope is still load-bearing" three
+  lines under a freshly written "BUT-1838 deleted the fallback outright" — there is no scope.
+  A rewrite that converts a paragraph to past tense must convert the WHOLE paragraph.
+  **Round 5 (2026-08-15) verified all four round-4 fixes TRUE and found the same claims still
+  live in the two places a fix never reaches, so make both mechanical.** (a) The SUITE file's
+  copy: "no Firestore rule reads that document's membership" survived at
+  `enforce-group-minor-membership.test.ts`:79-82 because round 4 said "both twins" — a COUNT,
+  taken from the two source docstrings. Never enumerate a false claim by counting twins; grep
+  its distinctive phrase across `functions/src` INCLUDING `__tests__`, and fix every hit in the
+  one edit. (b) The UNCHANGED lines of the docstring you just rewrote: `tryClearRoster`'s
+  header still reads "A live parent that no longer names the evicted members denies the roster
+  to everyone" ~30 lines under the corrected paragraph — true for the two group-side callers
+  (zero-member shell), false for `deleteMessages`' 1:1 caller — and a `git diff` cannot show it,
+  because a false CONTEXT line looks reviewed. Re-read the WHOLE docstring, not the hunk.
+  **Round 6 (2026-08-15): the PHRASE grep is necessary and not sufficient — the same false idea
+  recurs under wording no fixed sentence contains.** The requester's grep of "no rule reads …
+  membership" cleared every hit and verified all six replacements TRUE (rules:1897/1904/1918,
+  `MAX_CHAT_GROUP_MEMBERS` in both callables, both group-side callers at zero survivors,
+  `directIdBinds`' two-row ceiling) — while 12 lines above one of the fixed hits,
+  `enforce-group-minor-membership.test.ts`:92-95 still said a wrong TRUE verdict "would leave
+  roster rows readable under a destroyed parent, forever, with no probe and no sweep to find
+  them": post-BUT-1838 those rows are UNREADABLE, and `deleteOwnRosterRows`'s collection-group
+  sweep does find the erased user's own — contradicting the same file 110 lines down. So grep
+  the CLAIM's mechanism nouns (destroyed/absent parent, orphan, readable, sweep, collapse
+  branch) as well as the sentence, and read the whole file you are pointed into.
+  Second durable half: **"the one write X still makes from the client" is TWO claims — a caller
+  exists, and something consumes it — and both need a grep.** P30's `updateLastRead` has no
+  caller outside its own module (firestore.rules:1847 says so itself), and unread counts come
+  from `Conversation.getUnreadCount` over `conversations.lastReadTimestamps`
+  (`conversation.dart`:443), not the roster row's `lastReadAt` — so "freezing it would break
+  unread counts in every group" is false twice over. Same round: a present-tense clause inside
+  an otherwise past-tense HISTORY paragraph is a false claim, not a tense wobble, whenever it
+  names a function that still exists (`conversations-rules.test.ts`:556 has
+  `enforceGroupMinorMembership` "treat"ing `metadata.creatorId`, which no function in
+  `functions/src` reads at all — `chat-group-writes.ts`:154 only writes it).
+  **Round 7 (2026-08-15) settled how to FIND the neighbours a phrase-grep misses: grep the
+  SUBJECT — the function, constant or fixture the claim is about — not the sentence.** Four
+  pre-existing falsehoods surfaced that way, every one a `git diff` CONTEXT line beside a
+  freshly corrected hunk: `updateLastRead` finds P16's "the single most frequent write on this
+  path" (`conversations-rules.test.ts`:1734) three cases above the P30 comment establishing it
+  has no caller at all; `leaveGroupConversation` finds `firestore.rules`:1573 ("its successor
+  and the safety backstop both read a creator identity") six lines above the corrected ":1603
+  nothing reads the field today"; `participantIds` finds
+  `enforce-group-minor-membership.ts`:186 ("every uid list in this trigger comes from
+  `participantIds`") in a trigger that has read `chat_groups.memberIds` since BUT-1838; and
+  the integration suite's own header refutes `firestore.rules`:1794's pointer to an
+  unclearable-roster fixture that moved to `chat-group-callables.test.ts`:523. A pointer to
+  WHICH SUITE pins a safety fixture is worth grepping every time — it is the claim most likely
+  to be stale and the one whose staleness costs coverage.
+  **A coverage claim that QUANTIFIES ("the production `dailyLimit` values are pinned by a test")
+  goes stale by ADDITION, with its own sentence untouched — so a `git diff` shows nothing.**
+  `rate_limiter.ts`:81-83 says exactly that; BUT-1838 then added a FOURTH `dailyLimit`
+  (`createChatGroup: 50`) 35 lines below it, and `rate-limiter-daily-cap.test.ts` pins only the
+  three LLM ones — a real per-user cap nothing would redden if deleted. Check such a claim by
+  counting instances of the FIELD against the assertions
+  (`grep -c dailyLimit` in the config vs. in the suite), never by re-reading the sentence; and
+  when a ticket adds an instance of a quantified kind, the pin is part of the same edit.
+  **CLOSED 2026-08-15, and closing it exposed the follow-on shape: adding the missing pin
+  falsifies the CLASSIFYING claim one level up.** The new case landed under a section header
+  reading "the production `dailyLimit` values are the load-bearing per-user LLM-SPEND caps"
+  (and a file docstring enumerating "the LLM daily caps"), which the added non-LLM cap
+  contradicts — the file then argues with itself 30 lines apart, the rounds-4-7 shape again.
+  So when you close a quantified-coverage finding by ADDITION, re-read the block header, the
+  file docstring and the runner LABEL that scope what you appended to, in the same edit.
+  **Round 13 (2026-08-15): that three-site inventory is INCOMPLETE, and the re-label is a
+  STRONGER claim than the one it replaces.** All three were fixed correctly and two more sites
+  still said it in wording no fixed sentence contained — the FIELD's own doc comment
+  (`dailyLimit?: number`, "Set on expensive (LLM-backed) operations", rate_limiter.ts:46-51,
+  which now contradicts the corrected header 33 lines below it) and the test file's TITLE line.
+  Grep the classifying ADJECTIVE across both files, never the sentences you rewrote. Worse,
+  "three bounding LLM cost" asserts each member BINDS, where "the LLM daily caps" only named a
+  category: `RATE_LIMIT_CONFIGS.importRecipe.dailyLimit` binds nothing — the string
+  `"importRecipe"` reaches no `checkRateLimit`/`withRateLimit`/`enforceRateLimit` call site in
+  `functions/src`, no such callable is exported from `index.ts`, and the only live limiter of
+  that name is the CLIENT's (`lib/core/rate_limiting/rate_limiter.dart`) — so two of the
+  "three" bound anything (an import's LLM spend is bounded by `structureRecipe`'s cap instead).
+  Before writing a COUNT of ENFORCING things, grep each member's operation string at its call
+  sites; a config entry with no caller is the cheapest way to make a sharpened label false, and
+  the safe remedy wording states the category ("three LLM"), not the effect ("three bounding").
+  **Round 14 (2026-08-15): the category re-label landed TRUE and the REASSURANCE clause beside it
+  was the new false claim.** Defusing "this cap binds nothing" with "the spend is bounded by X's
+  instead" is a fresh claim about the whole flow, and it named ONE of two callables: an import
+  reaches `structureRecipe` (text/URL, `llm_enhancement_service.dart`:80/256/324) AND
+  `ocrRecipeImage` (photo, :171 via `photo_llm_vision.dart`), whose vision spend is capped at 50 by
+  its own entry, not by structureRecipe's 100. So when you neutralise a binds-nothing finding by
+  pointing at the real bound, grep every LLM/expensive callable the flow can invoke and either
+  enumerate them or scope the sentence to the leg it holds for — the rounds-4-7 "must hold for
+  every caller" rule applies to the excuse as much as to the claim.
+  **Round 15 (2026-08-15) verified the two-callable clause CLEAN, and the cheap proof of
+  COMPLETENESS is to enumerate the CALLABLES from the client, never the flow's own branches.**
+  `grep "httpsCallable(" lib/` returns 13 sites and exactly one file carries LLM ones
+  (`llm_service.dart`:115/:255 → `structureRecipe`, :193 → `ocrRecipeImage`), so no import leg can
+  be bounded by an unnamed cap — one grep settles what branch-walking cannot. Two traps it exposed:
+  (a) the enumeration of CALLABLES INVOKED is not the enumeration of CAPS CHARGED — a photo import
+  also spends `structureRecipe`'s cap server-side (`ocr-recipe-image.ts`:308, BUT-1655 retry), so
+  "bounded by X" stays true while sharpening it to "only by X" would be false; (b) the verdict rests
+  on the SILENT leg, not the wording — the char-OCR photo path (`OCRExtractionService` →
+  `TextImportStrategy`, `photo_import_strategy.dart`:241) invokes no LLM callable at all, and had it
+  routed through `RecipeParserService`'s `LlmTier` instead, the clause would have been false. Check
+  the leg that spends NOTHING before passing a bounds claim. Round 14's own note also mis-pathed the
+  file it cited (`lib/services/import/photo_llm_vision.dart`, and ":171" is in
+  `llm_enhancement_service.dart`) — a verified-substance note still carries unverified coordinates. Corollary: round 13's own
+  "the only live limiter of that name is the CLIENT's" is imprecise too —
+  `RateLimitOperation.importRecipe` (`lib/core/rate_limiting/rate_limiter.dart`:34/251) has no
+  `checkLimit` caller either (one test reads its token count); the import flow's client gate is
+  `ImportOperation.withLlm(...)`. Verify a "the live one is over there" pointer with the same grep
+  as the dead one.
+  Non-vacuity of such a pin is settled by the field's DECLARED type, not by running it:
+  `dailyLimit?: number` makes `assertEqual(cfg.X.dailyLimit, 50)` a RUNTIME comparison
+  (deleting the field → `undefined !== 50` → FAIL; renaming the config key → TypeError caught
+  per-case by `runTests`, suite continues), whereas the TS2367 compile-error trap recorded
+  above only bites a literal-typed `export const X = 90`. What such a pin does NOT cover is the
+  WIRING: nothing asserts the callable passes that operation STRING to `checkRateLimit`
+  (`create-chat-group.ts`:96), because the callable suites exercise the `…WithDeps` core below
+  the wrapper — a renamed operation key orphans the config and every value pin stays green.
+
+
+### 2026-08-17 — knowledge-file restructure carry-forward: Scheduled analytics and lifecycle jobs, full prior narrative [Pattern discovered]
+
+Verbatim retirement of the "### Scheduled analytics & lifecycle jobs" subsection from cloud-functions-specialist.knowledge.md, moved here unedited during the 2026-08-17 no-loss restructure.
+
+### Scheduled analytics & lifecycle jobs
+- Don't assume a date field's type (ISO string vs `Timestamp` varies by
+  collection — mixing silently returns zero rows). Full-scan jobs need an
+  explicit cap + `logger.warn` when hit. Stagger schedules away from
+  existing big scans.
+- Anomaly gates: `baseline≥MIN_SAMPLES` AND `stddev>0` AND `|z|>3` AND
+  `|today-mean|≥ABSOLUTE_FLOOR` — without the floor, 3σ on pre-launch counts
+  (0→2) fires constantly. A consumer job schedules strictly after its
+  producer's slowest run and SKIPS (never assumes zero) on a missing
+  producer doc. Always write the output doc even when empty.
+- **`Math.floor(elapsed/DAY)` truncation on a `>N`/`>=N` boundary
+  mis-classifies the sub-day remainder in `[N,N+1)`** (30d12h floors to 30,
+  falls in the wrong bucket). Compare raw elapsed ms, never truncated days,
+  when client+server must agree on a boundary; pin with a sub-day-remainder
+  fixture — a whole-day fixture passes under the buggy floor and proves
+  nothing.
+- **A cursor-driven "crossed threshold(s) since last run" window is safe
+  under normal cadence but OVERLAPS across thresholds after an
+  outage/wide-gap recovery** — exactly the scenario it targets. Without
+  cross-threshold dedup, one user matches several thresholds in one
+  recovery run and gets stacked notifications; track already-notified users
+  across thresholds, or pick each user's single highest threshold.
+- An unbounded `.where().get()` with a serial per-user read in a loop is a
+  memory/timeout risk specifically on a wide catch-up window — page with a
+  `__name__` cursor and parallelize the reads.
+- A test fake's auto-doc-id keyed off a write COUNTER that only increments
+  on `commit()` can collide across docs created inside one uncommitted
+  batch — bump the counter at `.doc()` time.
+- **A daily job that probes "today" only ever measures the hours BEFORE its own
+  run time, and no later run ever revisits that day** — the next run asks about
+  the next day. `compute-feature-retention` ran `30 4 * * *` UTC against
+  `startOfUtcDay(now)` and so measured 00:00–04:30 for 5 flags while reading as
+  a whole day; BUT-1791 (2026-08-01) rebased it to
+  `startOfUtcDay(now) - MS_PER_DAY`. Three rules fall out. (a) Probe the
+  previous COMPLETED day, and derive the row's `dateStr`, the query window, the
+  rollup day-offsets AND the active-user cutoff from that ONE base, so the row,
+  the window it measures and the rollup that reads it cannot disagree. (b) The
+  price is a one-day dashboard lag — check the consumer takes "newest N by doc
+  id desc" (`EngagementRepository.getDailyFeatureRetention` does) rather than
+  keying on today's date. The CUTOVER itself is lossless and worth saying so in
+  the write-up: deterministic `{date}` doc ids mean the first new run REWRITES
+  the last old run's truncated row with the complete one, and no date is
+  skipped — the visible change is one missing newest day, not a gap. (c) A
+  suite whose every case runs `now` AFTER the
+  seeded activity (08:00Z vs 06:00Z) is structurally blind to this whole class:
+  at least one case must use the REAL schedule hour with activity landing after
+  it. Verified by mutation — reverting the one line takes the suite 12/12 → 3/12.
+- **When a probe's signal depends on a CLIENT-side stamp, the probe's docstring
+  is asserting Dart behaviour it cannot enforce — verify the claim, don't
+  review the prose.** A COMMENT-ONLY diff is still reviewable and still gets a
+  verdict: confirm comment-only mechanically (`git diff -U0 | grep -vE '^[+-]
+  \*'` must be empty, plus `--numstat` for the file set), then check every
+  factual claim against code. BUT-1762's shape is the reusable one: personal
+  `unified_shopping_lists` items live in a subcollection, so
+  `ShoppingItemOperationsModule._touchPersonalListDay` stamps the PARENT's
+  `updatedAt` — the exact field the probe filters — at most once per UTC day,
+  from all six write branches (add/update/remove ×single+batch), AFTER the write
+  succeeds, guarded by comparing the parent `updatedAt` the caller already read
+  (so the coalescing costs no extra read; a 30-item shop bills 1 write, not 30).
+  Four things to verify on any such claim: (a) the named method/class exists and
+  the call-site count matches "all N branches"; (b) each call is after the
+  write's `await`, not after the pre-read; (c) no OTHER writer reaches the same
+  subcollection outside the stamped module (grep the collection constant — for
+  personal lists only the item-ops module writes, the shared repo's
+  `items` sites are `shared_content`, a different feature); (d) the day guard has
+  a non-vacuous test (a same-day case whose stamp must be UNCHANGED). Residual
+  worth stating in review: the stamp is client-clocked (`Timestamp.fromDate`, not
+  `serverTimestamp()`) and its failure is swallowed with a warn nobody alerts on,
+  so "accurate per-day" is modulo device clock and silent degradation.
+
+
+
+### 2026-08-17 — knowledge-file restructure carry-forward: Fan-out pagination and denormalization, full prior narrative [Pattern discovered]
+
+Verbatim retirement of the "### Fan-out pagination & denormalization (shared/batch-update.ts family)" subsection from cloud-functions-specialist.knowledge.md, moved here unedited during the 2026-08-17 no-loss restructure.
+
+### Fan-out pagination & denormalization (shared/batch-update.ts family)
+- **Self-advancing bounded loop** (`query.limit(N).get()` → mutate → repeat
+  until `size<N`) for any delete/filter-mutating sweep whose body changes a
+  field the base query filters on (the mutation removes the doc from the
+  next page's match, so it self-advances safely). Use the `__name__`-cursor
+  helper (`batchUpdateQueryPaginated`) ONLY when every write touches solely
+  denorm fields, never the filtered field or the doc id. A self-advancing
+  drain still needs a hard iteration cap as a backstop against a
+  non-shrinking page — converts a scheduler-timeout crash into a clean
+  logged partial-and-resume.
+- **"A deleted doc cannot anchor a `startAfter` cursor" is FALSE, and it is the
+  repo's most repeated paging folk-belief** — `Query._extractFieldValues`
+  (`node_modules/@google-cloud/firestore/build/src/reference/query.js:83`) builds
+  the cursor from the snapshot LOCALLY, pushing `documentSnapshot.ref` for
+  `FieldPath.documentId()` and `.get(field)` otherwise; nothing re-reads the
+  anchor, so a wholly-deleted page still positions the next one correctly. The
+  REAL reason an in-memory-filtered sweep must anchor on the last SCANNED doc is
+  ORDERING: the last *deleted* doc can sort before the last scanned one, so
+  anchoring on it re-reads the page's surviving tail and inflates `scanned`.
+  `cleanup-cache.ts:248` now carries the corrected rationale (BUT-1786, verified
+  2026-08-04); `cleanup-old-notifications.ts:49-50` said, until 2026-08-13, "it would in fact
+  be wrong here since the cursor doc gets deleted" — wrong but harmless there,
+  since that filtered walk self-advances. Correct the PROSE, never the cursor
+  choice. **And when the correction names a fixture as "the ONLY one where X",
+  check X against EVERY fixture, not just the ones that can redden** — the two
+  anchors also differ in `testDeletesOnlyExpired`, whose single page is terminal
+  so the cursor is never consumed. Mutation-measured 2026-08-04: anchoring on the
+  last DELETED doc reds exactly one check (`scanned` 700 → 701, in
+  `testCursorAnchorsOnLastScannedNotLastDeleted`), while 799 belongs to a
+  DIFFERENT mutant (an `indexOf` fake cursor, red only in
+  `testFakeCursorModelIsFaithful`, which stays green under the anchor mutant
+  because its page-one tail is itself deleted). Two mutants, two numbers, two
+  guards; a fix that swaps them repeats the defect it was written to correct.
+- A drain that CLAIMS-BY-DELETE each processed item self-heals across runs
+  (overflow stays matched, retried next run) — safer than a bounded scan
+  with no claim mechanism, which can starve overflow permanently if the
+  matched subset shifts between runs.
+- Rewriting an unbounded fan-out to paginate: (1) diff against `git show
+  HEAD:` of the old file to confirm every step's `.catch` survived; (2)
+  confirm no paginated update touches its own filter field or `__name__`;
+  (3) a per-doc-callback → static-update-map swap is safe ONLY when the map
+  is invocation-constant.
+- A shared debounce/queue wrapper gaining a new observability field needs
+  its return-type surface updated in EVERY adapter, not just the one under
+  test — the warn-log behavior fires everywhere automatically, but a typed
+  return field can drift between adapters.
+
+
+
+### 2026-08-17 — knowledge-file restructure carry-forward: GDPR account-deletion cascade, full prior narrative [Pattern discovered]
+
+Verbatim retirement of the "### GDPR account-deletion cascade" subsection from cloud-functions-specialist.knowledge.md, moved here unedited during the 2026-08-17 no-loss restructure.
+
+### GDPR account-deletion cascade
+- A cascade step keyed on a shared/parent handle (e.g. `arrayRemove` on a
+  household doc) must destroy the retry handle LAST, after all child
+  cleanup commits — else a transient mid-step failure strands orphans a
+  retry can no longer reach. Steps keyed `where(field,"==",uid)` are immune.
+  **The subtle form: a purpose-built QUERY HANDLE cleared in the SAME write
+  as the content scrub, ahead of a dependent denormalised copy.** BUT-1788's
+  `anonymizeSystemMessagesAboutUser` (`account-deletion-cascade.ts:1253`)
+  tombstones the `messages` rows AND `FieldValue.delete()`s
+  `metadata.subjectUserId` in one `commitInChunks`, THEN scrubs
+  `conversations.lastMessage.content` in a per-convo transaction whose failure
+  is caught and swallowed. Failure there is triple-silent: the mirror keeps the
+  deleted user's name, the re-run early-exits (`about.docs.length === 0`), the
+  new `probeResidualData` leg keyed on the SAME deleted field counts zero, and
+  `deleteMessages` still returns true so the callable reports `success: true`.
+  `syncConversationLastMessage` fires on message create/delete only — never on
+  update — so nothing heals it until someone posts in that group. Order it
+  mirror-FIRST, then the handle-clearing write (re-running is then a correct
+  no-op: the mirror already holds the tombstone and won't match the pre-scrub
+  content set), and skip clearing the handle for any conversation whose mirror
+  write failed. Rule of thumb: whenever a probe leg and a deleter share a
+  handle, ask which of them the deleter's OWN write blinds first.
+- `probeResidualData` must mirror the deleter's exact field scoping per
+  collection (two probes when a collection has two owner-ish fields; a
+  subcollection-shaped probe, never top-level `where`, for a subcollection).
+  `count()` is the probe primitive; a probe error should ADD to the
+  residual count, never abort the cascade. **A new probe leg dropped INSIDE an
+  existing `try` shortens every leg after it** — one transient error on the new
+  query now also skips the legs it was inserted above (BUT-1725 put two legs in
+  front of the sole-member-orphan leg). Give each independent leg its own
+  try/catch, or append rather than insert.
+- Pure `users/{uid}/*` subcollections erase via a generic uid-scoped sweep
+  (retry-safe by construction). Canonical test triple for any new deleter:
+  own-erased + other-kept + `failedCollections` empty.
+- **Personal data written by an ANALYTICS job under a non-`users/{uid}` path is
+  invisible to both of the cascade's structural loops** (the top-level
+  `where("userId","==",uid)` list and the `users/{uid}/…` subcollection list),
+  so it survives every erasure until someone names it. Live case:
+  `analytics/feature_retention/users/{uid}_{date}`, one behavioural row per
+  active day, kept forever (BUT-1789, fixed 2026-08-01). Sweep every SCHEDULED
+  WRITER for uid-keyed output, not just client-written collections. And a TTL is
+  often not the escape hatch it looks like: TTL `fieldOverrides` are
+  COLLECTION-GROUP scoped, so a subcollection whose collection ID collides with a
+  top-level one (`…/feature_retention/users` vs `users`) would arm a delete
+  policy over the real profile docs — the cascade step is then the ONLY safe
+  route. Check the collection ID for collisions before proposing a TTL, and
+  note the same collision means auto single-field indexes are shared (verify no
+  `fieldOverrides` entry for that id disables them before trusting the deleter's
+  equality query).
+- Warn-before-purge two-pass is the shape for any auto-deletion of user
+  data: pass 1 stamps a scheduled-at + warning; pass 2 deletes only once
+  due; reactivation clears the stamp.
+
+
+
+### 2026-08-17 — knowledge-file restructure carry-forward: Rate limiting and LLM cost gates, full prior narrative [Pattern discovered] [Cost finding]
+
+Verbatim retirement of the "### Rate limiting & LLM cost gates (middleware/rate_limiter.ts)" subsection from cloud-functions-specialist.knowledge.md, moved here unedited during the 2026-08-17 no-loss restructure.
+
+### Rate limiting & LLM cost gates (middleware/rate_limiter.ts)
+- **A two-stage gate where each stage has its own side effect has NO free
+  ordering** — a denial by the second gate strands the first gate's
+  mutation. Put the SHARED/cross-user side effect (the global counter)
+  LAST, so a denial only ever wastes the requester's OWN budget.
+- **A retry/fallback path calling an UNWRAPPED core (bypassing the
+  `withRateLimit`-wrapped callable) silently skips BOTH the per-user AND
+  global cap — close both, separately.** Re-apply the per-user check via
+  the SAME operation key the wrapped callable uses, BEFORE the global
+  check (same ordering rule), with the caller's uid a REQUIRED parameter so
+  no call site can silently fail open.
+- **A per-ITEM token charge couples the bucket's `maxTokens` to the
+  callable's own payload cap**: `maxTokens` must be ≥ the max batch size or
+  every full-size batch is denied forever (`currentTokens` can never reach
+  `tokensRequired`), with a retryAfter that never helps. The two constants
+  sit in different files — derive one from the other or pin both in a test;
+  a comment is not enforcement. The working shape (BUT-1692): `export` the
+  callable's cap (`MAX_BATCH_NOTIFICATIONS`) and assert it equals
+  `RATE_LIMIT_CONFIGS.<op>.maxTokens` in `rate-limiter-daily-cap.test.ts`,
+  alongside a second assertion that the split bucket's `refillRate`/
+  `refillIntervalMs` equal the single-item bucket's — else batching becomes
+  the cheap sustained path. Also state the COMBINED ceiling when a second
+  bucket is split off an existing one: separate buckets are ADDITIVE, so
+  "same budget either way" is only true per-path.
+- **Standalone callables use `enforceRateLimit`, not bare `checkRateLimit`**
+  — only the former writes the `system_events` `rate_limit_violation` row
+  via `logRateLimitViolation`. A bare `checkRateLimit` + hand-thrown
+  `resource-exhausted` silently drops the abuse telemetry, which is usually
+  the whole point of the ticket adding the gate. `notifications/` was the
+  outlier; BUT-1692 converted `sendNotificationBatch` (SHIPPED — the docstring
+  now names the remaining gap explicitly, so the earlier over-claim is
+  closed), so the remaining one is `sendNotification` single-send
+  (`send-notification.ts:91-97`, still bare `checkRateLimit` + local throw as
+  of 2026-07-30) — a diff that fixes one path must not claim in prose that the
+  family now leaves a trace. A seam typed
+  `enforce?: typeof enforceRateLimit` type-pins the production default: TS's
+  void-return bivariance does NOT reach through `Promise`, so
+  `Promise<RateLimitCheckResult>` is NOT assignable to `Promise<void>`
+  (verified with `tsc --strict`) and a silent revert to `checkRateLimit`
+  cannot compile. But the TYPE pin is not a BEHAVIOUR pin: a lambda that
+  calls `checkRateLimit` and throws `resource-exhausted` locally satisfies
+  the seam type, throws the SAME code, and drops the audit row — measured,
+  `thrown=resource-exhausted auditRows=0`. So every seam-injected case stays
+  green and only a case passing NO `enforce` catches it. Pin the default with
+  a case that asserts the ROW: drive the real enforcer against an exhausted
+  bucket via `__setFirestoreForTest` and assert exactly one
+  `system_events` doc with `type:"rate_limit_violation"` and the right
+  `operationType`. SHIPPED 2026-07-30 and green (19/19), but it needed
+  `logRateLimitViolation` switched from `admin.firestore()` to the seam's
+  `getFirestore()` first — the audit write was otherwise observable only on a
+  live emulator, which is exactly why the batch path first shipped unasserted.
+  **A deny asserted through a fake db cannot tell deny-by-bucket from
+  `checkRateLimit`'s fail-closed `catch`** (a fake that throws also yields
+  `allowed:false` → the same row, same `operationType`, so the case passes for
+  the wrong reason): disambiguate on the row's `retryAfterMs` —
+  `intervalsNeeded * refillIntervalMs` (60000 for a 10-token
+  `sendNotificationBatch` deny; measured `remainingTokens: 0.0005`) versus the
+  fail-closed 30000. The SHIPPED case does not assert `retryAfterMs`; it stays
+  honest only because its fixture is a well-formed zero-token bucket, so treat
+  "fake throws → same row, still green" as live technical debt. Reviewing the
+  `admin.firestore()`→`getFirestore()` swap itself: production is byte-identical
+  (`firestoreForTest` is null → `admin.firestore()`) and no non-test file calls
+  `__setFirestoreForTest` — grep that before rating the swap, it is the whole
+  question of whether an audit row can land in the wrong place. That seam covers
+  only the per-user bucket +
+  `logRateLimitViolation`; `getGlobalLimits`/`checkGlobalLimit`
+  (`rate_limiter.ts:516,563-564`) still call `admin.firestore()` directly, so
+  a fake db injected through it does NOT intercept them. `system_events` has
+  no TTL policy or cleanup job, so every newly-enforced callable adds an
+  unbounded write-per-denial stream — cheap, but say so, and note that
+  `retry_helper.dart:286` treats `resource-exhausted` as RETRYABLE, so a
+  future Dart caller multiplies the rows per denial.
+- Abuse/cost gates fail CLOSED on a Firestore error; some notification
+  gates fail OPEN by design for their own domain — don't harmonize.
+  `withRateLimit` wraps *callables*; the SDK does NOT auto-retry a thrown
+  `resource-exhausted`, so callable rate limits carry no double-consume
+  concern from the trigger idempotency rules.
+
+
+
+### 2026-08-17 — knowledge-file restructure carry-forward: Pooled ratings and rating aggregation, full prior narrative [Pattern discovered]
+
+Verbatim retirement of the "### Pooled ratings + rating aggregation (ratings/ family)" subsection from cloud-functions-specialist.knowledge.md, moved here unedited during the 2026-08-17 no-loss restructure.
+
+### Pooled ratings + rating aggregation (ratings/ family)
+- Recipes are USER-SCOPED (`users/{ownerUid}/recipes/{recipeId}`) — no
+  top-level `match /recipes` in rules. Confirm any server collection path
+  from firestore.rules + the repository mixin, never an incidental
+  `collection()` call; a test fake not mirroring the real layout makes a
+  path bug structurally invisible.
+- Unbounded collection-group folds use `.aggregate({count, average})`,
+  never `.get()`. A `collectionGroup` equality query needs a
+  `fieldOverrides` entry with `queryScope:"COLLECTION_GROUP"` — auto
+  single-field indexes are COLLECTION-scope only, and the emulator hides
+  the prod `FAILED_PRECONDITION`. `average(f)` skips non-numeric `f`
+  silently.
+- A recompute gate for a status-flip aggregation must be a full
+  membership-XOR (`wasCounted !== isCounted ⇒ recompute`), not a
+  before/after-is-X-only check — an asymmetric gate lets one direction
+  (e.g. demotion) go stale until an unrelated future event.
+- **When detecting a state TRANSITION via immutable history, also check
+  whether the DESTINATION state already exists and skip if so** — else the
+  "transition happened" signal re-fires on every subsequent touch, not
+  just the transition.
+- A shared derivation helper gaining a new returned/stamped field needs
+  EVERY importer's write shape reconciled in the same change — a sibling's
+  non-merge `.set()` can silently STRIP a field the primary path stamps.
+- **`recipe_social_stats` is SERVER-ONLY** (`firestore.rules:2506-2508`:
+  `allow create, update, delete: if false`) and is owned by
+  `ratings/update-recipe-rating-stats.ts` (`index.ts:371`, on
+  `recipe_ratings/{ratingId}`), which additionally folds `family_ratings` rows
+  with `memberType == "profile"` into the same doc. Any CLIENT write there is
+  denied, and would undercount family diners if it weren't — a client
+  `delete()` on the "no ratings left" branch would destroy an aggregate still
+  holding their votes. Two general rules from BUT-1781: (a) **splitting an
+  always-failing batch into sequential awaits changes WHICH write fails
+  first** — an unreachable second write becomes the whole point of the fix, so
+  order the writes so the one that can actually succeed runs first, or drop
+  the doomed one; (b) `fake_cloud_firestore` evaluates no rules, so a green
+  Dart unit test asserting a client write to a server-only collection proves
+  nothing — check `firestore.rules` for the collection by hand on any diff
+  that adds or reorders a client-side aggregate write.
+- A second debounced aggregator sharing the queue infra needs only a
+  distinct marker-collection + log-prefix adapter, never a fork.
+  Claim-by-delete before aggregating; the aggregation itself should be a
+  full re-read + `set(merge)` so a marker-race double-run is safe.
+- **A backfill that RECONSTRUCTS a value from fields still on the doc must
+  exclude every field the erasure cascade DELIBERATELY RETAINS, not just the
+  sentinel it writes.** Excluding the `"deleted"` sentinel and `null`s is the
+  obvious half; `ownerId` on `unified_shared_shopping_lists` is the trap — the
+  cascade keeps it raw on purpose (rules read it for write authorization), so
+  a reconstruction that adds it re-creates a deleted user's identifier in a
+  NEW field. Gate on a handle the cascade actually clears (owner present in
+  `memberPermissions`), not on the retained one. Worse once the field is
+  made APPEND-ONLY in `firestore.rules` (BUT-1725 did exactly that): the
+  re-created uid is then removable by no client write and by no future
+  cascade run (that user's cascade already completed) — only by an admin
+  script. Check the rule before rating a resurrection finding as merely
+  cosmetic. The discriminator to gate on is the handle the cascade CLEARS: the
+  create rule pins a live owner into `memberPermissions` and the cascade
+  deletes that key, so `hasOwnProperty(memberPermissions, ownerId)` separates
+  live from erased. A fixture feeding the SENTINEL into the retained field
+  (`ownerId: "deleted"`) proves nothing — the sentinel is written for item
+  `addedByUserId`/`lastModifiedByUserId` only; assert the shape the cascade
+  actually leaves. Re-flagged unfixed on a second review pass: verify a
+  resurrection finding against the FINAL staged bytes, never against the
+  earlier pass's write-up.
+- **A full-collection `orderBy(documentId()).limit(N)` backfill with NO filter
+  cannot self-advance across invocations** — already-migrated docs stay
+  matched and burn the per-invocation scan cap, so run 2 rescans run 1 and
+  `hasMore` never reaches false above the cap. That shape needs an
+  operator-supplied `startAfter` in the request + a `nextCursor` in the
+  response (`backfillCanonicalRatings` is the correct precedent;
+  `backfillRecipeCommentsDenorm` and `backfillSharedListContributors` share the
+  defect — don't copy either). A filter-mutating sweep is the only shape that
+  may skip the cursor — and "it writes a marker" is NOT the same as
+  filter-mutating: `bulkMarkForRetagging` (`admin/bulk-retag.ts`) was a third
+  instance, fixed 2026-08-01, and its marker `"outdated"` still FAILS the
+  in-memory `currentVersion !== targetVersion` filter, so every call re-read the
+  same first page forever. Two wrinkles that generalise to any
+  scan-then-filter-in-memory drain: (i) the cursor must be the last document
+  SCANNED, never the last UPDATED — the post-filter drops most of a page, and
+  resuming from an updated doc silently skips everything between; (ii) a DRY-RUN
+  (or any other early-return preview branch) that returns before the cursor is
+  computed re-creates the whole defect on the preview path, so compute
+  `lastScanned`/`reachedEnd` ABOVE the first early return and spread it into
+  every exit. Also clamp the operator-supplied `limit` (`Number(...)`,
+  `Number.isFinite`, `Math.min(..., MAX)`) — an untyped `limit: 500000` is an
+  unbounded `.get()` into function memory — and prefer
+  `.select("<the one field the filter reads>")`, which is what makes a large
+  page affordable at all (the sibling `getRetagStatus` already does; the drain
+  callable reads whole recipe documents). Measured (`backfillSharedListContributors`, 23×450 cap,
+  corpus 20,000): run 1 stamps 10,350, runs 2–3 re-read the SAME docs
+  (`migrated 0, skipped 10350`), 10,351+ never reached, every run still
+  `success: true` — structurally unfinishable, not a cosmetic nag. Two things get
+  dropped when the shape is copied without the cursor: (a) an explicit
+  `reachedEnd` flag set at EVERY exhaustion break — inferring completion from
+  `batchesProcessed >= MAX` reports `hasMore: true` exactly when the final
+  allowed batch was a SHORT page, i.e. when the corpus IS done, so a "delete this
+  file once a run returns `hasMore:false`" lifecycle gate never opens;
+  (b) NOT_FOUND handling on the 450-op
+  `batch.update()` — one doc a client deleted between the page read and the
+  commit aborts all 450 (catch grpc code 5, fall back per-doc). A
+  `maxLists`-style cap tested only between batches is a SOFT cap: with
+  `maxLists:10` the run still processes the whole 450-doc page — don't document
+  it as a hard ceiling. A snapshot-read + blind-`arrayUnion` backfill also races
+  a concurrent cascade: the page read before the cascade commits re-adds uids it
+  just removed. Fix shape (BUT-1725): drop the 450-op batch entirely and give
+  each doc needing a write its own transaction that RE-DERIVES the write set
+  from the fresh read — the cascade's anonymised items then yield an empty set
+  and nothing is written. This also dissolves the grpc-5 batch-abort problem
+  (`if (!fresh.exists) return "raced"`). It costs one extra read per written
+  doc and nothing at all on re-runs, but 450 sequential transactions per page
+  will not fit a 540s budget: run them through a small concurrency pool (25),
+  counting `written`/`raced`/`failed` and returning `success: failed === 0`
+  rather than aborting the page.
+- One-shot backfills: persist the resume cursor; use TWO cursors
+  (`lastFetched` drives the query, `lastProcessed` drives the resume value)
+  when a per-batch cap can stop mid-fetch — a single cursor plus a
+  skip-if-identical count can stall forever above a few thousand docs.
+  Collect a batch's writes into ONE `commit()` after the loop so a
+  mid-loop throw leaves zero partial writes.
+
+
+
+### 2026-08-17 — knowledge-file restructure carry-forward: Verify-signup-age, account callables and minor-safety triggers, full prior narrative [Bug found] [Pattern discovered]
+
+Verbatim retirement of the "### Verify-signup-age, account callables & minor-safety triggers" subsection from cloud-functions-specialist.knowledge.md (incl. the leaveGroupConversation oracle/no-oracle saga and the top-level-vs-user-scoped conversations path bug, BUT-1788/BUT-1795), moved here unedited during the 2026-08-17 no-loss restructure.
+
+### Verify-signup-age, account callables & minor-safety triggers
+- Abuse/IP caps on account-gate callables fail CLOSED (some notification
+  gates fail OPEN — don't harmonize). Compute a response-only derived
+  field ONCE before any branch so it's in scope on every exit path,
+  including an idempotent-retry branch.
+- Trace the actual CONSUMER (client/rules read path) of a "protection
+  default" before trusting a write accomplishes it — a default-private flag
+  taking effect only on a LATER write (not the initial one) leaves a real
+  window unprotected.
+- **Rules can't iterate an array field (`participantIds`) to enforce a
+  per-member rule for GROUP-shaped data** — needs a companion
+  `onDocumentCreated` trigger as backstop, with the create RULE binding any
+  client field the trigger trusts (e.g. `metadata.creatorId`) to
+  `request.auth.uid` — else the tampered-client adversary the trigger
+  targets can spoof the field it trusts.
+- **A callable that READS a doc before checking the caller's membership is an
+  ORACLE, and its IDEMPOTENT NO-OP branch is the leak.** "Already not a member
+  → return success, changed nothing" is indistinguishable from "never was a
+  member", so an outsider probing arbitrary ids gets three separable answers
+  (`not-found` = no doc / a shape-specific `failed-precondition` = doc exists
+  and is of type X / `success` + a COUNT off the doc) and can enumerate private
+  relationships. Butlery makes this cheap on both halves: `public_profiles` doc
+  ids ARE uids under `allow read: if isAuthenticated()`, and direct-conversation
+  ids are deterministic (`direct_${sortedUidA}_${sortedUidB}`) — so
+  `leaveGroupConversation` (BUT-1788) answered "does A DM B?" for any signed-in
+  caller. The green idempotency test IS the bug, same branch. Rule: gate on
+  caller membership immediately after the read, and collapse `!exists` +
+  non-member into ONE uniform response returning no count — a genuine
+  post-departure retry is a non-member too, so idempotency survives. Never
+  return a count/name/shape derived from a doc the caller failed the read gate
+  for. Pair it with `enforceRateLimit` (the family is mixed:
+  `setProfileSearchability`/`verifySignupAge` have it, `acceptFriendRequest`
+  and BUT-1788 do not) so probing is at least metered.
+  CLOSED 2026-08-01, and the CLOSING SHAPE is one line inside the transaction,
+  before every branch that reads document shape:
+  `if (!snap.exists || !participantIds.includes(callerUid)) return {removed:false,
+  remaining:0}`. Two consequences to keep when reviewing the next one: the pure
+  authorization core's own membership branch becomes DEFENCE IN DEPTH
+  (unreachable from the orchestrator — say so in its docstring or a future run
+  files it as dead code), and the suite needs BOTH a uniform-answer test across
+  {missing doc, outsider on a group, outsider on a DM} AND a real-member test
+  asserting the TRUE count, or `return 0` always passes. Still open on BUT-1788:
+  no `enforceRateLimit`, so every probe still bills one transactional read.
+- **A no-oracle / uniform-answer gate DESTROYS the only symptom a wrong collection
+  path was producing — pair it with a path-pinning test in the same change.** BUT-1795
+  (open, High, 2026-08-01): `leaveGroupConversation` reads top-level
+  `conversations/{id}`, but a group created normally lands at
+  `users/{creatorUid}/conversations/{id}` — `FirebaseMessagingRepository` mixes in
+  `UserScopedFirebaseRepository`, so `create` routes through the overridden
+  `getCollectionRef()`, while the DM path in the SAME module writes top-level
+  explicitly. So `snap.exists` is false, the gate returns
+  `{removed:false, remaining:0}`, the callable answers `success:true`, and
+  `ConversationsViewModel.leaveGroup` / `GroupDetailViewModel.leaveGroup` fire
+  `AnalyticsService.social.logGroupLeft` on a leave that never happened. Before the
+  gate the same bug threw `not-found` and was loud. Three rules: (a) `collectionName`
+  on a Dart repository is NOT the path — check the MIXIN LIST for
+  `UserScopedFirebaseRepository`, and expect two creation paths in one module to
+  disagree; (b) a hand-rolled fake whose `collection(name)` accepts any string and
+  whose `tx.get(ref)` ignores the ref pins NEITHER collection nor doc path — the
+  24/24-green `leave-group-conversation.test.ts` is exactly that, and the emulator
+  twin seeds `conversations/{id}` itself, so both lanes bake in the wrong assumption —
+  RE-CONFIRMED 2026-08-01 against the STAGED bytes:
+  `leave-group-conversation.integration.test.ts` ships 5/5 green on a live emulator
+  while the defect is live, because it seeds the same top-level path
+  `leave-group-conversation.ts:245` reads. A green emulator suite is evidence about
+  the SEED, never about the path the client writes. The Dart half settles by code read
+  in 60s, no Flutter run: `createGroupConversation` → `createFn` → the repository's
+  `create` (user-scoped via the mixin), while `createDirectConversation` three methods
+  up calls `firestore.collection(collectionName)` explicitly — and
+  `conversation_mutation_module.dart:63-66` NAMES the divergence in a comment;
+  (c) the whole server messaging family assumes top-level `conversations` —
+  `enforceGroupMinorMembership` (`onDocumentCreated "conversations/{id}"`),
+  `syncConversationLastMessage`, `on-profile-updated.ts:107`,
+  `account-deletion-cascade.ts:1166`. Fix the path in ONE consumer and the rest still
+  miss; and `firestore.rules` grants the subcollection `allow read, write: if
+  isOwner(userId)` with no `participantIds` deny, so the rule reasoning the callable's
+  own docstring rests on describes a block groups never reach.
+  RE-CONFIRMED 2026-08-02 (commit-gate batch 3/3) against the STAGED bytes of BOTH
+  halves, and two facts that were missing now NAME THE FIX. (1) The READER is
+  top-level too: `conversation_query_module.dart` uses
+  `firestore.collection(collectionName)` at :34/:87/:125, never `getCollectionRef()`.
+  So the top-level path is what the reader, `firestore.rules:1494`, and the entire
+  server messaging family agree on — the user-scoped WRITE in
+  `createGroupConversation` is the SOLE outlier, and the fix is to make it write
+  top-level like its `createDirectConversation` sibling three methods up, NOT to
+  repoint the CF. Corollary worth stating out loud: a group is written where nothing
+  reads it, so this is not only a CF bug. (2) Chain of proof, all by code read, no
+  Flutter run: `FirebaseMessagingRepository` (`firebase_messaging_repository.dart:28-30`)
+  mixes in `UserScopedFirebaseRepository<Conversation>` → that mixin overrides
+  `getCollectionRef()` (`firebase_repository.dart:430`) to `getUserCollection(null)` →
+  `BaseFirebaseRepository.create` writes through `getCollectionRef()` at :117 →
+  `createGroupConversation` calls `createFn`. Whenever a CF and a Dart repository must
+  agree on a path, walk exactly this four-link chain; `collectionName` is link zero and
+  proves nothing on its own. Third fact from the same pass: the
+  `conversations/{id}/participants/{uid}` mirror that `leave-group-conversation.ts:325`
+  deletes has NO `match` block (the top-level `conversations` block matches only
+  `userSettings`), so every client write from `conversation_participant_module.dart` is
+  denied and that leg is a no-op delete on an always-empty path — harmless, but it bills
+  a write per departure and its dedicated error log can never fire.
+- **Moving a client write to a callable does not fix its SIBLING in the same
+  file.** `firestore.rules`' `conversations` update deny
+  (`affectedKeys().hasAny(['participantIds','createdAt'])`) plus the `messages`
+  create deny (`auth.uid == senderId`, so `senderId:"system"` never lands) break
+  add-member and remove-member identically; BUT-1788 fixed only remove and left
+  `addParticipants` writing `participantIds` + a `Message.system` three methods
+  up, under a new docstring that reads as if the whole file migrated. On any
+  "the client could never do this, so it moved server-side" diff, grep the file
+  for every other method hitting the SAME denied field/collection. Resolved
+  2026-08-01 by DOCUMENTING rather than fixing: `addParticipants` carries a
+  KNOWN BROKEN docstring naming both denials and the two unanswered questions
+  (who may add; `enforceGroupMinorMembership` is onDocumentCREATED and never
+  sees a later add), and the Dart suite's group comments say green there means
+  "the module assembles the payload", not "the feature works". Accept that shape
+  — but it needs a real follow-up ticket, or the comment becomes the only
+  record. Second-order, STILL OPEN: once membership can actually shrink, ask
+  what happens at ZERO — read AND delete rules both require membership, so the
+  last departure strands a conversation no client can ever read or delete while
+  the callable still writes a system message into it and
+  `syncConversationLastMessage` keeps writing to it. Reachable on the third
+  member of a three-person group; the cheap half-fix is to skip the system
+  message when the post-removal count is 0.
+- **A new `onCall` export is a THREE-FILE change**: the function, its
+  `test:*` script + `__tests__` suite in `package.json`, AND
+  `app-check-enforcement.test.ts`'s classification. `ADMIN_EXEMPT` is
+  justified iff the handler's FIRST statement is `requireAdmin(request)` (or
+  `token.admin===true`) — App Check attests the app binary, the admin claim
+  attests the caller; orthogonal threats. A callable reachable by an
+  ordinary user belongs in `USER_FACING` with `enforceAppCheck:true`, never
+  `ADMIN_EXEMPT`. An IN-APP admin role read from a document
+  (`chat_groups.adminIds`, gating `addChatGroupMembers` /
+  `removeChatGroupMember`) is NOT the admin claim — an ordinary authenticated
+  account holds it, so those stay `USER_FACING`. **DELETING a callable is the
+  same three-file change**: the stale `USER_FACING` entry is caught only by the
+  guard's THIRD assertion (name with no matching `onCall`), and both halves fire
+  in one commit when a family is replaced wholesale — BUT-1838 added three and
+  removed `leaveGroupConversation`, reddening the suite 13/15 on two different
+  assertions. That miss is invisible to every PER-FILE reviewer (the guard is a
+  file the diff does not touch); it was the integration reviewer that caught it,
+  so on any diff that adds or deletes an `index.ts` export, open the guard
+  yourself. (The guard's regex matches multi-line declarations, so a
+  miss is always a RED suite — but it still recurs, most often on a new
+  `migrations/` backfill; `CI_EXCLUDE` is empty, so the miss reddens the real
+  CI lane. `check-test-registration.js` will NOT catch it: that script only
+  checks that EXISTING test files are registered, so a source file shipped
+  with no test at all passes it silently. Grep the new callable's name in
+  `app-check-enforcement.test.ts` + `package.json` as step one of any review
+  that adds an export to `index.ts`.)
+- A rules hard-deny paired with an Admin-SDK escape-hatch callable needs
+  its CLIENT-SIDE SERIALIZER audited too — enumerate every call site of the
+  model chokepoint (e.g. `toFirestore()`) that could re-trigger the deny'd
+  default; one compensating re-call at one site is leaky when the
+  reverting logic lives in a shared method with other callers.
+
+
+
+### 2026-08-17 — knowledge-file restructure carry-forward: CI, test wiring and ops, full prior narrative [Pattern discovered] [Bug fixed]
+
+Verbatim retirement of the "### CI / test wiring / ops" subsection from cloud-functions-specialist.knowledge.md, moved here unedited during the 2026-08-17 no-loss restructure.
+
+### CI / test wiring / ops
+- Post-deploy smoke: `firebase functions:list --json` + a fixed-string
+  grep of stable representative function names — `firebase deploy` exiting
+  0 does NOT prove functions are callable (a function can land
+  `DEPLOY_FAILED`); only a control-plane query after deploy does.
+- A Firestore TTL field is INERT without a policy, but gcloud is NOT the only
+  way to create one: a `fieldOverrides` entry with `"ttl": true` +
+  `firebase deploy --only firestore:indexes` creates it. VERIFIED in the
+  installed CLI's source, not inferred (`firebase-tools@14.27.0`
+  `lib/firestore/api.js`): `deploy()` calls `patchField()` for any spec not
+  matching a live field; `patchField` adds `ttlConfig:{}` when `spec.ttl` is
+  true and omits the `updateMask` so it lands. `ttl` UNDEFINED → patch with
+  `updateMask:"indexConfig"`, i.e. a live policy is left alone; `"ttl": false`
+  → the mask is dropped and the policy is REMOVED, with no `--force` needed.
+  `--force` separately deletes every live override ABSENT from the file
+  (`.github/workflows/deploy-firebase.yml` uses `--non-interactive`, never
+  `--force` — re-grep before repeating that). Two traps: (a) an entry's
+  PRESENCE in `firestore.indexes.json` is NOT evidence the file created it —
+  Butlery's 13 pre-existing ttl entries were synced DOWN from prod in
+  `9cd5b53c2`, so "13 already work this way" is circular; prove the mechanism
+  from CLI source. (b) Nothing round-trips, so a green repo test only proves
+  DECLARED; only `gcloud firestore fields ttls list` proves ACTIVE — never let
+  a doc/comment write "declared" as "active".
+- **A field stamped `expireAt`/`expiresAt` is a retention CLAIM, not retention.
+  Sweep ALL of them at once** (`grep -rn expireAt functions/src lib`), map each
+  to the `fieldOverrides` ttl set, and treat any writer still carrying a
+  "manual one-off gcloud command" header as unenabled — those commands do not
+  get run. **CLOSED 2026-08-17 (BUT-1792)** — the four that were open
+  (`notification_opened_events` 30d, `report_processing_markers` 180d,
+  `system_ip_audit_caps` 2h, `activeUsers.expiresAt` 60s) are now DECLARED, and
+  three reusable checks come out of it:
+  (a) **The suite's field name must be PER TARGET, never a shared constant.**
+  `activeUsers` spells it `expiresAt`; every TS writer spells it `expireAt`. A
+  policy names exactly one field, so the wrong spelling arms a policy that is
+  live, valid and deletes nothing — no error anywhere. Mutation-proven
+  2026-08-17: flipping the `activeUsers` fieldPath to `expireAt` reddens exactly
+  one check (13/13 → 12/13, exit 1).
+  (b) **The stamp anchor must cover EVERY writer of the collection GROUP, not
+  one.** `activeUsers` has FOUR write sites across two Dart repos
+  (`firebase_recipe_presence_repository.dart`,
+  `firebase_shopping_presence_repository.dart`); TARGETS anchors one, so a
+  rename in the other leaves the suite green and those rows unreaped. When the
+  group is a SUBCOLLECTION, enumerate its parents before writing the pin. And say
+  "one writer OF THIS FIELD" — the comment added with the second entry read "every
+  entry above names a single writer because its collection has one", which is false
+  under the plain reading (`deliver-scheduled-notifications.ts` updates
+  `scheduled_notifications`; `on-user-deleted.ts` deletes three of them) and true
+  only of writers that STAMP the expiry.
+  (c) **Before arming a policy, read the READER, not just the writer.** A TTL is
+  safe against a reader whose window equals the retention (`suppressLowPerformers`
+  aggregates `openedAt >= now-30d` against a 30d TTL — the TTL is the lagging
+  side, so a row leaves the window before it is deleted), and safe against a
+  bucket-keyed rate limit only while the TTL exceeds the bucket window
+  (`system_ip_audit_caps` is a 1h bucket refreshed to now+2h on every hit ⇒ ≥1h
+  margin; a 1h TTL there would reset a live cap and defeat the control).
+  Anchor check while you are there: `expireAt` computed from NOW must exceed the
+  doc's own functional lifetime (`scheduled_notifications` is now+7d against a
+  quiet-hours `deliverAt` ≤24h out — safe; a >7d deferral would be deleted
+  before delivery).
+- **A retention bucket selected by an ENUMERATED allowlist fails silently toward
+  the SHORTER window, and a hand-typed mirror of that list in the test cannot
+  see it.** `purge-expired.ts` splits `audit_logs` with one constant driving both
+  `where("operation","in",CONSENT_OPERATIONS)` (730d) and
+  `where("operation","not-in",CONSENT_OPERATIONS)` (180d), so an unlisted
+  `consent_*` token is not "unclassified" — it is actively swept by the general
+  bucket and the Art. 7(1) trail vanishes on schedule. `consent_deleted` sat
+  unlisted from 2025-10-30 to 2026-08-13 with a green
+  `CONSENT_OPERATIONS covers all known values` test, because that test compares
+  the constant against a hand-typed `knownConsentOps` literal and reads no
+  WRITER — and the writer was DART (`firebase_consent_repository.dart`), which no
+  TS suite has any reason to open. Two moves: derive the expected set by reading
+  the writer files (`fs.readFileSync` + `/operation:\s*['"]consent_[a-z_]+/g` over
+  `functions/src/**` and `lib/**`, ~15 lines, no dep), and assert the CONVERSE too
+  (`ops.every(o => o.startsWith(PREFIX))`) — without it a non-consent value added
+  to the list silently exempts a whole operation from the general purge forever.
+  Same shape for any `in`/`not-in` allowlist that PARTITIONS a collection; a
+  count-based or mirror-based tripwire is not a guard. Cap note: the Node Admin
+  SDK (7.11.6) does NOT validate the value count client-side — only a non-empty
+  check, and only for `documentId()` paths — so an overflow surfaces as a runtime
+  INVALID_ARGUMENT inside the scheduled job, never at build.
+  **Corollary — a retention file's header naming a SECOND CF over the same
+  collection is a load-bearing claim with a half-life, and both of this pair's
+  headers outlived it.** `purge-expired.ts:13-17` still says `cleanupOldAuditLogs`
+  "applies a flat 90-day default sourced from Remote Config" to `audit_logs` and
+  "will be retired"; BUT-808 already cut that CF back to `deletion_audit_logs`
+  only (`cleanup-audit-logs.ts:1-18` says so, and deliberately KEEPS the export
+  name so the scheduler binding does not churn — it is not being retired).
+  `docs/security/audit-logs-retention.md` repeats the stale paragraph at :9-12 and
+  additionally claims at :35 that `AuditLog.toFirestore` stamps a 365-day
+  `expireAt`, which `lib/models/audit_log.dart:92` explicitly removed in the same
+  ticket — a live `audit_logs` TTL fieldOverride still stands in
+  `firestore.indexes.json:553`, so that sentence reads as an armed 365-day floor
+  under a 730-day policy. Whenever you touch a retention constant, re-read the
+  OTHER CF named in the header and the Art. 30 record; two documents describing
+  one collection's lifecycle drift in opposite directions and each one alone
+  looks authoritative.
+- **Before approving a new composite index, check for an EXISTING composite on
+  the same two fields in the opposite orderBy direction — Firestore serves a
+  query by scanning that index in reverse, so the "opposite direction" variant
+  is usually redundant.** Caught on the BUT-1766/1768 diff:
+  `firestore.indexes.json` already declared `messages` (conversationId ASC,
+  sentAt DESCENDING) for `sync-conversation-last-message.ts`'s
+  `.orderBy("sentAt","desc")`; the diff added a second entry, same two fields,
+  sentAt ASCENDING — no query in the codebase orders that way, so it's a
+  standing write-cost tax with zero query benefit. Contrast with a GENUINELY
+  new requirement in the same diff: `unified_shared_shopping_lists`
+  (lastActivityByUserId ASC, updatedAt ASC) for the new
+  `compute-feature-retention.ts` collaborative-shopping probe — that one is
+  correctly the collection's ONLY composite, so nothing to reverse-check
+  against. Always grep the collection name in `firestore.indexes.json` for
+  existing entries before rating a new composite as required.
+- Data-writing/deleting CFs get an adversarial multi-finder review before
+  commit — a single-specialist gate has endorsed a dead-on-arrival
+  collection path before; necessary but not sufficient alone.
+- Verify an index-to-query mapping stated in a commit message against the
+  ACTUAL queries in the actual files — a commit has misattributed an index
+  to the wrong file before.
+- **Prove a lefthook glob by RUNNING it:** `npx lefthook run <hook> --command
+  <name> --no-auto-install` (singular `--command`; `--commands` is not a flag).
+  But in a LIVE worktree with dozens of unstaged files and nothing staged, that
+  hiding step would stash the whole tree — too dangerous next to a parallel
+  session. Read-only substitute that still proves the wiring: `npx lefthook
+  validate` (config parses) + `npx lefthook dump | grep -A5 <job>` (the job's
+  glob/run/priority as lefthook actually resolved them), then run the guard
+  SCRIPT directly with a positive fixture and a comment-only fixture and check
+  exit 1 / exit 0. That combination pins everything except the glob's file
+  matching, which a proven sibling job with the identical glob covers.
+  Lefthook HIDES unstaged changes for `pre-commit`, so the job sees the STAGED
+  file set plus any UNTRACKED file still on disk — a parallel session's
+  untracked WIP test can redden a guard that scans the working tree, and that
+  is a real commit block, not a false alarm. `**/*.js` requires an intermediate
+  directory (misses `functions/scripts/x.js`); `functions/scripts/**` matches
+  both flat sources and `__tests__/`.
+- **A new `tools/check_*.sh` lefthook guard is almost never wired into CI, so a
+  documented zero-arg "CI / manual" mode in its header is usually DEAD code** —
+  only 8 of them run in `architecture-validation.yml` (`check_null_filter.sh`,
+  BUT-1746, is not one). Grep `.github/workflows/` for the script name and say
+  whether the second mode has a caller: pre-commit-only means the guard never
+  sees an UNSTAGED violation, which is exactly the state a parallel session's
+  mutation leaves on disk. Second trap in the same script shape: a comment-skip
+  filter anchored `^[^:]*:[0-9]+:` against grep's `path:line:` prefix BREAKS on a
+  drive-letter path — measured, `check_null_filter.sh 'C:\...\x.dart'` reports all
+  three WHY-comment lines as violations (exit 1) where the same file by relative
+  path exits 0. Lefthook passes relative paths so it does not fire today; prove
+  any such filter with BOTH a relative and an absolute-path fixture, and prefer
+  an unanchored `:[0-9]+:[[:space:]]*(//|\*)`.
+- **A guard's own CI registration is usually outside the guard's universe.**
+  `check-test-registration.js` scans `functions/src/__tests__/` only, so
+  deleting `test:script-coverage-report` + `test:script-test-registration` from
+  `package.json` leaves it at exit 0 / "117 test files registered" while
+  `run-ci-unit-tests.js` silently drops from 78 to 76 suites — and the
+  `functions/scripts/**` pre-commit hook doesn't fire on a `package.json` edit.
+  When reviewing a self-checking guard, ask what deregisters it, not just what
+  it checks.
+- **To review the staged set free of a parallel session's worktree edits:**
+  `git archive $(git write-tree) | tar -x -C <scratch>` — `write-tree` touches
+  no ref and no index. Run the guards there and say so.
+- **Review the STAGED copy (`git show :<path>`), not only the worktree.** A
+  `MM` file means the index is older than the fix under review, so `git commit`
+  ships the version the review just rejected — `account-deletion-cascade.ts`
+  sat `MM` with the abort-early regression in the index while the worktree held
+  the accepted fix. Diff both, and say which one you reviewed.
+- **A pass dispatched "re-review AFTER automated fixes" does NOT imply your
+  scoped files changed.** Hash all of them FIRST and compare against the
+  previous pass's recorded hashes (the archive entry carries them for exactly
+  this): the sprint's fixes usually landed in the OTHER files of the same
+  commit. BUT-1724's nine-file scope came back a third time byte-identical
+  (`compute-feature-retention.ts` md5 `c7c7760001a46bea8bb7eb6cbf4612b2`,
+  `on-profile-updated.ts` `7cc2acc50a2f35385526b66cefa5143c`). Say "nothing in
+  my scope moved; the prior findings are still open" rather than writing as if
+  a fix landed — and still re-derive every finding from the CURRENT bytes and
+  re-run the suites, because copying a verdict forward is how a stale claim
+  survives three passes.
+- **In a live sprint worktree the file can change UNDER the review: hash the
+  bytes immediately before and after EVERY suite you run, and report the
+  hash — but hash with `git hash-object`, not `md5sum`.** Raw-byte md5 also
+  moves on a pure LF→CRLF normalization (measured on
+  `send-notification.ts`: md5 changed, `git hash-object` and the `git diff`
+  index blob both identical), so md5 alone sends you hunting a content change
+  that never happened. A mid-review red is as likely someone else's MUTATION
+  PROOF as a defect: on 2026-07-30 both realtime services'
+  `_currentUserDisplayName` getters were reverted to the old source (twice in
+  one session, ~3 min each, and NOT simultaneously — my second run reddened
+  only the recipe file's 3 tests while the menu file was mutated too), with
+  docstring and new import left in place so the file read as
+  self-contradictory; the harness restored the exact original blobs and the
+  same suites went 52/52 green. So: poll on file CONTENT (grep the expected
+  line in a loop), never on a timer, never write up a finding from a run whose
+  before/after hashes differ — re-run, and treat the reds as free non-vacuity
+  evidence for the tests they hit. **Equal before/after hashes do NOT prove the
+  window never opened**: on a third pass the same day, a `grep` between two
+  IDENTICAL `git hash-object` readings of `realtime_menu_service.dart` returned
+  the reverted getter, because the mutate-and-restore cycle fitted entirely
+  between the two hashes. The tell is the self-contradictory read itself
+  (BUT-1736 docstring + `PermissionService` getter + an unused `user_service`
+  import) — when a grep contradicts a hash, re-read the LINES (`sed -n`), don't
+  trust either alone; a hash-stable grep hit is a window, not a finding. The change is not always a mutation proof:
+  later the same day `shopping_repository_routing_module_test.dart` moved under
+  a Dart review because a parallel session STRENGTHENED an assertion (added a
+  falsifiable `items isEmpty` beside a name-only one). Either way the response
+  is identical — re-`git diff` the file, re-run its suite, and report the verdict
+  against the NEW bytes. The cheapest detector is a `md5sum ... | tee
+  before.md5` before the run and `md5sum -c before.md5` after; it names the file
+  for you. **The mutated file is often OUTSIDE your fileset, and then the tell is a
+  newly-added GUARD SCRIPT reddening on the whole tree rather than a red test** —
+  2026-07-30, `check_null_filter.sh` reported `shopping_repository_query_module.dart`
+  still carrying `isNotEqualTo: null` three lines under a comment stating it uses
+  `isNull: false`, which reads exactly like "the fix was never applied, only its
+  comments were". Four disambiguators, ~60s, BEFORE writing that Critical: (a) RE-RUN
+  `git status --porcelain -- <file>` — the session-start snapshot is stale and had
+  shown it clean; (b) `git show HEAD:<file>` — HEAD held the CORRECT spelling, so the
+  worktree was an uncommitted REGRESSION against a good commit, which no unfinished
+  fix looks like; (c) `stat -c '%y'` vs `date` — seconds old; (d) poll on CONTENT,
+  restored on the first poll. Then re-run that file's suite against the restored
+  bytes and report THAT. Never restore another session's file yourself, and expect
+  the knowledge files themselves to move mid-session — re-`Read` before editing.
+  Second trap, same cause: the scratchpad
+  is SHARED between sessions, so a generically-named runner
+  (`_run_test.bat`) gets overwritten and you silently execute another
+  session's file list — name throwaway runners uniquely (`_cfs_<what>_$$.bat`)
+  and confirm the suite names in the output match what you asked for. Earlier
+  case, same rule: `tsconfig.json` has `include: ["src"]`, so `__tests__` IS
+  typechecked — a `tsc --noEmit` PASS that disagrees with a later `ts-node`
+  FAIL means the file moved (an intermediate save mid-review), not that the
+  lanes differ.
+
+
+
+### 2026-08-17 — knowledge-file restructure carry-forward: Logging conventions, full prior narrative [Pattern discovered] [Bug fixed]
+
+Verbatim retirement of the "## Logging conventions" section from cloud-functions-specialist.knowledge.md (the err-nested-vs-positional serialization gap, the hashUid/uid_prefix convention history, and the logSafeConversationId direct-id PII saga, BUT-1788/BUT-1789/BUT-1822), moved here unedited during the 2026-08-17 no-loss restructure.
+
+## Logging conventions
+
+```ts
+logger.info("descriptive event", { userId, recipeId, action });
+```
+- First arg: stable, queryable STRING. Second arg: structured object, no
+  PII. `logger.info(JSON.stringify({...}))` defeats Cloud Logging's
+  queryable `jsonPayload` even when "queryable telemetry" is the stated
+  goal — never crush structured data into the message string.
+- Errors: an Error nested in the payload object serializes to `err: {}` —
+  `firebase-functions`'s `entryFromArgs` unwraps an Error only when it is
+  passed POSITIONALLY (`logger/index.js:112-121`), so `logger.error(msg,
+  { err })` records NO cause at all (verified against the emulator, not
+  inferred). Where the only other record is a count-only throw, add
+  `errCode: (err as {code?:number|string}).code` + `errName` — the gRPC code
+  is what separates DEADLINE_EXCEEDED from PERMISSION_DENIED, and unlike
+  `err.message` it cannot carry a doc path containing the raw uid. **One diff
+  routinely gets this right in one hand and wrong in the other** — BUT-1788
+  shipped `{ errCode, errName }` on the new probe leg and a bare `{ err }` on the
+  new swallowed mirror-scrub catch in the same change; both are `{errCode,errName}`
+  as of the 2026-08-01 staged bytes (`account-deletion-cascade.ts:389,1302`). Grep
+  `{ err }` / `{ err,` across every cascade or probe diff; the tell is a catch
+  added beside a correct sibling. **Still live, and provable from a PASSING run
+  rather than by argument:** `request-account-deletion.ts:256,265,302`
+  (`auth.deleteUser failed`, `audit-log write failed`, `storage delete failed`) and
+  the older `{ err }` legs of `probeResidualData`/`runStep`
+  (`account-deletion-cascade.ts:65,108,133,225,255,308`) — `npm run
+  test:request-account-deletion` prints `{"err":{},...  "message":"Error:
+  [requestAccountDeletion] auth.deleteUser failed"}` in its own 4/4 GREEN output.
+  Run the suite and paste that line; never argue a log-shape finding from source.
+- **Hash ALL PII/title-derived log fields consistently, not just some** — a
+  mixed line (one hashed, a sibling cleartext) is a tell the cleartext one
+  was kept for eyeballing. Swedish dish titles often lead with a given name
+  ("Annas paj", "Mormors …"); if only inequality-across-events matters for
+  detection, a hash gives that signal without the leak. `hashUid(uid)`
+  everywhere a raw uid would sit near other identifying fields. CLOSED
+  2026-07-30 after FOUR reports: `compute-feature-retention.ts`'s
+  `feature_retention_probe_failed` now emits
+  `{flag, userIdHash, errCode, errName}` and its comment forbids re-adding
+  `err.message` (Firestore error text carries `users/<raw uid>/…` paths and
+  `create_composite` URLs). That is the canonical shape for any probe warn —
+  and the way to ARGUE such a finding is to run the suite, because
+  `npm run test:compute-feature-retention` PRINTS the log line in its own
+  PASSING output. Never argue a log-shape finding from source alone.
+- **A raw uid interpolated into the MESSAGE string is the recurring form of
+  this leak**, and it fails twice: it is cleartext PII (worst on the Art. 17
+  erasure path, where the log outlives the account) and it gives every user a
+  distinct message, destroying Cloud Logging grouping. The account family's
+  settled convention is `uid_prefix: uid.slice(0, 6)`
+  (`request-account-deletion.ts:178,266`) or `hashUid(uid)`
+  (`verify-signup-age.ts`). Grep `\${uid}` inside backticked log strings on
+  any cascade/probe diff — one such line among a dozen clean siblings is the
+  tell that it was added ad hoc.
+- **A DOCUMENT ID can be PII, and whether it is depends on the CALLER, not on
+  the log line.** A conversation id is an opaque UUIDv4 for a group and
+  `direct_${sortedUids[0]}_${sortedUids[1]}` for a DM
+  (`conversation_mutation_module.dart:57`), so `{ conversationId }` is clean in a
+  group-only trigger and is TWO cleartext uids — the erased user's AND the
+  surviving partner's, a data subject who asked for nothing — the moment a caller
+  reaches it with a 1:1 id. Flagged as a future risk in the BUT-1789 review; went
+  LIVE in BUT-1822, when the cascade's ≤2-participant branch started calling
+  `tryClearRoster` and logging `conversationId` beside a carefully-prefixed
+  `uid_prefix`. The mixed line is the tell, exactly as for hashed-vs-cleartext
+  fields. So: when a diff adds a CALLER to a helper that logs an id, re-derive
+  that id's SHAPE in the new caller's key space; a "never name a uid" comment
+  inside the helper governs its own fields, not the id it was handed. Provable
+  from a PASSING run — both `test:account-deletion-cascade` and
+  `test:enforce-group-minor-membership` print the id in their own green output.
+  **CLOSED 2026-08-13, and the closing shape is the reusable part:** one exported
+  `logSafeConversationId(id)` that returns `direct_#${hashUid(id)}` for the
+  PII-bearing spelling and the raw id otherwise — hashing only the shape that
+  carries uids keeps group UUIDs greppable, so nobody is tempted to revert it for
+  debuggability, and the `direct_#` prefix still says which kind of id it was.
+  Verified by the same suites now printing `direct_#2ad5bfa67fc4`. Second-order
+  trap, still OPEN at `account-deletion-cascade.ts:1497`: fixing the HELPER's call
+  sites is not fixing the FILE. Enumerate every log in the module whose id can be
+  direct-shaped — the `messages` create rule (`firestore.rules:1906`) has no
+  `hasOnly`, so a client can plant `metadata.subjectUserId` on a message in their
+  own DM and steer `anonymizeSystemMessagesAboutUser`'s failure log onto a
+  `direct_` id.
+- A literal NUL (or odd byte) in a source file makes `ripgrep` treat the
+  WHOLE file as binary and silently skip it in sweeps — use `Read`/Node to
+  inspect suspect files. **The tool can also LIE about ordinary characters:
+  measured 2026-08-14, the Grep tool rendered `// BUT-1838/BUT-1830` in
+  `firestore.rules` as `\ BUT-1838\BUT-1830` (leading `//` and inner `/` both
+  collapsed to a backslash), which reads exactly like a rules file with corrupted
+  comment markers — i.e. a Critical that does not exist (the file holds ZERO
+  backslash bytes). Never file a finding about literal punctuation from a Grep
+  excerpt; re-print the line with Node/`Read` first. CI backstop: `functions-binary-guard` in
+  `test.yml` (`git ls-files -z 'functions/src/**' | xargs -0 -r grep -laP
+  '\x00'`).
+- **Doc-ID prefix ranges (`startAt(x).endAt(x+sentinel)`) must spell the
+  sentinel as the 6-character escape (backslash-u-f-8-f-f), never a raw literal** — the literal
+  renders as nothing, so the range reads as degenerate and invites a "fix"
+  that erases the bound (BUT-1690 was exactly that false report). Verify with
+  `Read`/Node codepoints, not eyes. The `lib/**.dart` guard added for BUT-1690
+  lives in `test/architecture/architecture_test.dart` and does NOT cover
+  `functions/src/**` — `account-deletion-cascade.ts`'s `system_rate_limits`
+  range still carries the raw form, including inside its own comment prose.
+
+
+### 2026-08-17 — `maxInstances: 10` added to `setGlobalOptions` to make the project deployable [deploy][quota][region][measured]
+
+Reviewed a one-line change in `functions/src/index.ts`:
+`setGlobalOptions({ region: "europe-west1" })` →
+`setGlobalOptions({ region: "europe-west1", maxInstances: 10 })`, plus a
+13-line comment. Context given: that day's `firebase deploy --only functions`
+failed on 53 of 71 functions with "Quota exceeded for total allowable CPU per
+project per region", each surfacing as `Container Healthcheck failed`; all
+services at `cpu=1`; no `maxInstances` anywhere; app pre-launch, zero users.
+
+**Verdict: no blocking findings.** Everything below was MEASURED, not reasoned.
+
+**Method that settled every question at once.** `npm run build`, then require
+`lib/index.js` in a scratch script and print each export's `__endpoint`. That
+object IS the deploy manifest the CLI ships, so it answers ordering, merge and
+per-function-override questions in one run and needs no emulator:
+
+    process.env.GCLOUD_PROJECT = "butlery-dev";
+    const mod = require("<abs>/functions/lib/index.js");
+    for (const [n, f] of Object.entries(mod)) if (f && f.__endpoint) ...
+
+Result: **71 exported endpoints.** 70 are `gcfv2` and every one of them carries
+`maxInstances: 10` AND `region: ["europe-west1"]`. Zero endpoints off-region.
+
+**Q1 — ordering.** Honoured. The concern is real: `firebase-functions` 7.2.5
+reads `getGlobalOptions()` EAGERLY inside each trigger factory
+(`makeEndpoint` in `lib/v2/providers/firestore.js:236`, scheduler.js:71,
+https.js:90), i.e. at module-eval time of the file DEFINING the trigger.
+`import` statements hoist to the top of the compiled JS and therefore run
+BEFORE the `setGlobalOptions` call at line 46 — but the only top-of-file
+imports (lines 19-32, `./ratings/*`) define no triggers (grepped
+`onDocument|onSchedule|onCall|onRequest|onObject` in all four: no matches).
+Every deployed function arrives via `export ... from` BELOW line 46, which
+compiles to a `require` at that source position. The line-181 comment
+protecting this for `./scheduled/maintenance-dispatchers` still holds:
+`dailyAnalytics`/`weeklyReports`/`drainAggregations` all show
+`europe-west1` + `maxInstances: 10` in the manifest.
+
+**Q2 — merge vs replace: MERGE, key-by-key. Nothing is lost.** Read the SDK
+source rather than trusting docs. Each provider builds
+`{...initV2Endpoint(global, opts), platform, ...baseOpts, ...specificOpts,
+labels: {...base, ...specific}}` where `baseOpts = optionsToEndpoint(
+getGlobalOptions())` and `specificOpts = optionsToEndpoint(opts)`.
+`optionsToEndpoint` uses `copyIfPresent`/`convertIfPresent`, so a key absent
+from the per-function object is simply not in `specificOpts` and the global
+value survives the spread. Per-function wins on collision.
+Confirmed against the functions the reviewer was told to watch:
+- `onIngredientSoftDeleted`: kept `memory 512 / timeout 540 / retry true`,
+  gained `maxInstances 10`. Same for `onIngredientPropertiesChanged`.
+- `onRecipeRatingWrittenForPool`, `onPooledRatingEventWritten`: `retry: true`
+  intact.
+- `onFeedbackCreated`: kept its only secret, `FEEDBACK_EMAIL_API_KEY`
+  (`defineSecret` appears exactly once in `src/`, in
+  `feedback/on-feedback-created.ts`).
+- `structureRecipe` 512/60s, `ocrRecipeImage` 1024/120s,
+  `requestAccountDeletion` 512/540s, `logWebError` 256/10s — all preserved.
+
+**The one function the cap does NOT reach: `onUserDeleted`.** Its endpoint is
+`platform: "gcfv1"`, `maxInstances: null`. It is the repo's only v1 deployed
+function — `src/cleanup/on-user-deleted.ts` uses
+`v1.region("europe-west1").runWith({timeoutSeconds:540, memory:"512MB"})
+.auth.user().onDelete(...)`, because a v1 auth trigger has no v2 equivalent.
+`setGlobalOptions` is a v2 API and cannot touch it. Consequence for the
+comment's arithmetic: the Cloud Run population is 70 services, not 71, so the
+reservation was ~7000 vCPU rather than "~7100". `grep -rln
+"firebase-functions/v1" src/` returns only this file and
+`shared/batch-update.ts` (a helper, not a function). Any future "every
+function" claim must exclude it.
+
+**Q3 — is a cap of 10 harmful anywhere? No, and the framing "10 concurrent"
+is itself wrong.** The installed SDK's own JSDoc
+(`lib/v2/options.d.ts:88-97`) states: *"A value of null restores the default
+concurrency (80 when CPU >= 1, 1 otherwise)"*, and for `cpu` (lines 98-107)
+*"Defaults to 1 for functions with <= 2GB RAM"*. Every endpoint in the dump
+has `concurrency: null`, and the reported live services are `cpu=1`. So the
+real ceiling is ~10 x 80 = **800 concurrent requests per function**, not 10.
+Per named worry:
+- *Scheduled sweeps* (`dailyAnalytics`, `weeklyReports`, `drainAggregations`,
+  `purgeDormantFamilyData`, `pingSweeper`, all `cleanup*`,
+  `deliverScheduledNotifications`): Cloud Scheduler fires ONE invocation per
+  tick. They need one instance. `drainAggregations` is the only overlap
+  candidate (every 60s, 120s timeout) → at most ~2. Cap is 5-10x headroom.
+- *Notification fan-out*: in-process, not per-invocation.
+  `deliverScheduledNotifications` has `MAX_PER_RUN = 200` inside one scheduled
+  run; `sendNotificationBatch` handles up to `MAX_BATCH_NOTIFICATIONS = 100`
+  via `Promise.all` inside ONE callable invocation. `maxInstances` caps
+  concurrent CALLERS, never the size of a batch, so no batch can be split.
+- *LLM callables*: 800 concurrent `structureRecipe`/`ocrRecipeImage` calls
+  pre-launch is unreachable, and here the cap is a genuine COST brake on the
+  most expensive functions in the project.
+- *Firestore triggers* are the only true per-document fan-out class. The two
+  that can realistically burst (`onIngredientSoftDeleted`,
+  `onIngredientPropertiesChanged` — an admin bulk ingredient sync fires one
+  event per changed doc, each a 540s paginated collectionGroup cascade) are
+  BOTH `retry: true`, so a throttled event is redelivered (up to 7 days),
+  not dropped. That is the reassuring half.
+
+A concern I formed and then DISPROVED, worth recording so it is not re-raised:
+"capping instances packs more concurrent executions onto each 512MiB instance,
+risking OOM on the long cascades." False. Cloud Run scales OUT when instances
+reach the concurrency target; per-instance packing is bounded by `concurrency`
+(80) regardless of `maxInstances`. Lowering `maxInstances` changes when
+requests start queueing/429ing, not how densely one instance is packed.
+
+**Q4 — comment accuracy.** Substantively correct; two nits filed Low.
+(a) "~7100 vCPU at 71 services" — 70 Cloud Run services (see `onUserDeleted`
+above), so ~7000. (b) "A function that genuinely needs more **concurrency**
+raises it in its OWN options object" — the mechanism claim is verified true
+(spread order), but `concurrency` is a DISTINCT option in this SDK meaning
+requests-per-instance; the sentence means `maxInstances`. Using the other
+option's name in a comment about instance caps is the kind of drift the repo's
+"a comment is an untested assertion" lesson targets. The claims about the
+platform default of 100/function and about Cloud Run reserving
+`cpu x maxInstances` region-wide are consistent with the SDK, the observed
+error string and the arithmetic.
+
+**Two now-stale comments the change did not update (the real findings):**
+1. `src/ingredients/on-ingredient-soft-deleted.ts:40` —
+   "`setGlobalOptions` in index.ts sets the region **and nothing else**, so
+   this ran at the v2 event DEFAULT of 60s". The first clause is now FALSE.
+   It is load-bearing: it is the recorded rationale (BUT-1781) for declaring
+   `timeoutSeconds` locally, so a future reader who believes it may reason
+   that global options now supply a timeout. Recommended rewording states the
+   rule (global options carry no timeout) instead of an inventory.
+2. `src/index.ts:184` quotes the call as
+   `setGlobalOptions({ region: "europe-west1" })` inside the DO-NOT-HOIST
+   comment — a stale literal 138 lines below the line it quotes.
+
+**My own knowledge file carried the same stale fact** and was corrected in
+place: the Cost & cold-start bullet read "`setGlobalOptions` sets only
+`region`". It also claimed "LLM functions: `timeoutSeconds:540` (v2 max)",
+which the manifest disproves (`structureRecipe` 60s, `ocrRecipeImage` 120s).
+Both fixed. Net file size 25,690 → ~25,700 chars while adding ~1,600 chars of
+new deploy/quota content, paid for by tightening ~10 verbose principles.
+
+**Test state.** `npm run build` clean. `node scripts/run-ci-unit-tests.js`:
+**86/87 suites passed (305s)**, one failure — `test:request-account-deletion`,
+3/4 tests, "expected success, got failed: [chat_groups, messages]" from
+`runStep` in `account/account-deletion-cascade.ts:82`. **Pre-existing and
+unrelated**, proven cheaply rather than by rebuilding a clean tree: that suite
+`require`s `../account/request-account-deletion` directly and never imports
+`index.ts`, so `setGlobalOptions` is never executed in its process; and
+`account-deletion-cascade.ts` is unmodified in the working tree. It arrived
+with `a329de0f5` (poll voting / Art. 15 recipe section).
+
+**Recommendation left with the user, not blocking:** nothing pins
+`maxInstances` in the manifest, so a future edit can delete the option and
+every test plus `tsc` stays green while the next deploy fails again the same
+way. The repo already has the exact pattern to copy —
+`src/__tests__/cleanup-cache.test.ts:426-440` asserts
+`cleanupExpiredCache.__endpoint.timeoutSeconds`, with a comment explaining
+that comparing two constants does NOT pin the declaration site.
+
+**Parallel-session note:** `.claude/agents/code-reviewer.md` and
+`.claude/agents/integration-reviewer.md` were modified in the working tree by
+another session during this review. Not touched, not staged.
+
+### 2026-08-17 — final-bytes re-review of the maxInstances deploy fix [deploy][cost][review]
+
+Second review round on the same change (an earlier round passed an intermediate
+version that had shipped several false comment sentences, so every factual claim
+in the new `index.ts` comment was re-derived from the installed SDK rather than
+trusted).
+
+**Files on disk reviewed:** `functions/src/index.ts`,
+`functions/src/ingredients/on-ingredient-soft-deleted.ts`,
+`functions/package.json`, plus the untracked
+`functions/src/__tests__/deploy-manifest.test.ts` and the working-tree edit to
+`functions/src/__tests__/request-account-deletion.test.ts`.
+
+**Every claim in the comment, verified:**
+
+- *"70 gen2 services"* — TRUE. `npm run build`, then required `lib/index.js`
+  with `GCLOUD_PROJECT`/`FIREBASE_CONFIG` stubbed and read `__endpoint` off
+  every export: 71 total, 70 `platform:"gcfv2"`, 1 `gcfv1`. All 71 regions =
+  `["europe-west1"]`. `maxInstances` = 10 on all 70 gen2, none on the gen1.
+- *"`onUserDeleted` is gen1"* — TRUE. `cleanup/on-user-deleted.ts` uses
+  `import * as v1 from "firebase-functions/v1"` and
+  `v1.region("europe-west1").runWith({timeoutSeconds:540, memory:"512MB"})
+  .auth.user().onDelete(...)`; manifest says `platform:"gcfv1"`. *"consumes no
+  Cloud Run CPU"* is a Google-platform fact NOT checkable from the SDK or the
+  repo — it is consistent with the gcfv1 platform field and with that function
+  having survived the failed deploy, and it was recorded as consistent-but-not-
+  locally-provable rather than as verified.
+- *"`concurrency` defaults to 80 at cpu >= 1"* — TRUE, in firebase-tools 15.26.0
+  (installed globally at `C:/Users/malla/AppData/Roaming/npm/node_modules/`):
+  `lib/deploy/functions/backend.js:117 DEFAULT_CONCURRENCY = 80`;
+  `lib/deploy/functions/prepare.js:456 e.concurrency = e.cpu >= 1 ?
+  DEFAULT_CONCURRENCY : 1`; `lib/gcp/runv2.js:256 maxInstanceRequestConcurrency:
+  endpoint.concurrency || DEFAULT_CONCURRENCY`. `memoryToGen2Cpu` returns 1 for
+  memory <= 2048MiB; the repo's largest is `ocrRecipeImage` at 1GiB and no export
+  declares `cpu` or `concurrency` (grepped `src/`, excluding `__tests__`). So
+  cpu = 1 everywhere → the "~800 simultaneous requests" and "70 x 1 vCPU x 100 =
+  ~7000 vCPU" arithmetic both hold.
+- *"per-function options win over global ones key-by-key"* — TRUE, in
+  firebase-functions 7.2.5: `lib/v2/providers/firestore.js:235-256` builds
+  `baseOpts = optionsToEndpoint(getGlobalOptions())`,
+  `specificOpts = optionsToEndpoint(opts)` and returns
+  `{...initV2Endpoint(global, opts), platform, ...baseOpts, ...specificOpts,
+  labels:{...}}`. `optionsToEndpoint` uses `copyIfPresent`, so an absent
+  per-function key leaves the global value standing. Same shape in
+  `https.js:166-169`.
+
+**Blocking finding (High): `deploy-manifest.test.ts` is UNTRACKED.**
+`git status --porcelain` reports `?? functions/src/__tests__/deploy-manifest.test.ts`
+while `package.json` already registers `test:deploy-manifest`.
+`scripts/run-ci-unit-tests.js` discovers every `test:*` script that is not
+`test:rules*`/`test:integration:*`, so committing package.json without the file
+turns the whole CI unit lane red on MODULE_NOT_FOUND. Remedy: stage both in one
+commit. The script name/command match the repo convention exactly
+(`test:cleanup-cache` -> `cleanup-cache.test.ts`), and
+`npm run test:script-test-registration` passes 20/20 with the new entry.
+
+**Medium — concurrency packing, made 10x more likely by this change.**
+`sync-ingredients.ts:532-544` writes `status:"deleted"` for every removed row in
+one 500-op batch, firing that many `onIngredientSoftDeleted` events at once. Each
+is 540s (`CASCADE_TIMEOUT_SECONDS`) at 512MiB and holds a 500-doc page of recipe
+snapshots (`batchUpdateQueryPaginated`, `BATCH_LIMIT`). With `maxInstances: 100`
+a burst of N spread across up to 100 containers; with 10, the same N packs ~10x
+denser per container. OOM kills the container, `retry: true` re-delivers into the
+same packing, and the 1h `CASCADE_MAX_EVENT_AGE_MS` guard then abandons the
+cascade permanently — leaving every matching recipe with allergen tags computed
+from the deleted ingredient, with nothing that re-runs it. Remediation given:
+`concurrency: 1` on `onIngredientSoftDeleted` and
+`onIngredientPropertiesChanged` (per-function options merge key-by-key, so
+nothing else is lost).
+
+**Medium — rolling-deploy quota.** 70 x 1 x 10 = 700 vCPU after the change, but
+the 18 services that succeeded today still hold revisions at 100 until replaced.
+Told the user to confirm the real quota rather than infer it, and to deploy in
+`--only functions:<names>` batches if the wall fires again.
+
+**Low — two comment defects.** (1) `index.ts:38-40` is ungrammatical: "Across the
+70 gen2 services that reserved ~7000 vCPU, and the 2026-08-17 deploy failed on 53
+functions with ..." — a leftover edit in a comment whose entire value is being
+trusted on facts; also "53 functions" against "70 gen2 services" in a 71-export
+repo should read "53 of the 70". (2) `on-ingredient-soft-deleted.ts:40` now says
+"Global options carry no timeout", which is true of THIS repo's call but reads as
+an SDK capability claim, and `optionsToEndpoint` DOES copy `timeoutSeconds` from
+globals — so the sentence silently becomes false the day someone adds one.
+Suggested "The `setGlobalOptions` call in index.ts declares no `timeoutSeconds`".
+The BUT-1781 rationale itself survives the rewrite intact (guard could never
+fire, collectionGroup fan-out, 500 writes per page, silent platform kill, ticket
+tag) — not a regression.
+
+**Also observed, out of scope:** the working tree's
+`request-account-deletion.test.ts` edit adds `limit()` to the fake query and
+widens the failure message with `result.errors`. That repairs exactly the
+pre-existing failure the previous round of this review recorded as unrelated
+(`expected success, got failed: [chat_groups, messages]`) — test-only, no
+production effect.
+
+**Verdict:** fail (1 blocking) — the untracked test file. Everything else is
+Medium or Low.
+
+---
+
+### 2026-08-17 — Reviewing the deploy-manifest suite and the account-deletion fake [review][testing][deploy]
+
+Review of two test files, no production code changed by me.
+
+**File 1 — `functions/src/__tests__/deploy-manifest.test.ts` (new).**
+Imports the ENTRY POINT after setting `FIREBASE_CONFIG`/`GCLOUD_PROJECT`, then
+asserts region + instance ceiling on every `platform:"gcfv2"` `__endpoint`.
+Measured baseline: **71 exports, 71 endpoints, 70 gcfv2 + 1 gcfv1
+(`onUserDeleted`)**; every gcfv2 endpoint `maxInstances: 10`; `onUserDeleted`
+carries `object:null:ResetValue`.
+
+**The `typeof x === "number"` fix is genuine — proved by mutating the SDK seam,
+not the source.** Patched `setGlobalOptions` in `require.cache`'s
+`firebase-functions/lib/v2/options.js` before requiring `../index`, which is
+exactly equivalent to editing the call and touches no tracked file. Results:
+
+| mutant | region check | uncapped (`typeof`) | uncapped (old `== null`) | value pin (`!== 10`) |
+|---|---|---|---|---|
+| none | PASS | PASS | PASS | PASS |
+| drop `maxInstances` | PASS | **FAIL n=70** | PASS | PASS |
+| region → us-central1 | **FAIL n=64** | PASS | PASS | PASS |
+| global → 100 | PASS | PASS | PASS | **FAIL n=70** |
+
+Row 2 confirms both halves at once: the new check reddens, the OLD `== null`
+check would still have passed. `RESETTABLE_OPTIONS` in
+`lib/esm/runtime/manifest.mjs` lists `maxInstances`, so `initV2Endpoint` writes
+`RESET_VALUE` (a `ResetValue` with `toJSON() → null`) when it is unset.
+
+An earlier in-place probe (overwriting `endpoint.maxInstances` on the collected
+objects) reported **n=69, not 70**, and under a `platform`-rename probe left
+`gen2=1`. Cause: exactly one export's `__endpoint` is a live GETTER that
+regenerates on access, so in-place tampering silently under-counts. That
+discrepancy is what sent me to the seam-patch method.
+
+**Findings filed (all Medium, none blocking):**
+1. The value pin `notAtGlobalDefault` is VACUOUS under the primary mutant
+   (row 2) — it filters non-numbers out before comparing. Its justifying
+   comment ("without this, deleting the global and adding it to one function
+   would satisfy the check above") is false: the presence check iterates every
+   gen2 endpoint and fails at n=68 in that scenario (measured). It earns its
+   place for row 4 only.
+2. `testManifestIsReadable` guards a `__endpoint` rename but NOT the `gcfv2`
+   filter — the actual vacuity surface. Measured: renaming `platform` leaves 71
+   endpoints readable, `gen2` at ~0, all three checks green.
+3. Header's mutation record says removing `maxInstances` reddens "with every
+   endpoint named". It does not: `uncapped.length === gen2.length` fires the
+   "EVERY endpoint is uncapped" SUMMARY branch. The region mutant is the one
+   that names endpoints.
+4. Check 3's comment says a function may raise its own ceiling; check 4 reddens
+   on exactly that, and its hint ("raise it here too") points at a single shared
+   constant. Contradiction between two assertions in the same function.
+5. Header: "Both invariants are produced by ONE `setGlobalOptions(...)` call."
+   For region that is 64 of 70 — `moderateUpload`,
+   `syncConversationLastMessage`, `purgeExpiredAuditLogs` and the three
+   `migrations/` backfills pin their own `region: "europe-west1"`.
+
+**Claims I checked and found ACCURATE** (worth recording, since two looked
+wrong on first read): `app/invalid-app-options` really is the code when
+`index.ts`'s bare `admin.initializeApp()` follows one with a projectId
+(reproduced); `onObjectFinalized` really throws "Missing bucket name" without
+`FIREBASE_CONFIG.storageBucket` (`lib/v2/providers/storage.js:169`, and
+`moderate-upload.ts` passes no bucket); no other suite asserted region before
+this one; `onUserDeleted` is genuinely the only gcfv1 export.
+
+**CI:** not flaky. `run-ci-unit-tests.js` spawns `npm run <suite>` per suite, so
+each import of `index.ts` gets its own process and no `initializeApp`/
+`setGlobalOptions` collision is possible. `cloud-functions-unit.yml` sets
+neither `FIREBASE_CONFIG` nor `GCLOUD_PROJECT`, so the file's `||` defaults
+apply. `check-test-registration.js` OK (130 files). `npm run build` clean.
+`npx ts-node src/__tests__/deploy-manifest.test.ts` 4/4.
+
+**File 2 — `request-account-deletion.test.ts` (modified).** Adding `limit()` to
+the fake's `makeCollection` query is the right fix, not a paper-over. Production
+really does call `.limit(CAP+1)` on plain collection queries in two places:
+`account-deletion-cascade.ts:2560` (`chat_groups`, `MAX_CHAT_GROUPS_PER_USER`)
+and `:1699` (`messages` poll-AUTHORSHIP, inside `deletePollVotes`). The other
+two caps (`:1575` roster, `:1671` poll votes) run on `collectionGroup`, whose
+fake already had `limit()` from BUT-1822. `Query.limit()` returning a chainable
+query is the real Admin-SDK contract, so returning `query` is honest.
+
+**Ticket attribution in the new comment is wrong.** It credits
+"BUT-1838/BUT-1822". BUT-1838 (`d627daf25`) is right for `chat_groups`;
+BUT-1822 (`370a0f679`) added the ROSTER cap, which does not route through this
+method at all. The `messages` cap came with `a329de0f5` and the cascade test
+calls it **BUT-1801** ("poll AUTHORSHIP is capped too"). Correct citation:
+BUT-1838 + BUT-1801.
+
+**Yes, both steps now pass by sweeping nothing** — the fake returns an empty
+snapshot, `snap.size` is 0, no branch is taken. What they still prove is that
+the orchestrator invokes them and they do not THROW; before the fix
+`result.success` was false with `chat_groups`/`messages` in
+`failedCollections`, so the suite was red on main and CI's `CI_EXCLUDE` is
+empty. Real behaviour is proven in `account-deletion-cascade.test.ts`:
+`scenario_implausibleChatGroupCountDeclines` (seeds `MAX+1` groups, asserts
+`ok === false` and that not one group is touched) and
+`scenario_implausiblePollVoteCountDeclines` (2001 rows, asserts the step
+reports INCOMPLETE). The new comment's own claim that the cap "is proven
+against real counts in `account-deletion-cascade.test.ts`, not here" is
+therefore accurate.
+
+The `result.errors` addition is non-vacuous: `runStep`
+(`account-deletion-cascade.ts:77-83`) pushes `` `${name}: ${err.message}` `` on
+a THROW, which is the exact failure that motivated it. Note it stays `[]` when
+a step RETURNS false (the decline path) — `runStep` records that in
+`failedCollections` only. The comment says "the one line that threw", so it is
+correctly scoped.
+
+**Stale text noticed nearby, not mine to fix:**
+`cloud-functions-unit.yml:86-89` still says the runner "excludes two suites
+with pre-existing failures on main"; `CI_EXCLUDE` is empty and the runner's own
+header says both were fixed.
+
+**Knowledge-file budget.** The file stood at 25,872 chars BEFORE this pass
+(already over the ~25,000 target after an earlier run's additions the same
+day). I added ~1,150 net after compressing my own three bullets and the "How to
+update this file" preamble, leaving it near 27,000. I deliberately did NOT
+retire principles another run had just verified today to pay for it, and
+reported the overage instead of hiding it — the next run should tighten the
+`concurrency`/OOM narrative in "Region & global options" first.
+
+### 2026-08-17 — `concurrency: 1` on the two ingredient cascades, final-bytes review [review][cost][retry]
+
+Third review round on the same change set (`functions/src/index.ts`,
+`ingredients/on-ingredient-soft-deleted.ts`,
+`ingredients/on-ingredient-properties-changed.ts`). Verdict: pass, 0 blocking.
+The new part since round 2 was `concurrency: 1` on both cascade triggers.
+
+**The question that mattered: does serialising cause the failure it prevents?**
+Answer: no, with ~2 orders of magnitude of headroom, but the coupling is real
+and worth writing down.
+
+- Capacity under the new options = `maxInstances(10) x concurrency(1)` = 10
+  events in flight. A burst of N events with mean duration D finishes its last
+  START at ~(N/10) x D, and `isCascadeEventExpired` measures from `event.time`
+  (the Firestore write time), NOT from delivery — so pure QUEUE TIME is charged
+  against `CASCADE_MAX_EVENT_AGE_MS` (1h). A first delivery that only waited can
+  therefore be abandoned without ever having failed. That is new: at the old
+  effective concurrency of 80 the queue was ~0, so the guard only ever saw
+  genuine retries.
+- Budget: `D_max = maxInstances x maxAge / N` = 10 x 3600s / 500 = **72s per
+  event**. 72s is ~45 pages at `BATCH_LIMIT` 500, i.e. ~23,000 matching recipes
+  for EVERY one of 500 ingredients in one sync. Realistic D for a removed
+  (obscure) ingredient is one collectionGroup query matching zero docs,
+  ~0.3-1s → a 500-event burst drains in ~50s. Verified the shape of the burst
+  in `admin/sync-ingredients.ts`: `maxBatchSize = 500`, soft-deletes staged as
+  `status: "deleted"` updates alongside adds/updates in the same batches, so
+  "up to 500 rows in ONE batch" is a correct upper bound (and `toRemove` can
+  exceed 500 across batches, making the burst larger, not the per-event work).
+- The work is I/O-bound (Firestore round trips), so `concurrency: 1` wastes
+  throughput in principle; `concurrency: 8` would keep memory bounded and give
+  8x the drain rate. Left alone — the OOM argument is sound and the headroom is
+  large. Recorded as the tuning lever if a burst ever nears the budget; the
+  right first lever is a per-function `maxInstances` override, which does not
+  touch the OOM story.
+- `concurrency` does NOT interact with the retry/idempotency argument: writes
+  are a constant marker (`stale-ingredient` / `stale-properties`) into
+  `core.tagResult.generatorVersion`, and `cleanup-deleted-ingredients.ts`,
+  `bulk-retag.ts` and `lib/services/offline/offline_user_storage.dart` all treat
+  the two constants as equivalent, so interleaved deliveries and cross-trigger
+  races are safe. Confirmed the two triggers still carry `retry: true` and
+  `timeoutSeconds: 540` in the compiled manifest.
+
+**Every comment claim checked against the real bytes** (all TRUE):
+- Rebuilt `lib/` and enumerated `__endpoint` across the entry point:
+  `gcfv1: 1, gcfv2: 70, total 71`, all `europe-west1`, zero gen2 endpoints
+  without a numeric `maxInstances`, and the single gen1 export IS
+  `onUserDeleted`. So "70 gen2 services", "~7000 vCPU" (no function declares
+  >=4GiB, so every gen2 is cpu 1) and "the one export reporting
+  platform: gcfv1" are all correct.
+- `concurrency` default 80 at `cpu >= 1` is quoted verbatim from
+  `node_modules/firebase-functions/lib/v2/options.d.ts:93` (v7.2.5) — not
+  inferred from firebase-tools this time.
+- Both triggers' compiled endpoints read
+  `maxInstances 10, concurrency 1, memory 512, timeout 540, retry true`, so the
+  option is not silently dropped by the SDK version.
+- The hedged gen1 sentence ("understood not to draw on the Cloud Run CPU pool
+  … not something the SDK or this repo can prove") is correctly hedged: gen1 is
+  legacy GCF infra with its own quotas. The weakest sentence in the set is
+  "packing happens before Cloud Run scales out" — a simplification (the
+  autoscaler targets ~60% concurrency utilisation) but not false, since the
+  autoscaler is reactive and per-instance concurrency is the only synchronous
+  admission bound during a cold burst.
+- Round 2's now-corrected sentence ("`setGlobalOptions` sets the region and
+  nothing else") would have been FALSE the moment `maxInstances` landed; the
+  replacement ("declares no `timeoutSeconds`") is true and survives the next
+  global-option addition.
+
+**Tests run:** `npm run build` (clean), `npm run test:deploy-manifest` (6/6 —
+including "every gen2 export sits at its expected ceiling (10 unless registered
+as an override)", with `ALLOWED_OVERRIDES` currently empty), `npm run
+test:cascade-retry-semantics` (11/11).
+
+**Non-blocking gap:** nothing pins `concurrency` anywhere. `tsc` and all three
+suites stay green if either `concurrency: 1` is deleted — the cascade-retry
+suite greps the source for `retry: true` and `timeoutSeconds:` only. A one-line
+addition to `deploy-manifest.test.ts` (both ingredient endpoints report
+`concurrency === 1`) would close it, and the endpoint route is already proven
+readable there.
+
+**Knowledge-file budget.** Was 27,049 chars (already over the ~25,000 target,
+as the 2026-08-16 entry reported). Added the queue-time/event-age budget rule
+and the "concurrency is deploy-neutral for the CPU quota" fact, and paid for
+them by compressing the `maxInstances`, `onUserDeleted` and deploy-manifest
+bullets and by RETIRING two principles that belong to other agents:
+(a) "A parent-document predicate in rules is per-VERB" — firestore-rules-tester
+territory, and the same fact is already recorded in
+`.claude/rules/accepted-deviations.md` (the roster entry: the row's own subject
+can still update or delete it);
+(b) the Dart-side half of the sentinel-default bullet — `DateTime.==` compares
+`isUtc` and `Timestamp.toDate()` returns a LOCAL `DateTime`, so use
+`isAtSameMomentAs`, never `!=`, and grep EVERY factory for a stale default.
+That is firebase-backend-security's domain; it is preserved verbatim here so a
+future run can grep it. Net result: file is smaller than it started.
+
+### 2026-08-17 — deploy-manifest + account-deletion fake, final-bytes round [review][testing]
+
+Second review of `deploy-manifest.test.ts` (untracked, new) and the
+`request-account-deletion.test.ts` / `functions/package.json` diff. Verdict:
+FAIL on three false comments, no code defect.
+
+**Verified true, by measurement, so a later run need not redo it:**
+- 71 exports carry `__endpoint`, 70 are `gcfv2`, the one `gcfv1` is
+  `onUserDeleted`; all 70 currently read `["europe-west1"]` and
+  `maxInstances: 10` (number). Probe: ts-node register with
+  `functions/tsconfig.json`, then `require` `src/index.ts` after setting
+  `GCLOUD_PROJECT`/`FIREBASE_CONFIG`.
+- `RESETTABLE_OPTIONS` lives in `firebase-functions/lib/runtime/manifest.js`
+  (NOT `lib/v2/options.js`, where it is undefined) and includes
+  `maxInstances`; `initEndpoint` sets each key to `RESET_VALUE` from
+  `lib/common/options.js` unless `preserveExternalChanges`.
+  `JSON.stringify({v: RESET_VALUE})` → `{"v":null}`. The file's SDK comment is
+  accurate.
+- Exactly six gen2 exports set their own `region:` —
+  `audit_logs/purge-expired.ts`, `messaging/sync-conversation-last-message.ts`,
+  `storage/moderate-upload.ts` and the three `migrations/` backfills — so the
+  "64 of 70" claim holds. `cleanup/on-user-deleted.ts` uses `.region(...)` and
+  is the gcfv1 one.
+- The account-deletion fake's new `limit()` claim checks out: the only two
+  `db.collection(...).where(...).limit(...)` chains on this path are
+  `deleteChatGroupMemberships` (`MAX_CHAT_GROUPS_PER_USER + 1`, step
+  `chat_groups`) and the poll-authorship sweep inside `deletePollVotes`, which
+  is called from `deleteMessages` (step `messages`). Both named scenarios exist
+  in `account-deletion-cascade.test.ts` and are invoked.
+- Suites green: `test:deploy-manifest` 6/6, `test:request-account-deletion`
+  4/4, `test:script-test-registration` 20/20 (it sees the new file+script
+  pair), `npm run build` clean. `test:deploy-manifest` is discovered by both
+  `run-all-tests.js` and `run-ci-unit-tests.js` (prefix `test:`, not
+  `test:rules*`/`test:integration:*`).
+
+**The three false comments (all in `deploy-manifest.test.ts`):**
+1. Header mutation record says "a healthy tree is 4/4". Measured 6/6 — adding
+   `gen2Endpoints()`, which records once per caller, added two lines. The
+   record also omits the fourth mutant actually run (gen2 filter changed).
+2. `testManifestIsReadable`'s comment says that without it "every assertion
+   below would iterate an EMPTY list and report a clean pass — the suite would
+   go green". False since the gen2 guard landed: an `__endpoint` rename now
+   reddens `gen2Endpoints()` too. The check still earns its place, but as the
+   DIAGNOSTIC that separates an `__endpoint` rename from a `platform` rename.
+3. The header's require-vs-import note claims "`import` declarations are
+   hoisted above assignments regardless of where they are written ... the only
+   ordering that works". Measured false twice: `tsc --module node16` emits the
+   `require` at the import's source position, and a ts-node run of
+   `process.env.PROBE_VAL = "set-before-import"; import { seen } from "./m2";`
+   printed `module saw: set-before-import`. An import would work; `require`
+   is explicitness, not necessity.
+
+**Judged and cleared, not defects:** `gen2Endpoints()` recording a PASS per
+caller (duplicate line, red on both callers if it fires, exit code correct);
+`ALLOWED_OVERRIDES` empty + `??` (behaves exactly as its message says; an
+export named `toString`/`constructor` would inherit a prototype member and
+force a LOUD fail, not a silent pass); the deliberate absence of an
+endpoint-count pin (documented tradeoff — a v2 export that lost `__endpoint`
+would drop out unnoticed).
+
+**Also noticed, outside the diff:** `request-account-deletion.ts:261` logs
+`logger.error(msg, { err })`, which prints `{"err":{}}` — the known
+no-cause-captured shape; use `errCode`/`errName`.
+
+**Knowledge-file budget:** inherited at 27,247 chars (a parallel session had
+already extended the region section the same day). Left at 27,613 after
+trimming the update preamble, the archive pointer and my own two additions —
+still ~2,600 over the ~25,000 target. Fattest remaining candidate for the next
+run: the PII-scrubbing / GDPR-cascade block, several of whose bullets restate
+the same "enumerate every leg" rule from different angles.
+
+
+### 2026-08-17 — `deploy-manifest.test.ts` final pre-commit pass: three comment fixes + the new concurrency pin [deploy][mutation][measured]
+
+Second review round on the same untracked file
+(`functions/src/__tests__/deploy-manifest.test.ts`). The previous round found
+three false comments; this round re-verified the rewritten versions and
+attacked the newly added `testCascadeTriggersAreSerialised`.
+
+**Verdict: no blocking findings. One factually wrong sentence (Low).**
+
+Everything below was MEASURED against the installed SDK
+(firebase-functions 7.2.5, firebase-tools 15.26.0, TypeScript 5.9.3), never
+reasoned from memory.
+
+**Suite output.** `npx ts-node src/__tests__/deploy-manifest.test.ts` prints
+7/7, with `the manifest still identifies gen2 endpoints` appearing TWICE (once
+per caller of `gen2Endpoints()`). Matches the header's "A healthy tree is 7/7".
+
+**Mutation table reproduced without touching a tracked file** — patched
+`setGlobalOptions` in `require.cache`'s
+`firebase-functions/lib/v2/options.js` before requiring `../index`, then ran
+the suite's four checks verbatim in a scratch harness:
+
+| mutant | reddens | total |
+|---|---|---|
+| `maxInstances` deleted from global opts | presence check, **summary branch**, n=70 | 6/7 |
+| global ceiling raised to 100 | value pin, summary branch, n=70 | 6/7 |
+| region → `us-central1` | region check, **count=64** | 6/7 |
+| `gcfv2` filter → non-matching string | `gen2Endpoints()` **twice** | 5/7 |
+
+Exactly the header's numbers, including the 64 and the "summary branch, so no
+list is printed" detail.
+
+**Endpoint census (baseline).** 71 exported keys, 71 carry `__endpoint`, 70
+`gcfv2`, 1 `gcfv1` (`onUserDeleted`). Zero off-region.
+
+**"Six exports pin their own region" — the names are right.** With the global
+region mutated to `us-central1`, exactly six stay `europe-west1`:
+`moderateUpload`, `syncConversationLastMessage`, `purgeExpiredAuditLogs`,
+`backfillRecipeCommentsDenorm`, `backfillCanonicalRatings`,
+`backfillSharedListContributors` — the last three all under `src/migrations/`,
+confirmed against `index.ts` lines 155/159/164. 70 − 6 = 64.
+
+**SDK claims, all true.**
+- `RESETTABLE_OPTIONS` (`lib/runtime/manifest.js`) contains BOTH `maxInstances`
+  and `concurrency`; `initV2Endpoint` seeds every key with `RESET_VALUE`
+  before the option spreads.
+- `ResetValue.toJSON()` returns `null`. Measured on a live endpoint
+  (`structureRecipe.__endpoint.concurrency`): `JSON.stringify` → `null`,
+  `== null` → **false**, `typeof` → `"object"`, `instanceof ResetValue` → true.
+  So the file's warning against `== null` is exactly right.
+- Concurrency default: `options.d.ts` says "80 when CPU >= 1, 1 otherwise";
+  firebase-tools `backend.js:memoryToGen2Cpu` maps 128–2048 MiB → cpu **1**, so
+  the two 512MiB cascades really do default to 80, and "every other function in
+  the repo wants the default concurrency of 80" holds (no function exceeds
+  2GiB in a way that changes the ≥1 verdict).
+- **New asymmetry worth knowing:** `initV1Endpoint` destructures `concurrency`
+  OUT of the reset set, so on `onUserDeleted` an unset `concurrency` is plain
+  `undefined`, not the sentinel. Irrelevant to both concurrency-reading checks
+  (they name two gen2 endpoints), but it makes the `Endpoint` interface's
+  "unset is an object, not null" caveat true only for gen2.
+
+**TypeScript emit claim — measured twice.** Compiled a fixture with a statement
+ABOVE an `import` and a trailing `export … from`, under the repo's exact
+options (`--module node16 --moduleResolution node16 --target es2022 --strict`,
+tsc 5.9.3). Emit order: the side-effect statement, THEN
+`const dep_js_1 = require(...)`, THEN the re-export's own `require`. Both the
+header's §1 claim about `export … from` and the require-vs-import
+justification are correct, and the justification correctly stops short of
+claiming necessity.
+
+**Eager vs lazy `__endpoint`.** The header's §1 names only
+`onSchedule`/`onDocument*`/`onCall`, and for those it is right:
+`scheduler.js:87`, `firestore.js:304/321`, `https.js:106/168` all assign
+`func.__endpoint = <built now>` at definition time, reading
+`getGlobalOptions()` then. `storage.js` is the exception — it
+`Object.defineProperty`s a live GETTER that re-reads global options on every
+access (that is `moderateUpload`, the one endpoint that regenerates). Since the
+header does not name storage, no false statement; and `moderateUpload` pins its
+own region anyway.
+
+**`testCascadeTriggersAreSerialised` is not vacuous.** Attacked five ways
+against the real endpoint objects:
+- concurrency replaced by `RESET_VALUE` (the delete-the-option shape) → FAIL,
+  detail `onIngredientSoftDeleted=null`
+- key removed entirely (`undefined`) → FAIL
+- export removed from the map (rename) → FAIL, `="NO SUCH EXPORT"`
+- concurrency `"1"` (string) → FAIL
+- concurrency `80` → FAIL
+Healthy → PASS. `actual !== 1` is a strict compare, so the sentinel OBJECT and
+`undefined` both fail; the ternary's `"NO SUCH EXPORT"` string also fails. The
+missing-export branch really fails rather than silently passing.
+
+**The one factual error (Low, non-blocking).** The `SERIALISED_ENDPOINTS`
+comment says the cascade suite "greps the source for `retry: true` and
+`timeoutSeconds:` only". `cascade-retry-semantics.test.ts` greps THREE things
+per file: `/\bretry:\s*true\b/`, `/timeoutSeconds:\s*CASCADE_TIMEOUT_SECONDS/`
+AND `/isCascadeEventExpired\(\s*event\.time\s*\)/`, plus four behavioural
+cases. The conclusion it supports — that nothing there pins `concurrency` — is
+still true, so this is a wrong enumeration behind a right claim. Same shape as
+the digest lesson about a correction going false again in a new QUALIFIER:
+"only" quantifies over the greps, and one was left off.
+
+**Residual (Low, not filed as a finding).** `SERIALISED_ENDPOINTS` is not
+guarded for emptiness the way `gen2Endpoints()` guards its filter: emptying the
+array passes vacuously. Unlike the SDK-rename case that motivated that guard,
+this can only happen by a deliberate local edit — but it is the same "edit the
+expected value instead of reading it" pressure the header warns about
+elsewhere.
+
+**Ops note carried to the report.** The suite file is UNTRACKED (`??`) while
+`functions/package.json` (which holds `test:deploy-manifest`) is modified and
+unstaged. Both must land in the SAME commit or `run-ci-unit-tests.js`
+auto-discovers a `test:*` script whose file git does not have, reddening the
+whole CF unit lane. That harness keys on EXIT CODE only, so the file's
+hand-rolled `record()` printer plus `process.exit(1)` integrates correctly —
+no shared `runTests` needed.
+
+**Knowledge-file budget.** Started 27,613, ended 27,676 (+63, effectively
+neutral) after folding in the concurrency pin, the v1/v2 sentinel asymmetry and
+the new 7/7 total, and offsetting by tightening the update preamble, the
+queue-time budget example, the archive pointer and the trigger-list bullet.
+Still ~2,700 over the ~25,000 target; the previous run's recommendation stands
+— the PII-scrubbing / GDPR-cascade block remains the fattest candidate.
+
+### 2026-08-21 — BUT-1831 conversations rules-test trio: a fixture justified by a rule that never runs [rules-tests][review]
+
+Reviewed ONE file, `functions/src/__tests__/conversations-rules.test.ts` (no
+Cloud Function source in the diff; `firestore.rules` unchanged). Added: C11C
+(DENY re-stamped `createdAt`), C11D (DENY recipient reverses `participantIds`
+on a direct conversation), C11E (ALLOW control with the stored order), plus a
+`DIRECT_CONVO` fixture seeded in `seedUpdateFixtures`.
+
+VERIFIED CLEAN (measured, not reasoned):
+- `cd functions && npx tsc --noEmit` → exit 0. The addition uses no `as`, no
+  `any`, no `[string, any][]`; `directConvoPayload(extra = {})` mirrors
+  `conversationDtoPayload`'s second parameter, and `[...DIRECT_PARTICIPANTS]`
+  copies the module constant the same way `[...FIXTURE_PARTICIPANTS]` does.
+- Cross-run state: `DM_INITIATOR`/`DM_RECIPIENT` are built by `peer()` over a
+  tag ending in RUN, so `DIRECT_CONVO` embeds RUN twice; and
+  `clearFirestore()` in `setup()` DELETEs the whole `/documents` root for
+  PROJECT_ID before any seeding, so the new doc is covered either way.
+  PROJECT_ID is per-suite, so no cross-suite leak.
+- Within-run: `DIRECT_CONVO` cannot collide with `MSG_DIRECT` (ADULT/STRANGER),
+  `STAMP_DIRECT` (FRIEND/STRANGER) or `P_BATCH_DIRECT` (ADULT/FRIEND). The
+  collision the new comment records — first draft reused ADULT/STRANGER, and
+  `seedMessageFixtures` runs AFTER `seedUpdateFixtures` in `run()` — is real
+  and now avoided. C11E is the only writer of `DIRECT_CONVO` and nothing reads
+  it afterwards. C11C denies, so `NULL_METADATA_GROUP` keeps `metadata: null`
+  and C12B further down stays attributable.
+- Registration: not needed. `functions/scripts/check-test-registration.js`
+  keys on the FILE; `test:rules:conversations` exists (package.json:48) and the
+  file is already in the `test:rules:all` chain. Guard run: "OK — 132 test
+  files registered, 41 rules suites triggered by 2 paths blocks, 2 guard suites
+  on the unit lane, 4 accepted-debt warning(s)."
+- Suite run against the parallel session's emulator
+  (`FIRESTORE_EMULATOR_HOST=127.0.0.1:8080 npx ts-node ...`): **87/87 passed.**
+- C11D non-vacuity: C11E is a true single-variable ALLOW control (same doc,
+  same actor, same payload, only the array order differs), so the deny is
+  attributable to the `affectedKeys().hasAny(['participantIds', ...])`
+  conjunct rather than to the actor or the fixture.
+
+BLOCKING FINDING (1). The new fixture's header comment (around line 580) says
+`conversationDtoPayload` "would deny on `directIdBinds(p.size() == 2)` before
+any other conjunct is reached". Measured: `directIdBinds` appears at
+firestore.rules:1555 (definition) and :1596 — inside `allow create` ONLY. The
+`allow update` limb (:1638-1647) has no such conjunct. C11D/C11E are
+`set(..., {merge:true})` on a document `seedUpdateFixtures` writes under
+`withSecurityRulesDisabled`, so neither the seed nor either test evaluates the
+create rule at all; a three-participant group fixture at a `direct_`-shaped id
+would NOT deny on `directIdBinds`, and a reversed three-element array would
+deny on the very same deny-list conjunct C11D exercises. The sentence is the
+one that tells the next editor WHY the dedicated fixture must exist, and its
+stated mechanism is false, so an editor who checks it will conclude the fixture
+is redundant and fold C11D/C11E back onto a group fixture — losing both the
+production-fidelity scenario and C11E's uncontended control document. Same
+class as the corrections already recorded at C7B, M11 and M12 in this very
+file. Remediation: restate the reason as (a) fidelity — the reversed array is
+what a RECIPIENT's client produces, `createDirectConversation` writing
+`participantIds: [user1Id, user2Id]` and merge-setting when its existence read
+falls through — and (b) C11E needing a document no other test writes.
+
+NON-BLOCKING (2). C11C's "neither test could fail for the reason its comment
+gives" is loose: C11/C11B are ALLOW tests whose comments give METADATA reasons,
+and they can and do fail for exactly those. The true statement is that nothing
+in the file varied `createdAt`, so the deny-list entry for it was unpinned
+until C11C. "Byte-identical to C11B" is also approximate — `updatedAt`,
+`lastMessage.sentAt` and `lastReadTimestamps` are fresh `new Date()`s per call;
+they sit outside the deny list, so the attribution survives.
+
+NON-BLOCKING (3). `peer()` is used as an authenticated ACTOR for the first
+time (`env.authenticatedContext(DM_RECIPIENT)`). Its own comment describes it
+as "a throwaway counterparty with no users/{uid} profile", and every prior use
+is a DM target. It works — no conjunct on the conversations UPDATE path reads
+`users/{uid}` — but the helper's comment now under-describes it.
+
+KNOWLEDGE FILE: folded the verb/fixture lesson into the existing "Rules are not
+filters" principle, and recorded that `check-test-registration.js` mechanises
+the "grep package.json FIRST" rule per FILE. Offset by tightening four
+principles (the header, the deploy-manifest bullet, the concurrency bullet, the
+duplicate CI-lane bullet, the archive pointer): net +54 chars, 27,676 →
+27,730. The file remains ~2,700 over the ~25,000 target — standing debt from
+earlier runs, and the PII-scrubbing / GDPR-cascade block is still the fattest
+candidate for the next run that needs room.
+
+### 2026-08-22 — BUT-1831 round 2: the fix landed, and deleting a client writer left its old topic sentence standing [rules-tests][review]
+
+Re-read the full current bytes of `functions/src/__tests__/conversations-rules.test.ts`
+after the coordinator's fixes. Round-one blocking finding is CLOSED: the
+`directIdBinds` sentence is struck, the replacement gives FIDELITY + CONTROL as
+the two reasons and states plainly that `directIdBinds` is called only from
+`allow create` (re-verified: firestore.rules 1555 def, 1587 comment, 1596 use,
+and 1596 sits inside the create limb). `peer()` now records the
+authenticated-ACTOR use with the `users/{uid}` caveat. Re-ran both checks
+myself rather than citing: `npx tsc --noEmit` exit 0, suite 87/87 with all four
+BUT-1831 tests green.
+
+NEW BLOCKING FINDING, from the unprompted C7B edit. The edit added "It no
+longer stops OUR client, because our client no longer sends it: BUT-1831
+deleted the `MessageMutationModule` fallback ..." — which is TRUE (verified in
+the working tree: that module now throws `ResourceNotFoundException` where the
+fabricated `Conversation` used to be, and its own comment says the branch could
+never have repaired anything because the rules refuse it on both horns). But
+the paragraph's OLD topic sentence four lines above still reads "That
+evaluation error is currently the only thing stopping a NON-CREATOR from
+materialising a group's top-level conversation document THROUGH THE APP",
+which the deletion makes false; and further down the same comment still says,
+in the present tense, "The `metadata: null` fallback from
+`MessageMutationModule` is now refused by the presence requirement ... binds
+our own client". One comment now asserts both halves of a contradiction about
+whether an app path exists.
+
+THE GENERAL SHAPE, and why it is worth recording: deleting a WRITER named in a
+test comment obliges a sweep of every other sentence in that comment that names
+it. The correcting sentence gets added where the author is looking; the topic
+sentence that framed the whole paragraph survives and silently inverts.
+
+Also measured while there, both pre-existing and non-blocking: the comment
+cites the emulator printing an error at `L1565`, but firestore.rules:1565 is
+today a comment line and the create rule starts at 1592 — the drift my own
+knowledge file already forbids (cite the `match` pattern or function name);
+and the same paragraph says the rule comment "still claims harmonising the
+spellings would disarm this", which is false against current bytes —
+firestore.rules 1608-1618 now carries the CORRECTED note retracting exactly
+that claim.
+
+Three more Low items: C11C calls `createdAt` "the one field the update deny-list
+pins" when the list holds four keys and U1-U5 plus C11D vary three of them;
+"Everything else here is byte-identical to C11B" is STILL PRESENT although the
+coordinator reported dropping it (and is inexact about the payload, whose
+`updatedAt`/`lastMessage.sentAt`/`lastReadTimestamps` are fresh per call —
+exact about the CALL); and the fixture comment's present-tense "actually
+produces" sits against C11D's past-tense "produced", the honest version being
+that the deleted fallback produced it and `createDirectConversation` still can
+when its existence read falls through.
+
+No principle added to the knowledge file this round: the lesson is already
+carried by the always-on core digest ("when a reviewer disproves one claim,
+re-check every other claim in the file"), and the file is ~2,700 over target,
+so a near-duplicate would cost budget for nothing.
+
+### 2026-08-22 — BUT-1831 round 3: PASS at final bytes [rules-tests][review]
+
+Re-read the whole of `functions/src/__tests__/conversations-rules.test.ts` at
+final bytes and graded by whether the false claims are GONE, not by whether
+true sentences were added beside them. All three are gone:
+
+  * The C7B topic sentence ("currently the only thing stopping a NON-CREATOR
+    ... THROUGH THE APP") is DELETED. The paragraph now opens at "That
+    evaluation error is not a security bound", which keeps the BUT-1830
+    hand-rolled-create point and no longer contradicts the next paragraph.
+  * The later paragraph no longer names `MessageMutationModule` as the
+    producer ("The shape is now refused by the presence requirement").
+  * `L1565` is replaced by the match pattern with an explicit note that a line
+    number moves; "still claims harmonising the spellings would disarm this"
+    now reads that the rule comment has since been CORRECTED — verified true
+    against firestore.rules 1608-1618.
+
+Also verified: C11C says "the call is otherwise identical to C11B's" (the
+payload-level "byte-identical" claim is gone) and "the one deny-listed key
+this section never moved"; the fixture comment now splits the LIVE producer
+(`createDirectConversation`'s existence-read fall-through, which merge-sets
+[user1Id, user2Id]) from the deleted `sendMessage` fallback. Ran both gates
+myself: `npx tsc --noEmit` exit 0, suite 87/87 with no FAIL lines.
+
+Left as NON-blocking wobbles, recorded so a later run does not re-litigate
+them: the probe bullet still says "the edit the rule comment warns against" in
+the present tense, reconciled 16 lines later by "has since been corrected", and
+it points at "the paragraph above" positionally; C11D still says the recipient
+"produced" the opposite order while the fixture comment says a live path still
+can; and "the one deny-listed key this section never moved" is exact only for
+the C8-C14 block (memberSince/groupId are moved in the U-section, not here).
+None of these is a false operative claim with no correction nearby, which is
+the bar the previous two rounds used — three rounds of blocking over tense
+markers would be the reviewer drifting, not the file.
+
+THE REVIEW LESSON, folded into the principles file this round: grade a comment
+repair at FINAL BYTES. Two rounds were spent because a correct sentence was
+added BESIDE a false one instead of replacing it, and the survivor was the
+paragraph's topic sentence. Offset the addition by cutting an unprovable
+parenthetical from the `onUserDeleted` bullet and a redundant clause from the
+deploy-manifest bullet.
+
+Addendum, same date: reviewing C7B also caught a STALE principle in my own
+knowledge file. It read "a rules DENY (e.g. a CEL error on null-metadata
+access) can be what keeps a safety trigger armed ... 'harmonising' it with a
+sibling rule can disarm it" — which is exactly the claim the 2026-08-13
+mutation probe refuted (harmonising the create conjunct with the update rule's
+`is map` ternary reddens NOTHING, because BUT-1838's bare equality carries the
+deny on its own). Rewritten to the durable half: a PRESENCE requirement binds a
+tampered client, a CEL evaluation error only binds our own. Net for the round
+after that cut: 27,730 -> 27,706 (measured after the edit, not estimated).
+
+### 2026-08-22 — BUT-1831 round 4: the paragraph kept "on record" describes a trigger that no longer exists [rules-tests][review]
+
+Re-read the full current bytes of
+`functions/src/__tests__/conversations-rules.test.ts` (2,222 lines). Round 3's
+three closures still hold at these bytes — the C7B topic sentence is gone, the
+later paragraph no longer names `MessageMutationModule` as the producer, and
+`L1565` is still replaced by the `match` pattern — so no parallel session has
+reverted them. Ran the gate myself rather than citing the coordinator: 87/87,
+with `a create carrying metadata: null`, `a merge-set that re-stamps
+createdAt`, `the recipient cannot send back participantIds in the opposite
+order` and `the same recipient write SUCCEEDS ...` all PASS.
+
+Verified the diff's own claims:
+  * The `MessageMutationModule` fallback IS deleted — `sendMessage` now awaits
+    `readConversation` with no swallow and throws `ResourceNotFoundException`
+    on absence.
+  * The DIRECT fixture cannot collide. `DM_INITIATOR`/`DM_RECIPIENT` carry RUN,
+    and every other `direct_`-shaped fixture in the file names a different
+    pair (`MSG_DIRECT` = ADULT+STRANGER, `STAMP_DIRECT` = FRIEND+STRANGER,
+    `P_BATCH_DIRECT` = ADULT+FRIEND). The comment's account of the first
+    draft's collision reproduces: `seedMessageFixtures` runs AFTER
+    `seedUpdateFixtures` and `.set()`s `MSG_DIRECT` without metadata, which
+    would have turned C11E's ALLOW into a creatorId injection deny.
+  * C11D/C11E are a single-variable pair (array order), C11C's "otherwise
+    identical to C11B's" is exact at the CALL, and the fixture comment's
+    live-producer split is right: `createDirectConversation` writes
+    `[user1Id, user2Id]` and its existence read is wrapped in a try/catch that
+    falls through to `.set(..., merge: true)` on failure.
+
+NEW BLOCKING FINDING, in the paragraph this diff ADDED to C7B: "The harm it
+bounded is worth keeping on record, because it is what a future writer of the
+same shape would re-open: had such a create landed,
+`enforceGroupMinorMembership` would return early on it — that payload trips
+BOTH halves of the trigger's guard (`isGroup: false` AND a single participant)
+... and `onDocumentCreated` cannot fire twice, so the child-safety cut would
+never run for that group at all." Measured against the code: the trigger is
+`onDocumentWritten` on `chat_groups/{groupId}`
+(`functions/src/messaging/enforce-group-minor-membership.ts`:279/286), its
+early returns are `!after.exists`, empty `memberIds` and the size cap — there
+is no `isGroup`/participant-count guard — and a grep of every `document:`
+option in `functions/src` shows NO trigger on `conversations/{id}`. A client
+also cannot create a group conversation at all (`directIdBinds`). So the
+paragraph asserts a present/future harm that no code path can produce.
+Remediation given as a STRIKE of the whole paragraph, not a rewrite.
+
+Second finding, OUT OF THIS GATE'S FILE and handed to `firestore-rules-tester`:
+`firestore.rules`:1604-1606 still says, present tense, "A create carrying
+`metadata: null` denies here, and test C7B pins it — it is what stops
+`MessageMutationModule`'s fallback materialising a conversation it does not
+own." The fallback was deleted by this same ticket. Round 2 read 1608-1618 (the
+CORRECTED note) and did not look four lines up.
+
+THE SHAPE: round 2 recorded that deleting a writer obliges a sweep of every
+sentence naming it. This round adds the other half — a repoint of the TRIGGER
+those sentences describe does the same, and a paragraph explicitly preserved
+"on record" is where it hides, because its subjunctive framing reads as history
+while its topic sentence claims a live future harm.
+
+KNOWLEDGE FILE: superseded the minor-safety bullet IN PLACE. Retired text,
+verbatim: "- Rules can't iterate an array field for a per-member rule on
+GROUP-shaped data — needs a companion `onDocumentCreated` backstop, with the
+create RULE binding any trusted client field to `request.auth.uid`." — stale in
+two ways (the backstop is `onDocumentWritten` on `chat_groups`, and the primary
+control moved into the callables). Offset by cutting the cross-agent pointer
+from the sentinel-default bullet and shortening the archive pointer: 27,706 ->
+27,727 measured, i.e. flat, and the file stays ~2,700 over the ~25,000 target.
+
+### 2026-08-22 — BUT-1831 round 5: the struck paragraph stayed struck, and nothing grew back [rules-tests][review]
+
+Re-read the full current bytes of
+`functions/src/__tests__/conversations-rules.test.ts` (2,209 lines, index blob
+`96ab86e1` — worktree hash identical, so no parallel session had reverted the
+round-4 fix under a `M ` status). Round 4's blocking paragraph is gone and its
+replacement makes NO claim about a trigger: C7B now reads only "It no longer
+stops OUR client, because our client no longer sends it: BUT-1831 deleted the
+`MessageMutationModule` fallback ... The assertion stands on the tampered-client
+case alone". Grepped every surviving mention of `enforceGroupMinorMembership`
+in the file (4: C6, the BUT-1788 section header, P_EVICTED's comment, P12B) —
+each is past tense or names the repoint to `chat_groups.memberAddedBy`, and
+none describes the live trigger's shape. The one `onDocumentCreated` left
+(line ~429, BUT-1830 squat history, untouched by this diff) is corroborated by
+the CF's OWN header, `enforce-group-minor-membership.ts`:5, which records the
+same history above an `onDocumentWritten` export at :279.
+
+The rules-tester's three strikes hold at final bytes: "a hand-rolled create
+carrying a real metadata map is allowed today" is gone (it was refuted by C5,
+C5B and `directIdBinds` in the same file); the trigger paragraph is gone; and
+C11C carries no "the one deny-listed key this section never moved" — it now
+says only that C11/C11B hold `FIXTURE_CREATED_AT` on BOTH fixture and payload,
+which is true at the bytes (both fixtures and `conversationDtoPayload` use the
+constant). Neighbours read correctly; the `L1565` citation is still the `match`
+pattern.
+
+Re-verified rather than cited: 87/87 green, `npm run build` clean. Fixture
+isolation survives — `DM_INITIATOR`/`DM_RECIPIENT` are RUN-scoped and grep
+shows the pair only at its own declaration, the seeder, C11D and C11E.
+Confirmed against `firestore.rules` (staged blob): `directIdBinds` has exactly
+ONE call site, inside `allow create`, so the added comment's "it never runs on
+C11D or C11E" is exact; `participantIds` and `createdAt` are both in the update
+deny-list; and the conversations `allow update` limb has NO `rateLimitWrite`
+and no `users/{uid}` read at all, which is what makes an unseeded `peer()` uid
+sound as the ACTOR and makes the new `peer()` caveat correctly scoped.
+
+ONE LOW, NOT BLOCKING: C7B renders the deleted fallback as
+`Conversation(participantIds: [senderId], isGroup: false)`; the deleted code
+actually built `[message.senderId, ?otherUserId]` (a null-aware element), so
+the one-element spelling is only the branch where the id fails to split into
+three parts. Inherited wording, about code that no longer exists, and the two
+load-bearing halves (no metadata, staged a top-level create) are true — so a
+rewrite would buy a new unmeasured claim for nothing. Left alone deliberately.
+
+NO KNOWLEDGE-FILE EDIT: nothing durable was learned that a bullet does not
+already carry, and the file is ~2,700 over its ~25,000 target (27,727; HEAD is
+27,676, so the overage predates this session). Flagged to the parent rather
+than opened as a compression edit inside a commit gate.
+
+### 2026-08-22 — BUT-1831 coverage re-read after the C7B rewrite [review]
+
+Re-read at index blob `0ea2d6b2c` (worktree == index, verified with
+`git hash-object` vs `git rev-parse :<path>`), so this pass is graded at the
+same bytes the gate holds. `npm run test:rules:conversations` → 87/87.
+
+The rewritten C7B paragraph carries FOUR claims and all four are checkable
+without counting anything:
+  * "BUT-1831 deleted the `MessageMutationModule` fallback that built a
+    creator-less `Conversation` with no metadata and staged a top-level
+    create" — read off the staged Dart diff: the deleted constructor call
+    passes no `metadata:` argument, and the fabricated conversation was
+    merge-set beside the message, which is a CREATE when the document is
+    absent (the branch's own precondition).
+  * "the corrected account of who can still reach this limb lives at the rule
+    itself" — true: `firestore.rules`, `allow create` in
+    `match /conversations/{conversationId}`, records that a `merge: true` set
+    is a create when the document is absent, so the limb is still reachable by
+    shipped code.
+  * "the rule comment ... no longer claims harmonising the spellings would
+    disarm this" — true; the rules comment now says that warning is FALSE of
+    the bare-equality spelling.
+  * the emulator citation. MEASURED this run, and it is why striking the old
+    literal was right: the C7B deny prints
+    `Null value error. for 'create' @ L1592` — operation plus a LINE, never a
+    match pattern, and L1592 is the `allow create:` line, i.e. the old `L1565`
+    had already moved 27 lines. The same run prints `@ L1874`/`@ L1886` for the
+    roster limbs, so the format is uniform.
+
+My earlier Low is resolved: the `Conversation(participantIds: [senderId],
+isGroup: false)` spelling is gone from the file (grepped), struck rather than
+re-rendered. The rules-tester's two reachability sentences are gone (grepped by
+their exact wording, no hits), and the `enforceGroupMinorMembership` paragraph
+that was my blocking finding is gone — the three remaining mentions of that
+symbol in the file are the BUT-1788 section and the roster section, both
+pre-existing and correct. `DM_INITIATOR`/`DM_RECIPIENT` isolation survives:
+RUN-scoped, and `DIRECT_CONVO` appears only at its declaration, the seeder,
+C11D and C11E, with no other fixture naming that pair.
+
+TWO LOWS, NEITHER BLOCKING, BOTH PRE-EXISTING AND BOTH PURE STRIKES:
+  * The paragraph two above the probe note still says the create rule
+    "evaluates `!('creatorId' in request.resource.data.metadata)` against null"
+    and that "the named equality conjunct below it is never reached". Measured
+    against the shipped rule (a bare `metadata.creatorId == request.auth.uid`),
+    there is no `in` conjunct at all and the equality IS the limb that errors.
+    The deny reason itself is unchanged (still a CEL null error), so only the
+    spelling and the "never reached" sentence are false.
+  * Deleting a paragraph RE-ANCHORS its neighbours' positional references: the
+    probe note's "recorded here because the paragraph above is inherited from
+    the OLD one" pointed at the deleted fallback paragraph, and now points at
+    the freshly written BUT-1831 one, which is not inherited from anything.
+
+NO KNOWLEDGE-FILE EDIT AGAIN: the anchor-drift shape is already carried by the
+"grade a comment repair at FINAL BYTES" clause plus the global digest's "never
+state another comment's wording or position", and the file is still ~2,700 over
+its ~25,000 target (27,727), so a near-duplicate bullet would be the drift the
+budget exists to stop.
+
+### 2026-08-22 — BUT-1856 `ensureCategoryChat` review [review][idempotency][gdpr][cost]
+
+Reviewed the meal-vote "one chat group per social group" diff: new
+`groups/ensure-category-chat.ts` + suite, `chat-group-writes.ts` (`adminUids`,
+`sourceCategory` pointer, `tombstone` flag, `departedUserIds` cleared on an
+explicit add), `create-chat-group.ts` (options object + the <2 guard duplicated
+into the DI'd core), `remove-chat-group-member.ts` and
+`enforce-group-minor-membership.ts` (both pass `tombstone: true`),
+`account-deletion-cascade.ts` (second sweep `clearDepartureTombstones`),
+`rate_limiter.ts` (`ensureCategoryChat` bucket, 5/5/min + dailyLimit 50),
+`collections.ts` (`friendCategories`), `index.ts`, `_fake-firestore.ts`
+(`where()` with `==` / `array-contains`), three test suites, `package.json`.
+
+VERIFIED GREEN, this machine: `npm run build` clean;
+`ensure-category-chat` 17/17, `account-deletion-cascade` 117/117,
+`rate-limiter-daily-cap` 17/17, `app-check-enforcement` 19/19,
+`chat-group-callables` 14/14, `remove-chat-group-member` 23/23,
+`deploy-manifest` 7/7.
+
+MEASURED, entry point loaded with `FIREBASE_CONFIG` set: **72 endpoints, 71
+gen2, 1 gcfv1** after this diff. That falsifies `index.ts`'s own
+`setGlobalOptions` comment ("Across 70 gen2 services", "counts 70 and not 71")
+and `deploy-manifest.test.ts`'s header ("64 of the 70", "~7000 vCPU across 70",
+"all 71 endpoints"). No assertion pins any of those numbers, so nothing
+reddened. Also stale in the knowledge file: "(71 exports, 70 gen2…)" and
+"moves 64 of 70" — both retired to tallies-free wording in the same edit; the
+retired text was `(71 exports, 70 gen2, healthy total 7/7)` and `A
+global-region change moves 64 of 70, so never say a global option "reaches
+every export" without counting.`
+
+MEASURED on the Firestore emulator (127.0.0.1:8080, project butlery-test):
+**two `tx.update()` calls on the SAME document inside one `runTransaction`
+commit fine and COMPOSE** — `arrayRemove("a")` + `m.a` delete, then
+`arrayRemove("b")` + `m.b` delete, left `{memberIds:["c"], m:{c:3}}`. This
+settles the eviction loop in `reconcile()` (and the pre-existing one in
+`enforceGroupMinorMembership`), which stages one `stageMemberRemoval` per uid
+rather than one batched update per document. Not a defect.
+
+MEASURED: `checkRateLimit` (bare, no `system_events` audit row) is used by all
+four `groups/` callables and `sendNotification`; `enforceRateLimit` by
+`verifySignupAge`, `logParseCorrection`, `logParseEvent`, `logWebError`,
+`setProfileSearchability`. The knowledge principle said "standalone callables
+use `enforceRateLimit`" universally, which is false per-family; superseded in
+place. Retired text: `**Standalone callables use \`enforceRateLimit\`, not bare
+\`checkRateLimit\`** — only the former writes the \`system_events\`
+\`rate_limit_violation\` row.`
+
+BLOCKING findings reported (4):
+1. Create path is not idempotent under concurrency —
+   `where('sourceCategoryId').where('sourceCategoryOwnerId').limit(1).get()`
+   runs OUTSIDE any transaction, so two simultaneous first polls both see
+   `existing.empty` and both call `createChatGroupWithDeps`, minting two
+   `chat_groups` docs for one category. `.limit(1)` then resolves to the
+   lowest `__name__` forever and the loser is an orphan chat everyone is in.
+   Remedy: deterministic doc id from `hash(ownerId + '|' + categoryId)` and
+   `tx.create()` (also removes the query, cheaper).
+2. `reconcile()`'s caller check is
+   `callerUid !== ownerId && !memberIds.includes(callerUid)`. A category owner
+   who LEFT the chat or was removed by an admin still passes: they receive
+   `groupId`/`conversationId`/`memberCount` for a chat `firestore.rules` denies
+   them, and they can stage additions and evictions in it. With every other
+   roster member tombstoned, `toAdd` is empty and `toRemove` is everyone, so
+   the transaction drives `memberIds` to ZERO — a `chat_groups` doc and a
+   conversation no client can read, update or delete (every rule in the block
+   gates on membership). Remedy: require `memberIds.includes(callerUid)`
+   unconditionally, plus refuse when `memberCountAfter === 0`.
+3. `clearDepartureTombstones` has no leg in `probeResidualData`, breaking the
+   deleter-⊇-probe invariant the cascade's own comments state ("a leg without
+   one is exactly how an erasure becomes silently incomplete"). Remedy: append
+   `[Collections.chatGroups, "departedUserIds", "array-contains"]` to the
+   owner-keyed probe list.
+4. The stale endpoint tallies in `index.ts` (above).
+
+NON-BLOCKING: NOT_FOUND wedge if the conversation is deleted while the group
+survives (a participant may still delete a group conversation per the BUT-1838
+accepted deviation) — `stageMemberAdditions`/`stageMemberRemoval` do
+`tx.update(convoRef)` and the transaction only checks the GROUP's existence,
+so the poll returns a generic `internal` forever for that category. Art. 15:
+`departedUserIds` is erased by the cascade but the export
+(`exportChatGroups`, filtered `memberIds array-contains`) can never see a
+departed row — erasable-but-not-exportable, same shape as the BUT-1832 poll
+note; needs a decision, not a silent gap. Also: `departedUserIds` grows
+unboundedly on a long-lived group; the
+`failed-precondition "Group has no conversation."` throw sits ABOVE the
+chat-membership check, a weak oracle for a category member removed from the
+chat.
+
+WHAT IS RIGHT and should not be "simplified": the pointer's OWNER half (a
+`friend_categories` id is a client-chosen UUID, and the suite's hijack case is
+what keeps the second `where`); the gate running against the CALLER; `seated`
+being filtered from the already-gated `profiles` rather than from the fresh
+read; both halves re-read inside the transaction; the steady state returning
+BEFORE the transaction (≈4 reads, 1 rate-limit write per poll, no membership
+writes); system messages outside the transaction with per-write `.catch`; the
+tombstone asymmetry (set by explicit removal and by the safety backstop, NOT
+by the category mirror); and the fake's own docstring disclaiming concurrency
+and index coverage.
+
+### 2026-08-22 — BUT-1856 re-review after fixes: two fixes landed incomplete [review][gdpr][deploy]
+
+Re-reviewed the BUT-1856 Cloud Functions diff after the previous pass's four
+blocking findings plus two non-blocking ones were addressed. Verdict: FAIL,
+3 blocking.
+
+Files read in full or in the relevant ranges: `groups/ensure-category-chat.ts`
+(new), `groups/chat-group-writes.ts`, `groups/create-chat-group.ts`,
+`groups/remove-chat-group-member.ts`, `messaging/enforce-group-minor-membership.ts`,
+`shared/collections.ts`, `middleware/rate_limiter.ts`,
+`account/account-deletion-cascade.ts`, `index.ts`, and the suites
+`ensure-category-chat.test.ts` (new), `chat-group-callables.test.ts`,
+`_fake-firestore.ts`, `deploy-manifest.test.ts`, `app-check-enforcement.test.ts`,
+`rate-limiter-daily-cap.test.ts`, `account-deletion-cascade.test.ts`. Also read
+`firestore.rules` (the `chat_groups`, `friend_categories` and collection-group
+blocks) and `firestore.indexes.json` to check the claims the new header comments
+make about them — all of those claims verified TRUE.
+
+WHAT VERIFIED CLEAN
+- Fix 1 (derived id). `categoryChatId = sha256("owner:category").slice(0,20)`,
+  `tx.get` before `tx.set` inside `createChatGroupWithDeps` when `options.groupId`
+  is supplied, `already-exists` caught and reconciled. The derived id ENCODES the
+  pointer pair, so trusting the document at that id is exactly as strong as the
+  two-`where` query — the reconcile-after-race path not re-checking
+  `sourceCategoryId`/`sourceCategoryOwnerId` is safe for that reason, not by luck.
+- Fix 2 (owner bypass). `if (!memberIds.includes(callerUid)) throw notAllowed();`
+  — no escape left. Test at ensure-category-chat.test.ts:564 pins it.
+- Fix 4 (probe legs + cascade). Both probe rows ship with their deleter;
+  `clearUnreachableChatGroupResiduals` caps and DECLINES per leg. Both cascade
+  scenarios (`scenario_departureTombstoneIsErased`,
+  `scenario_mealVotePointerOwnerIsErased`) are non-vacuous by construction — the
+  fixtures put the erased uid in NO `memberIds`, so the primary sweep visits
+  nothing and only the new legs can answer. Verified `friend_categories` is in the
+  cascade's `users/{uid}` subcollection sweep, so the docstring's "the category
+  itself goes in this same cascade, so it is already dangling" is TRUE.
+- Fix 6 (deleted conversation). `tx.get` on the conversation inside the reconcile
+  transaction, distinguishable `failed-precondition`. Correct: `firestore.rules`
+  does still allow any participant to delete a group conversation.
+- Three-file rule for a new `onCall` satisfied: export in `index.ts`, `test:*`
+  script in `package.json`, `USER_FACING` entry in `app-check-enforcement.test.ts`.
+  Region inherited (no per-function override) and the Dart side calls
+  `FirebaseFunctions.instanceFor(region: 'europe-west1')` with the same name.
+- Two-equality query (`sourceCategoryId` + `sourceCategoryOwnerId`) needs no
+  composite index; neither `array-contains` leg does. `firestore.indexes.json`
+  has no `chat_groups` entry and none is required.
+- Rate-limiter coverage check is real: it derives `capped` from
+  `RATE_LIMIT_CONFIGS` and fails on any `dailyLimit` entry absent from `pinned`,
+  so the replacement comment's "adding one without its pin is what the test's own
+  coverage check fails on" is TRUE.
+
+BLOCKING 1 — fix 7 is UNGUARDED. Mutation-probed 2026-08-22: re-adding
+`tombstone: true` to the `stageMemberRemoval` call in
+`enforce-group-minor-membership.ts` leaves enforce-group-minor-membership 28/28,
+chat-group-callables 16/16 and ensure-category-chat 21/21 ALL GREEN. Backup taken
+immediately before, `trap` restore on EXIT/INT/TERM/HUP, `git hash-object`
+identical afterwards, `grep -c` = 0. The two new cases pin `stageMemberRemoval`'s
+DEFAULT (no flag -> no `departedUserIds`), which is a property of the CALLEE; the
+fix deleted an argument at ONE CALLER, and no test reads that caller's group
+document for the field. This is the generalisable lesson and it went into the
+knowledge file.
+
+BLOCKING 2 — a new false reachability sentence. `ensure-category-chat.ts`'s
+`memberCountAfter <= 0` guard carries "Unreachable as the code stands — the caller
+has to be in BOTH the category roster and `memberIds`, and someone in the roster
+is never in `evicted`". That justification describes the STALE outer read; the
+guard sits behind the FRESH in-transaction category read, which the enclosing
+comment itself says can move. Constructed path: owner previously removed AND
+tombstoned (so `toAdd` is empty), group `memberIds = [caller, X]` with X already
+out of the category (so work exists and the transaction is entered), then the
+caller is dropped from `friendUserIds` between the two reads — a member may remove
+their OWN uid under `firestore.rules`. Then `freshRoster = [owner]`,
+`evicted = [caller, X]`, `seated = []`, `memberCountAfter = 0`. The guard FIRES,
+so the code is right and the guard is not dead; the sentence is what is wrong.
+Remedy is a strike, not a rewrite.
+
+BLOCKING 3 — fix 5 is half-applied. Three endpoint tallies survive in the SAME
+file whose header tallies were struck: `deploy-manifest.test.ts:59` ("all 70
+uncapped"), `:152` ("all 71 endpoints"), `:226` ("raise it for all 70"). The
+`:152` string is literally the one the fix description names as struck. All three
+are falsified by this commit's own new export. `index.ts` is clean. The
+generalisable part — the tallies recur in the mutation-probe log and the
+`ALLOWED_OVERRIDES` note, so a header-only sweep reads as done — went into the
+knowledge file.
+
+NON-BLOCKING
+- `deleteChatGroupMemberships` early-`return false`s above the
+  `clearUnreachableChatGroupResiduals` call, so the two independent residual legs
+  are skipped whenever the MEMBERSHIP sweep exceeds `MAX_CHAT_GROUPS_PER_USER`.
+  The step reports incomplete and the probes flag it, so no silent certification,
+  but the legs are lost for a reason unrelated to them. Generalised into the
+  knowledge file.
+- `_fake-firestore.ts`'s header still enumerates "The suites it serves
+  (`remove-chat-group-member`, `chat-group-callables`)"; `ensure-category-chat`
+  now imports it too.
+- `ensure-category-chat.ts` reconcile: "an owner outside the chat is one an admin
+  removed or who left" omits a third producer — the minor backstop can evict a
+  minor owner if the seating friendship is revoked after creation.
+- `stageMemberAdditions`' `arrayRemove` on `departedUserIds` now runs for
+  `addChatGroupMembers` too (untouched file), which materialises an empty array on
+  groups that never had the field. Cosmetic; pinned by
+  ensure-category-chat.test.ts:279.
+- The tombstone/`memberLeft` pairing is best-effort on one side: the system message
+  in `removeChatGroupMember` is written outside the transaction with a `.catch`, so
+  a failed write yields a tombstone with no visible row.
+- `ensureCategoryChat` takes bare `checkRateLimit`, so no `rate_limit_violation`
+  audit row — consistent with its three `groups/` siblings, already recorded as
+  "consistent, not correct".
+
+KNOWLEDGE-FILE EDITS THIS RUN
+Added three principles (whole-file tally sweep; a deleted ARGUMENT is pinned at
+the CALLER not the callee's default; a cascade step's early-`return false` skips
+the legs below it) and compressed nine bullets so the file NET SHRANK
+(28,192 -> 28,177 chars). Still ~3.2k over the 25,000 target — the header now
+says so explicitly and demands every future edit retire more than it adds.
+
+RETIRED VERBATIM (superseded in place, kept here per the archive contract):
+- "region-wide, so 70 gen2 x 1 vCPU x 100 blew "Total allowable CPU per / project
+  per region", surfacing as `Container Healthcheck failed` on 53." — the tally
+  rotted exactly as the file's own principle predicts; replaced with the
+  count-free wording plus the 2026-08-17 date.
+- "Adding an export falsifies every endpoint TALLY in `index.ts`'s
+  `setGlobalOptions` comment and `deploy-manifest.test.ts`'s header — no test
+  guards those numbers; strike a tally rather than re-counting it." — the word
+  "header" is what let this round's strike stop three sentences short.
+- "**`recipe_social_stats` is SERVER-ONLY** — `fake_cloud_firestore` evaluates /
+  no rules, so a green Dart test proves nothing; read firestore.rules." — merged
+  into the recipes-are-user-scoped bullet above it, no content lost.
+- "Doc-ID prefix-range sentinels need the 6-char escape, never a raw / literal —
+  a NUL/odd byte also makes ripgrep skip the file as binary." — retired to pay for
+  the additions; the substance is now carried by the global lessons digest entry
+  on control bytes in source and by `.github/workflows/text-integrity.yml`.
+
+CORRECTS THE PREVIOUS BUT-1856 ENTRY IN THIS ARCHIVE, which ends "the tombstone
+asymmetry (set by explicit removal and by the safety backstop, NOT by the category
+mirror)". As of fix 7 the safety backstop no longer sets it — it writes no
+`memberLeft` row, so a tombstone there made `departedUserIds` minus the uids with
+a visible row equal to "the accounts the child-safety backstop evicted".
+
+### 2026-08-23 — BUT-1856 re-review after the integration-reviewer's eviction block [groups][gdpr][comments]
+
+Re-read `functions/src/groups/ensure-category-chat.ts` and
+`functions/src/__tests__/ensure-category-chat.test.ts` after the roster sync was
+narrowed to evict only its own seats (`categorySeatedUserIds`, stamped by
+`stageGroupCreation` and by `stageMemberAdditions({categorySeated:true})`, cleared
+unconditionally by `stageMemberRemoval`).
+
+VERIFIED CLEAN, and the reasoning is the reusable part:
+
+- **The new field owes the deletion cascade nothing, and that had to be proven per
+  writer.** `chat-group-writes.ts` is the only writer of `memberIds` in
+  `functions/src` (grepped; `firestore.rules` `chat_groups` update is
+  `hasOnly(['name','updatedAt'])`, create/delete `if false`), and all three of its
+  writers keep `categorySeatedUserIds ⊆ memberIds`: creation sets it equal,
+  additions union both, removal removes from both. So
+  `deleteChatGroupMemberships`'s `memberIds array-contains` sweep reaches every
+  residual through `stageMemberRemoval`, and no leg is owed in
+  `clearUnreachableChatGroupResiduals` (which exists precisely because
+  `departedUserIds` and `sourceCategoryOwnerId` BREAK that subset property) and no
+  row in `probeResidualData`. This is now a principle in the knowledge file.
+- Art. 15: `lib/services/account/export/chat_group_export.dart` exports a
+  PROJECTION, so the field never reaches a bundle.
+- The `memberCountAfter <= 0` guard IS reachable, so striking "Unreachable as the
+  code stands" was right — but only via a concurrent category edit: inside one call
+  the `roster.length < 2` pre-check refuses first, and `evicted` excludes `ownerId`
+  while `rosterOf` always re-adds the owner. Reachable shape: the owner is not in
+  `memberIds` (removed with a tombstone), both remaining members are
+  category-seated, and the category shrinks to the owner alone between the
+  pre-check and the transaction.
+- The transferred-category comment's claims check out:
+  `friend_category_repository.transferOwnership` updates the `ownerId` FIELD in
+  place under `users/{oldOwner}/friend_categories/{id}`, and the rules gate on the
+  path segment (`isOwner(userId)`), so the new owner can only add/remove their own
+  uid from `friendUserIds`.
+
+FINDINGS (none blocking):
+
+1. `stageMemberRemoval`'s new `categorySeatedUserIds: arrayRemove(uid)` line is
+   untested — no case in any `__tests__` file names the field, and no case runs the
+   sequence that needs it (category-seated member removed, then re-invited
+   explicitly by an admin while still absent from the category, then a poll). The
+   22 cases stay green with the line deleted.
+2. The test header's "Three properties here exist because removing them is
+   invisible" undercounts: the new admin-invite guard is a fourth, and this round's
+   own mutation probe proves it is invisible when removed. Strike the numeral —
+   writing "Four" is the BUT-1910 insertion seam again.
+3. "Without the asymmetry being symmetric, an admin's invitation is silently
+   deleted by the next poll and re-invited into the same loop" — garbled, and
+   "silently" contradicts the reported bug, which wrote "X har lämnat gruppen" into
+   the thread (the test file's own comment says so). Strike the sentence.
+4. "every rule in the `chat_groups` and `conversations` blocks gates on membership"
+   is false — the `chat_groups` block ends `allow read: if isAdmin();` and
+   `allow create, delete: if false;`. Reported Low and optional: the phrasing
+   echoes the `tryClearRoster` accepted deviation, which is correctly scoped to
+   `conversations`.
+5. Staging: `functions/package.json` (carrying `test:ensure-category-chat`) was
+   UNSTAGED while the new test file was staged. Same commit or the suite never
+   reaches `run-all-tests.js`.
+6. The comment defers the transferred-category regression to "Own ticket" with no
+   ticket id, and it is a real regression (the poll worked before, because the old
+   path never read the category).
+
+RETIRED from the knowledge file to pay for the addition, verbatim:
+- "- **TS's CommonJS emit does NOT hoist an import's `require`** (measured,
+  `module: node16` + ts-node): env set ABOVE an `import` IS visible to that
+  module at eval, so \"env must be set first, therefore `require`\" is a FALSE
+  justification — use `require` for explicitness, never claim necessity." — narrow
+  comment-wording point; the file is over budget and this round's GDPR subset rule
+  outranks it.

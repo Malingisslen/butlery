@@ -210,29 +210,33 @@ void main() {
   /// cuts once, and `frame_trim_test.dart` carries the case that forced that.
   /// What this proves is the WIRING — that `autoParseMulti` still reaches both
   /// ends of a real import.
-  test('leading furniture and an orphan tail both get cut on one page', () async {
-    final h = build();
-    final lines = [
-      line('Kokboken 2024', wordHeight: 70, words: 2),
-      ...pageWithTail().lines,
-    ];
-    final doc = DocumentLayout([PageLayout(lines: lines)]);
-    final input = doc.text!;
-    expect(
-      HeadingDetector.headingLines(PageLayout(lines: lines)),
-      [1, 8],
-      reason: 'fixture premise: two detected headings, shifted by the '
-          'furniture row',
-    );
+  test(
+    'leading furniture and an orphan tail both get cut on one page',
+    () async {
+      final h = build();
+      final lines = [
+        line('Kokboken 2024', wordHeight: 70, words: 2),
+        ...pageWithTail().lines,
+      ];
+      final doc = DocumentLayout([PageLayout(lines: lines)]);
+      final input = doc.text!;
+      expect(
+        HeadingDetector.headingLines(PageLayout(lines: lines)),
+        [1, 8],
+        reason:
+            'fixture premise: two detected headings, shifted by the '
+            'furniture row',
+      );
 
-    await h.manager.autoParseMulti(input, layout: doc);
+      await h.manager.autoParseMulti(input, layout: doc);
 
-    expect(h.spy.seen, isNotEmpty);
-    final seen = h.spy.seen.join('\n');
-    expect(seen.contains('Kokboken'), isFalse, reason: 'leading furniture');
-    expect(seen.contains('Mandelforell'), isFalse, reason: 'orphan tail');
-    expect(seen.contains('havregryn'), isTrue, reason: 'the real recipe');
-  });
+      expect(h.spy.seen, isNotEmpty);
+      final seen = h.spy.seen.join('\n');
+      expect(seen.contains('Kokboken'), isFalse, reason: 'leading furniture');
+      expect(seen.contains('Mandelforell'), isFalse, reason: 'orphan tail');
+      expect(seen.contains('havregryn'), isTrue, reason: 'the real recipe');
+    },
+  );
 
   /// The ORDER test, and the only thing in the repo that pins it.
   ///
@@ -249,33 +253,40 @@ void main() {
   /// under the CHAINED order the leading rule then eats it. Under the shipped
   /// single call it survives. See `frame_trim.dart` for the full mechanism and
   /// the solved arithmetic.
-  test('a baseline shift cannot eat a real title through the MANAGER', () async {
-    final h = build();
-    final lines = [
-      line('42', wordHeight: 70, words: 1),
-      line('Abb', wordHeight: 100, words: 1),
-      for (var i = 0; i < 4; i++) line('ab ab ab ab', wordHeight: 70),
-      line('Ratt', wordHeight: 108, words: 1),
-      line('Katt', wordHeight: 108, words: 1),
-      for (var i = 0; i < 4; i++) line('ab ab ab ab', wordHeight: 30),
-    ];
-    final doc = DocumentLayout([PageLayout(lines: lines)]);
-    expect(
-      HeadingDetector.headingLines(PageLayout(lines: lines)),
-      [1, 6, 7],
-      reason: 'premise: all three titles detected on the UNTOUCHED page',
-    );
+  test(
+    'a baseline shift cannot eat a real title through the MANAGER',
+    () async {
+      final h = build();
+      final lines = [
+        line('42', wordHeight: 70, words: 1),
+        line('Abb', wordHeight: 100, words: 1),
+        for (var i = 0; i < 4; i++) line('ab ab ab ab', wordHeight: 70),
+        line('Ratt', wordHeight: 108, words: 1),
+        line('Katt', wordHeight: 108, words: 1),
+        for (var i = 0; i < 4; i++) line('ab ab ab ab', wordHeight: 30),
+      ];
+      final doc = DocumentLayout([PageLayout(lines: lines)]);
+      expect(
+        HeadingDetector.headingLines(PageLayout(lines: lines)),
+        [1, 6, 7],
+        reason: 'premise: all three titles detected on the UNTOUCHED page',
+      );
 
-    await h.manager.autoParseMulti(doc.text!, layout: doc);
+      await h.manager.autoParseMulti(doc.text!, layout: doc);
 
-    expect(h.spy.seen, isNotEmpty);
-    final seen = h.spy.seen.join('\n');
-    // Reddens the moment `autoParseMulti` goes back to chaining the two
-    // appliers — that is this test's entire job.
-    expect(seen.contains('Abb'), isTrue, reason: 'the real title survives');
-    expect(seen.contains('Katt'), isFalse, reason: 'the orphan tail still goes');
-    expect(seen.contains('42'), isFalse, reason: 'the folio still goes');
-  });
+      expect(h.spy.seen, isNotEmpty);
+      final seen = h.spy.seen.join('\n');
+      // Reddens the moment `autoParseMulti` goes back to chaining the two
+      // appliers — that is this test's entire job.
+      expect(seen.contains('Abb'), isTrue, reason: 'the real title survives');
+      expect(
+        seen.contains('Katt'),
+        isFalse,
+        reason: 'the orphan tail still goes',
+      );
+      expect(seen.contains('42'), isFalse, reason: 'the folio still goes');
+    },
+  );
 
   test('without a layout the text is handed on untouched', () async {
     final h = build();

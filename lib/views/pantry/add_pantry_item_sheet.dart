@@ -9,6 +9,7 @@ import 'package:provider/provider.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/core/utils/swedish_decimal_input.dart';
 import 'package:butlery/widgets/common/input/ingredient_suggestion_list.dart';
 import 'package:butlery/models/pantry/pantry_item.dart';
 import 'package:butlery/models/tagging/ingredient_data.dart';
@@ -172,10 +173,20 @@ class _AddPantryItemSheetState extends State<AddPantryItemSheet> {
     final name = _nameController.text.trim();
     if (name.isEmpty) return;
 
+    // BUT-1910: the field had a hand-rolled `replaceAll(',', '.')` and no input
+    // formatter, so "1,5,5" was typeable and parsed to nothing — falling back
+    // to 1.0 on an amount the user had plainly written. Measured, because the
+    // ticket claimed more than was true: ",5" and "0,5" both DID read as 0.5
+    // through the old path.
+    //
+    // The fallback now differs by mode, which is what the helper documents: an
+    // unreadable field on ADD means 1, on EDIT it means the amount the item
+    // already had — those are not the same answer, and one `?? 1.0` for both
+    // silently reset a 250 g item to 1.
+    final existing = widget.existingItem;
     final quantity =
-        double.tryParse(
-          _quantityController.text.replaceAll(',', '.'),
-        ) ??
+        parseSwedishDecimal(_quantityController.text) ??
+        existing?.quantity ??
         1.0;
     final note = _noteController.text.trim().isEmpty
         ? null
@@ -289,6 +300,7 @@ class _AddPantryItemSheetState extends State<AddPantryItemSheet> {
                     keyboardType: const TextInputType.numberWithOptions(
                       decimal: true,
                     ),
+                    inputFormatters: const [SwedishDecimalInputFormatter()],
                     decoration: InputDecoration(
                       labelText: l10n.pantryQuantityLabel,
                       border: const OutlineInputBorder(
