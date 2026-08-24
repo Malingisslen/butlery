@@ -25397,3 +25397,358 @@ repo-wide convention, NOT a defect of this diff. Do not file it here.
 56/56 green in the two suites; `test/unit/viewmodels/menu`, `test/unit/services/messaging`,
 `test/unit/services/shopping`, `test/widget/menu` and the slot-picker widget test = 350/350
 green; `flutter analyze --fatal-infos` clean over all three changed paths.
+
+### 2026-08-23 — BUT-1928 SECOND round: the throw became a wrapper, and the producer lost its only seam
+
+**Trigger:** review of `lib/services/menu/group_weekly_menu_plan_service.dart`,
+`lib/services/menu/weekly_menu_plan_service.dart`, `lib/services/messaging_service.dart`,
+`lib/widgets/messaging/builders/message_content_builder.dart` (all four staged, index ==
+worktree, verified with `git diff --numstat`).
+
+**The design changed between rounds.** The version reviewed earlier today threw a
+`MenuPlanReadException` out of both `getWeek`s and DROPPED `executeServiceOperation` on that
+path. That file no longer exists anywhere (`lib/core/exceptions/` holds three files, none of
+them it) and the wrapper is back: `getWeek` keeps its old swallowing shape and a NEW
+`readWeek`/`readOrBuildWeek` pair returns `WeeklyMenuPlanRead`/`GroupWeeklyMenuPlanRead`,
+whose `readFailed` is derived from `executeServiceOperation` answering `null`
+(`group_weekly_menu_plan_service.dart:91`, `weekly_menu_plan_service.dart:92`). The
+consumer (`MessagingService._appendWinnerToWeeklyPlanAndShare` /
+`_appendWinnerToGroupPlan`) now throws `StateError` on `readFailed`.
+
+**What that costs, measured.** `flutter test --coverage` over
+`test/unit/services/menu/group_weekly_menu_plan_service_test.dart` reports
+`DA:79,0 DA:80,0 DA:81,0 DA:82,0` — the body of `readWeek`'s closure, i.e.
+`_repository.fetchForWeek`, never runs — and `DA:133,1` with `DA:135,0 DA:137,0`, i.e. both
+tests take the `readFailed` early return. Both pass on the fabricated empty plan
+`getOrBuildWeek` builds at `DA:113,1/114,1`. The first is named "returns the existing plan
+when one is persisted" and the stubbed `fetchForWeek` is never called. That vacuity is
+PRE-EXISTING (`git show HEAD:` shows the same wrapper), but the earlier design would have
+removed it and this one does not.
+
+`grep -n 'readWeek|readOrBuildWeek|readFailed' test/` returns hits in ONE file, and every one
+of them is a `when(() => mockPlanService.readWeek(...))`. So nothing anywhere asserts that a
+throwing repository yields `readFailed: true` or that a returning one yields `false`. Invert
+the sentinel and 17/17 close-poll + 47/47 menu tests stay green. Filed HIGH.
+
+**The four tests the diff DOES add all discriminate** (checked one by one, then run: 17/17,
+47/47): the BUT-1926 no-filter refusal (unregistering the filter is the only variable), the
+two BUT-1928 read-failure cases with the empty-but-READ control beside them, and the
+`FakeMessage`-throws ballot-strip case, which reddens if the new inner catch returns
+`messages` instead of `visible`.
+
+**Both sibling findings from this morning's entry are still on disk, unfixed** —
+`firebase_weekly_menu_plan_repository.dart:92-94` (claims the server read returns null rather
+than throwing; it throws, which is what makes `readFailed` reachable at all) and the
+`save()`-swallow that falsifies "if the plan save fails, the poll stays open"
+(`messaging_service.dart:838-840`). Re-filed, still non-blocking.
+
+**New sibling disagreement:** `weekly_menu_plan_service.dart:62` says callers about to save
+"call `readWeek` instead". Three do not — `weekly_menu_plan_viewmodel.dart:161` (then saves at
+`:219`), `menu_placement_viewmodel.dart:120`, `onboarding_viewmodel.dart:514` — so the
+week-overwrite BUT-1928 names is still live on the calendar's own generate-menu path. Strike
+the sentence; ticket the paths. And the group service's `getWeek`/`getOrBuildWeek` now have
+ZERO production callers (only `readOrBuildWeek` is called): the unsafe pair survives beside
+the safe one as an attractive nuisance.
+
+**Verdict: fail (1 blocking)** — the untested sentinel producer.
+
+### 2026-08-23 — BUT-1928 re-review: the auth-pre-flight hollowing is CLOSED, and one ordering comment it exposed
+
+Trigger: re-review of an automated fix round over `lib/services/menu/group_weekly_menu_plan_service.dart`,
+`lib/services/menu/weekly_menu_plan_service.dart`, `lib/services/messaging_service.dart`,
+`lib/widgets/messaging/builders/message_content_builder.dart`.
+
+**The hollowing recorded earlier today is closed.** The 2026-08-23 entry above recorded that
+`GroupWeeklyMenuPlanService`'s two `getOrBuildWeek` tests were green without the repository ever
+being called, because `executeServiceOperation`'s `_isAuthenticated()` reaches
+`ServiceLocator.get<AuthRepository>()`, which throws in a suite with no DI harness, so the wrapped
+closure never runs and the method returns `defaultValue`. Both suites were repaired the same way:
+
+    setUpAll(() async { await BaseUnitTest.setupUnitWithProductionLocator(); });
+    setUp(() {
+      (TestServiceLocator.get<AuthRepository>() as FakeAuthRepository)
+          .setAuthState(userId: creatorId);
+    });
+
+`test/unit/services/menu/group_weekly_menu_plan_service_test.dart` now carries that harness and a
+comment naming the trap; the new `test/unit/services/menu/weekly_menu_plan_read_week_test.dart`
+carries it plus a file header stating it.
+
+**Why no mutation probe was owed.** The suite has arms asserting `readFailed: false` together with
+`expect(read.plan, same(existing))` and `verify(() => repo.fetchForWeek(userId: 'u', weekStart:
+weekStart)).called(1)`. Under the hollowed wrapper `readWeek` returns the fabricated
+`readFailed: true` sentinel and the repo is never touched, so those arms cannot pass on the
+fallback. A SUCCESS-value arm is the free non-vacuity proof for this whole class; only
+failure-arm-only suites need the coverage run. Measured: 9/9 green,
+`flutter analyze --fatal-infos` clean over all four production files and all four suites.
+
+The consumer half is separately non-vacuous: `messaging_service_close_poll_test.dart:1086` holds
+"the CONTROL: a read that SUCCEEDS on an empty week still saves", which is the fixture that
+separates `readFailed` from emptiness — without it both refusal tests are satisfied by a service
+that never writes a plan at all.
+
+**The defect the round exposed but did not touch** (pre-existing, filed Medium):
+`messaging_service.dart` ~line 837 says "Resolve + persist the plan write BEFORE marking the poll
+closed. If the plan save fails, the poll stays open so the creator can retry." That is false for a
+repository failure. `WeeklyMenuPlanService.save` and `GroupWeeklyMenuPlanService.save` both wrap
+`_repository.save(...)` in `executeServiceOperation`, and `ErrorHandlingMixin.safeExecute` returns
+`defaultValue` rather than rethrowing — so a failed plan write is swallowed and
+`_messagingRepository.closePoll` runs anyway, producing exactly the "closed poll with no plan"
+outcome the sentence calls the non-preferred failure. Only `_requireEditor`'s
+`PermissionDeniedException` (group path) and BUT-1928's own new `StateError` propagate. Generalised
+into the principles file as: a swallowing wrapper falsifies ordering-safety comments two files
+away; grade "if X fails, Y never runs" by opening X's method, not by reading Y's comment.
+
+**Round hygiene noted at verdict time.** `git diff --numstat` showed the two menu services `MM` —
+6/3 and 7/4 unstaged lines, both comment-only strikes of over-broad quantifiers
+("`readFailed` covers every way the stored week went unread", "Those call [readWeek] instead").
+The worktree copy is the correct one; the INDEX still carried the false sentences. This is the
+exact shape the "a round whose remedy was a strike is the highest-risk shape for staging drift"
+principle names, seen a third time.
+
+Two save-path callers of `getWeek` were deliberately left unconverted and the round's strike
+correctly stopped claiming otherwise: `menu_placement_viewmodel.dart:120` (`_loadWeek`, then
+`confirm()`'s save) and `weekly_menu_plan_viewmodel.dart:161` (`_fetchWeek`). The BUT-1928 hazard
+is still live on both — follow-up ticket, not a regression.
+
+Verdict: pass, 0 blocking.
+
+### 2026-08-23 — BUT-1926/BUT-1928 commit-gate review (trigger: third pass over the same four staged `lib/` files, asked to settle two named residuals)
+
+Same four production files as the entry above, now carrying BUT-1926 as well. Index matched the
+worktree on all eight reviewed paths at verdict time (`git diff --numstat` empty, `pwd` echoed) —
+the staging drift the previous round flagged is closed.
+
+**Superseded verbatim from `testing-specialist.knowledge.md` (removal-claim principle), retired
+here per the archive contract:**
+
+    Scope it to the cases it is true of, or strike the clause; BUT-1909 shipped
+    it in three copies (two test comments + `lessons-digest-testing.md`).
+
+**The one blocking finding: the removal-claim inversion recurred, in this diff's OWN harness
+comments, and one copy contradicts a sentence 45 lines below it in the same file.** Measured
+against `base_service.dart:119` + `:243-252` — `_isAuthenticated()` CATCHES and returns false, so
+the wrapper returns `defaultValue` (null) rather than throwing, and `readWeek` hands back the
+fabricated `readFailed: true` sentinel:
+
+- `weekly_menu_plan_read_week_test.dart` header — "every test passes on a fabricated
+  `readFailed: true`". False for 5 of the 9: every arm asserting `readFailed: false`,
+  `same(existing)` or `verify(fetchForWeek…).called(1)` goes RED without the harness. The archive
+  entry directly above states the correct fact, so the tree held two answers to one question.
+- `group_weekly_menu_plan_service_test.dart` `setUpAll` — "the tests below pass on a fabricated
+  empty plan without ever touching the repo they stub". False for test 1, whose own inline comment
+  says the opposite ("`same` is what proves the repo was actually consulted").
+- `messaging_service_close_poll_test.dart` `setUp` — "Every case in this file therefore needs one
+  standing". False for the three cases that refuse ABOVE the filter lookup: `already-closed poll`
+  (returns at `isClosed`), `a poll marked capped` and `a failed vote read` (both throw at the
+  hydration guard, which sits before the `tryGet<BlockedUserFilter>()` line).
+
+Remedy filed as STRIKE, not reword: which tests survive the removal needs per-test tracing, i.e.
+counting, so a truer sentence is a fresh unmeasured claim.
+
+**Residual 1 settled — the prior reviewer's `verify(fetchForWeek).called(1)` on
+`group_weekly_menu_plan_service_test.dart` test 2 is NICE-TO-HAVE, not blocking.** The mechanism
+the reviewer named is real (a fabricated `GroupWeeklyMenuPlan.empty` from the same arguments
+satisfies `result.groupId` and `participants.single.userId`), but three things bound it: test 1 in
+the same group asserts `same(existing)`, which cannot pass on the fallback, so a harness regression
+reddens the file rather than hollowing it silently; the same behaviour is independently pinned in
+the new producer suite (`readOrBuildWeek DOES build on a genuinely empty week`, beside arms that do
+carry the `verify`); and `getOrBuildWeek` now has ZERO `lib/` callers — grep found only its own doc
+comments — so the test guards a compatibility facade, not a live path. Worth taking, changes
+nothing the suite proves.
+
+**Residual 2 settled — the BUT-1926 ballot-strip test CAN go red, traced end to end.** Fixture
+`[FakeMessage poll from 'clean-author', real Message from 'blocked-1']`, blocked = {'blocked-1'}.
+`BlockedUserFilter.filter` reads `senderId`, which `FakeMessage` overrides, so the FIRST try
+completes and `visible == [poll]`; `blockedIds` is non-empty so `_withoutBlockedBallots` does not
+early-return; poll/options/voterIds all clear the shape guards; `kept` drops the blocked voter so
+`changed` is true and `copyWith` — the one member the `Fake` does not implement — throws
+`UnimplementedError` into the NEW inner catch. Revert-mutant (one catch returning `messages`)
+yields `['clean-author', 'blocked-1']` and the assertion fails. Residual, non-blocking: the
+assertion `['clean-author']` is ALSO satisfied if the strip succeeds, so the premise "the strip
+threw" is unasserted — the day `FakeMessage` gains `copyWith` the test degrades into a duplicate of
+the plain author-filter case, green. One-line hardening: assert the surviving poll's tally still
+contains `blocked-1` (or `identical(page.single, unstrippablePoll)`), which is what the test's own
+`reason:` string already claims.
+
+**Third save-path `getWeek` caller, not in the previous round's list of two.**
+`onboarding_viewmodel.dart:514` `_seedSampleMenu` reads `getWeek`, gates on
+`if (plan.isNotEmpty) return`, then `addEntry` × N and `menuService.save(plan)` at :561 — a failed
+read hands it an empty plan, which walks straight through the idempotency guard and upserts sample
+recipes over the deterministic doc id. Same shape as the poll path BUT-1928 fixed. So the follow-up
+ticket covers three callers, not two (`menu_placement_viewmodel.dart:120`,
+`weekly_menu_plan_viewmodel.dart:161`, `onboarding_viewmodel.dart:514`).
+
+**`_filterBlocked`'s OUTER catch is entered by no test, and the test that looks like it does is
+honest about not doing so.** `BlockedUserFilter.currentBlockedIds` catches internally and returns
+`const {}` (verified at `blocked_user_filter.dart:43-53`), so "an unreadable block list serves the
+tally UNFILTERED" reaches the fail-open OUTCOME through the empty-set path, never the catch. The
+catch is reachable only if `authorOf` throws. Pre-existing, low.
+
+**No test owed for the fourth file's one line.** `message_content_builder.dart` swapped the literal
+`'Omröstning'` for `context.l10n.messagingPoll`, and `app_sv.arb` holds exactly `"Omröstning"` —
+so under `createLocalizedTestApp` (Swedish-pinned) the rendering is byte-identical and any
+`find.text` pin is unfalsifiable by construction. The only discriminating test is an ENGLISH-locale
+pump asserting `Poll` on a poll message whose `metadata['poll']` is absent. Named, not demanded.
+
+Verdict: fail, 1 blocking (the removal-claim inversion, three sites, one strike each).
+
+### 2026-08-24 — BUT-1837 feedback-FAB semantics: reviewing a NEW suite for vacuity (trigger: commit-gate testing review, first review of a stash-recovered suite)
+
+Files: `lib/widgets/common/feedback_fab.dart` (fix: `container: true` + comment),
+`test/widget/common/feedback_fab_test.dart` (new, 107 lines, 15 tests).
+
+**The mechanism, traced in the installed SDK rather than assumed.**
+`Semantics(container: false)` builds a `RenderSemanticsAnnotations` that is not a semantics
+boundary, so its config is absorbed by the nearest ancestor that forms a node. Between the FAB
+and `RenderView` there is no such ancestor at the real mount point
+(`lib/app/butlery_app.dart:763-777`: `SafeArea(top:false) > Stack[RepaintBoundary(key:
+feedbackRepaintBoundaryKey), FeedbackFAB]`, with `MaintenanceModeGate/Shortcuts/Actions/Focus`
+above — `Focus` contributes another `container:false` annotation, which makes escape more likely,
+not less). So label + `isButton` + the child `GestureDetector`'s tap action land on the ROOT node,
+whose rect is the whole surface and whose descendants are every other control.
+
+`/c/tools/flutter/packages/flutter/lib/src/semantics/semantics.dart`,
+`SemanticsConfiguration.isCompatibleWith`: compares action bits, repeated FLAGS, `platformViewId`,
+max/current value length, non-empty `_attributedValue`, `_hasExplicitRole`. **Labels are not on
+that list** (`absorb` concatenates them), and `set isButton` sets only a flag — no explicit role.
+Therefore a neighbouring `Text` cannot be the annotation that "conflicts and forces a node",
+which is what BOTH the production comment (lines 76-80) and the test-file harness comment
+(lines 32-37) claim. `routes.dart` sets `explicitChildNodes: true` only in `PageRouteBuilder`
+(line 2618), not in the `MaterialPageRoute` that `MaterialApp(home:)` uses — so the plausible
+alternative mechanism does not hold either, and the honest remedy is to STRIKE both sentences
+rather than write a third mechanism nobody measured.
+
+**The two ticket tests, graded against every other mechanism that could satisfy them.**
+- "the node carrying the feedback label is the button, not the screen": `hasLength(1)` holds in
+  BOTH arrangements (under the mutant the root is the single labelled node) — so the COUNT is not
+  the discriminator. The discriminators are `rect.width/height == AppDimensions.minTouchTarget`
+  (48.0; root would be 800x600) and `lessThan(root.rect.width)`, the latter entailed by the
+  former: one observable, two assertions.
+- "the feedback node adopts no other control on the screen": under the mutant the labelled node IS
+  the root, so `_allNodes(feedback)` is the whole tree and `Spara recept` is inside it. Its second
+  `expect` (the page's button exists SOMEWHERE) is a genuine positive control, passing in both
+  arrangements — keep it.
+- Neither depends on the test's own scaffold beyond using the page as adopted-victim probe, and
+  neither survives a harness regression that stops building semantics (`tester.getSemantics`
+  asserts semantics enabled; `_allNodes(root)` collapses and `hasLength(1)`/`firstWhere` throw).
+
+**The right assertion shape, and the wrong one.** `find.bySemanticsLabel` (test at line 210) and
+`matchesSemantics(label:, isButton:, hasTapAction:)` both PASS under the mutant, because the root
+node carries label, flag and tap action alike. They pin the a11y contract, not the ticket.
+Equally, `tester.tap` on a neighbouring control cannot see this defect at all: taps in a widget
+test route through hit testing, which was never wrong here — the defect lives on the semantics
+input path the browser uses once `main.dart` turns semantics on. So the semantics-tree assertion
+is the faithful model and a "tap the other button" test would be the vacuous version.
+
+**Non-blocking findings filed.** (1) strike the harness comment's mechanism + "does NOT reproduce"
+sentences, keep the mount-point sentence (verified); (2) same strike for the production comment's
+"safe elsewhere in the app only by accident" quantifier — unmeasured, and its second half reads
+backwards since self-labelling controls are exactly the ones with conflicting FLAGS;
+(3) `handle.dispose()` not failure-safe at lines 223/310/339 — `addTearDown(handle.dispose)`, else
+a red test also reports an undisposed SemanticsHandle and muddies probe attribution; (4) test name
+at line 210 claims `button: true` it never asserts; (5) three tautologies (`isA<GlobalKey>()` x2,
+plus a test that builds its OWN `RepaintBoundary` and exercises Flutter, never `_onTap`);
+(6) constant restatements (`right == 16`, `bottom == feedbackFabBottomOffset`,
+`constraints?.maxWidth == minTouchTarget`, `fontSize == 24`); (7) `(auth as dynamic).setAuthState`
+defeats the analyzer — `MockAuthService` (`production_mocks.dart:276`) declares both members.
+
+Mutation probe named for the parent (not run here): delete `container: true,` at
+`feedback_fab.dart:81`. SOUND = exactly those two tests red, the rect assertion reporting 800.0.
+HOLLOW = 15/15 green. If the `find.bySemanticsLabel` test also reddens, the file comment's
+"`_wrap` does not reproduce" is falsified — report it, do not weaken the assertion.
+
+`docs/architecture/ACCEPTED_DEVIATIONS.md` has no section touching semantics, a11y or this widget
+(headings at 576/846/949/1243/1288/1684/1853/1921/2013), so nothing above re-opens a decided call.
+
+Verdict: pass, 0 blocking.
+
+### 2026-08-24 — BUT-1837 re-review round 2 (trigger: parent ran the specified mutation probe, then struck the false mechanism in both named locations)
+
+Re-reviewed `lib/widgets/common/feedback_fab.dart` + `test/widget/common/feedback_fab_test.dart`
+against the CURRENT bytes. Index == worktree for both (`git diff --numstat` empty; blob
+3064b9fa / f0eadd69), so the graded copy is the one the parent commits.
+
+Probe result reported by parent, matching the SOUND signature I specified: 13 pass / 2 fail;
+`the node carrying the feedback label is the button, not the screen` red on the RECT
+(`Expected: <48.0> Actual: <800.0>`), `the feedback node adopts no other control on the screen`
+red on the nesting assertion. So `container: true` is discriminated by the new group, and both
+halves of the production comment's mechanism are measured.
+
+Scope check via `git diff HEAD`: production = the 8-line comment + `container: true` (the fix
+itself, new this commit). Test = +105 lines, purely additive (`_appLike`, `_rootNode`,
+`_allNodes`, the BUT-1837 group). Everything my findings 3-7 named is PRE-EXISTING HEAD code
+except the two new `handle.dispose()` calls at 308/337.
+
+BLOCKING (1): the `page()` doc comment, test file 275-277, survived the strike carrying the
+same refuted mechanism in different words — "Both controls label themselves, which is the
+condition under which the FAB's annotation used to escape upwards." Two defects: (a) `const
+TextField()` at 283 has no decoration/labelText, so its node's label is EMPTY — "both controls
+label themselves" is false on its face, directly readable from the two lines under the comment;
+(b) the neighbour-annotation mechanism is what the code-reviewer's six-combination measurement
+refuted (discriminator = mount point). Remedy is a STRIKE of both sentences, keeping "The page
+the FAB shares its `Stack` with." Nothing is lost: the button's real role is already stated in
+test 2's own `reason:` at 334, and the mount-point discriminator in the `_appLike` doc comment.
+This is why the round shipped incomplete — the strike hit the two locations the findings named,
+and the third copy was a PARAPHRASE in a third syntactic role (doc comment on a local fixture
+builder inside the group), so a verdict-time grep of the old string reads clean.
+
+Verified TRUE this round: `_appLike` mirrors the real mount (`lib/app/butlery_app.dart:764-777`
+— SafeArea(top:false) > Stack > [RepaintBoundary(feedbackRepaintBoundaryKey), FeedbackFAB],
+inside the MaterialApp `builder`); the bare basename `butlery_app.dart` resolves, so it is not a
+false path claim. Production parenthetical "main.dart enables them by default on web" checked at
+`lib/main.dart:53-64` — `kIsWeb` && `!DISABLE_FORCE_SEMANTICS` -> `SemanticsBinding.instance
+.ensureSemantics()`; correctly qualified both ways. `ACCEPTED_DEVIATIONS.md` still has no entry
+touching this widget, semantics or a11y (only hit is "rules-semantics" at 1963, unrelated).
+
+Parent's inference corrected: "the `find.bySemanticsLabel` test did not redden, so '`_wrap` does
+NOT reproduce' stands" is a non-sequitur. That test passes under the container mutant in EITHER
+harness (recorded in the principles file since round 1), so it is zero evidence in the
+confirming direction. My round-1 probe spec stated only the FALSIFYING direction and the parent
+read the converse. The sentence survives on the code-reviewer's six-combination measurement,
+which is the only thing that varied the mount point.
+
+Findings 3-7 re-graded, none became blocking. The `handle.dispose()` leak specifically: in a
+GREEN run every dispose executes, so it cannot affect this commit's gate; on a red run it
+appends diagnostic noise to a test that is already failing. No cross-test contamination path
+exists in this file — test 2 calls `ensureSemantics()` itself, and the global-keys group reads
+no semantics. The probe is the evidence: exactly the two predicted reds, no spurious third.
+Fix remains `addTearDown(handle.dispose)`. Sharpened remedy for finding 4 (over-claiming name
+at 208): the fix is a RENAME, not more assertions — `matchesSemantics(isButton: true)` is also
+green under the mutant, so "strengthening" it would change nothing.
+
+Verdict: fail, 1 blocking.
+
+### 2026-08-24 — BUT-1837 re-review round 3, resolution (trigger: coordinator struck the blocking sentence mid-round; my round-2 bytes were one edit stale)
+
+The round-2 blocking finding is CLOSED. Not withdrawn — it was true against the blob it was
+graded on (`f0eadd69`), and the fix is the strike it asked for.
+
+Settled in one call with a blob-to-blob diff, `git diff f0eadd69 $(git hash-object <path>)`:
+the only change since my graded copy is the two-line deletion in the `page()` doc comment,
+which now reads `/// The page the FAB shares its `Stack` with.` and nothing else. No
+replacement sentence was written. New blob `fabb137e`, 362 lines (was 364), index == worktree,
+production blob `3064b9fa` unmoved with `container: true` still at line 76. That diff is the
+cheap primitive for a stale-bytes re-review: diffing against HEAD instead would have shown the
+round's whole +105-line addition and buried the one hunk in question.
+
+Independent paraphrase sweep of the current bytes, by CONCEPT not word list (my own round-2
+principle says a literal grep is what missed the third carrier). Every comment graded: library
+header 1-7 (matches `tryGet` + `SizedBox.shrink` in production); 28; `_appLike` 32-35 (verified
+round 2 against `lib/app/butlery_app.dart:764-777`); `_allNodes` 60; 95; 99; 195-196; 215-216;
+236-237; 249-255 (matches the `navigator == null` early return); 275; 301; 321-322; both
+`reason:` strings at 327/332. No fourth carrier — agrees with the code-reviewer's word-list
+sweep, reached independently.
+
+One sentence I deliberately did NOT file, having re-checked it as the only surviving mechanism
+claim in the suite: 321-322, "Nesting is what let a tap anywhere reach the feedback handler."
+That is the HARM mechanism (oversized adopting node takes the taps), which the probe measured
+and the production comment states. It is not a paraphrase of the struck NEIGHBOUR-ANNOTATION
+claim, which was about the CONDITION for the escape. Keeping the two straight is what makes the
+strike complete rather than over-broad.
+
+Findings 3-7 stay deferred by agreement, none blocking; plus the standing Low on `_allNodes`'
+doc ("every node in the semantics tree" while line 323 calls it on a SUBTREE — correctable in
+place, needs no measurement).
+
+Verdict: pass, 0 blocking.

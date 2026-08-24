@@ -2313,3 +2313,42 @@ Example: lib/services/menu/parser/text_normalizer.dart _noWordBefore/_noWordAfte
   cannot be older than the bytes it describes. This generalises: any figure in a
   committed file that measures another file in the same commit is a derived value, and
   a derived value that a human types is a value that is wrong.
+
+### [Delivery] A sprint's own report is not an inventory — reconcile it against the tree
+- **Date**: 2026-08-23 (BUT-1932, BUT-1933, BUT-1936)
+- **Trigger**: The run reported ONE held batch. The stash list held four, three of them
+  finished work nobody was told about — two Article-17 erasure fixes, an accessibility fix
+  with its tests, and a test-shape fix. Separately, BUT-1931 was selected in the plan with
+  four acceptance criteria and then left the run with no disposition row at all: no commit,
+  no stash, no metrics row, no Linear comment. And four production files were left STAGED
+  in the index across turns, where the next commit in the checkout sweeps them.
+- **Rule**: Close a run by reconciling three inventories, never by reading the run's own
+  summary: (a) every selected ticket has a disposition row; (b) every stash the run created
+  is named, by SHA, against a ticket; (c) the index is empty and every dirty path in the
+  tree belongs to a named batch. Anything unmatched is reported as unaccounted — a "Done"
+  written over an unaccounted tree is the 2026-08-04 false report. And `git stash` DROPS
+  untracked files: BUT-1928's entire test proof (a new 267-line file) was outside its own
+  held stash, one tree-discarding command from gone while the fix itself survived.
+
+### [Delivery] A gate's cited FILENAME is a claim; verify it exists before obeying the block
+- **Date**: 2026-08-23 (BUT-1934)
+- **Trigger**: Both commit-gate reviewers refused a real batch with "reviewer never named:
+  binary_test.dart; the ledger does not corroborate a read of: binary_test.dart". No file of
+  that name exists anywhere in the repo and it was in no batch's file set. An Urgent
+  data-loss fix is still unshipped because of it.
+- **Rule**: A blocked gate is a stop, not a puzzle — but a gate that names a specific
+  ARTEFACT is asserting that artefact exists, and that assertion is checkable in one
+  command. `git ls-files | grep` the cited name before spending a batch on it. A block whose
+  subject does not exist indicts the gate, not the diff, and the fix belongs in the gate.
+
+### [Testing] A service wrapped in executeServiceOperation makes a stubbed-repo test green without ever calling the repo
+- **Date**: 2026-08-23 (BUT-1937)
+- **Trigger**: Two tests in `group_weekly_menu_plan_service_test.dart` passed on a fabricated
+  empty plan. `getOrBuildWeek` goes through `executeServiceOperation`, whose auth pre-flight
+  reads the PRODUCTION `ServiceLocator`; without `setupUnitWithProductionLocator` the
+  pre-flight fails, the wrapped closure never runs, and the assertion matches the fallback's
+  shape. Only three files in the whole menu suite stand up that harness.
+- **Rule**: For any service behind an `executeServiceOperation`-style wrapper, assert that
+  the stubbed method was CALLED, not that the result has the right shape — a result shape a
+  fallback can also produce proves nothing. Whenever one such false-green is found, sweep
+  the siblings: the missing harness is a property of the wrapper, not of the feature.

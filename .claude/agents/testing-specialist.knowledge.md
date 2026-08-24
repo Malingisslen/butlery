@@ -38,7 +38,10 @@ you want the revert-probe that proved it; or this file itself reads too compress
 
 ### Re-review economics (re-reviewing "after automated fixes")
 - **Confirm bytes actually MOVED before re-reviewing** — hash + `wc -l` per file, both ends
-  of the round; mtime lies. `git diff <path>` empty ≠ unmoved (staged shows only in `git
+  of the round; mtime lies. When they DID move, `git diff <graded-blob> $(git hash-object <f>)`
+  isolates exactly what changed since YOUR copy — diffing against HEAD instead buries the one
+  hunk in the round's other work, and a mid-round fix makes stale-byte findings routine, not
+  exceptional (BUT-1837: settled a claimed two-line strike in one call). `git diff <path>` empty ≠ unmoved (staged shows only in `git
   diff HEAD`/`git show :<path>`). Hash a suite's runtime INPUT files too (a source-text
   guard reading `firestore.rules`), not just changed ones.
 - **The brief is pinned to a hash and expires with it** — a `sed -n` printing different
@@ -111,7 +114,13 @@ you want the revert-probe that proved it; or this file itself reads too compress
   absent (twice measured: a false sentence outliving the production edit, and a two-repair
   round that landed the blocking fix and silently dropped the non-blocking reword, reported as
   done), and a parallel session can land the removal between two of your own greps: say which COPY the
-  finding is against, since the parent commits the INDEX (BUT-1897). **Then grade the
+  finding is against, since the parent commits the INDEX (BUT-1897). **That grep answers
+  "gone" whenever the surviving copy is a PARAPHRASE, not a duplicate** — BUT-1837's struck
+  mechanism sentence lived a third time as a doc comment on a FIXTURE BUILDER inside the
+  group, worded differently, so every literal grep and both blob hashes read clean; sweep the
+  whole file by CONCEPT, and expect the copies in different syntactic roles (inline production
+  comment, module-level doc comment, nested local-function doc comment) because a strike round
+  sweeps the locations the FINDINGS named. **Then grade the
   REPLACEMENT as a fresh claim** — a strike that swaps a measured count for a quantifier
   ("six call sites" → "from every list and detail surface") is unmeasured by construction, and
   the falsifier is usually an explicit exception in the same code (`assert(!readOnly, 'edit
@@ -534,7 +543,25 @@ The single most repeated finding across two months of review.
   the repo's return value passed on the fallback (`expect(result.groupId, …)` needed `same(existing)`).
   And `safeExecute` catches EVERYTHING, so no `throwsA` test can pass while the wrapper is
   there: that is a free analytic non-vacuity proof for any fail-loud fix that strips one — no
-  `lib/` mutation probe, no parallel-session risk (BUT-1928).
+  `lib/` mutation probe, no parallel-session risk (BUT-1928). **A redesign that KEEPS the
+  wrapper and reports failure through a nullable-wrapper SENTINEL instead (`read ?? const
+  Read(readFailed: true)`) leaves the hollowing in place AND leaves the sentinel's producer
+  untested, because every consumer suite mocks the service that mints it** — grade the
+  producer, not the consumer's branch, and settle it in one coverage run: `DA:0` on the lines
+  inside the wrapped closure IS the finding (measured 2026-08-23, both group tests green
+  without the repository ever being called). **The remedy is a harness, not a redesign**:
+  `BaseUnitTest.setupUnitWithProductionLocator()` in `setUpAll` plus
+  `(TestServiceLocator.get<AuthRepository>() as FakeAuthRepository).setAuthState(userId: …)`
+  in `setUp` puts the pre-flight through, and the proof it worked is any arm asserting the
+  SUCCESS value — a `same(existing)` plus `verify(repo.fetch…).called(1)` cannot pass on the
+  fallback, so no mutation probe is owed (BUT-1928, closed 2026-08-23).
+- **The same swallow falsifies ORDERING-SAFETY comments two files away.** "Do A before B, so
+  if A fails B never runs" is FALSE whenever A's method wraps its write in
+  `executeServiceOperation` — `safeExecute` returns `defaultValue` instead of rethrowing, so
+  B runs on a failed A. Grade every "if X fails, Y stays open/unwritten" sentence by opening
+  X's own method and asking whether anything can propagate out of it; usually only a guard
+  that throws ABOVE the wrapper (a permission check, a new sentinel refusal) does. Strike the
+  clause, file the behaviour gap separately (BUT-1928 review, `MessagingService.closePoll`).
 - Circular determinism (calling the same pure function twice, or deriving expected from the
   const under test) — pin the literal OUTPUT.
 - Sibling-branch short-circuit, BOTH polarities: for `if(A) return true; if(B) return
@@ -566,6 +593,18 @@ The single most repeated finding across two months of review.
   ONLY by `find.byType(<ChildWidget>)`** — the child-CONTENT assertion (badge, row item) is
   vacuous, because deleting the guard rebuilds the child, which then draws nothing and leaves
   the dead spacer the ticket was about (BUT-1869, `CompactAllergenRow` on an empty pref set).
+- **`Semantics(label:, button:)` at `container: false` gets NO node** — the config is absorbed by
+  the nearest node-forming ancestor (usually `RenderView`), so the label lands on a screen-sized
+  node that owns every other control and takes their taps. `find.bySemanticsLabel` and
+  `matchesSemantics` PASS under that mutant; only the node's RECT and its non-ADOPTION of a
+  neighbouring labelled control discriminate, and only in a harness mirroring the REAL mount
+  point. Labels are not a compatibility axis (`isCompatibleWith` reads actions/flags/role/value),
+  so "a neighbouring `Text` conflicts and forces a node" is false (BUT-1837). **An assertion
+  that is green under the mutant BY CONSTRUCTION is ZERO evidence about the harness it runs
+  in, both directions** — so a probe spec must say which way each observation cuts, or the
+  parent reads the converse as confirmation: "if `find.bySemanticsLabel` also reddens, '`_wrap`
+  does not reproduce' is falsified" was returned as "it stayed green, so that half stands",
+  when only varying the MOUNT POINT can settle it (BUT-1837 re-review).
 - **ONE parameter feeding TWO axes is pinned on the easy axis only** — a grid's `spacing`
   used between rows AND columns: deleting the between-COLUMN spacer left all six tests in
   the widget's own new suite green (measured, BUT-1911), because a short-last-row width
@@ -685,8 +724,12 @@ The single most repeated finding across two months of review.
   own path before writing it.** A missing DI bridge or a `Fake` fixture inside a fail-open
   catch makes the UNFILTERED-asserting tests pass and the one test that asserts the FILTERED
   result go RED — which is how the author found it — so the sentence inverts the observable it
-  was written from. Scope it to the cases it is true of, or strike the clause; BUT-1909 shipped
-  it in three copies (two test comments + `lessons-digest-testing.md`).
+  was written from. An AUTH-PRE-FLIGHT harness (`setupUnitWithProductionLocator`) is the third
+  carrier and inverts the same way: without it only the FAILURE arms pass, every `readFailed:
+  false` / `same(existing)` / `verify(...).called(1)` arm reddens. The disproof is almost always
+  IN THE SAME FILE — that success arm is why the harness exists — so grade a harness header
+  against the file's own canary, and STRIKE rather than reword, since the true wording needs
+  per-test tracing (BUT-1909, recurred in BUT-1928's own harness comments).
 - A guard classifying OLD vs NEW mutation is untested when every fixture base is EMPTY or
   same LENGTH — need the MIXED case. Same for a re-found index after `await` (identical to
   stale when the collection has one element) and a field-exclusion decision (byte-identical

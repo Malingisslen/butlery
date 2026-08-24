@@ -1,3 +1,347 @@
+# PLAN 2026-08-23 — sprint (auto-select, N=8): poll fail-opens, plan-overwrite bug,
+# blocking-rule gap, feedback-FAB accessibility, GDPR cascade gaps, golden-test blindness
+
+Selected automatically via `/delivery:sprint-execute` (Phase 1, no `--pick`, no `malin`
+argument — Phase 3.6 decision queue does not run this pass). Linear MCP confirmed
+connected (`list_issues` succeeded). Backlog gathered: 178 Backlog + 9 Todo + 0 In Progress
++ 0 Triage = 187 candidates, minus 2 `onboarding-reserved` (excluded per rule, never
+scored) = 185 scored.
+
+Score = priority base (Urgent 100/High 75/Medium 50/Low 25) + 20 if `bug`/`security`
+labeled. No ticket carried a due date, so the overdue/due-this-week bonuses never fired.
+`deferred`- and `need-malin`-labeled tickets were left unselected (decision-queue /
+long-hold material, not this pass's build target) even where they scored high.
+
+## Selection record
+
+| Ticket | Disposition | Priority | Router tier | Plan mode | Owning panel (if full-panel) |
+| --- | --- | --- | --- | --- | --- |
+| BUT-1928 a failed plan read silently overwrites the week | build | Urgent | single | yes (priority≤2) | Product Manager |
+| BUT-1926 two fail-open holes in the poll/blocklist path | build | High | single | yes (priority≤2) | Product Manager |
+| BUT-1917 blocking is not enforced by the rules on poll_votes | build | High | **full-panel** | yes | Security Architect, Trust & Safety, Privacy/DPO, Legal, Software Architect, PM, DBA, Perf, FinOps, Support |
+| BUT-1837 Feedback-FAB semantics node covers the whole screen | build | High | single | yes (priority≤2) | Information Architect, Monetization |
+| BUT-1716 second shared-shopping repo stamps no attribution | build | High | **full-panel** | yes | Security Architect, Privacy/DPO, Trust & Safety, DBA, Legal, PM, Software Architect, Perf, FinOps, Vendor |
+| BUT-1800 account deletion misses two analytics collections | build | High | **full-panel** | yes | (same panel as BUT-1716 — same batch, same router call) |
+| BUT-1931 golden tests cannot fail — the comparator's error is swallowed | build | High | single | yes (priority≤2) | Software Architect, PM |
+| BUT-1929 a deleted group conversation wedges every future poll | build | Medium | single | no | Vendor/Procurement |
+| BUT-1913 two BUT-1872 tests hang on an id shape nothing creates | build | Low | single | no | QA/Test Engineer |
+
+Router: `python tools/stakeholder_router.py --json <paths>`, run once per batch's file set.
+Panel policy is `park` (`shared-plugin.json` → `delivery.router._panelPolicy`): a
+full-panel ticket still enters the sprint and still builds — it parks in In Review instead
+of auto-closing at ship, and the specialist commit-gate reviewers (unconditional on every
+commit) are the backstop regardless of whether the panel convenes. None of the three
+full-panel tickets carry a product choice — they restore documented-intended behaviour
+(blocking should block; deletion should delete) — so disposition stays `build`, not
+`needsApproval`; the heavier review is a process control, not a founder sign-off gate.
+
+### Step-0 premise check (grep of current `main`, not `git log`)
+
+* **BUT-1928** — `WeeklyMenuPlanService.getWeek` (`weekly_menu_plan_service.dart:46-67`)
+  wraps the fetch in `executeServiceOperation`, which returns null on error; both the inner
+  and outer `??` fall through to `WeeklyMenuPlan.empty(...)`, same deterministic id `save`
+  upserts by. `GroupWeeklyMenuPlanService.getOrBuildWeek` (`:61-76`) does the identical
+  collapse — `getWeek` returns null on error, `getOrBuildWeek` cannot tell that from "no
+  plan yet". **Premise holds**, confirmed by direct read, not by trusting the ticket.
+* **BUT-1926** — `messaging_service.dart:294-301`'s catch block for
+  `getConversationMessages` reads exactly `return messages;` — the raw, unfiltered list —
+  discarding both the BUT-544 author filter (`visible`) and the BUT-1909 ballot strip
+  computed one line above it. `closePoll`'s block-filter resolution at `:786` uses
+  `ServiceLocator.tryGet<BlockedUserFilter>()`, confirmed. **Premise holds.**
+* **BUT-1917** — `firestore.rules`'s `poll_votes` `allow create` (`:2148+`) has no clause
+  referencing the message author's block list; the only membership check is
+  `inPollConversation()`. `firebase_block_repository.dart`'s `getBlockedUserIds()` queries
+  `where('blockerId', isEqualTo: uid)` — no compound-key doc a rule could `exists()`-check
+  today. **Premise holds**, and the "where does the list live for rules to read it" question
+  the ticket names as undecided is real — that is why this batch requires plan mode.
+* **BUT-1837** — `feedback_fab.dart:64-92` and the `Stack` mount at
+  `butlery_app.dart:769-777` are unchanged since the ticket's 2026-08-13 measurement.
+  **Premise holds** (reproduced only on web per the ticket; device verification is the
+  ticket's own open item, carried into acceptance as a `run` criterion).
+* **BUT-1716** — `grep -c lastActivityBy firebase_shared_shopping_repository.dart` → 0.
+  **Premise holds.**
+* **BUT-1800** — `grep -n "retention/events\|lapsed_users/events" account-deletion-cascade.ts`
+  → no matches. **Premise holds.**
+* **BUT-1931** — `golden_helper.dart:107-109` sets `FlutterError.onError = (_) {};`
+  immediately before `expectLater`, which is exactly where `matchesGoldenFile`'s own
+  comparator error would land. **Premise holds.**
+* **BUT-1929** — not independently re-derived beyond the ticket's own measurement (it
+  already names its own repro + fix shape); no contradicting code found in
+  `ensure-category-chat.ts`.
+* **BUT-1913** — test-only; not independently re-derived beyond the ticket's own citation
+  of the two test files and the `direct_abc` construction.
+
+### Obsolete — already fixed under a different id
+
+* **BUT-1795** ("Group chats are stored in two different places — leaving a group silently
+  does nothing") — **superseded by BUT-1838.** `lib/repositories/interfaces/chat_group_repository.dart`'s
+  own doc comment now states the design directly: "Chat groups: read from Firestore,
+  written only by Cloud Functions... Every mutating method here is a callable invocation,
+  not a Firestore write." `firebase_chat_group_repository.dart` calls
+  `createChatGroup`/`addChatGroupMembers`/`removeChatGroupMember` — the exact canonical,
+  single-path, server-side shape BUT-1795's acceptance criteria asked for. Resolving
+  commits: `faaba5978` ("the app side of chat groups, and the four ways it was broken"),
+  `d627daf25`, `c7fc9dd6b`. Closed, not selected.
+* **BUT-1796** ("'Lägg till medlemmar' in a group chat has never worked") — **same
+  supersession.** `addChatGroupMembers` is a live callable
+  (`functions/src/groups/add-chat-group-members.ts`, confirmed on disk) invoked from
+  `firebase_chat_group_repository.dart:142`, not the denied client-side rebuild the ticket
+  describes. Closed citing the same BUT-1838 commits. Closed, not selected.
+
+### Excluded, not obsolete (no code diff to grade / not autonomously buildable)
+
+* **BUT-1884** — asks only that BUT-1801's ticket body be re-verified and rewritten; no
+  production diff to build. Left unselected; a future selection pass can fold the rewrite
+  into whichever ticket next touches that code, per its own recommendation.
+* **BUT-1885** — Tier D: needs a production-console/Admin-SDK document count Malin (or a
+  session with prod access) must run by hand. Not autonomously buildable. Left unselected,
+  not scored into `needsApproval` (it is not a product choice, just an ops step already
+  labeled `need-malin`).
+
+### Needs approval — a product/policy choice, not a build call
+
+* **BUT-1854** — "The GDPR export contradicts itself about a late joiner's chat history."
+  The ticket's own text says it plainly: *"Undecided — it is not covered by any entry in
+  accepted-deviations.md, so this is a question for Malin, not a decided call to
+  re-litigate."* Two real options are laid out (drop the pre-join `lastMessage`, or keep it
+  and record why) with a recommendation (drop it) — exactly the shape of every other
+  accepted-deviations entry, all of which are recorded as Malin's explicit call. Not built.
+
+## Batches
+
+### Batch A — social-messaging-polls (area: social)
+
+Both tickets touch `messaging_service.dart`'s poll-close path, so they run as one batch to
+keep file sets disjoint across batches (BUT-1928's fix reaches the same file through the
+private `_appendWinnerToWeeklyPlanAndShare` / `_appendWinnerToGroupPlan` methods that write
+the poll winner into the plan). Split into ≤3-file commits per the repo's batch advisory —
+do not land all four files in one commit.
+
+**BUT-1928 — [Tier A, build, plan-mode] A failed plan read silently overwrites the week**
+Files: `lib/services/menu/weekly_menu_plan_service.dart`,
+`lib/services/menu/group_weekly_menu_plan_service.dart`, `lib/services/messaging_service.dart`
+Change: `getWeek` (both personal and group) distinguishes "read failed" from "no plan yet",
+and the poll-close winner-append path refuses to save when the read failed instead of
+building and upserting an empty plan over the existing one.
+Acceptance:
+1. (diff) `WeeklyMenuPlanService.getWeek` and `GroupWeeklyMenuPlanService.getWeek` surface a
+   read failure distinguishably from "no plan yet" instead of both collapsing to null/empty.
+2. (diff) The poll-close winner-append path refuses to save when the read failed, rather
+   than building and upserting an empty plan over the existing one.
+3. (diff) A test proves a simulated read failure no longer overwrites an existing week's
+   plan, for both the personal and the group path; a genuine empty week still builds and
+   saves normally.
+4. (diff) Negative constraint: the deterministic doc-id scheme and the upsert `set`
+   semantics are unchanged — only the failure path changes.
+
+**BUT-1928 residuals — NOT fixed here, file as follow-ups**
+
+1. *Two save-after-read callers still go through `getWeek`.* `readWeek` closed the poll-close
+   path only. `weekly_menu_plan_viewmodel.dart` adopts `getWeek`'s result as `_plan` and later
+   calls `_service.save(...)` on it, and `onboarding_viewmodel.dart`'s `_seedSampleMenu` guards
+   on `plan.isNotEmpty` — which a failed read answers `false` — before seeding and saving. Both
+   are the original BUT-1928 harm on the personal week; both need the same `readWeek` treatment
+   or an explicit refusal. (`menu_placement_viewmodel.dart` and `slot_picker_dialog.dart` also
+   read-then-write and want checking under the same ticket.)
+2. *The unavailable-read route never sets `readFailed`.* Both repositories map a week they
+   cannot answer for to `null` via `!snapshot.exists` rather than throwing, so an offline /
+   never-cached week reports `readFailed: false` with an empty plan and the guard stays silent
+   on the most likely real failure. `fetchForWeek` cannot distinguish "no doc" from "no answer"
+   today, so no wrapper above it can — the fix belongs at the repository layer. The doc comments
+   on both `readWeek`s now state this limit explicitly instead of claiming full coverage.
+
+**BUT-1926 — [Tier A, build, plan-mode] Two fail-open holes in the poll/blocklist path**
+Files: `lib/services/messaging_service.dart`,
+`lib/widgets/messaging/builders/message_content_builder.dart`
+Change: the widened catch in `getConversationMessages` stops discarding author-block
+filtering when the newer ballot-strip throws; `closePoll`'s block-filter resolution stops
+depending on `tryGet` succeeding to register; the duplicate refusal log and the hardcoded
+Swedish fallback string are fixed alongside.
+Acceptance:
+1. (diff) `getConversationMessages`'s catch returns the author-filtered list (or narrows the
+   `try` to the block-fetch alone) — never the raw unfiltered `messages` — when
+   `_withoutBlockedBallots` throws.
+2. (diff) `closePoll` resolves `BlockedUserFilter` with `get<T>()` (or refuses explicitly on
+   null) instead of `tryGet`, so a poll can never close on an unfiltered tally purely
+   because of DI registration.
+3. (diff) A refused close is logged once, not twice, for the same `PollCloseRefusedException`.
+4. (diff) `message_content_builder.dart`'s no-poll-data fallback uses
+   `context.l10n.messagingPoll` instead of the hardcoded Swedish string.
+5. (diff) Negative constraint: the ticket's "Test gaps" and "harm narrative still present
+   tense" sections are NOT addressed here — file a follow-up ticket for them instead of
+   expanding scope.
+
+### Batch B — backend-security-rules (area: backend)
+
+**BUT-1917 — [Tier C, build, plan-mode, full-panel] Blocking is not enforced by the rules**
+Files: `firestore.rules`, `lib/repositories/firebase/firebase_block_repository.dart` (or
+wherever the block list gains a rules-readable shape), a `poll_votes` rules test file.
+Change: `poll_votes` `allow create` denies a write from someone the poll message's author
+has blocked, closing the store-policy gap ("blocked" must mean "cannot interact", not
+"invisible to you") that BUT-1909's client-side filtering left open.
+Router returned **full-panel** (Security Architect, Trust & Safety, Privacy/DPO, Legal,
+Software Architect, PM, DBA, Perf Engineer, FinOps, Support) — panel policy is `park`, so
+this still builds; it parks In Review rather than closing automatically, on top of the
+mandatory `firebase-backend-security` + `firestore-rules-tester` commit gates.
+Acceptance:
+1. (diff) `poll_votes`'s `allow create` denies a voter uid that appears in the poll
+   message's author's block list.
+2. (diff) A rules test proves a blocked person's vote is denied and an unblocked person's
+   is allowed, on the real rule (not a hand-rolled predicate).
+3. (diff) Negative constraint: does not touch BUT-1832's votability decision or BUT-1838's
+   `memberSince` cutoff — both stay exactly as `accepted-deviations.md` records them.
+4. (diff) The chosen shape for "where the block list lives so rules can read it" is stated
+   in the commit body with its read-cost implication (CLAUDE.md cost principles) — not
+   silently decided.
+
+### Batch C — settings-accessibility (area: settings)
+
+**BUT-1837 — [Tier A, build, plan-mode] Feedback-FAB semantics node covers the whole screen**
+Files: `lib/widgets/common/feedback_fab.dart`, `lib/app/butlery_app.dart`, a new widget test.
+Change: the Semantics node wrapping `FeedbackFAB` stops adopting the entire screen's
+subtree and stops intercepting taps aimed at other controls.
+Acceptance:
+1. (diff) A widget test asserts the `FeedbackFAB`'s `SemanticsNode.rect` matches the
+   button's own size, not the viewport's.
+2. (diff) A widget test asserts a tap in the middle of another control (e.g. a form field)
+   does not open the feedback dialog.
+3. (run) Reproduced fixed on a real device with TalkBack/VoiceOver on — the ticket's own
+   "NOT verified on mobile" gap; this is a run criterion, not gradeable from the diff alone.
+4. (diff) Negative constraint: `FeedbackFAB`'s visual size and position are unchanged —
+   only its semantics boundary is fixed.
+
+### Batch D — account-gdpr-backend (area: account)
+
+Both tickets are Article 17 cascade-completeness fixes and both plausibly touch
+`account-deletion-cascade.ts`, so they run as one batch to keep files disjoint.
+
+**BUT-1800 — [Tier A, build, plan-mode, full-panel] Account deletion misses two analytics
+collections**
+Files: `functions/src/account/account-deletion-cascade.ts`,
+`functions/src/account/request-account-deletion.ts`,
+`functions/src/__tests__/account-deletion-cascade.test.ts`
+Change: add a deleter each for `analytics/retention/events` and
+`analytics/lapsed_users/events`, registered in the orchestrator's tier list (an
+unregistered deleter deletes nothing — the exact BUT-1789 trap).
+Acceptance:
+1. (diff) Both collections' rows for the deleted user are erased by a cascade run (test).
+2. (diff) Another user's same-day rows, and any anonymous/aggregate row, survive (test).
+3. (diff) Both new deleters are registered in `request-account-deletion.ts`'s tier list.
+
+**BUT-1716 — [Tier B, build, plan-mode, full-panel] Second shared-shopping repo stamps no
+attribution at all**
+Files: `lib/repositories/firebase/firebase_shared_shopping_repository.dart`,
+`functions/src/account/account-deletion-cascade.ts` (verify/extend the subcollection scrub),
+tests.
+Change: determine whether the subcollection shared-shopping write path
+(`firebase_shared_shopping_repository.dart`) is still reachable; if so, stamp
+`lastActivityBy*` attribution there (matching BUT-1697's array-path fix); if not, delete it.
+Either way, prove the deletion cascade scrubs subcollection-shaped attribution fields.
+Acceptance:
+1. (diff) A written, code-cited answer on reachability (the call chain traced in the
+   commit body), matching what BUT-1716 asks for.
+2. (diff) If reachable: attribution is stamped there with a test. If not reachable: the
+   path is deleted, not left as inert-looking code.
+3. (diff) A test proves the cascade scrubs subcollection-shaped `purchasedByUserId`/
+   `addedByUserId`, or proves no such documents can exist.
+
+Router for this batch returned **full-panel** on both files (Security Architect,
+Privacy/DPO, Trust & Safety, DBA, Legal, PM, Software Architect, Perf, FinOps, Vendor) —
+same `park` handling as Batch B: builds, parks In Review, specialist gates still mandatory.
+
+### Batch E — test-infra-goldens (area: backend/tooling)
+
+**BUT-1931 — [Tier A, build, plan-mode] Golden tests cannot fail — the comparator's own
+error is swallowed**
+Files: `test/widget/golden/golden_helper.dart`, any golden PNG that genuinely diverges once
+re-run, `test/widget/golden/failures/` (cleared).
+Change: `butleryGolden` stops silencing `matchesGoldenFile`'s own comparator error along
+with the asset-load errors it was meant to suppress.
+Acceptance:
+1. (diff) `FlutterError.onError` is restored before `expectLater`/`matchesGoldenFile` runs,
+   or the silencing is scoped to the `pump` call only — not left swallowing the
+   comparator's own error.
+2. (run) Every golden going through `butleryGolden` was re-run under the fixed helper; any
+   that genuinely diverged got a human-reviewed update, not a mechanical overwrite. Not
+   provable from the diff alone — the ticket itself calls for "a human eye on the diff".
+3. (diff) A test (or a documented manual step run and pasted into the PR body) proves the
+   gate can now go red: mutate one golden pixel and watch the suite fail.
+4. (diff) `test/widget/golden/failures/` is cleared in this commit.
+
+### Batch F — social-groups-functions (area: social)
+
+**BUT-1929 — [Tier B, build] A deleted group conversation wedges every future poll**
+Files: `functions/src/groups/ensure-category-chat.ts`,
+`lib/core/errors/chat_group_error_mapper.dart`,
+`functions/src/__tests__/ensure-category-chat.test.ts`
+Change: `ensureCategoryChat`'s conversation-existence check currently sits inside the
+transaction, but the steady-state early return skips the transaction entirely — so a
+category whose backing conversation was deleted (rules allow it; BUT-1838's accepted
+deviation records the deletion module's refusal as UX, not a control) hands back a dead
+conversation id forever. Preferred fix per the ticket: let the create branch self-heal by
+re-stamping the pointer when the conversation is missing, rather than adding a `get()` to
+the steady-state's common path. If a hoisted existence check is chosen instead, it must
+throw with a `details['reason']` the error mapper recognizes — otherwise a silent wedge
+becomes an equally silent `genericFallback`, which is the exact regression the ticket's
+2026-08-23 addendum found.
+Acceptance:
+1. (diff) A poll posted into a category whose chat conversation was deleted no longer
+   receives the dead conversation id — proven by a test that creates the chat, deletes the
+   conversation, then polls again with an unchanged roster.
+2. (diff) Whichever fix shape is chosen, the user-visible failure text (if any is still
+   reachable) is Swedish and names what happened — never `genericFallback` — proven by a
+   widget/unit test on `ChatGroupErrorMapper`.
+3. (diff) Negative constraint: the existing drifted-roster deleted-conversation test case is
+   unchanged and still passes — this is an additive case, not a rewrite of the guard.
+
+### Batch G — test-hygiene-log-sanitizer (area: backend, test-only)
+
+**BUT-1913 — [Tier A, build] Two BUT-1872 tests hang on an id shape nothing creates**
+Files: `test/unit/repositories/firebase/modules/conversation_mutation_module_test.dart`,
+`test/unit/repositories/firebase/modules/message_mutation_module_test.dart`
+Change: both masking tests assert against the exception's raw FIELD
+(`ResourceNotFoundException.resourceId` / `PermissionDeniedException.userId`) instead of a
+single-segment `direct_abc` id form that only the test constructs and that a future
+harmonization of `maskConversationId`'s pattern would silently stop distinguishing.
+Acceptance:
+1. (diff) Both tests assert against the exception's raw field, using a real two-segment id
+   (the shape the app actually produces), not the `direct_abc` construction.
+2. (diff) Both files are fixed in the same commit, not just one.
+3. (diff) Negative constraint: no change to `log_sanitizer.dart` or to any exception class's
+   masking behavior — this is a test-shape fix only.
+
+## Needs approval (not built — Malin's call)
+
+* **BUT-1854** — GDPR export: drop a late joiner's pre-join `lastMessage`, or keep it and
+  record why. See the "Needs approval" note above for the full reasoning; recommendation is
+  to drop it (option A), matching every neighbouring accepted-deviations entry on this
+  export section.
+
+## Obsolete (closed this pass, citing the resolving commit)
+
+* **BUT-1795** — superseded by BUT-1838 (`faaba5978`, `d627daf25`, `c7fc9dd6b`).
+* **BUT-1796** — superseded by BUT-1838 (same commits) — `addChatGroupMembers` callable is
+  live and is what the client now calls.
+
+## Needs you (Tier D)
+
+* **BUT-1885** — needs a production-console/Admin-SDK document count of the top-level
+  `recipes` collection. Not selected this pass (already `need-malin`-labeled; excluded from
+  scoring, not carried as a build candidate).
+
+## Excluded from consideration entirely
+
+`onboarding-reserved`-labeled tickets (BUT-677, BUT-722) — never scored, never selected,
+per the standing rule.
+
+## Deviation log
+
+(empty at Selection — filled in by Implementation as batches run)
+
+---
+
+# ARCHIVED — previous sprint plan (2026-08-22)
+
 # PLAN 2026-08-22 — sprint (--pick malin): six tickets Malin chose in session
 
 Selected interactively 2026-08-22 via `/delivery:sprint-execute --pick malin`. Malin picked
