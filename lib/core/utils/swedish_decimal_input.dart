@@ -2,6 +2,8 @@
 
 import 'package:flutter/services.dart';
 
+import 'package:butlery/core/extensions/default_value_extensions.dart';
+
 // WHICH FORMATTER APPLIES (BUT-1910)
 //
 // This app has several places that turn a period into a comma and read one
@@ -36,8 +38,23 @@ import 'package:flutter/services.dart';
 /// `replaceAll(',', '.')` at the call site is how BUT-1891 happened — the field
 /// stripped the separator before the parse ever saw it, so the parse looked
 /// correct and was unreachable.
+///
+/// It also bounds how many digits may be entered (BUT-1912). Without a bound the
+/// field accepts a paste long enough for `double.tryParse` to answer infinity,
+/// and an infinite amount is then stored and re-displayed as one.
 class SwedishDecimalInputFormatter extends TextInputFormatter {
   const SwedishDecimalInputFormatter();
+
+  /// Digits allowed before the separator.
+  ///
+  /// Measured: `double.tryParse` needs a 309-digit run of nines before it
+  /// answers infinity, so this bound closes that route with a wide margin.
+  static const int maxIntegerDigits = 15;
+
+  /// Digits allowed after the separator. NOT wide enough for every string
+  /// [formatSwedishDecimal] emits: its `toString()` branch can run past this
+  /// bound, and such a value is refused on retype.
+  static const int maxFractionDigits = 20;
 
   @override
   TextEditingValue formatEditUpdate(
@@ -67,10 +84,27 @@ class SwedishDecimalInputFormatter extends TextInputFormatter {
     }
 
     final text = buffer.toString();
+    // Over the bound the keystroke is REFUSED rather than truncated: truncating
+    // would silently change the magnitude of what the user is looking at.
+    // Refusing only what does not shrink the field is what lets someone edit
+    // their way out of an over-long amount that arrived from stored data — a
+    // flat refusal would freeze that field for good.
+    if (_exceedsBounds(text) && text.length >= oldValue.text.length) {
+      return oldValue;
+    }
     return TextEditingValue(
       text: text,
       selection: TextSelection.collapsed(offset: caret.clamp(0, text.length)),
     );
+  }
+
+  /// [text] has already been filtered to digits and at most one comma.
+  static bool _exceedsBounds(String text) {
+    final separator = text.indexOf(',');
+    final integerDigits = separator < 0 ? text.length : separator;
+    final fractionDigits = separator < 0 ? 0 : text.length - separator - 1;
+    return integerDigits > maxIntegerDigits ||
+        fractionDigits > maxFractionDigits;
   }
 
   static bool _isDigit(String char) {
@@ -90,8 +124,9 @@ double? parseSwedishDecimal(String raw) {
 
   // Load-bearing, measured: `double.tryParse` accepts "Infinity" and "NaN",
   // and an amount of either shape reaches `formatSwedishDecimal`, whose own
-  // guard exists because `round()` throws on them. Requiring a digit refuses
-  // them here instead. "," and "abc" would return null without this line.
+  // guard exists because that function must not print an exponent. Requiring a
+  // digit refuses them here instead. "," and "abc" would return null without
+  // this line.
   if (!trimmed.contains(RegExp(r'[0-9]'))) return null;
 
   // No padding for a leading or trailing separator: `tryParse` already reads
@@ -105,41 +140,69 @@ double? parseSwedishDecimal(String raw) {
 ///
 /// Kept beside the parser because the two are meant as one round trip — but the
 /// trip production actually takes is format -> FIELD -> parse, and the field is
-/// the part that loses the value.
+/// the part that used to lose the value.
 ///
-/// It holds down to 1e-6 and no further, measured: `0,000001` survives,
-/// `9.99e-7` does not. Below that `toString()` switches to exponent notation,
-/// and [SwedishDecimalInputFormatter] keeps only digits and one separator — so
-/// it eats the `e` and the `-`, and `5e-7` comes back out of the field as `57`,
-/// eight orders of magnitude high.
+/// **It never emits exponent notation** (BUT-1912). That is the contract, not a
+/// side effect: [SwedishDecimalInputFormatter] keeps only digits and one
+/// separator, so an `e` and a `-` reaching the field are eaten and the amount
+/// comes back a different number — `5e-7` returned as `57`, eight orders of
+/// magnitude high. `toString()` gives up on decimal notation at both ends, so
+/// both ends are spelled out here instead.
 ///
-/// It takes a KEYSTROKE to fire. Input formatters do not run on a programmatic
-/// `controller.text`, so opening the edit dialog on such an item and pressing
-/// Save preserves the number; the corruption needs the user to touch the amount
-/// field, and then the first keystroke rewrites the whole string.
-///
-/// [parseSwedishDecimal] is NOT the culprit and a fix aimed at it is a no-op:
-/// `double.tryParse` reads `5e-7` correctly. The repair belongs here, in what
-/// this function is allowed to emit, or in the formatter. It reaches the
-/// PANTRY field too since BUT-1910: `PantryItem.formattedQuantity` seeds
-/// that field through this same function. Stated rather than
-/// guarded because seven decimal places on a quantity is not a real path;
-/// BUT-1912 carries it, along with the large end, where `round()` saturates
-/// at int64 and `1e21` is written as `9223372036854775807`.
+/// Precision it does not keep: the deep end is rounded to 20 decimals by
+/// `toStringAsFixed`, so anything under half of the last place is written as
+/// `0`, and digits below the 20th are lost above that. A quantity that small is
+/// noise, and the alternative — a 300-character field — is not a quantity
+/// anyone can read or retype.
 String formatSwedishDecimal(double amount) {
-  // Infinity is what this guards. `round()` throws on it, and this function now
-  // seeds the edit dialog's field where a plain `toString()` used to sit — so
-  // the throw would land when the dialog OPENS rather than on save. Through that
-  // FIELD the only way in is a pasted ~309-digit quantity, which
-  // `double.tryParse` turns into infinity; the amount can also arrive from
-  // stored data via `formattedAmount`.
-  //
-  // NaN lands here too — `double.nan.isFinite` is false — but it never NEEDED
-  // to: with the guard removed, `NaN == NaN.roundToDouble()` is false, so NaN
-  // would fall to the fraction branch and `toString()` its way to the same
-  // "NaN". Named because both routes print the identical string, which makes it
-  // easy to assert the wrong one; this comment has already done so twice.
+  // Infinity and NaN are what this guards. Neither has a digit spelling, and
+  // this function seeds a field that opens with the value already in it.
+  // Since BUT-1912 the FIELD can no longer produce infinity. Other producers
+  // can: `QuantityParser.parse` has no finiteness guard.
   if (!amount.isFinite) return amount.toString();
-  if (amount == amount.roundToDouble()) return amount.round().toString();
-  return amount.toString().replaceAll('.', ',');
+  // Also catches -0.0, which `toStringAsFixed` spells "-0".
+  if (amount == 0) return '0';
+  if (amount == amount.roundToDouble()) return _wholeDigits(amount);
+
+  final decimal = amount.toString();
+  if (!decimal.contains('e')) return decimal.replaceAll('.', ',');
+  return _digitsBelowExponentThreshold(amount);
 }
+
+/// A whole amount, written out in full.
+///
+/// `round().toString()` is what used to sit here and it cannot be used: `round()`
+/// saturates at int64, so `1e21` was written as `9223372036854775807` — a real
+/// number, wrong by two orders of magnitude, with nothing to mark it as a
+/// failure. `toStringAsFixed(0)` spells the digits instead, but it falls back to
+/// exponent notation from 1e21 upwards exactly as `toString()` does, so above
+/// that the digits are shifted out of the exponent by hand.
+String _wholeDigits(double amount) {
+  if (amount.abs() < 1e21) return amount.toStringAsFixed(0);
+
+  final exponential = amount.toStringAsExponential();
+  final match = _positiveExponentShape.firstMatch(exponential);
+  if (match == null) return exponential;
+
+  final fraction = match[3].orEmpty();
+  final zeros = int.parse(match[4]!) - fraction.length;
+  return '${match[1]}${match[2]}$fraction${'0' * (zeros > 0 ? zeros : 0)}';
+}
+
+/// An amount too small for `toString()` to write in decimal notation.
+///
+/// Measured: the switch happens under 1e-6, so `0,000001` arrives here already
+/// decimal and only what is smaller reaches this function.
+String _digitsBelowExponentThreshold(double amount) {
+  final fixed = amount.toStringAsFixed(20);
+  var trimmed = fixed.replaceFirst(RegExp(r'0+$'), '');
+  if (trimmed.endsWith('.')) {
+    trimmed = trimmed.substring(0, trimmed.length - 1);
+  }
+  // Everything rounded away: "-0" is a worse answer than "0", and neither is
+  // the amount, so say the one a reader can act on.
+  if (!trimmed.contains(RegExp(r'[1-9]'))) return '0';
+  return trimmed.replaceAll('.', ',');
+}
+
+final RegExp _positiveExponentShape = RegExp(r'^(-?)(\d)(?:\.(\d+))?e\+(\d+)$');

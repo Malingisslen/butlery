@@ -411,7 +411,7 @@ void main() {
       expect(find.byIcon(Icons.numbers), findsOneWidget);
     });
 
-    testWidgets('keyboard is decimal-numeric and only digits/dot accepted', (
+    testWidgets('keyboard is decimal-numeric and the separator is a comma', (
       tester,
     ) async {
       final controller = TextEditingController();
@@ -432,9 +432,41 @@ void main() {
         const TextInputType.numberWithOptions(decimal: true),
       );
 
-      // Letters get filtered out
+      // BUT-1920: letters are filtered out and a typed period is rewritten to
+      // the Swedish comma. It used to keep the period and discard everything
+      // from a typed comma on, so "12,5" reached the validator as 12.
       await tester.enterText(find.byType(TextField), '12.5abc');
-      expect(controller.text, '12.5');
+      expect(controller.text, '12,5');
+
+      await tester.enterText(find.byType(TextField), '12,5');
+      expect(controller.text, '12,5');
+    });
+
+    testWidgets('a comma-typed amount validates on its real value (BUT-1920)', (
+      tester,
+    ) async {
+      // The old anchored filter DISCARDED everything from the comma on, so
+      // "1,5" reached the validator as 1. `minValue` is 1.2 so the two answers
+      // disagree: the old 1.0 fails the minimum, the real 1.5 passes. With a
+      // minimum of 1 this test was green on the pre-fix code — measured.
+      final controller = TextEditingController();
+      final formKey = GlobalKey<FormState>();
+      await tester.pumpWidget(
+        _wrap(
+          _FormHarness(
+            formKey: formKey,
+            builder: (ctx) => DialogFormFields.buildAmountField(
+              context: ctx,
+              controller: controller,
+              minValue: 1.2,
+              maxValue: 10,
+            ),
+          ),
+        ),
+      );
+      await tester.enterText(find.byType(TextField), '1,5');
+      expect(controller.text, '1,5');
+      expect(formKey.currentState!.validate(), isTrue);
     });
 
     testWidgets('empty input → "Antal krävs"', (tester) async {

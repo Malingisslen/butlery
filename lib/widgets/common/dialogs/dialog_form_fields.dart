@@ -2,7 +2,8 @@
 /// Component: Dialog Form Fields - Common form field patterns for dialogs
 /// File: lib/widgets/common/dialogs/dialog_form_fields.dart
 /// Quick Guide: Prebuilt dialog form fields with consistent validation and styling
-/// Dependencies IN: FormValidators, ValidationUtils, AppDimensions, l10n, Material UI
+/// Dependencies IN: FormValidators, ValidationUtils, AppDimensions, l10n, Material UI,
+///   SwedishDecimalInputFormatter/parseSwedishDecimal
 /// Dependencies OUT: create_group_dialog.dart
 /// Data flow: User input -> Validation -> Controller update
 /// State management: TextEditingController-based
@@ -21,6 +22,7 @@ import 'package:flutter/services.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/validators/form_validators.dart';
+import 'package:butlery/core/utils/swedish_decimal_input.dart';
 import 'package:butlery/core/utils/validation_utils.dart';
 
 /// Static builders for a dialog's form fields. Every TEXT variant funnels
@@ -136,7 +138,15 @@ class DialogFormFields {
     );
   }
 
-  /// Amount/quantity field with numeric validation
+  /// Amount/quantity field with numeric validation.
+  ///
+  /// Reads and writes the Swedish decimal COMMA, through the same formatter and
+  /// parser every other hand-typed amount in the app uses. It did neither until
+  /// BUT-1920: it filtered the field down to digits and a PERIOD with an
+  /// ANCHORED pattern, so everything from a typed comma onward was discarded,
+  /// and read what was left with a bare `double.tryParse`. It had no callers in
+  /// `lib/` at the time, so the bug was waiting for whoever reached for the
+  /// shared builder first.
   static Widget buildAmountField({
     required BuildContext context,
     required TextEditingController controller,
@@ -155,15 +165,13 @@ class DialogFormFields {
       prefixIcon: prefixIcon,
       enabled: enabled,
       keyboardType: const TextInputType.numberWithOptions(decimal: true),
-      inputFormatters: [
-        FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
-      ],
+      inputFormatters: const [SwedishDecimalInputFormatter()],
       customValidator: (value) {
         if (value == null || value.trim().isEmpty) {
           return context.l10n.dialogAmountRequired;
         }
 
-        final amount = double.tryParse(value.trim());
+        final amount = parseSwedishDecimal(value);
         if (amount == null) {
           return context.l10n.dialogAmountInvalid;
         }

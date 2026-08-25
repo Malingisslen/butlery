@@ -25864,3 +25864,444 @@ remedy (split `Vacuity patterns` out rather than compress again). Not done here:
 the wrong place to restructure a shared file. Surfaced to the parent.
 
 Verdict: pass, 0 blocking.
+
+### 2026-08-25 — BUT-1912 + BUT-1920 test review: a fixture chosen from a wrong mental model of the OLD formatter
+
+Trigger: commit-gate testing review of the staged BUT-1912 (`swedish_decimal_input.dart`) +
+BUT-1920 (`dialog_form_fields.dart`) change, recovered from a patch file, first reviewer.
+
+**The find.** The new widget test `'a comma-typed amount validates on its real value
+(BUT-1920)'` (`minValue: 1, maxValue: 10`, `enterText('1,5')`, `expect(validate(), isTrue)`)
+PASSES on the pre-fix code. HEAD's formatter was
+`FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*'))`. Measured with a scratch Dart
+replica of `_formatPattern`'s keep-matched-substrings loop:
+
+```
+1,5     -> "1"     (tryParse=1.0)
+12,5    -> "12"    (tryParse=12.0)
+12.5abc -> "12.5"  (tryParse=12.5)
+42,5    -> "42"    (tryParse=42.0)
+```
+
+The `^` anchor makes `allMatches` yield exactly ONE match, at index 0, so the formatter
+TRUNCATES at the first non-matching character. It does not CONCATENATE the allowed characters
+the way `digitsOnly` does. `'1,5'` therefore became `1`, never `15`.
+
+Consequence for the fixture: 1.0 satisfies `minValue: 1` and `maxValue: 10` exactly as 1.5
+does, so the boolean `validate()` cannot see the difference. Mutant table for that test:
+
+| mutant | field text | parsed | validate() | killed? |
+|---|---|---|---|---|
+| full revert (old formatter + `double.tryParse`) | `1` | 1.0 | true | NO |
+| formatter reverted only | `1` | 1.0 | true | NO |
+| parser reverted only (`double.tryParse('1,5')`) | `1,5` | null | false | yes |
+
+So the test pins the PARSER half only. The formatter half is pinned by its sibling
+(`'keyboard is decimal-numeric and the separator is a comma'`, which asserts
+`controller.text == '12,5'` where HEAD gives `'12.5'`). The property is not unguarded — but
+nothing observes the VALUE the validator computed from a comma-typed field, which is the
+observable BUT-1920 is about. Remedy: `minValue: 1.2` (kills all three mutants) plus
+`expect(controller.text, '1,5')`.
+
+**The comments that produced it.** Three copies of the same false measured claim, all saying
+the old field concatenated:
+- `lib/widgets/common/dialogs/dialog_form_fields.dart:147` — `"1,5" became 15`
+- `test/widget/common/dialogs/dialog_form_fields_test.dart:437` — `turned "12,5" into 125`
+- same file `:448` — `read "1,5" as 15 ... so an in-range amount was rejected as over the
+  maximum`
+
+The third names a failure mode that cannot happen under truncation (truncation always LOWERS
+the value, so an over-max rejection is unreachable), and it is exactly the sentence that
+justified the `min 1 / max 10` range. A wrong comment manufactured a fixture that looked like
+a receipt. The `"precisely the shape BUT-1891 was"` equivalence in the production doc is the
+same error: BUT-1891 was `digitsOnly` + `replaceAll`, which concatenates; this was an anchored
+prefix regex, which truncates. Filed as strikes, not rewrites — the true value required
+running the regex.
+
+**Q2, the precision floor.** Measured with a scratch replica of `formatSwedishDecimal`:
+
+```
+1e-19  -> "0,0000000000000000001"   fractionDigits=19
+1e-20  -> "0,00000000000000000001"  fractionDigits=20
+9e-21  -> "0,00000000000000000001"  fractionDigits=20
+1e-21  -> "0"
+```
+
+Two facts nothing pins. (a) The documented floor ("below 1e-20 an amount is written as `0`")
+is never straddled — the only fixture is `1e-320`, ~300 orders below the flip, so
+`toStringAsFixed(20)` → `(21)` moves the floor an order of magnitude with zero red.
+(b) `formatSwedishDecimal`'s deepest emission is exactly 20 fraction digits and
+`SwedishDecimalInputFormatter.maxFractionDigits` is exactly 20 — an exact TIE, stated in the
+bound's own doc comment as its rationale ("Wide enough for the longest string
+`formatSwedishDecimal` emits, so a seeded amount is always typeable back"), and asserted by
+nothing. `maxFractionDigits: 20 → 19` makes a seeded 1e-20 untypeable, which IS the BUT-1912
+defect class, with zero red.
+
+Recommended pair (each kills a distinct mutant; literals measured, not typed from memory):
+```dart
+test('the deepest amount the formatter emits still fits the field (BUT-1912)', () {
+  final written = formatSwedishDecimal(1e-20);
+  expect(written, '0,00000000000000000001');
+  expect(typed(written), written);            // dies at maxFractionDigits 19
+  expect(parseSwedishDecimal(typed(written)), 1e-20);
+});
+test('below that depth an amount is written as a plain zero (BUT-1912)', () {
+  expect(formatSwedishDecimal(1e-21), '0');   // dies at toStringAsFixed(21)
+});
+```
+
+**Q3, `"Infinity"`.** Pinned literally, and mutation-dead by construction — the test's own
+comment says so and is CORRECT. Traced each branch with the `isFinite` guard deleted:
+`infinity` → `roundToDouble()` equal → `_wholeDigits` → `toStringAsExponential()` = `'Infinity'`
+→ regex no match → returns `'Infinity'`. `NaN` → `NaN == NaN.roundToDouble()` is FALSE → falls
+to the fraction branch → `'NaN'`. All three identical with and without the guard. Honest test,
+no finding. Unpinned consequence: format→parse does NOT round-trip for exactly these three
+values (`parseSwedishDecimal('Infinity')` is null by the digit guard), i.e. the file's whole
+premise has three documented exceptions and no test states the asymmetry in composition.
+
+**Q1, the bounds.** They DO enter the refusal branch — `typed('9'*400)` returns `''` because
+the branch returns `oldValue`, and `''` is not a value any other mechanism produces. Both
+conjuncts of `_exceedsBounds(text) && text.length >= oldValue.text.length` are killed (the
+second by the edit-down test, `typed('9'*29, previous: '9'*30)`). Both flip points are
+straddled at ±1, and the two fixtures do not cross-satisfy (the integer fixture has no
+separator, the fraction fixture has 1 integer digit). What they do NOT prove:
+- Refusal vs TRUNCATION, in the test NAMED for it: `typed('9'*16, previous: '9'*15)` gives
+  `'9'*15` under BOTH. The discrimination lives in the 400-nines test (`''` vs `'9'*15`).
+- The bound VALUES. Both fixtures derive from the constants themselves, so they pin "a bound
+  exists and refuses at bound+1", not "15" and "20". The 400-nines test caps `maxIntegerDigits`
+  below ~309 (past that, `parseSwedishDecimal` answers infinity and `isNull` reddens); anything
+  in 1..308 survives.
+- `parseSwedishDecimal(typed('9'*400))` is `isNull` is ENTAILED by the `''` assertion above it
+  — a documentation line, not a second guard.
+
+**Not a defect, checked:** every downstream consumer suite (`pantry_item_test.dart`,
+`unified_shopping_item_test.dart`, `recipe_form_rating_field_test.dart`) uses ordinary values
+where `round().toString()` and `toStringAsFixed(0)` agree and nothing types near the new
+bounds, so no sibling suite was silently hollowed or reddened. `_wholeDigits`'s
+`if (match == null) return exponential;` is unreachable (only Infinity/NaN fail the regex and
+the `isFinite` guard eats them; nothing with a negative exponent reaches `_wholeDigits`) —
+dead branch reading as coverage, informational only. `dialogAmountInvalid` ("Ogiltigt antal")
+is NEWLY reachable: a lone `,` now survives the field where HEAD filtered it to `''`, and no
+test covers it.
+
+Verdict: fail, 2 blocking.
+
+### 2026-08-25 — BUT-1912/BUT-1920 re-review: my own round-1 measurement shipped as a false test name
+
+Trigger: re-review after the coordinator fixed both round-1 blockers and folded in all three
+tests I suggested.
+
+**Retired verbatim from `knowledge.md` (superseded in place the same day):**
+
+> **Two CONSTANTS in different classes can sit at that exact tie with nothing pinning the
+> coupling** — a writer's deepest output vs a reader's bound (20 emitted fraction digits vs
+> `maxFractionDigits = 20`), where the bound's own doc comment states the coupling as its
+> rationale. Mutate EACH side by one and expect a red; two zero-red probes is the finding
+> (BUT-1912).
+
+**Why it was wrong.** My round-1 probe replicated `formatSwedishDecimal` and swept values
+BELOW 1e-6 — i.e. only the branch that goes through `_digitsBelowExponentThreshold`'s
+`toStringAsFixed(20)`. That branch does top out at 20 fraction digits. But `formatSwedishDecimal`
+has a second emitting branch one line above it:
+
+```dart
+final decimal = amount.toString();
+if (!decimal.contains('e')) return decimal.replaceAll('.', ',');
+```
+
+For a double in [1e-6, 1e-5) with a full 17-significant-digit mantissa, `toString()` gives
+decimal notation with 5 leading zeros + 17 digits = **22** fraction digits. Measured
+2026-08-25:
+
+```
+1.2345678901234567e-6  -> "0,0000012345678901234567"  fd=22   (refused, bound is 20)
+1.0000000000000002e-6  -> "0,0000010000000000000002"  fd=22
+9.876543210987654e-6   -> "0,000009876543210987654"   fd=21
+1.2345678901234567e-5  -> "0,000012345678901234568"   fd=21
+1.2345678901234567e-4  -> "0,00012345678901234567"    fd=20
+1e-20                  -> "0,00000000000000000001"    fd=20
+```
+
+So the bound is NARROWER than the widest emission, not tied to it, and the property BUT-1912
+asserts ("a seeded amount is always typeable back") is FALSE for that decade. The 22 only
+occurs in [1e-6, 1e-5) — 17 significant digits is the ceiling for a shortest-round-trip
+double, so [1e-5,1e-4) tops out at 21 and [1e-4,1e-3) at 20.
+
+**What it cost.** The coordinator wrote my sentence into the commit close to verbatim, as a
+test NAME (`'the deepest amount the formatter emits still fits the field'`) and its comment
+(`An exact tie between two constants...the formatter's deepest emission is 20 fraction
+digits`). Meanwhile the code-reviewer independently measured the 22 and corrected
+`maxFractionDigits`' own doc to `NOT wide enough for every string [formatSwedishDecimal]
+emits`. One commit, two files ~180 lines apart, opposite answers to one question — and the
+false half was in the artefact I had asked for.
+
+The test's ASSERTIONS survive the correction intact: `expect(typed(written), written)` on
+1e-20 still kills `maxFractionDigits: 20 -> 19`, which was the zero-red mutant worth closing.
+Only the name and the "exact tie" framing were false. That split matters — the remedy is to
+strike two sentences, not to drop the test.
+
+**The generalisable rule.** A reviewer's measured claim is a DRAFT COMMENT for the code under
+review; it will be pasted, not paraphrased. Before stating a MAX or a "deepest", enumerate the
+emitting branches from the source and probe each — a replica built to answer one question
+inherits that question's scope, and a sweep over VALUES cannot find a branch the values never
+reach.
+
+**Second finding this round, same shape, different sentence.** The round proved
+`QuantityParser.parse` has no finiteness guard (verified: no `isFinite`/`isInfinite`/`isNaN`
+anywhere in `lib/utils/text/quantity_parser.dart`) and filed BUT-1943 on it. The production
+comment was corrected to say so. But the SAME provenance claim survived in two test comments:
+
+- `swedish_decimal_input_test.dart:160` — `The route in is stored data written before the
+  field was bounded.`
+- `swedish_decimal_input_test.dart:285` — `...anyone whose stored amount predates the bound`
+
+The sweep caught the `lib/` copy and one of the three test copies (`:143-145`, correctly
+struck) and missed two. Confirms the standing principle: a comment-only correction owes a
+grep of the CORRECTED SENTENCE, by CONCEPT, across `test/` — and the copies land in different
+syntactic roles (production doc, test-body comment, test rationale), so a literal grep of the
+production wording finds none of them. Grep the CONCEPT: here, "stored data", "predates",
+"before the bound".
+
+Round-1 blockers both verified closed on the current bytes: the three false "1,5 became 15"
+copies are gone from every index copy, and `minValue: 1.2` + `expect(controller.text, '1,5')`
+kills all three revert mutants (coordinator's P1 re-run: 1 red before, 2 red after).
+
+Verdict: fail, 2 blocking.
+
+### 2026-08-25 — BUT-1912 round 3: the comment was struck, the test NAME kept saying it
+
+Trigger: third re-review. Coordinator reported all three round-2 findings fixed.
+
+**Closed and verified on the current bytes.** Blocking A: `swedish_decimal_input_test.dart:293`
+now reads `anyone holding an amount over the bound` — the false `predates the bound`
+provenance qualifier is gone, and the replacement is directly readable from `_exceedsBounds`
+(the field refuses by SIZE, not by when the value was written). The `:160` copy is gone too.
+Non-blocking interval: `maxFractionDigits`' doc now says `its toString() branch can run past
+this bound, and such a value is refused on retype` — no interval, no numeral, nothing to rot.
+Round-1 fixes still intact in the index copies (`minValue: 1.2`, `ANCHORED pattern`).
+
+**The deficiency test landed and is sound.** `swedish_decimal_input_test.dart:282-290`:
+
+```dart
+final written = formatSwedishDecimal(1.2345678901234567e-6);
+expect(written, '0,0000012345678901234567');   // matches my measurement exactly
+expect(typed(written), '');                     // 22 > 20 -> refused whole
+```
+
+Its comment's claim `reddens if maxFractionDigits is raised to 22` is TRUE: at a bound of 22,
+`fractionDigits > maxFractionDigits` is false, the text is accepted, and the `''` assertion
+fails. So widening either number is now deliberate.
+
+**Still open — and it is the SAME finding as round 2, half-repaired.** Line 236:
+
+```dart
+test('the deepest amount the formatter emits still fits the field', () {
+  // An exact tie that nothing else asserts: the deep branch spells 20
+  // fraction digits via `toStringAsFixed(20)` and the field's bound is 20.
+```
+
+The COMMENT was correctly scoped to the branch and is now true. The NAME still asserts the
+global claim verbatim, and it is false: the deepest emission is 22 digits and does NOT fit.
+The file now holds, 46 lines apart and in the same commit:
+
+- `:236` `'the deepest amount the formatter emits still fits the field'`
+- `:282` `'the formatter can emit more digits than the field accepts'`
+
+**The generalisable rule.** A test's NAME and its COMMENT are two copies of one claim. A
+finding that QUOTES the comment gets the comment repaired; the name survives because the
+repair sweeps the text the finding quoted. `grep "^ *test('"` the concept across names as a
+separate pass. And grade every test the round ADDS against the names already in the file —
+the new test's name is frequently the exact falsifier of an old one, and that collision is
+cheap to catch (two greps) and expensive to ship, because both names read as documentation.
+
+This is the fourth instance today of "repair landed at the locations the finding NAMED, a
+sibling copy survived". The coordinator identified the pattern independently this round and
+started sweeping by concept; this one still slipped, because the sibling was not in another
+file or another paragraph but in the same test's own first line.
+
+Verdict: fail, 1 blocking.
+
+### 2026-08-25 — BUT-1912 round 4: closed, and the over-correction that was correctly declined
+
+Trigger: fourth re-review. Coordinator struck the last false test name and asked whether
+`:165`'s "ever" was the same defect a fifth time.
+
+**Closed.** `swedish_decimal_input_test.dart:236` is now `test('a 1e-20 amount still fits the
+field', ...)`. The superlative is gone, what remains is readable off the test's own two lines
+(`1e-20`, `maxFractionDigits`), the assertions are untouched, and it still kills
+`maxFractionDigits: 20 -> 19`. No collision with `:282` remains — "a specific value fits" and
+"some values do not" are compatible statements.
+
+**Independent name-vs-name pass, 29 unit names + 7 widget amount names.** No remaining
+collisions. Two names were checked hard and cleared:
+
+- `:206` `'a tiny amount survives the FIELD, not just the parser'` vs `:282` `'the formatter
+  can emit more digits than the field accepts'` — the INDEFINITE ARTICLE does the work.
+  `:206` asserts one exists; it makes no universal claim, so `:282` does not falsify it. Had
+  it read "every tiny amount", it would be the `:236` defect again.
+- `:127` `'what it writes, the parser reads back unchanged'` is unqualified and false in
+  general (Infinity parses back null). NOT filed: it predates this ticket, the round did not
+  touch or falsify it, and the round's own new `:247` (`'the one shape format -> parse does
+  NOT round-trip'`) is precisely the carve-out that documents the exception. The pair is
+  better documented after this round than before it. Recorded rather than filed so a later
+  reviewer knows it was considered.
+
+**The `:165` question, and why declining to strike was right.** The coordinator offered to
+strike `'no amount is ever written in exponent notation (BUT-1912)'` rather than argue for
+the one that ships. Verified by walking every branch of `formatSwedishDecimal`:
+
+1. `!isFinite` -> `'Infinity'` / `'-Infinity'` / `'NaN'` — none contains an `e`.
+2. `== 0` -> `'0'`.
+3. whole number -> `_wholeDigits`: `< 1e21` -> `toStringAsFixed(0)`, digits only; `>= 1e21`
+   -> `toStringAsExponential()` always matches `^(-?)(\d)(?:\.(\d+))?e\+(\d+)$` (exactly one
+   leading digit, positive exponent), so the expansion returns sign + digits.
+4. `toString()` without `e` -> explicitly guarded by `!decimal.contains('e')`.
+5. `_digitsBelowExponentThreshold` -> `toStringAsFixed(20)`. Cannot receive a value where
+   `toStringAsFixed` falls back to exponential: that needs `|x| >= 1e21`, and every double
+   that large IS a whole number (no fractional part above 2^52), so branch 3 claims it first.
+
+The only `e`-emitting line in the file is `_wholeDigits`' `if (match == null) return
+exponential;`, which is unreachable. The "ever" therefore holds for every reachable value —
+and survives even removing the `isFinite` guard (infinity would route to `_wholeDigits`,
+fail the regex, and return `'Infinity'`, still no `e`).
+
+**The generalisable rule, and it is the brake on this whole four-round pattern.** A
+quantifier over the CODE'S BEHAVIOUR is a CONTRACT; a quantifier over the TEST FILE'S
+CONTENTS is a COUNT. `'no amount is ever written in exponent notation'` ranges over the
+function's output and cannot be falsified by adding a ninth fixture — the repo's own rule
+(state the rule, not the evidence) prefers it to a name scoped to its fixture list. `'only
+the X case discriminates'` ranges over the tests below it and dies to the next insert. Settle
+a superlative by WALKING THE BRANCHES, never by counting fixtures. Then check that the
+fixtures defend the one branch that could falsify the name: here `1e21`, `1e30` and
+`maxFinite` are exactly the values reaching the expansion path, so the fixture set guards the
+line whose regression would make the name false. That is a good name-to-fixture relationship,
+not a seam.
+
+Four rounds, four instances of "repair landed where the finding pointed, a sibling copy
+survived": another file, another paragraph, a group name nine lines down, and finally the
+test's own first line two lines above the comment that was fixed. Every one was prose; no
+round found a second code defect after round 1's hollow fixture.
+
+Verdict: pass, 0 blocking.
+
+### 2026-08-25 — BUT-1912 round 5: a doc sentence that broke a rule its own file states
+
+Trigger: fifth re-review. Integration gate struck a consumer census in
+`formatSwedishDecimal`'s closing doc paragraph; one file changed.
+
+**Verified closed.** The sentence — `It seeds the shopping and PANTRY amount fields alike:
+PantryItem.formattedQuantity and UnifiedShoppingItem.formattedAmount both come through here.`
+— is gone from the INDEX copy (checked with `git show :<path>`, not the worktree). Pure
+deletion: the doc block now ends on the precision paragraph and `String
+formatSwedishDecimal(double amount)` follows directly, with no replacement sentence and no
+re-parented comment. File 211 -> 206 lines, consistent with 3 prose lines plus the `///`
+spacer. Every other section byte-compared against my round-2 full read and round-3 partial:
+header, class doc, both constants, `formatEditUpdate`, `_exceedsBounds`,
+`parseSwedishDecimal`, the function body including the `QuantityParser` correction,
+`_wholeDigits`, `_digitsBelowExponentThreshold`, the regex — all unmoved.
+
+**Independent recount confirms the sentence was false.** Five `formatSwedishDecimal` call
+sites in `lib/`, not two:
+
+```
+lib/models/pantry/pantry_item.dart:159                                 formattedQuantity
+lib/models/unified/unified_shopping_item.dart:437                      formattedAmount
+lib/views/edit_recipe_view.dart:557                                    RATING seed
+lib/views/skriv_sjalv_recept_view.dart:132                             RATING seed
+lib/views/unified_shopping/widgets/dialogs/shopping_item_dialogs.dart:301  direct seed
+```
+
+**It was wrong on the CATEGORY too, not only the count** — two of the five are rating
+fields, so `the shopping and PANTRY amount fields alike` would still have been false after
+expanding the list to five. That is a second, independent reason strike beat expand, and it
+generalises: when a census is wrong, check whether the NOUN it groups by is also wrong
+before proposing the longer version.
+
+Concept sweep across the whole change set for surviving copies (`come through here`,
+`seeds the shopping`, `formattedQuantity`, `formattedAmount`): none. No test cites the
+sentence as a coverage pointer — the only hit in the two consumer suites is an ordinary
+`import`.
+
+**The generalisable rule.** Read a file's OWN HEADER before grading any prose below it. This
+file's header, thirty lines above the struck sentence, says `This is a ROUTING rule, not a
+census — deliberately, because a count of them would be wrong the week after it was
+written.` The sentence broke a rule its own file states, which is the cheapest strike
+argument available: nothing to measure, the file already made the argument, and it settles
+strike-vs-expand in the same breath because expanding the list re-arms the exact trap the
+header names.
+
+**The shape of this whole change, for the record.** Five rounds, five instances of one
+pattern — repair lands where the finding pointed, a sibling copy survives: another file,
+another paragraph, a group name nine lines down, a test's own first line two lines above the
+comment that was fixed, and finally a doc sentence contradicting its own file header. Every
+one prose. Exactly one behavioural defect was ever found (round 1's hollow BUT-1920 fixture,
+green on the pre-fix code), and three of the false sentences originated in a REVIEW rather
+than in the implementation — including one of mine. The durable pair: a reviewer's measured
+sentence gets pasted into the code, not paraphrased, so measure it as if writing the comment;
+and on receiving one, re-measure before adopting it.
+
+**Housekeeping surfaced, not done:** `knowledge.md` grew five clauses across this review and
+is well past the budget its own header names. The header pre-authorises SPLITTING
+`Vacuity patterns` out rather than compressing again. A review turn is the wrong place to
+restructure a shared file — flagged to the parent for a dedicated pass. Same flag was raised
+2026-08-17 and has now recurred, which is itself the signal.
+
+Verdict: pass, 0 blocking.
+
+### 2026-08-25 — BUT-1912 round 6: the one mechanical defect, found by a regex after six passes
+
+Trigger: `arch-guard` pre-commit hook blocked in 1.17s on a BUT-581 violation that three
+review agents and six passes had walked past. One file changed.
+
+**The substitution is semantically identical — verified, not assumed.**
+`lib/core/extensions/default_value_extensions.dart:7-9` reads:
+
+```dart
+extension StringDefaults on String? {
+  String orEmpty() => this ?? '';
+```
+
+That is byte-for-byte the expression being replaced. `match[3]` is `String?`
+(`RegExpMatch.operator []`), so `StringDefaults` binds; the file's other two `orEmpty()`
+overloads are on `List<T>?` and `Map<K,V>?`, so static dispatch is unambiguous. The
+zero-padding arithmetic below it is untouched.
+
+**No new test is owed, and the reason is analytic rather than a judgement call: BOTH arms of
+`match[3]`'s nullability are already pinned** by `'a huge amount keeps its magnitude instead
+of saturating (BUT-1912)'`:
+
+| fixture | `toStringAsExponential()` | `match[3]` | `fraction` | `zeros` | expected |
+|---|---|---|---|---|---|
+| `1e21`   | `1e+21`   | **null** | `''`  | 21-0=21 | `1000000000000000000000` |
+| `1.5e21` | `1.5e+21` | `'5'`    | `'5'` | 21-1=20 | `1500000000000000000000` |
+| `-1e21`  | `-1e+21`  | **null** | `''`  | 21      | `-1000000000000000000000` |
+
+Any divergence from `?? ''` changes `fraction.length` on the null arm and shifts every digit
+after it — e.g. a `'null'` return gives `zeros=17` and `'1null'` + 17 zeros. The test reddens
+loudly. So the discrimination is structural; no mutation probe owed.
+
+**Import checked too, because an added import is its own lint surface.**
+`analysis_options.yaml:78` sets `directives_ordering: false`, so placement is free, and
+`always_use_package_imports: true` (line 42) is satisfied by a `package:` import. The
+flutter-then-butlery order matches the prevailing pattern in `cook_event.dart` and in the
+sibling staged file. No raw `?? ''` remains in either staged `lib/` file.
+
+**The lesson, and it is about the division of labour.** A review gate grades CLAIMS and
+whether a test can fail. A deterministic lint grades CONVENTIONS. Neither covers the other.
+Six passes of vacuity analysis across three agents could not see a raw `?? ''`, and a regex
+named it in 1.17 seconds — not because the gates were weak but because it is not the axis
+they measure. The remedy is ordering, not more review: run
+`tools/check_staged_arch_guards.sh` FIRST when reviewing a recovered or never-reviewed
+patch. It costs about a second and it front-loads the entire class.
+
+Worth keeping beside it: the converse also held here. Round 1's hollow BUT-1920 fixture —
+green on the pre-fix code because the old anchored regex TRUNCATED at the comma rather than
+concatenating — is a behavioural defect no linter could ever have seen. The two mechanisms
+are complements, and this change needed both.
+
+**Final state of the change.** Six rounds. One behavioural defect (round 1), one convention
+defect (round 6, by hook), and four rounds of prose in between — three of whose false
+sentences originated in a review rather than in the implementation, including one of mine.
+The code was right early; the sentences describing it were not.
+
+Verdict: pass, 0 blocking.

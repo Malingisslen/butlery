@@ -131,7 +131,28 @@ you want the revert-probe that proved it; or this file itself reads too compress
   file gained a group, and resolve the cross-file pointer with one grep of the guarded CLASS
   name in the cited file: zero hits IS the finding, and a false coverage pointer is worse than
   a false count because it is the sentence a later run cites to skip writing the test
-  (BUT-1909).
+  (BUT-1909). **A test's NAME and its COMMENT are TWO copies of one claim** — a finding that
+  quotes the comment gets the comment repaired and leaves the name, two lines away, asserting
+  the struck thing verbatim. Grep the concept across NAMES separately (`grep "^ *test('"`).
+  **And grade every test the round ADDS against the names already in the file**: the new
+  test's name is often the precise falsifier of an old one, which is how one file ended up
+  holding `'the deepest amount the formatter emits still fits the field'` 46 lines above
+  `'the formatter can emit more digits than the field accepts'` (BUT-1912, 2026-08-25).
+  **The line that stops OVER-correcting: a quantifier over the CODE'S BEHAVIOUR is a
+  CONTRACT, a quantifier over the TEST FILE'S CONTENTS is a COUNT.** `'no amount is ever
+  written in exponent notation'` ranges over the function's output — adding a ninth fixture
+  cannot falsify it, and the repo rule (state the rule, not the evidence) prefers it to a
+  name scoped to its fixture list. `'only the X case discriminates'` ranges over the tests
+  below it and dies to the next insert. Settle a superlative by WALKING THE BRANCHES, not by
+  counting fixtures — and check the fixtures then defend the one branch that could falsify
+  it (BUT-1912's eight include `1e21`/`1e30`/`maxFinite`, the only values reaching the
+  expansion path whose dead `match == null` fallback is the sole `e`-emitting line).
+  **Read a file's OWN HEADER before grading any prose below it** — a header stating
+  `this is a ROUTING rule, not a census, because a count would be wrong the week after`
+  makes every later census in that file a defect BY THE FILE'S OWN TERMS. That is the
+  cheapest strike argument there is: nothing to measure, the file already made it, and it
+  also settles strike-vs-expand — expanding the list re-arms the trap the header names
+  (BUT-1912, 2026-08-25).
 - **A production edit in the round falsifies comments in files it never touched, in two
   recurring shapes.** (1) A param promoted DEFAULTED→REQUIRED kills every "delete this
   argument and it falls back to <default>" mutant sentence — the mutant is now a COMPILE
@@ -305,7 +326,15 @@ Codecov: 60% project / 70% new patches / 2% drop tolerance — floors, decided 5
   nothing because a later one refuses everything it does), FORWARD (fixture must clear
   every downstream refusal WITH SLACK, never at an exact tie), SIDEWAYS (a new guard can
   unpin an older filter downstream). Total subsumption = comment, never a test. Run "which
-  mutants killed nothing" and its mirror once per file.
+  mutants killed nothing" and its mirror once per file. **Two CONSTANTS in different classes
+  can sit at that tie with nothing pinning the coupling** — a writer's widest output vs a
+  reader's bound, where the bound's doc comment states the coupling as its rationale. Mutate
+  EACH side by one; two zero-red probes is the finding. **Before stating the writer's MAX,
+  sweep EVERY branch that emits** — I called `formatSwedishDecimal`/`maxFractionDigits` an
+  exact 20/20 tie from a probe covering only the `toStringAsFixed` branch; the plain
+  `toString()` branch emits 22, so the bound is NARROWER than the widest output, not equal to
+  it. A reviewer's measured sentence gets copied verbatim into the test name and comment, so a
+  partial sweep ships as a false claim in the commit it was reviewing (BUT-1912, 2026-08-25).
 - A guard inside a loop has a POSITION (before/after the accumulator update); one above a
   pre-existing early-return is blind to every fixture that falls through — usually the
   worst leak (raw content unfiltered).
@@ -320,6 +349,14 @@ Codecov: 60% project / 70% new patches / 2% drop tolerance — floors, decided 5
   `FilteringTextInputFormatter.digitsOnly`**, so any `replaceAll(',', '.')` decimal parse
   below it is DEAD and "1,5" reaches the model as 15. A suite over a numeric field that never
   types a DECIMAL cannot see it — measured, shopping add/edit dialogs, 2026-08-17.
+  **RUN the OLD formatter's regex before choosing the fixture that proves its replacement**:
+  `allow(RegExp(r'^\d*\.?\d*'))` TRUNCATES at the comma ("1,5"→"1") because `^` makes
+  `allMatches` yield one match at index 0 — it does NOT concatenate like `digitsOnly`
+  ("1,5"→"15"). The two failures need OPPOSITE fixtures: truncation lands INSIDE any range the
+  true value satisfies, so `expect(validate(), isTrue)` is satisfied by the pre-fix code.
+  Assert the parsed VALUE, or set a bound BETWEEN the truncated prefix and the true value. The
+  wrong mental model shipped as three comments AND as the fixture chosen from them (BUT-1920,
+  2026-08-25).
 - A flag selecting between two values is pinned by both arms over one fixture with
   observably different values — no production mutant needed. A nullable override deriving
   its default from a nullable payload owes a third arm: the EMPTY (non-null) payload.
@@ -530,7 +567,12 @@ ever on screen. Use `RecipeBuilder().withTagResult(...)` for anything badge- or 
   suite had nothing to say", grep `test/architecture/architecture_test.dart`: style bans
   (BUT-581 raw `?? ''`) ARE tests there, repo-walking source lints run in two CI workflows,
   with `tools/check_staged_arch_guards.sh` as the pre-commit twin. Behavioural suites cannot
-  see a respelling by construction — that split is correct, not a gap.
+  see a respelling by construction — that split is correct, not a gap. **Run that pre-commit
+  twin FIRST when reviewing a recovered or never-reviewed patch** — ~1s, and it grades the
+  axis vacuity analysis structurally cannot see: BUT-1912 ran six passes across three review
+  agents and every one missed a raw `?? ''` the regex named instantly. Gates grade CLAIMS and
+  whether a test can fail; lints grade CONVENTIONS. Neither covers the other, and treating a
+  review pass as if it covered both is what left it there (2026-08-25).
 
 ### Vacuity patterns — the recurring ways a "passing" test proves nothing
 The single most repeated finding across two months of review.
