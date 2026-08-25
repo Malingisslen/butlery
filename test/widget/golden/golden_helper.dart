@@ -46,6 +46,34 @@ void _installCacheStubs() {
   );
 }
 
+/// The `FlutterErrorDetails.library` stamped on a failed image load. It is the only error class a golden is
+/// allowed to ignore: the placeholder or errorWidget that replaces the image
+/// is what the golden captures, so the load failure itself changes nothing.
+const _imageErrorLibrary = 'image resource service';
+
+/// Swallows failed-image-load reports and hands every other error back to the
+/// test binding. Returns the handler it replaced, so the caller can restore it.
+///
+/// Why this is a filter and not `FlutterError.onError = (_) {}`: a golden
+/// comparison reports its verdict as a thrown error, not as a return value.
+/// `matchesGoldenFile` runs the comparator inside `binding.runAsync`, which
+/// catches whatever the comparator throws, routes it to `FlutterError.onError`
+/// and completes with `null` — and `null` is the matcher's word for "matched".
+/// A handler that drops everything therefore turns every pixel mismatch and
+/// every wrong-size render into a passing test, while still writing the diff
+/// images to `failures/`. `golden_helper_redness_test`
+/// pins both halves of this filter.
+void Function(FlutterErrorDetails)? installGoldenImageErrorFilter() {
+  final previous = FlutterError.onError;
+  FlutterError.onError = (details) {
+    if (details.library == _imageErrorLibrary) {
+      return;
+    }
+    (previous ?? FlutterError.presentError)(details);
+  };
+  return previous;
+}
+
 /// Canonical runner for visual golden tests in the Butlery project.
 ///
 /// Centralises the ceremony every golden test shares:
@@ -56,8 +84,9 @@ void _installCacheStubs() {
 ///  * the default test font (Ahem) — we intentionally do *not* load the
 ///    app's JosefinSans / SpaceGrotesk fonts so glyphs stay deterministic
 ///    across platforms without a CI-vs-local split;
-///  * silenced FlutterError during render — protects goldens from asset-
-///    load / network-image error bleed that doesn't affect the pixel output.
+///  * an image-error filter around the comparison — drops asset-load /
+///    network-image noise that doesn't affect the pixel output, and lets
+///    everything else through so a real mismatch still fails the test.
 ///
 /// Update goldens with `flutter test --update-goldens test/widget/golden`.
 ///
@@ -103,9 +132,7 @@ void butleryGolden(
 
     await tester.pumpWidget(createLocalizedTestApp(child: child));
 
-    // Don't let stray asset-load errors fail a golden render.
-    final previousOnError = FlutterError.onError;
-    FlutterError.onError = (_) {};
+    final previousOnError = installGoldenImageErrorFilter();
     addTearDown(() => FlutterError.onError = previousOnError);
 
     await expectLater(

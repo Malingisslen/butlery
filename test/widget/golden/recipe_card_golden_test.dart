@@ -44,13 +44,7 @@ void main() {
       // the row it sits in takes the height of its tallest card. Pinning one
       // here would measure a card the screen never draws.
       //
-      // The pixels were re-pinned in that commit. Note for whoever reads a
-      // failure here: this suite cannot currently report one — `butleryGolden`
-      // silences `FlutterError.onError` immediately before `expectLater`, and
-      // the comparator throws through that, so a mismatch writes
-      // `failures/*_{master,test}Image.png` and still reports a pass. Filed
-      // separately as BUT-1931; the silencing is unconditional, so it affects
-      // every golden that goes through `butleryGolden`, not just this one.
+      // The pixels were re-pinned in that commit.
       width: 180,
       height: null,
       target: find.byType(ContentCard),
