@@ -2352,3 +2352,23 @@ Example: lib/services/menu/parser/text_normalizer.dart _noWordBefore/_noWordAfte
   the stubbed method was CALLED, not that the result has the right shape — a result shape a
   fallback can also produce proves nothing. Whenever one such false-green is found, sweep
   the siblings: the missing harness is a property of the wrapper, not of the feature.
+
+### [Workflow] A scoped competitive finding got promoted to the product's USP by episodes reading each other
+- **Date**: 2026-08-25 (Butlery Radio radar)
+- **Trigger**: Radar v.35 headlined that a rival had "taken Butlery's position in words" by
+  copying an allergen sentence, calling allergen blocking "the architectural claim Butlery's
+  whole differentiation rests on". Malin: *"Var får du din information om att just
+  allergenerna är vår stora USP? Det är det inte."* The USP is the collect-everything +
+  auto-tag + catered-menu chain, and `docs/architecture/RECIPE_PIPELINE.md` states it in its
+  first line — *any source → import → extraction → parsing → tagging → personalization*. The
+  claim's real origin was a 2026-07-26 competitor note where "our blocking is real, theirs
+  only warns" was scoped as the strongest edge **in a head-to-head with one rival's false
+  marketing**. Each radar then gathered from the previous radar's log instead of the product
+  record, and the scoped finding compounded into an identity claim over several weeks.
+- **Rule**: A recurring episode/report that reads its own previous output will amplify
+  whatever framing it started with — no single run introduces an error large enough to
+  notice. Anchor every "what this product IS" sentence in the product record (the doc, the
+  code) on each run, never in the prior episode; a competitive comparison tells you where a
+  RIVAL is weak, which is a fact about the rival, not about what you are for. When a scoped
+  finding is worth carrying forward, carry its scope with it — the qualifier is the first
+  thing a summary drops.

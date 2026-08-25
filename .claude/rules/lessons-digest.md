@@ -58,6 +58,7 @@ lessons that only matter while writing or running tests.
 
 ## UI/UX
 
+- A recurring report that reads its OWN previous output amplifies whatever framing it started with, one harmless step at a time: a competitor note scoped as "our strongest edge against THIS rival's false marketing" became "the claim Butlery's whole differentiation rests on" over several radar episodes, none of which re-read the product record that states the USP in its first line. Anchor every "what this product IS" sentence in the doc/code on EVERY run, never in the prior episode - a competitive contrast is a fact about the rival, not about what you are for - and when carrying a scoped finding forward, carry the scope: the qualifier is the first thing a summary drops.
 - Heuristic/LLM-derived visible content (headings, tags, parsed amounts) ships WITH its correction UI in the MVP — "display now, correct later" is never a valid phasing.
 
 ## Language and Firebase gotchas

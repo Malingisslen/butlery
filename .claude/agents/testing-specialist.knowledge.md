@@ -562,6 +562,18 @@ The single most repeated finding across two months of review.
   X's own method and asking whether anything can propagate out of it; usually only a guard
   that throws ABOVE the wrapper (a permission check, a new sentinel refusal) does. Strike the
   clause, file the behaviour gap separately (BUT-1928 review, `MessagingService.closePoll`).
+- **A blanket `FlutterError.onError = (_) {}` near `matchesGoldenFile` makes every golden a
+  PERMANENT PASS** — the comparator reports its verdict by THROWING, `runAsync` catches it,
+  re-reports it as `library: 'Flutter test framework'` and returns `null`, and `null` is the
+  matcher's word for "matched"; only the diff images in `failures/` tell you. The on-disk
+  symptom is a golden whose DIMENSIONS disagree with the helper's pinned surface — nobody
+  re-verified it because nothing could fail. Filter on `details.library == 'image resource
+  service'` instead: it fails LOUD on an SDK rename and structurally cannot eat a verdict.
+  Pinning the FILTER is not pinning the CALL SITE — an `@isTest` helper cannot be invoked from
+  inside `testWidgets`, so the only durable guard is a source lint in `test/architecture/`,
+  which must strip comments first because the fix's own doc comment quotes the banned literal.
+  Grep `matchesGoldenFile` across `test/` before believing a helper-level fix is repo-wide
+  (BUT-1931).
 - Circular determinism (calling the same pure function twice, or deriving expected from the
   const under test) — pin the literal OUTPUT.
 - Sibling-branch short-circuit, BOTH polarities: for `if(A) return true; if(B) return

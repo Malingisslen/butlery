@@ -25752,3 +25752,115 @@ doc ("every node in the semantics tree" while line 323 calls it on a SUBTREE —
 place, needs no measurement).
 
 Verdict: pass, 0 blocking.
+
+### 2026-08-25 — BUT-1931 golden-silencer fix: reviewing the redness suite that pins it (trigger: commit-gate testing review, first review of a patch-file-recovered change)
+
+Staged: `test/widget/golden/golden_helper.dart` (M), `golden_helper_redness_test.dart` (NEW,
+96 lines), `recipe_card_golden_test.dart` (M, comment strike only), six regenerated PNGs.
+
+**The bug.** `butleryGolden` set `FlutterError.onError = (_) {}` immediately before
+`expectLater(..., matchesGoldenFile(file))`. Verified against the SDK at Flutter 3.38.5
+(`/c/tools/flutter`):
+
+- `_matchers_io.dart:109-128` — `MatchesGoldenFile.matchAsync` runs the comparison inside
+  `binding.runAsync<String?>`, returns `success ? null : 'does not match'`, and its inner
+  `on TestFailure` catch does NOT cover `LocalFileComparator`'s throw, which is a `FlutterError`.
+- `binding.dart:2108-2121` — `runAsync` catches anything the callback throws, calls
+  `FlutterError.reportError(FlutterErrorDetails(..., library: 'Flutter test framework',
+  context: ErrorSummary('while running async test code')))`, then `return null`.
+- `null` from `matchAsync` = matched. So the mismatch is routed to `onError`, eaten, and the
+  test passes while `failures/*_{master,test}Image.png` are still written.
+
+**The measurement that settles "were the other goldens load-bearing".** The surface-pinning
+block in `butleryGolden` (`tester.view.physicalSize`, `devicePixelRatio = 1.0`, lines 118-128)
+is NOT part of the diff — it is pre-existing. So the six on-disk goldens at 800x600 predate it
+and were never re-verified: the comparator threw a size mismatch on every run since, the
+silencer ate it. All six were asserting nothing. They are load-bearing now, and the parent's
+green `flutter test test/widget/golden/` PROVES it under the fix (a throw would now fail the
+test), where the same green proved nothing before. `recipe_card_grid.png` is correctly the one
+that did not move — BUT-1911 regenerated it with `--update-goldens` at 180px two days earlier.
+
+**The premise in the brief that is false.** "Every golden in the repo goes through this helper"
+— no. `grep -rn matchesGoldenFile test/ --include=*.dart` returns a second live call site:
+`test/widget/menu/calendar_weekly_menu_widget_test.dart:951-958`, which hand-rolls
+`FlutterError.onError = (_) {}` immediately before
+`matchesGoldenFile('goldens/calendar_weekly_menu_populated.png')`. Its golden
+(`test/widget/menu/goldens/`, 8337 bytes) is dated 2026-04-18 and has never been regenerated.
+Same bug, unfixed, seventh golden in the repo. Filed non-blocking because the file is untouched
+by the diff and nothing the diff ships claims repo-wide coverage — the comment the diff STRUCK
+was correctly scoped ("every golden that goes through `butleryGolden`").
+
+**Grading the redness suite.** Five tests, two groups.
+
+- `installGoldenImageErrorFilter > drops a failed image load` and `> forwards everything else`
+  differ in EXACTLY ONE variable (`details.library`) with opposite expected outcomes. That is
+  the single-variable-control shape; neither can be satisfied by "the binding recorded nothing",
+  because its twin proves the binding does record. Non-vacuous by construction, no probe owed.
+- `butleryGolden can fail > a golden mismatch reaches the test binding` is the forwarding half
+  driven through the REAL mechanism: `_ThrowingComparator` throws a `FlutterError` with
+  `LocalFileComparator`'s message shape, so the runAsync wrapping is exercised for real.
+  `takeException()` is both the assertion and the reason the test can itself pass — its comment
+  says so and is accurate.
+- `> the blanket handler this replaced swallowed it` is an explicit CONTROL demonstrating the
+  bug, with a comment that correctly states what its own reddening would mean. Invariant under
+  the fix by design; correctly labelled rather than claimed as a guard.
+- The test spells `'image resource service'` by hand rather than importing the private
+  `_imageErrorLibrary` const — correct, that avoids circular determinism. Cost: an SDK rename
+  leaves it GREEN. Acceptable, because a rename is fail-loud in production (image noise starts
+  failing goldens).
+
+Mutants named (not run — analytically settled from the SDK read; both are `test/`-side, so no
+`lib/` write and no auto-mode classifier):
+1. delete `if (details.library == _imageErrorLibrary) return;` -> exactly 1 red (`drops a failed
+   image load`). Green = hollow.
+2. replace the handler body with an unconditional `return;` -> exactly 2 red (`forwards
+   everything else` + `a golden mismatch reaches the test binding`). Either green = hollow.
+
+**The gap: the CALL SITE is unpinned.** No test in the file invokes `butleryGolden`. Revert
+`golden_helper.dart:136` to `FlutterError.onError = (_) {}` while leaving
+`installGoldenImageErrorFilter` intact-but-unused and all 11 tests stay green — the exact
+BUT-1931 regression, silent. Analytically certain (nothing references `butleryGolden` in the
+suite), so no probe. Cannot be closed with a test: `butleryGolden` is `@isTest` and registers
+its own `testWidgets`, so it cannot be called from inside one, and a deliberately-mismatching
+`butleryGolden` would simply be a red test. The group NAME "butleryGolden can fail" is what
+overclaims; correct in place to name `installGoldenImageErrorFilter` (directly readable — the
+group calls that, not `butleryGolden`). The durable close for BOTH this and the calendar test
+is one source lint in `test/architecture/` banning the blanket form across `test/`, comments
+stripped first — the fix's own doc comment at `golden_helper.dart:58` quotes
+`FlutterError.onError = (_) {}` verbatim, so a naive guard is red on arrival.
+
+**Discriminator durability (`details.library == 'image resource service'`).** Live at five SDK
+sites in 3.38.5: `packages/flutter/lib/src/painting/image_stream.dart:556,604,792,818` and
+`packages/flutter/lib/src/widgets/image.dart:153`. Not brittle in the dangerous direction: the
+golden verdict arrives labelled `'Flutter test framework'` (minted by `runAsync` itself), so the
+filter structurally cannot swallow one whatever the image string becomes. A rename only makes
+image noise loud. No better anchor exists — `NetworkImageLoadException` misses asset-decode and
+`precacheImage`, `details.silent` is set on some sites and not others, and `flutter_test`
+publishes no constant. Naming `ImageProvider` in the const's doc comment is loose (it routes
+through `ImageStreamCompleter.reportError`, `image_stream.dart:792`); Low, and the repair is to
+STRIKE the class names and keep the rule, not to re-attribute them.
+
+**Determinism now that mismatches can fail.** Checked the two goldens that could go red with no
+commit behind them. `state_widget_loading` captures an animated `CircularProgressIndicator` after
+a single `pumpWidget` — phase 0, deterministic. `cook_snap_gallery_with_snaps` builds fixtures
+from `DateTime.now().subtract(Duration(days: 2))` and `days: 5`; both sit inside
+`ContextualTimeFormatter._relativeWindow` (7 days), so they render "2d"/"5d" and are
+calendar-independent. Safe by the fixture's values, not by design — bumping either to >=8 flips
+to `DateFormat.MMMd` and the golden becomes date-dependent. Follow-up only.
+
+Scoping caveat worth repeating to anyone reading a green golden here: the helper deliberately
+uses Ahem (doc comment lines 85-88), so every glyph is a solid box. These goldens pin layout,
+size, spacing and colour; they cannot see a Swedish copy change of the same length, a font swap
+or a weight change. Unchanged by this commit, but "load-bearing" is easy to over-read.
+
+Findings: 0 blocking. 1 High follow-up (calendar test, pre-existing), 1 Medium (call site
+unpinned + group name overclaims), 2 Low (tighten `isA<FlutterError>()` to the comparator's
+message; strike the SDK class names in the const's doc comment).
+
+Housekeeping observed, not acted on: `testing-specialist.knowledge.md` is at 90,589 chars and my
+Step 0 `Read` returned only lines 1-671 of 1075 — i.e. it has crossed the threshold its own
+header warns about, where Step 0 silently degrades to grepping. The header pre-authorises the
+remedy (split `Vacuity patterns` out rather than compress again). Not done here: a review turn is
+the wrong place to restructure a shared file. Surfaced to the parent.
+
+Verdict: pass, 0 blocking.
