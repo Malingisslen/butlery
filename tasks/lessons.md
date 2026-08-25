@@ -2372,3 +2372,27 @@ Example: lib/services/menu/parser/text_normalizer.dart _noWordBefore/_noWordAfte
   RIVAL is weak, which is a fact about the rival, not about what you are for. When a scoped
   finding is worth carrying forward, carry its scope with it — the qualifier is the first
   thing a summary drops.
+
+### [Workflow] A check run correctly against the wrong object is indistinguishable from a clean bill of health
+- **Date**: 2026-08-26 (BUT-1921, and twice more the same day)
+- **Trigger**: Three separate wrong answers in one session, all the same shape.
+  (1) I reported all nine sprint patches "apply cleanly" on the strength of
+  `git apply --check --3way` exiting 0 — but `--3way` exits 0 while writing conflict
+  markers, so six of nine actually conflicted. The command ran, the exit code was read
+  correctly, and it answered a different question than the one asked.
+  (2) BUT-1921 was closed as obsolete by a sprint run, then confirmed obsolete by a
+  parallel session, both having verified that the variable IS quoted in `secret-scan`.
+  True — but dating the line showed it was quoted since 2026-05-03, three months before
+  the error was observed, so `secret-scan` was never the source. Two correct checks, one
+  innocent file, and a live bug left standing.
+  (3) A reviewer stated a global maximum ("the deepest emission is 20 fraction digits")
+  measured with a probe that replicated only one of the function's two emitting branches.
+  The other branch reaches 22.
+- **Rule**: A wrong check is easy to spot; a right check aimed at the wrong object is not,
+  because everything about the execution looks correct. Before trusting a green result, ask
+  what the check's OUTPUT actually ranges over, not whether it ran: does this exit code
+  distinguish the failure I care about (`--3way` does not), is this the file the symptom
+  came from (date the line against the observation), does this probe reach every branch that
+  can produce the value (enumerate them from the source first). When a verdict and a symptom
+  disagree, the verdict is usually measuring something adjacent — find what it measured
+  before concluding the symptom was stale.
