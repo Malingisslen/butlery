@@ -134,16 +134,14 @@ void main() {
         // So a raw direct id here reaches Crashlytics with both uids in it,
         // in the very report whose reason was masked.
         //
-        // That WAS this test's only barrier. It is not any more: since
-        // BUT-1897 the exception class masks inside its own `toString()`, so
-        // the three assertions below now hold whether or not the throw site
-        // calls `.maskedConversationId`. Said plainly rather than left as a
-        // stale boast — the sentence here used to claim the opposite.
-        //
-        // The per-site call still does something the class rule does not: it
-        // hashes a ONE-SEGMENT `direct_abc`, which the class rule's composite
-        // pattern (two segments) leaves alone. That is the discriminating
-        // assertion at the end.
+        // Two different masks meet on this object, and the assertions are
+        // split to match. `toString()` is masked by the exception CLASS since
+        // BUT-1897, so the rendered-string assertions hold whether or not the
+        // throw site masks. The FIELD is not masked there — it deliberately
+        // keeps whatever the caller passed — so a hashed `resourceId` can only
+        // come from the throw site's own `.maskedConversationId`. That is the
+        // discriminating assertion, and it discriminates on the live
+        // `direct_<uidA>_<uidB>` shape (BUT-1913).
         const uidA = 'aBcDeFgHiJkLmNoPqRsTuVwXyZ12';
         const uidB = 'zZyYxXwWvVuUtTsSrRqQpPoO3456';
         const directId = 'direct_${uidA}_$uidB';
@@ -169,24 +167,16 @@ void main() {
         expect(rendered, isNot(contains(uidB)));
         expect(rendered, contains('direct_#'));
 
-        // The discriminating half. A one-segment id is hashed by
-        // `maskConversationId` at the throw site and NOT by the class-level
-        // rule, so this is the assertion that reddens if the throw site stops
-        // masking.
-        Object? shortThrown;
-        try {
-          await module.updateConversation(
-            conversationId: 'direct_abc',
-            title: 'New Title',
-          );
-        } catch (e) {
-          shortThrown = e;
-        }
+        // The discriminating half: the raw field, which no class-level
+        // `toString()` mask can reach.
+        final resourceId = (thrown! as ResourceNotFoundException).resourceId;
+        expect(resourceId, isNot(contains(uidA)));
+        expect(resourceId, isNot(contains(uidB)));
         expect(
-          shortThrown.toString(),
+          resourceId,
           contains('direct_#'),
           reason:
-              'a one-segment id is masked only by the throw site, so this is '
+              'a hashed field can only come from the throw site, so this is '
               'what proves the per-site call is still there',
         );
       },

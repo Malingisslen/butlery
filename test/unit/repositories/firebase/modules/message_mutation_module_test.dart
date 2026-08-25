@@ -480,31 +480,31 @@ void main() {
         // separate passes: the conversation id was caught by one reviewer and
         // the uid by another, a line apart, in the same hunk.
         //
-        // Since BUT-1897 the exception CLASS masks inside its own `toString()`,
-        // so the id assertions below no longer discriminate the throw site's
-        // `.maskedConversationId` on their own — the class rule would hold them
-        // up anyway. Nor does the `outsider` assertion — a bare uid passed as
-        // `userId:` is masked by the class rule too, measured: deleting
-        // `.maskedUserId` from the throw site leaves this suite green.
-        //
-        // The one-segment check at the end of this test is the ONLY assertion
-        // here that pins a per-site call, because the class rule's composite
-        // pattern needs TWO segments and cannot hash `direct_abc`.
+        // Two different masks meet on these objects, and the assertions are
+        // split to match. Since BUT-1897 the exception CLASS masks inside its
+        // own `toString()`, so every rendered-string assertion below holds
+        // whether or not the throw site masks — that half pins what leaves the
+        // device, not what the throw site did. The FIELDS are deliberately left
+        // unmasked by the class, keeping whatever the caller passed, so a
+        // hashed `resource` and a truncated `userId` can only come from the
+        // throw site's own `.maskedConversationId` / `.maskedUserId`. Those are
+        // the discriminating assertions, and they discriminate on the live
+        // `direct_<uidA>_<uidB>` shape (BUT-1913).
         const uidA = 'aBcDeFgHiJkLmNoPqRsTuVwXyZ12';
         const uidB = 'zZyYxXwWvVuUtTsSrRqQpPoO3456';
         const directId = 'direct_${uidA}_$uidB';
         const outsider = 'qQwWeErRtTyYuUiIoOpP12345678';
 
-        Future<String> renderedThrowFrom(Future<void> Function() op) async {
+        Future<Object> throwFrom(Future<void> Function() op) async {
           try {
             await op();
           } catch (e) {
-            return e.toString();
+            return e;
           }
           throw StateError('expected a throw');
         }
 
-        final missing = await renderedThrowFrom(
+        final missing = await throwFrom(
           () =>
               _newModule(
                 FakeFirebaseFirestore(),
@@ -514,12 +514,20 @@ void main() {
                 userId: outsider,
               ),
         );
-        expect(missing, isNot(contains(uidA)));
-        expect(missing, isNot(contains(uidB)));
-        expect(missing, contains('direct_#'));
+        final missingRendered = missing.toString();
+        expect(missingRendered, isNot(contains(uidA)));
+        expect(missingRendered, isNot(contains(uidB)));
+        expect(missingRendered, contains('direct_#'));
+        expect(
+          (missing as ResourceNotFoundException).resourceId,
+          contains('direct_#'),
+          reason:
+              'the field survives the class mask untouched, so a hashed '
+              'resourceId is what proves this throw site still masks',
+        );
 
         final convo = _twoPersonConvo();
-        final denied = await renderedThrowFrom(
+        final denied = await throwFrom(
           () =>
               _newModule(
                 FakeFirebaseFirestore(),
@@ -529,37 +537,43 @@ void main() {
                 userId: outsider,
               ),
         );
-        expect(denied, isNot(contains(uidA)));
-        expect(denied, isNot(contains(uidB)));
+        final deniedRendered = denied.toString();
+        expect(deniedRendered, isNot(contains(uidA)));
+        expect(deniedRendered, isNot(contains(uidB)));
         expect(
-          denied,
+          deniedRendered,
           isNot(contains(outsider)),
           reason:
               'the CALLER uid too — it rode in on `userId:` for a week '
               'after the conversation id beside it was masked',
         );
-        expect(denied, contains('direct_#'));
+        expect(deniedRendered, contains('direct_#'));
 
-        // The discriminating half. A one-segment `direct_` id is hashed by
-        // `maskConversationId` at the throw site and NOT by the class-level
-        // rule, which matches two segments — so this is what reddens if the
-        // per-site masking is removed.
-        final shortId = await renderedThrowFrom(
-          () =>
-              _newModule(
-                FakeFirebaseFirestore(),
-                readConversation: (_) async => null,
-              ).markConversationAsRead(
-                conversationId: 'direct_abc',
-                userId: outsider,
-              ),
-        );
+        // The discriminating half: the raw fields, which no class-level
+        // `toString()` mask can reach.
+        final deniedException = denied as PermissionDeniedException;
+        expect(deniedException.resource, isNot(contains(uidA)));
+        expect(deniedException.resource, isNot(contains(uidB)));
         expect(
-          shortId,
+          deniedException.resource,
           contains('direct_#'),
           reason:
-              'a one-segment id is masked only by the throw site, so this is '
+              'a hashed field can only come from the throw site, so this is '
               'what proves the per-site call is still there',
+        );
+        expect(
+          deniedException.userId,
+          isNotNull,
+          reason:
+              'the negative assertion below is vacuous on a null field, and '
+              'this throw site does populate it',
+        );
+        expect(
+          deniedException.userId,
+          isNot(contains(outsider)),
+          reason:
+              'the uid field is untouched by the class mask, so this is what '
+              'reddens if `.maskedUserId` leaves the throw site',
         );
       },
     );
