@@ -73,10 +73,16 @@ Marking wins on three counts:
   `onDocumentWritten` trigger, so the gate is keyed on the KIND of write rather than on who wrote
   it, and a writer nobody enumerated is closed for free. A third draft of this paragraph did hand
   over a list of four; it was measured at eight and struck.)
-- **The erasure and export story is already written.** A blocked row is an ordinary `messages`
-  document: `deleteMessages` anonymises it with every other message the user sent, and the
-  Art. 15 export carries it like any other row — as an empty one, since the guard removed the
-  text.
+- **The erasure story is already written.** A blocked row is an ordinary `messages`
+  document: `deleteMessages` anonymises it with every other message the user sent. No new
+  collection, no new cascade step.
+
+  **AMENDED 2026-08-26 (BUT-1904 follow-up):** this bullet also said the Art. 15 export
+  "carries it like any other row — as an empty one, since the guard removed the text". True
+  when written and falsified by the follow-up itself: another participant's guard-written
+  blocked row is now DROPPED from the bundle, and a client-stamped one is kept precisely
+  because it is not empty. The DECIDED paragraph further down carries the export decision;
+  this bullet is now about erasure only.
 
   *(Corrected 2026-08-26, before this landed: an earlier draft ended that sentence "before the
   document was ever readable". False. `guardDuplicateMessage` is `onDocumentCreated` — the client

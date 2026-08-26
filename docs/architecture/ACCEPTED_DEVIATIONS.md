@@ -2143,14 +2143,26 @@ Hiding the row from the other participants is a UI rule. What protects them is t
 SERVER removed the text; the client-side filter withholds only the bare fact that somebody's
 message was stopped.
 
-*(SUPERSEDED 2026-08-26 — Malin: build the dismiss control. The two paragraphs above are now
-false in both directions, and the sentence they argue about is false as well.
+*(Corrected 2026-08-26, before this landed: that sentence read "removed the text before the
+document was ever readable". False — and this was the THIRD copy of it. The other two were struck
+first and this one was missed, which is exactly why a false claim gets swept file by file rather
+than fixed where you noticed it. `guardDuplicateMessage` is `onDocumentCreated`: the client
+commits the full text and the trigger runs after, so a participant with the thread open sees the
+duplicate until the mark propagates. Harm nil — it is the same text they received moments
+earlier, and it was equally true of the delete behaviour — but the guarantee did not exist.
+Raised by the `code-reviewer` gate, twice.)* Do not cite it as a
+boundary, and do not move it inside `_filterBlocked`'s fail-open try/catch — it is pure local
+logic with nothing to fetch and nothing to throw. Two different moves are possible: into the
+catch, or below the `filter == null` exit.
+
+*(SUPERSEDED 2026-08-26 — Malin: build the dismiss control. Two claims in this section are
+now false, and each bolded paragraph below quotes the one it retires.
 
 **The sender CAN remove the row, from anywhere.** The notice carries its own `x`:
 `SystemMessageWidget.onDismiss` -> `MessageBubble.onDismissBlocked` -> `_dismissBlockedNotice`
 -> `ChatViewModel.deleteMessage`. That is the per-MESSAGE delete, not the conversation-level
-one, so it works identically in a group and in a direct message and closes the group gap the
-paragraph above measured. No confirm dialog and no undo -- a fourth friction class, written
+one, so it works identically in a group and in a direct message. That closes the group gap
+this section measured when it said a blocked row in a group had no removal path at all. No confirm dialog and no undo -- a fourth friction class, written
 into `.claude/rules/ui-conventions.md` section "Destructive-action confirmation" rather than
 here. The control is drawn only on the viewer's OWN row (`_isFromCurrentUser`), because
 `firestore.rules` `allow delete` on `messages` is sender-only.
@@ -2169,17 +2181,6 @@ failure. Do not harmonise the two. BUT-1954 carries the third surface, `searchMe
 filters neither. Mirrored from `.claude/rules/accepted-deviations.md`, which was amended in the
 same change; both files are edited together by this file's own header rule.)*
 
-*(Corrected 2026-08-26, before this landed: that sentence read "removed the text before the
-document was ever readable". False — and this was the THIRD copy of it. The other two were struck
-first and this one was missed, which is exactly why a false claim gets swept file by file rather
-than fixed where you noticed it. `guardDuplicateMessage` is `onDocumentCreated`: the client
-commits the full text and the trigger runs after, so a participant with the thread open sees the
-duplicate until the mark propagates. Harm nil — it is the same text they received moments
-earlier, and it was equally true of the delete behaviour — but the guarantee did not exist.
-Raised by the `code-reviewer` gate, twice.)* Do not cite it as a
-boundary, and do not move it inside `_filterBlocked`'s fail-open try/catch — it is pure local
-logic with nothing to fetch and nothing to throw. Two different moves are possible: into the
-catch, or below the `filter == null` exit.
 *(The sentence that stood here explaining why both placement cases exist — "neither kills the
 other's" — was STRUCK 2026-08-26. The testing-specialist gate measured it false: on the
 into-the-catch move the unregistered-filter case kills the throwing-filter case's mutant as
