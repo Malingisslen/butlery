@@ -310,11 +310,13 @@ async function run(): Promise<void> {
   // quoting another comment's wording breaks the moment that comment is
   // fixed — which is exactly what happened to the first version of this
   // note.)
-  //  · create path back to `!after?.sentAt` — the write throws
-  //    "candidateSentAt.toMillis is not a function", measured, because the
-  //    string reaches the comparator; and when the conversation happens to
-  //    have no lastMessage it is projected instead, after which every later
-  //    write in that conversation throws on the STORED value.
+  //  · create path — the mechanism sentence that stood here is STRUCK rather
+  //    than re-derived. It said reverting the trailing guard to
+  //    `!after?.sentAt` makes the write throw, measured. BUT-1904 then added a
+  //    second `instanceof` check EARLIER in the same function (the pre-read
+  //    gate), which refuses a string `sentAt` before the trailing check is
+  //    reached — so that revert now leaves this case green. A replacement
+  //    claim has to be run, not reasoned, and nobody has run one.
   //  · delete path back to `!replacementData.sentAt` — the string is truthy,
   //    so the recompute projects it and `lm.id === M6`.
   test("a STRING sentAt is refused by both the create and the delete path", async () => {

@@ -13,7 +13,7 @@
  *
  * Scenarios:
  *   D1. Flag OFF               -> nothing is deleted, even for a true duplicate.
- *   D2. Flag ON, true duplicate in ONE conversation -> the second is deleted.
+ *   D2. Flag ON, true duplicate in ONE conversation -> the second is stopped.
  *   D3. Same text, TWO conversations -> both survive. The false positive that
  *       made this ticket need a stakeholder panel.
  *   D4. Short body             -> never evaluated, so never deleted.

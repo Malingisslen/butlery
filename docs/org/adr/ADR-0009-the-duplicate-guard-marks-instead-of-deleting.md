@@ -123,9 +123,17 @@ the row exists — but it is gone as a copy.
   blocked row — `{type: duplicateBlocked, content: "", senderId: <other uid>}` — which is exactly
   the fact `_withoutOthersBlockedRows` exists to withhold on screen. That is the class BUT-1774
   decided (third-party behaviour the client never renders for anyone but yourself), and no
-  accepted deviation covers it. Harmless today, because with the flag off no such row can exist.
-  Either drop those rows from the export or append a dated deviation — but decide it, rather than
-  letting the code settle it silently. Raised by the `integration-reviewer` gate.
+  accepted deviation covers it. Either drop those rows from the export or append a dated
+  deviation — but decide it, rather than letting the code settle it silently. Raised by the
+  `integration-reviewer` gate.
+
+  *(Corrected 2026-08-26, before this landed: this bullet justified the deferral with "Harmless
+  today, because with the flag off no such row can exist." Falsified by two tests in this very
+  commit — B16 and B17 in `cook-snaps-and-message-mod-rules.test.ts` both ALLOW, because `type`
+  sits in neither `cannotModify` nor the create rule, so a client can stamp its own message
+  `duplicateBlocked` or create one already stamped. The exposure is small — such a row is
+  self-stamped by its own sender — but it is not zero, and the false premise was the load-bearing
+  half of the argument for deferring. The instruction stands; the excuse does not.)*
 - **A residual this record claimed, REFUTED rather than merely stale.** Earlier drafts said the
   recipient's push notification is sent client-side before the guard runs, so a blocked duplicate
   could still produce a push. Measured 2026-08-26 by the `integration-reviewer` gate and confirmed

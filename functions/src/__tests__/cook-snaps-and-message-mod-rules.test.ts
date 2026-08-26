@@ -727,10 +727,14 @@ test("messages: the same sender CAN edit an ordinary message (control)", async (
   );
 });
 
-// The sender can still get rid of the row — the delete rule is untouched, and
-// dismissing the notice is the one thing they are meant to be able to do with
-// it. A change that closed editing by closing the whole document would pass
-// the deny above and break this.
+// The sender can still get rid of the row — the delete RULE is untouched. A
+// change that closed editing by closing the whole document would pass the deny
+// above and break this.
+//
+// Says nothing about dismissing the notice: no screen in the app reaches this
+// delete (ADR-0009). An earlier version of this comment claimed it did, and was
+// the fourth carrier of a sentence struck in three other files in the same
+// commit — the first sweep was scoped to the production `.ts` files.
 test("messages: the sender can still delete a blocked message", async () => {
   await seedBlockedMessage(
     "m-blocked-del",
@@ -982,7 +986,7 @@ test("messages: an unauthenticated client cannot edit a blocked message", async 
 });
 
 // B15: the deny half of "the sender can still delete a blocked message".
-// Dismissing the notice belongs to its sender; the freeze must not read as a
+// The delete belongs to the row's own sender; the freeze must not read as a
 // licence for anyone else in the conversation to clear the row away.
 test("messages: a recipient cannot delete a blocked message", async () => {
   await seedBlockedMessage(

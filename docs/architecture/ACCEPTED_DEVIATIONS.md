@@ -2184,7 +2184,10 @@ permanently, including while the flag is OFF and nothing can be marked. The bulk
 gate stops them at one read per CONVERSATION rather than one per message. The cheaper shape —
 gating on the flag — is refused above and must stay refused.
 
-**Two cosmetic consequences, listed so nobody rediscovers them as bugs.** A blocked row shrinks
+**Cosmetic consequences, listed so nobody rediscovers them as bugs.** No count: a third was
+found the round after this paragraph was written — a reply whose target the guard marks loses its
+quote block entirely for every OTHER participant, because the lookup resolves against the
+already-filtered list, throws, and is caught. A blocked row shrinks
 the loaded page, which can make `chat_message_stream`'s "you joined here" divider draw when the
 join point is actually off-screen; and a blocked row sits between two messages from the same
 sender, so `shouldShowAvatar` suppresses the avatar across it. Both are pre-existing consequences

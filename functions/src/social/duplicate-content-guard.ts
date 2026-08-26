@@ -597,6 +597,12 @@ export const guardDuplicateMessage = onDocumentCreated(
     // The kill switch. Ships OFF. BUT-1904 landed the sender-visible signal
     // that it was waiting on, so the condition holding it off is met — but
     // turning it on is an explicit decision, not an implication of that.
+    //
+    // And one thing is still open at the moment of flipping it: ADR-0009's
+    // "One thing to decide BEFORE that flag is switched on" — the Art. 15
+    // export ships another participant's blocked row verbatim, which is the
+    // fact the client filter withholds on screen. Undecided, so no rule file
+    // carries it; the ADR is its only home. Read it before switching this on.
     if (!(await isChatDuplicateGuardEnabled())) return;
 
     try {
