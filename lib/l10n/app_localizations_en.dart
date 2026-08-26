@@ -16326,4 +16326,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get messageTypeDuplicateBlocked => 'Blocked';
+
+  @override
+  String get a11yDismissDuplicateNotice => 'Dismiss the notice';
 }

@@ -93,18 +93,24 @@ enum MessageType {
   /// A message the server's duplicate guard stopped (BUT-1904).
   ///
   /// Written by `guardDuplicateMessage`, which empties `content` and stamps
-  /// this type instead of deleting the document. The row carries no text: the
-  /// sentence the sender reads is a localized UI string, not stored data.
+  /// this type instead of deleting the document. The sentence the sender reads
+  /// is a localized UI string, not stored data — a row the guard wrote has an
+  /// empty `content`, but see the caveat below: not every stamped row is one
+  /// the guard wrote.
   ///
-  /// "Written by", not "written only by": the `messages` create rule places no
-  /// constraint on `type`, so a hand-rolled client can stamp its own message
-  /// this way. It reaches nobody — every other participant's client drops the
-  /// row, and the update rule then freezes it — but it is not an invariant.
+  /// "Written by", not "written only by": no rule bounds what `type` is
+  /// written TO on a create or a sender update, so a hand-rolled client can
+  /// stamp its own message this way, at create time with its text intact.
+  /// (The sender update limb does READ `type` —
+  /// `resource.data.get('type','text') != 'duplicateBlocked'` — but that
+  /// freezes an ALREADY-blocked row rather than bounding the stamp. The
+  /// third limb, the read-receipts update, forbids `type` outright via
+  /// `affectedKeys().hasOnly`.)
   ///
   /// The sender-only rule is applied in `MessagingService`, on the two
-  /// conversation read paths. `searchMessages` does not go through it; a
-  /// blocked row cannot match a non-empty query anyway, since its content is
-  /// empty.
+  /// conversation read paths. `searchMessages` does not go through it, and a
+  /// client-stamped row can still be carrying the text a query would match.
+  /// BUT-1954.
   ///
   /// The wire value is `name`, so this must stay spelled exactly as
   /// `DUPLICATE_BLOCKED_TYPE` in `functions/src/social/duplicate-content-guard.ts`.

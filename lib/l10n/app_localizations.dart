@@ -27215,7 +27215,7 @@ abstract class AppLocalizations {
   /// **'En grupp kan ha högst {max} medlemmar.'**
   String chatGroupTooManyMembers(int max);
 
-  /// BUT-1904: shown in the sender's own thread, where a message the server-side duplicate guard stopped would have been. Sender-only; the message document stores no text.
+  /// BUT-1904: shown in the sender's own thread, where a message the server-side duplicate guard stopped would have been. Sender-only. The sentence comes from here, not from the document — do not fall back to the message's own content, which a client-stamped row can still be carrying.
   ///
   /// In sv, this message translates to:
   /// **'Du har redan skickat det här'**
@@ -27226,6 +27226,12 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Stoppat'**
   String get messageTypeDuplicateBlocked;
+
+  /// BUT-1904: Semantics label for the dismiss control on the duplicate-guard notice row. The action alone: the notice's own text is CONCATENATED onto this label by the framework, so restating it here made a screen reader announce the sentence twice.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ta bort notisen'**
+  String get a11yDismissDuplicateNotice;
 }
 
 class _AppLocalizationsDelegate

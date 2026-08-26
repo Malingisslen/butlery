@@ -11989,7 +11989,11 @@
   },
   "chatDuplicateBlocked": "Du har redan skickat det här",
   "@chatDuplicateBlocked": {
-    "description": "BUT-1904: shown in the sender's own thread, where a message the server-side duplicate guard stopped would have been. Sender-only; the message document stores no text."
+    "description": "BUT-1904: shown in the sender's own thread, where a message the server-side duplicate guard stopped would have been. Sender-only. The sentence comes from here, not from the document — do not fall back to the message's own content, which a client-stamped row can still be carrying."
   },
-  "messageTypeDuplicateBlocked": "Stoppat"
+  "messageTypeDuplicateBlocked": "Stoppat",
+  "a11yDismissDuplicateNotice": "Ta bort notisen",
+  "@a11yDismissDuplicateNotice": {
+    "description": "BUT-1904: Semantics label for the dismiss control on the duplicate-guard notice row. The action alone: the notice's own text is CONCATENATED onto this label by the framework, so restating it here made a screen reader announce the sentence twice."
+  }
 }

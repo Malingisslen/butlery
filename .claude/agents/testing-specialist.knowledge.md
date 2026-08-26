@@ -38,12 +38,23 @@ you want the revert-probe that proved it; or this file itself reads too compress
 
 ### Re-review economics (re-reviewing "after automated fixes")
 - **Confirm bytes actually MOVED before re-reviewing** — hash + `wc -l` per file, both ends
-  of the round; mtime lies. When they DID move, `git diff <graded-blob> $(git hash-object <f>)`
-  isolates exactly what changed since YOUR copy — diffing against HEAD instead buries the one
+  of the round; mtime lies. When they DID move, isolate what changed since YOUR copy with
+  `git cat-file -p <graded-blob> > scratch/old && diff -u --strip-trailing-cr scratch/old <f>`
+  — NOT `git diff <blob> $(git hash-object <f>)`, which dies "bad object" (`hash-object`
+  without `-w` writes nothing), and never a plain `diff`, which calls EVERY line changed when
+  the blob is LF and the worktree CRLF. Diffing against HEAD instead buries the one
   hunk in the round's other work, and a mid-round fix makes stale-byte findings routine, not
-  exceptional (BUT-1837: settled a claimed two-line strike in one call). `git diff <path>` empty ≠ unmoved (staged shows only in `git
+  exceptional (BUT-1837: settled a claimed two-line strike in one call). **A tree that moves
+  DURING the round is the same event and needs the same isolate-diff at VERDICT time** —
+  BUT-1904 round 3 had 6 of 9 reviewed paths re-hash mid-review, a parallel session
+  independently closing two of the findings being written; re-verify every finding against
+  the CURRENT bytes before filing and say which copy the verdict is against. `git diff <path>` empty ≠ unmoved (staged shows only in `git
   diff HEAD`/`git show :<path>`). Hash a suite's runtime INPUT files too (a source-text
-  guard reading `firestore.rules`), not just changed ones.
+  guard reading `firestore.rules`), not just changed ones. **Write the hash TABLE into every
+  round's archive entry, prose-only rounds included** — BUT-1904 round 8 recorded only "graded the
+  worktree, index empty", so round 9 had to reach back two rounds and INFER which of five moved
+  paths belonged to which round; the table is what makes the next round's attribution mechanical
+  instead of inferential.
 - **The brief is pinned to a hash and expires with it** — a `sed -n` printing different
   content at the same lines means re-Read and rebuild the mutant list; skip re-running
   mutants already measured on an unchanged hash.
@@ -122,7 +133,11 @@ you want the revert-probe that proved it; or this file itself reads too compress
   absent (twice measured: a false sentence outliving the production edit, and a two-repair
   round that landed the blocking fix and silently dropped the non-blocking reword, reported as
   done), and a parallel session can land the removal between two of your own greps: say which COPY the
-  finding is against, since the parent commits the INDEX (BUT-1897). **That grep answers
+  finding is against, since the parent commits the INDEX (BUT-1897). **Your OWN prior round's
+  reported strike gets that grep too** — BUT-1904 round 1 wrote "struck, not reworded" about
+  three false sentences and nothing was struck; they rode two more rounds because rounds 2 and
+  3 re-read the DIFF, and a pre-existing block sits outside every hunk. Re-grep last round's
+  quoted strings before opening a new round. **That grep answers
   "gone" whenever the surviving copy is a PARAPHRASE, not a duplicate** — BUT-1837's struck
   mechanism sentence lived a third time as a doc comment on a FIXTURE BUILDER inside the
   group, worded differently, so every literal grep and both blob hashes read clean; sweep the
@@ -146,6 +161,13 @@ you want the revert-probe that proved it; or this file itself reads too compress
   test's name is often the precise falsifier of an old one, which is how one file ended up
   holding `'the deepest amount the formatter emits still fits the field'` 46 lines above
   `'the formatter can emit more digits than the field accepts'` (BUT-1912, 2026-08-25).
+  **A FILTER the round adds to production does the same to an unqualified `includes every X`
+  name in a sibling group of the same suite** — BUT-1904's export drop left
+  `'includes every message of a conversation the user participates in'` 550 lines below the new
+  `"another participant's blocked row is dropped"`, both green, one false. The old test stays
+  correct (its fixture has no such row); only the CONTRACT its name states died. Grep
+  `grep "^ *test($" -A2` for `every|all|no ` whenever the round narrows what a method returns,
+  and rename off what the fixture actually proves (2026-08-26).
   **The line that stops OVER-correcting: a quantifier over the CODE'S BEHAVIOUR is a
   CONTRACT, a quantifier over the TEST FILE'S CONTENTS is a COUNT.** `'no amount is ever
   written in exponent notation'` ranges over the function's output — adding a ninth fixture
@@ -173,6 +195,41 @@ you want the revert-probe that proved it; or this file itself reads too compress
   file had lost were CORRECT when struck, one for having an insertion seam and one for naming
   a suite total. Strike the count and stop; explaining why counts are avoided re-introduces a
   claim about the file's own history that nothing checks (BUT-1904, 2026-08-26).
+  **Told NOT to re-point a false pointer, the next round writes its HISTORY instead, and that
+  sentence fails the same way** — BUT-1904 round 6 replaced "case X pins it" with "two versions
+  of that sentence have been false: one named a case that did not exist, one named a case that
+  never reaches the branch". The mechanism half and the coverage figure verified; the history
+  half did not — BOTH prior versions named cases that exist (one positional, pinning something
+  else; one measured unreachable). Only the review ARCHIVE can settle such a sentence, so grade
+  it there or strike it — and it is always strikeable, because the MECHANISM sentence beside it
+  ("two stacked layers absorb each other, so no case here has a single-mutant kill set") is the
+  whole warning and needs no history (2026-08-26). **The next mutation of that same reflex is a
+  POSITIONAL DISTANCE — "twenty lines up", "twenty lines below" — and it is a derived value a
+  human cannot type: measured 3 wrong of 4 carriers in one round (36-38 actual vs "twenty"),
+  because the paragraph making the claim is itself being edited. It also survives the strike
+  round, because a review sweep follows the CLAIM and the distance rides in the sentence
+  explaining it.** Grep the whole repo for the distance phrase, not the claim — one round put it
+  in an ADR twice, an auto-loading `lessons-digest.md` line and a `tasks/lessons.md` entry, all
+  four the same edit. The durable pointer ("in the bullet about X") is already in the sentence;
+  strike the number and stop. Same round, same class: a digest line QUOTING what a record "had
+  already struck" quoted a string `git show HEAD:<record>` does not contain — a paraphrase of a
+  neighbouring correction. Grep HEAD for any quoted strike before writing it (BUT-1904, 2026-08-26).
+  **The terminal form is a repair sentence NAMING its own verification command** — "a clause
+  `git show HEAD` shows byte-identical with a sentence inserted beside it" — which described a
+  mid-round worktree state a LATER edit in the same round falsified: HEAD carried the clause, the
+  worktree had replaced it, and the round's own `isNot(contains(<old clause>))` test plus a
+  sibling reviewer's archive both said REWRITTEN. Two tells, either enough: the retraction
+  contradicts a paragraph in its own file, and the named command FLIPS with the commit, so the
+  illustration refutes itself once it lands. Run the quoted command yourself and diff HEAD against
+  the WORKTREE, never against the state the sentence remembers; the repair is a strike, never a
+  "was true at the time" qualifier (BUT-1904 round 8, 2026-08-26).
+  **Grade the STRIKE with three cheap checks rather than by re-reading the diff**: grep the struck
+  string (0 hits); grep the ORDINAL or pointer it CARRIED, since a provenance parenthetical usually
+  takes a "the second X" with it and an orphaned ordinal reads as a dangling reference; and re-read
+  the paragraphs the strike left ADJACENT, whose "this"/"that" antecedents used to resolve through
+  the deleted text. Then grade the surviving paragraph now carrying the fact ALONE as a fresh
+  claim. All three came back clean at BUT-1904 round 9 and the nine-round chain ended there —
+  rounds 1-8 each closed a sentence, none closed code after round 4 (2026-08-26).
   **Read a file's OWN HEADER before grading any prose below it** — a header stating
   `this is a ROUTING rule, not a census, because a count would be wrong the week after`
   makes every later census in that file a defect BY THE FILE'S OWN TERMS. That is the
@@ -362,7 +419,16 @@ Codecov: 60% project / 70% new patches / 2% drop tolerance — floors, decided 5
 - **Guard-chain subsumption, three directions**: BACKWARD (an earlier guard pinned by
   nothing because a later one refuses everything it does), FORWARD (fixture must clear
   every downstream refusal WITH SLACK, never at an exact tie), SIDEWAYS (a new guard can
-  unpin an older filter downstream). Total subsumption = comment, never a test. Run "which
+  unpin an older filter downstream). **The commonest SIDEWAYS carrier is a conjunct added to
+  ONE copy of a duplicated predicate**: the other copy's ABSENCE of it silently becomes
+  load-bearing, and no fixture can see it because the shared fixture builder hardcodes the
+  field the conjunct reads. BUT-1904 gave the export's `isOthersBlockedRow` a
+  `content == ''` test while the chat's `_withoutOthersBlockedRows` kept type-only — a
+  correct asymmetry (the export owes the row, the screen must hide it) whose harmonising
+  mutant reddens nothing, since every `duplicateBlocked` fixture reaching the service
+  hardcodes `content: ''`. A production comment saying "do not harmonise these" is the
+  DOC half and never the pin. Repair: parameterise the fixture builder on the field the new
+  conjunct reads, one case per side, each named after the asymmetry. Total subsumption = comment, never a test. Run "which
   mutants killed nothing" and its mirror once per file. **Two CONSTANTS in different classes
   can sit at that tie with nothing pinning the coupling** — a writer's widest output vs a
   reader's bound, where the bound's doc comment states the coupling as its rationale. Mutate
@@ -483,6 +549,19 @@ Codecov: 60% project / 70% new patches / 2% drop tolerance — floors, decided 5
   case killed BOTH named moves and the other earned its place on a THIRD mutant the doc never
   names. Both tests were right, the sentence explaining why was false. A ~90-line scratchpad
   Dart replica of the one method settles it with no `lib/` write (2026-08-26).
+  **A "pinned by the case named X" pointer is settled by a REACHABILITY probe on the branch the
+  sentence is about, never by reading X's name — `--plain-name '<X>' --coverage` and a `DA:` read
+  on a line inside that branch, ~15s.** The recurring trap is a behaviour implemented in TWO
+  STACKED LAYERS that both fail the same way: a collaborator whose own catch returns a NEUTRAL
+  value (`currentBlockedIds` → `const {}`) and a caller catch behind it. The case that LOOKS like
+  the pin — the REAL collaborator over a throwing dependency — hands the caller that neutral
+  value, so it never enters the caller's branch and is byte-identical, through production, to the
+  empty-set CONTROL three tests above it; every single-point mutant of either layer is absorbed by
+  the other, so its kill set is empty and only a two-point mutation reddens it. Measured
+  (BUT-1904/1909): `DA:309,0` for the whole group, `DA:309,1` for one case in a DIFFERENT group.
+  **My own round-3 repair wrote that false pointer** — a correction naming a case is as
+  falsifiable as the count it replaced, and the repair is to STRIKE the pin clause, not to
+  re-point it at the case the probe found (2026-08-26).
 - The in-memory version DELETES data instead of failing to write it (a model field + N
   field-by-field rebuilds) — `copyWith` is the durable fix, it can't forget what it never
   enumerates; assert an UNTOUCHED member survives.
@@ -699,6 +778,33 @@ The single most repeated finding across two months of review.
   ONLY by `find.byType(<ChildWidget>)`** — the child-CONTENT assertion (badge, row item) is
   vacuous, because deleting the guard rebuilds the child, which then draws nothing and leaves
   the dead spacer the ticket was about (BUT-1869, `CompactAllergenRow` on an empty pref set).
+- **`Semantics(label:)` does NOT suppress a descendant `Text` — the two labels CONCATENATE
+  into ONE node's label, parent first, `\n`-joined** (measured 2026-08-26 on the BUT-1904
+  dismiss pill: `"<label>\nDu har redan skickat det här"`, one node, rect 363x48). Three
+  consequences, all of which shipped as wrong sentences: `find.bySemanticsLabel(exactString)`
+  returns 0 for that reason and NOT for any RepaintBoundary/rendered-tree reason (the RegExp
+  form finds it); "this label is the ONLY thing a screen reader hears" is false, so a label
+  restating the visible text ships a STUTTER; and the widget-property workaround
+  (`widgetList<Semantics>().where(label non-empty)`) that the 0-hit provokes is strictly
+  weaker — it cannot see `container`, `button`, the RECT or the merge. Assert
+  `tester.getSemantics(<scoped finder>)` instead. `.claude/rules/ui-conventions.md` rule 5 was
+  the origin of the belief and has been corrected in place (2026-08-26); BUT-1953 sweeps the
+  labels written under it, which are not audited.
+- **A vacuity POST-MORTEM comment ("this case was vacuous because X") is an unmeasured claim,
+  and the file's own other assertions usually disprove it** — BUT-1904 blamed
+  `find.byType(GestureDetector).first` picking up "a framework detector from the app
+  scaffold", while two cases in the same file assert `find.byType(GestureDetector),
+  findsNothing` UNSCOPED and pass (the framework uses `RawGestureDetector`; `byType` is
+  exact-type). The real cause was the PRODUCTION bug — an expanding `Center` made the region
+  768x584, so a `minHeight: 0` mutant cleared 48 on height it did not own. Re-derive the
+  cause from the fix that killed it, not from the finder you changed at the same time.
+- **A "renders identically for a foreign/other-user row" case is vacuous when its fixture
+  omits the callback the real call site passes UNCONDITIONALLY** — measured (BUT-1904):
+  `chat_message_stream` hands `onDismissBlocked` to EVERY row, and the blocked branch gates
+  the × on the callback alone with no ownership check, so a foreign row does get the control
+  and firing it deletes a message the viewer did not send. The suite could not see it because
+  the not-mine fixture was the only one that left the callback out. Build the "should not
+  occur" fixture with the PRODUCTION wiring, or the identity claim is about the harness.
 - **`Semantics(label:, button:)` at `container: false` gets NO node** — the config is absorbed by
   the nearest node-forming ancestor (usually `RenderView`), so the label lands on a screen-sized
   node that owns every other control and takes their taps. `find.bySemanticsLabel` and
@@ -710,7 +816,20 @@ The single most repeated finding across two months of review.
   in, both directions** — so a probe spec must say which way each observation cuts, or the
   parent reads the converse as confirmation: "if `find.bySemanticsLabel` also reddens, '`_wrap`
   does not reproduce' is falsified" was returned as "it stayed green, so that half stands",
-  when only varying the MOUNT POINT can settle it (BUT-1837 re-review).
+  when only varying the MOUNT POINT can settle it (BUT-1837 re-review). **`container` is NOT
+  what that rect assertion discriminates once the child forms its own node** — a
+  `GestureDetector` with `onTap` does, so `true`→`false` leaves `getSemantics(<that finder>)`
+  returning the same rect, label and `isButton` (measured 2026-08-26, three-arm replica). What
+  it DOES kill is HOISTING the `Semantics` above a wider ancestor: node 800x600 vs widget
+  87x48, i.e. the BUT-1837 harm itself. Say which of the two a rect pin covers; a comment
+  crediting it with `container` is false. A no-Semantics arm is the cheap third control (label
+  falls back to the child `Text`, `isButton` false).
+- **A control that DISABLES ITSELF after one tap makes every later negative-tap assertion in
+  the same test unfailable** — the second `expect(fired, 1)` cannot fail because the widget is
+  gone, whatever the hit region does. Measured (BUT-1904): moving the "beside the pill" probe
+  point to the region's DEAD CENTRE left the case green. Order the negative tap FIRST and
+  assert `fired, 0`, or the geometry precondition beside it is the only thing killing the
+  widen-the-region mutant while the `reason:` string claims the tap did.
 - **ONE parameter feeding TWO axes is pinned on the easy axis only** — a grid's `spacing`
   used between rows AND columns: deleting the between-COLUMN spacer left all six tests in
   the widget's own new suite green (measured, BUT-1911), because a short-last-row width
@@ -1095,7 +1214,12 @@ in ITS suite, same edit (BUT-1874: emitter pinned, `ShoppingItemManagementModule
   view down to the write, confirm the fixed method is ON it — a fix on a parallel facade
   with no `lib/` callers ships nothing. A tested caller + a tested callee ≠ a tested seam.
 - An optional nullable callback seam ("stays constructible in tests") is invisible when every
-  harness omits it — grep the seam's name across `test/`; zero hits IS the finding.
+  harness omits it — grep the seam's name across `test/`; zero hits IS the finding. **Hits are
+  not the answer either: split them by LAYER.** BUT-1904's `onDismissBlocked` had 6 hits, all
+  in the widget's own suite constructing the widget directly, and none at the view that wires
+  it — so deleting the two production lines that pass it (and the message id they pass) left
+  every suite green with the feature simply absent from the app. A callback seam owes one test
+  at the CALL SITE'S layer, and it is cheap whenever a suite already mounts that view.
 - A new error/message seam is only as good as its READERS — a caller that awaits then shows
   success unconditionally means the message is never shown or cleared.
 - Enumerate optimistic-rollback siblings by SHAPE (catch blocks restoring local state,

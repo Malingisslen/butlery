@@ -120,7 +120,8 @@ class ReplyBanner extends StatelessWidget {
         );
       case MessageType.duplicateBlocked:
         // BUT-1904. Named rather than left to the `default` below, which would
-        // preview a blocked row as an empty string: it stores no content.
+        // preview a guard-written row as an empty string — and a client-stamped
+        // one as the very text the mark exists to remove.
         //
         // Both routes to a reply target are closed for such a row today — the
         // swipe gesture and the long-press menu both sit below `MessageBubble`'s

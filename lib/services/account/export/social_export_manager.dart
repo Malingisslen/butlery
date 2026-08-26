@@ -239,10 +239,19 @@ class SocialExportManager with SocialExportRedaction {
           // false and every received message was dropped — a filter on a
           // non-existent field throws nothing and reads as deliberate scoping.
           //
+          // BUT-1904, before any field-level redaction: another participant's
+          // duplicate-guard notice is not the requester's record to receive.
+          // Dropped rather than stripped — the whole record belongs to someone
+          // else, so there is no field to remove. The predicate is NARROWER
+          // than the chat screen's; `isOthersBlockedRow` says why.
+          final storedRow =
+              sanitizeForJson(msg['data']) as Map<String, dynamic>;
+          if (isOthersBlockedRow(storedRow, userId: userId)) continue;
+
           // BUT-1772's per-row half: names and uids stay, the durable pointer
           // to someone else's photograph goes.
           final messageData = dropAvatarUnlessOwn(
-            sanitizeForJson(msg['data']) as Map<String, dynamic>,
+            storedRow,
             ownerIdField: 'senderId',
             avatarField: 'senderAvatarUrl',
             userId: userId,
@@ -319,9 +328,9 @@ class SocialExportManager with SocialExportRedaction {
       // Section level, matching SharedShoppingListExport, rather than duplicated
       // into each of up to 100 conversations.
       //
-      // It states the DROP and stops. The keep side is deliberately not
-      // enumerated: the sibling section shipped a positive list that named four
-      // of six fields and thereby made the bundle state something false about
+      // The keep side is deliberately not enumerated: the sibling section
+      // shipped a positive list that named four of six fields and thereby made
+      // the bundle state something false about
       // itself, and this document carries more than the obvious keeps —
       // `lastReadTimestamps` and `reactions` among them. A list that must stay
       // exhaustive to stay true is a list that will stop being true. Both drops
@@ -333,12 +342,20 @@ class SocialExportManager with SocialExportRedaction {
       // the message copy, so naming that array would point at a field recording
       // nothing. The requester's own vote is exported beside each poll message
       // as `your_poll_vote`, which keeps the sentence below true.
+      // BUT-1904 narrowed "everything else is kept as it was stored" to the
+      // rows that are HERE. It was a categorical claim about FIELDS, and it
+      // stopped being true the moment a whole ROW could be withheld: a bundle
+      // that overclaims its own completeness is as false as one that redacts
+      // silently.
       messagesData['data_minimisation'] =
           "Other participants' profile pictures have been removed, as have "
           'their own notification settings for this conversation (muted, '
           'pinned, archived) and, for a group chat, the moment each of THEM '
-          'joined it. Everything else this conversation held is kept as it was '
-          'stored. The chat_groups section beside it is a summary rather than a '
+          'joined it. Rows where the app stopped a duplicate message that '
+          'someone ELSE sent have been left out entirely — yours are kept. '
+          'Of the rows that ARE here, nothing else has been changed: each one '
+          'is as it was stored. '
+          'The chat_groups section beside it is a summary rather than a '
           'copy: it carries the group name, who created it, who administers it '
           'and who added YOU — not the other members you can already see above.';
 

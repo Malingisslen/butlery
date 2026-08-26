@@ -6351,3 +6351,98 @@ stands" claim on the `memberCountAfter <= 0` guard that a concurrent category ed
 already fixed in that window. Everything above is re-verified against the bytes on disk at 23:22.
 
 **Verdict: fail (1 blocking).**
+
+
+---
+
+## 2026-08-26 — BUT-1904 / ADR-0009: dropping another participant's duplicate-guard row from the Art. 15 messages section
+
+Reviewed the uncommitted diff in `lib/services/account/export/` (`social_export_manager.dart`,
+`social_export_redaction.dart`) plus `test/unit/services/account/export/social_export_manager_test.dart`
+and `test/unit/services/messaging_service_test.dart`. Verdict: pass, 0 blocking.
+
+**What the change is.** `SocialExportManager.exportMessages` now calls a new mixin predicate
+`isOthersBlockedRow(storedRow, userId:)` before `dropAvatarUnlessOwn` and `continue`s on true, so
+another participant's `type: "duplicateBlocked"` row never enters the bundle; the requester's own
+is kept. Malin's call, recorded in ADR-0009 ("filter, do not write a deviation").
+
+**The fail-direction asymmetry is correct and the code is actually that way.**
+`social_export_redaction.dart` keeps a row whose `senderId` is not a non-empty String
+(`if (senderId is! String || senderId.isEmpty) return false;`), the opposite of
+`dropAvatarUnlessOwn`'s `row[ownerIdField] == userId` strip-on-doubt. Dropping a ROW on doubt
+withholds a record from its own subject; stripping a FIELD on doubt costs a URL. Correct.
+
+**The DPO's caveat rests on a premise that is false as stated, and the repo already pins the
+counterexample.** The docstring says "the guard empties `content` before it stamps the type" and
+that fail-open "is not safe by construction, only by that fact". Measured:
+
+  · the guard writes `{type, content: "", updatedAt}` in ONE `tx.update`
+    (`functions/src/social/duplicate-content-guard.ts`), so there is no before/after sequence;
+  · a blocked row does NOT always carry empty text. B17 in
+    `functions/src/__tests__/cook-snaps-and-message-mod-rules.test.ts` creates a message already
+    stamped `duplicateBlocked` with real content and asserts SUCCESS — the `messages` create rule
+    places no constraint on `type` (`hasRequiredFields` pins keys, not values);
+  · what actually makes fail-open safe is STRONGER and directly readable: the create rule pins
+    `request.auth.uid == request.resource.data.senderId`, so no client can write a row with an
+    absent or non-String `senderId` — the fail-open branch is unreachable for any client write —
+    and `dropAvatarUnlessOwn` runs on that same kept row and fails CLOSED, so the one durable
+    third-party pointer goes anyway. Every other field on such a row (`senderDisplayName`,
+    `reactions`, uids) is already a decided KEEP under BUT-1772/BUT-1774.
+
+Filed Medium, non-blocking: strike the false clause in the docstring; ADR-0009's DECIDED paragraph
+repeats it verbatim and is a decision record, so it gets a dated supersede plus a note to Malin,
+never a silent delete.
+
+**The new disclosure sentence is unguarded.** `data_minimisation` was rewritten rather than
+extended (correctly — "Everything else this conversation held is kept as it was stored" was a
+categorical claim about FIELDS that a row-level withholding falsifies). But the only test on that
+string asserts `contains('profile pictures')` and a negative; nothing pins the blocked-row
+sentence, so deleting it leaves the filter dropping rows silently — the exact failure the
+section's own comment calls "a bundle that redacts silently states something false". Filed Medium.
+
+**Wording, both directions.** "Rows where the app stopped a duplicate message that someone ELSE
+sent have been left out entirely" is one hair wide of the predicate, which KEEPS an
+unreadable-sender row; unreachable today via the create rule, so recommended leaving it rather
+than growing it. "yours are kept, and they hold no text" is false for a self-stamped row (B17) —
+that direction gives the subject MORE of their own data, which is the harmless one.
+
+**Ordering: no consequence except one.** The predicate does not mutate, `dropAvatarUnlessOwn`
+copies before removing, and `message_count`/`total_messages` are computed post-filter so they
+cannot overstate. The one real consequence: `your_poll_vote` is attached to the row map at the
+repository, so dropping the row drops the requester's OWN vote with it. Reachable only via a
+hand-rolled client (a poll message carries `type: 'poll'` and is not a guard candidate), and it is
+a narrow new instance of the erasable-but-not-exportable asymmetry BUT-1832 already records.
+Cheap close if wanted: lift `your_poll_vote` before the `continue`.
+
+**The truncation mitigation is real.** `messages_truncated` is computed at
+`firebase_data_export_repository.dart` from an N+1 probe over the RAW fetch
+(`docs.length > maxMessagesPerConversation`), the manager copies it key by key, and
+`DataExportService._declaresTruncation` matches `truncated` or `*_truncated` at up to depth 4 —
+so it reaches `truncated_collections` AND the `data_completeness` sentence. The new test pins the
+flag surviving the filter, with `messages` empty as its stated precondition.
+
+**Checked, no gap.** `conversation_info.lastMessage` is a separate denormalised copy the row
+filter never touches — but `syncConversationLastMessage` treats a blocked row exactly like a
+delete, and its survivor scan skips `DUPLICATE_BLOCKED_TYPE` rather than promoting the next
+blocked row, clearing to null when all five scanned are blocked. Account deletion: `deleteMessages`
+anonymises the subject's own rows to `senderId: "deleted"` plus a tombstone — still a non-empty
+String, so an erased participant's blocked rows still DROP and erasure never re-arms fail-open.
+Export ⊇ erasure holds for the requester's own blocked rows. Cost: a pure in-memory predicate,
+zero extra reads.
+
+**Non-vacuity, measured rather than argued.** 49/49 green. Two mutants, each applied to
+`social_export_redaction.dart` with a backup restored from a trap and md5-verified afterwards:
+deleting the `is! String` guard reddens exactly 1 test (the fail-open case); replacing
+`return senderId != userId` with `return false` reddens 2 (the drop case and the truncation
+test's precondition assertion).
+
+**Smaller notes.** The new docstring says "The three helpers around it take a row and return a
+row" — true today (`dropAvatarUnlessOwn`, `dropSharerAvatar`, `dropOtherMembersNamesInListData`)
+and an insertion seam tomorrow, in the same edit that correctly removed "These three helpers" from
+the file header two lines up. Three added lines exceed 80 columns and `dart format` will rewrap
+them (`social_export_manager.dart:248`, `social_export_manager_test.dart:704`,
+`messaging_service_test.dart:1984`); lefthook reformats and re-stages, so it only bites outside the
+hook. Pre-existing and not this diff's: `social_export_manager_test.dart:586` still cites
+`_dropOtherSenderAvatar`, a symbol that no longer exists.
+
+**Verdict: pass (0 blocking).**

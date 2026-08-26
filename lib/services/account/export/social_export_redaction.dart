@@ -1,5 +1,6 @@
 // lib/services/account/export/social_export_redaction.dart
 
+import 'package:butlery/models/messaging/message_type.dart';
 import 'package:butlery/services/account/export/export_pagination_helper.dart'
     show sanitizeForJson;
 import 'package:butlery/services/account/export/shared_shopping_list_export.dart';
@@ -8,7 +9,7 @@ import 'package:butlery/services/account/export/shared_shopping_list_export.dart
 /// leaves the device — and, just as importantly, everything it deliberately
 /// KEEPS.
 ///
-/// These three helpers were extracted from `SocialExportManager` when it
+/// These helpers were extracted from `SocialExportManager` when it
 /// crossed the 500-line limit, but the real reason they live together is the
 /// one `.claude/rules/accepted-deviations.md` states outright: several export
 /// sections implement ONE founder decision each, and a second copy of the
@@ -43,6 +44,60 @@ mixin SocialExportRedaction {
   }) {
     if (row[ownerIdField] == userId) return row;
     return Map<String, dynamic>.from(row)..remove(avatarField);
+  }
+
+  /// Whether a stored message row is another participant's duplicate-guard
+  /// notice, and therefore not the requester's to receive (BUT-1904).
+  ///
+  /// SHAPE DIFFERS FROM ITS NEIGHBOURS ON PURPOSE. The helpers around it take a
+  /// row and return a row; this one answers a question about a row and the
+  /// caller drops it. A field cannot be stripped out of existence — the
+  /// whole record is somebody else's — so there is nothing to return.
+  ///
+  /// FAILS OPEN, which is the OPPOSITE of `dropAvatarUnlessOwn` directly above,
+  /// and the asymmetry is the decision rather than an oversight. That one
+  /// strips a FIELD, where withholding on doubt costs the requester a URL they
+  /// did not need. This one drops a ROW: a record whose `senderId` cannot be
+  /// read would be withheld from its own subject, and under-disclosure is the
+  /// worse Art. 15 failure. So an unrecognisable sender KEEPS the row.
+  ///
+  /// What makes failing open safe is the CREATE RULE, not the row's emptiness:
+  /// `messages` pins `request.auth.uid == request.resource.data.senderId` and
+  /// requires the field, so no client write can produce a row whose sender is
+  /// absent or non-String — this branch is unreachable from a client. The
+  /// avatar helper above then runs on the kept row and fails closed.
+  ///
+  /// The EMPTY-CONTENT conjunct is not belt-and-braces, it is what makes the
+  /// predicate match the guard's product instead of the type name. No
+  /// `firestore.rules` limb bounds what `type` is written TO on a create or a
+  /// sender update — B16/B17 in `cook-snaps-and-message-mod-rules.test.ts`
+  /// both ALLOW, and B17 creates a stamped row still carrying its full
+  /// sentence. Any client can therefore stamp a real message it sent you, and
+  /// without this conjunct the bundle would withhold text the requester
+  /// genuinely RECEIVED. That is Art. 15 under-disclosure, the failure this
+  /// whole helper exists to avoid on the other side. A client-stamped row is
+  /// possible whatever `enable_chat_duplicate_guard` is set to, so do not
+  /// re-argue this conjunct from the flag's current position.
+  ///
+  /// A row whose `content` is absent rather than empty is likewise not the
+  /// guard's product, so it is KEPT — same direction, same reason.
+  ///
+  /// This makes the predicate NARROWER than the chat screen's
+  /// (`MessagingService._withoutOthersBlockedRows`, which tests type and sender
+  /// only), and the divergence is deliberate: hiding a row costs a reader
+  /// nothing, while withholding one from an Art. 15 bundle costs its subject a
+  /// record they are owed. Do not "harmonise" the two — dropping this conjunct
+  /// to match the screen re-opens the under-disclosure.
+  ///
+  /// Do NOT re-argue the fail-open branch above from emptiness either; that
+  /// one rests on the create rule, and ADR-0009 records the emptiness premise
+  /// being written back in by the round that removed it.
+  bool isOthersBlockedRow(Map<String, dynamic> row, {required String userId}) {
+    if (row['type'] != MessageType.duplicateBlocked.name) return false;
+    if (row['content'] != '') return false;
+    final senderId = row['senderId'];
+    if (senderId is! String || senderId.isEmpty) return false;
+    return senderId != userId;
   }
 
   /// One shared-recipe / shared-menu row with the SHARER's avatar URL removed,

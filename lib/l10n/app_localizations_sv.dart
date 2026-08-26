@@ -16368,4 +16368,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get messageTypeDuplicateBlocked => 'Stoppat';
+
+  @override
+  String get a11yDismissDuplicateNotice => 'Ta bort notisen';
 }

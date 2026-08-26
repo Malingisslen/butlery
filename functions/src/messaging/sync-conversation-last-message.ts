@@ -12,9 +12,16 @@
  * - On message delete: if the deleted message WAS the lastMessage, recompute
  *   from the remaining messages (or clear `lastMessage` if the conversation
  *   is now empty, or if the surviving message carries no resolved `sentAt`).
- * - On a message the duplicate guard has BLOCKED: same as a delete. The
- *   document survives (BUT-1904) but carries no text, so projecting it would
- *   put an empty preview in everybody's conversation list.
+ * - On a message this trigger SEES carrying the blocked mark: same as a
+ *   delete. The document survives (BUT-1904), and projecting it would put
+ *   either an empty preview or — for a row a client stamped itself — the very
+ *   text the mark exists to remove into everybody's conversation list.
+ *   "Sees", not "is": the create side gates its re-read on candidacy, so a
+ *   client-stamped row whose text was never a duplicate candidate can still
+ *   reach `lastMessage` through a stale create-shaped invocation. Only a
+ *   client can produce that — the guard marks candidates only, and reads the
+ *   same payload the gate does — and the row is the sender's own, in their own
+ *   conversation, so the outcome is what not stamping it would have given.
  *
  * THE RACE WITH `guardDuplicateMessage`, and how it is closed here (BUT-1904).
  * Both triggers wake on the same create with no ordering guarantee, and the
@@ -366,9 +373,11 @@ export const syncConversationLastMessage = onDocumentWritten(
         }
       }
 
-      // A blocked row carries no text, so projecting it would leave an empty
-      // preview in every participant's conversation list. Treated exactly like
-      // a delete: the row stays on disk, it just stops being previewable.
+      // A row this trigger sees carrying the blocked mark is never projected.
+      // The guard's own product would show as an empty preview; a row a client
+      // stamped itself still carries its text, and that is what the mark exists
+      // to remove. Treated exactly like a delete: the row stays on disk, it
+      // just stops being previewable.
       const isBlocked =
         payloadBlocked || (!vanished && current?.type === DUPLICATE_BLOCKED_TYPE);
 

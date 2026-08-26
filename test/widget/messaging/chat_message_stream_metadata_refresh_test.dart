@@ -30,6 +30,7 @@ import 'package:butlery/models/messaging/poll.dart';
 import 'package:butlery/services/messaging_service.dart';
 import 'package:butlery/viewmodels/chat_viewmodel.dart';
 import 'package:butlery/views/messaging/chat_view/chat_message_stream.dart';
+import 'package:butlery/widgets/messaging/components/system_message_widget.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
 import 'package:mocktail/mocktail.dart';
@@ -274,6 +275,14 @@ void main() {
     );
   });
 
+  /// The notice's OWN dismiss icon. A bare `find.byIcon(Icons.close)` also
+  /// matches the error snackbar's own leading ICON, so it cannot answer "did the
+  /// control come back" in the very case that raises the question.
+  final dismissIcon = find.descendant(
+    of: find.byType(SystemMessageWidget),
+    matching: find.byIcon(Icons.close),
+  );
+
   // BUT-1904: the same incremental-update path, one field along. The duplicate
   // guard rewrites a message's `type` IN PLACE — same id, same sender, same
   // sentAt — so if `type` is not among the fields the merge compares, the
@@ -358,6 +367,104 @@ void main() {
       find.text('Du har redan skickat det här'),
       findsOneWidget,
       reason: 'the sender must see the notice without reopening the chat',
+    );
+
+    // BUT-1904's dismiss control, measured through the REAL view. Every
+    // assertion about it in the widget suite constructs `MessageBubble`
+    // directly, so `_dismissBlockedNotice` and the `message.id` this view
+    // forwards were deletable with that suite green and the × simply absent
+    // from the app. The case below covers the refusal path the same way.
+    when(
+      () => messagingService.deleteMessage(any()),
+    ).thenAnswer((_) async {});
+
+    await tester.tap(dismissIcon);
+    await tester.pumpAndSettle();
+
+    // The ID matters as much as the call: forwarding the wrong one deletes a
+    // different message, and a bare `any()` would not notice.
+    verify(() => messagingService.deleteMessage('msg_blocked')).called(1);
+  });
+
+  testWidgets('a dismiss the service refuses reports it and gives the × back', (
+    tester,
+  ) async {
+    // The false answer from `ChatViewModel.deleteMessage`, which swallows and
+    // returns false rather than throwing. Offline or on a rules refusal the
+    // row is still on screen, so the user must be told and must be able to
+    // try again — the widget-level case pins the control returning, this one
+    // pins that the view says why.
+    tester.view.physicalSize = const Size(800, 2000);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final controller = StreamController<List<Message>>.broadcast();
+    addTearDown(controller.close);
+
+    final blocked = Message(
+      id: 'msg_blocked',
+      conversationId: conversationId,
+      senderId: currentUserId,
+      senderDisplayName: 'Test',
+      content: '',
+      type: MessageType.duplicateBlocked,
+      status: MessageStatus.sent,
+      sentAt: createdAt,
+    );
+
+    when(
+      () => messagingService.getConversationMessagesPage(
+        conversationId: any(named: 'conversationId'),
+        historyStart: any(named: 'historyStart'),
+        limit: any(named: 'limit'),
+        startAfter: any(named: 'startAfter'),
+      ),
+    ).thenAnswer((_) async => [blocked]);
+    when(
+      () => messagingService.getConversationMessages(
+        conversationId: any(named: 'conversationId'),
+        historyStart: any(named: 'historyStart'),
+        limit: any(named: 'limit'),
+      ),
+    ).thenAnswer((_) => controller.stream);
+    when(
+      () => messagingService.deleteMessage(any()),
+    ).thenThrow(Exception('permission-denied'));
+
+    viewModel = ChatViewModel(
+      messagingService: messagingService,
+      conversationId: conversationId,
+      initialConversation: conversation(),
+    );
+
+    await tester.pumpWidget(
+      createLocalizedTestApp(
+        child: ChangeNotifierProvider<ChatViewModel>.value(
+          value: viewModel,
+          child: ChatMessageStream(
+            conversationId: conversationId,
+            onMessageAction: (_, _) {},
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(dismissIcon);
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('Kunde inte ta bort meddelandet'),
+      findsOneWidget,
+      reason:
+          'a refusal the user cannot see reads as a control that does '
+          'nothing',
+    );
+    expect(
+      dismissIcon,
+      findsOneWidget,
+      reason: 'and the retry has to still be there',
     );
   });
 

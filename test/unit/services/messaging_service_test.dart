@@ -1630,9 +1630,6 @@ void main() {
           emitsError(isA<Exception>()),
         );
       });
-
-      // Additional error tests should be added here from messaging_service_error_test.dart
-      // Due to size, only showing first two tests as example
     });
     // ══ BUT-1909 — the DISPLAY half of the blocked-ballot fix ═══════════════
     //
@@ -1645,7 +1642,17 @@ void main() {
     // Fail-open is CORRECT here and wrong there. A transient block-list error
     // must not blank a conversation, and an over-counted poll on screen is
     // recoverable; a blocked ballot deciding a recipe other members then see is
-    // not. The asymmetry is the decision, and the last case below pins it.
+    // not. The asymmetry is the decision.
+    //
+    // Deliberately NOT followed by "and case X pins it", because no case here
+    // can carry that sentence. `_filterBlocked`'s fail-open catch is guarded
+    // by two stacked layers that absorb each other —
+    // `BlockedUserFilter.currentBlockedIds` swallows and returns an empty set
+    // before the service catch can see anything — so no case in this group has
+    // a single-mutant kill set for it. Measured with line coverage 2026-08-26:
+    // every case here leaves the fail-open catch in `_filterBlocked`
+    // unexecuted, while the sibling BUT-1904 group's THROWS case reaches it.
+    // (That run read `DA:309`; the line moves, the branch does not.)
     group('blocked ballots on the read path (BUT-1909)', () {
       const conversationId = 'conv-poll-block';
 
@@ -1825,9 +1832,8 @@ void main() {
     // client. Only its own sender may see it — the sentence it stands for is
     // "you already sent this", which is true for exactly one person.
     //
-    // This filter runs BEFORE and OUTSIDE the block filter's try/catch, and the
-    // last case is what pins that placement. Everything else here would pass
-    // just as well with it buried inside.
+    // This filter runs BEFORE and OUTSIDE the block filter's try/catch. The
+    // placement cases are named where they sit, further down.
     group('duplicate-blocked rows are sender-only (BUT-1904)', () {
       const conversationId = 'conv-blocked-rows';
 
@@ -1838,15 +1844,24 @@ void main() {
       // `copyWith`, which a `Fake` does not implement, and its fail-open catch
       // would then swallow the throw and serve the list unfiltered — which
       // looks exactly like this filter never running.
+      // `content` is a PARAMETER, and that is load-bearing. No
+      // `firestore.rules` limb bounds what `type` is written TO on a create or
+      // a sender update (B16/B17 in
+      // `cook-snaps-and-message-mod-rules.test.ts`, both ALLOW), so a client
+      // can stamp its own real message and the row arrives here still carrying
+      // text. With the fixture hardcoding '' no test could enter that state,
+      // and adding `&& m.content.isEmpty` to the service predicate — the
+      // obvious make-the-two-copies-agree edit — reddened nothing.
       Message blockedRow({
         required String senderId,
         String id = 'msg-blocked',
+        String content = '',
       }) => Message(
         id: id,
         conversationId: conversationId,
         senderId: senderId,
         senderDisplayName: 'Someone',
-        content: '',
+        content: content,
         type: MessageType.duplicateBlocked,
         status: MessageStatus.sent,
         sentAt: DateTime.utc(2026, 1, 2),
@@ -1948,8 +1963,9 @@ void main() {
       // the group's own `setUp` had just initialized a production container
       // that resolves it. Both therefore ran the full happy path, and a mutant
       // that moved this filter inside the fail-open region passed the suite AS
-      // IT THEN STOOD. It does not pass it now; the two cases below are what
-      // changed that.
+      // IT THEN STOOD. It does not pass it now; the cases NAMED ABOVE are what
+      // changed that. Do not read this comment positionally — other cases sit
+      // below it too.
       test(
         'a block lookup that THROWS still hides the row (BUT-1904)',
         () async {
@@ -1978,6 +1994,67 @@ void main() {
             reason:
                 'the sender-only rule holds even when the block lookup fails',
           );
+        },
+      );
+
+      test('SEVERAL other senders in one page: every foreign notice goes, mine '
+          'stays (BUT-1904)', () async {
+        // A page with more than one other sender, which no case above stages.
+        // The single-other-sender cases cannot separate "drops rows whose
+        // sender is not me" from "drops the one row it happened to look at",
+        // and a filter that stopped after the first match would pass all of
+        // them. Two cuts and one retained row in one page is what pins it.
+        //
+        // NOT a group test, despite an earlier name and comment here that said
+        // so: nothing below stages a `groupId`, and the service never reads the
+        // conversation — it filters on `senderId` alone. A real group case
+        // would have to reach past this service, and the reason it is not
+        // needed is that same independence.
+        TestServiceLocator.registerMock<BlockedUserFilter>(
+          _StubBlockedUserFilter(const <String>{}),
+        );
+
+        final page = await readPage([
+          ordinaryRow(senderId: 'other-user'),
+          blockedRow(senderId: 'other-user'),
+          blockedRow(senderId: 'third-user', id: 'msg-blocked-third'),
+          blockedRow(senderId: 'test-user-id', id: 'msg-blocked-mine'),
+        ]);
+
+        expect(
+          page.map((m) => m.id),
+          ['msg-ordinary', 'msg-blocked-mine'],
+          reason: 'only my own notice stays; every other member notice goes',
+        );
+      });
+
+      test(
+        'a foreign stamped row is hidden even when it STILL CARRIES TEXT '
+        '(BUT-1904)',
+        () async {
+          // The chat screen's predicate and the Art. 15 export's diverge here,
+          // deliberately and in opposite directions. `isOthersBlockedRow` adds
+          // `content == ''` so a client-stamped row carrying a real message
+          // the requester RECEIVED stays in their bundle. This one must NOT:
+          // rendering it draws "Du har redan skickat det här" over somebody
+          // else's message, a sentence that is false for the viewer.
+          //
+          // Without this case the two spellings can be harmonised in either
+          // direction with the suite green.
+          TestServiceLocator.registerMock<BlockedUserFilter>(
+            _StubBlockedUserFilter(const <String>{}),
+          );
+
+          final page = await readPage([
+            ordinaryRow(senderId: 'other-user'),
+            blockedRow(
+              senderId: 'other-user',
+              id: 'msg-blocked-with-text',
+              content: 'Jag kommer klockan sju ikvall',
+            ),
+          ]);
+
+          expect(page.map((m) => m.id), ['msg-ordinary']);
         },
       );
 

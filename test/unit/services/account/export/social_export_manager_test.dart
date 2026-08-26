@@ -583,7 +583,7 @@ void main() {
       'a message row with NO recognisable senderId still loses its avatar '
       '(fail-closed, BUT-1772 x BUT-1767)',
       () async {
-        // `_dropOtherSenderAvatar`'s docstring claims it fails closed on an
+        // `dropAvatarUnlessOwn`'s docstring claims it fails closed on an
         // unrecognised row shape, and the conversation-DOCUMENT halves of the
         // same decision each have such a fixture. The per-row half shipped
         // without one, which is the shape that already cost this file once:
@@ -638,6 +638,229 @@ void main() {
     );
 
     test(
+      "another participant's blocked row is dropped; yours is kept "
+      '(BUT-1904)',
+      () async {
+        // Two controls, not one. A filter that removes too much looks exactly
+        // like one that works if the only assertion is that the other row is
+        // gone — so the requester's OWN blocked row and an ORDINARY row from
+        // the same other participant both have to survive.
+        const userId = 'user-uid';
+        final manager = SocialExportManager(
+          dataExportRepository: _FakeDataExportRepository(
+            conversations: [
+              {
+                'id': 'conv1',
+                'data': {'title': 'Middagsplaner'},
+                'messages': [
+                  {
+                    'id': 'm-mine-blocked',
+                    'data': {
+                      'senderId': userId,
+                      'type': 'duplicateBlocked',
+                      'content': '',
+                    },
+                  },
+                  {
+                    'id': 'm-theirs-blocked',
+                    'data': {
+                      'senderId': 'other-uid',
+                      'type': 'duplicateBlocked',
+                      'content': '',
+                    },
+                  },
+                  {
+                    'id': 'm-theirs-ordinary',
+                    'data': {
+                      'senderId': 'other-uid',
+                      'type': 'text',
+                      'content': 'Ses kl 18',
+                    },
+                  },
+                  {
+                    // A row wearing the type but still carrying its text is
+                    // NOT the guard's product. No `firestore.rules` limb
+                    // bounds what `type` is written TO on a create or a sender
+                    // update (B16/B17 in
+                    // `cook-snaps-and-message-mod-rules.test.ts`, both ALLOW),
+                    // so any client can stamp a real message it sent you.
+                    // Withholding this one keeps text the requester genuinely
+                    // RECEIVED out of their own Art. 15 bundle.
+                    'id': 'm-theirs-stamped-but-full',
+                    'data': {
+                      'senderId': 'other-uid',
+                      'type': 'duplicateBlocked',
+                      'content': 'Jag kommer klockan sju ikvall',
+                    },
+                  },
+                  {
+                    // Same direction, the other unreadable shape: `content`
+                    // absent rather than empty is not the guard's product
+                    // either.
+                    'id': 'm-theirs-stamped-no-content',
+                    'data': {
+                      'senderId': 'other-uid',
+                      'type': 'duplicateBlocked',
+                    },
+                  },
+                ],
+              },
+            ],
+          ),
+        );
+
+        final result = await manager.exportMessages(userId);
+        final rows =
+            ((result['conversations'] as List).single
+                    as Map<String, dynamic>)['messages']
+                as List;
+        final ids = rows
+            .cast<Map<String, dynamic>>()
+            .map((r) => r['message_id'] as String)
+            .toList();
+
+        expect(ids, isNot(contains('m-theirs-blocked')));
+        expect(
+          ids,
+          contains('m-mine-blocked'),
+          reason: "the requester's own record is theirs to receive",
+        );
+        expect(
+          ids,
+          contains('m-theirs-ordinary'),
+          reason:
+              'only the BLOCKED rows of others go, not everything of theirs',
+        );
+        expect(
+          ids,
+          contains('m-theirs-stamped-but-full'),
+          reason:
+              'a stamped row that still carries text is a message the requester '
+              'RECEIVED — withholding it is Art. 15 under-disclosure',
+        );
+        expect(
+          ids,
+          contains('m-theirs-stamped-no-content'),
+          reason: 'absent content is not the empty content the guard writes',
+        );
+      },
+    );
+
+    test(
+      'a blocked row with NO recognisable senderId is KEPT (fail-open, '
+      'BUT-1904)',
+      () async {
+        // The MIRROR of 'a message row with NO recognisable senderId still
+        // loses its avatar', which is elsewhere in this group: read from the
+        // neighbourhood alone, someone would assume both helpers fall the same
+        // way. They do not, and the asymmetry is the decision.
+        //
+        // Stripping a FIELD on doubt costs the requester a URL they did not
+        // need. Dropping a ROW on doubt withholds a record from its own
+        // subject, which is the worse Art. 15 failure — so an unreadable
+        // sender keeps the row.
+        //
+        // The mutant this kills: `senderId != userId` written without the
+        // is-a-String guard, which makes a null sender "not me" and drops it.
+        const userId = 'user-uid';
+        final manager = SocialExportManager(
+          dataExportRepository: _FakeDataExportRepository(
+            conversations: [
+              {
+                'id': 'conv1',
+                'data': {'title': 'Middagsplaner'},
+                'messages': [
+                  {
+                    'id': 'm-shapeless-blocked',
+                    'data': {'type': 'duplicateBlocked', 'content': ''},
+                  },
+                  {
+                    // The OTHER unreadable shape, and it needs its own row:
+                    // an empty string IS a String, so the type test alone
+                    // lets it through and `'' != userId` then drops it. The
+                    // `isEmpty` clause is what keeps it, and without this row
+                    // that clause is deletable with every test still green.
+                    'id': 'm-empty-sender-blocked',
+                    'data': {
+                      'senderId': '',
+                      'type': 'duplicateBlocked',
+                      'content': '',
+                    },
+                  },
+                ],
+              },
+            ],
+          ),
+        );
+
+        final result = await manager.exportMessages(userId);
+        final rows =
+            ((result['conversations'] as List).single
+                    as Map<String, dynamic>)['messages']
+                as List;
+
+        expect(
+          rows.cast<Map<String, dynamic>>().map((r) => r['message_id']),
+          ['m-shapeless-blocked', 'm-empty-sender-blocked'],
+        );
+      },
+    );
+
+    test(
+      'a truncated conversation still says so after the filter runs '
+      '(BUT-1904)',
+      () async {
+        // The completeness question the stakeholder panel was asked. The filter
+        // runs in this manager, downstream of the repository's row cap — so a
+        // conversation packed with another participant's blocked rows could
+        // spend the cap before the filter removes them.
+        //
+        // What makes that acceptable rather than silent: `messages_truncated`
+        // is computed at the repository from the RAW pre-filter fetch, so the
+        // bundle flags itself as incomplete in exactly the case where this can
+        // bite. This pins that the flag survives the filter — an implementation
+        // that recomputed truncation from the filtered list would lose it.
+        const userId = 'user-uid';
+        final manager = SocialExportManager(
+          dataExportRepository: _FakeDataExportRepository(
+            conversations: [
+              {
+                'id': 'conv1',
+                'data': {'title': 'Middagsplaner'},
+                'messages_truncated': true,
+                'messages': [
+                  {
+                    'id': 'm-theirs-blocked',
+                    'data': {
+                      'senderId': 'other-uid',
+                      'type': 'duplicateBlocked',
+                      'content': '',
+                    },
+                  },
+                ],
+              },
+            ],
+          ),
+        );
+
+        final result = await manager.exportMessages(userId);
+        final conversation =
+            (result['conversations'] as List).single as Map<String, dynamic>;
+
+        expect(
+          conversation['messages_truncated'],
+          isTrue,
+          reason: 'the bundle must keep saying it is incomplete',
+        );
+        expect(
+          conversation['messages'],
+          isEmpty,
+          reason: 'precondition: the filter did remove the row',
+        );
+      },
+    );
+
+    test(
       'the section states what it dropped, and does not enumerate the keeps',
       () async {
         final result = await buildManager().exportMessages(userId);
@@ -647,6 +870,27 @@ void main() {
           line,
           contains('profile pictures'),
           reason: 'a bundle that silently redacts states something false',
+        );
+        // Same rule, applied to the BUT-1904 drop. Without this the disclosure
+        // is deletable while the filter keeps withholding — which is exactly
+        // the silent redaction the assertion above refuses.
+        expect(
+          line,
+          contains('left out entirely'),
+          reason:
+              'the whole-ROW drop must be disclosed, not just the field '
+              'strips',
+        );
+        // And the completeness claim beside it must stay scoped to the rows
+        // that survived. "Everything else this conversation held is kept"
+        // was a categorical claim about FIELDS and stopped being true the
+        // moment a whole row could be withheld.
+        expect(
+          line,
+          isNot(contains('Everything else this conversation held')),
+          reason:
+              'a bundle that overclaims its completeness is as false as '
+              'one that redacts silently',
         );
         // The keep side must NOT be a list. The sibling section shipped one that
         // named four of six fields; this document carries lastReadTimestamps,
@@ -949,8 +1193,8 @@ void main() {
 
   group('SocialExportManager.exportMessages (BUT-1438)', () {
     test(
-      'includes every message of a conversation the user participates in '
-      '(BUT-1767)',
+      "includes another participant's message in a conversation the user "
+      'participates in (BUT-1767)',
       () async {
         // The filter this replaces kept a row only when `senderId == userId`
         // OR `recipientIds` contained them. No message document has ever
@@ -959,7 +1203,7 @@ void main() {
         // `participantIds` — so the second limb was permanently false and
         // every RECEIVED message was silently dropped from the Art. 15 bundle.
         //
-        // `m3` is the decisive row: sent by someone else, and under the old
+        // `m3` is a decisive row: sent by someone else, and under the old
         // filter it was the "not mine" case. The gateway only ever returns
         // threads the requester participates in, so there is no such thing as
         // a message in the bundle that is not part of their record.
@@ -1098,18 +1342,7 @@ void main() {
       'carries a per-conversation messages_truncated flag through, and omits '
       'it on complete conversations',
       () async {
-        // The manager's copy is correct and this pins it. Two defects AROUND
-        // it are known and deliberately NOT asserted as desired behaviour:
-        //   1. firebase_data_export_repository computes the flag as
-        //      `docs.length >= maxMessagesPerConversation`, the false-positive
-        //      rule BUT-1562/1662 retired everywhere else, so a conversation
-        //      holding exactly `cap` messages is stamped clipped;
-        //   2. data_export_service's nested truncation pass only walks
-        //      `section.values.whereType<Map>()`, and this flag lives inside
-        //      the `conversations` LIST — so it never reaches
-        //      `truncated_collections` and the user never sees it.
-        // This test exists so both are greppable: it is the only reference to
-        // `messages_truncated` anywhere under test/.
+        // The manager's copy is correct and this pins it.
         const userId = 'user-uid';
         final manager = SocialExportManager(
           dataExportRepository: _FakeDataExportRepository(

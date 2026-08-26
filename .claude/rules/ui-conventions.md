@@ -56,7 +56,7 @@ Semantics(
 2. **`label:` is always a localized `context.l10n.<key>`** — never a hardcoded string. Add the key to BOTH `app_sv.arb` and `app_en.arb` (matching descriptions + placeholders), then run `flutter gen-l10n`.
 3. **For toggle UIs use `Semantics(toggled: <bool>)` with a SINGLE label key** — Flutter announces "expanded/collapsed", "on/off", "selected" automatically from `toggled:`. Don't create two keys (`a11yXOn` + `a11yXOff`) and a ternary — that's the chunk-7 anti-pattern that the simplify pass caught.
 4. **For radio-style pickers use `Semantics(selected: <bool>)`** — emoji picker, content-type toggle, etc. (See `group_dialog_components.EmojiSelector` for the canonical example.)
-5. **The visible child Text often duplicates the label — that's fine.** `Semantics(label:)` blocks descendant Text from being merged into the screen-reader output, so the parent label wins. Don't omit a meaningful label just because the visible text says the same thing.
+5. **`Semantics(label:)` does NOT block the descendant `Text` — the two are CONCATENATED into one announcement.** Measured 2026-08-26 on a built semantics node and pinned by `message_bubble_duplicate_blocked_test.dart` ("announces its action ONCE"). This line asserted the opposite until it was measured, so **name the ACTION in the label and let the visible text carry the noun** — a label that restates the visible text makes a screen reader say the same sentence twice. Labels written under the old belief are not audited; BUT-1953 sweeps them.
 6. **Never wrap `IconButton`/`TextButton` etc.** — they already carry Semantics. Wrap only `InkWell` / `GestureDetector` / bare `onTap` containers.
 
 ### l10n key naming
@@ -131,12 +131,15 @@ passes" note) — it is the only open item on dialog a11y focus.
 
 ## Destructive-action confirmation (BUT-954)
 
-Three severity classes decide the friction pattern. Pick by **recoverability**, not by how scary the verb sounds:
+Severity classes decide the friction pattern. Pick by **recoverability**, not by how scary the verb sounds:
 
 1. **Reversible-destructive** — the item is trivially recreatable or restorable (pantry row, image attachment, own comment): **swipe/tap deletes immediately + snackbar with "Ångra" (7s, `SnackBarUtils.showSuccessWithAction` + a `restore`/undo path). NO confirm dialog** — a dialog on a recoverable action is friction without protection.
 2. **Hard-destructive** — user-authored content that is gone (or expensive to rebuild) after the undo window closes (recipe delete, bulk recipe delete, personal-tag delete which untags recipes): **confirm dialog AND, where a restore path exists, snackbar undo.** Recipe single + bulk delete are the canonical implementations (dialog → optimistic delete → 5-7s undo).
 3. **Light action** — reversible state flips with an obvious inverse (claim/release shopping item, mark step done, favorite): **no friction at all.** Never add a dialog or undo snackbar to these.
+4. **Dismissing a notice** — the app told the user something and they are clearing the message, not deleting their own content (BUT-1904's duplicate-guard row): **no dialog, no undo.** It looks like a class-1 delete and is not: nothing the user authored is lost, and the notice reappears if the same condition recurs. Class 1 MANDATES an undo and class 3 FORBIDS one, so a notice straddles them until you apply the recoverability test — which here returns "nothing to protect". Do not reach for this class for anything the user wrote.
 
-Reference implementations: `mina_recept/recipe_card_widget.dart` + `recipe_delete_manager.dart` (class 2), `pantry/pantry_item_card.dart` (class 1), `collaborative_shopping_items.dart` claim flow (class 3).
+Reference implementations: `mina_recept/recipe_card_widget.dart` + `recipe_delete_manager.dart` (class 2), `pantry/pantry_item_card.dart` (class 1), `collaborative_shopping_items.dart` claim flow (class 3), `messaging/components/system_message_widget.dart` + `message_bubble.dart` (class 4).
+
+A class-4 control still needs a real tap target: the notice pill is shorter than `AppDimensions.minTouchTarget`, so the hit region carries its own `minHeight` and is sized to the pill rather than to the row. Both halves are pinned in `message_bubble_duplicate_blocked_test.dart`; an unbounded `Center` once made that gesture cover most of the screen.
 
 When adding a new destructive action: classify first, then copy the matching reference. If undo is impossible for a class-2 action, say so in the confirm dialog body ("Detta går inte att ångra").

@@ -341,9 +341,13 @@ class MessagingService extends BaseService with StreamManagementMixin {
   /// row says "you already sent this", which is true for exactly one person and
   /// is nobody else's business.
   ///
-  /// This hides a row; it does not protect content. The text is already gone,
-  /// so what is withheld here is the bare fact that somebody's message was
-  /// stopped.
+  /// This hides a row; it does not protect content — and do not read it as
+  /// resting on the row being empty. No `firestore.rules` limb bounds what
+  /// `type` is written TO on a create or a sender update, so a client can stamp
+  /// its own full message and it arrives here with its text (B16/B17 in
+  /// `cook-snaps-and-message-mod-rules.test.ts`, both ALLOW). Hiding it is what
+  /// stops "Du har redan skickat det här" being drawn over somebody else's
+  /// sentence — a claim that is false for every viewer but its author.
   ///
   /// It was NOT gone before the document became readable. An earlier version
   /// of this comment claimed it was. `guardDuplicateMessage` is

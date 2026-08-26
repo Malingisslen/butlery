@@ -2465,3 +2465,33 @@ Example: lib/services/menu/parser/text_normalizer.dart _noWordBefore/_noWordAfte
   VERIFIED, not the one that ought to exist. A correction inherits the fragility of the claim
   it repairs, and a count is true only of the exact set it was measured on — moving it to a
   neighbouring set is how a fix ships a fresh false sentence.
+
+### [Workflow] A repo RULE can be the false claim, and a correction round is the likeliest place to plant the next one
+- **Date**: 2026-08-26 (BUT-1904 follow-up)
+- **Trigger**: Two independent instances in one change.
+  (a) `.claude/rules/ui-conventions.md` rule 5 said `Semantics(label:)` "blocks descendant
+  Text from being merged into the screen-reader output, so the parent label wins". Written
+  under that rule, BUT-1904's dismiss control carried a label restating the whole notice.
+  Measured on the built semantics node: the label and the child `Text` are CONCATENATED, so
+  the row announced "Du har redan skickat det här, tryck för att ta bort notisen. Du har
+  redan skickat det här." The rule is auto-loaded on `lib/views/**` and `lib/widgets/**`, so
+  every a11y label in the app was written against it — 190 `a11y*` keys, unaudited (BUT-1953).
+  The first test written for it read the `Semantics` WIDGET's property, which cannot see a
+  merge, so it agreed with the rule.
+  (b) "A blocked row carries no text" was load-bearing wherever the export filter was argued.
+  No `firestore.rules` limb bounds what `type` is written TO on a create or a sender update,
+  so a client can write a row already stamped and holding 5000 characters — pinned as B16/B17,
+  both ALLOW. (The third limb, the read-receipts update, forbids `type` outright — the
+  under-counted quantifier was itself one of this sprint's findings.)
+  ADR-0009 had ALREADY corrected that premise in one bullet; the correction round that removed
+  it there wrote it back further down the same record, as the justification for a different
+  decision. It was also load-bearing in the FILTER itself, which keyed on `type` alone and so
+  withheld client-stamped rows still carrying text the requester had genuinely received — an
+  Art. 15 under-disclosure created by the fix.
+- **Rule**: A project rule file is an untested assertion like any other, and a rule that
+  auto-loads has produced code shaped by it — when a measurement contradicts one, the finding
+  is not "fix this call site" but "correct the rule and scope the sweep of what it already
+  produced". Assert against the RENDERED artefact (`tester.getSemantics`), never the widget
+  property that cannot observe the failure. And when removing a false premise, grep the WHOLE
+  repo for it and fix every copy in the same edit: the round that removes it is the round most
+  likely to re-derive it, because the reasoning that produced it is loaded in context.

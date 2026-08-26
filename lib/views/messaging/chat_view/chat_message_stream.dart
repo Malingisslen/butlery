@@ -290,6 +290,24 @@ class _ChatMessageStreamState extends State<ChatMessageStream> {
     SnackBarUtils.showError(context, problem);
   }
 
+  /// BUT-1904: clears the duplicate-guard notice the sender is looking at.
+  ///
+  /// Goes through the existing `ChatViewModel.deleteMessage`, which reports
+  /// failure by returning false rather than throwing. Nothing removes the row
+  /// from this list directly — the Firestore stream stops returning the
+  /// document and `_updateMessagesIncremental` drops it.
+  /// Returns whether the row went, so the control can re-enable itself when
+  /// it did not.
+  Future<bool> _dismissBlockedNotice(
+    ChatViewModel viewModel,
+    String messageId,
+  ) async {
+    final ok = await viewModel.deleteMessage(messageId);
+    if (ok || !mounted) return ok;
+    SnackBarUtils.showError(context, context.l10n.chatCouldNotDeleteMessage);
+    return false;
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
@@ -385,6 +403,8 @@ class _ChatMessageStreamState extends State<ChatMessageStream> {
                 onPollVote: (optionId) =>
                     viewModel.votePoll(message.id, optionId),
                 onPollClose: () => _closePoll(viewModel, message.id),
+                onDismissBlocked: () =>
+                    _dismissBlockedNotice(viewModel, message.id),
               );
             },
           ),

@@ -26784,3 +26784,764 @@ cases/denies/tests: only line 1635's "only showing first two tests as example", 
 accurate (that group holds exactly two), and outside this round.
 
 Verdict: pass, 0 blocking.
+
+### 2026-08-26 — BUT-1904 follow-up review: dismiss control, export filter, group sender-only (trigger: review of uncommitted test work)
+
+Reviewed three suites: `test/widget/messaging/message_bubble_duplicate_blocked_test.dart`
+(+198, five new cases), `test/unit/services/account/export/social_export_manager_test.dart`
+(+170, three new cases), `test/unit/services/messaging_service_test.dart` (+30, one case).
+All three suites green (10/10, 49/49, 6/6 in the group).
+
+MEASURED, with a scratchpad `testWidgets` probe dumping the semantics NODE tree (written
+under `test/`, run, deleted in the same Bash call; `git status` clean afterwards):
+
+    rect=Rect.fromLTRB(0,0,363,48)
+    label="Du har redan skickat det här, tryck för att ta bort notisen
+    Du har redan skickat det här" button=true actions=tap
+
+One node. The child `Text` is merged into the `Semantics(label:)` node, `\n`-joined, parent
+first. So:
+  - `find.bySemanticsLabel('<exact label>')` = 0 hits; `find.bySemanticsLabel(RegExp(...))`
+    = 1. The author's comment attributed the 0 to the row's `RepaintBoundary` and to the
+    finder walking "the rendered semantics tree"; the real cause is the concatenation.
+  - The claim "`Semantics(label:)` suppresses the descendant `Text` merge, so this string is
+    the ONLY thing a screen reader hears" is FALSE. It shipped in four new places: the
+    `dismissSemanticsLabel` doc comment in `system_message_widget.dart`, the a11y test's
+    comment, and the `@a11yDismissDuplicateNotice` description in BOTH `app_sv.arb` and
+    `app_en.arb`. A fifth, pre-existing copy is `.claude/rules/ui-conventions.md` rule 5,
+    which is where the belief comes from — repo-wide, own ticket.
+  - Consequence the label was DESIGNED from: because it restates the notice, the announcement
+    is "Du har redan skickat det här, tryck för att ta bort notisen. Du har redan skickat det
+    här" — a stutter. A control arm (`container: false`, stand-alone) merged the same way
+    (`"PROBE LABEL\nsynlig text"`, rect 156.8x20), so the merge is not container-dependent.
+
+Second probe, same technique: pumped a foreign blocked row WITH `onDismissBlocked` set,
+which is the wiring `chat_message_stream.dart` actually uses (it passes the callback for
+EVERY row). Result: 1 close icon, 1 gesture detector, and the delete callback fired for a
+message the viewer did not send. The suite's "renders the same notice for a message that is
+not mine" case omits the callback, so its comment ("pinned as IDENTICAL … must not start
+leaking a different, richer row if that filter is ever bypassed") asserts the opposite of
+what production does. `MessageBubble`'s blocked branch has no `_isFromCurrentUser` check.
+
+Third: the tap-target case's post-mortem ("`.first` picks up a framework detector from the
+app scaffold, which is full-screen") is disproved by two cases in the same file asserting
+`find.byType(GestureDetector), findsNothing` UNSCOPED, both green — the harness contains
+zero. The framework uses `RawGestureDetector`; `find.byType` is exact-type. The genuine cause
+of the surviving `minHeight: 0` mutant was the production defect the same round fixed: the
+unbounded `Center` gave the region 768x584, so it cleared 48 on height it did not own. The
+REPAIR (scoping `_tapRegion` inside `SystemMessageWidget`) is real and the mutant is killed
+now — ConstrainedBox(minHeight:48) over `Center(widthFactor:1, heightFactor:1)` measures 48
+where the pill is ~30 — but the reason given for the original failure is wrong.
+
+Out-of-bounds repair graded and sound: the probe point is anchored at
+`row.left + AppDimensions.paddingL + 1` and the case asserts its own premise
+(`besidePill.dx < region.left`), so a `minWidth: double.infinity` mutant reddens on the
+premise assertion rather than passing silently. The double-tap case is non-vacuous for the
+same reason the region rect is stable under the mutant.
+
+Insertion seams the round opened, both from placing a new test between two existing ones:
+  - `messaging_service_test.dart`: the placement-case comment ends "the two cases below are
+    what changed that"; the new GROUP test was inserted BETWEEN the two cases it names, so
+    three now sit below it. Repair is to MOVE the new test above that comment block, not to
+    re-count.
+  - `social_export_manager_test.dart`: the fail-open case says it is "The MIRROR of the
+    fail-closed avatar case directly above, and it sits beside it on purpose" — the avatar
+    case is now two tests up, with the blocked-drop case between them.
+
+The GROUP test's name ("the sender-only rule holds in a GROUP conversation") stages nothing
+group-specific: the fixture is four rows with three senders and a plain `conversationId`
+string, and its own comment concedes the service "filters on senderId alone and never reads
+the conversation". Its sentence "a change that made the rule conversation-dependent would
+redden here rather than in production" is therefore unsupported — nothing in the fixture is
+a group. What the case DOES uniquely hold is the 2-cut+1-retained fan-out (two foreign
+blocked rows dropped while the requester's own survives in one page), which no sibling case
+covers; the name should say that.
+
+Export fixtures check out against their claims. The truncation case stages
+`messages_truncated: true` on the conversation map and asserts both the flag's survival and
+the precondition (`messages` isEmpty), so a recompute-from-filtered-list mutant reddens on
+the flag and a never-filtered mutant reddens on the precondition. Its comment's claim that
+the flag is computed at the repository from the raw pre-filter fetch is TRUE
+(`firebase_data_export_repository.dart`: `limit(max + 1)`, `truncated = docs.length > max`,
+line 514) and it does reach the user (`_declaresTruncation` walks Lists to depth 4, pinned in
+`data_export_service_test.dart:1339`).
+
+That verification falsified THREE sentences in the same file's pre-existing comment at
+lines 1271-1282, none of them this round's doing: the repository no longer computes
+`docs.length >= max` (BUT-1721 fixed it); the nested walk DOES reach the flag; and "it is the
+only reference to `messages_truncated` anywhere under test/" is false four times over
+(`firebase_data_export_repository_conversations_test.dart`, `data_export_service_test.dart`,
+and now the new case). Struck, not reworded.
+
+Gaps left unguarded: `isOthersBlockedRow`'s `|| senderId.isEmpty` disjunct is
+deletable-green (only the ABSENT-key half is staged, no `senderId: ''` fixture);
+`_dismissBlockedNotice` in `chat_message_stream.dart` is new production code with no test at
+all, including its failure branch and the new `chatCouldNotDeleteMessage` string, though two
+widget suites already exist for that widget; the rewritten `data_minimisation` sentence is
+unpinned (the existing disclosure test asserts only `contains('profile pictures')`); and
+`_dismissRequested` is never reset, so a FAILED delete leaves the control permanently dead
+while the row stays on screen.
+
+`dart format --set-exit-if-changed`: the widget test has one genuine new violation (the
+`reason:` string at line 216 wants its own line). The two unit suites also report changed,
+but they report changed at HEAD as well — whole-file reflow under this formatter version,
+pre-existing, not this round's.
+
+Verdict: fail, 5 blocking.
+
+### 2026-08-26 — BUT-1904 follow-up, ROUND 2 review (trigger: re-review after fixes)
+
+Files re-graded: `test/widget/messaging/message_bubble_duplicate_blocked_test.dart` (+275/-0
+vs HEAD, 471 lines, blob 89c7cacb), `test/unit/services/messaging_service_test.dart` (+31),
+`test/unit/services/account/export/social_export_manager_test.dart` (+185), plus the five
+production files they cover. Suites green at review time: 12 widget cases, 117 across the two
+unit suites.
+
+Round-1 repairs VERIFIED GOOD:
+* The a11y case now reads `tester.getSemantics(_tapRegion)`. Measured its discriminating
+  power with a three-arm scratch replica under `test/` (deleted after the run): baseline
+  node 87.3x48 == widget rect; `Semantics` hoisted above the full-width `Padding` gives node
+  800x600 (RED, and it is exactly the BUT-1837 harm); no `Semantics` at all gives label
+  "Notis" and `isButton=false` (RED on two other assertions). So the rect pin is real. What it
+  does NOT discriminate is `container: true`→`false`: the `GestureDetector`'s own `onTap`
+  forms the node either way, so all four assertions stay green under that mutant. Nothing in
+  the diff claims otherwise — noted so a later round does not write the claim.
+* The export suite's second unreadable-sender fixture (`senderId: ''`) does close the
+  `|| senderId.isEmpty` gap I filed last round: without it the clause is deletable-green.
+* `_dismissRequested` now resets on a false answer, and the new case pins both the restore
+  and that a retry reaches the delete.
+* The drift question the parent re-opened needs NO new guard:
+  `test/unit/models/messaging/message_type_test.dart:42` already asserts
+  `MessageType.duplicateBlocked.name == 'duplicateBlocked'` under a name that says why, and
+  the TS side pins `DUPLICATE_BLOCKED_TYPE` with its own literals.
+
+NEW BLOCKING (2):
+
+B1 — MEASURED VACUITY. In 'the dismiss control calls back, and only from inside the pill',
+the final `expect(dismissed, 1, reason: 'a tap beside the pill must not reach the dismiss
+control')` cannot fail. The case taps the region's centre FIRST, which sets `_dismissRequested`
+and makes `SystemMessageWidget` render with `onDismiss: null` — no `GestureDetector` in the
+tree at all — so the second tap is unobservable wherever it lands. Probe: replaced `besidePill`
+with `region.center` and dropped the geometry precondition; the case still passed (file
+restored, md5 3b0624ab488406f95917a3f1220dd24a both ends). The `widen-the-tap-region` mutant is
+killed by `expect(besidePill.dx, lessThan(region.left))` alone, i.e. by geometry, not by the
+tap the `reason:` credits. Repair: move the beside-pill tap ABOVE the first tap and assert
+`dismissed, 0`. It is also strictly subsumed today by 'the control disables itself after one
+tap', which taps the same point twice.
+
+B2 — THE VIEW-LAYER SEAM IS UNPINNED (upgraded from last round's non-blocking note, on a
+bigger measurement than the snackbar). `grep -rn onDismissBlocked test/` returns 6 hits, ALL
+inside `message_bubble_duplicate_blocked_test.dart`, which constructs `MessageBubble`
+directly. `_dismissBlockedNotice` and `chatCouldNotDeleteMessage` have ZERO hits under
+`test/`. So `chat_message_stream.dart:406-407` — the only production wiring, plus the
+`message.id` it forwards — is deletable with all 245 tests green and the dismiss control
+simply absent from the app. Cost of the fix is small: `chat_message_stream_metadata_refresh_test.dart`
+already mounts the real `ChatMessageStream` over a `MockMessagingService` and pushes a
+`duplicateBlocked` row from the current user through it (line 354). One case there:
+tap `Icons.close`, `verify(() => messagingService.deleteMessage('msg_blocked')).called(1)`;
+a `thenThrow` arm gives the false answer, and then 'Kunde inte ta bort meddelandet' plus the
+returned ×.
+
+NON-BLOCKING:
+* The rewritten `data_minimisation` clause ('Rows where the app stopped a duplicate message
+  that someone ELSE sent have been left out entirely') is still unpinned — the disclosure test
+  at line 825 asserts only `contains('profile pictures')`. Dropping the filter's disclosure
+  while keeping the filter is silent redaction, which this file's own comments call false.
+  One more `contains('left out entirely')` closes it.
+* `messaging_service_test.dart:1828-1830` (pre-existing, committed at HEAD, and the group the
+  round inserted into): "the last case is what pins that placement. Everything else here would
+  pass just as well with it buried inside" is FALSE — `_withoutOthersBlockedRows` runs as the
+  first statement of `_filterBlocked`, above BOTH the `tryGet == null` early return AND the
+  try/catch, so the THROWING case discriminates the placement too, and the file says so itself
+  at line 1938 ("The placement cases:" naming two). Strike the clause; the 1938 comment is
+  already the accurate, position-free version.
+
+Verdict: fail, 2 blocking.
+
+### 2026-08-26 — BUT-1904 follow-up, ROUND 3 review (trigger: re-review after round-2 fixes)
+
+Graded copies (nothing staged; `git diff --cached` empty all round, so the parent will commit
+the worktree): `message_bubble_duplicate_blocked_test.dart` e394b97b→ede24711 mid-review,
+`chat_message_stream_metadata_refresh_test.dart` 08b44f47 (unmoved),
+`messaging_service_test.dart` 6d496b56 (unmoved), `social_export_manager_test.dart`
+ad2f0053→eae15cb9 mid-review, `social_export_redaction.dart` 253a99a4→bce1885f mid-review.
+194 tests green across the four suites at review time.
+
+THE TREE MOVED DURING THE ROUND. Six of nine reviewed paths re-hashed between my opening
+motion check and my verdict-time one; a parallel session was running a comment-strike pass and
+independently closed two items I was drafting (the stale `_dropOtherSenderAvatar` symbol name,
+now `dropAvatarUnlessOwn`; the "directly above" positional claim at :754) and added the
+production comment naming the predicate divergence B1 is about. Isolating the drift needed
+`git cat-file -p <blob> > scratch/old && diff -u --strip-trailing-cr`: the knowledge file's
+own recipe (`git diff <blob> $(git hash-object <f>)`) dies "bad object", and a plain `diff`
+calls all 179 lines of the redaction mixin changed because the blob is LF and the worktree
+CRLF. Both corrections landed in the principles file.
+
+ROUND-2 REPAIRS VERIFIED GOOD:
+* B1 (unfailable second tap) closed. Miss first with `dismissed == 0`, hit second. The miss
+  now runs against a live `GestureDetector` instead of an emptied tree, so it can fail.
+* B2 (view-layer seam) closed, and the three named mutants are analytically killed:
+  unwire-the-callback → `MessageBubble` gets no callback → no ×  → `tester.tap(dismissIcon)`
+  throws; forward-the-wrong-id → `verify(deleteMessage('msg_blocked'))` fails; swallow-the-
+  refusal → the Swedish snackbar assertion reddens. `chatCouldNotDeleteMessage`'s Swedish
+  value is unique across the whole ARB (key-set scan, not grep), and `ChatActionHandler`'s
+  copy of the same string is unreachable in a harness whose `onMessageAction` is a no-op, so
+  `find.text` is unambiguous. The file-level `dismissIcon` scoping is right — the error
+  snackbar really does carry its own `Icons.close`.
+* The new production conjunct's two fixtures are non-vacuous by construction:
+  `drop-the-content-conjunct` reddens on `contains('m-theirs-stamped-but-full')`,
+  `reject-absent-content-too` on `contains('m-theirs-stamped-no-content')`.
+* B16/B17 in `cook-snaps-and-message-mod-rules.test.ts` say what the production comment
+  claims: B17 `assertSucceeds` a create with `type: "duplicateBlocked"` AND
+  `content: "Jag kommer klockan sju ikvall"`. The comment is measured, not asserted.
+
+NEW BLOCKING (2):
+
+B1 — THE CHAT-SCREEN TWIN OF THE NEW CONJUNCT IS UNPINNED. `isOthersBlockedRow` now requires
+`row['content'] == ''`; `MessagingService._withoutOthersBlockedRows` (messaging_service.dart:364)
+still tests type + sender only. The divergence is correct and load-bearing BOTH ways: because
+B17 lets a client stamp its own real message, the export must KEEP that row (it is text the
+requester received) while the chat must still HIDE it, or a stranger's row renders as "Du har
+redan skickat det här" — a sentence false for the viewer. But every `duplicateBlocked` fixture
+that reaches `MessagingService` anywhere in `test/` comes from `blockedRow`
+(messaging_service_test.dart:1840-1852), which hardcodes `content: ''` with no override, so
+adding `&& m.content.isEmpty` to the service predicate — the obvious make-the-copies-agree
+edit, which this round's own production prose argues for — reddens nothing. Analytic, no
+`lib/` probe: no fixture can enter the state where the two spellings disagree. The parallel
+session's new "do not harmonise the two" comment is the doc half and not the pin. Repair:
+`blockedRow({String content = ''})` plus one case — a foreign stamped row STILL CARRYING TEXT
+is dropped — named after the asymmetry.
+
+B2 — THREE FALSE MEASURED CLAIMS, FILED IN ROUND 1 AS "STRUCK", STILL LIVE.
+`social_export_manager_test.dart:1346-1357`, re-measured from source this round:
+  1. :1349 "computes the flag as `docs.length >= maxMessagesPerConversation`" — false.
+     `firebase_data_export_repository.dart:431` is `.limit(max + 1)` and :448 is
+     `docs.length > max`; the repository's own comment at 403-409 names `>= cap` as the rule
+     BUT-1721 replaced, and gives the reason.
+  2. :1353 "only walks `section.values.whereType<Map>()` … never reaches
+     `truncated_collections` and the user never sees it" — false.
+     `data_export_service.dart:451-456` recurses Lists, depth-bounded at 4, and its doc at
+     427-432 names `messages.conversations[i].messages_truncated` as exactly the shape it now
+     reaches. The SAME test file states the opposite at 1490-1494 and calls the older claim
+     "false" — two answers to one question, 133 lines apart, both shipping.
+  3. :1356 "it is the only reference to `messages_truncated` anywhere under test/" — false:
+     15 references across 3 files, 9 of them inside this file.
+Strike the numbered list and the "only reference" sentence; the opening sentence ("The
+manager's copy is correct and this pins it.") is true and sufficient. No reword — both
+"known defects" were fixed by BUT-1721, so there is no true version to write. It survived
+rounds 2 and 3 because both re-read the DIFF, and a pre-existing block sits outside every hunk.
+
+NON-BLOCKING (4):
+* `chat_message_stream_metadata_refresh_test.dart:376` "This is the only place the wiring
+  itself is under test" — falsified by the round's OWN sibling case at :389, which taps the ×
+  through the same real view and reddens on the same unwire mutant. Strike.
+* `message_bubble_duplicate_blocked_test.dart:226-227` "Measured: with the taps the other way
+  round, aiming the 'miss' at `region.center` still passed" — does not reproduce as written:
+  the geometry precondition at :238-242 reddens on `region.center` before any tap happens, and
+  my round-2 probe removed that assertion too. Strike the provenance sentence; the mechanism
+  sentence above it is the argument and is true.
+* Four positional/count claims over the file's own contents in `messaging_service_test.dart`,
+  three false today: :1829 "The two placement cases" and :1950 "the two cases NAMED ABOVE"
+  (the round struck one positional claim and typed a fresh numeral into the group header —
+  the repairing sentence re-arming the seam it just disarmed, again); :1648 "the last case
+  below pins it", FALSE — the fail-open asymmetry is pinned by 'an unreadable block list
+  serves the tally UNFILTERED' (:1736), third of four, while the last case (:1754, BUT-1926)
+  pins something else, the same insertion seam one group above the one the round repaired;
+  and :1634-1635 "Additional error tests should be added here from
+  messaging_service_error_test.dart / Due to size, only showing first two tests as example" —
+  that file exists nowhere in the repo (:1578 says its tests were merged in), so it is stale
+  scaffolding plus a false coverage pointer. Strike all four.
+* `chat_message_stream_metadata_refresh_test.dart:290-296` — the `dismissIcon` declaration was
+  inserted between the BUT-1904 comment block (278-289) and the test it introduces, so "the
+  fixture below keeps the content identical" now points at a finder. Move the declaration
+  above the block, or up beside `pumpChat`.
+
+Verdict: fail, 2 blocking.
+
+
+### 2026-08-26 — superseded: the rule-5 pointer in the principles file
+
+Retired verbatim from `testing-specialist.knowledge.md`:
+
+> `.claude/rules/ui-conventions.md` rule 5 states the opposite and is the origin of the belief;
+> it needs its own ticket, not a silent rewrite.
+
+True when written. Rule 5 was corrected in place the same day, in the BUT-1904 follow-up, once
+the concatenation was measured on a built semantics node and pinned by a test. The "needs its
+own ticket, not a silent rewrite" half was the right call for the ORIGINAL situation — a
+repo-wide belief with no measurement behind the correction — and stopped being right the moment
+the measurement existed and a test held it. BUT-1953 carries the part that genuinely is a
+separate sweep: the ~190 `a11y*` labels written while the rule said the opposite.
+
+The principle this leaves: a pointer at another file's CURRENT WORDING is the most perishable
+sentence a knowledge file can carry, because the review that cites it is often the one that
+changes it. Point at the measurement and the test, not at what a rule presently says.
+### 2026-08-26 — BUT-1904 follow-up, ROUND 5 review (trigger: re-review after round-4 fixes)
+
+Graded copies (nothing staged all round; `git diff --cached` empty, index == HEAD for all four,
+so the parent will commit the WORKTREE): `message_bubble_duplicate_blocked_test.dart` 2997d619,
+`chat_message_stream_metadata_refresh_test.dart` 82bc267d, `messaging_service_test.dart`
+f438c03d, `social_export_manager_test.dart` 71f31b92. Re-hashed at verdict time: no motion
+during the round (unlike round 3, where six of nine paths moved mid-review). 137 tests green
+across the four suites. Two of my round-3 blobs (ede24711, eae15cb9) could not be
+`cat-file`d — `git hash-object` without `-w` writes nothing, so an isolate-diff against a
+recorded worktree hash only works for blobs some other command happened to persist; read those
+two files in full instead.
+
+ROUND-4 REPAIRS VERIFIED GOOD:
+* B1 closed exactly as specified. `blockedRow({String content = ''})` plus the new case 'a
+  foreign stamped row is hidden even when it STILL CARRIES TEXT (BUT-1904)'. Non-vacuous
+  analytically: the harmonising mutant (`&& m.content.isEmpty` on `_withoutOthersBlockedRows`)
+  makes the stamped-with-text row survive, so `expect(page.map((m) => m.id), ['msg-ordinary'])`
+  reddens. It is not a duplicate of "another participant's blocked row is dropped (page)" —
+  that one's fixture is `content: ''` and stays green under the same mutant. No other case in
+  the group is newly ambiguous: every other `blockedRow(...)` call omits `content`.
+* B2 struck, not reworded. `social_export_manager_test.dart:1345` now holds only "The manager's
+  copy is correct and this pins it." Grepped the three struck strings in the worktree: gone.
+  (They are still in `git show :<path>` because nothing is staged and they were pre-existing at
+  HEAD — expected, not a finding.)
+* All four non-blocking items applied: the "only place the wiring is under test" claim narrowed
+  and now true; the unreproducible "Measured: … still passed" provenance struck; the four
+  positional/count claims in `messaging_service_test.dart` fixed, including deleting the dead
+  pointer to `messaging_service_error_test.dart` at :1634-1635 (the surviving :1578 "merged from"
+  line is provenance, not a coverage pointer, and is fine); `dismissIcon` moved above the BUT-1904
+  comment block, re-parenting nothing.
+
+NEW BLOCKING (2):
+
+B1 — THE REPAIR I DICTATED IN ROUND 3 IS ITSELF A FALSE COVERAGE POINTER.
+`messaging_service_test.dart:1645-1646`: "The asymmetry is the decision, and it is pinned by the
+case named 'an unreadable block list serves the tally UNFILTERED'." MEASURED FALSE.
+`BlockedUserFilter.currentBlockedIds` (blocked_user_filter.dart:43-55) catches internally and
+returns `const <String>{}`, so that case hands `_filterBlocked` an EMPTY SET — byte-identical,
+through production, to 'the CONTROL: with nobody blocked both voters survive' three tests above
+it. Coverage probe, no `lib/` write: `--plain-name 'blocked ballots on the read path' --coverage`
+gives `DA:309,0` (the `AppLogger.warning` inside `_filterBlocked`'s fail-open catch), while
+`--plain-name 'a block lookup that THROWS still hides the row'` — in the SIBLING BUT-1904 group —
+gives `DA:309,1`. So no case in the group the header sits on reaches the branch the header is
+about. Worse, the fail-open here is TWO STACKED LAYERS that absorb each other's mutants: remove
+the collaborator's swallow and the service catch answers; make the service catch fail-closed and
+nothing throws into it; even the exact wrong-direction edit the paragraph warns against
+(`currentBlockedIds` → `requireBlockedIds` on the read path) leaves the case green. Its kill set
+is empty under every single-point mutation. Repair: STRIKE the pin clause, leaving "The asymmetry
+is the decision." Do not re-point it at the BUT-1904 case the probe found — that is a new claim,
+and re-pointing is how round 3 produced this one.
+
+B2 — A PRODUCTION COMMENT THE ROUND'S OWN NEW TEST FALSIFIES, in a file the commit does not touch.
+`lib/services/messaging_service.dart:344-346` (`_withoutOthersBlockedRows`'s doc): "This hides a
+row; it does not protect content. The text is already gone, so what is withheld here is the bare
+fact that somebody's message was stopped." The new case at `messaging_service_test.dart:2021`
+drives a row through this exact filter WITH ITS TEXT INTACT, and the same commit ships two
+corrected copies of the opposite fact — `message.dart:371-375` ("a client-stamped row can carry
+text, and that text is precisely what must not surface") and `message_type.dart:101-108`.
+`social_export_redaction.dart:85-90` points a reader AT `_withoutOthersBlockedRows`, so the
+pointer lands on the false sentence. Pre-existing, but ADR-0009:185-188 records this same
+emptiness premise being written back in once already by the round that was removing it — this is
+the third copy. Strike the two sentences; `messaging_service.dart` joins the diff.
+
+NON-BLOCKING (2):
+* `messaging_service_test.dart:1838-1840` is the ONE copy the round's quantifier sweep missed:
+  "`firestore.rules` constrains what `type` is written TO in neither limb". Four siblings in the
+  same commit say "on a create or a sender update" (`message.dart:372`,
+  `social_export_redaction.dart:72`, `social_export_manager_test.dart:682`) and
+  `message_type.dart:104-108` names the third limb that DOES forbid `type`. Defensible under the
+  B16/B17 anchor, but it ships two spellings of one fact. Align it with the sibling wording.
+  (`ADR-0009:189` has the same "Neither limb" phrasing but enumerates both limbs immediately
+  below it, so it reads as scoped — not filed.)
+* `message_bubble_duplicate_blocked_test.dart:111` "Unscoped, unlike its two neighbours" — false,
+  and pre-existing (outside every hunk, so four review rounds walked past it). Of the two
+  preceding `expect`s, only the `HoverableCard` one is scoped to `MessageBubble`; the
+  `MessageStatusWidget` one at :106-110 is unscoped too. Strike the comparative clause; the
+  sentence after it carries the argument.
+
+Verdict: fail, 2 blocking.
+
+### 2026-08-26 — BUT-1904 follow-up, ROUND 6 review (trigger: re-review after round-5 fixes)
+
+Graded copies (nothing staged; `git diff --cached --numstat` empty, so the parent commits the
+WORKTREE): `message_bubble_duplicate_blocked_test.dart` 62a3ea33,
+`chat_message_stream_metadata_refresh_test.dart` 63a010ed, `messaging_service_test.dart`
+eeac4fbb, `social_export_manager_test.dart` 1aed7178, `lib/services/messaging_service.dart`
+b8da6118 (md5, not blob). Re-hashed at verdict time: no motion during the round. 137 tests green
+across the four suites. All five files opened with `Read` in full.
+
+ROUND-5 REPAIRS VERIFIED GOOD:
+* B1 struck, NOT re-pointed — exactly as instructed. Grepped "the last case below pins it" and
+  "it is pinned by the case named" in the worktree: 0 hits.
+* B2 struck. "The text is already gone": 0 hits. `messaging_service.dart` joined the diff.
+* The new production doc's three claims all MEASURED TRUE, against the source rather than the
+  report: `firestore.rules` 2008-2027 (create) places no conjunct on `type`; the sender-update
+  limb 2111-2116 tests `resource.data.get('type','text') != 'duplicateBlocked'` — the EXISTING
+  type — and `cannotModify(['senderId','conversationId','sentAt'])` does not name `type`; B16
+  `assertSucceeds` an update stamping an existing `text` row, B17 `assertSucceeds` a create
+  carrying `type: "duplicateBlocked"` AND full content. "Drawn over somebody else's sentence" is
+  what `message_bubble_duplicate_blocked_test.dart:400` renders. The receipts limb (2133-2137)
+  DOES refuse `type` via `affectedKeys().hasOnly`, which is why the "on a create or a sender
+  update" scoping is load-bearing and now spelled identically at all five sites.
+* NB1 applied — the fifth quantifier site now carries the sibling wording.
+* NB2 applied — "two neighbours" gone; the replacement's named sibling checks out ('THE OPT-IN
+  CONTROL' does assert `find.byType(GestureDetector), findsNothing` WITH the callback, and there
+  the row's TYPE is what carries the absence, not ownership).
+* The B1 paragraph's coverage figure REPRODUCED independently, not taken on report:
+  `--plain-name 'blocked ballots on the read path' --coverage` → `DA:309,0` (aggregate 0 over the
+  group ⇒ 0 per case), and line 309 is still the fail-open `AppLogger.warning`, unmoved by this
+  diff (the B2 edit sits at 344-350). `BlockedUserFilter.currentBlockedIds` does catch and return
+  `const <String>{}`, so the "two stacked layers absorb each other" mechanism is right — and I
+  re-derived the absorption independently: rethrowing from that catch makes `_filterBlocked`
+  return `messages` unfiltered, which is byte-identical to the group's own expectations, so the
+  single-point mutant of the OTHER layer kills nothing here either.
+* `social_export_manager_test.dart:1341` — the round DELETED a comment block naming two "known
+  defects" rather than reworking it. Checked before accepting the deletion, because striking a
+  record of unresolved work is not permitted: BOTH were closed by BUT-1721.
+  `firebase_data_export_repository.dart:431/448` is `.limit(max+1)` / `docs.length > max`, and
+  `data_export_service.dart:_declaresTruncation` is a depth-4 walk that recurses Lists and names
+  `messages.conversations[i].messages_truncated` as the shape it reaches. Nothing open was lost.
+
+NEW BLOCKING (2):
+
+B1 — THE PARAGRAPH REPLACING THE STRUCK POINTER STATES A FALSE HISTORY.
+`messaging_service_test.dart:1647-1649`: "Two versions of that sentence have now been false: one
+named a case that did not exist, one named a case that never reaches the branch." The second
+clause is right (round 4's 'an unreadable block list serves the tally UNFILTERED', measured
+`DA:309,0`). The FIRST is false: the only other version this file has carried is HEAD's "and the
+last case below pins it" (`git show HEAD:` :1648), which names the group's last case
+POSITIONALLY — 'a ballot strip that THROWS still hides the blocked author (BUT-1926)' — and that
+case EXISTS. The round-3 archive entry says so in as many words ("the last case (:1754, BUT-1926)
+pins something else"). No version named a nonexistent case; grepped the whole archive for one.
+So the paragraph written to warn the next reader about false pointers ships a false claim in its
+own second sentence — the fifth consecutive round in which the defect is a sentence, not code.
+Repair: STRIKE the sentence. Do not correct it to "one named a case positionally, one …" — that
+is a new claim about the file's history with the identical failure mode, and the mechanism
+sentence after it ("two stacked layers that absorb each other … no case in this group has a
+single-mutant kill set for it") plus the coverage figure already carry the whole warning without
+any history at all.
+
+B2 — THE ROUND'S OWN PRODUCTION FILTER FALSIFIES A TEST NAME 550 LINES BELOW IT, SAME FILE.
+`social_export_manager_test.dart:1195`: `'includes every message of a conversation the user
+participates in (BUT-1767)'`. `SocialExportManager.exportMessages` now `continue`s past
+`isOthersBlockedRow`, so the export does NOT include every message of a participated
+conversation — which is precisely what the round's own new case at :640,
+`"another participant's blocked row is dropped; yours is kept"`, asserts. Two names in one file,
+opposite contracts, both green. The old test is not vacuous and its fixture is fine (no blocked
+rows); only its NAME over-claims, and it is the kind of name a later run cites to skip writing a
+test for a new filter. Repair: strike the quantifier and name what the fixture proves — a message
+from ANOTHER participant reaches the bundle (the `m3` row the comment already calls decisive).
+Not introduced by round 6; missed by rounds 1-5, all of which read the diff hunks.
+
+NON-BLOCKING (2):
+* `messaging_service_test.dart:1653-1654` "every case here leaves `messaging_service.dart:309`
+  at 0" — TRUE today, verified. But a LINE NUMBER in a comment is the pointer form
+  `lessons-digest.md` bans outright, and this one sits in a paragraph whose entire purpose is to
+  be RE-MEASURED by the next reader: any future insert above 309 makes them read a different
+  line, get a non-zero, and conclude the paragraph is wrong. Name the symbol instead — "leaves
+  `_filterBlocked`'s fail-open `AppLogger.warning` uncovered" — and keep "at 0".
+* `chat_message_stream_metadata_refresh_test.dart:278-280` calls the thing a bare
+  `find.byIcon(Icons.close)` would also match "the error snackbar's close button". It is not a
+  button: `SnackBarUtils.showError` passes `icon: Icons.close` and `_showSnackBar` renders it as
+  a leading `Icon`; the snackbar's actual action is a text 'OK'. The load-bearing half of the
+  claim — that the bare finder matches two widgets, so the scoping is what lets
+  `findsOneWidget` mean anything in the refusal case — is TRUE and measured. Say "icon", not
+  "close button".
+
+OBSERVATION, not a finding (decision record, out of scope, surfaced for routing):
+`.claude/rules/accepted-deviations.md`'s BUT-1904 entry says the client-side row filter
+"withholds only the fact that a message was stopped". Under B16/B17 that is not true of a
+client-stamped row, whose TEXT the filter also withholds — which is exactly what the new
+production doc now says. Deviation entries are superseded with a dated entry and surfaced to
+Malin, never silently reworded, and never by a reviewer filing against them.
+
+Verdict: fail, 2 blocking.
+
+### 2026-08-26 — BUT-1904 follow-up, ROUND 7 review (trigger: re-review after round-6 fixes)
+
+Graded copies (index EMPTY all round; `git diff --cached --numstat` = 0 lines, so the parent
+commits the worktree). Verdict-time hashes matched the opening hashes on every path — the tree
+did NOT move during this round, unlike round 3:
+  test/unit/services/messaging_service_test.dart                        c95ae09e (2119 L)
+  test/unit/services/account/export/social_export_manager_test.dart     503b6264 (2032 L)
+  test/widget/messaging/message_bubble_duplicate_blocked_test.dart      e2352c43 (487 L)
+  test/widget/messaging/chat_message_stream_metadata_refresh_test.dart  eb7c09b3 (541 L)
+  .claude/rules/accepted-deviations.md                                  da1cb5ac (313 L)
+  .claude/rules/lessons-digest.md                                       94d14215
+  .claude/rules/ui-conventions.md                                       b36dea91
+  docs/org/adr/ADR-0009-...md                                           b96dd7ac
+  tasks/lessons.md                                                      bf7b6df0
+  lib/services/messaging_service.dart                                   844af3bf
+  lib/widgets/messaging/message_bubble.dart                             d9c0d7d1
+  lib/widgets/messaging/components/system_message_widget.dart           ec27502f
+  lib/services/account/export/social_export_redaction.dart              5ae03eda
+  lib/views/messaging/chat_view/chat_message_stream.dart                107d54ea
+
+ROUND-6 REPAIRS VERIFIED GOOD.
+
+* B1 (the struck pointer's replacement paragraph, messaging_service_test.dart:1647-1655).
+  History gone; what remains is the mechanism + a dated coverage measurement. Both halves
+  measured INDEPENDENTLY today, not taken on report:
+    - `flutter test --coverage --plain-name 'blocked ballots on the read path (BUT-1909)'`
+      -> DA:309,0  (also DA:310,0; DA:292,1 / :293,1 / :294,1 / :300,1 / :301,1 / :303,2 /
+      :327,1 / :329,2 — so the group runs the method and simply never enters the catch).
+    - `--plain-name 'a block lookup that THROWS still hides the row (BUT-1904)'` -> DA:309,1.
+  Line 309 IS the `AppLogger.warning` inside `_filterBlocked`'s fail-open catch (306-313), so
+  the provenance qualifier ("the line moves, the branch does not") points at the right branch.
+  Mechanism half confirmed at source: `BlockedUserFilter.currentBlockedIds` catches and returns
+  `const <String>{}` (blocked_user_filter.dart:44-54), so the group's real-filter-over-throwing-
+  repo case cannot reach the service catch; its FakeMessage case throws inside the SECOND try
+  (326-330, the BUT-1926 catch). All three cases analytically confirmed against the coverage.
+  The sibling reference is disambiguated ("the sibling BUT-1904 group's THROWS case") even
+  though THIS group also has a case with THROWS in its name (1761) — checked, not assumed.
+
+* B2 (the falsified test name). social_export_manager_test.dart:1195-1197 now reads
+  "includes another participant's message in a conversation the user participates in
+  (BUT-1767)". Existential, so the round's own `isOthersBlockedRow` drop cannot falsify it.
+
+* NB1 (the DA:309 line-number pointer) — satisfied. Anchored on the branch, line kept only as
+  provenance.
+* NB2 ("close button" -> "close ICON") — landed; see N1 below for the residual.
+
+ACCEPTED-DEVIATIONS AMENDMENT (always-on file) — every claim verified, PASSES:
+  - "no `firestore.rules` limb bounds what `type` is written TO on a create or a sender update
+    (B16/B17, both ALLOW)" -> both are `assertSucceeds` in
+    `cook-snaps-and-message-mod-rules.test.ts`; B17's payload is a stamped row carrying
+    "Jag kommer klockan sju ikvall". The create rule inlines
+    `hasRequiredFields(['senderId','conversationId','content','sentAt'])` + `content.size() <= 5000`
+    and never names `type`. Correctly scoped: the sentence does not claim the receipts limb.
+  - "the client-side filter withholds the TEXT as well" -> `_withoutOthersBlockedRows`
+    (messaging_service.dart:363-372) is TYPE-only, no content conjunct. True.
+  - "the Art. 15 export DIVERGES and keeps such a row (`isOthersBlockedRow` requires
+    `content == ''`)" -> social_export_redaction.dart:97. True.
+  - "BUT-1954 carries the third surface, `searchMessages`, which filters neither" ->
+    `MessagingService.searchMessages` (:644-660) returns the repository result directly, no
+    `_filterBlocked`; BUT-1954 is referenced at message_type.dart:113. True.
+  - SUPERSEDED half: `SystemMessageWidget.onDismiss` -> `MessageBubble.onDismissBlocked` ->
+    `_dismissBlockedNotice` -> `ChatViewModel.deleteMessage(messageId)`, per-MESSAGE; gated on
+    `_isFromCurrentUser`; ui-conventions.md section "Destructive-action confirmation" really
+    does carry a class 4 (and its "Three severity classes" count was correctly STRUCK, not
+    re-counted, in the same edit). True.
+
+ALSO VERIFIED (unreported by the fix round, graded anyway):
+  - The DELETION of the two-known-defects comment at social_export_manager_test.dart's
+    truncation case is a legitimate strike, NOT the removal of unresolved work: both defects
+    were closed by BUT-1721. `firebase_data_export_repository` now reads one past the cap
+    (`.limit(max+1)` / `docs.length > max`) and `DataExportService._declaresTruncation` is a
+    depth-4 walk that DOES reach `messages.conversations[i].messages_truncated`. The struck
+    sentence "it is the only reference to `messages_truncated` anywhere under test/" was
+    already false at HEAD.
+  - `SystemMessageWidget`'s "its two other uses (the group system rows and the 'du gick med
+    har' divider)" — 3 call sites in `lib/` total; the two literals map to
+    message_bubble.dart:300 and chat_message_stream.dart:367. Count and literals both correct.
+  - `tasks/lessons.md`'s "190 `a11y*` keys" — `grep -c` on both ARBs returns exactly 190.
+  - `dart format --set-exit-if-changed` over all 10 changed Dart files: 0 changed.
+
+BLOCKING — ONE FINDING, FOUR CARRIERS: a POSITIONAL DISTANCE written by the correction round,
+false where it can be measured, and unmeasurable where it cannot.
+  1. ADR-0009:221-222 "That is the second false premise this record has had planted by a
+     correction round; the first is twenty lines up." The first is at 185-188 (36 lines up) or
+     its subject at 183 (38). Wrong under BOTH readings.
+  2. ADR-0009:187 "the SAME false premise this record already corrected once, twenty lines up"
+     — the bullet's correction sits at 170-176, i.e. 11-17 lines up. Same shape, same edit; the
+     durable pointer ("in the bullet about deferring the export decision") is already there.
+  3. `.claude/rules/lessons-digest.md:59` (AUTO-LOADS in every session) — 'ADR-0009 had already
+     struck "a blocked row carries no text" in one bullet when the correction round wrote it
+     back twenty lines below'. TWO defects: `git show HEAD:docs/org/adr/ADR-0009...md | grep
+     "carries no text"` returns ZERO hits — what HEAD struck is "with the flag off no such row
+     can exist", a different sentence — so the quotation is false; and the write-back landed at
+     178-183 versus a struck bullet at 170-176, i.e. 2-13 lines, not twenty.
+  4. `tasks/lessons.md:2484-2485` — same distance claim, "twenty lines further down".
+  Repair is a STRIKE in ONE edit across all four, never a re-measurement: delete the distance
+  phrase (the sentences stay grammatical), and in the digest strike the whole ADR-0009 clause —
+  its own lesson ("a repo RULE file is an untested assertion; assert against the artefact; a
+  false premise is likeliest to be re-planted by the round removing it") is complete without it.
+  Note the shape: the re-planted sentence no longer exists in ANY revision (the DECIDED
+  paragraph at 178-183 now ends "That asymmetry is the decision, not an oversight"), which is
+  exactly the unverifiable-from-the-repo standard round 6 used to strike the B1 history.
+
+NON-BLOCKING:
+  N1. chat_message_stream_metadata_refresh_test.dart:278-280 — "the error snackbar's close
+      ICON". The COLLISION is real and the scoped finder is right: `SnackBarUtils.showError`
+      passes `icon: Icons.close` (snackbar_utils.dart:81), and the refusal case at :389 asserts
+      `dismissIcon, findsOneWidget` while that snackbar is up. But that glyph is the snackbar's
+      LEADING/severity icon, not a close affordance — `showCloseButton: false, // Handle via
+      action`, action label 'OK'. Strike "close"; the fact is that a bare
+      `find.byIcon(Icons.close)` also matches the error snackbar's own icon.
+  N2. social_export_manager_test.dart:1206 — "`m3` is the decisive row". PRE-EXISTING at HEAD
+      (line 962), but the round's rename leans on it. m2 and m3 are role-identical
+      (`senderId: 'other'`, neither carrying `recipientIds`), so the retired filter dropped both
+      and either alone discriminates. Strike "the decisive"; the superlative is the false part.
+
+Verdict: fail, 1 blocking (four carriers).
+
+### 2026-08-26 — BUT-1904 follow-up round 8: the round-7 strikes landed; a THIRD claim about the same edit is false against the bytes being committed [messaging][export][docs][review]
+
+Graded the WORKTREE (index empty — `git diff --cached --stat` prints nothing, so worktree ==
+what will be committed). `cd`+`pwd` echoed on every verification call.
+
+ROUND-7 REPAIRS VERIFIED GOOD — all four positional-distance carriers struck, no re-measurement.
+  - ADR-0009: both "twenty lines" phrases gone; :187 keeps the durable pointer ("in the bullet
+    about deferring the export decision"), :221 keeps only "planted by a correction round". Both
+    sentences grammatical.
+  - `tasks/lessons.md:2484-2485` -> "further down the same record". No number.
+  - `.claude/rules/lessons-digest.md:59` -> the whole ADR-0009 clause struck, including the false
+    quotation round 7 measured (`git show HEAD:<ADR> | grep -c "carries no text"` = 0, re-run
+    today, still 0).
+  - Post-edit sweep `twenty lines|lines up|lines below|lines further|lines above|lines down` over
+    the four files: only the digest's own INSTRUCTION not to write one, plus two pre-existing
+    dated `tasks/lessons.md` records (511, 1555) that are not this round's text.
+  - N1 landed: `chat_message_stream_metadata_refresh_test.dart:279` now "the error snackbar's own
+    leading ICON". N2 landed: `social_export_manager_test.dart:1206` now "`m3` is a decisive row".
+  - `dart format --set-exit-if-changed` on both comment-edited test files: 0 changed.
+
+BLOCKING — ONE FINDING, THREE CARRIERS. The round's stated verification ("the surviving true
+half, which `git show HEAD` does substantiate") is itself wrong. The sentence asserts the
+`data_minimisation` completeness clause was left BYTE-IDENTICAL with a sentence merely inserted
+beside it. Measured:
+  - `git show HEAD:lib/services/account/export/social_export_manager.dart | grep -c "Everything
+    else this conversation held is kept as it was"` -> 1
+  - same grep on the WORKTREE file -> 0. The clause was REPLACED by "Of the rows that ARE here,
+    nothing else has been changed: each one is as it was stored." (:350-360)
+  - the round's OWN test pins the replacement:
+    `expect(line, isNot(contains('Everything else this conversation held')))`
+    (social_export_manager_test.dart:888-894)
+  - the ADR's own paragraph six lines above the retraction says the same thing
+    (:210-215, "had its completeness clause narrowed ... it now reads ...")
+  - the sibling `firebase-backend-security` reviewer measured it independently the same round:
+    "`data_minimisation` was rewritten rather than extended (correctly — ...)" (its archive :6397)
+  So the claim the retraction STRUCK as false is what the committed bytes actually do, and the
+  retraction is the false sentence. Carriers, all outside `.archive.md`:
+    1. `docs/org/adr/ADR-0009-...md:217-221` — the whole parenthetical.
+    2. `.claude/rules/lessons-digest.md:59` — AUTO-LOADS in every session.
+    3. `tasks/lessons.md:2488-2491` — trailing sentence of trigger (b).
+  Decisive argument that ends the chain: the sentence NAMES a command (`git show HEAD`) whose
+  output flips with this very commit. After landing, `git show HEAD` returns the narrowed
+  clause, so the illustration refutes itself on its own instructions. Repair is a STRIKE, never
+  a re-measurement or a "was true at the time" qualifier — the surviving instruction ("diff your
+  edit against HEAD before describing it; never write a positional distance") carries the whole
+  lesson without the example, and ADR :210-215 + the two test assertions carry the fact.
+  Striking the ADR parenthetical also removes "That is the second false premise this record has
+  had planted by a correction round" — an ORDINAL over the record's own uncommitted history,
+  unverifiable and already contested by the two distances round 7 struck. It dies with the
+  strike; do not re-count it. ADR exception checked: this is a provenance parenthetical, not a
+  decision line. The DECIDED paragraph (:178-183) and the SUPERSEDED marker (:185-188) are
+  untouched by the repair, so no record of a choice is lost.
+
+GRADED AND PASSED (the sentences round 8 left behind, re-read as they now stand):
+  - ADR :185-188 "The paragraph above ended 'and it is safe only because a blocked row carries no
+    text' ... the SAME false premise ... in the bullet about deferring the export decision". The
+    quoted string is absent from HEAD, but it describes an uncommitted intermediate state and is
+    corroborated in THREE independent reviewer records (`cloud-functions-specialist.knowledge.md`
+    :144, `tasks/lessons.md`:2481, `firebase-backend-security` archive :6397 "ADR-0009's DECIDED
+    paragraph repeats it verbatim"). "SAME false premise" is a claim about the shared ROOT
+    assumption (only the flag-gated server trigger can produce a `duplicateBlocked` row), which
+    B16/B17 falsify for both wordings — fair, and the mechanism spelling it out follows at
+    :189-201. Not filed; filing it would be the over-correction chain this ticket is trying to end.
+  - The digest's new instruction ("never write a positional distance — the edit moving the text
+    cannot type it right") is a RULE, not evidence: no count, no distance, no provenance date.
+    BUT-1953 verified live (`ui-conventions.md`:59, `tasks/lessons.md`:2478,
+    `testing-specialist.knowledge.md`:771). Survives the strike above grammatically.
+
+Verdict: fail, 1 blocking (three carriers).
+
+### 2026-08-26 — BUT-1904 follow-up round 9: the round-8 strike landed clean; nine rounds close at zero blocking [messaging][export][docs][review]
+
+Graded the WORKTREE (`git diff --cached --numstat` = 0 lines, so the parent commits the
+worktree). `cd`+`pwd` echoed on every verification call.
+
+MOTION CHECK, blob hashes against the ROUND-7 table (round 8's entry recorded none — that gap
+is the process finding below). Five paths moved since round 7, and only three of those are
+round 9's:
+  moved by round 9   .claude/rules/lessons-digest.md   94d14215 -> b75143fc
+                     docs/org/adr/ADR-0009-...md       b96dd7ac -> a55eb91e
+                     tasks/lessons.md                  bf7b6df0 -> ed204ff1
+  moved by round 8   social_export_manager_test.dart   503b6264 -> 86f5e304  (N2 repair)
+                     chat_message_stream_metadata...   eb7c09b3 -> 9ff4a81f  (N1 repair)
+  UNMOVED since r7   messaging_service.dart 844af3bf, message_bubble.dart d9c0d7d1,
+                     system_message_widget.dart ec27502f, social_export_redaction.dart 5ae03eda,
+                     chat_message_stream.dart 107d54ea, accepted-deviations.md da1cb5ac,
+                     ui-conventions.md b36dea91, messaging_service_test.dart c95ae09e,
+                     message_bubble_duplicate_blocked_test.dart e2352c43
+So round 9 is prose-only: no Dart, no `.ts`, no rules moved. The "296 green / analyze clean /
+format clean" report is therefore inherited from rounds 7-8, not re-run, and saying so is the
+honest form.
+
+ROUND-8 REPAIR VERIFIED GOOD — struck at all three carriers, no replacement claim, no
+"was true at the time" qualifier.
+  - ADR-0009: the provenance parenthetical is gone. Orphan sweep
+    `grep -rn "planted by a correction round"` (excl. archives/worktrees) = 0, so the ordinal
+    it carried died with it and nothing dangles. The paragraphs the strike left adjacent
+    (:208 "A future change letting another field ride along..." and :210-215) both read with
+    their antecedents intact — "this" at :208 still resolves to the fail-open safety argument
+    at :203-206.
+  - `.claude/rules/lessons-digest.md:59`: the illustrative clause struck; three rules survive.
+  - `tasks/lessons.md`: trailing sentence of trigger (b) deleted; (b) now ends at the Art. 15
+    under-disclosure.
+  - Verdict-time sweeps, worktree (index empty, so worktree == committed bytes):
+    "rewritten rather than extended" 0; "twenty lines|lines up|lines below|lines above" 0
+    outside the digest's own INSTRUCTION not to write one; "in neither limb|neither the create
+    nor the update limb|Neither limb" 0.
+
+EVERY CHANGED SENTENCE GRADED, all against source rather than the fix report:
+
+ADR :210-215 (the paragraph the strike now leaves carrying the fact alone) — four claims, all
+measured:
+  - "gained the drop" -> `social_export_manager.dart:354-355` 'Rows where the app stopped a
+    duplicate message that someone ELSE sent have been left out entirely — yours are kept.'
+  - "had its completeness clause narrowed" -> `git show HEAD:<f>` carries "Everything else this
+    conversation held is kept as it was stored"; the worktree does not.
+  - the quoted OLD wording is byte-exact against HEAD (spans a source line break; concatenated
+    it matches).
+  - "it now reads 'Of the rows that ARE here, nothing else has been changed'" -> verbatim
+    PREFIX of :356-357, which continues ": each one is as it was stored." A truncated quote
+    with no ellipsis; the quoted span is the clause under discussion, so not filed.
+  - "both halves are pinned in `social_export_manager_test.dart`" -> :877-883
+    `contains('left out entirely')` and :888-894
+    `isNot(contains('Everything else this conversation held'))`. The first proves the string
+    IS the production string, which makes the second non-vacuous. TRUE.
+ADR :203-206 "the create rule pins `request.auth.uid == request.resource.data.senderId` and
+  requires the field" -> `firestore.rules:2008-2011`, verbatim. TRUE.
+ADR :138-146 "a fourth friction class ... written into ui-conventions.md, section
+  Destructive-action confirmation, which auto-loads on `lib/widgets/**`" -> the section carries
+  exactly four numbered classes, class 4 is the new one, and the frontmatter globs are
+  `lib/views/**` + `lib/widgets/**`. TRUE (and round 7 verified "Three severity classes" was
+  STRUCK, not re-counted).
+digest:59 — the three surviving rules carry NO count, NO distance, NO date, NO provenance.
+  The one new rule ("never describe your own diff in prose a later edit in the SAME change can
+  falsify — a sentence citing `git show HEAD` is refuted by its own commit") is scoped by its
+  own first clause to your own diff, where it is analytically true. Its evidence half is
+  measured: `git show HEAD:.claude/rules/ui-conventions.md` rule 5 reads "blocks descendant
+  Text from being merged into the screen-reader output, so the parent label wins" — the
+  lessons entry quotes it verbatim; the stutter is the round-2 probe (archive :26798-26816).
+tasks/lessons.md :2482-2485, the sixth copy the fix round found unprompted — now "No
+  `firestore.rules` limb bounds what `type` is written TO on a create or a sender update",
+  matching the five sibling sites, with the third limb named. Both halves re-verified: B16 and
+  B17 in `cook-snaps-and-message-mod-rules.test.ts` are both `assertSucceeds`, B17's payload
+  carries "Jag kommer klockan sju ikvall"; the create limb caps `content` at 5000 and never
+  names `type`. "The under-counted quantifier was itself one of this sprint's findings" is
+  TRUE and settled in THIS archive at :27143-27148 (round 5, non-blocking).
+tasks/lessons.md :2479-2480 "The first test written for it read the `Semantics` WIDGET's
+  property, which cannot see a merge, so it agreed with the rule" — describes an uncommitted
+  intermediate state, corroborated in `testing-specialist.knowledge.md:776-778` (the
+  widget-property workaround listed as one of three consequences that shipped). Same standard
+  round 8 applied to ADR :185-188. Passed.
+
+CHECKED AND DELIBERATELY NOT FILED (each would have been the over-correction chain):
+  - `tasks/lessons.md:2478` "190 `a11y*` keys, unaudited". The count is right (round 7
+    verified; re-verified 190 in the worktree, 189 at HEAD — the delta is
+    `a11yDismissDuplicateNotice`, added and CORRECTED by this change). Strictly, one of the
+    190 is now audited. Read as a POPULATION scope for BUT-1953 — the sweep has not run over
+    any of them — the sentence is true, and `ui-conventions.md:59` states the same fact with
+    no numeral at all. A reader acts identically either way.
+  - ADR :187 "the SAME false premise ... in the bullet about deferring the export decision".
+    Round 8 graded and passed this on the shared-root reading; re-reading it did not change
+    the answer. Premise A ("with the flag off no such row can exist") entails premise B ("a
+    blocked row carries no text") and B16/B17 falsify both.
+  - `social_export_manager.dart:328-334` — the comment re-wrapped raggedly when its first
+    sentence was struck ("made the bundle state something false about / itself,").
+    `dart format` does not reflow comments. Cosmetic, carries no claim.
+
+PROCESS FINDING (mine, not the fix round's): round 8's archive entry recorded NO per-file
+hashes, only "graded the worktree, index empty". That forced round 9's motion check to reach
+back two rounds and infer which of the five moved paths belonged to which round. Every round
+entry gets the hash table, including a prose-only round — the table is what makes the NEXT
+round's attribution mechanical instead of inferential.
+
+Verdict: pass, 0 blocking. Nine rounds; rounds 1-8 each closed a sentence, none closed code
+after round 4.

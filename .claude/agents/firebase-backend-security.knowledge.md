@@ -49,7 +49,10 @@ a security hole (rule too permissive) or an app break (rule too strict). A new f
 model with `toFirestore()` is a rules change too: `hasOnly` allowlists fail CLOSED and
 SILENTLY (an unlisted field denies every write, with no signal beyond "nothing saved") — grep
 `firestore.rules` for its validator in the SAME edit, and demand a rules test that day (one
-allowed set, one rejected extra key).
+allowed set, one rejected extra key). The MIRROR failure: `hasRequiredFields` pins KEYS, not
+VALUES, so anything a create rule does not constrain is client-writable — including a
+server-only MARKER a Cloud Function stamps (`type: 'duplicateBlocked'`, text and all). Never
+rest a privacy argument on "the server empties it first"; read the create rule.
 
 The `firestore-rules-tester` agent owns proving rule behavior — hand off after rule changes
 rather than writing rules tests yourself.
@@ -262,6 +265,15 @@ name which doc each end touches before approving it.
   `e.toString()` alone (leaks uids/paths into what the subject may forward to a regulator).
   Truncation: fetch `limit+1`, flag `truncated = fetched.length > limit`; a NESTED per-parent
   cap needs the identical flag.
+- A row-level DROP is a different decision from a field-level STRIP and takes the OPPOSITE
+  fail direction: a strip fails CLOSED (unrecognised owner id ⇒ lose the field), a drop fails
+  OPEN (unreadable owner id ⇒ KEEP the row, because under-disclosure is the worse Art. 15
+  failure). Both need the section's `data_minimisation` sentence to NAME the drop and a test
+  asserting that sentence, or the withholding is silent. Three things a row filter does not
+  reach: a denormalised COPY of the row on the parent doc (`conversations.lastMessage`), any
+  overlay attached to the dropped row (the requester's own `your_poll_vote` goes with it), and
+  a cap applied UPSTREAM of it — so the truncation flag must stay computed from the RAW
+  pre-filter fetch.
 - A denormalized ERASURE HANDLE (flat `array-contains` trail, needed because Firestore
   can't filter inside an array of maps) must be extended by EVERY write path (derive the
   obligation from the payload so a new path inherits it by construction), removed in the

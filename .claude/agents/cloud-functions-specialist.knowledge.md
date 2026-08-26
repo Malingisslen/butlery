@@ -68,9 +68,8 @@ without approval (mismatch = silent client-side "not found").
   test:deploy-manifest` imports the ENTRY POINT (the only way the global
   call runs) and asserts region + a numeric `maxInstances` on every
   `platform:"gcfv2"` endpoint, plus `concurrency === 1` on the two cascades
-  (7 checks). Nothing else reddens when one is deleted. An unset v2 option
-  is a sentinel OBJECT (`RESET_VALUE`; `toJSON()` → null, so
-  `JSON.stringify` prints "null" while `== null` is FALSE) — check
+  (7 checks). Nothing else reddens when one is deleted. An unset v2 option is
+  a sentinel OBJECT, not null (`== null` is FALSE) — check
   `typeof x === "number"`; on the gcfv1 export `concurrency` is plain
   `undefined`. VACUITY SURFACE is the `gcfv2` FILTER: rename `platform` and
   every assertion passes over ~0 endpoints — guard the FILTERED count, once
@@ -129,23 +128,24 @@ idempotent:
     show it (single-threaded, no isolation). Derive the doc id
     deterministically from the key and `tx.create()` instead.
 12. **Two triggers on ONE collection: gate the re-read on WRITE KIND, never
-    on a LIST of writers and never on the sibling's ADMISSION TEST.** A
-    stale-payload invocation can land LAST and undo the correction. Gating on
-    `create` misses the read-receipt update; gating on the sibling's own
-    predicate misses an update edited OUT of candidacy (the sibling admits on
-    the CREATE payload and rewrites regardless, while `cannotModify` pins
-    neither `content` nor `type`). The gate that holds is kind-shaped —
-    `isDelete` / payload-already-rewritten / `!!before` — because it closes
-    writers nobody enumerated: on `messages` that is 8+, incl. a delayed
-    `status:'sent'` self-update ~100ms after create, `onProfileUpdated`'s
-    fan-out over every message a user sent, and three GDPR cascade legs.
-    The CREATE side may gate on the sibling's
-    predicate — but only because both triggers read the SAME create snapshot.
-    Put the CHEAP no-write checks (stamp type, precedence) BEFORE the read;
-    deciding on the payload's `sentAt` is safe only while `sentAt` is
-    immutable in the rules AND untouched by the sibling — re-verify both.
-    Measured: a transactional re-read DOES abort+retry on a concurrent commit
-    (2 attempts, stale value lost). Stage it by REPLAYING a pre-rewrite
+    on a LIST of writers and never on the sibling's ADMISSION TEST.** A stale
+    payload can land LAST and undo the correction: gating on `create` misses
+    the read-receipt update, gating on the sibling's predicate misses an
+    update edited OUT of candidacy (it admits on the CREATE payload and
+    rewrites regardless, while `cannotModify` pins neither `content` nor
+    `type`). What holds is kind-shaped — `isDelete` /
+    payload-already-rewritten / `!!before` — because it closes writers nobody
+    enumerated (8+ on `messages`, incl. a delayed self-update ~100ms after
+    create and three GDPR cascade legs). The CREATE side may gate on the
+    sibling's predicate only for the sibling's OWN marks: a wire value no rule
+    constrains (`type` is in neither the create rule nor `cannotModify`) has a
+    SECOND producer — the client — which can stamp a NON-candidate row the
+    create gate then never re-reads. So a comment states what the trigger
+    SEES, never what the row IS ("a blocked row carries no text" was false
+    exactly there). Put the CHEAP no-write checks BEFORE the read; deciding on
+    the payload's `sentAt` is safe only while `sentAt` is immutable in the
+    rules AND untouched by the sibling. Measured: a transactional re-read DOES
+    abort+retry on a concurrent commit. Stage it by REPLAYING a pre-rewrite
     snapshot; a sequential suite cannot stage true concurrency, and each wrong
     scope passes every case written for the previous one.
 

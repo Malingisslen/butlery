@@ -258,10 +258,20 @@ files in the same edit.
   client drops the row. `guardDuplicateComment` keeps `tx.delete`, its global per-author key,
   no length floor and no flag — unchanged since 2026-05-04. Do not "simplify" the two surfaces
   back into one action, and do not describe the client-side row filter as a privacy control:
-  the protection is that the SERVER removed the text, and the filter withholds only the fact
-  that a message was stopped — and only that: the text is gone by then, but NOT before the
-  document became readable, because the trigger is `onDocumentCreated` and runs after the
-  client's own write. Load-bearing parts, each of which dies alone: the guard uses `tx.update`
+  the protection is that the SERVER removed the text. That text is gone by the time the filter
+  runs, but NOT before the document became readable, because the trigger is
+  `onDocumentCreated` and runs after the client's own write.
+  **AMENDED 2026-08-26 (BUT-1904 follow-up): the filter does NOT withhold "only the fact that a
+  message was stopped".** The sentence that said so assumed every blocked row is empty. It is
+  not: no `firestore.rules` limb bounds what `type` is written TO on a create or a sender
+  update, so a client can stamp its own full message and the row arrives carrying its text
+  (B16/B17 in `cook-snaps-and-message-mod-rules.test.ts`, both ALLOW). For such a row the
+  client-side filter withholds the TEXT as well — which does not promote it to a privacy
+  control, because the row was readable before any filter ran and a hand-rolled client simply
+  does not apply one. The Art. 15 export deliberately DIVERGES here and keeps such a row
+  (`isOthersBlockedRow` requires `content == ''`): withholding a record from its own subject is
+  the worse failure. Do not harmonise the two. BUT-1954 carries the third surface,
+  `searchMessages`, which filters neither. Load-bearing parts, each of which dies alone: the guard uses `tx.update`
   and never a merge-set, so a message its sender deleted first is not resurrected;
   `firestore.rules` refuses a client update to an already-blocked message, or the sender could
   write the duplicate text straight back in; `syncConversationLastMessage` tests `after.type`
@@ -275,12 +285,20 @@ files in the same edit.
   blocked row. Creates gate on candidacy; updates do not. Do not bound the read by gating on the
   flag either — it caches per isolate for five minutes, so switching it on would leave a window
   where one isolate marks while another skips.
-  The duplicate's TEXT is destroyed and is not recoverable from the row; that was weighed. And
-  the sender cannot dismiss the row ON ITS OWN — the rules allow the delete, but no per-row
-  affordance reaches it (`MessageBubble` returns before it installs the long-press gesture, and
-  that menu is dead for every message type anyway). What else can remove the row depends on the
-  conversation — ADR-0009 has the measurement. Whether the notice needs its own dismiss control
-  is Malin's, and open. BUT-1904, 2026-08-26
+  The duplicate's TEXT is destroyed and is not recoverable from the row; that was weighed.
+  **SUPERSEDED the same day, 2026-08-26 — Malin: build the dismiss control.** This entry
+  shipped saying "the sender cannot dismiss the row ON ITS OWN … whether the notice needs its
+  own dismiss control is Malin's, and open". Both halves are now false: the notice carries a
+  `×` (`SystemMessageWidget.onDismiss`, wired through `MessageBubble.onDismissBlocked` to
+  `ChatViewModel.deleteMessage`), and it is the per-MESSAGE delete rather than the
+  conversation-level one, so it works identically in a group and in a DM. No dialog and no
+  undo — a fourth friction class, written into `.claude/rules/ui-conventions.md` §
+  "Destructive-action confirmation" rather than here. The control is gated on
+  `_isFromCurrentUser`: another participant's notice draws no `×`, because `firestore.rules`
+  allows the delete only to the sender.
+  Still true and still the reason the row is not merely cosmetic: the long-press menu is dead
+  for every message type, so the `×` is the ONLY per-row affordance. What else can remove the
+  row depends on the conversation — ADR-0009 has the measurement. BUT-1904, 2026-08-26
 
 
 - **`inPollConversation()` reproduces only the MEMBERSHIP half of the message read rule, not

@@ -33,6 +33,15 @@ class MessageBubble extends StatefulWidget {
   final void Function(String optionId)? onPollVote;
   final VoidCallback? onPollClose;
 
+  /// BUT-1904: clears the duplicate-guard notice. Ignored for every other
+  /// message type — only the blocked branch below reads it.
+  ///
+  /// Returns whether the delete succeeded. The control disables itself on tap
+  /// so a double tap cannot reach a document that is already gone, and a false
+  /// answer is what re-enables it — otherwise a failed delete leaves the user
+  /// told it failed with no way to try again.
+  final Future<bool> Function()? onDismissBlocked;
+
   const MessageBubble({
     super.key,
     required this.message,
@@ -46,6 +55,7 @@ class MessageBubble extends StatefulWidget {
     this.onReactionToggle,
     this.onPollVote,
     this.onPollClose,
+    this.onDismissBlocked,
   });
 
   @override
@@ -61,6 +71,12 @@ class _MessageBubbleState extends State<MessageBubble>
   static const double _maxSwipe = 120.0;
   bool _reduceMotion = false;
   bool _showReactionPicker = false;
+
+  /// BUT-1904. Local, and it lives HERE rather than in
+  /// `SystemMessageWidget` because that one is a `StatelessWidget` and
+  /// should stay one; this `State` survives the rebuild, since the row is
+  /// keyed on the message id.
+  bool _dismissRequested = false;
 
   @override
   void initState() {
@@ -110,16 +126,46 @@ class _MessageBubbleState extends State<MessageBubble>
     // bubble furniture: no sender side, no avatar, no timestamp, no delivery
     // ticks, no reactions (any written before the mark stay on the document and
     // are simply not drawn), no swipe-to-reply and no long-press menu. Its text
-    // comes from the ARB rather than from the document, which stores none.
+    // comes from the ARB, never from the document — a client-stamped row can
+    // still be carrying its own, and that is exactly what must not surface.
     //
-    // Losing the long-press menu means there is no PER-ROW way to dismiss the
-    // notice. What else can remove it depends on the conversation and is
-    // recorded in ADR-0009, not here. That menu is
-    // dead for every message type today for an unrelated reason, so restoring
-    // it here would not help; see the note in ADR-0009.
+    // The long-press menu is dead for every message type today for an
+    // unrelated reason, so the notice carries its own dismiss control instead
+    // of borrowing one. It goes through the per-MESSAGE delete, which is why it
+    // works the same in a group as in a direct message; what else can remove
+    // the row depends on the conversation and is recorded in ADR-0009.
+    //
+    // Product framing on purpose: this lets the sender clear their own notice.
+    // Do not describe it anywhere as satisfying a regulatory obligation —
+    // whether this action is in scope for one has never been determined.
     if (_isDuplicateBlocked) {
       return RepaintBoundary(
-        child: SystemMessageWidget(content: context.l10n.chatDuplicateBlocked),
+        child: SystemMessageWidget(
+          content: context.l10n.chatDuplicateBlocked,
+          // Gated on OWNERSHIP as well as on the callback. The stream passes
+          // the callback for every row, and `MessagingService` is what keeps
+          // other people's notices off the screen — but that is a filter, not a
+          // control, so a row that slipped past it would otherwise have drawn a
+          // dismiss button firing a delete the rules refuse.
+          //
+          // Disabled after the first tap: the delete re-reads the document and
+          // throws `ResourceNotFoundException` on the second, which would put
+          // an error in front of the user for an action that worked. Reset when
+          // the delete FAILS, or the only way to retry is to leave the chat.
+          onDismiss:
+              (widget.onDismissBlocked == null ||
+                  !_isFromCurrentUser ||
+                  _dismissRequested)
+              ? null
+              : () async {
+                  setState(() => _dismissRequested = true);
+                  final ok = await widget.onDismissBlocked!();
+                  if (!ok && mounted) {
+                    setState(() => _dismissRequested = false);
+                  }
+                },
+          dismissSemanticsLabel: context.l10n.a11yDismissDuplicateNotice,
+        ),
       );
     }
     if (_isSystemMessage) {
@@ -363,9 +409,9 @@ class _MessageBubbleState extends State<MessageBubble>
 
     // BUT-1904: the same answer `ReplyBanner` gives, because this is the same
     // question. `displayContent` returns '' for a blocked row — it has no
-    // `BuildContext` and the row stores no text — and unlike the composer
-    // banner this path IS reachable: reply to a message, and the guard marks it
-    // a moment later. Only the sender can see it, since the target is filtered
+    // `BuildContext`, so it has no truthful sentence to give — and unlike the
+    // composer banner this path IS reachable: reply to a message, and the guard
+    // marks it a moment later. Only the sender can see it, since the target is filtered
     // out of everyone else's list.
     return ReplyPreviewWidget(
       senderName: replyTo.senderDisplayName,

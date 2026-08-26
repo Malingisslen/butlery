@@ -178,3 +178,6 @@
 {"ts":"2026-08-23T19:13:20.212Z","type":"trigger","fired":true,"signals":"delete,deletion,firestore.rules,functions/src,gdpr,moderation","ran":null}
 {"ts":"2026-08-23T19:15:48.742Z","type":"trigger","fired":true,"signals":"firestore.rules","ran":null}
 {"ts":"2026-08-23T19:16:05.886Z","type":"trigger","fired":true,"signals":"firestore.rules","ran":null}
+{"ts":"2026-08-26T05:35:35.622Z","type":"trigger","fired":true,"signals":"delete,destructive","ran":null}
+{"ts":"2026-08-26T05:44:20.007Z","type":"trigger","fired":true,"signals":"delete,destructive","ran":null}
+{"type": "review", "tier": "full", "panel": ["Privacy/DPO", "Legal Counsel", "Accessibility Specialist", "Software Architect", "Trust & Safety", "Codebase Archaeologist"], "stakeholders": 6, "outcome": "approve-with-conditions", "must_haves": 19, "findings_material": 19, "conflicts": 0, "escalations": 0, "escalated_to_human": false, "adrs": [], "adr": "", "rubber_stamp": false, "tokens_est": 631000, "approx_tokens": 631000, "ran": true, "via": "manual", "plan": "BUT-1904 follow-up: dismiss control, export filter; the flag is Malin step 3, no code", "ts": "2026-08-26T10:03:50.084124+00:00"}

@@ -213,6 +213,10 @@ body { font-family: var(--font-body); color: var(--text); background: var(--crea
 .msg-own { background: var(--green); color: white; margin-left: auto; }
 .msg-other { background: var(--cream-dark); color: var(--text); }
 .msg-system { text-align: center; font-size: 12px; color: var(--text-muted); padding: 8px; }
+/* BUT-1904: the duplicate-guard notice. Same pill as a system row, plus a dismiss
+   affordance — its own sender may clear it, and no other participant is shown one. */
+.msg-notice { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; font-style: italic; color: var(--text-muted); background: rgba(0,0,0,0.05); padding: 8px 12px; }
+.msg-notice-x { font-size: 16px; line-height: 1; }
 .reply-preview { border-left: 3px solid rgba(255,255,255,0.4); padding-left: 8px; margin-bottom: 6px; font-size: 12px; opacity: 0.8; }
 .reply-preview-other { border-left-color: var(--green); }
 .conversation-item { display: flex; align-items: center; gap: 12px; padding: 12px; border-bottom: 1px solid var(--cream-dark); }
@@ -813,12 +817,13 @@ body { font-family: var(--font-body); color: var(--text); background: var(--crea
 
   <div class="lib-row">
     <div class="lib-item">
-      <div class="lib-label">MessageBubble (own + other + reply)</div>
+      <div class="lib-label">MessageBubble (own + other + reply + notice)</div>
       <div class="lib-class">MessageBubble</div>
       <div class="lib-demo" style="display:flex;flex-direction:column;gap:4px">
         <div class="msg-other">Hej! Ska vi laga pasta ikväll?</div>
         <div class="msg-own"><div class="reply-preview">Hej! Ska vi laga pasta...</div>Absolut! Jag har köpt pancetta</div>
         <div class="msg-system">Anna gick med i gruppen</div>
+        <div style="text-align:center"><span class="msg-notice">Du har redan skickat det här<span class="msg-notice-x">&times;</span></span></div>
       </div>
     </div>
     <div class="lib-item">

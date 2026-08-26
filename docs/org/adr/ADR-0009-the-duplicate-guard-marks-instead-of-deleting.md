@@ -134,6 +134,28 @@ the row exists — but it is gone as a copy.
   inside the app by anyone.
   Whether that is enough, or whether the notice needs its own dismiss control, is still Malin's
   call and is still not decided here.
+
+  **DECIDED 2026-08-26 — Malin: build the dismiss control.** The notice now carries its own
+  `×`, wired to the per-MESSAGE delete rather than to the conversation-level one, which is why
+  it works identically in a group and in a direct message and closes the group gap above. No
+  confirm dialog and no undo: the recoverability test returns "nothing to protect", because the
+  sentence on screen is the app's own — it comes from the ARB, not from the document — and the
+  row returns if the guard trips again. That is a fourth friction class and it is written into
+  `.claude/rules/ui-conventions.md` § "Destructive-action confirmation" — the canonical list,
+  which auto-loads on `lib/widgets/**` — rather than here, so the next person classifying an
+  action reads it where they are already looking.
+
+  **Framing, and this is a constraint rather than a preference (Legal Counsel, 2026-08-26):**
+  describe this as letting the sender clear their own notice. Do NOT write anywhere — code,
+  record, or copy — that it satisfies or closes a DSA Article 17 obligation. Butlery has never
+  determined it is in scope for DSA Art. 17 on this action, and ADR-0007 left that a Trust & Safety
+  trend-flag escalated to Malin, not a legal position. The server-side rejection log is the
+  record that survives the sender dismissing the notice; do not let a later refactor drop it on
+  the theory that the in-app row covers the same ground.
+
+  **What this does NOT close (Trust & Safety, 2026-08-26):** the guard still has no admin
+  visibility and no appeal route. That gap is ADR-0007's and stays open — this change gets no
+  credit for it.
 - **The flag stays OFF.** The condition ADR-0007 left holding it off is met, but turning it on
   is a separate, explicit decision. Nothing in this record implies it.
 - **One thing to decide BEFORE that flag is switched on, and it is Malin's:** the Art. 15 export
@@ -152,6 +174,64 @@ the row exists — but it is gone as a copy.
   `duplicateBlocked` or create one already stamped. The exposure is small — such a row is
   self-stamped by its own sender — but it is not zero, and the false premise was the load-bearing
   half of the argument for deferring. The instruction stands; the excuse does not.)*
+
+  **DECIDED 2026-08-26 — Malin: filter, do not write a deviation.** Another participant's
+  blocked row is dropped from the bundle; the requester's own is kept. The predicate is
+  `isOthersBlockedRow` in `SocialExportRedaction`, beside `dropAvatarUnlessOwn`, and it FAILS
+  OPEN where its neighbour fails closed: a row whose `senderId` cannot be read is KEPT, because
+  dropping a row on doubt withholds a record from its own subject, and under-disclosure is the
+  worse Art. 15 failure. That asymmetry is the decision, not an oversight.
+
+  **SUPERSEDED 2026-08-26, same day, before the follow-up landed.** The paragraph above ended
+  "and it is safe only because a blocked row carries no text". That is false, and it is the
+  SAME false premise this record already corrected once, in the bullet about deferring the
+  export decision — written back in by the correction round that was removing it.
+  Neither the create limb of `firestore.rules` nor the SENDER-update limb constrains what
+  `type` is written TO (the third, the read-receipts update, forbids it outright via
+  `affectedKeys().hasOnly`):
+
+  - **create** — the rule inlines `hasRequiredFields(['senderId', 'conversationId', 'content',
+    'sentAt'])` plus a 5000-character cap on `content`; it never names `type`, so a client may
+    create a row already stamped `duplicateBlocked` **with up to 5000 characters of text in it**.
+  - **sender update** — `cannotModify` lists `senderId`, `conversationId` and `sentAt`; `type` is not
+    on it, so a sender may stamp an existing full message. The limb DOES read `type`
+    (`resource.data.get('type', 'text') != 'duplicateBlocked'`), but that freezes a row already
+    blocked rather than bounding the stamp — which is why B16 succeeds exactly once.
+
+  Both are pinned as B16/B17 in `cook-snaps-and-message-mod-rules.test.ts`, and both ALLOW.
+
+  The real reason failing open is safe is stronger and does not depend on emptiness: the create
+  rule pins `request.auth.uid == request.resource.data.senderId` and requires the field, so no
+  client write can produce a row whose sender is absent or unreadable. The fail-open branch is
+  unreachable from a client, and the avatar helper that runs afterwards still fails closed.
+
+  A future change letting another field ride along on a blocked row still means revisiting this.
+
+  The section's `data_minimisation` sentence gained the drop AND had its completeness clause
+  narrowed. "Everything else this conversation held is kept as it was stored" was a categorical
+  claim about FIELDS, and it stopped being true the moment a whole ROW could be withheld; it now
+  reads "Of the rows that ARE here, nothing else has been changed". A bundle that overclaims its
+  own completeness is as false as one that redacts silently, and both halves are pinned in
+  `social_export_manager_test.dart`.
+
+  **A second residual, stated rather than closed (`code-reviewer` gate, 2026-08-26).** The row
+  is dropped BEFORE the block that attaches `your_poll_vote`, so a vote the requester cast on
+  another participant's blocked-typed row leaves the bundle with it — and that overlay is the
+  requester's OWN data, which is the under-disclosure this helper exists to avoid. Reachability
+  is narrow: the chat screen hides such a row, so casting the vote takes a hand-rolled client,
+  and per the BUT-1832 deviation any map-metadata message accepts one. Not closed here because
+  the fix is a re-order whose interaction with the `content == ''` conjunct deserves its own
+  measurement, not a same-round patch.
+
+  **The first residual, stated rather than closed (Software Architect, 2026-08-26).** The filter
+  runs in the manager, downstream of the repository's raw row cap. A single conversation of more than
+  `messages_per_conversation` rows, heavy with another participant's blocked ones, can therefore
+  spend the cap before the filter removes them and under-deliver the requester's own real
+  messages. It is not silent: `messages_truncated` is computed at the repository from the RAW
+  pre-filter fetch, so the bundle flags itself as incomplete in exactly that case, and a test
+  pins that the flag survives the filter. Moving the filter into the repository would close the
+  residual and split one redaction decision across two layers — which the mixin exists to
+  prevent. The residual was chosen knowingly over that.
 - **A residual this record claimed, REFUTED rather than merely stale.** Earlier drafts said the
   recipient's push notification is sent client-side before the guard runs, so a blocked duplicate
   could still produce a push. Measured 2026-08-26 by the `integration-reviewer` gate and confirmed

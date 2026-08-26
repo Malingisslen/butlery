@@ -401,8 +401,9 @@ async function run(): Promise<void> {
   let staleCreateSnapshot: admin.firestore.DocumentSnapshot | null = null;
 
   // J1: the guard's own mark reaches this trigger as an UPDATE whose `after`
-  // already says `duplicateBlocked`. A blocked row stores no text, so
-  // projecting it would leave every participant with an empty preview.
+  // already says `duplicateBlocked`. A row the trigger sees carrying that mark
+  // is never projected — the guard's own product is empty, and a client-stamped
+  // one still carries the text the mark exists to remove.
   //
   // This is the case an eligibility gate would swallow: `duplicateBlocked` is
   // not a candidate, so a re-read gated on candidacy never runs, and the

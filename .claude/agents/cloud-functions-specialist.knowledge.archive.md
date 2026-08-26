@@ -15116,3 +15116,65 @@ symbol is `MessageManagementOperations.deleteAllMessages`, called from its own
 `deleteConversation:204`. Both corrections hold.
 
 Verdict: PASS, 0 blocking.
+
+### 2026-08-26 — BUT-1904 follow-up: "a blocked row carries no text" corrected, and the absolute that replaced it [messaging][comments][review]
+
+Comment-only diff, two files: `functions/src/messaging/sync-conversation-last-message.ts`
+(header bullet + the sentence above `const isBlocked`) and the J1 block of
+`functions/src/__tests__/sync-conversation-last-message.integration.test.ts`.
+
+PREMISE, re-verified myself rather than taken from the task text:
+- `guardDuplicateMessage` writes `{type: DUPLICATE_BLOCKED_TYPE, content: ""}`
+  (duplicate-content-guard.ts:452-453), so the GUARD's product is genuinely empty.
+- `firestore.rules` constrains `type` in neither limb. Create inlines
+  `hasRequiredFields(['senderId','conversationId','content','sentAt'])` + `content is string`
+  + `size() <= 5000`; the sender update limb has `cannotModify(['senderId','conversationId',
+  'sentAt'])` and its only `type` reference is `resource.data.get('type','text') !=
+  'duplicateBlocked'`, which freezes an ALREADY-blocked row (pre-state) rather than bounding
+  the stamp; the receipts limb is `affectedKeys().hasOnly(['status','deliveredAt','readAt',
+  'updatedAt'])`.
+- B16 (`cook-snaps-and-message-mod-rules.test.ts`) `assertSucceeds` an update stamping
+  `type: "duplicateBlocked"` on a row seeded with content "Hej!" — content untouched, so the
+  text survives. B17 `assertSucceeds` a CREATE already stamped, content
+  "Jag kommer klockan sju ikvall". Premise confirmed: a client-stamped blocked row carries text.
+
+PATH TRACE for "is it refused a preview on every path" (the question asked):
+- `isBlocked = payloadBlocked || (!vanished && current?.type === DUPLICATE_BLOCKED_TYPE)`
+  does cover both the payload-blocked path and the re-read path. Confirmed.
+- create of an already-stamped row → `payloadBlocked` true → `currentLastMessage?.id !==
+  messageId` returns; refused.
+- update stamping the current preview → `payloadBlocked` → recompute; the survivor scan's
+  `find(d => d.data().type !== DUPLICATE_BLOCKED_TYPE)` excludes client-stamped rows too
+  (it tests `type`, never `content`), so refused there as well.
+- delete → `vanished` → same branch; refused.
+- stale UPDATE-shaped invocation with a pre-stamp payload → `!!before` is true, so the
+  re-read runs unconditionally → sees the live blocked doc; refused.
+- STALE CREATE-shaped invocation whose payload is a NON-candidate → the create side gates the
+  re-read on `isChatDuplicateCandidate`, so no re-read runs, `current` stays the payload,
+  `isBlocked` is false and the row IS projected. Reachable only by a client stamping its own
+  row: the guard marks only candidates, and the guard and the create-side gate read the SAME
+  create payload, so they cannot diverge — a client can. Sequence: create "ok" (2 chars, under
+  MIN_CHAT_BODY_CHARS=12, non-candidate) → client updates it to `duplicateBlocked` (B16 allows
+  it) → the delayed create invocation lands last and puts "ok" in the preview naming a blocked
+  row. HARM IS NIL (the sender's own text, their own message, their own conversation — the
+  same preview they get by not stamping), but the sentence "A blocked row is not previewable
+  to anyone" is false in that window, and so is J1's "Such a row is not previewable to anyone"
+  and the header bullet's scope word "the duplicate guard has BLOCKED" (the branch keys on the
+  MARK, not on who wrote it). Filed as one blocking finding with three carriers — one edit, or
+  a header-only fix reads as done while the body keeps the false copy.
+
+SWEEP of everything else resting on blocked-means-empty, both files: nothing else falsified.
+`payloadBlocked`'s own paragraph ("would project the emptied row") is scoped to the guard's
+mark; J2/J5's "the duplicate's text" comes from the stale PAYLOAD, not the row; J6's "a
+blocked, emptied row" is a measurement on a fixture that empties it (line 711); the
+`SURVIVOR_SCAN_LIMIT` doc and the scan's own comment claim nothing about emptiness and filter
+on `type`, which is exactly what makes them survive the corrected premise. The `DUP_BODY`
+comment ("Over MIN_CHAT_BODY_CHARS, so the guard — and therefore the re-read — would consider
+it") is true and is the same candidacy gate the residual above rides.
+
+Verification: `npm run build` clean; no control bytes in either file (`grep -nP` over the
+C0 range, the BUT-1901 class); `git diff functions/` shows only `//`-comment lines in both
+files and nothing else. Did not re-run the suite — comment-only, and the parent reported
+90/90 green (238s).
+
+Verdict: FAIL, 1 blocking (the absolute, three carriers).

@@ -364,17 +364,15 @@ class Message {
         final pollData = metadata?['poll'] as Map<String, dynamic>?;
         return '${type.icon} ${pollData?['question'] ?? content}';
       case MessageType.duplicateBlocked:
-        // Empty on purpose (BUT-1904). A blocked row stores no text, and the
-        // sentence its sender reads is a widget-level localized string rather
-        // than data — this getter has no `BuildContext` and nothing truthful to
-        // return.
+        // Empty on purpose (BUT-1904). The sentence a sender reads on a blocked
+        // row is a widget-level localized string, not data — this getter has no
+        // `BuildContext`, so it has nothing truthful to return.
         //
-        // An earlier version of this comment enumerated "the two callers that
-        // could reach it" and named a Cloud Function among them. Both halves
-        // were wrong, so the enumeration is struck rather than re-counted: the
-        // callers are Dart, there are more than two, and at least one of them
-        // (the in-bubble reply preview) really can render this empty string for
-        // the sender if they reply to a message the guard marks a moment later.
+        // Do NOT restore a fallback to `content` on the theory that a blocked
+        // row is always empty: no `firestore.rules` limb bounds what `type` is
+        // written TO on a create or a sender update (B16/B17 in
+        // `cook-snaps-and-message-mod-rules.test.ts`), so a client-stamped row
+        // can carry text, and that text is precisely what must not surface.
         return '';
     }
   }
