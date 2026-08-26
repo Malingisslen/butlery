@@ -16,6 +16,34 @@ rule is internalised (roughly six weeks).
 
 ## Current
 
+### [Workflow] `git status` says WHAT changed, never BY WHOM — ownership is not derivable from a shared checkout
+- **Date**: 2026-08-26 (four times in one night, five sessions sharing `C:/Butlery/butlery`)
+- **Trigger**: Four ownership claims, each built on a correct measurement.
+  (1) A worktree under `.claude/worktrees/` sat on a BUT-1911 commit, so a session was
+  told its tree "stands on BUT-1911". The worktree was real and the SHA was right; it
+  belonged to nobody asking.
+  (2) Four files staged at session start were read as "my BUT-1912 work" and reported to
+  the founder as this session's only owned ticket. They were another session's, recovered
+  from the same sprint patch — so the content matched, which made the wrong conclusion
+  look confirmed.
+  (3) A reviewer warned a session that "your uncommitted set spans `firestore.rules` and
+  six files under `functions/src/`". Those 29 files were a third session's BUT-1904 work,
+  identifiable in one `git status` read by their own subject matter (an ADR named for the
+  feature, a duplicate-guard test).
+  (4) **While writing this entry**, its author attributed 15 staged files and two commits to
+  the session that had just been corrected in (1)–(3) — they belonged to a fourth session
+  mid-commit. The lesson did not inoculate the person writing it, in the same hour.
+- **Rule**: In a shared checkout, `git status` / `git diff` / the index are facts about the
+  TREE and carry **no author information at all**. Provenance exists in exactly three places:
+  commit metadata, a session's own log of what it edited, and asking the session. Subject
+  matter (an ADR title, a ticket-named test) identifies the TICKET, not the session — useful
+  for routing a warning, never proof of who is holding the file. The failure is silent in
+  both directions: it strands work nobody claims, and it invents work nobody did. Two
+  corollaries that bit the same night: a peer's ownership claim about YOUR tree deserves the
+  same check before you accept it, and content matching a patch proves shared ORIGIN, not
+  authorship. This is the wrong-object shape of the entry below, aimed at the one question a
+  repo full of parallel sessions asks hourly.
+
 ### [Workflow] A check run correctly against the wrong object is indistinguishable from a clean bill of health
 - **Date**: 2026-08-26 (BUT-1921, and twice more the same day)
 - **Trigger**: Three separate wrong answers in one session, all the same shape.
