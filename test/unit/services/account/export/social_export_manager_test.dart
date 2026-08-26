@@ -881,16 +881,41 @@ void main() {
               'the whole-ROW drop must be disclosed, not just the field '
               'strips',
         );
-        // And the completeness claim beside it must stay scoped to the rows
-        // that survived. "Everything else this conversation held is kept"
-        // was a categorical claim about FIELDS and stopped being true the
-        // moment a whole row could be withheld.
+        // The completeness claim must stay scoped to the rows that survived.
+        // Three assertions, pinning three DIFFERENT things — not three
+        // directions of one property. None of them can decide whether a
+        // sentence overclaims; that is semantic and no prose matcher reaches
+        // it. Each was added because a specific wording got past what stood
+        // before it, and each is recorded with what was measured:
+        //
+        //   - the claim is MADE. Measured: with only the `isNot` below, the
+        //     whole completeness sentence could be DELETED with the suite
+        //     green.
+        //   - the retired 2026-08-26 spelling stays gone.
+        //   - the categorical FIELD claim struck the same day stays gone.
+        //     Measured: without it, restoring that clause verbatim left the
+        //     suite green — the strike itself had no guard.
+        expect(
+          line,
+          contains('Of the rows that ARE here, nothing else has been changed'),
+          reason:
+              'the scoped completeness claim must be MADE, not merely not '
+              'overclaimed',
+        );
         expect(
           line,
           isNot(contains('Everything else this conversation held')),
           reason:
-              'a bundle that overclaims its completeness is as false as '
-              'one that redacts silently',
+              'this categorical ROW claim was retired 2026-08-26; it stops '
+              'being true the moment a whole row can be withheld',
+        );
+        expect(
+          line,
+          isNot(contains('as it was stored')),
+          reason:
+              'and this categorical FIELD claim was retired with it — '
+              "another participant's row loses its avatar in this very "
+              'section',
         );
         // The keep side must NOT be a list. The sibling section shipped one that
         // named four of six fields; this document carries lastReadTimestamps,

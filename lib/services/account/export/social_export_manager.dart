@@ -353,8 +353,7 @@ class SocialExportManager with SocialExportRedaction {
           'pinned, archived) and, for a group chat, the moment each of THEM '
           'joined it. Rows where the app stopped a duplicate message that '
           'someone ELSE sent have been left out entirely — yours are kept. '
-          'Of the rows that ARE here, nothing else has been changed: each one '
-          'is as it was stored. '
+          'Of the rows that ARE here, nothing else has been changed. '
           'The chat_groups section beside it is a summary rather than a '
           'copy: it carries the group name, who created it, who administers it '
           'and who added YOU — not the other members you can already see above.';
