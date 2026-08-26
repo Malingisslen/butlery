@@ -94,10 +94,17 @@ the row exists — but it is gone as a copy.
 
 ## What follows, and what does not
 
-- The row is **sender-only**, and that is a UI rule, not a control. What protects the other
-  participants is that the server removed the text; hiding the row from them withholds only
-  the bare fact that somebody's message was stopped. Do not describe the client-side filter
-  as a privacy boundary.
+- The row is **sender-only**, and that is a UI rule, not a control. Do not describe the
+  client-side filter as a privacy boundary.
+  **AMENDED 2026-08-26:** this bullet used to give the reason as "the server removed the text;
+  hiding the row withholds only the bare fact that somebody's message was stopped". False for a
+  client-stamped row. No `firestore.rules` limb bounds what `type` is written TO on a create or
+  a sender update (B16/B17 in `cook-snaps-and-message-mod-rules.test.ts`, both ALLOW), so such a
+  row arrives carrying its text and `_withoutOthersBlockedRows` -- type+sender only -- withholds
+  that text too. Still not a control: the row was readable before any filter ran, and a
+  hand-rolled client applies none. The conclusion holds; the reason did not. The Art. 15 export
+  deliberately keeps such a row (`isOthersBlockedRow` requires `content == ''`); BUT-1954 carries
+  `searchMessages`, which filters neither.
 - **Comments still delete.** `guardDuplicateComment` is unchanged: a global per-author key, no
   length floor, no flag, and `tx.delete` on a duplicate — live since 2026-05-04. A duplicate
   one-word comment is spam; a duplicate one-word chat message is conversation. The asymmetry
@@ -214,7 +221,7 @@ the row exists — but it is gone as a copy.
   own completeness is as false as one that redacts silently, and both halves are pinned in
   `social_export_manager_test.dart`.
 
-  **A second residual, stated rather than closed (`code-reviewer` gate, 2026-08-26).** The row
+  **A second residual, stated rather than closed — BUT-1955 (`code-reviewer` and `integration-reviewer` gates, 2026-08-26).** The row
   is dropped BEFORE the block that attaches `your_poll_vote`, so a vote the requester cast on
   another participant's blocked-typed row leaves the bundle with it — and that overlay is the
   requester's OWN data, which is the under-disclosure this helper exists to avoid. Reachability

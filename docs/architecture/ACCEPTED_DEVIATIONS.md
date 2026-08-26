@@ -2143,6 +2143,32 @@ Hiding the row from the other participants is a UI rule. What protects them is t
 SERVER removed the text; the client-side filter withholds only the bare fact that somebody's
 message was stopped.
 
+*(SUPERSEDED 2026-08-26 — Malin: build the dismiss control. The two paragraphs above are now
+false in both directions, and the sentence they argue about is false as well.
+
+**The sender CAN remove the row, from anywhere.** The notice carries its own `x`:
+`SystemMessageWidget.onDismiss` -> `MessageBubble.onDismissBlocked` -> `_dismissBlockedNotice`
+-> `ChatViewModel.deleteMessage`. That is the per-MESSAGE delete, not the conversation-level
+one, so it works identically in a group and in a direct message and closes the group gap the
+paragraph above measured. No confirm dialog and no undo -- a fourth friction class, written
+into `.claude/rules/ui-conventions.md` section "Destructive-action confirmation" rather than
+here. The control is drawn only on the viewer's OWN row (`_isFromCurrentUser`), because
+`firestore.rules` `allow delete` on `messages` is sender-only.
+
+**And "withholds only the bare fact" is false for a client-stamped row.** No `firestore.rules`
+limb bounds what `type` is written TO on a create or a sender update -- B16/B17 in
+`cook-snaps-and-message-mod-rules.test.ts` both ALLOW, and B17 creates a stamped row still
+carrying its full sentence. `_withoutOthersBlockedRows` is type+sender only, so for such a row
+the filter withholds the TEXT as well. That does not promote it to a privacy control: the row
+was readable before any filter ran, and a hand-rolled client applies none. The conclusion of
+this section stands; the reason given for it does not.
+
+The Art. 15 export deliberately DIVERGES here and KEEPS such a row -- `isOthersBlockedRow`
+requires `content == ''` -- because withholding a record from its own subject is the worse
+failure. Do not harmonise the two. BUT-1954 carries the third surface, `searchMessages`, which
+filters neither. Mirrored from `.claude/rules/accepted-deviations.md`, which was amended in the
+same change; both files are edited together by this file's own header rule.)*
+
 *(Corrected 2026-08-26, before this landed: that sentence read "removed the text before the
 document was ever readable". False — and this was the THIRD copy of it. The other two were struck
 first and this one was missed, which is exactly why a false claim gets swept file by file rather
