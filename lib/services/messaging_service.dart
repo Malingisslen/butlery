@@ -269,11 +269,27 @@ class MessagingService extends BaseService with StreamManagementMixin {
     }
   }
 
-  /// BUT-544: applies the shared block-aware filter to a message list.
+  /// Trims a message list down to what this viewer may see.
+  ///
+  /// TWO jobs, deliberately in this order.
+  ///
+  /// BUT-1904 first: someone else's duplicate-blocked row is dropped. This runs
+  /// BEFORE and OUTSIDE everything below, and that placement is the point —
+  /// the block filter's FAILURE exits all return a less filtered list (an
+  /// unregistered filter, a failed block-list fetch, a failed ballot strip),
+  /// and this must not inherit that contract. It cannot: it is a pure test over
+  /// data already in hand, with nothing to fetch and nothing to throw. Do not
+  /// move it below the early returns.
+  ///
+  /// BUT-544 second: messages authored by users the viewer has blocked.
   /// `tryGet` keeps test contexts that don't register the filter unaffected.
   /// Fail-open: a transient blocked-list fetch error must not blank out
   /// the conversation; the next snapshot will retry the lookup.
-  Future<List<Message>> _filterBlocked(List<Message> messages) async {
+  Future<List<Message>> _filterBlocked(List<Message> incoming) async {
+    // A local rather than a reassigned parameter: every exit below returns
+    // `messages` or a list derived from it, so the sender-only rule holds on
+    // the failure exits too — which is the whole point of doing this first.
+    final messages = _withoutOthersBlockedRows(incoming);
     if (messages.isEmpty) return messages;
     final filter = ServiceLocator.tryGet<BlockedUserFilter>();
     if (filter == null) return messages;
@@ -316,6 +332,39 @@ class MessagingService extends BaseService with StreamManagementMixin {
       );
       return visible;
     }
+  }
+
+  /// Drop duplicate-blocked rows that belong to somebody else (BUT-1904).
+  ///
+  /// The guard empties a blocked message rather than deleting it, so the row
+  /// reaches every participant's client. Only its own sender is shown it — the
+  /// row says "you already sent this", which is true for exactly one person and
+  /// is nobody else's business.
+  ///
+  /// This hides a row; it does not protect content. The text is already gone,
+  /// so what is withheld here is the bare fact that somebody's message was
+  /// stopped.
+  ///
+  /// It was NOT gone before the document became readable. An earlier version
+  /// of this comment claimed it was. `guardDuplicateMessage` is
+  /// `onDocumentCreated`: the client commits the full text first and the
+  /// trigger runs after, so a participant with the thread open sees the
+  /// duplicate until the mark propagates — no measured duration, and a cold
+  /// start makes it longer. Harmless, since it is by construction the same text
+  /// they received moments earlier, but not the guarantee that was claimed.
+  ///
+  /// A signed-out reader owns nothing, so every blocked row goes — the safe
+  /// direction, and unreachable in practice since the conversation itself needs
+  /// a signed-in participant.
+  List<Message> _withoutOthersBlockedRows(List<Message> messages) {
+    final currentUserId = _authRepository.currentUserId;
+    return messages
+        .where(
+          (m) =>
+              m.type != MessageType.duplicateBlocked ||
+              (currentUserId != null && m.senderId == currentUserId),
+        )
+        .toList();
   }
 
   /// Remove blocked voters from every poll option's `voterIds`, in memory.

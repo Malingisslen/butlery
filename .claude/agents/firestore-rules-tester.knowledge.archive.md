@@ -2851,3 +2851,83 @@ false claim has merely become a dangling one.
 ALLOW controls either. On BUT-1831 as follow-up #4. Pre-existing, out of this diff's scope.
 
 Verdict: PASS, 0 blocking.
+
+---
+
+## 2026-08-26 — BUT-1904: the `duplicateBlocked` freeze on the messages sender update
+
+**Diff.** One conjunct on the `match /messages/{messageId}` sender `allow update`:
+`&& resource.data.get('type', 'text') != 'duplicateBlocked'`, plus an eight-line comment.
+`guardDuplicateMessage` now empties a duplicate (`content: ""`) and stamps
+`type: "duplicateBlocked"` in place instead of `tx.delete` (ADR-0009). Decision records read
+first: `.claude/rules/accepted-deviations.md`, `docs/architecture/ACCEPTED_DEVIATIONS.md`,
+`docs/org/adr/ADR-0009-the-duplicate-guard-marks-instead-of-deleting.md`.
+
+**Three questions asked, all answered by measurement.**
+
+1. *Does the OR'd receipts branch give a route to `content` or `type`?* No.
+   `affectedKeys().hasOnly(['status','deliveredAt','readAt','updatedAt'])` is TOP-LEVEL and
+   both fields are top-level, so a receipt payload carrying either drops out of the
+   allow-list while the sender branch is already refusing the row. Pinned four ways
+   (recipient+content, sender+content, recipient+type, and the receipt-only ALLOW that keeps
+   the four denies from being vacuous). Receipt-only updates DO stay allowed on a blocked
+   row, for the sender and for a recipient — the intended reading of the split.
+2. *Is the `'text'` default right for legacy rows?* Yes, and it is load-bearing. The
+   `default-blocked` mutant (`get('type', 'duplicateBlocked')`) reddens exactly ONE test —
+   the no-`type`-field row. `MessageDto.toFirestore` has always written `type`, so the
+   population is pre-DTO rows only, but the mutant shows nothing else guards them.
+3. *Does anything else in the rules read `messages.type`?* No. `grep` finds two hits: this
+   conjunct and an unrelated `activity_events` validator. The only cross-document read of a
+   message anywhere in the file is `poll_votes`' `pollMessage()`, which reads `metadata`.
+
+**Measured CEL behaviour of `resource.data.get('type','text') != 'duplicateBlocked'`** —
+probe over six stored states, sender editing `content`: absent ALLOW, null ALLOW, number 42
+ALLOW, map ALLOW, `'text'` ALLOW, `'duplicateBlocked'` DENY. A single `.get()` against a
+literal answers in every state; the present-null CEL error that bites `a.get().get()` chains
+(BUT-1788) does not reach it. Fail-open on every malformed shape, which is the right
+direction here — an error would freeze an ordinary message on a field nobody validates.
+
+**Deny attribution.** Every denial on this path prints the byte-identical string
+(`evaluation error at L2111:24 ... false for 'update' @ L3241`) — a stranger editing an
+ordinary message and the sender editing a blocked one are indistinguishable in the emulator
+output. Confirmed by probe before trusting any deny. The existing single-variable ALLOW
+control is what carries the attribution.
+
+**Mutation probes** (three, each against a COPY in the scratchpad via new `PROBE_PROJECT_ID`
+/ `PROBE_RULES_PATH` env hooks added to the suite; `firestore.rules` md5-verified unchanged,
+diff still exactly the 9 added lines):
+
+- `drop` the conjunct → 5 red (the freeze deny, the sender's receipt-smuggle, both unstamp
+  cases, and the self-stamp case's second assertion).
+- `default-blocked` → 1 red, the legacy no-`type` row. Sole guard.
+- `request-side` (`resource.data.get` → `request.resource.data.get`) → 3 red, and **the
+  three tests that shipped with the diff all survived it**. Their payload is `{content:...}`,
+  which leaves the post-state `type` at `duplicateBlocked`, so the mutant still denies. Only
+  a payload that MOVES `type` (`{type:'text'}`) tells pre-state from post-state. This is the
+  durable rule extracted below.
+
+**Tests added** — B4-B17 in `cook-snaps-and-message-mod-rules.test.ts`, taking it from 37 to
+51. Receipts-branch allow + three smuggle denies; two unstamp denies; three defaulting-state
+allows (absent / null / number); non-participant and unauthenticated denies; the deny half of
+"sender can delete a blocked message"; and the two behaviour-as-it-is cases — a client may
+stamp its OWN message `duplicateBlocked` (`type` is in neither `cannotModify` nor the create
+rule) and may create one already stamped. Those two are pinned as they BEHAVE, so a later
+ticket constraining `type` flips them rather than passing silently.
+
+**Neighbours re-run after the tightening** (older deny tests on a tightened path go vacuous
+silently): `test:rules:conversations` 87/87, `test:rules:poll-votes` 33/33. No suite outside
+this one seeds a `duplicateBlocked` row, and the two integration suites that write the value
+use the Admin SDK, which bypasses rules.
+
+**Adjacent, not filed as findings.** `poll_votes` gates on `metadata.poll`, never on `type`,
+so a row a client self-stamps stays votable after every client has stopped drawing it — inside
+what the BUT-1832 accepted deviation already covers. And `conversations.lastMessage` is a
+client-writable denormalised copy that now has one more value it can carry; that field's
+update rule is the pre-existing hole BUT-1903's entry already names and tickets.
+
+**Durable rule extracted.** A conjunct on `resource.data.<f>` is proven only by a payload that
+MOVES `<f>`. Both spellings read as "the message's type" in English, so the pre-state/post-state
+mixup is the likeliest wrong edit, and a suite whose denies all leave the field alone stays
+green with the guard testing the attacker's own input instead of the stored document.
+
+Verdict: PASS, 0 blocking.

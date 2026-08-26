@@ -108,29 +108,49 @@ idempotent:
 4. **Sends** → write a `sent-events/{id}` guard BEFORE sending.
 5. **`retry:true` needs every write safe on a MISSING doc** — `.update()`
    throws NOT_FOUND (grpc `5`), turning a drop-once into a permanent loop.
-6. Errors COLLECTED then thrown later are not a gate — throw immediately.
-7. **Client-supplied strings in a doc path are a poison-pill surface** —
+6. **Client-supplied strings in a doc path are a poison-pill surface** —
    validate non-empty, ≤1500 UTF-8 bytes, no `/`, not `.`/`..`/`/^__.*__$/`.
-8. Sanitisation must never shrink the value a security gate's THRESHOLD is
+7. Sanitisation must never shrink the value a security gate's THRESHOLD is
    computed from. Can't be idempotent? Document why + add a guard doc.
-9. **Concurrent Tier-1 cascade legs (`Promise.all`) can write the same
+8. **Concurrent Tier-1 cascade legs (`Promise.all`) can write the same
    collection** — grep sibling legs for writers before claiming "no
    race"; make anonymising legs NOT_FOUND-tolerant PER DOCUMENT
    (`commitInChunks(strict:false)` fails a whole chunk on one NOT_FOUND),
    and give every new sweep its own `count()` leg in `probeResidualData`.
-10. A sweep cap's threat model comes from the write RULE it bounds, never
+9. A sweep cap's threat model comes from the write RULE it bounds, never
     a copied rationale — a bound's ABSENCE needs the same read
     (`hasRequiredFields` ≠ `hasOnly`). Never cite a rules LINE NUMBER in a
     comment — cite the `match` pattern or function name (it drifts).
-11. A fake whose `update()` no-ops on a missing doc can't stage grpc 5 —
+10. A fake whose `update()` no-ops on a missing doc can't stage grpc 5 —
     give it an injectable `updateFailures: Map<path, grpcCode>`. Deleting a
     cascade LEG needs a `__tests__` grep for writers of that path.
-12. **Resolve-or-create keyed on a QUERY is not idempotent.** A
+11. **Resolve-or-create keyed on a QUERY is not idempotent.** A
     `where(...).limit(1).get()` outside the transaction lets two concurrent
     callers both see empty and both create — the "one object per key" the
     feature promises then holds only for SEQUENTIAL calls, and no fake can
     show it (single-threaded, no isolation). Derive the doc id
     deterministically from the key and `tx.create()` instead.
+12. **Two triggers on ONE collection: gate the re-read on WRITE KIND, never
+    on a LIST of writers and never on the sibling's ADMISSION TEST.** A
+    stale-payload invocation can land LAST and undo the correction. Gating on
+    `create` misses the read-receipt update; gating on the sibling's own
+    predicate misses an update edited OUT of candidacy (the sibling admits on
+    the CREATE payload and rewrites regardless, while `cannotModify` pins
+    neither `content` nor `type`). The gate that holds is kind-shaped —
+    `isDelete` / payload-already-rewritten / `!!before` — because it closes
+    writers nobody enumerated: on `messages` that is 8+, incl. a delayed
+    `status:'sent'` self-update ~100ms after create, `onProfileUpdated`'s
+    fan-out over every message a user sent, and three GDPR cascade legs.
+    Enumerating instead is the trap that produced three review rounds AND a
+    false "all four" in the record. The CREATE side may gate on the sibling's
+    predicate — but only because both triggers read the SAME create snapshot.
+    Put the CHEAP no-write checks (stamp type, precedence) BEFORE the read;
+    deciding on the payload's `sentAt` is safe only while `sentAt` is
+    immutable in the rules AND untouched by the sibling — re-verify both.
+    Measured: a transactional re-read DOES abort+retry on a concurrent commit
+    (2 attempts, stale value lost). Stage it by REPLAYING a pre-rewrite
+    snapshot; a sequential suite cannot stage true concurrency, and each wrong
+    scope passes every case written for the previous one.
 
 ## Cost & cold-start
 
@@ -197,15 +217,6 @@ from `(err as {code?}).code` instead.
 
 ---
 
-### Completion-event telemetry (`emitTiming` family)
-- Gemini/Vertex implicit caching: `usageMetadata.cachedContentTokenCount`,
-  billed ~10% of input rate, clamped to `[0, promptTokenCount]`.
-- Never coerce a missing telemetry field to 0 — log as-is; Cloud Logging
-  drops `undefined` fields, marking "not reported" vs a real zero.
-- Emitter test: EXACTLY ONE event per call (catches try+catch double-emits).
-  Declare a bucket variable BEFORE the closure on an early-exit function;
-  each experiment gets its own salt.
-
 ### Test seams, emulator infra & non-vacuity
 - v2 exports carry `.run(event)` — test triggers with a typed payload from
   real emulator snapshots, no firebase-functions-test needed.
@@ -228,11 +239,6 @@ from `(err as {code?}).code` instead.
   update-path fixture's shape. Grade a comment repair at FINAL BYTES: a true
   sentence added BESIDE a false one leaves both, and deleting a WRITER
   obliges a sweep of every sentence naming it.
-- **DELETING an argument at ONE call site is NOT pinned by a test on the
-  callee's DEFAULT** — a case proving `stageMemberRemoval` tombstones only
-  when asked stayed green after re-adding `tombstone:true` in the minor
-  backstop. Pin the CALLER's own suite; restore the argument and watch it
-  redden.
 - **A fake `commit()` that RE-DERIVES the intended effect instead of
   APPLYING the write payload makes the write vacuous** — dispatch on the
   `FieldValue` transform's `constructor.name`; reject `update()` on a
@@ -242,12 +248,6 @@ from `(err as {code?}).code` instead.
   and `collectionGroup()` queries** — the cascade's caps split across them,
   so one missing method reports a GDPR step FAILED, not skipped. An
   always-empty fake still cannot stage the over-cap DECLINE.
-- To mutate a global option without touching a tracked file, patch
-  `setGlobalOptions` in `require.cache`'s
-  `firebase-functions/lib/v2/options.js` before requiring `../index` — one
-  `__endpoint` is a live GETTER that regenerates, so in-place tampering
-  under-counts by one.
-
 ### PII scrubbing + GDPR cascade design
 - **PROMOTING a per-section field to the ROOT of an Art. 15 bundle changes
   its blast radius — the root value must be DERIVED, never copied** (a raw
@@ -299,8 +299,7 @@ from `(err as {code?}).code` instead.
   SUBCOLLECTION name updates zero docs).
 
 ### Scheduled analytics & lifecycle jobs
-- Don't assume a date field's type (ISO vs `Timestamp` varies by
-  collection). Full-scan jobs need an explicit cap + `logger.warn`.
+- Don't assume a date field's type (ISO vs `Timestamp` varies by collection).
 - Anomaly gates: `baseline≥MIN_SAMPLES` AND `stddev>0` AND `|z|>3` AND
   `|today-mean|≥ABSOLUTE_FLOOR` — without the floor, pre-launch counts fire
   constantly. A consumer job SKIPS (never assumes zero) on a missing producer
@@ -309,14 +308,6 @@ from `(err as {code?}).code` instead.
 - **A daily job probing "today" only measures the hours BEFORE its own run
   time** — probe the PREVIOUS COMPLETED UTC day and derive date, query
   window, rollup offsets AND active-user cutoff from that one base.
-
-### Fan-out pagination & denormalization (shared/batch-update.ts family)
-- Self-advancing bounded loop when the mutation removes the doc from the
-  base query's next match. Use the `__name__`-cursor helper ONLY when every
-  write touches solely denorm fields — hard iteration cap either way.
-  **"A deleted doc can't anchor a `startAfter` cursor" is FALSE** — the
-  cursor is built from the snapshot LOCALLY; anchor on the last SCANNED doc
-  for ORDERING, since a deleted one can sort earlier.
 
 ### GDPR account-deletion cascade
 - A cascade step keyed on a shared/parent handle must destroy the retry
@@ -363,9 +354,6 @@ from `(err as {code?}).code` instead.
 - Unbounded collection-group folds use `.aggregate({count, average})`,
   never `.get()`; a `collectionGroup` equality query needs a
   `fieldOverrides` entry with `queryScope:"COLLECTION_GROUP"`.
-- A backfill reconstructing a value must exclude every field the erasure
-  cascade deliberately RETAINS (e.g. `ownerId`) — gate on a handle the
-  cascade CLEARS instead.
 - A full-collection `orderBy(documentId()).limit(N)` backfill with no
   filter cannot self-advance — needs an operator-supplied `startAfter` +
   `nextCursor`; only a filter-mutating sweep may skip the cursor.
@@ -415,8 +403,6 @@ from `(err as {code?}).code` instead.
 
 ### Ingredient sync, allergen data & admin exports/ETL (admin/ family)
 - `admin/` scripts run `main()` at import — extract pure cores for testing.
-  `reset-user-data.ts`'s `subcollections` list is DOCUMENTATION ONLY —
-  `deleteDocRecursive` discovers subcollections via `listCollections()`.
 - Normalization parity must hold across every matching surface (sync
   stamp, server hold-gate, Dart client) — list-split regexes stay in
   lockstep across every field they're applied to.

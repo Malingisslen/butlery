@@ -45,6 +45,12 @@ class MessageContentBuilder {
         return _buildVoiceContent(context, message, isFromCurrentUser);
       case MessageType.system:
         return _buildTextContent(context, message, isFromCurrentUser);
+      case MessageType.duplicateBlocked:
+        // BUT-1904. `MessageBubble.build` returns its own centred row for a
+        // blocked message before it ever calls this builder, so drawing
+        // anything here would be a second copy of that row rather than a
+        // fallback. Present because the switch is exhaustive.
+        return const SizedBox.shrink();
       case MessageType.poll:
         return _buildPollContent(
           context,

@@ -2100,8 +2100,18 @@ service cloud.firestore {
         && rateLimitWrite('messages', 5);
 
       // Can update your own messages (content only — identity fields are immutable)
+      //
+      // BUT-1904: a message the duplicate guard has BLOCKED is frozen. The guard
+      // empties such a row and stamps it, and this branch otherwise places no
+      // constraint on `type` or on what `content` becomes — so without this
+      // conjunct the sender could simply write the duplicate text back in and
+      // hand it to the other participants after all. The Admin SDK bypasses
+      // rules, so the guard itself is unaffected. Deleting a blocked row stays
+      // allowed below — though no screen in the app currently reaches that
+      // delete, for a reason unrelated to this rule (ADR-0009).
       allow update: if isAuthenticated()
         && request.auth.uid == resource.data.senderId
+        && resource.data.get('type', 'text') != 'duplicateBlocked'
         && request.resource.data.content is string
         && request.resource.data.content.size() <= 5000
         && cannotModify(['senderId', 'conversationId', 'sentAt']);

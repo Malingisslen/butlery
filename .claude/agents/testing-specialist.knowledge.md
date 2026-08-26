@@ -51,6 +51,14 @@ you want the revert-probe that proved it; or this file itself reads too compress
   construction** — `git show :<path>` on such a file is a free pre-fix mutant.
 - **Fix loop consumes Critical/High only** — an all-Low/Medium re-review never changes.
   Apply zero-risk test-only fixes yourself; never edit production in a review pass.
+- **Re-run the MOTION CHECK against the fix report, not just against your own copy — a
+  round's remedy routinely drags in production edits the report never mentions.** BUT-1904's
+  fix round reported four test files; `--numstat` showed the shared predicate
+  `isChatDuplicateCandidate` and a second suite had moved too (+414 where +88 was described).
+  Diff EVERY path in the round, sort by whether it is production, and grade the unreported
+  production edits FIRST: they arrive with no finding attached, so nothing has asked whether
+  a test can see them. The recurring shape is a fix for finding N landing an unpinned
+  behaviour change beside it.
 - **"Duplicate test" is measurable**: mutate the guarded expression, delete only a strict
   subset kill set THROUGH THE SAME SEAM. Exceptions: reaches the sole fail-closed lookup via
   a different seam, or is another test's CONTROL. Grade two suites for one class by what
@@ -317,7 +325,18 @@ Codecov: 60% project / 70% new patches / 2% drop tolerance — floors, decided 5
   and habitually leaves inherited CRUD (`read`, `readAll`, `watchAll`) untested though it
   skips every filter the finders apply.
 - A defensive DECODE helper's null branch needs the ABSENCE mutated, not the value, plus a
-  wrong-TYPE row. A deterministic composite id + body-vs-path check makes "stored==payload"
+  wrong-TYPE row. **A `x !== undefined` → `x` (truthiness) swap in a guard is a FOUR-state
+  behaviour change that an "absent" fixture structurally cannot see** — measured on
+  `isChatDuplicateCandidate` (BUT-1904): `undefined`/`"text"`/`"system"` agree under both
+  spellings, while `null`, `""`, `0` and `false` flip from refused to admitted. The tell is a
+  doc comment that grew from "an ABSENT type counts as text" to "ABSENT, null or empty" while
+  the suite kept its one `undefined` case: an ENUMERATING doc with one member pinned. One
+  fixture per member, or the swap is revertible-green. **Check the swap against HEAD before
+  filing it as a new behaviour — an EXTRACTION is the usual carrier, and the extracted copy
+  is often the REGRESSION.** BUT-1904 pulled the predicate out of an inline
+  `if (type && type !== "text") return;` that had shipped for three months and rewrote it as
+  `!== undefined`, so the "new" behaviour was the bug and the fix restored parity. `git show
+  HEAD:<file>` on the ORIGINATING call site, never on the new function, which has no history. A deterministic composite id + body-vs-path check makes "stored==payload"
   checks TAUTOLOGIES — isolate the one conjunct that can still decide.
 - **A fail-loud parser deriving ownership from the STORED BODY is protective on read, an
   Art. 17 defect on delete** — the forged row becomes the one doc its owner can't erase;
@@ -412,7 +431,15 @@ Codecov: 60% project / 70% new patches / 2% drop tolerance — floors, decided 5
   the easier `await`; the stream is the path the open screen actually renders from. `lcov
   DA=0` on the stream's branch is the whole probe, ~35s, no `lib/` write (BUT-1908).
 - **A source-scanning guard enforces its REGEX, not its TITLE — cite what it matches, never
-  what it is called.** `architecture_test.dart`'s "no raw user ids in AppLogger calls"
+  what it is called.** Grade it against the file's OWN PRE-CHANGE BYTES, which is a free
+  corpus of the exact shape it exists to refuse: BUT-1904 added a guard scanning its suite
+  for `^\s*assert\(await exists\(` after a delete→mark fix made every existence assertion
+  true-by-construction, and run over `git show HEAD:<suite>` it matched 10 of the 15 real
+  sites — missing exactly the 5 the author had hand-wrapped onto two lines. A one-line
+  anchor cannot see a wrapped call, and a long `reason:` string is what wraps it, so the
+  evaded form is the NORM in any suite with explanatory failure messages. Match the CALL
+  (allow a newline after `assert(`) or scan a parsed form.
+  `architecture_test.dart`'s "no raw user ids in AppLogger calls"
   matches `$userId`/`$uid` only, so `$conversationId` walks past it in 9+ `lib/` files while
   literally being two raw uids (`direct_<a>_<b>`). Before leaning on a guard as a
   contract, read its pattern and name the aliases of the guarded DATA that the pattern
@@ -681,7 +708,13 @@ The single most repeated finding across two months of review.
   two-layer fix (N emitters + chokepoint) is tested only at the chokepoint — a control, not
   coverage; each emitter owes its own suite's test.
 - Boundary tests must straddle the EXACT flip point (`==N` vs `N+1`); a calendar-day guard
-  flips at MIDNIGHT, not a duration. `DateTime.utc(...)` fixtures can't assert zone
+  flips at MIDNIGHT, not a duration. **An "these two spellings agree" assertion
+  (`f(nfd) == f(nfc)`, two casings, two separators) is the same rule wearing a disguise: it
+  is vacuous unless the fixture straddles the threshold `f` actually tests.** BUT-1904 pinned
+  "NFC and NFD sit on the same side of the 12-char chat floor" with a 14/15 pair — both over
+  the floor, so deleting `.normalize("NFC")` keeps it green. The killer is an NFC length one
+  BELOW the floor with one combining mark (`"hej då alla"`, 11 NFC / 12 NFD). Measure both
+  spellings against the BOUND before writing the fixture, never against plausibility. `DateTime.utc(...)` fixtures can't assert zone
   normalisation — feed `Timestamp.fromDate(x).toDate()`.
 - Any normalizer/sanitizer is the IDENTITY on an already-normal fixture, and realistic
   fixtures usually are — enumerate what the helper changes, plant one instance each. MIRROR:
@@ -1007,6 +1040,18 @@ in ITS suite, same edit (BUT-1874: emitter pinned, `ShoppingItemManagementModule
   ZERO test lines, which reads as "the whole suite died" — keep the symbol used.
 - A retired-collection RE-POINT is proven by seeding the RETIRED path as a trap in the SAME
   run, never by asserting the live path alone.
+- **These hand-rolled emulator runners share ONE world across cases, in order, so a mutant's
+  RED COUNT is inflated by state cascade and cannot attribute anything.** A downstream case's
+  PRECONDITION assert reddens on the upstream case's damage, not on its own discrimination —
+  measured on BUT-1904's sync suite, where "4 fail" and "2 fail" both included a case whose
+  own before→after transition is INVARIANT under the mutant, and whose named guard
+  (`currentLastMessage?.id !== messageId`) survived deletion with the whole suite green.
+  Attribute per case, cheaply and with no repo write, by replicating the handler's decision
+  branches in a scratchpad JS file and replaying the cases in order: reproducing the reported
+  red counts exactly is what proves the replica, and the per-case split then reads straight
+  off it. A guard that only skips WORK (a read, a redundant write) is invisible to a suite
+  that asserts only the final value — it needs a fixture where the skipped work would land
+  somewhere DIFFERENT, or it is untestable at that layer and owes a comment, not a test.
 
 ### Multi-select / bulk-action wiring
 - VM tests + card tests can pass while the GLUE (snapshot/order/callback) is untested at

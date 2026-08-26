@@ -16362,4 +16362,10 @@ class AppLocalizationsSv extends AppLocalizations {
   String chatGroupTooManyMembers(int max) {
     return 'En grupp kan ha högst $max medlemmar.';
   }
+
+  @override
+  String get chatDuplicateBlocked => 'Du har redan skickat det här';
+
+  @override
+  String get messageTypeDuplicateBlocked => 'Stoppat';
 }

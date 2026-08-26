@@ -14707,3 +14707,291 @@ RETIRED from the knowledge file to pay for the addition, verbatim:
   justification — use `require` for explicitness, never claim necessity." — narrow
   comment-wording point; the file is over budget and this round's GDPR subset rule
   outranks it.
+
+### 2026-08-26 — BUT-1904: the duplicate guard marks instead of deleting [review]
+
+Reviewed the uncommitted diff to `functions/src/social/duplicate-content-guard.ts` and
+`functions/src/messaging/sync-conversation-last-message.ts`. Decision records read first:
+ADR-0009 (new), ADR-0007 (superseded in part), and the new BUT-1904 entry in both
+deviations files. Verdict: FAIL, one blocking finding.
+
+**The blocking finding, MEASURED not reasoned.** The sync trigger's transactional re-read
+is gated `!isDelete && !before && isChatDuplicateCandidate(after ?? {})` — i.e. CREATES
+only. Both files, ADR-0009 and the deviations entry all assert the race with
+`guardDuplicateMessage` is closed. It is not: the messages block has a SECOND
+`allow update` (the receipts branch, `affectedKeys().hasOnly(['status','deliveredAt',
+'readAt','updatedAt'])`), and `MessageMutationModule.batchMarkAsDelivered` /
+`markMessageAsRead` drive it from the RECIPIENT's client within seconds of every message.
+That invocation's `after` is the PRE-mark payload; because `before` exists, no re-read
+runs; if it lands after the mark's own invocation has corrected the preview, it re-projects
+the blocked duplicate's text into `conversations.lastMessage` for every participant.
+
+Reproduced against the live emulator with the real exported handler via
+`CloudFunction.run(event)` (scratch probe, not committed):
+  STEP 1 preview: B2 (ok)
+  STEP 2 stale receipt payload: {"type":"text","content":"Jag kommer klockan sju ikvall","status":"read"}
+  STEP 3 preview after the mark: probe-b1 "forsta meddelandet"
+  STEP 4 preview after the stale receipt: probe-b2 "Jag kommer klockan sju ikvall"
+  RESULT: REPRODUCED
+
+Then patched the gitignored build output (`functions/lib/.../sync-conversation-last-message.js`)
+to drop `!before`, re-ran the same probe: "RESULT: not reproduced — preview stayed correct".
+Rebuilt to restore. So the remediation direction is proven, not guessed.
+
+**Two mechanism claims measured rather than trusted:**
+- `tx.update` on a MISSING doc: THREW grpc 5 NOT_FOUND, doc still absent afterwards. So the
+  `tx.get(docRef)` existence check in the guard's mark branch is NOT what prevents
+  resurrection — `tx.update` alone is. The read buys a clean `gone` no-op instead of a
+  spurious `logger.error` plus a burnt attempt. The comment's stated "because" names the
+  wrong mechanism.
+- Transaction abort+retry on a concurrent commit: attempt 1 read `type=text`, an outside
+  writer committed the mark, attempt 2 read `type=duplicateBlocked`, final preview took the
+  fresh value. 2 attempts. So header claim #2 IS true — for creates. Only the scope is wrong.
+
+**Behaviour change nobody wrote down.** The old inline filter was `if (type && type !==
+"text") return;`; `isChatDuplicateCandidate` is `data.type !== undefined && data.type !==
+"text"`. Measured across six values: `null` and `""` flipped from guarded to skipped.
+`undefined`/`text` guarded, `system`/`image` skipped — unchanged. Low severity (a
+hand-rolled client could already evade with `type:"image"`, and the shared predicate keeps
+both triggers in step even for null), but the doc's "An ABSENT `type` counts as text" does
+not cover a stored null.
+
+**Stale-comment sweep.** The change left "delete" claims about the CHAT surface standing in
+the file it edited (`MIN_CHAT_BODY_CHARS` doc "a guard without a floor deletes ordinary
+conversation"; `computeDuplicateHash` doc "the second is deleted"; the `<=` paragraph
+"would delete ONE of two DIFFERENT messages"; "It fails toward not-deleting"; "so we don't
+delete the user's legitimate doc on retry") and in an untouched neighbour,
+`social/duplicate-message-flag.ts` (three: "Delete duplicates.", "the action on 'enabled'
+is `tx.delete()`", "Whether the chat duplicate guard may delete"). Same shape as the
+BUT-1856 lesson: one behaviour change falsifying sentences across files, none reddening.
+`after.type` appears in three places (sync header claim #1, the deviations entry, ADR-0009)
+where the code reads `current?.type` — a renamed symbol, so correct in place.
+
+**Checks that came back clean:** `npm run build`; `test:duplicate-content-guard` 27/27;
+`test:sync-conversation-last-message` 5/5; `test:integration:sync-conversation` 12/12;
+`test:integration:duplicate-message-guard` 11/11; `test:deploy-manifest` 7/7 (the new
+cross-module import did not disturb any endpoint). Reads-before-writes holds on every path
+in both transactions. Region unchanged — `syncConversationLastMessage` still pins its own
+`europe-west1`, the two guards inherit the global. Open-by-default holds on the guard side
+(the mark is inside the transaction, so a failure rolls back and the text survives). Only
+two triggers exist on `messages/{messageId}`, so the guard's "the one other trigger on this
+collection" is TRUE. Create-rule required fields match the predicate's doc exactly. Dart
+`MessageType.duplicateBlocked` matches `DUPLICATE_BLOCKED_TYPE` byte for byte. The cascade
+sweeps `messages` by `senderId`, so a blocked row is still erased — ADR-0009's Art. 17
+claim holds.
+
+**Cost.** The candidate gate is the tightest one that stays in step with the guard, but it
+is NOT bounded by the kill switch, which ships OFF — so today every text create ≥12 chars
+pays a second transactional read for a rewrite that cannot happen (create path goes from
+1 read to 2). Naively gating on the flag is a trap: `isChatDuplicateGuardEnabled` caches
+per-isolate for 5 minutes, so flipping the flag ON would leave a window where the guard
+marks while the sync trigger skips its re-read — re-opening the race. Recorded so a future
+run does not "optimise" it into a bug.
+
+**Retired from the principles file in this same edit** (verbatim, per the archive contract):
+
+- "- **DELETING an argument at ONE call site is NOT pinned by a test on the
+  callee's DEFAULT** — a case proving `stageMemberRemoval` tombstones only
+  when asked stayed green after re-adding `tombstone:true` in the minor
+  backstop. Pin the CALLER's own suite; restore the argument and watch it
+  redden." — subsumed by the general caller-suite rule; the file is over budget.
+
+- "- To mutate a global option without touching a tracked file, patch
+  `setGlobalOptions` in `require.cache`'s
+  `firebase-functions/lib/v2/options.js` before requiring `../index` — one
+  `__endpoint` is a live GETTER that regenerates, so in-place tampering
+  under-counts by one." — a one-off mutation-testing trick, not a rule that changes
+  how a review is conducted.
+
+- "### Fan-out pagination & denormalization (shared/batch-update.ts family)
+- Self-advancing bounded loop when the mutation removes the doc from the
+  base query's next match. Use the `__name__`-cursor helper ONLY when every
+  write touches solely denorm fields — hard iteration cap either way.
+  **\"A deleted doc can't anchor a `startAfter` cursor\" is FALSE** — the
+  cursor is built from the snapshot LOCALLY; anchor on the last SCANNED doc
+  for ORDERING, since a deleted one can sort earlier." — one helper family, and this
+  round's two-triggers-on-one-collection rule outranks it on a file that is 2.9k over.
+
+### 2026-08-26 — BUT-1904 round 2: the fix closed the receipts path, narrowed the rest [review]
+
+Re-review after the coordinator fixed every finding from round 1. Re-read both files (they
+had changed). Verdict: FAIL again, one blocking finding, different from the first.
+
+**Round 1's blocking finding is genuinely fixed.** `!before` is gone; the pre-read gate
+(stamp type + `shouldReplaceLastMessage`) now runs first so an invocation that cannot write
+returns before paying for a read. My original probe, re-run unchanged against the new code:
+"RESULT: not reproduced — preview stayed correct". Integration case J5 exists and pins it.
+
+**The new blocking finding: the re-read is gated on the SIBLING'S ADMISSION TEST, and that
+test is evaluated at CREATE time while the payload can be edited out of candidacy.** The
+guard admits a message on `isChatDuplicateCandidate` from the create payload, then marks it
+regardless of what the document says later. But `firestore.rules`' sender update branch
+pins only `senderId`/`conversationId`/`sentAt` via `cannotModify` — `content` and `type` are
+both freely updatable. So an update landing between create and mark can produce a payload
+that is NOT a candidate, skip the re-read, and land last.
+
+Two measured variants:
+- PROBE 2, benign and reachable from the shipped UI (`chat_action_handler.dart` ->
+  `MessagingService.editMessage` -> `updateMessageContent`): sender edits the message down
+  to "ok" while the guard marks. "preview after the stale edit: p2b 'ok'" — the preview
+  names a blocked, emptied row and carries the short text.
+- PROBE 4, hand-rolled client, keeps the duplicate text and flips `type` to "image":
+  "RESULT: the DUPLICATE TEXT itself is back in the preview". This is the harm the ticket
+  exists to prevent, reachable again — though only by the message's OWN sender, against
+  their own duplicate, in a conversation they are already in. Spam-guard evasion, not a
+  third-party leak.
+
+Note what is genuinely closed: any payload still carrying the duplicate TEXT is >=12 chars
+and type `text` by construction, so it IS a candidate and does trigger the re-read. Only a
+payload edited OUT of candidacy escapes.
+
+**Remediation measured, not guessed.** Patched the gitignored build output at exactly one
+site (asserted `count(old)==1` first — an earlier `sed` had silently hit the pre-read gate
+too and invalidated one probe run; caught it by reading the patched lines back):
+`(!!before || isChatDuplicateCandidate(after ?? {}))`. All four probes then came back
+closed, and it preserves today's create-path cost exactly, because creates stay gated on
+candidacy and only updates that already survived the pre-read gate pay. Dropping the
+candidacy test entirely also works but makes every create pay, including system rows and
+short "ok"s.
+
+**Their second question — is deciding on the payload's `sentAt` before the re-read safe?
+YES, and the argument is sharper than "sentAt is immutable".** The gate can only skip work
+when `shouldReplaceLastMessage` is false, i.e. candidate < stored. If the preview names THIS
+message the stored stamp was projected from it and cannot drift (immutable in the rules,
+and the mark writes only `{type, content, updatedAt}` — re-verified in the new code), so the
+comparison is `>=` and never skips. Hence the gate can only skip when the preview names a
+DIFFERENT message, which is exactly the condition under which every downstream branch
+returns without writing anyway. The one way to break the equality is a client-planted
+`lastMessage` (the open BUT-1903 residual) — PROBE 3 stages it and the correction still
+runs, because `payloadBlocked` bypasses the gate. No ordering bug. The hinge is that BOTH
+invariants live elsewhere; a future change letting any writer touch `sentAt` turns this gate
+into a silent ordering bug, and nothing tests that.
+
+**Stale comments the fix created or missed** (all directly readable from the code, so
+correct in place): `sync-conversation-last-message.ts:28` "the create branch RE-READS",
+`:21-22` "the CREATE-side invocation could land last", `:32` "Both invocations";
+`duplicate-content-guard.ts:107` "whether a create is worth re-reading", `:548-553` "closed
+on both sides" / "wakes on this create AND on our mark" / "before projecting a create"; and
+`:71` "a guard without a floor deletes ordinary conversation" — the one stale "delete" of
+the eight that survived the sweep. Round 1's #4, #5, #6, #8 and the flag-cache warning all
+verified fixed. #6's repair (`data.type && data.type !== "text"`) restores null/"" to text.
+
+Suites re-run by me: build clean, 27/27, 11/11, 5/5, 13/13, 7/7 deploy-manifest.
+
+**Superseded IN PLACE in the principles file, retired here verbatim per the contract:**
+
+- "13. **Two triggers on ONE collection: a re-read gated on `create` is not a
+    fix.** Any OTHER writer of that collection hands ITS invocation a
+    PRE-rewrite payload that can land LAST and undo the correction — on
+    `messages` that writer is the read-receipt `update`
+    (`batchMarkAsDelivered` writes `status`/`deliveredAt`/`updatedAt` under
+    its own `allow update`), which fires seconds after every message a
+    recipient is online for. Gate the re-read on the payload SHAPE, never on
+    `!before`. The mechanism itself is sound — measured, a transactional
+    re-read DOES abort+retry on a concurrent commit (2 attempts, stale value
+    lost); only its scope was wrong. Stage it by REPLAYING a snapshot
+    captured pre-rewrite: a sequential suite cannot stage true concurrency,
+    and a create-only replay passes green while the update replay fails."
+
+**Also retired, to stay net-negative on a file 2.7k over budget:**
+
+- "### Completion-event telemetry (`emitTiming` family)
+- Gemini/Vertex implicit caching: `usageMetadata.cachedContentTokenCount`,
+  billed ~10% of input rate, clamped to `[0, promptTokenCount]`.
+- Never coerce a missing telemetry field to 0 — log as-is; Cloud Logging
+  drops `undefined` fields, marking \"not reported\" vs a real zero.
+- Emitter test: EXACTLY ONE event per call (catches try+catch double-emits).
+  Declare a bucket variable BEFORE the closure on an early-exit function;
+  each experiment gets its own salt." — facts about one emitter family, not review behaviour.
+
+- "6. Errors COLLECTED then thrown later are not a gate — throw immediately." — subsumed by
+  the cascade best-effort and per-document tolerance rules beside it. List renumbered.
+
+- "`reset-user-data.ts`'s `subcollections` list is DOCUMENTATION ONLY —
+  `deleteDocRecursive` discovers subcollections via `listCollections()`." — one script; the
+  general `listCollections()` discovery rule is already in the GDPR section.
+
+### 2026-08-26 — BUT-1904 round 3: code correct, the record's "all four" is not [review]
+
+Re-read both files (changed again). Remediation from round 2 applied verbatim:
+`(!!before || isChatDuplicateCandidate(after ?? {}))`. Verdict: PASS, one Medium doc defect.
+
+**Both holes confirmed closed, by re-running the same probes that opened them:**
+PROBE 1 (receipt race) "not reproduced"; PROBE 2 (sender edits to "ok") "closed for this path
+too"; PROBE 3 (planted far-future `lastMessage.sentAt` vs the mark) "correction ran,
+payloadBlocked bypasses the gate as intended"; PROBE 4 (hand-rolled `type` flip keeping the
+duplicate text) "duplicate text did not leak". Integration J6 exists and 14/14 pass; 28/28
+unit, 11/11 guard, 5/5, 7/7 deploy-manifest, tsc clean.
+
+**Their question — any wake source not enumerated? YES, at least eight, and the record says
+"all four".** Grepped every writer of `messages` rather than reasoning about it:
+CLIENT — create (`sendMessage` `batch.set`); a DELAYED `status:'sent'` self-update fired
+`Future.delayed(100ms)` from inside `sendMessage` itself (temporally the closest write to the
+mark, and nobody had named it); receipts (`updateMessageStatus`, `batchMarkAsDelivered`);
+content edit (`updateMessageContent`); delete.
+ADMIN — the guard's mark; `writeGroupSystemMessage` (create); `onProfileUpdated`'s
+`batchUpdateQueryPaginated` over EVERY message a user ever sent (the highest-fan-out writer of
+this collection in the repo); `deleteMessages`' anonymise (`senderId:"deleted"`);
+`anonymizeSystemMessagesAboutUser`; the cascade's conversation/group teardown deletes;
+`admin/reset-user-data.ts`.
+
+**None of them reopens the hole, and that is the structural point.** The round-3 gate keys on
+write KIND (`isDelete` / `payloadBlocked` / `!!before`), not on a list of writers, so an
+omitted writer is closed for free. Measured rather than assumed — PROBE 5 staged the profile
+fan-out racing the mark: "RESULT: closed for the fan-out wake source too". So the incomplete
+enumeration is a comment/record defect, not a code defect, which is why this round passes.
+
+The create side is airtight for a different and stronger reason than I first credited: a
+create that is not a candidate can never be marked, because BOTH triggers read the SAME create
+snapshot and apply the SAME predicate to it — not a re-derivation that could drift.
+
+**The Medium defect.** `docs/architecture/ACCEPTED_DEVIATIONS.md` ends the BUT-1904 entry
+"`onDocumentWritten` fires on the create, the mark, every read receipt and every edit —
+enumerate all four before reasoning about which can carry a stale payload", and ADR-0009
+closes its race bullet with the same list. The sentence whose whole purpose is "enumerate,
+don't reason" is itself a reasoned, incomplete enumeration — the third instance of this
+change's recurring error, now embedded as the corrective. Told them to STRIKE the list rather
+than extend it: any count handed over is one nobody will maintain, and the durable wording is
+the rule (gate on write kind; every writer wakes it), which is also what makes the code
+correct. `.claude/rules/accepted-deviations.md` is phrased causally and carries no count — it
+is fine as written.
+
+**Cost correction to my own round-2 note:** with `!!before`, updates surviving the pre-read
+gate pay a read, so it is ~2-3 extra reads per message (delayed status→sent, delivered, read)
+rather than the ~1 I estimated, while the pre-read gate keeps the bulk fan-outs
+(`onProfileUpdated`, GDPR legs) at one read per conversation instead of one per message.
+
+**Superseded IN PLACE in the principles file, retired here verbatim per the contract:**
+
+- "12. **Two triggers on ONE collection: enumerate every WRITER, and never gate
+    the re-read on the sibling's ADMISSION TEST.** Any other writer hands ITS
+    invocation a PRE-rewrite payload that can land LAST and undo the
+    correction — on `messages`, the read-receipt `update`
+    (`batchMarkAsDelivered`) and the sender's `updateMessageContent` edit,
+    both live. Gating on `create` misses the first. Gating on the sibling's
+    own predicate (`isChatDuplicateCandidate`) misses the second and is the
+    subtler error: the sibling admits on the CREATE payload, but an update
+    can edit the document OUT of candidacy (shorter `content`, or `type` off
+    `text` — neither is pinned by `cannotModify`), so the stale payload skips
+    the re-read while the sibling rewrites anyway. Sound gates: the
+    payload-level blocked test, and the CHEAP no-write checks (stamp type,
+    precedence) placed BEFORE the read. Deciding on the payload's `sentAt`
+    pre-read IS safe, but only because `sentAt` is immutable in the rules AND
+    untouched by the sibling's write — re-verify both, they are the hinge.
+    The mechanism is sound (measured: a transactional re-read DOES abort+retry
+    on a concurrent commit, 2 attempts, stale value lost); scope is what goes
+    wrong. Stage it by REPLAYING a pre-rewrite snapshot — a sequential suite
+    cannot stage true concurrency, and each wrong scope passes every case
+    written for the previous one."
+  Superseded because "enumerate every writer" is precisely the advice that failed three times;
+  the kind-shaped gate is the resolution.
+
+**Also retired, to stay net-negative on a file 2.6k over budget:**
+
+- "- A backfill reconstructing a value must exclude every field the erasure
+  cascade deliberately RETAINS (e.g. `ownerId`) — gate on a handle the
+  cascade CLEARS instead." — one backfill shape; the cascade section already carries the
+  retain-vs-clear distinction.
+
+- "Full-scan jobs need an explicit cap + `logger.warn`." — subsumed by the unbounded-fan-out
+  bullet under Cost & cold-start, which carries the concrete `.limit(CAP+1)` remedy.

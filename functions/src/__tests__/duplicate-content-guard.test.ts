@@ -26,6 +26,7 @@ import {
   computeDuplicateHash,
   guardDuplicateComment,
   guardDuplicateMessage,
+  isChatDuplicateCandidate,
   isDuplicate,
 } from "../social/duplicate-content-guard";
 import { Collections } from "../shared/collections";
@@ -335,6 +336,173 @@ const cases: UnitCase[] = [
         "recipe_comments/{commentId}",
         "the comment guard's path must not have moved",
       );
+    },
+  },
+  // BUT-1904. `isChatDuplicateCandidate` decides two different things in two
+  // different files: whether the guard opens a transaction, and whether
+  // `syncConversationLastMessage` re-reads a create before projecting it. Each
+  // rejection reason gets its own case, because a predicate that returned false
+  // for the wrong reason would still look right from either caller.
+  {
+    name: "BUT-1904: an ordinary long text message is a candidate",
+    fn: () => {
+      // The control. Without it every case below could pass because the
+      // predicate answers false to everything.
+      assertEqual(
+        isChatDuplicateCandidate({
+          type: "text",
+          content: "Jag kommer klockan sju ikvall",
+          conversationId: "conv-1",
+        }),
+        true,
+        "a long text message in a conversation must be a candidate",
+      );
+    },
+  },
+  {
+    name: "BUT-1904: an absent type counts as text",
+    fn: () => {
+      // The create rule requires senderId, conversationId, content and sentAt
+      // — never `type` — so a client may legitimately omit it.
+      assertEqual(
+        isChatDuplicateCandidate({
+          content: "Jag kommer klockan sju ikvall",
+          conversationId: "conv-1",
+        }),
+        true,
+        "a message with no type must be treated as text",
+      );
+    },
+  },
+  {
+    // The type test is TRUTHINESS, not `!== undefined`, and the difference is
+    // every falsy value that is not `undefined`.
+    //
+    // Not a new rule: the trigger has read `if (type && type !== "text")` since
+    // 2026-05-04, and extracting it into a shared predicate silently changed it
+    // to `!== undefined` — a regression against three months of production
+    // semantics, which flipped a stored `null` or `""` from guarded to skipped.
+    // Only `undefined` was pinned, and `undefined` is green under either
+    // spelling, so the suite could not tell them apart. Found by the
+    // testing-specialist gate; the label "unpinned new behaviour" was corrected
+    // to "unpinned regression" by one `git show HEAD:` on the call site.
+    name: "BUT-1904: a null, empty or non-string type counts as text",
+    fn: () => {
+      for (const type of [null, "", 0, false]) {
+        assertEqual(
+          isChatDuplicateCandidate({
+            type: type as unknown as string | undefined,
+            content: "Jag kommer klockan sju ikvall",
+            conversationId: "conv-1",
+          }),
+          true,
+          `a stored ${JSON.stringify(type)} type must be treated as text`,
+        );
+      }
+    },
+  },
+  {
+    name: "BUT-1904: a system row is not a candidate",
+    fn: () => {
+      assertEqual(
+        isChatDuplicateCandidate({
+          type: "system",
+          content: "Malin har lagts till i gruppen",
+          conversationId: "conv-1",
+        }),
+        false,
+        "group system rows share one author and must never be hashed",
+      );
+    },
+  },
+  {
+    name: "BUT-1904: a share card is not a candidate",
+    fn: () => {
+      assertEqual(
+        isChatDuplicateCandidate({
+          type: "recipeShare",
+          content: "Kottbullar med potatismos",
+          conversationId: "conv-1",
+        }),
+        false,
+        "the same recipe share sent twice is a legitimate repeat",
+      );
+    },
+  },
+  {
+    name: "BUT-1904: a message with no conversationId is not a candidate",
+    fn: () => {
+      assertEqual(
+        isChatDuplicateCandidate({
+          type: "text",
+          content: "Jag kommer klockan sju ikvall",
+        }),
+        false,
+        "without a conversation the key would fall back to the global one",
+      );
+    },
+  },
+  {
+    name: "BUT-1904: the length floor is measured in NFC, on the trimmed body",
+    fn: () => {
+      // Under the floor of 12 once trimmed, over it if the trim were skipped —
+      // which is the whole claim. (An earlier version of this comment counted
+      // the characters and got it wrong; the count is not what carries it.)
+      assertEqual(
+        isChatDuplicateCandidate({
+          type: "text",
+          content: "   hej pa dig   ",
+          conversationId: "conv-1",
+        }),
+        false,
+        "the floor must be measured after trimming",
+      );
+      // The fixture STRADDLES the floor, and it has to. "hejsan da alla" was
+      // here first: 14 in NFC and 15 in NFD, both over 12, so the predicate
+      // answered true either way and this assertion held with the
+      // normalisation deleted — it measured nothing. Found by the
+      // testing-specialist gate.
+      //
+      // "hej da alla" is 11 in NFC and 12 in NFD, because the a-ring
+      // decomposes into two code points. Without the normalisation the two
+      // spellings of one visible string land on OPPOSITE sides of the floor,
+      // which is the only shape that can fail.
+      const nfc = "hej då alla";
+      const nfd = nfc.normalize("NFD");
+      assertEqual(
+        nfc === nfd,
+        false,
+        "the fixture must actually differ between the two forms",
+      );
+      assertEqual(
+        isChatDuplicateCandidate({
+          type: "text",
+          content: nfd,
+          conversationId: "conv-1",
+        }),
+        isChatDuplicateCandidate({
+          type: "text",
+          content: nfc,
+          conversationId: "conv-1",
+        }),
+        "NFC and NFD spellings must sit on the same side of the floor",
+      );
+    },
+  },
+  {
+    name: "BUT-1904: a short acknowledgement is not a candidate",
+    fn: () => {
+      for (const body of ["?", "ok", "ja", "nej", "haha", "okej då"]) {
+        assertEqual(
+          isChatDuplicateCandidate({
+            type: "text",
+            content: body,
+            conversationId: "conv-1",
+          }),
+          false,
+          `"${body}" is ordinary conversation and must never be hashed`,
+        );
+      }
     },
   },
 ];

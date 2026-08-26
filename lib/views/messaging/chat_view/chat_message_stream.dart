@@ -231,7 +231,13 @@ class _ChatMessageStreamState extends State<ChatMessageStream> {
         // answers false exactly as a bare `!=` would.
         // Replacing one element is cheap either way: `setState` already fires
         // unconditionally in the stream listener.
+        // `type` is in the list because of BUT-1904: the duplicate guard
+        // rewrites a message's type in place. Its mark also empties `content`,
+        // so the first test would usually catch it anyway — usually is not a
+        // guarantee, and a row that keeps its old text while claiming to be
+        // blocked is the failure that would follow.
         if (_messages[index].content != newMsg.content ||
+            _messages[index].type != newMsg.type ||
             _messages[index].status != newMsg.status ||
             _messages[index].readAt != newMsg.readAt ||
             !mapEquals(_messages[index].metadata, newMsg.metadata)) {

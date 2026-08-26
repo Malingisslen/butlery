@@ -89,6 +89,26 @@ enum MessageType {
   /// Allows users to create questions with multiple options that
   /// other participants can vote on within the conversation.
   poll,
+
+  /// A message the server's duplicate guard stopped (BUT-1904).
+  ///
+  /// Written by `guardDuplicateMessage`, which empties `content` and stamps
+  /// this type instead of deleting the document. The row carries no text: the
+  /// sentence the sender reads is a localized UI string, not stored data.
+  ///
+  /// "Written by", not "written only by": the `messages` create rule places no
+  /// constraint on `type`, so a hand-rolled client can stamp its own message
+  /// this way. It reaches nobody — every other participant's client drops the
+  /// row, and the update rule then freezes it — but it is not an invariant.
+  ///
+  /// The sender-only rule is applied in `MessagingService`, on the two
+  /// conversation read paths. `searchMessages` does not go through it; a
+  /// blocked row cannot match a non-empty query anyway, since its content is
+  /// empty.
+  ///
+  /// The wire value is `name`, so this must stay spelled exactly as
+  /// `DUPLICATE_BLOCKED_TYPE` in `functions/src/social/duplicate-content-guard.ts`.
+  duplicateBlocked,
 }
 
 /// Enumeration defining comprehensive message delivery status lifecycle for messaging infrastructure tracking.
@@ -142,6 +162,7 @@ extension MessageTypeExtension on MessageType {
       MessageType.image => l.messageTypeImage,
       MessageType.voice => l.messageTypeVoice,
       MessageType.poll => l.messageTypePoll,
+      MessageType.duplicateBlocked => l.messageTypeDuplicateBlocked,
     };
   }
 
@@ -159,6 +180,7 @@ extension MessageTypeExtension on MessageType {
     MessageType.image => '📷',
     MessageType.voice => '🎤',
     MessageType.poll => '📊',
+    MessageType.duplicateBlocked => '🚫',
   };
 }
 

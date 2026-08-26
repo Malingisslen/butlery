@@ -8,16 +8,40 @@ void main() {
   ModelTestBase.testModelGroup('MessageType', () {
     group('MessageType Enum', () {
       test('should have all expected message types', () {
-        expect(MessageType.values.length, equals(8));
-        expect(MessageType.values, contains(MessageType.text));
-        expect(MessageType.values, contains(MessageType.recipeShare));
-        expect(MessageType.values, contains(MessageType.menuShare));
-        expect(MessageType.values, contains(MessageType.shoppingListShare));
-        expect(MessageType.values, contains(MessageType.system));
-        expect(MessageType.values, contains(MessageType.image));
-        expect(MessageType.values, contains(MessageType.voice));
-        expect(MessageType.values, contains(MessageType.poll));
+        // The whole SET in one assertion, rather than a count plus a list of
+        // `contains`. The count was a separate fact that had to be kept in step
+        // by hand, and BUT-1904 falsified it by adding a ninth member — a
+        // failure that says "Expected: <8> Actual: <9>" and names neither the
+        // value nor the change. This form catches an addition AND a removal,
+        // and prints which.
+        expect(
+          MessageType.values.toSet(),
+          equals({
+            MessageType.text,
+            MessageType.recipeShare,
+            MessageType.menuShare,
+            MessageType.shoppingListShare,
+            MessageType.system,
+            MessageType.image,
+            MessageType.voice,
+            MessageType.poll,
+            MessageType.duplicateBlocked,
+          }),
+        );
       });
+
+      // BUT-1904. The wire value is `name`, and the server writes the string
+      // itself — `DUPLICATE_BLOCKED_TYPE` in
+      // functions/src/social/duplicate-content-guard.ts. A rename on this side
+      // alone would leave every blocked row parsing as `MessageType.text`,
+      // because `MessageDto.fromMap` falls back rather than throwing: an empty
+      // ordinary bubble where the notice should be, with nothing red anywhere.
+      test(
+        'duplicateBlocked serializes as the exact string the server writes',
+        () {
+          expect(MessageType.duplicateBlocked.name, equals('duplicateBlocked'));
+        },
+      );
 
       test('should have correct Swedish display names', () {
         expect(MessageType.text.displayName, equals('Textmeddelande'));
@@ -30,6 +54,7 @@ void main() {
         expect(MessageType.system.displayName, equals('Systemmeddelande'));
         expect(MessageType.image.displayName, equals('Bild'));
         expect(MessageType.voice.displayName, equals('Röstmeddelande'));
+        expect(MessageType.duplicateBlocked.displayName, equals('Stoppat'));
       });
 
       test('should have appropriate emoji icons', () {

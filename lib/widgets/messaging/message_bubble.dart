@@ -101,9 +101,26 @@ class _MessageBubbleState extends State<MessageBubble>
   bool get _isFromCurrentUser =>
       widget.message.isFromCurrentUser(widget.currentUserId);
   bool get _isSystemMessage => widget.message.isSystemMessage;
+  bool get _isDuplicateBlocked =>
+      widget.message.type == MessageType.duplicateBlocked;
 
   @override
   Widget build(BuildContext context) {
+    // BUT-1904. Before everything below, which means the row gets none of the
+    // bubble furniture: no sender side, no avatar, no timestamp, no delivery
+    // ticks, no reactions (any written before the mark stay on the document and
+    // are simply not drawn), no swipe-to-reply and no long-press menu. Its text
+    // comes from the ARB rather than from the document, which stores none.
+    //
+    // Losing the long-press menu means the sender cannot delete the row from
+    // inside the app, even though `firestore.rules` allows it. That menu is
+    // dead for every message type today for an unrelated reason, so restoring
+    // it here would not help; see the note in ADR-0009.
+    if (_isDuplicateBlocked) {
+      return RepaintBoundary(
+        child: SystemMessageWidget(content: context.l10n.chatDuplicateBlocked),
+      );
+    }
     if (_isSystemMessage) {
       return RepaintBoundary(child: _buildSystemMessage(context));
     }
@@ -343,9 +360,17 @@ class _MessageBubbleState extends State<MessageBubble>
     final replyTo = widget.replyToMessage;
     if (replyTo == null) return const SizedBox.shrink();
 
+    // BUT-1904: the same answer `ReplyBanner` gives, because this is the same
+    // question. `displayContent` returns '' for a blocked row — it has no
+    // `BuildContext` and the row stores no text — and unlike the composer
+    // banner this path IS reachable: reply to a message, and the guard marks it
+    // a moment later. Only the sender can see it, since the target is filtered
+    // out of everyone else's list.
     return ReplyPreviewWidget(
       senderName: replyTo.senderDisplayName,
-      content: replyTo.displayContent,
+      content: replyTo.type == MessageType.duplicateBlocked
+          ? context.l10n.chatDuplicateBlocked
+          : replyTo.displayContent,
       isFromCurrentUser: _isFromCurrentUser,
     );
   }

@@ -118,6 +118,16 @@ class ReplyBanner extends StatelessWidget {
         return context.l10n.messagingRecipePreview(
           title ?? context.l10n.recipeRecipe,
         );
+      case MessageType.duplicateBlocked:
+        // BUT-1904. Named rather than left to the `default` below, which would
+        // preview a blocked row as an empty string: it stores no content.
+        //
+        // Both routes to a reply target are closed for such a row today — the
+        // swipe gesture and the long-press menu both sit below `MessageBubble`'s
+        // early return — so this is defence rather than a live path. Do not
+        // reduce that to "the swipe is unreachable": the menu is the half that
+        // would come back first if the long-press gap is ever fixed.
+        return context.l10n.chatDuplicateBlocked;
       default:
         return message.content;
     }

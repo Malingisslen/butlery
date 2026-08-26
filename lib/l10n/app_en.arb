@@ -11924,5 +11924,10 @@
         "type": "int"
       }
     }
-  }
+  },
+  "chatDuplicateBlocked": "You have already sent this",
+  "@chatDuplicateBlocked": {
+    "description": "BUT-1904: shown in the sender's own thread, where a message the server-side duplicate guard stopped would have been. Sender-only; the message document stores no text."
+  },
+  "messageTypeDuplicateBlocked": "Blocked"
 }

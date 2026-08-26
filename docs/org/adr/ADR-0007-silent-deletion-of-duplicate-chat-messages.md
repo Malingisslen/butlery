@@ -1,7 +1,7 @@
 # ADR-0007: Switching on the chat duplicate guard means deleting people's messages without telling them
 
 - **Date:** 2026-08-19
-- **Status:** Decided — escalated to Malin, answered 2026-08-19
+- **Status:** Decided — escalated to Malin, answered 2026-08-19. **Superseded in part by [ADR-0009](ADR-0009-the-duplicate-guard-marks-instead-of-deleting.md) (2026-08-26): the guard no longer DELETES a duplicate, it empties and marks it. Everything else here stands.**
 - **Trigger:** BUT-1898 (repoint `guardDuplicateMessage` to the top-level `messages` collection) reviewed together with BUT-1896 (`sentAt is timestamp` on the messages create rule)
 - **Blast-radius tier:** full-panel
 - **Stakeholders seated:** Trust & Safety / Content Moderation, Product Manager, Security Architect, Privacy / Data Protection Officer (GDPR), Financial Controller / FinOps, Codebase Archaeologist
@@ -151,5 +151,11 @@ the conditions above do not touch it: the text is over the floor, it is the same
 conversation, and it is the same person. Recorded here rather than fixed, because the honest
 fix is the sender signal that the flag is waiting on: with a signal, the user sees why. Added
 after the fact, from the implementing review — the panel did not raise it.
+
+**That signal landed on 2026-08-26 (BUT-1904, ADR-0009).** The false positive itself is
+unchanged — the resend is still stopped — but it is no longer SILENT: the sender gets a row
+where the message would have been, and the message document survives rather than being
+deleted. Read every "deleted"/"silently" in this file as "emptied and marked" from that date
+on.
 
 Advisory only. Malin decides.

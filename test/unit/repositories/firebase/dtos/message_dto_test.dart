@@ -136,6 +136,23 @@ void main() {
       expect(restored.type, MessageType.text);
     });
 
+    // BUT-1904. The guard writes this string server-side, through the Admin
+    // SDK, so nothing on the Dart side produces it — which is exactly why it
+    // needs pinning: the case above proves an unrecognised type is silently
+    // read as `text`, so a spelling drift here would land a blocked row in the
+    // thread as an empty ordinary bubble with no error anywhere.
+    test(
+      'the duplicateBlocked string the server writes parses to the enum',
+      () {
+        final map = MessageDto.toMap(_message());
+        map['type'] = 'duplicateBlocked';
+        map['content'] = '';
+        final restored = MessageDto.fromMap(map);
+        expect(restored.type, MessageType.duplicateBlocked);
+        expect(restored.content, isEmpty);
+      },
+    );
+
     test('unknown status string falls back to MessageStatus.sent', () {
       final map = MessageDto.toMap(_message());
       map['status'] = 'totally-unknown-status';

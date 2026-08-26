@@ -3,22 +3,34 @@
  *
  * Triggers on `recipe_comments/{commentId}` and `messages/{messageId}` — the
  * latter TOP-LEVEL, which it was not until BUT-1898; see the note on
- * `guardDuplicateMessage` below. Computes a content hash and rejects (deletes)
- * the new doc if the same hash was already submitted by the same user within
- * the configured window (default: 5 min).
+ * `guardDuplicateMessage` below. Computes a content hash and rejects the new
+ * doc if the same hash was already submitted by the same user within the
+ * configured window (default: 5 min).
  *
  * The two surfaces are NOT symmetric, and the asymmetry is the decision:
  *
  *   · COMMENTS — key is `authorId:body`, global per user, no length floor, no
- *     flag. Those four settings are unchanged since 2026-05-04. The duplicate
- *     TEST underneath them did change in BUT-1898 (ordering rather than event
- *     id, and entries stamped from the document's own createTime), for both
- *     surfaces — so "unchanged" is about the surface's settings, not about the
- *     whole code path.
- *   · CHAT — key is `conversationId:authorId:body`, a 12-character floor, and a
- *     Remote Config kill switch that ships OFF. Chat is higher-velocity and its
- *     most-repeated strings ("ok", "ja") are conversation rather than spam, so
- *     the comment surface's settings would delete ordinary messages.
+ *     flag, and rejection DELETES. Those five settings are unchanged since
+ *     2026-05-04. The duplicate TEST underneath them did change in BUT-1898
+ *     (ordering rather than event id, and entries stamped from the document's
+ *     own createTime), for both surfaces — so "unchanged" is about the
+ *     surface's settings, not about the whole code path.
+ *   · CHAT — key is `conversationId:authorId:body`, a 12-character floor, a
+ *     Remote Config kill switch that ships OFF, and rejection MARKS rather than
+ *     deletes. Chat is higher-velocity and its most-repeated strings ("ok",
+ *     "ja") are conversation rather than spam, so the comment surface's
+ *     settings would stop ordinary messages.
+ *
+ * WHY CHAT MARKS AND COMMENTS DELETE (BUT-1904, ADR-0009). A deleted chat
+ * message is indistinguishable, to the person who sent it, from the app losing
+ * it — and the commonest reason anybody sends the same text twice is believing
+ * the first send failed. So a rejected chat message is emptied and stamped
+ * `duplicateBlocked` instead: the text leaves Firestore, the document stays, and
+ * the sender's own client draws a localized row in its place. Keeping the
+ * document is also what removes the `syncConversationLastMessage` race that
+ * BUT-1898 shipped with — nothing on this path disappears any more, so no
+ * trigger can be left pointing at a document that no longer exists.
+ * Do NOT "simplify" the two surfaces back into one action.
  *
  * Why server-side and not Firestore rules: rules cannot efficiently
  * inspect time-windowed lists. The trigger writes a small per-user
@@ -56,7 +68,7 @@ const MAX_RECENT_HASHES = 20;
  *
  * Two conditions from the same panel land on this one number. Trust & Safety
  * and Product: "ok", "ja", "nej", "?" are the most-repeated strings in a real
- * chat and the least likely to be spam, so a guard without a floor deletes
+ * chat and the least likely to be spam, so a guard without a floor stops
  * ordinary conversation. FinOps: a one-word reply must never open a Firestore
  * transaction.
  *
@@ -75,6 +87,61 @@ const MAX_RECENT_HASHES = 20;
  * and changing a live surface is not this ticket.
  */
 const MIN_CHAT_BODY_CHARS = 12;
+
+/**
+ * The `type` a rejected CHAT message carries once the guard has emptied it
+ * (BUT-1904). Exported so the one other trigger on this collection —
+ * `syncConversationLastMessage` — spells it the same way; two string literals
+ * for one wire value is how a preview starts showing blocked rows.
+ *
+ * The Dart side is `MessageType.duplicateBlocked`, serialized by `.name`, so
+ * this string and that enum value must stay identical.
+ */
+export const DUPLICATE_BLOCKED_TYPE = "duplicateBlocked";
+
+/**
+ * Whether a message document is one the CHAT guard could act on at all.
+ *
+ * ONE definition, two callers, and that is the point: `guardDuplicateMessage`
+ * uses it to decide whether to open a transaction, and
+ * `syncConversationLastMessage` uses it to decide whether a CREATE is worth
+ * re-reading before it projects a preview. That trigger re-reads on every
+ * update it might act on regardless — an update can be edited out of candidacy
+ * between the create and the mark, which is a hole it measured and closed.
+ *
+ * Written twice, the two would drift and the sync trigger would start
+ * trusting a payload the guard is about to rewrite.
+ *
+ * The `type` test is what keeps the group system rows out: they carry
+ * `type: "system"` and `senderId: "system"`, so without it every group in the
+ * app would collide on one hash. Recipe shares, images and polls are exempt for
+ * a different reason — the same share sent twice is a legitimate repeat. Do not
+ * widen the type filter without thinking about the system rows again: the key
+ * has a conversation component now, but those rows would still share an author.
+ *
+ * An ABSENT, null or empty `type` counts as text, matching the create rule,
+ * which requires `senderId`, `conversationId`, `content` and `sentAt` but never
+ * `type`.
+ *
+ * The length floor is measured after `.trim().normalize("NFC")`, the same
+ * expression the hash uses — an NFD string counts a combining mark as its own
+ * character, so the identical visible message would otherwise sit on different
+ * sides of the floor depending on the sender's keyboard.
+ */
+export function isChatDuplicateCandidate(data: {
+  type?: string;
+  content?: string;
+  conversationId?: string;
+}): boolean {
+  // Truthiness, not an `!== undefined` test. A stored `null` or `""` counts
+  // as text — the shape the trigger has always guarded, and an `!== undefined`
+  // test silently flipped both to SKIPPED when this moved into a shared
+  // predicate. Measured by the cloud-functions gate on this change.
+  if (data.type && data.type !== "text") return false;
+  if (!data.content) return false;
+  if (!data.conversationId) return false;
+  return data.content.trim().normalize("NFC").length >= MIN_CHAT_BODY_CHARS;
+}
 
 interface RecentHash {
   hash: string;
@@ -104,7 +171,7 @@ interface RecentContentDoc {
  *
  * `scope` (BUT-1898) narrows the key beyond the author. Without it the key is
  * global per user, so the same text sent to two DIFFERENT people within the
- * window collides and the second is deleted — an ordinary chat pattern, not
+ * window collides and the second is rejected — an ordinary chat pattern, not
  * spam. Chat passes the conversation id; comments pass nothing and keep the
  * global key they have run on in production since 2026-05-04.
  */
@@ -187,8 +254,10 @@ export function isDuplicate(
       // upstream had made the boundary unreachable, so the stated failure was
       // not the one a flip would produce.
       //
-      // What `<=` would actually do is delete ONE of two DIFFERENT messages
+      // What `<=` would actually do is REJECT one of two DIFFERENT messages
       // with the same hash created in the same millisecond — the inverse.
+      // (Rejection is a delete on the comment surface and a mark on the chat
+      // surface since BUT-1904; this comparator is shared and does not care.)
       // One, not both: a rejected document returns before `appendAndPrune`,
       // so it never writes its own entry and cannot condemn its twin back.
       //
@@ -216,7 +285,7 @@ export function isDuplicate(
       // at microsecond granularity in PRODUCTION is inferred from its
       // documented Timestamp precision, not measured here.
       //
-      // It fails toward not-deleting. Two routes close it, and neither is a
+      // It fails toward not-rejecting. Two routes close it, and neither is a
       // comparator flip:
       //
       //   · store `createTime` itself instead of `Timestamp.fromMillis` — the
@@ -289,7 +358,14 @@ async function evaluateAndRecord(args: {
   /** BUT-1898: narrows the key beyond the author. Chat passes the
    * conversation id; comments pass nothing. */
   scope?: string;
-}): Promise<"accepted" | "rejected" | "retry-noop"> {
+  /**
+   * What rejection DOES. `delete` destroys the document; `mark` empties it and
+   * stamps `DUPLICATE_BLOCKED_TYPE`, leaving the row in place so the sender's
+   * client can draw a reason where the message sat. See the file header for why
+   * the two surfaces differ (BUT-1904).
+   */
+  rejectAction: "delete" | "mark";
+}): Promise<"accepted" | "rejected" | "retry-noop" | "gone"> {
   const {
     authorId,
     body,
@@ -299,6 +375,7 @@ async function evaluateAndRecord(args: {
     eventId,
     selfCreatedAtMs,
     scope,
+    rejectAction,
   } = args;
   if (!authorId || !body || !body.trim()) return "accepted";
 
@@ -328,7 +405,7 @@ async function evaluateAndRecord(args: {
 
     // Self-retry detection: if THIS exact event already wrote the hash on
     // a previous at-least-once delivery, treat as a no-op so we don't
-    // delete the user's legitimate doc on retry.
+    // reject the user's legitimate doc on retry.
     const selfWrite = recent.find(
       (e) => e.eventId === eventId && e.hash === hash,
     );
@@ -342,14 +419,47 @@ async function evaluateAndRecord(args: {
 
     const now = admin.firestore.Timestamp.now();
     if (isDuplicate(hash, recent, now.toMillis(), windowMs, selfCreatedAtMs)) {
-      // Reject: delete the just-created doc so it never reaches readers.
-      tx.delete(docRef);
+      if (rejectAction === "delete") {
+        // Reject: delete the just-created doc so it never reaches readers.
+        tx.delete(docRef);
+      } else {
+        // Reject by MARKING (BUT-1904). The text is what must not reach the
+        // other participants, so `content` is emptied here rather than in any
+        // client: the row that survives carries no message, and the sentence
+        // the sender reads is drawn from their own app's ARB.
+        //
+        // `tx.update`, never `tx.set(..., {merge: true})`: a sender who deletes
+        // the message between the create and this trigger must not have it
+        // written back, and a merge-set would RESURRECT it. That property comes
+        // from the VERB, not from the read below — measured: `tx.update` on a
+        // missing document throws NOT_FOUND and the document stays absent. An
+        // earlier version of this comment credited the read for it.
+        //
+        // What the READ buys is the difference between a clean no-op and a
+        // burnt transaction attempt plus a spurious `logger.error` on an
+        // ordinary user action. Inside the branch because the accept path must
+        // not pay for it; Firestore only requires that every read precede every
+        // write, and no write has happened yet.
+        const live = await tx.get(docRef);
+        if (!live.exists) {
+          logger.debug(
+            `[duplicate-content-guard] ${surface} ${docRef.id} vanished ` +
+              `before it could be marked (event=${eventId})`,
+          );
+          return "gone" as const;
+        }
+        tx.update(docRef, {
+          type: DUPLICATE_BLOCKED_TYPE,
+          content: "",
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+      }
       // BUT-1822 / accepted-deviations: a `direct_` conversation id is two
       // raw uids, and this line only started carrying one when BUT-1898
       // repointed the chat trigger. The author uid is hashed for the same
       // reason — both are stable handles that still correlate across lines.
       logger.info(
-        `[duplicate-content-guard] Rejected ${surface} from ` +
+        `[duplicate-content-guard] Rejected (${rejectAction}) ${surface} from ` +
           `${hashUid(authorId)} (hash=${hash}, doc=${docRef.id}` +
           `${scope ? `, conversation=${logSafeConversationId(scope)}` : ""}` +
           `, event=${eventId})`,
@@ -406,6 +516,8 @@ export const guardDuplicateComment = onDocumentCreated(
         windowMs: DEFAULT_WINDOW_MS,
         eventId: event.id,
         selfCreatedAtMs: selfCreatedAtMs(event.data!),
+        // Unchanged since 2026-05-04. BUT-1904 changed the CHAT action only.
+        rejectAction: "delete",
       });
     } catch (err) {
       // Open-by-default: leave the comment intact if the guard errors.
@@ -431,17 +543,22 @@ export const guardDuplicateComment = onDocumentCreated(
  * chat history while the cascade reported success. If you are here changing a
  * trigger path, check the writers rather than the neighbouring code.
  *
- * RACE WITH `syncConversationLastMessage`, and it is narrower than it looks.
- * That trigger is `onDocumentWritten` on the same collection, so both wake on
- * this create with no ordering guarantee between them, each working from its
- * own captured payload rather than re-reading. Its DELETE branch recomputes
- * the preview, so the ordinary interleaving self-corrects. The one that sticks
- * is: our delete lands, the sync trigger processes that delete, and only THEN
- * the sync trigger's CREATE-side invocation writes `lastMessage` from its
- * stale payload — pointing at a document that no longer exists, with nothing
- * left to fire and fix it. The preview stays wrong until the next real message
- * in that conversation. Not fixed here; the flag exists partly so this can be
- * turned off if it shows up.
+ * REJECTION MARKS, IT DOES NOT DELETE (BUT-1904, ADR-0009). The message is
+ * emptied and stamped `DUPLICATE_BLOCKED_TYPE`; the sender's own client draws a
+ * localized row where it sat, and no other participant is shown anything. The
+ * file header carries the reasoning.
+ *
+ * RACE WITH `syncConversationLastMessage`. That trigger is `onDocumentWritten`
+ * on the same collection, so it wakes on this create, on our mark, and on every
+ * read receipt and edit that follows — with no ordering guarantee between those
+ * invocations, each holding its own captured payload. Two things stop it
+ * landing wrong: a marked message still EXISTS, so no preview can point at a
+ * destroyed document; and that trigger re-reads inside its transaction before
+ * projecting, so a payload we are in the middle of rewriting cannot win a race
+ * against the invocation that sees the finished state. Both halves live over
+ * there — see its own header, which is also where the two measured holes in
+ * earlier versions of this fix are recorded. Do not reintroduce a delete on
+ * this path without reading that trigger first.
  */
 export const guardDuplicateMessage = onDocumentCreated(
   "messages/{messageId}",
@@ -452,22 +569,15 @@ export const guardDuplicateMessage = onDocumentCreated(
     const content = data.content as string | undefined;
     const type = data.type as string | undefined;
     const conversationId = data.conversationId as string | undefined;
-    // Only text messages are subject to dup detection — recipe shares,
-    // images, polls etc. are exempt because the same recipe-share is a
-    // legitimate repeat send. This is also what keeps the group system rows
-    // ("X har lagts till i gruppen") out: they carry `type: "system"` and
-    // `senderId: "system"`, so without this line every group in the app would
-    // collide on one hash. Do not widen the type filter without giving the key
-    // a conversation component first — it has one now, but the system rows
-    // would still share an author.
-    if (type && type !== "text") return;
     if (!senderId || !content) return;
 
     // The conversation id is the duplicate key's scope. A message without one
     // is SKIPPED rather than falling back to the author-only key: the create
     // rule guarantees the field for client writes, but Admin-SDK writers
     // bypass rules, and a silent fallback lands on exactly the global key
-    // BUT-1898 exists to remove — it would fail to the unsafe side.
+    // BUT-1898 exists to remove — it would fail to the unsafe side. Warned
+    // separately from the candidate test below, which returns false for the
+    // same input but cannot say why.
     if (!conversationId) {
       logger.warn(
         "[duplicate-content-guard] Message has no conversationId; skipping",
@@ -476,20 +586,17 @@ export const guardDuplicateMessage = onDocumentCreated(
       return;
     }
 
-    // Cheapest checks first, both BEFORE any Firestore work.
-    //
-    // The length floor is the panel's condition and FinOps's in one: short
-    // acknowledgements are the most-repeated and least-spammy strings in a
-    // real chat, and a one-word reply must never open a transaction.
-    // Normalised before measuring, for the same reason the hash is: an NFD
-    // string counts a combining mark as its own character, so the identical
-    // visible message would sit on different sides of the floor depending on
-    // the sender's keyboard.
-    if (content.trim().normalize("NFC").length < MIN_CHAT_BODY_CHARS) return;
+    // Type filter and length floor, both BEFORE any Firestore work — the
+    // floor is the panel's false-positive condition and FinOps's cost
+    // condition in one: short acknowledgements are the most-repeated and
+    // least-spammy strings in a real chat, and a one-word reply must never
+    // open a transaction. `isChatDuplicateCandidate` holds the reasoning and
+    // is shared with `syncConversationLastMessage` (BUT-1904).
+    if (!isChatDuplicateCandidate({ type, content, conversationId })) return;
 
-    // The kill switch. Ships OFF, and per the plan it stays off until a
-    // sender-visible signal exists — a deleted message currently just
-    // vanishes, with nothing in the app to explain it.
+    // The kill switch. Ships OFF. BUT-1904 landed the sender-visible signal
+    // that it was waiting on, so the condition holding it off is met — but
+    // turning it on is an explicit decision, not an implication of that.
     if (!(await isChatDuplicateGuardEnabled())) return;
 
     try {
@@ -502,6 +609,7 @@ export const guardDuplicateMessage = onDocumentCreated(
         eventId: event.id,
         selfCreatedAtMs: selfCreatedAtMs(event.data!),
         scope: conversationId,
+        rejectAction: "mark",
       });
     } catch (err) {
       logger.error("[duplicate-content-guard] Message evaluation failed", err);

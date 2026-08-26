@@ -9,15 +9,16 @@
  * OPPOSITE failure contract, which is the whole reason this is a separate file
  * rather than a reuse of that one:
  *
- *   · RC readable, flag literal "true"  -> true. Delete duplicates.
+ *   · RC readable, flag literal "true"  -> true. Reject duplicates.
  *   · RC readable, flag absent/anything -> false. Feature off.
  *   · RC UNREACHABLE                    -> false, logged, NOT cached.
  *
  * Pooled ratings THROWS on an unreachable template, because there the
  * indeterminate state must not silently drop a user's vote and the caller
- * retries. Here the action on "enabled" is `tx.delete()` on a message somebody
- * just sent, so not-acting is the safe direction: the worst case is that one
- * duplicate survives an RC blip, which is exactly what happens today anyway.
+ * retries. Here the action on "enabled" is to empty and mark a message somebody
+ * just sent (BUT-1904; it was `tx.delete()` until then), so not-acting is the
+ * safe direction: the worst case is that one duplicate survives an RC blip,
+ * which is exactly what happens today anyway.
  * Throwing instead would hand the trigger an error that `onDocumentCreated`
  * without `retry` simply drops — the same outcome plus a spurious alert.
  *
@@ -102,7 +103,7 @@ async function defaultLoader(): Promise<boolean> {
 }
 
 /**
- * Whether the chat duplicate guard may delete. False when the flag is missing,
+ * Whether the chat duplicate guard may act on a duplicate. False when the flag is missing,
  * not the literal "true", or Remote Config cannot be reached.
  */
 export async function isChatDuplicateGuardEnabled(

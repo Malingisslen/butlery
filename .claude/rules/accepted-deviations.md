@@ -250,6 +250,35 @@ files in the same edit.
   Art. 15/17 note for the repair: the export probes only `metadata['poll'] is Map` while the
   cascade erases by collection group, so such a row is erasable but not exportable — cover
   both sides. BUT-1832, 2026-08-17
+- **The chat duplicate guard MARKS a duplicate; the comment guard DELETES one. The asymmetry
+  is the decision, not drift (BUT-1904, ADR-0009, Malin's explicit call 2026-08-26).** A
+  rejected chat message is emptied (`content: ""`) and stamped `type: "duplicateBlocked"` in
+  place; `senderId`, `conversationId` and `sentAt` are untouched, because `sentAt` is the row's
+  position in the thread. Its own sender sees a localized row there; every other participant's
+  client drops the row. `guardDuplicateComment` keeps `tx.delete`, its global per-author key,
+  no length floor and no flag — unchanged since 2026-05-04. Do not "simplify" the two surfaces
+  back into one action, and do not describe the client-side row filter as a privacy control:
+  the protection is that the SERVER removed the text, and the filter withholds only the fact
+  that a message was stopped — and only that: the text is gone by then, but NOT before the
+  document became readable, because the trigger is `onDocumentCreated` and runs after the
+  client's own write. Load-bearing parts, each of which dies alone: the guard uses `tx.update`
+  and never a merge-set, so a message its sender deleted first is not resurrected;
+  `firestore.rules` refuses a client update to an already-blocked message, or the sender could
+  write the duplicate text straight back in; `syncConversationLastMessage` tests `after.type`
+  for blocked-ness DIRECTLY, never behind the candidate gate — the mark's own invocation
+  arrives already carrying `duplicateBlocked`, so a gated test never runs and the `>=` tie rule
+  projects an empty preview; and its re-read covers UPDATES, not only creates, because the
+  read-receipt branch every recipient writes carries a PRE-MARK payload and a create-only
+  re-read let it put the duplicate's text back in everyone's preview (reproduced on the
+  emulator), and gating the UPDATE side on candidacy instead was the same hole again — a sender
+  trimming their message to "ok" edits it out of candidacy, skips the re-read and lands last on a
+  blocked row. Creates gate on candidacy; updates do not. Do not bound the read by gating on the
+  flag either — it caches per isolate for five minutes, so switching it on would leave a window
+  where one isolate marks while another skips.
+  The duplicate's TEXT is destroyed and is not recoverable from the row; that was weighed. And
+  the sender cannot DISMISS the row from inside the app — the rules allow the delete, no screen
+  reaches it. BUT-1904, 2026-08-26
+
 
 - **`inPollConversation()` reproduces only the MEMBERSHIP half of the message read rule, not
   BUT-1838's `memberSince` cut-off.** Measured 2026-08-17 on a group whose `memberSince`

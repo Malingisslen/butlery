@@ -27214,6 +27214,18 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'En grupp kan ha högst {max} medlemmar.'**
   String chatGroupTooManyMembers(int max);
+
+  /// BUT-1904: shown in the sender's own thread, where a message the server-side duplicate guard stopped would have been. Sender-only; the message document stores no text.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du har redan skickat det här'**
+  String get chatDuplicateBlocked;
+
+  /// No description provided for @messageTypeDuplicateBlocked.
+  ///
+  /// In sv, this message translates to:
+  /// **'Stoppat'**
+  String get messageTypeDuplicateBlocked;
 }
 
 class _AppLocalizationsDelegate

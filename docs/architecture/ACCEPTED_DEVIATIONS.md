@@ -2061,3 +2061,131 @@ grid draws no `CompactDietaryRow` when the card is handed dietary preferences an
 is FREE on a diet, and its control asserts the detailed layout still does — so a change that
 removed the row everywhere cannot pass as satisfying this decision.
 
+---
+
+## The chat duplicate guard marks; the comment guard deletes
+
+**BUT-1904 / ADR-0009, Malin's explicit call 2026-08-26.**
+
+`guardDuplicateMessage` no longer ends a duplicate with `tx.delete`. It empties the message
+(`content: ""`) and stamps `type: "duplicateBlocked"` in place. `senderId`, `conversationId`
+and `sentAt` are untouched — `sentAt` is the row's position in the thread, and the whole
+promise to the sender is a row where the message would have been. That sender sees a
+localized notice there; every other participant's client drops the row in
+`MessagingService._filterBlocked`.
+
+`guardDuplicateComment` is unchanged and still deletes: global per-author key, no length
+floor, no flag, live since 2026-05-04. The two surfaces now differ in five settings, and that
+is the decision. A duplicate one-word comment is spam; a duplicate one-word chat message is
+conversation, and a chat message that vanishes reads as the app losing it.
+
+**The full reasoning, the alternative it was chosen over, and what it costs are in
+[ADR-0009](../org/adr/ADR-0009-the-duplicate-guard-marks-instead-of-deleting.md).** Read it
+before arguing with any line here. In one sentence: marking also kills the
+`syncConversationLastMessage` race by construction, because nothing on this path is destroyed
+any more, and it keeps the row inside the Art. 15 export and the Art. 17 cascade with no new
+collection.
+
+### The parts that are load-bearing, and each die alone
+
+1. **The guard uses `tx.update` and never `tx.set(..., {merge: true})`.** A sender who deletes
+   the message between the create and the trigger must not have it written back, and a merge-set
+   would RESURRECT it — a deleted message reappearing, emptied and stamped, is worse than the
+   duplicate ever was. That property comes from the VERB: `tx.update` on a missing document
+   throws NOT_FOUND and the document stays absent.
+
+   *(Corrected 2026-08-26, before this landed: this item credited the transactional READ for the
+   property and cited D10 as pinning it. Both halves were wrong, and the two other copies of this
+   decision already said so — the code at `duplicate-content-guard.ts` and D10's own header, which
+   states it pins the OUTCOME and deliberately not the existence check. A future editor reading
+   only this file could have swapped the verb for a merge-set believing the read protected them.
+   What the read actually buys is a clean no-op instead of a burnt transaction attempt and a
+   spurious error log. Raised by the `integration-reviewer` gate.)*
+2. **`firestore.rules` refuses a client update to an already-blocked message.** The sender's
+   own update branch otherwise places no constraint on `type` and lets `content` become
+   anything, so without the conjunct the sender could write the duplicate text straight back
+   in and hand it to the other participants after all. Deleting a blocked row stays allowed by
+   the rules. Pinned in `cook-snaps-and-message-mod-rules.test.ts` with an ALLOW control on an
+   ordinary message by the same sender, and mutation-probed.
+
+   *(Corrected 2026-08-26, before this landed: that sentence read "Deleting a blocked row stays
+   allowed: that is how the notice is dismissed", with the test citation attached — which made
+   the false half read as proven. The rules test pins that the RULE allows the delete. It cannot
+   pin the dismissal, because no screen in the app reaches it: `MessageBubble` returns before it
+   installs the long-press gesture, and that menu is dead for every message type anyway. **The
+   sender cannot remove the row from inside the app.** See ADR-0009; whether the notice needs its
+   own dismiss control is Malin's call.)*
+3. **`syncConversationLastMessage` tests `after.type` for blocked-ness DIRECTLY, never behind
+   the candidate gate.** The mark's own invocation arrives already carrying
+   `duplicateBlocked`, which is not a duplicate-guard candidate — so a gated test never runs,
+   and `shouldReplaceLastMessage`'s `>=` tie rule then projects the blocked row and leaves
+   every participant with an empty preview. This was a real defect in the first draft of the
+   plan, caught by the plan auditor before any code was written. Pinned by the update-side
+   replay case, and mutation-probed.
+
+### What it costs, stated rather than implied
+
+The duplicate's TEXT is destroyed and cannot be recovered from the row. The same text is a
+few rows above — that it is the same text is why the row exists — but the copy is gone.
+Weighed and accepted.
+
+### Not a privacy control
+
+Hiding the row from the other participants is a UI rule. What protects them is that the
+SERVER removed the text; the client-side filter withholds only the bare fact that somebody's
+message was stopped.
+
+*(Corrected 2026-08-26, before this landed: that sentence read "removed the text before the
+document was ever readable". False — and this was the THIRD copy of it. The other two were struck
+first and this one was missed, which is exactly why a false claim gets swept file by file rather
+than fixed where you noticed it. `guardDuplicateMessage` is `onDocumentCreated`: the client
+commits the full text and the trigger runs after, so a participant with the thread open sees the
+duplicate until the mark propagates. Harm nil — it is the same text they received moments
+earlier, and it was equally true of the delete behaviour — but the guarantee did not exist.
+Raised by the `code-reviewer` gate, twice.)* Do not cite it as a
+boundary, and do not move it inside `_filterBlocked`'s fail-open try/catch — it is pure local
+logic with nothing to fetch and nothing to throw. Two different moves are possible (into the
+catch, or below the `filter == null` exit) and each has its own killing test; neither kills the
+other's, which is why both cases exist.
+
+### A fourth part, added after the first version of this entry
+
+**The sync trigger's re-read covers UPDATES, not only creates.** `messages` has a second update
+path — the read-receipt branch (`status`/`deliveredAt`/`readAt`/`updatedAt`) that every
+recipient's client writes seconds after every message it is online for. That invocation carries a
+PRE-MARK payload, so a create-only re-read skipped it and re-projected the blocked duplicate's
+TEXT to every participant. Reproduced against the emulator by the `cloud-functions-specialist`
+gate. Cost is bounded by running the two cheap checks (`sentAt` type, `shouldReplaceLastMessage`)
+BEFORE the read, so an invocation that cannot end in a write pays nothing. Do NOT bound it by
+gating on `enable_chat_duplicate_guard` instead: that flag caches per isolate for five minutes,
+so switching it on would leave a window where one isolate marks while another skips its re-read.
+
+**And do not gate the UPDATE side on candidacy either** — that was the second measured hole in the
+same design. The guard decides candidacy from the CREATE payload and marks regardless, while the
+sender update branch leaves `content` and `type` writable, so an update edited OUT of candidacy (a
+sender trimming their message to "ok", reachable from shipped UI) skipped the re-read and landed
+last on a blocked, emptied row. Creates stay gated on candidacy; updates re-read whenever they
+survive the cheap pre-read gate.
+
+**Every writer of the `messages` collection wakes this trigger** — client sends, the delayed
+`status: "sent"` self-update, receipts, edits, deletes, the guard's own mark, the group system
+rows, the profile-rename fan-out, and each leg of the GDPR cascade. That is why the gate is keyed
+on the KIND of write (`isDelete` / `payloadBlocked` / `!!before`) and not on a list of writers: a
+writer nobody thought of is closed for free. No count is given here on purpose — an earlier
+version of this very sentence said "the create, the mark, every read receipt and every edit —
+enumerate all four", which was itself a reasoned, incomplete enumeration embedded as the
+corrective. Measured 2026-08-26: at least eight writers, and the omitted ones were already safe.
+
+**The cost, accepted knowingly.** Every update that survives the pre-read gate pays one
+transactional read — on the newest message that is the delayed `status: "sent"` self-update plus
+each recipient's delivered and read receipts, so roughly two to three extra reads per message,
+permanently, including while the flag is OFF and nothing can be marked. The bulk writers
+(`onProfileUpdated`'s rename fan-out, the GDPR legs) are nearly free by comparison: the pre-read
+gate stops them at one read per CONVERSATION rather than one per message. The cheaper shape —
+gating on the flag — is refused above and must stay refused.
+
+**Two cosmetic consequences, listed so nobody rediscovers them as bugs.** A blocked row shrinks
+the loaded page, which can make `chat_message_stream`'s "you joined here" divider draw when the
+join point is actually off-screen; and a blocked row sits between two messages from the same
+sender, so `shouldShowAvatar` suppresses the avatar across it. Both are pre-existing consequences
+of BUT-544's block filter that this change widens, not new mechanisms.

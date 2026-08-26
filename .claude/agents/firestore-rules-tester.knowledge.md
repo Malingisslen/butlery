@@ -31,6 +31,7 @@ enters this file").
 | `/conversations/*` incl. `participants` roster, **and `/messages`** | `conversations-rules.test.ts` | `test:rules:conversations` |
 | `/chat_groups/{groupId}`              | `chat-groups-rules.test.ts` | `test:rules:chat-groups`  |
 | `messages/{id}/poll_votes/{voterUid}`, the messages RECEIPT `allow update`, **and `/shared_content` create** | `poll-votes-rules.test.ts` | `test:rules:poll-votes` |
+| `/cook_snaps`, the messages ADMIN read/delete clauses, **and the BUT-1904 `duplicateBlocked` freeze on the sender `allow update`** | `cook-snaps-and-message-mod-rules.test.ts` | `test:rules:cook-snaps-and-message-mod` |
 | All of the above                      | (sequence)                 | `test:rules:all`          |
 
 If the diff touches a collection not listed above, **create a new test file** named
@@ -134,7 +135,12 @@ Standard deny matrix for ownership-checked collections:
   a CEL error, denying every write through that branch (BUT-1788 `conversations.metadata`
   — the app writes `null` on every send via `ConversationDto.toFirestore`, never absent).
   Verified spelling that survives it: `(x.get(k,{}) is map ? x.get(k,{}).get(k2,null) :
-  null)` on both sides of a comparison.
+  null)` on both sides of a comparison. **A SINGLE `.get(k, d)` compared against a literal
+  is the safe shape and needs no guard** — measured on `messages.type` (BUT-1904): absent,
+  present-null, a number and a map all ANSWER the comparison rather than CEL-erroring, so
+  only an exact match denies. The hazard is the second `.get()`, never the first; still pin
+  all four states, because a wrong DEFAULT freezes every legacy row and nothing else catches
+  it.
 - **A `get(collection/{id})`-then-`.data.get()` chain needs an `exists()` guard or it
   fails OPEN on a missing doc**: `otherIsMinor(uid) = exists(users/{uid}) &&
   get(users/{uid}).data.get('isMinor', false)==true`. Same pattern for any "allowed only
@@ -208,6 +214,13 @@ Standard deny matrix for ownership-checked collections:
 - An `allow update` textually identical to `allow create` still needs its OWN allow
   test — a client `set()` on an existing doc is an update, and a toggle/edit path can
   live entirely there, unproven by create-side coverage alone.
+- **A conjunct on `resource.data.<f>` (PRE-state) is only proven by a payload that MOVES
+  `<f>`.** A deny whose payload leaves the field alone passes identically under
+  `request.resource.data.<f>` — the likeliest wrong edit, since both spellings read as "the
+  message's type" — so the suite stays green with the guard testing the attacker's own
+  input. Measured (BUT-1904): the three original tests survived that mutant whole; the case
+  that killed it was the sender writing the field itself. Pin the field-moving payload
+  beside the field-preserving one on every pre-state conjunct, immutability guards included.
 - **A rules change that TIGHTENS an existing gate makes every OLDER test on that path
   vacuous for a different reason, and the deny tests are the ones that hide it.** When a
   new conjunct sits ABOVE the one a test targeted, the test still denies — just not for

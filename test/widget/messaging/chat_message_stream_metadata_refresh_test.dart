@@ -274,6 +274,93 @@ void main() {
     );
   });
 
+  // BUT-1904: the same incremental-update path, one field along. The duplicate
+  // guard rewrites a message's `type` IN PLACE — same id, same sender, same
+  // sentAt — so if `type` is not among the fields the merge compares, the
+  // sender keeps looking at the message they already sent while the server has
+  // replaced it with a notice.
+  //
+  // The guard also empties `content`, which the merge does compare, so this
+  // would usually be caught by accident. Usually is not a guarantee: a future
+  // guard that kept the text, or a message that was empty to begin with, lands
+  // in exactly the hole this closes. Written against `type` alone for that
+  // reason — the fixture below keeps the content identical so `content` cannot
+  // be what carries the update.
+  testWidgets('a guard mark that changes only the type reaches the screen', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(800, 2000);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final controller = StreamController<List<Message>>.broadcast();
+    addTearDown(controller.close);
+
+    Message row(MessageType type) => Message(
+      id: 'msg_blocked',
+      conversationId: conversationId,
+      senderId: currentUserId,
+      senderDisplayName: 'Test',
+      content: 'Jag kommer klockan sju ikvall',
+      type: type,
+      status: MessageStatus.sent,
+      sentAt: createdAt,
+    );
+
+    when(
+      () => messagingService.getConversationMessagesPage(
+        conversationId: any(named: 'conversationId'),
+        historyStart: any(named: 'historyStart'),
+        limit: any(named: 'limit'),
+        startAfter: any(named: 'startAfter'),
+      ),
+    ).thenAnswer((_) async => [row(MessageType.text)]);
+    when(
+      () => messagingService.getConversationMessages(
+        conversationId: any(named: 'conversationId'),
+        historyStart: any(named: 'historyStart'),
+        limit: any(named: 'limit'),
+      ),
+    ).thenAnswer((_) => controller.stream);
+
+    viewModel = ChatViewModel(
+      messagingService: messagingService,
+      conversationId: conversationId,
+      initialConversation: conversation(),
+    );
+
+    await tester.pumpWidget(
+      createLocalizedTestApp(
+        child: ChangeNotifierProvider<ChatViewModel>.value(
+          value: viewModel,
+          child: ChatMessageStream(
+            conversationId: conversationId,
+            onMessageAction: (_, _) {},
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // The premise: the ordinary message really is on screen first.
+    expect(
+      find.text('Jag kommer klockan sju ikvall'),
+      findsOneWidget,
+      reason: 'positive control: the message rendered before the guard ran',
+    );
+
+    // The guard's mark arrives. Only `type` differs from what is on screen.
+    controller.add([row(MessageType.duplicateBlocked)]);
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('Du har redan skickat det här'),
+      findsOneWidget,
+      reason: 'the sender must see the notice without reopening the chat',
+    );
+  });
+
   testWidgets('a vote that changes only metadata reaches the screen', (
     tester,
   ) async {

@@ -1458,6 +1458,12 @@
       "path": "functions/src/social/duplicate-content-guard.ts"
     },
     {
+      "id": "cf-chat-dup-guard",
+      "label": "guardDuplicateMessage — dubblettspärr chatt",
+      "context": "cloud-function",
+      "path": "functions/src/social/duplicate-content-guard.ts"
+    },
+    {
       "id": "cf-recipe-rating-trig",
       "label": "onRatingCreated/Updated/Deleted (recipe_ratings)",
       "context": "cloud-function",
@@ -6042,6 +6048,27 @@
           "to": "ds-messages",
           "payload": "nytt meddelande (ev. replyToMessageId, bifogad bild/recept)",
           "transport": "write",
+          "verified": true
+        },
+        {
+          "from": "ds-messages",
+          "to": "cf-chat-dup-guard",
+          "payload": "onCreate-trigger (bakom enable_chat_duplicate_guard, avstängd)",
+          "transport": "call",
+          "verified": true
+        },
+        {
+          "from": "cf-chat-dup-guard",
+          "to": "ds-messages",
+          "payload": "dubblett töms och märks duplicateBlocked på plats — raderas inte (BUT-1904)",
+          "transport": "write",
+          "verified": true
+        },
+        {
+          "from": "ds-messages",
+          "to": "cf-sync-conversation-last-message",
+          "payload": "märkningen och varje läskvitto väcker synken igen; den läser om meddelandet i sin transaktion så en gammal nyttolast inte kan skriva tillbaka dubblettens text (BUT-1904)",
+          "transport": "call",
           "verified": true
         },
         {

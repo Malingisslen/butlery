@@ -49,6 +49,7 @@ process.env.GCLOUD_PROJECT = PROJECT_ID;
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 import * as admin from "firebase-admin";
+import * as fs from "fs/promises";
 
 const RUN = Date.now().toString(36);
 const SENDER = `dup-sender-${RUN}`;
@@ -144,6 +145,50 @@ async function run(): Promise<void> {
   }
 
   /**
+   * BUT-1904 made `exists()` almost useless as a verdict on its own.
+   *
+   * The guard no longer deletes: it empties the message and stamps
+   * `duplicateBlocked`. So a rejected message EXISTS, and every case that used
+   * to prove innocence with a bare existence assertion would now pass even if
+   * the guard had wrongly blocked it. These two helpers carry the assertions
+   * instead — `assertIntact` says the guard did not touch this message,
+   * `assertBlocked` says it did, and one is the negation of the other on the
+   * fields that decide it.
+   */
+  async function assertIntact(
+    messageId: string,
+    expectedContent: string,
+    why: string,
+    expectedType = "text",
+  ): Promise<void> {
+    const snap = await msgRef(messageId).get();
+    assert(snap.exists, `${why} (the document is gone entirely)`);
+    const data = snap.data() ?? {};
+    assert(
+      data.type === expectedType,
+      `${why} (type is "${data.type}", expected "${expectedType}")`,
+    );
+    assert(
+      data.content === expectedContent,
+      `${why} (content is "${data.content}", expected "${expectedContent}")`,
+    );
+  }
+
+  async function assertBlocked(messageId: string, why: string): Promise<void> {
+    const snap = await msgRef(messageId).get();
+    assert(snap.exists, `${why} (a blocked message must NOT be deleted)`);
+    const data = snap.data() ?? {};
+    assert(
+      data.type === "duplicateBlocked",
+      `${why} (type is "${data.type}", expected "duplicateBlocked")`,
+    );
+    assert(
+      data.content === "",
+      `${why} (content is "${data.content}", expected it emptied)`,
+    );
+  }
+
+  /**
    * The guard's rolling hash docs — cleared between cases so each starts cold.
    *
    * BOTH ids, and that is not defensive: the chat surface writes to `chat` and
@@ -161,32 +206,62 @@ async function run(): Promise<void> {
 
   // D1: the kill switch. This is what ships — the flag is OFF on landing, so
   // this case is the one that describes production on day one.
-  test("flag OFF: a true duplicate is NOT deleted", async () => {
+  //
+  // It asserts INTACT rather than "still there" (BUT-1904). Since the guard
+  // stopped deleting, "still there" is true of a blocked message too, so the
+  // old assertion would have passed against a guard that ignored the flag
+  // entirely and marked the message anyway. That is the whole failure this
+  // case exists to catch.
+  test("flag OFF: a true duplicate is left completely alone", async () => {
     __setChatGuardFlagForTests(false);
     await clearHashes();
     const a = `d1a-${RUN}`;
     const b = `d1b-${RUN}`;
     await writeAndFire(a, body(CONV_A, LONG_BODY));
     await writeAndFire(b, body(CONV_A, LONG_BODY));
-    assert(await exists(a), "the first message must survive");
-    assert(
-      await exists(b),
-      "with the flag off the guard must not delete anything",
+    await assertIntact(a, LONG_BODY, "the first message must be untouched");
+    await assertIntact(
+      b,
+      LONG_BODY,
+      "with the flag off the guard must neither delete nor mark",
     );
   });
 
   // D2: the guard doing its job. Also the control that makes D3, D4, D5 and D6
   // attributable — without it they could all pass because the trigger never
   // fires at all, which is precisely the bug this ticket fixes.
-  test("flag ON: a repeat in the SAME conversation is deleted", async () => {
+  test("flag ON: a repeat in the SAME conversation is blocked, not deleted", async () => {
     __setChatGuardFlagForTests(true);
     await clearHashes();
     const a = `d2a-${RUN}`;
     const b = `d2b-${RUN}`;
+    const sent = body(CONV_A, LONG_BODY);
     await writeAndFire(a, body(CONV_A, LONG_BODY));
-    await writeAndFire(b, body(CONV_A, LONG_BODY));
-    assert(await exists(a), "the first message must survive");
-    assert(!(await exists(b)), "the repeat must be deleted");
+    await writeAndFire(b, sent);
+    await assertIntact(a, LONG_BODY, "the first message must be untouched");
+    await assertBlocked(b, "the repeat must be marked");
+
+    // The identity fields decide WHERE the row lands in the thread and whose
+    // it is. `sentAt` is the one the UX claim rests on: the sender is promised
+    // a row in the place the message would have been, and that place is this
+    // stamp. The rules forbid changing all three, but the guard writes through
+    // the Admin SDK, which bypasses rules — so nothing but this test is
+    // watching them. Mutation-probed: re-stamping `sentAt` in the mark reddens
+    // this case and nothing else.
+    const marked = (await msgRef(b).get()).data() ?? {};
+    assert(
+      marked.senderId === SENDER,
+      `senderId must be untouched, got "${marked.senderId}"`,
+    );
+    assert(
+      marked.conversationId === CONV_A,
+      `conversationId must be untouched, got "${marked.conversationId}"`,
+    );
+    const sentAt = sent.sentAt as admin.firestore.Timestamp;
+    assert(
+      (marked.sentAt as admin.firestore.Timestamp).isEqual(sentAt),
+      "sentAt must be untouched — it is the row's position in the thread",
+    );
   });
 
   // D3: the false positive the panel formed around. Before the scoped key this
@@ -199,9 +274,14 @@ async function run(): Promise<void> {
     const b = `d3b-${RUN}`;
     await writeAndFire(a, body(CONV_A, LONG_BODY));
     await writeAndFire(b, body(CONV_B, LONG_BODY));
-    assert(await exists(a), "the first conversation's message must survive");
-    assert(
-      await exists(b),
+    await assertIntact(
+      a,
+      LONG_BODY,
+      "the first conversation's message must be untouched",
+    );
+    await assertIntact(
+      b,
+      LONG_BODY,
       "a different conversation must not collide with the first",
     );
   });
@@ -215,8 +295,8 @@ async function run(): Promise<void> {
     const b = `d4b-${RUN}`;
     await writeAndFire(a, body(CONV_A, SHORT_BODY));
     await writeAndFire(b, body(CONV_A, SHORT_BODY));
-    assert(await exists(a), "the first short message must survive");
-    assert(await exists(b), "a repeated short message must survive");
+    await assertIntact(a, SHORT_BODY, "the first short message must be untouched");
+    await assertIntact(b, SHORT_BODY, "a repeated short message must be untouched");
   });
 
   // D5: system rows. `writeGroupSystemMessage` writes senderId "system" for
@@ -228,10 +308,21 @@ async function run(): Promise<void> {
     await clearHashes();
     const a = `d5a-${RUN}`;
     const b = `d5b-${RUN}`;
-    await writeAndFire(a, body(CONV_A, "Anna har lagts till i gruppen", "system"));
-    await writeAndFire(b, body(CONV_A, "Anna har lagts till i gruppen", "system"));
-    assert(await exists(a), "the first system row must survive");
-    assert(await exists(b), "a repeated system row must survive");
+    const systemRow = "Anna har lagts till i gruppen";
+    await writeAndFire(a, body(CONV_A, systemRow, "system"));
+    await writeAndFire(b, body(CONV_A, systemRow, "system"));
+    await assertIntact(
+      a,
+      systemRow,
+      "the first system row must be untouched",
+      "system",
+    );
+    await assertIntact(
+      b,
+      systemRow,
+      "a repeated system row must be untouched",
+      "system",
+    );
   });
 
   // D6: no conversationId. The create rule guarantees the field for client
@@ -245,9 +336,10 @@ async function run(): Promise<void> {
     const b = `d6b-${RUN}`;
     await writeAndFire(a, body(undefined, LONG_BODY));
     await writeAndFire(b, body(undefined, LONG_BODY));
-    assert(await exists(a), "the first must survive");
-    assert(
-      await exists(b),
+    await assertIntact(a, LONG_BODY, "the first must be untouched");
+    await assertIntact(
+      b,
+      LONG_BODY,
       "without a conversation id the guard must skip, not fall back",
     );
   });
@@ -260,11 +352,12 @@ async function run(): Promise<void> {
     await clearHashes();
     const a = `d7a-${RUN}`;
     await writeAndFire(a, body(CONV_A, LONG_BODY));
-    assert(await exists(a), "precondition: the message was accepted");
+    await assertIntact(a, LONG_BODY, "precondition: the message was accepted");
     await refire(a);
-    assert(
-      await exists(a),
-      "a redelivery must not delete the message it accepted",
+    await assertIntact(
+      a,
+      LONG_BODY,
+      "a redelivery must not block the message it accepted",
     );
   });
 
@@ -277,7 +370,11 @@ async function run(): Promise<void> {
     await clearHashes();
     const victim = `d8-victim-${RUN}`;
     await writeAndFire(victim, body(CONV_A, LONG_BODY));
-    assert(await exists(victim), "precondition: the message was accepted");
+    await assertIntact(
+      victim,
+      LONG_BODY,
+      "precondition: the message was accepted",
+    );
 
     // 20 further qualifying messages evict the victim's own entry (the cap is
     // MAX_RECENT_HASHES = 20). Distinct bodies, so none of them is a duplicate.
@@ -298,8 +395,9 @@ async function run(): Promise<void> {
     // the victim: its own entry was evicted, and the resend's entry looked
     // like somebody else's duplicate.
     await refire(victim);
-    assert(
-      await exists(victim),
+    await assertIntact(
+      victim,
+      LONG_BODY,
       "the original message must survive a redelivery after eviction",
     );
   });
@@ -336,6 +434,89 @@ async function run(): Promise<void> {
       hashes[0].at.toMillis() === created,
       `entry must carry the document's createTime (${created}), ` +
         `got ${hashes[0].at.toMillis()}`,
+    );
+  });
+
+  // D10: the sender deletes the message between the create and this trigger.
+  //
+  // Only reachable because the guard MARKS now (BUT-1904): a delete had nothing
+  // to race with, but an update does. `tx.set(..., {merge:true})` would recreate
+  // a message its author had just removed — a deleted message reappearing,
+  // emptied and stamped, is worse than the duplicate ever was.
+  //
+  // What this case pins is the OUTCOME, not the existence check: `tx.update` on
+  // a missing document throws NOT_FOUND and the guard's own catch swallows it,
+  // so the document stays absent with or without that check. The check earns
+  // its place by turning a burnt transaction and an error log into a clean
+  // no-op — which this case deliberately does NOT claim to prove.
+  test("flag ON: a message deleted before the trigger runs is not recreated", async () => {
+    __setChatGuardFlagForTests(true);
+    await clearHashes();
+    const a = `d10a-${RUN}`;
+    const b = `d10b-${RUN}`;
+    await writeAndFire(a, body(CONV_A, LONG_BODY));
+
+    // Write the duplicate, then delete it BEFORE firing — the trigger receives
+    // the snapshot it would have had, and the document is already gone.
+    writtenMessageIds.push(b);
+    const sent = body(CONV_A, LONG_BODY);
+    await msgRef(b).set(sent);
+    const snap = await msgRef(b).get();
+    await msgRef(b).delete();
+
+    // Must not throw: the guard's own catch would swallow it, but the
+    // transaction failing is still a retried invocation and an error log.
+    await guardDuplicateMessage.run({
+      params: { messageId: b },
+      data: snap,
+      id: `evt-${b}`,
+    });
+
+    assert(
+      !(await exists(b)),
+      "a message its sender deleted must not be written back",
+    );
+    await assertIntact(
+      a,
+      LONG_BODY,
+      "the surviving original must be untouched by all this",
+    );
+  });
+
+  // D11: `exists()` is no longer a verdict, and this is what keeps it that way.
+  //
+  // Every case above was rewritten to assert INTACT or BLOCKED because the
+  // guard stopped deleting. Nothing stops a future case being added that
+  // asserts only that the document is still there, which would read like
+  // proof and prove nothing. This scans the file's own source for that
+  // shape. (Spelled around rather than quoted, here and above: the literal
+  // would be a hit on this file itself.)
+  test("no case proves innocence with a bare exists() any more", async () => {
+    const source = await fs.readFile(__filename, "utf8");
+
+    // Matches the CALL, across line breaks, not a single line. The first
+    // version anchored at the start of a line and was graded against this
+    // file's own pre-change bytes by the testing-specialist gate: it caught 10
+    // of the 15 sites that existed, and missed every hand-wrapped one —
+    //
+    //     assert(
+    //       await exists(victim),
+    //       "…",
+    //     );
+    //
+    // which is what any assertion carrying an explanation looks like, and the
+    // norm in this suite. A guard that refuses the terse form and permits the
+    // discursive one reads as closed while being open.
+    //
+    // Built from concatenation so neither the pattern nor the message below
+    // contains the literal sequence it hunts for, which would make this case
+    // fail on itself.
+    const banned = "assert(" + "await exists(";
+    const matches = source.match(new RegExp("assert\\(\\s*await exists\\(", "g"));
+    assert(
+      matches === null,
+      `a bare \`${banned}…)\` cannot tell an untouched message from a ` +
+        `blocked one — use assertIntact. Found ${matches?.length ?? 0}.`,
     );
   });
 

@@ -26305,3 +26305,240 @@ sentences originated in a review rather than in the implementation, including on
 The code was right early; the sentences describing it were not.
 
 Verdict: pass, 0 blocking.
+
+### 2026-08-26 — BUT-1904 review: the delete→mark fix, and three ways its new tests still proved nothing
+
+**Trigger:** review of the uncommitted BUT-1904 test diff (chat duplicate guard stops
+deleting a duplicate and instead empties it + stamps `type: "duplicateBlocked"`). Nine test
+files, one new. The author explicitly asked for a VACUITY audit, having already been bitten
+once: every old `assert(await exists(id))` in the guard's integration suite became
+true-by-construction the moment nothing was deleted.
+
+**What was already right.** The D1-D8 rewrite to `assertIntact`/`assertBlocked` is correct
+and complete — no bare existence assertion survives in that file, and D10's
+`assert(!(await exists(b)))` is the one legitimate negative. The two `messaging_service_test`
+placement cases the author rewrote after their first draft went vacuous do now discriminate,
+and they discriminate DIFFERENT exits: the throwing stub kills a mutant that moves the row
+filter INSIDE the try, and `production.ServiceLocator.reset()` kills one that moves it below
+`if (filter == null) return messages`. Neither kills the other's mutant, so both are load
+bearing. Traced against the real `_filterBlocked` body; 67/67 green, analyze clean, `tsc
+--noEmit` clean.
+
+**Finding 1 — D11's regex misses the shape it exists to catch, measured on the file's own
+history.** D11 scans `__filename` for `/^\s*assert\(await exists\(/`. Run over
+`git show HEAD:functions/src/__tests__/duplicate-message-guard.integration.test.ts` — the
+exact corpus of the shape it refuses — it matches 10 of the 15 positive sites. The 5 it
+misses are the ones the author had hand-wrapped, e.g.
+
+```
+    assert(
+      await exists(victim),
+      "the original message must survive a redelivery after eviction",
+    );
+```
+
+`functions/` has no prettier config and no `max-len` rule, so the wrapping was by hand and
+is exactly what a long `reason:` string produces. The guard therefore refuses the terse
+form and permits the discursive one.
+
+**Finding 2 — J3 in the sync suite is green under the mutant its own comment names, and
+the reported red counts are state cascade.** These runners share one emulator world across
+cases in declaration order. Replicated the handler's branch logic in a scratchpad JS file
+and replayed J1-J4:
+
+| variant | red |
+|---|---|
+| unmutated | 0 |
+| blocked check gated behind candidacy | J1, J2, J3, J4 |
+| create-side re-read dropped | J2, J3 |
+| `currentLastMessage?.id !== messageId` guard dropped | (none) |
+
+Rows 2 and 3 reproduce the author's reported "4 fail" and "2 fail" exactly, which is what
+proves the replica. But J3's red in both is its PRECONDITION (`lmBefore?.id === B1`) failing
+on damage J1/J2 left behind; J3's own before→after transition is invariant under both. And
+the guard J3's comment says it pins survives deletion with the suite fully green, because the
+recompute in that fixture lands back on B1 — the same document. The guard only skips WORK
+there, and a suite asserting the final value cannot see skipped work. A discriminating
+fixture needs the preview pointing at something OTHER than the newest survivor (reachable:
+the client's own `MessageMutationModule` merge-sets `lastMessage` with no comparison).
+
+**Finding 3 — the NFC/NFD floor case is satisfied with or without `.normalize("NFC")`.**
+The new unit case asserts `isChatDuplicateCandidate(nfd) === isChatDuplicateCandidate(nfc)`
+on `"hejsan då alla"` — 14 NFC / 15 NFD, both over the 12-char floor, so both answer `true`
+either way. Verified by replica: with the normalize dropped the assertion still passes.
+`"hej då alla"` (11 NFC / 12 NFD) is the straddling fixture that kills it. The same case's
+sibling half ("11 visible characters") is a wrong count — `"   hej pa dig   "` trims to 10.
+
+**Also unguarded, none blocking.** Two new arms disagree about the same row: `ReplyBanner`
+returns the localized notice for a blocked message while `MessageBubble._buildReplyPreview`
+feeds `replyTo.displayContent`, which is `''` for the same type — and only the SENDER's list
+still contains the row, so only the sender can see the empty quote. Neither arm has a test,
+nor does `MessageContentBuilder`'s. `displayContent`'s new comment says "the two callers that
+could reach it"; there are three call-site files, the third being the push-notification body
+in `message_sending_operations.dart` — unreachable in practice (the push is built at send
+time, before the guard runs) but the count is unverifiable in place. And `type` is not in the
+messages update rule's `cannotModify`, and the new conjunct reads the STORED type, so a
+sender can stamp `duplicateBlocked` on their own ordinary message and freeze it out of
+everyone else's list; low harm, no rule and no test.
+
+**The generalisable half.** A fix that changes the ACTION on a rejected document (delete →
+mark) invalidates every assertion in its suite that was phrased as a question about
+EXISTENCE, and the author's instinct to add a source-text guard against the regression was
+right. What went wrong is the standard source-guard failure: the regex enforces a SHAPE, and
+the shape it was written from was the terse one. The pre-change file is the free corpus that
+settles it, and nobody thinks to run the new guard over the old bytes.
+
+Verdict: pass, 0 blocking.
+
+### 2026-08-26 — BUT-1904 re-review: three blockers closed, one new one arrived with the fix
+
+**Trigger:** re-review after the coordinator fixed all three blocking findings from the
+same-day review above. Motion check first: every graded file had moved, and two had moved
+further than the report described — `cook-snaps-and-message-mod-rules.test.ts` at +414/-2
+against a reported +88, and `functions/src/social/duplicate-content-guard.ts`, which the
+report did not mention at all.
+
+**All three original blockers verified closed, each by the measurement that condemned it.**
+
+1. D11's regex is now `assert\(\s*await exists\(` built by string concatenation. Graded
+   against the corpus I named — the file at HEAD — it catches **15 of 15**; the old
+   line-anchored form caught 10. Zero self-matches in the current file, and D10's legitimate
+   `assert(!(await exists(` is still permitted (`\s*` does not match `!`).
+2. The NFC/NFD fixture is now `"hej då alla"` (11 NFC / 12 NFD), which straddles the 12-char
+   floor. The old 14/15 pair sat on one side and held with the normalisation deleted.
+3. J3 rebuilt: it pins the preview to the OLDEST row via a direct `convBRef.update` (the
+   shape `MessageMutationModule`'s merge-set produces), then marks a row that is neither the
+   preview nor the newest. Replica across five mutants: dropping
+   `currentLastMessage?.id !== messageId` now reddens **J3 alone**, and — the part that
+   matters — J3's OWN assertion fails, not a precondition inherited from J1/J2. The
+   cascade that inflated the previous round's "4 fail / 2 fail" is gone.
+
+**The new production work, which I was asked to grade.** The cloud-functions gate found a
+real defect: `messages` has a second update path — the receipts branch
+(`status`/`deliveredAt`/`readAt`/`updatedAt`) — whose invocation carries a PRE-MARK payload
+and a non-empty `before`, so a create-only re-read skipped it and re-projected the blocked
+duplicate's TEXT once it landed after the mark. Strictly worse than the BUT-1898 race it
+replaces. The fix widens the re-read to all non-delete writes, adds a `payloadBlocked` test
+ahead of everything, and adds a PRE-READ GATE so an invocation that cannot end in a write
+returns before paying for the read.
+
+**J5 stages what it claims, and I could settle the coordinator's own doubt with a
+measurement.** They passed the pre-mark snapshot as BOTH `before` and `after`, and asked
+whether that is honest — a real receipt's `after` would carry `status: "read"`. I ran the
+honest payload as a separate replica variant: identical in every mutant (PASS unmutated,
+FAIL under create-only). `status` participates in none of the four conditions that select
+the branch, so the simplification changes nothing the test proves. The probe attributes
+cleanly: restoring `!before` reddens **J5 alone** — J1/J3/J4 arrive already `payloadBlocked`
+and skip the re-read regardless, and J2's `before` is a non-existent snapshot, so `!before`
+is true for it either way.
+
+**BLOCKING, new this round — the shared predicate changed behaviour with nothing able to
+redden.** `isChatDuplicateCandidate`'s type test went from
+`data.type !== undefined && data.type !== "text"` to `data.type && data.type !== "text"`.
+Measured over the state lattice: `undefined`, `"text"` and `"system"` agree; `null`, `""`,
+`0` and `false` flip from refused to admitted — **4 of 7 states**. The doc comment was
+updated in the same edit to claim "An ABSENT, null or empty `type` counts as text", so the
+widening is deliberate and documented. But `grep` finds no fixture for `null`, `""` or a
+non-string anywhere in the suite, and the one existing case ("an absent type counts as
+text") passes `undefined`, which is green under BOTH spellings. Reverting the swap leaves
+27/27 green. A predicate that two triggers now share, widened in a re-review round, with a
+three-member enumeration in its doc and one member pinned.
+
+**Non-blocking.** The big BUT-1904 comment block in the sync trigger was written for the
+re-read but now sits above `payloadBlocked` with no blank line separating it from the seven
+lines that do describe that const — the doc-comment RE-PARENTING pattern, recurring. J5's
+comment says the receipt payload carries "`status` -> read"; the snapshot passed has
+`status: "sent"` (the live document gets the receipt, the payload does not). A third `sentAt`
+type guard now exists on the create/update path and is mutation-dead — reverting it to
+truthiness reddens nothing — but production labels it defensive in place, so it is honestly
+declared rather than a false claim.
+
+**Strikes all landed and the replacements hold as fresh claims.** "reddens four tests" and
+"two tests redden if it moves" are gone from `ACCEPTED_DEVIATIONS.md`, the second replaced
+with the rule (two moves, each with its own killing test, neither killing the other's) —
+which is exactly what I measured. The three false "ONE field/variable" comments are struck.
+The `displayContent` enumeration is struck rather than re-counted, and its replacement
+concedes the reply-preview finding instead of restating a count. B16/B17 pin the two holes I
+flagged as UNGUARDED as they BEHAVE, with a stated flip-signal — the honest treatment.
+
+**The generalisable half.** A re-review's motion check has to be run against the FIX REPORT,
+not only against my own graded bytes. Two of the round's files moved further than described
+and one of them was production; the new blocker was in a file no finding had ever named, so
+nothing in the round had asked whether a test could see it. And the `!== undefined` →
+truthiness swap is worth remembering on its own: it reads as a tidy-up, it changes four
+states, and the fixture everybody already has (`undefined`) is precisely the one that cannot
+tell the two spellings apart.
+
+Verdict: fail, 1 blocking.
+
+### 2026-08-26 — BUT-1904 round 3: blocker closed, and the blocker turned out to be an extraction regression
+
+**Trigger:** third review round. Motion check against the fix report this time as well as
+against my own bytes — all four round-2 files moved again, and the report's account of the
+previous round's discrepancy (`cook-snaps` +414 was the firestore-rules-tester gate adding
+B4-B17) checked out: that file did not move this round.
+
+**The round-2 blocker is closed, and it was worse than I graded it.** The new case pins
+`null`, `""`, `0` and `false` as text — exactly the four states I measured as flipping — and
+reddens under the `!== undefined` spelling. 28/28. But checking the comment's history claim
+against HEAD changed the story: the shipped trigger had `if (type && type !== "text")
+return;` inline, TRUTHINESS, since 2026-05-04. So `isChatDuplicateCandidate`'s `!== undefined`
+was not new behaviour introduced deliberately — it was a REGRESSION the extraction
+introduced, silently, against three months of production semantics, and round 3 restores
+parity rather than choosing a new rule. I graded it in round 2 as "unpinned new behaviour";
+it was "unpinned regression", which is worse and which one `git show HEAD:` would have told
+me. The lesson generalises: when a predicate is EXTRACTED into a shared helper, the helper
+has no history of its own — diff against the ORIGINATING CALL SITE at HEAD, because the
+extracted copy is the likeliest place for a silent semantic change.
+
+**J6 grades clean, and the decisive evidence is the inverse of the old J3.** The second hole:
+the guard decides candidacy from the CREATE payload but marks regardless, while `content`
+and `type` stay client-writable — so an update edited OUT of candidacy (sender trims to
+"ok", reachable from shipped UI) skipped a candidacy-gated re-read and landed last on a
+blocked, emptied row. Fix: `(!!before || isChatDuplicateCandidate(after ?? {}))` — updates
+always re-read once past the pre-read gate, creates stay gated. Replica over three gate
+shapes:
+
+| variant | red |
+|---|---|
+| unmutated (updates always re-read) | none |
+| candidacy gates updates too (round-2 shape) | J6 |
+| creates only (round-1 shape) | J5, J6 |
+
+J6 reddens ALONE under its own mutant, and — the part that answers the coordinator's
+question — `J6 precondition` PASSES while `J6 own assertion` FAILS. That is the exact inverse
+of the original J3, whose precondition was what failed. J6 builds its own conversation and
+its own two messages inside the test, so there is no upstream state to inherit. I3 (an edit
+of a SHORT message that must still refresh the preview) stays green throughout, which is the
+control that the widened re-read did not break the ordinary edit path.
+
+**Worth recording: J5's kill set is a STRICT SUBSET of J6's** (both kill create-only, only J6
+kills candidacy-on-updates), which by the letter of the duplicate-test rule marks J5 for
+deletion. It should NOT be deleted, and the reason is not mutation coverage: the two stage
+different mechanisms with different reachability and lean on different rules branches — J5 on
+the receipts `allow update` (a RECIPIENT writing to someone else's message, republishing the
+duplicate's TEXT), J6 on the sender branch leaving `content` writable (lower harm, but
+reachable from shipped UI). Remove either rules branch and one case goes unreachable while
+the other still holds. J5 also carries the only update-path fixture whose payload is STILL a
+candidate, so the two cover opposite sides of a predicate creates still consult. The subset
+shape is precisely what gets a case deleted as redundant two tickets later; the note is the
+defence.
+
+**Both nits done.** J5's comment no longer claims the payload carries `status: "read"` — it
+now names the asymmetry (live document gets the receipt, payload does not) and records that
+`status` takes no part in branch selection. The re-parented block is moved: `payloadBlocked`
+keeps its own seven lines, and the ~45-line re-read rationale sits directly above the re-read.
+The "a system row, a share card and a short 'ok' cost nothing extra" claim was correctly
+SCOPED to creates rather than left universal — which is where it is still true, since updates
+now always pay.
+
+**Non-blocking, this round.** The new case's comment says the difference is "four of seven
+states". Seven is a count over a fixture lattice nobody defined (`[]`, `{}`, `NaN` would make
+it more), so it is a numeral that can only rot; the durable wording is the RULE — every falsy
+non-undefined value — which is directly readable off `data.type` vs `data.type !== undefined`
+and needs no counting. Strike the numeral, do not re-count it. Also an accepted cost, stated
+rather than found: a read receipt on the NEWEST message now always pays one extra
+transactional read, because candidacy gating on updates was a measured defect. The tradeoff
+is forced and the comment scopes its cost claim honestly.
+
+Verdict: pass, 0 blocking.

@@ -29,8 +29,21 @@ import {
   assertSucceeds,
 } from "@firebase/rules-unit-testing";
 
-const PROJECT_ID = "butlery-rules-cook-snaps-and-message-mod";
-const RULES_PATH = path.resolve(__dirname, "../../../firestore.rules");
+// Overridable so a mutation probe can point the suite at a MUTATED COPY of the
+// rules in a scratch directory, under its own project id, without editing
+// `firestore.rules` or duplicating this file. The real file stays
+// byte-identical by construction — there is no restore step to skip.
+const PROJECT_ID =
+  process.env.PROBE_PROJECT_ID ?? "butlery-rules-cook-snaps-and-message-mod";
+const RULES_PATH =
+  process.env.PROBE_RULES_PATH ??
+  path.resolve(__dirname, "../../../firestore.rules");
+
+// The emulator keeps documents between `npm run` invocations, so a create-allow
+// case with a fixed doc id becomes an UPDATE on the second local run and fails
+// for the wrong reason. `setup()` clears the namespace, and this makes the
+// create targets unique even if that clear is ever removed or races.
+const RUN_TOKEN = Date.now().toString(36);
 
 const OWNER_UID = "snap-owner-uid";
 const FRIEND_UID = "friend-uid";
@@ -638,6 +651,405 @@ test("messages: admin can delete any message (moderation)", async () => {
   await seedMessage("m-del", "conv-del", [OWNER_UID, FRIEND_UID]);
   const ctx = env.authenticatedContext(ADMIN_UID);
   await assertSucceeds(ctx.firestore().doc(`messages/m-del`).delete());
+});
+
+// BUT-1904. The duplicate guard empties a message and stamps it
+// `duplicateBlocked` instead of deleting it. The sender's own update branch
+// otherwise places no constraint on `type` and lets `content` become anything,
+// so without the new conjunct the sender could write the duplicate text back
+// in and hand it to the other participants after all — undoing the guard from
+// the client, with no server involvement.
+//
+// Seeded with rules DISABLED, which is how the guard writes it too (the Admin
+// SDK bypasses rules); these cases are about what the CLIENT may then do.
+async function seedBlockedMessage(
+  msgId: string,
+  conversationId: string,
+  participants: string[],
+  type: string,
+): Promise<void> {
+  await env.withSecurityRulesDisabled(async (admin) => {
+    await admin
+      .firestore()
+      .doc(`conversations/${conversationId}`)
+      .set({ participantIds: participants, createdAt: new Date() });
+    await admin
+      .firestore()
+      .doc(`messages/${msgId}`)
+      .set({
+        senderId: participants[0],
+        conversationId,
+        content: type === "duplicateBlocked" ? "" : "Hej!",
+        type,
+        sentAt: new Date(),
+      });
+  });
+}
+
+test("messages: the sender cannot edit a message the duplicate guard blocked", async () => {
+  await seedBlockedMessage(
+    "m-blocked",
+    "conv-blocked",
+    [OWNER_UID, FRIEND_UID],
+    "duplicateBlocked",
+  );
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`messages/m-blocked`)
+      .update({ content: "Jag kommer klockan sju ikvall" }),
+  );
+});
+
+// THE CONTROL for the case above: same author, same conversation, same update
+// payload, an ordinary message. (`seedBlockedMessage` also varies the STORED
+// content, so this is not literally single-variable — but no conjunct in the
+// update rule reads stored content, which is the argument the phrase would
+// otherwise have replaced.) Without
+// it the deny above proves nothing — every rules denial prints an
+// interchangeable PERMISSION_DENIED that names a rule line rather than a
+// reason, so a test that denied for the wrong reason (say, the author not
+// matching) would read identically.
+test("messages: the same sender CAN edit an ordinary message (control)", async () => {
+  await seedBlockedMessage(
+    "m-editable",
+    "conv-editable",
+    [OWNER_UID, FRIEND_UID],
+    "text",
+  );
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertSucceeds(
+    ctx
+      .firestore()
+      .doc(`messages/m-editable`)
+      .update({ content: "Jag kommer klockan sju ikvall" }),
+  );
+});
+
+// The sender can still get rid of the row — the delete rule is untouched, and
+// dismissing the notice is the one thing they are meant to be able to do with
+// it. A change that closed editing by closing the whole document would pass
+// the deny above and break this.
+test("messages: the sender can still delete a blocked message", async () => {
+  await seedBlockedMessage(
+    "m-blocked-del",
+    "conv-blocked-del",
+    [OWNER_UID, FRIEND_UID],
+    "duplicateBlocked",
+  );
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertSucceeds(
+    ctx.firestore().doc(`messages/m-blocked-del`).delete(),
+  );
+});
+
+// ============================================================================
+// MESSAGES — BUT-1904 freeze, the branches the three cases above do not reach
+// ============================================================================
+
+// `seedBlockedMessage` takes `type` as a STRING, so it cannot express the three
+// stored states the defaulting expression treats separately — absent, present
+// and null, present and not a string. Those are the states legacy rows and
+// hand-rolled clients actually produce, and each is its own branch of
+// `resource.data.get('type', 'text')`.
+async function seedMessageBody(
+  msgId: string,
+  conversationId: string,
+  participants: string[],
+  body: Record<string, unknown>,
+): Promise<void> {
+  await env.withSecurityRulesDisabled(async (admin) => {
+    await admin
+      .firestore()
+      .doc(`conversations/${conversationId}`)
+      .set({ participantIds: participants, createdAt: new Date() });
+    await admin
+      .firestore()
+      .doc(`messages/${msgId}`)
+      .set({
+        senderId: participants[0],
+        conversationId,
+        content: "Hej!",
+        sentAt: new Date(),
+        ...body,
+      });
+  });
+}
+
+// B4: the RECEIPTS branch is a second, OR'd `allow update` on this collection,
+// and the freeze conjunct is not on it. It stays open on a blocked row, which
+// is the intended reading of the split — a receipt is not an edit — and this
+// is the allow half that makes the four denies below mean something.
+test("messages: a recipient can still mark a blocked message delivered", async () => {
+  await seedBlockedMessage(
+    "m-blocked-receipt",
+    "conv-blocked-receipt",
+    [OWNER_UID, FRIEND_UID],
+    "duplicateBlocked",
+  );
+  const ctx = env.authenticatedContext(FRIEND_UID);
+  await assertSucceeds(
+    ctx
+      .firestore()
+      .doc(`messages/m-blocked-receipt`)
+      .update({ status: "delivered", deliveredAt: new Date() }),
+  );
+});
+
+// B5: the route the freeze would have to be re-proved on. `affectedKeys()`
+// is TOP-LEVEL and `content` is a top-level key, so adding it to a receipt
+// payload drops out of the receipts allow-list — and the sender branch is
+// already refusing the row. Both `allow update` statements have to say no or
+// the guard is undone through the other one.
+test("messages: a recipient cannot smuggle content into a blocked message with a receipt", async () => {
+  await seedBlockedMessage(
+    "m-blocked-smuggle",
+    "conv-blocked-smuggle",
+    [OWNER_UID, FRIEND_UID],
+    "duplicateBlocked",
+  );
+  const ctx = env.authenticatedContext(FRIEND_UID);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`messages/m-blocked-smuggle`)
+      .update({ status: "read", content: "Jag kommer klockan sju ikvall" }),
+  );
+});
+
+// B6: same route, taken by the person who has a motive for it. The sender is
+// also a participant, so the receipts branch is open to them too.
+test("messages: the sender cannot smuggle content into a blocked message with a receipt", async () => {
+  await seedBlockedMessage(
+    "m-blocked-smuggle-self",
+    "conv-blocked-smuggle-self",
+    [OWNER_UID, FRIEND_UID],
+    "duplicateBlocked",
+  );
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`messages/m-blocked-smuggle-self`)
+      .update({ status: "read", content: "Jag kommer klockan sju ikvall" }),
+  );
+});
+
+// B7: the freeze reads the STORED type, so the obvious escape is to unstamp
+// the row first and edit it afterwards. The pre-state is what the conjunct
+// tests, so the first write of that pair never lands.
+test("messages: the sender cannot unstamp a blocked message", async () => {
+  await seedBlockedMessage(
+    "m-blocked-unstamp",
+    "conv-blocked-unstamp",
+    [OWNER_UID, FRIEND_UID],
+    "duplicateBlocked",
+  );
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertFails(
+    ctx.firestore().doc(`messages/m-blocked-unstamp`).update({ type: "text" }),
+  );
+});
+
+// B8: and not in one write either.
+test("messages: the sender cannot unstamp and refill a blocked message in one update", async () => {
+  await seedBlockedMessage(
+    "m-blocked-refill",
+    "conv-blocked-refill",
+    [OWNER_UID, FRIEND_UID],
+    "duplicateBlocked",
+  );
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`messages/m-blocked-refill`)
+      .update({ type: "text", content: "Jag kommer klockan sju ikvall" }),
+  );
+});
+
+// B9: unstamping through the receipts branch instead. `type` is not in its
+// allow-list, so a recipient cannot launder the row back into an editable one
+// for the sender.
+test("messages: a recipient cannot unstamp a blocked message with a receipt", async () => {
+  await seedBlockedMessage(
+    "m-blocked-launder",
+    "conv-blocked-launder",
+    [OWNER_UID, FRIEND_UID],
+    "duplicateBlocked",
+  );
+  const ctx = env.authenticatedContext(FRIEND_UID);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`messages/m-blocked-launder`)
+      .update({ status: "read", type: "text" }),
+  );
+});
+
+// B10: the DEFAULT in `get('type', 'text')` is the whole compatibility story
+// for rows written before the field existed. A default of anything else would
+// have frozen every one of them, silently and forever.
+test("messages: the sender can edit a legacy message that has no type field", async () => {
+  await seedMessageBody("m-legacy-notype", "conv-legacy-notype", [
+    OWNER_UID,
+    FRIEND_UID,
+  ], {});
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertSucceeds(
+    ctx
+      .firestore()
+      .doc(`messages/m-legacy-notype`)
+      .update({ content: "Jag kommer klockan sju ikvall" }),
+  );
+});
+
+// B11: PRESENT-AND-NULL is a fourth state, not a spelling of absent — a
+// `.get()` on it returns null rather than the default. Measured: the
+// comparison against the literal still answers, so the row stays editable
+// rather than CEL-erroring into a blanket deny.
+test("messages: the sender can edit a message whose type is null", async () => {
+  await seedMessageBody(
+    "m-null-type",
+    "conv-null-type",
+    [OWNER_UID, FRIEND_UID],
+    { type: null },
+  );
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertSucceeds(
+    ctx
+      .firestore()
+      .doc(`messages/m-null-type`)
+      .update({ content: "Jag kommer klockan sju ikvall" }),
+  );
+});
+
+// B12: nothing in the rules constrains what `type` may hold, so a hand-rolled
+// client can store a number there. Comparing it against the literal must not
+// error either — an error here denies the write, which would freeze an
+// ordinary message on a malformed field nobody validates.
+test("messages: the sender can edit a message whose type is not a string", async () => {
+  await seedMessageBody(
+    "m-number-type",
+    "conv-number-type",
+    [OWNER_UID, FRIEND_UID],
+    { type: 42 },
+  );
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertSucceeds(
+    ctx
+      .firestore()
+      .doc(`messages/m-number-type`)
+      .update({ content: "Jag kommer klockan sju ikvall" }),
+  );
+});
+
+// B13: the freeze is not what stops an outsider — membership already did, and
+// it still has to. A conjunct added to this branch could have been written in
+// a way that made the branch pass for somebody it never passed for before.
+test("messages: a non-participant cannot edit a blocked message", async () => {
+  await seedBlockedMessage(
+    "m-blocked-stranger",
+    "conv-blocked-stranger",
+    [OWNER_UID, FRIEND_UID],
+    "duplicateBlocked",
+  );
+  const ctx = env.authenticatedContext(STRANGER_UID);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`messages/m-blocked-stranger`)
+      .update({ content: "Jag kommer klockan sju ikvall" }),
+  );
+});
+
+// B14: and neither can a client with no identity at all.
+test("messages: an unauthenticated client cannot edit a blocked message", async () => {
+  await seedBlockedMessage(
+    "m-blocked-anon",
+    "conv-blocked-anon",
+    [OWNER_UID, FRIEND_UID],
+    "duplicateBlocked",
+  );
+  const ctx = env.unauthenticatedContext();
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`messages/m-blocked-anon`)
+      .update({ content: "Jag kommer klockan sju ikvall" }),
+  );
+});
+
+// B15: the deny half of "the sender can still delete a blocked message".
+// Dismissing the notice belongs to its sender; the freeze must not read as a
+// licence for anyone else in the conversation to clear the row away.
+test("messages: a recipient cannot delete a blocked message", async () => {
+  await seedBlockedMessage(
+    "m-blocked-otherdel",
+    "conv-blocked-otherdel",
+    [OWNER_UID, FRIEND_UID],
+    "duplicateBlocked",
+  );
+  const ctx = env.authenticatedContext(FRIEND_UID);
+  await assertFails(
+    ctx.firestore().doc(`messages/m-blocked-otherdel`).delete(),
+  );
+});
+
+// B16: `type` is absent from `cannotModify` and absent from the create rule,
+// so a client can put the guard's own value on a message of its own — on an
+// existing one here, and B17 does it at create time. Both are pinned as they
+// BEHAVE rather than as anyone would wish them: the row a client stamps this
+// way becomes frozen by the same conjunct, and the only person who can reach
+// it is its own sender, who could already delete it. A later ticket that
+// constrains `type` will flip these two, and flipping them is the signal.
+test("messages: the sender can stamp their own ordinary message as blocked", async () => {
+  await seedBlockedMessage(
+    "m-selfstamp",
+    "conv-selfstamp",
+    [OWNER_UID, FRIEND_UID],
+    "text",
+  );
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertSucceeds(
+    ctx
+      .firestore()
+      .doc(`messages/m-selfstamp`)
+      .update({ type: "duplicateBlocked" }),
+  );
+  // ...and having done so, it can no longer edit its own row.
+  await assertFails(
+    ctx.firestore().doc(`messages/m-selfstamp`).update({ content: "igen" }),
+  );
+});
+
+// B17: the create rule places no constraint on `type` (see B16). `email_verified`
+// stands in for the account-maturity window and `ageCompliant` for the age gate,
+// so this case isolates `type` rather than re-testing either of those.
+test("messages: a client can create a message already stamped as blocked", async () => {
+  await env.withSecurityRulesDisabled(async (admin) => {
+    await admin
+      .firestore()
+      .doc(`conversations/conv-create-blocked`)
+      .set({ participantIds: [OWNER_UID, FRIEND_UID], createdAt: new Date() });
+  });
+  const ctx = env.authenticatedContext(OWNER_UID, {
+    email_verified: true,
+    ageCompliant: true,
+  });
+  await assertSucceeds(
+    ctx
+      .firestore()
+      .doc(`messages/m-create-blocked-${RUN_TOKEN}`)
+      .set({
+        senderId: OWNER_UID,
+        conversationId: "conv-create-blocked",
+        content: "Jag kommer klockan sju ikvall",
+        type: "duplicateBlocked",
+        sentAt: new Date(),
+      }),
+  );
 });
 
 async function run(): Promise<void> {

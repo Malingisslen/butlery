@@ -363,6 +363,19 @@ class Message {
       case MessageType.poll:
         final pollData = metadata?['poll'] as Map<String, dynamic>?;
         return '${type.icon} ${pollData?['question'] ?? content}';
+      case MessageType.duplicateBlocked:
+        // Empty on purpose (BUT-1904). A blocked row stores no text, and the
+        // sentence its sender reads is a widget-level localized string rather
+        // than data — this getter has no `BuildContext` and nothing truthful to
+        // return.
+        //
+        // An earlier version of this comment enumerated "the two callers that
+        // could reach it" and named a Cloud Function among them. Both halves
+        // were wrong, so the enumeration is struck rather than re-counted: the
+        // callers are Dart, there are more than two, and at least one of them
+        // (the in-bubble reply preview) really can render this empty string for
+        // the sender if they reply to a message the guard marks a moment later.
+        return '';
     }
   }
 

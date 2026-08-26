@@ -12,6 +12,36 @@
  * - On message delete: if the deleted message WAS the lastMessage, recompute
  *   from the remaining messages (or clear `lastMessage` if the conversation
  *   is now empty, or if the surviving message carries no resolved `sentAt`).
+ * - On a message the duplicate guard has BLOCKED: same as a delete. The
+ *   document survives (BUT-1904) but carries no text, so projecting it would
+ *   put an empty preview in everybody's conversation list.
+ *
+ * THE RACE WITH `guardDuplicateMessage`, and how it is closed here (BUT-1904).
+ * Both triggers wake on the same create with no ordering guarantee, and the
+ * guard's mark wakes this one a second time — as does every read receipt and
+ * every edit on the same message. Left alone, ANY of those invocations could
+ * land last and project the payload it captured before the guard rewrote the
+ * document. Two things prevent it:
+ *
+ *   1. the blocked test below reads `after.type` DIRECTLY, before and
+ *      independent of any eligibility gate — the mark's own invocation arrives
+ *      already carrying `duplicateBlocked`, so a gated test would never see it;
+ *   2. the trigger RE-READS the message inside this transaction before
+ *      projecting it. The read takes part in the transaction, so a concurrent
+ *      commit by the guard aborts and retries this one rather than letting a
+ *      stale payload win. Creates pay for it only when the guard could act on
+ *      them; updates pay whenever they survived the cheap gate, because an
+ *      update can be edited out of candidacy before it lands.
+ *
+ * Every invocation therefore computes from the same finished state, whichever
+ * lands last. Removing either half re-opens the race on its own, and the
+ * integration suite has a case per half.
+ *
+ * What those cases prove is ORDERING — a stale payload replayed after the mark
+ * has committed. A genuinely CONCURRENT commit is not something the suite can
+ * stage; the abort-and-retry behaviour it would exercise was measured by hand
+ * against the emulator instead. Ordering is the interleaving that actually
+ * occurred in practice.
  *
  * Idempotent. Uses a Firestore transaction so concurrent message writes for
  * the same conversation can't clobber each other into a stale state.
@@ -28,6 +58,20 @@ import * as admin from "firebase-admin";
 // BUT-1872: a DIRECT conversation id is `direct_<uidA>_<uidB>` — two raw uids.
 // One helper, so every logger on a conversation path hashes it the same way.
 import { logSafeConversationId } from "./enforce-group-minor-membership";
+// BUT-1904: the OTHER trigger on this collection decides what counts as a
+// blocked row and which creates it can rewrite. Importing both from there is
+// what stops the two triggers drifting apart — see `isChatDuplicateCandidate`.
+import {
+  DUPLICATE_BLOCKED_TYPE,
+  isChatDuplicateCandidate,
+} from "../social/duplicate-content-guard";
+
+/**
+ * How many of the newest messages the recompute path scans for a previewable
+ * survivor. More than one because the newest can itself be blocked (BUT-1904);
+ * bounded because this is a per-invocation Firestore read on a rare path.
+ */
+const SURVIVOR_SCAN_LIMIT = 5;
 
 interface MessageWireFields {
   conversationId?: string;
@@ -226,30 +270,152 @@ export const syncConversationLastMessage = onDocumentWritten(
         | null
         | undefined;
 
-      if (isDelete) {
-        // Only act when the deleted message WAS the conversation's
+      // The payload-level blocked test, FIRST and independent of everything
+      // below. The mark's own invocation arrives already carrying
+      // `duplicateBlocked`, which is not a duplicate-guard candidate — so a
+      // test that sat behind the candidate gate would never run, and the `>=`
+      // tie rule in `shouldReplaceLastMessage` would project the emptied row
+      // as the preview. That was a real defect in this change's first plan,
+      // caught before any code was written.
+      const payloadBlocked = !isDelete && after?.type === DUPLICATE_BLOCKED_TYPE;
+
+      // THE PRE-READ GATE. An invocation that cannot end in a write must not
+      // pay for the re-read below — a receipt on anything but the newest
+      // message is the common case, and it returns here for free.
+      if (!isDelete && !payloadBlocked) {
+        if (!(after?.sentAt instanceof admin.firestore.Timestamp)) {
+          logger.warn(
+            "[syncConversationLastMessage] sentAt missing or not a Timestamp; skipping",
+            { messageId, conversationId: logSafeConversationId(conversationId) }
+          );
+          return;
+        }
+        // Safe to decide on the PAYLOAD's stamp, and the reason is stronger
+        // than immutability alone. This skips only when the candidate stamp is
+        // OLDER than the stored one — and if the preview names THIS message the
+        // stored stamp was projected from it, so the comparison is `>=` and
+        // never skips. The gate can therefore only skip when the preview names
+        // a different message, which is exactly the condition under which every
+        // branch below also returns without writing. Nothing reachable is lost.
+        //
+        // It does rest on two invariants that live ELSEWHERE: `sentAt` is
+        // immutable under the messages update rule, and the guard's mark writes
+        // only `{type, content, updatedAt}`. A future change letting any writer
+        // touch `sentAt` turns this gate into a silent ordering bug, and no
+        // test would catch it.
+        if (!shouldReplaceLastMessage(currentLastMessage, after.sentAt)) return;
+      }
+
+      // THE RE-READ: what the document says RIGHT NOW, which is not necessarily
+      // what this invocation was handed.
+      //
+      // NOT confined to creates, and that scope was a real defect rather than a
+      // tuning choice — measured against the emulator by the
+      // `cloud-functions-specialist` gate before this shipped. `messages` has a
+      // SECOND update path: the receipts branch
+      // (`status`/`deliveredAt`/`readAt`/`updatedAt`), which every recipient's
+      // client writes seconds after every message it is online for. That
+      // invocation carries a PRE-MARK payload and a non-empty `before`, so a
+      // create-only re-read skipped it — and if it landed after the mark's own
+      // invocation had corrected the preview, it put the blocked duplicate's
+      // text back in front of every participant. Worse than the BUT-1898 race
+      // it replaces: that one left a preview pointing at a missing document,
+      // this one PUBLISHES the text the guard exists to withhold.
+      //
+      // Bounded differently on each side, and the asymmetry is deliberate.
+      //
+      // CREATES are gated on `isChatDuplicateCandidate`, the guard's own
+      // admission test, shared so the two triggers cannot drift — a system row,
+      // a share card and a short "ok" cost nothing extra.
+      //
+      // UPDATES are NOT, and gating them on it was a second measured defect
+      // (`cloud-functions-specialist`, round 2). The guard decides candidacy
+      // from the CREATE payload and marks regardless of what the document says
+      // later, while the sender update branch leaves `content` and `type`
+      // freely writable — so an update landing between create and mark can
+      // carry a payload that is no longer a candidate, skip the re-read, and
+      // land last. Measured: a sender editing their message down to "ok" put
+      // the preview on a blocked, emptied row; a hand-rolled client flipping
+      // `type` put the duplicate's TEXT back. Any payload still carrying that
+      // text is a candidate by construction, so only a message edited OUT of
+      // candidacy escaped — lower stakes than the receipt race, but the code
+      // and its records assert a CLOSED race, and that is what a later editor
+      // trusts.
+      //
+      // The pre-read gate above still runs FIRST, so an update that was never
+      // going to write (a receipt on anything but the newest message) returns
+      // before paying for a read. That is what keeps this affordable.
+      //
+      // Do NOT gate this on `isChatDuplicateGuardEnabled` to save the read
+      // while the flag is off. That flag caches per isolate for five minutes,
+      // so switching it ON would leave a window in which one isolate's guard
+      // marks while another isolate's sync trigger still skips its re-read —
+      // re-opening this exact hole at the worst possible moment.
+      let current = after;
+      let vanished = isDelete;
+      if (
+        !isDelete &&
+        !payloadBlocked &&
+        (!!before || isChatDuplicateCandidate(after ?? {}))
+      ) {
+        const live = await tx.get(db.collection("messages").doc(messageId));
+        if (live.exists) {
+          current = live.data() as MessageWireFields;
+        } else {
+          vanished = true;
+        }
+      }
+
+      // A blocked row carries no text, so projecting it would leave an empty
+      // preview in every participant's conversation list. Treated exactly like
+      // a delete: the row stays on disk, it just stops being previewable.
+      const isBlocked =
+        payloadBlocked || (!vanished && current?.type === DUPLICATE_BLOCKED_TYPE);
+
+      if (vanished || isBlocked) {
+        // Only act when the gone-or-blocked message WAS the conversation's
         // lastMessage; otherwise the preview is unaffected.
         if (currentLastMessage?.id !== messageId) return;
 
         // Recompute by reading the most recent surviving message. Outside
         // the transaction would be cheaper but introduces a TOCTOU race;
-        // a single get() inside the txn is acceptable for the rare delete
-        // path.
+        // a get() inside the txn is acceptable for these rare paths.
+        //
+        // SCANS A FEW ROWS, not one: the newest message can itself be blocked,
+        // and a blocked row must never become the preview by being the top of
+        // this query either. Five is a ceiling chosen to bound the cost of a
+        // rare path, not a measurement — a sender who trips the guard five
+        // times in a row leaves the conversation with no preview until their
+        // next real message, which is the same outcome an empty conversation
+        // already has.
         const replacement = await tx.get(
           db
             .collection("messages")
             .where("conversationId", "==", conversationId)
             .orderBy("sentAt", "desc")
-            .limit(1)
+            .limit(SURVIVOR_SCAN_LIMIT)
         );
-        if (replacement.empty) {
+        const replacementDoc = replacement.docs.find(
+          (d) =>
+            (d.data() as MessageWireFields).type !== DUPLICATE_BLOCKED_TYPE
+        );
+        if (!replacementDoc) {
+          if (!replacement.empty) {
+            logger.warn(
+              "[syncConversationLastMessage] every scanned message is blocked; clearing lastMessage",
+              {
+                messageId,
+                scanned: replacement.size,
+                conversationId: logSafeConversationId(conversationId),
+              }
+            );
+          }
           tx.update(conversationRef, {
             lastMessage: null,
             updatedAt: admin.firestore.FieldValue.serverTimestamp(),
           });
           return;
         }
-        const replacementDoc = replacement.docs[0];
         const replacementData = replacementDoc.data() as MessageWireFields;
         // BUT-1853, STRENGTHENED 2026-08-19. A truthiness check is NOT enough
         // here, and the gap is reachable by any participant rather than by
@@ -261,7 +427,7 @@ export const syncConversationLastMessage = onDocumentWritten(
         //   · Firestore's type ordering sorts STRINGS above every timestamp,
         //     measured `string > new ts > old ts > null`.
         //
-        // So a planted string WINS `orderBy('sentAt','desc').limit(1)` outright
+        // So a planted string SORTS FIRST under `orderBy('sentAt','desc')`
         // and walks straight past `!data.sentAt`. Anyone in a group could make
         // their own message the permanent recomputed preview for everyone else.
         // Require a real Timestamp; anything else clears.
@@ -349,18 +515,26 @@ export const syncConversationLastMessage = onDocumentWritten(
       // Logged as one line either way: the log is for spotting a sustained
       // spike, and both shapes mean the same thing to whoever reads it —
       // messages arriving without a usable stamp.
-      if (!(after?.sentAt instanceof admin.firestore.Timestamp)) {
+      //
+      // Reads `current`, not `after` (BUT-1904): the two differ exactly when
+      // the duplicate guard rewrote the document while this invocation was in
+      // flight, which is the whole race. Re-checked here rather than trusted
+      // from the pre-read gate above, because this is the value that gets
+      // PROJECTED — `sentAt` is immutable under the rules and untouched by the
+      // guard, so the two agree in every case anyone has staged, and this
+      // costs a type test rather than a read.
+      if (!(current?.sentAt instanceof admin.firestore.Timestamp)) {
         logger.warn(
-          "[syncConversationLastMessage] after.sentAt missing or not a Timestamp; skipping",
+          "[syncConversationLastMessage] sentAt missing or not a Timestamp; skipping",
           { messageId, conversationId: logSafeConversationId(conversationId) }
         );
         return;
       }
-      if (!shouldReplaceLastMessage(currentLastMessage, after.sentAt)) {
+      if (!shouldReplaceLastMessage(currentLastMessage, current.sentAt)) {
         return;
       }
       tx.update(conversationRef, {
-        lastMessage: projectLastMessage(messageId, after),
+        lastMessage: projectLastMessage(messageId, current),
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       });
     });

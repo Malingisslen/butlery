@@ -1819,6 +1819,180 @@ void main() {
         );
       });
     });
+
+    // BUT-1904. The duplicate guard stopped deleting: it empties a message and
+    // stamps it `duplicateBlocked`, so the row reaches every participant's
+    // client. Only its own sender may see it — the sentence it stands for is
+    // "you already sent this", which is true for exactly one person.
+    //
+    // This filter runs BEFORE and OUTSIDE the block filter's try/catch, and the
+    // last case is what pins that placement. Everything else here would pass
+    // just as well with it buried inside.
+    group('duplicate-blocked rows are sender-only (BUT-1904)', () {
+      const conversationId = 'conv-blocked-rows';
+
+      setUp(() => production.ServiceLocator.initialize(DIContainer()));
+      tearDown(production.ServiceLocator.reset);
+
+      // Real `Message`s throughout: the block filter rebuilds messages with
+      // `copyWith`, which a `Fake` does not implement, and its fail-open catch
+      // would then swallow the throw and serve the list unfiltered — which
+      // looks exactly like this filter never running.
+      Message blockedRow({
+        required String senderId,
+        String id = 'msg-blocked',
+      }) => Message(
+        id: id,
+        conversationId: conversationId,
+        senderId: senderId,
+        senderDisplayName: 'Someone',
+        content: '',
+        type: MessageType.duplicateBlocked,
+        status: MessageStatus.sent,
+        sentAt: DateTime.utc(2026, 1, 2),
+      );
+
+      Message ordinaryRow({required String senderId}) => Message(
+        id: 'msg-ordinary',
+        conversationId: conversationId,
+        senderId: senderId,
+        senderDisplayName: 'Someone',
+        content: 'Jag kommer klockan sju ikvall',
+        type: MessageType.text,
+        status: MessageStatus.sent,
+        sentAt: DateTime.utc(2026, 1, 1),
+      );
+
+      Future<List<Message>> readPage(List<Message> stored) {
+        when(
+          () => mockMessagingRepo.getConversationMessagesPage(
+            conversationId: conversationId,
+            limit: any(named: 'limit'),
+            startAfter: any(named: 'startAfter'),
+          ),
+        ).thenAnswer((_) async => stored);
+        return messagingService.getConversationMessagesPage(
+          conversationId: conversationId,
+          limit: 50,
+        );
+      }
+
+      Future<List<Message>> readStream(List<Message> stored) {
+        when(
+          () => mockMessagingRepo.getConversationMessages(
+            conversationId: conversationId,
+            limit: any(named: 'limit'),
+          ),
+        ).thenAnswer((_) => Stream.value(stored));
+        return messagingService
+            .getConversationMessages(conversationId: conversationId)
+            .first;
+      }
+
+      test('the sender keeps their own blocked row (page)', () async {
+        TestServiceLocator.registerMock<BlockedUserFilter>(
+          _StubBlockedUserFilter(const <String>{}),
+        );
+
+        final page = await readPage([
+          ordinaryRow(senderId: 'test-user-id'),
+          blockedRow(senderId: 'test-user-id'),
+        ]);
+
+        expect(page.map((m) => m.id), ['msg-ordinary', 'msg-blocked']);
+      });
+
+      test("another participant's blocked row is dropped (page)", () async {
+        TestServiceLocator.registerMock<BlockedUserFilter>(
+          _StubBlockedUserFilter(const <String>{}),
+        );
+
+        final page = await readPage([
+          ordinaryRow(senderId: 'other-user'),
+          blockedRow(senderId: 'other-user'),
+        ]);
+
+        expect(
+          page.map((m) => m.id),
+          ['msg-ordinary'],
+          reason: 'nobody but the sender is shown that a message was stopped',
+        );
+      });
+
+      test("another participant's blocked row is dropped (stream)", () async {
+        // The two read paths are separate methods and were separate bugs
+        // before they shared `_filterBlocked`; a fix applied to one and not the
+        // other is the failure this case exists for.
+        TestServiceLocator.registerMock<BlockedUserFilter>(
+          _StubBlockedUserFilter(const <String>{}),
+        );
+
+        final live = await readStream([
+          ordinaryRow(senderId: 'other-user'),
+          blockedRow(senderId: 'other-user'),
+        ]);
+
+        expect(live.map((m) => m.id), ['msg-ordinary']);
+      });
+
+      // THE TWO PLACEMENT CASES. Both stage an EARLY RETURN out of the block
+      // filter, which is the only way to tell where this filter sits: on the
+      // happy path it makes no difference at all, so the three cases above
+      // pass wherever it is written.
+      //
+      // A first draft of these two staged nothing of the sort — one used a
+      // real `BlockedUserFilter` over a throwing repository, whose
+      // `currentBlockedIds` catches internally and returns an empty set rather
+      // than throwing, and the other relied on `tryGet` answering null while
+      // the group's own `setUp` had just initialized a production container
+      // that resolves it. Both therefore ran the full happy path, and a mutant
+      // that moved this filter inside the fail-open region passed all 67 tests.
+      test(
+        'a block lookup that THROWS still hides the row (BUT-1904)',
+        () async {
+          // The fail-open exit: `_filterBlocked` catches and returns the list it
+          // was handed, unfiltered, so a conversation is never blanked by a
+          // transient error (BUT-544). This filter must not inherit that
+          // contract — it has nothing to fetch and nothing to throw.
+          //
+          // A stub that throws from `currentBlockedIds` is the RIGHT instrument
+          // here, and the sibling BUT-1909 group's objection to it does not
+          // transfer: that group is measuring what the real filter does with an
+          // unreadable list, while this one only needs the service to take its
+          // catch.
+          TestServiceLocator.registerMock<BlockedUserFilter>(
+            _ThrowingBlockedUserFilter(),
+          );
+
+          final page = await readPage([
+            ordinaryRow(senderId: 'other-user'),
+            blockedRow(senderId: 'other-user'),
+          ]);
+
+          expect(
+            page.map((m) => m.id),
+            ['msg-ordinary'],
+            reason:
+                'the sender-only rule holds even when the block lookup fails',
+          );
+        },
+      );
+
+      test('an unregistered block filter still hides the row', () async {
+        // The other exit: `tryGet` answers null and `_filterBlocked` gives up
+        // before doing any work. Resetting the production locator is what
+        // stages it — with the group's container in place the filter resolves
+        // and this exit is never taken.
+        production.ServiceLocator.reset();
+
+        final page = await readPage([
+          ordinaryRow(senderId: 'other-user'),
+          blockedRow(senderId: 'other-user'),
+        ]);
+
+        expect(page.map((m) => m.id), ['msg-ordinary']);
+      });
+    });
   });
 }
 
@@ -1831,6 +2005,21 @@ class _StubBlockedUserFilter implements BlockedUserFilter {
 
   @override
   Future<Set<String>> currentBlockedIds() async => _ids;
+
+  @override
+  Future<void> dispose() async {}
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+/// Throws from `currentBlockedIds`, which the real filter never does — its own
+/// catch turns a failed fetch into an empty set. Used only to force
+/// `MessagingService._filterBlocked` down its fail-open exit, where what is
+/// under test is what the service returns from there, not what the filter did.
+class _ThrowingBlockedUserFilter implements BlockedUserFilter {
+  @override
+  Future<Set<String>> currentBlockedIds() async => throw Exception('offline');
 
   @override
   Future<void> dispose() async {}
