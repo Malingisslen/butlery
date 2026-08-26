@@ -34,9 +34,11 @@ void main() {
     // which uses sqflite. On macOS widget-test runners the native sqflite
     // plugin isn't initialised and an async gap in CacheStore bypasses
     // the path_provider + com.tekartik.sqflite MethodChannel stubs in
-    // golden_helper. Ubuntu + windows are unaffected. Skip this single
-    // test on macOS; the empty-gallery golden still proves the widget
-    // renders correctly there.
+    // golden_helper. Ubuntu + windows are unaffected by that bug. Skip this
+    // single test on macOS. Since golden_helper pinned the comparison to
+    // Windows this guard decides nothing on any platform — it is kept because
+    // it records a real macOS-only failure that goes live again if the pin
+    // moves.
     if (!Platform.isMacOS) {
       butleryGolden(
         'gallery with snaps matches golden',

@@ -2440,3 +2440,28 @@ Example: lib/services/menu/parser/text_normalizer.dart _noWordBefore/_noWordAfte
   stream and whatever the wording), never on the wording or the stream itself. And a guard that
   sends any stream to `/dev/null` is claiming that stream can hold nothing it needs — write that
   claim down or merge the stream.
+
+### [Workflow] A dormant assertion protects nothing, and the comment written to fix it invented a safety net that did not exist
+- **Date**: 2026-08-26 (BUT-1931 follow-up)
+- **Trigger**: `butleryGolden` had set `FlutterError.onError = (_) {}` around
+  `matchesGoldenFile`. A golden comparison reports its verdict as a THROWN error, so the
+  blanket handler turned every pixel mismatch into a PASS. While it was dormant the helper's
+  doc comment claimed the goldens were "deterministic across platforms" and produced "the same
+  pixel grid on any OS" — nothing could contradict it. The moment BUT-1931 made the comparison
+  live, seven of eight goldens differed on ubuntu (0.16-0.86 %) and six of seven on macOS (up
+  to 3.90 %). Then, writing the comment that justified the platform pin, I asserted that "the
+  verify skill and the commit gate" would still catch a visual regression before a commit
+  lands. Review disproved both: `lefthook.yml` runs no Flutter test at all, and `verify.md`'s
+  mapping stops at `test/widget/<widget>_test.dart` and never reaches a golden. Looking for
+  what actually does compare turned up better evidence than the false claim did — the nightly
+  `widget (windows-latest)` leg runs them un-skipped on a machine that is not the authoring
+  one, and had already passed. Two further counting errors followed in the corrections
+  themselves, one of them a phrase the reviewer supplied for a seven-item set and I pasted
+  onto an eight-item one.
+- **Rule**: When a repair makes a dormant assertion live, re-check every sentence written
+  while it was dormant — they were never true, only unfalsifiable. And a comment justifying a
+  fix is itself an untested assertion: before naming a mechanism as the safety net, open that
+  mechanism's config and confirm it runs the thing you are claiming. Name the check you
+  VERIFIED, not the one that ought to exist. A correction inherits the fragility of the claim
+  it repairs, and a count is true only of the exact set it was measured on — moving it to a
+  neighbouring set is how a fix ships a fresh false sentence.

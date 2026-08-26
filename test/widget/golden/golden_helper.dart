@@ -74,21 +74,55 @@ void Function(FlutterErrorDetails)? installGoldenImageErrorFilter() {
   return previous;
 }
 
+/// Whether this host is the one the committed PNGs were rendered on.
+///
+/// Pixel goldens are NOT portable, which `butleryGolden` below used to claim
+/// they were. Until BUT-1931 the comparison was silenced by a blanket
+/// `FlutterError.onError`, so every mismatch reported a pass and no measurement
+/// of this could exist. Taken once it started working, 2026-08-25/26: of the
+/// eight comparisons, all eight passed on Windows, seven differed on ubuntu by
+/// 0.16-0.86 %, and six of the seven that ran on macOS differed by up to
+/// 3.90 %. Same code, same PNGs, so the platform is the whole variable; the
+/// macOS spread is also why a percentage tolerance is not the answer instead
+/// of a pin.
+///
+/// Windows is the pin because that is where the PNGs are authored. Two things
+/// still compare them, and NEITHER is the commit gate — `lefthook.yml` runs no
+/// Flutter test at all, and the verify skill's mapping does not route a widget
+/// edit to that widget's golden:
+///  * any local `flutter test` run that covers these directories;
+///  * the nightly `widget (windows-latest)` leg of the cross-OS matrix, which
+///    does not skip and is a different machine from the authoring one — it
+///    passed against the committed set on 2026-08-26 (run 32930327481), which
+///    is what makes the pin a real check rather than a local habit.
+///
+/// Everywhere else CI reports these as skipped instead of as passed, which is
+/// the honest version of what it was already doing.
+///
+/// Moving the pin means regenerating every committed PNG on the new platform
+/// and verifying each one by eye. Do not regenerate on one platform while
+/// comparing on another: that only moves the red.
+bool get _goldensCompareHere => Platform.isWindows;
+
 /// Canonical runner for visual golden tests in the Butlery project.
 ///
 /// Centralises the ceremony every golden test shares:
 ///  * `createLocalizedTestApp` wrapping — Swedish locale, AppTheme.lightTheme,
 ///    all 4 localization delegates;
-///  * pinned surface size + device pixel ratio of 1.0, so the same render
-///    produces the same pixel grid on any OS;
-///  * the default test font (Ahem) — we intentionally do *not* load the
-///    app's JosefinSans / SpaceGrotesk fonts so glyphs stay deterministic
-///    across platforms without a CI-vs-local split;
+///  * pinned surface size + device pixel ratio of 1.0, so a given widget
+///    always lands on the same pixel grid;
+///  * the default test font (Ahem) rather than the app's JosefinSans /
+///    SpaceGrotesk, so glyph shapes don't depend on which fonts resolved;
 ///  * an image-error filter around the comparison — drops asset-load /
 ///    network-image noise that doesn't affect the pixel output, and lets
-///    everything else through so a real mismatch still fails the test.
+///    everything else through so a real mismatch still fails the test;
+///  * the comparison itself pinned to one platform — see [_goldensCompareHere].
 ///
-/// Update goldens with `flutter test --update-goldens test/widget/golden`.
+/// Update goldens on the pinned platform with
+/// `flutter test --update-goldens test/widget/golden
+/// test/widget/common/tappable_wrapper_test.dart`. Both paths are needed: one
+/// `butleryGolden` lives outside `test/widget/golden`, so the shorter command
+/// rewrites seven of the eight.
 ///
 /// Usage:
 /// ```dart
@@ -139,5 +173,5 @@ void butleryGolden(
       target ?? find.byType(SizedBox).first,
       matchesGoldenFile(file),
     );
-  });
+  }, skip: !_goldensCompareHere);
 }
