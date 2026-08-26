@@ -2107,8 +2107,7 @@ service cloud.firestore {
       // conjunct the sender could simply write the duplicate text back in and
       // hand it to the other participants after all. The Admin SDK bypasses
       // rules, so the guard itself is unaffected. Deleting a blocked row stays
-      // allowed below — though no screen in the app currently reaches that
-      // delete, for a reason unrelated to this rule (ADR-0009).
+      // allowed below.
       allow update: if isAuthenticated()
         && request.auth.uid == resource.data.senderId
         && resource.data.get('type', 'text') != 'duplicateBlocked'

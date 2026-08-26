@@ -36,7 +36,6 @@ New family → append a row.
 `setGlobalOptions({ region: "europe-west1", maxInstances: 10 })` in
 `index.ts`, above every `export … from`. Never re-region per-function
 without approval (mismatch = silent client-side "not found").
-`admin.initializeApp()` runs once, after that call.
 - **Global and per-function options MERGE key-by-key** (via
   `copyIfPresent`) — declaring `memory`/`timeoutSeconds`/`retry`/`secrets`
   loses nothing and still inherits the rest; per-function wins on collision.
@@ -83,9 +82,8 @@ without approval (mismatch = silent client-side "not found").
   export, so never say a global option "reaches every export". Adding an
   export falsifies every endpoint TALLY in `index.ts` and
   `deploy-manifest.test.ts`; no test guards them, so STRIKE rather than
-  re-count — and sweep the WHOLE file: they recur in the mutation-probe log
-  and the `ALLOWED_OVERRIDES` note, so a header-only strike leaves three
-  behind and reads as done.
+  re-count, and sweep every carrier — a header-only strike leaves the body's
+  copies and reads as done.
 
 ## Firebase Functions v2 — what to use
 
@@ -141,8 +139,7 @@ idempotent:
     writers nobody enumerated: on `messages` that is 8+, incl. a delayed
     `status:'sent'` self-update ~100ms after create, `onProfileUpdated`'s
     fan-out over every message a user sent, and three GDPR cascade legs.
-    Enumerating instead is the trap that produced three review rounds AND a
-    false "all four" in the record. The CREATE side may gate on the sibling's
+    The CREATE side may gate on the sibling's
     predicate — but only because both triggers read the SAME create snapshot.
     Put the CHEAP no-write checks (stamp type, precedence) BEFORE the read;
     deciding on the payload's `sentAt` is safe only while `sentAt` is
@@ -229,7 +226,10 @@ from `(err as {code?}).code` instead.
   (pair it with a sibling requiring EXISTS); a `src.includes("<field>")`
   assertion is free whenever the docstring names the field (assert the
   WRITE); a fake `listDocuments()` returning only stored docs cannot stage a
-  PHANTOM parent.
+  PHANTOM parent. A rules test in `functions/src/__tests__/`, and a comment in
+  `firestore.rules`, pin what the RULE grants and never which SCREEN reaches
+  it — strike any app-reachability claim in either, and include rules comments
+  in a claim sweep (one survived there after four other carriers were struck).
 - **Rules are not filters** — a client query with NO condition is DENIED
   wholesale on a member-scoped collection; only the RULES emulator lane
   proves it, and that emulator KEEPS data across runs, so give an "empty"
@@ -435,7 +435,3 @@ from `(err as {code?}).code` instead.
   refused by its own hook).
 - `run-ci-unit-tests.js` auto-discovers every `test:*` that is not
   `test:rules*`/`test:integration:*` (see the registration bullet above).
-
-### When to consult the archive
-Grep it when a principle here is too compressed, or for a ticket's round
-chain or a past config value.

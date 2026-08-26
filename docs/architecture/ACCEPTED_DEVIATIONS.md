@@ -2115,6 +2115,14 @@ collection.
    installs the long-press gesture, and that menu is dead for every message type anyway. **The
    sender cannot remove the row from inside the app.** See ADR-0009; whether the notice needs its
    own dismiss control is Malin's call.)*
+
+   *(Superseded 2026-08-26, same day, before landing: "cannot remove the row from inside the app"
+   is too broad. No PER-ROW dismissal reaches the delete — that part holds — but deleting the
+   whole CONVERSATION reaches it in a DIRECT message. In a GROUP it does not: the
+   delete-conversation tile is gated on `conversation.groupId == null`
+   (`conversations_list_view.dart`), so a blocked row in a group has no removal path from inside
+   the app at all. Measured by the `firestore-rules-tester` and `integration-reviewer` gates, in
+   that order — the second correcting the first.)*
 3. **`syncConversationLastMessage` tests `after.type` for blocked-ness DIRECTLY, never behind
    the candidate gate.** The mark's own invocation arrives already carrying
    `duplicateBlocked`, which is not a duplicate-guard candidate — so a gated test never runs,
@@ -2144,9 +2152,14 @@ duplicate until the mark propagates. Harm nil — it is the same text they recei
 earlier, and it was equally true of the delete behaviour — but the guarantee did not exist.
 Raised by the `code-reviewer` gate, twice.)* Do not cite it as a
 boundary, and do not move it inside `_filterBlocked`'s fail-open try/catch — it is pure local
-logic with nothing to fetch and nothing to throw. Two different moves are possible (into the
-catch, or below the `filter == null` exit) and each has its own killing test; neither kills the
-other's, which is why both cases exist.
+logic with nothing to fetch and nothing to throw. Two different moves are possible: into the
+catch, or below the `filter == null` exit.
+*(The sentence that stood here explaining why both placement cases exist — "neither kills the
+other's" — was STRUCK 2026-08-26. The testing-specialist gate measured it false: on the
+into-the-catch move the unregistered-filter case kills the throwing-filter case's mutant as
+well. Both cases still earn their place, but not for the reason given, and no replacement
+reason is written here — a fresh one would be another unmeasured claim in a ticket that has
+already shipped several repairing each other. The tests themselves carry it.)*
 
 ### A fourth part, added after the first version of this entry
 
@@ -2190,5 +2203,5 @@ quote block entirely for every OTHER participant, because the lookup resolves ag
 already-filtered list, throws, and is caught. A blocked row shrinks
 the loaded page, which can make `chat_message_stream`'s "you joined here" divider draw when the
 join point is actually off-screen; and a blocked row sits between two messages from the same
-sender, so `shouldShowAvatar` suppresses the avatar across it. Both are pre-existing consequences
+sender, so `shouldShowAvatar` suppresses the avatar across it. These are pre-existing consequences
 of BUT-544's block filter that this change widens, not new mechanisms.

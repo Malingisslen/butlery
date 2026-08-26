@@ -121,7 +121,12 @@ check_pattern() {
   # which must not pass for "nothing to see".
   local grep_out grep_rc=0
   set +e
-  grep_out="$(grep -rEn --include='*_test.dart' "$pattern" "${paths[@]}" 2>/dev/null)"
+  # -H is load-bearing, not decorative: grep OMITS the filename when it is given
+  # exactly one FILE, so with a single staged *_test.dart every line arrived as
+  # "70:code" instead of "path:70:code". Such a line fails the `:[0-9]+:` parse
+  # below and takes the unreadable-file branch — which is why the guard blamed a
+  # binary blob. Found 2026-08-26 on a commit that staged one test file.
+  grep_out="$(grep -rEnH --include='*_test.dart' "$pattern" "${paths[@]}" 2>/dev/null)"
   grep_rc=$?
   set -e
 

@@ -731,10 +731,8 @@ test("messages: the same sender CAN edit an ordinary message (control)", async (
 // change that closed editing by closing the whole document would pass the deny
 // above and break this.
 //
-// Says nothing about dismissing the notice: no screen in the app reaches this
-// delete (ADR-0009). An earlier version of this comment claimed it did, and was
-// the fourth carrier of a sentence struck in three other files in the same
-// commit — the first sweep was scoped to the production `.ts` files.
+// Says nothing about DISMISSING the notice — this test pins what the RULE
+// allows and can pin nothing about screens. See ADR-0009.
 test("messages: the sender can still delete a blocked message", async () => {
   await seedBlockedMessage(
     "m-blocked-del",
@@ -749,7 +747,7 @@ test("messages: the sender can still delete a blocked message", async () => {
 });
 
 // ============================================================================
-// MESSAGES — BUT-1904 freeze, the branches the three cases above do not reach
+// MESSAGES — BUT-1904 freeze, the branches the cases above do not reach
 // ============================================================================
 
 // `seedBlockedMessage` takes `type` as a STRING, so it cannot express the three
@@ -784,7 +782,7 @@ async function seedMessageBody(
 // B4: the RECEIPTS branch is a second, OR'd `allow update` on this collection,
 // and the freeze conjunct is not on it. It stays open on a blocked row, which
 // is the intended reading of the split — a receipt is not an edit — and this
-// is the allow half that makes the four denies below mean something.
+// is the allow half that makes the denies below mean something.
 test("messages: a recipient can still mark a blocked message delivered", async () => {
   await seedBlockedMessage(
     "m-blocked-receipt",

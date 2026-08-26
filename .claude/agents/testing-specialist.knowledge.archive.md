@@ -26542,3 +26542,245 @@ transactional read, because candidacy gating on updates was a measured defect. T
 is forced and the comment scopes its cost claim honestly.
 
 Verdict: pass, 0 blocking.
+
+---
+
+## 2026-08-26 — BUT-1904 follow-up re-review: comment repairs, and the guard fix nothing pinned
+
+**Trigger:** re-review of a staged diff described as 9 files, comment-only except
+`scripts/check_test_real_time.sh`. `lib/widgets/messaging/message_bubble.dart` had moved
+since my earlier pass. The round's subject: four carriers of one false inference ("no screen
+in the app reaches this delete"), three superseded as decision records, one struck.
+
+**Scope moved under me mid-round.** The staged set was 12 files by verdict time, not 9. A
+parallel gate staged `firestore.rules` (comment-only: the FIFTH carrier of the same false
+sentence, correctly struck, rule logic byte-identical) and both
+`cloud-functions-specialist.knowledge*.md`. Meanwhile
+`.claude/agents/firestore-rules-tester.knowledge{,.archive}.md` sat `MM` with +11/+19 lines
+in the worktree and NOT in the index. Re-run `git diff --cached --stat` at verdict time, not
+only at the start.
+
+**The blocking finding was in the one file everybody read as trivial.** The diff's single
+functional change adds `-H` to a grep. `scripts/__tests__/check_test_real_time_test.sh` is a
+CI-wired fixture suite whose own header says "the guard is now only changeable against these
+fixtures". Measured: 15/15 PASS against `git show HEAD:scripts/check_test_real_time.sh` AND
+15/15 against the staged version. Nothing in it can see the fix.
+
+Why it looks covered: the suite has two argument-scoping cases that appear to exercise the
+single-file shape. Both are exit-code-degenerate. `a named violating file is checked` expects
+exit 1 — and pre-fix it exits 1 for the WRONG reason, down the unreadable-file branch instead
+of the violation branch. `an unnamed violating file is out of scope` names a CLEAN file, so
+grep matches nothing and the filename question never arises. The suite asserts exit codes only
+(deliberately, so a rewrite can pass), which is exactly why a wrong-reason exit is invisible.
+
+The killer fixture INVERTS the expected code: one named BASELINED file, exit 0. Measured
+pre-fix:
+
+```
+::error file=1:void main() { final x = DateTime.now(); }::Unreadable test file
+(grep could not report a line number — a *_test.dart committed as a binary blob does this).
+```
+
+— the exact error the blocked commit was blamed with, reproduced from `git show HEAD:`. Added
+`a single named BASELINED file is allowed`: red on HEAD (`expected exit 0, got 1`), green on
+the staged script, 16/16 in the real repo, no new wiring needed (lefthook + test.yml already
+run the suite). Left UNSTAGED for the parent to add.
+
+**Grading the repairs' REPLACEMENT claims, which is where a strike round goes wrong.** The
+inserted claim is that `deleteAllMessages` reaches the blocked row. Traced end to end rather
+than accepted: `conversations_list_view.dart:430` -> `ConversationsViewModel.deleteConversation:341`
+-> `MessagingService.deleteConversation` -> `MessageManagementOperations.deleteConversation:204`
+-> `deleteAllMessages:113`, which calls `searchMessages(query: '')`;
+`MessageQueryModule.searchMessages:404` filters `content.toLowerCase().contains(lowerQuery)`
+and `''.contains('')` is TRUE, so an emptied row survives; line 136 deletes every row whose
+`senderId` matches the caller. Claim holds.
+
+I also checked the way the surviving TRUE half could have been wrong, since three carriers now
+rest on it: if the long-press lived on an ANCESTOR, `MessageBubble`'s early return would not
+remove it. It does not — `chat_message_stream.dart:383` passes `onLongPress` as a MessageBubble
+PARAMETER, installed at `message_bubble.dart:334`, below the `_isDuplicateBlocked` return at
+119. "Returns before it installs the long-press gesture" is accurate.
+
+**No test asserts the falsified claim.** Swept `lib/`, `test/`, `functions/src/` for "no
+screen" / "cannot delete" / "cannot remove" / "from inside the app": zero hits.
+`message_bubble_duplicate_blocked_test.dart` read in full — it asserts affordances
+(`find.byType(GestureDetector), findsNothing`) and never deletion reachability; its `reason:`
+strings stay inside what the widget can prove. One carrier survives and is CORRECTLY
+qualified, so leave it alone: `lib/models/messaging/message_type.dart:104-107` says
+`searchMessages` does not apply the sender-only rule and "a blocked row cannot match a
+NON-EMPTY query anyway" — true, and the empty-query caller is precisely `deleteAllMessages`.
+
+**Non-blocking, both about the repaired Dart comment.** The two quoted test-name literals
+verify verbatim (lines 1955, 1985) — that repair is right. But the same sentence introduces
+"so every case above it passes wherever it is written", a quantifier over the FILE'S CONTENTS
+with the identical insertion seam, two lines above the clause explaining why counts have one.
+Strike the derived clause. And "a mutant ... passed the whole suite" is anchored to the FIRST
+DRAFT by its preceding sentences and is historically true, but reads as the current suite,
+which the mutant does NOT pass — the two placement cases were rewritten to kill it. Also noted:
+`cook-snaps-and-message-mod-rules.test.ts:750` still says "the branches the three cases above
+do not reach". Accurate today (tests at 689, 714, 736), same seam, in a file this very commit
+edits. Strike the numeral, never re-count.
+
+**Verification.** 72/72 Dart (67 messaging_service + 5 message_bubble_duplicate_blocked).
+Guard fixtures 16/16. All six struck strings absent from the INDEX copies via
+`git show :<path>`, not from the worktree.
+
+Verdict: FAIL, 1 blocking (remedy written and measured, unstaged).
+
+---
+
+## 2026-08-26 — BUT-1904, round 3: the repairs verified, and a test-attribution sentence measured false
+
+**Trigger:** coordinator reported the blocker closed and both non-blocking items done, staged,
+worktree clean. Verified against `git diff --cached`, not the report.
+
+**Confirmed clean.** Index == worktree on every staged path (`git diff --numstat` empty).
+`scripts/check_test_real_time.sh` still carries `-H` in the INDEX after the coordinator's stash
+cycle — they caught the guard falling out of the index themselves by diffing `--cached`, which
+is the right reflex and the second time this ticket produced that exact failure by a different
+route. My fixture is staged verbatim. Guard fixtures 16/16, service suite 67/67, both on my own
+run. Staged set is **15 files, not the 14 reported** — small, but this ticket has blocked four
+times on miscounts.
+
+**The two repairs' NEW claims, graded as fresh claims rather than accepted.**
+1. Non-blocking 1's replacement asserts a mutation outcome in the present tense: "a mutant that
+   moved this filter inside the fail-open region passed the suite AS IT THEN STOOD. It does not
+   pass it now; the two cases below are what changed that." MEASURED TRUE — a scratchpad replica
+   of `_filterBlocked` (lib/services/messaging_service.dart:288-335 + 359-368) at three
+   placements shows the inside-the-try move reddening BOTH placement cases, with every
+   happy-path fixture GREEN under both mutants (which independently confirms the sentence's own
+   mechanism half, "on the happy path it makes no difference at all").
+2. The reworded supersession, "`deleteAllMessages` searches with an EMPTY query string, which
+   every row matches — an emptied one included", is TRUE and strictly better than the earlier
+   "queries on empty content", which read as though it queried FOR empty content.
+   `content.toLowerCase().contains('')` is true of every string.
+
+**BLOCKING, and it is the sentence nobody would re-measure.**
+`docs/architecture/ACCEPTED_DEVIATIONS.md:2154-2156` (staged, unchanged this round):
+
+> Two different moves are possible (into the catch, or below the `filter == null` exit) and each
+> has its own killing test; neither kills the other's, which is why both cases exist.
+
+Measured matrix, mutants × the two placement cases (THROWS / UNREGISTERED):
+
+| mutant | THROWS | UNREGISTERED |
+|---|---|---|
+| P2 — filter moved below the `filter == null` exit | GREEN | **RED** |
+| P3 — filter moved inside the try (fail-open region) | **RED** | **RED** |
+| catch returns `incoming` instead of `messages` | **RED** | GREEN |
+
+"Neither kills the other's" is FALSE: on the into-the-catch move the UNREGISTERED case kills the
+THROWS case's mutant as well. Both tests still earn their place — but on a THIRD mutant the
+sentence never names (the catch's own return), not on the two moves it does name. So the tests
+are right and the sentence explaining why they exist is wrong, which is the worst shape: it is
+the line a future run cites to skip re-measuring, and it would license deleting the THROWS case
+on the mistaken belief its move is uniquely its own.
+
+Repair filed as a STRIKE of the clause after "(into the catch, or below the `filter == null`
+exit)" — everything following it is either false or a fresh claim needing measurement. Not
+reworded into "each kills a mutant the other misses", true though I measured it to be: that is a
+new counted claim, and this ticket has already shipped five sentences repairing each other.
+Left for the coordinator to apply rather than editing a staged deviations doc mid-review — an
+edit from me would put the worktree ahead of the index, the failure they had just been caught by.
+
+**Durable rule extracted.** A doc claiming two cases are mutually non-subsuming is a claim about
+a MATRIX; reading it pairs mutants to tests one-to-one by eye and misses that one test can kill
+every named mutant. Run mutants × tests in full. A ~90-line scratchpad replica of the single
+method under discussion settles it in about a minute with no `lib/` write, no classifier
+refusal, and no parallel-session risk.
+
+Verdict: FAIL, 1 blocking.
+
+---
+
+## 2026-08-26 — BUT-1904, round 4 (final pass): the group-chat correction, and a false count the sweep walked past
+
+**Trigger:** final pass on a 15-file staged diff, index == worktree. One file had moved since my
+round-3 pass: `lib/widgets/messaging/message_bubble.dart`, comment-only, after the
+`integration-reviewer` gate found the surviving sentence ("Deleting the whole conversation still
+removes it") false for GROUP chats. Also moved, not mine: `firestore.rules` (fifth carrier of the
+same claim, struck) and `.claude/rules/accepted-deviations.md` (an unmeasured count struck).
+
+**Question 1 — does any staged test assert what the group-chat correction falsified? NO.**
+Read all three staged test files in full (`messaging_service_test.dart`,
+`cook-snaps-and-message-mod-rules.test.ts`, `check_test_real_time_test.sh`). Swept `test/`,
+`functions/src/`, `scripts/` by CONCEPT rather than by the struck string: "no screen", "cannot
+delete", "cannot remove", "from inside the app", "whole conversation", "removal path",
+`groupId == null` — zero carriers in any test. Read
+`test/widget/messaging/message_bubble_duplicate_blocked_test.dart` in full (unstaged, the covering
+suite for the corrected file): it asserts affordances only — `find.byType(GestureDetector),
+findsNothing` with a `reason:` that stays inside what the widget can prove — and never deletion
+reachability. The `.ts` rules test asserts `assertSucceeds(delete)`, a claim about the RULE, which
+the correction does not touch; its comment now says so explicitly.
+
+**Independently re-measured the correction's own two halves** rather than relaying the gate:
+- `conversations_list_view.dart:424` gates the delete-conversation tile on
+  `conversation.groupId == null` — verified by reading it, with the BUT-1838 rationale above it.
+- The bulk route exists only through that tile: `MessageManagementOperations.deleteAllMessages`
+  (line 98) has exactly one caller, `deleteConversation` (line 204) in the same file;
+  `MessagingService.deleteAllMessages` (line 528) has NO caller in `lib/views`, `lib/viewmodels`
+  or `lib/widgets` — grepped, including for a "rensa chatt" surface, which does not exist as UI
+  despite `deleteAllMessages`' own comment quoting the phrase.
+- The surviving TRUE half: `handleMessageAction` (`chat_action_handler.dart:64-89`) has cases
+  reply/edit/delete/copy/report and a `default: AppLogger.warning('Unknown message action')`.
+  `chat_message_stream.dart:383` sends `'menu'`. So "that menu is dead for every message type" is
+  a quantifier over the CODE'S BEHAVIOUR — a contract, not a count — and it holds.
+
+**Question 2 — did any test comment gain a fresh count this round? NO.** The only files that
+moved since my pass carry no numeral in a test: the new `message_bubble.dart` sentence is
+"there is no PER-ROW way to dismiss the notice … recorded in ADR-0009, not here", the rules
+comment is "Deleting a blocked row stays allowed below." (readable off `allow delete` two
+statements down, line 2139), and the deviations entry is "cannot dismiss the row ON ITS OWN".
+
+**BLOCKING — a false count in a staged test file, in an untouched region of a file this round
+edited.** `functions/src/__tests__/cook-snaps-and-message-mod-rules.test.ts:785` (B4's comment):
+"this is the allow half that makes the four denies below mean something." Measured on the INDEX
+blob: 8 deny TESTS below it (B5, B6, B7, B8, B9, B13, B14, B15) and 9 deny ASSERTIONS (B16's
+second half). Scoped to the branch B4 is actually a control for — the receipts route — it is 3
+(B5, B6, B9). Wrong under both readings. It was committed in `ee372d3cf`, so it is not in this
+round's hunks; the round nonetheless struck its sibling 35 lines above ("the branches the three
+cases above do not reach" -> "the cases above"), which is the header-fix-reads-as-done shape.
+Remedy is a STRIKE of the numeral, never a re-count: "…makes the denies below mean something."
+NOT applied by me — the file sits under the `firestore-rules-tester` / `cloud-functions-specialist`
+markers, and editing it un-proves it for both.
+
+**Explicitly NOT a finding, so nobody re-opens it.** `messaging_service_test.dart:1950` says "the
+two cases below are what changed that". It is a count over the file's contents, but its antecedent
+is the pair NAMED by literal three lines above, in the same comment that explains why counts are
+avoided; it is true today and bound to those names. Raising it would be the reword chain this
+ticket has already run five times.
+
+**Round-3 blocker verified closed.** `ACCEPTED_DEVIATIONS.md:2155-2162` now ends at "Two different
+moves are possible: into the catch, or below the `filter == null` exit." followed by a dated strike
+note that states no replacement reason. Correct: struck, not reworded.
+
+**Verification.** `messaging_service_test.dart` + `message_bubble_duplicate_blocked_test.dart`:
+72/72 green on my own run. `scripts/__tests__/check_test_real_time_test.sh`: 16/16, including my
+round-2 fixture. `git diff --numstat` over every staged path: empty, so the index the parent will
+commit is the copy I graded.
+
+Verdict: FAIL, 1 blocking.
+
+**Re-review, same day (round 4 close).** Both strikes verified in the INDEX, not the worktree:
+`git show :<path>` on `cook-snaps-and-message-mod-rules.test.ts:785` reads "…makes the denies
+below mean something." and `messaging_service_test.dart:1942` ends at "on the happy path it makes
+no difference at all." Comment-stripped md5 identical to HEAD on BOTH files (`c12c6e77…`,
+`8c110b22…`), so neither repair moved code. 72/72 Dart on my own run, 16/16 guard fixtures,
+`git diff --numstat` empty across all 15 staged paths.
+
+The coordinator's second strike is the round's other lesson, and it was their own sentence:
+`messaging_service_test.dart` had carried "a count of the cases beside it has an insertion seam,
+and this comment already lost one numeral that way" — a PROVENANCE claim, measured false. The two
+numerals this file lost were `all 67 tests` (correct when struck; it named a suite total) and
+`the three cases above` (correct when struck; it had an insertion seam). Neither was lost "that
+way", i.e. neither had gone stale. So the clause explaining why a count was avoided was itself
+the only false sentence left in the paragraph. It is deleted, not reworded.
+
+Checked that the deletion did not strand an antecedent: the naming sentence above it survives
+("The placement cases: 'a block lookup that THROWS…' and 'an unregistered block filter…'"), so
+the following paragraph's "these two" and "the two cases below" still resolve — which is why
+that one stays untouched. Swept both index copies for any remaining numeral quantifying
+cases/denies/tests: only line 1635's "only showing first two tests as example", pre-existing,
+accurate (that group holds exactly two), and outside this round.
+
+Verdict: pass, 0 blocking.

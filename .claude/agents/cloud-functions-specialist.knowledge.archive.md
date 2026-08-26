@@ -14995,3 +14995,124 @@ rather than the ~1 I estimated, while the pre-read gate keeps the bulk fan-outs
 
 - "Full-scan jobs need an explicit cap + `logger.warn`." — subsumed by the unbounded-fan-out
   bullet under Cost & cold-start, which carries the concrete `.limit(CAP+1)` remedy.
+
+### 2026-08-26 — BUT-1904 comment sweep: a fifth carrier survived in firestore.rules [review][comments]
+
+Re-review of the 9-file staged diff (comment-only + one `-H` flag fix in
+`scripts/check_test_real_time.sh`). Verified for
+`functions/src/__tests__/cook-snaps-and-message-mod-rules.test.ts`:
+
+- Nothing executable moved. One hunk, all `//` lines; stripping full-line comments from
+  `git show HEAD:<path>` and `git show :<path>` gives byte-identical blobs
+  (`16e800bcdcef50d9e9d80e9f2edd5566ee806c61` both sides).
+- The surviving two-sentence comment claims only what the emulator test pins: the delete rule
+  is `allow delete: if isAuthenticated() && request.auth.uid == resource.data.senderId`, with
+  the BUT-1904 `duplicateBlocked` conjunct on `allow update` only, and the new sentence
+  explicitly declines to claim anything about screens.
+
+Blocking finding: `firestore.rules` (NOT staged, unchanged since HEAD) carries a fifth copy of
+the claim struck in the four other carriers, above `allow update` on `messages`:
+"Deleting a blocked row stays allowed below — though no screen in the app currently reaches
+that delete, for a reason unrelated to this rule (ADR-0009)."
+
+Measured the falsifying path end to end rather than relaying the `firestore-rules-tester`
+gate's report: `conversations_list_view.dart:430/475/494` ->
+`ConversationsViewModel.deleteConversation` -> `MessagingService.deleteConversation` ->
+`message_management_operations.deleteAllMessages` -> `searchMessages(query: '')`, whose filter
+is `message.content.toLowerCase().contains('')` — true for every string including `''`, so an
+emptied blocked row matches — then `deleteMessage` for each row where
+`message.senderId == currentUserId`. Remedy is a STRIKE of the "though no screen ..." clause,
+not a rewrite; adding the file also pulls it back under the `firestore-rules-tester` marker.
+
+Also reproduced the script fix's premise before accepting it: `grep -rEn --include=... PATTERN
+onefile` prints `1:text`, `grep -rEnH ...` prints `a_test.dart:1:text`, and `-H` is a no-op for
+the multi-file and directory cases. An unprefixed line fails `match($0, /:[0-9]+:/)` and lands
+in the "Unreadable test file / binary blob" branch, as the new comment states.
+
+Knowledge-file edits (net size down, 27607 -> under it):
+- Folded the rules-comment/rules-test reachability rule into the comment-repair bullet under
+  "Test seams, emulator infra & non-vacuity".
+- Retired "`admin.initializeApp()` runs once, after that call." — one line of index.ts, readable
+  in seconds, no decision depends on it.
+- Retired "Enumerating instead is the trap that produced three review rounds AND a false 'all
+  four' in the record." — round narrative; the actionable half (gate on write KIND) is stated
+  immediately above it.
+- Compressed the endpoint-tally strike sentence to the rule, dropping the per-site inventory.
+- Retired the "When to consult the archive" trailer — the agent definition already states the
+  archive is the audit trail to grep when a principle is too compressed.
+
+### 2026-08-26 — BUT-1904 final pass: the fifth-carrier finding is CLOSED [review][comments]
+
+Closes the blocking finding in the entry above, which was written while `firestore.rules` was
+still unstaged and therefore reads as open. It is staged now, and the strike landed as
+recommended: the sender `allow update` comment ends "Deleting a blocked row stays allowed
+below.", with no reachability clause. Rule logic byte-identical to HEAD.
+
+Staged set 15 files, index == worktree on every one of them. My file changed once more since
+the round above — `testing-specialist` struck the numeral in the MESSAGES section header
+("the branches the three cases above do not reach" -> "the branches the cases above do not
+reach"). Re-verified after that edit rather than trusting the earlier proof:
+
+- `git diff --cached -U0` on the file yields no changed line that is not a `//` line, across
+  BOTH hunks.
+- Stripping comments from `git show HEAD:<path>` and `git show :<path>` leaves 796 identical
+  lines on each side.
+- `npm run build` clean; `test:rules:cook-snaps-and-message-mod` 51/51 on my own run, with the
+  emulator already up on 127.0.0.1:8080.
+
+Two `three`s survive in the file and BOTH are legitimate, so do not sweep them on sight: the
+`seedMessageBody` header enumerates its own three states in the same sentence (absent,
+present-null, present-non-string), and B11's "a fourth state" counts from the stamped/ordinary
+pair plus those. Neither ranges over the tests below it, which is what the struck one did.
+
+No knowledge-file edit this round — the reachability principle added in the round above already
+covers what this pass verified, and the file is over budget.
+
+Verdict: PASS, 0 blocking.
+
+### 2026-08-26 — BUT-1904 third pass: B4's "four denies" struck, and the file swept to the end [review][comments]
+
+Third comment-only edit to `cook-snaps-and-message-mod-rules.test.ts` in one ticket. B4's
+comment said "the allow half that makes the four denies below mean something"; struck to "the
+denies below". Re-measured both readings independently rather than relaying the two gates:
+`awk 'NR>785 && /assertFails/'` returns 9 assertions across 8 deny-named tests (B5, B6, B7, B8,
+B9, B13, B14, B15, plus B16's trailing deny inside an allow-named test), and 3 if scoped to the
+receipts route B4 is the allow half of (B5, B6, B9 — the payloads carrying `status:`). FOUR
+matched neither, and a rewrite to either number would have re-armed the same seam, so the
+strike is the right shape and "eight" would not have been.
+
+**This is the header-fixed-body-missed shape, second occurrence in one ticket, and both times
+a PHRASING SHIFT hid the survivor from the sweep.** Round 1 grepped "no screen in the app
+reaches" and missed `firestore.rules` saying "reaches that delete". Round 2 struck "the three
+cases above" in the section header 35 lines up and missed "the four denies below" in the body.
+The lesson is already in the knowledge file ("STRIKE rather than re-count, and sweep every
+carrier — a header-only strike leaves the body's copies and reads as done"); nothing new is
+owed there, and it is not restated in a second bullet because the `testing-specialist` file
+owns the count/insertion-seam domain and took its own bullet this round.
+
+**Swept to the end this time, which is what should stop a fourth round.** Every comment line
+carrying a number word or quantifier, checked for whether it ranges over the tests below it.
+Nothing left that does. The survivors and why each is safe:
+- `seedMessageBody`'s "the three stored states" — enumerated in the same sentence.
+- B11's "a fourth state" — counts from that enumeration plus the stamped/ordinary pair.
+- B16's "Both are pinned" / "flip these two" — names B16 and B17 as literals.
+- "Both `allow update` statements have to say no" (B5) — ranges over `firestore.rules`, where
+  the sender and receipts limbs are two statements; verified, and the emulator prints both
+  (`for 'update' @ L2111`, `@ L2133`) on every deny in this block.
+- "both halves of the `allow read, delete` rule" / "both read + delete" / "mutable in BOTH
+  directions" — range over a quoted rule's verbs and an enum's two values, not over tests.
+
+Verification, all three hunks: no changed line that is not a `//` line; comment-stripped
+`git show HEAD:<path>` vs `git show :<path>` identical at 796 lines each side (the strip is
+non-vacuous — one line contains `://` inside a string and survives on both sides);
+`npm run build` clean; `test:rules:cook-snaps-and-message-mod` 51/51, 0 FAIL, on my own run.
+
+Also re-verified ADR-0009's two symbol corrections, since a correction is as falsifiable as
+the claim it repairs: `handleMessageAction` (`chat_action_handler.dart:64`) has no `'menu'`
+case and warns "Unknown message action" at :87, while `handleAttachment` at :162 does carry
+`case 'menu':` at :177 — so naming the CLASS would have pointed a reader at a live affordance.
+And `MessagingService.deleteAllMessages:528` is a facade with no caller in `lib/`; the reached
+symbol is `MessageManagementOperations.deleteAllMessages`, called from its own
+`deleteConversation:204`. Both corrections hold.
+
+Verdict: PASS, 0 blocking.

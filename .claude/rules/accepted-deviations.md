@@ -276,8 +276,11 @@ files in the same edit.
   flag either — it caches per isolate for five minutes, so switching it on would leave a window
   where one isolate marks while another skips.
   The duplicate's TEXT is destroyed and is not recoverable from the row; that was weighed. And
-  the sender cannot DISMISS the row from inside the app — the rules allow the delete, no screen
-  reaches it. BUT-1904, 2026-08-26
+  the sender cannot dismiss the row ON ITS OWN — the rules allow the delete, but no per-row
+  affordance reaches it (`MessageBubble` returns before it installs the long-press gesture, and
+  that menu is dead for every message type anyway). What else can remove the row depends on the
+  conversation — ADR-0009 has the measurement. Whether the notice needs its own dismiss control
+  is Malin's, and open. BUT-1904, 2026-08-26
 
 
 - **`inPollConversation()` reproduces only the MEMBERSHIP half of the message read rule, not

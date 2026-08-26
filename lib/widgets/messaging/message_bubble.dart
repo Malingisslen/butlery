@@ -112,8 +112,9 @@ class _MessageBubbleState extends State<MessageBubble>
     // are simply not drawn), no swipe-to-reply and no long-press menu. Its text
     // comes from the ARB rather than from the document, which stores none.
     //
-    // Losing the long-press menu means the sender cannot delete the row from
-    // inside the app, even though `firestore.rules` allows it. That menu is
+    // Losing the long-press menu means there is no PER-ROW way to dismiss the
+    // notice. What else can remove it depends on the conversation and is
+    // recorded in ADR-0009, not here. That menu is
     // dead for every message type today for an unrelated reason, so restoring
     // it here would not help; see the note in ADR-0009.
     if (_isDuplicateBlocked) {

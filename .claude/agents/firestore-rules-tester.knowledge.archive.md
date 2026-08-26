@@ -2931,3 +2931,170 @@ mixup is the likeliest wrong edit, and a suite whose denies all leave the field 
 green with the guard testing the attacker's own input instead of the stored document.
 
 Verdict: PASS, 0 blocking.
+
+---
+
+## 2026-08-26 — BUT-1904 follow-up review: the two comment-only edits to `cook-snaps-and-message-mod-rules.test.ts`
+
+**Diff reviewed** (staged, 4 files, 12 insertions): a two-line comment edit in my own suite,
+a `grep -H` fix in `scripts/check_test_real_time.sh`, and two count strikes (a doc line and a
+Dart test comment). `firestore.rules` NOT in the diff.
+
+**Scope correction, measured first.** The task described TWO comment changes to my file. Only
+ONE is staged. The other — striking "dismissing the notice is the one thing they are meant to
+be able to do with it" from the delete case and the matching clause above B15 — landed in
+commit `9cfecf1a5`, already in HEAD. Verified with `git show HEAD:<file>` and
+`git show 9cfecf1a5 -- <file>`. A description of a diff is not the diff; measure the scope
+before reviewing to it.
+
+**Comment-only proven mechanically, not by eye.** Comment-stripped md5 identical HEAD vs
+worktree (`b0dc103a086d64e7b232adeea90ba638`, 815 surviving lines both sides), and
+`git diff --cached -U0 | grep '^[+-]' | grep -v '^[+-]\s*//'` empty. Coverage unchanged:
+51/51 on my own run of `test:rules:cook-snaps-and-message-mod`, allow/deny pairs untouched.
+
+**Blocking finding — the reachability sentence is broader than what was measured.** The
+comment above "the sender can still delete a blocked message" reads: *"Says nothing about
+dismissing the notice: no screen in the app reaches this delete (ADR-0009)."* The pointer
+RESOLVES — ADR-0009 and the ACCEPTED_DEVIATIONS entry both carry the account, and the
+mechanism is real: `MessageBubble.build` returns a `SystemMessageWidget` for
+`type == duplicateBlocked` before the `GestureDetector` that installs `onLongPress`, so the
+per-message action menu never opens for a blocked row (and `ChatActionHandler` has no `'menu'`
+case anyway). But the measurement covers ONE affordance, while the sentence quantifies over
+every screen. A second route reaches the same `allow delete` from the client:
+`conversations_list_view.dart:430` -> `ConversationsViewModel.deleteConversation` ->
+`MessagingService.deleteConversation` -> `deleteAllMessages`, which calls
+`messagingRepository.deleteMessage(message.id)` for every row where
+`senderId == currentUserId`. The blocked row is in that set:
+`MessageQueryModule.searchMessages` filters with `content.toLowerCase().contains(lowerQuery)`
+and an empty query matches an emptied row. So a screen DOES reach this delete — just not as a
+per-row dismissal. ADR-0009's own bolded "**the sender cannot remove the row from inside the
+app**" and the identical sentence in the ACCEPTED_DEVIATIONS entry are broad in exactly the
+same way; those two are a decision record and an accepted deviation, so they are superseded
+with a dated entry and surfaced to Malin, never silently edited.
+Recommended repair in MY file: STRIKE the reachability clause and keep only the pointer — the
+test pins that the RULE allows the delete and can pin nothing about screens; ADR-0009 is the
+canonical site. Do not reword it to a narrower quantifier; the narrow version is another
+sentence nobody re-measures.
+
+**Second finding — a count strike that left an unmeasurable claim behind.** The staged hunk
+replaces "was the fourth carrier of a sentence struck in three other files in the same commit"
+with "was a further carrier of a sentence struck elsewhere in the same commit". The numeral is
+gone, but the provenance claim survives and is not checkable from the repository: in
+`9cfecf1a5` — the commit that struck the sentence here — the only two removals of it are BOTH
+in this file (`git show 9cfecf1a5 | grep '^-' | grep -i dismiss` returns exactly those two).
+In `ee372d3cf` the sentence was never struck at all; the corrected wording landed there
+first-time in ACCEPTED_DEVIATIONS.md and ADR-0009 as parenthetical "*Corrected ... before this
+landed*" notes, so the strike happened during authoring and left no git trace. "The same
+commit" therefore resolves to a false reading and an unverifiable one. Softening a count to a
+vague quantifier is a REWORD, not a strike: the whole provenance clause should go, leaving
+"An earlier version of this comment claimed it did."
+
+**Verified clean in the same pass.** The other three files' edits are honest strikes: "Both
+are pre-existing consequences" -> "These are" (the numeral was falsified by a third consequence
+added to the same paragraph), and "passed all 67 tests" -> "passed the whole suite". The
+`grep -rEnH` fix is correct — GNU grep omits the filename when handed exactly one FILE, and
+the awk baseline is keyed on `path:line:`, so a single staged `*_test.dart` made every
+baselined occurrence report as an error down the `Binary file` branch, which is what the
+error message then blamed. Noted, not filed: the Dart comment the diff touches still carries
+"THE TWO PLACEMENT CASES" and "the three cases above" — same insertion seam, another agent's
+file.
+
+**Durable rule extracted.** A reachability claim is scoped to the AFFORDANCE it was measured
+on. Before passing one, enumerate every client caller of the verb — a bulk path filters on the
+ACTOR and never on the state the comment is about, so it is invisible to a measurement that
+started from the feature's own screen.
+
+Verdict: FAIL, 1 blocking.
+
+**Re-review, same day.** Blocker closed correctly and by strike, not reword: the test comment
+now reads only "Says nothing about DISMISSING the notice — this test pins what the RULE allows
+and can pin nothing about screens. See ADR-0009." Both the reachability clause and the
+provenance clause are gone. ADR-0009 and the ACCEPTED_DEVIATIONS entry each carry a dated
+`Superseded 2026-08-26` block quoting the measured path, with the original text left standing —
+the decision-record exception applied properly. The guard comment's branch attribution was
+wrong in my first pass too and is now right: a filename-less line fails the `:[0-9]+:` parse at
+the top of the awk body and takes the unreadable-file branch, so the baseline is never consulted
+at all. Re-measured: `grep -rEn` on one file prints `70:       createdAt = ...` and `-H` prints
+the path — the comment's own example line reproduces byte-for-byte. Suite 51/51 on my own run,
+comment-stripped md5 still identical to HEAD.
+**The one thing outstanding is mechanical: the repairs were in the WORKTREE and not in the
+INDEX.** `git status` showed `MM` on all four files, and `git diff --cached` still carried both
+false sentences — committing at that moment would have shipped exactly what the round removed.
+A worktree fix that never reached the index is indistinguishable from one that did if you read
+only the file. Re-read the STAGED diff, never the file, when a coordinator reports a fix.
+
+**Fifth carrier, and a count of my own retired.** `firestore.rules` itself carried the claim,
+directly above the `messages` sender `allow update`: "though no screen in the app currently
+reaches that delete, for a reason unrelated to this rule (ADR-0009)". Struck to "Deleting a
+blocked row stays allowed below." — which is readable from the `allow delete` two statements
+down and claims nothing a rules comment cannot know. Found by the `cloud-functions-specialist`
+gate, not by me: my own sweep grepped the string "no screen in the app reaches" and this copy
+said "reaches that delete", so the phrasing shift hid it. Grep the CLAIM, not a sentence.
+Retired verbatim from the knowledge file, superseded in place because this round falsified its
+count: *"A reachability claim about a rule usually exists in TWO files — the rules comment and
+the pinning test's comment — so a finding filed against one is only half-fixed until the other
+is swept: BUT-1831's rules-side sentence was struck while the identical claim rode into the
+same commit at test C7B."* BUT-1904 had carriers in the rules file, the rules test, ADR-0009,
+`docs/architecture/ACCEPTED_DEVIATIONS.md`, `.claude/rules/accepted-deviations.md` and
+`message_bubble.dart` — "two" was wrong, and the replacement states no number.
+Rules diff verified comment-only two ways (comment-stripped md5 identical across HEAD and the
+staged blob, 1381 surviving lines; no non-comment changed lines; the file contains no `://`, so
+the strip is not vacuous). Sender update conjunct, receipts `hasOnly` and `allow delete` all
+byte-identical. Suite: exit 0, 51 PASS, 0 FAIL.
+
+**Final pass, same day — PASS, 0 blocking.** Re-verified after `testing-specialist` struck the
+numeral in my MESSAGES section header ("the branches the three cases above do not reach" -> "the
+branches the cases above do not reach"). Both files re-proven against the INDEX blob, not the
+worktree file: `firestore.rules` at `6c2e707b`, comment-stripped md5 `829b56f5…` identical to
+HEAD's blob at 1381 surviving lines, no `://` anywhere so the strip is not vacuous; the suite at
+`e799b3c2`, 816 surviving lines identical to HEAD under a strip written to PRESERVE its one
+`https://example.com` literal (the naive `s://.*::` recipe would have eaten it). No changed line
+in either file is a non-`//` line. `duplicateBlocked` conjunct, receipts `hasOnly` and `allow
+delete` byte-identical. Suite exit 0, 51/51. Registration intact (41 rules suites, 2 `paths:`
+blocks). Scope re-measured at verdict time and it HAD moved — 418 -> 447 insertions while I read,
+all of it `cloud-functions-specialist.knowledge.archive.md` appending its own entry; same 15
+files, my two untouched.
+
+**Non-blocking finding, and it is a new shape of the same disease.** The strike-and-point repair
+is correct and the pointer resolves — ADR-0009 carries the account — but the ACCOUNT AT THE
+TARGET names the wrong symbol: "since `ChatActionHandler` has no `'menu'` case". It has one, at
+`chat_action_handler.dart:177`, inside `handleAttachment` (the weekly-menu SHARE). The switch
+that is actually dead is `handleMessageAction`, whose cases are reply/edit/delete/copy/report;
+`chat_message_stream.dart:383` dispatches `onMessageAction(message, 'menu')` through
+`chat_view_facade.dart:114` into it, hits `default:` and logs "Unknown message action". So the
+CONCLUSION is true and the SYMBOL is false — a future reader greps the named class, finds the
+case, and concludes the ADR is wrong about a live affordance. Fix is one word, in place, no
+measurement: `ChatActionHandler` -> `handleMessageAction`. Not blocking because the sentence sits
+in a parenthetical already superseded below it, and the live text ("that menu is dead for every
+message type anyway") is true and independently pinned. The same imprecision is in MY archive
+entry above, which is where the ADR's wording came from — append-only, so it stays as the record
+of how it propagated. Verified in the same pass: `deleteAllMessages` has no caller in `lib/`
+besides `deleteConversation`, and no `leaveGroup` on any of the five paths touches messages, so
+the superseding block's live claims hold.
+
+Durable rule, merged into the pointer clause rather than added as a bullet: verifying a pointer
+RESOLVES is not enough — read the SYMBOL the account names. The account can be right about
+behaviour and wrong about which function has it.
+
+**CLOSED, same day — the non-blocking finding above is fixed; do not read that entry as open.**
+ADR-0009 now names `handleMessageAction`, with a parenthetical recording that `ChatActionHandler`
+DOES carry a `'menu'` case in `handleAttachment` (the weekly-menu share) so a reader greping the
+class is not sent to a live affordance. The `code-reviewer` gate corrected a second symbol in the
+same paragraph on its own: the reached method is `MessageManagementOperations.deleteAllMessages`,
+not the `MessagingService` facade — which has no caller of its own, so the qualified name is the
+one that resolves.
+
+One further comment-only edit to my suite after that: B4's "the allow half that makes the FOUR
+denies below mean something" -> "the denies below". Verified the strike was warranted rather than
+cosmetic — 9 `assertFails` calls sit below B4 (8 deny-named tests, B5–B9 and B13–B15, plus B16's
+trailing deny), or 3 scoped to the receipts route B4 is the allow half of (B5, B6, B9). Wrong
+under both readings, and "eight" would have carried the identical insertion seam, so no numeral
+replaced it. Re-proven against the NEW index blob `8175e8eb`: no changed line is a non-`//` line
+across all three hunks, and the comment-stripped md5 is still `4defc1b8…` at 816 lines — the same
+value measured before the edit, so test logic is unmoved. `firestore.rules` still `6c2e707b`,
+stripped md5 `829b56f5…` at 1381 lines, conjunct read back verbatim from the index blob. 51/51,
+exit 0.
+
+Method note worth keeping: every proof in this round was taken from `git show :<path>`, never the
+worktree file. The scope moved three times while I read (418 -> 484 -> 642 insertions, always the
+same 15 files, twice by other gates appending archives and once by me). Re-stat at verdict time.

@@ -201,16 +201,30 @@ Standard deny matrix for ownership-checked collections:
   still reaches the create rule under a read-then-delete race. Never pass a comment
   claiming "no shipped code sends shape X on create" without enumerating every merge-set
   of X, not just the literal creates (BUT-1831). **A reachability claim about a rule
-  usually exists in TWO files — the rules comment and the pinning test's comment — so a
-  finding filed against one is only half-fixed until the other is swept: BUT-1831's
-  rules-side sentence was struck while the identical claim rode into the same commit at
-  test C7B.** Grep the test file for the claim's keywords whenever a rules comment is
+  spreads to EVERY file that touches the feature — rules comment, test comment, ADR,
+  deviation entry, widget comment — so a finding filed against one is only part-fixed, and
+  each review round tends to surface one more carrier: BUT-1831's rules-side sentence was
+  struck while the identical claim rode into the same commit at test C7B, and BUT-1904's
+  survived four rounds, the last carrier sitting in `firestore.rules` directly above the
+  rule it misdescribed. Sweep by grepping the CLAIM's own keywords repo-wide, never by
+  fixing the copy you happened to notice.** Grep the test file for the claim's keywords whenever a rules comment is
   corrected, and the reverse. **Sweep it by STRIKE-AND-POINT, never by writing the
   correction into both files** — the copy names the canonical site ("the account lives at
   the rule itself; do not restate it here") and makes no claim of its own, so there is one
   thing to re-measure instead of two that drift. Verify the pointer RESOLVES: open the
   named limb and confirm it carries the account, or you have replaced a false claim with a
-  dangling one.
+  dangling one — and read the SYMBOL that account names, not only its conclusion: a class can
+  carry the very case the account says it lacks, on a DIFFERENT switch (ADR-0009 credited
+  `ChatActionHandler` with no `'menu'` case; `handleAttachment` has one, and the dead switch
+  is `handleMessageAction`). **And scope the claim to the AFFORDANCE it was measured on: "no screen
+  reaches this delete" was measured on the per-row long-press menu and is false for the RULE,
+  because a BULK path — `deleteConversation` -> `deleteAllMessages` — reaches the same rows
+  through the same client verb.** Enumerate every client caller of the verb before passing a
+  reachability sentence; a bulk caller filters on the actor, never on the state the comment is
+  about. Then check whether the UI RENDERS that caller at all: the tile is gated on
+  `groupId == null`, so in a group chat neither path exists — a correction that stopped at
+  "the bulk path reaches it" was itself false, and that was the fifth round on one sentence
+  (BUT-1904, 2026-08-26).
 - An `allow update` textually identical to `allow create` still needs its OWN allow
   test — a client `set()` on an existing doc is an update, and a toggle/edit path can
   live entirely there, unproven by create-side coverage alone.

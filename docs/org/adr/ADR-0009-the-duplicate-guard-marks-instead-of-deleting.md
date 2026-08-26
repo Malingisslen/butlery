@@ -110,12 +110,30 @@ the row exists — but it is gone as a copy.
   *(Corrected 2026-08-26, before this landed: that clause continued "— that is how the sender
   dismisses the notice", and no screen in the app reaches it. `MessageBubble` returns before it
   installs the long-press gesture, so the action menu never opens for a blocked row — and that
-  menu is dead for EVERY message type today anyway, since `ChatActionHandler` has no `'menu'`
-  case and long-press has logged "Unknown message action" since before this ticket. The rules
+  menu is dead for EVERY message type today anyway, since `handleMessageAction` has no `'menu'`
+  case and long-press has logged "Unknown message action" since before this ticket.
+  (`ChatActionHandler` DOES have one, in `handleAttachment` — the weekly-menu share. Naming the
+  class rather than the switch would send a reader to a live affordance.) The rules
   permission is real; the affordance is not. Raised by the `code-reviewer` gate, which measured
   the pre-existing half too. **So the sender cannot remove the row from inside the app, and it
   stays in their thread.** Whether that is acceptable, or whether the notice needs its own
   dismiss control, is Malin's call and is not decided here.)*
+
+  **Superseded 2026-08-26, same day, before landing.** The sentence above is too broad and the
+  `firestore-rules-tester` gate measured it. What is TRUE: no per-row dismissal reaches the
+  delete — `MessageBubble` returns before it installs the long-press gesture, and that menu is
+  dead for every message type anyway. What is FALSE: "cannot remove the row from inside the app".
+  Deleting the whole CONVERSATION reaches it — but only in a DIRECT message.
+  `ConversationsListView` → `deleteConversation` → `MessageManagementOperations.deleteAllMessages`
+  searches
+  with an EMPTY query string, and `content.contains('')` is true of every row, an emptied one
+  included, so a blocked row is deleted with the rest the caller sent.
+  **In a GROUP there is no path at all.** The delete-conversation tile is gated on
+  `conversation.groupId == null`, `deleteAllMessages` has no other caller in `lib/`, and
+  `leaveGroup` deletes no messages. So a blocked row in a group chat cannot be removed from
+  inside the app by anyone.
+  Whether that is enough, or whether the notice needs its own dismiss control, is still Malin's
+  call and is still not decided here.
 - **The flag stays OFF.** The condition ADR-0007 left holding it off is met, but turning it on
   is a separate, explicit decision. Nothing in this record implies it.
 - **One thing to decide BEFORE that flag is switched on, and it is Malin's:** the Art. 15 export

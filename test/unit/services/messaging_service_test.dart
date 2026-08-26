@@ -1935,10 +1935,11 @@ void main() {
         expect(live.map((m) => m.id), ['msg-ordinary']);
       });
 
-      // THE TWO PLACEMENT CASES. Both stage an EARLY RETURN out of the block
-      // filter, which is the only way to tell where this filter sits: on the
-      // happy path it makes no difference at all, so the three cases above
-      // pass wherever it is written.
+      // The placement cases: 'a block lookup that THROWS still hides the row (BUT-1904)'
+      // and 'an unregistered block filter still hides the row'. Each stages an
+      // EARLY RETURN out of the block filter, which is the only way to tell
+      // where this filter sits: on the happy path it makes no difference at
+      // all.
       //
       // A first draft of these two staged nothing of the sort — one used a
       // real `BlockedUserFilter` over a throwing repository, whose
@@ -1946,7 +1947,9 @@ void main() {
       // than throwing, and the other relied on `tryGet` answering null while
       // the group's own `setUp` had just initialized a production container
       // that resolves it. Both therefore ran the full happy path, and a mutant
-      // that moved this filter inside the fail-open region passed all 67 tests.
+      // that moved this filter inside the fail-open region passed the suite AS
+      // IT THEN STOOD. It does not pass it now; the two cases below are what
+      // changed that.
       test(
         'a block lookup that THROWS still hides the row (BUT-1904)',
         () async {

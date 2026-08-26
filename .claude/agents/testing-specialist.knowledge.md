@@ -155,6 +155,24 @@ you want the revert-probe that proved it; or this file itself reads too compress
   counting fixtures — and check the fixtures then defend the one branch that could falsify
   it (BUT-1912's eight include `1e21`/`1e30`/`maxFinite`, the only values reaching the
   expansion path whose dead `match == null` fallback is the sole `e`-emitting line).
+  **Replacing a COUNT with the named test LITERALS is the right repair** — verify each literal
+  against the test's own name verbatim — **but the repairing sentence routinely re-arms the
+  seam it just disarmed**: "the three cases above" became "every case above it", a quantifier
+  over the file's contents with the identical insertion seam, two lines above the clause
+  explaining why counts have one. Strike the derived clause; the mechanism sentence beside it
+  ("on the happy path it makes no difference") already carries it (BUT-1904, 2026-08-26).
+  **A strike round that fixes the count the FINDING named leaves the FALSE one further down the
+  same file** — grep every numeral quantifying tests/cases/denies across the WHOLE file, not the
+  diff-adjacent region, because a review sweep follows the hunks: BUT-1904 struck an ACCURATE
+  "the three cases above" at line 750 while "the four denies below" at 785 (8 deny tests, 9 deny
+  assertions, 3 on the branch it controls) rode through five rounds untouched. Grade an
+  ALLOW-control's "makes the N denies below mean something" against the branch it is a control
+  FOR, then against the whole section — a numeral wrong under BOTH readings is the tell.
+  **The strike's own JUSTIFICATION sentence is a fresh unmeasured claim, and provenance is the
+  usual shape** — "this comment already lost one numeral that way" was false: both numerals the
+  file had lost were CORRECT when struck, one for having an insertion seam and one for naming
+  a suite total. Strike the count and stop; explaining why counts are avoided re-introduces a
+  claim about the file's own history that nothing checks (BUT-1904, 2026-08-26).
   **Read a file's OWN HEADER before grading any prose below it** — a header stating
   `this is a ROUTING rule, not a census, because a count would be wrong the week after`
   makes every later census in that file a defect BY THE FILE'S OWN TERMS. That is the
@@ -458,6 +476,13 @@ Codecov: 60% project / 70% new patches / 2% drop tolerance — floors, decided 5
   same `group(`. Scope the sentence to the FIXTURE it sits beside, and `grep -n '^  group('`
   the counterexample's line before writing "in this group"; the guard-bearing test is the
   file's ONLY caller of the mutated seam, so it is always one grep away (BUT-1897, 2026-08-21).
+  **A doc claiming two cases are mutually non-subsuming ("each has its own killing test;
+  neither kills the other's") is a claim about a MATRIX, and reading pairs it one-to-one by
+  eye.** Run mutants × tests in full: BUT-1904's placement pair measured
+  P2(below-null-exit)=GREEN/RED, P3(inside-try)=RED/RED, catch-returns-input=RED/GREEN — so one
+  case killed BOTH named moves and the other earned its place on a THIRD mutant the doc never
+  names. Both tests were right, the sentence explaining why was false. A ~90-line scratchpad
+  Dart replica of the one method settles it with no `lib/` write (2026-08-26).
 - The in-memory version DELETES data instead of failing to write it (a model field + N
   field-by-field rebuilds) — `copyWith` is the durable fix, it can't forget what it never
   enumerates; assert an UNTOUCHED member survives.
@@ -1154,7 +1179,15 @@ in ITS suite, same edit (BUT-1874: emitter pinned, `ShoppingItemManagementModule
 - A new grep guard in `lefthook.yml` needs one path-handling probe — it renders
   `{staged_files}` REPO-RELATIVE, so an anchor past a `path:line:` prefix false-fails on a
   Windows absolute path (`C:/…` splits at the drive colon); anchor the LAST `:<digits>:`. A
-  guard wired only pre-commit is bypassed by `LEFTHOOK_EXCLUDE` or a merge.
+  guard wired only pre-commit is bypassed by `LEFTHOOK_EXCLUDE` or a merge. **The ONE-FILE
+  case is its own probe**: grep OMITS the filename when handed exactly one FILE, so a
+  `path:line:` parser takes its malformed-input branch for every hit and the baseline is never
+  consulted. An EXIT-CODE-ONLY fixture suite structurally cannot see that — the pre-existing
+  "a named violating file IS refused" case expects exit 1 either way and passes for the wrong
+  reason. Probe any guard fix by running the guard's OWN fixture suite against `git show
+  HEAD:<script>`; identical pass counts IS the finding, and the killer fixture INVERTS the
+  expected code (one named BASELINED file, exit 0). BUT-1904: 15/15 both sides, the 16th case
+  red on HEAD with the exact error the blocked commit was blamed with.
 
 ### Firestore-rules `.ts` suites (emulator-gated)
 - Every `&&` clause in an `allow` rule gets a failing test; every `cannotModify`/

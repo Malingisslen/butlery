@@ -122,6 +122,17 @@ printf 'void main() { final x = DateTime.now(); }\n' > "$root/test/unit/unnamed_
 printf 'void main() {}\n' > "$root/test/unit/named_test.dart"
 assert_exit 0 "an unnamed violating file is out of scope" "$root" test/unit/named_test.dart
 
+# The single-file shape, which is what a commit staging exactly one *_test.dart
+# hands the guard. grep omits the filename when it is given one FILE, so every
+# line arrives as "70:code", fails the `:[0-9]+:` parse and takes the
+# unreadable-file branch — the baseline is never consulted and a baselined file
+# is refused as a binary blob. Neither argument case above can see it: both
+# expect the same exit code with the filename present or absent.
+root="$(new_root)"
+printf 'test/unit/seeded_test.dart\n' > "$root/scripts/test_real_time_baseline.txt"
+printf 'void main() { final x = DateTime.now(); }\n' > "$root/test/unit/seeded_test.dart"
+assert_exit 0 "a single named BASELINED file is allowed" "$root" test/unit/seeded_test.dart
+
 # A path outside every scope must not drag the whole tree back in.
 root="$(new_root)"
 printf 'void main() { final x = DateTime.now(); }\n' > "$root/test/unit/elsewhere_test.dart"
