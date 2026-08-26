@@ -119,6 +119,16 @@ check_pattern() {
   # case — as a failure, which would make the guard refuse every clean commit.
   # Reading the status here also separates that 1 from a real grep error (>1),
   # which must not pass for "nothing to see".
+  #
+  # stderr is MERGED into the parsed stream, not discarded, and that is what
+  # makes the guard portable. grep reports a binary match as prose instead of a
+  # `path:line:text` record, and which STREAM it writes that prose to depends on
+  # the grep: measured on stdout with the 3.0 this repo's Git Bash ships and on
+  # stderr with the 3.11 the CI runner ships (grep's own NEWS dates the move to
+  # 3.5). Discarding stderr therefore left the guard blind to a binary
+  # *_test.dart everywhere except the dev machine — green locally, fail-open in
+  # CI. Nothing below matches the wording or the stream: the rule is that
+  # anything grep emits carrying no `:<line>:` is refused.
   local grep_out grep_rc=0
   set +e
   # -H is load-bearing, not decorative: grep OMITS the filename when it is given
@@ -126,12 +136,13 @@ check_pattern() {
   # "70:code" instead of "path:70:code". Such a line fails the `:[0-9]+:` parse
   # below and takes the unreadable-file branch — which is why the guard blamed a
   # binary blob. Found 2026-08-26 on a commit that staged one test file.
-  grep_out="$(grep -rEnH --include='*_test.dart' "$pattern" "${paths[@]}" 2>/dev/null)"
+  grep_out="$(grep -rEnH --include='*_test.dart' "$pattern" "${paths[@]}" 2>&1)"
   grep_rc=$?
   set -e
 
   if [[ "$grep_rc" -gt 1 ]]; then
     echo "::error::${label}: grep failed (exit ${grep_rc}) — the guard could not read its own scope."
+    if [[ -n "$grep_out" ]]; then printf '%s\n' "$grep_out"; fi
     fail=1
     return
   fi
@@ -164,13 +175,17 @@ check_pattern() {
       }
 
       {
-        # grep prints `path:line:text`. It prints `Binary file X matches` for a
-        # binary blob, with no line number — a *_test.dart that is not text is
-        # itself a defect (a source file can land as a git binary blob), so it
-        # is reported rather than skipped. Dropping an unparseable line is how
-        # a rewrite goes quietly fail-open.
+        # grep prints `path:line:text`. For a binary blob it prints prose with
+        # no line number instead; both the wording and the stream vary by grep
+        # version, so neither is matched on — the missing line number is the
+        # test. A *_test.dart that is not text is itself a defect (a source file
+        # can land as a git binary blob), so it is reported rather than skipped.
+        # Dropping an unparseable line is how a rewrite goes quietly fail-open.
+        # The line is quoted whole and carries no `file=`: the path sits inside
+        # prose whose shape differs per version, so any field built from it
+        # names something that is not a file.
         if (!match($0, /:[0-9]+:/)) {
-          printf "::error file=%s::Unreadable test file (grep could not report a line number — a *_test.dart committed as a binary blob does this).\n", $0
+          printf "::error::Unreadable test file — grep reported no line number, which is what a *_test.dart committed as a binary blob does. grep said: %s\n", $0
           bad = 1
           next
         }

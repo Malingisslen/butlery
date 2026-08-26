@@ -2422,3 +2422,21 @@ Example: lib/services/menu/parser/text_normalizer.dart _noWordBefore/_noWordAfte
   finding is worth carrying forward, carry its scope with it — the qualifier is the first
   thing a summary drops.
 
+### [Workflow] A CLI's output format is a platform variable, and a guard that discards a stream stops guarding
+- **Date**: 2026-08-26 (BUT-1894 follow-up)
+- **Trigger**: `main` was red on the real-time guard's own fixture "binary `*_test.dart` is
+  refused" — exit 0 where 1 was expected — while the same suite was green on the dev machine.
+  GNU grep reports a binary match as prose rather than a `path:line:text` record, and it moved
+  that prose from stdout to stderr in 3.5. The guard ran grep with `2>/dev/null`. Git Bash
+  ships grep 3.0 (stdout, caught); the CI runner ships 3.11 (stderr, discarded), so the check
+  returned "OK" and exited 0. The hole predated the ticket that exposed it: the same
+  `2>/dev/null` sat in the pre-rewrite guard, so CI had never once refused a binary test file.
+  Reproduced by running the untouched suite under WSL Ubuntu, which gave the CI log's exact
+  14/15.
+- **Rule**: Before parsing a tool's output, reproduce that output on the platform that will
+  run it — a version difference can move a message to another stream without changing a single
+  exit code, and the dev machine's version is the one least likely to match CI's. Parse on a
+  property the message cannot lose (here: a record without `:<line>:` is refused, whatever the
+  stream and whatever the wording), never on the wording or the stream itself. And a guard that
+  sends any stream to `/dev/null` is claiming that stream can hold nothing it needs — write that
+  claim down or merge the stream.
