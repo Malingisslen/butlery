@@ -244,7 +244,24 @@ jobs:
           deploy_one() {
             local t="$1"
             echo "Deploying: $t"
-            firebase deploy --only "$t" --project "$PROJECT" --non-interactive
+            # `--force` is REQUIRED, not convenience. The CLI refuses to deploy a
+            # codebase containing ANY function with a failure policy unless it is
+            # passed, and this one has vetted ones: `onIngredientPropertiesChanged`
+            # and `onIngredientSoftDeleted` carry `retry: true` deliberately
+            # (BUT-1781 — the update is idempotent, an event-age guard bounds the
+            # retry window, and `concurrency: 1` stops the re-delivery packing that
+            # OOMs a shared container). Without it this workflow cannot deploy
+            # functions at all; that is how it failed on its first ever run.
+            #
+            # WHAT IT COSTS, because `--force` skips EVERY prompt and not only that
+            # one: a function live in production but absent from source is DELETED
+            # without asking. Measured on the run that needed the flag — 72 source
+            # exports against 71 deployed, the only delta an ADDITION
+            # (`ensureCategoryChat`) — so nothing was at risk that day. That is a
+            # fact about one deploy, not a standing guarantee, and nothing here
+            # re-measures it. A pre-deploy diff that refuses rather than deletes is
+            # owed; until it exists, read the CLI's own deletion list in the log.
+            firebase deploy --only "$t" --project "$PROJECT" --non-interactive --force
             echo "$t" >> reached-targets.txt
           }
           echo "Deploying target: $DEPLOY_TARGET"
