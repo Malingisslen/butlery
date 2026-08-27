@@ -2534,3 +2534,27 @@ Example: lib/services/menu/parser/text_normalizer.dart _noWordBefore/_noWordAfte
   still ranges over only what that agent opened, so check its quantifier before it becomes a
   plan condition or a comment — especially "X is the only Y", which is the shape a
   single-file reader is least able to establish.
+
+### [Workflow] A pipeline that has never run hides every one of its faults at once, and its own safety gate can fail a deploy that worked
+- **Date**: 2026-08-27 (BUT-1904 rollout)
+- **Trigger**: Shipping BUT-1904 meant deploying two Cloud Functions. `deploy-firebase.yml`
+  existed, looked maintained, and had a smoke gate and auto-rollback. Its run history was
+  EMPTY — every previous deploy had been done outside CI — and it failed four times in a row,
+  each on a different fault: (1) the CI service account had eleven roles and none for Secret
+  Manager, so it could not read that a secret existed; (2) `firebase deploy` refuses any
+  codebase containing a failure policy without `--force`, and two functions carry a vetted
+  `retry: true`; (3) `run.googleapis.com/CpuAllocPerProjectRegion` is 20 vCPU for the region
+  while every function is 1 vCPU at maxScale 10, so admitting ONE new revision reserves 10 and
+  two at once needs the whole ceiling; (4) the smoke gate then FAILED A DEPLOY THAT WORKED —
+  `echo "$list" | grep -qF` plus `set -o pipefail`, where `grep -q` exits on match, `echo` dies
+  on SIGPIPE writing the rest of ~200KB, and the pipeline's status comes from the dead writer.
+  Which names it reported missing depended on their position in the JSON.
+  Two of these were already known to the codebase and neither surfaced: the CPU wall is written
+  in `cloud-functions-specialist.knowledge.md`, and the `retry: true` audit is in the code.
+- **Rule**: Check whether the pipeline you are about to rely on has EVER succeeded (`gh run list`)
+  before treating a failure as a regression — an unused path fails serially, one fault at a time,
+  and each looks like the whole problem. Read a deploy's verdict against the RESOURCE, never the
+  exit code: `firebase deploy` reporting 52 failures had two real ones, and a green-looking gate
+  can fail a live deploy. Any `cmd | grep -q` under `pipefail` is a latent false negative on large
+  input. And when a check disagrees with the artefact, believe the artefact: Cloud Run revisions
+  said deployed while the gate said missing.
