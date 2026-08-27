@@ -920,8 +920,10 @@ void main() {
     test('seeds a non-empty menu plan and generates its shopping list when the '
         'week is empty', () async {
       when(
-        () => mockMenuService.getWeek(any()),
-      ).thenAnswer((_) async => emptyPlan());
+        () => mockMenuService.readWeek(any()),
+      ).thenAnswer(
+        (_) async => WeeklyMenuPlanRead(plan: emptyPlan(), readFailed: false),
+      );
       // Real addEntry semantics — delegate to a fresh service so the saved
       // plan is genuinely non-empty rather than a hand-rolled stub.
       final realAdder = WeeklyMenuPlanService(
@@ -978,8 +980,10 @@ void main() {
       () async {
         final existing = realPlanWithOneEntry();
         when(
-          () => mockMenuService.getWeek(any()),
-        ).thenAnswer((_) async => existing);
+          () => mockMenuService.readWeek(any()),
+        ).thenAnswer(
+          (_) async => WeeklyMenuPlanRead(plan: existing, readFailed: false),
+        );
 
         await viewModel.completeOnboarding();
 
@@ -1001,8 +1005,10 @@ void main() {
     // instead of a hand-rolled stub. Shared by the placement-invariant tests.
     void wireRealAdderOnEmptyWeek() {
       when(
-        () => mockMenuService.getWeek(any()),
-      ).thenAnswer((_) async => emptyPlan());
+        () => mockMenuService.readWeek(any()),
+      ).thenAnswer(
+        (_) async => WeeklyMenuPlanRead(plan: emptyPlan(), readFailed: false),
+      );
       final realAdder = WeeklyMenuPlanService(
         repository: _NoopMenuRepo(),
         userService: mockUserService,
@@ -1166,28 +1172,68 @@ void main() {
       verifyNever(() => mockRecipeService.getRecipeById('null'));
     });
 
-    test('no recipes seeded → menu seeding is skipped entirely (no getWeek, no '
-        'menu_seeded event)', () async {
-      // Every seed fails to persist, so seededRecipeIds is empty and
-      // _seedSampleMenu returns before touching any menu service.
+    test(
+      'no recipes seeded → menu seeding is skipped entirely (no readWeek, no '
+      'menu_seeded event)',
+      () async {
+        // Every seed fails to persist, so seededRecipeIds is empty and
+        // _seedSampleMenu returns before touching any menu service.
+        when(
+          () => mockRecipeService.createPersonalRecipe(
+            title: any(named: 'title'),
+            description: any(named: 'description'),
+            ingredients: any(named: 'ingredients'),
+            instructions: any(named: 'instructions'),
+            mealType: any(named: 'mealType'),
+            portions: any(named: 'portions'),
+            timeMinutes: any(named: 'timeMinutes'),
+            sourceUrl: any(named: 'sourceUrl'),
+          ),
+        ).thenAnswer((_) async => null);
+
+        final result = await viewModel.completeOnboarding();
+
+        expect(result, isTrue, reason: 'onboarding still completes');
+        verifyNever(() => mockMenuService.readWeek(any()));
+        verifyNever(() => mockMenuService.save(any()));
+        verifyNever(
+          () => mockAnalyticsService.logEvent(
+            name: 'onboarding_menu_seeded',
+            parameters: any(named: 'parameters'),
+          ),
+        );
+      },
+    );
+
+    test('a FAILED read seeds nothing — the idempotency guard cannot see it '
+        '(BUT-1939)', () async {
+      // The guard below the read is `if (plan.isNotEmpty) return;`. A failed
+      // read used to arrive as an EMPTY plan, so the guard did not fire and the
+      // seed wrote sample recipes over the user's real week on a deterministic
+      // document id. The comment beside it claimed immunity to exactly this.
+      // `addEntry` is the load-bearing stub: without it the mutant path throws
+      // MissingStubError into `_seedSampleMenu`'s outer catch and the test
+      // passes without the guard doing anything. `createPersonalRecipe` and
+      // `getRecipeById` are already stubbed in setUp.
       when(
-        () => mockRecipeService.createPersonalRecipe(
-          title: any(named: 'title'),
-          description: any(named: 'description'),
-          ingredients: any(named: 'ingredients'),
-          instructions: any(named: 'instructions'),
-          mealType: any(named: 'mealType'),
-          portions: any(named: 'portions'),
-          timeMinutes: any(named: 'timeMinutes'),
-          sourceUrl: any(named: 'sourceUrl'),
+        () => mockMenuService.addEntry(
+          plan: any(named: 'plan'),
+          day: any(named: 'day'),
+          slot: any(named: 'slot'),
+          recipe: any(named: 'recipe'),
         ),
-      ).thenAnswer((_) async => null);
+      ).thenAnswer(
+        (inv) => inv.namedArguments[#plan] as WeeklyMenuPlan,
+      );
+      when(() => mockMenuService.readWeek(any())).thenAnswer(
+        (_) async => WeeklyMenuPlanRead(plan: emptyPlan(), readFailed: true),
+      );
 
-      final result = await viewModel.completeOnboarding();
+      await viewModel.completeOnboarding();
 
-      expect(result, isTrue, reason: 'onboarding still completes');
-      verifyNever(() => mockMenuService.getWeek(any()));
+      verify(() => mockMenuService.readWeek(any())).called(1);
       verifyNever(() => mockMenuService.save(any()));
+      verifyNever(() => mockShoppingGenerator.generateForWeek(any()));
       verifyNever(
         () => mockAnalyticsService.logEvent(
           name: 'onboarding_menu_seeded',
@@ -1199,8 +1245,10 @@ void main() {
     test('a save failure inside menu seeding does not fail onboarding '
         '(best-effort)', () async {
       when(
-        () => mockMenuService.getWeek(any()),
-      ).thenAnswer((_) async => emptyPlan());
+        () => mockMenuService.readWeek(any()),
+      ).thenAnswer(
+        (_) async => WeeklyMenuPlanRead(plan: emptyPlan(), readFailed: false),
+      );
       final realAdder = WeeklyMenuPlanService(
         repository: _NoopMenuRepo(),
         userService: mockUserService,

@@ -189,8 +189,6 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
       replaceExisting: true,
       parsedRequest: parsed,
     );
-    // applyGeneratedMenu clears the error state on entry, so a non-null
-    // error here belongs to THIS run (cancel paths return before this).
     if (placed == null && mounted) {
       final error = calendarVm.error;
       if (error != null) SnackBarUtils.showError(context, error);

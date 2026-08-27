@@ -96,6 +96,12 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
       error: vm.error,
       data: vm.plan,
       loadingMessage: context.l10n.loadingGeneric,
+      // The error state replaces the whole calendar, week navigation included,
+      // so without this the message's "försök igen" names a control that is not
+      // on screen (BUT-1939).
+      // `currentWeekStart` answers the REQUESTED week even when its plan failed
+      // to load, so this retries the week the user was on rather than today.
+      onErrorRetry: () => vm.loadWeek(vm.currentWeekStart),
       builder: (context, plan) => _buildSuccessContent(context, vm, plan),
       emptyBuilder: (context) => _buildEmptyHint(context),
     );

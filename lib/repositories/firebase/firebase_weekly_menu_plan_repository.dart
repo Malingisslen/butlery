@@ -89,9 +89,10 @@ class FirebaseWeeklyMenuPlanRepository
     required DateTime weekStart,
   }) async {
     final docId = IsoWeekUtils.weekIdFor(userId, weekStart);
-    // Cache-first so a previously-viewed week resolves instantly offline; a
-    // never-cached week falls back to server and (if unavailable) returns null
-    // via the !exists check below rather than letting a server read stall/throw.
+    // Cache-first so a previously-viewed week resolves instantly offline. A
+    // never-cached week falls back to the server, and that fallback THROWS when
+    // the server is unreachable: `getDocCacheFirst` wraps only its cache read in
+    // a try, and returns its `serverAndCache` read unguarded.
     final snapshot = await getDocCacheFirst(collection.doc(docId));
     if (!snapshot.exists) return null;
     return fromFirestore(snapshot);

@@ -15,7 +15,7 @@
 ///    with zero placements it returns null and never saves
 ///  * week navigation resets every placement
 ///
-/// The repository-facing service methods (getWeek / save) are mocked; the
+/// The repository-facing service methods (readWeek / save) are mocked; the
 /// pure placement methods (addEntry / removeEntry /
 /// distributeFromGeneratedMenu) are delegated to a real
 /// [WeeklyMenuPlanService] so the tests exercise genuine placement
@@ -35,6 +35,12 @@ import 'package:butlery/viewmodels/menu/menu_placement_viewmodel.dart';
 
 import '../../../infrastructure/factories/recipe_factory.dart';
 import '../../../test_support/base_unit_test.dart';
+
+/// BUT-1939: the viewmodels read through `readWeek`, which carries the
+/// `readFailed` bit beside the plan. Every stub here answers a SUCCESSFUL
+/// read; the refusal cases build their own with `readFailed: true`.
+WeeklyMenuPlanRead _read(WeeklyMenuPlan plan) =>
+    WeeklyMenuPlanRead(plan: plan, readFailed: false);
 
 class _MockWeeklyMenuPlanService extends Mock
     implements WeeklyMenuPlanService {}
@@ -160,7 +166,9 @@ void main() {
       userService: userService,
     );
     savedPlans = [];
-    when(() => service.getWeek(any())).thenAnswer((_) async => _plan());
+    when(() => service.readWeek(any())).thenAnswer(
+      (_) async => WeeklyMenuPlanRead(plan: _plan(), readFailed: false),
+    );
     when(() => service.save(any())).thenAnswer((inv) async {
       savedPlans.add(inv.positionalArguments.first as WeeklyMenuPlan);
     });
@@ -199,11 +207,13 @@ void main() {
     test(
       'startFromEmptyWeek hides the saved entries (ÄNDRA redo path)',
       () async {
-        when(() => service.getWeek(any())).thenAnswer(
-          (_) async => _plan(
-            entries: [
-              _entry(day: DayOfWeek.mon, slot: MealSlot.lunch),
-            ],
+        when(() => service.readWeek(any())).thenAnswer(
+          (_) async => _read(
+            _plan(
+              entries: [
+                _entry(day: DayOfWeek.mon, slot: MealSlot.lunch),
+              ],
+            ),
           ),
         );
         final vm = buildVm(startFromEmptyWeek: true);
@@ -215,13 +225,78 @@ void main() {
     );
   });
 
+  group('a failed READ never becomes a save (BUT-1939)', () {
+    test(
+      'confirm() refuses and says why, instead of saving over the week',
+      () async {
+        // `getWeek` used to spell a failed read as an EMPTY plan. A placement
+        // session saves the WHOLE week in one write to a deterministic document
+        // id, so confirming after one would have replaced a real week with just
+        // whatever this session placed.
+        when(() => service.readWeek(any())).thenAnswer(
+          (_) async => WeeklyMenuPlanRead(plan: _plan(), readFailed: true),
+        );
+        final vm = buildVm();
+        await vm.init();
+
+        expect(vm.plan, isNull, reason: 'a failed read must publish no plan');
+        expect(vm.error, equals(weeklyPlanReadFailedMessage));
+        verify(() => service.readWeek(any())).called(1);
+
+        // The save half of this guard cannot be pinned: a failed read leaves
+        // `_plan` null, so the null guard below always subsumes it. The message
+        // is the only observable, which is what the `clearError()` pair pins.
+        final result = await vm.confirm();
+
+        expect(result, isNull);
+        expect(savedPlans, isEmpty, reason: 'nothing may be written');
+        // The message survives a `clearError()` between the failed load and
+        // the confirm — the guard re-states it rather than relying on the
+        // error set during the load.
+        vm.clearError();
+        await vm.confirm();
+        expect(vm.error, equals(weeklyPlanReadFailedMessage));
+      },
+    );
+
+    test('a later SUCCESSFUL read clears the refusal', () async {
+      var failNext = true;
+      when(() => service.readWeek(any())).thenAnswer(
+        (_) async => WeeklyMenuPlanRead(
+          plan: _plan(),
+          readFailed: failNext,
+        ),
+      );
+      final vm = buildVm();
+      await vm.init();
+      expect(vm.plan, isNull);
+
+      failNext = false;
+      await vm.init();
+
+      expect(vm.plan, isNotNull);
+      expect(vm.error, isNull);
+
+      // Drive the refused action again. Without `_readFailed = false` on the
+      // success path, confirm() would refuse forever after one transient read
+      // failure — a lockout no other assertion here would catch.
+      vm.placeSelectedAt(DayOfWeek.mon);
+      final result = await vm.confirm();
+
+      expect(result, isNotNull);
+      expect(savedPlans, isNotEmpty);
+    });
+  });
+
   group('eligibility', () {
     test('only empty cells of the selected slot are eligible', () async {
-      when(() => service.getWeek(any())).thenAnswer(
-        (_) async => _plan(
-          entries: [
-            _entry(day: DayOfWeek.mon, slot: MealSlot.lunch),
-          ],
+      when(() => service.readWeek(any())).thenAnswer(
+        (_) async => _read(
+          _plan(
+            entries: [
+              _entry(day: DayOfWeek.mon, slot: MealSlot.lunch),
+            ],
+          ),
         ),
       );
       final vm = buildVm();
@@ -251,11 +326,13 @@ void main() {
     });
 
     test('övrigt is eligible even when the day already has entries', () async {
-      when(() => service.getWeek(any())).thenAnswer(
-        (_) async => _plan(
-          entries: [
-            _entry(day: DayOfWeek.mon, slot: MealSlot.ovrigt),
-          ],
+      when(() => service.readWeek(any())).thenAnswer(
+        (_) async => _read(
+          _plan(
+            entries: [
+              _entry(day: DayOfWeek.mon, slot: MealSlot.ovrigt),
+            ],
+          ),
         ),
       );
       final vm = buildVm(
@@ -285,11 +362,13 @@ void main() {
     });
 
     test('ignores ineligible targets', () async {
-      when(() => service.getWeek(any())).thenAnswer(
-        (_) async => _plan(
-          entries: [
-            _entry(day: DayOfWeek.mon, slot: MealSlot.lunch),
-          ],
+      when(() => service.readWeek(any())).thenAnswer(
+        (_) async => _read(
+          _plan(
+            entries: [
+              _entry(day: DayOfWeek.mon, slot: MealSlot.lunch),
+            ],
+          ),
         ),
       );
       final vm = buildVm();
@@ -431,7 +510,7 @@ void main() {
       expect(vm.placedCount, 0);
       expect(vm.selectedIndex, 0);
       final nextWeek = _weekStart.add(const Duration(days: 7));
-      verify(() => service.getWeek(nextWeek)).called(1);
+      verify(() => service.readWeek(nextWeek)).called(1);
     });
 
     test(
@@ -448,7 +527,7 @@ void main() {
         // Still on the original week, placement intact, no extra fetch.
         expect(vm.weekStart, _weekStart);
         expect(vm.placedCount, 1);
-        verify(() => service.getWeek(any())).called(1);
+        verify(() => service.readWeek(any())).called(1);
       },
     );
   });

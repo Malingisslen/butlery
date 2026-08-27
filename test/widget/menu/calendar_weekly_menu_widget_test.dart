@@ -118,7 +118,9 @@ void main() {
       tester,
     ) async {
       final emptyPlan = _plan(weekStart: DateTime(2026, 4, 13));
-      when(() => service.getWeek(any())).thenAnswer((_) async => emptyPlan);
+      when(() => service.readWeek(any())).thenAnswer(
+        (_) async => WeeklyMenuPlanRead(plan: emptyPlan, readFailed: false),
+      );
 
       final vm = WeeklyMenuPlanViewModel(
         service: service,
@@ -139,6 +141,49 @@ void main() {
       expect(find.byType(StateWidget), findsOneWidget);
       expect(find.text('Ingen planering än'), findsOneWidget);
     });
+
+    testWidgets(
+      'a failed read offers a retry, and it retries the REQUESTED week '
+      '(BUT-1939)',
+      (tester) async {
+        // The error state replaces the whole calendar, week navigation
+        // included, so the "Försök igen" the message names has to be a real
+        // control here — and it must not silently retry today's week.
+        final requested = IsoWeekUtils.weekStartOf(DateTime(2026, 4, 20));
+        final plan = _plan(weekStart: requested);
+        var failNext = true;
+        when(() => service.readWeek(any())).thenAnswer(
+          (_) async => WeeklyMenuPlanRead(plan: plan, readFailed: failNext),
+        );
+
+        final vm = WeeklyMenuPlanViewModel(
+          service: service,
+          recipeService: recipeService,
+          shoppingListGenerator: _MockMenuShoppingListGenerator(),
+        );
+        addTearDown(vm.dispose);
+
+        await tester.pumpWidget(
+          _host(vm: vm, child: const CalendarWeeklyMenuWidget()),
+        );
+        await tester.pumpAndSettle();
+        await vm.loadWeek(requested);
+        await tester.pumpAndSettle();
+
+        expect(find.text('Försök igen'), findsOneWidget);
+
+        failNext = false;
+        // Without this the verify below is already satisfied by the two loads
+        // that happen BEFORE the tap, so it would say nothing about the tap.
+        clearInteractions(service);
+        await tester.tap(find.text('Försök igen'));
+        await tester.pumpAndSettle();
+
+        verify(() => service.readWeek(requested)).called(1);
+        expect(vm.plan, isNotNull);
+        expect(vm.currentWeekStart, equals(requested));
+      },
+    );
 
     testWidgets('populated week renders one row per DayOfWeek (7) with lunch + '
         'middag + övrigt columns per row', (tester) async {
@@ -164,7 +209,9 @@ void main() {
           ),
         ],
       );
-      when(() => service.getWeek(any())).thenAnswer((_) async => populated);
+      when(() => service.readWeek(any())).thenAnswer(
+        (_) async => WeeklyMenuPlanRead(plan: populated, readFailed: false),
+      );
 
       final vm = WeeklyMenuPlanViewModel(
         service: service,
@@ -205,7 +252,9 @@ void main() {
         'recipe when vm.overflow.isNotEmpty', (tester) async {
       final weekStart = IsoWeekUtils.weekStartOf(DateTime(2026, 4, 13));
       final emptyPlan = _plan(weekStart: weekStart);
-      when(() => service.getWeek(any())).thenAnswer((_) async => emptyPlan);
+      when(() => service.readWeek(any())).thenAnswer(
+        (_) async => WeeklyMenuPlanRead(plan: emptyPlan, readFailed: false),
+      );
       when(
         () => service.distributeFromGeneratedMenu(
           generated: any(named: 'generated'),
@@ -264,7 +313,9 @@ void main() {
           ),
         ],
       );
-      when(() => service.getWeek(any())).thenAnswer((_) async => plan);
+      when(() => service.readWeek(any())).thenAnswer(
+        (_) async => WeeklyMenuPlanRead(plan: plan, readFailed: false),
+      );
 
       final vm = WeeklyMenuPlanViewModel(
         service: service,
@@ -303,7 +354,9 @@ void main() {
             ),
           ],
         );
-        when(() => service.getWeek(any())).thenAnswer((_) async => plan);
+        when(() => service.readWeek(any())).thenAnswer(
+          (_) async => WeeklyMenuPlanRead(plan: plan, readFailed: false),
+        );
 
         final vm = WeeklyMenuPlanViewModel(
           service: service,
@@ -360,14 +413,20 @@ void main() {
         ],
       );
       when(
-        () => service.getWeek(thisWeek.weekStartDate),
-      ).thenAnswer((_) async => thisWeek);
+        () => service.readWeek(thisWeek.weekStartDate),
+      ).thenAnswer(
+        (_) async => WeeklyMenuPlanRead(plan: thisWeek, readFailed: false),
+      );
       when(
-        () => service.getWeek(prevWeek.weekStartDate),
-      ).thenAnswer((_) async => prevWeek);
+        () => service.readWeek(prevWeek.weekStartDate),
+      ).thenAnswer(
+        (_) async => WeeklyMenuPlanRead(plan: prevWeek, readFailed: false),
+      );
       when(
-        () => service.getWeek(nextWeek.weekStartDate),
-      ).thenAnswer((_) async => nextWeek);
+        () => service.readWeek(nextWeek.weekStartDate),
+      ).thenAnswer(
+        (_) async => WeeklyMenuPlanRead(plan: nextWeek, readFailed: false),
+      );
 
       final vm = WeeklyMenuPlanViewModel(
         service: service,
@@ -412,7 +471,9 @@ void main() {
         WidgetTester tester, {
         required WeeklyMenuPlan plan,
       }) async {
-        when(() => service.getWeek(any())).thenAnswer((_) async => plan);
+        when(() => service.readWeek(any())).thenAnswer(
+          (_) async => WeeklyMenuPlanRead(plan: plan, readFailed: false),
+        );
         final vm = WeeklyMenuPlanViewModel(
           service: service,
           recipeService: recipeService,
@@ -572,7 +633,9 @@ void main() {
         WidgetTester tester, {
         required WeeklyMenuPlan plan,
       }) async {
-        when(() => service.getWeek(any())).thenAnswer((_) async => plan);
+        when(() => service.readWeek(any())).thenAnswer(
+          (_) async => WeeklyMenuPlanRead(plan: plan, readFailed: false),
+        );
         final vm = WeeklyMenuPlanViewModel(
           service: service,
           recipeService: recipeService,
@@ -615,7 +678,7 @@ void main() {
         (tester) async {
           final plan = oneEntryWeek();
           // The bulk move re-reads the same week afterwards (_fetchWeek), so
-          // getWeek is already stubbed by pumpSelectedOneEntry to return `plan`.
+          // readWeek is already stubbed by pumpSelectedOneEntry to return `plan`.
           when(
             () => service.bulkMoveEntries(
               weekStart: any(named: 'weekStart'),
@@ -746,7 +809,9 @@ void main() {
             ),
           ],
         );
-        when(() => service.getWeek(any())).thenAnswer((_) async => plan);
+        when(() => service.readWeek(any())).thenAnswer(
+          (_) async => WeeklyMenuPlanRead(plan: plan, readFailed: false),
+        );
         final vm = WeeklyMenuPlanViewModel(
           service: service,
           recipeService: recipeService,
@@ -928,7 +993,9 @@ void main() {
           ),
         ],
       );
-      when(() => service.getWeek(any())).thenAnswer((_) async => populated);
+      when(() => service.readWeek(any())).thenAnswer(
+        (_) async => WeeklyMenuPlanRead(plan: populated, readFailed: false),
+      );
 
       final vm = WeeklyMenuPlanViewModel(
         service: service,

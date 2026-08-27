@@ -40,6 +40,16 @@ class WeeklyMenuPlanRead {
   const WeeklyMenuPlanRead({required this.plan, required this.readFailed});
 }
 
+/// The refusal message the menu views show when [WeeklyMenuPlanRead.readFailed]
+/// said the week could not be read (BUT-1939).
+///
+/// One string rather than one per view: the refusal is the same event everywhere,
+/// and two spellings of it drift. It names the retry because the failure is a read
+/// that did not answer, which the next attempt may well survive — unlike the
+/// generic fallback, which tells the user nothing they can act on.
+const String weeklyPlanReadFailedMessage =
+    'Kunde inte läsa in veckan — försök igen';
+
 class WeeklyMenuPlanService extends BaseService {
   final WeeklyMenuPlanRepository _repository;
   final UserService _userService;

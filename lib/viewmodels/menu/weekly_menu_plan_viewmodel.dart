@@ -28,6 +28,19 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
   WeeklyMenuPlan? _plan;
   List<Recipe> _overflow = const [];
   bool _applyInFlight = false;
+
+  /// BUT-1939. Whether the last read of the week FAILED, as distinct from
+  /// reading a week with nothing in it.
+  /// The two protections are NOT independent: the same branch that sets this
+  /// also sets `_plan = null`, which is the only thing stopping `assignRecipe`,
+  /// `moveEntry`, `removeEntry`, `clearWeek`, `undoClearWeek` and
+  /// `assignFromOverflow`. Keeping the last-known week on screen would remove
+  /// that second guard for all six, so they would need their own.
+  bool _readFailed = false;
+
+  /// The week most recently asked for, so [currentWeekStart] can answer for a
+  /// week whose read failed instead of falling back to today.
+  DateTime? _requestedWeekStart;
   ParsedMenuRequest? _lastParsedRequest;
 
   // BUT-1241: entry ids placed by the most recent auto-distribution, used
@@ -65,9 +78,17 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
   bool isRecentlyPlaced(String entryId) =>
       _recentlyPlacedEntryIds.contains(entryId);
 
-  // Until the first `loadWeek` call completes, fall back to "this week".
+  /// The week this viewmodel is showing, whether or not its plan loaded.
+  ///
+  /// `_requestedWeekStart` is the middle term because `_plan` is null in two
+  /// different situations: nothing has been requested yet, and a requested week
+  /// failed to read. Without it the second case answers "this week", and the
+  /// getter is PUBLIC — `veckomeny_view.dart` hands it to the placement session,
+  /// which would then target a week the user never chose (BUT-1939).
   DateTime get currentWeekStart =>
-      _plan?.weekStartDate ?? IsoWeekUtils.weekStartOf(clock.now());
+      _plan?.weekStartDate ??
+      _requestedWeekStart ??
+      IsoWeekUtils.weekStartOf(clock.now());
 
   bool get hasOverflow => _overflow.isNotEmpty;
   bool get hasEntries => _plan?.isNotEmpty ?? false;
@@ -88,6 +109,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
     MealSlot slot,
     List<String>? memberIds,
   ) async {
+    if (_readFailed) return;
     await executeAsyncVoid(
       () async {
         final updated = await _service.setSlotPresence(
@@ -107,6 +129,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
   /// BUT-1611 "Hela dagen": set the same selection on both meal slots of
   /// [day]. Null clears both back to the "everyone" default.
   Future<void> setDayPresence(DayOfWeek day, List<String>? memberIds) async {
+    if (_readFailed) return;
     await executeAsyncVoid(
       () async {
         final updated = await _service.setDayPresence(
@@ -148,6 +171,12 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
     Set<String> recentlyPlacedEntryIds = const {},
   }) {
     _plan = plan;
+    // BUT-1939. Without this the flag outlives the failure: the placement
+    // session read and saved this exact week successfully, but `loadWeek`
+    // short-circuits on a matching `weekStartDate`, so nothing would ever
+    // re-fetch and clear it — leaving every guarded action silently inert
+    // until the user navigates away.
+    _readFailed = false;
     // The placement session is the new truth for that week; whatever the
     // tray held that wasn't placed was deliberately left out.
     _overflow = const [];
@@ -156,10 +185,25 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
   }
 
   Future<void> _fetchWeek(DateTime weekStart) async {
+    _requestedWeekStart = weekStart;
     await executeAsyncVoid(
       () async {
-        final fetched = await _service.getWeek(weekStart);
+        final read = await _service.readWeek(weekStart);
         if (isDisposed) return;
+        if (read.readFailed) {
+          // BUT-1939. `getWeek` spells a failed read as an EMPTY plan, which is
+          // indistinguishable from a week with nothing saved.
+          _plan = null;
+          _readFailed = true;
+          // The selection belongs to the week that just failed to load, so it
+          // must not survive into the next one.
+          _selectionMode = false;
+          _selectedEntryIds.clear();
+          setError(weeklyPlanReadFailedMessage);
+          return;
+        }
+        _readFailed = false;
+        final fetched = read.plan;
         _plan = fetched;
         _recentlyPlacedEntryIds = const {};
         // A week (re)load is a fresh context — drop any in-progress
@@ -194,7 +238,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
     ParsedMenuRequest? parsedRequest,
     bool replaceExisting = false,
   }) async {
-    if (_applyInFlight) return null;
+    if (_applyInFlight || _readFailed) return null;
     _applyInFlight = true;
     _lastParsedRequest = parsedRequest;
     int? placedCount;
@@ -374,6 +418,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
   /// failures outside it; either way the caller sees null = failure.
   Future<MenuShoppingGenerationResult?> generateShoppingList() async {
     if (isLoading) return MenuShoppingGenerationResult.alreadyRunning;
+    if (_readFailed) return null;
     try {
       return await executeAsync(
         () => _shoppingListGenerator.generateForWeek(currentWeekStart),
@@ -409,6 +454,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
   /// Does NOT navigate to next week; the user stays on the current week so
   /// the copy is a non-disruptive background action.
   Future<int?> copyWeekToNext() async {
+    if (_readFailed) return null;
     final from = currentWeekStart;
     final to = from.add(const Duration(days: 7));
     int? copied;
@@ -462,6 +508,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
     required DayOfWeek toDay,
     required MealSlot toSlot,
   }) async {
+    if (_readFailed) return null;
     if (_selectedEntryIds.isEmpty) return 0;
     final ids = _selectedEntryIds.toList(growable: false);
     final weekStart = currentWeekStart;

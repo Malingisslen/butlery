@@ -511,7 +511,17 @@ class OnboardingViewModel extends BaseViewModel {
       final shoppingGenerator = ServiceLocator.get<MenuShoppingListGenerator>();
       final now = clock.now();
 
-      var plan = await menuService.getWeek(now);
+      final read = await menuService.readWeek(now);
+      if (read.readFailed) {
+        // BUT-1939. `getWeek` returned an empty plan for a week it could not
+        // read, so `isNotEmpty` was false and the idempotency guard below did
+        // not fire. Refusing is safe — it gates no navigation.
+        AppLogger.warning(
+          'Sample menu: skipped, the week could not be read',
+        );
+        return;
+      }
+      var plan = read.plan;
       // Idempotency: never overwrite or stack onto a plan the user already
       // has for this week (covers onboarding re-entry / partial retries).
       if (plan.isNotEmpty) return;

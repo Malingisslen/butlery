@@ -30,6 +30,12 @@ import 'package:butlery/viewmodels/menu/weekly_menu_plan_viewmodel.dart';
 import '../../../infrastructure/factories/recipe_factory.dart';
 import '../../../test_support/base_unit_test.dart';
 
+/// BUT-1939: the viewmodels read through `readWeek`, which carries the
+/// `readFailed` bit beside the plan. Every stub here answers a SUCCESSFUL
+/// read; the refusal cases build their own with `readFailed: true`.
+WeeklyMenuPlanRead _read(WeeklyMenuPlan plan) =>
+    WeeklyMenuPlanRead(plan: plan, readFailed: false);
+
 class _MockWeeklyMenuPlanService extends Mock
     implements WeeklyMenuPlanService {}
 
@@ -138,11 +144,235 @@ void main() {
       });
     });
 
+    group('a failed READ never becomes a save (BUT-1939)', () {
+      test('publishes no plan and surfaces a retryable message', () async {
+        when(() => mockService.readWeek(any())).thenAnswer(
+          (_) async => WeeklyMenuPlanRead(plan: _plan(), readFailed: true),
+        );
+
+        await viewModel.loadWeek(DateTime(2026, 4, 15));
+
+        expect(viewModel.plan, isNull);
+        expect(viewModel.error, equals(weeklyPlanReadFailedMessage));
+        verifyNever(() => mockService.save(any()));
+      });
+
+      test(
+        'applyGeneratedMenu refuses — it has no _plan null guard of its own',
+        () async {
+          when(() => mockService.readWeek(any())).thenAnswer(
+            (_) async => WeeklyMenuPlanRead(plan: _plan(), readFailed: true),
+          );
+          // Stubbed to SUCCEED, so the only thing that can stop the save is the
+          // guard: without it `existing: null` builds a fresh week and upserts it
+          // onto the deterministic doc id. `hasEntries` is false while `_plan` is
+          // null, so the view's overwrite confirmation is skipped too.
+          when(
+            () => mockService.distributeFromGeneratedMenu(
+              generated: any(named: 'generated'),
+              weekStart: any(named: 'weekStart'),
+              existing: any(named: 'existing'),
+              now: any(named: 'now'),
+              dayPins: any(named: 'dayPins'),
+            ),
+          ).thenReturn(
+            WeeklyMenuDistributionResult(plan: _plan(), overflow: const []),
+          );
+          await viewModel.loadWeek(DateTime(2026, 4, 15));
+
+          final placed = await viewModel.applyGeneratedMenu(
+            const {'middag': <Recipe>[]},
+            replaceExisting: true,
+          );
+
+          expect(placed, isNull);
+          verifyNever(() => mockService.save(any()));
+        },
+      );
+
+      test(
+        'the week-scoped writers refuse rather than retargeting THIS week',
+        () async {
+          when(() => mockService.readWeek(any())).thenAnswer(
+            (_) async => WeeklyMenuPlanRead(plan: _plan(), readFailed: true),
+          );
+          await viewModel.loadWeek(DateTime(2026, 4, 15));
+
+          await viewModel.setSlotPresence(DayOfWeek.mon, MealSlot.middag, [
+            'm1',
+          ]);
+          await viewModel.setDayPresence(DayOfWeek.tue, ['m1']);
+          final copied = await viewModel.copyWeekToNext();
+
+          expect(copied, isNull);
+          verifyNever(
+            () => mockService.setSlotPresence(
+              weekStart: any(named: 'weekStart'),
+              day: any(named: 'day'),
+              slot: any(named: 'slot'),
+              memberIds: any(named: 'memberIds'),
+            ),
+          );
+          verifyNever(
+            () => mockService.setDayPresence(
+              weekStart: any(named: 'weekStart'),
+              day: any(named: 'day'),
+              memberIds: any(named: 'memberIds'),
+            ),
+          );
+          verifyNever(
+            () => mockService.copyWeek(
+              fromWeekStart: any(named: 'fromWeekStart'),
+              toWeekStart: any(named: 'toWeekStart'),
+            ),
+          );
+        },
+      );
+
+      test(
+        'bulkMoveSelected refuses on a failed read',
+        () async {
+          final week = _plan(
+            entries: [
+              _entry(day: DayOfWeek.mon, slot: MealSlot.middag, id: 'e-sel'),
+            ],
+          );
+          var failNext = false;
+          when(() => mockService.readWeek(any())).thenAnswer(
+            (_) async => WeeklyMenuPlanRead(plan: week, readFailed: failNext),
+          );
+          await viewModel.loadWeek(DateTime(2026, 4, 15));
+          viewModel.beginSelection();
+          viewModel.toggleSelection('e-sel');
+          expect(viewModel.selectedCount, 1);
+
+          failNext = true;
+          await viewModel.loadWeek(DateTime(2026, 4, 22));
+
+          final moved = await viewModel.bulkMoveSelected(
+            toDay: DayOfWeek.tue,
+            toSlot: MealSlot.middag,
+          );
+
+          expect(moved, isNull);
+          verifyNever(
+            () => mockService.bulkMoveEntries(
+              weekStart: any(named: 'weekStart'),
+              entryIds: any(named: 'entryIds'),
+              toDay: any(named: 'toDay'),
+              toSlot: any(named: 'toSlot'),
+            ),
+          );
+        },
+      );
+
+      test(
+        'generateShoppingList refuses rather than listing the wrong week',
+        () async {
+          when(() => mockService.readWeek(any())).thenAnswer(
+            (_) async => WeeklyMenuPlanRead(plan: _plan(), readFailed: true),
+          );
+          await viewModel.loadWeek(DateTime(2026, 4, 15));
+
+          final result = await viewModel.generateShoppingList();
+
+          expect(result, isNull);
+          verifyNever(() => mockGenerator.generateForWeek(any()));
+        },
+      );
+
+      test(
+        'currentWeekStart still names the REQUESTED week after a failed read',
+        () async {
+          // The getter is public and `veckomeny_view` hands it to the placement
+          // session. Falling back to today would aim that session at a week the
+          // user never chose — and that write lands, because the session reads
+          // its own target fresh.
+          final target = DateTime(2026, 4, 20);
+          when(() => mockService.readWeek(any())).thenAnswer(
+            (_) async => WeeklyMenuPlanRead(plan: _plan(), readFailed: true),
+          );
+
+          await viewModel.loadWeek(target);
+
+          expect(viewModel.plan, isNull);
+          expect(
+            viewModel.currentWeekStart,
+            equals(IsoWeekUtils.weekStartOf(target)),
+          );
+        },
+      );
+
+      test(
+        'adoptPlan clears the refusal — a placement session recovers it',
+        () async {
+          // `loadWeek` short-circuits on a matching weekStartDate, so without
+          // adoptPlan clearing the flag nothing would ever re-fetch and every
+          // guarded action would stay silently inert for that week.
+          final week = _plan();
+          when(() => mockService.readWeek(any())).thenAnswer(
+            (_) async => WeeklyMenuPlanRead(plan: week, readFailed: true),
+          );
+          when(
+            () => mockService.copyWeek(
+              fromWeekStart: any(named: 'fromWeekStart'),
+              toWeekStart: any(named: 'toWeekStart'),
+            ),
+          ).thenAnswer((_) async => 3);
+          await viewModel.loadWeek(week.weekStartDate);
+          expect(viewModel.plan, isNull);
+
+          viewModel.adoptPlan(week);
+
+          final copied = await viewModel.copyWeekToNext();
+          expect(copied, isNotNull);
+          verify(
+            () => mockService.copyWeek(
+              fromWeekStart: any(named: 'fromWeekStart'),
+              toWeekStart: any(named: 'toWeekStart'),
+            ),
+          ).called(1);
+        },
+      );
+
+      test('and the entry mutators write nothing while it holds', () async {
+        // A SUCCESSFUL load first, then a failed re-read of a DIFFERENT week:
+        // without it the mutant that drops `_plan = null` is invisible,
+        // because the plan was never resident to begin with.
+        final week = _plan(
+          entries: [
+            _entry(day: DayOfWeek.mon, slot: MealSlot.middag, id: 'e-live'),
+          ],
+        );
+        var failNext = false;
+        when(() => mockService.readWeek(any())).thenAnswer(
+          (_) async => WeeklyMenuPlanRead(plan: week, readFailed: failNext),
+        );
+        when(
+          () => mockService.removeEntry(
+            plan: any(named: 'plan'),
+            entryId: any(named: 'entryId'),
+          ),
+        ).thenReturn(_plan());
+        await viewModel.loadWeek(DateTime(2026, 4, 13));
+        expect(viewModel.plan, isNotNull);
+
+        failNext = true;
+        await viewModel.loadWeek(DateTime(2026, 4, 20));
+
+        await viewModel.removeEntry('e-live');
+
+        verifyNever(() => mockService.save(any()));
+      });
+    });
+
     group('loadWeek', () {
       test('fetches the plan for the ISO week containing the given date '
           'and notifies listeners', () async {
         final fetched = _plan();
-        when(() => mockService.getWeek(any())).thenAnswer((_) async => fetched);
+        when(() => mockService.readWeek(any())).thenAnswer(
+          (_) async => WeeklyMenuPlanRead(plan: fetched, readFailed: false),
+        );
         var notifications = 0;
         viewModel.addListener(() => notifications++);
 
@@ -152,28 +382,30 @@ void main() {
         // executeAsyncVoid fires at minimum: setLoading(true), success path
         // setLoading(false), plus explicit notifyListeners on plan assignment.
         expect(notifications, greaterThanOrEqualTo(1));
-        verify(() => mockService.getWeek(fetched.weekStartDate)).called(1);
+        verify(() => mockService.readWeek(fetched.weekStartDate)).called(1);
       });
 
       test('short-circuits when the target week is already loaded '
           '(no extra service call)', () async {
         final first = _plan();
-        when(() => mockService.getWeek(any())).thenAnswer((_) async => first);
+        when(() => mockService.readWeek(any())).thenAnswer(
+          (_) async => WeeklyMenuPlanRead(plan: first, readFailed: false),
+        );
 
         // First load pulls from the service.
         await viewModel.loadWeek(DateTime(2026, 4, 13));
-        verify(() => mockService.getWeek(first.weekStartDate)).called(1);
+        verify(() => mockService.readWeek(first.weekStartDate)).called(1);
 
         // Second call for ANY date in the same ISO week — must be a no-op.
         await viewModel.loadWeek(DateTime(2026, 4, 15));
         await viewModel.loadWeek(DateTime(2026, 4, 18));
 
-        verifyNever(() => mockService.getWeek(any()));
+        verifyNever(() => mockService.readWeek(any()));
       });
 
       test('sets the localized error string when the service throws', () async {
         when(
-          () => mockService.getWeek(any()),
+          () => mockService.readWeek(any()),
         ).thenThrow(StateError('network down'));
 
         // executeAsyncVoid swallows the throw and records the prefix as
@@ -194,17 +426,17 @@ void main() {
           final week1 = _plan(weekStart: DateTime(2026, 4, 13));
           final week2 = _plan(weekStart: DateTime(2026, 4, 20));
           when(
-            () => mockService.getWeek(week1.weekStartDate),
-          ).thenAnswer((_) async => week1);
+            () => mockService.readWeek(week1.weekStartDate),
+          ).thenAnswer((_) async => _read(week1));
           when(
-            () => mockService.getWeek(week2.weekStartDate),
-          ).thenAnswer((_) async => week2);
+            () => mockService.readWeek(week2.weekStartDate),
+          ).thenAnswer((_) async => _read(week2));
 
           await viewModel.loadWeek(DateTime(2026, 4, 13));
           await viewModel.nextWeek();
 
           expect(viewModel.currentWeekStart, week2.weekStartDate);
-          verify(() => mockService.getWeek(week2.weekStartDate)).called(1);
+          verify(() => mockService.readWeek(week2.weekStartDate)).called(1);
         },
       );
 
@@ -214,17 +446,17 @@ void main() {
           final week1 = _plan(weekStart: DateTime(2026, 4, 13));
           final prev = _plan(weekStart: DateTime(2026, 4, 6));
           when(
-            () => mockService.getWeek(week1.weekStartDate),
-          ).thenAnswer((_) async => week1);
+            () => mockService.readWeek(week1.weekStartDate),
+          ).thenAnswer((_) async => _read(week1));
           when(
-            () => mockService.getWeek(prev.weekStartDate),
-          ).thenAnswer((_) async => prev);
+            () => mockService.readWeek(prev.weekStartDate),
+          ).thenAnswer((_) async => _read(prev));
 
           await viewModel.loadWeek(DateTime(2026, 4, 13));
           await viewModel.previousWeek();
 
           expect(viewModel.currentWeekStart, prev.weekStartDate);
-          verify(() => mockService.getWeek(prev.weekStartDate)).called(1);
+          verify(() => mockService.readWeek(prev.weekStartDate)).called(1);
         },
       );
 
@@ -241,11 +473,11 @@ void main() {
           weekStart: DateTime(2027, 1, 4),
         );
         when(
-          () => mockService.getWeek(w53.weekStartDate),
-        ).thenAnswer((_) async => w53);
+          () => mockService.readWeek(w53.weekStartDate),
+        ).thenAnswer((_) async => _read(w53));
         when(
-          () => mockService.getWeek(w1.weekStartDate),
-        ).thenAnswer((_) async => w1);
+          () => mockService.readWeek(w1.weekStartDate),
+        ).thenAnswer((_) async => _read(w1));
 
         await viewModel.loadWeek(DateTime(2026, 12, 30));
         // Confirm we landed on week 53 of 2026.
@@ -263,7 +495,9 @@ void main() {
       test('distributes the generated menu, persists, and updates plan '
           '+ overflow state', () async {
         final initial = _plan();
-        when(() => mockService.getWeek(any())).thenAnswer((_) async => initial);
+        when(() => mockService.readWeek(any())).thenAnswer(
+          (_) async => WeeklyMenuPlanRead(plan: initial, readFailed: false),
+        );
         await viewModel.loadWeek(DateTime(2026, 4, 13));
 
         final distributedPlan = initial.copyWith(
@@ -304,7 +538,9 @@ void main() {
             _entry(day: DayOfWeek.mon, slot: MealSlot.middag, id: 'pre-1'),
           ],
         );
-        when(() => mockService.getWeek(any())).thenAnswer((_) async => initial);
+        when(() => mockService.readWeek(any())).thenAnswer(
+          (_) async => WeeklyMenuPlanRead(plan: initial, readFailed: false),
+        );
         await viewModel.loadWeek(DateTime(2026, 4, 13));
 
         final result = WeeklyMenuDistributionResult(
@@ -349,8 +585,8 @@ void main() {
         () async {
           final initial = _plan();
           when(
-            () => mockService.getWeek(any()),
-          ).thenAnswer((_) async => initial);
+            () => mockService.readWeek(any()),
+          ).thenAnswer((_) async => _read(initial));
           await viewModel.loadWeek(DateTime(2026, 4, 13));
 
           when(
@@ -381,7 +617,9 @@ void main() {
       test('_applyInFlight guard blocks a concurrent second call '
           '(only the first distributes + saves)', () async {
         final initial = _plan();
-        when(() => mockService.getWeek(any())).thenAnswer((_) async => initial);
+        when(() => mockService.readWeek(any())).thenAnswer(
+          (_) async => WeeklyMenuPlanRead(plan: initial, readFailed: false),
+        );
         await viewModel.loadWeek(DateTime(2026, 4, 13));
 
         var distributeCalls = 0;
@@ -444,8 +682,8 @@ void main() {
           final initial = _plan();
           final recipe = _recipe(id: 'r-add');
           when(
-            () => mockService.getWeek(any()),
-          ).thenAnswer((_) async => initial);
+            () => mockService.readWeek(any()),
+          ).thenAnswer((_) async => _read(initial));
           await viewModel.loadWeek(DateTime(2026, 4, 13));
 
           final updated = initial.copyWith(
@@ -486,8 +724,8 @@ void main() {
             ],
           );
           when(
-            () => mockService.getWeek(any()),
-          ).thenAnswer((_) async => initial);
+            () => mockService.readWeek(any()),
+          ).thenAnswer((_) async => _read(initial));
           await viewModel.loadWeek(DateTime(2026, 4, 13));
 
           when(
@@ -528,7 +766,9 @@ void main() {
             _entry(day: DayOfWeek.mon, slot: MealSlot.middag, id: 'e-move'),
           ],
         );
-        when(() => mockService.getWeek(any())).thenAnswer((_) async => initial);
+        when(() => mockService.readWeek(any())).thenAnswer(
+          (_) async => WeeklyMenuPlanRead(plan: initial, readFailed: false),
+        );
         await viewModel.loadWeek(DateTime(2026, 4, 13));
 
         final moved = initial.copyWith(
@@ -579,8 +819,8 @@ void main() {
         () async {
           final initial = _plan();
           when(
-            () => mockService.getWeek(any()),
-          ).thenAnswer((_) async => initial);
+            () => mockService.readWeek(any()),
+          ).thenAnswer((_) async => _read(initial));
           await viewModel.loadWeek(DateTime(2026, 4, 13));
 
           when(
@@ -609,8 +849,8 @@ void main() {
             ],
           );
           when(
-            () => mockService.getWeek(any()),
-          ).thenAnswer((_) async => initial);
+            () => mockService.readWeek(any()),
+          ).thenAnswer((_) async => _read(initial));
           await viewModel.loadWeek(DateTime(2026, 4, 13));
 
           final stripped = initial.copyWith(entries: const []);
@@ -643,7 +883,9 @@ void main() {
       test('short-circuits when plan is empty AND overflow is empty '
           '(no service call fired)', () async {
         final empty = _plan();
-        when(() => mockService.getWeek(any())).thenAnswer((_) async => empty);
+        when(() => mockService.readWeek(any())).thenAnswer(
+          (_) async => WeeklyMenuPlanRead(plan: empty, readFailed: false),
+        );
         await viewModel.loadWeek(DateTime(2026, 4, 13));
 
         await viewModel.clearWeek();
@@ -662,8 +904,8 @@ void main() {
           // executeAsyncVoid path.
           final emptyPlan = _plan();
           when(
-            () => mockService.getWeek(any()),
-          ).thenAnswer((_) async => emptyPlan);
+            () => mockService.readWeek(any()),
+          ).thenAnswer((_) async => _read(emptyPlan));
           await viewModel.loadWeek(DateTime(2026, 4, 13));
 
           // Seed overflow via applyGeneratedMenu.
@@ -705,8 +947,8 @@ void main() {
           ],
         );
         when(
-          () => mockService.getWeek(any()),
-        ).thenAnswer((_) async => populated);
+          () => mockService.readWeek(any()),
+        ).thenAnswer((_) async => _read(populated));
         await viewModel.loadWeek(DateTime(2026, 4, 13));
 
         final cleared = populated.copyWith(entries: const []);
@@ -731,8 +973,8 @@ void main() {
           final entry = _entry(day: DayOfWeek.mon, slot: MealSlot.middag);
           final populated = _plan(entries: [entry]);
           when(
-            () => mockService.getWeek(any()),
-          ).thenAnswer((_) async => populated);
+            () => mockService.readWeek(any()),
+          ).thenAnswer((_) async => _read(populated));
           await viewModel.loadWeek(DateTime(2026, 4, 13));
 
           final cleared = populated.copyWith(entries: const []);
@@ -764,7 +1006,9 @@ void main() {
             _entry(day: DayOfWeek.tue, slot: MealSlot.lunch),
           ],
         );
-        when(() => mockService.getWeek(any())).thenAnswer((_) async => initial);
+        when(() => mockService.readWeek(any())).thenAnswer(
+          (_) async => WeeklyMenuPlanRead(plan: initial, readFailed: false),
+        );
         await viewModel.loadWeek(DateTime(2026, 4, 13));
 
         // No clearWeek called — snapshot is null.
@@ -782,8 +1026,8 @@ void main() {
         // back — the snapshot has to capture overflow, not just entries.
         final emptyPlan = _plan();
         when(
-          () => mockService.getWeek(any()),
-        ).thenAnswer((_) async => emptyPlan);
+          () => mockService.readWeek(any()),
+        ).thenAnswer((_) async => _read(emptyPlan));
         await viewModel.loadWeek(DateTime(2026, 4, 13));
 
         final overflowRecipe = _recipe(id: 'overflow-1', title: 'Extra');
@@ -840,7 +1084,9 @@ void main() {
       test('delegates to the generator with the current week anchor, toggles '
           'isLoading, and passes the success result through', () async {
         final week = _plan(weekStart: DateTime(2026, 4, 13));
-        when(() => mockService.getWeek(any())).thenAnswer((_) async => week);
+        when(() => mockService.readWeek(any())).thenAnswer(
+          (_) async => WeeklyMenuPlanRead(plan: week, readFailed: false),
+        );
         await viewModel.loadWeek(DateTime(2026, 4, 13));
 
         var sawLoading = false;
@@ -965,8 +1211,8 @@ void main() {
           // Seed VM with a plan + overflow containing 2 recipes.
           final initial = _plan();
           when(
-            () => mockService.getWeek(any()),
-          ).thenAnswer((_) async => initial);
+            () => mockService.readWeek(any()),
+          ).thenAnswer((_) async => _read(initial));
           await viewModel.loadWeek(DateTime(2026, 4, 13));
 
           final r1 = _recipe(id: 'o-1', title: 'Första');
@@ -1024,7 +1270,9 @@ void main() {
       test('does not notify listeners a second time when the recipe was '
           'not in the overflow', () async {
         final initial = _plan();
-        when(() => mockService.getWeek(any())).thenAnswer((_) async => initial);
+        when(() => mockService.readWeek(any())).thenAnswer(
+          (_) async => WeeklyMenuPlanRead(plan: initial, readFailed: false),
+        );
         await viewModel.loadWeek(DateTime(2026, 4, 13));
 
         // Overflow stays empty, but assignRecipe still runs.
@@ -1074,7 +1322,9 @@ void main() {
           id: 'old-1',
         );
         final initial = _plan(entries: [preExisting]);
-        when(() => mockService.getWeek(any())).thenAnswer((_) async => initial);
+        when(() => mockService.readWeek(any())).thenAnswer(
+          (_) async => WeeklyMenuPlanRead(plan: initial, readFailed: false),
+        );
         await viewModel.loadWeek(DateTime(2026, 4, 13));
 
         stubDistribution(
@@ -1104,7 +1354,9 @@ void main() {
       test('adoptPlan publishes a placement-saved plan without a Firestore '
           'read and carries the session NY flags', () async {
         final initial = _plan();
-        when(() => mockService.getWeek(any())).thenAnswer((_) async => initial);
+        when(() => mockService.readWeek(any())).thenAnswer(
+          (_) async => WeeklyMenuPlanRead(plan: initial, readFailed: false),
+        );
         await viewModel.loadWeek(DateTime(2026, 4, 13));
 
         final placedPlan = initial.copyWith(
@@ -1126,13 +1378,15 @@ void main() {
           reason: 'a placement session supersedes any stale overflow tray',
         );
         // Exactly the initial fetch — adoption must not re-read the doc.
-        verify(() => mockService.getWeek(any())).called(1);
+        verify(() => mockService.readWeek(any())).called(1);
       });
 
       test('applyGeneratedMenu returns null when the save fails — a success '
           'toast must never describe an unpersisted week', () async {
         final initial = _plan();
-        when(() => mockService.getWeek(any())).thenAnswer((_) async => initial);
+        when(() => mockService.readWeek(any())).thenAnswer(
+          (_) async => WeeklyMenuPlanRead(plan: initial, readFailed: false),
+        );
         await viewModel.loadWeek(DateTime(2026, 4, 13));
 
         stubDistribution(
@@ -1157,7 +1411,9 @@ void main() {
       test('copyWeekToNext delegates to service.copyWeek with current → +7d '
           'and returns the copied count', () async {
         final plan = _plan(weekStart: DateTime(2026, 4, 13));
-        when(() => mockService.getWeek(any())).thenAnswer((_) async => plan);
+        when(() => mockService.readWeek(any())).thenAnswer(
+          (_) async => WeeklyMenuPlanRead(plan: plan, readFailed: false),
+        );
         await viewModel.loadWeek(DateTime(2026, 4, 13));
         when(
           () => mockService.copyWeek(
@@ -1182,7 +1438,9 @@ void main() {
         'copyWeekToNext returns null and raises error state on failure',
         () async {
           final plan = _plan(weekStart: DateTime(2026, 4, 13));
-          when(() => mockService.getWeek(any())).thenAnswer((_) async => plan);
+          when(() => mockService.readWeek(any())).thenAnswer(
+            (_) async => WeeklyMenuPlanRead(plan: plan, readFailed: false),
+          );
           await viewModel.loadWeek(DateTime(2026, 4, 13));
           when(
             () => mockService.copyWeek(
@@ -1247,7 +1505,9 @@ void main() {
             _entry(day: DayOfWeek.tue, slot: MealSlot.ovrigt, id: 'e2'),
           ],
         );
-        when(() => mockService.getWeek(any())).thenAnswer((_) async => plan);
+        when(() => mockService.readWeek(any())).thenAnswer(
+          (_) async => WeeklyMenuPlanRead(plan: plan, readFailed: false),
+        );
         await viewModel.loadWeek(DateTime(2026, 4, 13));
         when(
           () => mockService.bulkMoveEntries(
@@ -1310,7 +1570,9 @@ void main() {
               _entry(day: DayOfWeek.mon, slot: MealSlot.ovrigt, id: 'e1'),
             ],
           );
-          when(() => mockService.getWeek(any())).thenAnswer((_) async => plan);
+          when(() => mockService.readWeek(any())).thenAnswer(
+            (_) async => WeeklyMenuPlanRead(plan: plan, readFailed: false),
+          );
           await viewModel.loadWeek(DateTime(2026, 4, 13));
           when(
             () => mockService.bulkMoveEntries(
@@ -1346,7 +1608,9 @@ void main() {
         final plan = _plan(weekStart: weekStart).copyWith(
           presenceBySlot: presence,
         );
-        when(() => mockService.getWeek(any())).thenAnswer((_) async => plan);
+        when(() => mockService.readWeek(any())).thenAnswer(
+          (_) async => WeeklyMenuPlanRead(plan: plan, readFailed: false),
+        );
         await viewModel.loadWeek(weekStart);
       }
 

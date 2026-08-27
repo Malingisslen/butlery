@@ -58,6 +58,11 @@ class MenuPlacementViewModel extends BaseViewModel {
   final DateTime _originalWeekStart;
 
   WeeklyMenuPlan? _plan;
+
+  /// BUT-1939. Whether the last load failed to READ the week, as distinct from
+  /// reading an empty one. `confirm()` refuses on it — a placement session saves
+  /// the whole week in one write.
+  bool _readFailed = false;
   late final List<MenuPlacementItem> _items;
   late final List<MenuPlacementItem> _itemsView = List.unmodifiable(_items);
   int? _selectedIndex;
@@ -84,6 +89,12 @@ class MenuPlacementViewModel extends BaseViewModel {
 
   WeeklyMenuPlan? get plan => _plan;
   List<MenuPlacementItem> get items => _itemsView;
+
+  /// Falls back to the ORIGINAL week, not the requested one, unlike the
+  /// calendar's `currentWeekStart` (BUT-1939). Deliberate: a placement session
+  /// targets exactly one week, its retry is `init()` which reloads that same
+  /// original week, and `confirm()` saves `_plan`'s own `weekStartDate` — so
+  /// this getter never decides where a write lands.
   DateTime get weekStart => _plan?.weekStartDate ?? _originalWeekStart;
 
   MenuPlacementItem? get selectedItem =>
@@ -117,8 +128,18 @@ class MenuPlacementViewModel extends BaseViewModel {
     if (!canNavigateWeeks && normalized != _originalWeekStart) return;
     await executeAsyncVoid(
       () async {
-        var fetched = await _service.getWeek(normalized);
+        final read = await _service.readWeek(normalized);
         if (isDisposed) return;
+        if (read.readFailed) {
+          // BUT-1939. A failed read arrives from `getWeek` as an EMPTY plan.
+          _plan = null;
+          _readFailed = true;
+          setError(weeklyPlanReadFailedMessage);
+          notifyListeners();
+          return;
+        }
+        _readFailed = false;
+        var fetched = read.plan;
         // The redo base only applies to the week the redo was started for.
         if (startFromEmptyWeek && normalized == _originalWeekStart) {
           fetched = fetched.copyWith(entries: const []);
@@ -239,6 +260,10 @@ class MenuPlacementViewModel extends BaseViewModel {
   /// Persist the working plan — exactly one save for the whole session.
   /// Returns the save result on success, null on failure / no placements.
   Future<PlacementSaveResult?> confirm() async {
+    if (_readFailed) {
+      setError(weeklyPlanReadFailedMessage);
+      return null;
+    }
     final current = _plan;
     if (current == null || !hasPlacements) return null;
     final ok = await executeAsyncVoid(
