@@ -36,6 +36,21 @@ on:
         type: choice
         default: all
         options: [all, rules, indexes, functions, storage]
+      # Deploying all 71 functions at once FAILS on this project: Cloud Run
+      # reports "Quota exceeded for total allowable CPU per project per region"
+      # for europe-west1, because a rolling update holds the old and the new
+      # revision at the same time and 71 of those do not fit under the ceiling.
+      # Measured 2026-08-27 on the flow's third run — two services (logWebError,
+      # suppressLowPerformers) failed their health check on quota and the CLI
+      # then reported the other 50 as failures, which reads as a systemic error
+      # and is not one.
+      #
+      # So a targeted deploy is the normal path here, not the exception. Names
+      # are function EXPORTS, comma-separated, no `functions:` prefix.
+      functions_only:
+        description: "Comma-separated function names (blank = all functions)"
+        type: string
+        default: ""
   push:
     tags:
       - "v*"
@@ -59,6 +74,8 @@ jobs:
     # A tag push always deploys everything; dispatch uses the chosen target.
     env:
       DEPLOY_TARGET: ${{ github.event.inputs.target || 'all' }}
+      # Empty on a tag push, which is deliberate: a release deploys everything.
+      FUNCTIONS_ONLY: ${{ github.event.inputs.functions_only || '' }}
 
     steps:
       - name: Checkout code
@@ -268,7 +285,20 @@ jobs:
           case "$DEPLOY_TARGET" in
             rules)    deploy_one "firestore:rules" ;;
             indexes)  deploy_one "firestore:indexes" ;;
-            functions) deploy_one "functions" ;;
+            functions)
+              # Blank input keeps the old whole-codebase behaviour. A list turns
+              # into `functions:a,functions:b`, which is one `--only` argument
+              # and therefore still ONE deploy — not a loop, so a name that does
+              # not exist fails the whole run instead of half-deploying.
+              if [ -n "${FUNCTIONS_ONLY// /}" ]; then
+                only=$(echo "$FUNCTIONS_ONLY" | tr -d ' ' | tr ',' '\n' \
+                  | grep -v '^$' | sed 's/^/functions:/' | paste -sd, -)
+                echo "Targeted function deploy: $only"
+                deploy_one "$only"
+              else
+                deploy_one "functions"
+              fi
+              ;;
             storage)  deploy_one "storage" ;;
             all)
               deploy_one "firestore"
