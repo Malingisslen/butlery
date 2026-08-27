@@ -290,13 +290,15 @@ jobs:
               #
               # A list deploys ONE FUNCTION PER `firebase deploy`, sequentially,
               # and the reason is a measured ceiling rather than caution.
-              # `run.googleapis.com/CpuAllocPerProjectRegion` is 20000 milli vCPU
-              # (20 vCPU) for europe-west1 on this project, and every function
-              # here is 1 vCPU with maxScale 10 — so admitting ONE new revision
-              # reserves 10 vCPU. Two at once needs exactly the whole ceiling and
-              # fails; the first version of this branch passed both names in a
-              # single `--only` and died that way (run 33043799598, both
-              # revisions "Container Healthcheck failed. Quota exceeded").
+              # MEASURED: `run.googleapis.com/CpuAllocPerProjectRegion` is 20000
+              # milli vCPU (20 vCPU) for europe-west1 on this project, and a
+              # two-function deploy failed on it — run 33043799598, both
+              # revisions "Container Healthcheck failed. Quota exceeded".
+              # HOW the quota is accounted is not established — see the note in
+              # `functions/src/index.ts`, which also says not to write a "how
+              # many fit per deploy" number anywhere. That is why this is one
+              # function per `firebase deploy` rather than a batch sized from a
+              # guess.
               # A quota increase is not currently an option either — the API
               # reports `ineligibilityReason: NOT_ENOUGH_USAGE_HISTORY`.
               #

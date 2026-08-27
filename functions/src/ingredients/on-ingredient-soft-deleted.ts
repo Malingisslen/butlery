@@ -56,6 +56,25 @@ export const onIngredientSoftDeleted = onDocumentUpdated(
     // packing happens before Cloud Run scales out, so this must be declared even
     // when `maxInstances` is generous.
     concurrency: 1,
+    // OVERRIDES the global ceiling, which dropped to 3 on 2026-08-27 to make
+    // deploys fit `CpuAllocPerProjectRegion`. With `concurrency: 1` above, one
+    // instance drains one event at a time, so capacity inside the 1h
+    // `CASCADE_MAX_EVENT_AGE_MS` window is on the order of
+    // `maxInstances x 3600/540` — roughly 20 at 3, roughly 66 at 10 — against
+    // the up-to-500-event batch described above. That is a floor rather than an
+    // estimate (see the full reasoning in `index.ts`), so at the global value
+    // the event-age guard COULD abandon the cascade silently — the exact
+    // permanent-mistagging failure this comment block already describes. 66
+    // does not clear 500 either; the override buys a factor, not safety.
+    //
+    // COST, and it is why `deploy-firebase.yml` deploys one function per
+    // `firebase deploy`: at 10 this function alone can need the whole regional
+    // ceiling during a rolling update, which holds the old and new revision at
+    // once. A batch deploy containing this function is the case that fails.
+    //
+    // Registered in `ALLOWED_OVERRIDES` in `deploy-manifest.test.ts`; the pair
+    // must move together.
+    maxInstances: 10,
     // v2 event triggers do NOT retry by default — without this the `throw` at
     // the bottom is logged and dropped, so a timeout or a transient Firestore
     // error at page N leaves every remaining recipe carrying allergen tags

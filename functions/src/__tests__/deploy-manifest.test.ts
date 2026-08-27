@@ -10,11 +10,11 @@
  * produced mainly by the `setGlobalOptions(...)` call at the top of `index.ts`,
  * and a test that imported the individual trigger modules would never execute
  * that call — every assertion would then read an unconfigured endpoint and pass
- * or fail for reasons unrelated to what ships. Not ONLY that call, though: six
+ * or fail for reasons unrelated to what ships. Not ONLY that call, though: some
  * gen2 exports pin their own region (`moderateUpload`,
- * `syncConversationLastMessage`, `purgeExpiredAuditLogs` and the three
- * `migrations/` backfills), so a global region change moves every gen2 export
- * except those six, which are held by their own options objects.
+ * `syncConversationLastMessage`, `purgeExpiredAuditLogs` and the `migrations/`
+ * backfills), so a global region change moves every gen2 export except those,
+ * which are held by their own options objects.
  *
  * 1. REGION. `onSchedule`/`onDocument*`/`onCall` read `getGlobalOptions()`
  *    EAGERLY at module-eval time, and `export … from` compiles to a `require`
@@ -23,13 +23,16 @@
  *    Until now that hazard was guarded by a comment in `index.ts` and nothing
  *    else; a comment does not redden.
  *
- * 2. MAX INSTANCES. Cloud Run admits a new revision only if the sum of
- *    `cpu x maxInstances` across every service in the region fits the project's
- *    CPU quota, and an UNSET ceiling is not "no reservation" — it is the
- *    platform default of 100 per function. On 2026-08-17 that reserved
- *    thousands of vCPU across this project's services and a deploy failed on
- *    53 of them, reporting
- *    `Container Healthcheck failed`, which reads like broken code and is not.
+ * 2. MAX INSTANCES. An UNSET ceiling is not "no reservation" — it is the
+ *    platform default of 100 per function, and on 2026-08-17 a deploy failed
+ *    on 53 services reporting `Container Healthcheck failed`, which reads like
+ *    broken code and is not. Setting a ceiling fixed that deploy. HOW the quota
+ *    is accounted is NOT established, and the model this paragraph used to
+ *    assert — `cpu x maxInstances` summed across every service in the region —
+ *    is false, because the configured sum exceeds the quota many times over
+ *    while every service runs. The check below DERIVES that sum instead of
+ *    stating it, so the falsification is re-measured rather than typed. See
+ *    `index.ts`.
  *    Deleting `maxInstances` from `index.ts` keeps `tsc` and every other suite
  *    green and breaks only the next deploy, at the worst possible moment.
  *
@@ -52,18 +55,35 @@
  * worse than a red one. `testManifestIsReadable` guards the layer above it
  * (`__endpoint` itself) and does NOT cover this.
  *
- * Mutation-tested 2026-08-17, six ways, each reddening exactly one check and
- * nothing else. A healthy tree is 7/7.
+ * Mutation-tested. Each mutant reddens the check named beside it and nothing
+ * else, except the `gcfv2`-filter one, which reddens two because both callers
+ * of `gen2Endpoints()` go through it.
  *
+ * PASS TOTALS ARE DELIBERATELY NOT RECORDED HERE. They were, as "-> 6/7" and
+ * "-> 5/7", and adding one check on 2026-08-27 falsified every one of them at
+ * a stroke — by ADDITION, with their own bytes untouched, which is the same
+ * trap the endpoint-count note above avoids. Which check goes red is the
+ * durable fact; how many stay green is not.
+ *
+ * 2026-08-17:
  *   maxInstances deleted from `setGlobalOptions` -> the PRESENCE check, via its
- *     summary branch (every export uncapped, so no list is printed)     -> 6/7
- *   global ceiling raised to 100                 -> the VALUE pin      -> 6/7
+ *     summary branch (every export uncapped, so no list is printed)
+ *   global ceiling raised to 100                 -> the VALUE pin
  *   region changed                               -> the region check,
- *     naming the 64 it moves (six exports pin their own)               -> 6/7
+ *     naming the ones it moves (some exports pin their own)
  *   the `gcfv2` filter changed to a non-matching string -> `gen2Endpoints()`,
- *     twice, once per caller                                           -> 5/7
+ *     twice, once per caller
  *   `concurrency: 1` deleted from either ingredient cascade -> the cascade
- *     check, naming that one endpoint (two separate mutants)           -> 6/7
+ *     check, naming that one endpoint (two separate mutants)
+ *
+ * 2026-08-27, added with `ALLOWED_OVERRIDES` — an override is TWO edits and
+ * only a DISAGREEMENT between them reddens, so each side is probed alone:
+ *   a cascade lowered to the global value, its entry left at 10 -> VALUE pin,
+ *     naming that endpoint
+ *   a cascade's `ALLOWED_OVERRIDES` entry removed, its options left at 10
+ *                                               -> VALUE pin, same
+ *   global ceiling put back to 10               -> VALUE pin, naming every
+ *     non-overridden export
  *
  * Every mutated file was restored byte-identical afterwards, md5 compared.
  *
@@ -96,7 +116,7 @@ process.env.FIREBASE_CONFIG = process.env.FIREBASE_CONFIG
 const entryPoint = require("../index") as Record<string, unknown>;
 
 const EXPECTED_REGION = "europe-west1";
-const EXPECTED_MAX_INSTANCES = 10;
+const EXPECTED_MAX_INSTANCES = 3;
 
 interface Endpoint {
   platform?: string;
@@ -221,11 +241,29 @@ function testEveryGen2EndpointCapsItsInstances(): void {
   // mutant, per the note above.
   //
   // A function that genuinely needs a different ceiling is registered here
-  // rather than silently tolerated. An empty map is the current policy: one
-  // number for everything. Comparing against a lone shared constant instead
-  // would mean the only way to allow one override is to raise it for every export,
-  // which is how a cap stops being a cap.
-  const ALLOWED_OVERRIDES: Record<string, number> = {};
+  // rather than silently tolerated. Comparing against a lone shared constant
+  // instead would mean the only way to allow one override is to raise it for
+  // every export, which is how a cap stops being a cap.
+  //
+  // The two entries below are the ingredient cascades, and they are here
+  // because of `concurrency: 1` rather than because they are busy. One
+  // instance drains one event at a time, and `isCascadeEventExpired` abandons
+  // anything older than `CASCADE_MAX_EVENT_AGE_MS` (1h), so capacity in that
+  // window is on the order of `maxInstances x 3600/540` events: roughly 20 at
+  // the global 3, roughly 66 at 10. An admin ingredient sync fires up to 500
+  // at once. At the global value the guard COULD drop allergen re-tagging
+  // silently — no throw, no alert, recipes left carrying tags from the
+  // ingredient's old properties. The figure is a floor, not an estimate, and
+  // 66 does not clear 500 either; `index.ts` carries the full reasoning and
+  // the reason it still justifies the override.
+  //
+  // Each override is TWO edits — this map and the function's own options — and
+  // the check below only fires when they disagree, so a value changed in one
+  // place alone reddens here rather than shipping.
+  const ALLOWED_OVERRIDES: Record<string, number> = {
+    onIngredientSoftDeleted: 10,
+    onIngredientPropertiesChanged: 10,
+  };
   const notAtExpected = gen2.filter(
     ({ name, endpoint }) =>
       typeof endpoint.maxInstances === "number"
@@ -243,6 +281,33 @@ function testEveryGen2EndpointCapsItsInstances(): void {
         .map(({ name, endpoint }) => `${name}=${endpoint.maxInstances}`)
         .join(", ")
         + " (a deliberate override belongs in ALLOWED_OVERRIDES, not here)",
+  );
+
+  // DERIVES the falsification the header refers to, instead of anyone typing
+  // it. `CpuAllocPerProjectRegion` for europe-west1 on this project is 20 vCPU
+  // (20000 milli), measured 2026-08-27 — the one number here that is external
+  // and therefore stated. Everything else is computed from the manifest, so it
+  // cannot go stale by ADDITION the way a written count does.
+  //
+  // This is NOT a threshold to keep the build under. It exists to keep one
+  // sentence honest: if the sum ever came in UNDER the quota, the "summed
+  // across every service in the region" model would stop being obviously false
+  // and the comments in `index.ts` and above would need rewriting. So it
+  // asserts the direction, and prints the numbers either way.
+  const QUOTA_VCPU = 20;
+  const configuredSum = gen2.reduce(
+    (n, { endpoint }) =>
+      n + (typeof endpoint.maxInstances === "number" ? endpoint.maxInstances : 0),
+    0,
+  );
+  record(
+    "the configured instance ceiling still sums far past the regional CPU quota "
+      + `(${configuredSum} vCPU across ${gen2.length} gen2 exports vs a quota of `
+      + `${QUOTA_VCPU}) — so admission cannot be a region-wide sum`,
+    configuredSum > QUOTA_VCPU,
+    `sum ${configuredSum} <= quota ${QUOTA_VCPU}: the region-wide-sum model is `
+      + "no longer self-evidently false — re-read the quota note in index.ts "
+      + "before trusting it",
   );
 }
 

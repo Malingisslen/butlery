@@ -32,23 +32,58 @@ import {
 } from "./ratings/family-rating-recompute";
 
 // `maxInstances` here is not performance tuning — it is what makes the project
-// deployable at all. Cloud Run admits a new revision only if the sum of
-// `cpu x maxInstances` across every service in the region fits the project's CPU
-// quota, and leaving the ceiling unset does not mean "no reservation": it means
-// the platform default of 100 per function. Multiplied across this project's
-// gen2 services that is thousands of vCPU, and the 2026-08-17 deploy failed on
-// 53 of them with "Quota exceeded for total allowable CPU per project per
-// region" — each one surfacing the symptom as `Container Healthcheck failed`,
-// which reads like broken code and is not. (The service COUNT is deliberately
-// not written here: nothing asserts it, so it goes stale by ADDITION every time
-// an export lands, with its own bytes untouched.)
+// deployable at all. Leaving the ceiling unset does not mean "no reservation":
+// it means the platform default of 100 per function, and the 2026-08-17 deploy
+// failed on 53 of them with "Quota exceeded for total allowable CPU per project
+// per region" — each one surfacing the symptom as `Container Healthcheck
+// failed`, which reads like broken code and is not. Setting a ceiling fixed
+// that deploy. (The service COUNT is deliberately not written here: nothing
+// asserts it, so it goes stale by ADDITION every time an export lands, with its
+// own bytes untouched.)
+//
+// HOW the quota is accounted is NOT established, and the obvious model is
+// FALSE. This comment used to say Cloud Run admits a revision only if
+// `cpu x maxInstances` summed across every service in the region fits the
+// quota. Under that model nothing would deploy at any ceiling, because the
+// configured sum exceeds the quota many times over — `deploy-manifest.test.ts`
+// DERIVES and prints both numbers on every run rather than stating them here,
+// so the falsification cannot go stale. Do not write a "how many fit per
+// deploy" number either: `tasks/todo.md` (2026-08-17) records the accounting as
+// unreconciled, and `deploy-firebase.yml` deploys one function per
+// `firebase deploy` precisely because the number is unknown.
 //
 // This is a cap on INSTANCES, not on in-flight requests: `concurrency` is a
 // separate option that defaults to 80 at cpu >= 1, so the real ceiling per
-// function is ~800 simultaneous requests, not 10. A function that genuinely
+// function is ~240 simultaneous requests, not 3. A function that genuinely
 // needs more raises `maxInstances` in its OWN options object, which wins over
 // this one key-by-key. Raising it globally re-arms the same wall, and the wall
 // is invisible until a deploy is already half-applied.
+//
+// LOWERED 10 -> 3 on 2026-08-27. At 10 the ceiling was still binding in
+// practice: `CpuAllocPerProjectRegion` for europe-west1 is 20000 milli vCPU,
+// and a two-function deploy failed on it — run 33043799598, targets
+// `guardDuplicateMessage` and `syncConversationLastMessage`, both UPDATES, both
+// "Container Healthcheck failed. Quota exceeded" — while one at a time worked.
+// A quota increase is not available: the API answers
+// `ineligibilityReason: NOT_ENOUGH_USAGE_HISTORY`.
+//
+// THE TWO INGREDIENT CASCADES ARE EXEMPT AND MUST STAY EXEMPT. They declare
+// `concurrency: 1`, so one instance drains one event at a time, each for up to
+// `CASCADE_TIMEOUT_SECONDS` (540s), and `isCascadeEventExpired` abandons an
+// event older than `CASCADE_MAX_EVENT_AGE_MS` (1h) measured from `event.time`
+// — which every event in one admin batch shares, so a 500-row sync races ONE
+// window rather than 500. Drain capacity in it is on the order of
+// `maxInstances x 3600/540`: roughly 66 at 10, roughly 20 at 3.
+//
+// That figure is a FLOOR, not an estimate, and it is bounded on neither side:
+// 540s is the most an event may hold an instance (the in-code guard fires at
+// `CASCADE_TIMEOUT_MS`, 500s) while a real event finishes in seconds, and
+// pushing the other way a saturated ceiling returns 429s that Eventarc retries
+// with backoff. So it cannot carry a verdict — 66 does not clear "hundreds"
+// either. What it does support is the comparison: 3 is worse than 10 by 3.3x
+// on every reading of the model, on a path whose failure is silent. Hence the
+// override back to 10, registered in `ALLOWED_OVERRIDES` in
+// `deploy-manifest.test.ts`.
 //
 // Does NOT reach `onUserDeleted`: that is a gen1 auth trigger, which v2
 // `setGlobalOptions` cannot configure — verified in the compiled manifest,
@@ -56,7 +91,7 @@ import {
 // not to draw on the Cloud Run CPU pool this cap protects, so it is left out of
 // the arithmetic above; that part is a platform property, not something the SDK
 // or this repo can prove.
-setGlobalOptions({ region: "europe-west1", maxInstances: 10 });
+setGlobalOptions({ region: "europe-west1", maxInstances: 3 });
 
 admin.initializeApp();
 

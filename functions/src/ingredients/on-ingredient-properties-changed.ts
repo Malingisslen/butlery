@@ -72,6 +72,24 @@ export const onIngredientPropertiesChanged = onDocumentUpdated(
     // `retry: true` then re-delivers into the same packing until the event-age
     // guard abandons the cascade permanently.
     concurrency: 1,
+    // OVERRIDES the global ceiling, which dropped to 3 on 2026-08-27 to make
+    // deploys fit `CpuAllocPerProjectRegion`. `concurrency: 1` above means one
+    // instance drains one event at a time, so capacity inside the 1h
+    // `CASCADE_MAX_EVENT_AGE_MS` window is on the order of
+    // `maxInstances x 3600/540` — roughly 20 at 3, roughly 66 at 10 — against
+    // the "hundreds at once" the note above describes. That is a floor rather
+    // than an estimate (full reasoning in `index.ts`), so at the global value
+    // the event-age guard COULD abandon allergen re-tagging silently, which is
+    // the one failure this cascade exists to prevent. 66 does not clear
+    // "hundreds" either; the override buys a factor, not safety.
+    //
+    // COST, and it is why `deploy-firebase.yml` deploys one function per
+    // `firebase deploy`: at 10 this function alone can need the whole regional
+    // ceiling during a rolling update, which holds old and new at once.
+    //
+    // Registered in `ALLOWED_OVERRIDES` in `deploy-manifest.test.ts`; the pair
+    // must move together.
+    maxInstances: 10,
     // See the identical note on onIngredientSoftDeleted: v2 event triggers do
     // not retry by default, so without this the `throw` below is dropped and a
     // half-finished fan-out leaves recipes tagged from the ingredient's OLD
