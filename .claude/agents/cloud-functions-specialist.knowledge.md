@@ -2,10 +2,9 @@
 
 Step 0 of every Cloud Functions task. Durable PRINCIPLES only, edited IN
 PLACE; dated narrative goes to the paired `.archive.md` (append-only).
-**Target: under ~25,000 characters, and the file is OVER it** — every edit
-must retire more than it adds until it is back under. A principle earns its
-place only if a future run would act DIFFERENTLY: keep exact
-names/codes/thresholds, cut the story.
+**OVER the ~25,000-char budget — every edit must retire more than it adds.**
+A principle earns its place only if a future run would act DIFFERENTLY: keep
+exact names/codes/thresholds, cut the story.
 
 ---
 
@@ -33,33 +32,42 @@ New family → append a row.
 
 ## Region & global options
 
-`setGlobalOptions({ region: "europe-west1", maxInstances: 10 })` in
+`setGlobalOptions({ region: "europe-west1", maxInstances: 3 })` in
 `index.ts`, above every `export … from`. Never re-region per-function
 without approval (mismatch = silent client-side "not found").
 - **Global and per-function options MERGE key-by-key** (via
   `copyIfPresent`) — declaring `memory`/`timeoutSeconds`/`retry`/`secrets`
   loses nothing and still inherits the rest; per-function wins on collision.
-- **`maxInstances: 10` is a DEPLOY gate, not tuning.** Unset = the v2
-  default 100/function; Cloud Run reserves `cpu x maxInstances` summed
-  region-wide, which blew "Total allowable CPU per project per region",
-  surfacing as `Container Healthcheck failed` on 53 services (2026-08-17).
-  Raising it globally re-arms the wall; a rolling deploy can trip it too
-  (old revisions hold their reservation until replaced) — batch it.
-- **10 instances != 10 concurrent executions, and a LOW cap PACKS.**
-  `concurrency` defaults to 80 at `cpu >= 1` (true for every function here)
-  → ~800 in flight, packed ~N/10 per container. A handler both LONG-LIVED
-  and memory-hungry per request declares its OWN `concurrency: 1` — the two
-  ingredient cascades. It never changes the `cpu x maxInstances` quota, so it
-  is deploy-neutral, and it is pinned BY NAME (`SERIALISED_ENDPOINTS`,
-  `deploy-manifest.test.ts`).
-- **Serialising trades OOM for QUEUE TIME, charged against the event-age
-  guard.** `isCascadeEventExpired` measures from `event.time`, so a FIRST
-  delivery that only queued is abandoned without ever failing. Budget before
-  any `concurrency: 1`: `maxDuration = maxInstances x maxEventAge /
-  burstSize`. If a burst nears it raise `maxInstances` on THOSE functions
-  (override + `ALLOWED_OVERRIDES` in `deploy-manifest.test.ts`), never
-  `concurrency`. Notification fan-out is IN-PROCESS — a cap never splits a
-  batch.
+- **`maxInstances` is a DEPLOY gate, not tuning.** Global 3; the two
+  ingredient cascades override to 10. Unset = the v2 default 100/function,
+  which blew "Total allowable CPU per project per region", surfacing as
+  `Container Healthcheck failed`. MEASURED:
+  `run.googleapis.com/CpuAllocPerProjectRegion` = 20 vCPU (europe-west1);
+  no export declares `cpu`; a two-function UPDATE at 10 failed (run
+  33043799598), the SAME two one-at-a-time succeeded at 10 (run
+  33044537911); an increase is refused (`NOT_ENOUGH_USAGE_HISTORY`).
+  **The accounting is UNRECONCILED; never write a derived "N functions fit
+  per deploy" number, in ANY carrier** — a region-wide sum over configured
+  ceilings cannot be it, and no candidate reading is proven. SEQUENCING is
+  what is established: one function per `firebase deploy`.
+- **3 instances != 3 concurrent executions, and a LOW cap PACKS.**
+  `concurrency` defaults to 80 at `cpu >= 1` → ~240 in flight, ~N/3 per
+  container. Only a LONG-LIVED, per-request memory-hungry handler declares
+  `concurrency: 1` (the two ingredient cascades, pinned by name in
+  `SERIALISED_ENDPOINTS`); it is NOT deploy-neutral once it also overrides
+  `maxInstances`. It trades OOM for QUEUE TIME charged against
+  `isCascadeEventExpired`, which measures from `event.time` — a first
+  delivery that only queued is abandoned without ever failing, and all
+  events of one admin batch share one emission instant, so they race ONE
+  window. Budget `maxInstances x maxEventAge / maxDuration`: a worst-case
+  FLOOR, tight on neither side, so it never carries a would/would-not-abandon
+  verdict (the numbers and the full reasoning live in `index.ts`). An abandoned
+  cascade writes NO marker, so it is invisible to `STALE_TAG_MARKERS`,
+  `getDeletedIngredientStats` and the Dart `_needsRetagging`; the only
+  signal is a `cascade.abandoned` error log nothing consumes. Raise
+  `maxInstances` (override + `ALLOWED_OVERRIDES` in
+  `deploy-manifest.test.ts`), never `concurrency`. Notification fan-out is
+  IN-PROCESS — a cap never splits a batch.
 - **`onUserDeleted` is the ONLY gcfv1 export** — a v1 auth trigger with its
   own `.region("europe-west1").runWith(...)`, unreachable by
   `setGlobalOptions`, so no instance cap. Exclude it from any
@@ -67,22 +75,22 @@ without approval (mismatch = silent client-side "not found").
 - **Prove endpoint config, never reason about it:** `npm run
   test:deploy-manifest` imports the ENTRY POINT (the only way the global
   call runs) and asserts region + a numeric `maxInstances` on every
-  `platform:"gcfv2"` endpoint, plus `concurrency === 1` on the two cascades
-  (7 checks). Nothing else reddens when one is deleted. An unset v2 option is
+  `platform:"gcfv2"` endpoint, plus `concurrency === 1` on the two cascades.
+  An unset v2 option is
   a sentinel OBJECT, not null (`== null` is FALSE) — check
   `typeof x === "number"`; on the gcfv1 export `concurrency` is plain
   `undefined`. VACUITY SURFACE is the `gcfv2` FILTER: rename `platform` and
   every assertion passes over ~0 endpoints — guard the FILTERED count, once
   per CALLER. Keep BOTH the presence check and the value pin; each misses
   the other's mutant. A by-NAME pin must FAIL on a missing export, not skip.
-- **Six gen2 exports pin their OWN region** — `moderateUpload`,
-  `syncConversationLastMessage`, `purgeExpiredAuditLogs` and the three
-  `migrations/` backfills. A global-region change moves every OTHER gen2
-  export, so never say a global option "reaches every export". Adding an
+- **Some gen2 exports pin their OWN region** (`moderateUpload`,
+  `syncConversationLastMessage`, `purgeExpiredAuditLogs`, the `migrations/`
+  backfills), so never say a global option "reaches every export". Adding an
   export falsifies every endpoint TALLY in `index.ts` and
-  `deploy-manifest.test.ts`; no test guards them, so STRIKE rather than
-  re-count, and sweep every carrier — a header-only strike leaves the body's
-  copies and reads as done.
+  `deploy-manifest.test.ts`; no test guards them — strike, sweep every carrier
+  INCLUDING `.github/workflows/` (a header-only strike reads as done, and a
+  strike in two files has re-appeared as a fresh derived number in a third in
+  the SAME commit). Where the count is load-bearing, DERIVE it in the test.
 
 ## Firebase Functions v2 — what to use
 
@@ -91,8 +99,7 @@ without approval (mismatch = silent client-side "not found").
 - **`HttpsError` thrown inside `db.runTransaction` is NOT retried** —
   `isRetryableTransactionError` switches on numeric gRPC codes;
   `HttpsError.code` is a string and matches none, so the transaction rolls
-  back first-attempt. Lets an authorization gate live inside the same
-  transaction that reads the doc it judges.
+  back first-attempt.
 
 ## Idempotency rules (the most bug-prone area)
 
@@ -127,33 +134,22 @@ idempotent:
     feature promises then holds only for SEQUENTIAL calls, and no fake can
     show it (single-threaded, no isolation). Derive the doc id
     deterministically from the key and `tx.create()` instead.
-12. **Two triggers on ONE collection: gate the re-read on WRITE KIND, never
-    on a LIST of writers and never on the sibling's ADMISSION TEST.** A stale
-    payload can land LAST and undo the correction: gating on `create` misses
-    the read-receipt update, gating on the sibling's predicate misses an
-    update edited OUT of candidacy (it admits on the CREATE payload and
-    rewrites regardless, while `cannotModify` pins neither `content` nor
-    `type`). What holds is kind-shaped — `isDelete` /
-    payload-already-rewritten / `!!before` — because it closes writers nobody
-    enumerated (8+ on `messages`, incl. a delayed self-update ~100ms after
-    create and three GDPR cascade legs). The CREATE side may gate on the
-    sibling's predicate only for the sibling's OWN marks: a wire value no rule
-    constrains (`type` is in neither the create rule nor `cannotModify`) has a
-    SECOND producer — the client — which can stamp a NON-candidate row the
-    create gate then never re-reads. So a comment states what the trigger
-    SEES, never what the row IS ("a blocked row carries no text" was false
-    exactly there). Put the CHEAP no-write checks BEFORE the read; deciding on
-    the payload's `sentAt` is safe only while `sentAt` is immutable in the
-    rules AND untouched by the sibling. Measured: a transactional re-read DOES
-    abort+retry on a concurrent commit. Stage it by REPLAYING a pre-rewrite
-    snapshot; a sequential suite cannot stage true concurrency, and each wrong
-    scope passes every case written for the previous one.
+12. **Two triggers on ONE collection: gate the re-read on WRITE KIND** —
+    never a LIST of writers, never the sibling's ADMISSION TEST. A stale
+    payload lands LAST and undoes the correction: `create`-only misses the
+    read-receipt update; the sibling's predicate misses a row edited OUT of
+    candidacy. Kind-shaped tests (`isDelete` / already-rewritten / `!!before`)
+    close writers nobody enumerated. A CREATE gate may use the sibling's
+    predicate only for the sibling's OWN marks — an unconstrained wire value
+    has a SECOND producer, the client. A comment states what the trigger SEES,
+    never what the row IS. Cheap no-write checks BEFORE the read; stage by
+    REPLAYING a pre-rewrite snapshot (each wrong scope passes every case
+    written for the last one). Full record: ADR-0009.
 
 ## Cost & cold-start
 
 - Billed per ms × memory + per-invocation. Narrow imports. 540s is the v2
-  max, but read the real value off `__endpoint` — the LLM callables are
-  `structureRecipe` 60s/512MiB and `ocrRecipeImage` 120s/1024MiB.
+  max, but read the real value off `__endpoint`, never off a comment.
 - **An in-code timeout guard is dead unless `timeoutSeconds` is declared on
   the SAME trigger** — global options carry no timeout, so a v2 event
   function defaults to the 60s platform timeout otherwise. Export the
@@ -205,9 +201,6 @@ from `(err as {code?}).code` instead.
 
 ## What NOT to do
 
-- Don't deploy; don't change region without approval; no `console.log` in
-  a deployed function; no trigger without an idempotency story; no
-  `retry:true` without a missing-doc audit.
 - Don't trust a client-controlled field for a security decision unless the
   create/update RULE pins it to `request.auth.uid` — a PRESENCE requirement
   binds a tampered client, a CEL evaluation error only binds our own.
@@ -229,16 +222,14 @@ from `(err as {code?}).code` instead.
   PHANTOM parent. A rules test in `functions/src/__tests__/`, and a comment in
   `firestore.rules`, pin what the RULE grants and never which SCREEN reaches
   it — strike any app-reachability claim in either, and include rules comments
-  in a claim sweep (one survived there after four other carriers were struck).
+  in a claim sweep.
 - **Rules are not filters** — a client query with NO condition is DENIED
   wholesale on a member-scoped collection; only the RULES emulator lane
   proves it, and that emulator KEEPS data across runs, so give an "empty"
   fixture a uid no other test seeds. The VERB decides which conjuncts run: a
   merge-`set` on a seeded doc is an UPDATE, and a `withSecurityRulesDisabled`
   seed evaluates none — so a create-only conjunct can never justify an
-  update-path fixture's shape. Grade a comment repair at FINAL BYTES: a true
-  sentence added BESIDE a false one leaves both, and deleting a WRITER
-  obliges a sweep of every sentence naming it.
+  update-path fixture's shape.
 - **A fake `commit()` that RE-DERIVES the intended effect instead of
   APPLYING the write payload makes the write vacuous** — dispatch on the
   `FieldValue` transform's `constructor.name`; reject `update()` on a
@@ -316,10 +307,22 @@ from `(err as {code?}).code` instead.
   scrub, ahead of a dependent mirror — order the mirror write FIRST.
 - **`probeResidualData` must not be BROADER than the deleter** — union the
   probe's queries into the deleter's scoping, dedup by doc id; prove the
-  coupling by deleting one union leg and checking BOTH the targeted fixture
-  AND "no failed collections" redden. A probe ERROR ADDS to the residual
-  count, never aborts the cascade; a new leg dropped INSIDE an existing
-  `try` silently shortens every leg after it — one try/catch each.
+  coupling by DELETING the leg and checking BOTH the targeted fixture AND
+  "no failed collections" redden. A leg with no DIRTY-fixture scenario is
+  mutation-invisible (a clean-store scenario runs it and asserts nothing),
+  and since `batchDeleteAll(strict:false)` swallows a whole failed chunk the
+  probe is the ONLY contradiction to a deleter's unconditional `return true`
+  — so leg and scenario ship in one edit. A probe ERROR ADDS to residual
+  (`+= 1`, a sentinel, never a count), never aborts; a leg inside an existing
+  `try` shortens every leg after it — one try/catch each. Hoist any
+  parent/collection LIST the deleter and probe both hardcode into one
+  exported const. A "the N siblings" completeness numeral in a cascade
+  docstring is a GDPR claim — strike it. Read `fieldOverrides[].ttl` AND an
+  `expireAt` writer before a retention sentence; grep every collection of a
+  NAME before a "no collectionGroup id collision" claim (`events` collides
+  with `recipe_cook_events/{uid}/events`, as `users` does with profiles);
+  never say WHY an earlier ticket left a collection out — its record shows
+  SCOPE, not intent.
 - Pure `users/{uid}/*` subcollections erase via a generic uid-scoped
   sweep. Test triple: own-erased + other-kept + `failedCollections` empty.
 - **Data written by a SCHEDULED JOB under a non-`users/{uid}` path is
@@ -411,8 +414,13 @@ from `(err as {code?}).code` instead.
   exported key set is EXACTLY allow-listed.
 
 ### CI / test wiring / ops
-- Post-deploy smoke: `firebase functions:list --json` + grep stable names
-  — `deploy` exiting 0 does NOT prove functions are callable.
+- Post-deploy smoke: `firebase functions:list --json` + grep stable names —
+  `deploy` exiting 0 does NOT prove functions are callable, and a run
+  concluding `failure` does NOT prove the DEPLOY step failed (the smoke gate
+  is a later step). **"Setting X fixed/helped the deploy" is a claim about a
+  RUN**: read conclusions from `gh run list --workflow=`, then
+  `git show <headSha>:<file>` PER RUN to prove the value under test was even
+  committed — an uncommitted change has deployed nothing.
 - **A Firestore TTL field is INERT without a policy**; a `fieldOverrides`
   entry with `"ttl": true` + `firebase deploy --only firestore:indexes`
   creates one. `--force` deletes every live override ABSENT from the
@@ -433,5 +441,3 @@ from `(err as {code?}).code` instead.
   not `md5sum` (CRLF moves the md5, not the blob hash). Read
   `.claude/state/review-ledger.jsonl` with the **Grep tool** (Bash `grep` is
   refused by its own hook).
-- `run-ci-unit-tests.js` auto-discovers every `test:*` that is not
-  `test:rules*`/`test:integration:*` (see the registration bullet above).

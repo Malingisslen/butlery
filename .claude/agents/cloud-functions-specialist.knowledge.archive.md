@@ -15178,3 +15178,411 @@ files and nothing else. Did not re-run the suite — comment-only, and the paren
 90/90 green (238s).
 
 Verdict: FAIL, 1 blocking (the absolute, three carriers).
+
+### 2026-08-27 — BUT-1929 (ensureCategoryChat deleted-conversation guard) + BUT-1800 (retention analytics cascade leg) [review]
+
+Reviewed the worktree diff (files were NOT staged — ` M` in the worktree column, empty
+index — so `git diff --` was the right instrument, not `git show :<path>`):
+`groups/ensure-category-chat.ts`, `account/account-deletion-cascade.ts`,
+`account/request-account-deletion.ts`, and the two `__tests__` suites.
+
+BUT-1929 verdict: the hoisted `.get()` belongs OUTSIDE the transaction and is cost-minimal
+where it sits. `ensureCategoryChat` is an `onCall`, not a retryable trigger, so the throw
+has no retry semantics to get wrong; the early return writes nothing, so a TOCTOU window
+after the read is harmless (the next poll catches it). Placing it INSIDE the steady-state
+branch means the read is paid once in the steady state and never on the drift path, where
+the transaction reads the same document anyway — folding it into a `Promise.all` with the
+existing `categoryRef.get()` would save one round trip but pay two reads on the drift path.
+`conversationDeleted()` correctly gives both throw sites `details.reason`.
+
+MEASURED (mutation probes, backup taken immediately before each mutation, restored and
+`diff`-verified byte-identical afterwards):
+- delete the hoisted `.get()` block -> exactly one new test reds
+  ("a deleted conversation is caught even when the roster has NOT drifted"), 23/24.
+  Non-vacuous, and it does not double up with the pre-existing in-transaction case.
+- make `deleteRetentionAnalytics` a bare `return true` -> 128/130, two checks red in
+  `scenario_retentionAnalyticsRowsAreErased`. `scenario_retentionAnalyticsWithNoRowsSucceeds`
+  stayed GREEN under that same total no-op, which is honest (it only claims "empty is not a
+  failure") but is not coverage.
+- delete the whole new `probeResidualData` analytics leg (33 lines) -> 130/130 STILL GREEN.
+  That is the finding: every sibling leg in this file ships a `scenario_probeSeesLeftover*`
+  and the chat-group leg's own docstring states the rule, but this one shipped without one.
+  It matters more than usual here because `batchDeleteAll` runs
+  `commitInChunks(strict:false)`, so a failed 500-doc chunk is swallowed and the deleter's
+  unconditional `return true` stands — the probe is the only thing that can contradict it.
+
+Blocking #1, the completeness numeral. "the two analytics siblings BUT-1789 left behind"
+appears in four carriers (`account-deletion-cascade.ts` docstring + probe comment,
+`request-account-deletion.ts` tier-1 comment, the test docstring) and is false:
+`analytics/notifications/effectiveness/{notificationId}`, written by
+`analytics/correlate-notifications.ts` (`batch.set(..., { notificationId, userId, type,
+sentAt, wasOpened, ... })`), carries `userId`, hangs off a fixed `analytics/` parent exactly
+like the two swept here, and has NO cascade step, NO probe leg, NO TTL (verified against
+every `"ttl": true` fieldOverride in `firestore.indexes.json` — 19 entries, none named
+`effectiveness`) and no cleanup in `on-user-deleted.ts`. Contrast
+`analytics/ingredients/learned_aliases`, which IS covered — `cleanUserFromLearnedAliases` is
+called from `on-user-deleted.ts:138`. Strike the numeral rather than write "three"; the
+uncovered collection is its own ticket.
+
+Adjacent, verified, out of this diff: `users/{uid}/notifications` (written by
+`detect-lapsed-users.ts:272-285` with the push `message`/`bodyShown` text, and by
+`send-activity-digest.ts`) is absent from `deleteUserSubcollections`' `subs` list, from
+`probeResidualData`, and from every `on-user-deleted.ts` step — so Tier 3's
+`users/{uid}` delete orphans it. `deleteNotifications` targets the TOP-LEVEL
+`user_notifications`, a different collection.
+
+Also raised: the `["retention", "lapsed_users"]` list is hardcoded in BOTH the deleter and
+the probe (drift), and the deleter's `for` loop lets a throw on `retention` skip
+`lapsed_users` entirely — the existing "accumulate, throw once" principle
+(`deleteShoppingLists`) applies and was not followed. Both non-blocking; the step is loud
+either way via `runStep` -> `failedCollections` -> `gdprCompliant: false`.
+
+No region/deploy implications: no new export, so `deploy-manifest.test.ts` and
+`app-check-enforcement.test.ts` are untouched and no endpoint tally moved. Logging is
+clean — `uid_prefix: uid.slice(0, 6)` on both new sites, `parent` a literal from a fixed
+list, `errCode`/`errName` rather than `{ err }`.
+
+Verification: `npm run build` clean; `npm run test:account-deletion-cascade` 130/130;
+`npm run test:ensure-category-chat` 24/24. Both files restored byte-identical after the
+probes (`diff` against the backup, plus `git diff --stat` matching the pre-probe shape).
+
+Verdict: FAIL, 2 blocking (the "two siblings" numeral in four carriers; the untested probe leg).
+
+### 2026-08-27 — BUT-1800/BUT-1929 re-review: the strike's replacement text carried a new false claim [gdpr-cascade][comments]
+
+Re-review of the same diff after the previous pass returned `fail (2 blocking)`.
+
+Both prior blockers are genuinely closed. The "two analytics siblings" completeness numeral
+is STRUCK in every carrier — grepped the added lines for `both|two|only|every|neither` and
+each survivor ranges over the enumerated pair (`RETENTION_ANALYTICS_PARENTS`), not over the
+`analytics/*` universe. `scenario_probeSeesLeftoverRetentionAnalytics` is registered in
+`main()` (line 2785) and loops `["retention", "lapsed_users"]` with a clean/dirty pair each,
+so both parents are covered; the clean half is what keeps the dirty half honest.
+`feature_retention` + `retention_analytics` are now pinned in the orchestration test's
+`expected` list, and grep confirms the registration table is the only caller of either
+deleter, so the comment's "reached only through this table" holds.
+
+NEW blocking finding, and the reason to record this at all: the paragraph written to REPLACE
+the struck numeral asserted "TTL is the tool for the anonymous aggregate, which is why
+`daily/{date}` keeps one and these do not". Measured: no `fieldOverrides` entry in
+`firestore.indexes.json` has `collectionGroup: "daily"` (19 TTL entries, none of them), and
+`compute-feature-retention.ts` / `track-retention.ts` / `detect-lapsed-users.ts` write no
+`expireAt`/`expiresAt` at all. It also contradicts the BUT-1789 accepted deviation, which
+records that the daily aggregates are KEPT. Same shape as the defect the strike removed: an
+unmeasured retention claim in a cascade docstring. Remedy filed as a STRIKE of that one
+sentence; the sentences around it ("No TTL for either", "Neither parent has an aggregate
+sibling to preserve") were checked and are true.
+
+Non-blocking, reported: `RETENTION_ANALYTICS_PARENTS` is declared BETWEEN the BUT-1800
+docstring and `deleteRetentionAnalytics`, so the const's own docstring is the one attached to
+the const and the function ends up with no docstring — runtime is fine (TDZ never reached; both
+readers are function bodies) but the block should move above. The `failed`/throw path has no
+scenario (the fake cannot fail a subcollection `.get()`), and the probe scenario hardcodes the
+parent list rather than importing the const, which is not exported.
+
+Retry semantics checked as asked: throwing lands in `runStep`'s catch, so `failedCollections`
++ `result.errors` + `gdprCompliant: false`, same terminal outcome as the siblings that
+`return false`; the callable has no retry, and every write is a delete, so a re-run cannot
+double-apply. Note the per-parent catch only covers the QUERY — `batchDeleteAll` is
+`commitInChunks(strict:false)` and still swallows a failed chunk, which is exactly why the
+probe leg is the load-bearing half.
+
+Verification: `npm run build` clean; `test:account-deletion-cascade` 134/134;
+`test:request-account-deletion` 4/4; `test:ensure-category-chat` 24/24.
+
+Verdict: FAIL, 1 blocking.
+
+### 2026-08-27 — BUT-1800 / BUT-1929 third review pass [gdpr-cascade][comment-truth]
+
+Third pass over the same six files. The previous blocking finding is genuinely gone: the
+"`daily/{date}` keeps one [TTL]" sentence is struck, and the surviving `daily/{date}` sentence
+(account-deletion-cascade.ts, in `deleteFeatureRetentionFlags`) claims only that the aggregates
+are NOT touched, which matches the BUT-1789 accepted deviation. Nothing equivalent replaced it.
+
+NEW blocking finding, same species one paragraph down. The BUT-1800 docstring now says: "No TTL
+for either, and unlike the feature-retention case the reason is not a collectionGroup id
+collision — it is simply that both rows are uid-bearing." Measured: the collectionGroup id of
+both sweeps is `events`, and `firestore.rules` L1457 grants
+`recipe_cook_events/{userId}/events/{eventId}` — a live, client-written user-data collection
+with the SAME collection-group id, plus the two analytics parents share it with each other. So
+the collision does exist, and the denial is exactly the hazard the feature-retention paragraph
+was written to prevent (a future run arming a TTL fieldOverride on collectionGroup `events`
+would arm it over cook events). Remedy filed as a STRIKE of that sentence; "Neither parent has
+an aggregate sibling to preserve" was re-verified true (only `.doc("retention")` /
+`.doc("lapsed_users")` sites in the tree are the two writers plus this cascade; the
+`lapsed_users` parent doc holds only `detect-lapsed-users.ts`'s cursor fields).
+
+Items 2/4/5/6 verified against the code:
+- Item 2 TRUE. `commitInChunks(strict:false)` try/catches `batch.commit()` only, so
+  `batchDeleteAll` cannot deliver an error to the per-parent catch and `deleteRetentionAnalytics`
+  can return true with rows on disk; the probe leg is the load-bearing half. (Textually the catch
+  does wrap the `batchDeleteAll` call; "covers the QUERY only" is true about which errors reach
+  it, not about lexical scope.)
+- Item 3 verified: const now sits above the docstring block, is exported, and the probe scenario
+  iterates it.
+- Item 4 TRUE: `request-account-deletion.ts:202` names the two paths literally, no quantifier.
+- Item 5 TRUE: every cascade unit scenario `require()`s its deleter directly, and the only other
+  caller of `runAccountDeletionWithDeps` is the emulator integration suite — a separate lane, and
+  the comment says "unit tests".
+- Item 6 TRUE, and the two claims it leans on check out: both throw sites now call
+  `conversationDeleted()`; `ChatGroupErrorMapper` has a `case 'conversation-deleted'` returning
+  `messagingGroupNoLongerExists`; and `git log -S "Group conversation no longer exists"` returns
+  the single commit 5c45ba156, so "for its whole life" holds.
+
+Non-blocking, reported: the `scenario_retentionAnalyticsWithNoRowsSucceeds` docstring says "A
+user who never reached a retention milestone has no rows in either collection" —
+`detect-lapsed-users.ts` writes its rows off an inactivity threshold, not off `RETENTION_DAYS`,
+so the milestone does not govern the second collection. Strike the causal clause.
+
+Also noted while reading: `reconcile`'s new steady-state existence check costs one extra
+Firestore read on the COMMON path of every poll; the comment declares it and the alternative
+(handing back a dead conversation id forever) is worse, so accepted.
+
+A stale `Read` bit again — `lib/core/errors/chat_group_error_mapper.dart` came back missing the
+two lines `sed` showed on disk, in a checkout with a parallel session live. Cross-check any
+surprising absence with `sed`/`git show` before filing it.
+
+Verification: `npx tsc --noEmit` clean; `test:ensure-category-chat` 24/24;
+`test:account-deletion-cascade` 134/134; `test:request-account-deletion` 4/4.
+
+Verdict: FAIL, 1 blocking.
+
+### 2026-08-27 — BUT-1800 / BUT-1929 fourth review pass [gdpr-cascade][comment-truth]
+
+Fourth pass over the same six files. Both items from pass three landed as strikes, not
+rewordings, and both remainders read correctly as standalone text:
+- The "No TTL for either … not a collectionGroup id collision" sentence is gone; the
+  paragraph now runs "…A single-field equality needs no composite index." then "Neither
+  parent has an aggregate sibling to preserve." Re-verified that survivor a second time:
+  the only `.doc("retention")` / `.doc("lapsed_users")` sites in the tree are
+  `track-retention.ts:170`, `detect-lapsed-users.ts:259` (+ its `CURSOR_DOC` at :73) and
+  this cascade; the `lapsed_users` parent doc carries `lastRunAt` cursor FIELDS, which is
+  neither an aggregate nor a sibling collection. No `fieldOverrides` entry names `events`
+  (19 `"ttl": true` entries, checked).
+- `scenario_retentionAnalyticsWithNoRowsSucceeds`'s docstring lost the retention-milestone
+  clause; what is left ("An empty query is knowledge, not a failure") is grammatical and
+  claims nothing about either writer.
+
+NEW blocking finding, SEVENTH false sentence of the batch and the first one that is a claim
+about another TICKET rather than about code. `account-deletion-cascade.test.ts:997-998`:
+"`analytics/retention/events` and `analytics/lapsed_users/events` were left out of
+BUT-1789's scope so that change would not widen mid-run." The BUT-1789 record contains no
+such decision: the 2026-08-01 review entry in this archive (L7959-8020) enumerates exactly
+what it checked — the feature-retention rows, the `users` collectionGroup TTL collision, the
+index side — and never mentions either collection; `tasks/todo.md:96` files BUT-1800 as
+"Still uncovered", i.e. a later discovery, not a deferral. The production docstring beside it
+says only "which BUT-1789 left behind", which is the true form. Remedy filed as deletion of
+the motive clause "so that change would not widen mid-run" only — the remainder is directly
+readable from the record and keeps `Both carry userId` its antecedent.
+
+Everything else in the diff re-verified this pass, nothing new: both throw sites call
+`conversationDeleted()` and `ChatGroupErrorMapper` matches `'conversation-deleted'`
+(`chat_group_error_mapper.dart:57`); `git log -S "Group conversation no longer exists."`
+still returns only 5c45ba156, so "for its whole life" holds; `commitInChunks(strict:false)`
+try/catches `batch.commit()` alone, so "the per-parent catch covers the QUERY only" is true
+about which errors can reach it; `RETENTION_ANALYTICS_PARENTS` is exported, sits above both
+readers and is iterated by the probe scenario; both writers confirmed to stamp `userId`
+(`track-retention.ts:171-179` deterministic `{uid}_d{N}` ids, `detect-lapsed-users.ts:256-267`
+`.doc()` auto ids); the "deleting either registration line left every unit test green" comment
+is statically sound — `grep` shows the tier-1 table in `request-account-deletion.ts` is the
+only non-test caller of either deleter, and every cascade scenario `require()`s its deleter.
+
+Verification: read-only pass, no mutation probes (the two open items were both comment
+strikes). Reported build/test state accepted as given: `npx tsc --noEmit` clean,
+account-deletion-cascade 134/134.
+
+Verdict: FAIL, 1 blocking.
+
+### 2026-08-27 — BUT-1800 fifth pass: a cap-contrast paragraph named the wrong set [gdpr-cascade][comments]
+`deleteRetentionAnalytics`'s docstring justified having no cap by contrasting with "the
+capped, decline-above-cap collection-group sweeps elsewhere in this file" and asserting
+"that cap exists because a collectionGroup query's rows sit under arbitrarily many
+parents". Measured in the same file: `deleteChatGroupMemberships` caps
+(`MAX_CHAT_GROUPS_PER_USER = 200`) a PLAIN top-level `chat_groups` query and declines above
+it, so both the characterisation of the set and the stated motive are refuted one file
+over. Blocking; struck, not reworded. Re-application of knowledge principle 9 (a bound's
+ABSENCE needs the same read as the bound) — no new principle added, file is over budget.
+The rest of the diff verified clean: both analytics writers re-read (`track-retention.ts`
+id `{uid}_d{N}` + `userId`; `detect-lapsed-users.ts` auto-id + `userId`), no aggregate
+sibling under either parent (only the `lastRunAt` cursor field on `analytics/lapsed_users`),
+the in-transaction `failed-precondition` throw carried no `details` from its introducing
+commit 5c45ba156 onward, and no test outside `request-account-deletion.test.ts` pins the
+cascade step names.
+
+### 2026-08-27 — BUT-1800/BUT-1929 sixth pass: the false premise came from a reviewer, not the author [review][process]
+
+Pass six on the same diff (`account-deletion-cascade.ts`, `request-account-deletion.ts`,
+`ensure-category-chat.ts` + three suites). The single blocking finding of pass five — the
+`deleteRetentionAnalytics` docstring paragraph claiming the capped decline-above-cap shape
+belongs only to collectionGroup sweeps — is deleted, not reworded. The paragraph now reads
+"Shaped on `deleteFeatureRetentionFlags`." and the surrounding paragraphs (filter choice,
+no aggregate sibling, per-parent catch covering the QUERY only) stand on their own. PASS.
+
+Provenance, which is the part worth keeping: the author did not invent the claim. A
+stakeholder-review agent handed it over as a MEASURED finding, it was folded into the plan
+as a binding condition, and it propagated into the code comment untouched. The
+counterexample that refuted it (`deleteChatGroupMemberships` caps and declines on a PLAIN
+top-level query) sat one file away the whole time. Principle folded into the cascade
+docstring bullet: an upstream agent's or a plan's stated MEASUREMENT is as falsifiable as a
+comment — verify it in code before it becomes one.
+
+Ninth-claim sweep, all re-verified this pass and all clean: `{uid}_dN` ids and the `userId`
+field in `track-retention.ts:167-179`; `.doc()` auto-ids and `userId` in
+`detect-lapsed-users.ts:257-269`; no aggregate or reader under either analytics parent
+(the only sibling datum is the `lastRunAt` cursor FIELD on the `analytics/lapsed_users`
+document, untouched by a subcollection sweep); `batchDeleteAll` → `commitInChunks(strict:
+false)`, so the "swallowed chunk, still returns true" sentence holds; `runStep` catches, so
+the deleter's `throw` lands as a failed step with a PII-free message; the
+`conversationDeleted()` docstring's `ChatGroupErrorMapper` claim confirmed against
+`lib/core/errors/chat_group_error_mapper.dart`, which maps `reason: 'conversation-deleted'`
+to `messagingGroupNoLongerExists`; "for its whole life" confirmed by `git show
+5c45ba156` — the in-transaction throw carried no `details` from its only introducing commit;
+and the new test's "the case above ALSO adds a member" confirmed at
+`ensure-category-chat.test.ts:609-611`, which appends `latecomer` to `friendUserIds`.
+
+Considered and NOT filed: "A site that discovers a deleted group conversation throws THIS"
+reads universally, and `sync-conversation-last-message.ts:267` discovers a missing
+conversation without throwing — but it is a trigger with no client, and the sentence's own
+second clause ("so the client sees one shape") supplies the scope. Also not filed: "the
+deleter stays a strict superset of the probe", where the two scopes are in fact EQUAL; the
+phrasing is pre-existing house idiom at two untouched sites in the same file and means "not
+narrower".
+
+Verification: `npx tsc --noEmit` clean; `test:account-deletion-cascade` 134/134,
+`test:ensure-category-chat` 24/24, `test:request-account-deletion` 4/4.
+
+Budget note: the knowledge file is 27,688 chars against a 25,000 target. This pass added
+118 and retired 58. An attempt to retire the "What NOT to do" bullet that duplicates the
+agent definition verbatim (~230 chars) was refused by the permission classifier and is left
+for a future pass — flagged rather than worked around.
+
+### 2026-08-27 — deploy ceiling 10 -> 3, cascades override to 10 [deploy][quota][cascade]
+
+Reviewed a four-file diff: `index.ts` global `maxInstances` 10 -> 3, both ingredient
+cascades adding `maxInstances: 10`, `deploy-manifest.test.ts` `EXPECTED_MAX_INSTANCES`
+10 -> 3 with the two cascades entered in `ALLOWED_OVERRIDES`.
+
+MEASURED THIS RUN (not taken from the diff's own account):
+- Compiled `lib/index.js` manifest: 72 endpoints, 71 `gcfv2`, 1 `gcfv1` (`onUserDeleted`,
+  europe-west1, `maxInstances` unset). Sum of numeric `maxInstances` over gcfv2 = 227.
+  `cpu` is `undefined` on every endpoint — no export declares it. Memory values present:
+  512, 1024, 256, unset. `concurrency` numeric on exactly two endpoints, both 1.
+- Six gen2 exports pin their own region (`purge-expired`, `sync-conversation-last-message`,
+  `moderate-upload`, three `migrations/`), so 65 move on a global region change — the test
+  header's "naming the 64 it moves" is stale by one.
+- `npm run test:deploy-manifest` -> 7/7 green on the working tree.
+- `gh run view 33043799598 --log`: `FUNCTIONS_ONLY: guardDuplicateMessage,syncConversationLastMessage`,
+  both "updating Node.js 22 (2nd Gen) function ... (europe-west1)", both failing
+  "Could not create or update Cloud Run service ..., Container Healthcheck failed ...
+  Quota exceeded for total allowable CPU per project per region." So index.ts's description
+  of the run as a two-function deploy is ACCURATE.
+
+THE ARITHMETIC VERDICT. `maxInstances x 3600/540` = 66.7 at 10 and 20 at 3 — the numbers
+are right and the framing (one `concurrency: 1` instance, one event, up to
+`CASCADE_TIMEOUT_SECONDS`, inside the 1h `CASCADE_MAX_EVENT_AGE_MS` window measured from
+`event.time`) is right, including the part that makes it meaningful: every event of one
+admin batch shares an emission instant, so all 500 race ONE window. But it is a worst-case
+FLOOR, not an estimate — 540s is the ceiling per event, the in-code guard actually fires at
+`CASCADE_TIMEOUT_MS` = 500s, and a real cascade event (one collectionGroup query plus
+paginated batch updates) finishes in seconds. Pushing the other way, 429 backoff under a
+saturated ceiling puts real throughput below instances/duration. So the figure is an
+order-of-magnitude sanity number bounded on neither side, and cannot carry the
+"would abandon" verdict three of the four files hang on it.
+
+THE QUOTA MODEL IS THE REAL DEFECT. index.ts asserts "a revision reserving `1 x 10` left
+room for exactly two at a time, and a two-function deploy failed on it" — self-contradictory
+in one sentence: room for exactly two means two fits, and two did not. And "At 3 the same
+ceiling holds six" is `20/3` under an accounting the repo's own record says it could not
+reconcile (`tasks/todo.md`, 2026-08-17: "I could not reconcile the exact accounting from
+the quota API"), which `deploy-firebase.yml` labels INFERRED and hedges to "about six ...
+the number that closes the gap is not one this workflow can see", and which the same
+workflow contradicts elsewhere by naming the rolling old+new mechanism. Under old+new the
+answer is 3, not 6 — and ONE when a cascade at 10 is in the batch. A region-wide sum over
+deployed services is definitively not the accounting: 227 vCPU are live under a 20 vCPU
+quota. index.ts is the only one of the three carriers that drops the inference marker.
+
+SILENT-ABANDONMENT GAP (pre-existing, ticket-worthy, independent of 3 vs 10). An abandoned
+cascade writes no marker, so the recipe is invisible to `STALE_TAG_MARKERS` /
+`countStaleRecipes` / `getDeletedIngredientStats` (all count recipes CARRYING a marker)
+and to the Dart `_needsRetagging`. The only signal is `logger.error("cascade.abandoned")`,
+which nothing consumes — no log-based alert exists. `bulkMarkForRetagging` can recover but
+is manual, capped at 5/day, and requires knowing it happened.
+
+Knowledge-file accounting: retired/compressed the "summed region-wide" reservation claim
+(falsified above), idempotency rule 12, the `probeResidualData` comment-accuracy tail, the
+"Grade a comment repair at FINAL BYTES" line and the "What NOT to do" bullet that duplicated
+the agent definition verbatim (a previous pass recorded that retirement as refused by the
+permission classifier; it went through this time). Added the quota principle and the
+drain-capacity floor. File is 27954 chars against 27,688 at the start of this pass — still
+over the 25,000 target and still owed a retirement pass, stated rather than papered over.
+
+### 2026-08-27 — maxInstances 10 -> 3 re-review: the replacement prose asserted a deploy that never ran [deploy][comments]
+
+Second pass over the same diff (`index.ts`, both ingredient cascades,
+`deploy-manifest.test.ts`, plus `.github/workflows/deploy-firebase.yml`) after the first
+pass returned 1 blocking on the quota-accounting model.
+
+The struck model IS gone from `index.ts` and the test header, and the floor/verdict
+framing IS carried in all four files — checked sentence by sentence, each says the figure
+is a FLOOR and that 66 does not clear the batch, and "would abandon" is "COULD abandon"
+everywhere. Constants verified against `shared/with-timeout.ts`: `CASCADE_TIMEOUT_MS`
+500000, `CASCADE_TIMEOUT_SECONDS` 540, `CASCADE_MAX_EVENT_AGE_MS` 3600000. Arithmetic
+verified: 10*3600/540 = 66.7, 3*6.67 = 20, ratio 3.33, 3*80 = 240.
+
+Manifest measured directly (built `lib/`, required the entry point with
+`FIREBASE_CONFIG` carrying a `storageBucket`, summed `cpu x maxInstances` over
+`platform === "gcfv2"`): 71 gen2 endpoints + 1 gen1, sum 227 vCPU, ZERO endpoints
+declaring `cpu`, histogram `{3: 69, 10: 2}`. So `index.ts`'s 71/227 numerals are
+arithmetically right — about the LOCAL manifest at the new ceiling, which has never been
+deployed. "all live" fuses that with a claim about deployed services.
+
+BLOCKING #1, and the reason to record this: **"lowering it further helped again on
+2026-08-27"** (`index.ts`, and "lowering it again on 2026-08-27 helped again" in the test
+header) is false. `gh run list --workflow=deploy-firebase.yml` returns five runs, all on
+2026-08-27, all `failure`: 33040866064, 33042806582, 33043254433, 33043799598,
+33044537911. For each I resolved `headSha` and ran
+`git show <sha>:functions/src/index.ts | grep -o "maxInstances: [0-9]*"` — every one reads
+**10**. `maxInstances: 3` is uncommitted, so no deploy has ever run at it, and the sentence
+that claims to be "the whole of what is established" is the one unestablished sentence in
+the block. What DID clear the wall is sequencing: run 33044537911 logs
+`functions[guardDuplicateMessage(europe-west1)] Successful update operation` and the same
+for `syncConversationLastMessage`, in two separate `firebase deploy` invocations, at 10.
+
+BLOCKING #2: `index.ts` writes the service COUNT five lines after the parenthetical saying
+the count is deliberately not written there because it goes stale by ADDITION. Both 71 and
+227 are stale-by-addition and nothing asserts either.
+
+BLOCKING #3: the model struck from two files reappeared in a THIRD in the same commit.
+`deploy-firebase.yml` now carries an "INFERRED, from `functions/src/index.ts`'s account"
+paragraph that restates `cpu x maxInstances` per revision and adds a NEW derived number
+("widens this to about six") — cited to a file that no longer says it and that explicitly
+forbids writing that number. This is the chain-of-corrections pattern the strike rule
+exists to stop, and a per-file pass cannot see it; only the whole-diff pass did.
+
+Verified true and left alone: run 33043799598's targets are exactly
+`functions:guardDuplicateMessage,functions:syncConversationLastMessage`, both logged as
+`Failed to update function` with "Container Healthcheck failed ... Quota exceeded for total
+allowable CPU per project per region"; `tasks/todo.md` (2026-08-17) does record the
+accounting as unreconciled; `deploy-firebase.yml` does deploy one function per invocation;
+`onUserDeleted` is the single gcfv1 endpoint. Six gen2 exports do currently pin their own
+region (3 literal `region: "europe-west1"` + 3 `region: REGION` in `migrations/`), so the
+test header's "six" is TRUE today — but it is the same unguarded count the same diff struck
+from the mutation-record line below it, so it should go the same way.
+
+Raised for Malin, not a defect: the sole evidence for "at 10 the ceiling was still binding
+in practice" is a two-function BATCH, and the same change stops the workflow batching. On
+the tree's own evidence, sequencing alone cleared the wall and 10 -> 3 has no observed
+deploy benefit.
+
+Also found, outside the diff and more urgent than it: run 33044537911's post-deploy smoke
+gate reported `ocrRecipeImage`, `requestAccountDeletion`, `cleanupExpiredCache`,
+`drainAggregations` and `dailyAnalytics` "not in deployed function list", failed, and
+triggered the BUT-1424 auto-rollback. Live production state.
+
+Verification: `npm run build` clean; `test:deploy-manifest` 7/7 (the value pin prints
+"expected ceiling (3 unless registered as an override)"); `test:cascade-retry-semantics`
+11/11. No mutation probes run this pass — the `ALLOWED_OVERRIDES` check is a direct value
+equality behind a `typeof === "number"` filter that passes for both sides of each probed
+mutant, so its non-vacuity is readable and a write to a tracked file was not worth it.
+
+Verdict: FAIL, 3 blocking.

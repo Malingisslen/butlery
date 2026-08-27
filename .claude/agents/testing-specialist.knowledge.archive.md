@@ -27545,3 +27545,318 @@ round's attribution mechanical instead of inferential.
 
 Verdict: pass, 0 blocking. Nine rounds; rounds 1-8 each closed a sentence, none closed code
 after round 4.
+
+### 2026-08-26 — BUT-1904 GDPR `data_minimisation` strike: the repair assertion pins a PREFIX, so the strike is revertible-green
+
+**Trigger:** tight-scope review of a 3-file, pre-push diff. `integration-reviewer` had found the
+conversations-section sentence overclaiming (`'Of the rows that ARE here, nothing else has been
+changed: each one is as it was stored.'` — false, because `dropAvatarUnlessOwn` strips
+`senderAvatarUrl` a few lines below in the same section). The clause was STRUCK. `code-reviewer`
+then measured that deleting the WHOLE completeness sentence left the suite 49/49 green, i.e. the
+existing `isNot(contains('Everything else this conversation held'))` did not hold the property its
+`reason:` names. Remedy applied before my review: a positive `contains('Of the rows that ARE here')`
+beside it, plus a comment recording the measurement.
+
+**Files (worktree graded; index was at HEAD for all three, nothing staged):**
+
+| Path | wc -l | numstat (worktree vs index) |
+|---|---|---|
+| `lib/services/account/export/social_export_manager.dart` | 544 | +1 −2 |
+| `test/unit/services/account/export/social_export_manager_test.dart` | 2045 | +13 −0 |
+| `docs/architecture/ACCEPTED_LARGE_FILES.md` | 294 | +1 −1 |
+
+`ACCEPTED_LARGE_FILES.md` row recomputed to 544 — matches `wc -l` exactly, correct.
+`grep "as it was stored"` in the worktree: two hits, both legitimate (a BUT-1904 provenance comment
+quoting the retired wording, and the SHARED-CONTENT section's own separate sentence). The INDEX copy
+still carried the struck line 357 because nothing was staged.
+
+**Measurement.** The five matchers in `'the section states what it dropped, and does not enumerate
+the keeps'` are pure `String.contains`, so a scratchpad Dart replica is faithful and writes nothing
+into `lib/`:
+
+```
+SUITE GREEN  A  HEAD, the overclaim this commit strikes
+SUITE GREEN  B  worktree, the fix
+SUITE GREEN  C  reworded categorical overclaim ("every single field is exactly as it was stored")
+SUITE GREEN  D  prefix kept, claim FALSE about the strip ("no profile picture was ever touched")
+suite RED    E  completeness sentence deleted (control)
+```
+
+E red confirms the new positive is non-vacuous for PRESENCE — the property its own `reason:` names,
+and the one the author measured (+48 −1 on the delete-probe). A green is the finding: **reverting
+`lib/` to HEAD leaves the suite 49/49 green, so the production change this commit exists to make has
+no guard.** C and D show why: `'Of the rows that ARE here'` is a sentence PREFIX, and the `isNot`
+pins one RETIRED spelling, not the class of overclaims. `flutter test` on the real suite: 49 green,
+confirming the author's count.
+
+**Three blocking findings, one root — nothing in the pair holds "does not overclaim".**
+1. The strike is revertible-green (candidate A). Remedy: add
+   `isNot(contains('as it was stored'))` to the same test — red on A and C, green on B, and no
+   collision with the shared-content section's own `data_minimisation` test at line 1660, which
+   reads a different key and asserts only `contains('profile picture')`.
+2. The NEW comment ("BOTH directions, because the negative alone does not hold the property its
+   `reason:` names") reads as "with both, the property is held" — falsified by A. Its quoted
+   MEASUREMENT is accurate; the framing around it is not. This is the ticket's own failure mode
+   reproduced in the repair. Remedy: strike the framing, keep the measured sentence.
+3. `isNot`'s `reason:` — "a bundle that overclaims its completeness is as false as one that redacts
+   silently" — still names a property nothing holds, and remedy 1 does not fully rescue it: a prose
+   pin cannot decide semantic overclaim. Pre-existing at HEAD, but it sits two lines from the repair
+   in the paragraph the commit is reviewing. Remedy: strike, or narrow in place to what the matcher
+   holds ("this retired wording must not come back" — directly readable, no counting).
+
+**Anchor stability:** `'Of the rows that ARE here'` rots toward a FALSE RED on a legitimate rewording,
+which is the safe direction. Not a finding.
+
+Verdict: fail, 3 blocking.
+
+### 2026-08-27 — BUT-1929 review: a two-sided literal contract still leaks one direction
+
+Trigger: reviewing `ChatGroupErrorMapper`'s new `conversation-deleted` case plus its Dart
+suite and the sibling `functions/src/__tests__/ensure-category-chat.test.ts`, asked
+specifically whether the two together pin BOTH ends of the cross-language string contract.
+
+Graded the WORKTREE copies — `git diff --cached --name-only` was empty, nothing staged.
+
+Non-vacuity, settled analytically rather than by mutating `lib/`: removing the
+`case 'conversation-deleted'` drops the switch through to `break` and returns
+`genericFallback`, which every test sets to the sentinel
+`<<sentinel-fallback-no-arb-key-holds-this>>`. The only vacuity seam was two ARB keys
+sharing a string, which would make the arm-SWAP mutant survive; checked
+`lib/l10n/app_sv.arb` — `messagingGroupNoLongerExists` = "Denna grupp finns inte längre"
+vs `chatGroupNeedsAnotherMember` = "Gruppen behöver minst en medlem till innan ni kan
+rösta om mat." Distinct, so both arms discriminate. `AppLocale.current` defaults to
+`AppLocalizationsSv()` with no initialize() call, so the getter is live in a bare unit test.
+
+Dormancy check (the BUT-1931 reflex — is the revived string still unreachable?): traced
+`ensureCategoryChat` → `MessagingService` → `SocialGroupDetailViewModel.startMealVotePoll`
+line 479, whose outer `catch` at 508 calls the mapper and `setError`s the result.
+`BaseViewModel.executeAsync` RETHROWS after its own `setError`, so the outer catch runs and
+its `setError` wins last — confirmed by reading `base_viewmodel.dart:181-201` and by the
+existing green VM test at `social_group_detail_viewmodel_test.dart:517`, whose comment
+states exactly that. The branch is live end-to-end.
+
+The actual finding, and the reason the parent's question was the right one: BOTH sides are
+pinned, and it is STILL not pinned across. The TS test re-types `"conversation-deleted"`
+rather than importing `conversationDeleted()`'s literal, so a server rename reddens it —
+good. The Dart test re-types it in its fixture, so a client rename reddens that — good.
+But a server-side rename shows the author the new spelling in the red TS assertion, they
+update it, and nothing anywhere tells them Dart's `case` must move too. The failure mode is
+degradation to `genericFallback`: no crash, no red, a user sees the operation-specific
+"something went wrong" instead of "Denna grupp finns inte längre". Directional, not
+symmetric. Same residual already carried by `group-too-small` and by
+`ChatGroupErrorMapper.maxMembers`, whose own test comment admits it ("duplicated from a
+TypeScript file no Dart test can read") — so the suite knows about the class and has
+accepted it twice.
+
+What was new: the repo already HAS the enforcing pattern, so "no Dart test can read it" is
+false as a general claim. `test/unit/services/tagging/phases/tag_phase1_seafood_safety_test.dart:196-216`
+does `File('functions/src/admin/sync-ingredients-core.ts').readAsStringSync()` and
+regex-extracts the literals out of `VALID_PROPERTIES`. A ~10-line equivalent reading
+`functions/src/groups/ensure-category-chat.ts` for both `reason:` literals closes the
+server-rename direction. Recommended, not written — this was a review pass.
+
+Coverage-gap axes the parent asked about, walked and mostly answered "not a gap":
+- `details` absent/null on `failed-precondition` — covered, and it is ALSO what discriminates
+  the `is Map` guard (drop the guard and the null fixture throws NoSuchMethodError).
+- `details` a non-Map non-null (a String) — uncovered for this branch, covered for
+  `permission-denied`. Kills nothing the null fixture does not already kill.
+- `reason` present-but-null, or non-String — behaviourally identical to an unknown reason,
+  which IS covered (`'something-else'`). No mutant distinguishes them.
+- unknown reason — covered.
+So the uncovered states are the ones with no discriminating mutant. Said so plainly instead
+of filing busywork.
+
+Also verified rather than assumed: the Dart fallback test's comment quotes two English
+messages as the other `failed-precondition` states, and both exist verbatim in the CF —
+"Group has no conversation." at `ensure-category-chat.ts:313` and "Group no longer exists."
+at 411, neither carrying a `reason`. The prose is accurate. The interface doc at
+`chat_group_repository.dart:42` enumerates only `group-too-small`; it is incomplete, not
+false (it never says "only"), so nothing to strike.
+
+Runs: `flutter test test/unit/core/errors/chat_group_error_mapper_test.dart` 17/17;
+`npm run test:ensure-category-chat` 24/24.
+
+Verdict: pass, 0 blocking.
+
+### 2026-08-27 — BUT-1929 round 2 (final): chat_group_error_mapper suite after the rename round
+
+Trigger: re-review of `test/unit/core/errors/chat_group_error_mapper_test.dart`,
+`lib/core/errors/chat_group_error_mapper.dart`,
+`lib/repositories/interfaces/chat_group_repository.dart` after a strike/rename round.
+
+Hash table (worktree, verdict copy — all three files ` M`, index still == HEAD):
+| file | md5 |
+|---|---|
+| test/unit/core/errors/chat_group_error_mapper_test.dart | 709b4548ac7f32b091c7ddb1bd44609f |
+| lib/core/errors/chat_group_error_mapper.dart | 34dfe64076475d4af0be91c1c67ea05e |
+| lib/repositories/interfaces/chat_group_repository.dart | 8dc739aaf6bde0f480988b0e423ab089 |
+
+Strike verification: `mirrors MAX_CHAT_GROUP_MEMBERS`, `no Dart test can read`,
+`meal-vote group is too small`, `WITHOUT that reason` — 0 hits across `test/` and `lib/`
+in the worktree; 3 hits still in `git show :test/unit/core/errors/chat_group_error_mapper_test.dart`
+because nothing is staged yet. Verdict stated against the worktree.
+
+Measured this round:
+- ARB values all distinct (`messagingGroupNoLongerExists` = "Denna grupp finns inte längre",
+  `chatGroupNeedsAnotherMember`, `chatGroupTooManyMembers` with a `{max}` placeholder,
+  `chatGroupAddMembersBlocked`, `errorRateLimitExceeded`), so no `equals()` in the suite is
+  unfalsifiable by two keys sharing a string.
+- Interface doc's enumeration verified against `functions/src/groups/ensure-category-chat.ts`:
+  reasoned refusals are exactly `group-too-small` (l.210) and `conversation-deleted` (helper
+  `conversationDeleted()`, thrown at the pre-transaction site and inside the transaction);
+  reasonless `failed-precondition`s are "Group has no conversation." (l.313), "Group no longer
+  exists." (l.411), "Sync would empty the group." (l.458). All three named in the doc, all three
+  present.
+- Historical claim "the callable threw this case with no `reason` at all" verified against
+  `git show HEAD:functions/src/groups/ensure-category-chat.ts` l.393-397 — two-arg HttpsError,
+  no details.
+- `maxMembers` doc path verified: `functions/src/groups/minor-membership-gate.ts:97`
+  `export const MAX_CHAT_GROUP_MEMBERS = 100;` — path and value both correct.
+- "message is a required constructor parameter" verified in
+  `cloud_functions_platform_interface-*/lib/src/firebase_functions_exception.dart:16`.
+- Header claim "the details-shape guards and the `retryAfterSeconds` fallbacks are only
+  reachable here": the three VM suites that mention those keys
+  (`conversations_viewmodel_test`, `create_group_conversation_viewmodel_test`,
+  `group_detail_viewmodel_test`) all stub only HAPPY shapes (`blockedUserIds` present,
+  `retryAfterSeconds` an int: 12/45/30). None drives non-Map details, a null value, a wrong key
+  or an unparseable value. Claim holds.
+- Header claim "Every ViewModel that calls a chat-group callable routes its failures through
+  this one switch": `ChatGroupRepository` VM consumers are `conversations_viewmodel`,
+  `create_group_conversation_viewmodel`, `group_detail_viewmodel`,
+  `group_detail/chat_group_watch`; the first three plus `social_group_detail_viewmodel` all call
+  `ChatGroupErrorMapper.map`, and `chat_group_watch` only calls `watchGroup` (a stream read, not
+  a callable). Claim holds.
+- Kill-set note: `'the cap constant is 100'` is a strict subset of
+  `'a message mentioning members yields the cap wording'` (whose `contains('100')` reddens on the
+  same constant change). Kept as the named anchor for the unbuilt BUT-1960 pin, not as coverage.
+  `BUT-1960` is referenced nowhere in the repo — the residual lives only in Linear.
+- Suite green 17/17 (`flutter test`, run this round).
+
+Verdict: pass, 0 blocking. Non-blocking: nothing.
+
+### 2026-08-27 — BUT-1939 review (readFailed guards in three menu viewmodels)
+
+Trigger: review of `weekly_menu_plan_viewmodel_test.dart`, `menu_placement_viewmodel_test.dart`,
+`onboarding_viewmodel_test.dart` after `getWeek` -> `readWeek` repoint + 5 new refusal tests.
+
+Hash/motion: all three suites unstaged-modified at review time; a parallel session moved other
+paths mid-round (`.github/workflows/deploy-firebase.yml`, `functions/src/__tests__/`), none of
+the reviewed ones. Verdict graded against the WORKTREE bytes; `git diff --numstat` on the three
+suites: 70/16, 142/57, 69/10 — identical to the round-opening `--stat`, so nothing moved during
+the review.
+
+Suite: 105 green (`flutter test` on the three files, run this round). `dart analyze` on the
+three: clean. `dart format --output=none --set-exit-if-changed`: EXIT 1 on all three (helper
+inserted with no blank line before the class, 10-space stub bodies in `setUp`, `))` closers
+without trailing commas). Format is a separate CI gate here, so this blocks the commit.
+
+Blocking finding 1 — the guard does not cover the file's own worst save site, and the new
+test's comment asserts that it does. Probe (`test/unit/viewmodels/menu/_zz_probe_but1939_test.dart`,
+written, run, deleted — no `lib/` write): failed read -> `vm.plan == null` -> `applyGeneratedMenu`
+-> mocktail "Unexpected calls: ... distributeFromGeneratedMenu({... weekStart: 2026-08-24,
+existing: null ...}), save(Instance of 'WeeklyMenuPlan')". Two harms in one: it saves after a
+failed read, and it saves to TODAY's week (`currentWeekStart` falls back to `clock.now()` when
+`_plan` is null) rather than the week on screen. Reachable through
+`veckomeny_view.dart::_applyGeneratedToCalendar`, which calls `loadWeek(clock.now())` and then
+`applyGeneratedMenu(replaceExisting: true)`; with `_plan == null`, `hasEntries` is false so the
+overwrite-confirmation dialog is skipped too. The false sentence lives twice — test file
+(`weekly_menu_plan_viewmodel_test.dart`, "every save site below guards on null") and production
+(`weekly_menu_plan_viewmodel.dart` `_fetchWeek` comment). Strike, don't reword.
+Save sites checked: `assignRecipe`/`moveEntry`/`removeEntry`/`clearWeek`/`undoClearWeek` guard on
+`_plan == null` (true); `setSlotPresence`/`setDayPresence`/`bulkMoveSelected` are safe for a
+different reason — the SERVICE re-reads via `_loadPlanForWrite`, which throws on a failed fetch;
+`copyWeekToNext` is additive, low harm; `applyGeneratedMenu` is the hole.
+
+Vacuity sweep of the five refusal tests:
+- weekly T1 (publishes no plan) — discriminating via `plan isNull` + error; `verifyNever(save)`
+  is a free rider (no mutator ran). No positive control that the read happened.
+- weekly T2 (entry mutators) — the strengthening WORKS: with the guard neutralised the seeded
+  'e-live' entry makes `removeEntry` non-identical and `save` fires. Name says "mutators"
+  (plural), exercises `removeEntry` only.
+- placement T1 (confirm refuses) — save assertions VACUOUS: nothing is placed, so `hasPlacements`
+  refuses under the mutant too. Repair: `vm.placeSelectedAt(DayOfWeek.mon)` before `confirm()`
+  (a no-op while the guard holds, a real placement under the mutant). Separately, `confirm()`'s
+  own `if (_readFailed) { setError(...); return null; }` is deletable-green across the suite:
+  `_plan == null` catches everything and the error string set during `_loadWeek` survives
+  (`executeAsyncVoid` clears the error only at START). Discriminator: `vm.clearError()` (public
+  on `BaseViewModel`) between `init()` and `confirm()`, then assert the message is back.
+- placement T2 ("a later SUCCESSFUL read clears the refusal") — never re-runs the refused
+  action, so `_readFailed = false` in `_loadWeek` is unpinned; deleting it (confirm refuses
+  forever after any transient read failure) stays green.
+- onboarding T (a FAILED read seeds nothing) — non-vacuous, but for a different reason than its
+  comment says. `setUp` already stubs `createPersonalRecipe` (same `'r${++created}'`) and
+  `getRecipeById(any())`, so both re-stubs are redundant; the only load-bearing stub is
+  `addEntry` — without it the mutant path throws `MissingStubError` into `_seedSampleMenu`'s
+  outer catch and the test passes vacuously. The 8-param `createPersonalRecipe` re-spelling is
+  the known silent-unmatch shape.
+
+Repoint audit: no stub changed meaning. Every `_read(x)` wraps a plan that `getWeek` previously
+returned (= a successful read); the one failure-simulating stub (`thenThrow(StateError('network
+down'))`) was left as a throw. No test in the three files still asserts on `getWeek`;
+`menu_generator_test.dart` legitimately still does (MenuGenerator reads history through it).
+Residual noted, not filed: `SlotPickerDialog._loadWeek` wraps `getWeek` in a try/catch that can
+never fire (readWeek swallows), and it renders occupancy from a read that spells failure as
+empty — pre-existing, outside BUT-1939's three VMs.
+
+Verdict: fail, 2 blocking (unguarded `applyGeneratedMenu` + the comment asserting otherwise;
+`dart format`).
+
+### 2026-08-27 — BUT-1939 re-review round 2 (three menu/onboarding viewmodels)
+
+Trigger: re-review after "everything you raised was acted on". Graded the WORKTREE; index
+was still at HEAD for all seven paths (`git diff --numstat` non-zero on every one).
+
+Hashes at verdict time:
+- `01d4c82d` 1546L test/unit/viewmodels/menu/weekly_menu_plan_viewmodel_test.dart
+- `dd591bbb`  535L test/unit/viewmodels/menu/menu_placement_viewmodel_test.dart
+- `b572ac74` 1330L test/unit/viewmodels/onboarding_viewmodel_test.dart
+- `57171bf1`  519L lib/viewmodels/menu/weekly_menu_plan_viewmodel.dart
+- `581b5adc`  287L lib/viewmodels/menu/menu_placement_viewmodel.dart
+- `b499210c`  591L lib/viewmodels/onboarding_viewmodel.dart
+- `777e3424`  733L lib/services/menu/weekly_menu_plan_service.dart
+107 tests green on those bytes.
+
+What the round fixed, verified: `applyGeneratedMenu` now guarded and the new test kills the
+mutant twice over (distribute stubbed to SUCCEED, save permissive in setUp, so removing the
+guard calls `save` AND returns 0 instead of null). The week-scoped-writers test kills three
+mutants through `verifyNever` (an unstubbed mock still RECORDS the call before
+MissingStubError). Placement T2 places + confirms after the successful re-read, so
+`_readFailed = false` is pinned by `savedPlans isNotEmpty`. Onboarding: coverage proved the
+refusal branch is genuinely reached (`DA:514,1`, `DA:520,1`, `DA:525,0`), and the `addEntry`
+comment is accurate — without that stub the mutant path throws into `_seedSampleMenu`'s outer
+catch and the test would pass for the wrong reason.
+
+Three blocking findings, all of them SENTENCES this round wrote:
+1. weekly test L155-157 "every save site below guards on null" — false; five writers guard on
+   `_readFailed` only, and the very next test's NAME says so ("applyGeneratedMenu refuses — it
+   has no _plan null guard of its own"). Not in HEAD; introduced by the repair round. This is
+   the exact sentence the round-1 finding was about, re-planted in the fix.
+2. placement T1 comment "a placement attempt FIRST, so `hasPlacements` cannot refuse ahead of
+   the guard: without it this test passes under every mutant". Measured false both ways:
+   `placeSelectedAt` returns early because the failed read left `_plan` null AND `_selectedIndex`
+   null (`DA:196,0`/`DA:197,0` — nothing placed), and `confirm()` never reaches its null guard
+   (`DA:266,0`/`DA:267,0`), so under the mutant the save assertions still hold and the kill
+   comes from the `clearError()` + second `confirm()` + error assertion pair.
+3. weekly test L241-243 "the entry id must EXIST in the plan ... or `removeEntry`
+   short-circuits on nothing-changed" — the service is a MOCK stubbed
+   `thenReturn(_plan())`, a fresh instance, so `identical(updated, current)` is false whatever
+   the fixture holds. The `e-live` entry is inert.
+
+Non-blocking: two of the six new guards are deletable-green (`generateShoppingList`,
+`bulkMoveSelected`) — no test drives either after a failed read, and the reported
+"neutralising EVERY guard reddens exactly seven" probe cannot see it. `bulkMoveSelected` is
+the one with teeth: `_fetchWeek`'s failure branch returns before clearing `_selectionMode`
+/`_selectedEntryIds`, so a selection made on the previously loaded week survives and the move
+would target `currentWeekStart`, i.e. THIS week. Also: the weekly VM doc comment's "those
+writes DO land" is false in the commonest trigger — every one routes through
+`_loadPlanForWrite`, which does not catch, so a throwing `fetchForWeek` fails the write closed.
+
+Residual (question 4): confirmed FILE, don't fix here. `slot_picker_dialog.dart` reads through
+`getWeek`, whose `catch` cannot fire (`readWeek` swallows into `readFailed`), so the dialog
+paints an EMPTY week on a failed read and every cell looks free. Its write goes through
+`assignRecipeToTargets`/`bulkAssignRecipes`, which re-read via `_loadPlanForWrite` and fail
+closed — so it is not an empty-week upsert, but `addEntry` on a single slot does
+`removeWhere`, so the user can silently replace an occupant they could not see. Different
+layer, needs widget scaffolding, bounded harm.
+
+Verdict: fail, 3 blocking (all comments; no code defect this round).

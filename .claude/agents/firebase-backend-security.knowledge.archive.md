@@ -6446,3 +6446,117 @@ hook. Pre-existing and not this diff's: `social_export_manager_test.dart:586` st
 `_dropOtherSenderAvatar`, a symbol that no longer exists.
 
 **Verdict: pass (0 blocking).**
+
+---
+
+## 2026-08-27 — BUT-1939: "a failed read destroyed the saved week" is refuted by the update rule
+
+**Diff.** One comment in `lib/repositories/firebase/firebase_weekly_menu_plan_repository.dart`
+(`fetchForWeek`), plus `readFailed` guards in three viewmodels and a shared Swedish refusal
+string in `weekly_menu_plan_service.dart`.
+
+**Point 4 (the one that decides the ticket) — the guard is LIVE.** `getDocCacheFirst`
+(`base_firebase_repository.dart:373`) wraps ONLY the `Source.cache` read in a `try`, and
+returns the `Source.serverAndCache` read unguarded. `cloud_firestore_web-5.6.0`
+`interop/firestore.dart:391` maps `serverAndCache` -> `'default'` -> the JS SDK's `getDoc()`;
+Android/iOS map it to `Source.DEFAULT`. All three SDKs reject a snapshot that is
+`!exists && fromCache` with `unavailable` ("Failed to get document because the client is
+offline"), so an offline cache-miss THROWS rather than returning a non-existent snapshot.
+Delegation verified from the pub cache; the throw itself lives in the native/JS SDKs, which
+are not in this repo and are pinned by no test here.
+
+**Corollary the diff does not state.** Because `getDocCacheFirst` returns the cached snapshot
+only `if (cached.exists)`, a week that is genuinely EMPTY also falls through to the server
+read and therefore also throws offline. Offline planning of a fresh week previously worked
+(empty plan -> `set()` lands in the local cache -> syncs later as an allowed CREATE) and now
+refuses with `weeklyPlanReadFailedMessage`. That is a functional regression in the BUT-1683
+class (offline write semantics) and wants Malin's call / an accepted-deviation entry.
+
+**The blocking finding.** Three shipped comments assert server-side destruction as measured
+fact: onboarding ("the seed wrote sample recipes over the user's real week"), placement
+("saving after a failed read replaces a real week with whatever the session placed"), weekly
+("would arm them to erase a real week"). `firestore.rules:923-927` gates every update on
+`cannotModify(['userId','createdAt'])`, and every one of those writes is a full `set()` of a
+plan derived from `WeeklyMenuPlan.empty` (`weekly_menu_plan.dart:216-230`), whose `createdAt`
+is `clock.now()` serialized as a client-side `Timestamp` (`app_timestamp.dart:182`). The
+value always differs from the stored one, so `diff().affectedKeys()` contains `createdAt` and
+the update is DENIED. The overwrite cannot reach the server. Real harm: a save that fails
+with `permission-denied`, the user's placements lost, and a locally-wiped week until the
+optimistic write rolls back. Remedy: STRIKE the destruction sentences (a reworded count is a
+fresh unmeasured claim); the guard itself stays and is still worth having.
+
+**Scope checks that came back clean.** Every other `getWeek()` caller is read-only
+(`menu_generator._recentlyUsedRecipeIds`, `menu_shopping_list_generator` -> `nothingToGenerate`
+on an empty plan, `chat_action_handler._shareMenu` -> bails on `plan.isEmpty`,
+`slot_picker_dialog` display). The service's own write paths use `_loadPlanForWrite`, which
+lets `fetchForWeek` THROW rather than substituting an empty plan. `messaging_service:1027`
+already guards `readFailed`. Permission surface unchanged: `save()` still runs
+`validateUpdatePermission`, `deleteAllByUser`/`exportAllByUser` still `validateOwnership` on
+the same `{userId}_` prefix range, no read widened.
+
+**Pre-existing, in the primary file, not this diff's.** `save()` performs a custom permission
+check with NO `logPermissionCheck` (lib/repositories/CLAUDE.md requires one) and swallows a
+denial with `AppLogger.warning` + `return`, so the caller cannot distinguish "saved" from
+"refused" — the same "no answer looks like success" shape BUT-1939 exists to fix.
+`exportAllByUser` caps at 260 docs with no `truncated` flag (the knowledge file's limit+1
+convention).
+
+**Verdict: fail (1 blocking).**
+
+---
+
+## 2026-08-27 — BUT-1939 re-review: the root-cause fix for the wrong-week write path
+
+Re-review of the five-file diff after the previous run's `fail (1 blocking)`. The blocking
+finding was `WeeklyMenuPlanViewModel.currentWeekStart` falling back to
+`IsoWeekUtils.weekStartOf(clock.now())` whenever `_plan` was null — which, after the new
+`_readFailed` branch nulls the plan, made a FAILED read of week N+1 report "this week" to
+`veckomeny_view.dart:236`, where it is handed to `MenuPlacementView` as its write target.
+The root-cause fix was taken: `DateTime? _requestedWeekStart`, assigned at the top of
+`_fetchWeek` (before the await), and the getter ordered
+`_plan?.weekStartDate ?? _requestedWeekStart ?? weekStartOf(now)`.
+
+Verified this round:
+
+- **Does it disagree with the screen?** No. `_requestedWeekStart` is consulted only while
+  `_plan == null`, and `LoadingStateBuilder` gives `error != null` the HIGHEST priority
+  (`loading_state_builder.dart:141`), ahead of loading, empty and data. On a failed read the
+  whole calendar — including `WeekNavHeader`, the only place `currentWeekStart` is drawn
+  (`calendar_weekly_menu_widget.dart:160`, inside `_buildSuccessContent`) — is replaced by
+  `StateWidget.error`. So there is no on-screen week label while the fallback is answering.
+  Setting it before the read (rather than after a success) is safe for the same reason:
+  during the in-flight read `_plan` still holds the PREVIOUS week and wins the `??` chain.
+  The only overlapping-fetch race (two `_fetchWeek` calls, the earlier response landing last)
+  resolves to the earlier plan's own `weekStartDate` — pre-existing, and the plan wins.
+- **`getDocCacheFirst` mechanism**, cited by the new repository comment, is accurate:
+  `base_firebase_repository.dart:373-383` wraps ONLY the `Source.cache` read in a try and
+  returns the `Source.serverAndCache` read unguarded, so an unreachable server throws.
+- **Why the other service write paths were never exposed**: `setSlotPresence`,
+  `setDayPresence`, `bulkMoveEntries`, `bulkAssignRecipes`, `assignRecipeToTargets` and
+  `copyWeek` all load through `_loadPlanForWrite` / a direct `fetchForWeek`, with no catch —
+  the throw propagates and the save never runs. They are safe by PROPAGATION, not by
+  `readFailed`. The repository comment's closing sentence ("Callers that go on to SAVE must
+  therefore read through `WeeklyMenuPlanService.readWeek` and check `readFailed`") describes
+  an obligation six live write paths do not meet and do not need — filed Low, strike rather
+  than reword.
+- **`MenuPlacementViewModel.weekStart`** is the sibling getter with the same shape:
+  `_plan?.weekStartDate ?? _originalWeekStart`, so after a failed `nextWeek()` read it
+  reports the ORIGINAL week while the session is erroring on another one. It reaches no
+  write — `confirm()` refuses on `_readFailed` and otherwise saves `current`, whose own
+  `weekStartDate` is authoritative; `placeSelectedAt` and `placeRemainingAutomatically`
+  both require `_plan != null`. Its only consumers are the week-nav arithmetic and
+  `menu_placement_view.dart:137` `onAction: vm.init`, which retries `_originalWeekStart`.
+  Low, not blocking.
+- **Retry affordance asymmetry**: `weeklyPlanReadFailedMessage` ends "— försök igen".
+  The placement view wires `onAction: vm.init`, so the button renders
+  (`state_widget.dart:341` supplies the label when `onAction != null`). The calendar passes
+  no `onErrorRetry` to `LoadingStateBuilder`, so there is no button on that surface. Low.
+- **Onboarding**: the "makes a failed read DANGEROUS" sentence is struck; what remains is
+  mechanism, and "it gates no navigation" is true — `_seedSampleMenu` is an awaited
+  `Future<void>` whose early return is indistinguishable from the pre-existing
+  `seededRecipeIds.isEmpty` return, and onboarding completion runs after it either way.
+- The six `_readFailed` guards were kept knowingly, five of them unreachable while the
+  calendar renders the error branch. That is the correct call: a ViewModel write precondition
+  must not depend on a widget's rendering branch.
+
+**Verdict: pass (0 blocking).**

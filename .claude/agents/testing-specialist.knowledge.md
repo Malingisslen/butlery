@@ -223,13 +223,22 @@ you want the revert-probe that proved it; or this file itself reads too compress
   illustration refutes itself once it lands. Run the quoted command yourself and diff HEAD against
   the WORKTREE, never against the state the sentence remembers; the repair is a strike, never a
   "was true at the time" qualifier (BUT-1904 round 8, 2026-08-26).
-  **Grade the STRIKE with three cheap checks rather than by re-reading the diff**: grep the struck
+  **Grade the STRIKE with cheap mechanical checks rather than by re-reading the diff**: grep the struck
   string (0 hits); grep the ORDINAL or pointer it CARRIED, since a provenance parenthetical usually
   takes a "the second X" with it and an orphaned ordinal reads as a dangling reference; and re-read
   the paragraphs the strike left ADJACENT, whose "this"/"that" antecedents used to resolve through
   the deleted text. Then grade the surviving paragraph now carrying the fact ALONE as a fresh
-  claim. All three came back clean at BUT-1904 round 9 and the nine-round chain ended there —
+  claim. They came back clean at BUT-1904 round 9 and the nine-round chain ended there —
   rounds 1-8 each closed a sentence, none closed code after round 4 (2026-08-26).
+  **When the struck sentence is PINNED BY A SUITE, run the STRUCK TEXT ITSELF through that suite's
+  matchers before grading the repair** — a `contains` on a sentence PREFIX beside an `isNot` on a
+  RETIRED spelling both pass on the very clause just removed, so the production strike is
+  revertible-green and the repair comment's "both directions now hold it" is false. Measured
+  (BUT-1904, 2026-08-26): the pre-strike GDPR `data_minimisation` string passed all five matchers;
+  only deleting the sentence outright reddened, which pins PRESENCE, never non-overclaim. The
+  discriminator is an `isNot` on the STRUCK clause's OWN literal, and a ~40-line scratchpad Dart
+  replica of the matchers settles the whole table with no `lib/` write. A prose pin cannot hold
+  "does not overclaim" at all, so the sibling `reason:` naming that property is struck, not tested.
   **Read a file's OWN HEADER before grading any prose below it** — a header stating
   `this is a ROUTING rule, not a census, because a count would be wrong the week after`
   makes every later census in that file a defect BY THE FILE'S OWN TERMS. That is the
@@ -372,6 +381,22 @@ Codecov: 60% project / 70% new patches / 2% drop tolerance — floors, decided 5
   address if spellings never matched).
 - A cross-language literal contract (a CF-written marker Dart matches) is usually pinned
   consumer-side only — a doc comment claiming sync is not a test; grep for the enforcing one.
+  **Pinned on BOTH sides is still not pinned ACROSS**: when each suite types the literal
+  independently, a one-sided rename reddens only its OWN side, and the red test hands the
+  author the new spelling, so the fix lands and the other language silently degrades (here
+  to `genericFallback` — no crash, no red). Check whether the emitting test IMPORTS the
+  constant or re-types it (re-typing is the stronger pin) and then say the residual is
+  DIRECTIONAL. The repo's enforcing pattern already exists and is cheap: a Dart test that
+  `File(...).readAsStringSync()` on the `.ts` and regex-extracts the literal —
+  `tag_phase1_seafood_safety_test.dart` does it against `sync-ingredients-core.ts`
+  (BUT-1929, 2026-08-27). **Until that pin is built, the residual belongs in a TICKET and the
+  mirroring test's NAME must state only what it asserts** — `'the cap constant is 100'`, never
+  `'the cap constant mirrors MAX_CHAT_GROUP_MEMBERS'`: a name claiming the cross-language
+  mirror is the sentence a later run cites to skip building the pin, and the test cannot
+  observe the other language at all. Grade such a one-literal test's KEEP separately: its kill
+  set is usually a strict subset of the end-to-end sibling's (a `contains('100')` on the
+  rendered string reddens on the same constant change), so it survives as the named anchor for
+  the residual, not as coverage (BUT-1929/BUT-1960, 2026-08-27).
 - **"X was REPOINTED" — run X's PRE-EXISTING suite even if the ticket omits it.** It's
   written against the retired behaviour and usually passes VACUOUSLY (seam uncalled, fixture
   unseeded) rather than failing. Rewrite with a fixture where old/new DISAGREE, seed the
@@ -466,7 +491,36 @@ Codecov: 60% project / 70% new patches / 2% drop tolerance — floors, decided 5
 - "Declines/falls back" needs `equals([input])`, not `hasLength` — catches truncation. A
   test named after an input must assert that input's VALUE.
 - "X does NOT happen" needs proof the code reached where X could — "no write" can mean
-  skipped OR identical values; count writes, positive control same test.
+  skipped OR identical values; count writes, positive control same test. **A refusal test
+  written beside a new fail-closed guard is the standing carrier of this**: BUT-1939's
+  placement case asserted `savedPlans isEmpty` after a failed read with NOTHING placed, so
+  `hasPlacements` refused first and both save assertions held under every mutant — the
+  discriminating lines were the `plan isNull` / error pair above them. Drive the refused
+  ACTION to the point where it would write (place an item, seed an entry the mutator can
+  find), and treat the guard's own SECOND copy (a `_readFailed` early-return duplicating a
+  `_plan == null` guard) as deletable-green until a fixture clears the state the two spellings
+  differ on. **"Drive the refused ACTION" is itself a claim, and the repair round is where it
+  ships false**: the same failed read that armed the guard nulls the state the driving call
+  needs, so `placeSelectedAt` before `confirm()` placed NOTHING (`DA:197,0`) while its comment
+  said the save assertions now discriminate — they still don't; the error-message pair still
+  carries the kill. Read the inserted call's OWN early-returns against the state the failure
+  left, and never let a `thenReturn(<fresh instance>)` stub sit under a comment about an
+  `identical(...)` short-circuit — the stub decides, so the fixture it names is inert.
+- **Grade a read-side guard against EVERY WRITER in the file, not the mutators the fix's
+  tests exercise — and the sentence "every save site guards on null" IS the finding.**
+  BUT-1939 nulled `_plan` on a failed read and pinned the entry mutators (all of which
+  already had a null guard); `applyGeneratedMenu` rebuilds a plan from scratch
+  (`existing: _plan` nullable) and saves unconditionally, so a failed read still upserted a
+  generated week — over the WRONG week, because `currentWeekStart` falls back to `clock.now()`
+  when `_plan` is null. The unguarded site is reliably the one that DERIVES its payload
+  instead of mutating the loaded one; a ~90-line probe suite in the same dir settles it in
+  ~30s with no `lib/` write. A test named "a later SUCCESSFUL read clears the refusal" that
+  never re-runs the refused action leaves the RESET assignment unpinned in the same way.
+  **Then refuse the aggregate probe the fix round offers back**: "neutralising every guard
+  reddens exactly N" ranges over the SET and cannot see a per-site gap — mutate one site at a
+  time. BUT-1939 shipped six guards, two reached by no fixture, and the unreached one with
+  teeth was the one whose refusal branch returns BEFORE the state reset the other paths rely
+  on (a selection from the previous week survives the failed re-read and retargets).
 - A guard skipping a per-parent subcollection probe is unfailable when the probed doc
   doesn't exist — repair with a TRAP row at a path production never writes, spelled with
   production CONSTANTS (a literal drifts dead on a rename).

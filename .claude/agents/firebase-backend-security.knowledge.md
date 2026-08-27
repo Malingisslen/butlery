@@ -176,6 +176,12 @@ name which doc each end touches before approving it.
 - Full-doc `set()`: create pins `request.resource.data.userId==auth.uid`; update pins BOTH
   `resource.data.userId` AND `request.resource.data.userId`; delete pins
   `resource.data.userId`. Ship rule + repo-support together, or one is dead code.
+  Corollary that refutes most "a full `set()` destroyed the doc" claims: an update rule
+  carrying `cannotModify([... 'createdAt'])` DENIES any full `set()` built from a
+  freshly-synthesized entity, because a client-side `createdAt` (`clock.now()`) always lands
+  in `diff().affectedKeys()`. Before writing "an overwrite erased X", open the update limb —
+  the overwrite usually fails closed at the server, and the real harm is a lost local edit
+  plus a rolled-back optimistic write, not server-side destruction.
 - Prefer a targeted `update({changed fields})` over `set(merge:true)` from a possibly-stale
   local base (offline/queued replay) — a merge re-sends unchanged privileged fields, letting
   the one caller allowed to touch them (the owner) resurrect a removed member via a stale
@@ -447,6 +453,14 @@ name which doc each end touches before approving it.
   nothing else" overclaims unless it checks `metadata.isFromCache` — the same cache path is
   why a "refuse when unreadable" gate never covers "readable but STALE". A parser/lookup that can
   turn 1 input into N reads needs a cap at the split site.
+- A read-failed FLAG is only half the repair: the same object's public SCOPE getter
+  (`currentWeekStart`, the id/date a sibling VM is handed to write against) usually falls
+  back to a DEFAULT — today's week, the current user — the moment its loaded entity is null,
+  so a refused write path still exports a plausible WRONG TARGET to whoever asks. Keep the
+  requested scope in its own field, set BEFORE the read, and order the getter
+  loaded ?? requested ?? default. Check it cannot disagree with the screen: it must be
+  consulted only while the loaded entity is null, and that is exactly the state the
+  error branch renders (error-first precedence, no header) — verify the branch, don't assume.
 - A write-coalescing guard ("once per day") keyed off a stored timestamp is inert for a doc
   whose PARSER defaults that field to `now()` on absence — check what an absent field
   parses to before trusting the guard.

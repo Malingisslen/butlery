@@ -157,7 +157,7 @@ Acceptance criteria:
 3. `diff` — the false comment at `firebase_weekly_menu_plan_repository.dart:92-94` is struck,
    not reworded.
 4. `diff` — a test proves a failed read does **not** result in a save, for at least the
-   onboarding path (the one that writes sample recipes over a real week).
+   onboarding path.
 
 - [ ] Trace the three sites and the five display-only callers before editing
 - [ ] Convert the three; leave `slot_picker_dialog.dart:95` alone (display-only, no save)
