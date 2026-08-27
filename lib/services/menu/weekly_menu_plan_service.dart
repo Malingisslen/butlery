@@ -30,9 +30,15 @@ class WeeklyMenuDistributionResult {
 ///
 /// [plan] is always usable — the saved week, or an empty plan when the week has
 /// none. [readFailed] is the part a bare [WeeklyMenuPlan] cannot carry: an empty
-/// plan means "nothing saved yet" AND "the fetch never answered", and a caller
-/// that saves on top of the second one upserts an empty week over a full one.
+/// plan means "nothing saved yet" AND "the fetch never answered".
 /// Display may ignore the flag; anything that WRITES must not.
+///
+/// Measured 2026-08-27: saving on top of the second one does NOT overwrite a
+/// STORED week. An empty plan carries a fresh `createdAt` and the update limb
+/// refuses a changed one — pinned by W2 in
+/// `functions/src/__tests__/weekly-menu-plans-rules.test.ts`. The create limb
+/// carries no such conjunct, so on a week with no document the same save is a
+/// create and lands.
 class WeeklyMenuPlanRead {
   final WeeklyMenuPlan plan;
   final bool readFailed;

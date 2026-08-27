@@ -181,7 +181,12 @@ name which doc each end touches before approving it.
   freshly-synthesized entity, because a client-side `createdAt` (`clock.now()`) always lands
   in `diff().affectedKeys()`. Before writing "an overwrite erased X", open the update limb —
   the overwrite usually fails closed at the server, and the real harm is a lost local edit
-  plus a rolled-back optimistic write, not server-side destruction.
+  plus a rolled-back optimistic write, not server-side destruction. That corollary is now
+  PINNED for both weekly-plan collections (`weekly-menu-plans-rules.test.ts`, W2 personal /
+  G1 group) — cite the test rather than re-deriving it, and note the protection is a side
+  effect of `*.empty()` stamping `clock.now()` while `copyWith` preserves it. Each factory
+  carries its own clock-pinned model test; a "symmetry" cleanup is caught there, not by the
+  rules suite, which builds its bodies from literals.
 - Prefer a targeted `update({changed fields})` over `set(merge:true)` from a possibly-stale
   local base (offline/queued replay) — a merge re-sends unchanged privileged fields, letting
   the one caller allowed to touch them (the owner) resurrect a removed member via a stale
@@ -451,7 +456,31 @@ name which doc each end touches before approving it.
   rethrowing and reserving null for `!exists` is the fix, but a `!exists` answer resolved
   from CACHE is still not proof of absence, so any comment claiming null means absent "and
   nothing else" overclaims unless it checks `metadata.isFromCache` — the same cache path is
-  why a "refuse when unreadable" gate never covers "readable but STALE". A parser/lookup that can
+  why a "refuse when unreadable" gate never covers "readable but STALE". A flag that TRUSTS a
+  cached absence (`acceptCachedAbsence`) must be opt-in per call and stay `@protected` — but
+  its real cost is that it converts a refusal into an EMPTY answer, so the read-failed flag
+  never fires and the write path built on that empty answer runs unguarded: trace it, and
+  check whether the collection's update rule (`cannotModify(['createdAt'])` vs a full `set()`
+  carrying a client `clock.now()`) refuses the resulting overwrite — it does, because
+  `diff().affectedKeys().hasAny` sees the fresh client stamp, so the loss is the user's own
+  local edit, not server data. ORDER is the whole control: the cached absence may be
+  substituted only inside the server read's `catch`, never before, or a stale
+  "missing" becomes authoritative ONLINE too. Do NOT write that as "the server is asked on
+  every call" — a cache-first helper returns a cache HIT with no server read at all, so that
+  sentence is false in the docs and inverts the helper's cost story; the true claim is
+  "asked before any cached absence is used". Keep that `catch` narrow — a bare `catch (_)`
+  converts `permission-denied` OR a client-side timeout into "empty", so the safety claim
+  must read "a caller whose server read SUCCEEDED", never "an online caller" — and that
+  narrowing reappears in the DERIVED artefacts (onboarding/workflow map, feature docs) after
+  the ADR itself is worded correctly, so review a diff's docs against the ADR in the same
+  pass: a doc sentence saying the relaxation applies "offline, and only there" is refuted by
+  the ADR paragraph beside it. And never write that a stale absence merely
+  "degrades to the cautious floor": `null` and `throw` from a profile read reach OPPOSITE
+  verdicts (`ProfileLookup.missing` SKIPS the member from the allergen union; `unavailable`
+  applies the BUT-1663 floor), so absence is the LESS safe of the two. Negative entries persist
+  as long as the app configures persistence (here 100MB LRU on every platform, web included),
+  so "stale until LRU or a server read" is the honest wording. Offline, the read half is only
+  half the feature: an awaited `set()` never completes until the server acks. A parser/lookup that can
   turn 1 input into N reads needs a cap at the split site.
 - A read-failed FLAG is only half the repair: the same object's public SCOPE getter
   (`currentWeekStart`, the id/date a sibling VM is handed to write against) usually falls
@@ -540,7 +569,11 @@ name which doc each end touches before approving it.
   collection returns `permission-denied` (the read rule dereferences null `resource.data`),
   while the fake returns `exists == false` — a "try shared, fall back to personal" probe
   whose `catch` RETURNS the inconclusive value instead of falling through reads as covered
-  and answers "unknown" forever in production; state such a throw in the interface.
+  and answers "unknown" forever in production; state such a throw in the interface. It also
+  IGNORES `GetOptions(source:)`, so cache-vs-server behaviour can only be pinned through a
+  mocked `DocumentReference` capturing the `GetOptions` it is handed — and that pins the base
+  method only: whether the one production caller still PASSES the opt-in stays unguarded
+  unless a test drives that repository through the same mock.
 - Prefer real-repository + fake-Firestore + auth-state-fake tests over side-effect stubs
   that mock away the boundary under test. Cascade unit tests against a fake Firestore must
   bridge the production `ServiceLocator`, or it throws, gets caught, and the step lands
@@ -548,6 +581,10 @@ name which doc each end touches before approving it.
 - A standalone admin script is safe to delete once: no exports; not exported from
   `index.ts`; no `package.json` entry; no dedicated test; not named in CI/deploy config.
   Reference `firestore.rules` branches by path+rule type in comments, never line number.
+  A CALLER's comment that describes a shared helper's INTERNALS ("wraps only its cache read
+  in a try, returns the server read unguarded") is falsified by the commit that edits the
+  helper, in a file the diff shows only as context — grep the helper's NAME across callers'
+  comments in the same edit, and strike the mechanism clause rather than re-describing it.
   Deleting a client symbol that a RULES comment cites as the reason a conjunct exists leaves
   a false sentence in `firestore.rules` (and often in the rules tests): grep both for the
   deleted symbol in the same edit, and STRIKE the clause rather than reword it — the
@@ -555,6 +592,14 @@ name which doc each end touches before approving it.
   comment naming the TEST that pins an invariant dies when that test is deleted along with
   the code it sat inside — re-point only to an assertion GREPPED in the current tree (the
   invariant often survives in the DTO/serializer test), never to where you remember it.
+  The commit that CORRECTS an inverted comment is where the inversion is re-asserted as
+  HISTORY: "tickets A, B and C all argue from <the true fact>" is false whenever A and B
+  argued the opposite and this diff is what fixes them. Any "N tickets rest on this"
+  provenance clause is a measured claim about `git show HEAD:<file>`, not about the code —
+  strike it and state the code fact alone. Re-verify the WHOLE file on the repair round, not
+  the struck sentence: the same claim comes back lower down in new wording ("every 'damage is
+  bounded' sentence in A/B/C rests on this", as a per-test comment, after the header sentence
+  saying it was deleted).
 
 ### Superseded
 - `activity_events` and comment-image Storage orphans (both previously open follow-ups

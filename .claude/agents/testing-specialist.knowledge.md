@@ -143,7 +143,17 @@ you want the revert-probe that proved it; or this file itself reads too compress
   group, worded differently, so every literal grep and both blob hashes read clean; sweep the
   whole file by CONCEPT, and expect the copies in different syntactic roles (inline production
   comment, module-level doc comment, nested local-function doc comment) because a strike round
-  sweeps the locations the FINDINGS named. **Then grade the
+  sweeps the locations the FINDINGS named. **When the struck premise is a HARM claim, the two
+  copies a `lib/`-scoped sweep cannot reach are the SUITE's `group(` header stating the same
+  rationale, and a PRESUPPOSITION in a sibling method ("a wrong plan written now cannot be
+  undone" presupposes one can be written) — grep `test/` for the harm wording in the same round,
+  and re-read every sibling comment the strike did NOT touch for the harm smuggled in as a
+  subordinate clause; the tell is one file answering the question two ways (BUT-1961, 2026-08-27).
+  **The STOP rule for that sweep, or it never terminates: a sentence saying only what the code
+  REFUSES ("the close path refuses on a failed read rather than saving over the week") asserts no
+  outcome and is not a carrier — only a clause asserting what the write WOULD DO is.** Round 2 of
+  BUT-1961 came back with the two named copies struck, the repaired header measured true, 17/17
+  green, and the weakest remaining phrase deliberately left standing (2026-08-27). **Then grade the
   REPLACEMENT as a fresh claim** — a strike that swaps a measured count for a quantifier
   ("six call sites" → "from every list and detail surface") is unmeasured by construction, and
   the falsifier is usually an explicit exception in the same code (`assert(!readOnly, 'edit
@@ -154,7 +164,12 @@ you want the revert-probe that proved it; or this file itself reads too compress
   file gained a group, and resolve the cross-file pointer with one grep of the guarded CLASS
   name in the cited file: zero hits IS the finding, and a false coverage pointer is worse than
   a false count because it is the sentence a later run cites to skip writing the test
-  (BUT-1909). **A test's NAME and its COMMENT are TWO copies of one claim** — a finding that
+  (BUT-1909). **The cross-file pointer that is NOT a count is a reciprocal LABEL pair** — a Dart
+  comment naming a rules case (`W2`) while that rules file names the Dart test by its verbatim
+  NAME. Resolve BOTH directions (label present in the cited file; test name grep-exact); a label
+  survives an insert where a count dies, so this is the durable form and a rename is the better
+  fix to REFUSE. Residual to state, never to repair: neither direction is test-enforced
+  (BUT-1961, 2026-08-27). **A test's NAME and its COMMENT are TWO copies of one claim** — a finding that
   quotes the comment gets the comment repaired and leaves the name, two lines away, asserting
   the struck thing verbatim. Grep the concept across NAMES separately (`grep "^ *test('"`).
   **And grade every test the round ADDS against the names already in the file**: the new
@@ -420,7 +435,19 @@ Codecov: 60% project / 70% new patches / 2% drop tolerance — floors, decided 5
   `ownerId` and the signed-in uid were both `test_user_123`, so six cases could not see
   `ownerId: currentUserId`, which breaks the feature for every non-owner because the CF
   addresses the category by OWNER PATH). Recurring pairs: owner vs caller, creator vs
-  current user, group id vs conversation id.
+  current user, group id vs conversation id. **The same arithmetic settles an assertion
+  ENTAILED BY ITS NEIGHBOURS, with no probe: `expect` is fail-fast, so a line evaluates only
+  when the lines above it passed, and when those pin BOTH operands it compares its kill set is
+  EMPTY by construction** — `createdAt == <a Wednesday t>` plus `weekStartDate.weekday ==
+  monday` makes a following `weekStartDate isNot createdAt` unfailable. It reads as extra
+  discrimination and adds none; delete it rather than probe it (BUT-1961).
+  **Splitting one fixture instant into two (clock `t` vs caller's `date`) kills the
+  VALUE-swap mutant and leaves the DERIVATION mutant alive** — inside `withClock` a
+  same-week `date` makes `weekStartOf(clock.now())` byte-identical to `weekStartOf(date)`,
+  so what kills it is a SIBLING test running OUTSIDE the fixed clock and pinning the derived
+  id against a literal week. Two mirror suites can therefore match on the guarded axis and
+  differ on that one; grade a "do these mirror?" question per AXIS, and check the unfixed-
+  clock siblings, not only the clock-pinned test (BUT-1961, 2026-08-27).
 - A repository suite where every fixture lives in ONE scope can't see its scoping `where` —
   and habitually leaves inherited CRUD (`read`, `readAll`, `watchAll`) untested though it
   skips every filter the finders apply.

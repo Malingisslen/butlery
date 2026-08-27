@@ -2299,7 +2299,15 @@ That is intended where the absence is TRUE — the week really is empty and ther
 to protect. Where the absence is STALE it means BUT-1928's guard, which sits on a one-way
 door (closing a poll writes a winner into the plan), proceeds on a fabricated empty plan.
 The same `cannotModify(['userId','createdAt'])` limb denies the resulting write, so the
-server keeps what another device wrote — but the guard Malin signed off in BUT-1928 is
+server keeps what another device wrote. **That limb was unguarded when this entry was
+written.** Measured 2026-08-27: neither `weekly_menu_plans` nor `group_weekly_menu_plans`
+had any rules test. The protection was a side effect of
+`WeeklyMenuPlan.empty` stamping a fresh `createdAt` — while the neighbouring `copyWith`
+deliberately preserves it and has a test saying so, which is what a future "symmetry"
+cleanup would copy. Both collections are now pinned by
+`functions/src/__tests__/weekly-menu-plans-rules.test.ts` (W2 and G1), each mutation-probed
+by dropping `createdAt` from its own rule and confirming exactly that one test reddens.
+The guard Malin signed off in BUT-1928 is
 weaker for this case than its own comment says, and that is worth her knowing rather than
 discovering.
 

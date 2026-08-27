@@ -134,9 +134,19 @@ void main() {
         );
 
     test('empty starts on a Monday with no entries (clock-pinned)', () {
-      final t = DateTime.utc(2026, 1, 7); // a Wednesday
+      // `expect(plan.createdAt, t)` below is a GUARD, not a detail, and
+      // `weekly-menu-plans-rules.test.ts` names this test as what holds it:
+      // W2 asserts that a plan built here cannot overwrite a stored week,
+      // which is true only while this factory stamps a fresh `createdAt`.
+      // W2 builds its body from a literal, so it cannot catch that changing.
+      // The group model test carries the same guard for its own factory.
+      final t = DateTime.utc(2026, 1, 7); // the clock: a Wednesday
+      // A DIFFERENT instant in the same ISO week. Passing the clock instant as
+      // `date` too would let a `createdAt: date` mutant survive a test named
+      // for the clock. Mirrors the group model test.
+      final target = DateTime.utc(2026, 1, 9);
       withClock(Clock.fixed(t), () {
-        final plan = WeeklyMenuPlan.empty(userId: 'u1', date: t);
+        final plan = WeeklyMenuPlan.empty(userId: 'u1', date: target);
         expect(plan.userId, 'u1');
         expect(plan.id, contains('u1'));
         expect(plan.weekStartDate.weekday, DateTime.monday);

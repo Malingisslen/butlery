@@ -1025,10 +1025,11 @@ class MessagingService extends BaseService with StreamManagementMixin {
     }
 
     final now = clock.now();
-    // BUT-1928. `getWeek` answers a failed read with an EMPTY plan, and the
-    // save below is an upsert on a deterministic doc id — so appending to that
-    // empty plan replaces the whole week with one entry. Throwing leaves the
-    // poll open (the close happens after this returns), which is the
+    // BUT-1928. `getWeek` answers a failed read with an EMPTY plan, so the
+    // save below would write a one-entry week built from nothing. On a week
+    // that already exists the server refuses it (the empty plan's fresh
+    // `createdAt`; W2 in `weekly-menu-plans-rules.test.ts`). Throwing
+    // leaves the poll open (the close happens after this returns), which is the
     // recoverable failure; a silent skip would burn a one-way close instead.
     final read = await planService.readWeek(now);
     if (read.readFailed) {
@@ -1121,9 +1122,7 @@ class MessagingService extends BaseService with StreamManagementMixin {
     //
     // BUT-1928, and the reason this is `readOrBuildWeek`: building on a FAILED
     // read produces a fresh empty plan whose id is the same deterministic
-    // `{groupId}_{ISO week}`, so the save would replace the group's real week
-    // — every member's entries — with the one winner. Throwing leaves the poll
-    // open for a retry, which is the recoverable half of the two failures.
+    // `{groupId}_{ISO week}`. Throwing leaves the poll open for a retry.
     final read = await groupService.readOrBuildWeek(
       groupId: conversation.id,
       creatorId: creatorId,

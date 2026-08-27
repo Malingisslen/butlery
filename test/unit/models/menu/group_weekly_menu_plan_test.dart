@@ -11,6 +11,7 @@
 /// - Denormalised `memberPermissions` map matches the structured participants.
 library;
 
+import 'package:clock/clock.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/core/utils/iso_week_utils.dart';
@@ -78,6 +79,32 @@ void main() {
         expect(plan.entries, isEmpty);
         expect(plan.id, GroupWeeklyMenuPlan.docIdFor(groupId, weekDate));
         expect(plan.lastModifiedBy, 'user-creator');
+      });
+
+      // The fresh stamp is a GUARD, not a detail. `group_weekly_menu_plans`'
+      // update rule refuses a changed `createdAt`, so a plan built here and
+      // saved over a stored week is denied by the server rather than
+      // overwriting it. Making this constructor inherit a stored `createdAt` —
+      // which looks like symmetry with `copyWith`, that preserves it
+      // deliberately — removes that protection. The rules test (G1) cannot
+      // catch it: it builds its body from a literal and never calls this
+      // factory. BUT-1928/1961.
+      test('stamps a FRESH createdAt from the clock', () {
+        final t = DateTime.utc(2026, 4, 8, 9, 30); // the clock: a Wednesday
+        // A DIFFERENT instant in the same ISO week. Passing the clock instant
+        // as `date` too would let a `createdAt: date` mutant survive a test
+        // named for the clock.
+        final target = DateTime.utc(2026, 4, 10);
+        withClock(Clock.fixed(t), () {
+          final plan = GroupWeeklyMenuPlan.empty(
+            groupId: groupId,
+            creatorId: 'user-creator',
+            date: target,
+          );
+          expect(plan.createdAt, t);
+          expect(plan.lastModifiedAt, t);
+          expect(plan.weekStartDate.weekday, DateTime.monday);
+        });
       });
 
       test('uses the caller-supplied participant list verbatim', () {

@@ -26,8 +26,7 @@ import 'package:butlery/repositories/interfaces/group_weekly_menu_plan_repositor
 ///
 /// A bare `GroupWeeklyMenuPlan?` spells two different situations the same way:
 /// the group has no plan for that week, and the fetch never answered. Only the
-/// first is safe to build an empty plan on top of and save — doing it on the
-/// second upserts an empty week over whatever the group already had.
+/// first is safe to build an empty plan on top of and save.
 ///
 /// [plan] is null when the week has no saved plan, and always null when
 /// [readFailed] is true.
@@ -123,7 +122,11 @@ class GroupWeeklyMenuPlanService extends BaseService {
   }
 
   /// [getOrBuildWeek] that tells the caller whether the read FAILED instead of
-  /// silently building an empty plan over it (BUT-1928).
+  /// answering it with a freshly built empty plan (BUT-1928).
+  ///
+  /// The group rule carries the same `createdAt` conjunct as the personal one
+  /// (G1 in `weekly-menu-plans-rules.test.ts`), so writing that empty plan over
+  /// a stored week is refused rather than destructive.
   ///
   /// `plan` is non-null exactly when `readFailed` is false.
   Future<GroupWeeklyMenuPlanRead> readOrBuildWeek({

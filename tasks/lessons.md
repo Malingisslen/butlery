@@ -2558,3 +2558,45 @@ Example: lib/services/menu/parser/text_normalizer.dart _noWordBefore/_noWordAfte
   can fail a live deploy. Any `cmd | grep -q` under `pipefail` is a latent false negative on large
   input. And when a check disagrees with the artefact, believe the artefact: Cloud Run revisions
   said deployed while the gate said missing.
+
+
+### [Workflow] The paragraph written to BE the correction is where the next three false sentences land — and a pointer is a quantifier
+- **Date**: 2026-08-27 (BUT-1961 follow-up / BUT-1928 premise)
+- **Trigger**: Three shipped tickets argued from "a failed weekly-plan read OVERWRITES the
+  saved week". Measured false: the empty plan carries a fresh `createdAt` and both update
+  rules refuse a changed one, so the SERVER denies it. I struck the premise in three code
+  comments and wrote a rules test to pin the deny. The commit-gate reviewers then found a
+  succession of false sentences, every one of them inside text I had written AS the
+  correction, each round's repair producing the next round's finding. This very entry was
+  one of them: it first named a count and a number of rounds, and a later round in the same
+  commit falsified both. Representative cases:
+  1. "W2 is the test that stops an `empty()` change being silent" — W2 builds its fixture
+     from a literal and never calls `empty()`. The word appeared in that file ONLY in my
+     comment.
+  2. "Three shipped tickets all argue from the same fact" — two of them argued the exact
+     OPPOSITE, in the very sentences this diff was deleting. The correction re-asserted the
+     inversion it existed to remove, as HISTORY.
+  3. The same claim, reworded, SURVIVED 100 lines lower in W2's own comment after I struck
+     it from the header.
+  4. "The constructor half is pinned in Dart by <test>" — that test covers
+     `WeeklyMenuPlan.empty`; `GroupWeeklyMenuPlan.empty` had no `createdAt` assertion and no
+     `withClock` anywhere in its file. Half the claim's range was unguarded, and the rules
+     test G1 would have kept passing while pinning a hazard that no longer existed.
+  5. A workflow-map sentence: BUT-1961 relaxes the refusal "OFFLINE, och bara där" —
+     `getDocCacheFirst`'s fallback sits in `catch (_)` on the SERVER read, so any error
+     serves the cached absence. A rules file staged in the SAME commit said so explicitly.
+  Separately, my structural argument that W5 was a single-variable deny control was wrong:
+  its fixture carried the OWNER's `userId`, so the uid conjuncts denied it and the doc-id
+  prefix was never isolated. A reviewer's probe removed the prefix check and W5 still passed.
+- **Rule**: A pointer — "the test that pins this", "the guard for that" — is a QUANTIFIED
+  claim, and it must resolve for every symbol the surrounding sentence ranges over. Name two
+  constructors and one test resolves half of it. Prefer closing the gap over scoping the
+  sentence: adding the missing group test made the sentence true and removed the hazard,
+  where a "for the personal constructor only" caveat would have documented it forever.
+  After striking a claim, GREP THE WHOLE FILE for it — a header fix reads as finished while
+  the body still says it, and a reworded survivor is harder to see than the original. When
+  correcting an inverted comment, do not narrate what the old comments believed: that is the
+  one sentence guaranteed to re-plant the inversion, and it is a claim about TICKET TEXT,
+  which no test can hold. And attribution of a DENY is a MEASUREMENT, not a structural
+  argument — "the other conjuncts are satisfied" is the reasoning that was wrong here;
+  removing the conjunct and watching the test stay green is the one that was right.

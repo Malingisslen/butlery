@@ -6560,3 +6560,277 @@ Verified this round:
   must not depend on a widget's rendering branch.
 
 **Verdict: pass (0 blocking).**
+
+---
+
+## 2026-08-27 — BUT-1961: `getDocCacheFirst(acceptCachedAbsence:)` (weekly menu plan)
+
+Diff reviewed: `lib/repositories/firebase/base_firebase_repository.dart`,
+`lib/repositories/firebase/firebase_weekly_menu_plan_repository.dart`,
+`test/unit/repositories/firebase/base_firebase_repository_extra_test.dart`.
+
+**Scoping (verified).** `getDocCacheFirst` has exactly three call sites in `lib/`:
+`firebase_recipe_repository.dart:713` (archive recipe), the base class's own
+`readCacheFirst` (which reaches `firebase_user_repository.dart:199 fetchProfile` and
+`firebase_household_allergen_share_repository.dart:379`, the latter delegating to
+`super.readCacheFirst`), and `firebase_weekly_menu_plan_repository.dart:103`. Nothing
+overrides `getDocCacheFirst`; no mixin calls it; `readCacheFirst` does not forward the
+flag. `@protected` + a `false` default means the opt-in cannot leak. The stated allergen
+risk is real: a stale "profile missing" would drop a member to the BUT-1663 common-allergen
+floor, so the default must stay `false`.
+
+**Can the wrongly-empty week be overwritten? No — the rules refuse it.**
+`firestore.rules:923-927` (`weekly_menu_plans` update) carries
+`cannotModify(['userId','createdAt'])`, and `FirebaseWeeklyMenuPlanRepository.save` does a
+full `collection.doc(id).set(toFirestore(plan))`. A plan synthesized by
+`WeeklyMenuPlan.empty` stamps `createdAt: clock.now()`, which lands in
+`diff().affectedKeys()` — so a save built on a stale absence is DENIED server-side. The
+create limb does not apply (the doc exists). Residual harm is therefore a lost LOCAL write:
+offline the mutation applies to the cache, and the server rejects it at reconnect, silently,
+with `readFailed == false` so no refusal is shown. Not cosmetic, not server data loss.
+
+**Comment accuracy (Q3, verified).** `lib/core/bootstrap/firestore_bootstrap.dart:9-12` sets
+`persistenceEnabled: true` and `cacheSizeBytes: 100MB` on every platform including web, so a
+negative cache entry survives restarts and is bounded only by LRU at the 100MB threshold or a
+server read of that document. The "no expiry / LRU or a server read / potentially the life of
+the install" wording is accurate as written. The clause understating the cost of a stale
+absence ("a week that looks empty until the next successful read") is the one sentence to
+strike.
+
+**The fix may not close the ticket end-to-end.**
+`WeeklyMenuPlanViewModel.applyGeneratedMenu` awaits `_service.save(result.plan)` BEFORE
+publishing the plan ("Persist FIRST, publish after"). A Firestore `set()` Future does not
+complete until the server acknowledges, so offline the awaited save stays pending and the
+generated week never renders, even though the write is in the local cache. The read half of
+BUT-1961 is fixed; the write half is untested here. Reported, not blocking.
+
+**Test harness (Q4).** The mocked-`DocumentReference` + captured-`GetOptions` approach is
+sound: `fake_cloud_firestore` ignores `GetOptions(source:)`, so the sequence of sources is
+the only surviving observable. The nullable wrapper parameter correctly avoids shadowing the
+base default. Two gaps: (1) no test pins that `fetchForWeek` PASSES `acceptCachedAbsence:
+true` — deleting that argument keeps the whole suite green and silently restores BUT-1961,
+because the fake-backed `fetchForWeek` tests cannot see the flag; (2) the test named
+"a cached PRESENCE short-circuits either way" only drives the default branch.
+
+**Verdict: pass (0 blocking).**
+
+---
+
+## 2026-08-27 — BUT-1961 RE-REVIEW (design changed; the earlier pass is void)
+
+The shape I passed on the previous run returned the cached absence INSTEAD of asking the
+server, so a stale "missing" was authoritative while ONLINE too. `code-reviewer` caught it.
+Re-reviewed the replacement in `base_firebase_repository.dart`, which asks the server on
+every call and substitutes the cached absence only inside the server read's `catch`.
+
+**Q1 — online regression gone: YES.** `cached` is returned only from inside the failed
+server read's `catch`, and only when `acceptCachedAbsence && cached != null`. Three call
+sites checked: `fetchForWeek` (opt-in), `FirebaseRecipeRepository.fetchArchiveRecipe`
+(default false), `readCacheFirst` (default false; its consumers are
+`FirebaseUserRepository.fetchProfile` and the `readCacheFirst` OVERRIDE on
+`FirebaseHouseholdAllergenShareRepository`). Residual: a server read that FAILS while online
+(`permission-denied`, `unauthenticated`) is caught by the bare `catch (_)` and also yields
+the cached absence, which the doc comment's "a server read the network could not reach" does
+not describe.
+
+**Q2 — the rules chain is real.** `firestore.rules` line ~923 `weekly_menu_plans` update:
+`cannotModify(['userId','createdAt'])`; `cannotModify` = `!request.resource.data
+.diff(resource.data).affectedKeys().hasAny(fields)`. `WeeklyMenuPlan.empty` stamps
+`createdAt: clock.now()`; `toFirestore` writes `AppTimestamp.fromDateTime(createdAt)
+.toFirestore()` = `Timestamp.fromDate(...)`, a CONCRETE client value, not a server sentinel.
+`save()` does a full `set()`, evaluated against `allow update` when the doc exists ⇒ DENIED.
+Genuinely-absent doc ⇒ `allow create` ⇒ allowed, which is the correct outcome. No path where
+the offline write is allowed and destroys server data. The deviation text is right here.
+
+**Q3 — `rethrow` is correct.** `fetchForWeek` throw → `executeServiceOperation` returns null
+→ `readWeek`'s `read ?? (... readFailed: true)`. Swallowing would kill that signal for cache
+MISS (no negative entry at all), `permission-denied` and unauthenticated. `readWeek`'s
+pre-existing doc comment already states the matching caveat ("a repository that maps an
+unreachable week to null rather than throwing is NOT covered"), so the contract is
+self-consistent.
+
+**Q4 — two inaccuracies in the new deviation text.**
+1. INVERTED, and inverted toward the unsafe side. `ACCEPTED_DEVIATIONS.md` says a stale
+   "this profile does not exist" "would degrade a member to the BUT-1663 common-allergen
+   floor instead of their real preferences". `UserService.lookupUserProfile` does the
+   opposite: `fetchProfile` returning null gives `ProfileLookup.missing()` for a non-self
+   member, and per the BUT-1663 entry a MISSING profile does NOT degrade the roster — the
+   member is dropped from the union. The floor belongs to `unavailable()`, i.e. the THROW.
+   So the widening the paragraph warns against is worse than the paragraph says.
+2. Two enumerations that read as exhaustive and are not. (a) "two other callers, an archive
+   recipe and (through `readCacheFirst`) a user profile" omits the allergen-share
+   `readCacheFirst` override — Art. 9 data, the exact category the same paragraph forbids.
+   (b) The residual is scoped to `_loadPlanForWrite`'s five write paths (verified: five), but
+   `copyWeek` reaches `fetchForWeek` DIRECTLY at both its source and dest fetch — dest-side
+   is the same rules-bounded residual, source-side turns a stale absence into a silent
+   "0 copied".
+
+**Tests.** The two gaps I recorded last run are closed: `firebase_weekly_menu_plan_
+repository_test.dart` now drives the real repository through a mocked
+`FirebaseFirestore`/`CollectionReference`/`DocumentReference` and asserts the captured
+sources are `[cache, serverAndCache]`, so deleting the argument at the call site reddens; and
+the base-repo suite pins the online case (server answer wins), the no-opt-in throw, the
+cache-presence short-circuit and the cache-MISS-is-not-an-absence case.
+
+**Verdict: fail (1 blocking)** — finding 1 above. The code is sound; the decision record
+points the wrong way on allergen safety.
+
+## 2026-08-27 — BUT-1961 confirmation pass: three false sentences in the new decision-record text
+
+Re-review after the fix to the allergen-direction sentence. The direction itself is now
+right in both records (null ⇒ `ProfileLookup.missing` ⇒ member left out of the union;
+throw ⇒ `unavailable` ⇒ BUT-1663 floor), and every load-bearing mechanism claim verified:
+`_loadPlanForWrite`'s five call sites are exactly the five methods the doc enumerates
+(`bulkMoveEntries`, `bulkAssignRecipes`, `assignRecipeToTargets`, `setSlotPresence`,
+`setDayPresence`); `copyWeek`'s source-side `if (source == null) return 0`;
+`WeeklyMenuPlan.empty` stamps `clock.now()` into `createdAt`; `firestore.rules`
+`weekly_menu_plans` update limb carries `cannotModify(['userId','createdAt'])`;
+`applyGeneratedMenu` awaits `_service.save` and is gated on `_readFailed`.
+
+Three sentences the code falsifies, all written in the repair round:
+
+1. `ACCEPTED_DEVIATIONS.md`: "Other callers of `getDocCacheFirst` reach a user profile and
+   an archive recipe through `readCacheFirst`". `FirebaseRecipeRepository.fetchArchiveRecipe`
+   calls `getDocCacheFirst` DIRECTLY (`firebase_recipe_repository.dart:713`). The distinction
+   is the one the rule cares about: `readCacheFirst` does not forward the parameter, so its
+   callers CANNOT pass the flag, while a direct call site can. Recommended: strike the
+   inventory — the "Do not widen it" paragraph above it already carries the rule.
+2. Both records: "`lookupUserProfile` … a null return gives `ProfileLookup.missing()`" is
+   false for the SIGNED-IN user — `user_service.dart:681` returns `unavailable()` when
+   `isSelf`, deliberately (a half-completed save leaves the settings sub-doc behind). The
+   missing qualifier is the safety-relevant one.
+3. `.claude/rules/accepted-deviations.md` and the `getDocCacheFirst` doc comment: "The
+   server is still asked first … so an online caller can never be handed a stale absence."
+   The catch is `catch (_)` on ANY error, as the same comment states two sentences earlier —
+   a `deadline-exceeded`/`unavailable` on a flaky-but-connected network serves the negative
+   cache entry while online. True wording: a caller whose server read SUCCEEDED.
+
+Pattern worth keeping: a "can never happen online" claim written beside a bare `catch (_)`
+is self-refuting in the same comment. Filed into the principles file on the
+`acceptCachedAbsence` bullet.
+
+### 2026-08-27 — BUT-1961 confirmation pass: two prose claims still falsified by the code (`acceptCachedAbsence`)
+Change under review: `BaseFirebaseRepository.getDocCacheFirst` gains `acceptCachedAbsence` (default false), passed only by `FirebaseWeeklyMenuPlanRepository.fetchForWeek`. Verified clean this round: the `isSelf` split in `UserService.lookupUserProfile` (null ⇒ `missing()` for others, `unavailable()` for self, `user_service.dart` ~L681), the five `_loadPlanForWrite` call sites named in the ADR (`bulkMoveEntries`, `bulkAssignRecipes`, `assignRecipeToTargets`, `setSlotPresence`, `setDayPresence` — five defs, five calls), `copyWeek`'s source `return 0` and destination `WeeklyMenuPlan.empty` fallback, `firestore.rules` `weekly_menu_plans` update limb `cannotModify(['userId','createdAt'])` vs `WeeklyMenuPlan.empty`'s `clock.now()` stamp, the flag having exactly one production passer, and the "applies ONLY after the server read has failed" claim (the substitution sits inside the server read's `catch`).
+Still false: (1) **"The server is asked first on every call"** — in `docs/architecture/ACCEPTED_DEVIATIONS.md` (BUT-1961 section) and `.claude/rules/accepted-deviations.md`. `getDocCacheFirst` early-returns on `if (cached.exists) return cached;`, so a cache hit never reaches the server; the sentence also inverts the helper's own cost rationale ("avoid a network round-trip"). The neighbouring sentence "The flag applies ONLY after the server read has already failed" carries the true content, so the remedy is a strike, not a rewrite. (2) **The pre-existing first comment paragraph in `fetchForWeek`** ("`getDocCacheFirst` wraps only its cache read in a try, and returns its `serverAndCache` read unguarded") — this commit wrapped the server read in a try with a catch, so the mechanism clause is now false in a line the diff renders only as context. Pattern worth keeping: a caller comment describing a shared helper's internals dies in the commit that edits the helper.
+
+### 2026-08-27 — BUT-1961 final confirmation: clean (`acceptCachedAbsence`)
+Both prose findings from the previous round are STRUCK, not reworded. "The server is asked first on every call" is gone from `docs/architecture/ACCEPTED_DEVIATIONS.md` and `.claude/rules/accepted-deviations.md` (grep for "every call"/"asked first" in both returns nothing); the true neighbour — "The flag applies ONLY after the server read has already failed" — carries it alone. The stale `fetchForWeek` preamble clause describing `getDocCacheFirst`'s internals is gone; the comment now says only "A never-cached week falls back to the server."
+Re-verified this round against code: the flag has exactly one production passer (`fetchForWeek`) and defaults false; the substitution sits inside the `serverAndCache` catch with `cached != null` meaning a cache read that positively answered "absent"; the five `_loadPlanForWrite` bulk write paths named in the ADR all exist; `copyWeek` source ⇒ `return 0`, destination ⇒ `WeeklyMenuPlan.empty`; `firestore.rules` `weekly_menu_plans` update limb still `cannotModify(['userId','createdAt'])` against `WeeklyMenuPlan.empty`'s `clock.now()`; `lookupUserProfile`'s `isSelf` split matches both records including the parenthetical; `applyGeneratedMenu` refuses on `_readFailed` and awaits `save()`. No caller comment elsewhere describes the helper's internals (`firebase_recipe_repository.dart:713` is bare). No new durable rule — the `acceptCachedAbsence` and caller-comment principles already carry it.
+
+---
+
+## 2026-08-27 — BUT-1961 follow-up: the createdAt limb finally gets a rules test, and the commit re-asserts the inversion it fixes
+
+**Diff.** Comment-only edits in `weekly_menu_plan_service.dart`, `group_weekly_menu_plan_service.dart`
+and `messaging_service.dart`; a new `functions/src/__tests__/weekly-menu-plans-rules.test.ts`
+(W1-W6, G1-G3); CI + `package.json` wiring; amendments to the BUT-1961 entry in both
+`.claude/rules/accepted-deviations.md` and `docs/architecture/ACCEPTED_DEVIATIONS.md`.
+
+**Rule-limb verification (the review's point 1) — clean.** `firestore.rules:923-927`
+(`weekly_menu_plans` update) gates on prefix + stored `userId` + submitted `userId` +
+`cannotModify(['userId','createdAt'])`; `firestore.rules:967-977` (`group_weekly_menu_plans`)
+on membership + `edit|admin` + `cannotModify(['groupId','createdAt'])` + an
+admin-or-unchanged-membership branch. Traced each test for over-determination:
+- W2 denies ONLY on the `createdAt` conjunct (same actor, same prefix, `userId` unchanged),
+  and W3 is the single-variable ALLOW control differing in exactly that field.
+- G1 denies ONLY on `cannotModify` — membership map is byte-identical to the seed, so the
+  participants/admin branch is satisfied by its first arm; G2 is its single-variable control.
+- G3 (view-only) denies ONLY on the permission conjunct: `createdAt` unchanged, membership
+  unchanged. Not over-determined either.
+- W4/W5 are over-determined across two conjuncts, but both conjuncts express ONE invariant
+  (userId immutability / path ownership), so the deny is still attributable.
+Production-payload fidelity confirmed: `planBody` matches `WeeklyMenuPlan.toFirestore()`'s
+key set, and both repositories write a full non-merge `.set(toFirestore(plan))`
+(`firebase_weekly_menu_plan_repository.dart:131`, `firebase_group_weekly_menu_plan_repository.dart:121`),
+with `createdAt` serialized by both models. So the tested shape IS the shipped shape.
+
+**Point 2 — "no rules test until 2026-08-27" is TRUE.** `git grep -i weekly_menu_plan HEAD --
+functions/src/__tests__` returns only `request-account-deletion.integration.test.ts`, which
+imports `firebase-admin` and drives the Admin SDK (rules bypassed entirely) — a cascade test,
+not a rules test. No file under `__tests__` loaded `firestore.rules` against either collection.
+The mutation-probe claim was verified structurally rather than by re-running: dropping
+`createdAt` from either `cannotModify` list flips exactly W2 / exactly G1 and touches no other
+assertion in the file. `git status` shows `firestore.rules` clean, so no mutant survived.
+
+**BLOCKING — a false provenance sentence, in two places, introduced by this diff.**
+`weekly-menu-plans-rules.test.ts:6-9`: "Three shipped tickets — BUT-1928, BUT-1939, BUT-1961 —
+all argue from the same fact, that a plan built from `WeeklyMenuPlan.empty` cannot overwrite a
+real week". `ACCEPTED_DEVIATIONS.md:2304`: "the fact three tickets' harm bounds rest on".
+Both are false for two of the three. At HEAD, BUT-1928's comments asserted the OPPOSITE —
+`messaging_service.dart` said "appending to that empty plan replaces the whole week with one
+entry", `weekly_menu_plan_service.dart` said "upserts an empty week over a full one" — and this
+very diff is what strikes them. BUT-1939 is the same: the archive entry immediately above
+(2026-08-27, "a failed read destroyed the saved week is refuted by the update rule") blocked
+that ticket precisely because three shipped comments asserted server-side destruction as
+measured fact. Only BUT-1961's own entry argued from the createdAt protection. So the commit
+that corrects the inversion re-asserts the inversion as history. Remedy is a STRIKE, not a
+reword (a reworded count is a fresh unmeasured claim): delete the "all argue from the same
+fact" sentence and the "three tickets' harm bounds rest on" clause, keep the code fact
+("the update rule refuses a changed `createdAt`; nothing checked it until this file").
+Not merely cosmetic: a future session reading it would conclude the BUT-1928/1939 guards
+exist BECAUSE of the rule, and strike guards that actually exist for the unexplained-failure
+and one-way-poll-close reasons the corrected comments now state.
+
+**Non-blocking.**
+- Medium: `setup()` never calls `clearFirestore()`, unlike essentially every sibling rules
+  test in `functions/src/__tests__` (they all declare one and await it). The emulator keeps
+  data across `env.cleanup()` and across process runs, so on a second run against a
+  non-cleared emulator W1 ("a week with no document can be created") evaluates the UPDATE
+  limb instead of `create` — and still passes, because its payload keeps `createdAt`. The
+  test silently stops testing what it names. W2/G1/W3-W6/G2-G3 are unaffected: each re-seeds
+  its document with a deterministic `set()` first.
+- Low: `functions/src/__tests__/__probe-baseline.test.ts`, a byte-copy of the new test, was
+  present in the working tree partway through this review and gone minutes later — a probe
+  writing into the tree while the commit gate reads it. Harmless here (untracked, never
+  staged, `firestore.rules` clean), but it is the "never edit the measured input under a
+  review that is reading it" pattern.
+- Low, not this diff's and already recorded above: `FirebaseWeeklyMenuPlanRepository.save()`
+  swallows a denial with `AppLogger.warning` + `return` and calls no `logPermissionCheck`.
+- Gate note: `docs/onboarding/workflow-map.stale` is present untracked; CLAUDE.md requires
+  it handled before commit.
+
+**Permission/GDPR surface: unchanged.** No rule edited, no query, field, cascade or export
+touched. Every security claim in the three Dart comments was verified against the rules text
+and both write paths and is correctly scoped — the personal comment says "on a week that
+already exists", leaving the CREATE case (which is allowed, and is what BUT-1961 restored
+offline) outside the claim.
+
+**Verdict: fail (1 blocking).**
+
+## 2026-08-27 — BUT-1961 re-review: the struck provenance sentence came back as a test comment
+
+Round 1 blocked on `weekly-menu-plans-rules.test.ts`'s header: "Three shipped tickets —
+BUT-1928, BUT-1939, BUT-1961 — all argue from the same fact…". The repair struck it from the
+header and from `docs/architecture/ACCEPTED_DEVIATIONS.md`, exactly as asked. Round 2 found
+the identical claim alive at lines 111-112 of the SAME file, in W2's comment: "Every 'the
+damage is bounded' sentence in BUT-1928 / BUT-1939 / BUT-1961 rests on this." Still false the
+same way — the BUT-1928 comments this very diff DELETES (`messaging_service.dart`,
+`group_weekly_menu_plan_service.dart`) asserted the damage was UNBOUNDED ("the save would
+replace the group's real week — every member's entries"), i.e. they argued against the fact
+the sentence says they rest on. Lesson: after striking a false claim, grep the whole file for
+the ticket ids, not just the struck line; the repair round is where it is re-planted.
+
+Second finding, same diff: `docs/onboarding/workflow-map.html`'s new flow-menu-1 sentence
+said BUT-1961 softens BUT-1939's refusal "OFFLINE, och bara där". Refuted by the code and by
+the ADR in the same diff. `getDocCacheFirst` substitutes the cached absence inside the SERVER
+read's `catch (_)`, which does not discriminate — `deadline-exceeded` on a flaky-but-connected
+network, or a `permission-denied`, serves it too. `ACCEPTED_DEVIATIONS.md` §2250-2252 says so
+explicitly ("the ordering narrows the window, it does not close it"), so the map contradicted
+its own governing entry. Remedy: strike "OFFLINE, och bara där" — the sentence's own
+subordinate clause ("när serverläsningen misslyckas") already states the true condition.
+
+Verified clean in the same pass, for the record:
+- `firestore.rules` 915-983: both weekly-plan update limbs carry `cannotModify([...,
+  'createdAt'])`; `WeeklyMenuPlan.empty` and `GroupWeeklyMenuPlan.empty` both stamp
+  `clock.now()`; both repositories write with a non-merge `.set`. So W2/G1 pin a real
+  protection and the doc sentences resting on THAT are accurate.
+- New rules cases W5/W6/G4/G5/G6 grant nothing broader than the rule. W5 is properly
+  isolated: a CREATE at an unwritten id with the STRANGER's own uid in `userId`, so the only
+  failing conjunct is the `^uid_` doc-id prefix. G4 (edit-member ALLOW) spreads the IDENTICAL
+  seeded body, so `participants`/`participantUserIds`/`memberPermissions` land unchanged and
+  the test cannot accidentally prove a non-admin may edit membership — the admin-only branch
+  of the update rule is never reached.
+- `ACCEPTED_DEVIATIONS.md` §2314-2318 cites a test by name ("a cache MISS is not a cached
+  absence"); it exists at `test/unit/repositories/firebase/base_firebase_repository_extra_test.dart:472`.
+- CI wiring is real: the new suite is in `firestore-rules.yml` (both `paths:` blocks),
+  `test:rules:all`, and its own `test:rules:weekly-menu-plans` script.

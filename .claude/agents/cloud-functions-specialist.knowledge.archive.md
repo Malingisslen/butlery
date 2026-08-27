@@ -15586,3 +15586,158 @@ equality behind a `typeof === "number"` filter that passes for both sides of eac
 mutant, so its non-vacuity is readable and a write to a tracked file was not worth it.
 
 Verdict: FAIL, 3 blocking.
+
+### 2026-08-27 — third pass on af2bc7aff (maxInstances 10 -> 3): three claims still standing, all falsified from run logs [deploy][quota][prose]
+
+Round 3 of the `maxInstances` review. Rounds 1-2 struck two run-attribution sentences; this
+round found three more of the same shape, two of them ADDED by the commit under review, and
+one live CI defect nobody had looked for.
+
+MEASURED THIS PASS (all from `gh`, not inferred):
+
+- The `deploy-firebase.yml` workflow has exactly FIVE runs, all 2026-08-27, all `failure`.
+  There is no CI run from 2026-08-17, so the "2026-08-17 deploy" in `index.ts` was a local
+  `firebase deploy`, consistent with `tasks/todo.md`'s narrative.
+- Run 33043254433 (the mass deploy): `grep -c "Quota exceeded"` = 52, and
+  `grep -oE "Cloud Run service [a-z0-9]+" | sort -u | wc -l` = 52 DISTINCT services, each
+  with its own `Could not create or update Cloud Run service <name>, Container Healthcheck
+  failed … Quota exceeded`. 23 of those lines also name a specific revision. The CLI's
+  CLOSING summary named only two: `logWebError`, `suppressLowPerformers`.
+- Both services later repaired one-at-a-time in run 33044537911 (`guardDuplicateMessage`,
+  `syncConversationLastMessage`) ARE in that 52. 52 - 2 = 50, which reconciles EXACTLY with
+  Malin's independently measured "50 of 71 services Ready=False with
+  HealthCheckContainerError / quota". So the 50 are real failed revisions, not a CLI
+  reporting artefact — the opposite of what `deploy-firebase.yml:43-46` asserts.
+- Auto-rollback: `steps[].conclusion` on BOTH failing runs shows `Auto-rollback on deploy
+  failure` = `skipped` — run 33043254433 where `Deploy` FAILED, and run 33044537911 where
+  `Post-deploy smoke gate` FAILED. Cause is not "nothing to roll back": the step's `if:`
+  contains no status-check function, so GitHub ANDs an implicit `success()`, which is false
+  the moment any earlier step fails. The step is unreachable in both of the two cases it was
+  written for, and the smoke gate's own `::error::` text says "Auto-rollback will run".
+- Deploy-step durations: run 33044537911 deployed TWO functions sequentially in 3m24s
+  (~90s each incl. the first one's predeploy build); run 33043254433's whole-codebase attempt
+  ran 3m51s before failing. The job carries `timeout-minutes: 30`. So ~50 sequential
+  single-function deploys is ~75 min and would be CANCELLED mid-flight — and `cancelled` is
+  not `failure`, so even a working rollback would not fire on it.
+- Endpoint census, dumped from the compiled manifest (throwaway ts-node file under
+  `src/__tmp__`, deleted after): `total endpoints: 72 { gcfv2: 71, gcfv1: 1 }`, and
+  `cpu declared: []` — NO export carries a numeric `cpu` in the manifest at all. So the new
+  derived check's "227 vCPU" is instances × an EXTERNAL cpu=1 measurement (recorded in
+  `tasks/todo.md`: "71 Cloud Run services in europe-west1, every one at `cpu=1`"), not a
+  manifest fact. It also means `deploy-firebase.yml`'s "all 71 functions" is already off by
+  one — 72 functions ship today, `ensureCategoryChat` being the addition.
+- `npx ts-node src/__tests__/deploy-manifest.test.ts` → 8/8, printing "227 vCPU across 71
+  gen2 exports vs a quota of 20".
+
+THE THREE BLOCKING PROSE FINDINGS:
+
+1. "Setting a ceiling fixed that deploy." survives in `functions/src/index.ts:39` and
+   `functions/src/__tests__/deploy-manifest.test.ts:33` — the SAME claim shape struck twice
+   already, about the sibling event. `tasks/todo.md` records that the 2026-08-18 recovery
+   ALSO deleted five live functions from production to break the deadlock, so the ceiling was
+   never the only variable; and the same ceiling failed 52 services nine days later.
+2. The commit ADDED a "COST" paragraph to BOTH cascade files asserting "at 10 this function
+   alone can need the whole regional ceiling during a rolling update … A batch deploy
+   containing this function is the case that fails." That is arithmetic under the very
+   region-wide-sum model `index.ts` declares FALSE three files away, and it is refuted
+   directly: run 33043799598's failing two-function batch contained NEITHER cascade. It also
+   gives a THIRD, incompatible reason for the one-function-per-deploy rule (`index.ts` and
+   the yml both say the reason is that the number is UNKNOWN).
+3. `deploy-firebase.yml:43-46` — "two services … failed their health check on quota and the
+   CLI then reported the other 50 as failures, which reads as a systemic error and is not
+   one." Inverted: 52 per-service Cloud Run errors, 2 in the summary. Pre-existing
+   (commit d3f9437dd), not introduced by af2bc7aff.
+
+ON THE NEW DERIVED CHECK (Malin's direct question): it is sound and NOT vacuous in the
+"measures nothing" sense — `gen2Endpoints()` guards the filter, and the printed sum is
+re-derived every run. But its ASSERTION cannot flip at this scale: 71 endpoints each ≥1
+means the sum is ≥71 > 20 unconditionally, and the only path to sum=0 (option deleted
+everywhere) is already the presence check's mutant. So the comment's stated purpose ("if the
+sum ever came in UNDER the quota, the model would stop being obviously false") names a state
+the check cannot reach. Keep the check for the PRINT; strike the sentence about what it
+guards. `QUOTA_VCPU = 20` is the right thing to hard-code — it is the one external number,
+it is labelled and dated — but nothing detects its staleness, and the refusal that keeps it
+at 20 (`NOT_ENOUGH_USAGE_HISTORY`) lapses by definition as usage accrues.
+
+RETIRED FROM THE PRINCIPLES FILE THIS PASS (verbatim, per the supersede-in-place contract —
+the file was 27,929 chars, over its ~25,000 budget, and this edit had to end net-negative):
+
+- **Prove a lefthook glob by RUNNING it** (`npx lefthook validate` +
+  `dump`) — `pre-commit` hides UNSTAGED changes but still sees UNTRACKED
+  files.
+
+- A per-ITEM token charge couples `maxTokens` to the callable's payload
+  cap — must be ≥ the max batch size or a full batch is denied forever.
+
+- Mutate a SHADOW COPY, never the tracked file, in a live parallel-session worktree.
+
+Also corrected in place: the family table's `admin/` row said "One-shot scripts, ts-node,
+never deployed", which is false — `index.ts` exports `seedSiteConfigs`, `getSiteConfigStats`,
+`bulkMarkForRetagging`, `getRetagStatus`, `onAdminGranted` and `onAdminRevoked` from
+`admin/`. Directly readable from the export list, so corrected rather than struck. And the
+LLM-prompts bullet's unmeasured "touches ~5 sites" numeral was struck, not re-counted.
+
+Verdict: FAIL, 3 blocking.
+
+### 2026-08-27 — weekly-menu-plans rules suite: registration surfaces, and a coverage-discovery regex that silently drops suites [review][test-wiring]
+
+Commit-gate review of the staged `functions/` half of BUT-1961's follow-up:
+NEW `functions/src/__tests__/weekly-menu-plans-rules.test.ts` (9 cases, W1-W6 personal +
+G1-G3 group) plus a `test:rules:weekly-menu-plans` script and its append to
+`test:rules:all`. No Cloud Function source changed.
+
+Verified mechanically, not by reading:
+- `npx tsc --noEmit` exit 0 with the file in the program (`--listFiles | grep -c` = 1);
+  `noUnusedLocals`/`strict` clean.
+- Staged `functions/package.json` parses; `test:rules:all`'s full `&&` chain does contain
+  the new file (read the whole value, not the diff hunk header).
+- `PROJECT_ID = "butlery-rules-weekly-menu-plans"` is unique across all 33 rules suites.
+- Harness shape is byte-comparable to `menus-rules.test.ts`: same `setup`/`teardown`,
+  same 127.0.0.1:8080, same `run()` with `process.exit(1)` on any failure.
+- Both `paths:` blocks in `.github/workflows/firestore-rules.yml` gained the file, and CI
+  runs `npm run test:rules:all`. `scripts/run-ci-unit-tests.js` excludes it from the unit
+  lane by the `test:rules` prefix. `check-test-registration.js` = OK.
+- Suite run against a live emulator: 9/9 PASS.
+
+Mutation probes (backup + `git hash-object` before/after, RESTORE VERIFIED each time):
+- drop `createdAt` from `cannotModify(['userId','createdAt'])` on `weekly_menu_plans`
+  -> exactly W2 reddens, nothing else. The header comment's claim HOLDS.
+- drop `createdAt` from `cannotModify(['groupId','createdAt'])` on
+  `group_weekly_menu_plans` -> exactly G1 reddens. Claim HOLDS.
+- drop `userId` from the personal `cannotModify` -> 9/9 still green. W4 does NOT guard
+  that list entry; the two `request.auth.uid == …userId` conjuncts already deny the
+  write, so `cannotModify(['userId'])` is dead on the update path. W4 still proves the
+  PROPERTY its name states, so no change requested.
+- `allow read: if false` on `weekly_menu_plans` -> 9/9 still green. W6 is a read DENY
+  with no ALLOW control; a total read lockout is invisible to the suite. Reported Medium.
+
+One probe was run against the WRONG OBJECT and looked like evidence: a multi-line Python
+`str.replace` asserted and threw because `firestore.rules` is CRLF, yet the suite ran
+anyway and printed a clean 9/9. That output says nothing. Multi-line matches on this repo's
+rules file need `\r\n`; single-line ones happen to work.
+
+New durable finding, folded into the knowledge file's `test:rules:all` bullet:
+`scripts/rules-coverage-report.js` discovers project ids by REGEX over the test sources
+(`/\bPROJECT_ID\s*=\s*["']…/` plus a literal `projectId:` form). The
+`const PROJECT_ID = process.env.PROBE_PROJECT_ID ?? "…"` spelling matches NEITHER, so
+those suites are absent from the coverage union in silence. Reproduced the discovery
+function standalone: 29 ids discovered, 4 suites missing — `chat-groups`, `conversations`,
+`cook-snaps-and-message-mod`, `poll-votes`. The new file is discovered. Pre-existing and
+out of scope for this commit; surfaced to the parent.
+
+Documentation finding (Medium, non-blocking): the file header's "Three shipped tickets —
+BUT-1928, BUT-1939, BUT-1961 — all argue from the same fact" is a quantified claim not
+readable from the code, and `.claude/rules/accepted-deviations.md` records BUT-1939 as a
+REFUSAL that BUT-1961 relaxed rather than a `createdAt` argument. Recommended STRIKING the
+ticket enumeration and keeping the clause that firestore.rules does support.
+
+Verdict: PASS, 0 blocking.
+
+Retired from the knowledge file in this edit (kept here verbatim):
+- from the `maxInstances` bullet: '**"Setting X fixed the deploy" must name the OTHER
+  variables** — the 2026-08-18 recovery also deleted five live functions, and the same
+  ceiling failed 52 services on 2026-08-27.' (the RUN-claim principle survives in the
+  CI/ops section; the 52-service count survives in the Cloud Run line-counting bullet).
+- from the own-region bullet: 'A header-only strike reads as done, and a strike in two
+  files has twice re-appeared as a fresh derived number in a third in the SAME commit.'
+  (duplicated by `lessons-digest.md`'s strike-the-numeral line).

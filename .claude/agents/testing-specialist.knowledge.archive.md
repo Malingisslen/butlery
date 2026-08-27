@@ -27860,3 +27860,282 @@ closed — so it is not an empty-week upsert, but `addEntry` on a single slot do
 layer, needs widget scaffolding, bounded harm.
 
 Verdict: fail, 3 blocking (all comments; no code defect this round).
+
+### 2026-08-27 — BUT-1961: review of `group_weekly_menu_plan_test.dart`'s fresh-`createdAt` guard (trigger: commit-gate review, one staged test file)
+
+Staged diff: +1 `package:clock/clock.dart` import, +1 test `stamps a FRESH createdAt from the
+clock`, +8 comment lines. Reviewed copy: index == worktree (`git diff --numstat` empty).
+`lib/models/menu/group_weekly_menu_plan.dart` graded at `1629e34eccff0d08a6176ca21b092040922243da`.
+
+**Attribution verified directly (the parent had inferred it by elimination).** Mutant:
+line 155 `createdAt: now,` -> `createdAt: weekStart,` in `GroupWeeklyMenuPlan.empty`.
+Observer set enumerated first, so "nothing else reddens" ranged over something complete:
+`grep -rn "GroupWeeklyMenuPlan.empty" lib test` (5 other suites) plus
+`grep -rln "GroupWeeklyMenuPlanService\|readOrBuildWeek" test/` (3 suites, all already in
+the first set). Union = 5 files.
+- Baseline: `+63: All tests passed!`
+- Mutant: `+62 -1: Some tests failed.`; the only `[E]` line, by name, is
+  `GroupWeeklyMenuPlan empty stamps a FRESH createdAt from the clock`.
+Two runs (the first was filtered too aggressively to show the tally); production restored
+from a `trap ... EXIT INT TERM HUP` copy both times and re-hashed to the baseline blob after
+each. Kill set = exactly the new test. Non-vacuous, and the comment's counterfactual is TRUE
+as measured.
+
+**The G1 half of the counterfactual is true and needs no measurement**: `weekly-menu-plans-rules.test.ts`'s
+`groupPlanBody()` sets `createdAt: CREATED_AT` from a module literal, and it is TypeScript,
+so it cannot reach a Dart factory at all. That file's own header (lines 13-22) already states
+the same two-halves split, better scoped, and names this very Dart test as the constructor
+half — so the Dart comment is a SECOND COPY of one coverage decision.
+
+**Finding (Low, non-blocking): `expect(plan.weekStartDate, isNot(equals(plan.createdAt)))`
+has a provably empty kill set.** `expect` is fail-fast, so line 103 evaluates only when line
+100 (`createdAt == t`, t = `DateTime.utc(2026,4,8,9,30)`, a Wednesday — 2026-04-13 is the
+file's own stated ISO Monday, so 04-06 is Monday and 04-08 Wednesday) and line 102
+(`weekStartDate.weekday == monday`) both passed. A Monday instant cannot equal a Wednesday
+instant, so the assertion is entailed and cannot fail while its neighbours pass. No probe
+needed — read the entailment. Recommended deletion, not a blocker: it is redundant, not wrong.
+
+**Finding (Low, non-blocking): "Nothing else reddens if it does:" is a quantifier over the
+SUITE'S CONTENTS with an insertion seam.** True today (measured above), false the moment any
+sibling suite asserts `createdAt` off `empty()`. Per the repo's strike rule it is a measured
+claim, so the repair is a strike, not a re-measure; the mechanism sentences beside it (the
+update rule refuses a changed `createdAt`; a `copyWith`-symmetry cleanup removes the
+protection) are the whole warning and stand alone, and the surviving `G1 ... from a literal`
+clause is directly readable from the rules file.
+
+**Conventions: matches.** Sibling `weekly_menu_plan_test.dart`'s `empty starts on a Monday
+with no entries (clock-pinned)` uses the identical shape — `withClock(Clock.fixed(t))`, a
+Wednesday fixture, a `weekday == DateTime.monday` assert, and both audit stamps pinned to `t`.
+The `clock` import is used by `withClock`/`Clock.fixed` and the production file imports the
+same package.
+
+**Header docstring: no finding.** `Covers:` (lines 3-11) never listed the `empty` group at
+all — the two pre-existing `empty` tests are absent from it too — so the omission predates
+this diff and the list carries no `all`/`only` quantifier. Adding a bullet would put a second
+copy of the guard's rationale two screens from the first; left alone deliberately.
+
+Verdict: pass (0 blocking).
+
+### 2026-08-27 — BUT-1961 comment-only strike round: the copies a lib/-scoped sweep misses
+
+Trigger: commit gate, three staged production files, all edits comment-only. The struck
+premise: "a failed weekly-plan read leads to a save that OVERWRITES the stored week."
+Measured false — `WeeklyMenuPlan.empty`/`GroupWeeklyMenuPlan.empty` stamp a fresh
+`createdAt`, and both update limbs in `firestore.rules` (lines ~927 and ~967) carry
+`cannotModify([..., 'createdAt'])`, pinned by W2/G1 in
+`functions/src/__tests__/weekly-menu-plans-rules.test.ts`.
+
+Verified against the three staged files (index == worktree, `git diff --numstat` empty):
+- md5 `fb19cc94a105dfb28895a4c1fc5edec2` weekly_menu_plan_service.dart
+- md5 `8d319d958910d4b03647bd449e6143b3` group_weekly_menu_plan_service.dart
+- md5 `47eeb2725d0b91868631d95c1183e102` messaging_service.dart
+- md5 `414fc0feaa223291b319f5790cf80a4a` messaging_service_close_poll_test.dart (unstaged)
+
+No test assertion depends on the struck premise; the three affected suites ran green
+(28 tests) and `dart analyze` was clean on all three files — so "comment-only, no test
+changes" verified.
+
+Three findings, all sentences:
+
+1. BLOCKING. `messaging_service_close_poll_test.dart:970-979`, the `group(` header for the
+   BUT-1928 cases, still says: "Appending the winner to that and saving is an upsert on a
+   deterministic doc id, so the whole week — every other entry, for every member of a group —
+   is replaced by one recipe." This is the struck premise verbatim, in the one place the
+   commit's `lib/`-scoped sweep could not see, and it is the sentence a later run cites as
+   the guard's rationale. Repo-wide grep for the harm wording found exactly one surviving
+   copy, this one. Remedy: strike those two clauses (keep the "refusing leaves the poll OPEN"
+   half, which is true and is what the cases assert).
+2. BLOCKING. `messaging_service.dart:1126-1128`, the surviving comment edited twice: "…the
+   close below is a one-way door, so a wrong plan written now cannot be undone by re-running
+   this." The subordinate clause presupposes a wrong plan CAN be written — the harm this
+   commit measured away, 100 lines below the sibling comment that states the correct version
+   ("what is at stake here is a failure nobody can explain, not lost entries"). One file, two
+   answers. Also "the close below" is positionally wrong: `_messagingRepository.closePoll` is
+   at line 930, textually ABOVE this method; the personal sibling's "the close happens after
+   this returns" is the durable wording. Remedy: strike the clause.
+3. NON-BLOCKING (deferred, correctly). `messaging_service.dart:896-899` — "If the plan save
+   fails, the poll stays open so the creator can retry." Confirmed false, same mechanism as
+   BUT-1945's test at `messaging_service_close_poll_test.dart:524`: both plan services'
+   `save()` wrap the repository in `executeServiceOperation` → `safeExecute`, which catches
+   and returns `defaultValue`, so a repository failure never reaches `_appendWinner*` and
+   `closePoll` proceeds to the close. The test is green only because the MOCK
+   `GroupWeeklyMenuPlanService.save` throws. Leaving the behaviour fix and the test rename out
+   of this commit is right (BUT-1925's parked patch rewrites the same ordering region); the
+   comment strike would also land inside that region, so it rides with BUT-1945.
+
+Counter-check that came back clean: the readFailed guard itself IS real in production —
+`closePoll` uses a bare `try/catch { rethrow }`, not `executeServiceOperation`, so the
+`StateError` propagates and the close is skipped. The BUT-1945 swallowing does not reach it.
+Also clean: `weekly_menu_plan_read_week_test.dart` and `group_weekly_menu_plan_service_test.dart`
+carry no harm claim (their only mechanism claim, "the built plan carries the same doc id",
+is still true), and both halves of the new comments' citations verify — W2/G1 exist, the
+rules lines exist, and the constructor half is pinned in Dart once per model.
+
+Verdict: fail (2 blocking).
+
+### 2026-08-27 — BUT-1961 round 2 (final gate): the harm-premise sweep terminates on "refuses X"
+
+Trigger: re-review after two strikes I had filed as blocking in round 1
+(`messaging_service_close_poll_test.dart` ~:970 group header; `messaging_service.dart` ~:1126),
+plus two struck this round by the parallel `code-reviewer` gate (`messaging_service.dart` ~:1031;
+`weekly_menu_plan_service.dart` doc block).
+
+Verified on the CURRENT bytes, index == worktree for all four staged paths
+(`git diff --numstat` empty; `git show :<path> | grep` finds none of the struck strings):
+
+- Header at :970 reads standalone as a scoped, measured statement of the two services' return
+  shape (personal `readWeek` → empty plan + `readFailed: true`; group → `plan: null`), and the
+  three cases below it (group refusal, 1:1 refusal, empty-week CONTROL) are what it describes.
+  No harm claim survives in it.
+- "Refusing leaves the poll OPEN (the close is written after the plan)" verified against
+  `messaging_service.dart`: plan append 904-925, `closePoll` 930-933, and both refusal cases
+  throw a `StateError` DIRECTLY in `MessagingService` (1036, 1134), not inside a service wrapper
+  — so this is NOT the `executeServiceOperation`-swallow shape recorded for :896-899 (deferred to
+  BUT-1945).
+- W2 and G1 exist in `functions/src/__tests__/weekly-menu-plans-rules.test.ts` (lines 117 / 226)
+  and pin exactly what the two comments cite; the file's own header records G1's group half was
+  added 2026-08-27 and was mutation-probed.
+- Second-carrier sweep: `grep -rni "one-way door|cannot be undone|nobody can explain|wrong plan|
+  written over|over the week|destroy"` across `test/unit/services/menu`,
+  `test/unit/viewmodels/menu`, `test/unit/services/messaging`, `test/widget/menu`,
+  `lib/viewmodels/menu` returned two hits, both in the staged suite: :622 (a true statement about
+  `isClosed`, whose only writer is `message_mutation_module.dart:492`) and :222.
+- `test/unit/services/menu/weekly_menu_plan_read_week_test.dart` :229 ("since the built plan
+  carries the same doc id") and `test/unit/models/menu/group_weekly_menu_plan_test.dart` :84-91
+  ("saved over a stored week is denied by the server rather than overwriting it") are both
+  correctly scoped and were left alone.
+- Suite re-run on current bytes: 17/17 green.
+
+The finding that did NOT get filed, and why it matters more than the ones that did: :222 says
+"the close path refuses on a failed read rather than saving over the week". By the letter of the
+round-1 rule ("a presupposition in a sibling comment") that phrase presupposes a save that lands
+over a stored week, which is true for a week with NO document (create limb, no `createdAt`
+conjunct) and false for a stored one (update limb refuses). But the sentence asserts only what the
+code REFUSES; it states no outcome. Filing it would have opened round 3 on a six-word clause whose
+load-bearing content (which method is stubbed and why) is correct — the exact chain the repo rule
+warns about. Recorded as the sweep's stop rule.
+
+Non-blocking, left for whoever next touches the file: `group_weekly_menu_plan_service.dart` :31-32
+says "[plan] is null when the week has no saved plan", which is true for `readWeek` and false for
+`readOrBuildWeek` (builds one, :141-151, and its own doc two lines down says "non-null exactly when
+`readFailed` is false"). Pre-existing, pinned by
+`weekly_menu_plan_read_week_test.dart` :248 ("readOrBuildWeek DOES build on a genuinely empty
+week"), no user-visible risk. If touched, scope the class-doc sentence to `readWeek`.
+
+Verdict: pass (0 blocking).
+
+### 2026-08-27 — BUT-1961 follow-up: grading two mirror `empty()` clock tests (personal vs group weekly menu plan)
+
+Trigger: commit-gate review of `test/unit/models/menu/weekly_menu_plan_test.dart` and
+`test/unit/models/menu/group_weekly_menu_plan_test.dart`. Both pin that `empty()` stamps
+`createdAt` from the ambient clock — the constructor half of the harm bound whose rule half
+is `weekly-menu-plans-rules.test.ts` W2/G1 (`cannotModify([... 'createdAt'])`, firestore.rules
+:927 personal, :970 group; both repos `save()` with a non-merge `.set`, e.g.
+`firebase_group_weekly_menu_plan_repository.dart:121`).
+
+Kill sets, graded per AXIS rather than per test:
+- Stamp axis (which expression feeds `createdAt`/the second stamp): IDENTICAL. The lattice
+  inside each factory is {`now`, `date`, `weekStart`, wall-clock now}; both files kill all
+  three wrong ones. `createdAt: <the sibling stamp>` (`updatedAt` / `participants.first
+  .addedAt`) evaluates to the same value and is analytically unkillable — read the fixture,
+  no probe.
+- Week-derivation axis: they DIFFER. `weekStart = IsoWeekUtils.weekStartOf(clock.now())`
+  survives the personal file (its only id assertion is `contains('u1')`, and any Monday
+  satisfies the weekday assert; `t` and `target` are deliberately in the same ISO week) but
+  dies in the group file — via `seeds the creator as sole admin`, which runs OUTSIDE
+  `withClock` and pins `plan.id == docIdFor(groupId, weekDate)`, so the mutant computes the
+  real current week. Pre-existing on both sides (before the retrofit `date == t`, so the
+  mutant was identical there too); reported non-blocking.
+- `empty().groupId` is asserted nowhere in the group file, while the personal file asserts
+  `empty().userId`. Pre-existing; the group's id assertion derives from `docIdFor(groupId,…)`
+  and does not see a mutated `groupId:` field arg.
+
+Assertion vacuity: none in either clock test. `expect(plan.weekStartDate.weekday,
+DateTime.monday)` KEEPS — and in the group file it is the sole killer of `weekStartDate: date`,
+because the sibling id assertion passes `weekDate`, which is already a Monday, making
+`weekStartOf` the identity there. That is a stronger ground than the earlier gate's ("it covers
+`IsoWeekUtils.weekStartOf`'s contract"). BUT-1961's entailed `weekStartDate isNot createdAt`
+line is absent from both files — verified by reading, not by diff.
+Non-blocking, pre-existing, untouched by the commit: the group `copyWith` test's
+`isAtSameMomentAs(base.lastModifiedAt) || isAfter(base.lastModifiedAt)` has an effectively
+empty kill set (every expression in scope for `lastModifiedAt` is >= base's; `createdAt` is
+equal to it).
+
+Comments: every counterfactual in both files confirmed against code — the two rules limbs, the
+non-merge `.set` write path, `copyWith`'s deliberate `createdAt: createdAt`, and G1 building its
+body from `groupPlanBody()` literals in TypeScript (so it cannot reach a Dart factory at all).
+Calendar arithmetic checked from the anchor 2026-01-05 = Monday (which the file's own
+`DayOfWeek.fromDateTime` test pins): 2026-01-07 Wed / 2026-01-09 Fri same ISO week;
+2026-04-06 Monday, so 2026-04-08 Wed / 2026-04-10 Fri same ISO week, and 2026-04-13 is the
+Monday the sibling fixtures use.
+
+Cross-file surprise reported: the rules-test header names the PERSONAL test as the pin for the
+constructor half, but that test carries none of the guard rationale and its name
+(`empty starts on a Monday with no entries (clock-pinned)`) does not say `createdAt` — so a
+future tidy-up could drop the two stamp assertions without ever meeting the reason they exist.
+The group test carries the whole paragraph. Remedy is a comment pointer, not a test.
+Verdict: pass (0 blocking).
+
+### 2026-08-27 — BUT-1961 round 3: the comment-route repair, graded (trigger: commit-gate re-review, two staged test files)
+
+Reviewed at index==worktree, both `M ` staged, blob hashes identical to disk:
+| file | blob |
+|---|---|
+| `test/unit/models/menu/weekly_menu_plan_test.dart` | `d126d649ac8c872b66a842a278517685cb751c9d` |
+| `test/unit/services/messaging/messaging_service_close_poll_test.dart` | `99296de7413210ae33327e1e8759ba4307d6fc96` |
+
+39/39 green (22 model + 17 close-poll), measured this round.
+
+**Item 4 from round 2 acted on via the comment route (not the rename).** Six lines above the
+`empty` fixture in `weekly_menu_plan_test.dart:137-142`. Every claim resolved mechanically:
+- "`weekly-menu-plans-rules.test.ts` names this test as what holds it" — TRUE, that file's
+  header lines 17-20 cite `weekly_menu_plan_test.dart`'s *"empty starts on a Monday with no
+  entries (clock-pinned)"*, matching the Dart test name at :136 verbatim.
+- "W2 asserts that a plan built here cannot overwrite a stored week" — W2 is at
+  `weekly-menu-plans-rules.test.ts:114-129`, seeds a real week and writes `createdAt: LATER`
+  under `assertFails`.
+- "W2 builds its body from a literal, so it cannot catch that changing" — TRUE, `planBody()`
+  is a literal record; W2 never calls `empty()`. Mirrors the rules file's own header
+  ("W2 and G1 pin the RULE half … a change to the constructor leaves them green").
+- "The group model test carries the same guard for its own factory" — TRUE,
+  `group_weekly_menu_plan_test.dart:84-92`.
+
+**New shape worth the principle: the reciprocal LABEL pair.** The Dart comment names a rules
+case (`W2`); the rules file names the Dart test by verbatim NAME. That is NOT the insertion-seam
+class — a label survives an insert where a count dies — and the reciprocity is what makes the
+rename route WORSE than the comment route, since renaming the Dart test would have falsified the
+`.ts` citation. Residual, stated not repaired: neither direction is test-enforced. Three other
+cross-references already depend on the same `W#`/`G#` labelling convention
+(`.ts` header → W2/G1; `group_weekly_menu_plan_test.dart:89` → G1), so this is a fourth
+consistent use, not a new hazard class.
+
+**Scoping is the reason it does not overclaim.** The comment opens on ONE assertion
+(`` `expect(plan.createdAt, t)` below is a GUARD ``) rather than on the test. The pre-existing
+`weekStart`-from-clock mutant the personal test admits (t=Wed Jan 7 and target=Fri Jan 9 sit in
+the same ISO week, so `weekStartOf(clock.now())` is byte-identical to `weekStartOf(date)`) is
+about `weekStartDate`, which the comment never mentions. Round 2's non-blocking call stands.
+
+**The struck sentence** ("The controls beside each case are what stop the guard from being an
+unconditional throw", BUT-1928 group header) is gone from worktree AND `git show :<path>`; zero
+hits for "controls beside" across `test/ functions/src/ lib/ docs/ .claude/rules/`. Concept sweep
+for the surviving carrier found only `:687-688`, which is correctly scoped ("Without this the two
+refusal cases below …") and sits directly above the control it describes, in a group that has one.
+Nothing hollowed: the BUT-1928 control at `:1082` carries its own rationale at `:1084-1087`
+(`discriminates on readFailed, not on emptiness`), and the 1:1 refusal at `:1042` is non-vacuous
+by construction — the outer `setUp` stubs `planService.addEntry`/`save`, so dropping the guard
+fires both. Recommended AGAINST adding a pointer to the 1:1 case's control at `:357`: a
+"pinned by X" sentence is the exact class my own round-3 repair shipped false on BUT-1904.
+
+Also checked, no finding filed: `:627-628` "the group also holds positive controls" is a correct
+plural (`:686` and `:751`, both positive), typed as no count.
+
+Non-blocking observation, pre-existing and NOT this commit's: the model file's header `:4-8`
+enumerates what the file covers and omits the BUT-1611 presence group at `:228-332`. The repair
+if ever taken is to STRIKE the enumeration — extending it re-arms the seam.
+
+Informational: `.claude/worktrees/wf_a173466e-c2e-19/` holds a parallel session's 918-line copy
+of the close-poll suite with no BUT-1928 group at all. It predates the struck sentence rather
+than leaking it. Not touched.
+
+Verdict: pass (0 blocking). Round 3 of BUT-1961's comment chain ended here — rounds 1-3 each
+closed a sentence, none closed code after round 1.

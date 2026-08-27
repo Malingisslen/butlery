@@ -146,7 +146,10 @@ files in the same edit.
   one-way door. The GROUP chain reads through a repository that does not pass the flag,
   so its guard still fires. Intended
   where the absence is true; where it is stale the same `createdAt` limb denies the write,
-  so the server is safe and the user loses their own edit. Malin signed off BUT-1928's
+  so the server is safe and the user loses their own edit. That limb had NO rules test until
+  2026-08-27 — it does now, on both the personal and the group collection
+  (`weekly-menu-plans-rules.test.ts`, W2 and G1, both mutation-probed). Do not write any
+  further "the server refuses it" sentence without citing them. Malin signed off BUT-1928's
   refusal, so this weakening is hers to know about. The fix also only helps a week fetched
   while ONLINE at some point — a never-fetched week still throws, by design.
 

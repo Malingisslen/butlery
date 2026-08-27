@@ -3098,3 +3098,203 @@ exit 0.
 Method note worth keeping: every proof in this round was taken from `git show :<path>`, never the
 worktree file. The scope moved three times while I read (418 -> 484 -> 642 insertions, always the
 same 15 files, twice by other gates appending archives and once by me). Re-stat at verdict time.
+
+## 2026-08-27 — `weekly-menu-plans-rules.test.ts` adversarial non-vacuity review (BUT-1961 follow-up)
+
+New suite, 9 cases (W1-W6 `weekly_menu_plans`, G1-G3 `group_weekly_menu_plans`);
+`firestore.rules` unchanged in the commit. Reproduced every claim independently with
+env-var probes against mutated COPIES of the rules file (real file md5-verified identical
+before and after: `6cdc26dac450938ddf169a3b19dfbf55`).
+
+Probe harness note: the suite does NOT ship `PROBE_RULES_PATH`/`PROBE_PROJECT_ID` seams,
+so probing required generating a temp copy of the TEST file under
+`functions/src/__tests__/__probe-<label>.test.ts` with two `sed` substitutions
+(project id -> `probe-<label>-$RANDOM`, `RULES_PATH` -> `process.env.PROBE_RULES_PATH ??
+path.resolve(...)`), deleted via `trap ... EXIT INT TERM`. Writing the env read as a bare
+`as string` instead of `??` re-triggered the known TS6133 (`'path' declared but never
+read`) — `noUnusedLocals` aborts ts-node and the exit code reads like a red assertion.
+
+Probe results (baseline 9/9 on a fresh project id):
+- M1 `cannotModify(['userId','createdAt'])` -> `(['userId'])`: exactly W2 reddens.
+- M2 group `cannotModify(['groupId','createdAt'])` -> `(['groupId'])`: exactly G1 reddens.
+  (Both confirm the file header's own probe claim.)
+- M3 -> `cannotModify(['createdAt'])` (drop `userId`): NOTHING reddens. `userId` is
+  masked by `uid == resource.data.userId && uid == request.resource.data.userId`; W4
+  guards the pair, not the immutability key.
+- M4 group update permission `in ['edit','admin']` -> `in ['view','edit','admin']`:
+  exactly G3 reddens. G3 is single-conjunct attributable, and `view` is a real wire value
+  (`GroupMenuParticipant.toMap` writes `permission.name` from `SharedListPermission`).
+- M5 -> `in ['admin']`: NOTHING reddens. The `edit` grant — the whole point of a
+  collaborative plan — has no test.
+- M6 weekly `allow read` prefix conjunct -> `false`: NOTHING reddens. W6 (stranger deny)
+  has no owner-read ALLOW control, so it would survive `allow read: if false`.
+- M7 `allow create: if false`: W1 reddens, so W1 does exercise CREATE today — but only on
+  a fresh emulator project. The suite has no `clearFirestore()` and W1's id
+  (`wmp-owner-uid_2026-W19`) has no per-run token, so a second local run on a live
+  emulator silently turns W1 into an UPDATE (which the rules also allow) and M7 would stop
+  reddening. CI is unaffected.
+- M8 weekly update prefix conjunct -> `true`: NOTHING reddens. W5 is over-determined —
+  the stranger's payload carries `userId: OWNER_UID`, so
+  `uid == request.resource.data.userId` denies independently. W5's comment clause "even
+  though the body would otherwise be valid for them" is refuted by this probe; blocking
+  finding, fix by striking the clause and/or moving W5 to a CREATE at an unwritten
+  `OWNER_UID_2026-W20` carrying `userId: STRANGER_UID`, which isolates the prefix conjunct
+  exactly and also covers the create limb for a stranger.
+
+Registration verified mechanically: `node scripts/check-test-registration.js` -> OK,
+42 rules suites across both `paths:` blocks; `test:rules:weekly-menu-plans` present and
+in the `test:rules:all` chain.
+
+Uncovered branches recorded for follow-up: weekly owner READ allow, weekly DELETE limb
+(all four actors), weekly stranger CREATE, group CREATE limb entirely (incl. its
+`hasRequiredFields`), group READ (member allow + non-member deny), group DELETE
+(admin-only), the group `edit` permission grant, and the admin-only membership-change
+branch (`affectedKeys().hasAny(['participants','participantUserIds','memberPermissions'])`
+with a non-admin editor).
+
+---
+
+## 2026-08-27 — `weekly-menu-plans-rules.test.ts` re-review (BUT-1961 follow-up)
+
+Second pass over the reworked suite. 13/13 green on the real `firestore.rules`
+(byte-identical md5 before and after every probe). Probed with a sed-generated copy of the
+suite (`zz-probe-wmp.test.ts`, deleted in the same Bash call) because this suite, unlike
+`chat-groups`/`conversations`/`poll-votes`/`cook-snaps`, ships no
+`PROBE_PROJECT_ID`/`PROBE_RULES_PATH` hooks.
+
+Mutants, each a single-line diff against the real file, each run under its own project id:
+
+| Mutant | Edit | Reddens |
+|---|---|---|
+| M5  | group update `in ['edit','admin']` -> `== 'admin'` | G4 only |
+| M6  | personal `allow read` -> `if false` | W6 only |
+| M8  | personal `allow create` prefix conjunct dropped | W5 only |
+| M9  | group `allow read` -> `if false` | G5 only |
+| M12 | personal `cannotModify(['userId','createdAt'])` -> `(['userId'])` | W2 only |
+| M13 | group `cannotModify(['groupId','createdAt'])` -> `(['groupId'])` | G1 only |
+| M14 | group `allow read` -> `if isAuthenticated()` | G6 only |
+| M15 | personal `allow read` -> `if isAuthenticated()` | W7 only |
+| M4B | personal `cannotModify` loses `'userId'` | NOTHING (13/13) |
+| M10 | personal `allow update` prefix conjunct dropped | NOTHING (13/13) |
+| M11 | group `allow update` membership conjunct dropped | NOTHING (13/13) |
+
+So the previous round's B1 (W5's false attribution) is genuinely closed — and closed by
+rebuilding the test, not by striking the clause. W5 is now a stranger CREATE at an unwritten
+id carrying the stranger's own `userId`, so only the doc-id prefix can deny, and M8 proves
+it. W6/W7 and G5/G6 are true single-variable ALLOW/DENY couples (same doc, same payload,
+actor the only difference), and M14/M15 prove each DENY fires on the conjunct it names
+rather than on anything upstream. G3/G4 differ only in the stranger's permission value
+(`view` vs `edit`); the payloads move only `entries` + `lastModifiedAt`, so the membership
+branch of the update rule is not what decides them.
+
+`clearFirestore()` in `setup()` runs before the first test (awaited in `run()`) and breaks
+no fixture — every test seeds what it reads, and the two tests that depend on ABSENCE
+(W1's create at `_2026-W19`, W5's at `_2026-W21`) are the ones it protects.
+
+M4B confirms W4's corrected comment: `'userId'` in the personal `cannotModify` is dead,
+masked by the two `uid == …userId` conjuncts (BUT-1967).
+
+### The blocking finding this round
+
+The rewritten header describes the fresh-`createdAt` hazard over BOTH `WeeklyMenuPlan.empty`
+and `GroupWeeklyMenuPlan.empty`, then says "The constructor half is pinned in Dart, by
+`weekly_menu_plan_test.dart`'s 'empty starts on a Monday with no entries (clock-pinned)'".
+That test exists (`test/unit/models/menu/weekly_menu_plan_test.dart:136`) and does assert
+`plan.createdAt == t` under `withClock` — for the PERSONAL constructor only.
+`GroupWeeklyMenuPlan.empty` has exactly two tests
+(`test/unit/models/menu/group_weekly_menu_plan_test.dart`, "seeds the creator as sole admin…"
+and "uses the caller-supplied participant list verbatim"); neither is clock-pinned and
+neither reads `createdAt`. So the constructor half is pinned for one of the two collections
+the file covers, and G1's stated premise is unguarded.
+
+Everything else in the header measured true: both `empty` factories stamp `clock.now()`
+(`weekly_menu_plan.dart:221`, `group_weekly_menu_plan.dart:139`), both `copyWith` carry
+`createdAt` through, both repositories write with a non-merge `.set`
+(`firebase_weekly_menu_plan_repository.dart:131`,
+`firebase_group_weekly_menu_plan_repository.dart:121`), and the "dropping `createdAt` from
+either collection's `cannotModify` reddens exactly that collection's test" claim is M12/M13.
+
+### New uncovered branches (not BUT-1966/1967/1968)
+
+- Personal `allow update`'s doc-id prefix conjunct (M10) reddens nothing — masked by
+  `uid == resource.data.userId`. Only reachable for an Admin-SDK-seeded doc whose id prefix
+  disagrees with its `userId`. Same family as BUT-1967's dead `cannotModify` key.
+- Group `allow update`'s `uid in resource.data.memberPermissions` conjunct (M11) reddens
+  nothing — masked because the next conjunct indexes the same map and CEL-errors on a
+  missing key. There is no non-member group WRITE deny test at all; G3 is a view-MEMBER.
+
+### Superseded text, retired verbatim from the knowledge file
+
+> Verify the pointer RESOLVES: open the
+> named limb and confirm it carries the account, or you have replaced a false claim with a
+> dangling one
+
+## 2026-08-27 — `weekly-menu-plans-rules.test.ts`, third review round (BUT-1961)
+
+Third gate pass on the same file. Prior rounds each found one false sentence in the
+header paragraph; this round found none.
+
+Re-run: 13/13 green against the real `firestore.rules`
+(md5 `6cdc26dac450938ddf169a3b19dfbf55`, byte-identical before and after all probing).
+
+Seven mutants, each a verified single-line edit, run through a `sed`-derived probe copy
+of the suite (the file ships no `PROBE_*` env hooks):
+
+| mutant | edit | red tests |
+|---|---|---|
+| m1 | personal `cannotModify(['userId','createdAt'])` -> `(['userId'])` | W2 only |
+| m2 | group `cannotModify(['groupId','createdAt'])` -> `(['groupId'])` | G1 only |
+| m3 | personal `cannotModify` -> `(['createdAt'])` | none (13/13) |
+| m4 | personal `allow read: if false` | W6 only |
+| m5 | group update `in ['edit','admin']` -> `== 'admin'` | G4 only |
+| m6 | group `allow read: if false` | G5 only |
+| m7 | personal create, prefix conjunct removed | W5 only |
+
+m1/m2 confirm the header's "reddens exactly that collection's test and nothing else".
+m3 confirms W4's own comment that `'userId'` is structurally unreachable in that list.
+m4/m5/m6/m7 attribute each of the four cases added since the first review to one conjunct.
+
+Header verified clause by clause against source: both `empty` factories stamp
+`clock.now()` (`weekly_menu_plan.dart` 221/227, `group_weekly_menu_plan.dart` 139/155);
+both `copyWith` preserve `createdAt` (309 / 219); both repositories' `save()` uses a
+non-merge `.set` (`firebase_weekly_menu_plan_repository.dart:131`,
+`firebase_group_weekly_menu_plan_repository.dart:121`) while
+`removeRecipeFromAllPlans` does a partial `batch.update` on the same collection — which
+is why the clause is now scoped to `save()`.
+
+B2 (last round's blocker) is closed at the root, not by striking: the header's two named
+Dart tests both exist and assert what the sentence says. `weekly_menu_plan_test.dart`
+"empty starts on a Monday with no entries (clock-pinned)" asserts `plan.createdAt == t`
+under `withClock(Clock.fixed(t))`; `group_weekly_menu_plan_test.dart` "stamps a FRESH
+createdAt from the clock" does the same for the group factory. `git show HEAD:` on the
+group test confirms it had no `clock` import and no `empty`-createdAt assertion before
+today, so "the group one was added 2026-08-27 — until then that half was unguarded" is
+true. `git diff --cached` shows 23 insertions, that test.
+
+Two new probe mechanics learned, merged into the principles file:
+- an uppercase letter in a probe project id makes the run emit NO test lines, which is
+  indistinguishable from green when grepping for `FAIL`;
+- `resource\.data\.` matches the tail of `request.resource.data.`, so a pre-state mutant
+  silently counts the create limb — anchor on `&& resource.data`, and slice the rules
+  text by `match /<collection>` when the shape is shared repo-wide.
+
+Registration verified: `test:rules:weekly-menu-plans`, the `test:rules:all` chain, and
+both `paths:` blocks of the workflow; `check-test-registration.js` returns OK.
+
+Verdict: pass, 0 blocking. The two coverage gaps (group non-member update deny; the dead
+personal update prefix conjunct) stay filed as BUT-1969.
+
+## 2026-08-27 — superseded in place (BUT-1961 follow-up, round 4)
+
+Retired verbatim from `firestore-rules-tester.knowledge.md`, struck because the commit that
+carried the round-2 finding also closed it — the group constructor gained a clock-pinned test
+in the same change, so the measurement below stopped being true before it was committed:
+
+> the group `empty` has two tests, neither clock-pinned nor touching `createdAt` (measured
+> 2026-08-27).
+
+The principle it illustrated ("Resolve a pointer per symbol, or you have replaced a false
+claim with a dangling one") survives without it, and the full worked example is preserved in
+the round-2 entry above. Found by the `integration-reviewer` gate as the fourth
+assert/deny pair in one commit — this one inside an auto-loading knowledge file, i.e. the
+Step-0 read for the gate that would next audit that suite.

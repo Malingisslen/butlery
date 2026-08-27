@@ -970,13 +970,10 @@ void main() {
   // ══ BUT-1928 — a failed week READ must not be saved over ══
   //
   // Both plan services answer a failed fetch with "nothing there": an empty
-  // `WeeklyMenuPlan` and a null `GroupWeeklyMenuPlan`. Appending the winner to
-  // that and saving is an upsert on a deterministic doc id, so the whole week —
-  // every other entry, for every member of a group — is replaced by one recipe.
+  // `WeeklyMenuPlan` and a null `GroupWeeklyMenuPlan`.
   //
   // Refusing leaves the poll OPEN (the close is written after the plan), so a
-  // retry once the read works is the recovery. The controls beside each case
-  // are what stop the guard from being an unconditional throw.
+  // retry once the read works is the recovery.
   group('closePoll refuses to write over an unread week (BUT-1928)', () {
     setUp(() {
       when(() => recipeService.recipes).thenReturn([

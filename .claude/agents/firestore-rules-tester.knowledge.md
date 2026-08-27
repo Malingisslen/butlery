@@ -32,6 +32,7 @@ enters this file").
 | `/chat_groups/{groupId}`              | `chat-groups-rules.test.ts` | `test:rules:chat-groups`  |
 | `messages/{id}/poll_votes/{voterUid}`, the messages RECEIPT `allow update`, **and `/shared_content` create** | `poll-votes-rules.test.ts` | `test:rules:poll-votes` |
 | `/cook_snaps`, the messages ADMIN read/delete clauses, **and the BUT-1904 `duplicateBlocked` freeze on the sender `allow update`** | `cook-snaps-and-message-mod-rules.test.ts` | `test:rules:cook-snaps-and-message-mod` |
+| `/weekly_menu_plans` and `/group_weekly_menu_plans` | `weekly-menu-plans-rules.test.ts` | `test:rules:weekly-menu-plans` |
 | All of the above                      | (sequence)                 | `test:rules:all`          |
 
 If the diff touches a collection not listed above, **create a new test file** named
@@ -186,6 +187,14 @@ Standard deny matrix for ownership-checked collections:
   non-vacuity with (a) a **fail-closed control** — same doc/id/actor/payload with only
   the gate satisfied → must ALLOW — and (b) a **discriminating mutation** — rewrite the
   gate so the two actors' fates diverge, and confirm they do.
+- **A `cannotModify([...])` key can be STRUCTURALLY unreachable when a neighbouring
+  conjunct pins the same field to `request.auth.uid` on BOTH the pre- and post-state.**
+  `weekly_menu_plans` names `userId` in `cannotModify` while also requiring
+  `uid == resource.data.userId && uid == request.resource.data.userId`, so no payload can
+  fail the immutability key alone — dropping `'userId'` from `cannotModify` reddens NOTHING
+  (measured 2026-08-27). The deny test is real; only its ATTRIBUTION is wrong. Probe every
+  key of a multi-key `cannotModify` list separately, and report an unreachable key as
+  "guards the pair" rather than as covered.
 - **A single-conjunct removal that reddens NOTHING can mean the conjunct is MASKED by a
   neighbour, not that the test is dead.** In `A && B`, if B CEL-errors whenever A is
   false, dropping A alone changes no verdict. Attribute a masked test with the SMALLEST
@@ -211,8 +220,11 @@ Standard deny matrix for ownership-checked collections:
   corrected, and the reverse. **Sweep it by STRIKE-AND-POINT, never by writing the
   correction into both files** — the copy names the canonical site ("the account lives at
   the rule itself; do not restate it here") and makes no claim of its own, so there is one
-  thing to re-measure instead of two that drift. Verify the pointer RESOLVES: open the
-  named limb and confirm it carries the account, or you have replaced a false claim with a
+  thing to re-measure instead of two that drift. Verify the pointer RESOLVES FOR EVERY SYMBOL THE SENTENCE RANGES OVER: open the
+  named limb/test and confirm it carries the account for each one. A rules-suite header
+  saying "the constructor half is pinned in Dart by <test>" after describing BOTH
+  `WeeklyMenuPlan.empty` and `GroupWeeklyMenuPlan.empty` held for the personal one only.
+  Resolve a pointer per symbol, or you have replaced a false claim with a
   dangling one — and read the SYMBOL that account names, not only its conclusion: a class can
   carry the very case the account says it lacks, on a DIFFERENT switch (ADR-0009 credited
   `ChatActionHandler` with no `'menu'` case; `handleAttachment` has one, and the dead switch
@@ -281,7 +293,13 @@ Standard deny matrix for ownership-checked collections:
   file in the scratchpad; run with those env vars set. The real file stays
   byte-identical by construction — no restore step to skip on a timeout — and a fresh
   project id keeps mutant writes out of the real namespace. Assert the mutator's match
-  count is 1 and diff the mutant against the original before trusting the run.
+  count is 1 and diff the mutant against the original before trusting the run. **A probe
+  project id must be lowercase** — an uppercase letter (a `createdAt`-derived id) makes the
+  run emit NO test lines at all, which greps for `FAIL` as cleanly as a green suite; require
+  a `passed` line before reading any probe result. A suite that ships WITHOUT the two env
+  hooks has to be probed through a throwaway `sed`-derived copy under
+  `functions/src/__tests__/`, deleted in the same call — workable, but add the hooks when
+  you touch the file.
 - A standalone probe script must live UNDER `functions/src/` — from the OS temp dir,
   `npx ts-node` resolves neither `@firebase/rules-unit-testing` nor the tsconfig and dies
   on TS2307/implicit-any. Delete it in the SAME Bash call that created it (`trap ... EXIT
@@ -294,6 +312,11 @@ Standard deny matrix for ownership-checked collections:
   the mutator to a heredoc FILE and `diff` the mutant before running it — quoting a CEL
   string list inside `node -e '...'` lets bash eat the quotes, yielding undefined
   identifiers, i.e. a deny-everything mutant that reddens plenty and proves nothing.
+  **`resource\.data\.` also matches the TAIL of `request.resource.data.`**, so a pre-state
+  mutation silently counts the create limb too — anchor on `&& resource.data`. When one
+  collection's shape is shared repo-wide (`memberPermissions[uid] in ['edit','admin']`
+  appears three times), slice the block by `indexOf('match /<collection>')` and mutate
+  inside the slice rather than widening the pattern.
 - **Proving a "comment-only" rules diff is mechanical, not eyeballable**: recover every
   previously-staged revision with `git cat-file --batch-all-objects --batch-check`, strip
   `//` comments (only after grepping for `://` first) AND blank lines AND `\r`, then

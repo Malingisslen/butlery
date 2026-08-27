@@ -1,3 +1,201 @@
+# PLAN 2026-08-27 (tredje passet) — hela "veckan gick inte att läsa"-familjen
+
+Malin: "jag vill att du planerar för att hantera allt."
+
+## Diagnosen, i en mening
+
+Appen kan inte skilja **"veckan är tom"** från **"jag kunde inte läsa veckan"** — och den
+kan inte heller skilja **"sparat"** från **"nekat"**. Två halvor av samma sjukdom. Alla
+ticketar nedan är symptom på den ena eller den andra.
+
+## Det som faktiskt skyddar datan i dag är oavsiktligt och otestat
+
+Varje resonemang i BUT-1928, BUT-1939 och BUT-1961 vilar på att en destruktiv skrivning
+NEKAS av servern: `firestore.rules` vägrar ett ändrat `createdAt`, och `WeeklyMenuPlan.empty`
+stämplar ett nytt.
+
+Uppmätt 2026-08-27:
+
+- `copyWith` **bevarar** `createdAt` med flit och har ett test för det. `empty()` stämplar ett
+  nytt.
+
+**RÄTTAT under bygget:** planen påstod här att ingenting pinnar `empty()`:s färska
+`createdAt`. Det var fel. Testet *"empty starts on a Monday with no entries (clock-pinned)"*
+i `weekly_menu_plan_test.dart` gör det redan — mutationsprövat: att låta `empty()` härleda
+`createdAt` ur `weekStart` rödnar det.
+
+Det gällde dock bara den PERSONLIGA konstruktorn. `GroupWeeklyMenuPlan.empty` hade varken en
+`createdAt`-assertion eller `withClock` någonstans i sin testfil — hittat av två
+granskningsgrindar oberoende av varandra, efter att den här rättelsen skrevs. Den halvan
+pinnades i samma commit.
+
+Det som saknades var **regelhalvan**: ingen test bevisade att servern faktiskt vägrar ett
+ändrat `createdAt`. Utan den kunde `cannotModify`-limben tas bort ur `firestore.rules` utan
+att något rödnade, och då hade de tre klientvakterna varit det enda som stod kvar.
+
+**Det är den enskilt viktigaste punkten i hela den här planen.**
+
+## Andra halvan, som ingen ticket ännu åtgärdar
+
+`WeeklyMenuPlanRepository.save()` returnerar `Future<void>`. Vid en klientsidig nekning
+loggar den och `return`:ar. Vid en serversidig nekning kastar `set()`, och
+`executeServiceOperation` sväljer det till null — men signaturen är `void`, så anroparen kan
+inte se skillnad ändå.
+
+**Ingen anropare kan skilja "sparat" från "nekat".** Det är precis den formen BUT-1939 finns
+till för att åtgärda, en våning ner. Och det är den enda delen av hela familjen som en
+människa faktiskt märker: arbetet försvinner, utan förklaring.
+
+---
+
+## Fas 0 — pinna det som redan skyddar oss
+
+**Gör detta först. Allt annat vilar på det.**
+
+- [x] Regeltest för `weekly_menu_plans` (`functions/src/__tests__/weekly-menu-plans-rules.test.ts`,
+      registrerad i `package.json` och i CI-lanens `paths:`-block — annars körs den aldrig):
+      en tom plan med nytt `createdAt` över ett befintligt dokument **NEKAS**; en äkta
+      redigering som bevarar `createdAt` **TILLÅTS**; en CREATE på ett dokument som inte finns
+      **TILLÅTS**.
+- [x] Dart-test som pinnar `WeeklyMenuPlan.empty`:s färska `createdAt` — fanns redan.
+- [x] Dart-test som pinnar `GroupWeeklyMenuPlan.empty`:s färska `createdAt` — saknades,
+      tillagt: *"stamps a FRESH createdAt from the clock"* i
+      `test/unit/models/menu/group_weekly_menu_plan_test.dart`.
+- [x] **Utökat under körning:** `group_weekly_menu_plans` hade *också* noll regeltester och
+      samma form (`GroupWeeklyMenuPlan.empty` stämplar färskt `createdAt`, regeln har
+      `cannotModify(['groupId','createdAt'])`). Grupp-fallen ligger i samma fil.
+- [x] Mutationspröva: `cannotModify` utan `createdAt` rödnar W2 ensam på den personliga
+      regeln och G1 ensam på gruppregeln; `empty()` som härleder `createdAt` rödnar den
+      motsvarande konstruktorns modelltest.
+
+**Acceptans:** uppfylld. Båda halvorna av skyddet rödnar var för sig när de tas bort.
+
+**Varför först:** det förvandlar "råkar fungera" till "vaktat", och det är förutsättningen
+för att fas 5 ska kunna diskuteras alls.
+
+## Fas 1 — rätta underlaget
+
+BUT-1928 är **stängd**, men dess premiss citeras av BUT-1939, BUT-1961 och ett
+beslutsdokument. Jag resonerade själv fel från den två gånger under en dag.
+
+- [x] ~~Kommentar på BUT-1928~~ — ticketen är ARKIVERAD (2026-08-27 06:45) och tar inte
+      kommentarer. Rättelsen ligger i stället på de två öppna ärenden som ärver premissen:
+      BUT-1962 och BUT-1948. BUT-1948 fick dessutom en andra mätning: dess påstående att
+      `getWeek`/`getOrBuildWeek` är döda stämmer inte — `messaging_service` läser via
+      `GroupWeeklyMenuPlanRead`. Steg 0 där blir att verifiera anropsläget.
+- [x] Kommentar med mätningen: skrivningen når inte servern, skadan är förlorat
+      lokalt arbete plus ett obegripligt fel.
+- [x] Tre kodkommentarer strukna (`weekly_menu_plan_service`, `messaging_service`,
+      `group_weekly_menu_plan_service`); båda beslutsposterna hänvisar nu till W2/G1.
+- [x] Grep `docs/architecture/` och `.claude/rules/` efter samma premiss; stryk där den står,
+      supersedera där det är ett avvikelsebeslut.
+- [ ] Ingen omskrivning av stängda ticketars titlar — bara en daterad rättelse.
+
+**Acceptans:** ingen kvarvarande text påstår att en misslyckad läsning raderar veckan.
+
+### Fynd under Fas 1 — BUT-1945 hör hit och är verifierad
+
+`messaging_service.dart` bär TVÅ falska meningar till, från en annan ticket (BUT-1945, öppen).
+Premissen där är mätt och HÅLLER: både `WeeklyMenuPlanService.save` och
+`GroupWeeklyMenuPlanService.save` lindar repot i `executeServiceOperation`, som returnerar ett
+defaultvärde i stället för att kasta vidare — så ett sparfel når aldrig anroparen och
+omröstningen stängs ändå.
+
+- [ ] Stryk raderna 896-899 ("If the plan save fails, the poll stays open…") och 927
+      ("Plan write succeeded (or there was nothing to write)"). Vad som FAKTISKT lämnar
+      omröstningen öppen är ett kast FÖRE sparningen: läsvaktens `StateError` och gruppvägens
+      `_requireEditor` — verifierat, `closePoll` ligger efter dem båda.
+- [ ] Döp om testet på rad 525 i `messaging_service_close_poll_test.dart` efter vad det pinnar
+      (en kastande mock, en form produktionens `save` bara kan anta via `_requireEditor`).
+- [ ] BUT-1945 varnar för krock med BUT-1925:s parkerade patch, som skriver om samma
+      ordningslogik. En kommentarsstrykning är trivial att slå ihop — men nämn det på båda.
+
+**Varför inte i samma commit som resten av Fas 1:** granskningsagenterna läste den filen när
+fyndet gjordes, och att ändra bytes de mäter är precis det felet repot har en lärdom om.
+
+## Fas 2 — låt en nekad skrivning synas (BUT-1962 punkt 4)
+
+Den enda delen användaren upplever.
+
+**Omfattning uppmätt 2026-08-27 (innan någon kod skrivits):** `save` finns i två lager och
+har **17 anropsställen** i `lib/` — 8 inne i `weekly_menu_plan_service` självt, 1 i
+gruppmottsvarigheten, 2 i `messaging_service`, 6 i `weekly_menu_plan_viewmodel` och 1 i
+`onboarding_viewmodel`. Signaturen är `Future<void>` i BÅDA lagren
+(`weekly_menu_plan_repository.dart:20` och tjänsten), så ingen anropare kan se skillnad.
+
+Båda nekningsvägarna är mätta:
+- **Klientsidig:** `firebase_weekly_menu_plan_repository.dart:119-130` — `validateUpdatePermission`
+  falskt ⇒ `AppLogger.warning` + `return`. Inget `logPermissionCheck()`, som
+  `lib/repositories/CLAUDE.md` kräver av varje egen behörighetsgrind.
+- **Serversidig:** `collection.doc(...).set(...)` kastar ⇒ `executeServiceOperation` sväljer
+  till ett defaultvärde. Samma tystnad, annan orsak.
+
+- [ ] `save()` slutar returnera `void`: den rapporterar utfallet (sparat / nekat / fel).
+- [ ] Den klientsidiga nekningen får `logPermissionCheck()`, som `lib/repositories/CLAUDE.md`
+      kräver av varje egen behörighetsgrind — den saknas i dag.
+- [ ] Anroparna visar en svensk text vid nekning i stället för tystnad.
+- [ ] Test per utfall, mutationsprövade.
+
+**Acceptans:** en nekad sparning ger användaren en begriplig mening, och en anropare kan
+avgöra vad som hände.
+
+**Not:** det här är också det som gör fas 5 möjlig — när en nekning syns behöver
+klientvakterna inte bära hela bördan.
+
+## Fas 3 — de kvarvarande läsvägarna
+
+- [ ] **BUT-1962** punkt 1-3: `slot_picker_dialog` (den värsta — målar en tom vecka och låter
+      användaren placera ovanpå det, med en `catch` som aldrig kan lösa ut),
+      `menu_shopping_list_generator`, `chat_action_handler`.
+- [ ] **Ta med i BUT-1948:** `GroupWeeklyMenuPlanRead`:s klass-doc (`group_weekly_menu_plan_service.dart`
+      ~rad 31) säger "[plan] är null när veckan saknar sparad plan" — sant för `readWeek`,
+      FALSKT för `readOrBuildWeek`, vars egen doc två rader ner säger motsatsen. Preexisterande,
+      hittat av testing-specialist-grinden 2026-08-27. Scopa meningen till `readWeek`; skriv inte
+      om den.
+- [ ] **BUT-1948**: gruppmenytjänstens `getWeek`/`getOrBuildWeek` är döda, och den osäkra av
+      dem har det vänligare namnet. Samma sjukdom på gruppkedjan.
+
+**Acceptans:** ingen väg påstår "tomt" när den menar "vet inte".
+
+## Fas 4 — skrivhalvan offline (BUT-1965)
+
+- [ ] **Verifiera på riktig enhet i flygplansläge FÖRE någon kod.** Påståendet är läst ur
+      Firestores skrivsemantik, inte reproducerat.
+- [ ] Om det inte stämmer: stäng ticketen med mätningen. Repot har en lärdom om ticketar vars
+      angivna skada visar sig falsk (BUT-1883).
+- [ ] Om det stämmer: skilj "accepterad lokalt" från "kvitterad av servern", och bestäm vad
+      kalendern visar i mellanläget.
+
+## Fas 5 — se över vakterna, sist
+
+Med fas 0 pinnat och fas 2 fixat blir klientvägran **djupförsvar** i stället för huvudnumret.
+
+- [ ] Behövs alla tre kvar? BUT-1961:s undantag på den personliga kedjan försvagar redan
+      BUT-1928:s vakt medvetet.
+- [ ] Om något tas bort: en accepterad avvikelse i båda filerna, inte en tyst borttagning.
+
+**Gör inte detta före 0 och 2.** Att ta bort en vakt vars ersättare inte är pinnad är hur
+skyddet försvinner.
+
+---
+
+## Ordning och varför
+
+0 → 1 → 2 → 3 → 4 → 5. Fas 0 och 1 är små och stoppar driften. Fas 2 är det enda bygget som
+ändrar vad en användare ser. Fas 3 är mekaniskt. Fas 4 börjar med en mätning, inte med kod.
+Fas 5 är ett beslut som kräver att de andra ligger.
+
+## Utanför den här planen, men öppet
+
+BUT-1917, BUT-1716, BUT-1925 valdes i morgonens sprint och byggdes aldrig. De hör inte till
+den här familjen. BUT-1956/1957 (Art. 17-luckor), BUT-1958, BUT-1960, BUT-1964 likaså.
+
+## Avvikelselogg (tredje passet)
+
+---
+
+# ARKIV — 2026-08-27, andra passet (BUT-1961 + BUT-1959/1914), levererat
+
 # PLAN 2026-08-27 (andra passet) — BUT-1961 + BUT-1959/BUT-1914
 
 Malin sa "ta tag i 1961 och 1959" efter att ha läst rapporten, där jag namngav en
