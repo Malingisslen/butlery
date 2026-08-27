@@ -26,8 +26,7 @@
  * 2. MAX INSTANCES. An UNSET ceiling is not "no reservation" — it is the
  *    platform default of 100 per function, and on 2026-08-17 a deploy failed
  *    on 53 services reporting `Container Healthcheck failed`, which reads like
- *    broken code and is not. Setting a ceiling fixed that deploy. HOW the quota
- *    is accounted is NOT established, and the model this paragraph used to
+ *    broken code and is not. HOW the quota is accounted is NOT established, and the model this paragraph used to
  *    assert — `cpu x maxInstances` summed across every service in the region —
  *    is false, because the configured sum exceeds the quota many times over
  *    while every service runs. The check below DERIVES that sum instead of
@@ -289,15 +288,27 @@ function testEveryGen2EndpointCapsItsInstances(): void {
   // and therefore stated. Everything else is computed from the manifest, so it
   // cannot go stale by ADDITION the way a written count does.
   //
-  // This is NOT a threshold to keep the build under. It exists to keep one
-  // sentence honest: if the sum ever came in UNDER the quota, the "summed
-  // across every service in the region" model would stop being obviously false
-  // and the comments in `index.ts` and above would need rewriting. So it
-  // asserts the direction, and prints the numbers either way.
+  // KEEP THIS FOR WHAT IT PRINTS, not for what it asserts. The assertion
+  // cannot realistically flip: every endpoint carries a ceiling of at least 1,
+  // so with this many exports the sum clears 20 unconditionally, and the only
+  // route to zero is the option being deleted everywhere — which the PRESENCE
+  // check above already owns. An earlier version of this comment claimed it
+  // guarded the falsification; it names a state the check cannot reach.
+  //
+  // `QUOTA_VCPU` is a SNAPSHOT that nothing re-reads: measured 2026-08-27 via
+  // the Cloud Quotas API. It is expected to change — the refusal holding it
+  // there is `NOT_ENOUGH_USAGE_HISTORY`, which lapses as usage accrues.
   const QUOTA_VCPU = 20;
+  // Instances read AS vCPU. No export declares `cpu`, and every europe-west1
+  // service measured at cpu=1 — an external fact, not one the manifest carries.
+  // Firebase's v2 default is 1 below 2GiB and RISES above it, so a future
+  // `memory: "4GiB"` export makes this under-count until it reads `endpoint.cpu`.
+  const CPU_PER_INSTANCE = 1;
   const configuredSum = gen2.reduce(
     (n, { endpoint }) =>
-      n + (typeof endpoint.maxInstances === "number" ? endpoint.maxInstances : 0),
+      n + (typeof endpoint.maxInstances === "number"
+        ? endpoint.maxInstances * CPU_PER_INSTANCE
+        : 0),
     0,
   );
   record(

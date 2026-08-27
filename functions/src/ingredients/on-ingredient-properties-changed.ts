@@ -83,10 +83,6 @@ export const onIngredientPropertiesChanged = onDocumentUpdated(
     // the one failure this cascade exists to prevent. 66 does not clear
     // "hundreds" either; the override buys a factor, not safety.
     //
-    // COST, and it is why `deploy-firebase.yml` deploys one function per
-    // `firebase deploy`: at 10 this function alone can need the whole regional
-    // ceiling during a rolling update, which holds old and new at once.
-    //
     // Registered in `ALLOWED_OVERRIDES` in `deploy-manifest.test.ts`; the pair
     // must move together.
     maxInstances: 10,

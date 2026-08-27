@@ -36,14 +36,19 @@ on:
         type: choice
         default: all
         options: [all, rules, indexes, functions, storage]
-      # Deploying all 71 functions at once FAILS on this project: Cloud Run
-      # reports "Quota exceeded for total allowable CPU per project per region"
-      # for europe-west1, because a rolling update holds the old and the new
-      # revision at the same time and 71 of those do not fit under the ceiling.
-      # Measured 2026-08-27 on the flow's third run — two services (logWebError,
-      # suppressLowPerformers) failed their health check on quota and the CLI
-      # then reported the other 50 as failures, which reads as a systemic error
-      # and is not one.
+      # Deploying every function at once FAILS on this project: Cloud Run reports
+      # "Quota exceeded for total allowable CPU per project per region" for
+      # europe-west1.
+      #
+      # The damage is REAL, and larger than the CLI's closing summary suggests.
+      # Run 33043254433 printed a per-service "Could not create or update Cloud
+      # Run service <name>, Container Healthcheck failed … Quota exceeded" line
+      # for 52 distinct services and then SUMMARISED two. An earlier version of
+      # this comment was written from that summary and called the other 50
+      # collateral; they were not. COUNT THE PER-SERVICE LINES, never the
+      # summary — 52 minus the two later repaired one-at-a-time is exactly the
+      # 50 services measured stuck at `Ready=False` afterwards, each still
+      # serving its previous revision while its newest one failed.
       #
       # So a targeted deploy is the normal path here, not the exception. Names
       # are function EXPORTS, comma-separated, no `functions:` prefix.
@@ -69,7 +74,12 @@ jobs:
     # `production` is the manual-approval gate: configure required reviewers on
     # this GitHub Environment so deploys pause until approved.
     environment: production
-    timeout-minutes: 30
+    # 90 MINUTES, not the usual 30. A targeted deploy runs ONE
+    # `firebase deploy` per name — measured at ~90s each on run 33044537911 —
+    # so clearing a backlog of fifty would pass 30 minutes and be CANCELLED
+    # mid-run. A cancelled job is not a failed one: nothing downstream flags it,
+    # and it leaves exactly the half-applied state this file exists to avoid.
+    timeout-minutes: 90
 
     # A tag push always deploys everything; dispatch uses the chosen target.
     env:
@@ -476,7 +486,7 @@ jobs:
           fi
 
           echo "" >&2
-          echo "::error::Post-deploy smoke gate FAILED — one or more expected functions are missing after a settle + retry. The deploy may have partially failed on the backend even though the firebase CLI exited 0. Auto-rollback will run." >&2
+          echo "::error::Post-deploy smoke gate FAILED — one or more expected functions are missing after a settle + retry. The deploy may have partially failed on the backend even though the firebase CLI exited 0. NOTE: auto-rollback does NOT run from here — its \`if:\` has no status-check function, so GitHub ANDs an implicit success() that is already false. Check the Cloud Run revisions by hand." >&2
           exit 1
 
       # ─── AUTO-ROLLBACK ON FAILED DEPLOY (BUT-1424) ───────────────────────────

@@ -67,11 +67,6 @@ export const onIngredientSoftDeleted = onDocumentUpdated(
     // permanent-mistagging failure this comment block already describes. 66
     // does not clear 500 either; the override buys a factor, not safety.
     //
-    // COST, and it is why `deploy-firebase.yml` deploys one function per
-    // `firebase deploy`: at 10 this function alone can need the whole regional
-    // ceiling during a rolling update, which holds the old and new revision at
-    // once. A batch deploy containing this function is the case that fails.
-    //
     // Registered in `ALLOWED_OVERRIDES` in `deploy-manifest.test.ts`; the pair
     // must move together.
     maxInstances: 10,

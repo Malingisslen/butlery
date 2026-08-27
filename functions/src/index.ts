@@ -36,10 +36,9 @@ import {
 // it means the platform default of 100 per function, and the 2026-08-17 deploy
 // failed on 53 of them with "Quota exceeded for total allowable CPU per project
 // per region" — each one surfacing the symptom as `Container Healthcheck
-// failed`, which reads like broken code and is not. Setting a ceiling fixed
-// that deploy. (The service COUNT is deliberately not written here: nothing
-// asserts it, so it goes stale by ADDITION every time an export lands, with its
-// own bytes untouched.)
+// failed`, which reads like broken code and is not. (The service COUNT is
+// deliberately not written here: nothing asserts it, so it goes stale by
+// ADDITION every time an export lands, with its own bytes untouched.)
 //
 // HOW the quota is accounted is NOT established, and the obvious model is
 // FALSE. This comment used to say Cloud Run admits a revision only if
@@ -48,9 +47,10 @@ import {
 // configured sum exceeds the quota many times over — `deploy-manifest.test.ts`
 // DERIVES and prints both numbers on every run rather than stating them here,
 // so the falsification cannot go stale. Do not write a "how many fit per
-// deploy" number either: `tasks/todo.md` (2026-08-17) records the accounting as
-// unreconciled, and `deploy-firebase.yml` deploys one function per
-// `firebase deploy` precisely because the number is unknown.
+// deploy" number either — nobody has reconciled the accounting, and
+// `deploy-firebase.yml` deploys one function per `firebase deploy` precisely
+// because the number is unknown. (`cloud-functions-specialist.knowledge.archive.md`
+// carries the measurement trail; `tasks/` is disposable and is not the record.)
 //
 // This is a cap on INSTANCES, not on in-flight requests: `concurrency` is a
 // separate option that defaults to 80 at cpu >= 1, so the real ceiling per
