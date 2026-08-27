@@ -422,7 +422,36 @@ jobs:
               # --json output carries the name token (e.g. "structureRecipe" as id or
               # in the resource path). Substring match is robust across CLI patch
               # versions.
-              if echo "$list" | grep -qF "\"${fn}\""; then
+              #
+              # HERE-STRING, NOT A PIPE. This read `echo "$list" | grep -qF …`.
+              #
+              # OBSERVED on run 33044537911 (2026-08-27), the flow's first
+              # successful functions deploy: the gate failed it, naming five
+              # functions as [MISSING] that are present in the JSON the same
+              # step had just printed, and each [MISSING] line is immediately
+              # preceded by `echo: write error: Broken pipe`. The deploy itself
+              # was fine — both target functions reached new Cloud Run revisions
+              # (guardduplicatemessage 00001→00007, syncconversationlastmessage
+              # 00004→00007).
+              #
+              # MECHANISM, argued rather than reproduced: `grep -q` exits the
+              # moment it matches, leaving `echo` writing the rest of ~200KB
+              # into a closed pipe; it dies on SIGPIPE, and `set -o pipefail`
+              # takes the pipeline's status from that failure even though grep
+              # succeeded. That also explains why the gate looked healthy for
+              # so long — whether echo has finished writing when grep exits
+              # depends on where the name sits in the JSON, so the four names
+              # that passed were not more deployed than the five that failed.
+              #
+              # NOT reproduced locally: Windows/Git Bash does not raise the
+              # SIGPIPE that a Linux runner does, so a local probe returns a
+              # false all-clear. The fix is structural instead of measured —
+              # a here-string is not a pipeline, so there is no second exit
+              # status for pipefail to read and no writer to kill. The next
+              # functions deploy is the real test; if a [MISSING] line ever
+              # appears again WITHOUT a broken-pipe line above it, that is a
+              # different bug and this comment is not about it.
+              if grep -qF "\"${fn}\"" <<< "$list"; then
                 echo "  [OK] ${fn} present"
               else
                 echo "  [MISSING] ${fn} not in deployed function list" >&2
