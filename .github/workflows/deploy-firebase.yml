@@ -286,15 +286,41 @@ jobs:
             rules)    deploy_one "firestore:rules" ;;
             indexes)  deploy_one "firestore:indexes" ;;
             functions)
-              # Blank input keeps the old whole-codebase behaviour. A list turns
-              # into `functions:a,functions:b`, which is one `--only` argument
-              # and therefore still ONE deploy — not a loop, so a name that does
-              # not exist fails the whole run instead of half-deploying.
+              # Blank input keeps the old whole-codebase behaviour.
+              #
+              # A list deploys ONE FUNCTION PER `firebase deploy`, sequentially,
+              # and the reason is a measured ceiling rather than caution.
+              # `run.googleapis.com/CpuAllocPerProjectRegion` is 20000 milli vCPU
+              # (20 vCPU) for europe-west1 on this project, and every function
+              # here is 1 vCPU with maxScale 10 — so admitting ONE new revision
+              # reserves 10 vCPU. Two at once needs exactly the whole ceiling and
+              # fails; the first version of this branch passed both names in a
+              # single `--only` and died that way (run 33043799598, both
+              # revisions "Container Healthcheck failed. Quota exceeded").
+              # A quota increase is not currently an option either — the API
+              # reports `ineligibilityReason: NOT_ENOUGH_USAGE_HISTORY`.
+              #
+              # Sequential deploys can half-finish, which one `--only` could not.
+              # That is bought off BEFORE anything ships: every name is checked
+              # first, so a typo fails the run while production is untouched.
+              #
+              # Checked against `functions/src/index.ts` and NOT the compiled
+              # `functions/lib/index.js`: the build runs as firebase's own
+              # predeploy hook, i.e. inside the first `deploy_one`, so `lib/`
+              # does not exist yet at this point in a clean CI checkout. Reading
+              # it here would report every name as missing.
               if [ -n "${FUNCTIONS_ONLY// /}" ]; then
-                only=$(echo "$FUNCTIONS_ONLY" | tr -d ' ' | tr ',' '\n' \
-                  | grep -v '^$' | sed 's/^/functions:/' | paste -sd, -)
-                echo "Targeted function deploy: $only"
-                deploy_one "$only"
+                names=$(echo "$FUNCTIONS_ONLY" | tr -d ' ' | tr ',' '\n' | grep -v '^$')
+                missing=""
+                for n in $names; do
+                  grep -qE "(^|[^A-Za-z0-9_])$n([^A-Za-z0-9_]|$)" functions/src/index.ts \
+                    || missing="$missing $n"
+                done
+                if [ -n "$missing" ]; then
+                  echo "::error::Not exported by functions/src/index.ts:$missing" >&2
+                  exit 1
+                fi
+                for n in $names; do deploy_one "functions:$n"; done
               else
                 deploy_one "functions"
               fi
