@@ -172,10 +172,10 @@ void main() {
       expect(message, contains('100'));
     });
 
-    test('the cap constant mirrors MAX_CHAT_GROUP_MEMBERS', () {
-      // One literal, deliberately. Comparing the constant to itself through
-      // the message alone would stay green if both moved together, and this
-      // number is duplicated from a TypeScript file no Dart test can read.
+    test('the cap constant is 100', () {
+      // One literal, deliberately. The ARB string takes the number as a
+      // placeholder, so feeding `maxMembers` into it and reading it back is a
+      // tautology. BUT-1960.
       expect(ChatGroupErrorMapper.maxMembers, 100);
     });
 
@@ -214,7 +214,7 @@ void main() {
     });
   });
 
-  group('failed-precondition (the meal-vote group is too small)', () {
+  group('failed-precondition', () {
     test('a structured group-too-small reason gets its own message', () {
       final message = _map(
         FirebaseFunctionsException(
@@ -228,8 +228,23 @@ void main() {
       expect(message, isNot(equals(_fallback)));
     });
 
+    test('a structured conversation-deleted reason gets its own message', () {
+      // BUT-1929. The callable threw this case with no `reason` at all, so it
+      // landed in the generic fallback.
+      final message = _map(
+        FirebaseFunctionsException(
+          code: 'failed-precondition',
+          message: 'Group conversation no longer exists.',
+          details: const {'reason': 'conversation-deleted'},
+        ),
+      );
+
+      expect(message, equals(AppLocale.current.messagingGroupNoLongerExists));
+      expect(message, isNot(equals(_fallback)));
+    });
+
     test(
-      'a failed-precondition WITHOUT that reason falls back to generic',
+      'a failed-precondition without a recognised reason falls back to generic',
       () {
         // The callables raise this code for other states too — "Group has no
         // conversation.", "Group no longer exists." — and telling that caller

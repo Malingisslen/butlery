@@ -490,6 +490,40 @@ export async function probeResidualData(
     );
   }
 
+  // BUT-1800: probed on the same handle the deleter uses, and over the SAME
+  // list, so the deleter stays a strict superset of the probe. Each
+  // parent gets its OWN `try` for the reason the blocks above state — a leg
+  // sharing another leg's catch shortens every leg after it, and here that
+  // would let a failure on `retention` hide whatever `lapsed_users` holds.
+  for (const parent of RETENTION_ANALYTICS_PARENTS) {
+    try {
+      const snap = await db
+        .collection("analytics")
+        .doc(parent)
+        .collection("events")
+        .where("userId", "==", uid)
+        .count()
+        .get();
+      const count = snap.data().count ?? 0;
+      if (count > 0) {
+        residual += count;
+        logger.warn("[deletion-cascade] residual analytics rows", {
+          uid_prefix: uid.slice(0, 6),
+          parent,
+          count,
+        });
+      }
+    } catch (err) {
+      residual += 1;
+      logger.error("[deletion-cascade] residual probe failed: analytics", {
+        uid_prefix: uid.slice(0, 6),
+        parent,
+        errCode: (err as { code?: number | string }).code ?? null,
+        errName: err instanceof Error ? err.name : typeof err,
+      });
+    }
+  }
+
   // BUT-1822: the conversation roster rows. A SUBCOLLECTION, so neither the
   // top-level loops at the head of this function nor the `users/{uid}/...` loop
   // can express it — only a collection-group query can, and the loops above are
@@ -1065,6 +1099,68 @@ export async function deleteFeatureRetentionFlags(
     .where("userId", "==", uid)
     .get();
   await batchDeleteAll(db, snap.docs);
+  return true;
+}
+
+/**
+ * The `analytics/{parent}/events` collections this cascade sweeps. ONE list:
+ * the deleter and `probeResidualData`'s matching leg both read it, and a probe
+ * that ranges over fewer parents than its deleter certifies a bad erasure clean.
+ */
+export const RETENTION_ANALYTICS_PARENTS = ["retention", "lapsed_users"] as const;
+
+/**
+ * BUT-1800: uid-bearing analytics rows under `analytics/retention` and
+ * `analytics/lapsed_users`, which BUT-1789 left behind.
+ *
+ * `analytics/retention/events/{uid}_dN` (`analytics/track-retention.ts`) and
+ * `analytics/lapsed_users/events/{autoId}` (`analytics/detect-lapsed-users.ts`)
+ * both carry the uid in a `userId` field, so Art. 17 reaches them exactly as it
+ * reached the feature-retention rows.
+ *
+ * Shaped on `deleteFeatureRetentionFlags`.
+ *
+ * The filter is the writer's own `userId` field on both. `lapsed_users` has no
+ * choice: its ids are auto-generated, so there is no id form to range over. A
+ * single-field equality needs no composite index.
+ *
+ * Neither parent has an aggregate sibling to preserve.
+ *
+ * The per-parent catch below covers the QUERY only. `batchDeleteAll` commits
+ * non-strict, so a failed chunk is still swallowed and this function can return
+ * true with rows left behind — which is why the matching leg in
+ * `probeResidualData` is the load-bearing half, not this one.
+ */
+export async function deleteRetentionAnalytics(
+  db: admin.firestore.Firestore,
+  uid: string,
+): Promise<boolean> {
+  const failed: string[] = [];
+  for (const parent of RETENTION_ANALYTICS_PARENTS) {
+    // Per-parent, for the reason the probe leg states: sharing one catch lets a
+    // failure on the first parent skip the second, and the caller cannot tell
+    // "swept both" from "threw before reaching the second".
+    try {
+      const snap = await db
+        .collection("analytics")
+        .doc(parent)
+        .collection("events")
+        .where("userId", "==", uid)
+        .get();
+      await batchDeleteAll(db, snap.docs);
+    } catch (err) {
+      failed.push(parent);
+      logger.error("[deletion-cascade] analytics sweep failed", {
+        uid_prefix: uid.slice(0, 6),
+        parent,
+        errCode: (err as { code?: number | string }).code ?? null,
+        errName: err instanceof Error ? err.name : typeof err,
+      });
+    }
+  }
+  if (failed.length > 0) {
+    throw new Error(`analytics erasure incomplete: ${failed.join(", ")}`);
+  }
   return true;
 }
 

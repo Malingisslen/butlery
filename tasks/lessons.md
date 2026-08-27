@@ -2495,3 +2495,42 @@ Example: lib/services/menu/parser/text_normalizer.dart _noWordBefore/_noWordAfte
   property that cannot observe the failure. And when removing a false premise, grep the WHOLE
   repo for it and fix every copy in the same edit: the round that removes it is the round most
   likely to re-derive it, because the reasoning that produced it is loaded in context.
+
+### [Workflow] A comment that explains WHY a test is shaped a certain way asserts what the test CATCHES — and that is the claim that keeps coming back wrong
+- **Date**: 2026-08-27 (BUT-1929 / BUT-1800 sprint)
+- **Trigger**: Eight false sentences in one batch, all struck rather than reworded. Five of
+  them, each caught by a different reviewer pass:
+  1. "the string already existed and reached nothing" — `messagingGroupNoLongerExists` is live
+     at `group_detail_view.dart:103`.
+  2. "the two uid-bearing analytics siblings BUT-1789 left behind" — there is a third,
+     `analytics/notifications/effectiveness`.
+  3. striking that numeral produced "uid-bearing analytics event rows BUT-1789 left behind",
+     which dropped the names too and so claimed MORE than the counted version did.
+  4. "TTL is the tool for the anonymous aggregate, which is why `daily/{date}` keeps one" —
+     `daily/{date}` keeps no TTL; nothing in `firestore.indexes.json` covers it.
+  5. one comment on `maxMembers` was rewritten THREE times and was wrong all three: first
+     "no Dart test can read it" (false — `tag_phase1_seafood_safety_test.dart` reads TS
+     source), then "would stay green if the constant and the ARB string moved together"
+     (the ARB takes the number as a placeholder, so that mechanism cannot participate), then
+     "only a bare literal here can catch the constant drifting from MAX_CHAT_GROUP_MEMBERS"
+     (it catches the DART constant moving; TS-side drift is caught by nothing).
+- **Rule**: The digest already said a correction is as falsifiable as the claim it repairs.
+  What that entry missed is WHICH comments keep failing: the ones that explain why a test or
+  a guard is shaped the way it is, because they assert what it CATCHES — a counterfactual
+  about a mutant nobody ran, which reads as obviously true and is measurable only by running
+  the mutant. First, an explanatory clause of that kind is worth writing
+  only after mutation-probing the thing it describes; otherwise state what the code DOES and
+  stop. Second, after the SECOND failed repair of one sentence, stop repairing: delete the
+  clause outright. A third wording is not more likely to be right — three of the five above
+  were second or third attempts, and the correcting round is when the wrong reasoning is
+  most loaded in context. Corollary from #3: striking a numeral can BROADEN a claim, so
+  re-read what survives as a standalone sentence rather than assuming a shorter one is safer.
+  Third, added when the count reached eight: a REVIEWER's stated measurement is as falsifiable
+  as a comment. The eighth was not mine — a stakeholder-review agent reported that the capped
+  decline-above-cap sweeps in `account-deletion-cascade.ts` "only exist for the collectionGroup
+  queries"; I folded it into the plan as a BINDING condition and it propagated into a code
+  comment, until a later reviewer produced the counterexample (`deleteChatGroupMemberships`
+  caps a plain top-level collection query). A critique arrives with file:line evidence and
+  still ranges over only what that agent opened, so check its quantifier before it becomes a
+  plan condition or a comment — especially "X is the only Y", which is the shape a
+  single-file reader is least able to establish.

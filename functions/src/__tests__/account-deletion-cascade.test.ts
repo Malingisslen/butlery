@@ -994,6 +994,136 @@ async function scenario_featureRetentionRowsAreErased(): Promise<void> {
 }
 
 /**
+ * BUT-1800. `analytics/retention/events` and `analytics/lapsed_users/events`
+ * were left out of BUT-1789's scope.
+ * Both carry `userId`; the second has AUTO ids, so it can only be reached by a
+ * field query — a doc-id form would find nothing and look exactly like
+ * "nothing to delete".
+ */
+async function scenario_retentionAnalyticsRowsAreErased(): Promise<void> {
+  const db = new FakeFirestore();
+  const retention = (uid: string, day: number) =>
+    db.set(`analytics/retention/events/${uid}_d${day}`, {
+      userId: uid,
+      day,
+      wasActive: true,
+      lifecycleStage: "active",
+    });
+  retention(UID, 1);
+  retention(UID, 7);
+  retention(OTHER, 7);
+  // Auto ids, exactly as `detect-lapsed-users.ts` writes them: the id says
+  // nothing about the subject, so only `userId` can find these.
+  db.set("analytics/lapsed_users/events/aUtOiD1", {
+    userId: UID,
+    daysInactive: 30,
+    notificationSent: true,
+  });
+  db.set("analytics/lapsed_users/events/aUtOiD2", {
+    userId: OTHER,
+    daysInactive: 30,
+    notificationSent: true,
+  });
+
+  const { deleteRetentionAnalytics } =
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    require("../account/account-deletion-cascade");
+  await deleteRetentionAnalytics(asDb(db), UID);
+
+  const retentionLeft = db.pathsUnder("analytics/retention/events");
+  check(
+    "every retention event of the deleted user is erased",
+    retentionLeft.every((p: string) => !p.includes(`/${UID}_`)),
+    `left: ${JSON.stringify(retentionLeft)}`,
+  );
+  check(
+    "another user's retention event for the same day is untouched",
+    db.has(`analytics/retention/events/${OTHER}_d7`),
+    `left: ${JSON.stringify(retentionLeft)}`,
+  );
+
+  const lapsedLeft = db.pathsUnder("analytics/lapsed_users/events");
+  check(
+    "the deleted user's auto-id lapsed row is erased despite its opaque id",
+    !db.has("analytics/lapsed_users/events/aUtOiD1"),
+    `left: ${JSON.stringify(lapsedLeft)}`,
+  );
+  check(
+    "another user's lapsed row is untouched",
+    db.has("analytics/lapsed_users/events/aUtOiD2"),
+    `left: ${JSON.stringify(lapsedLeft)}`,
+  );
+}
+
+/**
+ * The probe leg for the two analytics parents. Without this the leg is
+ * decoration: `batchDeleteAll` commits non-strict, so a swallowed chunk failure
+ * leaves rows behind while `deleteRetentionAnalytics` still returns true — the
+ * probe is the only thing that can contradict it.
+ *
+ * Both parents separately, because a probe that catches one and misses the
+ * other still certifies a bad erasure clean.
+ */
+async function scenario_probeSeesLeftoverRetentionAnalytics(): Promise<void> {
+  const { probeResidualData, RETENTION_ANALYTICS_PARENTS } =
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    require("../account/account-deletion-cascade");
+
+  // The deleter's own list, not a copy: a third parent added to the const must
+  // widen this scenario too, or the probe silently under-covers it.
+  for (const parent of RETENTION_ANALYTICS_PARENTS) {
+    const clean = new FakeFirestore();
+    clean.set(`analytics/${parent}/events/somebodyElse`, { userId: OTHER });
+    const cleanResult = {
+      deletedCollections: [],
+      failedCollections: [] as string[],
+      errors: [],
+    };
+    await probeResidualData(asDb(clean), UID, cleanResult);
+    check(
+      `another user's ${parent} row is not this user's residual`,
+      !cleanResult.failedCollections.includes("residual_data_detected"),
+      `failed: ${JSON.stringify(cleanResult.failedCollections)}`,
+    );
+
+    const dirty = new FakeFirestore();
+    dirty.set(`analytics/${parent}/events/mine`, { userId: UID });
+    const dirtyResult = {
+      deletedCollections: [],
+      failedCollections: [] as string[],
+      errors: [],
+    };
+    await probeResidualData(asDb(dirty), UID, dirtyResult);
+    check(
+      `a leftover ${parent} row is reported as residual data`,
+      dirtyResult.failedCollections.includes("residual_data_detected"),
+      `failed: ${JSON.stringify(dirtyResult.failedCollections)}`,
+    );
+  }
+}
+
+/**
+ * The "nothing to delete" case: the step must still report success. An empty
+ * query is knowledge, not a failure.
+ */
+async function scenario_retentionAnalyticsWithNoRowsSucceeds(): Promise<void> {
+  const db = new FakeFirestore();
+  db.set("analytics/retention/events/someoneElse_d1", { userId: OTHER, day: 1 });
+
+  const { deleteRetentionAnalytics } =
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    require("../account/account-deletion-cascade");
+  const ok = await deleteRetentionAnalytics(asDb(db), UID);
+
+  check("a user with no analytics rows still reports success", ok === true, `got ${ok}`);
+  check(
+    "and nobody else's rows were swept",
+    db.has("analytics/retention/events/someoneElse_d1"),
+    "other user's row vanished",
+  );
+}
+
+/**
  * BUT-1798. `removeFromSharedContent` discovered membership ONLY through a
  * `members/{uid}` subcollection doc, which is written by
  * `BaseSharedContentRepository.addMember()` and by nothing else. The three
@@ -2651,6 +2781,9 @@ async function main(): Promise<void> {
   await scenario_ownedRealtimeMenuChildrenAreDeleted();
   await scenario_realtimeParticipationIsRemoved();
   await scenario_featureRetentionRowsAreErased();
+  await scenario_retentionAnalyticsRowsAreErased();
+  await scenario_retentionAnalyticsWithNoRowsSucceeds();
+  await scenario_probeSeesLeftoverRetentionAnalytics();
   await scenario_systemMessageAboutDepartedUserIsScrubbed();
   await scenario_newerLastMessageSurvivesTheSystemScrub();
   await scenario_failedMirrorScrubKeepsTheRetryHandle();

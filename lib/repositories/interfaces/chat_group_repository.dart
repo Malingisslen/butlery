@@ -39,8 +39,12 @@ abstract class ChatGroupRepository {
   /// The roster is resolved server-side from the category, so the caller passes
   /// no member list.
   ///
-  /// Throws `failed-precondition` with `details['reason'] == 'group-too-small'`
-  /// when the social group has nobody but its owner in it. Every refusal the
+  /// Some `failed-precondition` refusals carry a `details['reason']` the caller
+  /// can map: `'group-too-small'` when the social group has nobody but its
+  /// owner in it, `'conversation-deleted'` when the group's chat has been
+  /// deleted out from under the pointer (BUT-1929). Others carry no reason at
+  /// all — a missing conversation pointer, a vanished group, a sync that would
+  /// empty it — so a caller still needs a generic branch. Every refusal the
   /// caller is not entitled to a reason for arrives as one indistinguishable
   /// `permission-denied`.
   Future<String> ensureCategoryChat({

@@ -302,11 +302,18 @@ test("BUT-788: full cascade reports every step + writes audit + calls auth.delet
   }
 
   // Spot-check a few expected step names — full list is in the source.
+  //
+  // `feature_retention` and `retention_analytics` are named because deleting
+  // either registration line left every one of their own unit tests green —
+  // those tests `require()` the deleter directly, so nothing else notices when
+  // the cascade stops calling it (BUT-1800).
   const expected = [
     "recipes",
     "menus",
     "shopping_lists",
     "personal_tags",
+    "feature_retention",
+    "retention_analytics",
     "messages",
     "shared_content",
     "comments_ratings",

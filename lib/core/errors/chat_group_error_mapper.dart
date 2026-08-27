@@ -48,9 +48,15 @@ class ChatGroupErrorMapper {
           // the callable states the number in English, and repeating the
           // mistake in a new branch is how it becomes the house style.
           final preconditionDetails = error.details;
-          if (preconditionDetails is Map &&
-              preconditionDetails['reason'] == 'group-too-small') {
-            return AppLocale.current.chatGroupNeedsAnotherMember;
+          if (preconditionDetails is Map) {
+            switch (preconditionDetails['reason']) {
+              case 'group-too-small':
+                return AppLocale.current.chatGroupNeedsAnotherMember;
+              // BUT-1929. The callable threw this case without a `reason`, so
+              // it landed in the generic fallback below.
+              case 'conversation-deleted':
+                return AppLocale.current.messagingGroupNoLongerExists;
+            }
           }
           break;
       }

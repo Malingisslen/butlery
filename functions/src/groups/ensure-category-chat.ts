@@ -116,6 +116,21 @@ function notAllowed(): HttpsError {
 }
 
 /**
+ * BUT-1929. A site that discovers a deleted group conversation throws THIS,
+ * so the client sees one shape wherever it is found. The `reason` detail is the whole point: without
+ * it `ChatGroupErrorMapper` cannot tell this apart from any other
+ * `failed-precondition` and falls through to its generic text, which is what
+ * the in-transaction site did for its whole life.
+ */
+function conversationDeleted(): HttpsError {
+  return new HttpsError(
+    "failed-precondition",
+    "Group conversation no longer exists.",
+    { reason: "conversation-deleted" },
+  );
+}
+
+/**
  * The roster a category implies. The owner is normally already inside
  * `friendUserIds` — creation seats them there and `migrateOwnersAsMembers()`
  * re-appends them on every login, so the uid can appear twice — which is why
@@ -328,6 +343,16 @@ async function reconcile(
   );
 
   if (toAdd.length === 0 && toRemove.length === 0) {
+    // BUT-1929. The transaction below carries the same check, but the steady
+    // state — no roster drift — returns before ever opening one, so a caller
+    // whose conversation was deleted got the dead id handed straight back and
+    // every later poll for this category repeated it. The read is paid on the
+    // COMMON path, which is the cost of the check being reachable at all.
+    const convoSnap = await db
+      .collection(Collections.conversations)
+      .doc(conversationId)
+      .get();
+    if (!convoSnap.exists) throw conversationDeleted();
     return {
       groupId,
       conversationId,
@@ -391,10 +416,7 @@ async function reconcile(
     // pointer is sticky now, so one deletion would otherwise wedge every future
     // poll for this category behind a bare `internal`.
     if (!freshConvo.exists) {
-      throw new HttpsError(
-        "failed-precondition",
-        "Group conversation no longer exists.",
-      );
+      throw conversationDeleted();
     }
     if (!freshCategory.exists) throw notAllowed();
     const freshRoster = rosterOf(

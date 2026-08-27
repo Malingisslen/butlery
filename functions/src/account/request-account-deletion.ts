@@ -47,6 +47,7 @@ import {
   deleteCookSnaps,
   deleteActivityEvents,
   deleteFeatureRetentionFlags,
+  deleteRetentionAnalytics,
   deleteWeeklyMenuPlans,
   deletePantryItems,
   deleteFamilyData,
@@ -198,6 +199,8 @@ export async function runAccountDeletionWithDeps(
     ["activity_events", () => deleteActivityEvents(database, uid)],
     // BUT-1789: one behavioural row per active day, kept forever until now.
     ["feature_retention", () => deleteFeatureRetentionFlags(database, uid)],
+    // BUT-1800: `analytics/retention/events` and `analytics/lapsed_users/events`.
+    ["retention_analytics", () => deleteRetentionAnalytics(database, uid)],
     ["weekly_menu_plans", () => deleteWeeklyMenuPlans(database, uid)],
     ["pantry_items", () => deletePantryItems(database, uid)],
     ["family_data", () => deleteFamilyData(database, uid)],

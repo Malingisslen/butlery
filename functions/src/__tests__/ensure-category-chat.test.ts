@@ -616,9 +616,42 @@ const cases: UnitCase[] = [
 
       assertEqual(err.code, "failed-precondition", "refusal code");
       assertEqual(
+        (err.details as { reason?: string } | undefined)?.reason,
+        "conversation-deleted",
+        "refusal carries a reason the client can map",
+      );
+      assertEqual(
         membersOf(fake, `chat_groups/${first.groupId}`).join(","),
         "friend,owner",
         "roster unchanged",
+      );
+    },
+  },
+  {
+    // BUT-1929. The case above ALSO adds a member, so it reaches the check
+    // inside the transaction. The steady state — roster unchanged, which is the
+    // ordinary shape of a repeat poll — returned before the transaction opened
+    // and handed the caller the id of a conversation that no longer exists.
+    // Every later poll for this category repeated it: no error, no self-heal.
+    name: "a deleted conversation is caught even when the roster has NOT drifted",
+    fn: async () => {
+      const fake = new FakeFirestore();
+      seedPerson(fake, OWNER);
+      seedPerson(fake, FRIEND);
+      seedCategory(fake, [OWNER, FRIEND]);
+
+      const first = await ensureCategoryChatWithDeps(fake.db, OWNER, OWNER, CAT);
+      await fake.db.doc(`conversations/${first.conversationId}`).delete();
+
+      const err = await capture(() =>
+        ensureCategoryChatWithDeps(fake.db, OWNER, OWNER, CAT),
+      );
+
+      assertEqual(err.code, "failed-precondition", "refusal code");
+      assertEqual(
+        (err.details as { reason?: string } | undefined)?.reason,
+        "conversation-deleted",
+        "refusal carries a reason the client can map",
       );
     },
   },
