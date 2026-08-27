@@ -21,6 +21,7 @@ import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/analytics/analytics_events.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 
 /// Consolidated state class for ChatInputSection to reduce setState calls
 class ChatInputState {
@@ -129,7 +130,7 @@ class _ChatInputSectionState extends State<ChatInputSection> {
       );
       AppLogger.debug('📤 [ChatInputSection] Full message content: "$text"');
       AppLogger.debug(
-        '📤 [ChatInputSection] Conversation ID: ${widget.conversationId}',
+        '📤 [ChatInputSection] Conversation ID: ${widget.conversationId.maskedConversationId}',
       );
 
       // Send message through action handler FIRST

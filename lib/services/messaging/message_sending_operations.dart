@@ -14,6 +14,7 @@ import 'package:butlery/services/notifications/notification_service.dart'
     as notifications;
 import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 
 /// Message sending operations for the messaging service.
 /// Handles all message sending functionality including:
@@ -40,7 +41,9 @@ class MessageSendingOperations {
   }) async {
     try {
       AppLogger.info('📤 [MessagingService] sendTextMessage called');
-      AppLogger.debug('📤 [MessagingService] Conversation ID: $conversationId');
+      AppLogger.debug(
+        '📤 [MessagingService] Conversation ID: ${conversationId.maskedConversationId}',
+      );
       AppLogger.debug('📤 [MessagingService] Content: "$content"');
       AppLogger.debug('📤 [MessagingService] Reply to: $replyToMessageId');
 
@@ -262,7 +265,7 @@ class MessageSendingOperations {
       );
       if (conversation == null) {
         AppLogger.warning(
-          'Cannot send notification - conversation not found: $conversationId',
+          'Cannot send notification - conversation not found: ${conversationId.maskedConversationId}',
         );
         return;
       }

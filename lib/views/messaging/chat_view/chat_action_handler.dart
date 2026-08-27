@@ -23,6 +23,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/models/social/content_type.dart';
 import 'package:butlery/widgets/social/report_content_dialog.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:image_picker/image_picker.dart';
 
 /// Centralized chat action handler with clean interfaces
@@ -105,7 +106,7 @@ class ChatActionHandler {
       AppLogger.debug('📤 [ChatActionHandler] Content: "$content"');
       AppLogger.debug('📤 [ChatActionHandler] Type: $type');
       AppLogger.debug(
-        '📤 [ChatActionHandler] Conversation ID: $conversationId',
+        '📤 [ChatActionHandler] Conversation ID: ${conversationId.maskedConversationId}',
       );
 
       // Send based on message type
@@ -304,7 +305,9 @@ class ChatActionHandler {
       if (confirmed) {
         // In production, this would remove the user from the conversation
         // For now, just navigate back
-        AppLogger.info('Leaving conversation: $conversationId');
+        AppLogger.info(
+          'Leaving conversation: ${conversationId.maskedConversationId}',
+        );
         if (context.mounted) {
           Navigator.of(context).pop();
         }

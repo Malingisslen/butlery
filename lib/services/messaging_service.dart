@@ -138,7 +138,7 @@ class MessagingService extends BaseService with StreamManagementMixin {
           );
 
       AppLogger.success(
-        '✅ [MessagingService] Conversation ready: $conversationId',
+        '✅ [MessagingService] Conversation ready: ${conversationId.maskedConversationId}',
       );
       return conversationId;
     } catch (e) {
@@ -183,7 +183,9 @@ class MessagingService extends BaseService with StreamManagementMixin {
         memberIds: memberIds,
       );
 
-      AppLogger.success('✅ Group conversation created: $conversationId');
+      AppLogger.success(
+        '✅ Group conversation created: ${conversationId.maskedConversationId}',
+      );
       return conversationId;
     } catch (e) {
       AppLogger.error('Failed to create group conversation', e);
@@ -507,7 +509,9 @@ class MessagingService extends BaseService with StreamManagementMixin {
         userId: currentUserId,
       );
 
-      AppLogger.debug('Conversation marked as read: $conversationId');
+      AppLogger.debug(
+        'Conversation marked as read: ${conversationId.maskedConversationId}',
+      );
     } catch (e) {
       AppLogger.error(
         'Failed to mark conversation as read: '
@@ -558,7 +562,7 @@ class MessagingService extends BaseService with StreamManagementMixin {
       });
 
       AppLogger.debug(
-        'Typing indicator set for $currentUserId in $conversationId',
+        'Typing indicator set for $currentUserId in ${conversationId.maskedConversationId}',
       );
     } catch (e) {
       AppLogger.error('Failed to set typing indicator', e);
@@ -585,7 +589,7 @@ class MessagingService extends BaseService with StreamManagementMixin {
     _typingTimers.remove(conversationId);
 
     AppLogger.debug(
-      'Typing indicator cleared for ${userId.maskedUserId} in $conversationId',
+      'Typing indicator cleared for ${userId.maskedUserId} in ${conversationId.maskedConversationId}',
     );
   }
 
@@ -761,7 +765,9 @@ class MessagingService extends BaseService with StreamManagementMixin {
       );
 
       await _messagingRepository.sendMessage(message);
-      AppLogger.success('Poll message sent in conversation $conversationId');
+      AppLogger.success(
+        'Poll message sent in conversation ${conversationId.maskedConversationId}',
+      );
     } catch (e) {
       AppLogger.error('Failed to send poll message', e);
       rethrow;

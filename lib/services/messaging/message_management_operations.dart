@@ -121,7 +121,7 @@ class MessageManagementOperations {
       );
 
       AppLogger.info(
-        '🧹 Deleting ${messages.length} messages from conversation $conversationId',
+        '🧹 Deleting ${messages.length} messages from conversation ${conversationId.maskedConversationId}',
       );
 
       // Delete messages in batches to avoid overwhelming the system
@@ -197,7 +197,7 @@ class MessageManagementOperations {
       }
 
       AppLogger.info(
-        '🗑️ Deleting conversation $conversationId for user $currentUserId',
+        '🗑️ Deleting conversation ${conversationId.maskedConversationId} for user $currentUserId',
       );
 
       // First delete all messages in the conversation
@@ -212,7 +212,9 @@ class MessageManagementOperations {
         historyStart: conversation.historyQueryStartFor(currentUserId),
       );
 
-      AppLogger.success('✅ Successfully deleted conversation $conversationId');
+      AppLogger.success(
+        '✅ Successfully deleted conversation ${conversationId.maskedConversationId}',
+      );
     } catch (e) {
       AppLogger.error(
         '❌ Failed to delete conversation ${conversationId.maskedConversationId}',
@@ -240,7 +242,9 @@ class MessageManagementOperations {
         title: newTitle.trim(),
       );
 
-      AppLogger.debug('Group title updated: $conversationId');
+      AppLogger.debug(
+        'Group title updated: ${conversationId.maskedConversationId}',
+      );
     } catch (e) {
       AppLogger.error('Failed to update group title', e);
       rethrow;

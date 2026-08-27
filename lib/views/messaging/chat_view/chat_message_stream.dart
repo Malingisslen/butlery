@@ -21,6 +21,7 @@ import 'package:butlery/widgets/common/state/empty_states.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 
 /// Message stream widget with real-time updates (50 message limit)
 class ChatMessageStream extends StatefulWidget {
@@ -108,7 +109,7 @@ class _ChatMessageStreamState extends State<ChatMessageStream> {
   Future<void> _initializeMessageStream() async {
     try {
       AppLogger.debug(
-        'Initializing message stream for conversation: ${widget.conversationId}',
+        'Initializing message stream for conversation: ${widget.conversationId.maskedConversationId}',
       );
 
       // The cut-off comes from the ViewModel, which owns the conversation —

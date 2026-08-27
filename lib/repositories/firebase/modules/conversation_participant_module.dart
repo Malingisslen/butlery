@@ -7,6 +7,7 @@ import 'package:butlery/models/messaging/conversation_membership.dart';
 import 'package:butlery/services/feature_flags/feature_flag_service.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 
 /// Module for managing conversation participants using subcollections.
 ///
@@ -84,7 +85,7 @@ class ConversationParticipantModule {
 
     await batch.commit();
     AppLogger.debug(
-      'Added participant $participantId to conversation $conversationId (subcollection)',
+      'Added participant $participantId to conversation ${conversationId.maskedConversationId} (subcollection)',
     );
   }
 
@@ -144,7 +145,7 @@ class ConversationParticipantModule {
 
     await batch.commit();
     AppLogger.debug(
-      'Added ${participantDisplayNames.length} participants to conversation $conversationId (subcollection)',
+      'Added ${participantDisplayNames.length} participants to conversation ${conversationId.maskedConversationId} (subcollection)',
     );
   }
 
@@ -177,7 +178,7 @@ class ConversationParticipantModule {
 
     await batch.commit();
     AppLogger.debug(
-      'Removed participant $participantId from conversation $conversationId (subcollection)',
+      'Removed participant $participantId from conversation ${conversationId.maskedConversationId} (subcollection)',
     );
   }
 
@@ -403,7 +404,7 @@ class ConversationParticipantModule {
 
     await batch.commit();
     AppLogger.info(
-      'Migrated conversation $conversationId to subcollection participants',
+      'Migrated conversation ${conversationId.maskedConversationId} to subcollection participants',
     );
   }
 

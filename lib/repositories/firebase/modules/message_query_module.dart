@@ -40,7 +40,7 @@ class MessageQueryModule {
   }) {
     try {
       AppLogger.info(
-        '🔍 [MessageQuery] Creating message stream for conversationId: $conversationId',
+        '🔍 [MessageQuery] Creating message stream for conversationId: ${conversationId.maskedConversationId}',
       );
       var query = messagesRef.where(
         'conversationId',
@@ -60,7 +60,7 @@ class MessageQueryModule {
           .snapshots()
           .map((snapshot) {
             AppLogger.debug(
-              '📬 [MessageQuery] Stream update: ${snapshot.docs.length} messages for conversation $conversationId',
+              '📬 [MessageQuery] Stream update: ${snapshot.docs.length} messages for conversation ${conversationId.maskedConversationId}',
             );
             final messages = snapshot.docs
                 .map((doc) => MessageDto.fromFirestore(doc))

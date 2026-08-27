@@ -39,7 +39,7 @@ class MessageMutationModule {
       );
       AppLogger.debug('📤 [MessageMutation] Message ID: ${message.id}');
       AppLogger.debug(
-        '📤 [MessageMutation] Conversation ID: ${message.conversationId}',
+        '📤 [MessageMutation] Conversation ID: ${message.conversationId.maskedConversationId}',
       );
       AppLogger.debug('📤 [MessageMutation] Sender ID: ${message.senderId}');
       AppLogger.debug('📤 [MessageMutation] Content: "${message.content}"');
@@ -96,7 +96,7 @@ class MessageMutationModule {
       }
 
       AppLogger.debug(
-        '📤 [MessageMutation] Conversation found: ${conversation.id}',
+        '📤 [MessageMutation] Conversation found: ${conversation.id.maskedConversationId}',
       );
 
       if (!conversation.isParticipant(message.senderId)) {
@@ -144,7 +144,7 @@ class MessageMutationModule {
         SetOptions(merge: true),
       );
       AppLogger.debug(
-        '📤 [MessageMutation] Added conversation update to batch: ${message.conversationId}',
+        '📤 [MessageMutation] Added conversation update to batch: ${message.conversationId.maskedConversationId}',
       );
 
       // 3. Update rate limit doc for server-side enforcement
@@ -214,7 +214,7 @@ class MessageMutationModule {
       }
 
       AppLogger.success(
-        '✅ [MessageMutation] Message sent: ${message.id} in conversation ${message.conversationId}',
+        '✅ [MessageMutation] Message sent: ${message.id} in conversation ${message.conversationId.maskedConversationId}',
       );
     } catch (e, stackTrace) {
       AppLogger.error(
@@ -326,7 +326,7 @@ class MessageMutationModule {
       });
 
       AppLogger.debug(
-        'Conversation marked as read: $conversationId by ${userId.maskedUserId}',
+        'Conversation marked as read: ${conversationId.maskedConversationId} by ${userId.maskedUserId}',
       );
     } catch (e) {
       AppLogger.error(

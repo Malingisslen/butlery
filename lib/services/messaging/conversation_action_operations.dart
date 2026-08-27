@@ -7,6 +7,7 @@ import 'package:butlery/repositories/interfaces/auth_repository.dart'
 import 'package:butlery/models/messaging/conversation.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 
 /// Conversation action operations for the messaging service.
 /// Handles conversation management actions including:
@@ -55,7 +56,9 @@ class ConversationActionOperations {
         },
       );
 
-      AppLogger.info('Conversation $conversationId pinned');
+      AppLogger.info(
+        'Conversation ${conversationId.maskedConversationId} pinned',
+      );
     } catch (e) {
       AppLogger.error('Failed to pin conversation', e);
       rethrow;
@@ -79,7 +82,9 @@ class ConversationActionOperations {
         },
       );
 
-      AppLogger.info('Conversation $conversationId unpinned');
+      AppLogger.info(
+        'Conversation ${conversationId.maskedConversationId} unpinned',
+      );
     } catch (e) {
       AppLogger.error('Failed to unpin conversation', e);
       rethrow;
@@ -103,7 +108,9 @@ class ConversationActionOperations {
         },
       );
 
-      AppLogger.info('Conversation $conversationId archived');
+      AppLogger.info(
+        'Conversation ${conversationId.maskedConversationId} archived',
+      );
     } catch (e) {
       AppLogger.error('Failed to archive conversation', e);
       rethrow;
@@ -127,7 +134,9 @@ class ConversationActionOperations {
         },
       );
 
-      AppLogger.info('Conversation $conversationId unarchived');
+      AppLogger.info(
+        'Conversation ${conversationId.maskedConversationId} unarchived',
+      );
     } catch (e) {
       AppLogger.error('Failed to unarchive conversation', e);
       rethrow;
@@ -150,7 +159,9 @@ class ConversationActionOperations {
         },
       );
 
-      AppLogger.info('Conversation $conversationId muted');
+      AppLogger.info(
+        'Conversation ${conversationId.maskedConversationId} muted',
+      );
     } catch (e) {
       AppLogger.error('Failed to mute conversation', e);
       rethrow;
@@ -173,7 +184,9 @@ class ConversationActionOperations {
         },
       );
 
-      AppLogger.info('Conversation $conversationId unmuted');
+      AppLogger.info(
+        'Conversation ${conversationId.maskedConversationId} unmuted',
+      );
     } catch (e) {
       AppLogger.error('Failed to unmute conversation', e);
       rethrow;

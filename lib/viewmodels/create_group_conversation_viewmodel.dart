@@ -11,6 +11,7 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/mixins/async_operation_mixin.dart';
 import 'package:butlery/core/mixins/state_notifier_mixin.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 
 /// ViewModel for messaging group conversation creation with friend selection and validation.
 /// Manages complete group conversation creation workflow including friend list loading,
@@ -212,7 +213,9 @@ class CreateGroupConversationViewModel extends ChangeNotifier
 
       if (_isDisposed) return null;
 
-      AppLogger.success('✅ Gruppkonversation skapad: $conversationId');
+      AppLogger.success(
+        '✅ Gruppkonversation skapad: ${conversationId.maskedConversationId}',
+      );
 
       _isCreatingGroup = false;
       _safeNotifyListeners();

@@ -22,6 +22,7 @@ import 'package:butlery/core/mixins/stream_management_mixin.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/services/moderation/content_filter_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 
 class ChatViewModel extends ChangeNotifier
     with
@@ -168,7 +169,7 @@ class ChatViewModel extends ChangeNotifier
     if (_isDisposed) return;
 
     AppLogger.info(
-      '🔍 [ChatViewModel] Initializing chat for conversationId: $conversationId',
+      '🔍 [ChatViewModel] Initializing chat for conversationId: ${conversationId.maskedConversationId}',
     );
     _subscribeToTypingIndicators();
     unawaited(_loadConversationThenMessages());
@@ -267,7 +268,7 @@ class ChatViewModel extends ChangeNotifier
 
     try {
       AppLogger.info(
-        '🔍 [ChatViewModel] Starting message stream for conversationId: $conversationId',
+        '🔍 [ChatViewModel] Starting message stream for conversationId: ${conversationId.maskedConversationId}',
       );
       _messagesSubscription = _messagingService
           .getConversationMessages(
@@ -290,7 +291,9 @@ class ChatViewModel extends ChangeNotifier
     if (_isDisposed) return;
 
     AppLogger.info('📬 [ChatViewModel] Message stream update received');
-    AppLogger.debug('📬 [ChatViewModel] ConversationId: $conversationId');
+    AppLogger.debug(
+      '📬 [ChatViewModel] ConversationId: ${conversationId.maskedConversationId}',
+    );
     AppLogger.debug(
       '📬 [ChatViewModel] Number of messages: ${messages.length}',
     );

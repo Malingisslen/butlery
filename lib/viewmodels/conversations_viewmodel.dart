@@ -162,7 +162,9 @@ class ConversationsViewModel extends ChangeNotifier
                 otherUserAvatarUrl: otherUserAvatarUrl,
               );
 
-          AppLogger.success('Direct conversation started: $conversationId');
+          AppLogger.success(
+            'Direct conversation started: ${conversationId.maskedConversationId}',
+          );
           return conversationId;
         },
         errorPrefix: AppLocale.current.errorCouldNotStartConversation,
@@ -192,7 +194,9 @@ class ConversationsViewModel extends ChangeNotifier
                 title: title,
               );
 
-          AppLogger.success('Group conversation created: $conversationId');
+          AppLogger.success(
+            'Group conversation created: ${conversationId.maskedConversationId}',
+          );
           return conversationId;
         },
         errorPrefix: AppLocale.current.errorCouldNotCreate('gruppchatt'),
@@ -208,7 +212,9 @@ class ConversationsViewModel extends ChangeNotifier
 
     try {
       await _messagingService.markConversationAsRead(conversationId);
-      AppLogger.debug('Conversation marked as read: $conversationId');
+      AppLogger.debug(
+        'Conversation marked as read: ${conversationId.maskedConversationId}',
+      );
     } catch (e) {
       AppLogger.error('Failed to mark conversation as read', e);
       // Don't show error to user for this operation
@@ -251,7 +257,9 @@ class ConversationsViewModel extends ChangeNotifier
         groupId: conversationId,
       );
 
-      AppLogger.success('Left group conversation: $conversationId');
+      AppLogger.success(
+        'Left group conversation: ${conversationId.maskedConversationId}',
+      );
       return true;
     } catch (e) {
       AppLogger.error('Failed to leave group', e);

@@ -480,29 +480,43 @@ void main() {
     // different field name, which is exactly why the uid arm above never
     // caught it.
     //
-    // Scoped to `AppLogger.error` on purpose, and that is narrower than the
-    // uid arm above, which bans a raw uid at EVERY level. The two rules
-    // therefore disagree about identical bytes — a direct id IS two raw uids
-    // — and that asymmetry is not a policy anyone decided. Only `error`
-    // reaches Crashlytics, so `error` is where the leak was. Forty-odd
-    // non-`error` sites (`info`, `debug`, `success`, `warning`) still print
-    // raw ids; they are device-local, and BUT-1872 masked one of them anyway,
-    // so "unswept" describes them better than any policy does.
-    // BUT-1897 owns reconciling them. Counting them precisely has now been
-    // wrong twice in this comment's history — measure before quoting a
-    // number, or leave it approximate as it is here.
+    // Every level via `\w+`, the same shape as the uid arm above, so the two
+    // cannot drift apart again (BUT-1959). Naming the levels instead would
+    // silently miss `AppLogger.persistence`, `.service`, `.viewModel` and
+    // `.analytics`, which are entry points the uid arm already covers. It was
+    // `error`-only
+    // until then, on the reasoning that only `error` reaches Crashlytics — but
+    // the two arms then disagreed about identical bytes, and this arm's own
+    // comment conceded that scope "is not a policy anyone decided". Malin
+    // decided it: widen. The non-`error` sites that printed raw ids were
+    // masked in the same change.
     //
-    // KNOWN GAPS, same spirit as the uid arm's own list above. This matches
-    // the bare identifier only, so an error log written as
-    // `${message.conversationId}`, `${conversation.id}` or `${convId}` is
-    // invisible to it — zero instances today, checked. And it cannot see the
-    // channel that actually leaked in BUT-1872: the exception OBJECT handed
-    // to `recordError`, which no regex anchored on `AppLogger.error(` can
-    // reach. So this catches the sixteenth LOG SITE, not the sixteenth leak.
-    test('no raw \$conversationId interpolated into AppLogger.error calls in '
+    // The alternation is EXACT-CLOSE anchored on every braced form (the bare
+    // one is held by its word boundary instead), and that is
+    // load-bearing rather than style: drop the closing brace and the pattern
+    // matches `${conversationId.maskedConversationId}` — the masked output
+    // itself — so every site this arm exists to protect would report as a
+    // violation and the arm could never go green. A first measurement made
+    // exactly that mistake and reported 14 phantom `error`-level hits.
+    //
+    // KNOWN GAPS, same spirit as the uid arm's own list above. The alternation
+    // is a LIST of spellings, so a form nobody thought of is invisible: the
+    // first version of this widening missed `${widget.conversationId}` and
+    // reported green over two live sites printing a full DM id. If you add a
+    // way to spell a conversation id, add it here. It also cannot see
+    // the channel that actually leaked in BUT-1872 — the exception OBJECT
+    // handed to `recordError`, which no regex anchored on `AppLogger.` reaches
+    // at any level. That is BUT-1907. This catches a LOG SITE, not every leak.
+    test('no raw \$conversationId interpolated into any AppLogger call in '
         'lib/ (use .maskedConversationId)', () {
       final pattern = RegExp(
-        r'AppLogger\.error\([^;]*(\$conversationId\b|\$\{conversationId\})',
+        r'AppLogger\.\w+\([^;]*'
+        r'(\$conversationId\b'
+        r'|\$\{conversationId\}'
+        r'|\$\{message\.conversationId\}'
+        r'|\$\{conversation\.id\}'
+        r'|\$\{widget\.conversationId\}'
+        r'|\$\{convId\})',
       );
 
       final violations = <String>[];

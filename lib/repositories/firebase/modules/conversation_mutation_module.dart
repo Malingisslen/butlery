@@ -59,7 +59,7 @@ class ConversationMutationModule {
       final conversationId = 'direct_${sortedIds[0]}_${sortedIds[1]}';
 
       AppLogger.info(
-        '🔍 Creating/getting direct conversation with deterministic ID: $conversationId',
+        '🔍 Creating/getting direct conversation with deterministic ID: ${conversationId.maskedConversationId}',
       );
 
       // Check if conversation already exists directly in top-level collection.
@@ -72,7 +72,9 @@ class ConversationMutationModule {
             .doc(conversationId)
             .get();
         if (existingDoc.exists) {
-          AppLogger.success('✅ Found existing conversation: $conversationId');
+          AppLogger.success(
+            '✅ Found existing conversation: ${conversationId.maskedConversationId}',
+          );
           return conversationId;
         }
       } catch (e) {
@@ -129,7 +131,7 @@ class ConversationMutationModule {
       );
 
       AppLogger.success(
-        '✅ Direct conversation created with deterministic ID: $conversationId',
+        '✅ Direct conversation created with deterministic ID: ${conversationId.maskedConversationId}',
       );
       return conversationId;
     } catch (e) {
@@ -216,7 +218,9 @@ class ConversationMutationModule {
         'metadata': ?metadata,
       });
 
-      AppLogger.debug('Conversation updated: $conversationId');
+      AppLogger.debug(
+        'Conversation updated: ${conversationId.maskedConversationId}',
+      );
     } catch (e) {
       AppLogger.error(
         'Failed to update conversation ${conversationId.maskedConversationId}',
@@ -256,7 +260,7 @@ class ConversationMutationModule {
       final messages = messagesQuery.docs;
 
       AppLogger.info(
-        '🗑️ Deleting ${messages.length} messages from conversation $conversationId',
+        '🗑️ Deleting ${messages.length} messages from conversation ${conversationId.maskedConversationId}',
       );
 
       for (int i = 0; i < messages.length; i += batchSize) {
@@ -274,7 +278,9 @@ class ConversationMutationModule {
       // Then delete the conversation document
       await firestore.collection(collectionName).doc(conversationId).delete();
 
-      AppLogger.success('✅ Successfully deleted conversation $conversationId');
+      AppLogger.success(
+        '✅ Successfully deleted conversation ${conversationId.maskedConversationId}',
+      );
     } catch (e) {
       AppLogger.error(
         'Failed to delete conversation ${conversationId.maskedConversationId}',

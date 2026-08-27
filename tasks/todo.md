@@ -1,3 +1,130 @@
+# PLAN 2026-08-27 (andra passet) — BUT-1961 + BUT-1959/BUT-1914
+
+Malin sa "ta tag i 1961 och 1959" efter att ha läst rapporten, där jag namngav en
+rekommendation för var och en. Jag bygger enligt de rekommendationerna.
+
+**BUT-1959 kan inte byggas ensam.** Den är LEVEL-halvan av samma vaktarm som BUT-1914 är
+PATTERN-halvan av. BUT-1914 valdes i morgonens sprint men byggdes aldrig. Att bara göra
+den ena lämnar armen halvfärdig och nästa läsare hittar två ärenden mot samma fem rader.
+Båda byggs här.
+
+Router: `single` för båda.
+- BUT-1961: Data Analyst/BI, Performance, PM, Trust & Safety
+- BUT-1959/1914: Data Analyst/BI, Performance, Trust & Safety
+
+## Mätning gjord FÖRE bygget
+
+Kommentaren i vaktarmen säger "Forty-odd non-`error` sites" och tillägger uttryckligen att
+antalet varit fel två gånger i kommentarens historia. Mätt nu, på bara `$conversationId`
+respektive `${conversationId}` i `lib/`:
+
+| nivå | ställen |
+| --- | --- |
+| `.debug` | 14 |
+| `.info` | 15 |
+| `.success` | 11 |
+| `.warning` | 1 |
+| **summa** | **41** |
+
+Med det bredare mönstret (även `${x.conversationId}` och `${convId}`) blir det 61 totalt,
+varav **14 på `.error`** — alltså ställen som dagens arm SKA fånga men inte gör, eftersom
+den bara ser den nakna identifieraren. Det är BUT-1914:s hål, och det är inte noll som
+armens kommentar påstår ("zero instances today, checked").
+
+VARNING: den siffran måste verifieras innan den blir ett påstående någonstans. Mönstret kan
+matcha en redan maskerad form, eftersom `${conversationId.maskedConversationId}` innehåller
+strängen `conversationId`. Räkna om med maskerade former exkluderade före något skrivs.
+
+---
+
+## BUT-1961 — skilj "finns inte" från "fick inget svar"
+
+### Problemet
+
+`getDocCacheFirst` (`base_firebase_repository.dart:373-383`) returnerar cache-träffen bara
+`if (cached.exists)`. En vecka som är genuint TOM finns inte som dokument, så den faller
+igenom till `.get(GetOptions(source: serverAndCache))` — som kastar offline. Efter BUT-1939
+blir det `readFailed: true`, och vymodellen vägrar.
+
+Följd: att planera en HELT NY vecka offline slutade fungera. En vecka man redan öppnat
+fungerar (den ligger i cachen med `exists == true`).
+
+### Riskerna, som avgör formen på lösningen
+
+`getDocCacheFirst` är en DELAD hjälpare i basklassen. Att ändra dess semantik ändrar varje
+repo som använder den. Första steget i bygget är att räkna anroparna — inte att anta att
+det bara är veckomenyn.
+
+Två former att välja mellan:
+1. **Ny metod bredvid**, t.ex. `getDocCacheFirstOrAbsent`, som returnerar något som skiljer
+   de tre utfallen (finns / finns inte / fick inget svar). Bara veckomenyns repo byter.
+   Ingen befintlig anropare rör sig.
+2. **Ändra `getDocCacheFirst`** att skilja fallen. Rör alla anropare.
+
+Form 1 är nästan säkert rätt — men det är exakt den sortens val jag ska låta kritiken
+väga, inte avgöra ensam i planen.
+
+### Acceptanskriterier
+
+1. `diff` — en genuint tom vecka offline ger INTE `readFailed`, och går att planera.
+2. `diff` — en vecka som inte gick att LÄSA ger fortfarande `readFailed`, och vägran står.
+   Detta är BUT-1939:s hela poäng och får inte tappas.
+3. `diff` — antalet anropare av den ändrade hjälparen är RÄKNAT och skrivet i planen, och
+   ingen befintlig anropare byter beteende oavsiktligt.
+4. `diff` — båda fallen är mutationsprövade var för sig: en fixtur för "finns inte" och en
+   för "svarade inte", och att ta bort skillnaden rödnar det ena utan det andra.
+5. `diff` — den accepterade avvikelsen skrivs in i BÅDA avvikelsefilerna om utfallet blir
+   att något medvetet lämnas.
+
+- [ ] Räkna anroparna av `getDocCacheFirst` FÖRE någon ändring
+- [ ] Konvenera kritiken; välj form 1 eller 2 på dess villkor
+- [ ] Bygg + tester, mutationspröva båda riktningarna
+
+---
+
+## BUT-1959 + BUT-1914 — vaktarmen mot råa konversations-id
+
+### Vad som byggs
+
+**BUT-1914 (pattern):** armen matchar i dag bara den nakna identifieraren, så
+`${message.conversationId}`, `${conversation.id}` och `${convId}` är osynliga. Widen —
+snävt, så att `${recipe.id}` inte fångas.
+
+**BUT-1959 (level):** armen täcker bara `AppLogger.error(`. Uid-armen bredvid täcker alla
+nivåer. Ett `direct_`-id ÄR två råa uid, så asymmetrin har inget skrivet skäl — armens egen
+kommentar säger att den "is not a policy anyone decided".
+
+Malins beslut: bredda. Det kostar att 41 loggställen måste maskeras först.
+
+### Ordningen är hela arbetet
+
+Att bredda armen utan att först maskera ställena gör bygget rött. Alltså:
+1. Maskera de 41 ställena (`.maskedConversationId` finns redan).
+2. Bredda armen.
+3. Kör armen mot ett PLANTERAT brott och se den rödna — annars vet vi inte att den lever.
+
+### Acceptanskriterier
+
+1. `diff` — armen täcker alla `AppLogger.*`-nivåer, inte bara `.error`.
+2. `diff` — armen fångar `${x.conversationId}` / `${convId}`, men INTE `${recipe.id}`.
+3. `diff` — sviten är grön EFTER maskeringen, och armen rödnar mot ett planterat brott på
+   en icke-error-nivå. Båda körningarna klistras in.
+4. `diff` — armens kommentar beskriver den nya räckvidden, utan siffra som ruttnar. Den
+   ärliga kvarvarande begränsningen (undantagsOBJEKTET till `recordError`, som inget
+   `AppLogger`-mönster når) står kvar — det är BUT-1907.
+5. `diff` — ingen maskering ändrar en loggs betydelse för den som felsöker: ett maskerat id
+   ska fortfarande gå att korrelera inom samma session.
+
+- [ ] Räkna om med maskerade former exkluderade
+- [ ] Maskera, sedan bredda, sedan planterat brott
+- [ ] Kontrollera att `maskedConversationId` finns och gör vad namnet säger
+
+## Avvikelselogg (andra passet)
+
+---
+
+# ARKIV — sprinten 2026-08-27 (första passet), levererad
+
 # PLAN 2026-08-27 — sprint (auto-select, N=7): poll-vote blocking at the rules level,
 # shared-list attribution, GDPR analytics leftovers, week-overwrite rest, poll atomicity,
 # a wedged group chat, and a log-PII guard that cannot see conversation ids
