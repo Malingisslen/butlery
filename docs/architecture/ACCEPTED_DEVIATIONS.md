@@ -2281,6 +2281,31 @@ member is left out of it. A stale cached absence produces the NULL, so it would 
 member's allergens from the union rather than fall back to the cautious floor. That is the
 unsafe direction, and it is the one this flag would take.
 
+**Added 2026-08-27, same day, after the whole-range review.** The entry above named
+`_loadPlanForWrite` and `copyWeek` as the consumers that matter, and that enumeration is
+short. `WeeklyMenuPlanService.readWeek` also calls `fetchForWeek`, and it mints
+`readFailed: false` for ANY null return — its own docstring already warned that a repository
+mapping an unreachable week to null "reports `readFailed: false`", which is precisely what
+this flag makes it do for a negatively-cached week.
+
+`readFailed` is read in four places, not one: `messaging_service.dart` (twice, the BUT-1928
+poll-close guard), `menu_placement_viewmodel.dart`, `weekly_menu_plan_viewmodel.dart` and
+`onboarding_viewmodel.dart`. For a cached-absent week those guards do not fire.
+
+That is intended where the absence is TRUE — the week really is empty and there is nothing
+to protect. Where the absence is STALE it means BUT-1928's guard, which sits on a one-way
+door (closing a poll writes a winner into the plan), proceeds on a fabricated empty plan.
+The same `cannotModify(['userId','createdAt'])` limb denies the resulting write, so the
+server keeps what another device wrote — but the guard Malin signed off in BUT-1928 is
+weaker for this case than its own comment says, and that is worth her knowing rather than
+discovering.
+
+**Also not closed:** the fix only helps a week whose document was fetched while ONLINE at
+some earlier point. A never-fetched week's `Source.cache` read throws, `cached` stays null,
+and `getDocCacheFirst` rethrows — deliberately, and pinned by the test named "a cache MISS
+is not a cached absence". So "planning a new week offline works again" is true only for a
+week the device has seen before.
+
 **Not closed by this.** The WRITE half of offline planning is a separate question:
 `applyGeneratedMenu` awaits a `save()` whose Future does not complete until the server
 acknowledges, so a generated week may still fail to render offline. Filed as BUT-1965, and

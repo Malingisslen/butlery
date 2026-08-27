@@ -118,7 +118,14 @@ class FirebaseWeeklyMenuPlanRepository
     // user+week update in place rather than throwing on doc collisions.
     final canWrite = await validateUpdatePermission(plan.userId, plan.id, plan);
     if (!canWrite) {
-      AppLogger.warning('Blocked weekly menu plan save: ${plan.id}');
+      // Split rather than logging `plan.id`, which is `{uid}_{YYYY-Www}`: raw
+      // it prints a user id that neither guard arm can see, and masking the
+      // whole id would take the week with it and leave the line undebuggable
+      // (BUT-1964).
+      AppLogger.warning(
+        'Blocked weekly menu plan save for ${plan.userId.maskedUserId}, '
+        'week ${IsoWeekUtils.weekStartOf(plan.weekStartDate)}',
+      );
       return;
     }
     await collection.doc(plan.id).set(toFirestore(plan));

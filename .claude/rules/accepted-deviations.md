@@ -139,6 +139,15 @@ files in the same edit.
   rather than falling back to BUT-1663's floor, which a THROW buys.
   BUT-1961, 2026-08-27
 
+- **AMENDED same day (BUT-1961):** the entry above names `_loadPlanForWrite` and `copyWeek`,
+  and that list is short. `readWeek` also calls `fetchForWeek` and mints `readFailed: false`
+  for any null, so for a cached-absent week the `readFailed` guards do not fire — in FOUR
+  places, including BUT-1928's poll-close guard, which sits on a one-way door. Intended
+  where the absence is true; where it is stale the same `createdAt` limb denies the write,
+  so the server is safe and the user loses their own edit. Malin signed off BUT-1928's
+  refusal, so this weakening is hers to know about. The fix also only helps a week fetched
+  while ONLINE at some point — a never-fetched week still throws, by design.
+
 - **The recipe GRID card draws no dietary row, and that is a measurement, not a deferral
   (BUT-1906, Malin's explicit call 2026-08-23).** A dietary badge carries its WORD; the
   allergen badges beside it are icon-only. Measured on a 2-column tile: the row has 88
