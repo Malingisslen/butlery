@@ -369,17 +369,43 @@ abstract class BaseFirebaseRepository<T>
   /// where slightly stale data is acceptable (e.g., displaying a recipe
   /// detail, showing a user profile). NOT suitable for permission checks
   /// or pre-update validation where fresh data is required -- use [read].
+  /// [acceptCachedAbsence] lets a cache read that positively said "this
+  /// document is not there" stand in for a server read the network could not
+  /// reach (BUT-1961). Firestore caches negative answers, so a document fetched
+  /// while online and found missing is remembered as missing — and that is a
+  /// real answer, not an absence of one.
+  ///
+  /// It applies ONLY after the server read has already failed, on ANY error —
+  /// the catch does not distinguish an unreachable network from a refusal, so a
+  /// `permission-denied` or a timeout on a flaky connection also reads as
+  /// "absent" here. Asking the server first narrows that window; it does not
+  /// close it. An earlier version returned the cached absence instead of asking,
+  /// which silently made a stale "missing" authoritative online too.
+  ///
+  /// Even so, pass `true` only where a stale absence is survivable. A negative
+  /// entry has no expiry — it lives until the cache passes its size limit and
+  /// LRU evicts it, or until a server read of that document succeeds — so
+  /// offline it can outlast the install. It must not reach anything an allergen
+  /// or a permission decision reads.
   @protected
   Future<DocumentSnapshot<Map<String, dynamic>>> getDocCacheFirst(
-    DocumentReference<Map<String, dynamic>> docRef,
-  ) async {
+    DocumentReference<Map<String, dynamic>> docRef, {
+    bool acceptCachedAbsence = false,
+  }) async {
+    DocumentSnapshot<Map<String, dynamic>>? cached;
     try {
-      final cached = await docRef.get(const GetOptions(source: Source.cache));
+      cached = await docRef.get(const GetOptions(source: Source.cache));
       if (cached.exists) return cached;
     } catch (_) {
       // Cache miss or cache disabled -- fall through to server
+      cached = null;
     }
-    return await docRef.get(const GetOptions(source: Source.serverAndCache));
+    try {
+      return await docRef.get(const GetOptions(source: Source.serverAndCache));
+    } catch (_) {
+      if (acceptCachedAbsence && cached != null) return cached;
+      rethrow;
+    }
   }
 
   /// Cache-first read with full permission validation.

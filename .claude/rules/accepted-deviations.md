@@ -122,6 +122,23 @@ files in the same edit.
 
 ## Engineering
 
+- **An OFFLINE read of a weekly menu plan trusts a cached "this week is empty", and a
+  write may then build on it** — `getDocCacheFirst(acceptCachedAbsence: true)`, passed by
+  `FirebaseWeeklyMenuPlanRepository.fetchForWeek` and by nothing else. The flag only
+  decides what happens once the server read has FAILED, on any error — so a timeout on a flaky connection can still serve the cached absence. Offline it lets a genuinely
+  empty week be planned again, which BUT-1939's refusal had blocked.
+  The residual is real and bounded: `fetchForWeek` is NOT display-only —
+  `WeeklyMenuPlanService._loadPlanForWrite` and `copyWeek` reach it from write paths, and a
+  stale absence there becomes an empty plan that `save()` writes back with `set()`. What
+  stops that destroying anything is `firestore.rules`' update limb refusing a changed
+  `createdAt`, so the server keeps what another device wrote and the user loses their own
+  local edit instead. Do NOT pass this flag on anything an allergen or a permission
+  decision reads: a negative cache entry has no expiry and can outlast the install, and on
+  the profile path a stale absence returns NULL, which `lookupUserProfile` reads as
+  `missing` for anyone but the signed-in user — dropping that member from the allergen union
+  rather than falling back to BUT-1663's floor, which a THROW buys.
+  BUT-1961, 2026-08-27
+
 - **The recipe GRID card draws no dietary row, and that is a measurement, not a deferral
   (BUT-1906, Malin's explicit call 2026-08-23).** A dietary badge carries its WORD; the
   allergen badges beside it are icon-only. Measured on a 2-column tile: the row has 88

@@ -90,10 +90,24 @@ class FirebaseWeeklyMenuPlanRepository
   }) async {
     final docId = IsoWeekUtils.weekIdFor(userId, weekStart);
     // Cache-first so a previously-viewed week resolves instantly offline. A
-    // never-cached week falls back to the server, and that fallback THROWS when
-    // the server is unreachable: `getDocCacheFirst` wraps only its cache read in
-    // a try, and returns its `serverAndCache` read unguarded.
-    final snapshot = await getDocCacheFirst(collection.doc(docId));
+    // never-cached week falls back to the server.
+    //
+    // `acceptCachedAbsence` because an empty week has no document, so without it
+    // "this week is empty" and "I could not reach the server" arrive as the same
+    // throw, and BUT-1939's refusal blocks planning a fresh week offline
+    // (BUT-1961). The flag only applies once the server read has already failed.
+    //
+    // This is NOT a display-only read: `WeeklyMenuPlanService._loadPlanForWrite`
+    // and `copyWeek` reach it from write paths, and a `null` there becomes an
+    // empty plan that `save()` writes back with `set()`. So a stale absence lets
+    // a write build on "empty". What bounds it is `firestore.rules`' update
+    // limb, which refuses a changed `createdAt` — the server keeps whatever
+    // another device wrote, and the user loses their own local edit instead.
+    // That trade is recorded in `docs/architecture/ACCEPTED_DEVIATIONS.md`.
+    final snapshot = await getDocCacheFirst(
+      collection.doc(docId),
+      acceptCachedAbsence: true,
+    );
     if (!snapshot.exists) return null;
     return fromFirestore(snapshot);
   }

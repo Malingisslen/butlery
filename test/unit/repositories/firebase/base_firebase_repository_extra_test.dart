@@ -16,9 +16,12 @@
 /// - updateBatch + deleteBatch (BatchOperationsFirebaseRepository mixin)
 library;
 
+// ignore_for_file: subtype_of_sealed_class
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
@@ -41,6 +44,21 @@ class _ItemRepo extends BaseFirebaseRepository<_Item>
     required super.firestore,
     required super.authRepository,
   });
+
+  /// `getDocCacheFirst` is `@protected`; this exposes it so the BUT-1961
+  /// cached-absence contract can be driven directly.
+  ///
+  /// The parameter is NULLABLE and omitted when null, deliberately. Giving this
+  /// wrapper its own `= false` default would forward a value on every call and
+  /// silently shadow the base method's default — a mutant that flips that
+  /// default would then leak to the profile and archive callers with every test
+  /// still green. Measured: it did.
+  Future<DocumentSnapshot<Map<String, dynamic>>> cacheFirst(
+    DocumentReference<Map<String, dynamic>> ref, {
+    bool? acceptCachedAbsence,
+  }) => acceptCachedAbsence == null
+      ? getDocCacheFirst(ref)
+      : getDocCacheFirst(ref, acceptCachedAbsence: acceptCachedAbsence);
 
   @override
   String get collectionName => 'items';
@@ -353,4 +371,122 @@ void main() {
       },
     );
   });
+
+  // BUT-1961. `fake_cloud_firestore` IGNORES `GetOptions(source:)` (recorded in
+  // the testing digest), so a fake-backed test cannot tell a cache read from a
+  // server read — both return the same snapshot and neither throws. The
+  // observable that survives is therefore WHICH READS HAPPEN, driven through a
+  // mock reference that records every `GetOptions` it is handed.
+  group('getDocCacheFirst cached-absence contract', () {
+    late _MockDocRef ref;
+    late _MockSnapshot present;
+    late _MockSnapshot absent;
+
+    setUpAll(() {
+      registerFallbackValue(const GetOptions());
+    });
+
+    setUp(() {
+      ref = _MockDocRef();
+      present = _MockSnapshot();
+      absent = _MockSnapshot();
+      when(() => present.exists).thenReturn(true);
+      when(() => absent.exists).thenReturn(false);
+    });
+
+    List<Source> sourcesUsed() => verify(
+      () => ref.get(captureAny()),
+    ).captured.cast<GetOptions>().map((o) => o.source).toList();
+
+    test(
+      'a cached ABSENCE stands in ONLY once the server read fails',
+      () async {
+        // The server is still asked first. The opt-in changes what happens when
+        // that fails, and nothing else — an earlier version returned the cached
+        // absence instead of asking, which made a stale "missing" authoritative
+        // while online too.
+        var call = 0;
+        when(() => ref.get(any())).thenAnswer((_) async {
+          call++;
+          if (call == 1) return absent;
+          throw FirebaseException(plugin: 'x', code: 'unavailable');
+        });
+        final repo = _repo(FakeFirebaseFirestore(), authedUserId: 'alice');
+
+        final snap = await repo.cacheFirst(ref, acceptCachedAbsence: true);
+
+        expect(snap.exists, isFalse);
+        expect(
+          sourcesUsed(),
+          equals([Source.cache, Source.serverAndCache]),
+          reason: 'the server must still be asked before the cache is trusted',
+        );
+      },
+    );
+
+    test(
+      'ONLINE, the opt-in changes nothing — the server still decides',
+      () async {
+        // The regression this guards is the one that matters for the five write
+        // paths reaching this through `_loadPlanForWrite`: a stale cached absence
+        // must never beat a reachable server, or a write builds on "empty".
+        when(() => ref.get(any())).thenAnswer(
+          (i) async =>
+              (i.positionalArguments.first as GetOptions).source == Source.cache
+              ? absent
+              : present,
+        );
+        final repo = _repo(FakeFirebaseFirestore(), authedUserId: 'alice');
+
+        final snap = await repo.cacheFirst(ref, acceptCachedAbsence: true);
+
+        expect(snap.exists, isTrue, reason: 'the server answer wins');
+        expect(sourcesUsed(), equals([Source.cache, Source.serverAndCache]));
+      },
+    );
+
+    test('without the opt-in a failed server read still THROWS', () async {
+      var call = 0;
+      when(() => ref.get(any())).thenAnswer((_) async {
+        call++;
+        if (call == 1) return absent;
+        throw FirebaseException(plugin: 'x', code: 'unavailable');
+      });
+      final repo = _repo(FakeFirebaseFirestore(), authedUserId: 'alice');
+
+      await expectLater(
+        () => repo.cacheFirst(ref),
+        throwsA(isA<FirebaseException>()),
+      );
+    });
+
+    test('a cached PRESENCE short-circuits before the server', () async {
+      when(() => ref.get(any())).thenAnswer((_) async => present);
+      final repo = _repo(FakeFirebaseFirestore(), authedUserId: 'alice');
+
+      await repo.cacheFirst(ref);
+
+      expect(sourcesUsed(), equals([Source.cache]));
+    });
+
+    test('a cache MISS is not a cached absence — it still throws', () async {
+      // Never fetched while online: there is no answer to stand in, so the
+      // opt-in must not swallow the failure. BUT-1939's refusal depends on it.
+      when(() => ref.get(any())).thenAnswer(
+        (_) async => throw FirebaseException(plugin: 'x', code: 'unavailable'),
+      );
+      final repo = _repo(FakeFirebaseFirestore(), authedUserId: 'alice');
+
+      await expectLater(
+        () => repo.cacheFirst(ref, acceptCachedAbsence: true),
+        throwsA(isA<FirebaseException>()),
+      );
+    });
+  });
 }
+
+class _MockDocRef extends Mock
+    implements DocumentReference<Map<String, dynamic>> {}
+
+class _MockSnapshot extends Mock
+    implements DocumentSnapshot<Map<String, dynamic>> {}

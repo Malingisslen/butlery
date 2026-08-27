@@ -2232,3 +2232,56 @@ the loaded page, which can make `chat_message_stream`'s "you joined here" divide
 join point is actually off-screen; and a blocked row sits between two messages from the same
 sender, so `shouldShowAvatar` suppresses the avatar across it. These are pre-existing consequences
 of BUT-544's block filter that this change widens, not new mechanisms.
+
+## An offline weekly-plan read trusts a cached absence (BUT-1961, 2026-08-27)
+
+**Decision.** `FirebaseWeeklyMenuPlanRepository.fetchForWeek` passes
+`acceptCachedAbsence: true` to `BaseFirebaseRepository.getDocCacheFirst`. No other caller
+does, and the parameter defaults to `false`.
+
+**What it changes.** Firestore caches negative answers: a document fetched while online and
+found missing is remembered as missing. `getDocCacheFirst` used to discard that answer and
+re-ask the server, which throws with no connection. Since BUT-1939 that throw mints
+`readFailed: true` and the viewmodel refuses to save — so planning a brand-new week offline
+stopped working, because an empty week has no document to cache-hit on.
+
+The flag applies ONLY after the server read has already failed. An earlier version of this change returned the cached absence *instead of*
+asking, which made a stale "missing" authoritative without asking at all; that was caught in
+review and is why the ordering is load-bearing. The catch is on ANY error, so a
+`deadline-exceeded` on a flaky-but-connected network can still serve the cached absence —
+the ordering narrows the window, it does not close it.
+
+**The residual, stated plainly.** `fetchForWeek` is not a display-only read.
+`WeeklyMenuPlanService._loadPlanForWrite` reaches it from the bulk write paths
+(`setSlotPresence`, `setDayPresence`, `bulkMoveEntries`, `bulkAssignRecipes`,
+`assignRecipeToTargets`), and a `null` there becomes `WeeklyMenuPlan.empty`, which `save()`
+writes back as a full `set()`. So offline, a stale absence lets a write build on "empty".
+`copyWeek` reaches `fetchForWeek` directly on both its source and destination fetch: the
+destination side carries the same residual, and the source side turns a stale absence into a
+silent `return 0`, i.e. "there was nothing to copy".
+
+What bounds it is the rules layer, not the client: `firestore.rules`' `weekly_menu_plans`
+update limb gates on `cannotModify(['userId','createdAt'])`, and `WeeklyMenuPlan.empty`
+stamps a fresh `createdAt`. The write is therefore DENIED at reconnect. The server keeps
+whatever another device wrote; what is lost is the user's own local edit, plus an
+unexplained failure. That is the same residual shape BUT-1939 already accepted, and it is
+why this is a deviation rather than a bug.
+
+**Do not widen it.** A negative cache entry has no expiry — it lives until the cache passes
+its configured size limit and LRU evicts it, or until a server read of that document
+succeeds. Offline it can outlast the install.
+
+The flag must not reach anything an allergen or a permission decision reads, and the profile
+path shows why the direction matters. `UserService.lookupUserProfile` branches on HOW the
+read failed: for anyone other than the signed-in user a null return gives
+`ProfileLookup.missing()`, while a throw gives `ProfileLookup.unavailable()`. (For the
+signed-in user null also gives `unavailable()` — they are definitionally at the table.) Per BUT-1663 those are opposite calls — `unavailable` widens
+the union with the common-allergen floor, `missing` does not degrade the roster and the
+member is left out of it. A stale cached absence produces the NULL, so it would drop a
+member's allergens from the union rather than fall back to the cautious floor. That is the
+unsafe direction, and it is the one this flag would take.
+
+**Not closed by this.** The WRITE half of offline planning is a separate question:
+`applyGeneratedMenu` awaits a `save()` whose Future does not complete until the server
+acknowledges, so a generated week may still fail to render offline. Filed as BUT-1965, and
+explicitly unverified on a device.
