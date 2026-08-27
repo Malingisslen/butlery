@@ -2288,9 +2288,12 @@ short. `WeeklyMenuPlanService.readWeek` also calls `fetchForWeek`, and it mints
 mapping an unreachable week to null "reports `readFailed: false`", which is precisely what
 this flag makes it do for a negatively-cached week.
 
-`readFailed` is read in four places, not one: `messaging_service.dart` (twice, the BUT-1928
-poll-close guard), `menu_placement_viewmodel.dart`, `weekly_menu_plan_viewmodel.dart` and
-`onboarding_viewmodel.dart`. For a cached-absent week those guards do not fire.
+The scope needs no counting and is one grep to check: the flag reaches only
+`FirebaseWeeklyMenuPlanRepository.fetchForWeek`, so only the PERSONAL
+`WeeklyMenuPlanService.readWeek` guards are weakened — including BUT-1928's PERSONAL
+poll-close guard. The GROUP chain is untouched: `GroupWeeklyMenuPlanService` reads through a
+different repository, which does not pass the flag, so the group poll-close guard beside it
+still fires.
 
 That is intended where the absence is TRUE — the week really is empty and there is nothing
 to protect. Where the absence is STALE it means BUT-1928's guard, which sits on a one-way

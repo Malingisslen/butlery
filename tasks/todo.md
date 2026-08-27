@@ -94,7 +94,7 @@ snävt, så att `${recipe.id}` inte fångas.
 nivåer. Ett `direct_`-id ÄR två råa uid, så asymmetrin har inget skrivet skäl — armens egen
 kommentar säger att den "is not a policy anyone decided".
 
-Malins beslut: bredda. Det kostar att 41 loggställen måste maskeras först.
+Malins beslut: bredda. Det kostar att loggställena måste maskeras först.
 
 ### Ordningen är hela arbetet
 

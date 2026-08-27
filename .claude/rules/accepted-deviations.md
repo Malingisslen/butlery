@@ -141,8 +141,10 @@ files in the same edit.
 
 - **AMENDED same day (BUT-1961):** the entry above names `_loadPlanForWrite` and `copyWeek`,
   and that list is short. `readWeek` also calls `fetchForWeek` and mints `readFailed: false`
-  for any null, so for a cached-absent week the `readFailed` guards do not fire — in FOUR
-  places, including BUT-1928's poll-close guard, which sits on a one-way door. Intended
+  for any null, so for a cached-absent week the `readFailed` guards on the PERSONAL
+  chain do not fire, including BUT-1928's personal poll-close guard, which sits on a
+  one-way door. The GROUP chain reads through a repository that does not pass the flag,
+  so its guard still fires. Intended
   where the absence is true; where it is stale the same `createdAt` limb denies the write,
   so the server is safe and the user loses their own edit. Malin signed off BUT-1928's
   refusal, so this weakening is hers to know about. The fix also only helps a week fetched

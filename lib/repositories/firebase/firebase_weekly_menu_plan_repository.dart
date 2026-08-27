@@ -124,7 +124,7 @@ class FirebaseWeeklyMenuPlanRepository
       // (BUT-1964).
       AppLogger.warning(
         'Blocked weekly menu plan save for ${plan.userId.maskedUserId}, '
-        'week ${IsoWeekUtils.weekStartOf(plan.weekStartDate)}',
+        'week ${IsoWeekUtils.weekKeyOf(plan.weekStartDate)}',
       );
       return;
     }
