@@ -227,12 +227,10 @@ void main() {
 
   group('a failed READ never becomes a save (BUT-1939)', () {
     test(
-      'confirm() refuses and says why, instead of saving over the week',
+      'confirm() refuses and says why',
       () async {
         // `getWeek` used to spell a failed read as an EMPTY plan. A placement
-        // session saves the WHOLE week in one write to a deterministic document
-        // id, so confirming after one would have replaced a real week with just
-        // whatever this session placed.
+        // session saves the WHOLE week in one write.
         when(() => service.readWeek(any())).thenAnswer(
           (_) async => WeeklyMenuPlanRead(plan: _plan(), readFailed: true),
         );

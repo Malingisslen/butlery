@@ -1208,9 +1208,7 @@ void main() {
     test('a FAILED read seeds nothing — the idempotency guard cannot see it '
         '(BUT-1939)', () async {
       // The guard below the read is `if (plan.isNotEmpty) return;`. A failed
-      // read used to arrive as an EMPTY plan, so the guard did not fire and the
-      // seed wrote sample recipes over the user's real week on a deterministic
-      // document id. The comment beside it claimed immunity to exactly this.
+      // read used to arrive as an EMPTY plan, so the guard did not fire.
       // `addEntry` is the load-bearing stub: without it the mutant path throws
       // MissingStubError into `_seedSampleMenu`'s outer catch and the test
       // passes without the guard doing anything. `createPersonalRecipe` and
