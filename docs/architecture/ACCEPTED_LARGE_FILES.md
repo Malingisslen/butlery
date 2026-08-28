@@ -184,6 +184,7 @@ UI files that are already extracted or represent cohesive single-screen implemen
 | `recipe_parser_service.dart` | 915 | Multi-tier recipe text parsing pipeline |
 | `recipe_list_viewmodel.dart` | 1,177 | Recipe list with filtering, search, tags |
 | `recipe_detail_view.dart` | 1,273 | Recipe detail screen (source-artefact sheet + stale banner extracted to recipe_detail/recipe_source_artefact_sheet.dart, BUT-1205) |
+| `weekly_menu_plan_viewmodel.dart` | 693 | Weekly-menu VM: the week read, the write paths, the optimistic-publish/rollback pair and the overflow tray. The write paths split cleanly into a manager if it grows further (BUT-1975) |
 | `personal_tag_viewmodel.dart` | 798 | Personal tag management VM |
 | `recipe_detail_content.dart` | 859 | Body content widget for recipe detail |
 | `mina_recept_view.dart` | 697 | Main recipe list screen — facade-extracted to `lib/views/mina_recept/` per BUT-441 |

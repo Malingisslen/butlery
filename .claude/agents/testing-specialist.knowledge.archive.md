@@ -29383,3 +29383,65 @@ negatively-cached week is the decided BUT-1961 deviation (ACCEPTED_DEVIATIONS.md
 weekly-plan read trusts a cached absence", incl. the 2026-08-27 same-day amendment naming
 `readWeek` explicitly). The `operationName` log label and the struck docstring qualifier were
 declared settled by prior passes and left alone.
+
+### 2026-08-28 — BUT-1975/BUT-1965 review: the rollbacks are pinned only for `_plan`
+
+Trigger: review of the staged `weekly_menu_plan_viewmodel.dart` + `veckomeny_view.dart` change
+that moved writes off `isLoading` onto `_executeWrite` (+ `_writeInFlight` guard) and made edits
+publish optimistically via `_publishThenSave` / hand-rolled equivalents.
+
+Hashes at review time: index == worktree for all three reviewed paths (`git diff --numstat`
+empty). `lib/viewmodels/menu/weekly_menu_plan_viewmodel.dart` md5 `fcdc4968e48446443453209ccc908138`.
+Suite green 65/65; `flutter analyze --fatal-infos` on the three files: no issues (180s).
+
+**Probe 1 (rollback fields).** One `cp`-backed mutant deleting six assignments from the three
+hand-rolled catch blocks:
+  * `applyGeneratedMenu`: `_overflow = previousOverflow`, `_recentlyPlacedEntryIds = previousPlacedIds`, `placedCount = null`
+  * `clearWeek`: `_overflow = previousOverflow`, `_preClearOverflow = null`
+  * `undoClearWeek`: `_overflow = previousOverflow`, `_preClearOverflow = overflowSnapshot`
+Result: **65/65 GREEN.** File restored, md5 identical.
+
+Root cause is one fixture shape: the refusal group's `seed()` and the `applyGeneratedMenu`
+refusal fixture both leave the overflow tray EMPTY, so `previousOverflow == result.overflow == []`
+and every overflow rollback is unobservable. What IS pinned: `_plan` (three `_publishThenSave`
+tests + clearWeek + undoClearWeek + applyGeneratedMenu, all `same(<pre-edit plan>)`), and
+`_preClearEntries` (both directions — nulled on a refused clear, re-armed on a refused undo, via
+`verifyNever(restoreWeek)` / `called(2)`).
+
+Sharpest live gap: `_preClearOverflow = overflowSnapshot` in `undoClearWeek`'s catch. The retry
+test proves `restoreWeek` is reached twice but never asserts the tray came back, so a
+failed-then-retried undo drops the overflow snapshot to `?? const []` — permanent loss of exactly
+the recipes the sibling test "restores the overflow tray on undo" exists to protect.
+
+`placedCount = null` is dead rather than untested: `_executeWrite` returns false and
+`applyGeneratedMenu` does `if (!ok) return null` above it.
+
+**Probe 2 (`_writeInFlight` release on the error path).** Moved `_writeInFlight = false` out of
+the `finally` into the success arm. Exactly ONE test reddened: `'undoClearWeek — and the snapshot
+survives for a retry'` at line 340 (`verify(restoreWeek).called(2)`), because a second write after
+a failed one is the only sequence in the file. Pinned, but incidentally — a rename or split of
+that test silently unpins the error-path release.
+
+**False sentence (blocking).** The refusal group's header still reads "The five operations that
+mutated `_plan` BEFORE the await each had to be reordered on their own". BUT-1962's reversal
+already falsified it once (recorded 2026-08-27); BUT-1975 restores publish-before-await as the
+DESIGN, so the sentence now prescribes reverting Malin's decision. Present in the staged copy
+(`git show :<path>` lines 139-140), sole carrier — grep of `reorder|BEFORE the await` across
+`test/unit/services/menu/`, `test/unit/viewmodels/menu/`, `lib/services/menu/`,
+`lib/viewmodels/menu/` returns only that one line. Repair is a strike, not a reword.
+
+**Non-blocking.** (a) The new second-edit test's mutant kill is a 30s TIMEOUT: `addEntry` is
+stubbed with `any()` to return the same `first` plan for both calls, so `expect(plan, same(first))`
+cannot discriminate, and the second `save` re-returns the never-completing `Completer`, so the
+guardless build hangs before reaching `verify(save).called(1)`. (b) `_publishThenSave`'s rollback
+`notifyListeners()` is subsumed by `_executeWrite`'s `setError`, which notifies. (c) Widening the
+guard from `applyGeneratedMenu` to ALL writes gave `copyWeekToNext` / `bulkMoveSelected` a new
+observable: a guard refusal returns null with `error == null`, and
+`calendar_weekly_menu_widget.dart:250,279` renders any null as a red error snackbar (and
+`bulkMoveSelected` clears the selection regardless of outcome), so a double-tap now reads as a
+failure. `generateShoppingList`'s `alreadyRunning` sentinel is the existing precedent for the
+other choice. Untested either way; product call. (d) Nothing was UNPINNED by the four
+service-owned writes losing `isLoading` — every `isLoading` assertion in the suite belongs to
+`generateShoppingList` (a read path) or to the two new unacked-write tests.
+
+Verdict: fail (2 blocking) — the unpinned rollback fields, and the reorder sentence.

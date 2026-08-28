@@ -131,14 +131,12 @@ void main() {
       viewModel.dispose();
     });
 
-    // BUT-1962 — a refused save must (a) say so and (b) leave the screen
-    // showing the last server-confirmed state.
+    // BUT-1962 — a refused save must (a) say so and (b) put back the state it
+    // replaced.
     //
     // Before this, `save()` swallowed every failure, so neither half happened:
     // the user's edit stayed on screen, was never written, and vanished on the
-    // next load with no message. The five operations that mutated `_plan`
-    // BEFORE the await each had to be reordered on their own — a single test
-    // would have gone green on the first one fixed.
+    // next load with no message.
     group('a refused save is visible and does not move the screen', () {
       /// Seeds a resident week so the operations under test have a `_plan`.
       Future<WeeklyMenuPlan> seed({List<WeeklyMenuPlanEntry>? entries}) async {
@@ -158,19 +156,121 @@ void main() {
         when(() => mockService.save(any())).thenThrow(Exception('denied'));
       }
 
-      // A PENDING save (the offline shape: `persistenceEnabled: true` applies
-      // the write locally but leaves its future uncompleted until the server
-      // acks) leaves the ViewModel in the loading state with no error.
+      /// Seeds a resident week AND a non-empty overflow tray.
+      ///
+      /// The tray is the half the plain `seed()` cannot stage: with an empty
+      /// tray a rollback that forgets `_overflow` is indistinguishable from
+      /// one that restores it, so every assertion about the tray passes for
+      /// free. `clearWeek` wipes it and `undoClearWeek` restores it, which is
+      /// exactly where a missed rollback loses the recipes permanently.
+      Future<({WeeklyMenuPlan week, Recipe tray})> seedWithTray() async {
+        final week = _plan(
+          entries: [_entry(day: DayOfWeek.mon, slot: MealSlot.middag)],
+        );
+        final tray = _recipe(id: 'r-tray');
+        when(
+          () => mockService.readWeek(any()),
+        ).thenAnswer((_) async => _read(week));
+        when(
+          () => mockService.distributeFromGeneratedMenu(
+            generated: any(named: 'generated'),
+            weekStart: any(named: 'weekStart'),
+            existing: any(named: 'existing'),
+            now: any(named: 'now'),
+            dayPins: any(named: 'dayPins'),
+          ),
+        ).thenReturn(
+          WeeklyMenuDistributionResult(plan: week, overflow: [tray]),
+        );
+        await viewModel.loadWeek(week.weekStartDate);
+        await viewModel.applyGeneratedMenu({
+          'middag': [tray],
+        });
+        expect(viewModel.overflow, hasLength(1));
+        viewModel.clearError();
+        return (week: week, tray: tray);
+      }
+
+      test('a refused clear leaves the overflow TRAY where it was', () async {
+        final seeded = await seedWithTray();
+        when(() => mockService.clearWeek(any())).thenReturn(
+          _plan(entries: const []),
+        );
+        failTheSave();
+
+        expect(await viewModel.clearWeek(), isFalse);
+
+        expect(viewModel.plan, same(seeded.week));
+        expect(
+          viewModel.overflow,
+          [seeded.tray],
+          reason:
+              'clearWeek wipes the tray before the save, so a refusal that '
+              'restores only the plan loses the tray recipes for good',
+        );
+      });
+
+      test(
+        'a refused undo re-arms the snapshot AND puts the tray back',
+        () async {
+          final seeded = await seedWithTray();
+          final cleared = _plan(entries: const []);
+          when(() => mockService.clearWeek(any())).thenReturn(cleared);
+          await viewModel.clearWeek();
+          expect(viewModel.overflow, isEmpty);
+
+          when(
+            () => mockService.restoreWeek(any(), any()),
+          ).thenReturn(seeded.week);
+          failTheSave();
+
+          await viewModel.undoClearWeek();
+
+          expect(viewModel.plan, same(cleared));
+          expect(
+            viewModel.overflow,
+            isEmpty,
+            reason: 'the refused undo leaves the cleared state, tray included',
+          );
+
+          // The snapshot must survive, or the retry below restores nothing.
+          when(() => mockService.save(any())).thenAnswer((_) async {});
+          await viewModel.undoClearWeek();
+          expect(viewModel.plan, same(seeded.week));
+          expect(
+            viewModel.overflow,
+            [seeded.tray],
+            reason: 'the retried undo is what brings the tray recipes back',
+          );
+        },
+      );
+
+      // A PENDING save is the offline shape: `persistenceEnabled: true`
+      // applies the write locally but leaves its future uncompleted until the
+      // server acks (measured 2026-08-28 against the emulator, on the web
+      // SDK).
       //
-      // That is the state the CALENDAR renders as a spinner —
-      // `LoadingStateBuilder` returns the loading widget before it looks at
-      // `data`, so nothing about the edit is on screen either way. This test
-      // pins the state, not a rendering; the spinner-forever defect it implies
-      // is BUT-1975 and predates this change.
+      // BUT-1975 reversed what that state means. It used to leave the VM
+      // LOADING, which the calendar renders as a spinner because
+      // `LoadingStateBuilder` returns its loading widget before it looks at
+      // `data` — so the edit was invisible until the connection came back.
+      // `assignRecipe` now runs through `_executeWrite`, which does not raise
+      // the flag, and the edit is published before the save is awaited.
       //
       // Deliberately not awaited — that is the offline shape.
-      test('a PENDING save leaves the VM loading with no error', () async {
+      test('a PENDING save shows the edit and does NOT hold the calendar in '
+          'the loading state', () async {
         await seed();
+        final edited = _plan(
+          entries: [
+            _entry(
+              day: DayOfWeek.tue,
+              slot: MealSlot.middag,
+              id: 'e-offline',
+              recipeId: 'r-offline',
+            ),
+          ],
+        );
         when(
           () => mockService.addEntry(
             plan: any(named: 'plan'),
@@ -178,7 +278,7 @@ void main() {
             slot: any(named: 'slot'),
             recipe: any(named: 'recipe'),
           ),
-        ).thenReturn(_plan());
+        ).thenReturn(edited);
         final pending = Completer<void>();
         addTearDown(() {
           if (!pending.isCompleted) pending.complete();
@@ -194,7 +294,20 @@ void main() {
         );
         await Future<void>.delayed(Duration.zero);
 
-        expect(viewModel.isLoading, isTrue);
+        expect(
+          viewModel.isLoading,
+          isFalse,
+          reason:
+              'the loading flag belongs to READS; a write that owns it '
+              'leaves the calendar a spinner until the server acks',
+        );
+        expect(
+          viewModel.plan,
+          same(edited),
+          reason:
+              'the whole point: the edit is on screen while the write is '
+              'still out for delivery',
+        );
         expect(viewModel.error, isNull);
         pending.complete();
       });
@@ -281,8 +394,7 @@ void main() {
 
         expect(viewModel.error, contains('Kunde inte rensa veckan'));
         expect(viewModel.plan, same(week));
-        // The snapshot is taken only once the write lands. Taking it up front
-        // armed "Ångra" for a clear that never happened — asserted through
+        // A refused clear must leave no undo window armed — asserted through
         // behaviour because the window has no public getter: a later undo must
         // find no snapshot and return before reaching the service.
         await viewModel.undoClearWeek();
@@ -340,7 +452,7 @@ void main() {
 
           await viewModel.removeEntry('entry-1');
 
-          // Pinning the WHOLE string is the assertion: `executeAsyncVoid` calls
+          // Pinning the WHOLE string is the assertion: `_executeWrite` calls
           // `setError(errorPrefix)` verbatim, so a future
           // `setError('$errorPrefix: $e')` — which is how the exception would
           // leak — changes this equality.
@@ -430,6 +542,208 @@ void main() {
         expect(placed, isNull);
         expect(viewModel.error, 'Kunde inte fördela recepten');
         expect(viewModel.plan, same(week));
+      });
+    });
+
+    group('an unacked write (BUT-1975/BUT-1965)', () {
+      /// Same shape as the refusal group's: a resident week so the operations
+      /// under test have a `_plan` to build from.
+      Future<WeeklyMenuPlan> seed() async {
+        final week = _plan(
+          entries: [_entry(day: DayOfWeek.mon, slot: MealSlot.middag)],
+        );
+        when(
+          () => mockService.readWeek(any()),
+        ).thenAnswer((_) async => _read(week));
+        await viewModel.loadWeek(week.weekStartDate);
+        viewModel.clearError();
+        return week;
+      }
+
+      test(
+        'a generated week is RENDERED while its save is still pending',
+        () async {
+          // BUT-1965's own acceptance criterion, which it could not meet alone:
+          // the old order awaited the save before assigning `_plan`, so offline
+          // the distributed week never reached the screen at all.
+          await seed();
+          final distributed = _plan(
+            entries: [
+              _entry(
+                day: DayOfWeek.wed,
+                slot: MealSlot.middag,
+                id: 'e-gen',
+                recipeId: 'r-gen',
+              ),
+            ],
+          );
+          when(
+            () => mockService.distributeFromGeneratedMenu(
+              generated: any(named: 'generated'),
+              weekStart: any(named: 'weekStart'),
+              existing: any(named: 'existing'),
+              now: any(named: 'now'),
+              dayPins: any(named: 'dayPins'),
+            ),
+          ).thenReturn(
+            WeeklyMenuDistributionResult(plan: distributed, overflow: const []),
+          );
+          final pending = Completer<void>();
+          addTearDown(() {
+            if (!pending.isCompleted) pending.complete();
+          });
+          when(() => mockService.save(any())).thenAnswer((_) => pending.future);
+
+          unawaited(
+            viewModel.applyGeneratedMenu({
+              'middag': [_recipe()],
+            }),
+          );
+          await Future<void>.delayed(Duration.zero);
+
+          expect(viewModel.plan, same(distributed));
+          expect(viewModel.isLoading, isFalse);
+          pending.complete();
+        },
+      );
+
+      test('a pending PRESENCE save does not refuse a calendar edit', () async {
+        // The regression this pins: `setSlotPresence` re-reads through the
+        // repository, and its only assignment to `_plan` happens after that
+        // call returns — the ack. Behind the shared publish guard, a single
+        // "vem är hemma" tap therefore wedged every other write for the whole
+        // outage, silently.
+        final week = await seed();
+        final pending = Completer<WeeklyMenuPlan>();
+        addTearDown(() {
+          if (!pending.isCompleted) pending.complete(week);
+        });
+        when(
+          () => mockService.setSlotPresence(
+            weekStart: any(named: 'weekStart'),
+            day: any(named: 'day'),
+            slot: any(named: 'slot'),
+            memberIds: any(named: 'memberIds'),
+          ),
+        ).thenAnswer((_) => pending.future);
+
+        unawaited(
+          viewModel.setSlotPresence(DayOfWeek.mon, MealSlot.middag, const [
+            'u-1',
+          ]),
+        );
+        await Future<void>.delayed(Duration.zero);
+
+        final edited = _plan(
+          entries: [
+            _entry(
+              day: DayOfWeek.tue,
+              slot: MealSlot.middag,
+              id: 'e-after',
+              recipeId: 'r-after',
+            ),
+          ],
+        );
+        when(
+          () => mockService.addEntry(
+            plan: any(named: 'plan'),
+            day: any(named: 'day'),
+            slot: any(named: 'slot'),
+            recipe: any(named: 'recipe'),
+          ),
+        ).thenReturn(edited);
+        when(() => mockService.save(any())).thenAnswer((_) async {});
+
+        final ok = await viewModel.assignRecipe(
+          day: DayOfWeek.tue,
+          slot: MealSlot.middag,
+          recipe: _recipe(id: 'r-after'),
+        );
+
+        expect(ok, isTrue, reason: 'the calendar edit must not be refused');
+        expect(viewModel.plan, same(edited));
+        pending.complete(week);
+      });
+
+      test('a second edit is accepted while the first is still unacked, and '
+          'builds ON it', () async {
+        // `assignRecipe` releases the guard once it has published, not when
+        // the save acks. Holding it to the ack would last the whole outage —
+        // one offline edit, every later one silently dropped.
+        await seed();
+        final first = _plan(
+          entries: [
+            _entry(
+              day: DayOfWeek.mon,
+              slot: MealSlot.middag,
+              id: 'e-first',
+              recipeId: 'r-first',
+            ),
+          ],
+        );
+        final second = _plan(
+          entries: [
+            _entry(
+              day: DayOfWeek.mon,
+              slot: MealSlot.middag,
+              id: 'e-first',
+              recipeId: 'r-first',
+            ),
+            _entry(
+              day: DayOfWeek.tue,
+              slot: MealSlot.middag,
+              id: 'e-second',
+              recipeId: 'r-second',
+            ),
+          ],
+        );
+        final bases = <WeeklyMenuPlan>[];
+        when(
+          () => mockService.addEntry(
+            plan: any(named: 'plan'),
+            day: any(named: 'day'),
+            slot: any(named: 'slot'),
+            recipe: any(named: 'recipe'),
+          ),
+        ).thenAnswer((inv) {
+          bases.add(inv.namedArguments[#plan] as WeeklyMenuPlan);
+          return bases.length == 1 ? first : second;
+        });
+        final pending = Completer<void>();
+        addTearDown(() {
+          if (!pending.isCompleted) pending.complete();
+        });
+        when(() => mockService.save(any())).thenAnswer((_) => pending.future);
+
+        unawaited(
+          viewModel.assignRecipe(
+            day: DayOfWeek.mon,
+            slot: MealSlot.middag,
+            recipe: _recipe(id: 'r-first'),
+          ),
+        );
+        await Future<void>.delayed(Duration.zero);
+        unawaited(
+          viewModel.assignRecipe(
+            day: DayOfWeek.tue,
+            slot: MealSlot.middag,
+            recipe: _recipe(id: 'r-second'),
+          ),
+        );
+        await Future<void>.delayed(Duration.zero);
+
+        expect(
+          bases,
+          hasLength(2),
+          reason: 'the second edit must not be dropped',
+        );
+        expect(
+          bases[1],
+          same(first),
+          reason: 'it computes from the FIRST edit, not the pre-edit week',
+        );
+        expect(viewModel.plan, same(second));
+        pending.complete();
       });
     });
 
@@ -919,7 +1233,7 @@ void main() {
         },
       );
 
-      test('_applyInFlight guard blocks a concurrent second call '
+      test('the write-in-flight guard blocks a concurrent second call '
           '(only the first distributes + saves)', () async {
         final initial = _plan();
         when(() => mockService.readWeek(any())).thenAnswer(
@@ -945,8 +1259,8 @@ void main() {
         });
 
         // Fire the two calls back-to-back WITHOUT awaiting the first. The
-        // first call sets `_applyInFlight = true` synchronously (before its
-        // first await), so the second sees the guard and early-returns.
+        // first marks a write in flight synchronously, before its first
+        // await, so the second sees the guard and early-returns.
         clearInteractions(mockService);
         final first = viewModel.applyGeneratedMenu(const {'middag': []});
         final second = viewModel.applyGeneratedMenu(const {'middag': []});
@@ -955,15 +1269,21 @@ void main() {
         expect(
           distributeCalls,
           1,
-          reason: 'second call must early-return on _applyInFlight',
+          reason: 'the second call must early-return on the in-flight guard',
         );
         verify(() => mockService.save(any())).called(1);
+        // The refusal is deliberately SILENT (BUT-1987). A message here would
+        // land on a surface where `LoadingStateBuilder` ranks error above
+        // data, replacing the whole calendar — including the week the first
+        // tap just placed. Pinned so re-introducing `setError` on this branch
+        // cannot go green.
+        expect(viewModel.error, isNull);
       });
     });
 
     group('assignRecipe', () {
       test('is a no-op when no plan is loaded', () async {
-        // Guard: current == null triggers early-return before executeAsyncVoid.
+        // Guard: current == null triggers early-return before _executeWrite.
         await viewModel.assignRecipe(
           day: DayOfWeek.mon,
           slot: MealSlot.middag,
@@ -1206,7 +1526,7 @@ void main() {
           // clearWeek returns the same (empty) plan so service.save is NOT
           // called, but the overflow list is wiped. The guard `isEmpty &&
           // overflow.isEmpty` means overflow alone is enough to enter the
-          // executeAsyncVoid path.
+          // _executeWrite path.
           final emptyPlan = _plan();
           when(
             () => mockService.readWeek(any()),
@@ -1240,7 +1560,7 @@ void main() {
 
           expect(viewModel.overflow, isEmpty);
           // Plan was already empty → service.clearWeek returns the same plan →
-          // `entriesChanged` is false → save must NOT be fired by clearWeek.
+          // `identical(cleared, current)` → save must NOT be fired by clearWeek.
           verifyNever(() => mockService.save(any()));
         },
       );

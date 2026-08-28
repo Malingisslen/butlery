@@ -310,8 +310,9 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
         context,
         label: context.l10n.menuToShoppingList,
         icon: Icons.shopping_cart,
-        // Disabled while the VM is busy — together with the VM's isLoading
-        // guard this replaces the old hand-rolled re-entrancy flag.
+        // An unacked save does not lock this button (BUT-1975).
+        // Generate-vs-generate re-entrancy still holds: `generateShoppingList`
+        // runs through `executeAsync`, which does set the flag.
         isLoading: planVm.isLoading,
         onPressed: _generateWeekShoppingList,
         style: ActionButtonStyle.primary,

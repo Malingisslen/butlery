@@ -1,6 +1,7 @@
 /// ViewModel backing the calendar weekly menu view.
 library;
 
+import 'package:butlery/core/utils/logger.dart';
 import 'package:clock/clock.dart';
 
 import 'package:butlery/core/utils/iso_week_utils.dart';
@@ -27,6 +28,26 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
 
   WeeklyMenuPlan? _plan;
   List<Recipe> _overflow = const [];
+
+  /// BUT-1975: an edit computed from `_plan` is being published. Carried ONLY
+  /// by the operations that publish optimistically, and released by each of
+  /// them the moment it has assigned `_plan`.
+  ///
+  /// Offline a Firestore write applies locally but its Future does not
+  /// complete until the server acks (measured 2026-08-28 on the web SDK). A
+  /// guard that spans
+  /// the save therefore lasts the whole outage, which would allow exactly one
+  /// offline edit and silently drop every later one.
+  ///
+  /// The writes that re-read through the repository instead of computing from
+  /// `_plan` do NOT take it: they assign `_plan`, if at all, only after the
+  /// service call has returned — which is the ack, so holding the flag until
+  /// then is that same defect.
+  bool _publishInFlight = false;
+
+  /// Distribution keeps its own long guard: a double-tap must not distribute
+  /// twice, and unlike a single-cell edit there is no sense in which the
+  /// second run builds on the first.
   bool _applyInFlight = false;
 
   /// BUT-1939. Whether the last read of the week FAILED, as distinct from
@@ -110,7 +131,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
     List<String>? memberIds,
   ) async {
     if (_readFailed) return;
-    await executeAsyncVoid(
+    await _executeWrite(
       () async {
         final updated = await _service.setSlotPresence(
           weekStart: currentWeekStart,
@@ -123,6 +144,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
         notifyListeners();
       },
       errorPrefix: 'Kunde inte spara vilka som är hemma',
+      guarded: false,
     );
   }
 
@@ -130,7 +152,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
   /// [day]. Null clears both back to the "everyone" default.
   Future<void> setDayPresence(DayOfWeek day, List<String>? memberIds) async {
     if (_readFailed) return;
-    await executeAsyncVoid(
+    await _executeWrite(
       () async {
         final updated = await _service.setDayPresence(
           weekStart: currentWeekStart,
@@ -142,6 +164,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
         notifyListeners();
       },
       errorPrefix: 'Kunde inte spara vilka som är hemma',
+      guarded: false,
     );
   }
 
@@ -154,6 +177,70 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
   /// Resolves a recipe by ID for navigation. Returns null if deleted.
   Recipe? resolveForNavigation(String recipeId) =>
       _recipeService.getRecipeById(recipeId);
+
+  /// BUT-1975: `executeAsyncVoid` minus the loading flag, for WRITES.
+  ///
+  /// Reads own `isLoading`; writes must not, or an unacked write leaves the
+  /// calendar showing a spinner over a plan it already has. Error handling is
+  /// otherwise identical, so a refusal still reaches the user as its Swedish
+  /// prefix.
+  ///
+  /// [guarded] is for the operations that compute an edit from `_plan` and
+  /// publish it: they take [_publishInFlight] here and release it themselves
+  /// once published. The writes that re-read through the repository pass
+  /// false — see that field's doc.
+  Future<bool> _executeWrite(
+    Future<void> Function() operation, {
+    required String errorPrefix,
+    bool guarded = true,
+  }) async {
+    if (isDisposed) return false;
+    if (guarded) {
+      if (_publishInFlight) return false;
+      _publishInFlight = true;
+    }
+    clearError();
+    try {
+      await operation();
+      return true;
+    } catch (e) {
+      AppLogger.error(errorPrefix, e);
+      if (!isDisposed) setError(errorPrefix);
+      return false;
+    } finally {
+      if (guarded) _publishInFlight = false;
+    }
+  }
+
+  /// BUT-1975/BUT-1965: put [updated] on screen now, persist after.
+  ///
+  /// Awaiting the save BEFORE assigning `_plan` is what made an offline edit
+  /// invisible. A failure rolls the calendar back
+  /// to [previous] and rethrows, so the caller's Swedish prefix still reaches
+  /// the user.
+  Future<void> _publishThenSave(
+    WeeklyMenuPlan updated,
+    WeeklyMenuPlan previous,
+  ) async {
+    _plan = updated;
+    notifyListeners();
+    // Released HERE, not when the save acks. A guard held across the save
+    // lasts the whole outage and allows exactly one offline edit.
+    _publishInFlight = false;
+    try {
+      await _service.save(updated);
+    } catch (_) {
+      // Roll back only what is still on screen. The user may have navigated to
+      // another week, or a later edit may have superseded this one, while the
+      // refusal was in flight — restoring unconditionally would drag the
+      // calendar back to a week they had left.
+      if (!isDisposed && identical(_plan, updated)) {
+        _plan = previous;
+        notifyListeners();
+      }
+      rethrow;
+    }
+  }
 
   Future<void> loadWeek(DateTime date) async {
     final targetWeekStart = IsoWeekUtils.weekStartOf(date);
@@ -238,47 +325,75 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
     ParsedMenuRequest? parsedRequest,
     bool replaceExisting = false,
   }) async {
-    if (_applyInFlight || _readFailed) return null;
+    // A refused second tap returns null WITHOUT setting an error: on this
+    // surface `LoadingStateBuilder` ranks error above data, so a message here
+    // replaces the whole calendar — including the week the first tap just
+    // placed. The error state's own retry does not recover it either:
+    // `onErrorRetry` calls `loadWeek`, which short-circuits when the resident
+    // plan already matches that week, so it never reaches `clearError`.
+    // Silence is the lesser fault; making the refusal visible needs a channel
+    // the view can tell apart from failure, the way `generateShoppingList`
+    // uses its `alreadyRunning` sentinel. BUT-1987.
+    if (_readFailed || _applyInFlight) return null;
+    final previousPlan = _plan;
+    final previousOverflow = _overflow;
+    final previousPlacedIds = _recentlyPlacedEntryIds;
+    final previousParsedRequest = _lastParsedRequest;
     _applyInFlight = true;
-    _lastParsedRequest = parsedRequest;
     int? placedCount;
-    try {
-      final ok = await executeAsyncVoid(
-        () async {
-          final base = replaceExisting
-              ? _plan?.copyWith(entries: const [])
-              : _plan;
-          final baseIds = base?.entries.map((e) => e.id).toSet() ?? const {};
-          final result = _service.distributeFromGeneratedMenu(
-            generated: generated,
-            weekStart: currentWeekStart,
-            existing: base,
-            now: now,
-            dayPins: parsedRequest?.dayPins ?? const [],
-          );
-          if (isDisposed) return;
-          // Persist FIRST, publish after: a failed save must not leave the
-          // calendar showing a distributed week (with NY badges) that was
-          // never written.
+    final ok = await _executeWrite(
+      () async {
+        final base = replaceExisting
+            ? _plan?.copyWith(entries: const [])
+            : _plan;
+        final baseIds = base?.entries.map((e) => e.id).toSet() ?? const {};
+        final result = _service.distributeFromGeneratedMenu(
+          generated: generated,
+          weekStart: currentWeekStart,
+          existing: base,
+          now: now,
+          dayPins: parsedRequest?.dayPins ?? const [],
+        );
+        if (isDisposed) return;
+        // Assigned only once the distribution has actually produced a result:
+        // set before the guard is evaluated, a refused call would leave the
+        // header chips describing a distribution that never ran.
+        _lastParsedRequest = parsedRequest;
+        final newIds = result.plan.entries
+            .map((e) => e.id)
+            .where((id) => !baseIds.contains(id))
+            .toSet();
+        // BUT-1975/BUT-1965: publish FIRST. The old order awaited the save
+        // before assigning `_plan`, so offline the generated week was never
+        // rendered at all.
+        _plan = result.plan;
+        _overflow = result.overflow;
+        _recentlyPlacedEntryIds = newIds;
+        placedCount = newIds.length;
+        notifyListeners();
+        _publishInFlight = false;
+        try {
           await _service.save(result.plan);
-          if (isDisposed) return;
-          final newIds = result.plan.entries
-              .map((e) => e.id)
-              .where((id) => !baseIds.contains(id))
-              .toSet();
-          _plan = result.plan;
-          _overflow = result.overflow;
-          _recentlyPlacedEntryIds = newIds;
-          placedCount = newIds.length;
-          notifyListeners();
-        },
-        errorPrefix: 'Kunde inte fördela recepten',
-      );
-      // A failed save must not report success either.
-      if (!ok) return null;
-    } finally {
-      _applyInFlight = false;
-    }
+        } catch (_) {
+          // Every piece this method set, including the parsed request the
+          // header chips read — a refused distribution must not leave them
+          // describing a week that was rejected. Only while it is still the
+          // resident plan: the user may have moved on while the refusal was
+          // in flight.
+          if (!isDisposed && identical(_plan, result.plan)) {
+            _plan = previousPlan;
+            _overflow = previousOverflow;
+            _recentlyPlacedEntryIds = previousPlacedIds;
+            _lastParsedRequest = previousParsedRequest;
+            notifyListeners();
+          }
+          rethrow;
+        }
+      },
+      errorPrefix: 'Kunde inte fördela recepten',
+    );
+    _applyInFlight = false;
+    if (!ok) return null;
     return placedCount;
   }
 
@@ -293,8 +408,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
   }) async {
     final current = _plan;
     if (current == null) return false;
-    var persisted = false;
-    final ok = await executeAsyncVoid(
+    return _executeWrite(
       () async {
         final updated = _service.addEntry(
           plan: current,
@@ -303,15 +417,10 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
           recipe: recipe,
         );
         if (isDisposed) return;
-        await _service.save(updated);
-        persisted = true;
-        if (isDisposed) return;
-        _plan = updated;
-        notifyListeners();
+        await _publishThenSave(updated, current);
       },
       errorPrefix: 'Kunde inte lägga till receptet',
     );
-    return ok && persisted;
   }
 
   Future<void> moveEntry({
@@ -321,7 +430,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
   }) async {
     final current = _plan;
     if (current == null) return;
-    await executeAsyncVoid(
+    await _executeWrite(
       () async {
         final updated = _service.moveEntry(
           plan: current,
@@ -330,10 +439,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
           toSlot: toSlot,
         );
         if (isDisposed || identical(updated, current)) return;
-        await _service.save(updated);
-        if (isDisposed) return;
-        _plan = updated;
-        notifyListeners();
+        await _publishThenSave(updated, current);
       },
       errorPrefix: 'Kunde inte flytta receptet',
     );
@@ -342,14 +448,11 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
   Future<void> removeEntry(String entryId) async {
     final current = _plan;
     if (current == null) return;
-    await executeAsyncVoid(
+    await _executeWrite(
       () async {
         final updated = _service.removeEntry(plan: current, entryId: entryId);
         if (isDisposed || identical(updated, current)) return;
-        await _service.save(updated);
-        if (isDisposed) return;
-        _plan = updated;
-        notifyListeners();
+        await _publishThenSave(updated, current);
       },
       errorPrefix: 'Kunde inte ta bort receptet',
     );
@@ -369,21 +472,37 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
     final current = _plan;
     if (current == null) return false;
     if (current.isEmpty && _overflow.isEmpty) return false;
-    return executeAsyncVoid(
+    final previousOverflow = _overflow;
+    return _executeWrite(
       () async {
         final cleared = _service.clearWeek(current);
         if (isDisposed) return;
-        final entriesChanged = !identical(cleared, current);
-        if (entriesChanged) await _service.save(cleared);
-        if (isDisposed) return;
         // Snapshots read the PRE-clear values, so they are taken from `current`
-        // and `_overflow` before the two assignments below. Placed after the
-        // save so a refused clear arms no undo window.
+        // and `_overflow` before the assignments below.
         _preClearEntries = List.unmodifiable(current.entries);
-        _preClearOverflow = List.unmodifiable(_overflow);
+        _preClearOverflow = List.unmodifiable(previousOverflow);
         _plan = cleared;
         _overflow = const [];
         notifyListeners();
+        _publishInFlight = false;
+        if (identical(cleared, current)) return;
+        try {
+          await _service.save(cleared);
+        } catch (_) {
+          // The clear was shown before it was persisted, so a refusal puts
+          // back all four pieces — plan, tray, and both halves of the undo
+          // window it armed. Leaving the snapshot would offer "Ångra" for a
+          // clear that never happened. Only if it is still the resident plan:
+          // the user may have moved on while the refusal was in flight.
+          if (!isDisposed && identical(_plan, cleared)) {
+            _plan = current;
+            _overflow = previousOverflow;
+            _preClearEntries = null;
+            _preClearOverflow = null;
+            notifyListeners();
+          }
+          rethrow;
+        }
       },
       errorPrefix: 'Kunde inte rensa veckan',
     );
@@ -396,21 +515,34 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
     final overflowSnapshot = _preClearOverflow;
     final current = _plan;
     if (snapshot == null || current == null) return;
-    await executeAsyncVoid(
+    final previousOverflow = _overflow;
+    await _executeWrite(
       () async {
         final restored = _service.restoreWeek(current, snapshot);
-        if (isDisposed) return;
-        await _service.save(restored);
         if (isDisposed) return;
         _plan = restored;
         // Restore the tray too — clearWeek wiped it, so undo must bring it back
         // or the overflow recipes vanish even though the user tapped "Ångra".
         _overflow = overflowSnapshot ?? const [];
-        // Consumed only once the write landed, so a refused undo leaves the
-        // snapshot in place and the user can try again.
         _preClearEntries = null;
         _preClearOverflow = null;
         notifyListeners();
+        _publishInFlight = false;
+        try {
+          await _service.save(restored);
+        } catch (_) {
+          // Shown before persisted, so a refusal puts the cleared week back
+          // AND re-arms the snapshot — otherwise the user has neither their
+          // week nor a second chance at "Ångra".
+          if (!isDisposed && identical(_plan, restored)) {
+            _plan = current;
+            _overflow = previousOverflow;
+            _preClearEntries = snapshot;
+            _preClearOverflow = overflowSnapshot;
+            notifyListeners();
+          }
+          rethrow;
+        }
       },
       errorPrefix: 'Kunde inte ångra rensningen',
     );
@@ -476,7 +608,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
     final from = currentWeekStart;
     final to = from.add(const Duration(days: 7));
     int? copied;
-    final ok = await executeAsyncVoid(
+    final ok = await _executeWrite(
       () async {
         copied = await _service.copyWeek(
           fromWeekStart: from,
@@ -484,6 +616,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
         );
       },
       errorPrefix: 'Kunde inte kopiera veckan',
+      guarded: false,
     );
     if (!ok) return null;
     return copied;
@@ -531,7 +664,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
     final ids = _selectedEntryIds.toList(growable: false);
     final weekStart = currentWeekStart;
     int? moved;
-    final ok = await executeAsyncVoid(
+    final ok = await _executeWrite(
       () async {
         moved = await _service.bulkMoveEntries(
           weekStart: weekStart,
@@ -546,6 +679,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
         await _fetchWeek(weekStart);
       },
       errorPrefix: 'Kunde inte flytta recepten',
+      guarded: false,
     );
     // Clear selection regardless of outcome — a failed move shouldn't leave
     // the user trapped in selection mode over a now-uncertain plan.

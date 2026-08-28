@@ -323,7 +323,12 @@ you want the revert-probe that proved it; or this file itself reads too compress
   final persist-then-publish shape was reported as pinned by three entry-mutator tests; a
   two-method mutant showed `clearWeek` and `undoClearWeek` each redden on their own
   `same(<pre-save plan>)` assertion (2026-08-27). One `cp`-backed probe on ONE file, restored
-  and md5-verified in the next call, settles it in ~90s.
+  and md5-verified in the next call, settles it in ~90s. **A sentence a reversal falsified
+  outlives the ticket that reversed it and rides into the NEXT one's staged commit** — the same
+  "each had to be REORDERED" clause was still the group header at BUT-1975/1965, where the code
+  publishes before the save by design, so it now prescribes reverting a decision the founder
+  made. When a ticket reverses a design, grep the PRIOR ticket's graded comments as part of the
+  new review, not only the new diff; the repair is a strike (2026-08-28).
 
 ### Project-specific test infrastructure (full detail in `testing-specialist.md`)
 - Production ServiceLocator bridge: `production.ServiceLocator.initialize(DIContainer())`
@@ -568,6 +573,17 @@ Codecov: 60% project / 70% new patches / 2% drop tolerance — floors, decided 5
   needs proof PER SITE (`any(named:)` survives mutants on the other sites). A comment naming
   two shapes one guard catches is two claims — the second is often unreachable-but-true;
   reachability is a producer question.
+- **An optimistic-publish ROLLBACK is pinned only for the field the refusal test reads, and
+  every OTHER field it restores is deletable-green whenever the fixture's collateral collection
+  is EMPTY.** Measured on BUT-1975/1965: deleting the rollback assignments for
+  `_overflow`, `_recentlyPlacedEntryIds`, `_preClearOverflow` and `placedCount` across three
+  hand-rolled catch blocks left 65/65 green, because every refusal fixture seeded an empty
+  overflow tray. `_plan` alone was held. Grade a rollback FIELD BY FIELD, seed each collateral
+  collection NON-EMPTY and DIFFERENT from what the operation would leave, and check the
+  RETRY-after-failure path — a lost re-armed snapshot is permanent data loss the failure test
+  itself cannot see. The guard's release in a `finally` is a separate question and is usually
+  pinned only INCIDENTALLY, by whichever test performs a second write after a failed one
+  (2026-08-28).
 - **Fixture-shape family**: the fixture's own shape answers for the code. An accumulator off
   `.first` hides its loop unless the first item is interior on every axis; enumerate every
   field production READS, override each independently. **Two DIFFERENT expressions that

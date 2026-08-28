@@ -2321,3 +2321,26 @@ week the device has seen before.
 `applyGeneratedMenu` awaits a `save()` whose Future does not complete until the server
 acknowledges, so a generated week may still fail to render offline. Filed as BUT-1965, and
 explicitly unverified on a device.
+
+**SUPERSEDED IN PART 2026-08-29 (BUT-1975).** The paragraph above still describes the
+await correctly — `applyGeneratedMenu` does await a `save()` that waits for the server.
+Its CONSEQUENCE clause is now narrower rather than gone: while the calendar is ALREADY on
+screen (kalender mode) a generated week does render offline. From the lista-mode
+"Placera automatiskt" footer it still does not — `_onPlaceAutomatically` awaits the
+result before switching the view mode, and the calendar widget is not in the tree until
+it does, so offline the published week goes to a widget nobody is rendering. That
+view-side half is unbuilt; it is written up in a comment on BUT-1975 (Linear's issue
+limit refused a new ticket on 2026-08-29). Two things changed on the VM side, and only both together:
+the distributed week is published to
+`_plan` BEFORE the save is awaited, and `applyGeneratedMenu` now runs through
+`_executeWrite`, which does not raise `isLoading` (`LoadingStateBuilder` consults that
+before it looks at `data`, so a pending write used to render as a spinner regardless). Either alone leaves the week invisible offline, which is
+why fas 2's reordering measured as no change and was rolled back.
+The mechanism the paragraph describes was reproduced first — Chrome plus the Firestore
+emulator plus `disableNetwork()`, 2026-08-28, on the WEB SDK: offline `set()` applies
+locally
+(`hasPendingWrites: true`) and its Future stays uncompleted until the connection returns.
+That measurement is on BUT-1965. It was NOT reproduced on a phone; this machine offers only
+Windows, Chrome and Edge, so the "unverified on a device" half of the sentence above stands.
+A refused save now rolls the calendar back, guarded on the published plan still being the
+resident one. Malin's decision, 2026-08-28.
