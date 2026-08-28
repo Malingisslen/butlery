@@ -338,23 +338,79 @@ säger att dedup aldrig får blockera menygenerering — så den lämnas.
 
 ## Fas 4 — skrivhalvan offline (BUT-1965)
 
-- [ ] **Verifiera på riktig enhet i flygplansläge FÖRE någon kod.** Påståendet är läst ur
-      Firestores skrivsemantik, inte reproducerat.
-- [ ] Om det inte stämmer: stäng ticketen med mätningen. Repot har en lärdom om ticketar vars
-      angivna skada visar sig falsk (BUT-1883).
-- [ ] Om det stämmer: skilj "accepterad lokalt" från "kvitterad av servern", och bestäm vad
-      kalendern visar i mellanläget.
+- [x] **Verifiera FÖRE någon kod.** Gjort 2026-08-28, men **inte på en telefon** — maskinen
+      har bara Windows, Chrome och Edge som mål. Mätt i stället med projektets egen
+      `cloud_firestore` mot emulatorn i Chrome, med `disableNetwork()`.
+- [x] Mekanismen är BEKRÄFTAD, inte motbevisad.
+- [x] Ingen kod ändrad — se nedan varför.
+
+### Utfall fas 4
+
+```
+ONLINE set() completed in 2282 ms
+after 5 s offline, set() resolved? false
+local cache says phase=offline (fromCache=true, hasPendingWrites=true)
+after reconnect, set() resolved? true
+```
+
+Skrivningen tillämpas lokalt direkt; dess `Future` väntar på serverns kvittens och
+fullbordas vid återanslutning. **Mätningens gräns: webb-SDK:n, inte den native plugin en
+telefon kör.** Kontraktet är detsamma i Firestores design, men den klienten är omätt.
+
+**Det som gör att ingen kod skrevs:** `applyGeneratedMenu` blockeras offline av TVÅ
+oberoende saker, och var för sig ändrar de ingenting synligt.
+
+1. `await _service.save(...)` ligger före tilldelningen av `_plan`
+   (`weekly_menu_plan_viewmodel.dart:263`) — nås aldrig offline. Det är BUT-1965.
+2. `executeAsyncVoid` gör `setLoading(true)` och rensar först efter `await operation()`
+   (`base_viewmodel.dart:227-231`) — nås aldrig heller, så `isLoading` fastnar sant och
+   `LoadingStateBuilder` returnerar laddningswidgeten innan den läser `data`. Det är
+   BUT-1975.
+
+Bara 1: snurran ligger kvar. Bara 2: `_plan` är otilldelad. **Kodändringen hör alltså till
+BUT-1975:s bygge**, som Malin beslutade samma dag. Det förklarar också varför fas 2:s
+omläggning av skrivordningen mättes som verkningslös — den lagade 1 medan 2 stod kvar.
 
 ## Fas 5 — se över vakterna, sist
 
-Med fas 0 pinnat och fas 2 fixat blir klientvägran **djupförsvar** i stället för huvudnumret.
+- [x] Genomgången gjord 2026-08-28. **Beslut: alla tre står kvar. Ingen kod ändrad.**
 
-- [ ] Behövs alla tre kvar? BUT-1961:s undantag på den personliga kedjan försvagar redan
-      BUT-1928:s vakt medvetet.
-- [ ] Om något tas bort: en accepterad avvikelse i båda filerna, inte en tyst borttagning.
+### Utfall fas 5 — och premissen jag höll på att bygga på var fel
 
-**Gör inte detta före 0 och 2.** Att ta bort en vakt vars ersättare inte är pinnad är hur
-skyddet försvinner.
+De tre är skrivvägarnas vägran: omröstningens stängning på den personliga kedjan
+(`messaging_service.dart:1035`), samma på gruppkedjan (`:1134`), och onboardingens
+exempelsådd (`onboarding_viewmodel.dart:515`).
+
+**Det argument jag först formulerade — "vakterna skyddar en enkelriktad dörr som serverns
+vägran kommer för sent för" — är MOTBEVISAT.** `closePoll` skriver planen FÖRE den stänger
+omröstningen (`messaging_service.dart:895-931`, med kommentaren som säger just det). Ett kast
+från servern lämnar alltså omröstningen öppen precis som vaktens kast gör. Dörren brinner
+inte i någotdera fallet.
+
+**Vad reglerna faktiskt täcker, mätt:** `cannotModify(['userId', 'createdAt'])` sitter bara på
+`update`-limben (`firestore.rules:927`), inte på `create` (`:919-921`). Alltså:
+
+- Veckan HAR en sparad plan → dokumentet finns → skrivning byggd på en misslyckad läsning är
+  en UPDATE med färskt `createdAt` → **servern vägrar**.
+- Veckan har INGEN sparad plan → CREATE → **servern accepterar** — men då finns det heller
+  inget att förstöra.
+
+Serverns skydd sammanfaller alltså med precis de fall där förstörelse är möjlig. **Vakterna
+är inte längre det som hindrar dataförlust.** Det är en verklig statusändring och den är värd
+att veta.
+
+**Varför de ändå står kvar:**
+
+1. De vägrar tidigt och billigt — ingen dömd rundtur till servern, och ett begripligt svenskt
+   fel i stället för en generisk regelvägran.
+2. Serverns täckning är en BIPRODUKT, inte en design: `cannotModify` finns för att skydda
+   `createdAt` och `userId`, inte för att fånga bygg-på-misslyckad-läsning. Skulle den limben
+   någon gång mjukas upp, eller en merge-skrivning införas, är vakterna det som återstår.
+   Planens egen inledning gör precis den poängen.
+3. Att ta bort dem kräver en accepterad avvikelse som hävdar att servern räcker — och på
+   create-vägen gör den inte det.
+
+Ingen avvikelsepost skrivs, eftersom inget tas bort.
 
 ---
 
