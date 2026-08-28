@@ -1,8 +1,9 @@
 /// Integration tests for [FirebaseWeeklyMenuPlanRepository] (BUT-361).
 ///
 /// Exercises deterministic doc-ID upsert semantics, missing-doc null return,
-/// owner-prefix range delete, >500-doc batch chunking, and the permission
-/// filter that keeps cross-user reads/writes from landing.
+/// owner-prefix range delete, >500-doc batch chunking, and the internal
+/// permission-method invariants. Cross-user WRITE blocking is firestore.rules'
+/// job — `save` passes the CLAIMED owner.
 ///
 /// Uses FakeFirebaseFirestore + MockFirebaseAuth (Fake Lane, post-BUT-389).
 library;
@@ -14,6 +15,7 @@ import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:firebase_auth_mocks/firebase_auth_mocks.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/core/utils/iso_week_utils.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
@@ -129,7 +131,12 @@ void main() {
         // start with the entity's userId. `save()` calls
         // validateUpdatePermission(plan.userId, plan.id, plan), which
         // requires `resourceId.startsWith('${userId}_')`. The mismatch must
-        // be silently rejected.
+        // be refused, and the refusal must REACH THE CALLER.
+        //
+        // BUT-1962: this assertion used to read "save() must log-and-return
+        // when canWrite is false" — it pinned the defect. A caller could not
+        // tell a refusal from a completed save, so the user was shown nothing
+        // when their week failed to persist.
         //
         // Scope note: save() uses `plan.userId` (not the authenticated user)
         // as the permission subject. Cross-user forgery blocking is the
@@ -146,16 +153,17 @@ void main() {
           updatedAt: DateTime(2026, 4, 18, 12),
         );
 
-        // Act
-        await repository.save(forged);
-
-        // Assert — no document ever made it to Firestore.
-        final snapshot = await firestore.collection(_collection).get();
-        expect(
-          snapshot.docs,
-          isEmpty,
-          reason: 'save() must log-and-return when canWrite is false',
+        // Act + assert — the refusal is visible to the caller.
+        await expectLater(
+          repository.save(forged),
+          throwsA(isA<PermissionDeniedException>()),
         );
+
+        // ...and still nothing reached Firestore. Both halves matter: the
+        // throw alone would not prove the write was skipped, and the empty
+        // collection alone was what the silent version also satisfied.
+        final snapshot = await firestore.collection(_collection).get();
+        expect(snapshot.docs, isEmpty);
       });
     });
 

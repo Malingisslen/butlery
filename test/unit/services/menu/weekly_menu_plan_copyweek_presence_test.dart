@@ -68,6 +68,42 @@ void main() {
     );
   });
 
+  // BUT-1962: `copyWeek` kept its save INSIDE `executeServiceOperation` after
+  // the other writes were moved out, so a refused copy came back as 0 — which
+  // the UI renders as "everything was already there".
+  test(
+    'copyWeek propagates a refusal rather than reporting 0 copied',
+    () async {
+      final nextMon = mon.add(const Duration(days: 7));
+      final source = WeeklyMenuPlan.empty(userId: 'u', date: mon).copyWith(
+        entries: [
+          WeeklyMenuPlanEntry.create(
+            day: DayOfWeek.mon,
+            slot: MealSlot.middag,
+            recipeId: 'r-copy',
+            recipeTitle: 'Tacos',
+          ),
+        ],
+      );
+      when(
+        () => repo.fetchForWeek(
+          userId: any(named: 'userId'),
+          weekStart: any(named: 'weekStart'),
+        ),
+      ).thenAnswer(
+        (inv) async => inv.namedArguments[#weekStart] == mon ? source : null,
+      );
+      when(
+        () => repo.save(any()),
+      ).thenThrow(StateError('refused by the repository'));
+
+      await expectLater(
+        () => service.copyWeek(fromWeekStart: mon, toWeekStart: nextMon),
+        throwsA(isA<StateError>()),
+      );
+    },
+  );
+
   test(
     'copyWeek carries the source week\'s presence into the new week',
     () async {

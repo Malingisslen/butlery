@@ -11,10 +11,8 @@
 /// at the call site. Avoid inline string literals.
 library;
 
-/// All `logEvent(name: ...)` values used in the app. Grouped by domain in
-/// declaration order: auth/lifecycle, recipes, menu, shopping, social,
-/// import/parse, system/perf, attribution, notifications, milestones,
-/// review prompts, security.
+/// All `logEvent(name: ...)` values used in the app, grouped by domain in
+/// declaration order — see the section dividers below.
 abstract final class AnalyticsEvents {
   // --- Auth / lifecycle ---
   static const appOpened = 'app_opened';
@@ -49,6 +47,11 @@ abstract final class AnalyticsEvents {
   // Parameters: `menuEntries` (int), `shoppingItems` (int). Both 0 means
   // seeding ran but had nothing to place (no recipes seeded / plan non-empty).
   static const onboardingMenuSeeded = 'onboarding_menu_seeded';
+  // BUT-1962: the seed's own failure. Deliberately telemetry and NOT an error
+  // shown to the user — the sample week is not their work, and a red message
+  // about a menu they never made is a worse first impression than a thinner
+  // calendar. A first-run seeding failure is a funnel defect Product owns.
+  static const onboardingMenuSeedFailed = 'onboarding_menu_seed_failed';
   // BUT-545: dedicated outcome events for the onboarding import page so
   // the activation funnel can distinguish "tried-and-imported" from
   // "tried-and-failed" from "skipped". The generic import_started/success

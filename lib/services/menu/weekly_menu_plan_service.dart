@@ -119,12 +119,25 @@ class WeeklyMenuPlanService extends BaseService {
   }
 
   /// Persist [plan] (upsert by deterministic doc ID).
-  Future<void> save(WeeklyMenuPlan plan) async {
-    await executeServiceOperation(
-      () => _repository.save(plan),
-      operationName: 'saveWeeklyMenuPlan',
-    );
-  }
+  ///
+  /// Deliberately NOT wrapped in `executeServiceOperation`, which answers a
+  /// failure with a default value. For a READ that is a usable fallback; for a
+  /// write there is no default, so it made a refused save indistinguishable
+  /// from a completed one and the user was told nothing at all (BUT-1962).
+  ///
+  /// A failure therefore propagates. Where the caller routes it through
+  /// `BaseViewModel.executeAsyncVoid`, that catches and calls `setError`,
+  /// which is how a Swedish error prefix reaches the screen. Not every caller
+  /// does — the onboarding seed deliberately shows nothing at all — so read the
+  /// call site rather than assuming this surfaces.
+  ///
+  /// Note what this does NOT cover: with `persistenceEnabled: true` an offline
+  /// write does not throw — it applies locally and the future stays pending
+  /// until the server acks. So this path sees refusals and faults, not
+  /// offline. Offline has two open tickets: BUT-1965 for the generated-week
+  /// write, and BUT-1975 for the calendar sitting in a permanent loading state
+  /// because this future never completes.
+  Future<void> save(WeeklyMenuPlan plan) async => _repository.save(plan);
 
   /// BUT-996: copy every entry from [fromWeekStart] into [toWeekStart].
   ///
@@ -153,7 +166,8 @@ class WeeklyMenuPlanService extends BaseService {
     final normalizedTo = IsoWeekUtils.weekStartOf(toWeekStart);
     if (normalizedFrom == normalizedTo) return 0;
 
-    final result = await executeServiceOperation<int>(
+    // The record's plan is null for every "nothing to copy" outcome.
+    final prepared = await executeServiceOperation<(WeeklyMenuPlan?, int)>(
       () async {
         final source = await _repository.fetchForWeek(
           userId: userId,
@@ -163,8 +177,10 @@ class WeeklyMenuPlanService extends BaseService {
         // with no entries but explicit presence must still carry that presence
         // forward (acceptance criterion 5). Only a truly empty source (no
         // entries AND no presence) short-circuits, via the guard below.
-        if (source == null) return 0;
-        if (source.entries.isEmpty && source.presenceBySlot.isEmpty) return 0;
+        if (source == null) return (null, 0);
+        if (source.entries.isEmpty && source.presenceBySlot.isEmpty) {
+          return (null, 0);
+        }
 
         final destFetched = await _repository.fetchForWeek(
           userId: userId,
@@ -201,18 +217,25 @@ class WeeklyMenuPlanService extends BaseService {
           source.presenceBySlot,
         );
 
-        if (newEntries.isEmpty && !presenceAdded) return 0;
+        if (newEntries.isEmpty && !presenceAdded) return (null, 0);
 
         dest = dest.copyWith(
           entries: [...dest.entries, ...newEntries],
           presenceBySlot: mergedPresence,
         );
-        await _repository.save(dest);
-        return newEntries.length;
+        return (dest, newEntries.length);
       },
       operationName: 'copyWeek',
     );
-    return result ?? 0;
+    if (prepared == null) return 0;
+    final (planToSave, copied) = prepared;
+    if (planToSave == null) return 0;
+    // Outside the wrapper on purpose: inside it, a refused copy came back as 0
+    // and the UI rendered that as "everything was already there" (BUT-1962).
+    // The READS still sit inside it, and a read that THROWS still returns 0 —
+    // the same symptom, on the other half. BUT-1972.
+    await _repository.save(planToSave);
+    return copied;
   }
 
   /// Deep-merges [source] presence into [dest], with dest winning on any
@@ -321,7 +344,7 @@ class WeeklyMenuPlanService extends BaseService {
   /// algorithm still places one per day in chronological order. Anything
   /// that doesn't fit lands in [WeeklyMenuDistributionResult.overflow].
   ///
-  /// [now] is injected for testability — defaults to `DateTime.now()`.
+  /// [now] is injected for testability — defaults to the ambient clock.
   WeeklyMenuDistributionResult distributeFromGeneratedMenu({
     required Map<String, List<Recipe>> generated,
     required DateTime weekStart,
@@ -505,11 +528,6 @@ class WeeklyMenuPlanService extends BaseService {
         dayIdx++;
       }
     }
-    // Use `_repository.save` directly (not `save()`), bypassing
-    // `executeServiceOperation` which gates on service-initialised state
-    // and is unfriendly to mock-only unit tests. The error surface for a
-    // failed bulk-assign save is intentionally raw — the caller (snackbar
-    // handler) catches and surfaces; we don't want a swallow-and-return-null.
     if (added > 0) await _repository.save(plan);
     return (added: added, overflowed: overflowed);
   }
@@ -548,8 +566,6 @@ class WeeklyMenuPlanService extends BaseService {
         recipe: recipe,
       );
     }
-    // Direct `_repository.save` for the same reason as bulkAssignRecipes:
-    // raw error surface for the snackbar handler, mock-friendly in tests.
     await _repository.save(plan);
     return unique.length;
   }
@@ -560,8 +576,7 @@ class WeeklyMenuPlanService extends BaseService {
   /// empty list is a deliberate "nobody home" selection and is kept.
   ///
   /// Returns the updated plan so the caller can adopt it in memory without
-  /// a re-read. Uses `_repository.save` directly for the same raw error
-  /// surface / mock-friendliness as the other targeted write paths.
+  /// a re-read.
   Future<WeeklyMenuPlan> setSlotPresence({
     required DateTime weekStart,
     required DayOfWeek day,
@@ -629,8 +644,8 @@ class WeeklyMenuPlanService extends BaseService {
     return result;
   }
 
-  /// Shared write-path loader for the bulk operations: fetch the week's
-  /// plan or start from an empty one. Normalizes [weekStart] to Monday.
+  /// Shared write-path loader: fetch the week's plan or start from an empty
+  /// one. Normalizes [weekStart] to Monday.
   Future<WeeklyMenuPlan> _loadPlanForWrite({
     required String userId,
     required DateTime weekStart,

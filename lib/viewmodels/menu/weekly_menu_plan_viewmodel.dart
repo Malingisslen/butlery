@@ -282,14 +282,19 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
     return placedCount;
   }
 
-  Future<void> assignRecipe({
+  /// Returns whether the entry was actually persisted. [assignFromOverflow]
+  /// needs that answer: the overflow tray is in-memory only and nothing
+  /// repopulates it, so pruning a chip after a refused save loses the recipe
+  /// until the menu is regenerated.
+  Future<bool> assignRecipe({
     required DayOfWeek day,
     required MealSlot slot,
     required Recipe recipe,
   }) async {
     final current = _plan;
-    if (current == null) return;
-    await executeAsyncVoid(
+    if (current == null) return false;
+    var persisted = false;
+    final ok = await executeAsyncVoid(
       () async {
         final updated = _service.addEntry(
           plan: current,
@@ -298,13 +303,15 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
           recipe: recipe,
         );
         if (isDisposed) return;
-        _plan = updated;
         await _service.save(updated);
+        persisted = true;
         if (isDisposed) return;
+        _plan = updated;
         notifyListeners();
       },
       errorPrefix: 'Kunde inte lägga till receptet',
     );
+    return ok && persisted;
   }
 
   Future<void> moveEntry({
@@ -323,9 +330,9 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
           toSlot: toSlot,
         );
         if (isDisposed || identical(updated, current)) return;
-        _plan = updated;
         await _service.save(updated);
         if (isDisposed) return;
+        _plan = updated;
         notifyListeners();
       },
       errorPrefix: 'Kunde inte flytta receptet',
@@ -339,9 +346,9 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
       () async {
         final updated = _service.removeEntry(plan: current, entryId: entryId);
         if (isDisposed || identical(updated, current)) return;
-        _plan = updated;
         await _service.save(updated);
         if (isDisposed) return;
+        _plan = updated;
         notifyListeners();
       },
       errorPrefix: 'Kunde inte ta bort receptet',
@@ -354,22 +361,28 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
   /// [undoClearWeek] can restore the full state within the 7-second SnackBar
   /// window. The overflow snapshot is required because clearWeek also wipes the
   /// tray — without it, undo would silently lose the overflow recipes.
-  Future<void> clearWeek() async {
+  /// Returns whether the week was actually cleared. The view needs that: the
+  /// success snackbar carries the "Ångra" affordance, and a refused clear arms
+  /// no undo snapshot, so announcing it would offer a dead button on top of
+  /// the error state.
+  Future<bool> clearWeek() async {
     final current = _plan;
-    if (current == null) return;
-    if (current.isEmpty && _overflow.isEmpty) return;
-    await executeAsyncVoid(
+    if (current == null) return false;
+    if (current.isEmpty && _overflow.isEmpty) return false;
+    return executeAsyncVoid(
       () async {
-        // Capture snapshots before mutating so the undo path can restore both.
-        _preClearEntries = List.unmodifiable(current.entries);
-        _preClearOverflow = List.unmodifiable(_overflow);
         final cleared = _service.clearWeek(current);
         if (isDisposed) return;
         final entriesChanged = !identical(cleared, current);
-        _plan = cleared;
-        _overflow = const [];
         if (entriesChanged) await _service.save(cleared);
         if (isDisposed) return;
+        // Snapshots read the PRE-clear values, so they are taken from `current`
+        // and `_overflow` before the two assignments below. Placed after the
+        // save so a refused clear arms no undo window.
+        _preClearEntries = List.unmodifiable(current.entries);
+        _preClearOverflow = List.unmodifiable(_overflow);
+        _plan = cleared;
+        _overflow = const [];
         notifyListeners();
       },
       errorPrefix: 'Kunde inte rensa veckan',
@@ -383,18 +396,20 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
     final overflowSnapshot = _preClearOverflow;
     final current = _plan;
     if (snapshot == null || current == null) return;
-    _preClearEntries = null;
-    _preClearOverflow = null;
     await executeAsyncVoid(
       () async {
         final restored = _service.restoreWeek(current, snapshot);
+        if (isDisposed) return;
+        await _service.save(restored);
         if (isDisposed) return;
         _plan = restored;
         // Restore the tray too — clearWeek wiped it, so undo must bring it back
         // or the overflow recipes vanish even though the user tapped "Ångra".
         _overflow = overflowSnapshot ?? const [];
-        await _service.save(restored);
-        if (isDisposed) return;
+        // Consumed only once the write landed, so a refused undo leaves the
+        // snapshot in place and the user can try again.
+        _preClearEntries = null;
+        _preClearOverflow = null;
         notifyListeners();
       },
       errorPrefix: 'Kunde inte ångra rensningen',
@@ -436,8 +451,11 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
     required DayOfWeek day,
     required MealSlot slot,
   }) async {
-    await assignRecipe(day: day, slot: slot, recipe: recipe);
-    if (isDisposed) return;
+    // Prune only once the write landed. The tray is the recipe's only
+    // remaining home — `_fetchWeek` does not repopulate it — so pruning on a
+    // refused save dropped it for good.
+    final saved = await assignRecipe(day: day, slot: slot, recipe: recipe);
+    if (isDisposed || !saved) return;
     final pruned = _overflow.where((r) => r.id != recipe.id).toList();
     if (pruned.length == _overflow.length) return;
     _overflow = pruned;

@@ -585,6 +585,11 @@ class OnboardingViewModel extends BaseViewModel {
       );
     } catch (e) {
       AppLogger.warning('Failed to seed sample menu: $e');
+      // Measured, not narrated. The seed stays silent to the user (see the
+      // constant's comment) but must not stay silent to us — this catch has
+      // always swallowed, and since BUT-1962 made a refused save throw, a
+      // permission failure lands here too rather than being lost a layer down.
+      _analytics?.logEvent(name: AnalyticsEvents.onboardingMenuSeedFailed);
     }
   }
 }

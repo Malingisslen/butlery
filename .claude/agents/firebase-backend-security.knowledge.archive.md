@@ -6834,3 +6834,396 @@ Verified clean in the same pass, for the record:
   absence"); it exists at `test/unit/repositories/firebase/base_firebase_repository_extra_test.dart:472`.
 - CI wiring is real: the new suite is in `firestore-rules.yml` (both `paths:` blocks),
   `test:rules:all`, and its own `test:rules:weekly-menu-plans` script.
+
+## 2026-08-27 — BUT-1962 re-review: menu-plan saves stop swallowing refusals
+
+Re-review of the staged diff after five graded findings were acted on. Files re-read:
+`firebase_weekly_menu_plan_repository.dart`, `firebase_group_weekly_menu_plan_repository.dart`,
+`weekly_menu_plan_service.dart`, `group_weekly_menu_plan_service.dart`, plus
+`base_firebase_repository.dart`, `permission_validation_mixin.dart`, `permission_exceptions.dart`,
+`log_sanitizer.dart`, `logger.dart`, `base_service.dart`, `messaging_service.dart` (poll close),
+`menu_placement_viewmodel.dart`, `onboarding_viewmodel.dart` and `firestore.rules` §audit_logs.
+
+**Blocking (1): a masking claim that names no sink.** The new `logPermissionCheck` comment in
+`firebase_weekly_menu_plan_repository.dart` ended "`LogSanitizer` masks it on every sink that
+leaves the device". Measured: the raw uid reaches exactly two sinks from this call, and
+LogSanitizer touches NEITHER. (1) `logPermissionCheck` builds
+`'Permission GRANTED: User=$userId, Resource=$resource…'` and hands it to `AppLogger.info`
+(granted) or `AppLogger.warning` (denied); both are `developer.log` ONLY — the redactor
+(`maskIdentifiers`) lives in `_logToCrashlytics`, which only `AppLogger.error` calls. (2) the
+audit document itself carries the uid raw to Firestore, deliberately, because Art. 30 needs it.
+So the sentence asserts a protection on a path that has none, in the one comment answering the
+plan's explicit privacy question to this agent (`tasks/todo.md` §"Öppen designfråga"). Remedy:
+STRIKE the clause; the preceding sentence ("what the Art. 30 audit row needs to name its
+subject") is true and stands alone.
+
+**Verified correct, and the reason finding C's fix was right.** `firestore.rules:2561-2565`:
+`allow create: if isAuthenticated() && request.auth.uid == request.resource.data.userId && …`.
+So `userId: requireCurrentUserId()` is not a style choice — naming `plan.userId` would have the
+server refuse the row in precisely the mismatch case the denial exists for. Also confirmed the
+call cannot fail a save: `unawaited(... .catchError(...))` inside a `try`. That is what makes
+running it BEFORE the deny branch, on every save, safe.
+
+**Q1, `requireCurrentUserId()` can now throw on a granted save.** No legitimate unauthenticated
+caller exists: every write path in `WeeklyMenuPlanService` already requires
+`_userService.currentUserProfile?.uid` (throws `StateError` or returns 0), the poll-close path
+runs as the authenticated closer, and `onboarding_viewmodel` wraps its seed in try/catch (now
+with `onboardingMenuSeedFailed` telemetry). The one new divergence is the sign-out race —
+profile cached, `authRepository.currentUserId` already null — which previously proceeded to
+`set()` and was denied server-side in silence, and now throws `AuthenticationException` the VM
+renders. Strictly better.
+
+**Q2, the masked `StateError`.** `maskConversationId` is the IDENTITY function for a non-`direct_`
+id, so a group auto-id passes through fully debuggable; only `direct_<a>_<b>` is hashed. Applied
+at interpolation, i.e. where the value enters the message — correct, because `StateError` gets
+none of `PermissionDeniedException.toString()`'s `maskIdentifiers` pass, and `recordError` sends
+`exception.toString()`. Reachability measured: `_appendWinnerToGroupPlan` runs only under
+`if (isGroup && conversation != null)`, so `plan.groupId` is a group conversation id and the mask
+is defence-in-depth rather than live protection. Kept as-is — routing through the chokepoint is
+right by construction, and a group auto-id is not derived from uids.
+
+**Q3, `copyWeek`'s save moved outside `executeServiceOperation`.** Nothing lost.
+`executeServiceOperation`'s only pre-flight is `requiresAuth` (default true), which returns the
+default on failure — so an unauthenticated caller yields `prepared == null` and the method
+returns 0 before reaching the save. The save is then gated by the repository's
+`requireCurrentUserId()` + `validateUpdatePermission` + `firestore.rules`. Net guard count went
+up, not down; the pre-flight never covered the write's authorization in the first place.
+
+**Non-blocking, recorded:**
+- The group repo passes the caller-supplied `actorId` as the audit subject rather than
+  `requireCurrentUserId()`. Unreachable today (its single caller passes `currentUserId`), but a
+  future caller with a divergent actor silently loses the row to the same rule finding C fixed.
+- The group repo's `resource: '$collectionName/${plan.id}'` embeds the conversation id; harmless
+  for a group auto-id, and only a `direct_` groupId would make it two raw uids in `audit_logs` —
+  which the `isGroup` branch prevents.
+- One `audit_logs` write per menu save, on a drag-and-drop-heavy screen. `rateLimitWrite`'s
+  bucket is `users/{uid}/rate_limits/audit_logs` and nothing writes it, so the 2 s conjunct is
+  inert and the writes all land. Cost was accepted as a decision in `tasks/todo.md`.
+
+## 2026-08-27 — BUT-1962 weekly-menu save path, FINAL re-review (pass)
+
+Re-read all four files after the parent acted on the previous round's one blocking finding
+and three Lows. Verdict: pass, 0 blocking.
+
+**Q1, the struck masking clause.** Re-measured the sink chain:
+`PermissionValidationMixin.logPermissionCheck` (line ~404) builds `User=$userId, Resource=...`
+and hands it to `AppLogger.info`/`warning`, which are `developer.log` only; the redactor lives
+in `AppLogger._logToCrashlytics`, reachable solely from `AppLogger.error`. The struck sentence
+was false and the strike (not a rewrite) was the right repair. What survives does NOT leave the
+raw-uid choice unexplained: the inner comment on `userId:` names the exact rule that a "fix"
+would break, and `firestore.rules` line ~2562 confirms it verbatim
+(`request.auth.uid == request.resource.data.userId`). Also confirmed both repositories are
+DI-wired WITH `auditRepository` (`content_module.dart` 630-633 and 655-659), so the Art. 30 row
+is live rather than console-only — the claim the comments rest on.
+
+**Q2, the group repo's new `requireCurrentUserId()`.** Same shape as the personal one cleared
+last round, and reachable only in a sign-out race: `MessagingService.closePoll` requires a
+non-null `currentUserId` at entry and passes it down as `creatorId`/`actorId`, and the repo
+resolves the SAME DI `AuthRepository` singleton. In that race the old code proceeded to `set()`
+and was denied by rules in silence; now it throws `AuthenticationException` before the write.
+The poll close happens AFTER the plan save, so either way the poll stays open for a retry. One
+behavioural nuance, benign: an unauthenticated AND unauthorized caller now sees
+`AuthenticationException` rather than `PermissionDeniedException`, because the `requireCurrentUserId()`
+argument is evaluated before the deny branch.
+
+**Q3, `copyWeek` and the BUT-1972 pointer.** Accurate, measured end to end: a throwing read
+inside `executeServiceOperation` returns null -> `prepared == null` -> `return 0` ->
+`copyWeekToNext` reports `ok` with `copied == 0` -> `calendar_weekly_menu_widget._onCopyWeek`
+calls `SnackBarUtils.showSuccess` with `weeklyMenuCopyToNextResult(0)` =
+"Inget kopierades - allt finns redan nasta vecka". So the residual the pointer names is exactly
+what remains. The added line "The record's plan is null for every 'nothing to copy' outcome"
+holds for all three in-wrapper returns.
+
+**Q4, sweep of the remaining comments.** Verified rather than read: `persistenceEnabled: true`
+(`core/bootstrap/firestore_bootstrap.dart:10`) backs the service doc's offline clause;
+`ChatViewModel.closePoll` (chat_viewmodel.dart 507-520) backs "surfaces through `ChatViewModel`
+instead" with `l.pollCloseFailed` and no prefix; `GroupWeeklyMenuPlanService` has exactly one
+non-DI reference repo-wide (`messaging_service.dart:1087`), so "the only live caller" holds.
+
+**Low, carried not re-litigated.** The group repo's `StateError` comment opens "Masked because
+...". `maskConversationId` is the identity function for a non-`direct_` id and the `isGroup`
+branch guarantees a group auto-id, so nothing is actually redacted there - a fact this archive
+already measured and cleared on the previous round as defence-in-depth routing through the
+chokepoint. Not reversed here and NOT worth switching to `maskIdentifiers`, which would truncate
+a debuggable group id to `aBcD***` for no privacy gain (a group auto-id is not derived from
+uids). The only residual is that the word teaches the helper as a general masker; the durable
+form of that went into the PII bullet in the knowledge file.
+
+## 2026-08-27 — BUT-1962 follow-up: the replacement comment moved the false claim one sentence over
+
+File: `lib/repositories/firebase/firebase_group_weekly_menu_plan_repository.dart`,
+`save()`'s doc-ID/groupId mismatch branch (the `StateError`).
+
+Round 1 (four-file scope) carried a Low: the comment claimed the `LogSanitizer.maskConversationId`
+call masked the id, while the helper returns non-`direct_` input unchanged. The replacement
+wording fixed that and introduced two new unmeasured claims:
+
+- "`maskConversationId` is the identity function for anything not starting `direct_`" — false
+  at the edges: `null` -> `'null'`, `''` -> `'[empty]'` (log_sanitizer.dart:79-83). And `''` is a
+  LIVE value on this branch: `GroupWeeklyMenuPlan.fromMap` takes `id` from the doc PATH and
+  `groupId` from the BODY via `SerializationUtils.safeString` (default `''`), so a stored doc
+  missing `groupId` parses to `''`, fails the prefix test, and lands here.
+- "this branch only ever holds a group auto-id" — a claim about the current caller
+  (`MessagingService._appendWinnerToGroupPlan` passes `conversation.id` of an `isGroup`
+  conversation), not about this file. `save()` is a public interface method taking a
+  caller-built plan, and the branch is entered precisely when path and body disagree — the one
+  state no invariant governs. `firestore.rules` 943-983 pins the prefix at CREATE and freezes
+  `groupId` on UPDATE, so a legitimately stored doc cannot reach this branch at all; the
+  comment asserts a value class for a state the rest of the system says is impossible.
+
+Verified and left alone: the call itself stays. `AppLogger.error` (logger.dart:301-344,
+reached from `MessagingService.closePoll`'s `catch` at line 940) runs `maskIdentifiers` over
+the MESSAGE string only and hands the raw `error` object to `recordError`, which sends
+`exception.toString()`. A `StateError` has no build-time mask, so the throw site is its only
+one — clause 1 of the comment is true as written.
+
+Verdict: fail (1 blocking) — strike the middle sentence, keep clauses 1 and 3.
+
+Also filed non-blocking (pre-existing): the class doc and the pre-permission-method comment say
+those methods "only enforce internal self-consistency between the entity's groupId and the
+doc-ID prefix". False in the understating direction — `validateCreatePermission` also requires
+`participantFor(userId) != null`, `validateReadPermission` calls `canRead`, and
+`validateUpdatePermission` calls `canEdit`, which is the check the audit row and the
+`PermissionDeniedException` hang on. "rules enforce admin-only delete" (line 83) is true
+(firestore.rules:979-982).
+
+## 2026-08-27 — BUT-1962 round 3: the repaired comment became a universal over the method set
+
+`lib/repositories/firebase/firebase_group_weekly_menu_plan_repository.dart`, single staged
+file, commit-gate confirmation round.
+
+Verified clean this round (each measured, not reasoned):
+
+- The `StateError` comment. `PermissionDeniedException.toString()` runs
+  `LogSanitizer.maskIdentifiers`; a Dart-core `StateError` has no such wrapper, so the
+  throw-site mask is the only one the OBJECT gets — `AppLogger.error` → `_logToCrashlytics`
+  hands the raw `error` to `FirebaseCrashlytics.recordError` and sanitizes only the `reason`
+  string. The Crashlytics reachability clause holds: `MessagingService.closePoll`'s outer
+  `catch (e) { AppLogger.error('Failed to close poll $messageId', e); rethrow; }` sits above
+  `_appendWinnerToGroupPlan` → `GroupWeeklyMenuPlanService.save` (deliberately NOT wrapped in
+  `executeServiceOperation`) → `repository.save`, with no intervening catch. The middle
+  sentence describing `maskConversationId`'s internals is gone; nothing replaced it, which is
+  the right shape — the previous two attempts both re-asserted a caller invariant.
+- "the only live caller — closing a meal poll": measured, `messaging_service.dart:1148` is the
+  sole production call of `GroupWeeklyMenuPlanService.save`; `RealtimeGroupMenuModule` is
+  read-only (`watchForWeek` only).
+- "like its per-user twin" (skipped `logPermissionCheck`): true of HEAD — `git show
+  HEAD:.../firebase_weekly_menu_plan_repository.dart` has `save` at :116 with no
+  `logPermissionCheck`; the only call at :177 is in `removeRecipeFromAllPlans`.
+- The `logPermissionCheck` actor comment: `firestore.rules` `audit_logs` create pins
+  `request.auth.uid == request.resource.data.userId`, so `requireCurrentUserId()` is right and
+  a caller-supplied divergent uid would lose the Art. 30 row.
+- `validateDeletePermission`'s own comment ("rules enforce admin-only delete") matches
+  `firestore.rules` group_weekly_menu_plans delete limb (`memberPermissions[uid] == 'admin'`).
+
+The one blocking finding: repairing the previous UNDERSTATEMENT ("the permission methods here
+only enforce internal self-consistency") produced an OVERSTATEMENT one register up. The class
+doc and the block comment above the four methods now say the methods enforce the
+doc-ID/groupId invariant AND a participant check. Measured against the bodies:
+`validateCreatePermission` = prefix + `participantFor != null`; `validateUpdatePermission` =
+prefix + `canEdit`; `validateReadPermission` = `canRead`, and `return true` when the entity is
+null; `validateDeletePermission` = unconditional `return true`. So the universal is false for
+delete — the most permissive method in the file, and the one a reader is likeliest to take on
+trust — and half-false for read. `deleteAllByGroup` runs no permission check either.
+
+Second, direction-of-error note folded into the same finding: "belt-and-braces copy" implies a
+duplicate of the authoritative rule, but the create limb of `firestore.rules` requires
+`memberPermissions[uid] in ['edit','admin']` while the repo's create check accepts ANY
+participant including `view`. The repo copy is weaker, not a mirror. The label is correct only
+where it already sits correctly — inside `save()`, on the update check that actually refuses.
+
+Remedy filed as a STRIKE, not a rewrite: delete the generalising clauses in the class doc and
+the block comment, keep the verified specific sentence about `validateUpdatePermission` /
+`save()`, and let `validateDeletePermission`'s existing accurate comment stand. Any enumerated
+replacement ("three of the four do X") would be a fresh measured claim that rots on the next
+method added.
+
+Verdict: fail (1 blocking).
+
+## 2026-08-27 — BUT-1962 round 3: the repair of a permission-method universal promoted the service layer (`firebase_group_weekly_menu_plan_repository.dart`)
+
+Round 2 blocked because a corrected class doc credited all four `validate*Permission`
+methods with a participant check that `validateReadPermission` (null entity -> `true`) and
+`validateDeletePermission` (unconditional `true`) do not run. Round 3 struck the universal
+correctly in both places — class doc and the block comment above the permission methods —
+and both now point the reader at each method's body.
+
+Verified this round against the code:
+- `validateUpdatePermission` -> `entity.canEdit(userId)` -> `participantFor(...)?.canEdit`,
+  i.e. editor/admin, the SAME strength as `firestore.rules` `allow update` on
+  `group_weekly_menu_plans` (line ~967: `memberPermissions[uid] in ['edit','admin']`). So the
+  class doc's "the one `save()`'s denial hangs on" is accurate, and it is not the weak method.
+  `validateCreatePermission` remains WEAKER than the create rule (any participant vs
+  edit/admin) but is now uncredited by any comment and has no production caller (`save()`
+  bypasses `create`).
+- "the only live caller — closing a meal poll": verified. Repo `save()` <- only
+  `GroupWeeklyMenuPlanService.save` <- only `messaging_service.dart`
+  `_appendWinnerToGroupPlan`. The realtime module and `content_export_manager` never write.
+- Delete comment ("rules enforce admin-only delete") matches the rule's `== 'admin'` limb.
+- `deleteAllByGroup` runs no permission check and writes no Art. 30 row; its service wrapper
+  has no production caller at all today. Left out of scope; rules refuse a non-admin's
+  batch deletes.
+
+The blocking finding: the new block comment read "Firestore rules and the service layer
+above are the authoritative gates". The service layer is client-side — `_requireEditor` is
+skipped entirely by a hand-rolled client — so calling it authoritative overstates what is
+protected, and it contradicts the file's own pre-existing (unmodified) comment thirty lines
+below: "The service layer also checks this, and Firestore rules are the authoritative gate".
+Remedy given as a clause STRIKE ("and the service layer above"), which terminates rather
+than opening another wording round. Two low, non-blocking, pre-existing items left standing
+with Malin's agreement: the `query.dart:659` SDK line-number citation in
+`exportPlansForParticipant` (same class as the repo ban on citing `firestore.rules` line
+numbers — strike the parenthetical if touched), and the "like its per-user twin" provenance
+clause beside `logPermissionCheck`, which reads false to anyone opening the twin now that
+the same commit fixed it.
+
+## 2026-08-27 — BUT-1962/BUT-1961 weekly-plan repos, comment-truth round (gate review)
+
+Both weekly-menu-plan repositories re-reviewed on staged bytes after several rounds of
+comment strikes (BUT-1964 masking rationale, the false "chokepoint for every menu edit"
+enumeration, a duplicate raw-uid half-sentence, and both "this one skipped it" clauses).
+
+Security substance verified clean on current bytes:
+- `audit_logs` create rule (`firestore.rules:2561-2562`) pins
+  `request.auth.uid == request.resource.data.userId`, so `requireCurrentUserId()` as the
+  audit subject in both files is correct, and the surviving sentence ("an `audit_logs`
+  create whose uid does not match the caller is refused by the rules") also covers a future
+  "let's mask this uid" fix — the raw-uid choice stays adequately explained after the
+  strikes. No change owed there.
+- `group_weekly_menu_plans` delete limb IS admin-only
+  (`memberPermissions[uid] == 'admin'`), so `validateDeletePermission`'s "rules enforce
+  admin-only delete" claim is true.
+- `PermissionDeniedException.toString()` masks through `LogSanitizer.maskIdentifiers`, so
+  the two new throws carrying a uid are safe on the Crashlytics/web path; the group repo's
+  `StateError` genuinely does reach Crashlytics (`messaging_service.dart` poll-close catch →
+  `AppLogger.error('Failed to close poll …', e)`), which is why the mask sits at the throw
+  site. Its comment correctly declines to claim redaction ("the chokepoint is the point").
+- `getDocCacheFirst` body matches the `fetchForWeek` caller comment: the cached absence is
+  substituted only inside the server read's `catch`.
+- The class-doc's U+F8FF escape-spelling claim is really pinned
+  (`test/architecture/architecture_test.dart:860`).
+- Group service save has exactly one live caller chain (poll close), so that comment's
+  caller claim measured true today.
+
+Two comment findings, both the unmeasured-quantifier class:
+1. "Note this logs per SAVE, on the app's busiest write path" — an unmeasured superlative
+   over the whole app (chat message sends and shopping-list writes are the obvious
+   counterexamples). The asymmetry sentence it introduces stands without it. Strike.
+2. "The AUTHENTICATED actor, like every sibling" — an unbounded universal, refuted inside
+   `lib/repositories/` by `base_storage_repository.dart` (`userId: 'anonymous'`,
+   `userId: currentUserId ?? 'system'`) and `firebase_storage_repository.dart`
+   (`userId: 'anonymous'`). Strike the two words; the rules-pin rationale after it is the
+   load-bearing part and stands alone.
+
+Side observation, NOT filed as part of this gate: those storage-repository audit rows name
+a userId the `audit_logs` create rule cannot accept, so they are written and refused. Worth
+its own ticket if it is not already covered.
+
+Also confirmed a false alarm worth not repeating: the Grep tool renders some
+`firestore.rules` context lines with a leading `\ ` instead of `//`. `sed | cat -A` showed
+the bytes are plain `    // …`. It is a tool rendering artifact, not a corrupted rules file
+— byte-check before filing one.
+
+## 2026-08-27 — BUT-1962 phase 2, confirmation round: `firebase_weekly_menu_plan_repository.dart` (save())
+
+Commit-gate confirmation of ONE staged file after a `fail (1 blocking)` on a fabricated
+deliberation. The struck sentence claimed `save()` weighed per-operation granularity against
+audit volume and "chose granularity"; `save()` writes one document, so one audit row is
+structural and there was no alternative to weigh. Confirmed struck to the end of the block,
+no replacement. What survives above `logPermissionCheck` is one sentence: the call is
+required of every custom permission gate (`lib/repositories/CLAUDE.md`).
+
+Distinguishing measurement worth keeping: the SAME wording ("we log once at the user level,
+not per-plan, to keep audit volume reasonable") sits ~65 lines below in
+`removeRecipeFromAllPlans` and is TRUE there — that method scrubs N plan documents in one
+batch, so per-document logging genuinely exists as the alternative. The defect is per METHOD,
+not per phrase; a grep-and-sweep of the twin would have removed a correct comment.
+
+Verified this round, each against the artefact rather than the sentence:
+- `audit_logs` create rule (`firestore.rules:2561-2564`) pins
+  `request.auth.uid == request.resource.data.userId` (`hasRequiredFields` is `hasAll`, so the
+  extra `resourceId`/`metadata` keys do not deny). `FirebaseAuditRepository.logPermissionCheck`
+  maps its `userId` parameter straight onto the doc's `userId`. So the surviving inline comment
+  ("the AUTHENTICATED actor — naming the claim would lose the Art. 30 row") is operative, and
+  the `userId:` argument is protected against a "fix" to `plan.userId`.
+- The trail is LIVE, not nominal: `content_module.dart:629-634` passes
+  `auditRepository: container<FirebaseAuditRepository>()`.
+- BUT-1964's masking concern, which the plan raised as an open design question to this agent,
+  is resolved rather than contradicted: the removed `AppLogger.warning` is replaced by a throw,
+  and `PermissionDeniedException.toString()` masks at the string boundary, so the raw
+  `userId: plan.userId` field never leaves the device. The raw uid `logPermissionCheck` writes
+  to `AppLogger.info/warning` reaches `developer.log` only, and no comment in the file claims a
+  sanitizer covers it.
+- "Was `return`, which is why a refused save reached the user as silence (BUT-1962)" is TRUE
+  as a causal claim: with `return`, nothing throws, so the service layer's swallowing is not
+  needed to explain the silence. Checked because the same commit also changes that service.
+- Class-doc U+F8FF paragraph: the source spells the sentinel as the six-character escape (backslash-u-f-8-f-f) as the comment claims, and
+  `test/architecture/architecture_test.dart:860` does enforce the spelling.
+- `fetchForWeek`'s block (committed in the BUT-1961 round, not these bytes) still matches
+  `getDocCacheFirst`'s own doc and the ACCEPTED_DEVIATIONS entry, including "only applies once
+  the server read has already failed".
+
+Non-blocking, reported and NOT fixed here:
+- `save()` calls `validateUpdatePermission(plan.userId, plan.id, plan)` — the CLAIMED owner —
+  so `canWrite` reduces to `plan.id.startsWith('${plan.userId}_')` and never involves the
+  authenticated caller. Every sibling in `base_firebase_repository.dart` passes
+  `requireCurrentUserId()`. This diff promotes that verdict into a durable Art. 30 `granted:`
+  value beside a `userId:` that IS the caller. Not exploitable today: all seven service call
+  sites build the plan from `_currentUserId`, and `weekly_menu_plans` rules deny any doc whose
+  ID prefix is not `auth.uid`. The line is pre-existing and untouched by the diff.
+- `exportAllByUser` truncates at `maxDocuments: 260` with no `truncated` flag (pre-existing).
+
+Verdict: pass (0 blocking).
+
+## 2026-08-27 — BUT-1962 commit-gate confirmation: `firebase_group_weekly_menu_plan_repository.dart` (final bytes)
+
+Confirmation round on the committed bytes after `code-reviewer` struck a
+`create`-throws-on-collisions clause from the deterministic-upsert comment. Re-read the whole
+file plus the facts its comments assert. Verified this round:
+
+- Surviving upsert comment is "Deterministic upsert on `{groupId}_{ISO week}`" only. `save()`
+  never calls `BaseFirebaseRepository.create`; it does `collection.doc(plan.id).set(...)`, so
+  the strike removed a claim about a method this path does not use. Nothing security-relevant
+  moved with it: the self-consistency throw, the `logPermissionCheck` and the deny throw are
+  byte-identical to the cleared round.
+- `firestore.rules:943-983` confirms the two comments that lean on it: delete is
+  admin-only (`memberPermissions[uid] == 'admin'`), so `validateDeletePermission`'s
+  "rules enforce admin-only delete" is true; update requires `edit`/`admin`, which
+  `entity.canEdit` (model line 173, `participantFor(...)?.canEdit`) mirrors.
+- `audit_logs` create rule (`firestore.rules:2561`) is
+  `request.auth.uid == request.resource.data.userId` — so the `userId: requireCurrentUserId()`
+  comment is accurate, and `resource: '<collection>/<planId>'` splits into
+  `resourceType`/`resourceId`, satisfying `hasRequiredFields`. Row lands.
+- Crashlytics reachability of the `StateError` is MEASURED, not assumed:
+  `MessagingService.closePoll` (line ~938) has `catch (e) { AppLogger.error('Failed to close
+  poll ...', e); rethrow; }` above `_appendWinnerToGroupPlan` → `GroupWeeklyMenuPlanService.save`
+  (unwrapped, no `executeServiceOperation`) → this repository. So the exception OBJECT reaches
+  `recordError` untouched, which is why masking at the throw site is the only mask it gets.
+- The mask comment stays in the SAFE formulation: "The chokepoint is the point, not the
+  redaction." It claims neither that `maskConversationId` redacts here nor the inverse
+  ("this branch only ever holds <shape>"). Worth recording why the inverse would have been
+  wrong to write EITHER WAY: only `conversation.isGroup` reaches this path, so today's value is
+  a group id the helper passes through unchanged — but the guard branch is entered exactly when
+  the id invariant is violated, so its value class is unconstrained.
+- "The service layer also checks this, and Firestore rules are the authoritative gate" —
+  `GroupWeeklyMenuPlanService.save` does call `_requireEditor` first, and the sentence keeps
+  rules as the sole authority (the exact wording the knowledge file's authority-claim bullet
+  prescribes). "Mirroring the per-user plan repo" is true:
+  `firebase_weekly_menu_plan_repository.dart:117-143` has the same check/log/throw shape.
+- Export truncation is NOT a gap: `exportPlansForParticipant`'s cap is driven by
+  `ExportPaginationHelper.fetchCapped` in `content_export_manager.dart:450-470`, which emits
+  `'truncated': true`.
+
+No new durable rule — every formulation in the file matched a principle already in the
+knowledge file, so this is archive-only.
+
+Low, reported and not fixed: the class doc (lines 17-19) and the block comment above the
+permission methods (lines 45-47) state the same decline-to-generalise fact twice
+(`validateUpdatePermission` is what `save()` refuses on). Both true today; two copies of one
+fact is the drift shape. Recommendation is to STRIKE one, not reword either.
+
+Carried non-blocking (BUT-1974, deliberately not fixed here): the `userId == null` branch skips
+both the permission check and the audit row; the storage repositories' audit rows name a uid the
+`audit_logs` create rule refuses.
+
+Verdict: pass (0 blocking).

@@ -14,6 +14,7 @@ import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:firebase_auth_mocks/firebase_auth_mocks.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/core/utils/iso_week_utils.dart';
 import 'package:butlery/models/menu/group_weekly_menu_plan.dart';
@@ -130,7 +131,8 @@ void main() {
       test('should refuse to persist a plan whose doc-ID prefix does not match '
           'the entity.groupId (internal self-consistency check)', () async {
         // Construct a plan whose id does NOT start with the entity's
-        // groupId. save() must log-and-return rather than create the doc.
+        // groupId. BUT-1962: save() must TELL the caller, not log-and-return
+        // — the silent version made a refusal look like a completed write.
         final forged = GroupWeeklyMenuPlan(
           id: 'spoofed_2026-W15', // prefix does not match groupId below
           groupId: 'real-group',
@@ -148,7 +150,10 @@ void main() {
           lastModifiedBy: callerId,
         );
 
-        await repository.save(forged);
+        await expectLater(
+          repository.save(forged),
+          throwsA(isA<StateError>()),
+        );
 
         final snapshot = await firestore.collection(_collection).get();
         expect(
@@ -211,8 +216,11 @@ void main() {
             ],
           );
 
-          // Viewer — not an editor — must be rejected.
-          await repository.save(plan, userId: 'viewer-uid');
+          // Viewer — not an editor — must be rejected, visibly (BUT-1962).
+          await expectLater(
+            repository.save(plan, userId: 'viewer-uid'),
+            throwsA(isA<PermissionDeniedException>()),
+          );
           var snapshot = await firestore.collection(_collection).get();
           expect(
             snapshot.docs,
@@ -221,8 +229,11 @@ void main() {
                 'view-only member must be blocked by save() permission check',
           );
 
-          // Non-participant stranger — also rejected.
-          await repository.save(plan, userId: 'stranger-uid');
+          // Non-participant stranger — also rejected, also visibly.
+          await expectLater(
+            repository.save(plan, userId: 'stranger-uid'),
+            throwsA(isA<PermissionDeniedException>()),
+          );
           snapshot = await firestore.collection(_collection).get();
           expect(
             snapshot.docs,

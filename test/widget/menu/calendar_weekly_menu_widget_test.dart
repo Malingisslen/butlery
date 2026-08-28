@@ -2,11 +2,7 @@
 ///
 /// Drives a real `WeeklyMenuPlanViewModel` with a mocked
 /// `WeeklyMenuPlanService` + `UnifiedRecipeService` so the view-model's own
-/// state transitions exercise the widget's five UI states:
-/// loading, empty hint, overflow tray, 7×3 grid, today badge.
-///
-/// One `butleryGolden(...)` freezes the layout of the populated-with-overflow
-/// state so the next UI refactor surfaces as a golden diff.
+/// state transitions exercise the widget.
 library;
 
 import 'package:clock/clock.dart';
@@ -280,9 +276,7 @@ void main() {
       );
       addTearDown(vm.dispose);
 
-      // Seed overflow via the VM before the widget mounts — the widget's
-      // own didChangeDependencies will re-call loadWeek, but since the plan
-      // is already resident for the same week it short-circuits.
+      // Seed overflow via the VM before the widget mounts.
       await vm.loadWeek(weekStart);
       await vm.applyGeneratedMenu(const {'middag': []});
 
@@ -787,6 +781,70 @@ void main() {
       );
     });
 
+    // BUT-1962: the ViewModel's `clearWeek()` bool is pinned in the VM suite,
+    // but nothing pinned the VIEW consuming it — reverting the `!cleared` gate
+    // in `_onClearWeek` reddened no test at any layer, and that gate IS the
+    // user-visible half: a refused clear used to announce "Veckan rensad" over
+    // the error state, offering an "Ångra" that arms nothing.
+    group('clear-week announcement is gated on the outcome', () {
+      Future<WeeklyMenuPlanViewModel> pumpWeekWithOneEntry(
+        WidgetTester tester,
+      ) async {
+        final weekStart = IsoWeekUtils.weekStartOf(DateTime(2026, 4, 13));
+        final plan = _plan(
+          weekStart: weekStart,
+          entries: [
+            _entry(
+              day: DayOfWeek.mon,
+              slot: MealSlot.middag,
+              id: 'mon-m',
+              recipeId: 'r-mon',
+              title: 'Pasta',
+            ),
+          ],
+        );
+        when(() => service.readWeek(any())).thenAnswer(
+          (_) async => WeeklyMenuPlanRead(plan: plan, readFailed: false),
+        );
+        when(
+          () => service.clearWeek(any()),
+        ).thenReturn(_plan(weekStart: weekStart));
+        final vm = WeeklyMenuPlanViewModel(
+          service: service,
+          recipeService: recipeService,
+          shoppingListGenerator: _MockMenuShoppingListGenerator(),
+        );
+        addTearDown(vm.dispose);
+        await tester.pumpWidget(
+          _host(vm: vm, child: const CalendarWeeklyMenuWidget()),
+        );
+        await tester.pumpAndSettle();
+        return vm;
+      }
+
+      testWidgets('a REFUSED clear shows no success snackbar', (tester) async {
+        await pumpWeekWithOneEntry(tester);
+        when(() => service.save(any())).thenThrow(Exception('denied'));
+
+        await tester.tap(find.byTooltip('Rensa veckan'));
+        await tester.pumpAndSettle();
+
+        expect(find.text('Veckan rensad'), findsNothing);
+      });
+
+      // The control: without it the assertion above would pass against a view
+      // that never shows the snackbar at all.
+      testWidgets('a successful clear does show it', (tester) async {
+        await pumpWeekWithOneEntry(tester);
+        when(() => service.save(any())).thenAnswer((_) async {});
+
+        await tester.tap(find.byTooltip('Rensa veckan'));
+        await tester.pumpAndSettle();
+
+        expect(find.text('Veckan rensad'), findsOneWidget);
+      });
+    });
+
     // BUT-1280 follow-up: the copy-week affordance's widget-layer wiring. The
     // VM's copyWeekToNext is unit-tested in isolation, but the dialog gate +
     // the three-way result snackbar (N copied / nothing-to-copy / failure)
@@ -939,11 +997,19 @@ void main() {
 
   // -------- Golden -------------------------------------------------------
   //
-  // Populated week — pins the layout of the day rows + single-slot cells
-  // + övrigt cell to a pixel reference so the next UI refactor surfaces
-  // as a golden diff. Does NOT use `butleryGolden` because that helper
-  // builds its own MaterialApp wrapper, and the calendar widget needs a
-  // `ChangeNotifierProvider<WeeklyMenuPlanViewModel>` in scope.
+  // Populated week.
+  //
+  // The blanket `FlutterError.onError` below is the pattern
+  // `test/widget/golden/golden_helper_redness_test.dart` pins as broken:
+  // `matchesGoldenFile` runs its comparator inside `binding.runAsync`, so a
+  // mismatch is routed to that handler and the matcher completes with `null`,
+  // which it reads as a match. Every pixel difference and every wrong-size
+  // render passes. (A MISSING golden file still fails — that error surfaces
+  // through the matcher itself, not through the handler.)
+  //
+  // Not hypothetical: `failures/` carries master/test images from green runs.
+  // This golden is the only one outside `butleryGolden`, which is where the
+  // error filter and the platform pin live. Repair: BUT-1978.
   //
   // Update with `flutter test --update-goldens test/widget/menu`.
   group('CalendarWeeklyMenuWidget golden', () {
@@ -952,7 +1018,9 @@ void main() {
     });
 
     testWidgets('populated week matches golden', (tester) async {
-      // Pin surface + DPR for deterministic pixel grid across platforms.
+      // Surface + DPR are pinned so the render is at least stable within one
+      // platform. It does NOT make the bytes portable — BUT-1931 measured 7 of
+      // 8 goldens differing on ubuntu and 6 of 7 on macOS.
       final previousSize = tester.view.physicalSize;
       final previousRatio = tester.view.devicePixelRatio;
       tester.view.physicalSize = const Size(375, 900);
@@ -1002,9 +1070,7 @@ void main() {
         recipeService: recipeService,
         shoppingListGenerator: _MockMenuShoppingListGenerator(),
       );
-      // Pre-load the plan so the widget mounts with state already resident
-      // — the widget's post-frame callback will still fire loadWeek but
-      // it short-circuits because the target week matches.
+      // Pre-load the plan so the widget mounts with state already resident.
       await vm.loadWeek(weekStart);
       addTearDown(vm.dispose);
 

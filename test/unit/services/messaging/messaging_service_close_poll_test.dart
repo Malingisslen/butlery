@@ -526,6 +526,11 @@ void main() {
       final winnerRecipe = _recipe('recipe-winner', 'Tacos');
       when(() => recipeService.recipes).thenReturn([winnerRecipe]);
 
+      // BUT-1962 relies on this case: the group service used to swallow a
+      // refused save, so the close ran anyway. What the SERVICE does with a
+      // refusal is pinned in `group_weekly_menu_plan_service_test.dart`; this
+      // pins how `closePoll` reacts to one.
+      //
       // Make the group-plan save blow up. The repo close must NOT have
       // been called — otherwise the poll would be closed with no plan
       // entry and the idempotency guard would block retry.

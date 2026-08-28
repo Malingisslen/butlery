@@ -201,7 +201,33 @@ name which doc each end touches before approving it.
   `Future<void> Function({...})` and await, only once the sink can't throw.
 - `requireCurrentUserId()` then `logPermissionCheck(granted:true)` with no real check
   forges the trail. Run the actual `validate*Permission`, log its verdict, fix every sibling
-  (create/update/mutate) in one pass, checking EVERY conjunct of the matching rule.
+  (create/update/mutate) in one pass, checking EVERY conjunct of the matching rule. Its
+  `userId:` must be the AUTHENTICATED caller, never the entity's CLAIMED owner — the
+  `audit_logs` create rule pins `request.auth.uid == request.resource.data.userId`, so
+  naming the claim loses the row in exactly the denial it exists for (put the claimed owner
+  in `resource`). Do NOT write that as "the authenticated actor, like every sibling" — the
+  audit `userId` is NOT uniform across `lib/repositories`: the storage repositories pass the
+  literals `'anonymous'` and `currentUserId ?? 'system'`, which the same create rule refuses,
+  so the universal is false and points at rows that never land. State the rule (the create
+  rule pins `auth.uid`), never a survey of the siblings. The call MASKS NOTHING: the raw uid goes to a device-local `developer.log`
+  (`AppLogger.info`/`warning`, no Crashlytics, no redactor) and raw into the audit document
+  by design — so any comment saying a sanitizer covers it is false; name the SINK. It also
+  cannot fail an operation (`unawaited` + `catchError` + an outer try), which is what makes
+  it safe to run BEFORE the deny branch on every write.
+- A class-doc or block comment that summarises "the permission methods here enforce X" is a
+  UNIVERSAL over the four `validate*Permission` methods, and the member that falsifies it is
+  almost always the one that `return true`s unconditionally (delete, or read on a null
+  entity). A repair for an UNDERSTATEMENT swings straight into it: the corrected sentence
+  credits every method with the check only one or two of them run. Strike the generalisation
+  and let each method's own body speak. Check direction too — a repo copy can be WEAKER than
+  the rule it "mirrors" (create accepting any participant where the rule demands
+  `edit`/`admin`), so "belt-and-braces" belongs on the specific method that refuses, never on
+  the group. The REPAIR round then smuggles a fresh authority claim in the other direction:
+  naming the client-side SERVICE LAYER alongside `firestore.rules` as "the authoritative
+  gates" promotes a layer a hand-rolled client skips. Only rules are authoritative; a Dart
+  layer "also checks". Before writing such a sentence, grep the SAME FILE — the correct
+  formulation is usually already sitting a few lines away, and the fix is to strike the added
+  clause, not to re-word either.
 - An OPT-IN named-parameter guard defaults every EXISTING caller into the restricted branch
   (silent no-op) — ship a named METHOD on the interface instead, with its own exception
   type and a caller that honours the result (ADR-002).
@@ -392,7 +418,18 @@ name which doc each end touches before approving it.
   data wherever it lands; hash it through one chokepoint helper. `\b` treats `_` as a word
   character, so it never fires inside such an id — run the regex on the exact shape rather
   than reading it, and note a raw-uid log guard misses structured args
-  (`AppLogger.x({'uid': uid})`).
+  (`AppLogger.x({'uid': uid})`). A mask helper NAMED FOR ONE ID SHAPE
+  (`maskConversationId`, `direct_` only) is the IDENTITY function on every other shape, so a
+  comment saying "masked" is a claim about which shapes can REACH that call — measure the
+  reachable value class, and reach for `maskIdentifiers` when a uid can arrive. The INVERSE
+  wording ("it redacts nothing here, this branch only ever holds <shape>") is the same
+  caller-invariant-as-fact claim, and on a GUARD branch it is worse: that branch is entered
+  exactly when the invariant is violated, so its value class is the one nothing constrains
+  (here a doc-body field the model parses from stored data, defaulting to `''` — for which
+  the helper returns `[empty]`, not identity). Strike such a clause; do not reword it. The
+  mask at the THROW SITE is nonetheless the only one an exception OBJECT gets —
+  `AppLogger.error` sanitizes the message string only and hands `error` to `recordError`
+  untouched — so keeping the call while striking the sentence is right.
 - A field on a world-readable doc must be audited individually — a boolean gating SEARCH
   does not gate DIRECT-FETCH. A moderation "hide" flag is search-suppression + UI-
   placeholder only unless every direct-fetch consumer also filters it. A presence opt-out
@@ -599,7 +636,12 @@ name which doc each end touches before approving it.
   strike it and state the code fact alone. Re-verify the WHOLE file on the repair round, not
   the struck sentence: the same claim comes back lower down in new wording ("every 'damage is
   bounded' sentence in A/B/C rests on this", as a per-test comment, after the header sentence
-  saying it was deleted).
+  saying it was deleted). A "we chose X over Y" comment is checkable only where Y EXISTS in
+  that method: an audit row beside a ONE-document write has no granularity to trade, so
+  "logged per save to keep volume down" is fabricated deliberation — strike it and leave the
+  bare requirement sentence (`lib/repositories/CLAUDE.md`). The N-document sibling in the same
+  file (a per-user cascade) may carry that identical wording legitimately, so judge per METHOD
+  and do not sweep the twin.
 
 ### Superseded
 - `activity_events` and comment-image Storage orphans (both previously open follow-ups

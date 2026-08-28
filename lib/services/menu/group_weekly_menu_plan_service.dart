@@ -1,12 +1,12 @@
 /// Service layer for group-scoped weekly menu plans.
 ///
 /// Mirrors [WeeklyMenuPlanService] but scoped to a group instead of a user,
-/// and adds per-participant permission checks before any mutation. The
-/// service wraps the repository with:
+/// and adds per-participant permission checks. The service wraps the
+/// repository with:
 ///
 /// - Fetch-or-build semantics for `getOrBuildWeek` (no persist).
 /// - Permission gates (editor+ for entry mutations, admin for participant
-///   management + delete).
+///   management). Read each method — they differ.
 /// - Pure helper methods (`addEntry`, `removeEntry`, `moveEntry`) that
 ///   return updated plans without persisting — callers pick when to save
 ///   so multiple edits can batch into one Firestore write.
@@ -152,8 +152,11 @@ class GroupWeeklyMenuPlanService extends BaseService {
   }
 
   /// Persist [plan]. Throws [PermissionDeniedException] when [actorId] is
-  /// not an editor or admin on the plan. `lastModifiedBy` is stamped with
-  /// [actorId] so audits always reflect the true writer.
+  /// not an editor or admin on the plan — and, since the wrapper was removed,
+  /// whatever else the repository raises: a `StateError` for a mis-keyed doc
+  /// id, an `AuthenticationException` from the audit call, or the Firestore
+  /// failure itself. `lastModifiedBy` is stamped with [actorId] so audits
+  /// always reflect the true writer.
   Future<void> save({
     required GroupWeeklyMenuPlan plan,
     required String actorId,
@@ -163,10 +166,12 @@ class GroupWeeklyMenuPlanService extends BaseService {
       lastModifiedAt: clock.now(),
       lastModifiedBy: actorId,
     );
-    await executeServiceOperation(
-      () => _repository.save(stamped, userId: actorId),
-      operationName: 'saveGroupWeeklyMenuPlan',
-    );
+    // Not wrapped in `executeServiceOperation` — same reason as the per-user
+    // service: it answers a failure with a default, which for a write makes a
+    // refusal indistinguishable from a save (BUT-1962). The only live caller
+    // is the meal-poll close, where swallowing meant the poll burned its
+    // one-way close with no winner in the plan.
+    await _repository.save(stamped, userId: actorId);
   }
 
   /// Add a single recipe to a (day, slot). For lunch/middag, replaces any
@@ -269,9 +274,7 @@ class GroupWeeklyMenuPlanService extends BaseService {
   }
 
   /// Admin-only: remove a participant. Refuses to remove the last admin —
-  /// the service layer guards against an orphaned plan (rules also deny
-  /// admin-field mutation that would leave zero admins, but that's a
-  /// belt-and-braces second line of defence).
+  /// the service layer guards against an orphaned plan.
   GroupWeeklyMenuPlan removeParticipant({
     required GroupWeeklyMenuPlan plan,
     required String actorId,

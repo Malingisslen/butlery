@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:butlery/core/constants/firestore_collections.dart';
+import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/utils/iso_week_utils.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
@@ -114,19 +115,30 @@ class FirebaseWeeklyMenuPlanRepository
 
   @override
   Future<void> save(WeeklyMenuPlan plan) async {
-    // Deterministic upsert — bypass `create` so re-saves of the same
-    // user+week update in place rather than throwing on doc collisions.
+    // Deterministic upsert on `{uid}_{ISO week}`.
     final canWrite = await validateUpdatePermission(plan.userId, plan.id, plan);
+    // `logPermissionCheck` is required of every custom permission gate
+    // (`lib/repositories/CLAUDE.md`).
+    await logPermissionCheck(
+      // The AUTHENTICATED actor — `plan.userId` is the CLAIMED owner. An
+      // `audit_logs` create whose uid does not match the caller is refused by
+      // the rules, so naming the claim here would lose the Art. 30 row.
+      userId: requireCurrentUserId(),
+      resource: '$collectionName/user:${plan.userId}',
+      operation: 'save',
+      granted: canWrite,
+      details: 'week ${IsoWeekUtils.weekKeyOf(plan.weekStartDate)}',
+      auditRepository: auditRepository,
+    );
     if (!canWrite) {
-      // Split rather than logging `plan.id`, which is `{uid}_{YYYY-Www}`: raw
-      // it prints a user id that neither guard arm can see, and masking the
-      // whole id would take the week with it and leave the line undebuggable
-      // (BUT-1964).
-      AppLogger.warning(
-        'Blocked weekly menu plan save for ${plan.userId.maskedUserId}, '
-        'week ${IsoWeekUtils.weekKeyOf(plan.weekStartDate)}',
+      // Was `return`, which is why a refused save reached the user as silence
+      // (BUT-1962).
+      throw PermissionDeniedException(
+        'Weekly menu plan save denied',
+        resource: collectionName,
+        operation: 'save',
+        userId: plan.userId,
       );
-      return;
     }
     await collection.doc(plan.id).set(toFirestore(plan));
   }

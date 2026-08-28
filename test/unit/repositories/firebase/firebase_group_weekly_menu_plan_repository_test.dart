@@ -1,6 +1,6 @@
 /// Unit tests for FirebaseGroupWeeklyMenuPlanRepository.
 ///
-/// Pure-Dart; FakeFirebaseFirestore. Targets ~61 unhit lines.
+/// Pure-Dart; FakeFirebaseFirestore.
 library;
 
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
@@ -66,6 +66,32 @@ void main() {
         final plan = _plan();
 
         expect(await repo.validateCreatePermission(_bob, plan), isFalse);
+      },
+    );
+
+    // The prefix conjunct had no negative arm: both cases above carry a
+    // matching prefix, so deleting `entity.id.startsWith(...)` from
+    // `validateCreatePermission` left the whole suite green.
+    test(
+      'validateCreatePermission false when the id prefix does not match',
+      () async {
+        final repo = _repo(FakeFirebaseFirestore());
+        final base = _plan();
+        final mismatched = GroupWeeklyMenuPlan(
+          id: 'wrong-prefix_2026-W03',
+          groupId: _group,
+          weekStartDate: base.weekStartDate,
+          entries: base.entries,
+          participants: base.participants,
+          createdAt: base.createdAt,
+          lastModifiedAt: base.lastModifiedAt,
+        );
+
+        // Alice IS a participant, so only the prefix can decide.
+        expect(
+          await repo.validateCreatePermission(_alice, mismatched),
+          isFalse,
+        );
       },
     );
 
@@ -190,34 +216,39 @@ void main() {
       },
     );
 
-    test('rejects save when id/groupId mismatch (returns silently)', () async {
-      final firestore = FakeFirebaseFirestore();
-      final repo = _repo(firestore);
-      // Manually construct a plan with mismatched id.
-      final plan = GroupWeeklyMenuPlan(
-        id: 'wrong-prefix_2026-W03',
-        groupId: _group,
-        weekStartDate: DateTime.utc(2026, 1, 15),
-        entries: const [],
-        participants: [
-          GroupMenuParticipant(
-            userId: _alice,
-            permission: SharedListPermission.admin,
-            addedAt: DateTime.utc(2026, 1, 1),
-          ),
-        ],
-        createdAt: DateTime.utc(2026, 1, 1),
-        lastModifiedAt: DateTime.utc(2026, 1, 1),
-      );
+    test(
+      'rejects save when id/groupId mismatch — and the caller is told',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        final repo = _repo(firestore);
+        // Manually construct a plan with mismatched id.
+        final plan = GroupWeeklyMenuPlan(
+          id: 'wrong-prefix_2026-W03',
+          groupId: _group,
+          weekStartDate: DateTime.utc(2026, 1, 15),
+          entries: const [],
+          participants: [
+            GroupMenuParticipant(
+              userId: _alice,
+              permission: SharedListPermission.admin,
+              addedAt: DateTime.utc(2026, 1, 1),
+            ),
+          ],
+          createdAt: DateTime.utc(2026, 1, 1),
+          lastModifiedAt: DateTime.utc(2026, 1, 1),
+        );
 
-      await repo.save(plan);
+        // BUT-1962: this used to assert a silent return, which is what let a
+        // refused write look identical to a completed one.
+        await expectLater(repo.save(plan), throwsA(isA<StateError>()));
 
-      final doc = await firestore
-          .collection('group_weekly_menu_plans')
-          .doc(plan.id)
-          .get();
-      expect(doc.exists, isFalse);
-    });
+        final doc = await firestore
+            .collection('group_weekly_menu_plans')
+            .doc(plan.id)
+            .get();
+        expect(doc.exists, isFalse);
+      },
+    );
 
     test('rejects save when user lacks edit permission', () async {
       final firestore = FakeFirebaseFirestore();
@@ -232,9 +263,12 @@ void main() {
         ],
       );
 
-      await repo.save(plan, userId: _alice);
+      await expectLater(
+        repo.save(plan, userId: _alice),
+        throwsA(isA<PermissionDeniedException>()),
+      );
 
-      // Should be silently blocked.
+      // Blocked, and the refusal reached the caller (BUT-1962).
       final doc = await firestore
           .collection('group_weekly_menu_plans')
           .doc(plan.id)

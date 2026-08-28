@@ -1,6 +1,8 @@
-/// Tests for `GroupWeeklyMenuPlanService` — focused on the fetch-or-build
-/// contract. `getOrBuildWeek` must NOT persist an empty plan on cache miss;
-/// callers own the write and bundle it with the first meaningful mutation.
+/// Tests for `GroupWeeklyMenuPlanService`.
+///
+/// `getOrBuildWeek` must NOT persist an empty plan on cache miss; callers own
+/// the write and bundle it with the first meaningful mutation. `save` must
+/// propagate a refusal rather than swallowing it.
 library;
 
 // ignore_for_file: subtype_of_sealed_class
@@ -37,7 +39,7 @@ void main() {
     await BaseUnitTest.teardownUnit();
   });
 
-  group('GroupWeeklyMenuPlanService.getOrBuildWeek', () {
+  group('GroupWeeklyMenuPlanService', () {
     late _MockRepo repo;
     late GroupWeeklyMenuPlanService service;
 
@@ -50,6 +52,27 @@ void main() {
       (TestServiceLocator.get<AuthRepository>() as FakeAuthRepository)
           .setAuthState(userId: creatorId);
       service = GroupWeeklyMenuPlanService(repository: repo);
+    });
+
+    // BUT-1962: `save` wrapped the repository in `executeServiceOperation`,
+    // which answers a failure with a default instead of rethrowing. A refused
+    // write therefore looked identical to a completed one. On the only live
+    // caller — closing a meal poll — that burned a one-way close with the
+    // winner never written into anyone's week.
+    test('save propagates a refusal instead of swallowing it', () async {
+      final plan = GroupWeeklyMenuPlan.empty(
+        groupId: groupId,
+        creatorId: creatorId,
+        date: date,
+      );
+      when(
+        () => repo.save(any(), userId: any(named: 'userId')),
+      ).thenThrow(StateError('refused by the repository'));
+
+      await expectLater(
+        service.save(plan: plan, actorId: creatorId),
+        throwsA(isA<StateError>()),
+      );
     });
 
     test('returns the existing plan when one is persisted for the ISO week, '

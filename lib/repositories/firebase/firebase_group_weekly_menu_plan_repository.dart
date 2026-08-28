@@ -1,8 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import 'package:butlery/core/exceptions/permission_exceptions.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/core/utils/logger.dart';
-import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/models/menu/group_weekly_menu_plan.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/repositories/interfaces/group_weekly_menu_plan_repository.dart';
@@ -13,8 +14,9 @@ import 'package:butlery/repositories/firebase/firestore_batch_utils.dart';
 /// Top-level collection (one doc per group per ISO week). Doc ID is
 /// `{groupId}_{YYYY}-W{WW}`, same shape as the per-user plans so upsert
 /// semantics transfer directly. Access control is the domain of
-/// firestore.rules — the permission methods here only enforce internal
-/// self-consistency between the entity's groupId and the doc-ID prefix.
+/// firestore.rules. What each permission method here checks differs — read
+/// their bodies. `validateUpdatePermission` calls `canEdit`, and that is the
+/// one `save()`'s denial hangs on.
 class FirebaseGroupWeeklyMenuPlanRepository
     extends BaseFirebaseRepository<GroupWeeklyMenuPlan>
     implements GroupWeeklyMenuPlanRepository {
@@ -40,9 +42,9 @@ class FirebaseGroupWeeklyMenuPlanRepository
   @override
   String getId(GroupWeeklyMenuPlan entity) => entity.id;
 
-  // Permission methods — only enforce the internal invariant that the
-  // doc-ID prefix matches the entity's groupId. Participant-level auth is
-  // enforced by Firestore rules + the service layer above.
+  // Permission methods. Firestore rules are the authoritative gate; these vary
+  // in what they check, so read each body rather than the group.
+  // `validateUpdatePermission` is the one `save()` refuses on.
 
   @override
   Future<bool> validateCreatePermission(
@@ -96,14 +98,18 @@ class FirebaseGroupWeeklyMenuPlanRepository
 
   @override
   Future<void> save(GroupWeeklyMenuPlan plan, {String? userId}) async {
-    // Deterministic upsert — bypass `create` so re-saves of the same
-    // group+week update in place rather than throwing on doc collisions.
+    // Deterministic upsert on `{groupId}_{ISO week}`.
     // Self-consistency: doc-ID prefix must match groupId.
     if (!plan.id.startsWith('${plan.groupId}_')) {
-      AppLogger.warning(
-        'Blocked group menu plan save (id/groupId mismatch): ${plan.id}',
+      // Was a silent `return`, so a mis-keyed plan looked saved to every
+      // caller (BUT-1962). Routed through the sanitizer because a Dart-core
+      // throw gets none of the `toString()` masking the permission exceptions
+      // build in, and this one reaches Crashlytics through the poll-close
+      // path. The chokepoint is the point, not the redaction.
+      throw StateError(
+        'Group menu plan id does not match its groupId: '
+        '${LogSanitizer.maskConversationId(plan.groupId)}',
       );
-      return;
     }
     // Belt-and-braces permission check mirroring the per-user plan repo.
     // The service layer also checks this, and Firestore rules are the
@@ -111,11 +117,29 @@ class FirebaseGroupWeeklyMenuPlanRepository
     // (missing service-layer check, test harness mocks, etc.).
     if (userId != null) {
       final canWrite = await validateUpdatePermission(userId, plan.id, plan);
+      // Required of every custom permission gate (`lib/repositories/CLAUDE.md`).
+      await logPermissionCheck(
+        // The AUTHENTICATED actor, not the caller-supplied one — an
+        // `audit_logs` create whose uid does not match the caller is refused by
+        // the rules, so a divergent actor would lose the Art. 30 row silently.
+        // The permission check above deliberately still uses the passed
+        // `userId`: that is the identity whose access is being decided.
+        userId: requireCurrentUserId(),
+        resource: '$collectionName/${plan.id}',
+        operation: 'save',
+        granted: canWrite,
+        auditRepository: auditRepository,
+      );
       if (!canWrite) {
-        AppLogger.warning(
-          'Blocked group menu plan save (permission denied for ${userId.maskedUserId}): ${plan.id}',
+        // Was a silent `return`. On the only live caller — closing a meal
+        // poll — that meant the poll closed on a one-way door with the
+        // winner never written. Throwing leaves it open for a retry.
+        throw PermissionDeniedException(
+          'Group menu plan save denied',
+          resource: collectionName,
+          operation: 'save',
+          userId: userId,
         );
-        return;
       }
     }
     await collection.doc(plan.id).set(toFirestore(plan));

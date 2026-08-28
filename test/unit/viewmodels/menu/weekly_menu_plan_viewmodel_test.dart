@@ -15,9 +15,12 @@
 /// the VM's orchestration logic (and only that) is exercised.
 library;
 
+import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
+import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/utils/iso_week_utils.dart';
 import 'package:butlery/models/menu/parsed_menu_request.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
@@ -126,6 +129,308 @@ void main() {
 
     tearDown(() {
       viewModel.dispose();
+    });
+
+    // BUT-1962 — a refused save must (a) say so and (b) leave the screen
+    // showing the last server-confirmed state.
+    //
+    // Before this, `save()` swallowed every failure, so neither half happened:
+    // the user's edit stayed on screen, was never written, and vanished on the
+    // next load with no message. The five operations that mutated `_plan`
+    // BEFORE the await each had to be reordered on their own — a single test
+    // would have gone green on the first one fixed.
+    group('a refused save is visible and does not move the screen', () {
+      /// Seeds a resident week so the operations under test have a `_plan`.
+      Future<WeeklyMenuPlan> seed({List<WeeklyMenuPlanEntry>? entries}) async {
+        final week = _plan(
+          entries:
+              entries ?? [_entry(day: DayOfWeek.mon, slot: MealSlot.middag)],
+        );
+        when(
+          () => mockService.readWeek(any()),
+        ).thenAnswer((_) async => _read(week));
+        await viewModel.loadWeek(week.weekStartDate);
+        viewModel.clearError();
+        return week;
+      }
+
+      void failTheSave() {
+        when(() => mockService.save(any())).thenThrow(Exception('denied'));
+      }
+
+      // A PENDING save (the offline shape: `persistenceEnabled: true` applies
+      // the write locally but leaves its future uncompleted until the server
+      // acks) leaves the ViewModel in the loading state with no error.
+      //
+      // That is the state the CALENDAR renders as a spinner —
+      // `LoadingStateBuilder` returns the loading widget before it looks at
+      // `data`, so nothing about the edit is on screen either way. This test
+      // pins the state, not a rendering; the spinner-forever defect it implies
+      // is BUT-1975 and predates this change.
+      //
+      // Deliberately not awaited — that is the offline shape.
+      test('a PENDING save leaves the VM loading with no error', () async {
+        await seed();
+        when(
+          () => mockService.addEntry(
+            plan: any(named: 'plan'),
+            day: any(named: 'day'),
+            slot: any(named: 'slot'),
+            recipe: any(named: 'recipe'),
+          ),
+        ).thenReturn(_plan());
+        final pending = Completer<void>();
+        addTearDown(() {
+          if (!pending.isCompleted) pending.complete();
+        });
+        when(() => mockService.save(any())).thenAnswer((_) => pending.future);
+
+        unawaited(
+          viewModel.assignRecipe(
+            day: DayOfWeek.tue,
+            slot: MealSlot.middag,
+            recipe: _recipe(id: 'r-offline'),
+          ),
+        );
+        await Future<void>.delayed(Duration.zero);
+
+        expect(viewModel.isLoading, isTrue);
+        expect(viewModel.error, isNull);
+        pending.complete();
+      });
+
+      test('assignRecipe', () async {
+        final week = await seed();
+        // Stubbing `addEntry` is load-bearing: unstubbed it throws first, the
+        // error surfaces anyway, and the test goes green having never reached
+        // the save.
+        when(
+          () => mockService.addEntry(
+            plan: any(named: 'plan'),
+            day: any(named: 'day'),
+            slot: any(named: 'slot'),
+            recipe: any(named: 'recipe'),
+          ),
+        ).thenReturn(
+          _plan(
+            entries: [
+              _entry(day: DayOfWeek.tue, slot: MealSlot.middag, id: 'e-added'),
+            ],
+          ),
+        );
+        failTheSave();
+
+        await viewModel.assignRecipe(
+          day: DayOfWeek.tue,
+          slot: MealSlot.middag,
+          recipe: _recipe(id: 'r-new'),
+        );
+
+        expect(viewModel.error, contains('Kunde inte lägga till receptet'));
+        expect(viewModel.plan, same(week));
+      });
+
+      test('moveEntry', () async {
+        final week = await seed();
+        when(
+          () => mockService.moveEntry(
+            plan: any(named: 'plan'),
+            entryId: any(named: 'entryId'),
+            toDay: any(named: 'toDay'),
+            toSlot: any(named: 'toSlot'),
+          ),
+        ).thenReturn(_plan(entries: const []));
+        failTheSave();
+
+        await viewModel.moveEntry(
+          entryId: 'entry-1',
+          toDay: DayOfWeek.wed,
+          toSlot: MealSlot.middag,
+        );
+
+        expect(viewModel.error, contains('Kunde inte flytta receptet'));
+        expect(viewModel.plan, same(week));
+      });
+
+      test('removeEntry', () async {
+        final week = await seed();
+        when(
+          () => mockService.removeEntry(
+            plan: any(named: 'plan'),
+            entryId: any(named: 'entryId'),
+          ),
+        ).thenReturn(_plan(entries: const []));
+        failTheSave();
+
+        await viewModel.removeEntry('entry-1');
+
+        expect(viewModel.error, contains('Kunde inte ta bort receptet'));
+        expect(viewModel.plan, same(week));
+      });
+
+      test('clearWeek — and the undo window is not opened', () async {
+        final week = await seed();
+        when(
+          () => mockService.clearWeek(any()),
+        ).thenReturn(_plan(entries: const []));
+        failTheSave();
+
+        // `_onClearWeek` gates the "Veckan rensad" snackbar on this bool, so
+        // a refused clear no longer announces success with a dead "Ångra".
+        expect(await viewModel.clearWeek(), isFalse);
+
+        expect(viewModel.error, contains('Kunde inte rensa veckan'));
+        expect(viewModel.plan, same(week));
+        // The snapshot is taken only once the write lands. Taking it up front
+        // armed "Ångra" for a clear that never happened — asserted through
+        // behaviour because the window has no public getter: a later undo must
+        // find no snapshot and return before reaching the service.
+        await viewModel.undoClearWeek();
+        verifyNever(() => mockService.restoreWeek(any(), any()));
+      });
+
+      test('undoClearWeek — and the snapshot survives for a retry', () async {
+        final week = await seed();
+        final cleared = _plan(entries: const []);
+        when(() => mockService.clearWeek(any())).thenReturn(cleared);
+        await viewModel.clearWeek();
+        expect(
+          viewModel.plan,
+          same(cleared),
+          reason: 'the clear must land first',
+        );
+        viewModel.clearError();
+
+        when(() => mockService.restoreWeek(any(), any())).thenReturn(week);
+        failTheSave();
+
+        await viewModel.undoClearWeek();
+
+        expect(viewModel.error, contains('Kunde inte ångra rensningen'));
+        expect(viewModel.plan, same(cleared));
+        // Consuming the snapshot before the write landed left the user with a
+        // failed undo they could not repeat. A second attempt must still reach
+        // the service, which is what proves the snapshot survived.
+        await viewModel.undoClearWeek();
+        verify(() => mockService.restoreWeek(any(), any())).called(2);
+      });
+
+      // The message the user sees is built from the call site's own prefix, so
+      // it cannot pick up the exception. Asserted rather than eyeballed: a
+      // future `setError('$errorPrefix: $e')` would leak the class name, and
+      // for this repository the thrown object carries the uid in a field.
+      test(
+        'the surfaced text leaks no exception name, code, uid or path',
+        () async {
+          await seed();
+          when(() => mockService.save(any())).thenThrow(
+            PermissionDeniedException(
+              'Weekly menu plan save denied',
+              resource: 'weekly_menu_plans',
+              operation: 'save',
+              userId: 'u-1',
+            ),
+          );
+          when(
+            () => mockService.removeEntry(
+              plan: any(named: 'plan'),
+              entryId: any(named: 'entryId'),
+            ),
+          ).thenReturn(_plan(entries: const []));
+
+          await viewModel.removeEntry('entry-1');
+
+          // Pinning the WHOLE string is the assertion: `executeAsyncVoid` calls
+          // `setError(errorPrefix)` verbatim, so a future
+          // `setError('$errorPrefix: $e')` — which is how the exception would
+          // leak — changes this equality.
+          expect(viewModel.error, 'Kunde inte ta bort receptet');
+        },
+      );
+
+      // `assignFromOverflow`, found by the integration pass rather than by
+      // me: it awaited `assignRecipe`, ignored the outcome
+      // and pruned the tray regardless. The tray is in-memory only and
+      // `_fetchWeek` does not repopulate it, so on a refused save the recipe
+      // was gone until the menu was regenerated.
+      test('assignFromOverflow keeps the chip in the tray', () async {
+        final week = _plan();
+        final tray = _recipe(id: 'r-tray');
+        when(
+          () => mockService.readWeek(any()),
+        ).thenAnswer((_) async => _read(week));
+        when(
+          () => mockService.distributeFromGeneratedMenu(
+            generated: any(named: 'generated'),
+            weekStart: any(named: 'weekStart'),
+            existing: any(named: 'existing'),
+            now: any(named: 'now'),
+            dayPins: any(named: 'dayPins'),
+          ),
+        ).thenReturn(
+          WeeklyMenuDistributionResult(plan: week, overflow: [tray]),
+        );
+        await viewModel.loadWeek(week.weekStartDate);
+        await viewModel.applyGeneratedMenu({
+          'middag': [tray],
+        });
+        expect(viewModel.overflow, hasLength(1));
+        viewModel.clearError();
+
+        when(
+          () => mockService.addEntry(
+            plan: any(named: 'plan'),
+            day: any(named: 'day'),
+            slot: any(named: 'slot'),
+            recipe: any(named: 'recipe'),
+          ),
+        ).thenReturn(_plan());
+        failTheSave();
+
+        await viewModel.assignFromOverflow(
+          recipe: tray,
+          day: DayOfWeek.wed,
+          slot: MealSlot.middag,
+        );
+
+        expect(viewModel.error, contains('Kunde inte lägga till receptet'));
+        expect(
+          viewModel.overflow,
+          hasLength(1),
+          reason: 'the tray is where the recipe still lives',
+        );
+      });
+
+      test('applyGeneratedMenu', () async {
+        final week = await seed();
+        when(
+          () => mockService.distributeFromGeneratedMenu(
+            generated: any(named: 'generated'),
+            weekStart: any(named: 'weekStart'),
+            existing: any(named: 'existing'),
+            now: any(named: 'now'),
+            dayPins: any(named: 'dayPins'),
+          ),
+        ).thenReturn(
+          WeeklyMenuDistributionResult(
+            plan: _plan(
+              entries: [
+                _entry(day: DayOfWeek.fri, slot: MealSlot.middag, id: 'e-new'),
+              ],
+            ),
+            overflow: const [],
+          ),
+        );
+        failTheSave();
+
+        final placed = await viewModel.applyGeneratedMenu({
+          'middag': [_recipe(id: 'r-gen')],
+        });
+
+        expect(placed, isNull);
+        expect(viewModel.error, 'Kunde inte fördela recepten');
+        expect(viewModel.plan, same(week));
+      });
     });
 
     group('resolveForNavigation', () {
@@ -888,7 +1193,7 @@ void main() {
         );
         await viewModel.loadWeek(DateTime(2026, 4, 13));
 
-        await viewModel.clearWeek();
+        expect(await viewModel.clearWeek(), isFalse);
 
         verifyNever(() => mockService.clearWeek(any()));
         verifyNever(() => mockService.save(any()));
@@ -954,14 +1259,14 @@ void main() {
         final cleared = populated.copyWith(entries: const []);
         when(() => mockService.clearWeek(populated)).thenReturn(cleared);
 
-        await viewModel.clearWeek();
+        expect(await viewModel.clearWeek(), isTrue);
 
         expect(viewModel.plan, same(cleared));
         verify(() => mockService.save(cleared)).called(1);
       });
 
       test('is a no-op when no plan is loaded', () async {
-        await viewModel.clearWeek();
+        expect(await viewModel.clearWeek(), isFalse);
         verifyNever(() => mockService.clearWeek(any()));
       });
     });

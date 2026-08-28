@@ -99,6 +99,14 @@ you want the revert-probe that proved it; or this file itself reads too compress
   so `DA:<rhs>,>0` proves the null-check passed (BUT-1908: a tap "through the real screen"
   discriminates the VM's gate only if the VM's own message list was populated first, and
   `DA:499,3` proved it against a suite that stays green either way).
+  **Dart's lcov mis-attributes lines around an `await`, so on "did this test REACH the
+  save" it can answer nothing** — the `await _service.save(...)` line carried no `DA:` record
+  at all and a hit landed two lines past it, which reads as "reached AND its continuation
+  ran", the opposite of the truth. The decisive probe there is TEST-side and needs no `lib/`
+  write either: copy the suite to a scratch `_zz_probe_test.dart` beside it, insert
+  `verify(() => mock.<seam>(any())).called(greaterThan(0))` in every case, run with
+  `--plain-name`, delete. ~20s, settles all N cases in one run, immune to the
+  parallel-session clobber a production mutant risks (BUT-1962, 2026-08-27).
 - **"Only `dart format`" is provable, not assumed**: walk `git cat-file --batch-all-objects`,
   compare whitespace-stripped bytes blob-to-blob (not blob-to-disk — CRLF differs by one
   byte/line). The formatter can insert a trailing comma, so fall back to raw `diff` if a
@@ -158,13 +166,25 @@ you want the revert-probe that proved it; or this file itself reads too compress
   ("six call sites" → "from every list and detail surface") is unmeasured by construction, and
   the falsifier is usually an explicit exception in the same code (`assert(!readOnly, 'edit
   must be unreachable')`). The repair is to STRIKE the quantifier, never to re-measure it
-  (BUT-1910). **A test FILE HEADER scoping what the file covers ("tests cover the static
+  (BUT-1910). **The specific replacement that re-arms the seam is one supplying a missing
+  ANTECEDENT**: told "`the five` has no antecedent", the round wrote `Each test below pins one
+  operation, graded separately because the five that…` — a quantifier over the group's own
+  contents, false the moment that group holds a leak test or a pre-existing-behaviour control,
+  which BUT-1962's did (8 tests, 7 operations, 5 reordered). Put the head noun INSIDE the
+  surviving noun phrase (`The five operations that mutated _plan…`) so the antecedent costs no
+  quantifier (BUT-1962, 2026-08-27). **A test FILE HEADER scoping what the file covers ("tests cover the static
   helpers; cache behaviour is covered by <other file>") is the same insertion seam as a test
   COUNT, and the round's own new group is what falsifies it** — so re-read every header whose
   file gained a group, and resolve the cross-file pointer with one grep of the guarded CLASS
   name in the cited file: zero hits IS the finding, and a false coverage pointer is worse than
   a false count because it is the sentence a later run cites to skip writing the test
-  (BUT-1909). **The cross-file pointer that is NOT a count is a reciprocal LABEL pair** — a Dart
+  (BUT-1909). **The same header also names the HELPERS the file uses, and the falsifier is
+  usually IN THE SAME FILE** — a widget suite's header claimed "one `butleryGolden(...)`
+  freezes the populated-with-overflow state" while its own golden group 1000 lines down opens
+  "Does NOT use `butleryGolden`, because…" and pumps a fixture with no overflow. Two answers to
+  one question, neither reddening, and a diff-following sweep never reaches either: grade a
+  header against the file's GROUPS, and strike rather than re-scope (BUT-1962, 2026-08-28).
+  **The cross-file pointer that is NOT a count is a reciprocal LABEL pair** — a Dart
   comment naming a rules case (`W2`) while that rules file names the Dart test by its verbatim
   NAME. Resolve BOTH directions (label present in the cited file; test name grep-exact); a label
   survives an insert where a count dies, so this is the durable form and a rename is the better
@@ -245,6 +265,18 @@ you want the revert-probe that proved it; or this file itself reads too compress
   the deleted text. Then grade the surviving paragraph now carrying the fact ALONE as a fresh
   claim. They came back clean at BUT-1904 round 9 and the nine-round chain ended there —
   rounds 1-8 each closed a sentence, none closed code after round 4 (2026-08-26).
+  **A "two answers to one question" finding about a comment is settled by measuring each
+  clause's REFERENT, never by reading the clauses against each other** — a motive clause and a
+  disclaimer beside it contradict only if the sink and the helper behave as you assumed, and
+  that assumption is the whole finding. BUT-1962: I filed a sanitizer "because" clause as
+  contradicting its own "the chokepoint is the point, not the redaction" caveat; the three
+  referents each measured the other way (native `_logToCrashlytics` hands the error OBJECT to
+  `recordError` unmasked, so a throw-site mask is the only one a `StateError` ever gets; the
+  permission exceptions really do mask inside `toString()`; and `maskConversationId` is an
+  IDENTITY function on the group id this site passes, which is exactly what the caveat says).
+  Every clause true, the caveat load-bearing, the finding wrong. WITHDRAW such a finding
+  outright rather than re-file a narrowed version — a declined non-blocking finding coming
+  back reworded is the correction chain the strike rule exists to stop (2026-08-28).
   **When the struck sentence is PINNED BY A SUITE, run the STRUCK TEXT ITSELF through that suite's
   matchers before grading the repair** — a `contains` on a sentence PREFIX beside an `isNot` on a
   RETIRED spelling both pass on the very clause just removed, so the production strike is
@@ -271,6 +303,27 @@ you want the revert-probe that proved it; or this file itself reads too compress
   with. Both shipped in one batch beside a file stating the correct plural version, i.e. two
   answers to one question. A group header's "each test below asserts X" is the same defect
   once the group holds positive CONTROLS: strike the quantifier, never re-count (BUT-1908/1909).
+  **(3) A DESIGN REVERSAL mid-batch, which is the worst of the three because the assertions
+  stay GREEN and a PRIOR ROUND has usually graded the rationale sentence TRUE** — a rollback
+  restoring state to the same object leaves every `same(x)` passing under both designs, so
+  only the comments died. BUT-1962's "each had to be REORDERED" was graded true against the
+  pre-reversal diff, survived on that sign-off, and then prescribed the exact ordering the
+  reversal removed as a bug. A round's TRUE grading is valid only against the bytes it
+  measured: when the round's own production shape changes, re-grade every sentence the
+  earlier round cleared, and re-ask what the mutant is NOW (here: delete the rollback, not
+  swap the order) rather than what it was. **The reversal can land DURING your round, and
+  INDEX and WORKTREE can then hold OPPOSITE designs of one method while the suite is green on
+  both** — measured on BUT-1962 (63/63 either way; a scratch pending-state probe passed on the
+  index bytes and failed on the worktree ones). When the verdict-time isolate-diff shows a
+  REVERSAL rather than an edit, refuse to grade "the change" as one object: say which COPY each
+  finding is against, and treat a comment that flips false→true→false with nobody editing it as
+  proof the batch is oscillating, not converging. **A reversal can also RESTORE the mutant an
+  earlier round retired, so re-probe rather than inherit the fix report's "reverting reddens
+  exactly N" — that figure measures the probe PATCH's scope, not the suite's.** BUT-1962's
+  final persist-then-publish shape was reported as pinned by three entry-mutator tests; a
+  two-method mutant showed `clearWeek` and `undoClearWeek` each redden on their own
+  `same(<pre-save plan>)` assertion (2026-08-27). One `cp`-backed probe on ONE file, restored
+  and md5-verified in the next call, settles it in ~90s.
 
 ### Project-specific test infrastructure (full detail in `testing-specialist.md`)
 - Production ServiceLocator bridge: `production.ServiceLocator.initialize(DIContainer())`
@@ -283,6 +336,13 @@ you want the revert-probe that proved it; or this file itself reads too compress
   absent from `firestore.indexes.json`. Suite needs three arms (override exists at group
   scope, exact set survives delete+add, source still spells the field). Register the npm
   `test:*` script in the same edit.
+- **A `setUpAll(registerFallbackValue(...))` added with "the suite had none" is a MEASURED
+  claim about the whole file, and the cheapest check is deleting it and re-running** — BUT-1962
+  added one to `weekly_menu_plan_service_test.dart` under "nothing stubbed `save` before" while
+  the file already held four `registerFallbackValue(_FakeWeeklyMenuPlan())` and four
+  `repo.save(any())` stubs; the new group used no `any()` on a plan at all, so the line was dead
+  and its reason false (46/46 green without it). Grep `registerFallbackValue` and the mocked
+  method across the WHOLE file before writing the sentence (2026-08-27).
 - Source-text assertion suites must strip comments first, or a bare `includes` stays green
   after the setting is deleted; probe non-vacuity with a STRING mutant, never a file mutant.
 - **A mocktail matcher goes vacuous only when a named arg's value stops equalling its
@@ -295,10 +355,67 @@ you want the revert-probe that proved it; or this file itself reads too compress
 ### Coverage decisions
 Codecov: 60% project / 70% new patches / 2% drop tolerance — floors, decided 55% project
 (2026-07-11); don't file generic "raise coverage" tickets.
+- **A method whose RETURN TYPE widens (`Future<void>`→`Future<bool>`) adds an observable with
+  zero test hits by construction — every existing call site discards it, and the suite stays
+  green under `return true`.** Grep the method in `test/` and read whether ANY call assigns the
+  result: 8 of 8 discarding IS the finding. The sibling that IS pinned is what hides it —
+  BUT-1962 gave `assignRecipe` and `clearWeek` a bool the same day; `assignRecipe`'s is held
+  indirectly (`assignFromOverflow` prunes only on true), `clearWeek`'s gates a success snackbar
+  and was held by nothing at any layer (2026-08-27).
 - **Open a review by grepping each NEW TOKEN into a token→files table** (~30s). Zero files
   IS the finding; hits only in an extracted class's own suite means the composing line in
   the CALLER's suite is still unproven (BUT-1838: a `copyWith` carry, a DTO write asymmetry,
-  a query filter — three sibling suites untouched).
+  a query filter — three sibling suites untouched). **A telemetry constant added in the same
+  commit as the behaviour it measures is the token that reliably lands with zero hits** — the
+  sibling SUCCESS event is pinned, its new FAILURE twin is not, and it is emitted from the
+  very `catch` the change made reachable, so a later re-swallow silences it with nothing red
+  (BUT-1962: `onboardingMenuSeedFailed`). **The test written to close that gap is the one
+  that goes green without reaching the failure it names**: the event sits in a `catch`
+  wrapping a whole block, so ANY throw inside emits it — and the throw that actually fires is
+  usually an unstubbed collaborator EARLIER in the block (the sibling SUCCESS test stubs
+  `readWeek`/`addEntry` LOCALLY, so the new test inherits none of them and mocktail's
+  MissingStubError is caught by the same `catch`). The stubbed failure is then inert and the
+  test name is fiction. Never grade such a test by reading it: `verify(() => mock.<seam>())`
+  in a scratch `_zz_probe_test.dart` copy names the only call that happened in one run
+  (measured: `All calls: readWeek(...)`, save never reached — BUT-1962, 2026-08-27). The
+  repair is to stub the earlier seams and keep the `verify` in the committed test.
+  **The other reliably-unpinned new token is a call added to satisfy a REPO RULE rather than a
+  feature** — `logPermissionCheck` per `lib/repositories/CLAUDE.md`. It is unpinned twice over,
+  and each half hides the other: no repository suite injects an `auditRepository`, so the mixin's
+  `if (auditRepository != null)` branch never runs and no row is ever produced; and the deliberate
+  `requireCurrentUserId()`-vs-caller-supplied-`userId` choice (the rules refuse a row whose uid is
+  not the caller, and the mixin's `unawaited(...).catchError` swallows that refusal) collapses to
+  one observable whenever the fixture's authed uid IS the passed one. Template one directory away:
+  `firebase_activity_event_repository_test.dart` → `'records the granted permission check via the
+  audit repository'`; the killer fixture must DIVERGE the two uids and assert the authed one
+  (BUT-1962, both weekly-menu repositories, 2026-08-28).
+- **A claim about "the call sites" is measured over the CALLERS of the CHANGED METHOD, never
+  over the one file the fix touched** — and `grep -rn '\.<method>(' lib/` is the whole check.
+  Same commit, same class: a test comment quoting another suite's total ("all 304 of those
+  tests") names a figure no reader can reproduce from any file and that the round's own new
+  tests move. Strike the numeral rather than re-measure it.
+  **The strike is only half the repair, because the claim comes back as a BARE QUANTIFIER over
+  the same population and nothing about it looks like a count.** BUT-1962 struck "the six menu
+  call sites, which all carry a Swedish errorPrefix" and shipped "the Swedish `errorPrefix`
+  each ViewModel call site carries" two rounds later — same population, same falsifier, no
+  number to notice. Two tells, either enough to file it: the sentence carries its own
+  EXCEPTION CLAUSE ("not every caller is a ViewModel — the poll-close path…"), which is the
+  author showing you they enumerated and stopped; and the falsifier ships in the SAME COMMIT
+  (`OnboardingViewModel._seedSampleMenu` calls `save` inside a bare `try`, deliberately telling
+  the user nothing — a hunk of that very diff). Re-run the caller grep against a
+  bare "each/every X" exactly as against "the N X", and strike the quantifier, never repair it
+  to "most" (BUT-1962, 2026-08-27).
+  **Round five came back with the mirror move: the universal repaired into an EXISTENTIAL
+  ("Callers differ — SOME carry no prefix"), which reads as a concession and is falsifiable
+  the same way.** Measured false — 14 of 14 `executeAsyncVoid` sites that reach the changed
+  `save` carry an `errorPrefix`, and every caller that carries none (poll-close, onboarding
+  seed, the widget call sites) does not route through `executeAsyncVoid` at all, so the
+  sentence's own preceding clause fixes the population it is false over. Run the caller grep
+  against "some/not every/a few" too; the tell is unchanged (an exception clause naming ONE
+  caller). And the strike round sweeps the files the FINDING named — here service + suite —
+  leaving the SAME claim as a paraphrase one layer down (`firebase_…_repository.dart`: "reach
+  the Swedish message its call sites already carry"), so grep the CONCEPT across every layer
+  the changed method passes through, not the two files the report lists (BUT-1962, 2026-08-27).
 - When a fix SPLITS one write/event across destinations, or teaches a method a new
   side-field, grep every WRITER/reader's OWN SUITE (not `lib/`) — the list grows mid-round.
 - **A figure measured OUTSIDE the repo (corpus gold, an eval sweep) has no test holding it,
@@ -441,6 +558,19 @@ Codecov: 60% project / 70% new patches / 2% drop tolerance — floors, decided 5
   EMPTY by construction** — `createdAt == <a Wednesday t>` plus `weekStartDate.weekday ==
   monday` makes a following `weekStartDate isNot createdAt` unfailable. It reads as extra
   discrimination and adds none; delete it rather than probe it (BUT-1961).
+  **The commonest carrier is a LEAK test**: an exact-string `expect(shown, '<the Swedish
+  message>')` pins both operands, so the `for (final leak in [...]) expect(shown,
+  isNot(contains(leak)))` loop below it is unfailable by construction, and the comment beside
+  it names a mutant the EQUALITY already kills. Keep the equality, delete the loop — that
+  loop earns its place only where the assertion above it is a `contains`
+  (BUT-1962, 2026-08-27).
+  **The other carrier needs no neighbour at all: an assertion on a state channel the subject
+  NEVER WRITES.** `expect(viewModel.error, isNull)` is unfailable when the VM never calls
+  `setError` and never routes through an `execute*` helper that would — grep the whole class
+  for `setError|execute|handleError`; zero hits IS the proof, no probe. It reads as pinning
+  "no error surfaced to the user", and the sentence beside it is usually TRUE as behaviour
+  while nothing measures it. Delete the line; never "strengthen" it onto another surface,
+  because a subject with no error channel has none (BUT-1962, 2026-08-28).
   **Splitting one fixture instant into two (clock `t` vs caller's `date`) kills the
   VALUE-swap mutant and leaves the DERIVATION mutant alive** — inside `withClock` a
   same-week `date` makes `weekStartOf(clock.now())` byte-identical to `weekStartOf(date)`,
@@ -448,6 +578,12 @@ Codecov: 60% project / 70% new patches / 2% drop tolerance — floors, decided 5
   id against a literal week. Two mirror suites can therefore match on the guarded axis and
   differ on that one; grade a "do these mirror?" question per AXIS, and check the unfixed-
   clock siblings, not only the clock-pinned test (BUT-1961, 2026-08-27).
+  **The mirror image is a REFUSAL+CONTROL pair whose non-vacuity needs no probe at all**: when
+  both cases pump ONE fixture builder and differ only in a stub, the control's green proves the
+  path reaches the observable, and the refusal case's green then proves the stubbed seam WAS
+  called — had it not been, that case would behave like the control and be RED. Grade such a
+  pair by reading the two `when(...)` lines; reach for coverage or a `verify` probe only when
+  the two cases differ in more than the stub (BUT-1962 `_onClearWeek`, 2026-08-28).
 - A repository suite where every fixture lives in ONE scope can't see its scoping `where` —
   and habitually leaves inherited CRUD (`read`, `readAll`, `watchAll`) untested though it
   skips every filter the finders apply.
@@ -533,6 +669,19 @@ Codecov: 60% project / 70% new patches / 2% drop tolerance — floors, decided 5
   carries the kill. Read the inserted call's OWN early-returns against the state the failure
   left, and never let a `thenReturn(<fresh instance>)` stub sit under a comment about an
   `identical(...)` short-circuit — the stub decides, so the fixture it names is inert.
+  **The silent-return→throw rewrite is the same family seen from the other end**: when
+  `await expectLater(call, throwsA(...))` is put ABOVE a surviving "nothing was written"
+  assertion, that assertion is now UNREACHABLE whenever the throw is missing, so it no longer
+  carries the missing-guard mutant — the `throwsA` does. What it still kills is the ORDERING
+  mutant (write, THEN throw), and that is the only sentence a comment beside it may claim.
+  Grade the matcher's discrimination from the TYPE LATTICE, not by running anything:
+  `PermissionDeniedException implements Exception` while `StateError` is an `Error`, so the
+  two branches' matchers are disjoint and a production swap reddens both tests. Attribute the
+  denial to ONE conjunct: `save(plan)` passing `plan.userId` into
+  `validateUpdatePermission(userId, id, entity)` makes `entity.userId == userId` a tautology,
+  so the doc-ID prefix is the sole determinant — and on the group repo, a valid prefix leaves
+  `canEdit` as the sole determinant only while the id-prefix guard above it stays silent
+  (BUT-1962, 2026-08-27).
 - **Grade a read-side guard against EVERY WRITER in the file, not the mutators the fix's
   tests exercise — and the sentence "every save site guards on null" IS the finding.**
   BUT-1939 nulled `_plan` on a failed read and pinned the entry mutators (all of which
@@ -548,6 +697,19 @@ Codecov: 60% project / 70% new patches / 2% drop tolerance — floors, decided 5
   time. BUT-1939 shipped six guards, two reached by no fixture, and the unreached one with
   teeth was the one whose refusal branch returns BEFORE the state reset the other paths rely
   on (a selection from the previous week survives the failed re-read and retargets).
+- **An OPTIMISTIC publish is pinned only where a test observes state while the write is still
+  PENDING — count the `Completer`s, one per COPY of the publish, not one per method.** A test
+  that awaits the call sees only the settled state, which a rollback makes identical to
+  never-publishing, so the offline behaviour (write applies locally, future never completes)
+  is unasserted however many refusal tests exist. `grep -n "Completer\|unawaited"` on the
+  suite is the whole check. The probe is TEST-side and cheap (a scratch
+  `_zz_probe_test.dart` asserting the pending state; PASSING proves the behaviour exists and
+  nothing pins it). Its twin defect is the ROLLBACK of a collateral field (an overflow tray,
+  a snapshot) whose fixture is empty in every refusal test, so restore and no-op are one
+  observable — seed the collateral field through its real producer before grading the
+  `catch`. Ask FIRST whether the publish is optimistic at all: the change this was learned
+  on reverted to persist-then-publish before it shipped, so a reader grepping its symbols
+  finds nothing (2026-08-27).
 - A guard skipping a per-parent subcollection probe is unfailable when the probed doc
   doesn't exist — repair with a TRAP row at a path production never writes, spelled with
   production CONSTANTS (a literal drifts dead on a rename).

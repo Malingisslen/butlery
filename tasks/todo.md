@@ -130,7 +130,38 @@ Båda nekningsvägarna är mätta:
 - **Serversidig:** `collection.doc(...).set(...)` kastar ⇒ `executeServiceOperation` sväljer
   till ett defaultvärde. Samma tystnad, annan orsak.
 
-- [ ] `save()` slutar returnera `void`: den rapporterar utfallet (sparat / nekat / fel).
+**Mekanismen uppmätt 2026-08-27, och den ändrar formen på fixen.** Planen antog att 17
+anropsställen måste ändras. Det stämmer inte: UI:ts felväg finns redan hela vägen.
+
+`weekly_menu_plan_viewmodel` kör varje sparning genom `executeAsyncVoid(..., errorPrefix:
+'Kunde inte lägga till receptet')`, och `BaseViewModel.executeAsyncVoid`
+(`base_viewmodel.dart:219`) fångar, anropar `setError(errorPrefix)` — som når skärmen — och
+returnerar false. Svensk text finns alltså redan på alla sex anropsställen. Den lyser aldrig
+upp av EN anledning: `save()` kastar aldrig.
+
+Den minimala korrekta ändringen blir därför:
+
+- [ ] `WeeklyMenuPlanService.save()` slutar svälja felet (`executeServiceOperation`
+      returnerar ett defaultvärde i stället för att kasta vidare).
+- [ ] Repositoryts KLIENTSIDIGA nekan slutar `return`:a tyst — den måste bli synlig på samma
+      väg som serverns, annars är bara hälften lagad.
+- [ ] **Den verkliga risken, och det som gör detta till mer än en rörändring:**
+      `addEntry`/`moveEntry`/`removeEntry` sätter `_plan = updated` FÖRE `await save()`.
+      Vid ett fel behåller skärmen alltså ett tillstånd som aldrig skrevs. Grannmetoden
+      `applyGeneratedMenu` i viewmodellen gör redan tvärtom och säger varför
+      ("Persist FIRST, publish after"). Antingen samma ordning överallt, eller en rollback. Asymmetrin är i
+      dag oavsiktlig.
+- [ ] `onboarding_viewmodel:571` — eget anropsställe, egen väg, måste kollas separat.
+- [ ] `messaging_service`s två ställen kastar redan `StateError` och hanteras; kontrollera
+      bara att de inte dubbelrapporterar.
+
+**Öppen designfråga till firebase-backend-security:** `logPermissionCheck` skriver uid:t
+RÅTT till `AppLogger` (alla befintliga anropare gör så, och revisionsloggen behöver den
+riktiga uid:n för Art. 30). Men just den här filen maskerar medvetet (BUT-1964), och
+`AppLogger`s maskering skyddar bara sinks som lämnar enheten — den lokala `developer.log`
+gör det inte. Att lägga till den efterfrågade compliance-loggningen skulle alltså motsäga
+BUT-1964 lokalt. Fråga dem innan, inte efter.
+
 - [ ] Den klientsidiga nekningen får `logPermissionCheck()`, som `lib/repositories/CLAUDE.md`
       kräver av varje egen behörighetsgrind — den saknas i dag.
 - [ ] Anroparna visar en svensk text vid nekning i stället för tystnad.
@@ -141,6 +172,111 @@ avgöra vad som hände.
 
 **Not:** det här är också det som gör fas 5 möjlig — när en nekning syns behöver
 klientvakterna inte bära hela bördan.
+
+### Blind kritik (Product Manager, tier `single`, konvenerad 2026-08-27) — villkoren är BINDANDE
+
+Routern gav `single`. Kritiken godkände bygget men skar ner det, och hittade **ett fel i
+premissen** som ändrar vad som får byggas:
+
+**Offline kastar inte.** `firestore_bootstrap.dart:10` har `persistenceEnabled: true`. Offline
+tillämpas skrivningen lokalt och `Future`n **fullbordas inte** förrän servern kvitterar — den
+kastar aldrig. Alltså är "nätverksfel" nästan aldrig det som händer; de kast vi bygger UI för
+är **vägran** (regler/behörighet) plus äkta fel.
+
+**Uppmätt konsekvens av hängningen (kriterium 10, besvarat i skrift):** `executeAsyncVoid`
+sätter `isLoading` och rensar den aldrig. På veckomenyskärmen används `isLoading` på EN plats
+— `veckomeny_view.dart:315`, som avaktiverar inköpslistsknappen. Efter en offline-redigering
+går det alltså inte att generera inköpslista förrän uppkopplingen kommer tillbaka och
+skrivningen kvitteras; skrivningen landar sedan av sig själv.
+**Därför: ingen timeout och ingen "försök igen" på offline-fallet** — det vore en lögn om en
+skrivning som redan är köad. Offline-halvan hör till fas 4 / BUT-1965, inte hit.
+
+**RÄTTAT TVÅ GÅNGER under bygget, och det andra svaret är det som gäller.**
+
+Helhetsgranskningen påpekade att persist-then-publish gör en offline-redigering osynlig, och
+jag byggde om till optimistisk publicering med återställning. Kodgranskningen mätte sedan att
+den premissen var **falsk**: `LoadingStateBuilder` returnerar laddningswidgeten INNAN den
+tittar på `data`, så medan en sparning pågår är kalendern en snurra oavsett vad `_plan`
+innehåller. Ingen av ordningarna visar något offline.
+
+Jag hade alltså gjort en designomläggning på en granskares mätning utan att själv mäta den —
+precis den lärdom repot redan har om att en granskares påstående är lika falsifierbart som en
+kommentar.
+
+**Slutlig form: persist-then-publish**, som var den enklare av de två och aldrig sämre —
+ingen återställningskod, inget fönster där en gammal plan kan skriva över en nyare, och en
+NEKAD skrivning når aldrig skärmen.
+
+**Det verkliga offline-felet är däremot värre än båda**, preexisterande (verifierat mot
+`HEAD`) och nu filat som **BUT-1975**: offline fullbordas sparningens future aldrig, så
+`isLoading` rensas aldrig och kalendern fastnar i en evig snurra — ingen post, inget fel.
+Det är en produktavvägning för Malin, inte en teknisk fix, och den ligger utanför fas 2.
+
+**Bindande acceptanskriterier från kritiken:**
+
+- [ ] Per var och en av de sex viewmodel-operationerna: ett injicerat sparfel ger (a) ett
+      synligt svenskt meddelande och (b) skärmtillstånd identiskt med senast serverbekräftade.
+      Sex tester, graderade var för sig.
+- [ ] Ingen sparväg under `lib/services/menu/` eller menyrepona returnerar normalt efter en
+      sväljd behörighetsnekan eller ett fångat skrivfel. Graderas av test, inte av inspektion.
+- [ ] Den klientsidiga grinden anropar `logPermissionCheck()` (`lib/repositories/CLAUDE.md`).
+- [ ] Gruppnekan får egen text UTAN "försök igen"; ett övergående fel får text MED. Två tester.
+      (En deterministisk vägran med en försök-igen-knapp lär användaren att knappar inte gör
+      något.)
+- [ ] Onboardingens exempelmeny visar INGET fel-UI, blockerar inte slutförandet, och sänder ett
+      analysevent definierat som en `AnalyticsEvents`-konstant — noll råa stränglitteraler.
+- [ ] Pollvinnarens sparfel lämnar omröstningen ÖPPEN, skriver INGET vinnarmeddelande, och
+      notifierar ENDAST den som stängde.
+- [ ] Varje ny användartext är en ARB-nyckel i både `app_sv.arb` och `app_en.arb`. Noll nya
+      svenska litteraler under `lib/services/` eller `lib/repositories/`.
+- [ ] Ingen ny `showDialog`, ingen retry-loop. Greppet redovisas i commit-meddelandet.
+- [ ] Feltexten innehåller inget undantagsnamn, ingen felkod, ingen uid, ingen dokumentsökväg
+      — asserterat i test.
+
+**Kritikern skulle skicka tillbaka:** modal dialog, helskärmsfel för en cell, permanent banner,
+försök-igen på en vägran, auto-retry var som helst, offline-kö/synkmotor/"osparade ändringar",
+"Sparar…"-spinner på varje drag, sex nya bespoke-meddelanden som ersätter de sex bra som finns.
+
+**Den punkt kritikern väntade sig bråk om, och som är avgjord:** den misslyckade posten ska
+FÖRSVINNA från skärmen direkt. Att låta den ligga kvar "så användaren inte tappar sitt arbete"
+ÄR buggen. `applyGeneratedMenu` gör redan rätt; fem syskon gör fel.
+
+**Skuren scope:** offline-kö, konflikt-UI, global "osparade ändringar", per-cell sparindikator.
+
+### Fas 2 — UTFALL 2026-08-27
+
+Nio av tio bindande kriterier uppfyllda. Alla kodändringar mutationsprövade.
+
+| # | Kriterium | Utfall |
+|---|---|---|
+| 1 | Operationerna, var för sig | ✅ ett test per operation; probe per omordning rödnar exakt sina egna |
+| 2 | Ingen sparväg sväljer tyst | ✅ probe per lager. Scopat till SPARvägar; `removeRecipeFromAllPlans` och `deleteAllByGroup` sväljer fortfarande med flit — dess egen docstring säger varför (en kontoradering ska inte falera på menystädning) |
+| 3 | `logPermissionCheck` | ✅ båda klientgrindarna |
+| 4 | Gruppvägran egen text utan retry | ❌ **ingen yta finns** — BUT-1971 |
+| 5 | Onboarding tyst + analysevent | ✅ `onboardingMenuSeedFailed` |
+| 6 | Poll: öppen, ingen annonsering, bara stängaren | ✅ utan ny UI (se nedan) |
+| 7 | Inga nya svenska litteraler i services/repos | ✅ 0 (greppat) |
+| 8 | Ingen `showDialog`, ingen retry-loop | ✅ 0 / 0 (greppat) |
+| 9 | Texten läcker inget tekniskt | ✅ eget test |
+| 10 | Offline-beteendet nedskrivet | ✅ se premissavsnittet ovan |
+
+**Kriterium 6 föll ut gratis och det är värt att förstå varför:** `closePoll` ligger EFTER
+plan-skrivningen. När sparningen nu kastar hinner alltså varken vinnaren skrivas eller
+omröstningen stängas, och kastet landar i `ChatViewModel.closePoll`s `catch`, som returnerar
+`pollCloseFailed` till den som tryckte. Ingen annan deltagare ser något.
+
+På den PERSONLIGA vägen ligger dessutom delningen (`_appendWinnerToWeeklyPlanAndShare`) efter
+sparningen, så inte heller den körs. Gruppvägen har ingen delning alls — den skillnaden är
+värd att veta, för den gör att "annonserar inget" är sant av två olika skäl på de två vägarna.
+
+**Kriterium 4 är inte skjutet på framtiden av bekvämlighet:** ingen vy och ingen viewmodel
+refererar gruppmenytjänsten alls. Texten hade blivit död UI. Hela lagret UNDER den är byggt och
+testat, så beteendet finns redan när vyn en dag kommer. Malins beslut, BUT-1971 + BUT-1499.
+
+**Två vakuösa tester som mina egna prober fångade, värda att minnas:** `assignRecipe`-testet
+nådde aldrig sparningen (ostubbad `addEntry` kastade först och assertionen blev grön ändå), och
+messaging-testet för gruppvägran stubbar TJÄNSTEN — alltså precis det lager ändringen gäller —
+så det överlevde att svälj-beteendet återinfördes. Båda hade sett ut som täckning.
 
 ## Fas 3 — de kvarvarande läsvägarna
 

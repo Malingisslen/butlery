@@ -28139,3 +28139,1067 @@ than leaking it. Not touched.
 
 Verdict: pass (0 blocking). Round 3 of BUT-1961's comment chain ended here — rounds 1-3 each
 closed a sentence, none closed code after round 1.
+
+### 2026-08-27 — BUT-1962 commit-gate review: a refused weekly-menu save becomes visible
+
+Trigger: commit-gate review of 7 staged TEST files beside a production change that makes
+`WeeklyMenuPlanService.save`, `GroupWeeklyMenuPlanService.save` and both Firebase menu-plan
+repositories THROW instead of swallowing, and reorders five viewmodel operations to publish
+state only after the write lands.
+
+Hash table (index == worktree for every reviewed path; `git status` column 2 blank on all 7):
+
+| path | state |
+|---|---|
+| test/unit/viewmodels/menu/weekly_menu_plan_viewmodel_test.dart | M , +183 |
+| test/unit/services/menu/weekly_menu_plan_service_test.dart | M , +21 |
+| test/unit/services/menu/group_weekly_menu_plan_service_test.dart | M , +20 |
+| test/unit/services/messaging/messaging_service_close_poll_test.dart | M , +66 |
+| test/integration/firebase/repositories/weekly_menu_plan_repository_test.dart | M , +25/-... |
+| test/integration/firebase/repositories/group_weekly_menu_plan_repository_test.dart | M , +23/-... |
+| test/unit/repositories/firebase/firebase_group_weekly_menu_plan_repository_test.dart | M , +13/-... |
+
+Measured myself: 149 green across the five unit suites. `dart format --set-exit-if-changed`
+reports 5 of the 7 files CHANGED (lefthook reformats and re-stages on commit, so the bytes
+committed will differ from the bytes graded — stated for the record, not filed as a defect).
+
+**Q1 — does `same(week)` prove what the author thinks?** Yes, and it was worth checking.
+`_fetchWeek` assigns `_plan = read.plan` BY REFERENCE and the test's `_read(week)` wraps the
+same instance, while every mutator stub returns a FRESH `_plan(...)`, so any reorder mutant
+that publishes before the await breaks identity. Non-vacuous.
+
+**The hunt for a third vacuous test came back empty, and the probe is the reusable part.**
+lcov could not answer "does each of the six reach the save": Dart's coverage mis-attributes
+lines around an `await`, so `await _service.save(updated)` had no `DA:` record at all and a
+hit landed on `notifyListeners()` two lines below it — i.e. it read as "the failing save was
+reached and its continuation ran", the opposite of the truth. What settled it was a TEST-side
+probe with no `lib/` write: copy the suite to `test/unit/viewmodels/menu/_zz_probe_test.dart`,
+insert `verify(() => mockService.save(any())).called(greaterThan(0))` into every case, run
+with `--plain-name`, delete. 7/7 green — every one of the six operations genuinely reaches
+its save. ~20s for all six cases at once.
+
+**Q2 — the two undo-window assertions DO discriminate.** Their kill set is the
+SNAPSHOT-ONLY mutant, which the `same(...)` assertions above them cannot see: move only
+`_preClearEntries/_preClearOverflow` back above the await and `viewModel.plan` still holds,
+while `verifyNever(restoreWeek)` reddens; mirror-image for `called(2)` on the undo side.
+
+**Q3 — yes, the loop is dead.** `expect(shown, 'Kunde inte ta bort receptet')` pins the whole
+string, so each of the five following `isNot(contains(leak))` has an empty kill set
+analytically (no probe needed, and none of the five tokens is a substring of the message).
+The comment beside it justifies the loop with a mutant (`setError('$errorPrefix: $e')`) that
+the equality already kills.
+
+**Q5 — no coverage lost.** All four updated tests kept their post-condition Firestore
+assertion (`docs isEmpty` / `doc.exists isFalse`) and ADDED the throw assertion; the only
+deletion was one `reason:` string.
+
+Blocking findings (2):
+1. `AnalyticsEvents.onboardingMenuSeedFailed` — zero hits across `test/`. New emission, in a
+   `catch` the change itself made reachable, in a suite (`onboarding_viewmodel_test.dart`)
+   that already pins the sibling SUCCESS event `onboardingMenuSeeded`.
+2. False counts in the BUT-1962 comments. `weekly_menu_plan_service.dart`'s doc comment and
+   `weekly_menu_plan_service_test.dart:85` both say "the six menu call sites — which all
+   carry a Swedish errorPrefix". Measured `grep -rn '\.save(' lib/`: SEVEN menu call sites
+   carry one (six in `weekly_menu_plan_viewmodel.dart` plus `menu_placement_viewmodel.confirm`
+   at line 270, 'Kunde inte spara veckomenyn'), and EIGHT callers exist — the eighth,
+   `messaging_service.dart:1049`, carries no prefix at all and surfaces its message through
+   `ChatViewModel.closePoll`'s `l.pollCloseFailed` instead. Same finding class two lines
+   below: "restoring the wrapper leaves all 304 of those tests green" names a figure
+   reproducible from no file in the repo (the suite holds 61 tests, its directory 270) and
+   with an insertion seam the round's own +7 tests already moved, and "This is the only test
+   that fails when the swallow comes back" is an unmeasured `only` over the whole suite.
+   Strike the numerals, do not re-count.
+
+Non-blocking: the leak loop (Q3); the messaging test's name promising "and announces nothing"
+with nothing asserting it (the group path has no announce — only the 1:1 path shares); the new
+`save` test parked under `group('GroupWeeklyMenuPlanService.getOrBuildWeek')`; the
+`applyGeneratedMenu` case asserting `error isNotNull` where its five siblings pin the Swedish
+prefix; `logPermissionCheck` newly called by both menu repos with no suite asserting the audit
+row; and the 1:1 poll-close path, where `planService.save` now throws where it used to swallow
+while only the GROUP refusal got a test.
+
+Verified true, not filed: "the only live caller — closing a meal poll" for
+`GroupWeeklyMenuPlanService.save` (one caller, `messaging_service.dart:1148`); the messaging
+suite's scope comment, which states honestly that it mocks the service and stays green under
+the restored wrapper; and `verifyNever(messagingRepo.closePoll(...))`, whose two named params
+are both spelled, so it is failable.
+
+Verdict: fail (2 blocking).
+
+### 2026-08-27 — BUT-1962 round 2 (re-review after the two blocking fixes) — trigger: parent reported B1/B2 fixed + 2 new tests
+
+Hash table (index == worktree for every reviewed path; `git diff --numstat -- test/ lib/`
+empty at verdict time, run from `/c/Butlery/butlery` with `pwd` echoed):
+graded the INDEX copies of the 8 staged test files. Last round's three struck strings
+("six menu call sites", "304 of those", "the only test that fails") grepped ZERO in
+`git show :<path>` across every staged `lib/` and `test/` path — the strike landed.
+
+Reachability probes (test-side, no `lib/` write), each a scratch copy in the suite's own
+directory run with `--plain-name`, deleted after:
+- `copyWeek propagates a refusal rather than reporting 0 copied` + `verify(repo.save)` → GREEN.
+  The conditional `weekStart == mon ? source : null` stub does reach the save; and the test was
+  already self-proving, since `executeServiceOperation` swallows every throw inside the closure,
+  so the only `StateError` that can escape `copyWeek` is the save stub's.
+- `assignFromOverflow keeps the chip in the tray` + `verify(mockService.save)` → GREEN. The tray
+  IS populated first (`applyGeneratedMenu` with a stubbed `distributeFromGeneratedMenu` returning
+  `overflow: [tray]`, asserted `hasLength(1)` before acting), and the success-direction control
+  already exists in the file's own `group('assignFromOverflow')`.
+- `a failed sample-menu save emits telemetry and blocks nothing` (the B1 fix) +
+  `verify(mockMenuService.save)` → RED: `No matching calls. All calls:
+  _MockWeeklyMenuPlanService.readWeek(...)`. The save is NEVER reached. `readWeek` and
+  `addEntry` are stubbed LOCALLY by the sibling success test, not in `setUp`, so in the new test
+  `readWeek` throws MissingStubError into the same `catch` that emits the event. Filed blocking.
+
+Blocking:
+1. The onboarding telemetry test above — vacuous w.r.t. its name and its comment ("since
+   BUT-1962 made a refused save throw, a permission failure lands in that catch too"). It pins
+   "any throw inside `_seedSampleMenu` emits the event". The author's own mutation probe
+   (delete the `logEvent` line → reddens) is consistent with this and cannot see it.
+2. `// These six pin one operation each` in the new viewmodel group — false at commit time: the
+   group holds 8 tests / 7 operations, and the falsifier is the round's OWN `assignFromOverflow`
+   test 170 lines below, whose comment opens "The seventh operation". Strike the numeral.
+   `the five that mutated `_plan` BEFORE the await` in the same sentence VERIFIED TRUE against
+   `git show HEAD:` (assignRecipe/moveEntry/removeEntry/clearWeek/undoClearWeek assign `_plan`
+   above the `await _service.save`; `applyGeneratedMenu` already saved first at HEAD) — keep it.
+
+Non-blocking: the 1:1 poll-close refused-save path still has no test (both branches of
+`closePoll` await their save uncaught, so they are symmetric; the pre-existing
+`1:1: a failed read → no save, poll stays open` pins that a throw out of
+`_appendWinnerToWeeklyPlanAndShare` leaves the poll open, so the only surviving mutant is a
+try/catch around the 1:1 save specifically — follow-up ticket, not this commit). The onboarding
+comment's "a later re-swallow would silence it with nothing red" reads false in the present
+tense (`weekly_menu_plan_service_test.dart`'s `save propagates a refusal` reddens on a service
+re-swallow) — dies with the B1 repair.
+
+Q3 (deleting the leak loop): nothing lost. The surviving
+`expect(viewModel.error, 'Kunde inte ta bort receptet')` pins BOTH operands of every
+`isNot(contains(leak))` the loop ran, which is why the loop was unfailable by construction.
+Q4 comment sweep, verified true and not filed: the copyweek file header (the main service
+suite has no `setupUnitWithProductionLocator`, so `copyWeek`'s wrapped READS would answer null
+there — the "it already has the harness" claim holds); `_fetchWeek does not repopulate` the
+tray; the clearWeek/undoClearWeek snapshot ordering comments (both match production); the
+integration suites' "the throw alone would not prove the write was skipped".
+
+Verdict: fail (1 blocking new + 1 blocking new = 2).
+
+### 2026-08-27 — BUT-1962 round 3 (commit-gate confirmation) — trigger: parent reported B2 fixed, the named survivor closed, and BUT-1973 filed
+
+Hash table (index == worktree on every path; `git diff --numstat -- test/ lib/` empty, run from
+an echoed `/c/Butlery/butlery`):
+
+| blob (12) | lines | path |
+|---|---|---|
+| 19f0943498ae | 1910 | test/unit/viewmodels/menu/weekly_menu_plan_viewmodel_test.dart |
+| 920de9eec46d | 1393 | test/unit/viewmodels/onboarding_viewmodel_test.dart |
+| 6dfb760d4c74 | 1328 | test/unit/services/menu/weekly_menu_plan_service_test.dart |
+| bbe59faf9e3d | 221 | test/unit/services/menu/weekly_menu_plan_copyweek_presence_test.dart |
+| 5ad1576aab53 | 133 | test/unit/services/menu/group_weekly_menu_plan_service_test.dart |
+| 10ebc5450f16 | 1183 | test/unit/services/messaging/messaging_service_close_poll_test.dart |
+| ba245570d909 | 377 | test/unit/repositories/firebase/firebase_group_weekly_menu_plan_repository_test.dart |
+| 1e3663577164 | 413 | test/integration/firebase/repositories/weekly_menu_plan_repository_test.dart |
+| 7ef47fd15e7b | 520 | test/integration/firebase/repositories/group_weekly_menu_plan_repository_test.dart |
+| 9987d8870fe3 | 595 | lib/viewmodels/onboarding_viewmodel.dart |
+| 025305e74758 | 549 | lib/viewmodels/menu/weekly_menu_plan_viewmodel.dart |
+| 29eadb528d1c | 1162 | lib/services/messaging_service.dart |
+| 78cc169fde10 | 760 | lib/services/menu/weekly_menu_plan_service.dart |
+
+**The round-2 strike grep answered "gone" from the worktree and was wrong.** My first check was
+`grep -rn "graded separately because" test/ lib/ tasks/` → exit 1, no hits. The clause is line-
+WRAPPED in the file (`…pins one operation, graded` / `// separately because the five…`), so the
+literal never existed on one line and the grep could not have found it in any state. `git show
+:<path> | grep -n "graded separately\|five that mutated"` found it immediately at 137-138. Lesson
+already carried by the "grep the index, not the worktree" principle; the NEW half is that a
+comment reflowed to 80 columns has no single-line literal at all — grep a fragment that cannot
+straddle a wrap, or grep the concept.
+
+**B3 (blocking, NEW) — the antecedent repair re-armed the seam it closed.** Round 2's finding was
+that "the five" had no antecedent. The repair supplied one by adding a quantifier over the group's
+own contents:
+
+    // …Each test below pins one operation, graded
+    // separately because the five that mutated `_plan` BEFORE the await each
+    // had to be reordered on their own — a single test would have gone green
+    // on the first one fixed.
+
+Measured against the group as staged: 8 tests, 7 distinct VM operations, 5 reordered.
+`'the surfaced text leaks no exception name, code, uid or path'` (line 278) pins no operation —
+it re-drives `removeEntry` to assert one exact string. `'applyGeneratedMenu'` (line 360) is a
+CONTROL: the VM diff does not touch that method, whose "Persist FIRST, publish after" ordering
+predates this branch. `'clearWeek'` and `'undoClearWeek'` each pin an operation AND the undo
+window. So the quantifier is false today and has an insertion seam on top.
+The `five that mutated _plan BEFORE the await` clause is CORRECT — re-measured off the staged VM
+diff: assignRecipe, moveEntry, removeEntry, clearWeek, undoClearWeek all move `_plan = …` from
+before the `await _service.save(...)` to after it. Repair filed as a STRIKE of the first clause,
+with the head noun moved inside the surviving phrase (`The five operations that mutated…`), which
+buys the antecedent at no quantifier.
+
+**B4 (blocking, NEW) — a `registerFallbackValue` added under a false claim about its own file.**
+`weekly_menu_plan_service_test.dart:91-93`:
+
+    // `any()` on a WeeklyMenuPlan parameter needs a registered fallback; the
+    // suite had none because nothing stubbed `save` before.
+    setUpAll(() => registerFallbackValue(_emptyPlan(DateTime(2026, 4, 6))));
+
+Both halves false. `grep -n "any(\|registerFallbackValue"` on the file: four pre-existing
+`registerFallbackValue(_FakeWeeklyMenuPlan())` (664, 910, 1055, 1204) and four pre-existing
+`when(() => repo.save(any()))` stubs (675, 921, 1074, 1209). And the new `group('save')` uses a
+CONCRETE plan (`when(() => repo.save(plan))`), no `any()` on a plan at all, so no fallback is
+needed. Probed test-side, no `lib/` write: deleted the three lines → `flutter test` on the file
+46/46 green; restored, md5 `1e3758d90d80d8f8551bb86928b46a69` identical, `git diff --numstat`
+empty. Repair: delete comment + `setUpAll`.
+
+**The named round-2 survivor is closed, and the discriminator is the right one.** The mutant was
+a local `try/catch` around `await menuService.save(plan)` in `_seedSampleMenu`. Under it the next
+statement runs — production line 573 is `await shoppingGenerator.generateForWeek(now)`, and that
+mock is stubbed only LOCALLY (949, 1096), never in `setUp`, so it is genuinely unstubbed in the
+new test. `verifyNever(() => mockShoppingGenerator.generateForWeek(any()))` therefore fails under
+the mutant. Positional `any()`, so none of the `verifyNever` named-arg vacuity applies; the
+sibling `verify(... 'onboarding_menu_seeded' ...).called(1)` at 970-975 uses the identical
+`parameters: any(named: 'parameters')` spelling positively, which proves the analytics matchers
+are not vacuous either. The comment beside it is accurate line for line.
+
+**BUT-1973's scope matches, with one wording defect.** `_appendWinnerToWeeklyPlanAndShare`
+(messaging_service.dart:1005) does `await planService.save(updatedPlan)` at 1049; the share
+`try {` opens at 1053 (1050 blank, 1051-1052 comment). Widening it upward swallows the refusal,
+`closePoll` proceeds to `_messagingRepository.closePoll` at 930, and the one-way close burns with
+no plan written. The group leg is a different method (`_appendWinnerToGroupPlan`, 1082), so the
+new `'group: a REFUSED save leaves the poll open'` cannot see it — confirmed. The ticket body says
+"the `try` sitting one line below"; that is a POSITIONAL DISTANCE and it is wrong (four lines).
+Say "the next statement is a `try`" — durable under any reflow.
+
+**Verified-clean this round** (each opened with Read or measured, none a finding): the group-service
+comment's `the only live caller — closing a meal poll` (grep: `messaging_service.dart:1148` is the
+sole caller of `GroupWeeklyMenuPlanService.save` outside DI); the copyWeek comment's `the UI renders
+that as "everything was already there"` (`weeklyMenuCopyToNextResult` `=0{Inget kopierades – allt
+finns redan nästa vecka}`, shown via `showSuccess`); `executeAsyncVoid` calls `setError(errorPrefix)`
+verbatim (base_viewmodel.dart:236), so the whole-string equality in the leak test is the right pin
+and no leak LOOP was added beside it; `the window has no public getter` (`_preClearEntries`/
+`_preClearOverflow` have none); `The sibling above covers a failed READ` (line 1000); the
+`assignRecipe` stub-is-load-bearing note; `The seventh operation` (true under both readings — 7th
+test by position AND 7th distinct operation — so seam only, not filed).
+Suites re-run on the graded bytes: VM menu + onboarding + close-poll = 120 green; service suite 46
+green.
+
+Verdict: fail (2 blocking).
+
+### 2026-08-27 — BUT-1962 round 4 (commit-gate confirmation) — trigger: parent reported the group-comment antecedent repaired, the `setUpAll` fallback deleted, and BUT-1973's positional distance corrected
+
+Hash table, graded bytes (index == worktree on every staged path after `git update-index --refresh`;
+the first `git diff --numstat` reported the two `lib/repositories/firebase/*weekly_menu_plan*` files
+as changed, and that was a STALE STAT CACHE — `git ls-files -s` and `git hash-object` agree
+blob-for-blob on both, the BUT-1910 shape):
+
+```
+46029dd8 test/unit/viewmodels/menu/weekly_menu_plan_viewmodel_test.dart
+856c881f test/unit/services/menu/weekly_menu_plan_service_test.dart
+920de9ee test/unit/viewmodels/onboarding_viewmodel_test.dart
+10ebc545 test/unit/services/messaging/messaging_service_close_poll_test.dart
+bbe59faf test/unit/services/menu/weekly_menu_plan_copyweek_presence_test.dart
+5ad1576a test/unit/services/menu/group_weekly_menu_plan_service_test.dart
+ba245570 test/unit/repositories/firebase/firebase_group_weekly_menu_plan_repository_test.dart
+1e366357 test/integration/firebase/repositories/weekly_menu_plan_repository_test.dart
+7ef47fd1 test/integration/firebase/repositories/group_weekly_menu_plan_repository_test.dart
+```
+
+**Answering the three questions asked.**
+
+(1) The group comment reads standalone and TRUE. `save()` swallowed every failure: verified to the
+bottom — `executeServiceOperation` delegates to `safeExecute`, whose body is a bare
+`catch (e, stackTrace)` returning `defaultValue` (`error_handling_mixin.dart:125-127`), so "every"
+ranges correctly. "The five operations that mutated `_plan` BEFORE the await" is measured against
+the staged production diff: `assignRecipe`, `moveEntry`, `removeEntry`, `clearWeek`,
+`undoClearWeek` — five reorderings, no more. `applyGeneratedMenu` already persisted-then-published
+at HEAD (its "Persist FIRST, publish after" comment is pre-existing context in the hunk, not an
+addition) and `assignFromOverflow` never touches `_plan`, so both are correctly outside the five.
+The head noun sits inside the surviving noun phrase as specified, so nothing quantifies over the
+group's own contents and the 8-tests / 7-operations / 5-reordered split cannot falsify it.
+
+(2) The `setUpAll(registerFallbackValue(...))` deletion is clean and the new group is non-vacuous.
+`registerFallbackValue` count in the index copy is back to 4 (lines 659/905/1050/1199), each inside
+its OWN group's `setUpAll`, and each of those groups holds the `repo.save(any())` stubs that need it
+(671/917/1070/1205, plus the `verifyNever` sites at 737/1022/1143/1175). Nothing outside those
+groups uses `any()` on a `WeeklyMenuPlan`. The new `save` group declares FIRST, before any
+`registerFallbackValue` runs, and stubs a CONCRETE plan (`when(() => repo.save(plan))`), so it never
+needed a fallback and cannot have depended on the deleted one. Non-vacuity is analytic, not merely
+green: reverting `save` to the wrapper sends the throw into `safeExecute`'s bare catch, which
+returns `defaultValue` and completes normally, so `throwsA(isA<StateError>())` reddens. The
+lessons-digest hazard (a wrapper's auth pre-flight reading the production `ServiceLocator` so the
+closure never runs) does not rescue the mutant either — that path also returns `defaultValue`
+without throwing.
+
+(3) One false claim present, as predicted, and it is round 1's defect returning without a numeral.
+
+**B1 (blocking) — `weekly_menu_plan_service_test.dart:86`, the round-1 call-site claim re-armed as a
+bare quantifier.** Round 1 struck "the six menu call sites, which all carry a Swedish errorPrefix";
+the staged bytes read "so the Swedish `errorPrefix` each ViewModel call site carries never fired."
+Same population, same falsifier, no number to catch the eye. Measured with a caller grep for
+`WeeklyMenuPlanService.save`: NINE call sites — six in `weekly_menu_plan_viewmodel.dart`
+(263/305/330/346/370/393), `menu_placement_viewmodel.dart:270`
+(`errorPrefix: 'Kunde inte spara veckomenyn'`), `messaging_service.dart:1049`, and
+`onboarding_viewmodel.dart:571`. Seven carry a prefix; TWO do not, and the one the sentence cannot
+survive is `OnboardingViewModel._seedSampleMenu`, which is a VIEWMODEL, calls `save` inside a bare
+`try`, and deliberately shows the user nothing — and whose telemetry hunk ships in THIS commit, two
+files away, under a constant comment saying so in as many words. The production copy in
+`weekly_menu_plan_service.dart` carries the same sentence with an exception clause naming only
+`MessagingService`; that clause is the author enumerating callers and stopping one short, and it is
+the tell to grep for. Both copies confirmed against `git show :<path>`. Repair is a strike, not a
+re-measure: drop "each ViewModel call site carries" and let the mechanism sentence
+(`executeAsyncVoid` catches and calls `setError`) stand alone.
+
+This also falsifies the numerals I wrote into the round-1 knowledge principle — nine callers, two
+without prefixes, and the one I described as a service was actually the viewmodel. Superseded in
+place; retired text verbatim:
+
+> **A comment counting "the N call sites" is measured over the CALLERS of the CHANGED METHOD,
+> never over the one file the fix touched** — "the six menu call sites, which all carry a
+> Swedish errorPrefix" counted one viewmodel and missed a second (7 with prefixes, 8 callers,
+> the eighth a service that surfaces its message another way). Same commit, same class: a
+> test comment quoting another suite's total ("all 304 of those tests") names a figure no
+> reader can reproduce from any file and that the round's own new tests move. Strike both
+> numerals; `grep -rn '\.<method>(' lib/` is the whole check (BUT-1962, 2026-08-27).
+
+**B2 (blocking) — the parent's `dart format` measurement is wrong.**
+`dart format --output=none --set-exit-if-changed` over the nine staged test paths reports
+"Formatted 9 files (1 changed)": `firebase_group_weekly_menu_plan_repository_test.dart` is NOT
+format-clean. The carrier is the renamed test at line 193 —
+`test('rejects save when id/groupId mismatch — and the caller is told', () async {` — 84 columns, so
+the formatter rewrites the whole 30-line body into the split `test(` / name / callback form. The new
+em-dash suffix is what pushed it over; the pre-rename name fitted. Reproduced by running the
+formatter, capturing the diff, then `git checkout --` (hash restored to `ba245570`, verified). CI
+gates format separately from analyze here, so this blocks on its own.
+
+**Non-blocking, reported not filed.** `onboarding_viewmodel_test.dart:982` — "the event is the only
+signal this failure leaves behind" sits two lines from a surviving `AppLogger.warning` in the same
+catch. Defensible rather than false: `AppLogger.warning` is `developer.log` only (level 900, no
+Crashlytics and no analytics forwarding — only `AppLogger.error` calls `_logToCrashlytics` /
+`_trackErrorAnalytics`), so nothing leaves the device. Strikeable as an absolute; not worth a round.
+`weekly_menu_plan_viewmodel_test.dart:386` — `expect(viewModel.error, contains('Kunde inte'))` in
+the `applyGeneratedMenu` case is the one assertion in the group that does not discriminate WHICH
+prefix fired; its six siblings pin the full Swedish string. A mutant swapping that call site's
+prefix for any other "Kunde inte …" survives.
+
+**Verified-clean this round** (opened with Read or measured; round 3 already cleared several of
+these and they were not re-litigated): the five-operation count and the `save()` swallow claim
+(above); "the window has no public getter" (`_preClearEntries`/`_preClearOverflow`, no accessor);
+"the only live caller — closing a meal poll" (`messaging_service.dart:1148` is the sole caller of
+`GroupWeeklyMenuPlanService.save` outside DI registration); the copyWeek comment's "the UI renders
+as everything was already there" (`weeklyMenuCopyToNextResult` `=0{Inget kopierades – allt finns
+redan nästa vecka}`, shown through `showSuccess`, so a refused copy read as success); "the shopping
+generator — unstubbed here" in the onboarding test (the `generateForWeek` stubs at 949 and 1096 are
+test-local, the setUp at 843-891 has none), which makes the `verifyNever(generateForWeek)`
+discriminator sound as confirmed in round 3; "this catch has always swallowed"; the `assignRecipe`
+stub-is-load-bearing note and its siblings (every mutator in the group is stubbed, so no case can go
+green on a MissingStubError before reaching the save); "The seventh operation" (seam only, cleared
+round 3 — true under production-file order and under test position). BUT-1973's positional distance
+now reads "the next statement after `await planService.save(updatedPlan)` is a `try/catch`", which
+is durable under reflow and needs no measuring.
+
+Suites re-run on the graded bytes: menu service + group service + copyweek + VM menu = 115 green;
+onboarding + close-poll + group repo unit + both repository integration suites = 102 green. 217
+total, 0 failures.
+
+Verdict: fail (2 blocking).
+
+### 2026-08-27 — BUT-1962 round 5 (commit-gate confirmation): the universal repaired into an existential, and a third paraphrase copy one layer down
+
+Trigger: parent reported both round-4 blocking findings fixed and asked whether the two
+struck comments were true standalone, with the explicit warning that four of four prior
+repairs had each introduced a new false claim.
+
+Graded copy: the INDEX. `git diff --numstat` over all 21 staged paths returned zero lines
+at both ends of the round (index == worktree), and the five files carrying findings
+re-hashed identically at open and at verdict:
+
+| md5 (12) | path |
+|---|---|
+| ddc8bab6a11a | lib/services/menu/weekly_menu_plan_service.dart |
+| 3d7f243b09f6 | lib/repositories/firebase/firebase_weekly_menu_plan_repository.dart |
+| 547104817bf6 | test/unit/services/menu/weekly_menu_plan_service_test.dart |
+| 74105a2d3ad9 | test/unit/viewmodels/onboarding_viewmodel_test.dart |
+| 57ce4f0fa1a9 | test/unit/viewmodels/menu/weekly_menu_plan_viewmodel_test.dart |
+
+**First correction to the parent's own report.** It listed two sentences under "Struck in
+BOTH copies", and a joined-line grep of the staged blobs found BOTH present. They were the
+REPLACEMENT text, not the struck text (the production quote names the onboarding exception
+the report says was ADDED, which settles it). The old strings ("six menu call sites", "each
+ViewModel call site") were genuinely absent from `lib/` and `test/`, surviving only in the
+two knowledge files that record them. Lesson for the grep: a reported strike quoting the NEW
+wording reads as a false-negative on the old-string grep; resolve which copy is quoted from
+a detail only one version can contain, before filing "the strike did not land".
+
+**Blocking 1 — the existential.** `weekly_menu_plan_service.dart:130-131`:
+
+> A failure therefore propagates. Where the caller routes it through
+> `BaseViewModel.executeAsyncVoid`, that catches and calls `setError`, which is how a Swedish
+> error prefix reaches the screen. Callers differ — some carry no prefix, and the onboarding
+> seed deliberately shows nothing at all — so read the call site rather than assuming this
+> surfaces.
+
+Round 4 was told to strike a bare universal ("the Swedish `errorPrefix` each ViewModel call
+site carries"). Round 5 shipped its mirror. Measured:
+
+- `weekly_menu_plan_viewmodel.dart`: 11 `executeAsyncVoid` sites, 11 `errorPrefix`.
+- `menu_placement_viewmodel.dart`: 2 sites, 2 prefixes; `confirm()` is the one that reaches
+  `_service.save`, prefix `'Kunde inte spara veckomenyn'`.
+- Every OTHER caller of `WeeklyMenuPlanService.save` — `messaging_service.dart:1049`
+  (poll close), `onboarding_viewmodel.dart` `_seedSampleMenu`, `slot_picker_dialog`,
+  `selection_app_bar`, `recipe_menu_handler`, `chat_action_handler`,
+  `personal_recipe_crud`, `menu_shopping_list_generator` — does not use `executeAsyncVoid`
+  at all, so none of them is a prefix-less carrier.
+
+14 of 14. The sentence's own preceding clause ("Where the caller routes it through
+`executeAsyncVoid`") fixes the population it is then false over. Prefix-less
+`executeAsyncVoid` sites DO exist repo-wide (min_familj, import_base ×2, notifications,
+photo_import, text_import ×2), which is what makes the clause feel safe to write; none of
+them touches this method. Repair filed as a strike of "some carry no prefix, and" — the
+onboarding half is directly readable from the code and survives alone.
+
+Method note: the naive `sed -n "$l,$((l+22))p" | grep -q errorPrefix` window produced two
+FALSE prefix-less hits in the menu VM (prefixes sat 26 and 29 lines below their call). A
+window heuristic over a multi-line call is an instrument error that lands on the side of
+confirming the comment; widen to 60 and re-read the hits.
+
+**Blocking 2 — the paraphrase one layer down.** `firebase_weekly_menu_plan_repository.dart:142-144`:
+
+> Was `return`, which is why a refused save reached the user as silence (BUT-1962). Throwing
+> is what lets `BaseViewModel.executeAsyncVoid` reach the Swedish message its call sites
+> already carry.
+
+Same claim, third file, different wording and a dangling "its". The round-4 finding named
+the service and the suite; the strike swept exactly those two. Repair: strike the second
+sentence outright — the first carries the whole rationale.
+
+**Non-blocking, all three carried forward for the parent to close.**
+1. `onboarding_viewmodel_test.dart:981` "the event is the only signal this failure leaves
+   behind" — `AppLogger.warning('Failed to seed sample menu: $e')` sits on the line ABOVE
+   the emit, in the same catch. Defensible only under "signal that reaches us off-device"
+   (the warning is `developer.log`-only). Round 4 graded it defensible; nothing measured
+   this round changed that, so the grade holds, but strike is recommended: the preceding
+   clause ("The user is still told nothing — the sample week is not their work") stands
+   alone and the clause costs nothing to lose.
+2. `weekly_menu_plan_viewmodel_test.dart:386` `contains('Kunde inte')` — the seven sibling
+   cases in the same group each pin their full prefix. `applyGeneratedMenu`'s is
+   `'Kunde inte fördela recepten'` (VM:275) and is constant; the weak matcher stays green
+   under any of the VM's other 12 prefixes. Pin it.
+3. `onboarding_viewmodel_test.dart:1031` — the comment says "and onboarding still completed"
+   and the test NAME says "blocks nothing", but the `bool` from `completeOnboarding()` is
+   discarded. `_seedSampleMenu` is awaited at `onboarding_viewmodel.dart:382` and swallows,
+   so `return true` at :411 is reached — `expect(await viewModel.completeOnboarding(), isTrue)`
+   would pass and would pin the half of the name nothing currently holds.
+
+**Claims graded TRUE this round** (recorded so a sixth round does not re-measure them):
+- "The five operations that mutated `_plan` BEFORE the await each had to be reordered" — the
+  staged VM diff reorders exactly five: assignRecipe, moveEntry, removeEntry, clearWeek,
+  undoClearWeek. `applyGeneratedMenu` is correctly excluded: it already persisted before
+  publishing (VM:263 vs :269), which is why it is not in the diff.
+- "The seventh operation" for `assignFromOverflow` — six direct `_service.save` sites in the
+  VM (263, 305, 330, 346, 370, 393) plus the delegating `assignFromOverflow`. Resolves.
+- "the only live caller — closing a meal poll" for `GroupWeeklyMenuPlanService.save` — the
+  sole call is `messaging_service.dart:1148`.
+- "a refused copy came back as 0 — which the UI renders as 'everything was already there'" —
+  `weeklyMenuCopyToNextResult` `=0{Inget kopierades – allt finns redan nästa vecka}`, reached
+  because `calendar_weekly_menu_widget.dart:249` only errors on `null`.
+- "the window has no public getter" — `_preClearEntries`/`_preClearOverflow` are private with
+  no accessor.
+- "`_fetchWeek` does not repopulate it" — `_fetchWeek` (VM:187) never touches `_overflow`.
+- "`executeAsyncVoid` calls `setError(errorPrefix)` verbatim" — `base_viewmodel.dart:236`.
+
+**Sweep boundary, stated so it is not mistaken for a clean bill.** Question 2 was scoped to
+the staged test files; I graded every comment the round ADDED plus the file/group headers the
+round's new groups could falsify. One PRE-EXISTING count sits outside that sweep and was NOT
+measured: `firebase_group_weekly_menu_plan_repository_test.dart:302`, "the identical fix the
+three BUT-1732 shared-shopping-list probes carry". Untouched by this diff.
+
+Verdict: fail (2 blocking).
+
+### 2026-08-27 — BUT-1962 round 6: the design REVERSED under a claim a prior round had graded TRUE
+
+**Trigger.** Commit-gate re-review of the staged test files after the whole-diff review
+replaced persist-then-publish with optimistic-publish-plus-rollback in
+`weekly_menu_plan_viewmodel.dart`. Six graded tests unchanged and still green (63/63 in the
+VM suite), because the rollback restores `_plan` to the same object they assert with
+`same(...)`.
+
+**Hash table (index == worktree, `git diff --numstat` empty for every reviewed path).**
+| path | md5 |
+|---|---|
+| `test/unit/viewmodels/menu/weekly_menu_plan_viewmodel_test.dart` | b32651462519ce81c0e42c3cbaa7c1bf |
+| `lib/viewmodels/menu/weekly_menu_plan_viewmodel.dart` | a4552994b7851ebc27f315d2e3960e88 |
+
+**The finding that matters.** Round 5's archive entry (immediately above) records, under
+"Claims graded TRUE this round", the sentence *"The five operations that mutated `_plan`
+BEFORE the await each had to be reordered"* — verified then against the diff as it stood.
+The reversal landed after that grading and made it false: the shipped code has all five
+still mutating `_plan` BEFORE the await, with a rollback in the `catch` instead. The
+sentence survived precisely BECAUSE a reviewer had signed it off, and it now prescribes the
+persist-then-publish ordering the whole-diff review removed as the offline bug. A round that
+grades a rationale sentence TRUE hands the next round a reason not to re-read it; the
+grading is only valid against the bytes it measured, and a design reversal in the same batch
+is exactly what invalidates it.
+
+Two further comments died the same way, both present-tense claims about production:
+- `weekly_menu_plan_viewmodel_test.dart:281-283` — "The snapshot is taken only once the
+  write lands. Taking it up front armed 'Ångra' for a clear that never happened." The
+  shipped `clearWeek` takes both snapshots at VM:395-396, BEFORE the save at VM:402, and
+  nulls them in the `catch`. Both sentences false.
+- `weekly_menu_plan_viewmodel_test.dart:161` — "the reason these publish BEFORE persisting",
+  where "these" ranges over the group. `applyGeneratedMenu` is in that group and is
+  persist-then-publish (VM:263 before VM:269), carrying its own comment stating the
+  OPPOSITE rationale to `_publishThenPersist`'s doc (VM:285-296). Two answers to one
+  question, one file apart.
+
+**The coverage half, measured with a test-side probe (no `lib/` write).** A scratch
+`test/unit/viewmodels/menu/_zz_probe_test.dart` (written, run, deleted) held four cases; all
+four passed on the shipped code, so all four behaviours exist and none is asserted by any
+committed test:
+- A1 a PENDING `clearWeek` save empties the screen immediately;
+- A2 a PENDING `undoClearWeek` save restores immediately;
+- B1 a REFUSED `clearWeek` gives the overflow tray back;
+- B2 a REFUSED undo, retried, still restores the tray.
+
+A1/A2 matter because the new `'a PENDING save renders immediately'` test drives
+`assignRecipe`, i.e. `_publishThenPersist`, which covers three of the five sites.
+`clearWeek` and `undoClearWeek` publish INLINE, each with its own `try`/`catch`, so
+reverting either to persist-then-publish reddens nothing. Proof the gap is real and not just
+unread: `grep -n "Completer\|unawaited"` on the committed suite returns exactly lines 184 and
+187, both inside the one `assignRecipe` test.
+
+B1/B2 matter because both `catch` blocks restore `_overflow = priorOverflow` and
+`undoClearWeek`'s also restores `_preClearOverflow = overflowSnapshot`, while every committed
+test that reaches those blocks was seeded through `seed()`, which never populates the tray —
+so `_overflow` is `const []` and "restore it" and "leave it" are the same observable. The
+pre-existing `'restores the overflow tray on undo'` test (line 1323) does not reach them
+either: its `clearWeek` returns the SAME empty plan, so `entriesChanged` is false, `save` is
+never called and neither `try` is entered.
+
+**Claims graded TRUE this round.**
+- `Future<void>.delayed(Duration.zero)` is sound in the pending test, and is stronger than
+  the "one microtask hop" the brief called it: it schedules a TIMER, and the event loop
+  drains the whole microtask queue before a timer fires. It is also not load-bearing —
+  `executeAsyncVoid` (`base_viewmodel.dart:219`) calls `operation()` synchronously, the
+  closure calls `_publishThenPersist` synchronously, and that assigns `_plan` and calls
+  `notifyListeners()` before its own first `await`, so the state is published before
+  `assignRecipe(...)` returns to the test.
+- The pending test neither hangs nor leaks if an assertion fails: package:test does not await
+  orphan futures, and the never-completed `Completer` schedules no timer. `pending.complete()`
+  is nonetheless unreachable on failure — `addTearDown` makes it unconditional.
+- `weekly_menu_plan_service_test.dart`'s new `save` test is NOT vacuous despite having no
+  production ServiceLocator: `_isAuthenticated` (`base_service.dart:243`) catches its own
+  `ServiceLocator.get` failure and returns false, so a restored `executeServiceOperation`
+  would return `defaultValue` rather than throw — the test reddens under the mutant.
+- `messaging_service_close_poll_test.dart:1046`'s "restoring the wrapper leaves this test
+  green" — the service is a mock there; the comment scopes itself correctly and points at
+  the suite that does hold it.
+
+**Sweep boundary.** Graded every comment this round ADDED or left standing in the eight
+staged test files, plus the file/group headers a new group could falsify. Not measured:
+`firebase_group_weekly_menu_plan_repository_test.dart:302` (pre-existing, untouched, and
+already named as out of sweep by round 5).
+
+Verdict: fail (3 blocking).
+
+### 2026-08-27 — BUT-1962 round 6b: the design reversed AGAIN, mid-review, and the INDEX kept the other one
+
+**Trigger.** Verdict-time re-hash of the round 6 entry above. Both central files had moved
+DURING the round; the isolate-diff against the graded blobs showed not an edit but a second
+full design reversal, back to persist-then-publish.
+
+| path | graded md5 | worktree md5 at verdict | index blob |
+|---|---|---|---|
+| `lib/viewmodels/menu/weekly_menu_plan_viewmodel.dart` | a4552994b7851ebc27f315d2e3960e88 | 5f20c4d0dc7000b77edda7f669e8608e | 062c6a3f (= graded) |
+| `test/unit/viewmodels/menu/weekly_menu_plan_viewmodel_test.dart` | b32651462519ce81c0e42c3cbaa7c1bf | c35584d3d1c8bcfe9b74da0c6fd10f93 | 40f72ce6 (= graded) |
+
+`_publishThenPersist` and both inline rollbacks are GONE from the worktree; every mutator
+awaits `save` and then assigns `_plan`. The pending test was rewritten from
+`expect(viewModel.plan, same(placed))` to `expect(viewModel.isLoading, isTrue)`, with a
+comment conceding the offline case is a spinner-forever defect filed as BUT-1975.
+
+**The measurement that decides the verdict.** The committed suite is 63/63 GREEN under BOTH
+designs — measured on each copy, not inferred. The two designs are observably different: a
+scratch probe asserting that a PENDING `clearWeek` save is visible PASSED against the index
+bytes and FAILED against the worktree bytes (`Expected: same instance as ... Actual: ...`).
+So the suite as staged cannot tell persist-then-publish from optimistic-publish at all, and
+the rewritten pending test cannot either — `isLoading` is true while the save is pending
+under both, so its kill set is "someone stops awaiting `save`", i.e. `executeAsyncVoid`'s own
+contract, not this diff's.
+
+**Consequences for the round 6 findings, by copy.** Against the INDEX (what a commit would
+take) findings B1 and B2 stand: "each had to be REORDERED" and "the snapshot is taken only
+once the write lands" are both false of the optimistic code. Against the WORKTREE both are
+TRUE again, because the code moved back under them — the sentences were never edited. A
+comment that is false, then true, then false again without anyone touching it is the tell
+that the batch is oscillating, not converging.
+
+**Lesson, added to the principles file.** A design reversal can land DURING the review round,
+and index and worktree can hold OPPOSITE designs of the same method while every test passes
+on both. Re-hash at verdict time (already the rule), and when the isolate-diff shows a
+reversal rather than an edit, say which COPY each finding is against and refuse to grade
+"the change" as one object.
+
+Verdict: fail (3 blocking) — restated in the report against both copies.
+
+## 2026-08-27 — superseded in place (BUT-1962 fas 2, optimistic-publish bullet)
+
+Retired verbatim from `testing-specialist.knowledge.md`. Struck because it cited the design
+as SHIPPED, and that design was reverted before the commit landed — `_publishThenPersist`
+exists nowhere in `lib/`, and no mutator carries a rollback `catch`:
+
+> BUT-1962 shipped one, driving the shared `_publishThenPersist`, while `clearWeek` and
+> `undoClearWeek` publish INLINE with their own `try`/`catch` — 2 of 5 sites
+> revertible-green.
+
+The transferable rule survives in place. Found by the `integration-reviewer` gate, which
+noticed the always-loaded principle file disagreed with this archive's own round-6 entry —
+the stale copy being the one that loads on every future review.
+
+Why the reversal happened, for anyone re-deriving it: the whole-diff gate reported that
+persist-then-publish made offline edits invisible, and that was acted on without being
+measured. The `code-reviewer` gate then measured that `LoadingStateBuilder` returns its
+loading widget BEFORE reading `data`, so the calendar is a spinner during any pending save
+and neither ordering renders anything offline. The real defect is BUT-1975.
+
+## 2026-08-27 — BUT-1962 round N: grading the three suites against the FINAL persist-then-publish shape
+
+Trigger: commit-gate re-review after the design reversed (optimistic-publish-with-rollback →
+persist-then-publish). Files graded on their staged bytes (index == worktree, `git diff
+--numstat` empty at both ends):
+`test/unit/viewmodels/menu/weekly_menu_plan_viewmodel_test.dart`,
+`test/unit/viewmodels/onboarding_viewmodel_test.dart`,
+`test/unit/services/menu/weekly_menu_plan_service_test.dart`.
+`lib/viewmodels/menu/weekly_menu_plan_viewmodel.dart` md5 `98e70b255eb5bead76553bbda3f9c14e`
+before and after the probe below.
+
+**Mutation probe (the round's one measurement).** The fix report said reverting to
+optimistic-without-rollback "reddens exactly the three entry-mutator tests", which read as
+"the clearWeek/undoClearWeek ordering coverage died with the rollback". Reverted BOTH
+`clearWeek` (snapshot + `_plan`/`_overflow` assignment hoisted above the save) and
+`undoClearWeek` (`_plan`, tray and snapshot-consume hoisted above the save) in one patch,
+ran the suite, restored from a `cp` backup, md5-verified:
+
+    00:00 +4 -1: ... clearWeek — and the undo window is not opened [E]
+      Expected: same instance as <Instance of 'WeeklyMenuPlan'>
+    00:00 +4 -2: ... undoClearWeek — and the snapshot survives for a retry [E]
+
+Exactly those two, on their `expect(viewModel.plan, same(<pre-save plan>))` lines. So the
+ordering IS pinned per method and the "exactly three" figure described the probe patch's
+scope, not the suite's kill sets. Rule recorded in place.
+
+**Finding 1 (blocking) — `clearWeek`'s new `Future<bool>` is unasserted at every layer.**
+`grep -rn "clearWeek()" test/` returns 8 call sites, all `await viewModel.clearWeek();` with
+the value discarded; `grep -rln "weeklyMenuClearedUndo\|clearWeek" test/widget test/views`
+returns nothing. So `return true` in the VM, or dropping `!cleared` from
+`calendar_weekly_menu_widget.dart`'s `if (!context.mounted || !cleared) return;`, is green
+repo-wide — and that gate is the whole user-visible change (a refused clear no longer
+announces success with a dead "Ångra"). Remedy is three assertions inside tests already in
+the diff: `isFalse` on the refusal case (line 278), `isTrue` on 'persists the cleared plan
+when entries actually existed' (1260), `isFalse` on an 'is a no-op when no plan is loaded'
+case (1267). `assignRecipe`'s twin bool needed nothing — it is already held indirectly, which
+is precisely what made the unheld one invisible.
+
+**Finding 2 (blocking) — the ordinal in "The seventh operation, found by the integration pass
+rather than by me: `assignFromOverflow` …" (viewmodel suite, line 349).** The staged diff
+changes SIX operations (assignRecipe, moveEntry, removeEntry, clearWeek, undoClearWeek,
+assignFromOverflow), and the group header 200 lines above already fixes the population at
+"The five operations that mutated `_plan` BEFORE the await" — which measures TRUE against the
+diff. `applyGeneratedMenu` cannot be the sixth: `git show HEAD:` has it persist-first with
+`if (!ok) return null` already, and the staged diff carries no hunk for it. There is a reading
+under which 7 is right (every VM operation that persists, counting the delegating
+`assignFromOverflow`), which is the point — the ordinal is not resolvable from the file.
+Strike the ordinal, do not re-count: "`assignFromOverflow`, found by the integration pass
+rather than by me: it awaited `assignRecipe`, ignored the outcome …".
+
+**Graded clean, with the measurement each needed.**
+- The rewritten PENDING test: kept. Its kill set is not in this diff (both orderings leave
+  `isLoading` true / `error` null while the save is unresolved), but it pins that
+  `assignRecipe` AWAITS the write inside the loading window, and it is BUT-1975's named
+  anchor — the shape the knowledge file already blesses ("the named anchor for the residual,
+  not as coverage"). Its comment's load-bearing claim was verified rather than trusted:
+  `loading_state_builder.dart` tests `error` (141), then `isLoading` (153), and only reaches
+  `data` at 189, and `calendar_weekly_menu_widget.dart:94` wires `vm.isLoading/error/plan`.
+  `addTearDown` guard applied; `persistenceEnabled: true` confirmed at
+  `firestore_bootstrap.dart:10`. Only mismatch: it sits under a group header about REFUSED
+  saves while pinning a PENDING one (non-blocking).
+- "The five operations that mutated `_plan` BEFORE the await" — measured TRUE (5 hunks).
+- Leak test: `expect(viewModel.error, 'Kunde inte ta bort receptet')` against
+  `executeAsyncVoid`'s `setError(errorPrefix ?? …)` verbatim (base_viewmodel.dart:236). The
+  `isNot(contains(leak))` loop the earlier round flagged as unfailable is gone.
+- Service suite's caller-population sentence: struck, and verified struck by grepping
+  `errorPrefix|call site` across all three files — only the VM suite's singular "the call
+  site's own prefix" survives, which quantifies over nothing.
+- Onboarding suite: every comment resolved against `_seedSampleMenu` — `save` at line 571,
+  `generateForWeek` at 573 in the same `try`, so "re-swallowing the save locally would let the
+  next line run" is a real discriminator, and the unstubbed generator's `verifyNever` is what
+  carries it. "This catch has always swallowed" true at HEAD. `onboarding_menu_seed_failed`
+  is re-typed as a literal (the stronger pin).
+- Observation, not a defect: the new onboarding test's kill set is a strict SUPERSET of the
+  pre-existing 'a save failure inside menu seeding does not fail onboarding (best-effort)'
+  (line 1307) through the same seam — same stubs, same throw, plus the telemetry assertions.
+  Retiring one is a scope call for the batch owner.
+
+### 2026-08-27 — BUT-1962 commit gate: the three repository suites whose assertions pinned the silent refusal
+
+Trigger: commit-gate review of `test/integration/firebase/repositories/weekly_menu_plan_repository_test.dart`
+(md5 99ff76bb8845ad4917844b7996d2ce45), `.../group_weekly_menu_plan_repository_test.dart`
+(82bb5eaa8139a3e24d16bf1ae36a672c) and
+`test/unit/repositories/firebase/firebase_group_weekly_menu_plan_repository_test.dart`
+(4763dec49c049342e57730b8550dbd59). Index == worktree (`git diff --numstat` empty on all three).
+Verdict: pass, 0 blocking.
+
+Four rewritten refusal tests. Each previously called `await repo.save(...)` and asserted only
+that no document existed; each now wraps the call in `await expectLater(..., throwsA(...))` and
+keeps the original post-condition.
+
+1. Coverage. Every post-condition survives (personal: whole-collection `isEmpty`, its `reason:`
+   string dropped; group integration: both viewer and stranger halves keep `isEmpty` with their
+   reasons; unit: `doc(plan.id).exists isFalse` in both). The write assertion is now UNREACHABLE
+   when the throw is absent, because `expectLater`'s mismatch aborts the test — but nothing is
+   lost: the missing-guard mutant ("write anyway") is killed by the `throwsA` line instead, and
+   the surviving kill set of the `isEmpty`/`exists` line is the ORDERING mutant (`collection.doc()
+   .set()` moved above the throw). The personal file's new comment claims exactly that and no
+   more ("the throw alone would not prove the write was skipped"), which is why it is not a
+   finding.
+2. Matchers. `PermissionDeniedException implements Exception`
+   (`lib/core/exceptions/permission_exceptions.dart:117`); `StateError` is a `dart:core` `Error`.
+   The two are disjoint, so swapping the two throws in
+   `FirebaseGroupWeeklyMenuPlanRepository.save` reddens both group tests. No probe needed — the
+   type lattice settles it.
+3. Attribution. Personal: `save` passes `plan.userId` as the permission subject, so
+   `entity.userId == userId` inside `validateUpdatePermission` is a tautology and the doc-ID
+   prefix is the SOLE determinant, which is what the test name and comment claim. Group
+   id-mismatch cases pass `userId: null`, so the `canEdit` conjunct is never evaluated — single
+   variable. Group permission cases use a plan whose prefix matches, so `canEdit` is the sole
+   determinant, and the integration test's name says so ("even if the doc-ID prefix is valid").
+   None over-determined. `validateDeletePermission`'s unconditional `true` is pinned only by a
+   positive test whose name states the contract; no denial is attributed to it.
+4. Comments. The BUT-1962 provenance notes verify: the personal file quotes
+   `save() must log-and-return when canWrite is false` verbatim, and `git show HEAD` carries that
+   exact `reason:` string. "the user was shown nothing when their week failed to persist" is
+   directly readable from the pre-fix `Future<void>` + bare `return` (no caller could observe it)
+   and the branch is reachable in production via `WeeklyMenuPlan.fromMap`, which takes `id` from
+   the doc path and `userId` from the stored field — a tampered/corrupt row parses mismatched and
+   its re-save hits the guard. Not a finding.
+
+Pre-existing prose, both Low and both non-blocking, both recommended as STRIKES rather than
+rewordings:
+- The personal integration file's header claims "the permission filter that keeps cross-user
+  reads/writes from landing" while the scope note 120 lines below correctly says cross-user WRITE
+  blocking is firestore.rules' job, not the repository's (`save` passes the CLAIMED owner). One
+  file answering the question two ways; unchanged at HEAD.
+- The unit file's header carries "Targets ~61 unhit lines" — an undated, unattributed coverage
+  figure the file's own later `exportPlansForParticipant` group falsifies. Unchanged at HEAD.
+
+Checked and NOT a finding: the unit file's `exportPlansForParticipant` docblock claims
+"`FakeFirebaseFirestore` throws `Unsupported` on `isNotEqualTo: null` rather than silently
+degrading". Measured true against the pinned version — `fake_cloud_firestore-4.1.1`'s
+`mock_query.dart` `_valueMatchesQuery` guards every operator with `!= null` and ends in a bare
+`throw 'Unsupported'`, so a null argument falls through the whole chain. Consistent with the
+sibling claim about the real SDK dropping null conditions (`query.dart:659`): different layers,
+both true.
+
+### 2026-08-28 — BUT-1962 round 5 (commit-gate review of three files) — trigger: parent asked for a coverage-only grade of `analytics_events.dart`, `firebase_group_weekly_menu_plan_repository.dart`, `group_weekly_menu_plan_service.dart`
+
+Graded copy: worktree == index for all three (`git diff --numstat` empty on each; `git status`
+shows `M ` staged). Suites re-run on the current bytes: `firebase_group_weekly_menu_plan_repository_test.dart`
++ `group_weekly_menu_plan_service_test.dart` = 25/25 green.
+
+**The one coverage gap, and it is new to this round.** The repository's `save` gained the
+`logPermissionCheck` call `lib/repositories/CLAUDE.md` requires, with a five-line comment
+explaining that the audit row must name `requireCurrentUserId()` and NOT the caller-supplied
+`userId` (verified against `firestore.rules` line 2561: `request.auth.uid ==
+request.resource.data.userId`, so a divergent actor's row is refused and the mixin's
+`unawaited(...).catchError` swallows the refusal — an Art. 30 row lost in silence). Nothing
+pins it, in two independent ways:
+- Neither suite injects an `auditRepository` (`_repo(...)` in the unit file and the integration
+  `setUp` both pass firestore + authRepository only), so `permission_validation_mixin`'s
+  `if (auditRepository != null)` branch never runs and no row is ever produced.
+- In the unit suite the authed uid and the passed `userId` are the SAME literal (`_alice` on both
+  sides of every `save` case), so the `requireCurrentUserId()` → `userId` swap mutant is
+  analytically unkillable there — the BUT-1856 fixture-collapse shape, no probe needed. The
+  integration suite does diverge them (`callerId = 'user-alpha'` authed vs `'editor-uid'` /
+  `'viewer-uid'` / `'stranger-uid'` passed) but observes nothing, because it too injects no audit
+  repository.
+The sibling half of the same batch (`firebase_weekly_menu_plan_repository.dart`, same comment,
+same `requireCurrentUserId()`) is unpinned identically — grep for `audit` in either weekly-menu
+repository suite returns nothing — so this is a batch-wide omission, not a slip in one file.
+Graded Medium/non-blocking on that basis: the diff ADDS the call, so it is strictly better than
+HEAD, and the `firebase-backend-security` gate already carries the audit topic as BUT-1974.
+The idiomatic template is one directory away —
+`firebase_activity_event_repository_test.dart` → `'records the granted permission check via the
+audit repository'` (MockAuditRepository stubbed with `any(named:)` on every param, then
+`verify(... userId: <expected>, granted: true ...)`). The killer fixture must diverge the two
+uids and assert the AUTHED one; a same-uid fixture reproduces the collapse.
+
+**Comment findings, all pre-existing and all recommended as STRIKES.**
+- `group_weekly_menu_plan_service.dart` header: "adds per-participant permission checks before any
+  mutation" and "Permission gates (editor+ …, admin for participant management + delete)". False
+  on both clauses — `_requireAdmin` is called at `addParticipant` and `removeParticipant` only
+  (lines 259/285), and `deleteAllByGroup` (304) has NO gate and says so in its own doc 290 lines
+  below. One file answering the question two ways; byte-identical at HEAD. Strike "+ delete" and
+  the "before any mutation" quantifier — do NOT reword to "most mutations".
+- The repository's new `StateError` comment gives two answers to one question: "Routed through the
+  sanitizer because a Dart-core throw gets none of the `toString()` masking the permission
+  exceptions build in" then "The chokepoint is the point, not the redaction."
+  `LogSanitizer.maskConversationId` returns its input UNCHANGED unless it starts with `direct_`,
+  and the only producer (`MessagingService._appendWinnerToGroupPlan`) runs behind
+  `conversation.isGroup`, so the helper is the identity function on every value this call site can
+  receive. Strike the "because…" clause; keep the chokepoint sentence. (Swapping in
+  `maskIdentifiers` is a production change, not a comment round.)
+- `analytics_events.dart` header enumerates the domains "in declaration order" and names 12 while
+  the file holds 18 sections — pooled ratings, cooking mode, household size, tagging, win-back and
+  experiments are all absent. Enumerating doc with an insertion seam; strike the list.
+- Already reported by the `firebase-backend-security` gate the same day, found independently here
+  and NOT re-filed: the class doc (17-19) and the block comment (45-47) state the same
+  `validateUpdatePermission`-is-what-`save()`-refuses-on fact twice.
+
+**The parent's own premise was stale, and saying so was the answer.** The brief asked whether the
+analytics constant's comment "claims the seed failure is the only signal this failure leaves
+behind" — it does not, on the current bytes. That sentence lives on `messageSendDeniedClockAhead`
+(BUT-1903, pre-existing and correctly scoped to a population the server structurally cannot see).
+Had it been present on `onboardingMenuSeedFailed` it would have been false, because
+`OnboardingViewModel._seedSampleMenu`'s catch logs `AppLogger.warning('Failed to seed sample
+menu: $e')` on the line above the `logEvent`. A brief's quoted claim gets grepped in the graded
+bytes before it is graded — an earlier round evidently struck it.
+
+**Checked and NOT findings.** The constant is pinned by its LITERAL (`onboarding_menu_seed_failed`
+typed in `onboarding_viewmodel_test.dart:1027`), not by an import — the stronger pin, since a
+value change reddens. That test is non-vacuous in the exact shape this file's own BUT-1962
+principle demanded: `readWeek` stubbed locally, `verify(save).called(1)` proving the save was
+reached, `verifyNever(generateForWeek)` discriminating a later throw in the same `try`. The
+`userId == null` branch IS reachable from a test ("persists plan when userId not provided") and is
+production-dead (`_repository.save` has exactly one caller, `GroupWeeklyMenuPlanService.save`,
+which always passes `actorId`) — already BUT-1974, not re-filed. No suite elsewhere asserts the
+retired behaviour: both rewritten repository tests, the integration suite and
+`messaging_service_close_poll_test.dart` all assert the throw, and the retired log strings
+("Blocked group menu plan save", `.maskedUserId` at that site) appear nowhere in `test/`. Both
+silent-return→throw rewrites put `expectLater(..., throwsA(...))` above a surviving "nothing was
+written" assertion, which per this file's principle now carries only the ORDERING mutant — and
+neither comment beside them overclaims that.
+
+Verdict: pass (0 blocking).
+
+### 2026-08-28 — BUT-1962 re-review: a declined comment finding, withdrawn on measurement
+
+**Trigger:** founder declined one of three comment strikes from my `pass (0 blocking)` verdict
+on `group_weekly_menu_plan_service.dart`, `analytics_events.dart`,
+`firebase_group_weekly_menu_plan_repository.dart`, and asked me to push back if I disagreed.
+The `firebase-backend-security` gate had blessed the same wording twice.
+
+**The declined clause** (`firebase_group_weekly_menu_plan_repository.dart`, save()'s StateError):
+
+    // Routed through the sanitizer because a Dart-core throw gets none of the
+    // `toString()` masking the permission exceptions build in, and this one
+    // reaches Crashlytics through the poll-close path. The chokepoint is the
+    // point, not the redaction.
+
+I had filed it as two answers to one question: a motive clause naming redaction, and a
+sentence beside it disclaiming redaction. I withdrew it. Four measurements, all against
+current bytes:
+
+1. `lib/core/exceptions/permission_exceptions.dart` — six `toString()` overrides, each
+   wrapping its body in `LogSanitizer.maskIdentifiers`. A `StateError` has none. Premise TRUE.
+2. `lib/core/utils/logger.dart:246-271` — its own doc records the OPEN RESIDUAL: `_sanitize
+   ForCrashlytics` covers the MESSAGE only; `_logToCrashlytics` hands the raw `error` OBJECT to
+   `recordError` untouched, for "every app-owned class outside permission_exceptions.dart".
+   So a throw-site mask is the ONLY one this string will ever get on native. TRUE and
+   load-bearing — not redundant with the sink, which was my unstated assumption.
+3. `messaging_service.dart:912` gates `_appendWinnerToGroupPlan` on `isGroup`; `:1127` passes
+   `conversation.id` as the groupId. A group conversation id is an opaque auto-id, never
+   `direct_`, so `maskConversationId` returns it UNCHANGED (log_sanitizer.dart:81). The call
+   redacts nothing today — which is precisely what "the chokepoint is the point, not the
+   redaction" says. The caveat is the accurate half, not a contradiction.
+4. The exposure clause closes too: `messaging_service.dart:939-941` catches and calls
+   `AppLogger.error('Failed to close poll …', e)` then rethrows, so the StateError reaches
+   Crashlytics by the exact route named.
+
+**Verdict:** the security gate's reading was right and mine was wrong. Comment kept intact,
+unmodified. No blocking findings; verdict `pass (0 blocking)`.
+
+**Also confirmed this round (non-blocking, reported, not filed):**
+- Rewritten service header measured true: 4 `_requireEditor` (save/addEntry/removeEntry/
+  moveEntry), 2 `_requireAdmin` (addParticipant/removeParticipant), `deleteAllByGroup` none.
+- "`deleteAllByGroup` has none" is literally true but implicates uniqueness, which holds only
+  under a WRITE-scoped reading — `getWeek`/`readWeek`/`getOrBuildWeek`/`readOrBuildWeek` carry
+  no gate either (rules-gated reads, documented at getWeek). It is also a second copy of the
+  method's own doc at lines 301-303. Durable form is "read each method — they differ";
+  expanding it to list all five would re-arm the census seam the round just removed.
+- Analytics header ("grouped by domain in declaration order — see the section dividers below")
+  has no count, no enumeration, no insertion seam. Founder's 23 `^  // --- ` includes the 5
+  dividers in `AnalyticsUserProperties`; `AnalyticsEvents` alone has 18. Both consistent.
+- Three copies of one CALLER CENSUS across two files: service save doc (154-159), service
+  inline block "The only live caller is the meal-poll close" (169-173), repository
+  "On the only live caller — closing a meal poll" (134-136). True today
+  (`messaging_service.dart:1148` is the only call site; DI is the only other reference), and
+  the same shape the founder struck from the analytics list this round.
+- Repository states the same three claims twice: class header (12-19) and block (45-47).
+- Rules claim at repository 122-127 VERIFIED: `firestore.rules:2562`
+  `request.auth.uid == request.resource.data.userId`; "silently" VERIFIED via the mixin's
+  `unawaited(...).catchError` (permission_validation_mixin.dart:430+).
+- `AuthenticationException` in the save doc VERIFIED (base_firebase_repository.dart:72).
+
+**Measured motion:** `git diff --numstat` empty on all three paths — index == worktree, so the
+verdict is against the copy the parent will commit.
+
+### 2026-08-28 — BUT-1962 commit-gate round: struck doc + new clear-week widget pair
+**Trigger:** parent re-review of two staged files on current bytes —
+`lib/services/menu/group_weekly_menu_plan_service.dart`
+(md5 f23fefeac48e62454b93d44b92d28896) and
+`test/widget/menu/calendar_weekly_menu_widget_test.dart`
+(md5 58324afe7cf2ef1a851b82905316972e, +64/-0, new to this diff).
+`git diff --numstat` empty on both — index == worktree; verdict against that copy.
+
+**1. The struck `removeParticipant` doc — TRUE standalone.** Surviving text: "Admin-only:
+remove a participant. Refuses to remove the last admin — the service layer guards against an
+orphaned plan." Measured: `canAdmin(uid)` is participant-derived only
+(`group_weekly_menu_plan.dart:176` → `participantFor(uid)?.canAdmin`), so `_requireAdmin`
+guarantees ≥1 admin at entry; the `remainingAdmins == 0` throw therefore fires exactly when the
+removed participant IS the last admin. No residual implication about `firestore.rules`: the
+clause names the service layer as the guard's LOCATION and asserts nothing about a second line
+of defence. Nothing else in the file re-states the struck rules claim (grep of "belt-and-braces"
+in this file: the only surviving instance is in the REPOSITORY, about a duplicated permission
+check, a different claim).
+
+**2. The refusal+control pair — non-vacuous, and settled ANALYTICALLY with no probe.** Both
+cases go through one `pumpWeekWithOneEntry`; the only difference is the `service.save` stub
+(throws vs answers). Path verified by reading production: fixture has one entry → `hasEntries`
+→ `WeekNavHeader.onClearWeek` non-null (calendar_weekly_menu_widget.dart:170) → tooltip
+`weeklyMenuClearWeekAction` = "Rensa veckan" (app_sv.arb:10424) → `_onClearWeek` has NO confirm
+dialog, calls `vm.clearWeek()` then gates on `!cleared` (line 212-213). VM: `clearWeek` stub
+returns a FRESH plan so `!identical(cleared, current)` holds and `save` is actually reached
+(viewmodel:376-377), and the snapshot assignments sit AFTER the save (379-383), so a refused
+clear arms no undo — the group comment's "an 'Ångra' that arms nothing" is readable from the
+code, not a guess. The reasoning shortcut worth keeping: the control's green proves the path
+reaches the snackbar, so the refusal case's green PROVES `save` was called — had it not been,
+that case would behave like the control and be RED. No `verify`, no coverage run needed.
+Ran it: `--plain-name "clear"` → 2/2 green.
+
+**3. Belongs here, duplicates nothing.** Grep of `test/` for "Veckan rensad"/"Rensa veckan"
+outside this file: zero. The VM suite pins the BOOL
+(`weekly_menu_plan_viewmodel_test.dart:280/1262/1269`) through a different seam; this pair pins
+the VIEW's consumption of it. Placement matches the file's sibling snackbar-gating groups
+(copy-week, bulk-move).
+
+**4. Comments graded.** `save`'s newly-added non-exhaustive enumeration verified item by item:
+`StateError` for a mis-keyed doc id (repository:109), `AuthenticationException` from the audit
+call via `requireCurrentUserId()` (repository:127 → base_firebase_repository.dart:72, reachable
+because the service always passes a non-null `userId`), Firestore failure at `set()`
+(repository:145). "The only live caller is the meal-poll close" — grep of
+`GroupWeeklyMenuPlanService` across `lib/`: DI registration plus `messaging_service.dart:1087`,
+so measured true. Phrasing "whatever else the repository raises: …" is open-ended, so it is NOT
+an enumerating-doc trap.
+
+**Non-blocking finding (pre-existing, header untouched by this diff):** the test file's
+LIBRARY header (lines 1-10) is false twice. It says the file exercises "the widget's five UI
+states: loading, empty hint, overflow tray, 7×3 grid, today badge" (no loading state is
+asserted anywhere in the file, and the file also covers multi-select, bulk-move, copy-week and
+now clear-week), and "One `butleryGolden(...)` freezes the layout of the populated-with-overflow
+state" — contradicted by the file's OWN golden group at line 1004-1011 ("Does NOT use
+`butleryGolden` because that helper builds its own MaterialApp wrapper"), whose fixture is three
+entries and NO overflow. Recommended as a STRIKE of both sentences, never a re-scope: the
+surviving first sentence ("Drives a real `WeeklyMenuPlanViewModel` with a mocked service") is
+true and sufficient. Filed non-blocking because it misstates no control and was not introduced
+by this round.
+
+**Declined finding NOT re-filed:** my earlier note on the production header's bullet 3
+(`addEntry`/`removeEntry`/`moveEntry` reading as exhaustive). The parent declined it on the
+grounds that a fourth edit to that header is the shape that has planted false claims in this
+batch. Agreed and withdrawn — a declined non-blocking finding coming back reworded is the
+correction chain the strike rule exists to stop.
+
+### 2026-08-28 — BUT-1962 commit-gate confirmation, two staged files, current bytes
+
+Hash table (graded copy; `git diff --numstat` empty on both, so INDEX == WORKTREE):
+
+| path | md5 |
+|---|---|
+| `lib/repositories/firebase/firebase_weekly_menu_plan_repository.dart` | 98a02f23b37d43893893a4b8f1ead6ec |
+| `test/unit/viewmodels/onboarding_viewmodel_test.dart` | 4719a33787627979d00be14073f49aeb |
+
+Suites run on those bytes: onboarding VM + repository unit + repository integration = 57/57 green.
+
+**Verdict: pass, 0 blocking.**
+
+**Q1 — second coverage gap in `save`.** The deny→throw and the "nothing reached Firestore"
+halves ARE pinned (`weekly_menu_plan_repository_test.dart`, `save (deterministic upsert)`
+group, second test); the allow→upsert half by the first. BUT-1974 (logPermissionCheck pinned
+by nothing) stands. Three further items are SUBSUMED by BUT-1974's fixture and were
+deliberately NOT filed separately, because all three need the same auditRepository +
+diverging-uid fixture: (a) the log-above-throw ORDERING — a mutant moving `logPermissionCheck`
+below the `if (!canWrite) throw` drops the DENIED Art. 30 row and is green everywhere;
+(b) the `details: 'week <key>'` string; (c) the authed-vs-claimed uid divergence.
+The one gap with an INDEPENDENT fixture: `requireCurrentUserId()` is now an unconditional
+precondition of `save`, which it never was — no suite constructs this repository
+unauthenticated, so nothing sees that a signed-out save throws `AuthenticationException`
+before the permission decision and before the write, where it previously performed the write.
+Graded LOW and reported as a ticket, not a blocker: no upstream layer discriminates the type
+(grepped `is|on PermissionDeniedException` across `lib/` — no hit on the weekly-menu path; the
+VM's catch is untyped), so the user-visible Swedish message is identical either way.
+Stated for the record, not filed: the exception's `resource`/`operation`/`userId` fields and
+its message have an EMPTY kill set (dropping all three named args is green); nothing in `lib/`
+reads them and `toString()` masks the uid.
+
+**Withdrawn before filing — a PII "regression" that was not one.** The diff deletes an
+`AppLogger.warning` carrying `plan.userId.maskedUserId` (BUT-1964) and replaces it with
+`logPermissionCheck`, whose console line prints `User=$userId` RAW plus a raw uid inside
+`resource: '<collection>/user:<uid>'`. Read alone that is a masking regression. Measured
+against the house pattern it is not: `grep -c maskedUserId` over every `logPermissionCheck(` call
+site in `lib/repositories/firebase/` returns **0**, and `BaseFirebaseRepository.create` even
+embeds the raw uid in the thrown message. The sink is `developer.log` only (`AppLogger.info`/
+`warning` never reach `_logToCrashlytics`), so it stays on-device. BUT-1964's masking was the
+outlier; the change aligns this path with ~every sibling. Withdrawn outright rather than
+re-filed narrowed.
+
+**Q2 — the retirement holds.** The survivor
+(`'a failed sample-menu save emits telemetry and blocks nothing'`) strictly dominates the
+deleted `'a save failure inside menu seeding does not fail onboarding (best-effort)'`: both of
+the deleted test's assertions survive (`completeOnboarding()` isTrue carrying the IDENTICAL
+`reason:` string; `verifyNever(generateForWeek)`), plus four the deleted one lacked
+(`verify(save).called(1)`, the `onboarding_menu_seed_failed` event, `error isNull`,
+`verifyNever(onboarding_menu_seeded)`). The only fixture difference is the thrown type
+(`Exception` → `StateError`), and it loses nothing: `_seedSampleMenu`'s catch is a bare
+`catch (e)`, verified by reading it, so the two kill sets are identical. (Noted so a later
+round does not re-derive it: this path's real refusal is `PermissionDeniedException`, not
+`StateError` — irrelevant while the catch stays untyped, load-bearing the moment anyone types it.)
+
+**NEW VACUITY SHAPE — a ViewModel with NO error channel.** Non-blocking finding, filed:
+`expect(viewModel.error, isNull)` in the survivor has an EMPTY kill set. `OnboardingViewModel`
+extends `BaseViewModel` but never calls `setError` and never routes through an `execute*`
+helper that would (grepped the whole class: zero hits for `setError|execute|handleError`), so
+`error` is null on every path of every test in the file and NO production change to
+`_seedSampleMenu` or `completeOnboarding` can redden it. No probe was needed — the grep is the
+proof. Its comment ("No error surfaced to the user") is TRUE as behaviour but is not held by
+the line beneath it; the real reason the user sees nothing is that the catch swallows AND the
+VM has no error surface at all. Repair when the bytes reopen: DELETE the line. Do NOT
+"strengthen" it into a check of some other surface — there is none on this VM.
+
+**Q3 — comments, each graded standalone and each measured TRUE.**
+Repository: "`logPermissionCheck` is required of every custom permission gate" — quoted
+verbatim from `lib/repositories/CLAUDE.md`, a citation of a rule rather than a census of code.
+"An `audit_logs` create whose uid does not match the caller is refused by the rules, so naming
+the claim here would lose the Art. 30 row" — verified at `firestore.rules:2561-2563`
+(`request.auth.uid == request.resource.data.userId`), and "lose" is exact because the mixin
+wraps the write in `unawaited(...).catchError`, which swallows the refusal. "Was `return`,
+which is why a refused save reached the user as silence" — verified against
+`git show HEAD:<file>`. "Deterministic upsert on `{uid}_{ISO week}`" — true, and the struck
+"bypass `create` … rather than throwing on doc collisions" is absent from
+`git show :<path>` (the INDEX, not just the worktree). Strike-adjacency swept: no surviving
+"this"/"that" resolved through the deleted text. Class-doc cross-file pointer resolves —
+`test/architecture/architecture_test.dart:860` is the escape-spelling guard it names.
+Onboarding test: "the seed's catch has always swallowed" is a HISTORY claim and was MEASURED
+rather than trusted — `git log -S 'Failed to seed sample menu'` returns exactly ONE commit
+(1711d297c) and `git show` of that blob has the catch as `AppLogger.warning(...)` with no
+rethrow, so "always" ranges over a two-member history and holds. "A permission failure lands
+in that catch too" — verified end to end: `WeeklyMenuPlanService.save` is a bare pass-through
+(`=> _repository.save(plan)`, no `executeServiceOperation`), and the catch is untyped.
+"Discriminates the SAVE's throw from a later one in the same `try`" — verified:
+`generateForWeek` is the next statement after `await menuService.save(plan)` inside the same
+try, and it is unstubbed here.
+
+**Two true sentences deliberately NOT filed, to avoid starting a correction chain.**
+(1) `removeRecipeFromAllPlans`'s pre-existing "log once at the user level … to keep audit
+volume reasonable" — the same claim-CLASS the round struck from `save`, surviving in a sibling
+method because the strike swept only the locations the findings named. Untouched by this diff
+and not false (the method does log once, and the cascade is one-per-user). (2) `fetchForWeek`'s
+"`_loadPlanForWrite` and `copyWeek` reach it from write paths" — the accepted-deviations
+AMENDMENT already records that this list is short (`readWeek` also calls it), but the sentence
+carries no "only" and supports a NEGATIVE claim ("NOT display-only"), which a third caller
+cannot falsify.

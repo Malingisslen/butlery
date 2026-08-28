@@ -975,6 +975,74 @@ void main() {
       ).called(1);
     });
 
+    // BUT-1962: the seed's catch has always swallowed, so a first-run seeding
+    // failure was invisible. Since the menu save now throws on a refusal, a
+    // permission failure lands in that catch too. The user is still told
+    // nothing — the sample week is not their work.
+    test(
+      'a failed sample-menu save emits telemetry and blocks nothing',
+      () async {
+        // Stubbing the ROUTE is what makes this test about the save: the
+        // `verify(save).called(1)` below is what holds it there.
+        when(() => mockMenuService.readWeek(any())).thenAnswer(
+          (_) async => WeeklyMenuPlanRead(plan: emptyPlan(), readFailed: false),
+        );
+        final realAdder = WeeklyMenuPlanService(
+          repository: _NoopMenuRepo(),
+          userService: mockUserService,
+        );
+        when(
+          () => mockMenuService.addEntry(
+            plan: any(named: 'plan'),
+            day: any(named: 'day'),
+            slot: any(named: 'slot'),
+            recipe: any(named: 'recipe'),
+          ),
+        ).thenAnswer(
+          (inv) => realAdder.addEntry(
+            plan: inv.namedArguments[#plan] as WeeklyMenuPlan,
+            day: inv.namedArguments[#day] as DayOfWeek,
+            slot: inv.namedArguments[#slot] as MealSlot,
+            recipe: inv.namedArguments[#recipe] as Recipe,
+          ),
+        );
+        when(
+          () => mockMenuService.save(any()),
+        ).thenThrow(StateError('refused by the repository'));
+
+        // Pins the "blocks nothing" half of the name: the seed's catch swallows,
+        // so completion still reports success.
+        expect(
+          await viewModel.completeOnboarding(),
+          isTrue,
+          reason:
+              'menu seeding is best-effort; its failure must not block '
+              'onboarding completion',
+        );
+
+        verify(() => mockMenuService.save(any())).called(1);
+        // Discriminates the SAVE's throw from a later one in the same `try`:
+        // re-swallowing the save locally would let the next line run, and the
+        // shopping generator — unstubbed here — would throw into the same
+        // catch and fire the same event with this test none the wiser.
+        verifyNever(() => mockShoppingGenerator.generateForWeek(any()));
+        verify(
+          () => mockAnalyticsService.logEvent(
+            name: 'onboarding_menu_seed_failed',
+            parameters: any(named: 'parameters'),
+          ),
+        ).called(1);
+        // No error surfaced to the user, and onboarding still completed.
+        expect(viewModel.error, isNull);
+        verifyNever(
+          () => mockAnalyticsService.logEvent(
+            name: 'onboarding_menu_seeded',
+            parameters: any(named: 'parameters'),
+          ),
+        );
+      },
+    );
+
     test(
       'does not overwrite an existing non-empty plan (idempotent)',
       () async {
@@ -1238,50 +1306,6 @@ void main() {
           parameters: any(named: 'parameters'),
         ),
       );
-    });
-
-    test('a save failure inside menu seeding does not fail onboarding '
-        '(best-effort)', () async {
-      when(
-        () => mockMenuService.readWeek(any()),
-      ).thenAnswer(
-        (_) async => WeeklyMenuPlanRead(plan: emptyPlan(), readFailed: false),
-      );
-      final realAdder = WeeklyMenuPlanService(
-        repository: _NoopMenuRepo(),
-        userService: mockUserService,
-      );
-      when(
-        () => mockMenuService.addEntry(
-          plan: any(named: 'plan'),
-          day: any(named: 'day'),
-          slot: any(named: 'slot'),
-          recipe: any(named: 'recipe'),
-        ),
-      ).thenAnswer(
-        (inv) => realAdder.addEntry(
-          plan: inv.namedArguments[#plan] as WeeklyMenuPlan,
-          day: inv.namedArguments[#day] as DayOfWeek,
-          slot: inv.namedArguments[#slot] as MealSlot,
-          recipe: inv.namedArguments[#recipe] as Recipe,
-        ),
-      );
-      when(
-        () => mockMenuService.save(any()),
-      ).thenThrow(Exception('menu write failed'));
-
-      final result = await viewModel.completeOnboarding();
-
-      expect(
-        result,
-        isTrue,
-        reason:
-            'menu seeding is best-effort; its failure must not block '
-            'onboarding completion',
-      );
-      // The shopping generator runs only after a successful save, so a save
-      // failure must short-circuit before it.
-      verifyNever(() => mockShoppingGenerator.generateForWeek(any()));
     });
   });
 }

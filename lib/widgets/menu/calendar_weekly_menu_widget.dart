@@ -1,6 +1,7 @@
 /// Calendar view for the weekly menu plan. Embedded in `VeckomenyView`
 /// when the user toggles "Kalender". Renders the 7-day grid, overflow tray,
-/// week-nav header, and all five UI states, with drag-drop between cells.
+/// week-nav header, and the loading/error/empty/data states, with drag-drop
+/// between cells.
 ///
 /// BUT-542: cell rendering + drag/drop machinery extracted to
 /// `lib/widgets/menu/calendar/`. This file is the orchestrator only.
@@ -208,8 +209,8 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
     BuildContext context,
     WeeklyMenuPlanViewModel vm,
   ) async {
-    await vm.clearWeek();
-    if (!context.mounted) return;
+    final cleared = await vm.clearWeek();
+    if (!context.mounted || !cleared) return;
     SnackBarUtils.showSuccessWithAction(
       context,
       context.l10n.weeklyMenuClearedUndo,
@@ -357,7 +358,9 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
     // For lunch/middag take the first; for övrigt accept all and queue them.
     if (slot.isMulti) {
       for (final recipe in picked) {
-        await vm.assignRecipe(day: day, slot: slot, recipe: recipe);
+        // Stop at the first refusal: each further write clears the error the
+        // user needs to read.
+        if (!await vm.assignRecipe(day: day, slot: slot, recipe: recipe)) break;
       }
     } else {
       await vm.assignRecipe(day: day, slot: slot, recipe: picked.first);

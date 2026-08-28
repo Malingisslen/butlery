@@ -80,6 +80,27 @@ void main() {
     );
   });
 
+  // BUT-1962: `save` wrapped the repository in `executeServiceOperation`, which
+  // answers a failure with a default instead of rethrowing. A refused write was
+  // therefore indistinguishable from a completed one, so a caller that shows
+  // an error had nothing to show it from.
+  //
+  // This has to live at the SERVICE layer: the viewmodel suite mocks the
+  // service, so restoring the wrapper leaves that suite green (probed).
+  group('save', () {
+    test('propagates a refusal instead of swallowing it', () async {
+      final plan = _emptyPlan(mon);
+      when(
+        () => repo.save(plan),
+      ).thenThrow(StateError('refused by the repository'));
+
+      await expectLater(
+        () => service.save(plan),
+        throwsA(isA<StateError>()),
+      );
+    });
+  });
+
   group('distributeFromGeneratedMenu — lunch/middag chronological fill', () {
     test('Mon anchor: 3 dinners land on Mon/Tue/Wed', () {
       final result = service.distributeFromGeneratedMenu(
