@@ -29203,3 +29203,183 @@ and not false (the method does log once, and the cascade is one-per-user). (2) `
 AMENDMENT already records that this list is short (`readWeek` also calls it), but the sentence
 carries no "only" and supports a NEGATIVE claim ("NOT display-only"), which a third caller
 cannot falsify.
+
+### 2026-08-28 — BUT-1948 review: the deleted twin gets retargeted, the KEPT twin gets nothing
+
+Trigger: review of the staged deletion of `GroupWeeklyMenuPlanService.getWeek` /
+`getOrBuildWeek`, plus the one-word `operationName: 'getWeek'` → `'readWeek'` fix in
+`WeeklyMenuPlanService.readWeek`.
+
+Graded (all opened with Read):
+- `lib/services/menu/group_weekly_menu_plan_service.dart`
+- `lib/services/menu/weekly_menu_plan_service.dart`
+- `test/unit/services/menu/group_weekly_menu_plan_service_test.dart`
+- `test/unit/services/menu/weekly_menu_plan_read_week_test.dart`
+- `test/unit/viewmodels/menu/menu_generator_test.dart` (lines 1270-1379)
+
+Verdict: pass, 0 blocking. 13/13 green before the fix, 11/11 in the read-week suite after.
+
+What held:
+- Zero remaining `getOrBuildWeek`/group-`getWeek` references anywhere in `lib/` or `test/`.
+  A deletion of dead delegates is mutation-dead by construction; nothing to pin forward.
+- The GROUP refuse-on-failed-read branch IS pinned specifically, not only the personal one:
+  `weekly_menu_plan_read_week_test.dart` "readOrBuildWeek refuses to build on a FAILED read"
+  with the sibling "DOES build on a genuinely empty week" as its control. Same fixture
+  builder, differing only in the stub → non-vacuity needs no probe (existing principle).
+  Mutant check by reading: dropping `if (read.readFailed) return read;` flips both assertions.
+- The retargeted participant-seeding pair is genuinely distinguishable now.
+  `GroupWeeklyMenuPlan.empty` defaults to `[creator, admin]` (read at
+  `lib/models/menu/group_weekly_menu_plan.dart:132-159`); the fixture passes
+  `user-beta`/`edit`. Mutant "drop the argument" reddens only the supplied-participants test;
+  mutant "`initialParticipants ?? const []`" reddens only the default test.
+- Cross-file pointers resolve in both directions: the `W2`/`G1` labels the two services'
+  doc comments cite exist in `functions/src/__tests__/weekly-menu-plans-rules.test.ts`
+  (lines 114, 222). The read-week suite header's "consumer half is pinned in the messaging
+  suites" resolves too — `messaging_service_close_poll_test.dart` holds both a personal
+  `readWeek(readFailed: true)` case and a group `readOrBuildWeek(plan: null, readFailed:
+  true)` case (lines 1006-1054).
+- No group-side "failed auth pre-flight" test, and that is correct rather than a gap: both
+  services reach the pre-flight through the same `BaseService.executeServiceOperation` seam,
+  so a group copy's kill set would be a strict subset of the personal one's.
+
+The finding (Low, fixed in the review):
+`WeeklyMenuPlanService.getWeek` is deliberately kept — the group twin was deleted, this one
+survives for `menu_generator.dart`'s recent-recipe dedup where an empty-plan fallback is the
+right answer. It had NO direct test at any layer. All five `getWeek` hits in `test/` are in
+`menu_generator_test.dart`, every one a `when(() => mockPlanService.getWeek(...))` on a mock
+service, so the real one-line delegate was never executed and its stated contract ("a failed
+read is reported as an empty plan here") was unpinned: replacing the body with an
+unconditional `WeeklyMenuPlan.empty(...)` reddened nothing, which would silently disable
+dedup forever. Closed with a pair added to the read-week suite's first group — a throwing
+repo must yield an empty plan for the right week rather than throwing, and a persisted week
+must come back `same(existing)`. The second is load-bearing: the fallback assertion on its
+own is satisfied by the "always empty" mutant.
+
+Residuals stated, not repaired:
+- The `operationName` rename is unpinnable by design — no suite in the repo asserts an
+  operation name for these services, and a log string is not worth a test. Reverting it
+  reddens nothing; do not record it as covered.
+- `menu_generator_test.dart`'s "plan-service read throws" case models a failure mode the real
+  `getWeek` cannot produce (`readWeek` swallows into `readFailed`). Harmless as a defensive
+  control over the mock, but it is not evidence about production behaviour.
+- `weekly_menu_plan_service.dart:98` still throws `StateError('No authenticated user for
+  getWeek')` from inside `readWeek`. Not false (the public `getWeek` delegates here), just
+  imprecise; left alone rather than reworded.
+- BUT-1961's cached-absence entry in `.claude/rules/accepted-deviations.md` was read first:
+  `readWeek` minting `readFailed: false` for a cached-absent week is a decided call, not a
+  finding, and both services' doc comments state it accurately.
+
+### 2026-08-28 — BUT-1962 fas 3: coverage review of the three `getWeek`→`readWeek` refusal sites
+
+Trigger: review the staged production change in `menu_shopping_list_generator.dart`,
+`chat_action_handler.dart`, `slot_picker_dialog.dart` and judge whether the accompanying tests
+are adequate and honest. All three previously reported a FAILED read as "the week is empty".
+
+Ran 29/29 green across
+`test/unit/services/shopping/menu_shopping_list_generator_test.dart`,
+`test/widget/dialogs/slot_picker_dialog_test.dart`,
+`test/widget/messaging/chat_action_handler_share_menu_test.dart`.
+
+What held up:
+- The generator's new case is non-vacuous WITHOUT a probe. Deleting the `read.readFailed`
+  throw makes the (empty) plan fall into the `entries.isEmpty` branch and return the
+  `nothingToGenerate` SENTINEL, which is not null — `expect(result, isNull)` reddens. Its
+  `verifyNever(createPersonalList)` is NOT entailed by `isNull` either: the file's other two
+  `StateError` sites (create returned null; update returned false) also produce null, and the
+  first of them fires only AFTER a create. So the verify discriminates WHICH throw.
+- The chat pair is the refusal+control shape whose non-vacuity needs no probe: one fixture
+  builder, one stub differing only in `readFailed`; the control's green proves the path reaches
+  the snackbar, so the refusal case's green proves the branch was taken.
+- The control also self-verifies the hardcoded Swedish literal `'Ingen meny för den veckan'`:
+  it is asserted `findsOneWidget` there and `findsNothing` in the refusal case, so a wrong
+  spelling reddens the control rather than passing silently.
+
+What did not:
+1. **The slot picker's retry was untested.** `StateWidget.error(message:, onAction: _loadWeek)`
+   resolves its label through `_buildErrorState`: `actionLabel ?? (onAction != null ?
+   l10n.commonRetry : null)`. Drop `onAction:` and no button renders — and the existing failed-read
+   test (message shown + `find.text('fre')` absent) stays green, because both its assertions are
+   entailed by the same `_loadFailed` branch. Since the refusal replaces the ENTIRE body, that
+   button is the only way out of the sheet other than cancelling. Wrote the missing test myself
+   (zero-risk, test-only): a counter-backed stub failing the first read and answering the second,
+   asserting `reads == 2`, the refusal gone and the grid back. 6/6 green, analyze clean. Argued
+   its kill set from `_buildErrorState` rather than mutating staged production code, since a
+   parallel session was live in the tree (the knowledge file moved under me mid-round).
+2. **`weeklyPlanReadFailedMessage`'s Swedish literal is pinned nowhere.** `grep -rn "Kunde inte
+   läsa in veckan"` returns exactly one hit, the declaration. Both consumer suites use
+   `find.text(weeklyPlanReadFailedMessage)`, so the symbol is pinned twice and the string not at
+   all — it could become any non-empty text with everything green. Not fixed; reported.
+3. The generator's other two `StateError` sites are untested (no test stubs
+   `createPersonalList` → null or `updateList` → false). Pre-existing, predates this change, and
+   does not weaken the new case per the argument above.
+
+Declined to file:
+- **`_loadWeek`'s `catch (e)` should NOT be tested.** Read the chain: `readWeek` wraps everything
+  in `executeServiceOperation` → `safeExecute`, whose `catch` returns `defaultValue` for EVERY
+  error with no rethrow path, and `readWeek` maps that null to `readFailed: true`. The only other
+  statements in the `try` are `setState` calls. The catch is therefore unreachable in production,
+  and a test for it would stage the throw on the mock and assert the mock threw — it would measure
+  the double, not the widget.
+- Nothing here contradicts BUT-1961's accepted deviation: `readWeek` mints `readFailed: false`
+  for a cached absence, so none of these three refusals fire offline. That is decided.
+
+Verdict: pass, 0 blocking (findings 1-3 non-blocking; 1 closed in the same round).
+
+### 2026-08-28 — BUT-1962 fas 3 / BUT-1948 final pass on `weekly_menu_plan_service.dart`
+
+Trigger: final review pass on the staged file (index == worktree for the service and all
+three suites, verified with `git diff --numstat`; service md5 8bf3290731a9905d86fbbc02a4707565).
+62/62 green across `weekly_menu_plan_read_week_test.dart`,
+`weekly_menu_plan_service_test.dart`, `weekly_menu_plan_copyweek_presence_test.dart`.
+
+Verified the earlier passes' claims rather than assuming them:
+- `.getWeek(` across `test/`: only the two new real-service calls in the read-week suite;
+  every other hit stubs it on `MockWeeklyMenuPlanService` in `menu_generator_test.dart`. The
+  "no direct test" premise held.
+- `getWeek(` across `lib/`: sole caller is `menu_generator.dart` (two sites), so the suite
+  comment naming the dedup caller is measured. `group_weekly_menu_plan_service.dart` has no
+  `getWeek` — the "group twin was deleted" clause is true.
+- `'Kunde inte läsa in veckan — försök igen'` across `test/`: exactly one hit, the new
+  constant test. Consumers still match by symbol, as stated.
+
+Contract questions asked by the parent:
+- `readWeek` — pinned four ways (throw → readFailed true + empty; persisted → `same(existing)`
+  + `verify(fetchForWeek(userId:'u', weekStart:<Mon>)).called(1)`; null → readFailed false;
+  auth pre-flight fail → readFailed true + `verifyNever`). Non-vacuous without a probe: the
+  persisted case's `verify(...).called(1)` is the control proving the wrapped closure runs
+  under `setupUnitWithProductionLocator`, so the two failure cases are not the harness
+  short-circuiting (BUT-1937 shape).
+- `save()` propagate-don't-swallow — pinned at the service layer. The re-wrap mutant dies
+  either way in that suite: with no production ServiceLocator the pre-flight short-circuits
+  and `executeServiceOperation` returns null, so no throw escapes and `throwsA` reddens.
+- `copyWeek` fas-2 refusal — pinned (`throwsA(isA<StateError>())` on a throwing `repo.save`);
+  moving the save back inside the wrapper makes it `return 0` and reddens.
+
+Surviving mutants found (all non-blocking, all pre-existing to this commit):
+1. `return copied;` → `return 0;` — no real-service test assigns the result; the four presence
+   tests `await` and discard. The count feeds the "N måltider kopierade" snackbar and is
+   asserted only against a mocked service in the VM and widget suites.
+2. `if (duplicate) continue;` deleted — every dest fixture in the presence suite has zero
+   entries (`null` dest, or a dest carrying only `presenceBySlot`), so the documented
+   "invoke copyWeek twice safely" contract is unreachable from any fixture.
+3. `if (normalizedFrom == normalizedTo) return 0;` deleted — no fixture passes equal weeks.
+4. `if (userId == null) return 0;` → `throw` — copyWeek's silent-zero-on-no-auth is untested,
+   though its five siblings' `throwsA(isA<StateError>())` cases are.
+5. `_currentUserId ?? 'anonymous'` → `'anonymous'` on the readWeek FALLBACK plan — neither
+   failure test asserts `plan.userId` (only the success/null paths do). `weekStartDate` on
+   that fallback IS asserted, so normalization is covered.
+6. Service-level `removeRecipeFromAllPlans` has no test at all (`result ?? 0` → `0` survives;
+   dropping `executeServiceOperation` survives). Severity is low both ways: the sole caller,
+   `personal_recipe_crud._cascadeRemoveFromWeeklyMenus`, already wraps it in try/catch AND
+   discards the int, so the count is a dead observable.
+
+Also filed: the read-week suite's file header says "These tests enter the real wrapper, which
+means they need the DI ServiceLocator" — a quantifier over the file's contents, falsified by
+the round's own new `weeklyPlanReadFailedMessage` group, which compares a constant and enters
+no wrapper. Same seam class as a test COUNT; remedy is a strike/attach-to-group, not a reword.
+
+Not filed, and why: `readWeek` minting `readFailed: false` for a null return from a
+negatively-cached week is the decided BUT-1961 deviation (ACCEPTED_DEVIATIONS.md, "An offline
+weekly-plan read trusts a cached absence", incl. the 2026-08-27 same-day amendment naming
+`readWeek` explicitly). The `operationName` log label and the struck docstring qualifier were
+declared settled by prior passes and left alone.

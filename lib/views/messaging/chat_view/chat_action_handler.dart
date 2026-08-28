@@ -447,10 +447,20 @@ class ChatActionHandler {
       );
       if (weekStart == null) return;
 
-      final plan = await ServiceLocator.get<WeeklyMenuPlanService>().getWeek(
+      final read = await ServiceLocator.get<WeeklyMenuPlanService>().readWeek(
         weekStart,
       );
       if (!context.mounted) return;
+
+      // BUT-1962: `getWeek` reported a failed read as an empty plan, so the
+      // branch below told the user the week held no menu when what we had was
+      // no answer. The two deserve different messages — one is a fact about
+      // their menu, the other is a fault they can retry.
+      if (read.readFailed) {
+        _showErrorSnackBar(weeklyPlanReadFailedMessage);
+        return;
+      }
+      final plan = read.plan;
 
       if (plan.isEmpty) {
         _showInfoSnackBar(context.l10n.chatNoMenuForWeek);

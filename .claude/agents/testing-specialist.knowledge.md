@@ -355,13 +355,26 @@ you want the revert-probe that proved it; or this file itself reads too compress
 ### Coverage decisions
 Codecov: 60% project / 70% new patches / 2% drop tolerance — floors, decided 55% project
 (2026-07-11); don't file generic "raise coverage" tickets.
+- **When a cleanup DELETES a pair of unsafe delegates and deliberately KEEPS one twin, the
+  kept twin is the unpinned one** — the deleted side gets a retargeting round and the survivor
+  gets a rationale sentence instead of a test, because its sole caller's suite stubs it on a
+  mock service. `grep -rn '\.<method>(' test/` and ask whether ANY hit constructs the REAL
+  service; N-of-N mock hits IS the finding. Close it with a PAIR (failure fallback + persisted
+  passthrough) — the fallback assertion alone is satisfied by an "always empty" mutant
+  (BUT-1948, `WeeklyMenuPlanService.getWeek`, 2026-08-28).
 - **A method whose RETURN TYPE widens (`Future<void>`→`Future<bool>`) adds an observable with
   zero test hits by construction — every existing call site discards it, and the suite stays
   green under `return true`.** Grep the method in `test/` and read whether ANY call assigns the
   result: 8 of 8 discarding IS the finding. The sibling that IS pinned is what hides it —
   BUT-1962 gave `assignRecipe` and `clearWeek` a bool the same day; `assignRecipe`'s is held
   indirectly (`assignFromOverflow` prunes only on true), `clearWeek`'s gates a success snackbar
-  and was held by nothing at any layer (2026-08-27).
+  and was held by nothing at any layer (2026-08-27). **The same grep answers for an UNCHANGED
+  return value whose only assertions sit at a MOCK-service layer**: `copyWeek`'s copied-count
+  drives a Swedish snackbar and is asserted in the viewmodel and widget suites against a stubbed
+  service, while all four real-service calls `await` it and discard — so replacing the RETURN
+  VALUE with `0`, the exact symptom the ticket was opened for, reddens nothing. (Gutting the
+  whole body is a different mutant and does redden the save-refusal test.)
+  (BUT-1962/1948, 2026-08-28).
 - **Open a review by grepping each NEW TOKEN into a token→files table** (~30s). Zero files
   IS the finding; hits only in an extracted class's own suite means the composing line in
   the CALLER's suite is still unproven (BUT-1838: a `copyWith` carry, a DTO write asymmetry,
@@ -528,7 +541,18 @@ Codecov: 60% project / 70% new patches / 2% drop tolerance — floors, decided 5
   observe the other language at all. Grade such a one-literal test's KEEP separately: its kill
   set is usually a strict subset of the end-to-end sibling's (a `contains('100')` on the
   rendered string reddens on the same constant change), so it survives as the named anchor for
-  the residual, not as coverage (BUT-1929/BUT-1960, 2026-08-27).
+  the residual, not as coverage (BUT-1929/BUT-1960, 2026-08-27). **A SHARED user-facing
+  message CONSTANT is the same shape inside ONE language**: every consumer test writes
+  `find.text(kMessage)`, so the SYMBOL is pinned at N call sites and the STRING at none — it
+  can become any non-empty text and all suites stay green. Grep the literal across `test/`;
+  zero hits IS the finding, and the repair is one test typing it verbatim (BUT-1962,
+  `weeklyPlanReadFailedMessage`, 2026-08-28).
+- **A refusal that REPLACES a whole body ships an ESCAPE HATCH nobody asserts.** The natural
+  refusal test is the pair "message shown" + "the thing it replaced is gone", and both are
+  entailed by the same branch; the third observable — `StateWidget.error(onAction: _reload)` —
+  is untouched, and deleting `onAction:` reddens nothing because the label resolves to null
+  and the button simply stops rendering. Pin it as first-read-fails/second-answers plus a
+  CALL COUNT, which also kills a no-op callback (BUT-1962 slot picker, 2026-08-28).
 - **"X was REPOINTED" — run X's PRE-EXISTING suite even if the ticket omits it.** It's
   written against the retired behaviour and usually passes VACUOUSLY (seam uncalled, fixture
   unseeded) rather than failing. Rewrite with a fixture where old/new DISAGREE, seed the

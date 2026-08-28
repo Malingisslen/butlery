@@ -33,12 +33,15 @@ void main() {
   setUp(() async {
     await TestServiceLocator.initialize();
     planService = _MockPlanService();
-    when(() => planService.getWeek(any())).thenAnswer(
-      (invocation) async => WeeklyMenuPlan.empty(
-        userId: 'u',
-        date: IsoWeekUtils.weekStartOf(
-          invocation.positionalArguments.single as DateTime,
+    when(() => planService.readWeek(any())).thenAnswer(
+      (invocation) async => WeeklyMenuPlanRead(
+        plan: WeeklyMenuPlan.empty(
+          userId: 'u',
+          date: IsoWeekUtils.weekStartOf(
+            invocation.positionalArguments.single as DateTime,
+          ),
         ),
+        readFailed: false,
       ),
     );
     TestServiceLocator.registerMock<WeeklyMenuPlanService>(planService);
@@ -160,6 +163,72 @@ void main() {
       final button = tester.widget<FilledButton>(find.byType(FilledButton));
       expect(button.onPressed, isNull);
       expect(find.text('Lägg till (0)'), findsOneWidget);
+    });
+  });
+
+  group('failed read (BUT-1962)', () {
+    testWidgets('a week that could not be read shows the refusal and draws NO '
+        'placeable cells', (tester) async {
+      // Before BUT-1962 this dialog called `getWeek`, which reported a failed
+      // read as an empty plan — so the grid rendered a full week of free cells
+      // and the user placed a recipe onto a week the app had never read. No
+      // cell means no placement.
+      when(() => planService.readWeek(any())).thenAnswer(
+        (_) async => WeeklyMenuPlanRead(
+          plan: WeeklyMenuPlan.empty(
+            userId: 'u',
+            date: IsoWeekUtils.weekStartOf(DateTime(2026, 8, 28)),
+          ),
+          readFailed: true,
+        ),
+      );
+
+      await pumpHost(
+        tester,
+        open: (context) => showSlotPickerDialog(context),
+        onResult: (_) {},
+      );
+
+      expect(find.text(weeklyPlanReadFailedMessage), findsOneWidget);
+      expect(
+        find.text('fre'),
+        findsNothing,
+        reason: 'a slot grid over a week we never read is the whole defect',
+      );
+    });
+
+    testWidgets('the refusal\'s retry re-reads the week and the grid comes '
+        'back', (tester) async {
+      // First read fails, second answers.
+      var reads = 0;
+      when(() => planService.readWeek(any())).thenAnswer((invocation) async {
+        final week = IsoWeekUtils.weekStartOf(
+          invocation.positionalArguments.single as DateTime,
+        );
+        reads++;
+        return WeeklyMenuPlanRead(
+          plan: WeeklyMenuPlan.empty(userId: 'u', date: week),
+          readFailed: reads == 1,
+        );
+      });
+
+      await pumpHost(
+        tester,
+        open: (context) => showSlotPickerDialog(context),
+        onResult: (_) {},
+      );
+      expect(find.text(weeklyPlanReadFailedMessage), findsOneWidget);
+
+      await tester.tap(find.text('Försök igen'));
+      await tester.pumpAndSettle();
+
+      expect(reads, 2, reason: 'the retry must actually re-read the week');
+      expect(find.text(weeklyPlanReadFailedMessage), findsNothing);
+      expect(
+        find.text('fre'),
+        findsWidgets,
+        reason: 'a successful retry restores the placeable grid',
+      );
     });
   });
 

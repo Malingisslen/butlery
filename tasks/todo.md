@@ -280,18 +280,61 @@ så det överlevde att svälj-beteendet återinfördes. Båda hade sett ut som t
 
 ## Fas 3 — de kvarvarande läsvägarna
 
-- [ ] **BUT-1962** punkt 1-3: `slot_picker_dialog` (den värsta — målar en tom vecka och låter
+- [x] **BUT-1962** punkt 1-3: `slot_picker_dialog` (den värsta — målar en tom vecka och låter
       användaren placera ovanpå det, med en `catch` som aldrig kan lösa ut),
       `menu_shopping_list_generator`, `chat_action_handler`.
-- [ ] **Ta med i BUT-1948:** `GroupWeeklyMenuPlanRead`:s klass-doc (`group_weekly_menu_plan_service.dart`
+- [x] **Ta med i BUT-1948:** `GroupWeeklyMenuPlanRead`:s klass-doc (`group_weekly_menu_plan_service.dart`
       ~rad 31) säger "[plan] är null när veckan saknar sparad plan" — sant för `readWeek`,
       FALSKT för `readOrBuildWeek`, vars egen doc två rader ner säger motsatsen. Preexisterande,
       hittat av testing-specialist-grinden 2026-08-27. Scopa meningen till `readWeek`; skriv inte
       om den.
-- [ ] **BUT-1948**: gruppmenytjänstens `getWeek`/`getOrBuildWeek` är döda, och den osäkra av
+- [x] **BUT-1948**: gruppmenytjänstens `getWeek`/`getOrBuildWeek` är döda, och den osäkra av
       dem har det vänligare namnet. Samma sjukdom på gruppkedjan.
 
-**Acceptans:** ingen väg påstår "tomt" när den menar "vet inte".
+**Acceptans:** ingen väg påstår "tomt" när den menar "vet inte". Uppfylld för de tre vägarna.
+
+### Utfall fas 3
+
+| Väg | Före | Efter |
+|---|---|---|
+| `slot_picker_dialog` | Ritade en hel vecka lediga celler för en vecka den aldrig läst, och bjöd in till placering. `catch`-grenen kunde inte lösa ut, eftersom tjänsten sväljer kastet | `readWeek`; en misslyckad läsning ger `StateWidget.error` med försök-igen och **noll celler** |
+| `menu_shopping_list_generator` | Rapporterade `nothingToGenerate` — "du har inget planerat" — för en vecka utan svar | Kastar; landar som `null`, som vyn redan renderar som "Kunde inte skapa inköpslistan – försök igen" |
+| `chat_action_handler` | "Ingen meny för den veckan" för en vecka utan svar | Egen felsnackbar med den delade `weeklyPlanReadFailedMessage` |
+
+**BUT-1948:** gruppens `getWeek` och `getOrBuildWeek` borttagna (noll anropare i `lib/`,
+verifierat repo-brett vid ändringen). De två testerna **flyttades till `readOrBuildWeek`
+i stället för att raderas** — de pinnar gruppspecifika saker (deltagarsådd, och att inget
+persisteras) som den personliga sviten inte täcker. Doc-referenser till de borttagna
+metoderna rättade, och `operationName: 'getWeek'` — som loggade fel metodnamn — på båda
+tjänsterna.
+
+**Mutationsprövningarna, med utfall** — körda i huvudsessionen, inte av granskarna (en
+granskare läste deras arkivpost, där de skriver att DE resonerade i stället för att mutera,
+och drog felslutet att ingen probe kördes alls):
+
+| Mutant | Utfall |
+|---|---|
+| `menu_shopping_list_generator`: ta bort `if (read.readFailed) throw` | `+21 -1` (rent: `+22`) |
+| `slot_picker_dialog`: `_loadFailed = false; _plan = read.plan` | `+4 -2` (rent: `+6`) |
+| `chat_action_handler`: ta bort `if (read.readFailed)`-grenen | `+1 -1` (rent: `+2`) |
+| `readOrBuildWeek`: `initialParticipants: null` | `+3 -1` (rent: `+4`) |
+| `readOrBuildWeek`: `creatorId: 'mutant-creator'` | `+3 -1` (rent: `+4`) |
+
+Chat-mutantens `+1` är kontrollen (samma tomma plan, `readFailed: false`) som förblir
+grön — själva poängen: de två meddelandena ska skilja sig åt. De två sista raderna är de
+deltagarmutanter som ÖVERLEVDE före fixturrättelsen.
+
+Slot-picker-raden rodnar TVÅ tester, inte ett: retry-testet hävdar att vägran ritas innan
+det trycker på knappen, så mutanten fäller både det och det ursprungliga vägrantestet.
+Raden mättes först mot en svit på fem tester och kördes om mot de sex som skeppas, sedan
+retry-testet tillkommit — den första siffran beskrev bytes som inte längre fanns.
+
+Varje fil återställdes efter sin probe och verifierades med `git hash-object` mot värdet
+före mutationen.
+
+`getWeek` på den PERSONLIGA tjänsten behålls för `menu_generator`
+(dedup mot förra veckans recept). Den är rätt plats för en tom-plan-fallback — dess egen doc
+säger att dedup aldrig får blockera menygenerering — så den lämnas.
 
 ## Fas 4 — skrivhalvan offline (BUT-1965)
 

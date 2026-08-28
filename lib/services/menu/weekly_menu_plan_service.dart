@@ -46,10 +46,10 @@ class WeeklyMenuPlanRead {
   const WeeklyMenuPlanRead({required this.plan, required this.readFailed});
 }
 
-/// The refusal message the menu views show when [WeeklyMenuPlanRead.readFailed]
-/// said the week could not be read (BUT-1939).
+/// The refusal message shown when [WeeklyMenuPlanRead.readFailed] said the week
+/// could not be read (BUT-1939).
 ///
-/// One string rather than one per view: the refusal is the same event everywhere,
+/// One string rather than one per surface: the refusal is the same event everywhere,
 /// and two spellings of it drift. It names the retry because the failure is a read
 /// that did not answer, which the next attempt may well survive — unlike the
 /// generic fallback, which tells the user nothing they can act on.
@@ -95,7 +95,7 @@ class WeeklyMenuPlanService extends BaseService {
       () async {
         final userId = _currentUserId;
         if (userId == null) {
-          throw StateError('No authenticated user for getWeek');
+          throw StateError('No authenticated user for readWeek');
         }
         final saved = await _repository.fetchForWeek(
           userId: userId,
@@ -106,7 +106,7 @@ class WeeklyMenuPlanService extends BaseService {
           readFailed: false,
         );
       },
-      operationName: 'getWeek',
+      operationName: 'readWeek',
     );
     return read ??
         WeeklyMenuPlanRead(
@@ -154,8 +154,7 @@ class WeeklyMenuPlanService extends BaseService {
   /// Each copied entry gets a fresh UUID via `WeeklyMenuPlanEntry.create`
   /// so the two weeks share recipes-by-id but never share an entry-id.
   ///
-  /// Returns the count of entries actually copied (0 if source missing /
-  /// empty, source == dest, or every entry already exists in dest).
+  /// Returns the count of entries actually copied.
   Future<int> copyWeek({
     required DateTime fromWeekStart,
     required DateTime toWeekStart,
@@ -173,11 +172,10 @@ class WeeklyMenuPlanService extends BaseService {
           userId: userId,
           weekStart: normalizedFrom,
         );
+        if (source == null) return (null, 0);
         // Presence can be set BEFORE a menu is generated, so a source week
         // with no entries but explicit presence must still carry that presence
-        // forward (acceptance criterion 5). Only a truly empty source (no
-        // entries AND no presence) short-circuits, via the guard below.
-        if (source == null) return (null, 0);
+        // forward.
         if (source.entries.isEmpty && source.presenceBySlot.isEmpty) {
           return (null, 0);
         }

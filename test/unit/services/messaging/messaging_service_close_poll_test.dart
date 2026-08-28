@@ -217,9 +217,9 @@ void main() {
     ).thenAnswer((inv) => inv.namedArguments[#plan] as WeeklyMenuPlan);
     when(() => planService.save(any())).thenAnswer((_) async {});
 
-    // Group plan service stubs (group path). `readOrBuildWeek`, not
-    // `getOrBuildWeek`: BUT-1928 made the read state part of the answer, and
-    // the close path refuses on a failed read rather than saving over the week.
+    // Group plan service stubs (group path). BUT-1928 made the read state part
+    // of the answer, and the close path refuses on a failed read rather than
+    // saving over the week.
     when(
       () => groupPlanService.readOrBuildWeek(
         groupId: any(named: 'groupId'),

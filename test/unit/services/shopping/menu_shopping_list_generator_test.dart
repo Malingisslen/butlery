@@ -171,6 +171,9 @@ UnifiedShoppingList _list(
   generatedForWeek: generatedForWeek,
 );
 
+WeeklyMenuPlanRead _read(WeeklyMenuPlan plan) =>
+    WeeklyMenuPlanRead(plan: plan, readFailed: false);
+
 void main() {
   late _MockWeeklyMenuPlanService menuService;
   late MockUnifiedRecipeService recipeService;
@@ -257,8 +260,8 @@ void main() {
   // recipes reached the aggregator (3 dl summed), plus ägg as a second line.
   void seedTwoRecipePlan() {
     when(
-      () => menuService.getWeek(any()),
-    ).thenAnswer((_) async => _plan(['r1', 'r2']));
+      () => menuService.readWeek(any()),
+    ).thenAnswer((_) async => _read(_plan(['r1', 'r2'])));
     recipeService.setRecipeState(
       recipes: [
         _recipe('r1', const [
@@ -643,8 +646,8 @@ void main() {
       // silently reset bought-status in exactly the regeneration scenario
       // the preservation exists for.
       when(
-        () => menuService.getWeek(any()),
-      ).thenAnswer((_) async => _plan(['r1']));
+        () => menuService.readWeek(any()),
+      ).thenAnswer((_) async => _read(_plan(['r1'])));
       recipeService.setRecipeState(
         recipes: [
           _recipe('r1', const [
@@ -707,8 +710,8 @@ void main() {
       // the list is built from what resolved, and the gap is surfaced so the
       // snackbar can tell the truth.
       when(
-        () => menuService.getWeek(any()),
-      ).thenAnswer((_) async => _plan(['r1', 'r-deleted']));
+        () => menuService.readWeek(any()),
+      ).thenAnswer((_) async => _read(_plan(['r1', 'r-deleted'])));
       recipeService.setRecipeState(
         recipes: [
           _recipe('r1', const [
@@ -763,8 +766,9 @@ void main() {
       // v.NN" husk appears in the user's list collection — and the view can
       // tell "nothing planned" (sentinel) apart from "generation failed"
       // (null), which carry different user-facing messages.
-      when(() => menuService.getWeek(any())).thenAnswer(
-        (_) async => WeeklyMenuPlan.empty(userId: _testUserId, date: _date),
+      when(() => menuService.readWeek(any())).thenAnswer(
+        (_) async =>
+            _read(WeeklyMenuPlan.empty(userId: _testUserId, date: _date)),
       );
       shoppingService.setShoppingState(lists: [], personalLists: []);
 
@@ -787,14 +791,47 @@ void main() {
       verifyNever(() => shoppingService.updateList(any()));
     });
 
+    test('FAILED read: returns null, never the nothingToGenerate sentinel '
+        '(BUT-1962)', () async {
+      // The pair that matters is this test and the one directly above it: same
+      // stubs, same empty-looking week, and the ONLY difference is whether the
+      // read answered. Before BUT-1962 both landed on the sentinel, so a week
+      // the app never managed to read was reported to the user as "you have
+      // nothing planned".
+      when(() => menuService.readWeek(any())).thenAnswer(
+        (_) async => WeeklyMenuPlanRead(
+          plan: WeeklyMenuPlan.empty(userId: _testUserId, date: _date),
+          readFailed: true,
+        ),
+      );
+      shoppingService.setShoppingState(lists: [], personalLists: []);
+
+      final result = await generator.generateForWeek(_date);
+
+      expect(
+        result,
+        isNull,
+        reason:
+            'null is the failure channel the view renders as '
+            '"Kunde inte skapa inköpslistan"',
+      );
+      verifyNever(
+        () => shoppingService.createPersonalList(
+          any(),
+          items: any(named: 'items'),
+        ),
+      );
+      verifyNever(() => shoppingService.updateList(any()));
+    });
+
     test('plan whose every recipe is unresolvable degrades to '
         'nothingToGenerate without touching any list', () async {
       // Proves: the second sentinel branch — entries exist but none resolve
       // (all deleted/uncached). Generating an empty husk list here would be
       // worse than doing nothing; failing (null) would show the wrong copy.
       when(
-        () => menuService.getWeek(any()),
-      ).thenAnswer((_) async => _plan(['r-gone-1', 'r-gone-2']));
+        () => menuService.readWeek(any()),
+      ).thenAnswer((_) async => _read(_plan(['r-gone-1', 'r-gone-2'])));
       recipeService.setRecipeState(recipes: [], isInitialized: true);
       shoppingService.setShoppingState(lists: [], personalLists: []);
 
@@ -822,8 +859,8 @@ void main() {
       // (amount 1), never "0 salt". This lives in the GENERATOR, not the
       // aggregator — the aggregator hands over amount == null.
       when(
-        () => menuService.getWeek(any()),
-      ).thenAnswer((_) async => _plan(['r1']));
+        () => menuService.readWeek(any()),
+      ).thenAnswer((_) async => _read(_plan(['r1'])));
       recipeService.setRecipeState(
         recipes: [
           _recipe('r1', [RecipeIngredient.rawOnly('en nypa salt')]),
@@ -864,8 +901,8 @@ void main() {
       // lands on the generated shopping list, while non-staples (mjöl) do —
       // and the omission is reported so the UI can explain it.
       when(
-        () => menuService.getWeek(any()),
-      ).thenAnswer((_) async => _plan(['r1']));
+        () => menuService.readWeek(any()),
+      ).thenAnswer((_) async => _read(_plan(['r1'])));
       recipeService.setRecipeState(
         recipes: [
           _recipe('r1', const [
@@ -932,8 +969,8 @@ void main() {
       // Proves the defensive degrade: if the pantry read throws, the list is
       // still generated (every ingredient present, nothing excluded).
       when(
-        () => menuService.getWeek(any()),
-      ).thenAnswer((_) async => _plan(['r1']));
+        () => menuService.readWeek(any()),
+      ).thenAnswer((_) async => _read(_plan(['r1'])));
       recipeService.setRecipeState(
         recipes: [
           _recipe('r1', const [
@@ -986,11 +1023,13 @@ void main() {
       // both times) each placement adds its 2 dl mjöl, so the list must show
       // 4 dl — roughly double the single-placement 2 dl. A dedup regression
       // would collapse the two back to one line (2 dl) and under-buy.
-      when(() => menuService.getWeek(any())).thenAnswer(
-        (_) async => _planWith([
-          _entry('r1', DayOfWeek.mon, MealSlot.middag),
-          _entry('r1', DayOfWeek.tue, MealSlot.middag),
-        ]),
+      when(() => menuService.readWeek(any())).thenAnswer(
+        (_) async => _read(
+          _planWith([
+            _entry('r1', DayOfWeek.mon, MealSlot.middag),
+            _entry('r1', DayOfWeek.tue, MealSlot.middag),
+          ]),
+        ),
       );
       recipeService.setRecipeState(
         recipes: [
@@ -1035,14 +1074,16 @@ void main() {
         'to half (factor 3/6)', () async {
       // Presence set for Monday middag = 3 diners; the recipe cooks for 6, so
       // the shopping amount is halved: 6 dl mjölk → 3 dl.
-      when(() => menuService.getWeek(any())).thenAnswer(
-        (_) async => _planWith(
-          [_entry('r1', DayOfWeek.mon, MealSlot.middag)],
-          presenceBySlot: {
-            DayOfWeek.mon: {
-              MealSlot.middag: ['anna', 'björn', 'cecilia'],
+      when(() => menuService.readWeek(any())).thenAnswer(
+        (_) async => _read(
+          _planWith(
+            [_entry('r1', DayOfWeek.mon, MealSlot.middag)],
+            presenceBySlot: {
+              DayOfWeek.mon: {
+                MealSlot.middag: ['anna', 'björn', 'cecilia'],
+              },
             },
-          },
+          ),
         ),
       );
       recipeService.setRecipeState(
@@ -1081,14 +1122,16 @@ void main() {
       // recipe is bought for the whole household regardless of who's home for
       // the day's meals. Even with a 2-person selection stored against övrigt,
       // the 6-portion recipe's 6 dl mjöl is NOT scaled to 2.
-      when(() => menuService.getWeek(any())).thenAnswer(
-        (_) async => _planWith(
-          [_entry('r1', DayOfWeek.mon, MealSlot.ovrigt)],
-          presenceBySlot: {
-            DayOfWeek.mon: {
-              MealSlot.ovrigt: ['anna', 'björn'],
+      when(() => menuService.readWeek(any())).thenAnswer(
+        (_) async => _read(
+          _planWith(
+            [_entry('r1', DayOfWeek.mon, MealSlot.ovrigt)],
+            presenceBySlot: {
+              DayOfWeek.mon: {
+                MealSlot.ovrigt: ['anna', 'björn'],
+              },
             },
-          },
+          ),
         ),
       );
       recipeService.setRecipeState(
@@ -1129,10 +1172,12 @@ void main() {
       Future<UnifiedShoppingList> runWith(
         Map<DayOfWeek, Map<MealSlot, List<String>>> presence,
       ) async {
-        when(() => menuService.getWeek(any())).thenAnswer(
-          (_) async => _planWith(
-            [_entry('r1', DayOfWeek.mon, MealSlot.middag)],
-            presenceBySlot: presence,
+        when(() => menuService.readWeek(any())).thenAnswer(
+          (_) async => _read(
+            _planWith(
+              [_entry('r1', DayOfWeek.mon, MealSlot.middag)],
+              presenceBySlot: presence,
+            ),
           ),
         );
         recipeService.setRecipeState(
@@ -1180,14 +1225,16 @@ void main() {
         'presence', () async {
       // Without an authored serving count there is no ratio to form, so the
       // meal is never scaled even with a 2-person present selection.
-      when(() => menuService.getWeek(any())).thenAnswer(
-        (_) async => _planWith(
-          [_entry('r1', DayOfWeek.mon, MealSlot.middag)],
-          presenceBySlot: {
-            DayOfWeek.mon: {
-              MealSlot.middag: ['anna', 'björn'],
+      when(() => menuService.readWeek(any())).thenAnswer(
+        (_) async => _read(
+          _planWith(
+            [_entry('r1', DayOfWeek.mon, MealSlot.middag)],
+            presenceBySlot: {
+              DayOfWeek.mon: {
+                MealSlot.middag: ['anna', 'björn'],
+              },
             },
-          },
+          ),
         ),
       );
       recipeService.setRecipeState(
@@ -1223,18 +1270,20 @@ void main() {
       // is a second distinct recipe, unscaled. So: 2 distinct recipes, exactly
       // 1 scaled meal — proving recipeCount and scaledMeals count different
       // things (recipes vs placements).
-      when(() => menuService.getWeek(any())).thenAnswer(
-        (_) async => _planWith(
-          [
-            _entry('r1', DayOfWeek.mon, MealSlot.middag),
-            _entry('r1', DayOfWeek.tue, MealSlot.middag),
-            _entry('r2', DayOfWeek.wed, MealSlot.middag),
-          ],
-          presenceBySlot: {
-            DayOfWeek.mon: {
-              MealSlot.middag: ['anna', 'björn', 'cecilia'],
+      when(() => menuService.readWeek(any())).thenAnswer(
+        (_) async => _read(
+          _planWith(
+            [
+              _entry('r1', DayOfWeek.mon, MealSlot.middag),
+              _entry('r1', DayOfWeek.tue, MealSlot.middag),
+              _entry('r2', DayOfWeek.wed, MealSlot.middag),
+            ],
+            presenceBySlot: {
+              DayOfWeek.mon: {
+                MealSlot.middag: ['anna', 'björn', 'cecilia'],
+              },
             },
-          },
+          ),
         ),
       );
       recipeService.setRecipeState(

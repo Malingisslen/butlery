@@ -2,11 +2,10 @@
 ///
 /// The consumer half (poll-close refusing to save on a failed read) is pinned
 /// in the messaging suites against a stubbed `readWeek`. Nothing pinned the
-/// side that MINTS the flag, so inverting the sentinel in either direction
-/// stayed green. These tests enter the real wrapper, which means they need the
-/// DI `ServiceLocator` wired with an authenticated `AuthRepository` — without
-/// it `executeServiceOperation`'s auth pre-flight short-circuits and the
-/// wrapped closure never runs.
+/// side that MINTS the flag. The two `readWeek` groups below enter the real
+/// wrapper, which means they need the DI `ServiceLocator` wired with an
+/// authenticated `AuthRepository` — without it `executeServiceOperation`'s auth pre-flight
+/// short-circuits and the wrapped closure never runs.
 library;
 
 // ignore_for_file: subtype_of_sealed_class
@@ -152,6 +151,59 @@ void main() {
         ),
       );
     });
+
+    // `getWeek` survives BUT-1948 on purpose (the group twin was deleted): its
+    // caller is the recent-recipe dedup in `menu_generator.dart`, where an
+    // empty plan is the correct answer to a failed read because dedup must
+    // never block generation. That suite stubs `getWeek` on a mock service, so
+    // nothing exercised the real delegate. The pair below is what makes the
+    // fallback a decision rather than an accident.
+    test('getWeek answers a FAILED read with an empty plan instead of '
+        'throwing — the dedup caller must never be blocked', () async {
+      when(
+        () => repo.fetchForWeek(
+          userId: any(named: 'userId'),
+          weekStart: any(named: 'weekStart'),
+        ),
+      ).thenThrow(Exception('offline'));
+
+      final plan = await service.getWeek(date);
+
+      expect(plan.entries, isEmpty);
+      expect(plan.weekStartDate, weekStart);
+      // Without this the assertions above are also satisfied by a harness whose
+      // DI locator lost its authenticated user: the wrapper would short-circuit
+      // on the auth pre-flight and the throw would never be reached.
+      verify(
+        () => repo.fetchForWeek(
+          userId: any(named: 'userId'),
+          weekStart: any(named: 'weekStart'),
+        ),
+      ).called(1);
+    });
+
+    test('getWeek hands back the persisted plan — the fallback above is a '
+        'failure path, not the only path', () async {
+      final existing = WeeklyMenuPlan.empty(userId: 'u', date: weekStart)
+          .copyWith(
+            entries: [
+              WeeklyMenuPlanEntry.create(
+                day: DayOfWeek.fri,
+                slot: MealSlot.middag,
+                recipeId: 'r-2',
+                recipeTitle: 'Tacos',
+              ),
+            ],
+          );
+      when(
+        () => repo.fetchForWeek(
+          userId: any(named: 'userId'),
+          weekStart: any(named: 'weekStart'),
+        ),
+      ).thenAnswer((_) async => existing);
+
+      expect(await service.getWeek(date), same(existing));
+    });
   });
 
   group('GroupWeeklyMenuPlanService.readWeek mints readFailed', () {
@@ -262,6 +314,15 @@ void main() {
       expect(read.readFailed, isFalse);
       expect(read.plan, isNotNull);
       expect(read.plan!.groupId, groupId);
+    });
+  });
+
+  group('weeklyPlanReadFailedMessage', () {
+    test('is the Swedish refusal, spelled out', () {
+      expect(
+        weeklyPlanReadFailedMessage,
+        'Kunde inte läsa in veckan — försök igen',
+      );
     });
   });
 }

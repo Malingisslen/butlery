@@ -4,7 +4,7 @@
 /// and adds per-participant permission checks. The service wraps the
 /// repository with:
 ///
-/// - Fetch-or-build semantics for `getOrBuildWeek` (no persist).
+/// - Fetch-or-build semantics for `readOrBuildWeek` (no persist).
 /// - Permission gates (editor+ for entry mutations, admin for participant
 ///   management). Read each method — they differ.
 /// - Pure helper methods (`addEntry`, `removeEntry`, `moveEntry`) that
@@ -28,7 +28,9 @@ import 'package:butlery/repositories/interfaces/group_weekly_menu_plan_repositor
 /// the group has no plan for that week, and the fetch never answered. Only the
 /// first is safe to build an empty plan on top of and save.
 ///
-/// [plan] is null when the week has no saved plan, and always null when
+/// From [GroupWeeklyMenuPlanService.readWeek], [plan] is null when the week has
+/// no saved plan. From [GroupWeeklyMenuPlanService.readOrBuildWeek] it is a
+/// freshly built empty plan instead. Either way it is always null when
 /// [readFailed] is true.
 class GroupWeeklyMenuPlanRead {
   final GroupWeeklyMenuPlan? plan;
@@ -47,23 +49,12 @@ class GroupWeeklyMenuPlanService extends BaseService {
   @override
   String get serviceName => 'GroupWeeklyMenuPlanService';
 
-  /// Loads the saved plan for the ISO week containing [date], or returns
-  /// `null` when the group has no plan for that week yet.
+  /// Loads the saved plan for the ISO week containing [date], reporting both
+  /// the plan and whether the fetch actually answered (BUT-1928).
   ///
   /// Caller-side read permission is enforced by Firestore rules; this
   /// method does not re-check because a forged read would fail at the
   /// wire before reaching us.
-  /// A failed read is reported as `null` here, indistinguishable from "no plan
-  /// yet". Callers that go on to SAVE use [readWeek] or [readOrBuildWeek].
-  Future<GroupWeeklyMenuPlan?> getWeek({
-    required String groupId,
-    required DateTime date,
-  }) async {
-    return (await readWeek(groupId: groupId, date: date)).plan;
-  }
-
-  /// [getWeek] plus the one bit it cannot return: whether the fetch actually
-  /// answered (BUT-1928).
   ///
   /// `readFailed` is true when the wrapped read did not answer — a throwing
   /// repository or a failed auth pre-flight — because either leaves the caller
@@ -88,7 +79,7 @@ class GroupWeeklyMenuPlanService extends BaseService {
           readFailed: false,
         );
       },
-      operationName: 'getWeek',
+      operationName: 'readWeek',
     );
     return read ?? const GroupWeeklyMenuPlanRead(plan: null, readFailed: true);
   }
@@ -98,35 +89,14 @@ class GroupWeeklyMenuPlanService extends BaseService {
   /// [save] after mutating — this lets callers batch the "add entry +
   /// persist" flow into a single Firestore write instead of two.
   ///
-  /// Builds on a failed read too, which is why a caller that saves the result
-  /// uses [readOrBuildWeek] instead.
-  Future<GroupWeeklyMenuPlan> getOrBuildWeek({
-    required String groupId,
-    required String creatorId,
-    required DateTime date,
-    List<GroupMenuParticipant>? initialParticipants,
-  }) async {
-    final read = await readOrBuildWeek(
-      groupId: groupId,
-      creatorId: creatorId,
-      date: date,
-      initialParticipants: initialParticipants,
-    );
-    return read.plan ??
-        GroupWeeklyMenuPlan.empty(
-          groupId: groupId,
-          creatorId: creatorId,
-          date: date,
-          initialParticipants: initialParticipants,
-        );
-  }
-
-  /// [getOrBuildWeek] that tells the caller whether the read FAILED instead of
-  /// answering it with a freshly built empty plan (BUT-1928).
+  /// A FAILED read is reported as `readFailed`, never as a freshly built empty
+  /// plan (BUT-1928) — building on one is how a week gets overwritten from
+  /// nothing.
   ///
   /// The group rule carries the same `createdAt` conjunct as the personal one
-  /// (G1 in `weekly-menu-plans-rules.test.ts`), so writing that empty plan over
-  /// a stored week is refused rather than destructive.
+  /// (G1 in `weekly-menu-plans-rules.test.ts`), so a built empty plan saved
+  /// over a week that turns out to be stored is refused rather than
+  /// destructive.
   ///
   /// `plan` is non-null exactly when `readFailed` is false.
   Future<GroupWeeklyMenuPlanRead> readOrBuildWeek({

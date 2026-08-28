@@ -19,8 +19,10 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/iso_week_utils.dart';
+import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -75,7 +77,7 @@ class _SlotPickerDialogState extends State<SlotPickerDialog> {
   late DateTime _visibleWeekStart;
   WeeklyMenuPlan? _plan;
   bool _isLoading = true;
-  String? _error;
+  bool _loadFailed = false;
   final Set<SlotTarget> _selected = {};
 
   @override
@@ -89,19 +91,24 @@ class _SlotPickerDialogState extends State<SlotPickerDialog> {
   Future<void> _loadWeek() async {
     setState(() {
       _isLoading = true;
-      _error = null;
+      _loadFailed = false;
     });
     try {
-      final plan = await _planService.getWeek(_visibleWeekStart);
+      // BUT-1962: `getWeek` answered a failed read with an EMPTY plan, so this
+      // dialog drew a week of free cells and invited the user to place on top
+      // of a week it had never read. A refusal has to reach the body instead.
+      final read = await _planService.readWeek(_visibleWeekStart);
       if (!mounted) return;
       setState(() {
-        _plan = plan;
+        _loadFailed = read.readFailed;
+        _plan = read.readFailed ? null : read.plan;
         _isLoading = false;
       });
     } catch (e) {
+      AppLogger.error('SlotPickerDialog: could not load the week', e);
       if (!mounted) return;
       setState(() {
-        _error = e.toString();
+        _loadFailed = true;
         _isLoading = false;
       });
     }
@@ -224,16 +231,10 @@ class _SlotPickerDialogState extends State<SlotPickerDialog> {
     if (_isLoading) {
       return const Center(child: LoadingIndicator());
     }
-    if (_error != null) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(AppDimensions.spacingLg),
-          child: Text(
-            _error!,
-            style: AppTextStyles.bodyMedium,
-            textAlign: TextAlign.center,
-          ),
-        ),
+    if (_loadFailed) {
+      return StateWidget.error(
+        message: weeklyPlanReadFailedMessage,
+        onAction: _loadWeek,
       );
     }
     final plan = _plan!;

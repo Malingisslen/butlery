@@ -1,8 +1,10 @@
 /// Tests for `GroupWeeklyMenuPlanService`.
 ///
-/// `getOrBuildWeek` must NOT persist an empty plan on cache miss; callers own
-/// the write and bundle it with the first meaningful mutation. `save` must
-/// propagate a refusal rather than swallowing it.
+/// `readOrBuildWeek` must NOT persist an empty plan when the week has none —
+/// callers own the write and bundle it with the first meaningful mutation.
+/// `initialParticipants` decides the roster when supplied, and the creator
+/// becomes sole admin when it is not. `save` must propagate a refusal rather
+/// than swallowing it.
 library;
 
 // ignore_for_file: subtype_of_sealed_class
@@ -26,7 +28,7 @@ class _MockRepo extends Mock implements GroupWeeklyMenuPlanRepository {}
 class _FakeGroupPlan extends Fake implements GroupWeeklyMenuPlan {}
 
 void main() {
-  // `getOrBuildWeek` goes through `executeServiceOperation`, whose auth
+  // `readOrBuildWeek` goes through `executeServiceOperation`, whose auth
   // pre-flight reads the PRODUCTION ServiceLocator. Without this harness the
   // pre-flight fails and the wrapped closure never runs.
   setUpAll(() async {
@@ -89,15 +91,16 @@ void main() {
         ),
       ).thenAnswer((_) async => existing);
 
-      final result = await service.getOrBuildWeek(
+      final read = await service.readOrBuildWeek(
         groupId: groupId,
         creatorId: creatorId,
         date: date,
       );
 
       // `same` is what proves the repo was actually consulted: a fabricated
-      // empty plan would satisfy `result.groupId == groupId` just as well.
-      expect(result, same(existing));
+      // empty plan would satisfy `plan.groupId == groupId` just as well.
+      expect(read.readFailed, isFalse);
+      expect(read.plan, same(existing));
       verifyNever(() => repo.save(any(), userId: any(named: 'userId')));
     });
 
@@ -110,26 +113,64 @@ void main() {
         ),
       ).thenAnswer((_) async => null);
 
-      final result = await service.getOrBuildWeek(
+      final read = await service.readOrBuildWeek(
         groupId: groupId,
         creatorId: creatorId,
         date: date,
+        // Deliberately a participant `GroupWeeklyMenuPlan.empty` could not have
+        // synthesised on its own: a different uid AND a non-admin permission.
+        // Seeded with the creator-as-admin default instead, this assertion is
+        // satisfied by the fallback too and proves nothing about the argument
+        // ever reaching the model.
         initialParticipants: [
           GroupMenuParticipant(
-            userId: creatorId,
-            permission: SharedListPermission.admin,
+            userId: 'user-beta',
+            permission: SharedListPermission.edit,
             addedAt: DateTime.now(),
           ),
         ],
       );
 
-      expect(result.groupId, groupId);
-      expect(result.participants, hasLength(1));
-      expect(result.participants.single.userId, creatorId);
+      expect(read.readFailed, isFalse);
+      final built = read.plan!;
+      expect(built.groupId, groupId);
+      expect(built.participants, hasLength(1));
+      expect(built.participants.single.userId, 'user-beta');
+      expect(built.participants.single.permission, SharedListPermission.edit);
 
-      // Critical contract: nothing was persisted. This is the whole point
-      // of the rename from `getOrCreateWeek` — one Firestore write, not two.
+      // Critical contract: nothing was persisted.
       verifyNever(() => repo.save(any(), userId: any(named: 'userId')));
     });
+
+    test(
+      'with no participants supplied, the creator is seeded as sole admin',
+      () async {
+        // Together with the supplied-participants case, these pin that the argument
+        // decides the roster when given and the creator default fills in when
+        // not — neither case can be satisfied by the other's outcome.
+        when(
+          () => repo.fetchForWeek(
+            groupId: any(named: 'groupId'),
+            weekStart: any(named: 'weekStart'),
+          ),
+        ).thenAnswer((_) async => null);
+
+        final read = await service.readOrBuildWeek(
+          groupId: groupId,
+          creatorId: creatorId,
+          date: date,
+        );
+
+        expect(read.readFailed, isFalse);
+        final built = read.plan!;
+        expect(built.participants, hasLength(1));
+        expect(built.participants.single.userId, creatorId);
+        expect(
+          built.participants.single.permission,
+          SharedListPermission.admin,
+        );
+        verifyNever(() => repo.save(any(), userId: any(named: 'userId')));
+      },
+    );
   });
 }

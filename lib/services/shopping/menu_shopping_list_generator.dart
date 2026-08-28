@@ -102,7 +102,16 @@ class MenuShoppingListGenerator extends BaseService {
         final recipeService = ServiceLocator.get<UnifiedRecipeService>();
         final shoppingService = ServiceLocator.get<UnifiedShoppingService>();
 
-        final plan = await menuService.getWeek(date);
+        // BUT-1962: `getWeek` answers a failed read with an empty plan, which
+        // the branch below reported as `nothingToGenerate` — "your week has no
+        // meals" for a week we simply never read.
+        final read = await menuService.readWeek(date);
+        if (read.readFailed) {
+          throw StateError(
+            'Refusing to generate a shopping list: the week could not be read',
+          );
+        }
+        final plan = read.plan;
         if (plan.entries.isEmpty) {
           return MenuShoppingGenerationResult.nothingToGenerate;
         }
