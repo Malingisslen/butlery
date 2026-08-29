@@ -116,21 +116,32 @@ class FirebaseGroupWeeklyMenuPlanRepository
     // authoritative gate — the duplicate here catches programming errors
     // (missing service-layer check, test harness mocks, etc.).
     if (userId != null) {
+      // Resolved before the gate for the same reason as the per-user repo:
+      // on this limb it is the only client-side authentication assertion, and
+      // throwing it from inside the refusal branch would lose the row. A
+      // `save` with no `userId` skips this limb entirely and asserts nothing
+      // client-side — unchanged, and bounded by the rules.
+      final actorId = requireCurrentUserId();
       final canWrite = await validateUpdatePermission(userId, plan.id, plan);
-      // Required of every custom permission gate (`lib/repositories/CLAUDE.md`).
-      await logPermissionCheck(
-        // The AUTHENTICATED actor, not the caller-supplied one — an
-        // `audit_logs` create whose uid does not match the caller is refused by
-        // the rules, so a divergent actor would lose the Art. 30 row silently.
-        // The permission check above deliberately still uses the passed
-        // `userId`: that is the identity whose access is being decided.
-        userId: requireCurrentUserId(),
-        resource: '$collectionName/${plan.id}',
-        operation: 'save',
-        granted: canWrite,
-        auditRepository: auditRepository,
-      );
       if (!canWrite) {
+        // Audit only the REFUSAL (BUT-1981). Narrower than the per-user case:
+        // dropping the granted row here loses EDIT HISTORY on a document more
+        // than one person can write, and `lastModifiedBy` keeps only the last
+        // writer. Accepted because the only live caller is the meal-poll
+        // close, so the history was thin to begin with — but it is a real
+        // reduction, not a redundancy removed.
+        await logPermissionCheck(
+          // The AUTHENTICATED actor, not the caller-supplied one — an
+          // `audit_logs` create whose uid does not match the caller is refused
+          // by the rules, so a divergent actor would lose the row silently.
+          // The permission check above deliberately still uses the passed
+          // `userId`: that is the identity whose access is being decided.
+          userId: actorId,
+          resource: '$collectionName/${plan.id}',
+          operation: 'save',
+          granted: false,
+          auditRepository: auditRepository,
+        );
         // Was a silent `return`. On the only live caller — closing a meal
         // poll — that meant the poll closed on a one-way door with the
         // winner never written. Throwing leaves it open for a retry.

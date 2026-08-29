@@ -9,6 +9,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/models/menu/group_weekly_menu_plan.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
+import 'package:butlery/core/constants/firestore_collections.dart';
+import 'package:butlery/repositories/firebase/firebase_audit_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_group_weekly_menu_plan_repository.dart';
 
 import '../../../infrastructure/mocks/production_mocks.dart';
@@ -20,6 +22,7 @@ const _group = 'group-1';
 FirebaseGroupWeeklyMenuPlanRepository _repo(
   FakeFirebaseFirestore firestore, {
   String authedUserId = _alice,
+  bool withAudit = false,
 }) {
   final mockAuth = FakeAuthRepository();
   mockAuth.setAuthState(
@@ -30,6 +33,20 @@ FirebaseGroupWeeklyMenuPlanRepository _repo(
   return FirebaseGroupWeeklyMenuPlanRepository(
     firestore: firestore,
     authRepository: mockAuth,
+    auditRepository: withAudit ? FirebaseAuditRepository(firestore) : null,
+  );
+}
+
+/// A repository whose auth repository reports nobody signed in.
+FirebaseGroupWeeklyMenuPlanRepository _signedOutRepo(
+  FakeFirebaseFirestore firestore,
+) {
+  final mockAuth = FakeAuthRepository();
+  mockAuth.setAuthState(user: null, userId: null, isAuthenticated: false);
+  return FirebaseGroupWeeklyMenuPlanRepository(
+    firestore: firestore,
+    authRepository: mockAuth,
+    auditRepository: FirebaseAuditRepository(firestore),
   );
 }
 
@@ -402,5 +419,119 @@ void main() {
         throwsA(isA<PermissionDeniedException>()),
       );
     });
+  });
+
+  group('save audits refusals only (BUT-1981)', () {
+    // The group half of the same change, which nothing pinned: both group
+    // suites were green against the pre-change bytes, because neither passed
+    // an `auditRepository` at all.
+    //
+    // It matters more here than on the per-user repo. That gate compares the
+    // plan to itself and can only fail on a mis-keyed id; this one takes the
+    // actor as a separate argument, so its refusal branch is reached by a real
+    // permission decision — and dropping the granted row costs edit history on
+    // a document more than one person can write.
+    test('a GRANTED save writes no audit row', () async {
+      final firestore = FakeFirebaseFirestore();
+      final repo = _repo(firestore, withAudit: true);
+      final plan = _plan(
+        participants: [
+          GroupMenuParticipant(
+            userId: _alice,
+            permission: SharedListPermission.admin,
+            addedAt: DateTime.utc(2026, 1, 1),
+          ),
+        ],
+      );
+
+      await repo.save(plan, userId: _alice);
+
+      final rows = await firestore
+          .collection(FirestoreCollections.auditLogs)
+          .get();
+      expect(rows.docs, isEmpty);
+      // The save itself must have happened, or an empty audit collection is
+      // also satisfied by a write that never ran.
+      final saved = await firestore
+          .collection(FirestoreCollections.groupWeeklyMenuPlans)
+          .doc(plan.id)
+          .get();
+      expect(saved.exists, isTrue);
+    });
+
+    test(
+      'a save with nobody signed in throws before writing anything',
+      () async {
+        // Pins the hoist on THIS repository too. Without it, every fixture here
+        // is signed in and alice is admin, so `canWrite` is true, the refusal
+        // branch is skipped, and pushing `requireCurrentUserId()` back into it
+        // leaves both group suites green while the write goes through.
+        final firestore = FakeFirebaseFirestore();
+        final repo = _signedOutRepo(firestore);
+        final plan = _plan(
+          participants: [
+            GroupMenuParticipant(
+              userId: _alice,
+              permission: SharedListPermission.admin,
+              addedAt: DateTime.utc(2026, 1, 1),
+            ),
+          ],
+        );
+
+        await expectLater(
+          repo.save(plan, userId: _alice),
+          throwsA(isA<AuthenticationException>()),
+        );
+
+        final saved = await firestore
+            .collection(FirestoreCollections.groupWeeklyMenuPlans)
+            .doc(plan.id)
+            .get();
+        expect(saved.exists, isFalse);
+        final rows = await firestore
+            .collection(FirestoreCollections.auditLogs)
+            .get();
+        expect(rows.docs, isEmpty);
+      },
+    );
+
+    test(
+      'a REFUSED save writes one audit row naming the AUTHENTICATED actor',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        // Signed in as bob; the permission decision is made about alice, who is
+        // view-only. The two uids diverge on purpose: the row must name bob,
+        // because the rules refuse an `audit_logs` create whose uid is not the
+        // caller's.
+        final repo = _repo(firestore, authedUserId: _bob, withAudit: true);
+        final plan = _plan(
+          participants: [
+            GroupMenuParticipant(
+              userId: _alice,
+              permission: SharedListPermission.view,
+              addedAt: DateTime.utc(2026, 1, 1),
+            ),
+          ],
+        );
+
+        await expectLater(
+          repo.save(plan, userId: _alice),
+          throwsA(isA<PermissionDeniedException>()),
+        );
+
+        final rows = await firestore
+            .collection(FirestoreCollections.auditLogs)
+            .get();
+        expect(rows.docs, hasLength(1));
+        expect(rows.docs.single.data()['granted'], isFalse);
+        expect(rows.docs.single.data()['userId'], _bob);
+
+        final saved = await firestore
+            .collection(FirestoreCollections.groupWeeklyMenuPlans)
+            .doc(plan.id)
+            .get();
+        expect(saved.exists, isFalse);
+      },
+    );
   });
 }

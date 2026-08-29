@@ -124,8 +124,8 @@ class GroupWeeklyMenuPlanService extends BaseService {
   /// Persist [plan]. Throws [PermissionDeniedException] when [actorId] is
   /// not an editor or admin on the plan — and, since the wrapper was removed,
   /// whatever else the repository raises: a `StateError` for a mis-keyed doc
-  /// id, an `AuthenticationException` from the audit call, or the Firestore
-  /// failure itself. `lastModifiedBy` is stamped with [actorId] so audits
+  /// id, an `AuthenticationException` when nobody is signed in, or the
+  /// Firestore failure itself. `lastModifiedBy` is stamped with [actorId] so audits
   /// always reflect the true writer.
   Future<void> save({
     required GroupWeeklyMenuPlan plan,

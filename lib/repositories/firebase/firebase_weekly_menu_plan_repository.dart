@@ -116,21 +116,30 @@ class FirebaseWeeklyMenuPlanRepository
   @override
   Future<void> save(WeeklyMenuPlan plan) async {
     // Deterministic upsert on `{uid}_{ISO week}`.
+    //
+    // Resolved BEFORE the gate, not inside the refusal branch: it is the only
+    // client-side authentication assertion on this path, and throwing it from
+    // inside the branch would lose the very refusal row this method keeps.
+    final actorId = requireCurrentUserId();
     final canWrite = await validateUpdatePermission(plan.userId, plan.id, plan);
-    // `logPermissionCheck` is required of every custom permission gate
-    // (`lib/repositories/CLAUDE.md`).
-    await logPermissionCheck(
-      // The AUTHENTICATED actor — `plan.userId` is the CLAIMED owner. An
-      // `audit_logs` create whose uid does not match the caller is refused by
-      // the rules, so naming the claim here would lose the Art. 30 row.
-      userId: requireCurrentUserId(),
-      resource: '$collectionName/user:${plan.userId}',
-      operation: 'save',
-      granted: canWrite,
-      details: 'week ${IsoWeekUtils.weekKeyOf(plan.weekStartDate)}',
-      auditRepository: auditRepository,
-    );
     if (!canWrite) {
+      // Audit only the REFUSAL. Each granted save wrote a plan document plus
+      // an audit document — two writes where one would do. GDPR Art. 30 does
+      // not ask for the audit row — it is a
+      // register of processing categories and purposes, not an access log
+      // (checked 2026-08-29). What remains is the accountability value of
+      // being able to show refusals. Malin's call, BUT-1981.
+      await logPermissionCheck(
+        // The AUTHENTICATED actor — `plan.userId` is the CLAIMED owner. An
+        // `audit_logs` create whose uid does not match the caller is refused
+        // by the rules, so naming the claim here would lose the row.
+        userId: actorId,
+        resource: '$collectionName/user:${plan.userId}',
+        operation: 'save',
+        granted: false,
+        details: 'week ${IsoWeekUtils.weekKeyOf(plan.weekStartDate)}',
+        auditRepository: auditRepository,
+      );
       // Was `return`, which is why a refused save reached the user as silence
       // (BUT-1962).
       throw PermissionDeniedException(
@@ -183,9 +192,9 @@ class FirebaseWeeklyMenuPlanRepository
       resourceType: collectionName,
     );
 
-    // BUT-893 / lib/repositories/CLAUDE.md: every custom permission gate
-    // logs an audit trail. We log once at the user level (not per-plan) to
-    // keep audit volume reasonable — the cascade is naturally one-per-user.
+    // BUT-893: logged once at the user level, not per plan — the cascade is
+    // naturally one-per-user, so a row per document would say the same thing
+    // N times.
     await logPermissionCheck(
       userId: actorId,
       resource: '$collectionName/user:$userId',

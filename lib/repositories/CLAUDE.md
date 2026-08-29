@@ -21,7 +21,11 @@ class FirebaseXxxRepository extends BaseFirebaseRepository<Model>
 - User-scoped data must mix in `UserScopedFirebaseRepository<T>` (routes to `/users/{uid}/collection`)
 - Register as the interface type in DI, not the implementation
 - For bulk ops, mix in `BatchOperationsFirebaseRepository<T>` (respects 500-op batch limit)
-- Every custom permission check must call `logPermissionCheck()` for audit trail
+- Every custom permission check must call `logPermissionCheck()` on a REFUSAL. Logging
+  grants too is the default and is right for most repositories, but it is a house rule
+  about traceability, not a legal one: GDPR Art. 30 is a register of processing categories
+  and purposes, not an access log (checked 2026-08-29). So a high-volume write path may log
+  refusals only, when the cost is real and the decision is written down.
 
 ## schemaVersion convention (BUT-648)
 

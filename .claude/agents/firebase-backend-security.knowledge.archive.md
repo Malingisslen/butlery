@@ -7227,3 +7227,136 @@ both the permission check and the audit row; the storage repositories' audit row
 `audit_logs` create rule refuses.
 
 Verdict: pass (0 blocking).
+
+---
+
+## 2026-08-29 — BUT-1981: weekly-menu `save` audits refusals only
+
+**Reviewed (staged):** `lib/repositories/firebase/firebase_weekly_menu_plan_repository.dart`,
+`firebase_group_weekly_menu_plan_repository.dart`, `lib/repositories/CLAUDE.md`,
+`test/unit/repositories/firebase/firebase_weekly_menu_plan_repository_test.dart`.
+
+**What changed.** The unconditional `logPermissionCheck(granted: canWrite, ...)` in both
+`save`s moved inside the `if (!canWrite)` branch with `granted: false`. `lib/repositories/CLAUDE.md`
+rewrote the house rule: refusal logging required, grant logging the default, and it names
+the requirement as traceability rather than GDPR Art. 30. The struck Art. 30 framing was
+correct to strike — Art. 30 is a register of processing activities (controller, purposes,
+categories of subjects/data/recipients, transfers, erasure limits, a general description of
+security measures) and mandates no per-operation access log.
+
+**Confirmed Malin's own finding.** `FirebaseWeeklyMenuPlanRepository.validateUpdatePermission`
+is `entity.userId == userId && resourceId.startsWith('${userId}_')`, and `save` calls it as
+`validateUpdatePermission(plan.userId, plan.id, plan)`. The first conjunct is
+`plan.userId == plan.userId`, a tautology for any caller. The only reachable refusal is a
+mis-keyed doc id. So the client gate catches mis-keying, and the cross-user control is
+`firestore.rules` line ~915: `planId.matches('^' + request.auth.uid + '_.*')` plus
+`auth.uid == resource.data.userId` and `== request.resource.data.userId` on update. This
+STRENGTHENS the refusal-only decision: the granted row never recorded a security decision
+that could have gone the other way.
+
+**Accountability analysis (Art. 32 / 5(2)).** Personal collection is owner-only (no share
+rules in the block). The granted row carried (authenticated uid, `weekly_menu_plans/user:<uid>`,
+`week YYYY-Www`) — every field derivable from the plan document itself (doc id `{uid}_{week}`,
+`userId`, `updatedAt`). It was admin-read-only (`allow read: if isAdmin()`), so no data
+subject could ever exercise it. `presenceBySlot` does hold OTHER data subjects' identifiers
+(`HouseholdRosterMember.memberId` = an account `userId` for household account holders, a
+`DinerProfile.id` otherwise), but the granted row never named a member, so it carried nothing
+about that third-party processing either. Refusal-only is defensible here.
+Group collection is multi-writer (`memberPermissions` edit/admin). Its granted row IS lost
+edit history — `GroupWeeklyMenuPlan.lastModifiedBy` keeps only the LAST writer. Practical
+loss is small (only live caller is the meal-poll close, `messaging_service.dart:1148` →
+`GroupWeeklyMenuPlanService.save`) but it is a real reduction, not a redundancy removal.
+
+**Asymmetry, group vs personal.** The group `validateUpdatePermission` is
+`resourceId.startsWith('${entity.groupId}_') && entity.canEdit(userId)` with `userId` the
+caller-supplied actor — genuinely falsifiable, so its refusal row has real signal. Safe.
+(Pre-existing, not this diff: `canEdit` reads the SUBMITTED entity's `memberPermissions`, not
+the stored doc; rules use `resource.data.memberPermissions`, so the server is authoritative.)
+
+**Audit-row `userId` is still correct.** `requireCurrentUserId()` matches
+`firestore.rules` audit_logs create `request.auth.uid == request.resource.data.userId`
+(line ~2560); the claimed owner sits in `resource`, which `logPermissionCheck` splits into
+`resourceType`/`resourceId`. The test asserts `_bob` (authenticated) and not `_alice`
+(claimed) — the right assertion.
+
+**Findings filed (none blocking).**
+1. Medium — `requireCurrentUserId()` moved into the deny branch. It was the ONLY client-side
+   auth assertion on the grant path of both `save`s; and because it throws
+   `AuthenticationException` before `logPermissionCheck` runs, a signed-out + mis-keyed save
+   now loses the refusal row this change exists to preserve (device-local `AppLogger.warning`
+   too). One fix covers both: hoist `final actorId = requireCurrentUserId();` to the top of
+   `save` and pass `actorId` to the log. No server-side exposure — rules deny unauthenticated
+   writes.
+2. Medium — `lib/repositories/CLAUDE.md`'s "Live exceptions: ... `save` ... and
+   `removeRecipeFromAllPlans`" is a false enumeration.
+   `lib/repositories/firebase/modules/shopping_list_permission_guards.dart` logs five
+   `granted: false` sites and nothing on its success path (bare `return`), and
+   `firebase_household_allergen_share_repository.dart:329` is refusal-only in its
+   parse-failure branch. Strike the enumeration; do not extend it.
+3. Low — the audit write is `unawaited` inside `logPermissionCheck`, so the new
+   `hasLength(1)` assertion depends on microtask ordering under `FakeFirebaseFirestore`.
+   Green and mutation-probed today; noted as latent flake shape.
+
+**Not a finding, checked:** `removeRecipeFromAllPlans`' "we log once at the user level (not
+per-plan) to keep audit volume reasonable" is legitimate deliberation — that method really is
+the N-document cascade, so the granularity trade it describes exists (unlike the one-document
+`save`, where the same wording would be fabricated).
+
+**Cost side effect:** each removed audit write also removed the `rateLimitWrite('audit_logs', 2)`
+`exists()` read the rules perform on it — one write + one billed read saved per calendar edit.
+
+**Verdict:** pass, 0 blocking.
+
+## 2026-08-29 — BUT-1981 round 6 (final gate): the Art. 30 retraction is only half a sweep
+
+Re-review of the staged weekly-menu `save` change after two prior rounds of fixes. Verdict:
+pass, no blocking findings. What the round actually taught:
+
+**The retraction is correct on the law.** Art. 30(1) enumerates a register: controller/DPO
+details, purposes, categories of data subjects and of personal data, categories of
+recipients, third-country transfers, envisaged erasure limits, and a general description of
+security measures. It mandates no per-operation access logging and no granted-vs-denied
+record. So `firebase_audit_repository.dart`'s old header ("Article 30 … Audit logs record
+all permission checks") asserted a legal requirement that does not exist, and this commit
+made the "all" half false as well. Striking both, rather than rewording, was right.
+
+**Deleting the unsourced "Article 17: Right to Erasure (audit logs exempt per legal
+requirement)" line was also right, and adding a pointer to
+`docs/security/audit-logs-retention.md` in its place would NOT have been an improvement.**
+That doc is the live compliance record for the same rows, and it derives everything from the
+premise this commit retracts: its title is "GDPR Article 30 record covering the `audit_logs`
+collection", its per-field table gives every field lawful basis "Art 6(1)(c) — legal
+obligation (Art 30 record)", and its account-deletion section keeps a deleted user's rows on
+Art 17(3)(b) "compliance with a legal obligation". Pointing the code header at that doc
+would have re-imported the retracted premise through a citation. Saying nothing is the
+narrower, honest state; correcting the register is its own ticket. Pre-existing, unchanged by
+this diff, and the commit's own ACCEPTED_DEVIATIONS entry discloses that the sweep is not
+done (~17 further `lib/` files still assert Art. 30, incl. `lib/models/audit_log.dart` and
+`lib/core/di/modules/core_module.dart`).
+
+**The hoist verified against HEAD, not from the comment.** `git show HEAD:` on both
+repositories confirms `requireCurrentUserId()` was previously reached on exactly the same
+paths (personal: every `save`; group: only inside the `userId != null` limb), so the hoist
+changes ORDER only and regresses no authentication assertion. The group comment's claim that
+a `save` with no `userId` "asserts nothing client-side — unchanged" is true of HEAD too.
+`actorId` is read only inside the refusal branch, which is not an unused-local.
+
+**The audit `userId` is the authenticated actor in both, and the rule agrees:**
+`firestore.rules:2561` pins `request.auth.uid == request.resource.data.userId` on the
+`audit_logs` create, so naming the claimed owner would silently lose the row. Pinned by the
+new test asserting `rows.docs.single.data()['userId'] == _bob` while `plan.userId` is alice.
+
+**Nothing downstream consumed the dropped granted rows:** no `functions/src` reader queries
+`operation == 'save'` or `weekly_menu_plans` in `audit_logs`, and client reads of the
+collection are `isAdmin()`-only. Art. 15 access to audit rows is real, not TBD —
+`functions/src/exports/audit-logs.ts` exists (the "(TBD)" in the rules comment at
+`firestore.rules:2555` is stale; noted, not filed, comment-only and outside this diff).
+
+No `firestore.rules` change is staged, so no `firestore-rules-tester` handoff was owed. The
+rules read confirms the deviation entry's supporting claims: a cross-user personal `save` is
+refused by the create/update limbs' `planId.matches('^' + request.auth.uid + '_.*')`, which
+is why the personal client gate's tautology is not load-bearing.
+
+Non-blocking and let to ship: `docs/security/audit-logs-retention.md`'s lawful-basis and
+Art 17(3)(b) columns now contradict the code header (own ticket, pre-existing); the ~17
+remaining Art. 30 assertions in `lib/` (disclosed in the entry).

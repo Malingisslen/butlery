@@ -24,9 +24,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:butlery/core/constants/firestore_collections.dart';
+import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/utils/iso_week_utils.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_audit_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_weekly_menu_plan_repository.dart';
 
 import '../../../infrastructure/mocks/production_mocks.dart';
@@ -38,6 +40,7 @@ const _sharedRecipe = 'recipe-shared';
 FirebaseWeeklyMenuPlanRepository _repo(
   FakeFirebaseFirestore firestore, {
   String authedUserId = _alice,
+  bool withAudit = false,
 }) {
   final mockAuth = FakeAuthRepository();
   mockAuth.setAuthState(
@@ -48,6 +51,20 @@ FirebaseWeeklyMenuPlanRepository _repo(
   return FirebaseWeeklyMenuPlanRepository(
     firestore: firestore,
     authRepository: mockAuth,
+    auditRepository: withAudit ? FirebaseAuditRepository(firestore) : null,
+  );
+}
+
+/// A repository whose auth repository reports nobody signed in.
+FirebaseWeeklyMenuPlanRepository _signedOutRepo(
+  FakeFirebaseFirestore firestore,
+) {
+  final mockAuth = FakeAuthRepository();
+  mockAuth.setAuthState(user: null, userId: null, isAuthenticated: false);
+  return FirebaseWeeklyMenuPlanRepository(
+    firestore: firestore,
+    authRepository: mockAuth,
+    auditRepository: FirebaseAuditRepository(firestore),
   );
 }
 
@@ -294,6 +311,110 @@ void main() {
         IsoWeekUtils.weekIdFor(_alice, IsoWeekUtils.weekStartOf(week1)),
       );
     });
+  });
+
+  group('save audits refusals only (BUT-1981)', () {
+    // GDPR Art. 30 is a register of processing categories and purposes, not an
+    // access log (checked 2026-08-29), so a row per GRANTED save bought no
+    // legal cover — only cost. The refusal row stays: being able to show what
+    // was refused is the part with accountability value. Malin's call.
+    //
+    // Asserted against the real `FirebaseAuditRepository` over the same fake
+    // Firestore, so this reads the rows that would actually be written rather
+    // than a mock's call log.
+    test('a GRANTED save writes no audit row', () async {
+      final firestore = FakeFirebaseFirestore();
+      final repo = _repo(firestore, withAudit: true);
+      final plan = _plan(userId: _alice, date: DateTime(2026, 4, 15));
+
+      await repo.save(plan);
+
+      final rows = await firestore
+          .collection(FirestoreCollections.auditLogs)
+          .get();
+      expect(rows.docs, isEmpty);
+      // The save itself must still have happened — otherwise an empty audit
+      // collection would also be satisfied by a write that never ran.
+      final saved = await firestore
+          .collection(FirestoreCollections.weeklyMenuPlans)
+          .doc(plan.id)
+          .get();
+      expect(saved.exists, isTrue);
+    });
+
+    test(
+      'a save with nobody signed in throws before writing anything',
+      () async {
+        // `requireCurrentUserId()` is resolved BEFORE the permission gate, not
+        // inside the refusal branch. Inside it, a signed-out save would throw on
+        // the way to the audit call and lose the refusal row — and, for a
+        // well-formed plan, would skip the assertion entirely and write.
+        final firestore = FakeFirebaseFirestore();
+        final repo = _signedOutRepo(firestore);
+        final plan = _plan(userId: _alice, date: DateTime(2026, 4, 15));
+
+        await expectLater(
+          repo.save(plan),
+          throwsA(isA<AuthenticationException>()),
+        );
+
+        final saved = await firestore
+            .collection(FirestoreCollections.weeklyMenuPlans)
+            .doc(plan.id)
+            .get();
+        expect(saved.exists, isFalse);
+        // And no audit row: the throw precedes the audit call, so a signed-out
+        // save leaves nothing behind at all.
+        final rows = await firestore
+            .collection(FirestoreCollections.auditLogs)
+            .get();
+        expect(rows.docs, isEmpty);
+      },
+    );
+
+    test(
+      'a REFUSED save writes exactly one audit row, and does not write the plan',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        final repo = _repo(firestore, authedUserId: _bob, withAudit: true);
+        // The refusal has to be staged with a MIS-KEYED plan: this
+        // repository's `validateUpdatePermission` compares the plan to itself
+        // (`entity.userId == userId`, where `userId` IS `plan.userId`), so it
+        // cannot fail for a well-formed plan whoever is signed in. Cross-user
+        // writes are refused by `firestore.rules`, not here;
+        // the client gate catches mis-keying, which is what this stages.
+        final wellFormed = _plan(userId: _alice, date: DateTime(2026, 4, 15));
+        final plan = WeeklyMenuPlan(
+          id: 'someone-else_2026-W16',
+          userId: wellFormed.userId,
+          weekStartDate: wellFormed.weekStartDate,
+          entries: wellFormed.entries,
+          createdAt: wellFormed.createdAt,
+          updatedAt: wellFormed.updatedAt,
+        );
+
+        await expectLater(
+          repo.save(plan),
+          throwsA(isA<PermissionDeniedException>()),
+        );
+
+        final rows = await firestore
+            .collection(FirestoreCollections.auditLogs)
+            .get();
+        expect(rows.docs, hasLength(1));
+        expect(rows.docs.single.data()['granted'], isFalse);
+        // The AUTHENTICATED actor (bob), not the plan's claimed owner (alice):
+        // the rules refuse an `audit_logs` create whose uid does not match the
+        // caller, so a row naming the claim would be lost.
+        expect(rows.docs.single.data()['userId'], _bob);
+
+        final saved = await firestore
+            .collection(FirestoreCollections.weeklyMenuPlans)
+            .doc(plan.id)
+            .get();
+        expect(saved.exists, isFalse);
+      },
+    );
   });
 }
 

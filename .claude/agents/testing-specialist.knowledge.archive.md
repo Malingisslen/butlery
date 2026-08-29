@@ -29445,3 +29445,137 @@ service-owned writes losing `isLoading` — every `isLoading` assertion in the s
 `generateShoppingList` (a read path) or to the two new unacked-write tests.
 
 Verdict: fail (2 blocking) — the unpinned rollback fields, and the reorder sentence.
+
+### 2026-08-29 — BUT-1981: audit-on-refusal in the twin weekly-menu repositories (trigger: review of a staged production change)
+
+Reviewed: `lib/repositories/firebase/firebase_weekly_menu_plan_repository.dart`,
+`lib/repositories/firebase/firebase_group_weekly_menu_plan_repository.dart`,
+`test/unit/repositories/firebase/firebase_weekly_menu_plan_repository_test.dart`,
+`test/unit/repositories/firebase/firebase_group_weekly_menu_plan_repository_test.dart`,
+`test/integration/firebase/repositories/group_weekly_menu_plan_repository_test.dart`.
+
+Hashes at review time (md5, worktree == index for both production files, `git diff --numstat`
+empty at verdict): per-user repo `7c64cc8d66e063dbea17a0b334a82724`, group repo
+`be7901ecea67c6df233cd51fb2b6123e`. Both restored byte-identical after every probe.
+
+Change: `logPermissionCheck` moved into the refusal branch of `save` on BOTH repositories;
+`requireCurrentUserId()` hoisted above the gate on both (at HEAD it was already unconditional,
+as the `userId:` argument of the pre-gate audit call, so the hoist preserves behaviour).
+`lib/repositories/CLAUDE.md` amended in the same (staged) commit to permit refusal-only logging.
+
+Probes, each in its own Bash call, cp-backed and md5-verified after restore:
+
+1. `git show HEAD:` on the PER-USER repo, suite re-run → `+10 -1`. Exactly ONE test reddened:
+   `'a GRANTED save writes no audit row'`. The refusal test `'a REFUSED save writes exactly one'`
+   stayed GREEN, because the HEAD shape logs once with `granted: canWrite`, which on the refusal
+   path is one row with `granted: false` and the authed uid — indistinguishable from the new
+   shape. So the report's "restoring audit-on-grant reddens 1 and 2" is FALSE for test 2.
+2. `requireCurrentUserId()` pushed into the refusal branch (per-user) → reddens exactly
+   `'a save with nobody signed in throws before writing anything'` ("Actual: Future<void> …
+   emitted <null>"). Claim confirmed.
+3. `git show HEAD:` on the GROUP repo, both group suites re-run → **35/35 ALL GREEN**. The whole
+   group-side change is unobservable. Analytic reason, no probe needed: neither group suite
+   passes `auditRepository`, so the mixin's `if (auditRepository != null)` branch is dead there,
+   and every group fixture is signed in, so the hoist has no signed-out case either.
+
+Mutants surviving on the group repo, in blast-radius order: (a) log on GRANT again — the exact
+regression BUT-1981 exists to prevent, and worse here because `entity.canEdit(userId)` is a real
+actor check that refuses live callers, unlike the per-user gate whose first conjunct
+(`entity.userId == userId`, where `userId` IS `plan.userId`) is a tautology; (b) delete the
+refusal audit call — the accountability row the ticket kept; (c) `userId: actorId` →
+`userId: userId`, and the group's own fixtures already DIVERGE the two (`save(plan,
+userId: 'editor-uid')` under an authed `user-alpha`), so the killer fixture is already written,
+it just has no audit repository behind it; (d) hoist reverted — no signed-out group fixture.
+
+Fixture question the parent raised: test 2's mis-keyed plan DOES exercise the branch the change
+touched. The refusal is decided by the prefix conjunct (the equality conjunct cannot decide),
+but the audit call sits in the branch regardless of which conjunct fell, so it is not passing
+for an adjacent reason. Its comment states the tautology honestly.
+
+`unawaited` question: the fake has no timers (`grep 'Future.delayed|Timer|scheduleMicrotask'`
+over `fake_cloud_firestore-4.1.1/lib/src` → 0 hits); `add()` awaits `set()` which awaits
+`maybeThrowSecurityException`, so ~3-4 microtask hops, and the test's `await expectLater(...)` +
+`await collection.get()` supply slack. Deterministic, not a wall-clock flake. But the risk is on
+the OPPOSITE assertion from the one asked about: `hasLength(1)` fails LOUD if the flush budget
+ever shrinks, while `expect(rows.docs, isEmpty)` in test 1 is also satisfied by a write that
+simply has not landed yet. Probe 1 settles it empirically today; `await pumpEventQueue()` before
+that read would write the guarantee into the test.
+
+Also found: `lib/services/menu/group_weekly_menu_plan_service.dart:127` (unstaged, at HEAD) says
+`save` may throw "an `AuthenticationException` from the audit call". After this change the audit
+call does not run on the granted path and no longer resolves the uid; the exception now comes
+from the hoisted assertion. Attribution clause falsified by a change in another file.
+
+Caller claim in the group repo's new comment ("the only live caller is the meal-poll close")
+MEASURED TRUE: `GroupWeeklyMenuPlanService.save` (line 144) is the sole `.save(` on that
+repository in `lib/`, and its only caller is `messaging_service.dart:1087
+_appendWinnerToGroupPlan`.
+
+Verdict: fail (1 blocking) — the group repository's half of the change has zero coverage,
+measured 35/35 green on HEAD bytes.
+
+### 2026-08-29 — BUT-1981 final gate pass: the `isEmpty` latent-vacuity suspicion, measured closed
+
+Trigger: final review round on the staged BUT-1981 change (audit-on-refusal-only + the
+`requireCurrentUserId()` hoist, both weekly-menu repositories). Six new tests, three per repo.
+
+My own earlier round had filed an OPEN suspicion, retired verbatim here from the principle:
+
+> and the latent-vacuity risk sits on the NEGATIVE `expect(rows, isEmpty)`, which an
+> `unawaited` write not yet flushed also satisfies, never on the `hasLength(1)` beside it,
+> which fails LOUD. (BUT-1981, 2026-08-29.)
+
+The reasoning was sound — `PermissionValidationMixin.logPermissionCheck` schedules the
+Firestore `add()` through `unawaited(...)`, so `await logPermissionCheck(...)` returns before
+the row exists, and a GRANTED test asserting `expect(rows.docs, isEmpty)` would pass under the
+"log grants again" mutant if the write simply had not landed yet. That would have made both
+granted tests vacuous and the deviation doc's "all four halves are pinned" false again.
+
+MEASURED, and it does not happen. Scratch probe
+`test/unit/repositories/firebase/_zz_probe_audit_flush_test.dart` (written, run, deleted in the
+same round; no `lib/` write, no parallel-session clobber risk) called the public
+`logPermissionCheck(granted: true, auditRepository: FirebaseAuditRepository(fake))` on a real
+`FirebaseWeeklyMenuPlanRepository` and then read the `audit_logs` collection:
+
+- with one intervening `set()` + the `get()`, mimicking the reverted granted call followed by
+  the plan write: `hasLength(1)` GREEN.
+- with NO intervening write at all (minimum gap): `hasLength(1)` GREEN.
+
+So on `FakeFirebaseFirestore` the unawaited row is visible to the very next read. The granted
+tests' `isEmpty` discriminates; reverting audit-on-grant reddens them.
+
+Second, cheaper argument found in the same pass, which needs no probe and generalises beyond
+this fake: the GRANTED and REFUSED tests are built from ONE fixture helper
+(`_repo(firestore, withAudit: true)`) over ONE fake Firestore. The refusal test's
+`hasLength(1)` therefore proves the `auditRepository` is wired to the collection the granted
+test reads — the classic refusal+control pairing, here doing duty as a wiring proof.
+
+Also measured this round:
+- `flutter test` on both suites: 36 green.
+- `flutter analyze --fatal-infos` on the five production files + the test directory: clean.
+- Files 3 (`firebase_audit_repository.dart`), 4 (`permission_validation_mixin.dart`) and
+  `group_weekly_menu_plan_service.dart` verified COMMENT-ONLY from the staged diff, not
+  inherited from the brief.
+- The deviation doc's open-work sentence "`lib/models/audit_log.dart` … and it is not the only
+  one" is TRUE: a repo grep for `Article 30|Art\. 30` returns many surviving carriers
+  (`base_storage_repository`, `base_view_repository`, `base_engagement_repository`,
+  `base_dismissal_repository`, seven `shared_content/*`, `collaborative_recipe_repository`,
+  `core_module`, `personal_recipe_module`, `firestore.rules`). Left standing deliberately —
+  it names unresolved work, which the strike rule does not reach.
+- Verdict-time positive check: `git diff --numstat` empty on all seven reviewed paths, so the
+  verdict is against the bytes the parent will commit.
+
+Surviving-but-not-blocking mutants recorded, all on arguments UNCHANGED by this commit (moved,
+not edited — checked against the staged diff, so they are pre-existing gaps rather than new
+ones): the audit row's `resource`, `operation` and `details` VALUES are asserted by nothing in
+either suite. `granted` and `userId` are both pinned, and the refusal fixtures DIVERGE the
+authenticated uid from the caller-supplied one (bob vs alice) in both repos, so
+`userId: actorId` → the passed `userId` reddens. That divergence is the thing to check first in
+any future audit-row test; without it the two collapse to one observable.
+
+One decorative assertion, flagged as improvable and shipped: in both signed-out tests the
+`expect(rows.docs, isEmpty)` has an EMPTY kill set for the mutant its own comment names
+(pushing `requireCurrentUserId()` back into the refusal branch makes `canWrite` true, so the
+branch is skipped and no row is written under the mutant either). What actually reddens there
+is `saved.exists, isFalse` plus the `throwsA`. Harmless, states nothing false, not worth a
+round.

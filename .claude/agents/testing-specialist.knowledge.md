@@ -407,6 +407,25 @@ Codecov: 60% project / 70% new patches / 2% drop tolerance — floors, decided 5
   `firebase_activity_event_repository_test.dart` → `'records the granted permission check via the
   audit repository'`; the killer fixture must DIVERGE the two uids and assert the authed one
   (BUT-1962, both weekly-menu repositories, 2026-08-28).
+  **When ONE change edits TWIN repositories, the test lands on the twin whose refusal branch is
+  a TAUTOLOGY and the untested twin is the one with a real actor gate** — BUT-1981 moved the
+  audit call into the refusal branch of both weekly-menu repos; the per-user gate's first
+  conjunct compares the plan to itself (reachable only by MIS-KEYING) and got three tests, while
+  the group gate's `entity.canEdit(userId)` refuses live callers and got none: `git show HEAD:`
+  on the group file ran 35/35 GREEN, so deleting its audit call, logging grants again, or naming
+  the caller-supplied uid are all invisible. Grade a paired diff PER FILE and run the HEAD-bytes
+  probe on the file the round wrote no test for. Two claim shapes this settles: reverting
+  audit-on-grant reddens the GRANTED test ONLY (the refusal test still sees exactly one row, so
+  "reddens both" is false — measure each), and the suspected latent vacuity on the NEGATIVE
+  `expect(rows, isEmpty)` — that an `unawaited` audit write not yet flushed satisfies it too —
+  is MEASURED CLOSED for `FakeFirebaseFirestore`: a row written through the mixin's
+  `unawaited(...)` is visible to the very next `.get()` with ZERO intervening awaits, so the
+  negative assertion discriminates. Settle it with a scratch `_zz_probe_*_test.dart` calling the
+  public `logPermissionCheck` directly (~15s, no `lib/` write) rather than by reasoning about
+  microtask order. The cheaper argument needs no probe at all and generalises: a GRANTED/REFUSED
+  pair built from ONE fixture helper over ONE fake proves its own wiring — the refusal case's
+  row IS the evidence that the granted case's `isEmpty` is not measuring an unwired
+  `auditRepository`. (BUT-1981, 2026-08-29.)
 - **A claim about "the call sites" is measured over the CALLERS of the CHANGED METHOD, never
   over the one file the fix touched** — and `grep -rn '\.<method>(' lib/` is the whole check.
   Same commit, same class: a test comment quoting another suite's total ("all 304 of those

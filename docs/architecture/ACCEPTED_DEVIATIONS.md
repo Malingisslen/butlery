@@ -2344,3 +2344,65 @@ That measurement is on BUT-1965. It was NOT reproduced on a phone; this machine 
 Windows, Chrome and Edge, so the "unverified on a device" half of the sentence above stands.
 A refused save now rolls the calendar back, guarded on the published plan still being the
 resident one. Malin's decision, 2026-08-28.
+
+## The weekly-menu `save` audits refusals only (BUT-1981, 2026-08-28)
+
+`logPermissionCheck` moved inside the `if (!canWrite)` branch in both
+`FirebaseWeeklyMenuPlanRepository.save` and `FirebaseGroupWeeklyMenuPlanRepository.save`.
+Each granted save had written a plan document plus an audit document — two writes where one
+would do. **Malin's explicit call, 2026-08-28.**
+
+### The ticket's own framing was wrong, and is retracted
+
+The row was described as a GDPR Art. 30 record. It is not. Art. 30 requires a *register of
+processing activities*: controller and DPO details, purposes, **categories** of data subjects
+and personal data, **categories** of recipients, third-country transfers, envisaged erasure
+limits, and a *general description* of technical and organisational security measures. It
+mandates no per-operation access logging, no granted-vs-denied decisions, and no
+transaction-level records. Checked 2026-08-29.
+
+Calling it an Art. 30 row turned a house rule into a legal requirement. The real source is
+`lib/repositories/CLAUDE.md`, which now says `logPermissionCheck()` is required on a REFUSAL,
+that logging grants is the default and right for most repositories, and that this is a
+traceability rule rather than a legal one. Art. 32 (security measures) and Art. 5(2)
+(accountability) remain arguments for keeping the **refusals** — not for a row per successful
+write.
+
+The same retraction was applied to `FirebaseAuditRepository`'s header and
+`PermissionValidationMixin`. The sweep is NOT done: `lib/models/audit_log.dart` — the model of the row itself — still
+calls it an Art. 30 record, and it is not the only one. **The heaviest survivor is not code:**
+`docs/security/audit-logs-retention.md` is titled as the Art. 30 record for `audit_logs`, gives
+every field the lawful basis "Art 6(1)(c) — legal obligation (Art 30 record)", and keeps a
+deleted user's rows on Art 17(3)(b) on the same ground. That register rests on the premise
+retracted here, so it is a legal document to re-derive, not a comment to strike — and it is why
+this entry does not point `FirebaseAuditRepository`'s header at it: a citation would re-import
+the premise. A retraction that lands in some
+places is how the next session re-derives the requirement from a file that still asserts it.
+
+### The two halves are NOT the same trade
+
+**Per-user: the granted row recorded no decision.** `validateUpdatePermission` is
+`entity.userId == userId && resourceId.startsWith('${userId}_')`, called as
+`validateUpdatePermission(plan.userId, plan.id, plan)` — so the first conjunct is a tautology
+and only a mis-keyed doc id can refuse. A cross-user `save` is refused by
+`firestore.rules`.
+
+**Group: it is a real reduction.** That gate takes the actor as a separate argument
+(`entity.canEdit(userId)`), so its refusals are genuine permission decisions, and dropping the
+granted row loses **edit history** on a document more than one person can write —
+`lastModifiedBy` keeps only the last writer. Accepted because the only live caller is the
+meal-poll close, so the history was thin. Do not re-describe this half as "a redundant row
+removed"; the asymmetry is the decision.
+
+### Load-bearing
+
+`requireCurrentUserId()` is resolved **above** the gate in both repositories. It is the only
+client-side authentication assertion on `save`, and from inside the refusal branch it
+would throw on the way to the audit call — losing the very row this entry keeps. On the group
+repo it sits inside the `userId != null` limb; a `save` with no `userId` asserts nothing
+client-side, unchanged and bounded by the rules.
+
+Both repositories' granted, refused and signed-out paths are pinned in their unit suites,
+each mutation-probed. Before that, the entire change was invisible to the repository suites: they stayed green when the
+audit call moved, and both group suites were green against the pre-change bytes, because
+neither passed an `auditRepository` at all.

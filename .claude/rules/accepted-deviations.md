@@ -122,6 +122,28 @@ files in the same edit.
 
 ## Engineering
 
+- **The two weekly-menu-plan repositories' `save` audits only REFUSALS, not grants** —
+  `logPermissionCheck` moved inside the `if (!canWrite)` branch. Each granted save had
+  written a plan document plus an audit document, two writes where one would do.
+  **Malin's explicit call, 2026-08-28 (BUT-1981).** The ticket's own framing was wrong and
+  is retracted: this row is NOT a GDPR Art. 30 record. Art. 30 is a register of processing
+  CATEGORIES and purposes — it mandates no per-operation access logging, no granted-vs-denied
+  decisions, no transaction-level records (checked 2026-08-29). The requirement came from
+  `lib/repositories/CLAUDE.md`, a house traceability rule, which now says so.
+  **The two halves are NOT the same trade.** On the per-user repo the granted row was
+  a row that recorded no decision: its gate
+  (`entity.userId == userId` called with `plan.userId`) is a tautology that can only fail on a
+  mis-keyed doc id — so it never recorded a decision that could have gone the other way. On the
+  GROUP repo the gate takes the actor as a separate argument and its refusals are real, and
+  dropping the granted row loses EDIT HISTORY on a document more than one person can write
+  (`lastModifiedBy` keeps only the last writer). That reduction is accepted because the only
+  live caller is the meal-poll close.
+  `requireCurrentUserId()` is resolved ABOVE the gate in both, and that is load-bearing twice:
+  it is the only client-side authentication assertion on `save`, and from inside the
+  refusal branch it would throw on the way to the audit call and lose the very row this keeps.
+  Both repositories' granted, refused and signed-out paths are pinned and mutation-probed — before
+  this, the whole change was invisible to the repository suites. BUT-1981, 2026-08-28
+
 - **An OFFLINE read of a weekly menu plan trusts a cached "this week is empty", and a
   write may then build on it** — `getDocCacheFirst(acceptCachedAbsence: true)`, passed by
   `FirebaseWeeklyMenuPlanRepository.fetchForWeek` and by nothing else. The flag only

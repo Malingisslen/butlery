@@ -213,7 +213,26 @@ name which doc each end touches before approving it.
   (`AppLogger.info`/`warning`, no Crashlytics, no redactor) and raw into the audit document
   by design — so any comment saying a sanitizer covers it is false; name the SINK. It also
   cannot fail an operation (`unawaited` + `catchError` + an outer try), which is what makes
-  it safe to run BEFORE the deny branch on every write.
+  it safe to run BEFORE the deny branch on every write. Moving it INTO the deny branch
+  (refusal-only auditing, permitted by `lib/repositories/CLAUDE.md`) costs per-operation
+  HISTORY: the document is last-write-wins while audit rows are immutable and per-operation
+  (`allow update, delete: if false`), so every earlier operation is unrecoverable and the
+  last one only as a timestamp — the per-user plan document records no actor at all, and the
+  group document only the caller-supplied `lastModifiedBy`, never the authenticated uid the
+  row names. Say that out loud rather than calling the row redundant. Do not accept "the row
+  is derivable from the document" as the criterion; ask instead what the row records that the
+  document cannot — the authenticated uid, the refusal itself, and every earlier operation. Demand two things back: the unconditional
+  `requireCurrentUserId()` is usually the method's ONLY client-side auth assertion, and
+  calling it inside the deny branch THROWS before the refusal row is written, losing exactly
+  the row the design keeps — hoist it to the top of the method. Also grade the rule file's
+  own "live exceptions:" list as a measured ENUMERATION (strike, don't extend): a
+  guard-shaped module whose success path is a bare `return` already logs refusals only.
+- A client gate invoked as `validate*Permission(entity.ownerField, entity.id, entity)`
+  compares the entity to ITSELF — the ownership conjunct is a tautology whoever is signed
+  in, so it can only catch MIS-KEYING, never a cross-user write. Never credit such a refusal
+  row as an attacker signal, and never let its existence stand in for the real control (the
+  conjuncts in `firestore.rules`). Check the ARGUMENTS at the call site, not the
+  method body.
 - A class-doc or block comment that summarises "the permission methods here enforce X" is a
   UNIVERSAL over the four `validate*Permission` methods, and the member that falsifies it is
   almost always the one that `return true`s unconditionally (delete, or read on a null
@@ -356,7 +375,15 @@ name which doc each end touches before approving it.
   Renaming/retiring a token: grep CONSUMERS and `git log -S` the old spelling and writer
   METHOD, since rows outlive their caller. `auditRepository` is an OPTIONAL constructor arg
   some DI modules don't pass — check DI registration, not the repository, before crediting a
-  trail as live.
+  trail as live. A GDPR ARTICLE cited in a comment is a measured claim about that article's
+  TEXT: Art. 30 is a register of processing categories and purposes and mandates no
+  per-operation access log, so "Art. 30 requires this row" turned a house rule into a legal
+  one across ~17 files (BUT-1981). Retracting it in the code is only half — grep the paired
+  `docs/security/*-retention.md`, which is the actual Art. 30 register and may derive the
+  rows' LAWFUL BASIS (Art. 6(1)(c) "legal obligation") and the Art. 17(3)(b) erasure
+  exemption from the same retracted premise. Strike the false clause rather than re-point it
+  at a doc whose own basis is now in doubt, and file the register's correction as its own
+  ticket.
 - A UI gate hiding a CONSENT control must key on the absence of a live consent, not only
   the precondition that made it offerable (Art. 7(3)) — read "do I have a record?" BEFORE
   the eligibility check. A one-shot backfill needs a REQUEST-LEVEL resume cursor (both

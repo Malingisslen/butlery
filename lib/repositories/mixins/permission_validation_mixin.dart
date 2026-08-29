@@ -381,7 +381,8 @@ mixin PermissionValidationMixin {
   /// Logs permission check for audit trail with optional persistent storage.
   /// This method provides dual-layer audit logging:
   /// 1. **Console Logging**: Always logs to AppLogger for development visibility
-  /// 2. **Persistent Logging**: Optionally logs to Firestore for GDPR compliance (Article 30)
+  /// 2. **Persistent Logging**: Optionally logs to Firestore as a traceability
+  ///    measure — NOT an Art. 30 record; see `FirebaseAuditRepository`'s header
   /// The persistent logging is fire-and-forget - failures do not block operations.
   /// This ensures audit logging issues never break application functionality.
   /// [userId] The ID of the user performing the operation
@@ -389,7 +390,7 @@ mixin PermissionValidationMixin {
   /// [operation] The operation being performed (read, write, update, delete, create)
   /// [granted] Whether permission was granted or denied
   /// [details] Optional additional context
-  /// [auditRepository] Optional repository for persistent audit logging (GDPR compliance)
+  /// [auditRepository] Optional repository for persistent audit logging
   /// [metadata] Optional metadata for persistent audit logs (IP address, device info, etc.)
   Future<void> logPermissionCheck({
     required String userId,
@@ -413,7 +414,7 @@ mixin PermissionValidationMixin {
       );
     }
 
-    // OPTIONALLY persist to Firestore for GDPR compliance (Article 30)
+    // OPTIONALLY persist to Firestore as a traceability measure
     if (auditRepository != null) {
       try {
         // Parse resource string (format: "resourceType/resourceId" or "resourceType")
@@ -427,7 +428,7 @@ mixin PermissionValidationMixin {
           if (metadata != null) ...metadata,
         };
 
-        // Fire-and-forget persistent logging (GDPR Article 30 compliance)
+        // Fire-and-forget persistent logging
         // Note: We don't await this to avoid blocking application operations.
         // BUT-1741: `unawaited` says so out loud. A bare expression statement
         // discarding a future reads identically to the bug this ticket fixed

@@ -1,11 +1,15 @@
-/// Firebase repository for persistent audit logging (GDPR Article 30 compliance).
-/// This repository manages the secure storage and retrieval of audit logs in Firestore,
-/// providing the persistent audit trail required for GDPR compliance. Audit logs record
-/// all permission checks and security events throughout the application.
+/// Firebase repository for persistent audit logging.
+/// This repository manages the secure storage and retrieval of audit logs in Firestore.
+///
+/// **What it is NOT:** an Art. 30 record. Art. 30 is a register of processing
+/// CATEGORIES and purposes — controller, purposes, categories of data subjects,
+/// data and recipients, transfers, erasure limits, and a general description of
+/// security measures. It mandates no per-operation access logging (checked
+/// 2026-08-29, BUT-1981). This trail is a house traceability measure, closer to
+/// Art. 32, and callers may scale it: which permission checks reach it is each
+/// repository's decision, so do not read it as "every check is recorded".
 /// **GDPR Compliance:**
-/// - Article 30: Records of Processing Activities (CRITICAL requirement)
 /// - Article 15: Right of Access by the Data Subject
-/// - Article 17: Right to Erasure (audit logs exempt per legal requirement)
 /// **Security Model:**
 /// - Users CAN write their own audit logs (via authenticated requests)
 /// - Users CANNOT read their own audit logs (prevents tampering detection)
@@ -97,11 +101,11 @@ class FirebaseAuditRepository {
     }
   }
 
-  /// Log a tag result modification for GDPR Article 30 compliance.
-  /// Health-related data (allergens, dietary status) requires audit trail.
+  /// Log a tag result modification.
+  /// Health-related data (allergens, dietary status) gets an audit trail.
   /// This is a fire-and-forget operation - failures are logged but don't throw.
-  /// **GDPR Article 30:** Records of Processing Activities
-  /// Allergen/dietary data is health-sensitive and requires tracking.
+  /// Allergen/dietary data is health-sensitive, which is why this path keeps
+  /// its trail; see the header for what that trail is and is not.
   /// **Usage:**
   /// ```dart
   /// await auditRepository.logTagModification(
