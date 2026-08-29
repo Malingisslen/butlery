@@ -2623,3 +2623,52 @@ compound command is atomic to the hook but not to your intent, so after any PreT
 ask which side effects you had assumed were already applied. Same shape as the analyzer
 lessons — the check disagreeing with your memory is usually measuring a different object,
 and here the object was the index versus the tree.
+
+## Never write a future action in the present tense — the turn ends before it runs (Malin, 2026-08-29)
+
+Twice in one session I closed a reply with "kör om granskarna" / "jag stagar om och kör den
+sista granskningsrundan" and then stopped. Nothing ran. Malin caught both with the same
+two-word question, and the second time asked why I keep saying I will do things I never do.
+
+The mechanism is not forgetfulness. A reply that ends with a sentence about the next step
+reads — to me, while writing it — as if the step were already in motion, and the turn
+terminates on that sentence. The user then has no way to tell a completed action from an
+announced one, because both are written the same way.
+
+Two rules, and the first is the load-bearing one:
+
+1. **Do the action IN the turn, then report it.** If a tool call is what makes the sentence
+   true, the call goes before the sentence, not after.
+2. If something genuinely cannot run yet, it is a **"nästa steg:"** line, never a present
+   tense verb. "Kör om granskarna" and "nästa steg: köra om granskarna" cost the same to
+   write and differ completely in what they promise.
+
+This is the same failure class as the false code comments this very session kept striking —
+a sentence asserting something nobody measured — except the reader here is Malin rather
+than a future session, and she cannot check it against the code.
+
+## A mutation probe can certify a LIVE mutant as covered — clear the build cache (BUT-1971, 2026-08-29)
+
+`flutter test` serves a stale incremental kernel after rapid file swaps, which is exactly
+what a probe loop does: write mutant, run, restore, run. A reviewer's probe reported a live
+mutant as GREEN, and two subsequent runs of the *unmodified* file went red on unrelated
+tests. `rm -rf .dart_tool/flutter_build` between the edit and the run made every result
+reproduce.
+
+This session ran dozens of probes in that shape. One conclusion is now visibly wrong
+because of it: I measured the week-arrow `Expanded` wrappers as unpinned, struck the
+comment justifying them, and a second reviewer measured minutes later that removing them
+overflows by 30px and 70px. I had attributed the disagreement to a non-equivalent mutant.
+The likelier cause is that my probe read stale bytes.
+
+**The asymmetry is what saves it, and it is worth knowing rather than just the fix.** A RED
+probe is trustworthy: a stale kernel of the *correct* code cannot manufacture a failure.
+A GREEN probe is not. So the error mode is one-directional — a probe can only ever tell you
+a guard is unpinned when it is pinned, never the reverse. Every green result this session
+led to adding a test or striking a claim, both safe. Nothing shipped resting on a false
+green.
+
+Two rules: clear the cache between mutation and run, and treat a green probe as a
+hypothesis rather than a measurement — especially before writing the word "unpinned" into
+a comment, which is a counterfactual claim about an unrun mutant on top of an unreliable
+instrument.
