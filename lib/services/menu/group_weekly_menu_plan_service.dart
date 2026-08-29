@@ -266,17 +266,6 @@ class GroupWeeklyMenuPlanService extends BaseService {
     return plan.copyWith(participants: remaining);
   }
 
-  /// Delete every group plan belonging to [groupId] (used when a group
-  /// conversation is deleted). No per-participant permission check — the
-  /// caller is assumed to have group-level admin rights.
-  Future<int> deleteAllByGroup(String groupId) async {
-    return await executeServiceOperation<int>(
-          () => _repository.deleteAllByGroup(groupId),
-          operationName: 'deleteAllByGroup',
-        ) ??
-        0;
-  }
-
   void _requireEditor(GroupWeeklyMenuPlan plan, String actorId) {
     if (!plan.canEdit(actorId)) {
       throw PermissionDeniedException(

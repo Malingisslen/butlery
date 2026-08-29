@@ -7360,3 +7360,100 @@ is why the personal client gate's tautology is not load-bearing.
 Non-blocking and let to ship: `docs/security/audit-logs-retention.md`'s lawful-basis and
 Art 17(3)(b) columns now contradict the code header (own ticket, pre-existing); the ~17
 remaining Art. 30 assertions in `lib/` (disclosed in the entry).
+
+## 2026-08-29 — BUT-1974: `deleteAllByGroup` closed by REMOVAL; read limb gains the doc-id prefix
+
+Staged diff: `firebase_group_weekly_menu_plan_repository.dart`,
+`interfaces/group_weekly_menu_plan_repository.dart`, `services/menu/group_weekly_menu_plan_service.dart`,
+`test/integration/firebase/repositories/group_weekly_menu_plan_repository_test.dart`.
+
+**Removal graded CORRECT, not a loss.** The ticket asked for a permission check + audit row
+on `deleteAllByGroup` (a whole-group bulk delete whose `validateDeletePermission` returns an
+unconditional `true`). Verified instead of accepted:
+
+- Zero production callers. Repo-wide grep found it only in the definition chain, its own
+  tests, two knowledge ARCHIVES (append-only, correctly untouched), a stale `tasks/todo.md`
+  line and a `.claude/worktrees/` copy. `git log --oneline -S deleteAllByGroup -- lib/`
+  returns exactly ONE commit — `1483e3b0a`, the feature commit that introduced it. It never
+  had a caller at any point in its life.
+- The obligation moved server-side and RUNS: `deleteGroupMenuPlans` /`deleteEmptyGroup` in
+  `functions/src/groups/remove-chat-group-member.ts` (BUT-1979), selecting on the `groupId`
+  FIELD rather than the doc-id prefix, capped at `MAX_GROUP_MENU_PLANS = 500` with a decline
+  rather than a truncation, and pinned by `chat-group-callables.test.ts` (target-only scope,
+  cap, delete-failure). A CF cannot call a Dart repository, so the method could never have
+  become that caller.
+- Art. 17 is untouched by the removal: `account-deletion-cascade.ts:1179` scrubs the uid from
+  `group_weekly_menu_plans` via `participantUserIds array-contains` and deletes the plan when
+  it empties, with two emulator tests either side.
+- Nothing orphaned: DI (`content_module.dart:655`) registers the impl as the interface with no
+  method reference; `content_export_manager` uses only `exportPlansForParticipant`; the test
+  doubles are `Mock`/`Fake` (no explicit override to break). `batchDeleteDocs` retains nine
+  other callers plus its own unit test, and `firestore_batch_utils` is not orphaned.
+- The deleted 92 lines of tests pinned nothing unique: the `\uf8ff` prefix range, the >500-doc
+  chunking and cross-owner isolation all survive on the PERSONAL twin
+  (`deleteAllByUser` + `weekly_menu_plan_repository_test.dart:272-320`).
+
+**`validateReadPermission`**: now `resourceId.startsWith('${entity.groupId}_') && entity.canRead(userId)`.
+Matches the update limb byte-for-byte and the create limb modulo the id source (create has no
+`resourceId` param, so it reads `entity.id`). STRICTER than `firestore.rules`, whose read limb
+gates on `memberPermissions` alone — belt-and-braces, correct direction. Not a live-leak close:
+the group repo's own reads (`fetchForWeek`/`watchForWeek`) bypass the base `read`/`readAll` that
+call this method, so no production path reaches it. The kept null-entity `true` is right (no
+snapshot = nothing to judge).
+
+**Two blocking findings, both artefacts of the deletion rather than the logic:**
+1. The integration test's own header docstring still advertised "prefix-range delete with >500
+   docs, cross-group delete isolation" after those tests were deleted — a false coverage claim
+   in the diff's own file. Struck, not reworded.
+2. The new prefix conjunct had NO test in either suite (integration passes `plan.id`, unit
+   passes `plan.id`), so deleting it leaves both green. Asked for one case with a foreign-prefix
+   `resourceId`.
+
+Non-blocking: the INTERFACE class doc still says "the repo enforces only internal
+self-consistency (doc-ID prefix matches `plan.groupId`)", contradicted by its own `save` doc
+three lines below and by `validateUpdatePermission`'s `canEdit` — the recurring class-doc
+universal, strike the clause. `tasks/todo.md:253` still names `deleteAllByGroup` as a
+deliberate swallower.
+
+Checked and still TRUE, no action: `remove-chat-group-member.ts:288` says the field selector is
+used "not on the `{groupId}_{ISO week}` doc-id prefix the Dart repository uses" — the Dart repo
+still uses that id convention (`docIdFor`, the three prefix conjuncts), so the clause survives
+the deletion.
+
+## 2026-08-29 — BUT-1974 re-review: the interface docstring's THIRD wording is false in two ways
+
+Re-review of the staged group-weekly-menu-plan change after B1/B2 were applied. Both
+blocking findings are correctly discharged, and the removal reasoning holds (verified:
+`git log -S deleteAllByGroup` shows no caller in the method's life outside a stale
+`.claude/worktrees/` checkout; the server-side replacement is
+`functions/src/groups/remove-chat-group-member.ts:322` with its own cap tests; Art. 17 is
+covered independently by `account-deletion-cascade.ts:1179`; the deleted integration tests
+duplicated `deleteAllByUser`'s three properties in the personal twin, and `batchDeleteDocs`
+has its own unit suite). Suites: 883 green + 1 skipped, reproduced.
+
+The one blocking finding is the REPAIR of the earlier Low. The new class docstring on
+`lib/repositories/interfaces/group_weekly_menu_plan_repository.dart` reads "its permission
+methods read the entity's own `memberPermissions` as belt-and-braces on top of the rules",
+and that is false twice over:
+
+1. It is a universal over four `validate*Permission` methods, and `validateDeletePermission`
+   returns `true` unconditionally while `validateReadPermission` returns `true` on a null
+   entity. The previously-recorded principle predicted exactly this ("the member that
+   falsifies it is almost always the one that `return true`s unconditionally").
+2. NEW: it names the wrong storage shape. `memberPermissions` is a DERIVED getter
+   (`group_weekly_menu_plan.dart:185`) built from `participants` purely so `firestore.rules`
+   can do map-key lookup. Every Dart validator goes through `participantFor` /
+   `canRead` / `canEdit`, which walk the `participants` list. No permission method reads
+   `memberPermissions` at all. The sentence borrowed the RULES' mechanism and attributed it
+   to the client.
+
+Correct formulations were already in the tree, a few lines away in both directions: the
+implementation's class doc ("What each permission method here checks differs — read their
+bodies") and the same interface's own `save` docstring, which scopes belt-and-braces to
+`validateUpdatePermission`, the one method that actually refuses. Remedy filed as a STRIKE
+of the added clause, not a fourth wording.
+
+B2 graded as genuinely discriminating: `validateReadPermission(_alice, 'other-group_2026-W03',
+plan)` differs from its neighbouring ALLOW control in the resourceId alone, alice's membership
+is independently pinned by that control, and the entity is non-null so the null-delegation
+branch cannot answer it. Single-variable, not over-determined.

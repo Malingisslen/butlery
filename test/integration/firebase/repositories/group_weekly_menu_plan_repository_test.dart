@@ -2,14 +2,12 @@
 ///
 /// Mirrors `weekly_menu_plan_repository_test.dart` (BUT-361 template): uses
 /// FakeFirebaseFirestore + MockFirebaseAuth. Exercises deterministic
-/// doc-ID upsert, missing-doc null, prefix-range delete with >500 docs,
-/// cross-group delete isolation, and the internal permission-method
+/// doc-ID upsert, missing-doc null, and the internal permission-method
 /// invariants (doc-ID prefix + participant membership).
 library;
 
 // ignore_for_file: subtype_of_sealed_class
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:firebase_auth_mocks/firebase_auth_mocks.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -330,99 +328,6 @@ void main() {
           expect(fetched.participants.single.userId, 'user-alpha');
         },
       );
-    });
-
-    group('deleteAllByGroup — group-prefix range delete', () {
-      test('should delete only the target group\'s plans when multiple groups '
-          'have docs in the same collection', () async {
-        const groupIds = ['group-alpha', 'group-beta', 'group-gamma'];
-        final weeks = [
-          DateTime(2026, 4, 6),
-          DateTime(2026, 4, 13),
-          DateTime(2026, 4, 20),
-        ];
-        for (final gid in groupIds) {
-          for (final w in weeks) {
-            final docId = IsoWeekUtils.weekIdFor(gid, w);
-            await firestore.collection(_collection).doc(docId).set({
-              'groupId': gid,
-              'weekStartDate': Timestamp.fromDate(IsoWeekUtils.weekStartOf(w)),
-              'entries': <Map<String, dynamic>>[],
-              'participants': <Map<String, dynamic>>[],
-              'participantUserIds': <String>[],
-              'memberPermissions': <String, String>{},
-              'createdAt': Timestamp.now(),
-              'lastModifiedAt': Timestamp.now(),
-            });
-          }
-        }
-
-        final before = await firestore.collection(_collection).get();
-        expect(before.docs, hasLength(9));
-
-        final deleted = await repository.deleteAllByGroup('group-alpha');
-
-        expect(deleted, 3);
-        final after = await firestore.collection(_collection).get();
-        expect(after.docs, hasLength(6));
-        final remainingGroups = after.docs
-            .map((d) => d.data()['groupId'])
-            .toSet();
-        expect(remainingGroups, {
-          'group-beta',
-          'group-gamma',
-        }, reason: 'only the target group should have been erased');
-      });
-
-      test('should return 0 when the group has no plans', () async {
-        final deleted = await repository.deleteAllByGroup('nonexistent');
-        expect(deleted, 0);
-      });
-
-      test('should chunk deletes through batchDeleteDocs when the result set '
-          'exceeds the 500-op Firestore batch limit', () async {
-        const targetGroup = 'bulk-group';
-        for (var i = 0; i < 600; i++) {
-          final docId =
-              '${targetGroup}_${2010 + (i ~/ 53)}'
-              '-W${((i % 53) + 1).toString().padLeft(2, '0')}';
-          await firestore.collection(_collection).doc(docId).set({
-            'groupId': targetGroup,
-            'weekStartDate': Timestamp.now(),
-            'entries': <Map<String, dynamic>>[],
-            'participants': <Map<String, dynamic>>[],
-            'participantUserIds': <String>[],
-            'memberPermissions': <String, String>{},
-            'createdAt': Timestamp.now(),
-            'lastModifiedAt': Timestamp.now(),
-          });
-        }
-
-        // Seed an unrelated group so we can prove the prefix scope holds.
-        await firestore.collection(_collection).doc('other-group_2026-W15').set(
-          {
-            'groupId': 'other-group',
-            'weekStartDate': Timestamp.now(),
-            'entries': <Map<String, dynamic>>[],
-            'participants': <Map<String, dynamic>>[],
-            'participantUserIds': <String>[],
-            'memberPermissions': <String, String>{},
-            'createdAt': Timestamp.now(),
-            'lastModifiedAt': Timestamp.now(),
-          },
-        );
-
-        final deleted = await repository.deleteAllByGroup(targetGroup);
-
-        expect(
-          deleted,
-          600,
-          reason: 'batch chunking must not drop docs past the 500 boundary',
-        );
-        final after = await firestore.collection(_collection).get();
-        expect(after.docs, hasLength(1));
-        expect(after.docs.single.data()['groupId'], 'other-group');
-      });
     });
 
     group('permission filter (doc-ID prefix + participant membership)', () {

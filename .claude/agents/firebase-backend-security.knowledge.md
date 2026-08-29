@@ -246,7 +246,20 @@ name which doc each end touches before approving it.
   gates" promotes a layer a hand-rolled client skips. Only rules are authoritative; a Dart
   layer "also checks". Before writing such a sentence, grep the SAME FILE — the correct
   formulation is usually already sitting a few lines away, and the fix is to strike the added
-  clause, not to re-word either.
+  clause, not to re-word either. The THIRD wording adds a new failure mode: it names the
+  DENORMALISED field the RULES read (`memberPermissions`, a derived write-side getter) as
+  what the Dart methods read, when they walk the structured `participants` list — so open
+  the model and check which of the two shapes the method actually consults, and remember a
+  method-scoped "belt-and-braces" sentence on `save` usually already says it correctly.
+- A destructive repository method with ZERO callers is closed by REMOVAL, not by bolting on
+  a permission check and an audit row — a guard on an uncalled method protects nothing and
+  reads as coverage. Before deleting, discharge three things: the obligation it was written
+  for now lives somewhere that actually runs (a Cloud Function cannot call a Dart
+  repository, so a server-side replacement means this method could never become that
+  caller); Art. 17 for the same collection is covered by the deletion cascade; and the
+  deleted-symbol sweep reaches the TEST FILE'S OWN HEADER DOCSTRING and any plan/rules
+  comment naming it — those survive the compiler and become false coverage claims. Prove
+  "zero callers" with `git log -S` on the writer, not just today's grep.
 - An OPT-IN named-parameter guard defaults every EXISTING caller into the restricted branch
   (silent no-op) — ship a named METHOD on the interface instead, with its own exception
   type and a caller that honours the result (ADR-002).

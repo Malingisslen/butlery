@@ -8,8 +8,8 @@ import 'package:butlery/models/menu/group_weekly_menu_plan.dart';
 /// is an upsert (no duplicates ever).
 ///
 /// Access control lives in Firestore rules (participant membership +
-/// per-participant `SharedListPermission`) — the repo enforces only
-/// internal self-consistency (doc-ID prefix matches `plan.groupId`).
+/// per-participant `SharedListPermission`). The repo checks doc-ID/groupId
+/// self-consistency.
 abstract class GroupWeeklyMenuPlanRepository {
   /// Fetch the plan for the ISO week containing [weekStart] for [groupId].
   /// Returns `null` when no document exists yet — callers should treat that
@@ -27,10 +27,6 @@ abstract class GroupWeeklyMenuPlanRepository {
   /// writing — belt-and-braces alongside Firestore rules. When null, only
   /// the doc-ID/groupId self-consistency check runs.
   Future<void> save(GroupWeeklyMenuPlan plan, {String? userId});
-
-  /// Delete every group plan belonging to [groupId] (for group cleanup).
-  /// Returns the number of documents deleted.
-  Future<int> deleteAllByGroup(String groupId);
 
   /// Stream the plan document for [groupId] + the ISO week containing
   /// [date]. Emits `null` when the doc does not exist yet (callers render

@@ -119,6 +119,20 @@ void main() {
       expect(await repo.validateReadPermission(_alice, plan.id, plan), isTrue);
     });
 
+    test('validateReadPermission false when the doc id belongs to ANOTHER '
+        'group (BUT-1974)', () async {
+      // Without the prefix conjunct a document keyed to a different group
+      // passed on membership alone.
+      final repo = _repo(FakeFirebaseFirestore());
+      final plan = _plan();
+
+      expect(
+        await repo.validateReadPermission(_alice, 'other-group_2026-W03', plan),
+        isFalse,
+        reason: 'membership alone must not carry another group id',
+      );
+    });
+
     test('validateReadPermission false for non-participant', () async {
       final repo = _repo(FakeFirebaseFirestore());
       final plan = _plan();

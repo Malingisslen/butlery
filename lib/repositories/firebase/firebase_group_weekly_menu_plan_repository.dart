@@ -7,7 +7,6 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/menu/group_weekly_menu_plan.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/repositories/interfaces/group_weekly_menu_plan_repository.dart';
-import 'package:butlery/repositories/firebase/firestore_batch_utils.dart';
 
 /// Firebase implementation of [GroupWeeklyMenuPlanRepository].
 ///
@@ -61,8 +60,15 @@ class FirebaseGroupWeeklyMenuPlanRepository
     String resourceId,
     GroupWeeklyMenuPlan? entity,
   ) async {
-    if (entity == null) return true; // delegated to firestore.rules
-    return entity.canRead(userId);
+    // A null entity means the caller has no snapshot to judge — a read of a
+    // document that may not exist. `firestore.rules` decides that one; there is
+    // nothing here to check it against.
+    if (entity == null) return true;
+    // The doc-id prefix is checked alongside membership, matching the create
+    // and update limbs. Without it a document whose id belongs to another group
+    // passes on membership alone (BUT-1974).
+    return resourceId.startsWith('${entity.groupId}_') &&
+        entity.canRead(userId);
   }
 
   @override
@@ -213,23 +219,5 @@ class FirebaseGroupWeeklyMenuPlanRepository
     return snapshot.docs
         .map((doc) => <String, dynamic>{'id': doc.id, 'data': doc.data()})
         .toList();
-  }
-
-  @override
-  Future<int> deleteAllByGroup(String groupId) async {
-    // Doc IDs are prefixed with groupId, so a range query bounded by the
-    // prefix gives us only this group's docs without an extra index.
-    final snapshot = await collection
-        .where(FieldPath.documentId, isGreaterThanOrEqualTo: '${groupId}_')
-        .where(FieldPath.documentId, isLessThan: '${groupId}_\uf8ff')
-        .get();
-
-    if (snapshot.docs.isEmpty) return 0;
-
-    await batchDeleteDocs(firestore, snapshot.docs);
-    AppLogger.info(
-      'Deleted ${snapshot.docs.length} group weekly menu plans for group $groupId',
-    );
-    return snapshot.docs.length;
   }
 }

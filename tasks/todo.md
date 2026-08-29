@@ -250,7 +250,7 @@ Nio av tio bindande kriterier uppfyllda. Alla kodändringar mutationsprövade.
 | # | Kriterium | Utfall |
 |---|---|---|
 | 1 | Operationerna, var för sig | ✅ ett test per operation; probe per omordning rödnar exakt sina egna |
-| 2 | Ingen sparväg sväljer tyst | ✅ probe per lager. Scopat till SPARvägar; `removeRecipeFromAllPlans` och `deleteAllByGroup` sväljer fortfarande med flit — dess egen docstring säger varför (en kontoradering ska inte falera på menystädning) |
+| 2 | Ingen sparväg sväljer tyst | ✅ probe per lager. Scopat till SPARvägar; `removeRecipeFromAllPlans` sväljer fortfarande med flit — dess egen docstring säger varför |
 | 3 | `logPermissionCheck` | ✅ båda klientgrindarna |
 | 4 | Gruppvägran egen text utan retry | ❌ **ingen yta finns** — BUT-1971 |
 | 5 | Onboarding tyst + analysevent | ✅ `onboardingMenuSeedFailed` |
