@@ -2615,7 +2615,15 @@ disk, each spending a full pass to conclude "the files are `MM`". Two rounds, no
 
 **The move after any gate block: re-run the `git add` on its own, verify `git status --short`
 shows `M` and not `MM`, and only then re-run the reviewers.** `MM` is the whole tell, and it
-costs one command to check. Leaving them staged between the add and the commit is a shorter
+costs one command to check.
+
+**Sharpened after it bit twice more in the same session, both times after this entry was
+written.** The separator does not matter. `&&`, `;`, a newline — the gate is a PreToolUse hook
+on the Bash TOOL CALL, so it refuses the whole string before the shell sees any of it. The
+second relapse came from thinking `;` would let the `add` through because it is not a
+short-circuit; it does not, and nothing in the block message says which command failed,
+because none of them ran. Both times a reviewer caught it by comparing the index blob against
+what it had read — not by trusting my description of the change. Leaving them staged between the add and the commit is a shorter
 exposure than an extra review round, and the block already proved a commit is not imminent.
 
 Generalisation worth keeping: a gate's failure mode includes **what it did not run**. A
