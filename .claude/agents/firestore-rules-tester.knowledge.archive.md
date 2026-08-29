@@ -3493,3 +3493,41 @@ safe action on it is a strike, and it is not worth one.
 
 No new durable rule this run; the departure/late-joiner principle from round 5 already covers
 the case and needed no edit.
+
+## 2026-08-29 — BUT-1971 independent re-verification of round 6 (second reviewer pass)
+
+A second invocation re-ran the round-6 review from scratch on the same paragraph. The diff
+was committed as `717947656` mid-review, so the comment-only property was proven twice, on
+both objects: old-HEAD vs index before the commit, and `HEAD~1` vs `HEAD` after. Both times
+the non-comment line filter came back EMPTY and the comment-stripped md5 was identical over
+1382 surviving lines.
+
+The digest differed from the one round 6 recorded (`fb48930240371cbe9c7bda335670edeb` here
+vs `552dc5538c639f06e610411d96a3cb62` there) over the SAME bytes and the SAME 1382 lines,
+because the two runs stripped `\r` at different points in the pipeline. Round 6 warned that
+an md5 fingerprints a commit; it also fingerprints the pipeline. The line count is the only
+figure that survives between entries — recorded as a principle edit, in place.
+
+MUTATION-PROBED this run rather than read: dropping `resource == null` from the
+`group_weekly_menu_plans` read limb (match count asserted 1, mutant diffed before running)
+reddens G7 ALONE — 13/14, the other thirteen green, G5 and G6 untouched. That is the direct
+measurement behind the two surviving mechanism sentences, so they are no longer taken on the
+comment's word. The mutant was written to a repo-local `_probe.rules`, not `/tmp`: Node and
+Git Bash resolve `/tmp` to different directories on Windows, so the first attempt wrote a
+file the shell could not see. The `trap` cleanup then MISSED, because its paths were relative
+and the call had `cd functions` in it — the exact hazard the probe-mechanics bullet already
+names; artefacts were removed by absolute path afterwards.
+
+"Content, membership and names stay closed" verified against the whole file, not the block:
+`group_weekly_menu_plans` has no subcollection rules, no collection-group catch-all matches
+it (the seven are members/friend_categories/engagements/comments/ratings/recipes/pings), and
+the terminal `{document=**}` denies. A non-member learns allow-vs-deny and nothing else.
+Malin's decision line matches `tasks/but-1971-gruppmeny-regelfix-plan.md` ("en extra läsning
+per regelutvärdering … för alltid"), which is the approved plan the shipped rule came from.
+
+Non-blocking, and deliberately filed with NO prescribed rewrite, matching round 6's handling
+of the sentence beside it: "The per-user collection above … never touches `resource`" is
+unqualified and true of the read/create/delete limbs; `weekly_menu_plans`' UPDATE limb does
+read `resource.data.userId`. Operative reading (the read rule, which is what the paragraph is
+about) is correct. Recording it instead of opening a seventh round — the only safe action on
+such a sentence is a strike, and it does not earn one.

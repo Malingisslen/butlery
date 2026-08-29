@@ -357,7 +357,12 @@ Standard deny matrix for ownership-checked collections:
   compare md5s — print the surviving line count alongside the md5 so "identical" is
   visibly non-vacuous. Cross-check with `git diff -U0 | grep '^[+-]' | grep -v
   '^[+-][[:space:]]*//'` coming back empty; the two methods fail differently (md5 catches
-  reordering, the line filter catches a `//` inside a string literal). Size-filter object
+  reordering, the line filter catches a `//` inside a string literal). **The md5 is valid
+  only WITHIN one run: it fingerprints the strip pipeline as much as the bytes** — two
+  correct pipelines over the same 1382 surviving lines printed different digests in two
+  reviews of one diff (CR stripped before vs. after the comment strip). Compare digests only
+  against one you computed in the same call; the SURVIVING LINE COUNT is the figure that
+  travels between entries. Size-filter object
   recovery on the file's real CRLF byte size, not an LF-era guess, or the sweep silently
   returns only ancient revisions and reads as "no prior version exists."
 - **A mutation probe that reddens NOTHING is often the most valuable result — it means a
