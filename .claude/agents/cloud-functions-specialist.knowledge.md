@@ -35,9 +35,9 @@ New family → append a row.
 `setGlobalOptions({ region: "europe-west1", maxInstances: 3 })` in
 `index.ts`, above every `export … from`. Never re-region per-function
 without approval (mismatch = silent client-side "not found").
-- **Global and per-function options MERGE key-by-key** (via
-  `copyIfPresent`) — declaring `memory`/`timeoutSeconds`/`retry`/`secrets`
-  loses nothing and still inherits the rest; per-function wins on collision.
+- **Global and per-function options MERGE key-by-key** (`copyIfPresent`) —
+  a per-function `memory`/`timeoutSeconds`/`retry`/`secrets` inherits the
+  rest and wins on collision.
 - **`maxInstances` is a DEPLOY gate, not tuning.** Global 3; the two
   ingredient cascades override to 10. Unset = the v2 default 100/function,
   which blew "Total allowable CPU per project per region", surfacing as
@@ -92,16 +92,14 @@ without approval (mismatch = silent client-side "not found").
 ## Firebase Functions v2 — what to use
 
 - `logger` from `firebase-functions/logger`, never `console.log` (except
-  `admin/` ts-node scripts, which are never deployed).
+  `admin/` ts-node scripts, never deployed).
 - **`HttpsError` thrown inside `db.runTransaction` is NOT retried** —
-  `isRetryableTransactionError` switches on numeric gRPC codes;
-  `HttpsError.code` is a string and matches none, so the transaction rolls
-  back first-attempt.
+  `isRetryableTransactionError` switches on numeric gRPC codes and
+  `HttpsError.code` is a string, so it rolls back first-attempt.
 
 ## Idempotency rules (the most bug-prone area)
 
-Firestore triggers retry on uncaught exception; every handler must be
-idempotent:
+Triggers retry on uncaught exception; handlers must be idempotent:
 1. **Aggregate writes** → `FieldValue.increment` + an event-id guard doc
    (`processed-events/{id}`) in the same transaction.
 2. **Cascade deletes** → a target already gone on retry is success.
@@ -171,9 +169,9 @@ idempotent:
   `run-all-tests.js`: auto-discovers every `test:*` script. **A new
   `__tests__/*.test.ts` is invisible until its `test:*` script exists**, and
   `node scripts/check-test-registration.js` proves it — per FILE, so tests
-  ADDED to an existing suite need no registration. A `test:*` naming a file
-  git does not TRACK reddens the whole CI unit lane, so the file and its
-  package.json line stage in the SAME commit.
+  ADDED to an existing suite need no registration. A `test:*` naming an
+  UNTRACKED file reddens the CI unit lane, so file + package.json line
+  stage in ONE commit.
 - `npm run test:rules:all` — a new rules/integration suite is FOUR
   registrations: its own `test:*` script, an append to the `&&` chain in
   `test:rules:all`, BOTH `paths:` blocks in `firestore-rules.yml`, and a
@@ -236,7 +234,9 @@ from `(err as {code?}).code` instead.
 - **A hand-rolled Firestore fake needs `.limit()` on BOTH `collection()`
   and `collectionGroup()` queries** — the cascade's caps split across them,
   so one missing method reports a GDPR step FAILED, not skipped. An
-  always-empty fake still cannot stage the over-cap DECLINE.
+  always-empty fake cannot stage the over-cap DECLINE. `.select()` must
+  PROJECT or THROW, never pass through (a dotted path throws: flat-key
+  `data()` ≠ real nested shape).
 ### PII scrubbing + GDPR cascade design
 - **PROMOTING a per-section field to the ROOT of an Art. 15 bundle changes
   its blast radius — the root value must be DERIVED, never copied** (a raw

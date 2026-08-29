@@ -15741,3 +15741,113 @@ Retired from the knowledge file in this edit (kept here verbatim):
 - from the own-region bullet: 'A header-only strike reads as done, and a strike in two
   files has twice re-appeared as a fresh derived number in a third in the SAME commit.'
   (duplicated by `lessons-digest.md`'s strike-the-numeral line).
+
+### 2026-08-29 — BUT-1979 third pass: group menu-plan sweep, and the fake's select() [review]
+
+Reviewed staged: `groups/remove-chat-group-member.ts`, `shared/collections.ts`,
+`__tests__/chat-group-callables.test.ts`, `__tests__/_fake-firestore.ts`.
+Ran `npx ts-node src/__tests__/chat-group-callables.test.ts` — 20/20, and the run's own
+log lines confirm each new severity (`planRows:501` at ERROR, `failed:1` at ERROR,
+`failed:0` at INFO).
+
+VERIFIED, so a future run need not re-derive:
+- `firestore.rules` `match /group_weekly_menu_plans/{planId}` create limb is
+  `planId.matches('^' + request.resource.data.groupId + '_.*')` + caller in their OWN
+  submitted `memberPermissions` + `hasRequiredFields([...])`. Malin's description was
+  correct: nothing ties the writer to `chat_groups.memberIds`, the id suffix is free, and
+  `hasRequiredFields` is not `hasOnly` so a planted row can carry a 1 MB body. (Side
+  observation, not filed: the groupId is interpolated into the regex UNESCAPED, so a
+  submitted `groupId` of `.*` matches any planId. Grants the attacker nothing extra since
+  they already choose both, and the sweep filters on exact `==`.)
+- `match /chat_groups/{groupId}` allows `create, delete: if false` and update
+  `hasOnly(['name','updatedAt'])`, so `conversationId` on a chat group is NEVER
+  client-writable and `create-chat-group.ts:154` sets it to `groupRef.id`. Therefore the
+  conversation id `deleteEmptyGroup` hands the sweep can never be a `direct_<uidA>_<uidB>`
+  spelling, and logging it raw as `groupKey` leaks no uid. This is the re-derivation
+  the "a DOCUMENT ID can be PII depending on the CALLER" principle demands, done once.
+- `messaging_service.dart:1127` passes `groupId: conversation.id` — the sole producer of
+  the field, so keying the sweep on the conversation id is right.
+- `tryClearRoster` does log partial failure at ERROR (`enforce-group-minor-membership.ts`),
+  so the new "matching tryClearRoster's partial-failure severity" comment is true.
+- The Art. 17 residual of the DECLINE is bounded by a leg that already exists:
+  `deleteWeeklyMenuPlans` in `account-deletion-cascade.ts` scrubs group plans per-uid on
+  `participantUserIds` and deletes a plan once it empties. A declined collapse sweep
+  therefore strands rows but opens no erasure hole.
+
+FINDING (blocking, one): the test's BUT-1979 comment claimed "a range query would have
+left this green with the sweep silently broken". Inverted. The fake THROWS on an
+unmodelled operator and `deleteGroupMenuPlans` swallows the throw, so the rows survive and
+the `has(...) === false` assertions go RED. The fake's loudness is what makes a range query
+detectable, not what hides it. Struck rather than reworded.
+
+FINDING (low): moving the "ORDER MATTERS" JSDoc down to `deleteEmptyGroup` re-created the
+same orphan one line lower — `MAX_GROUP_MENU_PLANS` and its own doc now sit between the
+BUT-1979 block and `deleteGroupMenuPlans`, so the function has no attached doc. Fix is to
+hoist the const above the BUT-1979 block.
+
+No knowledge-file edit: the fake's silently-passing `select()` is already covered by the
+existing "an unsimulated fake stub must THROW, not silently succeed" principle, and the
+file is at 27,988 chars against a ~25,000 budget.
+
+### 2026-08-29 — BUT-1979 final gate pass: group menu-plan sweep, and the fake's select() [review]
+
+Reviewed staged: `groups/remove-chat-group-member.ts`, `shared/collections.ts`,
+`__tests__/chat-group-callables.test.ts`, `__tests__/_fake-firestore.ts`.
+`npx tsc --noEmit` clean. Suites re-run by me, not taken on report:
+chat-group-callables 20/20, remove-chat-group-member 23/23, ensure-category-chat 24/24
+(the last two share the fake and the `snapshot()` signature changed, so they were the
+regression surface for the projection edit).
+
+VERIFIED, each against the artefact rather than the comment:
+- `firestore.rules` 943-983 — create limb is
+  `planId.matches('^' + request.resource.data.groupId + '_.*')` plus the caller's OWN
+  submitted `memberPermissions`, `hasRequiredFields` (not `hasOnly`). So "any signed-in
+  account can plant rows carrying another group's `groupId`" is true, the doc-id suffix
+  is free, and the regex interpolation is unescaped. read/update/delete gate on
+  `memberPermissions` alone — no conversation dereference, so running the sweep BEFORE
+  `tryClearRoster` is correct and not merely convenient.
+- Producer: `lib/services/messaging_service.dart:1127` passes `groupId: conversation.id`,
+  and it is the SOLE writer of that field (`conversations_viewmodel.dart:257`'s `groupId:`
+  is an analytics call, not a plan write). `GroupWeeklyMenuPlan.toFirestore` emits
+  `'groupId': groupId` unconditionally, outside any conditional spread.
+- `create-chat-group.ts:154` `const conversationId = groupRef.id` — the "equal by
+  construction" clause holds.
+- `FirestoreCollections.groupWeeklyMenuPlans` exists at
+  `lib/core/constants/firestore_collections.dart:81`; doc id `{groupId}_{YYYY}-W{WW}`.
+- Cascade claim: `account-deletion-cascade.ts:1179` filters
+  `participantUserIds array-contains uid` and `batch.delete`s only when the array empties;
+  it does still use the bare literal, as the constant's comment says.
+- `groupKey` logged raw is safe and was left unwrapped, with the founder's reasoning
+  confirmed: `deleteEmptyGroup` only ever receives `chat_groups/{id}.conversationId`,
+  `chat_groups` create/delete are `if false` and update is `hasOnly(['name','updatedAt'])`,
+  so no client can steer a `direct_<uidA>_<uidB>` id into that field. A `logSafeConversationId`
+  import would have added a proof to maintain for no gain.
+
+THE ONE GAP FOUND (non-blocking, no production path): the new `select()` projection is
+correct for the field-less form and for exact field names, but DOTTED paths answer wrong
+quietly, in both directions — `select("a.b")` gives `data()` a flat `"a.b"` key where real
+Firestore nests, and `select("a")` makes `get("a.b")` return `undefined` where real
+Firestore returns the value (`visible()` does a literal `includes`). Nothing uses a dotted
+select today; the remedy filed was to THROW on a field containing a dot, which restores the
+file's own stated contract rather than needing the doc sentence reworded.
+
+Pre-existing and deliberately NOT filed this round (unchanged by the diff, and two rounds
+had already closed on sentences): the fake's header clause "so a failing transaction is
+all-or-nothing" is a hair broad — the pre-check covers missing update targets, but an
+unrecognised `FieldValue` throwing inside `applyUpdate`, or a delete-then-update of one
+path in a single tx, would apply a prefix.
+
+KNOWLEDGE EDIT (the previous entry declined this one on budget; paid for it this time).
+Added to the hand-rolled-fake principle: "`.select()` must PROJECT or THROW, never pass
+through (a dotted path throws: flat-key `data()` ≠ real nested shape)." Retired verbatim,
+all meaning-preserving compressions of surviving principles:
+- "**Global and per-function options MERGE key-by-key** (via `copyIfPresent`) — declaring
+  `memory`/`timeoutSeconds`/`retry`/`secrets` loses nothing and still inherits the rest;
+  per-function wins on collision."
+- "`isRetryableTransactionError` switches on numeric gRPC codes; `HttpsError.code` is a
+  string and matches none, so the transaction rolls back first-attempt."
+- "A `test:*` naming a file git does not TRACK reddens the whole CI unit lane, so the file
+  and its package.json line stage in the SAME commit."
+- "Firestore triggers retry on uncaught exception; every handler must be idempotent:"
+- "An always-empty fake still cannot stage the over-cap DECLINE." (dropped "still")
+- "…never `console.log` (except `admin/` ts-node scripts, which are never deployed)."

@@ -25,7 +25,7 @@
  * **What it is NOT**: it evaluates no security rules, it has no isolation,
  * contention, abort or retry (the callback runs exactly once, single-threaded),
  * and its query primitive is "the direct children of this collection",
- * optionally `.limit()`ed and filtered by `==` or `array-contains` — no
+ * optionally `.limit()`ed, `.select()`ed, and filtered by `==` or `array-contains` — no
  * ordering, no ranges, no indexes, so a query that would need a composite index
  * in production answers happily here. Nothing may be cited as evidence about
  * concurrency or index coverage; both live on the emulator lane.
@@ -71,6 +71,16 @@ export interface FakeDocRef {
 
 export interface FakeQuery {
   limit(n: number): FakeQuery;
+  /**
+   * PROJECTS, like the real thing: after `select(...f)` a snapshot's `data()`
+   * holds only `f` (`{}` for the field-less form) and `get()` returns
+   * `undefined` for anything unselected. `ref`, `id` and `exists` are
+   * untouched. Modelled rather than passed through because this file's whole
+   * contract is that an unmodelled call throws by name instead of answering
+   * wrong — a pass-through would have been the one place it answers wrong
+   * quietly, and every suite inheriting this fake would carry that.
+   */
+  select(...fields: string[]): FakeQuery;
   /** Only `==` and `array-contains` are modelled; anything else throws. */
   where(field: string, op: string, value: unknown): FakeQuery;
   get(): Promise<{ size: number; empty: boolean; docs: FakeDocSnap[] }>;
@@ -295,16 +305,33 @@ export class FakeFirestore {
 
   // --- internals -------------------------------------------------------------
 
-  private snapshot(path: string): FakeDocSnap {
+  private snapshot(path: string, fields: string[] | null = null): FakeDocSnap {
     const stored = this.docs.get(path);
     const ref = this.docRef(path);
+    // `select(...f)` PROJECTS: only `f` survives, and the field-less form
+    // leaves `{}`. Anything unselected reads back `undefined`, exactly as it
+    // would from a real projected snapshot.
+    const project = (doc: FakeDoc): FakeDoc => {
+      if (fields === null) return doc;
+      const out: FakeDoc = {};
+      for (const f of fields) {
+        const v = getAt(doc, f.split("."));
+        if (v !== undefined) out[f] = v;
+      }
+      return out;
+    };
+    const visible = (field: string): boolean =>
+      fields === null || fields.includes(field);
     return {
       id: ref.id,
       exists: stored !== undefined,
       ref,
-      data: () => (stored === undefined ? undefined : (clone(stored) as FakeDoc)),
+      data: () =>
+        stored === undefined ? undefined : (project(clone(stored) as FakeDoc)),
       get: (field: string) =>
-        stored === undefined ? undefined : clone(getAt(stored, field.split("."))),
+        stored === undefined || !visible(field)
+          ? undefined
+          : clone(getAt(stored, field.split("."))),
     };
   }
 
@@ -329,10 +356,28 @@ export class FakeFirestore {
   }
 
   private colRef(path: string): FakeColRef {
-    const query = (limit: number | null, filters: Filter[]): FakeQuery => ({
-      limit: (n: number) => query(n, filters),
+    const query = (
+      limit: number | null,
+      filters: Filter[],
+      fields: string[] | null = null,
+    ): FakeQuery => ({
+      limit: (n: number) => query(n, filters, fields),
+      select: (...f: string[]) => {
+        // Dotted paths would answer wrong QUIETLY in both directions: a flat
+        // `"a.b"` key where the real thing nests, and `get("a.b")` reading
+        // undefined after `select("a")`. Throwing keeps this file's contract —
+        // unmodelled means loud, never a wrong answer.
+        for (const name of f) {
+          if (name.includes(".")) {
+            throw new Error(
+              `fake-firestore: select("${name}") — dotted field paths are not modelled`,
+            );
+          }
+        }
+        return query(limit, filters, f);
+      },
       where: (field: string, op: string, value: unknown) =>
-        query(limit, [...filters, { field, op, value }]),
+        query(limit, [...filters, { field, op, value }], fields),
       get: async () => {
         const matching = this.childPaths(path).filter((p) => {
           const stored = this.docs.get(p);
@@ -342,7 +387,7 @@ export class FakeFirestore {
           );
         });
         const page = (limit === null ? matching : matching.slice(0, limit)).map(
-          (p) => this.snapshot(p),
+          (p) => this.snapshot(p, fields),
         );
         return { size: page.length, empty: page.length === 0, docs: page };
       },

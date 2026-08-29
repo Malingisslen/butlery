@@ -27,7 +27,10 @@ import { runTests, assertEqual, UnitCase } from "./_unit-runner";
 import { FakeFirestore } from "./_fake-firestore";
 import { createChatGroupWithDeps } from "../groups/create-chat-group";
 import { addChatGroupMembersWithDeps } from "../groups/add-chat-group-members";
-import { removeChatGroupMemberWithDeps } from "../groups/remove-chat-group-member";
+import {
+  removeChatGroupMemberWithDeps,
+  MAX_GROUP_MENU_PLANS,
+} from "../groups/remove-chat-group-member";
 import { stageMemberRemoval } from "../groups/chat-group-writes";
 import { stageBackstopRemovals } from "../messaging/enforce-group-minor-membership";
 import { MAX_CHAT_GROUP_MEMBERS } from "../groups/minor-membership-gate";
@@ -625,9 +628,19 @@ const cases: UnitCase[] = [
         participantId: "ghost",
       });
 
+      // BUT-1979: the menu sweep is INDEPENDENT of the roster outcome, so it
+      // must have run even though the teardown declined. With the call below
+      // the decline this assertion fails, which is what makes it worth having.
+      fake.seed("group_weekly_menu_plans/c1_2026-W16", { groupId: "c1" });
+
       const res = await removeChatGroupMemberWithDeps(fake.db, "solo", "g1", "solo");
       assertEqual(res.removed, true, "the access cut still happened");
       assertEqual(res.remainingMembers, 0, "group is empty");
+      assertEqual(
+        fake.has("group_weekly_menu_plans/c1_2026-W16"),
+        false,
+        "the menu plans went even though the roster clear declined",
+      );
       assertEqual(fake.has("conversations/c1"), true, "conversation NOT deleted");
       assertEqual(fake.has("chat_groups/g1"), true, "group NOT deleted");
       assertEqual(
@@ -640,6 +653,99 @@ const cases: UnitCase[] = [
         true,
         "the row that could not be deleted is still there — a partial clear is the worst outcome",
       );
+    },
+  },
+  {
+    // BUT-1979, Malin's call 2026-08-28: the group's weekly menu plans go with
+    // it. Two plans for this group and one for another are seeded, so the
+    // assertion discriminates the FILTER and not merely "something was
+    // deleted" — a sweep that took the collection would pass without it.
+    //
+    // Keyed on the CONVERSATION id, because that is what the producer writes
+    // into `groupId` (`messaging_service.dart` passes `groupId:
+    // conversation.id`). Seeding the chat-group id instead would exercise a key
+    // production never writes.
+    //
+    // Selected on the `groupId` field rather than the doc-id prefix, which is
+    // what makes this provable here at all: the fake models `==` and
+    // `array-contains` and THROWS on anything else.
+    name: "the last member leaving takes the group's weekly menu plans with it",
+    fn: async () => {
+      const fake = new FakeFirestore();
+      seedExistingGroup(fake, ["solo"], ["solo"]);
+      fake.seed("group_weekly_menu_plans/c1_2026-W16", { groupId: "c1" });
+      fake.seed("group_weekly_menu_plans/c1_2026-W17", { groupId: "c1" });
+      fake.seed("group_weekly_menu_plans/other_2026-W16", { groupId: "other" });
+
+      await removeChatGroupMemberWithDeps(fake.db, "solo", "g1", "solo");
+
+      assertEqual(
+        fake.has("group_weekly_menu_plans/c1_2026-W16"),
+        false,
+        "the group's plan is gone",
+      );
+      assertEqual(
+        fake.has("group_weekly_menu_plans/c1_2026-W17"),
+        false,
+        "both of its weeks are gone",
+      );
+      assertEqual(
+        fake.has("group_weekly_menu_plans/other_2026-W16"),
+        true,
+        "another group's plan is untouched",
+      );
+    },
+  },
+  {
+    // THE CAP, with the verdict DECLINE. The row count is chosen by whoever can
+    // write the collection: `firestore.rules` ties a create only to the
+    // caller's OWN submitted `memberPermissions`, never to the chat group's
+    // members, and the doc-id suffix is free — so a signed-in stranger can
+    // plant rows carrying this group's id. Above the cap the sweep must leave
+    // everything alone rather than truncate, and the teardown must still
+    // proceed.
+    name: "an implausible plan count declines the sweep and leaves the rows",
+    fn: async () => {
+      const fake = new FakeFirestore();
+      seedExistingGroup(fake, ["solo"], ["solo"]);
+      for (let i = 0; i <= MAX_GROUP_MENU_PLANS; i++) {
+        fake.seed(`group_weekly_menu_plans/c1_planted-${i}`, { groupId: "c1" });
+      }
+
+      const res = await removeChatGroupMemberWithDeps(fake.db, "solo", "g1", "solo");
+
+      assertEqual(res.removed, true, "the access cut still happened");
+      assertEqual(
+        fake.has("group_weekly_menu_plans/c1_planted-0"),
+        true,
+        "nothing was swept — a partial sweep above the cap is the worst outcome",
+      );
+      assertEqual(
+        fake.has(`group_weekly_menu_plans/c1_planted-${MAX_GROUP_MENU_PLANS}`),
+        true,
+        "including the row past the cap",
+      );
+      assertEqual(fake.has("conversations/c1"), false, "teardown still proceeded");
+    },
+  },
+  {
+    // The teardown is best-effort throughout, and the menu sweep must not be
+    // the exception: a person leaving a group cannot be failed because
+    // cleanup stumbled. With the plan delete refusing, the conversation and
+    // the group must still go.
+    name: "a menu-plan delete that fails does not stop the group teardown",
+    fn: async () => {
+      const fake = new FakeFirestore({
+        failDeleteAt: (path) => path === "group_weekly_menu_plans/c1_2026-W16",
+      });
+      seedExistingGroup(fake, ["solo"], ["solo"]);
+      fake.seed("group_weekly_menu_plans/c1_2026-W16", { groupId: "c1" });
+
+      const res = await removeChatGroupMemberWithDeps(fake.db, "solo", "g1", "solo");
+
+      assertEqual(res.removed, true, "the access cut still happened");
+      assertEqual(fake.has("conversations/c1"), false, "conversation still deleted");
+      assertEqual(fake.has("chat_groups/g1"), false, "group still deleted");
     },
   },
 ];

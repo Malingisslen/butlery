@@ -275,6 +275,98 @@ export async function removeChatGroupMemberWithDeps(
 }
 
 /**
+ * Above this, `deleteGroupMenuPlans` declines rather than truncating. Not a
+ * capacity estimate: it bounds what a hostile writer can make this pass cost,
+ * since the create rule lets any signed-in account plant rows against another
+ * group's id.
+ */
+export const MAX_GROUP_MENU_PLANS = 500;
+
+/**
+ * BUT-1979: delete every weekly menu plan belonging to a collapsed group.
+ *
+ * Selected on the `groupId` FIELD, not on the `{groupId}_{ISO week}` doc-id
+ * prefix the Dart repository uses. A single equality filter needs no composite
+ * index, it does not depend on the id convention, and — unlike a documentId
+ * range — it is expressible against the unit-test fake, so this cleanup is
+ * provable rather than assumed. What makes the field selector safe is the
+ * WRITER: `GroupWeeklyMenuPlan.toFirestore` emits `groupId` unconditionally.
+ *
+ * [groupKey] is the CONVERSATION id, because that is what the producer writes
+ * into the field (`messaging_service.dart` passes `groupId: conversation.id`).
+ * It equals the chat-group id only because `create-chat-group.ts` sets
+ * `conversationId = groupRef.id` — equal by construction, not by definition.
+ *
+ * Never throws. The caller has already cut the departing member's access, and
+ * failing their "leave" because cleanup stumbled would be the wrong answer.
+ */
+async function deleteGroupMenuPlans(
+  db: admin.firestore.Firestore,
+  groupKey: string,
+): Promise<void> {
+  try {
+    // CAPPED, and it DECLINES above the cap rather than truncating — the same
+    // shape as `tryClearRoster` and the account cascade's roster sweep, and for
+    // the same reason: the row count is chosen by whoever can write the
+    // collection, not by us. `firestore.rules`' create limb for
+    // `group_weekly_menu_plans` ties the caller only to their OWN submitted
+    // `memberPermissions`, never to the chat group's members, and the doc-id
+    // suffix is free — so any signed-in account can plant rows carrying another
+    // group's `groupId`. `select()` keeps the bodies out of memory; each row is
+    // otherwise up to 1 MB and `hasRequiredFields` is not `hasOnly`. That rule
+    // also interpolates the submitted `groupId` into its regex UNESCAPED, so a
+    // `groupId` of `.*` matches any id — which grants nothing extra here, since
+    // the writer already chooses both sides and this sweep filters on exact
+    // `==`.
+    const snap = await db
+      .collection(Collections.groupWeeklyMenuPlans)
+      .where("groupId", "==", groupKey)
+      .select()
+      .limit(MAX_GROUP_MENU_PLANS + 1)
+      .get();
+    if (snap.empty) return;
+    if (snap.size > MAX_GROUP_MENU_PLANS) {
+      logger.error(
+        "[removeChatGroupMember] implausible group menu plan count; not sweeping",
+        { groupKey, planRows: snap.size },
+      );
+      return;
+    }
+
+    // Chunked to bound concurrency; the read above is capped.
+    //
+    // `allSettled`, not `all`: a rejection from `all` escapes the loop and
+    // strands every LATER chunk too, so one un-deletable row would cost the
+    // rest.
+    const CHUNK = 50;
+    let failed = 0;
+    for (let i = 0; i < snap.docs.length; i += CHUNK) {
+      const results = await Promise.allSettled(
+        snap.docs.slice(i, i + CHUNK).map((d) => d.ref.delete()),
+      );
+      failed += results.filter((r) => r.status === "rejected").length;
+    }
+    const payload = { groupKey, count: snap.docs.length - failed, failed };
+    if (failed > 0) {
+      // At ERROR, matching `tryClearRoster`'s partial-failure severity: a leave
+      // that strands plans is otherwise invisible to any error-level view, and
+      // the teardown is never retried.
+      logger.error(
+        "[removeChatGroupMember] group menu plans partially deleted",
+        payload,
+      );
+    } else {
+      logger.info("[removeChatGroupMember] group menu plans deleted", payload);
+    }
+  } catch (e) {
+    logger.error("[removeChatGroupMember] group menu plan cleanup failed", {
+      groupKey,
+      errCode: (e as { code?: number | string } | null)?.code ?? "unknown",
+    });
+  }
+}
+
+/**
  * The last member left: take the empty group down.
  *
  * **ORDER MATTERS, and it is the opposite of the obvious one.** The roster rows
@@ -297,6 +389,13 @@ async function deleteEmptyGroup(
   groupId: string,
   conversationId: string,
 ): Promise<void> {
+  // BEFORE the roster gate, deliberately. These plans never dereference the
+  // conversation — `firestore.rules` gates their read, update and delete on
+  // `memberPermissions` alone — so a declined roster clear must not strand
+  // them for a reason that has nothing to do with them. A step that
+  // early-returns skips every leg below it.
+  await deleteGroupMenuPlans(db, conversationId);
+
   const cleared = await tryClearRoster(db, conversationId);
   if (!cleared) {
     logger.error(
