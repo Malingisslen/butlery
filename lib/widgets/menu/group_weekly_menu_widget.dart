@@ -63,7 +63,19 @@ class _GroupWeeklyMenuWidgetState extends State<GroupWeeklyMenuWidget> {
     _shownNotice = notice;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      SnackBarUtils.showError(context, _noticeText(context, notice));
+      final text = _noticeText(context, notice);
+      // Only a failed undo carries an action. The dish is still held in memory
+      // but the snackbar that offered "Ångra" is gone, so without this the user
+      // has a rescued dish and no way to reach it.
+      if (notice == GroupMenuEditProblem.undoFailed) {
+        SnackBarUtils.showErrorWithRetry(
+          context,
+          text,
+          onRetry: () => unawaited(vm.undoLastRemoval()),
+        );
+      } else {
+        SnackBarUtils.showError(context, text);
+      }
       vm.clearEditNotice();
     });
   }
@@ -76,6 +88,11 @@ class _GroupWeeklyMenuWidgetState extends State<GroupWeeklyMenuWidget> {
         return context.l10n.groupMenuUndoUnavailable;
       case GroupMenuEditProblem.saveFailed:
         return context.l10n.groupMenuSaveFailed;
+      // Its own sentence, not the save's: this is the one notice here that
+      // carries a retry button, and `groupMenuSaveFailed` already ends in
+      // "Försök igen", so sharing it printed the phrase twice.
+      case GroupMenuEditProblem.undoFailed:
+        return context.l10n.groupMenuUndoFailed;
       case GroupMenuEditProblem.none:
         // Filtered out by the caller; never rendered.
         return '';

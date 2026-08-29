@@ -16386,7 +16386,8 @@ class AppLocalizationsSv extends AppLocalizations {
   String get groupMenuEmptyAction => 'Starta en omröstning';
 
   @override
-  String get groupMenuNotAMember => 'Du är inte med i den här gruppen längre.';
+  String get groupMenuNotAMember =>
+      'Du har inte åtkomst till den här veckans meny.';
 
   @override
   String get groupMenuLoadFailed => 'Kunde inte läsa in veckan.';
@@ -16418,6 +16419,9 @@ class AppLocalizationsSv extends AppLocalizations {
   @override
   String get groupMenuUndoUnavailable =>
       'Det går inte att ångra det här längre.';
+
+  @override
+  String get groupMenuUndoFailed => 'Kunde inte ångra borttagningen.';
 
   @override
   String groupMenuWeekShort(int week) {

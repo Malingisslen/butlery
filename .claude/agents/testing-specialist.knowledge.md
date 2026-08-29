@@ -199,6 +199,23 @@ you want the revert-probe that proved it; or this file itself reads too compress
   "Does NOT use `butleryGolden`, because…" and pumps a fixture with no overflow. Two answers to
   one question, neither reddening, and a diff-following sweep never reaches either: grade a
   header against the file's GROUPS, and strike rather than re-scope (BUT-1962, 2026-08-28).
+  **A header carries a SECOND claim beside its count — EXCLUSIVITY ("N invariants nothing else
+  in the repo holds") — and the round's own NEW FILE falsifies that half, in a file the diff
+  shows as barely touched.** BUT-1971 added `chat_action_handler_group_menu_test.dart` holding
+  "keyed on the conversation id, NOT the groupId" at the CHAT entry point, which is verbatim
+  invariant 2 of the pre-existing `group_menu_entry_button_test.dart` header, while that header
+  also went from covering its 2 named invariants to 4 behaviours. Both halves die together;
+  strike BOTH the numeral and the exclusivity rather than scoping to "at this entry point" — a
+  twin entry point pinned in the same commit is a residual to record, and a scoped rewrite moves
+  the next falsifier one entry point away (2026-08-29). **The strike round then repairs the file
+  the FINDING named and leaves the identical claim in the file the ROUND ITSELF created, with
+  the numeral INCREMENTED to match the test it just added** — measured the next round on the
+  same pair: the sibling header lost "Two invariants nothing else in the repo holds" while the
+  new file shipped "Three invariants that nothing else in the repo held", and the incremented
+  count was ALREADY wrong (three listed invariants, four tests, one of them about another
+  feature entirely). Sweep the CONCEPT across the round's ADDED files, never only its modified
+  ones — `grep -rn "nothing else in the repo" test/ lib/` is the whole check — and read an
+  incremented count as evidence the seam was re-armed, not repaired (2026-08-29).
   **The cross-file pointer that is NOT a count is a reciprocal LABEL pair** — a Dart
   comment naming a rules case (`W2`) while that rules file names the Dart test by its verbatim
   NAME. Resolve BOTH directions (label present in the cited file; test name grep-exact); a label
@@ -628,8 +645,10 @@ Codecov: 60% project / 70% new patches / 2% drop tolerance — floors, decided 5
   entry that does nothing, no crash, nothing red. Grep the literal in `lib/` (two hits, two
   files) and in `test/` (zero) before calling a menu wiring reviewed; the emitting side is
   pinned by one widget test that opens the real popup and asserts the callback received the
-  literal, and the receiving side needs its own case or the residual stays directional
-  (BUT-1971, `'weekly_menu'`, 2026-08-29). Scope that follow-up to the whole WIRING, not the
+  literal (BUT-1971, `'weekly_menu'`, 2026-08-29). The CLOSING shape is one widget test that
+  pumps the real app bar with its `onMenuAction` wired to the real handler and taps the item's
+  visible label: both copies of the literal then die to a single mutant, and no test needs to
+  type the literal at all. Scope that follow-up to the whole WIRING, not the
   literal: the emitting side also carries a VISIBILITY filter
   (`if (conversation?.groupId != null)`) and the receiving arm an ARGUMENT decision
   (`groupId: conversationId`, deliberately NOT `conversation.groupId`) — a follow-up written
@@ -648,7 +667,11 @@ Codecov: 60% project / 70% new patches / 2% drop tolerance — floors, decided 5
   snackbar bodies whose test taps a DIFFERENT literal in the same widget (`commonUndo`'s
   "Ångra" pins the undo button while the message beside it is free). Measured 8 of 17 pinned on
   BUT-1971. Rewriting the generated file is never the repair; a literal in the consuming widget
-  suite is (2026-08-29).
+  suite is. **When no UI path can reach the state that renders the arm, drive the VM DIRECTLY
+  under a real pump — that is the pin, not a shortcut**: nothing on the group menu can raise
+  `undoUnavailable` from a tap, because the snackbar offering "Ångra" exists only while the undo
+  is armed, so `await vm.undoLastRemoval()` on an unarmed VM inside `testWidgets` is what closes
+  it (2026-08-29).
 - **A refusal that REPLACES a whole body ships an ESCAPE HATCH nobody asserts.** The natural
   refusal test is the pair "message shown" + "the thing it replaced is gone", and both are
   entailed by the same branch; the third observable — `StateWidget.error(onAction: _reload)` —
@@ -689,7 +712,13 @@ Codecov: 60% project / 70% new patches / 2% drop tolerance — floors, decided 5
   `ownerId` and the signed-in uid were both `test_user_123`, so six cases could not see
   `ownerId: currentUserId`, which breaks the feature for every non-owner because the CF
   addresses the category by OWNER PATH). Recurring pairs: owner vs caller, creator vs
-  current user, group id vs conversation id. **The same arithmetic settles an assertion
+  current user, group id vs conversation id, `isGroup` vs `groupId != null`. **The carrier that
+  outlives the round is a fixture BUILDER that DERIVES one member of the pair from the other**
+  (`isGroup: groupId != null`): the collapse is then invisible at every call site, no test can
+  ever see the swap, and it survives the very commit that fixes the production line — BUT-1971
+  moved `_showConversationInfo` to `groupId != null` (per `Conversation`'s own doc that `isGroup`
+  is an ordinary client field) while both new chat/menu entry suites' builders held the two
+  equal. Read the BUILDER, not the fixtures. **The same arithmetic settles an assertion
   ENTAILED BY ITS NEIGHBOURS, with no probe: `expect` is fail-fast, so a line evaluates only
   when the lines above it passed, and when those pin BOTH operands it compares its kill set is
   EMPTY by construction** — `createdAt == <a Wednesday t>` plus `weekStartDate.weekday ==
@@ -1088,6 +1117,21 @@ ever on screen. Use `RecipeBuilder().withTagResult(...)` for anything badge- or 
   cascade's defensive sweep as evidence the client writes it. A rationale citing a backend
   propagator/cascade is two greps (collection constant, then the query field) and both
   usually fail.
+- **A SNACKBAR SEVERITY swap (`showError` → `showInfo`) owes no test AT THE CALL SITE, and the
+  reason generalises to every static presentation helper**: every discriminator belongs to
+  `SnackBarUtils`, not to the screen — the icon (`Icons.close` vs `Icons.info_outline`), the
+  background (`cs.secondary` vs `cs.primary`) and the error variant's hardcoded `'OK'` dismiss
+  action — so a call-site pin reddens on edits to a shared helper the screen does not own, which
+  is the banned theme-value shape. What the user experiences ("told, not navigated") is already
+  the existing test. If severity is a contract, it earns ONE test in
+  `test/unit/core/utils/snackbar_utils_test.dart` asserting the two variants render observably
+  differently — grep first: as of 2026-08-29 that file covers only `userFriendlyMessage`.
+  SUPERSEDED 2026-08-29, same day, same ticket: this bullet ended by saying a first call-site
+  pin is "worse than none", and BUT-1971 then shipped exactly that pin on `groupMenuNoGroups`
+  (`Icons.info_outline`) at a second reviewer's request. The narrower rule survives and is the
+  one to apply: what is banned is pinning a THEME TOKEN a screen does not own (a `ColorScheme`
+  entry, an `AppDimensions` value), because a theme tweak moves it. An ICON IDENTITY is stable
+  and does kill the swap, so that assertion stands. Do not cite this bullet to remove it.
 - A pure removal of dead code owes no test when a repo-walking structural lint holds the
   invariant — verify the lint is byte-identical to HEAD and the pre-fix set had exactly ONE
   element.

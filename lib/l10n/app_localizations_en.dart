@@ -16344,7 +16344,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get groupMenuEmptyAction => 'Start a poll';
 
   @override
-  String get groupMenuNotAMember => 'You are no longer a member of this group.';
+  String get groupMenuNotAMember =>
+      'You do not have access to this week\'s menu.';
 
   @override
   String get groupMenuLoadFailed => 'Could not load the week.';
@@ -16375,6 +16376,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get groupMenuUndoUnavailable => 'This can no longer be undone.';
+
+  @override
+  String get groupMenuUndoFailed => 'Could not undo the removal.';
 
   @override
   String groupMenuWeekShort(int week) {

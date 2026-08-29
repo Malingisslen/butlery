@@ -27257,10 +27257,10 @@ abstract class AppLocalizations {
   /// **'Starta en omröstning'**
   String get groupMenuEmptyAction;
 
-  /// No description provided for @groupMenuNotAMember.
+  /// BUT-1971: shown when the group weekly-menu read is refused. The rule that refuses tests membership in THAT WEEK'S plan document (its `memberPermissions`), not membership in the group chat — someone who joined the chat after the week's plan was created is a group member and is still denied. Do not word this as leaving or not being in the group.
   ///
   /// In sv, this message translates to:
-  /// **'Du är inte med i den här gruppen längre.'**
+  /// **'Du har inte åtkomst till den här veckans meny.'**
   String get groupMenuNotAMember;
 
   /// No description provided for @groupMenuLoadFailed.
@@ -27316,6 +27316,12 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Det går inte att ångra det här längre.'**
   String get groupMenuUndoUnavailable;
+
+  /// BUT-1971: the undo's own save failed. Its snackbar is the only one on this screen that carries a retry, so the sentence must NOT end in a 'try again' of its own — the button says that.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte ångra borttagningen.'**
+  String get groupMenuUndoFailed;
 
   /// No description provided for @groupMenuWeekShort.
   ///

@@ -11938,7 +11938,10 @@
   "groupMenuEmptyTitle": "No dish has been voted in yet",
   "groupMenuEmptyBody": "Start a poll in the chat and the winner lands here.",
   "groupMenuEmptyAction": "Start a poll",
-  "groupMenuNotAMember": "You are no longer a member of this group.",
+  "groupMenuNotAMember": "You do not have access to this week's menu.",
+  "@groupMenuNotAMember": {
+    "description": "BUT-1971: shown when the group weekly-menu read is refused. The rule that refuses tests membership in THAT WEEK'S plan document (its `memberPermissions`), not membership in the group chat — someone who joined the chat after the week's plan was created is a group member and is still denied. Do not word this as leaving or not being in the group."
+  },
   "groupMenuLoadFailed": "Could not load the week.",
   "groupMenuViewerNotice": "You can see the group's menu but not change it.",
   "groupMenuWeekRange": "Week {week} · {range}",
@@ -11961,6 +11964,10 @@
   },
   "groupMenuSaveFailed": "Could not save the change. Try again.",
   "groupMenuUndoUnavailable": "This can no longer be undone.",
+  "groupMenuUndoFailed": "Could not undo the removal.",
+  "@groupMenuUndoFailed": {
+    "description": "BUT-1971: the undo's own save failed. Its snackbar is the only one on this screen that carries a retry, so the sentence must NOT end in a 'try again' of its own — the button says that."
+  },
   "groupMenuWeekShort": "W. {week}",
   "@groupMenuWeekShort": {
     "placeholders": {

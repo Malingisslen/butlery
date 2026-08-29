@@ -30119,3 +30119,144 @@ confirming reachability:
    two it does not pin. Both l10n keys have zero `test/` hits by Swedish literal.
 
 Verdict: pass, 0 blocking.
+
+### 2026-08-29 — BUT-1971 follow-up batch, test half (review round)
+
+Trigger: review of the UNSTAGED test half of BUT-1971's follow-up batch — 4 modified suites
+plus one untracked new file, against 4 modified production files under `lib/`.
+
+Measured, not reported: `flutter test` over the five suites = **89 tests, all green** (the
+brief said 91). `flutter analyze --fatal-infos` over the 5 suites + 4 production files: clean,
+194s.
+
+What the batch got right, verified by reading production against each test:
+
+- `undoFailed` as its own enum value rather than the derived `saveFailed && canUndoRemoval`.
+  The refutation test ('stays saveFailed when it was another edit that failed') is the whole
+  reason the enum exists: a MOVE whose compute throws sets `saveFailed` in `_edit` BEFORE the
+  publish that would clear the undo arm, so the derived pair is true while the armed dish
+  belongs to an earlier removal. Cross-group by construction — the falsifying case is a move,
+  living inside an undo's test group.
+- The `_editSeq == seqBefore` disjunct. Traced every route by which `_edit` can return false
+  with the counter unmoved: `isDisposed`; `current == null` (unreachable — no await between
+  `undoLastRemoval`'s own null check and `_edit`'s re-read of `_plan`); and `mutate` throwing.
+  For a real `GroupWeeklyMenuPlan`, `entries` is a final field and `copyWith` is total, so the
+  third is not live — which is exactly what the test's own comment says ("defensive rather than
+  live"). Honest, and measured true by reading `group_weekly_menu_plan.dart:207-223`.
+- `_CopyWithThrowsPlan extends Mock` has no `@override` bodies, only `when()` stubs — the
+  legitimate form, not the banned one.
+- The widget retry test is genuinely end-to-end: it discriminates `groupMenuSaveFailed`
+  ('Kunde inte spara ändringen. Försök igen.') from the `commonRetry` ACTION ('Försök igen')
+  and the two cannot collide, because `find.text` is whole-`Text.data` equality. Its
+  `stopFailing()` second leg proves the dish really was re-armed, not merely that a label drew.
+- `an undo that is no longer possible` closes the gap this archive recorded on 2026-08-29 for
+  the `undoUnavailable` l10n arm (repointing it alone previously ran 50/50 GREEN).
+- The chat entry-point file closes the `'weekly_menu'` literal residual recorded the same day,
+  and closes all three parts of it — the visibility filter (`conversation?.groupId != null` in
+  `ChatAppBar`), the two-literal popup↔switch agreement, and `groupId: conversationId` — with
+  an id that DIFFERS from the groupId, so the swap is killable.
+- `overwrites on resave` went from zero `expect` to a document COUNT plus a content assertion,
+  which is the only shape that separates overwrite from a second document.
+
+Findings filed (all non-blocking):
+
+1. `_showConversationInfo`'s `isGroup` → `groupId != null` change is production, in this diff,
+   and has NO test — and both new suites' `_conversation()` builders write
+   `isGroup: groupId != null`, which makes the swap analytically unkillable even if one were
+   added. Worst mutant is a display-only wrong-doc read (`ConversationGroupDetailView` opening
+   on an absent `chat_groups` doc for a multi-participant conversation with no group), hence
+   non-blocking. `Conversation`'s own field doc already says not to substitute `isGroup`.
+2. `group_menu_entry_button_test.dart`'s header "Two invariants nothing else in the repo
+   holds" is false in both halves: the file now holds 4 behaviours, and this round's own new
+   `chat_action_handler_group_menu_test.dart` holds invariant 2 at the chat entry point.
+   Remedy: strike numeral AND exclusivity, not a scoped rewrite.
+3. `_pickGroup`'s `group.title ?? groupMenuUntitledGroup` (chat_app_bar-side picker) is a
+   second copy of the fallback the new test pins on the navigation path; only reachable with
+   2+ groups, so the new single-group fixture cannot see it.
+
+Founder's stated open question — the `showError` → `showInfo` change on `groupMenuNoGroups`:
+answered CORRECTLY LEFT ALONE, with the measurement. Every discriminator lives in
+`SnackBarUtils` (icon, `cs.secondary` vs `cs.primary`, the error variant's hardcoded `'OK'`
+dismiss action), so a call-site pin reddens on shared-helper edits the screen does not own.
+Grepped `test/`: `snackbar_utils_test.dart` covers only `userFriendlyMessage`, so NOTHING in
+the repo pins any severity anywhere — the first one belongs there, as its own ticket, not at
+this call site.
+
+Housekeeping note surfaced to the parent, not acted on: `testing-specialist.knowledge.md` is
+153,733 chars and needed three `Read` pages for Step 0. The file's own header says to SPLIT
+`Vacuity patterns` out rather than compress again when it approaches ~250,000.
+
+Verdict: pass, 0 blocking.
+
+### 2026-08-29 — BUT-1971 follow-up batch, re-review round 2 (trigger: parent re-review after acting on 2 of 3 findings)
+
+Re-graded the staged diff (14 paths). `git diff --numstat` empty on every reviewed path, so
+the verdict is against the copy the parent commits.
+
+**Round-1 findings, re-verified against the index:**
+
+1. `chat_action_handler.dart:230` (`conversation.groupId != null`, not `isGroup`) — CLOSED.
+   `chat_action_handler_group_menu_test.dart` gained
+   `'conversation info follows groupId, not the isGroup flag'`, whose fixture sets
+   `isGroup: true, groupId: null` and asserts `ConversationGroupDetailView` findsNothing plus
+   the DM dialog's `'Typ: Direktmeddelande'`. Mutant `groupId != null` -> `isGroup` pushes the
+   detail view: red either by the assertion or by the unstubbed build. Every other fixture in
+   the batch spells `isGroup: groupId != null`, which is what made the swap unkillable before.
+2. `'Two invariants nothing else in the repo holds'` in `group_menu_entry_button_test.dart` —
+   STRUCK, verified by `git show :<path>` and a repo-wide grep of the string (0 hits). Replaced
+   by `'What this entry point has to get right:'`, which carries neither a numeral nor an
+   exclusivity claim.
+3. `_pickGroup`'s second copy of `?? groupMenuUntitledGroup` (line 115) — NOT taken, re-measured
+   and still unpinned. `'a group with no title opens under the fallback name'` has ONE group, so
+   `groups.length == 1` skips the picker entirely; `'the chosen group opens keyed on its
+   CONVERSATION id'` opens the picker with TWO TITLED groups, so the `??` right arm never
+   evaluates. Mutating line 115 to `''` leaves both green. Closable in 2 lines (drop `title:`
+   from `conv-b`, tap `find.text('Namnlös grupp')`), which keeps the keyed-on-conversation-id
+   assertion intact. Left non-blocking: worst mutant is a blank row in the group picker.
+4. `showError` -> `showInfo`: reaffirmed correct as production code. The added
+   `expect(find.byIcon(Icons.info_outline), findsOneWidget)` KILLS the `showInfo` -> `showError`
+   mutant (`showError` uses `Icons.close` + a default `'OK'` action), and `Icons.info_outline` is
+   an icon identity inside the shared helper, not a ColorScheme/AppDimensions token. Kept.
+   Recommended no removal.
+5. `groupMenuUndoFailed`: the widget test asserts the new sentence PRESENT and
+   `'Kunde inte spara ändringen. Försök igen.'` ABSENT, so the enum->l10n arm is pinned in the
+   one direction that a swap survives. Both new ARB strings are typed verbatim in `test/`
+   (`'Du har inte åtkomst till den här veckans meny.'`,
+   `'Kunde inte ångra borttagningen.'`) — the generated-l10n token table is clean.
+
+**New finding (non-blocking, 1):** the round's own NEW file
+`chat_action_handler_group_menu_test.dart` header opens
+`Three invariants that nothing else in the repo held.` Both halves are false. Exclusivity:
+`group_menu_entry_button_test.dart`, edited in the SAME commit, holds invariant 1 (a DM reaches
+no group menu) and invariant 3 verbatim (`'the chosen group opens keyed on its CONVERSATION
+id'`). Count: three listed invariants, four behaviours in the file — the added conversation-info
+test is in none of them, and is not about the group weekly menu the header's first line scopes
+the file to. So the strike round repaired the file the finding NAMED and re-armed the identical
+seam in the file it CREATED, with the numeral incremented to match the new test. Recommended
+repair: strike the clause and the numeral, mirroring the sibling's `'What this entry point has to
+get right:'`. Grep used: `grep -rn "nothing else in the repo" test/ lib/`.
+
+Cross-file pointer resolved both ways: `group_weekly_menu_widget.dart:_weekList` names the group
+`no overflow at small sizes`, which exists at `group_weekly_menu_widget_test.dart:209`.
+
+Residual now CLOSED (was recorded 2026-08-29 as directional): the `'weekly_menu'` literal typed
+in `PopupMenuItem(value:)` and in `ChatActionHandler`'s `switch`. The new file's `openMenu`
+helper pumps the real `ChatAppBar` with `onMenuAction` wired to a real `ChatActionHandler` and
+taps `find.text('Veckans meny')`, so both copies die to one mutant and no test types the literal.
+The visibility filter and the `groupId: conversationId` argument decision are pinned by the same
+file's other two tests.
+
+Verdict: pass, 0 blocking.
+
+
+## 2026-08-29 — retired verbatim from `testing-specialist.knowledge.md` (BUT-1971)
+
+Superseded the same day it was written, by the batch that wrote it: the bullet's closing
+sentence forbade the call-site pin that the same commit shipped. Retired here in full;
+the surviving narrower rule (theme tokens no, icon identity yes) lives in the principle file.
+
+> If severity is a contract, it earns ONE test in
+> `test/unit/core/utils/snackbar_utils_test.dart` asserting the two variants render observably
+> differently — grep first: as of 2026-08-29 that file covers only `userFriendlyMessage`, so
+> NOTHING in the repo pins any severity, and adding the first one at a random call site is worse
+> than none (BUT-1971, `groupMenuNoGroups`).

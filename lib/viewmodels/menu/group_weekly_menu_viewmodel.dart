@@ -17,7 +17,18 @@ import 'package:butlery/viewmodels/base_viewmodel.dart';
 /// Why an edit did not happen. Rendered as a passing notice by the widget,
 /// which owns the wording — a ViewModel that carries Swedish strings bypasses
 /// l10n and shows Swedish in an English build.
-enum GroupMenuEditProblem { none, notAnEditor, saveFailed, undoUnavailable }
+/// [undoFailed] is deliberately its own value rather than
+/// `saveFailed && canUndoRemoval`: `_edit` sets `saveFailed` before it clears
+/// the undo state, so that pair is also true for an unrelated edit whose
+/// compute throws — and the retry it earns would put back a dish the user
+/// removed earlier instead of redoing what they just tried.
+enum GroupMenuEditProblem {
+  none,
+  notAnEditor,
+  saveFailed,
+  undoUnavailable,
+  undoFailed,
+}
 
 /// Why the screen cannot show the week.
 ///
@@ -297,12 +308,23 @@ class GroupWeeklyMenuViewModel extends BaseViewModel {
     // nothing holds it — not `_plan`, not this field, and the snackbar that
     // offered it is gone. Re-arm, but only when nothing newer published and the
     // dish did not arrive by another route meanwhile.
+    //
+    // `seqBefore` and `seqBefore + 1` are both "nothing newer published": the
+    // closure above can return before `_edit` publishes anything, and a
+    // computation that never reached the screen must not consume the dish.
     if (!ok &&
         _weekStart == forWeek &&
-        _editSeq == seqBefore + 1 &&
+        (_editSeq == seqBefore || _editSeq == seqBefore + 1) &&
         !(_plan?.entries.any((e) => e.id == entry.id) ?? false)) {
       _undoEntry = entry;
       _undoDocId = forDoc;
+      // The only point that knows both halves: the undo's save failed AND the
+      // dish is reachable again. A refusal keeps `notAnEditor` — retrying a
+      // deterministic denial is the one thing this screen must never offer.
+      if (_editNotice == GroupMenuEditProblem.saveFailed) {
+        _editNotice = GroupMenuEditProblem.undoFailed;
+      }
+      notifyListeners();
     }
     return ok;
   }

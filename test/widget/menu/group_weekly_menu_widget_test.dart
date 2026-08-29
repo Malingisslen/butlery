@@ -174,7 +174,10 @@ void main() {
       );
       await pump(tester);
 
-      expect(find.text('Du är inte med i den här gruppen längre.'), findsOne);
+      expect(
+        find.text('Du har inte åtkomst till den här veckans meny.'),
+        findsOne,
+      );
       expect(
         find.text('Försök igen'),
         findsNothing,
@@ -270,6 +273,10 @@ void main() {
     ) async {
       await loadAndStub(tester, Exception('offline'));
       expect(find.text('Kunde inte spara ändringen. Försök igen.'), findsOne);
+      // A failed REMOVAL leaves the dish on screen, so there is nothing an
+      // action could recover — only a failed UNDO earns one. `commonRetry` is
+      // its own widget; the sentence above merely ends with the same words.
+      expect(find.text('Försök igen'), findsNothing);
     });
 
     // The discriminating control: same tap, same path, different exception.
@@ -408,6 +415,105 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Linsgryta med spetskål'), findsOne);
+    });
+  });
+
+  // The dish survives a failed undo in memory, but the snackbar that offered
+  // "Ångra" is gone by then. Without an action on the failure notice the user
+  // has a rescued dish and no control that reaches it.
+  group('a failed undo', () {
+    /// Removes the only dish, then taps "Ångra". The removal's save succeeds;
+    /// every later save throws [undoError] until [stopFailing] is called.
+    Future<void Function()> removeThenFailUndo(
+      WidgetTester tester,
+      Object undoError,
+    ) async {
+      final loaded = _plan(entries: [entry('e1')]);
+      stubRead(loaded);
+      await vm.loadWeek(_week);
+
+      when(
+        () => service.removeEntry(
+          plan: any(named: 'plan'),
+          actorId: any(named: 'actorId'),
+          entryId: any(named: 'entryId'),
+        ),
+      ).thenReturn(loaded.copyWith(entries: const []));
+
+      var failing = false;
+      when(
+        () => service.save(
+          plan: any(named: 'plan'),
+          actorId: any(named: 'actorId'),
+        ),
+      ).thenAnswer((_) async {
+        if (failing) throw undoError;
+      });
+
+      await pump(tester);
+      await tester.tap(find.byIcon(Icons.close));
+      await tester.pumpAndSettle();
+
+      failing = true;
+      await tester.tap(find.text('Ångra'));
+      await tester.pumpAndSettle();
+      return () => failing = false;
+    }
+
+    testWidgets('offers a retry, and the retry puts the dish back', (
+      tester,
+    ) async {
+      final stopFailing = await removeThenFailUndo(
+        tester,
+        Exception('offline'),
+      );
+
+      // Its own sentence: the save's text already ends in "Försök igen", and
+      // this is the notice that puts a BUTTON with those words beside it.
+      expect(find.text('Kunde inte ångra borttagningen.'), findsOne);
+      expect(
+        find.text('Kunde inte spara ändringen. Försök igen.'),
+        findsNothing,
+      );
+      expect(find.text('Linsgryta med spetskål'), findsNothing);
+      expect(find.text('Försök igen'), findsOne);
+
+      stopFailing();
+      await tester.tap(find.text('Försök igen'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Linsgryta med spetskål'), findsOne);
+    });
+
+    // The discriminating control: same tap, same path, different exception. A
+    // refusal will not change on a second attempt, and a control that can only
+    // fail is what this screen was built to avoid.
+    testWidgets('a REFUSED undo offers none', (tester) async {
+      await removeThenFailUndo(tester, PermissionDeniedException('view only'));
+
+      expect(
+        find.text('Du kan se gruppens meny men inte ändra i den.'),
+        findsOne,
+      );
+      expect(find.text('Försök igen'), findsNothing);
+    });
+  });
+
+  // The enum value is asserted elsewhere; the MAPPING from it to a sentence was
+  // not, so the arm could be pointed at any other string silently.
+  group('an undo that is no longer possible', () {
+    testWidgets('says so, and offers no retry', (tester) async {
+      final loaded = _plan(entries: [entry('e1')]);
+      stubRead(loaded);
+      await vm.loadWeek(_week);
+      await pump(tester);
+
+      // Nothing was removed, so nothing is armed.
+      await vm.undoLastRemoval();
+      await tester.pumpAndSettle();
+
+      expect(find.text('Det går inte att ångra det här längre.'), findsOne);
+      expect(find.text('Försök igen'), findsNothing);
     });
   });
 

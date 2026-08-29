@@ -2680,3 +2680,29 @@ Two rules: clear the cache between mutation and run, and treat a green probe as 
 hypothesis rather than a measurement — especially before writing the word "unpinned" into
 a comment, which is a counterfactual claim about an unrun mutant on top of an unreliable
 instrument.
+
+## A notice's meaning cannot be DERIVED from two independently-updated pieces of state (BUT-1971, 2026-08-29)
+
+The group menu needed a retry button on exactly one failure: an undo whose save died,
+leaving the dish held in memory but no control reaching it. The cheap read was to derive
+that in the widget — `editNotice == saveFailed && canUndoRemoval` — since a failed removal
+clears the undo arm and so cannot match.
+
+That is true for the case it was written from and false in general. `_edit` sets
+`saveFailed` in its `catch` around the compute, and only clears the undo arm *after* it
+publishes. So any OTHER edit whose computation throws lands with `saveFailed` set and the
+earlier removal's arm still standing — and the retry it earns would put back a dish the
+user removed minutes ago instead of redoing what they just tried.
+
+Nothing in the app can make that compute throw today, so it was defensive rather than live.
+That is exactly why it is worth recording: the derived condition looked measured, the
+measurement covered one of its two inputs, and the test that would have caught it did not
+exist because nobody thought to write a MOVE into an UNDO's test group. It took a
+fresh-context auditor reading the two files cold.
+
+The fix is not a longer condition. It is an enum value — `undoFailed` — set at the one
+point in the code that knows both halves at once. A derived condition re-answers a question
+at a distance from where the answer was known; a named value carries it.
+
+Generalise: when a UI branch keys off a conjunction of two fields, ask what ELSE sets each
+field and in what ORDER, then name the case at its origin instead.

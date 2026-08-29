@@ -1,6 +1,6 @@
 /// Widget tests for [GroupMenuEntryButton] (BUT-1971).
 ///
-/// Two invariants nothing else in the repo holds:
+/// What this entry point has to get right:
 ///
 /// 1. Only GROUP conversations reach the screen. A DM has no weekly plan, so a
 ///    user with only DMs must be told, not navigated.
@@ -145,10 +145,45 @@ void main() {
     await tapEntry(tester);
 
     expect(find.text('Du är inte med i någon grupp än.'), findsOneWidget);
+    // Informational, not an error: `showError` would draw its own dismiss
+    // action and read as something having gone wrong.
+    expect(find.byIcon(Icons.info_outline), findsOneWidget);
     expect(
       find.byType(GroupWeeklyMenuView),
       findsNothing,
       reason: 'a DM has no weekly plan document to open',
+    );
+  });
+
+  // A stream that fails is precisely why the `catch` exists: `_open` is fired
+  // through `unawaited`, so without it the tap produces nothing at all.
+  testWidgets('a failing conversation stream is reported, not swallowed', (
+    tester,
+  ) async {
+    when(
+      () => messaging.getMyConversations(),
+    ).thenAnswer((_) => Stream.error(Exception('offline')));
+
+    await tapEntry(tester);
+
+    expect(find.text('Kunde inte hämta dina grupper.'), findsOneWidget);
+    expect(find.byType(GroupWeeklyMenuView), findsNothing);
+  });
+
+  testWidgets('a group with no title opens under the fallback name', (
+    tester,
+  ) async {
+    stubConversations([_conversation(id: 'conv-a', groupId: 'chat-group-a')]);
+
+    await tapEntry(tester);
+
+    final view = tester.widget<GroupWeeklyMenuView>(
+      find.byType(GroupWeeklyMenuView),
+    );
+    expect(
+      view.groupName,
+      'Namnlös grupp',
+      reason: 'an empty app bar reads as a broken screen',
     );
   });
 
@@ -157,13 +192,16 @@ void main() {
   ) async {
     stubConversations([
       _conversation(id: 'conv-a', groupId: 'chat-group-a', title: 'Måndag'),
-      _conversation(id: 'conv-b', groupId: 'chat-group-b', title: 'Torsdag'),
+      // Untitled on purpose: `_pickGroup` carries its OWN copy of the fallback,
+      // and the single-group test above skips the picker entirely, so nothing
+      // else can reach this one.
+      _conversation(id: 'conv-b', groupId: 'chat-group-b'),
     ]);
 
     await tapEntry(tester);
 
     // Two groups, so the picker rides along.
-    await tester.tap(find.text('Torsdag'));
+    await tester.tap(find.text('Namnlös grupp'));
     await tester.pumpAndSettle();
 
     final view = tester.widget<GroupWeeklyMenuView>(
@@ -176,6 +214,6 @@ void main() {
           'closePoll writes `groupId: conversation.id`, so the chat-group '
           'id would open a document nobody writes',
     );
-    expect(view.groupName, 'Torsdag');
+    expect(view.groupName, 'Namnlös grupp');
   });
 }

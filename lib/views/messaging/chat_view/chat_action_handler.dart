@@ -224,8 +224,10 @@ class ChatActionHandler {
 
       if (!context.mounted) return;
 
-      // For group conversations, navigate to GroupDetailView
-      if (conversation != null && conversation.isGroup) {
+      // `groupId`, not `isGroup`: the detail view reads the `chat_groups`
+      // document, and only `groupId` says one exists. `Conversation.groupId`'s
+      // own doc says not to substitute `isGroup` for it.
+      if (conversation != null && conversation.groupId != null) {
         Navigator.of(context).push(
           MaterialPageRoute(
             builder: (context) => ConversationGroupDetailView(

@@ -12000,7 +12000,10 @@
   "groupMenuEmptyTitle": "Ingen rätt är framröstad än",
   "groupMenuEmptyBody": "Starta en omröstning i chatten, så hamnar vinnaren här.",
   "groupMenuEmptyAction": "Starta en omröstning",
-  "groupMenuNotAMember": "Du är inte med i den här gruppen längre.",
+  "groupMenuNotAMember": "Du har inte åtkomst till den här veckans meny.",
+  "@groupMenuNotAMember": {
+    "description": "BUT-1971: shown when the group weekly-menu read is refused. The rule that refuses tests membership in THAT WEEK'S plan document (its `memberPermissions`), not membership in the group chat — someone who joined the chat after the week's plan was created is a group member and is still denied. Do not word this as leaving or not being in the group."
+  },
   "groupMenuLoadFailed": "Kunde inte läsa in veckan.",
   "groupMenuViewerNotice": "Du kan se gruppens meny men inte ändra i den.",
   "groupMenuWeekRange": "Vecka {week} · {range}",
@@ -12023,6 +12026,10 @@
   },
   "groupMenuSaveFailed": "Kunde inte spara ändringen. Försök igen.",
   "groupMenuUndoUnavailable": "Det går inte att ångra det här längre.",
+  "groupMenuUndoFailed": "Kunde inte ångra borttagningen.",
+  "@groupMenuUndoFailed": {
+    "description": "BUT-1971: the undo's own save failed. Its snackbar is the only one on this screen that carries a retry, so the sentence must NOT end in a 'try again' of its own — the button says that."
+  },
   "groupMenuWeekShort": "V. {week}",
   "@groupMenuWeekShort": {
     "placeholders": {

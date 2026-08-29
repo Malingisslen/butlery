@@ -65,7 +65,9 @@ class GroupMenuEntryButton extends StatelessWidget {
     if (!context.mounted) return;
 
     if (groups.isEmpty) {
-      SnackBarUtils.showError(context, context.l10n.groupMenuNoGroups);
+      // Informational, not a failure: nothing went wrong, the user simply has
+      // no group chats yet.
+      SnackBarUtils.showInfo(context, context.l10n.groupMenuNoGroups);
       return;
     }
 

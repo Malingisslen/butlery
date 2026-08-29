@@ -313,8 +313,35 @@ void main() {
       final plan = _plan();
 
       await repo.save(plan);
-      // Second save with same id — should overwrite, not collide.
-      await repo.save(plan);
+      await repo.save(
+        plan.copyWith(
+          entries: [
+            const WeeklyMenuPlanEntry(
+              id: 'e1',
+              day: DayOfWeek.mon,
+              slot: MealSlot.middag,
+              recipeId: 'r1',
+              recipeTitle: 'Linsgryta',
+            ),
+          ],
+        ),
+      );
+
+      // The danger the name guards is a SECOND document, which two saves that
+      // merely do not throw cannot distinguish from an overwrite.
+      final docs = await firestore
+          .collection(FirestoreCollections.groupWeeklyMenuPlans)
+          .get();
+      expect(docs.docs, hasLength(1));
+      expect(docs.docs.single.id, plan.id);
+      expect(
+        GroupWeeklyMenuPlan.fromMap(
+          docs.docs.single.id,
+          docs.docs.single.data(),
+        ).entries.map((e) => e.id),
+        ['e1'],
+        reason: 'the second save must be the one that survives',
+      );
     });
   });
 

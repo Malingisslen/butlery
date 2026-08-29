@@ -31,6 +31,10 @@ class _MockUserService extends Mock implements UserService {}
 
 class _FakePlan extends Fake implements GroupWeeklyMenuPlan {}
 
+/// A week whose `copyWith` throws, so the undo's closure dies BEFORE `_edit`
+/// publishes anything and the edit counter never moves.
+class _CopyWithThrowsPlan extends Mock implements GroupWeeklyMenuPlan {}
+
 /// Delegating subscription that records its own cancellation.
 ///
 /// `stream.hasListener` cannot see a re-subscribe leak: the replacement
@@ -772,6 +776,169 @@ void main() {
         vm.editNotice,
         GroupMenuEditProblem.undoUnavailable,
         reason: 'silence here is the dish disappearing with no explanation',
+      );
+    });
+  });
+
+  // `undoFailed` exists so the widget can put a retry on exactly this notice.
+  // The cheap alternative — `saveFailed && canUndoRemoval` read in the widget —
+  // is what the second test here refutes.
+  group('the notice a failed undo leaves behind', () {
+    /// Removes the only dish (the removal's save succeeds), then undoes it
+    /// against a save that throws [undoError].
+    Future<void> armThenFailUndo(Object undoError) async {
+      final loaded = _plan(entries: [_entry('e1')]);
+      stubRead(loaded);
+      await vm.loadWeek(_week);
+
+      when(
+        () => service.removeEntry(
+          plan: any(named: 'plan'),
+          actorId: any(named: 'actorId'),
+          entryId: any(named: 'entryId'),
+        ),
+      ).thenReturn(loaded.copyWith(entries: const []));
+
+      var saves = 0;
+      when(
+        () => service.save(
+          plan: any(named: 'plan'),
+          actorId: any(named: 'actorId'),
+        ),
+      ).thenAnswer((_) async {
+        if (saves++ == 1) throw undoError;
+      });
+
+      await vm.removeEntry('e1');
+      expect(await vm.undoLastRemoval(), isFalse);
+    }
+
+    test(
+      'is undoFailed when the save died and the dish is recoverable',
+      () async {
+        await armThenFailUndo(Exception('offline'));
+
+        expect(vm.canUndoRemoval, isTrue);
+        expect(vm.editNotice, GroupMenuEditProblem.undoFailed);
+      },
+    );
+
+    // A REFUSAL keeps its own notice: the screen must never offer a retry on
+    // something deterministic, and the widget keys that off this value.
+    test('is notAnEditor when the save was refused', () async {
+      await armThenFailUndo(PermissionDeniedException('view only'));
+
+      expect(vm.canUndoRemoval, isTrue);
+      expect(vm.editNotice, GroupMenuEditProblem.notAnEditor);
+    });
+
+    // The refutation of the derived condition. An unrelated edit whose COMPUTE
+    // throws sets `saveFailed` before `_edit` publishes anything, so the undo
+    // from an earlier removal is still armed — `saveFailed && canUndoRemoval`
+    // is true here, and a retry built on it would put back the removed dish
+    // instead of redoing the move.
+    test('stays saveFailed when it was another edit that failed', () async {
+      final loaded = _plan(entries: [_entry('e1'), _entry('e2')]);
+      stubRead(loaded);
+      await vm.loadWeek(_week);
+
+      when(
+        () => service.removeEntry(
+          plan: any(named: 'plan'),
+          actorId: any(named: 'actorId'),
+          entryId: any(named: 'entryId'),
+        ),
+      ).thenReturn(loaded.copyWith(entries: [_entry('e2')]));
+      when(
+        () => service.save(
+          plan: any(named: 'plan'),
+          actorId: any(named: 'actorId'),
+        ),
+      ).thenAnswer((_) async {});
+      await vm.removeEntry('e1');
+      expect(vm.canUndoRemoval, isTrue);
+
+      when(
+        () => service.moveEntry(
+          plan: any(named: 'plan'),
+          actorId: any(named: 'actorId'),
+          entryId: any(named: 'entryId'),
+          toDay: any(named: 'toDay'),
+          toSlot: any(named: 'toSlot'),
+        ),
+      ).thenThrow(Exception('compute blew up'));
+
+      expect(
+        await vm.moveEntry(
+          entryId: 'e2',
+          toDay: DayOfWeek.tue,
+          toSlot: MealSlot.middag,
+        ),
+        isFalse,
+      );
+
+      expect(
+        vm.canUndoRemoval,
+        isTrue,
+        reason: 'a compute that never published leaves the arm standing',
+      );
+      expect(
+        vm.editNotice,
+        GroupMenuEditProblem.saveFailed,
+        reason:
+            'the failure was the move; a retry here must not resurrect the '
+            'dish an earlier removal took',
+      );
+    });
+  });
+
+  // The undo consumes the dish before it computes. A closure that throws on
+  // its way to the screen therefore spends the dish without anything ever
+  // publishing, and the edit counter never moves — so the re-arm has to accept
+  // an UNCHANGED counter as well as an incremented one.
+  group('an undo whose computation dies before it reaches the screen', () {
+    test('still leaves the dish recoverable', () async {
+      final loaded = _plan(entries: [_entry('e1')]);
+      stubRead(loaded);
+      await vm.loadWeek(_week);
+
+      when(
+        () => service.removeEntry(
+          plan: any(named: 'plan'),
+          actorId: any(named: 'actorId'),
+          entryId: any(named: 'entryId'),
+        ),
+      ).thenReturn(loaded.copyWith(entries: const []));
+      when(
+        () => service.save(
+          plan: any(named: 'plan'),
+          actorId: any(named: 'actorId'),
+        ),
+      ).thenAnswer((_) async {});
+
+      await vm.removeEntry('e1');
+      expect(vm.canUndoRemoval, isTrue);
+
+      // Swap the week for one that cannot be copied. Nothing else in the repo
+      // can make the undo's closure throw — `entries.any` and `copyWith` are
+      // all it runs — which is why this arm is defensive rather than live.
+      final hostile = _CopyWithThrowsPlan();
+      when(() => hostile.entries).thenReturn(const []);
+      when(() => hostile.participantUserIds).thenReturn(const []);
+      when(() => hostile.participants).thenReturn(const []);
+      when(
+        () => hostile.copyWith(entries: any(named: 'entries')),
+      ).thenThrow(StateError('cannot copy'));
+      stream.add(hostile);
+      await Future<void>.delayed(Duration.zero);
+
+      expect(await vm.undoLastRemoval(), isFalse);
+      expect(
+        vm.canUndoRemoval,
+        isTrue,
+        reason:
+            'the dish never reached the screen, so nothing consumed it but '
+            'this call',
       );
     });
   });
