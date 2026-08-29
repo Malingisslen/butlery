@@ -293,8 +293,12 @@ name which doc each end touches before approving it.
   `(resource == null || <membership>)` repair's residual runs the OPPOSITE way to how it is
   usually written up: absent now ALLOWS, present-non-member still DENIES, so the bit that
   becomes newly readable is PRESENCE, not absence — state it that way, and grade it by how
-  guessable the doc id is (a deterministic `{conversationId}_{week}` id where
-  `direct_<uidA>_<uidB>` is constructible from two uids makes it a weak social-graph probe).
+  guessable the doc id is. SUPERSEDED 2026-08-29: the worked example that stood here — a
+  `{conversationId}_{week}` id whose DM form `direct_<uidA>_<uidB>` two uids reconstruct — was
+  WRONG, and wrong for the reason this bullet's own advice prevents: nobody grepped the
+  writers. A DM is `isGroup: false`, and `closePoll` routes those to the PERSONAL collection,
+  so no group-plan document is ever keyed on a DM id and that probe always ALLOWs. The
+  example survived three review rounds as reviewer precedent.
   Grade guessability by the SECRET INSIDE the id, never by "derived vs random" — a
   sha256-derived group id is unguessable because its input is a v4 UUID, and "the other ids
   are random" is a falsifiable claim about a generator you have not opened. The disclosure

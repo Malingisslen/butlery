@@ -3411,3 +3411,85 @@ New durable rules extracted into the principles file: (1) an "unguessable id" co
 claim about every minting path, and a collection usually has more than one; (2) a sed-derived
 probe copy that substitutes `RULES_PATH` orphans the `path` import and dies on TS6133 before
 any test runs, which greps like a green suite.
+
+## 2026-08-29 — BUT-1971 re-confirm of the `group_weekly_menu_plans` read residual (round 5)
+
+Staged diff: `firestore.rules`, comment lines only. Proven mechanically two ways, not by eye:
+`git diff --cached -U0 | grep '^[+-]' | grep -v '^[+-][[:space:]]*//'` returns EMPTY, and the
+comment-stripped, CR-stripped, blank-stripped md5 of `git show :firestore.rules` equals that of
+`git show HEAD:firestore.rules` (`fb48930240371cbe9c7bda335670edeb`, 1382 surviving lines each,
+so the comparison is visibly non-vacuous; `grep -c '://'` on the stripped file is 0, so the `//`
+strip cannot have eaten a URL inside a string literal). `npm run test:rules:weekly-menu-plans`
+= 14/14 passed.
+
+The DM strike is CORRECT as far as the shipped client goes: `messaging_service.dart:910`
+branches on `conversation?.isGroup`, sending non-group conversations to
+`_appendWinnerToWeeklyPlanAndShare` (personal collection), and `_appendWinnerToGroupPlan` is the
+only caller of `readOrBuildWeek`. Caveat worth knowing but NOT worth a sentence in the file:
+`Conversation.isGroup` is documented at `conversation.dart:145` as "an ordinary client field"
+(only `groupId` is server-written), so the routing is a client-side property, not a rules-level
+one.
+
+BLOCKING finding — the replacement paragraph is understated again, in the departure direction.
+It says the oracle discloses to "a participant added to the chat AFTER the group's first plan
+week". Measured: `_appendWinnerToGroupPlan` seeds `memberPermissions` from
+`conversation.participantIds` AT BUILD TIME (messaging_service.dart:1108-1117) and
+`readOrBuildWeek` returns a stored plan untouched, so membership is a snapshot per week. A
+DEPARTED member is the mirror case and is not covered by the sentence: `removeChatGroupMember`
+writes nothing to any plan document (grep of the file shows `Collections.groupWeeklyMenuPlans`
+only inside `deleteGroupMenuPlans`), and `deleteGroupMenuPlans` is called from ONE place,
+`deleteEmptyGroup` (line 397), i.e. only when the LAST member leaves. So for every week planned
+after they left, an ex-member is absent from `memberPermissions`, still knows the deterministic
+`{conversationId}_{ISO week}` id, and gets the same allow/deny existence oracle. Weeks planned
+BEFORE they left are a different matter entirely — they are still in that document's
+`memberPermissions` and simply read the plan.
+
+Recommended repair, per the strike rule: DELETE the enumeration ("Who that discloses to is not
+'any member' … probe week by week."). Writing a two-class version means measuring a second
+population under a review that is reading it — the exact move that produced rounds 2-4. Keep
+the direction sentence, "Content, membership and names stay closed.", and Malin's decision line
+(a decision record, superseded but never silently deleted).
+
+Not measured, offered as a question rather than a finding: the create limb requires only that
+`planId` prefix-match the caller's OWN submitted `groupId`, so whether a failed create
+distinguishes ALREADY_EXISTS from PERMISSION_DENIED — a second, write-side existence oracle for
+a non-member who holds the id — was not probed this run.
+
+Durable rule extracted into the principles file: naming who an existence oracle discloses to is
+an exhaustive quantifier over every way a uid falls out of a denormalised membership snapshot;
+a join-shaped answer covers half of them, so enumerate the snapshot's writers AND its
+non-writers (removal paths, cascades) first.
+
+## 2026-08-29 — BUT-1971 confirm of the applied strike (round 6)
+
+Staged diff: `firestore.rules`, comment lines only, 4 insertions / 7 deletions in the
+`group_weekly_menu_plans` read-limb comment. Proven mechanically two ways, not by eye:
+`git diff --cached -U0 | grep '^[+-]' | grep -v '^[+-][[:space:]]*//'` returns EMPTY, and the
+comment-stripped, CR-stripped, blank-stripped md5 of the working file equals that of
+`git show HEAD:firestore.rules` (`552dc5538c639f06e610411d96a3cb62`, 1382 surviving lines each,
+so the comparison is visibly non-vacuous; `grep -c '://'` on the file is 0, so the `//` strip
+cannot have eaten a URL inside a string literal). Note the md5 differs from round 5's figure
+because HEAD moved between the two runs — an md5 quoted in an archive entry fingerprints a
+commit, not the file, so never compare one across entries.
+
+The round-5 blocking finding is applied as specified: the enumeration sentences are DELETED,
+not reworded. What survives is the mechanism paragraph, the direction sentence, "Content,
+membership and names stay closed." and Malin's dated decision line. No replacement population
+was written, so there is no new measured claim to re-measure. Swept the repo for surviving
+carriers of the struck wording (`guessable surface`, `DM pairs`, `closed a meal poll that
+week`) across rules/ts/dart/md: none outside this append-only archive, which must keep it.
+`weekly-menu-plans-rules.test.ts` G7 carries the direction sentence only, matching the rules
+file, and no enumeration.
+
+`npm run test:rules:weekly-menu-plans` = 14/14 passed, including G6 (non-member denied on an
+existing plan) and G7 (any signed-in user allowed on an absent week) — the allow/deny pair for
+the null arm.
+
+Non-blocking observation, deliberately filed WITHOUT a prescribed rewrite: the surviving
+sentence "an ALLOW now means the week is unplanned" is unqualified and holds for a NON-MEMBER;
+a member also gets ALLOW on a plan that exists. It predates this diff and has survived five
+review rounds. Recording it rather than opening a sixth round on the same paragraph — the only
+safe action on it is a strike, and it is not worth one.
+
+No new durable rule this run; the departure/late-joiner principle from round 5 already covers
+the case and needed no edit.

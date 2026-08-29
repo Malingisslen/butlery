@@ -499,7 +499,7 @@ Codecov: 60% project / 70% new patches / 2% drop tolerance — floors, decided 5
   something calls it: `GroupWeeklyMenuViewModel.moveEntry`'s sole `lib/` hit was a
   same-named method on a DIFFERENT viewmodel, so an argument-swap mutant harms nobody and a
   test would pin a test lever. Reachability of a generic `catch` is the mirror question,
-  answered by grepping `throw` in the CALLEE: the group menu service's only non-permission
+  answered by grepping `throw` in the CALLEE: the group menu service's non-permission
   throw (`StateError('Entry not found')`) lives in that callerless `moveEntry`, while its
   `removeEntry` returns the plan UNCHANGED for a missing id — so the arm is dead in
   production and its enum twin on the save path is what carries the behaviour. Grade a

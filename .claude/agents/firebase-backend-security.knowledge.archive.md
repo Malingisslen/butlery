@@ -7592,3 +7592,23 @@ G7 pins the ALLOW direction with `STRANGER_UID` and states its own kill set (dro
 arm → G7 alone reddens; drop the membership arm → G5; widen membership to `true` → G6).
 
 **Verdict:** pass, 0 blocking.
+
+## 2026-08-29 — the DM-pair example, retired verbatim (BUT-1971)
+
+Superseded text, kept because the bullet that carried it is cited as precedent:
+
+> grade it by how guessable the doc id is (a deterministic `{conversationId}_{week}` id where
+> `direct_<uidA>_<uidB>` is constructible from two uids makes it a weak social-graph probe)
+
+Why it was wrong: a `direct_` conversation is written `isGroup: false`
+(`conversation_mutation_module.dart`), and `closePoll` routes non-group conversations to
+`_appendWinnerToWeeklyPlanAndShare`, i.e. the PERSONAL `weekly_menu_plans` collection.
+`readOrBuildWeek` has exactly one caller, `_appendWinnerToGroupPlan`, behind `isGroup`. So no
+`group_weekly_menu_plans` document is ever keyed on a DM id: that probe always ALLOWs and
+discloses nothing. The surviving residual is over group conversation ids, which are not
+constructible.
+
+How it survived: the sentence was corrected THREE times for other faults — its direction, an
+app-reachability clause, and a false "group ids are random" — and each correction left the DM
+example untouched because each round graded the part it was asked about. The whole-diff pass
+before push was what caught it, by grepping the writer set the bullet's own advice names.

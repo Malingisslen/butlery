@@ -956,13 +956,10 @@ service cloud.firestore {
       // this: it gates on the PATH and never touches `resource`.
       //
       // The residual runs the other way from how it first reads: an ALLOW now
-      // means the week is unplanned, so a DENY means a plan EXISTS. Since the
-      // id is `{conversationId}_{ISO week}` and a DM conversation id is
-      // `direct_<uidA>_<uidB>`, someone already holding two uids can learn that
-      // those two closed a meal poll that week. Content, membership and names
-      // stay closed; DM pairs are the guessable surface. Malin's call,
-      // 2026-08-29, against a `get()` on the conversation costing one extra
-      // read per rule evaluation, forever.
+      // means the week is unplanned, so a DENY means a plan EXISTS. Content,
+      // membership and names stay closed. Malin's call, 2026-08-29, against a
+      // `get()` on the conversation costing one extra read per rule
+      // evaluation, forever.
       allow read: if isAuthenticated()
         && (resource == null
             || request.auth.uid in resource.data.memberPermissions);

@@ -163,6 +163,16 @@ Standard deny matrix for ownership-checked collections:
   v4 UUID). Grep every caller that supplies a doc id before passing such a sentence, and
   strike the mechanism word rather than rewording it — the operative clause is which ids an
   attacker can CONSTRUCT from what they already hold.
+  **Naming WHO an existence oracle discloses to is an exhaustive quantifier over every way a
+  uid falls OUT of a denormalised membership snapshot, and a join-shaped answer covers half
+  of them.** `group_weekly_menu_plans.memberPermissions` is seeded from
+  `conversation.participantIds` at first build and never re-synced, so LATE JOINERS miss the
+  older weeks — and DEPARTED members miss every week planned after they left, since
+  `removeChatGroupMember` edits no plan and `deleteGroupMenuPlans` fires only when the group
+  EMPTIES. Both still hold the id. Enumerate the snapshot's writers and its non-writers
+  (removal paths, cascades) before passing any "it discloses to X" sentence; when the true
+  set needs measuring, STRIKE the enumeration and keep the direction plus the decision line
+  (BUT-1971, 2026-08-29 — fifth wrong wording of one sentence, each round fixing the last).
 - **A `get(collection/{id})`-then-`.data.get()` chain needs an `exists()` guard or it
   fails OPEN on a missing doc**: `otherIsMinor(uid) = exists(users/{uid}) &&
   get(users/{uid}).data.get('isMinor', false)==true`. Same pattern for any "allowed only
