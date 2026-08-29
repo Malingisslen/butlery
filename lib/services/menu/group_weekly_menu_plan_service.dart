@@ -138,9 +138,9 @@ class GroupWeeklyMenuPlanService extends BaseService {
     );
     // Not wrapped in `executeServiceOperation` — same reason as the per-user
     // service: it answers a failure with a default, which for a write makes a
-    // refusal indistinguishable from a save (BUT-1962). The only live caller
-    // is the meal-poll close, where swallowing meant the poll burned its
-    // one-way close with no winner in the plan.
+    // refusal indistinguishable from a save (BUT-1962). On the meal-poll close
+    // swallowing meant the poll burned its one-way close with no winner in the
+    // plan.
     await _repository.save(stamped, userId: actorId);
   }
 

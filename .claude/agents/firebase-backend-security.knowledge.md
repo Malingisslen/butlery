@@ -224,7 +224,13 @@ name which doc each end touches before approving it.
   document cannot — the authenticated uid, the refusal itself, and every earlier operation. Demand two things back: the unconditional
   `requireCurrentUserId()` is usually the method's ONLY client-side auth assertion, and
   calling it inside the deny branch THROWS before the refusal row is written, losing exactly
-  the row the design keeps — hoist it to the top of the method. Also grade the rule file's
+  the row the design keeps — hoist it to the top of the method. A volume argument resting on
+  "the only live caller is <one server trigger>" is a claim about the CALLER SET that a UI
+  batch in the same sprint falsifies: when a new INTERACTIVE writer reaches such a method,
+  re-open the trade rather than only striking the quantifier, and split the verdict per
+  REPOSITORY — on a tautological-gate, single-writer document the granted row still records
+  nothing, while on a multi-writer document whose only actor field is a last-write-wins
+  `lastModifiedBy` the lost history grows from thin to real. Also grade the rule file's
   own "live exceptions:" list as a measured ENUMERATION (strike, don't extend): a
   guard-shaped module whose success path is a bare `return` already logs refusals only.
 - A client gate invoked as `validate*Permission(entity.ownerField, entity.id, entity)`

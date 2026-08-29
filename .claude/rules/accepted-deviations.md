@@ -144,6 +144,27 @@ files in the same edit.
   Both repositories' granted, refused and signed-out paths are pinned and mutation-probed — before
   this, the whole change was invisible to the repository suites. BUT-1981, 2026-08-28
 
+- **AMENDED 2026-08-29 (BUT-1971): the BUT-1981 entry says "the only live caller is the
+  meal-poll close". That is no longer true, and the reduction it justified is now larger than
+  what Malin weighed.** The group weekly-menu SCREEN adds an interactive write path —
+  `GroupWeeklyMenuViewModel._edit` -> `GroupWeeklyMenuPlanService.save` ->
+  `FirebaseGroupWeeklyMenuPlanRepository.save` — reached by remove and undo, from two
+  entry points (the group chat and the menu tab), by every editor of the plan. The cost the
+  entry names is exactly what this screen now produces: edit history on a document more than
+  one person can write, unaudited, with `lastModifiedBy` keeping only the last writer.
+  Nothing here is a re-filing of the decided call, and the granted-audit row has NOT been
+  restored — that is a code change scoped to Malin. **Open for her: does the refusal-only audit
+  still hold now that the writers are people rather than one server trigger?** Raised by the
+  `integration-reviewer` gate. BUT-1971, 2026-08-29
+  **RESOLVED 2026-08-29 — Malin: build an EDIT TRAIL instead.** She was shown the
+  security review's recommendation (restore the granted row on the GROUP repository only,
+  ~1 extra write per interactive remove/undo) and chose the alternative it named beside it:
+  an append-only trail on the plan document itself, which buys the same attribution with no
+  second write. So the refusal-only audit STANDS as BUT-1981 decided it, and the traceability
+  gap is closed by a design change rather than a revert. Not built here; it shares its model
+  change, its `firestore.rules` change and its GDPR review with the per-entry provenance
+  BUT-1971 needs for "framröstad av", and Malin asked for those to be planned as ONE build.
+
 - **An OFFLINE read of a weekly menu plan trusts a cached "this week is empty", and a
   write may then build on it** — `getDocCacheFirst(acceptCachedAbsence: true)`, passed by
   `FirebaseWeeklyMenuPlanRepository.fetchForWeek` and by nothing else. The flag only

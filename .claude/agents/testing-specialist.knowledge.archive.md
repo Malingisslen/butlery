@@ -29579,3 +29579,543 @@ One decorative assertion, flagged as improvable and shipped: in both signed-out 
 branch is skipped and no row is written under the mutant either). What actually reddens there
 is `saved.exists, isFalse` plus the `throwsA`. Harmless, states nothing false, not worth a
 round.
+
+### 2026-08-29 — BUT-1971 group weekly menu: review of the staged VM + widget suites (trigger: review request "find tests that pass for the wrong reason")
+
+Reviewed `lib/viewmodels/menu/group_weekly_menu_viewmodel.dart`,
+`test/unit/viewmodels/menu/group_weekly_menu_viewmodel_test.dart`,
+`test/widget/menu/group_weekly_menu_widget_test.dart`, plus
+`lib/widgets/menu/group_weekly_menu_widget.dart` (needed to grade the widget cases).
+Baseline: 38 green (29 VM + 9 widget), md5 of both lib files unchanged after every probe.
+
+**Probe 1 — the `the week fits` group.** Scratch `test/widget/menu/_zz_probe_test.dart`
+(deleted) read `ScrollableState.position.maxScrollExtent` under the committed fixtures:
+320dp@1x/two meals = 0.0 (fits), 360dp@2x = 210.0, 320dp@2x = 210.0, and a 14-long-dish
+fixture at 320dp@2x = 1090.0 — all green on `expect(tester.takeException(), isNull)`.
+`_weekList` wraps the seven rows in a `SingleChildScrollView`, so the child height is
+unbounded and no overflow is possible; the assertion cannot see a week that does not fit.
+It is NOT dormant, though: replacing the scroll view with seven `Expanded` day rows reddened
+all three cases (plus the two-meal removal test). So the production comment "the three tests
+in `the week fits` hold the sizes where a fixed-slice layout does not" is TRUE; the group
+NAME and the library header's "no scroll" are what is false, at 2 of the 3 configurations
+the group itself pumps.
+
+**Probe 2 — the sequence guard.** Mutant: dropped `_editSeq == seqBefore + 1` from
+`removeEntry`'s `armed`. Result 28 pass / 1 fail — the only kill was
+`'undo arming a non-removal edit during the save disarms the undo'`.
+`"the FIRST removal's undo is not the one armed"` stayed GREEN: both removals' trailing arms
+run in creation order, the second removal is armed under BOTH variants, and it writes last,
+so `ids == ['e2']` is answered by last-writer-wins. Restored, md5 verified
+(aa9714baaf092b5415867cd93940a998).
+Reading the same lines surfaced a product nuance: `_undoEntry = armed ? removed : null`
+clears UNCONDITIONALLY, so an older removal's late-resolving save wipes a newer legitimate
+arm — which is why the obvious discriminating rewrite (gate only the first save, as the
+sibling test does) fails against production as it stands.
+
+**Grep-only finding.** `GroupMenuEditProblem.saveFailed` is produced at two sites (the
+compute `catch`, and the `e is PermissionDeniedException ? notAnEditor : saveFailed` ternary
+after a failed save) and asserted by ZERO tests in either suite; no test throws anything but
+`PermissionDeniedException` from `save`/`removeEntry`. Collapsing that ternary to
+`notAnEditor` — telling an offline user they are not an editor — is invisible to all 38
+tests, while the SCREEN-level twin of the same distinction has its discriminating control.
+The batch wrote the control where it was proud of it and not where it was routine.
+
+**Also unpinned:** both suites stub `getUserProfiles` to `[]`, so `_displayNames` is never
+populated and the success half of `_resolveNames` (and `_FaceRow._initials`, whose comment is
+about grapheme splitting) has no test — the face row degrading to `·` for every member is a
+green regression. `moveEntry`'s `toDay`/`toSlot` pass-through is never asserted; it appears
+only as a disarming edit.
+
+Verdict: fail (3 blocking) — the false `the week fits` group name/header, the
+non-discriminating FIRST-removal test, and the unpinned edit-notice arm.
+
+## 2026-08-29 — BUT-1971 re-review round 2 (trigger: review of staged group-weekly-menu test coverage)
+
+Three earlier blocking findings were accepted and fixed (false test name `the week fits`;
+FIRST-removal test name + the unconditional `_undoEntry` clear it hid; the untested
+`saveFailed` arm). Re-review of the fixed state found two further blocking items.
+
+1. **Unprobed counterfactual, asserted twice, one of them already stale.**
+   `test/widget/menu/group_weekly_menu_widget_test.dart` group doc: "replacing the scroll
+   view with seven `Expanded` rows reddens all three". `lib/widgets/menu/group_weekly_menu_widget.dart`
+   `_weekList` doc: "the three tests in `the week fits` hold the sizes where a fixed-slice
+   layout does not" — that group was renamed to `no overflow at small sizes` in the previous
+   round, so the pointer no longer resolves. Neither counterfactual is in the reported probe
+   set (the three probes were: unconditional undo clear, notice-ternary collapse,
+   `_displayNames` assignment). `_weekList` also still asserts "at normal text size on a normal
+   phone that is what this renders" (i.e. no scroll at 1x) while the only stated measurement is
+   210px of scroll at 2x. Remedy filed as STRIKE, not reword — both a count and a
+   counterfactual would have to be measured to write a truer version.
+
+2. **Role carrier / affordance coverage hole.** The widget suite's `_plan()` hardcodes
+   `SharedListPermission.edit` (the unit suite's takes `permission` as a parameter). Consequence:
+   `if (vm.canEdit)` on the per-dish delete `IconButton` and the `vm.plan != null && !vm.canEdit`
+   viewer banner — including the deliberately-documented `plan != null` half — have no widget
+   test. Deleting the affordance guard leaves the whole widget file green, and the resulting
+   screen offers a viewer a delete control the VM then refuses, which is the exact
+   "buttons do nothing" failure the file header names as BUT-1971's product condition. The
+   VM-level `a viewer is refused before anything is published` does not cover it: it proves the
+   data path, not the affordance. Generalised into the knowledge file as the ROLE carrier of the
+   fixture-shape family, with the cross-suite diff heuristic (compare the unit and widget fixture
+   builders' signatures).
+
+Non-blocking, reported not fixed:
+- `isEmptyWeek`'s `_failure == GroupMenuFailure.none` conjunct has no test AND no observable
+  consumer — `_body` returns early on every non-none failure, so dropping the conjunct is
+  invisible to both suites. One line in `a failed read is transient, not a refusal` closes it.
+- `the newest removal is the one the undo puts back` seeds e1 and e2 both on mon/middag, a
+  two-entries-in-one-middag state the VM's own doc says no path can create. Verdict unaffected
+  (both slots are empty by undo time) but the sibling straggler test already uses distinct slots.
+- `_edit`'s generic `catch` around `mutate` (→ `saveFailed`) is untested; only the save-throw
+  site of that same enum value is.
+- `changing week re-subscribes on the new week` does not pin that the OLD subscription was
+  cancelled. Dropping `_subscription?.cancel()` from `_subscribe` double-delivers every snapshot
+  onto an idempotent `_plan = incoming`, so no state changes and `stream.hasListener` stays true
+  either way — the leak assertion exists only in the dispose test. Needs a cancel-counting
+  subscription double, not another `hasListener` check.
+- `moveEntry`'s pass-through arguments still unasserted (already known to the author).
+
+### 2026-08-29 — BUT-1971 group weekly menu, re-review round (both blocking findings closed)
+
+Trigger: re-review of the staged BUT-1971 test coverage after both blocking findings were applied.
+
+Hash table (index == worktree on all four; `git diff --numstat` empty, all four staged `A `):
+
+| path | md5 |
+|---|---|
+| lib/viewmodels/menu/group_weekly_menu_viewmodel.dart | 89462d17e58ff04c74a93ac67b6457a1 |
+| lib/widgets/menu/group_weekly_menu_widget.dart | bb134fe5facf9d805953737dbcdb8152 |
+| test/unit/viewmodels/menu/group_weekly_menu_viewmodel_test.dart | f7ab466a22d268a78663e1146c73499a |
+| test/widget/menu/group_weekly_menu_widget_test.dart | 111826bca74b4abd71f1f660739026c5 |
+
+45/45 green (33 unit + 12 widget).
+
+**Blocking finding 1 (unprobed counterfactual) — closed, and the comment's scoping is now
+measured.** Swapping `SingleChildScrollView` for `Expanded` rows (probe run and restored,
+md5 back to `bb134fe5…`) reddens FOUR tests: all THREE members of `no overflow at small
+sizes` plus `removing a dish a day with two meals can remove EITHER of them`. The surviving
+comment says "reddens this group", which is true and correctly scoped — every member of the
+named group reddens. This is the right repair shape: naming the GROUP survives an insert
+where a numeral does not, and it is verifiable without the reviewer re-counting. The struck
+"the week fits" pointer and the "at normal text size on a normal phone" claim are gone from
+both `lib/` and the suite (grepped against `git show :<path>`, not the worktree). The one
+surviving hit for "the week fits" is the test comment's own NEGATION ("These do NOT assert
+the week fits on screen"), which is the true statement, not the struck claim.
+
+**Blocking finding 2 (role carrier) — closed.** The widget `_plan()` now takes
+`permission`, matching the unit fixture's signature. New test `a viewer is offered no delete
+control, and is told why` asserts the dish renders, `Icons.close` findsNothing, and the
+banner. Non-obvious accidental strength worth recording: the `!vm.canEdit` conjunct on the
+banner is killed not by the viewer test but by `a refusal says you may not edit`, whose
+`findsOne` on the same Swedish string would see TWO widgets (banner + snackbar) if the
+conjunct were dropped, because that fixture is an editor with a non-null plan.
+
+**Re-probe of my own earlier finding (last-writer-wins carrier) — closed.** Mutating
+`final isNewest = _editSeq == seqBefore + 1;` to `= true` now reddens BOTH `undo arming a
+non-removal edit during the save disarms the undo` and `a straggler save does not wipe a
+newer undo`. The earlier measurement (one test reddening, and not the one named after it)
+was against the pre-fix shape; both tests now use the discriminating "only the first save
+hangs" gate the prior round prescribed. Restored, md5 back to `89462d17…`.
+
+**The three items the author asked me to rule on — all non-blocking, with the measurement
+that settles each:**
+- `_edit`'s generic `catch` around `mutate`: reachable ONLY from `GroupWeeklyMenuPlanService.moveEntry`'s
+  `StateError('Entry $entryId not found')`. `removeEntry` returns the plan UNCHANGED for a
+  missing id (no throw), and `_requireEditor`'s `PermissionDeniedException` goes to the typed
+  arm above. Since `GroupWeeklyMenuViewModel.moveEntry` has no `lib/` caller, the arm is dead
+  in production today.
+- `moveEntry`'s pass-through arguments: `grep -rn 'moveEntry' lib/` returns the group VM's own
+  definition, the service's, and `calendar_drag.dart:110` — which takes
+  `WeeklyMenuPlanViewModel` (the PERSONAL one), not this class. No production caller, so an
+  argument-swap mutant harms nobody and a test would pin a test lever.
+- The re-subscribe cancel in `_subscribe`: still unpinned, as recorded last round, and still
+  the strongest remaining gap because a leaked snapshot listener per week-arrow tap is an
+  ongoing Firestore read cost. Not blocking: no test NAME or comment claims to hold it, and
+  the dispose test's own comment scopes itself to dispose.
+
+**Un-asked findings from the whole-file pass (both non-blocking):**
+- `lib/widgets/menu/group_weekly_menu_widget.dart`'s `vm.plan != null` conjunct on the banner
+  has no widget coverage: no widget test stages `stubRead(null, readFailed: false)`, the
+  never-planned-week state the conjunct's own comment describes. The empty-week test uses a
+  NON-NULL empty plan instead. Both shapes are producible (null = never planned; empty = after
+  a clear), so this is a missing second fixture, not a wrong one.
+- `test/unit/.../group_weekly_menu_viewmodel_test.dart:155` — "the two tests above would pass
+  on a classifier that answered `permissionDenied` unconditionally" is a quantifier over the
+  FILE'S CONTENTS with the usual insertion seam (the group holds four tests today; a fifth
+  refusal-classifier test inserted above falsifies it). Correct as written. The durable repair
+  is to name the two test literals.
+- A narrow untested edge, stated once and not filed as a demand: a delete tap on a row whose
+  entry the live snapshot has already removed makes `_edit` return true via
+  `identical(updated, current)` without incrementing `_editSeq`, so `removeEntry`'s arming
+  block runs neither branch and `_remove` can offer an "Ångra" that restores a PREVIOUS dish.
+  The window is one frame, since the snapshot that removes the entry also removes the control.
+
+Verdict: pass (0 blocking).
+
+## 2026-08-29 — BUT-1971 re-review of the disarm fix and its test (trigger: bytes changed after a prior pass)
+
+Files opened with Read: `lib/viewmodels/menu/group_weekly_menu_viewmodel.dart`,
+`test/unit/viewmodels/menu/group_weekly_menu_viewmodel_test.dart`.
+
+Verified on the bytes:
+- `removeEntry`'s arming block reads `} else if (isNewest || removed == null) {` (line 243).
+  Traced the branch: a tap on an id absent from `_plan` makes `removed` null, the stub/service
+  returns the plan itself, `_edit` short-circuits on `identical(updated, current)` and returns
+  true WITHOUT incrementing `_editSeq`, so `isNewest` is false and only the `removed == null`
+  arm clears `_undoEntry`/`_undoDocId`.
+- `GroupWeeklyMenuPlanService.removeEntry` (service lines 181-183) does return `plan` itself
+  when the filter removes nothing — the new stub mirrors it exactly.
+- Suite green 34/34. Mutation probe (drop `|| removed == null`): 33 green + 1 red, and the red
+  is 'a tap on a row that is already gone disarms the undo instead of offering the previous
+  dish' — the intended test, not a neighbour.
+- Reproduced the reported vacuity: mutant + the old unconditional-`copyWith` stub = 34/34 green.
+  Backups taken immediately before each mutation, restored from a trap, md5 of the production
+  file identical before/after and `git diff` clean on both files.
+- `flutter analyze` clean on both files.
+
+Swept every other `removeEntry` stub for the same identity assumption. In this suite the
+unconditional-`copyWith` stubs are at the 'newest removal', 'straggler save', `stubRemoveAndSave`
+and `removeThen` helpers, plus the fixed-value `thenReturn`s; every one of them is called with an
+id the plan HOLDS at that moment, so the production early return is unreachable and none is
+vacuous by this mechanism. Same result in `test/widget/menu/group_weekly_menu_widget_test.dart`.
+`weekly_menu_plan_viewmodel_test.dart` already stages the identity case explicitly
+(`.thenReturn(initial); // identical - id didn't match`), and the personal viewmodel has no
+undo-arming block at all.
+
+Non-blocking observation (not a demand): `removeEntry` returns true on the already-gone tap, so
+`_GroupWeeklyMenuWidget._remove` shows the plain "rätten togs bort" snackbar for a tap that
+changed nothing. The undo ACTION is correctly withheld — `_remove` gates it on
+`vm.canUndoRemoval` — so the fix's user-visible claim holds.
+
+Verdict: pass (0 blocking).
+
+### 2026-08-29 — BUT-1971 wiring layer: which of three untested files owes a test
+
+Trigger: review of the test position of `lib/views/group_weekly_menu_view.dart`,
+`lib/widgets/menu/group_menu_entry_button.dart`, `lib/widgets/messaging/chat_app_bar.dart`.
+All three read with the Read tool; none has a test. Core VM + widget suites passed a prior round.
+
+Measurements taken:
+- `grep -rn "'weekly_menu'" lib/ test/` → exactly two hits, both `lib/`
+  (`chat_app_bar.dart:83` value, `chat_action_handler.dart:61` case), zero in `test/`.
+  `chat_action_handler.handleMenuAction` has ZERO hits across `test/` — so neither the
+  emitting nor the receiving side of that string is pinned, and the switch's `default:`
+  only calls `AppLogger.warning`. A typo either side = a dead menu entry, nothing red.
+- `Conversation` carries both `id` (line 73) and `groupId` (line 147). The entry button
+  passes `chosen.id` as the view's `groupId`, per the comment that `closePoll` writes
+  `groupId: conversation.id`. A fixture where those two strings are equal makes the
+  swap mutant analytically unkillable (the owner-vs-caller collapse already in the
+  principles file).
+- `GroupWeeklyMenuViewModel` is NOT registered in `lib/core/di/` — so the view's
+  `ChangeNotifierProvider(create:)` is correct and the views-CLAUDE.md singleton
+  double-dispose rule does not apply. No finding.
+- `group_weekly_menu_view.dart` calls `loadWeek(DateTime.now())`; its sibling
+  `veckomeny_view.dart` (staged in the same commit) uses `clock.now()` at three sites,
+  and `GroupWeeklyMenuViewModel._weekStart` also initialises off `DateTime.now()`.
+  Non-blocking, production, not edited in a review pass.
+- Harness for both owed tests already exists one directory away:
+  `test/widget/messaging/chat_action_handler_share_menu_test.dart` (TestServiceLocator
+  mocks + `production.ServiceLocator.initialize(DIContainer())` + `createLocalizedTestApp`).
+- `chat_action_handler.dart` is also staged but was not in the brief's list of three;
+  its new `_openGroupWeeklyMenu` case is the receiving half of the same unpinned string.
+
+Verdict recorded: fail (1 blocking) — the entry button's group filter + chosen-id path.
+Named cases: (a) conversations that are all DMs → no navigation, `groupMenuNoGroups`;
+(b) two groups → pick one → the pushed `GroupWeeklyMenuView` carries the CONVERSATION id,
+fixture with `id != groupId`. The view was graded lever-only; the app-bar conjunct
+non-blocking but cheap, best written as the popup-tap test that also pins the literal.
+
+### 2026-08-29 — BUT-1971: a struck harm claim survives in an UNSTAGED suite (trigger: review of a comment-only production diff)
+
+The batch adds `GroupMenuEntryButton` to `veckomeny_view`, giving the group weekly menu a
+second, interactive caller besides the meal-poll close. Three clauses asserting "the only
+live caller is the meal-poll close" were struck from
+`lib/repositories/firebase/firebase_group_weekly_menu_plan_repository.dart` and
+`lib/services/menu/group_weekly_menu_plan_service.dart`. Both `lib/` copies verified gone
+from the index (`git show :<path> | grep "only live"` → no output).
+
+The fourth copy survived, verbatim, at
+`test/unit/services/menu/group_weekly_menu_plan_service_test.dart:59-63`:
+
+    // BUT-1962: `save` wrapped the repository in `executeServiceOperation`,
+    // which answers a failure with a default instead of rethrowing. A refused
+    // write therefore looked identical to a completed one. On the only live
+    // caller — closing a meal poll — that burned a one-way close with the
+    // winner never written into anyone's week.
+
+What makes this copy harder to catch than BUT-1961's: the suite is CLEAN AT HEAD — not
+staged, not modified — so it appears in no `git diff`, no `--name-only` listing, and no
+motion check. Only `grep -rn "meal poll\|meal-poll\|one-way close" test/` finds it. The
+surviving `lib/` wording ("On the meal-poll close that meant…") is a legitimate
+correct-in-place: `lib/services/messaging_service.dart:1087` still resolves
+`GroupWeeklyMenuPlanService` on the poll close, so the fact is directly readable and needs
+no counting.
+
+Second finding, same suites, non-blocking: the repository suite's
+`'overwrites on resave (deterministic id)'` (lines 310-318) contains NO `expect` — it calls
+`repo.save(plan)` twice and asserts nothing, so it pins "a second save does not throw",
+not the overwrite its name claims. Written when the only writer was a server-side poll
+close; a second interactive writer on the same shared document makes last-write-wins
+semantics worth actually asserting (read the doc back and compare a mutated field).
+
+Third: `lib/widgets/menu/group_menu_entry_button.dart` is new and has ZERO hits across
+`test/` (grepped the class name and all five new l10n keys). Four unpinned behaviours, each
+with a real failure mode: no groups → `groupMenuNoGroups`; a throwing/timing-out
+`getMyConversations()` → `groupMenuGroupsLoadFailed` (the `catch` exists precisely because
+`_open` is fired through `unawaited`, so without it the tap does nothing visible); exactly
+one group skips the picker; and the route is handed `chosen.id`, the CONVERSATION id, not
+the chat-group id — `closePoll` writes `groupId: conversation.id`, so an argument swap
+silently points the screen at an empty week. The `veckomeny_view` composition line itself
+owes nothing: asserting `find.byType(GroupMenuEntryButton)` in the header actions is the
+BUT-368 topology anti-pattern.
+
+### 2026-08-29 — BUT-1971 re-review: the two new undo tests, and the older arming tests
+
+Trigger: parent asked whether `a failed undo`'s two new tests pin what their names claim, and
+whether the older undo tests still do after the arming logic changed again. Reviewed
+`test/unit/viewmodels/menu/group_weekly_menu_viewmodel_test.dart` (new, 1100 lines) and
+`test/unit/services/menu/group_weekly_menu_plan_service_test.dart` (3/3 lines, comment strike
+only), graded against `lib/viewmodels/menu/group_weekly_menu_viewmodel.dart` (new, 369 lines,
+md5 bcbc250b6ad7657b68c9805be4df95f0, index == worktree at verdict time).
+
+Baseline: 40/40 green across both suites (36 viewmodel + 4 service). `flutter analyze
+--fatal-infos` on all three files: no issues.
+
+Mutation table (each mutant its own Bash call; restore via `git show :<path>`; each re-run to
+defeat the stale-kernel phantom):
+
+| # | mutant | reds | owner |
+|---|---|---|---|
+| M1 | delete the whole `!ok` re-arm block in `undoLastRemoval` | 35 +1 | `a failed undo keeps the dish recoverable when the save is refused` |
+| M2 | drop `current == null` from the undo guard | 35 +1 | `a failed undo says so when the week itself could not be read` |
+| M3 | `else if (isNewest \|\| removed == null)` -> `else` (unconditional clear) | 35 +1 | `a straggler save does not wipe a newer undo` |
+| M4 | `isNewest = _editSeq == seqBefore + 1` -> `>=` | 34 +2 | `a non-removal edit during the save disarms the undo`, `a straggler save does not wipe a newer undo` |
+| M5 | drop the `removed == null` disjunct | 35 +1 | `a tap on a row that is already gone disarms the undo...` |
+| M6 | re-arm guard reduced to `if (!ok)` | 36 +0 | NOBODY |
+
+So: both new tests are individually attributed and match the parent's report (35 + 1 each);
+the older arming tests still discriminate the arming logic as rewritten (M3/M4/M5 each land on
+the test whose name claims that behaviour). M6 is the one gap — see below.
+
+Two instrument faults, both worth recording:
+
+1. M2's FIRST run reported 2 reds (the intended one plus `keeps the dish recoverable`). Neither
+   run B in the same call nor a fresh call reproduced the second; it belonged to M1's kill set,
+   served from a stale incremental kernel because the mutant was applied in the call
+   immediately after M1's restore. The phantom presented as a SUPERSET, which reads as "this
+   mutant is broader than predicted" rather than as an instrument fault - a different tell from
+   the BUT-1897 one (a red the mutant cannot reach).
+2. M1's `mktemp` + `trap ... EXIT` restore printed the pre-mutation md5 at the end of its own
+   call, and the NEXT call found the mutant still live on disk (`git diff` showed the deleted
+   block). Mechanism not established and deliberately not asserted. The reliable pair is
+   `git show :<path> > tmp && cp tmp <path>` plus `git diff --numstat <path>` empty.
+
+M6 finding (non-blocking, filed to the parent): the new re-arm guard's three trailing conjuncts
+are collectively unpinned. Graded for harm individually - `_weekStart == forWeek` is inert
+because `canUndoRemoval` re-derives the doc id from the CURRENT `_weekStart`, so a stale arm can
+never surface; `!(_plan?.entries.any(id == entry.id))` degrades to an undo whose mutate returns
+the identical plan, i.e. a silent no-op; only `_editSeq == seqBefore + 1` carries a real hazard,
+being the straggler class that the sibling `removeEntry` arm DOES have a test for (M3/M4).
+
+Strike verification (the blocking finding from the prior round): `grep -rn "only live caller"`
+returns 0 hits in the three named files in BOTH the worktree and `git show :<path>`, and exactly
+one surviving hit repo-wide, `lib/viewmodels/unified_shopping_viewmodel.dart:273`, which is an
+unrelated claim about the weekly-menu caller. The REPLACEMENT sentence was graded as a fresh
+claim and holds: `MessagingService.closePoll` -> `_appendWinnerToGroupPlan` ->
+`ServiceLocator.tryGet<GroupWeeklyMenuPlanService>()` reaches this `save`, the plan write is
+ordered BEFORE `_messagingRepository.closePoll`, and the pre-read `isClosed` guard means a
+close that lands with no plan write cannot be retried - i.e. "burned a one-way close" is
+measured, not inherited.
+
+Also graded and true: the suite header's "the screen offers a retry on one and not the other" -
+`group_weekly_menu_widget.dart:87-97` gives `transient` an `onAction: () => vm.loadWeek(...)`
+with `commonRetry`, and `permissionDenied` no action at all.
+
+Verdict: pass (0 blocking).
+
+### 2026-08-29 — BUT-1971 final round: the undo re-arm's sequence conjunct is now pinned
+
+Trigger: closing my own non-blocking finding from the previous round ("stripping all three
+trailing conjuncts from `undoLastRemoval`'s re-arm ran 36/36 green").
+
+The parent wrote `a refused undo that lost its race > does not re-arm behind a newer edit`
+in `test/unit/viewmodels/menu/group_weekly_menu_viewmodel_test.dart`. Measured by the
+parent with `rm -rf .dart_tool/flutter_build` before each run (per the stale-kernel lesson):
+baseline 37, mutant `_editSeq == seqBefore + 1` -> `true` gives 36 + 1 red. I re-ran the
+suite at verdict time: 37/37 green, `flutter analyze` clean, `git diff` on the path empty
+with the file staged `A` at 1180 added lines, so the graded copy is the copy being
+committed.
+
+Traced the test against `lib/viewmodels/menu/group_weekly_menu_viewmodel.dart`:
+
+- removal arms (`_editSeq` 0->1, `_undoDocId` = the loaded plan's id)
+- `undoLastRemoval` takes `seqBefore = 1`, publishes (`_editSeq` 2) and hangs on save 1
+- `moveEntry` publishes behind it (`_editSeq` 3) and completes
+- `undoGate.completeError` -> `_edit`'s catch skips the rollback, because
+  `identical(_plan, updated)` is false (the move superseded it)
+- back in `undoLastRemoval`: `_weekStart == forWeek` TRUE, `!dishBack` TRUE (the move's stub
+  left only `e2/ovrigt`), `_editSeq(3) == seqBefore(1) + 1` FALSE
+
+So exactly one conjunct is false and the test is single-variable on the one it names. The
+load-bearing, unremarked detail is the `moveEntry` stub replacing `entries` wholesale: had
+it preserved `e1`, `!dishBack` would ALSO be false, the seq mutant would survive and the
+test would be silently over-determined. This is what went into the knowledge file.
+
+The other two conjuncts, deliberately untested, re-derived independently and I agree:
+
+- `_weekStart == forWeek`: `loadWeek` does NOT clear `_undoEntry`/`_undoDocId`, and
+  `canUndoRemoval` compares `_undoDocId` against `docIdFor(groupId, _weekStart)`. Dropping
+  the conjunct changes nothing while the user is on another week, and on navigating BACK it
+  offers an undo of a dish genuinely still absent from that week — the same arm
+  `removeEntry` would legitimately have left. Inert. `removeEntry`'s own `_weekStart ==
+  forWeek` conjunct in `armed` is inert by the identical mechanism; noted, not filed, since
+  it is the same graded class and re-filing it narrowed is the correction chain the strike
+  rule exists to stop.
+- `!(_plan?.entries.any((e) => e.id == entry.id))`: without it the re-arm survives on a week
+  that already shows the dish; the next undo's mutate returns `plan` unchanged,
+  `identical(updated, current)` short-circuits, no save, no seq advance, and `_undoEntry`
+  was already consumed above, so the arm disarms itself. One silent no-op tap on "Ångra" —
+  the same bounded class as the `slotTaken` refusal. Not worth a test.
+
+Dormancy sweep over the whole file under the final arming logic — nothing found. The three
+sequence-guard tests kill three DIFFERENT expressions and none subsumes another:
+`undo arming > a non-removal edit during the save disarms the undo` kills `isNewest` inside
+`removeEntry`'s `armed`; `a straggler save > does not wipe a newer undo` kills the
+`isNewest ||` in its else-branch; the new test kills the re-arm's own `_editSeq` conjunct.
+`a failed undo > keeps the dish recoverable when the save is refused` still exercises the
+re-arm's EXISTENCE (seq check satisfied, rollback restores the week without the dish).
+`a tap on a row that is already gone` still depends on the identity-mirroring `removeEntry`
+stub recorded in the 2026-08-29 entry above.
+
+Verdict: pass, 0 blocking. The assertion-free `'overwrites on resave (deterministic id)'`
+test in the repository suite stays open as a follow-up by agreement; that file is untouched
+and out of this commit.
+
+### 2026-08-29 — BUT-1971 coverage pass on the three GENERATED l10n files (trigger: parent asked whether the 17 new strings are literal-pinned in `test/`)
+
+Reviewed with `Read`: `lib/l10n/app_localizations.dart` (new hunk 27235-27336),
+`app_localizations_en.dart` (16332-16388), `app_localizations_sv.dart` (16374-16431).
+Generated by `flutter gen-l10n`; a code-reviewer had already diffed a regeneration
+byte-for-byte. No logic, so no test is owed on these files themselves.
+
+The one test question: which of the 17 new Swedish literals is typed VERBATIM anywhere in
+`test/`. Grepped each string across `test/**/*.dart`.
+
+PINNED BY LITERAL (8) — an ARB edit reddens:
+- `groupMenuNoDish` "Ingen rätt vald" — group_weekly_menu_widget_test.dart:440,452
+- `groupMenuEmptyTitle` "Ingen rätt är framröstad än" — :319,451
+- `groupMenuEmptyAction` "Starta en omröstning" — :454 (exact-match `find.text`, so it is the
+  button and not a prefix hit on `groupMenuEmptyBody`)
+- `groupMenuNotAMember` — :177
+- `groupMenuLoadFailed` "Kunde inte läsa in veckan." — :193, and also
+  weekly_menu_plan_read_week_test.dart
+- `groupMenuViewerNotice` — :279,304,321
+- `groupMenuSaveFailed` — :272
+- `groupMenuNoGroups` — group_menu_entry_button_test.dart:147
+
+NOT PINNED (9) — an ARB edit passes silently:
+`groupMenuEmptyBody`, `groupMenuWeekRange`, `groupMenuChatAction`, `groupMenuPickGroupTitle`,
+`groupMenuDishRemoved`, `groupMenuUndoUnavailable`, `groupMenuWeekShort`,
+`groupMenuGroupsLoadFailed`, `groupMenuUntitledGroup`.
+(`"Veckans meny"` has 13 `test/` hits, all unrelated fixture menu NAMES — no chat_app_bar
+suite exists under `test/widget/messaging/`. Counted as unpinned.)
+
+Most interesting of the nine: `groupMenuUndoUnavailable`. `group_weekly_menu_widget.dart`
+`_noticeText` maps three `GroupMenuEditProblem` arms to three l10n keys (lines 74/76/78). Two
+of the three strings are literal-pinned; the `undoUnavailable` arm is not, while the ENUM
+value itself is asserted three times in the VM suite (:539,:578,:773). So the arm reads as
+covered and its MAPPING is not — swapping the bodies of cases 75 and 77 shows a user who
+missed the undo window "Kunde inte spara ändringen" with nothing red. Non-blocking (a
+`lib/widgets` gap, not a generated-file one), reported to the parent.
+
+Also re-confirmed still open from the earlier BUT-1971 entry: `'weekly_menu'` typed twice in
+`lib/` (chat_app_bar.dart:83 emits, chat_action_handler.dart:61 receives) and zero times in
+`test/`. Unchanged by this diff; not re-filed.
+
+Verdict: pass, 0 blocking. Generated files are correct and owe no test.
+
+### 2026-08-29 — BUT-1971 coverage pass, round 2 (trigger: re-review after strike fix; 3 files)
+
+Files reviewed, all opened with `Read`:
+- `lib/repositories/firebase/firebase_group_weekly_menu_plan_repository.dart`
+- `lib/services/menu/group_weekly_menu_plan_service.dart`
+- `lib/views/messaging/chat_view/chat_action_handler.dart`
+
+Motion / index table (`git diff --cached --numstat`, then `git diff --numstat` = empty for
+all three, so index == worktree and the verdict is against the copy the parent commits):
+
+| path | staged +/- | shape |
+|---|---|---|
+| `firebase_group_weekly_menu_plan_repository.dart` | +4 / -6 | comment text only |
+| `group_weekly_menu_plan_service.dart` | +3 / -3 | comment text only |
+| `chat_action_handler.dart` | +33 / -0 | 2 imports, 1 `case`, 1 private method |
+
+**Round-1 finding CLOSED.** The struck premise "the only live caller is the meal-poll close"
+was grepped in the WORKTREE and in `git show :<path>` for all three copies plus the suite
+`test/unit/services/menu/group_weekly_menu_plan_service_test.dart`: zero hits. The staged
+diff shows both repository copies and the service copy rewritten to "On the meal-poll close
+…", which asserts what the close path DID without quantifying callers, so it is not a
+carrier under the STOP rule. Remaining repo-wide hit for the phrase is
+`lib/viewmodels/unified_shopping_viewmodel.dart:273`, a different method and a different
+population — untouched at HEAD, out of this batch, not a paraphrase.
+
+**Comment-only claim verified, not inherited.** Read the staged hunks rather than trusting
+round 1: no expression, signature or control-flow byte moved in either file. No test change
+owed by either.
+
+**`chat_action_handler.dart` — the one live behaviour.** `case 'weekly_menu'` →
+`_openGroupWeeklyMenu()`, which resolves `PermissionService.currentUserId` (silent early
+return on null), fetches the conversation and pushes `GroupWeeklyMenuView(groupId:
+conversationId, …)`. Token grep: `'weekly_menu'` has TWO `lib/` hits
+(`chat_app_bar.dart:83` emitting `PopupMenuItem(value:)`, `chat_action_handler.dart:61`
+receiving `switch` arm) and ZERO `test/` hits. The keying invariant, the app-bar's
+`if (conversation?.groupId != null)` visibility filter and the literal itself are all
+unpinned at this call site; `test/widget/menu/group_menu_entry_button_test.dart` pins the
+menu-TAB twin only.
+
+**Graded NON-BLOCKING, agreeing with the integration-reviewer.** The worst mutant
+(`groupId: conversationId` → `conversation.groupId`) is a wrong-document READ: the group menu
+renders empty from chat, silently. Display-only, no data loss, no permission bypass — the
+rules gate the wrong document as well. New surface, so nothing regresses. Scope note filed:
+a follow-up written from the literal alone would leave the filter and the argument unpinned;
+one widget test through the real popup should carry all three.
+
+Existing scaffolding for that test: `test/widget/messaging/chat_action_handler_share_menu_test.dart`.
+
+Verdict: pass (0 blocking).
+
+### 2026-08-29 — BUT-1971 coverage pass, round 3 (trigger: re-review of three files whose earlier rounds ended on `fail`)
+
+Files reviewed, all opened with `Read`:
+- `lib/widgets/menu/group_weekly_menu_widget.dart`
+- `lib/views/group_weekly_menu_view.dart`
+- `lib/widgets/menu/group_menu_entry_button.dart`
+
+Motion / index table: `git diff --numstat` empty for all three; `git diff --cached --numstat`
+= 442/51/122 added lines (all three staged as new files, status `A `). Index == worktree, so
+this verdict is against the copy the parent commits. Widget md5 before and after probing:
+`fce82013d806e7264fe8da584a753fc5` (restored with `git show :<path> > tmp && cp`).
+
+**Correction to this file's 2026-08-29 round-1 entry** (append-only, the earlier text stands):
+that entry wrote "swapping the bodies of cases 75 and 77 shows a user who missed the undo
+window 'Kunde inte spara ändringen' with nothing red". MEASURED FALSE. The swap mutant kills
+`'a plain failure blames the save, not the person'` (widget suite :272 pins the `saveFailed`
+literal end-to-end through the real VM) — 1 red. The gap is real but the mutant is
+ONE-DIRECTIONAL: repointing only the `undoUnavailable` arm to `groupMenuSaveFailed` ran 50/50
+green across the widget suite plus the VM suite. The entry's own two lines above it list
+`groupMenuSaveFailed — :272` as pinned, so the counterfactual contradicted its own table.
+Same clause lived in `testing-specialist.knowledge.md`'s generated-l10n bullet ("swapping two
+`case` bodies stays green"); superseded in place there, superseded text retired here verbatim:
+
+> the mapping is not — swapping two `case` bodies stays green), plus tooltips, sheet titles and
+
+Two gaps re-graded, both agreed as NON-BLOCKING follow-ups, neither re-derived beyond
+confirming reachability:
+1. `_noticeText`'s `undoUnavailable` arm — unpinned mapping (above). Display-only.
+2. `group_menu_entry_button.dart`'s `catch`/`timeout` arm (`groupMenuGroupsLoadFailed`) and
+   the `groupMenuUntitledGroup` fallback — the new suite
+   `test/widget/menu/group_menu_entry_button_test.dart` holds exactly two tests (group-only
+   filter, conversation-id keying), so the two behaviours the latest revision added are the
+   two it does not pin. Both l10n keys have zero `test/` hits by Swedish literal.
+
+Verdict: pass, 0 blocking.

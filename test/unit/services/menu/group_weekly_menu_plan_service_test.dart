@@ -58,9 +58,9 @@ void main() {
 
     // BUT-1962: `save` wrapped the repository in `executeServiceOperation`,
     // which answers a failure with a default instead of rethrowing. A refused
-    // write therefore looked identical to a completed one. On the only live
-    // caller — closing a meal poll — that burned a one-way close with the
-    // winner never written into anyone's week.
+    // write therefore looked identical to a completed one. On the meal-poll
+    // close that burned a one-way close with the winner never written into
+    // anyone's week.
     test('save propagates a refusal instead of swallowing it', () async {
       final plan = GroupWeeklyMenuPlan.empty(
         groupId: groupId,

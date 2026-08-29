@@ -28,6 +28,7 @@ import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/main_view_header.dart';
 import 'package:butlery/views/menu_placement_view.dart';
 import 'package:butlery/widgets/menu/calendar_weekly_menu_widget.dart';
+import 'package:butlery/widgets/menu/group_menu_entry_button.dart';
 import 'package:butlery/widgets/menu/menu_content_widgets.dart';
 import 'package:butlery/widgets/menu/menu_placement_footer.dart';
 import 'package:butlery/widgets/menu/veckomeny_dialogs.dart';
@@ -384,6 +385,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
         mode: _viewMode,
         onSelect: (mode) => unawaited(_setViewMode(mode)),
       ),
+      const GroupMenuEntryButton(),
       // Load menu / template button
       IconButton(
         icon: Icon(

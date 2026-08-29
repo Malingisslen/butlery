@@ -16371,4 +16371,62 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get a11yDismissDuplicateNotice => 'Ta bort notisen';
+
+  @override
+  String get groupMenuNoDish => 'Ingen rätt vald';
+
+  @override
+  String get groupMenuEmptyTitle => 'Ingen rätt är framröstad än';
+
+  @override
+  String get groupMenuEmptyBody =>
+      'Starta en omröstning i chatten, så hamnar vinnaren här.';
+
+  @override
+  String get groupMenuEmptyAction => 'Starta en omröstning';
+
+  @override
+  String get groupMenuNotAMember => 'Du är inte med i den här gruppen längre.';
+
+  @override
+  String get groupMenuLoadFailed => 'Kunde inte läsa in veckan.';
+
+  @override
+  String get groupMenuViewerNotice =>
+      'Du kan se gruppens meny men inte ändra i den.';
+
+  @override
+  String groupMenuWeekRange(int week, String range) {
+    return 'Vecka $week · $range';
+  }
+
+  @override
+  String get groupMenuChatAction => 'Veckans meny';
+
+  @override
+  String get groupMenuPickGroupTitle => 'Välj grupp';
+
+  @override
+  String get groupMenuNoGroups => 'Du är inte med i någon grupp än.';
+
+  @override
+  String get groupMenuDishRemoved => 'Rätten togs bort';
+
+  @override
+  String get groupMenuSaveFailed => 'Kunde inte spara ändringen. Försök igen.';
+
+  @override
+  String get groupMenuUndoUnavailable =>
+      'Det går inte att ångra det här längre.';
+
+  @override
+  String groupMenuWeekShort(int week) {
+    return 'V. $week';
+  }
+
+  @override
+  String get groupMenuGroupsLoadFailed => 'Kunde inte hämta dina grupper.';
+
+  @override
+  String get groupMenuUntitledGroup => 'Namnlös grupp';
 }

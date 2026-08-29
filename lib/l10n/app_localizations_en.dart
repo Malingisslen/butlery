@@ -16329,4 +16329,61 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get a11yDismissDuplicateNotice => 'Dismiss the notice';
+
+  @override
+  String get groupMenuNoDish => 'No dish chosen';
+
+  @override
+  String get groupMenuEmptyTitle => 'No dish has been voted in yet';
+
+  @override
+  String get groupMenuEmptyBody =>
+      'Start a poll in the chat and the winner lands here.';
+
+  @override
+  String get groupMenuEmptyAction => 'Start a poll';
+
+  @override
+  String get groupMenuNotAMember => 'You are no longer a member of this group.';
+
+  @override
+  String get groupMenuLoadFailed => 'Could not load the week.';
+
+  @override
+  String get groupMenuViewerNotice =>
+      'You can see the group\'s menu but not change it.';
+
+  @override
+  String groupMenuWeekRange(int week, String range) {
+    return 'Week $week · $range';
+  }
+
+  @override
+  String get groupMenuChatAction => 'This week\'s menu';
+
+  @override
+  String get groupMenuPickGroupTitle => 'Choose group';
+
+  @override
+  String get groupMenuNoGroups => 'You are not in any group yet.';
+
+  @override
+  String get groupMenuDishRemoved => 'Dish removed';
+
+  @override
+  String get groupMenuSaveFailed => 'Could not save the change. Try again.';
+
+  @override
+  String get groupMenuUndoUnavailable => 'This can no longer be undone.';
+
+  @override
+  String groupMenuWeekShort(int week) {
+    return 'W. $week';
+  }
+
+  @override
+  String get groupMenuGroupsLoadFailed => 'Could not fetch your groups.';
+
+  @override
+  String get groupMenuUntitledGroup => 'Untitled group';
 }

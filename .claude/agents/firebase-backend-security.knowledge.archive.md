@@ -7457,3 +7457,38 @@ B2 graded as genuinely discriminating: `validateReadPermission(_alice, 'other-gr
 plan)` differs from its neighbouring ALLOW control in the resourceId alone, alice's membership
 is independently pinned by that control, and the entity is non-null so the null-delegation
 branch cannot answer it. Single-variable, not over-determined.
+
+## 2026-08-29 — BUT-1971: a comment-only strike that re-opens a decided cost trade
+
+`lib/repositories/firebase/firebase_group_weekly_menu_plan_repository.dart`, staged diff is
+comment-only (verified against `git diff --cached`: the two struck clauses are the only
+changed lines; `requireCurrentUserId()` above the gate, `logPermissionCheck(granted: false)`
+inside `if (!canWrite)`, `userId: actorId`, and the `PermissionDeniedException` throw are all
+byte-identical). BUT-1981's refusal-only audit therefore still behaves exactly as its entry
+describes on these bytes.
+
+What changed is the PREMISE, not the code. BUT-1981 was accepted partly on "the only live
+caller is the meal-poll close, so the history was thin to begin with". The same batch adds
+`GroupWeeklyMenuViewModel._edit` -> `GroupWeeklyMenuPlanService.save` ->
+`FirebaseGroupWeeklyMenuPlanRepository.save`, reached by remove and undo from two entry points
+by every editor of the plan. The VM passes `actorId: currentUserId`, so the `userId != null`
+limb IS exercised — refusals are audited, grants are not. The dated amendment is in both
+`.claude/rules/accepted-deviations.md` and `docs/architecture/ACCEPTED_DEVIATIONS.md`
+(BUT-1971, 2026-08-29) and correctly does NOT restore the row unilaterally.
+
+Assessment recorded for Malin: no GDPR finding. Art. 30 is a register of processing categories,
+retracted as the basis in BUT-1981 itself and re-checked here; Art. 15/17 are untouched because
+the audit row was never the disclosure or erasure record for these plans. The finding is
+TRACEABILITY, and it is now asymmetric between the two repositories: the per-user repo's gate is
+still a tautology called as `validateUpdatePermission(plan.userId, plan.id, plan)`, so its
+granted row still records no decision — refusal-only remains right there. The group document is
+multi-writer, its only actor field is `lastModifiedBy` (last write wins), and its writers are now
+people rather than one server trigger, so every intermediate edit is unattributable. Recommended
+to Malin (not acted on): restore `granted: true` on the GROUP repository only, at ~1 extra write
+per interactive remove/undo. A cheaper alternative worth putting beside it is an append-only
+editor trail on the plan document itself (no second write), which is a design change, not a
+revert.
+
+Struck-clause hygiene: both replacements are behaviour-neutral and neither introduces a new
+measured claim — "A real reduction, not a redundancy removed." and "On the meal-poll close that
+meant…" both drop the quantifier without asserting a new count or caller set.

@@ -27232,6 +27232,108 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Ta bort notisen'**
   String get a11yDismissDuplicateNotice;
+
+  /// No description provided for @groupMenuNoDish.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingen rätt vald'**
+  String get groupMenuNoDish;
+
+  /// No description provided for @groupMenuEmptyTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingen rätt är framröstad än'**
+  String get groupMenuEmptyTitle;
+
+  /// No description provided for @groupMenuEmptyBody.
+  ///
+  /// In sv, this message translates to:
+  /// **'Starta en omröstning i chatten, så hamnar vinnaren här.'**
+  String get groupMenuEmptyBody;
+
+  /// No description provided for @groupMenuEmptyAction.
+  ///
+  /// In sv, this message translates to:
+  /// **'Starta en omröstning'**
+  String get groupMenuEmptyAction;
+
+  /// No description provided for @groupMenuNotAMember.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du är inte med i den här gruppen längre.'**
+  String get groupMenuNotAMember;
+
+  /// No description provided for @groupMenuLoadFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte läsa in veckan.'**
+  String get groupMenuLoadFailed;
+
+  /// No description provided for @groupMenuViewerNotice.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du kan se gruppens meny men inte ändra i den.'**
+  String get groupMenuViewerNotice;
+
+  /// No description provided for @groupMenuWeekRange.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vecka {week} · {range}'**
+  String groupMenuWeekRange(int week, String range);
+
+  /// No description provided for @groupMenuChatAction.
+  ///
+  /// In sv, this message translates to:
+  /// **'Veckans meny'**
+  String get groupMenuChatAction;
+
+  /// No description provided for @groupMenuPickGroupTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj grupp'**
+  String get groupMenuPickGroupTitle;
+
+  /// No description provided for @groupMenuNoGroups.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du är inte med i någon grupp än.'**
+  String get groupMenuNoGroups;
+
+  /// BUT-1971: snackbar after removing a dish from the group's week; pairs with commonUndo.
+  ///
+  /// In sv, this message translates to:
+  /// **'Rätten togs bort'**
+  String get groupMenuDishRemoved;
+
+  /// No description provided for @groupMenuSaveFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte spara ändringen. Försök igen.'**
+  String get groupMenuSaveFailed;
+
+  /// No description provided for @groupMenuUndoUnavailable.
+  ///
+  /// In sv, this message translates to:
+  /// **'Det går inte att ångra det här längre.'**
+  String get groupMenuUndoUnavailable;
+
+  /// No description provided for @groupMenuWeekShort.
+  ///
+  /// In sv, this message translates to:
+  /// **'V. {week}'**
+  String groupMenuWeekShort(int week);
+
+  /// No description provided for @groupMenuGroupsLoadFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte hämta dina grupper.'**
+  String get groupMenuGroupsLoadFailed;
+
+  /// No description provided for @groupMenuUntitledGroup.
+  ///
+  /// In sv, this message translates to:
+  /// **'Namnlös grupp'**
+  String get groupMenuUntitledGroup;
 }
 
 class _AppLocalizationsDelegate

@@ -11995,5 +11995,42 @@
   "a11yDismissDuplicateNotice": "Ta bort notisen",
   "@a11yDismissDuplicateNotice": {
     "description": "BUT-1904: Semantics label for the dismiss control on the duplicate-guard notice row. The action alone: the notice's own text is CONCATENATED onto this label by the framework, so restating it here made a screen reader announce the sentence twice."
-  }
+  },
+  "groupMenuNoDish": "Ingen rätt vald",
+  "groupMenuEmptyTitle": "Ingen rätt är framröstad än",
+  "groupMenuEmptyBody": "Starta en omröstning i chatten, så hamnar vinnaren här.",
+  "groupMenuEmptyAction": "Starta en omröstning",
+  "groupMenuNotAMember": "Du är inte med i den här gruppen längre.",
+  "groupMenuLoadFailed": "Kunde inte läsa in veckan.",
+  "groupMenuViewerNotice": "Du kan se gruppens meny men inte ändra i den.",
+  "groupMenuWeekRange": "Vecka {week} · {range}",
+  "groupMenuChatAction": "Veckans meny",
+  "groupMenuPickGroupTitle": "Välj grupp",
+  "@groupMenuWeekRange": {
+    "placeholders": {
+      "week": {
+        "type": "int"
+      },
+      "range": {
+        "type": "String"
+      }
+    }
+  },
+  "groupMenuNoGroups": "Du är inte med i någon grupp än.",
+  "groupMenuDishRemoved": "Rätten togs bort",
+  "@groupMenuDishRemoved": {
+    "description": "BUT-1971: snackbar after removing a dish from the group's week; pairs with commonUndo."
+  },
+  "groupMenuSaveFailed": "Kunde inte spara ändringen. Försök igen.",
+  "groupMenuUndoUnavailable": "Det går inte att ångra det här längre.",
+  "groupMenuWeekShort": "V. {week}",
+  "@groupMenuWeekShort": {
+    "placeholders": {
+      "week": {
+        "type": "int"
+      }
+    }
+  },
+  "groupMenuGroupsLoadFailed": "Kunde inte hämta dina grupper.",
+  "groupMenuUntitledGroup": "Namnlös grupp"
 }

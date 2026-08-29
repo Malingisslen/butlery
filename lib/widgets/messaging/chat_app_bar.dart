@@ -75,6 +75,21 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
                 ],
               ),
             ),
+            // The group's weekly menu only exists for a group conversation —
+            // the plan is keyed by the CONVERSATION id (`messaging_service`
+            // writes `groupId: conversation.id`), and a DM has no plan.
+            if (conversation?.groupId != null)
+              PopupMenuItem(
+                value: 'weekly_menu',
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.calendar_month_outlined),
+                    const SizedBox(width: AppDimensions.spacingS),
+                    Flexible(child: Text(context.l10n.groupMenuChatAction)),
+                  ],
+                ),
+              ),
             const PopupMenuDivider(),
             PopupMenuItem(
               value: 'leave',

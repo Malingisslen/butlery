@@ -86,7 +86,16 @@ you want the revert-probe that proved it; or this file itself reads too compress
   run reports failures belonging to the mutant before it. Tell: a red test the mutant cannot
   reach (a fixture that never enters the mutated branch). Never loop probes in one Bash call;
   run each in its own call and RE-RUN any surprising red alone before filing it (BUT-1897:
-  two of four probe results were phantom, both reproduced clean on re-run).
+  two of four probe results were phantom, both reproduced clean on re-run). **The phantom
+  arrives as a SUPERSET, on the mutant applied in the call right after a restore** — BUT-1971's
+  M2 reported 2 reds, of which only 1 reproduced on a clean re-run, and a superset reads as
+  "this mutant is broader than I predicted" rather than as an instrument fault, so the tell is
+  the extra red belonging to the PREVIOUS mutant's kill set, not an unreachable fixture. Run
+  each mutant TWICE in its own call and grade run B. **And do not trust a `mktemp`+`trap`
+  restore, even one whose own md5 reads clean**: measured on BUT-1971, the restoring call
+  printed the pre-mutation md5 and the NEXT call found the mutant still live on disk. Restore
+  with `git show :<path> > tmp && cp tmp <path>` (deterministic, and it is the copy the parent
+  commits) and verify with `git diff --numstat <path>` empty — never against a remembered hash.
 - **When the question is only "is this line REACHED at all", coverage answers it with no
   `lib/` write** — `flutter test --coverage --coverage-path=<scratchpad>/lcov.info <suites>`,
   then `awk '/^SF:.*<file>/,/^end_of_record/' | grep '^DA:<line>,'`; a `0` is the finding.
@@ -157,6 +166,12 @@ you want the revert-probe that proved it; or this file itself reads too compress
   undone" presupposes one can be written) — grep `test/` for the harm wording in the same round,
   and re-read every sibling comment the strike did NOT touch for the harm smuggled in as a
   subordinate clause; the tell is one file answering the question two ways (BUT-1961, 2026-08-27).
+  **That `test/` copy then rides into the NEXT ticket's batch, invisible to every
+  diff-following sweep because the suite is CLEAN AT HEAD and in no commit at all** —
+  BUT-1971 struck "the only live caller is the meal-poll close" from both `lib/` files and
+  left the verbatim clause in `group_weekly_menu_plan_service_test.dart`'s test comment.
+  Grep the struck string across `test/` as well as `lib/`, and grade an unstaged suite whose
+  production file moved (2026-08-29).
   **The STOP rule for that sweep, or it never terminates: a sentence saying only what the code
   REFUSES ("the close path refuses on a failed read rather than saving over the week") asserts no
   outcome and is not a carrier — only a clause asserting what the write WOULD DO is.** Round 2 of
@@ -350,6 +365,16 @@ you want the revert-probe that proved it; or this file itself reads too compress
   method across the WHOLE file before writing the sentence (2026-08-27).
 - Source-text assertion suites must strip comments first, or a bare `includes` stays green
   after the setting is deleted; probe non-vacuity with a STRING mutant, never a file mutant.
+- **A stub must reproduce the production return's IDENTITY, not just its VALUE, whenever the
+  code under test branches on `identical(...)`** — `GroupWeeklyMenuPlanService.removeEntry`
+  returns the plan ITSELF when the id is missing, and a stub calling `copyWith`
+  unconditionally hands back a fresh object, so `_edit`'s `identical(updated, current)`
+  short-circuit never fires, the sequence counter advances, and a test written to pin the
+  already-gone-row branch passes on the UNFIXED code (measured 34/34 both ways; with the
+  mirroring stub the mutant gives 33 green + 1 red). The mutant reddening NOTHING is the
+  vacuity showing itself. Read the production method's early-return line before writing any
+  stub of it, and check which sibling stubs remove an id the fixture does not hold — only
+  those are exposed (2026-08-29, BUT-1971).
 - **A mocktail matcher goes vacuous only when a named arg's value stops equalling its
   DEFAULT** — `verifyNever` is the dangerous direction: a non-default named param can never
   match the omitted-param form, so the guard is UNFAILABLE. Spell every named param.
@@ -426,6 +451,22 @@ Codecov: 60% project / 70% new patches / 2% drop tolerance — floors, decided 5
   pair built from ONE fixture helper over ONE fake proves its own wiring — the refusal case's
   row IS the evidence that the granted case's `isEmpty` is not measuring an unwired
   `auditRepository`. (BUT-1981, 2026-08-29.)
+- **A guard added to close a review finding gets its EXISTENCE pinned and its CONDITIONS
+  not** — the round writes the test the finding described, so deleting the block reddens, while
+  stripping every conjunct but the one the finding named stays green. Measured on BUT-1971's
+  undo re-arm: `if (!ok && _weekStart == forWeek && _editSeq == seqBefore + 1 && !dishBack)`
+  reduced to `if (!ok)` ran 36/36. Grade each conjunct for HARM before filing: the week check
+  is analytically inert (the getter re-derives the doc id, so a stale arm can never surface),
+  the dish-already-back check degrades to a no-op undo, and only the SEQUENCE conjunct carries
+  a real hazard — it is the same straggler class the sibling `removeEntry` arm already has a
+  test for, which is exactly why nobody wrote it for the undo. **The test that closes ONE
+  conjunct discriminates only while the fixture leaves every OTHER conjunct SATISFIED, and
+  that is usually an unremarked property of a stub nobody would defend** — the race test's
+  `moveEntry` stub returns `entries: [e2]`, dropping the dish the undo had published, so
+  `!dishBack` stays true and the sequence mutant reddens; a stub "corrected" to preserve the
+  other entries would block the re-arm on `!dishBack` instead, the mutant would survive and
+  the test would be over-determined with nothing red. Name the conjuncts the fixture is
+  holding open in the test, or a later tidy vacuums it (BUT-1971, 2026-08-29).
 - **A claim about "the call sites" is measured over the CALLERS of the CHANGED METHOD, never
   over the one file the fix touched** — and `grep -rn '\.<method>(' lib/` is the whole check.
   Same commit, same class: a test comment quoting another suite's total ("all 304 of those
@@ -453,6 +494,17 @@ Codecov: 60% project / 70% new patches / 2% drop tolerance — floors, decided 5
   leaving the SAME claim as a paraphrase one layer down (`firebase_…_repository.dart`: "reach
   the Swedish message its call sites already carry"), so grep the CONCEPT across every layer
   the changed method passes through, not the two files the report lists (BUT-1962, 2026-08-27).
+  **The same caller grep decides whether an unpinned seam OWES a test at all, and run it
+  BEFORE filing.** A VM pass-through whose arguments no test captures is a finding only if
+  something calls it: `GroupWeeklyMenuViewModel.moveEntry`'s sole `lib/` hit was a
+  same-named method on a DIFFERENT viewmodel, so an argument-swap mutant harms nobody and a
+  test would pin a test lever. Reachability of a generic `catch` is the mirror question,
+  answered by grepping `throw` in the CALLEE: the group menu service's only non-permission
+  throw (`StateError('Entry not found')`) lives in that callerless `moveEntry`, while its
+  `removeEntry` returns the plan UNCHANGED for a missing id — so the arm is dead in
+  production and its enum twin on the save path is what carries the behaviour. Grade a
+  same-enum-different-site arm by its callee's throw surface, never by the enum
+  (BUT-1971, 2026-08-29).
 - When a fix SPLITS one write/event across destinations, or teaches a method a new
   side-field, grep every WRITER/reader's OWN SUITE (not `lib/`) — the list grows mid-round.
 - **A figure measured OUTSIDE the repo (corpus gold, an eval sweep) has no test holding it,
@@ -570,7 +622,33 @@ Codecov: 60% project / 70% new patches / 2% drop tolerance — floors, decided 5
   `find.text(kMessage)`, so the SYMBOL is pinned at N call sites and the STRING at none — it
   can become any non-empty text and all suites stay green. Grep the literal across `test/`;
   zero hits IS the finding, and the repair is one test typing it verbatim (BUT-1962,
-  `weeklyPlanReadFailedMessage`, 2026-08-28).
+  `weeklyPlanReadFailedMessage`, 2026-08-28). **The worst form has NO constant at all: a menu
+  ACTION string typed twice, in the emitting `PopupMenuItem(value:)` and in the receiving
+  `switch` arm, with a `default:` that only logs — a typo on either side degrades to a menu
+  entry that does nothing, no crash, nothing red. Grep the literal in `lib/` (two hits, two
+  files) and in `test/` (zero) before calling a menu wiring reviewed; the emitting side is
+  pinned by one widget test that opens the real popup and asserts the callback received the
+  literal, and the receiving side needs its own case or the residual stays directional
+  (BUT-1971, `'weekly_menu'`, 2026-08-29). Scope that follow-up to the whole WIRING, not the
+  literal: the emitting side also carries a VISIBILITY filter
+  (`if (conversation?.groupId != null)`) and the receiving arm an ARGUMENT decision
+  (`groupId: conversationId`, deliberately NOT `conversation.groupId`) — a follow-up written
+  from the literal alone leaves both. Grade the item NON-BLOCKING when the worst mutant is a
+  wrong-id READ: display-only, no data loss, no permission bypass, since the rules gate the
+  wrong document too. A twin entry point pinned in the SAME commit does not reach this call
+  site — record the residual rather than read it as covered.**
+  **A GENERATED `app_localizations*.dart` carries no logic, so its only reviewable question is
+  which new ARB strings a suite types VERBATIM — grep each new literal across `test/` and read
+  the answer as a table, not a verdict.** The unpinned ones cluster predictably: strings on the
+  arm of an enum→l10n `switch` whose ENUM is asserted at VM level (so the arm looks covered and
+  the mapping is not — but the killing mutant is ONE-DIRECTIONAL, never a swap: measured on
+  BUT-1971, swapping `undoUnavailable`↔`saveFailed` reddens the sibling arm's pinned literal
+  (1 red), while repointing the unpinned arm alone ran 50/50 green. Write the finding as
+  "repoint arm X", or the fix round proves the wrong mutant), plus tooltips, sheet titles and
+  snackbar bodies whose test taps a DIFFERENT literal in the same widget (`commonUndo`'s
+  "Ångra" pins the undo button while the message beside it is free). Measured 8 of 17 pinned on
+  BUT-1971. Rewriting the generated file is never the repair; a literal in the consuming widget
+  suite is (2026-08-29).
 - **A refusal that REPLACES a whole body ships an ESCAPE HATCH nobody asserts.** The natural
   refusal test is the pair "message shown" + "the thing it replaced is gone", and both are
   entailed by the same branch; the third observable — `StateWidget.error(onAction: _reload)` —
@@ -630,6 +708,24 @@ Codecov: 60% project / 70% new patches / 2% drop tolerance — floors, decided 5
   "no error surfaced to the user", and the sentence beside it is usually TRUE as behaviour
   while nothing measures it. Delete the line; never "strengthen" it onto another surface,
   because a subject with no error channel has none (BUT-1962, 2026-08-28).
+  **The concurrency carrier is LAST-WRITER-WINS**: two in-flight edits whose trailing arms
+  both write one field resolve in CREATION order, so a test asserting the final value is
+  answered by the ordering and not by the guard it names — deleting the
+  `_editSeq == seqBefore + 1` conjunct reddened exactly ONE of the two undo-arming tests, and
+  it was not the one named after it. Grade a "the older edit does not win" test by asking
+  which write lands LAST under both variants; the discriminating shape lets the NEWER edit
+  finish first (gate only the first save, as the sibling test does) — and if that variant
+  fails on production too, you have found the unconditional `? x : null` clobber beside it
+  (BUT-1971, 2026-08-29).
+  **The ROLE carrier is a fixture builder that hardcodes the PERMITTED role.** A widget-test
+  `_plan()` pinned to `SharedListPermission.edit` cannot reach the viewer state, so every
+  `if (vm.canEdit)` affordance guard and every viewer-only banner has zero widget coverage
+  while the suite reads complete — deleting the guard on a per-dish delete button leaves the
+  whole file green, and the VM-level refusal test does NOT substitute, because it proves the
+  DATA is safe and says nothing about offering a control that can only fail. Parameterise the
+  widget fixture by role the way the unit fixture already is, and diff the two builders'
+  SIGNATURES when a unit suite and a widget suite share a subject: a parameter present in one
+  and absent in the other names the untestable state (BUT-1971, 2026-08-29).
   **Splitting one fixture instant into two (clock `t` vs caller's `date`) kills the
   VALUE-swap mutant and leaves the DERIVATION mutant alive** — inside `withClock` a
   same-week `date` makes `weekStartOf(clock.now())` byte-identical to `weekStartOf(date)`,
@@ -1562,6 +1658,15 @@ in ITS suite, same edit (BUT-1874: emitter pinned, `ShoppingItemManagementModule
   which the runner prints every run. Two residuals survive that: the co-assert closes only
   "the ADDED content vanished" (a tile fitting because something ELSE shrank still passes),
   and a named skip goes stale GREEN the day the residual is actually fixed.
+  **A SCROLLABLE ancestor makes the whole class structurally unfailable** — inside a
+  `SingleChildScrollView` the child gets unbounded height, so no content can overflow and
+  `takeException(), isNull` is green at any size. It still kills a fixed-slice mutant
+  (measured: 7 `Expanded` day rows reddened all three cases), so the tests are worth keeping
+  — but a group NAMED "the week fits" then asserts something nothing measures, and it was
+  FALSE: 210 logical px of the week sat off-screen at 360dp@2x and 320dp@2x, and a 14-dish
+  fixture hid 1090px, all green. Read `ScrollableState.position.maxScrollExtent` before
+  writing "fits" (a `> 0` there IS the finding), and strike the claim rather than re-scope it
+  (BUT-1971, 2026-08-29).
 - A page-size guard is only testable on a TALL surface (`tester.view.physicalSize =
   Size(800,14000)`, dpr 1.0) — a short surface auto-scrolls and hides item 0.
 - `Semantics(label:)` on a tooltip'd button MERGES into one node — match with `RegExp`,

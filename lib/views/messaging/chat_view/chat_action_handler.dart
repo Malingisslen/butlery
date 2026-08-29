@@ -18,6 +18,8 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/dialogs/recipe_selection/menu_recipe_selection_dialog.dart';
 import 'package:butlery/widgets/common/dialogs/share_selection/menu_week_selection_dialog.dart';
 import 'package:butlery/widgets/common/dialogs/share_selection/shopping_list_selection_dialog.dart';
+import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/views/group_weekly_menu_view.dart';
 import 'package:butlery/views/messaging/group_detail_view.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
@@ -55,6 +57,9 @@ class ChatActionHandler {
         break;
       case 'leave':
         await _leaveConversation();
+        break;
+      case 'weekly_menu':
+        await _openGroupWeeklyMenu();
         break;
       default:
         AppLogger.warning('Unknown menu action: $action');
@@ -275,6 +280,34 @@ class ChatActionHandler {
       AppLogger.error('Failed to toggle mute', e);
       _showErrorSnackBar(context.l10n.chatCouldNotChangeNotifications);
     }
+  }
+
+  /// Open the group's weekly menu.
+  ///
+  /// The plan is keyed by the CONVERSATION id, not by `conversation.groupId` —
+  /// `MessagingService.closePoll` writes `groupId: conversation.id`, so reading
+  /// with the chat-group id would look at a document nobody writes.
+  Future<void> _openGroupWeeklyMenu() async {
+    final userId = ServiceLocator.get<PermissionService>().currentUserId;
+    if (userId == null) return;
+
+    final conversation = await _messagingService.getConversation(
+      conversationId,
+    );
+    if (!context.mounted) return;
+
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => GroupWeeklyMenuView(
+          groupId: conversationId,
+          groupName: conversation?.title ?? context.l10n.groupMenuUntitledGroup,
+          currentUserId: userId,
+          // Starting a poll lives in the chat this was opened from, so the
+          // empty state's call to action simply returns there.
+          onStartPoll: () => Navigator.of(context).pop(),
+        ),
+      ),
+    );
   }
 
   Future<void> _leaveConversation() async {

@@ -133,9 +133,7 @@ class FirebaseGroupWeeklyMenuPlanRepository
         // Audit only the REFUSAL (BUT-1981). Narrower than the per-user case:
         // dropping the granted row here loses EDIT HISTORY on a document more
         // than one person can write, and `lastModifiedBy` keeps only the last
-        // writer. Accepted because the only live caller is the meal-poll
-        // close, so the history was thin to begin with — but it is a real
-        // reduction, not a redundancy removed.
+        // writer. A real reduction, not a redundancy removed.
         await logPermissionCheck(
           // The AUTHENTICATED actor, not the caller-supplied one — an
           // `audit_logs` create whose uid does not match the caller is refused
@@ -148,9 +146,9 @@ class FirebaseGroupWeeklyMenuPlanRepository
           granted: false,
           auditRepository: auditRepository,
         );
-        // Was a silent `return`. On the only live caller — closing a meal
-        // poll — that meant the poll closed on a one-way door with the
-        // winner never written. Throwing leaves it open for a retry.
+        // Was a silent `return`. On the meal-poll close that meant the poll
+        // closed on a one-way door with the winner never written. Throwing
+        // leaves it open for a retry.
         throw PermissionDeniedException(
           'Group menu plan save denied',
           resource: collectionName,
