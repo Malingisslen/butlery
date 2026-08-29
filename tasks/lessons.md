@@ -2600,3 +2600,26 @@ Example: lib/services/menu/parser/text_normalizer.dart _noWordBefore/_noWordAfte
   which no test can hold. And attribution of a DENY is a MEASUREMENT, not a structural
   argument — "the other conjuncts are satisfied" is the reasoning that was wrong here;
   removing the conjunct and watching the test stay green is the one that was right.
+
+## `git add` + `git commit` in one call: a gate block loses the add, and the next reviewer reads stale index bytes (BUT-1974, 2026-08-29)
+
+`git-workflow.md` requires staging by explicit pathspec and committing in the SAME Bash
+call, so a parallel session's index sweep cannot take your files. That is right and stays.
+But the commit gate is a **PreToolUse hook on Bash**: when it blocks, it blocks the WHOLE
+compound command, so the `git add` never ran either. The index is left exactly as it was.
+
+The failure is not the block — it is what happens next. Applying the reviewer's fixes edits
+the WORKTREE, and re-running the reviewers then has them read an index that still holds the
+refuted bytes. Both reviewers came back blocking on a finding that was already fixed on
+disk, each spending a full pass to conclude "the files are `MM`". Two rounds, no defect.
+
+**The move after any gate block: re-run the `git add` on its own, verify `git status --short`
+shows `M` and not `MM`, and only then re-run the reviewers.** `MM` is the whole tell, and it
+costs one command to check. Leaving them staged between the add and the commit is a shorter
+exposure than an extra review round, and the block already proved a commit is not imminent.
+
+Generalisation worth keeping: a gate's failure mode includes **what it did not run**. A
+compound command is atomic to the hook but not to your intent, so after any PreToolUse block
+ask which side effects you had assumed were already applied. Same shape as the analyzer
+lessons — the check disagreeing with your memory is usually measuring a different object,
+and here the object was the index versus the tree.
