@@ -7492,3 +7492,103 @@ revert.
 Struck-clause hygiene: both replacements are behaviour-neutral and neither introduces a new
 measured claim — "A real reduction, not a redundancy removed." and "On the meal-poll close that
 meant…" both drop the quantifier without asserting a new count or caller set.
+
+## 2026-08-29 — BUT-1971: the null-`resource` deny on `group_weekly_menu_plans` read
+
+**Reviewed:** staged `firestore.rules` (group weekly-plan read limb) +
+`functions/src/__tests__/weekly-menu-plans-rules.test.ts` (new G7).
+
+The read limb was `isAuthenticated() && request.auth.uid in resource.data.memberPermissions`.
+For an absent document `resource` is null, the deref errors, and Firestore evaluates an error
+as a DENY. Effect: every week nobody had planned was refused, so the group menu screen could
+never reach its empty state (it told real members "Du är inte med i den här gruppen längre")
+and `GroupWeeklyMenuPlanService.readOrBuildWeek` could not create a first plan, because it
+READS before it builds. The sibling `weekly_menu_plans` collection never had the bug: its read
+rule gates on the doc-id PATH and touches no `resource`.
+
+Fix: `(resource == null || request.auth.uid in resource.data.memberPermissions)`. G7 pins the
+absent-document read; three mutants measured, each landing on a different existing test
+(null arm → G7, membership arm → G5, membership arm widened to `true` → G6).
+
+**Privacy verdict — not a GDPR or minor-safety blocker, but the residual was stated in the
+wrong direction.** The diff comment says a guesser "learns the week is unplanned". The
+material change is the other half: before, absent and present-but-not-mine were
+INDISTINGUISHABLE (both denied); now absent ALLOWS (`exists == false`) and present still
+DENIES, so a denial is a positive signal that a plan EXISTS. `groupId` is
+`conversation.id`, and a DM conversation id is `direct_<uidA>_<uidB>` — constructible from
+two uids — so the bit reads as "these two people closed a meal poll in week W", a weak
+social-graph/activity inference rather than content. Judged acceptable: the attacker must
+already hold both uids (which is most of the relationship fact), no content, membership or
+name is exposed, minors are largely non-enumerable because `isSearchable` is false for them,
+and the alternative was a `get()` on the conversation billing an extra read on every
+group-menu read forever (house cost principle). Recommended correcting the comment in place —
+the true wording is directly readable off the rule's two arms.
+
+**Export/cascade: no interaction, verified.** The Art. 17 cascade
+(`account-deletion-cascade.ts`, `participantUserIds array-contains uid`) runs on the Admin
+SDK, which bypasses rules entirely. The Art. 15 export runs CLIENT-side
+(`FirebaseGroupWeeklyMenuPlanRepository.exportPlansForParticipant`) but is a LIST query on
+`memberPermissions.<uid>, isNull: false` — the same field the read rule gates on, and a query
+returns only existing documents, so the null arm can never add a row to a bundle.
+
+**Pre-existing, unrelated to this diff, and now live: the CREATE limb lets anyone squat a
+group week.** `allow create` ties the caller only to their OWN submitted
+`memberPermissions` and to `planId.matches('^' + request.resource.data.groupId + '_.*')`,
+never to the chat group's members; the submitted `groupId` is interpolated UNESCAPED, so
+`groupId: '.*'` matches any id containing `_`. Any authenticated account can therefore plant
+`group_weekly_menu_plans/{realConversationId}_{week}` naming itself sole admin. Real members
+then fail the read (the document exists and they are not in its map) and cannot delete it
+(delete needs admin in that map) — a permanent, un-repairable outage of exactly the screen
+BUT-1971 restores. Known: `remove-chat-group-member.ts` already cites this rule gap as the
+reason its sweep is capped. Not filed against this commit — the diff does not touch create and
+blocking it would leave the collection broken — but it needs its own ticket, closed by tying
+create to the conversation's membership.
+
+**Test nit (non-blocking):** G7 is named "any signed-in user can read a group week that has no
+plan yet" and drives it with `OWNER_UID`. Since `resource` is null the actor is irrelevant to
+the outcome, so the test is sound — but `STRANGER_UID` would both match the name and
+demonstrate the residual the rule accepts.
+
+**Verdict:** pass, 0 blocking.
+
+## 2026-08-29 — BUT-1971 re-review of the group weekly-plan read arm (firestore.rules)
+
+Re-confirmation pass after three strikes landed in the comment above
+`group_weekly_menu_plans`' `allow read`. The rule expression is unchanged from the version
+that passed: `isAuthenticated() && (resource == null || request.auth.uid in
+resource.data.memberPermissions)`.
+
+Verified against code rather than against the comment:
+
+- Doc id provenance. `MessagingService._appendWinnerToGroupPlan` calls
+  `groupService.readOrBuildWeek(groupId: conversation.id, ...)`
+  (`lib/services/messaging_service.dart:1126-1130`), and the id is
+  `{groupId}_{YYYY}-W{WW}`, so for a DM the plan id embeds `direct_<uidA>_<uidB>`. The
+  comment's mechanism is accurate, and it no longer leans on the struck "group ids are
+  random" claim (false for `ensureCategoryChat`, whose id is
+  `sha256("${ownerId}:${categoryId}")[:20]`; unguessable only because `categoryId` is a v4
+  UUID — a distinction that belongs in the principle, and now is).
+- Writer set behind "closed a meal poll". The poll close is the only creator today.
+  `GroupWeeklyMenuViewModel` reaches `_service.save` only after `readWeek` returned a
+  stored plan; its empty state renders a "start poll" CTA and writes nothing. So the
+  inference from PRESENCE to "a poll was closed that week" holds as of this date. It is a
+  caller-set claim, which is why it is dated in the archive and why the comment states the
+  falsifiable half ("a plan EXISTS") first.
+- Scope of the widening. Queries are unaffected: a `list` evaluation runs per candidate
+  document, which by construction exists, so `resource` is never null there — the Art. 15
+  export path and the deletion cascade are untouched. A full `set()` on an absent document
+  is a CREATE in rules terms and still needs membership, so the read arm buys no write.
+- The per-user block's read rule (`weekly_menu_plans`, line ~916) gates on
+  `planId.matches('^' + uid + '_.*')` and never touches `resource`, so the comment's "does
+  not need this" is correct for the read limb it is talking about.
+
+Not filed as a finding, recorded so the next pass does not re-derive it: "DM pairs are the
+guessable surface" is scoped to GUESSING and therefore says nothing about an ex-member who
+already knows a group conversation id and can probe presence for later weeks. That case is
+presence-only and does not change the trade Malin is signing, so proposing a reword would
+have bought a round and no safety.
+
+G7 pins the ALLOW direction with `STRANGER_UID` and states its own kill set (drop the null
+arm → G7 alone reddens; drop the membership arm → G5; widen membership to `true` → G6).
+
+**Verdict:** pass, 0 blocking.

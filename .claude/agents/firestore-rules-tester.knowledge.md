@@ -142,6 +142,27 @@ Standard deny matrix for ownership-checked collections:
   only an exact match denies. The hazard is the second `.get()`, never the first; still pin
   all four states, because a wrong DEFAULT freezes every legacy row and nothing else catches
   it.
+- **`resource` ITSELF is null on a read of a document that does not exist, so ANY read
+  limb dereferencing `resource.data` DENIES the absent case** — a CEL evaluation error, not
+  a false. Harmless for a collection reached by query (a listed doc always exists) or by an
+  id only the owner can construct; a LIVE BUG exactly when the CLIENT DERIVES the doc id and
+  READS BEFORE CREATING. Triage the sweep by that question, not by counting limbs — ~25 read
+  limbs in `firestore.rules` share the shape and nearly all are fine. Candidates are the
+  composite/deterministic ids (`{groupId}_{ISO week}`, `direct_<a>_<b>`,
+  `{blocker}_{blocked}`, `{uid}_{deviceId}`); a PATH-gated read (`planId.matches('^' + uid)`)
+  never touches `resource` and is immune. The repair is `(resource == null || <membership>)`
+  with the null arm FIRST, and it widens exactly to an EXISTENCE oracle in BOTH directions —
+  allow ⇒ absent, deny ⇒ present-and-you-are-not-a-member. Note the failure hides: the
+  caller's `try/catch` around the probe reads PERMISSION_DENIED as "not found" and logs it as
+  such (`conversation_mutation_module`), so nothing reddens (BUT-1971, 2026-08-29).
+  **A comment bounding that oracle by calling the id "unguessable"/"random" is a claim about
+  EVERY MINTING PATH, and a collection usually has more than one** — group conversation ids
+  are a Firestore auto-id from `createChatGroupWithDeps` AND a
+  `sha256(ownerId:categoryId)[:20]` digest from `ensureCategoryChat`, so "group ids are
+  random" is false for the second while the SAFETY conclusion still holds (the digest eats a
+  v4 UUID). Grep every caller that supplies a doc id before passing such a sentence, and
+  strike the mechanism word rather than rewording it — the operative clause is which ids an
+  attacker can CONSTRUCT from what they already hold.
 - **A `get(collection/{id})`-then-`.data.get()` chain needs an `exists()` guard or it
   fails OPEN on a missing doc**: `otherIsMinor(uid) = exists(users/{uid}) &&
   get(users/{uid}).data.get('isMinor', false)==true`. Same pattern for any "allowed only
@@ -299,7 +320,10 @@ Standard deny matrix for ownership-checked collections:
   a `passed` line before reading any probe result. A suite that ships WITHOUT the two env
   hooks has to be probed through a throwaway `sed`-derived copy under
   `functions/src/__tests__/`, deleted in the same call — workable, but add the hooks when
-  you touch the file.
+  you touch the file. **Substituting `RULES_PATH` in that copy orphans the `import * as path`
+  line, and `noUnusedLocals` then aborts ts-node on TS6133 before any test runs** — an exit
+  that greps for `FAIL` exactly like a green suite. Delete the import in the same `sed`, and
+  require a `N/N passed` line before reading any probe result.
 - A standalone probe script must live UNDER `functions/src/` — from the OS temp dir,
   `npx ts-node` resolves neither `@firebase/rules-unit-testing` nor the tsconfig and dies
   on TS2307/implicit-any. Delete it in the SAME Bash call that created it (`trap ... EXIT

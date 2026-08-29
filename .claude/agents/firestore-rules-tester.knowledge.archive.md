@@ -3298,3 +3298,116 @@ claim with a dangling one") survives without it, and the full worked example is 
 the round-2 entry above. Found by the `integration-reviewer` gate as the fourth
 assert/deny pair in one commit — this one inside an auto-loading knowledge file, i.e. the
 Step-0 read for the gate that would next audit that suite.
+
+## 2026-08-29 — BUT-1971, `group_weekly_menu_plans` read limb: `resource` is null on an absent doc
+
+Reviewed the staged fix `allow read: if isAuthenticated() && (resource == null ||
+request.auth.uid in resource.data.memberPermissions)` plus its one new test, G7. Suite
+14/14 green on the emulator.
+
+**Confirmed for the author, all three questions.**
+
+1. *Can the null arm widen anything beyond existence?* No. `resource == null` holds only
+   when the document does not exist, so there is no content to disclose, and the arm is
+   FIRST in the `||` so it short-circuits before any dereference. It does not reach `list`
+   (a candidate doc in a query always exists, so the membership arm still decides, and an
+   unconstrained collection query stays unprovable), and it does not reach create/update/
+   delete, which read `request.resource` or an existing `resource`. One sharpening: the
+   oracle runs in BOTH directions, not just the direction the comment illustrates — allow
+   implies absent, deny implies present-and-caller-not-a-member — so a signed-in user who
+   knows a conversation id can enumerate which weeks that conversation has plans for. Still
+   exactly EXISTENCE, which is what the deviation says; the example sentence is narrower
+   than the leading claim, not false.
+
+2. *Write limbs untouched?* Yes, byte-verified against the staged diff: one hunk, the read
+   limb and its comment. The rules test file gains only G7.
+
+3. *The sweep — other read limbs with the same shape.* ~25 of them. The shape alone is not
+   the finding; the discriminator is whether the CLIENT DERIVES the doc id and READS BEFORE
+   CREATING. Collections reached by query (`cook_snaps`, `activity_events`,
+   `recipe_comments`, `social_requests`, `shared_content`, `menus`, the six
+   `{path=**}` collection-group limbs) are unaffected by construction. Path-gated reads
+   (`weekly_menu_plans`, `user_notification_preferences`, `report_throttle`,
+   `canonical_rating_events`) never touch `resource`. That leaves the deterministic-id
+   collections, and one of those is a live instance:
+
+   - **`conversations`** — `allow read: if isAuthenticated() && request.auth.uid in
+     resource.data.participantIds`, and `ConversationMutationModule` does a get-before-create
+     on `conversations/direct_<sorted a>_<sorted b>` to see whether the DM already exists. For
+     a brand-new pair that read is DENIED, not empty. It does not surface because the probe
+     sits in its own `try/catch` whose handler logs "No existing conversation found, creating
+     new one" — the denial is indistinguishable from absence, by construction. Filed, not
+     blocking: the outcome is correct today and the fix is a rules change with its own ticket.
+   - `blocks/{blocker}_{blocked}` and `user_fcm_tokens/{userId}_{deviceId}` are the same
+     shape with no confirmed read-before-write caller.
+   - `realtime_recipes` / `realtime_menus` are worth noting for contrast: their SUBCOLLECTION
+     helper `isRealtimeParticipant` is null-guarded (`get()` then `parentDoc != null`) while
+     the parent's own read limb is not — the guard for this exact hazard already exists one
+     line away, in the same block.
+   - `poll_votes` is the shipped precedent for the fixed behaviour: its read limb tests the
+     parent message and never `resource`, so an absent vote row already reads as absent.
+
+**Adjacent, pre-existing, NOT introduced by this diff, and reported to the author:** the
+`group_weekly_menu_plans` create limb binds `planId` to the caller's OWN submitted `groupId`
+and requires the caller in their OWN submitted `memberPermissions`, with no check against the
+conversation. Any signed-in user can therefore create `<anyConversationId>_<week>` seating
+themselves as admin, which the real members then cannot read, update or delete. The read fix
+does not create this, but it turns blind squatting into targeted squatting by supplying the
+"which weeks are unplanned" oracle. No test covers it — the file's create coverage is G1–G4,
+all on a seeded doc the actor already belongs to.
+
+A false lead worth recording: `Grep` rendered several `//` comment openers in
+`conversation_mutation_module.dart` as a bare backslash, which reads exactly like the
+control-byte corruption of BUT-1901. `Read` on the same lines shows ordinary `//`. It was
+the tool's output escaping, not the file — check with `Read` before filing a text-integrity
+finding from a grep excerpt.
+
+Verdict: pass, 0 blocking.
+
+## 2026-08-29 — BUT-1971 re-review of the staged `group_weekly_menu_plans` read limb
+
+Re-read the staged bytes of `firestore.rules` and
+`functions/src/__tests__/weekly-menu-plans-rules.test.ts` after three comment/actor
+changes landed on top of the earlier pass.
+
+Verified against the staged bytes:
+- Oracle direction now stated correctly in BOTH comments: ALLOW ⇒ `resource == null` ⇒ the
+  week is unplanned, so a DENY ⇒ a plan EXISTS. Confirmed the id chain that makes it
+  reachable: `messaging_service.dart:1127` passes `groupId: conversation.id` into
+  `GroupWeeklyMenuPlan.docIdFor`, and a DM conversation id is
+  `direct_${sortedIds[0]}_${sortedIds[1]}` (`conversation_mutation_module.dart:59`), so two
+  uids fully determine the doc id.
+- App-reachability sentences are gone from both artefacts; what survives in the test file is
+  an EXISTENCE claim about `GroupWeeklyMenuPlanService.readOrBuildWeek`, which resolves
+  (`group_weekly_menu_plan_service.dart:102`).
+- G7's actor is `STRANGER_UID`.
+
+Runs (emulator 127.0.0.1:8080):
+- `npm run test:rules:weekly-menu-plans` → 14/14 passed on the staged bytes.
+- Mutant A, null arm removed (`&& request.auth.uid in resource.data.memberPermissions`):
+  13/14, ONLY G7 red, verdict `Null value error ... for 'get'`. The "reddens THIS test
+  alone" claim survives G7's actor change from OWNER to STRANGER.
+- Mutant B, membership arm widened (`&& (resource == null || true)`): 13/14, ONLY G6 red,
+  G7 green. Confirms G6 is the control against the arm buying more than existence.
+Both mutants were scratchpad COPIES of the rules file; the probe test copies were deleted in
+the same Bash call and `git status` shows the two staged files byte-unchanged.
+
+Finding (non-blocking, comment accuracy): the rules comment reads "group ids are random, so
+DM pairs are the guessable surface." Measured, group conversation ids have TWO mints —
+`createChatGroupWithDeps` uses `groups.doc()` (auto-id, random) but `ensureCategoryChat`
+supplies `categoryChatId(ownerId, categoryId) = sha256("ownerId:categoryId")[:20]`
+(`functions/src/groups/ensure-category-chat.ts:85`), a DERIVED id, not a random one. The
+safety conclusion still holds because `categoryId` is a v4 UUID
+(`friend_categories_operations.dart:90`) an attacker does not hold, so the residual is not
+understated. Recommended repair is a STRIKE of "group ids are random, so", leaving
+"Content, membership and names stay closed; DM pairs are the guessable surface."
+
+Sweep finding from the earlier pass (the live `conversations` null-`resource` shape masked by
+`catch { AppLogger.debug('No existing conversation found, creating new one') }` in
+`conversation_mutation_module.dart:78-80`, plus the unbound create limb) re-confirmed present
+and untouched by this diff; both are carried on BUT-1971 as their own tickets.
+
+New durable rules extracted into the principles file: (1) an "unguessable id" comment is a
+claim about every minting path, and a collection usually has more than one; (2) a sed-derived
+probe copy that substitutes `RULES_PATH` orphans the `path` import and dies on TS6133 before
+any test runs, which greps like a green suite.

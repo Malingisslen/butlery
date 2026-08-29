@@ -316,6 +316,28 @@ test("a non-member cannot read the group plan", async () => {
   );
 });
 
+// G7: the ABSENT document. `resource` is null for a document that does not
+// exist, and dereferencing it errors, which Firestore evaluates as a deny — so
+// before the null arm every unplanned week was refused (BUT-1971).
+//
+// Measured, so the pair is not read as wider than it is: dropping the null arm
+// reddens THIS test alone; dropping the membership arm reddens G5; and widening
+// the membership arm to `true` reddens G6 while this stays green. G6 is
+// therefore already the control against the arm buying more than existence — a
+// second copy of it here added no kill and was removed.
+//
+// What the arm accepts, stated in the direction it actually runs: an ALLOW here
+// means the week is unplanned, so a DENY means a plan EXISTS.
+// The actor is a STRANGER on purpose: the outcome is actor-independent (with
+// `resource` null the membership arm errors whoever asks), and this is the
+// residual the rule accepts, so the test should be the one that demonstrates it.
+test("any signed-in user can read a group week that has no plan yet", async () => {
+  const ctx = env.authenticatedContext(STRANGER_UID);
+  await assertSucceeds(
+    ctx.firestore().doc(`group_weekly_menu_plans/${GROUP_ID}_2099-W01`).get()
+  );
+});
+
 async function run(): Promise<void> {
   console.log("weekly_menu_plans + group_weekly_menu_plans rules tests");
   console.log("==================================================\n");

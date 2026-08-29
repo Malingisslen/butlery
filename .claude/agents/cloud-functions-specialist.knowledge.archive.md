@@ -15851,3 +15851,78 @@ all meaning-preserving compressions of surviving principles:
 - "Firestore triggers retry on uncaught exception; every handler must be idempotent:"
 - "An always-empty fake still cannot stage the over-cap DECLINE." (dropped "still")
 - "…never `console.log` (except `admin/` ts-node scripts, which are never deployed)."
+
+### 2026-08-29 — BUT-1971 G7 review: registration clean, index one edit stale [review]
+
+Reviewed `functions/src/__tests__/weekly-menu-plans-rules.test.ts` (one new test, G7)
+against the `firestore.rules` fix `(resource == null || request.auth.uid in
+resource.data.memberPermissions)` on `group_weekly_menu_plans`.
+
+Registration verified, all four legs: `test:rules:weekly-menu-plans` at package.json:55;
+present in the `test:rules:all` `&&` chain (position 35); listed in BOTH `paths:` blocks of
+`.github/workflows/firestore-rules.yml` (lines 22 and 79); `PROJECT_ID =
+"butlery-rules-weekly-menu-plans"` is a unique bare literal, so the coverage-report regex
+picks the suite up. No fifth leg was owed — the suite already existed, and
+`check-test-registration.js` is per FILE.
+
+CI-vs-local deltas, all benign: CI's emulator is cold while the local one is warm, and
+`setup()`'s `clearFirestore()` covers the difference — load-bearing for G7, whose fixture is
+the ABSENCE of `group_weekly_menu_plans/wmp-group_2099-W01`; every suite in the chain carries
+its own projectId so the sequential run cannot seed it; the match block is not new on base, so
+the new-block coverage gate has no opinion on it; `firestore.rules` is itself in `paths:`, so
+the workflow fires on the rules half regardless of the test half.
+
+BLOCKING finding (process, not code): `git status` showed `MM` on both files and the INDEX was
+one edit behind the worktree. Staged G7 used `OWNER_UID` and lacked the two comment paragraphs;
+staged `firestore.rules` carried the superseded "the residual is EXISTENCE, not content"
+paragraph rather than the corrected DM-pair one. The null arm itself WAS staged, so the staged
+tree is functional — the divergence is the actor and two comments, i.e. exactly the content the
+task description called deliberate. Remedy is `git add` on both paths in the same call as the
+commit.
+
+Non-blocking, filed: G7's comment and the rules comment both assert app reachability ("the
+screen's empty state was unreachable", "`readOrBuildWeek` could not create the first plan").
+The knowledge principle on rules-test comments says a rules test and a `firestore.rules`
+comment pin what the RULE grants and never which screen reaches it — those clauses rot with the
+app and no test holds them. Recommended strike, not reword.
+
+No principles-file edit this round. The durable lesson (a read limb dereferencing `resource`
+denies every MISSING document, so read-before-create flows and empty states break) is
+firestore-rules-tester's domain, and this file is over budget; recommended it be recorded there.
+
+### 2026-08-29 — BUT-1971 re-review: the index held pre-revision bytes three times [review-mechanics]
+
+Third re-review of `functions/src/__tests__/weekly-menu-plans-rules.test.ts` in one
+session. My first blocking finding (G7 seeded the OWNER's uid, and the second comment
+paragraph was absent) was correct against the STAGED bytes and wrong against the
+worktree — the fixes existed on disk and had never reached the index.
+
+Cause, stated by the user: `git add` and `git commit` were issued in ONE Bash call. The
+commit gate is a PreToolUse hook, and it blocks the WHOLE call, so the `git add` never
+ran. The index therefore kept the pre-revision blob while the worktree carried the fix.
+That is indistinguishable from a parallel-session `MM` when read from a report, and only
+comparing `git hash-object <path>` against `git ls-files -s <path>` tells them apart.
+
+Verified this round: index and worktree both `ad51f31e1229c5594e385d46cf1c42209fc12fd9`,
+status `M `, staged diff exactly the 22-line G7 addition. G7 uses `STRANGER_UID`; both
+comment paragraphs present (the three mutation measurements, and the direction the
+existence oracle runs in). The Low was taken as a STRIKE: the app-reachability clauses
+are gone from the test comment and from the `firestore.rules` comment, leaving the
+measured rules-level fact (`resource` is null for a missing document, dereferencing it
+errors, Firestore evaluates that as a deny — measured on the emulator). Suite 14/14.
+
+Registration re-confirmed, all four legs: `test:rules:weekly-menu-plans` in
+`package.json`, the append to the `test:rules:all` `&&` chain, both `paths:` blocks in
+`.github/workflows/firestore-rules.yml` (lines 22 and 79), and the unique bare-literal
+`const PROJECT_ID = "butlery-rules-weekly-menu-plans"` that keeps the suite in the
+coverage union.
+
+Knowledge-file edits in the same change:
+- The "Review the STAGED copy" principle was superseded IN PLACE to name the hash
+  comparison as the proof and both ways the index goes stale.
+- Retired verbatim to keep the file under budget, from the deploy-manifest bullet:
+  "A derived check whose assertion cannot flip at today's scale earns its place for what
+  it PRINTS — say that, not that it guards a falsification."
+- Also struck from the gcfv1 bullet, as the file's own "strike every endpoint TALLY" rule
+  requires: "72 endpoints, 71 gcfv2". Retained: `onUserDeleted` is the only gcfv1 export
+  and must be excluded from any "every function" claim.

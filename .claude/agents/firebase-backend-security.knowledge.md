@@ -286,6 +286,23 @@ name which doc each end touches before approving it.
   `consentVersion == currentConsentVersion` (a re-grant is a `create()`, so without that it
   can re-date a stale record). Read the stored doc directly, never `exists()` (swallows a
   failed read as false).
+- A read rule whose ONLY arm dereferences `resource.data` DENIES a document that does not
+  exist — `resource` is null, the deref errors, and an error is a deny. That kills the empty
+  state and every read-before-create flow (`readOrBuild*`), and it looks like "you are not a
+  member" to real members. Path-gated rules (`planId.matches('^'+uid+'_')`) are immune. The
+  `(resource == null || <membership>)` repair's residual runs the OPPOSITE way to how it is
+  usually written up: absent now ALLOWS, present-non-member still DENIES, so the bit that
+  becomes newly readable is PRESENCE, not absence — state it that way, and grade it by how
+  guessable the doc id is (a deterministic `{conversationId}_{week}` id where
+  `direct_<uidA>_<uidB>` is constructible from two uids makes it a weak social-graph probe).
+  Grade guessability by the SECRET INSIDE the id, never by "derived vs random" — a
+  sha256-derived group id is unguessable because its input is a v4 UUID, and "the other ids
+  are random" is a falsifiable claim about a generator you have not opened. The disclosure
+  itself is PRESENCE; any "so a deny means X happened" clause beside it is a claim about the
+  collection's WRITER SET, so grep every creator before letting it stand in a sign-off.
+  It cannot widen a LIST/query (query results contain only existing docs), so an Art. 15
+  export or cascade filtering on the same field is untouched — but verify the export's
+  `.where()` names the SAME field the read rule gates on.
 - `allow list`/`allow get` are evaluated SEPARATELY (a `get` grant doesn't pass `list`);
   `auth.uid in resource.data.someMap` checks MAP KEYS, not values; self-only set edits need
   symmetric-difference CEL + `affectedKeys().hasOnly([...])`, and a self-leave needs

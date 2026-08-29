@@ -948,8 +948,24 @@ service cloud.firestore {
       // choice).
 
       // Any participant can read (any permission level).
+      //
+      // `resource` is NULL for a document that does not exist, and
+      // dereferencing it errors, which Firestore evaluates as a DENY — measured
+      // on the emulator. Without the null arm every week nobody had planned yet
+      // was refused (BUT-1971). The per-user collection above does not need
+      // this: it gates on the PATH and never touches `resource`.
+      //
+      // The residual runs the other way from how it first reads: an ALLOW now
+      // means the week is unplanned, so a DENY means a plan EXISTS. Since the
+      // id is `{conversationId}_{ISO week}` and a DM conversation id is
+      // `direct_<uidA>_<uidB>`, someone already holding two uids can learn that
+      // those two closed a meal poll that week. Content, membership and names
+      // stay closed; DM pairs are the guessable surface. Malin's call,
+      // 2026-08-29, against a `get()` on the conversation costing one extra
+      // read per rule evaluation, forever.
       allow read: if isAuthenticated()
-        && request.auth.uid in resource.data.memberPermissions;
+        && (resource == null
+            || request.auth.uid in resource.data.memberPermissions);
 
       // Creator must (a) match the doc-ID prefix with their submitted
       // groupId, (b) include themselves in memberPermissions as edit/admin.

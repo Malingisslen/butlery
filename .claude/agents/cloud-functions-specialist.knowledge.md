@@ -68,8 +68,8 @@ without approval (mismatch = silent client-side "not found").
   never `concurrency`. Notification fan-out is IN-PROCESS — a cap never
   splits a batch.
 - **`onUserDeleted` is the ONLY gcfv1 export** (own `.region().runWith()`,
-  unreachable by `setGlobalOptions`, no instance cap) — 72 endpoints, 71
-  gcfv2; exclude it from any "every function" claim.
+  unreachable by `setGlobalOptions`, no instance cap) — exclude it from any
+  "every function" claim.
 - **Prove endpoint config, never reason about it:** `npm run
   test:deploy-manifest` imports the ENTRY POINT (the only way the global
   call runs) and asserts region + a numeric `maxInstances` on every
@@ -80,8 +80,6 @@ without approval (mismatch = silent client-side "not found").
   every assertion passes over ~0 endpoints — guard the FILTERED count, once
   per CALLER. Keep BOTH the presence check and the value pin; each misses
   the other's mutant. A by-NAME pin must FAIL on a missing export, not skip.
-  A derived check whose assertion cannot flip at today's scale earns its
-  place for what it PRINTS — say that, not that it guards a falsification.
 - **Some gen2 exports pin their OWN region** (`moderateUpload`,
   `syncConversationLastMessage`, `purgeExpiredAuditLogs`, the `migrations/`
   backfills), so never say a global option "reaches every export". Adding an
@@ -433,9 +431,12 @@ from `(err as {code?}).code` instead.
   GROUP; the TTL must exceed the READER's window. An ENUMERATED allowlist
   fails silently toward the SHORTER window when a value is left off —
   derive the expected set from the WRITER files.
-- **Review the STAGED copy** (`git show :<path>`) when a parallel session is
-  live; `MM` means the index predates the fix under review, and a first read
-  after "fixes landed" can return PRE-FIX bytes. Hash with `git hash-object`,
-  not `md5sum` (CRLF moves the md5, not the blob hash). Read
+- **Review the STAGED copy**, proven by `git hash-object <path>` matching
+  `git ls-files -s <path>`, never by the worktree alone. Two ways the index
+  holds PRE-FIX bytes: `MM` (a parallel session), and `git add` + `git commit`
+  in ONE Bash call — the commit gate is a PreToolUse hook that blocks the WHOLE
+  call, so the add never runs and the report reads bytes nobody staged. Hash
+  with `git hash-object`, not `md5sum` (CRLF moves the md5, not the blob
+  hash). Read
   `.claude/state/review-ledger.jsonl` with the **Grep tool** (Bash `grep` is
   refused by its own hook).
