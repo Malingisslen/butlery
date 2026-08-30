@@ -96,6 +96,14 @@ you want the revert-probe that proved it; or this file itself reads too compress
   printed the pre-mutation md5 and the NEXT call found the mutant still live on disk. Restore
   with `git show :<path> > tmp && cp tmp <path>` (deterministic, and it is the copy the parent
   commits) and verify with `git diff --numstat <path>` empty — never against a remembered hash.
+- **A probe run over the SUITE YOU WROTE cannot support a "no other witness" claim** — that
+  needs the suites found by `grep -rl '<mutated symbol>' test/`, which is a different set from
+  the files you edited. BUT-1971's cross-language cap guard shipped a docstring saying raising
+  `maxEditTrailRows` "leaves every suite green"; the probe had run only the new file, and
+  `group_weekly_menu_plan_service_test.dart` reddens on ANY raise (its loop appends 55 rows and
+  asserts both `hasLength(cap)` and the pruned-from-the-front id). A green probe on one suite is
+  evidence about that suite only, and "no other witness" is the exact sentence shape the
+  counterfactual lesson keeps catching.
 - **When the question is only "is this line REACHED at all", coverage answers it with no
   `lib/` write** — `flutter test --coverage --coverage-path=<scratchpad>/lcov.info <suites>`,
   then `awk '/^SF:.*<file>/,/^end_of_record/' | grep '^DA:<line>,'`; a `0` is the finding.

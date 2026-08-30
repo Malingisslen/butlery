@@ -458,3 +458,13 @@ files in the same edit.
   surface from one field to four. Named beside the leaving-a-group residual rather than left
   to be discovered; the close is the whole-write ticket, not a wrapper.
   BUT-1971, 2026-08-30
+
+- **`GroupWeeklyMenuPlanService.removeParticipant` drops a uid from the two rosters and
+  leaves it on `entries[].proposedBy`, `entries[].votedInBy` and every trail row** — after
+  which NONE of the deletion cascade's three discovery handles reaches the document, so a
+  later account deletion misses it: neither erasable nor exportable. That is the exact
+  failure the `addEntry` roster intersection was written to prevent one door down. Dormant
+  today — the method has no caller in `lib/` — and named here rather than left to be
+  discovered, because the person who eventually wires an admin roster control is the one who
+  needs to know: scrub provenance and the trail in the SAME mutator. Raised by the
+  `integration-reviewer` gate. BUT-1971, 2026-08-30

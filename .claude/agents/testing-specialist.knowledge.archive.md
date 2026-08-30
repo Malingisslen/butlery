@@ -30877,3 +30877,54 @@ would be the correction chain the rule exists to stop.
 
 **Verdict:** pass (0 blocking). Test-only change by me: removed my duplicate. The suite file
 remains UNSTAGED and the parent must stage it.
+
+## 2026-08-30 — Review: `test/unit/security/rules_numeric_bound_drift_test.dart` (BUT-1971)
+
+Trigger: review of one new Dart test file added for an integration-reviewer optional — a
+cross-language guard tying `GroupWeeklyMenuPlan.maxEditTrailRows` (Dart, 50) to the number
+inside `groupMenuTrailWithinCap()` in `firestore.rules`.
+
+Read with the Read tool: `test/unit/security/rules_numeric_bound_drift_test.dart` (69 lines),
+`test/unit/security/rules_allowlist_drift_test.dart` (555 lines, the sibling idiom).
+
+Verified against the tree:
+- `firestore.rules:985-987` — `return request.resource.data.get('editTrail', []).size() <= 50;`
+  called from both the create limb (line 999) and the update limb (line 1014).
+- `lib/models/menu/group_weekly_menu_plan.dart:175` — `static const int maxEditTrailRows = 50;`
+- `lib/services/menu/group_weekly_menu_plan_service.dart:304` `_withTrailRow` — prunes; called
+  from FOUR sites (200, 226, 248, 289), not from every mutation on the service.
+- `functions/src/__tests__/weekly-menu-plans-rules.test.ts` — `trailRows(50)` / `trailRows(51)`
+  literals; there IS an at-cap ALLOW case, so lowering the rules number reddens it.
+- `test/unit/services/menu/group_weekly_menu_plan_service_test.dart:503-520` — reads the
+  constant, loops 55 appends.
+
+BLOCKING FINDING (1). The docstring's central sentence — "RAISE the Dart constant and every
+suite stays green … That is the direction with no other witness" — is FALSE, measured. Probe:
+backed up the model, `sed` the constant 50 -> 60, `rm -rf .dart_tool/flutter_build`, ran
+`flutter test test/unit/services/menu/group_weekly_menu_plan_service_test.dart` -> `+14 -1`,
+failing at line 514 `Which: has length of <55>`. Restored via trap; md5 `f9a3caba…` identical
+and `git diff --stat` empty. Any raise reddens that suite: below 55 the `first.entryId == 'e5'`
+assertion fails, above 55 the `hasLength` does. So the asymmetry is real but the "no other
+witness" half is not. Recommended STRIKE of the sentence (not a reword) per the repo's
+wrong-sentence rule; any replacement must be probed with `flutter test test/unit`, not one file.
+
+Non-blocking: "(`maxEditTrailRows`, which prunes on every write)" — a constant does not prune,
+and the prune is on four call sites, not every write; the service's own comment calls it "a
+courtesy to the document, not a bound". Recommend striking the quantifier.
+
+Not findings, checked and cleared:
+- The `isNotNull` expectation EARNS its place. It is the extraction precondition, exactly the
+  sibling's `_allowlistAfter` anchor+sentinel shape, and its reason string names both causes;
+  without it `match!` is a bare null crash. It is not a second property assertion.
+- Regex tolerance: `\s*` and `[^}]*?` both cross newlines, so a body split across lines still
+  matches, as does `.size() <= 50 && …`. It does NOT match `< 51`, `50 >= .size()`, or a
+  hoisted `let cap = 50;` — each of those trips `isNotNull`, whose message says the shape is
+  unreadable, so the failure is loud and actionable rather than silent. Acceptable.
+- Home and registration: `test/unit/security/` is where the sibling lives; CI runs
+  `flutter test test/unit` (`.github/workflows/test.yml:115,248`) by DIRECTORY, and
+  `functions/scripts/check-test-registration.js` covers `functions/src/__tests__/**` TypeScript
+  only. Nothing to register.
+- Green as claimed: `flutter test test/unit/security/rules_numeric_bound_drift_test.dart` -> `+1`.
+
+Lesson taken to the principles file: a probe scoped to the suite you wrote cannot support a
+"no other witness" claim; the witness set is `grep -rl '<symbol>' test/`.

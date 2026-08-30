@@ -299,9 +299,17 @@ class FakeFirestore {
    * stub that looked up the literal key would report the BUT-1788 system-message
    * sweep as matching nothing while claiming to pass.
    */
-  private static readField(data: DocData, field: string): unknown {
+  /** A `FieldPath` is not a dotted string; its parts are its `.segments`. */
+  private static readField(
+    data: DocData,
+    field: string | admin.firestore.FieldPath,
+  ): unknown {
+    const segments =
+      field instanceof admin.firestore.FieldPath
+        ? (field as unknown as { segments: string[] }).segments
+        : field.split(".");
     let cursor: unknown = data;
-    for (const segment of field.split(".")) {
+    for (const segment of segments) {
       if (cursor === null || typeof cursor !== "object") return undefined;
       cursor = (cursor as Record<string, unknown>)[segment];
     }
@@ -309,7 +317,11 @@ class FakeFirestore {
   }
 
   collection(name: string): unknown {
-    const matching = (field: string, op: string, value: unknown) => {
+    const matching = (
+      field: string | admin.firestore.FieldPath,
+      op: string,
+      value: unknown,
+    ) => {
       const matches: { path: string; data: DocData }[] = [];
       for (const [path, data] of this.docs) {
         const segments = path.split("/");
@@ -1666,6 +1678,100 @@ async function scenario_probeSeesLeftoverRosterRows(): Promise<void> {
 }
 
 /**
+ * BUT-1971: the three group-weekly-menu legs of the residual probe.
+ *
+ * The deleter finds a group plan through three handles — the queryable roster,
+ * the document-level `lastModifiedBy`, and the ACL key
+ * `memberPermissions.<uid>` — because the Art. 15 export discovers on the last
+ * of those and erasure may never be narrower than export. The probe carries the
+ * same three, and they are the only thing that contradicts a scrub which
+ * reported success over a failed chunk (`commitInChunks` runs `strict: false`).
+ *
+ * Nothing observed them. The integration lane asserts `failedCollections` is
+ * EMPTY, so deleting any one leg makes the probe blind and the assertion
+ * happier, not redder. Each case below seeds a document reachable by exactly
+ * ONE handle, so removing that leg leaves its case green-expected-red.
+ *
+ * The ACL leg is queried with a `FieldPath`, which the fake resolves via
+ * `.segments`; teaching it to is what makes that case measure the leg rather
+ * than the stub. Each of the three legs was mutation-probed with a compiling
+ * mutant and its own case reddened alone.
+ *
+ * The clean control is weaker here than beside the roster scenario, and that is
+ * worth knowing rather than assuming: a fake that mis-resolves a `FieldPath`
+ * matches nothing instead of throwing, so it produces a silent zero, and only
+ * the DIRTY ACL case can see that. Measured — the control stays green under
+ * that mutant. It still earns its place for the roster scenario's reason: a
+ * method the probe needs but the fake lacks lands in a per-leg catch and counts
+ * as residual, which would make every dirty half pass for the wrong reason.
+ */
+async function scenario_probeSeesLeftoverGroupMenuPlans(): Promise<void> {
+  const { probeResidualData } = require("../account/account-deletion-cascade");
+
+  const result = () => ({
+    deletedCollections: [],
+    failedCollections: [] as string[],
+    errors: [],
+  });
+
+  const clean = new FakeFirestore();
+  // Scrubbed exactly as the cascade leaves it: another member's plan, with no
+  // trace of UID on any of the three handles.
+  clean.set("group_weekly_menu_plans/g1_2026-W30", {
+    participantUserIds: [OTHER],
+    memberPermissions: { [OTHER]: "admin" },
+    lastModifiedBy: OTHER,
+  });
+  const cleanResult = result();
+  await probeResidualData(asDb(clean), UID, cleanResult);
+  check(
+    "a fully scrubbed group menu plan probes CLEAN on all three handles",
+    !cleanResult.failedCollections.includes("residual_data_detected"),
+    `failed: ${JSON.stringify(cleanResult.failedCollections)}`,
+  );
+
+  // Each case is spelled out whole rather than spread over a shared base: a
+  // spread that overwrites an earlier key is a TS2783 error, and silencing it
+  // by reordering is how a case ends up seeding a handle it did not mean to.
+  for (const [label, doc] of [
+    [
+      "the roster",
+      {
+        participantUserIds: [OTHER, UID],
+        memberPermissions: { [OTHER]: "admin" },
+        lastModifiedBy: OTHER,
+      },
+    ],
+    [
+      "the last writer",
+      {
+        participantUserIds: [OTHER],
+        memberPermissions: { [OTHER]: "admin" },
+        lastModifiedBy: UID,
+      },
+    ],
+    [
+      "the permission key",
+      {
+        participantUserIds: [OTHER],
+        memberPermissions: { [OTHER]: "admin", [UID]: "edit" },
+        lastModifiedBy: OTHER,
+      },
+    ],
+  ] as const) {
+    const dirty = new FakeFirestore();
+    dirty.set("group_weekly_menu_plans/g1_2026-W30", doc);
+    const dirtyResult = result();
+    await probeResidualData(asDb(dirty), UID, dirtyResult);
+    check(
+      `a group menu plan still naming the user in ${label} is reported as residual`,
+      dirtyResult.failedCollections.includes("residual_data_detected"),
+      `failed: ${JSON.stringify(dirtyResult.failedCollections)}`,
+    );
+  }
+}
+
+/**
  * BUT-1801: the recipes leg of the residual probe.
  *
  * Until this fix, `probeResidualData` counted `recipes` as a TOP-LEVEL collection
@@ -2791,6 +2897,7 @@ async function main(): Promise<void> {
   await scenario_rosterIsClearedBeforeTheParentDelete();
   await scenario_unclearableRosterLeavesTheParentStanding();
   await scenario_probeSeesLeftoverRosterRows();
+  await scenario_probeSeesLeftoverGroupMenuPlans();
   await scenario_probeSeesLeftoverRecipes();
   await scenario_rosterIndexIsDeclared();
   await scenario_chatGroupMembershipIsErasedEverywhere();

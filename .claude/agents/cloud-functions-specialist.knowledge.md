@@ -203,14 +203,15 @@ from `(err as {code?}).code` instead.
   DIFFERENT result than any other failure** — the recurring failure is one
   error code from TWO branches; assert on branch-unique text. Some guards
   fire only on a SECOND invocation — give re-enterable steps a re-run test.
-  An unsimulated fake stub must THROW, not silently succeed.
+  An unsimulated fake stub must THROW, not silently succeed — and a fake
+  resolving a dotted `where()` field MUST special-case `FieldPath`: it HAS a
+  `.split` (`"."` → `["",""]`), so it returns `undefined` not a throw,
+  a `!=` leg matches ZERO, and the clean control stays green.
+  Read `.segments`.
 - Vacuity patterns: a `?? {}` read survives the mutant that DELETES the doc
   (pair it with a sibling requiring EXISTS); a `src.includes("<field>")`
   assertion is free whenever the docstring names the field (assert the
-  WRITE); a fake `listDocuments()` returning only stored docs cannot stage a
-  PHANTOM parent. A rules test here, and a comment in `firestore.rules`, pin
-  what the RULE grants and never which SCREEN reaches it — strike any
-  app-reachability claim in either.
+  WRITE).
 - **Rules are not filters** — a client query with NO condition is DENIED
   wholesale on a member-scoped collection; only the RULES emulator lane
   proves it, and that emulator KEEPS data across runs, so give an "empty"

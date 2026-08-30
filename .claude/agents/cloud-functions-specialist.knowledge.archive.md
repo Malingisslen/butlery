@@ -16399,3 +16399,69 @@ raw-witness delete gate, the FieldPath-in-logs rule — is already in the file f
 previous pass, and the file is over budget.
 
 Verdict: pass, 0 blocking.
+
+### 2026-08-30 — FieldPath has a `.split`, so the string-assuming fake failed SILENTLY [testing][gdpr]
+
+BUT-1971 follow-up review of `functions/src/__tests__/account-deletion-cascade.test.ts`
+(the `readField` FieldPath resolution + `scenario_probeSeesLeftoverGroupMenuPlans`).
+
+MEASURED this run, on the real SDK (`npx ts-node`, firebase-admin in `functions/`):
+
+    new admin.firestore.FieldPath("memberPermissions", uid).segments
+      -> ["memberPermissions", "<uid>"]
+    typeof fieldPath.split  -> "function"
+    fieldPath.split(".")    -> ["", ""]
+
+So `admin.firestore.FieldPath` DOES expose `split`. A fake `readField` written as
+`(field as string).split(".")` therefore does NOT throw on a FieldPath — it walks the
+segments `["", ""]`, reads `data[""]` -> `undefined`, and the `!=` matcher's
+`fieldVal !== undefined` guard (faithful to Firestore, which excludes absent fields
+from `!=`) drops every document. The leg matches ZERO, silently: the wrong-field trap,
+not a false alarm.
+
+Mutation probe run this session (backup + restore, `git hash-object` verified
+9d42f299cc494166b2b979d4bb4e1a8cbecba9c8 before and after): reverting the fake to
+`(field as string).split(".")` gave **137/138**. The single red was
+`a group menu plan still naming the user in the permission key is reported as residual`.
+The CLEAN control (`a fully scrubbed group menu plan probes CLEAN on all three handles`)
+stayed GREEN with the mutant live.
+
+Consequence for the review: the doc comment added above `readField` claimed the opposite
+in both directions — "handing one to a stub that assumes a string throws", "the ACL-key
+leg would have reported leftover data on a store holding none", and "the clean-store
+control beside each dirty case is what proves this branch resolves rather than throws".
+All three refuted by the run above. Reported as blocking, remediation = STRIKE the block
+(the true wording is a measurement, not something readable off the code). Note this is
+the second wording of the same false claim: the first ("fails on a throw and passes only
+on a real resolution") had already been struck by the author, and the replacement text
+re-planted it — the "the paragraph written to BE the correction is where the next false
+sentence lands" pattern, exactly.
+
+Also verified this run (no findings):
+- Deleter's three handles at `account-deletion-cascade.ts:1218-1236` (roster
+  array-contains / `lastModifiedBy` == / `FieldPath("memberPermissions", uid) != null`),
+  unioned by `doc.ref.path` into `byPath`, scrubbed via
+  `commitInChunks(..., { label: "scrubGroupWeeklyMenuPlans", strict: false })`.
+- Probe's matching three legs at `:280-298`, with the `fieldLabel` guard keeping the raw
+  uid out of the log line.
+- `Collections.groupWeeklyMenuPlans === "group_weekly_menu_plans"`.
+- Integration lane asserts `RESULT.failedCollections.length === 0`
+  (`request-account-deletion.integration.test.ts:1820`) — so a deleted probe leg does make
+  that assertion happier, as the scenario's docstring says.
+- Each of the three dirty fixtures is reachable by exactly ONE handle (traced field by
+  field), and no other probe leg touches `group_weekly_menu_plans` (the other top-level
+  legs name different collections; the collectionGroup legs key on `poll_votes` /
+  `participants`).
+- Baseline 138/138; `npm run build` clean.
+
+Knowledge-file edit made in the SAME pass, budget-neutral-or-better: folded the FieldPath
+trap into the "unsimulated fake stub must THROW" principle, and retired two clauses from
+the vacuity bullet. Retired verbatim:
+
+  "a fake `listDocuments()` returning only stored docs cannot stage a PHANTOM parent."
+  (duplicated by the fuller `listDocuments()` principle in the GDPR-cascade section)
+
+  "A rules test here, and a comment in `firestore.rules`, pin what the RULE grants and
+  never which SCREEN reaches it — strike any app-reachability claim in either."
+  (firestore-rules-tester territory, and the general doctrine already lives in
+  `.claude/rules/` — retired from THIS agent's file only)

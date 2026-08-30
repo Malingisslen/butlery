@@ -16,6 +16,15 @@ rule is internalised (roughly six weeks).
 
 ## Current
 
+### [Testing] A mutation probe's SUITE SET is part of the probe, and a fake's stub can lie by matching nothing
+
+- **Date**: 2026-08-30 (BUT-1971 follow-ups)
+- **Trigger**: two comments written in the same hour, each measured false by the reviewer who read them. Both were counterfactuals about mutants I had run.
+- **Rule (probe scope)**: a mutation probe run against only the file you just wrote measures that file, not the claim. Mine said "raise the Dart cap and every suite stays green"; the service suite reddens too, because it loops 55 appends and asserts both the pruned LENGTH and the surviving first id against the constant. Run the probe over the directory, not the file — this is the same "verification set chosen by the files you EDITED" trap this ticket already paid for once, arriving the second time as a COMMENT rather than a missed red suite.
+- **Rule (fake stubs)**: `admin.firestore.FieldPath` HAS a `.split` method, so `(field as string).split(".")` on one does not throw — it returns `["", ""]`, reads `data[""]` as undefined, and a faithful `!=` matcher then excludes the document. The fake matches ZERO and reports a clean store over live data. Before writing that a mis-typed stub "throws and lands in the catch", run the two lines that check: does the object have the method, and what does the matcher do with the value it returns. A silent zero and a throw are opposite failures — one is a false all-clear, the other a false alarm — and only one of them a clean-store control can see.
+- **Corollary**: after a reviewer strikes one such sentence, the replacement is where the next false one lands. Both of mine were struck twice before the third wording said only what was measured. On the second failed repair, delete the clause rather than attempt a third.
+
+
 ### [GDPR] Before designing a new field's erasure, ask whether the field is a second copy
 - **Date**: 2026-08-30 (BUT-1971, the provenance build)
 - **Trigger**: the blind DPO critique returned the panel's only blocking finding — a uid inside `metadata.poll.options[]` is an array of maps Firestore cannot query, so it would have been structurally unerasable. Both remedies I then sketched were real work.
