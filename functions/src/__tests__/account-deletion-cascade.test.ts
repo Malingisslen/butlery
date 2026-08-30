@@ -344,7 +344,13 @@ class FakeFirestore {
       }
       return matches;
     };
-    const matcher = (field: string, op: string, value: unknown) => ({
+    // Same union as `matching` and `readField`: production hands this a
+    // `FieldPath`, and `asDb` casts through `unknown`, so nothing else checks it.
+    const matcher = (
+      field: string | admin.firestore.FieldPath,
+      op: string,
+      value: unknown,
+    ) => ({
       // BUT-1822: `count()` was missing, which is why `probeResidualData` — the
       // cascade's own safety net — had no test in this file at all.
       count: () => ({
@@ -407,8 +413,11 @@ class FakeFirestore {
       },
     });
     return {
-      where: (field: string, op: string, value: unknown) =>
-        matcher(field, op, value),
+      where: (
+        field: string | admin.firestore.FieldPath,
+        op: string,
+        value: unknown,
+      ) => matcher(field, op, value),
       doc: (id: string) => this.makeRef(`${name}/${id}`),
       get: unfiltered().get,
       limit: (max: number) => unfiltered(max),
@@ -436,7 +445,11 @@ class FakeFirestore {
    * does.
    */
   collectionGroup(name: string): unknown {
-    const matching = (field: string, op: string, value: unknown) => {
+    const matching = (
+      field: string | admin.firestore.FieldPath,
+      op: string,
+      value: unknown,
+    ) => {
       const matches: { path: string; data: DocData }[] = [];
       for (const [path, data] of this.docs) {
         const segments = path.split("/");
@@ -468,7 +481,11 @@ class FakeFirestore {
       })),
     });
     return {
-      where: (field: string, op: string, value: unknown) => ({
+      where: (
+        field: string | admin.firestore.FieldPath,
+        op: string,
+        value: unknown,
+      ) => ({
         get: async () => snapshotOf(matching(field, op, value)),
         // BUT-1822. The roster sweep reads `.limit(MAX + 1)` so it can tell
         // "plausible" from "seeded" and decline rather than truncate, and the
@@ -1714,18 +1731,23 @@ async function scenario_probeSeesLeftoverGroupMenuPlans(): Promise<void> {
     errors: [],
   });
 
+  // All three handles are clean while the uid is still on the per-dish
+  // provenance and in the trail, so the probe reads CLEAN over data that is
+  // present. The two rows are projections, not what `toFirestore` writes: the
+  // probe reads neither field, and only their presence matters here.
   const clean = new FakeFirestore();
-  // Scrubbed exactly as the cascade leaves it: another member's plan, with no
-  // trace of UID on any of the three handles.
   clean.set("group_weekly_menu_plans/g1_2026-W30", {
     participantUserIds: [OTHER],
     memberPermissions: { [OTHER]: "admin" },
     lastModifiedBy: OTHER,
+    entries: [{ id: "e1", proposedBy: UID, votedInBy: [UID, OTHER] }],
+    editTrail: [{ actorId: UID, subjectId: OTHER, entryId: "e1" }],
   });
   const cleanResult = result();
   await probeResidualData(asDb(clean), UID, cleanResult);
   check(
-    "a fully scrubbed group menu plan probes CLEAN on all three handles",
+    "a group menu plan clean on all three handles probes CLEAN — even with the " +
+      "uid still on the dishes and in the trail, which no handle can reach",
     !cleanResult.failedCollections.includes("residual_data_detected"),
     `failed: ${JSON.stringify(cleanResult.failedCollections)}`,
   );

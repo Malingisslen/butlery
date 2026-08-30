@@ -16454,7 +16454,8 @@ Also verified this run (no findings):
   `participants`).
 - Baseline 138/138; `npm run build` clean.
 
-Knowledge-file edit made in the SAME pass, budget-neutral-or-better: folded the FieldPath
+Knowledge-file edit made in the SAME pass (net +435 chars, so it did NOT pay its way
+against the file's stated budget): folded the FieldPath
 trap into the "unsimulated fake stub must THROW" principle, and retired two clauses from
 the vacuity bullet. Retired verbatim:
 
@@ -16465,3 +16466,34 @@ the vacuity bullet. Retired verbatim:
   never which SCREEN reaches it — strike any app-reachability claim in either."
   (firestore-rules-tester territory, and the general doctrine already lives in
   `.claude/rules/` — retired from THIS agent's file only)
+
+### 2026-08-30 — FieldPath seam typing on the cascade fake, and a fixture comment that over-claimed [review]
+
+BUT-1971 follow-up review of `functions/src/__tests__/account-deletion-cascade.test.ts`
+(diff: widened `matcher` + `collection().where` to `string | admin.firestore.FieldPath`;
+rewrote the group-menu clean control to seed `entries`/`editTrail` still carrying UID).
+
+Verified by reading the code:
+- The only two `FieldPath` query sites in `account/account-deletion-cascade.ts` are
+  `probeResidualData` (line ~296) and `deleteWeeklyMenuPlans` (line ~1234), and BOTH go
+  through `db.collection(...).where(...)`. All eight `collectionGroup(...)` calls in that
+  file pass plain string fields, so the fake's `collectionGroup` seam (`matching`/`where`,
+  still `field: string`) is not exercised with a FieldPath today. Widening it anyway was
+  recommended only because the new comment says "all the way out to `where`", and the file
+  has a second `where`.
+- Suite reproduced: `npm run test:account-deletion-cascade` → 138/138.
+- Fixture-vs-serialiser check against `lib/models/menu/group_weekly_menu_plan.dart` and
+  `weekly_menu_plan.dart`: a real `entries` element always carries `id`, `day`, `slot`,
+  `recipeId`, `recipeTitle`; a real `editTrail` row always carries `actorId`, `at`,
+  `action`. The fixture's rows carry neither set, and the document omits `participants`,
+  `groupId`, `weekStartDate`, `createdAt`, `lastModifiedAt`. Harmless for the probe (its
+  three legs read only `participantUserIds`, `lastModifiedBy`, `memberPermissions.<uid>`),
+  but it falsifies the comment's "this is the document `removeParticipant` leaves behind,
+  and seeding it whole".
+- Also struck-recommended: "the day a mutator scrubs those two fields as well, this
+  control is the fixture to widen" — scrubbing `entries`/`editTrail` changes nothing this
+  probe can observe, so the prediction is false, not merely unmeasured.
+
+Retired from the principles file in the same edit (verbatim, per the archive contract):
+  "Some guards fire only on a SECOND invocation — give re-enterable steps a re-run test."
+  (generic; the repo's testing digest carries re-run/idempotency doctrine already)

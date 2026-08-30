@@ -8,9 +8,7 @@
 ///
 /// This guard reads the RULES number and compares it to the Dart constant, so
 /// an edit to either side alone reddens here. Whether some OTHER suite also
-/// reddens is not a claim this file makes: an earlier version of this comment
-/// said raising the Dart constant left every suite green, and the review that
-/// measured it found `group_weekly_menu_plan_service_test.dart` reddening too.
+/// reddens is not a claim this file makes.
 ///
 /// Comment-stripped for the same reason the allowlist guard is: the rules file
 /// is read as raw text, so a commented-out cap would satisfy a naive match
