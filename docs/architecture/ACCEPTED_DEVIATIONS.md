@@ -2549,3 +2549,18 @@ neither passed an `auditRepository` at all.
   discovered, because the person who eventually wires an admin roster control is the one who
   needs to know: scrub provenance and the trail in the SAME mutator. Raised by the
   `integration-reviewer` gate. BUT-1971, 2026-08-30
+
+- **RESOLVED 2026-08-30 — Malin: a member who LEAVES a group KEEPS their name on the dishes
+  and in the trail; only deleting the account erases it.** Closes the first half of the OPEN
+  entry above, which said she had taken no position. Needs no code: a single leave never
+  touches the plan — `removeChatGroupMember` sweeps plans only when `remaining === 0`, via
+  `deleteEmptyGroup`, so one member leaving a still-populated group edits nothing.
+  Her proviso holds today for a reason worth naming: a leaver stays in `memberPermissions`,
+  which is one of the cascade's three discovery handles, so a LATER account deletion still
+  reaches the document and erases them. Wiring the dormant `removeParticipant` into a leave
+  path would break exactly that — a second reason on top of the one its own entry gives.
+  **Does NOT close** the second half of the entry above: the "already visible on screen"
+  reasoning has still not been tested against a week predating a requester's membership.
+  **Separate and still open:** because `firestore.rules` gates the plan on `memberPermissions`
+  alone, a departed member keeps EDIT access to the group's menu. That is an access question,
+  not a naming one, and this decision says nothing about it. BUT-1971, 2026-08-30
