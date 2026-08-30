@@ -320,6 +320,14 @@ Standard deny matrix for ownership-checked collections:
   sweep's natural instinct) can leave a false sync claim standing, so read the literal on
   both sides and grep for OTHER mirrors the comment doesn't name — `isAccountMatured()`'s
   60 min has three (`kAccountMaturityWindow`, `kAccountMaturityWindowMs`, the rule).
+  **A comment naming a DRIFT GUARD instead ("the two are compared by `<test>`") makes a
+  third claim: that the guard extracts THIS literal and not an adjacent one.** Verify by
+  replicating the guard's own extraction (its regex, over the same comment-stripped text)
+  and printing what it captured plus how many other copies of the number exist — reading the
+  regex is not verification. Then check the guard RUNS in CI (`test.yml` runs `flutter test
+  test/unit`), or the pointer names a guard nothing fires. Residual worth one Low line: such
+  a comment carries a cross-language PATH that a rename breaks silently, with no reciprocal
+  pointer back (BUT-1971, `groupMenuTrailWithinCap` -> `rules_numeric_bound_drift_test.dart`).
 - A decision record or comment quoting mutation-probe figures inherits their staleness
   at one remove — re-run every quoted mutant against the CURRENT file before trusting a
   written figure; arithmetic on an old run is not measurement.
@@ -380,6 +388,9 @@ Standard deny matrix for ownership-checked collections:
   travels between entries. Size-filter object
   recovery on the file's real CRLF byte size, not an LF-era guess, or the sweep silently
   returns only ancient revisions and reads as "no prior version exists."
+  **Re-run the affected suite anyway.** A comment cannot change CEL evaluation, so the run
+  is not owed for behaviour — but it is the only check on the one thing a comment edit CAN
+  break: a ruleset that no longer compiles.
 - **A mutation probe that reddens NOTHING is often the most valuable result — it means a
   COMMENT is wrong, not the code.** Run both the "the forbidden edit" probe (tests the
   comment's claim) and the "delete the conjunct" probe (tests whether the test is

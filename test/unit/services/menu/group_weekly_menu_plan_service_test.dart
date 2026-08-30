@@ -511,7 +511,12 @@ void main() {
         );
       }
 
-      expect(plan.editTrail, hasLength(GroupWeeklyMenuPlan.maxEditTrailRows));
+      // A LITERAL, not the constant. `hasLength(maxEditTrailRows)` compares the
+      // prune's own bound to itself: for any cap at or below the 55 appends
+      // above it holds in both directions, so it reddens only if the cap is
+      // raised past the loop. The rules copy of this cap is compared to the
+      // Dart constant by `test/unit/security/rules_numeric_bound_drift_test.dart`.
+      expect(plan.editTrail, hasLength(50));
       expect(
         plan.editTrail.last.entryId,
         'e54',

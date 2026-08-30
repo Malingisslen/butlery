@@ -3860,3 +3860,56 @@ Also noted and NOT touched: `.claude/worktrees/wf_a173466e-c2e-19/firestore.rule
 carries the pre-strike text. That is a parallel session's worktree.
 
 Verdict: pass, 0 blocking.
+
+---
+
+## 2026-08-30 — BUT-1971: a rules comment that POINTS AT A DRIFT GUARD (comment-only diff)
+
+Reviewed a three-line-for-two comment replacement beside `groupMenuTrailWithinCap()` in
+`group_weekly_menu_plans`. Old text: "Nothing derives one from the other: lowering the Dart
+constant diverges silently, raising it denies every save." New text: "50 is also
+`GroupWeeklyMenuPlan.maxEditTrailRows`; the two are compared by
+`test/unit/security/rules_numeric_bound_drift_test.dart`."
+
+**Comment-only proof (mechanical).** `git diff --cached -U0 | grep '^[+-]' | grep -v
+'^[+-][[:space:]]*//'` empty; comment+CR+blank-stripped staged vs HEAD both 1387 surviving
+lines with identical md5 within the run (b2de31c…, valid only for this run's strip
+pipeline).
+
+**Pointer resolution, measured rather than read.** Replicated the guard's own extraction in
+Python over the comment-stripped rules text: `function\s+groupMenuTrailWithinCap\s*\(\s*\)
+\s*\{[^}]*?\.size\(\)\s*<=\s*(\d+)` captures `50` from the span
+`function groupMenuTrailWithinCap() { return request.resource.data.get('editTrail',
+[]).size() <= 50`, there is exactly ONE definition of that function, and `50` appears 6
+times in the stripped file — so the capture is the function's literal and not an adjacent
+one. Dart side: `GroupWeeklyMenuPlan.maxEditTrailRows = 50`. `flutter test
+test/unit/security/rules_numeric_bound_drift_test.dart` green (1/1). The guard runs in CI:
+`.github/workflows/test.yml` runs `flutter test test/unit`. It asserts nothing else — its
+own header explicitly scopes out the both-limbs question.
+
+**The struck half was an overstatement, confirmed.** `_withTrailRow` prunes to
+`maxEditTrailRows` keeping the newest rows, and the rule reads
+`.get('editTrail', []).size() <= 50` off the submitted payload. Raising the Dart constant to
+N > 50 therefore denies only saves of a week whose trail has already grown past 50 rows;
+every shorter week saves normally. Striking beat rewording — the true wording is a scope
+that has to be measured.
+
+**Surrounding block re-verified against the rules language, not taken from the prompt.**
+`hasRequiredFields([...])` on the create limb omits `editTrail` and there is no `hasOnly`,
+so "create requires no `editTrail` and rejects no extra fields" holds and the both-limbs
+justification stands (cap present at both `allow create` and `allow update`; `allow delete`
+has no `request.resource` and needs none). The `.size()`-polymorphism sentence ("a map with
+<= 50 keys satisfies `.size()` too") matches the per-type measurement already in the
+knowledge file. The 1 MB sentence is a fact about Firestore, not a claim about this rule,
+and the "do not cite as a DoS control" line is advisory.
+
+**Re-ran the emulator suite anyway: 22/22 passed.** A comment cannot change CEL evaluation,
+so the re-run is not owed for behaviour — but it is cheap and it does disprove the one thing
+a comment edit CAN break, an unterminated/typo'd comment that stops the ruleset compiling.
+Worth doing whenever the rules file itself is edited, even for comments.
+
+Low, non-blocking: the comment now carries a cross-language file PATH, which goes stale
+silently on a rename with no test to catch it (the Dart guard has no reciprocal pointer back
+to the rules comment). Not worth a rewrite today.
+
+Verdict: pass, 0 blocking.

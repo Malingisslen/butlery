@@ -101,7 +101,7 @@ you want the revert-probe that proved it; or this file itself reads too compress
   the files you edited. BUT-1971's cross-language cap guard shipped a docstring saying raising
   `maxEditTrailRows` "leaves every suite green"; the probe had run only the new file, and
   `group_weekly_menu_plan_service_test.dart` reddens on ANY raise (its loop appends 55 rows and
-  asserts both `hasLength(cap)` and the pruned-from-the-front id). A green probe on one suite is
+  asserts the pruned-from-the-front id `first.entryId == 'e5'`, which is `e(55 − cap)`). A green probe on one suite is
   evidence about that suite only, and "no other witness" is the exact sentence shape the
   counterfactual lesson keeps catching.
 - **When the question is only "is this line REACHED at all", coverage answers it with no
@@ -390,6 +390,18 @@ you want the revert-probe that proved it; or this file itself reads too compress
   method across the WHOLE file before writing the sentence (2026-08-27).
 - Source-text assertion suites must strip comments first, or a bare `includes` stays green
   after the setting is deleted; probe non-vacuity with a STRING mutant, never a file mutant.
+- **A TAUTOLOGICAL assertion is not automatically a coverage hole — grade the whole test
+  before repairing it, and grade it ARITHMETICALLY.** `hasLength(<the constant>)` over N
+  appends does compare the prune's bound to itself, but the sibling `first.entryId == 'e5'`
+  in the same test is `e(N − cap)` and already reddened on EVERY cap change, so swapping in a
+  literal added no kill and the repair's "previously a lowering was silent here" was false.
+  Substituting the mutant value into the fixture's own arithmetic settles this in seconds and
+  outranks a mutation probe, whose GREEN is only a hypothesis. Two companions: a
+  cross-language DRIFT guard (`rules_numeric_bound_drift_test.dart`) pins EQUALITY between two
+  copies, never the VALUE — only a suite asserting the number absolutely does that; and the
+  moment such a guard lands, any "nothing ties these two copies / a lowering diverges
+  silently" comment on the OTHER side goes false, so grep that concept in the same round
+  (`firestore.rules` `groupMenuTrailWithinCap`, BUT-1971, 2026-08-30).
 - **A stub must reproduce the production return's IDENTITY, not just its VALUE, whenever the
   code under test branches on `identical(...)`** — `GroupWeeklyMenuPlanService.removeEntry`
   returns the plan ITSELF when the id is missing, and a stub calling `copyWith`

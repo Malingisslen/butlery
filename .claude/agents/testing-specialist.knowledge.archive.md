@@ -30928,3 +30928,54 @@ Not findings, checked and cleared:
 
 Lesson taken to the principles file: a probe scoped to the suite you wrote cannot support a
 "no other witness" claim; the witness set is `grep -rl '<symbol>' test/`.
+
+### 2026-08-30 — BUT-1971: the tautology was real, the hole was not (`hasLength(cap)` -> `hasLength(50)`)
+
+Trigger: review of a one-assertion change to `test/unit/services/menu/group_weekly_menu_plan_service_test.dart`
+(`'the trail keeps the NEWEST 50 rows, not the oldest'`), made in answer to an
+`integration-reviewer` finding that `expect(plan.editTrail, hasLength(GroupWeeklyMenuPlan.maxEditTrailRows))`
+compares the prune's own bound to itself. Staged (`M `, index == worktree),
+md5 `a6c73dc7be8010e8388171b3fb7b92e1`.
+
+Measured, analytically, from the prune (`rows.sublist(rows.length - cap)`) and the loop (`i < 55`):
+
+| cap C | length | last.entryId | first.entryId |
+|---|---|---|---|
+| C <= 55 | C | `e54` | `e(55 - C)` |
+| C >= 56 | 55 | `e54` | `e0` |
+
+- The finding is correct about the ONE assertion: `hasLength(C)` vs length `min(55, C)` holds
+  for every C <= 55.
+- But the test ALREADY held `expect(plan.editTrail.first.entryId, 'e5')` at HEAD
+  (`git show HEAD:<path>` read), and `e(55 - C) == 'e5'` only at C == 50. So at HEAD the test
+  reddened on EVERY cap change in both directions. The repair's stated measurement,
+  "previously a one-off lowering was silent here", is FALSE; a green mutation probe reporting
+  it is the stale-kernel phantom this file already warns about (GREEN is a hypothesis).
+- `last.entryId == 'e54'` is cap-INDEPENDENT (newest row survives any cap >= 1). It pins the
+  END the prune cuts from, not the number. So the new comment's "The two id assertions are
+  what actually pin the number" is wrong on the count: exactly one of them does.
+- The new literal is harmless and makes the first failure message clearer; it adds no kill.
+- `firestore.rules:982-984` still says "Nothing derives one from the other: lowering the Dart
+  constant diverges silently". False since `test/unit/security/rules_numeric_bound_drift_test.dart`
+  landed in this same ticket (0e2be74f5 / 4432f707b, after 5119c4bdb wrote the comment) — and it
+  is the direct contradiction of the new test comment's own pointer. Two answers to one question.
+- No unused import or symbol: `GroupWeeklyMenuPlan` is still used ~10 times in the file
+  (`empty`, `_FakeGroupPlan implements`, `planWith`), and `maxEditTrailRows` keeps two live
+  readers in `lib/` plus the drift guard.
+
+Verdict: fail (3 blocking) — the false measurement, the "two id assertions" count, the stale
+`firestore.rules` sentence. All three are strikes, not rewordings.
+
+Lesson taken to the principles file: a tautological assertion is not automatically a coverage
+hole — substitute the mutant value into the fixture's own arithmetic before repairing; and a
+cross-language drift guard pins EQUALITY, never the value, so its arrival falsifies every
+"nothing ties these copies" comment on the other side.
+
+
+Retired verbatim from the knowledge file in that same edit, the descriptive clause the
+paragraph above replaced (its parenthetical was wrong about which assertion pins the cap —
+`hasLength(cap)` compared the prune's own bound to itself and held for every cap at or
+below the loop's 55 appends, so only the pruned-from-the-front id did any pinning):
+
+> `group_weekly_menu_plan_service_test.dart` reddens on ANY raise (its loop appends 55 rows and
+> asserts both `hasLength(cap)` and the pruned-from-the-front id).

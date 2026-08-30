@@ -111,7 +111,7 @@ interface FakeSubcollection {
    * it, which is precisely the shape of collection the cascade had never swept.
    */
   where(
-    field: string,
+    field: string | admin.firestore.FieldPath,
     op: string,
     value: unknown,
   ): {
@@ -214,7 +214,11 @@ class FakeFirestore {
       collection: (name: string): FakeSubcollection => {
         const snapshotOf = (paths: string[]): FakeQuerySnapshot =>
           this.snapshotOfPaths(paths);
-        const filtered = (field: string, op: string, value: unknown) =>
+        const filtered = (
+          field: string | admin.firestore.FieldPath,
+          op: string,
+          value: unknown,
+        ) =>
           this.pathsUnder(`${path}/${name}`).filter((p) => {
             // `readField`, not a literal key lookup: Firestore resolves a dotted
             // `where()` field as a PATH into nested maps, and a stub that
@@ -255,7 +259,11 @@ class FakeFirestore {
             }
             return [...ids].sort().map((p) => this.makeRef(p));
           },
-          where: (field: string, op: string, value: unknown) => ({
+          where: (
+            field: string | admin.firestore.FieldPath,
+            op: string,
+            value: unknown,
+          ) => ({
             get: async () => snapshotOf(filtered(field, op, value)),
             count: () => ({
               get: async () => {
@@ -344,8 +352,10 @@ class FakeFirestore {
       }
       return matches;
     };
-    // Same union as `matching` and `readField`: production hands this a
-    // `FieldPath`, and `asDb` casts through `unknown`, so nothing else checks it.
+    // Same union as `matching` and `readField`. `asDb` casts through `unknown`,
+    // so this type is never checked against production either way — what it buys
+    // is inside the seam: under the union an inline `field.split(".")` is a
+    // compile error, and that is the defect that shipped.
     const matcher = (
       field: string | admin.firestore.FieldPath,
       op: string,

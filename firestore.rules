@@ -979,9 +979,8 @@ service cloud.firestore {
       // document limit is what refuses an oversized write; this rule bounds
       // legitimate growth and per-read bandwidth. Do not cite it as a
       // denial-of-service control.
-      // 50 is also `GroupWeeklyMenuPlan.maxEditTrailRows`. Nothing derives one
-      // from the other: lowering the Dart constant diverges silently, raising
-      // it denies every save.
+      // 50 is also `GroupWeeklyMenuPlan.maxEditTrailRows`; the two are compared
+      // by `test/unit/security/rules_numeric_bound_drift_test.dart`.
       function groupMenuTrailWithinCap() {
         return request.resource.data.get('editTrail', []).size() <= 50;
       }

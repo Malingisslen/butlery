@@ -383,8 +383,7 @@ from `(err as {code?}).code` instead.
   classes, not `/i`. Module-scope `/g` regexes are stateful with
   `.test()`/`.exec()` in long-lived CF isolates. Shared word lists and
   cross-port VECTORS: compiled-in consts or one shared JSON fixture, pinned
-  by parity tests on BOTH sides, never a runtime load. A
-  sentinel default must be ROUND-TRIP STABLE through Firestore.
+  by parity tests on BOTH sides, never a runtime load.
 
 ### LLM prompts & prompts-config
 - Compiled-in prompt edits are INERT while a Firestore `system/prompts`
@@ -430,7 +429,7 @@ from `(err as {code?}).code` instead.
   fails silently toward the SHORTER window when a value is left off —
   derive the expected set from the WRITER files.
 - **Review the STAGED copy**, proven by `git hash-object <path>` matching
-  `git ls-files -s <path>`, never by the worktree alone. Two ways the index
+  `git ls-files -s <path>`, never by the worktree alone. Ways the index
   holds PRE-FIX bytes: `MM` (a parallel session), and `git add` + `git commit`
   in ONE Bash call — the commit gate is a PreToolUse hook that blocks the WHOLE
   call, so the add never runs and the report reads bytes nobody staged. Hash

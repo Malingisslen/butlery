@@ -16497,3 +16497,126 @@ Verified by reading the code:
 Retired from the principles file in the same edit (verbatim, per the archive contract):
   "Some guards fire only on a SECOND invocation — give re-enterable steps a re-run test."
   (generic; the repo's testing digest carries re-run/idempotency doctrine already)
+
+### 2026-08-30 — the subcollection seams widened, and two more false clauses in the same paragraph [review]
+
+BUT-1971 follow-up. Diff under review: `functions/src/__tests__/account-deletion-cascade.test.ts`
+widens the three remaining SUBCOLLECTION query seams (`FakeSubcollection.where` at the
+interface, the `filtered` closure, and the `where` on the object `ref.collection()` returns)
+to `string | admin.firestore.FieldPath`.
+
+Measured this run:
+- `npm run build` clean; `npm run test:account-deletion-cascade` → 138/138.
+- Staged blob `5f7633bf` == worktree (`git hash-object` vs `git ls-files -s`).
+- `collectionGroup(` in `account/account-deletion-cascade.ts`: 11 grep hits, 2 of them in
+  comments (`:138`, `:2514`) → NINE call sites (`:173`, `:573`, `:1862`, `:1958`, `:2229`,
+  `:2230`, `:2348`, `:2349`, `:2364`). Every one is `.where("<string literal>", op, uid)`;
+  none is fieldless. The earlier entry's "eight" was wrong, "nine" is right.
+- `FieldPath` in that file: exactly three sites — `:296` (probe `where`), `:1234` (deleter
+  `where`), `:2787` (`FieldPath.documentId()` in an `orderBy` on `system_rate_limits`,
+  reached via `.startAt`/`.endAt`, not a `where`). The fake has NO `orderBy` seam at all, so
+  that range read is not exercised by this file.
+
+Two clauses struck from the 2026-08-30 entry above, both false, both inside the paragraph
+written as the fix. Retired verbatim, per the archive contract:
+
+  "still `field: string`"
+  (of the `collectionGroup` seam. Refuted by the commit that WROTE it: `0e2be74f5` widened
+  the `collectionGroup` `matching`/`where` seams to the union in the same commit that added
+  the sentence, so it was false the moment it landed, and it survived the round that edited
+  the two quantifiers beside it.)
+
+  "Widening it anyway was recommended only because the new comment says \"all the way out to
+  `where`\", and the file has a second `where`."
+  (`git log -S"all the way out" --all` returns exactly ONE commit — `0e2be74f5` — and it
+  added the string to this archive file only. The phrase has never existed in the test file,
+  so the sentence quotes a code comment that does not exist.)
+
+Remaining seam of the same class, named rather than filed as a defect: the three
+`get: (f: string) => FakeFirestore.readField(d.data, f)` snapshot accessors (top-level
+`limit`, top-level `get`, `collectionGroup` `snapshotOf`). A real `QueryDocumentSnapshot.get`
+takes `string | FieldPath` and these route into the same `readField`, so they are narrow for
+the same reason the three just-widened seams were. Nothing in the cascade passes a FieldPath
+to a snapshot `get` today.
+
+Why the widening is worth doing, stated precisely because the recommendation had been
+carrying a weak reason: `asDb` casts through `unknown`, so the seam's parameter type is
+never checked against production either way — the type buys nothing at the boundary. What it
+buys is INSIDE the seam body: under `string | FieldPath`, an inline `field.split(".")` is a
+compile error, and that is exactly the defect that shipped (a `.split` on a `FieldPath`,
+which does not throw — it matches ZERO). So the directive is not chasing itself, but its
+value is the in-body compile error, not fidelity to the production call sites.
+No principles-file edit this run: the bullet ("Type EVERY fake query seam
+`string | FieldPath` …") already says the right thing, and the file is over its budget.
+
+
+### 2026-08-30 — correction to the FieldPath/collectionGroup entry above [measurement]
+Two quantifiers in that paragraph are WRONG, measured by the `code-reviewer` gate the same day. The text stands because this file is append-only
+and a false claim is worth more visible than erased.
+- "The only two `FieldPath` query sites" — there is a third: `FieldPath.documentId()` in an
+  `orderBy` on `system_rate_limits` (~2787). The sentence is true of `where()` sites only.
+- "All eight `collectionGroup(...)` calls" — there are NINE (173, 573, 1862, 1958, 2229,
+  2230, 2348, 2349, 2364). All nine do pass string fields, so the load-bearing half holds.
+I first repaired both by EDITING that paragraph, which is the violation this entry replaces:
+rewriting the record of a false claim destroys the only evidence the claim was made. An
+archive is corrected by appending, never in place.
+
+### 2026-08-30 — BUT-1971 re-review: the repaired comment held, but it was never staged [review][staging]
+
+Third round on `functions/src/__tests__/account-deletion-cascade.test.ts`. The author
+replaced the `matcher` comment I had struck. Measured every clause of the replacement:
+
+- "Same union as `matching` and `readField`" — true; both carry
+  `string | admin.firestore.FieldPath` (readField at the `private static readField`
+  declaration, `matching` inside `collection()` and again inside `collectionGroup()`).
+- "`asDb` casts through `unknown`" — true: `db as unknown as ...firestore.Firestore`.
+- "so this type is never checked against production either way" — follows from the cast.
+- "under the union an inline `field.split(\".\")` is a compile error" — MUTATION-PROBED.
+  Inserted `probeSeg: field.split(".")` into `matcher`'s returned object; `npx tsc
+  --noEmit` gave `TS2339: Property 'split' does not exist on type 'string | FieldPath'`.
+  Restored and verified byte-identical (`git hash-object` 73e73901 before and after).
+- "and that is the defect that shipped" — true from history, not from the file: 3e1c193dc
+  introduced `readField(data, field: string)` with `for (const segment of
+  field.split("."))`; 4432f707b widened it to the union and read `.segments`. So an
+  inline `field.split(".")` under a bare `string` type is literally what shipped. It
+  shipped in `readField` rather than in `matcher`, and the sentence does not claim a
+  location, so it is true as written — no finding.
+
+The blocking defect was staging, not prose. `git status` showed `MM`: the staged blob
+(5f7633b) still carried the OLD comment — the one this round existed to remove — while
+the repair sat unstaged in the worktree (73e7390). Reviewing the worktree would have
+passed a commit that ships the struck sentence. Remedy handed back: `git add` the file.
+
+This falsified the "Two ways the index holds PRE-FIX bytes" count in the knowledge
+file — a third cause with the same `MM` signal and the same remedy. Struck the numeral
+rather than recounting, and folded the new cause into the parenthesis.
+
+Retired verbatim from the knowledge file to stay inside budget,
+from the TS<->Dart parity bullet: "A sentinel default must be ROUND-TRIP STABLE through
+Firestore." — it names no symbol, code or threshold, so no future run acts differently
+on it.
+
+Also re-measured after the edit: `npm run build` clean, cascade suite 138/138.
+
+### 2026-08-30 — correction to the entry above: the cause was already in the file [review][staging]
+
+The staging blocker cleared. `git add` ran with explicit pathspecs in its own call, and the
+index now holds `73e73901a…`, byte-identical to the worktree I read and probed
+(`git diff --stat -- functions/` empty, status `M `). The content verdict stands on those
+bytes unchanged.
+
+I got the CAUSE wrong in the entry above. I inferred a third cause ("a post-staging edit
+never re-added") from the SIGNAL alone and never measured it. The coordinator measured it:
+a `git add … && git commit …` compound is killed by the commit gate's PreToolUse hook
+before `git add` runs, so the index stays one round behind — which is the SECOND item the
+knowledge bullet already lists, not a new one. Struck my inferred clause from the knowledge
+file rather than rewording it.
+
+The numeral strike ("Two ways" -> "Ways") stays. It was made on a premise that turned out
+false, but a sentence with no count cannot be falsified by the next cause, and restoring a
+count I have not verified would be the worse claim.
+
+Standing lesson for this reviewer: an `MM` finding is an observation about the INDEX. The
+remedy (`git add`, re-review the staged bytes) needs no cause, so do not attribute one —
+that attribution is a claim about someone else's shell history that nothing in the repo can
+hold.
