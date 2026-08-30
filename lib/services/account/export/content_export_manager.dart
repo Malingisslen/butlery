@@ -446,6 +446,53 @@ class ContentExportManager {
     }
   }
 
+  // Malin's Art. 15 decisions on a group's weekly menu, 2026-08-29
+  // (BUT-1971), both reasoned on their own merits — deriving them from
+  // BUT-1732/1772/1774, which decided different collections, is the precise
+  // error `accepted-deviations.md` records having made once.
+  //
+  // Other members' per-dish provenance is KEPT. The reason is that the app
+  // shows it: tapping a dish's provenance row opens a sheet naming the voters.
+  // That was not true when this decision was first written — the screen drew a
+  // COUNT and the bundle shipped names — and rather than reword the reason,
+  // Malin chose to make it true. The sheet is what this entry rests on, so a
+  // change that removes it reopens the decision.
+  //
+  // The edit trail is FILTERED to rows where the requester is the ACTOR or the
+  // SUBJECT. Another member's edits are third-party behaviour no screen shows —
+  // but a row where someone removed the REQUESTER's dish is about the
+  // requester, and an actor-only filter would drop it. That second half is why
+  // a trail row carries `subjectId` at all.
+  //
+  // The asymmetry between the two is the decision, not an oversight. Do not
+  // harmonise them.
+  //
+  // One helper, not an inline filter: three sections implementing one decision
+  // separately is how they drift.
+  Map<String, dynamic> _redactGroupPlan(dynamic source, String userId) {
+    if (source is! Map) return <String, dynamic>{};
+    final copy = Map<String, dynamic>.from(source);
+
+    final trail = copy['editTrail'];
+    if (trail is List) {
+      copy['editTrail'] = trail.where((row) {
+        // Fails CLOSED per row: a shape we do not recognise is dropped rather
+        // than exported on the chance that it concerns someone else.
+        if (row is! Map) return false;
+        return row['actorId'] == userId || row['subjectId'] == userId;
+      }).toList();
+    } else if (copy.containsKey('editTrail')) {
+      // And fails closed at the CONTAINER. `firestore.rules` bounds the trail
+      // with `.get('editTrail', []).size() <= 50`, and `.size()` is polymorphic
+      // over list, map and string — a 50-key map is ALLOWED there, measured on
+      // the emulator. Without this arm such a value skips the filter and every
+      // other participant's bundle ships it whole, which is the opposite of the
+      // decision above.
+      copy['editTrail'] = const [];
+    }
+    return copy;
+  }
+
   /// Export all group weekly menu plans the user is a participant on.
   Future<Map<String, dynamic>> exportGroupWeeklyMenuPlans(String userId) async {
     try {
@@ -459,13 +506,21 @@ class ContentExportManager {
       for (final entry in entries.items) {
         plans.add({
           'plan_id': entry['id'],
-          'data': sanitizeForJson(entry['data']),
+          'data': sanitizeForJson(_redactGroupPlan(entry['data'], userId)),
         });
       }
 
       return {
         'total_count': plans.length,
         'group_weekly_menu_plans': plans,
+        // A section that withholds rows and says nothing leaves the requester
+        // unable to tell a filtered trail from a complete one.
+        'data_minimisation':
+            'The edit history of each group week has been filtered to the '
+            'changes you made yourself and the changes other members made to '
+            'your dishes. Other members\' edits to their own dishes are not '
+            'included. Who suggested each dish, and who voted for it, is '
+            'included in full.',
         if (entries.truncated) 'truncated': true,
       };
     } catch (e) {

@@ -933,12 +933,8 @@ service cloud.firestore {
     // ========================================
     // GROUP WEEKLY MENU PLANS - Collaborative weekly plans (BUT-405)
     // ========================================
-    // Doc ID is `{groupId}_{YYYY}-W{WW}`. Access is gated by the denormalised
-    // `participantUserIds` list + the nested `participants[].permission`
-    // field (mirrors SharedListPermission: 'view' | 'edit' | 'admin').
-    //
-    // Helpers are inlined rather than declared at top-level because the
-    // participant-permission lookup is specific to this collection's shape.
+    // Doc ID is `{groupId}_{YYYY}-W{WW}`. The access gate is described on the
+    // match block below, which is the only place it is enforced.
 
     match /group_weekly_menu_plans/{planId} {
       // Access is gated by the `memberPermissions` map: {uid: 'view'|'edit'|'admin'}.
@@ -964,6 +960,32 @@ service cloud.firestore {
         && (resource == null
             || request.auth.uid in resource.data.memberPermissions);
 
+      // BUT-1971: bound the edit trail on BOTH limbs.
+      //
+      // `.get('editTrail', [])` is load-bearing, not style: a bare
+      // `request.resource.data.editTrail` dereferences a field no existing
+      // document has, and a null dereference evaluates as DENY — which is the
+      // failure this very collection's READ rule already shipped once and had
+      // to be fixed for. A document created before this field existed must
+      // still be savable.
+      //
+      // On CREATE as well as UPDATE, because create requires no `editTrail`
+      // and rejects no extra fields: a cap on update alone lets a hand-rolled
+      // client seed an oversized trail on the create write, before the update
+      // limb ever runs.
+      //
+      // What this does NOT do: it bounds ROW COUNT, not bytes, and not type —
+      // a map with <= 50 keys satisfies `.size()` too. Firestore's own 1 MB
+      // document limit is what refuses an oversized write; this rule bounds
+      // legitimate growth and per-read bandwidth. Do not cite it as a
+      // denial-of-service control.
+      // 50 is also `GroupWeeklyMenuPlan.maxEditTrailRows`. Nothing derives one
+      // from the other: lowering the Dart constant diverges silently, raising
+      // it denies every save.
+      function groupMenuTrailWithinCap() {
+        return request.resource.data.get('editTrail', []).size() <= 50;
+      }
+
       // Creator must (a) match the doc-ID prefix with their submitted
       // groupId, (b) include themselves in memberPermissions as edit/admin.
       allow create: if isAuthenticated()
@@ -973,7 +995,8 @@ service cloud.firestore {
         && hasRequiredFields([
              'groupId', 'participants', 'participantUserIds',
              'memberPermissions', 'entries', 'createdAt', 'lastModifiedAt'
-           ]);
+           ])
+        && groupMenuTrailWithinCap();
 
       // Editors + admins may update entries. Immutable fields: groupId,
       // createdAt. Participants/permissions changes require admin.
@@ -987,7 +1010,8 @@ service cloud.firestore {
               .hasAny(['participants', 'participantUserIds', 'memberPermissions']))
           // …or the writer is an admin (can manage membership).
           || resource.data.memberPermissions[request.auth.uid] == 'admin'
-        );
+        )
+        && groupMenuTrailWithinCap();
 
       // Admin-only delete.
       allow delete: if isAuthenticated()

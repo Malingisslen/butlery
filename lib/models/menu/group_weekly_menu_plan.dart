@@ -94,6 +94,60 @@ class GroupMenuParticipant {
   int get hashCode => Object.hash(userId, permission);
 }
 
+/// One line in a group plan's [GroupWeeklyMenuPlan.editTrail].
+///
+/// A READING AID, never evidence. Two measured limits, both accepted by Malin
+/// on 2026-08-29 (ADR-0010): the row is written by the client, so an editor can
+/// put another member's uid in [actorId]; and `save` writes the whole document,
+/// so a genuine row can be lost when two people edit the same week. The record
+/// that can be relied on is the audit row the group repository writes.
+class GroupMenuEditTrailRow {
+  /// Who the client says made the edit.
+  final String actorId;
+
+  /// Whose dish the edit concerned, when the edit had a single subject.
+  ///
+  /// Load-bearing for the Art. 15 export: Malin's decision is that a requester
+  /// receives rows where they are the SUBJECT as well as rows they authored, and
+  /// without this field the schema cannot answer which those are.
+  final String? subjectId;
+
+  /// The entry the edit concerned, so a row stays meaningful after the dish is
+  /// gone from `entries`.
+  final String? entryId;
+
+  final DateTime at;
+
+  /// What happened, as one of the service mutators' action words.
+  final String action;
+
+  const GroupMenuEditTrailRow({
+    required this.actorId,
+    required this.at,
+    required this.action,
+    this.subjectId,
+    this.entryId,
+  });
+
+  Map<String, dynamic> toMap() => {
+    'actorId': actorId,
+    'at': AppTimestamp.fromDateTime(at).toFirestore(),
+    'action': action,
+    if (subjectId != null) 'subjectId': subjectId,
+    if (entryId != null) 'entryId': entryId,
+  };
+
+  factory GroupMenuEditTrailRow.fromMap(Map<String, dynamic> data) {
+    return GroupMenuEditTrailRow(
+      actorId: SerializationUtils.safeString(data, 'actorId'),
+      at: SerializationUtils.safeRequiredDateTime(data, 'at'),
+      action: SerializationUtils.safeString(data, 'action'),
+      subjectId: SerializationUtils.safeNullableString(data, 'subjectId'),
+      entryId: SerializationUtils.safeNullableString(data, 'entryId'),
+    );
+  }
+}
+
 /// A group's collaborative planned meals for one ISO week, persisted as a
 /// single Firestore document keyed by `{groupId}_{YYYY}-W{WW}`.
 class GroupWeeklyMenuPlan {
@@ -106,8 +160,19 @@ class GroupWeeklyMenuPlan {
   final DateTime lastModifiedAt;
 
   /// userId of the last writer. Nullable for empty-plan initial state;
-  /// populated on the first save.
+  /// populated on the first save. Answers "who saved last", which is a
+  /// different question from [editTrail]'s "what happened".
   final String? lastModifiedBy;
+
+  /// Newest last, pruned to [maxEditTrailRows] on every write.
+  ///
+  /// `firestore.rules` holds the same cap, because a client-side prune is not
+  /// a bound on what a hand-rolled client sends.
+  final List<GroupMenuEditTrailRow> editTrail;
+
+  /// Malin's choice, 2026-08-29. Deep enough that a week's editing is legible,
+  /// shallow enough that the document cannot grow without limit.
+  static const int maxEditTrailRows = 50;
 
   const GroupWeeklyMenuPlan({
     required this.id,
@@ -118,6 +183,7 @@ class GroupWeeklyMenuPlan {
     required this.createdAt,
     required this.lastModifiedAt,
     this.lastModifiedBy,
+    this.editTrail = const [],
   });
 
   /// Deterministic doc ID: `{groupId}_{YYYY}-W{WW}`. Mirrors the user-plan
@@ -209,6 +275,7 @@ class GroupWeeklyMenuPlan {
     List<GroupMenuParticipant>? participants,
     DateTime? lastModifiedAt,
     String? lastModifiedBy,
+    List<GroupMenuEditTrailRow>? editTrail,
   }) {
     return GroupWeeklyMenuPlan(
       id: id,
@@ -219,6 +286,7 @@ class GroupWeeklyMenuPlan {
       createdAt: createdAt,
       lastModifiedAt: lastModifiedAt ?? clock.now(),
       lastModifiedBy: lastModifiedBy ?? this.lastModifiedBy,
+      editTrail: editTrail ?? this.editTrail,
     );
   }
 
@@ -237,6 +305,8 @@ class GroupWeeklyMenuPlan {
       'createdAt': AppTimestamp.fromDateTime(createdAt).toFirestore(),
       'lastModifiedAt': AppTimestamp.fromDateTime(lastModifiedAt).toFirestore(),
       if (lastModifiedBy != null) 'lastModifiedBy': lastModifiedBy,
+      if (editTrail.isNotEmpty)
+        'editTrail': editTrail.map((r) => r.toMap()).toList(),
     };
   }
 
@@ -269,6 +339,11 @@ class GroupWeeklyMenuPlan {
       lastModifiedBy: SerializationUtils.safeNullableString(
         data,
         'lastModifiedBy',
+      ),
+      editTrail: SerializationUtils.safeObjectList<GroupMenuEditTrailRow>(
+        data,
+        'editTrail',
+        GroupMenuEditTrailRow.fromMap,
       ),
     );
   }

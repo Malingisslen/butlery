@@ -15926,3 +15926,476 @@ Knowledge-file edits in the same change:
 - Also struck from the gcfv1 bullet, as the file's own "strike every endpoint TALLY" rule
   requires: "72 endpoints, 71 gcfv2". Retained: `onUserDeleted` is the only gcfv1 export
   and must be excluded from any "every function" claim.
+
+### 2026-08-30 — BUT-1971 group-plan provenance + edit-trail scrub [review]
+
+Reviewed `deleteWeeklyMenuPlans`'s new scrub (`proposedBy` deleted, `votedInBy` filtered
+and the key dropped when empty, `editTrail` rows dropped when they name the uid as
+`actorId` OR `subjectId`), inside the EXISTING `batch.update` on the surviving-participants
+branch. Verdict: pass, 0 blocking. Measured here: `npm run build` clean;
+`node scripts/check-test-registration.js` OK (134 files, 4 accepted-debt warnings, both
+touched suites already registered).
+
+Settled questions, with what they were measured against:
+- **The 500-op batch limit counts WRITES, not FIELDS.** `commitInChunks` sizes chunks by
+  `BATCH_LIMIT / opsPerItem`, and one `batch.update` stays one op however many keys it
+  carries — so `opsPerItem` stays 1 and chunking is unchanged. What the extra fields do
+  change is COMMIT PAYLOAD BYTES (the per-commit request ceiling is on bytes), and
+  `entries`/`editTrail` are the two largest arrays on a group plan. Not a live risk at
+  plausible plan sizes; if it ever bites it lands as INVALID_ARGUMENT and `strict:false`
+  swallows the whole chunk.
+- **Key deletion is round-trip stable against the writer.** `WeeklyMenuPlanEntry.toMap`
+  emits `proposedBy` only when non-null and `votedInBy` only when non-empty, and
+  `GroupWeeklyMenuPlan.toFirestore` emits `editTrail` only when non-empty — so deleting
+  the key is exactly the writer's own absent shape, not an invented one.
+- **The dropped-poll-option-uid design call is right.** `messaging_service`'s
+  `_appendWinnerToGroupPlan` is the only writer of the two provenance fields and passes
+  `proposedBy: poll.creatorId` / `votedInBy: winner.voterIds`, to the GROUP plan only
+  (personal plans are deleted wholesale by the same step's first query). So a poll
+  option carries no separate proposer uid and `deletePollVotes`'s authorship leg
+  (`metadata.poll.creatorId` scrub, capped, plus its probe leg) already covers it.
+  STILL OWED there and untouched by this diff: the legacy
+  `metadata.poll.options[].voterIds` residue on polls created by the pre-BUT-1832
+  client, which `deletePollVotes`'s own docstring records and which neither probe leg
+  sees. Do not describe it as closed.
+
+Non-blocking findings reported: (Medium) the whole-array rewrite comes from a query-time
+snapshot in a non-transactional batch, so a concurrent editor's remove/undo can be
+reverted — same class as the transactions `deleteShoppingLists` and the group-departure
+path already use, but pre-existing here for `participants`/`participantUserIds` and only
+narrowed, not closed, by a transaction while the Dart repo saves with a whole-document
+`set()`. (Medium) `probeResidualData` has NO leg for `group_weekly_menu_plans` at all;
+the provenance fields are array-of-maps and unqueryable, so
+`where("participantUserIds","array-contains",uid).count()` is the only possible
+independent check on a chunk `strict:false` swallowed. (Low) when the source field is
+absent the scrub writes `entries: []` / `editTrail: []`, creating a key the writer omits.
+
+No knowledge-file edit: the file is over budget and every principle this run would have
+added is already carried by "One field can have TWO stores — erase BOTH" and the
+unqueryable-map-key clause in the GDPR-cascade section.
+
+### 2026-08-30 — BUT-1971 re-review: a third uid on the group weekly menu plan [gdpr][cascade]
+
+Re-reviewed `functions/src/account/account-deletion-cascade.ts` +
+`request-account-deletion.integration.test.ts` +
+`weekly-menu-plans-rules.test.ts` after findings 3/B/C were taken and A declined.
+
+Taken findings verified good: the trail now drops rows the departing user
+WROTE (`actorId === uid`) and keeps rows another member wrote ABOUT them with
+`subjectId` stripped; the probe leg
+`["group_weekly_menu_plans", "participantUserIds", "array-contains"]` is
+present; `entries`/`editTrail` are spread conditionally on
+`Array.isArray(raw)`, so the update invents neither key.
+
+NEW blocking finding: `GroupWeeklyMenuPlan.lastModifiedBy` is a raw uid the
+model writes (`if (lastModifiedBy != null) 'lastModifiedBy': lastModifiedBy`
+in `toFirestore`) and no cascade leg clears it — grepped `functions/src` for
+`lastModifiedBy`: only the shared-shopping-list `lastModifiedByUserId` legs
+exist. BUT-1971's own interactive `_edit` -> `GroupWeeklyMenuPlanService.save`
+stamps the acting member on every remove/undo, so after erasure a surviving
+plan keeps the erased uid there, readable by remaining members. Same class the
+file already anonymises to `"deleted"` (`item.lastModifiedByUserId`,
+`enteredByUid`, `lastEditedBy`). The new comment's "in two places the
+participant lists do not reach" is a completeness claim this falsifies.
+Field predates the branch (added 2026-04-18, commit 1483e3b0a), so it is a
+pre-existing residual the ticket's scrub was completing and did not close.
+
+Also: the rules-test header claims "the type gap is written down in
+`.claude/rules/accepted-deviations.md`". Grepped both that file and
+`docs/architecture/ACCEPTED_DEVIATIONS.md` for `size()`/`polymorphic`/
+`50-key`/`maxEditTrailRows` — no such entry. The rest of the same sentence IS
+true: `content_export_manager.dart` replaces a non-list `editTrail` with
+`const []`. Header also labels the block "G8-G11" over seven added tests.
+
+Finding A (whole-array rewrite from a query-time snapshot in a plain batch)
+stays declined and I agree: `runTransaction` narrows the cascade's own window
+but the repository's `save()` writes the whole document with `set()`, so a
+client write after the commit restores the uid either way. Narrower cheap
+improvement noted instead: gate the `entries`/`editTrail` spreads on a
+`changed` flag, the shape `deleteShoppingLists` already uses
+(`if (itemsChanged) update.items = scrubbed;`), so a plan the departing user
+never touched is not rewritten at all.
+
+Retired verbatim from the knowledge file in the same edit:
+  "- A \"shared\" collection also holds SOLO-owner docs that must be DELETED,
+     not scrubbed. Scrubbing a deleted user off a SHARED doc must enumerate
+     every {uid, displayName} pair on the MODEL — array elements and the
+     PARENT's per-uid maps included."
+  "New family → append a row."
+
+### 2026-08-30 — BUT-1971 re-review: the new `lastModifiedBy` probe leg is broader than its deleter [gdpr][probe][group-weekly-menu]
+
+Round 2 of the BUT-1971 `functions/src` review. Round 1's blocking finding
+(`lastModifiedBy` unscrubbed) is fixed — tombstoned `"deleted"` in the same
+`batch.update`, with the integration fixture seeding `lastModifiedBy: TARGET`
+on `gp-shared` and the scrub probed red at 60/62. All four non-blocking
+findings taken.
+
+New blocking finding, created BY that fix. The probe gained
+`[Collections.groupWeeklyMenuPlans, "lastModifiedBy", "=="]`, but
+`deleteWeeklyMenuPlans` discovers group plans by ONE query,
+`participantUserIds array-contains uid`. `firestore.rules` places no conjunct
+on `lastModifiedBy` at all (create and update limbs read in full on
+2026-08-30), so any editor on a plan can write an arbitrary uid there, and the
+update limb's admin arm lets an admin shrink `participantUserIds`. Either way
+a doc can carry `lastModifiedBy == uid` while uid is off the roster: the
+deleter never sees it, the probe counts it, and that user's every deletion
+records `gdprCompliant: false` with no code path able to clear it. Exactly the
+`ussl-ownerless-<RUN>` case this same test file already seeds a fixture for,
+with its comment "the deleter must be a superset of every probe leg".
+
+Remediation given: union a second discovery query
+(`where("lastModifiedBy","==",uid)`) into the deleter's doc set, dedup by
+`doc.ref.path`, plus a fixture where the target is ONLY the last writer.
+
+Also filed: a non-list `entries`/`editTrail` (rules bound row COUNT via a
+polymorphic `.size()`, not type — a 50-key map passes) is skipped by the
+scrub's `Array.isArray` guard, so a planted uid inside one is never erased.
+The export helper's container arm fails closed on the DISCLOSURE half only;
+nothing covers the ERASURE half. And a paragraph about the explicit-`null`
+trail test sits above the non-admin-cap test in
+`weekly-menu-plans-rules.test.ts`, describing a test it does not head.
+
+Sanity-checked the other gate's claim that `addEntry`'s intersection of
+`votedInBy` with `memberPermissions` makes every stored uid discoverable:
+TRUE at write time for all six uid positions (`participants[].userId`,
+`participantUserIds`, `memberPermissions` keys, `entries[].proposedBy` /
+`votedInBy`, `editTrail[].actorId` / `subjectId`, `lastModifiedBy`) — the
+whole `toFirestore` was enumerated. It is NOT durable, because membership can
+shrink afterwards; the invariant is "at write time", not "by construction".
+
+Retired verbatim from the knowledge file to pay for the sharpened principle
+(file was 27,997 chars, over its ~25,000 budget):
+
+  "`CpuAllocPerProjectRegion` = 20 vCPU (europe-west1); no export declares
+   `cpu`, so a summed ceiling is INSTANCES read as vCPU — external
+   measurement, not a manifest fact." … "(the sum exceeds the quota many
+   times over while every service runs)" … "— the failing batch (run
+   33043799598) held NEITHER cascade."
+
+### 2026-08-30 — BUT-1971 group weekly-menu plans in the deletion cascade, re-review [gdpr][cascade][idempotency]
+
+Re-review of `functions/src/account/account-deletion-cascade.ts` plus its two
+suites after my previous pass returned `fail (1 blocking)`.
+
+The blocking finding was that `probeResidualData` gained a
+`group_weekly_menu_plans.lastModifiedBy == uid` leg while `deleteWeeklyMenuPlans`
+discovered documents by `participantUserIds array-contains uid` alone. Since
+`firestore.rules`' `group_weekly_menu_plans` update limb places no conjunct on
+`lastModifiedBy` and lets an admin rewrite `participants`/`participantUserIds`,
+a document can name a uid as last writer while the roster query cannot reach it
+— the probe would then count residual forever with no code path able to clear
+it (`gdprCompliant: false` permanently).
+
+Fixed as specified: `Promise.all` over both queries, deduped into a
+`Map<string, QueryDocumentSnapshot>` keyed on `doc.ref.path`. The second-order
+hazard the fix introduces was also handled — the empty-roster `batch.delete` is
+now gated on `wasParticipant` (`Array.isArray(userIdsRaw) && includes(uid)`), so
+a plan reached only by the writer handle cannot be destroyed because its roster
+is malformed or absent. Fixture `gp-writer-only-${RUN}` (roster `[OTHER]`,
+`lastModifiedBy: TARGET`) asserts both the tombstone and that the untouched
+roster survives; probed red at 61/63 by reverting to the roster handle alone,
+which killed the new test and the residual-probe test.
+
+Medium taken: `entries` and `editTrail` present but not an array are now
+`FieldValue.delete()`d. Reachable because the rules cap is
+`request.resource.data.get('editTrail', []).size() <= 50` and `.size()` is
+polymorphic — a 50-key map passes. The Dart export's container arm
+(`_redactGroupPlan` in `lib/services/account/export/content_export_manager.dart`)
+covers the disclosure side; this covers erasure. Verified that arm exists and
+fails closed, so the rules-test comment asserting it is true.
+
+Checked and clean this round:
+- `proposedBy` / `votedInBy` key DELETION (rather than a tombstone) matches
+  `WeeklyMenuPlanEntry.toFirestore`, which omits both when null/empty, so the
+  scrub produces no shape a writer could not produce. `lastModifiedBy` is
+  `String?` in `GroupWeeklyMenuPlan`, so the `"deleted"` tombstone reads fine.
+- `hasRequiredFields([... 'entries' ...])` is on the CREATE limb only, so
+  deleting `entries` on an update cannot brick the document.
+- No `fieldOverrides` entry disables single-field indexing on
+  `group_weekly_menu_plans`, so the new `lastModifiedBy ==` query is served by
+  the automatic index; no composite needed.
+- `npx tsc --noEmit` clean (re-run here, exit 0).
+
+Two non-blocking findings reported:
+1. Medium — the two new `FieldValue.delete()` arms have no fixture; they are
+   mutation-invisible in a GDPR path.
+2. Low — `participants` / `participantUserIds` are written unconditionally in
+   the else branch, including for a writer-only document where neither changed.
+   The conditional-spread discipline the same batch applies to `entries` and
+   `editTrail` (and its own comment's reasoning about widening the
+   read-modify-write window) is not applied to them.
+
+Declined Low from last round (malformed non-object elements filtered out of
+`entries`/`editTrail` rather than passed through) — accepted the author's
+reasoning that it is consistent with the new "a shape no writer produces is
+removed" behaviour of the `FieldValue.delete()` arms. Not re-filed.
+
+Verdict: pass (0 blocking).
+
+### 2026-08-30 — BUT-1971 round 3: the third discovery handle (memberPermissions) [gdpr][cascade][review]
+
+Re-reviewed `functions/src/account/account-deletion-cascade.ts` plus its two
+suites after the security gate added a THIRD discovery handle to
+`deleteWeeklyMenuPlans`: `where(new FieldPath("memberPermissions", uid), "!=", null)`.
+
+Verified (measured, not reasoned):
+- The Dart export `FirebaseGroupWeeklyMenuPlanRepository.exportPlansForParticipant`
+  queries `memberPermissions.$userId` with `isNull: false`. The new Admin-SDK
+  `!= null` is the same predicate, so Art. 15 and Art. 17 now discover on
+  identical fields. Residual, symmetric and NOT a regression: `firestore.rules`
+  grants read on KEY PRESENCE (`request.auth.uid in resource.data.memberPermissions`,
+  rules line 965), so a null-VALUED key would be readable and invisible to both
+  queries. No writer produces one.
+- No `fieldOverrides` entry exists for `group_weekly_menu_plans`, so the nested
+  `!=` is served by the automatic single-field index.
+- Three-way union composes correctly with `wasParticipant`. A permission-only
+  document takes: roster untouched, `entries`/`editTrail` scrubbed only when the
+  uid was in them, `lastModifiedBy` tombstoned only when it was theirs, ACL key
+  deleted. The update object is never empty (the ACL delete is unconditional).
+- `npx tsc --noEmit` clean, exit 0 (re-run here).
+
+Blocking findings this round, both false sentences introduced by this diff:
+1. `// TWO discovery handles, unioned, because the residual probe counts both` —
+   there are three, and the probe counts two of them. Struck, not reworded.
+2. `// ...so this membership handle is the only independent check available` —
+   the `lastModifiedBy` probe leg added two lines below is a second one.
+
+Non-blocking, both offered:
+- The `memberPermissions.<uid>` handle has NO probe leg and NO fixture: deleting
+  the whole query leaves 64/64 green. One fixture (`gp-permission-only`: ACL key
+  present, roster `[]`) reddens both that mutant and the `&& wasParticipant`
+  mutant the testing gate flagged.
+- Did NOT re-file the declined Low about non-object elements being filtered out
+  of `entries`/`editTrail` (settled last round).
+
+Retired VERBATIM from the knowledge file in this edit, to stay inside budget
+(one-shot migration concern, low recurrence):
+
+  "A full-collection `orderBy(documentId()).limit(N)` backfill with no
+  filter cannot self-advance — needs an operator-supplied `startAfter` +
+  `nextCursor`; only a filter-mutating sweep may skip the cursor."
+
+Verdict: fail (2 blocking).
+
+### 2026-08-30 — BUT-1971 round 4+5: a uid logged through a FieldPath, then fixed [pii][logging][review]
+
+Round 4 (not archived at the time) returned **fail (1 blocking)** on
+`probeResidualData`: the new ACL probe leg passes
+`new admin.firestore.FieldPath("memberPermissions", uid)` as the loop's `field`,
+and both `logger.warn` and `logger.error` in that loop logged `field` directly.
+firebase-functions JSON-stringifies a structured payload, and a `FieldPath`
+serialises its SEGMENTS — so the raw uid landed on the same log line that
+carefully truncates it to `uid_prefix: uid.slice(0, 6)`, in a sink that outlives
+the account.
+
+Round 5 (this pass) verified the fix, staged copy only
+(`git hash-object` == `git ls-files -s` on all three files):
+- `fieldLabel` is computed once ABOVE the `try` and narrows by
+  `field instanceof admin.firestore.FieldPath` to the literal
+  `"memberPermissions.<uid>"`; both `warn` and `error` pass `field: fieldLabel`;
+  the query still passes `field`. No other site in the file logs a FieldPath.
+- Re-checked the rest of the diff against the Dart models rather than reasoning:
+  `GroupWeeklyMenuPlan.lastModifiedBy` is `String?` read through
+  `safeNullableString`, so the `"deleted"` tombstone is safe; `proposedBy` is
+  `String?` and `votedInBy` defaults to `const []`, and `toMap` OMITS both when
+  null/empty — so the scrub's delete-the-key (never write `[]`) matches the
+  writer's own shape. `GroupMenuEditTrailRow.subjectId` is nullable, so
+  stripping it in place is safe.
+- `firestore.indexes.json` still has no `group_weekly_menu_plans` entry, so all
+  three discovery legs and all three probe legs run on automatic single-field
+  indexes. No index gate on deploy day.
+- Idempotency on re-run: after a full pass all three handles return empty
+  (`lastModifiedBy` is `"deleted"`, ACL key gone, roster scrubbed), and the
+  `data.lastModifiedBy === uid` guard stops a second tombstone. The two
+  `entries`/`editTrail` spreads are mutually exclusive with their
+  `FieldValue.delete()` twins (`Array.isArray` vs `!Array.isArray`), so no key
+  collides inside one `batch.update`.
+- Cost: group-plan discovery goes 1 -> 3 queries and the probe 1 -> 3 `count()`
+  legs, once per account deletion. Negligible.
+
+Not re-filed: the non-object-element filter Low (declined round 3). Left with
+the founder, not blocking: the Medium that the scrub rewrites `entries` and
+`editTrail` from a query-time snapshot under `commitInChunks` — a transaction
+alone cannot close it while `FirebaseGroupWeeklyMenuPlanRepository.save` writes
+the whole document with `set()`. The conditional spreads already narrow the
+window to documents this uid actually touched.
+
+Knowledge-file edit made in the same pass (added the FieldPath-in-a-log
+principle under Logging conventions). Retired VERBATIM to stay inside budget:
+
+  "The region-wide-sum accounting model is FALSE: never write a derived
+  "N fit per deploy" number, nor name one function as the one a batch
+  fails on."
+
+  "- **`x || DEFAULT` != a typed guard** - passes negatives/numeric-strings/
+  `true` through. Use `typeof x === "number" && x > 0 ? x : DEFAULT`."
+
+Verdict: pass (0 blocking).
+
+### 2026-08-30 — commitInChunks calls `mutate` outside its try [cascade][gdpr]
+
+BUT-1971 re-review. Reading `functions/src/shared/batch-update.ts` to answer whether
+`participants.map((m) => m.userId)` could widen the group-plan roster write: the
+`strict:false` try/catch in `commitInChunks` wraps only `batch.commit()`. The
+`mutate(batch, item)` call sits in the outer `for` loop, unguarded. So a SYNCHRONOUS
+Firestore validation throw from inside a mutate callback (e.g. `undefined` reaching an
+array field) is not swallowed per-chunk at all — it escapes `commitInChunks`, escapes
+the step function, and lands in `runStep`, which records the step failed and stamps
+`gdprCompliant: false`. Every document after the throwing one, plus the current
+uncommitted chunk, is never written. Fail-loud rather than silent, but it is NOT the
+"swallowed chunk" behaviour the `strict:false` label suggests. Folded into the
+`batch.update()`-NOT_FOUND principle.
+
+Retired verbatim from the knowledge file in the same edit, to stay inside budget
+(TS<->Dart parity twins bullet):
+
+> Possessive titles are pinned NEGATIVE vectors — never generalize to capitalized-word
+> NER; a sentinel default must be ROUND-TRIP STABLE through Firestore.
+
+(the sentinel/round-trip half survives in place; only the possessive-titles clause was
+retired.)
+
+Also measured this round, for the record: `firestore.rules`' `group_weekly_menu_plans`
+block gates read, update and delete on `memberPermissions` ONLY — `participantUserIds`
+appears in the rules solely inside `hasRequiredFields` on create and in the update
+limb's admin-gated `affectedKeys()` disjunct. So materialising that array from the
+`participants` survivors grants nobody any access; it is a denormalised mirror, not an
+ACL.
+
+And the staging finding: the index held a partial copy of
+`request-account-deletion.integration.test.ts` (`MM`), with the `gp-roster-desync`
+fixture and its test unstaged. With only the staged bytes, mutating the write's
+`wasParticipant || participants.length !== participantsLength` disjunct down to
+`wasParticipant` leaves the whole staged suite green.
+
+
+### 2026-08-30 — BUT-1971 group weekly-menu cascade [gdpr][cascade]
+Widening a deleter from one handle to three (roster / lastModifiedBy / ACL
+map key) put the empty-roster DELETE in reach of two desyncs, not one. The
+reviewed fix gates on both rosters plus `wasParticipant`; fixtures
+`gp-desync-inverse` (destructive side) and `gp-roster-desync` (leftover
+side) pin the pair, 67/67 on the emulator.
+Uncapped discovery filed not-blocking: `firestore.rules` bounds a group-plan
+create only by doc-id prefix and the creator's own permission entry, so all
+three handles are plantable against a chosen victim — but the class predates
+this change, and `auth.deleteUser` runs AFTER the cascade, so an OOM/timeout
+fails the request before the account is destroyed. When capped, cap the READ:
+512MiB against three parallel full-document `.get()`s is the binding limit,
+not row count.
+Also: this diff falsified `shared/collections.ts`'s "still uses the bare
+literal" clause in a file it never staged — the adding-a-caller class again.
+Struck after grepping `functions/src` for the literal: the constant is now
+the only production home.
+
+
+### 2026-08-30 — retired verbatim from `cloud-functions-specialist.knowledge.md` (BUT-1971)
+
+Struck during this build's compressions but never archived; caught by the
+integration gate, which grepped the whole tree for it and found zero hits. The
+retire-verbatim contract is what makes a supersede-in-place safe, so a strike
+that skips the archive is the one shape that loses knowledge outright.
+
+> never say WHY an earlier ticket left a
+> collection out — its record shows SCOPE, not intent.
+
+Two more from the same batch, caught by the same whole-file word-diff:
+
+> so `deploy-firebase.yml`'s auto-rollback ran on neither failing run.
+
+> an owner who left still drives its roster and can empty it, leaving a
+> `chat_groups` doc no client can touch.
+
+The first is the MEASUREMENT behind a surviving rule; the second is the HARM a
+rewording kept the mechanism of but dropped the consequence of. Neither is
+re-derivable from what stayed.
+
+### 2026-08-30 — BUT-1971 final pass: the raw second witness landed [gdpr-cascade][review]
+Verdict round on the staged `functions/src` diff (4 files, index == worktree by
+`git hash-object` on all four; `npx tsc --noEmit` clean, re-run here).
+
+My blocking finding from the previous round is fixed in the form I asked for:
+`mirrorSurvivors` in `deleteWeeklyMenuPlans` is computed from `data.participantUserIds`
+RAW and is a fourth conjunct on the destructive gate beside `userIds.length === 0`,
+`participants.length === 0` and `wasParticipant`. The `gp-mirror-survivor-${RUN}` fixture
+(mirror `[TARGET, "mirror-only-member"]`, `participants` naming only TARGET) asserts the
+document survives and the survivor keeps their `memberPermissions` key. Reported probe:
+`=== 0` -> `>= 0`, 67/68 with that test the only red.
+
+Traced one thing the fixture does NOT assert and decided it is NOT a finding: in that
+desynced shape the scrub still writes `participantUserIds: []`, because
+`participantsNamedUid` is true and `userIds` derives from `participants`. Checked whether
+the survivor loses anything — they do not. `firestore.rules` gates read/update/delete on
+`group_weekly_menu_plans` entirely on `memberPermissions`; `participantUserIds` appears
+only inside the update limb's `affectedKeys()` classification. And on the Dart side
+`GroupWeeklyMenuPlan.participantUserIds` is a DERIVED GETTER over `participants` (write-only
+mirror, never read back, no query anywhere in `lib/`), so the cascade's re-derivation is
+exactly what the next client save would have written. Informational, not a defect.
+
+That trace produced the one Low I did file: the comment above `participantsNamedUid` says an
+empty fallback "would drop them from the field the rules read". Rules do not read
+`participantUserIds`. Reported as a STRIKE of that clause, not a rewrite — did not edit the
+staged file myself, because index/worktree byte-identity was a precondition of this round
+and the parent controls staging.
+
+Also found, out of my scope (handed to `firestore-rules-tester`): the block header at
+`firestore.rules` ~line 936 says access "is gated by the denormalised `participantUserIds`
+list + the nested `participants[].permission` field". The comment 6 lines below it and every
+limb say `memberPermissions`. Stale, and the likely source of the cascade comment's clause —
+one false sentence propagating into a second file, in a file this diff never staged.
+
+Rules-test additions read clean: the non-admin-editor ALLOW/DENY pair is the one that
+measures the trail cap's placement relative to the admin gate (a cap scoped to admins
+survived the rest of the suite), plus exact-50 controls on create and update, the explicit-
+null deny, and the no-trail-at-all allow that pins `.get('editTrail', [])`. Both test files
+pre-existed, so no `package.json` `test:*` registration was owed.
+
+Knowledge file: folded the raw-witness rule into the existing empty-roster-DELETE principle
+in place, net-negative on characters. Retired text, verbatim:
+"empty — the queryable mirror can name only this uid while the array-of-maps still holds
+another member, and deleting on the mirror alone destroys that member's data. A doc reached
+only by the attribution handle otherwise dies on a malformed roster."
+
+Verdict: pass, 0 blocking.
+
+### 2026-08-30 — BUT-1971 re-review after the gp-mirror-survivor fixture landed [gdpr-cascade]
+
+Re-read all four staged files (index hash == worktree hash for each; `npm run build` clean).
+The delta since the previous pass is the `gp-mirror-survivor` fixture plus its test and two
+roster assertions on the desync fixtures. Traced the fixture through the scrub by hand:
+mirror `[TARGET, "mirror-only-member"]`, `participants` `[{TARGET}]` -> `participantsNamedUid`
+true, so `userIds` derives from `participants` and is empty, but `mirrorSurvivors` is
+`["mirror-only-member"]` and the four-way delete gate therefore does NOT fire. That is the
+second raw witness doing exactly the job it was added for; deriving the mirror from
+`participants` collapses it and destroys that member's week.
+
+Verified independently of the diff's own claims: `exportPlansForParticipant`
+(`firebase_group_weekly_menu_plan_repository.dart:213`) discovers on
+`memberPermissions.$userId` with `isNull: false`, so the deleter's three-handle union is now
+a superset of the export — the Art. 15/Art. 17 asymmetry the ACL handle was added to close.
+`firestore.indexes.json` has no `fieldOverrides` entry excluding `memberPermissions` on this
+collection, so the `FieldPath("memberPermissions", uid) != null` query rides the automatic
+single-field index in production, the same shape already live on
+`unified_shared_shopping_lists`.
+
+One finding, non-blocking, doc-accuracy: the new test's comment at
+`request-account-deletion.integration.test.ts` (gp-mirror-survivor) asserts
+"`memberPermissions` is the only field `firestore.rules` reads on this collection". False —
+`participantUserIds` appears in the create limb's `hasRequiredFields` and in the update
+limb's `affectedKeys().hasAny([...])` disjunct, and `groupId`/`createdAt` are read by
+`cannotModify`. Same class as the stale `firestore.rules` block header logged in the previous
+entry: a sentence about the rules written from the access limb alone. Recommended STRIKE of
+the sentence rather than a rewrite; the assertions around it stand unaided.
+
+Noted, not filed: `memberPermissions.<uid>` explicitly set to `null` is excluded by both the
+deleter's `!= null` and the probe's `!= uid`, so such a key would survive as a raw uid on a
+document other members keep. No writer produces it, and it is the same blind spot the
+`unified_shared_shopping_lists` leg already carries. Group-plan step re-run safety is
+structural rather than tested: after run 1 no handle matches (`lastModifiedBy` is
+tombstoned, both roster fields and the ACL key are cleared), so discovery returns empty.
+
+Knowledge file: no edit. Every principle this round exercised — the handle union, the
+raw-witness delete gate, the FieldPath-in-logs rule — is already in the file from the
+previous pass, and the file is over budget.
+
+Verdict: pass, 0 blocking.

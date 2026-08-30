@@ -100,6 +100,19 @@ class WeeklyMenuPlanEntry {
   final String recipeTitle;
   final String? recipeImageUrl;
 
+  /// Who put this dish on the ballot, for a dish a group poll voted in.
+  ///
+  /// Written ONLY by the group poll-close path (BUT-1971). A personal plan
+  /// never fills it — but nothing in the type stops one, so that is a fact
+  /// about today's callers rather than a guarantee. What holds it today is the
+  /// personal service's signature: `WeeklyMenuPlanService.addEntry` has no such
+  /// parameter.
+  final String? proposedBy;
+
+  /// Who voted for this dish in the poll that put it here. Same provenance as
+  /// [proposedBy]: group poll-close only, empty everywhere else.
+  final List<String> votedInBy;
+
   const WeeklyMenuPlanEntry({
     required this.id,
     required this.day,
@@ -107,6 +120,8 @@ class WeeklyMenuPlanEntry {
     required this.recipeId,
     required this.recipeTitle,
     this.recipeImageUrl,
+    this.proposedBy,
+    this.votedInBy = const [],
   });
 
   factory WeeklyMenuPlanEntry.create({
@@ -115,6 +130,8 @@ class WeeklyMenuPlanEntry {
     required String recipeId,
     required String recipeTitle,
     String? recipeImageUrl,
+    String? proposedBy,
+    List<String> votedInBy = const [],
   }) {
     return WeeklyMenuPlanEntry(
       id: const Uuid().v4(),
@@ -123,6 +140,8 @@ class WeeklyMenuPlanEntry {
       recipeId: recipeId,
       recipeTitle: recipeTitle,
       recipeImageUrl: recipeImageUrl,
+      proposedBy: proposedBy,
+      votedInBy: votedInBy,
     );
   }
 
@@ -134,6 +153,10 @@ class WeeklyMenuPlanEntry {
       'recipeId': recipeId,
       'recipeTitle': recipeTitle,
       if (recipeImageUrl != null) 'recipeImageUrl': recipeImageUrl,
+      // Omitted when absent so a personal plan does not grow two dead fields
+      // per entry — the same shape `recipeImageUrl` already uses.
+      if (proposedBy != null) 'proposedBy': proposedBy,
+      if (votedInBy.isNotEmpty) 'votedInBy': votedInBy,
     };
   }
 
@@ -152,12 +175,20 @@ class WeeklyMenuPlanEntry {
         data,
         'recipeImageUrl',
       ),
+      proposedBy: SerializationUtils.safeNullableString(data, 'proposedBy'),
+      votedInBy: SerializationUtils.safeStringList(data, 'votedInBy'),
     );
   }
 
+  /// Every field is listed explicitly rather than spread from `this`, so a
+  /// field added without a line here is dropped SILENTLY on every move. That is
+  /// the one data-loss path on the provenance fields: `moveEntry` in both menu
+  /// services rebuilds the entry through this method.
   WeeklyMenuPlanEntry copyWith({
     DayOfWeek? day,
     MealSlot? slot,
+    String? proposedBy,
+    List<String>? votedInBy,
   }) {
     return WeeklyMenuPlanEntry(
       id: id,
@@ -166,6 +197,8 @@ class WeeklyMenuPlanEntry {
       recipeId: recipeId,
       recipeTitle: recipeTitle,
       recipeImageUrl: recipeImageUrl,
+      proposedBy: proposedBy ?? this.proposedBy,
+      votedInBy: votedInBy ?? this.votedInBy,
     );
   }
 

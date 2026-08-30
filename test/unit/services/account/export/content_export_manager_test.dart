@@ -927,6 +927,87 @@ void main() {
         expect(result['total_count'], 1);
       },
     );
+
+    // BUT-1971 / ADR-0010, Malin's two Art. 15 calls on this collection. They
+    // point OPPOSITE WAYS and that asymmetry is the decision. Do not harmonise
+    // them. The reasoning is in the dated deviation entries, not here — one
+    // version of it was measured false and must not be re-typed.
+    test('keeps other members provenance and filters the edit trail', () async {
+      final manager = _manager(
+        groupMenus: [
+          {
+            'id': 'gw1',
+            'data': {
+              'groupId': 'grp1',
+              'entries': [
+                {
+                  'id': 'e1',
+                  'proposedBy': 'user-bob',
+                  'votedInBy': ['user-bob', 'user-uid'],
+                },
+              ],
+              'editTrail': [
+                {'actorId': 'user-uid', 'action': 'removed'},
+                {'actorId': 'user-bob', 'subjectId': 'user-uid'},
+                {'actorId': 'user-bob', 'subjectId': 'user-cara'},
+                'not-a-map',
+              ],
+            },
+          },
+        ],
+      );
+
+      final result = await manager.exportGroupWeeklyMenuPlans('user-uid');
+      final data =
+          (result['group_weekly_menu_plans'] as List).single['data']
+              as Map<String, dynamic>;
+
+      expect(
+        data['entries'],
+        [
+          {
+            'id': 'e1',
+            'proposedBy': 'user-bob',
+            'votedInBy': ['user-bob', 'user-uid'],
+          },
+        ],
+      );
+      expect(data['editTrail'], [
+        {'actorId': 'user-uid', 'action': 'removed'},
+        {'actorId': 'user-bob', 'subjectId': 'user-uid'},
+      ]);
+      expect(
+        result['data_minimisation'],
+        contains('who voted for it'),
+        reason:
+            'a type-only assertion also passes on the earlier wording, '
+            'which described a COUNT while the bundle carries the uid list',
+      );
+    });
+
+    // The rules cap is `.size() <= 50`, and `.size()` is polymorphic — a
+    // 50-key MAP is ALLOWED by it, measured on the emulator. A per-row filter
+    // alone would skip such a value entirely and ship it whole.
+    test('a trail that is not a list is dropped, not exported whole', () async {
+      final manager = _manager(
+        groupMenus: [
+          {
+            'id': 'gw1',
+            'data': {
+              'groupId': 'grp1',
+              'editTrail': {'someone-elses': 'secret'},
+            },
+          },
+        ],
+      );
+
+      final result = await manager.exportGroupWeeklyMenuPlans('user-uid');
+      final data =
+          (result['group_weekly_menu_plans'] as List).single['data']
+              as Map<String, dynamic>;
+
+      expect(data['editTrail'], isEmpty);
+    });
   });
 
   // BUT-1732. `exportShoppingLists` only ever read the PERSONAL subcollection,

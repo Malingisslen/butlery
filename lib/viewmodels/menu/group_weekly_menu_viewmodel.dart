@@ -105,7 +105,15 @@ class GroupWeeklyMenuViewModel extends BaseViewModel {
   /// Resolve participant names for the face row. Failures are swallowed on
   /// purpose: a name we cannot read must not take the week off the screen.
   Future<void> _resolveNames(GroupWeeklyMenuPlan plan) async {
-    final missing = plan.participantUserIds
+    // Proposers and voters as well as participants: whoever put a dish on the
+    // ballot or voted for it may since have left the group, and their name is
+    // still what the screen needs.
+    final wanted = <String>{
+      ...plan.participantUserIds,
+      ...plan.entries.map((e) => e.proposedBy).whereType<String>(),
+      ...plan.entries.expand((e) => e.votedInBy),
+    };
+    final missing = wanted
         .where((id) => !_nameLookupsAttempted.contains(id))
         .toList();
     if (missing.isEmpty) return;
@@ -299,10 +307,16 @@ class GroupWeeklyMenuViewModel extends BaseViewModel {
     final seqBefore = _editSeq;
     _undoEntry = null;
     _undoDocId = null;
-    final ok = await _edit((plan) {
-      if (plan.entries.any((e) => e.id == entry.id)) return plan;
-      return plan.copyWith(entries: [...plan.entries, entry]);
-    });
+    // Through the service, not a raw `copyWith` here: the edit trail is written
+    // by the mutators, so a restore that bypassed them would leave the trail
+    // carrying every action except an undo.
+    final ok = await _edit(
+      (plan) => _service.restoreEntry(
+        plan: plan,
+        actorId: currentUserId,
+        entry: entry,
+      ),
+    );
 
     // A refused undo rolls the week back to WITHOUT the dish, so at this point
     // nothing holds it — not `_plan`, not this field, and the snackbar that

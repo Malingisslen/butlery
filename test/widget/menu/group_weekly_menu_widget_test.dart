@@ -20,11 +20,13 @@ import 'package:provider/provider.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/menu/group_weekly_menu_plan.dart';
+import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart'
     show SharedListPermission;
 import 'package:butlery/services/menu/group_weekly_menu_plan_service.dart';
 import 'package:butlery/services/unified/operations/realtime_group_menu/realtime_group_menu_module.dart';
 import 'package:butlery/services/user_service.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/viewmodels/menu/group_weekly_menu_viewmodel.dart';
 import 'package:butlery/widgets/menu/group_weekly_menu_widget.dart';
@@ -62,6 +64,15 @@ GroupWeeklyMenuPlan _plan({
 void main() {
   setUpAll(() {
     registerFallbackValue(_FakePlan());
+    registerFallbackValue(
+      const WeeklyMenuPlanEntry(
+        id: 'fallback',
+        day: DayOfWeek.mon,
+        slot: MealSlot.middag,
+        recipeId: 'r',
+        recipeTitle: 't',
+      ),
+    );
   });
 
   late _MockService service;
@@ -76,7 +87,25 @@ void main() {
     userService = _MockUserService();
     stream = StreamController<GroupWeeklyMenuPlan?>.broadcast();
 
+    // Answers only what it is ASKED for. A stub that returns its fixtures
+    // regardless makes `_resolveNames`' id set unobservable, so widening it
+    // to proposers and voters could be reverted with every suite green.
     when(() => userService.getUserProfiles(any())).thenAnswer((_) async => []);
+    // `undoLastRemoval` goes through the service now (BUT-1971), so the trail
+    // records an undo. Mirrors the real mutator: idempotent, appends the dish.
+    when(
+      () => service.restoreEntry(
+        plan: any(named: 'plan'),
+        actorId: any(named: 'actorId'),
+        entry: any(named: 'entry'),
+      ),
+    ).thenAnswer((invocation) {
+      final plan = invocation.namedArguments[#plan] as GroupWeeklyMenuPlan;
+      final restored = invocation.namedArguments[#entry] as WeeklyMenuPlanEntry;
+      if (plan.entries.any((e) => e.id == restored.id)) return plan;
+      return plan.copyWith(entries: [...plan.entries, restored]);
+    });
+
     when(
       () => realtime.subscribe(
         groupId: any(named: 'groupId'),
@@ -514,6 +543,365 @@ void main() {
 
       expect(find.text('Det går inte att ångra det här längre.'), findsOne);
       expect(find.text('Försök igen'), findsNothing);
+    });
+  });
+
+  // BUT-1971. The row exists to answer "whose dish is this" — and to answer
+  // NOTHING when the app does not know, rather than guess.
+  group('the provenance row', () {
+    testWidgets('names the proposer and counts the voters', (tester) async {
+      // The proposer is NEITHER a participant nor a voter, so his name can
+      // only appear if `_resolveNames` really widened its id set to proposers.
+      // With an on-roster proposer that half is deletable-green.
+      final profiles = [
+        UserProfile(
+          uid: 'user-dan',
+          email: 'd@b.se',
+          displayName: 'Dan',
+          joinedAt: DateTime.utc(2026, 1, 1),
+          lastActiveAt: DateTime.utc(2026, 1, 1),
+        ),
+      ];
+      when(() => userService.getUserProfiles(any())).thenAnswer((
+        invocation,
+      ) async {
+        final asked = invocation.positionalArguments.first as List<String>;
+        return profiles.where((p) => asked.contains(p.uid)).toList();
+      });
+      stubRead(
+        _plan(
+          entries: [
+            WeeklyMenuPlanEntry(
+              id: 'e1',
+              day: DayOfWeek.mon,
+              slot: MealSlot.middag,
+              recipeId: 'r1',
+              recipeTitle: 'Linsgryta med spetskål',
+              proposedBy: 'user-dan',
+              votedInBy: const [_alice, 'user-bob', 'user-cara'],
+            ),
+          ],
+        ),
+      );
+      await vm.loadWeek(_week);
+      await pump(tester);
+
+      expect(find.text('Föreslagen av Dan · framröstad av 3'), findsOne);
+    });
+
+    // The row is a tap target, so it owes the tap-target Semantics rule. The
+    // label names the ACTION only: the framework CONCATENATES the child text
+    // onto it, so restating the sentence would make a screen reader say it
+    // twice.
+    testWidgets('the row announces its action once, and is a button', (
+      tester,
+    ) async {
+      final handle = tester.ensureSemantics();
+      stubRead(
+        _plan(
+          entries: [
+            WeeklyMenuPlanEntry(
+              id: 'e1',
+              day: DayOfWeek.mon,
+              slot: MealSlot.middag,
+              recipeId: 'r1',
+              recipeTitle: 'Linsgryta med spetskål',
+              votedInBy: const ['user-bob'],
+            ),
+          ],
+        ),
+      );
+      await vm.loadWeek(_week);
+      await pump(tester);
+
+      final node = tester.getSemantics(find.text('framröstad av 1'));
+      expect(node.label, contains('Visa vilka som röstade'));
+      // Count the ROW's own sentence, not the label's: the framework
+      // concatenates the child text onto the label, so a label that restates
+      // it makes a screen reader say it twice. Counting the label's words
+      // instead would stay green under exactly that mutation.
+      expect(
+        'framröstad av 1'.allMatches(node.label).length,
+        1,
+        reason:
+            'the label names the ACTION; the row text is added by the '
+            'framework, so restating it announces the sentence twice',
+      );
+      expect(node.flagsCollection.isButton, isTrue);
+      handle.dispose();
+    });
+
+    // The row is the only way to the sheet, and the sheet is what the Art. 15
+    // keep decision rests on. A hit region the size of one line of `bodySmall`
+    // is the same failure one layer down.
+    testWidgets('the tap target meets the minimum height', (tester) async {
+      stubRead(
+        _plan(
+          entries: [
+            WeeklyMenuPlanEntry(
+              id: 'e1',
+              day: DayOfWeek.mon,
+              slot: MealSlot.middag,
+              recipeId: 'r1',
+              recipeTitle: 'Linsgryta med spetskål',
+              votedInBy: const ['user-bob'],
+            ),
+          ],
+        ),
+      );
+      await vm.loadWeek(_week);
+      await pump(tester);
+
+      final region = tester.getRect(
+        find.ancestor(
+          of: find.text('framröstad av 1'),
+          matching: find.byType(InkWell),
+        ),
+      );
+      expect(region.height, greaterThanOrEqualTo(AppDimensions.minTouchTarget));
+    });
+
+    // The sheet is a separate route, so it does not repaint on the
+    // viewmodel's notify unless something listens. Every other sheet test
+    // resolves its names during `loadWeek`, before the tap — so without this
+    // one the `ListenableBuilder` can be deleted with the group green, and a
+    // name arriving late would read "Okänd medlem" for the life of the sheet.
+    testWidgets('a name that resolves after the sheet opens reaches it', (
+      tester,
+    ) async {
+      final gate = Completer<List<UserProfile>>();
+      when(
+        () => userService.getUserProfiles(any()),
+      ).thenAnswer((_) => gate.future);
+      stubRead(
+        _plan(
+          entries: [
+            WeeklyMenuPlanEntry(
+              id: 'e1',
+              day: DayOfWeek.mon,
+              slot: MealSlot.middag,
+              recipeId: 'r1',
+              recipeTitle: 'Linsgryta med spetskål',
+              votedInBy: const ['user-bob'],
+            ),
+          ],
+        ),
+      );
+      await vm.loadWeek(_week);
+      await pump(tester);
+
+      await tester.tap(find.text('framröstad av 1'));
+      await tester.pumpAndSettle();
+      expect(find.text('Okänd medlem'), findsOne);
+
+      gate.complete([
+        UserProfile(
+          uid: 'user-bob',
+          email: 'b@b.se',
+          displayName: 'Bosse',
+          joinedAt: DateTime.utc(2026, 1, 1),
+          lastActiveAt: DateTime.utc(2026, 1, 1),
+        ),
+      ]);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Bosse'), findsOne);
+      expect(find.text('Okänd medlem'), findsNothing);
+    });
+
+    // A profile that resolves to a blank name must fall back the same way an
+    // unresolved one does, in the row AND in the sheet.
+    testWidgets('a blank display name falls back rather than rendering empty', (
+      tester,
+    ) async {
+      when(() => userService.getUserProfiles(any())).thenAnswer(
+        (_) async => [
+          UserProfile(
+            uid: 'user-bob',
+            email: 'b@b.se',
+            displayName: '   ',
+            joinedAt: DateTime.utc(2026, 1, 1),
+            lastActiveAt: DateTime.utc(2026, 1, 1),
+          ),
+        ],
+      );
+      stubRead(
+        _plan(
+          entries: [
+            WeeklyMenuPlanEntry(
+              id: 'e1',
+              day: DayOfWeek.mon,
+              slot: MealSlot.middag,
+              recipeId: 'r1',
+              recipeTitle: 'Linsgryta med spetskål',
+              proposedBy: 'user-bob',
+              votedInBy: const ['user-bob'],
+            ),
+          ],
+        ),
+      );
+      await vm.loadWeek(_week);
+      await pump(tester);
+
+      // The row drops the proposer half rather than printing an empty name.
+      expect(find.text('framröstad av 1'), findsOne);
+
+      await tester.tap(find.text('framröstad av 1'));
+      await tester.pumpAndSettle();
+      expect(find.text('Okänd medlem'), findsOne);
+    });
+
+    // The sheet's own comment says the scroll is what stops a big group losing
+    // voters off the bottom. Nothing measured that until here.
+    testWidgets('a long voter list reaches its last name', (tester) async {
+      final voters = List.generate(20, (i) => 'user-$i');
+      when(() => userService.getUserProfiles(any())).thenAnswer((
+        invocation,
+      ) async {
+        final asked = invocation.positionalArguments.first as List<String>;
+        return [
+          for (final uid in asked)
+            if (uid.startsWith('user-') && uid != _alice)
+              UserProfile(
+                uid: uid,
+                email: '$uid@b.se',
+                displayName: 'Röstare ${uid.substring(5)}',
+                joinedAt: DateTime.utc(2026, 1, 1),
+                lastActiveAt: DateTime.utc(2026, 1, 1),
+              ),
+        ];
+      });
+      stubRead(
+        _plan(
+          entries: [
+            WeeklyMenuPlanEntry(
+              id: 'e1',
+              day: DayOfWeek.mon,
+              slot: MealSlot.middag,
+              recipeId: 'r1',
+              recipeTitle: 'Linsgryta med spetskål',
+              votedInBy: voters,
+            ),
+          ],
+        ),
+      );
+      await vm.loadWeek(_week);
+      await pump(tester);
+
+      await tester.tap(find.text('framröstad av 20'));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+
+      // The sheet's own list, not the week's: two scrollables are in the tree
+      // and `scrollUntilVisible` refuses an ambiguous one.
+      await tester.scrollUntilVisible(
+        find.text('Röstare 19'),
+        200,
+        scrollable: find.descendant(
+          of: find.byType(ListView),
+          matching: find.byType(Scrollable),
+        ),
+      );
+      expect(find.text('Röstare 19'), findsOne);
+    });
+
+    // Malin's decision: the export ships other members' voter uids
+    // on the basis that the app shows them. Until this sheet the app showed a
+    // COUNT, and the justification was refuted by measurement. This test is
+    // what keeps it true.
+    testWidgets('tapping the row shows who voted', (tester) async {
+      // Filtered by what was ASKED for: `user-bob` is a VOTER and not a
+      // participant, so it only resolves if `_resolveNames` really widened its
+      // id set beyond the roster. A stub that ignores its argument would let
+      // that widening be reverted with every suite green.
+      final profiles = [
+        UserProfile(
+          uid: _alice,
+          email: 'a@b.se',
+          displayName: 'Malin',
+          joinedAt: DateTime.utc(2026, 1, 1),
+          lastActiveAt: DateTime.utc(2026, 1, 1),
+        ),
+        UserProfile(
+          uid: 'user-bob',
+          email: 'b@b.se',
+          displayName: 'Bosse',
+          joinedAt: DateTime.utc(2026, 1, 1),
+          lastActiveAt: DateTime.utc(2026, 1, 1),
+        ),
+      ];
+      when(() => userService.getUserProfiles(any())).thenAnswer((
+        invocation,
+      ) async {
+        final asked = invocation.positionalArguments.first as List<String>;
+        return profiles.where((p) => asked.contains(p.uid)).toList();
+      });
+      stubRead(
+        _plan(
+          entries: [
+            WeeklyMenuPlanEntry(
+              id: 'e1',
+              day: DayOfWeek.mon,
+              slot: MealSlot.middag,
+              recipeId: 'r1',
+              recipeTitle: 'Linsgryta med spetskål',
+              proposedBy: _alice,
+              votedInBy: const [_alice, 'user-bob', 'user-ghost'],
+            ),
+          ],
+        ),
+      );
+      await vm.loadWeek(_week);
+      await pump(tester);
+
+      await tester.tap(find.text('Föreslagen av Malin · framröstad av 3'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Röstade på den här rätten'), findsOne);
+      expect(find.text('Malin'), findsOne);
+      expect(find.text('Bosse'), findsOne);
+      // A uid is never rendered, in the sheet either.
+      expect(find.text('Okänd medlem'), findsOne);
+      expect(find.textContaining('user-ghost'), findsNothing);
+    });
+
+    // The discriminating control. Every dish that predates the feature is in
+    // this state, and a guessed name is worse than a missing one.
+    testWidgets('draws nothing for a dish with no provenance', (tester) async {
+      stubRead(_plan(entries: [entry('e1')]));
+      await vm.loadWeek(_week);
+      await pump(tester);
+
+      expect(find.text('Linsgryta med spetskål'), findsOne);
+      expect(find.textContaining('Föreslagen av'), findsNothing);
+      expect(find.textContaining('framröstad av'), findsNothing);
+    });
+
+    // A uid is never rendered. An unresolved profile costs the half it names,
+    // not the whole row — the count is still true.
+    testWidgets('keeps the vote count when the name will not resolve', (
+      tester,
+    ) async {
+      stubRead(
+        _plan(
+          entries: [
+            WeeklyMenuPlanEntry(
+              id: 'e1',
+              day: DayOfWeek.mon,
+              slot: MealSlot.middag,
+              recipeId: 'r1',
+              recipeTitle: 'Linsgryta med spetskål',
+              proposedBy: 'user-ghost',
+              votedInBy: const ['user-bob'],
+            ),
+          ],
+        ),
+      );
+      await vm.loadWeek(_week);
+      await pump(tester);
+
+      expect(find.text('framröstad av 1'), findsOne);
+      expect(find.textContaining('user-ghost'), findsNothing);
     });
   });
 

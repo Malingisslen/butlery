@@ -272,7 +272,39 @@ export async function probeResidualData(
     // `metadata.subjectUserId` entry earlier in this same list proves a nested
     // equality filter needs no declared index.
     [Collections.messages, "metadata.poll.creatorId", "=="],
+    // BUT-1971: the group weekly menu scrubs membership, per-dish provenance
+    // and the edit trail in ONE `batch.update` under `strict: false`, which
+    // returns `true` on a failed chunk. The provenance fields are arrays of
+    // maps and cannot be queried. It does not see an entries-only failure, but
+    // it does see the chunk failure that would produce one.
+    [Collections.groupWeeklyMenuPlans, "participantUserIds", "array-contains"],
+    // And the doc-level attribution, which unlike the two arrays IS queryable:
+    // a flat equality, served by the automatic single-field index.
+    [Collections.groupWeeklyMenuPlans, "lastModifiedBy", "=="],
+    // The ACL key. Without it a failed chunk on a document reached only by the
+    // permission handle reports clean under `strict: false`, with the raw uid
+    // still granting read access.
+    //
+    // The loop below runs `.where(field, op, uid)`, so this leg reads
+    // `memberPermissions.<uid> != <uid>`. That is an EXISTENCE test rather than
+    // a comparison: Firestore's `!=` excludes a missing field, and the stored
+    // value is always `view`/`edit`/`admin`, never a uid. The deleter's twin is
+    // spelled `!= null` because it builds its own query and can say so
+    // directly. Do not "align" the two spellings without changing the loop.
+    [
+      Collections.groupWeeklyMenuPlans,
+      new admin.firestore.FieldPath("memberPermissions", uid),
+      "!=",
+    ],
   ] as const) {
+    // A `FieldPath` leg carries the uid IN ITS SEGMENTS, and the logger
+    // JSON-stringifies whatever it is handed — so logging `field` directly
+    // would write the full uid on the very line that truncates it to a prefix,
+    // into a log that outlives the account. Label it instead.
+    const fieldLabel =
+      field instanceof admin.firestore.FieldPath
+        ? "memberPermissions.<uid>"
+        : field;
     try {
       const snap = await db.collection(col).where(field, op, uid).count().get();
       const count = snap.data().count ?? 0;
@@ -281,7 +313,7 @@ export async function probeResidualData(
         logger.warn("[deletion-cascade] residual owner-keyed docs", {
           uid_prefix: uid.slice(0, 6),
           collection: col,
-          field,
+          field: fieldLabel,
           count,
         });
       }
@@ -290,7 +322,7 @@ export async function probeResidualData(
       logger.error("[deletion-cascade] residual probe failed", {
         uid_prefix: uid.slice(0, 6),
         collection: col,
-        field,
+        field: fieldLabel,
         errCode: (err as { code?: number | string }).code ?? null,
         errName: err instanceof Error ? err.name : typeof err,
       });
@@ -1175,14 +1207,42 @@ export async function deleteWeeklyMenuPlans(
   await batchDeleteAll(db, owned.docs);
 
   // Scrub uid from group plans. If a plan ends up empty, delete it.
-  const groupPlans = await db
-    .collection("group_weekly_menu_plans")
-    .where("participantUserIds", "array-contains", uid)
-    .get();
-  if (groupPlans.docs.length > 0) {
+  //
+  // The deleter must be a superset of every probe leg, and of every field the
+  // EXPORT discovers on. `firestore.rules` puts
+  // no conjunct on `lastModifiedBy`, and its update limb lets an admin rewrite
+  // the roster, so a document can name this uid as its last writer while the
+  // roster query cannot reach it. One handle would leave that document
+  // un-erasable AND leave the audit reporting `gdprCompliant: false` forever,
+  // with no code path able to clear it.
+  const [byRoster, byWriter, byPermission] = await Promise.all([
+    db
+      .collection(Collections.groupWeeklyMenuPlans)
+      .where("participantUserIds", "array-contains", uid)
+      .get(),
+    db
+      .collection(Collections.groupWeeklyMenuPlans)
+      .where("lastModifiedBy", "==", uid)
+      .get(),
+    // The ACL key itself. `exportPlansForParticipant` discovers on THIS field,
+    // and the export must never reach a document the erasure cannot: an admin
+    // may update `memberPermissions` alone, so a uid can sit here as a map key
+    // — which is what grants read access — while the roster array does not
+    // name them.
+    db
+      .collection(Collections.groupWeeklyMenuPlans)
+      .where(new admin.firestore.FieldPath("memberPermissions", uid), "!=", null)
+      .get(),
+  ]);
+  const byPath = new Map<string, admin.firestore.QueryDocumentSnapshot>();
+  for (const doc of [...byRoster.docs, ...byWriter.docs, ...byPermission.docs]) {
+    byPath.set(doc.ref.path, doc);
+  }
+  const groupPlanDocs = [...byPath.values()];
+  if (groupPlanDocs.length > 0) {
     await commitInChunks(
       db,
-      groupPlans.docs,
+      groupPlanDocs,
       (batch, doc) => {
         const data = doc.data();
         const participantsRaw = data.participants;
@@ -1192,16 +1252,141 @@ export async function deleteWeeklyMenuPlans(
               .map((m) => ({ ...(m as Record<string, unknown>) }))
               .filter((m) => m.userId !== uid)
           : [];
+        const participantsLength = Array.isArray(participantsRaw)
+          ? participantsRaw.filter((m) => m && typeof m === "object").length
+          : 0;
         const userIdsRaw = data.participantUserIds;
-        const userIds = Array.isArray(userIdsRaw)
+        // Falls back to the SURVIVORS, not to empty: if the queryable mirror
+        // is missing or malformed while `participants` still holds the other
+        // members, an empty fallback would drop them. A shape `toFirestore`
+        // cannot produce, closed rather than accepted because the cost is one
+        // expression.
+        // True whenever `participants` NAMED this uid — the ordinary case for a
+        // real participant, not an exception. Named for what it measures: an
+        // earlier version called it `rostersDisagree`, which read as rare and
+        // hid that the derive branch below is the default path.
+        const participantsNamedUid = participants.length !== participantsLength;
+        // The RAW mirror's survivors, kept separate and never derived. It is
+        // the second, independent witness the destructive gate below needs: the
+        // moment `userIds` becomes a function of `participants`, that gate
+        // collapses to one check and a mirror-only survivor stops protecting
+        // the document.
+        const mirrorSurvivors = Array.isArray(userIdsRaw)
           ? (userIdsRaw as unknown[]).filter((id) => id !== uid)
           : [];
-        if (userIds.length === 0) {
+        const userIds =
+          Array.isArray(userIdsRaw) && !participantsNamedUid
+            ? mirrorSurvivors
+            : participants
+              .map((m) => m.userId)
+              // `userId` is `unknown` here, and `WriteBatch.update()` validates
+              // synchronously — `commitInChunks` calls its mutator OUTSIDE the
+              // chunk's try, so an undefined element would abort the whole step
+              // rather than one chunk.
+              .filter((id): id is string => typeof id === "string");
+        // `wasParticipant` gates the delete: a document reached only by the
+        // writer handle has a roster this user was never on, and an empty
+        // result there means "malformed", not "nobody left".
+        const wasParticipant =
+          Array.isArray(userIdsRaw) && (userIdsRaw as unknown[]).includes(uid);
+        // Both rosters must be empty, not just the queryable one. The mirror
+        // can name only this uid while `participants` still holds another
+        // member — the same desync as the rescue limb below, seen from the
+        // other side — and deleting then loses that member's week. A shape
+        // `toFirestore` cannot produce, closed because the failure is
+        // destructive rather than a leftover.
+        if (
+          userIds.length === 0 &&
+          mirrorSurvivors.length === 0 &&
+          participants.length === 0 &&
+          wasParticipant
+        ) {
           batch.delete(doc.ref);
         } else {
+          // BUT-1971: the participant lists are not the only place this uid
+          // sits on a group plan. Provenance on each dish
+          // (`proposedBy`/`votedInBy`), the edit trail, and the document-level
+          // `lastModifiedBy` all carry it, and the interactive screen stamps
+          // that last one on every remove and undo — so a departing member is
+          // routinely the last writer. Enumerate `toFirestore` when this model
+          // grows a field rather than trusting this list.
+          //
+          // All of them are scrubbed from the SAME `data` snapshot and in the
+          // SAME batch.update as the rosters: a second query or a second pass
+          // would read a document this batch is already rewriting.
+          //
+          // Only this branch needs it; the other deletes the whole document.
+          const entriesRaw = data.entries;
+          const entries = Array.isArray(entriesRaw)
+            ? entriesRaw
+                .filter((e) => e && typeof e === "object")
+                .map((e) => {
+                  const entry = { ...(e as Record<string, unknown>) };
+                  if (entry.proposedBy === uid) delete entry.proposedBy;
+                  const voted = entry.votedInBy;
+                  if (Array.isArray(voted)) {
+                    const kept = (voted as unknown[]).filter((v) => v !== uid);
+                    if (kept.length === 0) {
+                      delete entry.votedInBy;
+                    } else {
+                      entry.votedInBy = kept;
+                    }
+                  }
+                  return entry;
+                })
+            : [];
+          // Two positions, two different answers, because a row can be about
+          // TWO people. A row the departing user WROTE is theirs and goes. A row
+          // somebody else wrote ABOUT their dish is that other member's own
+          // attribution — the thing ADR-0010 restored the trail for — so it
+          // stays and only the departing uid is stripped out of it.
+          const entriesChanged =
+            JSON.stringify(entries) !== JSON.stringify(entriesRaw ?? []);
+          const trailRaw = data.editTrail;
+          const editTrail = Array.isArray(trailRaw)
+            ? trailRaw
+                .filter((r) => r && typeof r === "object")
+                .filter((r) => (r as Record<string, unknown>).actorId !== uid)
+                .map((r) => {
+                  const row = { ...(r as Record<string, unknown>) };
+                  if (row.subjectId === uid) delete row.subjectId;
+                  return row;
+                })
+            : [];
+          const trailChanged =
+            JSON.stringify(editTrail) !== JSON.stringify(trailRaw ?? []);
           batch.update(doc.ref, {
-            participants,
-            participantUserIds: userIds,
+            // Scoped to the handle that found this document, for the same
+            // reason the arrays below are: a plan reached only by the writer
+            // handle has a roster this user was never on, and rewriting it from
+            // a deletion-time snapshot can blank it or lose a concurrent edit.
+            // Also when `participants` named this uid while the queryable
+            // mirror did not: such a document is found by the ACL handle, and
+            // no probe leg can see inside an array of maps.
+            ...(wasParticipant || participantsNamedUid
+              ? { participants, participantUserIds: userIds }
+              : {}),
+            // Only when the document already had them, and only when this uid
+            // was actually in them: `toFirestore` omits both when empty, so
+            // writing `[]` unconditionally would invent a shape no writer
+            // produces, and rewriting an untouched array widens the
+            // read-modify-write window over plans this user never edited.
+            ...(Array.isArray(entriesRaw) && entriesChanged ? { entries } : {}),
+            ...(Array.isArray(trailRaw) && trailChanged ? { editTrail } : {}),
+            // A non-list value is skipped by the scrub above, so a uid inside
+            // one would never be erased. The rules cap is `.size()`, which is
+            // polymorphic — a 50-key map is accepted — so the shape is
+            // reachable. Deleted outright: no writer produces it.
+            ...(trailRaw !== undefined && !Array.isArray(trailRaw)
+              ? { editTrail: admin.firestore.FieldValue.delete() }
+              : {}),
+            ...(entriesRaw !== undefined && !Array.isArray(entriesRaw)
+              ? { entries: admin.firestore.FieldValue.delete() }
+              : {}),
+            // Tombstoned, not deleted: every sibling attribution field in
+            // this file uses "deleted", and the Dart reader takes it as a
+            // nullable string either way.
+            ...(data.lastModifiedBy === uid ? { lastModifiedBy: "deleted" } : {}),
             [`memberPermissions.${uid}`]: admin.firestore.FieldValue.delete(),
           });
         }

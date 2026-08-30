@@ -365,11 +365,20 @@ name which doc each end touches before approving it.
   fail direction: a strip fails CLOSED (unrecognised owner id ⇒ lose the field), a drop fails
   OPEN (unreadable owner id ⇒ KEEP the row, because under-disclosure is the worse Art. 15
   failure). Both need the section's `data_minimisation` sentence to NAME the drop and a test
-  asserting that sentence, or the withholding is silent. Three things a row filter does not
+  asserting that sentence, or the withholding is silent. An Art. 15 KEEP resting on "the
+  requester has already seen this in the app" is a measurable claim about a WIDGET, not a
+  policy argument — grep the render before accepting it (a row drawing a COUNT does not
+  justify shipping the uid LIST); when it is false, making the app show it is a legitimate
+  close, and the code then owes a comment saying a change removing that surface reopens the
+  decision. Three things a row filter does not
   reach: a denormalised COPY of the row on the parent doc (`conversations.lastMessage`), any
   overlay attached to the dropped row (the requester's own `your_poll_vote` goes with it), and
   a cap applied UPSTREAM of it — so the truncation flag must stay computed from the RAW
-  pre-filter fetch.
+  pre-filter fetch. A row filter guarded by a CONTAINER type-check (`if (trail is List)`)
+  fails OPEN at the container even when its per-row branch fails closed: an unexpected shape
+  skips the filter and exports the field WHOLE. Check what the write rule actually permits
+  before calling that unreachable — a `.get('f', []).size() <= N` cap bounds ROW COUNT, not
+  TYPE, so a map with N keys satisfies it. Put the else-branch on the container too.
 - A denormalized ERASURE HANDLE (flat `array-contains` trail, needed because Firestore
   can't filter inside an array of maps) must be extended by EVERY write path (derive the
   obligation from the payload so a new path inherits it by construction), removed in the
@@ -382,7 +391,22 @@ name which doc each end touches before approving it.
   pre-existing docs, and a deletion-cascade cross-check if the collection carries a raw
   `userId`.
 - "Export ⊇ erasure" is a field-PAIR property — the two filters must target the identical
-  field on the identical collection; check both cascades together. A membership MAP KEY is
+  field on the identical collection; check both cascades together. When a cascade UNIONS
+  several discovery handles (roster + last-writer), the EXPORT's own discovery field must be
+  one of the legs, or a document the bundle ships stays un-erasable — and the ACL MAP KEY is
+  a third handle in its own right, not a mirror of the roster, wherever an admin may update
+  `memberPermissions` alone (Admin SDK: `new FieldPath("memberPermissions", uid) != null`,
+  which matches the client's `isNull: false` set exactly) — and every per-document
+  scrub must be scoped to the handle that FOUND it: a writer-handle hit otherwise rewrites a
+  roster the subject was never on, from a snapshot, losing a concurrent admin edit. Both rest on a prior
+  property worth checking FIRST: every uid a write can store must satisfy the collection's
+  DISCOVERY predicate by construction. A field written by a THIRD party (a poll close
+  stamping the voters' uids onto a group plan) can carry someone the document's own
+  membership array never names — a member who joined after the doc was seeded, or left
+  before the write — and such a uid is invisible to a membership-keyed cascade, its residual
+  probe AND the membership-keyed export at once: neither erasable nor exportable. Fix at the
+  WRITE (intersect the stored ids with the roster) or add a flat `array-contains` erasure
+  handle; a scrub cannot reach what no query returns. A membership MAP KEY is
   itself a raw identifier — clearing the name but leaving the ACL key is incomplete
   (`FieldValue.delete()` it in the same scrub) — and so is a map VALUE: a per-member
   `addedBy`/`invitedBy` map is scrubbed only for the DEPARTING subject's own key, so their uid

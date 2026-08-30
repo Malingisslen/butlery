@@ -372,6 +372,7 @@ class _DayRow extends StatelessWidget {
                                       color: theme.colorScheme.onSurfaceVariant,
                                     ),
                                   ),
+                                  _provenance(context, vm, entry),
                                 ],
                               ),
                             ),
@@ -392,6 +393,129 @@ class _DayRow extends StatelessWidget {
       ),
     );
   }
+}
+
+/// "Föreslagen av Malin · framröstad av 3" under a dish (BUT-1971).
+///
+/// Draws NOTHING when the dish carries no provenance — no row, no "unknown".
+/// Every dish that predates the feature is in that state, and a guessed name is
+/// worse than a missing one.
+///
+/// The proposer gets a NAME and the voters get a COUNT because one name is what
+/// fits this row; the face row above already carries who is in the group.
+Widget _provenance(
+  BuildContext context,
+  GroupWeeklyMenuViewModel vm,
+  WeeklyMenuPlanEntry entry,
+) {
+  final theme = Theme.of(context);
+  final parts = <String>[];
+
+  final proposer = entry.proposedBy;
+  if (proposer != null) {
+    // A uid is never rendered. An unresolved profile drops the half it names
+    // rather than the whole row — the vote count is still true.
+    final name = vm.displayNameFor(proposer);
+    if (name != null && name.trim().isNotEmpty) {
+      parts.add(context.l10n.groupMenuProposedBy(name));
+    }
+  }
+  if (entry.votedInBy.isNotEmpty) {
+    parts.add(context.l10n.groupMenuVotedInBy(entry.votedInBy.length));
+  }
+  if (parts.isEmpty) return const SizedBox.shrink();
+
+  final label = Text(
+    parts.join(' · '),
+    maxLines: 2,
+    overflow: TextOverflow.ellipsis,
+    style: theme.textTheme.bodySmall?.copyWith(
+      color: theme.colorScheme.onSurfaceVariant,
+    ),
+  );
+
+  // The row shows a COUNT because only one name fits it (BUT-1906 measured the
+  // width). The names live one tap away — which is the whole point: Malin's
+  // Art. 15 decision to export other members' voter uids rests on the app
+  // actually showing them, and until this sheet existed it did not.
+  if (entry.votedInBy.isEmpty) return label;
+
+  return Semantics(
+    label: context.l10n.a11yShowVoters,
+    button: true,
+    child: InkWell(
+      onTap: () => _showVoters(context, vm, entry),
+      // The visible row is one line of `bodySmall`, well under the minimum
+      // touch target. Not wrapped in `TappableWrapper`: its `Center` would
+      // re-centre the row in a layout that is deliberately left-aligned. A
+      // control that is hard to hit shows no names, and the Art. 15 decision
+      // to export other members' voter uids rests on the app showing them.
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(
+          minHeight: AppDimensions.minTouchTarget,
+        ),
+        child: Align(alignment: Alignment.centerLeft, child: label),
+      ),
+    ),
+  );
+}
+
+void _showVoters(
+  BuildContext context,
+  GroupWeeklyMenuViewModel vm,
+  WeeklyMenuPlanEntry entry,
+) {
+  showModalBottomSheet<void>(
+    context: context,
+    builder: (sheetContext) => SafeArea(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(AppDimensions.spacingM),
+            child: Text(
+              sheetContext.l10n.groupMenuVotersTitle,
+              style: Theme.of(sheetContext).textTheme.titleMedium,
+            ),
+          ),
+          // Scrollable, not a bare column: a modal sheet is bounded to a
+          // fraction of the viewport, so a fixed list clips — and a clipped
+          // list here would mean the bigger the group, the fewer voters the app
+          // actually shows, which is the one direction the Art. 15 decision
+          // resting on this sheet cannot afford.
+          // Listens to the viewmodel: the sheet is a separate route, so without
+          // this a name that resolves after it opens stays "Okänd medlem" for
+          // the life of the sheet — and the Art. 15 decision to export other
+          // members' voter uids rests on this list showing their names.
+          Flexible(
+            child: ListenableBuilder(
+              listenable: vm,
+              builder: (_, _) => ListView.builder(
+                shrinkWrap: true,
+                itemCount: entry.votedInBy.length,
+                itemBuilder: (_, index) {
+                  final voter = entry.votedInBy[index];
+                  final name = vm.displayNameFor(voter);
+                  return ListTile(
+                    key: ValueKey(voter),
+                    leading: const Icon(Icons.how_to_vote_outlined),
+                    // A uid is never rendered, here either — and a blank display
+                    // name falls back the same way the face row does.
+                    title: Text(
+                      name == null || name.trim().isEmpty
+                          ? sheetContext.l10n.groupMenuUnknownVoter
+                          : name,
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
 }
 
 class _WeekArrows extends StatelessWidget {

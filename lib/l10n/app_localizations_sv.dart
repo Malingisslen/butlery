@@ -16421,6 +16421,31 @@ class AppLocalizationsSv extends AppLocalizations {
       'Det går inte att ångra det här längre.';
 
   @override
+  String groupMenuProposedBy(String name) {
+    return 'Föreslagen av $name';
+  }
+
+  @override
+  String groupMenuVotedInBy(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'framröstad av $count',
+      one: 'framröstad av 1',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get groupMenuVotersTitle => 'Röstade på den här rätten';
+
+  @override
+  String get a11yShowVoters => 'Visa vilka som röstade';
+
+  @override
+  String get groupMenuUnknownVoter => 'Okänd medlem';
+
+  @override
   String get groupMenuUndoFailed => 'Kunde inte ångra borttagningen.';
 
   @override

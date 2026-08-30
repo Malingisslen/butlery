@@ -392,6 +392,24 @@ you want the revert-probe that proved it; or this file itself reads too compress
   vacuity showing itself. Read the production method's early-return line before writing any
   stub of it, and check which sibling stubs remove an id the fixture does not hold — only
   those are exposed (2026-08-29, BUT-1971).
+  **A stub that correctly mirrors the identity return still silently drops the method's THROW
+  arm, and that arm is usually pinned nowhere** — grade a hand-written stub against the
+  callee's guard clauses as well as its early returns. `restoreEntry`'s `_requireEditor` was
+  unpinned repo-wide the day it shipped, and so were the four sibling mutators' on the same
+  class: the check is `grep -rn '<Service>(' test/` for suites constructing the REAL service
+  (two here) and then the exception name inside them (zero) — N-of-N mock-only IS the finding,
+  and it ranges over every method on the class, not just the round's new one. Confirm the gate
+  WORKS with a scratch `_zz_probe_test.dart` rather than a `lib/` mutant: ~15s, no
+  parallel-session clobber, and a green probe there proves the gate EXISTS, which is a
+  different claim from pinned (BUT-1971, 2026-08-30).
+- **A test asserting that a value SURVIVES a rebuild cannot tell "carried through" from
+  "never rebuilt"** — deleting the whole swap branch of `moveEntry` leaves every
+  `proposedBy`/`votedInBy` assertion on the swapped-aside dish green, because the occupant is
+  then never passed through `copyWith` at all. The fixture REACHING the branch is a separate
+  fact from the assertion DISCRIMINATING it, and hand-tracing the former is what makes the
+  latter look settled. Pin the rebuild itself (`expect(after['e2']!.day, <the source's day>)`)
+  beside the carry, or the test's own name is the only thing claiming the branch ran
+  (BUT-1971, 2026-08-30).
 - **A mocktail matcher goes vacuous only when a named arg's value stops equalling its
   DEFAULT** — `verifyNever` is the dangerous direction: a non-default named param can never
   match the omitted-param form, so the guard is UNFAILABLE. Spell every named param.
@@ -425,7 +443,17 @@ Codecov: 60% project / 70% new patches / 2% drop tolerance — floors, decided 5
 - **Open a review by grepping each NEW TOKEN into a token→files table** (~30s). Zero files
   IS the finding; hits only in an extracted class's own suite means the composing line in
   the CALLER's suite is still unproven (BUT-1838: a `copyWith` carry, a DTO write asymmetry,
-  a query filter — three sibling suites untouched). **A telemetry constant added in the same
+  a query filter — three sibling suites untouched). **Hits with a healthy SPREAD can still be
+  zero coverage of PERSISTENCE: sort the hits by whether any of them drives the model's
+  serializer.** BUT-1971 added three persisted fields (`editTrail`, entry `proposedBy`/
+  `votedInBy`) with four suites naming them — a service suite on in-memory `copyWith`, a mock-
+  level service suite, a widget suite, and a GDPR export suite that seeds RAW MAPS — so
+  `toFirestore`/`fromMap` were untouched and the whole feature could fail to persist with
+  everything green. The `if (x.isNotEmpty)` guards mean the lines never even execute. The
+  model suite holding the "preserves every field" round-trip is the file a feature round never
+  opens, and its NAME is the quantifier the round falsified; close the gap rather than scope
+  the name, and pin the OMITTED-when-empty half too, since that is a stated contract
+  (2026-08-30). **A telemetry constant added in the same
   commit as the behaviour it measures is the token that reliably lands with zero hits** — the
   sibling SUCCESS event is pinned, its new FAILURE twin is not, and it is emitted from the
   very `catch` the change made reachable, so a later re-swallow silences it with nothing red
@@ -467,7 +495,12 @@ Codecov: 60% project / 70% new patches / 2% drop tolerance — floors, decided 5
   microtask order. The cheaper argument needs no probe at all and generalises: a GRANTED/REFUSED
   pair built from ONE fixture helper over ONE fake proves its own wiring — the refusal case's
   row IS the evidence that the granted case's `isEmpty` is not measuring an unwired
-  `auditRepository`. (BUT-1981, 2026-08-29.)
+  `auditRepository`. (BUT-1981, 2026-08-29.) **When a later round FLIPS the granted arm from
+  `isEmpty` to a real row, the divergent-uid fixture does not transfer** — BUT-1971 restored the
+  granted row and left the authed-vs-passed divergence on the REFUSAL case only, so
+  `userId: actorId` on the NEW granted line is swappable for `userId: userId` with every suite
+  green. Grade the `requireCurrentUserId()`-vs-caller-`userId` choice PER CALL SITE, never per
+  method (2026-08-30).
 - **A guard added to close a review finding gets its EXISTENCE pinned and its CONDITIONS
   not** — the round writes the test the finding described, so deleting the block reddens, while
   stripping every conjunct but the one the finding named stays green. Measured on BUT-1971's
@@ -484,6 +517,69 @@ Codecov: 60% project / 70% new patches / 2% drop tolerance — floors, decided 5
   other entries would block the re-arm on `!dishBack` instead, the mutant would survive and
   the test would be over-determined with nothing red. Name the conjuncts the fixture is
   holding open in the test, or a later tidy vacuums it (BUT-1971, 2026-08-29).
+  **The MIRROR case is worse and is the one to grep for: a guard closing ANOTHER gate's
+  finding (security, GDPR, rules) arrives with NO pin at all, because no finding asked for a
+  test and the round's test budget went to the findings that did.** BUT-1971's fix round
+  answered my serializer finding with four model tests and, in the same round, added a
+  roster intersection to `GroupWeeklyMenuPlanService.addEntry` for a GDPR
+  erasability hazard — `DA:0` on every line of that method across all five menu suites,
+  while the sibling `restoreEntry`'s identical `_requireEditor` gate got a test the same
+  round, on the argument that a client-side gate nothing exercises is not a gate. The tell is
+  a method DA:0 whose class siblings are pinned; the check is `grep -rn '\.<method>(' test/`
+  for a call on the REAL service (mock-level hits do not reach it) plus `grep -rn
+  '\.<method>(' lib/` to confirm a live caller exists, since a callerless seam owes nothing.
+  Read the fix report for guards it mentions in passing as "also changed by the other
+  gates" — that phrase is where the unpinned code is (2026-08-30).
+  **The mirror's own mirror: a DETECTOR added beside a well-tested MUTATOR reads as covered
+  because the suite EXECUTES it and asserts nothing about it.** BUT-1971 gave the deletion
+  cascade three new `probeResidualData` legs (roster, `lastModifiedBy`, and an
+  `admin.firestore.FieldPath("memberPermissions", uid)` ACL leg) beside a deleter using the
+  same three handles; four emulator tests pin the DELETER, the cascade run calls the probe,
+  and deleting any leg leaves every suite green because nothing asserts `gdprCompliant` or a
+  logged row. A completeness signal is observable only through its FAILING state, so grep the
+  result flag's own name (`gdprCompliant`: zero hits IS the finding) rather than trusting that
+  the function ran. Same region, same cause, and the reason a log-payload redaction beside it
+  owes no test of its own: the lane that could assert it does not exist, and building it is
+  only worth it once the leg it labels is pinned (2026-08-30).
+  **"Owes no test" turns on whether an ASSERTION LANE EXISTS, never on the change being
+  small, structural or a mere wrapper — and the lane question is SETTLED BY RUNNING a scratch
+  probe, not by predicting a deadlock.** BUT-1971 wrapped a modal sheet's list in
+  `ListenableBuilder(listenable: vm)` and declined the test because staging it needed a
+  `Completer` in the profile stub and a resolve mid-route. Measured: the VM fires
+  `unawaited(_resolveNames(plan))`, so a held-open `Completer` neither blocks `loadWeek` nor
+  hangs `pumpAndSettle`, and the case is ~35 lines on the suite's existing `pump`/`stubRead`
+  helpers. The mutant is `listenable: Listenable.merge(const [])` — it compiles where deleting
+  the wrapper does not — and it left the file 24/24 GREEN before the test, reddening exactly
+  it after. Rule: when the suite already drives the real VM, already opens the surface and
+  already stubs the seam, the lane exists and the wrapper owes the test; reserve "owes none"
+  for a sink with no harness at all. A modal route is the recurring shape, because every
+  sibling test resolves its names during load and taps afterwards, so the whole group agrees
+  vacuously (2026-08-30).
+  **The fix round then closes it on ONE field and extends the same guard to a SIBLING field in
+  the same edit, and the report reads the one fixture as covering both** — "since your read, X
+  is also intersected, so the first test's sibling assertions cover both fields" was false:
+  `addEntry`'s `votedInBy` intersection got a killing fixture (an off-roster voter) while the
+  `proposedBy` one beside it stayed deletable-green, because every real-service fixture passed
+  an ON-ROSTER proposer or none. No probe is owed — the guarded and unguarded expressions
+  evaluate to the same fixture literal, which is the analytic case. Grade a guard PER FIELD it
+  was extended to, and grade the DERIVED writes beside it (a trail row's `subjectId`/`entryId`
+  taken from the filtered value are pinned by nothing when only the entry's own field is
+  asserted) (BUT-1971, 2026-08-30).
+  **The same arithmetic grades a SET WIDENED OVER SEVERAL SOURCES — a name-lookup set fed by
+  participants + proposers + voters — and only the source contributing a uid no OTHER source
+  holds is pinned.** BUT-1971's `_resolveNames` gained two spreads: the voter one is
+  discriminated (the fixture's voter sits off the roster, so deleting it renders the
+  unknown-member mark where a name is asserted), while the proposer one is deletable-green in
+  every fixture, because each proposer is also a participant, or also a voter, or has no
+  profile to resolve. The killing fixture is a uid appearing in EXACTLY ONE source AND
+  resolvable — which is the case the widening's own comment describes (a proposer who has
+  since left the group). Build the fixture-uid × source table before grading such a widening;
+  reading the spreads one by one makes all of them look covered. **And read the LOOKUP STUB
+  first, because it can make the whole table moot**: `when(() => userService.getUserProfiles(
+  any())).thenAnswer((_) async => [everyProfile])` ignores its ARGUMENT, so every profile lands
+  in the name map whatever the set asked for and EVERY spread is deletable-green. The stub must
+  filter on `invocation.positionalArguments.first` — that one line is what converts the table
+  into kills (2026-08-30).
 - **A claim about "the call sites" is measured over the CALLERS of the CHANGED METHOD, never
   over the one file the fix touched** — and `grep -rn '\.<method>(' lib/` is the whole check.
   Same commit, same class: a test comment quoting another suite's total ("all 304 of those
@@ -1231,7 +1327,18 @@ The single most repeated finding across two months of review.
   weaker — it cannot see `container`, `button`, the RECT or the merge. Assert
   `tester.getSemantics(<scoped finder>)` instead. `.claude/rules/ui-conventions.md` rule 5 was
   the origin of the belief and has been corrected in place (2026-08-26); BUT-1953 sweeps the
-  labels written under it, which are not audited.
+  labels written under it, which are not audited. **Re-measured 2026-08-30 over
+  `Semantics(label:, button: true, child: InkWell(onTap:, child: Text))`: same outcome — ONE
+  node, `label: "<parent>\n<child text>"`, `isButton`, `[focus, tap]`.** So the correct label
+  for a tappable row naming its own content is the ACTION ALONE ("Visa vilka som röstade"),
+  which is what avoids the stutter; the ARB description asserting the concatenation is a
+  framework claim a `tester.getSemantics(find.text(<the row>))` line settles in one run, and
+  an a11y label typed in `lib/` with zero `test/` hits is the usual state. **Assert the
+  stutter by counting the CHILD SENTENCE inside `node.label`
+  (`'<row text>'.allMatches(node.label).length == 1`), never the label's own words** — a
+  word-count reads a restating label as "more words" and stays green, which is the first
+  version BUT-1971 shipped; the occurrence count reddens at 2, and at 0 if the framework ever
+  stops concatenating, so one line holds both halves (2026-08-30).
 - **A vacuity POST-MORTEM comment ("this case was vacuous because X") is an unmeasured claim,
   and the file's own other assertions usually disprove it** — BUT-1904 blamed
   `find.byType(GestureDetector).first` picking up "a framework detector from the app
@@ -1422,6 +1529,16 @@ The single most repeated finding across two months of review.
   noSuchMethod fills omitted params with declared defaults, so `unit:null` never matches
   production's `unit:'st'`. Spell every named param as `any(named:'x')` (BUT-1858; positive
   `verify` unaffected).
+  **The same default-filling makes a MULTI-`captureAny` verify non-vacuous for the
+  "delete both new arguments" mutant, and it is measurable without touching `lib/`**: a call
+  omitting them is captured as `[<default>, null]`, so `captured.whereType<String>().single`
+  throws and the test reddens. Measured with a ~40-line scratchpad mocktail replica run under
+  `dart --packages=<repo>/.dart_tool/package_config.json` (~5s, no repo write). The same probe
+  settles the ORDER question: `.captured` follows the SOURCE order of the `captureAny` calls
+  inside the `verify` closure, NOT the mocked method's signature order — reversing them in the
+  closure reverses the list. So "mocktail's capture order is not the argument order" is FALSE
+  as written and an index would be stable; identify by type if you like, but the sentence
+  justifying it gets struck (BUT-1971, 2026-08-30).
 - mocktail is LAST-REGISTERED-WINS — wildcard-then-specific `when` is a genuine repoint
   discriminator; reversing the lines silently duplicates the other test.
 - When production adds a call to a NEW repository method, an existing `extends Fake` suite

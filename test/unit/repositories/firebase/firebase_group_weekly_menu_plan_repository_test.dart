@@ -462,7 +462,7 @@ void main() {
     });
   });
 
-  group('save audits refusals only (BUT-1981)', () {
+  group('save auditing (BUT-1981 / ADR-0010)', () {
     // The group half of the same change, which nothing pinned: both group
     // suites were green against the pre-change bytes, because neither passed
     // an `auditRepository` at all.
@@ -472,7 +472,13 @@ void main() {
     // actor as a separate argument, so its refusal branch is reached by a real
     // permission decision — and dropping the granted row costs edit history on
     // a document more than one person can write.
-    test('a GRANTED save writes no audit row', () async {
+    // FLIPPED by ADR-0010, and the flip is the change. BUT-1981 dropped the
+    // granted row here on the ground that the edit trail would buy back the
+    // lost edit history; the panel measured that it does not — the trail is
+    // client-written and a member can name someone else in a row, and `save`
+    // writes the whole document so a genuine row is lost under two editors.
+    // Malin chose to restore this row on the GROUP repository only.
+    test('a GRANTED save writes an audit row naming the actor', () async {
       final firestore = FakeFirebaseFirestore();
       final repo = _repo(firestore, withAudit: true);
       final plan = _plan(
@@ -490,15 +496,58 @@ void main() {
       final rows = await firestore
           .collection(FirestoreCollections.auditLogs)
           .get();
-      expect(rows.docs, isEmpty);
-      // The save itself must have happened, or an empty audit collection is
-      // also satisfied by a write that never ran.
+      expect(rows.docs, hasLength(1));
+      final row = rows.docs.single.data();
+      expect(row['userId'], _alice);
+      expect(
+        row['granted'],
+        isTrue,
+        reason: 'a refusal row here would mean the save was denied',
+      );
+      // The save itself must have happened, or the audit row is also satisfied
+      // by a write that never ran.
       final saved = await firestore
           .collection(FirestoreCollections.groupWeeklyMenuPlans)
           .doc(plan.id)
           .get();
       expect(saved.exists, isTrue);
     });
+
+    // The granted case above signs in as the same person it decides about, so
+    // `userId: actorId` and `userId: userId` are the same literal there. This
+    // one diverges them: alice is the editor being decided about, bob is the
+    // authenticated caller. `firestore.rules` refuses an `audit_logs` create
+    // whose uid is not the caller's, so the wrong choice loses the row —
+    // silently, and it is the row ADR-0010 restored.
+    test(
+      'a GRANTED row names the AUTHENTICATED actor, not the subject',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        final repo = _repo(firestore, authedUserId: _bob, withAudit: true);
+        final plan = _plan(
+          participants: [
+            GroupMenuParticipant(
+              userId: _alice,
+              permission: SharedListPermission.edit,
+              addedAt: DateTime.utc(2026, 1, 1),
+            ),
+            GroupMenuParticipant(
+              userId: _bob,
+              permission: SharedListPermission.admin,
+              addedAt: DateTime.utc(2026, 1, 1),
+            ),
+          ],
+        );
+
+        await repo.save(plan, userId: _alice);
+
+        final rows = await firestore
+            .collection(FirestoreCollections.auditLogs)
+            .get();
+        expect(rows.docs, hasLength(1));
+        expect(rows.docs.single.data()['userId'], _bob);
+      },
+    );
 
     test(
       'a save with nobody signed in throws before writing anything',

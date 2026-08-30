@@ -91,6 +91,15 @@ WeeklyMenuPlanEntry _entry(String id, {MealSlot slot = MealSlot.middag}) =>
 void main() {
   setUpAll(() {
     registerFallbackValue(_FakePlan());
+    registerFallbackValue(
+      const WeeklyMenuPlanEntry(
+        id: 'fallback',
+        day: DayOfWeek.mon,
+        slot: MealSlot.middag,
+        recipeId: 'r',
+        recipeTitle: 't',
+      ),
+    );
     registerFallbackValue(DayOfWeek.mon);
     registerFallbackValue(MealSlot.middag);
   });
@@ -110,7 +119,25 @@ void main() {
     service = _MockService();
     realtime = _MockRealtime();
     userService = _MockUserService();
+    // Answers only what it is ASKED for. A stub that returns its fixtures
+    // regardless makes `_resolveNames`' id set unobservable, so widening it
+    // to proposers and voters could be reverted with every suite green.
     when(() => userService.getUserProfiles(any())).thenAnswer((_) async => []);
+    // `undoLastRemoval` goes through the service now (BUT-1971), so the trail
+    // records an undo. Mirrors the real mutator: idempotent, appends the dish.
+    when(
+      () => service.restoreEntry(
+        plan: any(named: 'plan'),
+        actorId: any(named: 'actorId'),
+        entry: any(named: 'entry'),
+      ),
+    ).thenAnswer((invocation) {
+      final plan = invocation.namedArguments[#plan] as GroupWeeklyMenuPlan;
+      final restored = invocation.namedArguments[#entry] as WeeklyMenuPlanEntry;
+      if (plan.entries.any((e) => e.id == restored.id)) return plan;
+      return plan.copyWith(entries: [...plan.entries, restored]);
+    });
+
     stream = StreamController<GroupWeeklyMenuPlan?>.broadcast();
     subscriptions = [];
 
@@ -738,6 +765,17 @@ void main() {
       // And the second attempt actually works.
       expect(await vm.undoLastRemoval(), isTrue);
       expect(vm.entriesFor(DayOfWeek.mon).map((e) => e.id), ['e1']);
+
+      // The restore must go through the SERVICE, or the edit trail never gets
+      // an `undone` row. Reverting to the raw `copyWith` this used to do leaves
+      // every other assertion in this file green.
+      verify(
+        () => service.restoreEntry(
+          plan: any(named: 'plan'),
+          actorId: _alice,
+          entry: any(named: 'entry'),
+        ),
+      ).called(2);
     });
 
     // `_plan == null` reaches `_edit`, which returns false WITHOUT a notice.

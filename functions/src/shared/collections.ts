@@ -38,12 +38,10 @@ export const Collections = {
   chatGroups: "chat_groups",
   // BUT-1979: a group's weekly menu plans, doc id `{groupId}_{ISO week}`. Swept
   // whole by the group-collapse path in `remove-chat-group-member.ts`, and
-  // scrubbed per-user by the account cascade, which filters
-  // `participantUserIds` and deletes a plan only once it empties. The Dart
+  // scrubbed per-user by the account cascade. The Dart
   // writer is `FirestoreCollections.groupWeeklyMenuPlans`; the two must stay the
   // same string, since a mismatch is a query that matches nothing and throws
-  // nothing. Not yet the only home: `account-deletion-cascade.ts` still uses
-  // the bare literal.
+  // nothing.
   groupWeeklyMenuPlans: "group_weekly_menu_plans",
   // A user's own list of friends, at `users/{ownerId}/friend_categories/{id}`.
   // Read server-side only by BUT-1856's `ensureCategoryChat`, which resolves the

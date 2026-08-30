@@ -309,7 +309,116 @@ async function seedFixtures(): Promise<void> {
     ],
     memberPermissions: { [TARGET]: "editor", [OTHER]: "owner" },
     week: "2026-W23",
+    // The interactive screen stamps the acting member here on every remove and
+    // undo, so a departing member is routinely the last writer.
+    lastModifiedBy: TARGET,
+    // BUT-1971: the places the roster scrub does not reach. The target's
+    // uid sits on a dish they proposed, in the votes of a dish somebody else
+    // proposed, and in trail rows in both positions.
+    entries: [
+      { id: "e1", proposedBy: TARGET, votedInBy: [TARGET, OTHER] },
+      { id: "e2", proposedBy: OTHER, votedInBy: [TARGET] },
+      { id: "e3", proposedBy: OTHER, votedInBy: [OTHER] },
+    ],
+    editTrail: [
+      { actorId: TARGET, action: "removed", entryId: "e1" },
+      { actorId: OTHER, subjectId: TARGET, action: "removed", entryId: "e2" },
+      { actorId: OTHER, subjectId: OTHER, action: "moved", entryId: "e3" },
+    ],
   });
+
+  // Reached ONLY by the `lastModifiedBy` handle: the target is on no roster
+  // here. Mirrors the `ussl-ownerless` fixture's rule — the deleter must be a
+  // superset of every probe leg, or the audit reports gdprCompliant:false
+  // forever with no code path able to clear it.
+  await db
+    .collection("group_weekly_menu_plans")
+    .doc(`gp-writer-only-${RUN}`)
+    .set({
+      participantUserIds: [OTHER],
+      participants: [{ userId: OTHER, name: "Other" }],
+      memberPermissions: { [OTHER]: "owner" },
+      week: "2026-W24",
+      lastModifiedBy: TARGET,
+    });
+
+  // Shapes `firestore.rules` accepts and no writer produces: the trail cap is
+  // `.size()`, which is polymorphic, so a map passes it. The scrub cannot walk
+  // them, so it deletes them outright — without that a uid inside one is never
+  // erased.
+  await db
+    .collection("group_weekly_menu_plans")
+    .doc(`gp-malformed-${RUN}`)
+    .set({
+      participantUserIds: [TARGET, OTHER],
+      participants: [
+        { userId: TARGET, name: "Target" },
+        { userId: OTHER, name: "Other" },
+      ],
+      memberPermissions: { [TARGET]: "editor", [OTHER]: "owner" },
+      week: "2026-W25",
+      entries: { rogue: TARGET },
+      editTrail: { rogue: TARGET },
+    });
+
+  // Reached ONLY by the ACL key: no roster entry, no write attribution. This is
+  // the document the EXPORT can read and the erasure could not reach before the
+  // permission handle joined the union.
+  await db
+    .collection("group_weekly_menu_plans")
+    .doc(`gp-permission-only-${RUN}`)
+    .set({
+      participantUserIds: [],
+      participants: [],
+      memberPermissions: { [TARGET]: "editor", [OTHER]: "owner" },
+      week: "2026-W26",
+      entries: [{ id: "e1", proposedBy: TARGET, votedInBy: [TARGET] }],
+    });
+
+  // The two denormalised rosters DISAGREE: `participants` names the target,
+  // the queryable mirror does not. Reached by the ACL key, and the only fixture
+  // that stages the scrub's roster-mismatch disjunct.
+  await db
+    .collection("group_weekly_menu_plans")
+    .doc(`gp-roster-desync-${RUN}`)
+    .set({
+      participantUserIds: [OTHER],
+      participants: [
+        { userId: TARGET, name: "Target" },
+        { userId: OTHER, name: "Other" },
+      ],
+      memberPermissions: { [TARGET]: "editor", [OTHER]: "owner" },
+      week: "2026-W27",
+    });
+
+  // The desync seen from the DESTRUCTIVE side: the queryable mirror names
+  // only the target, while `participants` still holds another member. Deleting
+  // on the mirror alone would take that member's week with it.
+  await db
+    .collection("group_weekly_menu_plans")
+    .doc(`gp-desync-inverse-${RUN}`)
+    .set({
+      participantUserIds: [TARGET],
+      participants: [
+        { userId: TARGET, name: "Target" },
+        { userId: OTHER, name: "Other" },
+      ],
+      memberPermissions: { [TARGET]: "editor", [OTHER]: "owner" },
+      week: "2026-W28",
+    });
+
+  // The MIRROR holds a survivor the `participants` array does not. Deriving
+  // the mirror from `participants` would collapse the delete gate to one
+  // witness and destroy this member's week.
+  await db
+    .collection("group_weekly_menu_plans")
+    .doc(`gp-mirror-survivor-${RUN}`)
+    .set({
+      participantUserIds: [TARGET, "mirror-only-member"],
+      participants: [{ userId: TARGET, name: "Target" }],
+      memberPermissions: { [TARGET]: "editor", "mirror-only-member": "edit" },
+      week: "2026-W29",
+    });
 
   // --- recipe_comments authored by target (anonymize, not delete) ---
   await db.collection("recipe_comments").doc(`rc-${RUN}`).set({
@@ -981,6 +1090,14 @@ test("group_weekly_menu_plans: still-populated plan retained with target removed
     !participants.some((p) => p.userId === TARGET),
     "target removed from participants array",
   );
+  // `participants` is where the departed member's DISPLAY NAME lives, and no
+  // probe leg can see inside an array of maps — so if this scrub regressed,
+  // the name would stay on a document the remaining members keep, and both CI
+  // and the residual probe would report clean.
+  assert(
+    !JSON.stringify(participants).includes("Target"),
+    "and their display name goes with the entry",
+  );
   assert(
     participants.some((p) => p.userId === OTHER),
     "other participant retained in participants array",
@@ -988,6 +1105,186 @@ test("group_weekly_menu_plans: still-populated plan retained with target removed
   const perms = (data.memberPermissions as Record<string, unknown>) ?? {};
   assert(!(TARGET in perms), "target removed from memberPermissions");
   assert(OTHER in perms, "other participant retained in memberPermissions");
+});
+
+// BUT-1971 / ADR-0010. Provenance and the edit trail are the two surfaces the
+// roster scrub above never touched, so before this a departing member's uid
+// stayed on every dish they proposed or voted for, forever, on every group plan
+// that survived their deletion.
+test("group_weekly_menu_plans: provenance and trail are scrubbed too", async () => {
+  const data = await dataAt(`group_weekly_menu_plans/gp-shared-${RUN}`);
+
+  const entries =
+    (data.entries as Array<Record<string, unknown>>) ?? [];
+  assert(entries.length === 3, "no dish may be dropped by the scrub");
+  const byId = new Map(entries.map((e) => [e.id as string, e]));
+
+  assert(
+    byId.get("e1")?.proposedBy === undefined,
+    "target's authorship of a dish must be gone",
+  );
+  assert(
+    JSON.stringify(byId.get("e1")?.votedInBy) === JSON.stringify([OTHER]),
+    "target's vote goes, the other member's stays",
+  );
+  // The whole-field-drop control: a votes list that empties is removed, not
+  // left as an empty array pointing at nothing.
+  assert(
+    byId.get("e2")?.votedInBy === undefined,
+    "a votes list holding only the target is dropped, not emptied",
+  );
+  assert(
+    byId.get("e2")?.proposedBy === OTHER,
+    "another member's authorship is untouched",
+  );
+  assert(
+    byId.get("e3")?.proposedBy === OTHER &&
+      JSON.stringify(byId.get("e3")?.votedInBy) === JSON.stringify([OTHER]),
+    "a dish the target never touched is untouched",
+  );
+
+  assert(
+    data.lastModifiedBy === "deleted",
+    "the document-level last-writer attribution must be tombstoned too",
+  );
+
+  const trail = (data.editTrail as Array<Record<string, unknown>>) ?? [];
+  assert(
+    trail.length === 2,
+    `the target's OWN row goes, the other member's stays, got ${trail.length}`,
+  );
+  assert(
+    !trail.some((r) => r.actorId === TARGET),
+    "a row the target wrote is theirs and must be gone",
+  );
+  const aboutTarget = trail.find((r) => r.entryId === "e2");
+  assert(
+    aboutTarget !== undefined && aboutTarget.actorId === OTHER,
+    "the row another member wrote about the target's dish survives — it is " +
+      "that member's own attribution, which is what the trail exists for",
+  );
+  assert(
+    aboutTarget?.subjectId === undefined,
+    "but the target's uid is stripped out of it",
+  );
+});
+
+test("group_weekly_menu_plans: a plan the target only WROTE is reached", async () => {
+  assert(
+    await exists(`group_weekly_menu_plans/gp-writer-only-${RUN}`),
+    "the target was never on this roster, so the plan must survive",
+  );
+  const data = await dataAt(`group_weekly_menu_plans/gp-writer-only-${RUN}`);
+  assert(
+    data.lastModifiedBy === "deleted",
+    "discovery must union the writer handle with the roster handle — the " +
+      "residual probe counts both",
+  );
+  const ids = (data.participantUserIds as string[]) ?? [];
+  assert(
+    ids.length === 1 && ids[0] === OTHER,
+    "and the roster of a plan the target was never on must be untouched",
+  );
+});
+
+test("group_weekly_menu_plans: a non-list entries/trail is deleted, not skipped", async () => {
+  const data = await dataAt(`group_weekly_menu_plans/gp-malformed-${RUN}`);
+  assert(
+    data.entries === undefined,
+    "a shape the scrub cannot walk must go, or the uid inside it never does",
+  );
+  assert(data.editTrail === undefined, "same for the trail");
+  const ids = (data.participantUserIds as string[]) ?? [];
+  assert(!ids.includes(TARGET), "and the roster is still scrubbed");
+});
+
+test("group_weekly_menu_plans: a plan reached only by the ACL key is scrubbed", async () => {
+  // Survival is the assertion that matters most here: without the
+  // `wasParticipant` gate this document's empty roster would have made the
+  // deleter destroy another group's plan.
+  assert(
+    await exists(`group_weekly_menu_plans/gp-permission-only-${RUN}`),
+    "the target was never on this roster, so the plan must survive",
+  );
+  const data = await dataAt(`group_weekly_menu_plans/gp-permission-only-${RUN}`);
+  const perms = (data.memberPermissions as Record<string, unknown>) ?? {};
+  assert(
+    !(TARGET in perms),
+    "discovery must include the ACL key — the export discovers on it, so the " +
+      "erasure has to reach it",
+  );
+  assert(OTHER in perms, "and the other member's access is untouched");
+  const entries = (data.entries as Array<Record<string, unknown>>) ?? [];
+  assert(
+    entries[0]?.proposedBy === undefined && entries[0]?.votedInBy === undefined,
+    "provenance is scrubbed on a permission-only document too",
+  );
+});
+
+test("group_weekly_menu_plans: a roster that disagrees with itself is scrubbed", async () => {
+  const data = await dataAt(`group_weekly_menu_plans/gp-roster-desync-${RUN}`);
+  const participants = (data.participants as Array<{ userId: string }>) ?? [];
+  assert(
+    !participants.some((p) => p.userId === TARGET),
+    "the uid is inside participants[] even though the queryable mirror never " +
+      "named it — the scrub must reach it anyway",
+  );
+  assert(
+    participants.some((p) => p.userId === OTHER),
+    "and the other member survives",
+  );
+  const ids = (data.participantUserIds as string[]) ?? [];
+  assert(
+    ids.length === 1 && ids[0] === OTHER,
+    "the mirror is rewritten from the survivors, never emptied",
+  );
+});
+
+test("group_weekly_menu_plans: an empty mirror does not delete a plan someone still holds", async () => {
+  assert(
+    await exists(`group_weekly_menu_plans/gp-desync-inverse-${RUN}`),
+    "the other member is still in participants, so the week must survive",
+  );
+  const data = await dataAt(`group_weekly_menu_plans/gp-desync-inverse-${RUN}`);
+  const participants = (data.participants as Array<{ userId: string }>) ?? [];
+  assert(
+    participants.length === 1 && participants[0].userId === OTHER,
+    "and the target is scrubbed out of it rather than the document dropped",
+  );
+  const perms = (data.memberPermissions as Record<string, unknown>) ?? {};
+  assert(!(TARGET in perms), "the ACL key goes too");
+  // The mirror is rebuilt from the survivors, not just filtered: filtering it
+  // alone would leave an empty queryable roster beside a non-empty real one.
+  const ids = (data.participantUserIds as string[]) ?? [];
+  assert(
+    ids.length === 1 && ids[0] === OTHER,
+    `the mirror must name the surviving member, got ${JSON.stringify(ids)}`,
+  );
+});
+
+test("group_weekly_menu_plans: a survivor only the mirror knows about keeps their week", async () => {
+  assert(
+    await exists(`group_weekly_menu_plans/gp-mirror-survivor-${RUN}`),
+    "the mirror names a member `participants` does not — deleting here " +
+      "destroys that member's week",
+  );
+  const data = await dataAt(
+    `group_weekly_menu_plans/gp-mirror-survivor-${RUN}`,
+  );
+  const perms = (data.memberPermissions as Record<string, unknown>) ?? {};
+  assert(!(TARGET in perms), "and the target is still scrubbed out of it");
+  assert("mirror-only-member" in perms, "while the survivor keeps access");
+  // What the rosters actually become, so a later reader does not infer the
+  // mirror survives: `participants` never named the survivor, so both arrays
+  // end up empty.
+  assert(
+    ((data.participantUserIds as string[]) ?? []).length === 0,
+    "the mirror is rebuilt from participants, which never named the survivor",
+  );
+  assert(
+    ((data.participants as unknown[]) ?? []).length === 0,
+    "and participants held only the target",
+  );
 });
 
 // ===========================================================================

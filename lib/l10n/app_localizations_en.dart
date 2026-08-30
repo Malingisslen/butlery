@@ -16378,6 +16378,31 @@ class AppLocalizationsEn extends AppLocalizations {
   String get groupMenuUndoUnavailable => 'This can no longer be undone.';
 
   @override
+  String groupMenuProposedBy(String name) {
+    return 'Suggested by $name';
+  }
+
+  @override
+  String groupMenuVotedInBy(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'voted in by $count',
+      one: 'voted in by 1',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get groupMenuVotersTitle => 'Voted for this dish';
+
+  @override
+  String get a11yShowVoters => 'Show who voted';
+
+  @override
+  String get groupMenuUnknownVoter => 'Unknown member';
+
+  @override
   String get groupMenuUndoFailed => 'Could not undo the removal.';
 
   @override

@@ -14,7 +14,7 @@ they simply do not load in sessions that never open a test file.
 - Red CI on an unrelated test = suspect a pre-existing flake; fix the flake at root (seed the RNG) — never rerun-until-green.
 - Chronic-red CI disarms safety-gate tests silently — triage any always-red job to zero promptly, and after moving a definition, grep tests for hardcoded paths/regexes aimed at the old site.
 - `architecture_test.dart` guards are NOT in `dart analyze` — analyze-clean ≠ CI-green for `lib/widgets/`.
-- Adding a named param to a mocked service silently un-matches every old mocktail stub — update the stubs.
+- Adding a named param to a mocked service silently un-matches every old mocktail stub — update the stubs. The mechanical step, because knowing this was not enough to avoid it (BUT-1971, 2026-08-30): after ANY signature change, `grep -rl '<methodName>' test/` and run EVERY hit. A verification set chosen by the files you EDITED misses the suite that owns the method's only production caller — which is exactly the suite whose stubs break. Eight tests were red under a reported "232 green", and that suite held the controls for three other tickets. Watch the blast radius too: a blanket edit over `addEntry` matchers also hit the PERSONAL service's overload, which has no such parameter.
 - cloud_firestore's FieldValue caches the platform factory statically — fake batches can throw subtype errors.
 - Lexicon-dependent tests: assert the premise, and watch NFC vs NFD normalization on å/ä/ö.
 - real-time-guard matches the literal `DateTime.now()` even inside comments.

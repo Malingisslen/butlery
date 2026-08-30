@@ -88,6 +88,45 @@ void main() {
       expect(restored.recipeId, 'r2');
     });
 
+    // BUT-1971. Nothing executed either serializer arm for the provenance
+    // fields: both `if (proposedBy != null)` and `if (votedInBy.isNotEmpty)`
+    // could be deleted with every suite still green, and the screen's row would
+    // simply never appear for a real user.
+    test('toMap → fromMap round-trips the provenance fields', () {
+      final e = WeeklyMenuPlanEntry.create(
+        day: DayOfWeek.tue,
+        slot: MealSlot.middag,
+        recipeId: 'r3',
+        recipeTitle: 'Linsgryta',
+        proposedBy: 'user-alice',
+        votedInBy: const ['user-alice', 'user-bob'],
+      );
+
+      final map = e.toMap();
+      expect(map['proposedBy'], 'user-alice');
+      expect(map['votedInBy'], ['user-alice', 'user-bob']);
+
+      final restored = WeeklyMenuPlanEntry.fromMap(map);
+      expect(restored.proposedBy, 'user-alice');
+      expect(restored.votedInBy, ['user-alice', 'user-bob']);
+    });
+
+    // The omission is a stated contract, not an accident: a personal plan must
+    // not grow two dead fields on every entry.
+    test('toMap omits provenance a dish does not carry', () {
+      final e = WeeklyMenuPlanEntry.create(
+        day: DayOfWeek.tue,
+        slot: MealSlot.middag,
+        recipeId: 'r4',
+        recipeTitle: 'Kaka',
+      );
+
+      final map = e.toMap();
+      expect(map.containsKey('proposedBy'), isFalse);
+      expect(map.containsKey('votedInBy'), isFalse);
+      expect(WeeklyMenuPlanEntry.fromMap(map).votedInBy, isEmpty);
+    });
+
     test('copyWith changes day/slot, preserves identity + recipe', () {
       final e = WeeklyMenuPlanEntry.create(
         day: DayOfWeek.mon,

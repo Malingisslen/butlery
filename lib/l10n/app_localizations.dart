@@ -27317,6 +27317,36 @@ abstract class AppLocalizations {
   /// **'Det går inte att ångra det här längre.'**
   String get groupMenuUndoUnavailable;
 
+  /// BUT-1971: who put this dish on the poll's ballot. Rendered only when the name resolves — a raw uid is never shown, and no row is drawn at all when the dish carries no provenance.
+  ///
+  /// In sv, this message translates to:
+  /// **'Föreslagen av {name}'**
+  String groupMenuProposedBy(String name);
+
+  /// BUT-1971: how many people voted for this dish. A count, not names: one name is what fits the row, so the proposer gets the name and the voters get the number.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{framröstad av 1} other{framröstad av {count}}}'**
+  String groupMenuVotedInBy(int count);
+
+  /// BUT-1971: heading of the sheet listing who voted a dish in. The row itself shows a COUNT because only one name fits it; this sheet is where the names are actually displayed, which is what the Art. 15 export decision rests on.
+  ///
+  /// In sv, this message translates to:
+  /// **'Röstade på den här rätten'**
+  String get groupMenuVotersTitle;
+
+  /// BUT-1971: Semantics label for the tappable provenance row. Names the ACTION only — the row's own text is concatenated onto this label by the framework.
+  ///
+  /// In sv, this message translates to:
+  /// **'Visa vilka som röstade'**
+  String get a11yShowVoters;
+
+  /// BUT-1971: shown in the voter sheet for a member whose profile could not be read. A raw uid is never displayed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Okänd medlem'**
+  String get groupMenuUnknownVoter;
+
   /// BUT-1971: the undo's own save failed. Its snackbar is the only one on this screen that carries a retry, so the sentence must NOT end in a 'try again' of its own — the button says that.
   ///
   /// In sv, this message translates to:

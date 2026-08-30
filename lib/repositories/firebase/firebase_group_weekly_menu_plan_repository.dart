@@ -130,10 +130,17 @@ class FirebaseGroupWeeklyMenuPlanRepository
       final actorId = requireCurrentUserId();
       final canWrite = await validateUpdatePermission(userId, plan.id, plan);
       if (!canWrite) {
-        // Audit only the REFUSAL (BUT-1981). Narrower than the per-user case:
-        // dropping the granted row here loses EDIT HISTORY on a document more
-        // than one person can write, and `lastModifiedBy` keeps only the last
-        // writer. A real reduction, not a redundancy removed.
+        // BUT-1981 audited the REFUSAL only. That reduction was accepted on the
+        // ground that the edit trail would buy back the lost edit history, and
+        // ADR-0010 measured that it does not: the trail is written by the
+        // client, so a member can put another member's uid in a row, and `save`
+        // writes the whole document, so a genuine row is lost when two people
+        // edit the same week. Malin chose to restore the granted row here
+        // rather than rely on the trail alone.
+        //
+        // This collection only. The per-user repository keeps BUT-1981's
+        // reduction: its gate is a tautology that never recorded a decision
+        // which could have gone the other way.
         await logPermissionCheck(
           // The AUTHENTICATED actor, not the caller-supplied one — an
           // `audit_logs` create whose uid does not match the caller is refused
@@ -156,6 +163,16 @@ class FirebaseGroupWeeklyMenuPlanRepository
           userId: userId,
         );
       }
+      // The GRANTED row (ADR-0010). Server-verifiable in a way the edit trail
+      // is not: `audit_logs` refuses a create whose uid does not match the
+      // caller, so this row cannot name anybody but its writer.
+      await logPermissionCheck(
+        userId: actorId,
+        resource: '$collectionName/${plan.id}',
+        operation: 'save',
+        granted: true,
+        auditRepository: auditRepository,
+      );
     }
     await collection.doc(plan.id).set(toFirestore(plan));
   }

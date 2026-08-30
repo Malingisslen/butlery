@@ -2420,7 +2420,10 @@ neither passed an `auditRepository` at all.
   restored — that is a code change scoped to Malin. **Open for her: does the refusal-only audit
   still hold now that the writers are people rather than one server trigger?** Raised by the
   `integration-reviewer` gate. BUT-1971, 2026-08-29
-  **RESOLVED 2026-08-29 — Malin: build an EDIT TRAIL instead.** She was shown the
+  **RESOLVED 2026-08-29 — Malin: build an EDIT TRAIL instead. SUPERSEDED 2026-08-30 by
+  ADR-0010 — see the BUT-1971 entry at the end of this file: the trail is client-written and
+  not durable, so it does not buy what this paragraph claims, and the granted row is
+  restored on the GROUP repository. Kept as the record of what was decided that day.** She was shown the
   security review's recommendation (restore the granted row on the GROUP repository only,
   ~1 extra write per interactive remove/undo) and chose the alternative it named beside it:
   an append-only trail on the plan document itself, which buys the same attribution with no
@@ -2428,3 +2431,111 @@ neither passed an `auditRepository` at all.
   gap is closed by a design change rather than a revert. Not built here; it shares its model
   change, its `firestore.rules` change and its GDPR review with the per-entry provenance
   BUT-1971 needs for "framröstad av", and Malin asked for those to be planned as ONE build.
+
+- **SUPERSEDES the BUT-1981/BUT-1971 audit entry, 2026-08-30 (ADR-0010): the granted audit row IS restored on
+  the GROUP repository, and the edit trail ships beside it — both, not either.** That
+  entry's RESOLVED clause chose the trail over the audit row on the stated ground that it "buys the
+  same attribution with no second write". A full panel measured that the premise is false on
+  both axes that made the audit row trustworthy. **(1) The trail can be lied in:** it is
+  written by the client and `editTrail` is bounded only by its row cap, never validated
+  element-wise, so any editor can write
+  `{actorId: <another member's uid>}` and point at a groupmate for an edit they never made;
+  the audit row stamps the AUTHENTICATED actor and `audit_logs` refuses a create whose uid
+  does not match the caller. **(2) A genuine row can vanish:** `save` writes the whole
+  document with `set()`, so of two legitimate editors on the same week the later one
+  discards the earlier one's trail row — precisely the multi-editor case the trail was built
+  for. Malin was shown both and chose to build both: the trail shows, the audit row proves.
+  Cost: ~1 extra write per interactive remove/undo, not per view.
+  **GROUP repository only.** The per-user repository keeps BUT-1981's reduction untouched —
+  its gate is a tautology that never recorded a decision which could have gone the other
+  way. Do not "harmonise" the two repositories. BUT-1971, 2026-08-30
+
+- **A group menu's provenance is FORGEABLE, and that is accepted.** `entries` is not
+  validated element-wise anywhere in `firestore.rules` — the name appears in exactly one rule
+  expression, inside a `hasAll` presence list — so any editor may write any uid into
+  `proposedBy` or `votedInBy`. No permission hangs on either field; they are descriptive.
+  Malin's explicit call, 2026-08-29. **Corollary that is NOT covered by this entry and has
+  its own dated line:** the same absence lets a trail row name the wrong person, which is a
+  different harm. BUT-1971, 2026-08-30
+
+- **A trail row can name someone who did not do it, and that is a different accepted risk
+  from the forgeable-provenance entry.** Attribution under a dish is a wrong name on a suggestion;
+  a trail row is an accusation about an action. Both are accepted, separately and knowingly
+  (ADR-0010), and the mitigation for the second is that the audit row exists beside it. Do
+  not cite the provenance entry as authority for this one — a decision about one field does
+  not transfer to a field with another purpose, which is the citation error the BUT-1798
+  entries already record. BUT-1971, 2026-08-30
+
+- **The edit trail is NOT durable, and must never be used as evidence in a dispute.** Two
+  legitimate editors on the same week means the later `set()` silently discards the earlier
+  writer's row. Accepted because the alternative — a rules conjunct requiring the list never
+  to shrink — would REFUSE the losing writer's whole write, so an ordinary removal would
+  start failing. The record that can be relied on is the audit row. BUT-1971, 2026-08-30
+
+- **Art. 15, group weekly menu: other members' per-dish provenance is KEPT.** `proposedBy`
+  and `votedInBy` are uids the requester has already seen acted out — the whole group can
+  open the week and read who put a dish there and how many voted it in. Malin's explicit
+  call, 2026-08-29, **on its own merits**: NOT derived from BUT-1732, BUT-1772 or BUT-1774,
+  which decided other collections, and citing any of them as authority here is the precise
+  error the BUT-1732 entry records having made. **AMENDED 2026-08-30, same build:** this said "no code implements this — the export
+  ships the document whole". That is no longer true: `_redactGroupPlan` now rewrites
+  `editTrail`, so the section IS a projection and the keep decision depends on that
+  helper leaving `entries` alone. It also gained a `data_minimisation` sentence naming
+  what was withheld.
+  BUT-1971, 2026-08-30
+
+- **Art. 15, group weekly menu: the edit trail is FILTERED to rows where the requester is
+  the ACTOR or the SUBJECT.** Another member's edits are third-party behaviour no screen
+  shows; a row where somebody removed the REQUESTER's dish is about the requester, and an
+  actor-only filter would drop it. Malin's explicit call, 2026-08-29, revised the same day
+  from actor-only after Legal Counsel showed the under-disclosure. That second half is the
+  only reason a trail row carries `subjectId` at all. **The asymmetry with the keep decision —
+  votes kept, edits filtered — IS the decision.** Do not harmonise them "for consistency";
+  that is the same shape BUT-1774 already had to defend once. The filter fails CLOSED: an
+  unrecognised row shape is dropped. BUT-1971, 2026-08-30
+
+- **OPEN, named rather than silent: a member who LEAVES a group without deleting their
+  account keeps their uid on the plan's dishes and in the trail, indefinitely.** No cascade
+  touches it — account deletion does (that is built), leaving does not. Malin has not taken
+  a position; this is recorded so it is a known residual rather than a side effect of "we do
+  not backfill". Related and equally unclosed: the "already visible on screen" reasoning
+  behind the keep decision has NOT been tested against a week that predates a
+  requester's membership. BUT-1971, 2026-08-30
+
+- **SUPERSEDES the reasoning, not the decision, of the Art. 15 provenance entry —
+  2026-08-30, same build.** That entry rests on "the requester has already seen it
+  acted out: the whole group can open the week and read who voted a dish in". The
+  screen does not show that. `group_weekly_menu_widget.dart` renders
+  `groupMenuVotedInBy(entry.votedInBy.length)` — a COUNT — and no widget in `lib/`
+  renders another member's voter uids. So the bundle ships names the app has never
+  displayed. The KEEP decision is unchanged and still Malin's; what is withdrawn is
+  the sentence justifying it, which was refuted by the same build that wrote it.
+  **Open for her: does the keep still hold now that "you have already seen it" is
+  false?** BUT-1971, 2026-08-30
+
+- **RESOLVED 2026-08-30 — Malin: make the app show them.** Shown that the keep decision's
+  basis was refuted (the screen drew a COUNT, the bundle shipped names), she was offered
+  three ways out: keep with an honest new reason, strip the uids, or make the old reason
+  true. She chose the third. The provenance row is now a tap target opening a sheet that
+  lists the voters by name (`groupMenuVotersTitle`), so "the requester has already seen it
+  in the app" is true as written rather than as hoped. Pinned by
+  `tapping the row shows who voted`, and the sheet renders a neutral mark rather than a uid
+  for a profile it cannot read. The KEEP decision is unchanged; what changed is that the
+  app now earns it. BUT-1971, 2026-08-30
+
+- **The edit trail does not explain a dish that was DISPLACED.** `addEntry` on a
+  lunch or middag slot drops whatever was there and appends one row saying `added` or
+  `pollWinner`; nothing records what went. Out of scope for BUT-1971, and named here
+  rather than left to be discovered: it is the one edit a reader of the trail cannot
+  account for, and the trail is a reading aid precisely for edits like it.
+  BUT-1971, 2026-08-30
+
+- **A client that read the plan BEFORE an erasure can write the uid back.**
+  `FirebaseGroupWeeklyMenuPlanRepository.save` writes the whole document from the client's
+  cached copy, so a member whose screen holds a pre-cascade snapshot resurrects the erased
+  uid in `participants`, `memberPermissions`, `entries[].votedInBy` and the trail on their
+  next remove or undo. Narrow — the screen is realtime-subscribed and the poll-close path
+  re-reads first — and the roster half of it predates BUT-1971, but this build widened the
+  surface from one field to four. Named beside the leaving-a-group residual rather than left
+  to be discovered; the close is the whole-write ticket, not a wrapper.
+  BUT-1971, 2026-08-30

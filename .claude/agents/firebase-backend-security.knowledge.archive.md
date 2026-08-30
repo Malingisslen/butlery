@@ -7612,3 +7612,238 @@ How it survived: the sentence was corrected THREE times for other faults — its
 app-reachability clause, and a false "group ids are random" — and each correction left the DM
 example untouched because each round graded the part it was asked about. The whole-diff pass
 before push was what caught it, by grepping the writer set the bullet's own advice names.
+
+## 2026-08-30 — BUT-1971 provenance build (group weekly menu): edit trail + granted audit row
+
+Reviewed the repository and export halves of the ADR-0010 build:
+`firebase_group_weekly_menu_plan_repository.dart`, `content_export_manager.dart`,
+`weekly_menu_plan.dart`, `group_weekly_menu_plan.dart`,
+`group_weekly_menu_plan_service.dart`, plus `firestore.rules` (group plan block, lines
+~943-1021), `functions/src/account/account-deletion-cascade.ts` (~1177-1252) and
+`weekly-menu-plans-rules.test.ts` (G8-G11).
+
+Verified clean:
+- The granted `logPermissionCheck` correctly passes `actorId` from `requireCurrentUserId()`,
+  not the caller-supplied `userId`. `firestore.rules:2600` pins
+  `request.auth.uid == request.resource.data.userId` on `audit_logs` create, so naming the
+  claimed identity would lose the row exactly when the two diverge. Same reasoning as the
+  refusal row beside it. `requireCurrentUserId()` stays hoisted above the gate and now feeds
+  both rows.
+- `rateLimitWrite('audit_logs', 2)` is still inert (nothing writes
+  `users/{uid}/rate_limits/audit_logs`), so a remove-then-undo inside two seconds does not
+  silently drop the second audit row. Worth re-checking whenever an interactive writer is
+  added to an audited path.
+- Write-volume: repository `save` is reached only through `GroupWeeklyMenuPlanService.save`,
+  whose callers are `messaging_service.dart:1160` (group poll close) and
+  `GroupWeeklyMenuViewModel._edit`. `_edit` is entered from `removeEntry`,
+  `undoLastRemoval` and `moveEntry`. `moveEntry` has NO UI call site today (grep: VM and
+  tests only), so ADR-0010's "one extra write per interactive removal or undo" holds — but
+  it gains a fourth, much higher-frequency path the day drag-and-drop is wired.
+  `_edit`'s `identical(updated, current)` short-circuit means a no-op removal writes nothing.
+- Art. 17: the cascade scrubs `proposedBy`, `votedInBy` and BOTH trail positions
+  (`actorId`/`subjectId`) from the same `data` snapshot in the same `batch.update` as the
+  rosters. `audit_logs` already has its own Art. 15 export CF and purge, so the restored
+  granted rows inherit existing retention — no new obligation.
+- Rules reading confirmed: `hasRequiredFields` is presence-only and there is no `hasOnly`
+  anywhere in the `group_weekly_menu_plans` block, so the new fields need no rules change
+  and the usual silent-fail-closed hazard does not apply here.
+
+Two findings filed (both blocking):
+1. `exportGroupWeeklyMenuPlans` ships no `data_minimisation` sentence and no test asserting
+   one, so the trail filter withholds silently — the requester cannot tell a filtered trail
+   from a complete one. Every sibling section that strips or drops carries the line
+   (`social_export_manager.dart:350/437`, `shared_shopping_list_export.dart:160`).
+2. `_redactGroupPlan`'s `if (trail is List)` fails OPEN at the container: a non-list
+   `editTrail` skips the filter entirely and is exported whole, which is the exact opposite
+   of Malin's 2026-08-29 decision. Not unreachable — the rules cap is
+   `request.resource.data.get('editTrail', []).size() <= 50`, and its own comment says it
+   bounds row count "not bytes, and not type — a map with <= 50 keys satisfies `.size()`
+   too". Fix is an else-branch dropping the field. The two findings are coupled: the
+   `data_minimisation` sentence added for (1) is FALSE until (2) is closed.
+
+Not re-filed (decided, ADR-0010 + `accepted-deviations.md`): the trail is client-written
+and forgeable; the trail is not durable under concurrent `set()`; the granted row is
+group-repository-only; other members' per-dish provenance is kept; `entries` is not
+validated element-wise; and the open item that leaving a group leaves the uid in place.
+
+Not read this pass, so unreviewed by this gate: `group_weekly_menu_widget.dart`,
+`chat_action_handler.dart`, the `l10n` files and the test files in the same diff.
+
+## 2026-08-30 — BUT-1971 re-review (group weekly menu: provenance, edit trail, export, cascade)
+
+Second pass. Both blocking findings from 2026-08-29 verified closed by reading the code:
+`_redactGroupPlan` now carries the container else-branch (`copy['editTrail'] = const []`),
+and `exportGroupWeeklyMenuPlans` returns a `data_minimisation` sentence.
+
+New blocking finding, class "the uid outside the discovery query":
+`GroupWeeklyMenuPlanService.addEntry` stores `votedInBy` — the poll's voter uids — inside
+`entries[]`, a list of maps Firestore cannot filter. Every OTHER uid the document holds is
+roster-bound: `actorId` passes `_requireEditor`, `proposedBy` is the poll creator who must
+also be the closer and must pass `canEdit` to `save`. `votedInBy` is not, because the writer
+is the CLOSER, not the voter. `_appendWinnerToGroupPlan` seeds `initialParticipants` only
+when the week's document is built ("Existing plans keep their membership intact"), and
+nothing re-syncs the roster afterwards — `addParticipant`/`removeParticipant` have zero
+production callers (grepped). So a member added to the group after that week's plan was
+first written, who then votes, lands in `entries[].votedInBy` while absent from
+`participantUserIds`/`memberPermissions`. BUT-1832 records that even a late joiner may cast
+a vote in a pre-join poll, so the path is ordinary, not exotic.
+
+Consequences, all three from the same predicate:
+- `deleteWeeklyMenuPlans` discovers group plans by `participantUserIds array-contains uid` —
+  never returns that document, so the uid survives account deletion indefinitely.
+- The residual probe added in the same change uses the identical query, so it reports clean.
+- `exportPlansForParticipant` filters `memberPermissions.$uid isNull:false`, so the same
+  person cannot obtain the row under Art. 15 either. Neither erasable nor exportable.
+This also falsifies the "account deletion does (that is built)" half of the OPEN
+leaving-a-group entry in `ACCEPTED_DEVIATIONS.md`.
+Cheapest by-construction fix: intersect `votedInBy` with the plan's roster at write time.
+The alternative that preserves the true count is a flat `array-contains` handle field
+extended by every writer and scrubbed in the same `batch.update`.
+
+Second finding: the shipped `data_minimisation` sentence says "how many people voted for it,
+is included in full" while the bundle carries the voter uid LIST. The same "how many voted it
+in" wording sits in the `_redactGroupPlan` comment and in Malin's own deviation entry, which
+elsewhere says plainly that `votedInBy` holds uids. The decision (keep them) is hers and is
+not re-filed; the sentence describing the artefact to its subject is what is wrong.
+
+Third, non-blocking: `ACCEPTED_DEVIATIONS.md` still says of the provenance keep decision
+"**No code implements this** — the export ships the document whole". False since this change:
+`_redactGroupPlan` rewrites `editTrail`. A decision record is superseded with a dated line,
+never struck.
+
+Read this pass: `content_export_manager.dart`, `group_weekly_menu_plan.dart`,
+`weekly_menu_plan.dart` (diff), `firebase_group_weekly_menu_plan_repository.dart`,
+`group_weekly_menu_plan_service.dart`, `group_weekly_menu_viewmodel.dart`,
+`group_weekly_menu_widget.dart`, `messaging_service.dart` (poll-close region),
+`firestore.rules` (group block), `account-deletion-cascade.ts` (plan region), both ARB files
+(group-menu region, key sets diffed against HEAD: +2 keys each, none removed, generated
+`app_localizations_*.dart` carry both).
+
+## 2026-08-30 — BUT-1971 re-review (group weekly menu: repository + export halves)
+
+Third pass. Last round's blocking finding (the `addEntry` roster intersection had no test)
+is closed: `group_weekly_menu_plan_service_test.dart` drives the REAL service with an
+off-roster voter dropped (`user-cara`), an all-on-roster control that would fail an
+"always store nothing" mutant, and a provenance-less add recording `action: 'added'`.
+
+Two things worth keeping:
+
+1. **A unioned cascade changes the export⊇erasure arithmetic.** The deleter now discovers
+   group plans by `participantUserIds array-contains` UNION `lastModifiedBy ==`, deduped by
+   `doc.ref.path`, while `exportPlansForParticipant` discovers by
+   `memberPermissions.<uid> isNull:false`. Those two projections agree by construction only
+   for writes built from `GroupWeeklyMenuPlan.toFirestore`; `firestore.rules`' update limb
+   lets an ADMIN rewrite `memberPermissions` alone, so a hand-rolled admin write can leave a
+   uid as a map KEY — which is what grants read access — reachable by the export and by
+   neither erasure handle. Recommendation given: add the export's own field as a third leg of
+   the SAME union (cheap: an automatic single-field index on the map subfield, already proven
+   live by the export's identical query). Not added to the residual probe: the deleter must be
+   a superset of every probe leg, never the reverse.
+2. **Scope a per-document scrub to the handle that found it.** The `else` branch writes
+   `participants` and `participantUserIds` unconditionally, so a document reached only by the
+   writer handle — a roster this user was never on — gets its whole roster rewritten from the
+   deletion-time snapshot. Value-identical in the normal case, so the harm is a lost-update
+   window against a concurrent admin edit, plus a malformed non-array `participants` being
+   replaced by `[]`. `entries`/`editTrail` already do this correctly (written only when
+   changed); the roster fields should take the same `wasParticipant` guard the delete branch
+   uses.
+
+Also noted: the `proposedBy` roster filter (last round's Medium 1) shipped correct but
+unpinned — `final proposerOnRoster = proposedBy;` compiles and every suite stays green. The
+`votedInBy` twin is pinned; the two live in the same six lines and one test covers only one.
+
+Decision-record hygiene was right: the export's "uids the requester has already seen acted
+out" sentence is STRUCK in the code comment with no replacement (the widget renders
+`groupMenuVotedInBy(entry.votedInBy.length)`, a count), while both deviation files keep the
+original entry and add a dated line superseding the REASONING only, with the keep decision
+left standing and the question raised with Malin. That is the decision-record exception
+applied correctly rather than a silent rewrite.
+
+Verdict: pass, 0 blocking. Two Mediums (the memberPermissions union leg; the unpinned
+proposer filter) and one Low (unconditional roster rewrite on writer-only hits).
+
+---
+
+## 2026-08-30 — BUT-1971 final pass: group weekly menu, repository + export halves
+
+Third and final review round. Both prior findings verified closed by reading the code, not
+the report:
+
+- **Medium (discovery gap) closed.** `deleteWeeklyMenuPlans` now discovers group plans by a
+  three-way `Promise.all` union — `participantUserIds array-contains uid`,
+  `lastModifiedBy == uid`, and `new admin.firestore.FieldPath("memberPermissions", uid)
+  != null` — deduped by `doc.ref.path`. The export
+  (`FirebaseGroupWeeklyMenuPlanRepository.exportPlansForParticipant`) discovers on
+  `where('memberPermissions.$userId', isNull: false)`, which is the same predicate as the
+  third leg, so the export's document set is a strict subset of the erasure's. Taken in the
+  union rather than the probe, as asked: the probe's two legs (roster, lastModifiedBy)
+  remain a subset of the deleter, which is the invariant that direction needs.
+  The `FieldPath` constructor (segment list) rather than a `"memberPermissions.${uid}"`
+  string is the right spelling — it cannot be broken by a segment needing escaping.
+- **Medium (unpinned filter) closed.** `group_weekly_menu_plan_service_test.dart` →
+  "a vote from someone off the plan roster is not stored" now passes `proposedBy:
+  'user-cara'` alongside an off-roster voter and asserts `entries.single.proposedBy` is
+  null AND `editTrail.single.subjectId` is null, with a control test ("votes from members
+  on the roster are stored intact") that kills the "store nothing" mutant. Off-roster in
+  BOTH positions on purpose: with an on-roster proposer, the filter and a bare pass-through
+  are the same literal.
+- **Low (roster rewrite scoping) closed.** The scrub's `batch.update` now spreads
+  `...(wasParticipant ? { participants, participantUserIds: userIds } : {})`, so a plan
+  reached only by the writer or ACL handle keeps a roster this user was never on.
+
+### The withdrawn justification, and how it was closed
+
+The previous round validated the Art. 15 KEEP on other members' `proposedBy`/`votedInBy`
+on the stated ground that "the requester has already seen it acted out in the app". That
+was refuted by measurement in the same build — the provenance row rendered
+`groupMenuVotedInBy(entry.votedInBy.length)`, a COUNT, and no widget in `lib/` rendered
+another member's voter uid. Malin's resolution was NOT to reword the reason or strip the
+uids but to make the reason true: the row is now an `InkWell` inside
+`Semantics(label: a11yShowVoters, button: true)` opening `_showVoters`, a modal sheet
+listing each voter by resolved display name, falling back to `groupMenuUnknownVoter` for a
+profile that cannot be read. `_resolveNames` was widened from participants to
+participants ∪ proposers ∪ voters. Pinned by the widget test "tapping the row shows who
+voted", which asserts both names render AND `find.textContaining('user-ghost')` finds
+nothing. The export helper's comment states the resolved reason and says a change removing
+the sheet reopens the decision; both deviation files carry a dated RESOLVED entry beneath
+the superseding one.
+
+Answers to the three questions this round asked:
+
+1. **Union closes the subset property.** No discovery field is reachable by one side and
+   not the other in the direction that matters (export ⊆ erasure). The erasure reaches two
+   handles the export does not, which is the safe direction.
+2. **The voter-sheet profile read is legitimate.** It goes through
+   `UserService.getUserProfiles` → `FirebaseUserRepository.fetchProfiles`, i.e.
+   `public_profiles` by `whereIn(documentId)`, whose rule is `allow read: if
+   isAuthenticated()`. Any group member could already resolve any of those uids to a name;
+   the sheet discloses no new field. A voter uid can only be stored if it was in
+   `memberPermissions` at write time (the `addEntry` intersection), so a departed member's
+   name shown to the group is a name that was on the plan's roster when the vote landed.
+   No new decision needed beyond the dated entries.
+3. **Nothing in the new UI can render a uid.** `_provenance` drops the proposer half when
+   the name will not resolve, `_showVoters` substitutes `groupMenuUnknownVoter`, `_initials`
+   substitutes `·`, and each of those three is pinned by its own widget test.
+
+### Residuals named, none blocking
+
+- `GroupWeeklyMenuPlanService.removeParticipant` has NO production caller (grepped across
+  `lib/`), so today nothing can strip a member from `memberPermissions` while their uid
+  stays in `entries`/`editTrail`. If a "manage plan members" control ever ships, that
+  combination becomes discoverable by no cascade leg — the fix is the same intersection
+  `addEntry` already applies, run at removal time.
+- `firestore.rules` does not validate `entries` element-wise, so an editor may forge
+  provenance; that is a dated accepted deviation (2026-08-29), as is the trail's
+  non-durability and the leaver residual.
+- The section also ships `participants`/`memberPermissions` (other members' uids and
+  permission levels). That predates BUT-1971 and is unchanged by it, but unlike the
+  provenance and trail it carries no dated line of its own — worth one, and worth NOT
+  citing BUT-1732 for, per that entry's own warning.
+- `_resolveNames` records `_nameLookupsAttempted` BEFORE the fetch, so a transient profile
+  failure leaves those names unresolved for the ViewModel's lifetime. UX only.
+- The restored granted audit row is fire-and-forget (`unawaited` + `catchError` inside
+  `logPermissionCheck`, and `FirebaseAuditRepository` swallows its own failures), so it
+  cannot fail a save. Cost is ~1 extra write per interactive remove/undo, which is the
+  figure Malin was shown.
+
+Verdict: pass, 0 blocking.

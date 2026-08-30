@@ -251,7 +251,16 @@ Standard deny matrix for ownership-checked collections:
   corrected, and the reverse. **Sweep it by STRIKE-AND-POINT, never by writing the
   correction into both files** — the copy names the canonical site ("the account lives at
   the rule itself; do not restate it here") and makes no claim of its own, so there is one
-  thing to re-measure instead of two that drift. Verify the pointer RESOLVES FOR EVERY SYMBOL THE SENTENCE RANGES OVER: open the
+  thing to re-measure instead of two that drift. **Sweep the keywords, not the comment
+  syntax: a co-carrier hides in a TEST NAME, which no `//`-anchored grep reaches** — the
+  group-menu integration suite still names `participantUserIds` as a field "so Firestore
+  rules can enforce per-user access" after the rules-side sentence saying so was struck
+  (BUT-1971, 2026-08-30). **And the test for a false GATING claim is not "does any limb
+  READ field X" but "does any limb DECIDE ACCESS on X"** — `participantUserIds` and
+  `participants` both appear in that block, in `hasRequiredFields` and in the update's
+  `affectedKeys().hasAny([...])` guard, so a presence grep answers YES while the gating
+  claim is still false; membership is tested only against `memberPermissions`, and
+  `participants[].permission` is read nowhere. Verify the pointer RESOLVES FOR EVERY SYMBOL THE SENTENCE RANGES OVER: open the
   named limb/test and confirm it carries the account for each one. A rules-suite header
   saying "the constructor half is pinned in Dart by <test>" after describing BOTH
   `WeeklyMenuPlan.empty` and `GroupWeeklyMenuPlan.empty` held for the personal one only.
@@ -295,6 +304,12 @@ Standard deny matrix for ownership-checked collections:
   Enumerate every conjunct on the parent and check which the child actually inherited.
 - **Never cite a rules LINE NUMBER in a comment or report — the file renumbers on every
   edit.** Cite the `match` pattern or function name instead.
+- **A test comment is bound to its test by POSITION only, so the test a review ASKS you to
+  insert is what detaches it** — the fix for a stacked-comment finding put a new `test(` in
+  between a null-case paragraph and the null-case test, leaving the paragraph heading a
+  cap-binding test and the null test bare (BUT-1971, 2026-08-30). After inserting a test,
+  re-read the comment ABOVE and the test BELOW the insertion point as one unit; the repair is
+  a MOVE (directly readable, no measuring), never a rewrite.
 - **Never state a suite TOTAL ("32/32") in a comment — it goes stale the day a test is
   added.** Name which tests move, by comment ID, instead.
 - A rules comment asserting what a Cloud Function does with the document is a claim
@@ -409,11 +424,45 @@ Standard deny matrix for ownership-checked collections:
 ### Coverage shape patterns (reusable per rule shape)
 - **Numeric-floor change on a rule**: allow-at-floor, deny-at-floor+1, AND an
   update-branch allow at the same boundary — a create-only deny test lets a blanket-deny
-  update regression through unnoticed.
+  update regression through unnoticed. **The deny-at-floor+1 must be sent by the
+  PRODUCTION actor class, not only the most privileged one**: an ALLOW test for a lesser
+  actor proves the cap does not block them, never that it BINDS them. Measured on
+  `group_weekly_menu_plans.editTrail` (BUT-1971): scoping the cap to admins
+  (`perm == 'admin' ? size<=50 : true`) left 21/21 green — both over-cap denies were sent
+  by the admin, and the freshly added "a non-admin editor may write a trail within the
+  cap" allow survives that mutant by construction. Pin the boundary once per ACTOR CLASS
+  that writes the field, and never let an allow test's comment claim a conjunct sits
+  outside a gate — only the deny at that actor measures placement. Re-measured 2026-08-30
+  once the editor's over-cap DENY was added: the same mutant now dies 20/22, and the new
+  deny is one of the two kills — so the allow/deny PAIR at one actor is what proves
+  placement, not the allow alone. **The allow's own comment is then what goes false**: a
+  "nothing proved that" clause justifying why the allow was added is a claim about the
+  SUITE, and the deny a reviewer asks for the next round refutes it inside the same file.
+  Strike the justification clause; leave only what the test itself does.
 - **Optional-list field validator** (`!('f' in d) || (d.f is list && d.f.size()<=N)`):
   five-test cluster — present+valid, present+empty, present+at-cap (boundary inclusive),
   present+over-cap (deny), present+wrong-type (deny); absent is already covered by the
   baseline allow test.
+- **A bare `d.get('f', []).size() <= N` cap with NO `is list` guard has THREE verdicts, not
+  two, so "wrong-type" is never one test.** `.size()` is polymorphic: a LIST, a MAP and a
+  STRING all answer it, so each is ALLOWED at ≤N and DENIED above it; an INT, BOOL,
+  TIMESTAMP or explicit NULL CEL-errors and is DENIED outright (measured on the emulator,
+  `group_weekly_menu_plans.editTrail`, BUT-1971). Consequence for review: an `is list`
+  conjunct buys SHAPE, not a bound — every type that gets through is still capped at N, and
+  a 50-key map with huge values is the same byte risk as a 50-row list with huge rows, which
+  `is list` does not stop either. So "document the type gap instead of guarding it" is a
+  defensible call; say so with the per-type table, not from intuition. The half that IS
+  live: the explicit-NULL deny means the day any writer serialises the field
+  unconditionally (`'f': null` rather than omitting it when empty) EVERY write on the
+  collection is refused — grep `toFirestore`/`toMap` for the field's conditional before
+  passing the cap, and never rely on `.get()`'s default to cover null (it covers ABSENT only).
+  **Documenting the gap instead of guarding it SPREADS the measurement**: the per-type fact
+  ended up in six files (rule, rules test, cascade, its integration test, the export helper,
+  its unit test), each stating it to justify its own fail-closed arm. That is legitimate —
+  a bare pointer would leave a reader unable to judge whether the arm is needed — but it
+  means adding `is list` LATER falsifies six sentences in one edit, so grep `polymorphic`
+  before touching such a cap. And `is list` does not retire the downstream arms by itself:
+  a rules tightening never cleans STORED documents, and those arms read stored data.
 - **Deny-all server-only collection** (`allow read, write: if false`): matrix
   {read,create,update,delete} × {unauth, non-admin, admin} — admin-still-denied is the
   load-bearing case — plus one Admin-SDK-bypass write that succeeds.

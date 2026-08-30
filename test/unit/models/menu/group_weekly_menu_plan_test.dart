@@ -180,6 +180,60 @@ void main() {
     });
 
     group('Firestore round-trip', () {
+      // BUT-1971. The round-trip below is named for EVERY field, and this
+      // round falsified that: `if (editTrail.isNotEmpty)` in `toFirestore` and
+      // the `fromMap` parse beside it were executed by no test at all, so the
+      // trail ADR-0010 chose instead of the audit row could be deleted with
+      // every suite green. Closing the gap rather than scoping the name.
+      test('should preserve the edit trail across toFirestore / fromMap', () {
+        final plan =
+            GroupWeeklyMenuPlan.empty(
+              groupId: groupId,
+              creatorId: 'user-alice',
+              date: weekStart,
+            ).copyWith(
+              editTrail: [
+                GroupMenuEditTrailRow(
+                  actorId: 'user-alice',
+                  at: DateTime(2026, 4, 18, 11),
+                  action: 'removed',
+                  subjectId: 'user-bob',
+                  entryId: 'e1',
+                ),
+              ],
+            );
+
+        final map = plan.toFirestore();
+        expect(map['editTrail'], hasLength(1));
+
+        final restored = GroupWeeklyMenuPlan.fromMap(plan.id, map);
+        final row = restored.editTrail.single;
+        expect(row.actorId, 'user-alice');
+        expect(row.subjectId, 'user-bob');
+        expect(row.entryId, 'e1');
+        expect(row.action, 'removed');
+        // `safeRequiredDateTime` falls back to `clock.now()`, so without this
+        // dropping `at` from `toMap` leaves this test green while every
+        // restored row reads as "just now".
+        expect(row.at, DateTime(2026, 4, 18, 11));
+      });
+
+      // The omitted-when-empty half, which is what keeps a week nobody has
+      // edited from carrying an empty list.
+      test('omits the edit trail when there is none', () {
+        final plan = GroupWeeklyMenuPlan.empty(
+          groupId: groupId,
+          creatorId: 'user-alice',
+          date: weekStart,
+        );
+
+        expect(plan.toFirestore().containsKey('editTrail'), isFalse);
+        expect(
+          GroupWeeklyMenuPlan.fromMap(plan.id, plan.toFirestore()).editTrail,
+          isEmpty,
+        );
+      });
+
       test('should preserve every field across toFirestore / fromMap '
           '(entries, participants, permissions, audit fields)', () {
         final addedAt = DateTime(2026, 4, 1, 12);

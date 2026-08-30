@@ -16,6 +16,51 @@ rule is internalised (roughly six weeks).
 
 ## Current
 
+### [GDPR] Before designing a new field's erasure, ask whether the field is a second copy
+- **Date**: 2026-08-30 (BUT-1971, the provenance build)
+- **Trigger**: the blind DPO critique returned the panel's only blocking finding — a uid inside `metadata.poll.options[]` is an array of maps Firestore cannot query, so it would have been structurally unerasable. Both remedies I then sketched were real work.
+- **Rule**: before designing storage or erasure for a new attribution field, grep every construction site of the thing it attributes and ask whether any path can make the new field differ from a field that already exists. Here there were three sites and the answer was no — a poll option's proposer is ALWAYS `metadata.poll.creatorId`, which is flat, queryable and already scrubbed. The check is minutes; the erasure design it removes is a day. A finding that dissolves this way is still a good finding: it forced the question.
+- **Corollary**: where two variables must hold the same value on the only live path, pass them separately anyway and say they are equal TODAY, measured — never imply a test proves the distinction, because none can.
+
+<!-- Full narrative, kept because the two remedies I nearly built are the expensive half:
+The plan added `PollOption.proposedBy` so a menu dish could say who suggested it. The DPO's
+blind critique returned the panel's only blocking finding: a uid inside
+`metadata.poll.options[]` is an array of maps, which Firestore cannot query
+("does any element have field X == uid"), so it would be **structurally unerasable** — the
+exact bug class the repo had already paid to fix once, when BUT-1832/1835 moved `voterIds`
+out to a `poll_votes` subcollection for that reason. The finding was correct and the plan
+had not mentioned the `messages` collection at all.
+
+Both remedies the plan then sketched were real work: mirror the subcollection, or add a flat
+`array-contains`-queryable sibling field for the cascade to find.
+
+Neither was needed. Every option in a poll is built by ONE person in ONE
+`Poll.fromOptions(creatorId: ...)` call, and no path adds an option afterwards — so an
+option's proposer is ALWAYS `metadata.poll.creatorId`, a flat field that already exists, is
+already queryable, and is **already scrubbed by the cascade**. The new field would have been
+a second copy of a fact the document already held, which is the drift `accepted-deviations.md`
+records having removed once before (`sharedWithUserIds`, BUT-1798).
+
+Two things worth keeping:
+
+**The cheap check comes first.** Before designing storage or erasure for a new attribution
+field, grep every construction site of the thing it attributes and ask whether any path can
+make the new field differ from a field that already exists. Here there were three sites and
+the answer was no. That question is minutes; the erasure design was a day.
+
+**A dissolved finding is still a good finding.** The DPO was right about the hazard, and the
+hazard is what forced the question that removed the field. Do not record this as "the panel
+was wrong" — record it as the panel catching a defect early enough that the fix could be
+subtraction.
+
+Corollary now written into the code: because the closer of a poll must be its creator, the
+actor and the proposer hold the same uid on that path, so no test can tell "read the right
+variable" from "read the wrong one with the same value". The value is passed as its own
+argument anyway, so the seam exists the day that gate widens — and the comment says they are
+equal today, measured, rather than claiming the distinction is proven.
+-->
+
+
 ### [Workflow] `git status` says WHAT changed, never BY WHOM — ownership is not derivable from a shared checkout
 - **Date**: 2026-08-26 (four times in one night, five sessions sharing `C:/Butlery/butlery`)
 - **Trigger**: Four ownership claims, each built on a correct measurement.

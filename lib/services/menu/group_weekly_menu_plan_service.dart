@@ -146,28 +146,67 @@ class GroupWeeklyMenuPlanService extends BaseService {
 
   /// Add a single recipe to a (day, slot). For lunch/middag, replaces any
   /// existing entry; for övrigt, appends. Pure — does not persist.
+  /// [proposedBy] and [votedInBy] carry the poll's provenance onto the dish
+  /// (BUT-1971). They are a SEPARATE argument from [actorId] on purpose: today
+  /// the two hold the same uid, because `closePoll` only resolves a winner when
+  /// the closer is the poll's creator — measured, not assumed. Reusing
+  /// [actorId] would hide the distinction the day that gate widens.
   GroupWeeklyMenuPlan addEntry({
     required GroupWeeklyMenuPlan plan,
     required String actorId,
     required DayOfWeek day,
     required MealSlot slot,
     required Recipe recipe,
+    String? proposedBy,
+    List<String> votedInBy = const [],
   }) {
     _requireEditor(plan, actorId);
     final updated = List<WeeklyMenuPlanEntry>.from(plan.entries);
     if (!slot.isMulti) {
       updated.removeWhere((e) => e.day == day && e.slot == slot);
     }
-    updated.add(
-      WeeklyMenuPlanEntry.create(
-        day: day,
-        slot: slot,
-        recipeId: recipe.id,
-        recipeTitle: recipe.title,
-        recipeImageUrl: recipe.primaryImageUrl,
-      ),
+    // Only voters this plan can be FOUND by. Account deletion discovers group
+    // plans through the roster and the permission map, and this document's
+    // roster is a snapshot taken when the week was first built — it is never
+    // re-synced, so somebody who joined the group later can vote in a poll
+    // whose winner lands here while being absent from the roster. Their uid
+    // would then be reachable by no erasure query and by no export filter:
+    // neither erasable nor exportable.
+    //
+    // The cost is a lower count on the screen for such a voter. That is the
+    // right way round — a number is a nicety, an unreachable uid is not.
+    final onRoster = votedInBy
+        .where(plan.memberPermissions.containsKey)
+        .toList();
+    // The proposer too, for the same reason and at the same price. It rests on
+    // a caller invariant today — the closer must be the poll's creator and must
+    // pass `_requireEditor` — but the comment above says that gate is expected
+    // to widen, and on that day an unfiltered proposer lands here AND in every
+    // trail row's `subjectId` derived from it.
+    final proposerOnRoster =
+        proposedBy != null && plan.memberPermissions.containsKey(proposedBy)
+        ? proposedBy
+        : null;
+    final added = WeeklyMenuPlanEntry.create(
+      day: day,
+      slot: slot,
+      recipeId: recipe.id,
+      recipeTitle: recipe.title,
+      recipeImageUrl: recipe.primaryImageUrl,
+      proposedBy: proposerOnRoster,
+      votedInBy: onRoster,
     );
-    return plan.copyWith(entries: updated);
+    updated.add(added);
+    return _withTrailRow(
+      plan.copyWith(entries: updated),
+      actorId: actorId,
+      // Derived, not hard-coded: the only caller today is the poll close, but
+      // that is a fact about callers. A manual "add a dish" control would
+      // otherwise record a false word with nothing red.
+      action: proposedBy == null ? 'added' : 'pollWinner',
+      subjectId: proposerOnRoster,
+      entryId: added.id,
+    );
   }
 
   /// Remove an entry by id. Returns the same plan unchanged if the id is
@@ -179,8 +218,40 @@ class GroupWeeklyMenuPlanService extends BaseService {
   }) {
     _requireEditor(plan, actorId);
     final updated = plan.entries.where((e) => e.id != entryId).toList();
+    // Strictly after the no-op return: appending above it would make every tap
+    // on an already-gone row a real write, defeating the `identical()` save-skip
+    // the screen relies on.
     if (updated.length == plan.entries.length) return plan;
-    return plan.copyWith(entries: updated);
+    final removed = plan.entries.firstWhere((e) => e.id == entryId);
+    return _withTrailRow(
+      plan.copyWith(entries: updated),
+      actorId: actorId,
+      action: 'removed',
+      subjectId: removed.proposedBy,
+      entryId: removed.id,
+    );
+  }
+
+  /// Put back an entry a removal took (BUT-1971).
+  ///
+  /// Exists because the undo path used to rebuild the plan inside the
+  /// ViewModel with a raw `copyWith`, reaching no mutator at all — so the trail
+  /// would have carried every action except the one the user is most likely to
+  /// want explained.
+  GroupWeeklyMenuPlan restoreEntry({
+    required GroupWeeklyMenuPlan plan,
+    required String actorId,
+    required WeeklyMenuPlanEntry entry,
+  }) {
+    _requireEditor(plan, actorId);
+    if (plan.entries.any((e) => e.id == entry.id)) return plan;
+    return _withTrailRow(
+      plan.copyWith(entries: [...plan.entries, entry]),
+      actorId: actorId,
+      action: 'undone',
+      subjectId: entry.proposedBy,
+      entryId: entry.id,
+    );
   }
 
   /// Move an entry to a new (day, slot). Swap semantics match
@@ -215,7 +286,42 @@ class GroupWeeklyMenuPlanService extends BaseService {
       }
     }
     updated.add(source.copyWith(day: toDay, slot: toSlot));
-    return plan.copyWith(entries: updated);
+    return _withTrailRow(
+      plan.copyWith(entries: updated),
+      actorId: actorId,
+      action: 'moved',
+      subjectId: source.proposedBy,
+      entryId: source.id,
+    );
+  }
+
+  /// Append one trail row and prune to the newest
+  /// [GroupWeeklyMenuPlan.maxEditTrailRows].
+  ///
+  /// The prune is a courtesy to the document, not a bound: `firestore.rules`
+  /// holds the same cap, because nothing stops a hand-rolled client from
+  /// sending more.
+  GroupWeeklyMenuPlan _withTrailRow(
+    GroupWeeklyMenuPlan plan, {
+    required String actorId,
+    required String action,
+    String? subjectId,
+    String? entryId,
+  }) {
+    final rows = [
+      ...plan.editTrail,
+      GroupMenuEditTrailRow(
+        actorId: actorId,
+        at: clock.now(),
+        action: action,
+        subjectId: subjectId,
+        entryId: entryId,
+      ),
+    ];
+    final pruned = rows.length > GroupWeeklyMenuPlan.maxEditTrailRows
+        ? rows.sublist(rows.length - GroupWeeklyMenuPlan.maxEditTrailRows)
+        : rows;
+    return plan.copyWith(editTrail: pruned);
   }
 
   /// Admin-only: add a participant (with the given permission) to the

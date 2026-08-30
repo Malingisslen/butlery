@@ -244,6 +244,8 @@ void main() {
         day: any(named: 'day'),
         slot: any(named: 'slot'),
         recipe: any(named: 'recipe'),
+        proposedBy: any(named: 'proposedBy'),
+        votedInBy: any(named: 'votedInBy'),
       ),
     ).thenAnswer(
       (inv) => inv.namedArguments[#plan] as GroupWeeklyMenuPlan,
@@ -335,6 +337,8 @@ void main() {
           day: any(named: 'day'),
           slot: any(named: 'slot'),
           recipe: any<Recipe>(named: 'recipe', that: isA<Recipe>()),
+          proposedBy: any(named: 'proposedBy'),
+          votedInBy: any(named: 'votedInBy'),
         ),
       ).called(1);
       verify(
@@ -351,6 +355,75 @@ void main() {
           menu: any(named: 'menu'),
           friendUserIds: any(named: 'friendUserIds'),
         ),
+      );
+    });
+
+    // BUT-1971. This is the ONLY path in the app that ever writes provenance
+    // onto a dish, so without this test both argument lines can be deleted and
+    // every other suite stays green while the screen's row never renders.
+    test('the winning dish carries the poll\'s provenance', () async {
+      final now = DateTime.now();
+      final winnerRecipe = _recipe('recipe-winner', 'Tacos');
+      final loserRecipe = _recipe('recipe-loser', 'Pasta');
+
+      when(() => recipeService.recipes).thenReturn([winnerRecipe, loserRecipe]);
+
+      final poll = Poll(
+        id: 'poll-1',
+        question: 'Vad ska vi äta?',
+        creatorId: creatorId,
+        createdAt: now,
+        options: [
+          PollOption(
+            id: 'opt-1',
+            text: 'Tacos',
+            voterIds: const ['user-2', 'user-3'],
+            recipeId: 'recipe-winner',
+          ),
+          // The loser's voters are the discriminating half: a passed-through
+          // "everyone who voted in this poll" would pick this list up too.
+          PollOption(
+            id: 'opt-2',
+            text: 'Pasta',
+            voterIds: const ['user-4'],
+            recipeId: 'recipe-loser',
+          ),
+        ],
+      );
+      when(() => messagingRepo.getMessage(messageId)).thenAnswer(
+        (_) async => _pollMessage(
+          messageId: messageId,
+          conversationId: conversationId,
+          poll: poll,
+        ),
+      );
+
+      await service.closePoll(messageId: messageId);
+
+      final captured = verify(
+        () => groupPlanService.addEntry(
+          plan: any(named: 'plan'),
+          actorId: any(named: 'actorId'),
+          day: any(named: 'day'),
+          slot: any(named: 'slot'),
+          recipe: any(named: 'recipe'),
+          proposedBy: captureAny(named: 'proposedBy'),
+          votedInBy: captureAny(named: 'votedInBy'),
+        ),
+      ).captured;
+
+      // Identified by type, not by index.
+      expect(
+        captured.whereType<String>().single,
+        creatorId,
+        reason:
+            'every option is built in one Poll.fromOptions(creatorId:), so '
+            'the poll creator is the dish proposer',
+      );
+      expect(
+        captured.whereType<List<String>>().single,
+        const ['user-2', 'user-3'],
+        reason: "the WINNER's voters, not the poll's",
       );
     });
 
@@ -514,6 +587,8 @@ void main() {
           day: any(named: 'day'),
           slot: any(named: 'slot'),
           recipe: captureAny(named: 'recipe'),
+          proposedBy: any(named: 'proposedBy'),
+          votedInBy: any(named: 'votedInBy'),
         ),
       ).captured;
       expect(captured, hasLength(1));
@@ -855,6 +930,8 @@ void main() {
                   day: any(named: 'day'),
                   slot: any(named: 'slot'),
                   recipe: captureAny(named: 'recipe'),
+                  proposedBy: any(named: 'proposedBy'),
+                  votedInBy: any(named: 'votedInBy'),
                 ),
               ).captured.single
               as Recipe;
@@ -876,6 +953,8 @@ void main() {
                   day: any(named: 'day'),
                   slot: any(named: 'slot'),
                   recipe: captureAny(named: 'recipe'),
+                  proposedBy: any(named: 'proposedBy'),
+                  votedInBy: any(named: 'votedInBy'),
                 ),
               ).captured.single
               as Recipe;

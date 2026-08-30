@@ -338,6 +338,150 @@ test("any signed-in user can read a group week that has no plan yet", async () =
   );
 });
 
+// The edit trail's 50-row cap (BUT-1971).
+//
+// The cap sits on BOTH limbs. A cap on `update` alone would be evaded by
+// seeding an oversized trail on the CREATE write, because create requires no
+// `editTrail` and rejects no extra fields.
+//
+// `.size()` is polymorphic over list, map and string, so a 50-key MAP is
+// ALLOWED here — measured per type on the emulator. The cap bounds row count,
+// not type and not bytes. The type gap is left open here and absorbed
+// downstream: the export's redaction helper fails closed on a non-list trail. An explicit `null` DENIES, because
+// `.get()`'s default covers an ABSENT field, not a present-null one — safe only
+// while `GroupWeeklyMenuPlan.toFirestore` omits the field when empty.
+function trailRows(n: number): Record<string, unknown>[] {
+  return Array.from({ length: n }, (_, i) => ({
+    actorId: OWNER_UID,
+    at: CREATED_AT,
+    action: "removed",
+    entryId: `e${i}`,
+  }));
+}
+
+test("a create carrying more than 50 trail rows is denied", async () => {
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`group_weekly_menu_plans/${GROUP_ID}_2030-W02`)
+      .set(groupPlanBody({ editTrail: trailRows(51) }))
+  );
+});
+
+test("an update carrying more than 50 trail rows is denied", async () => {
+  await seedGroup(groupPlanBody());
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`group_weekly_menu_plans/${GROUP_PLAN_ID}`)
+      .set(groupPlanBody({ editTrail: trailRows(51) }))
+  );
+});
+
+// The create denial's own ALLOW control. Without it a rule that denied EVERY group create
+// would keep the 51-row create test green and the cap could vanish unnoticed.
+test("a create at exactly 50 trail rows is allowed", async () => {
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertSucceeds(
+    ctx
+      .firestore()
+      .doc(`group_weekly_menu_plans/${GROUP_ID}_2030-W03`)
+      .set(groupPlanBody({ editTrail: trailRows(50) }))
+  );
+});
+
+// The production writer is an EDIT member, not the admin every other trail test
+// uses. The deny below is what measures the conjunct's placement; this is its
+// allow control.
+test("a non-admin editor may write a trail within the cap", async () => {
+  await seedGroup(
+    groupPlanBody({
+      participants: [
+        { userId: OWNER_UID, permission: "admin" },
+        { userId: STRANGER_UID, permission: "edit" },
+      ],
+      participantUserIds: [OWNER_UID, STRANGER_UID],
+      memberPermissions: { [OWNER_UID]: "admin", [STRANGER_UID]: "edit" },
+    })
+  );
+  const ctx = env.authenticatedContext(STRANGER_UID);
+  await assertSucceeds(
+    ctx
+      .firestore()
+      .doc(`group_weekly_menu_plans/${GROUP_PLAN_ID}`)
+      .update({ editTrail: trailRows(50) })
+  );
+});
+
+// The production writer is an EDIT member, and an ALLOW cannot prove the cap
+// binds them: a mutant scoping the cap to admins survived the entire suite,
+// because every over-cap denial was sent by the admin. This is the one that
+// measures the conjunct's placement relative to the admin gate.
+test("a non-admin editor is also bound by the cap", async () => {
+  await seedGroup(
+    groupPlanBody({
+      participants: [
+        { userId: OWNER_UID, permission: "admin" },
+        { userId: STRANGER_UID, permission: "edit" },
+      ],
+      participantUserIds: [OWNER_UID, STRANGER_UID],
+      memberPermissions: { [OWNER_UID]: "admin", [STRANGER_UID]: "edit" },
+    })
+  );
+  const ctx = env.authenticatedContext(STRANGER_UID);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`group_weekly_menu_plans/${GROUP_PLAN_ID}`)
+      .update({ editTrail: trailRows(51) })
+  );
+});
+
+// A present `null` is not an absent field: `.get()`'s default does not cover it
+// and the whole save is refused. Pinned because it is one `toFirestore` change
+// away from denying every group-menu write — the same shape as the read-rule
+// bug this collection already shipped once.
+test("an explicit null trail is denied", async () => {
+  await seedGroup(groupPlanBody());
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`group_weekly_menu_plans/${GROUP_PLAN_ID}`)
+      .update({ editTrail: null })
+  );
+});
+
+test("a trail at exactly 50 rows is allowed", async () => {
+  await seedGroup(groupPlanBody());
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertSucceeds(
+    ctx
+      .firestore()
+      .doc(`group_weekly_menu_plans/${GROUP_PLAN_ID}`)
+      .set(groupPlanBody({ editTrail: trailRows(50) }))
+  );
+});
+
+// Pins `.get('editTrail', [])` rather than a bare dereference: a document
+// written before the field existed carries no `editTrail`, and under a bare
+// dereference the null errors, which Firestore evaluates as a DENY — refusing
+// every ordinary save on this collection. The account of why that shape is
+// dangerous here lives at the read rule in `firestore.rules`; this comment
+// makes no claim of its own about it.
+test("a save that carries no trail at all is allowed", async () => {
+  await seedGroup(groupPlanBody());
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertSucceeds(
+    ctx
+      .firestore()
+      .doc(`group_weekly_menu_plans/${GROUP_PLAN_ID}`)
+      .set(groupPlanBody({ entries: [{ recipeId: "r9", day: "tue" }] }))
+  );
+});
+
 async function run(): Promise<void> {
   console.log("weekly_menu_plans + group_weekly_menu_plans rules tests");
   console.log("==================================================\n");

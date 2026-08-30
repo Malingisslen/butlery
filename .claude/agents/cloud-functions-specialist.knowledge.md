@@ -28,8 +28,6 @@ exact names/codes/thresholds, cut the story.
 | `middleware/` | Auth/validation/rate-limit | `test:rate-limiter-*` |
 | `shared/` | Pure helpers, no triggers | varies |
 
-New family → append a row.
-
 ## Region & global options
 
 `setGlobalOptions({ region: "europe-west1", maxInstances: 3 })` in
@@ -40,17 +38,10 @@ without approval (mismatch = silent client-side "not found").
   rest and wins on collision.
 - **`maxInstances` is a DEPLOY gate, not tuning.** Global 3; the two
   ingredient cascades override to 10. Unset = the v2 default 100/function,
-  which blew "Total allowable CPU per project per region", surfacing as
-  `Container Healthcheck failed`. `CpuAllocPerProjectRegion` = 20 vCPU
-  (europe-west1); no export declares `cpu`, so a summed ceiling is
-  INSTANCES read as vCPU — external measurement, not a manifest fact. The
-  accounting is UNRECONCILED and the region-wide-sum model is FALSE (the
-  sum exceeds the quota many times over while every service runs): never
-  write a derived "N fit per deploy" number in ANY carrier, and never name
-  one function as the one a batch fails on — the failing batch (run
-  33043799598) held NEITHER cascade. An increase is refused
-  (`NOT_ENOUGH_USAGE_HISTORY`). SEQUENCING is what is established: one
-  function per `firebase deploy`, ~90s each against `timeout-minutes: 30`.
+  which blew the regional CPU quota as `Container Healthcheck failed`.
+  An increase is refused
+  (`NOT_ENOUGH_USAGE_HISTORY`). Established remedy: one function per
+  `firebase deploy`, ~90s each vs `timeout-minutes: 30`.
 - **3 instances != 3 concurrent executions, and a LOW cap PACKS.**
   `concurrency` defaults to 80 at `cpu >= 1`. Only a LONG-LIVED,
   memory-hungry handler declares `concurrency: 1` (pinned in
@@ -146,8 +137,6 @@ Triggers retry on uncaught exception; handlers must be idempotent:
   guard-ms/platform-seconds as a pair and pin it against the deploy
   manifest's `__endpoint.timeoutSeconds` (a constant-vs-constant test
   alone stays green after the declaration is deleted).
-- **`x || DEFAULT` ≠ a typed guard** — passes negatives/numeric-strings/
-  `true` through. Use `typeof x === "number" && x > 0 ? x : DEFAULT`.
 - **A `retry:true` trigger enumerating a client-writable collection has
   unbounded fan-out** — cap the READ (`.limit(CAP+1).get()`), refuse above
   cap, chunk-delete with a per-item `.catch` on grpc code only, never
@@ -194,6 +183,10 @@ from `(err as {code?}).code` instead.
   is a UUIDv4 for a group, `direct_${sortedUidA}_${sortedUidB}` for a DM.
   `logSafeConversationId(id)` hashes the direct spelling, leaves group
   UUIDs greppable — re-derive for every NEW caller of an id-logging helper.
+- **A uid enters a log through a QUERY OBJECT too** — a logged
+  `FieldPath("memberPermissions", uid)` JSON-stringifies its SEGMENTS,
+  writing the raw uid on the line that truncates it to `uid_prefix`. Log a
+  literal label; keep the FieldPath for the query.
 
 ## What NOT to do
 
@@ -244,7 +237,10 @@ from `(err as {code?}).code` instead.
   hard-coded names. Steps are BEST-EFFORT — a rethrow re-runs the WHOLE
   cascade, double-applying non-idempotent ones.
 - **`batch.update()` on a concurrently-deleted doc fails the WHOLE chunk
-  with NOT_FOUND** under `strict:false` — piggyback the existence probe on
+  with NOT_FOUND** under `strict:false`; and `commitInChunks` calls `mutate`
+  OUTSIDE that try, so a SYNCHRONOUS validation throw from the callback
+  (`undefined` in an array, bad FieldValue) escapes `strict:false` and aborts
+  the whole step, dropping every not-yet-queued doc — piggyback the existence probe on
   the SAME `getAll` as the idempotency gate; skip (never `set(merge)`) when
   absent. Where step A SKIPS and step B DELETES the same doc, record
   `batch.update` PATHS on the fake — absence can't pin the skip.
@@ -263,16 +259,15 @@ from `(err as {code?}).code` instead.
   Admin-SDK call returning refs for MISSING docs with live subcollections;
   use it on sweep AND probe, and `strict:true` for a to-be-deleted parent's
   children (`strict:false` strands PII silently).
-- A "shared" collection also holds SOLO-owner docs that must be DELETED,
-  not scrubbed. Scrubbing a deleted user off a SHARED doc must enumerate
-  every {uid, displayName} pair on the MODEL — array elements and the
-  PARENT's per-uid maps included.
+- A "shared" collection also holds SOLO-owner docs to DELETE, not scrub. A
+  scrub enumerates every uid in the MODEL's `toFirestore`: array elements,
+  per-uid map keys, AND doc-level attribution scalars (`lastModifiedBy`,
+  `lastEditedBy`), which no membership/array probe can see.
 - **A cascade write from a query-time snapshot applied via a plain
   `.update()` is a lost-update hazard** — wrap in `runTransaction`, re-read
   fresh, skip on `!fresh.exists`. The repo's fake transaction is
   single-threaded/no-retry, so a green suite proves values, not
-  concurrency-safety. Only the Admin SDK can key an erasure on a field the
-  read rule doesn't expose.
+  concurrency-safety.
 - A rules hard-deny PLUS an Admin-SDK escape hatch has TWO guards and the
   callable exempts only the first — the model's `toFirestore` coercion is
   the second. Enumerate the SERIALIZER's call sites, not just the rules'
@@ -301,22 +296,35 @@ from `(err as {code?}).code` instead.
   handle LAST, after all child cleanup commits. Subtler form: a
   purpose-built QUERY HANDLE cleared in the SAME write as the content
   scrub, ahead of a dependent mirror — order the mirror write FIRST.
-- **`probeResidualData` must not be BROADER than the deleter** — union the
+- **`probeResidualData` must not be BROADER than the deleter, and the deleter
+  must not be NARROWER than the EXPORT's predicate** — Art. 15 must never reach
+  a document Art. 17 cannot (`memberPermissions.<uid> != null` = Dart
+  `isNull:false`). Union the
   probe's queries into the deleter's scoping, dedup by doc id; prove the
   coupling by DELETING the leg and checking BOTH the targeted fixture AND
-  "no failed collections" redden. A leg with no DIRTY-fixture scenario is
-  mutation-invisible, and since `batchDeleteAll(strict:false)` swallows a
-  whole failed chunk the probe is the ONLY contradiction to a deleter's
-  unconditional `return true` — leg and scenario ship in one edit. A probe
-  ERROR ADDS to residual (a sentinel, never a count), never aborts; one
-  try/catch per leg. Hoist any parent/collection LIST the deleter and probe
-  both hardcode into one exported const. A "the N siblings" completeness
-  numeral in a cascade docstring is a GDPR claim — strike it. Read
-  `fieldOverrides[].ttl` AND an `expireAt` writer before a retention
-  sentence; grep every collection of a NAME before a "no collectionGroup id
-  collision" claim (`events` collides with `recipe_cook_events/{uid}/events`,
-  as `users` does with profiles); never say WHY an earlier ticket left a
-  collection out — its record shows SCOPE, not intent.
+  "no failed collections" redden. A leg on an ATTRIBUTION SCALAR
+  (`lastModifiedBy`, `ownerId`) is broader unless `firestore.rules` PINS that
+  field to the roster the deleter discovers by — read the write limb, never
+  the app's own writer; unpinned, any editor plants a stranger's uid and that
+  user's every deletion then reports `gdprCompliant:false` forever with no
+  path able to clear it. Close it by UNIONING both handles in the deleter
+  (dedup by `doc.ref.path`), then GATE any empty-roster DELETE on the uid
+  having actually been ON that roster AND on EVERY denormalised roster being
+  empty, EACH READ RAW: a witness DERIVED from another collapses the gate to
+  one check, so a survivor named by only one roster is destroyed. A doc
+  reached only by the attribution handle dies on a malformed roster.
+  Conditionally-spread each
+  scrubbed field: writing an unchanged array back widens the lost-update
+  window over docs this user never edited.
+  A leg with no DIRTY-fixture scenario is
+  mutation-invisible; `strict:false` swallows a failed chunk, so the probe is
+  the ONLY contradiction to an unconditional `return true` — leg and scenario
+  ship in one edit. A probe ERROR ADDS to residual (a sentinel, never a
+  count), never aborts; one try/catch per leg. Hoist any list the deleter and
+  probe both hardcode into one exported const. A "the N siblings" completeness
+  numeral in a cascade docstring is a GDPR claim — strike it. Grep every
+  collection of a NAME before a "no collectionGroup id collision" claim
+  (`events` collides with `recipe_cook_events/{uid}/events`).
 - Pure `users/{uid}/*` subcollections erase via a generic uid-scoped
   sweep. Test triple: own-erased + other-kept + `failedCollections` empty.
 - **Data written by a SCHEDULED JOB under a non-`users/{uid}` path is
@@ -342,16 +350,12 @@ from `(err as {code?}).code` instead.
   write-per-denial stream, and `resource-exhausted` is client-RETRYABLE.
 
 ### Pooled ratings + rating aggregation (ratings/ family)
-- Recipes are USER-SCOPED (no top-level `match /recipes`) and
-  `recipe_social_stats` is SERVER-ONLY — confirm any server path from
-  firestore.rules + the repository mixin, never from a green Dart test
-  (`fake_cloud_firestore` evaluates no rules).
+- Recipes are USER-SCOPED (no top-level `match /recipes`);
+  `recipe_social_stats` is SERVER-ONLY — confirm from firestore.rules, never
+  from a green Dart test (`fake_cloud_firestore` evaluates no rules).
 - Unbounded collection-group folds use `.aggregate({count, average})`,
   never `.get()`; a `collectionGroup` equality query needs a
   `fieldOverrides` entry with `queryScope:"COLLECTION_GROUP"`.
-- A full-collection `orderBy(documentId()).limit(N)` backfill with no
-  filter cannot self-advance — needs an operator-supplied `startAfter` +
-  `nextCursor`; only a filter-mutating sweep may skip the cursor.
 
 ### Verify-signup-age, account callables & minor-safety triggers
 - Rules can't iterate an array for a per-member rule on GROUP-shaped data —
@@ -362,15 +366,12 @@ from `(err as {code?}).code` instead.
 - **A callable that READS a doc before checking caller membership is an
   ORACLE, and its idempotent no-op branch is the leak** — collapse
   `!exists` + non-member into ONE uniform response, no count.
-- A no-oracle gate DESTROYS the only symptom of a wrong collection path —
-  pair it with a path-pinning test (`collectionName` on a Dart repository
-  is NOT the path; check for `UserScopedFirebaseRepository`).
 - **A client-chosen document id is not unique across accounts.** A
   server-side pointer to one (`friend_categories/{uuid}`) must be keyed on
   OWNER + id, or an ex-member re-creating that id under their own uid is
   handed the victim's object. Do NOT then exempt that owner from the
-  object's own membership check — an owner who left still drives its roster
-  and can empty it, leaving a `chat_groups` doc no client can touch.
+  object's own membership check — an owner who left could otherwise empty
+  its roster.
 - **A new `onCall` export is a THREE-file change**: the function, its
   `test:*`/suite in `package.json`, and `app-check-enforcement.test.ts`'s
   classification (`ADMIN_EXEMPT` only if the handler's FIRST statement
@@ -382,8 +383,7 @@ from `(err as {code?}).code` instead.
   classes, not `/i`. Module-scope `/g` regexes are stateful with
   `.test()`/`.exec()` in long-lived CF isolates. Shared word lists and
   cross-port VECTORS: compiled-in consts or one shared JSON fixture, pinned
-  by parity tests on BOTH sides, never a runtime load. Possessive titles are
-  pinned NEGATIVE vectors — never generalize to capitalized-word NER; a
+  by parity tests on BOTH sides, never a runtime load. A
   sentinel default must be ROUND-TRIP STABLE through Firestore.
 
 ### LLM prompts & prompts-config
@@ -413,13 +413,11 @@ from `(err as {code?}).code` instead.
   committed — an uncommitted change has deployed nothing.
 - **A workflow step whose `if:` names only a step OUTCOME is DEAD after a
   failure** — GitHub ANDs an implicit `success()` unless the expression
-  holds a status function, so `deploy-firebase.yml`'s auto-rollback ran on
-  neither failing run. Write `always() && (...)`; never cite a
+  holds a status function. Write `always() && (...)`; never cite a
   failure-handler as a safety net without a run where it fired.
 - **Count `Could not create or update Cloud Run service <name>` lines, not
-  the CLI's closing `Failed to update function` summary** — 52 quota-failed
-  while the summary named 2, and that reading wrote off 50 real broken
-  revisions as a reporting artifact.
+  the CLI's closing `Failed to update function` summary** — the summary
+  undercounts badly (52 vs 2), hiding real broken revisions.
 - **A Firestore TTL field is INERT without a policy**; a `fieldOverrides`
   entry with `"ttl": true` + `firebase deploy --only firestore:indexes`
   creates one. `--force` deletes every live override ABSENT from the

@@ -3531,3 +3531,332 @@ unqualified and true of the read/create/delete limbs; `weekly_menu_plans`' UPDAT
 read `resource.data.userId`. Operative reading (the read rule, which is what the paragraph is
 about) is correct. Recording it instead of opening a seventh round — the only safe action on
 such a sentence is a strike, and it does not earn one.
+
+## 2026-08-29 — BUT-1971 `group_weekly_menu_plans.editTrail` 50-row cap (review, verified)
+
+Diff: `groupMenuTrailWithinCap()` = `request.resource.data.get('editTrail', []).size() <= 50`,
+conjoined onto BOTH the `create` and `update` limbs. Tests G8-G11 added to
+`weekly-menu-plans-rules.test.ts`.
+
+Verified this run (not assumed):
+- Suite: 18/18 pass.
+- Mutant `request.resource.data.editTrail.size()` (bare dereference): 3 FAIL — "a group edit
+  that preserves createdAt is allowed" (G2), "an edit member can write a group plan" (G4),
+  "a save that carries no trail at all is allowed" (G11). Emulator prints
+  `Property editTrail is undefined on object.` Two of the three are PRE-EXISTING tests, i.e.
+  the collection's ordinary save path. Same failure mode as the read rule fixed in 562cf5ee0.
+- Mutant dropping the conjunct from the CREATE limb: G8 alone fails (flips to ALLOW). That
+  flip is also the only proof the create limb's OTHER conjuncts are satisfied — the suite
+  contains NO group-create ALLOW test.
+- Mutant dropping it from the UPDATE limb: G9 alone fails.
+- `firestore.rules` md5 byte-identical before and after probing
+  (65d70911295d223ff341360e95756d2e); mutants ran from scratchpad copies with per-mutant
+  project ids; `check-test-registration.js` OK (42 rules suites).
+
+Per-type probe against the REAL rules, `editTrail` set to each shape on an update:
+list(50) ALLOW · map 50 keys ALLOW · map 500 keys DENY · string 10 chars ALLOW ·
+string 500 chars DENY · int DENY · bool DENY · null DENY · timestamp DENY.
+So the missing `is list` conjunct is a SHAPE gap, not a bound gap — the accepted-deviation
+call to document it is correct. The rules comment's sentence "a map with <= 50 keys
+satisfies `.size()` too" is measured TRUE, and nothing in the suite keeps it true.
+
+Admin-gate interaction: none. `editTrail` is absent from the update limb's
+`affectedKeys().hasAny(['participants','participantUserIds','memberPermissions'])` list, and
+the cap is ANDed OUTSIDE that OR, so a non-admin `edit` member writing 50 trail rows is
+ALLOWED and 51 DENIED (both measured). That edit-member path is the real production writer
+(`GroupWeeklyMenuViewModel._edit`) and is untested in the suite.
+
+Client side: `GroupWeeklyMenuPlan.toFirestore` writes `if (editTrail.isNotEmpty)`, so it
+OMITS the field rather than sending null — the null-deny is latent, not live.
+`maxEditTrailRows = 50` agrees with the rules literal (checked, no cross-reference between
+the two spellings exists).
+
+Coverage gaps left open, none blocking: no group-create ALLOW test (G8 provable only by
+mutation, and it goes vacuous on the next create-limb tightening); no test pins the
+edit-member trail write; no test pins any non-list shape, in either direction.
+
+## 2026-08-30 — BUT-1971 re-review: the edit-trail cap is unproven for the actor that writes it
+
+Re-ran `test:rules:weekly-menu-plans` against the current `firestore.rules`: 21/21 pass.
+
+Re-probed the cap after the two new allow tests landed (mutants built in the scratchpad,
+`firestore.rules` never written):
+
+- M1 — drop `groupMenuTrailWithinCap()` from the CREATE limb: kills exactly
+  "a create carrying more than 50 trail rows is denied" (20/21).
+- M2 — drop it from the UPDATE limb: kills "an update carrying more than 50 trail rows is
+  denied" AND "an explicit null trail is denied" (19/21). The second kill is the useful
+  one: it ATTRIBUTES the null deny to the cap function rather than to `cannotModify` or
+  the membership conjuncts, which the emulator's `evaluation error at L1007` cannot.
+- M3 — loosen `<= 50` to `<= 51`: kills both over-cap denies, neither at-50 allow (19/21).
+  The boundary is exact on both limbs.
+- M4 — scope the cap to admins (`memberPermissions[uid] == 'admin' ? size <= 50 : true`):
+  **21/21 GREEN.** Both over-cap denies are sent by the admin owner, and the new
+  "a non-admin editor may write a trail within the cap" is an ALLOW, which survives a
+  mutant that only loosens the rule for non-admins. So the edit member — the actor the
+  interactive remove/undo path runs as — can write an unbounded trail with the whole suite
+  green, and that test's comment ("the cap is ANDed outside the admin gate, and nothing
+  proved that") is still unproven after it. One deny test (edit member, 51 rows) closes it.
+
+Two comment defects measured in the same pass:
+
+- The test file's `.claude/rules/accepted-deviations.md` pointer for the `.size()` type gap
+  does not resolve — grepped both deviations files; the BUT-1971 block there carries the
+  forgeable-provenance, non-durability, Art. 15 and open-uid entries and nothing about the
+  cap's type behaviour. ADR-0010 only records that a written type gap was REQUIRED. The
+  account actually lives in the `firestore.rules` comment and in
+  `_redactGroupPlan`'s container arm (verified: that arm exists and fails closed).
+- The banner range "G8-G11" now spans seven trail tests, three of which carry no ID, and
+  the "discriminating control for both … the two denials above" sentence sits above the
+  CREATE at-50 allow, which M1/M2 show controls the create denial only.
+
+Verdict: fail (1 blocking) on the M4 gap.
+
+## 2026-08-30 — BUT-1971 re-review: the editor's over-cap deny kills M4, and one comment detached
+
+Re-ran `test:rules:weekly-menu-plans` against the current `firestore.rules`: 22/22.
+
+Re-probed the four mutants on the CURRENT file (probe copy under
+`functions/src/__tests__/_probe_wmp.test.ts`, mutant rules in the scratchpad, deleted in the
+same call):
+
+- M1 — drop `&& groupMenuTrailWithinCap()` from the CREATE limb: 21/22, kills
+  "a create carrying more than 50 trail rows is denied".
+- M2 — drop it from the UPDATE limb: 19/22, kills the 51-row update deny, the new
+  "a non-admin editor is also bound by the cap", and "an explicit null trail is denied".
+- M3 — `.get('editTrail', [])` -> bare `request.resource.data.editTrail`: 19/22, kills three
+  ordinary-save allows ("a group edit that preserves createdAt is allowed", "an edit member
+  can write a group plan", "a save that carries no trail at all is allowed"). The defaulting
+  `.get()` is load-bearing, measured.
+- M4 — cap scoped to admins
+  (`resource == null || resource.data.memberPermissions[uid] != 'admin' || size <= 50`):
+  20/22 — DEAD, where the previous pass had it surviving 21/21. The two kills are the 51-row
+  CREATE deny (the `resource == null` arm unbinds create) and the new editor over-cap deny.
+  So the conjunct's placement OUTSIDE the admin gate is now measured, and the allow/deny pair
+  at the editor actor is what measures it — the allow alone survived the mutant by
+  construction.
+
+Verified the four strikes: the accepted-deviations pointer for the `.size()` type gap is gone
+and the replacement claim ("absorbed downstream: the export's redaction helper fails closed on
+a non-list trail") is TRUE — `_redactGroupPlan` in `content_export_manager.dart` has a
+container arm that replaces a non-list `editTrail` with `const []`; the `G8`–`G11` range labels
+are struck without renumbering (G1–G7 intact); the stacked control comment above the at-cap
+create test now reads only "The create denial's own ALLOW control."; and the duplicated
+read-rule account in the test file now points at the read rule in `firestore.rules` and makes
+no claim of its own.
+
+One non-blocking finding: inserting the new test between a comment and its test detached
+them. The paragraph beginning "A present `null` is not an absent field" now heads
+"a non-admin editor is also bound by the cap", and "an explicit null trail is denied" carries
+no comment. Repair is a MOVE of those four lines down one test, not a rewrite. Principle added
+to the knowledge file under rule parity/comments.
+
+## 2026-08-30 — BUT-1971 final round: the two downstream citations, and the allow test's justification clause
+
+Re-review at the post-comment-move bytes. `firestore.rules` byte-identical to the previous
+round (`git diff HEAD -- firestore.rules` shows only the BUT-1971 cap hunks, unchanged).
+Suite re-run rather than taken: 22/22.
+
+**Comment move verified.** The null-tripwire paragraph now heads `an explicit null trail is
+denied`, and `a non-admin editor may write a trail within the cap` carries its own. The Low
+from last round is closed.
+
+**Citation 1 — the cascade's outright delete of a non-list `entries`/`editTrail`
+(`account-deletion-cascade.ts`).** Accurate at these bytes. Each clause checked separately:
+the non-list value IS skipped by the scrub (`Array.isArray(trailRaw) ? … : []`, and the
+spread arms are themselves `Array.isArray`-gated, so nothing is written back); the rules cap
+IS `.get('editTrail', []).size() <= 50` with no type conjunct, and the create limb carries no
+`keys().hasOnly` and does not name `editTrail` in `hasRequiredFields`, so a hand-rolled client
+can seat a ≤50-key map — "the shape is reachable" holds; and "no writer produces it" holds
+against `GroupWeeklyMenuPlan.toFirestore`, which omits the field when empty and writes a list
+otherwise.
+
+**Citation 2 — the export's `_redactGroupPlan` container arm.** Accurate. The rule fragment
+is quoted verbatim, the per-type fact is mine, and the counterfactual ("without this arm such
+a value skips the filter and ships whole") is structurally true: the helper copies the whole
+map and only the `is List` branch filters, so an unfiltered non-list stays in `copy`.
+
+**New finding (Low, non-blocking).** The comment above `a non-admin editor may write a trail
+within the cap` reads "— the cap is ANDed outside the admin gate, and nothing proved that."
+Both halves are now false OF THAT TEST: an allow cannot measure the conjunct's placement (my
+own principle), and the deny below it does prove it and says so. The sentence was TRUE when
+written and was falsified by the deny that a review round asked for — the same insertion-seam
+shape as a comment that counts the tests below it. Reported as a STRIKE from the em-dash, not
+a reword.
+
+**Carrier count for the polymorphic-`.size()` fact, measured by grep rather than recalled:
+six files** — `firestore.rules`, `weekly-menu-plans-rules.test.ts`,
+`account-deletion-cascade.ts`, `request-account-deletion.integration.test.ts`,
+`content_export_manager.dart`, `content_export_manager_test.dart`. Each states it to justify
+its own fail-closed arm, which is why strike-and-point does not apply here. Two of the six are
+self-verifying (their fixtures ARE a map trail).
+
+**The `is list` conjunct — my call: its own ticket, and it does NOT retire the downstream
+arms.** My earlier note said the conjunct "would shut both halves at the source and let the
+export's container arm retire". Narrowing that at these bytes: a rules tightening binds future
+WRITES and never cleans STORED documents, and both downstream arms read stored data, so
+retiring either on the strength of the rule would be unsound. What the ticket really costs is
+a wrong-type deny per type at ≤50, a fresh mutation probe, and a six-file sweep of the
+sentences above — in a change that is otherwise complete at 22/22 with the gap documented
+per-type and absorbed by both consumers. Harm bound while it waits: a ≤50-key map that no
+writer produces and that both consumers already fail closed on.
+
+Verdict: pass, 0 blocking.
+
+---
+
+## 2026-08-30 — BUT-1971 re-review at the moved bytes (comment-only test delta)
+
+Re-invoked because the test file moved after a `READY TO MERGE`. `firestore.rules` staged
+diff byte-identical to the previous pass (the `groupMenuTrailWithinCap()` helper ANDed onto
+both the create and the update limb, `.get('editTrail', []).size() <= 50`); confirmed by
+reading the block at `match /group_weekly_menu_plans/{planId}` rather than trusting the
+"unchanged" claim. Both files are fully staged (`git status` second column blank), so the
+worktree bytes I read ARE the staged bytes — worth checking before a Read stands in for a
+`git show :<path>`.
+
+The strike landed correctly. The comment above `a non-admin editor may write a trail within
+the cap` now reads only "The production writer is an EDIT member, not the admin every other
+trail test uses. The deny below is what measures the conjunct's placement; this is its allow
+control." The retired clause ("the cap is ANDed outside the admin gate, and nothing proved
+that") survives ONLY here in the archive and as the principle at
+`firestore-rules-tester.knowledge.md`'s numeric-floor bullet — grepped repo-wide for both
+fragments, no restatement anywhere in `functions/` or `firestore.rules`. The pointer
+resolves: "the deny below" is the immediately following test, and the two differ in exactly
+one variable (50 vs 51 rows, same seed, same actor, same verb), so "its allow control" is
+directly readable rather than measured. The surviving "admin gate" mention sits in the DENY's
+own comment, where it is the claim the 20/22 mutant kill measured.
+
+Suite re-run on these bytes, not taken: 22/22. Emulator deny signatures worth recording —
+the editor over-cap deny and the view-only deny both print `evaluation error at L1007:24 for
+'update'`, i.e. byte-identical fingerprints for two structurally different actors, which is
+exactly why the admin-scoping mutant (measured 2026-08-30, dies 20/22 with this deny as one
+of the two kills) is the attribution and the emulator text is not. `an explicit null trail is
+denied` prints `Null value error.`, matching the per-type table.
+
+The `is list` call stands as I left it: its own ticket, and the ticket promises retiring
+neither downstream arm, because a rules tightening binds future writes and never cleans
+stored documents. Both arms are in this change and both fail closed — `_redactGroupPlan`'s
+container arm on export, and the cascade's `FieldValue.delete()` arms on erasure, the latter
+pinned by a `gp-malformed` fixture carrying map-typed `entries`/`editTrail`.
+
+No new reusable rule; the principle this round would have produced is already the last two
+sentences of the numeric-floor bullet. Archive-only per the contract.
+
+Verdict: pass, 0 blocking.
+
+---
+
+## 2026-08-30 — BUT-1971 verdict re-record against the current staged bytes (rounds landed elsewhere)
+
+Re-invoked purely to record a verdict against the bytes the commit gate is about to see:
+three rounds of edits landed elsewhere in the change set while neither reviewed file moved.
+Confirmed by reading, not by trusting the claim, and by three independent checks that agree:
+
+1. `git diff` of worktree against index is EMPTY for both files, so the bytes I opened with
+   `Read` are the staged bytes.
+2. The staged `firestore.rules` hunks are confined to lines 967-1018 — the
+   `groupMenuTrailWithinCap()` helper and its two `&&` conjuncts on the create and update
+   limbs of `match /group_weekly_menu_plans/{planId}`. Read the WHOLE file (3284 lines, in
+   three chunks) rather than the diff, so "nothing else moved" is a read rather than an
+   inference from hunk headers.
+3. My own previous archive entry quotes the post-strike comment above `a non-admin editor
+   may write a trail within the cap` verbatim; the freshly-read file matches it word for
+   word, and the suite is still 22 tests. A prior entry's verbatim quotation is a usable
+   corroboration of an "unchanged since your last read" claim — cheaper than recovering
+   blob revisions, and it fails loudly if a round did touch the text.
+
+Fourth, weaker but free: the emulator's deny SIGNATURES reproduced exactly across the two
+runs — `evaluation error at L1007:24 for 'update'` for both the view-only deny and the
+editor over-cap deny, `Null value error.` for the explicit-null test. Those fingerprint the
+rule LINE, so an unchanged set across runs is consistent with unmoved rules bytes. It is
+corroboration only, never the proof: it cannot see a comment-line insertion that shifts no
+rule, and it cannot distinguish two actors (which is the whole reason the admin-scoping
+mutant, not the emulator text, is the attribution for that deny).
+
+Suite re-run on these bytes: 22/22.
+
+The cascade file DID move in this commit (`account-deletion-cascade.ts`: the ACL probe leg
+now logs a constant label instead of the `FieldPath`, because the logger JSON-stringifies
+the path and would have written the full uid). Out of scope here and it touches no rule —
+recorded because a rules reviewer asked "did anything move" should say which neighbouring
+file did and why it is not a rules question.
+
+Both downstream citations re-checked as still in the change set and still failing closed:
+`_redactGroupPlan`'s container arm on export, and the cascade's `FieldValue.delete()` arms
+on erasure, the latter pinned by the `gp-malformed` fixture. The `is list` conjunct stays
+its own ticket, with the caveat unchanged: a rules tightening binds future writes and never
+cleans stored documents, so it retires neither arm.
+
+No new reusable rule. The principle this round would have produced is already carried by the
+"Proving a comment-only rules diff is mechanical, not eyeballable" bullet; the archive-quote
+corroboration above is a technique note, not a rule worth spending principle budget on.
+Archive-only per the contract.
+
+Verdict: pass, 0 blocking.
+
+## 2026-08-30 — BUT-1971 third verdict pass: the struck `participantUserIds` gating header
+
+Scope: verdict on the CURRENT bytes of `firestore.rules` + `weekly-menu-plans-rules.test.ts`
+after a comment-only change to the `group_weekly_menu_plans` block header. Index and
+worktree byte-identical (`git diff --quiet` clean). Suite re-run: 22/22 passed.
+
+**The strike is correct, and the reason a presence grep would have got it wrong.**
+The struck header claimed "Access is gated by the denormalised `participantUserIds` list +
+the nested `participants[].permission` field". Both field names DO appear inside the match
+block — `participants`/`participantUserIds` in the create limb's `hasRequiredFields([...])`,
+and both again in the update limb's
+`!request.resource.data.diff(resource.data).affectedKeys().hasAny(['participants',
+'participantUserIds', 'memberPermissions'])` admin-escalation guard. So `grep participant`
+inside the block answers YES on six lines. What none of them do is DECIDE ACCESS: every
+access decision on all four verbs (`read`, `create`, `update`, `delete`) tests
+`memberPermissions` and nothing else, and `participants[].permission` is read nowhere in the
+file — no top-level or block-scoped function touches it. Required-on-create is a SHAPE
+conjunct; a protected key in a diff guard is an immutability conjunct. Neither is the
+membership predicate the struck sentence described. Lesson generalised into the principles
+file: the test for a false gating claim is "does any limb DECIDE ACCESS on X", never "does
+any limb mention X".
+
+**Not an over-strike.** The one true fragment inside the struck text — the
+`'view' | 'edit' | 'admin'` value set mirroring `SharedListPermission` — survives verbatim
+six lines below, correctly attached to `memberPermissions`, in the block-level comment at
+`match /group_weekly_menu_plans/{planId}`. Nothing true was lost with the removal.
+
+**The "helpers are inlined" sentence carried nothing.** It justified inlining "because the
+participant-permission lookup is specific to this collection's shape" — there is no
+participant-permission lookup helper, inlined or otherwise, and after BUT-1971 the block
+contains exactly one declared function (`groupMenuTrailWithinCap()`), which is block-scoped
+rather than inlined and has nothing to do with participant permissions. Both halves of the
+sentence were false. Writing a replacement convention note ("keep helpers block-scoped
+here") would have been a new unmeasured claim; correctly omitted.
+
+**The replacement's one measurable clause, measured.** "The access gate is described on the
+match block below, which is the only place it is enforced." `group_weekly_menu_plans` occurs
+exactly once in `firestore.rules` (the `match` at the block). The seven `{path=**}/X/{id}`
+collection-group overlays all name a different trailing segment (`members`,
+`friend_categories`, `engagements`, `comments`, `ratings`, `recipes`, `pings`), so none
+matches this top-level collection; the `match /{document=**}` catch-all is
+`allow read, write: if false` and grants nothing. True as measured. The client-side
+`FirebaseGroupWeeklyMenuPlanRepository` permission check is not a counterexample — its own
+class comment says "Access control is the domain of firestore.rules" and the call site is
+labelled "Belt-and-braces". Recorded as an insertion seam, not a defect: the day a second
+match block or an overlay touches this collection the clause goes false silently. No
+rewrite recommended — the sentence is true, and rewording a true sentence is how one
+finding becomes a chain.
+
+**Surviving co-carrier, outside the staged set.** `git status` shows
+`test/integration/firebase/repositories/group_weekly_menu_plan_repository_test.dart`
+unmodified and unstaged; line 245-247 is a test NAME reading "should persist the
+denormalised `memberPermissions` + `participantUserIds` fields so Firestore rules can
+enforce per-user access". Same false framing as the struck header, for
+`participantUserIds`. Half-true by accident: the field must be persisted or the create limb
+denies the write on `hasRequiredFields` — but that is a shape requirement, not per-user
+access enforcement. Reported as Low, non-blocking, own follow-up. The mechanical lesson: a
+claim sweep anchored on comment syntax cannot see a claim living in a test's NAME string,
+and this is the second BUT-1971 round where the last carrier sat somewhere the previous
+sweep's grep shape could not reach.
+
+Also noted and NOT touched: `.claude/worktrees/wf_a173466e-c2e-19/firestore.rules:937` still
+carries the pre-strike text. That is a parallel session's worktree.
+
+Verdict: pass, 0 blocking.

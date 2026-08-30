@@ -11964,6 +11964,28 @@
   },
   "groupMenuSaveFailed": "Could not save the change. Try again.",
   "groupMenuUndoUnavailable": "This can no longer be undone.",
+  "groupMenuProposedBy": "Suggested by {name}",
+  "@groupMenuProposedBy": {
+    "description": "BUT-1971: who put this dish on the poll's ballot. Rendered only when the name resolves — a raw uid is never shown, and no row is drawn at all when the dish carries no provenance.",
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "groupMenuVotedInBy": "{count, plural, =1{voted in by 1} other{voted in by {count}}}",
+  "@groupMenuVotedInBy": {
+    "description": "BUT-1971: how many people voted for this dish. A count, not names: one name is what fits the row, so the proposer gets the name and the voters get the number.",
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "groupMenuVotersTitle": "Voted for this dish",
+  "@groupMenuVotersTitle": {
+    "description": "BUT-1971: heading of the sheet listing who voted a dish in. The row itself shows a COUNT because only one name fits it; this sheet is where the names are actually displayed, which is what the Art. 15 export decision rests on."
+  },
+  "a11yShowVoters": "Show who voted",
+  "@a11yShowVoters": {
+    "description": "BUT-1971: Semantics label for the tappable provenance row. Names the ACTION only — the row's own text is concatenated onto this label by the framework."
+  },
+  "groupMenuUnknownVoter": "Unknown member",
+  "@groupMenuUnknownVoter": {
+    "description": "BUT-1971: shown in the voter sheet for a member whose profile could not be read. A raw uid is never displayed."
+  },
   "groupMenuUndoFailed": "Could not undo the removal.",
   "@groupMenuUndoFailed": {
     "description": "BUT-1971: the undo's own save failed. Its snackbar is the only one on this screen that carries a retry, so the sentence must NOT end in a 'try again' of its own — the button says that."

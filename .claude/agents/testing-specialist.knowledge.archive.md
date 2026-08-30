@@ -30260,3 +30260,620 @@ the surviving narrower rule (theme tokens no, icon identity yes) lives in the pr
 > differently — grep first: as of 2026-08-29 that file covers only `userFriendlyMessage`, so
 > NOTHING in the repo pins any severity, and adding the first one at a random call site is worse
 > than none (BUT-1971, `groupMenuNoGroups`).
+
+### 2026-08-30 — BUT-1971 provenance/edit-trail test review (trigger: review of the test half of the provenance build)
+
+Graded: `test/unit/services/menu/group_weekly_menu_plan_service_test.dart` (new `the edit
+trail` group), `test/unit/viewmodels/menu/group_weekly_menu_viewmodel_test.dart`,
+`test/widget/menu/group_weekly_menu_widget_test.dart` (new `the provenance row` group),
+`test/unit/repositories/firebase/firebase_group_weekly_menu_plan_repository_test.dart`
+(granted-audit test FLIPPED per ADR-0010),
+`test/unit/services/account/export/content_export_manager_test.dart`,
+`functions/src/__tests__/request-account-deletion.integration.test.ts`. All five Dart suites
+green (141 tests, one run), `flutter analyze` clean on all five paths.
+
+FINDING 1 (vacuity, non-blocking). `'a move preserves provenance, including on the
+swapped-aside dish'`. Hand-traced: the fixture DOES reach the occupant branch — after
+`updated.removeWhere` the list is `[e2@tue/middag]`, `toSlot.isMulti` is false, `indexWhere`
+returns 0, so e2 is rebuilt via `copyWith(day: mon, slot: middag)`. But deleting the whole
+`if (occupantIndex != -1) { ... }` block leaves every assertion green: e2 is then never
+rebuilt, so its `proposedBy`/`votedInBy` survive trivially, and nothing asserts e2 moved to
+`mon`. The named half of the test is undiscriminated. One line closes it:
+`expect(after['e2']!.day, DayOfWeek.mon)`. Severity bounded — `GroupWeeklyMenuViewModel.
+moveEntry` has no production caller (`lib/widgets/menu/calendar/calendar_drag.dart:110`
+drives the PERSONAL `WeeklyMenuPlanViewModel.moveEntry`), so the group swap branch is dead
+today and this is a forward guard.
+
+FINDING 2 (coverage gap, non-blocking, Medium). The `restoreEntry` stub added to the VM and
+widget setUps is the RIGHT double and correctly mirrors the identity return
+(`if (plan.entries.any((e) => e.id == restored.id)) return plan;` — the exact trap the
+2026-08-29 `removeEntry` entry records). What it does not mirror is the `_requireEditor`
+throw, and NOTHING in the repo pins that. Measured: `grep -rn 'GroupWeeklyMenuPlanService('
+test/` returns exactly two suites constructing the real service
+(`group_weekly_menu_plan_service_test.dart:56`, `weekly_menu_plan_read_week_test.dart:219`);
+`grep -n 'PermissionDenied' ` in both returns zero. So deleting `_requireEditor` from
+`restoreEntry` — or from `addEntry`/`removeEntry`/`moveEntry`, or `_requireAdmin` from the
+two participant methods — reddens nothing. Confirmed the gate itself works with a scratch
+`test/unit/services/menu/_zz_probe_test.dart` asserting a `view`-permission participant's
+`restoreEntry` throws `PermissionDeniedException`: green, file deleted, `git status` on the
+directory clean apart from the graded suite. Harm bounded: `firestore.rules` refuses the
+write and the widget hides the delete control for viewers.
+
+FINDING 3 (stale claim in test prose, non-blocking).
+`firebase_group_weekly_menu_plan_repository_test.dart:465` still reads
+`group('save audits refusals only (BUT-1981)')` while its first test now asserts a granted
+save DOES write a row. Recommended: STRIKE the false qualifier
+(`group('save auditing (BUT-1981 / ADR-0010)')`), not reword the rationale.
+
+FINDING 4 (doc re-parenting, non-blocking, production file).
+`lib/services/account/export/content_export_manager.dart` — the new `_redactGroupPlan` was
+inserted directly beneath `/// Export all group weekly menu plans the user is a participant
+on.`, which had been `exportGroupWeeklyMenuPlans`'s doc. That sentence now documents a
+redaction helper that exports nothing, and the export method is left undocumented. Repair is
+a MOVE of the one line, not a rewrite.
+
+FINDING 5 (header enumeration, low). The service suite's file header names three subjects and
+the round added a fourth group (`the edit trail`) it does not name. No exclusivity word, so
+incomplete rather than false.
+
+ANSWERED CLEAN. (a) The provenance-row widget group cannot pass on a screen rendering no row:
+two of its three tests are positive exact-text assertions (`'Föreslagen av Malin · framröstad
+av 3'`, `'framröstad av 1'`) that die on an empty row; the third is a paired negative control.
+(b) The VM's `'does not duplicate a dish the peer already restored'` asserts the STUB's
+idempotence, not production's — but the real invariant IS pinned in the service suite
+(`'a restore of a dish already present records nothing'`, `identical(updated, plan)`), and the
+VM test still discriminates real VM behaviour (a multi slot is not refused by the `slotTaken`
+gate, and `_edit`'s identical short-circuit returns true). Keep; rename off what it proves.
+(c) The cascade test discriminates both halves of the trail filter — narrowing to
+`actorId !== uid` leaves `trail.length === 2` — and `undefined`-vs-`null` on `proposedBy`
+kills a set-to-null mutant. (d) The export test discriminates actor-only narrowing (row 2 is
+subject-only) and the non-map fail-closed drop. (e) The previously-recorded struck clause
+"the only live caller is the meal-poll close" is confirmed gone from `test/` and `lib/`.
+
+### 2026-08-30 — BUT-1971 re-review round N+1 (trigger: parent reported blocking #5 fixed, findings #1/#3 taken, plus a repaired RED suite)
+
+Hash table, worktree (index EMPTY — `git diff --numstat` on every reviewed path equals
+`git diff HEAD`, so the verdict is against the copy the parent commits):
+
+| md5 | lines | path |
+|---|---|---|
+| 2a7d0848bd9f64ec99e07b5269f85599 | 376 | test/unit/services/menu/group_weekly_menu_plan_service_test.dart |
+| 0fa3a50d0da5ad2a8e7546045257dcbd | 1196 | test/unit/services/messaging/messaging_service_close_poll_test.dart |
+| 0a166ee010cbc7286286992c1cbc528a | 1384 | test/unit/viewmodels/menu/group_weekly_menu_viewmodel_test.dart |
+| 2e88b542c7f257c3a15b0fbc995701f6 | 1570 | test/unit/services/account/export/content_export_manager_test.dart |
+| e3dee33b3a936731df6bf619d5a42e05 | 1642 | functions/src/__tests__/request-account-deletion.integration.test.ts |
+| 361b32b91d2e7aaaf92e8acceef87448 |  374 | lib/services/menu/group_weekly_menu_plan_service.dart |
+| 2bfe478272938ae04b8e62a94dd9f861 | 1174 | lib/services/messaging_service.dart |
+| 89f096a2f276820941cb3d70767988af |  405 | lib/viewmodels/menu/group_weekly_menu_viewmodel.dart |
+
+Motion check beyond the fix report: the round ALSO landed a production design FLIP the report
+did not mention — ADR-0010 restores the GRANTED audit row on the group repository, reversing
+BUT-1981, and the repository suite's granted test flipped from `rows.docs isEmpty` to
+`hasLength(1)` + `granted isTrue`. Plus a new GDPR redaction helper
+(`ContentExportManager._redactGroupPlan`) and a cascade scrub of provenance + trail. Graded
+those on their own; all three carry discriminating tests.
+
+Closed from the previous round: (5) the group is now `save auditing (BUT-1981 / ADR-0010)`,
+the false qualifier struck; (1) the move test asserts `after['e2']!.day == DayOfWeek.mon`
+before the provenance lines, so deleting the swap branch reddens instead of passing on a dish
+that was never rebuilt; (3) `restoreEntry`'s `_requireEditor` is now pinned by a real-service
+test with a `view`-permission participant (the four sibling mutators' gates stay unpinned —
+recorded residual, scope not widened, correct call).
+
+Measured this round with a scratchpad mocktail replica (`dart --packages=…`, no repo write):
+1. `.captured` follows the SOURCE order of the `captureAny` calls in the `verify` closure, not
+   the mocked method's signature order — a deliberately reversed closure returned the reversed
+   list. So the new provenance test's comment ("mocktail's capture order is not the argument
+   order, and an index here would encode that surprise as a fact") is FALSE. Filed blocking,
+   remedy STRIKE the clause; the type-based identification itself is fine and needs no
+   justification.
+2. Omitting both optional named args yields `captured == [[], null]`, so
+   `whereType<String>().single` throws — the "delete both argument lines in
+   `_appendWinnerToGroupPlanAndShare`" mutant reddens. The test is non-vacuous, and the loser
+   option's separate voter list discriminates "all poll voters" from "the winner's voters".
+   `proposedBy` vs `currentUserId` is analytically unkillable here and in production (the gate
+   resolves a winner only for the poll creator) — correctly left untested, no test owed.
+3. `verify(restoreEntry).called(2)` sits in the failed-then-retried undo test, where the test
+   itself makes exactly two `undoLastRemoval()` calls; it pins routing through the service AND
+   that a retry re-runs the mutator. Not brittle — the 2 is local to the test's own script.
+
+New blocking finding: the round's three PERSISTED fields have no serializer coverage.
+`grep -rl 'editTrail\|proposedBy\|votedInBy' test/` returns exactly four files — the group
+service suite (in-memory `copyWith`), the close-poll suite (mock service), the widget suite
+(in-memory), and the export suite (RAW seeded maps). None drives `toFirestore`/`fromMap`, and
+the repository suite's fixtures carry neither field, so the `if (editTrail.isNotEmpty)` and
+`if (proposedBy != null)` guards never execute. Deleting any of those serializer lines leaves
+every suite green while the whole BUT-1971 feature silently fails to persist — and ADR-0010
+rests on the trail existing. `test/unit/models/menu/group_weekly_menu_plan_test.dart:183`
+("should preserve every field across toFirestore / fromMap") and
+`weekly_menu_plan_test.dart:75` (entry `toMap → fromMap`) are the two files to extend; the
+first's name is the quantifier this round falsified.
+
+Suites re-run under review: 161 green across the six Dart suites (close-poll 18, group service,
+VM, widget, repository, export). Analyze not re-run (no `lib/` write made by me).
+
+### 2026-08-30 — BUT-1971 round 2 (re-review of the test half): both blocking findings closed; a guard closing another gate's finding lands unpinned
+
+Trigger: re-review after "both blocking are fixed".
+
+**Blocking #1 (comment strike) — verified closed.** `messaging_service_close_poll_test.dart`
+line 415 now reads exactly `// Identified by type, not by index.` Grep of the struck
+mechanism wording returns nothing in worktree or index.
+
+**Blocking #2 (serializers unexecuted) — verified closed, and the coverage numbers are the
+evidence.** Before the round, the reach argument was `if (proposedBy != null)` /
+`if (votedInBy.isNotEmpty)` / `if (editTrail.isNotEmpty)` never executing. After:
+
+| file | line | what | DA |
+|---|---|---|---|
+| `lib/models/menu/weekly_menu_plan.dart` | 156 | `if (proposedBy != null)` | 4 |
+| `lib/models/menu/weekly_menu_plan.dart` | 157 | `if (votedInBy.isNotEmpty)` | 6 |
+| `lib/models/menu/group_weekly_menu_plan.dart` | 308/309 | `if (editTrail.isNotEmpty)` + map | 2 / 6 |
+| `lib/models/menu/group_weekly_menu_plan.dart` | 132-146 | `GroupMenuEditTrailRow.toMap`/`fromMap` | 1-4 |
+
+Mutant grading of the four new tests, by reading each assertion against the mutant named in
+the fix report:
+- `toMap → fromMap round-trips the provenance fields` — deleting either `if` line makes
+  `map['proposedBy']`/`map['votedInBy']` null; deleting either `fromMap` line makes the
+  restored value null/empty. Kills both directions.
+- `toMap omits provenance a dish does not carry` — making either line unconditional puts the
+  key in the map with a null/empty value, and `containsKey` is the discriminator. Kills the
+  omission half, which a value-based assertion would not.
+- `should preserve the edit trail across toFirestore / fromMap` — deleting the `toFirestore`
+  block reddens `hasLength(1)`; deleting the `fromMap` parse makes `.single` throw.
+- `omits the edit trail when there is none` — unconditional emission reddens `containsKey`.
+
+**New finding, blocking (1): `GroupWeeklyMenuPlanService.addEntry` is reached by no test at
+all**, including the roster intersection the round added for the GDPR hazard
+(`votedInBy.where(plan.memberPermissions.containsKey)`), its `_requireEditor` gate, the
+single-slot `removeWhere`, and the `action: proposedBy == null ? 'added' : 'pollWinner'`
+derivation. Evidence, two independent instruments:
+- Coverage over the five menu suites: `DA:154,0 163,0 164,0 165,0 166,0 181,0 182,0 183,0
+  186,0 187,0 188,0 192,0 193,0 194,0 201,0` — the whole method.
+- `grep -rn '\.addEntry(' test/`: every group-service hit is on the MOCK
+  (`groupPlanService.addEntry` in the close-poll suite); the only two files constructing a
+  real `GroupWeeklyMenuPlanService(` are `group_weekly_menu_plan_service_test.dart` and
+  `weekly_menu_plan_read_week_test.dart`, and neither calls `addEntry`.
+
+It OWES a test rather than being a callerless seam: `lib/services/messaging_service.dart:1151`
+is a live production caller (the poll close), and the hazard the intersection closes is real —
+`readOrBuildWeek` uses `initialParticipants` only when NO plan is stored, so a stored plan
+carries the older roster snapshot and a late joiner really can vote into a dish whose uid the
+deletion cascade's `participantUserIds array-contains` query can never find.
+
+The round's own argument reaches it: the sibling `restoreEntry` got
+`'a view-only member cannot restore a dish'` this round with the comment "a client-side gate
+that nothing exercises is not a gate". `addEntry`'s identical gate got nothing.
+
+**Non-blocking: `GroupMenuEditTrailRow`'s `at` is executed (`DA:134,4`) but unasserted.**
+`SerializationUtils.safeRequiredDateTime` falls back to `clock.now()` (verified at
+`serialization_utils.dart:147`), so deleting `'at': ...` from `toMap` leaves the new
+round-trip test green and every restored row silently reads as "just now". One
+`expect(row.at, DateTime(2026, 4, 18, 11))` in the existing test closes it. Bounded because
+ADR-0010 makes the trail a reading aid and the rows are ordered by list position, not `at`.
+
+**Verified as reported and not re-filed:** the repository suite's granted-audit test flipped
+from `isEmpty` to `hasLength(1)` + `row['userId'] == alice` + `granted isTrue` (ADR-0010
+reversal of the BUT-1981 call — a design reversal mid-batch, the shape the re-review
+principle warns about, here correctly carried into the test); the viewmodel suite's
+`verify(restoreEntry).called(2)` discriminates a revert to the raw `copyWith`; the widget
+suite's three provenance-row tests carry their own control (`draws nothing for a dish with no
+provenance`) and never render a uid; the export suite's edit-trail filter drops both the
+third-party row and the non-map, and the not-a-list case pins `isEmpty` rather than absence.
+
+Scope: Dart unit + widget only. The `functions/src/__tests__` rules and cascade suites named
+in the fix report were not graded here — they belong to `firestore-rules-tester` and
+`cloud-functions-specialist`.
+
+### 2026-08-30 — BUT-1971 round 3 (re-review of the test half): the intersection is half-pinned; the sibling field it was extended to is deletable-green
+
+Trigger: parent reported round 2's blocking (`addEntry` zero coverage / untested roster
+intersection) closed with three new tests, plus the non-blocking `at` assertion taken.
+Graded copy: the WORKTREE. All five reviewed paths are unstaged (`git diff --numstat` shows
+the full additions against the index, i.e. the index is still at HEAD).
+
+| file | md5 | lines |
+|---|---|---|
+| `test/unit/services/menu/group_weekly_menu_plan_service_test.dart` | fc0cbd91917e201a32dccadbddbf74a6 | 482 |
+| `lib/services/menu/group_weekly_menu_plan_service.dart` | c24f4f8ee5cc5a08293c3ac73dcca18d | 398 |
+| `test/unit/models/menu/group_weekly_menu_plan_test.dart` | c0ef61c5ef14bc3914559e19b5fc8fea | 382 |
+| `lib/models/menu/group_weekly_menu_plan.dart` | 3fdee1941fa24a2084c36b58f29b7ddc | 350 |
+| `functions/src/__tests__/request-account-deletion.integration.test.ts` | 9d1736e6eb014428889e3fcfe97a6626 | 1683 |
+| `functions/src/account/account-deletion-cascade.ts` | 6095af13885db526603a47e64700dd01 | 2964 |
+
+30/30 green on the two Dart suites at these bytes.
+
+**What the three `addEntry` tests DO kill.**
+- `votedInBy` roster intersection: `'a vote from someone off the plan roster is not stored'`
+  (roster alice+bob, `votedInBy: [alice, bob, 'user-cara']`, asserts `[alice, bob]`) reddens
+  under a bare `votedInBy`. Its premise is self-proving — `memberPermissions` is derived from
+  `participants` (`group_weekly_menu_plan.dart:251`), so the expected `[alice, bob]` can only
+  pass if the map really holds them; no separate premise assert is owed.
+- The control is genuinely discriminating: `'votes from members on the roster are stored
+  intact'` reddens under an "always empty" mutant, which the first test alone would accept.
+- Derived action, both directions: test 2 pins `'pollWinner'`, test 3 pins `'added'`, so
+  hard-coding either way reddens one of them.
+- `expect(row.at, DateTime(2026, 4, 18, 11))` is real and STRONGER than described: Dart's
+  `DateTime ==` compares `isUtc` as well as the instant, so it also pins that the
+  `AppTimestamp` round trip returns a LOCAL `DateTime`, not just the right microsecond.
+
+**Blocking (1): `proposerOnRoster` is deletable-green, and the fix report says otherwise.**
+The round extended the intersection to the proposer
+(`group_weekly_menu_plan_service.dart:188-191`) and reported "the first test's sibling
+assertions cover both fields". Measured: every real-service `addEntry` call in `test/`
+passes `proposedBy: alice` (on the roster) or omits it — `grep -rn "addEntry(" test/ -A12`
+returns four `proposedBy` lines, all `alice` or an `any(named:)` on the MOCK in the close-poll
+suite, and only two files construct a real `GroupWeeklyMenuPlanService`. So
+`proposedBy != null && memberPermissions.containsKey(proposedBy) ? proposedBy : null` and a
+bare `proposedBy` produce the same value on all three fixtures. Analytic, no probe owed.
+The same mutant is invisible on the trail row too, since `subjectId: proposerOnRoster` is
+asserted nowhere on the `addEntry` path (nor is `entryId: added.id`).
+Remedy handed back: pass `proposedBy: 'user-cara'` in test 1 and assert
+`entries.single.proposedBy isNull` + `editTrail.single.subjectId isNull`; test 2 already
+holds the on-roster control, and gains `subjectId, alice` + `entryId`.
+
+**Non-blocking.**
+1. The comment at `group_weekly_menu_plan_service_test.dart:447-448` ("The other half of the
+   derived action, and the editor gate `addEntry` shares with every sibling mutator") claims
+   a gate no fixture drives: alice is admin in all three, so `_requireEditor` inside
+   `addEntry` is deletable-green. Harm bounded — `firestore.rules:1007-1009` refuses a
+   viewer's update server-side — so either strike the clause or add the refusal case the
+   sibling `restoreEntry` got.
+2. `GroupMenuEditTrailRow.action`'s doc (`group_weekly_menu_plan.dart:121`) enumerates
+   "removed, undone, moved, pollWinner"; the round added a fifth, `'added'`. Enumerating doc,
+   falsified by its own round. Strike the list.
+3. Cascade fixture `gp-writer-only` (asked about explicitly; outside my gate). Shape is right
+   and minimal: one handler serves both discovery legs
+   (`account-deletion-cascade.ts:1196-1210`), so the fixture isolates exactly the union
+   question, and under a roster-only discovery its `lastModifiedBy === "deleted"` assert
+   reddens. The gap is the `&& wasParticipant` conjunct at line 1231, which is
+   deletable-green across all three group-plan fixtures: `gp-empty` has the target ON the
+   roster, and both `gp-shared` and `gp-writer-only` leave `userIds.length === 1`, so the
+   conjunct never decides. The killer is a writer-only plan with a NON-ARRAY or empty
+   `participantUserIds` — without the conjunct that document is DELETED, which is another
+   group's plan destroyed. The non-array shape is reachable by the same "rules accept it, no
+   writer produces it" argument the file itself makes 70 lines lower for `editTrail`.
+
+**Swept clean:** the previously struck "the only live caller is the meal-poll close" returns
+zero hits in `lib/` and `test/` (only the `accepted-deviations.md` amendment quoting it, which
+is the decision-record exception); "nothing else in the repo" has no hit in the menu suites.
+The production comment "the only caller today is the poll close" re-measured TRUE —
+`grep -rn '\.addEntry(' lib/` gives one group-service caller,
+`messaging_service.dart:1151`, and the `'added'` branch is therefore unreachable in
+production today, which the comment itself says.
+
+Verdict: fail (1 blocking).
+
+### 2026-08-30 — BUT-1971 round N+1 (voter sheet): a widened lookup set is pinned per SOURCE, and the a11y label is measured
+
+Trigger: final review of BUT-1971's test half. Both prior blocking/non-blocking items verified
+closed (off-roster `proposedBy: 'user-cara'` now asserts `entries.single.proposedBy` null AND
+`editTrail.single.subjectId` null; on-roster control gained `subjectId`/`entryId`; `'a view-only
+member cannot add a dish'` added; the "shares with every sibling mutator" clause and
+`GroupMenuEditTrailRow.action`'s enumeration both grep to 0 hits).
+
+Hash table (unchanged across the round; index empty, verdict against the worktree):
+- `lib/widgets/menu/group_weekly_menu_widget.dart` 2a2fa11b7b11f8bdea0fa5798ca0f062
+- `test/widget/menu/group_weekly_menu_widget_test.dart` 5529b092e32198f6a3120ff62d3d4a73
+- `lib/services/menu/group_weekly_menu_plan_service.dart` d439df9b4db971ca9e2803857dc1225a
+- `test/unit/services/menu/group_weekly_menu_plan_service_test.dart` 88a14f863f0e99c66d6e5673496cc84d
+- `lib/viewmodels/menu/group_weekly_menu_viewmodel.dart` 1322ae9e4f7b0c04ad82a1e847c839cf
+
+Finding 1 (non-blocking). `GroupWeeklyMenuViewModel._resolveNames` was widened from
+`plan.participantUserIds` to a set also spreading `entries.map(proposedBy)` and
+`entries.expand(votedInBy)`. Fixture-uid × source table over every `proposedBy` fixture in
+`test/`:
+
+| uid | participant? | voter? | profile stubbed? | kills which spread |
+|---|---|---|---|---|
+| `user-alice` (tests 1 and 2) | yes | yes | yes | neither |
+| `user-bob` (test 2, voter only) | no | yes | yes | the VOTER spread |
+| `user-ghost` (tests 2 and 4) | no | yes/– | no | neither (null either way) |
+
+So deleting `...plan.entries.map((e) => e.proposedBy).whereType<String>()` leaves the whole
+suite green, while the comment above it claims exactly the behaviour that line buys ("whoever
+put a dish on the ballot … may since have left the group"). Analytic, no probe needed — no
+fixture has an off-roster proposer with a resolvable profile. Repair costs one fixture edit in
+`'names the proposer and counts the voters'`: proposer `user-dan`, participant of nothing,
+voter of nothing, profile `displayName: 'Dan'`, expected row `'Föreslagen av Dan · framröstad
+av 3'`.
+
+Finding 2 (non-blocking). `a11yShowVoters` ("Visa vilka som röstade") has zero `test/` hits, and
+its ARB description asserts framework behaviour ("the row's own text is concatenated onto this
+label by the framework"). Measured with a scratch `_zz_probe_semantics_test.dart` (written, run,
+deleted; ~40s):
+
+```
+SEM-INK: SemanticsNode#4(Rect.fromLTRB(0.0, 0.0, 527.3, 20.0), actions: [focus, tap],
+  flags: [isButton, isFocusable],
+  label: "Visa vilka som röstade\nFöreslagen av Malin · framröstad av 3", textDirection: ltr)
+```
+
+`getSemantics(find.byType(InkWell))` and `getSemantics(find.text(<row>))` return the SAME node,
+so the ARB sentence is TRUE and the label is correctly action-only (no stutter). One line in the
+tap test pins it: `expect(tester.getSemantics(find.text(<row>)).label, contains('Visa vilka som
+röstade'))` under `tester.ensureSemantics()`.
+
+Finding 3 (non-blocking, CF gate's file). `gp-malformed-${RUN}` exists and is map-typed
+(`entries: {rogue: TARGET}`, `editTrail: {rogue: TARGET}`) — it pins the `FieldValue.delete()`
+arms, not the `wasParticipant` conjunct, as the fix report says. Neither existing group-plan
+fixture discriminates that conjunct: `gp-malformed` has TARGET on the roster, and
+`gp-writer-only` leaves a NON-EMPTY roster after the scrub, so `userIds.length === 0` is false
+there. Deleting `wasParticipant` deletes a plan document belonging to a group the erased user
+was never a member of. Owed fixture: writer-only AND empty roster, asserting the doc still
+exists.
+
+Verified green: 206/206 across the eight changed Dart suites (widget, group service, group VM,
+both model suites, close-poll, group repo, content export). The "911 Dart tests" figure was not
+reproduced here and is not asserted.
+
+Non-vacuity of `'tapping the row shows who voted'`, settled by reading the fixtures rather than
+by probing: the tap targets `find.text(<row>)` whose ancestor `InkWell` is the only thing that
+can open the sheet, so an untappable row reddens the title assertion; `find.text('Bosse')`
+reddens if the voter spread is deleted; `find.text('Okänd medlem'), findsOne` covers the
+unresolved-profile arm in BOTH directions (a second unknown appears if bob stops resolving);
+and `findsNothing` on `user-ghost` holds the never-render-a-uid rule. The row's own
+unresolved arm has its own test (`'keeps the vote count when the name will not resolve'`).
+
+Decision-record check: `.claude/rules/accepted-deviations.md` supersedes the BUT-1981
+refusal-only entry with dated ADR-0010 entries rather than striking it, and the repository suite
+flipped `'a GRANTED save writes no audit row'` to `'a GRANTED save writes an audit row naming
+the actor'` in the same round. The auto-loaded copy of that rules file in a session started
+before the edit still reads "the refusal-only audit STANDS" — a stale CONTEXT SNAPSHOT, not a
+second answer on disk; grep the worktree before filing a contradiction between an auto-loaded
+rule and the code.
+
+#### 2026-08-30 — correction to the entry above, same round: the tree moved mid-review
+
+The hash table above was taken at the start of the round and re-taken after the eight-suite
+run; both read `5529b092…` for the widget suite. A parallel session then landed an edit
+BETWEEN that verdict-time check and the `Read` of the same file, so the bytes I graded the
+finding against are not the bytes the table names. Current, re-verified, index still empty:
+
+- `lib/widgets/menu/group_weekly_menu_widget.dart` 2a2fa11b… -> 0e0508d448a84a651e333e8ffa1aa84c
+- `test/widget/menu/group_weekly_menu_widget_test.dart` 5529b092… -> efda591d07133531a42cfb34692a837d
+- `lib/services/menu/group_weekly_menu_plan_service.dart` d439df9b… -> 57596adf88767bf1250bf9a372eff893
+- `test/unit/services/menu/group_weekly_menu_plan_service_test.dart` 88a14f86… -> 7b472216d326966445baaaae12a9d36d
+- `lib/models/…group_weekly_menu_plan.dart`, `lib/viewmodels/…group_weekly_menu_viewmodel.dart` unmoved
+
+What the motion changed, graded against the new bytes: the service comment lost a wrong
+mechanism clause (`participantUserIds array-contains` -> "the roster and the permission map");
+the service suite's graded assertions all survive verbatim (`user-cara`, `proposedBy, isNull`,
+`subjectId` null / alice, `entryId`); the sheet became a `Flexible(ListView.builder)` with a
+blank-display-name fallback; and the tap test's `getUserProfiles` stub became
+argument-FILTERING. That last one strengthens the finding above rather than closing it, and it
+also means the entry above understated the OLD defect: with the un-filtering stub, `bob`'s
+profile landed in `_displayNames` no matter what was asked, so BOTH spreads were
+deletable-green, not just the proposer one. The proposer spread is still deletable-green on the
+current bytes, for the reason the table gives.
+
+Two smaller items the motion introduced, both unpinned and both non-blocking: the sheet's
+`name.trim().isEmpty` disjunct (and the row's `name.trim().isNotEmpty` twin) has no fixture — a
+`UserProfile(displayName: '')` kills both in one go; and the `ListView.builder`'s own comment
+claims the scroll is what stops a big group losing voters off the bottom, which no fixture with
+a long voter list exercises. 35/35 green on the two moved suites after the motion.
+
+Generalisation added to the principles file: read the LOOKUP STUB before building the
+fixture-uid × source table, because a `thenAnswer((_) async => [everyProfile])` that ignores its
+argument makes the whole table moot.
+
+### 2026-08-30 — BUT-1971 re-review (round N+1): three named gaps closed, two new non-blocking
+
+Trigger: parent reported the three non-blocking gaps from my previous pass closed and asked
+specifically for the `a11yShowVoters` assertion to be graded, "the one I already got wrong once".
+
+Motion table (worktree md5 prefix; `git diff --numstat` = 0 lines on all sixteen, so index ==
+worktree and the verdict is against the copy the parent commits):
+
+- `lib/models/menu/weekly_menu_plan.dart` 11138ae7
+- `lib/models/menu/group_weekly_menu_plan.dart` f9a3caba
+- `lib/repositories/firebase/firebase_group_weekly_menu_plan_repository.dart` 8cc89c50
+- `lib/services/menu/group_weekly_menu_plan_service.dart` 57596adf (unmoved since last round)
+- `lib/services/account/export/content_export_manager.dart` 99e127e0
+- `lib/services/messaging_service.dart` 2bfe4782
+- `lib/widgets/menu/group_weekly_menu_widget.dart` 0e0508d4 (unmoved since last round)
+- `lib/viewmodels/menu/group_weekly_menu_viewmodel.dart` 1322ae9e
+- `test/widget/menu/group_weekly_menu_widget_test.dart` efda591d -> bf4483ed
+- `test/unit/services/menu/group_weekly_menu_plan_service_test.dart` 7b472216 (unmoved)
+- `test/unit/models/menu/weekly_menu_plan_test.dart` 2c97d639 (new group)
+- `test/unit/models/menu/group_weekly_menu_plan_test.dart` c0ef61c5 (new group)
+- `test/unit/services/account/export/content_export_manager_test.dart` b9479fce
+- `test/unit/repositories/firebase/firebase_group_weekly_menu_plan_repository_test.dart` 7af03ce6
+- `test/unit/services/messaging/messaging_service_close_poll_test.dart` a701f9a1
+- `test/unit/viewmodels/menu/group_weekly_menu_viewmodel_test.dart` 725da410
+
+Ran the four suites carrying the round's new assertions: 78/78 green.
+
+**The a11y assertion, graded (the one asked for).** Current shape:
+
+```dart
+final node = tester.getSemantics(find.text('framröstad av 1'));
+expect(node.label, contains('Visa vilka som röstade'));
+expect('framröstad av 1'.allMatches(node.label).length, 1, reason: ...);
+expect(node.flagsCollection.isButton, isTrue);
+```
+
+Correct, and non-vacuous ANALYTICALLY — no probe owed, because each mutant moves the measured
+number rather than leaving it satisfied: a label restating the row gives 2; deleting the
+`Semantics` wrapper fails the `contains`; `button: false` fails the flag; and a framework that
+stopped concatenating would give 0, which means this one line also pins the ARB description's
+framework claim ("the row's own text is concatenated onto this label"). That is the claim
+`ui-conventions.md` had backwards until 2026-08-26, so pinning it here is the right place.
+Robust to a separator/order change (both assertions are `contains`/`allMatches`, never an
+equality on the joined string). The fixture's entry carries `votedInBy: ['user-bob']` and no
+`proposedBy`, so the row text is exactly the sentence being counted.
+
+**Previous round's three gaps, verified closed on the current bytes:**
+- proposer half of `_resolveNames`: `'names the proposer and counts the voters'` uses
+  `user-dan`, absent from both the roster and `votedInBy`, with an argument-FILTERING
+  `getUserProfiles` stub. Deleting the proposer spread now costs the asserted name.
+- blank display name: `displayName: '   '` fixture hits the row's `trim().isEmpty` (row drops
+  the proposer half, asserted) and the sheet's twin (`Okänd medlem`, asserted after a tap).
+- long voter list: 20 voters, `scrollUntilVisible` scoped to `find.descendant(of: ListView)`.
+
+**Also closed since my earlier passes:** both serializer round-trips (`editTrail` in the group
+model, `proposedBy`/`votedInBy` in the entry, each with the omitted-when-empty half — the
+`at`-field assertion is load-bearing because `safeRequiredDateTime` falls back to `clock.now()`);
+the per-FIELD grading of `addEntry`'s roster intersection (`proposedBy: 'user-cara'` off-roster
+in the same fixture as the voter, plus the derived trail `subjectId` null assertion);
+`moveEntry`'s swapped-aside rebuild (`expect(after['e2']!.day, DayOfWeek.mon)` beside the carry,
+which is what stops "never rebuilt at all" from passing); `_requireEditor` on `addEntry` and
+`restoreEntry`; and the verbatim "the only live caller is the meal-poll close" clause is gone
+from `test/` and `lib/` (surviving hits are the decision record's own amended entries).
+
+**New, non-blocking, filed this round:**
+1. `lib/models/menu/weekly_menu_plan.dart` — "Written ONLY by the group poll-close path … a
+   personal plan never fills it … and a test pins it." The positive half is pinned
+   (`'the winning dish carries the poll's provenance'`); the ONLY/never half is pinned by the
+   personal `WeeklyMenuPlanService.addEntry`'s SIGNATURE (no such parameter), not by any test —
+   `grep -rln proposedBy test/` returns five files, none of them the personal service or its
+   suite. Unresolved pointer; remedy is to strike "and a test pins it", not to reword it.
+2. The restored GRANTED audit row's `userId: actorId` is unpinned for the actor-vs-caller
+   choice: the divergent-uid fixture sits on the REFUSAL test (authed bob, decision about
+   alice) and the granted test is alice/alice, so the new line is swappable for
+   `userId: userId` with every suite green. Remedy: one granted case with
+   `authedUserId: _bob` and alice an editor.
+
+Not filed, considered: `_redactGroupPlan`'s `source is! Map` arm has no fixture, but
+`entry['data']` is a Firestore `doc.data()` and is always a map — a callerless defensive arm
+owes nothing.
+
+Verdict: pass (0 blocking).
+
+### 2026-08-30 — BUT-1971 re-review (round N+1): a detector that co-executes with a tested mutator
+
+Trigger: re-review of the staged BUT-1971 diff after two non-blocking findings were taken.
+Graded copy: index == worktree for every reviewed path (`git diff --numstat` empty).
+
+**Closures verified.**
+- Finding 1 (false coverage pointer in `lib/models/menu/weekly_menu_plan.dart`): struck and
+  replaced with a directly-readable claim — "the personal service's signature:
+  `WeeklyMenuPlanService.addEntry` has no such parameter". Verified against
+  `lib/services/menu/weekly_menu_plan_service.dart:662` (params: plan, day, slot, recipe —
+  no `proposedBy`) versus `group_weekly_menu_plan_service.dart:154` (which has it). No new
+  pointer written; the surviving sentence still says "a fact about today's callers rather
+  than a guarantee", which is the honest form.
+- Finding 2 (granted audit row's actor argument): closed by
+  `'a GRANTED row names the AUTHENTICATED actor, not the subject'` in
+  `firebase_group_weekly_menu_plan_repository_test.dart:522` — authed as `_bob`,
+  `save(plan, userId: _alice)`, `expect(rows.docs.single.data()['userId'], _bob)`. The
+  divergent-uid fixture the earlier archive entry called for. Swapping `userId: actorId` for
+  `userId: userId` yields `_alice` and reddens.
+
+**New assertions graded.**
+- Tap target (`'the tap target meets the minimum height'`): finder is UNAMBIGUOUS —
+  walked the ancestor chain of the provenance `Text` in `group_weekly_menu_widget.dart`
+  (Align → ConstrainedBox → InkWell → Semantics → Column → … → Scaffold); the sibling
+  `IconButton` is not an ancestor and no other `InkWell` sits above. It also CANNOT pass on
+  the wrong widget in either direction: `tester.getRect` resolves `finder.evaluate().single`
+  and throws on multiple matches, and removing the `InkWell` gives zero matches. Two lines of
+  `bodySmall` (~32px) is under `minTouchTarget` (48.0), so the geometry cannot be satisfied
+  by wrapping. Token-relative on both sides (`AppDimensions.minTouchTarget`), which is the
+  repo's theme-resolved pattern, not a weakness.
+- a11y (`'the row announces its action once, and is a button'`): reads identically at these
+  bytes — `contains('Visa vilka som röstade')` (matches `a11yShowVoters` in `app_sv.arb`
+  verbatim), `'framröstad av 1'.allMatches(node.label).length == 1`, `flagsCollection.isButton`.
+  Still the right shape: it counts the ROW's sentence, so a label that restates the visible
+  text reddens.
+
+**Finding filed (non-blocking, mine-late — the legs were in the diff I passed last round).**
+`probeResidualData` gained three `group_weekly_menu_plans` legs
+(`participantUserIds array-contains`, `lastModifiedBy ==`, and
+`new admin.firestore.FieldPath("memberPermissions", uid) != uid`). Nothing discriminates any
+of them: `grep -rn "gdprCompliant" functions/src/__tests__/request-account-deletion.integration.test.ts`
+→ 1 hit, inside a COMMENT; `grep -rn "group_weekly_menu_plans" functions/src/__tests__/account-deletion-cascade.test.ts`
+→ 0 hits. The four new emulator tests pin the DELETER's three-handle union
+(`gp-writer-only`, `gp-permission-only`, `gp-malformed`, provenance/trail scrub), and because
+the integration test runs the whole cascade the probe EXECUTES on every run — which is what
+makes the legs read as covered. The `!=`-as-existence-test semantics is indirectly witnessed
+by the deleter's twin (`!= null` finds `gp-permission-only`), but `!= uid` itself never runs
+against a residual. The probe's own comment states what the leg CATCHES, which is the
+unrun-mutant class.
+
+**Judgement declined (asked explicitly): the `fieldLabel` log redaction owes no test.** The
+guard is `field instanceof admin.firestore.FieldPath ? "memberPermissions.<uid>" : field`,
+i.e. TYPE-based and generic over every future FieldPath leg, unlike the shape-based masks of
+BUT-1897 that failed in both directions. Sink is reachable only on a residual warn or a probe
+error. No logger spy exists in `account-deletion-cascade.test.ts` (0 `jest.mock` of
+firebase-functions in `functions/src/__tests__`), so asserting it means new harness. The
+proportionate move is to assert the logged `field` value inside the probe-leg test IF that leg
+ever gets one — the two gaps share a region and a lane.
+
+### 2026-08-30 — BUT-1971 re-review: "does this wrapper owe a test?" is a lane question, and the lane was measurable
+
+**Trigger:** re-review of the staged BUT-1971 diff after one production file moved. The voter
+sheet's `ListView.builder` was newly wrapped in `ListenableBuilder(listenable: vm, ...)` in
+`lib/widgets/menu/group_weekly_menu_widget.dart` (index blob f6391a42). Two gates had raised the
+same hazard: the sheet is a separate route, so a name resolving after it opens would stay
+"Okänd medlem" for the life of the sheet — and that sheet is the surface Malin's Art. 15
+keep decision for other members' voter uids rests on.
+
+The parent shipped it WITHOUT a test and asked for judgement rather than guessing, citing my
+own earlier call that a log-payload redaction beside the deletion-cascade probe "owes no test
+of its own".
+
+**Hash table (verdict-time, all `git diff --numstat` empty unless noted):**
+
+| path | index | disk | note |
+|---|---|---|---|
+| lib/widgets/menu/group_weekly_menu_widget.dart | f6391a42 | f6391a42 | graded copy; restored byte-identical after two mutants |
+| test/widget/menu/group_weekly_menu_widget_test.dart | 947aaa19 | 46d74bba | UNSTAGED (+52/-5) — parallel session's new test + formatter reflow |
+| lib/viewmodels/menu/group_weekly_menu_viewmodel.dart | — | — | numstat empty |
+
+**Why the log-label precedent did NOT transfer.** That call turned on the ASSERTION LANE not
+existing (a redaction inside a Cloud Functions log payload, with no harness reading logged rows)
+AND on the leg it labelled being itself unpinned — so building a lane would have pinned a label
+on unpinned code. Neither half holds here: `group_weekly_menu_widget_test.dart` already drives a
+real `GroupWeeklyMenuViewModel`, already opens the sheet in four tests, and already stubs
+`getUserProfiles` with an argument-filtering answer. The lane exists.
+
+**The staging objection was refutable by measurement, not argument.** The parent's stated worry
+was that a `Completer` in the `getUserProfiles` stub would require driving `_resolveNames` to
+resolve mid-sheet. Reading `GroupWeeklyMenuViewModel`: line 167 is
+`if (loaded != null) unawaited(_resolveNames(loaded));` and line 189 the same on the realtime
+`onUpdate`. Because it is `unawaited`, a held-open `Completer` does NOT block
+`await vm.loadWeek(_week)`, and it schedules no timer so `pumpAndSettle` does not hang either.
+A scratch `test/widget/menu/_zz_probe_sheet_refresh_test.dart` (test-side only, no `lib/` write)
+went green first run, ~1s. That settled stageability without touching production.
+
+**The kill measurement.** Mutant used: `listenable: vm,` → `listenable: Listenable.merge(const [])`.
+Chosen over deleting the wrapper because deletion unbalances the parens and fails to compile,
+and a mutant that does not compile is not a red test. Backed up with `git show :<path>`,
+restored with `cp`, `rm -rf .dart_tool/flutter_build` between edit and run per the stale-kernel
+lesson.
+
+- Probe file alone, mutant applied: RED at `expect(find.text('Bosse'), findsOne)`.
+- Whole suite, mutant applied: **24 passed, 1 failed** — the single red being
+  `'a name that resolves after the sheet opens reaches it'`.
+- Whole suite, restored: 25/25 green. `flutter analyze --fatal-infos` on both files: no issues.
+
+So the wrapper was deletable with the entire group green before this test existed, and this test
+is its sole discriminator. Every sibling sheet test (`tapping the row shows who voted`, `a long
+voter list reaches its last name`, `a blank display name falls back…`) stubs `getUserProfiles`
+to return immediately, so names are already in the map before the tap — the whole group agreed
+vacuously. That is the recurring shape for a modal route.
+
+**Parallel-session collision, handled per the standing rule.** While I was probing, another
+session landed essentially the same test in the same file. My `Edit` had already added mine, so
+the file briefly held two near-identical tests. I DELETED MINE and kept theirs (the standing rule:
+when a parallel session lands a test for the same guard, delete yours). Theirs asserts
+`Okänd medlem` immediately after the tap, which implicitly carries the sheet-open precondition
+my version asserted explicitly — the row itself never renders that string — so nothing was lost.
+The `Edit` tool's "file had been modified on disk" note was the tell; a hash check confirmed it
+was a real content change and not the formatter.
+
+**Grading their comment.** It claims "without this one the `ListenableBuilder` can be deleted with
+the group green". Under my knowledge file that is a counterfactual about an unrun mutant, i.e.
+normally a defect. Here it is TRUE and now MEASURED (24/24 green pre-test). Left standing.
+
+**Residual, stated not repaired.** `_showVoters` captures `entry` by value, so the wrapper makes
+the NAMES live but not the voter LIST — a peer's vote landing while the sheet is open is not
+reflected. The production comment does not claim otherwise (it says "a name that resolves after
+it opens"), so there is no false sentence to strike. Also noted and deliberately NOT actioned:
+the Art. 15 rationale sentence appears three times in the widget file (in `_provenance`, on the
+`InkWell`, and on the sheet's `Flexible`). All three are TRUE, so the strike rule does not reach
+them; flagging it only as the seam where a future false copy would land. Recommending a reword
+would be the correction chain the rule exists to stop.
+
+**Verdict:** pass (0 blocking). Test-only change by me: removed my duplicate. The suite file
+remains UNSTAGED and the parent must stage it.

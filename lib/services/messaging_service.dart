@@ -914,6 +914,14 @@ class MessagingService extends BaseService with StreamManagementMixin {
               winnerRecipeId: winner!.recipeId!,
               conversation: conversation,
               creatorId: currentUserId,
+              // The poll's creator is the dish's proposer: every option is
+              // built in one `Poll.fromOptions(creatorId: ...)` call and
+              // nothing adds an option later, so no per-option author field
+              // exists or is needed. Read from the poll rather than from
+              // `currentUserId` — they hold the same uid only because the gate
+              // above resolves a winner for the creator alone.
+              proposedBy: resolvablePoll.creatorId,
+              votedInBy: winner.voterIds,
             );
           } else if (conversation != null) {
             await _appendWinnerToWeeklyPlanAndShare(
@@ -1083,6 +1091,8 @@ class MessagingService extends BaseService with StreamManagementMixin {
     required String winnerRecipeId,
     required Conversation conversation,
     required String creatorId,
+    required String proposedBy,
+    required List<String> votedInBy,
   }) async {
     final groupService = ServiceLocator.tryGet<GroupWeeklyMenuPlanService>();
     final recipeService = ServiceLocator.tryGet<UnifiedRecipeService>();
@@ -1144,6 +1154,8 @@ class MessagingService extends BaseService with StreamManagementMixin {
       day: target.day,
       slot: target.slot,
       recipe: winnerRecipe,
+      proposedBy: proposedBy,
+      votedInBy: votedInBy,
     );
     await groupService.save(plan: updatedPlan, actorId: creatorId);
   }
