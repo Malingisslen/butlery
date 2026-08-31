@@ -1,8 +1,8 @@
 {
-  "lastRun": "2026-08-24",
+  "lastRun": "2026-08-31",
   "dossiersRefreshed": 0,
-  "worldWatchRoles": 2,
+  "worldWatchRoles": 3,
   "retroDue": true,
-  "acceptRate": 0.742,
-  "notes": "No stale dossier markers. World-watch: Security Architect + Release/App-Store Compliance both due, scanned; 2 material findings ticketed (#234 whisper.cpp memory-safety fix, #235 updated Apple DPLA). Legal Counsel not yet due (28/30 days). Full retro overdue since 2026-07-25 (never logged since goLive). Accept-rate 0.742 at time of this run (a same-day interactive run separately measured 0.792 after more commits landed — see accept-rate.jsonl). Cruft sweep: no-op, all shipped plans already archived."
+  "acceptRate": 0.739,
+  "notes": "No stale dossier markers. World-watch: all 3 roles due (Security Architect, Legal Counsel, Release/App-Store Compliance), lean-scanned; no material findings this cycle, no new issues filed (Google Play's Aug-31 target-API-36 deadline checked and already met). Full retro overdue since 2026-07-25 (never logged since goLive). Accept-rate 0.739, healthy. Cruft sweep: no-op, no tasks/*-plan.md outside archive."
 }
