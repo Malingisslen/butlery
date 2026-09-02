@@ -15013,6 +15013,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get weeklyMenuCopyToNextFailed => 'Couldn\'t copy the week';
 
   @override
+  String get weeklyPlanReadFailed =>
+      'Couldn\'t load the week — please try again';
+
+  @override
   String get weeklyMenuSelectAction => 'Select several to move';
 
   @override

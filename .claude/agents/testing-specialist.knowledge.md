@@ -308,6 +308,13 @@ you want the revert-probe that proved it; or this file itself reads too compress
   illustration refutes itself once it lands. Run the quoted command yourself and diff HEAD against
   the WORKTREE, never against the state the sentence remembers; the repair is a strike, never a
   "was true at the time" qualifier (BUT-1904 round 8, 2026-08-26).
+  **The same flip reaches a BINARY the commit replaces, where no grep can see it** — a golden
+  test's comment saying "the committed reference … is 375x874" was measured against the PNG in
+  HEAD while the same commit shipped a 375x967 one, so the sentence was false on arrival and its
+  referent no longer existed. The claim is a DIMENSION, not a string, so every struck-string
+  sweep reads clean. Measure any present-tense sentence about a committed artefact against the
+  copy IN THE INDEX (`git show :<path>`), never HEAD, whenever the round touches that artefact
+  (BUT-1982/1984 round 2, 2026-09-02).
   **Grade the STRIKE with cheap mechanical checks rather than by re-reading the diff**: grep the struck
   string (0 hits); grep the ORDINAL or pointer it CARRIED, since a provenance parenthetical usually
   takes a "the second X" with it and an orphaned ordinal reads as a dangling reference; and re-read
@@ -491,7 +498,34 @@ Codecov: 60% project / 70% new patches / 2% drop tolerance — floors, decided 5
   service, while all four real-service calls `await` it and discard — so replacing the RETURN
   VALUE with `0`, the exact symptom the ticket was opened for, reddens nothing. (Gutting the
   whole body is a different mutant and does redden the save-refusal test.)
-  (BUT-1962/1948, 2026-08-28).
+  (BUT-1962/1948, 2026-08-28). **When ONE change widens the return of TWIN methods, the round
+  writes an end-to-end test for the branch the VIEW takes by DEFAULT and leaves the twin
+  unpinned at every layer — and a comment claiming the pair is "pinned in the VM suite" is the
+  tell, not the evidence.** BUT-1982 widened `setSlotPresence`/`setDayPresence`; the widget
+  suite drives only "denna måltid", so gutting `setDayPresence` to always-true (its
+  `_readFailed` guard included) ran 92/92 GREEN across the VM AND widget suites, while the
+  slot twin reddens. The VM suite named in that comment `await`s both and asserts NEITHER
+  return. Grade a widened return PER BRANCH of the caller's ternary, and resolve any "pinned
+  in <other suite>" pointer with `grep -n '<method>' <that suite>` before believing it
+  (2026-09-02). **The REPLACEMENT for that struck pointer then shipped a count silently
+  qualified on a VERB**: "the VM suite's three call sites `await` the two methods and DISCARD
+  the bool" — four call sites, one of them `unawaited(...)`, so the numeral is right only for
+  the awaited subset the sentence does not name. Strike the numeral and state the property the
+  grep settles ("no VM-suite call site asserts the returned bool"); a count repairing a false
+  pointer is the same seam one round later (BUT-1982 round 2, 2026-09-02).
+  **Round 3 then INVERTED the measurement while removing its numerals: an ASYMMETRIC measured
+  fact ("gutting the day twin left the suite green while the slot twin reddened") must not be
+  de-numeralised into a SYMMETRIC quantifier ("gutting either twin alone leaves the suite
+  green") — the asymmetry WAS the finding, so the quantifier is not merely unmeasured, it is
+  false in both readings (service-level and view-ternary), and it licenses deleting the very
+  cases the round added.** Two mechanical tells, either enough, and neither needs a probe:
+  the sentence contradicts its own preceding clause ("BOTH branches are driven"), and the
+  file's untouched sibling comment 160 lines down still carries the true asymmetric wording,
+  i.e. one file answering one question two ways. When a strike round targets a sentence whose
+  content is a COMPARISON, strike the whole clause — the surviving mechanism sentence
+  ("`_onTapPresence` picks between the two on a ternary") is the whole warning; a
+  de-numeralised comparison keeps the shape and loses the direction (BUT-1982 round 3,
+  2026-09-02).
 - **Open a review by grepping each NEW TOKEN into a token→files table** (~30s). Zero files
   IS the finding; hits only in an extracted class's own suite means the composing line in
   the CALLER's suite is still unproven (BUT-1838: a `copyWith` carry, a DTO write asymmetry,
@@ -1340,6 +1374,24 @@ ever on screen. Use `RecipeBuilder().withTagResult(...)` for anything badge- or 
 The single most repeated finding across two months of review.
 - **MASTER RULE: name every OTHER mechanism that could satisfy the assertion, then build the
   fixture where they DISAGREE. Every pattern below is an instance.**
+- **A true/false PAIR over a new boolean pins the flag against HARDCODING and nothing else —
+  the surviving mutant derives the flag from a SIBLING field the two fixtures happen to
+  correlate with.** BUT-1983 flagged a failed shopping-list build (`result == null`,
+  `itemCount: 0`) against a success (`itemCount: 5`); `shoppingFailed = itemCount == 0` runs
+  41/41 GREEN and re-creates the exact conflation the ticket removed, because the generator
+  returns `nothingToGenerate` — a NON-NULL success with `itemCount: 0` — from two live
+  branches. Enumerate the callee's zero-valued SUCCESS constants (`grep -n 'static const'` on
+  its result type) and add the third fixture where flag and sibling disagree; the diff's own
+  new production comment usually states that case as the contract (2026-09-02).
+- **A "resolves through the l10n key, not a literal" test whose BOTH sides resolve the SAME
+  locale cannot kill a same-text revert.** BUT-1984 asserted
+  `weeklyPlanReadFailedMessage == AppLocalizationsSv().weeklyPlanReadFailed`; restoring the
+  symbol to `const String … = '<the Swedish text>'` ran 13/13 GREEN, which is the shape an
+  actual revert takes — and in production that literal serves Swedish to an English user.
+  Only the SIBLING literal pin dies to a reworded ARB entry, so the two tests do not split the
+  way such a comment tends to claim. Pin routing by switching the accessor
+  (`AppLocale.initialize(const Locale('en'))`, restored in `addTearDown`) and asserting the
+  OTHER locale's text (2026-09-02).
 - **An auth-gated `executeServiceOperation` wrapper hollows a raw-mock suite in BOTH
   directions, and REMOVING it is what un-vacuums them**: `_isAuthenticated()` calls
   `ServiceLocator.get<AuthRepository>()`, which THROWS in a file with no DI harness, so the

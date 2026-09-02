@@ -2778,3 +2778,120 @@ at a distance from where the answer was known; a named value carries it.
 
 Generalise: when a UI branch keys off a conjunction of two fields, ask what ELSE sets each
 field and in what ORDER, then name the case at its origin instead.
+
+---
+
+## 2026-09-02 — A mutation probe's OUTPUT FILTER can invert which test you think reddened (BUT-1984)
+
+I probed the moved l10n pin by rewriting the generated Swedish getter to `'MUTANT'` and
+grepping the run for lines matching a failure pattern. The grep showed one red test and I
+read it as *"the ARB-routing test reddened, the literal pin stayed green"* — the opposite of
+what happened. Re-running with the full failure block printed showed
+`Expected: 'Kunde inte läsa in veckan — försök igen' / Actual: 'MUTANT'` on the LITERAL test.
+
+The filter had dropped the failing test's name and kept the next line, which happened to be
+the *following* test's start line. Both readings were consistent with the counts on screen.
+
+Two things came out of it, and the second is the one worth keeping:
+
+1. A probe must print WHICH assertion failed and WHAT the two sides evaluated to — a
+   pass/fail count, or a grep tuned to catch "a failure", cannot attribute one. This is the
+   same family as the existing "a check run correctly against the WRONG OBJECT" lesson, but
+   the wrong object here was the *output*, not the target.
+2. Having measured it properly, the pair turned out to need **two** probes, not one. Mutating
+   the ARB text reddens only the literal pin; reverting the symbol to a hardcoded Dart literal
+   reddens only the routing test. Each covers a failure mode the other cannot see. Had I
+   trusted the first misread I would have deleted the routing test as tautological — it
+   *looks* tautological (`expect(symbol, AppLocalizationsSv().key)`), and its non-vacuity is
+   only visible from the second direction.
+
+Generalise: when two assertions look redundant, probe once per DIRECTION before deleting
+either. And never attribute a red to a test whose name you did not see printed beside it.
+
+---
+
+## 2026-09-02 — Widening what a PROBE ASKS can break every fixture, and the fake is where it shows (BUT-1957)
+
+`probeResidualData` had a hand-written include-list of `users/{uid}` subcollections to check.
+Replacing it with `listCollections()` is strictly better in production — it reports a
+subcollection nobody remembered instead of being blind to it — and it made the Cloud
+Functions suite RED on arrival: 132/138 and 3/4. The test fake had no `listCollections()`,
+so the call threw, the probe's outer catch fails closed (`residual += 1`), and **every clean
+fixture** reported non-compliant.
+
+The failure mode is worth naming because it is the inverse of the usual one. A fake that
+lacks a method normally makes a test vacuous (silently empty, everything green). Here the
+production code was fail-closed, so the missing method made everything RED instead — which
+is the good direction, but only because the catch was written that way. Had the probe
+swallowed instead, the fake would have returned nothing, every enumeration assertion would
+have passed vacuously, and the leg would have been untested in CI while looking covered.
+
+Also: implementing the fake's `listCollections()` as a stubbed `[]` would have reproduced
+exactly that vacuity. It had to derive from the stored paths, including for a MISSING parent
+that still owns children — which is what the real SDK does and is the entire state the probe
+exists to detect.
+
+Second-order consequence, which is the part that nearly shipped wrong: a probe that
+ENUMERATES is broader than a deleter that consults a list, and they must not disagree in that
+direction. Five legacy subcollection names (from `admin/reset-user-data.ts`) had no deleter;
+a legacy row under any of them would have been reported as residual on every deletion of that
+account forever, unclearable. The fix is to make the deleter a superset of the probe — which
+this codebase already states as a rule elsewhere (`deleteWeeklyMenuPlans`) and which nothing
+enforced across the two halves.
+
+Generalise: before widening what a check ASKS, ask (a) what the harness answers when it
+cannot, (b) whether the widened check now outruns the thing it audits, and (c) which
+direction that disagreement is recoverable from.
+
+---
+
+## 2026-09-02 — Letting an edit land while a reviewer is mid-pass costs a whole round (BUT-1957)
+
+Two gates independently reported a blocking finding I had already fixed, because I kept editing
+the staged files while they were reviewing. One of them said so explicitly: the files went
+`MM` → `M ` under it and a docstring changed mid-read.
+
+The cost is not just the wasted round. A reviewer that grades stale bytes produces findings I
+then have to *disprove* rather than act on, and disproving a reviewer is exactly the position
+where I am most likely to wave away a real finding as "already fixed" when it is not. I had to
+go back to `git show :<path>` to prove which version each verdict described.
+
+Worse, one gate observed that a contradiction it found — a corrected sentence five lines above
+an uncorrected restatement of the same fact — was *a direct product of* the mid-review edit.
+The edit fixed the header and left the body, which is the failure this repo already has a
+lesson about; concurrency is a new way to produce it.
+
+The rule: once a gate is dispatched on a staged diff, the index is FROZEN until it reports.
+Batch the fixes, re-stage once, then re-brief. If something genuinely cannot wait, kill the
+agent rather than let it grade bytes that will not ship.
+
+---
+
+## 2026-09-02 — Ten false sentences in one change, and every one was inside a repair (BUT-1957)
+
+Counting them was the useful part. Not one originated in the first draft of a feature; all ten
+were in text written to correct something else:
+
+- "No third party appears in these rows" — written while verifying the pass-through, refuted at
+  the copy resolver one call away. I had checked the writers' FIELD LISTS; the name arrives in a
+  field's VALUE.
+- "Nothing but the account-deletion cascade touched these rows … and it deleted them" — both
+  halves contradicted by a comment in the same commit.
+- "Written by nothing in `lib/` or `functions/src` today" about `counters` — it has a live writer.
+- "The former `users/{uid}/rate_limits` entry deleted nothing" — true when written for BUT-1390,
+  false once BUT-1957 put the entry back.
+- "Exactly one writer matches in `lib/`" — nine do.
+- "11 names in `functions/src`" — fourteen.
+- "Named by `admin/reset-user-data.ts`" ranging over `fcm_tokens` — it is not in that list.
+- "Every subcollection under a user document is a leaf" — two own an `items` subcollection.
+- "`deleteUserPreferences` deletes the single document by id" — written INSIDE the commit that
+  changed it to sweep the collection.
+- "It is a first name" — surviving five lines below the correction that struck the same claim.
+
+The generalisation is not "check your comments". It is that **a correction is written in the
+state of mind least suited to writing one**: you have just been shown you were wrong about X, so
+you write confidently about X's neighbourhood, which you have not re-measured. Three habits that
+would have caught most of these: strike rather than reword (a struck sentence cannot be wrong); after
+correcting a claim, grep the WHOLE diff for other wordings of the same fact before moving on;
+and never write a count — the two counts here were both wrong, and one was refuted by its own
+commit.

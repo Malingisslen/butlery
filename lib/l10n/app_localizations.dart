@@ -25169,6 +25169,12 @@ abstract class AppLocalizations {
   /// **'Kunde inte kopiera veckan'**
   String get weeklyMenuCopyToNextFailed;
 
+  /// BUT-1984/BUT-1939. The ONE refusal message shown wherever a weekly menu plan could not be READ. Deliberately not one key per surface: the refusal is the same event everywhere and two spellings of it drift apart. It names the retry because a read that did not answer may well succeed on the next attempt.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte läsa in veckan — försök igen'**
+  String get weeklyPlanReadFailed;
+
   /// No description provided for @weeklyMenuSelectAction.
   ///
   /// In sv, this message translates to:

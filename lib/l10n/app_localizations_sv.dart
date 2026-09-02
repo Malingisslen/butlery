@@ -15050,6 +15050,9 @@ class AppLocalizationsSv extends AppLocalizations {
   String get weeklyMenuCopyToNextFailed => 'Kunde inte kopiera veckan';
 
   @override
+  String get weeklyPlanReadFailed => 'Kunde inte läsa in veckan — försök igen';
+
+  @override
   String get weeklyMenuSelectAction => 'Välj flera att flytta';
 
   @override

@@ -10385,6 +10385,10 @@
     }
   },
   "weeklyMenuCopyToNextFailed": "Couldn't copy the week",
+  "weeklyPlanReadFailed": "Couldn't load the week — please try again",
+  "@weeklyPlanReadFailed": {
+    "description": "BUT-1984/BUT-1939. The ONE refusal message shown wherever a weekly menu plan could not be READ. Deliberately not one key per surface: the refusal is the same event everywhere and two spellings of it drift apart. It names the retry because a read that did not answer may well succeed on the next attempt."
+  },
   "weeklyMenuSelectAction": "Select several to move",
   "weeklyMenuSelectionCount": "{count, plural, =1{1 selected} other{{count} selected}}",
   "@weeklyMenuSelectionCount": {

@@ -6,6 +6,7 @@ library;
 
 import 'package:clock/clock.dart';
 import 'package:butlery/core/base/base_service.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/iso_week_utils.dart';
 import 'package:butlery/models/menu/parsed_menu_request.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
@@ -53,8 +54,14 @@ class WeeklyMenuPlanRead {
 /// and two spellings of it drift. It names the retry because the failure is a read
 /// that did not answer, which the next attempt may well survive — unlike the
 /// generic fallback, which tells the user nothing they can act on.
-const String weeklyPlanReadFailedMessage =
-    'Kunde inte läsa in veckan — försök igen';
+///
+/// BUT-1984: the text lives in the ARB files now, not in this file. `AppLocale`
+/// rather than `context.l10n` because three of the five call sites are a
+/// viewmodel or a service with no `BuildContext` — the same accessor
+/// `BaseService` already uses for its own user-facing errors. It stays a single
+/// symbol so the one-string decision above survives the move.
+String get weeklyPlanReadFailedMessage =>
+    AppLocale.current.weeklyPlanReadFailed;
 
 class WeeklyMenuPlanService extends BaseService {
   final WeeklyMenuPlanRepository _repository;
@@ -154,7 +161,11 @@ class WeeklyMenuPlanService extends BaseService {
   /// Each copied entry gets a fresh UUID via `WeeklyMenuPlanEntry.create`
   /// so the two weeks share recipes-by-id but never share an entry-id.
   ///
-  /// Returns the count of entries actually copied.
+  /// Returns the count of entries actually copied. Throws if either read
+  /// THROWS (BUT-1972) — the caller must be able to tell that from a returned
+  /// 0, which means "there was nothing to copy". A `null` read is not a throw:
+  /// it still means "week absent", which offline is a true absence
+  /// (BUT-1961's `acceptCachedAbsence`) and returns 0.
   Future<int> copyWeek({
     required DateTime fromWeekStart,
     required DateTime toWeekStart,
@@ -165,75 +176,80 @@ class WeeklyMenuPlanService extends BaseService {
     final normalizedTo = IsoWeekUtils.weekStartOf(toWeekStart);
     if (normalizedFrom == normalizedTo) return 0;
 
-    // The record's plan is null for every "nothing to copy" outcome.
-    final prepared = await executeServiceOperation<(WeeklyMenuPlan?, int)>(
-      () async {
-        final source = await _repository.fetchForWeek(
-          userId: userId,
-          weekStart: normalizedFrom,
-        );
-        if (source == null) return (null, 0);
-        // Presence can be set BEFORE a menu is generated, so a source week
-        // with no entries but explicit presence must still carry that presence
-        // forward.
-        if (source.entries.isEmpty && source.presenceBySlot.isEmpty) {
-          return (null, 0);
-        }
-
-        final destFetched = await _repository.fetchForWeek(
-          userId: userId,
-          weekStart: normalizedTo,
-        );
-        var dest =
-            destFetched ??
-            WeeklyMenuPlan.empty(userId: userId, date: normalizedTo);
-
-        final newEntries = <WeeklyMenuPlanEntry>[];
-        for (final src in source.entries) {
-          final duplicate = dest.entries.any(
-            (e) =>
-                e.day == src.day &&
-                e.slot == src.slot &&
-                e.recipeId == src.recipeId,
-          );
-          if (duplicate) continue;
-          newEntries.add(
-            WeeklyMenuPlanEntry.create(
-              day: src.day,
-              slot: src.slot,
-              recipeId: src.recipeId,
-              recipeTitle: src.recipeTitle,
-              recipeImageUrl: src.recipeImageUrl,
-            ),
-          );
-        }
-
-        // BUT-1611: presence travels with the week. The destination keeps any
-        // explicit selection it already had; the source only fills empty slots.
-        final (mergedPresence, presenceAdded) = _mergePresenceForward(
-          dest.presenceBySlot,
-          source.presenceBySlot,
-        );
-
-        if (newEntries.isEmpty && !presenceAdded) return (null, 0);
-
-        dest = dest.copyWith(
-          entries: [...dest.entries, ...newEntries],
-          presenceBySlot: mergedPresence,
-        );
-        return (dest, newEntries.length);
-      },
-      operationName: 'copyWeek',
+    // BUT-1972: the two reads sit OUTSIDE the wrapper, for the same reason the
+    // save was moved out in BUT-1962. Inside it, a throwing read came back as
+    // `null`, `copyWeek` returned 0, and the view rendered that as "everything
+    // was already there" — the user was told a copy succeeded that never read
+    // the week. A throw now reaches the caller, which shows an error instead.
+    //
+    // A `null` from either read is a different answer and still means what it
+    // says: the week is absent. `fetchForWeek` passes `acceptCachedAbsence`, so
+    // offline that is a TRUE "nothing to copy" (BUT-1961) and must keep its
+    // success message.
+    final source = await _repository.fetchForWeek(
+      userId: userId,
+      weekStart: normalizedFrom,
     );
-    if (prepared == null) return 0;
-    final (planToSave, copied) = prepared;
-    if (planToSave == null) return 0;
-    // Outside the wrapper on purpose: inside it, a refused copy came back as 0
-    // and the UI rendered that as "everything was already there" (BUT-1962).
-    // The READS still sit inside it, and a read that THROWS still returns 0 —
-    // the same symptom, on the other half. BUT-1972.
-    await _repository.save(planToSave);
-    return copied;
+    if (source == null) return 0;
+    // Presence can be set BEFORE a menu is generated, so a source week with no
+    // entries but explicit presence must still carry that presence forward.
+    //
+    // This check must stay BEFORE the destination read. Two reasons, and the
+    // second is the one that bites: it saves a Firestore read on every
+    // "nothing to copy" tap, and — since a read that throws now reaches the
+    // caller — reading the destination first would turn a cleared source week
+    // into an ERROR when the destination read fails, where "Inget kopierades"
+    // is the true answer. That is the inverse of the defect BUT-1972 fixes.
+    if (source.entries.isEmpty && source.presenceBySlot.isEmpty) return 0;
+
+    final destFetched = await _repository.fetchForWeek(
+      userId: userId,
+      weekStart: normalizedTo,
+    );
+
+    var dest =
+        destFetched ?? WeeklyMenuPlan.empty(userId: userId, date: normalizedTo);
+
+    final newEntries = <WeeklyMenuPlanEntry>[];
+    for (final src in source.entries) {
+      final duplicate = dest.entries.any(
+        (e) =>
+            e.day == src.day &&
+            e.slot == src.slot &&
+            e.recipeId == src.recipeId,
+      );
+      if (duplicate) continue;
+      newEntries.add(
+        WeeklyMenuPlanEntry.create(
+          day: src.day,
+          slot: src.slot,
+          recipeId: src.recipeId,
+          recipeTitle: src.recipeTitle,
+          recipeImageUrl: src.recipeImageUrl,
+        ),
+      );
+    }
+
+    // BUT-1611: presence travels with the week. The destination keeps any
+    // explicit selection it already had; the source only fills empty slots.
+    final (mergedPresence, presenceAdded) = _mergePresenceForward(
+      dest.presenceBySlot,
+      source.presenceBySlot,
+    );
+
+    if (newEntries.isEmpty && !presenceAdded) return 0;
+
+    dest = dest.copyWith(
+      entries: [...dest.entries, ...newEntries],
+      presenceBySlot: mergedPresence,
+    );
+    // Every step above is now outside `executeServiceOperation`. Nothing
+    // between the two reads and this save can fail in a way the caller should
+    // not hear about: the reads were hoisted out by BUT-1972, the save by
+    // BUT-1962, and what is left in between is pure computation over values
+    // already in hand. A wrapper here would only be able to swallow.
+    await _repository.save(dest);
+    return newEntries.length;
   }
 
   /// Deep-merges [source] presence into [dest], with dest winning on any

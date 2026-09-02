@@ -11,9 +11,16 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:provider/provider.dart';
 
+import 'package:butlery/core/providers/application_provider.dart' as prod_di;
 import 'package:butlery/core/utils/iso_week_utils.dart';
 import 'package:butlery/l10n/app_localizations.dart';
+import 'package:butlery/models/family_rating.dart' show HouseholdMemberType;
+import 'package:butlery/models/household.dart';
+import 'package:butlery/models/household_roster_member.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
+import 'package:butlery/repositories/interfaces/cook_event_repository.dart';
+import 'package:butlery/repositories/interfaces/household_repository.dart';
+import 'package:butlery/services/family/household_roster_service.dart';
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
 import 'package:butlery/services/shopping/menu_shopping_list_generator.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
@@ -23,8 +30,10 @@ import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/menu/calendar/calendar_header.dart';
 import 'package:butlery/widgets/menu/calendar_weekly_menu_widget.dart';
 
+import '../../infrastructure/di/test_service_locator.dart';
 import '../../infrastructure/factories/recipe_factory.dart';
 import '../../test_support/base_unit_test.dart';
+import '../golden/golden_helper.dart';
 
 class _MockWeeklyMenuPlanService extends Mock
     implements WeeklyMenuPlanService {}
@@ -35,6 +44,15 @@ class _MockMenuShoppingListGenerator extends Mock
     implements MenuShoppingListGenerator {}
 
 class _FakeWeeklyMenuPlan extends Fake implements WeeklyMenuPlan {}
+
+// BUT-1982: the presence row and the "vem är hemma?" sheet both resolve the
+// household stack off the ServiceLocator; these back it for that one group.
+class _MockHouseholdRepository extends Mock implements HouseholdRepository {}
+
+class _MockHouseholdRosterService extends Mock
+    implements HouseholdRosterService {}
+
+class _MockCookEventRepository extends Mock implements CookEventRepository {}
 
 WeeklyMenuPlan _plan({
   String userId = 'u-1',
@@ -845,6 +863,214 @@ void main() {
       });
     });
 
+    // BUT-1982, same shape as the group above. No VM-suite call site asserts
+    // the returned bool, so a viewmodel test cannot see whether the VIEW reads
+    // it. The presence row is the only surface that announces the write, so
+    // these drive the real tap -> sheet -> confirm path.
+    //
+    // BOTH branches of the gate are driven: `_onTapPresence` picks between
+    // `setDayPresence` and `setSlotPresence` on a ternary, and
+    // "denna måltid" and "hela dagen" are separate confirms in the sheet.
+    //
+    // The presence row only renders for a household roster of MORE THAN ONE,
+    // and `showWhoIsHomeSheet` builds its own `WhoIsEatingViewModel` off the
+    // ServiceLocator, so both the row and the sheet need a registered household
+    // stack. That setup is scoped to this group.
+    group('BUT-1982 presence notice is gated on the outcome', () {
+      const notice = 'närvaron uppdaterad — planerade rätter ligger kvar';
+      final presenceWeekStart = IsoWeekUtils.weekStartOf(DateTime(2026, 4, 13));
+      // The week already has a menu, which is what makes the notice reachable
+      // at all. The dish is in `ovrigt`, not lunch/middag, because of BUT-1991
+      // — see `tapPresenceAndConfirm`.
+      final presenceWeekPlan = _plan(
+        weekStart: presenceWeekStart,
+        entries: [
+          _entry(
+            day: DayOfWeek.mon,
+            slot: MealSlot.ovrigt,
+            id: 'mon-o',
+            recipeId: 'r-mon',
+            title: 'Pasta',
+          ),
+        ],
+      );
+
+      setUp(() async {
+        await BaseUnitTest.setupUnitWithProductionLocator();
+
+        final householdRepo = _MockHouseholdRepository();
+        final household = Household.create(creatorId: 'test-user-123');
+        when(
+          () => householdRepo.getForUser(any()),
+        ).thenAnswer((_) async => [household]);
+        TestServiceLocator.registerSingleton<HouseholdRepository>(
+          householdRepo,
+        );
+
+        final rosterService = _MockHouseholdRosterService();
+        when(() => rosterService.getRoster(any())).thenAnswer(
+          (_) async => const [
+            HouseholdRosterMember(
+              memberId: 'test-user-123',
+              type: HouseholdMemberType.user,
+              displayName: 'Malin',
+              isMinor: false,
+            ),
+            HouseholdRosterMember(
+              memberId: 'diner-1',
+              type: HouseholdMemberType.profile,
+              displayName: 'Ester',
+              isMinor: true,
+            ),
+          ],
+        );
+        TestServiceLocator.registerSingleton<HouseholdRosterService>(
+          rosterService,
+        );
+
+        // The sheet's own ViewModel resolves this in its constructor even on
+        // the presence path, where it never calls it.
+        TestServiceLocator.registerSingleton<CookEventRepository>(
+          _MockCookEventRepository(),
+        );
+      });
+
+      tearDown(() async {
+        await TestServiceLocator.reset();
+        prod_di.ServiceLocator.reset();
+      });
+
+      /// Pumps a week that already has a dish (so `hadMenu` is true — the
+      /// notice is only ever shown for a week with a generated menu), then taps
+      /// the first slot's presence row and confirms "denna måltid".
+      ///
+      /// The dish sits in `ovrigt` rather than lunch/middag deliberately:
+      /// `hadMenu` is a WEEK-level condition, and a filled lunch/middag cell
+      /// under a roster of more than one throws
+      /// `RenderFlex ... incoming height constraints are unbounded` at
+      /// `calendar_cells.dart` — **BUT-1991**, a separate and live production
+      /// defect on the same mounting path the app uses, not a test artefact.
+      /// It would make this group fail for a reason unrelated to the notice
+      /// gate.
+      ///
+      /// **When BUT-1991 is fixed, move this fixture to `middag`.** Until then
+      /// the gate is pinned only against the `ovrigt` layout, and a household
+      /// with family sees the other one.
+      Future<void> tapPresenceAndConfirm(
+        WidgetTester tester, {
+        String confirmLabel = 'denna måltid',
+      }) async {
+        when(() => service.readWeek(any())).thenAnswer(
+          (_) async =>
+              WeeklyMenuPlanRead(plan: presenceWeekPlan, readFailed: false),
+        );
+        final vm = WeeklyMenuPlanViewModel(
+          service: service,
+          recipeService: recipeService,
+          shoppingListGenerator: _MockMenuShoppingListGenerator(),
+        );
+        addTearDown(vm.dispose);
+        await tester.pumpWidget(
+          _host(vm: vm, child: const CalendarWeeklyMenuWidget()),
+        );
+        await tester.pumpAndSettle();
+
+        final presenceRow = find.bySemanticsLabel(
+          RegExp('^Välj vilka som är hemma'),
+        );
+        expect(
+          presenceRow,
+          findsWidgets,
+          reason:
+              'the presence row must render for a roster of more than one — '
+              'without it this group would pass vacuously',
+        );
+        await tester.tap(presenceRow.first);
+        await tester.pumpAndSettle();
+
+        // The sheet is open, seeded with the whole roster.
+        expect(find.text('vem är hemma?'), findsOneWidget);
+        await tester.tap(find.text(confirmLabel));
+        await tester.pumpAndSettle();
+      }
+
+      testWidgets('a REFUSED presence save shows no notice', (tester) async {
+        final handle = tester.ensureSemantics();
+        when(
+          () => service.setSlotPresence(
+            weekStart: any(named: 'weekStart'),
+            day: any(named: 'day'),
+            slot: any(named: 'slot'),
+            memberIds: any(named: 'memberIds'),
+          ),
+        ).thenThrow(Exception('denied'));
+
+        await tapPresenceAndConfirm(tester);
+
+        expect(find.text(notice), findsNothing);
+        handle.dispose();
+      });
+
+      // The control: without it the assertion above would pass against a view
+      // that never shows the notice at all.
+      testWidgets('a successful presence save does show it', (tester) async {
+        final handle = tester.ensureSemantics();
+        when(
+          () => service.setSlotPresence(
+            weekStart: any(named: 'weekStart'),
+            day: any(named: 'day'),
+            slot: any(named: 'slot'),
+            memberIds: any(named: 'memberIds'),
+          ),
+        ).thenAnswer((_) async => presenceWeekPlan);
+
+        await tapPresenceAndConfirm(tester);
+
+        expect(find.text(notice), findsOneWidget);
+        handle.dispose();
+      });
+
+      // The OTHER branch of the ternary. `applyToWholeDay` routes to
+      // `setDayPresence`, and gutting that twin left the whole suite green
+      // while the slot twin reddened — the two hide each other, so each needs
+      // its own case.
+      testWidgets('a REFUSED "hela dagen" save shows no notice', (
+        tester,
+      ) async {
+        final handle = tester.ensureSemantics();
+        when(
+          () => service.setDayPresence(
+            weekStart: any(named: 'weekStart'),
+            day: any(named: 'day'),
+            memberIds: any(named: 'memberIds'),
+          ),
+        ).thenThrow(Exception('denied'));
+
+        await tapPresenceAndConfirm(tester, confirmLabel: 'hela dagen');
+
+        expect(find.text(notice), findsNothing);
+        handle.dispose();
+      });
+
+      testWidgets('a successful "hela dagen" save does show it', (
+        tester,
+      ) async {
+        final handle = tester.ensureSemantics();
+        when(
+          () => service.setDayPresence(
+            weekStart: any(named: 'weekStart'),
+            day: any(named: 'day'),
+            memberIds: any(named: 'memberIds'),
+          ),
+        ).thenAnswer((_) async => presenceWeekPlan);
+
+        await tapPresenceAndConfirm(tester, confirmLabel: 'hela dagen');
+
+        expect(find.text(notice), findsOneWidget);
+        handle.dispose();
+      });
+    });
+
     // BUT-1280 follow-up: the copy-week affordance's widget-layer wiring. The
     // VM's copyWeekToNext is unit-tested in isolation, but the dialog gate +
     // the three-way result snackbar (N copied / nothing-to-copy / failure)
@@ -999,31 +1225,30 @@ void main() {
   //
   // Populated week.
   //
-  // The blanket `FlutterError.onError` below is the pattern
-  // `test/widget/golden/golden_helper_redness_test.dart` pins as broken:
-  // `matchesGoldenFile` runs its comparator inside `binding.runAsync`, so a
-  // mismatch is routed to that handler and the matcher completes with `null`,
-  // which it reads as a match. Every pixel difference and every wrong-size
-  // render passes. (A MISSING golden file still fails — that error surfaces
-  // through the matcher itself, not through the handler.)
+  // This golden cannot run through `butleryGolden`: the helper builds its own
+  // `MaterialApp` and this widget needs a `ChangeNotifierProvider` in scope.
+  // It therefore borrows the helper's two halves by hand (BUT-1978) —
+  // `installGoldenImageErrorFilter` for the comparison, `goldensCompareHere`
+  // for the platform pin. Neither is optional: without the filter every pixel
+  // difference passed, and without the pin the cross-OS lanes go red because
+  // the committed PNGs are not portable.
   //
-  // Not hypothetical: `failures/` carries master/test images from green runs.
-  // This golden is the only one outside `butleryGolden`, which is where the
-  // error filter and the platform pin live. Repair: BUT-1978.
-  //
-  // Update with `flutter test --update-goldens test/widget/menu`.
+  // Update with `flutter test --update-goldens test/widget/menu` on the pinned
+  // platform.
   group('CalendarWeeklyMenuWidget golden', () {
     setUpAll(() async {
       await BaseUnitTest.setupUnit();
     });
 
     testWidgets('populated week matches golden', (tester) async {
-      // Surface + DPR are pinned so the render is at least stable within one
-      // platform. It does NOT make the bytes portable — BUT-1931 measured 7 of
-      // 8 goldens differing on ubuntu and 6 of 7 on macOS.
+      // Surface + DPR are pinned so the render is stable within one platform.
+      // It does NOT make the bytes portable — BUT-1931 measured 7 of 8 goldens
+      // differing on ubuntu and 6 of 7 on macOS — which is what the `skip:`
+      // below is for.
       final previousSize = tester.view.physicalSize;
       final previousRatio = tester.view.devicePixelRatio;
-      tester.view.physicalSize = const Size(375, 900);
+      // 1150, not 900: at 900 the capture clips the seventh day.
+      tester.view.physicalSize = const Size(375, 1150);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(() {
         tester.view.physicalSize = previousSize;
@@ -1079,16 +1304,16 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // Silence stray asset errors (network image loads etc.) during
-      // golden capture so they don't fail the render.
-      final previousOnError = FlutterError.onError;
-      FlutterError.onError = (_) {};
+      // Drops failed image loads only. Everything else — including the
+      // mismatch `matchesGoldenFile` reports by THROWING inside
+      // `binding.runAsync` — reaches the binding and fails the test.
+      final previousOnError = installGoldenImageErrorFilter();
       addTearDown(() => FlutterError.onError = previousOnError);
 
       await expectLater(
         find.byType(CalendarWeeklyMenuWidget),
         matchesGoldenFile('goldens/calendar_weekly_menu_populated.png'),
       );
-    });
+    }, skip: !goldensCompareHere);
   });
 }

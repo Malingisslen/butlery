@@ -1,3 +1,171 @@
+# PLAN 2026-09-02 — sprint (auto-select, N=7): GDPR-kaskadens två glömda samlingar,
+# tre "lyckades" som ljuger, en hårdkodad svensk sträng, och ett dövt golden-test
+
+Vald med `/delivery:sprint-execute`. Alla sju premisser är grep-kontrollerade mot HEAD
+(6039d86e1) innan något valdes — ingen av dem hade redan skeppats.
+
+## Kluster A — kontoraderingens kaskad (Tier C, full-panel)
+
+### BUT-1957 — `users/{uid}/notifications` föräldralöses [Tier C] [build]
+Router: **full-panel** (DBA, FinOps, Legal, DPO, PM, Security, Arkitekt, T&S, Vendor).
+Steg 0 mätt: `subs`-listan i `deleteUserSubcollections` (rad 2795) innehåller nio namn,
+`notifications` är inte ett av dem. `subProbes` i `probeResidualData` innehåller ett enda
+namn, `canonical_rating_events`.
+
+Acceptans:
+1. `[diff]` `users/{uid}/notifications` är tom efter en kaskadkörning; ett annat konto rörs inte.
+2. `[diff]` Ett probe-ben rapporterar kvarvarande rader och **rödnar om benet tas bort**
+   (mutationsprövat, inte påstått).
+3. `[diff]` `subs`-listan är jämförd mot en faktisk uppräkning av subsamlingar under
+   `users/{uid}` i koden; varje avvikelse är antingen åtgärdad här eller filad som ticket.
+4. `[diff]` INTE göra: ingen omskrivning av `deleteNotifications` (den sveper toppnivå-
+   samlingen `user_notifications`, en annan samling — namnlikheten är fällan).
+
+### BUT-1956 — `analytics/notifications/effectiveness` behåller uid [Tier C] [build]
+Router: **full-panel** (samma). Steg 0 mätt: `effectiveness` förekommer på fyra rader i
+`functions/src`, alla i `correlate-notifications.ts`. Noll träffar i `account/` och `cleanup/`.
+
+Acceptans:
+1. `[diff]` Den raderade användarens rader i `analytics/notifications/effectiveness` är borta
+   efter kaskaden; en annan användares rader överlever.
+2. `[diff]` Steget är registrerat i tier-listan **och** namngivet i förväntad-steg-listan i
+   `request-account-deletion.test.ts` — annars kan registreringen tas bort utan rödnad.
+3. `[diff]` `probeResidualData` har ett ben med ett smutsigt testfall som rödnar om benet tas bort.
+4. `[diff]` INTE göra: ingen TTL-policy (`firestore.indexes.json` rörs inte — samma fälla som
+   BUT-1789, där en TTL på `users` hade armerats över riktiga profildokument).
+
+## Kluster B — tre ytor som säger "lyckades" när det inte gick (Tier A, single)
+
+### BUT-1972 — "Kopiera veckan" visar framgång när läsningen misslyckades [Tier A] [build]
+Router: **single** (Product Manager). Steg 0 mätt: `copyWeek` bär redan en kommentar som pekar
+hit ("a read that THROWS still returns 0 — the same symptom, on the other half. BUT-1972").
+Vyn (`calendar_weekly_menu_widget.dart:250`) skiljer redan `null` från `0`; det är tjänsten som
+kollapsar de två.
+
+Acceptans:
+1. `[diff]` En kastande `fetchForWeek` under "kopiera veckan" ger användaren en FELruta, aldrig
+   "Inget kopierades".
+2. `[diff]` En äkta tom källvecka ger fortfarande `0` och framgångsrutan — inklusive
+   BUT-1961:s cachade frånvaro offline, som är ett SANT "inget att kopiera".
+3. `[diff]` Mutationsprövat: att återinföra det gamla beteendet rödnar testet.
+4. `[diff]` INTE göra: ingen ny mening om vad `null` betyder i `copyWeek` utan att båda
+   läsningarna är mätta (`destFetched == null` betyder "börja från tom målvecka", inte "avbryt").
+
+### BUT-1982 — närvaronotisen målas över felrutan [Tier A] [build]
+Router: **single** (Product Manager). Steg 0 mätt: `_onClearWeek` (rad 212) grindar på sin bool;
+`_onTapPresence` (rad 405) kastar bort båda viewmodell-anropens utfall. Samma fil, fyrtio rader isär.
+
+Acceptans:
+1. `[diff]` `setSlotPresence`/`setDayPresence` returnerar `executeAsyncVoid`s bool och notisen
+   grindas på den, speglat på `clearWeek`.
+2. `[diff]` TVÅ widgettester: nekad sparning → ingen notis; lyckad sparning → notis. Utan det
+   andra är det första grönt även mot en vy som aldrig visar notisen.
+3. `[diff]` Mutationsprövat: att ta bort grinden rödnar test 1.
+
+### BUT-1983 — onboardingens sådd loggar ett fel som noll varor [Tier A] [build-review]
+Router: **single** (Product Manager). Steg 0 mätt: raden `shoppingResult?.itemCount ?? 0` följd
+av `onboardingMenuSeeded` står kvar oförändrad i `onboarding_viewmodel.dart`.
+**Detaljen som är Malins:** mätdesignen — eget fält på lyckad-händelsen kontra byte av händelse.
+Ticketen rekommenderar eget fält (menyn ÄR redan sparad, så en ren "failed" underrapporterar).
+Jag bygger den formen; hon får titta på den.
+
+Acceptans:
+1. `[diff]` Ett misslyckat inköpslistebygge går att skilja från en tom lista i analysdatan.
+2. `[diff]` Pinnat med ett test som rödnar om skillnaden tas bort.
+3. `[diff]` INTE göra: ingen ny UI-yta. Sådden är medvetet tyst mot användaren.
+
+## Kluster C — språkfil och testblindhet (Tier A, single)
+
+### BUT-1984 — `weeklyPlanReadFailedMessage` bor utanför språkfilerna [Tier A] [build]
+Router: **single** (Localization, UX Writer, A11y, PM). Steg 0 mätt: fem referenser, varav två
+ritar konstanten direkt i en widget. `grep -c` i `app_sv.arb` ger 1 träff — men det är
+`groupMenuLoadFailed` ("Kunde inte läsa in veckan."), en ANNAN sträng utan "— försök igen".
+Konstantens egen text finns fortfarande i noll språkfiler. Premissen håller.
+
+Acceptans:
+1. `[diff]` **EN** ARB-nyckel ersätter konstanten, i både `app_sv.arb` och `app_en.arb` — inte
+   fem. BUT-1939:s en-sträng-per-händelse-beslut överlever flytten.
+2. `[diff]` Literal-pinnen i `weekly_menu_plan_read_week_test.dart` FLYTTAR MED, raderas inte —
+   annars återöppnas hålet den stängde (alla konsumentsviter matchar via symbol).
+3. `[diff]` `flutter gen-l10n` körd och den genererade filen greppad på den nya texten (ARB-
+   redigering utan regenerering kompilerar tyst mot den gamla strängen).
+4. `[diff]` Ingen sammanslagning med `groupMenuLoadFailed` — två olika händelser, två strängar.
+
+### BUT-1978 (+ BUT-1941, DUBBLETT) — kalenderns golden-test är dövt [Tier A] [build]
+Router: **single** (Software Architect, PM). Steg 0 mätt: `FlutterError.onError = (_) {};` står
+på rad 1085, direkt före `matchesGoldenFile` på rad 1090. Filen bär redan en ärlig kommentar om
+dövheten (rad 1002-1004) från BUT-1962.
+**BUT-1941 beskriver samma rader i samma fil** — stängs som dubblett mot den commit som fixar 1978.
+
+Acceptans:
+1. `[diff]` Jämförelsen är levande: `installGoldenImageErrorFilter()` i stället för den blanka
+   hanteraren — ELLER goldenet tas bort helt, om ett pixel-golden på just den ytan inte är värt
+   underhållet. Valet motiveras i commit-meddelandet.
+2. `[diff]` Om det behålls: plattforms-pinnen finns, annars rödnar nattliga `widget (ubuntu)`
+   direkt (BUT-1931 mätte 7 av 8 skillnader på ubuntu under identisk surface/DPR-pinning).
+3. `[diff]` Om bilden skrivs om: innehållet är detsamma, bara ramen ändrad — verifierat, inte antaget.
+4. `[diff]` Ingen påstådd counterfactual i kommentarerna som inte är mutationsprövad.
+
+
+## Fas 1.4 — panelens och kritikernas villkor (BINDANDE, infogade i acceptansen ovan)
+
+**Panel (full-panel, 11 roller i två omgångar — den andra sammankallades efter att DPO:s
+villkor vidgade filmängden och routern kördes om över unionen).**
+
+Villkor som blir acceptanskriterier:
+
+- **DPO/Legal:** `users/{uid}/notifications` ska ALSO in i Art. 15-exporten, inte bara i
+  raderingen. Exporten täcker toppnivåsamlingen `user_notifications` — en ANNAN samling.
+  Raden bär `message`/`bodyShown` plus `variant`/`contextKey` (win-back-A/B). **Vidgar
+  BUT-1957 från radering till radering+export.**
+- **DPO/Legal:** probe-benet för `users/{uid}/notifications` ska vara SÖKVÄGS-scopat
+  (`users/{uid}.collection("notifications").count()`), aldrig `where("userId","==",uid)` —
+  raderna bär inget `userId`-fält, så ett fältfilter ger en permanent, oavsiktlig nolla.
+- **DPO/Legal:** `docs/security/notification-analytics-retention.md` (Art. 30-registret) ska
+  namnge båda de nyligen kaskaderade samlingarna och deras raderingsväg.
+- **Security/T&S:** ersätt den handskrivna `subProbes`-listan med `listCollections()` —
+  `notifications` är den ANDRA som hittats så här, och inget stoppar den tredje.
+- **Security/T&S:** pinna återuppståndelsefönstret: `correlateNotificationEffectiveness` kör
+  dagligen och skriver `effectiveness/{id}` från sidor i minnet, så en kaskad mitt i körningen
+  kan få raden återskriven efter raderingen. Test som skriver en rad EFTER raderaren och
+  hävdar att proben rapporterar `gdprCompliant: false`.
+- **Security/T&S:** ingen notistext och ingen rå uid i någon ny loggrad.
+- **DBA/Arkitekt:** rör INTE `firestore.indexes.json` — ett enkelfälts-`where` + `count()`
+  betjänas av automatindex, och en onödig `--force`-deploy har redan raderat live-TTL:er här.
+- **DBA/Arkitekt:** ersätt den fjärde handredigeringen av `subs` med ett emulatorstött test:
+  `listCollections()` mot `subs` ∪ de två dokumenterade `onUserDeleted`-undantagen.
+- **DBA/Arkitekt:** `count()` (inte `listDocuments()`) för båda nya probe-benen, med en rads
+  motivering var — båda är lövsamlingar.
+- **PM/FinOps/Vendor:** ingen svepning av resten av `analytics/*` — håll diffen till de två
+  samlingarna. Ingen läsare av `effectiveness` finns i detta repo; admin-appen ligger i ett
+  annat repo och den kontrollen kan jag inte göra härifrån → **redovisas som öppen fråga**.
+- **PM (meny):** BUT-1972:s felruta ska vara handlings-scopad ("kunde inte kontrollera nästa
+  vecka"), inte en generisk haveribanner; det cachade tomma fallet behåller framgångsrutan.
+- **PM (meny):** BUT-1982 får ett EGET kort felmeddelande, och INGEN ångra-affordans (den
+  hör till `clearWeek`, en annan återställbarhetsklass).
+- **PM (meny):** all ny/ändrad svensk text är **Malins beslut** — jag väljer en formulering
+  och flaggar den för henne, aldrig som en teknisk detalj.
+- **Arkitekt (golden):** exponera `_goldensCompareHere` som en getter och `skip:`-grinda
+  testet på den; duplicera INTE hjälparens komparator-riggning; regenerera PNG:n först när
+  pinnen sitter, och diffa mot `git show HEAD:`.
+- **i18n:** en ARB-nyckel med `@`-beskrivning som citerar BUT-1939:s en-sträng-beslut;
+  literal-pinnen flyttar med; `flutter gen-l10n` körs och den genererade filen greppas.
+
+**Konflikt:** ingen olöslig. Security ville ha `listCollections()` i PROBEN, DBA i ett TEST —
+båda byggs, de är olika ställen.
+
+**Öppet för Malin (redovisas i rapporten, blockerar inte bygget):**
+1. Läser admin-appen (annat repo) `analytics/notifications/effectiveness`? Om ja, tappar den
+   historik för raderade konton.
+2. Ny svensk text på tre ytor (kopiera-veckan-fel, närvarofel, samt ARB-nyckeln).
+
+## Needs you (Tier D)
+Inget i den här sprinten kräver konsol-, deploy- eller butiksåtkomst.
+
+## Deviation log
+
+---
+
 # PLAN 2026-08-27 (tredje passet) — hela "veckan gick inte att läsa"-familjen
 
 Malin: "jag vill att du planerar för att hantera allt."
@@ -2150,3 +2318,25 @@ threw. Suite is 4/4 and the full CF lane is 88/88.
 - [x] `onUserDeleted`'s blank state explained: it is gen1, which reports `status` rather than
       `state`. Not a failed deploy.
 - [ ] BUT-1792 closed (its two remaining criteria were the TTL deploy, now done).
+
+### Deviation log — 2026-09-02
+
+- [discovery] BUT-1957: `subs`-revisionen (acceptanskriterium 3) hittade TVÅ avvikelser till.
+  `users/{uid}/onboarding/progress` skrivs av appen och raderas av ingenting alls — **åtgärdad
+  i samma commit**, en rad i `subs`, för att den nya `listCollections()`-proben annars hade
+  rapporterat den som kvarvarande vid varje radering av ett konto som gjort onboarding.
+  `users/{uid}/fcm_tokens` läses av exporten men skrivs av ingen — annan defektklass (en död
+  läsning, inte en kvarleva), **filad som BUT-1990** i stället för byggd.
+- [deviation] BUT-1957 vidgades av panelen: DPO:s villkor lade till en Art. 15-EXPORTSEKTION
+  (`delivered_notifications`) ovanpå raderingen. Routern kördes om över den nya filmängden och
+  gav två roller som inte hörts (Data Analyst/BI, Performance) — de sammankallades innan bygget.
+- [deviation] BUT-1972/BUT-1982: PM-kritiken krävde handlings-scopade felmeddelanden. Ingen NY
+  svensk text behövdes — `weeklyMenuCopyToNextFailed` ("Kunde inte kopiera veckan") och
+  viewmodellens `errorPrefix` ("Kunde inte spara vilka som är hemma") var redan rätt form och
+  når redan skärmen. Malin behöver alltså inte godkänna någon ny formulering på de två.
+- [deviation] BUT-1972: `executeServiceOperation` togs bort HELT ur `copyWeek` i stället för att
+  bara läsningarna flyttades ut. Efter att både läsningarna (BUT-1972) och sparningen (BUT-1962)
+  ligger utanför är det som återstår ren beräkning över värden man redan håller — ett omslag där
+  hade bara kunnat svälja.
+- [discovery] BUT-1978 och BUT-1941 är samma rader i samma fil. En byggs, den andra stängs som
+  dubblett.

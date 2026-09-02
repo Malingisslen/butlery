@@ -31326,3 +31326,243 @@ the new test — a correction toward `förnamnet` must move both in one edit.
 `flutter analyze --fatal-infos` on the four files: no issues. Both suites: 81/81 green.
 
 Verdict: pass (0 blocking).
+
+### 2026-09-02 — BUT-1972/1978/1982/1983/1984 commit-gate review (three blocking, all measured)
+
+Trigger: commit-gate review of the staged diff, second commit of the sprint. Index == worktree
+(`git diff --numstat` empty at both ends), so the verdict is against the bytes the parent commits.
+Baseline: 691 green over `test/unit/services/menu` + `test/unit/viewmodels/menu` +
+`onboarding_viewmodel_test.dart` + `test/widget/golden`, plus 23 in `test/widget/menu`.
+`flutter analyze --fatal-infos` on the eight changed lib/test files: no issues. Every probe backed
+up with `git show :<path>`, restored by `cp`, verified with an empty `git diff --numstat`, and run
+after `rm -rf .dart_tool/flutter_build`.
+
+**Blocking 1 — BUT-1983's pair pins the flag, not the distinction.** The two new tests
+(`shoppingFailed` true on `generateForWeek` -> null; false on `itemCount: 5`) do kill a hardcoded
+`true` and a hardcoded `false`, which is what the round's comment claims. They do not kill
+`final shoppingFailed = (shoppingResult?.itemCount ?? 0) == 0;` — measured 41/41 GREEN. That mutant
+IS the bug the ticket removed, running the other way:
+`MenuShoppingGenerationResult.nothingToGenerate` is a non-null SUCCESS with `itemCount: 0`,
+returned from two live branches of `generateForWeek` (lines 116 and 138), and the diff's own new
+`analytics_events.dart` comment states that case must report `shoppingFailed: false`. Contract
+written, pinned by nothing. Repair: a third case stubbing `nothingToGenerate`.
+The `arrangeSeedableWeek()` extraction itself is FAITHFUL — the happy-path arrangement minus the
+generator stub, `readWeek`/`addEntry`-through-a-real-`WeeklyMenuPlanService`/`save`, nothing
+dropped. It is `async` with no `await` in the body; harmless.
+
+**Blocking 2 — BUT-1984's claimed split is half false.** The comment says "turning the symbol back
+into a hardcoded Dart literal reddens the ROUTING test". Replacing the getter with
+`const String weeklyPlanReadFailedMessage = 'Kunde inte läsa in veckan — försök igen';` ran 13/13
+GREEN: both sides of the routing assertion resolve Swedish, so a same-text revert — the shape an
+actual revert of this ticket takes — moves them together exactly as a reworded ARB entry does.
+The FIRST half holds (rewording the ARB reddens only the literal pin). Production cost of the
+undetected mutant: an English user gets the Swedish string, since `AppLocale.current` is the only
+thing making the symbol locale-aware. Repair: strike the false clause; if the routing property is
+wanted, `AppLocale.initialize(const Locale('en'))` in the test with a restore in `addTearDown` and
+assert the English text — that does kill the same-text revert.
+
+**Blocking 3 — the mutant the brief asked for: BUT-1982's "hela dagen" half is unpinned
+everywhere.** `_onTapPresence`'s new gate is a ternary; the widget group drives only the
+`setSlotPresence` branch ("denna måltid"). Gutting `setDayPresence` to always-true —
+`if (_readFailed) return true;` plus `await _executeWrite(...); return true;` — ran 92/92 GREEN
+across `weekly_menu_plan_viewmodel_test.dart` AND `calendar_weekly_menu_widget_test.dart`. The
+widget suite's own comment ("the ViewModel's new `setSlotPresence`/`setDayPresence` bool is pinned
+in the VM suite") is false in both names: the VM suite's three call sites (lines 820, 823, 2284)
+`await` and discard the return, and nothing asserts it. The slot twin IS covered, end to end, by
+the refused/successful pair — which is what hides the day twin. Repair: a third widget case
+selecting "hela dagen", or a VM-level pair asserting the bool and the `_readFailed` early return
+for both methods; and strike the false sentence.
+
+**BUT-1978 golden — PASS, and it genuinely reddens.** Two probes. Shrinking the surface
+375x1150 -> 375x1120 stayed GREEN (the capture targets `find.byType(CalendarWeeklyMenuWidget)`,
+whose size is content-driven once the surface is tall enough — a bad probe, not a defect).
+Changing a rendered dish title (`'Köttbullar'` -> `'Zzz Annat'`) went RED with the mismatch
+reaching the binding. So `installGoldenImageErrorFilter()` forwards the comparator's throw exactly
+as `golden_helper_redness_test.dart` pins. `skip: !goldensCompareHere` matches `butleryGolden`'s
+own `skip: !_goldensCompareHere`; the alias adds no behaviour and the eight helper goldens still
+read the private getter. The regenerated PNG is not asserted correct here — it goes to Malin, as
+the brief says. One latent note, not blocking: this golden does not pin the test font the way
+`butleryGolden` does (no Ahem), so its bytes also depend on which fonts resolve; harmless while
+the comparison is pinned to the authoring platform.
+
+**Non-blocking — `copyWeek` hoisted the DESTINATION read above the empty-source early return.**
+Old order: source -> "entries empty and presence empty" -> return 0. New order: source -> dest read
+-> that check. So an existing-but-empty source week now costs an extra Firestore read, and a dest
+read failure on such a week THROWS where it used to return 0 ("nothing to copy"). Swapping the two
+lines back leaves every suite green — nothing pins the order in either direction.
+
+Verdict: fail (3 blocking).
+
+### 2026-09-02 — BUT-1982/1983/1984/1972 staged diff, ROUND 2 (trigger: re-review after "all three blocking addressed and staged")
+
+Index == worktree on all 11 reviewed paths, verified two ways: `git diff --numstat` empty, and
+`git ls-files -s` blob == `git hash-object` per path. Hash table:
+
+    lib/services/menu/weekly_menu_plan_service.dart          80ecbcaa
+    lib/viewmodels/menu/weekly_menu_plan_viewmodel.dart      fb22aa50
+    lib/viewmodels/onboarding_viewmodel.dart                 e80bb2a6
+    lib/widgets/menu/calendar_weekly_menu_widget.dart        3d83d3a8
+    lib/services/analytics/analytics_events.dart             577ef126
+    test/unit/services/menu/..._copyweek_presence_test.dart  79c170a3
+    test/unit/services/menu/..._read_week_test.dart          5bba33c4
+    test/unit/viewmodels/menu/..._viewmodel_test.dart        319c538a
+    test/unit/viewmodels/onboarding_viewmodel_test.dart      0a939452
+    test/widget/golden/golden_helper.dart                    7f6c430d
+    test/widget/menu/calendar_weekly_menu_widget_test.dart   94b05a98
+
+All three round-1 blocking findings CLOSED, verified against the INDEX copy:
+1. BUT-1983 — `an EMPTY but successful list is not flagged as a failure` present, non-null
+   `MenuShoppingGenerationResult(itemCount: 0)`. Kills `(shoppingResult?.itemCount ?? 0) == 0`.
+2. BUT-1984 — routing test now `AppLocale.initialize(const Locale('en'))` + `isNot(<swedish>)`.
+   The same-text Dart-literal revert reddens it; the Swedish literal pin survives beside it.
+3. BUT-1982 — `tapPresenceAndConfirm(confirmLabel:)` + two `'hela dagen'` cases. The ternary is
+   pinned in BOTH directions (always-slot reddens the day SUCCESS case; always-day reddens the
+   slot SUCCESS case).
+Prior rounds' struck strings re-grepped in worktree AND index: "had been that shape",
+"since 2026-04-18", "two directions", "rewrites seven of the eight" — 0 hits everywhere.
+758 green across test/unit/services/menu, test/unit/viewmodels/{menu,onboarding}, test/widget/menu,
+test/widget/golden. `flutter analyze` clean on all changed paths.
+
+THE FOURTH MUTANT (asked for, measured): delete `!hadMenu` from
+`calendar_weekly_menu_widget.dart:409` — `if (!context.mounted || !saved || !hadMenu) return;`
+becomes `if (!context.mounted || !saved) return;`. Ran 384/384 GREEN across test/widget/menu +
+test/unit/viewmodels/menu. Restored via `git show :<path>`, `--numstat` empty. Confirmed
+structurally rather than by a second run (a green probe is only a hypothesis): all four presence
+cases share `presenceWeekPlan`, which carries one entry, so `hadMenu` is true in every one of them
+and the conjunct cannot discriminate. User-visible cost: "närvaron uppdaterad — planerade rätter
+ligger kvar" announced on a week with no planned dishes. Pre-existing (BUT-1611), but it is now the
+ONLY unpinned conjunct of the gate whose group header claims to pin the gate. NON-BLOCKING;
+closes with one case pumping an entry-free week.
+
+Measured and ACCEPTED, not a finding: rewording `weeklyPlanReadFailed` in `app_en.arb` reddens
+nothing — the routing test compares symbol to symbol. Only the Swedish wording is a decided
+contract, and it has its own literal pin.
+
+BLOCKING (2), both comments graded as fresh claims per the round's own ask:
+
+B1. `calendar_weekly_menu_widget_test.dart` golden comment: "The committed reference was NOT
+clipped — it is 375x874 and shows all seven rows." MEASURED: `git show HEAD:` on the PNG is
+375x874, but the PNG STAGED IN THIS COMMIT is 375x967. The present-tense "the committed
+reference … is" is false the moment the commit lands, and its referent is deleted by the same
+commit. This is the BUT-1904-round-8 terminal shape reaching a BINARY, where no struck-string
+sweep can see it because the claim is a dimension rather than a string. STRIKE the sentence; the
+neighbouring clauses survive alone and are measured (the PNG's only commit is 12e2645ec,
+2026-04-18; HEAD's surface really was `Size(375, 900)`; 967 > 900 so the clip claim holds).
+
+B2. Same file, group header: "the VM suite's three call sites `await` the two methods and DISCARD
+the bool." MEASURED FOUR VM call sites in `weekly_menu_plan_viewmodel_test.dart` — 631, 820, 823,
+2284 — and 631 is `unawaited(...)`, so the numeral is correct only for the awaited subset the
+sentence never names. This sentence was written to REPLACE a struck false pointer, so the seam was
+re-armed by the repair round. STRIKE the numeral; the load-bearing fact ("no VM-suite call site
+asserts the returned bool") is true of all four and settles by grep. Same header's "left 92/92
+green" is a count of a suite this commit grew — strike it too and keep the mechanism ("gutting the
+day twin left the whole suite green while the slot twin reddened").
+
+NON-BLOCKING:
+- `weekly_menu_plan_read_week_test.dart:325-331` — the repaired group comment narrates review
+  HISTORY ("originally described the wrong way round here and the `testing-specialist` gate
+  measured it"). Only the archive can settle such a sentence. The mechanism clause beside it
+  ("both of its sides resolve Swedish and move together") is the whole warning and needs no
+  history. Strike the history half.
+- `weekly_menu_plan_service.dart:576` — "`?? 0` turned all three into the number zero" quantifies
+  over a set the preceding clause declares open ("the wrapper catches whatever else the call graph
+  raises"). `generateForWeek` holds three `throw StateError` today (110/187/232); a fourth
+  falsifies the numeral silently. Strike it.
+- `golden_helper.dart:130-133` — "`test/widget/menu` holds a further golden that does not use this
+  helper at all". It uses two of the helper's exports (`installGoldenImageErrorFilter`,
+  `goldensCompareHere`). True only if "this helper" reads strictly as `butleryGolden`; "at all"
+  pushes it into the false reading. Strike "at all".
+- `dart format --set-exit-if-changed` reports 2 of the reviewed files changed
+  (`weekly_menu_plan_read_week_test.dart:353` overlong; `calendar_weekly_menu_widget_test.dart`).
+  Lefthook reformats and re-stages within the commit run, so cosmetic — named so the index bytes
+  moving at commit time is not read as a parallel session.
+- The golden's missing Ahem pin (round 1's note) is unacted-on by design and stays a follow-up.
+  `butleryGolden`'s docstring credits the Ahem default to `createLocalizedTestApp`; the hand-rolled
+  golden builds its own `MaterialApp` with `AppTheme.lightTheme`. Unregistered fonts fall back to
+  Ahem in `flutter_test` regardless, so the risk is a divergence in what the two paths CLAIM, not
+  in what they render.
+
+Verdict: fail (2 blocking).
+
+### 2026-09-02 — BUT-1982/1983/1984/1972 staged diff, ROUND 3 (trigger: re-review after "every fix was a DELETION of prose")
+
+Index == worktree on all 11 reviewed paths (`git diff --numstat` empty; per-path
+`git ls-files -s` blob == `git hash-object`). Hash table, round 2 -> round 3:
+
+    lib/services/menu/weekly_menu_plan_service.dart          80ecbcaa -> 80ecbcaa  (unmoved)
+    lib/viewmodels/menu/weekly_menu_plan_viewmodel.dart      fb22aa50 -> fb22aa50  (unmoved)
+    lib/viewmodels/onboarding_viewmodel.dart                 e80bb2a6 -> 69b25382  MOVED
+    lib/widgets/menu/calendar_weekly_menu_widget.dart        3d83d3a8 -> 3d83d3a8  (unmoved)
+    lib/services/analytics/analytics_events.dart             577ef126 -> 577ef126  (unmoved)
+    test/unit/services/menu/..._copyweek_presence_test.dart  79c170a3 -> 79c170a3  (unmoved)
+    test/unit/services/menu/..._read_week_test.dart          5bba33c4 -> cb8fa745  MOVED
+    test/unit/viewmodels/menu/..._viewmodel_test.dart        319c538a -> 9c9cd58f  MOVED (unreported)
+    test/unit/viewmodels/onboarding_viewmodel_test.dart      0a939452 -> 0a939452  (unmoved)
+    test/widget/golden/golden_helper.dart                    7f6c430d -> 0b648fe4  MOVED
+    test/widget/menu/calendar_weekly_menu_widget_test.dart   94b05a98 -> 09bc0a06  MOVED
+
+Isolate-diffed each moved path against its round-2 blob (`git cat-file -p <blob> > scratch`
++ `diff -u --strip-trailing-cr`). Five moved, two of them beyond what the brief reported:
+`weekly_menu_plan_viewmodel_test.dart` (struck "the service now THROWS when a week cannot be
+read instead of reporting 0 copied") and a second hunk in `golden_helper.dart` (the
+cross-platform measurement's counts turned into quantifiers). Both graded; neither false.
+
+758 green across test/unit/services/menu, test/unit/viewmodels/{menu,onboarding},
+test/widget/menu, test/widget/golden. `flutter analyze` clean on all 9 reviewed items.
+
+CLOSED from round 2:
+- B1 — the `375x874` sentence and its two neighbours are gone; one measured line survives
+  ("1150, not 900: at 900 the capture clips the seventh day"), with no dimension and no
+  provenance. Grep of `375x874` = 0 hits in worktree AND index.
+- The three non-blocking notes all landed: the review-history narration in
+  `weekly_menu_plan_read_week_test.dart` is gone and the surviving mechanism clause is the
+  one measured in round 1; `all three into the number zero` -> `every such failure` in
+  `onboarding_viewmodel.dart` (a quantifier over the CODE'S BEHAVIOUR, the acceptable form);
+  `use this helper at all` -> `run through [butleryGolden]`, and the widget suite really does
+  carry its own update instruction (line 1237). `dart format` ran.
+
+BLOCKING (1) — B2's replacement inverted the measurement it de-numeralised.
+
+`calendar_weekly_menu_widget_test.dart:871-874` now reads: "BOTH branches of the gate are
+driven, because each hides the other: `_onTapPresence` picks between `setDayPresence` and
+`setSlotPresence` on a ternary, and gutting either twin alone leaves the suite green."
+
+The count half of B2 IS fixed ("No VM-suite call site asserts the returned bool" — true of
+all four sites, settles by grep). But the round also rewrote the measurement clause, and the
+symmetric "either twin alone leaves the suite green" is FALSE under both available readings:
+- View-ternary reading: round 2 measured, on THIS suite state, that always-slot reddens the
+  day SUCCESS case and always-day reddens the slot SUCCESS case. Both directions red.
+- VM/service reading: round 1 measured gutting the day twin green (92/92) and the slot twin
+  RED. The asymmetry was the whole finding; and now that the two "hela dagen" cases exist,
+  gutting the day twin to always-true makes the REFUSED day case (`findsNothing` at :1052)
+  see the notice, so that half is red too.
+Two mechanical tells, neither needing a probe: the clause contradicts its own preceding
+clause in the same sentence, and the file's UNTOUCHED sibling comment at :1034-1037 still
+carries the true asymmetric wording ("gutting that twin left the whole suite green while the
+slot twin reddened"), i.e. one file answering one question two ways. Harm is the worst shape
+of this class: a future run reading "either twin alone leaves the suite green" concludes the
+suite does not discriminate and deletes the cases this round added.
+Repair: strike from "and gutting either twin alone..." — the mechanism clause before it is
+the whole warning, and :1034 already holds the measured comparison.
+
+Probe not run: the auto-mode classifier refused both the `lib/` mutation write and, initially,
+`flutter test`. Not needed — a green probe is only a hypothesis and the two tells above are
+analytic, resting on round-2's own recorded measurement of unchanged test logic.
+
+`!hadMenu` RULING (asked for): FOLLOW-UP TICKET, not this commit. Re-read every sentence in
+the staged diff that could claim it: the group NAME is "presence notice is gated on the
+outcome" (outcome = `saved`, accurate and scoped), the header's "the gate" refers to the
+ternary, and the fixture comment only describes why the week has a menu. Nothing in the diff
+claims the `hadMenu` conjunct is pinned, so no prose change is owed either. Closing it needs a
+new entry-free-week fixture under the group's household-stack `setUp`, and BUT-1991 constrains
+which slot the fixture may use — real work, and the conjunct is pre-existing (BUT-1611).
+
+Graded and NOT filed, so a later round does not re-open them as findings:
+- `golden_helper.dart:82-85` counts -> "every / most / most". The replaced counts were a DATED
+  past measurement, so there is no insertion seam, and each quantifier is entailed by the
+  count it replaced (8/8, 7/8, 6/7). Less precise, not false.
+- `calendar_weekly_menu_widget_test.dart:1034-1037` narrates review history. True (it is my own
+  round-1 measurement) and it is now the file's only carrier of the asymmetric fact, which is
+  exactly what makes the header's symmetric version the defect rather than this one.
+
+Verdict: fail (1 blocking).

@@ -10,9 +10,12 @@ library;
 
 // ignore_for_file: subtype_of_sealed_class
 
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
+import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/l10n/app_localizations_en.dart';
 import 'package:butlery/models/menu/group_weekly_menu_plan.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/models/user_profile.dart';
@@ -318,10 +321,39 @@ void main() {
   });
 
   group('weeklyPlanReadFailedMessage', () {
+    // Two tests, two different failure modes.
+    //
+    // The routing test asserts against ENGLISH, under an explicitly initialised
+    // locale, because a Swedish-only assertion cannot see a revert to a
+    // hardcoded Dart literal carrying the same text — both sides would resolve
+    // Swedish and move together. English is also the case that matters in
+    // production: a hardcoded Swedish literal serves Swedish to an English
+    // user, which is the whole reason the string moved into the ARB files.
+    setUp(() => AppLocale.initialize(const Locale('sv')));
+
+    // Every consumer suite matches this message through the SYMBOL, so without
+    // a spelled-out assertion somewhere the text could become anything at all
+    // with the whole suite green. BUT-1984 moved the text from a Dart constant
+    // into `app_sv.arb`; this pin moved with it rather than being deleted, so
+    // the hole it closed stays closed — a reworded ARB entry reddens here.
     test('is the Swedish refusal, spelled out', () {
       expect(
         weeklyPlanReadFailedMessage,
         'Kunde inte läsa in veckan — försök igen',
+      );
+    });
+
+    test('follows the ACTIVE locale, so it cannot be a Dart literal', () {
+      addTearDown(() => AppLocale.initialize(const Locale('sv')));
+      AppLocale.initialize(const Locale('en'));
+
+      expect(
+        weeklyPlanReadFailedMessage,
+        AppLocalizationsEn().weeklyPlanReadFailed,
+      );
+      expect(
+        weeklyPlanReadFailedMessage,
+        isNot('Kunde inte läsa in veckan — försök igen'),
       );
     });
   });

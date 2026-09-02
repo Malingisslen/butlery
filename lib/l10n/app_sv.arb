@@ -10435,6 +10435,10 @@
     }
   },
   "weeklyMenuCopyToNextFailed": "Kunde inte kopiera veckan",
+  "weeklyPlanReadFailed": "Kunde inte läsa in veckan — försök igen",
+  "@weeklyPlanReadFailed": {
+    "description": "BUT-1984/BUT-1939. The ONE refusal message shown wherever a weekly menu plan could not be READ. Deliberately not one key per surface: the refusal is the same event everywhere and two spellings of it drift apart. It names the retry because a read that did not answer may well succeed on the next attempt."
+  },
   "weeklyMenuSelectAction": "Välj flera att flytta",
   "weeklyMenuSelectionCount": "{count, plural, =1{1 vald} other{{count} valda}}",
   "@weeklyMenuSelectionCount": {

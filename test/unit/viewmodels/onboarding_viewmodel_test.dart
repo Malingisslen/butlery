@@ -975,6 +975,125 @@ void main() {
       ).called(1);
     });
 
+    // BUT-1983. `generateForWeek` is wrapped in `executeServiceOperation`, so
+    // anything that goes wrong inside it arrives as null rather than a throw,
+    // never reaching the outer catch that would have fired
+    // `onboarding_menu_seed_failed`. `?? 0` then filed every such failure under
+    // the SUCCESS event as `shoppingItems: 0`, which is also what a genuinely
+    // empty list looks like. The two were indistinguishable in the funnel data.
+    //
+    // Two tests, because one cannot pin a distinction: the flag must be true on
+    // failure AND false on success. Asserting only the first passes just as
+    // happily against a viewmodel that hardcodes `shoppingFailed: true`.
+    // The happy-path test's arrangement minus the shopping-generator stub, so
+    // each test below decides only that one thing. Kept beside those tests
+    // rather than folded into `setUp`: the other tests in this group
+    // deliberately arrange a DIFFERENT week (unreadable, non-empty, throwing),
+    // and a shared setUp would have to be undone by every one of them.
+    Future<void> arrangeSeedableWeek() async {
+      when(() => mockMenuService.readWeek(any())).thenAnswer(
+        (_) async => WeeklyMenuPlanRead(plan: emptyPlan(), readFailed: false),
+      );
+      final realAdder = WeeklyMenuPlanService(
+        repository: _NoopMenuRepo(),
+        userService: mockUserService,
+      );
+      when(
+        () => mockMenuService.addEntry(
+          plan: any(named: 'plan'),
+          day: any(named: 'day'),
+          slot: any(named: 'slot'),
+          recipe: any(named: 'recipe'),
+        ),
+      ).thenAnswer(
+        (inv) => realAdder.addEntry(
+          plan: inv.namedArguments[#plan] as WeeklyMenuPlan,
+          day: inv.namedArguments[#day] as DayOfWeek,
+          slot: inv.namedArguments[#slot] as MealSlot,
+          recipe: inv.namedArguments[#recipe] as Recipe,
+        ),
+      );
+      when(() => mockMenuService.save(any())).thenAnswer((_) async {});
+    }
+
+    Map<String, Object> capturedSeedParams() =>
+        verify(
+              () => mockAnalyticsService.logEvent(
+                name: 'onboarding_menu_seeded',
+                parameters: captureAny(named: 'parameters'),
+              ),
+            ).captured.single
+            as Map<String, Object>;
+
+    test(
+      'a FAILED shopping-list build is flagged, not filed as an empty list',
+      () async {
+        await arrangeSeedableWeek();
+        when(
+          () => mockShoppingGenerator.generateForWeek(any()),
+        ).thenAnswer((_) async => null);
+
+        await viewModel.completeOnboarding();
+
+        final params = capturedSeedParams();
+        expect(params['shoppingFailed'], isTrue);
+        expect(
+          params['shoppingItems'],
+          0,
+          reason: 'the count is still 0 — the flag is what separates the cases',
+        );
+      },
+    );
+
+    // THE discriminating case, and the reason the pair above is not enough.
+    // A non-null result carrying `itemCount: 0` is a shopping list that was
+    // built and came out EMPTY — the exact state BUT-1983 exists to separate
+    // from a failure. Without it, `shoppingFailed = (itemCount ?? 0) == 0`
+    // passes both other tests while re-collapsing the two cases into one flag,
+    // which is the defect rather than the fix. Found by the
+    // `integration-reviewer` gate, which demonstrated that mutant live.
+    test('an EMPTY but successful list is not flagged as a failure', () async {
+      await arrangeSeedableWeek();
+      when(() => mockShoppingGenerator.generateForWeek(any())).thenAnswer(
+        (_) async => const MenuShoppingGenerationResult(
+          listId: 'list1',
+          listName: 'Inköpslista v24',
+          itemCount: 0,
+          recipeCount: 2,
+          unresolvedRecipes: 0,
+        ),
+      );
+
+      await viewModel.completeOnboarding();
+
+      final params = capturedSeedParams();
+      expect(
+        params['shoppingFailed'],
+        isFalse,
+        reason: 'an empty list is not a failed build',
+      );
+      expect(params['shoppingItems'], 0);
+    });
+
+    test('a SUCCESSFUL shopping-list build is not flagged', () async {
+      await arrangeSeedableWeek();
+      when(() => mockShoppingGenerator.generateForWeek(any())).thenAnswer(
+        (_) async => const MenuShoppingGenerationResult(
+          listId: 'list1',
+          listName: 'Inköpslista v24',
+          itemCount: 5,
+          recipeCount: 2,
+          unresolvedRecipes: 0,
+        ),
+      );
+
+      await viewModel.completeOnboarding();
+
+      final params = capturedSeedParams();
+      expect(params['shoppingFailed'], isFalse);
+      expect(params['shoppingItems'], 5);
+    });
+
     // BUT-1962: the seed's catch has always swallowed, so a first-run seeding
     // failure was invisible. Since the menu save now throws on a refusal, a
     // permission failure lands in that catch too. The user is still told

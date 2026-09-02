@@ -44,8 +44,12 @@ abstract final class AnalyticsEvents {
   // BUT-930: emitted once after starter recipes are seeded, when a sample
   // weekly-menu plan + its shopping list are generated so the new user lands
   // on a populated menu and shopping list instead of empty screens.
-  // Parameters: `menuEntries` (int), `shoppingItems` (int). Both 0 means
-  // seeding ran but had nothing to place (no recipes seeded / plan non-empty).
+  // Parameters: `menuEntries` (int), `shoppingItems` (int), `shoppingFailed`
+  // (bool). `menuEntries` is always >= 1 here: every path that would make it 0
+  // returns before the event is logged.
+  // `shoppingFailed: true` (BUT-1983) means the shopping-list build itself
+  // failed — the menu was saved, the list was not. Without the flag that case
+  // reported an identical `shoppingItems: 0` under this same event.
   static const onboardingMenuSeeded = 'onboarding_menu_seeded';
   // BUT-1962: the seed's own failure. Deliberately telemetry and NOT an error
   // shown to the user — the sample week is not their work, and a red message

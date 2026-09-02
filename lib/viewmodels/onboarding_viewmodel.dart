@@ -570,7 +570,17 @@ class OnboardingViewModel extends BaseViewModel {
       if (placed == 0) return;
       await menuService.save(plan);
 
+      // BUT-1983: `generateForWeek` is wrapped in `executeServiceOperation`, so
+      // anything that goes wrong inside it arrives as null rather than a throw.
+      // `?? 0` turned every such failure into the number zero under the SUCCESS
+      // event, where it was indistinguishable from a list that was simply
+      // empty. The flag separates them.
+      //
+      // Still the success event, not the failure one: the menu itself was saved
+      // a few lines up, so the seed genuinely half-succeeded and reporting it
+      // as a clean failure would under-count the part that worked.
       final shoppingResult = await shoppingGenerator.generateForWeek(now);
+      final shoppingFailed = shoppingResult == null;
       final shoppingItems = shoppingResult?.itemCount ?? 0;
 
       _analytics?.logEvent(
@@ -578,10 +588,13 @@ class OnboardingViewModel extends BaseViewModel {
         parameters: {
           'menuEntries': placed,
           'shoppingItems': shoppingItems,
+          'shoppingFailed': shoppingFailed,
         },
       );
       AppLogger.info(
-        'Seeded sample menu: $placed entries, $shoppingItems shopping items',
+        shoppingFailed
+            ? 'Seeded sample menu: $placed entries, shopping list FAILED'
+            : 'Seeded sample menu: $placed entries, $shoppingItems shopping items',
       );
     } catch (e) {
       AppLogger.warning('Failed to seed sample menu: $e');

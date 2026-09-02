@@ -398,12 +398,15 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
         picked.length == allIds.length && picked.toSet().containsAll(allIds);
     final toStore = everyone ? null : picked;
 
-    if (result.applyToWholeDay) {
-      await vm.setDayPresence(day, toStore);
-    } else {
-      await vm.setSlotPresence(day, slot, toStore);
-    }
-    if (!context.mounted || !hadMenu) return;
+    // BUT-1982: gated on the outcome, the same way `_onClearWeek` is. A refused
+    // save already paints the error state, so announcing success over it told
+    // the user their attendance was stored when it was not.
+    // No undo affordance here on purpose — that belongs to `clearWeek`, which
+    // is a different recoverability class.
+    final saved = result.applyToWholeDay
+        ? await vm.setDayPresence(day, toStore)
+        : await vm.setSlotPresence(day, slot, toStore);
+    if (!context.mounted || !saved || !hadMenu) return;
     SnackBarUtils.showSuccess(
       context,
       context.l10n.menuPresenceAfterGenerateNotice,

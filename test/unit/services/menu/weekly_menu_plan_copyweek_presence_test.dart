@@ -1,10 +1,7 @@
 /// BUT-1611 acceptance criterion 5: "kopiera veckan carries presence forward".
 ///
-/// `copyWeek` runs through the auth-gated `executeServiceOperation`, so unlike
-/// the targeted presence writers (which use the repository directly) it needs
-/// the DI `ServiceLocator` initialized with an authenticated `AuthRepository`.
-/// This isolated file wires that harness rather than bolting it onto the
-/// raw-mock service suite.
+/// This isolated file wires a DI `ServiceLocator` harness with an authenticated
+/// `AuthRepository`, rather than bolting it onto the raw-mock service suite.
 library;
 
 import 'package:flutter_test/flutter_test.dart';
@@ -43,8 +40,7 @@ void main() {
   late WeeklyMenuPlanService service;
 
   setUpAll(() async {
-    // Wires the PRODUCTION ServiceLocator, which executeServiceOperation's
-    // auth check reads (not the injected repo).
+    // Wires the PRODUCTION ServiceLocator (not the injected repo).
     await BaseUnitTest.setupUnitWithProductionLocator();
     registerFallbackValue(_FakeWeeklyMenuPlan());
   });
@@ -59,7 +55,6 @@ void main() {
     userService = _MockUserService();
     when(() => userService.currentUserProfile).thenReturn(_profile('u'));
     when(() => repo.save(any())).thenAnswer((_) async {});
-    // executeServiceOperation checks ServiceLocator's AuthRepository.
     (TestServiceLocator.get<AuthRepository>() as FakeAuthRepository)
         .setAuthState(userId: 'u');
     service = WeeklyMenuPlanService(
@@ -101,6 +96,122 @@ void main() {
         () => service.copyWeek(fromWeekStart: mon, toWeekStart: nextMon),
         throwsA(isA<StateError>()),
       );
+    },
+  );
+
+  // BUT-1972: the two READS were still inside `executeServiceOperation`, which
+  // turns a throw into `null` — `copyWeek` then returned 0 and the view showed
+  // "Inget kopierades – allt finns redan nästa vecka", a success message for a
+  // week that was never read. The two reads are separate seams: the source read
+  // decides whether there is anything to copy at all, the destination read
+  // decides what is already there, and only the second one runs with a plan in
+  // hand. A hoist that only moved the first would leave the second swallowing.
+  test('a throwing SOURCE-week read reaches the caller', () async {
+    final nextMon = mon.add(const Duration(days: 7));
+    when(
+      () => repo.fetchForWeek(
+        userId: any(named: 'userId'),
+        weekStart: any(named: 'weekStart'),
+      ),
+    ).thenAnswer((_) async => throw StateError('source read refused'));
+
+    await expectLater(
+      () => service.copyWeek(fromWeekStart: mon, toWeekStart: nextMon),
+      throwsA(isA<StateError>()),
+    );
+    verifyNever(() => repo.save(any()));
+  });
+
+  test('a throwing DESTINATION-week read reaches the caller', () async {
+    final nextMon = mon.add(const Duration(days: 7));
+    final source = WeeklyMenuPlan.empty(userId: 'u', date: mon).copyWith(
+      entries: [
+        WeeklyMenuPlanEntry.create(
+          day: DayOfWeek.mon,
+          slot: MealSlot.middag,
+          recipeId: 'r-copy',
+          recipeTitle: 'Tacos',
+        ),
+      ],
+    );
+    // The SOURCE read succeeds; only the destination read throws.
+    when(
+      () => repo.fetchForWeek(
+        userId: any(named: 'userId'),
+        weekStart: any(named: 'weekStart'),
+      ),
+    ).thenAnswer((inv) async {
+      if (inv.namedArguments[#weekStart] == mon) return source;
+      throw StateError('destination read refused');
+    });
+
+    await expectLater(
+      () => service.copyWeek(fromWeekStart: mon, toWeekStart: nextMon),
+      throwsA(isA<StateError>()),
+    );
+    verifyNever(() => repo.save(any()));
+  });
+
+  // The ORDERING pin. An EMPTY source week short-circuits before the
+  // destination is read at all, so a destination read that would throw is never
+  // reached and the honest answer — 0, "inget att kopiera" — survives.
+  //
+  // Without it the emptiness check can drift below the destination fetch (it
+  // did, during BUT-1972's hoist, and the `integration-reviewer` and
+  // `code-reviewer` gates both caught it): the user then gets an ERROR for a
+  // cleared week, which is the inverse of the defect BUT-1972 exists to fix.
+  // The throw tests above cannot see that — their source week has entries, so
+  // they reach the destination read either way.
+  test('an EMPTY source week never reads the destination', () async {
+    final nextMon = mon.add(const Duration(days: 7));
+    final emptySource = WeeklyMenuPlan.empty(userId: 'u', date: mon);
+    when(
+      () => repo.fetchForWeek(
+        userId: any(named: 'userId'),
+        weekStart: any(named: 'weekStart'),
+      ),
+    ).thenAnswer((inv) async {
+      if (inv.namedArguments[#weekStart] == mon) return emptySource;
+      throw StateError('destination read must never be reached');
+    });
+
+    final copied = await service.copyWeek(
+      fromWeekStart: mon,
+      toWeekStart: nextMon,
+    );
+
+    expect(copied, 0);
+    verifyNever(() => repo.save(any()));
+    // The destination fetch is the thing under test: exactly one read.
+    verify(
+      () => repo.fetchForWeek(
+        userId: any(named: 'userId'),
+        weekStart: any(named: 'weekStart'),
+      ),
+    ).called(1);
+  });
+
+  // The control that must not regress (BUT-1961): offline, `fetchForWeek`
+  // passes `acceptCachedAbsence`, so a `null` source week is a TRUE "nothing to
+  // copy" — it must keep returning 0 and its success message, not throw.
+  test(
+    'a source week that reads as null still returns 0 and does not throw',
+    () async {
+      final nextMon = mon.add(const Duration(days: 7));
+      when(
+        () => repo.fetchForWeek(
+          userId: any(named: 'userId'),
+          weekStart: any(named: 'weekStart'),
+        ),
+      ).thenAnswer((_) async => null);
+
+      final copied = await service.copyWeek(
+        fromWeekStart: mon,
+        toWeekStart: nextMon,
+      );
+
+      expect(copied, 0);
+      verifyNever(() => repo.save(any()));
     },
   );
 

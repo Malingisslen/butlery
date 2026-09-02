@@ -2081,6 +2081,29 @@ void main() {
         },
       );
 
+      // BUT-1972: the two outcomes drive different snackbars — `null` is the
+      // failure message, `0` is "everything was already there".
+      // The throw half is pinned by the failure test above; this pins that a
+      // genuine 0 is NOT laundered into null on the way out.
+      test('a genuine 0 from copyWeek comes back as 0, not null', () async {
+        final plan = _plan(weekStart: DateTime(2026, 4, 13));
+        when(() => mockService.readWeek(any())).thenAnswer(
+          (_) async => WeeklyMenuPlanRead(plan: plan, readFailed: false),
+        );
+        await viewModel.loadWeek(DateTime(2026, 4, 13));
+        when(
+          () => mockService.copyWeek(
+            fromWeekStart: any(named: 'fromWeekStart'),
+            toWeekStart: any(named: 'toWeekStart'),
+          ),
+        ).thenAnswer((_) async => 0);
+
+        final copied = await viewModel.copyWeekToNext();
+
+        expect(copied, 0);
+        expect(viewModel.hasError, isFalse);
+      });
+
       test(
         'beginSelection enters selection mode with an empty selection',
         () async {

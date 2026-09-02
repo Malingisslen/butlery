@@ -79,9 +79,9 @@ void Function(FlutterErrorDetails)? installGoldenImageErrorFilter() {
 /// Pixel goldens are NOT portable, which `butleryGolden` below used to claim
 /// they were. Until BUT-1931 the comparison was silenced by a blanket
 /// `FlutterError.onError`, so every mismatch reported a pass and no measurement
-/// of this could exist. Taken once it started working, 2026-08-25/26: of the
-/// eight comparisons, all eight passed on Windows, seven differed on ubuntu by
-/// 0.16-0.86 %, and six of the seven that ran on macOS differed by up to
+/// of this could exist. Taken once it started working, 2026-08-25/26: every
+/// comparison passed on Windows, most differed on ubuntu by 0.16-0.86 %, and
+/// most of those that ran on macOS differed by up to
 /// 3.90 %. Same code, same PNGs, so the platform is the whole variable; the
 /// macOS spread is also why a percentage tolerance is not the answer instead
 /// of a pin.
@@ -104,6 +104,13 @@ void Function(FlutterErrorDetails)? installGoldenImageErrorFilter() {
 /// comparing on another: that only moves the red.
 bool get _goldensCompareHere => Platform.isWindows;
 
+/// The same pin, reachable from a golden that cannot run through
+/// [butleryGolden] because it needs providers in scope that the helper's own
+/// `MaterialApp` does not carry (BUT-1978). An alias rather than a rename: the
+/// goldens that DO go through the helper keep reading the private getter, so
+/// their behaviour is untouched by exposing it.
+bool get goldensCompareHere => _goldensCompareHere;
+
 /// Canonical runner for visual golden tests in the Butlery project.
 ///
 /// Centralises the ceremony every golden test shares:
@@ -120,9 +127,10 @@ bool get _goldensCompareHere => Platform.isWindows;
 ///
 /// Update goldens on the pinned platform with
 /// `flutter test --update-goldens test/widget/golden
-/// test/widget/common/tappable_wrapper_test.dart`. Both paths are needed: one
+/// test/widget/common/tappable_wrapper_test.dart`. Both paths are needed: a
 /// `butleryGolden` lives outside `test/widget/golden`, so the shorter command
-/// rewrites seven of the eight.
+/// does not reach it. `test/widget/menu` holds a further golden that does not
+/// run through [butleryGolden] and carries its own update instruction.
 ///
 /// Usage:
 /// ```dart

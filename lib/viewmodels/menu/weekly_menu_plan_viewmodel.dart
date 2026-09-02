@@ -125,13 +125,18 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
 
   /// BUT-1611: persist who's home for a single meal [slot] on [day]. Null
   /// clears the slot back to the "everyone" default.
-  Future<void> setSlotPresence(
+  ///
+  /// Returns whether the selection was actually persisted (BUT-1982). The view
+  /// needs that: it announces the change, and a refusal already paints the
+  /// error state, so announcing on top of it tells the user their attendance
+  /// was saved when it was not.
+  Future<bool> setSlotPresence(
     DayOfWeek day,
     MealSlot slot,
     List<String>? memberIds,
   ) async {
-    if (_readFailed) return;
-    await _executeWrite(
+    if (_readFailed) return false;
+    return _executeWrite(
       () async {
         final updated = await _service.setSlotPresence(
           weekStart: currentWeekStart,
@@ -150,9 +155,12 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
 
   /// BUT-1611 "Hela dagen": set the same selection on both meal slots of
   /// [day]. Null clears both back to the "everyone" default.
-  Future<void> setDayPresence(DayOfWeek day, List<String>? memberIds) async {
-    if (_readFailed) return;
-    await _executeWrite(
+  ///
+  /// Returns whether the selection was actually persisted, for the same reason
+  /// as [setSlotPresence] (BUT-1982).
+  Future<bool> setDayPresence(DayOfWeek day, List<String>? memberIds) async {
+    if (_readFailed) return false;
+    return _executeWrite(
       () async {
         final updated = await _service.setDayPresence(
           weekStart: currentWeekStart,
