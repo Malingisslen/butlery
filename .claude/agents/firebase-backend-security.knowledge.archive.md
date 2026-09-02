@@ -7847,3 +7847,100 @@ Answers to the three questions this round asked:
   figure Malin was shown.
 
 Verdict: pass, 0 blocking.
+
+---
+
+## 2026-08-31 — BUT-1971 re-review, Dart half (group weekly menu plan + Art. 15 export)
+
+Second pass after a `fail (1 blocking)` verdict. The blocker had been: the export section's
+left-group note was to be produced by a `contributorUserIds array-contains uid` probe whose
+refusal would be read as "you have left some groups". Malin put it on the emulator:
+`weekly-menu-plans-rules.test.ts` now carries two cases labelled MEASUREMENT — the
+contributor query is DENIED to a current member of the very week it matches, and the same
+query written as `memberPermissions.<uid> != null` SUCCEEDS (the control that stops the deny
+being read as "list queries fail here"). Rules are not filters; the read rule gates on
+`memberPermissions` and that implies nothing about `contributorUserIds`. Consequence taken in
+full: `probeLeftGroupPlans` removed from interface, repository, manager and the test fake,
+along with `left_groups_note`, `left_groups_probe_failed` and its error code; the gap is now
+stated unconditionally in `data_minimisation`, with one test asserting both halves of the
+sentence (the gap AND that erasure still reaches those weeks). Blocker closed.
+
+`content_export_manager.dart` had been damaged twice by scripted text-slicing and restored
+from HEAD. Verified: `git diff HEAD --numstat` = 18/1, one hunk, and a member-by-member diff
+of HEAD vs worktree shows only line-number shifts. No helper or method lost.
+
+New finding this round (blocking): `exportPlansForParticipant` returns `doc.data()` whole and
+`_redactGroupPlan` touches only `editTrail`, so the new `contributorUserIds` array — which by
+construction retains uids of members who have LEFT the group, and which no widget renders —
+now ships in the Art. 15 bundle with no recorded decision and no mention in the section's
+`data_minimisation` sentence. Malin's two BUT-1971 calls cover per-dish provenance (KEEP, on
+the ground that the new voters sheet displays it) and the trail (FILTERED); neither reaches
+this array, and the BUT-1732 shared-shopping-list entry deciding the identically-named field
+on `unified_shared_shopping_lists` explicitly warns against being cited across collections.
+
+Also filed: the bundle sentence "readable only by the members it was planned with" is
+readable-off-the-rule wrong (it is the CURRENT members — someone who joined later can read the
+week), correctable in place; and the append-only 200-uid cap has no client-side relief, so a
+document that ever reaches it refuses every later save.
+
+The founder's open question — whether to add a shopping-list-style key-set pin so a seventh
+uid-bearing field cannot be added without reddening the union test — answered NO with a
+reason: the shopping-list pin derives its expectation from a naming convention
+(`endsWith('DisplayName')`), and this model has none (`proposedBy`, `votedInBy`, `actorId`,
+`subjectId`, `lastModifiedBy`). A value-sentinel scan cannot see a field the fixture does not
+populate, and a raw `toFirestore().keys` allowlist reddens on every unrelated field. The
+proportionate answer is a RULE-shaped sentence on `contributorUserIdsForWrite`.
+
+---
+
+## 2026-08-31 — BUT-1971 re-review: the erasure handle is stripped; a true sentence that still does not explain
+
+Re-review after `fail (1 blocking)`. The blocker — `contributorUserIds` shipping whole in the
+group weekly-menu Art. 15 section — is closed by option 1: `_redactGroupPlan` does
+`copy.remove('contributorUserIds')` before `sanitizeForJson`, one new test seeds a plan
+carrying the array and asserts the key is absent while `groupId` still ships, and the
+decision is recorded in `.claude/rules/accepted-deviations.md` and
+`docs/architecture/ACCEPTED_DEVIATIONS.md` as chosen conservatively without asking Malin,
+with KEEPING it named as hers. The existing knowledge bullet on denormalised erasure handles
+had predicted exactly this ("a NEW THIRD-PARTY DISCLOSURE the day it ships … needs its own
+recorded decision"), so the finding produced no new principle on that axis — archive only.
+
+What DID produce one: my previous round asked for the bundle's sentence "readable only by the
+members it was planned with" to be corrected to "the group's current members". That request
+was wrong and the coordinator was right to refuse it. `firestore.rules` (group_weekly_menu_plans,
+read limb) gates on the PLAN's own `memberPermissions`, a projection of the plan's `participants`
+snapshot taken at poll close; nothing adds a member to an existing plan (`addParticipant`/
+`removeParticipant` have no callers in `lib/`), so a later joiner to the chat group is denied and
+"current members" would have been a new false sentence — a correction manufacturing a defect,
+the failure mode this ticket keeps paying for.
+
+The residual finding is subtler and is what went into the principles file. Since
+`cutGroupMenuPlanAccess` removes a leaver from `participants`, the reader set is a strict SUBSET
+of the members the week was planned with. So the sentence remains TRUE as an upper bound
+(readable ⇒ planned-with) while failing at its actual job: it sits under "Weeks in groups you
+have LEFT are not included at all" and is supposed to explain that exclusion to a leaver — who
+satisfies "planned with" perfectly. True, and no explanation. Recommended as a STRIKE rather
+than a re-word, since the unconditional gap sentence above it already carries the fact.
+
+Also checked and clean:
+- Three-language cap on the contributor array. `rules_numeric_bound_drift_test.dart` pins
+  Dart↔rules (`groupMenuContributorsWithinCap`, 200); `weekly-menu-plans-rules.test.ts:745`
+  pins the CF constant `MAX_CONTRIBUTOR_UIDS` against the rules text. The deviation entry's
+  "all three are pinned against each other" is therefore measured, not asserted.
+- `remove-chat-group-member.ts` guards the union with `known.length < MAX_CONTRIBUTOR_UIDS`,
+  which is off-by-one correct for a single-uid union (199 → 200 allowed, 200 → skipped).
+- Export ⊆ erasure holds in the safe direction: the export discovers on `memberPermissions`
+  alone while the cascade also discovers on `contributorUserIds`
+  (`account-deletion-cascade.ts:302`), so nothing the bundle ships is un-erasable.
+
+Two comment-level findings raised, both non-blocking:
+- The new rule-shaped sentence on `contributorUserIdsForWrite` ranges over "this model or
+  [WeeklyMenuPlanEntry]", but the getter also walks `GroupMenuParticipant` and
+  `GroupMenuEditTrailRow` — a uid field added to either sits outside the rule as written.
+  Correct in place; the range is directly readable from the getter body.
+- The field-level doc on `contributorUserIds` still carries the checklist ("participant,
+  proposer, voter, trail actor or subject, last writer") that the getter's new sentence says
+  it deliberately avoided writing. Strike the enumeration, keep "every uid the document
+  currently names".
+
+Verdict: pass (0 blocking).

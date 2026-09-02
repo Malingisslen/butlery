@@ -38,10 +38,10 @@ without approval (mismatch = silent client-side "not found").
   rest and wins on collision.
 - **`maxInstances` is a DEPLOY gate, not tuning.** Global 3; the two
   ingredient cascades override to 10. Unset = the v2 default 100/function,
-  which blew the regional CPU quota as `Container Healthcheck failed`.
+  which blew the regional CPU quota.
   An increase is refused
-  (`NOT_ENOUGH_USAGE_HISTORY`). Established remedy: one function per
-  `firebase deploy`, ~90s each vs `timeout-minutes: 30`.
+  (`NOT_ENOUGH_USAGE_HISTORY`). Remedy: one function per `firebase deploy`
+  (~90s each, against `timeout-minutes: 30`).
 - **3 instances != 3 concurrent executions, and a LOW cap PACKS.**
   `concurrency` defaults to 80 at `cpu >= 1`. Only a LONG-LIVED,
   memory-hungry handler declares `concurrency: 1` (pinned in
@@ -50,9 +50,7 @@ without approval (mismatch = silent client-side "not found").
   `isCascadeEventExpired`, which measures from `event.time` — a first
   delivery that only queued is abandoned without ever failing, and all
   events of one admin batch share one emission instant, so they race ONE
-  window. Budget `maxInstances x maxEventAge / maxDuration`: a worst-case
-  FLOOR, tight on neither side, so it never carries a would/would-not-abandon
-  verdict. An abandoned cascade writes NO marker, so it is invisible to
+  window. An abandoned cascade writes NO marker, so it is invisible to
   `STALE_TAG_MARKERS`, `getDeletedIngredientStats` and the Dart
   `_needsRetagging`; the only signal is a `cascade.abandoned` error log
   nothing consumes. Raise `maxInstances` (override + `ALLOWED_OVERRIDES`),
@@ -74,9 +72,8 @@ without approval (mismatch = silent client-side "not found").
 - **Some gen2 exports pin their OWN region** (`moderateUpload`,
   `syncConversationLastMessage`, `purgeExpiredAuditLogs`, the `migrations/`
   backfills), so never say a global option "reaches every export". Adding an
-  export falsifies every endpoint TALLY; no test guards them — strike, and
-  sweep every carrier INCLUDING `.github/workflows/`, where "all 71
-  functions" is already off by one. Load-bearing count ⇒ DERIVE it in a test.
+  export falsifies every endpoint TALLY; no test guards them — strike the
+  numeral, sweeping `.github/workflows/` too, or DERIVE it in a test.
 
 ## Firebase Functions v2 — what to use
 
@@ -99,7 +96,7 @@ Triggers retry on uncaught exception; handlers must be idempotent:
 6. **Client-supplied strings in a doc path are a poison-pill surface** —
    validate non-empty, ≤1500 UTF-8 bytes, no `/`, not `.`/`..`/`/^__.*__$/`.
 7. Sanitisation must never shrink the value a security gate's THRESHOLD is
-   computed from. Can't be idempotent? Document why + add a guard doc.
+   computed from.
 8. **Concurrent Tier-1 cascade legs (`Promise.all`) can write the same
    collection** — grep sibling legs for writers before claiming "no
    race"; make anonymising legs NOT_FOUND-tolerant PER DOCUMENT
@@ -122,15 +119,13 @@ Triggers retry on uncaught exception; handlers must be idempotent:
     never a LIST of writers, never the sibling's ADMISSION TEST. A stale
     payload lands LAST and undoes the correction: `create`-only misses the
     read-receipt update; the sibling's predicate misses a row edited OUT of
-    candidacy. A CREATE gate may use the sibling's predicate only for the
-    sibling's OWN marks — an unconstrained wire value has a SECOND producer,
-    the client. A comment states what the trigger SEES, never what the row
+    candidacy. A comment states what the trigger SEES, never what the row
     IS. Stage by REPLAYING a pre-rewrite snapshot. Full record: ADR-0009.
 
 ## Cost & cold-start
 
 - Billed per ms × memory + per-invocation. Narrow imports. 540s is the v2
-  max, but read the real value off `__endpoint`, never off a comment.
+  max; read the real value off `__endpoint`, never a comment.
 - **An in-code timeout guard is dead unless `timeoutSeconds` is declared on
   the SAME trigger** — global options carry no timeout, so a v2 event
   function defaults to the 60s platform timeout otherwise. Export the
@@ -138,12 +133,12 @@ Triggers retry on uncaught exception; handlers must be idempotent:
   manifest's `__endpoint.timeoutSeconds` (a constant-vs-constant test
   alone stays green after the declaration is deleted).
 - **A `retry:true` trigger enumerating a client-writable collection has
-  unbounded fan-out** — cap the READ (`.limit(CAP+1).get()`), refuse above
-  cap, chunk-delete with a per-item `.catch` on grpc code only, never
-  throw. A boolean verdict gating a destructive delete needs a fixture that
-  can force it FALSE. A `rateLimitWrite(bucket, n)` rules conjunct binds
-  only if some writer STAMPS `users/{uid}/rate_limits/<bucket>` — grep
-  before citing one as a real bound.
+  unbounded fan-out** — cap the READ (`.limit(CAP+1).get()`), chunk-delete
+  with a per-item `.catch` on grpc code only, never throw. The over-cap
+  verdict follows the ACTION: DECLINE a destructive sweep (truncating
+  half-erases), CUT the capped page for a per-row ACCESS REVOCATION (rows are
+  independent, nothing retries, and refusing lets a planter keep access). A boolean verdict gating a destructive delete needs a fixture that
+  can force it FALSE.
 
 ## Secrets handling
 
@@ -176,7 +171,7 @@ Triggers retry on uncaught exception; handlers must be idempotent:
 `logger.info("event", { userId, recipeId, action })` — stable string,
 structured object, no PII. **`logger.error(msg, { err })` records NO
 cause** — unwraps only when passed POSITIONALLY; use `errCode`/`errName`
-from `(err as {code?}).code` instead.
+from `(err as {code?}).code`.
 - **Hash ALL PII/title-derived fields consistently** — a mixed line (one
   hashed, one cleartext) is the tell. `hashUid(uid)` or `uid.slice(0,6)`.
 - **A DOCUMENT ID can be PII depending on the CALLER** — a conversation id
@@ -207,10 +202,11 @@ from `(err as {code?}).code` instead.
   `.segments`): it HAS `.split`, so it matches ZERO in silence and no clean
   control can see it. Type EVERY fake query seam `string | FieldPath` — an
   `as unknown as Firestore` cast type-checks none of them.
-- Vacuity patterns: a `?? {}` read survives the mutant that DELETES the doc
-  (pair it with a sibling requiring EXISTS); a `src.includes("<field>")`
-  assertion is free whenever the docstring names the field (assert the
-  WRITE).
+- Vacuity: a `?? {}` read survives the mutant DELETING the doc (pair with a
+  sibling requiring EXISTS); `src.includes("<field>")` is free when a
+  docstring names the field (assert the WRITE). A LOG-ONLY branch is pinnable
+  via the fake's recorded payload (`writes[].data`) — never write "no test
+  can pin this".
 - **Rules are not filters** — a client query with NO condition is DENIED
   wholesale on a member-scoped collection; only the RULES emulator lane
   proves it, and that emulator KEEPS data across runs, so give an "empty"
@@ -229,10 +225,13 @@ from `(err as {code?}).code` instead.
   PROJECT or THROW, never pass through (a dotted path throws: flat-key
   `data()` ≠ real nested shape).
 ### PII scrubbing + GDPR cascade design
-- **PROMOTING a per-section field to the ROOT of an Art. 15 bundle changes
-  its blast radius — the root value must be DERIVED, never copied** (a raw
-  Firestore error string can carry another subject's uid or an internal
-  path); the root guard does NOT clear the SECTION body.
+- **A server write leaving a doc unable to satisfy its own UPDATE limb BRICKS a
+  DETERMINISTIC doc id** (`{groupId}_{ISO week}`). Two forms: emptying
+  `memberPermissions` (a client `set()` is an UPDATE and every limb gates on
+  that map), and — since the Admin SDK bypasses rules — `arrayUnion`ing past a
+  rules cap (`contributorUserIds` 200), which freezes the doc
+  for every client. Delete the doc, or prune/skip at the cap; before revoking
+  the last holder, name what re-creates the id.
 - Cascade purges discover children via `rootRef.listCollections()`, never
   hard-coded names. Steps are BEST-EFFORT — a rethrow re-runs the WHOLE
   cascade, double-applying non-idempotent ones.
@@ -244,9 +243,8 @@ from `(err as {code?}).code` instead.
   the SAME `getAll` as the idempotency gate; skip (never `set(merge)`) when
   absent. Where step A SKIPS and step B DELETES the same doc, record
   `batch.update` PATHS on the fake — absence can't pin the skip.
-- A cascade STEP that early-`return false`s on its own cap skips every leg
-  below it; put independent legs before the decline, or they are lost for a
-  reason unrelated to them.
+- A step that early-`return false`s on its own cap skips every leg below it —
+  put independent legs first.
 - **Cross-check the identity FIELD and COLLECTION NAME across every leg**
   (deleter, export, probe, rules, Dart constant) — a wrong or pre-rename
   name deletes NOTHING silently, and the VALUE searched for must match what
@@ -311,15 +309,25 @@ from `(err as {code?}).code` instead.
   (dedup by `doc.ref.path`), then GATE any empty-roster DELETE on the uid
   having actually been ON that roster AND on EVERY denormalised roster being
   empty, EACH READ RAW: a witness DERIVED from another collapses the gate to
-  one check, so a survivor named by only one roster is destroyed. A doc
-  reached only by the attribution handle dies on a malformed roster.
-  Conditionally-spread each
-  scrubbed field: writing an unchanged array back widens the lost-update
-  window over docs this user never edited.
-  A leg with no DIRTY-fixture scenario is
-  mutation-invisible; `strict:false` swallows a failed chunk, so the probe is
-  the ONLY contradiction to an unconditional `return true` — leg and scenario
-  ship in one edit. A probe ERROR ADDS to residual (a sentinel, never a
+  one check, so a survivor named by only one roster is destroyed. Witnesses are
+  ROSTERS (readers) ONLY — an erasure-DISCOVERY handle (`contributorUserIds`) as
+  a witness blocks the delete and strands a doc with an empty
+  `memberPermissions`: unreadable, unwritable, un-deletable, on an id poll-close
+  re-mints.
+  **That gate binds EVERY server writer that can empty a roster**, and a
+  `.select()` projection is how one silently drops to a single witness.
+  **Its NON-delete branch must be survivable too**: rewriting the roster
+  projections wholesale there blanks `memberPermissions` and BRICKS a
+  deterministic `{groupId}_{ISO week}` id — worse than the delete the gate
+  refused. Delete the departing key PER KEY instead (`FieldValue.delete()` on
+  `map.<uid>`, `arrayRemove` on the mirror), and drop the whole-field key from
+  the same payload or the update carries conflicting paths; an unchanged array
+  written back also widens the lost-update window. Per-key surgery on the
+  PROJECTIONS alone is NOT durable — a client recomputing them from the
+  untouched source roster undoes the cut; say so rather than implying a fix.
+  A leg with no DIRTY fixture is mutation-invisible and `strict:false`
+  swallows a failed chunk, so the probe is the ONLY contradiction to
+  `return true` — leg and scenario ship in one edit. A probe ERROR ADDS to residual (a sentinel, never a
   count), never aborts; one try/catch per leg. Hoist any list the deleter and
   probe both hardcode into one exported const. A "the N siblings" completeness
   numeral in a cascade docstring is a GDPR claim — strike it. Grep every
@@ -361,11 +369,13 @@ from `(err as {code?}).code` instead.
 - Rules can't iterate an array for a per-member rule on GROUP-shaped data —
   the check lives in the CALLABLES (`groups/minor-membership-gate.ts`),
   backstopped by `enforceGroupMinorMembership`, `onDocumentWritten` on
-  `chat_groups/{groupId}`. NO trigger watches `conversations/{id}`, so "a
-  conversation create disarms child safety" is stale.
+  `chat_groups/{groupId}`.
 - **A callable that READS a doc before checking caller membership is an
   ORACLE, and its idempotent no-op branch is the leak** — collapse
   `!exists` + non-member into ONE uniform response, no count.
+- **A cleanup helper spawned from a callable needs `callerUid` passed IN if it
+  writes any ATTRIBUTION row** — deriving the actor from the SUBJECT is right
+  only for a self-leave and misnames an admin-initiated eviction.
 - **A client-chosen document id is not unique across accounts.** A
   server-side pointer to one (`friend_categories/{uuid}`) must be keyed on
   OWNER + id, or an ex-member re-creating that id under their own uid is
@@ -405,11 +415,10 @@ from `(err as {code?}).code` instead.
 ### CI / test wiring / ops
 - Post-deploy smoke: `firebase functions:list --json` + grep stable names —
   `deploy` exiting 0 does NOT prove functions are callable, and a run
-  concluding `failure` does NOT prove the DEPLOY step failed (the smoke gate
-  is a later step). **"Setting X fixed/helped the deploy" is a claim about a
-  RUN**: read conclusions from `gh run list --workflow=`, then
-  `git show <headSha>:<file>` PER RUN to prove the value under test was even
-  committed — an uncommitted change has deployed nothing.
+  concluding `failure` does NOT prove the DEPLOY step failed.
+  **"Setting X fixed the deploy" is a claim about a RUN**:
+  read conclusions from `gh run list --workflow=`, then
+  `git show <headSha>:<file>` PER RUN — an uncommitted change deployed nothing.
 - **A workflow step whose `if:` names only a step OUTCOME is DEAD after a
   failure** — GitHub ANDs an implicit `success()` unless the expression
   holds a status function. Write `always() && (...)`; never cite a

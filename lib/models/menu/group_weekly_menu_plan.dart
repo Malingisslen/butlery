@@ -174,6 +174,26 @@ class GroupWeeklyMenuPlan {
   /// shallow enough that the document cannot grow without limit.
   static const int maxEditTrailRows = 50;
 
+  /// The stored array unioned with every uid the document currently names. Not
+  /// a complete history: there is no backfill, so a uid that left a document
+  /// before this field existed is not in it. Kept as a top-level
+  /// array purely so account erasure can FIND the plan
+  /// after `participants` no longer names the person: Firestore cannot query
+  /// inside an array of maps, and leaving a group now removes you from the
+  /// roster (`removeChatGroupMember`) while your name stays on the dishes.
+  ///
+  /// Mirrors `unified_shared_shopping_lists.contributorUserIds` (BUT-1725),
+  /// which exists for the same reason and whose rule this collection now
+  /// copies. UNIONED on every write, never shrunk client-side — `firestore.rules`
+  /// refuses a write that drops an entry, or a remaining member could strip a
+  /// departed member's uid and hide their name from erasure forever.
+  final List<String> contributorUserIds;
+
+  /// Taken from the shopping-list precedent rather than derived again.
+  /// `firestore.rules` holds the same number; the two are compared by
+  /// `test/unit/security/rules_numeric_bound_drift_test.dart`.
+  static const int maxContributorUserIds = 200;
+
   const GroupWeeklyMenuPlan({
     required this.id,
     required this.groupId,
@@ -184,6 +204,7 @@ class GroupWeeklyMenuPlan {
     required this.lastModifiedAt,
     this.lastModifiedBy,
     this.editTrail = const [],
+    this.contributorUserIds = const [],
   });
 
   /// Deterministic doc ID: `{groupId}_{YYYY}-W{WW}`. Mirrors the user-plan
@@ -245,6 +266,42 @@ class GroupWeeklyMenuPlan {
   List<String> get participantUserIds =>
       participants.map((p) => p.userId).toList(growable: false);
 
+  /// [contributorUserIds] as it must be WRITTEN: the stored value unioned with
+  /// every uid the document currently names.
+  ///
+  /// **Any field that can hold a uid, added to this model or to any type it
+  /// walks below — [GroupMenuParticipant], [WeeklyMenuPlanEntry],
+  /// [GroupMenuEditTrailRow] — must be unioned here.** A uid left out cannot be
+  /// erased once a departure clears the roster, which is the failure this array
+  /// exists to prevent. Stated as a rule rather than a checklist of the current
+  /// fields, because a checklist is what goes stale. Union, never replacement — the
+  /// stored value is the part that outlives a departure, and a write computed
+  /// only from the live fields would drop exactly the people this array exists
+  /// to keep reachable.
+  List<String> get contributorUserIdsForWrite {
+    final union = <String>{...contributorUserIds};
+    for (final p in participants) {
+      union.add(p.userId);
+    }
+    for (final e in entries) {
+      final proposedBy = e.proposedBy;
+      if (proposedBy != null) union.add(proposedBy);
+      union.addAll(e.votedInBy);
+    }
+    for (final row in editTrail) {
+      union.add(row.actorId);
+      final subjectId = row.subjectId;
+      if (subjectId != null) union.add(subjectId);
+    }
+    final writer = lastModifiedBy;
+    // Not the cascade's tombstone. It writes `lastModifiedBy: "deleted"` when
+    // the last writer's account is erased, and unioning that literal would put
+    // a permanent non-uid in an array no `arrayRemove(uid)` can ever clear,
+    // counting against the cap forever.
+    if (writer != null && writer != 'deleted') union.add(writer);
+    return union.toList(growable: false);
+  }
+
   /// `{userId: permissionName}` map, mirrors `unified_shared_shopping_lists.memberPermissions`.
   /// Serialized alongside the structured `participants` list so Firestore
   /// rules can do per-user permission lookup via map key access.
@@ -276,6 +333,7 @@ class GroupWeeklyMenuPlan {
     DateTime? lastModifiedAt,
     String? lastModifiedBy,
     List<GroupMenuEditTrailRow>? editTrail,
+    List<String>? contributorUserIds,
   }) {
     return GroupWeeklyMenuPlan(
       id: id,
@@ -287,6 +345,7 @@ class GroupWeeklyMenuPlan {
       lastModifiedAt: lastModifiedAt ?? clock.now(),
       lastModifiedBy: lastModifiedBy ?? this.lastModifiedBy,
       editTrail: editTrail ?? this.editTrail,
+      contributorUserIds: contributorUserIds ?? this.contributorUserIds,
     );
   }
 
@@ -307,6 +366,9 @@ class GroupWeeklyMenuPlan {
       if (lastModifiedBy != null) 'lastModifiedBy': lastModifiedBy,
       if (editTrail.isNotEmpty)
         'editTrail': editTrail.map((r) => r.toMap()).toList(),
+      // Always written, never omitted-when-empty like `editTrail` above: an
+      // absent field would let the next write start the union from nothing.
+      'contributorUserIds': contributorUserIdsForWrite,
     };
   }
 
@@ -344,6 +406,10 @@ class GroupWeeklyMenuPlan {
         data,
         'editTrail',
         GroupMenuEditTrailRow.fromMap,
+      ),
+      contributorUserIds: SerializationUtils.safeStringList(
+        data,
+        'contributorUserIds',
       ),
     );
   }

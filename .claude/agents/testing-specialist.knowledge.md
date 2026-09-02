@@ -129,7 +129,17 @@ you want the revert-probe that proved it; or this file itself reads too compress
   byte/line). The formatter can insert a trailing comma, so fall back to raw `diff` if a
   token-signature match misses a genuine format-only file.
 - **"Staging — resolved" isn't resolved until `git show :<path>` diff is empty** — an index
-  can sit behind graded bytes across rounds; close every round naming unstaged hunks. Close
+  can sit behind graded bytes across rounds; close every round naming unstaged hunks.
+  **When the BRIEF says a finding is "already applied", run `git diff --numstat` on the
+  reviewed paths BEFORE grading, not at verdict time** — `Read` returns the WORKTREE and the
+  parent commits the INDEX, so a repair can be real and still absent from what ships. Measured
+  on BUT-1971's follow-up: 3 of 5 reviewed files were `MM`, and BOTH reported repairs (a
+  vacuous test rewritten, a false comment corrected) lived only in the worktree while the index
+  still held the exact defects the brief called fixed — plus two more the worktree had struck.
+  The index copy of a struck sentence is a SECOND claim to grade, not a stale duplicate: here it
+  was a wrong count ("from all five positions"; six sources) and a false capability ("the Art. 15
+  probe can FIND the plan" — the export queries `memberPermissions`, and the rules deny a
+  `contributorUserIds` query to every caller). Grade both copies and say which the verdict is against. Close
   the POSITIVE direction mechanically at verdict time: `git diff --numstat` every reviewed
   path (0 lines = index matches worktree) in one call, so the verdict names the copy the
   parent will commit. **A round whose remedy was "strike a false sentence" is the highest-risk

@@ -3913,3 +3913,355 @@ silently on a rename with no test to catch it (the Dart guard has no reciprocal 
 to the rules comment). Not worth a rewrite today.
 
 Verdict: pass, 0 blocking.
+
+---
+
+## 2026-08-31 — BUT-1971 follow-up: `group_weekly_menu_plans.contributorUserIds`
+### (append-only erasure handle, mirroring `unified_shared_shopping_lists.keepsContributorTrail`)
+
+Reviewed `git diff -- firestore.rules functions/src/__tests__/weekly-menu-plans-rules.test.ts`
+plus `test/unit/security/rules_numeric_bound_drift_test.dart` and
+`lib/models/menu/group_weekly_menu_plan.dart`. Emulator: 32/32 (the suite grew from 30 to 32
+mid-review — a parallel session added the two MEASUREMENT read-surface tests at 09:49).
+
+**Split verdict.** Correct and faithful to the precedent. `hasAll` on update only is right:
+create has no `resource`, and a create only happens on an absent document, so there is no
+prior array to preserve. The cap ANDed on BOTH limbs is required because the create limb
+uses `hasRequiredFields`, not `hasOnly`, so an extra oversized field would otherwise ride in
+(re-read the create limb to confirm — same structure as the `editTrail` cap's justification).
+Both conjuncts sit at the TOP level of the update limb, outside the
+`(participants-unchanged || admin)` parenthesis, so an admin is bound too — the same placement
+SSL14 exists to pin on the shopping lists.
+
+**Read surface: none added, and now measured in-suite.** The read limb still gates only on
+`memberPermissions`. Firestore refuses a list query it cannot prove readable for every
+returnable document, so `where('contributorUserIds','array-contains', uid)` is denied even to
+a CURRENT member — the suite's two MEASUREMENT tests pin exactly that plus the
+`memberPermissions.<uid>` control. `FirebaseGroupWeeklyMenuPlanRepository.probeLeftGroupPlans`
+is written knowing this: `.limit(1)`, and its own comment says the refusal IS the product.
+The only new disclosure to remaining members is a uid that survives in the array after its
+other traces are gone (cascade `arrayRemove` runs Admin-SDK, so this is narrow).
+
+**Four probes against the REAL rules** (throwaway sed-copy of the suite, deleted in the same
+Bash call; `firestore.rules` never written to, md5 unchanged): whole-doc `set()` OMITTING the
+field on a doc that has one -> DENY; preserving -> ALLOW; same set in DIFFERENT ORDER -> ALLOW
+(set semantics); a doc already at 205 -> FROZEN even for an unrelated `lastModifiedAt` update.
+A fifth: same-size SUBSTITUTION `['a','b'] -> ['a','z']` -> DENY.
+
+**Two surviving mutants — the coverage finding.** Both left the suite 32/32 green:
+1. `request.resource.data.get('contributorUserIds', resource.data.get('contributorUserIds', []))`
+   — defaulting the REQUEST side to the prior array. This is the plausible future "make older
+   clients work" fix, and it is caught only by the whole-doc `set()`-omits case. That verb is
+   production here: `FirebaseGroupWeeklyMenuPlanRepository.save` writes the whole document with
+   a non-merge `set`.
+2. `.size() >= resource.data.get('contributorUserIds', []).size()` replacing `.hasAll(...)` —
+   caught only by a same-size substitution.
+The existing drop/clear/editor denies kill neither. Same shape as the shopping-list suite's
+SSL17/SSL18 (set-drop + fail-closed control), SSL8 (reorder) and SSL20 (frozen) — all four
+absent here.
+
+**Drift guard.** Current raw-string concatenation form is right. Replicated its extraction
+independently over the comment-stripped file: it captures 200 from `groupMenuContributorsWithinCap`
+(one of SEVEN `<= 200` in the file) and 50 from `groupMenuTrailWithinCap` (one of SIX `<= 50`),
+so the function-name anchor is what makes it discriminating; `\s*\(` after the name also blocks
+a prefix collision with a future `…CapV2`. `flutter test test/unit` runs it in CI, +2 green.
+While replicating it I reproduced the very decay its comment describes, through bash instead of
+Dart: a heredoc collapsed `\s` to `\s` inside a JS string literal, giving `functions+` and NO
+MATCH. Build such patterns from regex LITERALS.
+One false clause found: the contributor test's "raise the Dart constant and every suite stays
+green while the server denies the write". Nothing in `lib/` reads `maxContributorUserIds` —
+`contributorUserIdsForWrite` does not prune to it (unlike `maxEditTrailRows`, which
+`GroupWeeklyMenuPlanService` prunes to) — so raising it changes no write and denies nothing.
+Strike the causal clause; the guard itself still earns its place.
+
+**Residual, informational only:** an admin can `delete` and re-`create` the plan, which resets
+the array; and a >200-contributor plan is permanently unsavable with no client-side prune. Both
+are inherited from the precedent and adjacent to already-decided BUT-1971 deviations.
+
+Verdict: pass, 0 blocking.
+
+## 2026-08-31 — BUT-1971 re-review: both blockers killed, mutants re-measured by me
+
+Re-review of `functions/src/__tests__/weekly-menu-plans-rules.test.ts` (37 tests),
+`firestore.rules`' `group_weekly_menu_plans` block, and
+`test/unit/security/rules_numeric_bound_drift_test.dart`.
+
+Real suite: 37/37. Drift guard: 2/2.
+
+Re-ran both blocking mutants myself rather than accepting the reported figures, through a
+throwaway `sed`-derived suite copy (project id lowercased, `RULES_PATH` repointed, the
+orphaned `import * as path` deleted) against mutant rulesets built in the scratchpad by a
+node mutator that slices on `indexOf('match /group_weekly_menu_plans')` and asserts a match
+count of exactly 1:
+
+- Mutant A — request side defaults to the STORED array
+  (`request.resource.data.get('contributorUserIds', resource.data.get('contributorUserIds', []))`),
+  i.e. the "let old clients through" fix: **36/37, sole kill = "a whole-document set() that
+  OMITS the field is denied"**.
+- Mutant B — `hasAll` rewritten as `size() >= size()`: **36/37, sole kill = "a SAME-SIZE
+  substitution is denied"**.
+
+`firestore.rules` was never written to; both mutants were separate files.
+
+Mediums taken and verified present: the reorder ALLOW (production writes come from a Dart
+`Set`, order unstable) and the already-over-cap freeze at 205 contributors, the latter
+labelled a documented consequence rather than a guard.
+
+Low: the drift test's contributor comment was struck and replaced. The replacement claim
+("nothing in `lib/` reads this constant, unlike `maxEditTrailRows` which the service prunes
+to") is a MEASUREMENT, so I grepped it: `maxContributorUserIds` appears once in `lib/`, the
+declaration itself; `maxEditTrailRows` is read by
+`GroupWeeklyMenuPlanService._withTrailRow`; `contributorUserIdsForWrite` unions and never
+truncates. Verified true.
+
+Superseded verbatim from the knowledge file (the drift-guard bullet's residual), now false
+because `GroupWeeklyMenuPlan.maxContributorUserIds`/`maxEditTrailRows` docstrings name the
+guard and `firestore.rules` names it at both caps:
+
+> Residual worth one Low line: such a comment carries a cross-language PATH that a rename
+> breaks silently, with no reciprocal pointer back (BUT-1971, `groupMenuTrailWithinCap` ->
+> `rules_numeric_bound_drift_test.dart`).
+
+Sentinel question, answered: `arrayUnion`/`arrayRemove` owe nothing here. Rules evaluate the
+resolved post-state, so a client sentinel is an alias of writes already pinned; the
+leave-path CF's `arrayUnion` in `cutGroupMenuPlanAccess` runs under the Admin SDK and never
+evaluates rules, so a rules suite cannot observe it at all.
+
+New this round: `cutGroupMenuPlanAccess` pushes an `adminPromoted` row onto the trail
+without pruning, so an Admin-SDK write can leave a stored trail at 51 rows, which
+`groupMenuTrailWithinCap` then refuses on every client save. Not permanent — `_withTrailRow`
+prunes to the newest 50 on every append, and every live `save()` path appends — so it heals
+on the next interactive edit. The contributor cap has no prune by design, so its freeze IS
+permanent, which is what the new freeze test documents. Two caps in one collection with
+opposite verdicts.
+
+Also checked: the two MEASUREMENT tests support the Art. 15 conclusion they were used for.
+The deny is sent by a CURRENT member of the only matching document, so a leaver is strictly
+weaker and denied too, and the `memberPermissions` control rules out "list queries fail
+here". One refinement, in the safe direction: a membership-CONSTRAINED query IS allowed, but
+it can only ever return weeks the requester is still a member of — never a week they left —
+so removing the export probe is right on either reading.
+
+`node functions/scripts/check-test-registration.js`: OK, 134 files, 42 rules suites.
+
+## 2026-08-31 — BUT-1971, final review: the cross-language cap pin
+
+`weekly-menu-plans-rules.test.ts` gained "the Cloud Function's copies of both caps match
+the rules literals", importing `MAX_TRAIL_ROWS` (50) and `MAX_CONTRIBUTOR_UIDS` (200) from
+`functions/src/groups/remove-chat-group-member.ts` and asserting each templated substring
+appears in the rules text the suite already reads. Third copy of each number; the Dart guard
+`test/unit/security/rules_numeric_bound_drift_test.dart` cannot see a TS literal, and the CF's
+own suite `chat-group-callables.test.ts` imports the same constants, so it is self-referential
+and stays green under drift. The pin is therefore genuinely the only tie — the motivation is
+sound.
+
+Suite re-run green (38/38); Dart guard 2/2. Two blocking findings, both measured:
+
+1. **The contributor needle is not unique.** Counted over `firestore.rules`:
+   `.get('contributorUserIds', []).size() <= 200` appears 3x — line 1010 in
+   `group_weekly_menu_plans`, lines 2362 and 2380 in `unified_shared_shopping_lists`. So the
+   scenario the guard exists for — the GROUP cap moving to 150 together with its Dart twin,
+   which keeps `rules_numeric_bound_drift_test.dart` green — leaves the pin matching the
+   shopping-list copy and green forever, while the CF unions to 200 and bricks weeks the rule
+   caps at 150. The `editTrail` needle is unique (1x) today, i.e. anchored by luck. Remedy:
+   slice by `indexOf('match /group_weekly_menu_plans')` up to the next `match /` and assert
+   the occurrence count inside the slice == 1.
+2. **A false clause in the test's own comment.** "the CF writing past a cap … writes a
+   document no client can ever save again" ranges over both caps. True for
+   `contributorUserIds` (nothing prunes it client-side; pinned by "a document already OVER the
+   cap is frozen"). FALSE for `editTrail`: `GroupWeeklyMenuPlanService._withTrailRow`
+   (`group_weekly_menu_plan_service.dart:321-322`) prunes to the newest
+   `GroupWeeklyMenuPlan.maxEditTrailRows` on EVERY append, so the next interactive edit heals
+   it — the opposite-verdicts-on-two-caps asymmetry already in the principles file, arriving
+   again as a comment. Strike the clause (the true wording needs measuring, so it is not a
+   correct-in-place case).
+
+Non-blocking: the raw `includes()` is comment-blind — measured by commenting the trail cap out
+in memory, the pin stayed true — whereas the sibling Dart guard strips `//` first for exactly
+that reason. Behavioural over-cap denies in the same suite reddens on a commented-out cap, so
+the SUITE is not vacuous; the pin alone is. Also, both thrown messages assert which side
+drifted ("remove-chat-group-member.ts prunes the trail to 50, which is not the bound in
+firestore.rules"), which prints falsely if the rule is merely reflowed across two lines — the
+same "guard fails accusing production" shape this ticket already paid for in Dart.
+
+Verdict on the instrument itself: a substring IS the right choice over a second parser here.
+The Dart guard already parses, this repo has a recorded regex-decay incident on that very
+pattern, and `includes` has no escaping failure mode. It needs the anchor, not a rewrite.
+
+Confirmed for the downstream citation: the two MEASUREMENT tests still say what
+`content_export_manager.dart` cites them for — the `array-contains` query on
+`contributorUserIds` is denied to a CURRENT member of a matching week, with the
+`memberPermissions` query allowed as the control, so the bundle's unconditional
+left-group sentence stands.
+
+## 2026-08-31 — BUT-1971 final gate: certifying the anchored cap pin, and the map case
+
+Frozen-bytes review of `firestore.rules` (`group_weekly_menu_plans`) +
+`functions/src/__tests__/weekly-menu-plans-rules.test.ts`. 39/39 re-run by me on the
+frozen bytes; no blocking findings.
+
+**The anchored pin, measured (not taken on report).** The previous round's blocker was a
+`rulesText.includes(".get('contributorUserIds', []).size() <= 200")` that matched three
+times whole-file. The fix ships `groupPlanRulesBlock()` — comment-strip, then slice from
+`match /group_weekly_menu_plans` to the next `match /` — with the in-slice occurrence count
+asserted `=== 1` per cap. I replicated that function verbatim in node over mutated buffers
+(pure string work; no emulator involved) and ran four mutants:
+
+| mutant | editTrail hits | contributor hits | verdict |
+|---|---|---|---|
+| pristine | 1 | 1 | guard green |
+| group contributor cap 200→150 | 1 | 0 | FIRES |
+| group trail cap 50→40 | 0 | 1 | FIRES |
+| group contributor cap commented out | 1 | 0 | FIRES (comment-blindness closed) |
+| shopping-list copies 200→150 (group untouched) | 1 | 1 | correctly silent |
+
+Whole-file counts: contributor needle 3 (rules L1010 in the group block; L2362 and L2380
+inside `unified_shared_shopping_lists`, block start L2348), trail needle 1. So the test
+comment's three factual claims — "NOT unique in the file", "the shopping list carries the
+same literal at the same cap", "the trail needle happens to be unique today" — are all
+measured-true. Non-vacuous for BOTH caps.
+
+**The Dart guard is anchored differently and better.** `rules_numeric_bound_drift_test.dart`
+matches on `function\s+groupMenuContributorsWithinCap\s*\(\s*\)\s*\{[^}]*?\.size\(\)\s*<=\s*(\d+)`
+— a FUNCTION NAME, unique by construction, which cannot reach the shopping list's inline
+copies. No slice needed. Its docstring's pointer ("whether the capped function is applied to
+both limbs is proven by the rules suite") resolves for every symbol it ranges over: the suite
+holds create-deny + update-deny for both caps.
+
+**Drift triangle closed, three languages:** Dart 50/200 (`GroupWeeklyMenuPlan`), rules 50/200,
+CF 50/200 (`MAX_TRAIL_ROWS`/`MAX_CONTRIBUTOR_UIDS`, `remove-chat-group-member.ts` L562/L573).
+CF↔rules by the new rules test (which imports the CF constants), Dart↔rules by the Dart guard.
+A change in any one language reddens something.
+
+**The map case.** `a MAP-shaped editTrail with 50 keys is ALLOWED by the cap` — passes. What
+the four downstream carriers actually cite is specifically "a 50-key MAP is accepted by
+`.size() <= 50`", so a map-at-50 rules-layer case discharges all four:
+`account-deletion-cascade.ts` L1411, `request-account-deletion.integration.test.ts` L346,
+`content_export_manager.dart` L486, `content_export_manager_test.dart` L1048. The cascade's
+own map fixture (`editTrail: { rogue: TARGET }`) is seeded through the Admin SDK, which
+bypasses rules, so it was never a rules-layer proof — the claim "no committed case held it"
+was true. Two scoping notes, neither blocking: the comment says "list, map and string" while
+the case holds map only (string is measured in this archive, not in a committed test), and only
+the ALLOW direction is pinned (a 51-key map deny is uncovered). The case's single kill is a
+future `is list` hardening — which is the point: it turns silent six-sentence drift into one
+red test.
+
+**Claims verified against source rather than read:** the export redaction fails closed at the
+CONTAINER (`copy['editTrail'] = const []`, `content_export_manager.dart` L484-491) with its own
+map-shaped test; the cascade DELETES a non-list trail outright (L1413-1415) with its own
+fixture; `contributorUserIdsForWrite` unions and never prunes, so the contributor freeze IS
+permanent while the trail self-heals (the struck "no client can ever save again" clause was
+correctly scoped to the contributor array); `save()` is a bare `.set()` with no `SetOptions`
+on the deterministic id; the leave path rewrites `participants`/`participantUserIds`/
+`memberPermissions` and unions the departing uid, so "your name stays on the dishes" holds; the
+cascade's `arrayRemove` runs under the Admin SDK.
+
+**Taken on the record, not re-measured this round:** G7's three quoted mutant attributions
+(drop the null arm → this test alone; drop the membership arm → G5; widen it to `true` → G6).
+The rule text they describe is unchanged since they were measured.
+
+
+### 2026-08-31 — correction to the Admin-SDK-past-a-cap bullet [measurement]
+The worked example in that bullet was falsified by the code shipping in the same commit, and
+it failed the bullet's own closing instruction ("Trace the prune before writing 'frozen
+forever' or 'self-healing'"). Caught by the `integration-reviewer` gate — the only pass that
+reads a knowledge file and the code it cites together.
+
+Retired verbatim:
+
+> The leave-path CF appends an `adminPromoted` trail row without pruning, so a
+> 50-row trail becomes 51 and every client save is then refused — except that
+> `_withTrailRow` prunes to the newest 50 on every append, so the next interactive edit
+> heals it.
+
+Measured: `cutGroupMenuPlanAccess` prunes in the same branch that appends the row
+(`remove-chat-group-member.ts`, `trail.slice(trail.length - MAX_TRAIL_ROWS)`), and
+`chat-group-callables.test.ts`'s "the promotion row prunes the trail rather than pushing it
+over the cap" asserts the stored trail comes back at exactly 50 with the oldest row dropped.
+So the 51-row state the example reasoned about cannot arise, and the "heals on the next
+interactive edit" mechanism describes a state that does not exist. The sibling
+`cloud-functions-specialist.knowledge.md` taught the opposite in the same commit.
+
+The bullet's HEADLINE survives — an Admin-SDK write can pass a cap the rules enforce, and
+permanence is a question about a client-side prune — as does the `contributorUserIds` half,
+where there is no prune by design and the freeze is permanent.
+
+
+### 2026-08-31 — correction to the corrected Admin-SDK-past-a-cap bullet [count]
+The repair itself carried a count. "Both writers of the trail prune it" ranges over writers
+of `editTrail`, and there are THREE: `_withTrailRow`, `cutGroupMenuPlanAccess`, and the
+account cascade, which filters or deletes and prunes nothing. The paired entry in
+`cloud-functions-specialist.knowledge.archive.md` counts three, so the numeral was the one
+thing the two files still spelled differently. Caught by the `integration-reviewer` gate.
+
+Retired verbatim:
+
+> Both writers of the trail prune it — the client in `_withTrailRow`
+> and the leave-path CF in the same branch that appends its `adminPromoted` row — so no
+> over-cap trail is ever stored.
+
+The operative claim was never in doubt: no over-cap trail is ever stored. The replacement
+ranges over APPENDERS, which is the set the prune has to cover, and names them.
+
+---
+
+## 2026-09-02 — BUT-1971 final ledger pass: the sliced cap pin, certified
+
+Re-review at frozen bytes (`git diff --stat` empty; index == worktree). Suite: 39/39 on
+`npm run test:rules:weekly-menu-plans`.
+
+**The un-anchored-needle blocker from the previous pass is closed.** `groupPlanRulesBlock()`
+strips block and line comments (`/(^|[^:])\/\/.*$/gm`, the `[^:]` keeping `://` out of it),
+slices from `match /group_weekly_menu_plans` to the next `match /`, and the test asserts each
+needle occurs exactly ONCE in that slice.
+
+Certified with the four text-only mutants the principles file prescribes, replicating the
+slicer in `node` over a mutated buffer (no emulator needed):
+
+| mutant | editTrail | contributorUserIds |
+|---|---|---|
+| cap changed INSIDE the block | fires (hits=0) | fires (hits=0) |
+| cap commented out | fires (hits=0) | fires (hits=0) |
+| copies changed OUTSIDE the block | stays green (n=0 copies) | stays green (n=2 copies) |
+
+Whole-file vs in-slice needle counts on these bytes: `editTrail` 1/1, `contributorUserIds`
+3/1. So the slice is load-bearing for the contributor cap exactly as predicted, and the trail
+needle is anchored by luck plus the slice. Each mutant names its OWN field, so neither anchor
+covers for the other. The comment strip is what converts the commented-out mutant from a
+survivor into a kill — that was the previous pass's Low and it is measured shut.
+
+Third language confirmed live, not a test-only literal: `MAX_TRAIL_ROWS = 50` and
+`MAX_CONTRIBUTOR_UIDS = 200` in `remove-chat-group-member.ts` are read by the CF's own prune
+(`trail.slice(trail.length - MAX_TRAIL_ROWS)`) and union guard
+(`known.length < MAX_CONTRIBUTOR_UIDS`). The Dart-vs-rules guard
+(`rules_numeric_bound_drift_test.dart`, 2/2) anchors on the rules FUNCTION NAMES, which cannot
+match the shopping list's inline copy, and its `[^}]*?` cannot cross a `}` — safe by
+construction, and its pointer resolves for both symbols.
+
+**The map case says what the four downstream carriers cite it for.** `cascade:1412`,
+`request-account-deletion.integration.test.ts:346`, `content_export_manager.dart:486` and
+`content_export_manager_test.dart:1058` all cite the MAP specifically ("a 50-key map is
+accepted"), and `firestore.rules` says "a map with <= 50 keys satisfies `.size()` too" — a
+50-key map ALLOWED discharges every one of them. The list arm is committed by the surrounding
+50-allow/51-deny cases. The STRING arm remains measured-but-uncommitted.
+
+**New durable rule (merged into the principles file):** the new case's own comment says "Three
+comments in this repo cite this as measured on the emulator and no committed case held it".
+That count does not resolve on these bytes — four carriers outside this file, five including
+`firestore.rules`. A count in a comment that discharges carriers is not derivable from the case
+and competes with the `grep polymorphic` instruction, so a later `is list` hardening stops at
+the stated number. Strike the numeral. Filed Low, not blocking.
+
+Also verified this pass, so it is not re-derived: `GroupWeeklyMenuPlan.toFirestore` still writes
+`if (editTrail.isNotEmpty)` — the live half of the explicit-null deny — and writes
+`contributorUserIds` UNCONDITIONALLY, which is what makes the OMITS-the-field deny a production
+shape rather than a hypothetical.
+
+Non-blocking observation on `firestore.rules`' contributor account: the struck "ONLY handle"
+over-claim left "without this array those uids are reachable by nothing" standing. The cascade
+runs FOUR discovery legs (`participantUserIds`, `lastModifiedBy`, `memberPermissions`,
+`contributorUserIds`), so a departed member who happens to be the document's `lastModifiedBy`
+IS reachable without the array. Narrow (that field names one person and is overwritten by the
+next save) and the sentence's operative point — Firestore cannot query inside an array of maps
+— is true. If it is ever touched, the fix is a strike of the "reachable by nothing" clause, not
+a reworded quantifier.

@@ -165,16 +165,16 @@ class GroupWeeklyMenuPlanService extends BaseService {
     if (!slot.isMulti) {
       updated.removeWhere((e) => e.day == day && e.slot == slot);
     }
-    // Only voters this plan can be FOUND by. Account deletion discovers group
-    // plans through the roster and the permission map, and this document's
-    // roster is a snapshot taken when the week was first built — it is never
-    // re-synced, so somebody who joined the group later can vote in a poll
-    // whose winner lands here while being absent from the roster. Their uid
-    // would then be reachable by no erasure query and by no export filter:
-    // neither erasable nor exportable.
+    // Only voters this plan's roster names. The roster is a snapshot taken when
+    // the week was first built and is never re-synced, so somebody who joined
+    // the group later can vote in a poll whose winner lands here while being
+    // absent from it — and their uid would then be stored on a document the
+    // Art. 15 export cannot hand them, because it discovers on
+    // `memberPermissions`, which does not name them.
     //
-    // The cost is a lower count on the screen for such a voter. That is the
-    // right way round — a number is a nicety, an unreachable uid is not.
+    // The cost is that such a voter is missing from what the screen shows —
+    // both the count and the sheet the provenance row opens. That is still the
+    // right way round: an unexportable uid is worse.
     final onRoster = votedInBy
         .where(plan.memberPermissions.containsKey)
         .toList();

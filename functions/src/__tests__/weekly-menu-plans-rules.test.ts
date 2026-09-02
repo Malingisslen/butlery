@@ -31,6 +31,10 @@
  */
 
 import * as fs from "fs";
+import {
+  MAX_TRAIL_ROWS,
+  MAX_CONTRIBUTOR_UIDS,
+} from "../groups/remove-chat-group-member";
 import * as path from "path";
 import {
   initializeTestEnvironment,
@@ -208,6 +212,26 @@ function groupPlanBody(
     lastModifiedAt: CREATED_AT,
     ...extra,
   };
+}
+
+/**
+ * The `group_weekly_menu_plans` match block, comments stripped.
+ *
+ * Slicing matters: several literals in this file are shared with
+ * `unified_shared_shopping_lists`, so a whole-file search can be satisfied by
+ * the wrong collection's copy.
+ */
+function groupPlanRulesBlock(): string {
+  const text = fs
+    .readFileSync(RULES_PATH, "utf8")
+    .replace(/\/\*[\s\S]*?\*\//g, "")
+    .replace(/(^|[^:])\/\/.*$/gm, (_m, keep: string) => keep);
+  const start = text.indexOf("match /group_weekly_menu_plans");
+  if (start === -1) {
+    throw new Error("group_weekly_menu_plans block not found in firestore.rules");
+  }
+  const next = text.indexOf("match /", start + 1);
+  return next === -1 ? text.slice(start) : text.slice(start, next);
 }
 
 async function seedGroup(body: Record<string, unknown>): Promise<void> {
@@ -479,6 +503,298 @@ test("a save that carries no trail at all is allowed", async () => {
       .firestore()
       .doc(`group_weekly_menu_plans/${GROUP_PLAN_ID}`)
       .set(groupPlanBody({ entries: [{ recipeId: "r9", day: "tue" }] }))
+  );
+});
+
+
+// ---------------------------------------------------------------------------
+// BUT-1971 follow-up: `contributorUserIds`, the append-only erasure handle.
+//
+// Its whole job is to survive a departure, so the rule that matters is the one
+// refusing a client write that SHRINKS it: a remaining member could otherwise
+// strip a departed member's uid and hide their name from erasure forever.
+// ---------------------------------------------------------------------------
+
+function contributors(n: number): string[] {
+  return Array.from({ length: n }, (_, i) => `contributor-${i}`);
+}
+
+test("an update that keeps every contributor is allowed", async () => {
+  // The control. Without it, every deny below could be passing because group
+  // updates fail for some unrelated reason.
+  await seedGroup(groupPlanBody({ contributorUserIds: ["a", "b"] }));
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertSucceeds(
+    ctx
+      .firestore()
+      .doc(`group_weekly_menu_plans/${GROUP_PLAN_ID}`)
+      .update({ contributorUserIds: ["a", "b", "c"] })
+  );
+});
+
+test("an update that DROPS a contributor is denied", async () => {
+  await seedGroup(groupPlanBody({ contributorUserIds: ["a", "b"] }));
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`group_weekly_menu_plans/${GROUP_PLAN_ID}`)
+      .update({ contributorUserIds: ["a"] })
+  );
+});
+
+test("an update that CLEARS the array is denied", async () => {
+  // The shape a hand-rolled client would actually send — not a subtle drop but
+  // the whole trail at once.
+  await seedGroup(groupPlanBody({ contributorUserIds: ["a", "b"] }));
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`group_weekly_menu_plans/${GROUP_PLAN_ID}`)
+      .update({ contributorUserIds: [] })
+  );
+});
+
+test("an update to a document that never had the field is allowed", async () => {
+  // Back-compat, and the reason both sides read `.get(..., [])`. Every plan
+  // written before this field existed must stay savable; a raw dereference
+  // would deny them all, which is the defect this collection's READ rule
+  // already shipped once.
+  await seedGroup(groupPlanBody());
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertSucceeds(
+    ctx
+      .firestore()
+      .doc(`group_weekly_menu_plans/${GROUP_PLAN_ID}`)
+      .update({ lastModifiedAt: new Date("2026-05-01T00:00:00Z") })
+  );
+});
+
+test("a non-admin editor is bound by the contributor rule too", async () => {
+  // The production writer is an EDIT member. An admin-only deny would leave the
+  // rule unenforced for exactly the people who write these documents — the same
+  // hole the trail-cap tests above were extended to close.
+  await seedGroup(
+    groupPlanBody({
+      participants: [
+        { userId: OWNER_UID, permission: "admin" },
+        { userId: STRANGER_UID, permission: "edit" },
+      ],
+      participantUserIds: [OWNER_UID, STRANGER_UID],
+      memberPermissions: { [OWNER_UID]: "admin", [STRANGER_UID]: "edit" },
+      contributorUserIds: ["a", "b"],
+    })
+  );
+  const ctx = env.authenticatedContext(STRANGER_UID);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`group_weekly_menu_plans/${GROUP_PLAN_ID}`)
+      .update({ contributorUserIds: ["a"] })
+  );
+});
+
+test("a create above the contributor cap is denied", async () => {
+  // On CREATE as well as update. A cap on update alone lets a hand-rolled
+  // client seed an oversized array on the create write, before the update limb
+  // ever runs — the same hole `groupMenuTrailWithinCap` exists to close, and
+  // the shopping-list precedent splits its rule the same way.
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`group_weekly_menu_plans/${GROUP_ID}_2030-W04`)
+      .set(groupPlanBody({ contributorUserIds: contributors(201) }))
+  );
+});
+
+test("a create at exactly the contributor cap is allowed", async () => {
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertSucceeds(
+    ctx
+      .firestore()
+      .doc(`group_weekly_menu_plans/${GROUP_ID}_2030-W05`)
+      .set(groupPlanBody({ contributorUserIds: contributors(200) }))
+  );
+});
+
+test("an update above the contributor cap is denied", async () => {
+  await seedGroup(groupPlanBody({ contributorUserIds: contributors(200) }));
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`group_weekly_menu_plans/${GROUP_PLAN_ID}`)
+      .update({ contributorUserIds: contributors(201) })
+  );
+});
+
+
+// ---------------------------------------------------------------------------
+// Can a CLIENT read by `contributorUserIds` at all? Rules are not filters: a
+// list query is denied unless the rule can prove EVERY document the query could
+// return is readable. The read rule here tests `memberPermissions`, and no
+// implication exists between that and `contributorUserIds` — so the expected
+// answer is "denied for everybody, always", not "denied only for a leaver".
+//
+// The whole shape of the Art. 15 gap note depends on which of those it is, so
+// it is measured here rather than reasoned about.
+// ---------------------------------------------------------------------------
+
+test("MEASUREMENT: a contributor query is denied even to a CURRENT member", async () => {
+  await seedGroup(groupPlanBody({ contributorUserIds: [OWNER_UID] }));
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertFails(
+    ctx
+      .firestore()
+      .collection("group_weekly_menu_plans")
+      .where("contributorUserIds", "array-contains", OWNER_UID)
+      .limit(1)
+      .get()
+  );
+});
+
+test("MEASUREMENT: the same query by memberPermissions IS allowed", async () => {
+  // The control. Without it the deny above could be "list queries fail here",
+  // which would say nothing about the contributor field.
+  await seedGroup(groupPlanBody({ contributorUserIds: [OWNER_UID] }));
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertSucceeds(
+    ctx
+      .firestore()
+      .collection("group_weekly_menu_plans")
+      .where(`memberPermissions.${OWNER_UID}`, "!=", null)
+      .limit(1)
+      .get()
+  );
+});
+
+test("a whole-document set() that OMITS the field is denied", async () => {
+  // The production verb. `FirebaseGroupWeeklyMenuPlanRepository.save` is a
+  // non-merge `set()` on the deterministic id, which evaluates the UPDATE limb,
+  // so a client build whose `toFirestore` lacks the field would silently drop
+  // the whole trail on every save. `hasAll` against `.get(..., [])` denies it,
+  // and this is the case that pins that: a mutant defaulting the request side
+  // to the STORED value — the obvious "let older clients through" fix — passed
+  // the entire suite without it.
+  await seedGroup(groupPlanBody({ contributorUserIds: ["a", "b"] }));
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`group_weekly_menu_plans/${GROUP_PLAN_ID}`)
+      .set(groupPlanBody())
+  );
+});
+
+test("…and the same set() PRESERVING the field is allowed", async () => {
+  // The control for the deny above: without it that test could be passing
+  // because a whole-document `set()` fails here for some unrelated reason.
+  await seedGroup(groupPlanBody({ contributorUserIds: ["a", "b"] }));
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertSucceeds(
+    ctx
+      .firestore()
+      .doc(`group_weekly_menu_plans/${GROUP_PLAN_ID}`)
+      .set(groupPlanBody({ contributorUserIds: ["a", "b", "c"] }))
+  );
+});
+
+test("a SAME-SIZE substitution is denied", async () => {
+  // The Art. 17 evasion the rule exists to stop, and the one a size comparison
+  // would let through: swap a departed member's uid for another and the array
+  // is the same length while erasure has lost that handle on them. A mutant
+  // replacing `hasAll` with `size() >= size()` survived the whole suite until
+  // this case existed.
+  await seedGroup(groupPlanBody({ contributorUserIds: ["a", "b"] }));
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`group_weekly_menu_plans/${GROUP_PLAN_ID}`)
+      .update({ contributorUserIds: ["a", "z"] })
+  );
+});
+
+test("a reorder of the same set is allowed", async () => {
+  // Production shape, not a kill: the client builds this array from a Dart
+  // `Set`, whose iteration order is not stable between saves. A rule that
+  // compared sequences rather than membership would deny an ordinary save.
+  await seedGroup(groupPlanBody({ contributorUserIds: ["a", "b", "c"] }));
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertSucceeds(
+    ctx
+      .firestore()
+      .doc(`group_weekly_menu_plans/${GROUP_PLAN_ID}`)
+      .update({ contributorUserIds: ["c", "a", "b"] })
+  );
+});
+
+test("a document already OVER the cap is frozen, even for an unrelated edit", async () => {
+  // A documented consequence rather than a guard: nothing prunes this array
+  // client-side, so a plan that somehow exceeds the cap — the Admin SDK
+  // bypasses rules and can write one — can never be saved by a client again,
+  // not even to touch a timestamp. Stated here so it is found in a test rather
+  // than in production.
+  await seedGroup(groupPlanBody({ contributorUserIds: contributors(205) }));
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`group_weekly_menu_plans/${GROUP_PLAN_ID}`)
+      .update({ lastModifiedAt: new Date("2026-05-01T00:00:00Z") })
+  );
+});
+
+test("the Cloud Function's copies of both caps match the rules literals", async () => {
+  // A THIRD language holds each of these numbers, and the Dart-vs-rules drift
+  // guard cannot see a TypeScript literal — so without this a drift in the CF
+  // copy alone is invisible.
+  //
+  // SLICED to this collection's block, and the occurrence count asserted. The
+  // contributor needle is NOT unique in the file: `unified_shared_shopping_lists`
+  // carries the same literal at the same cap, so an unanchored search stays
+  // green when the GROUP cap moves — matching the shopping list's copy instead,
+  // forever, which is the one drift this test exists to catch. The trail needle
+  // happens to be unique today; anchoring by luck is not anchoring.
+  //
+  // Comments are stripped first: the raw text is searched, so a commented-out
+  // cap would satisfy the match while enforcing nothing. Same reason the Dart
+  // guard strips them.
+  const block = groupPlanRulesBlock();
+  for (const [field, cap] of [
+    ["editTrail", MAX_TRAIL_ROWS],
+    ["contributorUserIds", MAX_CONTRIBUTOR_UIDS],
+  ] as const) {
+    const needle = `.get('${field}', []).size() <= ${cap}`;
+    const hits = block.split(needle).length - 1;
+    if (hits !== 1) {
+      throw new Error(
+        `expected exactly one \`${needle}\` in the group_weekly_menu_plans ` +
+          `block, found ${hits}. Either remove-chat-group-member.ts and ` +
+          "firestore.rules disagree about this cap, or the rule was reshaped " +
+          "and this guard can no longer read it. Both need a human.",
+      );
+    }
+  }
+});
+
+test("a MAP-shaped editTrail with 50 keys is ALLOWED by the cap", async () => {
+  // `.size()` is polymorphic over list, map and string, so the row cap does not
+  // bound TYPE. Several comments elsewhere cite that as measured on the
+  // emulator; before this case, none was committed. The gap is
+  // absorbed downstream: the Art. 15 redaction and the deletion cascade both
+  // fail CLOSED on a non-list, and each has its own test.
+  const trailMap: Record<string, unknown> = {};
+  for (let i = 0; i < 50; i++) trailMap[`k${i}`] = { actorId: OWNER_UID };
+  await seedGroup(groupPlanBody());
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertSucceeds(
+    ctx
+      .firestore()
+      .doc(`group_weekly_menu_plans/${GROUP_PLAN_ID}`)
+      .update({ editTrail: trailMap })
   );
 });
 

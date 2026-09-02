@@ -985,6 +985,35 @@ service cloud.firestore {
         return request.resource.data.get('editTrail', []).size() <= 50;
       }
 
+      // BUT-1971 follow-up: `contributorUserIds` is what account erasure has
+      // on a plan whose roster no longer names the person — which is now the ordinary case, because leaving the
+      // chat group removes you from `participants` while your name stays on the
+      // dishes and in the trail (Malin, 2026-08-30). Firestore cannot query
+      // inside an array of maps. The client only ever unions into it, so make that the rule:
+      // no client write may drop an entry, or a remaining member could strip a
+      // departed member's uid and hide their name from erasure forever
+      // (Art. 17). The Admin SDK cascade bypasses rules, so its `arrayRemove`
+      // is unaffected.
+      //
+      // Mirrors `keepsContributorTrail()` on unified_shared_shopping_lists,
+      // including its split: `hasAll` only makes sense on update, where a prior
+      // array exists, while the SIZE bound applies to both limbs. A cap on
+      // update alone would let a hand-rolled client seed an oversized array on
+      // the create write — the same hole `groupMenuTrailWithinCap` above was
+      // written to close for `editTrail`.
+      //
+      // 200 is also `GroupWeeklyMenuPlan.maxContributorUserIds`; the two are
+      // compared by `test/unit/security/rules_numeric_bound_drift_test.dart`.
+      function groupMenuContributorsWithinCap() {
+        return request.resource.data.get('contributorUserIds', []).size() <= 200;
+      }
+
+      function groupMenuKeepsContributorTrail() {
+        return request.resource.data.get('contributorUserIds', [])
+                 .hasAll(resource.data.get('contributorUserIds', []))
+          && groupMenuContributorsWithinCap();
+      }
+
       // Creator must (a) match the doc-ID prefix with their submitted
       // groupId, (b) include themselves in memberPermissions as edit/admin.
       allow create: if isAuthenticated()
@@ -995,7 +1024,8 @@ service cloud.firestore {
              'groupId', 'participants', 'participantUserIds',
              'memberPermissions', 'entries', 'createdAt', 'lastModifiedAt'
            ])
-        && groupMenuTrailWithinCap();
+        && groupMenuTrailWithinCap()
+        && groupMenuContributorsWithinCap();
 
       // Editors + admins may update entries. Immutable fields: groupId,
       // createdAt. Participants/permissions changes require admin.
@@ -1010,7 +1040,8 @@ service cloud.firestore {
           // …or the writer is an admin (can manage membership).
           || resource.data.memberPermissions[request.auth.uid] == 'admin'
         )
-        && groupMenuTrailWithinCap();
+        && groupMenuTrailWithinCap()
+        && groupMenuKeepsContributorTrail();
 
       // Admin-only delete.
       allow delete: if isAuthenticated()

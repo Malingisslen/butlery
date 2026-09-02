@@ -30,6 +30,8 @@ import { addChatGroupMembersWithDeps } from "../groups/add-chat-group-members";
 import {
   removeChatGroupMemberWithDeps,
   MAX_GROUP_MENU_PLANS,
+  MAX_TRAIL_ROWS,
+  MAX_CONTRIBUTOR_UIDS,
 } from "../groups/remove-chat-group-member";
 import { stageMemberRemoval } from "../groups/chat-group-writes";
 import { stageBackstopRemovals } from "../messaging/enforce-group-minor-membership";
@@ -693,6 +695,470 @@ const cases: UnitCase[] = [
         fake.has("group_weekly_menu_plans/other_2026-W16"),
         true,
         "another group's plan is untouched",
+      );
+    },
+  },
+  {
+    // BUT-1971 follow-up. Leaving a group that SURVIVES must cut the leaver's
+    // access to its weeks, which `firestore.rules` grants purely off
+    // `memberPermissions`. Nothing did this before: the only plan cleanup ran
+    // when the group emptied, so a departed member kept read AND write forever.
+    //
+    // Two members leave one behind, so this exercises the surviving-group path
+    // rather than the teardown beside it.
+    name: "a member leaving a surviving group loses access to its weeks",
+    fn: async () => {
+      const fake = new FakeFirestore();
+      seedExistingGroup(fake, ["stay", "leaver"], ["stay"]);
+      fake.seed("group_weekly_menu_plans/c1_2026-W16", {
+        groupId: "c1",
+        participants: [
+          { userId: "stay", permission: "admin" },
+          { userId: "leaver", permission: "edit" },
+        ],
+        participantUserIds: ["stay", "leaver"],
+        memberPermissions: { stay: "admin", leaver: "edit" },
+        entries: [{ id: "e1", proposedBy: "leaver", votedInBy: ["leaver"] }],
+      });
+
+      await removeChatGroupMemberWithDeps(fake.db, "leaver", "g1", "leaver");
+
+      const plan = fake.read("group_weekly_menu_plans/c1_2026-W16")!;
+      assertEqual(
+        JSON.stringify(plan.memberPermissions),
+        JSON.stringify({ stay: "admin" }),
+        "the ACL key the read and update rules test is gone",
+      );
+      assertEqual(
+        JSON.stringify(plan.participantUserIds),
+        JSON.stringify(["stay"]),
+        "and so is the queryable mirror",
+      );
+      assertEqual(
+        (plan.participants as unknown[]).length,
+        1,
+        "the roster the projections are recomputed from is the real store",
+      );
+    },
+  },
+  {
+    // The other half of the same decision, and the reason the array exists:
+    // Malin's call 2026-08-30 is that the NAME stays. Cutting access must not
+    // quietly take the provenance with it, and the uid must stay reachable by
+    // a query or account deletion could never erase it.
+    name: "…but their name stays on the dish, and stays findable",
+    fn: async () => {
+      const fake = new FakeFirestore();
+      seedExistingGroup(fake, ["stay", "leaver"], ["stay"]);
+      fake.seed("group_weekly_menu_plans/c1_2026-W16", {
+        groupId: "c1",
+        participants: [
+          { userId: "stay", permission: "admin" },
+          { userId: "leaver", permission: "edit" },
+        ],
+        participantUserIds: ["stay", "leaver"],
+        memberPermissions: { stay: "admin", leaver: "edit" },
+        entries: [{ id: "e1", proposedBy: "leaver", votedInBy: ["leaver"] }],
+      });
+
+      await removeChatGroupMemberWithDeps(fake.db, "leaver", "g1", "leaver");
+
+      const plan = fake.read("group_weekly_menu_plans/c1_2026-W16")!;
+      const entry = (plan.entries as Record<string, unknown>[])[0];
+      assertEqual(entry.proposedBy, "leaver", "the dish still names them");
+      assertEqual(
+        ((plan.contributorUserIds as string[]) ?? []).includes("leaver"),
+        true,
+        "and erasure can still find this document by them",
+      );
+    },
+  },
+  {
+    // Not merely wasteful — it is two capped scans of the same collection on
+    // one leave. `deleteEmptyGroup` deletes these very rows immediately after.
+    name: "the last member leaving does NOT also rewrite the rows it deletes",
+    fn: async () => {
+      // The delete is made to FAIL, which is what makes this provable. If the
+      // access cut had run first, the surviving document would come back with
+      // `solo` already stripped out of it; asserting only that the plan is gone
+      // would pass whether or not the cut ran, since the sweep deletes it
+      // either way.
+      const fake = new FakeFirestore({
+        failDeleteAt: (path) => path === "group_weekly_menu_plans/c1_2026-W16",
+      });
+      seedExistingGroup(fake, ["solo"], ["solo"]);
+      fake.seed("group_weekly_menu_plans/c1_2026-W16", {
+        groupId: "c1",
+        participants: [{ userId: "solo", permission: "admin" }],
+        participantUserIds: ["solo"],
+        memberPermissions: { solo: "admin" },
+      });
+
+      await removeChatGroupMemberWithDeps(fake.db, "solo", "g1", "solo");
+
+      const plan = fake.read("group_weekly_menu_plans/c1_2026-W16")!;
+      assertEqual(
+        JSON.stringify(plan.memberPermissions),
+        JSON.stringify({ solo: "admin" }),
+        "untouched — the cut never ran on a group that is being torn down",
+      );
+      assertEqual(
+        plan.contributorUserIds === undefined,
+        true,
+        "and no contributor trail was seeded on a row about to be deleted",
+      );
+    },
+  },
+  {
+    // Same cap and same verdict as the sweep beside it, for the same reason:
+    // the create rule ties a writer only to their own submitted
+    // `memberPermissions`, so the row count is chosen by a hostile writer.
+    name: "an implausible plan count still cuts the capped page",
+    fn: async () => {
+      const fake = new FakeFirestore();
+      seedExistingGroup(fake, ["stay", "leaver"], ["stay"]);
+      for (let i = 0; i <= MAX_GROUP_MENU_PLANS; i++) {
+        fake.seed(`group_weekly_menu_plans/c1_planted-${i}`, {
+          groupId: "c1",
+          participants: [
+            { userId: "stay", permission: "admin" },
+            { userId: "leaver", permission: "edit" },
+          ],
+          participantUserIds: ["stay", "leaver"],
+          memberPermissions: { stay: "admin", leaver: "edit" },
+        });
+      }
+
+      const res = await removeChatGroupMemberWithDeps(
+        fake.db,
+        "leaver",
+        "g1",
+        "leaver",
+      );
+
+      assertEqual(res.removed, true, "the leave itself still succeeds");
+      const cut = fake.read("group_weekly_menu_plans/c1_planted-0")!;
+      assertEqual(
+        ((cut.memberPermissions as Record<string, unknown>) ?? {}).leaver,
+        undefined,
+        "a partial cut beats none: refusing would let anyone plant rows to " +
+          "keep their access, and nothing retries this step",
+      );
+      // Counted, not read by id: the fake returns children in LEXICOGRAPHIC
+      // order, so `planted-500` sorts among the first five hundred and which
+      // specific row spills over is not a property worth asserting.
+      const stillUncut = Array.from({ length: MAX_GROUP_MENU_PLANS + 1 })
+        .map((_, i) => fake.read(`group_weekly_menu_plans/c1_planted-${i}`)!)
+        .filter(
+          (d) =>
+            ((d.memberPermissions as Record<string, unknown>) ?? {}).leaver ===
+            "edit",
+        ).length;
+      assertEqual(
+        stillUncut,
+        1,
+        "exactly the overflow past the cap is left, logged rather than read",
+      );
+    },
+  },
+  {
+    // A plan whose only admin walks out would otherwise be frozen: the update
+    // rule lets only an admin change `participants`, so nobody could ever add
+    // or remove a member on that week again.
+    name: "the last admin leaving promotes the lowest remaining uid",
+    fn: async () => {
+      const fake = new FakeFirestore();
+      seedExistingGroup(fake, ["zeta", "alpha", "boss"], ["boss"]);
+      fake.seed("group_weekly_menu_plans/c1_2026-W16", {
+        groupId: "c1",
+        participants: [
+          { userId: "boss", permission: "admin" },
+          { userId: "zeta", permission: "edit" },
+          { userId: "alpha", permission: "edit" },
+        ],
+        participantUserIds: ["boss", "zeta", "alpha"],
+        memberPermissions: { boss: "admin", zeta: "edit", alpha: "edit" },
+      });
+
+      await removeChatGroupMemberWithDeps(fake.db, "boss", "g1", "boss");
+
+      const plan = fake.read("group_weekly_menu_plans/c1_2026-W16")!;
+      const perms = plan.memberPermissions as Record<string, unknown>;
+      assertEqual(perms.alpha, "admin", "lowest uid, not first in the array");
+      assertEqual(perms.zeta, "edit", "and nobody else is promoted");
+    },
+  },
+  {
+    // A silent privilege grant does not belong in a build whose whole point is
+    // attribution (ADR-0010). Nobody is notified, so the trail is the record.
+    name: "…and the promotion is written into the week's edit trail",
+    fn: async () => {
+      const fake = new FakeFirestore();
+      seedExistingGroup(fake, ["alpha", "boss"], ["boss"]);
+      fake.seed("group_weekly_menu_plans/c1_2026-W16", {
+        groupId: "c1",
+        participants: [
+          { userId: "boss", permission: "admin" },
+          { userId: "alpha", permission: "edit" },
+        ],
+        participantUserIds: ["boss", "alpha"],
+        memberPermissions: { boss: "admin", alpha: "edit" },
+      });
+
+      await removeChatGroupMemberWithDeps(fake.db, "boss", "g1", "boss");
+
+      const plan = fake.read("group_weekly_menu_plans/c1_2026-W16")!;
+      const trail = (plan.editTrail as Record<string, unknown>[]) ?? [];
+      assertEqual(trail.length, 1, "exactly one row is appended");
+      assertEqual(trail[0].action, "adminPromoted", "naming what happened");
+      assertEqual(trail[0].subjectId, "alpha", "and who it happened to");
+      assertEqual(
+        trail[0].actorId,
+        "boss",
+        "and who did it — on a self-leave the caller IS the leaver",
+      );
+    },
+  },
+  {
+    // An ADMIN EVICTION, where the caller and the departing member differ. The
+    // trail row must name the caller: stamping the departing uid would say the
+    // person who was removed did the promoting. ADR-0010's accepted "a trail
+    // row can name the wrong person" is about CLIENT forgery and does not reach
+    // the server writing a wrong actor.
+    name: "an eviction's promotion names the admin who evicted, not the evicted",
+    fn: async () => {
+      const fake = new FakeFirestore();
+      seedExistingGroup(fake, ["alpha", "boss", "chief"], ["chief"]);
+      fake.seed("group_weekly_menu_plans/c1_2026-W16", {
+        groupId: "c1",
+        participants: [
+          { userId: "boss", permission: "admin" },
+          { userId: "alpha", permission: "edit" },
+        ],
+        participantUserIds: ["boss", "alpha"],
+        memberPermissions: { boss: "admin", alpha: "edit" },
+      });
+
+      await removeChatGroupMemberWithDeps(fake.db, "chief", "g1", "boss");
+
+      const plan = fake.read("group_weekly_menu_plans/c1_2026-W16")!;
+      const trail = (plan.editTrail as Record<string, unknown>[]) ?? [];
+      assertEqual(trail.length, 1, "one promotion row");
+      assertEqual(trail[0].actorId, "chief", "the evicting admin, not `boss`");
+      assertEqual(trail[0].subjectId, "alpha", "who gained admin");
+    },
+  },
+  {
+    // A DESYNC: `participants` names only the leaver while a projection still
+    // names somebody else. Deleting on that one field destroys the other
+    // member's week, which is the failure the account cascade's three-witness
+    // gate exists for. No writer in the repo produces this shape, but the
+    // failure is destructive rather than a leftover.
+    name: "an emptied roster is NOT deleted while another roster still names someone",
+    fn: async () => {
+      const fake = new FakeFirestore();
+      seedExistingGroup(fake, ["stay", "leaver"], ["stay"]);
+      fake.seed("group_weekly_menu_plans/c1_2026-W01", {
+        groupId: "c1",
+        participants: [{ userId: "leaver", permission: "admin" }],
+        participantUserIds: ["leaver", "mirror-only"],
+        memberPermissions: { leaver: "admin", "perm-only": "edit" },
+      });
+
+      await removeChatGroupMemberWithDeps(fake.db, "leaver", "g1", "leaver");
+
+      assertEqual(
+        fake.has("group_weekly_menu_plans/c1_2026-W01"),
+        true,
+        "the week survives — somebody else is still on one of its rosters",
+      );
+      // …and survives USABLE. Falling through with the rosters rebuilt from an
+      // empty `remaining` would write `memberPermissions: {}`, which fails
+      // every limb of this collection — nobody could read, write, re-plan or
+      // delete that ISO week again. Refusing the delete and then bricking the
+      // document is worse than the delete.
+      const plan = fake.read("group_weekly_menu_plans/c1_2026-W01")!;
+      const perms = (plan.memberPermissions as Record<string, unknown>) ?? {};
+      assertEqual(
+        Object.keys(perms).length > 0,
+        true,
+        "somebody can still open it",
+      );
+      assertEqual(perms.leaver, undefined, "and the leaver is still cut");
+    },
+  },
+  {
+    // The Admin SDK bypasses `firestore.rules`, so an over-cap trail written
+    // here would be accepted and would then refuse every subsequent CLIENT save
+    // of that week. The prune is the only thing stopping it, and this is its
+    // only fixture — the promotion test above seeds no existing trail, so
+    // without this case the branch is never entered.
+    name: "the promotion row prunes the trail rather than pushing it over the cap",
+    fn: async () => {
+      const fake = new FakeFirestore();
+      seedExistingGroup(fake, ["alpha", "boss"], ["boss"]);
+      fake.seed("group_weekly_menu_plans/c1_2026-W16", {
+        groupId: "c1",
+        participants: [
+          { userId: "boss", permission: "admin" },
+          { userId: "alpha", permission: "edit" },
+        ],
+        participantUserIds: ["boss", "alpha"],
+        memberPermissions: { boss: "admin", alpha: "edit" },
+        editTrail: Array.from({ length: MAX_TRAIL_ROWS }, (_, i) => ({
+          actorId: "boss",
+          entryId: `e${i}`,
+          action: "removed",
+        })),
+      });
+
+      await removeChatGroupMemberWithDeps(fake.db, "boss", "g1", "boss");
+
+      const plan = fake.read("group_weekly_menu_plans/c1_2026-W16")!;
+      const trail = (plan.editTrail as Record<string, unknown>[]) ?? [];
+      assertEqual(trail.length, MAX_TRAIL_ROWS, "still exactly at the cap");
+      assertEqual(
+        trail[trail.length - 1].action,
+        "adminPromoted",
+        "with the new row kept and the OLDEST dropped, not the new one",
+      );
+      assertEqual(
+        trail[0].entryId,
+        "e1",
+        "pruned from the front, so e0 is the row that went",
+      );
+    },
+  },
+  {
+    // The same brick the emptied roster caused, one field over: the Admin SDK
+    // bypasses `firestore.rules`, so a union past the 200-uid cap is accepted
+    // here and then refuses every subsequent CLIENT save of that week.
+    // Recording the uid loses to freezing the week, so at the cap it is skipped
+    // and logged — and the access cut still happens either way, which is what
+    // this case pins.
+    name: "at the contributor cap the union is skipped, but access is still cut",
+    fn: async () => {
+      const fake = new FakeFirestore();
+      seedExistingGroup(fake, ["stay", "leaver"], ["stay"]);
+      fake.seed("group_weekly_menu_plans/c1_2026-W16", {
+        groupId: "c1",
+        participants: [
+          { userId: "stay", permission: "admin" },
+          { userId: "leaver", permission: "edit" },
+        ],
+        participantUserIds: ["stay", "leaver"],
+        memberPermissions: { stay: "admin", leaver: "edit" },
+        contributorUserIds: Array.from(
+          { length: MAX_CONTRIBUTOR_UIDS },
+          (_, i) => `other-${i}`,
+        ),
+      });
+
+      await removeChatGroupMemberWithDeps(fake.db, "leaver", "g1", "leaver");
+
+      const plan = fake.read("group_weekly_menu_plans/c1_2026-W16")!;
+      assertEqual(
+        ((plan.contributorUserIds as string[]) ?? []).length,
+        MAX_CONTRIBUTOR_UIDS,
+        "the array is left exactly at the cap, not pushed past it",
+      );
+      assertEqual(
+        ((plan.memberPermissions as Record<string, unknown>) ?? {}).leaver,
+        undefined,
+        "and the access cut happens anyway — the bound costs erasability on " +
+          "one exceptional document, never the cut",
+      );
+    },
+  },
+  {
+    // The already-present arm of the cap condition. Invisible in STORED state —
+    // unioning a uid the array already holds is a no-op — so this reads the
+    // recorded write PAYLOAD instead. Without the arm the field is omitted and
+    // a false "uid not recorded" ERROR fires about a uid that IS recorded, and
+    // that stream is the only signal anywhere that erasability was lost.
+    name: "a uid already in a capped array is still written, not reported missing",
+    fn: async () => {
+      const fake = new FakeFirestore();
+      seedExistingGroup(fake, ["stay", "leaver"], ["stay"]);
+      fake.seed("group_weekly_menu_plans/c1_2026-W16", {
+        groupId: "c1",
+        participants: [
+          { userId: "stay", permission: "admin" },
+          { userId: "leaver", permission: "edit" },
+        ],
+        participantUserIds: ["stay", "leaver"],
+        memberPermissions: { stay: "admin", leaver: "edit" },
+        contributorUserIds: [
+          "leaver",
+          ...Array.from(
+            { length: MAX_CONTRIBUTOR_UIDS - 1 },
+            (_, i) => `other-${i}`,
+          ),
+        ],
+      });
+
+      await removeChatGroupMemberWithDeps(fake.db, "leaver", "g1", "leaver");
+
+      const write = fake.writes.find(
+        (w) =>
+          w.op === "update" &&
+          w.path === "group_weekly_menu_plans/c1_2026-W16",
+      );
+      assertEqual(write !== undefined, true, "the plan was written");
+      assertEqual(
+        Object.prototype.hasOwnProperty.call(
+          write!.data ?? {},
+          "contributorUserIds",
+        ),
+        true,
+        "the union is still sent for a uid the array already holds",
+      );
+    },
+  },
+  {
+    // The plan's roster is a snapshot taken when the week was BUILT and is
+    // never re-synced, so a leaver can be the sole participant of an OLD week
+    // while the chat group still has members. There is nobody to promote, and
+    // `remaining === 0` never fires, so no sweep cleans up.
+    name: "a week only the leaver was on is DELETED, not left as an empty shell",
+    fn: async () => {
+      // An empty `memberPermissions` map does not merely hide the week — every
+      // limb of this collection gates on it, and `save()` is a whole-document
+      // `set()` on the deterministic id, so the shell would brick that ISO week
+      // for the whole group, poll-close included. The group still has members;
+      // only this old week's snapshot roster had just the leaver on it.
+      const fake = new FakeFirestore();
+      seedExistingGroup(fake, ["stay", "leaver"], ["stay"]);
+      fake.seed("group_weekly_menu_plans/c1_2026-W01", {
+        groupId: "c1",
+        participants: [{ userId: "leaver", permission: "admin" }],
+        participantUserIds: ["leaver"],
+        memberPermissions: { leaver: "admin" },
+        entries: [{ id: "e1", proposedBy: "leaver" }],
+      });
+      // A week the group is still on, to prove the delete is scoped to the
+      // emptied roster rather than to the leave.
+      fake.seed("group_weekly_menu_plans/c1_2026-W16", {
+        groupId: "c1",
+        participants: [
+          { userId: "stay", permission: "admin" },
+          { userId: "leaver", permission: "edit" },
+        ],
+        participantUserIds: ["stay", "leaver"],
+        memberPermissions: { stay: "admin", leaver: "edit" },
+      });
+
+      await removeChatGroupMemberWithDeps(fake.db, "leaver", "g1", "leaver");
+
+      assertEqual(
+        fake.has("group_weekly_menu_plans/c1_2026-W01"),
+        false,
+        "the week nobody is left on goes, so the group can plan it again",
+      );
+      assertEqual(
+        fake.has("group_weekly_menu_plans/c1_2026-W16"),
+        true,
+        "while a week the group is still on survives the same leave",
       );
     },
   },

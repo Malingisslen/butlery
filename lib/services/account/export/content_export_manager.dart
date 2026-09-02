@@ -490,6 +490,21 @@ class ContentExportManager {
       // decision above.
       copy['editTrail'] = const [];
     }
+
+    // `contributorUserIds` is DROPPED. It is an erasure handle, not content:
+    // its only job is to let the deletion cascade find this document after the
+    // roster no longer names someone, so it accumulates the uids of people who
+    // have LEFT the group. No widget renders it, which matters because the
+    // decision to keep other members' per-dish provenance was re-grounded on
+    // exactly that — the app now shows the voters by name — and that ground
+    // does not reach a field the app never shows.
+    //
+    // Chosen conservatively without asking Malin, the way the `chat_groups`
+    // projection was; keeping it is hers to decide. Do not read the identically
+    // named field's keep decision on `unified_shared_shopping_lists` as
+    // authority: that entry itself records that arguing across collections by
+    // field NAME is the error it exists to document.
+    copy.remove('contributorUserIds');
     return copy;
   }
 
@@ -515,12 +530,30 @@ class ContentExportManager {
         'group_weekly_menu_plans': plans,
         // A section that withholds rows and says nothing leaves the requester
         // unable to tell a filtered trail from a complete one.
+        //
+        // The left-group sentence is UNCONDITIONAL, and that is a measurement
+        // rather than a shortcut. Since leaving a group now clears the leaver
+        // from `memberPermissions`, the query above cannot reach those weeks —
+        // and no probe can turn the sentence into a conditional one, because
+        // Firestore rules are not filters: a list query is refused unless the
+        // rule proves every document it could return is readable, and this
+        // collection's read rule tests `memberPermissions`, which implies
+        // nothing about `contributorUserIds`. Measured on the emulator, the
+        // contributor query is denied even to a CURRENT member of the week it
+        // matches (`weekly-menu-plans-rules.test.ts`, the MEASUREMENT
+        // cases). A probe would have thrown for every user on every export, so
+        // a note derived from one would have told people who have left nothing
+        // that they had.
         'data_minimisation':
             'The edit history of each group week has been filtered to the '
             'changes you made yourself and the changes other members made to '
-            'your dishes. Other members\' edits to their own dishes are not '
-            'included. Who suggested each dish, and who voted for it, is '
-            'included in full.',
+            'your dishes. Who suggested each dish, and who voted for it, is '
+            'included in full for the groups you are still a member of. '
+            'Weeks in groups you have LEFT are not included at all. Your '
+            'name is still removed from them when you delete your account. '
+            'The internal list each week keeps of everyone who has been on '
+            'it is not included: it exists only so your name '
+            'can be erased, and it holds identifiers belonging to others.',
         if (entries.truncated) 'truncated': true,
       };
     } catch (e) {

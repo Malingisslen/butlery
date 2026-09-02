@@ -2844,7 +2844,7 @@
         {
           "from": "svc-export-managers",
           "to": "ds-users",
-          "payload": "~36 collections/subcollections läses direkt klientsidigt (regelstyrt): recept, menyer, notiser, consent_records, users/{uid}/canonical_rating_events (Increment 5), unified_shared_shopping_lists (BUT-1732, tre frågor: ägd/medlem/bidragit till) m.fl.",
+          "payload": "~36 collections/subcollections läses direkt klientsidigt (regelstyrt): recept, menyer, notiser, consent_records, users/{uid}/canonical_rating_events (Increment 5), unified_shared_shopping_lists (BUT-1732, tre frågor: ägd/medlem/bidragit till) m.fl. Regelstyrt betyder också en gräns: group_weekly_menu_plans för veckor användaren lämnat nås inte alls härifrån — läsregeln grindar på memberPermissions och Firestore nekar hela frågan, så paketet anger luckan i text i stället. Planens contributorUserIds är ett raderingshandtag och stryps ur paketet (BUT-1971).",
           "transport": "Firestore reads",
           "verified": true
         },

@@ -1,14 +1,4 @@
 /// Unit tests for [GroupWeeklyMenuPlan] (BUT-405).
-///
-/// Covers:
-/// - Firestore round-trip serialization (toFirestore/fromMap preserves every
-///   field — entries, participants, permissions, audit timestamps).
-/// - `copyWith` updates only the fields it's given and bumps
-///   `lastModifiedAt` by default.
-/// - Doc-ID determinism: same `(groupId, week)` always returns the same ID,
-///   different groups collide into different IDs.
-/// - Participant permission helpers (`canRead` / `canEdit` / `canAdmin`).
-/// - Denormalised `memberPermissions` map matches the structured participants.
 library;
 
 import 'package:clock/clock.dart';
@@ -312,6 +302,138 @@ void main() {
         expect(decoded.participants, isEmpty);
         expect(decoded.entries, isEmpty);
         expect(decoded.lastModifiedBy, isNull);
+      });
+    });
+
+    group('contributorUserIds', () {
+      // The array exists so account erasure can still FIND the plan after a
+      // departure clears the roster. Every assertion here is about that, not
+      // about access.
+      GroupWeeklyMenuPlan planWith({
+        List<GroupMenuParticipant>? participants,
+        List<WeeklyMenuPlanEntry>? entries,
+        List<GroupMenuEditTrailRow>? editTrail,
+        List<String> stored = const [],
+        String? lastModifiedBy,
+      }) {
+        return GroupWeeklyMenuPlan(
+          id: GroupWeeklyMenuPlan.docIdFor(groupId, weekStart),
+          groupId: groupId,
+          weekStartDate: weekStart,
+          entries: entries ?? const [],
+          participants: participants ?? [_p('user-a')],
+          createdAt: DateTime(2026, 4, 13),
+          lastModifiedAt: DateTime(2026, 4, 13),
+          lastModifiedBy: lastModifiedBy,
+          editTrail: editTrail ?? const [],
+          contributorUserIds: stored,
+        );
+      }
+
+      test('unions every uid the document names', () {
+        final plan = planWith(
+          participants: [_p('roster-uid')],
+          entries: [
+            WeeklyMenuPlanEntry.create(
+              day: DayOfWeek.mon,
+              slot: MealSlot.middag,
+              recipeId: 'r',
+              recipeTitle: 'Lasagne',
+              proposedBy: 'proposer-uid',
+              votedInBy: const ['voter-uid'],
+            ),
+          ],
+          lastModifiedBy: 'writer-uid',
+          editTrail: [
+            GroupMenuEditTrailRow(
+              actorId: 'actor-uid',
+              subjectId: 'subject-uid',
+              entryId: 'e1',
+              at: DateTime(2026, 4, 14),
+              action: 'removed',
+            ),
+          ],
+        );
+
+        expect(
+          plan.contributorUserIdsForWrite,
+          unorderedEquals([
+            'roster-uid',
+            'proposer-uid',
+            'voter-uid',
+            'actor-uid',
+            'subject-uid',
+            'writer-uid',
+          ]),
+        );
+      });
+
+      test('never unions the cascade tombstone', () {
+        // The cascade writes `lastModifiedBy: "deleted"` when the last writer's
+        // account is erased. Unioning that literal would put a permanent
+        // non-uid in an array no `arrayRemove(uid)` can clear, counting against
+        // the cap forever.
+        final plan = planWith(
+          participants: [_p('user-a')],
+          lastModifiedBy: 'deleted',
+        );
+
+        expect(plan.contributorUserIdsForWrite, isNot(contains('deleted')));
+        expect(plan.contributorUserIdsForWrite, contains('user-a'));
+      });
+
+      test('keeps a stored uid the document no longer names anywhere', () {
+        // The whole point. A departed member is off the roster and may have
+        // had their only dish removed; if the write recomputed the array from
+        // the live fields alone, erasure would lose its last handle on them.
+        final plan = planWith(
+          participants: [_p('still-here')],
+          stored: const ['long-gone'],
+        );
+
+        expect(plan.contributorUserIdsForWrite, contains('long-gone'));
+      });
+
+      test('round-trips through toFirestore / fromMap', () {
+        final plan = planWith(
+          participants: [_p('user-a')],
+          stored: const ['departed-uid'],
+        );
+        final decoded = GroupWeeklyMenuPlan.fromMap(
+          plan.id,
+          plan.toFirestore(),
+        );
+
+        expect(
+          decoded.contributorUserIds,
+          unorderedEquals(['user-a', 'departed-uid']),
+        );
+      });
+
+      test('is always written, even when it would be empty', () {
+        // Unlike `editTrail`, which `toFirestore` omits when empty. An absent
+        // field would let the next write start its union from nothing, and the
+        // rules `hasAll` conjunct reads `.get('contributorUserIds', [])` on
+        // both sides — so an omitted field is indistinguishable from a cleared
+        // one there.
+        final plan = planWith(participants: const []);
+
+        expect(plan.toFirestore().containsKey('contributorUserIds'), isTrue);
+      });
+
+      test('coerces a mixed-type stored array rather than dropping it', () {
+        // A fixture the constructor default cannot fake. Asserting an ABSENT
+        // field decodes to empty proves nothing here: the parameter default is
+        // the same `const []`, so deleting the `fromMap` line entirely leaves
+        // such a test green while the parse is gone.
+        final decoded = GroupWeeklyMenuPlan.fromMap('fam-abc_2026-W16', {
+          'groupId': groupId,
+          'participants': const [],
+          'entries': const [],
+          'contributorUserIds': const ['kept-uid', 42],
+        });
+
+        expect(decoded.contributorUserIds, ['kept-uid', '42']);
       });
     });
 

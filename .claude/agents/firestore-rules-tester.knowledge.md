@@ -325,9 +325,17 @@ Standard deny matrix for ownership-checked collections:
   replicating the guard's own extraction (its regex, over the same comment-stripped text)
   and printing what it captured plus how many other copies of the number exist — reading the
   regex is not verification. Then check the guard RUNS in CI (`test.yml` runs `flutter test
-  test/unit`), or the pointer names a guard nothing fires. Residual worth one Low line: such
-  a comment carries a cross-language PATH that a rename breaks silently, with no reciprocal
-  pointer back (BUT-1971, `groupMenuTrailWithinCap` -> `rules_numeric_bound_drift_test.dart`).
+  test/unit`), or the pointer names a guard nothing fires. Such a comment carries a
+  cross-language PATH that a rename breaks silently, so the fix for that Low is a
+  RECIPROCAL pointer — the Dart constant's docstring naming the guard, as
+  `GroupWeeklyMenuPlan.maxContributorUserIds`/`maxEditTrailRows` now do — not a caveat
+  (BUT-1971, 2026-08-31).
+  **And a drift guard's stated failure mode ("raise the Dart constant and the server denies
+  the write") assumes the constant has a PRODUCTION READER — grep it before passing that
+  sentence.** `maxEditTrailRows` is pruned to by the service; `maxContributorUserIds` is read
+  by nothing but the guard itself, so raising it changes no write and denies nothing. The
+  guard still earns its place (it keeps the numbers together for the day a prune arrives);
+  what goes false is the causal clause, which gets STRUCK, not reworded (BUT-1971, 2026-08-31).
 - A decision record or comment quoting mutation-probe figures inherits their staleness
   at one remove — re-run every quoted mutant against the CURRENT file before trusting a
   written figure; arithmetic on an old run is not measurement.
@@ -357,6 +365,17 @@ Standard deny matrix for ownership-checked collections:
   line, and `noUnusedLocals` then aborts ts-node on TS6133 before any test runs** — an exit
   that greps for `FAIL` exactly like a green suite. Delete the import in the same `sed`, and
   require a `N/N passed` line before reading any probe result.
+- **A probe script written through a heredoc or `node -e` inherits the SHELL's escaping, and
+  the collapse is silent**: `"function\\s+"` came back as `function\s+` inside a JS *string*
+  literal, i.e. the pattern `functions+`, which matched nothing and read as "the rule is gone"
+  — the same decay the Dart guard's own comment warns about, arriving through bash instead.
+  Build patterns from REGEX LITERALS (`/…/.source` with a placeholder to substitute), never
+  from backslashes inside a quoted string, and print the CAPTURE plus how many other copies of
+  the number the file holds before believing a match (BUT-1971, 2026-08-31).
+- **A parallel session can edit the suite MID-REVIEW** — this file went 30 -> 32 tests between
+  the first run and the report, so a quoted total and a "no test covers X" claim both age
+  inside one review. Re-`Read` the test file and re-`ls -l` it before quoting any count, and
+  never carry a probe's pass total from an earlier run into the write-up.
 - A standalone probe script must live UNDER `functions/src/` — from the OS temp dir,
   `npx ts-node` resolves neither `@firebase/rules-unit-testing` nor the tsconfig and dies
   on TS2307/implicit-any. Delete it in the SAME Bash call that created it (`trap ... EXIT
@@ -374,6 +393,29 @@ Standard deny matrix for ownership-checked collections:
   collection's shape is shared repo-wide (`memberPermissions[uid] in ['edit','admin']`
   appears three times), slice the block by `indexOf('match /<collection>')` and mutate
   inside the slice rather than widening the pattern.
+  **The same slice is mandatory in a SHIPPED cross-language guard, where the consequence is
+  worse than in a probe: an unanchored needle stays green FOREVER instead of measuring the
+  wrong bytes once.** A rules test pinning a Cloud Function's cap by
+  `rulesText.includes(".get('contributorUserIds', []).size() <= 200")` matched THREE times —
+  once in `group_weekly_menu_plans`, twice in `unified_shared_shopping_lists` — so the group
+  cap could move to 150 (with its Dart twin, keeping the Dart guard green) while the needle
+  went on matching the shopping-list copy, which is exactly the drift the guard exists to
+  catch. Count the needle's occurrences over the WHOLE file before shipping any substring
+  pin, assert the count inside the slice is 1, and note that a needle unique TODAY (the
+  `editTrail` twin) is anchored by luck, not construction. A raw `includes()` is also
+  COMMENT-BLIND, unlike the Dart guard beside it which strips `//` first — measured:
+  commenting the cap out leaves the pin green (BUT-1971, 2026-08-31).
+  **Certify such a pin with FOUR text-only mutants, no emulator needed — the guard is pure
+  string work, so replicate its own slicer over a mutated buffer in `node`**: (1) change the
+  cap INSIDE the block → must fire; (2) same for the sibling cap, separately, or one anchor
+  covers for the other; (3) comment the cap out → must fire; (4) change the copies OUTSIDE
+  the block → must NOT fire. Print the WHOLE-FILE needle count beside the in-slice count:
+  the whole-file number is what tells you whether the slice was load-bearing at all
+  (measured: contributor needle 3 whole-file / 1 in-slice, trail needle 1 / 1 — so the trail
+  pin is anchored by luck and only the slice makes that safe to stop worrying about).
+  **A cross-language guard anchored on a rules FUNCTION NAME is safe by construction and
+  needs no slice** — `groupMenuContributorsWithinCap` cannot match the shopping list's inline
+  copy, whereas the literal can. Prefer the name anchor when the rule offers one.
 - **Proving a "comment-only" rules diff is mechanical, not eyeballable**: recover every
   previously-staged revision with `git cat-file --batch-all-objects --batch-check`, strip
   `//` comments (only after grepping for `://` first) AND blank lines AND `\r`, then
@@ -474,6 +516,17 @@ Standard deny matrix for ownership-checked collections:
   means adding `is list` LATER falsifies six sentences in one edit, so grep `polymorphic`
   before touching such a cap. And `is list` does not retire the downstream arms by itself:
   a rules tightening never cleans STORED documents, and those arms read stored data.
+  **A test that PINS such a gap (a 50-key map ALLOWED) has exactly one kill: the hardening.**
+  That is its value — it converts "adding `is list` falsifies six sentences silently" into a
+  RED test that names them — but say so in its comment, or the next reader reads the red as a
+  regression and deletes it. Scope the comment to what the case holds: the downstream carriers
+  all cite the MAP, so a map case discharges them; naming "list, map and string" beside a
+  map-only case leaves a third of the sentence uncommitted (BUT-1971, 2026-08-31).
+  **And never let that comment COUNT the carriers it discharges** ("three comments cite this
+  and no case held it"): the number is not derivable from the case, it is falsified by the next
+  carrier anyone adds, and it actively competes with the `grep polymorphic` that is the real
+  instruction — a maintainer adding `is list` later stops at the stated number and leaves a
+  stale carrier. Strike the numeral; keep only what the case does (BUT-1971, 2026-09-02).
 - **Deny-all server-only collection** (`allow read, write: if false`): matrix
   {read,create,update,delete} × {unauth, non-admin, admin} — admin-still-denied is the
   load-bearing case — plus one Admin-SDK-bypass write that succeeds.
@@ -487,6 +540,28 @@ Standard deny matrix for ownership-checked collections:
   must still ALLOW (the case that distinguishes it from an equality check); `arrayUnion`
   allows and `arrayRemove` denies with no special-case code; a doc already over N is
   FROZEN for every future update, a documented consequence, not a bug to silently patch.
+  **Drop-and-clear denies are NOT the coverage — two cheaper mutants survive them both,
+  measured on `group_weekly_menu_plans.contributorUserIds` (BUT-1971, 32/32 green each).**
+  (1) Defaulting the REQUEST side to the prior array
+  (`req.get(f, resource.get(f,[]))`) — the "make legacy clients work" fix — is caught only
+  by a whole-document non-merge `set()` that OMITS the field, which is the production verb
+  wherever `save()` writes the whole doc and the shape a stale app build sends. (2)
+  Rewriting `hasAll` as `req...size() >= resource...size()` is caught only by a SAME-SIZE
+  SUBSTITUTION (`['a','b']` -> `['a','z']`), the smarter evasion. Pin both beside the
+  drop/clear pair, plus the reorder ALLOW and a preserving-`set()` fail-closed control.
+  Re-measured 2026-08-31 once all four shipped: each mutant now dies 36/37, killing exactly
+  its own test and nothing else. **`arrayUnion`/`arrayRemove` sentinels owe NO test in a
+  rules suite** — rules see the RESOLVED post-state, so a client sentinel is an alias of the
+  superset-allow / drop-deny already pinned, and a SERVER sentinel (the leave-path CF's
+  `arrayUnion`) runs under the Admin SDK, which never evaluates rules at all; its coverage
+  belongs in the callable's own suite.
+- **An Admin-SDK write can put a document PAST a cap the rules enforce, and whether the
+  resulting client freeze is permanent is a question about a CLIENT-SIDE PRUNE, not about
+  the rule.** Every writer that APPENDS to the trail prunes it — the client in
+  `_withTrailRow` and the leave-path CF in the same branch that appends its `adminPromoted`
+  row — and the account cascade only filters rows out, so no over-cap trail is ever stored. `contributorUserIds` has no prune by design, so its freeze IS permanent. Trace
+  the prune before writing "frozen forever" or "self-healing"; they are opposite verdicts on
+  two caps in one collection (BUT-1971, 2026-08-31).
 - A `rateLimitWrite(...)` conjunct is invisible to the whole suite unless a test SEEDS
   `users/{uid}/rate_limits/{collection}` — no Butlery client writes those docs itself, so
   its removal reddens nothing without an explicit seeded-doc deny test. Report an

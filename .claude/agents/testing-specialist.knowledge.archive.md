@@ -30979,3 +30979,79 @@ below the loop's 55 appends, so only the pruned-from-the-front id did any pinnin
 
 > `group_weekly_menu_plan_service_test.dart` reddens on ANY raise (its loop appends 55 rows and
 > asserts both `hasLength(cap)` and the pruned-from-the-front id).
+
+### 2026-08-31 — BUT-1971 follow-up: contributorUserIds + cap-drift + Art.15 redaction (trigger: review request "judge whether any new test can pass for the wrong reason; check the two applied repairs; be strict on unmeasured comments")
+
+Five files read: `lib/models/menu/group_weekly_menu_plan.dart`,
+`lib/services/account/export/content_export_manager.dart`,
+`test/unit/models/menu/group_weekly_menu_plan_test.dart`,
+`test/unit/security/rules_numeric_bound_drift_test.dart`,
+`test/unit/services/account/export/content_export_manager_test.dart`.
+
+**The finding that reframed the round: 3 of 5 were `MM`.** `git diff --numstat` (run at
+verdict time, should have been run at brief time) showed the model file, the model suite and
+the drift suite all had unstaged hunks. BOTH repairs the brief presented as applied — the
+`decodes a document that predates the field as empty` -> `coerces a mixed-type stored array`
+rewrite, and the `nothing in firestore.rules reads this field to grant anything` correction —
+were WORKTREE ONLY. The index still held the vacuous test and the false comment, plus two
+sentences the worktree had already struck: the test name `unions every uid the document names,
+from all five positions` (six sources: participants, proposedBy, votedInBy, actorId, subjectId,
+lastModifiedBy) and the model doc's `so account erasure and the Art. 15 probe can FIND the
+plan` / `neither erasable nor exportable` — false, because `exportPlansForParticipant` queries
+`.where('memberPermissions.$userId', isNull: false)`
+(`firebase_group_weekly_menu_plan_repository.dart:230`) and a `contributorUserIds
+array-contains` query is denied to every caller (`weekly-menu-plans-rules.test.ts:645`,
+"MEASUREMENT: a contributor query is denied even to a CURRENT member").
+
+**Blocking (4), all prose, no code defect:**
+1. Unstaged repairs, above. `git add` the three files, or the commit ships every reported defect.
+2. `group_weekly_menu_plan_test.dart:322` (worktree) — the REPAIR introduced a new false `only`:
+   "the rules read it only to refuse a write that DROPS an entry". `groupMenuContributorsWithinCap()`
+   also reads the field to bound `.size() <= 200` on BOTH limbs (`firestore.rules:1009-1010,
+   1015, 1030`) — and that second read is what the round's OWN sibling test guards, so the
+   quantifier is falsified inside its own commit. The load-bearing half ("no access decision
+   depends on its contents") is true. Strike from the em dash.
+3. `rules_numeric_bound_drift_test.dart:1` (both copies) — "One number, two languages, nothing
+   tying them". Falsified twice by this round: the file now guards TWO numbers, and each lives
+   in a THIRD language (`MAX_TRAIL_ROWS = 50`, `MAX_CONTRIBUTOR_UIDS = 200`,
+   `remove-chat-group-member.ts:562,573`) where they ARE tied to the rules literals by
+   `weekly-menu-plans-rules.test.ts:750`, whose own comment opens "A THIRD language holds each
+   of these numbers". Two answers to one question across the two files.
+4. `rules_numeric_bound_drift_test.dart:49` (staged) — "Measured: it went green on the wrong
+   reason first." Refuted by the repo's own record of the same incident: `tasks/lessons.md:24`
+   says the decayed pattern "matched nothing, and the guard FAILED with 'the rule is gone from
+   firestore.rules'". A null `firstMatch` cannot go green — `expect(match, isNotNull)` is the
+   first assertion. The mechanism sentence beside it is the whole warning.
+
+**Non-vacuity verdict on the new tests (all discriminate):** the union test supplies a unique
+uid per source, so each spread deletion reddens; `keeps a stored uid` is the only arm feeding
+`long-gone`; the round-trip discriminates ForWrite-vs-stored on the write side AND the parse on
+the read side, which `is always written` alone does not (that one only kills the
+`if (isNotEmpty)` mutant) — the PAIR is what covers it; the `coerces` repair is sound because
+`SerializationUtils.safeStringList` -> `safeList(..., (item) => item.toString())` turns `42`
+into `'42'`, which the `const []` parameter default cannot fake. The edit-trail round-trip
+pins `at` explicitly against `safeRequiredDateTime`'s `clock.now()` fallback — the author's own
+good catch. Export: `drops the erasure handle` is saved from the wipe-the-map and
+remove-the-wrong-key mutants by its `groupId == 'grp1'` assertion.
+
+**Drift helper — one red means one thing: yes.** Two tests, one function each; within a test
+the `isNotNull` and the number-equality expects have disjoint failure modes and distinct
+`reason` strings. The regex anchors on `function <name>` so the shopping-list collection's
+identical `.size() <= 200` (`firestore.rules:2362,2380`) cannot be matched by accident — the
+exact trap the TS guard's comment records being bitten by. Ran it: 23/23 with the model suite
+(the brief's "measured" list did not name this suite).
+
+**Non-blocking:** the group-menu export section has no empty-section control equivalent to
+`no shared lists yields an empty, error-free section` — the new left-groups test drives the
+empty section but asserts nothing about `total_count`/`error` (it reddens on a failure
+envelope only incidentally, via a null `data_minimisation`). And a pre-existing claim in three
+places (`content_export_manager.dart:486`, its test comment, `firestore.rules:371`) that "a
+50-key MAP is ALLOWED, measured on the emulator" is held by NO committed case:
+`weekly-menu-plans-rules.test.ts` seeds a 51-list, a 50-list and an explicit null, never a map.
+
+Verified true, for the record: the export query really does key on `memberPermissions`;
+`removeChatGroupMember` really does rebuild `memberPermissions` from `remaining`
+(`remove-chat-group-member.ts:403`); no widget renders `contributorUserIds`; the voters sheet
+really exists (`group_weekly_menu_widget.dart:478`), so the Art. 15 keep decision's re-grounding
+holds; nothing in `lib/` reads `maxContributorUserIds`, and the service really does prune to
+`maxEditTrailRows`.

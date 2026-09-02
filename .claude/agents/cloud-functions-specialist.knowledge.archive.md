@@ -16620,3 +16620,504 @@ Standing lesson for this reviewer: an `MM` finding is an observation about the I
 remedy (`git add`, re-review the staged bytes) needs no cause, so do not attribute one —
 that attribution is a claim about someone else's shell history that nothing in the repo can
 hold.
+
+### 2026-08-31 — BUT-1971 follow-up: cutting group-menu access on leave [review]
+
+Reviewed the `functions/` half: `cutGroupMenuPlanAccess` in
+`groups/remove-chat-group-member.ts`, and the fourth `contributorUserIds` discovery
+handle + third destructive witness + `arrayRemove` scrub in
+`account/account-deletion-cascade.ts`, with the two suites.
+
+Verified for the author's specific doubt (his probe anchor had landed on the wrong
+collection): `contributorUserIds` appears at four query sites in the cascade —
+probe line 302 and deleter line 1249 on `Collections.groupWeeklyMenuPlans` (both NEW,
+both in the diff), probe line 460 and deleter line 872 on
+`unified_shared_shopping_lists` plus the in-transaction scrub at 1000-1003 (all three
+PRE-EXISTING, no diff hunk touches them). The code legs are the ones he meant; the
+survived probe was the script's fault, as he suspected.
+
+BLOCKING finding: the empty-roster SHELL is not merely unreadable, it BRICKS that
+week's doc id. `firestore.rules` `group_weekly_menu_plans` update limb requires
+`request.auth.uid in resource.data.memberPermissions`; the delete limb requires
+`admin`; and `FirebaseGroupWeeklyMenuPlanRepository.save` is
+`collection.doc(plan.id).set(...)` on the deterministic `{groupId}_{ISO week}` id. So
+once the last participant of an old week leaves a SURVIVING group, no client can ever
+read, write, adopt or delete that week again — including the poll-close path, which
+mints the same id. Reachable by ordinary churn: plan W16 while A,B are members, add D
+later, A and B leave one at a time. Before this change the leaver stayed in
+`memberPermissions` forever, so the state did not exist. The suite pins the shell's
+survival (intended half) but nothing exercises re-planning the week.
+
+Non-blocking, reported: (1) two other membership-removal paths never cut plan access —
+`stageBackstopRemovals` at `messaging/enforce-group-minor-membership.ts:417` (the
+child-safety eviction, the highest-stakes one) and the category sync at
+`groups/ensure-category-chat.ts:485`; the cascade's own `stageMemberRemoval` call is
+fine because `deleteWeeklyMenuPlans` scrubs separately. (2) `MAX_TRAIL_ROWS = 50`'s
+docstring claims it is "pinned against the rules literal by
+`weekly-menu-plans-rules.test.ts`" — that suite pins the RULES bound with literal
+50/51 fixtures and never reads the constant, which is not even exported;
+`test/unit/security/rules_numeric_bound_drift_test.dart` compares the rules literal to
+the DART constant only. The prune branch itself has no fixture (the promotion test
+seeds no existing trail). (3) The cap DECLINE leaves access UNCUT with no retry — the
+sibling's "decline rather than truncate" rationale does not transfer, because a
+partial CUT is strictly better than none while a partial DELETE is not; a member can
+plant 501 rows against the group id and keep access after leaving. (4) The union
+retains a uid for a participant with NO other trace on the week, where the departure
+would otherwise have erased every trace (the client's `contributorUserIdsForWrite`
+already unions anyone named in `entries`/`editTrail`/`lastModifiedBy` on every save).
+(5) Admin SDK bypasses `groupMenuContributorsWithinCap()` (200), so the union can push
+a week past the cap and refuse every later CLIENT write — the same hazard the author
+guarded one branch below for the trail. (6) The promotion trail row records
+`actorId: departingUid`, i.e. the leaver as the author of a promotion they did not
+choose; harmless today because no `lib/` widget renders `.action`, and using a
+`system` sentinel would put a non-uid into an erasure handle.
+
+Confirmed OK: the third witness is computed AFTER the uid is filtered out and the
+sole-contributor fixture proves it; `contributorUserIds` already existed in
+`firestore.rules` (hasAll append-only + <=200) and in `GroupWeeklyMenuPlan`, so no new
+`hasOnly` surface; `arrayRemove` creating `[]` on a doc without the field is harmless
+because every rules read is `get('contributorUserIds', [])`; the Art. 15 side of a
+left group is handled by `probeLeftGroupPlans` in the Flutter half; logging carries no
+uid and `groupKey` is always a group conversation id, never `direct_`.
+
+### 2026-08-31 — BUT-1971 re-review: empty-roster plan now DELETED; two comment defects, one cap gap [review]
+
+Re-review of `functions/` after the previous `fail (1 blocking)`. The blocker
+(an emptied `memberPermissions` shell bricking `{groupId}_{ISO week}` for the
+whole group, poll-close included) is correctly taken: `cutGroupMenuPlanAccess`
+deletes the plan when `remaining.length === 0`, guarded by the
+`remaining.length === rows.length` skip, so it can only fire on a plan whose
+snapshot roster named the departing member and nobody else. Verified scoped —
+the new fixture seeds `c1_2026-W16` (group still on it) beside `c1_2026-W01`
+and asserts the survivor. The cap CUT verdict introduces no partial-state
+hazard: rows are independent, each doc's cut is one `update()`, and the
+uncut overflow is logged at ERROR with a group-conversation id (not a
+`direct_` id, so not PII).
+
+Found:
+1. BLOCKING — `chat-group-callables.test.ts` line 964-966 still carries the
+   pre-fix rationale ("The shell is left STANDING on purpose…") directly above
+   a case named "…is DELETED, not left as an empty shell". Strike, don't
+   reword.
+2. BLOCKING — `MAX_TRAIL_ROWS`'s docstring claims it is "Pinned against the
+   rules literal by weekly-menu-plans-rules.test.ts". That suite imports only
+   fs/path/rules-unit-testing and uses bare 50/51; `rules_numeric_bound_drift_test.dart`
+   compares the DART constant to the rules literal, not the TS one. The third
+   copy is pinned by nothing.
+3. BLOCKING (High) — the unconditional
+   `contributorUserIds: arrayUnion(departingUid)` can cross the rules cap of
+   200 (Admin SDK bypasses rules), and `weekly-menu-plans-rules.test.ts`'s own
+   "a document already OVER the cap is frozen" test pins the consequence: no
+   client can ever save that week again. `editTrail` got a prune for exactly
+   this reason; the contributor union got none. Reachable by churn — chat group
+   cap is 100 concurrent members and the array only grows client-side.
+   Remedy: add `contributorUserIds` to the `.select()` and skip the union at
+   the cap.
+
+Noted, not filed (adjacent to the excluded whole-write item): the delete acts
+on a query-time snapshot with no re-read, so a plan re-planned between the
+query and the delete is destroyed.
+
+### 2026-08-31 — BUT-1971 remove-chat-group-member, re-review round 3 [review]
+
+All three blocking findings from round 2 verified fixed by Read on the staged
+files:
+
+1. The contradictory "the shell is left STANDING on purpose" paragraph above
+   the deletion test is gone. The only surviving "standing" sentences are about
+   the empty GROUP (`deleteEmptyGroup`'s docstring and the unclearable-roster
+   test), which are correct.
+2. `MAX_TRAIL_ROWS`'s docstring no longer claims a pin. `MAX_CONTRIBUTOR_UIDS`
+   and `MAX_TRAIL_ROWS` are now imported by `weekly-menu-plans-rules.test.ts`
+   and each asserted to appear in the rules text
+   (`.get('editTrail', []).size() <= 50`,
+   `.get('contributorUserIds', []).size() <= 200`). Third-language drift is
+   guarded.
+3. The union is bounded: `.select("participants", "editTrail",
+   "contributorUserIds")`, skip at `MAX_CONTRIBUTOR_UIDS` with an ERROR log,
+   access cut still applied. Pinned by "at the contributor cap the union is
+   skipped, but access is still cut".
+
+New finding this round (BLOCKING, comment): the replacement comment for the
+already-present arm ends "No test pins it, because none can." That is false.
+`_fake-firestore.ts` records write PAYLOADS (`FakeWrite.data`, pushed in
+`apply()`), so a fixture seeding `contributorUserIds` = 199 others + the leaver
+(length exactly 200) discriminates the arm: with it, the recorded `update`
+payload for the plan path carries `contributorUserIds`; with the condition
+reduced to `known.length < MAX_CONTRIBUTOR_UIDS` the field is absent and the
+ERROR log fires. So the arm IS pinnable — at payload level, not stored state,
+which is why the deleted stored-state test rightly survived its mutant. Second
+wording of a claim about this arm's testability, so per the digest rule the
+clause is struck rather than repaired a third time. The arm itself should stay:
+its effect is suppressing a false "uid not recorded" ERROR on an idempotent
+re-invocation, and that ERROR stream is the only signal that erasability was
+lost.
+
+Non-blocking, both wordings measured: "nothing else reads either of these"
+(constant docstring) and "nothing else reads either constant" (rules-test
+comment) are false — `chat-group-callables.test.ts` imports both and uses them
+as fixture sizes (lines 935, 979). Symbolic use means it catches no drift, so
+the intent holds; the sentence as written does not.
+
+My two round-2 non-blockers, re-judged on request:
+- Empty-roster `d.ref.delete()` from a query-time snapshot: RECOMMEND building,
+  cheaply — `d.ref.delete({ lastUpdateTime: d.updateTime })`. A failed
+  precondition lands in the existing `failed` counter and ERROR log. Note the
+  fake's `delete()` takes no argument, so the precondition itself stays
+  unpinned by the unit suite.
+- `participants` present but not an array is skipped, leaving the leaver's
+  `memberPermissions` key: do NOT build. Same class as a row whose
+  `memberPermissions` names a uid `participants` does not — both are
+  self-planted shapes, and both would need the whole-write ticket's fix to
+  close properly.
+
+Retired verbatim from the principles file to pay for this round's addition:
+- "Can't be idempotent? Document why + add a guard doc." (idempotency rule 7)
+- "which blew the regional CPU quota as `Container Healthcheck failed`" →
+  "which blew the regional CPU quota" (maxInstances bullet)
+
+### 2026-08-31 — BUT-1971 round 3: cutGroupMenuPlanAccess, comments only [review]
+
+Round-2 blocker CLEARED. The testability clause is gone from the contributor-cap
+comment, and the payload-level case exists: `chat-group-callables.test.ts`
+"a uid already in a capped array is still written, not reported missing" seeds
+`contributorUserIds = [leaver, ...199 foreign]` and asserts `FakeWrite.data`
+carries the key. Round-2 Low cleared in both places. The empty-roster delete is
+now `d.ref.delete({ lastUpdateTime: d.updateTime })` as recommended.
+
+Three NEW blocking comment defects, all inside text written as this build's
+explanatory prose, all in `cutGroupMenuPlanAccess`:
+1. The opening comment says "Capped and DECLINING above the cap, exactly like
+   `deleteGroupMenuPlans`" while the code slices to the cap and the comment ten
+   lines below says "Over the cap this CUTS what it read instead of declining,
+   which is the opposite of the sibling sweep's verdict". Two comments in one
+   function stating opposite verdicts; the code and the test
+   ("an implausible plan count still cuts the capped page") agree with the
+   second. Struck the false clause.
+2. "Two named fields rather than the sibling's field-LESS `.select()`" over a
+   `.select("participants", "editTrail", "contributorUserIds")` — three, and the
+   enumeration that follows omits the one the cap arm reads via
+   `d.get("contributorUserIds")`. Almost certainly written before the third
+   field was added in a later round: the count is the insertion seam.
+3. "the already-present arm is there to keep a RE-INVOCATION from firing it" —
+   the arm's condition is `known.includes(departingUid)`, which says nothing
+   about invocation counts, and the fixture that pins it (and that the reported
+   mutation probe reddens) is a FIRST invocation whose leaver already
+   contributed. Struck the scenario word.
+
+Verified true this round, so future rounds need not re-derive them:
+- `account-deletion-cascade.ts` queries `group_weekly_menu_plans` by
+  `contributorUserIds array-contains` (deleter and probe), so the docstring's
+  "that array is what account erasure and the Art. 15 probe find the document
+  by" holds.
+- `GroupWeeklyMenuPlan` (lib/models/menu/group_weekly_menu_plan.dart) derives
+  `participantUserIds` and `memberPermissions` as GETTERS off `participants` and
+  emits them in `toFirestore`, so "projections recomputed on every client write"
+  holds and cutting only the projections would indeed be undone by the next save.
+- `weekly-menu-plans-rules.test.ts` "the Cloud Function's copies of both caps
+  match the rules literals" really does compare BOTH constants against
+  `firestore.rules` text.
+
+Asked whether the fake-ignores-the-precondition caveat belongs at the call site:
+answered no — commit body only. A comment asserting what a test does NOT cover is
+the same unfalsifiable class as the testability clause struck in round 2.
+
+No principles-file edit this round: the file is over budget (28,015 chars) and
+nothing here is a new Cloud Functions mechanism, only a fresh instance of the
+already-recorded "the paragraph written to BE the correction is where the next
+false sentence lands".
+
+### 2026-08-31 — remove-chat-group-member.ts comment re-review, round 4 [review]
+
+Re-reviewed `functions/src/groups/remove-chat-group-member.ts` after four
+pure-deletion comment edits (contradictory over-cap verdict; the "two named
+fields" count against a three-field `.select()`; the `a re-invocation`
+scenario on the contributor-cap arm; the literal `501`). All four confirmed
+gone by Read; nothing was moved elsewhere and no replacement claim entered.
+The over-cap verdict for `cutGroupMenuPlanAccess` (CUT, not DECLINE) is still
+stated in full at its own branch, so nothing load-bearing was lost with the
+struck cross-reference.
+
+Cross-file claims re-measured this round, all true:
+- `contributorUserIds` really is an erasure/probe handle for
+  `group_weekly_menu_plans` (`account-deletion-cascade.ts:302`, `:872`,
+  `:1249`).
+- "Both constants here are compared to the rules text by
+  `weekly-menu-plans-rules.test.ts`" — both, at `:737` (`MAX_TRAIL_ROWS`) and
+  `:745` (`MAX_CONTRIBUTOR_UIDS`), both imported at `:35`/`:36`.
+- `GroupWeeklyMenuPlan.maxEditTrailRows`/`maxContributorUserIds` and
+  `groupMenuTrailWithinCap()`/`groupMenuContributorsWithinCap()` all exist
+  (`lib/models/menu/group_weekly_menu_plan.dart:175`/`:195`,
+  `firestore.rules:984`/`:1009`).
+- "the same 50 the client prunes to" — `group_weekly_menu_plan_service.dart:321`.
+- `toFirestore` emits `groupId` unconditionally
+  (`group_weekly_menu_plan.dart:351`).
+
+ONE non-blocking finding, an over-broad quantifier surviving from an earlier
+round: the `cutGroupMenuPlanAccess` docstring says that without the
+`contributorUserIds` union "the surviving uid would be reachable by no query
+at all". The cascade declares FOUR handles on this collection, and one of them
+is the attribution scalar `lastModifiedBy` (`:283`, `:1229`), which a
+departure does NOT clear — nothing in this file writes it. So a departed
+member who happened to be the last saver of that week is still reachable.
+Remedy is to strike the "at all" clause, not reword it. The sibling comment in
+`account-deletion-cascade.ts:1240-1246` ("the three handles above all read
+fields a departure clears") carries the same over-claim; out of scope for this
+commit, named so it is not discovered as new.
+
+Verdict: pass (0 blocking).
+
+### 2026-08-31 — BUT-1971 follow-up, final pass on the staged `functions/` diff [review]
+
+Re-reviewed after two comment strikes landed (the `cutGroupMenuPlanAccess`
+docstring's "reachable by no query at all", and the cascade contributor leg's
+"the three handles above"). Both are gone from the bytes I read; nothing was
+reworded into a fresh claim. Verified staged == worktree by `git hash-object`
+for all five files before reading.
+
+Re-measured myself: `npm run build` clean, `chat-group-callables.test.ts`
+30/30. Rules and integration lanes need emulators and were taken as reported.
+
+Findings this round (none blocking):
+
+1. MEDIUM — the emptied-roster DELETE in `cutGroupMenuPlanAccess` fires on ONE
+   witness. `remaining` is derived from `participants` only, and the query's
+   `.select("participants","editTrail","contributorUserIds")` does not even
+   fetch `participantUserIds` or `memberPermissions`, so the other two rosters
+   cannot be consulted. One door down, `deleteWeeklyMenuPlans` deliberately
+   requires THREE raw witnesses (`userIds`, `mirrorSurvivors`,
+   `contributorSurvivors`) plus `wasParticipant` before deleting, and ships
+   `gp-mirror-survivor-*` / `gp-desync-inverse-*` fixtures for exactly the
+   desync shape. On a plan whose `participants` names only the leaver while
+   `memberPermissions` still names another member, the leave destroys that
+   member's week. Unproducible by any writer in the repo (the Dart model
+   recomputes both projections from `participants` on every save), which is why
+   this is Medium rather than blocking — but it is the same shape the cascade
+   chose to close "because the failure is destructive rather than a leftover".
+   Remedy: add the two fields to `select()` and AND their emptiness into the
+   `remaining.length === 0` gate.
+
+2. MEDIUM — the `adminPromoted` trail row stamps `actorId: departingUid`.
+   `cutGroupMenuPlanAccess` is not passed `callerUid`, which IS in scope at the
+   call site in `removeChatGroupMemberWithDeps`. For a self-leave the two are
+   equal; for an admin-initiated eviction the row says the person who was
+   removed did the promoting. ADR-0010's accepted "a trail row can name the
+   wrong person" covers CLIENT forgery, not the server writing a wrong actor,
+   so this is not that deviation. Remedy: thread `callerUid` through and stamp
+   it; keep `subjectId: promotedUid`.
+
+3. LOW — `contributorUserIds: FieldValue.arrayRemove(uid)` in the cascade's
+   update branch carries the comment "Unconditional, like the ACL key above: a
+   no-op on a document that never carried the uid." Firestore's ARRAY_REMOVE
+   transform sets an absent field to `[]`, so on a legacy plan with no such
+   field the write CREATES it — unlike `FieldValue.delete()` on the ACL key,
+   which genuinely is a no-op. Harm is nil (the Dart `toFirestore` writes the
+   field unconditionally anyway, and both rules limbs read
+   `.get('contributorUserIds', [])`), so the defect is the sentence. Measure it
+   on the emulator or strike the clause; do not reword.
+
+4. LOW — `weekly-menu-plans-rules.test.ts` now imports
+   `../groups/remove-chat-group-member` for two numeric constants, which
+   evaluates `onCall(...)` at import and pulls firebase-functions + admin into
+   the rules lane. Works (38/38 reported). A shared constants module would
+   avoid it. No action asked for.
+
+Checked and NOT filed, deliberately: the whole-write/stale-client resurrection,
+the non-array `participants` shape, the three other membership-removal paths,
+passive-participant retention, and the 200-cap having no relief path — all
+recorded in `.claude/rules/accepted-deviations.md`.
+
+Verified as sound: `groupKey` is the CONVERSATION id and matches what
+`messaging_service.dart` writes into `groupId` (same handle
+`deleteGroupMenuPlans` already uses); no uid reaches any log line on this path;
+the CF's `"admin"` / `?? "view"` permission strings match Dart's
+`SharedListPermission.name` exactly; the CF trail row parses under
+`GroupMenuEditTrailRow.fromMap` (`subjectId`/`entryId` nullable, `action` a
+free string); the delete precondition uses `d.updateTime`, which a
+`.select()`-projected QueryDocumentSnapshot still carries; the fake DOES
+project on `select()` and `failDeleteAt` pre-existed. The unit suite cannot pin
+the `lastUpdateTime` precondition (the fake's `delete()` takes no argument) —
+stated in the commit body, agreed.
+
+Knowledge-file edit this run (net -350 chars, still over budget):
+- Extended the cascade's empty-roster-DELETE gate principle to bind EVERY
+  server writer that can empty a roster, and named `.select()` as the silent
+  way a witness goes missing.
+- Added, under the callables section: a cleanup helper spawned from a callable
+  needs `callerUid` passed in if it writes an attribution row.
+- Retired VERBATIM, as out of this agent's scope (it governs Dart export code
+  in `lib/services/account/export/`, owned by `firebase-backend-security`):
+  "**PROMOTING a per-section field to the ROOT of an Art. 15 bundle changes its
+  blast radius — the root value must be DERIVED, never copied** (a raw
+  Firestore error string can carry another subject's uid or an internal path);
+  the root guard does NOT clear the SECTION body."
+- Retired VERBATIM from idempotency rule 12, as ADR-0009 is cited two clauses
+  later and holds it: "A CREATE gate may use the sibling's predicate only for
+  the sibling's OWN marks — an unconstrained wire value has a SECOND producer,
+  the client."
+
+Verdict: pass (0 blocking).
+
+Correction to the entry above, same run: the "net -350 chars" figure was typed
+before the edits were measured and is wrong. Measured with `wc -c`: 28015 ->
+27790, net -225. One further retirement was made to get there, VERBATIM from
+the cost/cold-start bullet, as a rules-side claim owned by
+`firestore-rules-tester`: "A `rateLimitWrite(bucket, n)` rules conjunct binds
+only if some writer STAMPS `users/{uid}/rate_limits/<bucket>` — grep before
+citing one as a real bound." The file is still over the ~25,000-char budget.
+
+### 2026-08-31 — three-witness delete gate, and the branch it hands the document to [gdpr][idempotency]
+
+BUT-1971 final gate on `functions/src/groups/remove-chat-group-member.ts`.
+A previous round of mine asked for the emptied-roster DELETE in
+`cutGroupMenuPlanAccess` to require three raw witnesses (`participants`,
+`participantUserIds`, `memberPermissions` all empty of survivors), mirroring the
+account cascade's gate. It landed, with a positive fixture ("a week only the
+leaver was on is DELETED") and a desync fixture ("an emptied roster is NOT
+deleted while another roster still names someone"), mutation-probed with a
+compiling `>= 0` mutant.
+
+What the ask did not cover, and what I only saw once the gate existed: on the
+refused-delete path the function falls through to `d.ref.update(update)`, and
+`update` unconditionally carries `participants: remaining`,
+`participantUserIds: [...]` and `memberPermissions: {...}` all recomputed from
+`participants`. In the desync shape `remaining` is empty, so the write blanks
+`memberPermissions` to `{}` — which this very file argues at length (the
+"emptied roster is DELETED, not left standing" comment) bricks the deterministic
+`{groupId}_{ISO week}` id for every reader, writer and the poll-close path,
+permanently. The gate therefore converts a recoverable delete into an
+unrecoverable brick on the shape it was added to protect. The account cascade
+does NOT have this problem: its non-delete branch conditionally spreads the
+roster fields (`wasParticipant || participantsNamedUid`) and deletes
+`memberPermissions.<uid>` per key rather than rewriting the map.
+
+Not blocking, and not re-filed as a defect against the shape: no writer in the
+repo produces a desynced document (the Dart model and this CF both recompute
+both projections from `participants`), so the branch is defence-in-depth against
+an input only the Admin SDK or a hand-rolled admin client could write. Reported
+as a Medium with the concrete remedy (skip the roster rewrite when the gate
+refuses; per-key delete + `arrayRemove` on the mirror, logged at ERROR).
+
+Also flagged: the comment above the gate implies the surviving member keeps
+their week ("deleting on the one field destroys that member's week"). They do
+not — the week survives bricked. Recommended STRIKE of the implication rather
+than a rewrite, per the wrong-sentence rule.
+
+Cleared in the same pass, no findings: `actorUid` threading onto the
+`adminPromoted` trail row (eviction fixture asserts `actorId === "chief"`, and
+`chief` is deliberately not a plan participant, which is the realistic shape);
+the contributor-cap already-present arm (pinned off the recorded write payload,
+since the stored state is a no-op); the struck `arrayRemove` no-op clause in
+`account-deletion-cascade.ts` (an unconditional `arrayRemove` on an absent field
+creates `[]`, which the rules' `hasAll` against `.get(..., [])` and the 200 cap
+both accept, so it bricks nothing); logging (the only ids on these paths are
+chat-group auto-ids, never a `direct_` spelling); region, secrets and bundle
+untouched.
+
+Index verified equal to worktree by `git hash-object` vs `git ls-files -s` on
+all four reviewed files before the verdict.
+
+### 2026-08-31 — three-witness gate's non-delete branch, per-key substitution [gdpr][idempotency][review]
+
+BUT-1971 follow-up, `functions/src/groups/remove-chat-group-member.ts` →
+`cutGroupMenuPlanAccess`. Previous round's Medium (non-blocking) was built anyway:
+when the three-witness gate refuses the delete of an emptied `participants`
+roster, the code no longer falls through with `update` as built. It now
+`delete`s `participants`, `participantUserIds` and `memberPermissions` from the
+payload and substitutes `memberPermissions.<uid> = FieldValue.delete()` plus
+`participantUserIds = arrayRemove(uid)`, with a `logger.error` naming the desync.
+
+Verified this round:
+- No transform conflict. `arrayRemove` on `participantUserIds` and `arrayUnion`
+  on `contributorUserIds` are different fields in one `update()` — legal.
+- `editTrail` cannot be in the payload here: promotion is gated on
+  `remaining.length > 0`, which is false in this branch.
+- `delete update.memberPermissions` is LOAD-BEARING, not cosmetic — real
+  Firestore rejects an update carrying both `memberPermissions` and
+  `memberPermissions.<uid>`. `delete update.participantUserIds` is cosmetic (the
+  key is reassigned two lines later).
+- Dot-path safety comes from `isValidDocId(targetUid)` in the callable, same
+  reason `stageMemberRemoval` documents for `memberDisplayNames.${uid}`.
+- `_fake-firestore.ts` `applyUpdate` splits dotted keys into segments and
+  dispatches transforms on `constructor.name`, so the desync test discriminates
+  on the dotted delete rather than passing on a literal key. Confirmed by
+  reading the fake, not assumed.
+
+Residual named, not blocking: `participants` is left holding only the leaver, so
+a surviving member named only in a projection can undo the cut by opening and
+saving the week (the Dart model recomputes both projections from `participants`
+on every client write — the file's own header comment says so). The alternative,
+writing `participants: []`, is the brick the gate exists to prevent, so the trade
+is right; what is missing is a sentence admitting the cut is revocable here.
+Also Low: the desync ERROR carries only `groupKey`, not `d.id`, so the human it
+asks for cannot find which week without scanning.
+
+Verdict: pass (0 blocking).
+
+
+### 2026-08-31 — correction to the BRICKS-a-deterministic-doc-id bullet [measurement]
+The bullet listed `editTrail` 50 beside `contributorUserIds` 200 as caps a server write can
+pass, "which freezes the doc for every client". Both halves are false for the trail, and the
+same commit proves it — so this file and `firestore-rules-tester.knowledge.md` were shipping
+opposite verdicts about the two caps on one collection. Caught by the `integration-reviewer`
+gate on a sweep of every knowledge file against the code it cites.
+
+Retired verbatim:
+
+> rules cap (`contributorUserIds` 200, `editTrail` 50), which freezes the doc
+
+Measured: no writer `arrayUnion`s the trail at all. `cutGroupMenuPlanAccess` rewrites it
+whole and prunes in the same branch that appends its `adminPromoted` row; the client's
+`_withTrailRow` appends then prunes to `maxEditTrailRows`; the account cascade only filters
+rows out or deletes the field. A grep over `lib/` and `functions/src` returns no fourth
+writer. And even a hypothetical 51-row trail would not freeze every client, because the
+interactive save appends and prunes to 50 and is accepted.
+
+`contributorUserIds` keeps the whole claim: it has no prune by design, so its freeze is
+permanent. The bullet's remedy ("Delete the doc, or prune/skip at the cap") already
+describes what the trail code does.
+
+### 2026-09-02 — a discovery handle is not a witness on a destructive gate [gdpr][cascade][review]
+
+Final ledger pass on BUT-1971's frozen bytes (`remove-chat-group-member.ts`,
+`account-deletion-cascade.ts`, `chat-group-callables.test.ts`,
+`weekly-menu-plans-rules.test.ts`). Verdict: pass, 0 blocking.
+
+The change that mattered since the previous pass: `contributorUserIds` was
+removed as a fourth witness on `deleteWeeklyMenuPlans`' empty-roster DELETE gate.
+Keeping it re-created, in the cascade, the exact brick the same review had made
+the leave path fix: B leaves a group, `cutGroupMenuPlanAccess` takes B off
+`participants` and unions B into `contributorUserIds`, then A (the last member)
+deletes their account — every roster empties, the contributor witness blocks the
+delete, and the plan is left with an EMPTY `memberPermissions`. Every limb of
+`group_weekly_menu_plans` gates on that map, so nobody can read, write, re-plan
+or delete that ISO week again, on a deterministic `{groupId}_{ISO week}` id that
+poll-close will mint once more. The provenance the block preserved was
+unreachable by everyone. A contributor is not a READER. The gate now keeps the
+three witnesses that name readers (`participants`, `participantUserIds`,
+`memberPermissions`) plus `wasParticipant`, and `cutGroupMenuPlanAccess` answers
+the same shape the same way (delete a week nobody can open). Verified at these
+bytes: cascade lines ~1295-1338.
+
+Checked and clean at these bytes: no whole-`memberPermissions` write paired with
+a dotted `memberPermissions.<uid>` path in either file; the desync branch cannot
+carry an `adminPromoted` trail row (promotion needs `remaining.length > 0`, the
+branch needs `=== 0`); no uid or `direct_` id reaches any log on the cut path
+(`groupKey` is a group conversation id, `planId` is `{groupId}_{ISO week}`); the
+capped read uses named `.select()` fields, all top-level; the delete carries a
+`lastUpdateTime` precondition whose loss lands in the `failed` counter.
+
+Knowledge-file edits made in this pass:
+- ADDED to the empty-roster-gate principle: witnesses are ROSTERS (readers) ONLY;
+  an erasure-DISCOVERY handle as a witness blocks the delete and strands a doc
+  with an empty `memberPermissions`.
+- RETIRED verbatim (superseded in place, kept here per the archive contract):
+  "A doc reached only by the attribution handle dies on a malformed roster."
+  — subsumed by the reader-witness rule above.
+- RETIRED verbatim: "NO trigger watches `conversations/{id}`, so \"a conversation
+  create disarms child safety\" is stale." — a correction of a claim no longer in
+  circulation; the backstop it points at is already named in the surviving text.
+
+Measured by the caller on these bytes and not re-run here: `npm run build`
+clean; 32/32 chat-group-callables; 138/138 cascade unit; 71/71 cascade
+integration; 39/39 rules.

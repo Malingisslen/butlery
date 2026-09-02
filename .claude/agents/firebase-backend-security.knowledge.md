@@ -269,6 +269,14 @@ name which doc each end touches before approving it.
 - An OPT-IN named-parameter guard defaults every EXISTING caller into the restricted branch
   (silent no-op) — ship a named METHOD on the interface instead, with its own exception
   type and a caller that honours the result (ADR-002).
+- RULES ARE NOT FILTERS, and that kills whole probe designs before they are written: a list
+  query is denied unless the rule can prove EVERY document it could return is readable, so a
+  probe on a field the read rule does not gate (`contributorUserIds array-contains uid` where
+  the rule tests `memberPermissions`) is refused for EVERY caller — a CURRENT member of the
+  matching week included. A gap note derived from such a probe's refusal therefore fires for
+  users who have left nothing, i.e. it is unconditional prose wearing a conditional's shape.
+  Measure it on the emulator with a same-shape ALLOWED control on the gated field, and state
+  the gap unconditionally rather than probing for it.
 - No `firestore.rules` match block = default-deny — grep for every new collection path. An
   admin-only collection-group rule can make "no match block" a false claim; word it "no
   rule grants a CLIENT this read." A denied read inside a shared `try` DISCARDS sibling
@@ -365,7 +373,12 @@ name which doc each end touches before approving it.
   fail direction: a strip fails CLOSED (unrecognised owner id ⇒ lose the field), a drop fails
   OPEN (unreadable owner id ⇒ KEEP the row, because under-disclosure is the worse Art. 15
   failure). Both need the section's `data_minimisation` sentence to NAME the drop and a test
-  asserting that sentence, or the withholding is silent. An Art. 15 KEEP resting on "the
+  asserting that sentence, or the withholding is silent. Grade that sentence against the
+  READER it is written for, not only for truth: an upper bound ("readable only by the
+  members it was planned with") can be true and still fail to explain the exclusion it sits
+  under, because the excluded reader satisfies it too — a leaver WAS planned with. Strike
+  the bound rather than re-word it; the unconditional gap sentence above it carries the
+  fact already. An Art. 15 KEEP resting on "the
   requester has already seen this in the app" is a measurable claim about a WIDGET, not a
   policy argument — grep the render before accepting it (a row drawing a COUNT does not
   justify shipping the uid LIST); when it is false, making the app show it is a legitimate
@@ -384,7 +397,11 @@ name which doc each end touches before approving it.
   obligation from the payload so a new path inherits it by construction), removed in the
   SAME write as the scrub and added to the residual probe, and constrained APPEND-ONLY in
   rules (`hasAll(resource.data.F)` + size bound) or any editing member can strip another
-  user's uid.
+  user's uid. It is also a NEW THIRD-PARTY DISCLOSURE the day it ships: an Art. 15 section
+  that exports the document whole now ships an array of uids including people who have
+  LEFT, which no screen renders — so it needs its own recorded decision (keep or strip) and
+  its own `data_minimisation` clause, and a same-named field decided on a DIFFERENT
+  collection is not authority for it.
 - Deleting a parent doc does NOT delete its subcollections — child sweep (STRICT) before
   parent delete (best-effort), covering every legacy name variant. TTL fields need three
   things: the `gcloud --enable-ttl` policy (separate admin action), a backfill for

@@ -296,6 +296,10 @@ export async function probeResidualData(
       new admin.firestore.FieldPath("memberPermissions", uid),
       "!=",
     ],
+    // The contributor trail, which the deleter also reads. A DEPARTURE clears
+    // the roster and its mirror, so on a plan the user has left this leg is
+    // what still reaches the document.
+    [Collections.groupWeeklyMenuPlans, "contributorUserIds", "array-contains"],
   ] as const) {
     // A `FieldPath` leg carries the uid IN ITS SEGMENTS, and the logger
     // JSON-stringifies whatever it is handed — so logging `field` directly
@@ -1215,7 +1219,7 @@ export async function deleteWeeklyMenuPlans(
   // roster query cannot reach it. One handle would leave that document
   // un-erasable AND leave the audit reporting `gdprCompliant: false` forever,
   // with no code path able to clear it.
-  const [byRoster, byWriter, byPermission] = await Promise.all([
+  const [byRoster, byWriter, byPermission, byContributor] = await Promise.all([
     db
       .collection(Collections.groupWeeklyMenuPlans)
       .where("participantUserIds", "array-contains", uid)
@@ -1233,9 +1237,23 @@ export async function deleteWeeklyMenuPlans(
       .collection(Collections.groupWeeklyMenuPlans)
       .where(new admin.firestore.FieldPath("memberPermissions", uid), "!=", null)
       .get(),
+    // The contributor trail. `removeChatGroupMember` takes a leaving member out
+    // of `participants` and therefore out of both projections above, while
+    // their uid stays on the dishes and in the trail (Malin, 2026-08-30).
+    // Leaving a group is the ordinary case, so this leg is what reaches such a
+    // document.
+    db
+      .collection(Collections.groupWeeklyMenuPlans)
+      .where("contributorUserIds", "array-contains", uid)
+      .get(),
   ]);
   const byPath = new Map<string, admin.firestore.QueryDocumentSnapshot>();
-  for (const doc of [...byRoster.docs, ...byWriter.docs, ...byPermission.docs]) {
+  for (const doc of [
+    ...byRoster.docs,
+    ...byWriter.docs,
+    ...byPermission.docs,
+    ...byContributor.docs,
+  ]) {
     byPath.set(doc.ref.path, doc);
   }
   const groupPlanDocs = [...byPath.values()];
@@ -1274,6 +1292,22 @@ export async function deleteWeeklyMenuPlans(
         const mirrorSurvivors = Array.isArray(userIdsRaw)
           ? (userIdsRaw as unknown[]).filter((id) => id !== uid)
           : [];
+        // `contributorUserIds` is a DISCOVERY handle only, and deliberately not
+        // a witness on the destructive gate below. It was one for part of this
+        // build, and that was wrong: a contributor is not a READER. Every limb
+        // of this collection gates on `memberPermissions`, so blocking the
+        // delete on a departed contributor leaves a document with an empty
+        // permission map — one nobody can read, write, re-plan or delete, on a
+        // deterministic id that poll-close will mint again. Reachable by
+        // ordinary churn once leaving cuts the roster: B leaves, then A deletes
+        // their account, and B is the only contributor left.
+        //
+        // `cutGroupMenuPlanAccess` already decided this shape: a week no one
+        // can open is deleted rather than left standing, because the provenance
+        // it preserves is unreachable by everyone. The two files must not give
+        // opposite answers about the same document.
+        //
+        // The three witnesses that remain are the ones that name READERS.
         const userIds =
           Array.isArray(userIdsRaw) && !participantsNamedUid
             ? mirrorSurvivors
@@ -1388,6 +1422,13 @@ export async function deleteWeeklyMenuPlans(
             // nullable string either way.
             ...(data.lastModifiedBy === uid ? { lastModifiedBy: "deleted" } : {}),
             [`memberPermissions.${uid}`]: admin.firestore.FieldValue.delete(),
+            // The contributor trail is a list of uids, so it is erasable data
+            // in its own right, not just a handle. `arrayRemove` rather than a
+            // rewritten array: the client-facing rule refuses a write that
+            // drops an entry, and only the Admin SDK — which bypasses rules —
+            // may take one out. Unconditional, like the ACL key above.
+            contributorUserIds:
+              admin.firestore.FieldValue.arrayRemove(uid),
           });
         }
       },

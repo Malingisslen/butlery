@@ -2536,31 +2536,202 @@ neither passed an `auditRepository` at all.
   uid in `participants`, `memberPermissions`, `entries[].votedInBy` and the trail on their
   next remove or undo. Narrow — the screen is realtime-subscribed and the poll-close path
   re-reads first — and the roster half of it predates BUT-1971, but this build widened the
-  surface from one field to four. Named beside the leaving-a-group residual rather than left
+  surface beyond the roster field it started with. Named beside the leaving-a-group residual rather than left
   to be discovered; the close is the whole-write ticket, not a wrapper.
   BUT-1971, 2026-08-30
 
 - **`GroupWeeklyMenuPlanService.removeParticipant` drops a uid from the two rosters and
-  leaves it on `entries[].proposedBy`, `entries[].votedInBy` and every trail row** — after
-  which NONE of the deletion cascade's three discovery handles reaches the document, so a
-  later account deletion misses it: neither erasable nor exportable. That is the exact
-  failure the `addEntry` roster intersection was written to prevent one door down. Dormant
+  leaves it on `entries[].proposedBy`, `entries[].votedInBy` and every trail row.** Dormant
   today — the method has no caller in `lib/` — and named here rather than left to be
   discovered, because the person who eventually wires an admin roster control is the one who
-  needs to know: scrub provenance and the trail in the SAME mutator. Raised by the
+  needs to know.
+  **AMENDED 2026-08-31:** a leave path now exists and does this correctly —
+  `cutGroupMenuPlanAccess` in `remove-chat-group-member.ts`. Wire an admin control through THAT
+  shape, not through this dormant method. Raised by the
   `integration-reviewer` gate. BUT-1971, 2026-08-30
 
 - **RESOLVED 2026-08-30 — Malin: a member who LEAVES a group KEEPS their name on the dishes
   and in the trail; only deleting the account erases it.** Closes the first half of the OPEN
-  entry above, which said she had taken no position. Needs no code: a single leave never
-  touches the plan — `removeChatGroupMember` sweeps plans only when `remaining === 0`, via
-  `deleteEmptyGroup`, so one member leaving a still-populated group edits nothing.
-  Her proviso holds today for a reason worth naming: a leaver stays in `memberPermissions`,
-  which is one of the cascade's three discovery handles, so a LATER account deletion still
-  reaches the document and erases them. Wiring the dormant `removeParticipant` into a leave
-  path would break exactly that — a second reason on top of the one its own entry gives.
+  entry above, which said she had taken no position.
   **Does NOT close** the second half of the entry above: the "already visible on screen"
   reasoning has still not been tested against a week predating a requester's membership.
-  **Separate and still open:** because `firestore.rules` gates the plan on `memberPermissions`
-  alone, a departed member keeps EDIT access to the group's menu. That is an access question,
-  not a naming one, and this decision says nothing about it. BUT-1971, 2026-08-30
+  **AMENDED 2026-08-31 — the DECISION stands, its MECHANISM does not.** As written this entry
+  said a leave needs no code because it never touches the plan, that the leaver stays in
+  `memberPermissions` and is erasable through it, and that a departed member keeping EDIT
+  access was separate and still open. All three were falsified the next day by the entry below
+  ("Leaving a group now CUTS…"), which removes the leaver from `participants` on the
+  `remaining > 0` branch, closes the edit-access hole, and makes `contributorUserIds` — not
+  `memberPermissions` — what keeps the name erasable. The sentences are struck rather than
+  rewritten; the decision they were arguing for is unchanged. Raised by the
+  `integration-reviewer` gate, the only pass that sees a decision record and the code that
+  falsified it in one commit. BUT-1971, 2026-08-30
+
+- **Leaving a group now CUTS the leaver's read and write access to that group's weeks, and
+  `contributorUserIds` is what keeps their name erasable afterwards.** Malin's call,
+  2026-08-31, chosen over the cheaper alternative of cutting only WRITE. `removeChatGroupMember`
+  gains a per-plan step that takes the departing member out of `participants` — the two fields
+  `firestore.rules` actually reads, `participantUserIds` and `memberPermissions`, are PROJECTIONS
+  the Dart model recomputes from it, so editing only the projections would work until the next
+  `save()` regenerated them and handed the access back.
+  Their uid stays on the dishes and in the trail (2026-08-30), so removing them from the roster
+  would leave it reachable by NO query. `contributorUserIds` — a straight mirror of
+  `unified_shared_shopping_lists`' field of the same name (BUT-1725), including its rule shape —
+  is the fourth discovery handle for the cascade and the probe. Do not "simplify" it away as a
+  duplicate of the roster: the roster is what a departure CLEARS, which is the whole point.
+  The rules split follows the precedent: `hasAll` on UPDATE only (there is no prior array on a
+  create), the size cap on BOTH — a cap on update alone lets a hand-rolled client seed an
+  oversized array at create, the same hole `groupMenuTrailWithinCap` exists to close.
+  BUT-1971, 2026-08-31
+
+- **`contributorUserIds` is CLIENT-written, so a hand-rolled client can omit a uid and make it
+  un-erasable.** `firestore.rules` refuses a write that DROPS an entry, which stops a remaining
+  member stripping a departed one — but nothing forces a uid INTO the array in the first place.
+  Same trust model as the already-accepted forgeable provenance on the same document, and named
+  rather than left to be discovered. The cascade's other three handles are unaffected.
+  BUT-1971, 2026-08-31
+
+- **A remaining member whose screen cached the week BEFORE someone left can write the old roster
+  back and restore that person's access.** `save()` writes the whole document from the client's
+  copy. **Malin's explicit call, 2026-08-31: accepted, not stopped**, against the alternative of
+  re-reading before every write. This EXTENDS the existing stale-client entry from erasure to
+  DEPARTURE, which is a much more common event and where the resurrected party is a live account
+  that can act on the access. The window is bounded by the screen being realtime-subscribed, and
+  it closes the next time anyone leaves. Do not cite the erasure entry as authority for this one
+  — it was decided separately, on its own facts.
+  BUT-1971, 2026-08-31
+
+- **A week whose ONLY remaining participant leaves is DELETED.** The plan's roster is a
+  snapshot taken when the week was built and is never re-synced, so a leaver can be the sole
+  participant of an OLD week while the chat group still has members — and `remaining === 0`
+  never fires, so no sweep cleans up.
+  This entry first said the shell was left standing, on the belief that it merely went
+  unreadable. The `cloud-functions-specialist` gate measured otherwise: `save()` is a
+  whole-document `set()` on the deterministic `{groupId}_{ISO week}` id, which evaluates the
+  UPDATE limb, and every limb of this collection gates on `memberPermissions` — so an empty map
+  BRICKS that ISO week for the whole group, poll-close included. The group loses the week for
+  good, reachable by ordinary churn.
+  Deleting costs the provenance of people who have ALL left, which no remaining member can read
+  or export either way, and it takes the un-erasable residual with it. The alternative — a rules
+  limb letting anyone adopt an empty-roster plan — hands that provenance to a stranger, because
+  the create limb already lets any signed-in account write this doc-id shape. Chosen without
+  asking Malin; reversing it is hers. BUT-1971, 2026-08-31
+
+- **When the last ADMIN leaves a plan that still has participants, the lowest remaining uid is
+  promoted, and the promotion writes an `adminPromoted` trail row.** Without it the update rule
+  leaves nobody able to change that week's membership ever again. Lowest uid is deterministic,
+  not meaningful — nothing in the document ranks members. The trail row is not decoration: an
+  unaudited privilege grant does not belong in a build whose whole point is attribution
+  (ADR-0010), and nobody is notified. BUT-1971, 2026-08-31
+
+- **RESOLVED 2026-08-31 — the "already visible on screen" reasoning CANNOT be reached by a week
+  that predates someone's membership, measured.** The open half of the earlier entry asked
+  whether it had been tested against such a week. It cannot occur: a plan is created only at
+  poll close, for the CURRENT week, with the chat roster of that moment
+  (`messaging_service.dart`, "Existing plans keep their membership intact"), and nothing adds a
+  member to an existing plan — `addParticipant`/`removeParticipant` have no callers in `lib/`.
+  The export discovers on `memberPermissions.<uid>` alone, so a later joiner never receives such
+  a week at all. No code was built for it. BUT-1971, 2026-08-31
+
+- **A leaver's Art. 15 export contains a documented GAP, not their rows.** Malin first chose "only
+  what concerns her"; the panel then measured that a client cannot deliver it — Firestore refuses
+  a WHOLE query the moment it matches one document the caller may not read, and this repo already
+  says so about the identical shopping-list probe ("Only an Admin-SDK context can enumerate
+  those"). **Her revised call, 2026-08-31.** The export runs a `.limit(1)` probe whose only
+  product would be its own refusal.
+  **There is no probe.** The `firebase-backend-security` gate caught that the refusal is
+  UNCONDITIONAL, and the emulator confirmed it: the contributor query is denied even to a
+  CURRENT member of the week it matches, because rules are not filters — a list query is refused
+  unless the rule proves every returnable document is readable, and the read rule tests
+  `memberPermissions`, which implies nothing about `contributorUserIds`. A probe would have
+  thrown for every user on every export, so a note derived from it would have told people who
+  have left nothing that they had. The bundle states the gap unconditionally instead, in
+  `data_minimisation` — which had to change anyway, because it claimed provenance was included
+  "in full", false for a leaver, and a bundle that misdescribes itself is its own Art. 12(1)
+  defect. The two MEASUREMENT cases in `weekly-menu-plans-rules.test.ts` are the pin.
+  **The same reading applies to the shopping-list precedent** (`exportSharedShoppingListsAsContributor`),
+  whose contributor branch therefore also never returns a row and whose note also always fires.
+  Pre-existing, not introduced here, and its own ticket.
+  Residual, named rather than discovered: a leaver's contribution can vanish from the export
+  entirely if the dish is later displaced and the trail row ages past the 50-row cap. That is the
+  already-accepted displacement gap, but it weighs more here — the leaver has no in-app fallback.
+  BUT-1971, 2026-08-31
+
+- **OPEN, named rather than left to be found: THREE other membership-removal paths do NOT cut
+  group-menu access.** `cutGroupMenuPlanAccess` is wired only into `removeChatGroupMember`.
+  `stageBackstopRemovals` (`enforce-group-minor-membership.ts`) — the CHILD-SAFETY eviction —
+  and the category sync's eviction loop (`ensure-category-chat.ts`) both remove a member and
+  leave their read and write access to every one of that group's weeks intact. The minor-safety
+  one is the highest-stakes: a minor evicted for their own protection keeps write access to the
+  group's menu. Not a regression — nothing cut before this build — but it is now an
+  inconsistency rather than a uniform gap. Raised by the `cloud-functions-specialist` gate.
+  BUT-1971, 2026-08-31
+
+- **The union can create the only surviving record that a PASSIVE participant was ever on a
+  week.** `contributorUserIds` unions every roster member, not only people who wrote something,
+  so a member who never proposed, voted or edited gains a durable uid on the document at the
+  moment they leave — where previously the roster entry was removed and nothing remained. For a
+  contributor the array is belt-and-braces; for a passive participant it is new retention. It is
+  what makes erasure able to find them, so it is not removable without giving that up. A
+  minimisation question for Malin rather than a defect, and unasked.
+  BUT-1971, 2026-08-31
+
+- **The Admin SDK bypasses the 200-row contributor cap, and a plan pushed past it can never be
+  saved by a client again.** `cutGroupMenuPlanAccess` unions without measuring, and nothing
+  prunes the array client-side — pruning would drop uids, which is the one thing the array
+  exists to prevent. Implausible (200 distinct uids on one week), unguarded, and the same
+  bricking shape the emptied-roster entry above records; `weekly-menu-plans-rules.test.ts` pins
+  the frozen-document behaviour so it is found in a test rather than in production.
+  BUT-1971, 2026-08-31
+
+- **`contributorUserIds` is STRIPPED from the Art. 15 bundle.** It is an erasure handle, not
+  content: its only job is to let the deletion cascade find a plan after the roster stops
+  naming someone, so it accumulates the uids of people who have LEFT the group. **No widget
+  renders it**, and that is why the keep decision for other members' per-dish provenance does
+  not reach it — that decision was re-grounded on 2026-08-30 precisely on the app now showing
+  the voters by name, and the ground does not extend to a field the app never shows.
+  Do NOT read the identically named field's keep on `unified_shared_shopping_lists` (BUT-1732)
+  as authority: that entry itself records that arguing across collections by field NAME is the
+  error it exists to document.
+  Chosen conservatively without asking Malin, the way the `chat_groups` projection was;
+  KEEPING it is hers to decide. Raised by the `firebase-backend-security` gate.
+  BUT-1971, 2026-08-31
+
+- **The contributor union is BOUNDED at 200 and skipped above it, losing erasability on that
+  document rather than freezing the week.** The Admin SDK bypasses `firestore.rules`, so an
+  unbounded union past `groupMenuContributorsWithinCap` would be accepted and would then refuse
+  every subsequent CLIENT save of that week — the same bricking the emptied roster caused, one
+  field over. The access cut still happens at the cap; only the recording is skipped, and it is
+  logged at ERROR because nothing retries the step. Unlike the edit trail, which the client
+  prunes on every write and which therefore heals itself, this array only grows: the freeze it
+  would cause is permanent, which is why the bound is a skip rather than a truncation — dropping
+  a uid is the one thing the array exists to prevent. The number lives in THREE languages now
+  (Dart, rules, the Cloud Function) and all three are pinned against each other.
+  BUT-1971, 2026-08-31
+
+- **The append-only conjunct on `contributorUserIds` REFUSES a stale writer's whole save — the
+  exact cost Malin was told was unacceptable for the edit trail.** BUT-1971 rejected an
+  append-only rules conjunct on `editTrail` because it "would refuse the losing writer's whole
+  write, breaking ordinary removals". The same shape now guards `contributorUserIds`, so a
+  member whose cached snapshot predates another member's FIRST contribution to that week has
+  their remove or undo denied outright rather than merged.
+  It is accepted here because the frequency is not comparable: the trail changes on every edit,
+  while this array changes only when a person who has never touched that week touches it for
+  the first time. The screen is realtime-subscribed, so a retry succeeds. And the alternative
+  is losing the handle that makes a departed member erasable at all, which is the whole point.
+  Named rather than left to be discovered, because the cost is the one that was refused
+  before. Raised by the `code-reviewer` gate. BUT-1971, 2026-08-31
+
+- **`contributorUserIds` is a DISCOVERY handle, never a witness on a destructive gate — and the
+  two files that could disagree about that now do not.** For part of the BUT-1971 follow-up the
+  account cascade blocked its empty-roster DELETE when a departed contributor remained. That was
+  wrong, and reachable by ordinary churn the same build created: B leaves a group, `cutGroupMenuPlanAccess`
+  takes B off the roster and unions B into `contributorUserIds`, then A deletes their account —
+  every roster empties, the contributor witness blocks the delete, and the document is left with
+  an EMPTY `memberPermissions`. Every limb of this collection gates on that map, so nobody can
+  read, write, re-plan or delete that ISO week again, on a deterministic id poll-close will mint
+  once more. The provenance the block preserved was unreachable by everyone.
+  A contributor is not a READER. The gate keeps the three witnesses that name readers, and
+  `cutGroupMenuPlanAccess` already answers this shape the same way: a week no one can open is
+  deleted rather than left standing. Caught by the `integration-reviewer` gate, which is the
+  only pass that could see the two files ship opposite verdicts about one document.
+  BUT-1971, 2026-08-31

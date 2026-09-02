@@ -420,6 +420,59 @@ async function seedFixtures(): Promise<void> {
       week: "2026-W29",
     });
 
+  // BUT-1971 follow-up. The document a DEPARTURE leaves behind: the target is
+  // off every roster (`removeChatGroupMember` took them out when they left the
+  // chat) and is not the last writer, so the three original discovery handles
+  // all see nothing. Their uid survives on the dish and in the trail, which is
+  // Malin's decision, and `contributorUserIds` is the only thing that can still
+  // find it.
+  await db
+    .collection("group_weekly_menu_plans")
+    .doc(`gp-contributor-only-${RUN}`)
+    .set({
+      participantUserIds: ["still-a-member"],
+      participants: [{ userId: "still-a-member", name: "Kvar" }],
+      memberPermissions: { "still-a-member": "admin" },
+      lastModifiedBy: "still-a-member",
+      contributorUserIds: [TARGET, "still-a-member"],
+      entries: [{ id: "e1", proposedBy: TARGET, votedInBy: [TARGET] }],
+      editTrail: [{ actorId: TARGET, subjectId: "still-a-member", at: new Date() }],
+      week: "2026-W30",
+    });
+
+  // A departed contributor is NOT a witness on the destructive gate: every
+  // roster is empty and the target was on it, so the document goes. This is the
+  // churn the leave path creates — B leaves the group, then A deletes their
+  // account — and blocking the delete here would leave a document with an empty
+  // permission map, which every limb of this collection refuses. Nobody could
+  // read, write, re-plan or delete that ISO week again. `cutGroupMenuPlanAccess`
+  // decided the same shape the same way.
+  await db
+    .collection("group_weekly_menu_plans")
+    .doc(`gp-contributor-survivor-${RUN}`)
+    .set({
+      participantUserIds: [TARGET],
+      participants: [{ userId: TARGET, name: "Target" }],
+      memberPermissions: { [TARGET]: "admin" },
+      contributorUserIds: [TARGET, "departed-but-live"],
+      entries: [{ id: "e1", proposedBy: "departed-but-live" }],
+      week: "2026-W31",
+    });
+
+  // The delete side of the same gate. Nothing but the target is left anywhere —
+  // rosters, permissions AND the contributor trail — so the document holds no
+  // data about anyone else and deleting it is the correct erasure.
+  await db
+    .collection("group_weekly_menu_plans")
+    .doc(`gp-contributor-sole-${RUN}`)
+    .set({
+      participantUserIds: [TARGET],
+      participants: [{ userId: TARGET, name: "Target" }],
+      memberPermissions: { [TARGET]: "admin" },
+      contributorUserIds: [TARGET],
+      week: "2026-W32",
+    });
+
   // --- recipe_comments authored by target (anonymize, not delete) ---
   await db.collection("recipe_comments").doc(`rc-${RUN}`).set({
     recipeId: "recipe-x",
@@ -1284,6 +1337,47 @@ test("group_weekly_menu_plans: a survivor only the mirror knows about keeps thei
   assert(
     ((data.participants as unknown[]) ?? []).length === 0,
     "and participants held only the target",
+  );
+});
+
+test("group_weekly_menu_plans: a plan holding nothing but the erased user is deleted", async () => {
+  assert(
+    !(await exists(`group_weekly_menu_plans/gp-contributor-sole-${RUN}`)),
+    "no roster, no permissions and no contributor but the target — there is " +
+      "nobody else's data here to protect, so the document goes",
+  );
+});
+
+test("group_weekly_menu_plans: a plan reached ONLY by the contributor trail is scrubbed", async () => {
+  const data = await dataAt(`group_weekly_menu_plans/gp-contributor-only-${RUN}`);
+  const contributors = (data.contributorUserIds as string[]) ?? [];
+  assert(
+    !contributors.includes(TARGET),
+    "the trail entry is a uid and is erasable data in its own right",
+  );
+  assert(
+    contributors.includes("still-a-member"),
+    "while the remaining member keeps theirs",
+  );
+  const entries = (data.entries as Record<string, unknown>[]) ?? [];
+  assert(
+    entries[0]?.proposedBy === undefined,
+    "the dish no longer names the deleted user",
+  );
+  assert(
+    !((entries[0]?.votedInBy as string[]) ?? []).includes(TARGET),
+    "and neither does its vote list",
+  );
+  const trail = (data.editTrail as Record<string, unknown>[]) ?? [];
+  assert(trail.length === 0, "their own trail row is gone");
+});
+
+test("group_weekly_menu_plans: a departed contributor does NOT block the delete", async () => {
+  assert(
+    !(await exists(`group_weekly_menu_plans/gp-contributor-survivor-${RUN}`)),
+    "every roster is empty, so nobody can open this week — keeping it would " +
+      "leave a document with no readers that no client could ever repair, " +
+      "which is the brick `cutGroupMenuPlanAccess` deletes rather than create",
   );
 });
 

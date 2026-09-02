@@ -904,6 +904,79 @@ void main() {
       expect(result['total_count'], 1);
     });
 
+    // BUT-1971 follow-up. Weeks in groups the user has LEFT are not in the
+    // export and cannot be: the query that finds them discovers on
+    // `memberPermissions`, which a departure clears. The sentence saying so is
+    // UNCONDITIONAL because a probe cannot make it conditional — Firestore
+    // rules are not filters, so a `contributorUserIds array-contains` query is
+    // refused for EVERY caller, measured on the emulator in
+    // `weekly-menu-plans-rules.test.ts`. A note derived from such a probe would
+    // have fired for people who have left nothing.
+    test('drops the erasure handle from the bundle', () async {
+      // `contributorUserIds` exists so the deletion cascade can find this
+      // document after the roster stops naming someone — so it accumulates the
+      // uids of people who have LEFT. No widget renders it, which is why the
+      // keep decision for per-dish provenance does not reach it: that decision
+      // was re-grounded on the app showing the voters by name.
+      final manager = _manager(
+        groupMenus: [
+          {
+            'id': 'gw1',
+            'data': {
+              'groupId': 'grp1',
+              'contributorUserIds': ['user-uid', 'someone-who-left'],
+            },
+          },
+        ],
+      );
+
+      final result = await manager.exportGroupWeeklyMenuPlans('user-uid');
+
+      final data =
+          (result['group_weekly_menu_plans'] as List).single
+              as Map<String, dynamic>;
+      expect(
+        (data['data'] as Map).containsKey('contributorUserIds'),
+        isFalse,
+      );
+      expect(
+        (data['data'] as Map)['groupId'],
+        'grp1',
+        reason: 'and the rest of the document still ships',
+      );
+      expect(
+        result['data_minimisation'],
+        contains('The internal list each week keeps'),
+        reason:
+            'a withholding the bundle does not name is a silent one — every '
+            'sibling section names its own drops. Asserted on the phrase only '
+            'THIS sentence carries: `is not included` is one plural away from '
+            'the left-groups clause beside it, so it would stop '
+            'discriminating the day somebody reworded that one',
+      );
+    });
+
+    test(
+      'says outright that weeks in groups you left are not included',
+      () async {
+        final manager = _manager(groupMenus: const []);
+
+        final result = await manager.exportGroupWeeklyMenuPlans('user-uid');
+
+        expect(
+          result['data_minimisation'],
+          contains('Weeks in groups you have LEFT are not included at all'),
+        );
+        expect(
+          result['data_minimisation'],
+          contains('removed from them when you delete your account'),
+          reason:
+              'a gap the bundle names must also say what still protects the '
+              'requester, or it reads as data kept beyond their reach',
+        );
+      },
+    );
+
     test(
       'exportGroupWeeklyMenuPlans includes participant plan records',
       () async {

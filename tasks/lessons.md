@@ -16,6 +16,24 @@ rule is internalised (roughly six weeks).
 
 ## Current
 
+### [Workflow] A reviewer reads the worktree, the gate reads the index — and a brief must never describe an edit before it exists
+
+- **Date**: 2026-08-31 (BUT-1971 follow-up)
+- **Trigger**: a gate round graded three `MM` files. Every finding I had "already fixed" was still in the index, queued to ship, while the reviewer confirmed the repairs from the worktree. Separately, I briefed a reviewer with "I took the rule-shaped sentence instead" before writing it.
+- **Rule**: `git add -u` after every reviewer round, before briefing the next reviewer, and paste `git diff --stat | wc -l` as the proof. The two readers differ: an agent opens files, the commit hook hashes the index, so a repair that lives only in the worktree is invisible to exactly the check that matters.
+- **Rule (briefs)**: a brief to a reviewer is a claim about the code, subject to the same rule as a comment. Describing an intended edit in the past tense is the same false-completion failure as a present-tense promise to the user — and worse here, because the reviewer may grade the sentence rather than the file. Make the edit, then write the brief.
+- **Corollary**: this session shipped roughly a dozen false sentences inside text written AS the fix, caught only because five gates re-read the bytes. The repair paragraph is not a safe place; it is the likeliest place.
+
+
+### [Testing] A mutation probe's ANCHOR must be unique, and a non-raw Dart regex string eats its own backslashes
+
+- **Date**: 2026-08-31 (BUT-1971 follow-up: cutting a departed member's access)
+- **Trigger**: two probes reported a clean bill of health on code they never touched.
+- **Rule (anchor uniqueness)**: `s.replace(old, new, 1)` replaces the FIRST substring match, which is not the one you meant unless you checked. `.where("contributorUserIds", "array-contains", uid)` occurs several times in `account-deletion-cascade.ts`, on two different collections, and my six-space-indented anchor matched an eight-space line 400 lines earlier. The mutant landed on unrelated code, every test passed, and the result read as "the new discovery key is unpinned". Assert `s.count(old) == 1` in the probe script, always; a probe that cannot say WHICH bytes it changed measured nothing. Same class as the digest's existing "a check run correctly against the WRONG OBJECT", arriving through the probe harness rather than the tool.
+- **Rule (Dart regex strings)**: a regex that needs interpolation cannot be a raw string, and in a NON-raw Dart string `\s` is an unrecognised escape that decays to a bare `s`. The pattern silently became `functions+...`, matched nothing, and the guard failed with "the rule is gone from firestore.rules" — a message that accuses the code, not the test. Build such patterns by CONCATENATING raw strings around the variable (`r'function\s+' + name + r'\s*\('`), never by interpolating into a quoted one. Two rounds of doubling backslashes through a Python heredoc made it worse, not better: an edit made THROUGH another language inherits its escaping, which the digest already records for `\b` in a Python heredoc — the same trap, a different character.
+- **Corollary**: an assertion that fails with a message blaming production code is the most expensive kind of broken test, because the first instinct is to go looking at the code it names.
+
+
 ### [Testing] A mutation probe's SUITE SET is part of the probe, and a fake's stub can lie by matching nothing
 
 - **Date**: 2026-08-30 (BUT-1971 follow-ups)
