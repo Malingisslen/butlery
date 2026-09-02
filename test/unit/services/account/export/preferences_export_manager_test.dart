@@ -298,13 +298,16 @@ void main() {
       final result = await manager.exportDeliveredNotifications('user-uid');
 
       expect(result['data_minimisation'], isA<String>());
-      expect(result['data_minimisation'], contains('delade'));
-      expect(result['data_minimisation'], contains('namnet'));
-      // `'förnamnet'` contains `'namnet'`, so the assertion above would stay
-      // green on a regression to the underclaiming wording this sentence was
-      // corrected FROM. A single-token display name is exported whole, so
-      // "förnamnet" would be false.
-      expect(result['data_minimisation'], isNot(contains('förnamn')));
+      // `who shared it`, not bare `shared`: the sentence also says "a shared
+      // recipe", which would satisfy a looser pin on its own and let a reword
+      // of the ATTRIBUTION clause alone slip through. The Swedish it replaced
+      // (`delade`) matched only the attribution.
+      expect(result['data_minimisation'], contains('who shared it'));
+      expect(result['data_minimisation'], contains('name of the person'));
+      // `'first name'` would be an UNDERCLAIM: `firstName()` falls back to the
+      // whole trimmed name when a display name has no whitespace, so a
+      // single-token name is exported in full.
+      expect(result['data_minimisation'], isNot(contains('first name')));
     });
 
     test('forwards the cap to the repository query', () async {

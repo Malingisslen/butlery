@@ -121,8 +121,9 @@ class PreferencesExportManager {
         if (page.truncated)
           'note': 'Limited to the $limit most recent notifications',
         'data_minimisation':
-            'Notistexten återges ordagrant som den visades. En påminnelse om '
-            'ett delat recept innehåller därför namnet på den som delade.',
+            'Notification text is reproduced verbatim, exactly as it was shown '
+            'to you. A reminder about a shared recipe therefore contains the '
+            'name of the person who shared it.',
       };
     } catch (e) {
       return _failed(

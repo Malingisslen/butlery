@@ -31566,3 +31566,66 @@ Graded and NOT filed, so a later round does not re-open them as findings:
   exactly what makes the header's symmetric version the defect rather than this one.
 
 Verdict: fail (1 blocking).
+
+## 2026-09-02 — BUT-1957 follow-up (trigger: commit-gate review, translated GDPR pin)
+
+The `data_minimisation` sentence in `exportDeliveredNotifications` was hardcoded Swedish
+while its four sibling sections were English; the push gate raised it and the string plus
+its three pins were translated. Reviewed whether the translation preserved the pins'
+discrimination. It did, and the proof is per-direction, not a single delete-the-entry probe.
+
+Mutation probe over `lib/services/account/export/preferences_export_manager.dart`, unique
+anchors asserted (count == 1), md5-verified restore, `.dart_tool/flutter_build` cleared
+between runs, filtered to the one test by `--plain-name`:
+
+- BASELINE unmutated -> GREEN.
+- MUT-A, whole `data_minimisation` entry deleted -> RED at `expect(isA<String>())`
+  (Actual: null). Key presence is pinned.
+- MUT-B, `'name of the person who shared it.'` -> `'first name of the person who shared it.'`
+  -> RED, and the runner named `Expected: not contains 'first name'`. Because `expect` is
+  fail-fast and the negative pin is the LAST line, the two positive `contains` above it
+  PASSED under this mutant. That is the direct measurement that
+  `contains('name of the person')` is satisfied by `'the first name of the person'` — the
+  English pair reproduces the Swedish `'namnet'` in `'förnamnet'` property exactly, so the
+  negative pin is load-bearing and not redundant.
+- MUT-C, sharing context removed (`'a shared recipe'` -> `'a recipe'`,
+  `'who shared it'` -> `'who sent it'`, disclosure clause left intact) -> RED at
+  `Expected: contains 'shared'`. The mutant's string still contains `'name of the person'`,
+  so `contains('shared')` is the sole catcher of that direction. It is a real assertion, not
+  an incidental match on a common English word; the subject under test is a single String
+  field, so no sibling key can satisfy it by accident.
+
+Grounding for the negative pin re-verified against production:
+`functions/src/analytics/winback-context.ts:67-71` — `firstName()` does
+`trimmed.search(/\s/)` and returns the WHOLE trimmed name when there is no whitespace, so a
+single-token display name is exported in full and "first name" is an underclaim.
+
+Non-blocking observation, not filed as a finding: `contains('first name')` is
+case-sensitive, so a sentence-initial `'First name'` rewording would escape it. Every
+plausible regression puts the phrase mid-sentence ("therefore contains the first name of
+..."), so the gap is theoretical; a `matches(RegExp('first name', caseSensitive: false))`
+would close it if the sentence is ever restructured.
+
+Verdict: pass, 0 blocking. Test file, production string and the three refreshed
+`ACCEPTED_LARGE_FILES.md` row counts all reviewed; only the test file is test code.
+
+## 2026-09-02 — retired verbatim from the principles file (BUT-1957 push-gate follow-up)
+
+Superseded because the section's `data_minimisation` sentence was translated Swedish->English
+in `1617a3d60`'s follow-up, so a principle naming the Swedish pin described a pin that no
+longer exists. The lesson itself was VALIDATED by that change — the correction reddened
+rather than drifting — so this is a supersede, not a strike.
+
+Retired text:
+
+> **That pin then COUPLES the Swedish wording, so grade the DISCLOSURE against the mechanism
+> it describes in the same round.** A `contains('namnet')` freezes the sentence, which is the
+> point — a later correction reddens instead of drifting.
+
+What replaced it adds the measurement this round produced: the assertion PAIR survived
+translation only because `'name of the person'` is a substring of
+`'first name of the person'`, mirroring `'namnet'` inside `'förnamnet'`. Had the English
+positive been worded differently the negative pin would have gone redundant silently. Also
+recorded: pin the CLAUSE carrying the disclosure (`who shared it`), not a word the rest of
+the sentence satisfies (`shared`) — probed, the loose form stayed green under a reword of
+the attribution clause alone.

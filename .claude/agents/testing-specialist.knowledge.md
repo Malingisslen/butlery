@@ -557,9 +557,16 @@ Codecov: 60% project / 70% new patches / 2% drop tolerance — floors, decided 5
   happening; a section disclosing rather than promising needs the same pin, asserted BESIDE
   the passthrough test so the disclosure and the disclosed field die together. Settle it by
   grep, not by probe — the key is additive, so no other assertion can see it (BUT-1957 r2).
-  **That pin then COUPLES the Swedish wording, so grade the DISCLOSURE against the mechanism
-  it describes in the same round.** A `contains('namnet')` freezes the sentence, which is the
-  point — a later correction reddens instead of drifting. The defect beside it is the
+  **That pin then COUPLES the wording, so grade the DISCLOSURE against the mechanism
+  it describes in the same round.** A substring pin freezes the sentence, which is the
+  point — a later correction reddens instead of drifting. It also survives TRANSLATION only
+  by luck: the pair held when the section went Swedish->English because
+  `'name of the person'` sits inside `'first name of the person'` exactly as `'namnet'` sat
+  inside `'förnamnet'`, so the negative pin still carried the underclaim alone. A positive
+  worded slightly differently would have made the negative redundant in silence. Re-probe
+  per DIRECTION after translating a pinned sentence, and prefer the phrase that pins the
+  CLAUSE that carries the disclosure (`who shared it`) over a word the rest of the sentence
+  also satisfies (`shared`). The defect beside it is the
   production comment's HEADLINE clause overclaiming what the mechanism does ("NAME, not first
   name" above a correct description of a `firstName()` returning the first token of any
   multi-token name). It errs in the privacy-CONSERVATIVE direction, so nothing under-protects
@@ -953,6 +960,17 @@ Codecov: 60% project / 70% new patches / 2% drop tolerance — floors, decided 5
   it names a mutant the EQUALITY already kills. Keep the equality, delete the loop — that
   loop earns its place only where the assertion above it is a `contains`
   (BUT-1962, 2026-08-27).
+  **Where the neighbour IS a `contains`, entailment turns on whether the positive's match set
+  swallows the regression wording — and TRANSLATING the pair silently re-decides that.** The
+  containment is a property of the two LANGUAGES' strings, not of the test's intent, so a
+  pin that discriminated in Swedish can arrive redundant in English or vice versa, with the
+  suite green either way. Re-probe per DIRECTION after any re-wording of a pinned sentence,
+  and read WHICH assertion the runner names: a negative pin that fires LAST proves the
+  positives above it stayed green under that same mutant, which is the entailment answer
+  itself. Measured on the `data_minimisation` note: `contains('name of the person')` is
+  satisfied by the underclaiming `'the first name of the person'`, exactly as `'namnet'` was
+  by `'förnamnet'`, so `isNot(contains('first name'))` carries that mutant alone
+  (BUT-1957, 2026-09-02).
   **The other carrier needs no neighbour at all: an assertion on a state channel the subject
   NEVER WRITES.** `expect(viewModel.error, isNull)` is unfailable when the VM never calls
   `setError` and never routes through an `execute*` helper that would — grep the whole class

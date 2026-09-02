@@ -134,7 +134,7 @@ Already modular services or well-organized modules within service facades. Furth
 | `url_import_strategy.dart` | 507 | Single multi-tier URL extraction strategy; coherent pipeline |
 | `recipe_auto_save_manager.dart` | 506 | Single-concern auto-save + draft management for recipe form |
 | `recipe_member_manager.dart` | 637 | Focused module for collaborative membership only. The grant algebra behind BUT-1797's real group revoke lives in its own file (`recipe_share_grants.dart`) rather than here, so the decided behaviour is testable without this module's five injected seams. |
-| `weekly_menu_plan_service.dart` | 723 | Single-algorithm service: today-anchored menu auto-distribution; coherent domain |
+| `weekly_menu_plan_service.dart` | 768 | Single-algorithm service: today-anchored menu auto-distribution; coherent domain |
 | `analytics_service.dart` | 575 | Explicit facade delegating to 7 specialized tracker modules |
 | `cache_optimization.dart` | 526 | Single-concern LRU + periodic cache cleanup utility |
 | `social_shopping_coordinator.dart` | 528 | Direct-collaboration coordinator extending base; single shopping-list domain |
@@ -184,7 +184,7 @@ UI files that are already extracted or represent cohesive single-screen implemen
 | `recipe_parser_service.dart` | 915 | Multi-tier recipe text parsing pipeline |
 | `recipe_list_viewmodel.dart` | 1,177 | Recipe list with filtering, search, tags |
 | `recipe_detail_view.dart` | 1,273 | Recipe detail screen (source-artefact sheet + stale banner extracted to recipe_detail/recipe_source_artefact_sheet.dart, BUT-1205) |
-| `weekly_menu_plan_viewmodel.dart` | 693 | Weekly-menu VM: the week read, the write paths, the optimistic-publish/rollback pair and the overflow tray. The write paths split cleanly into a manager if it grows further (BUT-1975) |
+| `weekly_menu_plan_viewmodel.dart` | 701 | Weekly-menu VM: the week read, the write paths, the optimistic-publish/rollback pair and the overflow tray. The write paths split cleanly into a manager if it grows further (BUT-1975) |
 | `personal_tag_viewmodel.dart` | 798 | Personal tag management VM |
 | `recipe_detail_content.dart` | 859 | Body content widget for recipe detail |
 | `mina_recept_view.dart` | 697 | Main recipe list screen — facade-extracted to `lib/views/mina_recept/` per BUT-441 |
@@ -245,7 +245,7 @@ UI files that are already extracted or represent cohesive single-screen implemen
 | `collection_stats_view.dart` | 521 | **candidate**: stats view splittable into section sub-widgets (_HeroBanner, _SectionHeader, etc.) |
 | `collaborative_shopping_items.dart` | 595 | **candidate**: mixes 3 view-mode rendering paths + claim logic — splittable by mode |
 | `tag_result_display.dart` | 608 | **candidate**: displays allergen, dietary, and coverage sections — could split into sub-widgets. Re-measured 2026-08-18, twice, ending at 600 (565 at HEAD) when both compact rows gained a public `badgesFor` and their comments were corrected, so a caller can gate its own spacer on real content instead of guessing from the preference set. |
-| `onboarding_viewmodel.dart` | 565 | **candidate**: multi-step wizard VM mixing age-gate, allergens, seeding, and analytics |
+| `onboarding_viewmodel.dart` | 608 | **candidate**: multi-step wizard VM mixing age-gate, allergens, seeding, and analytics |
 | `photo_import_viewmodel.dart` | 872 | **candidate**: mixes OCR, multi-page, heirloom form, draft, and quality-score concerns |
 | `friends_viewmodel.dart` | 578 | **candidate**: VM mixing search, profile-cache, selection, group-creation, and stream subscriptions |
 | `performance_monitoring_service.dart` | 516 | **candidate**: mixes frame, network, cache, memory, and custom metrics in one service |
@@ -267,7 +267,7 @@ Files marked **candidate** above that are worth splitting in a future refactor s
 | `social_group_detail_viewmodel.dart` | 524 | Group load, events, leave, ownership transfer, content sharing — extract managers |
 | `collaborative_shopping_items.dart` | 595 | Three view-mode rendering paths + claim logic — split by mode |
 | `tag_result_display.dart` | 608 | Allergen, dietary, and coverage sections are independently renderable sub-widgets. Re-measured 2026-08-18. NOTE this file is listed TWICE in this document (see the Views/Widgets table above) — pre-existing, and it means a refresh has to touch both rows or one silently rots. |
-| `onboarding_viewmodel.dart` | 565 | Age-gate, allergens, seeding, analytics — each a candidate for an extracted manager |
+| `onboarding_viewmodel.dart` | 608 | Age-gate, allergens, seeding, analytics — each a candidate for an extracted manager |
 | `photo_import_viewmodel.dart` | 872 | OCR, multi-page, heirloom form, draft, quality-score concerns are independently extractable |
 | `friends_viewmodel.dart` | 578 | Search, profile-cache, selection, group-creation, stream subscriptions — extract managers |
 | `fcm_service.dart` | 728 | FCM token management, permission-gating, deep-link routing, and notification display are separable |
