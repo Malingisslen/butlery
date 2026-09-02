@@ -39,11 +39,33 @@ Widget _host(Widget child) => MaterialApp(
   home: Scaffold(body: SingleChildScrollView(child: child)),
 );
 
+/// BUT-1991: a week with a dish actually placed.
+///
+/// The empty fixture above cannot reach `_AssignedSlot`, so the branch that
+/// unbounded the cell's height was invisible to every test in this file.
+WeeklyMenuPlan _plannedPlan() => _emptyPlan().copyWith(
+  entries: [
+    WeeklyMenuPlanEntry.create(
+      day: DayOfWeek.mon,
+      slot: MealSlot.lunch,
+      recipeId: 'r1',
+      recipeTitle: 'Pannkakor',
+    ),
+    WeeklyMenuPlanEntry.create(
+      day: DayOfWeek.mon,
+      slot: MealSlot.middag,
+      recipeId: 'r2',
+      recipeTitle: 'Köttbullar',
+    ),
+  ],
+);
+
 Widget _dayCell(
   WeeklyMenuPlanViewModel vm,
-  List<HouseholdRosterMember> roster,
-) {
-  final plan = _emptyPlan();
+  List<HouseholdRosterMember> roster, {
+  WeeklyMenuPlan? plan,
+}) {
+  plan ??= _emptyPlan();
   return _host(
     DayCell(
       vm: vm,
@@ -89,5 +111,43 @@ void main() {
     expect(find.bySemanticsLabel(RegExp('är hemma')), findsNothing);
     expect(find.byType(FamilyAvatar), findsNothing);
     handle.dispose();
+  });
+
+  // BUT-1991. The presence row is the variable, not the dish: only when the
+  // roster is > 1 does `_SingleSlotCell` add the wrapping Column, and only then
+  // does the dish cell's own `Expanded` face a main-axis extent nothing bounds.
+  // Both cases are here because the roster-1 one is what proves the wrapper is
+  // the cause rather than the dish.
+  testWidgets('a household with family renders a placed dish without '
+      'unbounding the cell', (tester) async {
+    when(() => vm.isRecentlyPlaced(any())).thenReturn(false);
+    when(() => vm.isSelected(any())).thenReturn(false);
+
+    await tester.pumpWidget(
+      _dayCell(vm, [
+        _member('u1', 'Malin'),
+        _member('g1', 'Mormor'),
+      ], plan: _plannedPlan()),
+    );
+
+    expect(tester.takeException(), isNull);
+    // Lowercased by the cell, so this also pins that the dish really rendered
+    // rather than the finder matching some other node.
+    expect(find.text('pannkakor'), findsOneWidget);
+    expect(find.text('köttbullar'), findsOneWidget);
+  });
+
+  testWidgets('a solo account renders a placed dish (the control)', (
+    tester,
+  ) async {
+    when(() => vm.isRecentlyPlaced(any())).thenReturn(false);
+    when(() => vm.isSelected(any())).thenReturn(false);
+
+    await tester.pumpWidget(
+      _dayCell(vm, [_member('u1', 'Malin')], plan: _plannedPlan()),
+    );
+
+    expect(tester.takeException(), isNull);
+    expect(find.text('pannkakor'), findsOneWidget);
   });
 }

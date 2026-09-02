@@ -67,7 +67,9 @@ void main() {
         tester,
       ) async {
         final previousOnError = FlutterError.onError;
-        FlutterError.onError = (_) {};
+        FlutterError.onError = (_) {}; // LINT-EXEMPT: golden-blindness — the
+        // blank handler IS this test's subject; it is the control that proves
+        // the filter above is what makes the mismatch visible (BUT-1946).
         addTearDown(() => FlutterError.onError = previousOnError);
 
         await _pumpAndCompare(tester);

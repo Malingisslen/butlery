@@ -126,8 +126,8 @@ class _GroupWeeklyMenuWidgetState extends State<GroupWeeklyMenuWidget> {
         // follow the text scaler, so a subtitle inside it has a fixed box to
         // grow in.
         Padding(
-          padding: const EdgeInsets.only(
-            left: AppDimensions.spacingM,
+          padding: const EdgeInsetsDirectional.only(
+            start: AppDimensions.spacingM,
             top: AppDimensions.spacingS,
           ),
           child: Text(
@@ -242,12 +242,16 @@ class _FaceRow extends StatelessWidget {
         children: [
           for (final participant in shown)
             Padding(
-              padding: const EdgeInsets.only(right: AppDimensions.spacingXs),
+              padding: const EdgeInsetsDirectional.only(
+                end: AppDimensions.spacingXs,
+              ),
               child: _Face(initials: _initials(participant)),
             ),
           if (rest > 0)
             Padding(
-              padding: const EdgeInsets.only(right: AppDimensions.spacingS),
+              padding: const EdgeInsetsDirectional.only(
+                end: AppDimensions.spacingS,
+              ),
               child: _Face(initials: '+$rest'),
             ),
           // Flexible so the member count ellipsizes instead of widening the

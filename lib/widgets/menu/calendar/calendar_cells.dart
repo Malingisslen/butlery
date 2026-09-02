@@ -262,10 +262,16 @@ class _SingleSlotCell extends StatelessWidget {
     // who's-eating record only — never menu generation (that would under-filter
     // allergens; see BUT-1625).
     if (roster.length <= 1 || vm.selectionMode) return cell;
+    // BUT-1991: `cell` must be a FLEX child here. As a plain child of this
+    // Column it was handed an unbounded main-axis constraint, and the dish
+    // cell's own `Expanded` then had nothing finite to divide — which is why
+    // this threw only for a household with family: the roster-1 path returns
+    // above and never builds this wrapper at all. Expanded also says what the
+    // layout means, that the dish takes the height the presence row leaves.
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        cell,
+        Expanded(child: cell),
         _SlotPresenceRow(
           roster: roster,
           presentIds: plan.presentMemberIdsFor(day, slot),

@@ -206,20 +206,37 @@ class PreferencesExportManager {
   ) async {
     try {
       final prefs = await _exports.exportNotificationPreferences(userId);
-      final fcmData = await _exports.exportFcmTokensTopLevel(userId);
+      // BUT-1990: reads the same field-filtered query as `exportFcmTokens`. The
+      // `user_fcm_tokens/{userId}` doc fetch that stood here could not match a
+      // real document, so `fcm_token_registered` was false for every user who
+      // had ever registered a device.
+      final tokens = await _exports.exportFcmTokensForUser(userId);
 
-      String? fcmTokenUpdatedAt;
-      if (fcmData != null && fcmData['updatedAt'] != null) {
-        final updatedAt = fcmData['updatedAt'];
-        if (updatedAt is Timestamp) {
-          fcmTokenUpdatedAt = updatedAt.toDate().toIso8601String();
-        }
+      // `lastUpdated` is the field the writers actually write
+      // (`FcmTokenManager._saveTokenToFirestore`,
+      // `FirebaseDeviceRepository.updateTokenTimestamp`, and the schema comment
+      // in `functions/src/shared/fcm-tokens.ts`). The `updatedAt` this read
+      // before belonged to no writer, so the value was null for every user —
+      // the same never-answers defect BUT-1990 removed one field over.
+      // `lastSeen` is the fallback because the device-info write refreshes only
+      // that one.
+      // Ordered on the INSTANT, not on the formatted string: the format is
+      // local and zone-less (the whole export layer's convention, BUT-2000), so
+      // across a DST fall-back two stamps an hour apart compare in the wrong
+      // order as text while their instants do not.
+      DateTime? newest;
+      for (final row in tokens) {
+        final stamp = row['lastUpdated'] ?? row['lastSeen'];
+        if (stamp is! Timestamp) continue;
+        final at = stamp.toDate();
+        if (newest == null || at.isAfter(newest)) newest = at;
       }
+      final fcmTokenUpdatedAt = newest?.toIso8601String();
 
       return {
         'preferences': prefs != null ? sanitizeForJson(prefs) : null,
         'preferences_exist': prefs != null,
-        'fcm_token_registered': fcmData != null,
+        'fcm_token_registered': tokens.isNotEmpty,
         'fcm_token_updated_at': fcmTokenUpdatedAt,
         'note': 'FCM token is not included for security reasons',
       };
@@ -238,7 +255,7 @@ class PreferencesExportManager {
   /// Export FCM token metadata (token value redacted for security)
   Future<Map<String, dynamic>> exportFcmTokens(String userId) async {
     try {
-      final tokens = await _exports.exportFcmTokensSubcollection(userId);
+      final tokens = await _exports.exportFcmTokensForUser(userId);
 
       return {
         'tokens': tokens.map((data) {

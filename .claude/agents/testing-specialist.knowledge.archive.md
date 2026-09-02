@@ -31629,3 +31629,75 @@ positive been worded differently the negative pin would have gone redundant sile
 recorded: pin the CLAUSE carrying the disclosure (`who shared it`), not a word the rest of
 the sentence satisfies (`shared`) — probed, the loose form stayed green under a reword of
 the attribution clause alone.
+
+## 2026-09-02 — BUT-1946 / BUT-1990 / BUT-1995 re-review round 2 (trigger: re-review after fixes)
+
+Staged diff, index == worktree for all 23 paths (`git diff --numstat` over the staged set
+printed nothing). Round 1 returned `fail (2 blocking)`; both closed here.
+
+**B1 — the golden-blindness lint's second test was vacuous.** It asserted
+`helper.contains('installGoldenImageErrorFilter()')`, which the DECLARATION line
+`void Function(FlutterErrorDetails)? installGoldenImageErrorFilter() {` satisfies, so the
+defined-but-unused state (the BUT-1931 state) passed. Now
+`helper.contains('= installGoldenImageErrorFilter();')`, which only the call site at
+`golden_helper.dart:177` (`final previousOnError = installGoldenImageErrorFilter();`)
+matches. Verified by reading both lines; the reported probe (reinstate blank handler → both
+tests red, `+0 -2`; delete only the call site → second test red, `+1 -1`, with the build
+cache cleared each time) is the right pair, since it exercises the direction the old
+assertion could not see. Residual, non-blocking: the pin is on the ASSIGNED-call spelling,
+so a refactor to a bare `installGoldenImageErrorFilter();` statement is a false red — loud,
+not silent, and in a test file.
+
+**B2 — `fcm_token_registered` / `fcm_token_updated_at` unpinned at the seam producing them.**
+`_FakeFcmTokenRepository` now also overrides `exportNotificationPreferences`, and three tests
+land on `PreferencesExportManager.exportNotificationPreferences`. Graded the vacuity the
+brief asked about: NOT zone-dependent. Production computes
+`stamp.toDate().toIso8601String()`; the fixture seeds `Timestamp.fromDate(DateTime(...))`
+(local) and expects `DateTime(...).toIso8601String()` — both sides evaluate the same
+expression in whatever zone the runner has, so the round-trip is an identity and CI in
+another zone is unaffected. Same for the DST cases: an ambiguous or non-existent local time
+is normalised identically on both sides.
+Two smaller things measured instead:
+- `exportFcmTokensForUser` has NO `orderBy` (a bare `where('userId', ...)` at
+  `firebase_data_export_repository.dart:802`), so device row order is arbitrary. The
+  fixture's newest row is also the LAST row, so a `fcmTokenUpdatedAt = iso;` (last-wins)
+  mutant survives; only the first-wins direction is discriminated. Non-blocking; a third row
+  putting the max in the middle closes it.
+- `preferences_export_manager.dart:227` says "Fixed-width ISO strings, so lexical order is
+  chronological order". `DateTime.toIso8601String()` emits 3 fractional digits when
+  `microsecond == 0` and 6 otherwise, so the strings are NOT fixed-width. The CONCLUSION
+  survives (the millisecond field is always 3 digits, so extra digits only append and the
+  prefix relation preserves order), which is why this is a Low note, not a finding on the
+  comparison.
+
+**H1 — the `.handleError` wiring line executed by no suite (`DA:231,0`).** The note now in
+the `mapStreamError` group comment
+(`firebase_group_weekly_menu_plan_repository_test.dart:383-387`) is accurate and does not
+overclaim: the three tests do call the mapping directly; `grep -rn watchForWeek test/ lib/`
+returns only this suite and `realtime_group_menu_module.dart`, and the only other suite
+constructing the real repository
+(`test/integration/firebase/repositories/group_weekly_menu_plan_repository_test.dart`) never
+calls `watchForWeek` — so "executed by no suite in this repo" is supported. BUT-1999 cited.
+
+**M2 — the exemption marker could excuse every identically-spelled handler in a file.**
+Closed. Comments are blanked to the same LENGTH (`' ' * m.group(0)!.length`), so offsets in
+`stripped` and `raw` coincide, and the marker window is `raw.substring(match.start,
+match.end + 200)`; the `raw.indexOf` search is gone. Fail-closed still behaves — the whole
+reason comments are blanked rather than matched is that `golden_helper.dart` quotes
+`FlutterError.onError = (_) {}` verbatim in its doc comment, and the marker in
+`golden_helper_redness_test.dart:70` sits inside a `//` comment on the assignment line,
+i.e. inside the window and only reachable from `raw`. Residual, non-blocking and now stated
+in the lint's own doc comment: a marker can still excuse a SECOND violation that sits within
+200 chars ahead of it.
+
+**M3** — the residual paragraph about spellings the regex does not catch (`= _swallow;`,
+`{ return; }`) is at `golden_error_filter_lint_test.dart:20-23`. Accurate.
+
+Ran read-only: the four affected suites, 79/79 green
+(`golden_error_filter_lint_test.dart`, `preferences_export_manager_test.dart`,
+`firebase_data_export_repository_fcm_tokens_test.dart`,
+`firebase_group_weekly_menu_plan_repository_test.dart`). No mutation probe run this round —
+the index was declared frozen, and B1's non-vacuity is settled by reading the two lines.
+
+Verdict: pass, 0 blocking. Graded against the INDEX, which equals the worktree for every
+staged path.

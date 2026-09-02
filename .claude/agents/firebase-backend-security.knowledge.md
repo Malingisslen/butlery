@@ -273,7 +273,11 @@ name which doc each end touches before approving it.
   query is denied unless the rule can prove EVERY document it could return is readable, so a
   probe on a field the read rule does not gate (`contributorUserIds array-contains uid` where
   the rule tests `memberPermissions`) is refused for EVERY caller — a CURRENT member of the
-  matching week included. A gap note derived from such a probe's refusal therefore fires for
+  matching week included. The POSITIVE case is the same test and must not be over-flagged: a
+  query whose `.where()` names the SAME field and value the read rule gates on
+  (`where('userId', isEqualTo: uid)` against `allow read: resource.data.userId == auth.uid`)
+  is the documented allowed pattern and needs no rules change — compare FIELD to FIELD before
+  filing a denial. A gap note derived from such a probe's refusal therefore fires for
   users who have left nothing, i.e. it is unconditional prose wearing a conditional's shape.
   Measure it on the emulator with a same-shape ALLOWED control on the gated field, and state
   the gap unconditionally rather than probing for it.
@@ -361,7 +365,14 @@ name which doc each end touches before approving it.
   COLLECTION NAME — an owner-keyed collection probed by `userId`, an OR-owned collection
   folded into one query instead of per-field, or a constant naming a path nothing writes.
   Open the actual `.where()`/`.collection()` clause; a function with the right name proves
-  nothing. Cheapest check: grep `firestore.rules` for the path — no match block means
+  nothing. The REPAIR of such a read is where the next one hides: a section usually derives a
+  metadata field beside the rows (`fcm_token_registered` + `fcm_token_updated_at`), and fixing
+  the query leaves the derivation reading a field NO writer writes (`updatedAt` where the
+  writers emit `lastUpdated`/`lastSeen`) — permanently null, in the half nobody re-checked. Diff
+  every field name the section reads against the WRITER'S payload (and `git log -S` the
+  spelling), not against the query you just fixed. The same commit also falsifies whatever
+  comment elsewhere cited the dead read as live — the cascade's own `subs` list is the usual
+  place — so grep the ticket id and the path across `functions/src` and strike the clause. Cheapest check: grep `firestore.rules` for the path — no match block means
   nothing writes there. Sibling shape, WRONG NESTING LEVEL: a class mixing
   `UserScopedFirebaseRepository` (repoints CRUD to `users/{uid}/<name>`) with hand-built
   top-level `firestore.collection(name)` calls creates two disjoint trees under one name —

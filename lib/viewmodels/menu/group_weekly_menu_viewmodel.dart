@@ -3,8 +3,6 @@ library;
 
 import 'dart:async';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
-
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/utils/iso_week_utils.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -201,9 +199,6 @@ class GroupWeeklyMenuViewModel extends BaseViewModel {
 
   GroupMenuFailure _classify(Object error) {
     if (error is PermissionDeniedException) {
-      return GroupMenuFailure.permissionDenied;
-    }
-    if (error is FirebaseException && error.code == 'permission-denied') {
       return GroupMenuFailure.permissionDenied;
     }
     return GroupMenuFailure.transient;

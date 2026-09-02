@@ -16,6 +16,14 @@ rule is internalised (roughly six weeks).
 
 ## Current
 
+### [Workflow] A filed follow-up ticket does not discharge an acceptance criterion — least of all when your own diff un-pinned it
+
+- **Date**: 2026-09-02 (BUT-1995, caught by the `code-reviewer` gate)
+- **Trigger**: BUT-1995's acceptance criterion said a raw `FirebaseException(code: 'permission-denied')` must be proven "through the REAL path, not through `_classify` directly", and mutation-probed. I moved the translation from the ViewModel down into the repository, extracted it as `mapStreamError`, pinned that function in three directions — and repointed the four existing tests that HAD fed a raw exception through the real path so they injected the already-mapped domain type instead. Then I measured the wiring line as uncovered, wrote an honest note, and filed BUT-1999. Two gates independently reported the coverage regression; one of them pointed out that the criterion was mine, the diff was what removed the guard satisfying it, and a ticket is not a discharge.
+- **Rule**: when a fix moves a decision from layer A to layer B, the tests that pinned it at A become tests of a value you now hand them. That is a pin DELETED, not a pin moved, and the acceptance criterion is what notices. Before repointing any test off a raw SDK type onto a domain type, ask what still executes the conversion; `flutter test --coverage` on the new line answers it (`DA:<line>,0` is the finding, and it needs no `lib/` write).
+- **Rule**: "I named the residual honestly and filed a ticket" is the right move for something you cannot build. It is not a substitute for something you can. Here the seam existed the whole time — `BaseFirebaseRepository` takes an injectable `firestore`, so a mocktail `FirebaseFirestore` whose `.doc().snapshots()` returns `Stream.error(...)` pins the wiring directly. I reached for the disclosure before checking whether the thing was buildable, which is the same "check before not-doable" failure the repo already has a rule for, wearing an honest face.
+- **Measured after the fix**: reverting `throw mapStreamError(error, docId)` to `throw error` now reddens exactly the new end-to-end test; before it, every suite stayed green while a non-member would have been shown the retry screen.
+
 ### [Workflow] A reviewer reads the worktree, the gate reads the index — and a brief must never describe an edit before it exists
 
 - **Date**: 2026-08-31 (BUT-1971 follow-up)
@@ -2673,7 +2681,7 @@ Example: lib/services/menu/parser/text_normalizer.dart _noWordBefore/_noWordAfte
   argument — "the other conjuncts are satisfied" is the reasoning that was wrong here;
   removing the conjunct and watching the test stay green is the one that was right.
 
-## `git add` + `git commit` in one call: a gate block loses the add, and the next reviewer reads stale index bytes (BUT-1974, 2026-08-29)
+### `git add` + `git commit` in one call: a gate block loses the add, and the next reviewer reads stale index bytes (BUT-1974, 2026-08-29)
 
 `git-workflow.md` requires staging by explicit pathspec and committing in the SAME Bash
 call, so a parallel session's index sweep cannot take your files. That is right and stays.
@@ -2704,7 +2712,7 @@ ask which side effects you had assumed were already applied. Same shape as the a
 lessons — the check disagreeing with your memory is usually measuring a different object,
 and here the object was the index versus the tree.
 
-## Never write a future action in the present tense — the turn ends before it runs (Malin, 2026-08-29)
+### Never write a future action in the present tense — the turn ends before it runs (Malin, 2026-08-29)
 
 Twice in one session I closed a reply with "kör om granskarna" / "jag stagar om och kör den
 sista granskningsrundan" and then stopped. Nothing ran. Malin caught both with the same
@@ -2727,7 +2735,7 @@ This is the same failure class as the false code comments this very session kept
 a sentence asserting something nobody measured — except the reader here is Malin rather
 than a future session, and she cannot check it against the code.
 
-## A mutation probe can certify a LIVE mutant as covered — clear the build cache (BUT-1971, 2026-08-29)
+### A mutation probe can certify a LIVE mutant as covered — clear the build cache (BUT-1971, 2026-08-29)
 
 `flutter test` serves a stale incremental kernel after rapid file swaps, which is exactly
 what a probe loop does: write mutant, run, restore, run. A reviewer's probe reported a live
@@ -2753,7 +2761,7 @@ hypothesis rather than a measurement — especially before writing the word "unp
 a comment, which is a counterfactual claim about an unrun mutant on top of an unreliable
 instrument.
 
-## A notice's meaning cannot be DERIVED from two independently-updated pieces of state (BUT-1971, 2026-08-29)
+### A notice's meaning cannot be DERIVED from two independently-updated pieces of state (BUT-1971, 2026-08-29)
 
 The group menu needed a retry button on exactly one failure: an undo whose save died,
 leaving the dish held in memory but no control reaching it. The cheap read was to derive
@@ -2781,7 +2789,7 @@ field and in what ORDER, then name the case at its origin instead.
 
 ---
 
-## 2026-09-02 — A mutation probe's OUTPUT FILTER can invert which test you think reddened (BUT-1984)
+### 2026-09-02 — A mutation probe's OUTPUT FILTER can invert which test you think reddened (BUT-1984)
 
 I probed the moved l10n pin by rewriting the generated Swedish getter to `'MUTANT'` and
 grepping the run for lines matching a failure pattern. The grep showed one red test and I
@@ -2810,7 +2818,7 @@ either. And never attribute a red to a test whose name you did not see printed b
 
 ---
 
-## 2026-09-02 — Widening what a PROBE ASKS can break every fixture, and the fake is where it shows (BUT-1957)
+### 2026-09-02 — Widening what a PROBE ASKS can break every fixture, and the fake is where it shows (BUT-1957)
 
 `probeResidualData` had a hand-written include-list of `users/{uid}` subcollections to check.
 Replacing it with `listCollections()` is strictly better in production — it reports a
@@ -2845,7 +2853,7 @@ direction that disagreement is recoverable from.
 
 ---
 
-## 2026-09-02 — Letting an edit land while a reviewer is mid-pass costs a whole round (BUT-1957)
+### 2026-09-02 — Letting an edit land while a reviewer is mid-pass costs a whole round (BUT-1957)
 
 Two gates independently reported a blocking finding I had already fixed, because I kept editing
 the staged files while they were reviewing. One of them said so explicitly: the files went
@@ -2867,7 +2875,7 @@ agent rather than let it grade bytes that will not ship.
 
 ---
 
-## 2026-09-02 — Ten false sentences in one change, and every one was inside a repair (BUT-1957)
+### 2026-09-02 — Ten false sentences in one change, and every one was inside a repair (BUT-1957)
 
 Counting them was the useful part. Not one originated in the first draft of a feature; all ten
 were in text written to correct something else:

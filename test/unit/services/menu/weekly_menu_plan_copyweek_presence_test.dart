@@ -63,6 +63,50 @@ void main() {
     );
   });
 
+  // BUT-1993. Signed out, `copyWeek` returned 0 before reading anything, and 0
+  // is this method's word for "there was nothing to copy" — so an expired
+  // session was reported to the user as "allt finns redan nästa vecka". The
+  // second case is the control: a genuinely empty source week must KEEP that
+  // message, which is what makes the first case a real distinction rather than
+  // a blanket error.
+  test(
+    'copyWeek throws when signed out instead of reporting 0 copied',
+    () async {
+      (TestServiceLocator.get<AuthRepository>() as FakeAuthRepository)
+          .setAuthState(userId: null);
+      when(() => userService.currentUserProfile).thenReturn(null);
+
+      await expectLater(
+        () => service.copyWeek(
+          fromWeekStart: mon,
+          toWeekStart: mon.add(const Duration(days: 7)),
+        ),
+        throwsA(isA<StateError>()),
+      );
+      verifyNever(
+        () => repo.fetchForWeek(
+          userId: any(named: 'userId'),
+          weekStart: any(named: 'weekStart'),
+        ),
+      );
+    },
+  );
+
+  test('a genuinely empty source week still returns 0, not a throw', () async {
+    when(
+      () => repo.fetchForWeek(
+        userId: any(named: 'userId'),
+        weekStart: any(named: 'weekStart'),
+      ),
+    ).thenAnswer((_) async => null);
+
+    final copied = await service.copyWeek(
+      fromWeekStart: mon,
+      toWeekStart: mon.add(const Duration(days: 7)),
+    );
+    expect(copied, 0);
+  });
+
   // BUT-1962: `copyWeek` kept its save INSIDE `executeServiceOperation` after
   // the other writes were moved out, so a refused copy came back as 0 — which
   // the UI renders as "everything was already there".

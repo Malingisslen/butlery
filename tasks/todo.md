@@ -1,3 +1,199 @@
+# PLAN 2026-09-02 (andra passet) — sprint (auto-select, N=7): röd main, en kalender som
+# spräcker layouten för familjer, och GDPR-exportens saknade vakt
+
+Vald med `/delivery:sprint-execute`. Alla sju premisser är grep-kontrollerade mot HEAD
+(35aadc92d) innan något valdes. Arkitekturgrinden är dessutom KÖRD lokalt: 20 tester, 2 röda,
+exakt de två BUT-1995 beskriver.
+
+## Kluster A — grindar som inte längre bär information (Tier A, single)
+
+### BUT-1995 — main är röd på arkitekturgrinden sedan BUT-1971 [Tier A] [build]
+Router: **single** (Product Manager).
+Steg 0 mätt: `flutter test test/architecture/architecture_test.dart` → `+18 -2`.
+(a) `lib/widgets/menu/group_weekly_menu_widget.dart` rad 245 och 250 bär
+`EdgeInsets.only(right: …)`. (b) `lib/viewmodels/menu/group_weekly_menu_viewmodel.dart` rad 6
+importerar `cloud_firestore` för EN enda symbol: `FirebaseException` på rad 206, i `_classify`.
+Två rader ovanför gör samma klassificering redan på `PermissionDeniedException`, som är
+domäntypen — så översättningen hör hemma i lagret under, inte i viewmodellen.
+
+Acceptans:
+1. `[diff]` `flutter test test/architecture/architecture_test.dart` är GRÖN.
+2. `[diff]` `cloud_firestore`-importen är borta ur viewmodellen, och `permission-denied` från
+   servern ger fortfarande `GroupMenuFailure.permissionDenied` — bevisat med ett test som
+   matar in ett rått `FirebaseException(code: 'permission-denied')` genom den riktiga vägen,
+   inte genom `_classify` direkt.
+3. `[diff]` Mutationsprövat: att ta bort den nya översättningen rödnar det testet.
+4. `[diff]` INTE göra: ingen bredare MVVM-städning i filerna, och `EdgeInsetsDirectional`
+   är en ren riktningsändring — LTR-renderingen ska vara pixelidentisk, inte "nästan".
+
+### BUT-1946 — källkodslint mot blank `FlutterError.onError` nära `matchesGoldenFile` [Tier A] [build]
+Router: **single** (Software Architect, Product Manager).
+Steg 0 mätt: `test/architecture/` innehåller två filer; ingen av dem bär den här linten.
+Det förbjudna mönstret förekommer på två ställen i `test/`, och **båda är legitima**:
+`golden_helper.dart:57` (en dokumentationskommentar som citerar det för att förklara det) och
+`golden_helper_redness_test.dart:70` (rödnadstestet som medvetet installerar det). Linten är
+alltså röd på sina egna två träffar från minut ett om den inte hanterar dem.
+
+Acceptans:
+1. `[diff]` Linten strippar kommentarer före matchning — verifierat mot `golden_helper.dart:57`,
+   som annars är en falsk träff.
+2. `[diff]` `golden_helper_redness_test.dart` är ett skrivet, motiverat undantag (inte en tyst
+   sökvägsfilter-rad) — den installerar mönstret med flit.
+3. `[diff]` Mutationsprövat i BÅDA riktningarna: att återinföra det blanka mönstret i
+   `golden_helper.dart` rödnar linten, OCH linten är grön på HEAD som det ser ut nu.
+4. `[diff]` INTE göra: ingen ändring i golden-bilderna, inget nytt hjälpar-API.
+
+### BUT-1994 — lärdomsvakten är döv för de åtta nästa lärdomarna [Tier A] [build]
+Router: **single** (Agent-Ops, Monetization — den andra är irrelevant för filen; behandlas som
+Agent-Ops ensam).
+Steg 0 mätt: `grep -c "^### " tasks/lessons.md` → 186. Åtta poster ligger på `^## ` under
+`## Archived` (raderna 2676, 2707, 2730, 2756, 2784, 2813, 2848, 2870). Vakten räknar bara
+`^### `, så `lessonCount` är 8 för lågt — och ett för lågt tal producerar ingen varning, det
+undertrycker en.
+
+Acceptans:
+1. `[diff]` De åtta posterna ligger på `### `-nivå, och `grep -c "^### " tasks/lessons.md`
+   stiger med exakt 8 (räknat, inte påstått).
+2. `[diff]` Tripwiren körd före och efter; utfallet klistrat i commit-meddelandet.
+3. `[diff]` INTE göra: ingen redigering av lärdomarnas TEXT — bara rubriknivån flyttas.
+   Skriptet `knowledge-freshness.mjs` ligger i `C:/claude-plugins`, utanför det här repot,
+   och rörs inte här; punkt 3 i ticketen (en vakt på vakten) filas som egen ticket om den
+   kräver ändring där.
+
+## Kluster B — kalendern (Tier A/B, single)
+
+### BUT-1991 — kalendern spräcker layouten för hushåll med familj [Tier B] [build]
+Router: **single** (Software Architect, Product Manager). Tier B: det är en synlig yta.
+Steg 0 mätt: `calendar_cells.dart:498` bär det inre `Expanded`:et; `_emptyPlan()` i
+`test/widget/menu/calendar_presence_test.dart` sätter `entries: const []`, så den gren som
+kastar nås aldrig av den befintliga sviten. Båda premisserna håller.
+
+Acceptans:
+1. `[diff]` Roster 2 + placerad rätt renderar utan `RenderFlex … unbounded`-kast.
+2. `[diff]` `calendar_presence_test.dart` har en fixtur MED en placerad rätt, och den täcker
+   både roster 1 och roster 2.
+3. `[diff]` Mutationsprövat: att återställa lagningen rödnar det nya testet.
+4. `[diff]` INTE göra: ingen ändring av cellens UTSEENDE för det fall som redan fungerar
+   (roster 1) — avgränsningen ska vara osynlig där. Verifieras mot befintliga kalendertester.
+
+### BUT-1993 — "Kopiera veckan" ljuger för en utloggad användare [Tier A] [build]
+Router: **single** (Product Manager).
+Steg 0 mätt: `weekly_menu_plan_service.dart:174` `if (userId == null) return 0;`. Samma form på
+rad 336. Sex andra `return 0` i filen är ÄKTA nollor (rad 177, 193, 203, 240, 304, 566) och
+ska inte röras — det är den fällan.
+
+Acceptans:
+1. `[diff]` Ett utloggat `copyWeek` ger felrutan, aldrig "Inget kopierades".
+2. `[diff]` En äkta tom källvecka ger fortfarande `0` och framgångsrutan.
+3. `[diff]` Mutationsprövat: att återinföra `return 0` på rad 174 rödnar testet.
+4. `[diff]` INTE göra: de sex äkta nollorna rörs inte. Om rad 336 (samma form, annan metod)
+   ingår, är det med eget test — annars filas den som egen ticket, inte tyst utelämnad.
+5. `[diff]` Ingen NY svensk sträng om den befintliga felrutan räcker. Krävs en ny text blir
+   ticketen `build-review` och texten flaggas för Malin.
+
+## Kluster C — GDPR: exporten mot raderingen (Tier C, FULL PANEL)
+
+Båda ticketarna rör samma två filer och konvokeras i **en** panel.
+Router: **full-panel**, 11 roller, `high_stakes_hits: account-deletion-cascade.ts`.
+`panelPolicy: park` → båda byggs och parkeras i **In Review**, aldrig Done.
+
+### BUT-1992 — ingen vakt håller EXPORT ⊇ RADERING [Tier C] [build-review]
+Steg 0 mätt: `scenario_everyUserSubcollectionHasADeleter` finns (RADERARE ⊇ PROB). Ingen
+motsvarighet åt export-hållet.
+**Detaljen som är Malins:** vilka av de tio samlingarna som SKA exporteras. Det är ett
+artikel-15-avvägningsbeslut av samma klass som de i `accepted-deviations.md`. Jag bygger
+VAKTEN (som är det ticketen kallar det egentliga felet) och en undantagslista med ett skrivet
+skäl per rad; urvalet är hennes att ändra.
+
+Acceptans:
+1. `[diff]` En vakt rödnar när en samling läggs till raderingen utan att antingen exporteras
+   eller stå i en uttrycklig undantagslista med skäl.
+2. `[diff]` Vakten härleder sitt universum ur KÄLLKODEN (som raderingshalvans vakt gör), inte
+   ur en handskriven lista — annars återskapar den precis det fel den ska fånga.
+3. `[diff]` Mutationsprövat: att lägga till en påhittad samling i `subs` utan export och utan
+   undantag rödnar vakten.
+4. `[diff]` `settings`-asymmetrin (raderingen tar hela samlingen, exporten läser ett dokument)
+   är åtgärdad åt det håll undantagslistan landar i, och den riktningen är skriven.
+5. `[diff]` INTE göra: ingen ny samling läggs till EXPORTEN utan att det står i Art. 30-
+   dokumentet. Ingen `firestore.indexes.json`-ändring (BUT-1789:s TTL-fälla).
+
+### BUT-1990 — exporten läser `users/{uid}/fcm_tokens`, som ingenting skriver [Tier C] [build]
+Steg 0 mätt: enda referensen till den sökvägen i `lib/` + `functions/src/` är LÄSAREN
+(`firebase_data_export_repository.dart:807`). Allt annat går mot toppnivåsamlingen
+`user_fcm_tokens`. **Nytt sedan ticketen skrevs:** `fcm_tokens` står numera i `subs` i
+`account-deletion-cascade.ts` (rad 2976), med en kommentar som pekar just hit — så
+"raderas inte"-halvan av ticketens andra scenario är redan stängd.
+
+Acceptans:
+1. `[diff]` Frågan "död läsare eller bortmigrerad form" är BESVARAD med git-historik på
+   exportmetoden, och svaret står i commit-meddelandet — inte gissat.
+2. `[diff]` Utfallet är antingen läsaren borttagen ELLER läsaren behållen med ett skrivet skäl.
+   Båda är giltiga; det som inte är giltigt är att lämna den odokumenterad.
+3. `[diff]` Om läsaren tas bort: BUT-1992:s nya vakt måste fortfarande vara grön, eftersom
+   `fcm_tokens` då raderas utan att exporteras och alltså behöver en undantagsrad.
+4. `[diff]` INTE göra: `fcm_tokens` tas INTE ur `subs` — en gammal rad på disk ska fortsatt
+   städas.
+
+## Fas 1.4 — kritiker och panel (villkoren blir bindande acceptanskriterier)
+Fylls i när kritikerna svarat, före något bygge.
+
+## Needs you (Tier D)
+Inget i den här sprinten kräver konsol-, deploy- eller butiksåtkomst.
+
+## Deviation log
+
+- [deviation] BUT-1991: planen tog arkitektens rekommendation (`mainAxisSize: MainAxisSize.min`
+  på den yttre `Column`:en) → MÄTT: den lagar det inte. Med `min` rödnade familjefallet
+  fortfarande. Orsaken är att `cell` var en ICKE-flex-barn i den `Column`:en och därför fick
+  en obegränsad huvudaxelgräns; `Expanded(child: cell)` är lagningen. Mutationsprövat åt båda
+  håll. Arkitektens ANALYS av varför roster-1 klarar sig (den grenen bygger aldrig wrappern)
+  var däremot rätt och är det som gör kontrolltestet meningsfullt.
+- [discovery] BUT-1991: mitt första testvärdskap var otroget — jag antog att `IntrinsicHeight`
+  låg utanför `DayCell`. Den ligger INUTI den, så värdskapet var rätt hela tiden och
+  solo-kontrollen gick grön så snart textassertionen rättades (cellen gemenar titeln).
+- [deviation] BUT-1990: scope vidgat, medvetet. Ticketen beskriver EN död läsare
+  (`users/{uid}/fcm_tokens`). Mätningen hittade en ANDRA i samma metodpar:
+  `exportFcmTokensTopLevel` slog upp `user_fcm_tokens/{uid}` på dokument-id, men id:t är
+  `{userId}_{deviceId}` (reglerna rad 2573 + `FirebaseDeviceRepository`), så den kunde inte
+  heller ge en rad — `fcm_token_registered` har alltså varit `false` för varje användare som
+  någonsin registrerat en enhet. Båda ersattes av EN fältfråga på `userId`. Att laga den ena
+  och fila den andra hade lämnat ett känt spöke en rad bort, i samma metodpar, under en ticket
+  vars hela premiss är just den defekten.
+- [needs-human] BUT-1992: BYGGDES INTE. Panelen (11 roller) landade i en oläst konflikt om
+  VILKA av de tio samlingarna som ska exporteras — DPO/Legal säger exportera nästan allt och
+  kallar `onboarding`/`ingredients`/`acquisition` ett brott mot art. 15; PM säger undanta
+  `rate_limits`/`counters` som VVS och kallar `acquisition` Malins beslut; T&S ville redigera
+  bort `rate_limits.lastWrite` som en missbruksspärr, vilket Security sedan motbevisade genom
+  att mäta att gränserna redan ligger på enheten. Legal säger uttryckligen att beslutet per
+  samling kräver Malins signatur. Arkitekten säger att bygga vakten och besluten i samma
+  commit är precis hur ett undantag blir en gummistämpel. Enligt fas 1.4 byggs inte den
+  omtvistade omfattningen → parkeras i In Review med hela panelunderlaget.
+- [deviation] BUT-1995: `FakeFirebaseFirestore` kan inte sända ett strömfel, så översättningen
+  bröts ut till `mapStreamError` och pinnades i tre riktningar — och de fyra befintliga testerna
+  som HADE matat ett rått undantag genom den riktiga vägen pekades om till domäntypen. Det
+  raderade pinnen i stället för att flytta den: WIRING-raden blev otäckt, och acceptanskriterium
+  2 sa uttryckligen "genom den riktiga vägen". Jag skrev en ärlig not och filade BUT-1999 —
+  vilket TVÅ granskningsgrindar underkände, med rätta: en filad ticket löser inte ett
+  acceptanskriterium jag själv skrivit, och sömmen fanns hela tiden (`BaseFirebaseRepository`
+  tar en injicerbar `firestore`). Kriteriet är nu uppfyllt som det står: en mocktail-firestore
+  vars `.snapshots()` ger `Stream.error` driver ett rått `permission-denied` genom
+  `watchForWeek`. Mutationsprövat — att återställa WIRING-raden rödnar precis det testet, där
+  allt tidigare förblev grönt. BUT-1999 stängs.
+- [deviation] BUT-1993: rad 336 (`removeRecipeFromAllPlans`) rördes INTE, trots samma form.
+  Dess dokumenterade kontrakt är uttryckligen "failures are logged but never thrown, so the
+  user's delete never fails", och dess enda anropare (`personal_recipe_crud.dart`) kastar bort
+  returvärdet i en egen catch. Ett kast där hade brutit kontraktet utan att någon användare
+  någonsin ser skillnaden.
+- [discovery] BUT-1994: kritiken mätte att överskottet går från 11 till 3, inte till 0 — de
+  åtta posterna HADE redan sina digest-rader. Vakten är alltså fortfarande döv för de tre
+  nästa lärdomarna. Filad som uppföljning.
+- [discovery] BUT-1995: den första greppen efter `EdgeInsets.only(left|right)` var enradig och
+  missade ett tredje ställe som formateraren brutit över flera rader — lintens egen `[^)]*`
+  matchar radbrytningar. Greppen mätte inte samma sak som grinden.
+
+
+---
+
 # PLAN 2026-09-02 — sprint (auto-select, N=7): GDPR-kaskadens två glömda samlingar,
 # tre "lyckades" som ljuger, en hårdkodad svensk sträng, och ett dövt golden-test
 

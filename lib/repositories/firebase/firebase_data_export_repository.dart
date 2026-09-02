@@ -788,23 +788,24 @@ class FirebaseDataExportRepository extends BaseFirebaseRepository<Object> {
         ExportResourceType.userNotificationPreferences,
       );
 
-  /// `user_fcm_tokens/{userId}` single-doc fetch (top-level shape).
-  Future<Map<String, dynamic>?> exportFcmTokensTopLevel(String userId) =>
-      _readDoc(
-        firestore.collection(FirestoreCollections.userFcmTokens).doc(userId),
-        userId,
-        ExportResourceType.userFcmTokens,
-      );
-
-  /// `users/{uid}/fcm_tokens` subcollection (multi-device shape).
-  Future<List<Map<String, dynamic>>> exportFcmTokensSubcollection(
+  /// `user_fcm_tokens` filtered on the `userId` FIELD — the only shape that
+  /// returns a row.
+  ///
+  /// BUT-1990: two readers stood here and neither could ever answer. One asked
+  /// for `users/{uid}/fcm_tokens`, a subcollection no writer in `lib/` or
+  /// `functions/src/` has ever written and which `firestore.rules` grants no
+  /// read on, so it was denied as well as empty. The other asked for
+  /// `user_fcm_tokens/{userId}`, but the doc id is `{userId}_{deviceId}` (see
+  /// the rules block and `FirebaseDeviceRepository`), so it missed every real
+  /// document. The field filter is what `deleteAllByUser` already uses, and the
+  /// read rule is written on the same field, so a list query satisfies it.
+  Future<List<Map<String, dynamic>>> exportFcmTokensForUser(
     String userId, {
     int maxDocuments = 50,
   }) => _queryList(
     firestore
-        .collection(FirestoreCollections.users)
-        .doc(userId)
-        .collection('fcm_tokens'),
+        .collection(FirestoreCollections.userFcmTokens)
+        .where('userId', isEqualTo: userId),
     userId,
     ExportResourceType.userFcmTokens,
     limit: maxDocuments,

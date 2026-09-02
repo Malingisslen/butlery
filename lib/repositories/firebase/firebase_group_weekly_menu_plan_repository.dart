@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:meta/meta.dart';
 
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
@@ -177,6 +178,28 @@ class FirebaseGroupWeeklyMenuPlanRepository
     await collection.doc(plan.id).set(toFirestore(plan));
   }
 
+  /// BUT-1995: turns a rules refusal on the realtime stream into the DOMAIN
+  /// type, so the ViewModel never has to know what a `FirebaseException` is —
+  /// a ViewModel importing `cloud_firestore` is the MVVM violation the
+  /// architecture gate had been red on.
+  ///
+  /// Gated on the CODE, not the type. `unavailable`, `deadline-exceeded` and
+  /// every other `FirebaseException` must come through untouched: the screen
+  /// renders a refusal without a retry button and an outage with one, so
+  /// widening this to the type would tell a user on a dropped connection that
+  /// they are not an editor, and give them nothing to press.
+  @visibleForTesting
+  static Object mapStreamError(Object error, String docId) {
+    if (error is FirebaseException && error.code == 'permission-denied') {
+      return PermissionDeniedException(
+        'Realtime group menu plan read refused',
+        resource: docId,
+        operation: 'watch',
+      );
+    }
+    return error;
+  }
+
   @override
   Stream<GroupWeeklyMenuPlan?> watchForWeek({
     required String groupId,
@@ -205,7 +228,7 @@ class FirebaseGroupWeeklyMenuPlanRepository
             'Realtime group menu plan stream error ($groupId / $docId)',
             error,
           );
-          throw error;
+          throw mapStreamError(error, docId);
         });
   }
 

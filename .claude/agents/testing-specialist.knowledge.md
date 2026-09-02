@@ -429,6 +429,17 @@ you want the revert-probe that proved it; or this file itself reads too compress
   method across the WHOLE file before writing the sentence (2026-08-27).
 - Source-text assertion suites must strip comments first, or a bare `includes` stays green
   after the setting is deleted; probe non-vacuity with a STRING mutant, never a file mutant.
+  **Two follow-on traps, both measured on BUT-1946's golden-blindness lint (2026-09-02).**
+  (1) A "the approved helper is still USED" assertion keyed on the bare identifier is
+  satisfied by the DECLARATION of that identifier, so it passes on the defined-but-unused
+  state it exists to catch — key it on the CALL spelling (`= helperName();`), and probe both
+  directions (reinstate the defect; delete only the call site). (2) Blank comments to the
+  SAME LENGTH rather than deleting them, so an offset in `stripped` is the same offset in
+  `raw`: an exemption marker looked up by `raw.indexOf(<marker>)` returns the file's FIRST
+  marker, so one excused violation excuses every identically-spelled one, including later
+  ones. Read the marker window from `match.start`. Residual worth stating in the lint's own
+  doc comment: a fixed-size window still lets a marker excuse a second violation sitting
+  within it.
 - **A TAUTOLOGICAL assertion is not automatically a coverage hole — grade the whole test
   before repairing it, and grade it ARITHMETICALLY.** `hasLength(<the constant>)` over N
   appends does compare the prune's bound to itself, but the sibling `first.entryId == 'e5'`
@@ -542,6 +553,18 @@ Codecov: 60% project / 70% new patches / 2% drop tolerance — floors, decided 5
   end-to-end there — seed the real subcollection plus a DECOY in the neighbour, assert the
   bundle key — kills both mutants at once. Measured on BUT-1957: repointing the collection
   left 86/86 green, deleting the bundle entry 40/40 (2026-09-02).
+  **A fifth seam: a SIBLING section that DERIVES flags from the same repository read.**
+  BUT-1990 repointed the FCM device read; `exportNotificationPreferences` derives
+  `fcm_token_registered` and `fcm_token_updated_at` from it, and the manager suite's fake
+  overrode only the direct method, so that section threw and was pinned by nothing — a
+  hardcoded `false`/null shipped green. Grep the repointed repository method for EVERY
+  manager caller, not just the section named in the ticket, and make the fake answer each
+  caller's other reads. Fixture note: a LOCAL `DateTime(...)` seed is zone-safe when the
+  expectation is the SAME expression production evaluates
+  (`Timestamp.fromDate(d).toDate().toIso8601String()` round-trips to `d.toIso8601String()`
+  in any zone) — but a "newest wins" fixture whose newest row is also the LAST row leaves
+  the last-wins mutant alive; put the max in the MIDDLE of an unordered query's rows
+  (2026-09-02).
   **And a new section's failure envelope is pinned only by the file's parameterised `cases`
   table, never by a hand-written `completion(isA<Map>())`** — that matcher is satisfied by
   the raw-leak mutant `return {'error': e.toString()}`, i.e. by the exact defect (BUT-1760)

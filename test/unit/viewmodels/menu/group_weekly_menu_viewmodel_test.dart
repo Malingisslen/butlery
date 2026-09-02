@@ -192,28 +192,26 @@ void main() {
       await vm.loadWeek(_week);
 
       stream.addError(
-        FirebaseException(plugin: 'x', code: 'permission-denied'),
+        PermissionDeniedException(
+          'Realtime group menu plan read refused',
+          resource: 'group-1_2026-W03',
+          operation: 'watch',
+        ),
       );
       await Future<void>.delayed(Duration.zero);
 
       expect(vm.failure, GroupMenuFailure.permissionDenied);
     });
 
-    test('the project exception classifies the same way', () async {
-      stubRead(_plan());
-      await vm.loadWeek(_week);
-
-      stream.addError(PermissionDeniedException('nope'));
-      await Future<void>.delayed(Duration.zero);
-
-      expect(vm.failure, GroupMenuFailure.permissionDenied);
-    });
-
-    // The discriminating control for the two cases above ('a permission-denied
-    // stream error is NOT transient' and 'the project exception classifies the
-    // same way'): same delivery path, same shape of error, differing ONLY in
-    // the code. Without it both would pass on a classifier that answered
-    // `permissionDenied` unconditionally.
+    // The discriminating control for 'a permission-denied stream error is NOT
+    // transient': same delivery path, a different error. Without it that case
+    // would pass on a classifier answering `permissionDenied` unconditionally.
+    //
+    // Since BUT-1995 the raw `permission-denied` is translated in the
+    // repository, so the ViewModel only ever sees the domain type. The
+    // raw-to-domain step is pinned in
+    // `firebase_group_weekly_menu_plan_repository_test.dart`, both as a
+    // function and through `watchForWeek` itself.
     test('any other stream error IS transient', () async {
       stubRead(_plan());
       await vm.loadWeek(_week);
@@ -804,7 +802,11 @@ void main() {
       // A refusal drops the week from the screen; the arm survives it. (A
       // transient error deliberately KEEPS the week, so it cannot stage this.)
       stream.addError(
-        FirebaseException(plugin: 'x', code: 'permission-denied'),
+        PermissionDeniedException(
+          'Realtime group menu plan read refused',
+          resource: 'group-1_2026-W03',
+          operation: 'watch',
+        ),
       );
       await Future<void>.delayed(Duration.zero);
       vm.clearEditNotice();
@@ -1267,7 +1269,11 @@ void main() {
       await vm.loadWeek(_week);
 
       stream.addError(
-        FirebaseException(plugin: 'x', code: 'permission-denied'),
+        PermissionDeniedException(
+          'Realtime group menu plan read refused',
+          resource: 'group-1_2026-W03',
+          operation: 'watch',
+        ),
       );
       await Future<void>.delayed(Duration.zero);
 

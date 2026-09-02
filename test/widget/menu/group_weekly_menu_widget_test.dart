@@ -11,7 +11,6 @@ library;
 
 import 'dart:async';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -199,7 +198,11 @@ void main() {
       stubRead(_plan());
       await vm.loadWeek(_week);
       stream.addError(
-        FirebaseException(plugin: 'x', code: 'permission-denied'),
+        PermissionDeniedException(
+          'Realtime group menu plan read refused',
+          resource: 'group-1_2026-W03',
+          operation: 'watch',
+        ),
       );
       await pump(tester);
 

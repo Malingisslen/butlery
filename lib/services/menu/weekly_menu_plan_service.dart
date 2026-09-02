@@ -166,12 +166,18 @@ class WeeklyMenuPlanService extends BaseService {
   /// 0, which means "there was nothing to copy". A `null` read is not a throw:
   /// it still means "week absent", which offline is a true absence
   /// (BUT-1961's `acceptCachedAbsence`) and returns 0.
+  ///
+  /// Signed out throws too (BUT-1993), for the same reason: returning 0 there
+  /// spent the caller's "nothing to copy" answer on a week nobody read, and
+  /// the view rendered it as "allt finns redan nästa vecka".
   Future<int> copyWeek({
     required DateTime fromWeekStart,
     required DateTime toWeekStart,
   }) async {
     final userId = _currentUserId;
-    if (userId == null) return 0;
+    if (userId == null) {
+      throw StateError('No authenticated user for copyWeek');
+    }
     final normalizedFrom = IsoWeekUtils.weekStartOf(fromWeekStart);
     final normalizedTo = IsoWeekUtils.weekStartOf(toWeekStart);
     if (normalizedFrom == normalizedTo) return 0;

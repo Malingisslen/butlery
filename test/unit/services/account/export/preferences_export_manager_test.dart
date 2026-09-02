@@ -143,10 +143,18 @@ class _FakeFcmTokenRepository extends Fake
   final List<Map<String, dynamic>> tokenRows;
 
   @override
-  Future<List<Map<String, dynamic>>> exportFcmTokensSubcollection(
+  Future<List<Map<String, dynamic>>> exportFcmTokensForUser(
     String userId, {
     int maxDocuments = 50,
   }) async => tokenRows;
+
+  // BUT-1990: `exportNotificationPreferences` derives its FCM answers from the
+  // SAME device query, so the fake has to answer this one too or that section
+  // cannot be exercised at all.
+  @override
+  Future<Map<String, dynamic>?> exportNotificationPreferences(
+    String userId,
+  ) async => {'pushEnabled': true};
 }
 
 Map<String, dynamic> _row(int i) => {
@@ -429,6 +437,77 @@ void main() {
     // reaches the user's data bundle.
     const fullToken =
         'fMNq9RtCkX_abcdefghijklmnopqrstuvwxyz0123456789-LIVEFCMTOKEN';
+
+    // BUT-1990. Nothing pinned either of these two user-visible fields, so the
+    // section could be hardcoded to `false`/null — the exact defect the ticket
+    // was filed for — and every suite stayed green. The timestamp case seeds
+    // `lastUpdated`, the field the WRITERS write; the old code read `updatedAt`,
+    // which belongs to no writer, so it would fail this.
+    test(
+      'registers the devices the query returns, newest stamp wins',
+      () async {
+        final manager = PreferencesExportManager(
+          dataExportRepository: _FakeFcmTokenRepository([
+            {
+              'token': 'tok-old',
+              'lastUpdated': Timestamp.fromDate(DateTime(2026, 1, 2, 3)),
+            },
+            {
+              'token': 'tok-new',
+              'lastUpdated': Timestamp.fromDate(DateTime(2026, 5, 6, 7)),
+            },
+            // The newest sits in the MIDDLE on purpose. With it last, a mutant
+            // that assigns unconditionally — last wins rather than newest wins —
+            // survives, and the query has no orderBy so row order is arbitrary.
+            {
+              'token': 'tok-mid',
+              'lastUpdated': Timestamp.fromDate(DateTime(2026, 2, 3, 4)),
+            },
+          ]),
+        );
+
+        final result = await manager.exportNotificationPreferences('user-uid');
+
+        expect(result['fcm_token_registered'], isTrue);
+        expect(
+          result['fcm_token_updated_at'],
+          DateTime(2026, 5, 6, 7).toIso8601String(),
+          reason: 'the most recent stamp across the devices',
+        );
+      },
+    );
+
+    test(
+      'falls back to lastSeen when only the device-info write ran',
+      () async {
+        final manager = PreferencesExportManager(
+          dataExportRepository: _FakeFcmTokenRepository([
+            {
+              'token': 'tok',
+              'lastSeen': Timestamp.fromDate(DateTime(2026, 3, 4, 5)),
+            },
+          ]),
+        );
+
+        final result = await manager.exportNotificationPreferences('user-uid');
+
+        expect(
+          result['fcm_token_updated_at'],
+          DateTime(2026, 3, 4, 5).toIso8601String(),
+        );
+      },
+    );
+
+    test('a user with no devices is not reported as registered', () async {
+      final manager = PreferencesExportManager(
+        dataExportRepository: _FakeFcmTokenRepository([]),
+      );
+
+      final result = await manager.exportNotificationPreferences('user-uid');
+
+      expect(result['fcm_token_registered'], isFalse);
+      expect(result['fcm_token_updated_at'], isNull);
+    });
 
     test(
       'redacts a real token to prefix + marker, dropping the credential',

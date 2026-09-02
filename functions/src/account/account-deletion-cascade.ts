@@ -2964,11 +2964,11 @@ export async function deleteUserSubcollections(
     "acquisition",
     // NO live writer found in `lib/` or `functions/src`. The first four are
     // named as `users/{uid}` subcollections by `admin/reset-user-data.ts`;
-    // `fcm_tokens` is not, and comes from the Art. 15 export, which READS it
-    // while nothing writes it — its own defect, BUT-1990. All five are swept
-    // because an account predating their removal can still hold rows, and by
-    // the superset rule above such a row would otherwise be permanently
-    // residual.
+    // `fcm_tokens` is not. It was named here from the Art. 15 export, which
+    // read it while nothing wrote it — BUT-1990 has since removed that reader.
+    // All five are swept because an account predating their removal can still
+    // hold rows, and by the superset rule above such a row would otherwise be
+    // permanently residual.
     "category_memberships",
     "connection_tests",
     "unified_recipes",

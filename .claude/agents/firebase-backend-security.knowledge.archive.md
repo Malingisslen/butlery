@@ -8041,3 +8041,50 @@ Three non-blocking findings, all documentation-accuracy:
   counts of the requester's own ACTIVITY.
 
 Verdict: pass (0 blocking).
+
+---
+
+## 2026-09-02 — BUT-1990 (Art. 15 device tokens): the fixed probe, the field beside it, and the comment it falsified
+
+Staged diff replaced two dead readers (`exportFcmTokensTopLevel` on `user_fcm_tokens/{uid}`,
+`exportFcmTokensSubcollection` on `users/{uid}/fcm_tokens`) with one
+`exportFcmTokensForUser` doing `.where('userId', isEqualTo: userId)` on `user_fcm_tokens`.
+
+**The rules question (the one asked hardest).** `firestore.rules:2578` is
+`allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;`. Rules are not
+filters, but this is the POSITIVE side of that rule: the query constrains the same field to the
+same value the rule tests, so the server can prove every returnable document is readable and the
+list is ALLOWED. Not the BUT-1957 shape (`users/{uid}/notifications` had no match block at all).
+`_guardSelfExport` forces `userId == auth.uid`, and the shape matches
+`FirebaseDeviceRepository.deleteAllByUser` and the CF `deleteFcmTokens`, so Art. 15 ⊇ Art. 17
+parity holds on the same collection+field. Equality-only ⇒ automatic index.
+
+**The defect the repair left behind.** `PreferencesExportManager.exportNotificationPreferences`
+now loops the rows deriving `fcm_token_updated_at` from `row['updatedAt']`. No writer has ever
+written `updatedAt` on `user_fcm_tokens`: `fcm_token_manager._saveTokenToFirestore` writes
+`lastUpdated`, `_updateDeviceInfo` writes `lastSeen`, `FirebaseDeviceRepository.updateTokenTimestamp`
+writes `lastUpdated`, the CF writes `deactivatedAt`; `git log -S "'updatedAt'"` on both Dart
+writers returns nothing. So the field is null for every user, forever — the exact wrong-field
+class BUT-1990 exists to fix, surviving one line over, in the half of the section the ticket
+rewrote. The new repository test seeds `userId`/`token`/`isActive` only, so nothing reddens.
+(The ISO-string `compareTo` for "most recent across devices" is otherwise correct: fixed-width
+local ISO stamps compare chronologically; a missing or non-`Timestamp` value is skipped.)
+
+**The comment the commit falsified.** `functions/src/account/account-deletion-cascade.ts` (~2967)
+justifies keeping `fcm_tokens` in `subs` with "…comes from the Art. 15 export, which READS it
+while nothing writes it — its own defect, BUT-1990." After this commit nothing reads it either.
+The sweep and the list entry must stay (ADR-0011 says so explicitly); the clause is struck.
+
+**Clean.** Ownership guard identical to neighbours (`_queryList` → `_guardSelfExport` →
+`validateOwnership(requireCurrentUserId())`). Only the requester's own rows are reachable, so no
+third-party disclosure. `includeIds: false` drops the `{uid}_{deviceId}` doc id — minimisation,
+and the erasure handle is the field, not the id. Token redaction (`first 10 + ...[redacted]`) is
+live for the first time; a `token` shorter than 10 chars would ship whole and a non-String
+`token` is not redacted at all, but both are the subject's own data. Cost: the query now runs
+TWICE per bundle (both the `fcm_tokens` section and the preferences section call it), ≤100 reads.
+
+**`mapStreamError` (BUT-1995, same diff).** Gated on `error is FirebaseException && code ==
+'permission-denied'` — never on the type — and the ViewModel's now-deleted arm was the identical
+test. The only producer reaching `GroupWeeklyMenuViewModel._classify` is
+`RealtimeGroupMenuModule.subscribe`, a thin pass-through of `watchForWeek`, so the mapping is
+behaviour-preserving and the VM no longer imports `cloud_firestore`.

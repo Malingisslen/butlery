@@ -1,10 +1,17 @@
 /// Unit tests for FirebaseGroupWeeklyMenuPlanRepository.
 ///
-/// Pure-Dart; FakeFirebaseFirestore.
+/// Pure-Dart; FakeFirebaseFirestore, plus mocktail stubs of the SDK surface
+/// where a stream error is needed (the fake cannot produce one).
 library;
 
+// The cloud_firestore reference types are sealed; mocking them is the
+// established pattern here (see test/integration/firebase/repositories/).
+// ignore_for_file: subtype_of_sealed_class
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/models/menu/group_weekly_menu_plan.dart';
@@ -14,6 +21,14 @@ import 'package:butlery/repositories/firebase/firebase_audit_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_group_weekly_menu_plan_repository.dart';
 
 import '../../../infrastructure/mocks/production_mocks.dart';
+
+class _MockFirestore extends Mock implements FirebaseFirestore {}
+
+class _MockCollection extends Mock
+    implements CollectionReference<Map<String, dynamic>> {}
+
+class _MockDoc extends Mock
+    implements DocumentReference<Map<String, dynamic>> {}
 
 const _alice = 'user-alice';
 const _bob = 'user-bob';
@@ -369,6 +384,132 @@ void main() {
           .first;
       expect(first, isNotNull);
       expect(first!.id, plan.id);
+    });
+
+    // BUT-1995. The stream's error mapping, which is what lets the ViewModel
+    // drop its `cloud_firestore` import — the MVVM violation the architecture
+    // gate was red on. Both directions are here because the whole point of the
+    // mapping is that it does NOT fire for every FirebaseException: the group
+    // menu screen renders a refusal WITHOUT a retry button and an outage WITH
+    // one, so widening it to the type would tell a user on a dropped
+    // connection that they are not an editor and hand them nothing to press.
+    //
+    // These call the mapping directly; the group BELOW drives a real refusal
+    // through `watchForWeek` itself, because the wiring line is a separate
+    // claim from the mapping and reverting it alone used to keep every suite
+    // green (BUT-1999).
+    group('mapStreamError', () {
+      test('a rules refusal becomes the domain type', () {
+        final mapped = FirebaseGroupWeeklyMenuPlanRepository.mapStreamError(
+          FirebaseException(
+            plugin: 'cloud_firestore',
+            code: 'permission-denied',
+          ),
+          'group-1_2026-W03',
+        );
+        expect(mapped, isA<PermissionDeniedException>());
+      });
+
+      test('every other FirebaseException passes through untouched', () {
+        final unavailable = FirebaseException(
+          plugin: 'cloud_firestore',
+          code: 'unavailable',
+        );
+        expect(
+          FirebaseGroupWeeklyMenuPlanRepository.mapStreamError(
+            unavailable,
+            'group-1_2026-W03',
+          ),
+          same(unavailable),
+          reason:
+              'an outage must stay an outage — the transient screen is the one '
+              'that offers a retry',
+        );
+      });
+
+      test('a non-Firebase error passes through untouched', () {
+        final boom = StateError('boom');
+        expect(
+          FirebaseGroupWeeklyMenuPlanRepository.mapStreamError(boom, 'x'),
+          same(boom),
+        );
+      });
+    });
+
+    // BUT-1995 acceptance criterion 2: a RAW `permission-denied` fed through
+    // the real path, not through the mapper directly. `FakeFirebaseFirestore`
+    // cannot error a stream, so the SDK surface is stubbed just far enough to
+    // hand `watchForWeek` a failing `snapshots()`.
+    //
+    // Without this, reverting `throw mapStreamError(error, docId)` to
+    // `throw error` left every suite green while a non-member got the retry
+    // screen — the one thing BUT-1971 pinned that this refusal must not do.
+    group('watchForWeek error wiring', () {
+      late _MockFirestore firestore;
+
+      setUp(() {
+        firestore = _MockFirestore();
+        final coll = _MockCollection();
+        final doc = _MockDoc();
+        when(() => firestore.collection(any())).thenReturn(coll);
+        when(() => coll.doc(any())).thenReturn(doc);
+        when(doc.snapshots).thenAnswer(
+          (_) => Stream<DocumentSnapshot<Map<String, dynamic>>>.error(
+            FirebaseException(
+              plugin: 'cloud_firestore',
+              code: 'permission-denied',
+            ),
+          ),
+        );
+      });
+
+      FirebaseGroupWeeklyMenuPlanRepository repoOn(FirebaseFirestore db) {
+        final auth = FakeAuthRepository();
+        auth.setAuthState(
+          user: FakeUser(uid: _alice),
+          userId: _alice,
+          isAuthenticated: true,
+        );
+        return FirebaseGroupWeeklyMenuPlanRepository(
+          firestore: db,
+          authRepository: auth,
+        );
+      }
+
+      test('a rules refusal reaches the caller as the DOMAIN type', () {
+        expect(
+          repoOn(firestore)
+              .watchForWeek(groupId: _group, date: DateTime.utc(2026, 1, 15))
+              .first,
+          throwsA(isA<PermissionDeniedException>()),
+        );
+      });
+
+      test('an outage still reaches the caller as a FirebaseException', () {
+        final coll = _MockCollection();
+        final doc = _MockDoc();
+        final outage = _MockFirestore();
+        when(() => outage.collection(any())).thenReturn(coll);
+        when(() => coll.doc(any())).thenReturn(doc);
+        when(doc.snapshots).thenAnswer(
+          (_) => Stream<DocumentSnapshot<Map<String, dynamic>>>.error(
+            FirebaseException(plugin: 'cloud_firestore', code: 'unavailable'),
+          ),
+        );
+
+        expect(
+          repoOn(outage)
+              .watchForWeek(groupId: _group, date: DateTime.utc(2026, 1, 15))
+              .first,
+          throwsA(
+            isA<FirebaseException>().having(
+              (e) => e.code,
+              'code',
+              'unavailable',
+            ),
+          ),
+        );
+      });
     });
   });
 
