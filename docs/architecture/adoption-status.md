@@ -4,7 +4,7 @@
 > the tool and commit the result. Inline adoption % anywhere else in the repo
 > is forbidden by `tools/check_no_inline_adoption_pct.sh` (BUT-776).
 
-**Measured:** 2026-09-01T08:27:51.070507Z (UTC).
+**Measured:** 2026-09-02T07:45:36.752352Z (UTC).
 **Source ticket:** BUT-810. **Tool:** `tools/measure_adoption.dart`.
 **Scope:** every `*.dart` file under `lib/` except `lib/site-packages/`.
 
@@ -18,7 +18,7 @@
 | `PermissionValidationMixin` effective coverage (repos) | 56.5% (39/69) | `lib/repositories/firebase/` classes — direct `with` OR via BFR |
 | `PermissionValidationMixin` direct adoption (repos) | 4.3% (3/69) | `lib/repositories/firebase/` classes — base classes / non-BFR adopters |
 | `extends BaseViewModel` (viewmodels) | 48.0% (36/75) | `lib/viewmodels/` classes |
-| `SerializationUtils.safe*(` (call sites) | 992 | 87 files use it |
+| `SerializationUtils.safe*(` (call sites) | 993 | 87 files use it |
 
 **Total Dart files under `lib/` (excl. `site-packages/`):** 1512.
 
