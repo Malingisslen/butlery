@@ -23,6 +23,7 @@ class _FakeDataExportRepository extends Fake
     implements FirebaseDataExportRepository {
   _FakeDataExportRepository(
     this.rows, {
+    this.deliveredRows,
     this.historyRows,
     this.batchRows,
     this.engagementRows,
@@ -34,6 +35,10 @@ class _FakeDataExportRepository extends Fake
   // Each of the BUT-1450 sections is seeded independently and stays null when a
   // fixture does not cover it, so calling the WRONG sibling method throws
   // instead of quietly returning another section's rows.
+  // BUT-1957. Seeded independently of `rows`, which is the TOP-LEVEL
+  // `user_notifications` collection — a different collection one word away.
+  // Keeping them separate is what lets a test prove the section reads its own.
+  final List<Map<String, dynamic>>? deliveredRows;
   final List<Map<String, dynamic>>? historyRows;
   final List<Map<String, dynamic>>? batchRows;
   final List<Map<String, dynamic>>? engagementRows;
@@ -62,6 +67,15 @@ class _FakeDataExportRepository extends Fake
   }) async {
     capturedMaxDocuments = maxDocuments;
     return rows;
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> exportDeliveredNotifications(
+    String userId, {
+    int maxDocuments = -1,
+  }) async {
+    capturedMax['exportDeliveredNotifications'] = maxDocuments;
+    return _seeded(deliveredRows, 'exportDeliveredNotifications');
   }
 
   @override
@@ -199,7 +213,144 @@ final _cappedSections = <_CappedSection>[
   ),
 ];
 
+Map<String, dynamic> _deliveredRow(int i) => {
+  'id': 'd$i',
+  'data': {
+    'type': 'win_back',
+    'message': 'Vi saknar dig $i',
+    'bodyShown': 'Vi saknar dig $i',
+    'variant': 'b',
+    'contextKey': 'ctx',
+    'read': false,
+  },
+};
+
 void main() {
+  // BUT-1957: `users/{uid}/notifications`, the SUBCOLLECTION. The account
+  // deletion cascade began erasing it in the same change, and Art. 15 must
+  // reach anything Art. 17 removes — so this section exists to keep the export
+  // a superset of the erasure.
+  group('PreferencesExportManager.exportDeliveredNotifications (BUT-1957)', () {
+    final cap = ExportPaginationHelper.getLimitForType(
+      'delivered_notifications',
+    );
+
+    test(
+      'routes to the delivered-notifications read, not the top-level one',
+      () async {
+        // Named for what it measures. It discriminates at the MANAGER seam only —
+        // which repository METHOD was called — because the fixture is keyed by
+        // method name. Which Firestore COLLECTION that method reads is decided a
+        // layer down and is pinned in `data_export_service_test.dart`, over a
+        // real repository, where a wrong collection name can actually show.
+        //
+        // The fixture answers both sources and they disagree: `rows` (the
+        // top-level collection) holds a row that must NOT appear, `deliveredRows`
+        // the one that must.
+        final manager = PreferencesExportManager(
+          dataExportRepository: _FakeDataExportRepository(
+            [_row(99)],
+            deliveredRows: [_deliveredRow(1)],
+          ),
+        );
+
+        final result = await manager.exportDeliveredNotifications('user-uid');
+        final rows = result['notifications'] as List<dynamic>;
+
+        expect(result['total_count'], 1);
+        expect((rows.single as Map)['notification_id'], 'd1');
+      },
+    );
+
+    test('passes every field through, including the push text shown', () async {
+      final manager = PreferencesExportManager(
+        dataExportRepository: _FakeDataExportRepository(
+          const [],
+          deliveredRows: [_deliveredRow(1)],
+        ),
+      );
+
+      final result = await manager.exportDeliveredNotifications('user-uid');
+      final row =
+          (result['notifications'] as List<dynamic>).single
+              as Map<String, dynamic>;
+
+      // These are the fields that made the collection worth erasing: the text
+      // the person actually saw, and their win-back copy assignment.
+      expect(row['message'], 'Vi saknar dig 1');
+      expect(row['bodyShown'], 'Vi saknar dig 1');
+      expect(row['variant'], 'b');
+      expect(row['notification_id'], 'd1');
+    });
+
+    // The `data_minimisation` sentence is the ONLY thing in the bundle that
+    // tells the data subject a third party is in these rows, and it was
+    // asserted by nothing — deleting it left the suite green. It is prose in a
+    // GDPR artifact, so it gets a test like any other claim.
+    test('carries the data-minimisation note about the sharer name', () async {
+      final manager = PreferencesExportManager(
+        dataExportRepository: _FakeDataExportRepository(
+          const [],
+          deliveredRows: [_deliveredRow(1)],
+        ),
+      );
+
+      final result = await manager.exportDeliveredNotifications('user-uid');
+
+      expect(result['data_minimisation'], isA<String>());
+      expect(result['data_minimisation'], contains('delade'));
+      expect(result['data_minimisation'], contains('namnet'));
+      // `'förnamnet'` contains `'namnet'`, so the assertion above would stay
+      // green on a regression to the underclaiming wording this sentence was
+      // corrected FROM. A single-token display name is exported whole, so
+      // "förnamnet" would be false.
+      expect(result['data_minimisation'], isNot(contains('förnamn')));
+    });
+
+    test('forwards the cap to the repository query', () async {
+      final fake = _FakeDataExportRepository(
+        const [],
+        deliveredRows: [_deliveredRow(1)],
+      );
+      final manager = PreferencesExportManager(dataExportRepository: fake);
+
+      await manager.exportDeliveredNotifications('user-uid');
+
+      // cap + 1: the probe fetches one extra row so it can tell "exactly `cap`
+      // total" from "more than `cap`, some omitted".
+      expect(fake.capturedMax['exportDeliveredNotifications'], cap + 1);
+    });
+
+    test('omits the truncated flag below the cap', () async {
+      final manager = PreferencesExportManager(
+        dataExportRepository: _FakeDataExportRepository(
+          const [],
+          deliveredRows: List.generate(3, _deliveredRow),
+        ),
+      );
+
+      final result = await manager.exportDeliveredNotifications('user-uid');
+
+      expect(result['total_count'], 3);
+      expect(result.containsKey('truncated'), isFalse);
+      expect(result.containsKey('note'), isFalse);
+    });
+
+    test('stamps truncated + note once rows are omitted', () async {
+      final manager = PreferencesExportManager(
+        dataExportRepository: _FakeDataExportRepository(
+          const [],
+          deliveredRows: List.generate(cap + 1, _deliveredRow),
+        ),
+      );
+
+      final result = await manager.exportDeliveredNotifications('user-uid');
+
+      expect(result['truncated'], isTrue);
+      expect(result['note'], contains('$cap'));
+    });
+  });
+
   group('PreferencesExportManager.exportNotifications (BUT-1562)', () {
     final cap = ExportPaginationHelper.getLimitForType('user_notifications');
 
@@ -618,6 +769,15 @@ void main() {
             'notifications',
             'notifications-export-failed',
             (m) => m.exportNotifications('alice'),
+          ),
+          // BUT-1957. In the TABLE rather than in a test of its own: a
+          // standalone `completion(isA<Map>())` was satisfied by a mutant that
+          // returned the raw exception string, which is the BUT-1760 leak this
+          // table exists to deny.
+          (
+            'delivered notifications',
+            'delivered-notifications-export-failed',
+            (m) => m.exportDeliveredNotifications('alice'),
           ),
           (
             'notification preferences',

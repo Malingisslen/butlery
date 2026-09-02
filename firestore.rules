@@ -2704,6 +2704,32 @@ service cloud.firestore {
     }
 
     // ========================================
+    // DELIVERED NOTIFICATIONS (BUT-1957)
+    // The in-app row for a notification the service SENT the user: the win-back
+    // job (analytics/detect-lapsed-users.ts) and the weekly activity digest
+    // (analytics/send-activity-digest.ts). Carries the push text actually shown
+    // (`message` / `bodyShown`), the win-back copy assignment
+    // (`variant` / `contextKey`), or the digest's activity counts.
+    //
+    // Why this block did not exist until now: every writer is the Admin SDK and
+    // no client had ever READ the collection, so nothing was denied and nothing
+    // was missing. Adding the Art. 15 export section is what first needs a read,
+    // and rules do NOT cascade — `allow read` on `match /users/{userId}` grants
+    // nothing on a subcollection beneath it. Without this block the export's
+    // query is denied and the section returns its failure envelope for every
+    // user, forever, while the retention doc claims the rows are exported.
+    //
+    // Read is owner-only. Write is closed to every client on purpose: these rows
+    // are a record of what the SERVER sent, so a client that could write one
+    // could fabricate a notification it never received — and that record is now
+    // reachable through the data export.
+    // ========================================
+    match /users/{userId}/notifications/{notificationId} {
+      allow read: if isAuthenticated() && request.auth.uid == userId;
+      allow write: if false;
+    }
+
+    // ========================================
     // REPORT THROTTLE (BUT-781)
     // Per-(reporter, contentOwner) sentinel doc that powers the brigade
     // rate-limit on /reports. The reporter writes one of these alongside

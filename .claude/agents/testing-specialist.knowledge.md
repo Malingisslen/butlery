@@ -383,6 +383,28 @@ you want the revert-probe that proved it; or this file itself reads too compress
 ### Project-specific test infrastructure (full detail in `testing-specialist.md`)
 - Production ServiceLocator bridge: `production.ServiceLocator.initialize(DIContainer())`
   in `setUpAll`; both ServiceLocator classes share one `GetIt.instance`.
+  `BaseUnitTest.setupUnitWithProductionLocator()` does both and works inside a GROUP-scoped
+  `setUp` in a widget suite that otherwise never touches DI — pair it with
+  `TestServiceLocator.reset()` + `prod.ServiceLocator.reset()` in that group's `tearDown` so
+  no sibling group changes behaviour. Registering the household stack that way is what makes
+  the presence row (`roster.length > 1`) and `showWhoIsHomeSheet`'s self-built
+  `WhoIsEatingViewModel` reachable from a widget test; that VM resolves `CookEventRepository`
+  in its CONSTRUCTOR even on the presence path, where it never calls it, and
+  `test_service_locator.dart` does not register one (BUT-1982, 2026-09-02).
+- **A widget test driving a real screen can be blocked by an unrelated RENDER assertion in a
+  sibling branch of that same screen, and the right move is to satisfy the tested condition
+  through a branch that does not reach it — then FILE the render defect.** BUT-1982's notice
+  is gated on `hadMenu`, a WEEK-level condition, so putting the fixture's dish in `ovrigt`
+  instead of lunch/middag keeps `hasEntries` true and avoids the filled-slot cell whose
+  `Expanded` asserts under a presence row. Weakening the fixture to dodge a crash is only
+  legitimate when the dodged branch is provably not what the test claims to prove.
+- **`git stash` cannot attribute a failure when the worktree carries ANOTHER session's
+  uncommitted work** — stashing your file reverts theirs too, so a suite that goes green
+  reads as "I broke it" when the real cause is their staged-nowhere change. Remove your own
+  additions IN PLACE (script it, assert each anchor is unique, keep the removed text in the
+  scratchpad) and re-run; if it still fails, it is not yours. Same reason a probe RESTORE
+  here cannot use `git show :<path>`: the index is HEAD and the fix under test is worktree-only
+  — back up to the scratchpad and `diff` the restore (BUT-1972/1982, 2026-09-02).
 - `MockUnifiedRecipeService.setRecipeState()` defaults `isInitialized: false` — pass it.
 - Debounced VM: `fakeAsync` + `async.elapse(300ms)`; `executeDebounced` fires 3
   notifications. `test/views/` is journey-test territory (owned by `e2e-test-specialist`).
@@ -473,7 +495,48 @@ Codecov: 60% project / 70% new patches / 2% drop tolerance — floors, decided 5
 - **Open a review by grepping each NEW TOKEN into a token→files table** (~30s). Zero files
   IS the finding; hits only in an extracted class's own suite means the composing line in
   the CALLER's suite is still unproven (BUT-1838: a `copyWith` carry, a DTO write asymmetry,
-  a query filter — three sibling suites untouched). **Hits with a healthy SPREAD can still be
+  a query filter — three sibling suites untouched).
+  **A new GDPR EXPORT SECTION spans several seams and the round's suite lands only on the
+  manager one** — the repository's Firestore PATH, the manager's shape, the bundle
+  WIRING in `data_export_service.dart`, and its `data_minimisation` disclosure line. The manager suite fakes the repository, so the path
+  is invisible to it (BUT-1697's wrong collection matched zero rows and dropped every
+  shopping list), and no manager test sees the bundle map, so the section's whole reason for
+  existing — export ⊇ erasure — is deletable-green (BUT-1732 wrote that warning into
+  `data_export_service_test.dart` as a comment and the next section still shipped without
+  it). Both lanes already exist: `firebase_data_export_repository_*_test.dart` (real repo on
+  `FakeFirebaseFirestore`) and that suite's `should include all required sections`. One
+  end-to-end there — seed the real subcollection plus a DECOY in the neighbour, assert the
+  bundle key — kills both mutants at once. Measured on BUT-1957: repointing the collection
+  left 86/86 green, deleting the bundle entry 40/40 (2026-09-02).
+  **And a new section's failure envelope is pinned only by the file's parameterised `cases`
+  table, never by a hand-written `completion(isA<Map>())`** — that matcher is satisfied by
+  the raw-leak mutant `return {'error': e.toString()}`, i.e. by the exact defect (BUT-1760)
+  the table exists to prevent; measured 39/39 green. Adding the row to the table is the
+  whole repair, and it also grades the section PHRASE, which reaches the bundle as
+  "Could not export &lt;phrase&gt;." — a snake_case key there is a user-visible defect the
+  hand-written test cannot see (BUT-1957, 2026-09-02). **The seam a fix round still misses
+  after the other three are closed is the section's `data_minimisation` sentence** — the
+  Art. 12(1) disclosure that IS the mitigation for whatever the section decided to keep, so
+  it dies with nothing red while the kept third-party data ships on. Every sibling section
+  carrying that key has a presence pin (`content_`/`social_export_manager_test.dart`),
+  because each was added after a round shipped a sentence promising a redaction that was not
+  happening; a section disclosing rather than promising needs the same pin, asserted BESIDE
+  the passthrough test so the disclosure and the disclosed field die together. Settle it by
+  grep, not by probe — the key is additive, so no other assertion can see it (BUT-1957 r2).
+  **That pin then COUPLES the Swedish wording, so grade the DISCLOSURE against the mechanism
+  it describes in the same round.** A `contains('namnet')` freezes the sentence, which is the
+  point — a later correction reddens instead of drifting. The defect beside it is the
+  production comment's HEADLINE clause overclaiming what the mechanism does ("NAME, not first
+  name" above a correct description of a `firstName()` returning the first token of any
+  multi-token name). It errs in the privacy-CONSERVATIVE direction, so nothing under-protects
+  — but it is the sentence a later round quotes to argue a wider keep. Strike the headline,
+  keep the mechanism (BUT-1957 r3, 2026-09-02).
+  **`FakeFirebaseFirestore` honours `.orderBy(f, descending: true)` on a SUBCOLLECTION but
+  RETURNS documents that lack `f`, even as the only document** (measured 2026-09-02); real
+  Firestore drops them from the result entirely. So an ordered export read is testable for
+  ROUTING and ORDER on this lane, and its missing-field hazard — the "erasable but not
+  exportable" row an enumerating cascade still deletes — is invisible in both directions and
+  belongs on the emulator lane or in a note beside the seed. **Hits with a healthy SPREAD can still be
   zero coverage of PERSISTENCE: sort the hits by whether any of them drives the model's
   serializer.** BUT-1971 added three persisted fields (`editTrail`, entry `proposedBy`/
   `votedInBy`) with four suites naming them — a service suite on in-memory `copyWith`, a mock-

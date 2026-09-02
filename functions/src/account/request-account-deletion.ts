@@ -48,6 +48,7 @@ import {
   deleteActivityEvents,
   deleteFeatureRetentionFlags,
   deleteRetentionAnalytics,
+  deleteNotificationEffectiveness,
   deleteWeeklyMenuPlans,
   deletePantryItems,
   deleteFamilyData,
@@ -220,6 +221,13 @@ export async function runAccountDeletionWithDeps(
     ],
     ["notifications", () => deleteNotifications(database, uid)],
     ["notification_analytics", () => deleteNotificationAnalytics(database, uid)],
+    // BUT-1956: `analytics/notifications/effectiveness`. NOT covered by the
+    // line above — that one sweeps TOP-LEVEL `notification_*` collections,
+    // and this is a subcollection under a fixed `analytics/` document.
+    [
+      "notification_effectiveness",
+      () => deleteNotificationEffectiveness(database, uid),
+    ],
     ["realtime_recipes", () => deleteRealtimeRecipes(database, uid)],
     // BUT-1768: `realtime_menus` had no tier entry at all — the sibling
     // collection was cascaded, this one survived every erasure.

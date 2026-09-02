@@ -337,27 +337,102 @@ export async function probeResidualData(
   // collections, so a where("userId","==",uid) probe would silently match zero
   // (the realtime_recipes wrong-field trap). Probe each one directly.
   //
-  // - canonical_rating_events (decision 12): the user's frozen pool events,
-  //   erased in deleteUserSubcollections. A leaf collection — `count()` sees
-  //   everything it can hold.
-  const subProbes = ["canonical_rating_events"] as const;
-  for (const col of subProbes) {
-    try {
-      const snap = await db
-        .collection("users")
-        .doc(uid)
-        .collection(col)
-        .count()
-        .get();
-      const count = snap.data().count ?? 0;
-      if (count > 0) {
-        residual += count;
-        logger.warn(`[deletion-cascade] residual in ${col}: ${count} docs`);
+  // ENUMERATED, not listed (BUT-1957). This was a hand-written include-list
+  // naming one collection, so a subcollection nobody remembered to add was not
+  // reported as residual — it was invisible, and an all-clear was returned with
+  // the rows still on disk. `users/{uid}/notifications` was the second miss
+  // found that way, and a list cannot stop the third. `listCollections()` asks
+  // the database what is actually still there, so a subcollection introduced by
+  // a future feature shows up here on its first deletion instead of never.
+  //
+  // The two exclusions are the ones `deleteUserSubcollections` documents as
+  // belonging to `onUserDeleted` (cleanupContentGuardSubcollections), which
+  // runs after `admin.auth().deleteUser(uid)`. This probe runs BEFORE that, so
+  // without the exclusion every single deletion would report them as residual
+  // and `gdprCompliant` would be false forever, for every user.
+  const TRIGGER_OWNED_SUBCOLLECTIONS = new Set([
+    "notificationCounters",
+    "recentContentHashes",
+  ]);
+  try {
+    const remaining = await db.collection("users").doc(uid).listCollections();
+    for (const ref of remaining) {
+      if (TRIGGER_OWNED_SUBCOLLECTIONS.has(ref.id)) continue;
+      try {
+        // `count()`, not `listDocuments()`. The two answer different
+        // questions: `listDocuments()` is required where a MISSING parent can
+        // still own live children, which is why `unified_shopping_lists` has
+        // its own leg using it. That case is covered there, so this leg
+        // only needs to know whether anything is left.
+        const snap = await ref.count().get();
+        const count = snap.data().count ?? 0;
+        if (count > 0) {
+          residual += count;
+          // Collection id and count only — the rows under `notifications`
+          // carry the push text actually shown to the user, and this log
+          // outlives the account.
+          logger.warn("[deletion-cascade] residual user subcollection", {
+            uid_prefix: uid.slice(0, 6),
+            collection: ref.id,
+            count,
+          });
+        }
+      } catch (err) {
+        residual += 1;
+        logger.error("[deletion-cascade] residual probe failed: subcollection", {
+          uid_prefix: uid.slice(0, 6),
+          collection: ref.id,
+          errCode: (err as { code?: number | string }).code ?? null,
+          errName: err instanceof Error ? err.name : typeof err,
+        });
       }
-    } catch (err) {
-      residual += 1;
-      logger.error(`[deletion-cascade] residual probe failed: ${col}`, { err });
     }
+  } catch (err) {
+    // Fails CLOSED: if we cannot even ask what is left, we do not get to say
+    // the erasure was complete.
+    residual += 1;
+    logger.error("[deletion-cascade] residual probe failed: listCollections", {
+      uid_prefix: uid.slice(0, 6),
+      errCode: (err as { code?: number | string }).code ?? null,
+      errName: err instanceof Error ? err.name : typeof err,
+    });
+  }
+
+  // BUT-1956: `analytics/notifications/effectiveness`, a subcollection under a
+  // FIXED `analytics/` document — neither the top-level loop nor the
+  // `users/{uid}` enumeration above can reach it, so it needs its own leg.
+  //
+  // This leg is not a mirror of `deleteNotificationEffectiveness`. The writer,
+  // `correlateNotificationEffectiveness`, runs daily inside `dailyAnalytics`
+  // and writes these rows from pages it is already holding in memory, so a
+  // cascade that lands mid-run can have a row written back AFTER the deleter
+  // swept. That resurrection is exactly what this leg exists to report.
+  try {
+    const snap = await db
+      .collection("analytics")
+      .doc("notifications")
+      .collection("effectiveness")
+      .where("userId", "==", uid)
+      .count()
+      .get();
+    const count = snap.data().count ?? 0;
+    if (count > 0) {
+      residual += count;
+      logger.warn("[deletion-cascade] residual notification effectiveness", {
+        uid_prefix: uid.slice(0, 6),
+        count,
+      });
+    }
+  } catch (err) {
+    residual += 1;
+    logger.error(
+      "[deletion-cascade] residual probe failed: notification effectiveness",
+      {
+        uid_prefix: uid.slice(0, 6),
+        errCode: (err as { code?: number | string }).code ?? null,
+        errName: err instanceof Error ? err.name : typeof err,
+      },
+    );
   }
 
   // unified_shopping_lists (BUT-1697): the LIVE personal shopping-list path,
@@ -1197,6 +1272,51 @@ export async function deleteRetentionAnalytics(
   if (failed.length > 0) {
     throw new Error(`analytics erasure incomplete: ${failed.join(", ")}`);
   }
+  return true;
+}
+
+/**
+ * BUT-1956: `analytics/notifications/effectiveness/{notificationId}`, written
+ * daily by `analytics/correlate-notifications.ts` with a RAW `userId` in the
+ * document. Nothing erased it and nothing expires it.
+ *
+ * Why nothing reached it. It is a subcollection under a FIXED `analytics/`
+ * document, which makes it structurally invisible to both loops in
+ * `probeResidualData` — one walks top-level collections, the other walks
+ * `users/{uid}/...`. The two neighbouring sweeps look like they should cover it
+ * and do not: `deleteNotificationAnalytics` sweeps the TOP-LEVEL collections
+ * with a `notification_` prefix, and `cleanupNotificationQueuesWithDb` covers
+ * three other top-level ones.
+ *
+ * Same shape as `deleteRetentionAnalytics`, but its own function rather than a
+ * `RETENTION_ANALYTICS_PARENTS` entry: that loop is hardcoded to an `events`
+ * child collection, and this one is `effectiveness`.
+ *
+ * A single-field equality needs no composite index, so `firestore.indexes.json`
+ * is deliberately untouched — an unnecessary `--force` index deploy has already
+ * destroyed live TTL policies in this project once.
+ *
+ * The sibling `analytics/notifications/summary/{date}` is a uid-free daily
+ * aggregate and is deliberately NOT touched: Art. 17 does not reach it, and
+ * nothing recomputes it from these rows, so erasing a departed user here
+ * changes no stored rate.
+ *
+ * As with `deleteRetentionAnalytics`, the load-bearing half is the matching leg
+ * in `probeResidualData`, not this function: `batchDeleteAll` commits
+ * non-strict, so a failed chunk is swallowed and this can return true with rows
+ * left behind.
+ */
+export async function deleteNotificationEffectiveness(
+  db: admin.firestore.Firestore,
+  uid: string,
+): Promise<boolean> {
+  const snap = await db
+    .collection("analytics")
+    .doc("notifications")
+    .collection("effectiveness")
+    .where("userId", "==", uid)
+    .get();
+  await batchDeleteAll(db, snap.docs);
   return true;
 }
 
@@ -2762,12 +2882,15 @@ export async function deleteUserPreferences(
   db: admin.firestore.Firestore,
   uid: string,
 ): Promise<boolean> {
-  await db
-    .collection("users")
-    .doc(uid)
-    .collection("settings")
-    .doc("preferences")
-    .delete();
+  // The whole COLLECTION, not `settings/preferences` by id (BUT-1957).
+  // `probeResidualData` counts collections, so a delete keyed to one document
+  // id leaves any second document under `settings` reported as residual with no
+  // step able to remove it — a `gdprCompliant: false` nobody can clear, plus a
+  // real Art. 17 residual. `firestore.rules` leaves the id unconstrained on an
+  // owner-only create, so a second document is a client write away.
+  // Idempotent, and still deletes `preferences`.
+  const snap = await db.collection("users").doc(uid).collection("settings").get();
+  await batchDeleteAll(db, snap.docs);
   return true;
 }
 
@@ -2801,6 +2924,56 @@ export async function deleteUserSubcollections(
     "category_preferences",
     "list_category_orders",
     "report_throttle",
+    // BUT-1957: the win-back / activity-digest notification rows, written by
+    // `analytics/detect-lapsed-users.ts` and `analytics/send-activity-digest.ts`.
+    // They carry the push text ACTUALLY SHOWN to the user (`message`/`bodyShown`)
+    // plus the win-back A/B assignment, and nothing reached them: deleting the
+    // parent user document does not delete its subcollections, so every row
+    // survived erasure.
+    //
+    // `deleteNotifications` is NOT this. That sweeps the TOP-LEVEL collection
+    // `user_notifications` — a different collection whose name is one word away,
+    // which is the likeliest reason this one went unnoticed for so long.
+    "notifications",
+    // Everything below is here for ONE reason: the probe in
+    // `probeResidualData` ENUMERATES what is left under `users/{uid}` instead
+    // of consulting a list. That makes it broader than any hand-written
+    // deleter, and the direction of a disagreement matters — a row the probe
+    // reports and nothing erases is a `gdprCompliant: false` that no code path
+    // can ever clear. So the deleter must be a superset of the probe, which is
+    // the rule `deleteWeeklyMenuPlans` already states about its own four
+    // handles. A `.get()` on a collection that does not exist costs one empty
+    // read, on a path that runs once per account, ever.
+    //
+    // WRITTEN TODAY, with no dedicated tier step of their own. Found by the
+    // `subs` audit BUT-1957 asked for — the first pass of that audit scanned
+    // for the literal `.collection("users").doc(x).collection("y")` chain and
+    // therefore saw only the server; every Dart writer builds the path from a
+    // `FirestoreCollections` constant and was invisible to it. Resolving the
+    // constants is what turned these up.
+    "onboarding", // onboarding_progress_service.dart
+    "ingredients", // firebase_user_ingredient_repository.dart
+    "rate_limits", // firebase_activity_event_repository.dart, and others
+    "counters", // base_shared_content_repository.dart (unread counters)
+    // BUT-612 attribution (channel, campaign, timestamps), written to
+    // `users/{uid}/acquisition/current` by firebase_acquisition_repository.dart.
+    // Found by the `integration-reviewer` gate, NOT by the drift guard, which
+    // could not see it: that repository chains through a file-local `const`
+    // rather than `FirestoreCollections.users` inline. The guard now resolves
+    // local consts too, so the next one of this shape reddens.
+    "acquisition",
+    // NO live writer found in `lib/` or `functions/src`. The first four are
+    // named as `users/{uid}` subcollections by `admin/reset-user-data.ts`;
+    // `fcm_tokens` is not, and comes from the Art. 15 export, which READS it
+    // while nothing writes it — its own defect, BUT-1990. All five are swept
+    // because an account predating their removal can still hold rows, and by
+    // the superset rule above such a row would otherwise be permanently
+    // residual.
+    "category_memberships",
+    "connection_tests",
+    "unified_recipes",
+    "conversations",
+    "fcm_tokens",
     // Pooled ratings (decision 12): the user's frozen pool events. Each delete
     // fires the Stage-B trigger (onPooledRatingEventWritten), which recomputes
     // the affected pool's canonical_recipe_stats — so erasing the rater also
@@ -2813,10 +2986,17 @@ export async function deleteUserSubcollections(
     await batchDeleteAll(db, snap.docs);
   }
 
-  // BUT-1390: rate-limit buckets live at the TOP-LEVEL `system_rate_limits`
-  // collection (doc id `${uid}_${operation}`), not a user subcollection — the
-  // former `users/{uid}/rate_limits` entry above deleted nothing. Erase them
-  // explicitly for GDPR completeness via a documentId prefix range:
+  // BUT-1390: THESE rate-limit buckets live at the TOP-LEVEL
+  // `system_rate_limits` collection (doc id `${uid}_${operation}`), so they
+  // need their own sweep.
+  //
+  // This comment used to add that the `users/{uid}/rate_limits` entry above
+  // "deleted nothing". That was true when BUT-1390 was written and is false
+  // now: `firebase_activity_event_repository.dart` writes a bucket there, and
+  // BUT-1957 put the entry back for exactly that reason. The two are separate
+  // collections with separate writers, not one collection that moved.
+  //
+  // Erase the top-level ones via a documentId prefix range:
   //   startAt(`${uid}_`) .. endAt(`${uid}_`)
   // The upper bound's trailing  is a high-codepoint sentinel that is
   // INVISIBLE in most editors/diff viewers — it is load-bearing: WITHOUT it the

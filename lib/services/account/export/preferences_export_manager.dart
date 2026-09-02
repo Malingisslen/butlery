@@ -56,6 +56,83 @@ class PreferencesExportManager {
     }
   }
 
+  /// BUT-1957: the `users/{userId}/notifications` subcollection.
+  ///
+  /// A SEPARATE section from [exportNotifications], which reads the top-level
+  /// `user_notifications`. The two collections are one word apart in name and
+  /// were never the same rows: these are written by the win-back job
+  /// (`detect-lapsed-users.ts`) and the weekly activity digest
+  /// (`send-activity-digest.ts`), and until BUT-1957 nothing erased them and
+  /// nothing exported them either.
+  ///
+  /// Fields are passed through rather than projected.
+  ///
+  /// This comment first said no other person appears in these rows. That is
+  /// FALSE, and the `firebase-backend-security` gate measured it: the win-back
+  /// copy resolver's highest-priority signal builds
+  /// `"<namn> delade ett recept med dig"` from another user's
+  /// `sharedByDisplayName` (`functions/src/analytics/winback-context.ts`,
+  /// `contextKey == 'ctx_friend_share'`), and that text is stored verbatim in
+  /// `message` and `bodyShown`. `firstName()` splits on the first whitespace,
+  /// so "Anna Andersson" ships as "Anna" — but it falls back to the WHOLE
+  /// trimmed name when there is none, so a single-token display name is
+  /// exported in full.
+  /// The digest rows are clean — counts of the requester's OWN activity
+  /// (a comment they authored may sit on someone else's recipe) and nothing
+  /// else.
+  ///
+  /// The name is KEPT. It sits inside a push notification the
+  /// requester already received and read on their own device, so the export
+  /// discloses nothing they have not already been shown, and redacting it would
+  /// hand them a falsified copy of their own record. Reasoned here on its own
+  /// facts — NOT carried over from the conversations decision, which governs a
+  /// different collection; `.claude/rules/accepted-deviations.md` records that
+  /// arguing across collections by analogy is the error it exists to document.
+  /// Chosen conservatively without asking Malin; STRIPPING it is hers to decide.
+  Future<Map<String, dynamic>> exportDeliveredNotifications(
+    String userId,
+  ) async {
+    try {
+      final limit = ExportPaginationHelper.getLimitForType(
+        'delivered_notifications',
+      );
+      final page = await ExportPaginationHelper.fetchCapped(
+        type: 'delivered_notifications',
+        fetch: (max) =>
+            _exports.exportDeliveredNotifications(userId, maxDocuments: max),
+      );
+
+      final rows = <Map<String, dynamic>>[];
+      for (final entry in page.items) {
+        final data = entry['data'] as Map<String, dynamic>;
+        // Spread FIRST, id LAST: a document field literally named
+        // `notification_id` would otherwise overwrite the document id, and this
+        // section passes fields through unprojected, so it cannot rule that out.
+        rows.add({
+          ...sanitizeForJson(data) as Map<String, dynamic>,
+          'notification_id': entry['id'],
+        });
+      }
+
+      return {
+        'total_count': rows.length,
+        'notifications': rows,
+        if (page.truncated) 'truncated': true,
+        if (page.truncated)
+          'note': 'Limited to the $limit most recent notifications',
+        'data_minimisation':
+            'Notistexten återges ordagrant som den visades. En påminnelse om '
+            'ett delat recept innehåller därför namnet på den som delade.',
+      };
+    } catch (e) {
+      return _failed(
+        'delivered notifications',
+        'delivered-notifications-export-failed',
+        e,
+      );
+    }
+  }
+
   /// Export user notifications
   /// Includes all notifications received by the user for transparency.
   Future<Map<String, dynamic>> exportNotifications(String userId) async {

@@ -46,6 +46,12 @@ abstract final class FirestoreCollections {
   static const String familyRatings = 'family_ratings';
   static const String menuTemplates = 'menu_templates';
   static const String userNotifications = 'user_notifications';
+
+  /// The `users/{uid}/notifications` SUBCOLLECTION (BUT-1957) — not
+  /// [userNotifications], which is the top-level collection one word away.
+  /// Written only by the Admin SDK (win-back job, activity digest); read by the
+  /// GDPR export and erased by the account-deletion cascade.
+  static const String userDeliveredNotifications = 'notifications';
   static const String userNotificationPreferences =
       'user_notification_preferences';
   static const String userFcmTokens = 'user_fcm_tokens';

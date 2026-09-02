@@ -4265,3 +4265,55 @@ IS reachable without the array. Narrow (that field names one person and is overw
 next save) and the sentence's operative point — Firestore cannot query inside an array of maps
 — is true. If it is ever touched, the fix is a strike of the "reachable by nothing" clause, not
 a reworded quantifier.
+
+## 2026-09-02 — BUT-1957: `users/{uid}/notifications` (delivered notifications) gets its first block
+
+**Diff.** One new block beside the other `users/{userId}` subcollection blocks:
+`match /users/{userId}/notifications/{notificationId}` with
+`allow read: if isAuthenticated() && request.auth.uid == userId;` and `allow write: if false;`.
+Written only by the Admin SDK (`analytics/detect-lapsed-users.ts` win-back rows,
+`analytics/send-activity-digest.ts` weekly digest rows). The block exists because the Art. 15
+export gained `FirebaseDataExportRepository.exportDeliveredNotifications`, whose production
+read is `.orderBy('createdAt', descending: true)` then `_queryList`'s `.limit(500)` — an
+ORDERED LIST query, so a `get()`-only proof would not have covered it.
+
+**New suite.** `functions/src/__tests__/delivered-notifications-rules.test.ts`, 13 tests
+(DN1-DN13), registered in `package.json` (`test:rules:delivered-notifications` + the
+`test:rules:all` chain) and in BOTH `paths:` blocks of `.github/workflows/firestore-rules.yml`;
+`node scripts/check-test-registration.js` reports OK, 43 rules suites.
+Reads: DN1 owner ordered list (production shape, with a non-empty premise check), DN2 owner
+unordered list, DN3 owner `get()`, DN4 stranger list DENY, DN5 stranger `get()` DENY, DN6 the
+same stranger listing their OWN path (fail-closed control, one variable), DN7 unauth deny of
+both shapes. Writes: DN8 owner create DENY (per-run doc id, asserted absent first so it lands
+on CREATE), DN9 owner update DENY (`read: true` and a `message` rewrite), DN10 owner delete
+DENY, DN11 stranger create/update/delete DENY, DN12 unauth create DENY, DN13 the Admin SDK
+performing the same create/update/delete (fail-closed control for the whole write cluster).
+
+**Run.** 13/13 passed against the real ruleset.
+
+**Mutation probes** (env hooks `PROBE_PROJECT_ID` / `PROBE_RULES_PATH`; mutants generated into
+the scratchpad by a node script that slices on `indexOf('match /users/{userId}/notifications/')`
+and asserts the in-slice needle count is 1 — whole-file counts were 31 for
+`&& request.auth.uid == userId` and 10 for `allow write: if false;`, so the slice was
+load-bearing for both):
+- Read mutant (`allow read: if isAuthenticated();`) → 11/13, killing exactly DN4 and DN5
+  ("Expected request to fail, but it succeeded"). DN7 correctly survives — the mutant keeps
+  `isAuthenticated()`.
+- Write mutant (`allow write: if isAuthenticated() && request.auth.uid == userId;`) → 10/13,
+  killing exactly DN8, DN9, DN10; DN11/DN12 stay green, which is what proves the owner-write
+  closure is the thing being pinned rather than authentication.
+`firestore.rules` unchanged by the probes (`git diff --stat` still the 26-line block only).
+
+**Checked and clean, not merely assumed.** No overlapping `match` grants anything on this path:
+the only wildcards are `/{path=**}/<name>/...` on unrelated collection names plus the final
+`match /{document=**} { allow read, write: if false; }`. And `grep -rn` over `lib/` for
+`FirestoreCollections.userDeliveredNotifications` / `collection('notifications')` finds only the
+export's read, so closing writes breaks no shipped client path.
+
+**Addendum, same day (BUT-1957).** DN14 was added after the probes above: the block is a
+SPECIFIC path, so it authorizes no `collectionGroup('notifications')` query — the OWNER is
+refused one over their own rows, which pins that the path-scoped ordered query is the only
+shape this rule can serve (a future export refactor to a collection group would fail for
+every user). Suite is 14 tests; both mutants re-measured against it — read mutant 12/14
+(DN4, DN5), write mutant 11/14 (DN8, DN9, DN10). The kill sets quoted in the entry above were
+measured on the 13-test suite.

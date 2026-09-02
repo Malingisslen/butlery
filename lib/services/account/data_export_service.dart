@@ -259,6 +259,12 @@ class DataExportService extends BaseService {
       'consent_records': _complianceManager.exportConsentRecords(userId),
       'preferences': _preferencesManager.exportPreferences(userId),
       'notifications': _preferencesManager.exportNotifications(userId),
+      // BUT-1957: `users/{uid}/notifications`, the subcollection. NOT the same
+      // rows as `notifications` above, which is the top-level
+      // `user_notifications`. Added in the commit that first made the cascade
+      // erase them — the export must reach anything the erasure does.
+      'delivered_notifications': _preferencesManager
+          .exportDeliveredNotifications(userId),
       'notification_preferences': _preferencesManager
           .exportNotificationPreferences(userId),
       'blocks': _socialManager.exportBlocks(userId),

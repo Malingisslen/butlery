@@ -17121,3 +17121,310 @@ Knowledge-file edits made in this pass:
 Measured by the caller on these bytes and not re-run here: `npm run build`
 clean; 32/32 chat-group-callables; 138/138 cascade unit; 71/71 cascade
 integration; 39/39 rules.
+
+### 2026-09-02 — BUT-1957 / BUT-1956 test authoring: the enumerating residual probe [gdpr-cascade][test-seams]
+
+Task: author tests for two Art. 17 fixes already in the worktree —
+`users/{uid}/notifications` added to `deleteUserSubcollections`' `subs` and the
+`probeResidualData` subcollection leg switched from a hand-written include-list to
+`db.collection("users").doc(uid).listCollections()` (BUT-1957), plus a new
+`deleteNotificationEffectiveness` deleter and probe leg for
+`analytics/notifications/effectiveness` (BUT-1956).
+
+**The change was RED on arrival, and that was the first finding.** Neither
+hand-rolled fake models `listCollections()`. The probe's outer catch fails CLOSED
+(`residual += 1`), so every CLEAN fixture reported `residual_data_detected`:
+6 failures in `account-deletion-cascade.test.ts` (132/138) and 1 in
+`request-account-deletion.test.ts` (3/4). Measured before any test was written.
+Fixed in the fakes, not in production: `listCollections()` derived from stored
+deeper paths (so a MISSING parent with live children still lists, as the real SDK
+does), plus a `documentId()` prefix-range chain (`orderBy/startAt/endAt`) that
+`deleteUserSubcollections`' `system_rate_limits` sweep needs and the top-level
+matcher could not serve. Both suites green afterwards: 179/179 and 4/4.
+
+Seven scenarios added, all to `account-deletion-cascade.test.ts`:
+notifications erased + other-user kept; effectiveness erased + other-user kept;
+the enumeration reports a leftover row AND a subcollection no deleter has ever
+heard of; the two exclusions are NOT residual (combined and one at a time); the
+effectiveness probe leg dirty+clean; the RESURRECTION case (deleter runs, store
+is clean, a row is written back, the probe still fails the run); and a
+source-DERIVED drift guard.
+
+Mutation probes, each with a unique-anchor assertion and sha-verified restore:
+- M1 drop `"notifications"` from `subs` → 176/179, "every users/{uid}/notifications
+  row is erased" red (+2 drift-guard reds).
+- M2 drop `"onboarding"` from `subs` → 178/179, drift guard alone red.
+- M3 remove the whole `listCollections` leg (const + try/catch) → 175/179; the two
+  enumeration cases red. NOTE: the narrower mutant that only neutralised the
+  `continue` did NOT compile — `TRIGGER_OWNED_SUBCOLLECTIONS` goes unused, TS6133,
+  and ts-node aborts with an exit code that reads exactly like a red assertion.
+- M4 exclusion inert → 176/179, all three exclusion cases red.
+- M5/M5b effectiveness probe leg inert / removed → 177/179, the leg case AND the
+  resurrection case red.
+- M6 `deleteNotificationEffectiveness` sweeps nothing → 177/179.
+- M7 drop the tier-1 registration + its import → `request-account-deletion.test.ts`
+  3/4, the expected-steps test red. (Registration-only mutant: TS6133 again.)
+
+**Criterion 7 as briefed was wrong about its own universe** and is recorded here
+because the correction matters: "every id returned by `listCollections()` is in
+`subs` ∪ the two exclusions" is false — `recipes`, `menus`, `settings`, `consent`,
+`pantry`, `personal_tags`, `personal_tag_groups` are legitimate `users/{uid}`
+subcollections erased by their own tier steps. Implemented as a third bucket,
+`COVERED_BY_OWN_STEP`, every entry of which is EXERCISED (seed, run the named
+export, assert the row is gone and another user's is not), so the map cannot be
+filled in with a lie. The universe is derived per run by regexing
+`.collection("users").doc(..).collection("X")` across `functions/src` and `lib`;
+`subs` and `TRIGGER_OWNED_SUBCOLLECTIONS` are PARSED out of the cascade source.
+First parse attempt used `indexOf("];")`, which ran past `new Set([...])`'s `])`
+and returned 50+ names scraped from the rest of the module while still reporting
+a green "uncovered" check — replaced with bracket matching.
+
+Scan coverage: the chain regex resolved only literals at first, which reads the
+server and almost none of the client, since Dart writers go through repository
+helpers and collection-name constants. **CORRECTED the same day, by the
+`integration-reviewer` gate.** The two counts originally recorded here ("11 in
+`functions/src`, exactly ONE in `lib`") were both wrong, and the `lib` one was
+refuted by the very commit that wrote it. The scan now resolves shared constants
+AND file-local consts; no count is recorded, deliberately.
+
+**Open finding, CLOSED the same day and recorded as the miss it was.** The
+paragraph here originally said `admin/reset-user-data.ts` names six
+subcollections with no deleter and that "no live writer was found for any
+either". Wrong: `ingredients` and `counters` are written live, as are
+`rate_limits` and `acquisition`, which this scan could not see at all. All of
+them are now in `subs`. The lesson is the shape, not the list: an enumerating
+probe outruns a list-consulting deleter, and every gap between them is a
+`gdprCompliant: false` no code path can clear. Each was found by a REVIEWER, not
+by the guard — which is why the guard was widened twice in the same change.
+
+Production files were NOT modified. `git diff --stat` on `functions/src/account/`
+matches the pre-probe bytes and no `__never__`/`__nobody__`/`__nothing__` marker
+survives in either file. `npm run build` clean;
+`node scripts/check-test-registration.js` OK (no new file, so no new `test:*`).
+
+Knowledge-file edits in this pass:
+- ADDED: the enumerating-probe principle (broader than the deleter by
+  construction; derived drift test; bracket-matched literal parse; exclusions
+  load-bearing both ways; fakes need `listCollections()` or every clean fixture
+  reddens).
+- ADDED to the cascade-purge bullet: `admin/reset-user-data.ts`'s `subcollections`
+  inventory is a reader's note, not enforcement, and names collections no deleter
+  reaches.
+- ADDED to the scheduled-job bullet: `analytics/notifications/effectiveness` as
+  the worked example of a subcollection under a FIXED document, invisible to both
+  structural loops.
+- SHARPENED IN PLACE (no principle dropped): the concurrency/queue-time bullet,
+  the deploy-manifest and own-region bullets, idempotency rule 11, the retry-cap
+  bullet, the rules:all registration bullet, the wrapper/gate and fake-limit
+  vacuity bullets, `commitInChunks`, the serial-update loop, the identity-field
+  cross-check, the orphan-parent bullet, the empty-roster gate, the client-chosen
+  doc-id bullet, the anomaly-gate bullet, the TTL-claim bullet, the post-deploy
+  smoke bullet, the conversation-id logging bullet and the staged-copy bullet.
+  Net effect on the file: +371 characters against HEAD. Eleven compressions did
+  not fully pay for one principle; recorded honestly rather than shaved further.
+
+### 2026-09-02 — BUT-1957/BUT-1956 commit-gate review of the enumerating probe [review][gdpr][cascade]
+
+Reviewed the STAGED diff only (index blob == worktree blob for all four files,
+checked with `git hash-object` vs `git ls-files -s`). Ran the suites myself:
+`account-deletion-cascade.test.ts` 200/200, `request-account-deletion.test.ts`
+4/4, and the whole `npm test` 90/90 suites green in 247s. `firestore.indexes.json`
+is untouched (`git diff --cached --name-only` has no match), as the panel required.
+
+**The one blocking finding: `users/{uid}/settings`.** `deleteUserPreferences`
+deletes exactly ONE DOCUMENT BY ID — `settings/preferences` — while the new
+`listCollections()` leg counts the whole `settings` COLLECTION. `firestore.rules`
+declares `match /settings/{settingId}` with no constraint on the id and an
+owner-only `allow create`, so any other document under `settings` is both an
+un-erased Art. 17 residual and a `gdprCompliant: false` no code path can clear.
+Reachable only by the account's own hand-rolled client (the sole live writer is
+`FirebaseUserRepository._settingsDoc`, hardcoded to `preferences`; the server's
+`verify-signup-age.ts` writes the same doc via a `db.doc("users/${uid}/settings/preferences")`
+string path). The diff KNOWS: the test's `COVERED_BY_OWN_STEP` comment states it
+verbatim — but a test comment is not a fix and not an accepted deviation. Remedy
+is a four-line collection sweep, which also makes the existing assertion
+("deleteUserPreferences really erases users/{uid}/settings") true as written.
+
+**How I audited `subs` independently**, since the author's first pass used a
+literal-only scan and missed every Dart writer: (a) a Python scan of `functions/src`
+for the `.collection("users").doc(..).collection(X)` chain; (b) the same over `lib`
+with `FirestoreCollections.*` constants resolved; (c) `UserScopedFirebaseRepository`
+mixers and their `collectionName` (this is the shape a chain regex CANNOT see —
+`FirebaseRecipeRepository`, `FirebaseShoppingRepository`, `FirebaseMessagingRepository`,
+the two personal-tag repos; `FirebaseCookEventRepository` mentions the mixin only in
+a comment saying it deliberately does NOT use it, so `recipe_cook_events` is a false
+positive, not a gap); (d) `db.doc("users/${uid}/X/y")` STRING paths, which turned up
+`conversation_memberships`, `friends` and `settings` and which the drift test's chain
+regex misses entirely; (e) every `match` block nested under `/users/{userId}` in
+`firestore.rules`, which is the authority on what a CLIENT can create. That set is
+recipes, unified_shopping_lists, ingredients, personal_tags, personal_tag_groups,
+friends, friend_categories, conversations, rate_limits, counters,
+conversation_memberships, settings, pantry, category_preferences,
+list_category_orders — all covered except `settings`.
+
+Two false sentences, both to be STRUCK rather than reworded:
+- In `subs`: "NO live writer found … but named as `users/{uid}` subcollections by
+  `admin/reset-user-data.ts`" ranges over five names. Four are in that file's
+  `users` → `subcollections` list; `fcm_tokens` is NOT — what the file holds is the
+  TOP-LEVEL `{ name: "user_fcm_tokens" }` entry. Measured.
+- In the `listCollections()` leg: "every subcollection under a user document is a
+  leaf here" — `unified_shopping_lists` and the legacy `shopping_lists` each own an
+  `items` subcollection, and the same sentence's next clause names one of them.
+
+Non-findings I checked and cleared: the exclusion test is BEFORE `ref.count()`
+(right — it saves the read and avoids the residual); both the per-collection catch
+and the outer catch fail CLOSED with `residual += 1`; the probe runs after
+`deleteUserProfile`, and `listCollections()` on a missing parent is exactly the
+Admin-SDK call that still answers; the new log lines carry `uid_prefix`, `ref.id`
+and a count only — no notification body, no raw uid; the resurrection window is
+pinned by `scenario_effectivenessRowWrittenBackAfterTheSweep` rather than by the
+probe mirroring the deleter; the `users/{uid}` legs are PATH-scoped, and the only
+`where("userId","==",uid)` added is on `analytics/notifications/effectiveness`,
+whose writer does set that field; cost is ~10 extra empty `.get()`s plus one
+`count()` per surviving subcollection, once per account, ever; every new write is a
+delete, so a re-run is a no-op.
+
+Verdict: fail (1 blocking).
+
+Knowledge-file edits in this pass (net +1 character against the staged copy —
+27843 vs 27842):
+- ADDED to the enumerating-probe principle: resolve collection CONSTANTS and scan
+  `db.doc("users/${uid}/X/y")` string paths; and **a bucket entry whose deleter
+  removes ONE DOC BY ID is not a deleter for the COLLECTION the probe counts** —
+  read the rule's id wildcard, because the drift test's own exercise passes on the
+  seeded id and hides it.
+- ADDED to the scheduled-job bullet: a job flushing pages it already holds IN MEMORY
+  can write a row back AFTER the sweep, so pin the leg with a RESURRECTION scenario.
+- ADDED to the orphan-parent bullet: a `count()` reports a missing parent's live
+  children as ZERO.
+- SUPERSEDED IN PLACE, retired here verbatim: "`admin/reset-user-data.ts`'s
+  `subcollections` inventory is the nearest written shape of a user document — a
+  READER'S note, not enforcement, and it names collections no cascade deleter
+  reaches." The tail went stale the moment BUT-1957 put those names into `subs`, and
+  the replacement records the trap that actually bites: its `COLLECTIONS_TO_DELETE`
+  also holds TOP-LEVEL names, so check WHICH list a name sits in before citing it.
+- RETIRED: "Pure `users/{uid}/*` subcollections erase via a generic uid-scoped
+  sweep. Test triple: own-erased + other-kept + `failedCollections` empty." Wholly
+  subsumed by the enumerating-probe principle above.
+- COMPRESSED (no principle dropped): the concurrency, maxInstances, rules:all,
+  `commitInChunks`, serial-update, shared-collection scrub, Admin-SDK-escape-hatch,
+  query-snapshot, empty-roster-gate, anomaly-gate, TTL-claim, Cloud-Run-count,
+  workflow-`if:` and staged-copy bullets, and idempotency rule 12.
+
+### 2026-09-02 — BUT-1957 round 2: settings fix verified; coverage gate blind to the new suite [gdpr][ci][test-wiring]
+
+Re-review of the staged BUT-1957 diff after round 1 returned `fail (1 blocking)`.
+
+Verified fixed. `deleteUserPreferences` now `.get()`s the whole
+`users/{uid}/settings` collection and `batchDeleteAll`s it. `firestore.rules:566`
+confirms `match /settings/{settingId}` with an owner-only create and no id
+constraint, so the comment's justification is accurate.
+`scenario_settingsIsErasedAsACollectionNotOneDocument` seeds `preferences` +
+`somethingElse` + another user's row and pins all three.
+
+Re-ran the audit for "any `users/{uid}` path the enumerating probe reports and no
+step removes". Answer: NO. Passes used, beyond the in-repo drift guard:
+(a) `firestore.rules` nested `match` blocks under `users/{userId}` — 21 collections
+(recipes, unified_shopping_lists+items, ingredients, personal_tags,
+personal_tag_groups, friends, friend_categories, conversations, rate_limits,
+counters, conversation_memberships, settings, pantry, category_preferences,
+list_category_orders, consent, acquisition, onboarding, notifications,
+report_throttle, canonical_rating_events) — every one lands in `subs`,
+`COVERED_BY_OWN_STEP` or `TRIGGER_OWNED_SUBCOLLECTIONS`;
+(b) Dart `'users/...'` string paths — all Cloud STORAGE (`comment_images`,
+`heirloom`, upload folders), not Firestore, so out of the probe's reach.
+The `fcm_tokens` provenance comment checks out: `admin/reset-user-data.ts`'s
+`users` entry names `category_memberships`, `connection_tests`, `unified_recipes`,
+`conversations` and NOT `fcm_tokens`. `cleanupNotificationQueuesWithDb`'s "three
+other top-level ones" measured = 3 (scheduled_notifications,
+notification_send_events, notification_opened_events).
+
+Suites re-run by me, all reproducing the reported numbers:
+`account-deletion-cascade.test.ts` 204/204, `request-account-deletion.test.ts`
+4/4, `npm test` 90/90 suites (217s). `npm run build` clean.
+
+NEW BLOCKING FINDING (round 2), test-wiring not GDPR.
+`delivered-notifications-rules.test.ts:46` spells its id
+`const PROJECT_ID = process.env.PROBE_PROJECT_ID ?? "butlery-delivered-notifications-test"`
+and passes `projectId: PROJECT_ID` at line 96. Ran the REAL regexes out of
+`functions/scripts/rules-coverage-report.js:487-491` over the file: `constMatch`
+is `null` (the `\s*` after `=` cannot reach a quote, and `\bPROJECT_ID` finds no
+word boundary inside `PROBE_PROJECT_ID`), and the literal `projectId:` matcher
+returns `[]`. `discoverProjectIds()` yields 29 ids, none of them this suite's.
+The commit ADDS `match /users/{userId}/notifications/{notificationId}`
+(firestore.rules:2727-2730) whose `allow read` is conditional, so it is not a
+constant deny and the workflow's "new-block gate" requires it to be exercised.
+Grepped every other `*rules*.ts`: this suite is the only exerciser. So the gate
+fetches coverage for 29 projects, never sees the block evaluated, and
+`process.exit(1)` — CI red on push, on a commit whose tests all pass locally.
+Remedy: bare-literal const, probe override moved to the `projectId:` call site.
+
+SECOND BLOCKING FINDING: a comment written in THIS commit asserts the defect this
+commit fixes is still live. `account-deletion-cascade.test.ts`, the
+`COVERED_BY_OWN_STEP` `settings` entry: "`deleteUserPreferences` deletes the
+single document `settings/preferences` by id, not the collection — so the seeded
+id is load-bearing, and any OTHER document under `settings` would be reported
+residual by the probe with no step to remove it." Present tense, and
+`git show HEAD:` confirms the sentence does not predate this commit — it was
+authored in the fix. The new scenario's own docstring 1700 lines earlier says
+"used to", correctly. Struck, not reworded.
+
+LOW: `account-deletion-cascade.ts:366` says the `unified_shopping_lists`
+`listDocuments()` leg is "above" the `listCollections()` block; it is below
+(block 357-399, leg 447-465). Positional distance in a comment — strike the word.
+
+### 2026-09-02 — BUT-1957 round 3: coverage gate verified, not inferred [rules-coverage][review]
+
+Round-3 pass over the staged BUT-1957 diff (`functions/src/account/account-deletion-cascade.ts`,
+`request-account-deletion.ts`, the two `__tests__` suites, `functions/package.json`,
+`.github/workflows/firestore-rules.yml`, `firestore.rules`). Index blobs verified equal to the
+worktree with `git hash-object` vs `git ls-files -s` for every file in scope.
+
+Round-2 blocking 1 (the new rules suite was invisible to `rules-coverage-report.js`) is fixed
+as prescribed: `const PROJECT_ID = "butlery-delivered-notifications-test";` as a bare literal,
+probe override moved to `projectId: process.env.PROBE_PROJECT_ID ?? PROJECT_ID` at the
+`initializeTestEnvironment` call site. Discovery re-run in node over `src/__tests__`: 30 ids,
+target present.
+
+MEASURED end-to-end rather than reasoned about, which is the new principle: emulator already up
+on 127.0.0.1:8080, `npm run test:rules:delivered-notifications` → 14/14, then
+`node scripts/rules-coverage-report.js --out <tmp> --base HEAD` → exit 0,
+`coverage-summary.json` = totalBlocks 112, newBlocks 1, newUntestedBlocks 0, and
+`butlery-delivered-notifications-test` in `projects.fetched`. The only `notifications`-shaped
+entry left in `untestedBlockPaths` is the pre-existing top-level `user_notifications` block, a
+different collection.
+
+Round-2 blocking 2 (the `COVERED_BY_OWN_STEP` settings comment) verified struck — line reads
+`settings: ["deleteUserPreferences", "preferences"],` bare, not reworded. Round-2 Low ("its own
+leg above") verified: `above` struck, and the claim survives — the `unified_shopping_lists`
+`listDocuments()` leg sits BELOW the sentence in the file.
+
+Control bytes: swept both the worktree copies and the INDEX blobs (`git show :<path>`) of every
+staged file for `[\x00-\x08\x0b\x0c\x0e-\x1f]` — clean. The `` sentinel in the
+`system_rate_limits` prefix range is outside that class and is pre-existing.
+
+Fresh claims in the two repaired comments, each checked against the code:
+- `\bPROJECT_ID\s*=\s*["']` + a literal `projectId:` — both confirmed at
+  `functions/scripts/rules-coverage-report.js:487-491`; an expression after `=` matches neither,
+  and `PROBE_PROJECT_ID` has no word boundary before `PROJECT_ID` (`_` is a word char).
+- "the coverage gate exits 1 on a new block no discovered project exercises" — `process.exit(1)`
+  at line 789 behind `gate.failures.length > 0`; `classifyBlockBody` types the new block
+  `conditional`, so it is not exempt.
+- The two `TRIGGER_OWNED_SUBCOLLECTIONS` exclusions match `on-user-deleted.ts:336-337`.
+- "No client writer exists today" — `grep userDeliveredNotifications lib/` finds the constant,
+  the export enum and the export's read only; the literal `collection("notifications")` appears
+  only in `analytics/detect-lapsed-users.ts` and `analytics/send-activity-digest.ts`.
+
+Re-run of the requested suites, all reproducing the author's numbers: cascade 204/204,
+`request-account-deletion` 4/4, `npm test` 90/90 (190s), `npx tsc --noEmit` clean,
+`check-test-registration.js` OK (135 files, 43 rules suites, 4 accepted-debt warnings).
+
+Verdict: pass, 0 blocking.
+
+RETIRED from the knowledge file in this edit, verbatim (budget is over; deploy-log forensics is
+out of this agent's scope, which never deploys):
+- "Count `Could not create or update Cloud Run service <name>` LINES, never the CLI's closing
+  `Failed to update function` summary — it undercounts (52 vs 2)."
+Also compressed in place: "a block with any conditional `allow` is not a constant deny and must
+be exercised" → "any conditional `allow` must be exercised", and "Miss one and the suite guards
+nothing in CI." dropped in favour of the VERIFY instruction that replaces it.

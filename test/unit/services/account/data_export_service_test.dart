@@ -8,6 +8,7 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart' show UserMetadata;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:butlery/services/account/data_export_service.dart';
 import 'package:butlery/services/account/export/compliance_export_manager.dart';
@@ -551,6 +552,66 @@ void main() {
         expect(() => json.decode(jsonString), returnsNormally);
       });
 
+      // BUT-1957. The manager-layer suite proves which repository METHOD is
+      // called; which Firestore COLLECTION that method reads is decided a layer
+      // down and was pinned by nothing — repointing
+      // `.collection(FirestoreCollections.userDeliveredNotifications)` at
+      // `user_notifications` or `notification_history` left the whole repo
+      // green. That is the BUT-1697 bug class: a wrong collection name matches
+      // zero documents and silently empties a section of the export.
+      //
+      // This runs the REAL repository over the fake Firestore, and seeds both
+      // sources with rows that disagree, so a read of the wrong one fails
+      // rather than passing on its neighbour's data.
+      test('delivered_notifications reads the subcollection, not the '
+          'top-level user_notifications', () async {
+        await fakeFirestore
+            .collection('users')
+            .doc(testUserId)
+            .collection('notifications')
+            .doc('sub-1')
+            .set({
+              'type': 'win_back',
+              'message': 'Vi saknar dig',
+              'bodyShown': 'Vi saknar dig',
+              // Load-bearing, and this lane CANNOT prove why: the production
+              // read is ordered by `createdAt`, and real Firestore drops a
+              // document that lacks the orderBy field. `fake_cloud_firestore`
+              // does not — measured: a row without `createdAt` comes back, and
+              // comes back FIRST. So a future fixture that omits it passes
+              // green here while production exports nothing. Seed it.
+              'createdAt': Timestamp.fromDate(DateTime(2026, 8, 1)),
+              'read': false,
+            });
+        // The decoy: same user, the OTHER collection.
+        await fakeFirestore.collection('user_notifications').doc('top-1').set({
+          'userId': testUserId,
+          'type': 'social',
+          'title': 'Decoy',
+          'body': 'must not appear in delivered_notifications',
+          'createdAt': Timestamp.fromDate(DateTime(2026, 8, 2)),
+          'isRead': false,
+        });
+
+        final data =
+            json.decode(await service.exportUserData()) as Map<String, dynamic>;
+        final section = data['delivered_notifications'] as Map<String, dynamic>;
+        final rows = (section['notifications'] as List<dynamic>)
+            .cast<Map<String, dynamic>>();
+
+        expect(
+          section.containsKey('error'),
+          isFalse,
+          reason: 'a denied or mis-pathed read must not read as an empty week',
+        );
+        expect(rows.map((r) => r['notification_id']), contains('sub-1'));
+        expect(rows.map((r) => r['notification_id']), isNot(contains('top-1')));
+        // And the neighbour section still gets its own row, so this is a proof
+        // about routing rather than about one of the two being empty.
+        final neighbour = data['notifications'] as Map<String, dynamic>;
+        expect(neighbour['total_count'], 1);
+      });
+
       test('should include export metadata', () async {
         final jsonString = await service.exportUserData();
         final data = json.decode(jsonString) as Map<String, dynamic>;
@@ -597,6 +658,18 @@ void main() {
         // Preferences
         expect(data['preferences'], isNotNull);
         expect(data['notifications'], isNotNull);
+        // BUT-1957, and the same shape the shared-list comment above warns
+        // about: `delivered_notifications` is one map entry in
+        // `_buildExportBundle`, deletable with every other section test still
+        // green, because the manager's own suite drives the method directly and
+        // never sees the bundle. Measured — dropping the entry left the whole
+        // suite passing. Present AND not an error envelope: "we could not give you
+        // this" is a different Art. 15 answer from "there is nothing".
+        expect(data['delivered_notifications'], isNotNull);
+        expect(
+          (data['delivered_notifications'] as Map).containsKey('error'),
+          isFalse,
+        );
         expect(data['notification_preferences'], isNotNull);
         // BUT-1396: erased-but-unexported PII collections + group menus must
         // each have a present (non-null) section so Art. 15 right-of-access is

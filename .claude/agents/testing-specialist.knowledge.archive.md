@@ -31055,3 +31055,274 @@ Verified true, for the record: the export query really does key on `memberPermis
 really exists (`group_weekly_menu_widget.dart:478`), so the Art. 15 keep decision's re-grounding
 holds; nothing in `lib/` reads `maxContributorUserIds`, and the service really does prune to
 `maxEditTrailRows`.
+
+### 2026-09-02 — BUT-1972 / BUT-1982 test authoring (trigger: founder task, tests only, `lib/` frozen)
+
+Production diff under review (worktree only, index = HEAD): `weekly_menu_plan_service.dart`
+(`copyWeek`'s two `fetchForWeek` reads hoisted out of `executeServiceOperation`, wrapper
+deleted), `weekly_menu_plan_viewmodel.dart` (`setSlotPresence`/`setDayPresence`
+`Future<void>` -> `Future<bool>`), `calendar_weekly_menu_widget.dart` (`_onTapPresence` gates
+the success snackbar on that bool).
+
+Tests added:
+- `test/unit/services/menu/weekly_menu_plan_copyweek_presence_test.dart` — three cases:
+  a throwing SOURCE read reaches the caller; a throwing DESTINATION read reaches the caller
+  (source read succeeds, separate seam); a `null` source week still returns 0 and does not
+  throw (the BUT-1961 offline cached-absence control). All three also `verifyNever(save)`.
+- `test/unit/viewmodels/menu/weekly_menu_plan_viewmodel_test.dart` — "a genuine 0 from
+  copyWeek comes back as 0, not null". The throw->null half was NOT duplicated: the file
+  already held `copyWeekToNext returns null and raises error state on failure` with
+  `thenThrow(Exception('boom'))` + `expect(copied, isNull)`, verbatim the requested claim.
+- `test/widget/menu/calendar_weekly_menu_widget_test.dart` — group
+  `BUT-1982 presence notice is gated on the outcome`: a REFUSED presence save shows no
+  notice; the control, a successful save does show it. Full tap -> sheet -> "denna måltid"
+  path through the real screen.
+
+Harness discoveries:
+- The presence row needs `roster.length > 1`, resolved from the production `ServiceLocator`
+  in `_loadRoster`. `showWhoIsHomeSheet` then builds its own `WhoIsEatingViewModel()`, whose
+  constructor resolves `HouseholdRepository`, `HouseholdRosterService`, `PermissionService`
+  AND `CookEventRepository` — the last is not registered by `test_service_locator.dart` and
+  is never called on the presence path, but the constructor throws without it. Group-scoped
+  `BaseUnitTest.setupUnitWithProductionLocator()` + three `TestServiceLocator.registerSingleton`
+  calls, torn down with `TestServiceLocator.reset()` + `prod.ServiceLocator.reset()`.
+- `tester.ensureSemantics()`'s handle cannot be disposed via `addTearDown` — the
+  "SemanticsHandle was active at the end of the test" check runs BEFORE tearDowns. Dispose
+  inline as the last statement.
+
+PRODUCTION DEFECT FOUND (not fixed, `lib/` frozen): a `DayCell` with a roster of more than
+one AND a placed dish in that lunch/middag slot throws
+`RenderFlex children have non-zero flex but incoming height constraints are unbounded`
+(`calendar_cells.dart:498`). `_SingleSlotCell` wraps its cell in a `Column` when the presence
+row renders, which hands the cell unbounded main-axis height, and the entry cell's inner
+`Expanded` asserts. Reproduced with a throwaway two-case probe
+(`_zz_probe_presence_layout_test.dart`, since deleted): roster 2 + placed dish = RED,
+roster 1 + placed dish = GREEN. `calendar_presence_test.dart` misses it because its fixture
+plan is EMPTY. Worked around in the new group by putting the fixture's dish in `ovrigt`
+(`hadMenu` is week-level), and the reason is written into the test.
+
+Mutation probes (each mutant applied in its own Bash call, run twice, graded on run B;
+backup to scratchpad + `diff`-verified restore, because `git show :<path>` is HEAD here and
+would have destroyed the un-staged fix):
+- M1, service reads back inside a swallowing wrapper (`_zzSwallow` returning null on catch):
+  5 green + 2 red, killing exactly `a throwing SOURCE-week read reaches the caller` and
+  `a throwing DESTINATION-week read reaches the caller`. The null-source control and the
+  BUT-1962 save-refusal test stayed green. Both runs identical.
+- M2, `copyWeekToNext` returning `copied == 0 ? null : copied`: 68 green + 1 red, exactly
+  `a genuine 0 from copyWeek comes back as 0, not null`. Both runs identical.
+- M3a, delete `!saved` from `_onTapPresence`'s guard: the REFUSED test reddens
+  (`Found 1 widget with text "närvaron uppdaterad — planerade rätter ligger kvar"` where none
+  was expected), the control stays green. Both runs identical.
+- M3b, `setSlotPresence` reverted to discarding `_executeWrite`'s bool and `return true`:
+  same single red. So the widget test holds BOTH halves of BUT-1982 — the view reading the
+  bool, and the ViewModel producing an honest one.
+
+Pre-existing failure, NOT mine: `CalendarWeeklyMenuWidget golden populated week matches
+golden` fails `Master Image: 375 X 874 / Test Image: 375 X 900`. First attributed to my
+change because `git stash` on my file made it pass — wrong, because the worktree carries
+another session's uncommitted BUT-1978 work (`golden_helper.dart` plus the golden group's own
+comment block in this very file), which the stash reverted too. Removing only my own
+additions in place left the failure standing, which is the actual attribution. This is the
+"dormant assertion" case the knowledge file already records: the blanket
+`FlutterError.onError` used to swallow every mismatch, and turning the comparison on exposed
+a stale PNG. Regenerating it is BUT-1978's call, not this task's.
+
+Final state: 100 green / 1 red (that golden) across
+`weekly_menu_plan_copyweek_presence_test.dart`, `weekly_menu_plan_viewmodel_test.dart`,
+`calendar_weekly_menu_widget_test.dart`, `calendar_presence_test.dart`.
+`flutter analyze --fatal-infos` clean on all three edited suites. All three `lib/` files
+`diff`-verified byte-identical to their pre-probe backups.
+
+### 2026-09-02 — BUT-1957 commit-gate review: a new Art. 15 section pinned at one seam of three
+
+Staged diff added a `delivered_notifications` export section covering the subcollection
+`users/{uid}/notifications`, which the account-deletion cascade began erasing in the same
+commit. Six new tests in `preferences_export_manager_test.dart` (39 in the file, 190 in
+`test/unit/services/account/export/`, both re-measured green).
+
+Trigger: the parent asked which mutants SHOULD redden and would not, having probed two.
+The two probed mutants (repointing the manager's `fetch` at `exportUserNotifications`, and
+gutting the row build) do redden 5 and 1 respectively — confirmed by reading the fixture:
+`rows` is seeded `[_row(99)]` while `deliveredRows` is `[_deliveredRow(1)]`, so the id
+assertion `'d1'` discriminates the two sources at the MANAGER seam. Not incidental.
+
+Three surviving mutants, each measured in its own Bash call, restored with
+`git show :<path> > tmp && cp`, `git diff --numstat` empty after each:
+
+M1 `_failed(...)` -> `return {'error': e.toString()}` in the new catch: 39/39 GREEN.
+    The section's only failure test asserts `completion(isA<Map<String, dynamic>>())`,
+    which the leak satisfies. The section was not added to the file's BUT-1760 `cases`
+    table, so the authored sentence, the `error_code` token and the no-leak assertions
+    (`isNot(contains('uid-bob'))` etc.) do not range over it. Its `_failed` section phrase
+    is also the snake_case key `'delivered_notifications'`, so the bundle sentence reads
+    "Could not export delivered_notifications." where every sibling reads "notification
+    delivery" / "FCM tokens".
+M2 repository `.collection('notifications')` -> `.collection('notification_history')`:
+    86/86 GREEN across the manager suite, `data_export_service_test.dart` and
+    `firebase_data_export_repository_shopping_test.dart`. That last file's own header
+    documents BUT-1697, where exactly this defect silently emptied every user's shopping-list
+    export and where the fake-Firestore repository lane was built to stop it. The new
+    method's path, and its `orderBy('createdAt', descending: true)` (load-bearing: the
+    truncation note promises "the $limit most recent"), are held by nothing.
+M3 delete the `'delivered_notifications': _preferencesManager...` entry from
+    `_buildExportBundle`: 40/40 GREEN. `should include all required sections` was not
+    extended, though it carries a BUT-1732 comment warning about this exact deletability
+    for the shared-shopping-list key.
+
+Non-blocking: `'delivered_notifications': 500` in `exportLimits` is inert — `getLimitForType`
+falls back to `defaultBatchSize` = 500, so deleting it changes nothing today. Same shape as
+the sibling entries, whose comments say so; the new comment's claim is prospective only.
+The truncation test omits the sibling's `expect(result['total_count'], cap)` trim assertion.
+
+Remedy given: (a) one end-to-end in `data_export_service_test.dart` seeding
+`users/{uid}/notifications/n1` plus a top-level `user_notifications` decoy and asserting the
+bundle key — kills M2 and M3 together, since that suite runs the real repository on
+`FakeFirebaseFirestore`; (b) add the row to the BUT-1760 `cases` table and delete the weak
+`completion(isA<Map>)` test it subsumes — kills M1 and forces the section phrase fix.
+
+Instrument note: `flutter test` crashed on a stale
+`build/unit_test_assets/NativeAssetsManifest.json` (errno 183, "file already exists") before
+any test ran, exiting like a tool failure rather than a red suite. `rm -f` on that one file
+fixed it; worth recognising so it is not read as a broken analyzer/test tree.
+
+### 2026-09-02 — BUT-1957 round 2: the three findings closed, the fourth seam found (trigger: re-review of a staged GDPR-export diff after a fix round)
+
+Graded the INDEX and worktree together (identical blobs on all seven reviewed paths at both
+open and verdict time). Suites: `preferences_export_manager_test.dart` 39/39,
+`data_export_service_test.dart` 41/41, both directories together 231/231.
+`flutter analyze` clean on the four Dart files.
+
+Round 1's three findings all verified closed, and each repair verified on its own terms
+rather than on the report:
+- M1: the standalone `completion(isA<Map<String, dynamic>>())` test is gone and the section
+  sits in the BUT-1760 `cases` table as `('delivered notifications',
+  'delivered-notifications-export-failed', …)`. The production `_failed(...)` phrase now
+  reads `'delivered notifications'`, so the bundle sentence is "Could not export delivered
+  notifications." — the snake_case defect the table grades and the deleted test could not.
+- M2: the new `data_export_service_test.dart` case runs the REAL repository over
+  `FakeFirebaseFirestore`, seeds `users/{uid}/notifications/sub-1` plus a top-level
+  `user_notifications/top-1` decoy, and asserts routing + no `error` + the neighbour section
+  still returning its own row. Both mutants are analytic reds: repointing the constant
+  empties the subcollection (`contains('sub-1')` fails), and a copy-paste onto
+  `exportUserNotifications` surfaces `top-1`.
+- M3: `should include all required sections` now asserts `delivered_notifications` is
+  non-null and error-free; deleting the map entry reddens the `isNotNull` and throws on the
+  cast beside it (their reported +2).
+- The overclaiming test name is fixed and its comment correctly scopes the manager-seam
+  discrimination, with a cross-file pointer to the service test that resolves in both
+  directions.
+
+Claims graded true by measurement, not by reading: `winback-context.ts:106/151` really does
+build the friend-share copy from another user's `sharedByDisplayName` under
+`contextKey: 'ctx_friend_share'`; `users/{uid}/notifications` really is Admin-SDK-only
+(`detect-lapsed-users.ts:275`, `send-activity-digest.ts:128`, no Dart writer), so both the
+constant's comment and the new rules test's `lib/` grep claim hold;
+`FirestoreCollections.userDeliveredNotifications` is read by exactly one production site,
+which is what makes "repointing left the repo green" safe by construction rather than by a
+full-repo run.
+
+FOURTH SEAM (the blocking finding): the section's `data_minimisation` sentence — the Swedish
+Art. 12(1) line stating that a win-back row quotes a friend's first name verbatim — is
+pinned by nothing. Analytic, not a green probe: `grep data_minimisation` over both suites
+returns zero, the key is additive, and no test asserts a key set (the file's only
+`hasLength` is over the error-code list). That sentence is the mitigation the production
+comment's KEEP decision rests on ("Chosen conservatively without asking Malin; STRIPPING it
+is hers to decide"), so it can vanish while the third-party first name keeps shipping.
+Every sibling section carrying the key has at least a presence pin
+(`content_export_manager_test.dart:1192`, `social_export_manager_test.dart:868/1676`), each
+added after a round shipped a sentence that promised a redaction that was not happening —
+the same class, sign flipped.
+
+FAKE-vs-PRODUCTION divergence, measured with a throwaway `_zz_probe_fake_orderby_test.dart`
+driving the real repository (deleted after; three prints, one run):
+- PROBE A: two rows with `createdAt` come back `[new, old]` — the fake DOES honour
+  `.orderBy('createdAt', descending: true)` on a subcollection, so the new test is
+  non-vacuous for the reason it claims.
+- PROBE B: `[without, with]` — a row MISSING `createdAt` is returned, and returned FIRST.
+- PROBE C: `[lonely]` — a lone field-less row is returned.
+Real Firestore excludes documents lacking the `orderBy` field. So the hazard the production
+comment names ("one missing `createdAt` and the row is erasable but not exportable") cannot
+be staged OR falsified on this lane, and a future fixture seeding a row without the field
+will pass green while production exports nothing.
+
+Non-blocking, named rather than left to be found:
+- Spread-FIRST/id-LAST in `exportDeliveredNotifications` is a deliberate ordering with an
+  explanatory comment and no fixture carrying a `notification_id` FIELD, so swapping the two
+  lines is invisible (analytic).
+- `descending` direction is unpinned: every real-repo fixture holds ≤1 row and the manager
+  lane fakes the repository, yet the direction decides which rows survive the 500 cap.
+  Shared shape with `notification_history`; pre-existing.
+- `'delivered_notifications': 500` is a tautology — `getLimitForType` falls back to
+  `defaultBatchSize` = 500 and the tests derive `cap` from the same call, so deleting the
+  entry or changing the value is invisible. Pre-existing class (`user_notifications`,
+  `cook_snaps`, `shared_shopping_lists` are identical, each with a comment saying so).
+- Declined the `total_count == cap` trim assertion they offered: the trim happens in the
+  shared `fetchCapped`, which the `_cappedSections` table already pins per section.
+- The M3 comment's "left 40/40 passing" is a count of a file that now holds 41 tests. The
+  measurement is real; the numeral is the part that cannot survive an insert. Strike the
+  numeral, do not re-count.
+
+CROSS-GATE, outside the test diff: the same commit widens `deleteUserSubcollections` by ten
+`users/{uid}` subcollections — `onboarding`, `ingredients`, `rate_limits`, `counters` and
+`acquisition` all with live Dart writers per the cascade's own comments, `acquisition`
+carrying BUT-612 attribution — and the Art. 15 export carries none of them. The commit adds
+a strong DELETER ⊇ PROBE drift guard (`scenario_everyUserSubcollectionHasADeleter`) and no
+EXPORT ⊇ DELETER guard, so the next widening repeats it with nothing red. The Art. 15 gap is
+pre-existing; the asymmetry and the enumerating guard beside it are new. Also:
+`deleteUserPreferences` now erases the whole `settings` collection while the export reads
+`settings/preferences` by id — same asymmetry, bounded today because no production writer
+creates a second document there (the CF comment says a client write is the only route).
+
+### 2026-09-02 — BUT-1957 round 3 (staged diff, export ⊇ erasure for `users/{uid}/notifications`)
+
+Trigger: re-review after round-2 verdict `fail (1 blocking)`; the blocking finding had
+landed mid-round, so round 2 graded stale bytes (founder's process failure, acknowledged).
+
+Motion check at grade time — index == worktree on all four reviewed paths:
+
+| path | index blob | worktree blob |
+|---|---|---|
+| `test/unit/services/account/export/preferences_export_manager_test.dart` | b5ac57a7 | b5ac57a7 |
+| `test/unit/services/account/data_export_service_test.dart` | 1e20edcf | 1e20edcf |
+| `lib/services/account/export/preferences_export_manager.dart` | 3145d322 | 3145d322 |
+| `lib/services/account/data_export_service.dart` | 97a5a0f1 | 97a5a0f1 |
+
+`git diff --numstat` empty on all four; `git status` shows `M ` (staged, clean worktree).
+Verdict is therefore against the copy the parent will commit.
+
+Confirmed present and non-vacuous:
+- `carries the data-minimisation note about the sharer name` (preferences suite, line 288).
+  Asserts `isA<String>()` + `contains('delade')` + `contains('namnet')`. Ran by
+  `--plain-name`: `+1: All tests passed!`. Non-vacuity settled by GREP rather than probe —
+  `grep -rn data_minimisation test/ lib/…` shows the new test is the ONLY reader of this
+  section's key, and the key is additive, so deleting the production entry yields `null`
+  and fails `isA<String>()` analytically. The founder's own probe (39 +1 red) agrees.
+- Round-2 finding 1 (fake `orderBy` measurement) written at the fixture,
+  `data_export_service_test.dart` lines 577-583, with `createdAt` marked load-bearing.
+- Round-2 finding 2: `40/40` struck. `grep -rn "40/40" test/ lib/` → zero hits, and zero in
+  each of the four staged blobs (`git show :<path>`). Replacement reads "Measured — dropping
+  the entry left the whole suite passing" — a past measurement, no insertion seam, graded OK.
+
+Ask 2 (did the string and the test drift apart in the KEEP-paragraph reword): NO. The staged
+Swedish string is `'Notistexten återges ordagrant som den visades. En påminnelse om ett delat
+recept innehåller därför namnet på den som delade.'` — carries both `delade` and `namnet`, and
+the suite is green. The comment reword ("first name" → the name; digest "counts of their own
+activity") touched only prose.
+
+Non-blocking finding filed (not fixed by me, review pass): the reworded KEEP paragraph's
+headline clause `NAME, not first name:` overclaims. Measured in
+`functions/src/analytics/winback-context.ts`: line 150 builds the body as
+`` `${firstName(share.sharerName)} delade ett recept med dig` ``, and `firstName` (lines
+67-71) returns `trimmed.slice(0, trimmed.search(/\s/))` — so "Anna Andersson" ships as
+"Anna". Only the single-token fallback exports a display name in full, which is exactly what
+the clause AFTER the colon says correctly. The error is in the privacy-conservative
+direction (claims more disclosure than happens), so no control under-protects; the hazard is
+a later round quoting "we already ship full names" to argue a wider keep — the
+argue-by-analogy error `.claude/rules/accepted-deviations.md` exists to document. Remedy is a
+STRIKE of the four words, not a reword; the mechanism sentence beside it already carries the
+fact. The Swedish `namnet` inherits the same conservative imprecision, and is now frozen by
+the new test — a correction toward `förnamnet` must move both in one edit.
+
+`flutter analyze --fatal-infos` on the four files: no issues. Both suites: 81/81 green.
+
+Verdict: pass (0 blocking).

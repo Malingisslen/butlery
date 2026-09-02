@@ -166,6 +166,21 @@ function makeFakeDb(state: FakeDbState): admin.firestore.Firestore {
       collection(sub: string) {
         return makeCollection(sub);
       },
+      // BUT-1957: `probeResidualData` now ENUMERATES the `users/{uid}`
+      // subcollections instead of naming them. That enumeration's catch fails
+      // CLOSED, so a fake without this method makes every run report
+      // `residual_data_detected` — this suite read it as a failed GDPR step and
+      // the orchestration test went red for a reason that has nothing to do
+      // with orchestration, the same shape as the `listDocuments` and `limit`
+      // notes above.
+      //
+      // Empty is the honest answer here (this fake holds nothing), and it means
+      // this suite proves only that the call EXISTS. What the enumeration
+      // actually reports, and that its two exclusions are load-bearing, is
+      // proven against the in-memory store in `account-deletion-cascade.test.ts`.
+      async listCollections(): Promise<unknown[]> {
+        return [];
+      },
     };
     return docApi;
   }
@@ -307,6 +322,11 @@ test("BUT-788: full cascade reports every step + writes audit + calls auth.delet
   // either registration line left every one of their own unit tests green —
   // those tests `require()` the deleter directly, so nothing else notices when
   // the cascade stops calling it (BUT-1800).
+  //
+  // `notification_effectiveness` is named for the same reason (BUT-1956), and
+  // there is a second one: `notification_analytics` sits directly above it in
+  // the tier list and reads like it already covers this, so a future edit that
+  // removes the line as a duplicate would look like tidying.
   const expected = [
     "recipes",
     "menus",
@@ -314,6 +334,7 @@ test("BUT-788: full cascade reports every step + writes audit + calls auth.delet
     "personal_tags",
     "feature_retention",
     "retention_analytics",
+    "notification_effectiveness",
     "messages",
     "shared_content",
     "comments_ratings",

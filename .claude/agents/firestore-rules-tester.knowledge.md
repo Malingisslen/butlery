@@ -33,6 +33,7 @@ enters this file").
 | `messages/{id}/poll_votes/{voterUid}`, the messages RECEIPT `allow update`, **and `/shared_content` create** | `poll-votes-rules.test.ts` | `test:rules:poll-votes` |
 | `/cook_snaps`, the messages ADMIN read/delete clauses, **and the BUT-1904 `duplicateBlocked` freeze on the sender `allow update`** | `cook-snaps-and-message-mod-rules.test.ts` | `test:rules:cook-snaps-and-message-mod` |
 | `/weekly_menu_plans` and `/group_weekly_menu_plans` | `weekly-menu-plans-rules.test.ts` | `test:rules:weekly-menu-plans` |
+| `users/{uid}/notifications` (server-written, owner-read) | `delivered-notifications-rules.test.ts` | `test:rules:delivered-notifications` |
 | All of the above                      | (sequence)                 | `test:rules:all`          |
 
 If the diff touches a collection not listed above, **create a new test file** named
@@ -530,6 +531,24 @@ Standard deny matrix for ownership-checked collections:
 - **Deny-all server-only collection** (`allow read, write: if false`): matrix
   {read,create,update,delete} × {unauth, non-admin, admin} — admin-still-denied is the
   load-bearing case — plus one Admin-SDK-bypass write that succeeds.
+- **Owner-read / server-write collection** (`allow read: if uid == userId; allow write: if
+  false`, the shape a new Art. 15 export section needs): the load-bearing allow is the
+  PRODUCTION READ SHAPE, which for an export is an ordered LIST query
+  (`.orderBy(f,'desc').limit(n)`), not a `get()` — rules are not filters, so a single-doc
+  proof says nothing about the query the app issues. Read the repository method and copy its
+  ordering and limit. Non-vacuity has two distinct sources here: the read denies pair with
+  the SAME query run by the same stranger against their OWN path (one variable: the
+  ownership match), and the write denies pair with the identical payload+doc-id succeeding
+  under `withSecurityRulesDisabled` — `if false` has no conjunct to delete, so its only
+  discriminating mutant is OPENING the rule to the owner, which must redden the owner-write
+  denies and leave the stranger/unauth ones green (measured on
+  `users/{uid}/notifications`, BUT-1957: the read mutant kills exactly the two stranger-read
+  denies, the write mutant exactly the three owner-write denies, and neither touches the
+  other's cluster). A specific-path block also authorizes NO collection-group query — the
+  OWNER is refused one over their own rows — so pin that too where an export could plausibly
+  be refactored to `collectionGroup(<name>)`. Before calling `allow write: if false` safe, grep `lib/` for
+  the collection CONSTANT — an existing client writer would make it an outage, not a
+  hardening.
 - **Owner-scoped subcollection under a `{path=**}/<name>/{id}` collection-group
   catch-all**: a single-doc deny test is not proof — the engine can't show every matched
   doc satisfies an owner predicate for an unconstrained collection-group query, so the

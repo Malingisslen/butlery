@@ -120,6 +120,46 @@ files in the same edit.
   path — the field is written from the start and the only documents without it are test data
   (Malin, 2026-08-03). BUT-1797, 2026-08-04
 
+- **The Art. 15 `delivered_notifications` section exports another user's NAME, inside
+  the text of a friend-share win-back push (BUT-1957, 2026-09-02).** `users/{uid}/notifications`
+  is passed through unprojected. Measured by the `firebase-backend-security` gate after the
+  code shipped claiming the opposite: `resolveContextualWinbackCopy`'s highest-priority signal
+  builds `"<namn> delade ett recept med dig"` from `shared_recipes.sharedByDisplayName`
+  (`functions/src/analytics/winback-context.ts`), and that string is stored verbatim in
+  `message` and `bodyShown`. Only `contextKey == 'ctx_friend_share'` rows are affected; the
+  activity-digest rows carry counts of the requester's own ACTIVITY and nothing else — a
+  comment they authored may sit on someone else's recipe, but only the integer travels.
+  KEPT, because the requester received and read that exact text on their own device, so the
+  bundle discloses nothing new and a redaction would hand them a falsified copy of their own
+  record. Decided on THESE facts — not by analogy to BUT-1772 (conversations) or BUT-1732
+  (shopping lists), which govern different collections; the BUT-1732 entry itself records that
+  arguing across collections by shape is the error it exists to document.
+  The section carries a `data_minimisation` sentence saying so.
+  **Chosen conservatively without asking Malin, the way the `chat_groups` projection was —
+  STRIPPING the name is hers to decide, and it is open.**
+  It is the NAME, not reliably a first name: `firstName()` splits on the first whitespace and
+  falls back to the whole trimmed name when there is none, so a single-token display name is
+  exported in full.
+  **Named residual, not closed:** the sharer's name is baked into free text on the RECIPIENT's
+  row, so it outlives the sharer's own erasure — `on-user-deleted.ts` tombstones
+  `shared_recipes.sharedByDisplayName`, but no id-keyed cascade reaches a copy sitting inside a
+  sentence. Pre-existing; this change is what makes it exportable, and erasable through the
+  RECIPIENT's deletion.
+  Three sentences in the first version of this change asserted that no third party appears in
+  these rows. All three were struck rather than reworded. BUT-1957, 2026-09-02
+
+- **`users/{uid}/notifications` needs its own `firestore.rules` read block, and the export
+  section is dead without it (BUT-1957, 2026-09-02).** Rules do NOT cascade: `allow read` on
+  `match /users/{userId}` grants nothing on a subcollection beneath it. The collection had no
+  block because every writer is the Admin SDK and no client had ever read it, so nothing was
+  denied and nothing looked missing. The Art. 15 section is the first client read, and without
+  the block it returns its failure envelope for every user on every export while the retention
+  doc claims the rows are exported — a gap that reads as closed. Writes stay `if false`: the
+  rows record what the SERVER sent, so a client able to write one could fabricate a
+  notification it never received, and that record is now reachable through the export.
+  Found by two gates independently; three green manager tests could not see it, because
+  `fake_cloud_firestore` enforces no rules. BUT-1957, 2026-09-02
+
 ## Engineering
 
 - **PARTLY SUPERSEDED 2026-08-30 (ADR-0010) — see the BUT-1971 entry at the end of this

@@ -2735,3 +2735,58 @@ neither passed an `auditRepository` at all.
   deleted rather than left standing. Caught by the `integration-reviewer` gate, which is the
   only pass that could see the two files ship opposite verdicts about one document.
   BUT-1971, 2026-08-31
+
+- **The Art. 15 `delivered_notifications` section exports another user's NAME, inside the text
+  of a friend-share win-back push.** `users/{uid}/notifications` is passed through unprojected
+  rather than field-projected like its neighbour `exportNotifications`.
+  **Why:** the section exists because BUT-1957 made the account-deletion cascade erase that
+  subcollection. Projecting named fields would risk dropping a field the cascade erases and
+  re-open the gap the ticket exists to close.
+  (The export ⊇ erasure invariant is stated SCOPED in
+  `docs/security/notification-analytics-retention.md`, per collection and with its one named
+  exception. Do not restate it unscoped: it does not hold repo-wide, and this same commit
+  falsifies an unscoped version of it twice — `analytics/notifications/effectiveness` is
+  erased and deliberately not exported, and ten `users/{uid}` subcollections gained a deleter
+  with no export section. That asymmetry is BUT-1992.)
+  The first version of this change shipped three sentences asserting that no third party appears
+  in these rows. That was FALSE and the `firebase-backend-security` gate measured it:
+  `resolveContextualWinbackCopy` builds `"<namn> delade ett recept med dig"` from
+  `shared_recipes.sharedByDisplayName` (`functions/src/analytics/winback-context.ts`), stored
+  verbatim in `message` and `bodyShown` on `contextKey == 'ctx_friend_share'` rows. It is the
+  NAME, not reliably a first name: `firstName()` splits on the first whitespace and falls back
+  to the whole trimmed name when there is none. All three sentences were struck, not reworded.
+  The name is KEPT because the requester received and read that exact push on their own device,
+  so the bundle discloses nothing new, and redacting it would hand them a falsified copy of
+  their own record. Decided on these facts alone — NOT by analogy to BUT-1772 (conversations)
+  or BUT-1732 (shopping lists), which govern different collections; the BUT-1732 entry itself
+  records that arguing across collections by shape is the error it exists to document.
+  The section carries a `data_minimisation` sentence saying so, and that sentence is pinned by
+  a test, because it is the only thing telling the data subject a third party is in there.
+  **Named residual, not closed:** the sharer's name is baked into free text on the RECIPIENT's
+  row, so it outlives the sharer's own erasure — `on-user-deleted.ts` tombstones
+  `sharedByDisplayName`, but no id-keyed cascade reaches a copy sitting inside a sentence.
+  Pre-existing; this change is what makes it exportable, and erasable through the recipient's
+  deletion.
+  **Chosen conservatively without asking Malin, the way the `chat_groups` projection was —
+  STRIPPING the name is hers to decide, and it is open.**
+  Residual worth knowing: because this is a pass-through, "every field is safe" is a property of
+  two functions' CURRENT field lists, not of the shape. A writer that later stores a counterparty
+  uid lands it in a GDPR bundle with no rules change and no red test. Raised by the
+  `code-reviewer` gate as a follow-up rather than a blocker. BUT-1957, 2026-09-02
+
+- **`users/{uid}/notifications` needs its own `firestore.rules` read block, and the Art. 15
+  export section is dead without it.** Owner-only read; `allow write: if false`.
+  **Why:** rules do NOT cascade — `allow read` on `match /users/{userId}` grants nothing on a
+  subcollection beneath it. The collection had no block because every writer is the Admin SDK
+  and no client had ever read it, so nothing was denied and nothing looked missing. The export
+  is the first client read; without the block it returns its failure envelope for every user on
+  every export while the retention doc claims the rows are exported — a gap that reads as
+  closed. Writes stay `if false` because the rows record what the SERVER sent: a client able to
+  write one could fabricate a notification it never received, and that record is now reachable
+  through the export. `git log -S` confirms no client has ever written the path, so the closure
+  breaks nothing.
+  Found by the `firebase-backend-security` and `code-reviewer` gates independently. Three green
+  manager tests could not see it: `fake_cloud_firestore` enforces no rules. Proven by
+  `delivered-notifications-rules.test.ts`, which tests the LIST shape production actually issues
+  — a `get()`-only proof would not have covered it — plus a collection-group deny; both mutants
+  killed. BUT-1957, 2026-09-02

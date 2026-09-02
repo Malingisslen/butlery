@@ -214,6 +214,10 @@ class ExportPaginationHelper {
     // coincidence — the truncation signal in PreferencesExportManager keys off
     // this value (BUT-1562).
     'user_notifications': 500,
+    // BUT-1957: the `users/{uid}/notifications` SUBCOLLECTION — a different
+    // collection from the line above, and its own key so the two truncation
+    // probes cannot key off each other's cap.
+    'delivered_notifications': 500,
     // Increment 5: pooled-rating events (one per pool the user voted in).
     'canonical_rating_events': 1000,
     // BUT-1732: pinned at the value the section already resolved to via the

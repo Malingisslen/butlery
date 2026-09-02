@@ -93,6 +93,21 @@ interface FakeRef {
   delete(): Promise<void>;
   update(data: DocData): Promise<void>;
   collection(name: string): FakeSubcollection;
+  /**
+   * BUT-1957: `probeResidualData` stopped naming the `users/{uid}` subcollections
+   * it probes and now ENUMERATES them. Without this method the enumeration lands
+   * in the probe's own outer catch, which fails CLOSED — every clean fixture in
+   * this file then reports `residual_data_detected`, and the six scenarios that
+   * assert a clean store go red for a reason that has nothing to do with what
+   * they test. Modelled, not stubbed to `[]`: a stub returning nothing would make
+   * every assertion about the enumeration pass vacuously.
+   */
+  listCollections(): Promise<FakeSubcollectionRef[]>;
+}
+
+/** What `listCollections()` hands back: a subcollection handle that knows its id. */
+interface FakeSubcollectionRef extends FakeSubcollection {
+  id: string;
 }
 
 interface FakeQuerySnapshot {
@@ -211,6 +226,25 @@ class FakeFirestore {
       // Subcollections are real in Firestore and NOT deleted with their parent
       // — the whole point of the orphan findings this suite now covers. The
       // stub models them as deeper slash-separated keys.
+      //
+      // Derived from the stored paths, exactly like `listDocuments` below and
+      // for the same reason: a real `listCollections()` answers from what the
+      // database HOLDS, so a subcollection whose parent document is gone is
+      // still listed. Returning only names the test remembered to register
+      // would make the enumeration a mirror of the fixture's intent instead of
+      // of its contents.
+      listCollections: async (): Promise<FakeSubcollectionRef[]> => {
+        const prefix = `${path}/`;
+        const names = new Set<string>();
+        for (const p of this.docs.keys()) {
+          if (!p.startsWith(prefix)) continue;
+          const rest = p.slice(prefix.length).split("/");
+          if (rest.length >= 2) names.add(rest[0]);
+        }
+        return [...names].sort().map((name) =>
+          Object.assign(this.makeRef(path).collection(name), { id: name }),
+        );
+      },
       collection: (name: string): FakeSubcollection => {
         const snapshotOf = (paths: string[]): FakeQuerySnapshot =>
           this.snapshotOfPaths(paths);
@@ -422,6 +456,29 @@ class FakeFirestore {
         );
       },
     });
+    // BUT-1957: `deleteUserSubcollections` finishes with the `system_rate_limits`
+    // sweep, a documentId() PREFIX RANGE — `orderBy(documentId()).startAt(`${uid}_`)
+    // .endAt(`${uid}_`)`. The matcher above cannot serve it (it is reached
+    // only through `where()`), so without this the whole deleter throws before
+    // any assertion about the subcollections it just swept can run.
+    //
+    // Modelled as a real lexicographic range on the document ID rather than as a
+    // pass-through: the trailing sentinel in the production upper bound is
+    // load-bearing and invisible in a diff, and a stub that ignored the bounds
+    // would report an erase-everything mutant as passing.
+    const idRange = (lower: string | null, upper: string | null) => ({
+      startAt: (from: string) => idRange(from, upper),
+      endAt: (to: string) => idRange(lower, to),
+      get: async () => {
+        const paths = this.pathsUnder(name).filter((p) => {
+          const id = p.split("/")[1];
+          if (lower !== null && id < lower) return false;
+          if (upper !== null && id > upper) return false;
+          return true;
+        });
+        return this.snapshotOfPaths(paths);
+      },
+    });
     return {
       where: (
         field: string | admin.firestore.FieldPath,
@@ -431,6 +488,14 @@ class FakeFirestore {
       doc: (id: string) => this.makeRef(`${name}/${id}`),
       get: unfiltered().get,
       limit: (max: number) => unfiltered(max),
+      orderBy: (field: string | admin.firestore.FieldPath) => {
+        if (!(field instanceof admin.firestore.FieldPath)) {
+          throw new Error(
+            `fake: orderBy is modelled for documentId() only, got ${String(field)}`,
+          );
+        }
+        return idRange(null, null);
+      },
     };
   }
 
@@ -2869,6 +2934,616 @@ async function scenario_implausiblePollAuthorshipDeclines(): Promise<void> {
   );
 }
 
+/** A residual-probe result envelope, fresh for each probe call. */
+function emptyResult(): {
+  deletedCollections: string[];
+  failedCollections: string[];
+  errors: string[];
+} {
+  return { deletedCollections: [], failedCollections: [], errors: [] };
+}
+
+function sawResidual(result: { failedCollections: string[] }): boolean {
+  return result.failedCollections.includes("residual_data_detected");
+}
+
+/**
+ * BUT-1957: `users/{uid}/notifications`.
+ *
+ * Written by `analytics/detect-lapsed-users.ts` and
+ * `notifications/send-activity-digest.ts`, and it carries the push text ACTUALLY
+ * SHOWN (`message`/`bodyShown`) plus the win-back A/B assignment. Nothing
+ * reached it — deleting `users/{uid}` does not delete its subcollections, so
+ * every row survived erasure.
+ *
+ * The other user's row is the half that says this is a sweep and not a
+ * collection wipe; `deleteUserSubcollections` reads through the user document,
+ * so a mutant swapping the uid would still empty the target and only this
+ * assertion would notice.
+ */
+async function scenario_userNotificationRowsAreErased(): Promise<void> {
+  const {
+    deleteUserSubcollections,
+  } = require("../account/account-deletion-cascade");
+
+  const db = new FakeFirestore();
+  db.set(`users/${UID}`, { displayName: "Raderad" });
+  db.set(`users/${UID}/notifications/n1`, {
+    message: "Vi saknar dig i köket!",
+    variant: "winback_b",
+    contextKey: "lapsed_14d",
+  });
+  db.set(`users/${UID}/notifications/n2`, { bodyShown: "3 nya recept" });
+  db.set(`users/${OTHER}/notifications/n3`, { message: "Hej igen" });
+
+  const ok = await deleteUserSubcollections(asDb(db), UID);
+  check("deleteUserSubcollections reports success", ok === true, `returned ${ok}`);
+  check(
+    "every users/{uid}/notifications row is erased",
+    db.pathsUnder(`users/${UID}/notifications`).length === 0,
+    `left: ${JSON.stringify(db.pathsUnder(`users/${UID}/notifications`))}`,
+  );
+  check(
+    "…and another user's notification rows are untouched",
+    db.has(`users/${OTHER}/notifications/n3`),
+    "the other user's row was swept too",
+  );
+}
+
+/**
+ * BUT-1956: `analytics/notifications/effectiveness`, written daily by
+ * `analytics/correlate-notifications.ts` with a RAW `userId`. It was reached by
+ * no cascade step, no `onUserDeleted` leg and no TTL.
+ */
+async function scenario_notificationEffectivenessRowsAreErased(): Promise<void> {
+  const {
+    deleteNotificationEffectiveness,
+  } = require("../account/account-deletion-cascade");
+
+  const db = new FakeFirestore();
+  db.set("analytics/notifications/effectiveness/e1", {
+    userId: UID,
+    opened: true,
+  });
+  db.set("analytics/notifications/effectiveness/e2", {
+    userId: UID,
+    opened: false,
+  });
+  db.set("analytics/notifications/effectiveness/e3", { userId: OTHER });
+
+  const ok = await deleteNotificationEffectiveness(asDb(db), UID);
+  check(
+    "deleteNotificationEffectiveness reports success",
+    ok === true,
+    `returned ${ok}`,
+  );
+  check(
+    "the erased user's effectiveness rows are gone",
+    !db.has("analytics/notifications/effectiveness/e1") &&
+      !db.has("analytics/notifications/effectiveness/e2"),
+    "at least one row survived",
+  );
+  check(
+    "…and another user's effectiveness row survives",
+    db.has("analytics/notifications/effectiveness/e3"),
+    "the sweep was not keyed on userId",
+  );
+}
+
+/**
+ * The `listCollections()` leg of `probeResidualData` (BUT-1957).
+ *
+ * The leg it replaced was a hand-written include-list naming ONE subcollection,
+ * so anything absent from it was not merely unreported — it was invisible, and
+ * the cascade returned an all-clear with the rows still on disk. This asserts
+ * the enumeration reports what the database actually holds.
+ *
+ * The clean control is not decoration: the probe's outer catch fails CLOSED, so
+ * a fake missing `listCollections()` would count residual on every fixture and
+ * make the dirty case pass for the wrong reason.
+ */
+async function scenario_probeEnumeratesUserSubcollections(): Promise<void> {
+  const { probeResidualData } = require("../account/account-deletion-cascade");
+
+  const clean = new FakeFirestore();
+  clean.set(`users/${OTHER}/notifications/n3`, { message: "Hej igen" });
+  const cleanResult = emptyResult();
+  await probeResidualData(asDb(clean), UID, cleanResult);
+  check(
+    "a user with no subcollection rows left probes CLEAN",
+    !sawResidual(cleanResult),
+    `failed: ${JSON.stringify(cleanResult.failedCollections)}`,
+  );
+
+  const dirty = new FakeFirestore();
+  dirty.set(`users/${UID}/notifications/n1`, { message: "Vi saknar dig" });
+  const dirtyResult = emptyResult();
+  await probeResidualData(asDb(dirty), UID, dirtyResult);
+  check(
+    "a leftover users/{uid}/notifications row is reported as residual",
+    sawResidual(dirtyResult),
+    `failed: ${JSON.stringify(dirtyResult.failedCollections)}`,
+  );
+
+  // The enumeration's whole point is that it is NOT a list: a subcollection no
+  // deleter and no test ever named must still be reported. A fixture using the
+  // name the ticket fixed would pass equally well against a two-name include
+  // list, which is the state this leg replaced.
+  const unknown = new FakeFirestore();
+  unknown.set(`users/${UID}/a_subcollection_nobody_listed/x`, { secret: 1 });
+  const unknownResult = emptyResult();
+  await probeResidualData(asDb(unknown), UID, unknownResult);
+  check(
+    "…and so is a subcollection no deleter has ever heard of",
+    sawResidual(unknownResult),
+    `failed: ${JSON.stringify(unknownResult.failedCollections)}`,
+  );
+}
+
+/**
+ * The two exclusions are load-bearing in the OTHER direction (BUT-1957).
+ *
+ * `notificationCounters` and `recentContentHashes` belong to `onUserDeleted`
+ * (`cleanupContentGuardSubcollections`), which runs AFTER
+ * `admin.auth().deleteUser(uid)` — so this probe, which runs before it, always
+ * sees them still populated. Without the exclusion every single deletion of
+ * every user would report residual and `gdprCompliant` would be false forever,
+ * with nothing able to clear it.
+ *
+ * That failure mode is invisible to every other test in this file: they seed no
+ * guard rows, so the exclusion is never exercised and deleting it stays green.
+ */
+async function scenario_probeExcludesTriggerOwnedSubcollections(): Promise<void> {
+  const { probeResidualData } = require("../account/account-deletion-cascade");
+
+  const db = new FakeFirestore();
+  db.set(`users/${UID}/notificationCounters/2026-09-02`, { count: 4 });
+  db.set(`users/${UID}/recentContentHashes/abc123`, { hash: "abc123" });
+  const result = emptyResult();
+  await probeResidualData(asDb(db), UID, result);
+  check(
+    "the two trigger-owned subcollections are NOT residual — they outlive this probe by design",
+    !sawResidual(result),
+    `failed: ${JSON.stringify(result.failedCollections)}`,
+  );
+
+  // The pair is exercised one at a time as well: an exclusion set that lost a
+  // single entry would still be caught by the case above, but the message would
+  // not say which, and a mutant dropping only one would be attributed to both.
+  for (const name of ["notificationCounters", "recentContentHashes"]) {
+    const single = new FakeFirestore();
+    single.set(`users/${UID}/${name}/row`, { v: 1 });
+    const singleResult = emptyResult();
+    await probeResidualData(asDb(single), UID, singleResult);
+    check(
+      `…including ${name} on its own`,
+      !sawResidual(singleResult),
+      `failed: ${JSON.stringify(singleResult.failedCollections)}`,
+    );
+  }
+}
+
+/**
+ * `users/{uid}/settings` must be erased as a COLLECTION, not as one document id.
+ *
+ * `deleteUserPreferences` used to delete `settings/preferences` by id while
+ * `probeResidualData` counts the collection. `firestore.rules` leaves the id
+ * unconstrained on an owner-only create, so a second document under `settings`
+ * was both an un-erased Art. 17 residual and a `gdprCompliant: false` no code
+ * path could clear.
+ *
+ * The pre-existing coverage-map case seeds `settings/preferences` and therefore
+ * passes either way — it is the seeded id that made it green, not the deleter's
+ * scope. This case is the one that can tell them apart.
+ */
+async function scenario_settingsIsErasedAsACollectionNotOneDocument(): Promise<void> {
+  const {
+    deleteUserPreferences,
+    probeResidualData,
+  } = require("../account/account-deletion-cascade");
+
+  const db = new FakeFirestore();
+  db.set(`users/${UID}/settings/preferences`, { theme: "dark" });
+  db.set(`users/${UID}/settings/somethingElse`, { v: 1 });
+  db.set(`users/${OTHER}/settings/preferences`, { theme: "light" });
+
+  await deleteUserPreferences(asDb(db), UID);
+
+  check(
+    "deleteUserPreferences erases a settings document that is NOT `preferences`",
+    db.get(`users/${UID}/settings/somethingElse`) === undefined,
+    "a second settings document survived the cascade",
+  );
+  check(
+    "…and `preferences` itself, as before",
+    db.get(`users/${UID}/settings/preferences`) === undefined,
+    "the original settings document survived",
+  );
+  check(
+    "…and another user's settings are untouched",
+    db.get(`users/${OTHER}/settings/preferences`) !== undefined,
+    "the other user's settings were erased too",
+  );
+
+  const result = emptyResult();
+  await probeResidualData(asDb(db), UID, result);
+  check(
+    "…so the enumerating probe reports no residual settings",
+    !sawResidual(result),
+    `failed: ${JSON.stringify(result.failedCollections)}`,
+  );
+}
+
+/**
+ * The `users/{uid}` subcollections BUT-1957 added to `subs` that have no tier
+ * step of their own.
+ *
+ * Some are written today and were simply never erased; others are names only
+ * `admin/reset-user-data.ts` still mentions, where a row can predate their
+ * removal. That distinction does not matter here, and that is the point: the
+ * probe asks the database what is left instead of consulting a list, so a row
+ * under ANY of these names would be reported as residual on every deletion of
+ * that account with nothing able to erase it — a `gdprCompliant` that is false
+ * forever and unclearable.
+ *
+ * The invariant this pins is DELETER ⊇ PROBE. Without it the two disagree, and
+ * the direction they disagree in is the one that cannot be recovered from.
+ *
+ * Seeded through the whole cascade rather than the probe alone, because the
+ * claim is about the two halves agreeing, not about either one on its own.
+ */
+async function scenario_steplessSubcollectionsAreErasedNotJustReported(): Promise<void> {
+  const {
+    deleteUserSubcollections,
+    probeResidualData,
+  } = require("../account/account-deletion-cascade");
+
+  // `notifications` is absent: it has its own scenario above.
+  const NO_OWN_STEP = [
+    // written today
+    "onboarding",
+    "ingredients",
+    "rate_limits",
+    "counters",
+    // no live writer found; rows can predate their removal
+    "category_memberships",
+    "connection_tests",
+    "unified_recipes",
+    "conversations",
+    "fcm_tokens",
+  ];
+
+  for (const name of NO_OWN_STEP) {
+    const db = new FakeFirestore();
+    db.set(`users/${UID}/${name}/legacy-row`, { v: 1 });
+    db.set(`users/${OTHER}/${name}/legacy-row`, { v: 1 });
+
+    await deleteUserSubcollections(asDb(db), UID);
+
+    const result = emptyResult();
+    await probeResidualData(asDb(db), UID, result);
+    check(
+      `a ${name} row is erased, so the enumerating probe reports nothing`,
+      !sawResidual(result),
+      `failed: ${JSON.stringify(result.failedCollections)}`,
+    );
+    check(
+      `…and another user's ${name} row survives`,
+      db.get(`users/${OTHER}/${name}/legacy-row`) !== undefined,
+      "the other user's legacy row was erased too",
+    );
+  }
+}
+
+/**
+ * The `analytics/notifications/effectiveness` leg of the probe (BUT-1956).
+ *
+ * A deleter without a probe leg is how this class of gap survives: `batchDeleteAll`
+ * commits `strict: false`, so a failed chunk is swallowed and
+ * `deleteNotificationEffectiveness` returns true over rows it did not remove.
+ * This leg is the only contradiction to that `return true`.
+ */
+async function scenario_probeSeesLeftoverNotificationEffectiveness(): Promise<void> {
+  const { probeResidualData } = require("../account/account-deletion-cascade");
+
+  const clean = new FakeFirestore();
+  clean.set("analytics/notifications/effectiveness/e3", { userId: OTHER });
+  const cleanResult = emptyResult();
+  await probeResidualData(asDb(clean), UID, cleanResult);
+  check(
+    "another user's effectiveness row is not this user's residual",
+    !sawResidual(cleanResult),
+    `failed: ${JSON.stringify(cleanResult.failedCollections)}`,
+  );
+
+  const dirty = new FakeFirestore();
+  dirty.set("analytics/notifications/effectiveness/e1", { userId: UID });
+  const dirtyResult = emptyResult();
+  await probeResidualData(asDb(dirty), UID, dirtyResult);
+  check(
+    "a leftover notification-effectiveness row is reported as residual",
+    sawResidual(dirtyResult),
+    `failed: ${JSON.stringify(dirtyResult.failedCollections)}`,
+  );
+}
+
+/**
+ * The RESURRECTION window (BUT-1956).
+ *
+ * `correlateNotificationEffectiveness` runs daily inside `dailyAnalytics` and
+ * writes `effectiveness/{id}` rows from pages it is already holding in memory.
+ * A cascade landing mid-run can therefore have a row written back AFTER the
+ * deleter swept, and the deleter — which has already returned true — cannot
+ * know. The probe runs later in the same cascade, so it can.
+ *
+ * This is the case that proves the probe is not merely a mirror of the deleter:
+ * the deleter succeeded, the store was empty when it finished, and the run must
+ * still come back `gdprCompliant: false`.
+ */
+async function scenario_effectivenessRowWrittenBackAfterTheSweep(): Promise<void> {
+  const {
+    deleteNotificationEffectiveness,
+    probeResidualData,
+  } = require("../account/account-deletion-cascade");
+
+  const db = new FakeFirestore();
+  db.set("analytics/notifications/effectiveness/e1", { userId: UID });
+
+  const ok = await deleteNotificationEffectiveness(asDb(db), UID);
+  check(
+    "the deleter reports success and leaves the collection clean",
+    ok === true && !db.has("analytics/notifications/effectiveness/e1"),
+    `returned ${ok}, remaining: ${JSON.stringify(db.pathsUnder("analytics/notifications/effectiveness"))}`,
+  );
+
+  // The daily correlation job flushing a page it read before the cascade began.
+  db.set("analytics/notifications/effectiveness/e-resurrected", {
+    userId: UID,
+    opened: true,
+  });
+
+  const result = emptyResult();
+  await probeResidualData(asDb(db), UID, result);
+  check(
+    "a row written back AFTER the sweep still fails the run — the probe is not a mirror of the deleter",
+    sawResidual(result),
+    `failed: ${JSON.stringify(result.failedCollections)}`,
+  );
+}
+
+/**
+ * BUT-1957 drift guard: no `users/{uid}` subcollection any writer in this repo
+ * creates may be left unreached by the cascade.
+ *
+ * A one-time audit goes stale on the next feature — `notifications` and
+ * `onboarding` are both cases of exactly that. So the universe here is DERIVED
+ * from the sources on every run, not typed out: every
+ * `.collection("users").doc(...).collection("<name>")` chain under
+ * `functions/src` and `lib`. A new subcollection writer therefore enters this
+ * fixture by itself and reddens this scenario until something erases it.
+ *
+ * Each name must land in exactly one of three buckets, and two of them are read
+ * OUT OF THE PRODUCTION SOURCE rather than restated here (a restated copy is
+ * what drifts):
+ *  1. the `subs` list inside `deleteUserSubcollections`;
+ *  2. `TRIGGER_OWNED_SUBCOLLECTIONS` in `probeResidualData` — owned by
+ *     `onUserDeleted`, which runs after this cascade;
+ *  3. `COVERED_BY_OWN_STEP` below, for the ones with a dedicated tier step.
+ *
+ * Bucket 3 cannot be filled in with a lie: each entry is EXERCISED — a row is
+ * seeded under that subcollection, the named deleter is run, and the row must be
+ * gone. A map entry naming a function that does not touch the collection fails
+ * here.
+ *
+ * **What this does NOT cover, stated rather than implied.** The scan reads the
+ * `collection(users).doc(...).collection(X)` chain and resolves `X` when it is a
+ * literal, a `FirestoreCollections`/`Collections` member, or a file-local
+ * `const`. Anything else — a path assembled in a helper, a name passed in as a
+ * parameter, a getter — is invisible, and a subcollection written only that way
+ * will NOT appear here.
+ *
+ * That gap is not hypothetical and this test has already been widened twice by
+ * it: resolving the shared constants is what surfaced `ingredients`,
+ * `rate_limits` and `counters`, and resolving file-local consts is what
+ * surfaced `acquisition` — each of them a live writer with no deleter, and each
+ * found by a reviewer rather than by this test.
+ *
+ * Do not write a COUNT of how many names come from `lib/` versus
+ * `functions/src` here. Two such counts were written during this change and
+ * both were wrong, one of them refuted by the very commit that added it.
+ */
+async function scenario_everyUserSubcollectionHasADeleter(): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const fs = require("fs");
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const path = require("path");
+  const cascade = require("../account/account-deletion-cascade");
+
+  const repoRoot = path.join(__dirname, "..", "..", "..");
+  const cascadeSource = fs.readFileSync(
+    path.join(__dirname, "..", "account", "account-deletion-cascade.ts"),
+    "utf8",
+  ) as string;
+
+  /** Quoted string literals inside the array/set literal that follows `anchor`. */
+  const namesAfter = (anchor: string): string[] => {
+    const start = cascadeSource.indexOf(anchor);
+    if (start < 0) return [];
+    const open = cascadeSource.indexOf("[", start);
+    if (open < 0) return [];
+    // Bracket-matched, not `indexOf("];")`: the exclusion set is written
+    // `new Set([...])`, so its literal closes with `])` and a naive scan ran on
+    // to the next array in the file and swallowed half the module — which is
+    // exactly the shape of over-broad parse that makes a drift guard pass while
+    // ranging over the wrong thing.
+    let depth = 0;
+    let close = -1;
+    for (let i = open; i < cascadeSource.length; i++) {
+      if (cascadeSource[i] === "[") depth++;
+      else if (cascadeSource[i] === "]") {
+        depth--;
+        if (depth === 0) {
+          close = i;
+          break;
+        }
+      }
+    }
+    if (close < 0) return [];
+    const body = cascadeSource
+      .slice(open, close)
+      // Line comments in these blocks name sibling FUNCTIONS and collections in
+      // prose; stripping them keeps the parse to real entries.
+      .replace(/\/\/[^\n]*/g, "");
+    return [...body.matchAll(/"([A-Za-z_]+)"/g)].map((m) => m[1]);
+  };
+
+  const subs = namesAfter("const subs = ");
+  const triggerOwned = namesAfter("const TRIGGER_OWNED_SUBCOLLECTIONS = ");
+  check(
+    "the drift guard can still read `subs` out of the cascade source",
+    subs.length > 5 && subs.includes("notifications"),
+    `parsed subs: ${JSON.stringify(subs)}`,
+  );
+  check(
+    "…and TRIGGER_OWNED_SUBCOLLECTIONS, both entries",
+    triggerOwned.length === 2 &&
+      triggerOwned.includes("notificationCounters") &&
+      triggerOwned.includes("recentContentHashes"),
+    `parsed exclusions: ${JSON.stringify(triggerOwned)}`,
+  );
+
+  /** name -> [exported deleter, doc id to seed]. */
+  const COVERED_BY_OWN_STEP: Record<string, [string, string]> = {
+    recipes: ["deleteRecipes", "r1"],
+    menus: ["deleteMenus", "m1"],
+    pantry: ["deletePantryItems", "p1"],
+    personal_tags: ["deletePersonalTags", "t1"],
+    personal_tag_groups: ["deletePersonalTagGroups", "g1"],
+    consent: ["deleteConsentRecords", "c1"],
+    settings: ["deleteUserPreferences", "preferences"],
+    // Surfaced the moment the scanner learned to resolve constants and to skip
+    // comments: it is genuinely covered by its own tier step, it was simply
+    // never visible to this map before.
+    unified_shopping_lists: ["deleteShoppingLists", "l1"],
+  };
+
+  // The second `collection(...)` may be a literal OR a constant reference.
+  // Matching only literals is what made the first `subs` audit miss two live
+  // Dart writers (BUT-1957): every Dart repository builds the path from a
+  // `FirestoreCollections` constant, so a literal-only scan saw the server and
+  // essentially none of the client. Resolve the constants first.
+  const collectionConstants = new Map<string, string>();
+  for (const constFile of [
+    path.join(repoRoot, "lib", "core", "constants", "firestore_collections.dart"),
+    path.join(repoRoot, "functions", "src", "shared", "collections.ts"),
+  ]) {
+    if (!fs.existsSync(constFile)) continue;
+    const src = fs.readFileSync(constFile, "utf8") as string;
+    for (const m of src.matchAll(
+      /(?:static\s+const\s+String\s+|^\s*)([A-Za-z_]\w*)\s*[:=]\s*['"]([A-Za-z_]+)['"]/gm,
+    )) {
+      collectionConstants.set(m[1], m[2]);
+    }
+  }
+
+  const chain =
+    /collection\(\s*(?:['"]users['"]|(?:[A-Za-z_]\w*\.)?[A-Za-z_]\w*[Uu]sers\w*)\s*\)\s*\.\s*doc\(\s*[^)]*\)\s*\.\s*collection\(\s*([^)\s]+)\s*\)/gs;
+  const discovered = new Map<string, string>();
+  // Comments in this repo spell example chains out in prose — this very test
+  // reddened on a `.collection("users").doc(x).collection("y")` written inside
+  // a comment in the cascade. Same trap BUT-1941 records for the golden lint:
+  // strip comments before matching, or the scanner reads documentation as code.
+  const stripComments = (t: string): string =>
+    t.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/[^\n]*/g, "");
+  const walk = (dir: string, exts: string[]): void => {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        if (entry.name === "__tests__" || entry.name === "node_modules") continue;
+        walk(full, exts);
+        continue;
+      }
+      if (!exts.some((e: string) => entry.name.endsWith(e))) continue;
+      const text = stripComments(fs.readFileSync(full, "utf8") as string);
+      // File-LOCAL consts too. `firebase_acquisition_repository.dart` writes
+      // `users/{uid}/acquisition` through a private `static const` and was
+      // invisible to a scan that resolved only the shared constants file —
+      // which is how `acquisition` reached production unerasable.
+      const localConsts = new Map<string, string>();
+      for (const c of text.matchAll(
+        /(?:static\s+)?const\s+(?:String\s+)?([A-Za-z_]\w*)\s*=\s*['"]([A-Za-z_]+)['"]/g,
+      )) {
+        localConsts.set(c[1], c[2]);
+      }
+      for (const m of text.matchAll(chain)) {
+        const raw = m[1].trim();
+        const literal = /^['"]([A-Za-z_]+)['"]$/.exec(raw);
+        const viaConst = /^(?:FirestoreCollections|Collections)\.(\w+)$/.exec(raw);
+        const viaLocal = /^([A-Za-z_]\w*)$/.exec(raw);
+        const name = literal
+          ? literal[1]
+          : viaConst
+            ? collectionConstants.get(viaConst[1])
+            : viaLocal
+              ? localConsts.get(viaLocal[1])
+              : undefined;
+        // An unresolvable expression (a parameter, a getter) is skipped rather
+        // than guessed — it would be a name no bucket can contain, and this
+        // test must fail on real drift, not on its own parser.
+        if (name && !discovered.has(name)) discovered.set(name, full);
+      }
+    }
+  };
+  walk(path.join(repoRoot, "functions", "src"), [".ts"]);
+  walk(path.join(repoRoot, "lib"), [".dart"]);
+
+  check(
+    "the source scan found the writers it is supposed to range over",
+    discovered.has("notifications") &&
+      discovered.has("onboarding") &&
+      discovered.has("recentContentHashes"),
+    `discovered: ${JSON.stringify([...discovered.keys()].sort())}`,
+  );
+
+  const uncovered: string[] = [];
+  for (const name of [...discovered.keys()].sort()) {
+    if (subs.includes(name)) continue;
+    if (triggerOwned.includes(name)) continue;
+    if (name in COVERED_BY_OWN_STEP) continue;
+    uncovered.push(`${name} (written by ${discovered.get(name)})`);
+  }
+  check(
+    "every users/{uid} subcollection a repo writer creates is reached by the cascade",
+    uncovered.length === 0,
+    `unreached, so the probe will report them as residual forever: ${JSON.stringify(uncovered)}`,
+  );
+
+  for (const [name, [fnName, docId]] of Object.entries(COVERED_BY_OWN_STEP)) {
+    const db = new FakeFirestore();
+    db.set(`users/${UID}`, { displayName: "Raderad" });
+    db.set(`users/${UID}/${name}/${docId}`, { v: 1 });
+    db.set(`users/${OTHER}/${name}/${docId}`, { v: 1 });
+    const fn = cascade[fnName];
+    check(
+      `${fnName} is exported, so the coverage map names something real`,
+      typeof fn === "function",
+      `cascade.${fnName} is ${typeof fn}`,
+    );
+    if (typeof fn !== "function") continue;
+    await fn(asDb(db), UID);
+    check(
+      `${fnName} really erases users/{uid}/${name}`,
+      !db.has(`users/${UID}/${name}/${docId}`),
+      "the row survived the step the coverage map credits it to",
+    );
+    check(
+      `…and leaves another user's ${name} alone`,
+      db.has(`users/${OTHER}/${name}/${docId}`),
+      "the step is not keyed on the uid",
+    );
+  }
+}
+
 /**
  * The collection-group index the sweep needs. Firestore's AUTOMATIC single-field
  * indexes are COLLECTION-scoped, so a `collectionGroup('poll_votes')` query
@@ -2948,6 +3623,15 @@ async function main(): Promise<void> {
   await scenario_implausiblePollVoteCountDeclines();
   await scenario_implausiblePollAuthorshipDeclines();
   await scenario_pollVoteIndexIsDeclared();
+  await scenario_userNotificationRowsAreErased();
+  await scenario_notificationEffectivenessRowsAreErased();
+  await scenario_probeEnumeratesUserSubcollections();
+  await scenario_probeExcludesTriggerOwnedSubcollections();
+  await scenario_steplessSubcollectionsAreErasedNotJustReported();
+  await scenario_settingsIsErasedAsACollectionNotOneDocument();
+  await scenario_probeSeesLeftoverNotificationEffectiveness();
+  await scenario_effectivenessRowWrittenBackAfterTheSweep();
+  await scenario_everyUserSubcollectionHasADeleter();
 
   let failed = 0;
   for (const r of results) {

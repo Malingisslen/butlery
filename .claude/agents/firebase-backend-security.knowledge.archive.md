@@ -7944,3 +7944,100 @@ Two comment-level findings raised, both non-blocking:
   currently names".
 
 Verdict: pass (0 blocking).
+
+---
+
+## 2026-09-02 — BUT-1957: `delivered_notifications` Art. 15 section (commit-gate review)
+
+Staged change added an export section for `users/{uid}/notifications`, matching the
+account-deletion cascade that began erasing the subcollection in the same commit
+(export ⊇ erasure invariant). Reviewed `firebase_data_export_repository.dart`,
+`preferences_export_manager.dart`, `export_pagination_helper.dart`,
+`data_export_service.dart`, the manager test suite,
+`docs/security/notification-analytics-retention.md`, and
+`account-deletion-cascade.ts` for context. `flutter test test/unit/services/account/export/`
+→ 190 passing; the manager suite alone → 39.
+
+**Two blocking findings.**
+
+1. **Third-party display name in an unprojected pass-through.** The section passed every
+   field through `sanitizeForJson`, justified by a doc comment reading "No other person
+   appears in these rows, so there is nothing here to redact", and the retention doc said
+   the same twice (Art. 15 section: "no third party in these rows to redact"; DPIA note:
+   "The only third-party data point exported is another user's pseudonymous UID within the
+   data subject's own delivery records"). Refuted by the writer:
+   `functions/src/analytics/detect-lapsed-users.ts` stores `message`/`bodyShown` from
+   `resolveContextualWinbackCopy`, whose highest-priority signal
+   (`functions/src/analytics/winback-context.ts`, `ctx_friend_share`) builds
+   `` `${firstName(share.sharerName)} delade ett recept med dig` `` from
+   `shared_recipes.sharedByDisplayName` — another user's first name, in free text, in the
+   exported row. The digest writer (`send-activity-digest.ts`) is clean: its fields are
+   counts of the requester's own recipes/comments/ratings/shares.
+   The KEEP may well be right (the requester received that exact push on their device), but
+   it is Malin's call and must be recorded; BUT-1772's conversations-names KEEP is a
+   different collection and that entry itself records that arguing by analogy is the error.
+   Three false sentences to strike, not reword.
+
+2. **No `firestore.rules` match block for `users/{userId}/notifications`.** Rules do not
+   cascade, so `allow read: if isOwner(userId) || isAdmin()` on `match /users/{userId}`
+   (line 329) grants nothing on the subcollection. Enumerated every nested match inside the
+   users block and every `{path=**}` wildcard: members, friend_categories, engagements,
+   comments, ratings, recipes, pings — no notifications. So the read is default-denied,
+   `_queryList` throws, and the section returns
+   `{'error': ..., 'error_code': 'delivered-notifications-export-failed'}` for every user on
+   every export. The cause is structural: the collection is Admin-SDK-written and no client
+   has ever read it, so it never needed a rule. The unit suite cannot see this (fake
+   Firestore enforces no rules). Pre-existing sibling of the same shape, not introduced
+   here: `exportFcmTokensSubcollection` reads `users/{uid}/fcm_tokens`, which also has no
+   match block.
+
+**Non-blocking:** test-file comment "These tests exist because it shipped with none" is
+false (code and tests land in the same commit); the section carries no `data_minimisation`
+sentence, which finding 1's decision will require; `orderBy('createdAt')` silently excludes
+any row missing the field (both current writers set it).
+
+**Verified clean:** ownership scoping goes through `_queryList` → `_guardSelfExport` →
+`requireCurrentUserId()` + `validateOwnership`, identical to every sibling; the
+near-collision with the top-level `user_notifications` is well defended (own enum value
+whose tag spells the path, own cap key, own `error_code`, four comments, and a test seeding
+both fixtures with disagreeing rows); the cap is 500 + the standard N+1 probe; a
+single-field `orderBy` on a subcollection needs no declared index; the cascade's
+`deleteUserSubcollections` does erase `"notifications"`, so the doc's erasure claim holds.
+
+---
+
+## 2026-09-02 — BUT-1957 round 2 (re-review of the same staged change)
+
+Both round-1 blockers verified closed against the staged bytes.
+
+1. **Third-party name.** All three false sentences struck rather than reworded (manager doc
+   comment, retention doc Art. 15 section, retention doc DPIA note). The KEEP is now recorded
+   in three places that agree: `.claude/rules/accepted-deviations.md` (two new entries),
+   `docs/security/notification-analytics-retention.md`, and the manager doc comment — each
+   reasoned on its own facts, each marked as chosen without asking Malin with the strip left
+   open to her. The DPIA note now names TWO third-party data points. A Swedish
+   `data_minimisation` sentence ships in the section itself.
+2. **Rules gap.** `match /users/{userId}/notifications/{notificationId}` added, owner-only
+   read, `allow write: if false`. Ran `npm run test:rules:delivered-notifications` against a
+   live emulator: 14/14, including the exact production ordered LIST query (DN1), an
+   Admin-SDK fail-closed control (DN13) and a collection-group deny (DN14). `write: if false`
+   breaks no shipped path — `git log -S` over `lib/` finds no client that ever wrote or read
+   the subcollection.
+
+Re-checked the writer set for a second third-party signal: `resolveContextualWinbackCopy`'s
+other three branches are static Swedish strings; `fetchWinbackCopy`/`BASELINE_COPY` is
+operator-authored Remote Config copy with no interpolation; `send-activity-digest.ts` stores
+four counts of the requester's OWN activity. `ctx_friend_share` remains the only one.
+
+Suites run: `flutter test` over both export suites → 80/80;
+`npm run test:account-deletion-cascade` → 204/204;
+`npm run test:rules:delivered-notifications` → 14/14.
+
+Three non-blocking findings, all documentation-accuracy:
+- "förnamnet"/"FIRST NAME" (bundle sentence + three prose sites): `firstName()` returns the
+  whole trimmed display name when it holds no whitespace, so the wording underclaims.
+- The `data_minimisation` sentence is asserted by no test — deletable with 80/80 green.
+- "counts of activity on the requester's own content" describes the digest wrongly; they are
+  counts of the requester's own ACTIVITY.
+
+Verdict: pass (0 blocking).

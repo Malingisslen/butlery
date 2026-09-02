@@ -277,7 +277,15 @@ name which doc each end touches before approving it.
   users who have left nothing, i.e. it is unconditional prose wearing a conditional's shape.
   Measure it on the emulator with a same-shape ALLOWED control on the gated field, and state
   the gap unconditionally rather than probing for it.
-- No `firestore.rules` match block = default-deny — grep for every new collection path. An
+- No `firestore.rules` match block = default-deny — grep for every new collection path, and
+  remember rules DO NOT CASCADE: `allow read` on `match /users/{uid}` grants nothing on
+  `users/{uid}/<sub>`, each of which needs its own block. The sharpest instance is a
+  collection written ONLY by the Admin SDK and read by no client — it has never needed a
+  rule, so a NEW client read of it (a fresh Art. 15 section is the usual reason) is denied
+  by construction and the section is a permanent failure envelope that ships nothing.
+  Fake-Firestore unit tests pass either way, so the green suite is not evidence: grep for
+  the `match` block, and treat every `users/{uid}/<sub>` path the export reads as suspect
+  (`fcm_tokens` is a live pre-existing case). An
   admin-only collection-group rule can make "no match block" a false claim; word it "no
   rule grants a CLIENT this read." A denied read inside a shared `try` DISCARDS sibling
   reads already collected — give each probe in a multi-read section its own inner try.
@@ -369,6 +377,22 @@ name which doc each end touches before approving it.
   `e.toString()` alone (leaks uids/paths into what the subject may forward to a regulator).
   Truncation: fetch `limit+1`, flag `truncated = fetched.length > limit`; a NESTED per-parent
   cap needs the identical flag.
+- "No third party appears in these rows" is a claim about the WRITER'S COPY BUILDER, never
+  about the field list — grep the module that composes the stored text, not the `set()`.
+  A free-text field whose name promises nothing (`message`, `bodyShown`, `title`) is where
+  personalised server copy interpolates someone else's display name
+  (`${firstName(sharerName)} delade ett recept med dig`), so an unprojected pass-through
+  justified from the schema ships a third party the schema never named. Such a KEEP is
+  Malin's recorded decision, not an inference from a same-shaped call on another
+  collection, and the paired `docs/security/*-retention.md` usually repeats the false
+  sentence TWICE (the Art. 15 section and the DPIA note) — sweep the whole file. Once the
+  KEEP ships, the bundle's own `data_minimisation` sentence is the only thing that tells the
+  subject, so pin it with an assertion (nothing else stops a later edit deleting it), and
+  word it from what the code PRODUCES: a `firstName()` helper splitting on whitespace
+  returns the WHOLE display name for a single-token name, so "first name" in user-facing
+  text underclaims. Grade the copy builder's OTHER branches too — a digest row of counts is
+  clean, but "counts of activity on their own content" is a different claim from "counts of
+  their own activity" (a comment they authored sits on someone else's recipe).
 - A row-level DROP is a different decision from a field-level STRIP and takes the OPPOSITE
   fail direction: a strip fails CLOSED (unrecognised owner id ⇒ lose the field), a drop fails
   OPEN (unreadable owner id ⇒ KEEP the row, because under-disclosure is the worse Art. 15

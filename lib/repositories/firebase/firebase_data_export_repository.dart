@@ -27,6 +27,11 @@ enum ExportResourceType {
   userConsent('user_consent'),
   userSettings('user_settings'),
   userNotifications('user_notifications'),
+  // BUT-1957. A DIFFERENT collection from `userNotifications` above, one word
+  // apart: that one is the TOP-LEVEL `user_notifications`, this one is the
+  // subcollection `users/{uid}/notifications`. The tag spells the path out so a
+  // log line cannot be read as the other.
+  userDeliveredNotifications('users/{uid}/notifications'),
   userNotificationPreferences('user_notification_preferences'),
   userFcmTokens('user_fcm_tokens'),
   categoryPreferences('category_preferences'),
@@ -749,6 +754,27 @@ class FirebaseDataExportRepository extends BaseFirebaseRepository<Object> {
         .orderBy('createdAt', descending: true),
     userId,
     ExportResourceType.userNotifications,
+    limit: maxDocuments,
+  );
+
+  /// `users/{userId}/notifications` — the in-app notification rows the
+  /// win-back and activity-digest jobs write (BUT-1957). Distinct from
+  /// [exportUserNotifications], which reads the top-level collection.
+  Future<List<Map<String, dynamic>>> exportDeliveredNotifications(
+    String userId, {
+    int maxDocuments = 500,
+  }) => _queryList(
+    firestore
+        .collection(FirestoreCollections.users)
+        .doc(userId)
+        .collection(FirestoreCollections.userDeliveredNotifications)
+        // The cascade erases this subcollection by ENUMERATION, so it removes
+        // rows this ordered query cannot see — one missing `createdAt` and the
+        // row is erasable but not exportable. Both writers set the field today;
+        // a third would not inherit the obligation from anything but this.
+        .orderBy('createdAt', descending: true),
+    userId,
+    ExportResourceType.userDeliveredNotifications,
     limit: maxDocuments,
   );
 
