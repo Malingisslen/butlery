@@ -48,9 +48,16 @@ const RULES_PATH = path.resolve(__dirname, "../../../firestore.rules");
 
 const OWNER_UID = "wmp-owner-uid";
 const STRANGER_UID = "wmp-stranger-uid";
+// A uid that is a plain string prefix of OWNER_UID. The delete/read rule is
+// `planId.matches('^' + uid + '_.*')`, so the separator is the only thing
+// keeping this actor out of the owner's documents.
+const PREFIX_UID = "wmp-owner";
 
 /** Doc ids are `{uid}_{YYYY-Www}` — the rule matches on that prefix. */
 const OWNED_ID = `${OWNER_UID}_2026-W18`;
+// Its own id so the delete cases below cannot pull the document out from under
+// the update/read cases above, whatever order anyone reorders them into.
+const OWNED_DELETE_ID = `${OWNER_UID}_2026-W20`;
 
 const GROUP_ID = "wmp-group";
 const GROUP_PLAN_ID = `${GROUP_ID}_2026-W18`;
@@ -195,6 +202,39 @@ test("a stranger cannot read another user's plan", async () => {
   const ctx = env.authenticatedContext(STRANGER_UID);
   await assertFails(
     ctx.firestore().doc(`weekly_menu_plans/${OWNED_ID}`).get()
+  );
+});
+
+// W8 (BUT-1968): the DELETE limb, which had no test in either direction. Note
+// what it gates on — the doc ID, not `resource.data.userId` — so `resource` is
+// never dereferenced and a delete of a week that does not exist is allowed too.
+test("an owner can delete their own plan", async () => {
+  await seed(OWNED_DELETE_ID, planBody(OWNER_UID));
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertSucceeds(
+    ctx.firestore().doc(`weekly_menu_plans/${OWNED_DELETE_ID}`).delete()
+  );
+});
+
+// W9: the deny half. Single-variable against W8 — same document, same verb,
+// only the actor differs.
+test("a stranger cannot delete another user's plan", async () => {
+  await seed(OWNED_DELETE_ID, planBody(OWNER_UID));
+  const ctx = env.authenticatedContext(STRANGER_UID);
+  await assertFails(
+    ctx.firestore().doc(`weekly_menu_plans/${OWNED_DELETE_ID}`).delete()
+  );
+});
+
+// W10: the `_` in the pattern is the whole boundary between two uids where one
+// is a prefix of the other. Measured on the emulator 2026-09-03: with the
+// separator, `wmp-owner` is denied `wmp-owner-uid`'s plan; drop it and the same
+// actor is allowed. W9's stranger uid shares no prefix, so it cannot see that.
+test("a uid that is a string prefix of the owner's cannot delete their plan", async () => {
+  await seed(OWNED_DELETE_ID, planBody(OWNER_UID));
+  const ctx = env.authenticatedContext(PREFIX_UID);
+  await assertFails(
+    ctx.firestore().doc(`weekly_menu_plans/${OWNED_DELETE_ID}`).delete()
   );
 });
 
@@ -795,6 +835,107 @@ test("a MAP-shaped editTrail with 50 keys is ALLOWED by the cap", async () => {
       .firestore()
       .doc(`group_weekly_menu_plans/${GROUP_PLAN_ID}`)
       .update({ editTrail: trailMap })
+  );
+});
+
+// ---------------------------------------------------------------------------
+// BUT-1968: the group DELETE limb, and the admin arm of the update rule.
+//
+// `allow delete` is admin-only and had no test in any direction. The update
+// rule's `|| memberPermissions[uid] == 'admin'` arm had none either: admin was
+// incidental fixture data in every seed above, so no case turned on it.
+// ---------------------------------------------------------------------------
+
+// A member who exists in neither role — what an admin ADDS in GU1/GU2 below.
+const THIRD_UID = "wmp-third-uid";
+
+/** OWNER as admin, STRANGER at the given level. */
+function twoRoleBody(
+  strangerRole: string,
+  extra: Record<string, unknown> = {}
+): Record<string, unknown> {
+  return groupPlanBody({
+    participants: [
+      { userId: OWNER_UID, permission: "admin" },
+      { userId: STRANGER_UID, permission: strangerRole },
+    ],
+    participantUserIds: [OWNER_UID, STRANGER_UID],
+    memberPermissions: { [OWNER_UID]: "admin", [STRANGER_UID]: strangerRole },
+    ...extra,
+  });
+}
+
+/** The membership change the update rule reserves for admins. */
+const SEATS_A_THIRD_MEMBER = {
+  memberPermissions: {
+    [OWNER_UID]: "admin",
+    [STRANGER_UID]: "edit",
+    [THIRD_UID]: "view",
+  },
+};
+
+// GU1: DENY — an `edit` member changes `memberPermissions`.
+test("an edit member cannot change the permission map", async () => {
+  await seedGroup(twoRoleBody("edit"));
+  const ctx = env.authenticatedContext(STRANGER_UID);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`group_weekly_menu_plans/${GROUP_PLAN_ID}`)
+      .update(SEATS_A_THIRD_MEMBER)
+  );
+});
+
+// GU2: ALLOW — the single-variable control for GU1. Same document, same
+// payload; only the actor's role differs, so the admin arm is what decides it.
+test("an admin can change the permission map", async () => {
+  await seedGroup(twoRoleBody("edit"));
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertSucceeds(
+    ctx
+      .firestore()
+      .doc(`group_weekly_menu_plans/${GROUP_PLAN_ID}`)
+      .update(SEATS_A_THIRD_MEMBER)
+  );
+});
+
+// GD1: ALLOW — admin-only delete, the allow half.
+test("an admin can delete a group plan", async () => {
+  await seedGroup(twoRoleBody("edit"));
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertSucceeds(
+    ctx.firestore().doc(`group_weekly_menu_plans/${GROUP_PLAN_ID}`).delete()
+  );
+});
+
+// GD2: DENY — an `edit` member. Single-variable against GD1: this is the same
+// document and the same verb, and `edit` is the level that may write everything
+// else on it.
+test("an edit member cannot delete a group plan", async () => {
+  await seedGroup(twoRoleBody("edit"));
+  const ctx = env.authenticatedContext(STRANGER_UID);
+  await assertFails(
+    ctx.firestore().doc(`group_weekly_menu_plans/${GROUP_PLAN_ID}`).delete()
+  );
+});
+
+// GD3: DENY — a `view` member.
+test("a view-only member cannot delete a group plan", async () => {
+  await seedGroup(twoRoleBody("view"));
+  const ctx = env.authenticatedContext(STRANGER_UID);
+  await assertFails(
+    ctx.firestore().doc(`group_weekly_menu_plans/${GROUP_PLAN_ID}`).delete()
+  );
+});
+
+// GD4: DENY — someone absent from `memberPermissions` entirely. Over-determined
+// against GD2/GD3 by design: it is the `uid in resource.data.memberPermissions`
+// conjunct that keeps the map lookup beside it from erroring.
+test("a non-member cannot delete a group plan", async () => {
+  await seedGroup(groupPlanBody());
+  const ctx = env.authenticatedContext(STRANGER_UID);
+  await assertFails(
+    ctx.firestore().doc(`group_weekly_menu_plans/${GROUP_PLAN_ID}`).delete()
   );
 });
 

@@ -17827,3 +17827,101 @@ by trimming the endpoint-tally, deploy-manifest-vacuity, log-only-branch, header
 test-registration clauses; the file ends the round net SMALLER than it started (27,101 ->
 27,098 bytes, measured with wc -c in the same call), and is still far over the
 25,000-char budget.
+
+### 2026-09-04 — BUT-1968 + two BUT-1851 coverage gaps: nine rules tests and one wiring test [tests][rules][rate-limit]
+
+Wrote the missing tests only; no production file changed. Baselines before the work:
+`weekly-menu-plans-rules.test.ts` 39/39 with zero `.delete(` calls anywhere in the file,
+`conversations-rules.test.ts` 87/87, `chat-group-callables.test.ts` 32/32. After:
+48/48, 89/89, 33/33. `npm run build` clean.
+
+**BUT-1968 part 1 — personal delete (`weekly_menu_plans`).** Three cases: W8 owner-allows,
+W9 stranger-denies, W10 a uid that is a plain string PREFIX of the owner's. W10 exists
+because the rule is `planId.matches('^' + request.auth.uid + '_.*')` and the `_` is the
+entire boundary between two uids where one prefixes the other. Probes, each with
+`env.clearFirestore()` between mutation and run, and each restored with a byte-compare:
+`allow delete: if false` → W8 alone RED; dropping the prefix conjunct → W9 and W10 RED;
+dropping just the `_` from the pattern → W10 alone RED, which is what makes W10 more than
+a second copy of W9.
+
+**The prefix measurement, run on the emulator before writing anything.** `abc` reading and
+DELETING `abcdef_2026-W18` is denied — the separator holds. `abc` reading and deleting
+`abc_def_2026-W18` is ALLOWED, because the stored uid itself contains the separator. So the
+hazard is real but gated on a uid containing `_`, and Butlery mints none: no
+`createCustomToken`, no `signInWithCustomToken`, no Admin `createUser` with a chosen uid —
+the only account creation is `FirebaseAuthRepository.createUser(email, password)`, i.e.
+Firebase-minted 28-char alphanumerics. Reported as a Low finding, NOT pinned as a test:
+a test asserting that ALLOW would redden the day someone tightens the rule, which is the
+wrong signal. Also measured in the same probe: a delete of a document that does not exist
+is ALLOWED, because this limb never dereferences `resource`.
+
+**BUT-1968 part 2 — group delete (`group_weekly_menu_plans`).** GD1 admin-allows,
+GD2 edit-denies, GD3 view-denies, GD4 non-member-denies, all through one `twoRoleBody`
+helper so GD1/GD2 differ in the actor and nothing else. Probes: `allow delete: if false`
+→ GD1 alone RED; dropping the `== 'admin'` test → GD2 and GD3 RED; `allow delete: if
+isAuthenticated()` → GD2, GD3, GD4 RED.
+
+**BUT-1968 part 3 — the admin arm of the group update rule.** The two roles ARE
+discriminated, and only here: the alternation `(!affectedKeys().hasAny(['participants',
+'participantUserIds', 'memberPermissions'])) || memberPermissions[uid] == 'admin'`. So the
+discriminating action is a membership change. GU1 = an `edit` member seating a third member
+in `memberPermissions`, denied; GU2 = the same document and the same payload sent by the
+admin, allowed. Probes: replacing the whole alternation with `&& true` → GU1 alone RED;
+deleting the `|| … == 'admin'` arm → GU2 alone RED. Everything else on this collection is
+open to `edit` and `admin` alike, which G4 already covers.
+
+**BUT-1851 gap 1 — orphaned roster rows, WRITE verbs.** The brief's measurement reproduced:
+on a parentless `conversations/{id}/participants/{uid}`, READ is denied (P14/P15) while
+UPDATE and DELETE are ALLOWED, because the (u1) self-cursor branch and `allow delete` are
+pure self checks that never call `parentDoc()`. Pinned as P31/P32 on a NEW fixture
+(`P_ORPHAN_WRITE`) with two rows, one per verb — two rows because both branches gate on
+`participantId == request.auth.uid` and one uid cannot hold two rows in one conversation,
+and a separate conversation id so P32's delete cannot pull a row out from under
+P_READ_FRESH's read cases. The probes are the discriminating kind rather than "make it
+deny": adding `parentNames(request.auth.uid)` to the u1 branch reddens P31 and leaves P16
+(the parented equivalent) green; adding it to `allow delete` reddens P32 and leaves P21
+green. That is what proves the pair pins the parent-FREE property and not merely the self
+property.
+
+**BUT-1851 gap 2 — the rate-limit operation key.** `chat-group-callables.test.ts` drives
+`createChatGroupWithDeps`, which sits BELOW `checkRateLimit(callerUid, "createChatGroup")`
+in the `onCall` wrapper, so nothing read that literal. `getRateLimitConfig` returns
+`RATE_LIMIT_CONFIGS[op] || RATE_LIMIT_CONFIGS["default"]`, so a rename on either side alone
+runs the callable on the default bucket while every `dailyLimit`/`maxTokens` pin in
+`rate-limiter-daily-cap.test.ts` stays green. One case for the whole family: read every
+`.ts` under `functions/src/groups/`, strip comments (a commented-out call would otherwise
+satisfy the match), regex the second argument out of each `checkRateLimit(` call, and assert
+each key is an own property of `RATE_LIMIT_CONFIGS` and is not `"default"`. Derived, so a
+new `groups/` callable is covered on arrival. Three probes, all RED: renaming the call-site
+literal; renaming the `createChatGroup:` key in `RATE_LIMIT_CONFIGS`; and reshaping the call
+to `["createChatGroup"].join("")` so the regex parses nothing — the last one is the vacuity
+guard, and it works because the case asserts per file that at least one key was parsed.
+
+**Probe-harness notes, both of which cost time.** `mutate.js` asserted the anchor occurs
+EXACTLY once before writing, per the BUT-1971 lesson; that assert fired for real on the
+`RATE_LIMIT_CONFIGS` mutation, reporting 0 occurrences — `rate_limiter.ts` is CRLF while
+`firestore.rules` and `create-chat-group.ts` are LF, so an LF-normalised anchor matched
+nothing. Fixed by retrying the anchor in CRLF. Separately, `node -e` does not get MSYS path
+translation the way an argv path to a native binary does, so `/c/Butlery/...` inside a
+`node -e` string resolved to `C:\c\Butlery\...` and threw ENOENT; the same path passed as
+argv to `mutate.js` worked fine.
+
+**Incidental finding, not fixed here.** `conversations-rules.test.ts` declares
+`const PROJECT_ID = process.env.PROBE_PROJECT_ID ?? "butlery-rules-conversations"` and calls
+`projectId: PROJECT_ID`. Ran both of `rules-coverage-report.js`'s discovery regexes against
+the file: `\bPROJECT_ID\s*=\s*["']` returns null and `projectId:\s*["']` returns []. So that
+suite contributes nothing to the coverage union — exactly the failure mode the knowledge
+file's `test:rules:all` principle already describes, live in the tree. The fix is to move
+the env override to the `projectId:` call site, which is a production-test change outside
+this brief's scope.
+
+**Knowledge file.** Added two principles: the doc-ID-prefix/separator rule (with the
+`resource`-free corollary about deleting a missing document) and, folded into the existing
+`enforceRateLimit` bullet, that a `…WithDeps` core test sees none of the wrapper's gates and
+an unknown operation key falls back to `default` in silence. Paid for both by retiring the
+`\w`/`\b` ASCII clause (the always-on digest carries it), the duplicated
+`commitInChunks(strict:false)` parenthetical, the `migrations/` and `shared/` table rows, the
+standalone `logger` bullet (merged into the logging section), and by sharpening the
+deploy-manifest, concurrency, timeout, reset-user-data, minor-gate, aggregate-index,
+cascade-ordering and enumerating-probe bullets. 27,098 -> 27,099 bytes, measured with
+`wc -c`; still far over the 25,000-char budget.

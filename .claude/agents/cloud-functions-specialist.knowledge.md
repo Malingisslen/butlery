@@ -23,9 +23,7 @@ names/codes/thresholds, cut the story.
 | `family/` | Household data lifecycle (scheduled) | `test:purge-dormant-family-data` |
 | `messaging/` | Conversation/DM safety (onCreate) | `test:enforce-group-minor-membership` |
 | `account/` | GDPR deletion + age verify | `test:request-account-deletion` |
-| `migrations/` | One-shot gated backfills | n/a |
 | `middleware/` | Auth/validation/rate-limit | `test:rate-limiter-*` |
-| `shared/` | Pure helpers, no triggers | varies |
 
 ## Region & global options
 
@@ -41,23 +39,22 @@ without approval (mismatch = silent client-side "not found").
   (`NOT_ENOUGH_USAGE_HISTORY`); remedy is one function per `firebase deploy`.
 - **3 instances != 3 concurrent executions, and a LOW cap PACKS.**
   `concurrency` defaults to 80 at `cpu >= 1`; only a long-lived, memory-hungry
-  handler declares `concurrency: 1` (`SERIALISED_ENDPOINTS`). It trades OOM for
+  handler declares `concurrency: 1` (`SERIALISED_ENDPOINTS`), trading OOM for
   QUEUE TIME charged against `isCascadeEventExpired` (from `event.time`) — a
-  delivery that only queued is abandoned without failing and writes NO marker,
+  queued-only delivery is abandoned without failing and writes NO marker,
   invisible to `STALE_TAG_MARKERS`, `getDeletedIngredientStats` and
   `_needsRetagging`. Raise `maxInstances` (override + `ALLOWED_OVERRIDES`),
-  never `concurrency`. Notification fan-out is IN-PROCESS — a cap never splits
-  a batch.
+  never `concurrency`. Notification fan-out is IN-PROCESS — a cap never splits a
+  batch.
 - **`onUserDeleted` is the ONLY gcfv1 export** (own `.region().runWith()`,
   unreachable by `setGlobalOptions`) — exclude it from "every function" claims.
 - **Prove endpoint config, never reason about it:** `npm run
   test:deploy-manifest` imports the ENTRY POINT (the only way the global call
-  runs), asserting region + numeric `maxInstances` on every `gcfv2` endpoint,
-  plus `concurrency === 1` on the two cascades. An unset v2 option is a sentinel
-  OBJECT, not null (`== null` is FALSE) — check `typeof x === "number"`.
-  Vacuity sits in the `gcfv2` FILTER (rename `platform` → ~0 endpoints, all
-  green): guard the FILTERED count per CALLER, keep BOTH presence check and
-  value pin, and make a by-NAME pin FAIL on a missing export, never skip.
+  runs), pinning region, numeric `maxInstances` and the cascades'
+  `concurrency === 1`. An unset v2 option is a sentinel OBJECT, not null
+  (`== null` is FALSE) — check `typeof x === "number"`. Vacuity is in the
+  `gcfv2` FILTER: guard the filtered COUNT per caller, keep presence AND value
+  pins, and make a by-NAME pin fail rather than skip on a missing export.
 - **Some gen2 exports pin their OWN region** (`moderateUpload`,
   `syncConversationLastMessage`, `purgeExpiredAuditLogs`, `migrations/`), so
   never say a global option "reaches every export", and never write an endpoint
@@ -65,8 +62,6 @@ without approval (mismatch = silent client-side "not found").
 
 ## Firebase Functions v2 — what to use
 
-- `logger` from `firebase-functions/logger`, never `console.log` (except
-  `admin/` ts-node scripts).
 - **`HttpsError` thrown inside `db.runTransaction` is NOT retried** —
   `isRetryableTransactionError` switches on numeric gRPC codes and
   `HttpsError.code` is a string, so it rolls back first-attempt.
@@ -87,8 +82,7 @@ Triggers retry on uncaught exception; handlers must be idempotent:
    computed from.
 8. **Concurrent Tier-1 cascade legs (`Promise.all`) can write the same
    collection** — grep sibling legs for writers before claiming "no
-   race"; make anonymising legs NOT_FOUND-tolerant PER DOCUMENT
-   (`commitInChunks(strict:false)` fails a whole chunk on one NOT_FOUND),
+   race"; make anonymising legs NOT_FOUND-tolerant PER DOCUMENT,
    and give every new sweep its own leg in `probeResidualData` — it has
    top-level-FIELD, `users/{uid}`-ENUMERATION and collectionGroup shapes, so
    "the probe cannot see this collection" is never true and never a reason to
@@ -112,12 +106,12 @@ Triggers retry on uncaught exception; handlers must be idempotent:
 ## Cost & cold-start
 
 - Billed per ms × memory + per-invocation. Narrow imports. 540s is the v2 max;
-  read the real value off `__endpoint`, never a comment.
+  read the real value off `__endpoint`.
 - **An in-code timeout guard is dead unless `timeoutSeconds` is declared on the
   SAME trigger** — global options carry no timeout, so a v2 event function
-  defaults to 60s. Export guard-ms/platform-seconds as a pair and pin against
-  the manifest's `__endpoint.timeoutSeconds` (a constant-vs-constant test stays
-  green after the declaration is deleted).
+  defaults to 60s. Pin guard-ms against the manifest's
+  `__endpoint.timeoutSeconds`; a constant-vs-constant test stays green after
+  the declaration is deleted.
 - **A `retry:true` trigger enumerating a client-writable collection has
   unbounded fan-out** — cap the READ (`.limit(CAP+1).get()`), chunk-delete with
   a per-item `.catch` on grpc code only, never throw. The over-cap verdict
@@ -137,9 +131,8 @@ Triggers retry on uncaught exception; handlers must be idempotent:
   `run-all-tests.js`: auto-discovers every `test:*` script. **A new
   `__tests__/*.test.ts` is invisible until its `test:*` script exists**;
   `check-test-registration.js` proves it, per FILE (tests added to an existing
-  suite need none). A `test:*` naming an
-  UNTRACKED file reddens the CI unit lane, so file + package.json line
-  stage in ONE commit.
+  suite need none). A `test:*` naming an UNTRACKED file reddens the CI unit
+  lane, so file + package.json line stage in ONE commit.
 - `npm run test:rules:all` — a new rules/integration suite is FOUR
   registrations: its own `test:*` script, an append to the `&&` chain in
   `test:rules:all`, BOTH `paths:` blocks in `firestore-rules.yml`, and a UNIQUE
@@ -158,8 +151,9 @@ Triggers retry on uncaught exception; handlers must be idempotent:
 
 ## Logging conventions
 
-`logger.info("event", { userId, recipeId, action })` — stable string,
-structured object, no PII. **`logger.error(msg, { err })` records NO
+`logger` from `firebase-functions/logger`, never `console.log` (except `admin/`
+ts-node scripts): `logger.info("event", { userId, recipeId, action })` — stable
+string, structured object, no PII. **`logger.error(msg, { err })` records NO
 cause** — unwraps only when passed POSITIONALLY; use `errCode`/`errName`
 from `(err as {code?}).code`.
 - **Hash ALL PII/title-derived fields consistently** — a mixed line (one
@@ -182,7 +176,7 @@ from `(err as {code?}).code`.
 
 ### Test seams & non-vacuity
 - v2 exports carry `.run(event)` — test triggers with a typed payload from
-  real emulator snapshots, no firebase-functions-test needed.
+  real emulator snapshots; no firebase-functions-test.
 - **A wrapper/gate test is non-vacuous only if breaking it produces a
   DIFFERENT result than any other failure** — the recurring failure is one
   error code from TWO branches; assert on branch-unique text. An unsimulated
@@ -193,6 +187,11 @@ from `(err as {code?}).code`.
 - Vacuity: a `?? {}` read survives the mutant DELETING the doc (pair with a
   sibling requiring EXISTS); `src.includes("<field>")` is free when a
   docstring names the field (assert the WRITE).
+- **A doc-ID-prefix rule (`planId.matches('^' + uid + '_.*')`) is bounded by
+  the SEPARATOR, not the uid** — measured: `abc` is denied `abcdef_…` but
+  ALLOWED `abc_def_…`, on read and delete. Safe only while uids are
+  Firebase-minted (no `_`). Such a limb never reads `resource`, so it also
+  allows deleting a document that does not exist.
 - **Rules are not filters** — a client query with NO condition is DENIED
   wholesale on a member-scoped collection; only the RULES emulator lane
   proves it, and it KEEPS data across runs, so give an "empty" fixture a uid
@@ -219,11 +218,11 @@ from `(err as {code?}).code`.
 - Cascade purges discover children via `rootRef.listCollections()`, never
   hard-coded names. Steps are BEST-EFFORT — a rethrow re-runs the WHOLE
   cascade, double-applying non-idempotent ones. Before citing
-  `admin/reset-user-data.ts` as provenance OR as the recovery a capped sweep's
-  DECLINE names: `subcollections` is a READER'S note, not enforcement;
-  `COLLECTIONS_TO_DELETE` holds TOP-LEVEL names; and a name in BOTH it and
-  `COLLECTIONS_TO_KEEP` makes `main()` `process.exit(1)` before deleting
-  anything (`tag_configs` does). List membership is NECESSARY, not sufficient.
+  `admin/reset-user-data.ts` as provenance or as a capped sweep's recovery:
+  `subcollections` is a READER'S note, `COLLECTIONS_TO_DELETE` holds TOP-LEVEL
+  names, and a name in BOTH it and `COLLECTIONS_TO_KEEP` makes `main()`
+  `process.exit(1)` before deleting anything (`tag_configs` does). List
+  membership is NECESSARY, not sufficient.
 - **`batch.update()` on a concurrently-deleted doc fails the WHOLE chunk with
   NOT_FOUND** under `strict:false`; and `commitInChunks` calls `mutate` OUTSIDE
   that try, so a SYNCHRONOUS validation throw from the callback (`undefined` in
@@ -269,10 +268,9 @@ from `(err as {code?}).code`.
   window, rollup offsets AND active-user cutoff from that one base.
 
 ### GDPR account-deletion cascade
-- A cascade step keyed on a shared/parent handle must destroy the retry
-  handle LAST, after all child cleanup commits. Subtler form: a
-  purpose-built QUERY HANDLE cleared in the SAME write as the content
-  scrub, ahead of a dependent mirror — order the mirror write FIRST.
+- A cascade step keyed on a shared/parent handle destroys that handle LAST,
+  after all child cleanup commits — including a purpose-built QUERY HANDLE
+  cleared in the same write as the content scrub, ahead of a dependent mirror.
 - **`probeResidualData` must not be BROADER than the deleter, and the deleter
   must not be NARROWER than the EXPORT's predicate** — Art. 15 must never reach
   a document Art. 17 cannot (`memberPermissions.<uid> != null` = Dart
@@ -301,8 +299,8 @@ from `(err as {code?}).code`.
   DERIVED drift test: regex every
   `.collection(users).doc(..).collection("X")` writer across `functions/src` +
   `lib`, RESOLVING collection CONSTANTS incl. file-local ones, and spelling the
-  users token `\w*[Uu]sers\w*` — `[A-Za-z_]\w*` REQUIRES a char before "users"
-  and so misses the bare `FirestoreCollections.users` every Dart repo writes;
+  users token `\w*[Uu]sers\w*` (`[A-Za-z_]\w*` misses the bare
+  `FirestoreCollections.users` every Dart repo writes);
   `db.doc("users/${uid}/X/y")` string paths are still missed. Bucket each name
   into the source-PARSED `subs`, the source-PARSED exclusions, or a map whose
   every entry is EXERCISED (seed, run the named deleter, assert gone). Parse
@@ -337,6 +335,9 @@ from `(err as {code?}).code`.
   loop leaves no audit trail. A new callable copying its siblings is
   CONSISTENT, not correct. Abuse/cost gates fail CLOSED on a Firestore error;
   some notification gates deliberately fail OPEN — don't harmonize.
+  A `…WithDeps` core test sees none of the wrapper's gates, and an unknown
+  operation key falls back to `RATE_LIMIT_CONFIGS.default` in silence — pin the
+  `checkRateLimit(uid, "<key>")` LITERALS by parsing source, not by value.
 - **`rateLimitWrite(bucket, s)` is INERT unless a client writes
   `users/{uid}/rate_limits/<bucket>`** — it passes on an absent bucket doc, and
   the only buckets written are `activity_events`, `comments`, `social_requests`,
@@ -351,15 +352,13 @@ from `(err as {code?}).code`.
   a green Dart test.
 - Unbounded collection-group folds use `.aggregate({count, average})`, never
   `.get()`; a `collectionGroup` equality query needs a `fieldOverrides` entry
-  with `queryScope:"COLLECTION_GROUP"`. A COLLECTION-scoped equality needs
-  none — unless `fieldOverrides` EXEMPTS that field, so check exemptions, not
-  just `indexes`.
+  with `queryScope:"COLLECTION_GROUP"`. A COLLECTION-scoped equality needs none
+  unless `fieldOverrides` EXEMPTS that field — check exemptions, not `indexes`.
 
 ### Verify-signup-age, account callables & minor-safety triggers
 - Rules can't iterate an array for a per-member rule on GROUP-shaped data —
-  the check lives in the CALLABLES (`groups/minor-membership-gate.ts`),
-  backstopped by `enforceGroupMinorMembership`, `onDocumentWritten` on
-  `chat_groups/{groupId}`.
+  the check lives in `groups/minor-membership-gate.ts`, backstopped by
+  `enforceGroupMinorMembership` (`onDocumentWritten` on `chat_groups/{id}`).
 - **A callable that READS a doc before checking caller membership is an ORACLE,
   and its idempotent no-op branch is the leak** — collapse `!exists` +
   non-member into ONE uniform response.
@@ -369,7 +368,7 @@ from `(err as {code?}).code`.
 - **A client-chosen document id is not unique across accounts.** A
   server-side pointer to one (`friend_categories/{uuid}`) must be keyed on
   OWNER + id, or an ex-member re-creating that id under their own uid is
-  handed the victim's object. Do NOT then exempt that owner from the object's
+  handed the victim's object. Do not then exempt that owner from the
   membership check — an owner who left could otherwise empty its roster.
 - **A new `onCall` export is a THREE-file change**: the function, its
   `test:*`/suite in `package.json`, and `app-check-enforcement.test.ts`'s
@@ -377,8 +376,7 @@ from `(err as {code?}).code`.
   checks the admin claim); a deletion is the same in reverse.
 
 ### TS↔Dart parity twins (canonical-pool-key.ts et al.)
-- `\w`/`\b` are ASCII-only in both (the always-on digest carries this too);
-  case-insensitive triggers need per-letter classes, not `/i`. Module-scope
+- Case-insensitive triggers need per-letter classes, not `/i`. Module-scope
   `/g` regexes are stateful with `.test()`/`.exec()` in long-lived isolates.
   Shared word lists and cross-port VECTORS: compiled-in consts or one shared
   JSON fixture, pinned on BOTH sides, never a runtime load.

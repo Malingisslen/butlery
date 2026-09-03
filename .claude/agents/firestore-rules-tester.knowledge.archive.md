@@ -4375,3 +4375,69 @@ That does not falsify C6's sentence (no `chat_groups` document can be created, s
 minor-safety CF is unreachable either way), but a future reader should not take "a client
 cannot create a group conversation" to mean "no client-written conversation carries a
 `groupId`".
+
+---
+
+## 2026-09-04 — BUT-1968 review: twelve new cases across three suites, plus two carried BUT-1851 gaps
+
+Reviewed the staged diff (test files only). `git diff HEAD` for `firestore.rules`,
+`functions/src/groups/create-chat-group.ts` and `functions/src/middleware/rate_limiter.ts`
+was EMPTY, and a line-ending-normalised md5 of each matched `git show HEAD:` — no rule
+predicate changed. `firestore.rules` md5 `762cd6f32eb60fe03ea961bf093ff5f9` before and after
+my own probes.
+
+Runs: `test:rules:weekly-menu-plans` 48/48, `test:rules:conversations` 89/89,
+`test:chat-group-callables` 33/33.
+
+**Independently re-probed (not taken on report), all through mutated COPIES:**
+- conversations, via the suite's own `PROBE_RULES_PATH` seam. Adding `parentNames(request.auth.uid)`
+  to the (u1) self-cursor branch → 88/89, the single kill being P31; adding it to `allow delete`
+  → 88/89, the single kill being P32. P16 and P21 stayed green in both. The claimed asymmetry
+  holds: the pair pins the parent-FREE property, not the self property.
+- weekly-menu-plans, which has NO env seam, via a throwaway `sed`-derived copy under
+  `functions/src/__tests__/` (PROJECT_ID and RULES_PATH substituted, the orphaned
+  `import * as path` deleted to avoid TS6133). Removing the update rule's
+  `|| resource.data.memberPermissions[request.auth.uid] == 'admin'` → 47/48, killing exactly
+  GU2. Removing `&& … == 'admin'` from `allow delete` → 46/48, killing exactly GD2 and GD3.
+  Both match the reported figures.
+- Probe hygiene, relearned the hard way: the `trap 'rm -f "$COPY"' EXIT` used a RELATIVE path
+  and the same call later did `cd functions`, so the throwaway test file SURVIVED the call and
+  was only noticed by an `ls` at the start of the next one. Absolute paths in probe traps.
+  Also: a Git-Bash `mktemp -d` path (`/tmp/tmp.XXXX`) is invisible to node on Windows — the
+  run produced no test lines at all, which greps exactly like a green suite. Use the
+  scratchpad dir, and require an `N/N passed` line.
+
+**Blocking finding.** The GU1 comment in `weekly-menu-plans-rules.test.ts` reads "This is the
+action the two roles are discriminated on; every other write on this collection is open to
+`edit` and `admin` alike". False: `allow delete` on `group_weekly_menu_plans` is
+`== 'admin'`, and GD2 — added in the SAME commit, forty lines below — proves an `edit` member
+is refused. A measured quantifier, so it is struck rather than reworded.
+
+**Confirmed and enlarged, finding 2.** `conversations-rules.test.ts` really is invisible to
+`rules-coverage-report.js`; simulating both discovery regexes over `functions/src/__tests__`
+showed FOUR invisible suites, not one — conversations, chat-groups, poll-votes and
+cook-snaps-and-message-mod, i.e. exactly the set that has adopted the `PROBE_PROJECT_ID`
+seam this knowledge file recommends. Pre-existing; the seam and the discovery regex were
+written by different tickets and neither knows about the other.
+
+**Confirmed, finding 1.** The personal-plan `_` separator is the whole boundary: `^abc_.*`
+does not match `abcdef_…` but does match `abc_def_…`, so a uid containing `_` would reach
+another user's plans. Unreachable — no `signInWithCustomToken` anywhere in `lib/`, no Admin
+`auth().createUser({uid})` in `functions/src/`; the only `createUser` is the client
+email/password one, which mints a 28-char alphanumeric uid. Agreed with NOT writing an
+`assertSucceeds` on the hole: it would go red on the legitimate tightening. The residual is
+adequately carried by the `PREFIX_UID` comment and W10.
+
+**Non-blocking, filed.** The P31/P32 banner says the parent-free write is "deliberate — a
+user must be able to clear their own leftover row". No record carries that rationale: the
+rule's own comment justifies self-only delete as anti-griefing and notes `removeParticipant`
+has no caller, and ACCEPTED_DEVIATIONS §"Residual (b)" says the opposite of a cleanup
+affordance ("the deleting client cannot clean up after itself"). The MEASUREMENT is recorded
+(`.claude/rules/accepted-deviations.md`: "the row's own subject can still update or delete
+it — parent-free self checks, measured"). Recommended strike of the rationale clause and the
+"Do NOT change the rules" directive, keeping the measured half.
+
+**Also noted, not filed.** The new `chat-group-callables` case fails CLOSED on a reshaped call
+site (`keys.length > 0`), which is right: a third `tokensRequired` argument would make the
+regex miss and redden the test rather than pass it vacuously. `found[file] = key` keeps only
+the last key per file — harmless today (one call site per file), a trap if one gains two.

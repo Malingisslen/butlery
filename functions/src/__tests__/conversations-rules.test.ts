@@ -1508,6 +1508,9 @@ const P_UNC = `p-unclaimed-${RUN}`;
 const P_UNC_RESIDUAL = `p-unclaimed-residual-${RUN}`;
 // No parent, one seeded row for FRIEND — proves the own-row read branch.
 const P_READ_FRESH = `p-fresh-read-${RUN}`;
+// BUT-1851 gap: a second parentless roster, for the WRITE verbs. Its own id so
+// P31's delete cannot take a row out from under P_READ_FRESH's read cases.
+const P_ORPHAN_WRITE = `p-orphan-write-${RUN}`;
 const P_UPD = `p-update-${RUN}`;
 const P_DEL = `p-delete-${RUN}`;
 const P_BATCH_GROUP = `p-batch-group-${RUN}`;
@@ -1636,6 +1639,14 @@ async function seedParticipantFixtures(): Promise<void> {
     await db
       .doc(`conversations/${P_READ_FRESH}/participants/${FRIEND_UID}`)
       .set(participantBody(P_READ_FRESH, FRIEND_UID));
+    // Two orphaned rows, again with no parent: one per write verb, because both
+    // branches under test are SELF checks and one uid cannot hold two rows in
+    // the same conversation.
+    for (const uid of [FRIEND_UID, ADULT_UID]) {
+      await db
+        .doc(`conversations/${P_ORPHAN_WRITE}/participants/${uid}`)
+        .set(participantBody(P_ORPHAN_WRITE, uid));
+    }
   });
 }
 
@@ -2179,6 +2190,41 @@ test("participants: a stranger's identically-shaped batch against an existing co
     membershipBody(P_BATCH_DENY, true)
   );
   await assertFails(batch.commit());
+});
+
+// --- ORPHANED ROSTER ROWS, WRITE VERBS (BUT-1851 gap) ----------------------
+//
+// P14/P15 pin that a parentless row cannot be READ. Only the read verb used
+// that fixture, which left the shorthand "every predicate on this path reads
+// through the parent" available to a future reader. It is false, and the two
+// cases below are the measurement: the (u1) self-cursor update branch and
+// `allow delete` are both pure SELF checks that never call `parentDoc()`, so an
+// orphaned row's own subject can still stamp it and still remove it.
+//
+// It does not widen anything: the row is unreadable either way, and both
+// branches gate on `participantId == request.auth.uid`.
+
+// P31: ALLOW — the self-cursor update branch on an orphaned row.
+test("participants: the subject of an ORPHANED row can still stamp their own lastReadAt", async () => {
+  const ctx = env.authenticatedContext(FRIEND_UID);
+  await assertSucceeds(
+    ctx
+      .firestore()
+      .doc(`conversations/${P_ORPHAN_WRITE}/participants/${FRIEND_UID}`)
+      .update({ lastReadAt: new Date() })
+  );
+});
+
+// P32: ALLOW — `allow delete` on an orphaned row. Runs after P31 and on a
+// different row, so neither disturbs the other.
+test("participants: the subject of an ORPHANED row can still delete it", async () => {
+  const ctx = env.authenticatedContext(ADULT_UID);
+  await assertSucceeds(
+    ctx
+      .firestore()
+      .doc(`conversations/${P_ORPHAN_WRITE}/participants/${ADULT_UID}`)
+      .delete()
+  );
 });
 
 async function run(): Promise<void> {

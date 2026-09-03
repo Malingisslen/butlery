@@ -303,6 +303,13 @@ Standard deny matrix for ownership-checked collections:
   separate rules; a "same membership test" claim can hold for `read` and silently drop a
   cutoff the parent alone carries (BUT-1838's `memberSince`), leaking on `create` too.
   Enumerate every conjunct on the parent and check which the child actually inherited.
+  **The same "every verb" discipline binds a ROLE claim, and DELETE is the verb it drops.**
+  A test comment reading "this is the action the two roles are discriminated on; every other
+  write is open to both alike" was refuted by `allow delete: … == 'admin'` in the same block
+  and by a sibling deny test forty lines below it, in the same commit. Before writing a
+  quantifier over roles, read create, update AND delete; a role gate is usually spelled
+  `in ['edit','admin']` on the write limbs and `== 'admin'` on delete, which reads as one
+  rule and is two.
 - **Never cite a rules LINE NUMBER in a comment or report — the file renumbers on every
   edit.** Cite the `match` pattern or function name instead.
 - **A test comment is bound to its test by POSITION only, so the test a review ASKS you to
@@ -355,7 +362,16 @@ Standard deny matrix for ownership-checked collections:
   process.env.PROBE_RULES_PATH ?? <real>` in the suite itself; mutate a COPY of the rules
   file in the scratchpad; run with those env vars set. The real file stays
   byte-identical by construction — no restore step to skip on a timeout — and a fresh
-  project id keeps mutant writes out of the real namespace. Assert the mutator's match
+  project id keeps mutant writes out of the real namespace.
+  **But that seam DELETES the suite from `rules-coverage-report.js`, silently.** Its
+  discovery reads `/\bPROJECT_ID\s*=\s*["']…["']/` and `/projectId:\s*["']…["']/`, and
+  `PROJECT_ID = process.env.PROBE_PROJECT_ID ?? "…"` matches neither, so the suite's whole
+  coverage slice is never fetched and never unioned — measured 2026-09-04: FOUR suites
+  (conversations, chat-groups, poll-votes, cook-snaps-and-message-mod) are invisible, i.e.
+  every suite that has adopted the seam. It inflates the untested-block count and can fail
+  the NEW-block gate on a block those suites do cover. Adding the seam therefore owes a
+  literal the discovery can still see (keep `projectId: "…"` at the
+  `initializeTestEnvironment` call, or export the default as its own string const). Assert the mutator's match
   count is 1 and diff the mutant against the original before trusting the run. **A probe
   project id must be lowercase** — an uppercase letter (a `createdAt`-derived id) makes the
   run emit NO test lines at all, which greps for `FAIL` as cleanly as a green suite; require

@@ -36,6 +36,9 @@ import {
 import { stageMemberRemoval } from "../groups/chat-group-writes";
 import { stageBackstopRemovals } from "../messaging/enforce-group-minor-membership";
 import { MAX_CHAT_GROUP_MEMBERS } from "../groups/minor-membership-gate";
+import { RATE_LIMIT_CONFIGS } from "../middleware/rate_limiter";
+import * as fs from "fs";
+import * as path from "path";
 
 if (!admin.apps.length) {
   admin.initializeApp({ projectId: "butlery-test-chat-group-callables" });
@@ -1215,5 +1218,72 @@ const cases: UnitCase[] = [
     },
   },
 ];
+
+// BUT-1851 gap: every case above drives a `…WithDeps` core, which sits BELOW
+// the `checkRateLimit` call in its onCall wrapper. Nothing therefore reads the
+// operation key the wrapper passes, and `getRateLimitConfig` falls back to
+// `RATE_LIMIT_CONFIGS.default` for an unknown one — so renaming the key on
+// either side alone leaves every bucket-value pin in
+// `rate-limiter-daily-cap.test.ts` green while the callable runs on the default
+// bucket. One case for the whole family, derived from source rather than a
+// hand-typed list, so a new `groups/` callable is covered on arrival.
+const GROUPS_DIR = path.resolve(__dirname, "../groups");
+
+/** Comments stripped: a commented-out call would otherwise satisfy the match. */
+function sourceWithoutComments(file: string): string {
+  return fs
+    .readFileSync(path.join(GROUPS_DIR, file), "utf8")
+    .replace(/\/\*[\s\S]*?\*\//g, "")
+    .replace(/(^|[^:])\/\/.*$/gm, (_m, keep: string) => keep);
+}
+
+cases.push({
+  name: "every groups/ callable passes an operation key that RATE_LIMIT_CONFIGS defines",
+  fn: async () => {
+    const files = fs
+      .readdirSync(GROUPS_DIR)
+      .filter((f) => f.endsWith(".ts"))
+      .filter((f) => sourceWithoutComments(f).includes("checkRateLimit("));
+    assertEqual(
+      files.includes("create-chat-group.ts"),
+      true,
+      "create-chat-group.ts calls checkRateLimit",
+    );
+
+    const found: Record<string, string> = {};
+    for (const file of files) {
+      const src = sourceWithoutComments(file);
+      const keys = [
+        ...src.matchAll(
+          /checkRateLimit\(\s*[^,()]+,\s*"([A-Za-z][A-Za-z0-9]*)"\s*,?\s*\)/g,
+        ),
+      ].map((m) => m[1]);
+      // Without this the loop below is vacuous for any call site the regex
+      // stopped reading — a reshaped call would read as "no keys to check".
+      assertEqual(keys.length > 0, true, `${file}: an operation key was parsed`);
+      for (const key of keys) {
+        assertEqual(
+          Object.prototype.hasOwnProperty.call(RATE_LIMIT_CONFIGS, key),
+          true,
+          `${file}: RATE_LIMIT_CONFIGS defines "${key}"`,
+        );
+        assertEqual(
+          key === "default",
+          false,
+          `${file}: "${key}" is not the fallback bucket`,
+        );
+        found[file] = key;
+      }
+    }
+    // The literal the ticket names, pinned by itself as well: the derived check
+    // above passes if BOTH sides are renamed together, which is fine, but this
+    // collection's own key is one the export name has to keep agreeing with.
+    assertEqual(
+      found["create-chat-group.ts"],
+      "createChatGroup",
+      "createChatGroup passes its own name as the operation key",
+    );
+  },
+});
 
 void runTests("chat-group callables — create / add / remove cores", cases);
