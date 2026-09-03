@@ -172,7 +172,12 @@ Its doc id is the REPORTED user's uid, so exporting it would also ship a third-p
 identifier the reports already carry in a field.
 
 It is named in the bundle's `data_minimisation` text like the two she decided, so the data
-subject can see it is held. **Widening or reversing that call is hers**, and it is open.
+subject can see it is held.
+
+**Malin closed BUT-1992 on 2026-09-03 having been told this**, so the exemption is SEEN AND
+ACCEPTED as delivered — deliberately a weaker statement than the five above, which she
+weighed one at a time against the panel's split. She was not asked to judge this one on its
+merits, and widening or reversing it remains hers.
 
 The decision lines above are unchanged; this amendment records what was found after them.
 
