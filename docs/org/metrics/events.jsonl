@@ -188,3 +188,14 @@
 {"ts":"2026-08-31T05:53:50.447Z","type":"trigger","fired":true,"signals":"delete,deletion,firestore.rules,functions/src","ran":null}
 {"ts":"2026-08-31T05:58:22.689Z","type":"trigger","fired":true,"signals":"delete,deletion,firestore.rules,functions/src","ran":null}
 {"type": "review", "tier": "full", "panel": ["Privacy / Data Protection Officer (GDPR)", "Security Architect", "Legal Counsel", "Database Administrator / Data-layer Engineer", "Performance Engineer", "Codebase Archaeologist"], "stakeholders": 6, "outcome": "approve-with-conditions", "must_haves": 17, "conflicts": 0, "escalations": 2, "adrs": [], "rubber_stamp": false, "via": "manual", "plan": "BUT-1971 follow-up: cut a departed member's access, keep erasability", "ts": "2026-08-31T07:43:29.604225+00:00"}
+{"ts":"2026-09-03T08:25:47.638Z","type":"trigger","fired":true,"signals":"cloud function,delete,deletion,firestore.rules,functions/src,gdpr,llm,retention","ran":null}
+{"ts":"2026-09-03T08:49:34.747Z","type":"trigger","fired":true,"signals":"cloud function,delete,deletion,firestore.rules,functions/src,gdpr,llm,retention","ran":null}
+{"ts":"2026-09-03T08:49:44.273Z","type":"trigger","fired":true,"signals":"cloud function,delete,deletion,firestore.rules,functions/src,gdpr,llm,retention","ran":null}
+{"ts":"2026-09-03T16:56:53.030Z","type":"trigger","fired":true,"signals":"auth,delete,firestore.rules,functions/src,gdpr,llm,login,signup","ran":null}
+{"ts":"2026-09-03T17:02:57.640Z","type":"trigger","fired":true,"signals":"auth,delete,firestore.rules,functions/src,gdpr,llm,login,signup","ran":null}
+{"type": "review", "tier": "full", "panel": ["Privacy / Data Protection Officer (GDPR)", "Security Architect", "Legal Counsel", "QA / Test Engineer", "Software Architect", "Codebase Archaeologist"], "stakeholders": 6, "outcome": "approve-with-conditions", "must_haves": 18, "conflicts": 2, "escalations": 2, "adrs": ["ADR-0012", "ADR-0013"], "rubber_stamp": false, "approx_tokens": 770000, "via": "exit-plan", "ran": true, "plan": "18 delvis-gjort-arenden: uppstadning", "ts": "2026-09-03T17:13:02.148842+00:00"}
+{"ts":"2026-09-03T18:31:38.810Z","type":"trigger","fired":true,"signals":"cloud function,delete,firestore.rules","ran":null}
+{"ts":"2026-09-03T18:38:24.554Z","type":"trigger","fired":true,"signals":"cloud function,delete,destructive,firestore.rules","ran":null}
+{"ts":"2026-09-03T18:38:45.849Z","type":"trigger","fired":true,"signals":"cloud function,delete,destructive,firestore.rules","ran":null}
+{"ts":"2026-09-03T18:55:30.985Z","type":"trigger","fired":true,"signals":"trust & safety","ran":null}
+{"ts":"2026-09-03T19:09:21.421Z","type":"trigger","fired":true,"signals":"trust & safety","ran":null}

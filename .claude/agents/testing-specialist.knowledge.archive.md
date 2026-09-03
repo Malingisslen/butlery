@@ -34109,3 +34109,79 @@ in ITS suite, same edit (BUT-1874: emitter pinned, `ShoppingItemManagementModule
 ````
 
 </details>
+
+### 2026-09-03 — BUT-1764/BUT-1673 comment+doc review: a `tryGet<T>()?.field` data-source swap is green everywhere
+
+**Trigger:** review of a comment/doc-only staged diff. `lib/services/unified/unified_shopping_service.dart`
+struck the enumeration of other Auth-sourced display-name writers from the
+`currentUserDisplayName` doc comment (two of the three named items were dead) and replaced it
+with a pointer to BUT-2009; `docs/architecture/ACCEPTED_LARGE_FILES.md` gained nine rationale
+rows, one corrected line count, a recounted header and a struck stale count bullet.
+
+**Diff is comment-only — verified.** Every added/removed line in the Dart hunk starts with `///`;
+the expression line `String? get currentUserDisplayName => ServiceLocator.tryGet<UserService>()?.profileDisplayName;`
+is context, unchanged. `flutter test test/unit/services/unified/unified_shopping_service_test.dart`
+→ 36 passing.
+
+**Nothing pinned the struck text.** `grep -rln ACCEPTED_LARGE_FILES test/` returns only
+`test/architecture/architecture_test.dart`, and only as a prose reference inside a skip-list
+comment for the `FirebaseFirestore.instance` scan — no test reads either file's contents. No
+suite asserts on the getter's doc comment or on the writers it named.
+
+**The strike itself is correct, and the replacement claim is TRUE.** Both named items are fixed
+in the worktree: `social_menu_operations.dart:65` now reads
+`ServiceLocator.tryGet<UserService>()?.profileDisplayName`, and both
+`realtime_menu_service.dart:75` / `realtime_recipe_service.dart:73` read the same with an
+`AppLocale.current.displayUnknownUser` fallback. The surviving existential ("Writers elsewhere
+still persist the Auth-sourced name onto documents other users read") has plenty of live
+witnesses, so it is not an over-strike: `shopping_template_operations_module.dart:75`
+(`'ownerDisplayName': authRepository.currentUser?.displayName`),
+`firebase_comments_repository.dart:186`, and five `senderDisplayName:` sites in
+`message_sending_operations.dart`. The twin the doc names —
+`firebase_shopping_repository.dart:114` — does read `profileDisplayName`, so "the two writers
+cannot disagree" holds.
+
+**Header count re-measured, not trusted:** `bash tools/count_large_files.sh` → 190, matching
+the header. "0 unlisted" verified by diffing `--list` basenames against the document's rows;
+the only two apparent misses (`app_database.g.dart`, `butlery_app.dart`) are artefacts of my
+own basename regex (a `.g.` infix and a path-spelled row), both listed. All ten new/corrected
+line counts verified exact by `wc -l`: tag_generator 555, feature_flag_service 554,
+schema_org_tier 553, optimized_image_loader 528, clause_parser 509, logger 531,
+user_profile_viewmodel 561, recipe_detail_metadata 508, shopping_list_operations 506,
+butlery_app 868.
+
+**FINDING 1 (non-blocking, own ticket) — `currentUserDisplayName`'s data source is unpinned.**
+BUT-1705 made this getter read `profileDisplayName` instead of `currentDisplayName`, precisely
+the CLAUDE.md data-source footgun. Nothing discriminates the two. Settled ANALYTICALLY, no
+`lib/` mutant needed: both members exist on `UserService` and both are `String?`, so the swap
+compiles; and in the one suite that constructs the real service
+(`unified_shopping_service_test.dart`) the value is null under EITHER spelling — the suite runs
+with the production ServiceLocator bridge skipped (`✅ TestServiceLocator initialized -
+skipping production ServiceLocator`), and even where the bridge is live,
+`TestServiceLocator._registerServices` registers `MockFactory.createUserService()` =
+`production.MockUserService()`, an unstubbed mocktail `Mock` that answers null for every
+nullable getter. Every OTHER consumer (`collaborative_shopping_operations_test`,
+`collaborative_shopping_view_test`, `unified_shopping_viewmodel_test`) goes through
+`MockUnifiedShoppingService`, so the getter never executes there at all.
+`UserService.profileDisplayName` itself IS pinned — `user_service_test.dart:873`, group
+`'profileDisplayName vs currentDisplayName (BUT-1705)'` — but that is the LAYER BELOW; it
+cannot see which member this service reads. Same shape for the twin: the injected
+`resolveDisplayName` is exercised only as a lambda in
+`shopping_item_operations_module_test.dart:185` (`resolveDisplayName: () => profileName`), which
+pins the module's CONSUMPTION, never the repository's BINDING at
+`firebase_shopping_repository.dart:114`. Closing shape: register a `MockUserService` with
+`profileDisplayName` and `currentDisplayName` stubbed to DIFFERENT strings, drive the real
+service, assert the profile string reaches the persisted field. Not this commit — it is
+deliberately comment-only.
+
+**FINDING 2 (non-blocking) — a stale rationale comment in the suite, invisible to every
+diff-following sweep.** `test/unit/services/unified/unified_shopping_service_test.dart:311-315`
+says the display name comes from "`UserService.currentDisplayName`, which this suite does not
+register". Both halves are false: BUT-1705 repointed it to `profileDisplayName`, and
+`TestServiceLocator.initialize()` DOES register a `UserService`
+(`test_service_locator.dart:337`). Per the strike rule the "which this suite does not register"
+clause gets DELETED rather than re-measured; the symbol name is directly readable from the code
+and may be corrected in place. Clean at HEAD, so it rides into the next ticket's commit unless
+someone sweeps `test/` by concept.
+
+**Verdict: pass, 0 blocking.** No test is owed BY this commit.

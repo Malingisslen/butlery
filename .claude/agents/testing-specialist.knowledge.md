@@ -334,6 +334,14 @@ other suites prove:
   state — grep the result flag's own name (`gdprCompliant`) rather than trusting the function ran
   (BUT-1971).
 
+- A **DATA-SOURCE swap on a `ServiceLocator.tryGet<T>()?.field` getter** (the CLAUDE.md footgun:
+  `profileDisplayName` vs `currentDisplayName`) is deletable-green in EVERY suite, and settled
+  analytically — both members are same-typed so the swap compiles, and the value is null either
+  way whenever the locator is unregistered OR registered to an unstubbed mocktail `Mock`, which
+  `TestServiceLocator` does by default. A pin on `T`'s own getter is the LAYER BELOW and cannot
+  see which member the caller reads; an injected-lambda test pins CONSUMPTION, never the BINDING.
+  Only two stubs with DIFFERENT strings, over the real service, discriminate (BUT-1764/1705).
+
 **Grading a guard, a widening, or a rollback:**
 - **A guard added to close a review finding gets its EXISTENCE pinned and its CONDITIONS not** —
   deleting the block reddens, stripping every conjunct but the one the finding named stays green.
