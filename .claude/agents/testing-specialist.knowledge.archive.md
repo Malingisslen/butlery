@@ -31794,3 +31794,112 @@ No mutation probe run — the index was declared frozen. B1 and B2 are settled b
 reading the `cases` table, not by a probe.
 
 Verdict: fail, 2 blocking. Graded against the INDEX (`git diff --cached`).
+
+### 2026-09-03 — BUT-2003 / BUT-2004 review (staged test diff, GDPR export truncation + read isolation)
+
+Trigger: review of the staged test diff for BUT-2003 (per-collection truncation flags on
+`PreferencesExportManager.exportAccountSubcollections`) and BUT-2004 (per-leg read isolation
+there and in `SocialExportManager.exportBlocks`). Index == worktree on all six reviewed paths
+(`git diff --numstat` empty), so the verdict graded the copy that ships.
+
+Verdict: pass, 0 blocking, 5 non-blocking.
+
+What held:
+- The rewritten repository test (`a read returns exactly what was asked for, so N+1 can probe`)
+  is a strict SUPERSET of the one it replaced — the old `maxDocuments: 3 -> hasLength(3)`
+  assertion is retained verbatim, plus `maxDocuments: 4 -> hasLength(4)`, which is what makes
+  `fetchCapped`'s N+1 probe meaningful at the repository seam.
+- Both terminal states are pinned: `failedLegs == 2` in social
+  (`both directions refused is the outright failure`) and `failedLegs == 3` in preferences,
+  the latter through the BUT-1760 `cases` table, whose
+  `expect(result['error'], 'Could not export account subcollections.')` fires only on the
+  all-three branch.
+- The production comments' claims about `DataExportService` were measured true: the
+  `_declaresTruncation` walk lifts any `*_truncated` at depth <= 4 into
+  `truncated_collections`, and `error` vs `error_code` really do render as
+  "could not be exported" vs "may be incomplete".
+
+Non-blocking findings recorded:
+1. `expect(result['onboarding_note'], contains('$cap'))` — cap 50, and '50' is a substring of
+   '500', so the note printing the `defaultBatchSize` fallback keeps the test green. Promoted
+   to a principle in the vacuity section.
+2. Both sides of `every read asks for one past its cap` derive from
+   `getLimitForType(<type>)`, so deleting the three new `exportLimits` entries (behaviour then
+   falls back to 500) leaves every suite green; nothing asserts the declared caps 500/50/50
+   absolutely, which is the equality the lib comment claims. `user_onboarding` and
+   `user_acquisition` are both 50, so their type strings are also interchangeable under every
+   current assertion.
+3. The repository test's NAME ("returns exactly what was asked for") over-claims where its own
+   comment is correct ("at most `n`"), and the sibling
+   `a user with nothing gets empty lists, not errors` in the same file falsifies the literal
+   reading. Name/comment as two copies of one claim, again.
+4. False sentence in the staged diff, recommended STRUCK not reworded: the `cases` table's
+   "the section can no longer distinguish 'all three refused' from 'three separate refusals'
+   at the code level" is contradicted by the `if (failedLegs == 3) 'error'` line and by the
+   very assertion in that test.
+5. `data_export_service_test.dart`'s bundle guard for `account_subcollections` asserts only
+   `containsKey('error') == false`; after isolation a two-of-three refusal no longer sets
+   `error`, so that assertion got weaker without anything saying so. One line
+   (`containsKey('error_code'), isFalse`) restores it. Adjacent residual: `exportBlocks` still
+   reads both directions uncapped with no truncation probe, i.e. the BUT-2003 defect class
+   survives in the method BUT-2004 rewrote.
+
+### 2026-09-03 — BUT-2003/2004 round 2 (staged test diff re-review; trigger: re-review after fixes + a fourth section)
+
+Verdict: pass (0 blocking), graded against the INDEX — `git diff --numstat` empty for all
+nine reviewed paths, so worktree == index.
+
+Round-1 remedies verified present: `contains('first $cap rows')`, the four cap literals plus
+`defaultBatchSize isNot 50` in `export_pagination_helper_test.dart`, the `error_code`-absence
+line in `data_export_service_test.dart`, the repository test renamed to "at most".
+
+Three questions the brief asked, answered.
+
+1. **Is `_LeakySettingsExportRepository` still proving its name after being repointed from
+   `exportUserSettings` to `exportUserPreferencesDocument`?** Yes, not hollowed. The by-id read
+   is the FIRST statement of `exportPreferences` and sits inside the only outer `try`, so the
+   throw still produces `_failed('preferences', 'preferences-export-failed', e)` and all three
+   assertions (authored sentence, token, `isNot(contains(foreignUid))` over the encoded
+   section) still discriminate the `{'error': e.toString()}` mutant they were written for. What
+   the repoint moved out of the fixture's reach — a leak on the settings COLLECTION path, now
+   isolated and partial — is picked up one layer down by the manager suite's
+   `a refused settings collection keeps the preferences it has`, which asserts
+   `isNot(contains('permission-denied'))` on the whole encoded section. Both shapes covered:
+   outright at bundle level, partial at manager level.
+
+2. **Vacuity sweep of the new assertions: none vacuous.** Load-bearing ones checked by
+   substituting the mutant into the fixture arithmetic rather than by probe — cap 50 with 51
+   seeded rows trims the 51st (`preferences`), so re-deriving `preferences` from the page
+   reddens `preferences survive a settings collection past its cap`; the `exactly its cap`
+   test is the flip-point control; `every read asks for one past its cap` reads the fixture's
+   captured `maxDocuments` per leg; the isolation tests' `containsKey(<leg>) isFalse` is
+   discriminating because the BUT-1992 happy path pins all three keys by name and id 20 lines
+   above. Two soft spots, both Low: `the preferences document is readable by id` asserts only
+   `isNotNull`, so a `doc.exists ? {} : null` content mutant survives (no manager test uses the
+   real repository; the fake returns `doc['data']`, which happens to match `_readDoc`'s
+   `doc.data()` — one `expect(doc!['marker'], ...)` would pin the content AND that shape
+   agreement); and `other_settings_note` says "first 50 settings documents" while the effective
+   ceiling on `other_settings` is 49 whenever `preferences` lands inside the page, a case the
+   fixture cannot reach because its `preferences` row is the trimmed 51st.
+
+3. **What the two-token split leaves unguarded.** (a) No bundle-level case for a PARTIAL in any
+   of the three new sections; the "may be incomplete" rendering is pinned once, generically, by
+   `_TransientContributorProbeRepository` in `data_export_service_test.dart`, i.e. by a
+   shared-shopping-list fixture. Accepted layering, recorded as residual. (b) The partial
+   condition's `< attemptedLegs` clause cannot be killed: dropping it makes both `if`s fire in
+   the all-fail case and the map literal's later (outright) entry wins, so the observable is
+   identical — not a coverage gap. (c) `exportBlocks` still reads both directions with no
+   declared `exportLimits` key and no N+1 probe, so >500 blocks clip silently — the BUT-2003
+   defect one section over, in the method BUT-2004 rewrote. Pre-existing and in the documented
+   BUT-1701 class (`exportFriendCategories`/`exportChatGroups`), so not introduced here, but it
+   is now the standing asymmetry between the two isolated sections. Carried forward from round 1.
+
+Structural checks that came back clean and are worth the seconds: removing the outer `try`
+from `exportAccountSubcollections`/`exportBlocks` opened NO whole-bundle abort path — the only
+throwing expression left is the `_exports` ServiceLocator getter, and every call site of it now
+sits inside a `readLeg` try. Nothing in `lib/` or `functions/src` reads the section sub-keys, so
+an absent leg key cannot null-deref a consumer. The TS export⊇deletion drift guard is
+unaffected: the new by-id chain still matches its `collection(users).doc(...).collection(X)`
+regex and resolves to `settings`, already in the exported set. Token→files table: every new
+token (`*-partial-export-failure`, `other-settings-export-failed`, `other_settings_truncated`,
+the four `user_*` cap keys) has at least one test file hit.

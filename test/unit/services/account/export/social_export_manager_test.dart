@@ -48,6 +48,11 @@ class _FakeDataExportRepository extends Fake
   final List<Map<String, dynamic>> sharedShoppingLists;
   final List<Map<String, dynamic>> outgoingBlocks;
   final List<Map<String, dynamic>> incomingBlocks;
+
+  /// Block-section keys whose read throws (BUT-2004). The two directions are
+  /// separate queries against separate fields, so the fixture has to be able
+  /// to refuse exactly one of them.
+  Set<String> failingBlockLegs = const <String>{};
   final List<Map<String, dynamic>> memberships;
 
   /// BUT-1838. Overridden rather than left to `Fake`'s throw, because the
@@ -161,13 +166,23 @@ class _FakeDataExportRepository extends Fake
   Future<List<Map<String, dynamic>>> exportOutgoingBlocks(
     String userId, {
     int maxDocuments = 500,
-  }) async => outgoingBlocks;
+  }) async {
+    if (failingBlockLegs.contains('outgoing_blocks')) {
+      throw StateError('permission-denied reading outgoing blocks');
+    }
+    return outgoingBlocks;
+  }
 
   @override
   Future<List<Map<String, dynamic>>> exportIncomingBlocks(
     String userId, {
     int maxDocuments = 500,
-  }) async => incomingBlocks;
+  }) async {
+    if (failingBlockLegs.contains('incoming_blocks')) {
+      throw StateError('permission-denied reading incoming blocks');
+    }
+    return incomingBlocks;
+  }
 
   @override
   Future<List<Map<String, dynamic>>> exportConversationMemberships(
@@ -1706,6 +1721,63 @@ void main() {
       expect(result['incoming_blocks'], [
         {'blockerUserId': 'y'},
       ]);
+      expect(
+        result.containsKey('error_code'),
+        isFalse,
+        reason: 'nothing failed, so the section must not warn about itself',
+      );
+    });
+
+    // BUT-2004. The two directions shared one `try`, so a refusal on the
+    // second discarded rows the first had already returned and the bundle
+    // reported the whole section lost.
+    test('a refused direction keeps the one that returned', () async {
+      final repo = _FakeDataExportRepository(
+        outgoingBlocks: [
+          {'blockedUserId': 'x'},
+        ],
+      );
+      repo.failingBlockLegs = const {'incoming_blocks'};
+
+      final result = await SocialExportManager(
+        dataExportRepository: repo,
+      ).exportBlocks('user-uid');
+
+      expect(result['outgoing_blocks'], [
+        {'blockedUserId': 'x'},
+      ]);
+      // No empty list for the refused direction: `incoming_blocks: []` reads
+      // as "nobody has blocked you", which the section cannot know.
+      expect(result.containsKey('incoming_blocks'), isFalse);
+      expect(
+        result['incoming_blocks_error_code'],
+        'incoming_blocks-export-failed',
+      );
+      // Partial, not outright — `DataExportService` renders the two
+      // differently, and "could not be exported" would be false about the
+      // direction the subject did receive.
+      expect(result['error_code'], 'blocks-partial-export-failure');
+      expect(result.containsKey('error'), isFalse);
+    });
+
+    test('both directions refused is the outright failure', () async {
+      final repo = _FakeDataExportRepository();
+      repo.failingBlockLegs = const {'outgoing_blocks', 'incoming_blocks'};
+
+      final result = await SocialExportManager(
+        dataExportRepository: repo,
+      ).exportBlocks('user-uid');
+
+      expect(result['error'], 'Blocked users could not be exported.');
+      // The outright token, not the partial one — a section where BOTH
+      // directions failed must not name itself "partial" beside a rendered
+      // sentence that says it could not be exported at all.
+      expect(result['error_code'], 'blocks-export-failed');
+      expect(
+        json.encode(result),
+        isNot(contains('permission-denied')),
+        reason: 'a raw exception string can carry another subject\'s uid',
+      );
     });
   });
 

@@ -103,6 +103,22 @@ void main() {
         ExportPaginationHelper.defaultBatchSize,
       );
     });
+
+    // BUT-2003. The account-subcollection tests derive their expected cap from
+    // `getLimitForType`, so both sides of every assertion there move together:
+    // deleting one of these entries makes the type unknown, the cap silently
+    // becomes `defaultBatchSize`, and every one of those tests stays green
+    // while `onboarding` and `acquisition` widen from 50 to 500. The literal
+    // has to be pinned somewhere, and this is the file that owns the map.
+    test('the account-subcollection caps are declared, not fallen back to', () {
+      expect(ExportPaginationHelper.getLimitForType('user_ingredients'), 500);
+      expect(ExportPaginationHelper.getLimitForType('user_onboarding'), 50);
+      expect(ExportPaginationHelper.getLimitForType('user_acquisition'), 50);
+      expect(ExportPaginationHelper.getLimitForType('user_settings'), 50);
+      // The two 50s would also pass if the entry were missing and the fallback
+      // happened to be 50, so the fallback is asserted to be something else.
+      expect(ExportPaginationHelper.defaultBatchSize, isNot(50));
+    });
   });
 
   // BUT-1662: fetchCapped is the single primitive every GDPR export section

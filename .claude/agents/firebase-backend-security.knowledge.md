@@ -387,7 +387,19 @@ name which doc each end touches before approving it.
   not export", bare `error_code` = "may be incomplete") — never a bespoke flag or raw
   `e.toString()` alone (leaks uids/paths into what the subject may forward to a regulator).
   Truncation: fetch `limit+1`, flag `truncated = fetched.length > limit`; a NESTED per-parent
-  cap needs the identical flag.
+  cap needs the identical flag. Two corollaries the cap creates in the OTHER direction. (1) A
+  bundle field asserting EXISTENCE (`*_exist: false`) must never be derived from a capped,
+  UNORDERED collection page — the one known document can fall outside it, and an export
+  asserting absence is worse than one admitting it clipped; read that document BY ID (its own
+  `get`, guarded like every sibling) and let the collection read cover only the rest. Adding
+  `orderBy` is not a substitute unless the id is provably first. (2) When a section's legs are
+  isolated per read, a FAILED leg emits `<key>_error` + `<key>_error_code` and NO list key — an
+  empty list beside a failure marker is the stronger, possibly false claim "you have none" —
+  and the section-root split is counted, never a literal (`failedLegs == attemptedLegs` ⇒
+  `error`, else bare `error_code`), so a fourth leg cannot silently disable the
+  outright-failure branch. Isolation is only real while every leg's product survives the
+  others: a by-id read whose value is discarded by a sibling query's `catch` re-creates the
+  shared-`try` defect one file over.
 - "No third party appears in these rows" is a claim about the WRITER'S COPY BUILDER, never
   about the field list — grep the module that composes the stored text, not the `set()`.
   A free-text field whose name promises nothing (`message`, `bodyShown`, `title`) is where

@@ -581,7 +581,17 @@ Codecov: 60% project / 70% new patches / 2% drop tolerance — floors, decided 5
   the table exists to prevent; measured 39/39 green. Adding the row to the table is the
   whole repair, and it also grades the section PHRASE, which reaches the bundle as
   "Could not export &lt;phrase&gt;." — a snake_case key there is a user-visible defect the
-  hand-written test cannot see (BUT-1957, 2026-09-02). **The seam a fix round still misses
+  hand-written test cannot see (BUT-1957, 2026-09-02). **A section that gains PER-LEG
+  isolation (one `try` per read, partial vs outright token) owes three checks the diff does
+  not show.** (1) The removed outer `try` was the section's only envelope guarantee, so grep
+  every throwing expression left OUTSIDE the per-leg `try` — the `_exports` ServiceLocator
+  getter is the usual one, and a throw there now aborts the WHOLE bundle instead of one
+  section. (2) A leak fixture repointed onto the surviving outright seam is fine only if the
+  path it LEFT is pinned one layer down, at manager level, with the same
+  `isNot(contains('permission-denied'))`. (3) The partial condition's `< attemptedLegs` clause
+  is unkillable by construction when both `if`s write the same map key — the later entry wins,
+  so behaviour is identical; do not file that as a coverage gap (BUT-2003/2004, 2026-09-03).
+  **The seam a fix round still misses
   after the other three are closed is the section's `data_minimisation` sentence** — the
   Art. 12(1) disclosure that IS the mitigation for whatever the section decided to keep, so
   it dies with nothing red while the kept third-party data ships on. Every sibling section
@@ -1433,6 +1443,14 @@ ever on screen. Use `RecipeBuilder().withTagResult(...)` for anything badge- or 
 The single most repeated finding across two months of review.
 - **MASTER RULE: name every OTHER mechanism that could satisfy the assertion, then build the
   fixture where they DISAGREE. Every pattern below is an instance.**
+- **A `contains('$n')` on a NUMBER is satisfied by any cap that has it as a substring** —
+  `expect(note, contains('$cap'))` with `cap == 50` stays green when the note prints the 500
+  fallback, i.e. under the exact mutant (drop the key from `exportLimits`, fall through to
+  `defaultBatchSize`) the assertion exists to catch. Pin the surrounding CLAUSE
+  (`'first $cap rows'`) or the whole sentence. Same round, the sibling gap: deriving BOTH
+  sides of a cap assertion from `getLimitForType(<type>)` cannot see the map ENTRY
+  disappearing, and two types sharing one value make their type strings interchangeable —
+  a suite that never asserts a cap ABSOLUTELY pins equality, never the number (BUT-2003).
 - **A true/false PAIR over a new boolean pins the flag against HARDCODING and nothing else —
   the surviving mutant derives the flag from a SIBLING field the two fixtures happen to
   correlate with.** BUT-1983 flagged a failed shopping-list build (`result == null`,

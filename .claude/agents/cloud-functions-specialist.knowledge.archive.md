@@ -17498,3 +17498,79 @@ Retired from the knowledge file in the same edit, verbatim:
 "**A bucket entry whose deleter removes ONE DOC BY ID is NOT a deleter for the
   COLLECTION the probe counts** — the exercise passes on the seeded id and hides it;
   read the rule's id WILDCARD (`{settingId}` bounds nothing)."
+
+### 2026-09-03 — BUT-2002: the export⊇deletion guard's CI trigger, reviewed [ci][gdpr][review]
+
+Staged diff: `.github/workflows/cloud-functions-unit.yml` (+19) and
+`functions/src/__tests__/account-deletion-cascade.test.ts` (+112/-5). No
+`functions/src` production code. Verdict: pass, 0 blocking, 4 non-blocking.
+
+MEASURED during review (worktree at the time of the staged diff):
+
+1. `pathsUnder()` cannot bleed `pull_request` entries into `push`. The push
+   block's last entry is followed by `  pull_request:`, whose trimmed form does
+   not start with `- `, so the loop breaks there. Blank/comment `continue`
+   precedes the break check, so an interleaved comment does not truncate early.
+   The degenerate cases fail in the safe direction: a flow-style `paths: [a, b]`
+   or a re-indented block yields 0 entries and the `patterns.length > 0` check
+   reddens. The one case that would "bleed" — `push:` losing its `paths:` block
+   entirely, making `indexOf("paths:", at)` find the pull_request list — is
+   harmless, because a `push` with no paths filter runs on every push and the
+   Dart files are therefore genuinely covered.
+
+2. `covers()` under-approximates and therefore fails RED on an unknown glob
+   shape (`lib/**/firebase_*.dart` → "uncovered"). Right direction. The
+   `pattern.slice(0, -2)` keeps the trailing slash, so
+   `lib/repositories/firebase/**` does not falsely match
+   `lib/repositories/firebase_x.dart`. ONE over-approximating shape exists and
+   is unhandled: a GitHub `!`-negation entry. `- "!lib/repositories/firebase/**"`
+   is returned by `pathsUnder` as the literal string `!lib/...`, which does not
+   match, but the positive `lib/repositories/firebase/**` still does — so the
+   guard says covered while GitHub would exclude the file. Reported as Low with
+   the fix (treat a leading `!` as an automatic fail); not folded into the
+   knowledge principle beyond "fail CLOSED", because no such entry exists here.
+
+3. The YAML comment's claim about the third path is TRUE, verified two ways:
+   `lib/services/account/export/*_manager.dart` each hold a
+   `FirebaseDataExportRepository` and call its methods
+   (`preferences_export_manager.dart:112-114` calls `exportUserIngredients`,
+   `exportOnboardingProgress`, `exportAcquisition`), while the guard's
+   chain-scan reads only `firebase_data_export_repository.dart`. Dropping a
+   manager's call leaves the repository method — and therefore the scanned
+   chain — intact.
+
+4. NEW FINDING the comment does not cover: the breadth glob misses the
+   orchestrator. `lib/services/account/data_export_service.dart` constructs
+   every manager and calls the repository DIRECTLY
+   (`_exportRepo.exportPrivateProfile` / `exportPublicProfile`, lines 478/481).
+   It sits at `lib/services/account/`, not `lib/services/account/export/`, so
+   none of the three globs match it — the single most likely place to drop a
+   section from the bundle does not trigger this workflow. One-line fix: add
+   `lib/services/account/data_export_service.dart`, or widen to
+   `lib/services/account/**`, to BOTH blocks.
+
+5. Comment-honesty defects, both non-blocking:
+   - The new docstring on `assertGuardTriggersCoverItsDartInputs` says
+     "Deleting a `lib/` line from `cloud-functions-unit.yml` reddens here",
+     which its own later paragraph refutes for `lib/services/account/export/**`.
+     Recommended STRIKE (not reword) — the true rule is already stated in the
+     sentence above it.
+   - The YAML comment describes its entries POSITIONALLY ("The first two
+     lines", "The THIRD"). The `pull_request` block already lists them in a
+     different order, so the same sentence read there is wrong. Naming the globs
+     is directly readable from the code, so correct-in-place is allowed.
+   - PRE-EXISTING and unrelated to this diff: the workflow's line ~105 comment
+     says `run-ci-unit-tests.js` "excludes two suites with pre-existing failures
+     on main (test:app-check-enforcement, test:request-account-deletion)".
+     `CI_EXCLUDE` in that script is now empty ("no suite is currently
+     excluded"). Strike the sentence.
+
+Confirmed the guard actually runs in CI: `test:account-deletion-cascade` exists
+in `functions/package.json:132`, is not `test:rules*`/`test:integration:*`, and
+`CI_EXCLUDE` is empty — so `run-ci-unit-tests.js` picks it up.
+
+Knowledge-file edit: added one principle under "CI / test wiring / ops" (a
+guard reading files outside `functions/src` is asleep unless the workflow
+`paths:` reach them; derive from what it opens; assert both blocks; parser fails
+closed; breadth must reach the orchestrator). Budget was honoured by compressing
+nine existing bullets in the same edit — 27,363 -> 27,337 bytes, net -26.

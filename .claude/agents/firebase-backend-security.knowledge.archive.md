@@ -8145,3 +8145,67 @@ deliberate act. The writer scan is now one hoisted helper instead of two copies.
    bite and the fix is `limit+1`.
 
 Verdict: pass (0 blocking).
+
+---
+
+## 2026-09-03 — BUT-2003 + BUT-2004: preferences read by id, per-leg error isolation (Art. 15)
+
+**Reviewed (staged, `lib/` only):** `firebase_data_export_repository.dart`
+(+`exportUserPreferencesDocument`), `preferences_export_manager.dart`,
+`social_export_manager.dart`, `export_pagination_helper.dart`.
+
+**Ownership guard — equivalent to its siblings, verified rather than assumed.** The new
+method routes through `_readDoc` → `_guardSelfExport(userId, ExportResourceType.userSettings)`
+→ `validateOwnership(currentUserId: requireCurrentUserId(), resourceOwnerId: userId, ...)`,
+byte-for-byte the path `exportCurrentConsent` / `exportPrivateProfile` take. It shares the
+`userSettings` tag with `exportUserSettings`, which is correct: the tag is a log breadcrumb,
+not an authorization input.
+
+**Rules side — the `get`/`list` split was checked, not inferred from the collection read
+working.** `firestore.rules` `match /users/{userId}/settings/{settingId}` has
+`allow read: if isOwner(userId)`, which covers both verbs, and the arm does NOT dereference
+`resource.data` — so a missing `preferences` returns `exists == false` rather than
+`permission-denied`, which is what makes `preferences_exist: false` a truthful answer instead
+of a swallowed refusal. Also re-checked the three BUT-1992 legs this diff wraps in
+`fetchCapped`: `ingredients` (:409, owner read), `acquisition` (:2680) and `onboarding`
+(:2701) all have live client-read blocks, so none of them is the "no match block, permanent
+failure envelope" shape. No rules change is owed by this diff — no new collection path.
+
+**Third-party identifiers in the new strings: none.** Every new bundle string is authored or
+built from a hardcoded literal — `'Could not export $key.'` and `'$key-export-failed'` where
+`key` is one of five compile-time literals, and the `*_note` sentences interpolate only
+`getLimitForType()`, an int. No `e.toString()` reaches the bundle; the exception stays in
+`AppLogger.error`. `DataExportService`'s aggregator derives its root `message` from
+`error_code`, never from `error`, so nothing this diff adds can be promoted to bundle root as
+an exception string.
+
+**Art. 15/12(1) on the omitted list key: defensible, and the better of the two options.** An
+empty list beside a failure marker is indistinguishable from a truthful "you have none",
+which is a stronger claim than the section can support; omitting it plus a named
+`<key>_error_code` is the honest shape, and the root split (`error_code` alone ⇒ "may be
+incomplete", `+error` ⇒ "could not be exported") matches what `data_export_service.dart:356-390`
+actually renders.
+
+**Cost: one extra document read per export, justified.** Runs only when a user requests their
+data. The document is billed twice (once by id, once inside the capped page, then skipped),
+and that is the price of not asserting a false absence.
+
+**Findings filed (all non-blocking):**
+1. MEDIUM — `exportPreferences` keeps both reads under ONE `try`, so a failure of the
+   `settings` collection query discards the by-id `preferences` value already in hand and the
+   whole section reports failed. Exactly the shape BUT-2004 fixed in the two managers beside
+   it; `list` and `get` are separately evaluated verbs and can fail independently.
+2. LOW — the token `blocks-partial-export-failure` /
+   `account-subcollections-partial-export-failure` is also emitted when EVERY leg failed, so
+   the root warning reads "could not be exported (error_code: ...-partial-...)". The derived
+   sentence is right; only the token says "partial".
+3. LOW (pre-existing, not introduced) — `_declaresTruncation` walks four levels into exported
+   DOCUMENT BODIES, so a stored field named `*_truncated: true` would put a section in
+   `truncated_collections`. Unreachable today for these collections; noted so a future
+   free-shape section does not discover it.
+
+Prior round's finding 3 (the `unreadable_shape` comment refuted by its own ordering) is
+resolved by this change rather than reworded: `preferences` no longer comes from the page at
+all, and the branch's comment now states what it does (fail-open, keeps the row's existence).
+
+Verdict: pass (0 blocking).

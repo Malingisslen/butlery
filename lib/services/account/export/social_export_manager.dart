@@ -460,19 +460,65 @@ class SocialExportManager with SocialExportRedaction {
   }
 
   /// Export blocked users (both directions)
+  ///
+  /// BUT-2004: the two directions are isolated from each other. Under one `try`
+  /// a refusal on the incoming query threw away the outgoing rows that had
+  /// already been fetched, and the bundle then claimed the whole section
+  /// failed. They are separate queries against separate fields, so one being
+  /// refused says nothing about the other.
+  ///
+  /// A failed leg emits its error keys and NO list: an empty list beside a
+  /// failure marker reads as "nobody blocked you", which is a claim this
+  /// section is in no position to make.
   Future<Map<String, dynamic>> exportBlocks(String userId) async {
-    try {
-      final outgoing = await _exports.exportOutgoingBlocks(userId);
-      final incoming = await _exports.exportIncomingBlocks(userId);
+    final section = <String, dynamic>{};
+    var attemptedLegs = 0;
+    var failedLegs = 0;
 
-      return {
-        'outgoing_blocks': outgoing.map(sanitizeForJson).toList(),
-        'incoming_blocks': incoming.map(sanitizeForJson).toList(),
-      };
-    } catch (e) {
-      app_logger.AppLogger.error('[$_logTag] Failed to export blocks', e);
-      return _failed('Blocked users', 'blocks-export-failed');
+    Future<void> readLeg(
+      String key,
+      Future<List<Map<String, dynamic>>> Function() fetch,
+    ) async {
+      attemptedLegs++;
+      try {
+        section[key] = (await fetch()).map(sanitizeForJson).toList();
+      } catch (e) {
+        failedLegs++;
+        app_logger.AppLogger.error(
+          '[$_logTag] Failed to export $key',
+          e,
+        );
+        section['${key}_error'] = 'Could not export $key.';
+        section['${key}_error_code'] = '$key-export-failed';
+      }
     }
+
+    await readLeg(
+      'outgoing_blocks',
+      () => _exports.exportOutgoingBlocks(userId),
+    );
+    await readLeg(
+      'incoming_blocks',
+      () => _exports.exportIncomingBlocks(userId),
+    );
+
+    return {
+      ...section,
+      // `error_code` alone marks the section incomplete and points at it;
+      // `error` claims the section could not be exported at all, which is only
+      // true when neither direction returned. See `DataExportService`'s
+      // warning aggregation, which reads the two keys as different claims.
+      // Counted, not the literal 2 — a third direction would otherwise
+      // disable the outright-failure branch with nothing reddening. Two
+      // tokens, because one saying "partial" over a section where BOTH
+      // directions failed contradicts the sentence rendered beside it.
+      if (failedLegs > 0 && failedLegs < attemptedLegs)
+        'error_code': 'blocks-partial-export-failure',
+      // The file's own envelope helper, not a second spelling of the same
+      // map: two spellings of one contract in one file is how they drift.
+      if (failedLegs > 0 && failedLegs == attemptedLegs)
+        ..._failed('Blocked users', 'blocks-export-failed'),
+    };
   }
 
   /// Export conversation memberships

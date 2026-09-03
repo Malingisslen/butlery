@@ -144,35 +144,77 @@ class _FakeAccountSubsRepository extends Fake
     this.onboarding = const [],
     this.acquisition = const [],
     this.settings = const [],
+    this.failing = const <String>{},
   });
   final List<Map<String, dynamic>> ingredients;
   final List<Map<String, dynamic>> onboarding;
   final List<Map<String, dynamic>> acquisition;
   final List<Map<String, dynamic>> settings;
 
+  /// Leg keys (`ingredients`, `onboarding`, `acquisition`) whose read throws.
+  /// BUT-2004 is precisely about one refused read not taking the others down,
+  /// so the fixture has to be able to refuse ONE.
+  final Set<String> failing;
+
+  /// Per-leg captured `maxDocuments`. `fetchCapped` must ask for `cap + 1` —
+  /// asking for exactly `cap` makes a full page indistinguishable from a
+  /// clipped one, which is the defect BUT-2003 closes.
+  final Map<String, int> capturedMax = <String, int>{};
+
+  List<Map<String, dynamic>> _page(
+    String key,
+    List<Map<String, dynamic>> rows,
+    int maxDocuments,
+  ) {
+    capturedMax[key] = maxDocuments;
+    if (failing.contains(key)) {
+      throw StateError('permission-denied reading $key');
+    }
+    return rows.length > maxDocuments ? rows.sublist(0, maxDocuments) : rows;
+  }
+
   @override
   Future<List<Map<String, dynamic>>> exportUserIngredients(
     String userId, {
     int maxDocuments = 500,
-  }) async => ingredients;
+  }) async => _page('ingredients', ingredients, maxDocuments);
 
   @override
   Future<List<Map<String, dynamic>>> exportOnboardingProgress(
     String userId, {
     int maxDocuments = 50,
-  }) async => onboarding;
+  }) async => _page('onboarding', onboarding, maxDocuments);
 
   @override
   Future<List<Map<String, dynamic>>> exportAcquisition(
     String userId, {
     int maxDocuments = 50,
-  }) async => acquisition;
+  }) async => _page('acquisition', acquisition, maxDocuments);
 
+  // Honours the cap, like the real collection query does. That is what lets a
+  // fixture push `preferences` outside the page — the BUT-2003 case.
   @override
   Future<List<Map<String, dynamic>>> exportUserSettings(
     String userId, {
     int maxDocuments = 50,
-  }) async => settings;
+  }) async => _page('settings', settings, maxDocuments);
+
+  // Scans the WHOLE seeded collection, never the page: a read by document id
+  // ignores any query cap, which is the entire reason the section uses one.
+  @override
+  Future<Map<String, dynamic>?> exportUserPreferencesDocument(
+    String userId,
+  ) async {
+    if (failing.contains('preferences_document')) {
+      throw StateError('permission-denied reading settings/preferences');
+    }
+    for (final doc in settings) {
+      if (doc['id'] == 'preferences') {
+        return doc['data'] as Map<String, dynamic>;
+      }
+    }
+    return null;
+  }
 }
 
 class _FakeFcmTokenRepository extends Fake
@@ -936,6 +978,10 @@ void main() {
           ),
           // BUT-1992. Its three reads are the ones a rules refusal actually
           // stops, so a raw-leak mutant in that catch would otherwise ship.
+          // BUT-2004: the reads are isolated now, so `error` — and this
+          // token — appear only when EVERY leg fails, which is what this
+          // fixture does. A partial failure carries
+          // `account-subcollections-partial-export-failure` instead.
           (
             'account subcollections',
             'account-subcollections-export-failed',
@@ -1073,6 +1119,144 @@ void main() {
       expect(acquisition['campaign'], 'host-2026');
     });
 
+    // ── BUT-2003: the section may not clip in silence ──
+    //
+    // The three reads used to go through a plain `.limit(n).get()`, so a user
+    // whose library outgrew the cap received a short list that read as their
+    // whole library. An Art. 15 bundle that misdescribes its own completeness
+    // is the defect, not the cap itself.
+    group('truncation (BUT-2003)', () {
+      Map<String, dynamic> row(String id) => {
+        'id': id,
+        'data': <String, dynamic>{'n': id},
+      };
+
+      test('a clipped collection says so, and says WHICH one', () async {
+        final cap = ExportPaginationHelper.getLimitForType('user_onboarding');
+        final manager = PreferencesExportManager(
+          dataExportRepository: _FakeAccountSubsRepository(
+            ingredients: [row('saffran')],
+            onboarding: List.generate(cap + 1, (i) => row('step-$i')),
+            acquisition: [row('current')],
+          ),
+        );
+
+        final result = await manager.exportAccountSubcollections('user-uid');
+
+        expect(result['onboarding_truncated'], isTrue);
+        expect(result['onboarding'], hasLength(cap));
+        expect(result['onboarding_note'], contains('first $cap rows'));
+        // Per collection. A single section-level flag would tell the subject
+        // that something was cut without saying what, and the three
+        // collections here grow at completely different rates.
+        expect(result.containsKey('ingredients_truncated'), isFalse);
+        expect(result.containsKey('acquisition_truncated'), isFalse);
+      });
+
+      test(
+        'a collection holding exactly its cap is NOT called clipped',
+        () async {
+          final cap = ExportPaginationHelper.getLimitForType('user_onboarding');
+          final manager = PreferencesExportManager(
+            dataExportRepository: _FakeAccountSubsRepository(
+              onboarding: List.generate(cap, (i) => row('step-$i')),
+            ),
+          );
+
+          final result = await manager.exportAccountSubcollections('user-uid');
+
+          expect(result['onboarding'], hasLength(cap));
+          expect(
+            result.containsKey('onboarding_truncated'),
+            isFalse,
+            reason:
+                'a complete bundle stamped incomplete is a false claim in the '
+                'other direction — the reason the probe reads one past the cap',
+          );
+        },
+      );
+
+      test('every read asks for one past its cap', () async {
+        final repo = _FakeAccountSubsRepository();
+        await PreferencesExportManager(
+          dataExportRepository: repo,
+        ).exportAccountSubcollections('user-uid');
+
+        // Named types, not literals: the caps live in `exportLimits`, and a
+        // test restating them would keep passing after that map changed.
+        expect(
+          repo.capturedMax['ingredients'],
+          ExportPaginationHelper.getLimitForType('user_ingredients') + 1,
+        );
+        expect(
+          repo.capturedMax['onboarding'],
+          ExportPaginationHelper.getLimitForType('user_onboarding') + 1,
+        );
+        expect(
+          repo.capturedMax['acquisition'],
+          ExportPaginationHelper.getLimitForType('user_acquisition') + 1,
+        );
+      });
+    });
+
+    // ── BUT-2004: one refused read is not three ──
+    group('read isolation (BUT-2004)', () {
+      test('a refused read keeps the two that returned', () async {
+        final manager = PreferencesExportManager(
+          dataExportRepository: _FakeAccountSubsRepository(
+            ingredients: [
+              {
+                'id': 'saffran',
+                'data': <String, dynamic>{'name': 'Saffran'},
+              },
+            ],
+            acquisition: [
+              {
+                'id': 'current',
+                'data': <String, dynamic>{'campaign': 'host-2026'},
+              },
+            ],
+            failing: const {'onboarding'},
+          ),
+        );
+
+        final result = await manager.exportAccountSubcollections('user-uid');
+
+        String idOf(Object? section) =>
+            ((section as List).single as Map)['id'] as String;
+        expect(idOf(result['ingredients']), 'saffran');
+        expect(idOf(result['acquisition']), 'current');
+
+        // No empty list for the refused leg: `onboarding: []` beside a failure
+        // marker reads as "you completed no onboarding steps", a claim this
+        // section cannot make when the read never returned.
+        expect(result.containsKey('onboarding'), isFalse);
+        expect(result['onboarding_error_code'], 'onboarding-export-failed');
+
+        // `error_code` without `error`: `DataExportService` renders the first
+        // as "may be incomplete" and the second as "could not be exported".
+        // The second would be false about two collections the subject has.
+        expect(
+          result['error_code'],
+          'account-subcollections-partial-export-failure',
+        );
+        expect(result.containsKey('error'), isFalse);
+      });
+
+      test('the refused leg never carries the raw exception', () async {
+        final manager = PreferencesExportManager(
+          dataExportRepository: _FakeAccountSubsRepository(
+            failing: const {'acquisition'},
+          ),
+        );
+
+        final result = await manager.exportAccountSubcollections('user-uid');
+
+        expect(result['acquisition_error'], 'Could not export acquisition.');
+        expect(jsonEncode(result), isNot(contains('permission-denied')));
+      });
+    });
+
     // BUT-1992: `deleteUserPreferences` sweeps the whole collection, so a second
     // settings document was erasable but not exportable.
     test('a second settings document reaches the bundle', () async {
@@ -1110,5 +1294,133 @@ void main() {
       expect(result['preferences_exist'], isFalse);
       expect(result.containsKey('other_settings'), isFalse);
     });
+
+    // BUT-2003. The settings query has no `orderBy`, so past its cap the
+    // `preferences` document can fall outside the page. Picking it out of that
+    // page made the bundle state `preferences_exist: false` about a user who
+    // has preferences — an export ASSERTING absence, which is the one failure
+    // worse than admitting a list was clipped.
+    test('preferences survive a settings collection past its cap', () async {
+      final cap = ExportPaginationHelper.getLimitForType('user_settings');
+      final manager = PreferencesExportManager(
+        dataExportRepository: _FakeAccountSubsRepository(
+          settings: [
+            // `cap` other documents first, so the page is full before the one
+            // that matters is reached — exactly the ordering the live query
+            // gives no guarantee against.
+            for (var i = 0; i < cap; i++)
+              {
+                'id': 'extra-$i',
+                'data': <String, dynamic>{'n': i},
+              },
+            {
+              'id': 'preferences',
+              'data': <String, dynamic>{'theme': 'dark'},
+            },
+          ],
+        ),
+      );
+
+      final result = await manager.exportPreferences('user-uid');
+
+      expect(result['preferences_exist'], isTrue);
+      expect((result['preferences'] as Map)['theme'], 'dark');
+      // And the clipped remainder says so rather than passing as the whole set.
+      expect(result['other_settings_truncated'], isTrue);
+      expect(
+        result['other_settings_note'],
+        contains('first $cap settings documents'),
+      );
+    });
+
+    test(
+      'a refused preferences read fails the section, not silently',
+      () async {
+        final manager = PreferencesExportManager(
+          dataExportRepository: _FakeAccountSubsRepository(
+            failing: const {'preferences_document'},
+          ),
+        );
+
+        final result = await manager.exportPreferences('user-uid');
+
+        // Deliberately NOT the per-leg isolation the account-subcollections
+        // section got: `preferences_exist` is a claim about the user, and there
+        // is no honest value for it when the read did not return. The section
+        // fails outright instead.
+        expect(result['error_code'], 'preferences-export-failed');
+        expect(result.containsKey('preferences_exist'), isFalse);
+        expect(jsonEncode(result), isNot(contains('permission-denied')));
+      },
+    );
+
+    // The other side of the skip: when `preferences` DOES land inside the
+    // page, it must be dropped from `other_settings` rather than appearing
+    // twice — once in its own key and once as an ordinary settings row.
+    test('a preferences row inside the page is not exported twice', () async {
+      final cap = ExportPaginationHelper.getLimitForType('user_settings');
+      final manager = PreferencesExportManager(
+        dataExportRepository: _FakeAccountSubsRepository(
+          settings: [
+            {
+              'id': 'preferences',
+              'data': <String, dynamic>{'theme': 'dark'},
+            },
+            for (var i = 0; i < cap; i++)
+              {
+                'id': 'extra-$i',
+                'data': <String, dynamic>{'n': i},
+              },
+          ],
+        ),
+      );
+
+      final result = await manager.exportPreferences('user-uid');
+
+      expect(result['preferences_exist'], isTrue);
+      final others = result['other_settings'] as List;
+      expect(
+        others.map((o) => (o as Map)['setting_id']),
+        isNot(contains('preferences')),
+      );
+      // The page held `cap` rows and one of them was the skipped
+      // `preferences`, so this is the case where `other_settings` carries
+      // one fewer than the cap.
+      expect(others, hasLength(cap - 1));
+      expect(result['other_settings_truncated'], isTrue);
+    });
+
+    // BUT-2004, the same shape one section over: `get` and `list` are
+    // separately evaluated verbs, so a refused COLLECTION read must not throw
+    // away the preferences document the by-id read already returned.
+    test(
+      'a refused settings collection keeps the preferences it has',
+      () async {
+        final manager = PreferencesExportManager(
+          dataExportRepository: _FakeAccountSubsRepository(
+            settings: [
+              {
+                'id': 'preferences',
+                'data': <String, dynamic>{'theme': 'dark'},
+              },
+            ],
+            failing: const {'settings'},
+          ),
+        );
+
+        final result = await manager.exportPreferences('user-uid');
+
+        expect(result['preferences_exist'], isTrue);
+        expect((result['preferences'] as Map)['theme'], 'dark');
+        expect(
+          result['other_settings_error_code'],
+          'other-settings-export-failed',
+        );
+        // Partial, not outright — the subject DID receive their preferences.
+        expect(result['error_code'], 'preferences-partial-export-failure');
+        expect(result.containsKey('error'), isFalse);
+        expect(jsonEncode(result), isNot(contains('permission-denied')));
+      },
+    );
   });
 }

@@ -147,15 +147,36 @@ void main() {
       expect(await repository.exportAcquisition(userId), isEmpty);
     });
 
-    test('every new read honours its cap', () async {
-      for (var i = 0; i < 5; i++) {
-        await seed(userId, FirestoreCollections.ingredients, 'i$i');
-      }
-      expect(
-        await repository.exportUserIngredients(userId, maxDocuments: 3),
-        hasLength(3),
-      );
-    });
+    // BUT-2003. This used to assert `hasLength(3)` and nothing else, which
+    // pinned the silent clipping as intended behaviour: the read honoured its
+    // cap and the bundle said nothing about the rows it had dropped.
+    //
+    // The truncation FLAG is a manager-level decision
+    // (`PreferencesExportManager.exportAccountSubcollections`, proven in its
+    // own suite). What the repository owes that decision is this: asking for
+    // `n` returns at most `n`, and asking for `n + 1` returns the extra row
+    // when it exists. Without the second half `fetchCapped`'s N+1 probe cannot
+    // tell a full page from a clipped one, and the flag it derives is a guess.
+    test(
+      'a read returns at most what was asked for, so N+1 can probe',
+      () async {
+        for (var i = 0; i < 5; i++) {
+          await seed(userId, FirestoreCollections.ingredients, 'i$i');
+        }
+
+        expect(
+          await repository.exportUserIngredients(userId, maxDocuments: 3),
+          hasLength(3),
+        );
+        expect(
+          await repository.exportUserIngredients(userId, maxDocuments: 4),
+          hasLength(4),
+          reason:
+              'the probe row: cap 3 with 5 stored must be distinguishable from '
+              'cap 3 with 3 stored, and only the extra row can tell them apart',
+        );
+      },
+    );
 
     // BUT-1992: `deleteUserPreferences` sweeps the WHOLE `settings` collection
     // (BUT-1957), while the export read `settings/preferences` by id — so a
@@ -172,6 +193,36 @@ void main() {
       expect(
         rows.map((r) => r['id']),
         containsAll(<String>['preferences', 'experimental']),
+      );
+    });
+
+    // BUT-2003: the collection read above has no `orderBy`, so it cannot
+    // answer "does this user have preferences" once the cap bites. This read
+    // can, because a document id ignores the cap entirely.
+    test('the preferences document is readable by id', () async {
+      await seed(userId, FirestoreCollections.userSettings, 'preferences');
+
+      final doc = await repository.exportUserPreferencesDocument(userId);
+
+      // The marker, not merely `isNotNull`: a `doc.exists ? {} : null` mutant
+      // satisfies non-nullness, and nothing else in this suite reads content
+      // back out of this method.
+      expect(doc, isNotNull);
+      expect(doc!['marker'], '$userId/settings/preferences');
+    });
+
+    test('absent preferences read as null, not as an empty map', () async {
+      await seed(userId, FirestoreCollections.userSettings, 'experimental');
+
+      expect(await repository.exportUserPreferencesDocument(userId), isNull);
+    });
+
+    test('reading ANOTHER user\'s preferences is refused', () async {
+      await seed(other, FirestoreCollections.userSettings, 'preferences');
+
+      await expectLater(
+        () => repository.exportUserPreferencesDocument(other),
+        throwsA(anything),
       );
     });
   });

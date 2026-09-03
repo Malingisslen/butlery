@@ -283,11 +283,17 @@ class _LeakySettingsExportRepository extends FirebaseDataExportRepository {
   // follows it. The point of the test is unchanged — a raw PERMISSION_DENIED
   // carrying ANOTHER person's uid must not reach the bundle — and the seam it
   // throws from has to be one production still calls, or it proves nothing.
+  //
+  // BUT-2004 moved WHICH seam that is. The collection read is isolated now, so
+  // a refusal there leaves the section standing with a partial token and no
+  // `error` — correct, and no longer the outright-failure shape this test
+  // pins. The by-id `preferences` read is deliberately not isolated
+  // (`preferences_exist` has no honest default), so it is the seam that still
+  // fails the section, and it is the one this fixture throws from.
   @override
-  Future<List<Map<String, dynamic>>> exportUserSettings(
-    String userId, {
-    int maxDocuments = 50,
-  }) async => throw StateError(
+  Future<Map<String, dynamic>?> exportUserPreferencesDocument(
+    String userId,
+  ) async => throw StateError(
     'PERMISSION_DENIED reading blocks/${userId}_$foreignUid',
   );
 }
@@ -295,11 +301,10 @@ class _LeakySettingsExportRepository extends FirebaseDataExportRepository {
 /// BUT-1721 (fix round): the PARTIAL shape — a section that sets `error_code`
 /// but NOT `error`.
 ///
-/// `SharedShoppingListExport` is the one section that does this, deliberately:
-/// its contributor probe is the only one a rules refusal can stop, so a
-/// transient failure there leaves the owner and member probes' lists in the
-/// section body along with an accurate note. The section WAS exported; one of
-/// its three lookups was not.
+/// `SharedShoppingListExport` does this deliberately: its contributor probe is
+/// the only one a rules refusal can stop, so a transient failure there leaves
+/// the owner and member probes' lists in the section body along with an
+/// accurate note. The section WAS exported; one of its three lookups was not.
 ///
 /// A non-`permission-denied` exception is what makes it a warning rather than
 /// the documented rules-refusal note, so the throw below is a `StateError`.
@@ -684,6 +689,14 @@ void main() {
         expect(data['account_subcollections'], isNotNull);
         expect(
           (data['account_subcollections'] as Map).containsKey('error'),
+          isFalse,
+        );
+        // BUT-2004: `error` alone stopped proving the section is healthy the
+        // moment its three reads were isolated — a section where two of three
+        // were refused now sets only `error_code`, so the assertion above
+        // would pass on a bundle that lost two collections.
+        expect(
+          (data['account_subcollections'] as Map).containsKey('error_code'),
           isFalse,
         );
         expect(data['notification_preferences'], isNotNull);

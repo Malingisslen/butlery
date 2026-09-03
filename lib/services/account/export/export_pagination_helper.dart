@@ -224,6 +224,20 @@ class ExportPaginationHelper {
     // defaultBatchSize fallback, so its three truncation probes key off a
     // declared contract rather than a coincidence. Behaviour is unchanged.
     'shared_shopping_lists': 500,
+    // BUT-2003: the three `users/{uid}` subcollections BUT-1992 added to the
+    // bundle. Pinned at the caps those reads already carried as their own
+    // default arguments, so declaring them here adds the N+1 truncation probe
+    // without shrinking anyone's export. Three keys rather than one, because
+    // the three collections grow at completely different rates and a shared
+    // key would make one section's cap decide another's.
+    'user_ingredients': 500,
+    'user_onboarding': 50,
+    'user_acquisition': 50,
+    // The `settings` collection, `preferences` INCLUDED — the query is not
+    // filtered, so the section additionally reads that one document by id
+    // (`exportUserPreferencesDocument`) and drops it from the page afterwards
+    // when both reads found it.
+    'user_settings': 50,
   };
 
   /// Get export limit for content type

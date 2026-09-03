@@ -758,6 +758,30 @@ class FirebaseDataExportRepository extends BaseFirebaseRepository<Object> {
     limit: maxDocuments,
   );
 
+  /// `users/{uid}/settings/preferences` — that one document, by id.
+  ///
+  /// BUT-2003. Reading the collection above is what makes a SECOND settings
+  /// document exportable, but it cannot answer "does this user have
+  /// preferences": an unordered query still sorts by `__name__` ascending, so
+  /// enough document ids sorting before `"preferences"` push it out of the
+  /// page deterministically, and the bundle then states
+  /// `preferences_exist: false` about a user who has them. An export that
+  /// asserts absence is worse than one that admits it clipped.
+  ///
+  /// So the section reads both: this for the answer, the collection for the
+  /// rest. One extra document read on a path that runs when a user asks for
+  /// their data.
+  Future<Map<String, dynamic>?> exportUserPreferencesDocument(String userId) =>
+      _readDoc(
+        firestore
+            .collection(FirestoreCollections.users)
+            .doc(userId)
+            .collection(FirestoreCollections.userSettings)
+            .doc('preferences'),
+        userId,
+        ExportResourceType.userSettings,
+      );
+
   /// `users/{uid}/ingredients` — the user's own ingredient library.
   ///
   /// BUT-1992, Malin's call 2026-09-03: user-authored content, so it is exported.
