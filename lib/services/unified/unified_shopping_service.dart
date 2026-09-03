@@ -308,12 +308,9 @@ class UnifiedShoppingService
   /// onto a shared shopping list.
   ///
   /// Scope: this writer and `FirebaseShoppingRepository.resolveDisplayName`
-  /// only. Other writers still persist the Auth-sourced name onto documents
-  /// other users read — `social_menu_operations.dart` (`sharedByDisplayName`,
-  /// `sharedByAvatarUrl`, via `PermissionService.currentUser`, which is
-  /// synthesized from `FirebaseAuth.currentUser`) and the two realtime
-  /// services' `_currentUserDisplayName`. Those are out of BUT-1705's scope,
-  /// not already fixed. Do not read this as a repo-wide guarantee.
+  /// only. Writers elsewhere still persist the Auth-sourced name onto
+  /// documents other users read; BUT-2009 enumerates them and is where that
+  /// list is maintained. Do not read this as a repo-wide guarantee.
   String? get currentUserDisplayName =>
       ServiceLocator.tryGet<UserService>()?.profileDisplayName;
   @override

@@ -1,16 +1,13 @@
 # Accepted Large Files
 
-**Last Updated**: 2026-07-01 (inventory reconciled COMPLETE at 171 files — 0 unlisted). **Live count 2026-07-14: 177** (`tools/count_large_files.sh`) — ~6 files have drifted above the threshold since the reconciliation and may still need a rationale row; spot them with `--list`.
+**Last Updated**: 2026-09-03 (reconciled COMPLETE at 190 files — 0 unlisted). Recount with `bash tools/count_large_files.sh` and diff `--list` against this document's rows; the number moves most weeks, so treat any figure here as stale until you have re-run it.
 
 Files intentionally exceeding the 500-line guideline. Review this list before proposing refactoring.
 
-Recount with `bash tools/count_large_files.sh` to keep this header honest.
-
 ## Refactoring Summary
 
-- **31 files refactored** across 10 batches (latest two: facade-extract `mina_recept_view`, module-extract `firebase_recipe_repository`)
-- **~9,500 lines reduced** total (cumulative across the program)
-- **177 files currently >500 lines** in lib/ (live count 2026-07-14). This list was reconciled to a **complete inventory** (every file with an individual rationale row, 0 unlisted) on 2026-07-01 at 171 files; ~6 files have drifted above the threshold since then, so it is no longer guaranteed 0-unlisted — run `bash tools/count_large_files.sh --list` to see the full set and spot the newly drifted files that still need a row. Expect ±2 churn as new module extractions land helper files above the threshold. (Prior note: the 2026-06-21 +13 drift was largely the WS10 privacy log-masking sweep adding a `log_sanitizer` import to ~44 files, nudging a few from 499 over the line.)
+- Refactoring has run in batches since the program started. Neither the cumulative totals nor an ordering of the batches is tracked here — nobody re-derives either, and the header above says why a written figure should not be trusted. The individual extractions are recorded in the rows below, each against its ticket.
+- The live count and the unlisted set are stated in the header above, and both move most weeks — re-run `bash tools/count_large_files.sh --list` rather than trusting any figure written here. Expect ±2 churn as new module extractions land helper files above the threshold. (Prior note: the 2026-06-21 +13 drift was largely the WS10 privacy log-masking sweep adding a `log_sanitizer` import to ~44 files, nudging a few from 499 over the line.)
 
 ## Generated / Data Files
 
@@ -146,6 +143,12 @@ Already modular services or well-organized modules within service facades. Furth
 | `personal_tag_crud_service.dart` | 666 | CRUD service extracted from PersonalTagService to keep each service under 500 lines |
 | `universal_share_dialog_viewmodel.dart` | 540 | Dialog VM for multi-content sharing (recipes, menus, lists); single dialog scope |
 | `recipe_detail_viewmodel.dart` | 652 | Detail VM with explicit "does not handle" SRP doc comment; analytics+display only |
+| `tag_generator.dart` | 555 | Orchestrator for the five tagging phases, which already live in their own files under `phases/`. Resolves config once per run and invokes the phases in order with a per-phase failure fallback; `TagResult` is constructed at the end of a run, not accumulated across phases |
+| `feature_flag_service.dart` | 554 | Remote Config wrapper holding `FeatureFlagService` and the `FeatureFlags` constant roster: per-flag defaults, typed accessors, a rollout hash, per-session analytics dedup and a real-time config listener |
+| `schema_org_tier.dart` | 553 | Tier 1 of the parsing ladder — normalises the JSON-LD and Microdata output of `recipe_scraper.dart` into one contract; the two formats share every normaliser below them, with no format branch in the file |
+| `optimized_image_loader.dart` | 528 | A widget (`OptimizedImageLoader`) plus its ~280-line State, with `ImageOptimizationParams`, `ImageMemoryCacheManager` and `ImageLoadCacheRecorder` helpers and one extension. The State is over half the file and is the split candidate if this is ever revisited |
+| `clause_parser.dart` | 509 | Per-clause Swedish menu parsing — count, meal-type and subdivision detection over one grammar |
+| `logger.dart` | 531 | Structured logging with severity levels and categories, plus the Crashlytics and analytics plumbing and its PII sanitisation; it is a widely shared dependency |
 
 ## Entry Points
 
@@ -154,7 +157,7 @@ Must be self-contained.
 | File | Lines | Reason |
 |------|-------|--------|
 | `main.dart` | 268 | App entry point — bootstrap sequence only. BUT-530 (2026-06-14) extracted `ButleryApp`/shell → `lib/app/butlery_app.dart` and the auth-routing subtree → `lib/app/auth/auth_wrapper.dart`, bringing this from 1,395 back under the historical 954 ceiling. |
-| `lib/app/butlery_app.dart` | 861 | Cohesive app shell — `ButleryApp` + `_ButleryAppState` (lifecycle, session timeout, theme/locale wiring, analytics observers, clipboard banner, memory pressure) + `ErrorApp` fallback. Extracted from `main.dart` (BUT-530). Further thinning (lifecycle/session/analytics mixins) is a separate follow-up if wanted. |
+| `lib/app/butlery_app.dart` | 868 | Cohesive app shell — `ButleryApp` + `_ButleryAppState` (lifecycle, session timeout, theme/locale wiring, analytics observers, clipboard banner, memory pressure) + `ErrorApp` fallback. Extracted from `main.dart` (BUT-530). Further thinning (lifecycle/session/analytics mixins) is a separate follow-up if wanted. |
 
 ## Config / Constants / Data
 
@@ -253,6 +256,9 @@ UI files that are already extracted or represent cohesive single-screen implemen
 | `performance_monitoring_service.dart` | 516 | **candidate**: mixes frame, network, cache, memory, and custom metrics in one service |
 | `social_group_detail_viewmodel.dart` | 524 | **candidate**: VM mixing group load, events, leave, ownership transfer, and content sharing |
 | `fcm_service.dart` | 728 | **candidate**: mixes FCM token management, permission-gating, deep-link routing, and notification display |
+| `user_profile_viewmodel.dart` | 561 | Profile form VM: fields, avatar upload, privacy settings and live Swedish validation share one form-state object |
+| `recipe_detail_metadata.dart` | 508 | Inline metadata row (time, portions, rating, badges) — one cohesive widget plus its state |
+| `shopping_list_operations.dart` | 506 | Static dialog builders for shopping-list management on a namespace class with no state, plus the private `_ConvertToCollaborativeDialog` widget and its state. The two conversion dialogs share `_warnConversionIncomplete` |
 
 ## Extraction Candidates (follow-up)
 
