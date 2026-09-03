@@ -3352,6 +3352,110 @@ async function scenario_effectivenessRowWrittenBackAfterTheSweep(): Promise<void
  * `functions/src` here. Two such counts were written during this change and
  * both were wrong, one of them refuted by the very commit that added it.
  */
+/**
+ * Every `users/{uid}/<name>` subcollection named by a `.collection(users)
+ * .doc(x).collection(name)` chain anywhere in `lib/` or `functions/src`, mapped
+ * to the first file naming it.
+ *
+ * A chain is not proof of a WRITE — a read builds the same path — so a caller
+ * asking "does anything write this?" is really asking "does anything touch it",
+ * which is the conservative direction for both guards that use it.
+ *
+ * Shared by BOTH drift guards — the deletion half (DELETION ⊇ WRITERS) and the
+ * export half (BUT-1992). One parser, because two scanners that must agree is
+ * the shape this file exists to stop.
+ */
+function discoverUserSubcollectionWriters(
+  repoRoot: string,
+): Map<string, string> {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const fs = require("fs");
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const path = require("path");
+
+  // The second `collection(...)` may be a literal OR a constant reference.
+  // Matching only literals is what made the first `subs` audit miss two live
+  // Dart writers (BUT-1957): every Dart repository builds the path from a
+  // `FirestoreCollections` constant, so a literal-only scan saw the server and
+  // essentially none of the client. Resolve the constants first.
+  const collectionConstants = new Map<string, string>();
+  for (const constFile of [
+    path.join(repoRoot, "lib", "core", "constants", "firestore_collections.dart"),
+    path.join(repoRoot, "functions", "src", "shared", "collections.ts"),
+  ]) {
+    if (!fs.existsSync(constFile)) continue;
+    const src = fs.readFileSync(constFile, "utf8") as string;
+    for (const m of src.matchAll(
+      /(?:static\s+const\s+String\s+|^\s*)([A-Za-z_]\w*)\s*[:=]\s*['"]([A-Za-z_]+)['"]/gm,
+    )) {
+      collectionConstants.set(m[1], m[2]);
+    }
+  }
+
+  // `\w*` and not `[A-Za-z_]\w*` before `[Uu]sers`. BUT-1992 measured the
+  // difference: the stricter form REQUIRES a character in front of "users", so
+  // it matched `FirestoreCollections.usersCollection` and never the bare
+  // `FirestoreCollections.users` that every Dart repository actually writes.
+  // This scan saw 15 subcollections where there are 23 — blind to
+  // category_preferences, conversation_memberships, counters, friend_categories,
+  // ingredients, list_category_orders, rate_limits and report_throttle. All
+  // eight were already in `subs`, so nothing was unerasable; what was wrong is
+  // that this check has been ranging over two thirds of its subject while
+  // reading as exhaustive, and the next Dart writer of a NEW subcollection
+  // would have been invisible to it.
+  const chain =
+    /collection\(\s*(?:['"]users['"]|(?:[A-Za-z_]\w*\.)?\w*[Uu]sers\w*)\s*\)\s*\.\s*doc\(\s*[^)]*\)\s*\.\s*collection\(\s*([^)\s]+)\s*\)/gs;
+  const discovered = new Map<string, string>();
+  // Comments in this repo spell example chains out in prose — this very test
+  // reddened on a `.collection("users").doc(x).collection("y")` written inside
+  // a comment in the cascade. Same trap BUT-1941 records for the golden lint:
+  // strip comments before matching, or the scanner reads documentation as code.
+  const stripComments = (t: string): string =>
+    t.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/[^\n]*/g, "");
+  const walk = (dir: string, exts: string[]): void => {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        if (entry.name === "__tests__" || entry.name === "node_modules") continue;
+        walk(full, exts);
+        continue;
+      }
+      if (!exts.some((e: string) => entry.name.endsWith(e))) continue;
+      const text = stripComments(fs.readFileSync(full, "utf8") as string);
+      // File-LOCAL consts too. `firebase_acquisition_repository.dart` writes
+      // `users/{uid}/acquisition` through a private `static const` and was
+      // invisible to a scan that resolved only the shared constants file —
+      // which is how `acquisition` reached production unerasable.
+      const localConsts = new Map<string, string>();
+      for (const c of text.matchAll(
+        /(?:static\s+)?const\s+(?:String\s+)?([A-Za-z_]\w*)\s*=\s*['"]([A-Za-z_]+)['"]/g,
+      )) {
+        localConsts.set(c[1], c[2]);
+      }
+      for (const m of text.matchAll(chain)) {
+        const raw = m[1].trim();
+        const literal = /^['"]([A-Za-z_]+)['"]$/.exec(raw);
+        const viaConst = /^(?:FirestoreCollections|Collections)\.(\w+)$/.exec(raw);
+        const viaLocal = /^([A-Za-z_]\w*)$/.exec(raw);
+        const name = literal
+          ? literal[1]
+          : viaConst
+            ? collectionConstants.get(viaConst[1])
+            : viaLocal
+              ? localConsts.get(viaLocal[1])
+              : undefined;
+        // An unresolvable expression (a parameter, a getter) is skipped rather
+        // than guessed — it would be a name no bucket can contain, and this
+        // test must fail on real drift, not on its own parser.
+        if (name && !discovered.has(name)) discovered.set(name, full);
+      }
+    }
+  };
+  walk(path.join(repoRoot, "functions", "src"), [".ts"]);
+  walk(path.join(repoRoot, "lib"), [".dart"]);
+  return discovered;
+}
+
 async function scenario_everyUserSubcollectionHasADeleter(): Promise<void> {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const fs = require("fs");
@@ -3427,75 +3531,7 @@ async function scenario_everyUserSubcollectionHasADeleter(): Promise<void> {
     unified_shopping_lists: ["deleteShoppingLists", "l1"],
   };
 
-  // The second `collection(...)` may be a literal OR a constant reference.
-  // Matching only literals is what made the first `subs` audit miss two live
-  // Dart writers (BUT-1957): every Dart repository builds the path from a
-  // `FirestoreCollections` constant, so a literal-only scan saw the server and
-  // essentially none of the client. Resolve the constants first.
-  const collectionConstants = new Map<string, string>();
-  for (const constFile of [
-    path.join(repoRoot, "lib", "core", "constants", "firestore_collections.dart"),
-    path.join(repoRoot, "functions", "src", "shared", "collections.ts"),
-  ]) {
-    if (!fs.existsSync(constFile)) continue;
-    const src = fs.readFileSync(constFile, "utf8") as string;
-    for (const m of src.matchAll(
-      /(?:static\s+const\s+String\s+|^\s*)([A-Za-z_]\w*)\s*[:=]\s*['"]([A-Za-z_]+)['"]/gm,
-    )) {
-      collectionConstants.set(m[1], m[2]);
-    }
-  }
-
-  const chain =
-    /collection\(\s*(?:['"]users['"]|(?:[A-Za-z_]\w*\.)?[A-Za-z_]\w*[Uu]sers\w*)\s*\)\s*\.\s*doc\(\s*[^)]*\)\s*\.\s*collection\(\s*([^)\s]+)\s*\)/gs;
-  const discovered = new Map<string, string>();
-  // Comments in this repo spell example chains out in prose — this very test
-  // reddened on a `.collection("users").doc(x).collection("y")` written inside
-  // a comment in the cascade. Same trap BUT-1941 records for the golden lint:
-  // strip comments before matching, or the scanner reads documentation as code.
-  const stripComments = (t: string): string =>
-    t.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/[^\n]*/g, "");
-  const walk = (dir: string, exts: string[]): void => {
-    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-      const full = path.join(dir, entry.name);
-      if (entry.isDirectory()) {
-        if (entry.name === "__tests__" || entry.name === "node_modules") continue;
-        walk(full, exts);
-        continue;
-      }
-      if (!exts.some((e: string) => entry.name.endsWith(e))) continue;
-      const text = stripComments(fs.readFileSync(full, "utf8") as string);
-      // File-LOCAL consts too. `firebase_acquisition_repository.dart` writes
-      // `users/{uid}/acquisition` through a private `static const` and was
-      // invisible to a scan that resolved only the shared constants file —
-      // which is how `acquisition` reached production unerasable.
-      const localConsts = new Map<string, string>();
-      for (const c of text.matchAll(
-        /(?:static\s+)?const\s+(?:String\s+)?([A-Za-z_]\w*)\s*=\s*['"]([A-Za-z_]+)['"]/g,
-      )) {
-        localConsts.set(c[1], c[2]);
-      }
-      for (const m of text.matchAll(chain)) {
-        const raw = m[1].trim();
-        const literal = /^['"]([A-Za-z_]+)['"]$/.exec(raw);
-        const viaConst = /^(?:FirestoreCollections|Collections)\.(\w+)$/.exec(raw);
-        const viaLocal = /^([A-Za-z_]\w*)$/.exec(raw);
-        const name = literal
-          ? literal[1]
-          : viaConst
-            ? collectionConstants.get(viaConst[1])
-            : viaLocal
-              ? localConsts.get(viaLocal[1])
-              : undefined;
-        // An unresolvable expression (a parameter, a getter) is skipped rather
-        // than guessed — it would be a name no bucket can contain, and this
-        // test must fail on real drift, not on its own parser.
-        if (name && !discovered.has(name)) discovered.set(name, full);
-      }
-    }
-  };
-  walk(path.join(repoRoot, "functions", "src"), [".ts"]);
-  walk(path.join(repoRoot, "lib"), [".dart"]);
+  const discovered = discoverUserSubcollectionWriters(repoRoot);
 
   check(
     "the source scan found the writers it is supposed to range over",
@@ -3510,10 +3546,10 @@ async function scenario_everyUserSubcollectionHasADeleter(): Promise<void> {
     if (subs.includes(name)) continue;
     if (triggerOwned.includes(name)) continue;
     if (name in COVERED_BY_OWN_STEP) continue;
-    uncovered.push(`${name} (written by ${discovered.get(name)})`);
+    uncovered.push(`${name} (chained in ${discovered.get(name)})`);
   }
   check(
-    "every users/{uid} subcollection a repo writer creates is reached by the cascade",
+    "every users/{uid} subcollection any repo chain names is reached by the cascade",
     uncovered.length === 0,
     `unreached, so the probe will report them as residual forever: ${JSON.stringify(uncovered)}`,
   );
@@ -3542,6 +3578,202 @@ async function scenario_everyUserSubcollectionHasADeleter(): Promise<void> {
       "the step is not keyed on the uid",
     );
   }
+}
+
+/**
+ * BUT-1992 — the invariant is EXPORT ⊇ DELETION.
+ *
+ * Anything in the cascade's `subs` list must have been obtainable by its
+ * subject first, or it is destroyed having never been disclosable under
+ * Art. 15. Collections erased by their own tier steps are outside what this
+ * ranges over; the sibling scenario proves those have a DELETER, not an export. BUT-1957 gave
+ * the DELETION half a source-derived guard; this is its counterpart, and the
+ * ticket's own framing is that the missing guard — not any single gap — is the
+ * defect. Every future widening of `subs` repeats the mistake otherwise, and
+ * nothing reddens.
+ *
+ * Both halves are derived from SOURCE. `subs` is parsed out of the cascade, and
+ * the exported set is parsed out of the export repository's
+ * `.collection(users).doc(uid).collection(X)` chains. Neither is a hand-kept
+ * list, because two hand-kept lists that must agree is precisely how BUT-1957's
+ * own two gaps were created.
+ *
+ * The anchor is the CHAIN, not `ExportResourceType`: that enum has fewer members
+ * than the repository has export methods, the mapping is many-to-one, and its
+ * values are log labels rather than paths — so a new section can reuse an
+ * existing member and this guard would pass green (the DBA seat's finding).
+ *
+ * Residual, stated rather than left to be discovered: this suite runs on a
+ * `functions/src` diff, while the change most likely to break the invariant is
+ * DART-ONLY (a repository starts writing a new subcollection, or an export
+ * section is deleted). Until the commit gate runs this file on a `lib/` diff
+ * too, the guard is asleep for exactly that case. BUT-2002.
+ */
+async function scenario_exportCoversEveryDeletedSubcollection(): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const fs = require("fs");
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const path = require("path");
+  const cascade = require("../account/account-deletion-cascade");
+
+  const repoRoot = path.join(__dirname, "..", "..", "..");
+  const cascadeSource = fs.readFileSync(
+    path.join(__dirname, "..", "account", "account-deletion-cascade.ts"),
+    "utf8",
+  ) as string;
+
+  // Same bracket-matched parse the deletion half uses, for the same reason: a
+  // naive `indexOf("];")` runs past a `new Set([...])` and swallows the module.
+  const subsNames = (): string[] => {
+    const start = cascadeSource.indexOf("const subs = ");
+    const open = cascadeSource.indexOf("[", start);
+    let depth = 0;
+    let close = -1;
+    for (let i = open; i < cascadeSource.length; i++) {
+      if (cascadeSource[i] === "[") depth++;
+      else if (cascadeSource[i] === "]") {
+        depth--;
+        if (depth === 0) {
+          close = i;
+          break;
+        }
+      }
+    }
+    const body = cascadeSource.slice(open, close).replace(/\/\/[^\n]*/g, "");
+    return [...body.matchAll(/"([A-Za-z_]+)"/g)].map((m) => m[1]);
+  };
+
+  const subs = subsNames();
+  check(
+    "the export guard can still read `subs` out of the cascade source",
+    subs.length > 5 && subs.includes("ingredients"),
+    `parsed subs: ${JSON.stringify(subs)}`,
+  );
+
+  // The exempt map is imported from PRODUCTION source, not restated here. An
+  // exemption added to a test file reads as bookkeeping and gets waved through;
+  // one added to the cascade shows up in the diff a reviewer is already reading.
+  const exempt = cascade.EXPORT_EXEMPT as Record<string, string>;
+  check(
+    "EXPORT_EXEMPT is exported from the cascade and is a real map",
+    exempt && typeof exempt === "object" && Object.keys(exempt).length > 0,
+    `EXPORT_EXEMPT is ${typeof exempt}`,
+  );
+
+  // An exemption with no stated reason is the rubber stamp this design exists to
+  // prevent, so it fails as loudly as a missing one.
+  const unreasoned = Object.entries(exempt)
+    .filter(([, why]) => typeof why !== "string" || why.trim().length < 20)
+    .map(([name]) => name);
+  check(
+    "every exemption states a reason",
+    unreasoned.length === 0,
+    `exempt without a written reason: ${JSON.stringify(unreasoned)}`,
+  );
+
+  // The exported set, read off the one file that performs user-scoped export
+  // reads. Constants resolved, comments stripped — the repo writes example
+  // chains in prose, and a scanner that reads documentation as code reddens on
+  // its own docstrings.
+  const collectionConstants = new Map<string, string>();
+  const constFile = path.join(
+    repoRoot,
+    "lib",
+    "core",
+    "constants",
+    "firestore_collections.dart",
+  );
+  if (fs.existsSync(constFile)) {
+    const src = fs.readFileSync(constFile, "utf8") as string;
+    for (const m of src.matchAll(
+      /static\s+const\s+String\s+([A-Za-z_]\w*)\s*=\s*['"]([A-Za-z_]+)['"]/g,
+    )) {
+      collectionConstants.set(m[1], m[2]);
+    }
+  }
+
+  const exportFile = path.join(
+    repoRoot,
+    "lib",
+    "repositories",
+    "firebase",
+    "firebase_data_export_repository.dart",
+  );
+  const exportSource = (fs.readFileSync(exportFile, "utf8") as string)
+    .replace(/\/\*[\s\S]*?\*\//g, "")
+    .replace(/\/\/[^\n]*/g, "");
+
+  // `\w*` and not `[A-Za-z_]\w*` before `[Uu]sers`: the latter REQUIRES a
+  // character in front, so it matches `FirestoreCollections.usersCollection`
+  // and never the bare `FirestoreCollections.users` every Dart repository
+  // actually writes. Measured — with the stricter form this scan found zero
+  // sections and the guard would have passed by ranging over nothing.
+  const chain =
+    /collection\(\s*(?:['"]users['"]|(?:[A-Za-z_]\w*\.)?\w*[Uu]sers\w*)\s*\)\s*\.\s*doc\(\s*[^)]*\)\s*\.\s*collection\(\s*([^)\s]+)\s*\)/gs;
+  const exported = new Set<string>();
+  for (const m of exportSource.matchAll(chain)) {
+    const raw = m[1].trim();
+    const literal = /^['"]([A-Za-z_]+)['"]$/.exec(raw);
+    const viaConst = /^FirestoreCollections\.(\w+)$/.exec(raw);
+    const name = literal
+      ? literal[1]
+      : viaConst
+        ? collectionConstants.get(viaConst[1])
+        : undefined;
+    if (name) exported.add(name);
+  }
+
+  check(
+    "the export scan found the sections it is supposed to range over",
+    exported.has("ingredients") &&
+      exported.has("onboarding") &&
+      exported.has("acquisition") &&
+      exported.has("settings"),
+    `discovered export sections: ${JSON.stringify([...exported].sort())}`,
+  );
+
+  const gaps: string[] = [];
+  for (const name of [...new Set(subs)].sort()) {
+    if (exported.has(name)) continue;
+    if (name in exempt) continue;
+    gaps.push(name);
+  }
+  check(
+    "every subcollection the cascade erases is either exported or exempted with a reason",
+    gaps.length === 0,
+    "erased but never obtainable under Art. 15, and not written down as a " +
+      `decision: ${JSON.stringify(gaps)}`,
+  );
+
+  // An exemption for something the cascade no longer deletes is dead text that
+  // outlives its subject, and a reader cannot tell it from a live decision.
+  // Seven exemptions are justified by the ABSENCE of a writer. That premise was
+  // measured once, at the moment it was written, and nothing re-checks it — so
+  // the day a feature starts writing one of those paths (`firestore.rules`
+  // already permits the owner to write `users/{uid}/conversations`), the cascade
+  // would erase rows the export never reproduced and this guard would still be
+  // green, because `name in exempt` is unconditional. Reuses the SAME writer
+  // scan the deletion half runs; the exemption text is the anchor, so a reason
+  // rewritten away from "NO LIVE WRITER" is a deliberate act, not a silent one.
+  const writers = discoverUserSubcollectionWriters(repoRoot);
+  const revived = Object.entries(exempt)
+    .filter(([name, why]) => why.startsWith("NO LIVE WRITER") && writers.has(name))
+    .map(([name]) => `${name} (chained in ${writers.get(name)})`);
+  check(
+    "no legacy-only exemption has acquired a users/{uid} chain",
+    revived.length === 0,
+    "exempted as write-dead, but a `users/{uid}` chain names it — either a " +
+      "writer appeared and the rows are now erased without ever being " +
+      "exportable, or it is being exported and the exemption contradicts " +
+      `that: ${JSON.stringify(revived)}`,
+  );
+
+  const stale = Object.keys(exempt).filter((n) => !subs.includes(n));
+  check(
+    "no exemption names a collection the cascade has stopped deleting",
+    stale.length === 0,
+    `exempt but absent from subs: ${JSON.stringify(stale)}`,
+  );
 }
 
 /**
@@ -3632,6 +3864,7 @@ async function main(): Promise<void> {
   await scenario_probeSeesLeftoverNotificationEffectiveness();
   await scenario_effectivenessRowWrittenBackAfterTheSweep();
   await scenario_everyUserSubcollectionHasADeleter();
+  await scenario_exportCoversEveryDeletedSubcollection();
 
   let failed = 0;
   for (const r of results) {

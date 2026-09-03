@@ -17428,3 +17428,73 @@ out of this agent's scope, which never deploys):
 Also compressed in place: "a block with any conditional `allow` is not a constant deny and must
 be exercised" → "any conditional `allow` must be exercised", and "Miss one and the suite guards
 nothing in CI." dropped in favour of the VERIFY instruction that replaces it.
+
+### 2026-09-03 — BUT-1992: EXPORT ⊇ DELETION guard on the account cascade [gdpr][cascade][review]
+
+Commit-gate review of the staged diff (`account-deletion-cascade.ts` + its suite).
+
+MEASURED, reproducing the ticket's own claim exactly by re-running the guard's
+discovery scan standalone against the worktree:
+- strict `[A-Za-z_]\w*[Uu]sers\w*` → 15 names; widened `\w*[Uu]sers\w*` → 23.
+- the eight newly visible names are exactly `category_preferences`,
+  `conversation_memberships`, `counters`, `friend_categories`, `ingredients`,
+  `list_category_orders`, `rate_limits`, `report_throttle`.
+- cause: the strict form requires a character before "users", so it matched
+  `FirestoreCollections.usersCollection` / `_usersCollection` but never the bare
+  `FirestoreCollections.users` / `Collections.users` that every Dart repository writes.
+- false-positive check on the widening: the only users-ish first-collection tokens in
+  the repo are `FirestoreCollections.users` (62), `FirestoreCollections.activeUsers`
+  (11), `Collections.users` (6), `_usersCollection` (2). `activeUsers` and
+  `_usersCollection` already matched the STRICT form, so the widening adds only the
+  two bare spellings — no new false positive today. Residual: a future const such as
+  `blockedUsers` naming a non-user root collection would be misattributed, but it
+  fails LOUD (demands a deleter/exemption) rather than silent.
+
+Non-vacuity of the new scenario, computed independently: subs = 20 names, export-chain
+set = 14, EXPORT_EXEMPT = 10, gaps = 0, stale = 0. Both branches carry weight (10 names
+covered by export, 10 by exemption), so the invariant is not satisfied by one side alone.
+Suite run: 210/210 PASS.
+
+Exemption reasons checked against source:
+- `rate_limits` — owner-only rules block, writer `firebase_activity_event_repository.dart`.
+- `counters` — `firestore.rules` `allow create, update: if isAuthenticated()` on
+  `users/{userId}/counters/{counterId}`, so the "cross-user increment" claim is true.
+- `report_throttle` — writer confirmed: `firebase_report_repository.dart` batches
+  `users/{reporterId}/report_throttle/{contentOwnerId}` with `{lastReportAt}`. Body is
+  one timestamp as claimed, but the DOC ID is the reported user's uid, which
+  `rate_limits` (ids are limit types) has no equivalent of. Substantively covered
+  because `exportReports` exports `reports where reporterId == uid`, which carries
+  `contentOwnerId` — but the exemption text does not say so, and `report_throttle` is
+  the one LIVE-writer exemption absent from the bundle's `data_minimisation` sentence
+  (which names rate_limits and counters only).
+- the seven "NO LIVE WRITER" names: no chain writer and no string-path writer found for
+  `user_shared_menus`, `user_shared_shopping_lists`, `category_memberships`,
+  `connection_tests`, `unified_recipes`, `fcm_tokens`; `users/{uid}/conversations` has a
+  rules block (`allow read, write: if isOwner`) but no code writer. All seven are named
+  by `admin/reset-user-data.ts` or reached from the Art. 15 reader BUT-1990 removed.
+
+Findings filed (all non-blocking): the exemption map's "no live writer" premise is never
+re-checked against the writer scan; `report_throttle`'s reason and its absence from the
+bundle sentence; the scenario docstring's "Anything the cascade erases" over-claims what
+the code ranges over (`subs` only, not the own-step tier collections); and the guard
+proves a CHAIN exists, not that a section reaches the bundle (BUT-1957's dead-section
+precedent), though the staged Dart tests cover the wiring.
+
+Retired from the knowledge file in the same edit, verbatim:
+
+"GATE any empty-roster DELETE on the uid having been ON that roster AND on
+  EVERY denormalised roster being empty, EACH READ RAW (a DERIVED witness
+  collapses the gate to one check; a `.select()` projection is how one silently
+  drops). Witnesses are ROSTERS (readers) ONLY — an erasure-DISCOVERY handle
+  (`contributorUserIds`) as witness blocks the delete and strands a doc with an
+  empty `memberPermissions` on an id poll-close re-mints. The gate binds EVERY
+  server writer that can empty a roster, and its NON-delete branch must survive
+  too: rewrite roster projections PER KEY (`FieldValue.delete()` on `map.<uid>`,
+  `arrayRemove` on the mirror) and drop the whole-field key from the same
+  payload — a wholesale rewrite blanks `memberPermissions` and BRICKS the id.
+  Per-key surgery on PROJECTIONS alone is NOT durable (a client recomputes them
+  from the untouched source roster)."
+
+"**A bucket entry whose deleter removes ONE DOC BY ID is NOT a deleter for the
+  COLLECTION the probe counts** — the exercise passes on the seeded id and hides it;
+  read the rule's id WILDCARD (`{settingId}` bounds nothing)."

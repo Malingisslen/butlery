@@ -225,11 +225,9 @@ from `(err as {code?}).code`.
 - Cascade purges discover children via `rootRef.listCollections()`, never
   hard-coded names. Steps are BEST-EFFORT — a rethrow re-runs the WHOLE
   cascade, double-applying non-idempotent ones. `admin/reset-user-data.ts`'s
-  `subcollections` inventory is the nearest written shape of a user document
-  — a READER'S note, not enforcement. Its `COLLECTIONS_TO_DELETE`
-  also holds TOP-LEVEL names (`user_fcm_tokens`), so never cite that file as
-  provenance for a `users/{uid}` subcollection without checking WHICH list
-  the name sits in.
+  `subcollections` inventory is a READER'S note, not enforcement, and its
+  `COLLECTIONS_TO_DELETE` holds TOP-LEVEL names (`user_fcm_tokens`) — check
+  WHICH list a name sits in before citing that file as provenance.
 - **`batch.update()` on a concurrently-deleted doc fails the WHOLE chunk with
   NOT_FOUND** under `strict:false`; and `commitInChunks` calls `mutate` OUTSIDE
   that try, so a SYNCHRONOUS validation throw from the callback (`undefined` in
@@ -250,16 +248,16 @@ from `(err as {code?}).code`.
   call returning refs for MISSING docs with live subcollections (and a
   `count()` reports them as ZERO); use it on sweep AND probe, and `strict:true`
   for a doomed parent's children (`strict:false` strands PII silently).
-- A "shared" collection also holds SOLO-owner docs to DELETE, not scrub. A
-  scrub enumerates every uid in the MODEL's `toFirestore`: array elements,
-  per-uid map keys, AND attribution scalars (`lastModifiedBy`, `lastEditedBy`).
+- A "shared" collection also holds SOLO-owner docs to DELETE, not scrub. A scrub
+  enumerates every uid in the MODEL's `toFirestore`: array elements, per-uid map
+  keys, AND attribution scalars (`lastModifiedBy`, `lastEditedBy`).
 - **A cascade write from a query-time snapshot applied via a plain `.update()`
   is a lost-update hazard** — wrap in `runTransaction`, re-read, skip on
   `!fresh.exists`. The repo's fake transaction is single-threaded/no-retry, so
   a green suite proves values, not concurrency-safety.
-- A rules hard-deny PLUS an Admin-SDK escape hatch has TWO guards and the
-  callable exempts only the first — the model's `toFirestore` coercion is the
-  second. Enumerate the SERIALIZER's call sites, not just the rules' writes.
+- A rules hard-deny plus an Admin-SDK escape hatch has TWO guards: the callable
+  exempts only the first; the model's `toFirestore` coercion is the second.
+  Enumerate the SERIALIZER's call sites, not just the rules' writes.
 - A serial `ref.update()` loop over an embedded array: NOT_FOUND aborts the
   remaining iterations AND the full-array write is a lost update. Per-doc
   `runTransaction` fixes only the second — try/catch each, throw once, then
@@ -292,18 +290,13 @@ from `(err as {code?}).code`.
   read the write limb, never the app's own writer; unpinned, any editor plants
   a stranger's uid and that user's every deletion reports
   `gdprCompliant:false` forever.
-  GATE any empty-roster DELETE on the uid having been ON that roster AND on
-  EVERY denormalised roster being empty, EACH READ RAW (a DERIVED witness
-  collapses the gate to one check; a `.select()` projection is how one silently
-  drops). Witnesses are ROSTERS (readers) ONLY — an erasure-DISCOVERY handle
-  (`contributorUserIds`) as witness blocks the delete and strands a doc with an
-  empty `memberPermissions` on an id poll-close re-mints. The gate binds EVERY
-  server writer that can empty a roster, and its NON-delete branch must survive
-  too: rewrite roster projections PER KEY (`FieldValue.delete()` on `map.<uid>`,
-  `arrayRemove` on the mirror) and drop the whole-field key from the same
-  payload — a wholesale rewrite blanks `memberPermissions` and BRICKS the id.
-  Per-key surgery on PROJECTIONS alone is NOT durable (a client recomputes them
-  from the untouched source roster).
+  GATE any empty-roster DELETE on the uid having been ON that roster AND on EVERY
+  denormalised roster being empty, EACH READ RAW (a DERIVED witness or a
+  `.select()` projection silently collapses the gate); witnesses are ROSTERS
+  (readers) only, never a discovery handle (`contributorUserIds`). It binds EVERY
+  server writer that can empty a roster, and its NON-delete branch rewrites roster
+  projections PER KEY and drops the whole-field key from the same payload; per-key
+  surgery on PROJECTIONS alone is not durable.
   A leg with no DIRTY fixture is mutation-invisible and `strict:false` swallows
   a failed chunk, so the probe is the ONLY contradiction to `return true` — leg
   and scenario ship in one edit. A probe ERROR ADDS to residual (a sentinel,
@@ -316,29 +309,36 @@ from `(err as {code?}).code`.
   deleter by construction** — any user subcollection no step erases then
   reports `gdprCompliant:false` forever, unclearable. Ship it only with a
   DERIVED drift test: regex every
-  `.collection("users").doc(..).collection("X")` writer across
-  `functions/src` + `lib`, RESOLVING collection CONSTANTS (a literal-only scan
-  sees the server and none of the Dart client) and `db.doc("users/${uid}/X/y")`
-  string paths the chain regex misses; bucket each name into the
+  `.collection(users).doc(..).collection("X")` writer across `functions/src` +
+  `lib`, RESOLVING collection CONSTANTS incl. file-local ones (a literal-only
+  scan sees the server and none of the Dart client) and spelling the users token
+  `\w*[Uu]sers\w*` — `[A-Za-z_]\w*[Uu]sers\w*` REQUIRES a char before "users" and
+  so never matches the bare `FirestoreCollections.users` every Dart repo writes
+  (measured 15 names where 23 exist); `db.doc("users/${uid}/X/y")` string paths
+  are still missed. Bucket each name into the
   source-PARSED `subs`, the source-PARSED exclusions, or a map whose every
   entry is EXERCISED (seed, run the named deleter, assert gone). Parse those
   literals by BRACKET MATCHING: `new Set([...])` closes `])`, so
-  `indexOf("];")` silently swallows half the module. **A bucket entry whose
-  deleter removes ONE DOC BY ID is NOT a deleter for the COLLECTION the probe
-  counts** — the exercise passes on the seeded id and hides it; read the rule's
-  id WILDCARD (`{settingId}` bounds nothing). The exclusion list is
+  `indexOf("];")` silently swallows half the module. A deleter removing ONE DOC
+  BY ID is NOT a deleter for the COLLECTION the probe counts — the id WILDCARD
+  (`{settingId}`) bounds nothing. The exclusion list is
   load-bearing BOTH ways and needs its own fixture. Every hand-rolled fake
   doc-ref then needs `listCollections()` derived from stored deeper paths,
   never stubbed `[]` — absent, the probe's outer catch fails CLOSED and every
   CLEAN fixture reddens.
-- **Data written by a SCHEDULED JOB under a non-`users/{uid}` path is
+- **EXPORT ⊇ DELETION is the cascade's other drift guard**: every source-parsed
+  `subs` name is either read by an export chain or in a reasoned exemption map
+  kept in PRODUCTION source, not the test. Such a map is PERMANENT — re-check
+  each "no live writer" exemption against the same writer scan, and name every
+  withheld collection in the bundle's `data_minimisation` line, or the gap is
+  undisclosed (Art. 12(1)).
+- **A SCHEDULED JOB writing uid-keyed rows under a non-`users/{uid}` path is
   invisible to both of the cascade's structural loops** (e.g.
-  `analytics/notifications/effectiveness`, a subcollection of a FIXED doc) —
-  sweep every scheduled writer for uid-keyed output and give each its own
-  probe leg; a colliding subcollection name would arm a `fieldOverrides` TTL
-  (COLLECTION-GROUP scoped) over the wrong docs. Such a job flushing pages it
-  already holds IN MEMORY can write a row back AFTER the sweep, so pin the leg
-  with a RESURRECTION scenario, never by mirroring the deleter.
+  `analytics/notifications/effectiveness`, under a FIXED doc) — give each its own
+  probe leg; a colliding subcollection name arms a `fieldOverrides` TTL
+  (COLLECTION-GROUP scoped) over the wrong docs. Such a job can flush IN-MEMORY
+  pages back AFTER the sweep, so pin the leg with a RESURRECTION scenario, never
+  by mirroring the deleter.
 
 ### Rate limiting & LLM cost gates (middleware/rate_limiter.ts)
 - A two-stage gate's SHARED/cross-user side effect (global counter) goes

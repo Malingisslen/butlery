@@ -279,10 +279,15 @@ class _LeakySettingsExportRepository extends FirebaseDataExportRepository {
 
   static const String foreignUid = 'uid-of-another-person-9f2e45';
 
+  // BUT-1992: the settings read is now the whole collection, so this fixture
+  // follows it. The point of the test is unchanged — a raw PERMISSION_DENIED
+  // carrying ANOTHER person's uid must not reach the bundle — and the seam it
+  // throws from has to be one production still calls, or it proves nothing.
   @override
-  Future<Map<String, dynamic>?> exportSettingsPreferences(
-    String userId,
-  ) async => throw StateError(
+  Future<List<Map<String, dynamic>>> exportUserSettings(
+    String userId, {
+    int maxDocuments = 50,
+  }) async => throw StateError(
     'PERMISSION_DENIED reading blocks/${userId}_$foreignUid',
   );
 }
@@ -668,6 +673,17 @@ void main() {
         expect(data['delivered_notifications'], isNotNull);
         expect(
           (data['delivered_notifications'] as Map).containsKey('error'),
+          isFalse,
+        );
+        // BUT-1992, the THIRD section to ship without this assertion despite
+        // the two warnings above saying exactly why. The new drift guard does
+        // not cover it either: it reads the export repository's collection
+        // chains, so it proves a path is SPELLED, never that a section reaches
+        // the bundle. Deleting the one map entry in `_buildExportBundle` left
+        // every Dart suite and the guard green.
+        expect(data['account_subcollections'], isNotNull);
+        expect(
+          (data['account_subcollections'] as Map).containsKey('error'),
           isFalse,
         );
         expect(data['notification_preferences'], isNotNull);

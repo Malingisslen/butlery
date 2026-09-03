@@ -26,6 +26,11 @@ enum ExportResourceType {
   conversationMemberships('conversation_memberships'),
   userConsent('user_consent'),
   userSettings('user_settings'),
+  // BUT-1992: three `users/{uid}` subcollections the deletion cascade erases
+  // and the export previously omitted (Art. 15 ⊇ Art. 17).
+  userIngredients('users/{uid}/ingredients'),
+  userOnboarding('users/{uid}/onboarding'),
+  userAcquisition('users/{uid}/acquisition'),
   userNotifications('user_notifications'),
   // BUT-1957. A DIFFERENT collection from `userNotifications` above, one word
   // apart: that one is the TOP-LEVEL `user_notifications`, this one is the
@@ -731,17 +736,83 @@ class FirebaseDataExportRepository extends BaseFirebaseRepository<Object> {
 
   // ── preferences_export_manager residuals ──
 
-  /// `users/{uid}/settings/preferences` single-doc fetch.
-  Future<Map<String, dynamic>?> exportSettingsPreferences(String userId) =>
-      _readDoc(
-        firestore
-            .collection(FirestoreCollections.users)
-            .doc(userId)
-            .collection(FirestoreCollections.userSettings)
-            .doc('preferences'),
-        userId,
-        ExportResourceType.userSettings,
-      );
+  /// `users/{uid}/settings` — the WHOLE collection.
+  ///
+  /// BUT-1992: this fetched `settings/preferences` by id while
+  /// `deleteUserPreferences` sweeps the whole collection (BUT-1957). Any second
+  /// document under `settings` was therefore erasable but not exportable, and
+  /// `firestore.rules` leaves the id unconstrained on an owner-only create, so a
+  /// second document is one client write away. Widened rather than narrowing the
+  /// deleter: narrowing leaves a residual the probe reports and no step can
+  /// clear.
+  Future<List<Map<String, dynamic>>> exportUserSettings(
+    String userId, {
+    int maxDocuments = 50,
+  }) => _queryList(
+    firestore
+        .collection(FirestoreCollections.users)
+        .doc(userId)
+        .collection(FirestoreCollections.userSettings),
+    userId,
+    ExportResourceType.userSettings,
+    limit: maxDocuments,
+  );
+
+  /// `users/{uid}/ingredients` — the user's own ingredient library.
+  ///
+  /// BUT-1992, Malin's call 2026-09-03: user-authored content, so it is exported.
+  /// Grows with use, hence the higher cap.
+  Future<List<Map<String, dynamic>>> exportUserIngredients(
+    String userId, {
+    int maxDocuments = 500,
+  }) => _queryList(
+    firestore
+        .collection(FirestoreCollections.users)
+        .doc(userId)
+        .collection(FirestoreCollections.ingredients),
+    userId,
+    ExportResourceType.userIngredients,
+    limit: maxDocuments,
+  );
+
+  /// `users/{uid}/onboarding` — how far the user got through onboarding.
+  ///
+  /// BUT-1992, Malin's call 2026-09-03: exported. Thin, but it is a behavioural
+  /// record of the subject and no exemption covers low-value personal data.
+  Future<List<Map<String, dynamic>>> exportOnboardingProgress(
+    String userId, {
+    int maxDocuments = 50,
+  }) => _queryList(
+    firestore
+        .collection(FirestoreCollections.users)
+        .doc(userId)
+        .collection(FirestoreCollections.userOnboarding),
+    userId,
+    ExportResourceType.userOnboarding,
+    limit: maxDocuments,
+  );
+
+  /// `users/{uid}/acquisition` — install attribution (BUT-612).
+  ///
+  /// BUT-1992, Malin's explicit call 2026-09-03: exported UNPROJECTED, chosen
+  /// over the product objection that it reads as surprising. Art. 15(1)(a)+(g)
+  /// give the subject the right to know the SOURCE of their data, which the
+  /// legal seat called the strongest of the ten. The row carries source, medium,
+  /// campaign and a first-seen stamp — no spend, no partner identity, nothing
+  /// about anyone else. Do NOT strip the campaign name without reopening
+  /// ADR-0011: "it sounds bad" was weighed and rejected as a reason.
+  Future<List<Map<String, dynamic>>> exportAcquisition(
+    String userId, {
+    int maxDocuments = 50,
+  }) => _queryList(
+    firestore
+        .collection(FirestoreCollections.users)
+        .doc(userId)
+        .collection(FirestoreCollections.userAcquisition),
+    userId,
+    ExportResourceType.userAcquisition,
+    limit: maxDocuments,
+  );
 
   /// `user_notifications` where `userId == userId`.
   Future<List<Map<String, dynamic>>> exportUserNotifications(

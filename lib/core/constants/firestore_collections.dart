@@ -124,6 +124,12 @@ abstract final class FirestoreCollections {
   static const String userConsent = 'consent';
   static const String userConversationMemberships = 'conversation_memberships';
   static const String userRateLimits = 'rate_limits';
+  // BUT-1992: the export repository reads these through the constants so the
+  // export⊇deletion drift guard resolves them. Their WRITERS still hold their
+  // own literals (`onboarding_progress_service.dart`,
+  // `firebase_acquisition_repository.dart`), which the guard resolves too.
+  static const String userOnboarding = 'onboarding';
+  static const String userAcquisition = 'acquisition';
   static const String userSharedMenus = 'user_shared_menus';
   static const String userSharedShoppingLists = 'user_shared_shopping_lists';
   static const String categoryPreferences = 'category_preferences';

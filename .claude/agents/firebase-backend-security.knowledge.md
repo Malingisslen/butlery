@@ -408,7 +408,14 @@ name which doc each end touches before approving it.
   fail direction: a strip fails CLOSED (unrecognised owner id ⇒ lose the field), a drop fails
   OPEN (unreadable owner id ⇒ KEEP the row, because under-disclosure is the worse Art. 15
   failure). Both need the section's `data_minimisation` sentence to NAME the drop and a test
-  asserting that sentence, or the withholding is silent. Grade that sentence against the
+  asserting that sentence, or the withholding is silent. A WITHHELD SET is a counted set: the
+  moment a collection joins it, every "both"/"the five" in the bundle text, the Art. 30
+  register, the exemption map's docstring and the pinning test's NAME goes stale at once —
+  assert `contains(<name>)` per member, never a count. Grade an exemption's stated REASON
+  apart from the decision: "same class as <sibling>" is a claim about doc-id SHAPE and writer,
+  while the substantive reason is usually that the withheld rows are DERIVED from a section
+  the bundle already ships (a report-cooldown stamp over `reports where reporterId == uid`) —
+  open that section and check it carries the joining field before accepting it. Grade that sentence against the
   READER it is written for, not only for truth: an upper bound ("readable only by the
   members it was planned with") can be true and still fail to explain the exclusion it sits
   under, because the excluded reader satisfies it too — a leaver WAS planned with. Strike

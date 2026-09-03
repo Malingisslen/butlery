@@ -553,6 +553,16 @@ Codecov: 60% project / 70% new patches / 2% drop tolerance — floors, decided 5
   end-to-end there — seed the real subcollection plus a DECOY in the neighbour, assert the
   bundle key — kills both mutants at once. Measured on BUT-1957: repointing the collection
   left 86/86 green, deleting the bundle entry 40/40 (2026-09-02).
+  **The bundle-wiring seam has now been missed on THREE consecutive export sections, each
+  time in a file already carrying a written warning about it** — BUT-1732 wrote the comment,
+  BUT-1957 wrote a second one beside it, BUT-1992 added `account_subcollections` with the
+  key present in zero test files. The warning comment does not work; the check that does is
+  mechanical and takes seconds: `grep -rn '<bundle key>' test/` on every key the round adds
+  to `_buildExportBundle`, run as the FIRST step of reviewing an export change. Zero hits IS
+  the finding, whatever the round's other suites prove. A SOURCE-DERIVED drift guard does not
+  close it either: BUT-1992's TS guard reads `.collection(users).doc(uid).collection(X)`
+  chains out of the repository FILE, so it proves a path is SPELLED, not that any manager
+  calls it or that any section ships — a dead repository method satisfies it (2026-09-03).
   **A fifth seam: a SIBLING section that DERIVES flags from the same repository read.**
   BUT-1990 repointed the FCM device read; `exportNotificationPreferences` derives
   `fcm_token_registered` and `fcm_token_updated_at` from it, and the manager suite's fake
@@ -580,6 +590,14 @@ Codecov: 60% project / 70% new patches / 2% drop tolerance — floors, decided 5
   happening; a section disclosing rather than promising needs the same pin, asserted BESIDE
   the passthrough test so the disclosure and the disclosed field die together. Settle it by
   grep, not by probe — the key is additive, so no other assertion can see it (BUT-1957 r2).
+  **When the withheld set lives in ONE language and the sentence disclosing it in ANOTHER,
+  nothing ties them and the drift arrives at birth** — BUT-1992's `EXPORT_EXEMPT` (TS,
+  `account-deletion-cascade.ts`) holds three exemptions with a live writer while the Dart
+  `data_minimisation` sentence names two; `report_throttle` was undisclosed the day it
+  shipped, under the change's own stated Art. 12(1) standard. Grade a disclosure sentence
+  against the EXEMPT SET, not against the round's narrative, and read a test named "the
+  bundle names BOTH exempted collections" as a count over that set rather than a behaviour —
+  it is the seam, not the pin (2026-09-03).
   **That pin then COUPLES the wording, so grade the DISCLOSURE against the mechanism
   it describes in the same round.** A substring pin freezes the sentence, which is the
   point — a later correction reddens instead of drifting. It also survives TRANSLATION only

@@ -1,3 +1,101 @@
+# PLAN 2026-09-03 — BUT-1992: vakten som håller EXPORT ⊇ RADERING, plus de tre sektioner Malin beslutade
+
+Fas 1.4 är redan gjord: elva roller, blind panel, 2026-09-02. Besluten togs 2026-09-03,
+en fråga i taget. Underlag: `docs/org/adr/ADR-0011`. Det här är bygget av ett fattat beslut,
+inte en omplanering av det.
+
+Tier C, sensitiv domän (GDPR + kontoraderingskaskaden). Router: **full-panel**.
+`panelPolicy: park` → parkeras i In Review, aldrig Done.
+
+## Beslutet som byggs
+
+| Samling | Beslut |
+|---|---|
+| `ingredients` | EXPORTERAS |
+| `onboarding` | EXPORTERAS |
+| `acquisition` | EXPORTERAS, oförändrad |
+| `rate_limits` | UNDANTAS |
+| `counters` | UNDANTAS |
+
+## Steg 0 — mätt före något skrivs
+
+- `subs` i `account-deletion-cascade.ts` innehåller alla fem ovan.
+- Den befintliga raderingsvakten (`scenario_everyUserSubcollectionHasADeleter`,
+  `functions/src/__tests__/account-deletion-cascade.test.ts:3355`) har redan
+  `namesAfter()`, en parentesmatchande parser som strippar radkommentarer, samt en
+  konstantupplösare som läser BÅDE `lib/core/constants/firestore_collections.dart` och
+  `functions/src/shared/collections.ts`. **Den återanvänds — ingen andra parser.**
+- Exportläsarna bygger sökvägen som `.collection(users).doc(userId).collection(X)`, där X är
+  antingen en `FirestoreCollections`-konstant eller en literal. Det är ankaret.
+  `ExportResourceType`-enumet är INTE ankaret: den har färre medlemmar än repot har
+  exportmetoder, mappningen är många-till-en och värdena är loggetiketter, inte sökvägar
+  (DBA-sätet).
+- Konstanter som finns: `ingredients`, `userSettings`, `counters`, `userRateLimits`.
+  Saknas: `onboarding`, `acquisition` — skrivarna använder literaler
+  (`onboarding_progress_service.dart`, `firebase_acquisition_repository.dart`).
+- `deleteUserPreferences` raderar HELA `settings`-samlingen; exporten läser
+  `settings/preferences` via id. Asymmetrin är kvar.
+- Security mätte 2026-09-02: alla fem är redan klientläsbara för sin ägare.
+  **Ingen regeländring behövs.**
+
+## Uppgifter
+
+### A. Tre nya exportsektioner
+1. `exportUserIngredients`, `exportOnboardingProgress`, `exportAcquisition` i
+   `FirebaseDataExportRepository`, alla via `_queryList`/`_readDoc` så
+   `_guardSelfExport` körs, alla med EXPLICIT radgräns.
+2. `onboarding` och `acquisition` får konstanter i `firestore_collections.dart` i stället för
+   literaler — annars måste vakten lösa två stavningar av samma sak.
+3. Sektionerna wire:as i `PreferencesExportManager` (där `settings` och notiser redan bor) och
+   får varsin nyckel i `data_export_service.dart`.
+
+### B. `settings`-asymmetrin
+`exportSettingsPreferences` → hela samlingen, speglat mot `deleteUserPreferences`.
+Aldrig åt andra hållet: att smalna av raderingen lämnar en residual proben rapporterar och
+inget steg kan rensa.
+
+### C. Vakten (det ticketen kallar det egentliga felet)
+Ett systerscenario i `account-deletion-cascade.test.ts`, bredvid raderingsvakten och med
+samma parser. Invariant: **varje namn i `subs` är antingen läst av en exportmetod eller
+uppräknat i `EXPORT_EXEMPT` med ett skrivet skäl.**
+- `EXPORT_EXEMPT` bor i PRODUKTIONSKÄLLAN (cascade-filen), inte i testet — annars kan en
+  framtida undantagsrad läggas till utan att någon granskare ser den i diffen.
+- Ett namn i varken kategori RÖDNAR.
+- Ett undantag med tom sträng som skäl RÖDNAR.
+
+### D. Texten användaren ser
+`data_minimisation` måste NAMNGE de undantagna. Ett undantag användaren inte kan se är inte
+minimering, det är en oredovisad lucka (art. 12.1, BUT-1971-precedens).
+
+### E. Art. 30-registret
+`docs/security/notification-analytics-retention.md` får en rad per samling — alla fem,
+oavsett exportstatus. Art. 30 registrerar BEHANDLING, inte exportstatus.
+
+## Acceptans
+
+1. `[diff]` Vakten rödnar när en påhittad samling läggs i `subs` utan export och utan
+   undantag. Mutationsprövat.
+2. `[diff]` Vakten rödnar när ett undantag saknar skäl. Mutationsprövat.
+3. `[diff]` Vakten härleder BÅDA sidorna ur källkod. Ingen handskriven lista över
+   exportsökvägar någonstans.
+4. `[diff]` De tre nya sektionerna returnerar rader för sin ägare och INGET för en annan
+   användare, mot en riktig fake-Firestore.
+5. `[diff]` `settings`-exporten returnerar två dokument när två är seedade.
+6. `[diff]` `data_minimisation` nämner `rate_limits` och `counters` vid namn; test.
+7. `[diff]` INTE göra: ingen ändring i `firestore.rules`, ingen i `firestore.indexes.json`
+   (TTL-fällan, BUT-1789/BUT-1996), inget namn TAS BORT ur `subs`.
+8. `[diff]` Varje ny läsning har en radgräns.
+
+## Känd residual (namnges, byggs inte bort)
+
+Vakten bor i en TS-svit som körs på en `functions/src`-diff. Den mutation den fångar är oftast
+DART-ONLY. Arkitektsätet namngav det: vakten sover för precis den ändring som är mest sannolik
+att bryta den, om inte grinden wire:as. Redovisas, och filas om den inte kan wire:as här.
+
+## Deviation log
+
+---
+
 # PLAN 2026-09-02 (andra passet) — sprint (auto-select, N=7): röd main, en kalender som
 # spräcker layouten för familjer, och GDPR-exportens saknade vakt
 

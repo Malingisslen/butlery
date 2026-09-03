@@ -1,7 +1,8 @@
 # ADR-0011 — Which `users/{uid}` subcollections belong in the Article 15 export
 
-- **Status:** DECIDED 2026-09-03 by Malin, question by question. See "The decision" below.
-  Not yet built — the decision is what BUT-1992 was parked for.
+- **Status:** DECIDED 2026-09-03 by Malin, question by question, and BUILT the same day.
+  See "The decision" below, and the amendment at the end for a sixth collection found
+  during the build.
 - **Date:** 2026-09-02 (panel), 2026-09-03 (decision)
 - **Ticket:** BUT-1992 (with BUT-1990 reviewed in the same panel)
 - **Panel:** 11 roles, convened blind, routed by `tools/stakeholder_router.py`
@@ -156,6 +157,24 @@ agreed: widen the export to the whole collection, never narrow the deletion.
    as policy but not author it.
 3. **`onboarding` and `ingredients`** — everyone who expressed a view says export. Confirming
    that is a formality, but it is the formality that lets the guard go green.
+
+## AMENDED 2026-09-03, during the build — a SIXTH live-writer collection
+
+This record says "five of the ten have live writers". That was true of the panel's universe
+and is the count the questions were put to Malin against. The build found a sixth:
+`report_throttle`, written by `firebase_report_repository.dart`, in `subs`, erased on account
+deletion, and not exported.
+
+It was exempted **without asking her** — it was not among the three questions — on the
+reasoning that the reports themselves ARE exported (`reports` where `reporterId == uid`), so
+the throttle adds only a derived recency stamp on top of rows the subject already receives.
+Its doc id is the REPORTED user's uid, so exporting it would also ship a third-party
+identifier the reports already carry in a field.
+
+It is named in the bundle's `data_minimisation` text like the two she decided, so the data
+subject can see it is held. **Widening or reversing that call is hers**, and it is open.
+
+The decision lines above are unchanged; this amendment records what was found after them.
 
 ## Consequences of leaving it open
 

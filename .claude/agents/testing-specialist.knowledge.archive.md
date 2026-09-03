@@ -31701,3 +31701,96 @@ the index was declared frozen, and B1's non-vacuity is settled by reading the tw
 
 Verdict: pass, 0 blocking. Graded against the INDEX, which equals the worktree for every
 staged path.
+
+### 2026-09-03 — BUT-1992 commit-gate review, TEST half (export ⊇ deletion for `users/{uid}` subcollections)
+
+Trigger: commit-gate review of a frozen index. Reviewed
+`test/unit/repositories/firebase/firebase_data_export_repository_account_subcollections_test.dart`
+(new), `test/unit/services/account/export/preferences_export_manager_test.dart`,
+`test/unit/services/account/data_export_service_test.dart`,
+`functions/src/__tests__/account-deletion-cascade.test.ts`, against the staged production
+half (`firebase_data_export_repository.dart`, `preferences_export_manager.dart`,
+`data_export_service.dart`, `account-deletion-cascade.ts`, `firestore_collections.dart`).
+
+Verdict: FAIL, 2 blocking.
+
+B1 — the bundle-wiring seam, THIRD consecutive miss. `grep -rn account_subcollections test/`
+returns zero; the only hit in the repo is `lib/services/account/data_export_service.dart:279`.
+`should include all required sections` in `data_export_service_test.dart` carries TWO
+written warnings about exactly this mutant (BUT-1732 at lines 638-652, BUT-1957 at 666-677)
+and the third section shipped without an assertion. Deleting the one map entry leaves every
+Dart suite green AND the new TS guard green — the guard reads chains out of the repository
+FILE, so it proves a path is spelled, never that a section ships.
+
+B2 — the new section's failure envelope is outside the parameterised `cases` table in
+`preferences_export_manager_test.dart` (10 tuples, none for `exportAccountSubcollections`).
+The BUT-1760 raw-leak mutant `return {'error': e.toString()}` therefore ships green in a
+section whose reads are `PERMISSION_DENIED`-prone. Repair is one tuple:
+`('account subcollections', 'account-subcollections-export-failed', (m) => m.exportAccountSubcollections('alice'))`,
+which also grades the phrase and the code's uniqueness assertion.
+
+Non-blocking:
+- The test name `the bundle names both exempted collections` is a count over `EXPORT_EXEMPT`,
+  which holds THREE live-writer exemptions. `report_throttle`'s writer measured at
+  `lib/repositories/firebase/firebase_report_repository.dart:88`; the Dart
+  `data_minimisation` sentence names only `rate_limits` and `counters`. Undisclosed at birth
+  under the change's own Art. 12(1) standard. Strike the numeral from the name; do not write
+  "three".
+- `_FakeAccountSubsRepository` defaults all four reads to `const []` rather than adopting the
+  sibling `_seeded(...)`-throws discipline, and `the three included collections reach the
+  bundle` asserts only `hasLength(1)` each — swapping the onboarding and acquisition reads in
+  production is invisible. The fixture already makes the ids distinct
+  (`saffran`/`progress`/`current`); assert them.
+- The `acquisition` unprojected pin sits at the REPOSITORY layer only. Every redaction in
+  this repo is implemented in a MANAGER (`_redactGroupPlan`, the avatar strip, the
+  shared-list name walk), and the manager test asserts length only — so a manager-level
+  projection dropping `campaign`, the exact reversal the repository comment says the pin
+  prevents, ships green.
+- All four new reads truncate silently (caps 500/50/50/50, no `truncated`, no note), unlike
+  every sibling section which goes through `ExportPaginationHelper`'s N+1 probe. The test
+  `every new read honours its cap` pins the silent clip as correct.
+- `a user with nothing gets empty lists, not errors` passes under ANY wrong collection path —
+  a null-safety control, not routing evidence. No action.
+- Measured production prose: `firestore_collections.dart`'s new comment claims the constants
+  mean the drift guard "resolves one spelling instead of two". Both writers still hold their
+  own literal — `onboarding_progress_service.dart:98` (`.collection('onboarding')`) and
+  `firebase_acquisition_repository.dart:27` (private `_acquisitionSubcollection`). Strike the
+  clause.
+
+Answers to the brief's questions:
+- Q1: the three "owner gets their rows, nobody else's" cases are load-bearing for COLLECTION
+  ROUTING (a repoint returns zero rows and `hasLength` reddens); the DECOY half is
+  near-tautological because the path is `.doc(userId)` — its only live mutant is a repoint to
+  `collectionGroup`, a shape this repository uses elsewhere, so it earns its place cheaply.
+  Only the onboarding case pins a constant's VALUE (the `'$userId/onboarding/progress'`
+  marker); ingredients and acquisition would follow a constant rename, but the TS guard
+  catches that direction because `subs` holds the literal. The `acquisition` unprojected pin
+  is a real regression pin at the repository layer — see the manager-layer gap above.
+- Q2: the repointed `_LeakySettingsExportRepository` seam is sound. `exportPreferences` is the
+  ONLY caller of `exportUserSettings`, the fixture subclasses the REAL repository, and the
+  test still reads `data['preferences']['error']` end-to-end; if production stopped calling
+  the widened read, the throw never fires and the assertion reddens. `exportSettingsPreferences`
+  has zero surviving references in `lib/` or `test/`.
+- Q3: the three self-checks hold. `subs` parse: a renamed anchor gives `start = -1`, so
+  `indexOf("[", -1)` grabs the file's first bracket, which cannot contain `"ingredients"` —
+  reddens. The export-scan control names four literals including `settings`, so a regex
+  regression reddens. The 20-character reason floor is a rubber stamp in principle, but the
+  diff-visibility argument in the production comment is the real control — no finding.
+  Mutations that DO leave it green: B1's bundle-entry deletion; a new live-writer exemption
+  with no bundle sentence (`report_throttle` is the live instance); a repository method never
+  called by any manager.
+- Q4: beyond the filed BUT-2002 lane problem — B1, B2, the exempt-set/disclosure drift, the
+  manager-layer acquisition projection, and the silent truncation.
+- Q5: keep `_FakeAccountSubsRepository` separate — `_FakeDataExportRepository` is
+  notification-shaped and folding in would mean extending its `_seeded` bookkeeping for four
+  unrelated reads. Adopt the DISCIPLINE, not the class.
+
+Measurement note: replicated the widened discovery regex over `lib/` in a scratchpad node
+script (old form 1 collection, new form 19; all eight names the comment lists appear in the
+newly-visible set). The comment's 15 -> 23 figure is over `functions/src` + `lib` and is
+consistent; not filed.
+
+No mutation probe run — the index was declared frozen. B1 and B2 are settled by grep and by
+reading the `cases` table, not by a probe.
+
+Verdict: fail, 2 blocking. Graded against the INDEX (`git diff --cached`).

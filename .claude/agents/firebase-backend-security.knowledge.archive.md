@@ -8088,3 +8088,60 @@ TWICE per bundle (both the `fcm_tokens` section and the preferences section call
 test. The only producer reaching `GroupWeeklyMenuViewModel._classify` is
 `RealtimeGroupMenuModule.subscribe`, a thin pass-through of `watchForWeek`, so the mapping is
 behaviour-preserving and the VM no longer imports `cloud_firestore`.
+
+### 2026-09-03 — BUT-1992 re-review: EXPORT ⊇ DELETION guard + three `users/{uid}` export sections [gdpr][export][rules][review]
+
+Re-review of the corrected staged diff after I returned `fail (1 blocking)` on the first pass.
+
+**The blocker, and how it was fixed.** `report_throttle` was withheld from the Art. 15 bundle
+while three sentences claimed only `rate_limits` and `counters` were. The fix names all three
+in the bundle's `data_minimisation` text, drops the leading count word, corrects
+`account-subcollections-retention.md` ("Each exempt collection is named"), the workflow-map
+sentence and `data_export_service.dart`, and the manager test now asserts
+`contains('report_throttle')` with a count-free test name. Verified.
+
+**The exemption reason was upgraded on my evidence and I re-measured it.** Claim: the
+throttle is exempt because the reports themselves are exported. Confirmed at three points —
+`firebase_report_repository.dart:83-96` batches `users/{reporterId}/report_throttle/{contentOwnerId}`
+with a single `lastReportAt`; `submitReport` REFUSES a report without `contentOwnerId`, so the
+joining field is always present; `exportReports` → `exportReportsByReporter` reads
+`reports where reporterId == uid` and ships the whole doc. So the throttle adds only a derived
+recency stamp over rows the subject already receives. The doc-id-shape distinction from
+`rate_limits` (reported user's uid vs operation name) is also true.
+
+**Rules, the failure mode BUT-1957 paid for.** All four newly-read paths have their own block
+and grant the owner a LIST, not merely a GET (no `resource.data` deref in any read arm):
+`users/{userId}/ingredients` (line 409), `settings/{settingId}` (566),
+`users/{userId}/acquisition/{acquisitionDoc}` (2680), `users/{userId}/onboarding/{progressDoc}`
+(2701). The Security seat's ADR-0011 measurement ("no rules change needed") reproduces. No
+permanent-failure-envelope section this time.
+
+**Ownership.** All four go through `_queryList` → `_guardSelfExport`, and
+`exporting ANOTHER user is refused, not merely empty` pins it for all four — the fake enforces
+no rules, so without that test deleting the guard left the suite green, which the author states.
+
+**Guard non-vacuity.** `subs` = 19 names; every one resolves to an export chain or an
+`EXPORT_EXEMPT` entry (10 exempt), so both branches carry weight. The new
+`no legacy-only exemption has acquired a users/{uid} chain` check re-tests the seven
+"NO LIVE WRITER" premises against the shared writer scan on every run, anchored on the
+exemption TEXT — a good shape: rewording a reason away from "NO LIVE WRITER" becomes a
+deliberate act. The writer scan is now one hoisted helper instead of two copies.
+
+**Findings filed (all non-blocking, none new in kind):**
+1. Two stale count words inside text written AS the fix — `EXPORT_EXEMPT`'s docstring
+   ("The bundle SAYS both are held", three are named) and `preferences_export_manager.dart`
+   ("Both names are spelled out", three names). The exact class this ticket exists to prevent,
+   surviving one round of correction. Strike, do not reword.
+2. `exportUserIngredients` docstring: "the only one of the five that grows with use". True of
+   ADR-0011's five, but the register beside it now lists SIX live-writer collections and
+   `report_throttle` grows per reported person. Strike the numeral; the cap needs no count.
+3. The `unreadable_shape` branch's comment is refuted by its own code: it justifies itself by
+   "reporting `preferences_exist: false` for a user who HAS one is worse", but that branch runs
+   BEFORE the `id == 'preferences'` test, so a preferences doc landing there still yields
+   `preferences_exist: false`. The branch is also unreachable through `_queryList` (Firestore
+   always hands back `Map<String, dynamic>`) and has no test.
+4. Silent truncation (my earlier Medium) deferred as BUT-2003 — accepted, three sibling
+   sections ship the same way. Noted that `ingredients` is the section where it will actually
+   bite and the fix is `limit+1`.
+
+Verdict: pass (0 blocking).

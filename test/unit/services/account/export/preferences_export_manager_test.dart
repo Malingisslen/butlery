@@ -137,6 +137,44 @@ class _ThrowingDataExportRepository extends Fake
   dynamic noSuchMethod(Invocation invocation) => Future<Never>.error(error);
 }
 
+class _FakeAccountSubsRepository extends Fake
+    implements FirebaseDataExportRepository {
+  _FakeAccountSubsRepository({
+    this.ingredients = const [],
+    this.onboarding = const [],
+    this.acquisition = const [],
+    this.settings = const [],
+  });
+  final List<Map<String, dynamic>> ingredients;
+  final List<Map<String, dynamic>> onboarding;
+  final List<Map<String, dynamic>> acquisition;
+  final List<Map<String, dynamic>> settings;
+
+  @override
+  Future<List<Map<String, dynamic>>> exportUserIngredients(
+    String userId, {
+    int maxDocuments = 500,
+  }) async => ingredients;
+
+  @override
+  Future<List<Map<String, dynamic>>> exportOnboardingProgress(
+    String userId, {
+    int maxDocuments = 50,
+  }) async => onboarding;
+
+  @override
+  Future<List<Map<String, dynamic>>> exportAcquisition(
+    String userId, {
+    int maxDocuments = 50,
+  }) async => acquisition;
+
+  @override
+  Future<List<Map<String, dynamic>>> exportUserSettings(
+    String userId, {
+    int maxDocuments = 50,
+  }) async => settings;
+}
+
 class _FakeFcmTokenRepository extends Fake
     implements FirebaseDataExportRepository {
   _FakeFcmTokenRepository(this.tokenRows);
@@ -896,6 +934,13 @@ void main() {
             'notification-delivery-export-failed',
             (m) => m.exportNotificationDelivery('alice'),
           ),
+          // BUT-1992. Its three reads are the ones a rules refusal actually
+          // stops, so a raw-leak mutant in that catch would otherwise ship.
+          (
+            'account subcollections',
+            'account-subcollections-export-failed',
+            (m) => m.exportAccountSubcollections('alice'),
+          ),
         ];
 
     for (final (section, code, call) in cases) {
@@ -963,6 +1008,107 @@ void main() {
             'a shared token would make the bundle-level warning unable to say '
             'which read failed — the reason the codes are authored at all',
       );
+    });
+  });
+
+  // BUT-1992. An exemption is only a minimisation decision if the data subject
+  // can SEE it; unseen, it is an undisclosed gap
+  // (Art. 12(1), the BUT-1971 precedent). So the names are asserted literally —
+  // a generic "some technical data" sentence would satisfy a looser test and
+  // tell the reader nothing they could act on.
+  group('PreferencesExportManager account subcollections (BUT-1992)', () {
+    test('the bundle names every withheld collection', () async {
+      final manager = PreferencesExportManager(
+        dataExportRepository: _FakeAccountSubsRepository(),
+      );
+
+      final result = await manager.exportAccountSubcollections('user-uid');
+      final note = result['data_minimisation'] as String;
+
+      expect(note, contains('rate_limits'));
+      expect(note, contains('counters'));
+      expect(note, contains('report_throttle'));
+    });
+
+    test('the three included collections reach the bundle', () async {
+      final manager = PreferencesExportManager(
+        dataExportRepository: _FakeAccountSubsRepository(
+          ingredients: [
+            {
+              'id': 'saffran',
+              'data': <String, dynamic>{'name': 'Saffran'},
+            },
+          ],
+          onboarding: [
+            {
+              'id': 'progress',
+              'data': <String, dynamic>{'step': 4},
+            },
+          ],
+          acquisition: [
+            {
+              'id': 'current',
+              'data': <String, dynamic>{'campaign': 'host-2026'},
+            },
+          ],
+        ),
+      );
+
+      final result = await manager.exportAccountSubcollections('user-uid');
+
+      String idOf(Object? section) =>
+          ((section as List).single as Map)['id'] as String;
+
+      // Ids, not lengths: all three reads return the same SHAPE, so lengths
+      // alone leave a production swap of two of them invisible.
+      expect(idOf(result['ingredients']), 'saffran');
+      expect(idOf(result['onboarding']), 'progress');
+      expect(idOf(result['acquisition']), 'current');
+      // The campaign field again at the MANAGER layer: every redaction in this
+      // codebase is implemented in a manager, so a projection dropping it —
+      // the exact reversal ADR-0011 forbids — would not be caught by the
+      // repository-level pin alone.
+      final acquisition =
+          ((result['acquisition'] as List).single as Map)['data'] as Map;
+      expect(acquisition['campaign'], 'host-2026');
+    });
+
+    // BUT-1992: `deleteUserPreferences` sweeps the whole collection, so a second
+    // settings document was erasable but not exportable.
+    test('a second settings document reaches the bundle', () async {
+      final manager = PreferencesExportManager(
+        dataExportRepository: _FakeAccountSubsRepository(
+          settings: [
+            {
+              'id': 'preferences',
+              'data': <String, dynamic>{'theme': 'dark'},
+            },
+            {
+              'id': 'experimental',
+              'data': <String, dynamic>{'beta': true},
+            },
+          ],
+        ),
+      );
+
+      final result = await manager.exportPreferences('user-uid');
+
+      expect((result['preferences'] as Map)['theme'], 'dark');
+      expect(result['preferences_exist'], isTrue);
+      final others = result['other_settings'] as List;
+      expect(others, hasLength(1));
+      expect((others.single as Map)['setting_id'], 'experimental');
+    });
+
+    test('no settings at all is reported as absent, not invented', () async {
+      final manager = PreferencesExportManager(
+        dataExportRepository: _FakeAccountSubsRepository(),
+      );
+
+      final result = await manager.exportPreferences('user-uid');
+
+      expect(result['preferences_exist'], isFalse);
+      expect(result.containsKey('other_settings'), isFalse);
     });
   });
 }

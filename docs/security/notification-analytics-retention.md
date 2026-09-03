@@ -1,7 +1,7 @@
 # Notification Analytics — Art. 30 Record & Export Treatment
 
 GDPR Article 30 record of processing for the notification-analytics collections, and the
-data-subject-access (Art. 15) export treatment. Companion to `family-data-retention.md` and
+data-subject-access (Art. 15) export treatment. Companion to `account-subcollections-retention.md`, `family-data-retention.md` and
 `audit-logs-retention.md`. Sources: BUT-1450 (2026-06-30), BUT-1956 / BUT-1957 (2026-09-02).
 
 ## Collections

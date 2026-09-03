@@ -2878,6 +2878,97 @@ async function scrubLastEditor(
 
 // ─── Tier 2: user subcollections ─────────────────────────────────────────
 
+/**
+ * `users/{uid}` subcollections this cascade erases but the Art. 15 export
+ * deliberately does NOT reproduce, each with the reason it is exempt.
+ *
+ * BUT-1992. The invariant is EXPORT ⊇ DELETION: anything erased on account
+ * deletion must have been obtainable by its subject first, or it is erased
+ * having never been disclosable. `scenario_exportCoversEveryDeletedSubcollection`
+ * holds it, and a name that is neither exported nor listed here reddens.
+ *
+ * This lives in production source rather than in the test on purpose. An
+ * exemption added here shows up in the diff a reviewer reads; one added inside
+ * the test file reads as test bookkeeping and gets waved through — which is how
+ * an escape hatch built to be deliberate becomes a rubber stamp.
+ *
+ * Malin's explicit calls, 2026-09-03, taken one question at a time against the
+ * panel's split. She went AGAINST the recommendation on `rate_limits`, which was
+ * to export it: the Security seat had measured that nothing secret is disclosed
+ * (the limits live in client code and are already visible in the throttling copy
+ * the user sees). That measurement stands and was never disputed — she weighed
+ * bundle legibility higher for a row that is one timestamp per gated action.
+ * Recording it because a future reader will otherwise assume the security
+ * argument won, and re-litigate a decision that was made on other grounds.
+ *
+ * The bundle SAYS the withheld-on-purpose collections above are held:
+ * `PreferencesExportManager
+ * .exportAccountSubcollections` names them in its `data_minimisation` line. An
+ * exemption the subject cannot see is an undisclosed gap, not a minimisation
+ * decision (Art. 12(1), the BUT-1971 precedent).
+ */
+export const EXPORT_EXEMPT: Record<string, string> = {
+  // ── Withheld on purpose, with a live writer. These are the decisions. ──
+  rate_limits:
+    "PLUMBING. One timestamp per rate-limited action. Discloses nothing about " +
+    "the user that the throttling message does not already say on screen — " +
+    "measured by the Security seat, who recommended exporting it anyway. " +
+    "Malin, 2026-09-03, AGAINST that recommendation, weighing bundle " +
+    "legibility higher. Named in the bundle's data_minimisation line.",
+  counters:
+    "PLUMBING. Derived unread tallies over content this export already " +
+    "reproduces in full, so they add nothing the bundle lacks. Their values " +
+    "are also partly OTHER people's actions (the update limb accepts a " +
+    "cross-user increment), so a per-actor breakdown must never be added. " +
+    "Malin, 2026-09-03. Named in the bundle's data_minimisation line.",
+  report_throttle:
+    "PLUMBING: the cooldown between abuse reports, written by " +
+    "firebase_report_repository.dart. NOT the same shape as rate_limits — its " +
+    "doc id is the REPORTED user's uid (`contentOwnerId`), where rate_limits " +
+    "ids are operation names. The substantive reason it is exempt is that the " +
+    "reports themselves ARE exported (`reports` where `reporterId == uid`, " +
+    "each already carrying `contentOwnerId`), so the throttle adds only a " +
+    "derived recency stamp on top of rows the subject already receives. " +
+    "NOT put to Malin — it was not among the three questions she was asked. " +
+    "Named in the bundle's data_minimisation line like the two above.",
+
+  // ── No writer of the `users/{uid}` path. Swept for legacy rows only. ──
+  // The cascade sweeps these so an account predating their removal cannot hold
+  // rows the probe reports forever. Nothing writes them today, so for a current
+  // account the export omits nothing.
+  //
+  // The residual the DPO seat named, recorded rather than argued away: for an
+  // account that DOES still hold legacy rows, they are erasable but were never
+  // exportable. Whether that is worth an export section for a shape no live
+  // code writes is Malin's, and has not been asked.
+  category_memberships:
+    "NO LIVE WRITER of users/{uid}/category_memberships. Legacy sweep only.",
+  connection_tests:
+    "NO LIVE WRITER of users/{uid}/connection_tests. Legacy sweep only.",
+  unified_recipes:
+    "NO LIVE WRITER of users/{uid}/unified_recipes. Legacy sweep only.",
+  conversations:
+    "NO LIVE WRITER of the users/{uid}/conversations SUBCOLLECTION. The real " +
+    "conversations are the top-level collection, which the export covers in " +
+    "its own section. Legacy sweep only.",
+  fcm_tokens:
+    "NO LIVE WRITER of the users/{uid}/fcm_tokens SUBCOLLECTION — BUT-1990 " +
+    "measured that it never had one. Device tokens live in the TOP-LEVEL " +
+    "user_fcm_tokens, which the export reads by userId field. Legacy sweep " +
+    "only; do not read the shared name as the same data.",
+  user_shared_menus:
+    "NO LIVE WRITER of the users/{uid}/user_shared_menus SUBCOLLECTION. The " +
+    "share index is the TOP-LEVEL user_shared_menus/{recipientId}/" +
+    "received_menus, and the shared menus themselves are exported by the " +
+    "shared_content section. Same top-level-vs-subcollection name collision " +
+    "as fcm_tokens. Legacy sweep only.",
+  user_shared_shopping_lists:
+    "NO LIVE WRITER of the users/{uid}/user_shared_shopping_lists " +
+    "SUBCOLLECTION. The index is top-level, and the lists themselves are " +
+    "exported by the shared_shopping_lists section (BUT-1732). Legacy sweep " +
+    "only.",
+};
+
 export async function deleteUserPreferences(
   db: admin.firestore.Firestore,
   uid: string,

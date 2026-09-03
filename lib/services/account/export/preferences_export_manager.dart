@@ -44,15 +44,99 @@ class PreferencesExportManager {
   }
 
   /// Export user preferences and settings
+  ///
+  /// BUT-1992: reads the whole `settings` collection, mirroring
+  /// `deleteUserPreferences`, which sweeps it. `preferences` keeps its shape so
+  /// the bundle stays readable for the one document that has always been there;
+  /// any further document appears under `other_settings`, which is the half
+  /// that was erasable but not exportable.
   Future<Map<String, dynamic>> exportPreferences(String userId) async {
     try {
-      final prefs = await _exports.exportSettingsPreferences(userId);
+      final docs = await _exports.exportUserSettings(userId);
+      Map<String, dynamic>? preferences;
+      final others = <Map<String, dynamic>>[];
+      for (final doc in docs) {
+        final data = doc['data'];
+        if (data is! Map<String, dynamic>) {
+          // Defensive only: `_queryList` builds `data` from
+          // `QueryDocumentSnapshot.data()`, which is a non-null
+          // `Map<String, dynamic>`, so no current caller can reach this. Kept
+          // as fail-open rather than a silent `continue`: this keeps the row's
+          // EXISTENCE in the bundle and loses only its content, where a
+          // `continue` would lose both.
+          others.add({'setting_id': doc['id'], 'unreadable_shape': true});
+          continue;
+        }
+        if (doc['id'] == 'preferences') {
+          preferences = data;
+        } else {
+          others.add({
+            // Spread FIRST, id LAST: `settings` document shape is unconstrained
+            // by `firestore.rules`, so a stored `setting_id` field would
+            // otherwise overwrite the real document id. Same order, same
+            // reason, as `exportDeliveredNotifications` below.
+            ...sanitizeForJson(data) as Map<String, dynamic>,
+            'setting_id': doc['id'],
+          });
+        }
+      }
       return {
-        'preferences': sanitizeForJson(prefs ?? {}),
-        'preferences_exist': prefs != null,
+        'preferences': sanitizeForJson(preferences ?? {}),
+        'preferences_exist': preferences != null,
+        if (others.isNotEmpty) 'other_settings': others,
       };
     } catch (e) {
       return _failed('preferences', 'preferences-export-failed', e);
+    }
+  }
+
+  /// BUT-1992: the `users/{uid}` subcollections the deletion cascade erases
+  /// which were decided to be EXPORTED, collection by collection, by Malin on
+  /// 2026-09-03 (ADR-0011). The ones decided the other way are named in the
+  /// `data_minimisation` line below rather than reproduced.
+  ///
+  /// One section rather than three so the exemption note below sits beside the
+  /// inclusions it is the counterpart to — a reader comparing "what is deleted"
+  /// against "what I got" finds both answers in one place.
+  Future<Map<String, dynamic>> exportAccountSubcollections(
+    String userId,
+  ) async {
+    try {
+      // Three reads under ONE `try`, matching every sibling section in this
+      // manager and the uniform section-level failure envelope the BUT-1760
+      // table grades. Per-read isolation was built and reverted: it would
+      // keep two sections' rows when the third is refused, but it breaks
+      // that contract for one section only, and `export_metadata.warnings`
+      // keys on a section-level `error`. Filed as its own change (BUT-2004)
+      // so every section moves together or none do.
+      final ingredients = await _exports.exportUserIngredients(userId);
+      final onboarding = await _exports.exportOnboardingProgress(userId);
+      final acquisition = await _exports.exportAcquisition(userId);
+
+      return {
+        'ingredients': sanitizeForJson(ingredients),
+        'onboarding': sanitizeForJson(onboarding),
+        'acquisition': sanitizeForJson(acquisition),
+        // Art. 12(1): an exemption the data subject cannot see is not a
+        // minimisation decision, it is an undisclosed gap. The names are
+        // spelled out because "some technical data" tells the reader nothing
+        // they could act on.
+        'data_minimisation':
+            'Some collections are held but not reproduced here, because they '
+            'are internal plumbing rather than a record of you: rate_limits (a '
+            'timestamp per rate-limited action, used to stop spam), counters '
+            '(unread badge totals derived from content that already appears '
+            'elsewhere in this export), and report_throttle (when you last '
+            'reported a piece of content — the reports themselves are in the '
+            'reports section of this export). All of them are erased when you '
+            'delete your account.',
+      };
+    } catch (e) {
+      return _failed(
+        'account subcollections',
+        'account-subcollections-export-failed',
+        e,
+      );
     }
   }
 

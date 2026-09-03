@@ -273,6 +273,12 @@ class DataExportService extends BaseService {
       ),
       'feedback': _activityManager.exportFeedback(userId),
       'fcm_tokens': _preferencesManager.exportFcmTokens(userId),
+      // BUT-1992: erased by the deletion cascade since BUT-1957, and until
+      // now not obtainable under Art. 15 first. Which of them belong here was
+      // decided collection by collection — see ADR-0011.
+      'account_subcollections': _preferencesManager.exportAccountSubcollections(
+        userId,
+      ),
       'category_preferences': _preferencesManager.exportCategoryPreferences(
         userId,
       ),
