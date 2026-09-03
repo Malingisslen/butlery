@@ -17,6 +17,7 @@
  */
 
 import * as admin from "firebase-admin";
+import { Collections } from "../shared/collections";
 if (!admin.apps.length) {
   admin.initializeApp({ projectId: "butlery-test-cascade" });
 }
@@ -24,6 +25,8 @@ if (!admin.apps.length) {
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const {
   deleteMessages,
+  deleteBlocks,
+  MAX_BLOCK_SWEEP_ROWS,
   deleteRealtimeMenus,
 } = require("../account/account-deletion-cascade");
 
@@ -2579,6 +2582,260 @@ async function scenario_probeSeesLeftoverChatGroupMembership(): Promise<void> {
 }
 
 /**
+ * BUT-1917: the DECLINE path names a recovery, and this pins the half of it
+ * that is checkable here.
+ *
+ * `MAX_BLOCK_SWEEP_ROWS` says that above the cap the leg declines and a human
+ * recovers by running `admin/reset-user-data.ts`. That script is list-driven —
+ * it iterates `COLLECTIONS_TO_DELETE` — so membership in that list is
+ * NECESSARY for the recovery to reach this collection. It was absent, and the claim had been inherited from
+ * `MAX_ROSTER_SWEEP_ROWS`, where `conversations` IS listed.
+ *
+ * Membership is not SUFFICIENT, and this scenario does not claim it is: the
+ * script aborts before Phase 1 today over an unrelated delete/keep overlap
+ * (BUT-2010), so nothing in the list runs. Fixing that is a separate decision,
+ * because it revives a destructive script that has been inert for months.
+ *
+ * Asserted rather than written down, because prose is what let one docstring
+ * borrow another's reasoning in the first place.
+ */
+async function scenario_resetScriptDeleteListNamesBlocks(): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const fs = require("fs");
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const path = require("path");
+  const scriptPath = path.join(__dirname, "..", "admin", "reset-user-data.ts");
+  const source = fs.readFileSync(scriptPath, "utf8") as string;
+
+  const listStart = source.indexOf("const COLLECTIONS_TO_DELETE");
+  check(
+    "the reset script's collection list is findable",
+    listStart >= 0,
+    "COLLECTIONS_TO_DELETE not found in admin/reset-user-data.ts",
+  );
+  if (listStart < 0) return;
+  const listEnd = source.indexOf("];", listStart);
+  // Comment lines are dropped first: `// { name: "blocks" },` is how a human
+  // disables an entry, and it would otherwise satisfy this check while the
+  // reset script no longer touched the collection.
+  const list = source
+    .slice(listStart, listEnd)
+    .split("\n")
+    .filter((line: string) => !line.trim().startsWith("//"))
+    .join("\n");
+
+  check(
+    "the reset script's delete list names `blocks`",
+    // The constant, not the literal "blocks": production reads the collection
+    // through `Collections.blocks`, and a test restating the string would keep
+    // passing if the two ever diverged.
+    // A regex LITERAL for the whitespace, never a pattern built from a
+    // string: a backslash-s inside a JS string literal is an escape
+    // sequence that resolves to a bare `s`, so a string-built pattern
+    // silently became `name:s*"..."`, matched nothing, and failed accusing
+    // production of a gap it did not have. Normalising the whitespace
+    // first also makes the check proof against how the list is formatted.
+    list.replace(/\s+/g, " ").includes(`name: "${Collections.blocks}"`),
+    "`MAX_BLOCK_SWEEP_ROWS` tells a human to recover by running " +
+      "admin/reset-user-data.ts, but that script only deletes what " +
+      "COLLECTIONS_TO_DELETE names, and it does not name this collection — so " +
+      "the declined rows would survive a full reset",
+  );
+}
+
+/**
+ * BUT-1917: both `blocks` legs of the residual probe.
+ *
+ * `deleteBlocks` sweeps through `batchDeleteAll` -> `commitInChunks(strict:
+ * false)`, which swallows a failed chunk and lets the step return success — so
+ * without these legs the sweep self-reports clean over rows whose document id
+ * is the erased uid. They also fire when the sweep DECLINED above the cap and
+ * deleted nothing, which is the state the decline deliberately leaves behind.
+ *
+ * One document per case, reachable by exactly ONE leg, so deleting either leg
+ * from the probe list turns its case red rather than leaving both green on the
+ * strength of the other.
+ */
+async function scenario_probeSeesLeftoverBlocks(): Promise<void> {
+  const { probeResidualData } = require("../account/account-deletion-cascade");
+
+  const emptyResult = () => ({
+    deletedCollections: [],
+    failedCollections: [] as string[],
+    errors: [],
+  });
+
+  const clean = new FakeFirestore();
+  clean.set("blocks/third-uid_fourth-uid", {
+    blockerId: "third-uid",
+    blockedId: "fourth-uid",
+  });
+  const cleanResult = emptyResult();
+  await probeResidualData(asDb(clean), UID, cleanResult);
+  check(
+    "blocks between other people do not make the probe fire",
+    !cleanResult.failedCollections.includes("residual_data_detected"),
+    `failed: ${JSON.stringify(cleanResult.failedCollections)}`,
+  );
+
+  const asBlocker = new FakeFirestore();
+  asBlocker.set(`blocks/${UID}_${OTHER}`, {
+    blockerId: UID,
+    blockedId: OTHER,
+  });
+  const blockerResult = emptyResult();
+  await probeResidualData(asDb(asBlocker), UID, blockerResult);
+  check(
+    "a surviving block the user MADE is reported as residual",
+    blockerResult.failedCollections.includes("residual_data_detected"),
+    `failed: ${JSON.stringify(blockerResult.failedCollections)}`,
+  );
+
+  const asBlocked = new FakeFirestore();
+  asBlocked.set(`blocks/${OTHER}_${UID}`, {
+    blockerId: OTHER,
+    blockedId: UID,
+  });
+  const blockedResult = emptyResult();
+  await probeResidualData(asDb(asBlocked), UID, blockedResult);
+  check(
+    "a surviving block made OF the user is reported too — the other leg",
+    blockedResult.failedCollections.includes("residual_data_detected"),
+    `failed: ${JSON.stringify(blockedResult.failedCollections)}`,
+  );
+}
+
+/**
+ * BUT-1917: `blocks` is erased in BOTH directions.
+ *
+ * The collection had no server reader at all before this, so an erased
+ * account's uid survived inside every block row it was party to — including in
+ * the DOCUMENT ID, `{blockerId}_{blockedId}`, which is why a field projection
+ * would not have been enough and the row has to go.
+ *
+ * The second direction is the one worth a test of its own: those rows were
+ * created by OTHER living users. That is not unprecedented here —
+ * `deleteOwnRosterRows` and `tryClearRoster` do it too — but it is the half a
+ * reader is most likely to assume was left alone.
+ */
+async function scenario_blocksAreErasedInBothDirections(): Promise<void> {
+  const db = new FakeFirestore();
+  db.set(`blocks/${UID}_${OTHER}`, { blockerId: UID, blockedId: OTHER });
+  db.set(`blocks/${OTHER}_${UID}`, { blockerId: OTHER, blockedId: UID });
+  // A block between two people who are not being erased. If the sweep were
+  // keyed on the collection rather than the uid, this row would go too — and
+  // no assertion about the first two could tell.
+  db.set("blocks/third-uid_fourth-uid", {
+    blockerId: "third-uid",
+    blockedId: "fourth-uid",
+  });
+
+  const complete = await deleteBlocks(asDb(db), UID);
+
+  check("the blocks step reports itself complete", complete === true);
+  check(
+    "a block the erased user MADE is gone",
+    !db.has(`blocks/${UID}_${OTHER}`),
+  );
+  check(
+    "a block another user made OF the erased user is gone too",
+    !db.has(`blocks/${OTHER}_${UID}`),
+    "this row was authored by someone else and names the erased uid in its " +
+      "own document id",
+  );
+  check(
+    "a block between two other people is untouched",
+    db.has("blocks/third-uid_fourth-uid"),
+    `left: ${JSON.stringify(db.pathsUnder("blocks"))}`,
+  );
+}
+
+/**
+ * BUT-1917: an implausible block count DECLINES that direction and reports the
+ * step incomplete, rather than truncating.
+ *
+ * The `blockedId` leg is the one this really guards: any authenticated account
+ * may block this user and nothing rate-limits it, so a peer chooses how many
+ * rows exist. Declining is strictly less erasure for the same alarm — the audit
+ * row lands `gdprCompliant: false` either way.
+ *
+ * The other direction must still be swept. Two independent residues; half an
+ * erasure beats none as long as the step says so.
+ */
+async function scenario_implausibleBlockCountDeclines(): Promise<void> {
+  const db = new FakeFirestore();
+  // Imported, not restated as 2000: a literal here and a literal in
+  // production is two copies of one number, and the read is `.limit(MAX + 1)`,
+  // so `<=` seeds exactly one row past the cap.
+  for (let i = 0; i <= MAX_BLOCK_SWEEP_ROWS; i++) {
+    db.set(`blocks/peer-${i}_${UID}`, {
+      blockerId: `peer-${i}`,
+      blockedId: UID,
+    });
+  }
+  db.set(`blocks/${UID}_${OTHER}`, { blockerId: UID, blockedId: OTHER });
+
+  const complete = await deleteBlocks(asDb(db), UID);
+
+  check(
+    "the step reports itself INCOMPLETE rather than truncating",
+    complete === false,
+  );
+  check(
+    "the over-cap direction is left alone rather than half-erased",
+    db.has(`blocks/peer-0_${UID}`),
+  );
+
+  // The over-cap direction is `blockedId`, the LAST leg the loop visits, so by
+  // the time it declines the `blockerId` leg has already run. That makes this
+  // fixture unable to tell `continue` from `return` — both leave identical
+  // state. The mirrored case below is what pins the `continue`, and the two
+  // must stay together: this one alone would read as proving independence
+  // while proving loop order.
+  check(
+    "the other direction was swept, before the decline",
+    !db.has(`blocks/${UID}_${OTHER}`),
+  );
+}
+
+/**
+ * BUT-1917: the mirror of the case above, and the only one that pins
+ * `continue` rather than `return`.
+ *
+ * Here the OVER-CAP direction is `blockerId` — the FIRST leg — so the
+ * `blockedId` leg is reachable only by continuing past a declined one.
+ * Swapping `continue` for `return` in `deleteBlocks` leaves the peer's block
+ * standing and reddens this scenario alone.
+ */
+async function scenario_aDeclinedLegDoesNotStopTheOther(): Promise<void> {
+  const db = new FakeFirestore();
+  for (let i = 0; i <= MAX_BLOCK_SWEEP_ROWS; i++) {
+    db.set(`blocks/${UID}_peer-${i}`, {
+      blockerId: UID,
+      blockedId: `peer-${i}`,
+    });
+  }
+  db.set(`blocks/${OTHER}_${UID}`, { blockerId: OTHER, blockedId: UID });
+
+  const complete = await deleteBlocks(asDb(db), UID);
+
+  check(
+    "the step still reports itself incomplete",
+    complete === false,
+  );
+  check(
+    "the declined FIRST leg is left alone",
+    db.has(`blocks/${UID}_peer-0`),
+  );
+  check(
+    "the second leg still ran — a declined leg does not abandon the rest",
+    !db.has(`blocks/${OTHER}_${UID}`),
+    "with `return` in place of `continue` this row survives, and the erased " +
+      "uid stays on a block another user made of them",
+  );
+}
+
+/**
  * BUT-1835 — the erased user's poll votes and their authorship of polls.
  *
  * Two residues, and neither covers the other. The VOTE rows live at
@@ -3966,6 +4223,11 @@ async function main(): Promise<void> {
   await scenario_residualLegsSurviveTheMembershipDecline();
   await scenario_deleteMessagesSkipsGroupOwnedConversations();
   await scenario_probeSeesLeftoverChatGroupMembership();
+  await scenario_blocksAreErasedInBothDirections();
+  await scenario_probeSeesLeftoverBlocks();
+  await scenario_resetScriptDeleteListNamesBlocks();
+  await scenario_implausibleBlockCountDeclines();
+  await scenario_aDeclinedLegDoesNotStopTheOther();
   await scenario_pollVotesAndAuthorshipAreErased();
   await scenario_probeSeesLeftoverPollResidues();
   await scenario_pollCreatorScrubToleratesOnlyNotFound();

@@ -92,7 +92,11 @@ Triggers retry on uncaught exception; handlers must be idempotent:
    collection** — grep sibling legs for writers before claiming "no
    race"; make anonymising legs NOT_FOUND-tolerant PER DOCUMENT
    (`commitInChunks(strict:false)` fails a whole chunk on one NOT_FOUND),
-   and give every new sweep its own `count()` leg in `probeResidualData`.
+   and give every new sweep its own leg in `probeResidualData` — it has
+   top-level-FIELD, `users/{uid}`-ENUMERATION and collectionGroup shapes, so
+   "the probe cannot see this collection" is never true and never a reason to
+   skip one. `strict:false` is why it matters: the deleter reports `true` over
+   a chunk it never committed.
 9. A sweep cap's threat model comes from the write RULE it bounds, never a
     copied rationale — a bound's ABSENCE needs the same read. Never cite a
     rules LINE NUMBER in a comment; cite the `match` pattern or function name.
@@ -219,10 +223,12 @@ from `(err as {code?}).code`.
   the last holder, name what re-creates the id.
 - Cascade purges discover children via `rootRef.listCollections()`, never
   hard-coded names. Steps are BEST-EFFORT — a rethrow re-runs the WHOLE
-  cascade, double-applying non-idempotent ones. `admin/reset-user-data.ts`'s
-  `subcollections` is a READER'S note, not enforcement, and its
-  `COLLECTIONS_TO_DELETE` holds TOP-LEVEL names — check WHICH list a name sits
-  in before citing that file as provenance.
+  cascade, double-applying non-idempotent ones. Before citing
+  `admin/reset-user-data.ts` as provenance OR as the recovery a capped sweep's
+  DECLINE names: `subcollections` is a READER'S note, not enforcement;
+  `COLLECTIONS_TO_DELETE` holds TOP-LEVEL names; and a name in BOTH it and
+  `COLLECTIONS_TO_KEEP` makes `main()` `process.exit(1)` before deleting
+  anything (`tag_configs` does). List membership is NECESSARY, not sufficient.
 - **`batch.update()` on a concurrently-deleted doc fails the WHOLE chunk with
   NOT_FOUND** under `strict:false`; and `commitInChunks` calls `mutate` OUTSIDE
   that try, so a SYNCHRONOUS validation throw from the callback (`undefined` in
@@ -247,8 +253,7 @@ from `(err as {code?}).code`.
   keys, AND attribution scalars (`lastModifiedBy`, `lastEditedBy`).
 - **A cascade write from a query-time snapshot applied via a plain `.update()`
   is a lost-update hazard** — wrap in `runTransaction`, re-read, skip on
-  `!fresh.exists`. The repo's fake transaction is single-threaded/no-retry, so
-  a green suite proves values, not concurrency-safety.
+  `!fresh.exists`.
 - A rules hard-deny plus an Admin-SDK escape hatch has TWO guards: the callable
   exempts only the first; the model's `toFirestore` coercion is the second.
   Enumerate the SERIALIZER's call sites, not just the rules' writes.
@@ -294,10 +299,7 @@ from `(err as {code?}).code`.
   a failed chunk, so the probe is the ONLY contradiction to `return true` — leg
   and scenario ship in one edit. A probe ERROR ADDS to residual (a sentinel,
   never a count), never aborts; one try/catch per leg. Hoist any list a deleter
-  and probe both hardcode into one exported const. A "the N siblings" numeral in
-  a cascade docstring is a GDPR claim — strike it. Grep every collection of a
-  NAME before a "no collectionGroup id collision" claim (`events` collides with
-  `recipe_cook_events/{uid}/events`).
+  and probe both hardcode into one exported const.
 - **An ENUMERATING probe (`rootRef.listCollections()`) is BROADER than the
   deleter by construction** — any user subcollection no step erases then
   reports `gdprCompliant:false` forever, unclearable. Ship it only with a
@@ -347,10 +349,12 @@ from `(err as {code?}).code`.
 ### Pooled ratings + rating aggregation (ratings/ family)
 - Recipes are USER-SCOPED (no top-level `match /recipes`);
   `recipe_social_stats` is SERVER-ONLY — confirm from firestore.rules, not from
-  a green Dart test (`fake_cloud_firestore` evaluates none).
+  a green Dart test.
 - Unbounded collection-group folds use `.aggregate({count, average})`, never
   `.get()`; a `collectionGroup` equality query needs a `fieldOverrides` entry
-  with `queryScope:"COLLECTION_GROUP"`.
+  with `queryScope:"COLLECTION_GROUP"`. A COLLECTION-scoped equality needs
+  none — unless `fieldOverrides` EXEMPTS that field, so check exemptions, not
+  just `indexes`.
 
 ### Verify-signup-age, account callables & minor-safety triggers
 - Rules can't iterate an array for a per-member rule on GROUP-shaped data —

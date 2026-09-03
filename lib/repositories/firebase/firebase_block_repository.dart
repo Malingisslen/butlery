@@ -5,9 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/models/block_record.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
-import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/utils/logger.dart';
-import 'package:butlery/core/utils/log_sanitizer.dart';
 
 class FirebaseBlockRepository extends BaseFirebaseRepository<BlockRecord> {
   FirebaseBlockRepository({super.firestore, required super.authRepository});
@@ -136,32 +134,13 @@ class FirebaseBlockRepository extends BaseFirebaseRepository<BlockRecord> {
         );
   }
 
-  /// Delete all block records involving a user (for account deletion / GDPR).
-  Future<void> deleteAllBlocksForUser(String userId) async {
-    final uid = requireCurrentUserId();
-    if (uid != userId) {
-      throw PermissionDeniedException('Can only delete own block records');
-    }
-
-    // Delete blocks where user is the blocker
-    final asBlocker = await collection
-        .where('blockerId', isEqualTo: userId)
-        .get();
-    // Delete blocks where user is the blocked
-    final asBlocked = await collection
-        .where('blockedId', isEqualTo: userId)
-        .get();
-
-    final batch = firestore.batch();
-    for (final doc in [...asBlocker.docs, ...asBlocked.docs]) {
-      batch.delete(doc.reference);
-    }
-
-    if (asBlocker.docs.isNotEmpty || asBlocked.docs.isNotEmpty) {
-      await batch.commit();
-      AppLogger.info(
-        'Deleted ${asBlocker.docs.length + asBlocked.docs.length} block records for user ${userId.maskedUserId}',
-      );
-    }
-  }
+  // BUT-1917: `deleteAllBlocksForUser` used to sit here, and account deletion
+  // never called it. It could not have worked either — it deleted rows in BOTH
+  // directions, and `firestore.rules` allows a delete only to the row's
+  // blocker, so the leg that clears other people's blocks OF this user would
+  // have been refused and taken the whole atomic batch down with it.
+  //
+  // Erasing those rows is a server job, and it is done in the account cascade
+  // (`deleteBlocks`, `functions/src/account/account-deletion-cascade.ts`),
+  // which runs with the Admin SDK. Do not reinstate a client-side version.
 }

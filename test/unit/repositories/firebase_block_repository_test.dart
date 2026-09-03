@@ -256,46 +256,15 @@ void main() {
         },
       );
 
-      test(
-        'should delete all blocks in both directions for deleteAllBlocksForUser',
-        () async {
-          // Arrange - create blocks where user-123 is the blocker
-          await repository.blockUser('target-1');
-          await repository.blockUser('target-2');
-
-          // Create blocks where user-123 is the blocked user
-          final reverseId1 = BlockRecord.compositeId('other-1', 'user-123');
-          final reverseId2 = BlockRecord.compositeId('other-2', 'user-123');
-          await fakeFirestore.collection('blocks').doc(reverseId1).set({
-            'blockerId': 'other-1',
-            'blockedId': 'user-123',
-            'blockedAt': DateTime.now().toIso8601String(),
-          });
-          await fakeFirestore.collection('blocks').doc(reverseId2).set({
-            'blockerId': 'other-2',
-            'blockedId': 'user-123',
-            'blockedAt': DateTime.now().toIso8601String(),
-          });
-
-          // Act
-          await repository.deleteAllBlocksForUser('user-123');
-
-          // Assert - all blocks involving user-123 should be gone
-          final snapshot = await fakeFirestore.collection('blocks').get();
-          expect(snapshot.docs, isEmpty);
-        },
-      );
-
-      test(
-        'should throw PermissionDeniedException when deleting blocks for another user',
-        () async {
-          // Act & Assert
-          expect(
-            () => repository.deleteAllBlocksForUser('other-user'),
-            throwsA(isA<PermissionDeniedException>()),
-          );
-        },
-      );
+      // BUT-1917: `deleteAllBlocksForUser` and its two tests are GONE. Why the
+      // method could not have worked is stated on the tombstone in
+      // `firebase_block_repository.dart` — repeating the argument here would be
+      // another copy of one explanation, free to drift apart.
+      //
+      // What belongs here is the trap rather than an accident:
+      // `fake_cloud_firestore` enforces no rules, so a client-side erasure of
+      // other people's documents will always pass there — and it is not
+      // something a client may do.
 
       test(
         'should return empty set stream when unauthenticated for watchBlockedUserIds',

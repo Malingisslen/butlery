@@ -17572,5 +17572,199 @@ in `functions/package.json:132`, is not `test:rules*`/`test:integration:*`, and
 Knowledge-file edit: added one principle under "CI / test wiring / ops" (a
 guard reading files outside `functions/src` is asleep unless the workflow
 `paths:` reach them; derive from what it opens; assert both blocks; parser fails
-closed; breadth must reach the orchestrator). Budget was honoured by compressing
-nine existing bullets in the same edit — 27,363 -> 27,337 bytes, net -26.
+closed; breadth must reach the orchestrator). Nine existing bullets were
+compressed in the same edit.
+
+### 2026-09-03 — BUT-1917 step 1: the `blocks` erasure gap [review][gdpr][cascade]
+
+Reviewed the staged diff adding `deleteBlocks` (top-level `blocks`, both
+directions, capped at `MAX_BLOCK_SWEEP_ROWS = 2000` with a DECLINE, wired into
+tier 1) and removing the dead client method `deleteAllBlocksForUser`.
+
+Verdict: fail (3 blocking).
+
+1. The new sweep shipped with NO leg in `probeResidualData`. MEASURED:
+   `deleteBlocks` -> `batchDeleteAll` -> `commitInChunks(strict:false)`, which
+   catches a whole failed chunk (`shared/batch-update.ts:263-267`) and returns
+   normally, so the step reports `true` with up to 500 rows still on disk whose
+   DOCUMENT ID is `{blockerId}_{blockedId}` — the erased uid. The file states
+   the rule about itself at `account-deletion-cascade.ts:249-252`. Remedy: two
+   uncapped `count()` legs, `blockerId == uid` and `blockedId == uid`, own
+   try/catch each, appended.
+2. Two comments claimed `probeResidualData` "enumerates `users/{uid}`
+   subcollections" and therefore "cannot" see a top-level collection
+   (`account-deletion-cascade.ts:2072-2074`, `request-account-deletion.ts:217-220`).
+   FALSE, measured: the enumeration is ONE leg (line 358); the probe also
+   queries a dozen TOP-LEVEL collections by field (lines 106-115, 237-303,
+   478-543) and runs collectionGroup legs. `blocks` was invisible because no
+   leg NAMED it. The false sentences argue against fix (1), so they are
+   load-bearing wrong — struck, not reworded.
+3. The test docstring's "nothing else in this cascade deletes a document a
+   third party authored about this user" is false against the same file:
+   `deleteOwnRosterRows` deletes roster rows an attested peer may have written
+   (its own docstring says so, lines 1962-1974), and `tryClearRoster`'s
+   <=2-participant branch clears the WHOLE roster including other members' own
+   rows. Strike the clause; the first half of the sentence stands.
+
+Cleared on their merits, with the measurement:
+- Tier 1 / `Promise.all` placement is SAFE. `deleteOwnRosterRows` had to be
+  sequential because two deleters write the same rows; nothing else in
+  `functions/src` reads or writes `blocks` (grep: exactly three sites, all new
+  in this diff), `onUserDeleted` does not touch it, and a delete of an
+  already-deleted doc raises no NOT_FOUND.
+- The cap and the `continue` are right. The decline precedes any delete in that
+  leg, so a declined direction is untouched rather than truncated; the legs are
+  disjoint because `firestore.rules` refuses `blockerId == blockedId` on create,
+  so no row is matched twice. 2000 on the roster-cap argument is correct for
+  `blockedId`: `match /blocks/{blockId}` (firestore.rules:2466-2485) pins only
+  the blocker to `request.auth.uid`, so a peer chooses that count. The
+  docstring's refusal to reuse the poll-vote rationale is right.
+- Deleting third-party-authored rows is defensible. The uid is in the DOC ID so
+  a projection cannot reach it; the row is unusable once the account is gone;
+  and the Art. 15 export already read BOTH directions
+  (`firebase_data_export_repository.dart:660-692`), so before this change the
+  export reached a document the erasure could not — the narrower-than-export
+  violation. No contrary precedent; the cascade's anonymise-don't-delete
+  pattern covers artefacts with residual value to the third party, which a
+  block on a non-existent account has none of.
+- The removed client method's obituary holds: `firestore.rules` allows a delete
+  only to the blocker, and a Dart `WriteBatch` is atomic, so the reverse-direction
+  leg would have failed the whole commit. Import hygiene checked — `log_sanitizer`
+  dropped with its only user, `permission_exceptions` still needed by
+  `AuthenticationException` in the test.
+
+Named, non-blocking residual: the sweep runs before `auth.deleteUser`, so an
+auth-delete failure (`request-account-deletion.ts:270-279`) leaves a LIVE
+account with both directions of its blocks removed — peers who blocked them lose
+that protection until a human re-runs the deletion. Not introduced by a defect
+here, but `blocks` is the one collection where the residual is a SAFETY property
+rather than a privacy one.
+
+Knowledge-file edit: folded the probe-leg-shapes correction into idempotency
+principle 8 (a sweep without a probe leg is never excused by "the probe cannot
+see it"; `strict:false` is why it matters). Two sentences were retired in the
+same edit, verbatim here:
+  "Grep every collection of a NAME before a \"no collectionGroup id collision\"
+  claim (`events` collides with `recipe_cook_events/{uid}/events`)." — the
+  general form survives in the cross-check-FIELD-and-COLLECTION-NAME bullet.
+  "The repo's fake transaction is single-threaded/no-retry, so a green suite
+  proves values, not concurrency-safety." — carried by
+  `.claude/rules/lessons-digest-testing.md`'s `FakeFirebaseFirestore.runTransaction`
+  entry.
+
+### 2026-09-03 — BUT-1917 step 1, re-review of the repairs [review][gdpr][cascade]
+
+All three blocking findings applied; re-reviewed the frozen index (hash-object ==
+ls-files on all three ts files). Verdict: pass (0 blocking).
+
+Index question, settled by MEASUREMENT rather than by the sibling comments'
+claim: the two new probe legs are COLLECTION-scoped flat equalities on a
+top-level collection, and `firestore.indexes.json` carries neither an `indexes`
+entry nor — decisively — a `fieldOverrides` entry for `blocks`, so the automatic
+single-field indexes on `blockerId`/`blockedId` are intact and `count()` is
+served with no declaration. Confirmed independently against production code that
+already runs those exact queries: `FirebaseBlockRepository.getBlockedUserIds`
+and `watchBlockedUserIds` (`blockerId`), `exportIncomingBlocks` (`blockedId`).
+The deleter's `.limit(MAX + 1)` read is the same shape. A COLLECTION_GROUP
+override would have been needed only for a collectionGroup query; this is not
+one.
+
+The new `scenario_probeSeesLeftoverBlocks` is non-vacuous for the right reason:
+`residual_data_detected` also fires on a probe ERROR (every catch does
+`residual += 1`), so a bare "it fires" case could be green for the wrong cause —
+the CLEAN case (same fake shape, non-matching row, must NOT fire) is the control
+that excludes it, and each dirty fixture is reachable by exactly one leg
+(`blockerId: UID` / `blockedId: UID`), which is what makes the reported
+per-leg mutation probe meaningful. Added to an existing suite, so no
+`package.json` registration owed (registration is per FILE).
+
+Three replacement sentences checked for falsehood; the precedent one is true
+(`deleteOwnRosterRows` deletes roster rows an attested peer may have authored;
+`tryClearRoster` clears other members' own rows). Three LOW items left, all
+phrased as strikes: "a dozen top-level collections" (measured 16 — numeral
+drift class); "per THIS FILE's rule" in `request-account-deletion.ts` when the
+rule is stated in `account-deletion-cascade.ts`; and the both-directions
+docstring now sitting above `scenario_probeSeesLeftoverBlocks` rather than above
+its own function (pre-existing stacking style in that file, not new breakage).
+
+Agreed with the coordinator that the auth-delete residual belongs in the commit
+message and the ticket, not in code: the only code fix would move the sweep
+AFTER `auth.deleteUser`, breaking the deliberate probe-before-auth-delete
+ordering that gives the audit row its meaning, and the exposure requires an
+auth-delete failure — a state that already leaves the account stripped of
+profile, messages and tokens.
+
+Knowledge-file edit: added the index-exemption rule to the pooled-ratings
+aggregation bullet ("A COLLECTION-scoped equality needs none — unless
+`fieldOverrides` EXEMPTS that field, so check exemptions, not just `indexes`").
+Two sentences were retired in the same edit, verbatim here:
+  "A \"the N siblings\" numeral in a cascade docstring is a GDPR claim — strike
+  it." — subsumed by the auto-loaded `lessons-digest.md` rule on numerals in
+  comments.
+  "(`fake_cloud_firestore` evaluates none)" — carried by the test-seams
+  "Rules are not filters" bullet and by `lessons-digest-testing.md`.
+
+### 2026-09-03 — BUT-1917 round 3: the named recovery script does not run [gdpr][admin-scripts]
+
+Third review pass over the staged BUT-1917 diff (`blocks` erasure). Two findings, both
+in text this round introduced, neither in the erasure logic.
+
+1. `functions/src/account/request-account-deletion.ts`: the 5-line BUT-1917 comment is
+   present TWICE — once above `["blocks", ...]` (correct) and once above
+   `["reports", ...]`, where it asserts BUT-1917 facts about a step it does not
+   describe. Struck, not reworded.
+
+2. MEASURED on the staged bytes of `functions/src/admin/reset-user-data.ts`:
+   `tag_configs` appears in BOTH `COLLECTIONS_TO_DELETE` (last entry) and
+   `COLLECTIONS_TO_KEEP`. `main()`'s overlap guard `console.error`s and
+   `process.exit(1)`s before Phase 1, in dry-run and live alike — so the script
+   deletes nothing at all. Nobody noticed because the script is manual-only and
+   has no test.
+
+   That falsifies three sentences shipped in this diff: the reset-script comment's
+   "a claim this entry is what makes true", and the new test scenario's docstring
+   "this is what makes the name true". `MAX_BLOCK_SWEEP_ROWS` and (pre-existing)
+   `MAX_ROSTER_SWEEP_ROWS` both point a human at the script for recovery after a
+   DECLINE; both point at an abort.
+
+   Verification method: parsed the staged blob (`git show :<path>`) and set-intersected
+   the two lists, rather than reading the arrays by eye — the delete list is 60+ entries.
+
+   Recommended remedy, not applied by the reviewer: drop `{ name: "tag_configs" }` from
+   the delete list (the keep list and the file header both record tag_configs as
+   preserved seed data), and extend
+   `scenario_resetScriptDeleteListNamesBlocks` with an
+   overlap-is-empty assertion so the abort cannot come back silently. Reviving an
+   inert DESTRUCTIVE admin script is a founder-visible consequence, so it is Malin's
+   call whether it rides in this commit.
+
+   Class: the security gate's own finding one round earlier was that the recovery
+   sentence was inherited from `MAX_ROSTER_SWEEP_ROWS` without checking the script.
+   The repair checked the LIST and not whether the script runs — the correction is
+   again where the next false sentence landed.
+
+Verified green on the staged bytes: `npx tsc --noEmit` clean, cascade suite 231/231,
+`request-account-deletion` 4/4. Rules claims in the new docstrings checked against
+`firestore.rules` `match /blocks/{blockId}` (create pins `blockerId` to `request.auth.uid`,
+delete blocker-only, doc id `{blockerId}_{blockedId}`) — all true. `Collections.blocks`
+== `FirestoreCollections.blocks` == `"blocks"` — checked in
+`lib/core/constants/firestore_collections.dart:13`.
+
+### 2026-09-03 — BUT-1917 round 5: the repair sentence quantified over sibling caps [gdpr][comments]
+
+`MAX_BLOCK_SWEEP_ROWS`'s new docstring ends "The sibling caps in this file send a human
+to the same script and inherit the same gap." MEASURED in
+`functions/src/account/account-deletion-cascade.ts`: three sibling caps exist —
+`MAX_ROSTER_SWEEP_ROWS` (2005), `MAX_POLL_VOTE_SWEEP_ROWS` (2161),
+`MAX_CHAT_GROUPS_PER_USER` (3254). Only the roster one names
+`admin/reset-user-data.ts`; the poll-vote and chat-group docstrings frame recovery as
+the `failedCollections` alarm and name no script. 1 of 3, so the plural is false.
+Remedy filed as a STRIKE of the sentence, not a reworded count.
+
+Verified accurate the same round: the `tag_configs` delete/keep overlap
+(`admin/reset-user-data.ts` 145 + 150) makes `main()` `process.exit(1)` at 283, before
+Phase 1 at 299 — for dry-run and live alike; the reset-script `blocks` entry's
+NECESSARY-not-sufficient wording; the test scenario's list-membership pin (its
+`indexOf("];")` is safe here because every nested `subcollections` array closes `],`).
+The duplicated BUT-1917 tier comment is gone — one block above `["blocks", ...]`,
+`["reports", ...]` uncommented.

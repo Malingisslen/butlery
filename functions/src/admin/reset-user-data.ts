@@ -135,6 +135,13 @@ const COLLECTIONS_TO_DELETE: CollectionTarget[] = [
   // collection (doc id `${uid}_${operation}`), not under users/, so a full reset
   // must wipe the whole collection explicitly.
   { name: "system_rate_limits" },
+  // BUT-1917: user block relationships, doc id `{blockerId}_{blockedId}`.
+  // Absent until now, so a "clean slate" run left every block row standing.
+  // `MAX_BLOCK_SWEEP_ROWS` names this script as the recovery when the cascade's
+  // sweep declines above its cap; membership here is NECESSARY for that and is
+  // not sufficient — the script itself aborts before Phase 1 today, for an
+  // unrelated reason (BUT-2010).
+  { name: "blocks" },
   { name: "tag_configs" },
 ];
 

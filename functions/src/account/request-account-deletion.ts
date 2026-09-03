@@ -58,6 +58,7 @@ import {
   deleteCommentsAndRatings,
   deletePingsByUser,
   deleteUserReports,
+  deleteBlocks,
   deleteFcmTokens,
   deleteNotificationPreferences,
   deleteNotifications,
@@ -213,6 +214,12 @@ export async function runAccountDeletionWithDeps(
     ["shared_content", () => removeFromSharedContent(database, uid)],
     ["comments_ratings", () => deleteCommentsAndRatings(database, uid)],
     ["pings", () => deletePingsByUser(database, uid)],
+    // BUT-1917: the top-level `blocks` collection, both directions. No step
+    // reached it before and no probe leg named it, so the gap was silent
+    // rather than reported. Both now ship together, per the rule stated on
+    // `probeResidualData`'s own list: a deleter without a probe is how an
+    // erasure becomes silently incomplete.
+    ["blocks", () => deleteBlocks(database, uid)],
     ["reports", () => deleteUserReports(database, uid)],
     ["fcm_tokens", () => deleteFcmTokens(database, uid)],
     [

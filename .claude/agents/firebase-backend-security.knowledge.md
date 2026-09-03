@@ -456,6 +456,20 @@ name which doc each end touches before approving it.
   LEFT, which no screen renders — so it needs its own recorded decision (keep or strip) and
   its own `data_minimisation` clause, and a same-named field decided on a DIFFERENT
   collection is not authority for it.
+- A capped sweep that DECLINES above its bound usually names a RECOVERY in its docstring
+  ("a human runs `admin/reset-user-data.ts`"), and that is a checkable claim about a
+  hand-typed list in another file, not a policy sentence — open the list and confirm it names
+  the collection, because such a sentence is normally copied from the sibling cap where it
+  happens to hold. Close it by adding the collection AND binding it with an assertion keyed on
+  the shared CONSTANT (`Collections.x`), never on the literal; prose is what let the claim be
+  inherited in the first place. Membership is NECESSARY, never SUFFICIENT — also check the
+  script RUNS (this one has `process.exit(1)`'d on a delete/keep overlap since 2026-03,
+  BUT-2010) and that it is per-USER at all; a clean-slate script that deletes every auth user
+  is no remedy for one erasure. A residual whose named recovery cannot run stays ACCEPTABLE
+  while the decline is loud (`failedCollections` -> `gdprCompliant:false` + an uncapped probe)
+  and the surviving rows disclose nothing to anyone who could not already read them — file the
+  ticket, do not redesign the frozen decline. Then grep the SIBLING caps: the stale recovery
+  sentence is the neighbour you did not stage.
 - Deleting a parent doc does NOT delete its subcollections — child sweep (STRICT) before
   parent delete (best-effort), covering every legacy name variant. TTL fields need three
   things: the `gcloud --enable-ttl` policy (separate admin action), a backfill for

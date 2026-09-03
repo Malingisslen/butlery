@@ -8209,3 +8209,114 @@ resolved by this change rather than reworded: `preferences` no longer comes from
 all, and the branch's comment now states what it does (fail-open, keeps the row's existence).
 
 Verdict: pass (0 blocking).
+
+---
+
+## 2026-09-03 — BUT-1917 re-review: the `blocks` cascade, round 2 (remedy for the round-1 blocker)
+
+Staged diff: `functions/src/account/account-deletion-cascade.ts` (new `deleteBlocks` +
+`MAX_BLOCK_SWEEP_ROWS` + two `probeResidualData` legs), `request-account-deletion.ts` (tier-1
+step), `shared/collections.ts` (`blocks` constant), `admin/reset-user-data.ts`
+(`{ name: "blocks" }`), the CF cascade test suite (four new scenarios), and the Dart
+`FirebaseBlockRepository` (dead `deleteAllBlocksForUser` removed, tombstone comment) with its
+test file (two tests removed, tombstone comment).
+
+**Round 1's blocking finding, and how it closed.** `MAX_BLOCK_SWEEP_ROWS`'s docstring said the
+declined rows are "recoverable by a human running `admin/reset-user-data.ts`". That sentence
+was inherited verbatim from `MAX_ROSTER_SWEEP_ROWS`, where it holds because
+`{ name: "conversations", subcollections: ["participants", ...] }` is in
+`COLLECTIONS_TO_DELETE` and the recursive delete reaches the roster rows. `blocks` was in no
+list, so a full reset left every block row standing — a pre-existing gap the docstring made
+visible. Remedy 1 (the one recommended) was taken: the collection was added to the list. See
+the round-6 entry below, which measures that the script exits before Phase 1 regardless.
+
+Verified this round:
+- `COLLECTIONS_TO_DELETE` now contains `{ name: "blocks" }` and `blocks` is absent
+  from `COLLECTIONS_TO_KEEP`.
+- The new `scenario_resetScriptDeleteListNamesBlocks` slices the source from
+  `const COLLECTIONS_TO_DELETE` to the first `];`. That slice is correct: every nested
+  `subcollections: [...]` closes with `],`, so no earlier `];` truncates it. It normalises
+  whitespace with a regex LITERAL and uses `includes(`name: "${Collections.blocks}"`)` — keyed
+  on the constant, so a rename of the constant without a matching edit to the script reddens.
+  Runner is `ts-node src/__tests__/account-deletion-cascade.test.ts`, so `__dirname/../admin/
+  reset-user-data.ts` resolves from source.
+- The two docstring claims about `firestore.rules` are true as written:
+  `match /blocks/{blockId}` pins `request.resource.data.blockerId == request.auth.uid` on
+  create and `resource.data.blockerId == request.auth.uid` on delete — so the `blockerId` leg
+  is genuinely self-chosen, the `blockedId` leg is genuinely peer-chosen (the roster cap's
+  argument, correctly NOT the poll-vote one), and the Dart tombstone's "it could not have
+  worked" is right: the reverse-direction deletes would have been refused and taken the whole
+  batch with them.
+- Export/erasure symmetry holds on the same field PAIR: `firebase_data_export_repository.dart`
+  exports `blocks where blockerId == uid` and `blocks where blockedId == uid`, the same two
+  fields the cascade sweeps and the probe counts.
+- Probe legs are flat equalities on a top-level collection — automatic single-field indexes,
+  no `firestore.indexes.json` entry needed. No `firestore.rules` change in the diff, and none
+  owed: every new read is Admin SDK.
+- The Dart deletion removes no client capability — `deleteAllBlocksForUser` had zero callers
+  (grep across the tree returns only the three tombstones and this archive).
+
+**Non-blocking notes carried to the ticket/Malin by the author, agreed:** the export cap (500)
+and the sweep cap (2000) differ, so a user between the two exports a truncated block list while
+the cascade still erases in full; and `incoming_blocks` discloses WHO blocked the requester,
+which is an Art. 15(4) balancing call of the same class as BUT-1732/BUT-1772 and therefore
+Malin's, not a reviewer's.
+
+**One LOW note raised this round, no change requested:** the new test's comment explains the
+first version's failure as "a backslash-s inside a JS string literal … resolves to a bare `s`".
+The general rule is true and is already a repo lesson (BUT-1971), but it describes a SINGLE
+backslash; a `new RegExp("name:\s*")` with a doubled backslash would have compiled correctly.
+Recommended leaving it rather than rewording — the rule the comment states is the durable part,
+and a reword is what turns one note into a chain.
+
+Verdict: pass (0 blocking).
+
+### 2026-09-03 — BUT-1917 round 6 (re-review): the named recovery is inert, and the verdict holds [gdpr][art-17][admin-scripts]
+
+Re-review of the frozen staged index after the `cloud-functions-specialist` gate measured that
+`admin/reset-user-data.ts` is INERT: `tag_configs` sits in
+both `COLLECTIONS_TO_DELETE` and `COLLECTIONS_TO_KEEP`, and `main()`'s overlap guard
+`process.exit(1)`s before Phase 1, dry-run and live alike. Filed as BUT-2010; the script was
+deliberately NOT revived inside a GDPR commit.
+
+**Question re-put: does a DECLINED `blocks` sweep stay an acceptable Art. 17 residual when
+nothing can currently clear it?** Yes, and my round-1 clearance of the decline design stands.
+Measured, not argued:
+- The decline is loud and PERSISTED, not just logged: `deleteBlocks` returns false -> `runStep`
+  pushes `blocks` into `failedCollections` -> `success = authDeleted && failedCollections.length
+  === 0` -> `writeDeletionAuditLog` records `gdprCompliant: false`, and the probe's two uncapped
+  `count()` legs add `residual_data_detected` independently of the deleter's self-report.
+- The cap is not reachable by accident: 2001 rows in one direction means either 2001 self-made
+  blocks or 2001 DISTINCT authenticated peers blocking one user. No live users today.
+- The residual's exposure is BOUNDED and adds no reader: `match /blocks/{blockId}` allows read
+  only to `blockerId`/`blockedId`, so a surviving row is visible only to the counterparty who
+  already had it. Row content is `blockerId`, `blockedId`, `blockedAt` (`BlockRecord`) — two
+  uids and a stamp, no names, no free text.
+- Both fields are guaranteed present on any client-written row (the create rule dereferences
+  each), so no row can hide from the FIELD-keyed probe behind a uid that lives only in the
+  document id. That is the property that makes the alarm trustworthy.
+- The obligation is discharged by the alarm plus an operator, never by a docstring; an Admin-SDK
+  query removes the rows in minutes. BUT-2010 restores the convenience path.
+Truncating instead would erase more but reports the same alarm, and the decline is FROZEN by the
+BUT-1822 accepted deviation. Filing against it would be re-proposing a decided call.
+
+**Medium, raised:** `MAX_ROSTER_SWEEP_ROWS` named `admin/reset-user-data.ts` as the recovery
+with no qualification, in the same file as `MAX_BLOCK_SWEEP_ROWS`, which records that the script
+aborts — two sentences disagreeing about one fact this change measured. Remedy was a STRIKE of
+the clause, not a reword, and it was applied: that docstring no longer names the script.
+
+**Low, no change requested:** even repaired, `reset-user-data.ts` is a whole-project clean slate
+(Phase 1 deletes ALL auth users, Phase 3 wipes both storage prefixes). It is a dev-reset tool, not
+a per-user remedy; naming it as the recovery for ONE declined erasure overclaims. Worth
+scoping into BUT-2010 rather than re-litigating here.
+
+Re-verified on the staged bytes this round: `firestore.rules match /blocks/{blockId}` — create
+pins `blockerId == request.auth.uid`, delete blocker-only, no `rateLimitWrite` conjunct, so the
+docstring's split argument (self-chosen `blockerId` leg, peer-chosen `blockedId` leg) is exact.
+`grep` over `functions/src` confirms no server WRITER of `blocks` and no reader before this
+change. `Collections.blocks` == `FirestoreCollections.blocks` == `"blocks"`. Probe legs are flat
+equalities — automatic indexes, no `firestore.indexes.json` entry owed. Tier-1 parallelism is
+safe: no other step touches this collection. `"blocks"` is pinned in the
+`request-account-deletion` step list, which is what stops a deleted tier entry shipping green.
+
+Verdict: pass (0 blocking).

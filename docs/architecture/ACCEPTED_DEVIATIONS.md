@@ -1590,6 +1590,23 @@ scope note below made one leg insufficient:
    planted roster also blocks the sweep of the victim's LEGITIMATE rows, with no automatic
    retry (the auth user is gone), so recovery is a human running `admin/reset-user-data.ts`.
 
+**AMENDED 2026-09-03 (BUT-1917/BUT-2010) — the recovery this entry names cannot currently
+run. The cap and the decline are unchanged; only the sentence about what happens afterwards
+is wrong.** `admin/reset-user-data.ts` aborts before it deletes anything: `tag_configs` sits
+in both `COLLECTIONS_TO_DELETE` and `COLLECTIONS_TO_KEEP`, and `main()`'s overlap guard
+`process.exit(1)`s ahead of Phase 1, in dry-run and live alike. Measured 2026-09-03 while
+building BUT-1917's sibling cap; the overlap dates to `b9a95bd02` (2026-03-19), where the
+KEEP entry was renamed into collision. Filed as BUT-2010, deliberately NOT fixed inside a
+GDPR commit — repairing it revives a destructive whole-project reset that has been inert for
+months, which is Malin's call.
+
+The clause is left standing rather than struck, per this file's rule that a decision record is
+superseded and never deleted. What it should say once BUT-2010 lands: recovery is a human with
+the Admin SDK. Even repaired, that script is a whole-project clean slate (Phase 1 deletes every
+auth user, Phase 3 wipes both storage prefixes), so it is a dev-reset tool rather than a
+per-user remedy for one declined sweep. The equivalent clauses in
+`account-deletion-cascade.ts` were struck in BUT-1917's commit.
+
 **AMENDED 2026-08-15 (BUT-1838) — the cap's stated reason went stale one day after it was
 written; the cap itself is unchanged and still must not be removed.**
 

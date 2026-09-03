@@ -31903,3 +31903,55 @@ unaffected: the new by-id chain still matches its `collection(users).doc(...).co
 regex and resolves to `settings`, already in the exported set. Token→files table: every new
 token (`*-partial-export-failure`, `other-settings-export-failed`, `other_settings_truncated`,
 the four `user_*` cap keys) has at least one test file hit.
+
+### 2026-09-03 — BUT-1917 step 1, the `blocks` erasure gap (review, staged index frozen)
+
+Reviewed staged diff: four new scenarios in `account-deletion-cascade.test.ts`
+(`scenario_blocksAreErasedInBothDirections`, `scenario_implausibleBlockCountDeclines`,
+`scenario_probeSeesLeftoverBlocks`, `scenario_resetScriptDeleteListNamesBlocks`),
+two Dart tests deleted with the client method `deleteAllBlocksForUser`.
+
+Non-vacuity, checked by reading the fake rather than by probing (probes already run by the
+author, five, each reddening only the named scenarios):
+- the fake's top-level `limit(max)` SLICES, so `.limit(MAX + 1)` genuinely returns 2001 on a
+  2001-row fixture — the cap test pins the `+ 1` as well as the `>` comparison, since a
+  production `.limit(MAX)` would yield size 2000 and no decline.
+- the three probe cases each hold ONE document reachable by exactly one leg
+  (`blocks/{UID}_{OTHER}` -> `blockerId`; `blocks/{OTHER}_{UID}` -> `blockedId`; the
+  third/fourth row -> neither), so the legs cannot cover for each other. The clean case is a
+  legitimate control against an unfiltered or `!=` leg.
+- the both-directions scenario carries a third-party control row, so a collection-keyed
+  sweep is distinguishable from a uid-keyed one.
+
+Deleted Dart tests take no surviving guard with them: they exercised only
+`deleteAllBlocksForUser`; `validateDeletePermission` keeps its grant/reject pair,
+`blockUser`'s write keeps two field-level tests, and `PermissionDeniedException` was the only
+symbol they uniquely used (the file's other exception assertion is `AuthenticationException`,
+so the import stays live).
+
+Source-text check (`reset-user-data.ts`): the slice `indexOf("const COLLECTIONS_TO_DELETE")`
+-> first `];` is unambiguous (nested `subcollections` arrays close with `],`), and
+`.replace(/\s+/g, " ").includes('name: "blocks"')` is robust to reflow and to the
+`Collections.blocks` constant being renamed. It does NOT strip comments, so a
+commented-out `// { name: "blocks" },` satisfies it — the exact trap the "strip comments
+first" principle names. Filed non-blocking.
+
+Comment claims graded, all true: `"\s"` in a JS string literal is `"s"`, so the first
+version's pattern `name:s*"blocks"` could not match production's `name: "blocks"` (space);
+`firestore.rules` really does pin `blockerId == request.auth.uid` on create and blocker-only
+on delete (lines 2474-2484), which is what makes the cap docstring's self-chosen/peer-chosen
+asymmetry and the client tombstone's "could not have worked" both accurate; the
+`MAX_ROSTER_SWEEP_ROWS` docstring really does name `admin/reset-user-data.ts` as the recovery
+and `conversations` really is in that list, so the stated provenance of the borrowed sentence
+holds.
+
+Main finding (non-blocking, one line): nothing pins the STEP WIRING. All four scenarios
+`require()` `deleteBlocks`/`probeResidualData` directly, so deleting
+`["blocks", () => deleteBlocks(database, uid)]` from `runAccountDeletionWithDeps` leaves the
+cascade suite green — and `request-account-deletion.test.ts`'s `expected` step-name list,
+whose own comment records BUT-1800 and BUT-1956 as two prior instances of exactly this,
+was not extended with `"blocks"`. Also unguarded: Dart `FirestoreCollections.blocks` vs TS
+`Collections.blocks` string parity (the TS constant's own comment asserts they must match);
+and the `/blocks/{blockId}` rules block has no rules test at all (pre-existing — the only
+`blocks` seeding in a rules suite is `recipe-comments-rules.test.ts`'s blocked-rater gate).
+Verdict: pass, 0 blocking.

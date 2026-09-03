@@ -60,4 +60,11 @@ export const Collections = {
   socialRequests: "social_requests",
   notifications: "notifications",
   feedback: "feedback",
+  // BUT-1917: user block relationships, doc id `{blockerId}_{blockedId}`.
+  // Written only by the client (`FirebaseBlockRepository`); this constant is
+  // the first server-side reader, added because account deletion never reached
+  // the collection. The Dart writer is `FirestoreCollections.blocks` and the
+  // two must stay the same string — a mismatch is a query that matches nothing
+  // and throws nothing.
+  blocks: "blocks",
 } as const;

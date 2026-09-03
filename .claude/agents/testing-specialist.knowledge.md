@@ -559,7 +559,14 @@ Codecov: 60% project / 70% new patches / 2% drop tolerance — floors, decided 5
   key present in zero test files. The warning comment does not work; the check that does is
   mechanical and takes seconds: `grep -rn '<bundle key>' test/` on every key the round adds
   to `_buildExportBundle`, run as the FIRST step of reviewing an export change. Zero hits IS
-  the finding, whatever the round's other suites prove. A SOURCE-DERIVED drift guard does not
+  the finding, whatever the round's other suites prove.
+  **The account-deletion CASCADE has the identical seam one file over, and its own registry
+  already records two prior misses (BUT-1800, BUT-1956): a new step registered in
+  `runAccountDeletionWithDeps` is invisible to every scenario that `require()`s the deleter
+  directly, so deleting the registration line leaves the whole cascade suite green.** The
+  pin is the `expected` step-name list in `request-account-deletion.test.ts`; grep the new
+  step's NAME across `functions/src/__tests__/` as the first step of reviewing a cascade
+  change, exactly as for a bundle key. A SOURCE-DERIVED drift guard does not
   close it either: BUT-1992's TS guard reads `.collection(users).doc(uid).collection(X)`
   chains out of the repository FILE, so it proves a path is SPELLED, not that any manager
   calls it or that any section ships — a dead repository method satisfies it (2026-09-03).
@@ -1443,6 +1450,11 @@ ever on screen. Use `RecipeBuilder().withTagResult(...)` for anything badge- or 
 The single most repeated finding across two months of review.
 - **MASTER RULE: name every OTHER mechanism that could satisfy the assertion, then build the
   fixture where they DISAGREE. Every pattern below is an instance.**
+- **A cap-decline test proves `continue`-not-`return` only if the DECLINING leg is not the
+  LAST iteration** — with the over-cap direction last, both mutants leave identical state and
+  the "the other direction is still swept" assertion passes on LOOP ORDER, not on
+  independence. Put the over-cap fixture on the FIRST leg, or keep both and say which one
+  pins what (BUT-1917, 2026-09-03).
 - **A `contains('$n')` on a NUMBER is satisfied by any cap that has it as a substring** —
   `expect(note, contains('$cap'))` with `cap == 50` stays green when the note prints the 500
   fallback, i.e. under the exact mutant (drop the key from `exportLimits`, fall through to

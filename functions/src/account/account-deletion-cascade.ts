@@ -272,6 +272,14 @@ export async function probeResidualData(
     // `metadata.subjectUserId` entry earlier in this same list proves a nested
     // equality filter needs no declared index.
     [Collections.messages, "metadata.poll.creatorId", "=="],
+    // BUT-1917: `blocks`, BOTH directions. `deleteBlocks` sweeps through
+    // `batchDeleteAll` -> `commitInChunks(strict:false)`, which swallows a
+    // failed chunk and lets the step return success — so without these two the
+    // sweep self-reports clean over rows whose DOCUMENT ID is the erased uid.
+    // These legs are also uncapped, so they still fire when the sweep DECLINED
+    // above `MAX_BLOCK_SWEEP_ROWS` and deleted nothing at all.
+    [Collections.blocks, "blockerId", "=="],
+    [Collections.blocks, "blockedId", "=="],
     // BUT-1971: the group weekly menu scrubs membership, per-dish provenance
     // and the edit trail in ONE `batch.update` under `strict: false`, which
     // returns `true` on a failed chunk. The provenance fields are arrays of
@@ -830,7 +838,7 @@ export async function deleteShoppingLists(
   // though the parent is gone. There is no automatic retry: the callable
   // deletes the auth user unconditionally (`request-account-deletion.ts`), so
   // the real remediation is a human reading `deletion_audit_logs` for
-  // `gdprCompliant: false` and running `admin/reset-user-data.ts`.
+  // `gdprCompliant: false` and acting on it with the Admin SDK.
   //
   // Accumulate rather than letting the first failure escape: `deleteListItems`
   // is strict, and an unguarded loop would abort the whole step before the
@@ -1096,7 +1104,7 @@ export async function deleteShoppingLists(
   if (failedShared.length > 0 || failedItems > 0) {
     // One throw, AFTER every leg has run: `runStep` records the step failed and
     // the audit row lands with `gdprCompliant: false`, which is the signal a
-    // human reads before running `admin/reset-user-data.ts`.
+    // human acts on.
     throw new Error(
       `shopping-list erasure incomplete: ${failedItems} list(s) kept their ` +
         `items, ${failedShared.length} shared list(s) unscrubbed`,
@@ -1990,8 +1998,8 @@ export async function deleteMessages(
  * inflating their OWN count, at whatever rate a client can issue creates, since
  * nothing caps it (above) — block the sweep of
  * that user's LEGITIMATE roster rows,
- * and nothing retries automatically — the auth user is gone by then, so recovery
- * is a human running `admin/reset-user-data.ts`. The alarm is what makes that
+ * and nothing retries automatically — the auth user is gone by then, so
+ * recovery needs a human with the Admin SDK. The alarm is what makes that
  * recoverable rather than silent.
  */
 const MAX_ROSTER_SWEEP_ROWS = 2000;
@@ -2034,6 +2042,92 @@ async function deleteOwnRosterRows(
   }
   await batchDeleteAll(db, snap.docs);
   return true;
+}
+
+/**
+ * Cap on one erasure's `blocks` sweep, per direction.
+ *
+ * The two directions do NOT have the same cap argument, and saying so is the
+ * point of writing it down — this file already records one docstring that
+ * borrowed a sibling's reasoning and was wrong.
+ *
+ * `blockerId == uid` is self-chosen: only this user can create a row naming
+ * themselves as blocker (`firestore.rules` pins
+ * `request.resource.data.blockerId == request.auth.uid` on create), so the
+ * count is theirs, and the cap is the self-inflation guard.
+ *
+ * `blockedId == uid` is chosen by OTHER PEOPLE. Any authenticated account may
+ * block this user, and nothing rate-limits it, so this leg has the roster
+ * cap's argument rather than the poll-vote one: a peer can seat rows keyed on
+ * this user. That is the leg the cap is really for.
+ *
+ * Above the cap the leg DECLINES rather than truncating, and the step reports
+ * itself incomplete — `gdprCompliant: false`. Declining is strictly less
+ * erasure for the same alarm, which is the choice `deleteOwnRosterRows` already
+ * made.
+ *
+ * Recovery is a human running `admin/reset-user-data.ts`, which names this
+ * collection. That script does not currently run at all: an unrelated
+ * delete/keep overlap makes it exit before Phase 1, measured 2026-09-03 and
+ * filed as BUT-2010.
+ */
+export const MAX_BLOCK_SWEEP_ROWS = 2000;
+
+/**
+ * BUT-1917: the `blocks` collection, BOTH directions.
+ *
+ * Nothing in this cascade has ever touched it. `blocks/{blockerId}_{blockedId}`
+ * is written by the client (`FirebaseBlockRepository.blockUser`) and no server
+ * code read the collection before this, so an erased account's uid survived
+ * erasure inside every block row it was party to — in the DOCUMENT ID as well
+ * as in the fields, which is why a projection would not have been enough.
+ *
+ * `probeResidualData` did not see it either, and the reason is simply that no
+ * leg of that probe named the collection — it queries top-level collections by
+ * field as well as enumerating subcollections, so being top-level was never the
+ * obstacle. Two legs ship in this same change, because a sweep that reports on
+ * itself through `commitInChunks(strict:false)` needs an independent check.
+ *
+ * BOTH directions are erased, and the second one deserves its own sentence
+ * because it deletes a row another living user created. A block naming a
+ * deleted account is a decision about an account that no longer exists: it can
+ * never be acted on again, and it carries the erased uid. Art. 17 reaches it;
+ * the blocker loses nothing they can use.
+ *
+ * The client method that used to claim this job, `deleteAllBlocksForUser`, is
+ * removed in the same change. It had no caller, and it could not have worked:
+ * `firestore.rules` lets only the BLOCKER delete a row, so its second query's
+ * deletes would have been refused and taken the whole batch with them.
+ */
+export async function deleteBlocks(
+  db: admin.firestore.Firestore,
+  uid: string,
+): Promise<boolean> {
+  let complete = true;
+
+  for (const field of ["blockerId", "blockedId"] as const) {
+    const snap = await db
+      .collection(Collections.blocks)
+      .where(field, "==", uid)
+      .limit(MAX_BLOCK_SWEEP_ROWS + 1)
+      .get();
+
+    if (snap.size > MAX_BLOCK_SWEEP_ROWS) {
+      logger.error(
+        "[deletion-cascade] implausible block count; not sweeping",
+        { uid_prefix: uid.slice(0, 6), field, rows: snap.size },
+      );
+      // `continue`, not `return`: the two directions are independent, and half
+      // an erasure beats none as long as the step still reports itself
+      // incomplete. Same shape as `deletePollVotes`.
+      complete = false;
+      continue;
+    }
+
+    await batchDeleteAll(db, snap.docs);
+  }
+
+  return complete;
 }
 
 /**

@@ -335,6 +335,11 @@ test("BUT-788: full cascade reports every step + writes audit + calls auth.delet
     "feature_retention",
     "retention_analytics",
     "notification_effectiveness",
+    // BUT-1917. The same failure this list exists for: removing its tier
+    // entry leaves the whole cascade suite green while the erasure stops
+    // running — and the emulator lane seeds no block row, so its
+    // `failedCollections` assertion stays green too.
+    "blocks",
     "messages",
     "shared_content",
     "comments_ratings",
