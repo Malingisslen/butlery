@@ -309,10 +309,10 @@ void main() {
 
     // Auth repo: `currentUser` is read by initialize() for the cache user.
     // It no longer feeds the display name — BUT-1697 moved that to
-    // `UserService.currentDisplayName`, which this suite does not register, so
-    // `currentUserDisplayName` is null here. Null/empty IS the intended
-    // unresolved value now; the old `'Du'` placeholder was being persisted into
-    // other members' copies of a shared list.
+    // `UserService.profileDisplayName`. `currentUserDisplayName` is null here.
+    // Null/empty IS the intended unresolved value now; the old `'Du'`
+    // placeholder was being persisted into other members' copies of a shared
+    // list.
     when(() => mockAuthRepository.currentUser).thenReturn(null);
     when(() => mockAuthRepository.getCurrentUser()).thenReturn(null);
 

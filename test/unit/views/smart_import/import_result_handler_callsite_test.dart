@@ -10,9 +10,10 @@
 ///       the dialog would open and the method would never return `true`
 ///       synchronously → the test would hang or fail.
 ///
-///   (b) The clamp fires ONLY when `matchScore == 1.0` — i.e. only on the
-///       URL / title match path, not on the content-fingerprint path. A
-///       content match with a score above the gate but below 0.8 must pass
+///   (b) The clamp fires ONLY when `matchScore == 1.0`. That is the sentinel a
+///       URL or title match leaves behind, and it is also what a content match
+///       scoring exactly 1.0 sets — so the gate is the value, not the path. A
+///       content match with a score above the gate but below 0.8 passes
 ///       through un-clamped (the raw score reaches the dialog).
 ///
 /// Both tests drive the REAL [checkForDuplicates] method through a minimal
@@ -33,6 +34,7 @@ import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/core/router/recipe_detail_route_args.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/views/smart_import/import_result_handler.dart';
@@ -80,23 +82,23 @@ class _RouteSpy extends NavigatorObserver {
   }
 }
 
-/// Mirrors `AppRouter.generateRoute`'s `Routes.recipeDetail` branch: the
-/// argument is either a Recipe, or a Map carrying one under 'recipe'; anything
-/// else — notably a bare id String — decodes to null and falls to the error
-/// route. Same mirror as `test/widget/views/recipe_save_navigation_test.dart`;
-/// the real router reaches `FirebaseAuth.instance` and error-routes everything
-/// in a test host.
+/// Routes `Routes.recipeDetail` through the production decoder, so the argument
+/// contract is not copied here: anything that is neither a Recipe nor a Map
+/// carrying one under 'recipe' — notably a bare id String — decodes to a null
+/// recipe and falls to the error route.
+///
+/// `AppRouter.generateRoute` itself cannot be called: it reaches
+/// `FirebaseAuth.instance` before this branch and error-routes everything in a
+/// `flutter test` host, so it could not tell the fix from the bug (BUT-1779).
 Route<dynamic>? _routerLikeOnGenerateRoute(RouteSettings settings) {
   if (settings.name != Routes.recipeDetail) return null;
 
-  final arguments = settings.arguments;
-  Recipe? recipe;
-  if (arguments is Recipe) {
-    recipe = arguments;
-  } else if (arguments is Map<String, dynamic>) {
-    recipe = arguments['recipe'] as Recipe?;
-  }
-
+  // The decode is the production function, not a copy, so this cannot drift
+  // from it. Its own contract is pinned in
+  // test/unit/core/router/recipe_detail_route_args_test.dart; what this suite
+  // adds is the callers. Only the two markers below are local, so a route can
+  // be asserted on without building RecipeDetailView and its DI graph.
+  final recipe = decodeRecipeDetailRouteArgs(settings.arguments).recipe;
   if (recipe == null) {
     return MaterialPageRoute<void>(
       settings: settings,
@@ -458,4 +460,139 @@ void main() {
       },
     );
   }
+
+  // ── (e) URL match wins, and its display score is clamped to the floor ────
+  //
+  // BUT-1804 Gap 1. `findBySourceUrl` was stubbed to [] in setUp and no test
+  // ever overrode it, so the URL branch and the clamp beside it were both
+  // unexercised. The clamp exists because a URL match carries matchScore 1.0
+  // as a sentinel; the real content similarity is computed afterwards and can
+  // be far lower, and showing that raw number would tell the user 0% about a
+  // recipe the URL already proved is the same page.
+
+  testWidgets(
+    'a source-URL match opens the sheet even when the content is dissimilar, '
+    'and the score it shows is clamped to the exact-match floor',
+    (tester) async {
+      final existingRecipe = _recipe(
+        id: 'existing',
+        title: 'Soppor',
+        ingredients: const ['potatis', 'lök', 'buljong'],
+        sourceUrl: 'https://example.com/recept/1',
+      );
+      // Disjoint ingredients: real similarity is 0.0, well under the 0.6 gate.
+      // Only the URL match can open the sheet here.
+      when(
+        () => mockRecipeService.findBySourceUrl('https://example.com/recept/1'),
+      ).thenAnswer((_) async => [existingRecipe]);
+      mockRecipeService.setRecipeState(recipes: const [], isInitialized: true);
+
+      final candidate = _recipe(
+        id: 'new',
+        title: 'Pannkakor',
+        ingredients: const ['ägg', 'mjöl', 'smör'],
+        sourceUrl: 'https://example.com/recept/1',
+      );
+
+      late BuildContext capturedContext;
+      await tester.pumpWidget(
+        _testApp(
+          Builder(
+            builder: (ctx) {
+              capturedContext = ctx;
+              return const SizedBox();
+            },
+          ),
+        ),
+      );
+      await tester.pump();
+
+      // ignore: unawaited_futures
+      ImportResultHandler.checkForDuplicates(capturedContext, candidate);
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text('Spara som nytt'),
+        findsOneWidget,
+        reason:
+            'A URL match must open the merge sheet on its own. If this fails '
+            'the URL branch has stopped being consulted, and an import from a '
+            'page the user already saved would silently duplicate it.',
+      );
+      // The two ingredient sets are disjoint, so the computed similarity is
+      // 0.0 and the sheet would read "0% likhet" without the clamp. 80 is the
+      // exact-match floor the clamp raises it to.
+      expect(
+        find.text('80% likhet'),
+        findsOneWidget,
+        reason:
+            'A URL match must display the exact-match floor, not the raw '
+            'content similarity. Without clampToExactMatchFloor this reads '
+            '"0% likhet" about a recipe the URL already proved is the same '
+            'page.',
+      );
+
+      // The suppression is the half `verifyInOrder` in (f) cannot prove: it
+      // shows both lookups ran in order, which an unconditional sequence would
+      // also satisfy. This is what pins the `matches.isEmpty` guard.
+      verifyNever(() => mockRecipeService.findByTitle(any()));
+
+      await tester.tap(find.text('Spara som nytt'));
+      await tester.pumpAndSettle();
+    },
+  );
+
+  // ── (f) The title lookup runs after the URL lookup comes back empty ──────
+
+  testWidgets(
+    'a title match opens the sheet, and runs after the URL lookup',
+    (tester) async {
+      final existingRecipe = _recipe(
+        id: 'existing',
+        title: 'Pannkakor',
+        ingredients: const ['potatis', 'lök', 'buljong'],
+      );
+      when(
+        () => mockRecipeService.findByTitle('Pannkakor'),
+      ).thenAnswer((_) async => [existingRecipe]);
+      mockRecipeService.setRecipeState(recipes: const [], isInitialized: true);
+
+      final candidate = _recipe(
+        id: 'new',
+        title: 'Pannkakor',
+        ingredients: const ['ägg', 'mjöl', 'smör'],
+        sourceUrl: 'https://example.com/recept/2',
+      );
+
+      late BuildContext capturedContext;
+      await tester.pumpWidget(
+        _testApp(
+          Builder(
+            builder: (ctx) {
+              capturedContext = ctx;
+              return const SizedBox();
+            },
+          ),
+        ),
+      );
+      await tester.pump();
+
+      // ignore: unawaited_futures
+      ImportResultHandler.checkForDuplicates(capturedContext, candidate);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Spara som nytt'), findsOneWidget);
+      // The candidate carries a sourceUrl, so the URL lookup ran first and
+      // returned the setUp default of []. This pins that both lookups run and
+      // in which order; that the title one is SUPPRESSED by a URL hit is
+      // pinned by (e) above.
+      verifyInOrder([
+        () => mockRecipeService.findBySourceUrl('https://example.com/recept/2'),
+        () => mockRecipeService.findByTitle('Pannkakor'),
+      ]);
+
+      await tester.tap(find.text('Spara som nytt'));
+      await tester.pumpAndSettle();
+    },
+  );
 }

@@ -12,15 +12,15 @@
 // `AppRouter.generateRoute` does for `Routes.recipeDetail`, so a bare id lands
 // on the error screen exactly as it does in production.
 //
-// Why the decode is mirrored rather than delegated to the real AppRouter:
+// Why `AppRouter.generateRoute` itself cannot be called here:
 // `Routes.recipeDetail` is in `Routes.authenticatedRoutes`, so `generateRoute`
 // hits `FirebaseAuthRepository()` → `FirebaseAuth.instance` before it ever
 // reaches the recipe-detail branch. With no Firebase app in a `flutter test`
 // host that throws, and `generateRoute`'s own try/catch converts it into the
 // generic error route. Verified by probe: the real router returns an error route
 // for a perfectly valid Recipe argument, so it cannot tell the fix from the bug.
-// Source of truth for the mirror below: lib/core/router/app_router.dart, the
-// `case Routes.recipeDetail:` branch.
+// The decode below therefore calls `decodeRecipeDetailRouteArgs`, the same
+// function `generateRoute` calls, instead of copying it.
 library;
 
 import 'package:flutter/material.dart';
@@ -28,6 +28,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/core/router/recipe_detail_route_args.dart';
 import 'package:butlery/views/recipe_detail/recipe_save_navigation.dart';
 
 import '../../infrastructure/factories/recipe_factory.dart';
@@ -52,21 +53,18 @@ class _NavSpy extends NavigatorObserver {
 const _detailMarker = 'detail-for';
 const _errorMarker = 'route-error';
 
-/// Mirrors `AppRouter.generateRoute`'s `Routes.recipeDetail` branch: the
-/// argument is either a Recipe, or a Map carrying one under 'recipe'; anything
-/// else (notably a bare id String) decodes to null and falls through to the
-/// error route.
+/// Routes `Routes.recipeDetail` through the production decoder: anything that
+/// is neither a Recipe nor a Map carrying one under 'recipe' — notably a bare
+/// id String — decodes to a null recipe and falls through to the error route.
 Route<dynamic>? _routerLikeOnGenerateRoute(RouteSettings settings) {
   if (settings.name != Routes.recipeDetail) return null;
 
-  final arguments = settings.arguments;
-  Recipe? recipe;
-  if (arguments is Recipe) {
-    recipe = arguments;
-  } else if (arguments is Map<String, dynamic>) {
-    recipe = arguments['recipe'] as Recipe?;
-  }
-
+  // The decode is the production function, not a copy, so this cannot drift
+  // from it. Its own contract is pinned in
+  // test/unit/core/router/recipe_detail_route_args_test.dart; what this suite
+  // adds is the callers. Only the two markers below are local, so a route can
+  // be asserted on without building RecipeDetailView and its DI graph.
+  final recipe = decodeRecipeDetailRouteArgs(settings.arguments).recipe;
   if (recipe == null) {
     return MaterialPageRoute<void>(
       settings: settings,
@@ -128,7 +126,7 @@ void main() {
 
   testWidgets(
     'the bare id this used to pass would land on the error route (guards the '
-    'mirror actually discriminates)',
+    'decode actually discriminates)',
     (tester) async {
       await tester.pumpWidget(
         MaterialApp(

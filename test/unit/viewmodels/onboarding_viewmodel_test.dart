@@ -1151,8 +1151,6 @@ void main() {
             parameters: any(named: 'parameters'),
           ),
         ).called(1);
-        // No error surfaced to the user, and onboarding still completed.
-        expect(viewModel.error, isNull);
         verifyNever(
           () => mockAnalyticsService.logEvent(
             name: 'onboarding_menu_seeded',

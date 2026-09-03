@@ -65,8 +65,8 @@ import 'package:butlery/views/faq_view.dart';
 
 // Models (needed for route arguments)
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/core/router/recipe_detail_route_args.dart';
 import 'package:butlery/models/shared_menu.dart';
-import 'package:butlery/models/social_request.dart';
 
 /// Centralized application router managing navigation and route generation for Butlery.
 /// This class implements a comprehensive routing system that handles all navigation
@@ -252,33 +252,18 @@ class AppRouter {
           );
 
         case Routes.recipeDetail:
-          final arguments = settings.arguments;
-          Recipe? recipe;
-          bool scrollToComments = false;
-          bool readOnly = false;
-          SocialRequest? shareRequest;
-          int? presentServings;
-          if (arguments is Recipe) {
-            recipe = arguments;
-          } else if (arguments is Map<String, dynamic>) {
-            recipe = arguments['recipe'] as Recipe?;
-            scrollToComments = arguments['scrollToComments'] as bool? ?? false;
-            readOnly = arguments['readOnly'] as bool? ?? false;
-            shareRequest = arguments['shareRequest'] as SocialRequest?;
-            // BUT-1613: present count from the weekly-menu calendar, forwarded
-            // to cooking mode so it opens pre-scaled to who's home.
-            presentServings = arguments['presentServings'] as int?;
-          }
+          final args = decodeRecipeDetailRouteArgs(settings.arguments);
+          final recipe = args.recipe;
           if (recipe == null) {
             return _errorRoute('Recipe argument missing for detail view');
           }
           return _buildRoute(
             RecipeDetailView(
               recipe: recipe,
-              scrollToComments: scrollToComments,
-              readOnly: readOnly,
-              shareRequest: shareRequest,
-              presentServings: presentServings,
+              scrollToComments: args.scrollToComments,
+              readOnly: args.readOnly,
+              shareRequest: args.shareRequest,
+              presentServings: args.presentServings,
             ),
             settings,
             Routes.getAnimationType(routeName),
