@@ -1,7 +1,8 @@
 # ADR-0011 — Which `users/{uid}` subcollections belong in the Article 15 export
 
-- **Status:** OPEN — needs Malin. No code was written; BUT-1992 is parked in In Review.
-- **Date:** 2026-09-02
+- **Status:** DECIDED 2026-09-03 by Malin, question by question. See "The decision" below.
+  Not yet built — the decision is what BUT-1992 was parked for.
+- **Date:** 2026-09-02 (panel), 2026-09-03 (decision)
 - **Ticket:** BUT-1992 (with BUT-1990 reviewed in the same panel)
 - **Panel:** 11 roles, convened blind, routed by `tools/stakeholder_router.py`
   (`tier: full-panel`, `high_stakes_hits: functions/src/account/account-deletion-cascade.ts`)
@@ -107,7 +108,45 @@ concern.
   go, while `fcm_tokens` stays in the cascade so an old account's rows are still swept. That
   half shipped in this sprint.
 
-## What Malin has to decide
+## The decision
+
+**Malin, 2026-09-03**, asked one question at a time, each with the panel's split laid out.
+
+| Collection | Decision | Whose view it follows |
+|---|---|---|
+| `ingredients` | **EXPORT** | unanimous |
+| `onboarding` | **EXPORT** | unanimous |
+| `acquisition` | **EXPORT, unprojected** | Legal, DPO, Data Analyst — over PM's "cut it pending Malin" |
+| `rate_limits` | **EXEMPT** | PM — over DPO's "export counts only" |
+| `counters` | **EXEMPT** | PM and DPO |
+
+Two of the three answers took the recommendation; the third did not, and that is the one
+worth recording carefully.
+
+**On `acquisition`**, she was shown the strongest legal claim in the panel (Art. 15(1)(a)+(g),
+the right to know the SOURCE of one's data) against the product worry that it reads as
+surprising, plus the Data Analyst's measurement that the row holds only source, medium,
+campaign and a first-seen stamp — no spend, no partner identity, nothing about anyone else.
+She chose to export it as it stands. Do not projection-strip the campaign name later without
+reopening this entry: "it sounds bad" was explicitly considered and rejected as a reason.
+
+**On `rate_limits` she went against the recommendation**, which was to export it. The
+recommendation rested on Security's measurement that nothing secret is disclosed — the limits
+live in client code and are already visible in the throttling copy the user sees. That
+measurement stands and was not disputed; she simply weighed bundle legibility higher than
+completeness for a row that is one timestamp per gated operation. Legal had already said it
+would accept an exemption as policy but would not author one, so this is the policy, and it
+is hers.
+
+**Both exemptions carry an obligation**: the bundle's own `data_minimisation` text must say
+Butlery holds them. An exemption the data subject cannot see is not a minimisation decision,
+it is an undisclosed gap (Art. 12(1), on the BUT-1971 precedent). The Art. 30 register gets a
+row for all five either way — Art. 30 records processing, not export status.
+
+The `settings` asymmetry is unchanged by these answers and still resolves the way the panel
+agreed: widen the export to the whole collection, never narrow the deletion.
+
+## What Malin had to decide (the questions as put to her)
 
 1. **`acquisition`** — does the export include install attribution (which channel and campaign
    brought you in, and when), or is that internal growth plumbing? Legal calls withholding it
