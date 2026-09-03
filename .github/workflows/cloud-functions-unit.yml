@@ -21,6 +21,27 @@ on:
       # BUT-1675: the test-registration guard reads the rules workflow's
       # `paths:` triggers, so an edit there must re-run this job.
       - ".github/workflows/firestore-rules.yml"
+      # BUT-2002: `scenario_exportCoversEveryDeletedSubcollection` holds the
+      # EXPORT ⊇ DELETION invariant by READING Dart source, so its trigger has
+      # to reach Dart. It did not, and the guard slept through exactly its own
+      # case: a Dart-only edit deleting an export section.
+      #
+      # `lib/repositories/firebase/**` and `firestore_collections.dart` cover
+      # the files that scenario actually opens, and
+      # `assertGuardTriggersCoverItsDartInputs` derives that requirement from
+      # the paths it opens rather than from a second copy of this list.
+      #
+      # `lib/services/account/**` is deliberate breadth that no test holds: the
+      # export managers, and `data_export_service.dart` which builds them,
+      # decide which repository methods get called — so dropping a call there
+      # removes a section from the bundle while the repository method survives
+      # and the chain-scan still finds it. That case is unguarded; the line only
+      # ensures CI runs on it. It is the whole `account` directory rather than
+      # `account/export/**` because the orchestrator sits one level up and also
+      # reads the repository directly.
+      - "lib/repositories/firebase/**"
+      - "lib/core/constants/firestore_collections.dart"
+      - "lib/services/account/**"
   pull_request:
     paths:
       - "functions/src/**"
@@ -30,6 +51,10 @@ on:
       - "functions/scripts/**"
       - ".github/workflows/cloud-functions-unit.yml"
       - ".github/workflows/firestore-rules.yml"
+      # BUT-2002 — must mirror the `push` list above; the guard checks both.
+      - "lib/repositories/firebase/**"
+      - "lib/services/account/**"
+      - "lib/core/constants/firestore_collections.dart"
   workflow_dispatch:
 
 concurrency:
@@ -83,10 +108,6 @@ jobs:
         working-directory: functions
         run: npm run build
 
-      # run-ci-unit-tests.js excludes two suites with pre-existing failures on
-      # main (test:app-check-enforcement, test:request-account-deletion). Both
-      # are documented inside the script with the exact fix needed. Remove the
-      # exclusion once each suite is fixed.
       - name: Run DI-seam unit tests
         working-directory: functions
         run: node scripts/run-ci-unit-tests.js
