@@ -1,10 +1,9 @@
 # cloud-functions-specialist — accumulated knowledge
 
-Step 0 of every Cloud Functions task. Durable PRINCIPLES only, edited IN
-PLACE; dated narrative goes to the paired `.archive.md` (append-only).
+Step 0 of every Cloud Functions task. Durable PRINCIPLES only, edited IN PLACE;
+dated narrative goes to the paired `.archive.md`. Keep exact
+names/codes/thresholds, cut the story.
 **OVER the ~25,000-char budget — every edit must retire more than it adds.**
-A principle earns its place only if a future run would act DIFFERENTLY: keep
-exact names/codes/thresholds, cut the story.
 
 ---
 
@@ -53,18 +52,16 @@ without approval (mismatch = silent client-side "not found").
   unreachable by `setGlobalOptions`) — exclude it from "every function" claims.
 - **Prove endpoint config, never reason about it:** `npm run
   test:deploy-manifest` imports the ENTRY POINT (the only way the global call
-  runs) and asserts region + numeric `maxInstances` on every `gcfv2` endpoint,
+  runs), asserting region + numeric `maxInstances` on every `gcfv2` endpoint,
   plus `concurrency === 1` on the two cascades. An unset v2 option is a sentinel
   OBJECT, not null (`== null` is FALSE) — check `typeof x === "number"`.
-  VACUITY SURFACE is the `gcfv2` FILTER: rename `platform` and every assertion
-  passes over ~0 endpoints — guard the FILTERED count per CALLER, keep BOTH
-  presence check and value pin, and make a by-NAME pin FAIL on a missing
-  export, never skip.
+  Vacuity sits in the `gcfv2` FILTER (rename `platform` → ~0 endpoints, all
+  green): guard the FILTERED count per CALLER, keep BOTH presence check and
+  value pin, and make a by-NAME pin FAIL on a missing export, never skip.
 - **Some gen2 exports pin their OWN region** (`moderateUpload`,
   `syncConversationLastMessage`, `purgeExpiredAuditLogs`, `migrations/`), so
-  never say a global option "reaches every export". Adding an export
-  falsifies every endpoint TALLY and no test guards them — strike the
-  numeral (sweep `.github/workflows/` too) or DERIVE it in a test.
+  never say a global option "reaches every export", and never write an endpoint
+  TALLY — no test guards one; DERIVE it or strike the numeral.
 
 ## Firebase Functions v2 — what to use
 
@@ -98,8 +95,8 @@ Triggers retry on uncaught exception; handlers must be idempotent:
    skip one. `strict:false` is why it matters: the deleter reports `true` over
    a chunk it never committed.
 9. A sweep cap's threat model comes from the write RULE it bounds, never a
-    copied rationale — a bound's ABSENCE needs the same read. Never cite a
-    rules LINE NUMBER in a comment; cite the `match` pattern or function name.
+    copied rationale — a bound's ABSENCE needs the same read. Never cite a rules
+    LINE NUMBER; cite the `match` pattern or function name.
 10. A fake whose `update()` no-ops on a missing doc can't stage grpc 5 —
     give it an injectable `updateFailures: Map<path, grpcCode>`. Deleting a
     cascade LEG needs a `__tests__` grep for writers of that path.
@@ -138,9 +135,9 @@ Triggers retry on uncaught exception; handlers must be idempotent:
 
 - `npm run build` — must pass before any commit. `npm test` =
   `run-all-tests.js`: auto-discovers every `test:*` script. **A new
-  `__tests__/*.test.ts` is invisible until its `test:*` script exists**, and
-  `node scripts/check-test-registration.js` proves it — per FILE, so tests
-  ADDED to an existing suite need no registration. A `test:*` naming an
+  `__tests__/*.test.ts` is invisible until its `test:*` script exists**;
+  `check-test-registration.js` proves it, per FILE (tests added to an existing
+  suite need none). A `test:*` naming an
   UNTRACKED file reddens the CI unit lane, so file + package.json line
   stage in ONE commit.
 - `npm run test:rules:all` — a new rules/integration suite is FOUR
@@ -167,10 +164,10 @@ cause** — unwraps only when passed POSITIONALLY; use `errCode`/`errName`
 from `(err as {code?}).code`.
 - **Hash ALL PII/title-derived fields consistently** — a mixed line (one
   hashed, one cleartext) is the tell. `hashUid(uid)` or `uid.slice(0,6)`.
-- **A DOCUMENT ID can be PII depending on the CALLER** — a conversation id is
-  a UUIDv4 for a group, `direct_${sortedUidA}_${sortedUidB}` for a DM.
-  `logSafeConversationId(id)` hashes the direct spelling — re-derive it for
-  every NEW caller of an id-logging helper.
+- **A DOCUMENT ID can be PII depending on the CALLER** — a GROUP conversation
+  id is server-minted (auto-id, or a hash for a meal-vote chat); a DM's is
+  `direct_<uidA>_<uidB>`. `logSafeConversationId(id)` hashes the direct
+  spelling — re-derive it for every NEW caller of an id-logging helper.
 - **A uid enters a log through a QUERY OBJECT too** — a logged `FieldPath(...,
   uid)` JSON-stringifies its SEGMENTS, writing the raw uid on the very line
   that truncates it to `uid_prefix`. Log a literal label.
@@ -183,7 +180,7 @@ from `(err as {code?}).code`.
 
 ---
 
-### Test seams, emulator infra & non-vacuity
+### Test seams & non-vacuity
 - v2 exports carry `.run(event)` — test triggers with a typed payload from
   real emulator snapshots, no firebase-functions-test needed.
 - **A wrapper/gate test is non-vacuous only if breaking it produces a
@@ -195,9 +192,7 @@ from `(err as {code?}).code`.
   `string | FieldPath` — an `as unknown as Firestore` cast checks none.
 - Vacuity: a `?? {}` read survives the mutant DELETING the doc (pair with a
   sibling requiring EXISTS); `src.includes("<field>")` is free when a
-  docstring names the field (assert the WRITE). A LOG-ONLY branch is pinnable
-  via the fake's recorded `writes[].data` — never write "no test can pin
-  this".
+  docstring names the field (assert the WRITE).
 - **Rules are not filters** — a client query with NO condition is DENIED
   wholesale on a member-scoped collection; only the RULES emulator lane
   proves it, and it KEEPS data across runs, so give an "empty" fixture a uid
@@ -333,16 +328,20 @@ from `(err as {code?}).code`.
   the deleter.
 
 ### Rate limiting & LLM cost gates (middleware/rate_limiter.ts)
-- A two-stage gate's SHARED/cross-user side effect (global counter) goes
-  LAST, so a denial only wastes the requester's own budget. A
-  retry/fallback path calling an UNWRAPPED core (bypassing
-  `withRateLimit`) silently skips BOTH per-user AND global caps.
+- A two-stage gate's SHARED side effect (global counter) goes LAST, so a denial
+  only wastes the requester's own budget. A retry/fallback path calling an
+  UNWRAPPED core (bypassing `withRateLimit`) skips BOTH per-user and global caps.
 - **Only `enforceRateLimit` writes the `system_events` `rate_limit_violation`
   row** — bare `checkRateLimit` + a local throw does not, and the `groups/`
   callables plus `sendNotification` take the bare form, so a chat-group abuse
   loop leaves no audit trail. A new callable copying its siblings is
   CONSISTENT, not correct. Abuse/cost gates fail CLOSED on a Firestore error;
   some notification gates deliberately fail OPEN — don't harmonize.
+- **`rateLimitWrite(bucket, s)` is INERT unless a client writes
+  `users/{uid}/rate_limits/<bucket>`** — it passes on an absent bucket doc, and
+  the only buckets written are `activity_events`, `comments`, `social_requests`,
+  `messages`, `imports`, `friendSearchMigrated`, so `pings`/`conversations`
+  always pass and the trigger is the sole cap.
 - `system_events` has no TTL — every enforced callable adds an unbounded
   write-per-denial stream, and `resource-exhausted` is client-RETRYABLE.
 
@@ -378,7 +377,7 @@ from `(err as {code?}).code`.
   checks the admin claim); a deletion is the same in reverse.
 
 ### TS↔Dart parity twins (canonical-pool-key.ts et al.)
-- `\w`/`\b` are ASCII-only in both — fold å/ä/ö→a/o FIRST or use lookarounds;
+- `\w`/`\b` are ASCII-only in both (the always-on digest carries this too);
   case-insensitive triggers need per-letter classes, not `/i`. Module-scope
   `/g` regexes are stateful with `.test()`/`.exec()` in long-lived isolates.
   Shared word lists and cross-port VECTORS: compiled-in consts or one shared

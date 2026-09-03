@@ -431,6 +431,11 @@ Standard deny matrix for ownership-checked collections:
   travels between entries. Size-filter object
   recovery on the file's real CRLF byte size, not an LF-era guess, or the sweep silently
   returns only ancient revisions and reads as "no prior version exists."
+  **Run the strip over EVERY file in the STAGED set, not the files the brief names** — a
+  "two-file comment fix" arrived touching four (two Cloud Functions doc-comments rode along),
+  and a `/** … */` doc block needs its own `sed` arm beside the `//` one or the TS files
+  compare as changed. A `://` inside a string literal truncates identically in both
+  revisions, so it does not invalidate the md5 pair — grep for it and say which lines it hit.
   **Re-run the affected suite anyway.** A comment cannot change CEL evaluation, so the run
   is not owed for behaviour — but it is the only check on the one thing a comment edit CAN
   break: a ruleset that no longer compiles.

@@ -296,11 +296,14 @@ test("conversations: a 3-person conversation is denied even at a direct_-shaped 
   );
 });
 
-// C6: DENY — a create whose metadata.creatorId is NOT the caller. BUT-1626 binds
+// C6: DENY — a create whose metadata.creatorId is NOT the caller. BUT-1626 bound
 // the recorded creator to the caller so the group minor-safety Cloud Function
-// (enforceGroupMinorMembership) can trust metadata.creatorId. Without this a
+// (enforceGroupMinorMembership) could trust metadata.creatorId; that CF has
+// since been repointed to `chat_groups.memberAddedBy`. Without the binding a
 // client could forge creatorId to a friend of a minor (or the minor's own uid)
-// and slip a non-friend group add past the CF's friend check. Adult 1:1 target
+// and slip a non-friend group add past the CF's friend check. The scenario is
+// additionally unreachable now: a client can no longer create a group
+// conversation at all. Adult 1:1 target
 // so this isolates the creatorId binding, not the minor-DM gate.
 test("conversations: cannot create with metadata.creatorId set to another uid", async () => {
   const ctx = env.authenticatedContext(STRANGER_UID);
@@ -550,11 +553,14 @@ test("conversations: a create whose participantIds is not a list is denied", asy
 // ['participantIds','createdAt'] let any participant rewrite `metadata`
 // wholesale. Two server functions TREATED metadata.creatorId as the group admin
 // identity — enforceGroupMinorMembership (BUT-1626, since repointed to
-// `chat_groups.memberAddedBy`) and leaveGroupConversation's authorizeDeparture
-// (deleted by BUT-1838; its successor reads `chat_groups.adminIds`) — so a
-// self-promotion write was a group-takeover primitive: name yourself creator,
-// then call the callable and evict everyone else. NOTHING reads the field today;
-// the conjunct stays because the primitive returns the moment anything does.
+// `chat_groups.memberAddedBy`) and the authorizeDeparture that then lived in
+// leaveGroupConversation (the CALLABLE was deleted by BUT-1838; the symbol
+// survives in remove-chat-group-member.ts, which reads
+// `chat_groups.adminIds`) — so a self-promotion write was a group-takeover
+// primitive: name yourself creator, then call the callable and evict everyone
+// else. No server-side consumer treats the field as an identity today, though
+// firestore.rules binds it on create and compares it on update; the conjunct
+// stays because the primitive returns the moment a consumer does.
 
 const TAKEOVER_GROUP = `c-creator-immutable-${RUN}`;
 const NO_METADATA_GROUP = `c-no-metadata-${RUN}`;
@@ -725,8 +731,10 @@ test("conversations: participant cannot rewrite metadata.creatorId to their own 
 });
 
 // C9: DENY — dropping metadata (or just creatorId) is the same attack in
-// reverse: a group with no recorded creator, which authorizeDeparture treats as
-// "no admin". Proves the guard compares the resolved value, not just presence.
+// reverse: a group with no recorded creator, which the authorizeDeparture of
+// the time read as "no admin". The live one reads `chat_groups.adminIds` and
+// never this field. Proves the guard compares the resolved value, not just
+// presence.
 test("conversations: participant cannot delete metadata.creatorId", async () => {
   const ctx = env.authenticatedContext(STRANGER_UID);
   await assertFails(
@@ -2000,7 +2008,8 @@ test("participants: a non-member cannot LIST the roster of a conversation with n
 // --- UPDATE ---------------------------------------------------------------
 
 // P16: ALLOW — updateLastRead: the row's own subject stamps their read cursor.
-// The single most frequent write on this path.
+// updateLastRead has no production caller outside its own module today, so
+// this pins the rule rather than a live path.
 test("participants: the row's subject can stamp their own lastReadAt", async () => {
   const ctx = env.authenticatedContext(FRIEND_UID);
   await assertSucceeds(

@@ -17768,3 +17768,62 @@ NECESSARY-not-sufficient wording; the test scenario's list-membership pin (its
 `indexOf("];")` is safe here because every nested `subcollections` array closes `],`).
 The duplicated BUT-1917 tier comment is gone — one block above `["blocks", ...]`,
 `["reports", ...]` uncommented.
+
+### 2026-09-03 — BUT-1851 comment review: the ping burst guard is inert, and my own group-id note was stale [review][rate-limit]
+
+Reviewed the BUT-1851/BUT-1673/BUT-1764 staged diff (comments + one doc only; `npm run
+build` clean; index blobs equal worktree for all five files).
+
+MEASURED, and the reason `ping_onCreate.ts`'s new claim stands: `rateLimitWrite`
+(`firestore.rules`, helper at the top of the file) returns `!exists(limitsPath) || ...`,
+and the only writers of `users/{uid}/rate_limits/*` in `lib/` are
+`firebase_activity_event_repository.dart` (`activity_events`),
+`firebase_comments_repository.dart` (`comments`),
+`firebase_social_request_repository.dart` (`social_requests`),
+`message_mutation_module.dart` (`messages`), `import_rate_limiter.dart` (`imports`) and
+`friends_firebase_sync.dart` (`friendSearchMigrated`). Nothing in `functions/src` writes
+that subcollection at all (the server buckets live in top-level `system_rate_limits`).
+So `rateLimitWrite('pings', 60)` and `rateLimitWrite('conversations', 10)` always pass —
+`onPingCreated` is the sole enforcement. The same enumeration already sits in
+`account-deletion-cascade.ts` around the `tryClearRoster` docstring and agrees.
+
+Verified true at HEAD: `authorizeDeparture` at `remove-chat-group-member.ts:83`, taking
+`{memberIds, adminIds}` read off the `chat_groups` document inside the transaction;
+`updateLastRead` has exactly one occurrence in `lib/`, its own declaration in
+`conversation_participant_module.dart:186`, so it has no caller anywhere; the
+unclearable-roster fixture is `chat-group-callables.test.ts:620` ("an unclearable roster
+leaves the conversation and the group standing") and the integration suite's header does
+record it as not carried over; a client cannot create a group conversation
+(`directIdBinds` forces `size() == 2` and a `direct_` id); no server-side consumer reads
+`conversations.metadata.creatorId` (`chat-group-writes.ts:207` WRITES it;
+`metadata.poll.creatorId` in the cascade is a different field on a different collection);
+`tools/count_large_files.sh` prints 190 and every listed file resolves to a row, and all
+nine new rows plus `butlery_app.dart` carry exact `wc -l` figures.
+
+BLOCKING finding: `firestore.rules`, the roster READ paragraph, replacement sentence
+"ONE attestation branch, `parentNames(request.auth.uid)`, conjoined with
+isAuthenticated() — see the read rule below; create, update and delete follow it." The
+trailing clause is either a positional pointer (banned) or false: `allow delete` is a bare
+`participantId == request.auth.uid` with no attestation at all, and update's (u1)
+self-`lastReadAt` branch likewise never calls `parentNames`/`mayWriteRoster`. Remedy filed
+as a STRIKE of ", create, update and delete follow it".
+
+Non-blocking: `enforce-group-minor-membership.ts` says "The trigger is onDocumentWritten
+over `chat_groups.memberIds`" — the trigger is `onDocumentWritten` on
+`chat_groups/{groupId}` and fires on every write to that document (a rename included);
+`memberIds` is what the constant bounds, not what the trigger subscribes to. And
+`firestore.rules` now carries two different "the conjunct stays because" clauses nine
+lines apart, the second reading "because the field is writable" in the present tense while
+the conjunct is what makes it unwritable.
+
+Knowledge-file edits this round: added the `rateLimitWrite`-is-inert principle; superseded
+IN PLACE the stale PII-id line, whose retired text read: "**A DOCUMENT ID can be PII
+depending on the CALLER** — a conversation id is a UUIDv4 for a group,
+`direct_${sortedUidA}_${sortedUidB}` for a DM. `logSafeConversationId(id)` hashes the
+direct spelling — re-derive it for every NEW caller of an id-logging helper." The UUIDv4
+half was corrected in the code itself on 2026-08-19 (group ids are server-minted auto-ids,
+or a hash for a meal-vote chat) and my file had kept the old shape. Paid for the addition
+by trimming the endpoint-tally, deploy-manifest-vacuity, log-only-branch, header and
+test-registration clauses; the file ends the round net SMALLER than it started (27,101 ->
+27,098 bytes, measured with wc -c in the same call), and is still far over the
+25,000-char budget.

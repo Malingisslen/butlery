@@ -4317,3 +4317,61 @@ shape this rule can serve (a future export refactor to a collection group would 
 every user). Suite is 14 tests; both mutants re-measured against it — read mutant 12/14
 (DN4, DN5), write mutant 11/14 (DN8, DN9, DN10). The kill sets quoted in the entry above were
 measured on the 13-test suite.
+
+---
+
+## 2026-09-03 — BUT-1851: comment-only sweep over `conversations` rules + suite
+
+Staged diff was briefed as two files (`firestore.rules`,
+`functions/src/__tests__/conversations-rules.test.ts`) but touched FOUR — the two named plus
+`functions/src/messaging/enforce-group-minor-membership.ts` and
+`functions/src/triggers/ping_onCreate.ts`, both doc-comment edits. Comment-only proven over
+all four by two independent methods: (1) strip `//`, `/** */` and blank lines plus CR from
+`git show HEAD:<f>` and `git show :0:<f>`, compare md5 AND surviving line count — rules
+1401 lines, conversations suite 1239, minor-membership 195, ping 82, each pair identical;
+(2) `git diff --cached -U0 | grep '^[+-]' | grep -v '^[+-][[:space:]]*//' | grep -v
+'^[+-][[:space:]]*\*'` came back EMPTY. One `://` in the suite (line 1538, an
+`https://example.com` avatar literal) truncates identically on both sides, so the md5 pair
+still holds.
+
+Claims verified against the code, all TRUE:
+- Roster read paragraph: `allow read: if isAuthenticated() && parentNames(request.auth.uid);`
+  — exactly one attestation branch, and the surviving sentence makes no claim about the other
+  verbs (`allow delete` is a bare `isAuthenticated() && participantId == request.auth.uid`;
+  the (u1) self-cursor update never calls `parentNames`). The struck sentence would have been
+  false of both.
+- `metadata.creatorId`: bound on create by `request.resource.data.metadata.creatorId ==
+  request.auth.uid`; compared on update by the `is map` ternary pair. No server consumer reads
+  it as an identity — `chat-group-writes.ts:207` WRITES it, the cascade's hits are
+  `metadata.poll.creatorId` (a different field), and both Dart readers call it retired.
+- `authorizeDeparture`: the CALLABLE `leave-group-conversation.ts` is gone; the SYMBOL is
+  `remove-chat-group-member.ts:83`, fed `adminIds` read off `chat_groups/{groupId}` in
+  `removeChatGroupMemberWithDeps`. Stated consistently in rules and suite.
+- C6: `enforceGroupMinorMembership` is `onDocumentWritten("chat_groups/{groupId}")` reading
+  `data.memberAddedBy` (line 357). "A client can no longer create a group conversation at all"
+  holds via `directIdBinds` (size()==2 + `direct_` id) plus `chat_groups` `allow create: if
+  false`.
+- P16: `updateLastRead` is defined at
+  `conversation_participant_module.dart:186`; the only other hits repo-wide are its own unit
+  test. The replaced "single most frequent write on this path" was false.
+- Unclearable-roster fixture: `chat-group-callables.test.ts:620` ("an unclearable roster leaves
+  the conversation and the group standing"); the integration suite's header explicitly records
+  the case as NOT carried over. Pointer resolves. (A separate same-named fixture exists in
+  `account-deletion-cascade.test.ts` for the GDPR caller — the sentence does not say "only",
+  so it is not over-claimed.)
+- `ping_onCreate`: `rateLimitWrite` is `!exists(limitsPath) || …`, and no writer of
+  `users/{uid}/rate_limits/pings` exists — the seven `userRateLimits` writers in `lib/` stamp
+  `activity_events`, `comments`, `social_requests`, `messages`, `imports` and
+  `friendSearchMigrated`. The removed `firestore.rules:874` line-number citation was the
+  exact failure mode the knowledge file already warns about.
+
+Suite re-run for compilation only (a comment cannot change CEL): `npm run
+test:rules:conversations` → 87/87 passed.
+
+Out-of-scope observation, NOT introduced here and not blocking: the `conversations` create
+rule has no `hasOnly`, so a client may plant `groupId` (and `memberSince`) on the 2-person
+`direct_` document it is allowed to create — the update deny-list only bites afterwards.
+That does not falsify C6's sentence (no `chat_groups` document can be created, so the
+minor-safety CF is unreachable either way), but a future reader should not take "a client
+cannot create a group conversation" to mean "no client-written conversation carries a
+`groupId`".

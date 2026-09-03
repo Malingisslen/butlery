@@ -65,9 +65,11 @@ export function logSafeConversationId(conversationId: string): string {
 }
 
 /**
- * Upper bound on participants this trigger will read. Far above any real group
+ * Upper bound on group members this trigger will read. Far above any real group
  * chat, so it never fires legitimately; it exists purely to bound the billed
- * read fan-out (and its retry replays) on a tampered create.
+ * read fan-out (and its retry replays) on a tampered write. The trigger is
+ * `onDocumentWritten` on `chat_groups/{groupId}` and this bounds the sanitised
+ * `memberIds` it reads.
  */
 export const MAX_GROUP_PARTICIPANTS = 100;
 
@@ -191,8 +193,8 @@ export const MAX_ROSTER_ROWS = MAX_GROUP_PARTICIPANTS * 5;
  *
  * ENUMERATED, never derived from a uid list. The roster's writer
  * (`ConversationParticipantModule.addParticipants`) iterates
- * `participantDisplayNames.entries`, while every uid list in this trigger comes
- * from `participantIds` filtered by `isValidDocId`. A uid that filter rejects —
+ * `participantDisplayNames.entries`, while the uid list this trigger works from
+ * is `chat_groups.memberIds` filtered by `isValidDocId`. A uid that filter rejects —
  * `a.b` — is still a legal document id, and the write rule constrains the
  * id's SHAPE not at all: the only conjunct mentioning `participantId` pins the
  * payload field to the path segment. (Before BUT-1838 the bootstrap branch made

@@ -1664,9 +1664,10 @@ service cloud.firestore {
         && hasRequiredFields(['participantIds', 'createdAt'])
         && passesMinorDmGate(request.resource.data.participantIds)
         // BUT-1626/BUT-1830: the recorded creator must be PRESENT and must be
-        // the caller. `leaveGroupConversation`'s successor and the safety
-        // backstop both read a creator identity, and "records no creator" used
-        // to be a reachable state that authorizeDeparture read as "no admin".
+        // the caller. Neither reader is left: the safety backstop reads
+        // `chat_groups.memberAddedBy` and the departure path reads
+        // `chat_groups.adminIds`. "Records no creator" used to be a reachable
+        // state that the then-current authorizeDeparture read as "no admin".
         //
         // A create carrying `metadata: null` denies here, and test C7B pins it.
         // BUT-1831 deleted the branch that sent that shape deliberately, so the
@@ -1695,16 +1696,21 @@ service cloud.firestore {
       // BUT-1788: metadata.creatorId must be immutable, not just create-bound.
       // Two server-side functions TREATED it as a trustworthy admin identity —
       // enforceGroupMinorMembership (BUT-1626, since repointed to
-      // `chat_groups.memberAddedBy`) and leaveGroupConversation's
-      // authorizeDeparture (deleted by BUT-1838; its successor reads
-      // `chat_groups.adminIds`). Nothing reads the field today; the conjunct
-      // stays because the primitive below returns the moment anything does.
+      // `chat_groups.memberAddedBy`) and the authorizeDeparture that then
+      // lived in leaveGroupConversation (the CALLABLE was deleted by
+      // BUT-1838; the symbol survives in remove-chat-group-member.ts, which
+      // reads
+      // `chat_groups.adminIds`). No server-side consumer treats it as an
+      // identity today, though this file binds it on create and compares it
+      // here; the conjunct stays because the primitive below returns the
+      // moment a consumer does.
       // The create rule above binds it to the caller, but
       // affectedKeys() is TOP-LEVEL: 'metadata' is not in the deny list, so
       // without the conjunct below any group participant could
-      // update({metadata: {creatorId: <own uid>}}) and then call
-      // leaveGroupConversation to remove the real creator and every other
-      // member — the group-takeover primitive that function exists to avoid.
+      // update({metadata: {creatorId: <own uid>}}). While
+      // leaveGroupConversation existed that was a group takeover; it was
+      // deleted by BUT-1838, and the conjunct stays because the next reader of
+      // the field would inherit the same hole.
       allow update: if isAuthenticated() && request.auth.uid in resource.data.participantIds
         // BUT-1838: `memberSince` joins the deny list, and it is load-bearing,
         // not hygiene. The messages read rule below trusts that map to decide
@@ -1859,9 +1865,9 @@ service cloud.firestore {
             && d.isMuted is bool;
         }
 
-        // Read: a member of the roster, attested by the parent. ONE predicate,
-        // `parentNames(request.auth.uid)` — see the rule at the bottom of this
-        // block. It does not touch resource.data, so the client's
+        // Read: a member of the roster, attested by the parent. ONE attestation
+        // branch, `parentNames(request.auth.uid)`, conjoined with
+        // isAuthenticated(). It does not touch resource.data, so the client's
         // whole-collection get()/snapshots() LIST is provable, not just a get().
         //
         // HISTORY, kept because the next author will meet this shape again and
@@ -1885,15 +1891,17 @@ service cloud.firestore {
         // entirely. Rules: the fallback was scoped to a
         // parentless roster, which closed the LIVE-parent case. Code: the CF
         // now deletes the roster row alongside the membership mirror, which is
-        // the only possible fix for the other case — when it evicts the last
-        // members it DELETES the conversation, and rules cannot tell "parent
-        // destroyed" from "parent not written yet", so a surviving row would be
-        // readable forever. Pinned by roster assertions in
-        // functions/src/__tests__/enforce-group-minor-membership.integration.test.ts
-        // — and, since the caller's invariant needs its own fixture, by a test
-        // there that stages an UNCLEARABLE roster and asserts the parent is left
-        // standing. Deliberately not giving a count: the last two were both
-        // stale within the day.
+        // the only possible fix for the other case. This trigger no longer owns
+        // a conversation's lifecycle — the collapse-and-delete decision moved to
+        // removeChatGroupMember — and where a conversation IS destroyed, rules
+        // cannot tell "parent destroyed" from "parent not written yet", so a
+        // surviving row would be readable forever. Pinned by roster assertions
+        // in functions/src/__tests__/enforce-group-minor-membership.integration.test.ts.
+        // The UNCLEARABLE-roster fixture, which asserts the parent is left
+        // standing, is NOT there: that suite's header records that it was not
+        // carried over, and it lives in chat-group-callables.test.ts.
+        // Deliberately not giving a count: the last two were both stale within
+        // the day.
         //
         // RESIDUALS: CLOSED, 2026-08-13 (BUT-1838). Recorded rather than
         // deleted, because the next author will meet this shape again.
