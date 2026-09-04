@@ -8320,3 +8320,76 @@ safe: no other step touches this collection. `"blocks"` is pinned in the
 `request-account-deletion` step list, which is what stops a deleted tier entry shipping green.
 
 Verdict: pass (0 blocking).
+
+---
+
+## 2026-09-04 — BUT-1862 finding 2: `addAll` destroying an Art. 15 failure marker (social export)
+
+Staged diff: `lib/services/account/export/social_export_manager.dart` (+19/-1) and its unit
+suite (+68). Reviewed against ADR-0013 §2, `.claude/rules/accepted-deviations.md` and
+`docs/architecture/ACCEPTED_DEVIATIONS.md` (the conversations-export entries: BUT-1772,
+BUT-1774, BUT-1838 — none of them touched by this change).
+
+**The defect.** `exportMessages` set a section-root
+`error_code = 'conversation-messages-read-failed'` when a conversation's messages could not
+be read, then merged the chat-groups leg with
+`messagesData.addAll(await ChatGroupExport(_exports).export(userId))`. `ChatGroupExport`'s
+catch returns `{'chat_groups': [], 'error_code': 'chat-groups-export-failed'}` — the SAME
+generic key — and `Map.addAll` overwrites, so on a double failure the conversations code was
+replaced. `DataExportService` (lines 356-391) emits exactly one warning per section built from
+section-root `error`/`error_code`, so the losing code produced no warning at all.
+
+**The shipped fix** lifts the code out before the merge, mirrors `poll_votes_error_code` with
+a dedicated `chat_groups_error_code`, and lets `??=` govern only the generic key. Correct, and
+the priority (conversations wins the root key) is consistent with the tier the file already
+has: the conversations branch assigns with `=` unconditionally, the poll-votes branch with
+`??=`.
+
+**Verified, not assumed.**
+- `ChatGroupExport.export` returns a fresh `<String, dynamic>{}` literal on BOTH branches and
+  has exactly one production construction site (constructed inline per call), so `remove()`
+  on the returned map mutates nothing shared.
+- No consumer reads `chat_groups_error_code`, and none is owed: single-failure ⇒ `??=` fires
+  and a warning IS emitted; double-failure ⇒ a warning already names the section and its text
+  ("See that section for details") points at the body where both codes sit. Same standing as
+  `poll_votes_error_code`, unconsumed since BUT-1832.
+- Two mutants, each restored md5-identical: the old one-line `addAll` reddens ONE test
+  (`chat_groups_error_code`, Actual `<null>`); `??=` → `=` reddens the SAME test on the
+  priority assertion (Actual `chat-groups-export-failed`). Both halves separately pinned.
+  Unmutated suite 52/52.
+- The test's new `failChatGroups` flag is honest — it throws from the fake's
+  `exportChatGroups`, i.e. the real input to the production catch — and defaulting it `false`
+  preserves BUT-1838's fail-quiet property for every other test in the file.
+
+**Blocking findings — all four were false or unmeasured sentences inside text written AS the
+fix, which is the recurring shape.**
+1. Production comment: "Whichever loses is not de-prioritised … so the loser is GONE from the
+   artefact a data subject may forward to a supervisory authority." Universal and false in one
+   direction: the losing CONVERSATIONS code survived in the bundle at
+   `messages.conversations[i].error_code`, written 25 lines above by the BUT-1838 branch whose
+   own comment exists to say so. True and readable: the loser produces no bundle-level warning.
+2. Same claim restated in the test's block comment ("the conversations code … vanished", "the
+   loser is absent from the Art. 15 artefact").
+3. Test comment: "and `chatGroups` is left unoverridden, which sends that leg down its catch
+   branch" — refuted by the fixture three lines above it, which passes `failChatGroups: true`;
+   the fake overrides `exportChatGroups`. Stale draft text that would have told a future
+   prober the new flag was decorative.
+4. "an unreadable conversation is a bigger claim than an unreadable group roster" — unmeasured
+   comparative, and contestable the OTHER way: the chat-groups code means the whole leg
+   returned nothing, while the conversations code can be set by 1 conversation out of ≤100.
+   Immaterial to the outcome (the warning sentence is derived identically from either token),
+   which is exactly why the sentence should be struck rather than defended.
+
+**Non-blocking.** `ChatGroupExport`'s catch ships `chat_groups: []` beside its error code —
+the "empty list beside a failure marker" antipattern this same file's `exportBlocks` docstring
+forbids (BUT-2004). Pre-existing; the double-failure case now reads worst, since the root
+warning names the conversations code while an empty `chat_groups` sits there looking like "you
+belong to no groups". Own ticket, in `chat_group_export.dart`. Also: the BUT-1838 test comment
+quotes the one-line `addAll` this commit deleted.
+
+**For Malin.** ADR-0013 §2 carries the same "gone from the artefact" sentence as the DPO's
+stated reasoning. The DECISION it supports (dedicated key + fallback) is unaffected and
+correct; only the rationale overclaims. A decision record is superseded with a dated note, not
+struck.
+
+Verdict: fail (4 blocking) — all four are comment strikes, no code change owed.

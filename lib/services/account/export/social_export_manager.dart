@@ -323,7 +323,24 @@ class SocialExportManager with SocialExportRedaction {
       // BUT-1838: the one fact a group holds that the conversation does not —
       // who added you. Its own class so a failure there cannot take this
       // section down.
-      messagesData.addAll(await ChatGroupExport(_exports).export(userId));
+      //
+      // BUT-1862: the failure code is lifted OUT before the merge. `addAll`
+      // overwrites, and `ChatGroupExport` reports failure under the same
+      // generic `error_code` this section already uses, so on a double failure
+      // the bundle named only the second one. `DataExportService` builds its
+      // one warning per section from the root `error_code`, so the losing code
+      // produced no bundle-level warning. Same treatment as
+      // `poll_votes_error_code` above, for the same reason.
+      final chatGroups = await ChatGroupExport(_exports).export(userId);
+      final chatGroupsErrorCode = chatGroups.remove('error_code');
+      messagesData.addAll(chatGroups);
+      if (chatGroupsErrorCode is String) {
+        messagesData['chat_groups_error_code'] = chatGroupsErrorCode;
+        // `??=`, because the conversations branch above claims the root key
+        // unconditionally while the poll-votes branch already yields to it.
+        // This leg takes the key only when neither did.
+        messagesData['error_code'] ??= chatGroupsErrorCode;
+      }
 
       // Section level, matching SharedShoppingListExport, rather than duplicated
       // into each of up to 100 conversations.

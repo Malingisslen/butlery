@@ -399,7 +399,13 @@ name which doc each end touches before approving it.
   `error`, else bare `error_code`), so a fourth leg cannot silently disable the
   outright-failure branch. Isolation is only real while every leg's product survives the
   others: a by-id read whose value is discarded by a sibling query's `catch` re-creates the
-  shared-`try` defect one file over.
+  shared-`try` defect one file over. (3) MERGING a sub-leg's payload with `addAll` DESTROYS a
+  failure marker whenever both legs spell failure under the same generic `error_code` — and
+  `??=` only swaps which one dies, because the bundle emits ONE warning per section from that
+  key. Fix: lift the sub-leg's code OUT before the merge, give it its own `<leg>_error_code`,
+  and let `??=` govern the generic key alone. The rationale sentence that then gets written is
+  a quantifier trap: "whichever loses is GONE from the artefact" is FALSE for any leg that
+  also records itself per-row, so state only "the loser produces no bundle-level warning."
 - "No third party appears in these rows" is a claim about the WRITER'S COPY BUILDER, never
   about the field list — grep the module that composes the stored text, not the `set()`.
   A free-text field whose name promises nothing (`message`, `bodyShown`, `title`) is where

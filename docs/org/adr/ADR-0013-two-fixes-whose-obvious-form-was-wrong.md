@@ -113,6 +113,27 @@ error handling — each read is now isolated per leg via `attemptedLegs`/`failed
 failed leg emits error keys with no list rather than a false-empty one. The bug above is
 untouched by that commit, but the fix should follow the new shape.
 
+### Superseded 2026-09-04 — §2's rationale overclaimed; the decision stands
+
+The DPO's reasoning as recorded here says the losing code "is gone from the artefact the
+data subject may forward to a supervisory authority". Measured against the code when the fix
+shipped: it was **not** erased from the bundle. The conversations code also lands per
+conversation, written by the BUT-1838 branch a few lines above whose comment exists to say
+so. What the loser actually lost was the **bundle-level warning** — `DataExportService`
+builds one warning per section from the root `error_code` alone.
+
+The decision is unaffected and remains correct: a dedicated key plus `??=` on the generic
+one, so both failures stay recoverable and neither depends on which happened first. The
+priority between them decides only which token the root warning names — the sentence
+`DataExportService` emits is the same either way.
+
+Also corrected: the implementation comment briefly justified the priority as "an unreadable
+conversation is a bigger claim than an unreadable group roster". That was unmeasured and is
+contestable the other way (the chat-groups code means the whole leg returned nothing; the
+conversations code can come from one conversation out of a hundred). Struck rather than
+reworded; the code now states the readable fact — the conversations branch claims the root
+key unconditionally, so this leg takes it only when neither other branch did.
+
 ## 3. `viewedBase` may guard nothing, and may be hiding a real bug
 
 Recorded here because the plan changed from a build step to a **measurement**, and that

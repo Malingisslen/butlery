@@ -29,6 +29,7 @@ class _FakeDataExportRepository extends Fake
     this.receivedRequests = const [],
     this.categories = const [],
     this.conversations = const [],
+    this.failChatGroups = false,
     this.sharedRecipes = const [],
     this.sharedMenus = const [],
     this.sharedShoppingLists = const [],
@@ -62,6 +63,9 @@ class _FakeDataExportRepository extends Fake
   /// file whose whole convention is fail-loud sentinels.
   final List<Map<String, dynamic>> chatGroups;
 
+  /// Sends the chat-groups leg down its catch branch (BUT-1862).
+  final bool failChatGroups;
+
   /// Per-method captured `maxDocuments`, keyed by repository method name.
   /// Every override that the manager is expected to pass a cap to defaults to
   /// a sentinel -1 no real caller would pass, so a production path that stops
@@ -85,6 +89,12 @@ class _FakeDataExportRepository extends Fake
     int maxGroups = -1,
   }) async {
     capturedMax['exportChatGroups'] = maxGroups;
+    // The leg's catch branch is otherwise unreachable from this fake: the
+    // default is an empty list, which is a SUCCESSFUL read of a user with no
+    // groups, not a failure. BUT-1862 needs the failure itself.
+    if (failChatGroups) {
+      throw StateError('chat groups unreadable');
+    }
     return chatGroups;
   }
 
@@ -1324,9 +1334,8 @@ void main() {
       'leaves no failure marker (BUT-1838)',
       () async {
         // The leg lives in its own class and has its own suite, so everything
-        // ABOUT it is covered — but the one line that puts it in the bundle,
-        // `messagesData.addAll(await ChatGroupExport(_exports).export(...))`,
-        // was observable from no test at all: `chat_group_export_test.dart`
+        // ABOUT it is covered — but the line that puts it in the bundle was
+        // observable from no test at all: `chat_group_export_test.dart`
         // constructs the class directly, and nothing here read `chat_groups`.
         // Deleting that line reddened nothing while the whole section
         // disappeared from the Art. 15 bundle.
@@ -1375,6 +1384,65 @@ void main() {
         // has to be added rather than quietly capping a bundle that asserts
         // it is complete.
         expect(repo.capturedMax, {'exportChatGroups': -1});
+      },
+    );
+
+    test(
+      'a double failure keeps BOTH codes: the chat-groups one under its own '
+      'key, the louder conversations one at section root (BUT-1862)',
+      () async {
+        // The defect: `messagesData.addAll(chatGroupsResult)` merged a map that
+        // reports failure under the SAME generic `error_code` this section
+        // already uses, and `addAll` overwrites. So when both legs failed, the
+        // root key named only the chat-groups one.
+        //
+        // `DataExportService` builds ONE warning per section from that root
+        // key, so the losing code produced no bundle-level warning. (It was not
+        // erased from the bundle: the conversations code also lands per
+        // conversation, which is what the BUT-1838 branch above exists to do.)
+        // `??=` alone would only have swapped which of the two goes unwarned.
+        //
+        // Both legs fail here: the conversation row carries the marker the
+        // repository sets when a messages read fails, and `failChatGroups`
+        // throws from the fake's `exportChatGroups`, which is the real input to
+        // the production catch.
+        const userId = 'user-uid';
+        final manager = SocialExportManager(
+          dataExportRepository: _FakeDataExportRepository(
+            failChatGroups: true,
+            conversations: [
+              {
+                'id': 'unreadable',
+                'data': {'title': 'Tråd som inte gick att läsa'},
+                'messages': const <Map<String, dynamic>>[],
+                'error_code': 'conversation-messages-read-failed',
+              },
+            ],
+          ),
+        );
+
+        final result = await manager.exportMessages(userId);
+
+        expect(
+          result['chat_groups_error_code'],
+          'chat-groups-export-failed',
+          reason:
+              'the chat-groups failure must survive under its own key however '
+              'the generic one is resolved — this is the half `??=` alone '
+              'would still have lost',
+        );
+        expect(
+          result['error_code'],
+          'conversation-messages-read-failed',
+          reason:
+              'an unreadable conversation is the louder claim and keeps the '
+              'section-root key, which is the only one DataExportService '
+              'turns into a warning',
+        );
+        // The successful half of the merge still lands: lifting the code out
+        // must not drop the payload beside it.
+        expect(result['chat_groups'], isEmpty);
+        expect(result.containsKey('chat_groups'), isTrue);
       },
     );
 
