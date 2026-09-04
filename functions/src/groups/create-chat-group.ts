@@ -27,7 +27,7 @@ import {
   assertAccountMatured,
   assertAgeCompliant,
 } from "../shared/caller-eligibility";
-import { checkRateLimit } from "../middleware/rate_limiter";
+import { enforceRateLimit } from "../middleware/rate_limiter";
 import { isValidDocId } from "../shared/valid-doc-id";
 import {
   findInadmissibleMembers,
@@ -93,10 +93,15 @@ export const createChatGroup = onCall<CreateChatGroupRequest>(
     assertAgeCompliant(request.auth);
     await assertAccountMatured(db, request.auth);
 
-    const limit = await checkRateLimit(callerUid, "createChatGroup");
-    if (!limit.allowed) {
-      throw new HttpsError("resource-exhausted", limit.reason ?? "Slow down.");
-    }
+    // `enforceRateLimit`, NOT `withRateLimit`: the latter also spends the
+    // GLOBAL LLM budget (`checkGlobalLimit`), so an exhausted AI quota would
+    // start refusing group-chat operations that cost no model spend. Same
+    // reasoning as `verify-signup-age.ts` and `set-profile-searchability.ts`,
+    // and recorded in ADR-0013. It carries `retryAfterSeconds` in `details`,
+    // which the hand-rolled throw here dropped — leaving the client to fall
+    // back to 60 seconds when the real wait was until the daily cap reset
+    // (BUT-1862).
+    await enforceRateLimit(callerUid, "createChatGroup");
 
     return createChatGroupWithDeps(db, callerUid, name, memberIds);
   },

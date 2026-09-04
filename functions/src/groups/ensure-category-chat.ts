@@ -47,7 +47,7 @@ import {
   assertAccountMatured,
   assertAgeCompliant,
 } from "../shared/caller-eligibility";
-import { checkRateLimit } from "../middleware/rate_limiter";
+import { enforceRateLimit } from "../middleware/rate_limiter";
 import { isValidDocId } from "../shared/valid-doc-id";
 import {
   findInadmissibleMembers,
@@ -167,10 +167,15 @@ export const ensureCategoryChat = onCall<EnsureCategoryChatRequest>(
 
     // Caller-keyed for the same reason, plus a practical one: an owner-keyed
     // bucket lets one member exhaust the budget for everybody in the group.
-    const limit = await checkRateLimit(callerUid, "ensureCategoryChat");
-    if (!limit.allowed) {
-      throw new HttpsError("resource-exhausted", limit.reason ?? "Slow down.");
-    }
+    // `enforceRateLimit`, NOT `withRateLimit`: the latter also spends the
+    // GLOBAL LLM budget (`checkGlobalLimit`), so an exhausted AI quota would
+    // start refusing group-chat operations that cost no model spend. Same
+    // reasoning as `verify-signup-age.ts` and `set-profile-searchability.ts`,
+    // and recorded in ADR-0013. It carries `retryAfterSeconds` in `details`,
+    // which the hand-rolled throw here dropped — leaving the client to fall
+    // back to 60 seconds when the real wait was until the daily cap reset
+    // (BUT-1862).
+    await enforceRateLimit(callerUid, "ensureCategoryChat");
 
     return ensureCategoryChatWithDeps(db, callerUid, ownerId, categoryId);
   },

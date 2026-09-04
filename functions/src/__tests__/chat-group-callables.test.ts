@@ -1220,7 +1220,7 @@ const cases: UnitCase[] = [
 ];
 
 // BUT-1851 gap: every case above drives a `…WithDeps` core, which sits BELOW
-// the `checkRateLimit` call in its onCall wrapper. Nothing therefore reads the
+// the rate-limit call in its onCall wrapper. Nothing therefore reads the
 // operation key the wrapper passes, and `getRateLimitConfig` falls back to
 // `RATE_LIMIT_CONFIGS.default` for an unknown one — so renaming the key on
 // either side alone leaves every bucket-value pin in
@@ -1243,11 +1243,11 @@ cases.push({
     const files = fs
       .readdirSync(GROUPS_DIR)
       .filter((f) => f.endsWith(".ts"))
-      .filter((f) => sourceWithoutComments(f).includes("checkRateLimit("));
+      .filter((f) => /(?:check|enforce)RateLimit\(/.test(sourceWithoutComments(f)));
     assertEqual(
       files.includes("create-chat-group.ts"),
       true,
-      "create-chat-group.ts calls checkRateLimit",
+      "create-chat-group.ts rate-limits its callable",
     );
 
     const found: Record<string, string> = {};
@@ -1255,7 +1255,11 @@ cases.push({
       const src = sourceWithoutComments(file);
       const keys = [
         ...src.matchAll(
-          /checkRateLimit\(\s*[^,()]+,\s*"([A-Za-z][A-Za-z0-9]*)"\s*,?\s*\)/g,
+          // BUT-1862 moved these call sites from the bare `checkRateLimit` +
+          // hand-rolled throw to `enforceRateLimit`, which carries
+          // `retryAfterSeconds`. Both spellings are matched so the wiring
+          // stays pinned across that move.
+          /(?:check|enforce)RateLimit\(\s*[^,()]+,\s*"([A-Za-z][A-Za-z0-9]*)"\s*,?\s*\)/g,
         ),
       ].map((m) => m[1]);
       // Without this the loop below is vacuous for any call site the regex

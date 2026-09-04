@@ -31,6 +31,7 @@ import * as admin from "firebase-admin";
 import {
   __setFirestoreForTest,
   checkRateLimit,
+  enforceRateLimit,
   evaluateDailyCap,
   RATE_LIMIT_CONFIGS,
   RateLimitConfig,
@@ -377,6 +378,76 @@ const cases: UnitCase[] = [
       );
     },
   },
+
+  // ---- BUT-1862: the payload the four groups/ callables now carry ----
+  {
+    name: "enforceRateLimit: a denial carries retryAfterSeconds in details and writes the violation row",
+    fn: async () => {
+      // The assertion BUT-1862 exists for. The four groups/ callables used to
+      // hand-roll a TWO-argument HttpsError, so `details` was absent and
+      // `ChatGroupErrorMapper` fell back to a flat 60 seconds. Widening the
+      // wiring test's regex to accept either spelling keeps the operation KEY
+      // pinned across the move but makes the two forms interchangeable to it —
+      // measured: reverting a call site to the bare form left that suite fully
+      // green. Nothing else pins the payload, so this does.
+      const fake = fakeRateLimitDb({
+        tokens: 0,
+        lastRefill: admin.firestore.Timestamp.now(),
+        operationType: "createChatGroup",
+        updatedAt: admin.firestore.Timestamp.now(),
+        dayKey: liveTodayKey(),
+        dailyCount: 0,
+      });
+      __setFirestoreForTest(fake.db);
+      try {
+        let caught: unknown;
+        try {
+          await enforceRateLimit("user-denied", "createChatGroup");
+        } catch (e) {
+          caught = e;
+        }
+        const err = caught as
+          | { code?: string; details?: { retryAfterSeconds?: number } }
+          | undefined;
+
+        assertEqual(err !== undefined, true, "the denial throws");
+        assertEqual(
+          typeof err?.details?.retryAfterSeconds,
+          "number",
+          "retryAfterSeconds reaches details — a bare two-argument HttpsError " +
+            "leaves this undefined and the client guesses 60 seconds"
+        );
+        assertEqual(
+          (err?.details?.retryAfterSeconds ?? 0) > 0,
+          true,
+          "and it is a real wait, not a zero the client would round away"
+        );
+
+        // The accepted cost, pinned so it cannot disappear silently: moving to
+        // `enforceRateLimit` starts writing a Firestore row on every denial.
+        const rows = fake.added["system_events"] ?? [];
+        assertEqual(rows.length, 1, "exactly one violation row per denial");
+        assertEqual(
+          rows[0].type,
+          "rate_limit_violation",
+          "row carries the type the monitoring reads"
+        );
+        assertEqual(
+          rows[0].operationType,
+          "createChatGroup",
+          "and names the operation that was denied"
+        );
+        assertEqual(
+          rows[0].userIdHash !== "user-denied",
+          true,
+          "the uid is hashed, never raw — this row is monitoring, not an "
+            + "account identifier store"
+        );
+      } finally {
+        __setFirestoreForTest(null);
+      }
+    },
+  },
 ];
 
 /** Same shape as production's utcDayKey (0-based month), for live `new Date()`. */
@@ -389,6 +460,7 @@ interface FakeDbHandle {
   db: admin.firestore.Firestore;
   /** Payloads passed to transaction.set/update, in order. */
   writes: Record<string, unknown>[];
+  added: Record<string, Record<string, unknown>[]>;
   getStored: () => Record<string, unknown> | undefined;
 }
 
@@ -405,10 +477,20 @@ function fakeRateLimitDb(
     ? { ...initial }
     : undefined;
   const writes: Record<string, unknown>[] = [];
+  const added: Record<string, Record<string, unknown>[]> = {};
   const docRef = {}; // identity token; the fake tracks a single doc
   const db = {
-    collection: (_name: string) => ({
+    collection: (name: string) => ({
       doc: (_id: string) => docRef,
+      // BUT-1862: `logRateLimitViolation` goes through this same seam on
+      // purpose (see its own comment), so capturing `add` is what makes the
+      // violation row assertable without an emulator. Without it the row is
+      // written into a TypeError the limiter swallows, and the accepted cost
+      // of moving to `enforceRateLimit` would be pinned nowhere.
+      add: async (data: Record<string, unknown>) => {
+        (added[name] ??= []).push(data);
+        return {} as unknown;
+      },
     }),
     runTransaction: async <T>(fn: (tx: unknown) => Promise<T>): Promise<T> => {
       const tx = {
@@ -428,7 +510,7 @@ function fakeRateLimitDb(
       return fn(tx);
     },
   } as unknown as admin.firestore.Firestore;
-  return { db, writes, getStored: () => stored };
+  return { db, writes, added, getStored: () => stored };
 }
 
 runTests("BUT-1477: per-user daily caps", cases);

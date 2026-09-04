@@ -61,6 +61,31 @@ write per *denied* request. Taken deliberately as a monitoring gain.
 
 **Owed test:** that "a user must always be able to leave a group" survives the change.
 
+### Superseded 2026-09-04 — three counts in §1 went stale when it shipped
+
+Recorded rather than struck, because a decision record is superseded and dated, never
+edited in place.
+
+- **"the three callables" and "these three operations begin writing an audit row"** — it is
+  **four**. `ensure-category-chat.ts` carries the byte-identical defect and was missed by
+  both the ticket and the plan. It is the worst case of the four: it is one of only two
+  buckets in `groups/` that declares a `dailyLimit` (50), so the gap between the client's
+  60-second fallback and the real wait is widest exactly there, and its errors reach the same
+  `ChatGroupErrorMapper` through `social_group_detail_viewmodel.dart`. Found by the
+  `cloud-functions-specialist` gate, which stopped at the plan threshold rather than editing.
+- **"exactly two inline comments"** — six files carry the convention now, because the four
+  fixed call sites each gained one citing the original two.
+- **A correction to §1's own framing:** the "real wait was until the daily cap reset"
+  reasoning holds only for `createChatGroup` and `ensureCategoryChat`.
+  `addChatGroupMembers` and `removeChatGroupMember` declare no `dailyLimit`, so their
+  reachable wait is the minute bucket's. The comments in those two files say so.
+- **What the fix was NOT pinned by:** widening the wiring test's regex to
+  `(?:check|enforce)RateLimit\(` keeps the operation KEY pinned across the move, but makes
+  the two spellings interchangeable to that suite — measured by reverting a call site to the
+  bare form and watching it stay green. The payload is pinned instead by a dedicated case in
+  `rate-limiter-daily-cap.test.ts`, mutation-probed by deleting `details` from
+  `enforceRateLimit`.
+
 ## 2. The GDPR export fix would have moved the hole, not closed it
 
 **The defect is real.** In `social_export_manager.dart`, a per-conversation read failure

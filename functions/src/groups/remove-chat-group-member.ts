@@ -27,7 +27,7 @@ import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { logger } from "firebase-functions/logger";
 import * as admin from "firebase-admin";
 import { Collections } from "../shared/collections";
-import { checkRateLimit } from "../middleware/rate_limiter";
+import { enforceRateLimit } from "../middleware/rate_limiter";
 import { isValidDocId } from "../shared/valid-doc-id";
 import { tryClearRoster } from "../messaging/enforce-group-minor-membership";
 import { stageMemberRemoval } from "./chat-group-writes";
@@ -133,13 +133,16 @@ export const removeChatGroupMember = onCall<RemoveChatGroupMemberRequest>(
     // No age or maturity gate here, deliberately, and unlike the create and add
     // callables: those grant access, this one withdraws it. A user whose token
     // has gone stale must always be able to leave a group.
-    const limit = await checkRateLimit(
-      request.auth.uid,
-      "removeChatGroupMember",
-    );
-    if (!limit.allowed) {
-      throw new HttpsError("resource-exhausted", limit.reason ?? "Slow down.");
-    }
+    // `enforceRateLimit`, NOT `withRateLimit`: the latter also spends the
+    // GLOBAL LLM budget (`checkGlobalLimit`), so an exhausted AI quota would
+    // start refusing group-chat operations that cost no model spend. Same
+    // reasoning as `verify-signup-age.ts` and `set-profile-searchability.ts`,
+    // and recorded in ADR-0013. It carries `retryAfterSeconds` in `details`,
+    // which the hand-rolled throw here dropped, leaving the client to guess
+    // (BUT-1862). This bucket declares no `dailyLimit`, so the wait it now
+    // reports is the minute bucket's own — the daily-cap gap the ticket is
+    // named for is `createChatGroup` and `ensureCategoryChat`.
+    await enforceRateLimit(request.auth.uid, "removeChatGroupMember");
 
     return removeChatGroupMemberWithDeps(
       db,

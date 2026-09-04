@@ -43,9 +43,8 @@ without approval (mismatch = silent client-side "not found").
   QUEUE TIME charged against `isCascadeEventExpired` (from `event.time`) — a
   queued-only delivery is abandoned without failing and writes NO marker,
   invisible to `STALE_TAG_MARKERS`, `getDeletedIngredientStats` and
-  `_needsRetagging`. Raise `maxInstances` (override + `ALLOWED_OVERRIDES`),
-  never `concurrency`. Notification fan-out is IN-PROCESS — a cap never splits a
-  batch.
+  `_needsRetagging`. Raise `maxInstances`, never `concurrency`. Notification
+  fan-out is IN-PROCESS — a cap never splits a batch.
 - **`onUserDeleted` is the ONLY gcfv1 export** (own `.region().runWith()`,
   unreachable by `setGlobalOptions`) — exclude it from "every function" claims.
 - **Prove endpoint config, never reason about it:** `npm run
@@ -57,8 +56,7 @@ without approval (mismatch = silent client-side "not found").
   pins, and make a by-NAME pin fail rather than skip on a missing export.
 - **Some gen2 exports pin their OWN region** (`moderateUpload`,
   `syncConversationLastMessage`, `purgeExpiredAuditLogs`, `migrations/`), so
-  never say a global option "reaches every export", and never write an endpoint
-  TALLY — no test guards one; DERIVE it or strike the numeral.
+  never say a global option "reaches every export", and never TALLY endpoints.
 
 ## Firebase Functions v2 — what to use
 
@@ -128,23 +126,19 @@ Triggers retry on uncaught exception; handlers must be idempotent:
 ## Test commands (from `functions/`)
 
 - `npm run build` — must pass before any commit. `npm test` =
-  `run-all-tests.js`: auto-discovers every `test:*` script. **A new
-  `__tests__/*.test.ts` is invisible until its `test:*` script exists**;
-  `check-test-registration.js` proves it, per FILE (tests added to an existing
-  suite need none). A `test:*` naming an UNTRACKED file reddens the CI unit
-  lane, so file + package.json line stage in ONE commit.
+  `run-all-tests.js`, auto-discovering every `test:*` script. **A new
+  `__tests__/*.test.ts` is invisible until its `test:*` script exists**
+  (`check-test-registration.js` proves it per FILE; tests added to an existing
+  suite need none), and a `test:*` naming an UNTRACKED file reddens the CI unit
+  lane — so file + package.json line stage in ONE commit.
 - `npm run test:rules:all` — a new rules/integration suite is FOUR
   registrations: its own `test:*` script, an append to the `&&` chain in
   `test:rules:all`, BOTH `paths:` blocks in `firestore-rules.yml`, and a UNIQUE
-  **bare-literal** `const PROJECT_ID = "..."`. `rules-coverage-report.js`
-  discovers ids by REGEX (`\bPROJECT_ID\s*=\s*["']`, plus a literal
-  `projectId:`), so a `process.env.PROBE_X ?? "..."` const matches NEITHER and
-  drops the suite from the coverage union — a HARD `exit 1` when that suite is
-  the sole exerciser of a match block ADDED in the same commit (any conditional
-  `allow` must be exercised). Put the probe override at the `projectId:` CALL
-  SITE, never on the const. VERIFY, never infer: run the suite against a live
-  emulator, then `node scripts/rules-coverage-report.js --base HEAD` and read
-  `coverage-summary.json` → `newUntestedBlocks: 0`.
+  **bare-literal** `const PROJECT_ID = "..."` (`rules-coverage-report.js`
+  discovers ids by regex, so an env-defaulted const silently drops the suite from
+  the coverage union — put any probe override at the `projectId:` CALL SITE).
+  Verify with a live emulator + `rules-coverage-report.js --base HEAD` →
+  `newUntestedBlocks: 0`. Details are `firestore-rules-tester`'s; hand rules off.
   `test:rules*`/`test:integration:*` are excluded from the unit lane by prefix.
 - `scripts/run-ci-unit-tests.js` — the real CI gate. Hand-rolled harness,
   no jest — call `runTests` exactly ONCE per file.
@@ -192,12 +186,11 @@ from `(err as {code?}).code`.
   ALLOWED `abc_def_…`, on read and delete. Safe only while uids are
   Firebase-minted (no `_`). Such a limb never reads `resource`, so it also
   allows deleting a document that does not exist.
-- **Rules are not filters** — a client query with NO condition is DENIED
-  wholesale on a member-scoped collection; only the RULES emulator lane
-  proves it, and it KEEPS data across runs, so give an "empty" fixture a uid
-  no other test seeds. The VERB decides which conjuncts run: a merge-`set` on
-  a seeded doc is an UPDATE and a `withSecurityRulesDisabled` seed evaluates
-  none, so a create-only conjunct never justifies an update-path fixture.
+- **Rules are not filters** — an unconditioned client query is DENIED wholesale
+  on a member-scoped collection; only the RULES emulator lane proves it, and it
+  KEEPS data across runs, so give an "empty" fixture a uid no other test seeds.
+  The VERB decides which conjuncts run: a merge-`set` on a seeded doc is an
+  UPDATE, and a `withSecurityRulesDisabled` seed evaluates none.
 - **A fake `commit()` that RE-DERIVES the intended effect instead of
   APPLYING the write payload makes the write vacuous** — dispatch on the
   `FieldValue` transform's `constructor.name`; reject `update()` on a
@@ -217,12 +210,11 @@ from `(err as {code?}).code`.
   the last holder, name what re-creates the id.
 - Cascade purges discover children via `rootRef.listCollections()`, never
   hard-coded names. Steps are BEST-EFFORT — a rethrow re-runs the WHOLE
-  cascade, double-applying non-idempotent ones. Before citing
-  `admin/reset-user-data.ts` as provenance or as a capped sweep's recovery:
-  `subcollections` is a READER'S note, `COLLECTIONS_TO_DELETE` holds TOP-LEVEL
-  names, and a name in BOTH it and `COLLECTIONS_TO_KEEP` makes `main()`
-  `process.exit(1)` before deleting anything (`tag_configs` does). List
-  membership is NECESSARY, not sufficient.
+  cascade, double-applying non-idempotent ones. `admin/reset-user-data.ts` is
+  NOT provenance and NOT a capped sweep's recovery: its `subcollections` is a
+  reader's note, `COLLECTIONS_TO_DELETE` holds TOP-LEVEL names, and a name in
+  both it and `COLLECTIONS_TO_KEEP` `process.exit(1)`s `main()` before any
+  delete (`tag_configs` does).
 - **`batch.update()` on a concurrently-deleted doc fails the WHOLE chunk with
   NOT_FOUND** under `strict:false`; and `commitInChunks` calls `mutate` OUTSIDE
   that try, so a SYNCHRONOUS validation throw from the callback (`undefined` in
@@ -326,23 +318,37 @@ from `(err as {code?}).code`.
   the deleter.
 
 ### Rate limiting & LLM cost gates (middleware/rate_limiter.ts)
-- A two-stage gate's SHARED side effect (global counter) goes LAST, so a denial
-  only wastes the requester's own budget. A retry/fallback path calling an
-  UNWRAPPED core (bypassing `withRateLimit`) skips BOTH per-user and global caps.
-- **Only `enforceRateLimit` writes the `system_events` `rate_limit_violation`
-  row** — bare `checkRateLimit` + a local throw does not, and the `groups/`
-  callables plus `sendNotification` take the bare form, so a chat-group abuse
-  loop leaves no audit trail. A new callable copying its siblings is
-  CONSISTENT, not correct. Abuse/cost gates fail CLOSED on a Firestore error;
-  some notification gates deliberately fail OPEN — don't harmonize.
-  A `…WithDeps` core test sees none of the wrapper's gates, and an unknown
-  operation key falls back to `RATE_LIMIT_CONFIGS.default` in silence — pin the
-  `checkRateLimit(uid, "<key>")` LITERALS by parsing source, not by value.
+- A retry/fallback path calling an UNWRAPPED core skips BOTH per-user and global
+  caps; the shared global counter is spent LAST so a denial wastes only the caller's.
+- **`enforceRateLimit` for NON-LLM callables; `withRateLimit` only for LLM-backed
+  ones** (ADR-0013). The wrapper also spends `system/llmLimits`, so an exhausted
+  AI quota would refuse signup or LEAVING a group chat; it re-orders auth/limit
+  ABOVE the handler's own eligibility gates (validate + `assertAgeCompliant` /
+  `assertAccountMatured` must stay above the limit call); and left beside an
+  inline `checkRateLimit` it burns two tokens per call. `rate_limiter.ts`'s
+  docstring shows the wrapper as THE pattern, so grepping the helper misleads.
+- **Bare `checkRateLimit` + a local throw drops BOTH** the `system_events`
+  `rate_limit_violation` row AND `details.retryAfterSeconds`. `sendNotification`
+  still takes the bare form; every `groups/` callable moved to `enforceRateLimit`
+  (BUT-1862). Copying a sibling is CONSISTENT, not correct. Abuse/cost gates fail
+  CLOSED on a Firestore error; some notification gates deliberately fail OPEN —
+  don't harmonize. A `…WithDeps` core test sees none of the wrapper's gates, and
+  an unknown operation key falls back to `RATE_LIMIT_CONFIGS.default` in silence —
+  pin the `(check|enforce)RateLimit(uid, "<key>")` LITERALS by parsing source,
+  ranging over EVERY callable in the directory, never a hand-named subset.
+- **A source pin matching BOTH spellings cannot detect a revert to the bare
+  form** — it pins the KEY, never `details`. Pin that on the DENIED path: both
+  `enforceRateLimit` and `logRateLimitViolation` read `getFirestore()`, so
+  `__setFirestoreForTest` + a throwing fake reaches the fail-closed branch. The
+  ALLOWED path is unreachable — `getDb()` is a bare `admin.firestore()`.
+- **`retryAfterSeconds` only beats the client's 60s fallback where the config
+  declares `dailyLimit`** — `createChatGroup`/`ensureCategoryChat` (50/day) do;
+  `addChatGroupMembers`/`removeChatGroupMember` do not. Never write daily-cap
+  rationale onto a capless bucket.
 - **`rateLimitWrite(bucket, s)` is INERT unless a client writes
-  `users/{uid}/rate_limits/<bucket>`** — it passes on an absent bucket doc, and
-  the only buckets written are `activity_events`, `comments`, `social_requests`,
-  `messages`, `imports`, `friendSearchMigrated`, so `pings`/`conversations`
-  always pass and the trigger is the sole cap.
+  `users/{uid}/rate_limits/<bucket>`** — the only buckets written are
+  `activity_events`, `comments`, `social_requests`, `messages`, `imports`,
+  `friendSearchMigrated`, so `pings`/`conversations` always pass.
 - `system_events` has no TTL — every enforced callable adds an unbounded
   write-per-denial stream, and `resource-exhausted` is client-RETRYABLE.
 

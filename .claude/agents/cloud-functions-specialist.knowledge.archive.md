@@ -17925,3 +17925,115 @@ standalone `logger` bullet (merged into the logging section), and by sharpening 
 deploy-manifest, concurrency, timeout, reset-user-data, minor-gate, aggregate-index,
 cascade-ordering and enumerating-probe bullets. 27,098 -> 27,099 bytes, measured with
 `wc -c`; still far over the 25,000-char budget.
+
+### 2026-09-04 — BUT-1862 finding 1: rate-limit call sites NOT changed; plan gate blocked, and the brief's scope is short by one [rate-limiting][blocked]
+
+Brief (from ADR-0013 §1): replace the hand-rolled `checkRateLimit(...)` + two-argument
+`throw new HttpsError("resource-exhausted", limit.reason ?? "Slow down.")` in
+`create-chat-group.ts:98`, `add-chat-group-members.ts:81` and
+`remove-chat-group-member.ts:141` with `enforceRateLimit(uid, "<key>")`, so that
+`details.retryAfterSeconds` reaches `ChatGroupErrorMapper` instead of its flat 60-second
+fallback. All four line references verified against the code, as was
+`enforceRateLimit` at `rate_limiter.ts:744`.
+
+**No production file was changed.** The first Edit tripped the workflow-guards PLAN
+THRESHOLD GUARD (sensitive domain, single-file trigger). Its three remedies were all
+unavailable to me: I am a subagent and cannot run ExitPlanMode, no agent message is the
+user's approval, `tasks/todo.md` holds a PARALLEL session's 2026-09-03 sprint plan
+(BUT-1917 / BUT-2003 / BUT-2004) which git-workflow forbids overwriting, and
+`SKIP_PLAN_GUARD=1` is for a mechanical codemod — this is not one, because it adds a
+Firestore write per denied request and changes an error payload the client reads. Stopped
+and reported rather than routing around the gate. `git status functions/` clean.
+
+**The finding worth more than the fix: the brief names three call sites; there are four.**
+`groups/ensure-category-chat.ts:170-173` carries the byte-identical hand-rolled throw, and
+it is not a lesser case:
+- its bucket is one of only two in `groups/` with a `dailyLimit` (50, pinned by
+  `rate-limiter-daily-cap.test.ts`), so the 60-seconds-vs-midnight-UTC gap the ticket
+  exists to close is at its WIDEST exactly there;
+- its errors reach the SAME mapper — `social_group_detail_viewmodel.dart:479` calls it and
+  line 510 maps through `ChatGroupErrorMapper`.
+Shipping the three alone leaves the ticket's own user-visible symptom live on the fourth.
+(`notifications/send-notification.ts:91` is a fifth bare call site, different family and
+different mapper — out of scope, already covered by the standing principle.)
+
+**Consequence for owed-work item 3 that the brief got backwards.** The derived wiring case
+at `chat-group-callables.test.ts:1240-1287` scans `groups/*.ts` for `checkRateLimit(` and
+carries an explicit `files.includes("create-chat-group.ts")` assertion plus
+`found["create-chat-group.ts"] === "createChatGroup"`. Moving the three does NOT let it go
+green pinning nothing — it goes RED on both. It must be repointed to
+`(?:check|enforce)RateLimit\(`, which then also covers the fourth file.
+
+**Swedish strings: nothing changes.** `ChatGroupErrorMapper` maps `resource-exhausted` to
+`AppLocale.current.errorRateLimitExceeded(_retryAfterSeconds(error))`; the server message is
+never shown to the user, only the `details` payload is read. No ARB key, no `gen-l10n` run.
+
+**Test design worked out and handed over unbuilt** (all seams verified by reading):
+`onCall` exports carry `.run()`, and `removeChatGroupMember`'s wrapper reaches the rate
+check with no age/maturity gate and no Firestore touch before it, so the DENIED path is
+testable end-to-end against the real call site via `__setFirestoreForTest`. The ALLOWED path
+is not — `getDb()` is `admin.firestore()` and is not injectable. For "a user must always be
+able to leave a group": with no test Firebase app `checkGlobalLimit()` fail-closes to
+`false`, which is a free "AI budget exhausted" fixture — under it `withRateLimit` throws and
+`enforceRateLimit` must resolve. That pair discriminates the two helpers; pair it with the
+source-derived pin above, because the behavioural half cannot see the call site.
+
+No ACCEPTED_DEVIATIONS entry governs this change (grepped for rate-limit/`llmLimits`/
+`resource-exhausted`); the two hits are about `rateLimitWrite` buckets, unrelated.
+
+Knowledge file: the `withRateLimit`-vs-`enforceRateLimit` convention and the two things the
+bare form drops were folded IN PLACE into the rate-limiting section, replacing the older
+audit-row-only bullet. 27,099 -> 27,734 bytes after a trim pass, measured with `wc -c`; the file remains far
+over the 25,000-char budget and I did not retire a load-bearing principle to pay for it.
+
+### 2026-09-04 — BUT-1862 finding 1: four `groups/` call sites move to `enforceRateLimit` [rate-limiting]
+
+Reviewed the staged diff moving `create-chat-group.ts`, `add-chat-group-members.ts`,
+`remove-chat-group-member.ts` and `ensure-category-chat.ts` off the bare
+`checkRateLimit(...)` + two-argument `HttpsError` throw onto `await enforceRateLimit(uid,
+"<key>")`. Verified independently, not taken from the report:
+
+- Ordering preserved. `create-chat-group.ts` validates name/members, then
+  `assertAgeCompliant` + `await assertAccountMatured`, THEN the limit call (line 104).
+  `ensure-category-chat.ts` the same (gates 165-166, limit 178). `add-chat-group-members.ts`
+  validates then gates (76-77) then limits (87).
+- Asymmetry preserved. `remove-chat-group-member.ts` still carries no age/maturity gate and
+  its "a user whose token has gone stale must always be able to leave" comment survives
+  intact above the new call (133-135).
+- No double-spend: `grep -rn "checkRateLimit\|enforceRateLimit\|withRateLimit" src/groups/`
+  returns exactly one import + one call per file, twelve lines total.
+- `HttpsError` still used in all four (validation, no-oracle and gate throws).
+- `npm run build` clean; `test:chat-group-callables` 33/33; `test:rate-limiter-daily-cap`
+  17/17. All re-run here.
+
+**MEASURED — the wiring pin cannot detect a revert of this ticket.** The test's filter and
+key regex were widened to `(?:check|enforce)RateLimit\(`, which is right for keeping the KEY
+pinned across the move but makes the two spellings interchangeable to the suite. Mutation
+probe: reverted `remove-chat-group-member.ts` to `const limit = await checkRateLimit(...)` +
+the local two-argument throw, plus the import, and ran the suite — **33/33 passed with the
+mutant live**. File restored from a backup taken immediately before the mutation and
+`git hash-object` confirmed identical before/after; `git status` still `M ` (staged only).
+So nothing in the repo reddens if BUT-1862 is undone. The user's own probe (renaming
+`ensureCategoryChat`'s key to `ensureCategoryChatTypo`) is a genuine and new result — the
+fourth file was previously uncovered — but it pins the KEY, not the `details` payload, which
+is the thing this ticket changed.
+
+**MEASURED — the comment's daily-cap clause is false in two of the four files.** Every one of
+the four carries the identical block ending "...leaving the client to fall back to 60 seconds
+when the real wait was until the daily cap reset (BUT-1862)". `RATE_LIMIT_CONFIGS` declares
+`dailyLimit: 50` on `createChatGroup` and `ensureCategoryChat` only;
+`addChatGroupMembers` and `removeChatGroupMember` (both maxTokens 20 / refillRate 10) declare
+none, so `evaluateDailyCap` can never deny them. Their only reachable `retryAfterMs` values
+are 60000 (minute bucket: tokensRequired 1, so intervalsNeeded is always 1) and 30000 (the
+fail-closed catch). On those two files the payload therefore differs from
+`ChatGroupErrorMapper._retryAfterSeconds`'s 60 fallback in exactly one case, the fail-closed
+30s — which is worth having, but is not what the sentence claims.
+
+Also noted, not blocking: ADR-0013 says "the three callables" and "these three operations
+begin writing an audit row" (§1, lines 28/58) and "That line is drawn in exactly two inline
+comments" (line 51). All three counts were true when written on 2026-09-03 and are false as
+of this diff — four callables, six files carrying the comment. Per the decision-record
+exception these are superseded with a dated entry, never struck.
+
+Verdict: pass, with a recommendation to land the denied-path `retryAfterSeconds` test in the
+same commit, since the change is otherwise unpinned by measurement above.
