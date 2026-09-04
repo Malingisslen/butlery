@@ -54,4 +54,26 @@ class ArchiveSelectionManager extends ChangeNotifier {
       notifyListeners();
     }
   }
+
+  bool _isDisposed = false;
+
+  bool get isDisposed => _isDisposed;
+
+  /// BUT-1641. `ArchiveImportOperationsManager` calls its `onSuccess` callback
+  /// — which `ArchiveImportViewModel` binds to `clearSelection()` — BEFORE its
+  /// own guarded `notifyListeners()`, so a guard on the notification cannot see
+  /// this hop. A user who leaves the screen mid-import lands here on a disposed
+  /// receiver, and the assert inside `notifyListeners` is live in debug and
+  /// test builds.
+  @override
+  void notifyListeners() {
+    if (_isDisposed) return;
+    super.notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _isDisposed = true;
+    super.dispose();
+  }
 }

@@ -397,8 +397,14 @@ void main() {
 
       separateManager.dispose();
 
-      // After disposal, operations should throw an error
-      expect(() => separateManager.setMenu({}), throwsFlutterError);
+      // BUT-1641 CHANGED THIS. It used to assert `throwsFlutterError` — the
+      // crash from ChangeNotifier's own assert — which pinned the defect as
+      // though it were the contract. A post-dispose setter now notifies nobody
+      // and does not throw (the field itself is still assigned): the caller
+      // reaching here is the owning ViewModel's async continuation finishing
+      // after the screen closed, and crashing the app is the wrong answer.
+      expect(() => separateManager.setMenu({}), returnsNormally);
+      expect(separateManager.isStreamDisposed, isTrue);
     });
   });
 
@@ -521,5 +527,42 @@ void main() {
       );
       expect(shared.statusIcon, equals('person'));
     });
+  });
+
+  // BUT-1641: the guard, and the reason it is a no-op rather than a throw.
+  //
+  // The reaching path is the owning ViewModel's own public async method: it
+  // resumes after an `await` and calls a setter here without re-checking its
+  // own disposed flag. `ChangeNotifier.notifyListeners` asserts against a
+  // disposed receiver, and that assert is LIVE in debug and test builds, so
+  // before this guard the symptom was a developer-visible crash on any screen
+  // left mid-operation. BUT-1628 guarded the parents and judged the leaves
+  // covered; that was measured false on 2026-09-04.
+  //
+  // A local instance, deliberately: the shared fixture is disposed again in
+  // tearDown, and ChangeNotifier refuses a second dispose.
+  group('MenuStateManager - disposal guard (BUT-1641)', () {
+    test(
+      'a setter arriving after dispose notifies nobody and does not throw',
+      () {
+        final subject = MenuStateManager();
+        var notifications = 0;
+        subject.addListener(() => notifications++);
+
+        subject.setError('varm');
+        expect(
+          notifications,
+          1,
+          reason: 'positive control: the listener is wired',
+        );
+
+        subject.dispose();
+        expect(subject.isStreamDisposed, isTrue);
+
+        // The late continuation. Without the guard this throws a FlutterError
+        // from the assert inside notifyListeners.
+        expect(() => subject.setError('sent'), returnsNormally);
+      },
+    );
   });
 }

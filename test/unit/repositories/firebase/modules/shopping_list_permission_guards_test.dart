@@ -208,5 +208,75 @@ void main() {
       );
       expect(auditRows, isEmpty);
     });
+
+    // ---- BUT-1807 measurement, 2026-09-04 ----
+    //
+    // The ticket asked whether `viewedBase` needs hardening. The answer turned
+    // out to be that the path it protects may be unreachable, so this pins the
+    // measurement rather than a fix.
+    //
+    // `canManageShoppingList` (shopping_permission_module.dart) grants a
+    // NON-OWNER holding `SharedListPermission.admin` the right to manage
+    // members on a collaborative list, and `updateMemberPermission` is gated on
+    // exactly that. But the repository chain — updateMemberPermission →
+    // updateSharedListMembership → updateCollaborativeListMembership →
+    // updateCollaborativeList — runs `requireNoPrivilegeEscalation` BEFORE
+    // `restrictAccessControlToDeclaredBase`, and its owner exemption is
+    // `stored.ownerId == uid`. An admin who is not the owner therefore trips
+    // `rewritesMembers` and is refused.
+    //
+    // Two consequences, and this test exists to keep both visible. The first
+    // is a live user-facing defect and is filed as BUT-2013 — a test comment
+    // must not be the only record of unresolved work:
+    //   1. The UI offers member management to a non-owner admin that the
+    //      repository will refuse.
+    //   2. `restrictAccessControlToDeclaredBase` — BUT-1807's whole subject —
+    //      is never reached for that case, so hardening it would be armour on
+    //      a path nobody walks.
+    //
+    // This test asserts the CURRENT behaviour. If it ever goes red because an
+    // admin exemption was added, that is the fix landing, and the test should
+    // be rewritten to pin the new rule rather than restored.
+    test(
+      'a non-owner ADMIN changing memberPermissions is refused, the same as an '
+      'edit member — measured for BUT-1807, not a rule anyone chose',
+      () async {
+        const adminId = 'admin_3';
+        final doc = {
+          'name': 'Gemensam lista',
+          'ownerId': ownerId,
+          'ownerDisplayName': 'Ägaren',
+          'items': <dynamic>[],
+          // The caller holds admin, which is what canManageShoppingList reads.
+          'memberPermissions': {
+            ownerId: 'admin',
+            adminId: 'admin',
+            memberId: 'edit',
+          },
+        };
+        final stored = UnifiedShoppingList.fromMap('list_1', doc);
+        // The admin demotes an edit member — exactly what the dialog offers.
+        final proposed = stored.copyWith(
+          memberPermissions: {
+            ...stored.memberPermissions,
+            memberId: SharedListPermission.view,
+          },
+        );
+
+        await expectLater(
+          guards.requireNoPrivilegeEscalation(adminId, proposed, stored),
+          throwsA(isA<PermissionDeniedException>()),
+        );
+        expect(auditRows.single['granted'], isFalse);
+        expect(
+          auditRows.single['details'],
+          contains('memberPermissions'),
+          reason:
+              'the refusal is recorded as a member-permission rewrite, which '
+              'is what makes the admin case indistinguishable from an actual '
+              'escalation attempt in the audit trail',
+        );
+      },
+    );
   });
 }

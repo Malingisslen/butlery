@@ -98,6 +98,18 @@ class MenuStateManager extends ChangeNotifier with StreamManagementMixin {
     }
   }
 
+  // BUT-1641: swallowed, not thrown — the caller reaching here is an async
+  // continuation finishing after the screen closed. Why the parents' own
+  // guards do not cover this is recorded in the ticket.
+  //
+  // Gated on StreamManagementMixin's OWN flag rather than a second one of the
+  // same name.
+  @override
+  void notifyListeners() {
+    if (isStreamDisposed) return;
+    super.notifyListeners();
+  }
+
   @override
   void dispose() {
     disposeStreamResources();

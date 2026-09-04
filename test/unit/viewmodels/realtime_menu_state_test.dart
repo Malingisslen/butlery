@@ -853,4 +853,41 @@ void main() {
       });
     });
   });
+
+  // BUT-1641: the guard, and why it is a no-op rather than a throw.
+  //
+  // The reaching path is the owning ViewModel's own public async method: it
+  // resumes after an `await` and calls a setter here without re-checking its
+  // own disposed flag. `ChangeNotifier.notifyListeners` asserts against a
+  // disposed receiver, and that assert is LIVE in debug and test builds, so
+  // before the guard the symptom was a developer-visible crash on any screen
+  // left mid-operation. BUT-1628 guarded the parents and judged the leaves
+  // covered; that was measured false on 2026-09-04.
+  //
+  // A local instance, deliberately: a shared fixture is disposed again in
+  // tearDown, and ChangeNotifier refuses a second dispose.
+  group('RealtimeMenuState - disposal guard (BUT-1641)', () {
+    test(
+      'a setter arriving after dispose notifies nobody and does not throw',
+      () {
+        final subject = RealtimeMenuState();
+        var notifications = 0;
+        subject.addListener(() => notifications++);
+
+        subject.setError('varm');
+        expect(
+          notifications,
+          1,
+          reason: 'positive control: the listener is wired',
+        );
+
+        subject.dispose();
+        expect(subject.isStreamDisposed, isTrue);
+
+        // The late continuation. Without the guard this throws a FlutterError
+        // from the assert inside notifyListeners.
+        expect(() => subject.setError('sent'), returnsNormally);
+      },
+    );
+  });
 }

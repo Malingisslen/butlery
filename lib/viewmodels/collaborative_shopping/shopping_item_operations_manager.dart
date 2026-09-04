@@ -293,4 +293,26 @@ class ShoppingItemOperationsManager extends ChangeNotifier {
       return const ClaimResult(ClaimOutcome.error);
     }
   }
+
+  bool _isDisposed = false;
+
+  bool get isDisposed => _isDisposed;
+
+  // BUT-1641: swallowed, not thrown — the caller reaching here is an async
+  // continuation finishing after the screen closed. Why the parents' own
+  // guards do not cover this is recorded in the ticket.
+  @override
+  void notifyListeners() {
+    if (_isDisposed) return;
+    super.notifyListeners();
+  }
+
+  /// Exists only to flip the flag above. This class holds no subscriptions and
+  /// no timers, so there is nothing else to cancel — that half of BUT-1628's
+  /// finding still holds.
+  @override
+  void dispose() {
+    _isDisposed = true;
+    super.dispose();
+  }
 }

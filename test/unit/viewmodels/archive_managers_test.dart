@@ -308,6 +308,68 @@ void main() {
       resetMocktailState();
     });
 
+    // BUT-1641: the disposal guard, driven on the path production can actually
+    // reach after dispose. `ArchiveImportViewModel.clearError()` already guards
+    // itself, so a post-dispose `clearError()` would prove the guard exists
+    // without proving it matters; `importSelectedRecipes` is the method whose
+    // continuation genuinely outlives the screen.
+    //
+    // Two hops are covered here, and both are this manager's OWN statements —
+    // the ViewModel awaits and runs nothing after, so a parent guard could
+    // never have caught either. `_setImporting(true)` notifies before the
+    // `try` is entered at all. And `onSuccess()` runs before this manager
+    // notifies, so it reaches `ArchiveSelectionManager` — which is why that
+    // class got the same guard rather than a check at this call site.
+    test(
+      'an import that completes after dispose notifies nobody and does not '
+      'throw, including through onSuccess',
+      () async {
+        when(
+          () => mockPersonalOps.addMultipleUnifiedRecipes(any()),
+        ).thenAnswer((_) async => RecipeOperationResult.success('OK'));
+
+        // A local pair: tearDown disposes the shared `manager`, and
+        // ChangeNotifier refuses a second dispose.
+        final subject = ArchiveImportOperationsManager(mockRecipeService);
+        final selection = ArchiveSelectionManager();
+        // Seeded on purpose: `clearSelection()` only notifies on a NON-EMPTY
+        // set, so an empty one returns before ever reaching the guard this
+        // test claims to exercise.
+        selection.toggleRecipeSelection(recipe1.id);
+        var notifications = 0;
+        subject.addListener(() => notifications++);
+
+        // Positive control: the wiring notifies while alive.
+        subject.clearError();
+        expect(notifications, greaterThan(0));
+
+        subject.dispose();
+        selection.dispose();
+
+        await expectLater(
+          subject.importSelectedRecipes(
+            allRecipes,
+            {recipe1.id},
+            selection.clearSelection,
+          ),
+          completes,
+        );
+        expect(subject.isDisposed, isTrue);
+        // `completes` alone cannot discriminate the onSuccess hop: without the
+        // selection guard the FlutterError is caught by importSelectedRecipes'
+        // own `catch (e)`, and the future still resolves. The error STATE is
+        // what differs.
+        expect(
+          subject.hasError,
+          isFalse,
+          reason:
+              'without the guard on ArchiveSelectionManager, onSuccess throws '
+              'from a disposed notifier and this import records itself as a '
+              'failure despite having succeeded',
+        );
+      },
+    );
+
     test(
       'blocks import when no recipe IDs are selected and sets an error',
       () async {

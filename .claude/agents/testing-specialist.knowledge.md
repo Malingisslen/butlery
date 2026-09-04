@@ -369,6 +369,20 @@ other suites prove:
   Only two stubs with DIFFERENT strings, over the real service, discriminate (BUT-1764/1705).
 
 **Grading a guard, a widening, or a rollback:**
+- **A disposal guard's RATIONALE COMMENT names a reaching path, and that is a measured claim about
+  WHOSE continuation resumes — trace it, because one comment text pasted into sibling leaves is
+  right in some and wrong in others.** "The owning ViewModel resumes after an `await` and touches
+  this object" holds where the VM awaits a SERVICE and then touches the leaf; it is FALSE where the
+  VM merely delegates (`return await _manager.foo(...)`, nothing after the await) — there the
+  leaf's OWN async body is what resumes, typically in its `finally`. Same grep settles the method
+  ENUMERATION such a comment carries: a method that reaches no `notifyListeners` on any path cannot
+  reach the guard, so listing it is over-claiming. Strike both, never reword (BUT-1641).
+- **A synchronous post-dispose call is an ADEQUATE pin for `if (_isDisposed) return` and pins
+  nothing about REACHABILITY.** The guard has no await and `dispose()` sets the flag before
+  `super.dispose()`, so no interleaving exists for an async test to expose — settle it
+  analytically, not with a probe. What is still owed is one Completer test per leaf that OWNS the
+  await, driving the real async method disposed mid-flight: it is the only thing that pins which
+  method actually reaches the guard, and it is what catches an over-enumerated comment (BUT-1641).
 - **A guard added to close a review finding gets its EXISTENCE pinned and its CONDITIONS not** —
   deleting the block reddens, stripping every conjunct but the one the finding named stays green.
   Grade each conjunct for HARM before filing: some are analytically inert, some degrade to a

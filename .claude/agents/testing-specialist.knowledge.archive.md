@@ -34409,3 +34409,125 @@ it structural, so the principle was rewritten in place and the old text is retir
 >   idempotent and process-wide, so calling it from several suites is harmless; ordering is the
 >   whole contract, and a `serverTimestamp()` failure inside `batch.set(..., merge: true)` is NEVER
 >   a valid `skip:` (BUT-838, `recipe_sharing_manager_test.dart`).
+
+### 2026-09-04 — BUT-1641 disposal guards + BUT-1807 measurement (review, trigger: staged-diff review)
+
+Reviewed nine files: four leaf managers gaining `bool _isDisposed` + a `notifyListeners()`
+override, their four suites, and one added case in
+`test/unit/repositories/firebase/modules/shopping_list_permission_guards_test.dart`.
+
+Verification run in this review: `flutter test` over the five suites — 92 green.
+`flutter analyze --fatal-infos` over all nine — "No issues found" (138.5s).
+`lib/viewmodels/archive/archive_import_operations_manager.dart` showed `MM` in `git status`;
+`git ls-files -s` and `git hash-object` both returned `de951c66f4e6a250644334fc044e2ecb88c6a63a`,
+so index == worktree and the `MM` was the documented stale-stat-cache/CRLF artefact. The bytes
+read are the bytes that ship.
+
+**The repin (menu_state_manager_test.dart, `should handle disposal correctly`).** Graded
+LEGITIMATE, not a weakening. The old `expect(..., throwsFlutterError)` pinned
+`ChangeNotifier`'s own `_debugAssertNotDisposed`, a FRAMEWORK invariant, and reaching it was
+the defect BUT-1641 exists to remove — a test asserting the crash a ticket is chartered to
+delete must change. The replacement is strictly stronger about this class (`returnsNormally`
++ `isDisposed`), and both halves have a kill set. It is now a strict-subset duplicate of the
+new BUT-1641 group's test through the same seam (the new one adds the positive control and
+the count), which is churn, not a defect.
+
+**Non-vacuity of the four new tests, graded analytically.** Pre-dispose `expect(notifications,
+1)` is a genuine control: a listener that never attached reads 0 and reddens there. The
+post-dispose `returnsNormally` is the discriminator, and the author's own probe (guard removed
+from all four at once) turned all five RED, which per the green/red asymmetry rule is a
+trustworthy measurement. Noted but not filed: the post-dispose *count* assertion is nearly
+deletable-green on its own, because `ChangeNotifier.dispose()` nulls `_listeners`, so no
+plausible mutant fires a listener after dispose — it is the `returnsNormally` doing the work.
+
+**The two mocks are inert, confirmed by reading the seam.** `ShoppingItemOperationsManager`
+and `ArchiveImportOperationsManager` constructors only store the service reference, and
+`setError`/`clearError` touch no service, so `MockUnifiedShoppingService` /
+`MockUnifiedRecipeService` are never called and need no stubs. Both carry concrete `@override`
+bodies (`stateStream`), the DO-NOT-WRITE shape, but they are pre-existing shared fixtures, not
+authored here. Two useful facts for the owed follow-up: `MockUnifiedRecipeService.personal`
+THROWS with a helpful message unless `setRecipeState(personalOperations:)` is passed (so a
+future extension of the archive suite fails loudly rather than silently), and
+`addItemToActiveList` has NO concrete override in `production_mocks.dart`, so `when(() =>
+mock.addItemToActiveList(...))` works and the Completer test below is buildable.
+
+**BLOCKING #1 — the reaching-path sentence is FALSE in two of the four files it was pasted
+into.** The identical production comment says "The owning ViewModel's own public async methods
+resume after an `await` and touch this object without re-checking their own disposed flag."
+Measured:
+- `menu_state_manager.dart` — TRUE. `MenuViewModel.generateMenu` awaits
+  `_generator.generateMenuFromPrompt` (menu_viewmodel.dart:177) then calls
+  `_stateManager.setMenu` (:180), unguarded. Same shape in `regenerateSection`, `saveMenu`,
+  `loadSavedMenu`.
+- `realtime_menu_state.dart` — TRUE. `RealtimeMenuViewModel` awaits
+  `_streamManager.startWatching` (:126) then `_state.transitionToError` (:128); also await
+  at :249 then `_state.status` / `transitionToWatching()` at :256-257.
+- `shopping_item_operations_manager.dart` — FALSE. `CollaborativeShoppingViewModel.addItem` is
+  `return await _itemOperationsManager.addItem(...)` with NOTHING after the await; same for
+  `toggleItemCompletion`, `claimItem`, `unclaimItem`. The continuation that touches the dead
+  object is the MANAGER's own body — `setError` after `await _shoppingService...` and
+  `finally { _setAddingItem(false); }`.
+- `archive_import_operations_manager.dart` — FALSE, identical shape.
+  `ArchiveImportViewModel.importSelectedRecipes` is `await _importManager.importSelectedRecipes(...)`,
+  nothing after; the manager's own `finally { _setImporting(false); }` is the reaching statement.
+
+The same false mechanism is repeated in the two new test-file headers ("call back into this
+manager"). Remedy: STRIKE the mechanism clause in the two leaf files and the two headers; the
+outcome sentence (a post-dispose notify would hit `notifyListeners`' assert) needs no
+mechanism to stand.
+
+**BLOCKING #2 — the shopping test header enumerates four methods, two of which cannot reach
+the guard.** `claimItem` and `unclaimItem` return a `ClaimResult` and call neither `setError`
+nor `_setAddingItem` on any path (their `onListRefresh` / `onActivityUpdate` callbacks belong
+to the VM). Only `addItem` and `toggleItemCompletion` reach `notifyListeners`. Strike the list.
+
+**Verified TRUE and left alone.** "Unlike `RecipeFormState.createRecipe`, which throws because
+building from disposed state would write an empty recipe over the user's stored one" —
+`recipe_form_state.dart:812-829` throws for exactly that reason, in its own words. "This class
+holds no subscriptions and no timers" — both leaf managers carry only the service reference and
+two scalars. The twin `lib/viewmodels/shopping/shopping_item_operations_manager.dart` is NOT a
+`ChangeNotifier` at all, so it owes no guard (checked because of the twin-class lesson).
+
+**BUT-1807 measurement test — every claim in its comment checked and TRUE, and it cannot pass
+for an unrelated reason.** Analytically: `proposed = stored.copyWith(memberPermissions: ...)`,
+so `createdAt` is carried by identity (`rewritesCreatedAt` false) and `ownerId` is unchanged
+(`rewritesOwner` false); `adminId != ownerId` so the `stored.ownerId == uid` early return does
+not fire. The `field` ternary is ordered owner > members > createdAt, so
+`details contains 'memberPermissions'` proves `rewritesMembers` true AND `rewritesOwner` false
+— it does discriminate the two alternatives the brief worried about. The comment's chain claims
+were each verified in source: `canManageShoppingList` returns true for a non-owner holding
+`SharedListPermission.admin` on a collaborative list (`shopping_permission_module.dart:162-169`);
+`updateMemberPermission` gates on `canManageMembers` -> `canManageShoppingList`
+(`list_member_operations.dart:180`, `:264-268`); `updateCollaborativeList` runs
+`requireNoPrivilegeEscalation` BEFORE `restrictAccessControlToDeclaredBase`
+(`shopping_repository_routing_module.dart`, ~:234 vs ~:252); the guard's only early return is
+`stored.ownerId == uid`. The UI half is true too — `shopping_sharing_status_dialog.dart:479-482`
+`_canManageSharing` returns true for a non-owner admin and gates the dialog at :80, so the app
+really does offer a control the repository refuses.
+
+**NON-BLOCKING — one true async test is owed, and the reason is not the one the brief
+assumed.** The guard is `if (_isDisposed) return;` with no await, and `dispose()` sets the flag
+as its FIRST statement before `super.dispose()`, so a continuation can never observe
+`_isDisposed == false` on a disposed notifier. There is no interleaving an async test could
+expose that the synchronous call does not — the sync approximation is an adequate pin FOR THE
+GUARD, settled analytically rather than by probe. What it does not pin is REACHABILITY: that
+the manager's own async body genuinely survives being disposed mid-await. That test is worth
+owing precisely because it would have caught BLOCKING #2. Named class:
+`ShoppingItemOperationsManager` — stub `addItemToActiveList` to a `Completer.future`, call
+`addItem(...)`, `dispose()`, complete the future, `expectLater(future, completes)`; the
+reaching statement is the `finally { _setAddingItem(false); }`.
+`ArchiveImportOperationsManager` is the same shape via `_setImporting(false)` but needs
+`setRecipeState(personalOperations:)` and an `AppLocale` bootstrap. For `MenuStateManager` and
+`RealtimeMenuState` the await lives in the VM, so the equivalent test is a VM-level fixture and
+is NOT owed here.
+
+**NON-BLOCKING — the leaf population is larger than four, measured.** 33 classes under
+`lib/viewmodels/` extend `ChangeNotifier` with no disposed flag of any kind. Narrowed to the
+sibling leaf managers in a same-name subdirectory (the facade shape BUT-1641 addresses), ten
+qualify and eight have ZERO awaits, so they cannot reach the defect. Two can, and are
+unguarded: `lib/viewmodels/social_recipe/social_engagement_manager.dart` (await :26 ->
+`notifyListeners` :38; await :55 -> :66) and
+`lib/viewmodels/recipe_form/recipe_collaborative_manager.dart` (await :119 -> notify :126, and
+six more of the same shape; it also holds stream subscriptions). Nothing in the diff CLAIMS the
+population is closed, so this is scope, not a false sentence — but it is the shape of the next
+ticket.
