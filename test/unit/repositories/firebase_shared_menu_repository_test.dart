@@ -4,15 +4,12 @@
 ///
 /// Tests shared menu operations including create, read, status management (viewed/imported/dismissed),
 /// permission validation, and copy-on-write collaboration support.
-///
-/// NOTE: Tests that exercise FieldValue operations (serverTimestamp, arrayUnion,
-/// increment) are skipped due to known FakeFirebaseFirestore limitation where
-/// MethodChannelFieldValue conflicts with MockFieldValuePlatform.
-/// These operations are covered by integration tests with real Firebase.
 library;
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:clock/clock.dart';
 import 'package:butlery/repositories/firebase/firebase_shared_menu_repository.dart';
 import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -198,10 +195,72 @@ void main() {
               .doc(testFriendId)
               .get();
           expect(memberDoc.exists, isTrue);
+
+          // BUT-1798: `sharedToUserIds` is the SOLE membership field the GDPR
+          // export and the group queries scope on, denormalized here via
+          // arrayUnion. A member row without it is invisible to both.
+          final menuDoc = await fakeFirestore
+              .collection('shared_content')
+              .doc(menuId)
+              .get();
+          expect(
+            menuDoc.data()?['sharedToUserIds'],
+            equals([testUserId, testFriendId]),
+          );
         },
-        skip:
-            'FieldValue.arrayUnion/increment in addMember conflicts with TestServiceLocator platform bindings (MethodChannelFieldValue vs MockFieldValuePlatform)',
       );
+
+      test('re-adding an existing member neither resets addedAt nor '
+          'double-counts their unread badge', () async {
+        // BUT-1152. Arrange - one recipient, added once by createSharedMenu.
+        final sharedMenu = createSharedMenu(sharedByUserId: testUserId);
+        final menuId = await repository.createSharedMenu(
+          sharedMenu,
+          recipientIds: [testFriendId],
+        );
+        final firstAddedAt =
+            (await fakeFirestore
+                    .collection('shared_content')
+                    .doc(menuId)
+                    .collection('members')
+                    .doc(testFriendId)
+                    .get())
+                .data()?['addedAt'];
+
+        // Act - add the same person a second time
+        await repository.addMember(menuId, testFriendId, addedBy: testUserId);
+
+        // Assert - their original join stamp survives...
+        final memberDoc = await fakeFirestore
+            .collection('shared_content')
+            .doc(menuId)
+            .collection('members')
+            .doc(testFriendId)
+            .get();
+        expect(memberDoc.data()?['addedAt'], equals(firstAddedAt));
+
+        // ...and arrayUnion did not seat them twice.
+        final menuDoc = await fakeFirestore
+            .collection('shared_content')
+            .doc(menuId)
+            .get();
+        expect(
+          menuDoc.data()?['sharedToUserIds'],
+          equals([testUserId, testFriendId]),
+        );
+
+        // ...and the recipient's unread badge counted the share ONCE. Read the
+        // counter document directly: getUnreadCountForUser refuses to answer
+        // for anyone but the signed-in user.
+        final counters = await fakeFirestore
+            .collection('users')
+            .doc(testFriendId)
+            .collection('counters')
+            .doc('shared_content')
+            .get();
+        expect(counters.data()?['unreadSharedMenus'], equals(1));
+        expect(counters.data()?['totalSharedContent'], equals(1));
+      });
 
       test(
         'should reject user from creating shared menu as another user',
@@ -293,8 +352,6 @@ void main() {
               .get();
           expect(membersSnapshot.docs.length, 2);
         },
-        skip:
-            'FieldValue.arrayUnion/increment in addMember conflicts with TestServiceLocator platform bindings (MethodChannelFieldValue vs MockFieldValuePlatform)',
       );
 
       test('should get all shared menus for user', () async {
@@ -381,9 +438,15 @@ void main() {
               .get();
           expect(viewDoc.exists, isTrue);
           expect(viewDoc.data()?['userId'], testUserId);
+
+          // The serverTimestamp sentinel resolved rather than dropping the
+          // field, and the row carries its 90-day TTL stamp.
+          expect(viewDoc.data()?['timestamp'], isNotNull);
+          expect(
+            (viewDoc.data()!['expireAt'] as Timestamp).toDate(),
+            isSameTtlAs(const Duration(days: 90)),
+          );
         },
-        skip:
-            'FieldValue.serverTimestamp in addMetadata conflicts with TestServiceLocator platform bindings (MethodChannelFieldValue vs MockFieldValuePlatform)',
       );
 
       test(
@@ -408,9 +471,11 @@ void main() {
               .get();
           expect(engagementDoc.exists, isTrue);
           expect(engagementDoc.data()?['userId'], testUserId);
+
+          // The caller's extra payload rides along with the metadata row.
+          expect(engagementDoc.data()?['action'], 'import');
+          expect(engagementDoc.data()?['timestamp'], isNotNull);
         },
-        skip:
-            'FieldValue.serverTimestamp in addMetadata conflicts with TestServiceLocator platform bindings (MethodChannelFieldValue vs MockFieldValuePlatform)',
       );
 
       test(
@@ -431,9 +496,8 @@ void main() {
               .get();
           expect(dismissalDoc.exists, isTrue);
           expect(dismissalDoc.data()?['userId'], testUserId);
+          expect(dismissalDoc.data()?['timestamp'], isNotNull);
         },
-        skip:
-            'FieldValue.serverTimestamp in addMetadata conflicts with TestServiceLocator platform bindings (MethodChannelFieldValue vs MockFieldValuePlatform)',
       );
 
       test(
@@ -458,8 +522,6 @@ void main() {
               .get();
           expect(dismissalDoc.exists, isFalse);
         },
-        skip:
-            'FieldValue.serverTimestamp in removeMetadata conflicts with TestServiceLocator platform bindings (MethodChannelFieldValue vs MockFieldValuePlatform)',
       );
     });
 
@@ -563,22 +625,40 @@ void main() {
         expect(menus, isEmpty);
       });
 
-      test(
-        'should handle menu with empty snapshot',
-        () async {
-          final sharedMenu = createSharedMenu(
-            menuSnapshot: {},
-            sharedByUserId: testUserId,
-          );
+      test('should handle menu with empty snapshot', () async {
+        final sharedMenu = createSharedMenu(
+          menuSnapshot: {},
+          sharedByUserId: testUserId,
+        );
 
-          await repository.createSharedMenu(
-            sharedMenu,
-            recipientIds: [testFriendId],
-          );
-        },
-        skip:
-            'FieldValue.arrayUnion/increment in addMember conflicts with TestServiceLocator platform bindings (MethodChannelFieldValue vs MockFieldValuePlatform)',
-      );
+        final menuId = await repository.createSharedMenu(
+          sharedMenu,
+          recipientIds: [testFriendId],
+        );
+
+        // An empty week is still a shareable menu: the document and its
+        // recipient both land.
+        final stored = await repository.getSharedMenu(menuId);
+        expect(stored, isNotNull);
+        expect(stored!.menuSnapshot, isEmpty);
+        final memberDoc = await fakeFirestore
+            .collection('shared_content')
+            .doc(menuId)
+            .collection('members')
+            .doc(testFriendId)
+            .get();
+        expect(memberDoc.exists, isTrue);
+      });
     });
   });
+}
+
+/// Matches a TTL stamp sitting [ttl] ahead of now, with a minute of slack for
+/// the gap between the write and the assertion.
+Matcher isSameTtlAs(Duration ttl) {
+  final expected = clock.now().add(ttl);
+  return predicate<DateTime>(
+    (actual) => actual.difference(expected).abs() < const Duration(minutes: 1),
+    'a TTL stamp ~$ttl from now',
+  );
 }

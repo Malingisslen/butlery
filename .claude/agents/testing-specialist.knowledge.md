@@ -97,6 +97,17 @@ compress it.**
   needs the suites found by `grep -rl '<mutated symbol>' test/`, a different set from the files
   you edited. "Raising this constant leaves every suite green" shipped false because the probe
   ran one file (BUT-1971).
+- **Grouping several mutants into ONE run is legitimate and halves the runs, but only where they
+  touch disjoint EXPRESSIONS *and* disjoint ASSERTIONS — otherwise one mutant MASKS another and the
+  missing red reads as "that guard is unpinned".** Measured on BUT-1806: zeroing an increment made
+  an opened `docsCreated == 2` guard unobservable in the same run, so a genuinely-killed mutant
+  reported green. Predict the exact red SET before running and treat any shortfall as an
+  instrument fault first. Two mutants hitting the same test through DIFFERENT assertions are also
+  non-disjoint: `expect` stops at the first failure.
+- **A green probe on a "nothing changes" test is usually GUARD-CHAIN SUBSUMPTION, not a live
+  mutant** — an earlier early-return fires and the guard under test is never reached. The repair is
+  a fixture that falls THROUGH the early return (the PARTIAL state, not the complete one), and it
+  usually pins a real recovery invariant nobody had written down.
 - **When a green result is the claim you want, prefer an ANALYTIC argument to a probe**:
   substitute the mutant value into the fixture's own arithmetic, or read that two expressions
   evaluate to the same fixture literal. Analysis outranks a green probe; a green probe outranks
@@ -220,19 +231,30 @@ compress it.**
   what makes household/presence surfaces reachable from a widget test; note a VM can resolve a
   repository in its CONSTRUCTOR on a path that never calls it, and
   `test_service_locator.dart` may not register one (BUT-1982).
-- **`installFakeFieldValuePlatform()` (`test/test_support/fake_field_value_platform.dart`) must
-  be the FIRST line of `setUp`, ahead of `BaseUnitTest.setupUnit()`. Do not compress this.**
-  `FieldValue.serverTimestamp()` and every other sentinel resolve through
-  `FieldValueFactoryPlatform.instance`, a PROCESS-WIDE SINGLETON that freezes on first use.
-  `setupUnit()` touches cloud_firestore early enough that the real `MethodChannelFieldValueFactory`
-  WINS THE RACE, and a later write through a fake database then throws `type
-  'MethodChannelFieldValue' is not a subtype of type 'MockFieldValuePlatform'` deep inside the
-  fake — where best-effort denormalization code catches broadly, swallows it, and lands ZERO
-  documents. **The suite does not fail; it silently asserts nothing.** That is how a `skip:` once
-  shipped claiming "no unit test in this harness can observe the document". The helper is
-  idempotent and process-wide, so calling it from several suites is harmless; ordering is the
-  whole contract, and a `serverTimestamp()` failure inside `batch.set(..., merge: true)` is NEVER
-  a valid `skip:` (BUT-838, `recipe_sharing_manager_test.dart`).
+- **The FieldValue wall is CLOSED at the bootstrap, and a `skip:` naming it is now always
+  stale. Do not compress this.** `FieldValue.serverTimestamp()` and every other sentinel resolve
+  through `FieldValueFactoryPlatform.instance`, a PROCESS-WIDE SINGLETON that freezes on first
+  use; if the real `MethodChannelFieldValueFactory` wins the race, a write through a fake database
+  throws `MethodChannelFieldValue is not a subtype of MockFieldValuePlatform` deep inside the fake,
+  where best-effort denormalization code catches broadly, swallows it, and lands ZERO documents —
+  **the suite does not fail; it silently asserts nothing.** `BaseTest.setup()` now calls
+  `installFakeFieldValuePlatform()` as its FIRST statement, so every suite reaching it through
+  `setupUnit()`/`setupUnitWithProductionLocator()` wins by construction. A suite standing up
+  cloud_firestore WITHOUT that bootstrap must call the helper itself, first. 26 skips died to
+  this (BUT-1806); BUT-838 was the same wall.
+- **An ordering contract that only a comment enforces WILL be got wrong — move it into the shared
+  bootstrap instead of documenting it harder.** The `setUp`-ordering version of the rule above had
+  two callers repo-wide and 26 tests switched off around it. When a rule reads "call X before Y",
+  ask whether Y can just call X.
+- **Un-skipping reveals a SECOND wall as often as none: an `update()`/`batch.update()` on a
+  document the fixture never seeded.** `[FakeFirestore/not-found]` there is a real FIXTURE gap, not
+  a fake limitation — real Firestore refuses `update` on a missing document too. The missing doc is
+  reliably the DENORMALIZED COUNTER the write increments (`public_profiles.friendsCount`, the parent
+  comment's `replyCount`), which is also the assertion the skip was hiding. Seed it, then assert it.
+- **A test re-enabled from a `skip:` is the likeliest place in the repo to find a body with NO
+  `expect` at all** — the skip string was doing the explaining, so nobody wrote the assertion.
+  Grep every un-skipped body for `expect` before running anything (BUT-1806 found several, one
+  ending literally at `// Assert - FieldValue.increment conflicts...`; the archive lists them).
 - **A widget test driving a real screen can be blocked by an unrelated RENDER assertion in a
   sibling branch of that same screen** — satisfy the tested condition through a branch that does
   not reach it, then FILE the render defect. Weakening a fixture to dodge a crash is legitimate
@@ -299,7 +321,11 @@ gap):**
    lines never execute); mock-level hits do not reach a real-service gate; a callback seam with
    six hits all in the widget's own suite is absent from the app (BUT-1904/1971).
 3. **`grep -rn '\.<method>(' test/` and ask whether ANY hit constructs the REAL service.**
-   N-of-N mock-only IS the finding, and it ranges over every method on the class.
+   N-of-N mock-only IS the finding, and it ranges over every method on the class. **A brief's
+   "no suite covers X" is that same claim and gets that same grep BEFORE any test is written** —
+   the mirror of "resolve a `pinned in <other suite>` pointer with a grep". When the suite DOES
+   exist, the live question is its KILL SET, so probe the existing test instead of writing a
+   duplicate that deletes a strict subset through the same seam (BUT-1980).
 4. **`grep -rn '\.<method>(' lib/` before filing** — a callerless seam owes nothing, and a
    "same-named method on a different class" hit is the usual decoy (BUT-1971).
 

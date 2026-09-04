@@ -14,11 +14,14 @@
 /// A suite in that state does not fail — it silently asserts nothing, which is
 /// how `recipe_sharing_manager_test.dart` ended up carrying a `skip:` whose
 /// stated reason was "no unit test in this harness can observe the document".
-/// One line in `setUp`, before the bootstrap, is the whole fix.
 ///
-/// Call [installFakeFieldValuePlatform] FIRST in `setUp`, ahead of
-/// `BaseUnitTest.setupUnit()`. It is idempotent and process-wide, so calling it
-/// from several suites is harmless.
+/// `BaseTest.setup()` calls [installFakeFieldValuePlatform] as its first
+/// statement, so every suite going through `BaseUnitTest.setupUnit()` or
+/// `setupUnitWithProductionLocator()` already wins the race — the ordering is
+/// structural rather than a convention each `setUp` has to remember. A suite
+/// that stands up cloud_firestore WITHOUT that bootstrap must still call this
+/// itself, first. It is idempotent and process-wide, so calling it from several
+/// suites is harmless.
 library;
 
 // ignore: implementation_imports

@@ -211,30 +211,39 @@ void main() {
         expect(result.likesCount, equals(0));
       });
 
-      test(
-        'should add reply comment successfully',
-        () async {
-          // Arrange
-          const recipeId = 'recipe-1';
-          const parentCommentId = 'parent-1';
-          const userId = 'user-123';
-          const content = 'I agree!';
+      test('should add reply comment successfully', () async {
+        // Arrange - the reply's batch increments the PARENT's replyCount, so
+        // the parent must exist: batch.update fails on a missing document in
+        // the fake and in production alike.
+        const recipeId = 'recipe-1';
+        const parentCommentId = 'parent-1';
+        const userId = 'user-123';
+        const content = 'I agree!';
+        await _seedComment(
+          fakeFirestore,
+          parentCommentId,
+          _createComment(recipeId, 'other-user', id: parentCommentId),
+        );
 
-          // Act
-          final result = await repository.addComment(
-            recipeId: recipeId,
-            userId: userId,
-            content: content,
-            parentCommentId: parentCommentId,
-          );
+        // Act
+        final result = await repository.addComment(
+          recipeId: recipeId,
+          userId: userId,
+          content: content,
+          parentCommentId: parentCommentId,
+        );
 
-          // Assert
-          expect(result.recipeId, equals(recipeId));
-          expect(result.parentCommentId, equals(parentCommentId)); // Reply
-        },
-        skip:
-            'Reply uses FieldValue.increment on parent replyCount in batch, conflicts with TestServiceLocator platform bindings',
-      );
+        // Assert
+        expect(result.recipeId, equals(recipeId));
+        expect(result.parentCommentId, equals(parentCommentId)); // Reply
+
+        // The parent's reply counter moved with the same batch.
+        final parent = await fakeFirestore
+            .collection('recipe_comments')
+            .doc(parentCommentId)
+            .get();
+        expect(parent.data()!['replyCount'], equals(1));
+      });
 
       test('should reject empty comment content', () async {
         // Act & Assert
@@ -661,9 +670,15 @@ void main() {
               .get();
           expect(likeDoc.exists, isTrue);
           expect(likeDoc.data()!['userId'], equals(userId));
+
+          // ...and the denormalized counter on the comment moved with it, in
+          // the same batch.
+          final commentDoc = await fakeFirestore
+              .collection('recipe_comments')
+              .doc(commentId)
+              .get();
+          expect(commentDoc.data()!['likesCount'], equals(1));
         },
-        skip:
-            'FieldValue.increment in batch write conflicts with TestServiceLocator platform bindings (MethodChannelFieldValue vs MockFieldValuePlatform)',
       );
 
       test(
@@ -679,13 +694,17 @@ void main() {
           );
           await _seedComment(fakeFirestore, commentId, comment);
 
-          // Seed existing like
+          // Seed existing like, and the counter that already reflects it
           await fakeFirestore
               .collection('recipe_comments')
               .doc(commentId)
               .collection('likes')
               .doc(userId)
               .set({'userId': userId, 'likedAt': Timestamp.now()});
+          await fakeFirestore
+              .collection('recipe_comments')
+              .doc(commentId)
+              .update({'likesCount': 3});
 
           // Act
           await repository.toggleCommentLike(commentId, userId);
@@ -698,9 +717,14 @@ void main() {
               .doc(userId)
               .get();
           expect(likeDoc.exists, isFalse);
+
+          // ...and the counter came back down by exactly one.
+          final commentDoc = await fakeFirestore
+              .collection('recipe_comments')
+              .doc(commentId)
+              .get();
+          expect(commentDoc.data()!['likesCount'], equals(2));
         },
-        skip:
-            'FieldValue.increment in batch write conflicts with TestServiceLocator platform bindings (MethodChannelFieldValue vs MockFieldValuePlatform)',
       );
 
       test('should reject user from toggling like as another user', () async {

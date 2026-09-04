@@ -199,21 +199,44 @@ void main() {
     // ===== PERMISSION VALIDATION TESTS =====
 
     group('Permission Validation', () {
-      test(
-        'should allow user to create shared shopping list with recipients',
-        () async {
-          final sharedList = createSharedShoppingList(
-            sharedByUserId: testUserId,
-          );
+      test('should allow user to create shared shopping list with '
+          'recipients', () async {
+        final sharedList = createSharedShoppingList(sharedByUserId: testUserId);
 
-          await repository.createSharedShoppingList(
-            sharedList,
-            recipientIds: [testFriendId],
-          );
-        },
-        skip:
-            'addMember uses FieldValue.arrayUnion which conflicts with TestServiceLocator platform bindings',
-      );
+        final listId = await repository.createSharedShoppingList(
+          sharedList,
+          recipientIds: [testFriendId],
+        );
+
+        // The recipient is seated as a member...
+        final memberDoc = await fakeFirestore
+            .collection('shared_content')
+            .doc(listId)
+            .collection('members')
+            .doc(testFriendId)
+            .get();
+        expect(memberDoc.exists, isTrue);
+
+        // ...and BUT-1798's sole membership field names them, which is what
+        // the group queries and the GDPR export both scope on.
+        final listDoc = await fakeFirestore
+            .collection('shared_content')
+            .doc(listId)
+            .get();
+        expect(
+          listDoc.data()?['sharedToUserIds'],
+          equals([testUserId, testFriendId]),
+        );
+
+        // ...and their unread badge counted this share once.
+        final counters = await fakeFirestore
+            .collection('users')
+            .doc(testFriendId)
+            .collection('counters')
+            .doc('shared_content')
+            .get();
+        expect(counters.data()?['unreadSharedShoppingLists'], equals(1));
+      });
 
       test(
         'should reject user from creating shared shopping list as another user',
@@ -310,8 +333,6 @@ void main() {
           expect(doc.data()?['sharedByUserId'], testUserId);
           expect(doc.data()?['listName'], 'My Weekly Shopping');
         },
-        skip:
-            'addMember uses FieldValue.arrayUnion which conflicts with TestServiceLocator platform bindings',
       );
 
       test('should get all shared shopping lists for user', () async {
@@ -411,8 +432,6 @@ void main() {
           expect(viewDoc.exists, isTrue);
           expect(viewDoc.data()?['userId'], testUserId);
         },
-        skip:
-            'BaseMetadataRepository.addMetadata uses FieldValue.serverTimestamp which conflicts with TestServiceLocator platform bindings',
       );
 
       test(
@@ -436,8 +455,6 @@ void main() {
           expect(engagementDoc.data()?['userId'], testUserId);
           expect(engagementDoc.data()?['action'], 'join');
         },
-        skip:
-            'BaseMetadataRepository.addMetadata uses FieldValue.serverTimestamp which conflicts with TestServiceLocator platform bindings',
       );
 
       test(
@@ -460,8 +477,6 @@ void main() {
           expect(dismissalDoc.exists, isTrue);
           expect(dismissalDoc.data()?['userId'], testUserId);
         },
-        skip:
-            'BaseMetadataRepository.addMetadata uses FieldValue.serverTimestamp which conflicts with TestServiceLocator platform bindings',
       );
 
       test('should undismiss shared shopping list', () async {
@@ -580,22 +595,29 @@ void main() {
         expect(lists, isEmpty);
       });
 
-      test(
-        'should handle shopping list with empty items',
-        () async {
-          final sharedList = createSharedShoppingList(
-            items: [],
-            sharedByUserId: testUserId,
-          );
+      test('should handle shopping list with empty items', () async {
+        final sharedList = createSharedShoppingList(
+          items: [],
+          sharedByUserId: testUserId,
+        );
 
-          await repository.createSharedShoppingList(
-            sharedList,
-            recipientIds: [testFriendId],
-          );
-        },
-        skip:
-            'addMember uses FieldValue.arrayUnion which conflicts with TestServiceLocator platform bindings',
-      );
+        final listId = await repository.createSharedShoppingList(
+          sharedList,
+          recipientIds: [testFriendId],
+        );
+
+        // An empty list is still shareable: the document lands with no items
+        // and the recipient is still seated.
+        final items = await repository.getItems(listId);
+        expect(items, isEmpty);
+        final memberDoc = await fakeFirestore
+            .collection('shared_content')
+            .doc(listId)
+            .collection('members')
+            .doc(testFriendId)
+            .get();
+        expect(memberDoc.exists, isTrue);
+      });
     });
 
     // ===== ISSUE #015: ITEMS SUBCOLLECTION CRUD TESTS =====
@@ -634,8 +656,6 @@ void main() {
               .get();
           expect(listDoc.data()?['itemCount'], equals(1));
         },
-        skip:
-            'FieldValue.increment in direct update conflicts with TestServiceLocator platform bindings (MethodChannelFieldValue vs MockFieldValuePlatform)',
       );
 
       test(
@@ -662,8 +682,6 @@ void main() {
               .get();
           expect(listDoc.data()?['itemCount'], equals(3));
         },
-        skip:
-            'FieldValue.increment in batch write conflicts with TestServiceLocator platform bindings (MethodChannelFieldValue vs MockFieldValuePlatform)',
       );
 
       test('getItems should load all items from subcollection', () async {
@@ -735,8 +753,6 @@ void main() {
               .get();
           expect(listDoc.data()?['itemCount'], equals(0));
         },
-        skip:
-            'FieldValue.increment in direct update conflicts with TestServiceLocator platform bindings (MethodChannelFieldValue vs MockFieldValuePlatform)',
       );
 
       test(

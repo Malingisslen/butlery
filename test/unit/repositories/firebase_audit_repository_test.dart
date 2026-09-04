@@ -36,12 +36,9 @@ void main() {
     });
 
     group('logPermissionCheck - Write Operations', () {
-      // NOTE: logPermissionCheck() calls AuditLog.toFirestore() which embeds
-      // FieldValue.serverTimestamp(). The TestServiceLocator registers real
-      // Firebase platform bindings, causing FieldValue operations to throw
-      // 'MethodChannelFieldValue is not a subtype of MockFieldValuePlatform'.
-      // logPermissionCheck catches all errors silently (fire-and-forget).
-      // We test: (1) method completes, (2) model produces correct data shape.
+      // NOTE: logPermissionCheck catches all errors silently
+      // (fire-and-forget), so these assert only that (1) the method completes
+      // and (2) the model produces the right data shape.
 
       test('should complete without throwing for granted check', () async {
         // Act & Assert - fire-and-forget should never throw

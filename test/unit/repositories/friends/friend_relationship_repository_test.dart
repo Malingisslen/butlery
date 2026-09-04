@@ -75,7 +75,11 @@ void main() {
       await seedFriendship(userId2, userId1);
     }
 
-    Future<void> seedUserProfile(String userId, String displayName) async {
+    Future<void> seedUserProfile(
+      String userId,
+      String displayName, {
+      int friendsCount = 0,
+    }) async {
       final profile = UserProfile(
         uid: userId,
         displayName: displayName,
@@ -83,10 +87,28 @@ void main() {
         joinedAt: DateTime(2025, 1, 1),
         lastActiveAt: DateTime(2025, 1, 1),
       );
-      await fakeFirestore
+      await fakeFirestore.collection('public_profiles').doc(userId).set({
+        ...profile.toFirestore(),
+        'friendsCount': friendsCount,
+      });
+    }
+
+    Future<int?> readFriendsCount(String userId) async {
+      final doc = await fakeFirestore
           .collection('public_profiles')
           .doc(userId)
-          .set(profile.toFirestore());
+          .get();
+      return doc.data()?['friendsCount'] as int?;
+    }
+
+    Future<String?> readFriendDocName(String userId, String friendId) async {
+      final doc = await fakeFirestore
+          .collection('users')
+          .doc(userId)
+          .collection('friends')
+          .doc(friendId)
+          .get();
+      return doc.data()?['displayNameLower'] as String?;
     }
 
     // ===== PERMISSION VALIDATION TESTS =====
@@ -184,63 +206,99 @@ void main() {
         expect(areFriends, isFalse);
       });
 
-      test(
-        'should add mutual friends successfully',
-        () async {
-          // Act
-          await repository.addMutualFriends(testUserId, testFriendId);
+      test('should add mutual friends successfully', () async {
+        // Arrange - both sides need a public profile; the count increment is an
+        // update(), which fails on a missing document in the fake and in
+        // production alike.
+        await seedUserProfile(testUserId, 'Test User');
+        await seedUserProfile(testFriendId, 'Friend Name');
 
-          // Assert - Check both directions
-          final areFriends1 = await repository.areFriends(
-            testUserId,
-            testFriendId,
-          );
-          final areFriends2 = await repository.areFriends(
-            testFriendId,
-            testUserId,
-          );
-          expect(areFriends1, isTrue);
-          expect(areFriends2, isTrue);
-        },
-        skip:
-            'FieldValue.increment conflicts with TestServiceLocator platform bindings (MethodChannelFieldValue vs MockFieldValuePlatform)',
-      );
+        // Act
+        await repository.addMutualFriends(testUserId, testFriendId);
 
-      test(
-        'should remove mutual friends successfully',
-        () async {
-          // Arrange
-          await seedMutualFriendship(testUserId, testFriendId);
+        // Assert - Check both directions
+        expect(await repository.areFriends(testUserId, testFriendId), isTrue);
+        expect(await repository.areFriends(testFriendId, testUserId), isTrue);
 
-          // Act
-          await repository.removeMutualFriends(testUserId, testFriendId);
+        // Each friend doc denormalizes the OTHER user's lowercased name.
+        expect(
+          await readFriendDocName(testUserId, testFriendId),
+          'friend name',
+        );
+        expect(await readFriendDocName(testFriendId, testUserId), 'test user');
 
-          // Assert
-          final areFriends = await repository.areFriends(
-            testUserId,
-            testFriendId,
-          );
-          expect(areFriends, isFalse);
-        },
-        skip:
-            'FieldValue.increment conflicts with TestServiceLocator platform bindings (MethodChannelFieldValue vs MockFieldValuePlatform)',
-      );
+        // FieldValue.increment(1) lands on both profiles.
+        expect(await readFriendsCount(testUserId), 1);
+        expect(await readFriendsCount(testFriendId), 1);
+      });
 
-      test(
-        'should remove friend as current user',
-        () async {
-          // Arrange
-          await seedMutualFriendship(testUserId, testFriendId);
+      test('should repair a half-written friendship without counting it '
+          'twice', () async {
+        // Arrange - BUG-011 partial state: only user1 holds the friend doc, so
+        // user1 has already been counted and user2 has not.
+        await seedUserProfile(testUserId, 'Test User', friendsCount: 1);
+        await seedUserProfile(testFriendId, 'Friend Name', friendsCount: 0);
+        await seedFriendship(testUserId, testFriendId);
 
-          // Act
-          final success = await repository.removeFriend(testFriendId);
+        // Act
+        await repository.addMutualFriends(testUserId, testFriendId);
 
-          // Assert
-          expect(success, isTrue);
-        },
-        skip:
-            'FieldValue.increment conflicts with TestServiceLocator platform bindings (MethodChannelFieldValue vs MockFieldValuePlatform)',
-      );
+        // Assert - the missing side is written
+        expect(await repository.areFriends(testFriendId, testUserId), isTrue);
+
+        // ...but neither count moves: only a fresh BOTH-sides write increments,
+        // otherwise repairing the half-written state would double-count user1.
+        expect(await readFriendsCount(testUserId), 1);
+        expect(await readFriendsCount(testFriendId), 0);
+      });
+
+      test('should remove mutual friends successfully', () async {
+        // Arrange
+        await seedUserProfile(testUserId, 'Test User', friendsCount: 3);
+        await seedUserProfile(testFriendId, 'Friend Name', friendsCount: 2);
+        await seedMutualFriendship(testUserId, testFriendId);
+
+        // Act
+        await repository.removeMutualFriends(testUserId, testFriendId);
+
+        // Assert - both friend docs gone
+        expect(await repository.areFriends(testUserId, testFriendId), isFalse);
+        expect(await repository.areFriends(testFriendId, testUserId), isFalse);
+
+        // FieldValue.increment(-1) lands on both profiles.
+        expect(await readFriendsCount(testUserId), 2);
+        expect(await readFriendsCount(testFriendId), 1);
+      });
+
+      test('should decrement only the side that had a friend doc', () async {
+        // Arrange - partial state: only user1 holds the friend doc
+        await seedUserProfile(testUserId, 'Test User', friendsCount: 3);
+        await seedUserProfile(testFriendId, 'Friend Name', friendsCount: 2);
+        await seedFriendship(testUserId, testFriendId);
+
+        // Act
+        await repository.removeMutualFriends(testUserId, testFriendId);
+
+        // Assert - the untouched side keeps its count
+        expect(await readFriendsCount(testUserId), 2);
+        expect(await readFriendsCount(testFriendId), 2);
+      });
+
+      test('should remove friend as current user', () async {
+        // Arrange
+        await seedUserProfile(testUserId, 'Test User', friendsCount: 3);
+        await seedUserProfile(testFriendId, 'Friend Name', friendsCount: 2);
+        await seedMutualFriendship(testUserId, testFriendId);
+
+        // Act - removeFriend derives user1 from the signed-in uid
+        final success = await repository.removeFriend(testFriendId);
+
+        // Assert
+        expect(success, isTrue);
+        expect(await repository.areFriends(testUserId, testFriendId), isFalse);
+        expect(await readFriendsCount(testUserId), 2);
+        expect(await readFriendsCount(testFriendId), 1);
+      });
     });
 
     // ===== FRIEND QUERIES =====

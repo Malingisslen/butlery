@@ -304,10 +304,6 @@ void main() {
     });
 
     group('Track URL Click', () {
-      // NOTE: These tests are skipped due to FakeFirebaseFirestore limitations
-      // with FieldValue.increment() and FieldValue.serverTimestamp().
-      // These operations are tested in integration tests with real Firebase.
-
       test(
         'should increment click count',
         () async {
@@ -331,8 +327,6 @@ void main() {
           final data = doc.data()!;
           expect(data['clickCount'], equals(6));
         },
-        skip:
-            'FieldValue.increment in update conflicts with TestServiceLocator platform bindings (MethodChannelFieldValue vs MockFieldValuePlatform)',
       );
 
       test(
@@ -359,8 +353,6 @@ void main() {
           expect(clicks.docs.length, equals(1));
           expect(clicks.docs.first.data()['userId'], equals('user-123'));
         },
-        skip:
-            'trackUrlClick uses FieldValue.increment which conflicts with TestServiceLocator platform bindings',
       );
     });
 

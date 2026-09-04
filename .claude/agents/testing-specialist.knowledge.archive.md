@@ -34185,3 +34185,227 @@ and may be corrected in place. Clean at HEAD, so it rides into the next ticket's
 someone sweeps `test/` by concept.
 
 **Verdict: pass, 0 blocking.** No test is owed BY this commit.
+
+### 2026-09-03 — BUT-1980: a brief's "nothing covers this" was already covered; one tautology struck; one stale comment corrected
+
+Trigger: task brief with three items — (1) write a signed-out `save` test for
+`FirebaseWeeklyMenuPlanRepository`, stated as "No suite constructs the repository
+unauthenticated"; (2) delete `expect(viewModel.error, isNull)` from
+`onboarding_viewmodel_test.dart`; (3) correct the stale display-name comment in
+`unified_shopping_service_test.dart` (the FINDING 2 filed in the entry above).
+
+**Item 1 — PREMISE REFUTED, no test written.**
+`test/unit/repositories/firebase/firebase_weekly_menu_plan_repository_test.dart` already
+carries `'a save with nobody signed in throws before writing anything'` plus a
+`_signedOutRepo(...)` helper, and the GROUP twin
+(`firebase_group_weekly_menu_plan_repository_test.dart:694`) carries the same pair. Both
+shipped in commit `36a471a7a` (BUT-1981). `git status` clean for both files, so this is HEAD
+behaviour, not a parallel session's uncommitted work.
+
+The brief's real question — "does anything assert the throw happens BEFORE `set()` reaches
+Firestore, not merely that it throws" — is a question about the EXISTING test's kill set, so
+it was answered with a mutation probe rather than a second test.
+
+Mutant (ordering): hoist the write to the first statement of `save`, i.e. insert
+`await collection.doc(plan.id).set(toFirestore(plan));` immediately above
+`final actorId = requireCurrentUserId();` in
+`lib/repositories/firebase/firebase_weekly_menu_plan_repository.dart`. The trailing write is
+left in place, so the mutant is purely "write first, decide later".
+
+| run | result |
+|---|---|
+| baseline (unmutated) | 11/11 green |
+| mutant run A (`rm -rf .dart_tool/flutter_build` first) | **+9 -2 RED** |
+| mutant run B (cache cleared again) | **+9 -2 RED**, identical |
+
+Both reds are `Expected: false / Actual: <true>` on the post-condition
+`expect(saved.exists, isFalse)` — one in the signed-out test, one in the REFUSED-save test.
+So the ordering claim is pinned, in BOTH branches, and a duplicate test would have deleted a
+strict subset of that kill set through the same seam. Restored with `git checkout --`;
+`git diff --numstat` on the file is empty.
+
+Note for the next reader: this is the shape the knowledge file already warns about from the
+other direction ("resolve any 'pinned in <other suite>' pointer with a grep before believing
+it"). The mirror — a brief asserting NO coverage — costs the same one grep and was not being
+run.
+
+**Item 2 — struck, analytically, no probe.**
+`grep -nE "setError|clearError|handleError|executeAsync|executeAsyncVoid|executeWithRetry"
+lib/viewmodels/onboarding_viewmodel.dart` returns ZERO hits (the file's one `execute` string
+is inside a comment describing `generateForWeek`'s own service wrapper). `OnboardingViewModel`
+extends `BaseViewModel` but writes `_error` on no path, so `expect(viewModel.error, isNull)`
+could not fail and no production change to `_seedSampleMenu` or `completeOnboarding` could
+redden it. Per the tautology-family principle a probe is not owed and would only return an
+untrustworthy green.
+
+Deleted the assertion AND the comment above it ("No error surfaced to the user, and onboarding
+still completed"): the comment reads as a description of the line beneath it, so keeping it
+alone would leave a sentence asserting a pin that no longer exists. Its second half is already
+held by the `expect(await viewModel.completeOnboarding(), isTrue)` higher in the same test.
+What survives as the test's guard: `verify(save).called(1)`,
+`verifyNever(generateForWeek)`, `verify(onboarding_menu_seed_failed).called(1)`,
+`verifyNever(onboarding_menu_seeded)`. Suite: 42/42 green after.
+
+**Item 3 — corrected in place + one clause struck.**
+`unified_shopping_service_test.dart` now reads
+"BUT-1697 moved that to `UserService.profileDisplayName`. `currentUserDisplayName` is null
+here." Verified: `unified_shopping_service.dart:314-315` reads
+`ServiceLocator.tryGet<UserService>()?.profileDisplayName`;
+`test_service_locator.dart:337` registers `MockFactory.createUserService()`, which returns
+`production.MockUserService`, which declares no `profileDisplayName` override — so the value is
+null because the registered mocktail `Mock` does not stub it, NOT because nothing is registered.
+The struck clause was "which this suite does not register". The first repair also shipped a weak
+causal ("moved that to X, SO it is null here") which is false — the repoint is not the cause —
+so that was split into two sentences before running anything. Suite: 36/36 green.
+
+**Runs:** repository suite 11/11 (baseline), onboarding 42/42, unified shopping 36/36,
+`flutter analyze` on all four touched paths: "No issues found".
+Unrelated worktree motion observed and NOT touched: `lib/core/router/app_router.dart` (M) and
+`lib/core/router/recipe_detail_route_args.dart` (untracked) appeared mid-session from a parallel
+session.
+
+**Verdict: pass, 0 blocking.**
+
+---
+
+### 2026-09-04 - BUT-1806: the 26 FieldValue-wall skips re-enabled (trigger: ticket, "re-enable the switched-off repository write tests")
+
+**Scope as briefed:** 26 `skip:` across six files under `test/unit/repositories/`, each naming
+the `MethodChannelFieldValue` vs `MockFieldValuePlatform` cast. Measured on entry, matching the
+ticket's table exactly: shared_shopping 9, shared_menu 7, comments 3, friends/friend_relationship
+3, deeplink 2, user 2. The six SetOptions/index skips in `firebase_user_repository_test.dart`
+were left alone as briefed (6 remain there; 0 elsewhere in the six).
+
+**The fix, made structural rather than conventional (ticket condition 1).**
+`installFakeFieldValuePlatform()` had TWO callers in the whole repo
+(`recipe_sharing_manager_test.dart`, `social_menu_operations_test.dart`), both remembering to put
+it first in their own `setUp`. Instead of adding six more suites that have to remember, the call
+was moved to the FIRST statement of `BaseTest.setup()` - above the `if (!_initialized)` guard, so
+it runs unconditionally and idempotently. `BaseTest.setup()` is what `BaseUnitTest.setupUnit()`
+and `setupUnitWithProductionLocator()` both call, so every unit and widget suite in the repo now
+wins the race by construction and no `setUp` can order it wrong. Zero suites needed a `setUp`
+edit. Verified globally: `test/unit` 17699 passed / 22 skipped / 0 failed,
+`flutter analyze --fatal-infos` clean.
+
+**The wall came down, and a SECOND wall was behind it in two files.** With the fake platform
+installed, four re-enabled tests failed on `[FakeFirestore/not-found]` from `update()` - a real
+FIXTURE gap, not a fake limitation, since real Firestore also refuses `update` on a missing
+document:
+- `friend_relationship_repository_test.dart` (3 tests) - `_writeMutualFriendDocs` and
+  `removeMutualFriends` increment `public_profiles/{uid}.friendsCount`, and the suite never
+  seeded either profile.
+- `firebase_comments_repository_test.dart` (1 test) - the reply's batch increments
+  `recipe_comments/parent-1.replyCount`, and `parent-1` was never seeded.
+Both fixed by seeding, and the previously-invisible counter then became the assertion.
+
+**Tests were re-enabled ASSERTING NOTHING and had to be given assertions** - the exact failure
+this ticket exists to remove, shipped as a green test:
+`firebase_user_repository_test.dart` "should increment/decrement public recipe count" (body ended
+at `// Assert - FieldValue.increment conflicts...`, no `expect` at all);
+`firebase_shared_menu_repository_test.dart` "should handle menu with empty snapshot";
+`firebase_shared_shopping_repository_test.dart` "should allow user to create shared shopping list
+with recipients" and "should handle shopping list with empty items".
+
+**Guard-chain subsumption caught by a GREEN probe (the one finding that changed the deliverable).**
+A test written as "should not double-count when both sides already exist" (both friend docs
+seeded, assert counts unchanged) is satisfied by BOTH `docsCreated == 2` and its mutant
+`docsCreated >= 0`: the earlier `if (user1FriendDoc.exists && user2FriendDoc.exists) return;`
+fires first, so `docsCreated` is 0 either way and the guard is UNREACHABLE from that fixture.
+The mutant went green and the test was DELETED, replaced by
+"should repair a half-written friendship without counting it twice" - only user1's friend doc
+seeded, which falls THROUGH the early return, reaches the guard with `docsCreated == 1`, and
+reddens on the mutant. Restated: the early return and the `docsCreated == 2` guard are
+BACKWARD-subsumed for the both-exist input; only the partial-state input discriminates them.
+
+**Non-disjoint mutants, caught the same way.** Probe run 1 applied
+`increment(1)->increment(0)` and `docsCreated == 2 -> >= 0` together and reported only ONE red.
+The second mutant was masked by the first (zeroed increments make an opened guard unobservable).
+Every subsequent probe was grouped only where the mutants touched DISJOINT expressions AND
+disjoint assertions, and split into its own run otherwise.
+
+**Two of my own assertions were wrong and the production code was right** - corrected the test,
+not the code:
+1. `sharedToUserIds` after `createSharedMenu(recipientIds: [friend])` is
+   `[testUserId, testFriendId]`, not `[testFriendId]` - the sharer is already seated.
+2. `getUnreadCountForUser(<other user>)` throws `PermissionDeniedException`. The recipient's
+   badge has to be read off `users/{uid}/counters/shared_content` directly.
+
+**Mutation probes - every re-enabled test measured RED, one mutant per claim.** Production files
+restored with `git show :<path> > tmp && cp`, `git diff --numstat -- lib` empty at the end
+(`wc -l` = 0). `.dart_tool/flutter_build` cleared between every mutation and run.
+
+| mutant | file | red tests |
+|---|---|---|
+| `friendsCount: increment(1)->(0)` | friend_relationship_repository | add mutual friends |
+| `displayNameLower: user2Name->user1Name` | friend_relationship_repository | add mutual friends |
+| `docsCreated == 2 -> >= 0` | friend_relationship_repository | repair a half-written friendship |
+| `friendsCount: increment(-1)->(0)` | friend_relationship_repository | remove mutual friends; remove friend as current user; decrement only the side that had a friend doc |
+| `if (user2FriendDoc.exists) -> if (true)` | friend_relationship_repository | decrement only the side that had a friend doc |
+| `clickCount: increment(1)->(0)` | firebase_deeplink_repository | should increment click count |
+| `userId: currentUserId->'wrong-user'` | firebase_deeplink_repository | should record click history |
+| `replyCount: increment(1)->(0)` | firebase_comments_repository | add reply comment |
+| `likesCount: increment(1)->(2)` | comment_likes_operations | like a comment |
+| `likesCount: increment(-1)->(0)` | comment_likes_operations | unlike a comment |
+| `publicRecipeCount: increment(1)->(0)` | firebase_user_repository | increment public recipe count |
+| `publicRecipeCount: increment(-1)->(0)` | firebase_user_repository | decrement public recipe count |
+| TTL `days: 90->9` | base_metadata_repository | add view (menu) |
+| drop `...?additionalData` | base_metadata_repository | add engagement (menu); mark as joined (shopping) |
+| drop `'timestamp': serverTimestamp()` | base_metadata_repository | add view / engagement / dismissal (menu) |
+| drop `'userId': userId` | base_metadata_repository | mark as viewed / joined / dismissed (shopping) |
+| drop `getMetadataCollection(...).delete()` | base_metadata_repository | remove dismissal (menu) |
+| `addedAt` always `clock.now()` | base_shared_content_repository | re-adding an existing member |
+| `if (isNewMember) -> if (true)` | base_shared_content_repository | re-adding an existing member |
+| `if (isNewMember) -> if (false)` | base_shared_content_repository | create shared shopping list with recipients |
+| drop `memberRef.set(...)` | base_shared_content_repository | create shared menu x2, empty snapshot, re-add; create shared shopping list with recipients, empty items |
+| `arrayUnion([userId])->arrayUnion([])` | base_shared_content_repository | create shared menu with recipients; re-add; create shared shopping list with recipients |
+| `itemCount: increment(items.length)->(0)` | firebase_shared_shopping_repository | addItemsBatch |
+| `itemCount: increment(increment)->(0)` | firebase_shared_shopping_repository | addItem; removeItem |
+| `'listName': listName->'mutant'` | shared_shopping_list (model) | create shared shopping list successfully; get specific shared shopping list by ID |
+
+**Domain invariants added that the un-skipped tests did not carry** (Phase 9 contract - one
+autopilot test deleted, these written instead): BUT-1152 idempotent member re-add (original
+`addedAt` survives, `arrayUnion` does not double-seat, unread badge counts ONCE); BUT-1798's
+`sharedToUserIds` as the sole membership field the GDPR export and group queries scope on, on
+BOTH the menu and the shopping surfaces; the 90-day TTL stamp on every metadata row; the
+partial-state repair path on both friendship add and remove.
+
+**False comments struck** (each asserted the wall as a standing fact, and each is the kind of
+sentence that manufactures the next `skip:`): `firebase_shared_recipe_repository_test.dart`
+header ("cannot run against FakeFirebaseFirestore ... conflicts with MockFieldValuePlatform" -
+the emulator-lane POINTER, which is still true, was kept); `firebase_audit_repository_test.dart`
+group comment; the `NOTE:` block in `firebase_shared_menu_repository_test.dart`'s header; the
+`NOTE:` block in `firebase_deeplink_repository_test.dart`'s Track URL Click group.
+`fake_field_value_platform.dart`'s own "Call FIRST in `setUp`" instruction was corrected in
+place, since where it is now called is directly readable from `base_test.dart`.
+
+**Runs:** `test/unit` 17699 passed / 22 skipped / 0 failed. `flutter analyze --fatal-infos`:
+"No issues found!". `git diff --numstat -- lib`: empty.
+
+**Left open, NOT closed here (out of BUT-1806's scope):**
+- The six `SetOptions(merge: true)` / composite-index skips in
+  `firebase_user_repository_test.dart` - briefed as out of scope, untouched, unverified.
+- `firebase_audit_repository_test.dart` asserts only that `logPermissionCheck` COMPLETES. The
+  written audit document is now observable there (the wall is gone) and that suite does not read
+  it. It is NOT unasserted repo-wide: `firebase_group_weekly_menu_plan_repository_test.dart`
+  reads `FirestoreCollections.auditLogs` and asserts both the granted row with its actor uid and
+  the refusal rows. The first version of this entry said "asserted nowhere" and was wrong;
+  corrected by the review of the same change. What is left is a local gap in the audit suite,
+  worth ~6 lines there.
+
+**Superseded verbatim from `testing-specialist.knowledge.md` on 2026-09-04 (BUT-1806)** - the
+bullet below described the ordering as a per-suite `setUp` contract; `BaseTest.setup()` now makes
+it structural, so the principle was rewritten in place and the old text is retired here:
+
+> - **`installFakeFieldValuePlatform()` (`test/test_support/fake_field_value_platform.dart`) must
+>   be the FIRST line of `setUp`, ahead of `BaseUnitTest.setupUnit()`. Do not compress this.**
+>   `FieldValue.serverTimestamp()` and every other sentinel resolve through
+>   `FieldValueFactoryPlatform.instance`, a PROCESS-WIDE SINGLETON that freezes on first use.
+>   `setupUnit()` touches cloud_firestore early enough that the real `MethodChannelFieldValueFactory`
+>   WINS THE RACE, and a later write through a fake database then throws `type
+>   'MethodChannelFieldValue' is not a subtype of type 'MockFieldValuePlatform'` deep inside the
+>   fake - where best-effort denormalization code catches broadly, swallows it, and lands ZERO
+>   documents. **The suite does not fail; it silently asserts nothing.** That is how a `skip:` once
+>   shipped claiming "no unit test in this harness can observe the document". The helper is
+>   idempotent and process-wide, so calling it from several suites is harmless; ordering is the
+>   whole contract, and a `serverTimestamp()` failure inside `batch.set(..., merge: true)` is NEVER
+>   a valid `skip:` (BUT-838, `recipe_sharing_manager_test.dart`).

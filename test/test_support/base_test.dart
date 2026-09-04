@@ -8,6 +8,7 @@ library;
 import 'package:flutter_test/flutter_test.dart';
 import '../infrastructure/di/test_service_locator.dart';
 import '../infrastructure/mocks/firestore_singleton.dart';
+import 'fake_field_value_platform.dart';
 import 'test_mode_config.dart';
 
 /// Base class for all tests in the Butlery test suite
@@ -26,6 +27,13 @@ abstract class BaseTest {
   /// Call this in your test's setUp() method or use setUpAll() for
   /// one-time initialization across a test suite.
   static Future<void> setup() async {
+    // FIRST, before anything touches cloud_firestore. `FieldValueFactoryPlatform`
+    // is a process-wide singleton that freezes on first use, so whichever of the
+    // two factories is installed first wins for the rest of the isolate. Doing it
+    // here rather than asking each suite to remember makes the ordering
+    // structural: no `setUp` can lose the race with `TestServiceLocator`.
+    installFakeFieldValuePlatform();
+
     if (!_initialized) {
       // Enable test mode for repositories
       TestModeConfig.enableTestMode();

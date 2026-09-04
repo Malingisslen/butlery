@@ -676,45 +676,43 @@ void main() {
         expect(doc.data()!['publicRecipeCount'], equals(30));
       });
 
-      test(
-        'should increment public recipe count',
-        () async {
-          // Arrange
-          const userId = 'user-123';
-          await _seedUserProfile(
-            fakeFirestore,
-            userId,
-            _createUserProfile(userId).toFirestore(),
-          );
+      test('should increment public recipe count', () async {
+        // Arrange
+        const userId = 'user-123';
+        await _seedUserProfile(fakeFirestore, userId, {
+          ..._createUserProfile(userId).toFirestore(),
+          'publicRecipeCount': 4,
+        });
 
-          // Act
-          await repository.incrementPublicRecipeCount(userId);
+        // Act
+        await repository.incrementPublicRecipeCount(userId);
 
-          // Assert - FieldValue.increment conflicts with TestServiceLocator platform bindings
-        },
-        skip:
-            'FieldValue.increment conflicts with TestServiceLocator platform bindings (MethodChannelFieldValue vs MockFieldValuePlatform)',
-      );
+        // Assert
+        final doc = await fakeFirestore
+            .collection('public_profiles')
+            .doc(userId)
+            .get();
+        expect(doc.data()!['publicRecipeCount'], equals(5));
+      });
 
-      test(
-        'should decrement public recipe count',
-        () async {
-          // Arrange
-          const userId = 'user-123';
-          await _seedUserProfile(
-            fakeFirestore,
-            userId,
-            _createUserProfile(userId).toFirestore(),
-          );
+      test('should decrement public recipe count', () async {
+        // Arrange
+        const userId = 'user-123';
+        await _seedUserProfile(fakeFirestore, userId, {
+          ..._createUserProfile(userId).toFirestore(),
+          'publicRecipeCount': 4,
+        });
 
-          // Act
-          await repository.decrementPublicRecipeCount(userId);
+        // Act
+        await repository.decrementPublicRecipeCount(userId);
 
-          // Assert - FieldValue.increment conflicts with TestServiceLocator platform bindings
-        },
-        skip:
-            'FieldValue.increment conflicts with TestServiceLocator platform bindings (MethodChannelFieldValue vs MockFieldValuePlatform)',
-      );
+        // Assert
+        final doc = await fakeFirestore
+            .collection('public_profiles')
+            .doc(userId)
+            .get();
+        expect(doc.data()!['publicRecipeCount'], equals(3));
+      });
     });
 
     group('Online Status', () {

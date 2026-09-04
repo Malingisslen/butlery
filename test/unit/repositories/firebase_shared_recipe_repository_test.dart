@@ -4,12 +4,10 @@
 /// Validates create, read, status management (viewed/imported/dismissed via subcollections),
 /// permission validation, and copy-on-write collaboration support.
 ///
-/// NOTE: Tests that exercise FieldValue operations (serverTimestamp, arrayUnion,
-/// increment) cannot run against FakeFirebaseFirestore (MethodChannelFieldValue
-/// conflicts with MockFieldValuePlatform). They were moved to the emulator lane —
-/// see firebase_shared_recipe_repository_integration_test.dart (BUT-1151) — which
+/// NOTE: The write tests live on the emulator lane — see
+/// firebase_shared_recipe_repository_integration_test.dart (BUT-1151) — which
 /// runs on the CI emulator leg and skips cleanly locally. This file keeps the
-/// read/query/permission tests the fake handles natively.
+/// read/query/permission tests.
 library;
 
 import 'package:flutter_test/flutter_test.dart';
@@ -337,8 +335,7 @@ void main() {
         'dedup query returns existing doc id when shared_content already has matching (sharedByUserId, originalRecipeId) pair',
         () async {
           // Direct probe of the dedup query — proves the where() chain finds the
-          // pre-existing doc. Does NOT call createSharedRecipe (which would hit
-          // the FieldValue limitation in addMember), so this test runs.
+          // pre-existing doc. Does NOT call createSharedRecipe.
           // Does NOT exercise the post-query consume branch — see
           // firebase_shared_recipe_repository_integration_test.dart (emulator
           // lane) for the fix-regression guard (BUT-1151).
