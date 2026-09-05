@@ -2903,3 +2903,48 @@ would have caught most of these: strike rather than reword (a struck sentence ca
 correcting a claim, grep the WHOLE diff for other wordings of the same fact before moving on;
 and never write a count — the two counts here were both wrong, and one was refuted by its own
 commit.
+
+---
+
+### 2026-09-05 — A refuted claim has SIBLINGS, and the repair round writes new ones (BUT-1922)
+
+The 2026-09-02 entry above says to grep the whole diff for other wordings after correcting a
+claim. This change is the case where not doing it cost four extra review rounds, so the habit
+needs the sharper form: **a claim you have just been shown is false exists in more than one
+place, and one of those places is text you wrote minutes ago.**
+
+`integration-reviewer` measured that "the generation guard is reachable on sign-out" was false —
+`BlockedUserFilter` is registered in `SocialModule.configure`, the APP scope, so `popUserScope()`
+never disposes it. I fixed the copy it quoted. There were **five**:
+
+- the production comment beside the guard (the one quoted),
+- `_fetchAndWatch`'s "at scope pop … a user who has since signed out",
+- `dispose()`'s "Reachable — `social_module.dart` registers this with `dispose:`",
+- the dispose test's "Reachable: … a scope pop mid-fetch",
+- and **the name of a test I wrote during the repair round**: `signing out MID-READ refuses`.
+
+Two more surfaced a round later ("the signed-out user's query", "the disposed filter's list"),
+found only because a reviewer grepped the possessive rather than the mechanism words I had
+grepped. The sweep must range over the CONCEPT, not the phrase: `scope pop`, `signed out`,
+`sign-out`, `signing out`, `Reachable`, and the possessives.
+
+Same change, same shape, a different claim: a comment in `_fetchAndWatch` still said the throw
+protects "the one decision this variant exists to refuse" — after the split, no decision reaches
+that path at all. That one was dangerous rather than untidy: it is the sentence a later reader
+would cite to merge the two paths back together, which is exactly what the ticket undid.
+
+Two other things worth keeping from this change:
+
+**Ledger coverage is recorded by the `Read` tool alone.** The commit gate logs which reviewer
+opened which bytes, and it counts nothing else — so four reviews that read every file through
+Bash (this session's default) proved nothing, and the gate refused the commit after all four had
+passed. It also refuses a hand-written ledger. When dispatching a commit-gate reviewer, say
+explicitly that every gated file must be opened with `Read`, and give it the full file list —
+one review was later failed for three generated l10n files I simply forgot to list, which the
+reviewer could not have known were in its scope.
+
+**A constant set composed by spread can be pinned and still have a blind mutant.** `_networkCodes
+= {..._offlineCodes, 'deadline-exceeded'}` with the mapper suite pinning all three codes reads as
+fully covered. It is not: MOVING a member out of `_offlineCodes` into the outer literal leaves
+the mapper green (the union is unchanged) while the narrower predicate silently loses it. Grade
+membership per SET and per direction, not per code.
