@@ -15,11 +15,10 @@ export const Collections = {
   conversations: "conversations",
   // The roster subcollection under `conversations/{id}`, and the collection-group
   // id its cross-conversation queries use. Added for the account cascade's
-  // `participantId` sweep (BUT-1822). Two local copies of this literal remain —
-  // `enforce-group-minor-membership.ts` and `admin/reset-user-data.ts` — so a
-  // rename still needs three edits. (Three copies until BUT-1838 deleted
-  // `leave-group-conversation.ts`.) This is the home the next writer should use,
-  // not yet the only one.
+  // `participantId` sweep (BUT-1822). Local copies of the literal remain
+  // elsewhere, so a rename is not a single edit — grep the string, not this
+  // comment, which cannot stay right about where the copies are. This is the
+  // home the next writer should use, not yet the only one.
   participants: "participants",
   // BUT-1832: one row per voter under `messages/{messageId}`, doc id == voter
   // uid. Votes moved off the message document because only a message's SENDER

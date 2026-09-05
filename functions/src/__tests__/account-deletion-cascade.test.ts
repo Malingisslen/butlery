@@ -2601,42 +2601,27 @@ async function scenario_probeSeesLeftoverChatGroupMembership(): Promise<void> {
  * borrow another's reasoning in the first place.
  */
 async function scenario_resetScriptDeleteListNamesBlocks(): Promise<void> {
+  // Imported, not parsed. The lists moved to their own side-effect-free module
+  // in BUT-2028 precisely so this could stop reading source text — the old form
+  // needed comment-stripping and an anchor on the list's last entry, and the
+  // anchor carried a note telling the next person to move it when they append.
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const fs = require("fs");
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const path = require("path");
-  const scriptPath = path.join(__dirname, "..", "admin", "reset-user-data.ts");
-  const source = fs.readFileSync(scriptPath, "utf8") as string;
+  const { COLLECTIONS_TO_DELETE } = require("../admin/reset-collection-lists");
+  const names = (COLLECTIONS_TO_DELETE as { name: string }[]).map((t) => t.name);
 
-  const listStart = source.indexOf("const COLLECTIONS_TO_DELETE");
   check(
-    "the reset script's collection list is findable",
-    listStart >= 0,
-    "COLLECTIONS_TO_DELETE not found in admin/reset-user-data.ts",
+    "the reset script's delete list is non-empty",
+    names.length > 0,
+    "COLLECTIONS_TO_DELETE imported as empty — the check below would pass " +
+      "vacuously",
   );
-  if (listStart < 0) return;
-  const listEnd = source.indexOf("];", listStart);
-  // Comment lines are dropped first: `// { name: "blocks" },` is how a human
-  // disables an entry, and it would otherwise satisfy this check while the
-  // reset script no longer touched the collection.
-  const list = source
-    .slice(listStart, listEnd)
-    .split("\n")
-    .filter((line: string) => !line.trim().startsWith("//"))
-    .join("\n");
 
   check(
     "the reset script's delete list names `blocks`",
     // The constant, not the literal "blocks": production reads the collection
     // through `Collections.blocks`, and a test restating the string would keep
     // passing if the two ever diverged.
-    // A regex LITERAL for the whitespace, never a pattern built from a
-    // string: a backslash-s inside a JS string literal is an escape
-    // sequence that resolves to a bare `s`, so a string-built pattern
-    // silently became `name:s*"..."`, matched nothing, and failed accusing
-    // production of a gap it did not have. Normalising the whitespace
-    // first also makes the check proof against how the list is formatted.
-    list.replace(/\s+/g, " ").includes(`name: "${Collections.blocks}"`),
+    names.includes(Collections.blocks),
     "`MAX_BLOCK_SWEEP_ROWS` tells a human to recover by running " +
       "admin/reset-user-data.ts, but that script only deletes what " +
       "COLLECTIONS_TO_DELETE names, and it does not name this collection — so " +
@@ -2658,61 +2643,25 @@ async function scenario_resetScriptDeleteListNamesBlocks(): Promise<void> {
  * rather than a defect. Meanwhile `MAX_BLOCK_SWEEP_ROWS` named it as the
  * recovery for a declined Art. 17 erasure, which made a broken script into a
  * written promise.
- *
- * Parsed from source rather than imported, like the scenario above: importing
- * would execute `initializeAdminApp` at module load.
  */
 async function scenario_resetScriptListsDoNotOverlap(): Promise<void> {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const fs = require("fs");
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const path = require("path");
-  const scriptPath = path.join(__dirname, "..", "admin", "reset-user-data.ts");
-  const source = fs.readFileSync(scriptPath, "utf8") as string;
-
-  /** The `name:` values of a list literal, minus commented-out entries. */
-  function namesIn(marker: string, pattern: RegExp): string[] {
-    const start = source.indexOf(marker);
-    if (start < 0) return [];
-    const body = source
-      .slice(start, source.indexOf("];", start))
-      .split("\n")
-      .filter((line: string) => !line.trim().startsWith("//"))
-      .join("\n");
-    return [...body.matchAll(pattern)].map((m) => m[1]);
-  }
-
-  const toDelete = namesIn(
-    "const COLLECTIONS_TO_DELETE",
-    /name:\s*"([^"]+)"/g
+  const lists = require("../admin/reset-collection-lists");
+  const toDelete = (lists.COLLECTIONS_TO_DELETE as { name: string }[]).map(
+    (t) => t.name,
   );
-  const toKeep = namesIn("const COLLECTIONS_TO_KEEP", /"([^"]+)"/g);
+  const toKeep = lists.COLLECTIONS_TO_KEEP as string[];
 
-  // Anchored on the LAST entry of each list, not the first and not a count.
-  // A length check catches a total parse failure and nothing else — a slice that ends early
-  // yields a short-but-non-empty list, and the disjointness filter below then
-  // searches fewer names and passes while proving less.
-  //
-  // The first entry does not discriminate: `users` opens the delete list, so a
-  // slice truncated at the first `],` (which closes its nested
-  // `subcollections`) still contains it. Measured — that mutant passed a
-  // `users` anchor.
-  //
-  // What the anchor must BE is the list's final entry; which name that is
-  // changes whenever anyone appends one. If you add an entry below `blocks`,
-  // move this anchor with it, or a slice truncated between the two passes
-  // while proving less.
+  // Both lists are imported, so a partially-read list is no longer a failure
+  // mode and the last-entry anchors that guarded against one are gone with it.
+  // What survives is an emptiness check: a disjointness filter over an empty
+  // list passes while proving nothing, which is exactly what happened to the
+  // text-parsing version of this scenario the moment the lists moved.
   check(
-    "the reset script's delete list parsed to its end",
-    toDelete.includes("blocks"),
-    `parsed ${toDelete.length} delete entries without reaching "blocks", the ` +
-      "last one — the slice stopped early, so the disjointness check below is " +
-      "not seeing the whole list",
-  );
-  check(
-    "the reset script's keep list parsed to its end",
-    toKeep.includes("butlery_archive"),
-    `parsed ${toKeep.length} keep entries without reaching "butlery_archive"`,
+    "the reset script's lists are both non-empty",
+    toDelete.length > 0 && toKeep.length > 0,
+    `imported ${toDelete.length} delete and ${toKeep.length} keep entries — ` +
+      "the disjointness check below would pass vacuously",
   );
 
   const overlap = toDelete.filter((name) => toKeep.includes(name));
@@ -2725,6 +2674,369 @@ async function scenario_resetScriptListsDoNotOverlap(): Promise<void> {
       "MAX_BLOCK_SWEEP_ROWS named it as the recovery for a declined " +
       "Art. 17 erasure",
   );
+}
+
+/**
+ * BUT-2028: every Firestore collection this repo knows about is DECIDED —
+ * deleted, kept, or deliberately untouched with a reason.
+ *
+ * `admin/reset-user-data.ts` promises a clean slate. Before this guard, a
+ * collection was covered only if someone remembered to add it: top-level
+ * collections appeared in neither list, several of them uid-keyed personal data
+ * that Phase 1 orphans by deleting every Auth user first. Nothing reddened,
+ * and the run printed CLEANUP COMPLETE regardless.
+ *
+ * **Two independent sources, because neither sees the whole picture.**
+ * `firestore.rules` names every collection a CLIENT can touch but is blind to
+ * server-only ones; the Cloud Functions source names every collection the
+ * SERVER touches but is blind to the ones only the app writes. `system` — the
+ * collection holding the app's kill switches — is invisible to the rules file
+ * (it has no block, since only the Admin SDK reads it) and is reached through
+ * `.doc("system/config")` rather than `.collection(...)`, which is why the
+ * server scan reads document-path literals too. That was this ticket's own bug
+ * hiding inside its own fix: a guard written without it would have been blind
+ * to precisely the collection the kill switch lives in.
+ */
+async function scenario_everyCollectionIsDecided(): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const fs = require("fs");
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const path = require("path");
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const lists = require("../admin/reset-collection-lists");
+
+  const repoRoot = path.join(__dirname, "..", "..", "..");
+  const functionsSrc = path.join(__dirname, "..");
+
+  // --- Source A: firestore.rules -----------------------------------------
+  //
+  // Comments are stripped BEFORE parsing. The rules file's comments contain
+  // brace-carrying prose and map literals, and the brace counter below would
+  // read those as real nesting.
+  const rulesSource: string = fs.readFileSync(
+    path.join(repoRoot, "firestore.rules"),
+    "utf8",
+  );
+  const rulesLines: string[] = rulesSource
+    .split("\n")
+    .map((line: string) => line.replace(/\/\/.*$/, ""));
+
+  // Two readings of the same thing, kept separate so they can disagree.
+  // `byDepth` tracks brace nesting: a top-level collection is a `match` at
+  // depth 2, inside `service … {` and `match /databases/{db}/documents {`.
+  // `byIndent` only looks at four-space indentation. Neither is trustworthy
+  // alone — a stray brace breaks the first, a reformat breaks the second — so
+  // the guard asserts they agree and then uses the depth reading.
+  const byDepth: string[] = [];
+  const byIndent: string[] = [];
+  let depth = 0;
+  for (const line of rulesLines) {
+    const m = line.match(/^(\s*)match\s+\/(\S+)\s*\{/);
+    if (m) {
+      if (depth === 2) byDepth.push(m[2]);
+      if (m[1].length === 4) byIndent.push(m[2]);
+    }
+    for (const ch of line) {
+      if (ch === "{") depth++;
+      else if (ch === "}") depth--;
+    }
+  }
+
+  check(
+    "the two readings of firestore.rules agree on which matches are top-level",
+    byDepth.length === byIndent.length &&
+      byDepth.every((p, i) => p === byIndent[i]),
+    `brace-depth found ${byDepth.length} top-level matches, indentation found ` +
+      `${byIndent.length} — one of the two readings is wrong, so neither can ` +
+      "be trusted to say what the rules file covers",
+  );
+
+  /** First path segment of a match, or null for a wildcard-rooted one. */
+  function firstSegment(matchPath: string): string | null {
+    const first = matchPath.split("/")[0];
+    // `match /{path=**}/members/{id}` is a COLLECTION-GROUP rule and
+    // `match /{document=**}` is the terminal catch-all. Neither names a
+    // top-level collection, and taking their first segment would invent one.
+    return first.startsWith("{") ? null : first;
+  }
+
+  const fromRules = new Set<string>();
+  for (const p of byDepth) {
+    const seg = firstSegment(p);
+    if (seg) fromRules.add(seg);
+  }
+
+  // Positive anchors. A count would go stale on the next rules block; these
+  // say what the parse must be CAPABLE of, which does not.
+  check(
+    "the rules parse reached collections at the top and the bottom of the file",
+    // `users` opens the documents block; `parse_events` is the last named
+    // match before the terminal catch-all. A parse that stops early keeps the
+    // first and loses the second.
+    fromRules.has("users") && fromRules.has("parse_events"),
+    `parsed ${fromRules.size} top-level collections from firestore.rules ` +
+      `(users: ${fromRules.has("users")}, parse_events: ` +
+      `${fromRules.has("parse_events")})`,
+  );
+  check(
+    "the rules parse rejects collection-group wildcards",
+    // `members` has a `match /{path=**}/members/{memberId}` block and no
+    // top-level one. If it appears here, `firstSegment` stopped rejecting
+    // wildcard-rooted paths and the guard is inventing top-level collections
+    // out of subcollection rules.
+    !fromRules.has("members"),
+    "`members` was read as a top-level collection — it is only ever a " +
+      "subcollection, reached through a {path=**} collection-group rule",
+  );
+
+  // --- Source B: the Cloud Functions source ------------------------------
+  const serverFiles: string[] = [];
+  (function walk(dir: string) {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      if (entry.isDirectory()) {
+        // Tests are excluded deliberately: their fixtures name collections
+        // that exist only to be denied, and a fixture is not evidence that
+        // production touches anything.
+        if (entry.name === "__tests__") continue;
+        walk(path.join(dir, entry.name));
+      } else if (entry.name.endsWith(".ts")) {
+        serverFiles.push(path.join(dir, entry.name));
+      }
+    }
+  })(functionsSrc);
+
+  // Resolves `Collections.x` to the string it stands for.
+  const constants: Record<string, string> = {};
+  {
+    const source: string = fs.readFileSync(
+      path.join(functionsSrc, "shared", "collections.ts"),
+      "utf8",
+    );
+    for (const m of source.matchAll(/^\s+([A-Za-z0-9_]+):\s*"([^"]+)"/gm)) {
+      constants[m[1]] = m[2];
+    }
+  }
+
+  function stripTsComments(source: string): string {
+    return source
+      .replace(/\/\*[\s\S]*?\*\//g, "")
+      .split("\n")
+      .map((line: string) => line.replace(/\/\/.*$/, ""))
+      .join("\n");
+  }
+
+  // One set per extraction branch, unioned at the end. Kept separate so each
+  // branch gets an anchor that dies alone: a name discoverable by two routes
+  // proves nothing about either.
+  const fromCollectionLiteral = new Set<string>();
+  const fromConstant = new Set<string>();
+  const fromCollectionGroup = new Set<string>();
+  const fromDocPath = new Set<string>();
+
+  // A collection name is an identifier. This rejects the template fragments
+  // and path shapes that string literals in this codebase also carry.
+  const looksLikeCollection = /^[A-Za-z_][A-Za-z0-9_]*$/;
+  function record(into: Set<string>, name: string | undefined): void {
+    if (name && looksLikeCollection.test(name)) into.add(name);
+  }
+
+  for (const file of serverFiles) {
+    const source: string = stripTsComments(fs.readFileSync(file, "utf8"));
+
+    // A `const NAME = "collection"` declared in this file, exported or not.
+    // Without it, a collection reached through such a constant is invisible
+    // unless it also happens to have a rules block — `llm_response_samples`
+    // (private) and `canonical_recipe_stats` (exported) are both that shape.
+    // The `export` half is not decoration: the first version of this branch
+    // omitted it and left the exported case relying on the same accident the
+    // branch exists to stop relying on. An identifier IMPORTED from another
+    // file stays unresolved, because this map is per-file.
+    const localConstants: Record<string, string> = {};
+    for (const m of source.matchAll(
+      /^\s*(?:export\s+)?const\s+([A-Za-z_][A-Za-z0-9_]*)\s*(?::\s*string\s*)?=\s*"([^"]+)"\s*;/gm,
+    )) {
+      localConstants[m[1]] = m[2];
+    }
+
+    // `.collection(X)` — but only where X is the FIRST link of its chain.
+    // `db.collection("users").doc(uid).collection("consent")` must yield
+    // `users` alone; `consent` is a subcollection, and reporting it as
+    // top-level would demand a list entry for something that does not exist
+    // there. The collapse looks back to the nearest statement boundary and
+    // skips the match if a `.doc(` stands between.
+    //
+    // The look-back is a heuristic in one direction only: two handles built
+    // inside one expression, where an unrelated `.doc(` precedes a genuine
+    // top-level `.collection(...)`, are skipped. That direction hides a
+    // collection from the guard rather than inventing one.
+    for (const m of source.matchAll(
+      /\.collection\(\s*(?:"([^"]+)"|Collections\.([A-Za-z0-9_]+)|([A-Za-z_][A-Za-z0-9_]*))\s*\)/g,
+    )) {
+      const before = source.slice(Math.max(0, m.index - 400), m.index);
+      const boundary = Math.max(
+        before.lastIndexOf(";"),
+        before.lastIndexOf("{"),
+        before.lastIndexOf("}"),
+      );
+      if (before.slice(boundary + 1).includes(".doc(")) continue;
+      if (m[1] !== undefined) record(fromCollectionLiteral, m[1]);
+      else if (m[2] !== undefined) record(fromCollectionLiteral, constants[m[2]]);
+      // An identifier that resolves to no local const is a runtime value
+      // (a parameter, a config field) and is skipped rather than guessed.
+      else record(fromConstant, localConstants[m[3]]);
+    }
+
+    for (const m of source.matchAll(
+      /collectionGroup\(\s*(?:"([^"]+)"|Collections\.([A-Za-z0-9_]+))\s*\)/g,
+    )) {
+      record(fromCollectionGroup, m[1] ?? constants[m[2]]);
+    }
+
+    // Document-path literals: `.doc("system/config")`. Without this the guard
+    // is blind to `system`, which is where BUT-2028's own kill switch lives —
+    // it has no rules block and is never reached through `.collection(...)`.
+    // The backtick form is read too, up to its first interpolation:
+    // `` .doc(`pings/${groupId}/pings/${pingId}`) `` names `pings`.
+    for (const m of source.matchAll(/\.doc\(\s*"([^"\s]+\/[^"\s]+)"\s*\)/g)) {
+      record(fromDocPath, m[1].split("/")[0]);
+    }
+    for (const m of source.matchAll(
+      /\.doc\(\s*`([A-Za-z_][A-Za-z0-9_]*)\//g,
+    )) {
+      record(fromDocPath, m[1]);
+    }
+  }
+
+  const fromServer = new Set<string>([
+    ...fromCollectionLiteral,
+    ...fromConstant,
+    ...fromCollectionGroup,
+    ...fromDocPath,
+  ]);
+
+  check(
+    "the server scan resolves collection constants declared in the file",
+    // `llm/llm-sample-capture.ts` writes through `const COLLECTION = "…"`.
+    // Only this branch can find it; without it the collection is visible to
+    // the guard purely by accident of having a rules block.
+    // `canonical_recipe_stats` is the EXPORTED case
+    // (`ratings/update-pooled-rating-stats.ts`), and it is the only thing that
+    // can fail if the `export` half of the pattern is dropped.
+    fromConstant.has("llm_response_samples") &&
+      fromConstant.has("canonical_recipe_stats"),
+    // Both memberships are reported: the check is a conjunction, and a
+    // failure message naming only one half points a reader at the wrong half.
+    `the const branch found ${fromConstant.size} collections ` +
+      `(llm_response_samples: ${fromConstant.has("llm_response_samples")}, ` +
+      `canonical_recipe_stats: ${fromConstant.has("canonical_recipe_stats")})` +
+      " — a collection named through a constant in its own file is invisible " +
+      "to the guard again",
+  );
+  check(
+    "the server scan reads backtick document paths",
+    // `triggers/ping_onCreate.ts` builds `pings/${groupId}/pings/${pingId}`.
+    fromDocPath.has("pings"),
+    `the document-path branch found ${[...fromDocPath].join(", ")} — the ` +
+      "backtick form stopped being read",
+  );
+  check(
+    "the server scan sees collections firestore.rules cannot show",
+    // Both are server-only and have no rules block at all, so source A is
+    // blind to them by construction. `system` additionally proves the
+    // document-literal branch runs.
+    fromServer.has("system") && fromServer.has("system_ip_audit_caps"),
+    `scanned ${serverFiles.length} server files and found ` +
+      `${fromServer.size} collections (system: ${fromServer.has("system")}, ` +
+      `system_ip_audit_caps: ${fromServer.has("system_ip_audit_caps")})`,
+  );
+  check(
+    "the chain collapse keeps subcollections out of the server scan",
+    // `consent` and `settings` are written by this repo's server code ONLY as
+    // `db.collection("users").doc(uid).collection(...)` chains. If either
+    // shows up here the collapse stopped working, and the guard would start
+    // demanding a top-level list entry for a subcollection.
+    !fromServer.has("consent") && !fromServer.has("settings"),
+    "a users/{uid} subcollection was read as a top-level collection — the " +
+      "`.doc(` look-back stopped collapsing chains",
+  );
+
+  // --- The union, and the three lists ------------------------------------
+  const known = new Set<string>([...fromRules, ...fromServer]);
+  const subNames: Set<string> = lists.KNOWN_SUBCOLLECTION_NAMES;
+
+  const staleSubNames = [...subNames].filter((name) => !known.has(name));
+  check(
+    "every filtered subcollection name is still written somewhere",
+    staleSubNames.length === 0,
+    `${staleSubNames.join(", ")} is filtered out as a subcollection but no ` +
+      "source names it any more — the filter is hiding nothing, and it would " +
+      "hide a real top-level collection that later takes the name",
+  );
+
+  const discovered = [...known].filter((name) => !subNames.has(name)).sort();
+
+  const toDelete = new Set(
+    (lists.COLLECTIONS_TO_DELETE as { name: string }[]).map((t) => t.name),
+  );
+  const toKeep = new Set(lists.COLLECTIONS_TO_KEEP as string[]);
+  const untouched: Record<string, string> =
+    lists.COLLECTIONS_DELIBERATELY_UNTOUCHED;
+  const untouchedNames = new Set(Object.keys(untouched));
+
+  const undecided = discovered.filter(
+    (name) =>
+      !toDelete.has(name) && !toKeep.has(name) && !untouchedNames.has(name),
+  );
+  check(
+    "every collection this repo knows about is decided",
+    undecided.length === 0,
+    `${undecided.length} collection(s) appear in firestore.rules or in ` +
+      `functions/src but in none of the three lists: ${undecided.join(", ")}` +
+      " — reset-user-data.ts neither deletes nor protects them, and Phase 1 " +
+      "deletes every Auth user first, so anything uid-keyed is left orphaned " +
+      "and unreachable by the account cascade",
+  );
+
+  const reasonless = Object.entries(untouched).filter(
+    ([, reason]) => reason.trim().length < 20,
+  );
+  check(
+    "every deliberately-untouched collection states a reason",
+    reasonless.length === 0,
+    `${reasonless.map(([name]) => name).join(", ")} has no real reason — the ` +
+      "register exists so a skip is a decision someone wrote down, and a " +
+      "one-word string reads as decided while recording nothing",
+  );
+
+  const staleUntouched = [...untouchedNames].filter(
+    (name) => !discovered.includes(name),
+  );
+  check(
+    "no deliberately-untouched entry names a collection that is gone",
+    staleUntouched.length === 0,
+    `${staleUntouched.join(", ")} is registered as deliberately untouched but ` +
+      "no source names it — the reason it carries describes something that no " +
+      "longer exists, and a reader would trust it",
+  );
+
+  // Disjointness over all THREE pairs. The delete/keep pair had its own guard
+  // (BUT-2010, the overlap that made the script inert for five months); a
+  // third list makes two more pairs, and the script's own runtime guard covers
+  // only the original one.
+  const pairs: [string, Set<string>, string, Set<string>][] = [
+    ["delete", toDelete, "keep", toKeep],
+    ["delete", toDelete, "untouched", untouchedNames],
+    ["keep", toKeep, "untouched", untouchedNames],
+  ];
+  for (const [leftName, left, rightName, right] of pairs) {
+    const overlap = [...left].filter((name) => right.has(name));
+    check(
+      `the ${leftName} and ${rightName} lists are disjoint`,
+      overlap.length === 0,
+      `${overlap.join(", ")} is in both — a collection with two verdicts has ` +
+        "no verdict, and which one wins depends on which list a reader opens",
+    );
+  }
 }
 
 /**
@@ -4615,6 +4927,7 @@ async function main(): Promise<void> {
   await scenario_probeSeesLeftoverBlocks();
   await scenario_resetScriptDeleteListNamesBlocks();
   await scenario_resetScriptListsDoNotOverlap();
+  await scenario_everyCollectionIsDecided();
   await scenario_resetScriptRefusesLiveRuns();
   await scenario_implausibleBlockCountDeclines();
   await scenario_aDeclinedLegDoesNotStopTheOther();
