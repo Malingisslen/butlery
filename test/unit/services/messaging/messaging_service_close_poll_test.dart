@@ -981,9 +981,14 @@ void main() {
       // firebase-backend-security gate caught. `requireBlockedIds` is the
       // propagating variant this path now calls, and the only way to prove it
       // is to let the repository underneath do the throwing.
+      //
+      // BUT-1922: the throw has to be stubbed on the SERVER read, which is the
+      // one this path calls now. Leaving it on `getBlockedUserIds` would still
+      // make the test pass — an unstubbed mocktail method throws too — and it
+      // would be measuring the mock again, one method over.
       final throwingRepo = _MockBlockRepo();
-      when(() => throwingRepo.getBlockedUserIds()).thenThrow(
-        Exception('offline'),
+      when(() => throwingRepo.getBlockedUserIdsFromServer()).thenThrow(
+        Exception('unreadable'),
       );
       GetIt.instance.unregister<BlockedUserFilter>();
       GetIt.instance.registerSingleton<BlockedUserFilter>(
@@ -1013,6 +1018,104 @@ void main() {
         () => groupPlanService.save(
           plan: any(named: 'plan'),
           actorId: any(named: 'actorId'),
+        ),
+      );
+    });
+
+    test(
+      'an OFFLINE device refuses with the offline reason (BUT-1922)',
+      () async {
+        // Same refusal, different advice. Since the lookup is server-only now,
+        // being offline is the ordinary way to reach it, and the generic copy
+        // tells the user to "try again" at a button that cannot work until the
+        // connection is back.
+        final offlineRepo = _MockBlockRepo();
+        when(() => offlineRepo.getBlockedUserIdsFromServer()).thenThrow(
+          FirebaseException(plugin: 'cloud_firestore', code: 'unavailable'),
+        );
+        GetIt.instance.unregister<BlockedUserFilter>();
+        GetIt.instance.registerSingleton<BlockedUserFilter>(
+          BlockedUserFilter(blockRepository: offlineRepo),
+        );
+
+        await expectLater(
+          service.closePoll(messageId: messageId),
+          throwsA(
+            isA<PollCloseRefusedException>().having(
+              (e) => e.reason,
+              'reason',
+              PollCloseRefusal.blockListOffline,
+            ),
+          ),
+        );
+
+        verifyNever(
+          () => messagingRepo.closePoll(
+            messageId: any(named: 'messageId'),
+            closerId: any(named: 'closerId'),
+          ),
+        );
+      },
+    );
+
+    test('a TIMEOUT is not called offline (BUT-1922)', () async {
+      // `deadline-exceeded` is a CLIENT-side timeout and fires on a connected
+      // but slow device, so the offline copy would tell that user something
+      // false. It stays on the generic reason, whose text says the list could
+      // not be read — true either way.
+      final slowRepo = _MockBlockRepo();
+      when(() => slowRepo.getBlockedUserIdsFromServer()).thenThrow(
+        FirebaseException(plugin: 'cloud_firestore', code: 'deadline-exceeded'),
+      );
+      GetIt.instance.unregister<BlockedUserFilter>();
+      GetIt.instance.registerSingleton<BlockedUserFilter>(
+        BlockedUserFilter(blockRepository: slowRepo),
+      );
+
+      await expectLater(
+        service.closePoll(messageId: messageId),
+        throwsA(
+          isA<PollCloseRefusedException>().having(
+            (e) => e.reason,
+            'reason',
+            PollCloseRefusal.blockListUnknown,
+          ),
+        ),
+      );
+
+      verifyNever(
+        () => messagingRepo.closePoll(
+          messageId: any(named: 'messageId'),
+          closerId: any(named: 'closerId'),
+        ),
+      );
+    });
+
+    test('a dropped connection IS called offline (BUT-1922)', () async {
+      // The other member of `_offlineCodes`. Without this case, moving
+      // `network-request-failed` into the wider set leaves the mapper's own
+      // suite green while a genuinely offline user gets the "kunde inte läsas"
+      // copy the split exists to avoid.
+      final droppedRepo = _MockBlockRepo();
+      when(() => droppedRepo.getBlockedUserIdsFromServer()).thenThrow(
+        FirebaseException(
+          plugin: 'cloud_firestore',
+          code: 'network-request-failed',
+        ),
+      );
+      GetIt.instance.unregister<BlockedUserFilter>();
+      GetIt.instance.registerSingleton<BlockedUserFilter>(
+        BlockedUserFilter(blockRepository: droppedRepo),
+      );
+
+      await expectLater(
+        service.closePoll(messageId: messageId),
+        throwsA(
+          isA<PollCloseRefusedException>().having(
+            (e) => e.reason,
+            'reason',
+            PollCloseRefusal.blockListOffline,
+          ),
         ),
       );
     });

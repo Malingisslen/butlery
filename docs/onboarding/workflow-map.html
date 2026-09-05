@@ -6105,7 +6105,7 @@
     {
       "id": "flow-grp-5",
       "label": "Måltidsomröstning",
-      "description": "Skapa och rösta i en middagsomröstning i gruppchatten, med automatisk planering vid stängning. BUT-1856: omröstningen återanvänder EN chatt per social grupp — den skapas vid första omröstningen och rostern synkas mot gruppen vid varje senare, i stället för en ny oraderbar gruppchatt per omröstning. BUT-1908/BUT-1909: en omröstning vars röster aldrig lästes ritar ingen avsluta-knapp, en stängning som inte kan läsa blockeringslistan vägras med ett svenskt besked i stället för att gissa en vinnare, och blockerade personers röster räknas varken i siffran på skärmen eller när vinnaren avgörs.",
+      "description": "Skapa och rösta i en middagsomröstning i gruppchatten, med automatisk planering vid stängning. BUT-1856: omröstningen återanvänder EN chatt per social grupp — den skapas vid första omröstningen och rostern synkas mot gruppen vid varje senare, i stället för en ny oraderbar gruppchatt per omröstning. BUT-1908/BUT-1909: en omröstning vars röster aldrig lästes ritar ingen avsluta-knapp, en stängning som inte kan läsa blockeringslistan vägras med ett svenskt besked i stället för att gissa en vinnare, och blockerade personers röster räknas varken i siffran på skärmen eller när vinnaren avgörs. BUT-1922: blockeringslistan hämtas från servern på stängningsvägen, så en enhet utan nät vägrar i stället för att svara ur den lokala cachen — visningen i chatten är oförändrad och får fortfarande använda cachen.",
       "features": [
         "GRP-09"
       ],
@@ -6225,7 +6225,7 @@
         {
           "from": "svc-messaging",
           "to": "svc-blocked-user-filter",
-          "payload": "requireBlockedIds() — vägrar stängningen om listan inte går att läsa",
+          "payload": "requireBlockedIds() — läser blockeringslistan från SERVERN och vägrar stängningen om den inte går att läsa; offline är därmed en vägran, inte ett cachesvar",
           "transport": "call",
           "verified": true
         },
@@ -6246,7 +6246,7 @@
         {
           "from": "vm-chat",
           "to": "v-chat-view",
-          "payload": "svensk vägran-text vid PollCloseRefusedException (snackbar)",
+          "payload": "svensk vägran-text vid PollCloseRefusedException (snackbar) — egen text när enheten är offline, eftersom \"Försök igen\" inte hjälper utan nät",
           "transport": "call",
           "verified": true
         }

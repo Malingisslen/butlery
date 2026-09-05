@@ -513,6 +513,7 @@ class ChatViewModel extends ChangeNotifier
       return switch (e.reason) {
         PollCloseRefusal.votesUnread => l.pollCloseRefusedVotesUnread,
         PollCloseRefusal.blockListUnknown => l.pollCloseRefusedBlockList,
+        PollCloseRefusal.blockListOffline => l.pollCloseRefusedBlockListOffline,
       };
     } catch (e) {
       AppLogger.error('Failed to close poll', e);

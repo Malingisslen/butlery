@@ -267,7 +267,11 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(
-      find.textContaining('blockeringslista'),
+      // BUT-1922: `blockeringslista` is in BOTH refusal strings now, so on a
+      // POSITIVE assertion it no longer says which one reached the screen.
+      // A `findsNothing` on the broad word stays correct, since a wider
+      // negative is stronger.
+      find.textContaining('kunde inte läsas'),
       findsOneWidget,
       reason:
           'the reason has to reach the screen — a refusal nobody shows is the '

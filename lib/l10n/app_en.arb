@@ -9683,6 +9683,10 @@
   "@pollCloseRefusedBlockList": {
     "description": "Snackbar when closePoll refused because the viewer's block list was unreadable."
   },
+  "pollCloseRefusedBlockListOffline": "The poll was not closed — the app is offline and cannot check your block list. Try again once you have a connection.",
+  "@pollCloseRefusedBlockListOffline": {
+    "description": "Snackbar when closePoll refused because the device is offline, so the block list could not be confirmed against the server."
+  },
   "pollCloseFailed": "The poll could not be closed. Try again.",
   "@pollCloseFailed": {
     "description": "Snackbar for any other failure to close a poll."

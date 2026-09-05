@@ -34531,3 +34531,289 @@ unguarded: `lib/viewmodels/social_recipe/social_engagement_manager.dart` (await 
 six more of the same shape; it also holds stream subscriptions). Nothing in the diff CLAIMS the
 population is closed, so this is scope, not a false sentence — but it is the shape of the next
 ticket.
+
+### 2026-09-05 — BUT-1922 test-side review (server-only block-list read for closePoll)
+
+Trigger: review of the staged test diff for BUT-1922 (`getBlockedUserIdsFromServer`,
+`requireBlockedIds` split off the display latch, new `PollCloseRefusal.blockListOffline`).
+
+**The finding worth keeping: a new ARB string can hollow a sibling arm's pin in a file the
+round never opened.** The new Swedish copy
+`'Omröstningen avslutades inte — appen är offline och kan inte kontrollera din
+blockeringslista. Försök igen när du har nätverk.'` shares the substring `blockeringslista`
+with the pre-existing `pollCloseRefusedBlockList`. Two pins were keyed on that substring:
+`test/unit/viewmodels/chat_viewmodel_test.dart:916`
+(`expect(message, contains('blockeringslista'))`, in a test NAMED
+`closePoll tells the two refusals apart`) and
+`test/widget/messaging/chat_message_stream_metadata_refresh_test.dart:270`
+(`find.textContaining('blockeringslista')`). After this commit, repointing the
+`blockListUnknown` switch arm in `chat_viewmodel.dart` to the OFFLINE string leaves both
+green. Settled analytically (both strings read out of `app_localizations_sv.dart`; grep
+showed zero other consumers), which outranks a green probe. The sibling defect rides along:
+the test name's count word "two" went false the same commit, and `poll.dart`'s production
+doc HAD been swept ("which of the two" -> "which happened") while the test's copy was not.
+Discriminating clauses to key on instead: `kunde inte läsas` vs `nätverk`.
+
+**Second: the new enum arm itself (`PollCloseRefusal.blockListOffline` ->
+`l.pollCloseRefusedBlockListOffline`, `chat_viewmodel.dart:516`) had ZERO test hits.**
+`grep -rn 'blockListOffline' test/` returned only the service-layer suite, which asserts the
+ENUM on the thrown exception, never the string. Exhaustiveness proves the SET, not the
+MAPPING (the BUT-1846 lesson, arriving again).
+
+**Third: a comment falsified by its own commit, in TWO copies.**
+`lib/services/social/blocking/blocked_user_filter.dart:124-133` (the watch `onError` limb,
+OUTSIDE the diff hunk) and its mirror at
+`test/unit/services/social/blocking/blocked_user_filter_test.dart:244-248` both claim that a
+frozen cache would "hand `closePoll` a stale set with no error at all, so the refusal it
+exists for could never fire". After the split `requireBlockedIds` never reads `_cached`, so
+that mechanism is gone. Same file, one line above the hunk: `_invalidate`'s doc still says
+"every read goes through the `_initialized` check" — now false for exactly one of the two
+public readers.
+
+**Fourth, coverage: `requireBlockedIds` deliberately does NOT write `_cached`/`_initialized`
+(production comment says so) and nothing pins it.** Adding `_initialized = true; _cached =
+ids;` there is deletable-green across all 42 owned tests — every case that calls the method
+either asserts only its return value or throws before the write. Harm is real: the display
+path would then serve a set with no watch keeping it fresh.
+
+**Graded sound, for the record:** the repository suite's mock-Query group is the right answer
+to the "GetOptions.source is NOT testable on the fake" entry in the decision tree — it pins
+WHICH OPTIONS reach `get()` rather than the outcome. Note mocktail records `query.get()` as
+`[null]` (noSuchMethod fills the omitted optional positional), so the DISPLAY test's
+`options.single?.source` is null and `isNot(Source.server)` still discriminates the repoint
+mutant. The DI test (`social_module_registration_test.dart`) is a real pin, not a tautology:
+both entries are `registerLazySingleton` inside `SocialModule.configure`, `isRegistered<T>()`
+runs no factory, and no other unit suite asserts the registration — so its header's
+"every existing suite stays green" counterfactual holds.
+
+### 2026-09-05 — BUT-1922 re-review (round 2)
+
+All four blocking findings from round 1 plus the non-blocking coverage gap were closed
+correctly, and the repairs graded as fresh claims hold: `contains('kunde inte läsas')` +
+`isNot(contains('offline'))` in `chat_viewmodel_test.dart:919-921`, the new
+`closePoll says OFFLINE rather than "try again" (BUT-1922)` case, the widget positive pin
+repointed at `chat_message_stream_metadata_refresh_test.dart:270` while the NEGATIVE at :241
+keeps the broad word (a broader negative is strictly stronger — correct), the three struck
+comments, the renamed CONTROL, and the new
+`the decision read does NOT seed the display cache` case, whose counterfactual clause is
+mutation-proven rather than asserted.
+
+**One new blocking finding, and it is the round's own repair that produced it.** The
+`integration-reviewer` measured that `BlockedUserFilter` is registered in
+`SocialModule.configure` (app scope), so `DIContainer.popUserScope()` on logout never disposes
+it — `popUserScope` drops only `_userScopeName` (`di_container.dart:406-411`) and
+`DIContainer.reset()` is documented "for testing". The round rewrote the ONE comment that gate
+quoted (`blocked_user_filter.dart:78-82`, now correct and honest: "Defence in depth today") and
+left four paraphrases of the same falsified premise standing:
+`blocked_user_filter.dart:107` ("a fetch still in flight at scope pop"),
+`blocked_user_filter.dart:183-185` ("at scope pop … Reachable — `social_module.dart` registers
+this with `dispose:`"), `blocked_user_filter_test.dart:342-343` ("Reachable: … so a scope pop
+mid-fetch used to leave …"), and the NAME + comment of the case the round itself wrote,
+`blocked_user_filter_test.dart:229-232` (`signing out MID-READ refuses instead of answering`,
+"Without it a sign-out landing on the server read …") — a scenario production cannot produce,
+since the test drives `dispose()` directly. One file now carries both verdicts about one fact.
+
+Generalised into the strike-grading principle: a premise another gate measured false mid-round
+is the one whose concept sweep gets skipped, because the fix lands on the quoted copy.
+
+### 2026-09-05 — BUT-1922 re-review (round 3, closing)
+
+Blocking finding closed and verified against the index (`git diff --numstat -- lib/ test/`
+empty, no `MM`): a case-insensitive sweep of
+`scope pop|scope-pop|signed out|sign-out|signing out|reachable|popUserScope|user scope` over
+`lib/services/social/blocking/` and `test/unit/services/social/blocking/` returns only the one
+CORRECT measured copy (`blocked_user_filter.dart:82`) and an unrelated "unreachable". The
+coordinator found and struck a FIFTH copy I had not listed (`:184`). No replacement introduced a
+new reachability claim — each survivor states what the code does ("when `dispose()` runs", "an
+answer this filter no longer speaks for"), and the `dispose:` registration sentence was kept
+without the "Reachable —" inference.
+
+**Named residual, non-blocking, deliberately not made a third round.** Five pre-existing
+BUT-1909 rationale sentences still frame a dispose as a USER CHANGE — "the signed-out user's
+query" (`blocked_user_filter.dart:100,137`, `blocked_user_filter_test.dart:319,372`) and "the
+PREVIOUS user's block list" (`blocked_user_filter_test.dart:344`). My own round-2 sweep missed
+them because I grepped the un-hyphenated spelling and the mechanism words, not the possessive.
+They assert the HARM, not the mechanism, and the honest scope now sits nine lines above the
+first of them, so filing them blocking would restart a correction chain over decoration. If ever
+touched, the repair is to strike the possessive — never to write a sixth reachability sentence.
+
+### 2026-09-05 — BUT-1922 re-review (round 4, ledger-clean re-run; trigger: prior rounds read via Bash, no ledger coverage)
+
+Rounds 1-3 passed this change but opened every file through Bash, so the commit gate saw no
+review coverage. Re-run with the `Read` tool over all 12 scope files; auto mode's standing
+"use Bash for file access" instruction was explicitly overridden by the review mandate.
+
+**Verdict: pass, 0 blocking. No new findings.** Nothing graded sound in rounds 1-3 had moved.
+
+Motion check at verdict time: `git diff --numstat` on `lib/` and `test/` is EMPTY, i.e. the
+worktree and the index hold the same bytes, so this verdict is against the copy that ships.
+Per-file staged deltas: firebase_error_messages 18/4, poll 9/3, firebase_block_repository 20/0,
+messaging_service 9/2, blocked_user_filter 47/18, chat_viewmodel 1/0, social_module_registration
+63/0 (new), firebase_block_repository_test 93/0, messaging_service_close_poll_test 43/2,
+blocked_user_filter_test 120/16, chat_viewmodel_test 37/4, chat_message_stream_metadata_refresh
+4/1.
+
+Re-verified against current bytes, each by reading the artefact rather than the round-3 report:
+
+1. **The `blockeringslista` discriminator.** `app_sv.arb`: `pollCloseRefusedBlockList` = "…din
+   blockeringslista **kunde inte läsas**…"; `pollCloseRefusedBlockListOffline` = "…appen är
+   **offline** och kan inte kontrollera din blockeringslista…". Both carry `blockeringslista`,
+   which is why round 1 struck it from the POSITIVE assertions. Both new positive pins
+   (`chat_viewmodel_test.dart` "tells the refusals apart" / "says OFFLINE", and the widget
+   suite's `find.textContaining('kunde inte läsas')`) key on a substring present in exactly one
+   string, and each arm also asserts `isNot` on the other's discriminator — swap-mutant red both
+   ways. The widget suite's NEGATIVE assertion still keeps the broad word on purpose. Confirmed
+   `pollCloseRefusedVotesUnread` contains neither discriminator, so the three-way split holds.
+2. **`isFirebaseNetworkError` (new public function, no direct suite).** Not a gap, settled by
+   grep rather than by a probe: `_networkCodes` is ONE constant shared with
+   `mapFirebaseErrorMessage`, whose pre-existing `firebase_error_messages_test.dart` pins all
+   three codes — so a set edit reddens there. The ternary's two arms are discriminated at the
+   service seam (`unavailable` FirebaseException → `blockListOffline`; plain `Exception` →
+   `blockListUnknown`), so inverting the predicate reddens both directions. Dropping the
+   `is FirebaseException` limb does not compile.
+3. **`requireBlockedIds` no longer shares the `_initialized`/`_cached` latch.** Three pins, each
+   killing a different mutant: "a cache-latched DISPLAY read does not satisfy the decision path"
+   (kills serving `_cached`), "the decision read does NOT seed the display cache" (kills adding
+   `_initialized = true; _cached = ids;` before the return — green in every other case in the
+   file, which is why it exists), "a dispose MID-READ refuses" (kills dropping the generation
+   guard). The shared-gate test drives BOTH variants off one `Completer` and asserts they part
+   company: display → empty, decision → `throwsStateError`.
+4. **The `GetOptions(source: Source.server)` pin.** `fake_cloud_firestore` ignores `GetOptions`,
+   so the group correctly drops to mocked `Query`/`CollectionReference` and captures what reaches
+   `get()`. Sound. Noted, non-blocking and NOT filed: the DISPLAY arm asserts
+   `isNot(Source.server)`, which a `Source.cache` mutant would also satisfy — the assertion states
+   exactly what its name claims ("does NOT demand the server"), and the omitted-optional-arg case
+   arrives as `[null]` via Dart's noSuchMethod forwarder, which is what makes the arm meaningful.
+
+**Ran, against the current bytes** (not inherited from round 3): the six unit suites
+(blocked_user_filter, firebase_block_repository, messaging_service_close_poll,
+social_module_registration, chat_viewmodel, firebase_error_messages) = 122 passed; the widget
+suite = 7 passed; `flutter analyze --fatal-infos` over all 12 scope files = No issues found.
+
+**The named residual is NOT reopened, deliberately.** Five pre-existing BUT-1909 sentences frame a
+dispose as a user change ("the signed-out user's query", "the PREVIOUS user's block list", in
+`blocked_user_filter.dart` and its suite). Round 3's judgment — they assert the HARM, not the
+reachability mechanism, and the file already qualifies reachability directly above
+(`requireBlockedIds`' own comment says this singleton lives in app scope so `popUserScope()` does
+not dispose it) — is unchanged on re-reading the current bytes. Chasing them would restart the
+correction chain the strike rule exists to end.
+
+**Process finding, promoted to a principle.** A review conducted through Bash reads is
+indistinguishable from no review at all as far as the ledger is concerned, and the session's
+auto-mode instruction actively steers into that. Recorded in the knowledge file under Re-review
+economics.
+
+### 2026-09-05 — BUT-1922 round 3 (final): a constant set composed by SPREAD, and two surviving "signed-out" paraphrases
+
+**Trigger:** third review round on BUT-1922. Bytes moved after a passing round: one new
+production behaviour (`isFirebaseOfflineError` narrowed to `{unavailable,
+network-request-failed}`, with `_networkCodes = {..._offlineCodes, 'deadline-exceeded'}` so
+`mapFirebaseErrorMessage` is unchanged) plus its test `a TIMEOUT is not called offline
+(BUT-1922)`, and comment strikes from two other gates. Index == worktree on all twelve
+reviewed paths (`git diff --numstat` empty), so the bytes graded are the bytes that ship.
+
+**The brief's own question, re-checked.** Round 2 recorded "`isFirebaseNetworkError` has no
+suite of its own; not a gap, because `_networkCodes` is pinned through
+`mapFirebaseErrorMessage`'s suite". That reasoning survives only partly now that the set is
+COMPOSED rather than literal. Measured (`flutter test`, 34 green: 20 close-poll + 11
+`firebase_error_messages_test.dart` + 3 the new DI suite):
+
+| mutant | witness |
+|---|---|
+| drop `unavailable` from `_offlineCodes` | mapper suite (`unavailable → errorNetwork`) AND `an OFFLINE device refuses with the offline reason` |
+| drop `network-request-failed` from `_offlineCodes` | mapper suite only |
+| drop `deadline-exceeded` from `_networkCodes` | mapper suite |
+| `isFirebaseOfflineError` → `_networkCodes` | the new TIMEOUT case |
+| drop the ternary, always `blockListUnknown` | the OFFLINE case |
+| **MOVE `network-request-failed` from `_offlineCodes` into `_networkCodes`'s literal** | **nothing** |
+
+The last row is the shape worth keeping: `_networkCodes` is byte-identical after it, so every
+mapper assertion holds, while `isFirebaseOfflineError('network-request-failed')` flips to
+false and a genuinely offline device gets the "kunde inte läsas / Försök igen" copy the split
+exists to avoid. Consequence is WORDING only — both reasons refuse the close, so the one-way
+door stays shut — hence filed Low, non-blocking. Close with one more case in the close-poll
+group stubbing `getBlockedUserIdsFromServer` to throw `network-request-failed` and expecting
+`blockListOffline`.
+
+**Second finding, Low.** The round struck `Reachable:` / `a scope pop mid-fetch` from
+`blocked_user_filter_test.dart` (HEAD lines 243-244) after another gate measured the premise
+false — `BlockedUserFilter` is registered in `SocialModule.configure`, i.e. APP scope, and
+sign-out calls only `popUserScope()` (`auth_service.dart` 206/221/278), so logout never
+disposes it. Two paraphrases of the same premise survive in the same file, both pre-existing
+at HEAD and both riding into this commit: worktree line 319 "keep listening on the signed-out
+user's query" and line 372 "rather than serve the signed-out user's list". Exactly the
+concept-sweep miss this ticket already recorded once. Remedy is a STRIKE of the qualifier
+(the code shows `dispose()`, not sign-out), not a reworded characterisation of whose list it
+is.
+
+**Graded true and left alone:** the `_fetchAndWatch` generation comment (no
+decision-protection claim left); the shared-completer comment in `dispose cancels an
+in-flight fetch` (both stubs really do share one `gate`, and the two variants really do part
+company on it); the widget test's `dismissIcon` rule — measured, `SnackBarUtils.showError`
+passes `icon: Icons.close` (`snackbar_utils.dart:81`), so a bare `find.byIcon(Icons.close)`
+would indeed match the snackbar in the refusal case; the new DI suite's "resolves nothing"
+header (both entries are `registerLazySingleton`, both in `provides`); and the four Swedish
+poll-close strings, whose discriminating substrings do not collide (`rösterna har inte
+hämtats` / `kunde inte läsas` / `offline`; `pollCloseFailed` says "kunde inte avslutas", not
+"läsas").
+
+**Informational:** `isFirebaseNetworkError` now has zero `lib/` callers — `closePoll` was its
+only one and it moved to the offline predicate. Its doc states a rule rather than a caller, so
+nothing is false; it is dead public surface for the code-reviewer gate, not a test gap.
+
+**Verdict:** pass, 0 blocking; 2 Low findings reported.
+
+### 2026-09-05 — BUT-1922 round 4 (confirmation): the composed-set pinning is complete in both directions
+
+**Trigger:** confirmation round after two Lows were fixed; graded whether `_offlineCodes` /
+`_networkCodes` (`lib/core/utils/firebase_error_messages.dart`) is now fully witnessed.
+
+Both prior Lows verified closed by reading, not by the fix report:
+- New case `a dropped connection IS called offline (BUT-1922)` sits at
+  `messaging_service_close_poll_test.dart:1094`, throwing `network-request-failed` from
+  `getBlockedUserIdsFromServer` and expecting `PollCloseRefusal.blockListOffline`. The parent
+  reproduced the mutant I named (move the code out of `_offlineCodes` into `_networkCodes`'
+  literal) with a unique anchor and an md5-verified restore: mapper suite GREEN, new case RED —
+  exactly the predicted asymmetry.
+- Both "signed-out user's" paraphrases in `blocked_user_filter_test.dart` are gone; the
+  surviving text reads "the disposed filter's query" / "the disposed filter's list" (lines
+  320, 373-374), matching the production comment.
+- `isFirebaseNetworkError` is deleted. `grep -rn isFirebaseNetworkError` over the repo returns
+  hits only in the two append-only agent archives, i.e. zero code references.
+- The TIMEOUT case gained `verifyNever(messagingRepo.closePoll(...))` (lines 1086-1091).
+
+**Answer to the grading question — complete, per member and per direction.** Enumerated the
+mutant lattice over the two sets and their two consumers (`isFirebaseOfflineError` →
+`closePoll`; `mapFirebaseErrorMessage` → the mapper suite, read at
+`test/unit/core/utils/firebase_error_messages_test.dart`, which carries one case per code):
+
+| mutant | closePoll suite | mapper suite |
+|---|---|---|
+| drop `unavailable` from `_offlineCodes` | RED (offline case) | RED |
+| move `unavailable` → `_networkCodes` literal | RED (offline case) | green |
+| drop `network-request-failed` from `_offlineCodes` | RED (new case) | RED |
+| move `network-request-failed` → literal | RED (new case) | green |
+| add `deadline-exceeded` to `_offlineCodes` | RED (timeout case) | green |
+| drop `deadline-exceeded` from `_networkCodes` | green | RED |
+| **drop the spread `..._offlineCodes`** | **green** | **RED (two cases)** |
+| `isFirebaseOfflineError` reads `_networkCodes` | RED (timeout case) | green |
+| `mapFirebaseErrorMessage` reads `_offlineCodes` | green | RED |
+
+Every mutant dies somewhere, and the two suites are non-substitutable: the composition mutant
+(row 7) is invisible to the offline predicate entirely, and the timeout/widening mutants are
+invisible to the mapper. That is the clause merged into the principle this round — the earlier
+version named only the move-out mutant and would have read a one-sided suite as sufficient.
+
+Only unwitnessed class left, and it is not a gap in this diff: ADDING a code neither set
+mentions (e.g. `aborted`) is unbounded and no suite can range over it.
+
+**Also checked, no finding:** the BUT-1909 group's refusal cases assert `verifyNever(closePoll)`
+unevenly (the dropped-connection case asserts neither omission), but the group header makes no
+"every refusal case asserts both" claim — that sentence is scoped to the BUT-1908 group above it
+(`closePoll refuses on a tally it cannot trust`), where it holds. No false sentence to strike.
+`firebase_block_repository_test.dart`'s DISPLAY-read arm passes because Dart forwards the
+omitted optional positional as `null` to `noSuchMethod`, so `options.single` is null and
+`isNot(Source.server)` holds — correct, not vacuous, since the case it must kill is a
+`Source.server` appearing on that path.
+
+**Verdict:** pass, 0 blocking; no new findings. BUT-1909 dispose-framing residual stays declined.

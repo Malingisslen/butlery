@@ -675,7 +675,14 @@ name which doc each end touches before approving it.
   rethrowing and reserving null for `!exists` is the fix, but a `!exists` answer resolved
   from CACHE is still not proof of absence, so any comment claiming null means absent "and
   nothing else" overclaims unless it checks `metadata.isFromCache` — the same cache path is
-  why a "refuse when unreadable" gate never covers "readable but STALE". A flag that TRUSTS a
+  why a "refuse when unreadable" gate never covers "readable but STALE". Closing THAT is a
+  SERVER-SOURCED sibling read (`GetOptions(source: Source.server)`, which throws `unavailable`
+  offline) on the PROPAGATING variant only, and that variant must neither read nor write the
+  shared latch — a display path that latched a cache-served set offline otherwise answers the
+  decision with no I/O at all. Two residuals to state rather than fix: a local write not yet
+  server-acked is invisible to a server-source read (the cache-backed read saw it), and the
+  split stays unpinned unless a test drives the REPOSITORY, because every service-level suite
+  mocks the method NAME and passes whether or not the option is still passed. A flag that TRUSTS a
   cached absence (`acceptCachedAbsence`) must be opt-in per call and stay `@protected` — but
   its real cost is that it converts a refusal into an EMPTY answer, so the read-failed flag
   never fires and the write path built on that empty answer runs unguarded: trace it, and
@@ -721,7 +728,18 @@ name which doc each end touches before approving it.
   transaction needs an explicit fallback or an accepted-deviation entry (BUT-1683). Skip a
   true no-op write entirely, keyed on "no submitted row matched a live one" (an
   activity-stamp field defeats an object-identity check). `deadline-exceeded` is a
-  client-side timeout, not proof of offline. The offline-safe repair is a field-level MERGE
+  client-side timeout, not proof of offline — so a network-code SET reused to pick USER COPY
+  (one set feeding both a message mapper and an `isNetworkError` decision) turns a timeout on
+  a connected device into a sentence asserting the app is offline. Tolerable where both
+  branches refuse identically and only the advice differs; grade the SENTENCE, not the branch.
+  Its repair is a SUBSET split — a narrow `_offlineCodes` const set spread into the wide one,
+  the copy mapper still reading the WIDE set (behaviour-neutral, pin each code) and only the
+  DECISION reading the narrow one. Two things to check after it: the wide predicate is
+  usually left with ZERO callers while its doc still promises "one place so callers cannot
+  drift", and a sibling module may hold a PRIVATE set of the same name with different
+  contents (`shopping_repository_routing_module` keeps `deadline-exceeded` in its offline
+  fallback, BUT-1683) — "the offline codes" is not one fact in this repo.
+  The offline-safe repair for a WRITE is a field-level MERGE
   primitive (`FieldValue.arrayUnion` for an append); a change to an EXISTING row has none.
   Enforcement shape: a `toFirestore()` diff that THROWS on any differing key outside a
   narrow whitelist rather than falling back to a full write (which re-sends a stale ACL) —
@@ -790,7 +808,7 @@ name which doc each end touches before approving it.
   whose `catch` RETURNS the inconclusive value instead of falling through reads as covered
   and answers "unknown" forever in production; state such a throw in the interface. It also
   IGNORES `GetOptions(source:)`, so cache-vs-server behaviour can only be pinned through a
-  mocked `DocumentReference` capturing the `GetOptions` it is handed — and that pins the base
+  mocked `DocumentReference`/`Query` capturing the `GetOptions` it is handed — and that pins the base
   method only: whether the one production caller still PASSES the opt-in stays unguarded
   unless a test drives that repository through the same mock.
 - Prefer real-repository + fake-Firestore + auth-state-fake tests over side-effect stubs

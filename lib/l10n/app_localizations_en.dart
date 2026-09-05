@@ -13921,6 +13921,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'The poll was not closed — your block list could not be read, so blocked votes cannot be excluded. Try again.';
 
   @override
+  String get pollCloseRefusedBlockListOffline =>
+      'The poll was not closed — the app is offline and cannot check your block list. Try again once you have a connection.';
+
+  @override
   String get pollCloseFailed => 'The poll could not be closed. Try again.';
 
   @override

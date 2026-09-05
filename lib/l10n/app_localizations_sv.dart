@@ -13953,6 +13953,10 @@ class AppLocalizationsSv extends AppLocalizations {
       'Omröstningen avslutades inte — din blockeringslista kunde inte läsas, så blockerade röster går inte att räkna bort. Försök igen.';
 
   @override
+  String get pollCloseRefusedBlockListOffline =>
+      'Omröstningen avslutades inte — appen är offline och kan inte kontrollera din blockeringslista. Försök igen när du har nätverk.';
+
+  @override
   String get pollCloseFailed =>
       'Omröstningen kunde inte avslutas. Försök igen.';
 

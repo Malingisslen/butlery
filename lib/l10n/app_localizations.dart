@@ -23267,6 +23267,12 @@ abstract class AppLocalizations {
   /// **'Omröstningen avslutades inte — din blockeringslista kunde inte läsas, så blockerade röster går inte att räkna bort. Försök igen.'**
   String get pollCloseRefusedBlockList;
 
+  /// Snackbar when closePoll refused because the device is offline, so the block list could not be confirmed against the server.
+  ///
+  /// In sv, this message translates to:
+  /// **'Omröstningen avslutades inte — appen är offline och kan inte kontrollera din blockeringslista. Försök igen när du har nätverk.'**
+  String get pollCloseRefusedBlockListOffline;
+
   /// Snackbar for any other failure to close a poll.
   ///
   /// In sv, this message translates to:

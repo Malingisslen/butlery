@@ -116,6 +116,26 @@ class FirebaseBlockRepository extends BaseFirebaseRepository<BlockRecord> {
         .toSet();
   }
 
+  /// The same list, but it must come from the SERVER.
+  ///
+  /// BUT-1922. A plain `get()` answers from the local cache WITHOUT an error
+  /// while the device is offline, so a caller that only knows how to refuse an
+  /// unreadable list cannot tell a current answer from a stale one. Offline
+  /// this throws `unavailable` instead, which is what `closePoll`'s refusal
+  /// needs to fire. Display paths must NOT use this: offline it throws, and the
+  /// fail-open catch above them then serves the chat UNFILTERED, so a blocked
+  /// person's messages come back.
+  Future<Set<String>> getBlockedUserIdsFromServer() async {
+    final uid = requireCurrentUserId();
+    final snapshot = await collection
+        .where('blockerId', isEqualTo: uid)
+        .get(const GetOptions(source: Source.server));
+
+    return snapshot.docs
+        .map((doc) => BlockRecord.fromFirestore(doc.data(), doc.id).blockedId)
+        .toSet();
+  }
+
   /// Stream of blocked user IDs for real-time updates.
   Stream<Set<String>> watchBlockedUserIds() {
     final uid = currentUserId;

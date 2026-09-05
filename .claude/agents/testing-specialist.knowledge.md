@@ -60,6 +60,10 @@ want the probe that produced it; or this file itself reads too compressed — th
   an unchanged hash.
 - **The motion check is the map: moved PRODUCTION ∩ unmoved SUITES = unasserted by
   construction** — `git show :<path>` on such a file is a free pre-fix mutant.
+- **Coverage of a reviewed file is recorded by the `Read` TOOL and by nothing else** — `cat`,
+  `sed`, `head`, Grep excerpts and `git diff` leave no ledger trace, so a review that read that
+  way is treated as never having happened and must be re-run file-by-file. Auto mode's
+  "prefer Bash for file access" pulls straight into this; the review mandate outranks it.
 - **Fix loop consumes Critical/High only** — an all-Low/Medium re-review never changes. Apply
   zero-risk test-only fixes yourself; never edit production in a review pass.
 - **Re-run the motion check against the FIX REPORT, not just your own copy** — a round's remedy
@@ -397,7 +401,14 @@ other suites prove:
   source holds.** Build the fixture-uid × source table; reading the spreads one by one makes all
   of them look covered. **Read the LOOKUP STUB first** — a `thenAnswer` ignoring its ARGUMENT
   makes every spread deletable-green; the stub must filter on
-  `invocation.positionalArguments.first` (BUT-1971).
+  `invocation.positionalArguments.first` (BUT-1971). **A CONSTANT set composed by spread
+  (`B = {...A, x}`) is the same shape and reads as fully pinned**: every member of A is
+  witnessed by B's consumer suite, so the only unwitnessed mutant is MOVING a member out of A
+  into B's literal — behaviour-identical for B, silently narrowing A's own predicate. Grade
+  membership PER SET, not per code: one fixture per A-member through A's OWN predicate. The
+  MIRROR mutant, deleting the spread (`B = {x}`), is invisible to A's predicate and dies only
+  in B's own per-code suite — so the pair is pinned only when BOTH suites carry a case per
+  A-member (BUT-1922).
 - **An optimistic-publish ROLLBACK is pinned only for the field the refusal test reads.** Every
   OTHER restored field is deletable-green whenever the fixture's collateral collection is EMPTY.
   Grade FIELD BY FIELD, seed each collateral collection NON-EMPTY and DIFFERENT from what the
@@ -585,7 +596,11 @@ other suites prove:
 - A COPY test stopping at the confirmation dialog pins the words, not the branch.
   `MaterialApp(routes:{...})` never reads `settings.arguments` — push through `onGenerateRoute`.
 - Two l10n keys with the SAME string make `find.text` unfalsifiable — grep the ARB for EXACT value
-  equality, since `find.text` is whole-`Text.data` equality, never substring (BUT-1831).
+  equality, since `find.text` is whole-`Text.data` equality, never substring (BUT-1831). **A NEW
+  arm's string merely SHARING the discriminating SUBSTRING of a pinned sibling hollows every
+  `contains`/`textContaining` pin on that sibling, with nothing red and in files the round never
+  opened** — when a round adds an enum→l10n arm, run the NEW string through every existing matcher
+  for its siblings, and expect the sibling's test NAME to carry a stale count too (BUT-1922).
 - "Returns null on X / on permission denial" needs a positive control in the same fixture — where
   every layer swallows to null, null is the NORMAL shape of denied/offline/deleted; grep the suite
   for `async => null` on the loader.
@@ -707,7 +722,11 @@ than failing to compile — that is how BUT-1780 shipped "fixed" with no badge e
 - `SemanticsService.announce` in a fire-and-forget handler is skippable UNTIL the view gains a DI
   seam — dated, not permanent. **A comment-only CORRECTION owes a grep of the CORRECTED SENTENCE
   across `test/`**: a covering suite's group header quotes production prose, so the false claim has a
-  third copy there (BUT-1883).
+  third copy there (BUT-1883). **A premise ANOTHER gate measured false mid-round gets the same
+  concept sweep, and it is the one that gets skipped** — the fix lands on the copy that gate
+  quoted while paraphrases survive in sibling comments and in a TEST NAME the same round wrote,
+  leaving one file carrying both verdicts (BUT-1922: "scope pop"/"Reachable"/"signing out"
+  against an APP-scope singleton `popUserScope()` never disposes).
 - **A mask-at-the-throw fix owes NO test when nothing observes the message** — the string is handed to
   `AppLogger.error` as the ERROR OBJECT (only the MESSAGE arg is sanitized) and the user-visible text
   is a generic fallback, so `isNot(contains(id))` on it is type-description vacuity. The durable pin

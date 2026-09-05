@@ -26,16 +26,34 @@ import 'package:butlery/core/l10n/app_locale.dart';
 String mapFirebaseErrorMessage(Object error, {String? fallback}) {
   final l = AppLocale.current;
   if (error is FirebaseException) {
+    if (_networkCodes.contains(error.code)) return l.errorNetwork;
     switch (error.code) {
       case 'permission-denied':
       case 'unauthorized':
       case 'unauthenticated':
         return l.errorPermissionDenied;
-      case 'unavailable':
-      case 'deadline-exceeded':
-      case 'network-request-failed':
-        return l.errorNetwork;
     }
   }
   return fallback ?? l.errorGeneric;
 }
+
+/// The device could not reach the network at all — a subset of the codes
+/// [mapFirebaseErrorMessage] turns into the network message.
+///
+/// BUT-1922: `closePoll` tells these apart from a block list that could not be
+/// read for some other reason, because they need different advice. The split
+/// leaves `deadline-exceeded` out on purpose: it is a CLIENT-side timeout and
+/// fires on a connected but slow device, so telling that user they are offline
+/// would be false.
+bool isFirebaseOfflineError(Object error) =>
+    error is FirebaseException && _offlineCodes.contains(error.code);
+
+const Set<String> _offlineCodes = {
+  'unavailable',
+  'network-request-failed',
+};
+
+const Set<String> _networkCodes = {
+  ..._offlineCodes,
+  'deadline-exceeded',
+};

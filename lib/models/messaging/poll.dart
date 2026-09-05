@@ -298,12 +298,18 @@ enum PollCloseRefusal {
   /// person's vote would decide a recipe that other members then see in their
   /// plan (BUT-1909, Trust & Safety condition).
   blockListUnknown,
+
+  /// The same refusal, but the device has no network. Split from
+  /// [blockListUnknown] for the TEXT alone — BUT-1922 made the server the only
+  /// acceptable source for a poll-CLOSE decision, so being offline is now the
+  /// ordinary way to reach a refusal, and "Försök igen" is advice that cannot
+  /// work until the connection is back.
+  blockListOffline,
 }
 
 /// Thrown by `MessagingService.closePoll` instead of closing on a tally it
-/// cannot trust. Carries [reason] so the UI can say which of the two happened —
-/// they need different Swedish text, because one is repaired by a re-read and
-/// the other may not be.
+/// cannot trust. Carries [reason] so the UI can say which happened; each value
+/// has its own Swedish text.
 class PollCloseRefusedException implements Exception {
   const PollCloseRefusedException(this.reason);
 

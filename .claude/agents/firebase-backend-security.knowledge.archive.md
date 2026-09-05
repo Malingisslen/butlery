@@ -8393,3 +8393,157 @@ correct; only the rationale overclaims. A decision record is superseded with a d
 struck.
 
 Verdict: fail (4 blocking) — all four are comment strikes, no code change owed.
+
+---
+
+## 2026-09-05 — BUT-1922: the server-only block-list read for `closePoll` (verdict: pass, 0 blocking)
+
+Staged diff reviewed: `firebase_block_repository.dart` (+`getBlockedUserIdsFromServer`),
+`blocked_user_filter.dart` (`requireBlockedIds` no longer shares the display latch;
+`_seedBlockedIds` keeps the old cache-friendly cold start), the `closePoll` block-list branch
+in `messaging_service.dart`, plus `firebase_error_messages.dart`
+(`isFirebaseNetworkError` refactored out of `mapFirebaseErrorMessage`) and the new
+`PollCloseRefusal.blockListOffline`.
+
+**Correct and complete for the stated threat.** `Source.server` throws `unavailable` offline,
+so a cache-served answer can no longer decide a poll. No second door found: `closePoll` uses
+only the returned set (`_stripBlockedBallots` is pure); the two other `BlockedUserFilter`
+callers (`_filterBlocked`, `comment_crud_operations._applyBlockFilter`) are display-only and
+still fail open; `friends_state_manager` uses the plain read for display. The offline case also
+covers the earlier `getMessage`/hydration cache-staleness door, because the server block read
+throws before any plan write.
+
+**Display path is NOT fail-closed.** `currentBlockedIds` -> `_seedBlockedIds` -> `_fetchAndWatch`
+-> plain `getBlockedUserIds()`, latch + watch + `catch -> empty` all unchanged.
+
+**Generation guard sufficient.** One await, `_generation` captured before and re-checked after,
+and it THROWS (`StateError`) rather than returning the neutral empty set.
+`closePoll` classifies the `StateError` as non-network -> `blockListUnknown`, the correct copy.
+
+CORRECTION (integration-reviewer, same day): this review claimed the guard is reachable on
+sign-out because the filter sits in the `user_session` scope and `popUserScope()` disposes it.
+Measured false — `registerLazySingleton<BlockedUserFilter>` is at `social_module.dart:328`,
+inside `configure` (app scope), not `configureUserScope`. Nothing in production disposes it, so
+the guard is defence in depth. The guard is still right and stays.
+
+**No GDPR consequence.** The new method reads only the caller's own rows
+(`where('blockerId', isEqualTo: uid)`, matching the `blocks` read rule at `firestore.rules:2476`,
+so the list query is provable per-document); equality-only, no composite index needed. The new
+enum value stores nothing and the snackbar discloses nothing about other users. No export or
+cascade surface touched (`deleteBlocks` in the account cascade is unaffected).
+
+**`mapFirebaseErrorMessage` behaviour unchanged.** The network codes moved ahead of the switch,
+but the two code sets are disjoint and the returns are identical; `firebase_error_messages_test.dart`
+covers all three network codes and is untouched and green in the suite.
+
+**Non-blocking findings.**
+1. (Medium) Nothing pins `Source.server` on `getBlockedUserIdsFromServer`. Every suite mocks the
+   repository method, and `fake_cloud_firestore` ignores `GetOptions`, so deleting the option
+   restores the exact BUT-1922 hole with the whole suite green. Precedent for the pin:
+   `base_firebase_repository_extra_test.dart:375-435` (mock reference capturing `GetOptions`).
+2. (Low) A block whose `set()` is not yet server-acked is invisible to a server-source read,
+   where the previous cache-backed read included the pending mutation. Narrow: `blockUser`
+   awaits the write, and offline the read refuses anyway.
+3. (Low, PRE-EXISTING, not introduced here) `_appendWinnerToWeeklyPlanAndShare` shares the
+   resulting menu with every conversation participant including people the closer has blocked
+   (`messaging_service.dart:1074-1082`). The ballot strip does not reach the share list.
+
+No comment defects: the doc comments on `requireBlockedIds`, `getBlockedUserIdsFromServer` and
+`isFirebaseNetworkError` each check out against the code they describe.
+
+---
+
+## 2026-09-05 — BUT-1922 re-review (ledger-clean pass): server-only block read, VERIFIED CLEAN
+
+Re-run of a gate that had already passed this change, because the first run opened its files
+through Bash and left no ledger coverage; the bytes had also moved (four comment defects from
+three gates fixed since). All four scoped files re-opened with `Read`:
+`firebase_block_repository.dart`, `blocked_user_filter.dart`, `messaging_service.dart`,
+`firebase_error_messages.dart`.
+
+Re-checked the five questions against the current bytes:
+
+1. **Server-only read correct and complete.** `getBlockedUserIdsFromServer()` passes
+   `const GetOptions(source: Source.server)` on the same `where('blockerId', isEqualTo: uid)`
+   query the display path uses. `firestore.rules:2474` `match /blocks/{blockId}` gates read on
+   `resource.data.blockerId == request.auth.uid || resource.data.blockedId == request.auth.uid`
+   — the query's `.where()` names the SAME field and value the read rule gates on, so the list
+   is the documented allowed pattern and needs no rules change. Equality-only, so no composite
+   index. `requireBlockedIds()` is the sole caller; it neither reads nor writes `_initialized`
+   or `_cached`, which is exactly the split the principle demands. Scope is unchanged and
+   pre-existing: only blocks the closer MADE (`blockerId`), never blocks OF the closer.
+2. **Display path is still fail-open.** `currentBlockedIds` -> `_seedBlockedIds` ->
+   `_fetchAndWatch` -> `getBlockedUserIds()` (cache-allowed, `_inFlight` single-flight intact,
+   watch still opened, `onError` still `_invalidate()`s the latch). Its only throw is the
+   generation guard, converted to `const <String>{}` by `currentBlockedIds`'s catch and again
+   by `MessagingService._filterBlocked`'s. Nothing became fail-closed.
+3. **Generation guard sufficient.** Captured before the await, compared after, and the method
+   writes no shared state, so there is nothing to leak past a dispose. The claim it is
+   "reachable on sign-out" was measured FALSE by integration-reviewer and is now correctly
+   written as defence in depth in BOTH the production comment and the earlier archive entry:
+   `BlockedUserFilter` is registered in `SocialModule.configure` (line 328, inside `configure`
+   at line 296 — app scope), not `configureUserScope` (line 133), so `popUserScope()` never
+   disposes it. Verified by reading the module. A dispose-race `StateError` is non-network, so
+   `closePoll` classifies it `blockListUnknown` — the correct copy.
+4. **No GDPR consequence.** No new collection, field, export section or cascade handle; the
+   read is the subject's own blocks. The refusal logs `$e` at `AppLogger.warning`
+   (device-local `developer.log`, no Crashlytics, no analytics), and the query is equality-only
+   so it cannot mint a `create_composite` index-hint URL carrying a uid.
+5. **`isFirebaseNetworkError` does not change `mapFirebaseErrorMessage`.** The three network
+   codes moved from a `switch` arm into a shared `const _networkCodes`, tested BEFORE the
+   permission arm. The two code sets are disjoint, so the reordering is behaviour-preserving —
+   confirmed against the diff, not inferred.
+
+`test/unit/repositories/firebase_block_repository_test.dart` now captures the `GetOptions`
+handed to `get()` through mocked `Query`/`CollectionReference` and asserts server for the
+decision read and not-server for the display read — closing the Medium this gate raised, and
+the only observable that survives `fake_cloud_firestore` ignoring `GetOptions(source:)`.
+
+**One NEW, non-blocking Low.** `_networkCodes` includes `deadline-exceeded`, a CLIENT-SIDE
+timeout, and that set now also picks the user-facing sentence: `app_sv.arb:9736`
+`pollCloseRefusedBlockListOffline` asserts "appen är offline och kan inte kontrollera din
+blockeringslista" for a device that may well have a connection, only a slow one. Copy-only —
+both branches refuse identically, and "försök igen när du har nätverk" is not harmful advice
+for a timeout. Recorded rather than filed as blocking; the durable half went into the existing
+`runTransaction`/`deadline-exceeded` bullet in the principles file rather than a new bullet.
+
+No blocking findings. Verdict: pass (0 blocking).
+
+### 2026-09-05 — BUT-1922 final round: the offline/timeout split changed no security property (clean)
+Re-review of the fix for the Low I raised last round (`deadline-exceeded` sat in the set that
+also chose USER COPY, so a connected-but-slow device could be told it was offline).
+Shipped shape in `lib/core/utils/firebase_error_messages.dart`: `const Set<String> _offlineCodes
+= {'unavailable','network-request-failed'}` and `_networkCodes = {..._offlineCodes,
+'deadline-exceeded'}`; `mapFirebaseErrorMessage` moved its three network codes out of the
+`switch` into a `_networkCodes.contains` test placed BEFORE the permission arm. Behaviour-neutral,
+verified two ways: the code sets are disjoint (permission vs network), so the reordering cannot
+change any outcome, and the resulting `_networkCodes` membership is byte-identical to the three
+old `case` labels. `firebase_error_messages_test.dart` pins each code including
+`deadline-exceeded -> errorNetwork`, so the shared unrelated callers are covered.
+Security answer for `MessagingService.closePoll` (lib/services/messaging_service.dart:885-898):
+BOTH branches throw `PollCloseRefusedException` from inside the SAME `catch`, at the same point,
+before winner resolution and before both writes (`_appendWinnerTo*Plan` and
+`_messagingRepository.closePoll`), so the poll stays open and no plan is written either way —
+the refusal is identical. Logging is identical too: one `AppLogger.warning('Refusing to close
+poll ...: block list unreadable ($e)')` emitted BEFORE the predicate, same level, same sink, same
+text; the predicate is a pure set-membership test with no I/O and no logging. Retry semantics are
+unchanged because nothing downstream branches on the enum except copy selection —
+`ChatViewModel.closePoll` maps `PollCloseRefusal` to a Swedish string (chat_viewmodel.dart:513-517)
+and `chat_message_stream._closePoll` only receives a `String?`, so no reason-dependent retry,
+backoff or swallow can exist. Net effect is one sentence: a timeout now gets `blockListUnknown`
+("kunde inte läsas", true either way) instead of an offline claim.
+Only new finding (Low, not blocking): `isFirebaseNetworkError` (firebase_error_messages.dart:45)
+has ZERO callers anywhere in the repo after the call site moved to `isFirebaseOfflineError` —
+grepped `lib/` and `test/` — while its doc comment says the set lives "in one place so a caller
+that needs the DECISION rather than the copy cannot drift from it", a claim about a caller set
+that is empty. Remedy: delete it and strike the "narrower than [isFirebaseNetworkError]" clause
+in the sibling doc, or keep it and strike the drift sentence. Related, not a defect: the private
+`_offlineCodes` in `lib/repositories/firebase/modules/shopping_repository_routing_module.dart:53`
+is `{'unavailable','deadline-exceeded'}` — same name, different membership, deliberately (BUT-1683
+offline cache fallback). A future "consolidate the offline codes" cleanup would silently change
+that module's offline behaviour.
+Also re-read the three comment strikes from the sibling gates (`_fetchAndWatch` no longer claiming
+a decision-protection role, `requireBlockedIds` no longer claiming a shared latch, two
+"signed-out user" survivors): each now describes what the code does, and
+`requireBlockedIds`/`getBlockedUserIdsFromServer` still read server-only with no `_cached` read or
+write, so the BUT-1909 fail-closed decision path is intact. Verdict: pass, 0 blocking.

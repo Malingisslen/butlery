@@ -118,7 +118,8 @@ void main() {
       repo = _MockBlockRepo();
     });
 
-    test('the CONTROL: both return the list when the repository answers', () {
+    test('the CONTROL: currentBlockedIds returns the list when the repository '
+        'answers', () {
       // The happy path, so the cases below are read against a filter that does
       // reach the repository at all.
       when(() => repo.getBlockedUserIds()).thenAnswer((_) async => {'alice'});
@@ -138,10 +139,109 @@ void main() {
     });
 
     test('requireBlockedIds THROWS instead', () async {
-      when(() => repo.getBlockedUserIds()).thenThrow(Exception('offline'));
+      when(
+        () => repo.getBlockedUserIdsFromServer(),
+      ).thenThrow(Exception('offline'));
 
       final filter = BlockedUserFilter(blockRepository: repo);
       await expectLater(filter.requireBlockedIds(), throwsException);
+    });
+
+    // BUT-1922. The two paths no longer share a read, and this group is what
+    // says so. A plain `get()` is answered from the local cache WITHOUT an
+    // error while the device is offline, so the display path can latch a set
+    // that was never confirmed against the server — and the decision path used
+    // to return exactly that set, with no I/O of its own.
+    group('the decision path reads from the SERVER', () {
+      test('requireBlockedIds never uses the cache-friendly read', () async {
+        when(
+          () => repo.getBlockedUserIdsFromServer(),
+        ).thenAnswer((_) async => {'alice'});
+
+        final filter = BlockedUserFilter(blockRepository: repo);
+        expect(await filter.requireBlockedIds(), {'alice'});
+
+        verifyNever(() => repo.getBlockedUserIds());
+      });
+
+      test(
+        'a cache-latched DISPLAY read does not satisfy the decision path',
+        () async {
+          // The hole itself. Open a chat offline: the display path answers from
+          // the local cache and latches. Before this change `requireBlockedIds`
+          // returned that latched set without reading anything, so a block made
+          // on the user's OTHER device was invisible to `closePoll` and the
+          // ballot it should have removed decided the household's week.
+          when(
+            () => repo.getBlockedUserIds(),
+          ).thenAnswer((_) async => const <String>{});
+          final watch = StreamController<Set<String>>.broadcast();
+          addTearDown(watch.close);
+          when(
+            () => repo.watchBlockedUserIds(),
+          ).thenAnswer((_) => watch.stream);
+          when(
+            () => repo.getBlockedUserIdsFromServer(),
+          ).thenAnswer((_) async => {'alice'});
+
+          final filter = BlockedUserFilter(blockRepository: repo);
+          expect(await filter.currentBlockedIds(), isEmpty);
+
+          expect(
+            await filter.requireBlockedIds(),
+            {'alice'},
+            reason: 'the latched display set is not a claim about the server',
+          );
+          verify(() => repo.getBlockedUserIdsFromServer()).called(1);
+        },
+      );
+
+      test('the decision read does NOT seed the display cache', () async {
+        // `requireBlockedIds` opens no watch, so anything it wrote into
+        // `_cached` would sit there with nothing able to refresh or invalidate
+        // it — the display path would then serve a set that can only go stale.
+        // Adding `_initialized = true; _cached = ids;` before its return is
+        // green across every other case in this file, which is why this one
+        // exists.
+        when(
+          () => repo.getBlockedUserIdsFromServer(),
+        ).thenAnswer((_) async => {'alice'});
+        when(
+          () => repo.getBlockedUserIds(),
+        ).thenAnswer((_) async => {'bob'});
+        final watch = StreamController<Set<String>>.broadcast();
+        addTearDown(watch.close);
+        when(() => repo.watchBlockedUserIds()).thenAnswer((_) => watch.stream);
+
+        final filter = BlockedUserFilter(blockRepository: repo);
+        expect(await filter.requireBlockedIds(), {'alice'});
+
+        expect(
+          await filter.currentBlockedIds(),
+          {'bob'},
+          reason:
+              'the display path must still do its own seeding read and open '
+              'its own watch, not inherit the decision path answer',
+        );
+        verify(() => repo.watchBlockedUserIds()).called(1);
+      });
+
+      test('a dispose MID-READ refuses instead of answering', () async {
+        // The generation guard, carried onto the new path. Without it a
+        // `dispose()` landing on the server read lets an answer this filter no
+        // longer speaks for decide a poll.
+        final gate = Completer<Set<String>>();
+        when(
+          () => repo.getBlockedUserIdsFromServer(),
+        ).thenAnswer((_) => gate.future);
+
+        final filter = BlockedUserFilter(blockRepository: repo);
+        final pending = filter.requireBlockedIds();
+        await filter.dispose();
+        gate.complete({'alice'});
+
+        await expectLater(pending, throwsStateError);
+      });
     });
 
     test(
@@ -173,10 +273,9 @@ void main() {
     );
 
     test('a watch error invalidates instead of freezing the cache', () async {
-      // The second layer of the same fail-open, and the one that matters most:
-      // after this the SAFETY path would have served a stale set with no error,
-      // so `closePoll`'s refusal could never fire while a since-blocked person
-      // decided the winner. `unavailable` on a long-lived listener is routine.
+      // The second layer of the same fail-open, on the DISPLAY path — since
+      // BUT-1922 the decision path never reads this cache at all.
+      // `unavailable` on a long-lived listener is routine.
       final errors = StreamController<Set<String>>.broadcast();
       addTearDown(errors.close);
       var fetches = 0;
@@ -187,13 +286,13 @@ void main() {
       when(() => repo.watchBlockedUserIds()).thenAnswer((_) => errors.stream);
 
       final filter = BlockedUserFilter(blockRepository: repo);
-      expect(await filter.requireBlockedIds(), {'alice'});
+      expect(await filter.currentBlockedIds(), {'alice'});
       expect(fetches, 1);
 
       errors.addError(Exception('unavailable'));
       await Future<void>.delayed(Duration.zero);
 
-      await filter.requireBlockedIds();
+      await filter.currentBlockedIds();
       expect(
         fetches,
         2,
@@ -217,7 +316,7 @@ void main() {
       // The leak the in-flight guard closes. Without it each concurrent caller
       // subscribes, `_subscription` keeps only the last, and the rest are never
       // cancelled — they outlive `dispose()` and keep listening on the
-      // signed-out user's query. One cold chat open reaches this from three
+      // disposed filter's query. One cold chat open reaches this from three
       // places at once.
       when(() => repo.getBlockedUserIds()).thenAnswer((_) async {
         await Future<void>.delayed(const Duration(milliseconds: 5));
@@ -230,7 +329,7 @@ void main() {
       await Future.wait([
         filter.currentBlockedIds(),
         filter.currentBlockedIds(),
-        filter.requireBlockedIds(),
+        filter.currentBlockedIds(),
       ]);
 
       verify(() => repo.getBlockedUserIds()).called(1);
@@ -240,12 +339,18 @@ void main() {
     test(
       'dispose cancels an in-flight fetch instead of letting it re-latch',
       () async {
-        // Reachable: `social_module.dart` registers this with
-        // `dispose: (f) => f.dispose()`, so a scope pop mid-fetch used to leave
-        // the completed fetch re-latching and repopulating the cache with the
-        // PREVIOUS user's block list, plus a subscription nobody cancels.
+        // `social_module.dart` registers this with `dispose: (f) => f.dispose()`.
+        // A dispose mid-fetch used to leave the completed fetch re-latching and
+        // repopulating the cache with the PREVIOUS user's block list, plus a
+        // subscription nobody cancels.
         final gate = Completer<Set<String>>();
         when(() => repo.getBlockedUserIds()).thenAnswer((_) => gate.future);
+        // BUT-1922: the decision path has its own server read now, so it needs
+        // its own stub — the point of the test is still that the two variants
+        // part company on the SAME dispose, so both stubs share one completer.
+        when(
+          () => repo.getBlockedUserIdsFromServer(),
+        ).thenAnswer((_) => gate.future);
         final watch = openWatch();
         when(() => repo.watchBlockedUserIds()).thenAnswer((_) => watch.stream);
 
@@ -264,7 +369,7 @@ void main() {
         await expectLater(pendingRequire, throwsStateError);
 
         // And the next read must go back to the repository rather than serve
-        // the signed-out user's list.
+        // the disposed filter's list.
         when(() => repo.getBlockedUserIds()).thenAnswer((_) async => {'bob'});
         expect(await filter.currentBlockedIds(), {'bob'});
       },
@@ -286,13 +391,13 @@ void main() {
       when(() => repo.watchBlockedUserIds()).thenAnswer((_) => watch.stream);
 
       final filter = BlockedUserFilter(blockRepository: repo);
-      expect(await filter.requireBlockedIds(), {'alice'});
+      expect(await filter.currentBlockedIds(), {'alice'});
       expect(fetches, 1);
 
       await watch.close();
       await Future<void>.delayed(Duration.zero);
 
-      await filter.requireBlockedIds();
+      await filter.currentBlockedIds();
       expect(
         fetches,
         2,
@@ -310,7 +415,6 @@ void main() {
       final filter = BlockedUserFilter(blockRepository: repo);
       await filter.currentBlockedIds();
       await filter.currentBlockedIds();
-      await filter.requireBlockedIds();
 
       verify(() => repo.getBlockedUserIds()).called(1);
       // The watch too: a mutant that caches the fetch but re-subscribes on

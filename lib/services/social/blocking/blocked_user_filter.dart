@@ -43,7 +43,7 @@ class BlockedUserFilter {
   Future<Set<String>> currentBlockedIds() async {
     if (_initialized) return _cached;
     try {
-      return await requireBlockedIds();
+      return await _seedBlockedIds();
     } catch (e) {
       // Fail-open, and only for surfaces where an over-inclusive list is
       // recoverable — a blank conversation is worse than a briefly unfiltered
@@ -54,7 +54,8 @@ class BlockedUserFilter {
     }
   }
 
-  /// The same lookup, but it THROWS instead of degrading to an empty set.
+  /// The decision path's lookup: SERVER-only, and it THROWS instead of
+  /// degrading to an empty set.
   ///
   /// BUT-1909. `currentBlockedIds` swallows, which is right for display and
   /// wrong for any decision that cannot be taken back — an empty set there is
@@ -62,29 +63,57 @@ class BlockedUserFilter {
   /// resolve a poll winner into the household's week. A refusal branch written
   /// against `currentBlockedIds` is DEAD CODE for exactly that reason, and a
   /// test that stubs it to throw measures the mock rather than the collaborator.
-  Future<Set<String>> requireBlockedIds() {
-    if (_initialized) return Future.value(_cached);
+  Future<Set<String>> requireBlockedIds() async {
+    // BUT-1922. Deliberately NOT served from `_cached`, and deliberately not
+    // seeded by the display path's read. A plain `get()` answers from the
+    // local cache without an error while the device is offline, so the latch
+    // can hold a list that was
+    // never confirmed against the server: open a chat offline and the display
+    // path latches a cache-served set, after which this method would return it
+    // with no I/O at all. A block made on the user's OTHER device would then
+    // be invisible here, and the ballot it should have removed would decide
+    // the household's week.
+    final generation = _generation;
+    final ids = await _repo.getBlockedUserIdsFromServer();
+    // `dispose()` bumps the generation, so an answer whose read outlived the
+    // dispose belongs to a user this filter is no longer speaking for, and must
+    // not reach a decision. Defence in depth today: this singleton is
+    // registered in `SocialModule.configure`, i.e. the app scope, so
+    // `popUserScope()` on logout does not dispose it.
+    if (generation != _generation) throw StateError(_disposedDuringFetch);
+    // The shared cache is left alone on purpose. It is kept fresh by the watch
+    // that `_fetchAndWatch` opens; writing into it from here would seed a set
+    // with nothing behind it to update it.
+    return ids;
+  }
+
+  /// The display path's cold start: cache-friendly, watch-opening, and allowed
+  /// to answer from the local cache. `currentBlockedIds` converts its failure
+  /// into an empty set; nothing here may be used for a decision.
+  Future<Set<String>> _seedBlockedIds() {
+    // No `_initialized` check here: the only caller tests it and calls this
+    // synchronously, so it cannot flip in between.
+    //
     // Shared across concurrent first callers. Without it each of them runs the
     // fetch AND opens its own watch, and every subscription but the last is
     // overwritten in `_subscription` and never cancelled — it outlives
-    // `dispose()` and keeps listening on the signed-out user's query. One cold
+    // `dispose()` and keeps listening on that query. One cold
     // chat open reaches this from three places at once.
     return _inFlight ??= _fetchAndWatch().whenComplete(() => _inFlight = null);
   }
 
   Future<Set<String>> _fetchAndWatch() async {
     // Captured before the await. `dispose()` bumps it, so a fetch still in
-    // flight at scope pop can tell that the answer it is holding belongs to a
-    // user who has since signed out — clearing `_inFlight` alone does not stop
-    // a future that is ALREADY running, which is what the test for this found.
+    // flight when `dispose()` runs can tell that the answer it is holding
+    // belongs to a user this filter no longer speaks for — clearing `_inFlight`
+    // alone does not stop a future that is ALREADY running, which is what the
+    // test for this found.
     final generation = _generation;
     final ids = await _repo.getBlockedUserIds();
-    // THROWS rather than returning an empty set. An empty set here is
-    // indistinguishable from "nobody is blocked", which would fail OPEN on the
-    // one decision this variant exists to refuse — the neutral-value trap this
-    // file keeps being caught by. `currentBlockedIds` converts the throw back
-    // into the display path's empty set, so the fail-open half is preserved
-    // for free.
+    // THROWS rather than returning an empty set, which would be
+    // indistinguishable from "nobody is blocked" — the neutral-value trap this
+    // file keeps being caught by. `currentBlockedIds` converts the throw into
+    // the display path's empty set.
     if (generation != _generation) throw StateError(_disposedDuringFetch);
     await _subscription?.cancel();
     // Keep cache fresh — block adds/removes propagate without restart, which
@@ -94,19 +123,16 @@ class BlockedUserFilter {
         _cached = ids;
       },
       onError: (Object e) {
-        // Invalidate, do not just log. Leaving the latch set here was the
-        // second layer of the same fail-open: the initial fetch could no longer
-        // freeze the session, but ONE `unavailable` on this long-lived stream
-        // still could — and `requireBlockedIds` would then hand `closePoll` a
-        // stale set with no error at all, so the refusal it exists for could
-        // never fire while a since-blocked person decided the winner.
+        // Invalidate, do not just log. Leaving the latch set here froze the
+        // display path's set for the session on ONE `unavailable`, which is
+        // routine on a long-lived listener.
         AppLogger.warning('[BlockedUserFilter] watch failed: $e');
         _invalidate();
       },
       onDone: _invalidate,
     );
     // Re-checked AFTER opening the watch: a dispose that lands in between would
-    // otherwise leave this subscription listening on the signed-out user.
+    // otherwise leave this subscription running past it.
     if (generation != _generation) {
       await subscription.cancel();
       throw StateError(_disposedDuringFetch);
@@ -122,9 +148,10 @@ class BlockedUserFilter {
 
   /// Forget everything and re-read on the next call.
   ///
-  /// `_cached` is left in place but is unreachable afterwards: every read goes
-  /// through the `_initialized` check, so the display path re-fetches and falls
-  /// back to an EMPTY set on failure rather than to the last known list.
+  /// `_cached` is left in place but is unreachable afterwards: the display path
+  /// reads it only past the `_initialized` check, so it re-fetches and falls
+  /// back to an EMPTY set on failure rather than to the last known list. The
+  /// decision path never reads `_cached` at all.
   void _invalidate() {
     _initialized = false;
     _subscription?.cancel();
@@ -152,9 +179,9 @@ class BlockedUserFilter {
   }
 
   Future<void> dispose() async {
-    // `_inFlight` too. Without it a fetch still in flight at scope pop
+    // `_inFlight` too. Without it a fetch still in flight when this runs
     // completes afterwards, re-latches, repopulates the cache with the PREVIOUS
-    // user's block list and opens a subscription nobody cancels. Reachable —
+    // user's block list and opens a subscription nobody cancels.
     // `social_module.dart` registers this with `dispose: (f) => f.dispose()`.
     _inFlight = null;
     _generation++;

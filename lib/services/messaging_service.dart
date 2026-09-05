@@ -26,6 +26,7 @@ import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
+import 'package:butlery/core/utils/firebase_error_messages.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
 import 'package:butlery/services/messaging/message_sending_operations.dart';
@@ -885,8 +886,14 @@ class MessagingService extends BaseService with StreamManagementMixin {
         AppLogger.warning(
           'Refusing to close poll $messageId: block list unreadable ($e)',
         );
-        throw const PollCloseRefusedException(
-          PollCloseRefusal.blockListUnknown,
+        // BUT-1922: the refusal is the same either way; only the advice
+        // differs. Since that lookup is server-only, an offline device is now
+        // the ordinary way to get here, and telling that user to try again
+        // sends them at a button that cannot work yet.
+        throw PollCloseRefusedException(
+          isFirebaseOfflineError(e)
+              ? PollCloseRefusal.blockListOffline
+              : PollCloseRefusal.blockListUnknown,
         );
       }
       // Through the SAME helper the display path uses.

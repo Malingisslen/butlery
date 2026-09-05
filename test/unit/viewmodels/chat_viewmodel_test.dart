@@ -900,9 +900,13 @@ void main() {
         expect(message, contains('rösterna har inte hämtats'));
       });
 
-      test('closePoll tells the two refusals apart', () async {
-        // The whole reason the refusal carries a reason. One sentence for both
-        // would be wrong for whichever user got the other one.
+      test('closePoll tells the refusals apart', () async {
+        // The whole reason the refusal carries a reason: one sentence for all of
+        // them would be wrong for whichever user got a different one.
+        //
+        // BUT-1922: assert on `kunde inte läsas`, NOT on `blockeringslista`.
+        // Both block-list strings contain the latter, so keying on it would let
+        // this arm be repointed at the offline copy and stay green.
         when(
           () => mockMessagingService.closePoll(
             messageId: any(named: 'messageId'),
@@ -913,9 +917,38 @@ void main() {
 
         final message = await viewModel.closePoll('p1');
 
-        expect(message, contains('blockeringslista'));
+        expect(message, contains('kunde inte läsas'));
         expect(message, isNot(contains('rösterna har inte hämtats')));
+        expect(message, isNot(contains('offline')));
       });
+
+      test(
+        'closePoll says OFFLINE rather than "try again" (BUT-1922)',
+        () async {
+          // Exhaustiveness proves the enum value is HANDLED, never that it is
+          // handled with the right string — swapping the two block-list arms
+          // compiles green and ships the wrong Swedish. The user-visible half of
+          // BUT-1922 lives here and nowhere else.
+          when(
+            () => mockMessagingService.closePoll(
+              messageId: any(named: 'messageId'),
+            ),
+          ).thenThrow(
+            const PollCloseRefusedException(PollCloseRefusal.blockListOffline),
+          );
+
+          final message = await viewModel.closePoll('p1');
+
+          expect(message, contains('offline'));
+          expect(
+            message,
+            isNot(contains('kunde inte läsas')),
+            reason:
+                'telling an offline user their list "could not be read" sends '
+                'them at a retry that cannot work until the connection is back',
+          );
+        },
+      );
 
       test('closePoll reports an unexpected failure rather than swallowing '
           'it', () async {

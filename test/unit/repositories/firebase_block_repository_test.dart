@@ -4,8 +4,16 @@
 /// for the user blocking system using composite-key documents.
 library;
 
+// `Query` and `CollectionReference` are sealed in cloud_firestore, and the
+// group below has to mock them to see which `GetOptions` reach `get()` —
+// `fake_cloud_firestore` ignores the option entirely, so there is nothing to
+// observe through it. Same exemption several suites under `test/` already take.
+// ignore_for_file: subtype_of_sealed_class
+
 import 'package:flutter_test/flutter_test.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:butlery/repositories/firebase/firebase_block_repository.dart';
 import 'package:butlery/models/block_record.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
@@ -284,5 +292,90 @@ void main() {
         },
       );
     });
+
+    // BUT-1922. `fake_cloud_firestore` IGNORES `GetOptions(source:)` (recorded
+    // in the testing digest), so no fake-backed test can tell the decision
+    // path's server read from an ordinary one — both answer the same way and
+    // neither throws. Without this the `const GetOptions(source: Source.server)`
+    // could be dropped and every suite would stay green while the offline hole
+    // it closes reopens: a plain `get()` answers from the local cache with no
+    // error, so a block made on the user's OTHER device stops reaching
+    // `closePoll` and the ballot it should have removed decides the week.
+    //
+    // What survives the fake is WHICH OPTIONS ARE HANDED TO `get`, so the query
+    // is driven through mocks that record them.
+    group('read sources are part of the contract', () {
+      late _MockFirestore firestore;
+      late _MockCollection collectionRef;
+      late _MockQuery query;
+      late _MockQuerySnapshot snapshot;
+      late FirebaseBlockRepository repo;
+
+      setUpAll(() {
+        registerFallbackValue(const GetOptions());
+      });
+
+      setUp(() {
+        firestore = _MockFirestore();
+        collectionRef = _MockCollection();
+        query = _MockQuery();
+        snapshot = _MockQuerySnapshot();
+
+        when(() => firestore.collection(any())).thenReturn(collectionRef);
+        when(
+          () => collectionRef.where(any(), isEqualTo: any(named: 'isEqualTo')),
+        ).thenReturn(query);
+        when(() => snapshot.docs).thenReturn([]);
+        when(() => query.get(any())).thenAnswer((_) async => snapshot);
+        when(() => query.get()).thenAnswer((_) async => snapshot);
+
+        repo = FirebaseBlockRepository(
+          firestore: firestore,
+          authRepository: mockAuthRepo,
+        );
+      });
+
+      test('the DECISION read demands the server', () async {
+        await repo.getBlockedUserIdsFromServer();
+
+        final options = verify(
+          () => query.get(captureAny()),
+        ).captured.cast<GetOptions?>();
+        expect(options, hasLength(1));
+        expect(
+          options.single?.source,
+          Source.server,
+          reason:
+              'a cache-served answer here is indistinguishable from a current '
+              'one, which is the whole defect BUT-1922 closes',
+        );
+      });
+
+      test('the DISPLAY read does NOT demand the server', () async {
+        // The other half, and it must stay green for the opposite reason: a
+        // server-only read on this path throws offline, the fail-open catch
+        // above it swallows that, and the chat is then served unfiltered.
+        await repo.getBlockedUserIds();
+
+        final options = verify(
+          () => query.get(captureAny()),
+        ).captured.cast<GetOptions?>();
+        expect(
+          options.single?.source,
+          isNot(Source.server),
+          reason: 'the display path may answer from the local cache',
+        );
+      });
+    });
   });
 }
+
+class _MockFirestore extends Mock implements FirebaseFirestore {}
+
+class _MockCollection extends Mock
+    implements CollectionReference<Map<String, dynamic>> {}
+
+class _MockQuery extends Mock implements Query<Map<String, dynamic>> {}
+
+class _MockQuerySnapshot extends Mock
+    implements QuerySnapshot<Map<String, dynamic>> {}
