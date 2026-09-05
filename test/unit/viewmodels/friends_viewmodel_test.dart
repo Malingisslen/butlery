@@ -347,9 +347,6 @@ void main() {
         },
       );
 
-      // Note: unblockUser test skipped — same pre-existing SchedulerBinding issue
-      // as sendFriendRequest/removeFriend tests (notifyListeners needs widget binding)
-
       test('should cancel sent request', () async {
         // Arrange - use state-based configuration (ultrathink gold standard)
         mockManagement.setManagementState(friends: []);
@@ -808,9 +805,8 @@ void main() {
 
     // SOC-04: block/unblock at the VM layer.
     //
-    // FriendsViewModel has no blockUser() method — blocking is handled by the
-    // view layer (friend_request_actions.dart) which calls the service directly.
     // The VM surface for the block domain is:
+    //   • blockUser(userId)       — delegates to management, returns bool, logs analytic
     //   • unblockUser(userId)     — delegates to management, returns bool, logs analytic
     //   • getFriendshipStatus()   — reads blockedUsers from the service (covered above)
     //
@@ -818,6 +814,36 @@ void main() {
     // schedules via addPostFrameCallback, so the bool-return contract is the
     // correct, stable VM-level boundary to pin.
     group('Block / Unblock', () {
+      test(
+        'blockUser returns true and delegates to management service on success',
+        () async {
+          // BUT-1951: before this the VM had no blockUser at all, so every
+          // block surface in the app was a view-layer stub that wrote nothing.
+          mockManagement.setManagementState(shouldSucceed: true);
+
+          final result = await viewModel.blockUser('block-target-abc');
+
+          expect(result, isTrue);
+          // The bool alone cannot tell block from unblock — the fake answers
+          // both the same way, so a swap survives without these two.
+          expect(mockManagement.blockCalls, equals(['block-target-abc']));
+          expect(mockManagement.unblockCalls, isEmpty);
+        },
+      );
+
+      test(
+        'blockUser returns false when management service reports failure',
+        () async {
+          // Failure must propagate, or the UI reports a block that never landed.
+          mockManagement.setManagementState(shouldSucceed: false);
+
+          final result = await viewModel.blockUser('block-target-abc');
+
+          expect(result, isFalse);
+          expect(mockManagement.blockCalls, equals(['block-target-abc']));
+        },
+      );
+
       test(
         'unblockUser returns true and delegates to management service on success',
         () async {
@@ -829,6 +855,8 @@ void main() {
           final result = await viewModel.unblockUser('blocked-user-123');
 
           expect(result, isTrue);
+          expect(mockManagement.unblockCalls, equals(['blocked-user-123']));
+          expect(mockManagement.blockCalls, isEmpty);
         },
       );
 
@@ -845,52 +873,32 @@ void main() {
         },
       );
 
-      test('getFriendshipStatus reflects live blockedUsers from service', () {
-        // Proves the read path: when the service state contains a blocked user,
-        // the VM correctly surfaces FriendshipStatus.blocked for that id and
-        // FriendshipStatus.none for everyone else.
-        // (getFriendshipStatus reads blockedUsers directly from the service.)
-        mockFriendsService.setFriendsState(
-          friends: [],
-          incomingRequests: [],
-          outgoingRequests: [],
-          categoriesList: [],
-          blockedUsers: {'block-target-abc'},
-          isLoading: false,
-          error: null,
-          isInitialized: true,
-          management: mockManagement,
-        );
-
-        expect(
-          viewModel.getFriendshipStatus('block-target-abc'),
-          equals(FriendshipStatus.blocked),
-        );
-        expect(
-          viewModel.getFriendshipStatus('innocent-user-xyz'),
-          equals(FriendshipStatus.none),
-        );
-      });
-
       test(
         'getFriendshipStatus returns none for previously-blocked user after service state clears',
         () {
-          // Proves unblock consistency: once the service no longer includes a
-          // user in blockedUsers, the VM must not keep reporting them as blocked.
-          // This would fail if the VM cached blockedUsers locally instead of
-          // reading the live service state.
-          mockFriendsService.setFriendsState(
+          // The seed-then-clear order is the whole test. Asserting `none` for a
+          // uid that was never blocked passes on any implementation, cached or
+          // live; only reading `blocked` FIRST, on the same VM, can catch a VM
+          // that snapshots blockedUsers instead of reading the service.
+          void seed(Set<String> blocked) => mockFriendsService.setFriendsState(
             friends: [],
             incomingRequests: [],
             outgoingRequests: [],
             categoriesList: [],
-            blockedUsers: {},
+            blockedUsers: blocked,
             isLoading: false,
             error: null,
             isInitialized: true,
             management: mockManagement,
           );
 
+          seed({'formerly-blocked-user'});
+          expect(
+            viewModel.getFriendshipStatus('formerly-blocked-user'),
+            equals(FriendshipStatus.blocked),
+          );
+
+          seed({});
           expect(
             viewModel.getFriendshipStatus('formerly-blocked-user'),
             equals(FriendshipStatus.none),

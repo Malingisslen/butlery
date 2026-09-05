@@ -23,6 +23,10 @@
   "@stateSuccessDefault": {
     "description": "Default title on the shared success state when no explicit title is passed (BUT-1430)"
   },
+  "a11yBlockGroupMember": "Blockera",
+  "@a11yBlockGroupMember": {
+    "description": "Screen-reader action label on a tappable member row in the block picker. Names the action only; the row's own text carries the name"
+  },
   "a11yRequiredFieldSuffix": "{label} (obligatorisk)",
   "@a11yRequiredFieldSuffix": {
     "description": "Accessibility label for a required form field — the field label followed by a required marker (BUT-1430)",
@@ -748,6 +752,14 @@
     }
   },
   "chatErrorOccurred": "Ett fel uppstod",
+  "chatBlockGroupMemberEmpty": "Det finns ingen annan att blockera här",
+  "@chatBlockGroupMemberEmpty": {
+    "description": "Empty state in the group-chat block picker"
+  },
+  "chatBlockGroupMemberTitle": "Vem vill du blockera?",
+  "@chatBlockGroupMemberTitle": {
+    "description": "Title of the dialog that picks which group member to block"
+  },
   "chatConversationInfo": "Konversationsinfo",
   "chatTypeDirectMessage": "Typ: Direktmeddelande",
   "chatCreatedAt": "Skapad: {date}",
@@ -5636,7 +5648,7 @@
       }
     }
   },
-  "socialBlockUserMessage": "Vill du blockera {name}? De kommer inte kunna se din profil eller skicka förfrågningar.",
+  "socialBlockUserMessage": "Vill du blockera {name}? De kommer inte kunna se din profil eller skicka förfrågningar. En vänskap tas bort och återställs inte om du avblockerar.",
   "@socialBlockUserMessage": {
     "placeholders": {
       "name": {

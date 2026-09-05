@@ -17,6 +17,7 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/social/content_type.dart';
 import 'package:butlery/widgets/social/report_content_dialog.dart';
+import 'package:butlery/widgets/social/block_user_action.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/messaging_service.dart';
@@ -60,6 +61,17 @@ class _FriendProfileViewState extends State<FriendProfileView> {
     super.dispose();
   }
 
+  Future<void> _blockFriend() async {
+    final blocked = await BlockUserAction.confirmAndBlock(
+      context,
+      userId: friend.uid,
+      displayName: friend.displayName,
+      viewModel: _friendsViewModel,
+    );
+    // The profile of someone you just blocked has nothing left to show.
+    if (blocked && mounted) Navigator.of(context).pop();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -70,7 +82,9 @@ class _FriendProfileViewState extends State<FriendProfileView> {
         actions: [
           PopupMenuButton<String>(
             onSelected: (value) {
-              if (value == 'report') {
+              if (value == 'block') {
+                _blockFriend();
+              } else if (value == 'report') {
                 ReportContentDialog.show(
                   context: context,
                   contentType: ContentType.profile,
@@ -80,6 +94,21 @@ class _FriendProfileViewState extends State<FriendProfileView> {
               }
             },
             itemBuilder: (context) => [
+              if (_friendsViewModel.getFriendshipStatus(friend.uid) !=
+                  FriendshipStatus.blocked)
+                PopupMenuItem(
+                  value: 'block',
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.block,
+                        color: Theme.of(context).colorScheme.error,
+                      ),
+                      const SizedBox(width: AppDimensions.spacingSm),
+                      Text(context.l10n.socialBlock),
+                    ],
+                  ),
+                ),
               PopupMenuItem(
                 value: 'report',
                 child: Row(
@@ -374,8 +403,7 @@ class _FriendProfileViewState extends State<FriendProfileView> {
         Navigator.of(context).pop(); // Go back to friends list
       } else {
         // Was silently swallowed: a network/permission failure left the
-        // friend in place with no feedback. Surface it (matching the
-        // friend_request_actions sibling flow).
+        // friend in place with no feedback. Surface it.
         SnackBarUtils.showError(
           context,
           context.l10n.socialCouldNotRemoveFriend,

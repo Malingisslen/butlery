@@ -491,6 +491,41 @@ class MockFriendsViewModel extends MockBaseViewModel
     // Mock implementation - just return completed future
     return Future.value();
   }
+
+  // ===== Blocking (BUT-1951) =====
+
+  final List<String> blockedUserIds = [];
+  bool blockSucceeds = true;
+
+  /// Per-uid status. Deliberately NOT a blocked/not-blocked pair: with only
+  /// two values `!= blocked` and `== none` are the same function, so the
+  /// screens' real condition cannot be told from the inverted one — and the
+  /// inverted one hides Blockera from every friend, which is everyone who can
+  /// open a friend profile. Anything unseeded is `friends`, the status the
+  /// profile screen is actually opened with.
+  final Map<String, FriendshipStatus> _statuses = {};
+
+  void setBlockedUsers(Set<String> ids) {
+    for (final id in ids) {
+      _statuses[id] = FriendshipStatus.blocked;
+    }
+  }
+
+  void setFriendshipStatus(String userId, FriendshipStatus status) =>
+      _statuses[userId] = status;
+
+  @override
+  Future<bool> blockUser(String userId) async {
+    if (blockSucceeds) {
+      blockedUserIds.add(userId);
+      _statuses[userId] = FriendshipStatus.blocked;
+    }
+    return blockSucceeds;
+  }
+
+  @override
+  FriendshipStatus getFriendshipStatus(String userId) =>
+      _statuses[userId] ?? FriendshipStatus.friends;
 }
 
 /// Mock for ActivityFeedViewModel

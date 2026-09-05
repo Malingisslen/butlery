@@ -66,6 +66,9 @@ class AppLocalizationsSv extends AppLocalizations {
   String get stateSuccessDefault => 'Klart';
 
   @override
+  String get a11yBlockGroupMember => 'Blockera';
+
+  @override
   String a11yRequiredFieldSuffix(String label) {
     return '$label (obligatorisk)';
   }
@@ -926,6 +929,13 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get chatErrorOccurred => 'Ett fel uppstod';
+
+  @override
+  String get chatBlockGroupMemberEmpty =>
+      'Det finns ingen annan att blockera här';
+
+  @override
+  String get chatBlockGroupMemberTitle => 'Vem vill du blockera?';
 
   @override
   String get chatConversationInfo => 'Konversationsinfo';
@@ -8211,7 +8221,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String socialBlockUserMessage(String name) {
-    return 'Vill du blockera $name? De kommer inte kunna se din profil eller skicka förfrågningar.';
+    return 'Vill du blockera $name? De kommer inte kunna se din profil eller skicka förfrågningar. En vänskap tas bort och återställs inte om du avblockerar.';
   }
 
   @override

@@ -811,7 +811,7 @@
     },
     {
       "id": "svc-ocr-extraction",
-      "label": "OCR-extraktion (p\u00e5-enheten \u2192 OCR.space/Google Vision/Tesseract)",
+      "label": "OCR-extraktion (på-enheten → OCR.space/Google Vision/Tesseract)",
       "context": "service",
       "path": "lib/services/ocr_extraction_service.dart"
     },
@@ -2362,6 +2362,24 @@
       "label": "setProfileSearchability (Admin SDK — enda vägen för minderårig)",
       "context": "cloud-function",
       "path": "functions/src/social/set-profile-searchability.ts"
+    },
+    {
+      "id": "repo-block",
+      "label": "FirebaseBlockRepository",
+      "context": "repository",
+      "path": "lib/repositories/firebase/firebase_block_repository.dart"
+    },
+    {
+      "id": "ds-blocks",
+      "label": "blocks",
+      "context": "datastore",
+      "path": "Firestore: blocks collection"
+    },
+    {
+      "id": "v-block-group-member-dialog",
+      "label": "Blockera gruppmedlem-dialog",
+      "context": "view",
+      "path": "lib/widgets/messaging/dialogs/block_group_member_dialog.dart"
     }
   ],
   "actions": [
@@ -2651,14 +2669,14 @@
         {
           "from": "svc-social-share",
           "to": "ds-recipes",
-          "payload": "TVÅ grenar. Personligt recept: NYTT dokument, full kopia, type=collaborative, memberPermissions från noll. REDAN collaborative (omdelning): dokumentet uppdateras på plats — de nya personerna läggs till i memberPermissions, och den som redan finns behåller sin behörighet (en omdelning får aldrig tyst degradera en editor). Före BUT-1797 skrev den grenen BARA shared_recipes-raden och skickade notiser, så mottagarna fick besked om ett recept de inte kunde öppna. Båda grenarna skriver socialData.grants[uid] — 'direct' eller 'group:<id>' — härkomsten som gör delningen återkallelsebar; memberPermissions förblir den enda källan till åtkomst. BUT-1785 (2026-08-03): efterf\u00f6ljande medlems\u00e4ndringar (l\u00e4gg till, ta bort, ta bort grupp) skrev tidigare ALDRIG \u2014 s\u00f6mmen gick till den personliga skrivv\u00e4gen, som avvisar collaborative-recept. Den pekar nu p\u00e5 saveRecipeForSocialModule.",
+          "payload": "TVÅ grenar. Personligt recept: NYTT dokument, full kopia, type=collaborative, memberPermissions från noll. REDAN collaborative (omdelning): dokumentet uppdateras på plats — de nya personerna läggs till i memberPermissions, och den som redan finns behåller sin behörighet (en omdelning får aldrig tyst degradera en editor). Före BUT-1797 skrev den grenen BARA shared_recipes-raden och skickade notiser, så mottagarna fick besked om ett recept de inte kunde öppna. Båda grenarna skriver socialData.grants[uid] — 'direct' eller 'group:<id>' — härkomsten som gör delningen återkallelsebar; memberPermissions förblir den enda källan till åtkomst. BUT-1785 (2026-08-03): efterföljande medlemsändringar (lägg till, ta bort, ta bort grupp) skrev tidigare ALDRIG — sömmen gick till den personliga skrivvägen, som avvisar collaborative-recept. Den pekar nu på saveRecipeForSocialModule.",
           "transport": "Firestore create",
           "verified": true
         },
         {
           "from": "svc-social-share",
           "to": "ds-social",
-          "payload": "shared_content-metadata {recipeId, sharedByUserId, sharedByDisplayName, sharedToUserIds[], isActive}. Mottagarlistan skrivs under EN stavning, `sharedToUserIds` \u2014 den enda `firestore.rules` 'allow list' (:722) k\u00e4nner igen, och den GDPR-exporten och raderingskaskaden b\u00e5da l\u00e4ser. Den skrevs en tid under tv\u00e5 stavningar s\u00e5 att rader fr\u00e5n f\u00f6re fixen f\u00f6rblev l\u00e4sbara; avvecklat 2026-08-03, eftersom projektet bara inneh\u00e5ller testdata och tv\u00e5 kopior av samma faktum bara kunde glida is\u00e4r.",
+          "payload": "shared_content-metadata {recipeId, sharedByUserId, sharedByDisplayName, sharedToUserIds[], isActive}. Mottagarlistan skrivs under EN stavning, `sharedToUserIds` — den enda `firestore.rules` 'allow list' (:722) känner igen, och den GDPR-exporten och raderingskaskaden båda läser. Den skrevs en tid under två stavningar så att rader från före fixen förblev läsbara; avvecklat 2026-08-03, eftersom projektet bara innehåller testdata och två kopior av samma faktum bara kunde glida isär.",
           "transport": "Firestore set/merge",
           "verified": true
         },
@@ -2865,7 +2883,7 @@
         {
           "from": "svc-data-export",
           "to": "vm-data-export",
-          "payload": "JSON-sträng (export_metadata + alla sektioner inkl. pooled_rating_events, version 2.0); export_metadata får truncated_collections/data_completeness och warnings[] efter det djupbegränsade svepet (BUT-1721). data_completeness sätts vid BÅDE trunkering och misslyckad sektion; en sektion som satt error_code UTAN error rapporteras som ofullständig, inte som misslyckad. Samtalssektionen stryker andra deltagares avatar-URL:er (egen behålls) och behåller deras namn och uid — Malins beslut BUT-1772, motsatt kall mot delade listor. BUT-1774 (2026-07-30): andra deltagares perUserSettings (mutad/fäst/arkiverad) är nu ett BESLUTAT bortfall och nämns i sektionens data_minimisation; lastReadTimestamps är det beslutade behållet. BUT-1775 (2026-08-01): samma avatarregel gäller nu även sektionerna shared_recipes_received och shared_menus_received via EN gemensam hjälpfunktion — delarens sharedByAvatarUrl stryks om delaren inte är den som begär exporten — och sektionen har fått en egen data_minimisation-rad. BUT-1767 (2026-07-30): meddelandesektionen skickades tidigare tom (fantomväg conversations/{id}/messages saknar regelblock, fel sorteringsfält, ett filter på ett fält som aldrig skrivs) — läser numera top-level messages på conversationId och levererar riktiga rader; per-radens avsändaravatar stryks enligt samma BUT-1772-beslut. BUT-1773 (2026-07-30): varje exportförfrågan skriver nu exakt en revisionsrad (audit_logs) via DataExportService, beviljad eller nekad. BUT-1775 (2026-08-01): shared_menus_received läste top-level menus filtrerat på sharedToUserIds — ett fält SharedMenu.toFirestore aldrig skriver — och hade därför ALDRIG returnerat en rad; den läser nu shared_content med contentType 'menu', samma väg som recepten, och båda grenarna delar en fråga som filtrerar på den enda stavning firestore.rules 'allow list' godtar. Sedan 2026-08-03 finns bara en stavning, s\u00e5 det finns inget dokument som reglerna eller exporten inte n\u00e5r.",
+          "payload": "JSON-sträng (export_metadata + alla sektioner inkl. pooled_rating_events, version 2.0); export_metadata får truncated_collections/data_completeness och warnings[] efter det djupbegränsade svepet (BUT-1721). data_completeness sätts vid BÅDE trunkering och misslyckad sektion; en sektion som satt error_code UTAN error rapporteras som ofullständig, inte som misslyckad. Samtalssektionen stryker andra deltagares avatar-URL:er (egen behålls) och behåller deras namn och uid — Malins beslut BUT-1772, motsatt kall mot delade listor. BUT-1774 (2026-07-30): andra deltagares perUserSettings (mutad/fäst/arkiverad) är nu ett BESLUTAT bortfall och nämns i sektionens data_minimisation; lastReadTimestamps är det beslutade behållet. BUT-1775 (2026-08-01): samma avatarregel gäller nu även sektionerna shared_recipes_received och shared_menus_received via EN gemensam hjälpfunktion — delarens sharedByAvatarUrl stryks om delaren inte är den som begär exporten — och sektionen har fått en egen data_minimisation-rad. BUT-1767 (2026-07-30): meddelandesektionen skickades tidigare tom (fantomväg conversations/{id}/messages saknar regelblock, fel sorteringsfält, ett filter på ett fält som aldrig skrivs) — läser numera top-level messages på conversationId och levererar riktiga rader; per-radens avsändaravatar stryks enligt samma BUT-1772-beslut. BUT-1773 (2026-07-30): varje exportförfrågan skriver nu exakt en revisionsrad (audit_logs) via DataExportService, beviljad eller nekad. BUT-1775 (2026-08-01): shared_menus_received läste top-level menus filtrerat på sharedToUserIds — ett fält SharedMenu.toFirestore aldrig skriver — och hade därför ALDRIG returnerat en rad; den läser nu shared_content med contentType 'menu', samma väg som recepten, och båda grenarna delar en fråga som filtrerar på den enda stavning firestore.rules 'allow list' godtar. Sedan 2026-08-03 finns bara en stavning, så det finns inget dokument som reglerna eller exporten inte når.",
           "transport": "in-memory return",
           "verified": true
         },
@@ -3777,21 +3795,21 @@
         {
           "from": "vm-photo-import",
           "to": "svc-ocr-extraction",
-          "payload": "Bildbytes (HEIC konverterad till JPEG). 2026-08-03: en gratis p\u00e5-enheten-niv\u00e5 (ML Kit) f\u00f6rs\u00f6ker f\u00f6rst, bakom flaggan enable_on_device_ocr (av som standard). Tr\u00e4ffar den, n\u00e5s ingen betald tj\u00e4nst och ingen kvot f\u00f6rbrukas; annars faller den igenom till kedjan. 2026-08-06: den nivån lämnar numera ifrån sig BÅDE ML Kits egen sträng och en sidmodell med rad- och ordgeometri. En andra flagga, enable_layout_recipe_split (av som standard), avgör vilken av de två strängarna som lagras — av betyder byte för byte som före sömmen breddades, så en återställning aldrig kostar gratisnivån.",
+          "payload": "Bildbytes (HEIC konverterad till JPEG). 2026-08-03: en gratis på-enheten-nivå (ML Kit) försöker först, bakom flaggan enable_on_device_ocr (av som standard). Träffar den, nås ingen betald tjänst och ingen kvot förbrukas; annars faller den igenom till kedjan. 2026-08-06: den nivån lämnar numera ifrån sig BÅDE ML Kits egen sträng och en sidmodell med rad- och ordgeometri. En andra flagga, enable_layout_recipe_split (av som standard), avgör vilken av de två strängarna som lagras — av betyder byte för byte som före sömmen breddades, så en återställning aldrig kostar gratisnivån.",
           "transport": "method-call",
           "verified": true
         },
         {
           "from": "svc-ocr-extraction",
           "to": "vm-photo-import",
-          "payload": "OCR-text + konfidens per sida, och sedan 2026-08-07 \u00e4ven sidans GEOMETRI (OCRResult.layout) n\u00e4r den fria p\u00e5-enheten-niv\u00e5n l\u00e4ste sidan och enable_layout_recipe_split \u00e4r p\u00e5. Geometrin \u00e4r ett TYPAT f\u00e4lt p\u00e5 samma objekt som texten, aldrig en nyckel i metadata: cachen lagrar hela OCRResult under en bildhash, s\u00e5 texten och geometrin kan inte glida is\u00e4r vid en flaggv\u00e4ndning. Texten saneras h\u00e4r (HtmlSanitizer) p\u00e5 SAMTLIGA niv\u00e5er \u2014 detta \u00e4r enda saneringsgr\u00e4nsen p\u00e5 v\u00e4gen, och konsumenterna sparar texten vidare till utkastet utan att sanera om.",
+          "payload": "OCR-text + konfidens per sida, och sedan 2026-08-07 även sidans GEOMETRI (OCRResult.layout) när den fria på-enheten-nivån läste sidan och enable_layout_recipe_split är på. Geometrin är ett TYPAT fält på samma objekt som texten, aldrig en nyckel i metadata: cachen lagrar hela OCRResult under en bildhash, så texten och geometrin kan inte glida isär vid en flaggvändning. Texten saneras här (HtmlSanitizer) på SAMTLIGA nivåer — detta är enda saneringsgränsen på vägen, och konsumenterna sparar texten vidare till utkastet utan att sanera om.",
           "transport": "method-call",
           "verified": true
         },
         {
           "from": "vm-photo-import",
           "to": "svc-import-manager",
-          "payload": "Kombinerad OCR-text (alla sidor, autoParseMulti), och sedan 2026-08-07 ett DocumentLayout byggt av samma sidor, i samma ordning och med samma separator som str\u00e4ngen. Uppdelaren anv\u00e4nder det bara om radantalen st\u00e4mmer, och saknar N\u00c5GON sida geometri (betald niv\u00e5, handskrift, \u00e5terst\u00e4llt utkast) avb\u00f6jer hela dokumentet s\u00e5 textreglerna g\u00e4ller som f\u00f6rr. Sedan 2026-08-08 klipper importhanteraren dessutom bort en ensam rubrik i sidans slut (n\u00e4sta recepts titel, som fotot r\u00e5kade f\u00e5 med) INNAN uppdelningen, n\u00e4r under 120 tecken f\u00f6ljer efter den \u2014 se orphan_tail.dart. Sedan 2026-08-12 klipper den \u00e4ven bort brus i sidans B\u00d6RJAN (sidhuvud, sidnummer, f\u00f6rra receptets svans) n\u00e4r under 60 tecken f\u00f6reg\u00e5r den f\u00f6rsta uppt\u00e4ckta rubriken och inget av det ser ut som en ingrediens- eller instruktionsrad \u2014 se leading_noise.dart. B\u00c5DA trimmarna best\u00e4mmer sig utifr\u00e5n den OR\u00d6RDA sidan och klipper sedan i ETT steg (frame_trim.dart). K\u00f6rdes de efter varandra kunde den f\u00f6rsta trimmens klipp flytta sidans median-teckenstorlek under den andra, s\u00e5 att sidans riktiga rubrik slutade r\u00e4knas som rubrik och receptet f\u00f6rsvann \u2014 byggt och k\u00f6rt 2026-08-12, fastnaglat i frame_trim_test.dart. Svanstrimmens eget beslut \u00e4r of\u00f6r\u00e4ndrat, d\u00e4rf\u00f6r g\u00e4ller dess m\u00e4tta siffror fortfarande. Gr\u00e4nsen 60 \u00e4r EJ m\u00e4tt mot bildkorpusen (\u00e4rvd fr\u00e5n svansregelns egen andra m\u00e4tta niv\u00e5, inte gissad) och v\u00e4ntar p\u00e5 att n\u00e5gon k\u00f6r `dart run tools/corpus_split_eval.dart --leading-trim` innan man litar p\u00e5 den i stor skala.",
+          "payload": "Kombinerad OCR-text (alla sidor, autoParseMulti), och sedan 2026-08-07 ett DocumentLayout byggt av samma sidor, i samma ordning och med samma separator som strängen. Uppdelaren använder det bara om radantalen stämmer, och saknar NÅGON sida geometri (betald nivå, handskrift, återställt utkast) avböjer hela dokumentet så textreglerna gäller som förr. Sedan 2026-08-08 klipper importhanteraren dessutom bort en ensam rubrik i sidans slut (nästa recepts titel, som fotot råkade få med) INNAN uppdelningen, när under 120 tecken följer efter den — se orphan_tail.dart. Sedan 2026-08-12 klipper den även bort brus i sidans BÖRJAN (sidhuvud, sidnummer, förra receptets svans) när under 60 tecken föregår den första upptäckta rubriken och inget av det ser ut som en ingrediens- eller instruktionsrad — se leading_noise.dart. BÅDA trimmarna bestämmer sig utifrån den ORÖRDA sidan och klipper sedan i ETT steg (frame_trim.dart). Kördes de efter varandra kunde den första trimmens klipp flytta sidans median-teckenstorlek under den andra, så att sidans riktiga rubrik slutade räknas som rubrik och receptet försvann — byggt och kört 2026-08-12, fastnaglat i frame_trim_test.dart. Svanstrimmens eget beslut är oförändrat, därför gäller dess mätta siffror fortfarande. Gränsen 60 är EJ mätt mot bildkorpusen (ärvd från svansregelns egen andra mätta nivå, inte gissad) och väntar på att någon kör `dart run tools/corpus_split_eval.dart --leading-trim` innan man litar på den i stor skala.",
           "transport": "method-call",
           "verified": true
         },
@@ -3805,7 +3823,7 @@
         {
           "from": "svc-text-import-strategy",
           "to": "svc-import-manager",
-          "payload": "Recipe (endast parsat, ej sparat). Tillagningstiden avg\u00f6rs sedan 2026-08-05 av `RecipeTimeExtractor` (lib/services/import/parsers/recipe_time_extractor.dart); strategins egen `_extractTime` \u00e4r kvar som fallback n\u00e4r extraktorn inte hittar n\u00e5got.",
+          "payload": "Recipe (endast parsat, ej sparat). Tillagningstiden avgörs sedan 2026-08-05 av `RecipeTimeExtractor` (lib/services/import/parsers/recipe_time_extractor.dart); strategins egen `_extractTime` är kvar som fallback när extraktorn inte hittar något.",
           "transport": "method-call",
           "verified": true
         },
@@ -3949,7 +3967,7 @@
         {
           "from": "svc-text-import-strategy",
           "to": "svc-import-manager",
-          "payload": "Recipe(s) med k\u00e4llartefakt (textPaste). Tillagningstiden kommer fr\u00e5n `RecipeTimeExtractor` med strategins `_extractTime` som fallback (2026-08-05).",
+          "payload": "Recipe(s) med källartefakt (textPaste). Tillagningstiden kommer från `RecipeTimeExtractor` med strategins `_extractTime` som fallback (2026-08-05).",
           "transport": "method-call",
           "verified": true
         },
@@ -4954,7 +4972,7 @@
     {
       "id": "flow-soc-1",
       "label": "vänner",
-      "description": "Skicka/acceptera/avvisa/avbryt vänförfrågan, vänlista, ta bort vän, blockera/avblockera, vängrupper. Sedan pre-release-revisionen B1 skriver klienten aldrig direkt i en annan användares friends-subkollektion — accept går via en Admin SDK-callable som validerar förfrågan och skriver båda sidor, vilket stänger ett hål där en främling kunde skriva sig in i offrets vänlista och läsa dennes cook-snaps/aktivitetsflöde.",
+      "description": "Skicka/acceptera/avvisa/avbryt vänförfrågan, vänlista, ta bort vän, blockera/avblockera, vängrupper. Sedan pre-release-revisionen B1 skriver klienten aldrig direkt i en annan användares friends-subkollektion — accept går via en Admin SDK-callable som validerar förfrågan och skriver båda sidor, vilket stänger ett hål där en främling kunde skriva sig in i offrets vänlista och läsa dennes cook-snaps/aktivitetsflöde. BUT-1951 (2026-09-05): blockering går att NÅ från appen för första gången. Hela läsvägen och tjänstens skrivmetod fanns sedan tidigare, men ingen vy anropade dem — FriendRequestActions.blockUser var en attrapp med Future.delayed som alltid svarade true, så blockeringslistan i sekretessinställningarna kunde aldrig få poster. Nu finns menyvalet på två ytor (vänprofilen och chattens meny, den senare med en deltagarväljare i gruppchatt) och båda går via FriendsViewModel.blockUser till tjänsten. Bekräftelserutan säger att vänskapen tas bort och inte återställs vid avblockering (klass 2, ui-conventions).",
       "features": [
         "SOC-01",
         "SOC-02",
@@ -5038,6 +5056,48 @@
           "to": "repo-friends",
           "payload": "reject → status update; cancel → delete (sender-only, rules only let recipient update); removeFriend → removeMutualFriends transaction (both sides deleted + friendsCount -1)",
           "transport": "Firestore write/transaction",
+          "verified": true
+        },
+        {
+          "from": "v-friend-profile",
+          "to": "vm-friends",
+          "payload": "menyvalet Blockera → BlockUserAction.confirmAndBlock → blockUser(userId). Valet döljs när getFriendshipStatus redan är blocked; vid lyckad blockering poppas profilen",
+          "transport": "method call",
+          "verified": true
+        },
+        {
+          "from": "v-chat-view",
+          "to": "v-block-group-member-dialog",
+          "payload": "menyvalet Blockera i en GRUPPKONVERSATION (conversation.groupId != null) — dialogen listar medlemmarna utom dig själv och redan blockerade, och returnerar den valda profilen. I en DM hoppas dialogen över och motparten är participantIds minus inloggad användare",
+          "transport": "navigation (showDialog)",
+          "verified": true
+        },
+        {
+          "from": "v-chat-view",
+          "to": "vm-friends",
+          "payload": "BlockUserAction.confirmAndBlock → blockUser(userId). DM poppar chatten efteråt; gruppen står kvar",
+          "transport": "method call",
+          "verified": true
+        },
+        {
+          "from": "vm-friends",
+          "to": "svc-unified-friends",
+          "payload": "management.blockUser(userId) — tar först bort vänskapen och avbryter förfrågningar åt BÅDA håll, sedan skrivningen. Avblockering återställer inget av det",
+          "transport": "method call",
+          "verified": true
+        },
+        {
+          "from": "svc-unified-friends",
+          "to": "repo-block",
+          "payload": "blockUser(userId) — realtidsströmmen uppdaterar den lokala blockeringscachen",
+          "transport": "method call",
+          "verified": true
+        },
+        {
+          "from": "repo-block",
+          "to": "ds-blocks",
+          "payload": "blocks/{blockerId}_{blockedId}. Läsvägen (BlockedUserFilter, fyra isNotBlockedBy-anrop i firestore.rules) fanns före BUT-1951 — det var skrivknappen som saknades",
+          "transport": "write + onSnapshot stream",
           "verified": true
         },
         {

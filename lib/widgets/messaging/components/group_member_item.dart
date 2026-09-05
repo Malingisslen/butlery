@@ -12,6 +12,12 @@ class GroupMemberItem extends StatelessWidget {
   final bool canRemove;
   final VoidCallback? onRemove;
 
+  /// Makes the whole row tappable. A tapped row is wrapped in `Semantics`
+  /// carrying [semanticsLabel] and `button: true` — the flag and the action
+  /// word are what `ListTile` does not supply on its own.
+  final VoidCallback? onTap;
+  final String? semanticsLabel;
+
   const GroupMemberItem({
     super.key,
     required this.displayName,
@@ -19,12 +25,14 @@ class GroupMemberItem extends StatelessWidget {
     this.isCurrentUser = false,
     this.canRemove = false,
     this.onRemove,
+    this.onTap,
+    this.semanticsLabel,
   });
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    return Card(
+    final card = Card(
       margin: const EdgeInsets.only(bottom: AppDimensions.spacingM),
       child: ListTile(
         leading: UserDisplayWidgets.avatar(
@@ -54,7 +62,16 @@ class GroupMemberItem extends StatelessWidget {
                 tooltip: context.l10n.groupRemoveMember,
               )
             : null,
+        onTap: onTap,
       ),
+    );
+
+    if (onTap == null) return card;
+
+    return Semantics(
+      label: semanticsLabel,
+      button: true,
+      child: card,
     );
   }
 }

@@ -90,6 +90,19 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
                   ],
                 ),
               ),
+            PopupMenuItem(
+              value: 'block',
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.block, color: cs.error),
+                  const SizedBox(width: AppDimensions.spacingS),
+                  Flexible(
+                    child: Text(context.l10n.socialBlock),
+                  ),
+                ],
+              ),
+            ),
             const PopupMenuDivider(),
             PopupMenuItem(
               value: 'leave',

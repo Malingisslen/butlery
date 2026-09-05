@@ -66,6 +66,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get stateSuccessDefault => 'Done';
 
   @override
+  String get a11yBlockGroupMember => 'Block';
+
+  @override
   String a11yRequiredFieldSuffix(String label) {
     return '$label (required)';
   }
@@ -925,6 +928,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get chatErrorOccurred => 'An error occurred';
+
+  @override
+  String get chatBlockGroupMemberEmpty => 'There is no one else to block here';
+
+  @override
+  String get chatBlockGroupMemberTitle => 'Who do you want to block?';
 
   @override
   String get chatConversationInfo => 'Conversation info';
@@ -8198,7 +8207,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String socialBlockUserMessage(String name) {
-    return 'Do you want to block $name? They won\'t be able to see your profile or send requests.';
+    return 'Do you want to block $name? They won\'t be able to see your profile or send requests. A friendship is removed and is not restored if you unblock them.';
   }
 
   @override

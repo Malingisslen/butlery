@@ -2537,6 +2537,12 @@ class MockFriendsManagementOperations extends Mock
   bool _shouldSucceed = true;
   List<UserProfile> _mutualFriends = [];
 
+  /// Which ids block/unblock were actually called with. Without these two a
+  /// test can only see the returned bool, which is identical for both calls —
+  /// so a swap of one for the other survives (BUT-1951).
+  final List<String> blockCalls = [];
+  final List<String> unblockCalls = [];
+
   void setManagementState({
     List<UserProfile>? friends,
     List<FriendRequest>? incomingRequests,
@@ -2569,9 +2575,17 @@ class MockFriendsManagementOperations extends Mock
   @override
   Future<bool> removeFriend(String friendId) async => _shouldSucceed;
   @override
-  Future<bool> blockUser(String userId) async => _shouldSucceed;
+  Future<bool> blockUser(String userId) async {
+    blockCalls.add(userId);
+    return _shouldSucceed;
+  }
+
   @override
-  Future<bool> unblockUser(String userId) async => _shouldSucceed;
+  Future<bool> unblockUser(String userId) async {
+    unblockCalls.add(userId);
+    return _shouldSucceed;
+  }
+
   @override
   Future<int> blockUsers(List<String> userIds) async =>
       _shouldSucceed ? userIds.length : 0;

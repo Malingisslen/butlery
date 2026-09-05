@@ -1055,6 +1055,57 @@ body { font-family: var(--font-body); color: var(--text); background: var(--crea
 
 </div>
 
+<!-- ========================================================================
+     Blocking (BUT-1951)
+     ======================================================================== -->
+<h2>Blocking</h2>
+<div class="lib-grid">
+
+  <!-- BlockGroupMemberDialog — pick which member of a group to block -->
+  <div class="lib-item-full">
+    <div class="lib-label">BlockGroupMemberDialog</div>
+    <div class="lib-class">BlockGroupMemberDialog (BUT-1951) · lib/widgets/messaging/dialogs/block_group_member_dialog.dart</div>
+    <div class="lib-demo">
+      <div style="background:var(--cream);padding:16px">
+        <div style="background:#fff;padding:20px;max-width:340px">
+          <div style="font-size:18px;font-weight:600;margin-bottom:12px">Vem vill du blockera?</div>
+          <div style="display:flex;align-items:center;gap:12px;padding:12px;border:1px solid var(--cream-dark);margin-bottom:8px">
+            <div class="friend-avatar friend-avatar-sm" style="background:var(--green-dark)">AS</div>
+            <div style="font-size:14px">Anna Svensson</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;padding:12px;border:1px solid var(--cream-dark)">
+            <div class="friend-avatar friend-avatar-sm" style="background:var(--rust)">BE</div>
+            <div style="font-size:14px">Björn Ek</div>
+          </div>
+          <div style="text-align:right;margin-top:16px;font-size:14px;font-weight:600;color:var(--green-dark)">AVBRYT</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirm dialog — reuses DestructiveConfirmationDialog -->
+  <div class="lib-item-full">
+    <div class="lib-label">BlockUserAction — confirm</div>
+    <div class="lib-class">BlockUserAction (BUT-1951) · lib/widgets/social/block_user_action.dart · wraps DestructiveConfirmationDialog</div>
+    <div class="lib-demo">
+      <div style="background:var(--cream);padding:16px">
+        <div style="background:#fff;padding:20px;max-width:340px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+            <span class="mi" style="color:var(--rust);font-size:22px">warning_amber</span>
+            <div style="font-size:18px;font-weight:600">Vill du blockera denna användare?</div>
+          </div>
+          <div style="font-size:14px;line-height:1.5">Vill du blockera Anna Svensson? De kommer inte kunna se din profil eller skicka förfrågningar. En vänskap tas bort och återställs inte om du avblockerar.</div>
+          <div style="display:flex;gap:16px;justify-content:flex-end;margin-top:20px;font-size:14px;font-weight:600">
+            <span style="color:var(--text-muted)">AVBRYT</span>
+            <span style="color:var(--rust)">BLOCKERA</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
 <style>
 @keyframes pulse-dot {
   0%, 100% { transform: scale(1); opacity: 1; }

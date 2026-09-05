@@ -23,6 +23,10 @@
   "@stateSuccessDefault": {
     "description": "Default title on the shared success state when no explicit title is passed (BUT-1430)"
   },
+  "a11yBlockGroupMember": "Block",
+  "@a11yBlockGroupMember": {
+    "description": "Screen-reader action label on a tappable member row in the block picker. Names the action only; the row's own text carries the name"
+  },
   "a11yRequiredFieldSuffix": "{label} (required)",
   "@a11yRequiredFieldSuffix": {
     "description": "Accessibility label for a required form field — the field label followed by a required marker (BUT-1430)",
@@ -742,6 +746,14 @@
     }
   },
   "chatErrorOccurred": "An error occurred",
+  "chatBlockGroupMemberEmpty": "There is no one else to block here",
+  "@chatBlockGroupMemberEmpty": {
+    "description": "Empty state in the group-chat block picker"
+  },
+  "chatBlockGroupMemberTitle": "Who do you want to block?",
+  "@chatBlockGroupMemberTitle": {
+    "description": "Title of the dialog that picks which group member to block"
+  },
   "chatConversationInfo": "Conversation info",
   "chatTypeDirectMessage": "Type: Direct message",
   "chatCreatedAt": "Created: {date}",
@@ -5613,7 +5625,7 @@
       }
     }
   },
-  "socialBlockUserMessage": "Do you want to block {name}? They won't be able to see your profile or send requests.",
+  "socialBlockUserMessage": "Do you want to block {name}? They won't be able to see your profile or send requests. A friendship is removed and is not restored if you unblock them.",
   "@socialBlockUserMessage": {
     "placeholders": {
       "name": {

@@ -259,6 +259,17 @@ class FriendsViewModel extends BaseViewModel {
     return success;
   }
 
+  /// Block a user. The service also drops the friendship and cancels pending
+  /// requests both ways — unblocking does not restore any of it.
+  Future<bool> blockUser(String userId) async {
+    final success = await _friendsService.management.blockUser(userId);
+    if (success) {
+      await _analyticsService.social.logUserBlocked(blockedUserId: userId);
+      notifyListeners();
+    }
+    return success;
+  }
+
   /// Unblock a user
   Future<bool> unblockUser(String userId) async {
     final success = await _friendsService.management.unblockUser(userId);

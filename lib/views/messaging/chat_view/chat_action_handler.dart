@@ -25,7 +25,11 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/models/social/content_type.dart';
 import 'package:butlery/widgets/social/report_content_dialog.dart';
+import 'package:butlery/widgets/social/block_user_action.dart';
+import 'package:butlery/widgets/messaging/dialogs/block_group_member_dialog.dart';
+import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:image_picker/image_picker.dart';
 
 /// Centralized chat action handler with clean interfaces
@@ -60,6 +64,9 @@ class ChatActionHandler {
         break;
       case 'weekly_menu':
         await _openGroupWeeklyMenu();
+        break;
+      case 'block':
+        await _blockFromConversation();
         break;
       default:
         AppLogger.warning('Unknown menu action: $action');
@@ -351,6 +358,94 @@ class ChatActionHandler {
       AppLogger.error('Failed to leave conversation', e);
       if (!context.mounted) return;
       _showErrorSnackBar(context.l10n.chatCouldNotLeaveConversation);
+    }
+  }
+
+  /// A DM has one counterparty, so it blocks straight away; a group asks which
+  /// member first. Only a DM pops the chat — the group survives the block.
+  Future<void> _blockFromConversation() async {
+    try {
+      final conversation = await _messagingService.getConversation(
+        conversationId,
+      );
+      if (!context.mounted) return;
+
+      if (conversation == null) {
+        _showErrorSnackBar(context.l10n.socialCouldNotBlockUser);
+        return;
+      }
+
+      final currentUserId =
+          ServiceLocator.get<PermissionService>().currentUserId;
+      if (currentUserId == null) {
+        _showErrorSnackBar(context.l10n.socialCouldNotBlockUser);
+        return;
+      }
+
+      // Registered as a factory, so this instance is ours to dispose.
+      final friendsViewModel = ServiceLocator.get<FriendsViewModel>();
+      try {
+        if (conversation.groupId != null) {
+          final member = await BlockGroupMemberDialog.show(
+            context,
+            participantIds: conversation.participantIds,
+            friendsViewModel: friendsViewModel,
+          );
+          if (member == null || !context.mounted) return;
+
+          await BlockUserAction.confirmAndBlock(
+            context,
+            userId: member.uid,
+            displayName: member.displayName,
+            viewModel: friendsViewModel,
+          );
+          return;
+        }
+
+        final counterpartId = conversation.participantIds.firstWhere(
+          (id) => id != currentUserId,
+          orElse: () => '',
+        );
+        if (counterpartId.isEmpty) {
+          _showErrorSnackBar(context.l10n.socialCouldNotBlockUser);
+          return;
+        }
+
+        // NOT `conversation.title` — a direct conversation is written with an
+        // empty title (`conversation_mutation_module`), so the name lives in
+        // `participantDisplayNames`, which is what `getDisplayTitle` reads.
+        final displayName = conversation.getDisplayTitle(currentUserId);
+
+        // The app bar offers Blockera unconditionally — it has no ViewModel to
+        // ask — so this branch is where an already-blocked counterparty is
+        // caught. Writing again would be REFUSED: the repository uses `set()`
+        // and `firestore.rules` makes a block immutable, so the user would be
+        // told the block failed when it is already in force. The picker's
+        // group branch filters the same case out of its list instead.
+        if (friendsViewModel.getFriendshipStatus(counterpartId) ==
+            FriendshipStatus.blocked) {
+          SnackBarUtils.showSuccess(
+            context,
+            context.l10n.socialUserBlocked(displayName),
+          );
+          Navigator.of(context).pop();
+          return;
+        }
+
+        final blocked = await BlockUserAction.confirmAndBlock(
+          context,
+          userId: counterpartId,
+          displayName: displayName,
+          viewModel: friendsViewModel,
+        );
+        if (blocked && context.mounted) Navigator.of(context).pop();
+      } finally {
+        friendsViewModel.dispose();
+      }
+    } catch (e) {
+      AppLogger.error('Failed to block from conversation', e);
+      if (!context.mounted) return;
+      _showErrorSnackBar(context.l10n.socialCouldNotBlockUser);
     }
   }
 

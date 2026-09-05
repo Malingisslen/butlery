@@ -212,6 +212,12 @@ abstract class AppLocalizations {
   /// **'Klart'**
   String get stateSuccessDefault;
 
+  /// Screen-reader action label on a tappable member row in the block picker. Names the action only; the row's own text carries the name
+  ///
+  /// In sv, this message translates to:
+  /// **'Blockera'**
+  String get a11yBlockGroupMember;
+
   /// Accessibility label for a required form field — the field label followed by a required marker (BUT-1430)
   ///
   /// In sv, this message translates to:
@@ -1591,6 +1597,18 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Ett fel uppstod'**
   String get chatErrorOccurred;
+
+  /// Empty state in the group-chat block picker
+  ///
+  /// In sv, this message translates to:
+  /// **'Det finns ingen annan att blockera här'**
+  String get chatBlockGroupMemberEmpty;
+
+  /// Title of the dialog that picks which group member to block
+  ///
+  /// In sv, this message translates to:
+  /// **'Vem vill du blockera?'**
+  String get chatBlockGroupMemberTitle;
 
   /// No description provided for @chatConversationInfo.
   ///
@@ -13780,7 +13798,7 @@ abstract class AppLocalizations {
   /// No description provided for @socialBlockUserMessage.
   ///
   /// In sv, this message translates to:
-  /// **'Vill du blockera {name}? De kommer inte kunna se din profil eller skicka förfrågningar.'**
+  /// **'Vill du blockera {name}? De kommer inte kunna se din profil eller skicka förfrågningar. En vänskap tas bort och återställs inte om du avblockerar.'**
   String socialBlockUserMessage(String name);
 
   /// No description provided for @socialCancelCount.

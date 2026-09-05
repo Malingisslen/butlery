@@ -227,7 +227,7 @@ UI files that are already extracted or represent cohesive single-screen implemen
 | `social_collaborative_components.dart` | 536 | Collaborative social UI components |
 | `group_weekly_menu_widget.dart` | 583 | The group's weekly menu screen (BUT-1971). Row added 2026-08-30. Grew past 500 with the provenance row and the voter sheet, which the Art. 15 keep decision rests on. The day rows, the face row and the week arrows are already separate widgets; the next split is the sheet. |
 | `menu_preview_view.dart` | 531 | Shared menu preview screen |
-| `chat_action_handler.dart` | 628 | Chat action handling — extracted from messaging view; single handler class. Row refreshed 2026-08-29 (580 → 628); the size guard matches on basename only, so a stale figure here reddens nothing. |
+| `chat_action_handler.dart` | 723 | Chat action handling — extracted from messaging view; single handler class. The size guard matches on basename only, so a stale figure here reddens nothing; re-measure with `wc -l` in the same call that stages. |
 | `notification_preferences_view.dart` | 527 | Notification preferences settings screen — category toggles + quiet hours. Row refreshed 2026-08-14 (585 → 524 when BUT-1783 removed the sound/vibration section, → 527 when the digest dropdown became enum-driven). Still over 500, so the row stays. |
 | `smart_import_viewmodel.dart` | 614 | Smart import pipeline VM — delegates to ImportManager |
 | `shopping_list_content.dart` | 685 | Shopping list UI — drag/reorder, categories, collaborative |
@@ -252,7 +252,7 @@ UI files that are already extracted or represent cohesive single-screen implemen
 | `tag_result_display.dart` | 608 | **candidate**: displays allergen, dietary, and coverage sections — could split into sub-widgets. Re-measured 2026-08-18, twice, ending at 600 (565 at HEAD) when both compact rows gained a public `badgesFor` and their comments were corrected, so a caller can gate its own spacer on real content instead of guessing from the preference set. |
 | `onboarding_viewmodel.dart` | 608 | **candidate**: multi-step wizard VM mixing age-gate, allergens, seeding, and analytics |
 | `photo_import_viewmodel.dart` | 872 | **candidate**: mixes OCR, multi-page, heirloom form, draft, and quality-score concerns |
-| `friends_viewmodel.dart` | 578 | **candidate**: VM mixing search, profile-cache, selection, group-creation, and stream subscriptions |
+| `friends_viewmodel.dart` | 586 | **candidate**: VM mixing search, profile-cache, selection, group-creation, and stream subscriptions |
 | `performance_monitoring_service.dart` | 516 | **candidate**: mixes frame, network, cache, memory, and custom metrics in one service |
 | `social_group_detail_viewmodel.dart` | 524 | **candidate**: VM mixing group load, events, leave, ownership transfer, and content sharing |
 | `fcm_service.dart` | 728 | **candidate**: mixes FCM token management, permission-gating, deep-link routing, and notification display |
@@ -277,7 +277,7 @@ Files marked **candidate** above that are worth splitting in a future refactor s
 | `tag_result_display.dart` | 608 | Allergen, dietary, and coverage sections are independently renderable sub-widgets. Re-measured 2026-08-18. NOTE this file is listed TWICE in this document (see the Views/Widgets table above) — pre-existing, and it means a refresh has to touch both rows or one silently rots. |
 | `onboarding_viewmodel.dart` | 608 | Age-gate, allergens, seeding, analytics — each a candidate for an extracted manager |
 | `photo_import_viewmodel.dart` | 872 | OCR, multi-page, heirloom form, draft, quality-score concerns are independently extractable |
-| `friends_viewmodel.dart` | 578 | Search, profile-cache, selection, group-creation, stream subscriptions — extract managers |
+| `friends_viewmodel.dart` | 586 | Search, profile-cache, selection, group-creation, stream subscriptions — extract managers |
 | `fcm_service.dart` | 728 | FCM token management, permission-gating, deep-link routing, and notification display are separable |
 | `menu_generator.dart` | 591 | Scoring, allergen filtering, diversity logic, and attendance weighting — extract scorer/filter helpers |
 | `intelligent_cache_manager.dart` | 601 | Behavior-analysis, prefetching, friend-activity cache, and eviction policies are separable strategies |
