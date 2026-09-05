@@ -5648,13 +5648,14 @@
       }
     }
   },
-  "socialBlockUserMessage": "Vill du blockera {name}? De kommer inte kunna se din profil eller skicka förfrågningar. En vänskap tas bort och återställs inte om du avblockerar.",
+  "socialBlockUserMessage": "Vill du blockera {name}? De kommer inte kunna se din profil eller skicka förfrågningar, och de kan inte längre påverka det ni planerar tillsammans. En vänskap tas bort och återställs inte om du avblockerar.",
   "@socialBlockUserMessage": {
     "placeholders": {
       "name": {
         "type": "String"
       }
-    }
+    },
+    "description": "Block confirmation. The \"influence what you plan together\" clause is BUT-2024, Malin 2026-09-05: blocking also makes the server refuse that person's votes in shared polls, and this dialog is the only place the user is told what they are agreeing to. Deliberately does not name polls — the effect is what matters, not the mechanism."
   },
   "socialCancelCount": "Avbryt ({count})",
   "@socialCancelCount": {

@@ -8221,7 +8221,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String socialBlockUserMessage(String name) {
-    return 'Vill du blockera $name? De kommer inte kunna se din profil eller skicka förfrågningar. En vänskap tas bort och återställs inte om du avblockerar.';
+    return 'Vill du blockera $name? De kommer inte kunna se din profil eller skicka förfrågningar, och de kan inte längre påverka det ni planerar tillsammans. En vänskap tas bort och återställs inte om du avblockerar.';
   }
 
   @override

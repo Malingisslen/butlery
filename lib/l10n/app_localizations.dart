@@ -13795,10 +13795,10 @@ abstract class AppLocalizations {
   /// **'Accepterar {count} förfrågningar...'**
   String socialAcceptingRequests(int count);
 
-  /// No description provided for @socialBlockUserMessage.
+  /// Block confirmation. The "influence what you plan together" clause is BUT-2024, Malin 2026-09-05: blocking also makes the server refuse that person's votes in shared polls, and this dialog is the only place the user is told what they are agreeing to. Deliberately does not name polls — the effect is what matters, not the mechanism.
   ///
   /// In sv, this message translates to:
-  /// **'Vill du blockera {name}? De kommer inte kunna se din profil eller skicka förfrågningar. En vänskap tas bort och återställs inte om du avblockerar.'**
+  /// **'Vill du blockera {name}? De kommer inte kunna se din profil eller skicka förfrågningar, och de kan inte längre påverka det ni planerar tillsammans. En vänskap tas bort och återställs inte om du avblockerar.'**
   String socialBlockUserMessage(String name);
 
   /// No description provided for @socialCancelCount.

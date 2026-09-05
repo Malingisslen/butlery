@@ -1,13 +1,29 @@
 /**
  * Reset User Data — Clean Slate Script
  *
- * Wipes all user-generated data from Firebase (Auth + Firestore + Storage)
- * while preserving config/seed data (site_configs, tagConfigs, ingredients, etc.).
+ * Wipes the collections named in `COLLECTIONS_TO_DELETE` below from Firebase
+ * (Auth + Firestore + Storage), preserving config/seed data (site_configs,
+ * tag_configs, ingredients, etc.).
+ *
+ * ⚠ It does NOT wipe everything. Top-level collections with `firestore.rules`
+ * blocks appear in neither list, including uid-keyed personal data the account
+ * cascade erases. Phase 1 deletes every Auth user first, so anything skipped is
+ * left orphaned and unreachable by that cascade, which runs from an
+ * authenticated callable. The run prints CLEANUP COMPLETE either way. See
+ * BUT-2028, which also carries a second hazard: Phase 1 fires the live
+ * `onUserDeleted` trigger, which writes into collections Phase 2 is
+ * concurrently deleting.
+ *
+ * Any counts live in BUT-2028, where they can be re-derived. A count in a
+ * comment goes stale the next time anyone adds a rules block or a list entry,
+ * and nothing reddens when it does.
+ *
+ * Live runs are REFUSED while BUT-2028 is open — see the guard at the top of
+ * `main()`. `--dry-run` still works, and is how you inspect the script.
  *
  * Usage:
  *   cd functions
  *   npm run reset-user-data:dry-run   # preview what gets deleted
- *   npm run reset-user-data            # execute with confirmation gate
  */
 
 import * as admin from "firebase-admin";
@@ -138,11 +154,19 @@ const COLLECTIONS_TO_DELETE: CollectionTarget[] = [
   // BUT-1917: user block relationships, doc id `{blockerId}_{blockedId}`.
   // Absent until now, so a "clean slate" run left every block row standing.
   // `MAX_BLOCK_SWEEP_ROWS` names this script as the recovery when the cascade's
-  // sweep declines above its cap; membership here is NECESSARY for that and is
-  // not sufficient — the script itself aborts before Phase 1 today, for an
-  // unrelated reason (BUT-2010).
+  // sweep declines above its cap, and membership here is NECESSARY for that.
   { name: "blocks" },
-  { name: "tag_configs" },
+  // BUT-2010: `tag_configs` does NOT belong here and must not come back. It is
+  // SEED data: `firestore.rules` gives it `allow write: if false`, so no user
+  // can write it, and `TagConfigService` reads it as runtime config — wiping it
+  // would break auto-tagging rather than clean anything. It is listed in
+  // `COLLECTIONS_TO_KEEP` below, which this file's header states as the
+  // contract ("preserving config/seed data").
+  //
+  // The overlap guard caught it and exited before Phase 1 — correctly — which
+  // is why this script deleted nothing between 2026-03-19 and 2026-09-05.
+  // The guard worked; what was missing was anything that NOTICED it was firing.
+  // `scenario_resetScriptListsDoNotOverlap` is that now.
 ];
 
 const COLLECTIONS_TO_KEEP = [
@@ -157,6 +181,8 @@ const STORAGE_PREFIXES_TO_DELETE = ["users/", "shared/"];
 
 const BATCH_SIZE = 500;
 const CONFIRMATION_PHRASE = "YES DELETE ALL USER DATA";
+/** Opt-out for the BUT-2028 refusal below. Live runs only; `--dry-run` is free. */
+const BUT_2028_ACK_FLAG = "--but-2028-acknowledged";
 
 // --- Helpers ---
 
@@ -251,6 +277,33 @@ async function deleteWithSubcollections(
 async function main() {
   const args = process.argv.slice(2);
   const dryRun = args.includes("--dry-run");
+
+  // BUT-2028: live runs are REFUSED, in code, not in prose.
+  //
+  // Until BUT-2010 was fixed the overlap guard stopped every run, so the
+  // hazards BUT-2028 records could not be reached. Repairing that guard removed
+  // the only thing enforcing this file's warning — and `admin-init.ts`
+  // hardcodes the production project, so an unrefused live run wipes every Auth
+  // user there.
+  //
+  // Placed above `initializeAdminApp()` deliberately: it reads only `args`, so
+  // it fires without credentials and cannot be pre-empted by a credential
+  // discovery failure.
+  //
+  // `--dry-run` is deliberately unaffected: inspecting the script is how anyone
+  // resolves BUT-2028 in the first place.
+  if (!dryRun && !args.includes(BUT_2028_ACK_FLAG)) {
+    console.error(
+      "REFUSED: BUT-2028 is open. This script's delete list skips top-level " +
+        "collections that have `firestore.rules` blocks — several of them " +
+        "uid-keyed personal data, left orphaned because Phase 1 deletes every " +
+        "Auth user first — and Phase 1 fires the live onUserDeleted trigger " +
+        "into collections Phase 2 is concurrently deleting. " +
+        "Resolve BUT-2028, or re-run with:  npm run reset-user-data -- " +
+        BUT_2028_ACK_FLAG
+    );
+    process.exit(1);
+  }
 
   initializeAdminApp();
 

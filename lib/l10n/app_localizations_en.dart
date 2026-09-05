@@ -8207,7 +8207,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String socialBlockUserMessage(String name) {
-    return 'Do you want to block $name? They won\'t be able to see your profile or send requests. A friendship is removed and is not restored if you unblock them.';
+    return 'Do you want to block $name? They won\'t be able to see your profile or send requests, and they can no longer influence what you plan together. A friendship is removed and is not restored if you unblock them.';
   }
 
   @override

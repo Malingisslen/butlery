@@ -1607,6 +1607,32 @@ auth user, Phase 3 wipes both storage prefixes), so it is a dev-reset tool rathe
 per-user remedy for one declined sweep. The equivalent clauses in
 `account-deletion-cascade.ts` were struck in BUT-1917's commit.
 
+**SUPERSEDED 2026-09-05 (BUT-2010) — the overlap is gone.** Malin chose to
+fix it rather than delete it, once it emerged that this entry and `MAX_BLOCK_SWEEP_ROWS` name
+it as the recovery for a declined Art. 17 sweep, i.e. an Art. 17 promise rather than dead code.
+The `tag_configs` entry is out of `COLLECTIONS_TO_DELETE`, and
+`scenario_resetScriptListsDoNotOverlap` now reddens if the two lists ever overlap again — the
+guard worked for five and a half months and nothing watched it fire, which is what made this
+silent.
+One clause above is now false and is corrected here rather than in place: the equivalent
+clauses in `account-deletion-cascade.ts` were NOT struck in BUT-1917's commit — that docstring names the script to this day and was amended,
+not removed.
+**What has NOT changed is the part that matters most.** This entry's own reading stands: even
+repaired, the script is a whole-project clean slate (Phase 1 deletes every auth user), so it is
+a dev-reset tool and not a per-user remedy for one declined sweep. The honest recovery for that
+case is a human with the Admin SDK. And making it runnable exposed two dormant defects — its
+header claimed to wipe all user data while collections with `firestore.rules` blocks sit in
+neither list, and Phase 1 races the live `onUserDeleted` — so BUT-2028 now forbids running it
+against real data until those are resolved. BUT-2010, 2026-09-05
+
+**AMENDED 2026-09-05 (BUT-2028), same commit.** The prohibition above is enforced in code, not
+in prose: `main()` exits 1 on a live run unless `--but-2028-acknowledged` is passed, ahead of
+`initializeAdminApp()` and Phase 1, with `--dry-run` unaffected. Written because repairing the
+overlap guard removed the only mechanism standing between `npm run reset-user-data` and a
+hardcoded production project — the same shape as the guard it replaced, so
+`scenario_resetScriptRefusesLiveRuns` watches this one. The recovery named in this entry is
+therefore refused-unless-acknowledged rather than unavailable. BUT-2028, 2026-09-05
+
 **AMENDED 2026-08-15 (BUT-1838) — the cap's stated reason went stale one day after it was
 written; the cap itself is unchanged and still must not be removed.**
 

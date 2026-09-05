@@ -2593,10 +2593,9 @@ async function scenario_probeSeesLeftoverChatGroupMembership(): Promise<void> {
  * NECESSARY for the recovery to reach this collection. It was absent, and the claim had been inherited from
  * `MAX_ROSTER_SWEEP_ROWS`, where `conversations` IS listed.
  *
- * Membership is not SUFFICIENT, and this scenario does not claim it is: the
- * script aborts before Phase 1 today over an unrelated delete/keep overlap
- * (BUT-2010), so nothing in the list runs. Fixing that is a separate decision,
- * because it revives a destructive script that has been inert for months.
+ * Membership is not SUFFICIENT, and this scenario does not claim it is. The
+ * script also has to RUN, which it did not between 2026-03-19 and 2026-09-05
+ * (BUT-2010).
  *
  * Asserted rather than written down, because prose is what let one docstring
  * borrow another's reasoning in the first place.
@@ -2642,6 +2641,196 @@ async function scenario_resetScriptDeleteListNamesBlocks(): Promise<void> {
       "admin/reset-user-data.ts, but that script only deletes what " +
       "COLLECTIONS_TO_DELETE names, and it does not name this collection — so " +
       "the declined rows would survive a full reset",
+  );
+}
+
+/**
+ * BUT-2010: the reset script's two lists must not overlap.
+ *
+ * This is the invariant whose breach made the script do NOTHING for five and a
+ * half months. `tag_configs` sat in both `COLLECTIONS_TO_DELETE` and
+ * `COLLECTIONS_TO_KEEP`, so the script's own safety guard exited before Phase 1
+ * on every run — correctly, since deleting seed data is exactly what that guard
+ * exists to prevent.
+ *
+ * The guard was never the problem. Nothing NOTICED it was firing: the script is
+ * run by hand, rarely, and an early `process.exit(1)` reads like a refusal
+ * rather than a defect. Meanwhile `MAX_BLOCK_SWEEP_ROWS` named it as the
+ * recovery for a declined Art. 17 erasure, which made a broken script into a
+ * written promise.
+ *
+ * Parsed from source rather than imported, like the scenario above: importing
+ * would execute `initializeAdminApp` at module load.
+ */
+async function scenario_resetScriptListsDoNotOverlap(): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const fs = require("fs");
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const path = require("path");
+  const scriptPath = path.join(__dirname, "..", "admin", "reset-user-data.ts");
+  const source = fs.readFileSync(scriptPath, "utf8") as string;
+
+  /** The `name:` values of a list literal, minus commented-out entries. */
+  function namesIn(marker: string, pattern: RegExp): string[] {
+    const start = source.indexOf(marker);
+    if (start < 0) return [];
+    const body = source
+      .slice(start, source.indexOf("];", start))
+      .split("\n")
+      .filter((line: string) => !line.trim().startsWith("//"))
+      .join("\n");
+    return [...body.matchAll(pattern)].map((m) => m[1]);
+  }
+
+  const toDelete = namesIn(
+    "const COLLECTIONS_TO_DELETE",
+    /name:\s*"([^"]+)"/g
+  );
+  const toKeep = namesIn("const COLLECTIONS_TO_KEEP", /"([^"]+)"/g);
+
+  // Anchored on the LAST entry of each list, not the first and not a count.
+  // A length check catches a total parse failure and nothing else — a slice that ends early
+  // yields a short-but-non-empty list, and the disjointness filter below then
+  // searches fewer names and passes while proving less.
+  //
+  // The first entry does not discriminate: `users` opens the delete list, so a
+  // slice truncated at the first `],` (which closes its nested
+  // `subcollections`) still contains it. Measured — that mutant passed a
+  // `users` anchor.
+  //
+  // What the anchor must BE is the list's final entry; which name that is
+  // changes whenever anyone appends one. If you add an entry below `blocks`,
+  // move this anchor with it, or a slice truncated between the two passes
+  // while proving less.
+  check(
+    "the reset script's delete list parsed to its end",
+    toDelete.includes("blocks"),
+    `parsed ${toDelete.length} delete entries without reaching "blocks", the ` +
+      "last one — the slice stopped early, so the disjointness check below is " +
+      "not seeing the whole list",
+  );
+  check(
+    "the reset script's keep list parsed to its end",
+    toKeep.includes("butlery_archive"),
+    `parsed ${toKeep.length} keep entries without reaching "butlery_archive"`,
+  );
+
+  const overlap = toDelete.filter((name) => toKeep.includes(name));
+  check(
+    "the reset script's delete and keep lists are disjoint",
+    overlap.length === 0,
+    `${overlap.join(", ")} is in BOTH lists, so reset-user-data.ts exits at ` +
+      "its overlap guard before Phase 1 and deletes nothing at all — which is " +
+      "how it stayed inert from 2026-03-19 to 2026-09-05 while " +
+      "MAX_BLOCK_SWEEP_ROWS named it as the recovery for a declined " +
+      "Art. 17 erasure",
+  );
+}
+
+/**
+ * BUT-2028: the reset script REFUSES a live run, in code, ahead of Phase 1.
+ *
+ * This exists because of what BUT-2010 taught. The overlap guard protected this
+ * script for five and a half months and nobody watched it fire; fixing that
+ * guard removed the only mechanism enforcing the header's warning, leaving the
+ * prohibition as prose while `admin-init.ts` hardcodes the production project. A warning with no mechanism is the same shape as a
+ * promise nobody tests.
+ *
+ * Two properties, and the ORDER is one of them: the refusal must sit ahead of
+ * Phase 1, or it refuses a run that has already deleted the Auth users. Source
+ * order stands in for execution order only while the refusal is inline in
+ * `main()`; move it into a helper and this check stops meaning that.
+ *
+ * `--dry-run` must stay reachable — inspecting the script is how anyone
+ * resolves BUT-2028 — so the refusal is asserted to be conditional on a live
+ * run rather than unconditional.
+ */
+async function scenario_resetScriptRefusesLiveRuns(): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const fs = require("fs");
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const path = require("path");
+  const scriptPath = path.join(__dirname, "..", "admin", "reset-user-data.ts");
+  // Comment lines are dropped first, for the same reason the sibling scenario
+  // drops them: commenting the guard out is the cheapest way to disarm it, and
+  // over raw source every check below would stay green above a dead `if`. The
+  // 200-char `!dryRun` lookback is the other reason — a future comment carrying
+  // that token would satisfy it.
+  const source = (fs.readFileSync(scriptPath, "utf8") as string)
+    .split("\n")
+    .filter((line: string) => !line.trim().startsWith("//"))
+    .join("\n");
+
+  const refusalAt = source.indexOf("BUT_2028_ACK_FLAG)");
+  check(
+    "the reset script refuses live runs while BUT-2028 is open",
+    refusalAt >= 0,
+    "no BUT-2028 live-run refusal found in reset-user-data.ts — the header " +
+      "warning and two docstrings then have no mechanism behind them, against " +
+      "a hardcoded production project",
+  );
+  if (refusalAt < 0) return;
+
+  check(
+    "the refusal is conditional on a live run, not on every run",
+    source.slice(refusalAt - 200, refusalAt).includes("!dryRun"),
+    "the BUT-2028 refusal is not guarded by `!dryRun`, so --dry-run is " +
+      "refused too — and inspecting the script is how BUT-2028 gets resolved",
+  );
+
+  // Presence and position prove a reference, never an EFFECT. Measured: swap
+  // `process.exit(1)` for a `console.warn` and the checks above all stay green
+  // while the script prints REFUSED and walks into Phase 1 against production
+  // — the same shape as the guard this ticket exists to close, one level up.
+  check(
+    "the refusal EXITS rather than only printing",
+    source
+      .slice(refusalAt, source.indexOf("initializeAdminApp(", refusalAt))
+      .includes("process.exit(1)"),
+    "the BUT-2028 refusal prints and falls through into Phase 1",
+  );
+
+  const phaseOneAt = source.indexOf("Phase 1: Firebase Auth users");
+  check(
+    "the refusal runs BEFORE Phase 1 deletes the Auth users",
+    phaseOneAt > refusalAt,
+    "the BUT-2028 refusal sits after Phase 1, so it would refuse a run that " +
+      "has already deleted every Auth user",
+  );
+
+  // The blind spot the OVERLAP guard had, closed for this one. That guard kept
+  // working for five and a half months while nothing watched whether it could
+  // still fire; baking the ack flag into `package.json` leaves the refusal
+  // intact and permanently satisfied, which is the same shape.
+  const pkg = fs.readFileSync(
+    path.join(__dirname, "..", "..", "package.json"),
+    "utf8",
+  ) as string;
+  const scripts = JSON.parse(pkg).scripts as Record<string, string>;
+  // The flag is READ from the script, never restated: matching the literal
+  // means a rename leaves this searching for a string nothing uses, green while
+  // an npm script bakes in the new one. Same reason the sibling scenario
+  // matches `Collections.blocks` rather than "blocks".
+  const flagMatch = source.match(/BUT_2028_ACK_FLAG = "([^"]+)"/);
+  check(
+    "the ack flag's spelling is readable from the script",
+    flagMatch !== null,
+    "BUT_2028_ACK_FLAG's declaration was not found, so the npm-script check " +
+      "below cannot know what to look for",
+  );
+  if (flagMatch === null) return;
+  const ackFlag = flagMatch[1];
+
+  const baked = Object.entries(scripts)
+    .filter(([, cmd]) => cmd.includes("reset-user-data"))
+    .filter(([, cmd]) => cmd.includes(ackFlag))
+    .map(([name]) => name);
+  check(
+    "no npm script pre-acknowledges BUT-2028 for the operator",
+    baked.length === 0,
+    `${baked.join(", ")} passes ${ackFlag}, so the refusal is ` +
+      "satisfied before the operator sees it — the guard still runs and still " +
+      "proves nothing, which is exactly how the overlap guard went unnoticed",
   );
 }
 
@@ -4425,6 +4614,8 @@ async function main(): Promise<void> {
   await scenario_blocksAreErasedInBothDirections();
   await scenario_probeSeesLeftoverBlocks();
   await scenario_resetScriptDeleteListNamesBlocks();
+  await scenario_resetScriptListsDoNotOverlap();
+  await scenario_resetScriptRefusesLiveRuns();
   await scenario_implausibleBlockCountDeclines();
   await scenario_aDeclinedLegDoesNotStopTheOther();
   await scenario_pollVotesAndAuthorshipAreErased();
