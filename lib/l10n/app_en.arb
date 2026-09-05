@@ -5563,25 +5563,18 @@
   "socialBlock": "Block",
   "socialBlockUserConfirm": "Do you want to block this user?",
   "socialCancelAll": "Cancel all",
-  "socialCancelFriendRequestConfirm": "Do you want to cancel this friend request?",
   "socialCancelRequest": "Cancel request",
   "socialCancelSelectedRequestsConfirm": "Cancel all selected requests?",
   "socialCouldNotAcceptAllRequests": "Could not accept all requests",
   "socialCouldNotBlockUser": "Could not block user",
   "socialCouldNotCancelAllRequests": "Could not cancel all requests",
-  "socialCouldNotCancelFriendRequest": "Could not cancel friend request",
   "socialCouldNotRejectAllRequests": "Could not reject all requests",
-  "socialCouldNotRejectFriendRequest": "Could not reject friend request",
   "socialCouldNotRemoveFriend": "Could not remove friend",
-  "socialCouldNotSearchUsers": "Could not search users",
   "socialCouldNotUnblockUser": "Could not unblock user",
-  "socialCouldNotUpdateRequests": "Could not update requests",
   "socialDecline": "Decline",
   "socialDeclined": "Declined",
-  "socialEnterSearchTerm": "Enter a search term",
   "socialExpired": "Expired",
   "socialFindFriends": "Find friends",
-  "socialFriendRequestsUpdated": "Friend requests updated",
   "socialFriendsAndGroups": "Friends & groups",
   "socialGroups": "Groups",
   "socialIncoming": "Incoming",
@@ -5591,11 +5584,8 @@
   "socialNoSentRequests": "No sent requests",
   "socialNoSentRequestsDescription": "You have no sent friend requests",
   "socialPendingResponse": "Pending response",
-  "socialReject": "Reject",
   "socialRejectAll": "Reject all",
   "socialRejectAllSelectedConfirm": "Reject all selected requests?",
-  "socialRejectFriendRequestConfirm": "Do you want to reject this friend request?",
-  "socialRemoveFriendConfirm": "Do you want to remove this friend?",
   "socialRequestCancelled": "Request cancelled",
   "socialSearchGroups": "Search groups...",
   "socialSearchNewFriends": "Search for new friends",
@@ -5625,6 +5615,10 @@
       }
     }
   },
+  "socialBlockUserStaysInGroup": "They stay in the group, but you no longer see what they write.",
+  "@socialBlockUserStaysInGroup": {
+    "description": "Appended to socialBlockUserMessage ONLY on the group-chat path. Soft blocking: the person is not removed from the group. Concrete on purpose — it exists to correct the expectation that blocking evicts them."
+  },
   "socialBlockUserMessage": "Do you want to block {name}? They won't be able to see your profile or send requests, and they can no longer influence what you plan together. A friendship is removed and is not restored if you unblock them.",
   "@socialBlockUserMessage": {
     "placeholders": {
@@ -5639,14 +5633,6 @@
     "placeholders": {
       "count": {
         "type": "int"
-      }
-    }
-  },
-  "socialCancelFriendRequestMessage": "Do you want to cancel the friend request to {name}?",
-  "@socialCancelFriendRequestMessage": {
-    "placeholders": {
-      "name": {
-        "type": "String"
       }
     }
   },
@@ -5674,22 +5660,6 @@
       }
     }
   },
-  "socialFriendRequestCancelled": "Friend request to {name} cancelled",
-  "@socialFriendRequestCancelled": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "socialFriendRequestRejected": "Friend request from {name} rejected",
-  "@socialFriendRequestRejected": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
   "socialNotificationsCount": "Notifications ({count})",
   "@socialNotificationsCount": {
     "placeholders": {
@@ -5706,27 +5676,11 @@
       }
     }
   },
-  "socialRejectFriendRequestMessage": "Do you want to reject the friend request from {name}?",
-  "@socialRejectFriendRequestMessage": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
   "socialRejectingRequests": "Rejecting {count} requests...",
   "@socialRejectingRequests": {
     "placeholders": {
       "count": {
         "type": "int"
-      }
-    }
-  },
-  "socialRemoveFriendMessage": "Do you want to remove {name} as a friend?",
-  "@socialRemoveFriendMessage": {
-    "placeholders": {
-      "name": {
-        "type": "String"
       }
     }
   },

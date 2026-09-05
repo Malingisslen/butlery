@@ -8080,10 +8080,6 @@ class AppLocalizationsSv extends AppLocalizations {
   String get socialCancelAll => 'Avbryt alla';
 
   @override
-  String get socialCancelFriendRequestConfirm =>
-      'Vill du avbryta denna vänskapsförfrågan?';
-
-  @override
   String get socialCancelRequest => 'Avbryt förfrågan';
 
   @override
@@ -8102,29 +8098,14 @@ class AppLocalizationsSv extends AppLocalizations {
       'Kunde inte avbryta alla förfrågningar';
 
   @override
-  String get socialCouldNotCancelFriendRequest =>
-      'Kunde inte avbryta vänskapsförfrågan';
-
-  @override
   String get socialCouldNotRejectAllRequests =>
       'Kunde inte avvisa alla förfrågningar';
-
-  @override
-  String get socialCouldNotRejectFriendRequest =>
-      'Kunde inte avvisa vänskapsförfrågan';
 
   @override
   String get socialCouldNotRemoveFriend => 'Kunde inte ta bort vän';
 
   @override
-  String get socialCouldNotSearchUsers => 'Kunde inte söka användare';
-
-  @override
   String get socialCouldNotUnblockUser => 'Kunde inte avblockera användare';
-
-  @override
-  String get socialCouldNotUpdateRequests =>
-      'Kunde inte uppdatera förfrågningar';
 
   @override
   String get socialDecline => 'Avvisa';
@@ -8133,16 +8114,10 @@ class AppLocalizationsSv extends AppLocalizations {
   String get socialDeclined => 'Avvisad';
 
   @override
-  String get socialEnterSearchTerm => 'Ange ett sökord';
-
-  @override
   String get socialExpired => 'Utgången';
 
   @override
   String get socialFindFriends => 'Hitta vänner';
-
-  @override
-  String get socialFriendRequestsUpdated => 'Vänskapsförfrågningar uppdaterade';
 
   @override
   String get socialFriendsAndGroups => 'Vänner & grupper';
@@ -8173,21 +8148,11 @@ class AppLocalizationsSv extends AppLocalizations {
   String get socialPendingResponse => 'Väntar på svar';
 
   @override
-  String get socialReject => 'Avvisa';
-
-  @override
   String get socialRejectAll => 'Avvisa alla';
 
   @override
   String get socialRejectAllSelectedConfirm =>
       'Avvisa alla valda förfrågningar?';
-
-  @override
-  String get socialRejectFriendRequestConfirm =>
-      'Vill du avvisa denna vänskapsförfrågan?';
-
-  @override
-  String get socialRemoveFriendConfirm => 'Vill du ta bort denna vän?';
 
   @override
   String get socialRequestCancelled => 'Förfrågan avbruten';
@@ -8220,6 +8185,10 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
+  String get socialBlockUserStaysInGroup =>
+      'De står kvar i gruppen, men du ser inte längre vad de skriver.';
+
+  @override
   String socialBlockUserMessage(String name) {
     return 'Vill du blockera $name? De kommer inte kunna se din profil eller skicka förfrågningar, och de kan inte längre påverka det ni planerar tillsammans. En vänskap tas bort och återställs inte om du avblockerar.';
   }
@@ -8227,11 +8196,6 @@ class AppLocalizationsSv extends AppLocalizations {
   @override
   String socialCancelCount(int count) {
     return 'Avbryt ($count)';
-  }
-
-  @override
-  String socialCancelFriendRequestMessage(String name) {
-    return 'Vill du avbryta vänskapsförfrågan till $name?';
   }
 
   @override
@@ -8250,16 +8214,6 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String socialFriendRequestCancelled(String name) {
-    return 'Vänskapsförfrågan till $name avbruten';
-  }
-
-  @override
-  String socialFriendRequestRejected(String name) {
-    return 'Vänskapsförfrågan från $name avvisad';
-  }
-
-  @override
   String socialNotificationsCount(int count) {
     return 'Aviseringar ($count)';
   }
@@ -8270,18 +8224,8 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String socialRejectFriendRequestMessage(String name) {
-    return 'Vill du avvisa vänskapsförfrågan från $name?';
-  }
-
-  @override
   String socialRejectingRequests(int count) {
     return 'Avvisar $count förfrågningar...';
-  }
-
-  @override
-  String socialRemoveFriendMessage(String name) {
-    return 'Vill du ta bort $name som vän?';
   }
 
   @override

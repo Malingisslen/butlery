@@ -8071,10 +8071,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get socialCancelAll => 'Cancel all';
 
   @override
-  String get socialCancelFriendRequestConfirm =>
-      'Do you want to cancel this friend request?';
-
-  @override
   String get socialCancelRequest => 'Cancel request';
 
   @override
@@ -8091,27 +8087,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get socialCouldNotCancelAllRequests => 'Could not cancel all requests';
 
   @override
-  String get socialCouldNotCancelFriendRequest =>
-      'Could not cancel friend request';
-
-  @override
   String get socialCouldNotRejectAllRequests => 'Could not reject all requests';
-
-  @override
-  String get socialCouldNotRejectFriendRequest =>
-      'Could not reject friend request';
 
   @override
   String get socialCouldNotRemoveFriend => 'Could not remove friend';
 
   @override
-  String get socialCouldNotSearchUsers => 'Could not search users';
-
-  @override
   String get socialCouldNotUnblockUser => 'Could not unblock user';
-
-  @override
-  String get socialCouldNotUpdateRequests => 'Could not update requests';
 
   @override
   String get socialDecline => 'Decline';
@@ -8120,16 +8102,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get socialDeclined => 'Declined';
 
   @override
-  String get socialEnterSearchTerm => 'Enter a search term';
-
-  @override
   String get socialExpired => 'Expired';
 
   @override
   String get socialFindFriends => 'Find friends';
-
-  @override
-  String get socialFriendRequestsUpdated => 'Friend requests updated';
 
   @override
   String get socialFriendsAndGroups => 'Friends & groups';
@@ -8160,20 +8136,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get socialPendingResponse => 'Pending response';
 
   @override
-  String get socialReject => 'Reject';
-
-  @override
   String get socialRejectAll => 'Reject all';
 
   @override
   String get socialRejectAllSelectedConfirm => 'Reject all selected requests?';
-
-  @override
-  String get socialRejectFriendRequestConfirm =>
-      'Do you want to reject this friend request?';
-
-  @override
-  String get socialRemoveFriendConfirm => 'Do you want to remove this friend?';
 
   @override
   String get socialRequestCancelled => 'Request cancelled';
@@ -8206,6 +8172,10 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get socialBlockUserStaysInGroup =>
+      'They stay in the group, but you no longer see what they write.';
+
+  @override
   String socialBlockUserMessage(String name) {
     return 'Do you want to block $name? They won\'t be able to see your profile or send requests, and they can no longer influence what you plan together. A friendship is removed and is not restored if you unblock them.';
   }
@@ -8213,11 +8183,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String socialCancelCount(int count) {
     return 'Cancel ($count)';
-  }
-
-  @override
-  String socialCancelFriendRequestMessage(String name) {
-    return 'Do you want to cancel the friend request to $name?';
   }
 
   @override
@@ -8236,16 +8201,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String socialFriendRequestCancelled(String name) {
-    return 'Friend request to $name cancelled';
-  }
-
-  @override
-  String socialFriendRequestRejected(String name) {
-    return 'Friend request from $name rejected';
-  }
-
-  @override
   String socialNotificationsCount(int count) {
     return 'Notifications ($count)';
   }
@@ -8256,18 +8211,8 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String socialRejectFriendRequestMessage(String name) {
-    return 'Do you want to reject the friend request from $name?';
-  }
-
-  @override
   String socialRejectingRequests(int count) {
     return 'Rejecting $count requests...';
-  }
-
-  @override
-  String socialRemoveFriendMessage(String name) {
-    return 'Do you want to remove $name as a friend?';
   }
 
   @override

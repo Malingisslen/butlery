@@ -179,6 +179,11 @@ void main() {
           'participantDisplayNames',
     );
     expect(find.textContaining('återställs inte'), findsOneWidget);
+    expect(
+      find.textContaining('står kvar i gruppen'),
+      findsNothing,
+      reason: 'only the group picker passes staysInGroup',
+    );
 
     await tester.tap(find.text('Blockera').last);
     await tester.pumpAndSettle();
@@ -259,6 +264,10 @@ void main() {
 
       await tester.tap(find.text('Anna Svensson'));
       await tester.pumpAndSettle();
+
+      // Soft blocking leaves the person among the members, and the confirm
+      // dialog says so on THIS path only.
+      expect(find.textContaining('står kvar i gruppen'), findsOneWidget);
 
       await tester.tap(find.text('Blockera').last);
       await tester.pumpAndSettle();

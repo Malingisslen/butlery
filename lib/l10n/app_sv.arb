@@ -5586,25 +5586,18 @@
   "socialBlock": "Blockera",
   "socialBlockUserConfirm": "Vill du blockera denna användare?",
   "socialCancelAll": "Avbryt alla",
-  "socialCancelFriendRequestConfirm": "Vill du avbryta denna vänskapsförfrågan?",
   "socialCancelRequest": "Avbryt förfrågan",
   "socialCancelSelectedRequestsConfirm": "Avbryt alla valda förfrågningar?",
   "socialCouldNotAcceptAllRequests": "Kunde inte acceptera alla förfrågningar",
   "socialCouldNotBlockUser": "Kunde inte blockera användare",
   "socialCouldNotCancelAllRequests": "Kunde inte avbryta alla förfrågningar",
-  "socialCouldNotCancelFriendRequest": "Kunde inte avbryta vänskapsförfrågan",
   "socialCouldNotRejectAllRequests": "Kunde inte avvisa alla förfrågningar",
-  "socialCouldNotRejectFriendRequest": "Kunde inte avvisa vänskapsförfrågan",
   "socialCouldNotRemoveFriend": "Kunde inte ta bort vän",
-  "socialCouldNotSearchUsers": "Kunde inte söka användare",
   "socialCouldNotUnblockUser": "Kunde inte avblockera användare",
-  "socialCouldNotUpdateRequests": "Kunde inte uppdatera förfrågningar",
   "socialDecline": "Avvisa",
   "socialDeclined": "Avvisad",
-  "socialEnterSearchTerm": "Ange ett sökord",
   "socialExpired": "Utgången",
   "socialFindFriends": "Hitta vänner",
-  "socialFriendRequestsUpdated": "Vänskapsförfrågningar uppdaterade",
   "socialFriendsAndGroups": "Vänner & grupper",
   "socialGroups": "Grupper",
   "socialIncoming": "Inkommande",
@@ -5614,11 +5607,8 @@
   "socialNoSentRequests": "Inga skickade förfrågningar",
   "socialNoSentRequestsDescription": "Du har inga skickade vänskapsförfrågningar",
   "socialPendingResponse": "Väntar på svar",
-  "socialReject": "Avvisa",
   "socialRejectAll": "Avvisa alla",
   "socialRejectAllSelectedConfirm": "Avvisa alla valda förfrågningar?",
-  "socialRejectFriendRequestConfirm": "Vill du avvisa denna vänskapsförfrågan?",
-  "socialRemoveFriendConfirm": "Vill du ta bort denna vän?",
   "socialRequestCancelled": "Förfrågan avbruten",
   "socialSearchGroups": "Sök grupper...",
   "socialSearchNewFriends": "Sök nya vänner",
@@ -5648,6 +5638,10 @@
       }
     }
   },
+  "socialBlockUserStaysInGroup": "De står kvar i gruppen, men du ser inte längre vad de skriver.",
+  "@socialBlockUserStaysInGroup": {
+    "description": "Appended to socialBlockUserMessage ONLY on the group-chat path. Soft blocking: the person is not removed from the group. Concrete on purpose — it exists to correct the expectation that blocking evicts them."
+  },
   "socialBlockUserMessage": "Vill du blockera {name}? De kommer inte kunna se din profil eller skicka förfrågningar, och de kan inte längre påverka det ni planerar tillsammans. En vänskap tas bort och återställs inte om du avblockerar.",
   "@socialBlockUserMessage": {
     "placeholders": {
@@ -5662,14 +5656,6 @@
     "placeholders": {
       "count": {
         "type": "int"
-      }
-    }
-  },
-  "socialCancelFriendRequestMessage": "Vill du avbryta vänskapsförfrågan till {name}?",
-  "@socialCancelFriendRequestMessage": {
-    "placeholders": {
-      "name": {
-        "type": "String"
       }
     }
   },
@@ -5697,22 +5683,6 @@
       }
     }
   },
-  "socialFriendRequestCancelled": "Vänskapsförfrågan till {name} avbruten",
-  "@socialFriendRequestCancelled": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "socialFriendRequestRejected": "Vänskapsförfrågan från {name} avvisad",
-  "@socialFriendRequestRejected": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
   "socialNotificationsCount": "Aviseringar ({count})",
   "@socialNotificationsCount": {
     "placeholders": {
@@ -5729,27 +5699,11 @@
       }
     }
   },
-  "socialRejectFriendRequestMessage": "Vill du avvisa vänskapsförfrågan från {name}?",
-  "@socialRejectFriendRequestMessage": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
   "socialRejectingRequests": "Avvisar {count} förfrågningar...",
   "@socialRejectingRequests": {
     "placeholders": {
       "count": {
         "type": "int"
-      }
-    }
-  },
-  "socialRemoveFriendMessage": "Vill du ta bort {name} som vän?",
-  "@socialRemoveFriendMessage": {
-    "placeholders": {
-      "name": {
-        "type": "String"
       }
     }
   },

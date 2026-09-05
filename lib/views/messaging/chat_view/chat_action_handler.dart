@@ -398,6 +398,7 @@ class ChatActionHandler {
             userId: member.uid,
             displayName: member.displayName,
             viewModel: friendsViewModel,
+            staysInGroup: true,
           );
           return;
         }

@@ -13549,12 +13549,6 @@ abstract class AppLocalizations {
   /// **'Avbryt alla'**
   String get socialCancelAll;
 
-  /// No description provided for @socialCancelFriendRequestConfirm.
-  ///
-  /// In sv, this message translates to:
-  /// **'Vill du avbryta denna vänskapsförfrågan?'**
-  String get socialCancelFriendRequestConfirm;
-
   /// No description provided for @socialCancelRequest.
   ///
   /// In sv, this message translates to:
@@ -13585,23 +13579,11 @@ abstract class AppLocalizations {
   /// **'Kunde inte avbryta alla förfrågningar'**
   String get socialCouldNotCancelAllRequests;
 
-  /// No description provided for @socialCouldNotCancelFriendRequest.
-  ///
-  /// In sv, this message translates to:
-  /// **'Kunde inte avbryta vänskapsförfrågan'**
-  String get socialCouldNotCancelFriendRequest;
-
   /// No description provided for @socialCouldNotRejectAllRequests.
   ///
   /// In sv, this message translates to:
   /// **'Kunde inte avvisa alla förfrågningar'**
   String get socialCouldNotRejectAllRequests;
-
-  /// No description provided for @socialCouldNotRejectFriendRequest.
-  ///
-  /// In sv, this message translates to:
-  /// **'Kunde inte avvisa vänskapsförfrågan'**
-  String get socialCouldNotRejectFriendRequest;
 
   /// No description provided for @socialCouldNotRemoveFriend.
   ///
@@ -13609,23 +13591,11 @@ abstract class AppLocalizations {
   /// **'Kunde inte ta bort vän'**
   String get socialCouldNotRemoveFriend;
 
-  /// No description provided for @socialCouldNotSearchUsers.
-  ///
-  /// In sv, this message translates to:
-  /// **'Kunde inte söka användare'**
-  String get socialCouldNotSearchUsers;
-
   /// No description provided for @socialCouldNotUnblockUser.
   ///
   /// In sv, this message translates to:
   /// **'Kunde inte avblockera användare'**
   String get socialCouldNotUnblockUser;
-
-  /// No description provided for @socialCouldNotUpdateRequests.
-  ///
-  /// In sv, this message translates to:
-  /// **'Kunde inte uppdatera förfrågningar'**
-  String get socialCouldNotUpdateRequests;
 
   /// No description provided for @socialDecline.
   ///
@@ -13639,12 +13609,6 @@ abstract class AppLocalizations {
   /// **'Avvisad'**
   String get socialDeclined;
 
-  /// No description provided for @socialEnterSearchTerm.
-  ///
-  /// In sv, this message translates to:
-  /// **'Ange ett sökord'**
-  String get socialEnterSearchTerm;
-
   /// No description provided for @socialExpired.
   ///
   /// In sv, this message translates to:
@@ -13656,12 +13620,6 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Hitta vänner'**
   String get socialFindFriends;
-
-  /// No description provided for @socialFriendRequestsUpdated.
-  ///
-  /// In sv, this message translates to:
-  /// **'Vänskapsförfrågningar uppdaterade'**
-  String get socialFriendRequestsUpdated;
 
   /// No description provided for @socialFriendsAndGroups.
   ///
@@ -13717,12 +13675,6 @@ abstract class AppLocalizations {
   /// **'Väntar på svar'**
   String get socialPendingResponse;
 
-  /// No description provided for @socialReject.
-  ///
-  /// In sv, this message translates to:
-  /// **'Avvisa'**
-  String get socialReject;
-
   /// No description provided for @socialRejectAll.
   ///
   /// In sv, this message translates to:
@@ -13734,18 +13686,6 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Avvisa alla valda förfrågningar?'**
   String get socialRejectAllSelectedConfirm;
-
-  /// No description provided for @socialRejectFriendRequestConfirm.
-  ///
-  /// In sv, this message translates to:
-  /// **'Vill du avvisa denna vänskapsförfrågan?'**
-  String get socialRejectFriendRequestConfirm;
-
-  /// No description provided for @socialRemoveFriendConfirm.
-  ///
-  /// In sv, this message translates to:
-  /// **'Vill du ta bort denna vän?'**
-  String get socialRemoveFriendConfirm;
 
   /// No description provided for @socialRequestCancelled.
   ///
@@ -13795,6 +13735,12 @@ abstract class AppLocalizations {
   /// **'Accepterar {count} förfrågningar...'**
   String socialAcceptingRequests(int count);
 
+  /// Appended to socialBlockUserMessage ONLY on the group-chat path. Soft blocking: the person is not removed from the group. Concrete on purpose — it exists to correct the expectation that blocking evicts them.
+  ///
+  /// In sv, this message translates to:
+  /// **'De står kvar i gruppen, men du ser inte längre vad de skriver.'**
+  String get socialBlockUserStaysInGroup;
+
   /// Block confirmation. The "influence what you plan together" clause is BUT-2024, Malin 2026-09-05: blocking also makes the server refuse that person's votes in shared polls, and this dialog is the only place the user is told what they are agreeing to. Deliberately does not name polls — the effect is what matters, not the mechanism.
   ///
   /// In sv, this message translates to:
@@ -13806,12 +13752,6 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Avbryt ({count})'**
   String socialCancelCount(int count);
-
-  /// No description provided for @socialCancelFriendRequestMessage.
-  ///
-  /// In sv, this message translates to:
-  /// **'Vill du avbryta vänskapsförfrågan till {name}?'**
-  String socialCancelFriendRequestMessage(String name);
 
   /// No description provided for @socialCancellingRequests.
   ///
@@ -13831,18 +13771,6 @@ abstract class AppLocalizations {
   /// **'Avvisa ({count})'**
   String socialDeclineCount(int count);
 
-  /// No description provided for @socialFriendRequestCancelled.
-  ///
-  /// In sv, this message translates to:
-  /// **'Vänskapsförfrågan till {name} avbruten'**
-  String socialFriendRequestCancelled(String name);
-
-  /// No description provided for @socialFriendRequestRejected.
-  ///
-  /// In sv, this message translates to:
-  /// **'Vänskapsförfrågan från {name} avvisad'**
-  String socialFriendRequestRejected(String name);
-
   /// No description provided for @socialNotificationsCount.
   ///
   /// In sv, this message translates to:
@@ -13855,23 +13783,11 @@ abstract class AppLocalizations {
   /// **'Vill du avvisa {count} valda förfrågningar?'**
   String socialRejectAllSelectedMessage(int count);
 
-  /// No description provided for @socialRejectFriendRequestMessage.
-  ///
-  /// In sv, this message translates to:
-  /// **'Vill du avvisa vänskapsförfrågan från {name}?'**
-  String socialRejectFriendRequestMessage(String name);
-
   /// No description provided for @socialRejectingRequests.
   ///
   /// In sv, this message translates to:
   /// **'Avvisar {count} förfrågningar...'**
   String socialRejectingRequests(int count);
-
-  /// No description provided for @socialRemoveFriendMessage.
-  ///
-  /// In sv, this message translates to:
-  /// **'Vill du ta bort {name} som vän?'**
-  String socialRemoveFriendMessage(String name);
 
   /// No description provided for @socialRequestsAccepted.
   ///

@@ -16,13 +16,21 @@ class BlockUserAction {
   BlockUserAction._();
 
   /// Returns true when the block landed.
+  /// [staysInGroup] appends the group-chat sentence. Only the group picker
+  /// passes it: soft blocking leaves the person among the members, and that is
+  /// the expectation the sentence exists to correct.
   static Future<bool> confirmAndBlock(
     BuildContext context, {
     required String userId,
     required String displayName,
     required FriendsViewModel viewModel,
+    bool staysInGroup = false,
   }) async {
     final l10n = context.l10n;
+    final message = staysInGroup
+        ? '${l10n.socialBlockUserMessage(displayName)} '
+              '${l10n.socialBlockUserStaysInGroup}'
+        : l10n.socialBlockUserMessage(displayName);
 
     // `customContent` rather than the shared body: that body appends the item
     // name and a question mark AFTER the message, which would land past the
@@ -33,10 +41,7 @@ class BlockUserAction {
           title: l10n.socialBlockUserConfirm,
           message: '',
           itemName: '',
-          customContent: Text(
-            l10n.socialBlockUserMessage(displayName),
-            style: AppTextStyles.bodyMedium,
-          ),
+          customContent: Text(message, style: AppTextStyles.bodyMedium),
           primaryActionText: l10n.socialBlock,
         ) ??
         false;
