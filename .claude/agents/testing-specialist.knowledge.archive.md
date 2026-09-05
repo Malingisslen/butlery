@@ -35329,3 +35329,100 @@ loosens the getter. The finding is the comment claiming the figure "says which f
 on"; it does not, 0.8 is the threshold.
 
 Verdict: fail, 3 blocking (all sentence strikes, no behaviour change asked for).
+
+### 2026-09-05 — BUT-2010 / BUT-2024 commit-gate review (trigger: staged 8-file diff; reset-script list guard + block-dialog l10n clause)
+
+Reviewed staged index (frozen): `functions/src/__tests__/account-deletion-cascade.test.ts`,
+`functions/src/account/account-deletion-cascade.ts`, `functions/src/admin/reset-user-data.ts`,
+`lib/l10n/{app_en.arb,app_sv.arb,app_localizations.dart,app_localizations_en.dart,app_localizations_sv.dart}`.
+Own measurements: `npm run test:account-deletion-cascade` 248/248; `npx tsc --noEmit` exit 0.
+
+**Non-vacuity of `scenario_resetScriptListsDoNotOverlap`, measured with a scratchpad replica of
+`namesIn` over the real `reset-user-data.ts` (no write to any tracked file):**
+
+| mutant | delete n / hasBlocks | keep n / hasArchive | disjoint |
+|---|---|---|---|
+| baseline | 49 / true | 5 / true | true |
+| M1 keep marker typo | 49 / true | 0 / false | **true (vacuous)** |
+| M2 delete regex `"`→`'` | 0 / false | 5 / true | true |
+| M3 closer `]` not `];` | 0 / false | 5 / true | true |
+| M4 delete marker typo | 0 / false | 5 / true | true |
+| M5 closer `],` (mid-list truncation) | `["users"]` / false | — | — |
+
+Two things the table settles. (1) The KEEP anchor is load-bearing and its real kill is M1: with the
+keep list parsing empty, `toDelete.filter(n => toKeep.includes(n))` is empty and the disjointness
+assertion is UNFAILABLE. So the second anchor is not decoration, it is the vacuity guard on the
+intersection. (2) M5 reproduces the author's re-anchoring: a slice truncated at the first `],`
+(which closes `users`' nested `subcollections`) yields exactly `["users"]` — short but non-empty —
+so a `users` anchor passes while the check searches 1 name instead of 49. The `blocks` anchor kills
+it. Their first anchor was genuinely wrong and the repair is right.
+
+**Blocking finding (one, a sentence):** the comment above the anchors asserts "`namesIn` returns []
+only when the MARKER is missing". M2 and M3 both return [] with the marker present — an unrun
+counterfactual, false as measured. Filed as a STRIKE of the clause "`namesIn` returns [] only when
+the MARKER is missing, so", leaving "A length check catches a total parse failure and nothing
+else — …", which stays true and keeps the paragraph's argument. Not a reword.
+
+Verified-true claims in the same diff (checked rather than inherited): overlap start
+**2026-03-19** — `git log -S` shows the delete entry added 2026-03-14 (3d03e5ab4) while the keep
+list then read `tagConfigs`, camelCase; b9a95bd02 on 2026-03-19 renamed it to `tag_configs` and
+created the overlap. `firestore.rules:3197-3200` `allow write: if false` on `tag_configs`;
+`tag_config_service.dart:223/279` reads it. The header's "does NOT wipe everything" is true and
+understated (`cook_snaps`, `activity_events`, `tag_overrides_log`, `notification_*` appear in
+neither list). M5's own comment ("Measured — that mutant passed a `users` anchor") reproduced.
+
+**l10n, graded NOT blocking:** `socialBlockUserMessage` gained the "påverka det ni planerar
+tillsammans" clause; `grep` over `test/` finds ZERO files typing the old or the new string, and the
+sole consumer `lib/widgets/social/block_user_action.dart` plus its suite are another session's
+UNTRACKED work, outside this index. Writing the pin here would mean authoring a test against
+another session's in-flight widget — the parallel-session hazard this file already records. The
+durable pin belongs in that widget's own suite when it lands: assert the dialog body resolves
+through `l10n.socialBlockUserMessage(name)` (routing, killed by a Dart-literal revert) plus a
+`textContaining` on the clause (killed by an ARB reword). `find.text` is whole-`Text.data`
+equality, so a substring pin must use `textContaining`, and the BUT-1922 hollowing rule applies if
+a sibling block string later shares the clause.
+
+Verdict: fail, 1 blocking (a sentence strike, no behaviour change asked for).
+
+### 2026-09-05 — BUT-2010 / BUT-2024 re-review of the SAME index, now 9 files (trigger: blocking finding struck + `ACCEPTED_DEVIATIONS.md` joined the diff)
+
+Re-read all nine staged files with `Read`. Index verified frozen (`git status --porcelain`: nine
+`M ` entries, no `MM`). Re-measured myself rather than inheriting: `npx tsc --noEmit` exit 0,
+`npm run test:account-deletion-cascade` **248/248**.
+
+The blocking finding from the previous round is STRUCK, not reworded: the clause "`namesIn`
+returns [] only when the MARKER is missing, so" is gone from
+`account-deletion-cascade.test.ts:2691-2704`; the paragraph now opens "A length check catches a
+total parse failure and nothing else — …", which is the half M2/M3/M5 measured true. Grepped
+`namesIn`, `MARKER`, `returns []` and `marker is missing` across the file — no sibling wording of
+the removed claim survives (the `MARKER` hits are the unrelated `ARRAY_REMOVE_MARKER` /
+`DELETE_MARKER` symbols).
+
+Re-verified in the new bytes rather than carried over: `blocks` is still the LAST entry of
+`COLLECTIONS_TO_DELETE` and `butlery_archive` the last of `COLLECTIONS_TO_KEEP`, so both anchors
+still anchor what the comment says they anchor; `check()` only records, and `main()` exits 1 on
+any FAIL, so the two anchors are loud rather than decorative.
+
+New file in the diff, `docs/architecture/ACCEPTED_DEVIATIONS.md`: a dated **SUPERSEDED
+2026-09-05** entry appended below the 2026-09-03 amendment it falsifies, correcting two clauses
+by supersession instead of in place. That is the decision-record exception working as written,
+not a strike-avoidance. Its measured claims check out: the overlap window opens **2026-03-19**
+(`git log -S '"tag_configs",'` → b9a95bd02; the delete entry and the overlap guard both predate it
+at 2026-03-14, so the guard is what the KEEP rename walked into), "five and a half months" to
+2026-09-05 is right, and "that docstring names the script to this day" is true —
+`MAX_BLOCK_SWEEP_ROWS` still names it at `account-deletion-cascade.ts:2166`, now with the
+BUT-2028 caveat and the honest per-user recovery ("a human with the Admin SDK").
+
+l10n re-read at the changed region in all five files: EN/SV ARB text, the abstract doc comment in
+`app_localizations.dart` and both concrete overrides carry the same new clause, so the generated
+files are not stale against the ARB (the failure mode `lessons-digest` records). No exclamation
+mark, no congratulation framing — butler-voice clean.
+
+Declined to have the comment carry the stronger reason the mutant table found (with `toKeep`
+empty the intersection is UNFAILABLE, which is a better argument than "searches fewer names").
+Recommended against it: a comment asserting what an unrun mutant does is the counterfactual class
+this repo has been burned by repeatedly, the measurement already lives in this archive, and the
+sentence standing in the code today is true as written. If they add it, they must run M1
+themselves first — my table is not their measurement.
+
+Verdict: pass, 0 blocking.

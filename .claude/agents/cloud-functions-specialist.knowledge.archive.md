@@ -18457,3 +18457,308 @@ Verified this round: `npx tsc --noEmit` clean, `test:sync-block-mirror` 26/26,
 `test:account-deletion-cascade` 245/245, `blocks-rules.test.ts` registered in
 `package.json`, the `test:rules:all` chain and BOTH `paths:` blocks of
 `firestore-rules.yml`; the generated l10n matches both ARBs.
+
+### 2026-09-05 — reset-user-data coverage header: repair replaced one false claim with three unmeasured numerals [admin][review]
+
+Re-review of the BUT-2010/BUT-1917/BUT-2024 staged diff (8 files, index frozen).
+Prior round failed on A (header claimed the script "wipes all user-generated data")
+and B (`onUserDeleted` fires during Phase 1 and writes into collections Phase 2 is
+deleting).
+
+Repairs C (both docstrings now name `MAX_BLOCK_SWEEP_ROWS`), D (list-parse anchored
+on the LAST entry of each list; mutation-probed by the author, `indexOf("];")` ->
+`indexOf("],")` reddens `the reset script's delete list parsed to its end`) and E
+(comment cites `allow write: if false`, verified at firestore.rules:3197) all hold.
+Provenance strike was right: `git log -S'{ name: "tag_configs" }'` -> 3d03e5ab4
+(2026-03-14, delete entry); `-S'"tag_configs",'` -> b9a95bd02 (2026-03-19, keep
+entry). Overlap therefore begins 2026-03-19, which is what both surviving
+docstrings say.
+
+A's replacement introduced three numerals, none reproducible:
+- "27 top-level collections ... appear in neither list" — MEASURED 28. Extraction:
+  `^    match /<name>/` in firestore.rules -> 65 unique top-level names; delete list
+  49 `name:` entries + keep list 5. Missing: llm_response_samples, weekly_menu_plans,
+  group_weekly_menu_plans, households, diner_profiles, family_ratings, pings,
+  shoppingPresence, cook_snaps, recipe_cook_events, activity_events, chat_groups,
+  audit, _internal, menu_lexicon, tag_overrides_log, parse_corrections_v2, admins,
+  ingredient_suggestions, notification_history, notification_batches,
+  notification_delivery, notification_engagement, notification_metrics,
+  recipe_social_stats, canonical_recipe_stats, metrics, system_events.
+- "fifteen of them uid-keyed personal data the account cascade erases" — MEASURED 14
+  of the 28 named in `src/account/` (weekly_menu_plans, group_weekly_menu_plans,
+  households, diner_profiles, family_ratings, pings, cook_snaps, activity_events,
+  chat_groups, tag_overrides_log, notification_history/_batches/_delivery/_engagement).
+- "five collections Phase 2 is concurrently deleting" — MEASURED at least 9 written
+  by `cleanup/on-user-deleted.ts` that are ALSO in COLLECTIONS_TO_DELETE: users,
+  public_profiles, shared_content, social_requests, reports, feedback,
+  recipePresence/activeUsers, friend_categories, audit_logs (via
+  `stageCascadeAuditEntry` -> cascade-audit-log.ts:63).
+
+Remedy filed: strike all three numerals, keep the qualitative warning and the
+"Do not run this against real data until BUT-2028 is resolved" line, which are true
+and are what an operator acts on.
+
+BUT-2024 l10n copy verified TRUE against firestore.rules:2376-2396 —
+`notBlockedByAnyoneHere()` gates poll-vote create and update on the voter's own
+`users/{uid}/block_mirror/current`, one-directional (refuses the BLOCKED person's
+vote). Fails open on a missing mirror and above `MAX_MIRROR_ENTRIES`; accepted
+deviation BUT-1917. The "only place the user is told" quantifier holds: the sole
+caller of `socialBlockUserMessage` is `lib/widgets/social/block_user_action.dart`,
+and `BlockGroupMemberDialog` is a picker that routes into it.
+
+`npm run test:account-deletion-cascade` -> 248/248. Worktree blobs matched the index
+for all 8 files (`git hash-object` vs `git ls-files -s`).
+
+### 2026-09-05 — BUT-2010 reset-script re-review, verdict round 2 [gdpr][admin-scripts]
+
+Re-ran the verdict over the frozen 8-file staged index (blobs matched `git ls-files -s`).
+The prior round's one blocking finding — three unmeasured numerals in the
+`reset-user-data.ts` header — is closed by STRIKING all three, not recounting. The header
+now makes the qualitative claim (collections with `firestore.rules` blocks in neither
+list, including uid-keyed personal data the cascade erases; the orphaning mechanism; the
+false all-clear; the `onUserDeleted` race; "do not run against real data until BUT-2028").
+
+Re-verified from source this round, none of it taken from the prior report:
+- The qualitative "neither list" claim has witnesses: `weekly_menu_plans`,
+  `group_weekly_menu_plans`, `block_mirror`, `cook_snaps`, `chat_groups`, `households`,
+  `diner_profiles` all have top-level rules blocks and appear in neither list.
+- The inert window is real and both ends are measured: `b9a95bd02` (2026-03-19) renamed the
+  keep entry `tagConfigs` -> `tag_configs` while `tag_configs` was already in the delete
+  list, creating the overlap; fixed 2026-09-05 by removing the delete entry.
+- `onUserDeleted` (gen1, `cleanup/on-user-deleted.ts`) writes `public_profiles`,
+  `shared_content`, `reports`, `users/*/friends` and `friend_categories` — all deleted by
+  Phase 2, so the Phase 1 Auth wipe races Phase 2. This is the new durable fact folded into
+  the knowledge file.
+- `CLEANUP COMPLETE` prints unconditionally in Phase 4.
+
+MUTATION-PROBED `scenario_resetScriptListsDoNotOverlap`: re-adding `{ name: "tag_configs" }`
+below `blocks` reddens exactly one check ("the reset script's delete and keep lists are
+disjoint") with a message naming the collection. Backup taken immediately before, restored
+from a trap, `git hash-object` identical after. `npx tsc --noEmit` clean;
+`npm run test:account-deletion-cascade` 248/248 unmutated.
+
+Non-blocking residue, recorded rather than filed as a defect: the header's own explanation
+of why the numbers are absent contains counts ("carried three", "two gates measured all
+three wrong"). It is history rather than a claim about code, so it cannot rot from a code
+change, but the numeral-free form is available and BUT-2028 is the better home.
+
+`MAX_BLOCK_SWEEP_ROWS` now describes the script as fixed while the script's own header
+forbids running it against real data until BUT-2028. Not misleading in practice — a reader
+following the pointer lands on the warning as the file's first paragraph — so no finding.
+
+Knowledge file stands at ~28.9k chars, still over the ~25k budget. This round's edit was
+budget-neutral: the `reset-user-data.ts` narrative parenthetical retired here, the
+`onUserDeleted` race added in its place.
+
+VERDICT: pass (0 blocking).
+
+### 2026-09-05 — BUT-2010/BUT-2028 final verdict, comment-only round [gdpr-cascade][review]
+
+Third pass over the same frozen 8-file index. All eight worktree blobs matched
+`git ls-files -s` byte-for-byte, so the worktree read IS the staged read; no `MM`.
+
+Three comment-only deltas since the pass I cleared, and both open residues from that
+pass's archive entry are now closed in code rather than in prose:
+- The "carried three / two gates measured all three wrong" sentence is STRUCK, not
+  reworded. I had graded it a non-finding (history, cannot rot from a code change); the
+  `code-reviewer` gate went further and measured it false as written and unverifiable from
+  git — the previous committed header was the two-line "wipes all" text, so the "first
+  version" it described has no ancestor. Correct call, and the correct instrument: a peer
+  gate REPRODUCING a number is stronger evidence than a peer gate agreeing with a
+  conclusion. Its job (stopping a restoration of the numerals) survives in the two
+  remaining sentences plus BUT-2028.
+- `MAX_BLOCK_SWEEP_ROWS` gains "Read that file's header before running it." I had called
+  the pointer/warning tension a non-finding; making it an INSTRUCTION is strictly better
+  than either wording, because an instruction has no truth value to go stale.
+- "below" dropped from the sibling scenario's docstring (positional reference).
+
+Re-measured this round, not carried over: `b9a95bd02` (2026-03-19) is the commit that put
+`tag_configs` into `COLLECTIONS_TO_KEEP` while it was already in `COLLECTIONS_TO_DELETE`
+(`git show` on that commit: keep entry `+`, delete entry context-only). Both ends of the
+"inert 2026-03-19 to 2026-09-05" window therefore hold, in all three places the sentence
+now appears. The overlap guard does sit above Phase 1 and `process.exit(1)`s, read in
+`main()`. `scenario_resetScriptListsDoNotOverlap` is registered in `main()` and its
+last-entry anchors (`blocks`, `butlery_archive`) are still the final entries of their
+lists — the BUT-2010 comment block below `blocks` is a comment, not an entry.
+
+No re-probe: the test file's executable bytes are unchanged from the pass I already
+mutation-probed. `npx tsc --noEmit` clean, `npm run test:account-deletion-cascade`
+248/248.
+
+Knowledge file untouched this round — nothing durable was learned, and it is still ~28.9k
+against a ~25k budget, so a budget-neutral edit for a comment strike would be the wrong
+trade. Flagging the overage again rather than letting it pass silently; it is NOT made
+worse by this commit, which does not touch that file.
+
+VERDICT: pass (0 blocking).
+
+### 2026-09-05 — BUT-2028 refusal round: the fix was in the worktree, not the index [gdpr-cascade][review][process]
+
+Fourth pass, same ticket. The brief said "index FROZEN" and described the BUT-2028
+live-run refusal as landed. It was not landed in the INDEX. `git ls-files -s` vs
+`git hash-object` disagreed on two of nine files (`MM`):
+`reset-user-data.ts` and `account-deletion-cascade.test.ts`. `git show :<path>` on the
+staged blob still carried the pre-fix header line 21 ("Do not run this against real data
+until BUT-2028 is resolved"), no `BUT_2028_ACK_FLAG`, no refusal, and no
+`scenario_resetScriptRefusesLiveRuns`. The staged suite is 248/248 — green, and three
+checks short of the MEASURED 251/251 the brief reported from the worktree. So the
+commit as queued would have shipped the prose-only state while ACCEPTED_DEVIATIONS and
+`MAX_BLOCK_SWEEP_ROWS`, both `M ` and both consistent with the index, said the script
+runs. The existing "Review the STAGED copy" principle caught this exactly as written; no
+new principle needed for it.
+
+Verified independently rather than taken from the brief: `admin-init.ts:12` is
+`const PROJECT_ID = "butlery-app-1"` with no env override (read the whole file);
+`.firebaserc` names only that project; `b9a95bd02` is dated 2026-03-19, so both ends of
+the "inert 2026-03-19 to 2026-09-05" window still hold.
+
+Instrument questions I was asked, and what I measured:
+- Both `indexOf` anchors are grep-unique in the file (`BUT_2028_ACK_FLAG)` = 1,
+  `Phase 1: Firebase Auth users` = 1), so neither can land on a decoy — the failure this
+  repo has already paid for twice.
+- Mutation-probed the ORDER property, the one the author had not probed: moved the whole
+  refusal block below the Phase 1 banner, kept the `!dryRun` guard intact. Exactly one
+  FAIL, `the refusal runs BEFORE Phase 1 deletes the Auth users`, 250/251. Restored from
+  a backup taken immediately before the write and confirmed byte-identical by
+  `git hash-object`. Source position is the right instrument here because the module
+  cannot be imported (`main()` runs at import) and the sibling scenario already parses
+  this same file — its one limit is that it proves execution order only while the refusal
+  stays inline in `main()`.
+- `process.argv.includes(...)` breaks the local convention: `main()` already binds
+  `const args = process.argv.slice(2)` and `dryRun` reads it, so the new check is the
+  only one testing the unsliced vector (node binary path, script path). Small but real.
+- `npm run reset-user-data` needs `--` to forward the ack flag; the refusal's remedy text
+  omits it, so following the message literally drops the flag and refuses again. Fails
+  SAFE, which is why it is a Medium and not a blocker.
+
+Two comment claims flagged for STRIKE rather than reword, both the by-now familiar shape
+of a sentence falsified by its own commit: "the operator this exists for is a human sent
+here by `MAX_BLOCK_SWEEP_ROWS`" (the same diff rewrites that docstring to end "the
+recovery is a human with the Admin SDK", i.e. explicitly NOT this script), and "prose in
+three files" (a count, in a commit that adds a fourth mention).
+
+Knowledge file: one budget-neutral edit, folding "repairing an accidental guard removes
+the only enforcement" and the unique-anchor requirement into the existing `admin/` bullet
+while compressing two clauses in the same bullet. Still over the ~25k budget and flagged
+again.
+
+VERDICT: fail (1 blocking) — the index does not contain the fix under review.
+
+### 2026-09-05 — BUT-2028 reset-script live-run refusal, verdict re-run [admin][gdpr][test-strength]
+
+Staged: 9 files. Index verified frozen (`git status --porcelain | grep "^MM"` -> 0;
+worktree blob `1cadeb83a` == index blob for `reset-user-data.ts`).
+
+Guard as shipped is correct: `if (!dryRun && !args.includes(BUT_2028_ACK_FLAG))` sits
+above `initializeAdminApp()`, reads only `args`, exits 1, leaves `--dry-run` reachable
+(`reset-user-data:dry-run` passes `--dry-run` in package.json, verified). Message names
+the real npm invocation with the `--` separator.
+
+MEASURED here: `tsc --noEmit` clean; `test:account-deletion-cascade` 252/252.
+Overlap-origin commit re-verified independently: `b9a95bd02`, 2026-03-19, and
+`git log -S tag_configs` on the script agrees — so the 2026-03-19..2026-09-05 inert
+window in three prose copies is not an unverified date.
+
+MUTATION PROBE (backup + byte-identical restore, blob hash re-checked): replaced the
+refusal's `process.exit(1)` with a `console.warn`, so the script prints REFUSED and then
+proceeds into Phase 1 against the hardcoded production project. All four checks of
+`scenario_resetScriptRefusesLiveRuns` stayed green — 252/252. The scenario asserts a
+grep-unique reference (`BUT_2028_ACK_FLAG)`), a `!dryRun` within 200 preceding chars,
+source order vs Phase 1, and no npm script baking the flag; none reads the refusal's
+EFFECT. Filed Medium (test strength), NOT blocking — the production code is right.
+Remedy given: slice `refusalAt` -> `initializeAdminApp(` and assert `process.exit(1)` in it.
+
+Check 4 is non-vacuous today (two npm scripts match the `reset-user-data` filter, neither
+bakes the flag) and its NAME is correctly scoped to npm scripts; a shell alias or CI step
+is outside it, which the name does not claim.
+
+Low: the header Usage block still advertises `npm run reset-user-data  # execute with
+confirmation gate`, which is refused as of this commit — strike that line rather than
+reword it.
+
+Verdict: pass (0 blocking).
+
+### 2026-09-05 — BUT-2010/BUT-2028 closing verdict: both disarming edits now die by name [gdpr][admin-scripts][test-strength]
+
+Closing round on 9 staged files. Index FROZEN throughout: `git status --porcelain | grep "^MM"`
+returned nothing before and after my own mutation probes, and `git hash-object` matched
+`git ls-files -s` for all nine.
+
+MY PRIOR MEDIUM IS CLOSED, AND I RE-PROBED IT MYSELF RATHER THAN ACCEPTING THE REPORT.
+`scenario_resetScriptRefusesLiveRuns` gains `the refusal EXITS rather than only printing`,
+slicing `refusalAt` -> `initializeAdminApp(` and asserting `process.exit(1)` inside it.
+MUTANT A (backup, byte-identical restore, blob hash re-verified): swapped that
+`process.exit(1)` for `console.warn("refused")`. Result 252/253, the single red being
+`the refusal EXITS rather than only printing` — exactly the predicted check, nothing else.
+
+THE INTEGRATION GATE'S HALF, WHICH I HAD MISSED, IS FIXED IN THE SAME EDIT. The three source
+checks read RAW source while the sibling `scenario_resetScriptListsDoNotOverlap` strips `//`
+lines. So commenting the whole `if` out — the cheapest disarming edit a human makes — left all
+three green over a dead guard. `source` is now comment-stripped for this scenario too.
+MUTANT B (same backup discipline): commented the entire refusal block out. Result 248/249,
+red on `the reset script refuses live runs while BUT-2028 is open`. Both mutants restored
+BYTE-IDENTICAL, confirmed by blob hash.
+
+So the clause "the disarming edit is the npm script" is now true rather than an over-claim:
+the guard itself has two named death conditions, and check 4 covers the invoker. Verified
+`functions/package.json` lines 157-158 — `reset-user-data` and `reset-user-data:dry-run`,
+neither baking the flag, so check 4 is non-vacuous today. `npm run reset-user-data --
+--but-2028-acknowledged` (the string the refusal prints) works against that script definition.
+
+LOW TAKEN: the Usage block no longer advertises `npm run reset-user-data  # execute with
+confirmation gate`. Struck, not reworded. Verified 0 occurrences in the staged blob.
+
+RESIDUAL VACUITY SEAM, NAMED RATHER THAN FILED AS A FINDING. The exit check's right bound is
+`source.indexOf("initializeAdminApp(", refusalAt)`. If that call ever disappeared, indexOf
+returns -1, `slice(refusalAt, -1)` runs to end-of-file, and the two OTHER `process.exit(1)`
+sites (the overlap guard, `main().catch`) would satisfy the check vacuously. Contrived — the
+script cannot initialise without it — and the scenario's own docstring already states the
+"inline in `main()`" precondition. Not blocking, no change requested.
+
+OTHER FILES IN RANGE, all read in full or at their diff regions with the Read tool:
+`account-deletion-cascade.ts` — prose-only change to `MAX_BLOCK_SWEEP_ROWS`, and it is
+accurate against the file I read: `tag_configs` is out of `COLLECTIONS_TO_DELETE`, the
+docstring now points a declined sweep at a human with the Admin SDK rather than at the script.
+No trigger, region, secret, import or retry surface changed; `tsc --noEmit` clean;
+253/253 on `test:account-deletion-cascade`. `ACCEPTED_DEVIATIONS.md` supersedes in place with
+two dated entries and corrects the false "were struck in BUT-1917's commit" clause by stating
+the correction rather than deleting the record — the decision-record exception, correctly
+applied, and the correction is checkable: that docstring does still name the script (I read
+it). The five l10n files carry one string change, en/sv agreed, both generated files
+regenerated (no stale-generated-string trap), butler voice clean, ARB `description` in English
+per convention. Zero control bytes in the three TS blobs.
+
+KNOWLEDGE FILE EDIT, net -4 chars (29432 -> 29428), so it retires more than it adds as the
+budget requires. Folded the comment-strip requirement into the existing `reset-user-data`
+principle as the third thing a source pin owes, beside the grep-unique anchor and the EFFECT
+assertion; added the invoker clause. Paid for it by merging the two "no universal claim about
+exports" bullets (gcfv1 `onUserDeleted` + the own-region gen2 exports) into one and tightening
+four sentences. While doing so I wrote "Exclude all five" — a COUNT, and a wrong one, since
+`migrations/` is a directory rather than one export. Struck it the same edit rather than
+recounting. Also reverted two of my own edits mid-way that grew the file or duplicated a line
+I had just added elsewhere.
+
+Verdict: pass (0 blocking).
+
+### 2026-09-05 — BUT-2010/BUT-2028 reset-script guards, final round [review][admin][gdpr]
+Verdict round 4 on the 9-file staged set. Two comment/test-only edits since the prior pass,
+one correcting my own judgement: I had accepted the clause "the disarming edit is not to the
+guard at all, but to the npm scripts" as earned once `//`-line stripping landed. The
+integration gate refuted it and was right — the strip only drops lines whose trimmed start is
+`//`, so `&& false` appended to the `if` condition, or a `/* … */` wrap around the block,
+both leave all five checks green over a dead guard, and both ARE edits to the guard. The
+clause was struck (not reworded); the surviving sentence claims only the measured part.
+Second edit: `scenario_resetScriptRefusesLiveRuns` now derives the flag spelling from source
+(`/BUT_2028_ACK_FLAG = "([^"]+)"/`) with a findability check ahead of it, instead of matching
+the literal. Operator's mutation probe: rename the flag to `--but-2028-ok` AND bake that
+spelling into the npm script → 253/254, reddening exactly
+`no npm script pre-acknowledges BUT-2028 for the operator`; a literal-matching check would
+have stayed green over a permanently satisfied refusal.
+Verified myself: index clean (no `MM`), derivation regex present in the staged blob, struck
+clause absent from it, `tsc --noEmit` clean, `test:account-deletion-cascade` 254/254.
+Parse checks re-read: `COLLECTIONS_TO_DELETE` is an array of objects whose nested
+`subcollections` arrays close `],` not `];`, so `indexOf("];")` finds the real end, and the
+last-entry anchors (`blocks`, `butlery_archive`) catch an early slice. The named residual —
+the exit check's right bound `indexOf("initializeAdminApp(", refusalAt)` running to EOF on
+`-1` — is unchanged by the flag derivation and stays contrived; the docstring carries the
+inline-in-`main()` precondition. No blocking findings.

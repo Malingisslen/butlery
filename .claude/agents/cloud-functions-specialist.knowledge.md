@@ -41,11 +41,9 @@ without approval (mismatch = silent client-side "not found").
   `concurrency` defaults to 80 at `cpu >= 1`; only a long-lived, memory-hungry
   handler declares `concurrency: 1` (`SERIALISED_ENDPOINTS`), trading OOM for
   QUEUE TIME charged against `isCascadeEventExpired` (from `event.time`) — a
-  queued-only delivery is abandoned without failing and writes NO marker, so every
-  marker-based diagnostic reads clean. Raise `maxInstances`, never `concurrency`. Notification
+  queued-only delivery is abandoned silently and writes NO marker, so marker-based
+  diagnostics read clean. Raise `maxInstances`, never `concurrency`. Notification
   fan-out is IN-PROCESS — a cap never splits a batch.
-- **`onUserDeleted` is the ONLY gcfv1 export** (own `.region().runWith()`,
-  unreachable by `setGlobalOptions`) — exclude it from "every function" claims.
 - **Prove endpoint config, never reason about it:** `npm run
   test:deploy-manifest` imports the ENTRY POINT (the only way the global call
   runs), pinning region, numeric `maxInstances` and the cascades'
@@ -53,9 +51,10 @@ without approval (mismatch = silent client-side "not found").
   (`== null` is FALSE) — check `typeof x === "number"`. Vacuity is in the
   `gcfv2` FILTER: guard the filtered COUNT per caller, keep presence AND value
   pins, and make a by-NAME pin fail rather than skip on a missing export.
-- **Some gen2 exports pin their OWN region** (`moderateUpload`,
-  `syncConversationLastMessage`, `purgeExpiredAuditLogs`, `migrations/`), so
-  never say a global option "reaches every export", and never TALLY endpoints.
+- **No global option reaches EVERY export, and never TALLY endpoints.**
+  `onUserDeleted` is the only gcfv1 one (own `.region().runWith()`); `moderateUpload`,
+  `syncConversationLastMessage`, `purgeExpiredAuditLogs` and `migrations/` pin their
+  own region. Exclude them from any "every function" claim.
 - **A trigger or `onSchedule` NOT re-exported from `index.ts` is DEAD** — it
   compiles, its unit tests pass, and nothing deploys, so every comment calling
   it a safety net is false. New periodic work is a `MaintenanceTask` in
@@ -204,7 +203,7 @@ from `(err as {code?}).code`.
   for every client. Delete the doc, or prune/skip at the cap; before revoking
   the last holder, name what re-creates the id.
 - A step's throw is CAUGHT by `runStep` → `failedCollections` +
-  `gdprCompliant:false`, never an automatic retry; recovery is a human.
+  `gdprCompliant:false`; no automatic retry, recovery is a human.
 - **`batch.update()` on a concurrently-deleted doc fails the WHOLE chunk with
   NOT_FOUND** under `strict:false`; and `commitInChunks` calls `mutate` OUTSIDE
   that try, so a SYNCHRONOUS validation throw from the callback (`undefined` in
@@ -239,14 +238,11 @@ from `(err as {code?}).code`.
   a task LAST in `WEEKLY_REPORT_TASKS` is what `runTaskChain` SKIPS first.
 - **A compare-before-repair reconciliation resolves EXISTENCE once per uid ABOVE
   every branch, and counts a DELETE as drift on every branch.** `stored == expected`
-  never settles orphanhood: an EMPTY orphan (what a post-cascade rebuild writes)
-  matches an empty expectation, and a NON-EMPTY one matches too whenever the source
-  sweep DECLINED at its cap or a `strict:false` chunk failed. Scoping the fix to the
-  empty case leaves BOTH defects one branch over — measured: the equal-non-empty
-  orphan survives every weekly pass, and the unequal one IS deleted but counts
-  `skipped`, so the run logs "no drift" after changing something. Never reach the
-  existence seam THROUGH the repair call either: it rewrites the benign doc and
-  files it as drift.
+  never settles orphanhood — an EMPTY orphan matches an empty expectation, and a
+  NON-EMPTY one matches whenever the source sweep DECLINED or a `strict:false` chunk
+  failed — so scoping the fix to the empty case leaves both defects one branch over.
+  Never reach the existence seam THROUGH the repair call: it rewrites the benign doc
+  and files it as drift.
 - A "shared" collection also holds SOLO-owner docs to DELETE, not scrub. A scrub
   enumerates every uid in the MODEL's `toFirestore`: array elements, per-uid map
   keys, AND attribution scalars (`lastModifiedBy`, `lastEditedBy`).
@@ -344,18 +340,17 @@ from `(err as {code?}).code`.
   `rate_limit_violation` row AND `details.retryAfterSeconds`; both spellings are
   live, so copying a sibling is CONSISTENT, not correct. Abuse/cost gates fail
   CLOSED on a Firestore error; some notification gates deliberately fail OPEN —
-  don't harmonize. A `…WithDeps` core test sees none of the wrapper's gates, and
-  an unknown operation key falls back to `RATE_LIMIT_CONFIGS.default` in silence —
-  pin the `(check|enforce)RateLimit(uid, "<key>")` LITERALS by parsing source,
-  ranging over EVERY callable in the directory, never a hand-named subset.
-- **A source pin matching BOTH spellings cannot detect a revert to the bare
+  don't harmonize. A `…WithDeps` core test sees none of the wrapper's gates, and an
+  unknown key falls back to `RATE_LIMIT_CONFIGS.default` in silence — pin the
+  `(check|enforce)RateLimit(uid, "<key>")` LITERALS by parsing source, over EVERY
+  callable in the directory, never a hand-named subset.
+- **A pin matching BOTH spellings cannot detect a revert to the bare
   form** — it pins the KEY, never `details`. Pin on the DENIED path: both
   `enforceRateLimit` and `logRateLimitViolation` read `getFirestore()`, so
   `__setFirestoreForTest` + a throwing fake reaches the fail-closed branch. The
   ALLOWED path is unreachable — `getDb()` is a bare `admin.firestore()`.
-- **`retryAfterSeconds` only beats the client's 60s fallback where the config
-  declares `dailyLimit`** — read the bucket's config; never write daily-cap
-  rationale onto a capless one.
+- **`retryAfterSeconds` beats the client's 60s fallback only where the config
+  declares `dailyLimit`** — never write daily-cap rationale onto a capless bucket.
 - **`rateLimitWrite(bucket, s)` is INERT unless a client writes
   `users/{uid}/rate_limits/<bucket>`** — grep the Dart writers per bucket before
   citing it as a control; several rules name buckets nothing writes.
@@ -410,6 +405,23 @@ from `(err as {code?}).code`.
 
 ### Ingredient sync, allergen data & admin exports/ETL (admin/ family)
 - `admin/` scripts run `main()` at import — extract pure cores to test.
+- **A hand-run script's delete/keep OVERLAP guard no-ops the WHOLE script in
+  silence** (`reset-user-data.ts`), and REPAIRING it removes the header's only
+  enforcement — replace it with a deliberate `!dryRun` refusal ABOVE the destructive
+  phase (`admin-init.ts` hardcodes the prod project, no env override), read off the
+  script's own `args`. **A source pin owes**: a grep-UNIQUE anchor; the guard's EFFECT,
+  not only its reference and position (assert `process.exit(1)` INSIDE the refusal,
+  bounded by the next statement); `//`-line STRIPPING first, since commenting the block
+  out is the cheapest disarming edit — but stripping stops NEITHER an `&& false` on the
+  condition NOR a `/* */` wrap, so never claim a stripped-source pin covers every
+  disarming edit; a LAST-entry anchor whenever the pin slices a list (the first entry
+  survives truncation); and the INVOKER — a flag baked into the npm script satisfies the
+  guard forever, so DERIVE that flag's literal from its declaration
+  (`/FLAG = "([^"]+)"/`) rather than restating it, or a rename leaves the pin green.
+  A "wipes all" header is a COVERAGE claim: diff both lists against
+  `firestore.rules`' top-level `match` blocks; never restate the gap as a number. Its
+  Auth-wipe phase fires `onUserDeleted`, which writes into collections the Firestore
+  phase is concurrently deleting.
 - Normalization parity must hold across every matching surface (sync stamp,
   server hold-gate, Dart client); list-split regexes stay in lockstep.
 - Export/mining scripts: verify FIELD PARITY against the writer. Best test is a

@@ -3025,3 +3025,50 @@ confident claim (that my change added a fifth `isNotBlockedBy` call) was itself 
 I could check in one command. Brief them adversarially, then verify what they hand back. Both
 halves.
 
+## BUT-2010, 2026-09-05 — a promise that is never tested looks like a promise that is kept
+
+`admin/reset-user-data.ts` had done nothing for five and a half months. `tag_configs` sat in
+both `COLLECTIONS_TO_DELETE` and `COLLECTIONS_TO_KEEP`, so the script's own overlap guard hit
+`process.exit(1)` before Phase 1 on every run.
+
+I proposed deleting it as dead code. That was wrong, and the reason is the lesson: two
+docstrings — I first wrote "two", it is one, `MAX_BLOCK_SWEEP_ROWS` — named this script as the
+recovery for an erasure the account cascade DECLINES to complete above its cap, reporting
+`gdprCompliant: false`. It was an Art. 17 promise, not debris. Only reading the callers showed
+that; the file itself looked abandoned.
+
+**The guard was never the problem.** It did exactly its job — refusing to delete seed data —
+for five months, and nobody noticed, because an early `process.exit(1)` in a hand-run script
+reads as a refusal rather than a defect. Nothing watched it.
+
+Then fixing it in one line made things WORSE before better, and that is the part worth keeping.
+The moment the script could reach Phase 1, two dormant defects became live: its header claimed
+to wipe **all** user-generated data while 27 top-level collections sat in neither list (fifteen
+of them uid-keyed personal data, orphaned because Phase 1 deletes every Auth user first, putting
+them beyond the per-uid cascade), and its Auth phase races the live `onUserDeleted` trigger,
+which writes into five collections Phase 2 is concurrently deleting. Neither was reachable while
+the guard fired. **Repairing the thing that made a claim untestable is what makes the claim
+false**, so the repair is exactly when to re-read every sentence around it.
+
+Three instances of one shape in a single day, two of them mine:
+
+- a mirror gate whose fast path skipped a case, so the compensating sweep never ran;
+- a sanitiser (butlery-6d's) that looked like protection because nothing had attacked it;
+- this script, whose promise was unfalsifiable because it never reached the code that would
+  break it.
+
+The compressed form I had been carrying is **a safety mechanism doing its job looks identical to
+one that never runs.** BUT-2010 adds the half I was missing: the same is true of promises. An
+untested promise and a kept promise are the same artefact until something exercises it.
+
+Two measurement errors of my own, both caught by gates, both from searching for the wrong thing:
+
+- I dated the collision with `git log -S'"tag_configs"'`, which matched the KEEP entry; the
+  DELETE entry came from a different commit five days earlier. One gate CONFIRMED my wrong
+  version, so it was two-to-one until I ran the precise search. A peer agreeing is not a
+  measurement.
+- I anchored a new source-parsing test on the FIRST list entry and wrote that it would catch a
+  truncated parse. It did not — the first entry survives any truncation. The anchor has to be
+  the LAST entry, and I only know that because I probed it instead of trusting the sentence I
+  had just written.
+

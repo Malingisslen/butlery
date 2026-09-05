@@ -295,7 +295,12 @@ compress it.**
   identifier is satisfied by its own DECLARATION — key it on the CALL spelling and probe both
   directions; and BLANK comments to the same LENGTH rather than deleting them, so offsets in
   `stripped` match `raw`, else a marker looked up by `raw.indexOf(...)` returns the file's FIRST
-  marker and one excused violation excuses every identically-spelled one.
+  marker and one excused violation excuses every identically-spelled one. **A DISJOINTNESS /
+  intersection assertion over two PARSED sets is unfailable when EITHER set parses empty, so each
+  set owes its own presence anchor** — and the anchor must be the list's LAST entry, since the
+  FIRST survives a slice truncated at a nested `],` (measured, BUT-2010). The parse returns []
+  for any total failure, not only a missing marker: a changed quote style or closer empties it
+  with the marker still present, so never write "[] only when the marker is missing".
 - **A TAUTOLOGICAL assertion is not automatically a coverage hole — grade the whole test
   ARITHMETICALLY before repairing it.** `hasLength(<the constant>)` compares a bound to itself,
   but a sibling `first.entryId == 'e5'` may be `e(N − cap)` and already redden on every cap

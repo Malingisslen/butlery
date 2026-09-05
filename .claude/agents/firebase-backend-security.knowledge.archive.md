@@ -8849,3 +8849,25 @@ side so a change to one is made in sight of the other".
 
 Also found: an untracked `test/unit/_zz_probe_test.dart` left behind from the author's own
 investigation, inside the directory `flutter test` discovers.
+
+### 2026-09-05 — BUT-2010/BUT-2028: the reset script's status sentence, retired verbatim [admin][gdpr]
+
+Superseded text, kept because this archive is the audit trail:
+
+> script RUNS (this one has `process.exit(1)`'d on a delete/keep overlap since 2026-03,
+> BUT-2010)
+
+What replaced it, and why: the overlap was repaired 2026-09-05, so "has … since 2026-03" became
+false in the commit that fixed it. The surrounding lesson is unchanged and still true —
+membership in the delete list is necessary, never sufficient; check the script RUNS, and that it
+is per-USER at all.
+
+The reason it needed superseding rather than a strike: it is precisely the neighbour the bullet
+itself warns about. Found by the `integration-reviewer` gate, which flagged it as out of range
+for the commit that falsified it — a stale sentence in a file nobody staged.
+
+Also worth the trail: repairing the overlap removed the only mechanism standing between
+`npm run reset-user-data` and a hardcoded production project. The refusal that replaced it is in
+code, ahead of `initializeAdminApp()` and Phase 1, and is watched by
+`scenario_resetScriptRefusesLiveRuns` — because "the guard worked and nothing watched it fire"
+is the whole content of BUT-2010.
