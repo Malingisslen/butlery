@@ -1,5 +1,19 @@
 /// Test fixtures for Recept.se recipe parsing
 ///
+/// Every fixture in this file is FABRICATED from the schema.org Recipe
+/// standard, and stays that way. recept.se blocks `ClaudeBot` and
+/// `anthropic-ai` with `Disallow: /`, behind a Content-Signal block declaring
+/// its restrictions an express reservation of rights under article 4 of the
+/// DSM Directive. No capture from recept.se may be added, and no further
+/// automated fetch of the site is to be made. See ADR-0012's superseding
+/// section.
+///
+/// The consequence is a real limitation, written down rather than hidden:
+/// these fixtures agree with the parser by construction, so they cannot show
+/// that it handles what recept.se actually serves. Compare
+/// `real_structure_test.dart`, where captured arla.se markup turned out to
+/// disagree with the parser (BUT-2020).
+///
 /// Contains representative HTML from Recept.se recipes with:
 /// - Schema.org JSON-LD markup
 /// - Swedish recipe content

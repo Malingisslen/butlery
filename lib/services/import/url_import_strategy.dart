@@ -406,8 +406,12 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
   /// discovered `@type` values match `Recipe`. Used to escalate the
   /// "this is probably a news article" signal in the text-fallback tier.
   bool _hasOnlyNonRecipeJsonLd(String html) {
+    // Built from the shared pattern rather than spelling the media type a
+    // fourth time: a page whose `+` is entity-encoded HAS JSON-LD, and a
+    // matcher blind to that reads it as a page with none, which flips this
+    // signal's answer (BUT-2020).
     final blocks = RegExp(
-      r'<script[^>]*type=["\x27]application/ld\+json["\x27][^>]*>(.*?)</script>',
+      '<script[^>]*${jsonLdScriptOpeningTagPattern.pattern}[^>]*>(.*?)</script>',
       caseSensitive: false,
       dotAll: true,
     ).allMatches(html);

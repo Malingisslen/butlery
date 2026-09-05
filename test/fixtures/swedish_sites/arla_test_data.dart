@@ -389,4 +389,194 @@ class ArlaTestFixtures {
 <body></body>
 </html>
 ''';
+
+  /// Arla.se with the REAL page structure, captured 2026-09-05 from
+  /// https://www.arla.se/recept/kassler-i-ugn-med-senap-och-tomat/
+  ///
+  /// Title, description and instruction prose are PLACEHOLDERS. The DOM
+  /// structure, the class names, the JSON-LD envelope and the ingredient
+  /// lines are what the live page actually serves. See ADR-0012's superseding
+  /// section for why the prose is replaced and the ingredient lines are not.
+  ///
+  /// Three properties of the live page that no hand-authored fixture had:
+  /// - the script tag's type attribute is `application/ld&#x2B;json` — the `+`
+  ///   arrives HTML-entity-encoded, so anything matching the attribute before
+  ///   character references are resolved finds no structured data at all
+  /// - the payload is a four-element ARRAY; the Recipe is the third element
+  /// - `recipeInstructions` is a list of `HowToSection`, each holding its
+  ///   steps in `itemListElement` — there is no top-level `HowToStep`
+  ///
+  /// Smaller ones, each its own trap: every duration is `PT00M`,
+  /// `recipeYield` is abbreviated ("4 port"), nutrition values use Swedish
+  /// decimal commas, and the Recipe node carries both `type` and `@type`.
+  ///
+  /// The DOM fallback is no easier. Ingredients live in a TABLE — name in a
+  /// `<th>`, amount in a `<td>` AFTER it, so reading the row left to right
+  /// yields "Kassler 400 g" — and each instruction step's text is repeated
+  /// inside a `data-model` attribute as HTML-escaped JSON.
+  static const String realStructureKassler = '''
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <title>Platshållarrätt två - Recept | Arla</title>
+  <script type="application/ld&#x2B;json">
+  [
+    {"@context":"https://schema.org/","@type":"Organization","name":"Arla","url":"https://www.arla.se/"},
+    {"@context":"https://schema.org/","type":"BreadcrumbList","itemListElement":[{"type":"ListItem","position":1,"name":"Arla","item":"https://www.arla.se/","@type":"ListItem"}],"@type":"BreadcrumbList"},
+    {
+      "@context":"https://schema.org/",
+      "type":"Recipe",
+      "name":"Platshållarrätt två",
+      "headline":"Platshållarrätt två",
+      "description":"Platshållartext för beskrivningen. Den ersätter sajtens egen ingress.",
+      "image":"https://images.arla.com/recordid/A1EE0261-46C3-4966-A6573D5236DED194/kassler-i-ugn-med-senap-och-tomat.jpg?width=1300&height=525&mode=crop&format=webp",
+      "author":{"type":"Person","name":"Platshållarförfattare","@type":"Person"},
+      "publisher":{"type":"Organization","name":"Arla","@type":"Organization"},
+      "recipeCategory":"Huvudrätt, Lunch, Middag, Varmrätt",
+      "recipeCuisine":"",
+      "keywords":"Kassler",
+      "recipeYield":"4 port",
+      "prepTime":"PT00M",
+      "cookTime":"PT00M",
+      "totalTime":"PT00M",
+      "discussionUrl":"https://www.arla.se/recept/kassler-i-ugn-med-senap-och-tomat/",
+      "video":null,
+      "nutrition":{
+        "type":"NutritionInformation",
+        "servingSize":"port",
+        "calories":"444 kcal",
+        "carbohydrateContent":"50,6 g",
+        "fatContent":"13,7 g",
+        "fiberContent":"3,2 g",
+        "proteinContent":"28,8 g",
+        "@type":"NutritionInformation"
+      },
+      "aggregateRating":{"type":"AggregateRating","ratingValue":"3.3","ratingCount":"148","@type":"AggregateRating"},
+      "recipeIngredient":[
+        "400 g kassler",
+        "150 g Arla® Färskost Naturell",
+        "1 msk dijonsenap",
+        "1 msk flytande honung",
+        "2 tomater",
+        "1 dl hackad färsk basilika",
+        "3 dl råris",
+        "65 g salladsmix"
+      ],
+      "recipeInstructions":[
+        {
+          "type":"HowToSection",
+          "name":"Första instruktionen",
+          "itemListElement":[
+            {"type":"HowToStep","text":"Platshållarsteg ett.","url":"https://www.arla.se/recept/kassler-i-ugn-med-senap-och-tomat/#step1-1","@type":"HowToStep"},
+            {"type":"HowToStep","text":"Platshållarsteg två.","url":"https://www.arla.se/recept/kassler-i-ugn-med-senap-och-tomat/#step1-2","@type":"HowToStep"},
+            {"type":"HowToStep","text":"Platshållarsteg tre.","url":"https://www.arla.se/recept/kassler-i-ugn-med-senap-och-tomat/#step1-3","@type":"HowToStep"},
+            {"type":"HowToStep","text":"Platshållarsteg fyra.","url":"https://www.arla.se/recept/kassler-i-ugn-med-senap-och-tomat/#step1-4","@type":"HowToStep"}
+          ],
+          "@type":"HowToSection"
+        }
+      ],
+      "@type":"Recipe"
+    },
+    {"@context":"http://schema.org","@type":"ItemList","itemListElement":[{"@type":"ListItem","position":1,"url":"/recept/kasslergratang/"}]}
+  ]
+  </script>
+</head>
+<body>
+  <div class="c-recipe">
+    <div class="c-recipe__hero"><div class="c-recipe__hero-wrap js-recipe-hero-wrap">
+      <h1 class="c-recipe__title">Platshållarrätt två</h1>
+      <p class="c-recipe__description u-m--0 u-mt--s@mobile">Platshållartext för beskrivningen.</p>
+    </div></div>
+    <div class="c-recipe__content">
+      <div class="c-recipe__ingredients-inner-wrap u-hidden@mobile u-mt--m">
+        <div class="c-recipe__ingredients-group">
+          <table class="">
+            <tbody>
+              <tr>
+                <th class="u-width-70"><div class="u-flex u-flex-align-center"><span class="">Kassler</span></div></th>
+                <td class="u-text-align--right">400 g</td>
+              </tr>
+              <tr>
+                <th class="u-width-70"><div class="u-flex u-flex-align-center"><span class="">Arla&#xAE; F&#xE4;rskost Naturell</span></div></th>
+                <td class="u-text-align--right">150 g</td>
+              </tr>
+              <tr>
+                <th class="u-width-70"><div class="u-flex u-flex-align-center"><span class="">dijonsenap</span></div></th>
+                <td class="u-text-align--right">1 msk</td>
+              </tr>
+              <tr>
+                <th class="u-width-70"><div class="u-flex u-flex-align-center"><span class="">flytande honung</span></div></th>
+                <td class="u-text-align--right">1 msk</td>
+              </tr>
+              <tr>
+                <th class="u-width-70"><div class="u-flex u-flex-align-center"><span class="">tomater</span></div></th>
+                <td class="u-text-align--right">2 st</td>
+              </tr>
+              <tr>
+                <th class="u-width-70"><div class="u-flex u-flex-align-center"><span class="">hackad f&#xE4;rsk basilika</span></div></th>
+                <td class="u-text-align--right">1 dl</td>
+              </tr>
+              <tr>
+                <th class="u-width-70"><div class="u-flex u-flex-align-center"><span class="">r&#xE5;ris</span></div></th>
+                <td class="u-text-align--right">3 dl</td>
+              </tr>
+              <tr>
+                <th class="u-width-70"><div class="u-flex u-flex-align-center"><span class="">salladsmix</span></div></th>
+                <td class="u-text-align--right">65 g</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="c-recipe__how-to">
+        <div class="c-recipe__instructions-inner u-flex">
+          <p class="c-recipe__instructions-label u-flex u-font-size-h4 u-flex-align-center u-m--0">Första instruktionen</p>
+        </div>
+        <ol class="u-bare-list c-recipe__instructions-steps-list u-ml--m c-recipe__instructions-steps-multi">
+          <li class="c-recipe__instructions-step  u-ml--s">
+            <span data-vue="RecipeCookingInstructionCheckbox"
+                  data-aria-label="Markera instruktionssteg"
+                  data-section-index="0"
+                  data-item-index="0"
+                  data-model="{&quot;text&quot;:&quot;Platsh&#xE5;llarsteg ett.&quot;}">
+              Platshållarsteg ett.
+            </span>
+          </li>
+          <li class="c-recipe__instructions-step  u-ml--s">
+            <span data-vue="RecipeCookingInstructionCheckbox"
+                  data-aria-label="Markera instruktionssteg"
+                  data-section-index="0"
+                  data-item-index="1"
+                  data-model="{&quot;text&quot;:&quot;Platsh&#xE5;llarsteg tv&#xE5;.&quot;}">
+              Platshållarsteg två.
+            </span>
+          </li>
+          <li class="c-recipe__instructions-step  u-ml--s">
+            <span data-vue="RecipeCookingInstructionCheckbox"
+                  data-aria-label="Markera instruktionssteg"
+                  data-section-index="0"
+                  data-item-index="2"
+                  data-model="{&quot;text&quot;:&quot;Platsh&#xE5;llarsteg tre.&quot;}">
+              Platshållarsteg tre.
+            </span>
+          </li>
+          <li class="c-recipe__instructions-step  u-ml--s">
+            <span data-vue="RecipeCookingInstructionCheckbox"
+                  data-aria-label="Markera instruktionssteg"
+                  data-section-index="0"
+                  data-item-index="3"
+                  data-model="{&quot;text&quot;:&quot;Platsh&#xE5;llarsteg fyra.&quot;}">
+              Platshållarsteg fyra.
+            </span>
+          </li>
+        </ol>
+      </div>
+      <div class="c-recipe__nutrition-values u-mt--s u-mb--m u-ml--xs u-mr--xs">
+        <div class="c-recipe__nutrition-values-inner">444 kcal</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+''';
 }

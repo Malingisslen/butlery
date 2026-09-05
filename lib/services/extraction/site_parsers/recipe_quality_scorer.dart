@@ -2,6 +2,7 @@
 /// Calculates completeness scores based on field presence and quality.
 /// Used to determine if an extraction meets success criteria (>90% or >95%).
 import 'package:butlery/core/extensions/default_value_extensions.dart';
+import 'package:butlery/utils/recipe_scraper.dart';
 
 /// Quality score for an extracted recipe
 class RecipeQualityScore {
@@ -193,7 +194,10 @@ class RecipeQualityScorer {
     if (value is List) {
       final steps = <String>[];
 
-      for (final instruction in value) {
+      // A HowToSection holds its steps in `itemListElement`, so without
+      // flattening the loop below scores a sectioned recipe as having no
+      // instructions at all and fails it on quality (BUT-2020).
+      for (final instruction in flattenRecipeInstructions(value)) {
         if (instruction is String) {
           steps.add(instruction.trim());
         } else if (instruction is Map) {

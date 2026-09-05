@@ -711,4 +711,74 @@ void main() {
       });
     });
   });
+
+  group('JSON-LD script type recognition (BUT-2020)', () {
+    const body =
+        '{"@type":"Recipe","name":"Kassler","recipeIngredient":'
+        '["400 g kassler","150 g farskost","1 msk senap"],'
+        '"recipeInstructions":[{"@type":"HowToStep","text":"Sla ihop."},'
+        '{"@type":"HowToStep","text":"Grada."}]}';
+
+    String pageWithScriptType(String typeAttribute) =>
+        '<html><head><script type="$typeAttribute">$body</script>'
+        '</head><body></body></html>';
+
+    test('accepts the plain spelling', () {
+      expect(
+        extractRecipeFromHtml(pageWithScriptType('application/ld+json')),
+        isNotNull,
+      );
+    });
+
+    test('accepts an entity-encoded plus, hex or decimal', () {
+      expect(
+        extractRecipeFromHtml(pageWithScriptType('application/ld&#x2B;json')),
+        isNotNull,
+      );
+      expect(
+        extractRecipeFromHtml(pageWithScriptType('application/ld&#43;json')),
+        isNotNull,
+      );
+    });
+
+    test('accepts a media type carrying a parameter', () {
+      // `; charset=utf-8` is legal and appears on real pages. Comparing the
+      // whole attribute for equality would drop the page entirely.
+      expect(
+        extractRecipeFromHtml(
+          pageWithScriptType('application/ld+json; charset=utf-8'),
+        ),
+        isNotNull,
+      );
+      expect(
+        extractRecipeFromHtml(
+          pageWithScriptType('APPLICATION/LD+JSON;charset=UTF-8'),
+        ),
+        isNotNull,
+      );
+    });
+
+    test('rejects a type that merely starts the same way', () {
+      // The essence must match in full — a longer media type is a different
+      // media type, not a JSON-LD one with a suffix.
+      expect(
+        extractRecipeFromHtml(pageWithScriptType('application/ld+jsonx')),
+        isNull,
+      );
+      expect(
+        extractRecipeFromHtml(pageWithScriptType('text/javascript')),
+        isNull,
+      );
+    });
+
+    test('isJsonLdMediaType decides on the essence alone', () {
+      expect(isJsonLdMediaType('application/ld+json'), isTrue);
+      expect(isJsonLdMediaType('  application/ld+json  '), isTrue);
+      expect(isJsonLdMediaType('application/ld+json;charset=utf-8'), isTrue);
+      expect(isJsonLdMediaType('Application/LD+JSON'), isTrue);
+      expect(isJsonLdMediaType(null), isFalse);
+      expect(isJsonLdMediaType(''), isFalse);
+      expect(isJsonLdMediaType('application/json'), isFalse);
+    });
+  });
 }

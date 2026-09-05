@@ -13,6 +13,7 @@ import 'package:html/parser.dart' as html_parser;
 import 'package:html/dom.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/services/extraction/site_parsers/recipe_site_parser.dart';
+import 'package:butlery/utils/recipe_scraper.dart';
 
 /// Parser for Köket.se recipes
 /// **Example URL:** https://www.koket.se/recept/klassiska-kottbullar/
@@ -189,7 +190,12 @@ class KoketRecipeParser extends RecipeSiteParser {
 
     // Clean instruction formatting
     if (recipe['recipeInstructions'] is List) {
-      final instructions = recipe['recipeInstructions'] as List;
+      // Flatten HowToSection first — its steps sit in `itemListElement`, and
+      // the filter below keeps only maps carrying a top-level `text`, so
+      // without this every step on such a page is dropped (BUT-2020).
+      final instructions = flattenRecipeInstructions(
+        recipe['recipeInstructions'],
+      );
       recipe['recipeInstructions'] = instructions
           .map((inst) {
             if (inst is String) {

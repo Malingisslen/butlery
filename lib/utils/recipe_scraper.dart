@@ -123,19 +123,58 @@ bool _isRecipeType(dynamic type) {
   return false;
 }
 
+/// Whether a `type` attribute value denotes JSON-LD.
+///
+/// Compares the media type's ESSENCE, so `application/ld+json; charset=utf-8`
+/// counts. Callers pass the value as the HTML parser resolved it, which is
+/// what makes an entity-encoded `+` (Arla.se writes `application/ld&#x2B;json`)
+/// arrive here already decoded.
+bool isJsonLdMediaType(String? typeAttribute) {
+  if (typeAttribute == null) return false;
+  return typeAttribute.split(';').first.trim().toLowerCase() ==
+      'application/ld+json';
+}
+
+/// Matches a `<script>` OPENING TAG whose `type` attribute is JSON-LD, for
+/// callers that must work on raw source rather than a parsed document —
+/// `HtmlSanitizer`, whose whole point is to run before anything trusts the
+/// markup.
+///
+/// It answers the same QUESTION as [isJsonLdMediaType] but is not the same
+/// test, and the difference is deliberate: this one must enumerate the
+/// encodings of `+` a parser would have resolved (`&#x2B;` as Arla.se writes
+/// it, and the decimal `&#43;`). Any other character encoded that way fails
+/// to match, which drops the tag — the safe direction.
+///
+/// Both bounds are load-bearing, and each was measured against a tag that
+/// exempted itself from sanitisation without it:
+/// - The lookbehind requires the attribute to START here. A `\b` does not:
+///   `-` is a non-word character, so a word boundary sits inside
+///   `data-type=`, and `<script data-type="application/ld+json">` survived.
+/// - The lookahead requires the media type to END here, so
+///   `type="application/ld+jsonx" src="evil.js"` is not read as JSON-LD.
+final RegExp jsonLdScriptOpeningTagPattern = RegExp(
+  r'''(?<=[\s/])type\s*=\s*["']?\s*application/ld(?:\+|&#x2b;|&#43;)json(?=["'\s;>]|$)''',
+  caseSensitive: false,
+);
+
 /// Private helper: extracts JSON-LD of type "Recipe" if present.
 _JsonLdResult _extractJsonLd(String html) {
-  final jsonLdRegex = RegExp(
-    r"""<script[^>]*type=["']?application/ld\+json["']?[^>]*>([\s\S]*?)</script>""",
-    caseSensitive: false,
-  );
+  // Read the attribute off the PARSED document rather than matching raw
+  // source. Arla.se writes `type="application/ld&#x2B;json"` — the plus sign
+  // as a character reference — which a regex over the source never matches
+  // while a compliant parser resolves it (BUT-2020).
+  final scripts = html_parser
+      .parse(html)
+      .querySelectorAll('script')
+      .where((e) => isJsonLdMediaType(e.attributes['type']))
+      .toList();
 
-  final matches = jsonLdRegex.allMatches(html);
-  final hadBlocks = matches.isNotEmpty;
+  final hadBlocks = scripts.isNotEmpty;
 
-  for (final match in matches) {
-    final content = match.group(1)?.trim();
-    if (content == null) continue;
+  for (final script in scripts) {
+    final content = script.text.trim();
+    if (content.isEmpty) continue;
     try {
       final decoded = json.decode(content);
       // If JSON-LD is a list, search through each object
@@ -247,4 +286,49 @@ Map<String, dynamic> _parseRecipeMicrodata(Element root) {
 
   result['@type'] = 'Recipe';
   return result;
+}
+
+/// Flattens a schema.org `recipeInstructions` value into the step maps a
+/// caller can read a `text` off.
+///
+/// The list may hold `HowToStep` maps, plain strings, or `HowToSection` maps
+/// whose steps sit one level down in `itemListElement`. Arla.se serves the
+/// last shape, and every reader that kept only maps carrying a top-level
+/// `text` silently dropped every step on the page (BUT-2020).
+///
+/// A section's own `name` is a heading, not a step, so it is skipped when the
+/// section carries a non-empty `itemListElement`. A section with an empty or
+/// absent one is kept whole, because there is nothing to lift out and its own
+/// `text` would otherwise be lost.
+///
+/// Two other readers of the same schema shape disagree with this one, and
+/// with each other. Neither is reached by the five callers here, and both are
+/// named rather than left to be discovered:
+/// - `schema_org_tier.dart` emits a section's `name` as a step, so its output
+///   for a sectioned page has one extra leading entry.
+/// - `SchemaOrgRecipeExtractor._collectInstructionSteps` drops a section whose
+///   `itemListElement` is an empty list, where this keeps it.
+///
+/// Three implementations of one schema decision is how they drift; folding
+/// them together is its own change, because that reader returns strings while
+/// this returns the step maps its callers still filter.
+List<dynamic> flattenRecipeInstructions(dynamic value) {
+  if (value is! List) return const [];
+
+  final flattened = <dynamic>[];
+  for (final entry in value) {
+    if (entry is! Map) {
+      flattened.add(entry);
+      continue;
+    }
+
+    final nested = entry['itemListElement'];
+    if (nested is List && nested.isNotEmpty) {
+      flattened.addAll(flattenRecipeInstructions(nested));
+      continue;
+    }
+
+    flattened.add(entry);
+  }
+  return flattened;
 }

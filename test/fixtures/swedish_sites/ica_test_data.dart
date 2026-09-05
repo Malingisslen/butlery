@@ -395,4 +395,145 @@ class IcaTestFixtures {
 <body></body>
 </html>
 ''';
+
+  /// ICA.se with the REAL page structure, captured 2026-09-05 from
+  /// https://www.ica.se/recept/bananomelett-17/
+  ///
+  /// Title, description and instruction prose are PLACEHOLDERS. The DOM
+  /// structure, the class names, the JSON-LD key set and the ingredient lines
+  /// are what the live page actually serves. See ADR-0012's superseding
+  /// section for why the prose is replaced and the ingredient lines are not.
+  ///
+  /// What this exercises that the hand-authored fixtures above cannot:
+  /// - `recipeYield` is a bare number, not "N portioner"
+  /// - `recipeCategory` is one comma-joined string, not a list
+  /// - `recipeCuisine` is an empty string, as are the measured `nutrition`
+  ///   values; `servingSize` beside them is populated
+  /// - there is no `prepTime` and no `cookTime`, only `totalTime`
+  /// - the ingredient quantity sits in its own span, so a card's text reads
+  ///   "1  halvmogen banan" with a double space, and a quantity-less row
+  ///   begins with a space
+  /// - every instruction is wrapped in a checkbox label
+  static const String realStructureBananomelett = '''
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <title>Platshållarrätt ett - Recept - ICA.se</title>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Recipe",
+    "name": "Platshållarrätt ett",
+    "description": "Platshållartext för beskrivningen. Den ersätter sajtens egen ingress.",
+    "image": "https://assets.icanet.se/t_ICAseAbsoluteUrl/imagevaultfiles/id_181099/cf_259/bananomelett.jpg",
+    "author": {"@type": "Organization", "name": "ICA Köket"},
+    "datePublished": "1998-10-26",
+    "dateModified": "2014-07-29",
+    "totalTime": "PT30M",
+    "recipeYield": "2",
+    "recipeCategory": "Brunch,Mellanmål",
+    "recipeCuisine": "",
+    "cookingMethod": "Stekt",
+    "url": "https://www.ica.se/recept/bananomelett-17/",
+    "commentCount": 0,
+    "nutrition": {
+      "@type": "NutritionInformation",
+      "servingSize": "2 Servings",
+      "calories": "",
+      "fatContent": "",
+      "carbohydrateContent": "",
+      "proteinContent": ""
+    },
+    "aggregateRating": {"@type": "AggregateRating", "ratingValue": 2.2, "reviewCount": 16},
+    "recipeIngredient": [
+      "1 halvmogen banan",
+      "2 msk majsolja",
+      "3 ägg",
+      "salt",
+      "nymalen svartpeppar",
+      "hackad persilja"
+    ],
+    "recipeInstructions": [
+      {"@type": "HowToStep", "text": "Platshållarsteg ett."},
+      {"@type": "HowToStep", "text": "Platshållarsteg två."},
+      {"@type": "HowToStep", "text": "Platshållarsteg tre."},
+      {"@type": "HowToStep", "text": "Platshållarsteg fyra."}
+    ]
+  }
+  </script>
+</head>
+<body>
+  <div class="recipe-page with-top-ad"><div class="recipe-page__wrapper">
+    <div class="recipe-page-section recipe-page-card recipe-header ids-grid">
+      <div class="recipe-header__wrapper ids-column-12--tablet-6--desktop-5">
+        <div class="recipe-header__wrapper-inner">
+          <h1 class="recipe-header__title">Platshållarrätt ett</h1>
+          <div class="recipe-header__attr"><div class="attr-items">
+            <div class="recipe-rating recipe-rating--size-medium">
+              <div class="recipe-rating__votes">16 röster</div>
+            </div>
+          </div></div>
+          <div class="recipe-header__preamble"><p>Platshållartext för beskrivningen.</p></div>
+        </div>
+      </div>
+    </div>
+    <div class="ids-grid recipe-print-content">
+      <div class="ids-column-12--tablet-6--desktop-5 ingredients-wrapper">
+        <div class="ingredients-list row-noGutter-column section-margin">
+          <div class="ingredients-list__heading-section">
+            <h2 id="ingredients" class="section-heading-name" aria-label="6 stycken ingredienser"> Ingredienser </h2>
+            <div class="change-portions-wrapper">
+              <div class="ingredients-change-portions" modelvalue="2" default-portions="2">
+                <div class="">2 portioner</div>
+              </div>
+            </div>
+          </div>
+          <div class="ingredients-list-group row-noGutter-column"><div>
+            <div class="ingredients-list-group__card"><span class="ingredients-list-group__card__qty">1 </span> halvmogen banan</div>
+            <div class="ingredients-list-group__card"><span class="ingredients-list-group__card__qty">2 msk</span> majsolja</div>
+            <div class="ingredients-list-group__card"><span class="ingredients-list-group__card__qty">3 </span> ägg</div>
+            <div class="ingredients-list-group__card"> salt</div>
+            <div class="ingredients-list-group__card"> nymalen svartpeppar</div>
+            <div class="ingredients-list-group__card"> hackad persilja</div>
+          </div></div>
+        </div>
+      </div>
+      <div class="ids-column-12--tablet-6--desktop-7 cooking-steps-wrapper">
+        <div class="cooking-steps row-noGutter-column section-margin">
+          <div class="cooking-steps__heading-section"><div class="cooking-steps__heading-title-container">
+            <h2 id="steps" class="cooking-steps__heading-title"> Gör så här </h2>
+          </div></div>
+          <div class="cooking-steps-group"><div class="ingredients-list-group row-noGutter-column"><div>
+            <div class="cooking-steps-card"><div class="cooking-steps-main cooking-steps-main--step">
+              <label class="ids-checkbox cooking-steps-main__label" aria-label="Klicka i här när du är klar med steget">
+                <input class="ids-checkbox__input" type="checkbox">
+                <span class="ids-checkbox__label"> <span class="cooking-steps-main__text">Platshållarsteg ett.</span></span>
+              </label>
+            </div></div>
+            <div class="cooking-steps-card"><div class="cooking-steps-main cooking-steps-main--step">
+              <label class="ids-checkbox cooking-steps-main__label" aria-label="Klicka i här när du är klar med steget">
+                <input class="ids-checkbox__input" type="checkbox">
+                <span class="ids-checkbox__label"> <span class="cooking-steps-main__text">Platshållarsteg två.</span></span>
+              </label>
+            </div></div>
+            <div class="cooking-steps-card"><div class="cooking-steps-main cooking-steps-main--step">
+              <label class="ids-checkbox cooking-steps-main__label" aria-label="Klicka i här när du är klar med steget">
+                <input class="ids-checkbox__input" type="checkbox">
+                <span class="ids-checkbox__label"> <span class="cooking-steps-main__text">Platshållarsteg tre.</span></span>
+              </label>
+            </div></div>
+            <div class="cooking-steps-card"><div class="cooking-steps-main cooking-steps-main--step">
+              <label class="ids-checkbox cooking-steps-main__label" aria-label="Klicka i här när du är klar med steget">
+                <input class="ids-checkbox__input" type="checkbox">
+                <span class="ids-checkbox__label"> <span class="cooking-steps-main__text">Platshållarsteg fyra.</span></span>
+              </label>
+            </div></div>
+          </div></div>
+        </div>
+      </div>
+    </div>
+  </div></div>
+</body>
+</html>
+''';
 }

@@ -1,5 +1,20 @@
 /// Test fixtures for Köket.se recipe parsing
 ///
+/// Every fixture in this file is FABRICATED from the schema.org Recipe
+/// standard, and stays that way. TV4's terms bar copying the material,
+/// making any part of the service available to the public, and any use
+/// beyond private use; the terms close with "Do not mine us". Nothing here
+/// has any contact with a TV4 property, and no capture from köket.se may be
+/// added. See ADR-0012's superseding section — and note that köket.se's
+/// robots.txt is fully permissive, so robots.txt alone would tell you the
+/// opposite of the truth here.
+///
+/// The consequence is a real limitation, written down rather than hidden:
+/// these fixtures agree with the parser by construction, so they cannot show
+/// that it handles what köket.se actually serves. Compare
+/// `real_structure_test.dart`, where captured arla.se markup turned out to
+/// disagree with the parser (BUT-2020).
+///
 /// Contains representative HTML from Köket.se recipes with:
 /// - Schema.org JSON-LD markup
 /// - Swedish recipe content

@@ -1,4 +1,5 @@
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/utils/recipe_scraper.dart';
 import 'package:html_unescape/html_unescape.dart';
 
 /// Security-focused HTML and content sanitizer.
@@ -27,12 +28,16 @@ class HtmlSanitizer {
   /// regress URL imports — real recipe sites carry analytics/ad scripts
   /// inline. JSON-LD structured data (`application/ld+json`) is exempted
   /// entirely since `sanitize()`'s `preserveWhen` keeps it for schema.org
-  /// extraction. The `type=` prefix in the lookahead prevents the
-  /// `<script data-note="application/ld+json">alert(1)</script>` bypass:
-  /// only a real `type=` attribute carrying `application/ld+json` exempts
-  /// the tag.
+  /// extraction.
+  ///
+  /// This pattern and `sanitize()`'s `preserveWhen` must agree on WHICH tags
+  /// are JSON-LD, or one half warns about a tag the other half keeps. They
+  /// disagreed for as long as `preserveWhen` was a bare substring test, and
+  /// the sentence that used to stand here asserted the opposite (BUT-2020).
+  /// Both now use [jsonLdScriptOpeningTagPattern], whose own doc comment
+  /// carries the bounds and why each is needed.
   static final _scriptTagPattern = RegExp(
-    r'''<script\b(?![^>]*\btype\s*=\s*["']?application/ld\+json)''',
+    '<script\\b(?![^>]*${jsonLdScriptOpeningTagPattern.pattern})',
     caseSensitive: false,
   );
 
@@ -180,9 +185,12 @@ class HtmlSanitizer {
       result = _removeTagWithContent(
         result,
         tag,
-        // Preserve <script type="application/ld+json"> (structured data)
+        // Preserve <script type="application/ld+json"> (structured data).
+        // A plain substring test missed an entity-encoded `+`, so arla.se's
+        // recipe data was stripped here before any extractor saw it, and the
+        // page then read as having no structured data at all (BUT-2020).
         preserveWhen: tag == 'script'
-            ? (openingTag) => openingTag.contains('application/ld+json')
+            ? (openingTag) => jsonLdScriptOpeningTagPattern.hasMatch(openingTag)
             : null,
       );
     }

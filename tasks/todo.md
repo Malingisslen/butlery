@@ -1,195 +1,106 @@
-# BUT-1922 — blockeringslistan får inte läsas ur offline-cachen på stängningsvägen
+# BUT-2020 — receptimport från arla.se misslyckas alltid
 
-## Context
+`tasks/todo.md` ägs av en annan sessions BUT-1922-plan, så den här ligger separat.
 
-När någon stänger en omröstning skrivs vinnaren in i hushållets vecka. Det går inte att ta
-tillbaka. Därför byggdes en spärr (BUT-1909): om blockeringslistan inte går att läsa vägrar
-appen stänga omröstningen i stället för att gissa.
+## Vad som är mätt
 
-Spärren täcker fallet "listan gick inte att läsa". Den täcker inte fallet **"listan lästes,
-men den var gammal"**. `getBlockedUserIds()` är en vanlig Firestore-läsning, och Firestore
-svarar då *utan fel* ur den lokala cachen när enheten är offline. Spärren ser ett giltigt
-svar och släpper igenom.
+`ArlaRecipeParser.parseRecipe` returnerade `null` för varje arla.se-sida byggd som den
+hämtade fixturen. Mätt 2026-09-05 mot en sida hämtad samma dag, och pinnat av
+`DEFECT:`-fall i `test/unit/services/extraction/site_parsers/real_structure_test.dart`
+som skrevs för att bli röda när det här landar.
 
-Luckan är smal men verklig: blockeringar du gjort på **den här** enheten ligger i den lokala
-skrivkön och syns. Det som saknas är en blockering du gjort på en **annan** enhet medan den
-här är offline — då kan den blockerades röst fortfarande avgöra veckans meny.
+Tre oberoende orsaker, var och en tillräcklig. Detaljerna står i ärendet; det som styr
+planen är att **orsak 1 och 2 båda måste lagas för att någonting ska ändras** — mätt: att
+bara laga orsak 1 lämnar kvaliteten på 0.70 mot tröskeln 0.80, alltså fortfarande `null`.
 
-Utfall: stängningsvägen vägrar när listan inte är bevisat färsk. Visningsvägen ändras inte —
-där är det rätt att hellre visa en tillfälligt ostädad chatt än en tom.
+## Ändringar
 
----
+### 1. `lib/utils/recipe_scraper.dart` — läs attributet ur DOM:en, inte ur råtexten
 
-## Beslut som styr bygget
+`_extractJsonLd` matchar i dag `type=["']?application/ld\+json` med en regex över **rå
+HTML**. Arla skriver `application/ld&#x2B;json`, så den träffar aldrig.
 
-**1. Stängningsvägen får kosta en extra läsning.** Antaget, inte frågat. Stängning sker en
-gång per måltidsomröstning, så kostnaden är försumbar mot kostnadsprincipen i CLAUDE.md.
-Alternativet är provenienspårning (behåll cachen, men märk om den kom från cache) — mer kod,
-samma utfall. Säg till om du hellre vill ha det.
+Fixen är **inte** att lägga till `&#x2B;` i regexen. Nästa sajt stavar det på ett fjärde
+sätt. I stället: tolka dokumentet en gång och plocka `script`-elementen, så löser
+HTML-tolken varje teckenreferens åt oss — det är precis vad en tolk är till för.
 
-**2. `Source.server` framför en `isFromCache`-kontroll.** Vald för att den är testbar:
-`fake_cloud_firestore` sätter `isFromCache` bara när anroparen själv skickar `Source.cache`,
-så den kan inte simulera "offline serverar cache åt en vanlig läsning". Med `Source.server`
-går beteendet att pinna genom repository-mocken i stället för genom fejken.
+Behåll `hadJsonLdBlocks`-signalen. Den är det som skiljer "sidan har ingen strukturerad
+data" från "sidan hade strukturerad data men vi fick inget ur den", och utan den ser båda
+likadana ut. Det är den egenskap `butlery-9f` namngav och som gjorde felet osynligt.
 
-**3. Egen feltext när enheten är offline.** *Malins beslut.* Efter den här ändringen blir
-offline den vanligaste orsaken till att en stängning vägrar, och dagens text ber användaren
-"Försök igen" — vilket misslyckas likadant utan nät. Ny sträng som säger vad man faktiskt ska
-göra.
+### 2. En delad utplattning av `HowToSection`
 
----
+`recipeInstructions` kan vara en lista av `HowToSection` vars steg ligger i
+`itemListElement`. Det är standard schema.org, inte Arla-specifikt.
 
-## Två saker som måste överleva ändringen
+Fyra filer bär samma trasiga filter — `{arla,ica,koket,recept}_recipe_parser.dart`,
+alla `inst is Map && inst['text'] != null` — plus `RecipeQualityScorer._extractInstructions`.
+Alla fem lagas genom **en** delad hjälpare, inte fem kopior; fem kopior av ett beslut är
+hur de driver isär.
 
-1. **Asymmetrin mellan de två ingångarna.** `currentBlockedIds()` (visning) sväljer fel och
-   ger tom mängd. `requireBlockedIds()` (beslut) kastar. Kommentaren på rad 63 i
-   `blocked_user_filter.dart` säger rakt ut att en vägransgren skriven mot `currentBlockedIds`
-   är död kod. Cache-kontrollen får bara sitta på den senare.
-2. **Lösningen får inte servera den senast kända listan som om den vore aktuell.** Det var
-   precis felet som lagades en nivå upp i samma omgång (BUT-1909).
+`schema_org_tier.dart` hanterar redan formen och är förlagan — **med en avvikelse jag inte
+kopierar**: den lägger till sektionens `name` som ett eget steg, så "Första instruktionen"
+blir instruktion nummer ett. Rubriken är ingen tillagning. Min utplattning tar sektionens
+egna steg och hoppar över dess namn när `itemListElement` finns.
 
-## Den dolda halvan: låset gör en ren repository-fix otillräcklig
+### 2b. Tillagt 2026-09-05 efter granskning: fixen nådde inte hela vägen
 
-`BlockedUserFilter` delar cache mellan båda ingångarna. `_initialized` är ett fält som läses
-av båda (`blocked_user_filter.dart:44` och `:66`) och sätts bara i `_fetchAndWatch` (`:117`),
-som båda vägarna når. Öppnar användaren en chatt offline latchar visningsvägen en
-cache-serverad mängd — och `requireBlockedIds()` returnerar sedan den **utan att läsa
-någonting alls**. En kontroll som bara sitter i repositoryt skulle aldrig köra på den väg den
-finns för.
+`code-reviewer` mätte att samma matchning över RÅ källkod lever kvar på tre ställen till,
+och att ett av dem kör **före** ändringen ovan: `HtmlSanitizer.sanitize()`s `preserveWhen`
+tog bort Arlas script MED innehåll, så sidan var tom redan innan någon extraktor läste den.
+Meningen jag skrev om att fixen "stänger klassen" var därmed falsk och är struken.
 
-Därför måste stängningsvägen läsa om, inte läsa cachen.
+Lagas: `html_sanitizer.dart` (`preserveWhen` + `_scriptTagPattern`) och
+`_hasOnlyNonRecipeJsonLd` i `url_import_strategy.dart`.
 
----
+**Detta är en sanerare — varje breddning av ett UNDANTAG är en potentiell försvagning.**
+Kravet på ett riktigt `type=`-attribut måste bestå; utan det undantar
+`<script data-note="…">alert(1)</script>` sig själv.
 
-## Vad som byggs
+`firebase-backend-security` mätte sedan att `preserveWhen` ALDRIG haft det kravet — den
+testade en naken delsträng, så kryphålet var levande hela tiden. Kommentaren intill
+påstod motsatsen. Samma granskning visade att en `\b`-avgränsning inte räcker
+(`data-type=` passerar) och att mönstret måste avgränsas i BÅDA ändar.
 
-**1. `lib/repositories/firebase/firebase_block_repository.dart`** — ny läsning bredvid den
-befintliga som kräver servern. Samma query som `getBlockedUserIds()` (rad 110), men med
-`GetOptions(source: Source.server)`. Offline kastar den `unavailable` i stället för att svara
-ur cachen. Mönstret finns redan i repot på de här raderna, alla verifierade:
-`firebase_user_repository.dart:282`, `tag_config_service.dart:282`,
-`firebase_connectivity_repository.dart:119`. Equality-filter på ett fält, så inget composite
-index är skyldigt.
+Ingen renderande konsument finns i dag — därav Medium, inte kritiskt — men den falska
+kommentaren är den farliga delen: nästa konsument som renderar det sanerade innehållet
+ärver en levande XSS på en menings ord.
 
-**2. `lib/services/social/blocking/blocked_user_filter.dart`** — dela de två vägarna:
+### 3. Orsak 3 lagas INTE här
 
-* `requireBlockedIds()` läser alltid färskt från servern och går aldrig via `_initialized`.
-  Misslyckas den kastar den, och `closePoll` vägrar som förut. Den delade cachen lämnas orörd — den hålls färsk av visningsvägens watch, och en mängd skriven härifrån skulle sakna något som uppdaterar den.
-* Visningens kallstart flyttas till en intern seed-metod som behåller dagens beteende
-  (`serverAndCache`, cachen duger, fel → tom mängd via `currentBlockedIds`).
-* **Generationsvakten följer med till den nya vägen.** Den nya server-läsningen fångar
-  `_generation` före sin `await` och kontrollerar om efteråt, och kastar
-  `_disposedDuringFetch` vid avvikelse — precis som `_fetchAndWatch` gör.
-  Utan den kan ett `dispose()` mitt i läsningen låta `closePoll` fortsätta på föregående
-  användares blockeringslista. Den vakten är alltså inte oförändrad-och-orelevant, den är
-  en del av bygget.
-
-**3. Feltexten (beslut 3).** En ny vägransorsak skiljer "offline" från "gick inte att läsa":
-
-* `lib/models/messaging/poll.dart:284` — nytt värde i `PollCloseRefusal` bredvid
-  `blockListUnknown`.
-* `lib/services/messaging_service.dart:876-891` — klassificera i catch-grenen: en
-  `FirebaseException` med `code == 'unavailable'` är offline, allt annat är den befintliga
-  orsaken. Vägran sker i båda fallen — bara texten skiljer.
-* `lib/viewmodels/chat_viewmodel.dart:514-515` — mappa det nya värdet till den nya nyckeln.
-* **Båda ARB-filerna** (`lib/l10n/app_sv.arb`, `app_en.arb`) **plus `flutter gen-l10n`**.
-  Utan generatorkörningen behåller den genererade filen den gamla strängen och
-  `dart analyze` förblir grön — den fällan står i `lessons-digest.md`.
-
-**4. Testet som fattas kring DI.** BUT-1922 noterade att spärren var opt-in via DI. Den halvan
-är redan stängd i koden — BUT-1926 gjorde `closePoll` vägrande även när filtret saknas
-(`messaging_service.dart:867-874`). Men inget test hävdar att social-modulen faktiskt
-registrerar `BlockedUserFilter`, så en flytt i DI skulle stänga av grinden med varje svit
-grön.
-
-Ny fil: `test/unit/core/di/modules/social_module_registration_test.dart` (`test/unit/core/di/`
-har i dag bara `locale_provider_singleton_test.dart`, orelaterad). Registreringen sker på
-`social_module.dart:328` och kräver `AuthRepository`, så en riktig container-uppbyggnad drar
-in Firebase. **Regel för bygget:** gå först på den riktiga registreringen med stubbade
-beroenden; går den inte att bygga utan Firebase, fall tillbaka på en påståendetest mot
-`providedTypes`-listan (`social_module.dart:119`) **plus** modulens källtext — precis den form
-`message_query_module_test.dart:795` redan använder i det här repot. Skriv i testet vilken av
-de två det blev och varför.
-
-## Filer
-
-| Fil | Vad |
-|---|---|
-| `lib/repositories/firebase/firebase_block_repository.dart` | ny server-läsning |
-| `lib/services/social/blocking/blocked_user_filter.dart` | dela seed- och beslutsvägen + generationsvakt |
-| `lib/models/messaging/poll.dart` | ny vägransorsak |
-| `lib/services/messaging_service.dart` | klassificera offline i catch-grenen |
-| `lib/viewmodels/chat_viewmodel.dart` | mappa till ny sträng |
-| `lib/l10n/app_sv.arb` + `app_en.arb` | ny nyckel, båda filerna, sedan `gen-l10n` |
-| `test/unit/services/social/blocking/blocked_user_filter_test.dart` | nya fall |
-| `test/unit/core/di/modules/social_module_registration_test.dart` | ny, pinnar registreringen |
-
-Ingen fil är i närheten av 500-radersgränsen (filtret 166, repot 146).
+CSS-fallbacken hittar inte Arlas tabell (`<th>` med namn, `<td>` med mängd). Med orsak 1
+och 2 lagade når vi aldrig fallbacken för den här sajten, så den är inte längre på den
+kritiska vägen. Att bygga tabellstöd är en egen ändring med egen risk för de tre andra
+sajterna. Ärendet får en notering; DEFECT-testet för orsak 3 står kvar och är fortfarande
+sant.
 
 ## Tester
 
-Befintlig sele är mocktail mot `FirebaseBlockRepository` — den räcker, ingen ny infrastruktur.
+De fyra DEFECT-fallen för orsak 1 och 2 **ska bli röda** — det är kvittot. De ersätts i
+samma edit av den positiva assertionen: `parseRecipe(realStructureKassler)` ger 8
+ingredienser och 4 steg. Utan den står Arlas fungerande väg opinnad efter lagningen
+(BUT-1849:s klass).
 
-* Stängningsvägen läser från **servern**, inte cachen.
-* En cache-latchad visningsläsning **hindrar inte** stängningsvägen från att läsa om — testet
-  som fångar den dolda halvan ovan.
-* Server-läsning som kastar `unavailable` → `requireBlockedIds` kastar → `closePoll` vägrar.
-* **Utloggning mitt i server-läsningen** → `StateError`, ingen cache-skrivning, `closePoll`
-  vägrar. (Motsvarar de befintliga generationsfallen för `_fetchAndWatch`.)
-* `unavailable` ger den nya offline-orsaken; andra fel ger den befintliga.
-* Visningsvägen är oförändrad: offline ger fortfarande cachens lista, och fel ger tom mängd,
-  inte en vägran.
+Testet som pinnar att fixturen bär den teckenkodade stavningen står kvar oförändrat och
+ska vara grönt — det skyddar fixturen, inte parsern.
 
-Muteringsprov på den nya grenen: tas kontrollen bort ska minst ett test bli rött. **Obs:
-muteringsprov i det här trädet måste aviseras först** — flera sessioner arbetar i samma
-katalog.
+Muteringsprov, ett i taget, med `.dart_tool/flutter_build` rensat mellan mutation och
+körning. Endast rött räknas.
 
-## Granskning
+Regressionsyta: hela `test/unit/services/extraction/` och `test/golden/` — de fyra
+parsersviterna delar den hjälpare som ändras, och `koket`/`recept`/`ica` har egna
+instruktionstester som måste stå kvar gröna.
 
-`stakeholder_router.py` gav **tier: single** — Trust & Safety är den matchande rollen. Ingen
-full panel. Commit-grinden kräver dessutom `firebase-backend-security` (repositories/services),
-`code-reviewer` och `testing-specialist` för Dart-diffen.
+## Risk
 
-## Ordning och koordinering
+Låg och begränsad till receptimport. Värsta utfallet om utplattningen är fel är att steg
+dubbleras eller tappas för en sajt — vilket parsersviterna fångar. Ångras med en revert.
+Ingen användardata, inga regler, ingen Firestore.
 
-**Blockeringen är redan uppklarad.** butlery-69:s BUT-1917 steg 1 landade som `cfb8cefbd`, och
-`firebase_block_repository.dart` är ren i arbetsträdet med tomt index. Arbetet kan börja
-direkt.
+## Vad det betyder i klartext
 
-Kvar av koordineringen: staga med explicit pathspec, aldrig `git add .`, och säg till
-butlery-69 när BUT-1922 är inne — deras steg 5 lägger till läsning i motsatt riktning (vilka
-som blockerat *mig*) och behöver samma uppdelning i fail-open och fail-closed. Formen här är
-avsedd att kunna återanvändas rakt av.
-
-## Open questions
-
-Inga arkitekturändrande okända. Två frågor ställdes till Malin och är besvarade: filkonflikten
-med butlery-69 (vänta — numera uppklarad) och offline-texten (egen sträng). Beslut 1 och 2
-ovan är antaganden jag tagit själv och som går att vända utan att bygget ritas om.
-
-BUT-1917:s spegel (steg 2–5) ligger utanför. Den här ändringen ska kunna återanvändas av den,
-men bygger inget för den.
-
-## Verifiering före klart
-
-* `flutter analyze` rent.
-* `flutter test test/unit/services/social/blocking/blocked_user_filter_test.dart`
-* `flutter test test/unit/services/messaging/messaging_service_close_poll_test.dart` — den
-  sviten pinnar spärren och får inte tappa något.
-* `flutter test test/unit/core/di/modules/social_module_registration_test.dart`
-* `flutter gen-l10n` körd, och den genererade filen grepad på den nya strängen.
-* `verify`-skillen kör hela kontrollen innan arbetet kallas klart.
-
-## För Malin, i klartext
-
-Blockering fungerar när telefonen har nät. Men blockerar du någon på surfplattan medan mobilen
-ligger offline, och sedan stänger en omröstning i mobilen, kan den blockerades röst fortfarande
-avgöra vad som hamnar i veckans matsedel — appen läser då en gammal blockeringslista ur
-telefonens minne och märker inte att den är gammal.
-
-Efter det här vägrar appen stänga omröstningen i det läget i stället för att gissa, och säger
-rakt ut att den är offline i stället för att be dig försöka igen förgäves. Chatten påverkas
-inte: där fortsätter den visa det den kan även offline, för en tom chatt vore sämre än en som
-är någon minut osorterad.
-
-Det kostar en extra läsning varje gång en omröstning stängs, vilket är försumbart.
+Att importera ett recept från Arla har aldrig fungerat — appen har svarat "hittade inget
+recept" fast receptet fanns. Två saker lagas: vi läser sidan som en webbläsare gör i
+stället för att leta i råtexten, och vi hittar tillagningsstegen även när sajten grupperar
+dem. Testerna som bevisar buggen blir röda när fixen landar, vilket är själva kvittot på
+att den bet.

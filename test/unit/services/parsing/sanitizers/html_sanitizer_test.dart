@@ -147,6 +147,105 @@ void main() {
         expect(result, contains('"@type":"BreadcrumbList"'));
         expect(result, isNot(contains('evil')));
       });
+
+      test('should preserve JSON-LD whose `+` is entity-encoded', () {
+        // arla.se writes `application/ld&#x2B;json`. A plain substring test
+        // did not match it, so the recipe data was stripped here before any
+        // extractor could read it, and the page looked like it had no
+        // structured data at all (BUT-2020).
+        final input =
+            '<script type="application/ld&#x2B;json">{"@type":"Recipe","name":"Kassler"}</script>'
+            '<script>alert("xss")</script>';
+        final result = sanitizer.sanitize(input);
+
+        expect(result, contains('Kassler'));
+        expect(result, isNot(contains('alert')));
+      });
+
+      test('should preserve JSON-LD whose media type carries a parameter', () {
+        // `; charset=utf-8` is a legal media-type parameter and appears on
+        // real pages. An exact-equality test on the whole attribute drops it.
+        final input =
+            '<script type="application/ld+json; charset=utf-8">{"@type":"Recipe","name":"Kladdkaka"}</script>'
+            '<script>alert("xss")</script>';
+        final result = sanitizer.sanitize(input);
+
+        expect(result, contains('Kladdkaka'));
+        expect(result, isNot(contains('alert')));
+      });
+
+      test('a decoy attribute does NOT exempt a script', () {
+        // Only an attribute that IS `type` exempts a script. Each decoy
+        // below reached sanitize() and survived it at some point:
+        // `data-note` under the old bare substring test, and `data-type`,
+        // `data-cfg` and the `+jsonx` suffix under the first repair of it,
+        // because a word boundary sits INSIDE `data-type=` (the hyphen is a
+        // non-word character) and an unanchored pattern reads `+jsonx` as
+        // `+json` (BUT-2020).
+        final decoys = [
+          '<script data-note="application/ld+json">alert(1)</script>',
+          '<script data-note="application/ld&#x2B;json">alert(2)</script>',
+          '<script data-type="application/ld+json">alert(3)</script>',
+          '<script x-type="application/ld+json">alert(4)</script>',
+          '<script data-cfg="type=application/ld+json">alert(5)</script>',
+          '<script data-cfg="type=application/ld&#43;json">alert(6)</script>',
+          '<script type="application/ld+jsonx" src="e.js">alert(7)</script>',
+        ];
+        final result = sanitizer.sanitize(decoys.join());
+
+        for (var i = 1; i <= decoys.length; i++) {
+          expect(
+            result,
+            isNot(contains('alert($i)')),
+            reason: 'decoy ${i - 1} exempted itself: ${decoys[i - 1]}',
+          );
+        }
+      });
+
+      test('check() warns about every script sanitize() would strip', () {
+        // The warning pattern and the exemption must agree on which tags are
+        // JSON-LD. They disagreed while the exemption was a bare substring
+        // test: sanitize() KEPT a decoy that check() warned about.
+        for (final decoy in const [
+          '<script data-note="application/ld+json">alert(1)</script>',
+          '<script data-type="application/ld+json">alert(2)</script>',
+          '<script type="application/ld+jsonx" src="e.js">x</script>',
+        ]) {
+          expect(
+            sanitizer.check(decoy).issues.isNotEmpty,
+            isTrue,
+            reason: 'check() stayed silent about $decoy',
+          );
+        }
+
+        // …and stays silent about the real thing, in every spelling.
+        for (final real in const [
+          '<script type="application/ld+json">{"@type":"Recipe"}</script>',
+          '<script type="application/ld&#x2B;json">{"@type":"Recipe"}</script>',
+          '<script type="application/ld&#43;json">{"@type":"Recipe"}</script>',
+          '<script type="application/ld+json; charset=utf-8">{"a":1}</script>',
+        ]) {
+          expect(
+            sanitizer.check(real).issues,
+            isEmpty,
+            reason: 'check() warned about legitimate JSON-LD: $real',
+          );
+        }
+      });
+
+      test('the decimal entity `&#43;` is preserved too', () {
+        // Listed beside `&#x2B;` in the shared pattern. The parsed path
+        // decodes the entity before any matcher sees it, so a test that goes
+        // through the HTML parser cannot tell whether the raw-source pattern
+        // still lists this encoding. This one can.
+        final input =
+            '<script type="application/ld&#43;json">{"@type":"Recipe","name":"Bulle"}</script>'
+            '<script>alert("xss")</script>';
+        final result = sanitizer.sanitize(input);
+
+        expect(result, contains('Bulle'));
+        expect(result, isNot(contains('alert')));
+      });
     });
 
     // ---------------------------------------------------------------
