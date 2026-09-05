@@ -777,6 +777,17 @@ files in the same edit.
   mirroring the server cap, because the incoming set is chosen by OTHER people and nothing
   rate-limits a `blocks` create. Raised by the `firebase-backend-security` gate.
   BUT-1917, 2026-09-05
+  **CORRECTED 2026-09-05, same day, by the whole-range push review.** "The client can now
+  ENUMERATE" is false as a novelty claim: `FirebaseDataExportRepository.getIncomingBlocks`
+  (`lib/repositories/firebase/firebase_data_export_repository.dart:687`) already ran
+  `where('blockedId', isEqualTo: userId)` from the Flutter client, under the same read limb,
+  before this change. BUT-1917 added three readers on a DIFFERENT repository; it widened no
+  permission and introduced no capability.
+  This changes what the open question costs, which is why it is corrected rather than left:
+  the split it offers Malin (`allow get` both directions, `allow list` blocker-only) would
+  also kill the Art. 15 `incoming_blocks` section, not just the ballot strip. That section is
+  the one BUT-2018 already decides to remove — so the two questions are the same question,
+  and should be put to her together.
 
 - **Making the tally two-directional WIDENS an existing provenance gap on the group menu, and
   that is named rather than left to be discovered (BUT-1917, 2026-09-05).** `closePoll`
