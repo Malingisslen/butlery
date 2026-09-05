@@ -41,9 +41,8 @@ without approval (mismatch = silent client-side "not found").
   `concurrency` defaults to 80 at `cpu >= 1`; only a long-lived, memory-hungry
   handler declares `concurrency: 1` (`SERIALISED_ENDPOINTS`), trading OOM for
   QUEUE TIME charged against `isCascadeEventExpired` (from `event.time`) — a
-  queued-only delivery is abandoned without failing and writes NO marker,
-  invisible to `STALE_TAG_MARKERS`, `getDeletedIngredientStats` and
-  `_needsRetagging`. Raise `maxInstances`, never `concurrency`. Notification
+  queued-only delivery is abandoned without failing and writes NO marker, so every
+  marker-based diagnostic reads clean. Raise `maxInstances`, never `concurrency`. Notification
   fan-out is IN-PROCESS — a cap never splits a batch.
 - **`onUserDeleted` is the ONLY gcfv1 export** (own `.region().runWith()`,
   unreachable by `setGlobalOptions`) — exclude it from "every function" claims.
@@ -83,10 +82,12 @@ Triggers retry on uncaught exception; handlers must be idempotent:
    throws NOT_FOUND (grpc `5`), turning a drop-once into a permanent loop.
 6. **Client-supplied strings in a doc path are a poison-pill surface** —
    validate non-empty, ≤1500 UTF-8 bytes, no `/`, not `.`/`..`/`/^__.*__$/`.
-   A rules-pinned DOC ID pins nothing about the FIELDS inside it: `blocks`
-   pins `blockerId` and the composite id, leaving `blockedId` free — and a
-   bad segment makes the ref builder throw INVALID_ARGUMENT, i.e. a
-   `retry:true` loop any authenticated account can plant with one write.
+   A rules-pinned DOC ID pins nothing about the FIELDS inside it (`blocks` pins
+   `blockerId` and the composite id, leaving `blockedId` free), and a bad segment
+   makes the ref builder throw INVALID_ARGUMENT — a `retry:true` loop any account
+   plants with one write. Every DOWNSTREAM caller with a TIGHTER bound owes the
+   same treatment at ITS OWN boundary: `getUser` rejects >128 chars pre-network
+   with `auth/invalid-uid`, so ANSWER that code "gone" rather than rethrow it.
 7. Sanitisation must never shrink the value a security gate's THRESHOLD is
    computed from.
 8. **Concurrent Tier-1 cascade legs (`Promise.all`) can write the same
@@ -99,7 +100,7 @@ Triggers retry on uncaught exception; handlers must be idempotent:
    a chunk it never committed.
 9. A sweep cap's threat model comes from the write RULE it bounds, never a
     copied rationale — a bound's ABSENCE needs the same read. Never cite a rules
-    LINE NUMBER; cite the `match` pattern or function name.
+    LINE NUMBER.
 10. A fake whose `update()` no-ops on a missing doc can't stage grpc 5 —
     give it an injectable `updateFailures: Map<path, grpcCode>`. Deleting a
     cascade LEG needs a `__tests__` grep for writers of that path.
@@ -126,8 +127,7 @@ Triggers retry on uncaught exception; handlers must be idempotent:
   a per-item `.catch` on grpc code only, never throw. The over-cap verdict
   follows the ACTION: DECLINE a destructive sweep (truncating half-erases), CUT
   the capped page for per-row ACCESS REVOCATION (refusing lets a planter keep
-  access). A boolean verdict gating a destructive delete needs a fixture that
-  can force it FALSE.
+  access).
 
 ## Secrets handling
 
@@ -165,9 +165,8 @@ from `(err as {code?}).code`.
   id is server-minted; a DM's is `direct_<uidA>_<uidB>` and a `blocks` id is
   `{blockerId}_{blockedId}`. Hash the WHOLE id (`logSafeConversationId`,
   `hashUid(doc.id)`); re-derive it for every NEW caller of an id-logging helper.
-- **A uid enters a log through a QUERY OBJECT too** — a logged `FieldPath(...,
-  uid)` JSON-stringifies its SEGMENTS, writing the raw uid on the very line
-  that truncates it to `uid_prefix`. Log a literal label.
+- A logged `FieldPath(…, uid)` stringifies its SEGMENTS — the raw uid lands on
+  the very line that truncates it to `uid_prefix`. Log a literal label.
 
 ## What NOT to do
 
@@ -187,12 +186,6 @@ from `(err as {code?}).code`.
   `where()` field MUST special-case `FieldPath` (read `.segments`): it HAS
   `.split`, so it matches ZERO in silence. Type EVERY fake query seam
   `string | FieldPath` — an `as unknown as Firestore` cast checks none.
-- Vacuity: a `?? {}` read survives the mutant DELETING the doc (pair with a
-  sibling requiring EXISTS); `src.includes("<field>")` is free when a
-  docstring names the field (assert the WRITE).
-- **A doc-ID-prefix rule (`planId.matches('^' + uid + '_.*')`) is bounded by the
-  SEPARATOR, not the uid** — `abc` is ALLOWED `abc_def_…`; safe only while uids
-  carry no `_`. Reading no `resource`, it also allows deleting a missing doc.
 - **A fake `commit()` that RE-DERIVES the intended effect instead of
   APPLYING the write payload makes the write vacuous** — dispatch on the
   `FieldValue` transform's `constructor.name`; reject `update()` on a
@@ -210,13 +203,8 @@ from `(err as {code?}).code`.
   rules cap (`contributorUserIds` 200), which freezes the doc
   for every client. Delete the doc, or prune/skip at the cap; before revoking
   the last holder, name what re-creates the id.
-- Cascade purges discover children via `rootRef.listCollections()`, never
-  hard-coded names. Steps are BEST-EFFORT — a rethrow re-runs the WHOLE
-  cascade, double-applying non-idempotent ones. `admin/reset-user-data.ts` is
-  NOT provenance and NOT a capped sweep's recovery: its `subcollections` is a
-  reader's note, `COLLECTIONS_TO_DELETE` holds TOP-LEVEL names, and a name in
-  both it and `COLLECTIONS_TO_KEEP` `process.exit(1)`s `main()` before any
-  delete (`tag_configs` does).
+- A step's throw is CAUGHT by `runStep` → `failedCollections` +
+  `gdprCompliant:false`, never an automatic retry; recovery is a human.
 - **`batch.update()` on a concurrently-deleted doc fails the WHOLE chunk with
   NOT_FOUND** under `strict:false`; and `commitInChunks` calls `mutate` OUTSIDE
   that try, so a SYNCHRONOUS validation throw from the callback (`undefined` in
@@ -237,11 +225,28 @@ from `(err as {code?}).code`.
   returning refs for MISSING docs with live children (a `count()` reports ZERO);
   use it on sweep AND probe, and `strict:true` for a doomed parent's children.
 - **A server-written PROJECTION of a client collection (`block_mirror` of
-  `blocks`) owes three things**: its trigger checks the SUBJECT's owner doc
-  INSIDE the transaction and DELETES an orphan (the cascade's own source deletes
-  fire it, so a late rebuild re-creates the erased uid's doc post-probe); the
-  cross-user sweep STAMPS the revision guard (`arrayRemove` leaves it untouched,
-  so an in-flight older rebuild wins); and it runs AFTER the source tier.
+  `blocks`) owes**: an existence check on the SUBJECT the constrained user cannot
+  forge — `users/{uid}` is owner-DELETABLE, so ask `admin.auth().getUser`, OUTSIDE
+  the transaction (Auth is not transactional), answering `auth/user-not-found` and
+  `auth/invalid-uid` as "gone" and rethrowing every other code; a DELETE of an
+  orphan (a late rebuild re-creates the erased uid's doc post-probe, and Auth
+  deletion is the cascade's LAST step, so the subject exists throughout it); the
+  cross-user sweep STAMPS the revision guard (`arrayRemove` leaves it untouched, so
+  an in-flight older rebuild wins); it runs AFTER the source tier; and a CAP flag
+  unread by the consuming rules gate under-enforces on input OTHER people choose
+  (`.limit(cap+1)` with NO `orderBy` keeps the lowest doc ids, so sockpuppets sort a
+  real entry off the end). Trigger + reconcile NARROWS the window, never closes it;
+  a task LAST in `WEEKLY_REPORT_TASKS` is what `runTaskChain` SKIPS first.
+- **A compare-before-repair reconciliation resolves EXISTENCE once per uid ABOVE
+  every branch, and counts a DELETE as drift on every branch.** `stored == expected`
+  never settles orphanhood: an EMPTY orphan (what a post-cascade rebuild writes)
+  matches an empty expectation, and a NON-EMPTY one matches too whenever the source
+  sweep DECLINED at its cap or a `strict:false` chunk failed. Scoping the fix to the
+  empty case leaves BOTH defects one branch over — measured: the equal-non-empty
+  orphan survives every weekly pass, and the unequal one IS deleted but counts
+  `skipped`, so the run logs "no drift" after changing something. Never reach the
+  existence seam THROUGH the repair call either: it rewrites the benign doc and
+  files it as drift.
 - A "shared" collection also holds SOLO-owner docs to DELETE, not scrub. A scrub
   enumerates every uid in the MODEL's `toFirestore`: array elements, per-uid map
   keys, AND attribution scalars (`lastModifiedBy`, `lastEditedBy`).
@@ -336,27 +341,24 @@ from `(err as {code?}).code`.
   inline `checkRateLimit` it burns two tokens per call. `rate_limiter.ts`'s
   docstring shows the wrapper as THE pattern, so grepping the helper misleads.
 - **Bare `checkRateLimit` + a local throw drops BOTH** the `system_events`
-  `rate_limit_violation` row AND `details.retryAfterSeconds`. `sendNotification`
-  still takes the bare form; every `groups/` callable moved to `enforceRateLimit`
-  (BUT-1862). Copying a sibling is CONSISTENT, not correct. Abuse/cost gates fail
+  `rate_limit_violation` row AND `details.retryAfterSeconds`; both spellings are
+  live, so copying a sibling is CONSISTENT, not correct. Abuse/cost gates fail
   CLOSED on a Firestore error; some notification gates deliberately fail OPEN —
   don't harmonize. A `…WithDeps` core test sees none of the wrapper's gates, and
   an unknown operation key falls back to `RATE_LIMIT_CONFIGS.default` in silence —
   pin the `(check|enforce)RateLimit(uid, "<key>")` LITERALS by parsing source,
   ranging over EVERY callable in the directory, never a hand-named subset.
 - **A source pin matching BOTH spellings cannot detect a revert to the bare
-  form** — it pins the KEY, never `details`. Pin that on the DENIED path: both
+  form** — it pins the KEY, never `details`. Pin on the DENIED path: both
   `enforceRateLimit` and `logRateLimitViolation` read `getFirestore()`, so
   `__setFirestoreForTest` + a throwing fake reaches the fail-closed branch. The
   ALLOWED path is unreachable — `getDb()` is a bare `admin.firestore()`.
 - **`retryAfterSeconds` only beats the client's 60s fallback where the config
-  declares `dailyLimit`** — `createChatGroup`/`ensureCategoryChat` (50/day) do;
-  `addChatGroupMembers`/`removeChatGroupMember` do not. Never write daily-cap
-  rationale onto a capless bucket.
+  declares `dailyLimit`** — read the bucket's config; never write daily-cap
+  rationale onto a capless one.
 - **`rateLimitWrite(bucket, s)` is INERT unless a client writes
-  `users/{uid}/rate_limits/<bucket>`** — the only buckets written are
-  `activity_events`, `comments`, `social_requests`, `messages`, `imports`,
-  `friendSearchMigrated`, so `pings`/`conversations` always pass.
+  `users/{uid}/rate_limits/<bucket>`** — grep the Dart writers per bucket before
+  citing it as a control; several rules name buckets nothing writes.
 - `system_events` has no TTL — every enforced callable adds an unbounded
   write-per-denial stream, and `resource-exhausted` is client-RETRYABLE.
 
@@ -374,9 +376,8 @@ from `(err as {code?}).code`.
   field — check exemptions, not `indexes`.
 
 ### Verify-signup-age, account callables & minor-safety triggers
-- Rules can't iterate an array for a per-member rule on GROUP-shaped data —
-  the check lives in `groups/minor-membership-gate.ts`, backstopped by
-  `enforceGroupMinorMembership` (`onDocumentWritten` on `chat_groups/{id}`).
+- Rules can't iterate an array, so a per-member rule on GROUP-shaped data lives in
+  a CF (`groups/minor-membership-gate.ts`) with a trigger backstop.
 - **A callable that READS a doc before checking caller membership is an ORACLE,
   and its idempotent no-op branch is the leak** — collapse `!exists` +
   non-member into ONE uniform response.
@@ -418,8 +419,7 @@ from `(err as {code?}).code`.
 ### CI / test wiring / ops
 - Post-deploy smoke: `firebase functions:list --json` + grep stable names.
   `deploy` exiting 0 does not prove callability; a run concluding `failure`
-  does not prove the DEPLOY step failed. "Setting X fixed the deploy" is a
-  claim about a RUN — `gh run list --workflow=`, then `git show <sha>:<file>`.
+  does not prove the DEPLOY step failed.
 - **A step whose `if:` names only a step OUTCOME is DEAD after a failure** —
   GitHub ANDs an implicit `success()`. Write `always() && (...)`.
 - **A guard READING files outside `functions/src` is asleep unless the workflow

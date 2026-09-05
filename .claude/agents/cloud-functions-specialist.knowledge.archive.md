@@ -18191,3 +18191,269 @@ safe on a missing doc (`tx.set`/`tx.delete` behind an `exists` check),
 `test:sync-block-mirror` registered in `package.json`, and the
 `block_mirror/blockedByUserIds` COLLECTION_GROUP fieldOverride declared in
 `firestore.indexes.json` for the sweep and its probe leg.
+
+### 2026-09-05 — BUT-1917 steps 4+5: the block mirror gains a rules consumer [review][rules][safety]
+
+Commit-gate review of the staged `poll-votes-rules.test.ts` (10 new B1-B10 cases) plus the
+`firestore.rules` `notBlockedByAnyoneHere()` gate it pins. The mirror itself
+(`functions/src/social/sync-block-mirror.ts`) shipped earlier the same day in `027599f3e`
+and is NOT in this diff; this diff is what makes a security rule depend on it.
+
+MEASURED, this session:
+- Emulator live on 127.0.0.1:8080; `npm run test:rules:poll-votes` = 43/43 PASS.
+  `npx tsc --noEmit` in `functions/` clean.
+- The trigger writes FOUR fields, not three: `blockedByUserIds`, `sourceRev`, `truncated`
+  AND `updatedAt` (`serverTimestamp()`). The suite's `seedMirror` writes the first three.
+  Inert today because `notBlockedByAnyoneHere()` reads only
+  `.get('blockedByUserIds', [])`, but a later freshness conjunct on `updatedAt` would be
+  invisible to all ten B-cases.
+- `MAX_MIRROR_ENTRIES = 1000`, `truncated` is written by `rebuildMirrorFor` and read by
+  NOTHING. `expectedMirrorFor`/`rebuildMirrorFor` query with `.limit(cap+1)` and no
+  `orderBy`, so truncation keeps the lexicographically lowest `{blockerId}_{blockedId}`
+  doc ids — deterministic, and adversarially exploitable: the mirror's owner is the person
+  the gate constrains, and anyone may add a row to it, so a harasser can inflate their OWN
+  mirror past the cap with sockpuppet blocks until a real blocker falls off and votes flow
+  again. ~1000+ accounts, so implausible pre-launch, but it is the one direction where the
+  control fails silently and in the attacker's favour.
+- `syncBlockMirror` IS exported from `index.ts:183`; `runReconcileBlockMirrors` IS wired as
+  `reconcileBlockMirrors` in `WEEKLY_REPORT_TASKS` (`maintenance-dispatchers.ts:338`), so
+  neither is dead. But it is the LAST of three tasks in a chain that SKIPS tail tasks when
+  `available < MIN_TASK_BUDGET_MS` (`runTaskChain`), and the chain's own docstring records
+  that a slow `weeklyActivityDigest` already aborts `northStarWeekly`. So the only net
+  under a silent safety control is the first thing dropped, and the file's docstring
+  reasoning ("runs LAST so an overrun costs nothing else") argues only the other direction.
+- Q3 answer: the trigger + reconcile design NARROWS the window, it does not close it.
+  Nothing makes a block synchronous with the rule read; closing it would mean reading
+  `blocks` per participant, which is the 10-access cap the mirror exists to avoid.
+  Ordinary window = trigger latency (sub-second to seconds, plus cold start); long tail =
+  up to a week, longer if the weekly task is skipped.
+- Document-access budget for a `poll_votes` create by a voter WITH a mirror: `messages`
+  x3, `conversations` x2, mirror `exists`+`get` = 7 worst case against a cap of 10 (deny
+  on exceed). Green suite confirms it is under today. The `memberSince` cut-off repair
+  that `accepted-deviations.md` already owes on this same block would add more.
+- Test-file comments checked one by one against the trigger: no false claim found in
+  `poll-votes-rules.test.ts`. The false sentence is in `firestore.rules` instead — see the
+  finding below.
+
+FINDINGS FILED (2 blocking):
+1. `truncated` has no reader; the cap under-blocks and the gap is written down nowhere
+   (no rules comment, no `accepted-deviations.md` entry). Remediation offered: either a
+   `truncated == false` conjunct (fails closed for a user blocked by 1000+ people) or a
+   named residual + a green "known gap" B11 in the style of V10e/V10f.
+2. `firestore.rules` `notBlockedByAnyoneHere()` says a mirror "is never deleted afterwards
+   ... so absence means 'nobody has ever blocked this person'". Both halves false:
+   `rebuildMirrorFor` deletes an orphan when the owner doc is gone, `deleteBlockMirrors`
+   deletes it in the cascade, and absence is also the pre-first-trigger latency state.
+   STRIKE the two clauses, keep the fail-open decision and its true reason (failing closed
+   would refuse every vote until a per-user backfill existed).
+Non-blocking: fixture omits `updatedAt`; reconcile task's chain position; access budget.
+
+RETIRED VERBATIM from the principles file in the same edit (superseded by nothing — cut
+for budget, it was the narrowest line in the cascade section):
+
+  `admin/reset-user-data.ts` is NOT provenance and NOT a capped sweep's recovery: its
+  `subcollections` is a reader's note, `COLLECTIONS_TO_DELETE` holds TOP-LEVEL names, and
+  a name in both it and `COLLECTIONS_TO_KEEP` `process.exit(1)`s `main()` before any
+  delete (`tag_configs` does).
+
+Also RETIRED VERBATIM in the same 2026-09-05 edit, for budget (its non-vacuity idea is
+carried by the wrapper/gate bullet above it and by `lessons-digest-testing.md`):
+
+  - Vacuity: a `?? {}` read survives the mutant DELETING the doc (pair with a
+    sibling requiring EXISTS); `src.includes("<field>")` is free when a
+    docstring names the field (assert the WRITE).
+
+### 2026-09-05 — BUT-1917 re-review: the Auth-based owner check, and the orphan the weekly pass cannot see [block-mirror][retry][gdpr]
+
+Second pass over the staged BUT-1917 diff (24 files, index frozen, `git hash-object` ==
+`git ls-files -s` on every functions file). My two earlier blocking findings were resolved as
+asked: the `truncated` flag now has a deviations entry in both files plus B11 in
+`poll-votes-rules.test.ts` pinned GREEN in the known-gap style, and the false "never deleted
+afterwards" clauses were struck rather than reworded (grep confirms no wording survives).
+
+The sockpuppet mechanism I supplied was restated CORRECTLY: Firestore appends an implicit
+`orderBy(__name__, ASC)` when a query declares none, so `.where('blockedId','==',uid)
+.limit(MAX+1)` + `docs.slice(0, MAX)` keeps the lexicographically lowest
+`{blockerId}_{blockedId}` ids, and the surviving set is chosen by blocker uid. Both the
+`rebuildMirrorFor` and `expectedMirrorFor` queries have that shape.
+
+TWO NEW BLOCKING FINDINGS, both introduced by the security fix itself:
+
+1. `admin.auth().getUser(uid)` calls `validator.isUid`, which rejects any uid longer than 128
+   characters with `auth/invalid-uid` — `Promise.reject` BEFORE any network call
+   (`node_modules/firebase-admin/lib/auth/auth-api-request.js` `getAccountInfoByUid`,
+   `lib/utils/validator.js` `isUid`, firebase-admin 13.8.0). `accountExists` rethrows anything
+   but `auth/user-not-found`, the trigger handler does not catch, and the trigger is
+   `retry: true`. `isUsableUidSegment` bounds the segment at 1500 BYTES, and `firestore.rules`
+   pins only `blockerId` and the composite doc id — so any authenticated account can write
+   `blocks/{myUid}_{200-char-string}` and plant a permanent redelivery loop. This is exactly
+   the poison-pill class `isUsableUidSegment`'s own docstring says it exists to prevent; the
+   fix moved the bound without moving the guard. Before the change the same row was inert (a
+   1500-byte doc id is legal, the read simply missed). Also makes the weekly pass report
+   `failed: 1` / "NOT clean" forever, though `reconcileMirrors`' per-uid catch keeps the rest
+   of the pass alive.
+
+2. `reconcileMirrors` compares before repairing and `continue`s when
+   `stored === expected.join(",")`. For an ORPHANED but EMPTY mirror — which is precisely what
+   a post-cascade rebuild writes, since `deleteBlocks` has just removed every source row —
+   stored is `""` and expected is `""`, so `rebuildMirrorFor` is never called and the owner
+   check never runs. The orphan survives every weekly pass. Both the module comment
+   ("the weekly pass now finds and deletes it") and the deviations entry in BOTH files ("the
+   weekly pass now finds it, which it could not before") therefore assert a compensating
+   control that does not exist. The "which it could not before" contrast is also wrong on its
+   own terms: `deleteUserProfile` runs at tier 3, so the OLD document-based check would have
+   deleted a post-erasure orphan too — if it had been reached.
+
+Measured context for both: `auth.deleteUser` is the LAST step of `requestAccountDeletion`,
+after tier 1/2/3 and after `probeResidualData`. So during the whole cascade `accountExists`
+answers TRUE for the user being erased, and the resurrection window is [tier 1 → auth delete]
+rather than [tier 1 → tier 3 profile delete]. The widening is small (one probe step), but the
+shape matters: an Auth-keyed check cannot fire during its own cascade.
+
+Non-blocking, answered for the author: the Auth round trip is ~one Identity-Toolkit call per
+`blocks` write (rare) and per DRIFTED uid in the weekly pass (the compare-first design keeps
+it off the clean ones); `admin.auth()` is called at runtime, not import time, so cold-start
+parse cost is unchanged and no new dependency enters the bundle. The seam's default is a
+module-private function reached whenever the argument is omitted, and only the test file ever
+passes one — production cannot get the test behaviour. The
+`ownerExists === undefined ? 3-arg : 4-arg` conditional in `reconcileMirrors` is redundant
+(passing `undefined` selects the default anyway), harmless.
+
+I also confirmed `index.ts:183` and the `test:sync-block-mirror` script are already in HEAD
+while `sync-block-mirror.ts` is only now being committed — HEAD does not build, and this
+commit is what repairs it. The file must not be split out.
+
+On the weekly-chain ordering question: `reconcileBlockMirrors` is third behind
+`weeklyActivityDigest` (unbounded, aborts the chain when it races out) and `northStarWeekly`.
+Reordering would move a user-facing send time the file says is "preserved to the minute", so
+it is a product decision, not a mechanical one — naming it in the deviations entry was the
+right treatment and it correctly stayed out of this commit.
+
+RETIRED VERBATIM from the knowledge file in the same edit (superseded or out of scope):
+
+- "its trigger checks the SUBJECT's owner doc INSIDE the transaction and DELETES an orphan
+  (the cascade's own source deletes fire it, so a late rebuild re-creates the erased uid's doc
+  post-probe)" — superseded: the owner doc is client-deletable, the check is now Auth and
+  resolved outside the transaction.
+- "**A doc-ID-prefix rule (`planId.matches('^' + uid + '_.*')`) is bounded by the SEPARATOR,
+  not the uid** — `abc` is ALLOWED `abc_def_…`; safe only while uids carry no `_`. Reading no
+  `resource`, it also allows deleting a missing doc." — a rules-language rule, not a Cloud
+  Functions one; hand-offs go to `firestore-rules-tester`.
+- "`sendNotification` still takes the bare form; every `groups/` callable moved to
+  `enforceRateLimit` (BUT-1862)." — current mechanism, rots.
+- "`createChatGroup`/`ensureCategoryChat` (50/day) do; `addChatGroupMembers`/
+  `removeChatGroupMember` do not." — same.
+- "the only buckets written are `activity_events`, `comments`, `social_requests`, `messages`,
+  `imports`, `friendSearchMigrated`, so `pings`/`conversations` always pass" — same.
+- "invisible to `STALE_TAG_MARKERS`, `getDeletedIngredientStats` and `_needsRetagging`" —
+  compressed to "every marker-based diagnostic reads clean".
+- "the check lives in `groups/minor-membership-gate.ts`, backstopped by
+  `enforceGroupMinorMembership` (`onDocumentWritten` on `chat_groups/{id}`)" — compressed.
+- "\"Setting X fixed the deploy\" is a claim about a RUN — `gh run list --workflow=`, then
+  `git show <sha>:<file>`." — duplicated in `lessons-digest.md`.
+- "cite the `match` pattern or function name" — the line-number half is the durable part.
+
+### 2026-09-05 — BUT-1917 round 3: the empty-orphan fix inverted the weekly pass's own signal [reconciliation][measured]
+
+Round 2 found that `reconcileMirrors` fast-pathed `stored === expected` and therefore never
+reached the owner check for an EMPTY mirror — exactly the shape a post-cascade rebuild leaves,
+so the orphan survived every weekly pass. Round 3's fix adds `stored !== ""` to the fast-path
+condition, which is correct as far as it goes: the orphan is now visited and deleted.
+
+But the equal-and-empty case is now routed into `rebuildMirrorFor`, and that call is also the
+only thing the pass counts. MEASURED on the real `FakeFirestore` (probe run 2026-09-05,
+`reconcileMirrors(db, [VICTIM], 9000, seam)`):
+
+- LIVE account, mirror `{blockedByUserIds: [], sourceRev: 1000}` →
+  `{checked:1, repaired:1, skipped:0, failed:0}`, the document REWRITTEN
+  (`sourceRev` 1000 → 9000, fresh `updatedAt`), and
+  `logger.error("[block-mirror] reconciliation did not find a clean sweep")`.
+- ORPHAN, same document, no auth marker → deleted, but
+  `{checked:1, repaired:0, skipped:1}` and
+  `logger.info("[block-mirror] reconciliation found no drift")`.
+
+`runReconcileBlockMirrors` computes `clean = !partial && failed === 0 && repaired === 0`, so
+the benign case prints "weekly pass: NOT clean" and the real repair prints "weekly pass: clean".
+An empty mirror is the ordinary state after any unblock, `collectUidsToReconcile` visits every
+existing mirror through its collectionGroup leg, and the mirror's `sourceRev` is older than
+`Date.now() - RECONCILE_REV_SKEW_MS` for anything older than an hour — so this fires for every
+such user, every week, forever, plus one write each.
+
+The file's own docstring says the repair count "is the point … a signal about the TRIGGER
+rather than about this pass". That signal is what the fix consumed.
+
+Remediation filed: consult the `ownerExists` seam DIRECTLY on the equal-and-empty branch
+(`continue` when the owner lives — no write, no `repaired`), and count the orphan's delete as
+drift rather than as `skipped`. The existing case `an EMPTY mirror belonging to a LIVE account
+survives` asserts only `db.read(MIRROR) !== undefined`, so neither half is pinned today.
+
+Retired from the principles file in the same edit:
+- "Cascade purges discover children via `rootRef.listCollections()`, never hard-coded names.
+  Steps are BEST-EFFORT — a rethrow re-runs the WHOLE cascade, double-applying non-idempotent
+  ones." — the first half misdescribes this codebase: the PROBE enumerates, while
+  `deleteUserSubcollections` keeps a hardcoded `subs` list ON PURPOSE so the deleter stays a
+  superset of the probe (the enumerating-probe principle below it already says so, precisely).
+  The second half is wrong about the mechanism: `runStep` catches, so a step's throw becomes
+  `failedCollections` + `gdprCompliant:false`, and nothing retries the cascade.
+- "mapping ONLY `auth/user-not-found` to \"gone\"" — superseded this round: `auth/invalid-uid`
+  is answered too, at the Auth boundary, because `getUser` rejects >128 chars pre-network and a
+  `blocks/{myUid}_{200 chars}` row is a write any account can make. The team declined to bound
+  `isUsableUidSegment` to 128 instead, and that call is sound — the validator's other job is
+  path legality, which has a different bound (1500 bytes).
+- "A boolean verdict gating a destructive delete needs a fixture that can force it FALSE." —
+  duplicated by "A leg with no DIRTY fixture is mutation-invisible" in the cascade section.
+
+### 2026-09-05 — BUT-1917 round 4: the alarm inversion was fixed in ONE of two branches [reconciliation][gdpr]
+
+Round 3 found `reconcileMirrors`' equal-and-empty fast path both leaving a post-cascade
+orphan on disk forever AND (in the alternative routing) filing a benign rewrite as drift.
+Round 4 took the remediation shape I proposed: `resolveOwner` hoisted, the ambiguous EMPTY
+case asks it directly, the orphan branch calls `rebuildMirrorFor` then `repaired++`
+explicitly. Both counts asserted (0 live / 1 orphan), defect proved before the fix.
+
+MEASURED, this round, by a throwaway ts-node probe against the real `_fake-firestore`
+(`functions/src/__tests__/_tmp_fastpath_probe.ts`, deleted after the run), five arms:
+
+| stored | expected | owner | result | mirror after |
+|---|---|---|---|---|
+| `[]` | `[]` | live | repaired 0, skipped 0 | present  ← correct (control) |
+| `[]` | `[]` | GONE | repaired 1 | deleted   ← correct (fixed this round) |
+| `[A]` | `[A]` | live | repaired 0 | present   ← correct (control) |
+| `[A]` | `[A]` | GONE | repaired 0, skipped 0, "found no drift" | **PRESENT** |
+| `[A]` | `[]` | GONE | repaired 0, **skipped 1**, "found no drift" | deleted |
+
+So two of the four empty/non-empty × live/gone combinations are still wrong, and they are
+the same two failures round 3 named, one branch over. The `if (stored !== "") continue;`
+line is the whole cause of row 4; the `else { skipped++ }` branch is the cause of row 5,
+and the comment sitting ON that branch describes exactly the outcome it produces
+("Folding those into `repaired: 0` would make the pass log 'found no drift' on a run that
+changed something") as a hazard rather than as what the code does.
+
+Reachability of a NON-EMPTY orphan, traced rather than assumed: `deleteBlocks` DECLINES
+above `MAX_BLOCK_SWEEP_ROWS` (2000) on the `blockedId == uid` leg — a leg whose row count
+other people choose — and `batchDeleteAll` commits through `commitInChunks(strict:false)`,
+which swallows a failed chunk. Either leaves live `blocks` rows naming the erased uid.
+`auth.deleteUser` is the LAST step of `requestAccountDeletion`, so a `syncBlockMirror`
+delivery landing after tier 2's `block_mirror` sweep still sees the account as existing and
+rebuilds the mirror — non-empty, because rows remain. `probeResidualData` has already run.
+Nothing else reaches it, and the weekly pass reports it clean.
+
+Also refuted this round: the BUT-1917 entry in `ACCEPTED_DEVIATIONS.md` says "The weekly
+pass does reach it: `reconcileMirrors` no longer fast-paths an EMPTY stored mirror, which
+is exactly that orphan's shape". True for a clean cascade, false for the declined/failed
+one — which is precisely the state where the net matters. Fix the code rather than reword
+the entry; the sentence becomes true once existence is resolved above every branch.
+
+Non-blocking, same round: `poll-votes-rules.test.ts` spells `const PROJECT_ID =
+process.env.PROBE_PROJECT_ID ?? "butlery-rules-poll-votes"` and passes `projectId:
+PROJECT_ID`, so NEITHER discovery path in `scripts/rules-coverage-report.js` (line 487
+`/\bPROJECT_ID\s*=\s*["']([^"']+)["']/`, and the `projectId:\s*["']` literal scan) matches
+it — the suite is silently outside the coverage union. Pre-existing; `blocks-rules.test.ts`
+gets it right this round (bare literal const, override at the call site). Harmless for the
+new-block gate today only because `match /block_mirror/{mirrorDoc}` is a constant deny,
+which `evaluateGate` exempts.
+
+Verified this round: `npx tsc --noEmit` clean, `test:sync-block-mirror` 26/26,
+`test:account-deletion-cascade` 245/245, `blocks-rules.test.ts` registered in
+`package.json`, the `test:rules:all` chain and BOTH `paths:` blocks of
+`firestore-rules.yml`; the generated l10n matches both ARBs.

@@ -8572,3 +8572,280 @@ The three Lows also landed: both stranded docstrings reunited (`blockedIdFromEve
 Two observations, neither a finding. `clean` is gated on `!partial && failed === 0 && repaired === 0` and not on `skipped`, so a run whose only change was deleting an orphaned mirror still prints "clean" — the count ships in the same payload, which is why the round-2 counter was accepted as the fix. And the new cap docstring's "this one had been the exception" is a sentence about a prior state of the same uncommitted change, unverifiable from the tree once squashed; true today, worth striking only if the file is touched again.
 
 Pattern across three rounds, worth keeping: every defect I filed after round 1 was inside text or code written AS a repair — the raw-uid log and the false emulator-lane claim both arrived in the fix for the previous round's finding, and one stranded docstring was created by the round-2 repair that fixed a different one.
+
+---
+
+## 2026-09-05 — BUT-1917 steps 4+5 (rules gate + client readers), commit-gate review
+
+Staged: `firestore.rules` (block_mirror deny block, `notBlockedByAnyoneHere()` on
+`poll_votes` create+update), `firebase_block_repository.dart` (three INCOMING readers),
+`blocked_user_filter.dart` (two-direction cache), `messaging_service.dart`,
+`chat_viewmodel.dart`, `chat_message_stream.dart`, l10n, workflow map, three Dart suites
+and `poll-votes-rules.test.ts` (B1-B10).
+
+**Blocking finding — the fail-open's stated justification is false, and the fail-open is
+client-reachable.** The new rules comment says the mirror "is created the first time
+anyone blocks that user and is never deleted afterwards — unblocking empties the list, it
+does not remove the document", and the whole fail-open (`!exists(mirror) || ...`) rests on
+that: absence is read as "nobody has ever blocked this person". `rebuildMirrorFor`
+(`functions/src/social/sync-block-mirror.ts`, not staged) deletes the mirror whenever
+`users/{blockedId}` does not exist — and `firestore.rules` lets any user delete their own
+`users/{uid}` document (`allow delete: if isOwner(userId)`) while staying signed in.
+Sequence: delete your own profile doc, wait for any `blocks` event naming you or the
+weekly `runReconcileBlockMirrors`, your mirror is deleted, `notBlockedByAnyoneHere()`
+fails open, and every block against you stops being enforced on `poll_votes`. Nothing
+restores it: the weekly pass calls the same function, which deletes again. Voting needs no
+user doc (`inPollConversation` + `pollIsOpen` + `isValidVote` only; no maturity/age gate on
+this subcollection), so the account keeps working. The CF's own comment says the cost lasts
+"until the weekly reconciliation catches it", which is false for the same reason. The
+orphan delete is also counted as `skipped`, so the weekly verdict can print "clean" on the
+run that disarmed the control (already noted as an observation in the round-3 entry above;
+this is what it costs). Remedy offered: distinguish an ERASED account from a deleted
+profile doc by asking Auth (`admin.auth().getUser`) rather than the Firestore doc, and
+STRIKE the "never deleted afterwards" clause either way.
+
+**Document-access budget, measured rather than asserted.** Unique documents reached by the
+`poll_votes` create/update limbs: the message, the conversation, the mirror = 3. Literal
+call sites without assuming the per-evaluation cache: `pollMessage()` 3x, conversation 2x,
+mirror `exists`+`get` = 7, against the cap of 10 for a single-document write. The live path
+is `MessageMutationModule.votePoll`, a TRANSACTION: one read of the vote row (read limb =
+2 accesses) plus the write (7) = 9 against the transaction cap of 20. No participant-count
+term anywhere, which is the property the mirror design exists to buy.
+
+**The incoming LIST query is permitted, and that is the product question.** `where('blockedId',
+isEqualTo: uid)` matches the pre-existing read limb's second disjunct field-for-field, so
+the documented allowed pattern holds and no rules change is owed. But `isBlockedBy` needs a
+uid you already have, while enumeration hands over blockers you have no other handle on,
+live, and `public_profiles/{uid}` is world-readable so each uid resolves to a name and
+avatar. The same diff denies the OWNER read of `block_mirror` arguing that learning who
+blocked you is the outcome blocking exists to prevent, and BUT-2018 removes
+`incoming_blocks` from the Art. 15 export — three surfaces, two of them closing and one
+opening. Nothing renders the set today (ballot strip only). The rule could be split
+(`allow get` both directions, `allow list` blocker-only), which would kill the three new
+readers — so the client-side incoming strip IS what buys the enumeration. Since the app is
+not live there are no pre-rule blocked ballots for it to cover, which is the cheap way out.
+Raised for Malin, not filed as a defect.
+
+**Mediums.** `watchBlockedByUserIds`/`getBlockedByUserIds*` carry no `.limit()`, and unlike
+the outgoing direction the incoming set is chosen by OTHER people (the CF caps its own
+mirror at 1000 for exactly that reason) — an attacker-influenced unbounded read on a live
+listener. `currentBlockedByIds()` is fetched on every `_filterBlocked` call regardless of
+whether the page holds a poll, so every user pays a second query and a second app-scope
+listener for a refinement that only ever touches poll rows.
+
+**Low.** The `try`/`catch` around `filter.currentBlockedByIds()` in `_filterBlocked` is
+unreachable: `_BlockSetCache.current()` catches internally and returns an empty set, so the
+warning it logs can never fire. Behaviour is still the intended fail-open, one layer down.
+
+Logs: clean. Every new line is `AppLogger.warning` (device-local `developer.log`) carrying a
+direction label or a message id, never a uid; the one `AppLogger.error` on the vote path
+interpolates no identifier and its `$e` cannot carry a `create_composite` URL because the
+write is a document `set` inside a transaction, not a query.
+
+---
+
+## 2026-09-05 — BUT-1917, round 3 (staged, 28 files): the block mirror, re-graded
+
+Round 2 returned fail (3 blocking); all three were taken and all three are correct now.
+
+1. **`auth/invalid-uid` retry loop — CLOSED at the Auth boundary, as recommended.**
+`accountExists(uid, getUser = admin.auth().getUser)` answers `false` for
+`auth/user-not-found` AND `auth/invalid-uid`, rethrows everything else. Traced the residual:
+a planted `blocks/{myUid}_{200 chars}` row now resolves "gone", `tx.get` on
+`users/{200chars}/block_mirror/current` is a legal path and returns nothing, no write, no
+redelivery. A real uid is ≤128 chars, so no live mirror can be suppressed this way.
+Both error branches pinned through the injected `getUser`; the docstring says plainly that
+the `ownerExists` seam on `rebuildMirrorFor` cannot reach this catch, which is why the second
+seam exists. Not tightening `isUsableUidSegment` was right — its other job is path legality
+and the two bounds (128 vs 1500) belong to different systems.
+
+2. **The two false race clauses — the THIRD wording is accurate.** Verified line by line
+against `request-account-deletion.ts`: tier 1 → `block_mirrors` → tier 2 → `deleteUserProfile`
+→ `probeResidualData` → `auth.deleteUser`. So the Auth-keyed check answers "exists" for the
+whole cascade where the old document-keyed one answered "gone" from tier 3 — the residual IS
+wider, as the new text says, and the late-trigger orphan is an EMPTY mirror under the erased
+uid's path. The compensating control now genuinely runs: `stored !== ""` in `reconcileMirrors`,
+`collectUidsToReconcile`'s `collectionGroup` leg is what FINDS such an orphan (the blocks leg
+cannot — the rows are gone), `ownerExists` then answers false and it is deleted. Pinned both
+ways ("an EMPTY orphaned mirror is deleted by the weekly pass" + the live-account control).
+Only imprecision: "the LAST step of `requestAccountDeletion`" — the audit-log write follows
+`auth.deleteUser`. Deliberately NOT filed as a finding: the enumeration beside it is exact and
+load-bearing, and a reword is where the fourth false sentence would land.
+
+3. **"This does not widen what a client can learn" — struck.** Grepped `lib/`, `functions/src`
+and `firestore.rules`; the surviving hits are three unrelated pre-existing sentences.
+
+**Rules verified independently.** `notBlockedByAnyoneHere()` costs ≤3 distinct document
+accesses on a create (`messages/{id}` shared with `pollMessage`/`pollIsOpen`, the conversation
+shared with `inPollConversation`, and `exists`+`get` on one mirror path counting once) — no
+risk against the 10-access cap the mirror exists to dodge. The new `blocks` list reads are the
+documented field-to-field pattern: the query constrains `blockedId`, the read limb's second
+disjunct tests `blockedId`, so L1 is earned and L3/L4/L5 kill the alternatives.
+
+### Two blocking findings this round
+
+**(a) The generated l10n doc comment ships the sentence the previous round refuted.**
+Both ARBs now carry the corrected `@pollVoteFailed` description ("returns this sentence for
+ANY failure, including a transient network one that a retry would fix"), while
+`lib/l10n/app_localizations.dart:27404` still carries the refuted one ("neither refusal this
+rule produces … can succeed on a retry"). `flutter gen-l10n` was not re-run after the ARB was
+hand-corrected — the string values match, so nothing reddens. New principle filed. Fix is the
+generator, never a hand edit of the generated file.
+
+**(b) `EXPORT_EXEMPT.block_mirror` is filed under the wrong section header.** The staged hunk
+corrects the entry's ⚠ clause, but the entry sits beneath
+`// ── No writer of the users/{uid} path. Swept for legacy rows only. ──`, whose body says
+"Nothing writes them today, so for a current account the export omits nothing" and whose DPO
+residual paragraph speaks of "a shape no live code writes". `syncBlockMirror` writes
+`users/{uid}/block_mirror/current` for every user anyone blocks. The entry belongs in the
+"Withheld on purpose, with a live writer. These are the decisions." group above. A MOVE, not a
+reword. Answering the ticket's own question: the exemption needs no CODE change for its
+premise being time-limited — `scenario_blockMirrorExemptionRestsOnIncomingBlocks` asserts
+`manager.includes("'incoming_blocks'")`, and BUT-2018's decided outcome is to drop the section
+entirely, so the guard reddens when it lands. (A partial REDACTION would leave it green; that
+pin belongs to BUT-2018, as the earlier archive entry already records.)
+
+**(c) One stale "open question" survived the BUT-2018 sweep**, in the guard test's own
+docstring: `functions/src/__tests__/account-deletion-cascade.test.ts:2856` still says
+"Whether `incoming_blocks` SHOULD keep telling a requester exactly who blocked them is an
+open Art. 15(4) question (BUT-2018)". The staged deviation entry asserts that the artefacts
+calling it open are the stale half — this is the one that is still standing, in an unstaged
+file. Strike the clause; the rest of the sentence stays true.
+
+---
+
+## 2026-09-05 — BUT-1917, staged review round 4 (32 files, index frozen)
+
+Substance re-verified clean this round: `block_mirror` denied read+write to everyone
+including its owner (B9/B10); the `blocks` LIST capability proven with an allow/deny pair
+plus an unconstrained-list deny (L1-L5); the mirror's only writers Admin-SDK; the orphan
+check now asking Auth rather than the client-deletable `users/{uid}` document; the erasure
+covering own mirror (`subs`), other people's mirrors (`deleteBlockMirrors`, capped and
+declining) and `blocks` in both directions, each with its own uncapped probe leg; uids
+hashed in every log on the trigger path. Round 3's l10n drift and the stale "open question"
+docstring both fixed. The empty-orphan fast path now asks the owner check directly and the
+live-account control asserts `repaired == 0` as well as document survival — the half that
+could not see the previous round's defect.
+
+**Blocking, carried from round 3 and still open: `EXPORT_EXEMPT.block_mirror` under the
+wrong section header.** The entry sits beneath `// ── No writer of the users/{uid} path.
+Swept for legacy rows only. ──`, whose body says "Nothing writes them today, so for a
+current account the export omits nothing." `syncBlockMirror` writes
+`users/{uid}/block_mirror/current` for everyone who gets blocked, so both sentences are
+false over this key while no line of the entry's own text is wrong. Fix is a MOVE into
+`// ── Withheld on purpose, with a live writer. These are the decisions. ──`, text
+unchanged.
+
+The hesitation offered against it — "moving an entry between groups has broken a scenario
+assertion here before" — was settled by measurement rather than by argument, and that is
+the reusable half. `grep -rn EXPORT_EXEMPT` returns one production definition and one
+consumer suite. Every assertion in that suite reads the map by KEY or by a text PREFIX:
+`typeof exempt === "object"` + non-empty; a ≥20-char reason per entry; `name in exempt`
+for the gaps scan; `why.startsWith("NO LIVE WRITER") && writers.has(name)` for the revived
+scan (block_mirror's reason starts "PROJECTION", so it is outside that set before AND after
+the move); `Object.keys(exempt)` used only inside a failure message; and
+`exempt[Collections.blockMirror]` in the dependency scenario. Nothing reads position, so the
+move is assertion-neutral. Principle extended in place under the exemption-map bullet.
+
+**Second blocking finding, new this round and created by this commit:** the deviation
+entry's clause "the repo comments that call it an open question are the stale half" is now
+false, in both `.claude/rules/accepted-deviations.md` and
+`docs/architecture/ACCEPTED_DEVIATIONS.md`. `grep -rn BUT-2018` over the tree (excluding
+agent archives) returns five hits and every one states the decision: `firestore.rules:421`,
+`account-deletion-cascade.ts:3144`, and `account-deletion-cascade.test.ts:2855` and `:2898`,
+all repaired in this same staged diff. The clause describes a repo state its own commit
+removed — the recurring "refuted by its own commit" shape, arriving this time in a decision
+record that auto-loads into every session. Strike the clause; the decision sentence in front
+of it is untouched and stays.
+
+**Follow-ups, named rather than blocking.** (a) `docs/security/account-subcollections-retention.md`
+is the Art. 30 register for `users/{uid}` subcollections and declares "every collection below
+has a row here whether or not it is exported"; `block_mirror` has no row. The register is
+already partial in the same way for several older `subs` entries, so this change is not what
+falsifies the universal — but block_mirror is the newest exempt subcollection WITH a live
+writer, which is where the drift is cheapest to stop. (b) The Art. 12(1) question the bundle's
+own comment raises does NOT bite today: the withheld facts are reproduced under
+`incoming_blocks`, and `scenario_blockMirrorExemptionRestsOnIncomingBlocks` reddens on the
+Dart source if that section goes. The residual is that this guard's CI trigger is a
+`functions/src` path filter while the change that would remove the section is Dart-only —
+already filed as BUT-2002, and the exemption now depends on it. (c) Rule read budget for a
+vote, counted from the rule rather than the query: `messages/{id}` (pollMessage, cached across
+`inPollConversation`/`pollIsOpen`/`notBlockedByAnyoneHere`), the conversation document, and the
+mirror via `exists()` + `get()` — comfortably under the 10-access cap the whole mirror design
+exists to respect. (d) `closePoll` awaits `requireBlockedIds()` then `requireBlockedByIds()`
+sequentially; `Future.wait` halves the latency of a rare, user-visible action.
+
+---
+
+## 2026-09-05 — BUT-2020: the JSON-LD sanitizer exemption is narrowed, not closed
+
+Reviewed `html_sanitizer.dart`, `recipe_scraper.dart`, `url_import_strategy.dart` and
+`html_sanitizer_test.dart`.
+
+**The reported hole is real.** The old `preserveWhen` was
+`openingTag.contains('application/ld+json')` — a bare substring test over the lowercased
+opening tag — so `<script data-note="application/ld+json">alert(1)</script>` exempted itself
+from removal. The `type=` requirement the file's comment credited with stopping it sat only
+in `_scriptTagPattern`, the WARNING pattern in `check()`, never in the exemption. Measured
+end-to-end: under the old code that tag was preserved by `sanitize()` while `check()`
+simultaneously warned about it — the two halves disagreed for the whole life of the comment.
+
+**But the replacement does not close the class.** Measured on the real
+`HtmlSanitizer.instance` (`preserved` = the `alert` survived, `warned` = `check()` raised a
+scriptInjection issue):
+
+| opening tag | preserved | warned |
+|---|---|---|
+| `<script data-type="application/ld+json">` | yes | no |
+| `<script x-type="application/ld+json">` | yes | no |
+| `<script src="e.js" data-cfg="type=application/ld+json">` | yes | no |
+| `<script data-cfg="type=application/ld&#43;json">` | yes | no |
+| `<script type="application/ld+jsonx" src="e.js">` | yes | no |
+| `<script data-note="application/ld+json">` (the pinned decoy) | no | yes |
+
+`\b` treats `-` and `:` as non-word characters, so `\btype\s*=` fires inside `data-type=`,
+`x-type=` and `foo:type=`; and nothing stops the string `type=application/ld+json` from
+sitting inside another attribute's VALUE. The row with the entity encoding is a NEW survivor
+this change created: the old substring test required a literal `+`, so
+`data-cfg="type=application/ld&#43;json"` used to be stripped. The `jsonx` row shows the
+raw-source regex and `isJsonLdMediaType` are NOT the same decision — the regex is an
+unterminated prefix match, the helper an exact media-type-essence equality.
+
+Proposed and measured hardening (all six rows above flip to stripped, all seven legitimate
+spellings — quoted, unquoted, single-quoted, spaced, `&#x2B;`, `&#43;`, `; charset=utf-8` —
+still preserved):
+`(?<=[\s/])type\s*=\s*["']?\s*application/ld(?:\+|&#x2b;|&#43;)json(?=["'\s;>]|$)`
+
+**Harm bound, traced rather than assumed.** Attacker-controlled HTML reaches `sanitize()`
+through the URL import only: `UrlImportStrategy` -> `RecipeParserService.parseFromUrl` ->
+`ParsingContext.fromUrl`. Every consumer of `sanitizedContent` was opened. `schema_org_tier`
+and `site_config_tier` re-parse it as a document and ignore a script whose `type` is not
+JSON-LD; `rule_based_tier` and `llm_tier` both run `stripToPlainText`, whose own
+`_scriptPattern` removes script blocks before the text reaches the parser or the Gemini
+prompt. Flutter renders no HTML and no WebView shows this content. So there is no execution
+sink TODAY and the finding is defence-in-depth — which is exactly why the false comment is
+the dangerous part: the next consumer that renders `sanitizedContent` inherits a live XSS on
+the strength of a sentence saying the hole is closed.
+
+**ReDoS, pre-existing, not introduced.** `check()` runs `_scriptTagPattern` over the raw
+content BEFORE the 5 MB `excessiveLength` issue is appended (the check does not early-return),
+and `<script\b(?![^>]*...)` is quadratic in the number of `<script` tokens. Measured on 320 KB
+of repeated `<script ` with no `>`: 14.6 s through the real `check()`; the standalone regex
+14.6-25.5 s new versus 16.7 s old, i.e. the same class, roughly 1.5x worse. The fetcher caps a
+response at 5 MB, so a hostile page can be ~16x that input; what a 5 MB page actually costs
+was NOT measured — that probe was killed for memory before it produced a number, and no
+figure derived from it should be written without re-running it. The
+`_hasOnlyNonRecipeJsonLd` pattern is the same shape (3.3 s new / 3.2 s old on 700 KB) and
+essentially unchanged. The file's "state-machine approach (avoids ReDoS)" comment is about
+`_removeTagWithContent` and is true of it; the existing pathological-input test drives
+`sanitize()` with `'<' * 10000`, which contains no `<script` and therefore never reaches the
+quadratic pattern. Own ticket, not this diff's defect.
+
+**Symbol-sharing claim.** `jsonLdScriptOpeningTagPattern`'s docstring says "the two callers
+that must work on raw source" and then names one. There is exactly ONE caller
+(`html_sanitizer.dart:189`); `_hasOnlyNonRecipeJsonLd` inlines a fourth spelling of the same
+decision instead of importing the symbol, which defeats the docstring's own "kept side by
+side so a change to one is made in sight of the other".
+
+Also found: an untracked `test/unit/_zz_probe_test.dart` left behind from the author's own
+investigation, inside the directory `flutter test` discovers.

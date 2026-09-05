@@ -34,6 +34,7 @@ enters this file").
 | `/cook_snaps`, the messages ADMIN read/delete clauses, **and the BUT-1904 `duplicateBlocked` freeze on the sender `allow update`** | `cook-snaps-and-message-mod-rules.test.ts` | `test:rules:cook-snaps-and-message-mod` |
 | `/weekly_menu_plans` and `/group_weekly_menu_plans` | `weekly-menu-plans-rules.test.ts` | `test:rules:weekly-menu-plans` |
 | `users/{uid}/notifications` (server-written, owner-read) | `delivered-notifications-rules.test.ts` | `test:rules:delivered-notifications` |
+| `/blocks/{blockerId}_{blockedId}` (list, get, create, update-deny, delete) | `blocks-rules.test.ts` | `test:rules:blocks` |
 | All of the above                      | (sequence)                 | `test:rules:all`          |
 
 If the diff touches a collection not listed above, **create a new test file** named
@@ -233,11 +234,36 @@ Standard deny matrix for ownership-checked collections:
   mutation that DOES flip it, and report it as "guards the pair" — never as proven
   load-bearing alone. A deny against `allow x: if false` is unflippable by removal by
   construction; probe it by opening the rule instead.
+- **An `isAuthenticated()` conjunct on a read rule whose disjuncts compare
+  `request.auth.uid` is MASKED for every LIST test — deleting it reddens nothing.** With no
+  auth, `resource.data.f == request.auth.uid` is already unprovable, so the engine refuses
+  the query on the disjunct alone; only opening the rule to `if true` kills the signed-out
+  deny (measured on `blocks`, BUT-1917: `if isAuthenticated() && (...)` -> `if (...)` left
+  14/14 green, `if true` killed 4). Report such a signed-out test as pinning the null-auth
+  deny, never as attributing to `isAuthenticated()`, and never let a comment say the rule
+  "opens with `isAuthenticated()`, and that is what refuses this".
 - **When create and update share one conjunct, a deny test whose target document is
-  PRE-SEEDED lands on UPDATE and proves nothing about CREATE.** A cross-actor deny needs
-  a path no fixture has written yet (or twice, once per verb) — make the fixture
-  self-checking: assert the row doesn't exist via `withSecurityRulesDisabled` before
-  `assertFails`. The same fact binds PROSE, not just fixtures: `set(..., merge: true)` is
+  PRE-SEEDED lands on UPDATE and proves nothing about CREATE. The pre-seeder is as often
+  the suite's OWN `seed()` as an earlier allow test** — and a per-test re-seed makes that
+  deterministic rather than order-dependent, so the test is wrong on every run instead of
+  intermittently. **The DIAGNOSTIC is a PAIR of limb-scoped mutants, and only the pair:** drop
+  the conjunct from create only, then open update only, and read which tests each kills.
+  Measured twice on `blocks` (BUT-1917). Broken: the "I may not create a block in somebody
+  else's name" deny aimed at a stranger-pair id the seeder writes, so the create mutant left
+  14/14 green while opening `allow update` killed that very test. Repaired — re-pointed at an
+  id NO fixture writes, plus a `withSecurityRulesDisabled` assertion that the row is absent
+  before `assertFails` — the create mutant is 13/14 killing it alone and it now SURVIVES the
+  update mutant. The kill MOVING between the two mutants is the proof; either mutant alone
+  reads the same in both states. Check every deny's doc id against the seeder's key set before
+  believing a write-rule attribution, and make the fixture self-checking so a future seeder
+  cannot re-break it silently. **The seeder is not the only thing that pre-seeds it: in a suite where
+  `clearFirestore()` runs ONCE and `seed()` merely re-writes, an earlier ALLOW test's write
+  persists, so which limb a later test lands on is a function of DECLARATION ORDER.**
+  Measured on `poll_votes` (BUT-1917): B1 is a create only because it is declared first, and
+  a create-limb-only mutant kills it and nothing else — insert any allow above it that writes
+  the same row and the create limb silently loses its only kill. Attribute every shared
+  conjunct with TWO limb-scoped mutants (drop it from create only, then from update only) and
+  read which tests each kills; that is the only thing that says which limb a test is on. The same fact binds PROSE, not just fixtures: `set(..., merge: true)` is
   a CREATE whenever the document is absent, so a client the code reads as "update-only"
   still reaches the create rule under a read-then-delete race. Never pass a comment
   claiming "no shipped code sends shape X on create" without enumerating every merge-set
@@ -344,6 +370,15 @@ Standard deny matrix for ownership-checked collections:
   by nothing but the guard itself, so raising it changes no write and denies nothing. The
   guard still earns its place (it keeps the numbers together for the day a prune arrives);
   what goes false is the causal clause, which gets STRUCK, not reworded (BUT-1971, 2026-08-31).
+- **A sentence claiming a NEW check GAINS a capability is a claim about what the OLD check
+  did in the SAME state — measure both arms, not just the one the fix was written for.**
+  BUT-1917 moved a Cloud Function's orphan check from `users/{uid}` to Auth and wrote "the
+  weekly pass now finds it, which it could not before" beside the residual it left. False:
+  the account cascade DELETES `users/{uid}`, so for an erased account the old spelling
+  answered "gone" identically — the gain belongs to the profile-delete case, a different
+  residual, and got attached to this one. Second refutation from the same probe: the pass
+  short-circuits on `stored === expected` BEFORE the owner check, so an orphan whose list is
+  empty is never visited under either spelling. Both arms are cheap; the sentence is not.
 - A decision record or comment quoting mutation-probe figures inherits their staleness
   at one remove — re-run every quoted mutant against the CURRENT file before trusting a
   written figure; arithmetic on an old run is not measurement.
@@ -371,7 +406,16 @@ Standard deny matrix for ownership-checked collections:
   every suite that has adopted the seam. It inflates the untested-block count and can fail
   the NEW-block gate on a block those suites do cover. Adding the seam therefore owes a
   literal the discovery can still see (keep `projectId: "…"` at the
-  `initializeTestEnvironment` call, or export the default as its own string const). Assert the mutator's match
+  `initializeTestEnvironment` call, or export the default as its own string const).
+  **That split then has its OWN failure mode: every OTHER consumer of the id must resolve it
+  the SAME way.** `blocks-rules.test.ts` honours `PROBE_PROJECT_ID` at
+  `initializeTestEnvironment` but interpolates the BARE literal into `clearFirestore()`, so
+  under a probe the per-test clear empties a different namespace from the one under test and
+  the run silently loses its isolation — an earlier allow's write survives and turns a later
+  create-deny into an update-deny, which is the exact mis-attribution the limb-pair mutant
+  exists to catch. Grep every use of the id constant when you add the seam, and until it is
+  fixed, probe such a suite WITHOUT setting `PROBE_PROJECT_ID` (per-test clear+seed keeps
+  mutant writes contained). Assert the mutator's match
   count is 1 and diff the mutant against the original before trusting the run. **A probe
   project id must be lowercase** — an uppercase letter (a `createdAt`-derived id) makes the
   run emit NO test lines at all, which greps for `FAIL` as cleanly as a green suite; require
@@ -455,6 +499,21 @@ Standard deny matrix for ownership-checked collections:
   **Re-run the affected suite anyway.** A comment cannot change CEL evaluation, so the run
   is not owed for behaviour — but it is the only check on the one thing a comment edit CAN
   break: a ruleset that no longer compiles.
+- **A mutant built by PREFIXING a CEL predicate is not the mutant you wrote — `&&` binds
+  tighter than `||`.** `return false && !exists(X) || Y` collapses to `Y`, so an intended
+  "deny always" silently became "delete the leading fail-open disjunct" and killed a
+  different 8 tests (measured on `notBlockedByAnyoneHere`, BUT-1917). Replace the WHOLE
+  predicate body when you want an unconditional verdict, and read the kill SET against what
+  you predicted — a kill count you did not expect is the precedence showing itself, not a
+  surprising suite. The accidental mutant was worth keeping under an accurate name: prefixing
+  is a cheap way to reach "make this limb fail closed", which is often the edit a deviation
+  entry records as REJECTED and which therefore wants a pinned kill set of its own.
+- **A deny-always mutant on a whole gate is what grades its ALLOW tests, including the
+  pinned-green "known gap" ones** — they are fail-closed controls only if they die when the
+  gate stops permitting anything. It grades the ungated verbs at the same time: on `poll_votes`
+  it killed all 12 allows through the gate and left the READ and DELETE tests green, which is
+  the measurement behind "read and delete are deliberately not block-gated". Run it once per
+  gate before writing that a verb is ungated.
 - **A mutation probe that reddens NOTHING is often the most valuable result — it means a
   COMMENT is wrong, not the code.** Run both the "the forbidden edit" probe (tests the
   comment's claim) and the "delete the conjunct" probe (tests whether the test is
@@ -494,7 +553,9 @@ Standard deny matrix for ownership-checked collections:
   `functions/scripts/check-test-registration.js`: the `test:rules:<name>` script, an
   entry in `test:rules:all`, and the path in BOTH `paths:` blocks of
   `.github/workflows/firestore-rules.yml` (pull_request + push). Verify with `node
-  scripts/check-test-registration.js`.
+  scripts/check-test-registration.js` — and that checker RUNS IN CI
+  (`.github/workflows/cloud-functions-unit.yml`), so the two missing `paths:` entries are a
+  RED BUILD, not a soft warning. Run it on every new suite before reporting the suite green.
 
 ### Coverage shape patterns (reusable per rule shape)
 - **Numeric-floor change on a rule**: allow-at-floor, deny-at-floor+1, AND an

@@ -4441,3 +4441,269 @@ it — parent-free self checks, measured"). Recommended strike of the rationale 
 site (`keys.length > 0`), which is right: a third `tokensRequired` argument would make the
 regex miss and redden the test rather than pass it vacuously. `found[file] = key` keeps only
 the last key per file — harmless today (one call site per file), a trap if one gains two.
+
+## 2026-09-05 — BUT-1917 re-review: the block gate is fully attributed, and the repair sentence went wrong the same way its predecessor did
+
+Re-review of the staged BUT-1917 step-4 diff (24 files). The previous round's blocking
+finding — a fabricated "Measured on the emulator 2026-09-05" sentence in `firestore.rules`
+— is STRUCK, with no replacement causal claim. Confirmed by reading the whole rules file:
+the surviving `Measured` lines in the `poll_votes` block are the 2026-08-17 ones for
+`pollIsOpen()` / `inPollConversation()`, which the archive already records as run.
+
+**Suite: `npm run test:rules:poll-votes` → 46/46 passed.** Emulator 127.0.0.1:8080.
+
+**Mutation probes, all via the `PROBE_RULES_PATH` seam over scratchpad copies; the real
+`firestore.rules` stayed byte-identical to the index throughout (`git status` = `M `, not
+`MM`).** The `poll_votes` block was sliced by `indexOf("match /poll_votes/{voterId}")` and
+each mutant diffed before running.
+
+| mutant | edit | reddens |
+|---|---|---|
+| M1 | drop `&& notBlockedByAnyoneHere()` from the CREATE limb only | B1 only (45/46) |
+| M2 | drop it from the UPDATE limb only | B6 and B12 (44/46) |
+| M3 | fail CLOSED — remove the `!exists(mirror) ||` disjunct | 8 tests, incl. B2, B5, B13 (38/46) |
+| M4 | `.hasAny(participantIds)` -> `.hasAny([pollMessage().data.senderId])` | B1 and B6 (44/46) |
+| M5 | ADD the `truncated` conjunct the deviation entry says would reverse the decision | **B11 only** (45/46) |
+| M6 | treat a non-list `blockedByUserIds` as "nobody blocked me" (the plausible `is list` repair) | **B12 only** (45/46) |
+
+So the three new tests are all non-vacuous and each has a single named kill. B11's whole
+value is that it reddens when somebody adds the `truncated` conjunct, and M5 is that exact
+edit — measured, not argued. M4 is the one that proves the mirror is crossed against EVERY
+participant rather than the poll's author, which is the cheaper wrong implementation.
+
+**M5 needed a precedence fix that a careless probe would have missed.** Written as
+`return truncOk && A || B;` the mutant reads `(truncOk && A) || B` and B11 stays GREEN — the
+probe would have reported "adding the conjunct changes nothing", the exact opposite of the
+truth. The working mutant wraps the original body: `return (truncOk) && (original);`. A
+mutant that fails to redden is a hypothesis about the mutant before it is one about the test.
+
+**B12 and B13 land on the UPDATE limb, and only because of declaration order.** `seed()`
+re-writes but `clearFirestore()` runs once, so B2's ALLOW leaves a row at
+`poll_votes/{VOTER_UID}` under `POLL_MSG_ID` for the rest of the run. B1 is a CREATE solely
+because it is declared first — and M1 shows it is the create limb's ONLY kill. Filed as a
+Medium: give B1 the self-checking absence assertion V3b already carries, or a dedicated
+message id. New principle recorded.
+
+**The blocking finding, and it is the same class as the one it replaces.** Three copies of
+one clause — `sync-block-mirror.ts` ("the weekly pass now finds and deletes it, which it
+could not do while the check keyed on a document the user had deleted") and both
+ACCEPTED_DEVIATIONS files ("the weekly pass now finds it, which it could not before") —
+attach a capability gain to the erasure-race residual. Two measurements refute it:
+
+1. `deleteUserProfile` (`account-deletion-cascade.ts:3325`) does
+   `db.collection("users").doc(uid).delete()`. After an erasure `users/{uid}` is GONE, so
+   the OLD Firestore-keyed check answered "gone" exactly as the Auth check does. The gain is
+   real for the PROFILE-DELETE case — a different residual, correctly claimed elsewhere in
+   the same entry — and got attached to this one.
+2. Probed on the CF unit fake (temp file, deleted in the same call): an orphan mirror whose
+   `blockedByUserIds` is `[]` SURVIVES `reconcileMirrors` entirely — `stored === expected`
+   short-circuits before `rebuildMirrorFor` is ever called (`skipped == 0`, mirror still
+   present). Control: a non-empty orphan IS deleted, `skipped == 1`.
+
+Remedy filed as a STRIKE, not a reword: a true replacement would need measuring which orphan
+shapes the pass reaches, and the surviving sentences already carry the decision.
+
+**Verified-true claims in the two new deviation entries**, so a later round need not re-check
+them: the `users/{uid}` owner-delete (`firestore.rules` `allow delete: if isOwner(userId)`,
+in the `match /users/{userId}` block); `rebuildMirrorFor` now asking Auth; "Pinned by
+`deleting your own PROFILE does not delete your mirror`, mutation-probed" — re-probed here by
+reverting `accountExists` to the profile-document read through a throwaway module copy, which
+kills exactly that case, 21/22; `MAX_MIRROR_ENTRIES = 1000`; both `blocks` queries using
+`.limit(cap + 1)` with no `orderBy`; B7/B8 pinning the ungated read and delete; and the test
+name `the ASYMMETRY: their ballot goes, their MESSAGE stays`, which exists at
+`messaging_service_test.dart:1769`.
+
+**Uncovered, and measured rather than assumed: the `blocks` collection has NO rules suite,**
+while this diff adds the first client LIST read on its second read disjunct
+(`where('blockedId', isEqualTo: uid)`, three new readers). Rules are not filters, so that is
+exactly the shape BUT-1971's contributor query was silently DENIED on. Probed with a
+throwaway suite against the real rules: the incoming list is ALLOWED and returns its one row,
+the outgoing list is ALLOWED, an unconstrained `blocks` list is DENIED, and listing another
+user's incoming blocks is DENIED — 4/4. So the capability works; what is missing is a
+committed test saying so. Nothing else in the repo can catch a regression here:
+`fake_cloud_firestore` and the mocktail-driven repository suite both enforce no rules.
+
+## 2026-09-05 — BUT-1917 round 3: the new `blocks` suite, twelve mutants
+
+Reviewed the staged BUT-1917 diff (28 files) for the third time. Suites re-run by me:
+`blocks` 14/14, `poll-votes` 46/46.
+
+**Twelve mutants, sliced on `match /blocks/{blockId}` (in-slice hit asserted == 1; the
+`allow update: if false;` needle alone has 7 whole-file hits, so the slice was
+load-bearing).**
+
+| mutant | kills |
+|---|---|
+| read: drop `blockedId` disjunct | L1, G1 (12/14) |
+| read: drop `blockerId` disjunct | L2 (13/14) |
+| read: drop `isAuthenticated()` | NOTHING (14/14) |
+| read: `if isAuthenticated()` only | L3, L4, G2 (11/14) |
+| read: `if true` | L3, L4, L5, G2 (10/14) |
+| create: drop `blockerId == auth.uid` | NOTHING (14/14) |
+| create: drop `blockerId != blockedId` | W4 (13/14) |
+| create: drop composite-id conjunct | W3 (13/14) |
+| update: `if false` -> `if isAuthenticated()` | W2, W5 (12/14) |
+| delete: drop `blockerId == auth.uid` | W7 (13/14) |
+
+Two of those are findings, not confirmations.
+
+1. **W2 ("I may not create a block in somebody else's name") is an UPDATE-limb deny.** Its
+   target id is `STRANGER_A_STRANGER_B`, which `seed()` itself writes, so the write lands on
+   `allow update: if false`. Proof is the mutant PAIR: the create-ownership mutant leaves it
+   green, the update-opening mutant kills it. Measured fix: re-point it at
+   `blockId(STRANGER_A, ME)` (unseeded) — I built a throwaway copy of the suite with exactly
+   that change and it stayed 14/14 on the real rules while dying under the create mutant. So
+   the collection's single most important write conjunct currently has no kill set.
+
+2. **The signed-out list deny (L5) does not attribute to `isAuthenticated()`.** Removing that
+   conjunct reddens nothing; only `if true` kills L5. For a LIST query the engine already
+   cannot prove `resource.data.blockedId == request.auth.uid` with a null uid.
+
+**Poll-votes limb attribution** (gate removed from one limb at a time, two occurrences in the
+slice, `create` first): create-only removal kills B1 alone — so B1's "this case is the create
+limb's only kill" holds, and the `withSecurityRulesDisabled` absence assertion the author
+added guards exactly the right thing. Update-only removal kills B6 AND B12, i.e. the
+malformed-mirror case lands on the UPDATE limb (B2/B3/B4 write that row above it and `seed()`
+never clears `poll_votes`).
+
+**Two measurements settling the author's rejected suggestions.** With a temporary probe copy:
+`blockedByUserIds: null` DENIES, identically to B12's string — so the present-null case adds
+no verdict and skipping it is right. But a mirror document present with the key ABSENT ALLOWS
+(the `.get(k, [])` default), and no test in the suite holds that state; it is the shape a
+writer that omits the field when empty would produce.
+
+**Registration.** `node scripts/check-test-registration.js` fails with 2 problems: the new
+suite is missing from BOTH `paths:` blocks of `firestore-rules.yml`, and that checker runs in
+`cloud-functions-unit.yml`, so the commit ships CI red.
+
+**Coverage-report blindness, reconfirmed on a new suite.** `blocks-rules.test.ts` adopts the
+probe seam and passes `projectId: PROJECT_ID`, so `rules-coverage-report.js` discovery matches
+NEITHER regex (verified by replicating both against the file; `reports-rules.test.ts` matched
+`butlery-rules-test` as the visible control).
+
+**Stale claim shipping in the staged bytes.** `firestore.rules`' `notBlockedByAnyoneHere()`
+comment still lists a fourth meaning of absence: "the owner's `users/{uid}` document is gone,
+which makes `rebuildMirrorFor` delete the mirror as an orphan". That mechanism is what this
+commit REMOVED — `rebuildMirrorFor` asks Auth now (`accountExists`), and
+`sync-block-mirror.test.ts` pins "deleting your own PROFILE does not delete your mirror". The
+author believed it was fixed; the sibling they fixed was the `ACCEPTED_DEVIATIONS.md` copy,
+which drops the `users/{uid}` mechanism and survives. Second carrier of the same class in this
+diff: `lib/l10n/app_localizations.dart`'s generated doc comment still holds the ARB
+description's PREVIOUS wording ("neither refusal this rule produces … can succeed on a
+retry"), which the ARB itself now contradicts — `flutter gen-l10n` was not re-run.
+
+---
+
+## 2026-09-05 — BUT-1917, fourth review round: W2's kill confirmed, B14 probed, the twelve-mutant table re-run against the current file
+
+Brief: re-run both suites, re-probe the mutant table against the CURRENT `firestore.rules`
+(comment strikes since the last run) and the CURRENT `blocks-rules.test.ts`, probe B14 for
+non-vacuity, mark blocking vs follow-up.
+
+**Suites, real output.** `poll-votes 47/47 passed`, `blocks 14/14 passed`. Matches the figures
+the brief quoted. `check-test-registration.js` OK (44 rules suites across 2 `paths:` blocks, 4
+accepted-debt warnings); `check-test-registration.test.js` 20/20. `test:sync-block-mirror`
+26/26; `test:account-deletion-cascade` 245/245. Six Dart suites: 199 tests, all passed.
+`tools/check_workflow_map.py` OK (371 nodes, 54 flows, coverage 143/137).
+
+**W2, confirmed independently.** Mutant `B-create-drop-blockerId-is-me` (drop
+`request.resource.data.blockerId == request.auth.uid &&` from the `blocks` create limb, sliced
+`match /blocks/{blockId}` .. `RECIPE RATINGS`, in-slice anchor count 1, whole-file 1):
+**13/14, sole kill W2.** The PAIR is what settles the limb: `B-open-update`
+(`allow update: if false` -> `if true`, in-slice 1 / whole-file 7 — the slice was load-bearing)
+is **13/14 with sole kill W5**, and W2 now SURVIVES it. Before the repair the update mutant
+killed W2 and the create mutant killed nothing. The re-point onto `blockId(STRANGER_A, ME)`
+plus the `withSecurityRulesDisabled` absence assertion is what moved it.
+
+**Full blocks table, each mutant's kill set (11 mutants, 14 tests, no test vacuous):**
+
+| mutant | result | kills |
+|---|---|---|
+| create: drop `blockerId == auth.uid` | 13/14 | W2 |
+| create: drop self-block guard | 13/14 | W4 |
+| create: drop doc-id binding | 13/14 | W3 |
+| create: `if false` | 13/14 | W1 |
+| `allow update: if false` -> `if true` | 13/14 | W5 |
+| delete: `if false` | 13/14 | W6 |
+| delete: drop `blockerId == auth.uid` | 13/14 | W7 |
+| read: `if true` | 10/14 | L3, L4, L5, G2 |
+| read: drop `isAuthenticated() &&` | **14/14 — nothing** | (none) |
+| read: drop the `blockerId` disjunct | 13/14 | L2 |
+| read: drop the `blockedId` disjunct | 12/14 | L1, G1 |
+
+The `isAuthenticated()` row re-confirms the recorded principle, and L5's corrected comment now
+says exactly that.
+
+**B14 is non-vacuous and precisely targeted.** Mutant `P-require-list-key-present` rewrites
+`notBlockedByAnyoneHere()`'s whole body (whole-body replacement, not a prefix — a partial anchor
+here unbalances the parens and produces an uncompilable ruleset, which greps like a green run)
+so a mirror that EXISTS but omits `blockedByUserIds` denies instead of defaulting to `[]`:
+**46/47, sole kill B14.** Exactly the "a `blockedByUserIds` presence conjunct reddens B14 and
+nothing else" the brief asked for.
+
+**Block-gate limb attribution.** `P-create-drop-block-gate` -> 46/47, sole kill **B1** (matching
+B1's own comment that it is the create limb's only kill). `P-update-drop-block-gate` -> 45/47,
+kills **B6 and B12**. B12 lands on UPDATE, not CREATE: `clearFirestore()` runs ONCE for the
+poll-votes file, so an earlier ALLOW (B2/B3/B4) has already written VOTER_UID's row by the time
+B12 runs. Not a defect — B12's comment claims nothing about the limb — but it is another
+instance of the recorded declaration-order hazard.
+
+**`M-open-mirror`** (`users/{uid}/block_mirror` `allow read, write: if false` -> `if true`,
+in-slice 1 / whole-file 6): 45/47, kills exactly B9 and B10.
+
+**Deny-always gate**, added to grade the ALLOW controls: 35/47, killing all 12 allows that flow
+through the gate (B2, B3, B4, B5, B11, B13, B14, V1, V2, V13, V10e, V10f) — and leaving **B7
+(delete) and B8 (read) GREEN**, which is the measurement behind the accepted-deviation entry's
+claim that neither verb is block-gated.
+
+**A mutant that was not the mutant I wrote.** The first deny-always attempt prefixed the
+predicate with `false && `. CEL binds `&&` tighter than `||`, so
+`false && !exists(X) || Y` collapses to `Y` — it DELETED THE FAIL-OPEN LIMB instead. Result
+39/47, killing the 8 tests that seed no mirror and leaving every seeded-mirror case green. Kept
+under an accurate name (`P-drop-missing-mirror-failopen`) because it is the more useful edit: it
+is precisely the "fail closed on a missing mirror" change the deviation entry records as
+rejected, and it shows that change is pinned by 8 tests. The real deny-always replaces the whole
+function.
+
+**Probe-seam defect in `blocks-rules.test.ts` (follow-up, not blocking).** `clearFirestore()`
+interpolates the BARE `PROJECT_ID` literal while `initializeTestEnvironment` is passed
+`process.env.PROBE_PROJECT_ID ?? PROJECT_ID`. Under a probe with `PROBE_PROJECT_ID` set the
+per-test clear targets a DIFFERENT namespace from the one under test, so the run silently loses
+its per-test isolation — W1's created `ME_STRANGER_A` row survives into W3 and turns that
+create-deny into an update-deny. The literal is deliberate (the coverage-report discovery regex),
+so the fix is to route `clearFirestore()` through the same resolved id. Probed around it by not
+setting `PROBE_PROJECT_ID` for the blocks suite; per-test clear+seed keeps mutant writes out.
+
+**Lowercase probe project ids, re-confirmed the hard way.** `butlery-probe-P-create-drop-block-gate`
+made `loadFirestoreRules` return `{"error":{"code":500,"status":"UNKNOWN"}}` on two consecutive
+runs. Not emulator flake — the uppercase `P`. Diffing the mutant against the original first is
+what ruled out a bad edit before touching the project id.
+
+**Verified clean, no code finding.** `firestore.rules` byte-identical to the index throughout
+(`git diff -- firestore.rules` empty at the end); every mutant written to the scratchpad only.
+Index frozen at 32 files for the whole review. Pointer claims in the two deviation files all
+resolve: `the ASYMMETRY: their ballot goes, their MESSAGE stays` (messaging_service_test.dart),
+`deleting your own PROFILE does not delete your mirror` (sync-block-mirror.test.ts), B6, B7, B8,
+B11. ARB key sets agree between locales (4546 each) and add exactly `pollVoteFailed` versus HEAD;
+the generated l10n drift the brief mentions is gone.
+
+### Superseded verbatim from `firestore-rules-tester.knowledge.md`, 2026-09-05 (BUT-1917 round 4)
+
+Retired because the BUT-1917 defect it describes has been REPAIRED and re-measured, so the
+bullet's own example now reads as a live hazard when it is a fixed one. Replaced in place by a
+version stating the limb-PAIR diagnostic and both measurements (broken and repaired).
+
+> **When create and update share one conjunct, a deny test whose target document is
+> PRE-SEEDED lands on UPDATE and proves nothing about CREATE. The pre-seeder is as often
+> the suite's OWN `seed()` as an earlier allow test** — and a per-test re-seed makes that
+> deterministic rather than order-dependent, so the test is wrong on every run instead of
+> intermittently. Measured on `blocks` (BUT-1917): the "I may not create a block in somebody
+> else's name" deny aimed at a stranger-pair id the seeder writes, so it landed on
+> `allow update: if false`; dropping `request.resource.data.blockerId == request.auth.uid`
+> from the CREATE limb left 14/14 green, while opening `allow update` killed that very test —
+> the pair of mutants is what says which limb a test is on. Re-point such a deny at an id NO
+> fixture writes and it dies under the create mutant. Check every deny's doc id against the
+> seeder's key set before believing a write-rule attribution. A cross-actor deny needs
+> a path no fixture has written yet (or twice, once per verb) — make the fixture
+> self-checking: assert the row doesn't exist via `withSecurityRulesDisabled` before
+> `assertFails`.

@@ -34981,3 +34981,351 @@ snackbars in `_blockFromConversation`; `logUserBlocked`, unpinnable while
 decision as item 4 of "what the chat entry point has to get right" — that is a statement about
 PRODUCTION, not a coverage pointer, so it does not over-claim; it stays honest only while
 nobody rewords it into "what this file pins".
+
+### 2026-09-05 — BUT-1951 gate re-review: a `thenThrow` that pinned an unenterable branch
+
+Trigger: gate re-review after two files moved. The round's own fix report named the defect; two
+other reviewers found it independently. Recording the raw measurement because the principle it
+produced is compressed.
+
+`UserService.getUserProfiles` (`lib/services/user_service.dart:435-468`) — measured, not inferred:
+
+```dart
+if (uncachedIds.isNotEmpty) {
+  try {
+    final fetched = await _repository.fetchProfiles(uncachedIds);
+    ...
+  } catch (e) {
+    AppLogger.error('❌ Kunde inte hämta profilbatch: $e');
+  }
+}
+return results;          // [] on total failure, a SUBSET on a partial one
+```
+
+It never throws. The retry test in `chat_action_handler_block_test.dart` had stubbed the failure
+as `throw Exception('network')`, so it pinned `catch (e) { _failed = true }` — a branch production
+cannot enter — and went green. The live path was: failed load -> `[]` -> `_members = []` ->
+`StateWidget.empty` -> "Det finns ingen annan att blockera här", i.e. a claim about the GROUP made
+when the app knew nothing. I had CLEARED that test the previous round.
+
+Fix graded this round (index == worktree, verified by `git diff --numstat` empty on all 21 paths):
+- `_load` treats zero profiles for a NON-EMPTY candidate list as failure; the `catch` stays as a
+  backstop.
+- the retry fixture returns `<UserProfile>[]` on attempt 1, real profiles on attempt 2.
+- `verifyNever(() => userService.getUserProfiles(any()))` added to the genuinely-empty-group test,
+  so the two states cannot collapse. Non-vacuous: `getUserProfiles(List<String>)` has ONE
+  positional param and no named params, so the omitted-named-arg unfailability does not apply
+  (checked the signature, per the standing `verifyNever` rule).
+- Analytic kill-set derivation, agreeing with the reported RED probes: deleting the
+  `candidates.isEmpty` early return reddens BOTH assertions of the empty test (the seam is called,
+  and `getUserProfiles([])` returns `[]` -> error state replaces the empty state); neutralising the
+  new guard (`profiles.isEmpty && false`) reddens the retry test (empty state replaces the error
+  state); `onAction: null` reddens the retry tap.
+- Suites re-run at verdict time: 10/10 green.
+
+Named residual, NOT covered and not claimed to be: a PARTIAL load renders as complete, so a member
+whose profile failed silently cannot be blocked, with no signal and no test. The production comment
+names the partial case without claiming to handle it, so it is honest rather than false.
+
+Second thing graded: the strike of test-header item 4 ("Only a DM pops the chat afterwards"). I had
+judged the old wording defensible last round; the stricter reading is right and I withdraw the
+earlier grading. A TEST-FILE header enumerating "what this pins" is a coverage pointer, and an
+unpinned production behaviour listed there is the false-pointer shape that is worse than a false
+count. Concept sweep after the strike found exactly two survivors, both legitimate: the production
+doc comment on `_blockFromConversation` (directly readable — the group branch returns before the
+pop) and a workflow-map payload. Neither claims coverage.
+
+Counts verified rather than trusted: "the nine unreferenced stubs" = 9 removed method declarations
+(`git diff` on the file); "`FriendRequestsView` calls all three" = lines 199/209/219; the three
+`ACCEPTED_LARGE_FILES.md` rows = 704 / 586 / 586 by `wc -l`, and BOTH duplicate
+`friends_viewmodel.dart` rows moved together, which is the trap that document warns about itself.
+
+Non-blocking, carried forward: `MockFriendsViewModel` (`widget_mocks.dart`) has concrete
+`@override` bodies while transitively `extends Mock` — the banned shape, but house-wide in that
+file and pre-existing. No test uses `when()` on it today; the hazard is that its `Mock*` name
+invites one, which would silently not apply. Its `_statuses` default of `FriendshipStatus.friends`
+is the deliberate repair of the two-valued-fake vacuity this same ticket already taught.
+
+Verdict: pass (0 blocking).
+
+### 2026-09-05 — BUT-1951 final gate round (trigger: three files changed after a passing round)
+
+Reviewed the 21 staged files with `Read`. Index == worktree for all 21 (`git status --porcelain`
+shows `M `/`A `, `git diff --numstat -- lib/ test/ docs/` empty). `firestore.rules` and
+`functions/src/__tests__/poll-votes-rules.test.ts` are dirty but UNSTAGED — a parallel session's
+work, outside this commit.
+
+**Blocking finding — the new test `a DM with someone already blocked does not write again`.**
+Its comment reads: "Removing the guard reddens both: the dialog would open and the fake's blockUser
+would record the id." The second clause is false, settled analytically (no probe needed, and a
+`lib/` mutant would have measured only the first clause anyway):
+
+- The DM write path is `_blockFromConversation` -> `BlockUserAction.confirmAndBlock` ->
+  `DestructiveConfirmationDialog.show` -> `viewModel.blockUser`. The write is behind a SECOND tap.
+- The test taps once (`find.text('Blockera').last`) and then asserts. With the guard neutralised,
+  the confirm dialog opens and NOBODY taps its primary action, so `MockFriendsViewModel.blockUser`
+  is never called and `blockedUserIds` stays empty.
+- `expect` is fail-fast and `findsNothing` on the dialog is the line ABOVE, so under that mutant
+  `expect(blockedUserIds, isEmpty)` is never even evaluated. Its kill set is empty for every mutant:
+  either the dialog opens (assertion 1 reddens first) or it does not (no write is possible).
+
+So the test measures "the confirm dialog does not open"; the write suppression follows from the
+production shape, not from the assertion. The founder's own probe (`== requestSent`) is genuinely
+RED, but it reddens through assertion 1 alone.
+
+Remedy: strike the "and the fake's blockUser would record the id" clause. The `isEmpty` line may
+stay as a control; the name is defensible only because no-dialog entails no-write in this code.
+
+**Answering the founder's question — yes, the guard's user-visible half is entirely unpinned.**
+Mutating the branch body down to a bare `return;` keeps all three assertions green: the
+`SnackBarUtils.showSuccess(socialUserBlocked(name))` and the `Navigator.pop()` are both unasserted.
+The third assertion (`find.text('Kunde inte blockera användare'), findsNothing`) is WEAK rather than
+vacuous: it cannot reproduce the ticket's own bug (the fake's `blockUser` returns `blockSucceeds`,
+default true, so the rules refusal is unstageable), but it does kill the specific re-introduction of
+writing the failure text INTO the guard body.
+
+The harness diagnosis is sound: the handler is mounted as the ROOT route, so `Navigator.pop()`
+empties the navigator and the `ScaffoldMessenger` loses the `Scaffold` that renders the bar. The
+durable close is to push the chat from a host `Scaffold` so the pop returns to a page that still
+renders snackbars — the already-open item, not a new one.
+
+Verified in passing, all clean: `chat_action_handler.dart` 723 and `friends_viewmodel.dart` 586 match
+`ACCEPTED_LARGE_FILES.md` (`wc -l`); "nine unreferenced stubs" matches HEAD (12 methods at HEAD,
+3 bulk survivors, 9 deleted); HEAD's `blockUser` really was `Future.delayed(500ms)` + `return true`,
+as both the workflow-map description and the test header say; the struck
+"(matching the friend_request_actions sibling flow)" is absent from BOTH the worktree and
+`git show :lib/views/social/friend_profile_view.dart`; `getUserProfiles` really has other callers
+(10 sites, 9 outside the dialog); and `SnackBarUtils.showError` really paints `cs.secondary` while
+`showSuccess` paints `cs.primary`, so the colour assertion in `a block the service refuses reports
+the failure` is a real discriminator between the shared helper and the handler's own
+`_showErrorSnackBar` (`cs.error`).
+
+Verdict: fail (1 blocking).
+
+### 2026-09-05 — BUT-1951 re-verdict: the snackbar lane is destroyed by the root-route pop (measured)
+
+Single-file re-review of `test/widget/messaging/chat_action_handler_block_test.dart` after the
+one blocking finding (a false counterfactual in `a DM with someone already blocked does not write
+again`) was struck. The replacement clause was graded as a fresh claim and holds: "removing the
+guard opens the confirm dialog, which reddens the first assertion" is directly readable from
+`chat_action_handler.dart` (the guard branch returns before `BlockUserAction.confirmAndBlock`),
+and the write really does sit behind `DestructiveConfirmationDialog`'s own second tap.
+
+I nearly filed a follow-on saying the deferral's reason was too broad — that the SNACKBAR half of
+the guard's user-visible effect is closeable in this harness, because `a block the service refuses
+reports the failure` already reads a `SnackBar` from the same root-route mount. Measured instead of
+asserted, and it is FALSE. Probe: `test/widget/messaging/_zz_probe_block_test.dart` (a copy of the
+suite with one line added after the `Kunde inte blockera användare` assertion), run with
+`--plain-name 'already blocked'`:
+
+    Expected: exactly one matching candidate
+      Actual: _TextWidgetFinder:<Found 0 widgets with text "Anna Svensson har blockerats": []>
+
+So `SnackBarUtils.showSuccess` + `Navigator.of(context).pop()` on the root route leaves NOTHING to
+find, exactly as the previous round's harness diagnosis predicted. The probe file was deleted;
+`git status --porcelain test/widget/messaging/` shows only `A  chat_action_handler_block_test.dart`,
+unmodified by this round. The lesson is that "a sibling test in the same file reads a SnackBar" is
+not transitive — the pop is between them.
+
+Second-order consequence, which reverses a finding I had drafted: `expect(find.text('Kunde inte
+blockera användare'), findsNothing)` cannot redden under a `showSuccess`→`showError` mutant either,
+because the error bar dies with the same Scaffold. The file's comment calling the two trailing
+assertions CONTROLS is therefore correct as written, and the "it understates assertion 3" finding
+was withdrawn before filing rather than re-filed narrowed.
+
+Other claims in the file re-verified this round, all clean: the header's history sentence (HEAD's
+only view-reachable block was `executeWithConfirmation` around `Future.delayed(500ms)` in
+`friend_request_actions.dart`, and HEAD's `FriendsViewModel` had `unblockUser` but no `blockUser`);
+`UserService.getUserProfiles` swallows `fetchProfiles` in a `catch` and returns the partial
+`results` list, so the "a throw would pin a branch production cannot enter" comment holds;
+`conversation_mutation_module.dart:98` writes `title: ''` for a direct conversation, so the fixture
+comment holds; `a11yBlockGroupMember` is literally `'Blockera'`, so `find.bySemanticsLabel(RegExp('Blockera'))`
+resolves to the `GroupMemberItem` wrapper and is not vacuous; `AppColors.lightColorScheme` keeps
+`secondary` (rust), `primary` (forest green) and `error` distinct, so the colour assertion in
+`a block the service refuses reports the failure` discriminates all three arms; and the empty-group
+test's `verifyNever(() => userService.getUserProfiles(any()))` matches the dialog's
+`candidates.isEmpty` early return.
+
+Only non-blocking note left on the file: the repaired comment refers to its assertions by ORDINAL
+("the first assertion", "the two below"), the insertion seam BUT-1910 records — naming the literals
+(`DestructiveConfirmationDialog`, `blockedUserIds`) would survive a later insert. Not worth a
+correction round on its own.
+
+Verdict: pass (0 blocking).
+
+### 2026-09-05 — BUT-1951 formatting follow-up: the diff did not exist (trigger: brief premise refuted)
+
+Briefed to review a "formatting-only follow-up" to `ddcbd13df`: lefthook's formatter allegedly ran
+but its result never landed, so HEAD supposedly shipped four files unformatted while the worktree
+carried the formatted version, `git diff HEAD` = 17 insertions / 11 deletions.
+
+`git diff HEAD --numstat` over the four paths printed nothing. Per the existing wrong-cwd principle
+that is byte-identical to a failed call, so I re-ran with an explicit `pwd` (`/c/Butlery/butlery`)
+and added `git status --porcelain`, which listed none of the four. Blob table settled it:
+
+| file | worktree | index | HEAD |
+|---|---|---|---|
+| lib/views/messaging/chat_view/chat_action_handler.dart | 3a59b9b36 | 3a59b9b36 | 3a59b9b36 |
+| test/infrastructure/mocks/production_mocks.dart | 638c0135b | 638c0135b | 638c0135b |
+| test/unit/viewmodels/friends_viewmodel_test.dart | 352a0b749 | 352a0b749 | 352a0b749 |
+| test/widget/messaging/chat_action_handler_block_test.dart | e994d4e3b | e994d4e3b | e994d4e3b |
+
+All three copies identical for all four. `dart format --output=none --set-exit-if-changed` over the
+four exits 0, so the COMMITTED bytes are canonical. `git log --oneline -3` per file names `ddcbd13df`
+as the most recent commit touching each, and no later commit exists — so the formatter's output
+landed inside `ddcbd13df` itself. The brief's premise and its 17/11 figure are both false against the
+current tree; the follow-up commit would have been empty. HEAD had also moved from the session's
+opening snapshot (908ea0638 → ddcbd13df), which is the likeliest origin of the stale figure.
+
+The reflow itself was still graded, against the committed bytes, since the shipped shape is what a
+later reader inherits. `git diff ddcbd13df~1 ddcbd13df --numstat` = 95/0, 16/2, 46/38, 364/0.
+
+Named assertions re-confirmed at their new byte positions, all intact and non-vacuous:
+- `mockManagement.blockCalls` / `unblockCalls` — recorders at `production_mocks.dart:2543-2544`,
+  appended in the concrete bodies at 2579 and 2585; read at `friends_viewmodel_test.dart:829-830`,
+  843, 858-859. `_shouldSucceed` answers both calls identically, so the bool alone cannot see a
+  block↔unblock swap and these two lists are the whole discriminator.
+- `verifyNever(() => userService.getUserProfiles(any()))` — `chat_action_handler_block_test.dart:361`,
+  in `a group with nobody left to block says so`. Positional `any()`, and `setUp` registers a live
+  stub, so a call would be recorded. Separates the genuinely-empty roster from the failed load pinned
+  at 339.
+- Scoped name assertion — 171-180, still `find.descendant(of: find.byType(DestructiveConfirmationDialog),
+  matching: find.textContaining('Anna Svensson'))`.
+- SnackBar colour — 306-310, `Theme.of(tester.element(find.byType(SnackBar))).colorScheme.secondary`,
+  read from the live theme. Load-bearing: `socialCouldNotBlockUser` is emitted from four arms, three
+  through `ChatActionHandler._showErrorSnackBar` (`chat_action_handler.dart:374, 381, 448`), which
+  paints `colorScheme.error` at line 697, and one through `BlockUserAction`'s `SnackBarUtils.showError`,
+  which paints `secondary`. The colour is what says which arm fired.
+- `containsSemantics(isButton: true)` — 288, read off `tester.getSemantics(...)`, the rendered node
+  rather than the widget property.
+
+The specific hazard of this reflow class is a `reason:` string split into adjacent literals losing the
+space at the split. Checked each of the three: 177-179, 189-191, 255-257 all carry the trailing space
+on the first fragment, plus 499-501 in `friends_viewmodel_test.dart`. No words joined, no text changed.
+
+Only non-blocking asymmetry, pre-existing and untouched by the reflow: `unblockUser returns false when
+management service reports failure` (863-874) asserts the bool alone, while its `blockUser` twin (843)
+also asserts `blockCalls`. Not vacuous — a VM swallowing the failure reddens it — and the swap it
+would otherwise catch is already killed by 858-859.
+
+Verdict: pass (0 blocking). Reported to the parent that there is nothing to commit.
+
+### 2026-09-05 — BUT-1917 steps 4+5, re-review round 2 (staged index frozen, 24 files)
+
+Index == worktree for all 24 staged paths (`git diff --numstat` over the staged set empty).
+Hashes graded (12-char, `git hash-object` on the worktree copy, identical to the index):
+accepted-deviations 9654835d2169 · lessons-digest c8239f8b6696 · ACCEPTED_DEVIATIONS 910d2c186bb7 ·
+workflow-map 61db5705113b · firestore.rules 30584e0ad11f · poll-votes-rules a2b2fbbf8734 ·
+sync-block-mirror.test 9c1b8bdde0d0 · sync-block-mirror.ts c804270ee28c · app_en.arb ef02791a6fe0 ·
+app_localizations 70ec5f199dc6 · _en 5c1dd71cb5a1 · _sv e52e5043f049 · app_sv.arb 6e7cc429dc0a ·
+firebase_block_repository 843e9f7b88b3 · messaging_service 8a26403decf3 · blocked_user_filter 5e8cbbd178e3 ·
+chat_viewmodel 1c3584784005 · chat_message_stream 671d0f5113b1 · lessons 378be1ec9c37 ·
+block_repo_test 8ee4d4ad69f8 · close_poll_test 3fb249346967 · messaging_service_test a2db761416b6 ·
+blocked_user_filter_test 734d3700b9b4 · chat_viewmodel_test 8863adec8633.
+
+Round 1's five findings all repaired and verified: the four repository read-source cases each
+carry a distinct kill set (drop `Source.server` captures null; `blockerId` swap; `.blockedId`
+mapper swap); the four filter cases stub the two directions to DIFFERENT sets and one reads
+outgoing FIRST, so a shared cache latches the wrong value; F3's Swedish literal now matches the
+sibling `closePoll` style; F4/F5/F6 struck or re-pointed; F7 `.having(...blockListUnknown)`;
+F8 loops `AppLocalizationsSv()`/`AppLocalizationsEn()` — verified against
+`lib/core/l10n/app_locale.dart:11`, `_current` is field-initialised to Sv and the suite never
+re-initialises it.
+
+New material graded. The per-fixture Auth seam is genuinely leak-free — `accountSeamFor(fake)`
+closes over the case's own `FakeFirestore`, `AUTH_MARKER` is a const string, no module-level
+mutable state. Three false sentences shipped in the repair text instead, all the same refuted
+premise (the orphan check no longer reads `users/{uid}`):
+- `firestore.rules:2359-2364` — the fourth meaning of mirror absence is still spelled "the
+  owner's `users/{uid}` document is gone, which makes `rebuildMirrorFor` delete the mirror",
+  which is what `accountExists()` stopped doing IN THIS COMMIT. Both deviation files carry the
+  corrected wording; the rules paraphrase survived the sweep. Blocking.
+- `sync-block-mirror.test.ts:401` — "No `users/victim-uid` document: the account is gone"
+  attributes the case's outcome to the profile doc; the seam reads `_auth_accounts/{uid}`.
+  Blocking, and the worse of the two: it is the sentence a later reader cites to key the check
+  back on the profile document.
+- `sync-block-mirror.test.ts:77` — "It seeds the profile document as well, because other cases
+  read it": no case reads it. `_fake-firestore` is FLAT PATH-KEYED, so `users/{uid}` is not
+  consulted when reading `users/{uid}/block_mirror/current`, and nothing queries the `users`
+  collection. The seed is inert; the true reason is readable one case down (the security case
+  deliberately omits it). Blocking as a false claim about the suite's contents.
+
+Two non-blocking quantifiers, same class: `blocked_user_filter_test.dart:140` "no consumer suite
+can see it — they all stub the filter whole" is falsified by `messaging_service_test.dart:1818`,
+which builds a REAL `BlockedUserFilter(blockRepository: _ThrowingBlockRepo())` (it still cannot
+see the mis-wire, but for a different reason: both directions throw); and
+`firebase_block_repository_test.dart:361` says "two mutants were green across the whole repo"
+while enumerating three mutations.
+
+Claims that survived checking, recorded because each looked like a finding: "lost four tests to a
+leaked fixture" IS measured — `tasks/lessons.md:2964` records the `seed()` mirror leak denying the
+votes in four later tests; `_isPoll` really is byte-identical to
+`message_query_module.dart:180`; `collectUidsToReconcile`'s "reverting the skip reddens nothing"
+is analytically entailed (nothing imports the function, and the fake throws on `collectionGroup`),
+so it is the one counterfactual in the round that is safe to write; B11/B12/B13 each have a kill
+set the neighbouring case does not (the `truncated` conjunct; the string-vs-list CEL error; B6's
+single-variable allow).
+
+Two coverage gaps on new production lines, non-blocking: the `visible.any(_isPoll) ?` guard in
+`_filterBlocked` is pinned only in the direction that WOULD read (delete the condition and every
+suite is green, costing a second permanent `blocks` listener per chat open — `_StubBlockedUserFilter`
+has no call counter and no case pairs a non-empty `blockedBy` with a poll-free page); and
+`chat_message_stream.dart`'s `_votePoll` wrapper is unpinned — `onPollVote` takes a void callback,
+so reverting it to `viewModel.votePoll(...)` drops the returned `Future<String?>`, compiles, and
+restores the exact BUT-1908 silence one layer up. Two widget suites already pump `ChatMessageStream`,
+so the lane exists. I missed this one in round 1.
+
+Verdict: fail, 3 blocking.
+
+### 2026-09-05 — BUT-2020 arla.se real-structure suites (trigger: pre-commit review of three test files)
+
+Reviewed with `Read`: `test/unit/services/extraction/site_parsers/real_structure_test.dart` (new,
+untracked, so no pre-image to diff), the new `JSON-LD script type recognition (BUT-2020)` group in
+`test/unit/utils/recipe_scraper_test.dart`, the three new cases in `html_sanitizer_test.dart`'s
+SEC-1 group, plus `lib/utils/recipe_scraper.dart`, `arla_recipe_parser.dart`,
+`recipe_quality_scorer.dart`, `html_sanitizer.dart`, `recipe_site_parser.dart`,
+`schema_org_tier.dart` (l.310-364), `url_import_strategy.dart` (l.395-434),
+`parsing_context.dart` (l.60-110) and both real-structure fixtures. 136/136 green.
+
+Measured, with a throwaway `test/unit/_zz_probe_test.dart` (written, run, deleted):
+- `HtmlSanitizer.sanitize('<script type="application/ld+jsonx">alert(1)</script>')` returns the
+  script UNTOUCHED and `check()` raises ZERO issues, while `isJsonLdMediaType('application/ld+jsonx')`
+  is `false` and the new scraper suite pins that falseness ("a longer media type is a different
+  media type"). The shared `jsonLdScriptOpeningTagPattern` is an UNANCHORED prefix; the essence
+  function is an equality. The doc comment introduced by this diff says they are "the same decision
+  spelled for a different input". They are not.
+- `<script data-type="application/ld+json">alert(2)</script>` is preserved and unflagged too:
+  `\btype\s*=` finds a word boundary after the hyphen. The new test's decoy is spelled `data-note`,
+  the one such attribute the boundary happens to reject, and its comment generalises from it.
+- The `&#43;` alternative appears in THREE raw-source regexes (`jsonLdScriptOpeningTagPattern`,
+  `_scriptTagPattern`, `url_import_strategy._hasOnlyNonRecipeJsonLd`) and no test exercises any of
+  them: the one `&#43;` test goes through `extractRecipeFromHtml`, i.e. through the HTML parser,
+  which decodes the entity before any regex sees it.
+- `flattenRecipeInstructions` has five callers; only `itemListElement` in the ARLA fixture exists
+  (`grep -c` on the four site fixtures: 4/0/0/0), so the flatten call in the ICA, Köket and Recept
+  parsers is deletable-green.
+- `grep -rn` on the constant: ONE caller, `html_sanitizer.dart:189`. The doc comment says "the two
+  callers"; `url_import_strategy.dart:413` re-types its own copy instead of importing it.
+
+Counting claims that contradicted each other inside one file: the header of `real_structure_test.dart`
+says "BUT-2020 closed two such cases in this file. Both were replaced…" while the comment inside
+`parses — the whole page, end to end` says "the four DEFECT cases … were replaced by this one".
+The author's own brief says four, replaced by four. Reported as strikes, not rewordings.
+
+Graded non-vacuous and correct: the fixture-guard test (`contains('&#x2B;')` +
+`isNot(contains('+'))`) closes both directions; `DEFECT cause 3` is still true (`_extractIngredients`
+wants `<li>` under `.ingredient-list`-class tokens, the fixture's are `c-recipe__ingredients-*`, so
+the method returns null on an empty ingredient list) and carries its own recall control (`<table`,
+8 `<th>`); the ICA discriminator really discriminates (JSON-LD `"1 halvmogen banan"` one space, the
+DOM card renders `1 ` + ` halvmogen banan`, two); the 0.70-vs-0.80 figure in the quality comment is
+arithmetically right (1.00 minus the 0.30 instructions weight); `schema_org_tier.dart:328`
+(`item['text'] ?? item['name']`) really does emit a section name as a step, so that cross-file
+sentence holds.
+
+One assertion graded as ALMOST-vacuous and defended anyway: `expect(score.completeness,
+greaterThanOrEqualTo(0.8))` beside `expect(score.meetsMinimumQuality, isTrue)` restates the getter's
+own threshold, and the real value is 1.0 — its only independent kill set is a compound mutant that
+loosens the getter. The finding is the comment claiming the figure "says which field the score turns
+on"; it does not, 0.8 is the threshold.
+
+Verdict: fail, 3 blocking (all sentence strikes, no behaviour change asked for).

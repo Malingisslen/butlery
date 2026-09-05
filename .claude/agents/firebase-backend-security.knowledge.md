@@ -83,6 +83,16 @@ Required for every user-data-touching feature (Critical finding if any is missin
 ## Security best practices
 
 - Input validation/sanitization on every write boundary.
+- An EXEMPTION inside a sanitizer (the one branch that KEEPS hostile markup) is graded by
+  what it matches, not by what it names. A regex over a raw opening tag is an
+  attribute-VALUE substring match unless BOTH ends are anchored: `\b` does not bound an
+  attribute NAME (`-`, `:` and `x-` are non-word, so `\btype=` fires on `data-type=`), and
+  an unterminated value matches any suffix (`application/ld+jsonx`). Anchor with
+  `(?<=[\s/])` and a value terminator `(?=["'\s;>]|$)`, measured against a decoy table —
+  and pick the STRONGEST decoy for the test, because the plausible one (`data-type=`)
+  passes while the implausible one (`data-note=`) is the one usually pinned. Any comment
+  saying "only a real `type=` attribute exempts it", or that a raw-source regex is "the
+  same decision as" a parsed-attribute equality helper, is a measured claim: run it.
 - Grade an interpolated `$e` by its SINK and by the SHAPE OF THE READ, never by the word
   "exception." `AppLogger.warning` reaches `developer.log` only; `AppLogger.error` also
   reaches Crashlytics + analytics and runs the uid redactor, so promoting a log level is a
@@ -327,6 +337,19 @@ name which doc each end touches before approving it.
   It cannot widen a LIST/query (query results contain only existing docs), so an Art. 15
   export or cascade filtering on the same field is untouched — but verify the export's
   `.where()` names the SAME field the read rule gates on.
+- A rules gate that reads a SERVER-WRITTEN MIRROR and fails OPEN on its absence is only as
+  strong as the mirror's DELETERS — enumerate them before accepting "absence means the
+  benign case". The recurring one: the writer skips (and deletes) when the owner's
+  `users/{uid}` doc is missing, while rules let any user delete their OWN profile doc and
+  stay signed in — so a doc-existence owner check reads a self-deleted profile as an erased
+  account and the target disarms the control on themselves, permanently, since the weekly
+  reconciliation runs the same check. Ask Auth, not Firestore, when the question is "is this
+  account gone". Any "never deleted afterwards" clause justifying such a fail-open is a
+  measured claim about every deleter, cascade sweep included — strike it rather than reword.
+  Count the budget the same way: the mirror buys a participant-count-INDEPENDENT gate, so
+  state unique docs AND literal call sites against BOTH caps (10 single-write, 20 in a
+  transaction — check whether the live writer is `runTransaction`, which adds the read
+  limb's own accesses).
 - `allow list`/`allow get` are evaluated SEPARATELY (a `get` grant doesn't pass `list`);
   `auth.uid in resource.data.someMap` checks MAP KEYS, not values; self-only set edits need
   symmetric-difference CEL + `affectedKeys().hasOnly([...])`, and a self-leave needs
@@ -433,7 +456,19 @@ name which doc each end touches before approving it.
   apart from the decision: "same class as <sibling>" is a claim about doc-id SHAPE and writer,
   while the substantive reason is usually that the withheld rows are DERIVED from a section
   the bundle already ships (a report-cooldown stamp over `reports where reporterId == uid`) —
-  open that section and check it carries the joining field before accepting it. Grade that sentence against the
+  open that section and check it carries the joining field before accepting it. The exemption
+  map's SECTION HEADERS are themselves universals over the entries beneath them ("no live
+  writer of this path — legacy sweep only"), so a new key filed under the wrong group ships a
+  false reason without one line of its own text being wrong: check which group it lands in,
+  and MOVE the entry rather than reword the header. Settle "is moving it risky" by MEASURING
+  the consumers rather than arguing it: grep the map's symbol repo-wide and classify every
+  assertion as KEY-reading (`name in exempt`, `exempt[X]`, a text-PREFIX filter like
+  `why.startsWith('NO LIVE WRITER')`) or POSITION-reading. Where none reads position, a
+  group move is assertion-neutral and the "a move broke a scenario once" worry is answered
+  in one command. An exemption whose reason is another
+  section's continued existence needs that dependency held by an assertion, not by prose —
+  and when the depended-on section is DECIDED for removal, grep every artefact still calling
+  that decision open (the guard test's own docstring is the one the sweep misses). Grade that sentence against the
   READER it is written for, not only for truth: an upper bound ("readable only by the
   members it was planned with") can be true and still fail to explain the exclusion it sits
   under, because the excluded reader satisfies it too — a leaver WAS planned with. Strike
@@ -853,6 +888,13 @@ name which doc each end touches before approving it.
   bare requirement sentence (`lib/repositories/CLAUDE.md`). The N-document sibling in the same
   file (a per-user cascade) may carry that identical wording legitimately, so judge per METHOD
   and do not sweep the twin.
+
+- An ARB `@key.description` is COPIED into `lib/l10n/app_localizations.dart` by
+  `flutter gen-l10n`, so a description corrected AFTER the last generation leaves the old —
+  often already-refuted — sentence standing in the generated Dart, where nothing reddens: the
+  STRING still matches, `dart analyze` is clean, and no test reads a doc comment. Diff the
+  description against the generated doc comment whenever an ARB is touched in a review round,
+  and fix it by re-running the generator, never by hand-editing the generated file.
 
 ### Superseded
 - `activity_events` and comment-image Storage orphans (both previously open follow-ups

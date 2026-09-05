@@ -57,7 +57,11 @@ want the probe that produced it; or this file itself reads too compressed — th
   rounds included** — it is what makes the next round's attribution mechanical (BUT-1837/1904).
 - **The brief is pinned to a hash and expires with it** — a `sed -n` printing different content
   at the same lines means re-Read and rebuild the mutant list; skip mutants already measured on
-  an unchanged hash.
+  an unchanged hash. A brief asserting an UNCOMMITTED diff ("the formatter's output never landed,
+  `git diff HEAD` is N/M") is that same expiring claim and dies to ONE blob comparison per file —
+  worktree `git hash-object` vs `git ls-files -s` vs `git rev-parse HEAD:<f>`; all three equal means
+  the work is already IN the commit the brief says omitted it and the follow-up would be empty, which
+  an empty `git diff` cannot tell you on its own (BUT-1951).
 - **The motion check is the map: moved PRODUCTION ∩ unmoved SUITES = unasserted by
   construction** — `git show :<path>` on such a file is a free pre-fix mutant.
 - **Coverage of a reviewed file is recorded by the `Read` TOOL and by nothing else** — `cat`,
@@ -164,7 +168,10 @@ compress it.**
   file by CONCEPT, and expect copies in different syntactic roles (inline comment, module doc
   comment, nested local-function doc, a suite's `group(` header, a presupposition in a sibling
   method). Sweep `test/` as well as `lib/` — a clean-at-HEAD suite is invisible to every
-  diff-following sweep and rides into the NEXT ticket's commit.
+  diff-following sweep and rides into the NEXT ticket's commit. **And across LANGUAGES**: when a
+  security fix changes WHICH DOCUMENT a check reads, the corrected wording lands in the markdown
+  the gate quoted while the paraphrase survives in `firestore.rules` and in a fixture comment —
+  so the commit that CLOSES a hole ships two sentences asserting it is open (BUT-1917).
 - **STOP rule, or the sweep never terminates: a sentence saying only what the code REFUSES
   asserts no outcome and is not a carrier. Only a clause asserting what the write WOULD DO is.**
 - **Grade the REPLACEMENT as a fresh claim — the paragraph written to BE the correction is where
@@ -303,6 +310,14 @@ compress it.**
   it. A stub that correctly mirrors the identity return still silently drops the method's THROW
   arm: grade a hand-written stub against the callee's GUARD CLAUSES as well as its early returns,
   and check the gate with a scratch `_zz_probe_test.dart` rather than a `lib/` mutant (BUT-1971).
+  **The FAILURE MODE is the same question and the commoner miss: a `thenThrow` models a branch
+  production cannot enter whenever the real collaborator CATCHES its own error and returns a
+  neutral value** (`UserService.getUserProfiles` swallows the repository failure and returns `[]`
+  or a PARTIAL list). Such a test is green, reads as a retry pin, and the real failure falls
+  through to whatever the neutral value renders — here an empty state asserting a fact about the
+  group. Read the callee's `catch` before choosing HOW the stub fails, and where the neutral value
+  is ambiguous, pin the two states apart with `verifyNever` on the seam the genuinely-empty case
+  must not reach (BUT-1951).
 - **A test asserting that a value SURVIVES a rebuild cannot tell "carried through" from "never
   rebuilt"** — the fixture REACHING the branch is a separate fact from the assertion
   DISCRIMINATING it. Pin the rebuild itself beside the carry (BUT-1971).
@@ -436,6 +451,14 @@ other suites prove:
   "owes none" for a sink with no harness at all. A modal route is the recurring shape, because
   every sibling test resolves during load and taps afterwards, so the whole group agrees
   vacuously (BUT-1971).
+- **A path ending in `Navigator.pop()` of the ROOT route also destroys the lane for the
+  feedback shown JUST BEFORE the pop** — the messenger loses the popped `Scaffold`, so a
+  `find.text` on that snackbar returns 0 widgets while a SIBLING test in the same file reads
+  a `SnackBar` happily (measured, BUT-1951). So "a sibling reads one, therefore the lane
+  exists" is not transitive across tests, and such an item must not be split into "the pop is
+  unpinned, the snackbar is closeable": both halves need a route-pushed harness. The
+  consequence for grading is the useful half — an assertion sitting after such a pop that
+  reads ANY snackbar text is a CONTROL by construction, not a discriminator.
 
 **Claims about call sites, constants and cross-language literals:**
 - **A claim about "the call sites" is measured over the CALLERS of the CHANGED METHOD** —
@@ -555,7 +578,10 @@ other suites prove:
 - A guard replicated across sibling FIELDS is tested on one field only; same for sibling CLASSES
   (mutate PER CLASS — a class whose output is already safe for another reason is
   deletable-green); same for a MULTI-ALTERNATIVE REGEX (one fixture per alternative its own doc
-  enumerates). Grade the whole family in ONE cheap run: a scratchpad replica plus a MATRIX of
+  enumerates). **One decision spelled in TWO grammars — a parsed-value EQUALITY and a raw-source
+  regex PREFIX — is two decisions, and the doc comment calling them "the same decision spelled
+  differently" is what stops the next reader checking**; run BOTH over one lattice, since the
+  suite pinning the strict twin reads as covering the permissive one (BUT-2020). Grade the whole family in ONE cheap run: a scratchpad replica plus a MATRIX of
   full-regex × one-alternative-deleted over every fixture. Two things only the matrix shows: an
   alternative killed by TWO fixtures (fine) or by NONE (the finding). In a MASK-head/PRESERVE-frames
   splitter only the PRESERVE assertion pins the split. `hasRequiredFields` checks presence+non-null
@@ -784,7 +810,11 @@ and a probe would only return an untrustworthy green.**
   the assertion above it is a `contains` (BUT-1961/1962). **Where the neighbour IS a `contains`,
   entailment turns on whether the positive's match set swallows the regression wording, and
   TRANSLATING the pair silently re-decides that** — re-probe per DIRECTION after any re-wording, and
-  read WHICH assertion the runner names (BUT-1957).
+  read WHICH assertion the runner names (BUT-1957). **A guard that returns ABOVE the confirmation
+  dialog is the same shape wearing a UI costume**: once "no dialog" is asserted, every downstream
+  "nothing was written" line has an empty kill set, because the only write sits behind a tap the test
+  never makes — so the test proves the DIALOG, and a name or comment promising the WRITE is the false
+  sentence to strike (BUT-1951).
 - **A tautological PERMISSION gate**: `save(plan)` passing `plan.userId` into
   `validateUpdatePermission(userId, id, entity)` makes `entity.userId == userId` a tautology, so the
   doc-ID prefix is the sole determinant. Attribute a denial to ONE conjunct before writing about it
@@ -977,6 +1007,12 @@ the wrong belief and has been corrected in place):**
   grades that leg's CATCH branch (noSuchMethod throws, swallowed) — grep the new method name across
   `test/`; zero overrides while production calls it IS the finding.
 - A `-1` sentinel default on a Fake means two things and only one is self-proving — pick the arm.
+- **A per-case seam derived from the case's own fake cannot leak — so grade the SENTENCE beside
+  it, not the seam.** An in-memory Firestore double is FLAT PATH-KEYED, so seeding a PARENT
+  (`users/{uid}`) is inert when the SUT reads only `users/{uid}/<sub>/<doc>`: the fixture line is
+  unread and its "because other cases read it" justification is false. Same round, the case
+  staging that parent as ABSENT explained its own outcome by the parent rather than by the seam —
+  the refuted premise re-planted as a fixture comment (BUT-1917).
 - Lazy `tryGet` fields cache on construction — register fakes BEFORE constructing the SUT.
 - `verify(f(captureAny()))` marks calls VERIFIED, so a later `verifyInOrder` over the same method
   fails "not found" — capture THROUGH `verifyInOrder`. Fire-and-forget writes to
