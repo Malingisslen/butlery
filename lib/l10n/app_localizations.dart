@@ -27400,6 +27400,12 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Namnlös grupp'**
   String get groupMenuUntitledGroup;
+
+  /// Shown when casting a poll vote is refused. Deliberately says nothing about WHY: one reason is that somebody in the conversation has blocked the voter, and naming it would turn a silent safety control into a notification (BUT-1917). It carries no "try again" either — but note that ChatViewModel.votePoll returns this sentence for ANY failure, including a transient network one that a retry would fix, so the advice is omitted rather than tailored. Routing offline through its own sentence, the way closePoll does via isFirebaseOfflineError, is unbuilt.
+  ///
+  /// In sv, this message translates to:
+  /// **'Din röst kunde inte registreras.'**
+  String get pollVoteFailed;
 }
 
 class _AppLocalizationsDelegate

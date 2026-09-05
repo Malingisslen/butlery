@@ -2948,3 +2948,50 @@ reviewer could not have known were in its scope.
 fully covered. It is not: MOVING a member out of `_offlineCodes` into the outer literal leaves
 the mapper green (the union is unchanged) while the narrower predicate silently loses it. Grade
 membership per SET and per direction, not per code.
+
+## BUT-1917, 2026-09-05 — a debugging story invented a measurement, and shipped it as a dated fact
+
+`poll_votes` gained a block gate. The first version failed with an evaluation error on four
+tests, and I fixed it by inlining a path that had been returned from a rules helper. The tests
+went green, so I wrote into `firestore.rules`:
+
+> Measured on the emulator 2026-09-05: a function returning a `path` value, consumed by
+> `exists()` and `get()`, raises an evaluation error rather than resolving.
+
+The `firestore-rules-tester` gate refuted it in one run: the helper works in both spellings,
+43/43 each, and the shipped file already depends on that primitive twice (`rateLimitWrite` binds
+a path with `let` and calls `exists()` + `get()` on it). The real cause was somewhere else
+entirely — `seed()` never cleared mirrors between tests, so one block test's fixture denied the
+votes in four later ones. I had fixed that in the same round and never separated the two changes.
+
+**The failure is not "I was wrong about rules".** It is that I wrote the word *Measured* and a
+date next to a proposition I had never tested, on the strength of a green run that followed two
+simultaneous edits. A sentence like that is worse than a wrong comment: it is an instruction,
+dated and attributed, and mine ended "do not tidy this without re-running the suite" — so the
+next person to touch it would have preserved a duplication for a reason that does not exist.
+
+Rules that follow, and the second one is the one I keep relearning:
+
+- **Two edits, one green run, zero attributions.** If a fix and a fixture repair land together,
+  the run tells you the pair works and nothing about which one mattered. Either revert one, or
+  write no causal sentence at all.
+- **"Measured" is a claim about an experiment you can name.** If you cannot say what you ran,
+  what the two arms were and what each printed, the word is not available to you. Describe what
+  the code DOES instead and stop.
+
+The same round produced a smaller instance of the same class. The security fix needed a test
+seam for "does this account exist", and I built it on a module-level `Set` — which persists
+between cases, so one case seeding a live account decided the outcome of a later case staging
+that account as GONE. Two tests failed and told me. That is the identical mechanism as the
+`seed()` bug that started the day, six hours apart, written by me both times: **state a fixture
+shares between cases is the default hazard, not an edge case.** Derive it from the per-case
+object (here the `FakeFirestore`) and it cannot leak.
+
+Worth keeping separately, because it is the reason any of this was caught: **the gates disagreed
+with me and with each other, and the disagreements were where the value was.** Six reviewers
+produced three findings I would not have reached — a client-reachable way to disarm the whole
+control, two new methods no test called, and this fabricated measurement — and one gate's
+confident claim (that my change added a fifth `isNotBlockedBy` call) was itself wrong on a count
+I could check in one command. Brief them adversarially, then verify what they hand back. Both
+halves.
+

@@ -131,6 +131,83 @@ void main() {
       expect(filter.currentBlockedIds(), completion({'alice'}));
     });
 
+    // ── BUT-1917: the INCOMING direction is wired to the incoming reads ──
+    //
+    // These exist because the extraction that added the second direction is a
+    // copy-paste seam: `_incomingCache` is built from `_repo.getBlockedByUserIds`
+    // and `_repo.watchBlockedByUserIds`, and pointing either at the OUTGOING
+    // method compiles, runs, and silently makes the display tally filter by the
+    // wrong direction, and the consumer suites cannot tell: the one case there
+    // that builds a REAL filter gives it a repository that throws in both
+    // directions.
+    //
+    // The two directions therefore return DIFFERENT sets in every case below.
+    // With one shared fixture a mis-wire is green.
+
+    test(
+      'currentBlockedByIds reads the INCOMING list, not the outgoing one',
+      () {
+        when(() => repo.getBlockedUserIds()).thenAnswer((_) async => {'alice'});
+        when(
+          () => repo.watchBlockedUserIds(),
+        ).thenAnswer((_) => const Stream.empty());
+        when(() => repo.getBlockedByUserIds()).thenAnswer((_) async => {'bob'});
+        when(
+          () => repo.watchBlockedByUserIds(),
+        ).thenAnswer((_) => const Stream.empty());
+
+        final filter = BlockedUserFilter(blockRepository: repo);
+        expect(filter.currentBlockedByIds(), completion({'bob'}));
+      },
+    );
+
+    test('the two directions are separate caches, not one', () async {
+      when(() => repo.getBlockedUserIds()).thenAnswer((_) async => {'alice'});
+      when(
+        () => repo.watchBlockedUserIds(),
+      ).thenAnswer((_) => const Stream.empty());
+      when(() => repo.getBlockedByUserIds()).thenAnswer((_) async => {'bob'});
+      when(
+        () => repo.watchBlockedByUserIds(),
+      ).thenAnswer((_) => const Stream.empty());
+
+      final filter = BlockedUserFilter(blockRepository: repo);
+
+      // Outgoing FIRST, so a single shared cache would latch {'alice'} and hand
+      // it back for the incoming call too.
+      expect(await filter.currentBlockedIds(), {'alice'});
+      expect(await filter.currentBlockedByIds(), {'bob'});
+      verify(() => repo.getBlockedByUserIds()).called(1);
+    });
+
+    test(
+      'requireBlockedByIds reads the INCOMING list from the SERVER',
+      () async {
+        when(
+          () => repo.getBlockedUserIdsFromServer(),
+        ).thenAnswer((_) async => {'alice'});
+        when(
+          () => repo.getBlockedByUserIdsFromServer(),
+        ).thenAnswer((_) async => {'bob'});
+
+        final filter = BlockedUserFilter(blockRepository: repo);
+
+        expect(await filter.requireBlockedByIds(), {'bob'});
+        // Never the cache-friendly read: offline that answers from the local
+        // cache without an error, which is the whole reason this method exists.
+        verifyNever(() => repo.getBlockedByUserIds());
+      },
+    );
+
+    test('requireBlockedByIds THROWS rather than degrading', () async {
+      when(
+        () => repo.getBlockedByUserIdsFromServer(),
+      ).thenThrow(Exception('offline'));
+
+      final filter = BlockedUserFilter(blockRepository: repo);
+      await expectLater(filter.requireBlockedByIds(), throwsException);
+    });
+
     test('currentBlockedIds degrades to an empty set', () async {
       when(() => repo.getBlockedUserIds()).thenThrow(Exception('offline'));
 

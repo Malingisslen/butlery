@@ -444,8 +444,25 @@ class ChatViewModel extends ChangeNotifier
   /// Vote on (or toggle off) a poll option. Resolves the poll's
   /// `allowMultipleChoices` flag from the message metadata before delegating
   /// to the service, so the caller (a poll widget) only needs the option id.
-  Future<void> votePoll(String messageId, String optionId) async {
-    if (_isDisposed) return;
+  ///
+  /// Returns null on success, or the Swedish sentence to show the user —
+  /// the same shape as [closePoll], and for the same reason (BUT-1908): this
+  /// method used to swallow every failure into a log line, so a refused vote
+  /// looked exactly like a slow network. BUT-1917 gives it a refusal that
+  /// happens to real users — `firestore.rules` now denies a vote from someone
+  /// a participant has blocked — and a silent one is a tap that does nothing,
+  /// forever, with no way to tell.
+  ///
+  /// The sentence is deliberately generic. It must not say that a block
+  /// exists: a blocked person learning they were blocked is the notification
+  /// the whole silent design exists to avoid, and this is the one surface
+  /// where the server's refusal could leak it.
+  ///
+  /// The two early returns below keep returning null. Neither is a refusal the
+  /// user caused — the message is not in the cache, or carries no poll — and
+  /// both mean the tap reached a widget that should not have been drawn.
+  Future<String?> votePoll(String messageId, String optionId) async {
+    if (_isDisposed) return null;
 
     Message? target;
     for (final m in _messages) {
@@ -456,12 +473,12 @@ class ChatViewModel extends ChangeNotifier
     }
     if (target == null) {
       AppLogger.warning('votePoll: message $messageId not in cache');
-      return;
+      return null;
     }
     final pollData = target.metadata?['poll'] as Map<String, dynamic>?;
     if (pollData == null) {
       AppLogger.warning('votePoll: no poll metadata on message $messageId');
-      return;
+      return null;
     }
     final allowMultiple = pollData['allowMultipleChoices'] == true;
 
@@ -471,8 +488,13 @@ class ChatViewModel extends ChangeNotifier
         optionId: optionId,
         allowMultiple: allowMultiple,
       );
+      return null;
     } catch (e) {
+      // Logged with the exception, shown without it. The log is for us and
+      // may say `permission-denied`; the sentence is for the user and may
+      // not, because on this path that code means a block.
       AppLogger.error('Failed to vote on poll', e);
+      return AppLocale.current.pollVoteFailed;
     }
   }
 

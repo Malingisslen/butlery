@@ -2852,9 +2852,10 @@ async function scenario_implausibleMirrorCountDeclines(): Promise<void> {
  * bundle already reproduces the same facts under `incoming_blocks`, which reads
  * the `blocks` collection the mirror is derived from. That is an argument about
  * content identity inside ONE bundle — but it is only true while that section
- * exists. Whether `incoming_blocks` SHOULD keep telling a requester exactly who
- * blocked them is an open Art. 15(4) question (BUT-2018), so the section this
- * exemption leans on is one a future decision may remove.
+ * exists. Malin DECIDED on 2026-09-05 (BUT-2018) that `incoming_blocks` should
+ * stop telling a requester exactly who blocked them, so the section this
+ * exemption leans on is one a decision already taken will remove. Not built
+ * yet, which is the only reason the premise still holds.
  *
  * Bound by a test rather than by prose because prose is exactly what would stay
  * behind, still reading as a decided call, on the day the section goes.

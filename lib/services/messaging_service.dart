@@ -322,12 +322,32 @@ class MessagingService extends BaseService with StreamManagementMixin {
     // the count on screen but not the winner (or the reverse) makes the number
     // and the outcome contradict each other.
     //
+    // BUT-1917: the BALLOT set is both directions, the AUTHOR set above is one.
+    // A vote cast by someone who blocked the viewer decides what the viewer is
+    // served, so it comes out of the count; what that person SAYS stays
+    // visible, because hiding it would tell the viewer a block exists. The
+    // union is built here rather than inside the strip so the two call sites
+    // cannot end up filtering by different sets.
+    //
+    // Resolved only when this page actually holds a poll. The incoming set is
+    // consumed by nothing else, and reading it unconditionally opened a second
+    // permanent listener on `blocks` for every user on every chat open,
+    // including conversations that will never contain a poll.
+    //
+    // `currentBlockedByIds()` does not throw — its fail-open lives one layer
+    // down, in `_BlockSetCache.current()`, which converts a failed read into an
+    // empty set. So there is no catch here: one would be unreachable, and this
+    // file has twice been caught writing a branch that cannot run.
+    final ballotBlocked = visible.any(_isPoll)
+        ? blocked.union(await filter.currentBlockedByIds())
+        : blocked;
+
     // BUT-1926: its own catch, because falling back to `messages` here would
     // un-hide every blocked AUTHOR the step above already removed — the ballot
     // strip is a refinement of that list, so its failure costs the refinement,
     // never the filtering that succeeded.
     try {
-      return _withoutBlockedBallots(visible, blocked);
+      return _withoutBlockedBallots(visible, ballotBlocked);
     } catch (e) {
       AppLogger.warning(
         'MessagingService: ballot strip failed; '
@@ -336,6 +356,13 @@ class MessagingService extends BaseService with StreamManagementMixin {
       return visible;
     }
   }
+
+  /// Whether a message carries a poll, i.e. whether it has a tally to strip.
+  ///
+  /// Mirrors `MessageQueryModule._isPoll` rather than testing `type`: the
+  /// hydration and the strip must agree about what a poll IS, or the strip
+  /// skips a page the hydration filled. Both read the metadata key.
+  static bool _isPoll(Message m) => m.metadata?['poll'] is Map;
 
   /// Drop duplicate-blocked rows that belong to somebody else (BUT-1904).
   ///
@@ -376,11 +403,15 @@ class MessagingService extends BaseService with StreamManagementMixin {
 
   /// Remove blocked voters from every poll option's `voterIds`, in memory.
   ///
-  /// Viewer-scoped by design: the tally each person sees is filtered by THEIR
-  /// own block list, exactly as the message list already is. Two members can
-  /// therefore see different counts on one poll — inherent to per-viewer
-  /// blocking, and the alternative (the screen and the written winner
-  /// disagreeing for the person closing it) is the BUT-1908 harm.
+  /// Viewer-scoped by design: the tally each person sees is filtered by the
+  /// blocks THEY are party to. Two members can therefore see different counts
+  /// on one poll — inherent to per-viewer blocking, and the alternative (the
+  /// screen and the written winner disagreeing for the person closing it) is
+  /// the BUT-1908 harm.
+  ///
+  /// The set handed in covers BOTH directions (BUT-1917); this method does not
+  /// know which, and must not — it is given one set precisely so the display
+  /// path and `closePoll` cannot compose it differently.
   List<Message> _withoutBlockedBallots(
     List<Message> messages,
     Set<String> blockedIds,
@@ -881,7 +912,15 @@ class MessagingService extends BaseService with StreamManagementMixin {
         // branch dead code and fail OPEN on exactly the decision that cannot
         // be taken back. Raised as critical by the firebase-backend-security
         // gate, which also showed the test here was measuring its own mock.
-        blocked = await blockFilter.requireBlockedIds();
+        // BUT-1917: BOTH directions, unioned, and both server-only. The
+        // display path strips a ballot cast by anyone the viewer has blocked
+        // OR who has blocked the viewer; if the winner resolution used the
+        // narrower set, the count on screen and the recipe written into the
+        // week would disagree — which is the BUT-1908 harm arriving through
+        // the direction this ticket added.
+        blocked = (await blockFilter.requireBlockedIds()).union(
+          await blockFilter.requireBlockedByIds(),
+        );
       } catch (e) {
         AppLogger.warning(
           'Refusing to close poll $messageId: block list unreadable ($e)',

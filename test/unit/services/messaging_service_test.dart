@@ -1740,6 +1740,122 @@ void main() {
         );
       });
 
+      // BUT-1917. The INCOMING direction, and the single-variable pair of the
+      // test above: same fixture, same expected tally, and the only thing that
+      // moves is which set 'blocked-1' is in.
+      test('a voter who BLOCKED the viewer is stripped too', () async {
+        TestServiceLocator.registerMock<BlockedUserFilter>(
+          _StubBlockedUserFilter(
+            const <String>{},
+            blockedBy: const {'blocked-1'},
+          ),
+        );
+
+        final page = await readPage();
+
+        expect(
+          votersFor(page.single, 'opt-a'),
+          ['clean-1'],
+          reason:
+              'a ballot cast by someone who blocked the viewer still decides '
+              'what the viewer is served, so it comes out of the count',
+        );
+      });
+
+      // BUT-1917, and the reason the two directions are not one set: the
+      // asymmetry IS the design. If this test ever has to change so that the
+      // message disappears too, that is a product decision about telling
+      // people they have been blocked — not a tidy-up.
+      test('the ASYMMETRY: their ballot goes, their MESSAGE stays', () async {
+        TestServiceLocator.registerMock<BlockedUserFilter>(
+          _StubBlockedUserFilter(
+            const <String>{},
+            blockedBy: const {'blocker-1'},
+          ),
+        );
+        final fromBlocker = Message(
+          id: 'msg-from-blocker',
+          conversationId: conversationId,
+          senderId: 'blocker-1',
+          senderDisplayName: 'Blocker',
+          content: 'Hej!',
+          type: MessageType.text,
+          status: MessageStatus.sent,
+          sentAt: DateTime.utc(2026, 1, 1),
+        );
+        when(
+          () => mockMessagingRepo.getConversationMessagesPage(
+            conversationId: conversationId,
+            limit: any(named: 'limit'),
+            startAfter: any(named: 'startAfter'),
+          ),
+        ).thenAnswer((_) async => [pollMessage(), fromBlocker]);
+
+        final page = await messagingService.getConversationMessagesPage(
+          conversationId: conversationId,
+          limit: 50,
+        );
+
+        expect(
+          page.map((m) => m.id),
+          contains('msg-from-blocker'),
+          reason:
+              'hiding what they SAY the moment they block you tells you that '
+              'they did — a silent control turned into a notification',
+        );
+      });
+
+      // BUT-1917. The incoming set is read only when the page holds a poll.
+      // Without this the gate is unpinned in the direction that costs money:
+      // deleting `visible.any(_isPoll)` is green everywhere, and every chat
+      // open then seeds a second permanent listener on `blocks` for a set
+      // nothing on that page consumes.
+      test('a poll-free page never reads the incoming list', () async {
+        final filter = _StubBlockedUserFilter(
+          const <String>{},
+          blockedBy: const {'blocked-1'},
+        );
+        TestServiceLocator.registerMock<BlockedUserFilter>(filter);
+        final plain = Message(
+          id: 'msg-plain',
+          conversationId: conversationId,
+          senderId: 'other-user',
+          senderDisplayName: 'Other',
+          content: 'Hej!',
+          type: MessageType.text,
+          status: MessageStatus.sent,
+          sentAt: DateTime.utc(2026, 1, 1),
+        );
+        when(
+          () => mockMessagingRepo.getConversationMessagesPage(
+            conversationId: conversationId,
+            limit: any(named: 'limit'),
+            startAfter: any(named: 'startAfter'),
+          ),
+        ).thenAnswer((_) async => [plain]);
+
+        await messagingService.getConversationMessagesPage(
+          conversationId: conversationId,
+          limit: 50,
+        );
+
+        expect(filter.incomingReads, 0);
+      });
+
+      test('the CONTROL: a page WITH a poll does read it', () async {
+        // Pairs with the case above. Without it, a mutant that never reads the
+        // incoming set at all passes that one.
+        final filter = _StubBlockedUserFilter(
+          const <String>{},
+          blockedBy: const {'blocked-1'},
+        );
+        TestServiceLocator.registerMock<BlockedUserFilter>(filter);
+
+        await readPage();
+
+        expect(filter.incomingReads, greaterThan(0));
+      });
+
       test('an unreadable block list serves the tally UNFILTERED', () async {
         // Fail-open, and deliberately the opposite of `closePoll`. Blanking a
         // poll because a lookup blipped is worse than briefly over-counting it.
@@ -2079,12 +2195,26 @@ void main() {
 /// Returns a fixed blocked set. A stub rather than a mock because the only
 /// behaviour under test is what the SERVICE does with the answer.
 class _StubBlockedUserFilter implements BlockedUserFilter {
-  _StubBlockedUserFilter(this._ids);
+  _StubBlockedUserFilter(this._ids, {Set<String> blockedBy = const <String>{}})
+    : _blockedBy = blockedBy;
 
   final Set<String> _ids;
 
+  /// BUT-1917: stubbed EXPLICITLY rather than left to `noSuchMethod`. Left
+  /// unimplemented it throws, and the incoming half of the strip is then lost.
+  final Set<String> _blockedBy;
+
   @override
   Future<Set<String>> currentBlockedIds() async => _ids;
+
+  /// Counts reads of the INCOMING set, so a test can assert it was NOT read.
+  int incomingReads = 0;
+
+  @override
+  Future<Set<String>> currentBlockedByIds() async {
+    incomingReads++;
+    return _blockedBy;
+  }
 
   @override
   Future<void> dispose() async {}

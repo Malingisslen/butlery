@@ -154,6 +154,86 @@ class FirebaseBlockRepository extends BaseFirebaseRepository<BlockRecord> {
         );
   }
 
+  // ─── The INCOMING direction (BUT-1917) ─────────────────────────────────
+  //
+  // Everyone who has blocked the current user, as opposed to everyone they
+  // have blocked. Three readers, mirroring the three outgoing ones above,
+  // because the two directions are consumed by the same two kinds of caller:
+  // a display path that may answer from cache, and a decision path that may
+  // not.
+  //
+  // The query is `blockedId == me`, and `firestore.rules` allows it as a LIST:
+  // rules are not filters, so a list query is refused unless the rule proves
+  // every returnable document is readable — and the read limb's second
+  // disjunct (`resource.data.blockedId == request.auth.uid`) proves exactly
+  // that for this query and no other.
+  //
+  // It is used ONLY to filter poll tallies. Message DISPLAY is deliberately
+  // left asymmetric: hiding what someone says the moment they block you tells
+  // them nothing, but it tells YOU that they did, which turns a silent control
+  // into a notification. A vote is different — it decides what lands in the
+  // household's week.
+
+  /// The same bound `sync-block-mirror.ts` puts on the mirror
+  /// (`MAX_MIRROR_ENTRIES`). The OUTGOING set is bounded by how many people the
+  /// user chose to block; this one is chosen by OTHER people and nothing rate-
+  /// limits a `blocks` create, so without a cap N accounts blocking one victim
+  /// make that victim's client read N documents and hold a live listener over
+  /// them. Truncating under-strips ballots — the same direction the server
+  /// already accepts and logs.
+  static const int maxIncomingBlocks = 1000;
+
+  /// Everyone who has blocked the current user. Cache-friendly; display only.
+  Future<Set<String>> getBlockedByUserIds() async {
+    final uid = requireCurrentUserId();
+    final snapshot = await collection
+        .where('blockedId', isEqualTo: uid)
+        .limit(maxIncomingBlocks)
+        .get();
+
+    return snapshot.docs
+        .map((doc) => BlockRecord.fromFirestore(doc.data(), doc.id).blockerId)
+        .toSet();
+  }
+
+  /// The same list, from the SERVER.
+  ///
+  /// The incoming twin of [getBlockedUserIdsFromServer], and it exists for the
+  /// same reason: offline, a plain `get()` answers from the local cache with no
+  /// error, so a caller that can only refuse an UNREADABLE list cannot tell a
+  /// current answer from a stale one. `closePoll` needs the throw.
+  Future<Set<String>> getBlockedByUserIdsFromServer() async {
+    final uid = requireCurrentUserId();
+    final snapshot = await collection
+        .where('blockedId', isEqualTo: uid)
+        .limit(maxIncomingBlocks)
+        .get(const GetOptions(source: Source.server));
+
+    return snapshot.docs
+        .map((doc) => BlockRecord.fromFirestore(doc.data(), doc.id).blockerId)
+        .toSet();
+  }
+
+  /// Stream of the incoming set, so a block made while a chat is open takes
+  /// effect without a restart.
+  Stream<Set<String>> watchBlockedByUserIds() {
+    final uid = currentUserId;
+    if (uid == null) return Stream.value({});
+
+    return collection
+        .where('blockedId', isEqualTo: uid)
+        .limit(maxIncomingBlocks)
+        .snapshots()
+        .map(
+          (snapshot) => snapshot.docs
+              .map(
+                (doc) =>
+                    BlockRecord.fromFirestore(doc.data(), doc.id).blockerId,
+              )
+              .toSet(),
+        );
+  }
+
   // BUT-1917: `deleteAllBlocksForUser` used to sit here, and account deletion
   // never called it. It could not have worked either — it deleted rows in BOTH
   // directions, and `firestore.rules` allows a delete only to the row's

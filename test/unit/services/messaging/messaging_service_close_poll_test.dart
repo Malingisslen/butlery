@@ -184,6 +184,13 @@ void main() {
     when(
       () => defaultBlockFilter.requireBlockedIds(),
     ).thenAnswer((_) async => <String>{});
+    // BUT-1917: `closePoll` reads BOTH directions. An unstubbed mocktail call
+    // throws, and `closePoll` converts any throw here into a
+    // `blockListUnknown` refusal — a real refusal branch, so a missing stub
+    // does not fail loudly; it re-points the test at the block guard.
+    when(
+      () => defaultBlockFilter.requireBlockedByIds(),
+    ).thenAnswer((_) async => <String>{});
     getIt.registerSingleton<BlockedUserFilter>(defaultBlockFilter);
 
     when(() => authRepo.currentUserId).thenReturn(creatorId);
@@ -919,6 +926,9 @@ void main() {
       when(
         () => blockFilter.requireBlockedIds(),
       ).thenAnswer((_) async => <String>{});
+      when(
+        () => blockFilter.requireBlockedByIds(),
+      ).thenAnswer((_) async => <String>{});
 
       await service.closePoll(messageId: messageId);
 
@@ -942,6 +952,9 @@ void main() {
       when(
         () => blockFilter.requireBlockedIds(),
       ).thenAnswer((_) async => {'blocked-1', 'blocked-2'});
+      when(
+        () => blockFilter.requireBlockedByIds(),
+      ).thenAnswer((_) async => <String>{});
 
       await service.closePoll(messageId: messageId);
 
@@ -964,6 +977,86 @@ void main() {
         reason:
             'the two blocked ballots outnumber the one clean vote — if they '
             'still counted, the blocked option would be in the week plan',
+      );
+    });
+
+    // BUT-1917. The INCOMING direction, and the single-variable pair of
+    // `a blocked majority does not decide the winner`: same fixture, same two
+    // ballots, same expected winner — the only thing that moves is WHICH set
+    // the two voters are in.
+    test(
+      'a majority who BLOCKED the closer does not decide the winner',
+      () async {
+        when(
+          () => blockFilter.requireBlockedIds(),
+        ).thenAnswer((_) async => <String>{});
+        when(
+          () => blockFilter.requireBlockedByIds(),
+        ).thenAnswer((_) async => {'blocked-1', 'blocked-2'});
+
+        await service.closePoll(messageId: messageId);
+
+        final saved =
+            verify(
+                  () => groupPlanService.addEntry(
+                    plan: any(named: 'plan'),
+                    actorId: any(named: 'actorId'),
+                    day: any(named: 'day'),
+                    slot: any(named: 'slot'),
+                    recipe: captureAny(named: 'recipe'),
+                    proposedBy: any(named: 'proposedBy'),
+                    votedInBy: any(named: 'votedInBy'),
+                  ),
+                ).captured.single
+                as Recipe;
+        expect(
+          saved.id,
+          'recipe-clean',
+          reason:
+              'blocking someone must not let them keep steering what you are '
+              'served — the rule refusing their vote is not retroactive, so '
+              'ballots cast before it landed are still on the document',
+        );
+      },
+    );
+
+    // BUT-1917. The incoming leg is part of the DECISION, not a decoration on
+    // it: if only it is unreadable, the close still refuses. Stubbed so the
+    // OUTGOING read succeeds, which is what makes this test about the second
+    // leg rather than about the guard in general.
+    test('an unreadable INCOMING list refuses too', () async {
+      final halfRepo = _MockBlockRepo();
+      when(
+        () => halfRepo.getBlockedUserIdsFromServer(),
+      ).thenAnswer((_) async => <String>{});
+      when(() => halfRepo.getBlockedByUserIdsFromServer()).thenThrow(
+        Exception('unreadable'),
+      );
+      GetIt.instance.unregister<BlockedUserFilter>();
+      GetIt.instance.registerSingleton<BlockedUserFilter>(
+        BlockedUserFilter(blockRepository: halfRepo),
+      );
+
+      await expectLater(
+        service.closePoll(messageId: messageId),
+        throwsA(
+          isA<PollCloseRefusedException>().having(
+            (e) => e.reason,
+            'reason',
+            PollCloseRefusal.blockListUnknown,
+          ),
+        ),
+      );
+      verifyNever(
+        () => groupPlanService.addEntry(
+          plan: any(named: 'plan'),
+          actorId: any(named: 'actorId'),
+          day: any(named: 'day'),
+          slot: any(named: 'slot'),
+          recipe: any(named: 'recipe'),
+          proposedBy: any(named: 'proposedBy'),
+          votedInBy: any(named: 'votedInBy'),
+        ),
       );
     });
 

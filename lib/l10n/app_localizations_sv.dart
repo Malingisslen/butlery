@@ -16475,4 +16475,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get groupMenuUntitledGroup => 'Namnlös grupp';
+
+  @override
+  String get pollVoteFailed => 'Din röst kunde inte registreras.';
 }

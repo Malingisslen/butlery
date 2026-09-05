@@ -11987,12 +11987,20 @@
   "groupMenuProposedBy": "Suggested by {name}",
   "@groupMenuProposedBy": {
     "description": "BUT-1971: who put this dish on the poll's ballot. Rendered only when the name resolves — a raw uid is never shown, and no row is drawn at all when the dish carries no provenance.",
-    "placeholders": { "name": { "type": "String" } }
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "groupMenuVotedInBy": "{count, plural, =1{voted in by 1} other{voted in by {count}}}",
   "@groupMenuVotedInBy": {
     "description": "BUT-1971: how many people voted for this dish. A count, not names: one name is what fits the row, so the proposer gets the name and the voters get the number.",
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "groupMenuVotersTitle": "Voted for this dish",
   "@groupMenuVotersTitle": {
@@ -12019,5 +12027,9 @@
     }
   },
   "groupMenuGroupsLoadFailed": "Could not fetch your groups.",
-  "groupMenuUntitledGroup": "Untitled group"
+  "groupMenuUntitledGroup": "Untitled group",
+  "pollVoteFailed": "Your vote could not be registered.",
+  "@pollVoteFailed": {
+    "description": "Shown when casting a poll vote is refused. Deliberately says nothing about WHY: one reason is that somebody in the conversation has blocked the voter, and naming it would turn a silent safety control into a notification (BUT-1917). It carries no \"try again\" either — but note that ChatViewModel.votePoll returns this sentence for ANY failure, including a transient network one that a retry would fix, so the advice is omitted rather than tailored. Routing offline through its own sentence, the way closePoll does via isFirebaseOfflineError, is unbuilt."
+  }
 }

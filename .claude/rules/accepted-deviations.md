@@ -694,3 +694,96 @@ files in the same edit.
   deleted rather than left standing. Caught by the `integration-reviewer` gate, which is the
   only pass that could see the two files ship opposite verdicts about one document.
   BUT-1971, 2026-08-31
+
+- **The `poll_votes` block gate FAILS OPEN on a missing mirror, and absence has FOUR
+  meanings the rule cannot tell apart (BUT-1917, 2026-09-05).** `notBlockedByAnyoneHere()`
+  permits the vote when `users/{uid}/block_mirror/current` does not exist. Absence means:
+  nobody has ever blocked this person; the first block landed but the trigger has not run;
+  the account was erased; or `rebuildMirrorFor` deleted the mirror as an orphan. Only the
+  first is safe to permit. Failing CLOSED was rejected because it refuses every vote from
+  every user until a backfill writes a document for all of them.
+  The fourth meaning was CLIENT-REACHABLE and is now closed: the orphan check keyed on
+  `users/{uid}`, which `firestore.rules` lets its owner DELETE, so the constrained person
+  could delete their own profile and disarm their own mirror — permanently, since the weekly
+  pass ran the same check and deleted it again, counting it as `skipped` so the run that
+  disarmed the control still logged clean. `rebuildMirrorFor` now asks **Auth**, not
+  Firestore. Pinned by `deleting your own PROFILE does not delete your mirror`, mutation-probed.
+  That fix trades transactional atomicity for correctness, and the residual it leaves is
+  WIDER than the one it replaces on the erasure path, measured: `auth.deleteUser` is the LAST
+  step of `requestAccountDeletion`, after the `block_mirrors` sweep, after `deleteUserProfile`
+  and after `probeResidualData` — so throughout an erasure the check answers "exists" for the
+  user being erased, where the old document-keyed check answered "gone" from tier 3 onward.
+  A trigger landing late in the cascade therefore writes a mirror under the erased uid's path.
+  The weekly pass does reach it: `reconcileMirrors` no longer fast-paths an EMPTY stored
+  mirror, which is exactly that orphan's shape and which it used to skip forever while three
+  comments claimed otherwise. Two gates measured that independently.
+  Raised by the `firebase-backend-security` and `cloud-functions-specialist` gates, which
+  measured the same false sentence independently. BUT-1917, 2026-09-05
+
+- **A TRUNCATED mirror silently under-blocks, and the `truncated` flag has no reader
+  (BUT-1917, 2026-09-05).** `sync-block-mirror.ts` caps at `MAX_MIRROR_ENTRIES = 1000` and
+  stamps the flag; the rule reads only `blockedByUserIds`. Above the cap a blocker falls off
+  and stops being enforced. Both queries use `.limit(cap + 1)` with **no `orderBy`**, so
+  truncation keeps the lexicographically lowest `{blockerId}_{blockedId}` document ids — a
+  harasser with ~1000 sockpuppet accounts can therefore inflate their OWN mirror until a real
+  blocker sorts off the end. Implausible pre-launch, and denying while truncated would refuse
+  every vote from anyone blocked by that many people. Pinned GREEN by B11 in
+  `poll-votes-rules.test.ts`, so the day somebody adds the conjunct that test reddens and
+  names the decision being reversed. Raised by the `cloud-functions-specialist` gate.
+  BUT-1917, 2026-09-05
+
+- **READ of a poll tally is deliberately NOT block-gated, and neither is DELETE
+  (BUT-1917, 2026-09-05).** Hiding the tally from a blocked person would tell them a block
+  exists, turning a silent control into a notification. Delete stays open because erasing
+  your own row (Art. 17) cannot depend on somebody else having blocked you. B7 and B8 pin
+  both. BUT-1917, 2026-09-05
+
+- **The gate is ONE-DIRECTIONAL in the rules and TWO-DIRECTIONAL in the client tally, and
+  message DISPLAY stays one-directional (BUT-1917, 2026-09-05).** The rule refuses the
+  blocked person's vote and lets the blocker vote normally — refusing the blocker would
+  punish the person who used the safety feature. The on-screen tally and `closePoll`'s winner
+  resolution both strip BOTH directions, from one set, because filtering the count but not
+  the winner makes the number and the recipe contradict each other. What that person SAYS
+  stays visible: hiding it would disclose the block. The asymmetry is the decision; do not
+  harmonise it. Pinned by `the ASYMMETRY: their ballot goes, their MESSAGE stays`.
+  BUT-1917, 2026-09-05
+
+- **The rule is NOT retroactive, and the client strip is a DISPLAY control, not a server one
+  (BUT-1917, 2026-09-05).** Rows written before the rule landed stay on the document; B6
+  pins that a blocked voter can no longer STEER such a row, not that it is removed. The
+  window between a `blocks` write and the trigger's mirror write is NARROWED by `retry: true`
+  and the weekly reconciliation, never closed — closing it would mean reading `blocks` per
+  participant, which is the 10-access cap the mirror exists to avoid. Bounded in practice
+  because `closePoll` reads `blocks` from the SERVER, so a vote slipping through the lag
+  window still cannot decide the week. The reconciliation is LAST in a weekly chain that
+  skips tail tasks under budget pressure, so the only net under a silent safety control is
+  the first thing dropped. BUT-1917, 2026-09-05
+
+- **The client can now ENUMERATE everyone who blocked it, and that capability is what buys
+  the two-directional tally (BUT-1917, 2026-09-05).** `FirebaseBlockRepository` gained three
+  readers on `where('blockedId', isEqualTo: uid)`, permitted by the `blocks` read limb's
+  second disjunct. This is wider than `isBlockedBy`, which only answers about a uid the client
+  already holds: enumeration returns blockers the client has no other way to name, and
+  `public_profiles/{uid}` resolves each to a name and avatar. Nothing renders the set — it
+  reaches only the ballot strip — so the exposure is to a hand-rolled client.
+  It sits ACROSS the grain of this same change's `block_mirror` deny block, which refuses the
+  owner that very list, and across the grain of BUT-2018 — where Malin decided on 2026-09-05
+  to drop `incoming_blocks` from the Art. 15 bundle entirely. That decision is recorded on the
+  ticket and is NOT yet built, so the export still ships the section today.
+  **Open for Malin, and named rather than buried:** the rule could be split (`allow get` both
+  directions, `allow list` blocker-only), which would kill all three readers and the client
+  half of the tally. What that half actually covers is votes cast BEFORE the rule landed, and
+  the app is not live, so today it covers nothing. Bounded at `maxIncomingBlocks = 1000`,
+  mirroring the server cap, because the incoming set is chosen by OTHER people and nothing
+  rate-limits a `blocks` create. Raised by the `firebase-backend-security` gate.
+  BUT-1917, 2026-09-05
+
+- **Making the tally two-directional WIDENS an existing provenance gap on the group menu, and
+  that is named rather than left to be discovered (BUT-1917, 2026-09-05).** `closePoll`
+  resolves `votedInBy` from the FILTERED poll, so the group weekly menu's voter sheet — the
+  surface BUT-1971 built specifically to earn its Art. 15 keep — omits anyone the closer has
+  blocked, and now anyone who has blocked the CLOSER too. A member can therefore remove their
+  own name from that sheet by blocking whoever closes the poll. Pre-existing in the outgoing
+  direction (BUT-1909); this change adds the second direction. Not fixed here because the
+  winner must stay filtered while the provenance probably must not, which is a decision rather
+  than an edit. Raised by the `integration-reviewer` gate. BUT-1917, 2026-09-05

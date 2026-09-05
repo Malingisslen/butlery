@@ -3123,6 +3123,21 @@ export const EXPORT_EXEMPT: Record<string, string> = {
     "NOT put to Malin — it was not among the three questions she was asked. " +
     "Named in the bundle's data_minimisation line like the two above.",
 
+  block_mirror:
+    "PROJECTION, not a source. `users/{uid}/block_mirror/current` holds the " +
+    "uids of everyone who has blocked this user — the SAME facts the bundle " +
+    "already reproduces under `incoming_blocks`, which reads the `blocks` " +
+    "collection this mirror is derived from. Exporting both would hand the " +
+    "subject one list twice, and the mirror's copy is the less accurate one " +
+    "(it is capped, and it lags the source by a trigger). This argues content " +
+    "identity WITHIN one bundle, never by analogy from another collection. " +
+    "BUT-1917. ⚠ The premise is `incoming_blocks` continuing to be exported, " +
+    "and Malin DECIDED on 2026-09-05 (BUT-2018) to drop that section, so this " +
+    "premise is time-limited rather than open-ended. Not built yet, so the " +
+    "section still ships today; when it goes, this exemption loses its reason " +
+    "and must be re-argued rather than inherited. " +
+    "`scenario_blockMirrorExemptionRestsOnIncomingBlocks` fails if the two " +
+    "drift apart, so the dependency is enforced rather than described.",
   // ── No writer of the `users/{uid}` path. Swept for legacy rows only. ──
   // The cascade sweeps these so an account predating their removal cannot hold
   // rows the probe reports forever. Nothing writes them today, so for a current
@@ -3132,20 +3147,6 @@ export const EXPORT_EXEMPT: Record<string, string> = {
   // account that DOES still hold legacy rows, they are erasable but were never
   // exportable. Whether that is worth an export section for a shape no live
   // code writes is Malin's, and has not been asked.
-  block_mirror:
-    "PROJECTION, not a source. `users/{uid}/block_mirror/current` holds the " +
-    "uids of everyone who has blocked this user — the SAME facts the bundle " +
-    "already reproduces under `incoming_blocks`, which reads the `blocks` " +
-    "collection this mirror is derived from. Exporting both would hand the " +
-    "subject one list twice, and the mirror's copy is the less accurate one " +
-    "(it is capped, and it lags the source by a trigger). This argues content " +
-    "identity WITHIN one bundle, never by analogy from another collection. " +
-    "BUT-1917. ⚠ The premise is `incoming_blocks` continuing to be exported: " +
-    "whether it should be is an OPEN Art. 15(4) question filed as BUT-2018, " +
-    "and if that section is ever dropped this exemption loses its reason and " +
-    "must be revisited rather than inherited. " +
-    "`scenario_blockMirrorExemptionRestsOnIncomingBlocks` fails if the two " +
-    "drift apart, so the dependency is enforced rather than described.",
   category_memberships:
     "NO LIVE WRITER of users/{uid}/category_memberships. Legacy sweep only.",
   connection_tests:

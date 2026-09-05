@@ -14,8 +14,8 @@
  * **Why the server writes it.** `blocks` is client-written — `firestore.rules`
  * lets the blocker create the row. A client-written mirror would therefore be
  * forgeable by exactly the person it constrains: the blocked user could empty
- * their own mirror and vote again. This trigger is the only writer, and the
- * rules deny every client write to the mirror.
+ * their own mirror and vote again. Every writer is the Admin SDK — this
+ * trigger and the account cascade — and the rules deny every client write.
  *
  * **Direction.** The mirror lists INCOMING blocks only — if A blocks B, B's
  * mirror names A, so B's vote is refused in every room A is in, while A keeps
@@ -112,6 +112,57 @@ export async function expectedMirrorFor(
 }
 
 /**
+ * Does this ACCOUNT exist? Asked of Auth, deliberately not of Firestore.
+ *
+ * `users/{uid}` is CLIENT-DELETABLE — `firestore.rules` carries
+ * `allow delete: if isOwner(userId)` on it — so a signed-in account can remove
+ * its own profile document while keeping the account. Keying the orphan check
+ * on that document therefore let the person the gate constrains disarm it:
+ * delete your profile, and the next `blocks` event naming you (or the weekly
+ * pass) finds no owner, deletes your mirror, and `notBlockedByAnyoneHere()`
+ * then reads "nobody has blocked this person" for every poll in every room.
+ * It did not heal — the weekly pass deleted it again — and the delete counted
+ * as `skipped`, so the run that disarmed the control still logged clean.
+ *
+ * An Auth record is the fact the check actually wants: it survives a profile
+ * delete and is gone once the account is erased, which is the distinction
+ * Firestore could not make.
+ *
+ * Any OTHER Auth failure rethrows rather than answering "gone". Answering
+ * "gone" on an outage would delete live mirrors in bulk — an outage that
+ * silently switches off blocking is worse than one that retries.
+ */
+export async function accountExists(
+  uid: string,
+  /**
+   * Seam. Exported and injectable ONLY so the two error branches below can be
+   * pinned: the unit suite has no Auth emulator, and the `ownerExists` seam on
+   * `rebuildMirrorFor` replaces this whole function, so nothing driven through
+   * that seam can reach this catch.
+   */
+  getUser: (uid: string) => Promise<unknown> = (u) => admin.auth().getUser(u),
+): Promise<boolean> {
+  try {
+    await getUser(uid);
+    return true;
+  } catch (e) {
+    const code = (e as { code?: string }).code;
+    // `auth/invalid-uid` is answered, not rethrown. `getUser` rejects a uid
+    // over 128 characters before any network call, while `isUsableUidSegment`
+    // bounds a PATH segment at 1500 bytes and `firestore.rules` pins only
+    // `blockerId` and the composite id — so `blocks/{myUid}_{200 chars}` is a
+    // write any account can make. Rethrowing that under `retry: true` is a
+    // deterministic redelivery loop, which is the hazard the segment guard
+    // exists to prevent, re-opened one bound over. A uid Auth cannot represent
+    // names no account, so "gone" is the correct answer.
+    if (code === "auth/user-not-found" || code === "auth/invalid-uid") {
+      return false;
+    }
+    throw e;
+  }
+}
+
+/**
  * Rebuild one user's mirror from `blocks`, and write it if this event is not
  * older than what is already stored.
  *
@@ -119,14 +170,17 @@ export async function expectedMirrorFor(
  * inside a transaction because two events for the same user can be in flight
  * at once — an unblock landing while a block's recompute is still running
  * would otherwise resolve on arrival order rather than on event order.
- *
- * Returns whether a write happened, so tests can tell "skipped as stale" from
- * "wrote the same thing".
  */
 export async function rebuildMirrorFor(
   db: admin.firestore.Firestore,
   blockedId: string,
   sourceRev: number,
+  /**
+   * Seam. The unit suite has no Auth emulator, and a test that stubbed this
+   * with the profile document would re-introduce exactly the coupling the
+   * probe exists to remove.
+   */
+  ownerExists: (uid: string) => Promise<boolean> = accountExists,
 ): Promise<boolean> {
   const snap = await db
     .collection(Collections.blocks)
@@ -154,23 +208,29 @@ export async function rebuildMirrorFor(
   }
 
   const ref = mirrorRef(db, blockedId);
-  const ownerRef = db.collection(Collections.users).doc(blockedId);
+  // The OWNER first. An Admin-SDK delete fires this trigger exactly like a
+  // client delete, so the account cascade's own `deleteBlocks` step schedules
+  // a rebuild for the very user being erased. Tier 2 then sweeps the mirror
+  // and `probeResidualData` passes — and a trigger landing seconds later
+  // re-creates a document whose PATH carries the erased uid, with nothing
+  // left to remove it and an audit row already saying the erasure was clean.
+  //
+  // Resolved OUTSIDE the transaction, because Auth is not transactional.
+  //
+  // Measured: `auth.deleteUser` is the LAST step of `requestAccountDeletion`,
+  // after the `block_mirrors` sweep, after `deleteUserProfile` and after
+  // `probeResidualData`. So throughout an erasure this check answers TRUE for
+  // the user being erased, and a trigger landing late in the cascade writes a
+  // mirror under the erased uid's path. That residual is stated in the
+  // BUT-1917 entry in `docs/architecture/ACCEPTED_DEVIATIONS.md`.
+  const exists = await ownerExists(blockedId);
+
   return db.runTransaction(async (tx) => {
-    // The OWNER first. An Admin-SDK delete fires this trigger exactly like a
-    // client delete, so the account cascade's own `deleteBlocks` step schedules
-    // a rebuild for the very user being erased. Tier 2 then sweeps the mirror
-    // and `probeResidualData` passes — and a trigger landing seconds later
-    // re-creates a document whose PATH carries the erased uid, with nothing
-    // left to remove it and an audit row already saying the erasure was clean.
-    //
-    // Checking the owner INSIDE the transaction is what makes this a decision
-    // about the state at write time rather than at read time.
-    const owner = await tx.get(ownerRef);
-    if (!owner.exists) {
-      // Deleted, or never existed. Leaving the document absent is also what
+    if (!exists) {
+      // Erased, or never registered. Leaving the document absent is also what
       // the cascade's sweep intended.
       //
-      // For a NEVER-created owner this costs something real: the mirror's
+      // For a NEVER-registered uid this costs something real: the mirror's
       // beneficiaries are the BLOCKERS, not its owner, so their blocks go
       // unenforced until the weekly pass rebuilds it. Accepted because the
       // alternative — writing a mirror under a uid with no account — is the
@@ -339,6 +399,8 @@ export async function reconcileMirrors(
   db: admin.firestore.Firestore,
   uids: Iterable<string>,
   sourceRev: number,
+  /** Seam, passed straight to `rebuildMirrorFor`. See its own parameter. */
+  ownerExists?: (uid: string) => Promise<boolean>,
 ): Promise<{
   checked: number;
   repaired: number;
@@ -364,17 +426,46 @@ export async function reconcileMirrors(
       // collection that is almost always already correct, and it would make the
       // repair count unmeasurable without a third read.
       const expected = await expectedMirrorFor(db, uid);
+      // An EMPTY stored mirror is AMBIGUOUS, and the ambiguity is why this is
+      // not a plain comparison.
+      //
+      // It is the shape a post-cascade rebuild leaves — tier 1 has already
+      // deleted the source rows, so `expected` is empty too and a plain
+      // comparison matches and skips, leaving the orphan on disk through every
+      // weekly pass. It is ALSO the ordinary state of every live user who has
+      // ever been unblocked, and rebuilding those would count each one as a
+      // repair, which logs at ERROR and reports the pass NOT clean — inverting
+      // the only alarm this control has, permanently.
+      //
+      // So EXISTENCE is resolved once, above every branch. Asking it only on
+      // the branch where the contents happened to be empty left an orphan
+      // whose contents happened to agree skipped forever, and its delete
+      // filed as "found no drift" when they did not — the same defect twice,
+      // one branch over, which is why the question is hoisted rather than
+      // answered per branch.
+      const resolveOwner = ownerExists ?? accountExists;
+
+      if (!(await resolveOwner(uid))) {
+        // The rebuild DELETES an orphan, whatever its contents were.
+        await rebuildMirrorFor(db, uid, sourceRev, resolveOwner);
+        if (before.exists) {
+          repaired++;
+        } else {
+          skipped++;
+        }
+        continue;
+      }
+
+      // The owner is live, so contents agreeing settles it.
       if (stored !== null && stored === expected.join(",")) continue;
 
-      const wrote = await rebuildMirrorFor(db, uid, sourceRev);
+      const wrote = await rebuildMirrorFor(db, uid, sourceRev, resolveOwner);
       if (wrote) {
         repaired++;
       } else {
-        // Not "nothing was wrong". `rebuildMirrorFor` also returns false when a
-        // NEWER trigger event owns the document, and when the owner is gone —
-        // in which case it DELETED an orphaned mirror, which is a repair by any
-        // other name. Folding those into `repaired: 0` would make the pass log
-        // "found no drift" on a run that changed something.
+        // Not "nothing was wrong": a NEWER trigger event owns the document.
+        // That is the only thing `false` can mean here now — the owner-gone
+        // case returns above, counted as the repair it is.
         skipped++;
       }
     } catch (err) {

@@ -1764,6 +1764,12 @@
       "path": "Firestore: messages subcollection"
     },
     {
+      "id": "ds-poll-votes",
+      "label": "messages/{id}/poll_votes/{voterId}",
+      "context": "datastore",
+      "path": "Firestore: poll_votes subcollection"
+    },
+    {
       "id": "vm-cooking-mode",
       "label": "Matlagningsläge-vy-modell",
       "context": "viewmodel",
@@ -2374,6 +2380,18 @@
       "label": "blocks",
       "context": "datastore",
       "path": "Firestore: blocks collection"
+    },
+    {
+      "id": "cf-sync-block-mirror",
+      "label": "syncBlockMirror",
+      "context": "cloudfunction",
+      "path": "functions/src/social/sync-block-mirror.ts"
+    },
+    {
+      "id": "ds-block-mirror",
+      "label": "users/{uid}/block_mirror/current",
+      "context": "datastore",
+      "path": "Firestore: block_mirror subcollection"
     },
     {
       "id": "v-block-group-member-dialog",
@@ -5096,7 +5114,7 @@
         {
           "from": "repo-block",
           "to": "ds-blocks",
-          "payload": "blocks/{blockerId}_{blockedId}. Läsvägen (BlockedUserFilter, fyra isNotBlockedBy-anrop i firestore.rules) fanns före BUT-1951 — det var skrivknappen som saknades",
+          "payload": "blocks/{blockerId}_{blockedId}. Läsvägen (BlockedUserFilter, fyra isNotBlockedBy-anrop i firestore.rules) fanns före BUT-1951 — det var skrivknappen som saknades. BUT-1917 lade till en FEMTE spärr som inte går genom den hjälpfunktionen: poll_votes gatas mot en serverskriven spegel, eftersom en regel inte kan gå igenom deltagarlistan",
           "transport": "write + onSnapshot stream",
           "verified": true
         },
@@ -6165,7 +6183,7 @@
     {
       "id": "flow-grp-5",
       "label": "Måltidsomröstning",
-      "description": "Skapa och rösta i en middagsomröstning i gruppchatten, med automatisk planering vid stängning. BUT-1856: omröstningen återanvänder EN chatt per social grupp — den skapas vid första omröstningen och rostern synkas mot gruppen vid varje senare, i stället för en ny oraderbar gruppchatt per omröstning. BUT-1908/BUT-1909: en omröstning vars röster aldrig lästes ritar ingen avsluta-knapp, en stängning som inte kan läsa blockeringslistan vägras med ett svenskt besked i stället för att gissa en vinnare, och blockerade personers röster räknas varken i siffran på skärmen eller när vinnaren avgörs. BUT-1922: blockeringslistan hämtas från servern på stängningsvägen, så en enhet utan nät vägrar i stället för att svara ur den lokala cachen — visningen i chatten är oförändrad och får fortfarande använda cachen.",
+      "description": "Skapa och rösta i en middagsomröstning i gruppchatten, med automatisk planering vid stängning. BUT-1856: omröstningen återanvänder EN chatt per social grupp — den skapas vid första omröstningen och rostern synkas mot gruppen vid varje senare, i stället för en ny oraderbar gruppchatt per omröstning. BUT-1908/BUT-1909: en omröstning vars röster aldrig lästes ritar ingen avsluta-knapp, en stängning som inte kan läsa blockeringslistan vägras med ett svenskt besked i stället för att gissa en vinnare, och blockerade personers röster räknas varken i siffran på skärmen eller när vinnaren avgörs. BUT-1922: blockeringslistan hämtas från servern på stängningsvägen, så en enhet utan nät vägrar i stället för att svara ur den lokala cachen — visningen i chatten är oförändrad och får fortfarande använda cachen. BUT-1917: reglerna vägrar nu själva rösten från någon som en deltagare har blockerat — mot en serverskriven spegel, eftersom en regel inte kan gå igenom deltagarlistan. Tallyn på skärmen och vinnaruppräkningen räknar bort båda riktningarna, medan vad personen SKRIVER fortfarande syns: att dölja det hade avslöjat blockeringen. En vägrad röst ger numera ett neutralt besked i stället för tystnad.",
       "features": [
         "GRP-09"
       ],
@@ -6234,6 +6252,27 @@
           "verified": true
         },
         {
+          "from": "svc-messaging",
+          "to": "svc-blocked-user-filter",
+          "payload": "currentBlockedByIds() — visningsvägen läser ÄVEN vilka som blockerat användaren, så tallyn räknar bort deras röster; failar öppet",
+          "transport": "call",
+          "verified": true
+        },
+        {
+          "from": "ds-blocks",
+          "to": "cf-sync-block-mirror",
+          "payload": "onDocumentWritten på blocks — räknar om HELA listan från källan, retry:true",
+          "transport": "trigger",
+          "verified": true
+        },
+        {
+          "from": "cf-sync-block-mirror",
+          "to": "ds-block-mirror",
+          "payload": "vilka som blockerat användaren — ingen klient får läsa eller skriva den; reglerna läser den med get() som går förbi läsreglerna",
+          "transport": "write",
+          "verified": true
+        },
+        {
           "from": "v-chat-view",
           "to": "v-poll-message-widget",
           "payload": "rendera omröstning från meddelandemetadata",
@@ -6262,9 +6301,16 @@
           "verified": true
         },
         {
+          "from": "vm-chat",
+          "to": "v-chat-view",
+          "payload": "neutral svensk text när rösten vägras (snackbar) — säger aldrig att en blockering finns, för det vore just den notis blockeringen ska slippa",
+          "transport": "call",
+          "verified": true
+        },
+        {
           "from": "repo-messaging",
-          "to": "ds-messages",
-          "payload": "röst tillagd i poll-metadata",
+          "to": "ds-poll-votes",
+          "payload": "en rad per röstande, dok-id == röstarens uid — aldrig själva meddelandet, eftersom bara dess AVSÄNDARE får uppdatera det",
           "transport": "write",
           "verified": true
         },
@@ -6285,7 +6331,7 @@
         {
           "from": "svc-messaging",
           "to": "svc-blocked-user-filter",
-          "payload": "requireBlockedIds() — läser blockeringslistan från SERVERN och vägrar stängningen om den inte går att läsa; offline är därmed en vägran, inte ett cachesvar",
+          "payload": "requireBlockedIds() + requireBlockedByIds() — båda riktningarna, från SERVERN, och stängningen vägras om någon av dem inte går att läsa; offline är därmed en vägran, inte ett cachesvar",
           "transport": "call",
           "verified": true
         },

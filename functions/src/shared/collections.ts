@@ -61,14 +61,15 @@ export const Collections = {
   notifications: "notifications",
   feedback: "feedback",
   // BUT-1917: user block relationships, doc id `{blockerId}_{blockedId}`.
-  // Written only by the client (`FirebaseBlockRepository`); this constant is
-  // the first server-side reader, added because account deletion never reached
-  // the collection. The Dart writer is `FirestoreCollections.blocks` and the
+  // The CLIENT is its only creator (`FirebaseBlockRepository`), but not its
+  // only writer — `deleteBlocks` erases rows here through the Admin SDK. This
+  // constant was added because account deletion never reached the collection. The Dart writer is `FirestoreCollections.blocks` and the
   // two must stay the same string — a mismatch is a query that matches nothing
   // and throws nothing.
   blocks: "blocks",
   // BUT-1917: the server-written mirror of who has blocked a given user, at
-  // `users/{uid}/block_mirror/current`. Written ONLY by `syncBlockMirror`;
+  // `users/{uid}/block_mirror/current`. Every writer is the Admin SDK — the
+  // `syncBlockMirror` trigger and the account cascade;
   // `firestore.rules` denies every client write, because `blocks` itself is
   // client-written and a forgeable mirror would let the blocked party empty
   // their own. Under `users/{uid}` so the account cascade's probe and its

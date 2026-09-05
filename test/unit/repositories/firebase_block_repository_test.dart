@@ -325,6 +325,10 @@ void main() {
         when(
           () => collectionRef.where(any(), isEqualTo: any(named: 'isEqualTo')),
         ).thenReturn(query);
+        // BUT-1917: the incoming readers are bounded, so `where(...)` is
+        // followed by `.limit(...)`. Returning the same query keeps the chain
+        // one recording object rather than two.
+        when(() => query.limit(any())).thenReturn(query);
         when(() => snapshot.docs).thenReturn([]);
         when(() => query.get(any())).thenAnswer((_) async => snapshot);
         when(() => query.get()).thenAnswer((_) async => snapshot);
@@ -349,6 +353,88 @@ void main() {
               'a cache-served answer here is indistinguishable from a current '
               'one, which is the whole defect BUT-1922 closes',
         );
+      });
+
+      // ── BUT-1917: the INCOMING readers, same contract ──────────────────
+      //
+      // The outgoing pair above is pinned; without these the incoming twins
+      // were not, and these mutants were green across the whole repo: dropping
+      // `Source.server` from the incoming decision read (the BUT-1922 defect,
+      // re-entering through the direction this ticket added), swapping the
+      // query field, and swapping the mapper — a wrong-path Firestore read
+      // "matches zero" and no analyzer sees it.
+
+      test('the INCOMING decision read demands the server', () async {
+        await repo.getBlockedByUserIdsFromServer();
+
+        final options = verify(
+          () => query.get(captureAny()),
+        ).captured.cast<GetOptions?>();
+        expect(options, hasLength(1));
+        expect(
+          options.single?.source,
+          Source.server,
+          reason:
+              'offline this must throw so `closePoll` refuses, exactly as the '
+              'outgoing twin does',
+        );
+      });
+
+      test('the INCOMING display read does NOT demand the server', () async {
+        await repo.getBlockedByUserIds();
+
+        final options = verify(
+          () => query.get(captureAny()),
+        ).captured.cast<GetOptions?>();
+        expect(options.single?.source, isNot(Source.server));
+      });
+
+      test('the INCOMING readers are BOUNDED at the server cap', () async {
+        // Without this, deleting `.limit(maxIncomingBlocks)` from all three
+        // readers is green: the `limit` stub returns the same query object, so
+        // the chain works either way. The incoming set is chosen by OTHER
+        // people, which is why it needs a bound the outgoing one does not.
+        await repo.getBlockedByUserIds();
+
+        final limits = verify(() => query.limit(captureAny())).captured;
+        expect(limits.single, FirebaseBlockRepository.maxIncomingBlocks);
+        expect(
+          FirebaseBlockRepository.maxIncomingBlocks,
+          1000,
+          reason: 'the same number sync-block-mirror.ts caps the mirror at',
+        );
+      });
+
+      test('the INCOMING readers query blockedId, not blockerId', () async {
+        await repo.getBlockedByUserIds();
+
+        final fields = verify(
+          () => collectionRef.where(
+            captureAny(),
+            isEqualTo: any(named: 'isEqualTo'),
+          ),
+        ).captured;
+        expect(
+          fields.single,
+          'blockedId',
+          reason:
+              'querying blockerId returns who the user BLOCKED, which is the '
+              'other direction entirely — and it would match rows rather than '
+              'throw, so nothing would look broken',
+        );
+      });
+
+      test('the INCOMING readers map to the BLOCKER of each row', () async {
+        final doc = _MockQueryDocSnapshot();
+        when(() => doc.data()).thenReturn({
+          'blockerId': 'they-blocked-me',
+          'blockedId': 'me',
+          'createdAt': Timestamp.fromDate(DateTime.utc(2026, 1, 1)),
+        });
+        when(() => doc.id).thenReturn('they-blocked-me_me');
+        when(() => snapshot.docs).thenReturn([doc]);
+
+        expect(await repo.getBlockedByUserIds(), {'they-blocked-me'});
       });
 
       test('the DISPLAY read does NOT demand the server', () async {
@@ -379,3 +465,6 @@ class _MockQuery extends Mock implements Query<Map<String, dynamic>> {}
 
 class _MockQuerySnapshot extends Mock
     implements QuerySnapshot<Map<String, dynamic>> {}
+
+class _MockQueryDocSnapshot extends Mock
+    implements QueryDocumentSnapshot<Map<String, dynamic>> {}

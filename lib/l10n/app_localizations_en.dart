@@ -16432,4 +16432,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get groupMenuUntitledGroup => 'Untitled group';
+
+  @override
+  String get pollVoteFailed => 'Your vote could not be registered.';
 }

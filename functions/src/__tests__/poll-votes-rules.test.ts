@@ -191,6 +191,14 @@ async function seed(): Promise<void> {
     await db
       .doc(`messages/${POLL_MSG_ID}/poll_votes/${OTHER_MEMBER_UID}`)
       .set(voteBody(OTHER_MEMBER_UID));
+    // BUT-1917: mirrors are CLEARED, not just re-written. `seed()` runs before
+    // every test so that one test's writes cannot decide another's outcome, and
+    // a mirror is the one fixture that DENIES — so a leftover from a block test
+    // would silently deny every later vote, and the failure would read as a
+    // broken rule rather than a dirty fixture. It cost exactly that once.
+    for (const uid of [AUTHOR_UID, VOTER_UID, OTHER_MEMBER_UID]) {
+      await db.doc(`users/${uid}/block_mirror/current`).delete();
+    }
   });
 }
 
@@ -217,6 +225,303 @@ function test(name: string, fn: TestFn): void {
 // ============================================================================
 // POLL VOTES — the write the old rule denied
 // ============================================================================
+
+// ----------------------------------------------------------------------------
+// BUT-1917 — the block gate. `notBlockedByAnyoneHere()` on create and update.
+//
+// The mirror is what makes this expressible at all: rules cannot iterate a
+// participant list, and a per-counterparty check would cost N document accesses
+// against a hard cap of 10, where exceeding the cap DENIES. So the voter's own
+// `users/{uid}/block_mirror/current` is crossed against the conversation's
+// participants in one `hasAny`.
+//
+// Every case below writes through the REAL production path (the voter's own
+// row, a valid body, an open poll) so a deny can only come from the block
+// conjunct. A deny test that also violated membership or shape would pass for
+// the wrong reason, and `PERMISSION_DENIED` names a rule line, not a reason.
+// ----------------------------------------------------------------------------
+
+/** Give `uid` a mirror naming `blockers`. Server-written in production. */
+async function seedMirror(
+  uid: string,
+  blockers: string[],
+  overrides: Record<string, unknown> = {}
+): Promise<void> {
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    await ctx
+      .firestore()
+      .doc(`users/${uid}/block_mirror/current`)
+      // All FOUR fields `sync-block-mirror.ts` writes, `updatedAt` included.
+      // The rule reads one of them today, so the rest are inert — but the
+      // natural next conjunct is a freshness test on `updatedAt`, and a
+      // fixture missing it would leave every case below blind to that change.
+      .set({
+        blockedByUserIds: blockers,
+        sourceRev: 1,
+        truncated: false,
+        updatedAt: new Date("2026-09-05T00:00:00Z"),
+        ...overrides,
+      });
+  });
+}
+
+async function clearMirror(uid: string): Promise<void> {
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    await ctx.firestore().doc(`users/${uid}/block_mirror/current`).delete();
+  });
+}
+
+// B1: DENY — the whole point. A participant blocked the voter, so the vote is
+// refused even though they are a member and the poll is open.
+//
+// The blocker here is OTHER_MEMBER_UID, who did NOT send the poll. That is
+// deliberate: it is the case that kills the cheaper, wrong implementation which
+// only checks the message's author.
+test("poll_votes: a voter blocked by a NON-AUTHOR participant cannot vote", async () => {
+  await seedMirror(VOTER_UID, [OTHER_MEMBER_UID]);
+  // `clearFirestore()` runs ONCE for the file, so an allow declared above this
+  // one leaves a row at this path and turns the write below into an UPDATE.
+  // The limb would change silently and the deny would still pass, so the
+  // absence is asserted rather than assumed: this case is the create limb's
+  // only kill, measured.
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    const existing = await ctx
+      .firestore()
+      .doc(`messages/${POLL_MSG_ID}/poll_votes/${VOTER_UID}`)
+      .get();
+    if (existing.exists) {
+      throw new Error(
+        "B1 must exercise CREATE: a row already exists at its path, so an " +
+          "allow above it wrote one. Give B1 its own message id."
+      );
+    }
+  });
+  const ctx = env.authenticatedContext(VOTER_UID);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`messages/${POLL_MSG_ID}/poll_votes/${VOTER_UID}`)
+      .set(voteBody(VOTER_UID))
+  );
+});
+
+// B2: ALLOW — the fail-open control, and B1's single-variable pair. Same voter,
+// same room, same body; only the mirror is gone. Without this, B1 could be
+// denying for any reason at all.
+test("poll_votes: a voter with NO mirror votes normally", async () => {
+  await clearMirror(VOTER_UID);
+  const ctx = env.authenticatedContext(VOTER_UID);
+  await assertSucceeds(
+    ctx
+      .firestore()
+      .doc(`messages/${POLL_MSG_ID}/poll_votes/${VOTER_UID}`)
+      .set(voteBody(VOTER_UID))
+  );
+});
+
+// B3: ALLOW — an EMPTY mirror is not a missing one. This is the state an
+// unblock leaves behind, and it must not deny.
+test("poll_votes: an empty mirror does not block anyone", async () => {
+  await seedMirror(VOTER_UID, []);
+  const ctx = env.authenticatedContext(VOTER_UID);
+  await assertSucceeds(
+    ctx
+      .firestore()
+      .doc(`messages/${POLL_MSG_ID}/poll_votes/${VOTER_UID}`)
+      .set(voteBody(VOTER_UID))
+  );
+});
+
+// B4: ALLOW — a mirror naming somebody who is NOT in this conversation. The
+// gate is per-room, not global: being blocked by a stranger must not silence
+// the voter everywhere.
+test("poll_votes: a blocker outside this conversation does not block", async () => {
+  await seedMirror(VOTER_UID, ["pv-outsider-uid"]);
+  const ctx = env.authenticatedContext(VOTER_UID);
+  await assertSucceeds(
+    ctx
+      .firestore()
+      .doc(`messages/${POLL_MSG_ID}/poll_votes/${VOTER_UID}`)
+      .set(voteBody(VOTER_UID))
+  );
+});
+
+// B5: ALLOW — the direction. The BLOCKER keeps voting normally; only the
+// blocked person is refused. A symmetric rule would punish the person who used
+// the safety feature, and no assertion about B1 alone would catch that.
+test("poll_votes: the BLOCKER is not silenced by their own block", async () => {
+  await seedMirror(VOTER_UID, [OTHER_MEMBER_UID]);
+  await clearMirror(OTHER_MEMBER_UID);
+  const ctx = env.authenticatedContext(OTHER_MEMBER_UID);
+  await assertSucceeds(
+    ctx
+      .firestore()
+      .doc(`messages/${POLL_MSG_ID}/poll_votes/${OTHER_MEMBER_UID}`)
+      .set(voteBody(OTHER_MEMBER_UID))
+  );
+});
+
+// B6: DENY — UPDATE carries the gate too. The panel asked what happens to a
+// vote cast BEFORE the block: the row survives, because rules are not
+// retroactive, but the blocked voter can no longer STEER it. Without the
+// conjunct on update, create would refuse a new row while update let them keep
+// changing the old one.
+test("poll_votes: a blocked voter cannot change a vote cast before the block", async () => {
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    await ctx
+      .firestore()
+      .doc(`messages/${POLL_MSG_ID}/poll_votes/${VOTER_UID}`)
+      .set(voteBody(VOTER_UID));
+  });
+  await seedMirror(VOTER_UID, [OTHER_MEMBER_UID]);
+  const ctx = env.authenticatedContext(VOTER_UID);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`messages/${POLL_MSG_ID}/poll_votes/${VOTER_UID}`)
+      .set(voteBody(VOTER_UID))
+  );
+});
+
+// B7: ALLOW — Art. 17 survives the gate. A blocked voter may still DELETE their
+// own row; erasure of your own personal data cannot depend on whether somebody
+// else blocked you.
+test("poll_votes: a blocked voter can still delete their own vote", async () => {
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    await ctx
+      .firestore()
+      .doc(`messages/${POLL_MSG_ID}/poll_votes/${VOTER_UID}`)
+      .set(voteBody(VOTER_UID));
+  });
+  await seedMirror(VOTER_UID, [OTHER_MEMBER_UID]);
+  const ctx = env.authenticatedContext(VOTER_UID);
+  await assertSucceeds(
+    ctx
+      .firestore()
+      .doc(`messages/${POLL_MSG_ID}/poll_votes/${VOTER_UID}`)
+      .delete()
+  );
+});
+
+// B8: ALLOW — reading the tally is NOT block-gated, deliberately. Hiding it
+// would tell the blocked person that a block exists, turning a silent control
+// into a notification.
+test("poll_votes: a blocked voter can still READ the tally", async () => {
+  await seedMirror(VOTER_UID, [OTHER_MEMBER_UID]);
+  const ctx = env.authenticatedContext(VOTER_UID);
+  await assertSucceeds(
+    ctx.firestore().collection(`messages/${POLL_MSG_ID}/poll_votes`).get()
+  );
+});
+
+// B9: DENY — nobody may write the mirror, INCLUDING its owner. The control is
+// forgeable otherwise: the blocked user could empty their own mirror and vote.
+test("block_mirror: the owner cannot write their own mirror", async () => {
+  const ctx = env.authenticatedContext(VOTER_UID);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`users/${VOTER_UID}/block_mirror/current`)
+      .set({ blockedByUserIds: [], sourceRev: 2, truncated: false })
+  );
+});
+
+// B10: DENY — nor READ it. It is the list of who blocked them, so a client read
+// would disclose exactly what blocking exists to withhold.
+test("block_mirror: the owner cannot read their own mirror", async () => {
+  await seedMirror(VOTER_UID, [OTHER_MEMBER_UID]);
+  const ctx = env.authenticatedContext(VOTER_UID);
+  await assertFails(
+    ctx.firestore().doc(`users/${VOTER_UID}/block_mirror/current`).get()
+  );
+});
+
+
+// B11: ALLOW — the TRUNCATED mirror under-blocks, and that is today's decided
+// behaviour rather than an oversight.
+//
+// `sync-block-mirror.ts` caps the list at `MAX_MIRROR_ENTRIES` and stamps
+// `truncated: true`; `notBlockedByAnyoneHere()` never reads the flag. So a
+// blocker who fell off the end stops being enforced. The alternative — deny
+// while truncated — would refuse every vote from anyone blocked by that many
+// people, which is why it was not chosen.
+//
+// Pinned GREEN deliberately, in the "known gap" style the rest of this file
+// uses: the day somebody adds the `truncated` conjunct, this test reddens and
+// tells them the decision they are reversing.
+test("poll_votes: a TRUNCATED mirror does not block a voter it omits", async () => {
+  await seedMirror(VOTER_UID, [], { truncated: true });
+  const ctx = env.authenticatedContext(VOTER_UID);
+  await assertSucceeds(
+    ctx
+      .firestore()
+      .doc(`messages/${POLL_MSG_ID}/poll_votes/${VOTER_UID}`)
+      .set(voteBody(VOTER_UID))
+  );
+});
+
+// B12: DENY — a mirror whose list is not a list refuses the vote.
+//
+// Fail-CLOSED, and silently: such a mirror stops that user voting in every
+// room, everywhere, with no signal. No writer emits this shape today — the
+// trigger always writes an array — so this pins the behaviour rather than a
+// live path, and it is the case a future writer that spells "empty" as `null`
+// would land on.
+test("poll_votes: a malformed mirror refuses the vote", async () => {
+  await seedMirror(VOTER_UID, [], { blockedByUserIds: "not-a-list" });
+  const ctx = env.authenticatedContext(VOTER_UID);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`messages/${POLL_MSG_ID}/poll_votes/${VOTER_UID}`)
+      .set(voteBody(VOTER_UID))
+  );
+});
+
+// B14: ALLOW — a mirror that EXISTS but carries no `blockedByUserIds` key.
+//
+// `.data.get('blockedByUserIds', [])` defaults it, so this fails OPEN — the
+// same direction as a missing mirror, and a different one from B12's malformed
+// value, which denies. No writer produces this today: the trigger always writes
+// the array. It is the shape a future writer that omits the field when empty
+// would produce.
+test("poll_votes: a mirror with no list key does not block", async () => {
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    await ctx
+      .firestore()
+      .doc(`users/${VOTER_UID}/block_mirror/current`)
+      .set({ sourceRev: 1, truncated: false });
+  });
+  const ctx = env.authenticatedContext(VOTER_UID);
+  await assertSucceeds(
+    ctx
+      .firestore()
+      .doc(`messages/${POLL_MSG_ID}/poll_votes/${VOTER_UID}`)
+      .set(voteBody(VOTER_UID))
+  );
+});
+
+// B13: ALLOW — B6's exact single-variable control.
+//
+// B6 denies an UPDATE that re-sends a byte-identical body under a mirror. The
+// nearest existing allow (V13) changes the option ids as well, so it differs
+// from B6 in two variables. This one differs in exactly one: no mirror.
+test("poll_votes: the same update with NO mirror is allowed", async () => {
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    await ctx
+      .firestore()
+      .doc(`messages/${POLL_MSG_ID}/poll_votes/${VOTER_UID}`)
+      .set(voteBody(VOTER_UID));
+  });
+  await clearMirror(VOTER_UID);
+  const ctx = env.authenticatedContext(VOTER_UID);
+  await assertSucceeds(
+    ctx
+      .firestore()
+      .doc(`messages/${POLL_MSG_ID}/poll_votes/${VOTER_UID}`)
+      .set(voteBody(VOTER_UID))
+  );
+});
 
 // V1: ALLOW — the regression this ticket exists for. A participant who did NOT
 // send the poll casts a vote.

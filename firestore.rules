@@ -404,6 +404,34 @@ service cloud.firestore {
         }
       }
 
+      // BUT-1917: the block mirror — who has blocked THIS user.
+      //
+      // Denied in both directions, and each direction has its own reason.
+      //
+      // WRITE: the mirror is what `poll_votes` consults to refuse a blocked
+      // person's vote, and `blocks` itself is client-written. A client able to
+      // write here could empty its own mirror and vote again — the control
+      // would be forgeable by exactly the person it constrains. Every writer
+      // is the Admin SDK, which rules do not govern.
+      //
+      // READ, including by the OWNER: the document is the list of people who
+      // have blocked them. Letting them read it in real time would disclose
+      // that, and would do it silently and continuously. The Art. 15 export
+      // route was the deliberate alternative, and Malin closed it on
+      // 2026-09-05 (BUT-2018): `incoming_blocks` is to be dropped from the
+      // bundle. Not built yet, so the section still ships today.
+      // A blocked person learning who blocked them is the outcome blocking
+      // exists to prevent.
+      //
+      // This block is not what makes the mirror unreachable today — the
+      // terminal `match /{document=**}` already denies it, and did while the
+      // mirror shipped without a block of its own. It is here so the denial is
+      // STATED rather than inherited: a future `match /users/{userId}/{document=**}`
+      // would otherwise hand the write to the person it constrains, silently.
+      match /block_mirror/{mirrorDoc} {
+        allow read, write: if false;
+      }
+
       // CRIT-8: User-defined ingredients (allergen-safety critical)
       // Prevents cross-user ingredient tampering that could inject false allergen data
       match /ingredients/{ingredientId} {
@@ -2308,20 +2336,74 @@ service cloud.firestore {
             && request.resource.data.optionIds.size() <= 20;
         }
 
+        // BUT-1917: nobody in this room may have blocked the voter.
+        //
+        // `isNotBlockedBy(target)` cannot be used here. Every one of its four
+        // existing call sites has exactly ONE known counterparty — a friend
+        // request's `toUserId`, a comment's `recipeOwnerId` — and a group poll
+        // has N. Rules cannot iterate a participant list (the BUT-674 helpers
+        // say so), and checking each member in turn would cost N document
+        // accesses against a hard cap of 10, where EXCEEDING the cap is a
+        // permission-denied rather than a slow path. A nine-person group would
+        // simply stop accepting votes.
+        //
+        // So the direction is inverted: the voter's own mirror
+        // (`users/{uid}/block_mirror/current`, written by the Admin SDK only —
+        // the `syncBlockMirror` Cloud Function and the account cascade) lists
+        // everyone who has blocked THEM, and one `hasAny` against the
+        // conversation's participants answers the whole room at once.
+        //
+        // FAILS OPEN on a missing mirror, deliberately, because failing closed
+        // would refuse every vote from every user until a backfill had written
+        // a document for all of them.
+        //
+        // Absence has several meanings and the gate cannot tell them apart:
+        // nobody has ever blocked this person; the first block landed but the
+        // trigger has not run yet; the account was erased; or
+        // `rebuildMirrorFor` deleted the mirror as an orphan. Only the first is
+        // safe to permit. See the BUT-1917 entry in
+        // `docs/architecture/ACCEPTED_DEVIATIONS.md`.
+        //
+        // The `truncated` flag is NOT read here. `sync-block-mirror.ts` caps
+        // the list at `MAX_MIRROR_ENTRIES` and stamps the flag; above the cap a
+        // blocker falls off and stops being enforced. Deliberate — failing
+        // closed on it would refuse every vote from anyone blocked by that many
+        // people — and recorded in the same entry.
+        //
+        // One-directional on purpose: it refuses the BLOCKED person's vote and
+        // leaves the blocker voting normally. Refusing the blocker would punish
+        // the person who used the safety feature.
+        function notBlockedByAnyoneHere() {
+          return !exists(/databases/$(database)/documents/users/$(request.auth.uid)/block_mirror/current)
+            || !get(/databases/$(database)/documents/users/$(request.auth.uid)/block_mirror/current)
+                 .data.get('blockedByUserIds', [])
+                 .hasAny(get(/databases/$(database)/documents/conversations/$(pollMessage().data.conversationId)).data.participantIds);
+        }
+
         // Every participant reads the tally; only the voter writes their row.
+        //
+        // READ is deliberately NOT block-gated. Hiding the tally from a blocked
+        // person would tell them a block exists — turning a silent control into
+        // a notification — and the client already filters what they see. The
+        // control here is on what a vote DOES, not on what it can look at.
         allow read: if isAuthenticated() && inPollConversation();
 
         allow create: if isAuthenticated()
           && request.auth.uid == voterId
           && inPollConversation()
           && pollIsOpen()
-          && isValidVote();
+          && isValidVote()
+          && notBlockedByAnyoneHere();
 
+        // UPDATE carries it too. Without it, a blocked voter who had already
+        // voted could keep changing their choice — the create limb would refuse
+        // a new row while the update limb let them steer the existing one.
         allow update: if isAuthenticated()
           && request.auth.uid == voterId
           && inPollConversation()
           && pollIsOpen()
-          && isValidVote();
+          && isValidVote()
+          && notBlockedByAnyoneHere();
 
         // Un-voting stays possible after the poll closes: the row is the
         // voter's own personal data, and Art. 17 erasure must not depend on

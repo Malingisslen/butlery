@@ -1,6 +1,9 @@
 import 'dart:async';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:butlery/l10n/app_localizations_en.dart';
+import 'package:butlery/l10n/app_localizations_sv.dart';
 import 'package:butlery/viewmodels/chat_viewmodel.dart';
 import 'package:butlery/models/messaging/poll.dart';
 import 'package:butlery/models/messaging/conversation.dart';
@@ -833,6 +836,75 @@ void main() {
           ).called(1);
         },
       );
+
+      // ── BUT-1917: votePoll must stop swallowing too ───────────────────
+      //
+      // `firestore.rules` now denies a vote from someone a participant has
+      // blocked. Before these tests the method logged and returned, so that
+      // denial reached the user as a button that does nothing at all.
+
+      test('votePoll returns null when the vote goes through', () async {
+        final poll = buildPollMessage(id: 'p3', allowMultipleChoices: false);
+        messagesStreamController.add([poll]);
+        await Future.delayed(const Duration(milliseconds: 50));
+
+        // The CONTROL. Without it the test below could be satisfied by a
+        // method that returns the sentence unconditionally.
+        expect(await viewModel.votePoll('p3', 'opt_a'), isNull);
+      });
+
+      test('votePoll returns a sentence when the service refuses', () async {
+        final poll = buildPollMessage(id: 'p4', allowMultipleChoices: false);
+        messagesStreamController.add([poll]);
+        await Future.delayed(const Duration(milliseconds: 50));
+        when(
+          () => mockMessagingService.votePoll(
+            messageId: any(named: 'messageId'),
+            optionId: any(named: 'optionId'),
+            allowMultiple: any(named: 'allowMultiple'),
+          ),
+        ).thenThrow(
+          FirebaseException(
+            plugin: 'cloud_firestore',
+            code: 'permission-denied',
+          ),
+        );
+
+        final problem = await viewModel.votePoll('p4', 'opt_a');
+
+        // The literal, not the symbol. Asserting against
+        // `AppLocale.current.pollVoteFailed` would read the same getter on
+        // both sides, so it would stay green if the viewmodel returned a
+        // hard-coded Dart string — it pins nothing about where the sentence
+        // comes from. The sibling `closePoll` tests type their Swedish out for
+        // the same reason.
+        expect(problem, 'Din röst kunde inte registreras.');
+      });
+
+      // The acceptance criterion, as its own test: the sentence a refused
+      // voter reads must not disclose that a block exists.
+      //
+      // BOTH locales. `AppLocale.current` is Swedish in this harness
+      // (`AppLocale._current` is initialised to `AppLocalizationsSv()` at field
+      // level and nothing here re-initialises it), so reading it would leave
+      // the English string unguarded.
+      test('the refusal sentence never mentions blocking, in any locale', () {
+        // 'blocker' is deliberately absent: any string containing it contains
+        // 'block', so it could never fail on its own.
+        for (final l10n in [AppLocalizationsSv(), AppLocalizationsEn()]) {
+          final sentence = l10n.pollVoteFailed.toLowerCase();
+          for (final word in ['block', 'spärr']) {
+            expect(
+              sentence.contains(word),
+              isFalse,
+              reason:
+                  'a blocked person learning they were blocked is the '
+                  'notification the silent design exists to avoid; "$word" '
+                  'would leak it',
+            );
+          }
+        }
+      });
 
       // ── BUT-1908: closePoll must stop swallowing ──────────────────────
       //

@@ -279,6 +279,24 @@ class _ChatMessageStreamState extends State<ChatMessageStream> {
     }
   }
 
+  /// BUT-1917: a refused vote gets a sentence, not silence.
+  ///
+  /// Same shape as [_closePoll] below. Before this, `votePoll` swallowed every
+  /// failure, so the rule that now denies a blocked person's vote would have
+  /// been an option that simply never selects.
+  ///
+  /// `mounted` is checked after the await because a snackbar outlives its
+  /// route, and this widget can be disposed while the vote is in flight.
+  Future<void> _votePoll(
+    ChatViewModel viewModel,
+    String messageId,
+    String optionId,
+  ) async {
+    final problem = await viewModel.votePoll(messageId, optionId);
+    if (!mounted || problem == null) return;
+    SnackBarUtils.showError(context, problem);
+  }
+
   /// BUT-1908: `closePoll` can now REFUSE, and a refusal that nobody shows is
   /// the same silent failure the guard was built to replace. The viewmodel
   /// returns the Swedish sentence, or null when there is nothing to show.
@@ -402,7 +420,7 @@ class _ChatMessageStreamState extends State<ChatMessageStream> {
                 onLongPress: () => widget.onMessageAction(message, 'menu'),
                 onReply: () => viewModel.setReplyToMessage(message),
                 onPollVote: (optionId) =>
-                    viewModel.votePoll(message.id, optionId),
+                    _votePoll(viewModel, message.id, optionId),
                 onPollClose: () => _closePoll(viewModel, message.id),
                 onDismissBlocked: () =>
                     _dismissBlockedNotice(viewModel, message.id),
