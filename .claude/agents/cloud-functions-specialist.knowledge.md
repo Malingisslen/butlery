@@ -52,9 +52,9 @@ without approval (mismatch = silent client-side "not found").
   `gcfv2` FILTER: guard the filtered COUNT per caller, keep presence AND value
   pins, and make a by-NAME pin fail rather than skip on a missing export.
 - **No global option reaches EVERY export, and never TALLY endpoints.**
-  `onUserDeleted` is the only gcfv1 one (own `.region().runWith()`); `moderateUpload`,
-  `syncConversationLastMessage`, `purgeExpiredAuditLogs` and `migrations/` pin their
-  own region. Exclude them from any "every function" claim.
+  `onUserDeleted` is gcfv1 (own `.region().runWith()`) and others pin their own
+  region — grep `\.region(|region: "` and exclude every hit from an "every
+  function" claim, rather than trusting a roster written here.
 - **A trigger or `onSchedule` NOT re-exported from `index.ts` is DEAD** — it
   compiles, its unit tests pass, and nothing deploys, so every comment calling
   it a safety net is false. New periodic work is a `MaintenanceTask` in
@@ -292,23 +292,19 @@ from `(err as {code?}).code`.
   A leg with no DIRTY fixture is mutation-invisible and `strict:false` swallows
   a failed chunk, so the probe is the ONLY contradiction to `return true` — leg
   and scenario ship in one edit. A probe ERROR ADDS to residual (a sentinel,
-  never a count), never aborts; one try/catch per leg. Hoist any list a deleter
-  and probe both hardcode into one exported const.
+  never a count), never aborts; one try/catch per leg.
 - **An ENUMERATING probe (`rootRef.listCollections()`) is BROADER than the
   deleter by construction** — any user subcollection no step erases then
-  reports `gdprCompliant:false` forever, unclearable. Ship it only with a
+  reports `gdprCompliant:false` forever. Ship it only with a
   DERIVED drift test: regex every
   `.collection(users).doc(..).collection("X")` writer across `functions/src` +
-  `lib`, RESOLVING collection CONSTANTS incl. file-local ones, and spelling the
-  users token `\w*[Uu]sers\w*` (`[A-Za-z_]\w*` misses the bare
+  `lib`, spelling the users token `\w*[Uu]sers\w*` (`[A-Za-z_]\w*` misses the bare
   `FirestoreCollections.users` every Dart repo writes);
   `db.doc("users/${uid}/X/y")` string paths are still missed. Bucket each name
-  into the source-PARSED `subs`, the source-PARSED exclusions, or a map whose
-  every entry is EXERCISED (seed, run the named deleter, assert gone). Parse
-  those literals by BRACKET MATCHING: `new Set([...])` closes `])`, so
-  `indexOf("];")` swallows half the module. A deleter removing ONE DOC BY ID is
-  NOT a deleter for the COLLECTION the probe counts. The exclusion list is
-  load-bearing BOTH ways and needs its own fixture. Every hand-rolled fake
+  into the source-PARSED `subs`, the source-PARSED exclusions (load-bearing BOTH
+  ways, own fixture), or a map whose every entry is EXERCISED (seed, run the named
+  deleter, assert gone). A deleter removing ONE DOC BY ID is
+  NOT a deleter for the COLLECTION the probe counts. Every hand-rolled fake
   doc-ref then needs `listCollections()` derived from stored deeper paths,
   never stubbed `[]` — absent, the outer catch fails CLOSED and every CLEAN
   fixture reddens.
@@ -408,20 +404,24 @@ from `(err as {code?}).code`.
 - **A hand-run script's delete/keep OVERLAP guard no-ops the WHOLE script in
   silence** (`reset-user-data.ts`), and REPAIRING it removes the header's only
   enforcement — replace it with a deliberate `!dryRun` refusal ABOVE the destructive
-  phase (`admin-init.ts` hardcodes the prod project, no env override), read off the
-  script's own `args`. **A source pin owes**: a grep-UNIQUE anchor; the guard's EFFECT,
-  not only its reference and position (assert `process.exit(1)` INSIDE the refusal,
-  bounded by the next statement); `//`-line STRIPPING first, since commenting the block
-  out is the cheapest disarming edit — but stripping stops NEITHER an `&& false` on the
-  condition NOR a `/* */` wrap, so never claim a stripped-source pin covers every
-  disarming edit; a LAST-entry anchor whenever the pin slices a list (the first entry
-  survives truncation); and the INVOKER — a flag baked into the npm script satisfies the
-  guard forever, so DERIVE that flag's literal from its declaration
-  (`/FLAG = "([^"]+)"/`) rather than restating it, or a rename leaves the pin green.
-  A "wipes all" header is a COVERAGE claim: diff both lists against
-  `firestore.rules`' top-level `match` blocks; never restate the gap as a number. Its
-  Auth-wipe phase fires `onUserDeleted`, which writes into collections the Firestore
-  phase is concurrently deleting.
+  phase (`admin-init.ts` hardcodes prod, no env override), read off the
+  script's own `args`. Its Auth-wipe phase fires `onUserDeleted`, which writes into
+  collections the Firestore phase is concurrently deleting.
+- **A source pin owes**: a grep-UNIQUE anchor; the guard's EFFECT, not its position
+  (`process.exit(1)` INSIDE the refusal); `//`-stripping, which stops NEITHER
+  `&& false` NOR a `/* */` wrap, so no such pin is complete; and the INVOKER, its
+  flag DERIVED from the declaration (`/FLAG = "([^"]+)"/`) or a rename leaves it
+  green. A LIST needs none of it: move the list to a side-effect-free
+  module and IMPORT it, the rule that also keeps a deleter and its probe on ONE const.
+- **A "wipes all" claim needs TWO sources, never a number**: `firestore.rules`
+  top-level `match` blocks (blind to server-only) UNION a `functions/src` scan
+  resolving `Collections.X`, `(export )?const N = "…"` PER FILE (an IMPORTED name
+  must stay unresolved), `collectionGroup(…)`, and doc paths in BOTH quote and
+  backtick form. ONE anchor per branch, on a name only THAT branch finds and
+  something writes; the mutant must COMPILE (TS6133 is not a red test).
+- **A skip register's reason is a MEASURED claim about EVERY writer** — it authorises
+  retention, and rules are not evidence (the Admin SDK bypasses them): `system_events`
+  read clean in two writers while a third wrote raw uids in a doc id and a field.
 - Normalization parity must hold across every matching surface (sync stamp,
   server hold-gate, Dart client); list-split regexes stay in lockstep.
 - Export/mining scripts: verify FIELD PARITY against the writer. Best test is a

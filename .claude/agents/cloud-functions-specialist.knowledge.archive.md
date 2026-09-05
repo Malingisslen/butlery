@@ -18762,3 +18762,74 @@ last-entry anchors (`blocks`, `butlery_archive`) catch an early slice. The named
 the exit check's right bound `indexOf("initializeAdminApp(", refusalAt)` running to EOF on
 `-1` — is unchanged by the flag derivation and stays contrived; the docstring carries the
 inline-in-`main()` precondition. No blocking findings.
+
+### 2026-09-05 — BUT-2028 reset-script coverage guard, four review rounds [review][admin][gdpr]
+Four rounds on the staged set for `25d9060ce` (`admin/reset-collection-lists.ts` NEW,
+`admin/reset-user-data.ts`, `__tests__/account-deletion-cascade.test.ts`,
+`shared/collections.ts`). Verdicts: fail(3), fail(2), pass, pass. Every blocking finding
+was a SENTENCE, not logic — the same shape BUT-1858 and BUT-1957 recorded — and two of the
+five landed inside text written as a repair.
+
+Round 1, blocking. (B1) `COLLECTIONS_DELIBERATELY_UNTOUCHED.system_events` said "No uid on
+any row". Measured false: `feedback/on-report-created.ts` writes doc id
+`moderation_threshold_${contentOwnerId}` and raw uids in `details.userId`,
+`details.reporterId`, `details.contentOwnerId`. The two writers the reason generalised from
+(`admin/sync-ingredients.ts`, `middleware/rate_limiter.ts` with `userIdHash`) are clean,
+which is how it happened. I later read the payload of all nine `system_events` writers:
+`on-report-created.ts` is the only uid source, so the repaired paragraph is exhaustive as
+well as true. The collection moved to `COLLECTIONS_TO_DELETE` with the residual named (no
+cascade leg reaches it, so those uids survive a SINGLE erasure — own ticket).
+(B2) The `ingredient_suggestions` comment claimed "BUT-2028 adds one to the account cascade
+beside this entry"; no such leg existed in index or worktree. (B3) A group heading claimed
+"the per-user rows the account cascade already erases one account at a time" over a block in
+which seven entries have zero cascade coverage — contradicted three lines later by B2's own
+entry. All three struck, not reworded.
+
+Round 2, blocking, both inside round-1 repair text. (B4) The new `parse_corrections_v2`
+justification asserted that a corpus of parse corrections "trains a parser on a dataset the
+reset just orphaned". Refuted against `events/log-parse-correction.ts:170-177`: the row is
+`correctedField`, scrubbed `fromValue`/`toValue`, `sourceTier`, `domain`, `promptVersion`,
+`userIdHash`, `recipeIdHash` — the signal is site x field x tier, nothing points at a recipe
+document, so deleting recipes orphans nothing. Struck with no replacement mechanism; the
+entry now carries an OPEN paragraph. (B5) The new file-local-const branch's comment called
+the gap "a collection reached through a module-level constant" while the regex was
+`^\s*const\s+`, missing `export const`. Live counterexample:
+`ratings/update-pooled-rating-stats.ts:43` `export const CANONICAL_STATS_COLLECTION =
+"canonical_recipe_stats"`, visible to the guard only by the accident of having a rules block
+— the exact accident the branch existed to remove. Measured the widening myself before
+recommending it: over all of `functions/src` the `export` half adds exactly
+`canonical_recipe_stats` and nothing else, and no other check's verdict can move, because
+`known` still holds that name from `firestore.rules:3382` and only check 1 reads
+`fromConstant`. That enumeration is what let me confirm the operator's "it is the only thing
+that can fail" as true rather than take it on trust.
+
+Rounds 3-4, non-blocking: a two-name conjunction whose failure message named only one half
+(so the mutant it was strengthened for printed a diagnostic pointing at the wrong branch);
+an OPEN-paragraph row inventory that omitted the one field a skeptic would raise
+(`recipeIdHash`); "a hashed IP that outlives every account" overstating durability against a
+`${hashUid(ip)}_${hour}` key with a 2h `expireAt`. All corrected in place.
+
+Also verified and found correct, so recorded rather than re-measured next time:
+`pings` really is `pings/{groupId}/pings/{pingId}` (`triggers/ping_onCreate.ts:89`);
+`recipe_cook_events/{userId}/events/{eventId}` with a VIRTUAL parent doc, which
+`deleteWithSubcollections` reaches via `listDocuments()`; `menu_lexicon` and `admins` are
+genuine seed/config (`allow write: if false`) and correctly in `COLLECTIONS_TO_KEEP`;
+`system_ip_audit_caps` holds only a hashed-IP key, `count` and `expireAt`.
+
+Retired from the principles file in the same edit, verbatim:
+- "a LAST-entry anchor whenever the pin slices a list (the first entry survives
+  truncation);" — superseded: move the list to a side-effect-free module and IMPORT it.
+- "A \"wipes all\" header is a COVERAGE claim: diff both lists against `firestore.rules`'
+  top-level `match` blocks; never restate the gap as a number." — superseded: rules alone
+  are blind to server-only collections, and missed five here.
+- "Parse those literals by BRACKET MATCHING: `new Set([...])` closes `])`, so
+  `indexOf(\"];\")` swallows half the module." — same supersession; import, don't parse.
+- "Hoist any list a deleter and probe both hardcode into one exported const." — merged into
+  the import rule.
+- "`onUserDeleted` is the only gcfv1 one (own `.region().runWith()`); `moderateUpload`,
+  `syncConversationLastMessage`, `purgeExpiredAuditLogs` and `migrations/` pin their own
+  region." — the roster had gone stale (`grep -rln '\.region(|region: "'` returns five files,
+  none under `migrations/`), so it is replaced by the grep that re-derives it.
+Net effect on the principles file: 29,623 -> 29,615 chars. It remains ~4,600 over the
+~25,000 budget and needs a dedicated compaction pass; three principles could only be added
+here by trimming this hard, which is not sustainable for the next ticket.
