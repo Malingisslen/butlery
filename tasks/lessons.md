@@ -16,6 +16,36 @@ rule is internalised (roughly six weeks).
 
 ## Current
 
+### [Testing] A collaborator that swallows its own errors makes your error branch unreachable — and the test you write for it pins a branch production cannot enter
+
+- **Date**: 2026-09-05 (BUT-1951, found independently by the `integration-reviewer` and `code-reviewer` gates)
+- **Trigger**: a member picker wrapped `UserService.getUserProfiles` in `try/catch` and set an error state on a throw. That service catches its own repository failure, logs it, and returns what it has — `[]` on a total failure, a subset on a partial one. So the catch could not fire. A real network failure fell through to the EMPTY state, and the dialog told the user "Det finns ingen annan att blockera här" — a claim about who is in the group, made at the moment the app knew nothing, on the screen someone reaches when they are trying to block a person. The test I wrote for the error path stubbed the failure as a throw, so it was green on a branch no user can reach, and made the gap look covered.
+- **Rule**: before writing `catch` around a collaborator, read how that collaborator ENDS a failure. A method that returns a partial result on error has no throw to catch, and its emptiness is ambiguous: the signal is "zero results for a non-empty request", not an exception. Then check what the widget SAYS in the state a failure actually lands in — an empty state is a factual claim, and making it while the read failed is worse than an error message.
+- **Rule (fixtures)**: stub the failure the way the real collaborator produces it. A fixture that throws where production returns `[]` is the same vacuity as a fixture holding a value production never writes — see the sibling entry below.
+- **Measured**: mutating the new guard to `if (profiles.isEmpty && false)` reddens the retry test; before the guard, `onAction: _load` was deletable-green.
+
+### [Testing] A fixture holding a value production never writes makes the test green by the fixture, not by the code
+
+- **Date**: 2026-09-05 (BUT-1951, caught by the `code-reviewer` gate)
+- **Trigger**: the DM block flow took the counterparty's name from `conversation.title`. `conversation_mutation_module` writes `title: ''` for every direct conversation and carries names in `participantDisplayNames`, so the confirm dialog would have read "Vill du blockera ?" and the receipt " har blockerats". My widget test built its DM fixture with `title: 'Anna Svensson'` — a value production never writes for a DM — and deliberately left the counterparty OUT of the display-name map the code should have read. The assertion "the dialog names the counterparty" was satisfied by the fixture. The reviewer noted the fix makes that same assertion the pin, once the fixture mirrors production.
+- **Rule**: a fixture is a claim about what the writers produce. Before asserting on a field, grep the WRITER of that field for the value it actually stores — for a Firestore model that is the mutation module, not the model's constructor defaults. Where the app has a resolver for the same question (`Conversation.getDisplayTitle`), the existence of the resolver is the tell that the raw field is not the source.
+- **Corollary (scoping)**: the assertion was also unscoped, so an ancestor rendering the same string could satisfy it. Scope a finder to the widget under test (`find.descendant(of: find.byType(X), ...)`) whenever the string appears anywhere else on screen.
+
+### [Workflow] Blob hashes settle what `git status` and `git diff` only suggest — in both directions, in one session
+
+- **Date**: 2026-09-05 (BUT-1951; the second half caught by three gates independently)
+- **Trigger**: two opposite errors about the same four files, an hour apart. First: I staged, then kept fixing, and read past the `MM` in `git status` — the commit gate refused, and a reviewer showed my four repairs were worktree-only and would not have shipped. Then, after the commit, the same four files showed `MM` again and `git diff` printed a reflow, so I announced that the formatter's output had missed the commit and prepared a follow-up. It had not. Worktree, index and HEAD were byte-identical; the index was stat-dirty after lefthook rewrote the files during the commit, and my own `git add` had already reconciled it.
+- **Rule**: `git status` porcelain codes and `git diff` output are about the index's cached view. When a claim matters — "this shipped", "this did not ship" — compare `git hash-object <path>` against `git rev-parse HEAD:<path>` and read `git diff --cached --stat`. Three-way blob equality is the measurement; everything else is an impression.
+- **Rule (grep your own guard)**: I grepped `^(MM|AM)` to prove my files were frozen and printed "(nothing = clean)" — the files were `M ` at that moment, so the guard could not have found anything. A guard that cannot fire reads exactly like a guard that passed.
+- **Cost of the second error**: the follow-up commit would have been empty, and the hazard was not the empty commit — it was what a commit reaches for when its pathspec turns out to be empty. This checkout held ~20 other modified files from two other sessions; widening to `git add -u` to "find" the missing change would have swept them into a commit whose message said "formatting only".
+
+### [Workflow] Never run a mutation probe while a reviewer is reading — the probe's write lands in their measurement
+
+- **Date**: 2026-09-05 (BUT-1951; the `integration-reviewer` gate detected it from the inside)
+- **Trigger**: I launched three gate reviewers and then ran mutation probes over the files they were reading. One reviewer measured the blob changing twice mid-review, found an intermediate copy carrying a live mutant (`if (profiles.isEmpty && false)`), and correctly refused to certify — its whole pass was graded against bytes that would not ship. The shared-tree warning says this in as many words; I had read it and still did it, because probes feel read-only.
+- **Rule**: a probe WRITES to `lib/`. Run every probe before dispatching reviewers, paste the results into the brief, and do not touch a reviewed path until the verdict lands. If a probe becomes necessary mid-review, kill the reviewer rather than let it grade moving bytes.
+- **Corollary**: the same discipline covers the ordinary fix loop. A reviewer that reports a finding you already fixed puts you in the position of disproving a reviewer, which is exactly where a real finding gets waved away.
+
 ### [Workflow] A filed follow-up ticket does not discharge an acceptance criterion — least of all when your own diff un-pinned it
 
 - **Date**: 2026-09-02 (BUT-1995, caught by the `code-reviewer` gate)
