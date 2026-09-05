@@ -18833,3 +18833,75 @@ Retired from the principles file in the same edit, verbatim:
 Net effect on the principles file: 29,623 -> 29,615 chars. It remains ~4,600 over the
 ~25,000 budget and needs a dedicated compaction pass; three principles could only be added
 here by trimming this hard, which is not sustainable for the next ticket.
+
+### 2026-09-05 — BUT-2028 reset kill switch, six review rounds [review]
+
+Commit `8df407023`. Seven staged files: `functions/src/shared/reset-kill-switch.ts` (new),
+`functions/src/admin/reset-verdict.ts` (new), `functions/src/admin/reset-user-data.ts`,
+`functions/src/cleanup/on-user-deleted.ts`, `functions/src/__tests__/account-deletion-cascade.test.ts`,
+`docs/ops/reset-user-data-runbook.md`, `firestore.rules`.
+
+**The tally, which is the point of this entry.** Two defects in code, and every other
+finding across six rounds was a sentence.
+
+Code:
+1. **B1 — the kill-switch read was unguarded above the handler's own `try`.**
+   `onUserDeleted` is gen1 with no `failurePolicy`, so a transient Firestore error on that
+   new pre-flight read would have dropped the event and cost that account its entire
+   cascade, with nothing to retry it. Fixed by wrapping it and failing OPEN to
+   `{exists:false, active:false, expired:false}`. This is the clause promoted to the
+   principles file (idempotency rule 13).
+2. **B2 — the refresh cursor was at the wrong granularity.** The TTL bounds the RUN, not
+   only an abandoned one. Round 2 shipped a per-collection counter
+   (`KILL_SWITCH_REFRESH_EVERY = 5`); measured against `reset-collection-lists.ts`, two of
+   the 71 entries (`users`, `conversations`) hold effectively all the wall time and are
+   walked inside ONE `deleteWithSubcollections` call, so the counter refreshed freely
+   across the cheap collections and never fired once during the expensive ones. Round 3
+   replaced it with a `Date.now()` cursor closed over in `main()` and threaded through
+   `runPhases` → `deleteWithSubcollections` → `deleteDocRecursive`.
+
+Sentences (each its own round or half-round): a runbook expiry clause that took three
+wordings before deleting it was the answer ("expires only if the run stops" → "a single
+very large collection can still outlast that" → struck, pointer only); "three flag readers"
+when a fourth (`llm-sample-capture.ts`) matched the same description; a `setResetKillSwitch`
+docstring promising a return value the signature does not have; "the sole server reference
+is the trigger below reacting to a create" against two triggers, one of them
+`onDocumentUpdated`; "the verification phase only ever inspects its OWN run's flag", made
+false by the same change's `state.exists`; "Every probe here is a `count()`", made false by
+the `listDocuments()` leg added three lines below it; "Three things guard that" when the
+signal handlers made four; and finally a four-line comment left standing beside a conjunct
+that had moved one check down.
+
+**Two checks that generalise, both proved here.**
+
+1. *Settle a counterfactual about what a guard catches with a measurement, not an argument.*
+   A comment asserted "both name-anchored guards would stay green" under a described mutant.
+   Reconstructed the mutant from the staged blob, stripped comments the way the test does,
+   and ran the two regexes: `deleteWithSubcollections` guard went **false** — 3561 chars to
+   the next refresh against a 900-char window. The guard catches it; the comment claimed it
+   was blind, which is the direction that gets a working guard deleted. Struck, not reworded.
+   Sub-lesson from the same probe: the first attempt used the loop body as a literal search
+   string and matched **zero** times, because three comment lines sit inside the loop. The
+   `count(old) == 1` assert aborted it instead of measuring the wrong bytes.
+2. *Verify whitespace- or escape-only edits with something that would FAIL if the edit
+   no-opped.* Two claimed fixes were reported as landed and had not: a literal newline inside
+   a template that three heredoc-carried edits had silently no-opped (search and replacement
+   strings identical after the escape collapsed), and a rewrap. Both were caught with
+   `cat -A` and `awk 'length>90'`, neither with re-reading — an applied no-op and a real
+   change are identical to a reader.
+
+**Also worth keeping.** `git hash-object <path>` vs `git rev-parse :<path>` on every file
+each round is what made "the index is frozen" checkable rather than asserted. And one
+verification command in the last round ran after a Bash cwd reset, measuring the repo root
+instead of `functions/`; it failed loudly rather than falsely passing, but the result was
+discarded and re-run with an absolute path rather than reported.
+
+**Not promoted to the principles file, deliberately.** The heartbeat-threading rule
+(thread the cursor to where the time is spent; the enumeration preceding the work is part
+of that span). It generalises to one hand-run script in one family, and the principles file
+is ~4,600 chars over budget — see the 2026-09-02 entry above, which records the same
+measurement. Checked the `admin/`, idempotency, test-seam and cascade sections for
+something stale to retire against rule 13: found nothing. Every bullet still names a live
+symbol, code or threshold, several exercised by this very suite. Rule 13 therefore lands as
+net growth, and the file still needs the dedicated compaction pass those notes have now
+asked for twice.

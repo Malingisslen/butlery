@@ -111,6 +111,12 @@ Triggers retry on uncaught exception; handlers must be idempotent:
     a LIST of writers, never the sibling's ADMISSION TEST (`create`-only misses
     the read-receipt update; the predicate misses a row edited OUT of
     candidacy). Stage by REPLAYING a pre-rewrite snapshot. Record: ADR-0009.
+13. **New I/O ABOVE a handler's own `try` is a new drop point.** A gen1 Auth
+    trigger has no `failurePolicy`, so a throw from a pre-flight read (a kill
+    switch, a config flag) discards the event with nothing to retry it — wrap it
+    and fail OPEN, matching how the reader treats its own malformed/expired
+    cases (`llm-sample-capture.ts` is the precedent). A default that fails
+    CLOSED suppresses the work instead.
 
 ## Cost & cold-start
 
