@@ -22,6 +22,10 @@ import {
   stageCascadeAuditEntry,
   writeCascadeAuditEntry,
 } from "./cascade-audit-log";
+import {
+  readResetKillSwitch,
+  ResetKillSwitchState,
+} from "../shared/reset-kill-switch";
 
 const db = admin.firestore();
 const BATCH_LIMIT = 500;
@@ -36,6 +40,48 @@ export const onUserDeleted = v1
   .auth.user()
   .onDelete(async (user) => {
     const userId = user.uid;
+
+    // BUT-2028: a full reset switches this trigger off for its duration.
+    // Phase 1 deletes every Auth user, which fires this handler once per
+    // account, into collections Phase 2 is concurrently deleting.
+    //
+    // Read UNCACHED, on every invocation. See `readResetKillSwitch` for why a
+    // module cache — the pattern this repo's other flag readers use — would
+    // leave the switch ineffective for exactly the window it exists to close.
+    //
+    // FAILS OPEN, and the try/catch is the whole point of it. This is the only
+    // I/O above the handler's own `try`, and a gen1 Auth trigger has no
+    // `failurePolicy`: a throw here drops the event, so a transient read error
+    // would cost that account its entire cascade with nothing to retry it.
+    // Matches how the reader already treats an expired or malformed flag, and
+    // how `llm-sample-capture.ts` treats its own `system/config` read.
+    let killSwitch: ResetKillSwitchState = {
+      exists: false,
+      active: false,
+      expired: false,
+    };
+    try {
+      killSwitch = await readResetKillSwitch(db);
+    } catch (err: unknown) {
+      v1.logger.error("[onUserDeleted] kill-switch read failed; proceeding", {
+        uid_prefix: userId.slice(0, 6),
+        errCode: (err as { code?: unknown } | undefined)?.code,
+      });
+    }
+
+    // ERROR rather than info, deliberately. This is a suppressed cleanup, and
+    // the flag sticking ON is the failure mode the whole design guards
+    // against; a line per skipped account in Cloud Logging is what makes that
+    // visible from outside Firestore, which the reset itself wipes.
+    if (killSwitch.active) {
+      v1.logger.error("[onUserDeleted] SKIPPED — reset kill switch is set", {
+        uid_prefix: userId.slice(0, 6),
+        runId: killSwitch.runId,
+        expiresAt: killSwitch.expiresAt,
+      });
+      return;
+    }
+
     v1.logger.info(`User deleted: ${userId}. Starting social cleanup.`);
 
     try {
@@ -50,7 +96,14 @@ export const onUserDeleted = v1
         `Social cleanup failed for user ${userId}:`,
         error
       );
-      throw error; // Retry
+      // Rethrown so the invocation is recorded as failed. It is NOT a retry:
+      // this is a gen1 Auth trigger with no `failurePolicy`, so the thrown
+      // error is logged and the event is DROPPED. (`setGlobalOptions` is a v2
+      // API and does not reach this handler.) Making it true is not a free
+      // fix — a retried Auth-delete event would extend the racing writes this
+      // build's kill switch exists to stop, across up to seven days. Its own
+      // ticket.
+      throw error;
     }
   });
 

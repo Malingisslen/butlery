@@ -3275,6 +3275,18 @@ service cloud.firestore {
     // INGREDIENT SUGGESTIONS - User-submitted ingredients
     // ========================================
 
+    // BUT-2028, measured 2026-09-05: this collection is uid-keyed (`userId`)
+    // and NO deletion path reaches it — not the account cascade, not
+    // `on-user-deleted.ts`, and not `reset-user-data.ts` before this ticket
+    // added it to that script's delete list. An Art. 17 leg was scoped on the
+    // row count, and the count against production was ZERO: nothing in `lib/`
+    // writes here (only the `FirestoreCollections.ingredientSuggestions`
+    // constant exists).
+    //
+    // So the gap is real and empty. The `allow create` limb is what can end
+    // that — the FIRST client write here needs an erasure leg written with it,
+    // because a uid-keyed row nothing deletes is an Art. 17 defect from the
+    // moment it exists.
     match /ingredient_suggestions/{suggestionId} {
       allow read: if isAuthenticated()
         && resource.data.userId == request.auth.uid;
