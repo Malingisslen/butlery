@@ -98,10 +98,18 @@ async function testRegistryMembership(): Promise<void> {
     `got ${JSON.stringify(actualDaily)}`,
   );
 
-  const expectedWeekly = ["weeklyActivityDigest", "northStarWeekly"];
+  // BUT-1917 appended `reconcileBlockMirrors`. It goes LAST deliberately: it is
+  // a safety net rather than a report, so if the chain's budget runs out it is
+  // the right task to lose — a week's missed reconciliation is recoverable by
+  // the next pass, whereas the two reports are the chain's reason to exist.
+  const expectedWeekly = [
+    "weeklyActivityDigest",
+    "northStarWeekly",
+    "reconcileBlockMirrors",
+  ];
   const actualWeekly = WEEKLY_REPORT_TASKS.map((t) => t.name);
   record(
-    "WEEKLY_REPORT_TASKS holds the digest first, then the report",
+    "WEEKLY_REPORT_TASKS holds the digest, the report, then the mirror sweep",
     JSON.stringify(actualWeekly) === JSON.stringify(expectedWeekly),
     `got ${JSON.stringify(actualWeekly)}`,
   );

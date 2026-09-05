@@ -176,6 +176,12 @@ export { acceptFriendRequest } from "./social/accept-friend-request";
 // minor; this Admin-SDK callable is the audited server-side exception.
 export { setProfileSearchability } from "./social/set-profile-searchability";
 
+// BUT-1917: the server-written mirror of "who has blocked me". `blocks` is
+// client-written, so a client-written mirror would be forgeable by exactly the
+// person it constrains. This trigger is its only writer; the rules deny every
+// client write to it.
+export { syncBlockMirror } from "./social/sync-block-mirror";
+
 // Parse Event Logging - Server-side analytics (P1-4 security)
 export { logParseEvent } from "./events/log-parse-event";
 

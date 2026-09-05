@@ -174,7 +174,10 @@ compress it.**
   ("twenty lines up", a derived value a human cannot type); a HISTORY sentence about the file's
   own prior wordings (only the review archive can settle it — and it is always strikeable,
   because the mechanism sentence beside it is the whole warning); a sentence NAMING its own
-  verification command (it flips with the commit). **The repair is to STRIKE, never to
+  verification command (it flips with the commit); and a WHY-clause justifying an assertion
+  the round's OWN fixture change just invalidated — making a fixture faithful (a DM's
+  `title: ''`) removes the collision the "that is why this finder is scoped" sentence cites,
+  so re-read every rationale beside a changed fixture. **The repair is to STRIKE, never to
   re-measure or re-point.**
 - **Test-file HEADERS carry several claims at once**: a COUNT, an EXCLUSIVITY claim ("N
   invariants nothing else in the repo holds"), a COVERAGE POINTER to another file, and the
@@ -457,7 +460,12 @@ other suites prove:
   nothing red. The CLOSING shape is one widget test pumping the real app bar with `onMenuAction`
   wired to the real handler and tapping the visible label, so both copies die to one mutant. Scope
   that follow-up to the whole WIRING (the emitting side also carries a VISIBILITY filter, the
-  receiving arm an ARGUMENT decision) (BUT-1971).
+  receiving arm an ARGUMENT decision) (BUT-1971). **The same string emitted from SEVERAL ARMS of
+  ONE method is the third form**: a `find.text` pin cannot say which arm fired, so a mutant that
+  drops through to a sibling early-return stays green. The discriminator is a SECOND observable on
+  the same node — the snackbar's theme-resolved colour (`showError` paints `cs.secondary`, a
+  hand-rolled bar `cs.error`) — which makes such a colour assertion load-bearing rather than
+  cosmetic, and its comment must say what it READS, never why it exists (BUT-1951).
 - **A GENERATED `app_localizations*.dart` carries no logic — its only reviewable question is which
   new ARB strings a suite types VERBATIM.** Read the answer as a table. The unpinned ones cluster:
   arms of an enum→l10n `switch` whose ENUM is asserted at VM level, tooltips, sheet titles, and
@@ -860,6 +868,12 @@ and a probe would only return an untrustworthy green.**
   the PRODUCTION wiring, or the identity claim is about the harness (BUT-1904).
 - A Fake with two branches answering the same success value, driven by one UI flag, eats a routing
   test whole — test the FAILURE arm. An enum-driven `defaults()` owes a KEY-SET-COMPLETENESS test.
+  **A Fake whose ENUM getter can emit only TWO of the enum's N members makes `!= A` and `== B`
+  polarity-equivalent, so the guard's polarity has no witness and the real-world state is
+  unreachable** — grade an enum guard by which members the FAKE can produce, never by how many
+  cases the suite has (BUT-1951: a two-valued `getFriendshipStatus` left "hide Blockera unless
+  already blocked" indistinguishable from "show it only to strangers", which hides it from every
+  friend — on the friend profile screen).
 - Negative-scope claims need a negative assertion against `toMap().keys`, not a render check.
 - **"No write was issued" is the commonest untestable claim** — count writes, positive control same
   test. `findsNothing` needs a co-asserted positive render. A widget whose only access control is an

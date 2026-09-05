@@ -18037,3 +18037,157 @@ exception these are superseded with a dated entry, never struck.
 
 Verdict: pass, with a recommendation to land the denied-path `retryAfterSeconds` test in the
 same commit, since the change is otherwise unpinned by measurement above.
+
+### 2026-09-05 — BUT-1917 step 2+3 review: block mirror + cascade [review][gdpr][deploy]
+
+Staged review of `sync-block-mirror.ts`, `deleteBlockMirrors`, the `subs`/`EXPORT_EXEMPT`
+additions and their two suites. Verdict: fail, 3 blocking.
+
+1. POISON PILL. `blockedIdFromEvent` validates presence only, and `blockedId` is
+   client-chosen: `firestore.rules match /blocks/{blockId}` pins
+   `blockerId == request.auth.uid`, `blockerId != blockedId` and
+   `blockId == blockerId + '_' + blockedId`, and nothing else. `blockedId` of `.`, `..`,
+   `__x__` or a >1500-byte string is therefore writable by any authenticated account, and
+   `mirrorRef` then throws INVALID_ARGUMENT under `retry: true`. `/` is excluded
+   structurally (a doc id cannot hold one), `""` is caught by the existing null branch.
+   Fix: reject those shapes in `blockedIdFromEvent`, one test per shape.
+2. `reconcileBlockMirrors` is defined but NOT exported from `functions/src/index.ts`
+   (only `syncBlockMirror` is) — never deployed. Three docstrings assert the weekly net
+   exists. Also contradicts `maintenance-dispatchers.ts`'s standing rule: new periodic
+   work is a `MaintenanceTask` in `WEEKLY_REPORT_TASKS`, not a new Scheduler job.
+3. No `fieldOverrides` entry for `block_mirror`/`blockedByUserIds` with
+   `queryScope: COLLECTION_GROUP`; `firestore.indexes.json` is not in the staged set. In
+   prod `deleteBlockMirrors` throws FAILED_PRECONDITION → `gdprCompliant: false` on every
+   deletion. The hand-rolled fake cannot see it. Precedent: `participants/participantId`.
+
+Non-blocking, recorded: `collectUidsToReconcile` does two unbounded `.get()`s (whole
+`blocks` + every mirror) then ~4 serial round-trips per uid with no cursor, on the v2 60s
+default (no `timeoutSeconds` declared) — a raced-out run always re-does the same prefix.
+`sourceRev` mixes two clocks (trigger `Date.parse(event.time)` vs reconciliation
+`Date.now()`), so an instance clock running ahead freezes the mirror; subtract a skew
+margin. `blocks` and `block_mirrors` run in the SAME tier-1 `Promise.all` and the sweep's
+`arrayRemove` does not raise `sourceRev`, so a stale in-flight recompute can put the
+erased uid back into a third party's mirror, undetected (no probe leg covers cross-user
+mirrors, deliberately). Truncation direction (truncate+flag over refuse) judged CORRECT;
+unstated: `.limit()` without `orderBy` returns `__name__` order, so the same over-cap
+blockers are dropped every rebuild, and `truncated` has no reader yet.
+
+MEASURED: staged blobs == worktree for all 8 files (`git hash-object` vs `git ls-files -s`).
+Not re-run per brief: tsc, 91/91 CF suite, 14/14 mirror, 242/242 cascade.
+
+### 2026-09-05 — BUT-1917 step 2+3 re-review: block mirror projection [cascade][idempotency]
+
+Re-reviewed after three blocking findings were applied. All six fixes verified correct in
+the worktree:
+
+1. `blockedIdFromEvent` rejects `.`, `..`, `/`, `/^__.*__$/` and >1500 UTF-8 bytes, landing
+   on the existing log-and-return branch (the only exit that does not loop under
+   `retry: true`). Pinned by "a blockedId that is not a legal path segment is refused",
+   which also asserts an ordinary uid still passes.
+2. No new `onSchedule`: `runReconcileBlockMirrors` is appended to `WEEKLY_REPORT_TASKS`
+   and pinned LAST by the registry-membership guard in `maintenance-dispatchers.test.ts`.
+   `syncBlockMirror` is exported from `index.ts` BELOW `setGlobalOptions`.
+3. `firestore.indexes.json` gains `block_mirror/blockedByUserIds` with COLLECTION +
+   COLLECTION_GROUP `arrayConfig: CONTAINS`. MEASURED after the edit: `indexes` 53,
+   `fieldOverrides` 36, of which 19 carry `"ttl": true`; exactly one `block_mirror` entry.
+4. `RECONCILE_REV_SKEW_MS` (1h) holds the reconciliation's stamp behind the trigger's
+   `event.time` — the pass runs on an instance clock, and an instance running ahead would
+   freeze a safety control until the clocks drifted back.
+5. `expectedMirrorFor` compares before writing, so a no-drift weekly pass costs no write.
+6. `rebuildMirrorFor` reads the OWNER doc inside the transaction and deletes an orphaned
+   mirror; `probeResidualData` gained the cross-user `collectionGroup(block_mirror)
+   .where("blockedByUserIds","array-contains",uid)` leg, pinned both clean and dirty.
+
+Non-blocking findings raised: (a) the `rebuildMirrorFor` docstring was left stranded above
+`expectedMirrorFor` when the new export was inserted between them, so it documents the
+wrong symbol ("Returns whether a write happened" over a `string[]` return) — a MOVE, not a
+rewrite; (b) `collectUidsToReconcile` does two UNCAPPED reads (whole `blocks` collection +
+whole `block_mirror` collection group) inside a 60s task in the shared, memory-undeclared
+`weeklyReports` process, on a client-writable, unrate-limited collection — every sibling
+sweep in this ticket caps and declines; (c) the sweep's `sourceRev: Date.now()` stamp is
+unpinned (no test reads `sourceRev` after `deleteBlockMirrors`, so deleting the line
+reddens nothing); (d) two false clauses introduced by fix 6 — "A skipped write means a
+NEWER trigger event already owns this document" (the owner-missing branch also returns
+false, which also makes the reconciliation's `repaired` count undercount an orphan
+deletion) and "there is no one to protect" in the owner branch (a mirror's beneficiaries
+are the BLOCKERS, so a never-created owner doc leaves their blocks unenforced until the
+weekly pass). Both recommended as STRIKES, not rewordings.
+
+Verdict: pass, 0 blocking.
+
+### 2026-09-05 — retired from the knowledge file, kept verbatim [archive]
+
+Retired to stay inside the ~25,000-char budget while adding the block-mirror projection
+principle. Superseded by scope, not by fact — this is `firestore-rules-tester`'s domain and
+lives in that agent's file; the CF agent hands rules off:
+
+- **Rules are not filters** — an unconditioned client query is DENIED wholesale
+  on a member-scoped collection; only the RULES emulator lane proves it, and it
+  KEEPS data across runs, so give an "empty" fixture a uid no other test seeds.
+  The VERB decides which conjuncts run: a merge-`set` on a seeded doc is an
+  UPDATE, and a `withSecurityRulesDisabled` seed evaluates none.
+
+Also compressed in place (facts unchanged, wording tightened): the doc-ID-prefix rule
+bullet, and the `test:rules:all` bullet's coverage-report recipe.
+
+### 2026-09-05 — BUT-1917 step 2+3, round 3 (final) [review][pii][gdpr]
+
+Reviewed the eleven staged paths of the block-mirror trigger + weekly
+reconciliation + `blocks`/`block_mirror` cascade legs. Verdict: pass, 0 blocking.
+Verified per file with `git hash-object` vs `git ls-files -s` — all eleven
+worktree == index, so the bytes reviewed are the bytes that ship. Re-ran
+`src/__tests__/sync-block-mirror.test.ts`: 21/21. Staged blobs carry 0 control
+bytes (the earlier NUL is gone).
+
+The five changes since round 2, each judged:
+
+1. PII leak in the reconciliation's skip log, fixed. It wrote `doc_id`, and a
+   `blocks` id is `{blockerId}_{blockedId}` — two raw uids into Cloud Logging,
+   which outlives the account and which no cascade reaches, on a path any
+   authenticated client can plant (`firestore.rules` pins `blockerId` to the
+   caller and leaves `blockedId` free-form). Now `doc_id_hash: hashUid(doc.id)`;
+   `hashUid` is a SHA-256 12-hex-char prefix. This is the SAME class the
+   knowledge file already recorded for `direct_<uidA>_<uidB>` — a composite doc
+   id is PII — so the principle was folded in place rather than added.
+2. The false coverage claim ("asserted on the emulator lane") was struck rather
+   than reworded. The replacement says `collectUidsToReconcile` has no unit case
+   and the `isUsableUidSegment` skip is therefore UNPINNED. MEASURED as true:
+   `_fake-firestore.ts:302` has `collectionGroup(): never { throw ... }`, and
+   the test file imports six symbols, none of them `collectUidsToReconcile`.
+   Reverting the skip reddens nothing, including the "segment guard is shared"
+   case, which calls the predicate directly.
+3. My four round-2 findings all applied: the stranded docstring is back on
+   `rebuildMirrorFor`; both reconciliation reads cap at
+   `MAX_RECONCILE_SOURCE_ROWS` (5000, read as `.limit(CAP+1)`) with a PARTIAL
+   report; the sweep's `sourceRev` stamp is pinned by a non-vacuous assertion in
+   `scenario_blockMirrorsLoseTheErasedUid` (fixture seeds `sourceRev: 1000`,
+   production stamps `Date.now()`, so deleting the stamp line reddens it); both
+   false clauses struck.
+4. `isUsableUidSegment` hoisted and shared by both call sites, per-uid `try` in
+   `reconcileMirrors` with `checked/repaired/skipped/failed`. Both pinned.
+5. `collectUidsToReconcile` returns `{ uids, partial }` and
+   `runReconcileBlockMirrors` prints ONE verdict, so a truncated source can no
+   longer coexist with "found no drift".
+
+Two LOW notes, neither blocking and neither filed as a defect:
+- The `MAX_RECONCILE_SOURCE_ROWS` docstring says "Every other sweep in this
+  change caps and says so when it hits the cap". `expectedMirrorFor` caps at
+  `MAX_MIRROR_ENTRIES` and says NOTHING — it is a comparison read rather than a
+  sweep, and its write-side twin `rebuildMirrorFor` does log the truncation, so
+  the sentence survives on a reasonable reading of "sweep". Recorded because it
+  is an unnecessary quantified claim in a docstring whose actual argument (an
+  uncapped `.get()` materialises client-chosen rows into a 256MiB task) stands
+  without it. If it is ever touched, strike it rather than re-scope it.
+- `reconcileMirrors` walks up to 5000 uids at ~2 sequential round trips each
+  inside a 60s `TASK_TIMEOUT_MS`, so a large pass cannot finish. Costs nothing
+  else: the task is LAST in `WEEKLY_REPORT_TASKS`, so a timeout aborts only
+  itself, and the pass is recompute-from-source, so the next week resumes.
+  Pre-existing shape, not introduced by these five changes.
+
+Cost/region checks, all clean: no new SDK, no new Cloud Scheduler job (the pass
+is a `MaintenanceTask` in the existing weekly chain), no per-function region,
+`syncBlockMirror` exported BELOW `setGlobalOptions` in `index.ts`, `retry: true`
+safe on a missing doc (`tx.set`/`tx.delete` behind an `exists` check),
+`test:sync-block-mirror` registered in `package.json`, and the
+`block_mirror/blockedByUserIds` COLLECTION_GROUP fieldOverride declared in
+`firestore.indexes.json` for the sweep and its probe leg.

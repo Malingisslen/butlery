@@ -481,6 +481,14 @@
       ]
     },
     {
+      "collectionGroup": "block_mirror",
+      "fieldPath": "blockedByUserIds",
+      "indexes": [
+        { "arrayConfig": "CONTAINS", "queryScope": "COLLECTION" },
+        { "arrayConfig": "CONTAINS", "queryScope": "COLLECTION_GROUP" }
+      ]
+    },
+    {
       "collectionGroup": "members",
       "fieldPath": "userId",
       "indexes": [

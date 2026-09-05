@@ -19,6 +19,7 @@
     "test:parity": "ts-node src/__tests__/normalization-parity.test.ts",
     "test:parity:poolkey": "ts-node src/__tests__/pool-key-parity.test.ts",
     "test:parity:poolkey-wordlists": "ts-node src/__tests__/pool-key-wordlist-parity.test.ts",
+    "test:sync-block-mirror": "ts-node src/__tests__/sync-block-mirror.test.ts",
     "test:script-coverage-report": "node scripts/__tests__/rules-coverage-report.test.js",
     "test:script-test-registration": "node scripts/__tests__/check-test-registration.test.js",
     "test:rules": "ts-node src/__tests__/reports-rules.test.ts",

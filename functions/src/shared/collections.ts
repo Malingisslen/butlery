@@ -67,4 +67,15 @@ export const Collections = {
   // two must stay the same string — a mismatch is a query that matches nothing
   // and throws nothing.
   blocks: "blocks",
+  // BUT-1917: the server-written mirror of who has blocked a given user, at
+  // `users/{uid}/block_mirror/current`. Written ONLY by `syncBlockMirror`;
+  // `firestore.rules` denies every client write, because `blocks` itself is
+  // client-written and a forgeable mirror would let the blocked party empty
+  // their own. Under `users/{uid}` so the account cascade's probe and its
+  // subcollection sweep reach it without a bespoke step.
+  blockMirror: "block_mirror",
+  // The single document id inside that subcollection. One document rather than
+  // one per blocker: rules read it with a single `get()`, and the whole point
+  // is turning N lookups into one.
+  blockMirrorDoc: "current",
 } as const;

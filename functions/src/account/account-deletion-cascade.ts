@@ -32,7 +32,7 @@
 
 import * as admin from "firebase-admin";
 import { logger } from "firebase-functions/logger";
-import { commitInChunks } from "../shared/batch-update";
+import { batchUpdateRefs, commitInChunks } from "../shared/batch-update";
 import { Collections } from "../shared/collections";
 // Deliberate cross-domain import (BUT-1822). `tryClearRoster` lives in a
 // minor-safety TRIGGER module, but it is the one roster clearer: bounded,
@@ -185,6 +185,34 @@ export async function probeResidualData(
   } catch (err) {
     residual += 1;
     logger.error("[deletion-cascade] residual probe failed: poll_votes", {
+      uid_prefix: uid.slice(0, 6),
+      errCode: (err as { code?: number | string }).code ?? null,
+      errName: err instanceof Error ? err.name : typeof err,
+    });
+  }
+  // BUT-1917: the erased uid inside OTHER people's block mirrors. Same shape as
+  // the poll-vote leg above, and for the same reason — `deleteBlockMirrors` is
+  // a cross-user sweep, so nothing under `users/{uid}` can see whether it
+  // finished. It uses the collection-group index the sweep itself needs, so a
+  // missing index shows up here as a false alarm rather than as a false
+  // all-clear.
+  try {
+    const snap = await db
+      .collectionGroup(Collections.blockMirror)
+      .where("blockedByUserIds", "array-contains", uid)
+      .count()
+      .get();
+    const count = snap.data().count ?? 0;
+    if (count > 0) {
+      residual += count;
+      logger.warn("[deletion-cascade] residual block mirrors", {
+        uid_prefix: uid.slice(0, 6),
+        count,
+      });
+    }
+  } catch (err) {
+    residual += 1;
+    logger.error("[deletion-cascade] residual probe failed: block_mirror", {
       uid_prefix: uid.slice(0, 6),
       errCode: (err as { code?: number | string }).code ?? null,
       errName: err instanceof Error ? err.name : typeof err,
@@ -2045,6 +2073,75 @@ async function deleteOwnRosterRows(
 }
 
 /**
+ * Cap on one erasure's sweep of OTHER people's block mirrors.
+ *
+ * Same contract as the sibling caps and the same DECLINE-rather-than-truncate
+ * choice, for the roster cap's reason rather than the poll-vote one: the row
+ * count here is chosen by how many people this user blocked, which is their own
+ * doing — but each mirror belongs to somebody else, and a half-finished sweep
+ * would leave the erased uid inside a live safety control on an unknown subset
+ * of them. Declining reports itself; truncating would not.
+ */
+export const MAX_MIRROR_SWEEP_ROWS = 2000;
+
+/**
+ * BUT-1917: take the erased uid out of everybody else's block mirror.
+ *
+ * The mirror is a PROJECTION of `blocks`, and `deleteBlocks` has already
+ * removed the rows it is derived from. In principle `syncBlockMirror` would
+ * rebuild each affected mirror on its own, because an Admin-SDK delete fires
+ * the same trigger a client delete does. This step exists because that is not
+ * good enough for an erasure: the trigger is asynchronous and may land after
+ * the callable has returned and after `probeResidualData` has already decided
+ * the account is clean, so an Art. 17 guarantee that depends on it is a
+ * guarantee about scheduling. Doing it here makes the erasure synchronous, and
+ * the trigger then rebuilds an already-correct document.
+ *
+ * Probe-covered on both halves. The deleted user's OWN mirror is reached by the
+ * enumeration of what is left under `users/{uid}`; this cross-user half has its
+ * own uncapped `count()` leg on the same collection-group index this sweep
+ * uses, beside the poll-vote leg it is modelled on.
+ */
+export async function deleteBlockMirrors(
+  db: admin.firestore.Firestore,
+  uid: string,
+): Promise<boolean> {
+  const snap = await db
+    .collectionGroup(Collections.blockMirror)
+    .where("blockedByUserIds", "array-contains", uid)
+    .limit(MAX_MIRROR_SWEEP_ROWS + 1)
+    .get();
+
+  if (snap.size > MAX_MIRROR_SWEEP_ROWS) {
+    logger.error(
+      "[deletion-cascade] implausible block-mirror count; not sweeping",
+      { uid_prefix: uid.slice(0, 6), rows: snap.size },
+    );
+    return false;
+  }
+
+  // Per document with `arrayRemove`, not a recompute: the mirror belongs to
+  // another living user, and rebuilding it from `blocks` here would rewrite
+  // THEIR document from this cascade's view of the world. Removing one entry
+  // is the smallest change that erases the uid, and it leaves every other
+  // blocker of that user untouched.
+  await batchUpdateRefs(
+    snap.docs.map((d) => d.ref),
+    () => ({
+      blockedByUserIds: admin.firestore.FieldValue.arrayRemove(uid),
+      // Stamped so a `syncBlockMirror` rebuild that read `blocks` BEFORE
+      // `deleteBlocks` committed cannot land afterwards and put the uid back:
+      // its own `sourceRev` guard then sees a newer revision and skips. Without
+      // this the sweep is invisible to that guard, because `arrayRemove` alone
+      // leaves the revision untouched.
+      sourceRev: Date.now(),
+    }),
+    db,
+  );
+  return true;
+}
+
+/**
  * Cap on one erasure's `blocks` sweep, per direction.
  *
  * The two directions do NOT have the same cap argument, and saying so is the
@@ -3035,6 +3132,20 @@ export const EXPORT_EXEMPT: Record<string, string> = {
   // account that DOES still hold legacy rows, they are erasable but were never
   // exportable. Whether that is worth an export section for a shape no live
   // code writes is Malin's, and has not been asked.
+  block_mirror:
+    "PROJECTION, not a source. `users/{uid}/block_mirror/current` holds the " +
+    "uids of everyone who has blocked this user — the SAME facts the bundle " +
+    "already reproduces under `incoming_blocks`, which reads the `blocks` " +
+    "collection this mirror is derived from. Exporting both would hand the " +
+    "subject one list twice, and the mirror's copy is the less accurate one " +
+    "(it is capped, and it lags the source by a trigger). This argues content " +
+    "identity WITHIN one bundle, never by analogy from another collection. " +
+    "BUT-1917. ⚠ The premise is `incoming_blocks` continuing to be exported: " +
+    "whether it should be is an OPEN Art. 15(4) question filed as BUT-2018, " +
+    "and if that section is ever dropped this exemption loses its reason and " +
+    "must be revisited rather than inherited. " +
+    "`scenario_blockMirrorExemptionRestsOnIncomingBlocks` fails if the two " +
+    "drift apart, so the dependency is enforced rather than described.",
   category_memberships:
     "NO LIVE WRITER of users/{uid}/category_memberships. Legacy sweep only.",
   connection_tests:
@@ -3165,6 +3276,12 @@ export async function deleteUserSubcollections(
     // shrinks the public averages they contributed to, with no explicit
     // recompute call (the established trigger separation).
     "canonical_rating_events",
+    // BUT-1917: the block mirror, `users/{uid}/block_mirror/current`. This leg
+    // erases the deleted user's OWN mirror — the list of who blocked THEM.
+    // Removing their uid from OTHER people's mirrors is a separate, capped
+    // step (`deleteBlockMirrors`), because that one is a cross-user sweep and
+    // this list is only the owner's own subtree.
+    "block_mirror",
   ];
   for (const name of subs) {
     const snap = await userDoc.collection(name).get();

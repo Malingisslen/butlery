@@ -57,6 +57,13 @@ without approval (mismatch = silent client-side "not found").
 - **Some gen2 exports pin their OWN region** (`moderateUpload`,
   `syncConversationLastMessage`, `purgeExpiredAuditLogs`, `migrations/`), so
   never say a global option "reaches every export", and never TALLY endpoints.
+- **A trigger or `onSchedule` NOT re-exported from `index.ts` is DEAD** — it
+  compiles, its unit tests pass, and nothing deploys, so every comment calling
+  it a safety net is false. New periodic work is a `MaintenanceTask` in
+  `WEEKLY_REPORT_TASKS`/`DAILY_ANALYTICS_TASKS` (Scheduler bills per JOB, 3 free
+  per billing account), never a new `onSchedule`; a standalone one also needs
+  its own `timeoutSeconds` (else the v2 60s default) and must sit BELOW
+  `setGlobalOptions` in `index.ts`.
 
 ## Firebase Functions v2 — what to use
 
@@ -76,6 +83,10 @@ Triggers retry on uncaught exception; handlers must be idempotent:
    throws NOT_FOUND (grpc `5`), turning a drop-once into a permanent loop.
 6. **Client-supplied strings in a doc path are a poison-pill surface** —
    validate non-empty, ≤1500 UTF-8 bytes, no `/`, not `.`/`..`/`/^__.*__$/`.
+   A rules-pinned DOC ID pins nothing about the FIELDS inside it: `blocks`
+   pins `blockerId` and the composite id, leaving `blockedId` free — and a
+   bad segment makes the ref builder throw INVALID_ARGUMENT, i.e. a
+   `retry:true` loop any authenticated account can plant with one write.
 7. Sanitisation must never shrink the value a security gate's THRESHOLD is
    computed from.
 8. **Concurrent Tier-1 cascade legs (`Promise.all`) can write the same
@@ -125,20 +136,18 @@ Triggers retry on uncaught exception; handlers must be idempotent:
 
 ## Test commands (from `functions/`)
 
-- `npm run build` — must pass before any commit. `npm test` =
-  `run-all-tests.js`, auto-discovering every `test:*` script. **A new
-  `__tests__/*.test.ts` is invisible until its `test:*` script exists**
-  (`check-test-registration.js` proves it per FILE; tests added to an existing
-  suite need none), and a `test:*` naming an UNTRACKED file reddens the CI unit
-  lane — so file + package.json line stage in ONE commit.
+- `npm run build` before any commit. `npm test` = `run-all-tests.js`,
+  auto-discovering every `test:*`. **A new `__tests__/*.test.ts` is invisible
+  until its `test:*` script exists** (`check-test-registration.js`; additions to
+  an existing suite need none), and a `test:*` naming an UNTRACKED file reddens
+  the CI unit lane — file + package.json line in ONE commit.
 - `npm run test:rules:all` — a new rules/integration suite is FOUR
   registrations: its own `test:*` script, an append to the `&&` chain in
   `test:rules:all`, BOTH `paths:` blocks in `firestore-rules.yml`, and a UNIQUE
   **bare-literal** `const PROJECT_ID = "..."` (`rules-coverage-report.js`
   discovers ids by regex, so an env-defaulted const silently drops the suite from
   the coverage union — put any probe override at the `projectId:` CALL SITE).
-  Verify with a live emulator + `rules-coverage-report.js --base HEAD` →
-  `newUntestedBlocks: 0`. Details are `firestore-rules-tester`'s; hand rules off.
+  Details are `firestore-rules-tester`'s; hand rules off.
   `test:rules*`/`test:integration:*` are excluded from the unit lane by prefix.
 - `scripts/run-ci-unit-tests.js` — the real CI gate. Hand-rolled harness,
   no jest — call `runTests` exactly ONCE per file.
@@ -146,16 +155,16 @@ Triggers retry on uncaught exception; handlers must be idempotent:
 ## Logging conventions
 
 `logger` from `firebase-functions/logger`, never `console.log` (except `admin/`
-ts-node scripts): `logger.info("event", { userId, recipeId, action })` — stable
-string, structured object, no PII. **`logger.error(msg, { err })` records NO
+ts-node scripts): `logger.info("event", {structured})` — stable string, no
+PII. **`logger.error(msg, { err })` records NO
 cause** — unwraps only when passed POSITIONALLY; use `errCode`/`errName`
 from `(err as {code?}).code`.
 - **Hash ALL PII/title-derived fields consistently** — a mixed line (one
   hashed, one cleartext) is the tell. `hashUid(uid)` or `uid.slice(0,6)`.
 - **A DOCUMENT ID can be PII depending on the CALLER** — a GROUP conversation
-  id is server-minted (auto-id, or a hash for a meal-vote chat); a DM's is
-  `direct_<uidA>_<uidB>`. `logSafeConversationId(id)` hashes the direct
-  spelling — re-derive it for every NEW caller of an id-logging helper.
+  id is server-minted; a DM's is `direct_<uidA>_<uidB>` and a `blocks` id is
+  `{blockerId}_{blockedId}`. Hash the WHOLE id (`logSafeConversationId`,
+  `hashUid(doc.id)`); re-derive it for every NEW caller of an id-logging helper.
 - **A uid enters a log through a QUERY OBJECT too** — a logged `FieldPath(...,
   uid)` JSON-stringifies its SEGMENTS, writing the raw uid on the very line
   that truncates it to `uid_prefix`. Log a literal label.
@@ -181,16 +190,9 @@ from `(err as {code?}).code`.
 - Vacuity: a `?? {}` read survives the mutant DELETING the doc (pair with a
   sibling requiring EXISTS); `src.includes("<field>")` is free when a
   docstring names the field (assert the WRITE).
-- **A doc-ID-prefix rule (`planId.matches('^' + uid + '_.*')`) is bounded by
-  the SEPARATOR, not the uid** — measured: `abc` is denied `abcdef_…` but
-  ALLOWED `abc_def_…`, on read and delete. Safe only while uids are
-  Firebase-minted (no `_`). Such a limb never reads `resource`, so it also
-  allows deleting a document that does not exist.
-- **Rules are not filters** — an unconditioned client query is DENIED wholesale
-  on a member-scoped collection; only the RULES emulator lane proves it, and it
-  KEEPS data across runs, so give an "empty" fixture a uid no other test seeds.
-  The VERB decides which conjuncts run: a merge-`set` on a seeded doc is an
-  UPDATE, and a `withSecurityRulesDisabled` seed evaluates none.
+- **A doc-ID-prefix rule (`planId.matches('^' + uid + '_.*')`) is bounded by the
+  SEPARATOR, not the uid** — `abc` is ALLOWED `abc_def_…`; safe only while uids
+  carry no `_`. Reading no `resource`, it also allows deleting a missing doc.
 - **A fake `commit()` that RE-DERIVES the intended effect instead of
   APPLYING the write payload makes the write vacuous** — dispatch on the
   `FieldValue` transform's `constructor.name`; reject `update()` on a
@@ -234,6 +236,12 @@ from `(err as {code?}).code`.
   the server cannot QUERY** — `listDocuments()` is the only Admin-SDK call
   returning refs for MISSING docs with live children (a `count()` reports ZERO);
   use it on sweep AND probe, and `strict:true` for a doomed parent's children.
+- **A server-written PROJECTION of a client collection (`block_mirror` of
+  `blocks`) owes three things**: its trigger checks the SUBJECT's owner doc
+  INSIDE the transaction and DELETES an orphan (the cascade's own source deletes
+  fire it, so a late rebuild re-creates the erased uid's doc post-probe); the
+  cross-user sweep STAMPS the revision guard (`arrayRemove` leaves it untouched,
+  so an in-flight older rebuild wins); and it runs AFTER the source tier.
 - A "shared" collection also holds SOLO-owner docs to DELETE, not scrub. A scrub
   enumerates every uid in the MODEL's `toFirestore`: array elements, per-uid map
   keys, AND attribution scalars (`lastModifiedBy`, `lastEditedBy`).
@@ -357,9 +365,13 @@ from `(err as {code?}).code`.
   `recipe_social_stats` is SERVER-ONLY — confirm from firestore.rules, not from
   a green Dart test.
 - Unbounded collection-group folds use `.aggregate({count, average})`, never
-  `.get()`; a `collectionGroup` equality query needs a `fieldOverrides` entry
-  with `queryScope:"COLLECTION_GROUP"`. A COLLECTION-scoped equality needs none
-  unless `fieldOverrides` EXEMPTS that field — check exemptions, not `indexes`.
+  `.get()`; ANY filtered `collectionGroup` query — equality or
+  `array-contains` — needs a `fieldOverrides` entry with
+  `queryScope:"COLLECTION_GROUP"`, in `firestore.indexes.json`, staged in the
+  SAME commit (precedent: `participants/participantId`). Missing, a cascade leg
+  throws FAILED_PRECONDITION on every real erasure while the fake stays green.
+  A COLLECTION-scoped equality needs none unless `fieldOverrides` EXEMPTS that
+  field — check exemptions, not `indexes`.
 
 ### Verify-signup-age, account callables & minor-safety triggers
 - Rules can't iterate an array for a per-member rule on GROUP-shaped data —

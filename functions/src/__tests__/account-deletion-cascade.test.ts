@@ -26,7 +26,9 @@ if (!admin.apps.length) {
 const {
   deleteMessages,
   deleteBlocks,
+  deleteBlockMirrors,
   MAX_BLOCK_SWEEP_ROWS,
+  MAX_MIRROR_SWEEP_ROWS,
   deleteRealtimeMenus,
 } = require("../account/account-deletion-cascade");
 
@@ -2706,6 +2708,198 @@ async function scenario_probeSeesLeftoverBlocks(): Promise<void> {
 }
 
 /**
+ * BUT-1917: the residual probe SEES a block mirror the sweep missed.
+ *
+ * `deleteBlockMirrors` is a cross-user sweep, so nothing under `users/{uid}`
+ * can tell whether it finished — which is exactly the shape this file's own
+ * rule calls out: a deleter without a probe is how an erasure becomes silently
+ * incomplete. The leg uses the same collection-group index the sweep needs, so
+ * a missing index surfaces here as a false alarm rather than a false all-clear.
+ */
+async function scenario_probeSeesLeftoverBlockMirrors(): Promise<void> {
+  const { probeResidualData } = require("../account/account-deletion-cascade");
+
+  const clean = new FakeFirestore();
+  clean.set("users/fourth-uid/block_mirror/current", {
+    blockedByUserIds: ["third-uid"],
+  });
+  const cleanResult = {
+    deletedCollections: [],
+    failedCollections: [] as string[],
+    errors: [],
+  };
+  await probeResidualData(asDb(clean), UID, cleanResult);
+  check(
+    "somebody else's mirror does not make the probe fire",
+    !cleanResult.failedCollections.includes("residual_data_detected"),
+    `failed: ${JSON.stringify(cleanResult.failedCollections)}`,
+  );
+
+  const dirty = new FakeFirestore();
+  dirty.set(`users/${OTHER}/block_mirror/current`, {
+    blockedByUserIds: [UID],
+  });
+  const dirtyResult = {
+    deletedCollections: [],
+    failedCollections: [] as string[],
+    errors: [],
+  };
+  await probeResidualData(asDb(dirty), UID, dirtyResult);
+  check(
+    "a mirror still naming the erased user is reported as residual",
+    dirtyResult.failedCollections.includes("residual_data_detected"),
+    `failed: ${JSON.stringify(dirtyResult.failedCollections)}`,
+  );
+}
+
+/**
+ * BUT-1917: the erased uid comes out of OTHER people's block mirrors.
+ *
+ * Their own mirror goes with the `users/{uid}` subcollection sweep. This is the
+ * cross-user half: a mirror belonging to somebody the erased user had blocked
+ * still names them, and that document is a live safety control on an account
+ * that continues to exist.
+ *
+ * `arrayRemove` rather than a rebuild, and the distinction has a test of its
+ * own below: the mirror belongs to another user, so this cascade must take out
+ * one entry rather than rewrite their document from its own view of `blocks`.
+ */
+async function scenario_blockMirrorsLoseTheErasedUid(): Promise<void> {
+  const db = new FakeFirestore();
+  db.set(`users/${OTHER}/block_mirror/current`, {
+    blockedByUserIds: [UID, "third-uid"],
+    sourceRev: 1000,
+  });
+  // A mirror the erased user is not in. If the sweep were keyed on the
+  // collection rather than the uid, this one would be rewritten too and no
+  // assertion about the first would notice.
+  db.set("users/fourth-uid/block_mirror/current", {
+    blockedByUserIds: ["third-uid"],
+    sourceRev: 1000,
+  });
+
+  const complete = await deleteBlockMirrors(asDb(db), UID);
+
+  check("the mirror sweep reports itself complete", complete === true);
+  const touched = (db.get(`users/${OTHER}/block_mirror/current`) ??
+    {}) as DocData;
+  check(
+    "the erased uid is gone from another user's mirror",
+    Array.isArray(touched.blockedByUserIds) &&
+      !(touched.blockedByUserIds as string[]).includes(UID),
+    `left: ${JSON.stringify(touched.blockedByUserIds)}`,
+  );
+  check(
+    "…and the OTHER blocker on that same mirror survives",
+    Array.isArray(touched.blockedByUserIds) &&
+      (touched.blockedByUserIds as string[]).includes("third-uid"),
+    "an `arrayRemove` takes one entry; a rebuild from this cascade's view " +
+      "would have rewritten somebody else's document wholesale",
+  );
+  const untouched = (db.get("users/fourth-uid/block_mirror/current") ??
+    {}) as DocData;
+  check(
+    "…and the sweep RAISES the mirror's revision",
+    typeof touched.sourceRev === "number" && (touched.sourceRev as number) > 1000,
+    `sourceRev: ${JSON.stringify(touched.sourceRev)} — without a raised stamp a ` +
+      "`syncBlockMirror` rebuild that read `blocks` before the cascade deleted " +
+      "them can land afterwards and put the uid straight back, because its own " +
+      "guard would see no newer revision",
+  );
+  check(
+    "a mirror not naming the erased user is untouched",
+    Array.isArray(untouched.blockedByUserIds) &&
+      (untouched.blockedByUserIds as string[]).length === 1,
+  );
+}
+
+/**
+ * BUT-1917: an implausible mirror count DECLINES and reports the step
+ * incomplete, rather than sweeping a subset.
+ *
+ * Each of these documents belongs to a different living user, so a truncated
+ * sweep would leave the erased uid inside a live safety control on an unknown
+ * subset of them — with the audit row saying the erasure was clean.
+ */
+async function scenario_implausibleMirrorCountDeclines(): Promise<void> {
+  const db = new FakeFirestore();
+  for (let i = 0; i <= MAX_MIRROR_SWEEP_ROWS; i++) {
+    db.set(`users/peer-${i}/block_mirror/current`, {
+      blockedByUserIds: [UID],
+      sourceRev: 1000,
+    });
+  }
+
+  const complete = await deleteBlockMirrors(asDb(db), UID);
+
+  check(
+    "the step reports itself INCOMPLETE rather than truncating",
+    complete === false,
+  );
+  const first = (db.get("users/peer-0/block_mirror/current") ?? {}) as DocData;
+  check(
+    "and nothing was half-swept",
+    Array.isArray(first.blockedByUserIds) &&
+      (first.blockedByUserIds as string[]).includes(UID),
+  );
+}
+
+/**
+ * BUT-1917: the block mirror's export exemption rests on `incoming_blocks`, and
+ * this is what stops the two drifting apart in silence.
+ *
+ * `EXPORT_EXEMPT.block_mirror` says the mirror need not be exported because the
+ * bundle already reproduces the same facts under `incoming_blocks`, which reads
+ * the `blocks` collection the mirror is derived from. That is an argument about
+ * content identity inside ONE bundle — but it is only true while that section
+ * exists. Whether `incoming_blocks` SHOULD keep telling a requester exactly who
+ * blocked them is an open Art. 15(4) question (BUT-2018), so the section this
+ * exemption leans on is one a future decision may remove.
+ *
+ * Bound by a test rather than by prose because prose is exactly what would stay
+ * behind, still reading as a decided call, on the day the section goes.
+ */
+async function scenario_blockMirrorExemptionRestsOnIncomingBlocks(): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const fs = require("fs");
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const path = require("path");
+  const repoRoot = path.join(__dirname, "..", "..", "..");
+
+  const exempt = (
+    require("../account/account-deletion-cascade") as {
+      EXPORT_EXEMPT: Record<string, string>;
+    }
+  ).EXPORT_EXEMPT;
+
+  check(
+    "the block mirror is exempt from the export",
+    typeof exempt[Collections.blockMirror] === "string",
+    `EXPORT_EXEMPT keys: ${JSON.stringify(Object.keys(exempt))}`,
+  );
+
+  const managerPath = path.join(
+    repoRoot,
+    "lib",
+    "services",
+    "account",
+    "export",
+    "social_export_manager.dart",
+  );
+  const manager = fs.readFileSync(managerPath, "utf8") as string;
+
+  check(
+    "…and the section its reasoning depends on is still exported",
+    manager.includes("'incoming_blocks'"),
+    "`EXPORT_EXEMPT.block_mirror` argues the mirror is redundant because the " +
+      "bundle reproduces the same uids under `incoming_blocks`. That section " +
+      "is gone from social_export_manager.dart, so the exemption now excuses " +
+      "the ONLY copy of those facts. Revisit it (BUT-2018) rather than " +
+      "re-pointing this assertion.",
+  );
+}
+
+/**
  * BUT-1917: `blocks` is erased in BOTH directions.
  *
  * The collection had no server reader at all before this, so an erased
@@ -4223,6 +4417,10 @@ async function main(): Promise<void> {
   await scenario_residualLegsSurviveTheMembershipDecline();
   await scenario_deleteMessagesSkipsGroupOwnedConversations();
   await scenario_probeSeesLeftoverChatGroupMembership();
+  await scenario_probeSeesLeftoverBlockMirrors();
+  await scenario_blockMirrorsLoseTheErasedUid();
+  await scenario_implausibleMirrorCountDeclines();
+  await scenario_blockMirrorExemptionRestsOnIncomingBlocks();
   await scenario_blocksAreErasedInBothDirections();
   await scenario_probeSeesLeftoverBlocks();
   await scenario_resetScriptDeleteListNamesBlocks();

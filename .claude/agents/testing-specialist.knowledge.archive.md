@@ -34817,3 +34817,167 @@ omitted optional positional as `null` to `noSuchMethod`, so `options.single` is 
 `Source.server` appearing on that path.
 
 **Verdict:** pass, 0 blocking; no new findings. BUT-1909 dispose-framing residual stays declined.
+
+### 2026-09-05 — BUT-1951 blocking reachable from the app (trigger: review of a new test surface)
+
+Files reviewed with `Read`: the 21 listed in the brief (generated l10n + the two 5k–7k-line docs
+read at their changed regions).
+
+**Blocking findings.**
+
+1. `chat_action_handler_block_test.dart` — `expect(find.text('Malin'), findsNothing,
+   reason: 'you cannot block yourself')` is a TAUTOLOGY. 'Malin' lives only in
+   `participantDisplayNames`, which nothing in this screen renders; the picker renders profiles
+   from `_userService.getUserProfiles`, and the fixture builder names uid `_me` 'Björn Ek' —
+   the same string it gives `_third`. So the self-exclusion filter's only witness is the
+   `find.text('Björn Ek'), findsNothing` assertion whose `reason:` attributes it to the
+   ALREADY-BLOCKED filter. Both filters are killed by one assertion, neither is attributed, and
+   giving `_third` its own name later would silently unpin self-exclusion. Repair: one distinct
+   display name per fixture uid.
+2. `friends_viewmodel_test.dart:350-351` — "Note: unblockUser test skipped — same pre-existing
+   SchedulerBinding issue" is falsified by the same commit, which adds two passing
+   `unblockUser` tests 500 lines lower. Strike, do not reword.
+3. `friends_viewmodel_test.dart` "getFriendshipStatus returns none for previously-blocked user
+   after service state clears" — nothing is previously blocked in the fixture (setUp seeds no
+   blocked set and the test seeds `{}`), so it asserts `none` for an unknown uid, which three
+   other cases already pin. Its comment ("would fail if the VM cached blockedUsers locally") is
+   a false counterfactual: a constructor-caching mutant caches the same empty set. Repair is to
+   seed non-empty, read `blocked`, re-seed `{}` on the SAME VM, read `none` — that is the live-read
+   discriminator the name claims.
+
+**Enum-fake polarity (the new principle).** `MockFriendsViewModel.getFriendshipStatus` can return
+only `blocked` or `none`. Both new surfaces guard on `!= FriendshipStatus.blocked`
+(`friend_profile_view` menu item, `BlockGroupMemberDialog._load`). Under a two-valued fake
+`!= blocked` and `== none` are the same function, so the mutant is invisible — and in production
+the friend-profile screen is opened on a FRIEND, whose status is `friends`, so `== none` hides
+Blockera from every friend. Merged into the Fake/vacuity bullet in the principles file.
+
+**Unprobed mutants that survive (non-blocking, listed for the fix round).** `button: true` on
+`GroupMemberItem` (the a11y test asserts a LABEL only, while its name claims button-ness);
+`displayName` at the DM call site (the `findsWidgets` on 'Anna Svensson' is answered by the
+ChatAppBar title, which stays mounted under a non-opaque dialog — analytic, no probe owed);
+both `SnackBarUtils` arms in `BlockUserAction` (nothing asserts either); `return success` →
+`return true` (no test sets `blockSucceeds = false`, which has ZERO readers repo-wide);
+`Navigator.pop()` after a DM block and its absence in the group branch (the map and both test
+headers state it; nothing asserts it); the `conversation == null` and `counterpartId.isEmpty`
+error branches; `friendsViewModel.dispose()` in the `finally` (registration confirmed
+`registerFactory<FriendsViewModel>` in `ui_module.dart:272`); the picker's `_failed` + retry
+branch; and `logUserBlocked` in the VM (`MockSocialEventsTracker extends _NoOpFutureMock extends
+Fake`, so `verify` cannot see it — closing this needs a recorder, not a stub).
+
+**Weakening check (asked explicitly).** No. Before the change both members hit mocktail's
+`noSuchMethod` and threw `MissingStubError`, so any existing consumer calling them would already
+have been red; grep of the nine consumer suites shows no `throwsA`/`MissingStubError` and no call
+site. The forward risk is the default: `_alreadyBlocked` starts empty, so every future consumer
+of `getFriendshipStatus` silently takes the `none` branch. Separate landmine, pre-existing: a
+SECOND class named `MockFriendsViewModel` lives in `service_mocks.dart` (`extends Mock with
+ChangeNotifier`, does not implement `FriendsViewModel`) — a suite importing that one gets none of
+this behaviour.
+
+**Doc.** `ACCEPTED_LARGE_FILES.md` row for `chat_action_handler.dart` reads 697 in its Lines
+column (correct, `wc -l` 697) while its own parenthetical still says "Row refreshed 2026-08-29
+(580 → 628)". Strike the parenthetical numerals; keep the sentence about the guard matching on
+basename.
+
+**Verdict:** fail, 3 blocking.
+
+### 2026-09-05 — BUT-1951 re-review round 2 (blocking entry points): the fix round's own comments
+
+Trigger: re-review after three blocking findings were applied (distinct profile-stub names,
+struck stale note, rewritten seed-then-clear VM test). All three verified applied. Two NEW
+false sentences, both inside text written as part of that remedy, plus one false count.
+
+1. `test/widget/messaging/chat_action_handler_block_test.dart:279-281` — "showSuccess and
+   showError render the same string, only in different colours". Measured false:
+   `BlockUserAction` passes `socialUserBlocked(name)` ("{name} har blockerats") on the success
+   arm and `socialCouldNotBlockUser` ("Kunde inte blockera användare") on the failure arm, so
+   a whole-arm swap DIES to the text assertion. The mutant the colour assertion actually kills
+   is the narrower one: `showError` -> `showSuccess` keeping the same string
+   (`SnackBarUtils.showError` -> `cs.secondary`, `showSuccess` -> `cs.primary`). Assertion is
+   sound; only the WHY-clause overclaims.
+2. Same file, 168-169 — "the app bar renders the conversation title too, so an unscoped finder
+   passes even when displayName is empty". Falsified by the SAME round's other fix: the DM
+   fixture now carries `title: ''` (faithful to `conversation_mutation_module`), and
+   `ChatAppBar._buildTitle` renders `(conversation?.title).orEmpty()`. Nothing in the DM tree
+   prints "Anna Svensson", so an unscoped finder would FAIL under the mutant, not pass. New
+   shape: making a fixture faithful invalidates the rationale written for the assertion that
+   fixture supports, in the same edit.
+3. `docs/architecture/ACCEPTED_LARGE_FILES.md:230` — `chat_action_handler.dart | 697`;
+   `wc -l` = 704 in BOTH worktree and index (`git show :<path> | wc -l`). The row's own text
+   says "re-measure with `wc -l` in the same call that stages". `friends_viewmodel.dart | 586`
+   verified correct (both rows).
+
+Verified TRUE this round (no finding): `isNotBlockedBy` has exactly four call sites in
+`firestore.rules` (198 is the definition; 706/1404/2518/2564 the calls) as the workflow-map
+edge claims; BUT-1951 removed exactly NINE methods from `friend_request_actions.dart`
+(accept/reject/cancelSent/send/removeFriend/block/unblock/refresh/searchUsers) and all three
+surviving bulk stubs are called by `friend_requests_view.dart:199/209/219`; the old stub's
+delay was 500ms; `FriendsViewModel` IS `registerFactory` (`ui_module.dart:272`), so
+`_blockFromConversation`'s "ours to dispose" comment holds; the VM had `unblockUser` but no
+`blockUser` at HEAD.
+
+Coverage gaps left open and reported non-blocking: `BlockGroupMemberDialog`'s `_failed` arm
+plus its `onAction: _load` retry (no fixture throws from `getUserProfiles`); the three
+early-return error snackbars in `_blockFromConversation`; and all three pop decisions
+(DM pops, group does NOT, profile pops) — the author flagged only the first.
+Preview/ARB drift: `_butlery-components.html:1097` quotes "Er vänskap tas bort", the shipped
+string is "En vänskap tas bort".
+
+### 2026-09-05 — BUT-1951 final gate re-review (trigger: re-review after reported fixes)
+
+Verdict: pass, 0 blocking. Index == worktree for all 21 reviewed paths (`git diff --numstat`
+empty), so the verdict is against the bytes that ship.
+
+Three prior blocking findings re-graded by grepping the OLD strings in BOTH the worktree and
+`git show :<path>`, not by the motion check:
+- failure-arm "both arms render the same string" comment — 0 hits either copy. STRUCK, not
+  reworded. What replaced it ("colorScheme.secondary is what the error arm sets") is a fresh
+  claim and was measured: `SnackBarUtils.showError` sets `backgroundColor: cs.secondary`
+  (`lib/core/utils/snackbar_utils.dart:79`). True.
+- scoped-finder "the app bar also renders the name" comment — 0 hits. Fixture now `title: ''`,
+  matching `conversation_mutation_module.dart:98`, so the sentence's premise is gone with it.
+- ACCEPTED_LARGE_FILES 697 — the only surviving `697` in the file is `mina_recept_view.dart`'s
+  own unrelated row. `wc -l` in one call: chat_action_handler 704 (row says 704),
+  friends_viewmodel 586 (BOTH rows say 586 — the file lists it twice).
+
+Claims measured rather than read:
+- workflow-map "fyra isNotBlockedBy-anrop i firestore.rules" — 5 grep hits, one of which is the
+  DECLARATION at :198; calls at 706/1404/2518/2564 = four. Correct.
+- friend_request_actions header "nine unreferenced stubs" — HEAD had 14 members, now 5; the 9
+  removed are acceptFriendRequest, rejectFriendRequest, cancelSentRequest, sendFriendRequest,
+  removeFriend, blockUser, unblockUser, refreshFriendRequests, searchUsers. Correct.
+- same header "FriendRequestsView calls all three" bulk methods — 3 hits, all in
+  `friend_requests_view.dart`. Correct.
+- test header "the only blockUser a view could reach was a stub that delayed 500ms" —
+  `git grep blockUser HEAD -- lib/views lib/widgets lib/viewmodels` returns exactly the
+  FriendRequestActions stub (`Duration(milliseconds: 500)`), VM.blockUser being new. Correct.
+- chat_action_handler "Registered as a factory, so this instance is ours to dispose" —
+  `ui_module.dart:272` `registerFactory<FriendsViewModel>`. Correct.
+- The preview/ARB drift the PREVIOUS round recorded ("Er vänskap" vs "En vänskap") is closed:
+  `_butlery-components.html:1097` now quotes the shipped string byte-for-byte.
+
+Two gaps the prior round named are closed and both are non-vacuous by construction:
+the `_failed` arm + `onAction: _load` retry now has a first-call-throws fixture asserting
+`errorGeneric` then the member after tapping "Försök igen"; the cancel test asserts
+`DestructiveConfirmationDialog` present BEFORE tapping Avbryt (a harness-direction control).
+
+Non-blocking, filed as notes not findings:
+- `find.bySemanticsLabel(RegExp('Blockera'))` + `findsWidgets` is the weakest assertion in the
+  chat suite; the `containsSemantics(isButton: true)` beside it carries the real pin, and the
+  test comment already says the label finder ignores flags.
+- `MockFriendsViewModel` adds concrete `@override` bodies on a `Mock` subclass, which blocks
+  `when(() => vm.blockUser(...))`. Pre-existing convention for the WHOLE of `widget_mocks.dart`
+  (every class there is a Fake named Mock); no test in this ticket needs stubbing. Not
+  re-litigated here.
+- `'a FRIEND is still offered Blockera'` duplicates test 1's kill set TODAY, because the fake's
+  default status is already `friends`. Kept deliberately: it is test 1's CONTROL against a later
+  change of that default, which would otherwise hollow test 1 silently. Do not delete it as a
+  duplicate.
+
+Still open by agreement, and I agree with leaving them: the three `Navigator.pop` decisions
+(DM pops, group does not, profile pops) want one route-pushed test; the three early-return
+snackbars in `_blockFromConversation`; `logUserBlocked`, unpinnable while
+`MockSocialEventsTracker` is a Fake `verify` cannot see. The chat suite's header lists the pop
+decision as item 4 of "what the chat entry point has to get right" — that is a statement about
+PRODUCTION, not a coverage pointer, so it does not over-claim; it stays honest only while
+nobody rewords it into "what this file pins".

@@ -59,6 +59,7 @@ import {
   deletePingsByUser,
   deleteUserReports,
   deleteBlocks,
+  deleteBlockMirrors,
   deleteFcmTokens,
   deleteNotificationPreferences,
   deleteNotifications,
@@ -242,6 +243,22 @@ export async function runAccountDeletionWithDeps(
     ["storage_files", () => deleteUserStorageFiles(storage, uid)],
   ];
   await Promise.all(tier1.map(([name, fn]) => runStep(name, result, fn)));
+
+  // BUT-1917: the erased uid inside OTHER people's block mirrors. AFTER tier 1
+  // rather than inside it, and that ordering is the whole point: `deleteBlocks`
+  // runs in tier 1, an Admin-SDK delete fires `syncBlockMirror` exactly like a
+  // client delete, and a rebuild that read `blocks` before those deletes
+  // committed can land afterwards and put the uid straight back. Running beside
+  // it made which write landed last a coin flip; running after makes this the
+  // last word for everything tier 1 removed.
+  //
+  // It does not close the race — a trigger can still land after THIS step, and
+  // nothing here can stop that. What closes it is the weekly reconciliation
+  // (`runReconcileBlockMirrors`), which is why that pass is wired into the
+  // maintenance chain rather than left as an unexported function.
+  await runStep("block_mirrors", result, () =>
+    deleteBlockMirrors(database, uid),
+  );
 
   // Tier 2 (parallel after T1): subcollections under users/{uid}.
   const tier2: Array<[string, () => Promise<boolean>]> = [

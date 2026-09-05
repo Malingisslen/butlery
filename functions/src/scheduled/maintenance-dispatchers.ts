@@ -41,6 +41,7 @@ import { runDetectLapsedUsers } from "../analytics/detect-lapsed-users";
 import { runCorrelateNotificationEffectiveness } from "../analytics/correlate-notifications";
 import { runDetectAnomalies } from "../analytics/detect-anomalies";
 import { runWeeklyActivityDigest } from "../analytics/send-activity-digest";
+import { runReconcileBlockMirrors } from "../social/sync-block-mirror";
 import { runNorthStarWeekly } from "../scheduled/north-star-weekly";
 import { drainRatingAggregationQueue } from "../ratings/rating-aggregation";
 import { drainPoolAggregationQueue } from "../ratings/pool-aggregation";
@@ -326,6 +327,17 @@ export const SNAPSHOT_PRODUCER_TASKS = [
 export const WEEKLY_REPORT_TASKS: MaintenanceTask[] = [
   { name: "weeklyActivityDigest", run: () => runWeeklyActivityDigest(), timeoutMs: TASK_TIMEOUT_MS },
   { name: "northStarWeekly", run: () => runNorthStarWeekly(), timeoutMs: TASK_TIMEOUT_MS },
+  // BUT-1917. The block mirror is a safety control whose failure is SILENT: a
+  // missing entry lets a blocked person keep acting and nothing on any screen
+  // says so, so `retry: true` on the trigger is not the whole story. A task
+  // rather than its own `onSchedule` per this file's standing rule — it needs
+  // neither its own frequency nor failure isolation, and Scheduler bills per
+  // job.
+  {
+    name: "reconcileBlockMirrors",
+    run: () => runReconcileBlockMirrors(),
+    timeoutMs: TASK_TIMEOUT_MS,
+  },
 ];
 
 export const dailyAnalytics = onSchedule(

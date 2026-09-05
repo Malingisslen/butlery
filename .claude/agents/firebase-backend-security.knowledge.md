@@ -773,6 +773,17 @@ name which doc each end touches before approving it.
 - A deterministic doc ID + `set()` (not `add()`) is the standard idempotency primitive.
   Region pinning covers every export in a file — removing it reverts unconverted functions
   to the default region; clients must match the region option or 404 in prod.
+- A client-written FIELD that becomes a PATH SEGMENT is an availability weapon, and its
+  guard belongs at EVERY entry point that reaches the same `.doc()` — a trigger that
+  validates `"."`/`".."`/`"/"`/`__x__`/>1500 bytes and a reconciliation pass over the same
+  collection that does not are one guard and one hole. Grep every caller of the ref
+  builder, not the one the guard sits in.
+- A repair/reconciliation loop over N users needs PER-ITEM isolation (`try` inside the
+  loop, count failures, log at ERROR) exactly like a probe's per-leg `try`: without it one
+  poisoned or contending row aborts the whole pass for everyone behind it, every run,
+  forever. Judge the blast radius by what the pass IS — the safety net for a control whose
+  failure is silent has no second net.
+
 - A scheduled drainer retrying a state machine needs a max-attempts cutoff to `failed`.
   Storage/document triggers cannot carry App Check — put it on the client-facing callable
   that produces the triggering write.
