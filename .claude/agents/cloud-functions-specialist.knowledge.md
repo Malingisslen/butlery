@@ -63,12 +63,6 @@ without approval (mismatch = silent client-side "not found").
   its own `timeoutSeconds` (else the v2 60s default) and must sit BELOW
   `setGlobalOptions` in `index.ts`.
 
-## Firebase Functions v2 — what to use
-
-- **`HttpsError` thrown inside `db.runTransaction` is NOT retried** —
-  `isRetryableTransactionError` switches on numeric gRPC codes and
-  `HttpsError.code` is a string, so it rolls back first-attempt.
-
 ## Idempotency rules (the most bug-prone area)
 
 Triggers retry on uncaught exception; handlers must be idempotent:
@@ -117,6 +111,9 @@ Triggers retry on uncaught exception; handlers must be idempotent:
     and fail OPEN, matching how the reader treats its own malformed/expired
     cases (`llm-sample-capture.ts` is the precedent). A default that fails
     CLOSED suppresses the work instead.
+14. **`HttpsError` thrown inside `db.runTransaction` is NOT retried** —
+    `isRetryableTransactionError` switches on numeric gRPC codes and
+    `HttpsError.code` is a string, so it rolls back first-attempt.
 
 ## Cost & cold-start
 
@@ -149,9 +146,9 @@ Triggers retry on uncaught exception; handlers must be idempotent:
 - `npm run test:rules:all` — a new rules/integration suite is FOUR
   registrations: its own `test:*` script, an append to the `&&` chain in
   `test:rules:all`, BOTH `paths:` blocks in `firestore-rules.yml`, and a UNIQUE
-  **bare-literal** `const PROJECT_ID = "..."` (`rules-coverage-report.js`
-  discovers ids by regex, so an env-defaulted const silently drops the suite from
-  the coverage union — put any probe override at the `projectId:` CALL SITE).
+  **bare-literal** `const PROJECT_ID = "..."` (`rules-coverage-report.js` discovers
+  ids by regex; an env-defaulted const drops the suite from the coverage union —
+  put a probe override at the `projectId:` CALL SITE).
   Details are `firestore-rules-tester`'s; hand rules off.
   `test:rules*`/`test:integration:*` are excluded from the unit lane by prefix.
 - `scripts/run-ci-unit-tests.js` — the real CI gate. Hand-rolled harness,
@@ -213,7 +210,7 @@ from `(err as {code?}).code`.
 - **`batch.update()` on a concurrently-deleted doc fails the WHOLE chunk with
   NOT_FOUND** under `strict:false`; and `commitInChunks` calls `mutate` OUTSIDE
   that try, so a SYNCHRONOUS validation throw from the callback (`undefined` in
-  an array, bad FieldValue) escapes `strict:false` and aborts the whole step —
+  an array, bad FieldValue) escapes `strict:false` and aborts the step —
   piggyback the existence probe on the SAME `getAll` as the idempotency gate;
   skip (never `set(merge)`) when absent.
 - A step that early-`return false`s on its own cap skips every leg below it —
@@ -233,11 +230,11 @@ from `(err as {code?}).code`.
   `blocks`) owes**: an existence check on the SUBJECT the constrained user cannot
   forge — `users/{uid}` is owner-DELETABLE, so ask `admin.auth().getUser`, OUTSIDE
   the transaction (Auth is not transactional), answering `auth/user-not-found` and
-  `auth/invalid-uid` as "gone" and rethrowing every other code; a DELETE of an
-  orphan (a late rebuild re-creates the erased uid's doc post-probe, and Auth
-  deletion is the cascade's LAST step, so the subject exists throughout it); the
-  cross-user sweep STAMPS the revision guard (`arrayRemove` leaves it untouched, so
-  an in-flight older rebuild wins); it runs AFTER the source tier; and a CAP flag
+  `auth/invalid-uid` as "gone", rethrowing every other code; a DELETE of an
+  orphan (a late rebuild re-creates the erased uid's doc post-probe; Auth
+  deletion is the cascade's LAST step, so the subject exists throughout it); a
+  cross-user sweep that STAMPS the revision guard (`arrayRemove` leaves it untouched,
+  so an in-flight older rebuild wins); a run AFTER the source tier; and a CAP flag
   unread by the consuming rules gate under-enforces on input OTHER people choose
   (`.limit(cap+1)` with NO `orderBy` keeps the lowest doc ids, so sockpuppets sort a
   real entry off the end). Trigger + reconcile NARROWS the window, never closes it;
@@ -300,20 +297,18 @@ from `(err as {code?}).code`.
   and scenario ship in one edit. A probe ERROR ADDS to residual (a sentinel,
   never a count), never aborts; one try/catch per leg.
 - **An ENUMERATING probe (`rootRef.listCollections()`) is BROADER than the
-  deleter by construction** — any user subcollection no step erases then
-  reports `gdprCompliant:false` forever. Ship it only with a
-  DERIVED drift test: regex every
+  deleter by construction** — any user subcollection no step erases reports
+  `gdprCompliant:false` forever. Ship it only with a DERIVED drift test: regex every
   `.collection(users).doc(..).collection("X")` writer across `functions/src` +
   `lib`, spelling the users token `\w*[Uu]sers\w*` (`[A-Za-z_]\w*` misses the bare
   `FirestoreCollections.users` every Dart repo writes);
-  `db.doc("users/${uid}/X/y")` string paths are still missed. Bucket each name
+  `db.doc("users/${uid}/X/y")` strings are still missed. Bucket each name
   into the source-PARSED `subs`, the source-PARSED exclusions (load-bearing BOTH
   ways, own fixture), or a map whose every entry is EXERCISED (seed, run the named
   deleter, assert gone). A deleter removing ONE DOC BY ID is
-  NOT a deleter for the COLLECTION the probe counts. Every hand-rolled fake
+  NOT a deleter for the COLLECTION the probe counts. Every fake
   doc-ref then needs `listCollections()` derived from stored deeper paths,
-  never stubbed `[]` — absent, the outer catch fails CLOSED and every CLEAN
-  fixture reddens.
+  never `[]` — absent, the outer catch fails CLOSED and every CLEAN fixture reddens.
 - **EXPORT ⊇ DELETION is the cascade's other drift guard**: every source-parsed
   `subs` name is either read by an export chain or in a reasoned exemption map
   kept in PRODUCTION source, not the test. Such a map is PERMANENT — re-check
@@ -360,9 +355,6 @@ from `(err as {code?}).code`.
   write-per-denial stream, and `resource-exhausted` is client-RETRYABLE.
 
 ### Pooled ratings + rating aggregation (ratings/ family)
-- Recipes are USER-SCOPED (no top-level `match /recipes`);
-  `recipe_social_stats` is SERVER-ONLY — confirm from firestore.rules, not from
-  a green Dart test.
 - Unbounded collection-group folds use `.aggregate({count, average})`, never
   `.get()`; ANY filtered `collectionGroup` query — equality or
   `array-contains` — needs a `fieldOverrides` entry with
@@ -409,15 +401,22 @@ from `(err as {code?}).code`.
 - `admin/` scripts run `main()` at import — extract pure cores to test.
 - **A hand-run script's delete/keep OVERLAP guard no-ops the WHOLE script in
   silence** (`reset-user-data.ts`), and REPAIRING it removes the header's only
-  enforcement — replace it with a deliberate `!dryRun` refusal ABOVE the destructive
-  phase (`admin-init.ts` hardcodes prod, no env override), read off the
-  script's own `args`. Its Auth-wipe phase fires `onUserDeleted`, which writes into
-  collections the Firestore phase is concurrently deleting.
+  enforcement. The durable last barrier is a HUMAN step nothing can pre-satisfy —
+  a typed `CONFIRMATION_PHRASE`, `!dryRun`-scoped, above the first `runPhases(`
+  call (`admin-init.ts` hardcodes prod, no env override). Its Auth-wipe phase fires
+  `onUserDeleted`, which writes into collections the Firestore phase is
+  concurrently deleting. Removing a TEMPORARY refusal falsifies every sentence
+  citing it — grep the flag REPO-wide: the `ACCEPTED_DEVIATIONS.md` amendment
+  (supersede dated), the capped sweep naming it as Art. 17 recovery
+  (`MAX_BLOCK_SWEEP_ROWS`), other agents' `*.knowledge.md`. One entry usually
+  words the claim TWICE, so key the supersession on the CLAIM — "the paragraph
+  above" leaves the earlier wording live and unsuperseded.
 - **A source pin owes**: a grep-UNIQUE anchor; the guard's EFFECT, not its position
-  (`process.exit(1)` INSIDE the refusal); `//`-stripping, which stops NEITHER
+  (`process.exit(0|1)` INSIDE the gate); `//`-stripping, which stops NEITHER
   `&& false` NOR a `/* */` wrap, so no such pin is complete; and the INVOKER, its
-  flag DERIVED from the declaration (`/FLAG = "([^"]+)"/`) or a rename leaves it
-  green. A LIST needs none of it: move the list to a side-effect-free
+  literal DERIVED from the declaration and anchored `/^const NAME = "([^"]+)"/m` —
+  `String.match` takes the FIRST hit, so an unstripped `/** */` quoting it wins.
+  A LIST needs none of it: move the list to a side-effect-free
   module and IMPORT it, the rule that also keeps a deleter and its probe on ONE const.
 - **A "wipes all" claim needs TWO sources, never a number**: `firestore.rules`
   top-level `match` blocks (blind to server-only) UNION a `functions/src` scan
@@ -430,7 +429,7 @@ from `(err as {code?}).code`.
   read clean in two writers while a third wrote raw uids in a doc id and a field.
 - Normalization parity must hold across every matching surface (sync stamp,
   server hold-gate, Dart client); list-split regexes stay in lockstep.
-- Export/mining scripts: verify FIELD PARITY against the writer. Best test is a
+- Export/mining: verify FIELD PARITY against the writer. Best test is a
   PRIVACY WHITELIST — seed adversarial PII-shaped fields, assert the exported
   key set is EXACTLY allow-listed.
 

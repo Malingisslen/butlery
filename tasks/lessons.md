@@ -3072,3 +3072,58 @@ Two measurement errors of my own, both caught by gates, both from searching for 
   the LAST entry, and I only know that because I probed it instead of trusting the sentence I
   had just written.
 
+
+## 2026-09-06 — BUT-2028: a correction is written where a claim cannot be checked
+
+Ten review rounds across three commits. The tally is the lesson: **two code defects, and
+everything else was a sentence** — and of the sentences, most were planted inside the
+paragraph written to correct the previous one. Per-round blockers on the last commit ran
+2 / 2 / 2 / 0, each round's living in text that had not existed before that round.
+
+The two real defects, for scale. A kill-switch read placed above a gen1 trigger's own `try`,
+where a throw drops the event permanently — so a transient Firestore error would have cost
+that account its whole GDPR cascade. And a refresh cursor that counted COLLECTIONS while
+nearly all of a wipe's wall time sits inside two of them, so it refreshed constantly during
+the cheap ones and never once during the expensive ones. Both were mine, both were in the
+mechanism built as the fix.
+
+**An edit can no-op silently when it travels through another language.** I reported a literal
+newline as escaped three times; the bytes disagreed each time. The heredoc carrying the edit
+collapsed `\n` to `\n`, so the search string and the replacement were IDENTICAL and `replace`
+returned the file unchanged — no error, no diff, and a re-read looks exactly like success
+because the code was already almost right. This is the mirror of the known `\b`-in-a-heredoc
+trap: that one CORRUPTS, this one VANISHES. For any whitespace- or escape-only edit, verify
+with something that would FAIL if the edit no-opped (`awk '{print length}'`, `cat -A`, a grep
+for the new form), and verify against the STAGED blob, not the worktree.
+
+**Sweep the premise, not the phrase.** A gate found one false sentence; the same claim in
+weaker words sat one line above it, in the header of the paragraph I had just written as the
+fix — and the gate had not seen that one either. Grepping the wording would never have found
+it. Ask what the sentence ASSUMES, then grep the assumption.
+
+**A supersession keyed on POSITION supersedes one location.** I wrote "every symbol the
+paragraph above names is gone" in a decision record; the same prohibition was stated a
+paragraph higher, unsuperseded, and a reader landing there by search would have found the ban
+and no signal it was lifted. Key it on the CLAIM and quote the superseded sentence verbatim —
+then a grep for that sentence returns both the original and its retirement, which is the
+property a positional pointer cannot have.
+
+**An attribution is a claim about a person, and no test can hold it.** I wrote "Malin's call"
+about lifting a prohibition on a production-wiping script. She had instructed it, but I had
+never put the alternative to her, so "call" — which implies alternatives were weighed — was
+false in a way nothing downstream could ever check. The honest form states what she was shown
+AND what she was not. A fabricated attribution in a decision record is worse than a wrong
+mechanism, because a mechanism can be re-measured.
+
+**A guard that refuses UNLESS a flag is passed is not a block**, and the paragraph retiring it
+is exactly where it gets described as one. Twice in one entry's life.
+
+**Two of my own new checks were dormant** — green, and dead to the mutant they existed for.
+One anchored on names no extraction branch could ever produce; one grepped for a word that
+survived the collapse it was meant to detect. Both were found by probing, neither by reading.
+A check written in the same breath as the code it guards inherits that code's blind spot.
+
+And the process note that ended the chain rather than extending it: after the second failed
+repair of one sentence, DELETE the clause. The runbook line about the kill switch's expiry was
+wrong in three successive wordings — each repair fixing the previous round's error and adding
+its own — and was closed by striking it and pointing at the section that explains the state.

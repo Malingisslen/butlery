@@ -199,3 +199,9 @@
 {"ts":"2026-09-03T18:38:45.849Z","type":"trigger","fired":true,"signals":"cloud function,delete,destructive,firestore.rules","ran":null}
 {"ts":"2026-09-03T18:55:30.985Z","type":"trigger","fired":true,"signals":"trust & safety","ran":null}
 {"ts":"2026-09-03T19:09:21.421Z","type":"trigger","fired":true,"signals":"trust & safety","ran":null}
+{"ts":"2026-09-05T19:01:16.406Z","type":"trigger","fired":true,"signals":"auth,consent,delete,deletion,firestore.rules,functions/src,retention","ran":null}
+{"ts":"2026-09-05T19:07:59.734Z","type":"trigger","fired":true,"signals":"auth,consent,delete,deletion,firestore.rules,functions/src,purge,retention","ran":null}
+{"type": "review", "tier": "full", "panel": ["Privacy / Data Protection Officer (GDPR)", "Security Architect", "Database Administrator / Data-layer Engineer", "Software Architect", "Trust & Safety / Content Moderation", "Codebase Archaeologist"], "stakeholders": 6, "outcome": "approve-with-conditions", "must_haves": 27, "findings_material": 27, "conflicts": 0, "escalations": 0, "escalated_to_human": false, "adrs": [], "adr": null, "rubber_stamp": false, "tokens_est": 1500000, "approx_tokens": 1500000, "ran": true, "via": "exit-plan", "plan": "BUT-2028 reset-user-data coverage + onUserDeleted kill switch + Art.17 gap", "ts": "2026-09-05T19:09:24.470574+00:00"}
+{"ts":"2026-09-06T07:19:06.876Z","type":"trigger","fired":true,"signals":"deletion,functions/src","ran":null}
+{"ts":"2026-09-06T07:19:39.878Z","type":"trigger","fired":true,"signals":"deletion,functions/src","ran":null}
+{"ts":"2026-09-06T07:19:49.155Z","type":"trigger","fired":true,"signals":"deletion,functions/src","ran":null}
