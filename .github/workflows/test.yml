@@ -58,8 +58,9 @@ jobs:
   # of test/unit. Measured on PR #179 (4- vs 6-shard A/B): a shard's wall-clock
   # is almost INDEPENDENT of how many tests it runs (3492 tests → 12m34s vs
   # 2222 tests → 12m02s). The dominant cost is the fixed Flutter compile of the
-  # app graph that every `flutter test` invocation re-pays (~11-12 min); actual
-  # test execution is only ~1 min/shard. So sharding hits a ~12 min floor and
+  # app graph that every `flutter test` invocation re-pays (~11-12 min). The
+  # execution share was ~1 min/shard when this was measured; it has grown since
+  # (see the timeout note below). So sharding hits a ~12 min floor and
   # more shards just multiply the redundant compile for ~no wall-clock gain —
   # the wall BUT-1182 hit (it mis-read it as coverage instrumentation; it's the
   # compile). 3 shards is the cost/latency sweet spot (~12.5 min, 3× compile).
@@ -72,9 +73,13 @@ jobs:
       matrix:
         shard: [0, 1, 2]
     runs-on: ubuntu-latest
-    # ~12.5 min/shard (compile-bound). 20 leaves headroom while still catching
-    # a genuinely hung shard.
-    timeout-minutes: 20
+    # Measured 2026-09-06 on run 34041557438: passing shards took 17m24s and
+    # 18m42s, and the third was killed at 20m16s while still emitting results —
+    # not hung, just out of budget. The compile floor above is unchanged; what
+    # grew is the execution share, so 20 had stopped leaving any headroom and
+    # whichever shard was slowest that day tipped over. Three consecutive main
+    # runs were lost to it before anyone read past the word "cancelled".
+    timeout-minutes: 30
 
     steps:
       - uses: actions/checkout@v6
