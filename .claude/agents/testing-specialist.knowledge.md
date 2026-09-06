@@ -74,7 +74,12 @@ want the probe that produced it; or this file itself reads too compressed — th
   routinely drags in production edits the report never mentions. Diff EVERY path, sort by
   production-vs-test, and grade the unreported production edits FIRST: nothing has asked whether
   a test can see them. The recurring shape is a fix for finding N landing an unpinned behaviour
-  change beside it (BUT-1904).
+  change beside it (BUT-1904). **A brief's COUNT of what moved is one of those claims** — "four
+  files moved" for six, the unlisted one a test-infrastructure comment (2026-09-06).
+- **An UNTRACKED file's pin cannot be isolate-diffed later** — `git hash-object` writes no blob,
+  so `git cat-file -p` fails on your own prior round's hash and the whole file reads as ADDED.
+  Re-read such a file in full rather than grading the "+"-only diff as the round's change
+  (2026-09-06).
 - **"Duplicate test" is measurable**: mutate the guarded expression; a duplicate deletes only a
   strict subset of the kill set THROUGH THE SAME SEAM. Exceptions: reaches the sole fail-closed
   lookup via a different seam, or is another test's CONTROL. Grade two suites for one class by
@@ -449,6 +454,10 @@ other suites prove:
 - **When ONE change edits TWIN repositories/methods, the test lands on the twin whose refusal
   branch is a TAUTOLOGY** and the untested twin is the one with a real actor gate. Grade a paired
   diff PER FILE and run the HEAD-bytes probe on the file the round wrote no test for (BUT-1981).
+  **At N=3 in a VIEW handler the suite drives the FIRST sibling only, and the ARB is the cheap
+  tell**: each copy-paste sibling owns its own new l10n key, so grep the NEW KEYS across `test/` —
+  a key typed by no test names the untested twin, and a verb repoint between siblings then
+  survives the whole suite (batch friend requests, 2026-09-06).
 - **A cleanup that DELETES a pair of unsafe delegates and deliberately KEEPS one twin leaves the
   KEPT twin unpinned** — the survivor gets a rationale sentence instead of a test. Close it with
   a PAIR (failure fallback + persisted passthrough); the fallback assertion alone is satisfied by

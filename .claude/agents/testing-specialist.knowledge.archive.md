@@ -35603,3 +35603,145 @@ Diff observations, not blocking:
   next touches the file.
 
 Verdict: fail (1 blocking).
+
+### 2026-09-06 — batch friend-request actions (no Linear id; tasks/butlery-batch-friend-requests-plan.md)
+
+Trigger: coverage review of a finished change. Three bulk friend-request handlers in
+`lib/views/social/friend_requests/friend_request_actions.dart` had been stubs
+(`Future.delayed` + `return true`, no write) reached from the app bar and the FAB; they are
+now wired to new `FriendsViewModel.acceptFriendRequests/rejectFriendRequests/cancelSentRequests`
+(loop over the single-request method, return the count that landed). Two new suites,
+12 tests.
+
+Measured, not asserted:
+- Both new suites 12/12 green.
+- `MockFriendsManagementOperations` gained `acceptCalls`/`rejectCalls`/`cancelCalls` and a
+  `failingRequestIds` set. The six OTHER suites naming that mock or `setManagementState`
+  run 178/178 green — the addition is additive and `_resolveRequest` reduces to the old
+  `_shouldSucceed` while the set is empty.
+- No mutation probe: the tree is shared with other live sessions and the brief supplied
+  four already-killed mutants.
+
+BLOCKING (1): the handler layer is pinned for ONE verb of three. The widget suite drives
+only `acceptMultipleRequests`. `rejectMultipleRequests` and `cancelMultipleSentRequests`
+are line-for-line copies and have zero hits under `test/`. The ARB was the cheap tell:
+of the three keys the change ADDS, only `socialRequestsAcceptedPartial` is typed by a test;
+`socialRequestsRejectedPartial` and `socialRequestsCancelledPartial` are typed nowhere, and
+neither are `socialRequestsRejected`, `socialRequestsCancelled`,
+`socialCouldNotRejectAllRequests`, `socialCouldNotCancelAllRequests`. A repoint of the
+cancel handler onto `rejectFriendRequests` survives the whole suite and reproduces the exact
+defect the change exists to remove (a bulk button reporting an outcome for writes that did
+not land). The ViewModel suite does not close it — it pins the three VM methods, not which
+one each handler calls.
+
+Non-blocking:
+- The FAB's `onPressed` changed from a nested `acceptMultipleRequests(...)` whose `onSuccess`
+  was the caller's own batch handler (so a successful batch started a second one) to plain
+  `onBatchAccept`. Real behaviour fix, outside the plan's A-E, and `buildFloatingActionButton`
+  is reached by no test.
+- `_runBatch`'s `if (succeeded > 0) notifyListeners()` is deletable-green. The VM coalesces
+  through `addPostFrameCallback`, so a listener assertion needs a pump or fakeAsync.
+- The widget "nothing lands" test asserts only the message and `selectionCleared`; both hold
+  identically if the action THROWS, because `executeAction` shows the same `errorMessage`
+  string and returns null. Unreachable today (`_runBatch` catches per id); one
+  `expect(mockManagement.acceptCalls, requestIds)` keeps it discriminating.
+- The isEmpty early-return (`socialNoRequestsSelected`) is unreached.
+- `friend_requests_view.dart` has no suite; the `_selectedIncoming` vs `_selectedSent` choice
+  is proven at no call site.
+
+Graded sound: asserting the id LISTS rather than only the count is the right pin here (a wrong
+verb, a skipped id and a loop that aborts on the first failure all return a count that can be
+made to look right). The widget seam — real handler + real ViewModel over a mocked service in
+a minimal host — is correct; routing it through the whole `FriendRequestsView` would add a
+TabController, a ServiceLocator-resolved VM and two tab builders without touching the wiring
+under test.
+
+Verdict: fail (1 blocking).
+
+### 2026-09-06 (round 2) — batch friend-request actions, re-review
+
+Trigger: fix round after the round-1 fail. Verdict: pass (0 blocking).
+
+The blocking item closed the way it had to: a `_verbs` table drives all three handlers
+through the same six cases, and the success case asserts the OTHER TWO call lists are
+EMPTY. The empties are the discriminator, not the count — the count and the words are
+identical under a repoint.
+
+Two production edits the fix report did NOT list, found by diffing every path rather than
+the reported ones:
+- `friends_management_operations.dart`, comment-only: "loops with per-target error
+  handling" -> "a THROW is not caught here and ends the batch". Correct — neither loop
+  has a try — and it is the sentence the PLAN had cited as the precedent for the new
+  ViewModel batch. The ViewModel's own catch is real and now pinned; the service twins'
+  uncaught-throw behaviour is pinned by nothing, unchanged by this round.
+- Three ARB keys deleted in both languages (`socialAcceptingRequests`,
+  `socialRejectingRequests`, `socialCancellingRequests`) — the removed loading dialog's
+  strings. Zero references repo-wide; generated files match.
+
+Two gradings worth keeping:
+- The FAB test's real discriminators are `batchStarts == 1` and `AlertDialog findsNothing`
+  (the old code opened the confirmation dialog and ran the callback only after it). Its
+  `acceptCalls isEmpty` line is a CONTROL — nothing in that test confirms a dialog, so the
+  list would be empty under the old code too.
+- The VM's "caller list is not mutated" test was vacuous (nothing in the fixture mutates
+  the passed list) and was deleted rather than repaired; the `List<String>.of` copy is now
+  unpinned by construction, and the comment that had asserted a causal reason for it was
+  struck in the same edit. That is the right order: no test, and no sentence claiming one.
+
+Standing and correctly reported open: `if (succeeded > 0) notifyListeners()` is still
+deletable-green — but the stated reason (no pump-based seam) is false for the WIDGET
+suite, where `addListener` + a pump reaches it. The prior question is whether the line
+does anything at all, since the friends service notifies on its own; grade pin-vs-delete,
+do not add an assertion by reflex. And `friend_requests_view.dart` still has no suite.
+
+### 2026-09-06 (round 3) — batch friend-request actions, comment-strike round
+
+Trigger: a strike round after a pass. Verdict: pass (0 blocking), one Low finding.
+
+The strikes were right, each settled without a probe:
+- "a loop that aborted on the failure would also return 1" was INVERTED — a breaking loop
+  returns 1 where the test expects 2, so the count assertion kills that mutant by itself.
+- "and would report zero" was wrong about the missing-catch mutant: the `await` throws,
+  the test errors, nothing is reported.
+- "line-for-line copies" was false — the three handlers differ in `isDangerous`, icon and
+  six l10n keys.
+- Two production sentences claiming an uncaught throw reaches `blockUsers`/`unblockUsers`
+  described an unreachable state: both callees wrap their whole body in try/catch and
+  return false. I had graded those same sentences SOUND in round 2 on the narrower reading
+  ("the loop has no try"), which was true of the loop and useless to a reader — the state
+  they warned about cannot occur. Grade a mechanism sentence by REACHABILITY, not by
+  whether the mechanism it names is spelled that way.
+
+THE LOW FINDING IS THE REPAIR ITSELF, again: striking "line-for-line copies" from the
+`_Verb` doc left "Every case runs against all three and asserts the other two saw
+nothing". Only the success case asserts the other two lists; five cases do not. A
+quantifier over the FILE'S CONTENTS — strike the clause, do not re-scope it, and note the
+true version already sits at the assertion in the success case. The file HEADER's version
+of the same point survived the round correct, which is why sweeping the CONCEPT rather
+than the phrase matters: two copies, one repair went false.
+
+Two process findings:
+- The brief said four files moved; SIX had. The unlisted one was `production_mocks.dart`
+  (a doc comment). A motion list in a fix report is a claim; diff every path.
+- Pinning UNTRACKED files means the pinned blobs never enter the object DB, so a later
+  round cannot isolate-diff them — `git cat-file -p` fails on both round-2 test hashes and
+  the whole file reads as added. Re-read those in full; do not read the "+"-only diff as
+  the round's change.
+
+### 2026-09-06 (round 4) — batch friend-request actions, one-line close
+
+One line: the `_Verb` doc's false quantifier STRUCK, not re-scoped. Verdict: pass
+(0 blocking), no open findings from this review.
+
+Graded the replacement as a fresh claim, which is where the chain usually restarts:
+"Every case runs against all three" is true of the `for (final verb in _verbs)` loop, and
+the reason clause ("a repointed handler cannot hide behind a suite that exercises only
+one of them") holds INDEPENDENTLY of the cross-assertion — a cancel handler repointed at
+`rejectFriendRequests` leaves `cancelCalls` empty, so the cancel group's own
+`verb.calls` assertion fails whatever the other two lists say. So the sentence no longer
+borrows its truth from a case it does not describe. Four rounds, and the only defect the
+last three found was a sentence.
+
+Mechanics worth keeping: hashing all twelve paths took one command and settled "the other
+eleven are unchanged" without re-reading them, while the one moved file — untracked, so
+un-diffable — was re-read whole. That pairing is the cheap shape for a one-line round.
