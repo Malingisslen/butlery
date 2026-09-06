@@ -1,5 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/services/parsing/sanitizers/html_sanitizer.dart';
+import 'package:butlery/utils/recipe_scraper.dart';
+import 'package:html/parser.dart' as html_parser;
 
 void main() {
   late HtmlSanitizer sanitizer;
@@ -41,17 +43,10 @@ void main() {
       });
 
       test('should remove nested script tags', () {
-        // The state-machine matches the first <script to the first </script>.
-        // With truly nested tags, the outer close tag remains as leftover text.
-        // This tests that the inner content is fully stripped and the
-        // remainder is processed (the second pass picks up leftover </script>
-        // as plain text since there is no matching open tag).
         final input =
             '<script>outer<script>inner</script>still outer</script>Safe';
         final result = sanitizer.sanitize(input);
 
-        // The first <script...inner</script> is removed. "still outer</script>"
-        // remains as text. The close tag is harmless text at that point.
         expect(result, isNot(contains('<script')));
         expect(result, isNot(contains('inner')));
         expect(result, contains('Safe'));
@@ -174,35 +169,163 @@ void main() {
         expect(result, isNot(contains('alert')));
       });
 
-      test('a decoy attribute does NOT exempt a script', () {
-        // Only an attribute that IS `type` exempts a script. Each decoy
-        // below reached sanitize() and survived it at some point:
-        // `data-note` under the old bare substring test, and `data-type`,
-        // `data-cfg` and the `+jsonx` suffix under the first repair of it,
-        // because a word boundary sits INSIDE `data-type=` (the hyphen is a
-        // non-word character) and an unanchored pattern reads `+jsonx` as
-        // `+json` (BUT-2020).
-        final decoys = [
-          '<script data-note="application/ld+json">alert(1)</script>',
-          '<script data-note="application/ld&#x2B;json">alert(2)</script>',
-          '<script data-type="application/ld+json">alert(3)</script>',
-          '<script x-type="application/ld+json">alert(4)</script>',
-          '<script data-cfg="type=application/ld+json">alert(5)</script>',
-          '<script data-cfg="type=application/ld&#43;json">alert(6)</script>',
-          '<script type="application/ld+jsonx" src="e.js">alert(7)</script>',
+      test('these decoy attributes do NOT exempt a script', () {
+        // Some decoy attributes DO exempt — see the BUT-2034 test below.
+        const decoys = [
+          (
+            '<script data-note="application/ld+json">alert(1)</script>',
+            'alert(1)',
+          ),
+          (
+            '<script data-note="application/ld&#x2B;json">alert(2)</script>',
+            'alert(2)',
+          ),
+          (
+            '<script data-type="application/ld+json">alert(3)</script>',
+            'alert(3)',
+          ),
+          (
+            '<script x-type="application/ld+json">alert(4)</script>',
+            'alert(4)',
+          ),
+          (
+            '<script data-cfg="type=application/ld+json">alert(5)</script>',
+            'alert(5)',
+          ),
+          (
+            '<script data-cfg="type=application/ld&#43;json">alert(6)</script>',
+            'alert(6)',
+          ),
+          (
+            '<script type="application/ld+jsonx" src="e.js">alert(7)</script>',
+            'alert(7)',
+          ),
         ];
-        final result = sanitizer.sanitize(decoys.join());
+        final result = sanitizer.sanitize(
+          '${decoys.map((d) => d.$1).join()}'
+          '<script type="application/ld+json">'
+          '{"@type":"Recipe","name":"KEEP"}</script>',
+        );
 
-        for (var i = 1; i <= decoys.length; i++) {
+        // Control: without this, deleting the exemption outright leaves every
+        // assertion below green.
+        expect(result, contains('KEEP'));
+
+        for (final (markup, payload) in decoys) {
+          expect(markup, contains(payload));
+          expect(result, isNot(contains(payload)), reason: markup);
+        }
+      });
+
+      // DEFECT (BUT-2034): pins today's wrong behaviour green on purpose.
+      test('a value-embedded `type=` still exempts a script (BUT-2034)', () {
+        for (final (bypass, payload) in const [
+          (
+            '<script data-cfg=" type=application/ld+json">alert(8)</script>',
+            'alert(8)',
+          ),
+          (
+            '<script data-cfg="text/type=application/ld+json">alert(9)</script>',
+            'alert(9)',
+          ),
+        ]) {
+          final sanitized = sanitizer.sanitize(bypass);
+
+          const fixed =
+              'BUT-2034 is fixed — delete this test, add the (markup, payload) '
+              'pair to the sanitize decoy list and the bare markup to the '
+              'check() decoy list';
+          expect(sanitized, contains('<script'), reason: '$fixed: $bypass');
+          expect(sanitized, contains(payload), reason: '$fixed: $bypass');
           expect(
-            result,
-            isNot(contains('alert($i)')),
-            reason: 'decoy ${i - 1} exempted itself: ${decoys[i - 1]}',
+            sanitizer
+                .check(bypass)
+                .issues
+                .where((i) => i.type == IssueType.scriptInjection),
+            isEmpty,
+            reason: '$fixed — check() half still silent: $bypass',
           );
         }
       });
 
-      test('check() warns about every script sanitize() would strip', () {
+      // DEFECT (BUT-2037): pins today's wrong behaviour green on purpose.
+      // These are not decoys — the parser resolves each spelling to `+`, so
+      // every one of them IS JSON-LD. sanitize() runs on raw source, refuses
+      // them and deletes the block with its content.
+      test('spellings the parser accepts are deleted anyway (BUT-2037)', () {
+        for (final (spelling, payload) in const [
+          ('application/ld&plus;json', 'LOSTA'),
+          // Semicolon-less numeric references: the parser consumes them, the
+          // pattern requires the `;`. Leading zeros are legal, so this is a
+          // rule, not a list — these are examples of it.
+          ('application/ld&#x2Bjson', 'LOSTB'),
+          ('application/ld&#43json', 'LOSTC'),
+          ('application/ld&#x02Bjson', 'LOSTD'),
+          ('application/ld&#043json', 'LOSTE'),
+        ]) {
+          final markup =
+              '<script type="$spelling">{"@type":"Recipe","name":"$payload"}'
+              '</script>';
+
+          // The classification, not just the harm: without this the comment
+          // above could silently become false while the test stayed green.
+          final parsedType = html_parser
+              .parse(markup)
+              .querySelector('script')!
+              .attributes['type'];
+          expect(
+            isJsonLdMediaType(parsedType),
+            isTrue,
+            reason: '$spelling no longer resolves to application/ld+json',
+          );
+
+          const fixed =
+              'BUT-2037 is fixed — delete every assertion below this string, '
+              'but KEEP the isJsonLdMediaType premise assertion above (the '
+              'suite has no other pin on these spellings resolving). Then add '
+              'the entity fragment of each spelling to `a zero-padded numeric '
+              'reference is preserved too` (renaming it, since &plus; is not '
+              'numeric and the semicolon-less forms are not padded), and the '
+              'whole markup to the `real` list in `check() warns about decoy '
+              'attributes`';
+          final sanitized = sanitizer.sanitize(
+            '$markup<script type="application/ld+json">'
+            '{"@type":"Recipe","name":"KEPT"}</script>',
+          );
+          // Control: without it, deleting `preserveWhen` outright leaves the
+          // assertion below green — it is an absence.
+          expect(sanitized, contains('KEPT'), reason: spelling);
+          expect(
+            sanitized,
+            isNot(contains(payload)),
+            reason: '$fixed: $spelling',
+          );
+          // The check() half moves in lockstep: it embeds the same pattern, so
+          // today it warns about a block that is real JSON-LD.
+          expect(
+            sanitizer
+                .check(markup)
+                .issues
+                .any((i) => i.type == IssueType.scriptInjection),
+            isTrue,
+            reason: '$fixed — check() half: $spelling',
+          );
+        }
+      });
+
+      // Independent of the BUT-2037 defect — it touches neither sanitize()
+      // nor the pattern, so it survives that repair.
+      test('a named reference the parser leaves alone is not JSON-LD', () {
+        final unresolved = html_parser
+            .parse('<script type="application/ld&plusjson">x</script>')
+            .querySelector('script')!
+            .attributes['type'];
+
+        expect(unresolved, 'application/ld&plusjson');
+        expect(isJsonLdMediaType(unresolved), isFalse);
+      });
+
+      test('check() warns about decoy attributes', () {
         // The warning pattern and the exemption must agree on which tags are
         // JSON-LD. They disagreed while the exemption was a bare substring
         // test: sanitize() KEPT a decoy that check() warned about.
@@ -212,17 +335,21 @@ void main() {
           '<script type="application/ld+jsonx" src="e.js">x</script>',
         ]) {
           expect(
-            sanitizer.check(decoy).issues.isNotEmpty,
+            sanitizer
+                .check(decoy)
+                .issues
+                .any((i) => i.type == IssueType.scriptInjection),
             isTrue,
             reason: 'check() stayed silent about $decoy',
           );
         }
 
-        // …and stays silent about the real thing, in every spelling.
         for (final real in const [
           '<script type="application/ld+json">{"@type":"Recipe"}</script>',
           '<script type="application/ld&#x2B;json">{"@type":"Recipe"}</script>',
           '<script type="application/ld&#43;json">{"@type":"Recipe"}</script>',
+          '<script type="application/ld&#x02B;json">{"@type":"Recipe"}</script>',
+          '<script type="application/ld&#043;json">{"@type":"Recipe"}</script>',
           '<script type="application/ld+json; charset=utf-8">{"a":1}</script>',
         ]) {
           expect(
@@ -233,11 +360,21 @@ void main() {
         }
       });
 
+      test('a zero-padded numeric reference is preserved too', () {
+        for (final spelling in const ['&#x02B;', '&#043;']) {
+          final result = sanitizer.sanitize(
+            '<script type="application/ld${spelling}json">'
+            '{"@type":"Recipe","name":"Padded"}</script>'
+            '<script>alert("xss")</script>',
+          );
+
+          expect(result, contains('Padded'), reason: spelling);
+          expect(result, isNot(contains('alert')), reason: spelling);
+        }
+      });
+
       test('the decimal entity `&#43;` is preserved too', () {
-        // Listed beside `&#x2B;` in the shared pattern. The parsed path
-        // decodes the entity before any matcher sees it, so a test that goes
-        // through the HTML parser cannot tell whether the raw-source pattern
-        // still lists this encoding. This one can.
+        // Listed beside `&#x2B;` in the shared pattern.
         final input =
             '<script type="application/ld&#43;json">{"@type":"Recipe","name":"Bulle"}</script>'
             '<script>alert("xss")</script>';
@@ -749,10 +886,10 @@ void main() {
       });
 
       test(
-        'does NOT bypass via fake JSON-LD in unrelated attribute (BUT-1061)',
+        'a data-note decoy does NOT bypass check() (BUT-1061)',
         () {
-          // Tightened regex: only a real `type=` attribute exempts the tag.
-          // A `data-note="application/ld+json"` decoy must still trip the warning.
+          // A `data-note="application/ld+json"` decoy must still trip the
+          // warning.
           final result = sanitizer.check(
             '<script data-note="application/ld+json">alert(1)</script>',
           );
@@ -764,8 +901,6 @@ void main() {
                   i.severity == IssueSeverity.warning,
             ),
             isTrue,
-            reason:
-                'Lookahead must anchor on `type=` to avoid attribute bypass',
           );
         },
       );

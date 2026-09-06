@@ -27,15 +27,12 @@ class HtmlSanitizer {
   /// security gate logs them without aborting the import. Critical would
   /// regress URL imports — real recipe sites carry analytics/ad scripts
   /// inline. JSON-LD structured data (`application/ld+json`) is exempted
-  /// entirely since `sanitize()`'s `preserveWhen` keeps it for schema.org
+  /// since `sanitize()`'s `preserveWhen` keeps it for schema.org
   /// extraction.
   ///
   /// This pattern and `sanitize()`'s `preserveWhen` must agree on WHICH tags
-  /// are JSON-LD, or one half warns about a tag the other half keeps. They
-  /// disagreed for as long as `preserveWhen` was a bare substring test, and
-  /// the sentence that used to stand here asserted the opposite (BUT-2020).
-  /// Both now use [jsonLdScriptOpeningTagPattern], whose own doc comment
-  /// carries the bounds and why each is needed.
+  /// are JSON-LD, or one half warns about a tag the other half keeps.
+  /// Both now use [jsonLdScriptOpeningTagPattern].
   static final _scriptTagPattern = RegExp(
     '<script\\b(?![^>]*${jsonLdScriptOpeningTagPattern.pattern})',
     caseSensitive: false,
@@ -186,9 +183,6 @@ class HtmlSanitizer {
         result,
         tag,
         // Preserve <script type="application/ld+json"> (structured data).
-        // A plain substring test missed an entity-encoded `+`, so arla.se's
-        // recipe data was stripped here before any extractor saw it, and the
-        // page then read as having no structured data at all (BUT-2020).
         preserveWhen: tag == 'script'
             ? (openingTag) => jsonLdScriptOpeningTagPattern.hasMatch(openingTag)
             : null,

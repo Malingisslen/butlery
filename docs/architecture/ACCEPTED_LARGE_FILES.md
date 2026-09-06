@@ -169,7 +169,7 @@ Intentionally centralized reference data.
 | `app_dimensions.dart` | 801 | Theme dimension constants — intentionally centralized |
 | `swedish_line_classifier.dart` | 582 | Swedish text line classification — enum + classification rules |
 | `recipe_section_detector.dart` | 502 | The single audited heading/ingredient safety hinge — the heuristics must be read together, and each carries the reasoning that stops an allergen-dropping regression; vocabularies already extracted to `heading_word_lists.dart` (BUT-1714) |
-| `html_sanitizer.dart` | 549 | HTML sanitizer rules — cleaning rules table |
+| `html_sanitizer.dart` | 551 | HTML sanitizer rules — cleaning rules table |
 | `ingredient_normalizer.dart` | 536 | Ingredient name normalization — lookup tables |
 | `swedish_pluralization.dart` | 514 | Swedish pluralization rules |
 | `code_lexicon_provider.dart` | 511 | Large static lexicon constant (menu-code entries); splitting loses the lookup locality |
