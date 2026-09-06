@@ -18905,3 +18905,196 @@ something stale to retire against rule 13: found nothing. Every bullet still nam
 symbol, code or threshold, several exercised by this very suite. Rule 13 therefore lands as
 net growth, and the file still needs the dedicated compaction pass those notes have now
 asked for twice.
+
+### 2026-09-06 — BUT-2028 step 10: lifting the temporary live-run refusal [admin][review]
+
+Reviewed the removal of the `BUT_2028_ACK_FLAG` refusal from
+`functions/src/admin/reset-user-data.ts`, its test rewrite
+(`scenario_resetScriptRefusesLiveRuns` -> `scenario_resetScriptRequiresTheConfirmationPhrase`)
+and `docs/ops/reset-user-data-runbook.md`. Verified: `git hash-object` == index == worktree
+for all three; suite green at 293/293 (`npx ts-node src/__tests__/account-deletion-cascade.test.ts`).
+
+VERDICT: fail, 2 blocking — both surviving sentences OUTSIDE the three staged files, each
+falsified by this very commit.
+
+1. `functions/src/account/account-deletion-cascade.ts:2170`, in the `MAX_BLOCK_SWEEP_ROWS`
+   docstring: "BUT-2028 forbids running it against real data for now, and even once that
+   lifts…". That docstring is the Art. 17 recovery for a DECLINED block sweep, i.e. the
+   exact caller the BUT-2010 post-mortem identified as what makes the script a promise
+   rather than dead code.
+2. `docs/architecture/ACCEPTED_DEVIATIONS.md:1627-1634`, the "AMENDED 2026-09-05 (BUT-2028)"
+   entry: describes `main()` exiting 1 unless `--but-2028-acknowledged` is passed, and names
+   `scenario_resetScriptRefusesLiveRuns` as its watcher. Both symbols are removed by this
+   commit. A decision record is superseded dated, never struck.
+
+Non-blocking, another agent's file: `.claude/agents/firebase-backend-security.knowledge.md:509`
+still says "live runs are now REFUSED unless `--but-2028-acknowledged` is passed, BUT-2028".
+Supersede in place, retire the superseded text verbatim to that agent's archive.
+
+Answers to the four questions asked:
+- `args` is fine — it feeds `--dry-run` and `recordRunOutOfBand(projectId, runId, args)`
+  only; nothing unreachable, nothing mis-ordered. Everything before the prompt is
+  non-destructive (`initializeAdminApp`, the projectId string refusal, the
+  COLLECTIONS_TO_KEEP probe reads, the overlap guard). The one ordering CHANGE worth noting:
+  the old refusal sat ABOVE `initializeAdminApp()` and therefore fired without credentials;
+  the new gate sits below it, so a credential-discovery failure now pre-empts the prompt.
+  Harmless — it fails toward not-running.
+- "The gate is the only thing between an accidental invocation and a wiped project" holds
+  for DESTRUCTION. `runPhases` is module-private, called exactly once, after the gate; no
+  other path reaches it. But `main()` runs at module scope (`main().catch(...)`), so ANY
+  `require()` of this module enters `main()` with the importer's argv — no `--dry-run`, so
+  `dryRun === false` and it reaches the prompt. Nothing in the repo requires it (the
+  scenario reads it as TEXT with `fs`, deliberately). On a non-TTY stdin `rl.question`'s
+  callback never fires at EOF, so it HANGS rather than proceeding — safe, but a piped
+  `echo "<phrase>" |` does satisfy it. That is why the runbook's unqualified "nothing may
+  satisfy it on your behalf" reads stronger to a non-coder than the check behind it, which
+  ranges over `functions/package.json` scripts only.
+- Fifth check ("the phrase is readable from the script") CAN fail without a defect —
+  a quote-style change, a `: string` annotation between name and `=`, a prettier line-wrap,
+  or moving the constant into a side-effect-free module (which this file's own principle
+  recommends for lists). All fail RED and the early `return` then skips the other four, so
+  the failure is loud, not dormant. Real seam: `String.match` takes the FIRST occurrence and
+  the `//`-stripper leaves `/** */` blocks intact, so a future JSDoc quoting
+  `CONFIRMATION_PHRASE = "…"` above the declaration would win — and after a reword it would
+  be stale, leaving the npm-script check hunting the OLD phrase, green, which is precisely
+  the failure the comment says it avoids. Anchor `/^const CONFIRMATION_PHRASE = "([^"]+)"/m`.
+  Also: with the prompt deleted, check 3's `Math.max(0, -1 - 400)` -> `slice(0, -1)` spans
+  nearly the whole body and passes vacuously; checks 2 and 4 redden, so the suite still goes
+  red, but check 3 alone proves nothing there.
+- Suite total 293/293 reproduced.
+
+Knowledge file: folded the temporary-refusal lesson and the `^const`/`m` anchor into the
+existing `admin/` and source-pin principles. Retired the pooled-ratings "recipes are
+USER-SCOPED / `recipe_social_stats` is SERVER-ONLY" bullet verbatim (it is
+`firestore-rules-tester`'s domain, which this file already hands rules off to) and folded the
+one-bullet "Firebase Functions v2 — what to use" section into the idempotency list as rule 14.
+Net still +191 chars (30044 -> 30235). Nothing else in the file is stale — third run in a row
+to conclude that. The dedicated compaction pass is genuinely owed.
+
+Retired verbatim from the knowledge file this run:
+
+  ### Pooled ratings + rating aggregation (ratings/ family)
+  - Recipes are USER-SCOPED (no top-level `match /recipes`);
+    `recipe_social_stats` is SERVER-ONLY — confirm from firestore.rules, not from
+    a green Dart test.
+
+  ## Firebase Functions v2 — what to use   [section header; its single bullet survives
+                                            as idempotency rule 14]
+
+  [from the `admin/` bullet] replace it with a deliberate `!dryRun` refusal ABOVE the
+  destructive phase (`admin-init.ts` hardcodes prod, no env override), read off the
+  script's own `args`.
+
+### 2026-09-06 — BUT-2028 step 10, round 2: grading the replacement text [admin][review]
+
+Round 1's two blockers were taken; the staged set grew from 3 files to 7, which is the whole
+point of grepping outside your own diff. Re-verified this round: all seven `M ` (worktree ==
+index), `npx tsc --noEmit` exit 0, suite 293/293. `reset-user-data.ts` byte-identical to
+round 1 (`e0401d5b…`), so no decoy JSDoc was left behind by the N2 probe.
+
+Correctly done, worth recording as the shape to copy:
+- N2 was PROBED IN BOTH DIRECTIONS rather than trusted — a decoy
+  `CONFIRMATION_PHRASE = "NOT THE REAL PHRASE"` in the JSDoc plus the real phrase baked into
+  the npm script: red with `/^const …/m`, green-and-slipping-through without it. That is the
+  right way to close a finding a reviewer raised from reading alone.
+- N1: superseded in place, superseded clause retired VERBATIM in a blockquote to the paired
+  archive with its reason, and the generalisable part recorded (a mechanism named in one
+  agent's knowledge file falsified by a commit touching none of the files that name it).
+
+VERDICT round 2: fail, 2 blocking.
+
+1. `docs/architecture/ACCEPTED_DEVIATIONS.md:1625` — a SECOND live wording of the prohibition,
+   inside the BUT-2010 block, not reached by the supersession: "so BUT-2028 now forbids running
+   it against real data until those are resolved." The new entry says "Every symbol **the
+   paragraph above** names is gone", and that positional pointer resolves to lines 1628-1634
+   only. Grep proves it: `forbids running` still returns 1625 outside the archives. This is the
+   digest's own "a strike in the header left the same claim REWORDED lower in the body",
+   arriving as a supersession keyed on POSITION rather than on the CLAIM.
+2. "**Malin's call, 2026-09-06.**" on a decision record. Cannot be verified from code, and it
+   is the highest-authority sentence in the diff. Every neighbouring entry that claims her says
+   what she was shown ("Malin chose to fix it rather than delete it"), and this file has an
+   established opposite form for the other case ("Chosen conservatively without asking Malin;
+   X is hers to decide"). The brief said "marked as Malin's call", which is not the same as her
+   having made it. Confirm or switch to the second form.
+
+Non-blocking, all mechanism claims:
+- "Every symbol the paragraph above names is gone: A, B, C" is a false quantifier — that
+  paragraph also names `main()`, `initializeAdminApp()`, Phase 1, `--dry-run` and
+  `npm run reset-user-data`, all of which still exist. The colon-list alone carries the fact.
+- "the Phase-1 race is **answered** by a kill switch" overstates the mechanism the lift rests
+  on. The switch SUPPRESSES for the run's duration and Phase 4 DETECTS a lapse — the script's
+  own `verifyReset` has an `EXPIRED before the run ended` branch reading "Treat this run as
+  raced", and its header says a gen1 trigger has no bounded delivery time, so an event may
+  still arrive after the clear. Narrowed and detected, not eliminated.
+- Runbook TL;DR "A test holds **the one** shortcut that could remove it" is an "only" claim
+  its own next clause contradicts (the shell pipe is a second shortcut, and no test holds it).
+  The test also reads `functions/package.json` alone — the root `package.json`, `scripts/*.sh`
+  and CI workflows are unread. Strike "the one".
+- Runbook:93 — "whether to pause Cloud Scheduler … is open, BUT-2028 records it" now points at
+  a closing ticket, and the TL;DR no longer carries any "do not run this yet" line, so this
+  open hazard has lost the holder it had incidentally. It is unresolved work: it needs its own
+  ticket, never a deletion.
+- The new `firebase-backend-security.knowledge.archive.md` heading carries no `[tag]`; the
+  entry directly above it uses `[admin][gdpr]`.
+
+Knowledge file: extended the temporary-refusal principle with the positional-supersession
+trap, paid for by tightening the source-pin bullet. Net across both rounds is still growth;
+the compaction pass remains owed.
+
+### 2026-09-06 — BUT-2028 step 10, round 3: the correction paragraph, again [admin][review]
+
+Re-verified: all seven `M ` (worktree == index), `npx tsc --noEmit` exit 0, suite 293/293.
+`reset-user-data.ts` still `e0401d5b…` — untouched across all three rounds.
+
+R2-B1's fix WORKS and is worth copying: the supersession quotes the superseded sentence
+verbatim, so `grep "forbids running"` now returns line 1625 (the original) AND line 1637 (the
+supersession quoting it). A reader who lands on the stale sentence by search cannot miss the
+lift. That is what keying on the CLAIM buys over "the paragraph above". R2-N1 (false
+quantifier), R2-N2 (NARROWED and DETECTED, not eliminated), R2-N3 and R2-N6 all correctly
+taken. R2-B2 was settled by asking rather than rewording, and the entry says both what she was
+shown and what she was NOT — the strongest form an attribution in this file can take.
+
+VERDICT round 3: fail, 2 blocking. Both landed IN the paragraphs written as the fix, which is
+the third time in this one ticket.
+
+1. `ACCEPTED_DEVIATIONS.md:1670`, in the new OPEN paragraph: "While the refusal stood, nothing
+   could run anyway; now something can." FALSE, and self-contradicting inside one entry. The
+   refusal was `if (!dryRun && !args.includes(BUT_2028_ACK_FLAG))` — refuse-UNLESS-ACKNOWLEDGED,
+   not an absolute block — and line 1634, 36 lines up, draws exactly that distinction:
+   "refused-unless-acknowledged rather than unavailable." A live run WAS reachable with the
+   flag. Strike the clause; the OPEN item's conclusion does not depend on it, since the
+   Scheduler question was undecided either way.
+   Generalisable: a refuse-UNLESS-FLAG guard is not an absolute block, and the paragraph
+   retiring it is where it gets described as one.
+2. The ADR never names BUT-2036. Grep: the id appears in exactly ONE live file, the runbook.
+   The OPEN paragraph closes "Own ticket, not a strike. BUT-2028, 2026-09-06" with no id, and
+   the attribution paragraph points at "the Cloud Scheduler question BELOW" — a fresh positional
+   pointer, planted in the same commit that removed one. "Own ticket" without an id is an
+   untested promise: nothing lets a later reader confirm the ticket exists, and the ADR is what
+   a planner reads before touching this area. Two-token fix, and the id is directly readable
+   from the runbook.
+
+No new principle folded into the knowledge file this round — the positional-supersession clause
+added in round 2 already covers the shape, and the refuse-unless-flag point is recorded here
+rather than spending budget on a file that is already over it.
+
+### 2026-09-06 — BUT-2028 step 10, round 4: clean [admin][review]
+
+PASS, 0 blocking. All seven opened with `Read`; worktree == index on every one, measured from
+the repo root with an empty-value guard (round 3's first check ran with cwd in `.claude/agents`,
+so both sides were empty and it printed OK — a guard that could not fire, the same shape as the
+`^(MM|AM)` one in the digest). `npx tsc --noEmit` exit 0, suite 293/293. Staged blob greps 0 for
+both struck sentences. `BUT-2036` now resolves in three live lines: ADR 1664, ADR 1669, runbook 93.
+
+Both round-3 blockers closed, and the coordinator did the thing that ends these chains rather
+than extending them: **swept the PREMISE, not the phrase**, which surfaced a third wording I had
+not flagged — the OPEN paragraph's own header, "and it lost its incidental holder when this entry
+closed", the same false claim in weaker words. Struck without replacement. That is the correct
+response to "a refuted claim has SIBLINGS": the sibling was inside the paragraph written as the
+fix, one line above the sentence I did flag, and I missed it.
+
+Shape of the whole review, worth keeping: four rounds, and the only CODE defect was round 1's
+N2 (an unanchored `String.match` on a source pin). Every other finding across four rounds was a
+SENTENCE — three of them planted inside the paragraph written to correct the previous one. The
+per-round arc was 2 blocking / 2 blocking / 2 blocking / 0, and each round's blockers lived in
+text that had not existed before that round.

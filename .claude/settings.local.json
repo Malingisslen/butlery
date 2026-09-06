@@ -85,7 +85,9 @@
       "Bash(grep *)",
       "Bash(curl *)",
       "Bash(cd C:\\\\Butlery\\\\butlery *)",
-      "Bash(head *)"
+      "Bash(head *)",
+      "Read(//c/Users/malla/AppData/Local/Pub/Cache/hosted/pub.dev/fake_cloud_firestore-4.1.0\\\\+1/lib/**)",
+      "Bash(grep -n \"MockQuerySnapshot\" -A4 -B4 src/mock_query.dart)"
     ]
   },
   "skillOverrides": {
@@ -100,7 +102,7 @@
     "role-org@malin-plugins": true,
     "delivery@malin-plugins": true
   },
+  "outputStyle": "Concise",
   "spinnerTipsEnabled": false,
-  "prefersReducedMotion": true,
-  "outputStyle": "Concise"
+  "prefersReducedMotion": true
 }
