@@ -35,7 +35,7 @@ void main() {
   late MockUserService mockUserService;
   late MockFriendsManagementOperations mockManagement;
   late FriendRequestActions actions;
-  var selectionCleared = 0;
+  final landedReports = <List<String>>[];
 
   const currentUserId = 'test-user-123';
   final requestIds = ['req-1', 'req-2'];
@@ -63,7 +63,7 @@ void main() {
 
   setUp(() async {
     await TestServiceLocator.initialize();
-    selectionCleared = 0;
+    landedReports.clear();
 
     mockFriendsService = MockFactory.createUnifiedFriendsService();
     mockUserService = MockUserService();
@@ -143,7 +143,7 @@ void main() {
                 context,
                 viewModel,
                 requestIds,
-                () => selectionCleared++,
+                landedReports.add,
               ),
               child: const Text('kör'),
             ),
@@ -185,7 +185,7 @@ void main() {
           expect(other.calls(mockManagement), isEmpty, reason: other.name);
         }
         expect(find.text(verb.all(l10n, 2)), findsOneWidget);
-        expect(selectionCleared, 1);
+        expect(landedReports, [requestIds]);
       });
 
       testWidgets('declining the dialog writes nothing', (tester) async {
@@ -198,7 +198,7 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(verb.calls(mockManagement), isEmpty);
-        expect(selectionCleared, 0);
+        expect(landedReports, isEmpty);
       });
 
       testWidgets('a partial batch says how many landed, not that all did', (
@@ -210,25 +210,27 @@ void main() {
 
         expect(find.text(verb.partial(l10n, 1, 2)), findsOneWidget);
         expect(find.text(verb.all(l10n, 2)), findsNothing);
-        // One landed, so onSuccess ran — it clears the whole selection, the
-        // id that failed included.
-        expect(selectionCleared, 1);
+        // Only the id that landed is reported back; what the view then does
+        // with the rest is the view's decision, pinned in its own suite.
+        expect(landedReports, [
+          ['req-1'],
+        ]);
       });
 
-      testWidgets(
-        'a batch where nothing lands reports an error and keeps the selection',
-        (tester) async {
-          mockManagement.setManagementState(shouldSucceed: false);
+      testWidgets('a batch where nothing lands reports an error and still '
+          'reports back', (tester) async {
+        mockManagement.setManagementState(shouldSucceed: false);
 
-          final l10n = await runAndConfirm(tester, verb);
+        final l10n = await runAndConfirm(tester, verb);
 
-          expect(find.text(verb.none(l10n)), findsOneWidget);
-          // Both ids were attempted. An action that THREW would show this same
-          // message from executeAction's catch, having written nothing.
-          expect(verb.calls(mockManagement), requestIds);
-          expect(selectionCleared, 0);
-        },
-      );
+        expect(find.text(verb.none(l10n)), findsOneWidget);
+        // Both ids were attempted. An action that THREW would show this same
+        // message from executeAction's catch, having written nothing.
+        expect(verb.calls(mockManagement), requestIds);
+        // An EMPTY report, not no report: the view reconciles its selection
+        // from it either way.
+        expect(landedReports, [<String>[]]);
+      });
 
       testWidgets('an empty selection asks nothing and writes nothing', (
         tester,
@@ -241,14 +243,14 @@ void main() {
           tester.element(find.text('kör')),
           viewModel,
           const [],
-          () => selectionCleared++,
+          landedReports.add,
         );
         await tester.pumpAndSettle();
 
         expect(find.text(l10n.socialNoRequestsSelected), findsOneWidget);
         expect(find.text(verb.confirmLabel(l10n)), findsNothing);
         expect(verb.calls(mockManagement), isEmpty);
-        expect(selectionCleared, 0);
+        expect(landedReports, isEmpty);
       });
 
       testWidgets('no modal barrier survives the batch', (tester) async {
@@ -287,6 +289,7 @@ void main() {
                   DefaultTabController.of(context),
                   requestIds.toSet(),
                   () => batchStarts++,
+                  batchRunning: false,
                 ),
               ),
             ),
@@ -297,8 +300,9 @@ void main() {
       await tester.tap(find.byType(FloatingActionButton));
       await tester.pumpAndSettle();
 
-      // The FAB used to run the batch itself AND hand this callback to it as
-      // the batch's onSuccess, so one press ran the flow twice over.
+      // The FAB used to run the batch itself AND hand this callback to the
+      // batch as its own completion callback, so one press ran the flow twice
+      // over.
       expect(batchStarts, 1);
       expect(mockManagement.acceptCalls, isEmpty);
       expect(find.byType(AlertDialog), findsNothing);
@@ -326,7 +330,7 @@ class _Verb {
     BuildContext,
     FriendsViewModel,
     List<String>,
-    VoidCallback,
+    void Function(List<String>),
   )
   run;
   final String Function(AppLocalizations) confirmLabel;
@@ -339,8 +343,8 @@ class _Verb {
 final _verbs = <_Verb>[
   _Verb(
     name: 'acceptMultipleRequests',
-    run: (a, c, vm, ids, onSuccess) =>
-        a.acceptMultipleRequests(c, vm, ids, onSuccess),
+    run: (a, c, vm, ids, onSettled) =>
+        a.acceptMultipleRequests(c, vm, ids, onSettled),
     confirmLabel: (l) => l.socialAcceptAll,
     all: (l, n) => l.socialRequestsAccepted(n),
     partial: (l, n, total) => l.socialRequestsAcceptedPartial(n, total),
@@ -349,8 +353,8 @@ final _verbs = <_Verb>[
   ),
   _Verb(
     name: 'rejectMultipleRequests',
-    run: (a, c, vm, ids, onSuccess) =>
-        a.rejectMultipleRequests(c, vm, ids, onSuccess),
+    run: (a, c, vm, ids, onSettled) =>
+        a.rejectMultipleRequests(c, vm, ids, onSettled),
     confirmLabel: (l) => l.socialRejectAll,
     all: (l, n) => l.socialRequestsRejected(n),
     partial: (l, n, total) => l.socialRequestsRejectedPartial(n, total),
@@ -359,8 +363,8 @@ final _verbs = <_Verb>[
   ),
   _Verb(
     name: 'cancelMultipleSentRequests',
-    run: (a, c, vm, ids, onSuccess) =>
-        a.cancelMultipleSentRequests(c, vm, ids, onSuccess),
+    run: (a, c, vm, ids, onSettled) =>
+        a.cancelMultipleSentRequests(c, vm, ids, onSettled),
     confirmLabel: (l) => l.socialCancelAll,
     all: (l, n) => l.socialRequestsCancelled(n),
     partial: (l, n, total) => l.socialRequestsCancelledPartial(n, total),

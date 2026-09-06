@@ -2557,6 +2557,18 @@ class MockFriendsManagementOperations extends Mock
   /// handles differently, and which `failingRequestIds` cannot tell apart.
   final Set<String> _throwingRequestIds = {};
 
+  /// Holds every request verb open until [releaseRequests]. A batch that
+  /// completes within one frame cannot be observed mid-flight, so a test about
+  /// what the UI does WHILE it runs needs the batch to stop somewhere.
+  Completer<void>? _requestGate;
+
+  void pauseRequests() => _requestGate ??= Completer<void>();
+
+  void releaseRequests() {
+    _requestGate?.complete();
+    _requestGate = null;
+  }
+
   void setManagementState({
     List<UserProfile>? friends,
     List<FriendRequest>? incomingRequests,
@@ -2595,18 +2607,21 @@ class MockFriendsManagementOperations extends Mock
   @override
   Future<bool> acceptFriendRequest(String requestId) async {
     acceptCalls.add(requestId);
+    await _requestGate?.future;
     return _resolveRequest(requestId);
   }
 
   @override
   Future<bool> rejectFriendRequest(String requestId) async {
     rejectCalls.add(requestId);
+    await _requestGate?.future;
     return _resolveRequest(requestId);
   }
 
   @override
   Future<bool> cancelFriendRequest(String requestId) async {
     cancelCalls.add(requestId);
+    await _requestGate?.future;
     return _resolveRequest(requestId);
   }
 

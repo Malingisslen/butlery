@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/base/base_action_handler.dart';
 
 // Theme
+import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 
@@ -26,18 +27,27 @@ class FriendRequestActions extends BaseActionHandler with ActionStateMixin {
     BuildContext context,
     TabController tabController,
     Set<String> selectedIncoming,
-    VoidCallback onBatchAccept,
-  ) {
+    VoidCallback onBatchAccept, {
+    required bool batchRunning,
+  }) {
     if (!validateContext(context)) return null;
 
     if (tabController.index == 0 && selectedIncoming.isNotEmpty) {
       return FloatingActionButton.extended(
         // The caller's handler owns the batch, so the FAB only delegates —
-        // running it from here too would pass that handler as the batch's own
-        // onSuccess.
-        onPressed: onBatchAccept,
+        // running it from here too would hand that handler to the batch as its
+        // own completion callback. A null onPressed is what refuses a second
+        // press while one runs; the spinner only says so.
+        onPressed: batchRunning ? null : onBatchAccept,
         tooltip: context.l10n.socialAcceptSelected,
-        icon: const Icon(Icons.check_circle),
+        icon: batchRunning
+            ? const SizedBox(
+                width: AppDimensions.iconSizeM,
+                height: AppDimensions.iconSizeM,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
+            : const Icon(Icons.check_circle),
+        // The label stays put so the button does not resize mid-batch.
         label: Text(context.l10n.socialAcceptCount(selectedIncoming.length)),
         backgroundColor: context.butleryColors.success,
       );
@@ -49,8 +59,9 @@ class FriendRequestActions extends BaseActionHandler with ActionStateMixin {
     BuildContext context,
     FriendsViewModel viewModel,
     List<String> requestIds,
-    VoidCallback? onSuccess,
-  ) async {
+    void Function(List<String> landed)? onBatchSettled, {
+    VoidCallback? onConfirmed,
+  }) async {
     if (!validateContext(context) || requestIds.isEmpty) {
       showErrorMessage(context, context.l10n.socialNoRequestsSelected);
       return;
@@ -63,12 +74,12 @@ class FriendRequestActions extends BaseActionHandler with ActionStateMixin {
     final succeeded = await executeWithConfirmation<int>(
       context: context,
       action: () async {
-        final accepted = await viewModel.acceptFriendRequests(requestIds);
-        // On a total failure the selection stays, so the user can retry
-        // without re-picking. Anything else clears it whole, failures
-        // included — onSuccess takes no ids.
-        if (accepted > 0) onSuccess?.call();
-        return accepted;
+        onConfirmed?.call();
+        final landed = await viewModel.acceptFriendRequests(requestIds);
+        // Unconditional: an empty result does not say whether the requests
+        // failed or are gone, so the caller has to reconcile either way.
+        onBatchSettled?.call(landed);
+        return landed.length;
       },
       confirmationTitle: context.l10n.socialAcceptAllSelectedConfirm,
       confirmationMessage: context.l10n.socialAcceptAllSelectedMessage(
@@ -102,8 +113,9 @@ class FriendRequestActions extends BaseActionHandler with ActionStateMixin {
     BuildContext context,
     FriendsViewModel viewModel,
     List<String> requestIds,
-    VoidCallback? onSuccess,
-  ) async {
+    void Function(List<String> landed)? onBatchSettled, {
+    VoidCallback? onConfirmed,
+  }) async {
     if (!validateContext(context) || requestIds.isEmpty) {
       showErrorMessage(context, context.l10n.socialNoRequestsSelected);
       return;
@@ -116,9 +128,10 @@ class FriendRequestActions extends BaseActionHandler with ActionStateMixin {
     final succeeded = await executeWithConfirmation<int>(
       context: context,
       action: () async {
-        final rejected = await viewModel.rejectFriendRequests(requestIds);
-        if (rejected > 0) onSuccess?.call();
-        return rejected;
+        onConfirmed?.call();
+        final landed = await viewModel.rejectFriendRequests(requestIds);
+        onBatchSettled?.call(landed);
+        return landed.length;
       },
       confirmationTitle: context.l10n.socialRejectAllSelectedConfirm,
       confirmationMessage: context.l10n.socialRejectAllSelectedMessage(
@@ -153,8 +166,9 @@ class FriendRequestActions extends BaseActionHandler with ActionStateMixin {
     BuildContext context,
     FriendsViewModel viewModel,
     List<String> requestIds,
-    VoidCallback? onSuccess,
-  ) async {
+    void Function(List<String> landed)? onBatchSettled, {
+    VoidCallback? onConfirmed,
+  }) async {
     if (!validateContext(context) || requestIds.isEmpty) {
       showErrorMessage(context, context.l10n.socialNoRequestsSelected);
       return;
@@ -167,9 +181,10 @@ class FriendRequestActions extends BaseActionHandler with ActionStateMixin {
     final succeeded = await executeWithConfirmation<int>(
       context: context,
       action: () async {
-        final cancelled = await viewModel.cancelSentRequests(requestIds);
-        if (cancelled > 0) onSuccess?.call();
-        return cancelled;
+        onConfirmed?.call();
+        final landed = await viewModel.cancelSentRequests(requestIds);
+        onBatchSettled?.call(landed);
+        return landed.length;
       },
       confirmationTitle: context.l10n.socialCancelSelectedRequestsConfirm,
       confirmationMessage: context.l10n.socialCancelSelectedRequestsMessage(

@@ -6,6 +6,7 @@ import 'package:butlery/models/friend_request.dart';
 import 'package:butlery/models/user_profile.dart' as model;
 import 'package:butlery/repositories/interfaces/search_repository.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
@@ -84,6 +85,14 @@ class FriendsManagementOperations extends BaseService {
   /// Get NotificationService from DI (registered by MessagingModule)
   notif.NotificationService? get _notificationService =>
       ServiceLocator.tryGet<notif.NotificationService>();
+
+  /// Block/unblock analytics live here rather than on FriendsViewModel so that
+  /// every caller records them — the settings screen manages its own state and
+  /// calls this class directly, and [blockUsers]/[unblockUsers] never go near a
+  /// ViewModel at all. Optional because a unit test may stand this class up
+  /// without the analytics singleton.
+  AnalyticsService? get _analyticsService =>
+      ServiceLocator.tryGet<AnalyticsService>();
 
   Future<bool> sendFriendRequest(String recipientId, {String? message}) async {
     // Validate input
@@ -353,6 +362,7 @@ class FriendsManagementOperations extends BaseService {
       await blockRepo.blockUser(userId);
 
       AppLogger.success('User blocked');
+      await _analyticsService?.social.logUserBlocked(blockedUserId: userId);
       return true;
     } catch (e) {
       AppLogger.error('Failed to block user', e);
@@ -367,6 +377,9 @@ class FriendsManagementOperations extends BaseService {
       await blockRepo.unblockUser(userId);
 
       AppLogger.success('User unblocked');
+      await _analyticsService?.social.logUserUnblocked(
+        unblockedUserId: userId,
+      );
       return true;
     } catch (e) {
       AppLogger.error('Failed to unblock user', e);

@@ -29,8 +29,9 @@ class FriendRequestsHeaderBuilder {
     Set<String> selectedSent,
     VoidCallback onBatchAccept,
     VoidCallback onBatchReject,
-    VoidCallback onCancelSelected,
-  ) {
+    VoidCallback onCancelSelected, {
+    required bool batchRunning,
+  }) {
     final totalRequests =
         viewModel.incomingRequests.length + viewModel.sentRequests.length;
 
@@ -62,6 +63,7 @@ class FriendRequestsHeaderBuilder {
         // Batch actions for current tab
         if (tabController.index == 0 && selectedIncoming.isNotEmpty)
           PopupMenuButton<String>(
+            enabled: !batchRunning,
             icon: Icon(
               Icons.checklist,
               color: Theme.of(context).colorScheme.primary,
@@ -112,7 +114,7 @@ class FriendRequestsHeaderBuilder {
               Icons.cancel,
               color: Theme.of(context).colorScheme.error,
             ),
-            onPressed: onCancelSelected,
+            onPressed: batchRunning ? null : onCancelSelected,
             tooltip: context.l10n.socialCancelCount(selectedSent.length),
           ),
       ],

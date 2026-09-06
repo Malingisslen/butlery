@@ -260,23 +260,19 @@ class FriendsViewModel extends BaseViewModel {
   }
 
   /// Block a user. The service also drops the friendship and cancels pending
-  /// requests both ways — unblocking does not restore any of it.
+  /// requests both ways — unblocking does not restore any of it, and it is the
+  /// service that records the analytics, so a caller that skips this ViewModel
+  /// still counts.
   Future<bool> blockUser(String userId) async {
     final success = await _friendsService.management.blockUser(userId);
-    if (success) {
-      await _analyticsService.social.logUserBlocked(blockedUserId: userId);
-      notifyListeners();
-    }
+    if (success) notifyListeners();
     return success;
   }
 
   /// Unblock a user
   Future<bool> unblockUser(String userId) async {
     final success = await _friendsService.management.unblockUser(userId);
-    if (success) {
-      await _analyticsService.social.logUserUnblocked(unblockedUserId: userId);
-      notifyListeners();
-    }
+    if (success) notifyListeners();
     return success;
   }
 
@@ -338,37 +334,38 @@ class FriendsViewModel extends BaseViewModel {
   /// this ViewModel — a batch built on the service layer would write the
   /// friendships and record none of them.
   ///
-  /// Returns how many landed — a request can legitimately have vanished from
-  /// another device, so one failure must not strand the rest.
-  Future<int> acceptFriendRequests(List<String> requestIds) =>
+  /// Returns the ids that landed — a request can legitimately have vanished
+  /// from another device, so one failure must not strand the rest, and the
+  /// caller needs to know which ones to stop offering.
+  Future<List<String>> acceptFriendRequests(List<String> requestIds) =>
       _runBatch(requestIds, acceptFriendRequest);
 
   /// Reject several incoming requests. See [acceptFriendRequests].
-  Future<int> rejectFriendRequests(List<String> requestIds) =>
+  Future<List<String>> rejectFriendRequests(List<String> requestIds) =>
       _runBatch(requestIds, rejectFriendRequest);
 
   /// Cancel several sent requests. [cancelSentRequest] adds nothing of its own,
   /// so this exists for one contract towards the view rather than for the
   /// analytics reason the other two have.
-  Future<int> cancelSentRequests(List<String> requestIds) =>
+  Future<List<String>> cancelSentRequests(List<String> requestIds) =>
       _runBatch(requestIds, cancelSentRequest);
 
   /// Each id keeps the per-request analytics of the single-request path,
   /// which this adds a catch around: one id that throws must not strand the
   /// ids after it.
-  Future<int> _runBatch(
+  Future<List<String>> _runBatch(
     List<String> requestIds,
     Future<bool> Function(String) operation,
   ) async {
-    var succeeded = 0;
+    final succeeded = <String>[];
     for (final requestId in List<String>.of(requestIds)) {
       try {
-        if (await operation(requestId)) succeeded++;
+        if (await operation(requestId)) succeeded.add(requestId);
       } catch (e) {
         AppLogger.error('❌ Batch operation failed for one request: $e');
       }
     }
-    if (succeeded > 0) notifyListeners();
+    if (succeeded.isNotEmpty) notifyListeners();
     return succeeded;
   }
 

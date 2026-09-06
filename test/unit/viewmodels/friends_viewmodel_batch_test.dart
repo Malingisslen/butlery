@@ -122,26 +122,26 @@ void main() {
     });
 
     test('accepting all three writes all three', () async {
-      final succeeded = await viewModel.acceptFriendRequests(requestIds);
+      final landed = await viewModel.acceptFriendRequests(requestIds);
 
-      expect(succeeded, 3);
+      expect(landed, requestIds);
       expect(mockManagement.acceptCalls, requestIds);
       expect(mockManagement.rejectCalls, isEmpty);
       expect(mockManagement.cancelCalls, isEmpty);
     });
 
     test('rejecting all three writes all three', () async {
-      final succeeded = await viewModel.rejectFriendRequests(requestIds);
+      final landed = await viewModel.rejectFriendRequests(requestIds);
 
-      expect(succeeded, 3);
+      expect(landed, requestIds);
       expect(mockManagement.rejectCalls, requestIds);
       expect(mockManagement.acceptCalls, isEmpty);
     });
 
     test('cancelling all three writes all three', () async {
-      final succeeded = await viewModel.cancelSentRequests(requestIds);
+      final landed = await viewModel.cancelSentRequests(requestIds);
 
-      expect(succeeded, 3);
+      expect(landed, requestIds);
       expect(mockManagement.cancelCalls, requestIds);
       expect(mockManagement.acceptCalls, isEmpty);
     });
@@ -149,38 +149,39 @@ void main() {
     test('one failure does not strand the rest', () async {
       mockManagement.setManagementState(failingRequestIds: {'req-2'});
 
-      final succeeded = await viewModel.acceptFriendRequests(requestIds);
+      final landed = await viewModel.acceptFriendRequests(requestIds);
 
-      // The count reports the partial outcome, and the two that could land
-      // were still attempted.
-      expect(succeeded, 2);
+      // WHICH ids landed, not just how many: the view reconciles its
+      // selection from this list, so a result that merely counted would not
+      // carry enough.
+      expect(landed, ['req-1', 'req-3']);
       expect(mockManagement.acceptCalls, requestIds);
     });
 
-    test('a batch where nothing lands returns zero', () async {
+    test('a batch where nothing lands returns an empty list', () async {
       mockManagement.setManagementState(shouldSucceed: false);
 
-      final succeeded = await viewModel.rejectFriendRequests(requestIds);
+      final landed = await viewModel.rejectFriendRequests(requestIds);
 
-      expect(succeeded, 0);
+      expect(landed, isEmpty);
       expect(mockManagement.rejectCalls, requestIds);
     });
 
     test('an empty selection never reaches the service', () async {
-      final succeeded = await viewModel.acceptFriendRequests(const []);
+      final landed = await viewModel.acceptFriendRequests(const []);
 
-      expect(succeeded, 0);
+      expect(landed, isEmpty);
       expect(mockManagement.acceptCalls, isEmpty);
     });
 
     test('an id that throws does not strand the ids after it', () async {
       mockManagement.setManagementState(throwingRequestIds: {'req-1'});
 
-      final succeeded = await viewModel.acceptFriendRequests(requestIds);
+      final landed = await viewModel.acceptFriendRequests(requestIds);
 
       // Without the catch the whole batch dies on the first id and the two
       // behind it are never attempted.
-      expect(succeeded, 2);
+      expect(landed, ['req-2', 'req-3']);
       expect(mockManagement.acceptCalls, requestIds);
     });
   });

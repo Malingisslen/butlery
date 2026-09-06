@@ -806,8 +806,8 @@ void main() {
     // SOC-04: block/unblock at the VM layer.
     //
     // The VM surface for the block domain is:
-    //   • blockUser(userId)       — delegates to management, returns bool, logs analytic
-    //   • unblockUser(userId)     — delegates to management, returns bool, logs analytic
+    //   • blockUser(userId)       — delegates to management, returns bool
+    //   • unblockUser(userId)     — delegates to management, returns bool
     //   • getFriendshipStatus()   — reads blockedUsers from the service (covered above)
     //
     // Notification-firing is NOT asserted here: FriendsViewModel.notifyListeners()

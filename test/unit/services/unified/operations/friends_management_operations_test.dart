@@ -9,6 +9,8 @@ import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:butlery/repositories/firebase/firebase_block_repository.dart';
 import 'package:butlery/repositories/firebase/friends/friend_relationship_repository.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
+import 'package:butlery/services/analytics_service.dart';
+import 'package:butlery/services/analytics/trackers/social_events_tracker.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
 import '../../../../test_support/base_unit_test.dart';
 import '../../../../infrastructure/di/test_service_locator.dart';
@@ -19,6 +21,24 @@ class _MockFirebaseBlockRepository extends Mock
 
 class _MockFriendRelationshipRepository extends Mock
     implements FriendRelationshipRepository {}
+
+/// Records rather than swallows: the shared MockSocialEventsTracker is a
+/// no-op fake, so with it a repoint of logUserBlocked to logUserUnblocked
+/// ships green.
+class _RecordingSocialTracker extends Fake implements SocialEventsTracker {
+  final blocked = <String>[];
+  final unblocked = <String>[];
+
+  @override
+  Future<void> logUserBlocked({required String blockedUserId}) async =>
+      blocked.add(blockedUserId);
+
+  @override
+  Future<void> logUserUnblocked({required String unblockedUserId}) async =>
+      unblocked.add(unblockedUserId);
+}
+
+class _MockAnalyticsService extends Mock implements AnalyticsService {}
 
 void main() {
   group('FriendsManagementOperations', () {
@@ -53,7 +73,7 @@ void main() {
       await TestServiceLocator.initialize();
 
       // Production ServiceLocator bridge: the FriendsManagementOperations
-      // constructor calls ServiceLocator.get<UserService>() (line 78 of prod).
+      // constructor calls ServiceLocator.get<UserService>().
       // MockDIContainer delegates to GetIt.instance which TestServiceLocator
       // already populated with mocks.
       production.ServiceLocator.reset();
@@ -250,12 +270,56 @@ void main() {
 
     group('Block User Cascade', () {
       late _MockFirebaseBlockRepository mockBlockRepo;
+      late _RecordingSocialTracker socialTracker;
 
       setUp(() {
         mockBlockRepo = _MockFirebaseBlockRepository();
         TestServiceLocator.registerMock<FirebaseBlockRepository>(mockBlockRepo);
         when(() => mockBlockRepo.blockUser(any())).thenAnswer((_) async {});
+        when(() => mockBlockRepo.unblockUser(any())).thenAnswer((_) async {});
+
+        socialTracker = _RecordingSocialTracker();
+        final analytics = _MockAnalyticsService();
+        when(() => analytics.social).thenReturn(socialTracker);
+        TestServiceLocator.registerMock<AnalyticsService>(analytics);
       });
+
+      // The analytics used to sit on FriendsViewModel, so every caller that
+      // skipped it — the settings screen, and blockUsers/unblockUsers here —
+      // recorded nothing. These two pin the emission at the layer every caller
+      // passes through, and pin WHICH event, which a no-op tracker cannot.
+      test(
+        'a block records exactly one blocked event, and no unblock',
+        () async {
+          mockParentService.setFriendsState(
+            friends: [],
+            incomingRequests: [],
+            outgoingRequests: [],
+            isInitialized: true,
+          );
+
+          expect(
+            await managementOperations.blockUser('blocked_person'),
+            isTrue,
+          );
+
+          expect(socialTracker.blocked, ['blocked_person']);
+          expect(socialTracker.unblocked, isEmpty);
+        },
+      );
+
+      test(
+        'an unblock records exactly one unblocked event, and no block',
+        () async {
+          expect(
+            await managementOperations.unblockUser('blocked_person'),
+            isTrue,
+          );
+
+          expect(socialTracker.unblocked, ['blocked_person']);
+          expect(socialTracker.blocked, isEmpty);
+        },
+      );
 
       test('should clean up incoming requests from blocked user', () async {
         final incomingRequest = FriendRequest(
