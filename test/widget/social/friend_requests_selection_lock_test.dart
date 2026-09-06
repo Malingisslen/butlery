@@ -121,6 +121,12 @@ void main() {
   tearDown(() async {
     await TestServiceLocator.reset();
     BaseUnitTest.resetMocks();
+    // After the cleanups: a failing expect throws.
+    expect(
+      mockManagement.hasOutstandingRequestGate,
+      isFalse,
+      reason: 'a paused request gate was never released',
+    );
   });
 
   tearDownAll(() async {

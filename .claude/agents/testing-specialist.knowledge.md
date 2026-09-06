@@ -205,6 +205,15 @@ compress it.**
   separately (`grep "^ *test('"`). Grade every test the round ADDS against the names already in
   the file, and re-grade unqualified `every|all|no ` names whenever the round NARROWS what a
   method returns.
+- **A comment naming a STATE ("this is the case where X") is a claim about the FIXTURE THREE LINES
+  DOWN, not about the feature's story — check it there.** Read as motivating background it slides
+  through: I passed "an empty result is the case where every selected request had vanished" in two
+  consecutive rounds beside a `shouldSucceed: false` fixture where nothing had vanished, in the test
+  AND in the production comment it was copied from. The tell is a sentence that would still read
+  well with the fixture deleted. Same round, the cure for a pair of near-identical tests: give each
+  a BOUNDARY clause naming which side of the input split its own fixture sits on
+  (`landed` empty vs non-empty) plus the sibling's verbatim test name — never a test→mutant
+  mapping, which is a counterfactual about something nobody ran (batch friend requests, 2026-09-06).
 - **The line that stops OVER-correcting: a quantifier over the CODE'S BEHAVIOUR is a CONTRACT; a
   quantifier over the TEST FILE'S CONTENTS is a COUNT.** Keep the contract (state the rule, not
   the evidence); strike the count. Settle a superlative by WALKING THE BRANCHES, never by

@@ -35745,3 +35745,71 @@ last three found was a sentence.
 Mechanics worth keeping: hashing all twelve paths took one command and settled "the other
 eleven are unchanged" without re-reading them, while the one moved file — untracked, so
 un-diffable — was re-read whole. That pairing is the cheap shape for a one-line round.
+
+### 2026-09-07 — batch friend-request actions, rounds 5-6 and the follow-up round
+
+Trigger: two comment-only rounds on `friend_requests_selection_lock_test.dart`, then a
+follow-up round that built the `tearDown` check and these notes. Verdict each round: pass
+(0 blocking). Shipped in `f5bbc5c14` plus the follow-up commit.
+
+MY OWN MISS, which is what the new principle records. `"this is the case where every
+selected request had vanished elsewhere"` sat beside a `shouldSucceed: false` fixture where
+both requests were still present — an empty `landed` only means nothing landed. I graded it
+twice: in round 3 I read it in the test at the then-line 230 and passed it, and in the same
+round I explicitly called the identical sentence in `friend_request_actions.dart` "accurate"
+as a replacement. `code-reviewer` filed it blocking in round 4. I had read it as motivating
+background rather than as an assertion about the fixture directly beneath it. The kill-set
+table below is what made the defect visible, because the false sentence was erasing the very
+distinction the table draws.
+
+THE TWO VANISH TESTS — the non-duplication that had to be written down. Provenance per row
+matters and is recorded here rather than in the file:
+
+| mutant | `an id that vanished…` (landed NON-EMPTY) | `EVERY id vanished` (landed EMPTY) |
+|---|---|---|
+| neutralise `retainWhere` | red | red |
+| restore `if (landed.isNotEmpty)` around the report | GREEN | red (measured, 4 red) |
+| prune only when `landed.isEmpty` | red | GREEN |
+
+Rows 1-2 were measured by probes in rounds 3-4. Row 3 is ANALYTIC — substituted into each
+fixture's own arithmetic, never run — which is exactly why the table stayed OUT of the source
+file when the coordinator offered to transcribe it. What went into the file instead is one
+BOUNDARY clause per test, in the present tense, naming which side of the empty/non-empty
+split its own fixture sits on, plus the sibling's verbatim test name so a grep resolves it.
+That replaced a HISTORY clause ("until the report became unconditional this could not run at
+all") that carried the whole distinction and was settleable only from git — the shape a later
+tidy deletes, after which the pair reads as duplicates and the SMALLER (partial) case is the
+one that looks redundant. It is the one that must not go: it is the only fixture where
+`removeAll` and `retainWhere` both do work.
+
+Correction I owed the coordinator, twice, and the shape recurs: a verbatim test-name pointer
+does NOT "fail loudly" on a rename — nothing greps it automatically, so a dangling reference
+stays green until a human looks. What the verbatim name buys is that the check is MECHANICAL
+when someone does look. (Round 3's twin: "the tab-switch clear is a precondition of the sent
+test" was false — the switch happens before anything is selected, so `onClearSelection` runs
+as a no-op there and deleting it leaves the suite green.)
+
+THE `Completer` GATE, and the one property that makes it work. `MockFriendsManagementOperations`
+gained `pauseRequests()` / `releaseRequests()` holding every request verb open, because a batch
+that finishes inside one frame cannot be observed mid-flight and the lock was therefore
+unmeasurable. Load-bearing detail: the mock does `acceptCalls.add(requestId)` BEFORE
+`await _requestGate?.future`. That ordering is what let round 6 add
+`expect(mockManagement.acceptCalls, isEmpty)` before the confirmation tap as a real
+discriminator — a batch started at tap-time would already have recorded its ids even while
+paused. Had the recording sat after the gate, that assertion would have been unfailable and
+would have read as coverage. Default `_requestGate == null` means `await null`, one extra
+microtask; every other caller of those three verbs awaits, so the blast radius was nil.
+
+THE GATE'S OWN FAILURE MODE, now closed (follow-up round). A suite that pauses and never
+releases leaves a future nobody completes and PASSES SILENTLY. `hasOutstandingRequestGate`
+plus a `tearDown` assertion makes it loud; mutation-probed by deleting one `releaseRequests()`
+call, which reddens with the reason string naming the cause. Same family as "an untested
+promise and a kept promise are the same artefact" — a harness affordance whose misuse is
+invisible needs its own alarm, in the harness, not in a convention.
+
+Also from these rounds: `_clearLanded` → `_reconcileSelection`, because the truth belongs in
+the symbol rather than in the comment beside it; the suite header's "after a partial batch"
+struck once later rounds added non-partial cases (true when written, falsified by our own
+work); and the all-throwing test's unnamed conjunct written down — the selection survives not
+because nothing was reported but because both requests are still OPEN and `retainWhere` keeps
+them, which stopped being obvious the moment the report went unconditional.

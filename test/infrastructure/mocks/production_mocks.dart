@@ -2569,6 +2569,12 @@ class MockFriendsManagementOperations extends Mock
     _requestGate = null;
   }
 
+  /// A suite that pauses and never releases leaves a future nobody completes,
+  /// which passes silently. A tearDown assertion makes that loud — but only in
+  /// a suite that calls [pauseRequests]; everywhere else this is always false,
+  /// so the same assertion there is a green line rather than a guard.
+  bool get hasOutstandingRequestGate => _requestGate != null;
+
   void setManagementState({
     List<UserProfile>? friends,
     List<FriendRequest>? incomingRequests,
