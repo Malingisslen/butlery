@@ -8871,3 +8871,21 @@ Also worth the trail: repairing the overlap removed the only mechanism standing 
 code, ahead of `initializeAdminApp()` and Phase 1, and is watched by
 `scenario_resetScriptRefusesLiveRuns` — because "the guard worked and nothing watched it fire"
 is the whole content of BUT-2010.
+
+### 2026-09-06 — BUT-2028 step 10, superseded clause retired from the principles file [admin][gdpr]
+
+The principles file's `MAX_BLOCK_SWEEP_ROWS` bullet carried, verbatim:
+
+> live runs are now REFUSED unless `--but-2028-acknowledged` is passed, BUT-2028
+
+Superseded in place on 2026-09-06. The BUT-2028 refusal was temporary by construction —
+it existed only while the hazards that ticket recorded stood open — and was lifted once
+they closed and the reset kill switch had been exercised in production in both directions.
+`--but-2028-acknowledged` and the `exit 1` no longer exist; the live-run barrier is the
+typed `CONFIRMATION_PHRASE` in `main()`.
+
+Raised by the `cloud-functions-specialist` gate reviewing step 10, which found the sentence
+by grepping OUTSIDE its own staged set — the commit that falsified it touched none of the
+three files carrying a stale wording of it. The principle worth keeping from that: a
+mechanism named in one agent's knowledge file is falsified by another agent's commit, and
+nothing reddens.

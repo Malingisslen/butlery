@@ -23,8 +23,9 @@
  * and the verdict carries the exit code. It cannot answer "finished": a gen1
  * trigger has no bounded delivery time.
  *
- * Live runs are REFUSED while BUT-2028 is open — see the guard at the top of
- * `main()`. `--dry-run` still works, and is how you inspect the script.
+ * What stands between an accidental invocation and a wiped project is the
+ * confirmation phrase in `main()`, typed in full, on a live run only. See
+ * `CONFIRMATION_PHRASE` for why nothing may pre-satisfy it.
  *
  * Operating instructions, including what to do when the kill switch sticks:
  * `docs/ops/reset-user-data-runbook.md`.
@@ -32,6 +33,7 @@
  * Usage:
  *   cd functions
  *   npm run reset-user-data:dry-run   # preview what gets deleted
+ *   npm run reset-user-data           # live; asks for the phrase
  */
 
 import * as admin from "firebase-admin";
@@ -85,9 +87,13 @@ const BATCH_SIZE = 500;
  * alone.
  */
 const KILL_SWITCH_REFRESH_INTERVAL_MS = 10 * 60 * 1000;
+/**
+ * The last human step before a live run, typed in full at the prompt in
+ * `main()`. Nothing may pre-satisfy it — an npm script that pipes it in leaves
+ * the gate running and proves nothing, which is the shape that let the overlap
+ * guard sit broken for five and a half months (BUT-2010).
+ */
 const CONFIRMATION_PHRASE = "YES DELETE ALL USER DATA";
-/** Opt-out for the BUT-2028 refusal below. Live runs only; `--dry-run` is free. */
-const BUT_2028_ACK_FLAG = "--but-2028-acknowledged";
 
 // --- Helpers ---
 
@@ -472,33 +478,6 @@ async function verifyReset(
 async function main() {
   const args = process.argv.slice(2);
   const dryRun = args.includes("--dry-run");
-
-  // BUT-2028: live runs are REFUSED, in code, not in prose.
-  //
-  // Until BUT-2010 was fixed the overlap guard stopped every run, so the
-  // hazards BUT-2028 records could not be reached. Repairing that guard removed
-  // the only thing enforcing this file's warning — and `admin-init.ts`
-  // hardcodes the production project, so an unrefused live run wipes every Auth
-  // user there.
-  //
-  // Placed above `initializeAdminApp()` deliberately: it reads only `args`, so
-  // it fires without credentials and cannot be pre-empted by a credential
-  // discovery failure.
-  //
-  // `--dry-run` is deliberately unaffected: inspecting the script is how anyone
-  // resolves BUT-2028 in the first place.
-  if (!dryRun && !args.includes(BUT_2028_ACK_FLAG)) {
-    console.error(
-      "REFUSED: BUT-2028 is open. This script's delete list skips top-level " +
-        "collections that have `firestore.rules` blocks — several of them " +
-        "uid-keyed personal data, left orphaned because Phase 1 deletes every " +
-        "Auth user first — and Phase 1 fires the live onUserDeleted trigger " +
-        "into collections Phase 2 is concurrently deleting. " +
-        "Resolve BUT-2028, or re-run with:  npm run reset-user-data -- " +
-        BUT_2028_ACK_FLAG
-    );
-    process.exit(1);
-  }
 
   initializeAdminApp();
 

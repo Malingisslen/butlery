@@ -8,8 +8,10 @@ runbook covers the one thing about it that can go wrong quietly: the kill switch
 
 - Preview: `cd functions && npm run reset-user-data:dry-run`. Changes nothing,
   sets no flag, prints no verdict.
-- Live runs are **refused** while BUT-2028 is open. The refusal is in `main()`,
-  above `initializeAdminApp()`, so it fires without credentials.
+- A live run asks you to type a phrase in full before it deletes anything. That
+  prompt is the last human step. A test holds one shortcut shut: no script in
+  `functions/package.json` may carry the phrase. A shell pipe still satisfies
+  the prompt and no test holds that, so do not build one.
 - A live run **suppresses `onUserDeleted`** for its duration by writing
   `system/__reset_in_progress`, and clears it in a `finally`.
 - If the run ends and that document still exists, **report anonymisation and
@@ -88,7 +90,9 @@ residue exists; nothing can prove it is finished.
 - The weekly scheduled jobs (`reconcileBlockMirrors`, `cleanup-old-notifications`,
   `purge-dormant-family-data`, and others) delete and write in the same
   collections, unaware a reset is running. Whether to pause Cloud Scheduler for
-  the run is **open** — BUT-2028 records it and it has not been decided.
+  the run is **open and undecided — BUT-2036**. Until it is decided, this is
+  something to weigh yourself before starting a live run; nothing in the script
+  handles it.
 - The run writes its own record to Cloud Storage at `ops/resets/<runId>.json`
   **before** Phase 1, because every Firestore audit collection it could write to
   is in its own delete list. A file there with no matching verdict in the console

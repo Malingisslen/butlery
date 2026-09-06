@@ -2167,10 +2167,8 @@ export async function deleteBlockMirrors(
  * collection. That script was inert from 2026-03-19 to 2026-09-05 —
  * `tag_configs` was in both the delete and keep lists, and the overlap guard
  * exited before Phase 1 (BUT-2010, fixed 2026-09-05). Read that file's header
- * before running it — BUT-2028 forbids running it against real data for now,
- * and even once that lifts it is a whole-project clean slate rather than a
- * per-user remedy. For one declined sweep the recovery is a human with the
- * Admin SDK.
+ * before running it: it is a whole-project clean slate rather than a per-user
+ * remedy. For one declined sweep the recovery is a human with the Admin SDK.
  */
 export const MAX_BLOCK_SWEEP_ROWS = 2000;
 

@@ -3526,24 +3526,26 @@ async function scenario_resetKillSwitchIsWiredIn(): Promise<void> {
 }
 
 /**
- * BUT-2028: the reset script REFUSES a live run, in code, ahead of Phase 1.
+ * BUT-2028: a live run requires the confirmation phrase, typed by a human.
  *
- * This exists because of what BUT-2010 taught. The overlap guard protected this
- * script for five and a half months and nobody watched it fire; fixing that
- * guard removed the only mechanism enforcing the header's warning, leaving the
- * prohibition as prose while `admin-init.ts` hardcodes the production project. A warning with no mechanism is the same shape as a
- * promise nobody tests.
+ * This replaces the temporary BUT-2028 refusal, lifted 2026-09-06 — the
+ * decision and what it rested on are in `ACCEPTED_DEVIATIONS.md`, not here,
+ * because a docstring cannot hold a provenance claim. What survives is the
+ * property that made that scenario worth having, and it is not the refusal: it
+ * is that a gate meant as the last human step must not be satisfiable without
+ * the human.
  *
- * Two properties, and the ORDER is one of them: the refusal must sit ahead of
- * Phase 1, or it refuses a run that has already deleted the Auth users. Source
- * order stands in for execution order only while the refusal is inline in
- * `main()`; move it into a helper and this check stops meaning that.
+ * That is what BUT-2010 taught. The overlap guard protected this script for
+ * five and a half months while nothing watched whether it could still fire — a
+ * guard that runs and cannot fail reads exactly like one that passes. An npm
+ * script piping the phrase in would leave this gate running and prove nothing.
  *
- * `--dry-run` must stay reachable — inspecting the script is how anyone
- * resolves BUT-2028 — so the refusal is asserted to be conditional on a live
- * run rather than unconditional.
+ * Source parsing, so this proves REFERENCE and ORDER rather than effect:
+ * `main()` takes no injectable stream, so the prompt cannot be driven from a
+ * test. The one check here that measures a real effect is the last — that no
+ * npm script bakes the phrase in — and it reads `package.json`.
  */
-async function scenario_resetScriptRefusesLiveRuns(): Promise<void> {
+async function scenario_resetScriptRequiresTheConfirmationPhrase(): Promise<void> {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const fs = require("fs");
   // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -3559,88 +3561,87 @@ async function scenario_resetScriptRefusesLiveRuns(): Promise<void> {
     .filter((line: string) => !line.trim().startsWith("//"))
     .join("\n");
 
-  const refusalAt = source.indexOf("BUT_2028_ACK_FLAG)");
+  // The phrase is READ from the script, never restated here: matching a
+  // literal means a reword leaves this searching for a string nothing uses,
+  // green while an npm script bakes in the new one. Same reason the sibling
+  // scenario matches `Collections.blocks` rather than "blocks".
+  // Anchored on the DECLARATION line, because the `//`-stripper above leaves
+  // `/** */` blocks intact and the phrase's own JSDoc sits directly above it.
+  // An unanchored match takes the first occurrence, so a future edit quoting
+  // the phrase in that comment would win — and after a later reword the
+  // npm-script check would hunt the OLD phrase, green, while a script baked in
+  // the new one. That is the failure this scenario exists to prevent.
+  const phraseMatch = source.match(/^const CONFIRMATION_PHRASE = "([^"]+)"/m);
   check(
-    "the reset script refuses live runs while BUT-2028 is open",
-    refusalAt >= 0,
-    "no BUT-2028 live-run refusal found in reset-user-data.ts — the header " +
-      "warning and two docstrings then have no mechanism behind them, against " +
-      "a hardcoded production project",
+    "the confirmation phrase is readable from the script",
+    phraseMatch !== null,
+    "CONFIRMATION_PHRASE's declaration was not found, so neither the gate " +
+      "checks nor the npm-script check below know what to look for",
   );
-  if (refusalAt < 0) return;
+  if (phraseMatch === null) return;
+  const phrase = phraseMatch[1];
 
-  check(
-    "the refusal is conditional on a live run, not on every run",
-    source.slice(refusalAt - 200, refusalAt).includes("!dryRun"),
-    "the BUT-2028 refusal is not guarded by `!dryRun`, so --dry-run is " +
-      "refused too — and inspecting the script is how BUT-2028 gets resolved",
-  );
-
-  // Presence and position prove a reference, never an EFFECT. Measured: swap
-  // `process.exit(1)` for a `console.warn` and the checks above all stay green
-  // while the script prints REFUSED and walks into Phase 1 against production
-  // — the same shape as the guard this ticket exists to close, one level up.
-  check(
-    "the refusal EXITS rather than only printing",
-    source
-      .slice(refusalAt, source.indexOf("initializeAdminApp(", refusalAt))
-      .includes("process.exit(1)"),
-    "the BUT-2028 refusal prints and falls through into Phase 1",
-  );
-
-  // Scoped to `main()`'s body, not to the whole file. Phase 1 moved into a
-  // `runPhases` helper that is DECLARED above `main`, so file order stopped
-  // meaning execution order — a check reading the whole source now compares
-  // the refusal against a function definition rather than against the call
-  // that reaches it, and answers a question nobody asked.
+  // Scoped to `main()`'s body. `runPhases` is DECLARED above `main`, so file
+  // order stopped meaning execution order — a check reading the whole source
+  // would compare the gate against a function definition rather than against
+  // the call that reaches it.
   const mainAt = source.indexOf("async function main()");
   const mainBody = mainAt >= 0 ? source.slice(mainAt) : "";
-  const refusalInMain = mainBody.indexOf("BUT_2028_ACK_FLAG)");
+  const promptAt = mainBody.indexOf("promptUser(");
   const phasesCalledAt = mainBody.indexOf("runPhases(");
   check(
-    "the refusal runs BEFORE anything in main() reaches the phases",
+    "main() asks for the confirmation phrase before it reaches the phases",
     mainAt >= 0 &&
-      refusalInMain >= 0 &&
+      promptAt >= 0 &&
       phasesCalledAt >= 0 &&
-      phasesCalledAt > refusalInMain,
-    `in main(): refusal at ${refusalInMain}, first runPhases call at ` +
-      `${phasesCalledAt} — the BUT-2028 refusal would fire after Phase 1 has ` +
-      "already deleted every Auth user",
+      phasesCalledAt > promptAt,
+    `in main(): prompt at ${promptAt}, first runPhases call at ` +
+      `${phasesCalledAt} — the gate would ask after Phase 1 has already ` +
+      "deleted every Auth user",
   );
 
-  // The blind spot the OVERLAP guard had, closed for this one. That guard kept
-  // working for five and a half months while nothing watched whether it could
-  // still fire; baking the ack flag into `package.json` leaves the refusal
-  // intact and permanently satisfied, which is the same shape.
+  const gate = mainBody.slice(promptAt, phasesCalledAt);
+  check(
+    "the confirmation gate is conditional on a live run",
+    // Leans on the check above: with the prompt deleted `promptAt` is -1, the
+    // lookback spans nearly the whole body and this passes vacuously. It is
+    // not dormant, because that same state reddens the order check above and
+    // the exit check below — but on its own it proves nothing there.
+    promptAt >= 0 &&
+      mainBody.slice(Math.max(0, promptAt - 400), promptAt).includes("!dryRun"),
+    "the confirmation prompt is not guarded by `!dryRun`, so --dry-run would " +
+      "block on a prompt — and inspecting the script is what --dry-run is for",
+  );
+  check(
+    "a wrong phrase EXITS rather than only printing",
+    // Presence and position prove a reference, never an EFFECT: swap the exit
+    // for a `console.log` and every check above stays green while the script
+    // prints "Aborted." and wipes production anyway.
+    gate.includes("process.exit(0)") &&
+      gate.includes(`!== CONFIRMATION_PHRASE`),
+    "main() does not compare the answer to CONFIRMATION_PHRASE and exit — a " +
+      "wrong answer would fall through into Phase 1",
+  );
+
+  // The blind spot the OVERLAP guard had, kept closed. That guard ran for five
+  // and a half months while nothing watched whether it could still fire; an
+  // npm script piping the phrase in leaves this gate intact and permanently
+  // satisfied, which is the same shape.
   const pkg = fs.readFileSync(
     path.join(__dirname, "..", "..", "package.json"),
     "utf8",
   ) as string;
   const scripts = JSON.parse(pkg).scripts as Record<string, string>;
-  // The flag is READ from the script, never restated: matching the literal
-  // means a rename leaves this searching for a string nothing uses, green while
-  // an npm script bakes in the new one. Same reason the sibling scenario
-  // matches `Collections.blocks` rather than "blocks".
-  const flagMatch = source.match(/BUT_2028_ACK_FLAG = "([^"]+)"/);
-  check(
-    "the ack flag's spelling is readable from the script",
-    flagMatch !== null,
-    "BUT_2028_ACK_FLAG's declaration was not found, so the npm-script check " +
-      "below cannot know what to look for",
-  );
-  if (flagMatch === null) return;
-  const ackFlag = flagMatch[1];
-
   const baked = Object.entries(scripts)
     .filter(([, cmd]) => cmd.includes("reset-user-data"))
-    .filter(([, cmd]) => cmd.includes(ackFlag))
+    .filter(([, cmd]) => cmd.includes(phrase))
     .map(([name]) => name);
   check(
-    "no npm script pre-acknowledges BUT-2028 for the operator",
+    "no npm script types the confirmation phrase for the operator",
     baked.length === 0,
-    `${baked.join(", ")} passes ${ackFlag}, so the refusal is ` +
-      "satisfied before the operator sees it — the guard still runs and still " +
-      "proves nothing, which is exactly how the overlap guard went unnoticed",
+    `${baked.join(", ")} carries the confirmation phrase, so the gate is ` +
+      "satisfied before the operator sees it — it still runs and still proves " +
+      "nothing, which is exactly how the overlap guard went unnoticed",
   );
 }
 
@@ -5426,7 +5427,7 @@ async function main(): Promise<void> {
   await scenario_resetScriptDeleteListNamesBlocks();
   await scenario_resetScriptListsDoNotOverlap();
   await scenario_everyCollectionIsDecided();
-  await scenario_resetScriptRefusesLiveRuns();
+  await scenario_resetScriptRequiresTheConfirmationPhrase();
   await scenario_resetKillSwitchSelfHeals();
   await scenario_resetKillSwitchIsWiredIn();
   await scenario_implausibleBlockCountDeclines();

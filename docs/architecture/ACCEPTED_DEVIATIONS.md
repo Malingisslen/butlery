@@ -1633,6 +1633,41 @@ hardcoded production project — the same shape as the guard it replaced, so
 `scenario_resetScriptRefusesLiveRuns` watches this one. The recovery named in this entry is
 therefore refused-unless-acknowledged rather than unavailable. BUT-2028, 2026-09-05
 
+**SUPERSEDED 2026-09-06 (BUT-2028) — this entry's PROHIBITION ON LIVE RUNS is lifted, in both
+places it is stated: the BUT-2010 block's closing sentence ("BUT-2028 now forbids running it
+against real data until those are resolved") and the 2026-09-05 amendment above. Keyed on the
+claim rather than on a position, because a supersession that points at "the paragraph above"
+leaves the same claim standing wherever else it was written.** These symbols are gone:
+`--but-2028-acknowledged`, the `exit 1`, and `scenario_resetScriptRefusesLiveRuns`. The
+prohibition was temporary by construction — it existed only while the hazards BUT-2028
+records stood open, and they are closed: every collection is now decided (delete / keep /
+registered-untouched, with a two-source coverage guard), and the Phase-1 race is NARROWED and
+DETECTED — not eliminated — by a kill switch the run sets and clears, **exercised in
+production on 2026-09-06 in both directions** (flag set: `onUserDeleted` skipped and logged
+`SKIPPED`; flag clear: the cleanup ran). A gen1 trigger has no bounded delivery time, so an
+event can still arrive after the flag is cleared; Phase 4 prints `EXPIRED before the run
+ended` when the suppression lapsed mid-wipe, and that run is raced.
+
+The last barrier on a live run is now the typed `CONFIRMATION_PHRASE` in `main()`,
+`!dryRun`-scoped and above the only `runPhases(` call, watched by
+`scenario_resetScriptRequiresTheConfirmationPhrase` — which keeps the check that carried the
+BUT-2010 lesson: no npm script may type the phrase for the operator. Note the one ordering
+change: the old refusal sat above `initializeAdminApp()` and fired without credentials, while
+the phrase prompt sits below it, so a credential failure now pre-empts the prompt. That fails
+toward not running.
+
+Still true, and the reason this entry exists: the script is a whole-project clean slate, never
+a per-user remedy.
+
+**Malin's instruction, 2026-09-06** — she was shown that the kill switch had been exercised
+in production in both directions and said to lift the refusal. She was NOT shown the
+alternative of keeping it until the Cloud Scheduler question (BUT-2036) is decided; that
+option was never put to her, so reinstating the refusal on that ground is hers to take.
+BUT-2028, 2026-09-06
+
+**OPEN:** whether Cloud Scheduler must be paused for a live run. The weekly jobs delete and write in the same collections,
+unaware a reset is running. BUT-2036, not a strike. BUT-2028, 2026-09-06
+
 **AMENDED 2026-08-15 (BUT-1838) — the cap's stated reason went stale one day after it was
 written; the cap itself is unchanged and still must not be removed.**
 

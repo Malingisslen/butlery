@@ -505,8 +505,9 @@ name which doc each end touches before approving it.
   the shared CONSTANT (`Collections.x`), never on the literal; prose is what let the claim be
   inherited in the first place. Membership is NECESSARY, never SUFFICIENT — also check the
   script RUNS (this one `process.exit(1)`'d on a delete/keep overlap from 2026-03-19
-  until BUT-2010 repaired it 2026-09-05; live runs are now REFUSED unless
-  `--but-2028-acknowledged` is passed, BUT-2028) and that it is per-USER at all; a clean-slate script that deletes every auth user
+  until BUT-2010 repaired it 2026-09-05; a temporary BUT-2028 refusal on top of that
+  was lifted 2026-09-06, and the live-run barrier is now the typed
+  `CONFIRMATION_PHRASE`) and that it is per-USER at all; a clean-slate script that deletes every auth user
   is no remedy for one erasure. A residual whose named recovery cannot run stays ACCEPTABLE
   while the decline is loud (`failedCollections` -> `gdprCompliant:false` + an uncapped probe)
   and the surviving rows disclose nothing to anyone who could not already read them — file the
