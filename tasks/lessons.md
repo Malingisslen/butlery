@@ -3127,3 +3127,57 @@ And the process note that ended the chain rather than extending it: after the se
 repair of one sentence, DELETE the clause. The runbook line about the kill switch's expiry was
 wrong in three successive wordings — each repair fixing the previous round's error and adding
 its own — and was closed by striking it and pointing at the section that explains the state.
+
+## 2026-09-06 — BUT-2020/2037: the replacement text is where the struck claim comes back
+
+Nine review rounds over five files produced **two code findings and roughly twenty false
+sentences**, almost all inside text written as the previous round's repair. The BUT-2028
+entry above records that shape; these are the parts it does not cover.
+
+**A struck claim can return VERBATIM in its own replacement, carrying an instruction.**
+Round 5 struck "a named reference needs its `;`" from `recipe_scraper.dart` as measured
+false (`&amp`, `&nbsp`, `&copy` all resolve without one; `&plus` is simply not on HTML's
+legacy list). The sentence written to replace it, in the test file, said the same thing in
+the same words — and ended with "keep this when BUT-2037 lands". A false premise with a
+directive attached is worse than a false comment: it steers the repair. Sweeping the
+concept rather than the phrase catches the *sibling*; it does not catch the copy you are
+writing at that moment. After striking a rule, re-read what you wrote instead of it,
+against the measurement, before moving on.
+
+**Striking a qualifier BROADENS the claim.** The digest already says this about numerals.
+It applies to scope clauses too, and the trap is sharper: I struck "no rendering consumer
+exists today — hence Medium, not critical" because its antecedent had been struck two
+edits earlier, so it read as hanging. It was true and measured. What survived read as an
+unqualified live-XSS claim about a sanitiser whose only four consumers are parsing tiers.
+A clause left dangling by your own edit is a reason to restore its antecedent, not to
+delete the clause.
+
+**A reviewer's measurement propagates before it is checked.** One gate measured that a
+BUT-2037 spelling reaches tier 5 and hands the user "this does not look like a recipe". I
+folded it into a code comment, a plan file and a Linear ticket in a single round. The next
+gate traced the cascade and refuted it: tier 2 reads raw HTML and returns unconditionally
+on success, so the page is rescued before tier 5. The digest says a reviewer's measurement
+is as falsifiable as a comment — the cost that was missing is that accepting one plants it
+in every artefact you touch that round. Verify a gate's *measurement* the way you verify a
+ticket's premise, before it becomes three claims.
+
+**A count inside a repair instruction rots like any other.** "Delete the two assertions
+below" was written when there were three. A literal reader would have left the `check()`
+half to redden on repair day, reading as "the fix broke something". Strike the numeral;
+"every assertion below this string" needs no recount. Same edit: an instruction naming two
+destinations must name the SHAPE each one takes — one list held `(markup, payload)` tuples
+and the other bare markup, so "add each spelling to both" would have produced
+`application/ldapplication/ld&plus;jsonjson` and reddened the destination.
+
+**`dart format` must report 0 changed BEFORE the gates are dispatched.** A blank line
+before a closing brace survives `analyze` and is removed by lefthook mid-commit, which
+re-stages the file — and the review ledger is content-addressed, so every passing round
+would have graded bytes that no longer ship. Two gates flagged the blank line as a nit; it
+was the only finding that could have invalidated the whole review chain.
+
+**Two mechanical notes.** A multi-edit Python script that asserts each anchor before its
+single write fails atomically — one wrong anchor lost four correct edits and left the file
+untouched, which is the safe direction and is why the assert is there. And
+`git hash-object <path>` vs `git rev-parse origin/main:<path>` is the only honest answer to
+"did this ship": `git status` showed three files as locally modified that `git diff` proved
+identical to origin, because it hashes CRLF bytes against LF blobs.
