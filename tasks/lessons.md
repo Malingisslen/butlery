@@ -3181,3 +3181,39 @@ untouched, which is the safe direction and is why the assert is there. And
 `git hash-object <path>` vs `git rev-parse origin/main:<path>` is the only honest answer to
 "did this ship": `git status` showed three files as locally modified that `git diff` proved
 identical to origin, because it hashes CRLF bytes against LF blobs.
+
+## Granskningsledgern räknar agentens SENASTE körning, inte allt den någonsin läst (2026-09-06, bulk-vänförfrågningar)
+
+Fyra granskningsronder över tre grindar. Rond 4 ändrade EN rad i EN fil, så jag bad varje
+agent läsa om just den filen — vilket är rätt hushållning med kontext och fel mot grinden.
+`require-review-before-commit.mjs` läser sin ledger under `.claude/state/`, som en hook
+skriver när en agent öppnar en fil med `Read`, och den bedömer varje agents SENASTE körning.
+En enradsrunda gör alltså resten av filerna olästa i den körningen och un-provar en granskning
+som var färdig. Blocket sa "reviewed the PRE-CHANGE version — the change itself was never
+read" om filer som tre agenter hade läst vid rätt bytes tio minuter tidigare.
+
+Åtgärden är billig när man vet det: sista ronden måste läsa HELA filuppsättningen, hur liten
+ändringen än är. Två agenter, ~50 sekunder var.
+
+Två saker till från samma block, båda värda att inte lära sig om igen:
+
+- **Markerfilerna är inte beviset.** Jag höll tre `.claude/state/*-done.marker` byte-exakt
+  synkade mot arbetsträdet genom fyra ronder, verifierade varje hash mot `git hash-object`,
+  och det räknades inte alls. Beviset är hookens ledger. Markern är fortfarande värd att
+  skriva som *läsbar* historik — den bär verdikt, öppna punkter och vad agenten inte
+  verifierat — men den öppnar ingen grind.
+- **Ledgerns `sha` är inte git-blobbhashen.** Varken `sha1sum`, `sha256sum` eller
+  `git hash-object` av filen matchar värdet där, så man kan inte förutsäga om en fil kommer
+  att räknas som läst genom att jämföra hashar själv. Det enda tillförlitliga är att köra
+  agenten igen; att räkna ut det i förväg är bortkastad tid.
+
+En fjärde, som grindens egen text varnar för och som stämde: `git add && git commit` i samma
+anrop förlorar BÅDA leden när en PreToolUse-hook blockerar, eftersom hooken vägrar hela
+verktygsanropet innan skalet kör något. Jag hade separerat dem, så indexet stod kvar korrekt
+stagat genom blocket och committen gick igenom oförändrad efteråt.
+
+En femte, upptäckt när jag försökte skriva ner den här lärdomen: skyddet för ledgerfilen
+matchar dess NAMN som sträng i kommandot, så ett Bash-anrop som bara *nämner* filen i en
+heredoc vägras som ett skrivförsök. Samma klass som säkerhetshooken som matchar farliga
+kommandon inne i commit-MEDDELANDEN. Text som nämner en skyddad sökväg skrivs med
+Write/Edit, aldrig genom skalet.
