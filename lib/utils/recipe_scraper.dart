@@ -37,26 +37,6 @@ import 'package:flutter/foundation.dart';
 import 'package:html/parser.dart' as html_parser;
 import 'package:html/dom.dart';
 
-/// Comprehensive recipe extraction from HTML content with JSON-LD and Microdata support
-/// This function serves as the primary recipe extraction engine, providing intelligent parsing
-/// of web content to extract structured recipe data. It supports modern web standards for
-/// recipe markup while maintaining compatibility with various website formats and structures
-/// commonly used for recipe sharing and publication.
-/// **Extraction Strategy:**
-/// 1. **JSON-LD Priority**: First attempts to extract Recipe schema.org JSON-LD data
-/// 2. **Microdata Fallback**: Falls back to Microdata parsing for legacy compatibility
-/// 3. **Data Validation**: Validates extracted data for completeness and accuracy
-/// 4. **Error Handling**: Gracefully handles parsing errors and malformed data
-/// [html] The HTML content to parse for recipe data
-/// Returns a Map containing recipe data with schema.org field names, or null if no recipe found
-/// **Return Format:**
-/// - `name`: Recipe title
-/// - `recipeIngredient`: List of ingredient strings
-/// - `recipeInstructions`: List of instruction strings
-/// - `recipeYield`: Serving size information
-/// - `totalTime`: Total cooking/preparation time
-/// - `image`: Recipe image URL
-/// - `@type`: Always "Recipe" for identification
 /// Result of recipe extraction, distinguishing "no structured data found"
 /// from "structured data found but no recipe in it".
 class RecipeExtractionResult {
@@ -135,26 +115,29 @@ bool isJsonLdMediaType(String? typeAttribute) {
       'application/ld+json';
 }
 
-/// Matches a `<script>` OPENING TAG whose `type` attribute is JSON-LD, for
-/// callers that must work on raw source rather than a parsed document —
-/// `HtmlSanitizer`, whose whole point is to run before anything trusts the
-/// markup.
+/// Raw-source twin of [isJsonLdMediaType], for callers that match before the
+/// markup is parsed. It spells out encodings of `+` that a parser would have
+/// resolved. The trailing lookahead means `application/ld+jsonx` is not a
+/// match. The leading lookbehind is what stops `data-type="…"` from
+/// exempting itself — a `\b` there would sit inside that name and let it
+/// through.
 ///
-/// It answers the same QUESTION as [isJsonLdMediaType] but is not the same
-/// test, and the difference is deliberate: this one must enumerate the
-/// encodings of `+` a parser would have resolved (`&#x2B;` as Arla.se writes
-/// it, and the decimal `&#43;`). Any other character encoded that way fails
-/// to match, which drops the tag — the safe direction.
+/// OPEN — BUT-2037: this pattern accepts `+` literally, or a numeric
+/// reference carrying its terminating `;`. The parser resolves more than
+/// that — `&plus;`, and a numeric reference written WITHOUT the `;` — so
+/// those are refused here while being real JSON-LD. The refused set is a
+/// rule, not a list; `&plusjson` does not resolve. Both facts are pinned
+/// green in `html_sanitizer_test.dart`, by the BUT-2037 test and by
+/// `a named reference the parser leaves alone is not JSON-LD`.
 ///
-/// Both bounds are load-bearing, and each was measured against a tag that
-/// exempted itself from sanitisation without it:
-/// - The lookbehind requires the attribute to START here. A `\b` does not:
-///   `-` is a non-word character, so a word boundary sits inside
-///   `data-type=`, and `<script data-type="application/ld+json">` survived.
-/// - The lookahead requires the media type to END here, so
-///   `type="application/ld+jsonx" src="evil.js"` is not read as JSON-LD.
+/// OPEN — BUT-2034: the lookbehind is satisfied by whitespace or a slash
+/// anywhere,
+/// so `<script data-cfg=" type=application/ld+json">` and
+/// `<script data-cfg="text/type=application/ld+json">` match without carrying
+/// a `type` attribute at all. Pinned green by the BUT-2034 test in
+/// `html_sanitizer_test.dart`.
 final RegExp jsonLdScriptOpeningTagPattern = RegExp(
-  r'''(?<=[\s/])type\s*=\s*["']?\s*application/ld(?:\+|&#x2b;|&#43;)json(?=["'\s;>]|$)''',
+  r'''(?<=[\s/])type\s*=\s*["']?\s*application/ld(?:\+|&#x0*2b;|&#0*43;)json(?=["'\s;>]|$)''',
   caseSensitive: false,
 );
 
@@ -301,17 +284,9 @@ Map<String, dynamic> _parseRecipeMicrodata(Element root) {
 /// absent one is kept whole, because there is nothing to lift out and its own
 /// `text` would otherwise be lost.
 ///
-/// Two other readers of the same schema shape disagree with this one, and
-/// with each other. Neither is reached by the five callers here, and both are
-/// named rather than left to be discovered:
-/// - `schema_org_tier.dart` emits a section's `name` as a step, so its output
-///   for a sectioned page has one extra leading entry.
-/// - `SchemaOrgRecipeExtractor._collectInstructionSteps` drops a section whose
-///   `itemListElement` is an empty list, where this keeps it.
-///
-/// Three implementations of one schema decision is how they drift; folding
-/// them together is its own change, because that reader returns strings while
-/// this returns the step maps its callers still filter.
+/// `schema_org_tier.dart` and `SchemaOrgRecipeExtractor._collectInstructionSteps`
+/// read the same schema shape and disagree with this one. Folding them together
+/// is its own change.
 List<dynamic> flattenRecipeInstructions(dynamic value) {
   if (value is! List) return const [];
 

@@ -1,7 +1,5 @@
 # BUT-2020 — receptimport från arla.se misslyckas alltid
 
-`tasks/todo.md` ägs av en annan sessions BUT-1922-plan, så den här ligger separat.
-
 ## Vad som är mätt
 
 `ArlaRecipeParser.parseRecipe` returnerade `null` för varje arla.se-sida byggd som den
@@ -17,7 +15,7 @@ bara laga orsak 1 lämnar kvaliteten på 0.70 mot tröskeln 0.80, alltså fortfa
 
 ### 1. `lib/utils/recipe_scraper.dart` — läs attributet ur DOM:en, inte ur råtexten
 
-`_extractJsonLd` matchar i dag `type=["']?application/ld\+json` med en regex över **rå
+`_extractJsonLd` matchade `type=["']?application/ld\+json` med en regex över **rå
 HTML**. Arla skriver `application/ld&#x2B;json`, så den träffar aldrig.
 
 Fixen är **inte** att lägga till `&#x2B;` i regexen. Nästa sajt stavar det på ett fjärde
@@ -45,26 +43,29 @@ egna steg och hoppar över dess namn när `itemListElement` finns.
 
 ### 2b. Tillagt 2026-09-05 efter granskning: fixen nådde inte hela vägen
 
-`code-reviewer` mätte att samma matchning över RÅ källkod lever kvar på tre ställen till,
+`code-reviewer` mätte att samma matchning över RÅ källkod lever kvar på fler ställen,
 och att ett av dem kör **före** ändringen ovan: `HtmlSanitizer.sanitize()`s `preserveWhen`
-tog bort Arlas script MED innehåll, så sidan var tom redan innan någon extraktor läste den.
-Meningen jag skrev om att fixen "stänger klassen" var därmed falsk och är struken.
+tog bort Arlas script MED innehåll innan schema.org-tiern läste det. Bara den vägen
+saneras: `sanitize()` har en enda anropare i `lib/` (`parsing_context.dart:89`). Tier 2
+och tier 3:s strukturerade halva läser RÅ HTML (`url_import_strategy.dart:133` och
+`:162`); parserhalvorna går via `ParsingContext.fromUrl` och saneras.
 
-Lagas: `html_sanitizer.dart` (`preserveWhen` + `_scriptTagPattern`) och
+Lagat: `html_sanitizer.dart` (`preserveWhen` + `_scriptTagPattern`) och
 `_hasOnlyNonRecipeJsonLd` i `url_import_strategy.dart`.
 
 **Detta är en sanerare — varje breddning av ett UNDANTAG är en potentiell försvagning.**
-Kravet på ett riktigt `type=`-attribut måste bestå; utan det undantar
-`<script data-note="…">alert(1)</script>` sig själv.
+Två rester, i motsatta riktningar: mönstret är för SVAGT mot ett `type=` inuti ett annat
+attributs värde (BUT-2034), och för STRÄNGT mot stavningar av `+` som parsern löser
+upp (BUT-2037) — en regel, inte en uppräkning.
 
-`firebase-backend-security` mätte sedan att `preserveWhen` ALDRIG haft det kravet — den
-testade en naken delsträng, så kryphålet var levande hela tiden. Kommentaren intill
-påstod motsatsen. Samma granskning visade att en `\b`-avgränsning inte räcker
+`firebase-backend-security` mätte att `preserveWhen` aldrig krävt ett riktigt
+`type=`-attribut — den testade en naken delsträng, så kryphålet var levande hela tiden.
+Samma granskning visade att en `\b`-avgränsning inte räcker
 (`data-type=` passerar) och att mönstret måste avgränsas i BÅDA ändar.
 
-Ingen renderande konsument finns i dag — därav Medium, inte kritiskt — men den falska
-kommentaren är den farliga delen: nästa konsument som renderar det sanerade innehållet
-ärver en levande XSS på en menings ord.
+Ingen konsument renderar det sanerade innehållet i dag — alla fyra läsare av
+`sanitizedContent` är parsningstiers — så det här är djupförsvar, inte en levande XSS.
+Nästa konsument som renderar det ärver en.
 
 ### 3. Orsak 3 lagas INTE här
 
