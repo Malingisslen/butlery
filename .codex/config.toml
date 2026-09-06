@@ -1,0 +1,8 @@
+[shell_environment_policy]
+inherit = "core"
+
+[shell_environment_policy.set]
+ENABLE_CLAUDEAI_MCP_SERVERS = "false"
+
+[mcp_servers.linear]
+url = "https://mcp.linear.app/mcp"

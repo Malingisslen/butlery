@@ -88,6 +88,11 @@ test/**/results/*.log
 .claude/linear-tracker.json
 .claude/scheduled_tasks.lock
 .claude/state/
+
+# Codex mirrors the .claude layout, so its runtime state needs the same rules.
+.codex/cache/
+.codex/hooks/sessions/
+.codex/state/
 CLAUDE.local.md
 nul
 
