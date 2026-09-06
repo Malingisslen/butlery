@@ -35426,3 +35426,180 @@ sentence standing in the code today is true as written. If they add it, they mus
 themselves first — my table is not their measurement.
 
 Verdict: pass, 0 blocking.
+
+### 2026-09-05 — BUT-1951 follow-up: is a DM's `findsNothing` a control? (trigger: review request, 8 files)
+
+Change: 15 ARB keys orphaned by BUT-1951's stub deletion removed from both locales; one key
+`socialBlockUserStaysInGroup` added; appended to the confirm message only on the group path via a
+new `staysInGroup` parameter on `BlockUserAction.confirmAndBlock` (default `false`).
+
+Question asked: does `expect(find.textContaining('står kvar i gruppen'), findsNothing)` in the DM
+test do real work, or is it entailed by the group test's `findsOneWidget`?
+
+Answer: it is a DISCRIMINATOR with a kill set of its own, measured analytically over the four
+single-point mutants of the helper + its callers.
+
+| mutant | DM `findsNothing` (l.183) | group `findsOneWidget` (l.270) |
+|---|---|---|
+| M1 `bool staysInGroup = true` (flip the default) | RED | green — group passes `true` explicitly, message byte-identical |
+| M2 `!staysInGroup` (invert inside the helper) | RED | RED |
+| M3 drop the ternary, append unconditionally | RED | green |
+| M4 group caller drops `staysInGroup: true` | green | RED |
+
+M1 and M3 are killed by the DM assertion and by NOTHING ELSE in the repo. The third caller,
+`friend_profile_view.dart:65`, also omits the flag and its suite
+(`test/widget/social/friend_profile_block_test.dart`) contains no `gruppen`/`textContaining`
+matcher at all — grepped. So line 183 is the only pin against OVER-application of the sentence.
+
+The author's two probes were M4 and M2. M2 is a SHARED mutant: it reddens both assertions, so run
+alone it cannot attribute the red to the DM assertion. The unshared probes (M1, M3) were not run;
+the analytic argument settles it and outranks a probe, so this was not filed as a finding.
+
+Non-vacuity of the negative: anchored by the two `findsOneWidget` assertions on the same dialog at
+the same pump (lines 171-181) — the dialog is proven present, so the absence is observed rather
+than assumed. ARB-drift direction is covered too: rewording the key so it no longer contains the
+substring reddens line 270.
+
+Placement check (the author's own earlier bug: the assertion sat AFTER the confirm tap and failed
+loudly). Current position, between the member tap and the confirm tap, self-proves: a
+`findsOneWidget` cannot pass vacuously, so if the confirm dialog were not on screen at that point
+the assertion would be red rather than silently satisfied.
+
+Deletions verified independently of the author's claim: exact-identifier `grep -rnE "\b<key>\b"`
+over `lib/` and `test/` excluding the l10n files gave 0 for all 15 (including `socialReject`, the
+prefix that gave the author a substring false positive), and no residual in the generated files.
+ARB key-set parity across locales: 4532 == 4532, empty both directions — the check that catches a
+key deleted from `app_en.arb` only, which produces an untranslated-message warning and no compile
+error because the template is `app_sv.arb`.
+
+Finding filed (non-blocking, strike): the justification clause is wrong in two places. Production
+`block_user_action.dart:21-22` — "It would be false on a friend profile and on a DM, where no
+group is involved" — and the test's own `reason:` at line 185, "a DM has no group — the sentence
+would be false here". Soft blocking never removes anyone from any group, and a DM counterparty or
+a friend-profile subject can be a fellow group member (nothing couples the two), so the sentence
+is not FALSE on those paths, merely unmotivated: the surface has no group on screen. The accurate
+statement is about the CODE ("this path never passes the flag"), not about the world. Strike the
+falsity clause; do not reword it into a second unmeasured claim. Left as a caveat it is the
+"documents the hole forever" shape — a future reader wiring the friend-profile path would read it
+as a prohibition.
+
+Verdict: pass (0 blocking).
+
+### 2026-09-06 — BUT-2020 follow-up review: three false comment sentences in a test file, one non-duplicate new case
+
+Trigger: review of an uncommitted follow-up written by another session (arla.se recipe import).
+Files reviewed with `Read`: `test/unit/services/parsing/sanitizers/html_sanitizer_test.dart`,
+`lib/utils/recipe_scraper.dart`, `tasks/todo.md`; plus `lib/services/parsing/sanitizers/html_sanitizer.dart`
+as evidence.
+
+Measurement was a scratchpad Dart replica (no `lib/` write) of four pattern versions taken
+verbatim from git — the pre-BUT-2020 bare substring (`git show 3ee59733c^`), two candidate
+"first repair" shapes, and the current worktree pattern — run over the suite's own 7 decoy
+fixtures. Output:
+
+```
+survivors under orig (openingTag.contains('application/ld+json')): [1, 3, 4, 5, 7]
+survivors under repairA (\b, no end anchor):                        [3, 4, 5, 6, 7]
+survivors under repairB (\b + end anchor):                          [3, 4, 5, 6]
+
+&#x2B;   current=true  mutantA(padding reverted)=true
+&#43;    current=true  mutantA=true
+&#x02B;  current=true  mutantA=false
+&#043;   current=true  mutantA=false
+```
+
+Findings.
+
+1. NEW CASE IS NON-VACUOUS AND NOT A DUPLICATE. `a zero-padded numeric reference is preserved
+   too` is the sole discriminator of exactly one mutant: reverting `&#x0*2b;|&#0*43;` to
+   `&#x2b;|&#43;`. The pre-existing `&#x2B;`/`&#43;` cases stay green under it (last two rows
+   above). The other probe the parent ran — dropping the entity spellings entirely — is killed by
+   the pre-existing cases too, so it cannot answer the duplicate question; only the padding
+   mutant does. Its `isNot(contains('alert'))` half is a CONTROL, not a discriminator: the
+   sibling `<script>alert("xss")</script>` carries no `type=` at all, so no mutant of this
+   alternation can exempt it.
+
+2. THE DECOY COMMENT IS FALSE, MEASURABLY. "Every decoy below reached sanitize() and survived
+   it … each of these strings contains `application/ld+json` somewhere" — decoys 2 and 6 are the
+   ENTITY-ENCODED spellings (`&#x2B;`, `&#43;`), which contain no literal `application/ld+json`,
+   so the old bare-substring `preserveWhen` returned false and stripped them. Survivors were
+   {1,3,4,5,7}. The two fixtures the claim is false about are precisely the ones this round
+   added, to guard the alternation it also added — the general shape now merged into the
+   principles file.
+
+3. "THE FIRST REPAIR STILL LET FOUR THROUGH" IS UNSETTLEABLE AND INTERNALLY INCONSISTENT. No
+   artefact holds the intermediate repair (git has only the pre-fix substring and the committed
+   pattern). And no candidate reconciles the count with the stated reasons: the version carrying
+   BOTH named defects (word boundary inside `data-type=`, unanchored `+jsonx`) lets FIVE through
+   {3,4,5,6,7}; the version letting four through {3,4,5,6} already has the end anchor, so
+   `+jsonx` cannot be one of its reasons.
+
+4. "STAYS SILENT ABOUT THE REAL THING, IN EVERY SPELLING" was true when written and was
+   falsified by the same round: the loop below it carries 4 of the 6 spellings the pattern now
+   accepts, the two missing ones being the zero-padded pair added 30 lines further down. The
+   falsifier in the same file, again.
+
+5. Non-blocking: the renamed test `check() and the exemption agree about three known decoys`
+   never calls `sanitize()`, so it measures the check() side only — the "agree" is inferable
+   only by pairing it with the sibling decoy test; and "three" is a count over the file's own
+   contents with an insertion seam. Both Low. The rename itself was an improvement — the old
+   name was a false universal over all scripts.
+
+All three blocking findings are sentences, so the remedy filed was STRIKE, never reword; for (4)
+the alternative offered was adding the two padded spellings to that loop, which is a real (small)
+coverage gain for `check()`, but not both.
+
+Verdict: fail (3 blocking).
+
+## 2026-09-06 — BUT-2034 review round (trigger: review of html_sanitizer_test.dart final shape)
+
+Reviewed four files at frozen index: `test/unit/services/parsing/sanitizers/html_sanitizer_test.dart`,
+`lib/utils/recipe_scraper.dart`, `lib/services/parsing/sanitizers/html_sanitizer.dart`, `tasks/todo.md`.
+
+**Answered: the `const fixed` hoist weakened nothing.** Both assertions in the BUT-2034 DEFECT test
+carry an identical `reason`, but `expect` prints the matcher description and the actual value beside
+the reason, so `Expected: contains '<script'` vs `contains 'alert(8)'` still names which fired. The
+hoist also fixed the fail-fast ordering the previous round found: on the expected repair the element
+assertion reddens first and now carries the instruction.
+Residual (non-blocking): the third assertion in that loop (`check()` is silent) does NOT carry the
+instruction. Unreachable while the two above hold, but it is exactly the assertion that fires in the
+partial-fix state — `preserveWhen` repaired while `_scriptTagPattern` still exempts — which is the
+drift the file's own comment at line 256-258 exists to warn about.
+Also non-blocking: "add the pair to BOTH decoy lists" reads as the `(markup, payload)` record shape,
+which the `check()` list does not use (it holds bare markup strings). Ambiguous, not false.
+
+**Answered: the `&plus;` decoy IS non-vacuous for the reason claimed, and the reason is exact.**
+Traced every entry in the list against `jsonLdScriptOpeningTagPattern`:
+entries 1/2 carry no `type=` token at all; 3/4 (`data-type=`, `x-type=`) are refused by the
+lookbehind (`-` is not `[\s/]`); 5/6 (`data-cfg="type=…`) by the lookbehind (`"`); 7
+(`application/ld+jsonx`) by the lookahead. Entry 10 is the only one refused inside the alternation.
+`grep -rn 'plus;' lib test` returns only the pattern's doc comment and this entry, so "widening the
+alternation reddens nothing without this entry" holds repo-wide, not merely in this file.
+
+**Blocking finding: the entry is in the wrong list.** `html` 0.15.5 resolves the named reference
+`&plus;` to `+` (`lib/src/constants.dart:2247 'plus;': '+'`), so a parsed
+`type="application/ld&plus;json"` reaches `isJsonLdMediaType` as `application/ld+json` and is
+accepted — but `sanitize()` runs first over RAW source, the alternation refuses the spelling, and the
+block is deleted with its content. That is the BUT-2020 defect class exactly (structured data
+destroyed before any extractor sees it), one spelling over. Every other entry in the list is markup
+pretending to be JSON-LD; this one IS JSON-LD, so the test name "these decoy attributes do NOT exempt
+a script" is false about it, and the list blesses a live import-loss as a security decision. The same
+file already holds the right home for a knowingly-wrong behaviour: a DEFECT test with a delete-me
+instruction. Remedy is a move plus a name, not a reword.
+
+Diff observations, not blocking:
+- The alternation was WIDENED in this same diff (`&#x2b;|&#43;` -> `&#x0*2b;|&#0*43;`), in a change
+  whose new doc comment argues against widening. It is safe (leading zeros are legal in numeric
+  character references, so both readers still agree) and it is genuinely pinned: the "zero-padded
+  numeric reference" test at lines 291-302 fails under the pre-diff pattern.
+- `flattenRecipeInstructions`' rewrite generalises to "they return strings". Measured both:
+  `SchemaOrgRecipeExtractor.extractInstructions` -> `List<String>`;
+  `schema_org_tier._extractInstructions` -> `FieldResult<List<String>>`. The plural holds. What the
+  rewrite dropped was also true and measured (`_collectInstructionSteps` takes the `section is List`
+  branch on an EMPTY list and returns, dropping the section's own `text`, where
+  `flattenRecipeInstructions` keeps it). A reduction, not an error — flagged so it is a choice.
+- `html_sanitizer.dart:36` still narrates what the deleted comment believed ("the sentence that used
+  to stand here asserted the opposite"). Pre-existing, not in this diff; strike candidate for whoever
+  next touches the file.
+
+Verdict: fail (1 blocking).

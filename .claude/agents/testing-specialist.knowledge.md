@@ -179,8 +179,12 @@ compress it.**
   quantifier; a supplied ANTECEDENT that is itself a quantifier over the group's contents (put
   the head noun INSIDE the surviving noun phrase); an INCREMENTED count; a positional distance
   ("twenty lines up", a derived value a human cannot type); a HISTORY sentence about the file's
-  own prior wordings (only the review archive can settle it — and it is always strikeable,
-  because the mechanism sentence beside it is the whole warning); a sentence NAMING its own
+  own prior wordings, or about what an EARLIER version of the production code did to the
+  fixtures below it (only the review archive can settle either — and both are always
+  strikeable, because the mechanism sentence beside them is the whole warning; the fixtures the
+  round ADDED for its own widening sit OUTSIDE the historical claim's range, so a "every decoy
+  here survived the old check" universal is false about exactly the new ones, and a count about
+  an intermediate never-committed repair is settled by no artefact at all — BUT-2020); a sentence NAMING its own
   verification command (it flips with the commit); and a WHY-clause justifying an assertion
   the round's OWN fixture change just invalidated — making a fixture faithful (a DM's
   `title: ''`) removes the collision the "that is why this finder is scoped" sentence cites,
@@ -620,7 +624,14 @@ other suites prove:
 - Notification `when(...)` stubs are not coverage (the wrapper swallows everything incl.
   `MissingStubError`) — only `verify(...).called(n)` + `verifyNever` on the retained member.
 - A test passing an OPTIONAL override bypasses the changed default branch — grep every call site.
-  Worst case: a remote KILL SWITCH override present in every test by construction.
+  Worst case: a remote KILL SWITCH override present in every test by construction. **The MIRROR is
+  the useful half when grading a new defaulted flag: the DEFAULT is pinned only by a NEGATIVE
+  assertion on a caller that OMITS it.** The explicit caller's positive assertion is byte-identical
+  under a flipped default and under an unconditional body, so a `findsNothing` on the omitting path
+  is a discriminator, not a control — settle it analytically (substitute the mutant into each
+  caller) rather than by the shared inversion mutant, which reddens both sides and attributes to
+  neither. Such a negative needs a POSITIVE anchor in the same fixture at the same pump, or it
+  passes for the wrong reason (BUT-1951 follow-up).
 - A defensive bound on an injected collaborator is mutation-dead when every fake answers
   immediately — `grep 'fakeAsync\|Completer\|TimeoutException'` zero hits IS the finding. A new
   conjunct beside an existing gate is born mutation-dead without a fixture passing the OLD gate and
@@ -994,6 +1005,17 @@ the wrong belief and has been corrected in place):**
   which way each observation cuts. **`container` is NOT what a rect assertion discriminates once the
   child forms its own node** (a `GestureDetector` with `onTap` does); what it DOES kill is HOISTING
   the `Semantics` above a wider ancestor. Say which of the two a rect pin covers (BUT-1837).
+- **An entry added to a NEGATIVE-fixture list (decoys, deny cases, "must be stripped") inherits that
+  list's NAME as an assertion about what the input IS** — so before adding one to pin a deliberate
+  non-match, check what the OTHER reader of the same fact does with it. `<script
+  type="application/ld&plus;json">` was added to a decoy list titled "these decoy attributes do NOT
+  exempt a script"; it is non-vacuous (it is the only entry the raw pattern refuses inside its
+  ALTERNATION rather than at a bound), but `html`'s named-reference table resolves `&plus;` to `+`
+  (`html-0.15.5/lib/src/constants.dart:2247`), so the DOM-reading twin accepts it and the entry
+  actually pins a live import-loss as if it were an attack. A knowingly-wrong behaviour belongs in a
+  DEFECT test carrying its own delete-me instruction, which the same file already had. The check is
+  one grep of the sibling reader, and it is the difference between a security pin and a silently
+  blessed data loss (BUT-2034, 2026-09-06).
 
 ### Fake/Mock idioms + the ServiceLocator/GetIt bridge
 - `class X implements Y` with concrete bodies is a legitimate Fake; the mocktail ban is specifically a
