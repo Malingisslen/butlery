@@ -3072,3 +3072,112 @@ Two measurement errors of my own, both caught by gates, both from searching for 
   the LAST entry, and I only know that because I probed it instead of trusting the sentence I
   had just written.
 
+
+## 2026-09-06 — BUT-2028: a correction is written where a claim cannot be checked
+
+Ten review rounds across three commits. The tally is the lesson: **two code defects, and
+everything else was a sentence** — and of the sentences, most were planted inside the
+paragraph written to correct the previous one. Per-round blockers on the last commit ran
+2 / 2 / 2 / 0, each round's living in text that had not existed before that round.
+
+The two real defects, for scale. A kill-switch read placed above a gen1 trigger's own `try`,
+where a throw drops the event permanently — so a transient Firestore error would have cost
+that account its whole GDPR cascade. And a refresh cursor that counted COLLECTIONS while
+nearly all of a wipe's wall time sits inside two of them, so it refreshed constantly during
+the cheap ones and never once during the expensive ones. Both were mine, both were in the
+mechanism built as the fix.
+
+**An edit can no-op silently when it travels through another language.** I reported a literal
+newline as escaped three times; the bytes disagreed each time. The heredoc carrying the edit
+collapsed `\n` to `\n`, so the search string and the replacement were IDENTICAL and `replace`
+returned the file unchanged — no error, no diff, and a re-read looks exactly like success
+because the code was already almost right. This is the mirror of the known `\b`-in-a-heredoc
+trap: that one CORRUPTS, this one VANISHES. For any whitespace- or escape-only edit, verify
+with something that would FAIL if the edit no-opped (`awk '{print length}'`, `cat -A`, a grep
+for the new form), and verify against the STAGED blob, not the worktree.
+
+**Sweep the premise, not the phrase.** A gate found one false sentence; the same claim in
+weaker words sat one line above it, in the header of the paragraph I had just written as the
+fix — and the gate had not seen that one either. Grepping the wording would never have found
+it. Ask what the sentence ASSUMES, then grep the assumption.
+
+**A supersession keyed on POSITION supersedes one location.** I wrote "every symbol the
+paragraph above names is gone" in a decision record; the same prohibition was stated a
+paragraph higher, unsuperseded, and a reader landing there by search would have found the ban
+and no signal it was lifted. Key it on the CLAIM and quote the superseded sentence verbatim —
+then a grep for that sentence returns both the original and its retirement, which is the
+property a positional pointer cannot have.
+
+**An attribution is a claim about a person, and no test can hold it.** I wrote "Malin's call"
+about lifting a prohibition on a production-wiping script. She had instructed it, but I had
+never put the alternative to her, so "call" — which implies alternatives were weighed — was
+false in a way nothing downstream could ever check. The honest form states what she was shown
+AND what she was not. A fabricated attribution in a decision record is worse than a wrong
+mechanism, because a mechanism can be re-measured.
+
+**A guard that refuses UNLESS a flag is passed is not a block**, and the paragraph retiring it
+is exactly where it gets described as one. Twice in one entry's life.
+
+**Two of my own new checks were dormant** — green, and dead to the mutant they existed for.
+One anchored on names no extraction branch could ever produce; one grepped for a word that
+survived the collapse it was meant to detect. Both were found by probing, neither by reading.
+A check written in the same breath as the code it guards inherits that code's blind spot.
+
+And the process note that ended the chain rather than extending it: after the second failed
+repair of one sentence, DELETE the clause. The runbook line about the kill switch's expiry was
+wrong in three successive wordings — each repair fixing the previous round's error and adding
+its own — and was closed by striking it and pointing at the section that explains the state.
+
+## 2026-09-06 — BUT-2020/2037: the replacement text is where the struck claim comes back
+
+Nine review rounds over five files produced **two code findings and roughly twenty false
+sentences**, almost all inside text written as the previous round's repair. The BUT-2028
+entry above records that shape; these are the parts it does not cover.
+
+**A struck claim can return VERBATIM in its own replacement, carrying an instruction.**
+Round 5 struck "a named reference needs its `;`" from `recipe_scraper.dart` as measured
+false (`&amp`, `&nbsp`, `&copy` all resolve without one; `&plus` is simply not on HTML's
+legacy list). The sentence written to replace it, in the test file, said the same thing in
+the same words — and ended with "keep this when BUT-2037 lands". A false premise with a
+directive attached is worse than a false comment: it steers the repair. Sweeping the
+concept rather than the phrase catches the *sibling*; it does not catch the copy you are
+writing at that moment. After striking a rule, re-read what you wrote instead of it,
+against the measurement, before moving on.
+
+**Striking a qualifier BROADENS the claim.** The digest already says this about numerals.
+It applies to scope clauses too, and the trap is sharper: I struck "no rendering consumer
+exists today — hence Medium, not critical" because its antecedent had been struck two
+edits earlier, so it read as hanging. It was true and measured. What survived read as an
+unqualified live-XSS claim about a sanitiser whose only four consumers are parsing tiers.
+A clause left dangling by your own edit is a reason to restore its antecedent, not to
+delete the clause.
+
+**A reviewer's measurement propagates before it is checked.** One gate measured that a
+BUT-2037 spelling reaches tier 5 and hands the user "this does not look like a recipe". I
+folded it into a code comment, a plan file and a Linear ticket in a single round. The next
+gate traced the cascade and refuted it: tier 2 reads raw HTML and returns unconditionally
+on success, so the page is rescued before tier 5. The digest says a reviewer's measurement
+is as falsifiable as a comment — the cost that was missing is that accepting one plants it
+in every artefact you touch that round. Verify a gate's *measurement* the way you verify a
+ticket's premise, before it becomes three claims.
+
+**A count inside a repair instruction rots like any other.** "Delete the two assertions
+below" was written when there were three. A literal reader would have left the `check()`
+half to redden on repair day, reading as "the fix broke something". Strike the numeral;
+"every assertion below this string" needs no recount. Same edit: an instruction naming two
+destinations must name the SHAPE each one takes — one list held `(markup, payload)` tuples
+and the other bare markup, so "add each spelling to both" would have produced
+`application/ldapplication/ld&plus;jsonjson` and reddened the destination.
+
+**`dart format` must report 0 changed BEFORE the gates are dispatched.** A blank line
+before a closing brace survives `analyze` and is removed by lefthook mid-commit, which
+re-stages the file — and the review ledger is content-addressed, so every passing round
+would have graded bytes that no longer ship. Two gates flagged the blank line as a nit; it
+was the only finding that could have invalidated the whole review chain.
+
+**Two mechanical notes.** A multi-edit Python script that asserts each anchor before its
+single write fails atomically — one wrong anchor lost four correct edits and left the file
+untouched, which is the safe direction and is why the assert is there. And
+`git hash-object <path>` vs `git rev-parse origin/main:<path>` is the only honest answer to
+"did this ship": `git status` showed three files as locally modified that `git diff` proved
+identical to origin, because it hashes CRLF bytes against LF blobs.
