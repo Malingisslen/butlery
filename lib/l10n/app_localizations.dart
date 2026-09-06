@@ -13729,12 +13729,6 @@ abstract class AppLocalizations {
   /// **'Acceptera ({count})'**
   String socialAcceptCount(int count);
 
-  /// No description provided for @socialAcceptingRequests.
-  ///
-  /// In sv, this message translates to:
-  /// **'Accepterar {count} förfrågningar...'**
-  String socialAcceptingRequests(int count);
-
   /// Appended to socialBlockUserMessage ONLY on the group-chat path. Soft blocking: the person is not removed from the group. Concrete on purpose — it exists to correct the expectation that blocking evicts them.
   ///
   /// In sv, this message translates to:
@@ -13752,12 +13746,6 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Avbryt ({count})'**
   String socialCancelCount(int count);
-
-  /// No description provided for @socialCancellingRequests.
-  ///
-  /// In sv, this message translates to:
-  /// **'Avbryter {count} förfrågningar...'**
-  String socialCancellingRequests(int count);
 
   /// No description provided for @socialCancelSelectedRequestsMessage.
   ///
@@ -13782,12 +13770,6 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Vill du avvisa {count} valda förfrågningar?'**
   String socialRejectAllSelectedMessage(int count);
-
-  /// No description provided for @socialRejectingRequests.
-  ///
-  /// In sv, this message translates to:
-  /// **'Avvisar {count} förfrågningar...'**
-  String socialRejectingRequests(int count);
 
   /// No description provided for @socialRequestsAccepted.
   ///
@@ -27322,6 +27304,24 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Din röst kunde inte registreras.'**
   String get pollVoteFailed;
+
+  /// Partial success after a batch friend-request action
+  ///
+  /// In sv, this message translates to:
+  /// **'{succeeded} av {total} förfrågningar accepterade'**
+  String socialRequestsAcceptedPartial(int succeeded, int total);
+
+  /// Partial success after a batch friend-request action
+  ///
+  /// In sv, this message translates to:
+  /// **'{succeeded} av {total} förfrågningar avvisade'**
+  String socialRequestsRejectedPartial(int succeeded, int total);
+
+  /// Partial success after a batch friend-request action
+  ///
+  /// In sv, this message translates to:
+  /// **'{succeeded} av {total} förfrågningar avbrutna'**
+  String socialRequestsCancelledPartial(int succeeded, int total);
 }
 
 class _AppLocalizationsDelegate

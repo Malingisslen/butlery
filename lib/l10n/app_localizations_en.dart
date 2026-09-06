@@ -8167,11 +8167,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String socialAcceptingRequests(int count) {
-    return 'Accepting $count requests...';
-  }
-
-  @override
   String get socialBlockUserStaysInGroup =>
       'They stay in the group, but you no longer see what they write.';
 
@@ -8183,11 +8178,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String socialCancelCount(int count) {
     return 'Cancel ($count)';
-  }
-
-  @override
-  String socialCancellingRequests(int count) {
-    return 'Cancelling $count requests...';
   }
 
   @override
@@ -8208,11 +8198,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String socialRejectAllSelectedMessage(int count) {
     return 'Do you want to reject $count selected requests?';
-  }
-
-  @override
-  String socialRejectingRequests(int count) {
-    return 'Rejecting $count requests...';
   }
 
   @override
@@ -16380,4 +16365,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get pollVoteFailed => 'Your vote could not be registered.';
+
+  @override
+  String socialRequestsAcceptedPartial(int succeeded, int total) {
+    return '$succeeded of $total requests accepted';
+  }
+
+  @override
+  String socialRequestsRejectedPartial(int succeeded, int total) {
+    return '$succeeded of $total requests rejected';
+  }
+
+  @override
+  String socialRequestsCancelledPartial(int succeeded, int total) {
+    return '$succeeded of $total requests cancelled';
+  }
 }

@@ -5630,14 +5630,6 @@
       }
     }
   },
-  "socialAcceptingRequests": "Accepterar {count} förfrågningar...",
-  "@socialAcceptingRequests": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "socialBlockUserStaysInGroup": "De står kvar i gruppen, men du ser inte längre vad de skriver.",
   "@socialBlockUserStaysInGroup": {
     "description": "Appended to socialBlockUserMessage ONLY on the group-chat path. Soft blocking: the person is not removed from the group. Concrete on purpose — it exists to correct the expectation that blocking evicts them."
@@ -5653,14 +5645,6 @@
   },
   "socialCancelCount": "Avbryt ({count})",
   "@socialCancelCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "socialCancellingRequests": "Avbryter {count} förfrågningar...",
-  "@socialCancellingRequests": {
     "placeholders": {
       "count": {
         "type": "int"
@@ -5693,14 +5677,6 @@
   },
   "socialRejectAllSelectedMessage": "Vill du avvisa {count} valda förfrågningar?",
   "@socialRejectAllSelectedMessage": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "socialRejectingRequests": "Avvisar {count} förfrågningar...",
-  "@socialRejectingRequests": {
     "placeholders": {
       "count": {
         "type": "int"
@@ -12048,5 +12024,41 @@
   "pollVoteFailed": "Din röst kunde inte registreras.",
   "@pollVoteFailed": {
     "description": "Shown when casting a poll vote is refused. Deliberately says nothing about WHY: one reason is that somebody in the conversation has blocked the voter, and naming it would turn a silent safety control into a notification (BUT-1917). It carries no \"try again\" either — but note that ChatViewModel.votePoll returns this sentence for ANY failure, including a transient network one that a retry would fix, so the advice is omitted rather than tailored. Routing offline through its own sentence, the way closePoll does via isFirebaseOfflineError, is unbuilt."
+  },
+  "socialRequestsAcceptedPartial": "{succeeded} av {total} förfrågningar accepterade",
+  "@socialRequestsAcceptedPartial": {
+    "description": "Partial success after a batch friend-request action",
+    "placeholders": {
+      "succeeded": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "socialRequestsRejectedPartial": "{succeeded} av {total} förfrågningar avvisade",
+  "@socialRequestsRejectedPartial": {
+    "description": "Partial success after a batch friend-request action",
+    "placeholders": {
+      "succeeded": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "socialRequestsCancelledPartial": "{succeeded} av {total} förfrågningar avbrutna",
+  "@socialRequestsCancelledPartial": {
+    "description": "Partial success after a batch friend-request action",
+    "placeholders": {
+      "succeeded": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
   }
 }

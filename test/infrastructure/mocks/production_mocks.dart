@@ -2543,6 +2543,20 @@ class MockFriendsManagementOperations extends Mock
   final List<String> blockCalls = [];
   final List<String> unblockCalls = [];
 
+  /// Same reasoning for the request verbs: a batch that ran the wrong verb, or
+  /// skipped an id, returns the same count as one that did it right.
+  final List<String> acceptCalls = [];
+  final List<String> rejectCalls = [];
+  final List<String> cancelCalls = [];
+
+  /// Ids that fail while the rest succeed — the only way to reach the partial
+  /// outcome, which `shouldSucceed` (all or nothing) cannot express.
+  final Set<String> _failingRequestIds = {};
+
+  /// Ids that THROW rather than return false — the two failure modes a batch
+  /// handles differently, and which `failingRequestIds` cannot tell apart.
+  final Set<String> _throwingRequestIds = {};
+
   void setManagementState({
     List<UserProfile>? friends,
     List<FriendRequest>? incomingRequests,
@@ -2550,10 +2564,22 @@ class MockFriendsManagementOperations extends Mock
     Set<String>? blockedUsers,
     bool? shouldSucceed,
     List<UserProfile>? mutualFriends,
+    Set<String>? failingRequestIds,
+    Set<String>? throwingRequestIds,
   }) {
     if (friends != null) _friends = friends;
     if (incomingRequests != null) _incomingRequests = incomingRequests;
     if (outgoingRequests != null) _outgoingRequests = outgoingRequests;
+    if (failingRequestIds != null) {
+      _failingRequestIds
+        ..clear()
+        ..addAll(failingRequestIds);
+    }
+    if (throwingRequestIds != null) {
+      _throwingRequestIds
+        ..clear()
+        ..addAll(throwingRequestIds);
+    }
     if (blockedUsers != null) {
       _blockedUsers
         ..clear()
@@ -2567,11 +2593,30 @@ class MockFriendsManagementOperations extends Mock
   Future<bool> sendFriendRequest(String recipientId, {String? message}) async =>
       _shouldSucceed;
   @override
-  Future<bool> acceptFriendRequest(String requestId) async => _shouldSucceed;
+  Future<bool> acceptFriendRequest(String requestId) async {
+    acceptCalls.add(requestId);
+    return _resolveRequest(requestId);
+  }
+
   @override
-  Future<bool> rejectFriendRequest(String requestId) async => _shouldSucceed;
+  Future<bool> rejectFriendRequest(String requestId) async {
+    rejectCalls.add(requestId);
+    return _resolveRequest(requestId);
+  }
+
   @override
-  Future<bool> cancelFriendRequest(String requestId) async => _shouldSucceed;
+  Future<bool> cancelFriendRequest(String requestId) async {
+    cancelCalls.add(requestId);
+    return _resolveRequest(requestId);
+  }
+
+  bool _resolveRequest(String requestId) {
+    if (_throwingRequestIds.contains(requestId)) {
+      throw Exception('Simulated failure for $requestId');
+    }
+    return _shouldSucceed && !_failingRequestIds.contains(requestId);
+  }
+
   @override
   Future<bool> removeFriend(String friendId) async => _shouldSucceed;
   @override

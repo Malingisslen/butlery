@@ -5607,14 +5607,6 @@
       }
     }
   },
-  "socialAcceptingRequests": "Accepting {count} requests...",
-  "@socialAcceptingRequests": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "socialBlockUserStaysInGroup": "They stay in the group, but you no longer see what they write.",
   "@socialBlockUserStaysInGroup": {
     "description": "Appended to socialBlockUserMessage ONLY on the group-chat path. Soft blocking: the person is not removed from the group. Concrete on purpose — it exists to correct the expectation that blocking evicts them."
@@ -5630,14 +5622,6 @@
   },
   "socialCancelCount": "Cancel ({count})",
   "@socialCancelCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "socialCancellingRequests": "Cancelling {count} requests...",
-  "@socialCancellingRequests": {
     "placeholders": {
       "count": {
         "type": "int"
@@ -5670,14 +5654,6 @@
   },
   "socialRejectAllSelectedMessage": "Do you want to reject {count} selected requests?",
   "@socialRejectAllSelectedMessage": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "socialRejectingRequests": "Rejecting {count} requests...",
-  "@socialRejectingRequests": {
     "placeholders": {
       "count": {
         "type": "int"
@@ -11986,5 +11962,41 @@
   "pollVoteFailed": "Your vote could not be registered.",
   "@pollVoteFailed": {
     "description": "Shown when casting a poll vote is refused. Deliberately says nothing about WHY: one reason is that somebody in the conversation has blocked the voter, and naming it would turn a silent safety control into a notification (BUT-1917). It carries no \"try again\" either — but note that ChatViewModel.votePoll returns this sentence for ANY failure, including a transient network one that a retry would fix, so the advice is omitted rather than tailored. Routing offline through its own sentence, the way closePoll does via isFirebaseOfflineError, is unbuilt."
+  },
+  "socialRequestsAcceptedPartial": "{succeeded} of {total} requests accepted",
+  "@socialRequestsAcceptedPartial": {
+    "description": "Partial success after a batch friend-request action",
+    "placeholders": {
+      "succeeded": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "socialRequestsRejectedPartial": "{succeeded} of {total} requests rejected",
+  "@socialRequestsRejectedPartial": {
+    "description": "Partial success after a batch friend-request action",
+    "placeholders": {
+      "succeeded": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "socialRequestsCancelledPartial": "{succeeded} of {total} requests cancelled",
+  "@socialRequestsCancelledPartial": {
+    "description": "Partial success after a batch friend-request action",
+    "placeholders": {
+      "succeeded": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
   }
 }

@@ -198,6 +198,7 @@ class _FriendRequestsViewContentState extends State<_FriendRequestsViewContent>
 
     await _actions.acceptMultipleRequests(
       context,
+      viewModel,
       _selectedIncoming.toList(),
       _clearSelection,
     );
@@ -208,6 +209,7 @@ class _FriendRequestsViewContentState extends State<_FriendRequestsViewContent>
 
     await _actions.rejectMultipleRequests(
       context,
+      viewModel,
       _selectedIncoming.toList(),
       _clearSelection,
     );
@@ -218,6 +220,7 @@ class _FriendRequestsViewContentState extends State<_FriendRequestsViewContent>
 
     await _actions.cancelMultipleSentRequests(
       context,
+      viewModel,
       _selectedSent.toList(),
       _clearSelection,
     );

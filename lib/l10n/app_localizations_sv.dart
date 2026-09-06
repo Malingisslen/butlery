@@ -8180,11 +8180,6 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String socialAcceptingRequests(int count) {
-    return 'Accepterar $count förfrågningar...';
-  }
-
-  @override
   String get socialBlockUserStaysInGroup =>
       'De står kvar i gruppen, men du ser inte längre vad de skriver.';
 
@@ -8196,11 +8191,6 @@ class AppLocalizationsSv extends AppLocalizations {
   @override
   String socialCancelCount(int count) {
     return 'Avbryt ($count)';
-  }
-
-  @override
-  String socialCancellingRequests(int count) {
-    return 'Avbryter $count förfrågningar...';
   }
 
   @override
@@ -8221,11 +8211,6 @@ class AppLocalizationsSv extends AppLocalizations {
   @override
   String socialRejectAllSelectedMessage(int count) {
     return 'Vill du avvisa $count valda förfrågningar?';
-  }
-
-  @override
-  String socialRejectingRequests(int count) {
-    return 'Avvisar $count förfrågningar...';
   }
 
   @override
@@ -16422,4 +16407,19 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get pollVoteFailed => 'Din röst kunde inte registreras.';
+
+  @override
+  String socialRequestsAcceptedPartial(int succeeded, int total) {
+    return '$succeeded av $total förfrågningar accepterade';
+  }
+
+  @override
+  String socialRequestsRejectedPartial(int succeeded, int total) {
+    return '$succeeded av $total förfrågningar avvisade';
+  }
+
+  @override
+  String socialRequestsCancelledPartial(int succeeded, int total) {
+    return '$succeeded av $total förfrågningar avbrutna';
+  }
 }

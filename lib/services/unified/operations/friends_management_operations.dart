@@ -374,11 +374,10 @@ class FriendsManagementOperations extends BaseService {
     }
   }
 
-  /// BUT-993: bulk block. Loops [blockUser] per id with per-target error
-  /// handling — one failure shouldn't strand the rest. A batched Firestore
-  /// write isn't a clean optimisation here because each block also triggers
-  /// removeFriend + cancel-pending-requests side-effects per user, which
-  /// can't be coalesced into a single write op.
+  /// BUT-993: bulk block. Loops [blockUser] per id, counting the ones that
+  /// return true. A batched Firestore write isn't a clean optimisation here
+  /// because each block also triggers removeFriend + cancel-pending-requests
+  /// side-effects per user, which can't be coalesced into a single write op.
   ///
   /// Returns the count of blocks that landed.
   Future<int> blockUsers(List<String> userIds) async {
@@ -391,11 +390,11 @@ class FriendsManagementOperations extends BaseService {
     return succeeded;
   }
 
-  /// BUT-993: bulk unblock. Loops [unblockUser] per id with per-target
-  /// error handling. Unlike [blockUsers], the underlying op is a single
-  /// blocks-collection delete — a future optimisation could batch all
-  /// deletes into one Firestore `WriteBatch`. Loop kept for symmetry with
-  /// [blockUsers] until a real perf signal forces the batch path.
+  /// BUT-993: bulk unblock. Loops [unblockUser] per id. Unlike [blockUsers],
+  /// the underlying op is a single blocks-collection delete — a future
+  /// optimisation could batch all deletes into one Firestore `WriteBatch`.
+  /// Loop kept for symmetry with [blockUsers] until a real perf signal forces
+  /// the batch path.
   ///
   /// Returns the count of unblocks that landed.
   Future<int> unblockUsers(List<String> userIds) async {

@@ -333,6 +333,45 @@ class FriendsViewModel extends BaseViewModel {
     return await _friendsService.management.cancelFriendRequest(requestId);
   }
 
+  /// Accept several incoming requests. Loops [acceptFriendRequest] rather than
+  /// the service method it wraps, because the analytics for an accept live on
+  /// this ViewModel — a batch built on the service layer would write the
+  /// friendships and record none of them.
+  ///
+  /// Returns how many landed — a request can legitimately have vanished from
+  /// another device, so one failure must not strand the rest.
+  Future<int> acceptFriendRequests(List<String> requestIds) =>
+      _runBatch(requestIds, acceptFriendRequest);
+
+  /// Reject several incoming requests. See [acceptFriendRequests].
+  Future<int> rejectFriendRequests(List<String> requestIds) =>
+      _runBatch(requestIds, rejectFriendRequest);
+
+  /// Cancel several sent requests. [cancelSentRequest] adds nothing of its own,
+  /// so this exists for one contract towards the view rather than for the
+  /// analytics reason the other two have.
+  Future<int> cancelSentRequests(List<String> requestIds) =>
+      _runBatch(requestIds, cancelSentRequest);
+
+  /// Each id keeps the per-request analytics of the single-request path,
+  /// which this adds a catch around: one id that throws must not strand the
+  /// ids after it.
+  Future<int> _runBatch(
+    List<String> requestIds,
+    Future<bool> Function(String) operation,
+  ) async {
+    var succeeded = 0;
+    for (final requestId in List<String>.of(requestIds)) {
+      try {
+        if (await operation(requestId)) succeeded++;
+      } catch (e) {
+        AppLogger.error('❌ Batch operation failed for one request: $e');
+      }
+    }
+    if (succeeded > 0) notifyListeners();
+    return succeeded;
+  }
+
   /// Remove friend (unfriend)
   Future<bool> removeFriend(String friendUserId) async {
     final success = await _friendsService.management.removeFriend(friendUserId);
