@@ -814,9 +814,9 @@ files in the same edit.
   explicit call, 2026-09-07, against the gate's own recommendation on the ticket. She was
   shown that the kill switch removes the cause rather than the symptom, and that a second
   sweep can prove residue EXISTS but never that the trigger is finished (`onUserDeleted` is
-  gen1, no bounded delivery, no `retry`). She was NOT shown a measurement of real residue —
-  no live run exists since BUT-2010 made the script executable. Do not restore the sweep
-  without one. BUT-2028, 2026-09-07
+  gen1, no bounded delivery, no `retry`). She was NOT shown a measurement of real residue.
+  Do not restore the sweep without one — and note that whether any live run has happened is
+  not answerable from this repo at all. BUT-2028, 2026-09-07
 
 - **`ingredient_suggestions` gets BOTH GDPR legs before any client has written a row.** Malin's
   explicit call, 2026-09-07, shown the alternative of closing the door

@@ -3004,9 +3004,12 @@ neither passed an `auditRepository` at all.
   rather than the symptom, and that a second sweep buys a stronger claim about residue and no
   claim at all about completion — `onUserDeleted` is gen1, with no bounded delivery time and
   no `retry`, so no stopping rule based on elapsed time or number of passes is correct.
-  **She was NOT shown** a measurement of how much residue a real run leaves; no live run has
-  been made since the script became executable (BUT-2010). Do not add the sweep back without
-  one, and do not read the absence of a second pass as an oversight.
+  **She was NOT shown** a measurement of how much residue a real run leaves. Do not add the
+  sweep back without one, and do not read the absence of a second pass as an oversight.
+  (An earlier wording added "no live run has been made since the script became executable".
+  Struck 2026-09-07: unmeasured, and contradicted by `reset-user-data.ts` in the same commit —
+  whether a run has happened is not answerable from this repo, since the only record is
+  `ops/resets/{runId}.json` in the Storage bucket, which nothing here reads.)
 
 - **`ingredient_suggestions` gets BOTH GDPR legs, and that is the decision (BUT-2028,
   2026-09-07).** Malin's explicit call, shown the alternative of
