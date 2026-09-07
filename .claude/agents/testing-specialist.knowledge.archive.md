@@ -35813,3 +35813,100 @@ struck once later rounds added non-partial cases (true when written, falsified b
 work); and the all-throwing test's unnamed conjunct written down — the selection survives not
 because nothing was reported but because both requests are still OPEN and `retainWhere` keeps
 them, which stopped being obvious the moment the report went unconditional.
+
+### 2026-09-07 — FAB busy-state spinner swap (`friend_request_actions.dart`), triggered by a coverage review of a one-file staged diff
+
+**The diff.** `buildFloatingActionButton`'s busy arm went from a raw
+`const SizedBox(width/height: 24, child: CircularProgressIndicator(strokeWidth: 2))` to
+`const LoadingIndicator(size: AppDimensions.iconSizeM, strokeWidth: 2)`, fixing the
+architecture guard "no raw CircularProgressIndicator in lib/views/" (zero allowlist),
+introduced red on main by f5bbc5c14.
+
+**Why the first-pass read said "no test owed" and was wrong.** The regression class is pinned
+by `test/architecture/architecture_test.dart` (22 green), the behavioural suite
+`test/widget/social/friend_requests_batch_actions_test.dart` was 19 green after the change, and
+a `find.byType(LoadingIndicator)` assertion is exactly the topology assert the DO-NOT-WRITE list
+bans. All three are true and none of them answers the live question.
+
+**The measurement that changed the verdict.** Grepping the NEW token (`LoadingIndicator`) is a
+decoy — 12 test files hit it, because it is a shared widget. Grepping the flag that SELECTS the
+branch is the real probe:
+
+    grep -rn 'batchRunning|buildFloatingActionButton' .
+
+`batchRunning: true` appeared in NO test in the repo. The only call site,
+`friend_requests_batch_actions_test.dart:292`, passed `false`. So both changed lines — the
+`onPressed: batchRunning ? null : onBatchAccept` refusal and the `icon:` ternary — executed
+nowhere. Had the swap been typed `LoadingIndicator.small()` (which carries
+`padding: EdgeInsets.all(AppDimensions.spacingL)` and `size: iconSizeS`) the FAB's icon slot
+would have blown out and nothing would have reddened.
+
+`lib/views/social/friend_requests/friend_request_builders.dart:66,117` reads the same flag and
+is equally unpinned — out of scope for this commit, noted as pre-existing.
+
+**The test written.** The existing FAB case's inline `MaterialApp` was extracted into
+`pumpFab(tester, {required bool batchRunning, required VoidCallback onAccept})` plus
+`fabL10n(tester)`; the idle case now also asserts the loading label is ABSENT, so the two cases
+are the two sides of one boundary and each names the other in a comment (per the batch-friend-
+requests 2026-09-06 boundary-clause rule). New case:
+
+    testWidgets('while a batch runs the FAB refuses a second press and announces that it '
+        'is busy', ...)
+      await pumpFab(tester, batchRunning: true, onAccept: () => batchStarts++);
+      final l10n = fabL10n(tester);
+      final handle = tester.ensureSemantics();
+      await tester.tap(find.byType(FloatingActionButton));
+      await tester.pump();
+      expect(batchStarts, 0);
+      expect(mockManagement.acceptCalls, isEmpty);
+      expect(find.bySemanticsLabel(RegExp(RegExp.escape(l10n.a11yLoading))), findsOneWidget);
+      expect(find.text(l10n.socialAcceptCount(requestIds.length)), findsOneWidget);
+      handle.dispose();
+
+**Two mechanical findings from writing it.**
+
+1. `pumpAndSettle()` TIMED OUT on the busy arm — first run was `+19 -1` with
+   "pumpAndSettle timed out" and nothing else. `LoadingIndicator` with `value: null` and
+   `backgroundColor: null` resolves to `AdaptiveActivityIndicator`, an indeterminate spinner
+   that animates forever, so settling never returns. A single `tester.pump()` is the fix, and
+   the timeout is easy to misread as a broken fixture rather than as the widget behaving.
+2. The assertion had to be the SEMANTICS label, not the widget type. `find.byType(
+   CircularProgressIndicator)` would have been FALSE on the fixed code (the adaptive path
+   renders no such widget), and `find.byType(LoadingIndicator)` is a topology assert that would
+   redden on any future swap to another approved indicator. `l10n.a11yLoading` ("Laddar" under
+   the suite's `sv_SE` locale) is what a screen-reader user actually receives. It must be
+   matched with `RegExp(RegExp.escape(...))` rather than a bare String, because
+   `FloatingActionButton` merges its descendants' semantics and the node's label carries the
+   count label alongside "Laddar"; an exact-string `bySemanticsLabel` would find nothing.
+
+**Mutation probes (each in its own Bash call, restored from `git show :<path>` between them —
+the file was STAGED, so the index is the correct restore source).**
+
+| Mutant | Edit | Result |
+|---|---|---|
+| M1 | `onPressed: batchRunning ? null : onBatchAccept` → `onPressed: onBatchAccept` | RED, `+19 -1`, only the new case |
+| M2 | `icon: batchRunning ? const LoadingIndicator(...) : const Icon(...)` → `icon: const Icon(Icons.check_circle)` | RED, `+19 -1`, only the new case |
+
+Run separately rather than together: both mutants die inside the SAME test and `expect` stops
+at its first failure, so `expect(batchStarts, 0)` would have masked M2 entirely and the
+semantics assertion would have read as unpinned.
+
+Restore verified by blob equality, not by `git diff` alone —
+`git hash-object` = `git ls-files -s` = `90dc925eb96919d4c1b527e25b6fad149d206703`, and
+`git status --porcelain` reads `M ` (staged only, worktree clean).
+
+**Verification.** `dart format` 0 changed; `flutter analyze --fatal-infos` on both files, no
+issues; `flutter test test/architecture/architecture_test.dart
+test/widget/social/friend_requests_batch_actions_test.dart
+test/widget/common/indicators/loading_indicator_test.dart` → 54 green (the batch suite went
+19 → 20).
+
+**Non-blocking observation filed with the verdict, not fixed.** The pre-existing case
+`no modal barrier survives the batch` asserts
+`expect(find.byType(CircularProgressIndicator), findsNothing)`. That finder can no longer see
+the repo's own approved indeterminate spinner, since `LoadingIndicator` renders
+`AdaptiveActivityIndicator` on that path. The assertion still holds against the defect it was
+written for (a `barrierDismissible: false` progress dialog), and its sibling
+`find.byType(AlertDialog)` carries that; but it should not be cited as a general
+"no spinner is left behind" guard. Not changed here — it is outside the staged file and the
+test's stated intent is still correct.

@@ -287,6 +287,12 @@ compress it.**
   `expect` at all** — the skip string was doing the explaining, so nobody wrote the assertion.
   Grep every un-skipped body for `expect` before running anything (BUT-1806 found several, one
   ending literally at `// Assert - FieldValue.increment conflicts...`; the archive lists them).
+- **A busy-state widget test cannot use `pumpAndSettle`** — an indeterminate spinner animates
+  forever, so settling times out and the timeout reads like a broken fixture. Single `pump()`.
+  Assert the busy arm through the SEMANTICS live region (`find.bySemanticsLabel(RegExp(...))` on
+  `l10n.a11yLoading`, under `tester.ensureSemantics()`), never `find.byType(<SpinnerClass>)` —
+  the label is what a user gets and it survives a swap between approved indicators, which is the
+  edit these branches actually receive (2026-09-07).
 - **A widget test driving a real screen can be blocked by an unrelated RENDER assertion in a
   sibling branch of that same screen** — satisfy the tested condition through a branch that does
   not reach it, then FILE the render defect. Weakening a fixture to dodge a crash is legitimate
@@ -359,7 +365,11 @@ Codecov: 60% project / 70% new patches / 2% drop tolerance — floors, decided 5
 gap):**
 1. **Grep each NEW TOKEN into a token→files table.** Zero files IS the finding; hits only in an
    extracted class's own suite means the composing line in the CALLER's suite is unproven
-   (BUT-1838).
+   (BUT-1838). **When the new token is a SHARED widget or helper its repo-wide hits are a
+   decoy — grep the FLAG that SELECTS the changed branch instead** (`batchRunning`), which
+   answers whether the edited line executes at all. A swap inside a busy/error/empty arm reads
+   as covered because the suite pumps the surface, having only ever passed the flag's OTHER
+   value (2026-09-07).
 2. **Sort those hits by LAYER and by SEAM.** A healthy spread can still be zero coverage of
    PERSISTENCE (four suites naming a field while `toFirestore`/`fromMap` stay untouched, so the
    feature can fail to persist with everything green — and `if (x.isNotEmpty)` guards mean the

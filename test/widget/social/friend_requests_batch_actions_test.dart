@@ -264,38 +264,56 @@ void main() {
     });
   }
 
+  Future<void> pumpFab(
+    WidgetTester tester, {
+    required bool batchRunning,
+    required VoidCallback onAccept,
+  }) {
+    return tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('sv', 'SE'),
+        supportedLocales: AppLocalizations.supportedLocales,
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        home: DefaultTabController(
+          length: 2,
+          child: Builder(
+            builder: (context) => Scaffold(
+              body: const SizedBox.shrink(),
+              floatingActionButton: actions.buildFloatingActionButton(
+                context,
+                DefaultTabController.of(context),
+                requestIds.toSet(),
+                onAccept,
+                batchRunning: batchRunning,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  AppLocalizations fabL10n(WidgetTester tester) =>
+      AppLocalizations.of(tester.element(find.byType(FloatingActionButton)));
+
   testWidgets(
     'the FAB delegates to the caller instead of running the batch itself',
     (tester) async {
       var batchStarts = 0;
 
-      await tester.pumpWidget(
-        MaterialApp(
-          locale: const Locale('sv', 'SE'),
-          supportedLocales: AppLocalizations.supportedLocales,
-          localizationsDelegates: const [
-            AppLocalizations.delegate,
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-          ],
-          home: DefaultTabController(
-            length: 2,
-            child: Builder(
-              builder: (context) => Scaffold(
-                body: const SizedBox.shrink(),
-                floatingActionButton: actions.buildFloatingActionButton(
-                  context,
-                  DefaultTabController.of(context),
-                  requestIds.toSet(),
-                  () => batchStarts++,
-                  batchRunning: false,
-                ),
-              ),
-            ),
-          ),
-        ),
+      await pumpFab(
+        tester,
+        batchRunning: false,
+        onAccept: () => batchStarts++,
       );
+
+      final l10n = fabL10n(tester);
+      final handle = tester.ensureSemantics();
 
       await tester.tap(find.byType(FloatingActionButton));
       await tester.pumpAndSettle();
@@ -306,6 +324,54 @@ void main() {
       expect(batchStarts, 1);
       expect(mockManagement.acceptCalls, isEmpty);
       expect(find.byType(AlertDialog), findsNothing);
+      // The idle side of the busy boundary below: nothing announces loading
+      // while no batch is running.
+      expect(
+        find.bySemanticsLabel(RegExp(RegExp.escape(l10n.a11yLoading))),
+        findsNothing,
+      );
+
+      handle.dispose();
+    },
+  );
+
+  testWidgets(
+    'while a batch runs the FAB refuses a second press and announces that it '
+    'is busy',
+    (tester) async {
+      var batchStarts = 0;
+
+      // The busy side of the boundary drawn by the idle case above, which
+      // pumps the same FAB with batchRunning: false.
+      await pumpFab(
+        tester,
+        batchRunning: true,
+        onAccept: () => batchStarts++,
+      );
+
+      final l10n = fabL10n(tester);
+      final handle = tester.ensureSemantics();
+
+      await tester.tap(find.byType(FloatingActionButton));
+      // A single pump, not pumpAndSettle: the busy indicator animates for as
+      // long as the batch runs, so settling never returns.
+      await tester.pump();
+
+      // A null onPressed is what refuses the second press; the spinner only
+      // says so, which is why both are asserted here.
+      expect(batchStarts, 0);
+      expect(mockManagement.acceptCalls, isEmpty);
+      expect(
+        find.bySemanticsLabel(RegExp(RegExp.escape(l10n.a11yLoading))),
+        findsOneWidget,
+      );
+      // The count stays on the button so it does not resize mid-batch.
+      expect(
+        find.text(l10n.socialAcceptCount(requestIds.length)),
+        findsOneWidget,
+      );
+
+      handle.dispose();
     },
   );
 }

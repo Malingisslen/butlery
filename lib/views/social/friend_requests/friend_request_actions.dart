@@ -13,6 +13,9 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 // ViewModels
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
 
+// Widgets
+import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+
 /// Refactored FriendRequestActions using BaseActionHandler
 /// This class provides standardized friend request operations with:
 /// - Consistent batch operations with confirmation
@@ -41,10 +44,9 @@ class FriendRequestActions extends BaseActionHandler with ActionStateMixin {
         onPressed: batchRunning ? null : onBatchAccept,
         tooltip: context.l10n.socialAcceptSelected,
         icon: batchRunning
-            ? const SizedBox(
-                width: AppDimensions.iconSizeM,
-                height: AppDimensions.iconSizeM,
-                child: CircularProgressIndicator(strokeWidth: 2),
+            ? const LoadingIndicator(
+                size: AppDimensions.iconSizeM,
+                strokeWidth: 2,
               )
             : const Icon(Icons.check_circle),
         // The label stays put so the button does not resize mid-batch.
