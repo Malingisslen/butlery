@@ -3275,18 +3275,27 @@ service cloud.firestore {
     // INGREDIENT SUGGESTIONS - User-submitted ingredients
     // ========================================
 
-    // BUT-2028, measured 2026-09-05: this collection is uid-keyed (`userId`)
-    // and NO deletion path reaches it — not the account cascade, not
-    // `on-user-deleted.ts`, and not `reset-user-data.ts` before this ticket
-    // added it to that script's delete list. An Art. 17 leg was scoped on the
-    // row count, and the count against production was ZERO: nothing in `lib/`
-    // writes here (only the `FirestoreCollections.ingredientSuggestions`
-    // constant exists).
+    // BUT-2028: this collection is uid-keyed (`userId`) and the `allow create`
+    // limb below lets any signed-in client write a row keyed to themselves,
+    // while nothing in `lib/` does so today (`onSuggestionCreated` updates
+    // existing rows and creates none).
     //
-    // So the gap is real and empty. The `allow create` limb is what can end
-    // that — the FIRST client write here needs an erasure leg written with it,
-    // because a uid-keyed row nothing deletes is an Art. 17 defect from the
+    // Both GDPR legs are built anyway, 2026-09-07: `deleteIngredientSuggestions`
+    // in the account cascade with a leg in `probeResidualData` (Art. 17), and a
+    // section in the data export (Art. 15). They can find zero rows for a long
+    // time. That is the point — the first client write is erasable and
+    // exportable on the day it happens, rather than on the day someone notices
+    // it, because a uid-keyed row nothing deletes is an Art. 17 defect from the
     // moment it exists.
+    //
+    // The read limb is what makes the export's LIST query satisfiable, and the
+    // property that does it — the one a future editor must preserve — is an
+    // equality filter on the same field the rule tests, against the caller's
+    // own uid. Rules are not filters: a list is refused unless the rule proves
+    // every returnable document is readable, which an equality on
+    // `request.auth.uid` does and a different field would not (BUT-1971).
+    // Measured against the emulator 2026-09-07: the owner's filtered list is
+    // allowed, an unfiltered list and a foreign-uid list are both denied.
     match /ingredient_suggestions/{suggestionId} {
       allow read: if isAuthenticated()
         && resource.data.userId == request.auth.uid;

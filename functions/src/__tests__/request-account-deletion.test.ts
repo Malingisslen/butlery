@@ -340,6 +340,10 @@ test("BUT-788: full cascade reports every step + writes audit + calls auth.delet
     // running — and the emulator lane seeds no block row, so its
     // `failedCollections` assertion stays green too.
     "blocks",
+    // BUT-2028, and the same reason again: its own scenario in the cascade
+    // suite `require()`s the deleter directly, so removing this tier entry
+    // stops the erasure without reddening anything there.
+    "ingredient_suggestions",
     "messages",
     "shared_content",
     "comments_ratings",

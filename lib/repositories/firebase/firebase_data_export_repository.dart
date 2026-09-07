@@ -59,7 +59,9 @@ enum ExportResourceType {
   canonicalRatingEvents('canonical_rating_events'),
   // BUT-1732: shared shopping lists the deletion cascade scrubs but the
   // export omitted entirely (Art. 15 ⊇ Art. 17).
-  sharedShoppingLists('shared_shopping_lists')
+  sharedShoppingLists('shared_shopping_lists'),
+  // BUT-2028: ingredient suggestions (Art. 15 ⊇ Art. 17).
+  ingredientSuggestions('ingredient_suggestions')
   ;
 
   const ExportResourceType(this.tag);
@@ -983,6 +985,30 @@ class FirebaseDataExportRepository extends BaseFirebaseRepository<Object> {
         .where('fromUserId', isEqualTo: userId),
     userId,
     ExportResourceType.pings,
+    limit: maxDocuments,
+  );
+
+  /// Top-level `ingredient_suggestions` where `userId == userId` — moderated
+  /// ingredient submissions. NOT the search autocomplete of the same name in
+  /// `lib/widgets/common/input/ingredient_suggestion_list.dart`.
+  ///
+  /// What makes the LIST query permitted is that it filters on equality against
+  /// the caller's own uid, on the same field the collection's read rule tests.
+  /// Rules are not filters, so that property is what a future editor has to
+  /// preserve — not the textual likeness of the two.
+  ///
+  /// Expect zero rows for now: no client code creates a suggestion, and the
+  /// section exists so that the first one that appears is exportable the same
+  /// day it becomes erasable.
+  Future<List<Map<String, dynamic>>> exportIngredientSuggestions(
+    String userId, {
+    int maxDocuments = 500,
+  }) => _queryList(
+    firestore
+        .collection(FirestoreCollections.ingredientSuggestions)
+        .where('userId', isEqualTo: userId),
+    userId,
+    ExportResourceType.ingredientSuggestions,
     limit: maxDocuments,
   );
 

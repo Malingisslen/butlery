@@ -238,6 +238,18 @@ class ExportPaginationHelper {
     // (`exportUserPreferencesDocument`) and drops it from the page afterwards
     // when both reads found it.
     'user_settings': 50,
+    // BUT-2028: ingredient suggestions. Declared with the section rather than
+    // after it, so the truncation probe keys off a stated cap rather than the
+    // `defaultBatchSize` fallback. 500 matches `cook_snaps`, and is also what
+    // `defaultBatchSize` is today — so deleting this line changes no behaviour
+    // and loses only the contract, which is why the test asserts the entry
+    // resolves to 500 (null would not).
+    //
+    // The binding itself stays unprovable while the two numbers agree: the
+    // section passes the literal `'ingredient_suggestions'`, and a typo there
+    // falls back to 500 with nothing reddening. A cap different from
+    // `defaultBatchSize` is what would make key, value and wiring all pinnable.
+    'ingredient_suggestions': 500,
   };
 
   /// Get export limit for content type

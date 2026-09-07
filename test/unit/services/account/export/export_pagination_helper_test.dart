@@ -119,6 +119,16 @@ void main() {
       // happened to be 50, so the fallback is asserted to be something else.
       expect(ExportPaginationHelper.defaultBatchSize, isNot(50));
     });
+
+    // BUT-2028. The cap equals `defaultBatchSize` today, so `getLimitForType`
+    // cannot tell a declared entry from the fallback. Reading the map directly
+    // can: a deleted entry is null, a widened one is not 500.
+    test('the ingredient-suggestions cap is declared, not fallen back to', () {
+      expect(
+        ExportPaginationHelper.exportLimits['ingredient_suggestions'],
+        500,
+      );
+    });
   });
 
   // BUT-1662: fetchCapped is the single primitive every GDPR export section

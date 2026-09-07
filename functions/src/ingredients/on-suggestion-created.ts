@@ -19,6 +19,14 @@ const getDb = () => admin.firestore();
 
 /**
  * Interface for ingredient suggestion documents.
+ *
+ * BUT-2028: this is the de-facto source of truth for the Art. 15 export's
+ * field allowlist, `ContentExportManager._ingredientSuggestionFields` in Dart.
+ * That list fails CLOSED, so a field added HERE and not there is silently
+ * withheld from the data subject's own export. Nothing couples the two across
+ * the language boundary — this comment is the whole coupling.
+ * `reviewedBy` and `reviewNotes` are withheld deliberately; see the BUT-2028
+ * entry in `docs/architecture/ACCEPTED_DEVIATIONS.md`.
  */
 interface IngredientSuggestion {
   userId: string;

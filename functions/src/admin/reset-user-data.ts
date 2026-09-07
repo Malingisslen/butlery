@@ -50,6 +50,7 @@ import {
   CollectionTarget,
   COLLECTIONS_TO_DELETE,
   COLLECTIONS_TO_KEEP,
+  COLLECTIONS_DELIBERATELY_UNTOUCHED,
 } from "./reset-collection-lists";
 import {
   clearResetKillSwitch,
@@ -377,6 +378,18 @@ async function runPhases(
  * or never arrive at all. No stopping rule based on elapsed time or on a
  * number of passes is correct. A second sweep can prove that residue EXISTS;
  * nothing here can prove it is finished.
+ *
+ * **Report-only is a DECISION, not an omission. Malin's explicit call,
+ * 2026-09-07.** BUT-2028's gate recommended repeating the Firestore sweep here,
+ * to catch what the triggers wrote behind the first one. She was shown that
+ * against the kill switch, which removes the cause rather than the symptom, and
+ * against the paragraph above: a second sweep buys a stronger claim about
+ * residue and no claim at all about completion, at the cost of a second full
+ * pass over every deleted collection on every run. She was NOT shown a
+ * measurement of how much residue a real run actually leaves. Do not add the
+ * sweep back without one. (Whether any live run has happened at all is not
+ * answerable from this repo: the only record a run leaves behind is
+ * `ops/resets/{runId}.json` in the Storage bucket, which nothing here reads.)
  */
 async function verifyReset(
   db: admin.firestore.Firestore,
@@ -664,6 +677,14 @@ async function main() {
     `  Storage files ${dryRun ? "to delete" : "deleted"}: ${totals.storageFiles}`,
   );
   console.log("  Preserved: " + COLLECTIONS_TO_KEEP.join(", "));
+  // The register, printed beside the list with teeth. A collection that is
+  // neither deleted nor protected is the shape this ticket was filed about, so
+  // a summary that names only the protected ones reproduces the silence one
+  // step over — it reads as a complete account of what survived, and is not.
+  console.log(
+    "  Left alone (decided, not protected): " +
+      Object.keys(COLLECTIONS_DELIBERATELY_UNTOUCHED).join(", "),
+  );
   console.log();
 
   if (dryRun) {

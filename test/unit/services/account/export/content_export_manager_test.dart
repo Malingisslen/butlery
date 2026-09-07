@@ -1,7 +1,7 @@
 /// Direct unit tests for [ContentExportManager] (BUT-1438, BUT-1401 follow-up).
 ///
-/// Proves the GDPR Article-15/20 *content* export contract across every
-/// record type this manager owns: recipes (personal), menus
+/// Proves the GDPR Article-15/20 *content* export contract across the
+/// record types this manager owns, among them: recipes (personal), menus
 /// (personal + shared), shopping lists with items, personal tags, personal
 /// tag groups, cook snaps, cook events, pantry items, activity events,
 /// weekly menu plans, and group weekly menu plans. Each method must surface
@@ -57,6 +57,7 @@ class _FakeDataExportRepository extends Fake
     this.sharedMember = const [],
     this.sharedContributor = const [],
     this.contributorProbeError,
+    this.ingredientSuggestions = const [],
   });
   final List<Map<String, dynamic>> personalMenus;
   final List<Map<String, dynamic>> sharedMenus;
@@ -65,6 +66,8 @@ class _FakeDataExportRepository extends Fake
   final List<Map<String, dynamic>> sharedOwned;
   final List<Map<String, dynamic>> sharedMember;
   final List<Map<String, dynamic>> sharedContributor;
+  // BUT-2028.
+  final List<Map<String, dynamic>> ingredientSuggestions;
 
   /// The exact failure the contributor probe raises, not a bool. The section
   /// branches on WHICH error arrived — a rules refusal is a documented,
@@ -74,6 +77,17 @@ class _FakeDataExportRepository extends Fake
   /// predicate came to be deletable with the suite green.
   final Object? contributorProbeError;
   int? capturedMaxLists;
+
+  // Sentinel default (NOT the real 500), same shape as `_FakePantryRepository`:
+  // Dart fills in the callee's default when the caller omits a named argument,
+  // so the default decides what a dropped `maxDocuments:` looks like here.
+  // `take(-1)` throws, the section falls into its catch, and both truncation
+  // cases redden on a missing key.
+  @override
+  Future<List<Map<String, dynamic>>> exportIngredientSuggestions(
+    String userId, {
+    int maxDocuments = -1,
+  }) async => ingredientSuggestions.take(maxDocuments).toList();
 
   @override
   Future<List<Map<String, dynamic>>> exportSharedShoppingListsOwned(
@@ -110,11 +124,10 @@ class _FakeDataExportRepository extends Fake
     int maxDocuments = 1000,
   }) async => sharedMenus;
 
-  // Sentinel default (NOT the real 1000), same reasoning as
-  // `_FakePantryRepository`: shopping lists is the ONE migrated section whose
-  // fetch parameter is named `maxLists` rather than `maxDocuments`, so it is
-  // the likeliest place for the cap to stop being forwarded. A realistic
-  // default would let that regression pass.
+  // Sentinel default (NOT the real 1000), same shape as `_FakePantryRepository`.
+  // Shopping lists is the migrated section whose fetch parameter is NAMED
+  // `maxLists` rather than `maxDocuments`. (`exportCookEvents` passes `limit:`,
+  // the same shape, and its fake captures nothing, so that one is unpinned.)
   @override
   Future<List<Map<String, dynamic>>> exportPersonalShoppingLists(
     String userId, {
@@ -180,8 +193,7 @@ class _FakePantryRepository extends Fake implements PantryRepository {
   // Sentinel default (NOT the real 1000): Dart fills in the callee's default
   // when the caller omits a named arg, so if production ever stops passing
   // `maxDocuments`, capturedMaxDocuments becomes -1 and the forwarding test
-  // fails. A 1000 default here would make that test pass either way (the
-  // computed limit is also 1000) — the exact false-green BUT-1440 guards.
+  // fails — the false-green BUT-1440 guards against.
   @override
   Future<List<Map<String, dynamic>>> exportAllByUser(
     String userId, {
@@ -504,9 +516,9 @@ void main() {
     );
 
     // A Timestamp on the list document used to reach the encoder untouched.
-    // `jsonEncode` in DataExportService is NOT inside a try/catch, so one such
-    // field threw JsonUnsupportedObjectError out of the WHOLE GDPR export,
-    // not just this section.
+    // `DataExportService` rethrows out of its encode, so one such field threw
+    // JsonUnsupportedObjectError out of the WHOLE GDPR export, not just this
+    // section.
     test(
       'sanitizes list_info so a Timestamp cannot break jsonEncode',
       () async {
@@ -650,8 +662,7 @@ void main() {
       () async {
         // Regression guard: pantry was the lone export method that computed
         // its limit (for the `truncated` flag) but did not pass it to the
-        // repo, so the repo silently fell back to its own default. The two
-        // values coincide today (both 1000) but could diverge.
+        // repo, so the repo silently fell back to its own default.
         //
         // BUT-1662: the forwarded value is now cap + 1 — the N+1 truncation
         // probe fetches one past the cap so a complete export of exactly `cap`
@@ -1419,8 +1430,8 @@ void main() {
     // here is Strings and Maps. So both `sanitizeForJson` calls in
     // `_minimiseList` were deletable with this whole group green.
     //
-    // `jsonEncode` in DataExportService is NOT inside a try/catch, so one
-    // surviving Timestamp throws JsonUnsupportedObjectError out of the ENTIRE
+    // `DataExportService` rethrows out of its encode, so one surviving
+    // Timestamp throws JsonUnsupportedObjectError out of the ENTIRE
     // GDPR bundle — every section, for the first user who owns a shared list
     // and asks for their data. That is the normal path, not a corner case.
     test(
@@ -1510,7 +1521,62 @@ void main() {
     });
   });
 
-  /// BUT-1760: all twelve sections used to fail with `{'error': e.toString()}`.
+  // BUT-2028: the section's USE of `fetchCapped`. The primitive's boundary is
+  // pinned centrally, but `if (entries.truncated) 'truncated': true` is
+  // deletable with every other test green — and an undeclared truncation is the
+  // dangerous direction, because the data subject reads a clipped bundle as a
+  // complete one.
+  group('ingredient suggestions truncation (BUT-2028)', () {
+    Map<String, dynamic> row(String id) => {
+      'id': id,
+      'data': {'ingredientName': id},
+    };
+
+    // Derived, not literal: re-tuning the cap is a config change, not a
+    // behaviour regression, and must not fail here.
+    final cap = ExportPaginationHelper.getLimitForType(
+      'ingredient_suggestions',
+    );
+
+    test('stamps truncated when the N+1 probe clipped', () async {
+      final manager = _manager(
+        exports: _FakeDataExportRepository(
+          ingredientSuggestions: List.generate(cap + 1, (i) => row('s-$i')),
+        ),
+      );
+
+      final result = await manager.exportIngredientSuggestions('alice');
+
+      expect(result['truncated'], isTrue);
+      expect(
+        result['total_count'],
+        cap,
+        reason: 'the payload is trimmed back to the declared cap',
+      );
+    });
+
+    // The recall control: a section that FITS must not claim to be incomplete.
+    // Exactly at the cap is the flip point — the pre-BUT-1662 `length >= cap`
+    // shape stamped a complete export as truncated, which is a false
+    // incompleteness claim on a GDPR bundle.
+    test('a complete section at exactly the cap is not flagged', () async {
+      final manager = _manager(
+        exports: _FakeDataExportRepository(
+          ingredientSuggestions: List.generate(cap, (i) => row('s-$i')),
+        ),
+      );
+
+      final result = await manager.exportIngredientSuggestions('alice');
+
+      // The absence assertion alone is satisfied by the failure envelope too
+      // (it carries neither key), so `total_count` is what makes this case
+      // discriminate. Do not simplify it away.
+      expect(result.containsKey('truncated'), isFalse);
+      expect(result['total_count'], cap);
+    });
+  });
+
+  /// BUT-1760: the sections used to fail with `{'error': e.toString()}`.
   ///
   /// Two defects in one line. The raw string lands in an Article-15 artifact
   /// the data subject downloads and may forward to a supervisory authority,
@@ -1593,6 +1659,14 @@ void main() {
             'realtime recipes',
             'realtime-recipes-export-failed',
             (m) => m.exportRealtimeRecipes('alice'),
+          ),
+          // BUT-2028. This table is hand-typed, so a new section does not join
+          // it by existing — and the test below is named "every section", a
+          // quantifier that goes false silently while staying green.
+          (
+            'ingredient suggestions',
+            'ingredient-suggestions-export-failed',
+            (m) => m.exportIngredientSuggestions('alice'),
           ),
         ];
 

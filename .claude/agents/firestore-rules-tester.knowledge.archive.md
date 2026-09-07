@@ -4707,3 +4707,50 @@ version stating the limb-PAIR diagnostic and both measurements (broken and repai
 > a path no fixture has written yet (or twice, once per verb) — make the fixture
 > self-checking: assert the row doesn't exist via `withSecurityRulesDisabled` before
 > `assertFails`.
+
+## 2026-09-07 — BUT-2028 round 2: `ingredient_suggestions` suite (17 cases), full attribution
+
+Suite: `functions/src/__tests__/ingredient-suggestions-rules.test.ts`, project id
+`butlery-rules-ingredient-suggestions` (unique across all 45 rules suites, measured).
+Real run: 17/17. Ten mutants, each built by slicing `firestore.rules` between
+`match /ingredient_suggestions/` and `match /notification_history/`, asserting an in-slice
+match count of 1 and printing the whole-file count beside it (needles ranged 1..8 whole-file,
+so the slice was load-bearing for four of them). The suite ships no `PROBE_*` env seam, so
+each run went through a throwaway `sed`-derived copy under `functions/src/__tests__/`,
+deleted in the same Bash call; `RULES_PATH` was rewritten to
+`path.resolve(process.env.PROBE_RULES_PATH as string)` to keep the `path` import used
+(TS6133 otherwise, which greps like a green run — and a first attempt at a fixture mutant
+DID die that way, `const USER_UID` redeclared, printing nothing at all).
+
+Kill table (all single-variable unless noted):
+- m1 drop `hasRequiredFields` -> C4 only
+- m2 drop `ingredientName.size() <= 100` -> C5 only (C6, the at-bound allow, survives — correct)
+- m3 drop create-side `userId == auth.uid` -> C2 only
+- m4 add `status == 'approved'` to the read limb -> L1 + G1 exactly (reproduces the author's
+  claim; this is the Art. 15 failure mode the suite exists to catch)
+- m5 read limb -> `if true` -> L2, L3, L4, G2, G3, G4 (six); L5 survives
+- m6 create limb -> `false &&` -> C1 + C6
+- m7 open `update, delete` to the owner -> U1 + U2
+- m8 drop `isAuthenticated()` from create -> 17/17, C3 MASKED (unauth makes
+  `request.auth.uid` CEL-error first; the known principle, re-confirmed on a new collection)
+- m9 add a `{path=**}/ingredient_suggestions/{id}` collection-group match -> L5 only, so the
+  collectionGroup deny is discriminating rather than a free pass
+- m10 add `!('status' in request.resource.data)` -> C1 + C6, i.e. the allow fixtures DO
+  assert one of the open items the header disclaims
+
+Fixture measurements (probe copies, no rules mutation):
+- clear removed, run twice: run 2 = 15/17, failing C1 and C6; L1 PASSED. The comment beside
+  `clearFirestore()` claims 14/17 and names L1 — a figure measured before the same round moved
+  the create cases onto `CREATOR_UID`, which is exactly what invalidated it.
+- `CREATOR_UID = USER_UID`, current order: 17/17. Same, with a duplicate list case appended
+  last: it fails seeing 4 rows. So the CREATOR_UID rationale comment is measured TRUE.
+
+Registration: `node functions/scripts/check-test-registration.js` -> OK, 45 rules suites via
+2 `paths:` blocks. `rules-coverage-report.js` discovery finds the suite (`PROJECT_ID` is a
+bare literal — adding a probe seam later must keep a literal it can still see).
+
+Process note: `lib/services/account/export/content_export_manager.dart` and
+`test/unit/services/account/data_export_service_test.dart` went `MM` DURING this review
+(worktree mtime 10:02, mid-probe) — the four reviewed files were hash-verified index==worktree,
+so the review graded shipping bytes, but the export section's `data_minimisation` string is
+being rewritten unstaged.

@@ -586,4 +586,93 @@ class ContentExportManager {
       return _failed('realtime recipes', 'realtime-recipes-export-failed', e);
     }
   }
+
+  /// Fields of an ingredient suggestion that reach the Art. 15 bundle.
+  ///
+  /// An allowlist rather than a deny-list, so the section FAILS CLOSED: a field
+  /// this list does not name is withheld. `reviewedBy` (a moderator's raw uid)
+  /// and `reviewNotes` (internal moderation text) are omitted deliberately.
+  /// `userId` is the requester's own uid and is what the query already filters
+  /// on, so it adds nothing to the bundle.
+  ///
+  /// The cost of failing closed is real and is the reason the withholding is
+  /// declared in the section: the collection's create rule uses
+  /// `hasRequiredFields`, not `hasOnly`, so a client can store fields outside
+  /// the declared type — and this list would then drop the requester's OWN
+  /// content, which is an Art. 15 defect in the other direction.
+  static const _ingredientSuggestionFields = <String>[
+    'ingredientName',
+    'originalName',
+    'status',
+    'createdAt',
+    'notifiedAt',
+    'sourceApp',
+    'suggestedCategory',
+    'suggestedProperties',
+    'recipeContext',
+    'reviewedAt',
+  ];
+
+  /// BUT-2028: ingredient suggestions the user submitted
+  /// (`ingredient_suggestions` where `userId == uid`), projected.
+  ///
+  /// Lives here rather than in `ActivityExportManager` because the row is
+  /// something the user WROTE, like the recipes and pantry items around it —
+  /// the moderation fields on it are what happens to a submission afterwards,
+  /// not what the row is.
+  ///
+  /// A zero-row section is the expected result today: nothing in the app
+  /// creates a suggestion, and what keeps the collection live is the rules
+  /// file's `allow create`, not a screen.
+  Future<Map<String, dynamic>> exportIngredientSuggestions(
+    String userId,
+  ) async {
+    try {
+      final entries = await ExportPaginationHelper.fetchCapped(
+        type: 'ingredient_suggestions',
+        fetch: (max) =>
+            _exports.exportIngredientSuggestions(userId, maxDocuments: max),
+      );
+      return {
+        'total_count': entries.items.length,
+        'ingredient_suggestions': entries.items
+            .map(
+              (entry) => {
+                'suggestion_id': entry['id'],
+                'data': sanitizeForJson(
+                  _projectIngredientSuggestion(entry['data']),
+                ),
+              },
+            )
+            .toList(),
+        // Says WHAT is withheld, never WHOSE data it is: a moderator's note
+        // about the requester is the requester's own personal data, so calling
+        // the withheld fields "someone else's" would be a false statement
+        // wrapped around a withholding — an Art. 12(1) defect of its own.
+        //
+        // English, like every other note in this bundle. UI strings are
+        // Swedish; the export bundle is not UI, and a document that switches
+        // language halfway is weaker under Art. 12(1), not friendlier.
+        'data_minimisation':
+            'Who reviewed your suggestion, and internal review notes, are not '
+            'included. This section carries only the fields it recognises, so '
+            'a field added later may be missing.',
+        if (entries.truncated) 'truncated': true,
+      };
+    } catch (e) {
+      return _failed(
+        'ingredient suggestions',
+        'ingredient-suggestions-export-failed',
+        e,
+      );
+    }
+  }
+
+  Map<String, dynamic> _projectIngredientSuggestion(Object? data) {
+    if (data is! Map) return const {};
+    return {
+      for (final field in _ingredientSuggestionFields)
+        if (data.containsKey(field)) field: data[field],
+    };
+  }
 }

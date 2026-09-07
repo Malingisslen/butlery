@@ -2972,3 +2972,74 @@ neither passed an `auditRepository` at all.
   direction (BUT-1909); this change adds the second direction. Not fixed here because the
   winner must stay filtered while the provenance probably must not, which is a decision rather
   than an edit. Raised by the `integration-reviewer` gate. BUT-1917, 2026-09-05
+
+- **`parse_corrections_v2` is DELETED by the reset script while `metrics` is LEFT ALONE, and
+  the ground is CONTENT rather than identifiability (BUT-2028, 2026-09-07).** `metrics` sits in
+  `COLLECTIONS_DELIBERATELY_UNTOUCHED` — the register, which the script neither deletes nor
+  protects — and NOT in `COLLECTIONS_TO_KEEP`, which is the list with runtime teeth. The
+  register's own convention is that a collection carrying a verdict is filed per that verdict,
+  citing it; this entry is that verdict. Malin's explicit
+  call, made with both collections on the table. A correction row carries the user's own
+  words — `toValue` is what she typed into the field, `fromValue` is the parser's output over
+  a third-party page that she chose to correct — scrubbed by `scrubPii` and truncated to
+  `MAX_VALUE_CHARS`, and still text a person wrote or edited. That is the same ground as
+  `llm_response_samples`. `metrics` is aggregates with no uid and no text a person wrote
+  (the first wording said "integers per ISO week and no text" — struck 2026-09-07, measured
+  false: `north-star-weekly.ts` writes ratios, an `isoWeek` string and three timestamps.
+  The decision is unaffected; the description was wrong), so a reset that
+  takes what people wrote does not reach it.
+  **She was shown** that this restarts the parse-quality corpus from zero. **She was NOT
+  shown** a measurement of how large that corpus is; nobody has counted it against
+  production.
+  The row also carries no personal data (uid and recipeId arrive pre-hashed, and the
+  `recipeIdHash` resolves to nothing). That is TRUE, it was the first mechanism written into
+  the code comment, and it decides nothing — nothing is orphaned either way. Do not re-argue
+  the call from it, and do not "harmonise" the two collections in either direction.
+
+- **The reset script's Phase 4 COUNTS and JUDGES; it does not sweep a second time (BUT-2028,
+  2026-09-07).** Malin's explicit call, against the `cloud-functions-specialist` gate's own
+  recommendation on the ticket, which was to repeat the Firestore sweep at the end to catch
+  what the triggers wrote behind the first one.
+  **She was shown** that the kill switch (`shared/reset-kill-switch.ts`) removes the cause
+  rather than the symptom, and that a second sweep buys a stronger claim about residue and no
+  claim at all about completion — `onUserDeleted` is gen1, with no bounded delivery time and
+  no `retry`, so no stopping rule based on elapsed time or number of passes is correct.
+  **She was NOT shown** a measurement of how much residue a real run leaves; no live run has
+  been made since the script became executable (BUT-2010). Do not add the sweep back without
+  one, and do not read the absence of a second pass as an oversight.
+
+- **`ingredient_suggestions` gets BOTH GDPR legs, and that is the decision (BUT-2028,
+  2026-09-07).** Malin's explicit call, shown the alternative of
+  closing the door instead (`allow create: if false`) and its cost. Nothing in `lib/` creates
+  a suggestion, and `onSuggestionCreated` updates rows rather than creating them — so what keeps the
+  collection reachable is the `allow create` limb in `firestore.rules`, which lets any
+  signed-in client write a row keyed to their own uid.
+  `deleteIngredientSuggestions` (with a leg in `probeResidualData`) and the Art. 15 export
+  section therefore ship together. The point is that the FIRST client write
+  is erasable and exportable on the day it happens rather than the day someone notices it.
+  Do not delete either leg as dead code; the pair is what makes the open door safe.
+
+- **The Art. 15 `ingredient_suggestions` section is PROJECTED (BUT-2028, 2026-09-07).**
+  `ContentExportManager._ingredientSuggestionFields` is an ALLOWLIST, so the section fails
+  closed: a field it does not name is withheld. Two fields the declared type
+  (`functions/src/ingredients/on-suggestion-created.ts`) carries are deliberately omitted —
+  `reviewedBy`, a moderator's raw uid, and `reviewNotes`, internal moderation text. No widget
+  renders either, which is the `chat_groups` precedent rather than the BUT-1732/BUT-1772 keeps: those decided different collections, and
+  the BUT-1732 entry itself records that arguing across collections by shape is the error it
+  exists to document.
+  `userId` is neither kept nor withheld as a decision — it is the requester's own uid and the
+  field the query already filters on.
+  The cost of failing closed is real and is why the section carries a `data_minimisation`
+  line: the collection's create rule uses `hasRequiredFields`, not `hasOnly`, so a client can
+  store fields outside the declared type, and the allowlist would then drop the requester's
+  OWN content — an Art. 15 defect in the other direction.
+  **Chosen conservatively WITHOUT asking Malin, the way the `chat_groups` projection was.
+  KEEPING `reviewedBy`/`reviewNotes` is hers to decide, and it is OPEN.**
+  **Named residual, not closed:** if a moderator is themselves a user of the app, their uid
+  in `reviewedBy` sits on somebody else's row and is reached by no cascade query, no probe
+  and now no export. The projection makes it invisible; it does not make it erasable.
+  Second residual: `deleteIngredientSuggestions` reads unbounded, on a collection whose create
+  limb has no `rateLimitWrite` — same shape as `deleteCookSnaps`, and bounded by BUT-2038
+  rather than here.
+  Raised by the `firebase-backend-security` and `code-reviewer` gates.
+  BUT-2028, 2026-09-07

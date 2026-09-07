@@ -233,8 +233,8 @@ class _FailingProfileExportRepository extends FirebaseDataExportRepository {
 ///
 /// BUT-1760 repointed this from `preferences` to `audit_logs`. The original
 /// fixture leaned on `PreferencesExportManager.exportPreferences` returning
-/// `{'error': e.toString()}`; that manager (and the eleven sections in
-/// `ContentExportManager`) now return authored sentences, so the premise it
+/// `{'error': e.toString()}`; that manager (and every section in
+/// `ContentExportManager`) now returns authored sentences, so the premise it
 /// asserted no longer exists there. `ComplianceExportManager`'s transient
 /// branch still puts `e.message` — a string the BACKEND wrote — into the
 /// section's `error`, which keeps this a REAL leak path rather than a contrived
@@ -985,6 +985,86 @@ void main() {
         expect(recipe['data']['title'], 'Delat recept');
       });
 
+      test('BUT-2028: ingredient suggestions the user submitted export, '
+          'projected, and another user\'s does not', () async {
+        // The cascade erases these (`deleteIngredientSuggestions`), so Art. 15
+        // must reach them. The fixture below is shaped so that:
+        //  - the foreign row: an unfiltered read passes "mine is present" too;
+        //  - `createdAt` as a real Timestamp: the fixture the rules' create
+        //    limb actually permits, and the value that makes `jsonEncode`
+        //    throw — and take the WHOLE bundle with it — if the section stops
+        //    calling `sanitizeForJson`;
+        //  - `reviewedBy`/`reviewNotes`: a moderator's uid and internal notes
+        //    about the requester, which the projection withholds;
+        //  - `nickname`: a field outside the declared type, which the
+        //    allowlist withholds by failing closed.
+        final createdAt = DateTime.utc(2026, 3, 4, 5, 6, 7);
+        await fakeFirestore
+            .collection('ingredient_suggestions')
+            .doc('mine')
+            .set({
+              'userId': testUserId,
+              'ingredientName': 'svartkål',
+              'originalName': 'Svartkål (grönkål?)',
+              'status': 'pending',
+              'createdAt': Timestamp.fromDate(createdAt),
+              'reviewedBy': 'moderator-uid',
+              'reviewNotes': 'dubblett av grönkål, avvaktar',
+              // Outside the declared type. The create rule is
+              // `hasRequiredFields`, not `hasOnly`, so a client can store this
+              // — and the allowlist then withholds the requester's OWN
+              // content. That is the accepted cost of failing closed, and it
+              // is pinned so a later flip to a deny-list reddens here and gets
+              // decided rather than drifting.
+              'nickname': 'Svarta kålen',
+            });
+        await fakeFirestore
+            .collection('ingredient_suggestions')
+            .doc('theirs')
+            .set({
+              'userId': 'other-user',
+              'ingredientName': 'rabarber',
+              'originalName': 'rabarber',
+              'status': 'pending',
+              'createdAt': Timestamp.fromDate(createdAt),
+            });
+
+        final jsonString = await service.exportUserData();
+        final data = json.decode(jsonString) as Map<String, dynamic>;
+
+        final section = data['ingredient_suggestions'] as Map<String, dynamic>;
+        expect(section.containsKey('error'), isFalse);
+        expect(section['total_count'], 1);
+
+        final rows = section['ingredient_suggestions'] as List<dynamic>;
+        final row = rows.single as Map<String, dynamic>;
+        expect(row['suggestion_id'], 'mine');
+
+        final payload = row['data'] as Map<String, dynamic>;
+        expect(payload['ingredientName'], 'svartkål');
+        expect(payload['status'], 'pending');
+        // Asserted as "a string naming the right instant" rather than a
+        // literal: `sanitizeForJson` renders the local-time ISO form, so a
+        // literal would pin the machine's timezone instead of the conversion.
+        expect(payload['createdAt'], isA<String>());
+        expect(
+          DateTime.parse(payload['createdAt'] as String).toUtc(),
+          createdAt,
+        );
+        expect(payload.containsKey('reviewedBy'), isFalse);
+        expect(payload.containsKey('reviewNotes'), isFalse);
+        expect(payload.containsKey('nickname'), isFalse);
+        // Dropped too, and deliberately: it is the requester's own uid and the
+        // field the query filters on, so it is not a withholding decision.
+        expect(payload.containsKey('userId'), isFalse);
+        // The note's CONTENT is asserted, not just its presence: a bundle
+        // whose minimisation sentence stops matching what it withholds is
+        // misdescribing itself, which is an Art. 12(1) defect of its own.
+        final note = section['data_minimisation'] as String;
+        expect(note, contains('reviewed'));
+        expect(note, contains('notes'));
+      });
+
       test('BUT-1396: group pings the user sent export via the pings '
           'collection-group (total==1)', () async {
         // Pings nest under pings/{groupId}/pings/{pingId}; the export uses a
@@ -1031,6 +1111,10 @@ void main() {
           'pings',
           'realtime_recipes',
           'group_weekly_menu_plans',
+          // BUT-2028. The zero-row case is not an edge case for this
+          // section — no code in the app creates a suggestion, so it is the
+          // expected state.
+          'ingredient_suggestions',
         ]) {
           final section = data[key] as Map<String, dynamic>;
           expect(
@@ -1043,6 +1127,7 @@ void main() {
         expect(data['pings']['total'], 0);
         expect(data['realtime_recipes']['total_count'], 0);
         expect(data['group_weekly_menu_plans']['total_count'], 0);
+        expect(data['ingredient_suggestions']['total_count'], 0);
       });
     });
 
@@ -1344,12 +1429,11 @@ void main() {
                 'bundle without scanning every section.',
           );
           // Scoped to audit_logs rather than asserting the whole array's
-          // length. This fixture wires ONLY the compliance manager and the
-          // export gateway, so eleven other sections legitimately fail with
-          // "ServiceLocator not initialized" — they always did, and BUT-1721
-          // is precisely the change that stopped those failures being invisible
-          // at bundle level. The over-warning direction is guarded by the
-          // fully-wired happy-path test below, which asserts NO warnings key.
+          // length: this fixture does not wire every manager, so sections it
+          // leaves unwired fail here and always did. BUT-1721 is precisely the
+          // change that stopped those failures being invisible at bundle level.
+          // The over-warning direction is guarded by the fully-wired happy-path
+          // test below, which asserts NO warnings key.
           final auditEntries = warnings!
               .cast<Map<String, dynamic>>()
               .where((w) => w['section'] == 'audit_logs')

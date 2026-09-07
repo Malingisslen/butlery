@@ -3708,6 +3708,80 @@ async function scenario_probeSeesLeftoverBlocks(): Promise<void> {
 }
 
 /**
+ * BUT-2028: `ingredient_suggestions` is erased, and the probe SEES a leftover.
+ *
+ * Both halves in one scenario because they only mean anything together — the
+ * deleter's own success value is `true` unconditionally (it comes from
+ * `batchDeleteAll` -> `commitInChunks(strict: false)`, which swallows a failed
+ * chunk), so nothing but the probe can tell a completed sweep from a silently
+ * dropped one.
+ *
+ * The other-user row is what makes the delete assertion non-vacuous: an
+ * unfiltered sweep passes "the user's row is gone" just as easily.
+ */
+async function scenario_ingredientSuggestionsErasedAndProbed(): Promise<void> {
+  const {
+    deleteIngredientSuggestions,
+    probeResidualData,
+  } = require("../account/account-deletion-cascade");
+
+  const store = new FakeFirestore();
+  store.set("ingredient_suggestions/mine-1", {
+    userId: UID,
+    ingredientName: "svartkål",
+  });
+  store.set("ingredient_suggestions/mine-2", {
+    userId: UID,
+    ingredientName: "kikärtsmjöl",
+  });
+  store.set("ingredient_suggestions/someone-elses", {
+    userId: OTHER,
+    ingredientName: "rabarber",
+  });
+
+  await deleteIngredientSuggestions(asDb(store), UID);
+
+  check(
+    "the user's own ingredient suggestions are deleted",
+    !store.has("ingredient_suggestions/mine-1") &&
+      !store.has("ingredient_suggestions/mine-2"),
+    `left behind: ${JSON.stringify(store.idsIn("ingredient_suggestions"))}`,
+  );
+  check(
+    "another user's suggestion survives the sweep",
+    store.has("ingredient_suggestions/someone-elses"),
+    "the sweep is not filtered on userId — it deleted a row it does not own",
+  );
+
+  const emptyResult = () => ({
+    deletedCollections: [],
+    failedCollections: [] as string[],
+    errors: [],
+  });
+
+  const cleanResult = emptyResult();
+  await probeResidualData(asDb(store), UID, cleanResult);
+  check(
+    "with only another user's suggestion left, the probe stays clean",
+    !cleanResult.failedCollections.includes("residual_data_detected"),
+    `failed: ${JSON.stringify(cleanResult.failedCollections)}`,
+  );
+
+  const leftover = new FakeFirestore();
+  leftover.set("ingredient_suggestions/survivor", {
+    userId: UID,
+    ingredientName: "svartkål",
+  });
+  const leftoverResult = emptyResult();
+  await probeResidualData(asDb(leftover), UID, leftoverResult);
+  check(
+    "a surviving ingredient suggestion is reported as residual",
+    leftoverResult.failedCollections.includes("residual_data_detected"),
+    `failed: ${JSON.stringify(leftoverResult.failedCollections)}`,
+  );
+}
+
+/**
  * BUT-1917: the residual probe SEES a block mirror the sweep missed.
  *
  * `deleteBlockMirrors` is a cross-user sweep, so nothing under `users/{uid}`
@@ -5424,6 +5498,7 @@ async function main(): Promise<void> {
   await scenario_blockMirrorExemptionRestsOnIncomingBlocks();
   await scenario_blocksAreErasedInBothDirections();
   await scenario_probeSeesLeftoverBlocks();
+  await scenario_ingredientSuggestionsErasedAndProbed();
   await scenario_resetScriptDeleteListNamesBlocks();
   await scenario_resetScriptListsDoNotOverlap();
   await scenario_everyCollectionIsDecided();

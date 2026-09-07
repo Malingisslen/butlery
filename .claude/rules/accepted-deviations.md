@@ -798,3 +798,47 @@ files in the same edit.
   direction (BUT-1909); this change adds the second direction. Not fixed here because the
   winner must stay filtered while the provenance probably must not, which is a decision rather
   than an edit. Raised by the `integration-reviewer` gate. BUT-1917, 2026-09-05
+
+- **`parse_corrections_v2` is DELETED by the reset script while `metrics` is LEFT ALONE — on
+  CONTENT, not identifiability.** (`metrics` is in `COLLECTIONS_DELIBERATELY_UNTOUCHED`, the
+  register, not in `COLLECTIONS_TO_KEEP`, the list with runtime teeth — so a reader grepping
+  the keep list for it finds nothing.) Malin's explicit call, 2026-09-07, with both on the table:
+  the row carries the user's own words (`toValue` is what she typed, `fromValue` the parser
+  output she corrected), scrubbed but still text; `metrics` is aggregates with no uid and no
+  text a person wrote. She
+  was shown that this restarts the parse-quality corpus from zero; she was NOT shown how
+  large that corpus is, because nobody has counted it. The row's lack of personal data is
+  true and decides nothing — do not re-argue the call from it. BUT-2028, 2026-09-07
+
+- **The reset script's Phase 4 counts and judges; it does NOT sweep a second time.** Malin's
+  explicit call, 2026-09-07, against the gate's own recommendation on the ticket. She was
+  shown that the kill switch removes the cause rather than the symptom, and that a second
+  sweep can prove residue EXISTS but never that the trigger is finished (`onUserDeleted` is
+  gen1, no bounded delivery, no `retry`). She was NOT shown a measurement of real residue —
+  no live run exists since BUT-2010 made the script executable. Do not restore the sweep
+  without one. BUT-2028, 2026-09-07
+
+- **`ingredient_suggestions` gets BOTH GDPR legs before any client has written a row.** Malin's
+  explicit call, 2026-09-07, shown the alternative of closing the door
+  (`allow create: if false`). No code in `lib/` creates a suggestion; the `allow create` limb
+  in `firestore.rules` is what keeps the collection reachable. `deleteIngredientSuggestions`
+  (plus its `probeResidualData` leg) and the Art. 15 export section ship together, so the FIRST
+  client write is erasable and exportable the day it happens. Do not
+  delete either leg as dead code — the pair is what makes the open door safe.
+  BUT-2028, 2026-09-07
+
+- **The Art. 15 `ingredient_suggestions` section is PROJECTED: `reviewedBy` and `reviewNotes`
+  are stripped.** A moderator's raw uid, and internal moderation text, neither of which any
+  widget renders. (`userId` is not in the allowlist either — it is the requester's own uid and
+  the query's own filter, not a withholding decision.) The
+  section fails CLOSED — an allowlist, so a field nobody has declared is withheld — and says so
+  in a `data_minimisation` line, because the create rule uses `hasRequiredFields` rather than
+  `hasOnly`, so a client can store fields outside the type and have its OWN content dropped.
+  **Chosen conservatively WITHOUT asking Malin, the way the `chat_groups` projection was;
+  KEEPING the two fields is hers to decide, and it is open.** Named residual: if a moderator is
+  themselves a user, their uid in `reviewedBy` is reached by no cascade, no probe and no export —
+  the projection makes it invisible, not erasable. Second residual: `deleteIngredientSuggestions`
+  reads unbounded, on a collection whose create limb has no `rateLimitWrite`, so a user who plants
+  many rows under their own uid degrades their own erasure — same shape as `deleteCookSnaps`, and
+  bounded by BUT-2038 rather than here. Raised by the `firebase-backend-security`
+  and `code-reviewer` gates. BUT-2028, 2026-09-07

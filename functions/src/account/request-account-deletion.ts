@@ -46,6 +46,7 @@ import {
   deleteTagOverridesLog,
   deleteCookSnaps,
   deleteActivityEvents,
+  deleteIngredientSuggestions,
   deleteFeatureRetentionFlags,
   deleteRetentionAnalytics,
   deleteNotificationEffectiveness,
@@ -200,6 +201,12 @@ export async function runAccountDeletionWithDeps(
     ["tag_overrides_log", () => deleteTagOverridesLog(database, uid)],
     ["cook_snaps", () => deleteCookSnaps(database, uid)],
     ["activity_events", () => deleteActivityEvents(database, uid)],
+    // BUT-2028: uid-keyed rows no erasure path reached. Ships with its probe
+    // leg; may find zero rows until a client first writes one.
+    [
+      "ingredient_suggestions",
+      () => deleteIngredientSuggestions(database, uid),
+    ],
     // BUT-1789: one behavioural row per active day, kept forever until now.
     ["feature_retention", () => deleteFeatureRetentionFlags(database, uid)],
     // BUT-1800: `analytics/retention/events` and `analytics/lapsed_users/events`.

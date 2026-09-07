@@ -35,6 +35,7 @@ enters this file").
 | `/weekly_menu_plans` and `/group_weekly_menu_plans` | `weekly-menu-plans-rules.test.ts` | `test:rules:weekly-menu-plans` |
 | `users/{uid}/notifications` (server-written, owner-read) | `delivered-notifications-rules.test.ts` | `test:rules:delivered-notifications` |
 | `/blocks/{blockerId}_{blockedId}` (list, get, create, update-deny, delete) | `blocks-rules.test.ts` | `test:rules:blocks` |
+| `/ingredient_suggestions` (owner list/get, client create, update+delete deny) | `ingredient-suggestions-rules.test.ts` | `test:rules:ingredient-suggestions` |
 | All of the above                      | (sequence)                 | `test:rules:all`          |
 
 If the diff touches a collection not listed above, **create a new test file** named
@@ -381,7 +382,13 @@ Standard deny matrix for ownership-checked collections:
   empty is never visited under either spelling. Both arms are cheap; the sentence is not.
 - A decision record or comment quoting mutation-probe figures inherits their staleness
   at one remove — re-run every quoted mutant against the CURRENT file before trusting a
-  written figure; arithmetic on an old run is not measurement.
+  written figure; arithmetic on an old run is not measurement. **The likeliest invalidator
+  is the SAME round's own repair**: a suite comment justifying `clearFirestore()` with "a
+  second run went 14/17, L1 sees extra rows" measured the file as it stood BEFORE the
+  fixture was moved onto its own principal — after the move the stale-run failure set is
+  the two ALLOWED creates alone (15/17) and the list case passes, because the extra rows
+  now carry a uid its filter excludes (measured, BUT-2028). Re-run any number written
+  beside a fixture you also changed, or strike it.
 - **A paragraph a diff merely REWRAPS ships as new text and gets judged as new.** Two
   inherited sentences rode a rewrap into BUT-1831: one claimed a squat closed by
   `directIdBinds` was "allowed today", the other described a Cloud Function's guard that
@@ -663,6 +670,13 @@ Standard deny matrix for ownership-checked collections:
   row — and the account cascade only filters rows out, so no over-cap trail is ever stored. `contributorUserIds` has no prune by design, so its freeze IS permanent. Trace
   the prune before writing "frozen forever" or "self-healing"; they are opposite verdicts on
   two caps in one collection (BUT-1971, 2026-08-31).
+- **A header disclaiming "the missing `hasOnly`/rate limit is NOT asserted here as
+  contract" is a claim about the ALLOW FIXTURES' key set, and only a mutant settles it.**
+  Every required key the builder must send is a key a future hardening can forbid: on
+  `ingredient_suggestions`, `status` is in `hasRequiredFields`, so `validBody` carries it
+  and a `!('status' in request.resource.data)` mutant reddens both create-allows (measured,
+  BUT-2028) while a `hasOnly` over the same five keys reddens nothing. Probe the disclaimed
+  hardening itself before passing the sentence, and scope it to the fields no fixture sends.
 - A `rateLimitWrite(...)` conjunct is invisible to the whole suite unless a test SEEDS
   `users/{uid}/rate_limits/{collection}` — no Butlery client writes those docs itself, so
   its removal reddens nothing without an explicit seeded-doc deny test. Report an

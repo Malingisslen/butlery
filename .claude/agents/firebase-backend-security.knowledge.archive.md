@@ -8889,3 +8889,72 @@ by grepping OUTSIDE its own staged set — the commit that falsified it touched 
 three files carrying a stale wording of it. The principle worth keeping from that: a
 mechanism named in one agent's knowledge file is falsified by another agent's commit, and
 nothing reddens.
+
+### 2026-09-07 — BUT-2028 round 2, the `ingredient_suggestions` Art. 15 projection [gdpr][export]
+
+Round 1's two blocking findings were both closed properly: the section is now projected
+through `ContentExportManager._ingredientSuggestionFields` (an allowlist, so it fails
+closed), and the three false sentences in `firestore.rules` /
+`docs/architecture/ACCEPTED_DEVIATIONS.md` were struck rather than reworded.
+
+Verified clean this round, so a later run need not re-derive it:
+
+- The allowlist is COMPLETE against the declared type in
+  `functions/src/ingredients/on-suggestion-created.ts`: 13 declared fields = 10 kept + 2
+  withheld (`reviewedBy`, `reviewNotes`) + `userId` (the query's own filter).
+- `probeResidualData`'s corrected census is accurate — `deleteCookSnaps`,
+  `deleteActivityEvents` and the personal half of `deleteWeeklyMenuPlans` really are
+  top-level `userId` deleters with no probe leg (checked every leg of the function).
+- The Dart pin is non-vacuous: the fixture seeds `reviewedBy`/`reviewNotes` and the row IS
+  exported (`total_count == 1`, `ingredientName` asserted), so removing the projection
+  reddens it.
+- The rules suite is 17 cases and seeds through `withSecurityRulesDisabled`, so a create-rule
+  change cannot silently convert a read test into a create test.
+
+The finding that survived is a WORDING one, and it is the recurring shape: the bundle's
+`data_minimisation` line tells the subject the withheld review data "rör en annan person",
+while the docstring 55 lines up calls `reviewNotes` "internal text written about the
+requester". Two characterisations of one field, in one commit, contradicting each other —
+and the collection is empty, so neither is measurable. The always-loaded
+`.claude/rules/accepted-deviations.md` entry carries a second count-shaped false claim
+("everything else the declared type carries is kept": `userId` is declared and not kept),
+which the long `docs/architecture/ACCEPTED_DEVIATIONS.md` version corrects and the short one
+does not — the short file is the one that auto-loads into every session.
+
+Third, and the eleventh false sentence the brief predicted: `docs/onboarding/workflow-map.html`
+replaced a stale count ("~34 sektioner") with a NEW unmeasured claim ("en sektion per
+samling"), which `data_export_service.dart` refutes — `account_subcollections` is one section
+over three collections, `menus` over two, `comments_and_ratings` over two. Striking the
+qualifier was the fix; rewording it manufactured the next claim, exactly as the repo rule says.
+
+## 2026-09-07 — BUT-2028 round 3 (`ingredient_suggestions`), verified clean
+
+Third pass over the same frozen index (25 files), scoped to
+`lib/repositories/firebase/firebase_data_export_repository.dart`,
+`lib/services/account/export/content_export_manager.dart` and `firestore.rules`. Round 2's
+two blocking findings (the "concerns another person" bundle wording; the "everything else the
+declared type carries is kept" universal falsified by `userId`) are both applied as STRIKES,
+not rewordings, and the replacement text introduced no new claim I could refute.
+
+What I measured rather than read:
+- Ran `npm --prefix functions run test:rules:ingredient-suggestions` against a live Firestore
+  emulator: **17/17 PASS**, deny lines fingerprinting L3302/L3306, which is the block as
+  staged. That independently reproduces the rules comment's "Measured against the emulator
+  2026-09-07: the owner's filtered list is allowed, an unfiltered list and a foreign-uid list
+  are both denied" (L1/L2/L3). The suite is wired into `test:rules:all` and both `paths:`
+  filters of `.github/workflows/firestore-rules.yml`, so it runs in CI.
+- Allowlist vs declared type: the TS interface carries 13 fields, the Dart list 10; the three
+  absent are `userId`, `reviewedBy`, `reviewNotes` — exactly what the docstring, the bundle
+  line and both deviation files now say, with no count word anywhere.
+- Export ⊇ erasure holds field-for-field: cascade `deleteIngredientSuggestions`, the
+  `probeResidualData` leg and the export all key on `ingredient_suggestions.userId`.
+- `wc -l` matches every refreshed `ACCEPTED_LARGE_FILES.md` row (678 / 1199 / 506).
+- The "English, like every other note in this bundle" universal: grepped every `note` and
+  `data_minimisation` string under `lib/services/account/export/` plus
+  `data_export_service.dart` — all English, no Swedish. True as written today.
+
+Non-blocking observations left with the parent: the Dart↔TS field-list coupling is a comment
+and nothing else (no test asserts the two agree); `data_export_service_test.dart` pins
+`data_minimisation` only as `isNotNull`, so its wording can drift without reddening; and the
+`reviewedBy` moderator-uid residual is named in the deviation entry but reachable by no query.
+Verdict: pass, 0 blocking.

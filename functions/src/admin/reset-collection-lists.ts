@@ -162,17 +162,25 @@ export const COLLECTIONS_TO_DELETE: CollectionTarget[] = [
   { name: "recipe_cook_events", subcollections: ["events"] },
   { name: "shoppingPresence", subcollections: ["activeUsers"] },
   { name: "tag_overrides_log" },
-  // Anonymised at the client (`log-parse-correction.ts`: uid and recipeId
-  // arrive pre-hashed, values are scrubbed) and denied to clients in
-  // firestore.rules — so this is deleted DESPITE carrying no personal data,
-  // the opposite call to `metrics` in the register below, which is kept on the
-  // ground that a time series cannot be recomputed.
+  // Deleted, where `metrics` in the register below is kept. **Malin's explicit
+  // call, 2026-09-07**, made with both on the table.
   //
-  // OPEN: why the two differ is not written down, because the mechanism first
-  // claimed here was measured and refuted — the row carries site, field, tier,
-  // the from/to pair and a `recipeIdHash` that resolves to nothing, so
-  // deleting the recipes does not orphan the corpus. Keeping these as a mining
-  // set is defensible and is Malin's call, not a code decision.
+  // The ground is CONTENT, not identifiability: the row carries the user's own
+  // words. `toValue` is what she typed into the field. Both values are
+  // scrubbed (`scrubPii`) and truncated to `MAX_VALUE_CHARS`, and both are
+  // still text a person wrote or edited — the same ground as
+  // `llm_response_samples`. `metrics` is aggregates with no uid and no text a
+  // person wrote, so a reset that takes what people wrote does not reach it.
+  //
+  // She was shown that this restarts the parse-quality corpus from zero.
+  // She was NOT shown a measurement of how large that corpus is; nobody has
+  // counted it against production.
+  //
+  // The row also carries no personal data — uid and recipeId arrive pre-hashed
+  // and the `recipeIdHash` resolves to nothing. That is true, it was the first
+  // mechanism written here, and it decides NOTHING: nothing is orphaned either
+  // way, so identifiability is not what separates the two collections. Do not
+  // re-argue the call from it.
   { name: "parse_corrections_v2" },
   // Doc id is the reported user's uid (`feedback/on-report-created.ts`), so
   // the collection is uid-keyed even though no field says so.
@@ -180,10 +188,10 @@ export const COLLECTIONS_TO_DELETE: CollectionTarget[] = [
   // Keyed by the report's event id, one marker per report. `reports` is
   // already listed above, so these would outlive what they mark.
   { name: "report_processing_markers" },
-  // Uid-carrying suggestions from the ingredient-report flow (`userId` field,
-  // client-creatable per firestore.rules). No deletion path reaches this
-  // collection at all — not this script before now, and not the account
-  // cascade, which is a separate Art. 17 gap.
+  // Uid-carrying suggestions (`userId` field, client-creatable per
+  // firestore.rules; no screen in the app produces one). The cascade reaches it
+  // (`deleteIngredientSuggestions`, with a probe leg), so this script and a
+  // single erasure now agree about it.
   { name: "ingredient_suggestions" },
   // Captured model input and output for QA. Both are PII-scrubbed at capture
   // and the uid is stored as `authUidHash`, never raw — so the ground for
@@ -308,7 +316,7 @@ export const COLLECTIONS_DELIBERATELY_UNTOUCHED: Record<string, string> = {
 
   metrics:
     "North-star weekly snapshots (scheduled/north-star-weekly.ts), keyed by " +
-    "ISO week under metrics/weekly_north_star/snapshots. Aggregate counts " +
+    "ISO week under metrics/weekly_north_star/snapshots. Aggregates " +
     "with no uid; a user-data reset is not a reason to lose the product's " +
     "own time series, which cannot be recomputed once the inputs are gone.",
 
@@ -363,9 +371,8 @@ export const COLLECTIONS_DELIBERATELY_UNTOUCHED: Record<string, string> = {
  * here silently. Convention is what prevents that; the code cannot.
  *
  * `presence`, `friend_categories`, `recipes` and `conversations` are NOT here
- * even though each is also used as a subcollection name: every one of them is
- * additionally a real top-level collection with its own `firestore.rules`
- * block, and the guard must keep seeing them.
+ * even though each is also used as a subcollection name: a source discovers
+ * each of them anyway, and the guard must keep seeing them.
  *
  * The guard also checks the other direction — an entry here that no source
  * discovers any more is reported, so the set cannot quietly outlive its names.

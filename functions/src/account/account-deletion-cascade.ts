@@ -112,6 +112,10 @@ export async function probeResidualData(
     "notification_engagement",
     // BUT-1473: allergen tag-override corrections (top-level, userId-scoped).
     "tag_overrides_log",
+    // BUT-2028: the collection `deleteIngredientSuggestions` erases. Same
+    // shape as the rest of this list — top-level, filtered on a `userId`
+    // field — so it belongs here rather than needing a leg of its own.
+    "ingredient_suggestions",
   ] as const;
   let residual = 0;
   for (const col of probes) {
@@ -274,9 +278,9 @@ export async function probeResidualData(
     [Collections.realtimeRecipes, "lastEditedBy", "=="],
     [Collections.realtimeRecipes, "participantIds", "array-contains"],
     [Collections.conversations, "participantIds", "array-contains"],
-    // BUT-1838: chat-group membership. Every other leg in this file is paired
-    // with a probe, and a leg without one is exactly how an erasure becomes
-    // silently incomplete — so this line ships in the same edit as its deleter.
+    // BUT-1838: chat-group membership. A deleter without a probe is exactly how
+    // an erasure becomes silently incomplete, so this line ships in the same
+    // edit as its deleter.
     [Collections.chatGroups, "memberIds", "array-contains"],
     // BUT-1856: two more owner handles on the same document that the membership
     // leg above is structurally blind to. `departedUserIds` holds people who are
@@ -1201,6 +1205,38 @@ export async function deleteActivityEvents(
 ): Promise<boolean> {
   const snap = await db
     .collection("activity_events")
+    .where("userId", "==", uid)
+    .get();
+  await batchDeleteAll(db, snap.docs);
+  return true;
+}
+
+/**
+ * BUT-2028: ingredient suggestions, the rows `firestore.rules` lets a client
+ * write to `ingredient_suggestions`.
+ *
+ * Flat top-level collection with a raw `userId`. Nothing erased it before —
+ * not this cascade, not `on-user-deleted.ts`, and not `reset-user-data.ts`
+ * until that ticket added it to the script's delete list.
+ *
+ * **It can find zero rows for a long time, and that is expected.** No code in
+ * `lib/` creates a suggestion today; `onSuggestionCreated` only updates ones
+ * that already exist. What keeps the collection reachable is the `allow create`
+ * limb, which lets any signed-in client write a row keyed to their own uid.
+ * This leg exists so that the first such write is erasable on the day it
+ * happens rather than the day someone notices — a uid-keyed row nothing deletes
+ * is an Art. 17 defect from the moment it exists.
+ *
+ * Shipped with its probe leg, because a deleter without a probe is how an
+ * erasure becomes silently incomplete and this one is new enough that nothing
+ * else would notice it failing.
+ */
+export async function deleteIngredientSuggestions(
+  db: admin.firestore.Firestore,
+  uid: string,
+): Promise<boolean> {
+  const snap = await db
+    .collection("ingredient_suggestions")
     .where("userId", "==", uid)
     .get();
   await batchDeleteAll(db, snap.docs);

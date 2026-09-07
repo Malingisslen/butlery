@@ -289,6 +289,9 @@ class DataExportService extends BaseService {
       'reports': _socialManager.exportReports(userId),
       'pings': _socialManager.exportPings(userId),
       'realtime_recipes': _contentManager.exportRealtimeRecipes(userId),
+      'ingredient_suggestions': _contentManager.exportIngredientSuggestions(
+        userId,
+      ),
       'group_weekly_menu_plans': _contentManager.exportGroupWeeklyMenuPlans(
         userId,
       ),

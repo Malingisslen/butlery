@@ -449,7 +449,19 @@ name which doc each end touches before approving it.
   fail direction: a strip fails CLOSED (unrecognised owner id ⇒ lose the field), a drop fails
   OPEN (unreadable owner id ⇒ KEEP the row, because under-disclosure is the worse Art. 15
   failure). Both need the section's `data_minimisation` sentence to NAME the drop and a test
-  asserting that sentence, or the withholding is silent. A WITHHELD SET is a counted set: the
+  asserting that sentence, or the withholding is silent. A strip built as an ALLOWLIST is the
+  right shape only while its under-disclosure direction is DECLARED IN the bundle — where the
+  create rule is `hasRequiredFields` rather than `hasOnly` a client can store an undeclared
+  field and the list then drops the requester's OWN content — and check what the list is keyed
+  to: a Dart field list mirroring a TypeScript interface in `functions/src` is coupled by
+  nothing but a comment, so grep for a test asserting the two agree before crediting the
+  coupling. Word that sentence as WHAT is
+  withheld, never WHOSE data it is: a moderator's free-text note ABOUT the requester is the
+  requester's own personal data by any reading, so telling them it "concerns another person"
+  is an Art. 12(1) defect — and on a collection with no rows nobody can measure whose data it
+  carries. The tell is the docstring beside it describing the SAME field the opposite way
+  ("text written about the requester" vs "third-party data"); one of the two is false and it
+  is the bundle's that the subject reads. A WITHHELD SET is a counted set: the
   moment a collection joins it, every "both"/"the five" in the bundle text, the Art. 30
   register, the exemption map's docstring and the pinning test's NAME goes stale at once —
   assert `contains(<name>)` per member, never a count. Grade an exemption's stated REASON
