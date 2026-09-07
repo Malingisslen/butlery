@@ -3217,3 +3217,51 @@ matchar dess NAMN som sträng i kommandot, så ett Bash-anrop som bara *nämner*
 heredoc vägras som ett skrivförsök. Samma klass som säkerhetshooken som matchar farliga
 kommandon inne i commit-MEDDELANDEN. Text som nämner en skyddad sökväg skrivs med
 Write/Edit, aldrig genom skalet.
+
+## 2026-09-07 — BUT-2028: en rättelse kan motsäga meningen den skrevs för att rädda
+
+Fortsättning på 2026-09-06-posten ovan, som redan slår fast att rättelsetexten är där nästa
+falska mening landar. Det som är NYTT den här gången är tre mekaniska kontroller som den
+posten inte ger, och en observation om var granskning tar slut.
+
+**1. Läs om GRANNMENINGEN, inte bara den du rättade.** Jag hade skrivit att en
+parse-korrigeringsrad "inte bär personuppgifter". Falskt, så jag rättade: "en hash av ett
+känt uid är omräkningsbar, alltså pseudonymisering". Också falskt — men det avgörande är
+*hur* det gick fel: två rader ovanför stod "`recipeIdHash` resolves to nothing", och min
+rättelse gjorde den meningen omöjlig. Vore hashen omräkningsbar skulle servern kunna lösa
+upp den. Två meningar i samma stycke som inte kan vara sanna samtidigt, och båda skrivna av
+mig, den ena för att skydda den andra. Kontrollen: när du rättar en mening, läs om det
+påstående rättelsen var till för att bevara och fråga om den nya lydelsen fortfarande
+tillåter det.
+
+**2. Ett påstående om pseudonymitet är ett påstående om var SALTET ligger.** Samma fil bar
+två hashade identifierare med motsatta egenskaper: parse-korrigeringarnas hash saltas med ett
+per-installation-`Random.secure()`-värde som aldrig lämnar enheten (servern kan inte räkna om
+den), medan `system_ip_audit_caps` använder en OSALTAD sha256 trunkerad till 48 bitar över en
+IPv4-adress (vem som helst kan räkna igenom rymden). Båda beskrevs i kommentarer som "inte
+användardata". Skriv aldrig den slutsatsen från "den är hashad" — mät var saltet finns, och
+för vem det är oåtkomligt. Och skriv ingen ERSÄTTANDE juridisk mening: en sannare variant
+kräver ett nytt omätt påstående om vems räckvidd som räknas, vilket är kedjan om igen. Sådant
+hör hemma i ett ADR med mekanismen citerad.
+
+**3. Två oberoende granskare på samma mening är inte "style-grade".** Båda kallade fyndet för
+litet och sa att det inte var värt en runda. Att de hittade det var för sig, utan att se
+varandras svar, är signalen — och den ena namngav framtidsrisken som avgjorde saken (nästa
+person som lägger till ett tillåtet skapa-fall skulle tro sig följa den felaktiga regeln).
+Konvergens väger tyngre än den severity var och en satte.
+
+**4. Och det viktigaste: sju granskningsrundor hittade inte det en TORRKÖRNING hittade på
+trettio sekunder.** Under `users/{uid}` finns två stavningar av samma subcollection —
+`rate_limits` (nuvarande, via konstanten) och `rateLimits` (kvarlämnad efter en namnändring,
+utan skrivare). Kontoraderingen går på en handskriven lista med bara den ena; restdatasonden
+uppräknar med `listCollections()` och ser båda. Alltså rapporterar varje sådan radering
+`gdprCompliant: false` om sig själv. Ingen kodläsning kunde ha hittat det, eftersom defekten
+ÄR skillnaden mellan vad koden känner till och vad som faktiskt ligger i databasen. När en
+ändring handlar om täckning — vilka samlingar, vilka fält, vilka vägar — är en läsning mot
+verkligheten en annan sorts bevis än en granskning, inte en svagare. Kör den innan du kallar
+täckningen verifierad. (BUT-2040.)
+
+Bonus, samma klass: jag påstod tre gånger i rad att torrkörningen "behöver Malins
+credentials" utan att titta efter. `gcloud`-ADC låg på standardplatsen hela tiden. Ett
+påstående om att något är blockerat är lika falsifierbart som ett påstående om koden — och
+CLAUDE.md regel #11 säger uttryckligen att man ska kontrollera sina egna verktyg först.
