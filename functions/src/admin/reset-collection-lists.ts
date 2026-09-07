@@ -166,8 +166,8 @@ export const COLLECTIONS_TO_DELETE: CollectionTarget[] = [
   // call, 2026-09-07**, made with both on the table.
   //
   // The ground is CONTENT, not identifiability: the row carries the user's own
-  // words. `toValue` is what she typed into the field. Both values are
-  // scrubbed (`scrubPii`) and truncated to `MAX_VALUE_CHARS`, and both are
+  // words. `toValue` is what she typed into the field. It and `fromValue` are
+  // both truncated to `MAX_VALUE_CHARS` and scrubbed (`scrubPii`), and both are
   // still text a person wrote or edited — the same ground as
   // `llm_response_samples`. `metrics` is aggregates with no uid and no text a
   // person wrote, so a reset that takes what people wrote does not reach it.
@@ -176,11 +176,10 @@ export const COLLECTIONS_TO_DELETE: CollectionTarget[] = [
   // She was NOT shown a measurement of how large that corpus is; nobody has
   // counted it against production.
   //
-  // The row also carries no personal data — uid and recipeId arrive pre-hashed
-  // and the `recipeIdHash` resolves to nothing. That is true, it was the first
-  // mechanism written here, and it decides NOTHING: nothing is orphaned either
-  // way, so identifiability is not what separates the two collections. Do not
-  // re-argue the call from it.
+  // The uid and recipeId arrive pre-hashed and the `recipeIdHash` resolves to
+  // nothing. That was the first mechanism written here, and it decides NOTHING:
+  // nothing is orphaned either way, so identifiability is not what separates the
+  // two collections. Do not re-argue the call from it.
   { name: "parse_corrections_v2" },
   // Doc id is the reported user's uid (`feedback/on-report-created.ts`), so
   // the collection is uid-keyed even though no field says so.

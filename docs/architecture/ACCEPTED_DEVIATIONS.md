@@ -2991,10 +2991,18 @@ neither passed an `auditRepository` at all.
   **She was shown** that this restarts the parse-quality corpus from zero. **She was NOT
   shown** a measurement of how large that corpus is; nobody has counted it against
   production.
-  The row also carries no personal data (uid and recipeId arrive pre-hashed, and the
-  `recipeIdHash` resolves to nothing). That is TRUE, it was the first mechanism written into
-  the code comment, and it decides nothing — nothing is orphaned either way. Do not re-argue
-  the call from it, and do not "harmonise" the two collections in either direction.
+  The uid and recipeId arrive pre-hashed, and the `recipeIdHash` resolves to nothing. That was
+  the first mechanism written into the code comment, and it decides nothing — nothing is
+  orphaned either way. Do not re-argue the call from it, and do not "harmonise" the two
+  collections in either direction.
+  (An earlier wording opened this paragraph with "The row also carries no personal data" and
+  called it TRUE. Struck 2026-09-07: whether the row is personal data is not settled here, and
+  a flat assertion that it is not would have been cited as a finding that the collection is out
+  of scope. The decision is unaffected — it never rested on this. A first replacement said the
+  hash was recomputable and therefore pseudonymisation; that was struck the same day, measured
+  false — `ParseCorrectionUploader.hashId` salts with a per-install `Random.secure()` value held
+  in SharedPreferences that is never sent, so the server holds no salt. Settling the legal
+  question needs its own ADR, not a sentence here.)
 
 - **The reset script's Phase 4 COUNTS and JUDGES; it does not sweep a second time (BUT-2028,
   2026-09-07).** Malin's explicit call, against the `cloud-functions-specialist` gate's own

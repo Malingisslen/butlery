@@ -807,8 +807,8 @@ files in the same edit.
   output she corrected), scrubbed but still text; `metrics` is aggregates with no uid and no
   text a person wrote. She
   was shown that this restarts the parse-quality corpus from zero; she was NOT shown how
-  large that corpus is, because nobody has counted it. The row's lack of personal data is
-  true and decides nothing — do not re-argue the call from it. BUT-2028, 2026-09-07
+  large that corpus is, because nobody has counted it. The pre-hashed ids decide nothing
+  either way — do not re-argue the call from them. BUT-2028, 2026-09-07
 
 - **The reset script's Phase 4 counts and judges; it does NOT sweep a second time.** Malin's
   explicit call, 2026-09-07, against the gate's own recommendation on the ticket. She was

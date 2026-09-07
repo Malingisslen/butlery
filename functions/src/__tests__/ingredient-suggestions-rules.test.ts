@@ -59,7 +59,11 @@ const OTHER_UID = "other-uid";
  */
 const CREATOR_UID = "creator-uid";
 
-/** The cap the export's `_queryList` applies (`exportLimits` + the N+1 probe). */
+/**
+ * An arbitrary page size, chosen to match what the export sends today. Nothing
+ * couples it to the Dart cap: the block carries no `request.query` reference at
+ * all, so the limbs allow or deny identically at any limit.
+ */
 const EXPORT_LIMIT = 501;
 
 let env: RulesTestEnvironment;
