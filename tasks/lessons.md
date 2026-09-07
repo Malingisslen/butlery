@@ -3265,3 +3265,41 @@ Bonus, samma klass: jag påstod tre gånger i rad att torrkörningen "behöver M
 credentials" utan att titta efter. `gcloud`-ADC låg på standardplatsen hela tiden. Ett
 påstående om att något är blockerat är lika falsifierbart som ett påstående om koden — och
 CLAUDE.md regel #11 säger uttryckligen att man ska kontrollera sina egna verktyg först.
+
+
+## 2026-09-07 — Grindarna är parallella agenter i samma träd, och commit-grinden blockerar hela Bash-anropet
+
+En liten röd arkitekturregel (rå `CircularProgressIndicator` i `lib/views/`) och en
+uppföljande enhetlighetsfix drog nio granskningsrundor. Två av dem var rena
+självförvållade, och båda har en mekanisk lärdom.
+
+**1. Skicka aldrig en granskare som MUTERINGSPROVAR samtidigt som en granskare som LÄSER.**
+Jag startade `code-reviewer`, `testing-specialist` och `integration-reviewer` i ett svep.
+Testgrinden gör sitt jobb genom att skriva en mutant i `lib/` och en provfil i `test/`, och
+integrationsgrinden läste mitt under det. Den rapporterade — korrekt, för de bytes den såg —
+att filen innehöll designen och dess motsägelse samtidigt, och underkände. Den befintliga
+lärdomen säger "provet först, sedan granskarna"; det som saknades är att provet kan vara en
+ANNAN AGENTS. Kör den provande grinden ensam, eller sist. Digest-raden finns sedan tidigare
+men täckte bara mitt eget prov.
+
+**2. `git add X && git commit` förlorar sitt `add` när grinden blockerar.**
+Commit-grinden är en PreToolUse-hook på Bash, så den stoppar HELA anropet innan något körs.
+Kedjan `dart format && git add ... && git commit` såg ut att ha stagat filerna; ingenting hade
+stagats. Två rundor senare läste testgrinden indexet och hittade att alla mina rättelser låg
+kvar i arbetskopian medan de motbevisade meningarna var det som skulle shippas. Stagning och
+commit hör hemma i SEPARATA anrop, och `git rev-parse :<path>` mot `git hash-object <path>`
+är det som avgör frågan — `git status` räcker inte.
+
+**3. En granskares mätning är ett påstående, inte ett facit — men den ska mätas, inte väljas
+bort.** Testgrinden skrev in i sin kunskapsfil att en spinnare inne i en knapp inte går att
+kontrollera via semantik-etiketten ("unfailable, not stricter"), mätt på FAB:en med EXAKT
+sträng. Repots egen gröna assertion använde redan RegExp-formen på samma knapp, så påståendet
+var motbevisat i samma repo när det skrevs. Min rättelse övergeneraliserade åt andra hållet
+("bara RegExp-formen fungerar"), vilket integrationsgrinden fångade — och den öppna frågan gick
+att MÄTA på trettio sekunder i stället för att strykas: exakt matchning ger 1 på appbar-knappen
+och 0 på FAB:en, alltså är sammanslagningen en egenskap hos VÄRDEN. Tre formuleringar av ett
+faktum på en dag, varannan skriven som rättelsen av den förra.
+
+**4. En rubrik som räknar faller för sin egen commit.** Testfilens huvud sa "The two decisions
+that live in the VIEW"; den här ändringen la till en tredje klass av pin i samma fil. Ingen
+test blir röd av det. Stryk siffran, räkna inte om.
