@@ -35910,3 +35910,124 @@ written for (a `barrierDismissible: false` progress dialog), and its sibling
 `find.byType(AlertDialog)` carries that; but it should not be cited as a general
 "no spinner is left behind" guard. Not changed here — it is outside the staged file and the
 test's stated intent is still correct.
+
+### 2026-09-07 — friend-requests sent-tab spinner: the semantics-label route is unfailable inside a button
+
+**Trigger:** coverage review of the staged `friend_request_builders.dart` (cancel `IconButton`
+renders `LoadingIndicator` in its `icon:` slot while `batchRunning`) plus its suite
+`friend_requests_selection_lock_test.dart`. The brief asked whether the deliberately-silent
+incoming-tab `PopupMenuButton` needs its own "no second spinner" pin.
+
+**Blob table.** `lib/views/social/friend_requests/friend_request_builders.dart`
+worktree = index = `cfa6bb70ec632f046de215956e66c4e943ee1e64` before and after the probe
+(HEAD `7b43ceaf8ab75de83c54efc04a084967246c5136`). Restored with
+`git show :<path> > /tmp/fr.orig && cp`, `git diff --numstat` empty.
+
+**Measurement 1 — the never-two half is ALREADY pinned.** Mutant: gave the incoming
+`PopupMenuButton`'s `icon:` the same `batchRunning ? LoadingIndicator(...) : Icon(...)` ternary
+the sent tab's button has (anchor asserted unique, count==1). Two reds, both
+`Expected: exactly one matching candidate / Actual: Found 2 widgets with type
+"CircularProgressIndicator"`:
+- `the batch controls are locked while a batch runs and usable again afterwards`
+- `the controls do not lock while the confirmation is still asking`
+
+So `expect(find.byType(CircularProgressIndicator), findsOneWidget)` is the never-two pin. A
+dedicated test would delete a strict subset of that kill set through the same seam. No test
+added; a comment naming the count as load-bearing was added instead.
+
+The chain that makes it work: `LoadingIndicator(value: null, backgroundColor: null)` renders
+`AdaptiveActivityIndicator`, which branches on `!kIsWeb && Platform.isIOS` and draws
+`CircularProgressIndicator` on every non-iOS host, i.e. on all three CI hosts.
+
+**Measurement 2 — the semantics route is unfailable inside a button, refuting the principle
+written earlier the same day.** I first wrote two tests counting
+`find.bySemanticsLabel(RegExp(RegExp.escape(l10n.a11yLoading)))` ("announces itself ONCE, and
+from the FAB" / "... from the button"). Both failed at 2 and 3 matches. Instrumented probe
+(`_zz_probe_test.dart`, deleted):
+
+- the matches were the request CARDS, whose unstubbed display name renders `Laddar...`
+- `IN_FAB=1` — the `LoadingIndicator` IS inside the FAB
+- `LI_LABEL=<>` `live=false` for `tester.getSemantics(find.byType(LoadingIndicator))`
+- `EXACT=0` — `find.bySemanticsLabel(l10n.a11yLoading)` matched nothing in the whole tree
+
+Control (`_zz_probe2_test.dart`, deleted) — one bare `LoadingIndicator` in the body and one
+inside `FloatingActionButton.extended`, same localized `MaterialApp`, `ensureSemantics()`:
+
+```
+BARE_LABEL_HITS=1
+BARE=<Laddar> live=true
+FAB=<> live=true
+```
+
+The instrument works on the bare widget and finds nothing for the FAB-embedded one. So an
+announcement assertion on a button-hosted spinner is unfailable, not stricter. Both tests were
+removed rather than weakened.
+
+**Open, reported to the parent, not fixed here (production comments, not test code).** The
+comment in `friend_request_builders.dart` justifies the incoming menu's silence with "would
+announce 'laddar' twice for one batch", and the sent-tab comment calls the button "the batch's
+only voice". Nothing asserts either announcement, and the control above is at least consistent
+with the FAB's spinner announcing nothing to a screen reader. Whether the merged node reaches
+the user cannot be settled from a widget test — it needs a real screen-reader pass. Flagged
+rather than encoded, because a test written from an unsettled belief is the worse artefact.
+
+**Sent-tab coverage graded honest.** `cancelButton()` keyed on the tooltip with a `find.ancestor`
+hop is correct and non-vacuous (`tester.widget<IconButton>` throws on 0 or >1); the busy arm's
+`find.descendant(of: cancelButton(l10n, 2), matching: find.byType(LoadingIndicator))` is scoped
+to the button, so it says WHERE the signal is, and the trailing whole-tree `findsNothing` covers
+the after-batch state. Suite 9/9 green after the review edit.
+
+**Superseded verbatim from `testing-specialist.knowledge.md` (written 2026-09-07, refuted the
+same day by the control above):**
+
+> Assert the busy arm through the SEMANTICS live region (`find.bySemanticsLabel(RegExp(...))` on
+> `l10n.a11yLoading`, under `tester.ensureSemantics()`), never `find.byType(<SpinnerClass>)` —
+> the label is what a user gets and it survives a swap between approved indicators, which is the
+> edit these branches actually receive (2026-09-07).
+
+The `pumpAndSettle` half of that bullet stands unchanged and was not superseded.
+
+### 2026-09-07 — CORRECTION to "Measurement 2": the semantics route is NOT unfailable inside a button
+
+Measured by the parent session on the two hosts in this screen, after the entry above concluded
+from `EXACT=0` that an announcement assertion on a button-hosted spinner cannot fail:
+
+- `FloatingActionButton.extended`, busy arm of
+  `friend_requests_batch_actions_test.dart`: `find.bySemanticsLabel(l10n.a11yLoading)` = **0**,
+  `find.bySemanticsLabel(RegExp(RegExp.escape(l10n.a11yLoading)))` = **1**.
+- App-bar `IconButton` (disabled, spinner in `icon:`), busy arm of
+  `friend_requests_selection_lock_test.dart`: the same RegExp finder scoped with
+  `find.descendant(of: cancelButton(...), ...)` = **1**; `tester.getSemantics` on that
+  descendant gives label `Laddar` with `SemanticsFlag.isLiveRegion` set.
+
+So `EXACT=0` measures the MERGE, not an absent live region: the host merges its descendants, so
+the node's label is the spinner's word plus whatever else the control renders, and only a
+substring match reaches it. The refutation was already in the repo — the assertion at line 35862
+of this archive is the RegExp form, it is green, and it reddens when the `icon:` ternary is
+removed, so it was never unfailable.
+
+Two shapes worth keeping. A control that isolates the widget answers a DIFFERENT question than
+the one the assertion asks: the bare-widget control was sound and the generalisation from it was
+not, because the finder used in the control (exact) was not the finder used in the test (RegExp).
+And a claim of the form "X cannot be observed here" is refuted by one green test in the same
+suite — grep the suite for the finder before writing it.
+
+Both assertions now ship: the sent-tab busy arm pins the widget (scoped, WHERE) and the
+announcement (scoped RegExp, WHAT IT SAYS). The production comment's utterance clause
+("would announce 'laddar' twice") was struck anyway and replaced with a structural sentence —
+a second live region on screen — because how many times a screen reader SPEAKS is still not
+something these tests measure.
+
+### 2026-09-07 — CORRECTION to the correction above: the exact form works on the IconButton
+
+The entry above generalised from the FAB to "reachable only through the RegExp form … the node's
+label is the spinner's word plus whatever else the button renders". The `integration-reviewer`
+gate spotted that the IconButton datum quoted beside it (node label exactly `Laddar`) contradicts
+the generalisation, and that exact had never been RUN on that host. Measured after that:
+`ICON_EXACT_SCOPED=1`, `ICON_EXACT_TREE=1` — the exact form matches on the app-bar `IconButton`.
+
+So the merge is a property of the HOST, not of buttons: `FloatingActionButton.extended` merges its
+descendants and answers 0 to an exact match; the `IconButton` does not. The RegExp form is
+preferred because it holds on both, not because the exact form cannot work. Third wording of one
+fact in one day, and the second one was written as the fix for the first — the paragraph written
+to BE the correction is where the next unmeasured claim lands.

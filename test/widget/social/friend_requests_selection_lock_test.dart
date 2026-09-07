@@ -1,10 +1,11 @@
 // test/widget/social/friend_requests_selection_lock_test.dart
 //
-// The two decisions that live in the VIEW rather than in the action handler:
-// which ids leave the selection, and whether the batch controls can be
-// pressed again while one is running. The handler only reports
-// what landed; `FriendRequestsView` decides both, so both are pinned here
-// against the real view over a real ViewModel and a mocked service.
+// The decisions that live in the VIEW rather than in the action handler:
+// which ids leave the selection, whether the batch controls can be pressed
+// again while one is running, and what a running batch shows and announces.
+// The handler only reports what landed; `FriendRequestsView` decides the
+// rest, pinned here against the real view over a real ViewModel and a
+// mocked service.
 
 library;
 
@@ -23,6 +24,7 @@ import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/views/social/friend_requests/friend_requests_view.dart';
+import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 
 import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/factories/mock_factory.dart';
@@ -250,6 +252,9 @@ void main() {
 
     expect(fabPress(tester), isNull, reason: 'locked while the batch runs');
     expect(menuEnabled(tester), isFalse);
+    // `findsOneWidget`, not `findsWidgets`: the count is what refuses a second
+    // spinner beside the FAB. Giving the app-bar menu's icon the same busy
+    // ternary the sent tab's button has makes this find two (measured).
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
 
     mockManagement.releaseRequests();
@@ -401,10 +406,14 @@ void main() {
     }
 
     /// The IconButton itself, for reading `.onPressed`. `byTooltip` matches
-    /// the Tooltip wrapper instead, so it is only used for tapping.
-    Finder cancelButton() => find.descendant(
-      of: find.byType(AppBar),
-      matching: find.widgetWithIcon(IconButton, Icons.cancel),
+    /// the Tooltip IconButton builds inside itself, so it is only used for
+    /// tapping — and the ancestor hop is what gets from it back to the button.
+    /// Keyed on the tooltip rather than on `Icons.cancel` because the icon
+    /// slot holds a spinner while the batch runs, which is exactly the state
+    /// this finder is read in.
+    Finder cancelButton(AppLocalizations l10n, int count) => find.ancestor(
+      of: find.byTooltip(l10n.socialCancelCount(count)),
+      matching: find.byType(IconButton),
     );
 
     Finder cancelTooltip(AppLocalizations l10n, int count) => find.descendant(
@@ -437,6 +446,7 @@ void main() {
         ..setManagementState(failingRequestIds: {'sent-2'})
         ..pauseRequests();
 
+      final handle = tester.ensureSemantics();
       final l10n = await openSentTabAndSelectBoth(tester);
       await tester.tap(cancelTooltip(l10n, 2));
       await settle(tester);
@@ -444,18 +454,61 @@ void main() {
       await tester.pump();
 
       expect(
-        tester.widget<IconButton>(cancelButton()).onPressed,
+        tester.widget<IconButton>(cancelButton(l10n, 2)).onPressed,
         isNull,
         reason: 'locked while the batch runs',
+      );
+      // The sent tab has no FAB, so this button is the batch's only voice:
+      // inert alone would leave the tab silent about work in flight.
+      expect(
+        find.descendant(
+          of: cancelButton(l10n, 2),
+          matching: find.byType(LoadingIndicator),
+        ),
+        findsOneWidget,
+        reason: 'the busy sent tab shows a spinner, not just a dead button',
+      );
+      // The production comment justifies this button's spinner by what it
+      // SAYS, so the announcement is asserted and not only the widget. Scoped
+      // to the button: the request cards render an unstubbed display name that
+      // starts with the same word, so an unscoped finder matches them too. The
+      // RegExp form is the portable one — on this button an exact-string match
+      // also works, but the accept FAB merges the label with its own text and
+      // answers 0 (both measured).
+      expect(
+        find.descendant(
+          of: cancelButton(l10n, 2),
+          matching: find.bySemanticsLabel(
+            RegExp(RegExp.escape(l10n.a11yLoading)),
+          ),
+        ),
+        findsOneWidget,
+        reason: 'the busy sent tab announces itself to a screen reader',
       );
 
       mockManagement.releaseRequests();
       await settle(tester);
 
+      // sent-2 failed, so one request is still selected — the control is back
+      // to its cancel icon and pressable again.
       expect(
-        tester.widget<IconButton>(cancelButton()).onPressed,
+        tester.widget<IconButton>(cancelButton(l10n, 1)).onPressed,
         isNotNull,
       );
+      expect(find.byType(LoadingIndicator), findsNothing);
+      // Scoped for the same reason as the busy assertion above, and this one
+      // MEASURED it: unscoped, this found 2 — the two request cards, whose
+      // unstubbed display name renders "Laddar...".
+      expect(
+        find.descendant(
+          of: cancelButton(l10n, 1),
+          matching: find.bySemanticsLabel(
+            RegExp(RegExp.escape(l10n.a11yLoading)),
+          ),
+        ),
+        findsNothing,
+      );
+      handle.dispose();
     });
   });
 }

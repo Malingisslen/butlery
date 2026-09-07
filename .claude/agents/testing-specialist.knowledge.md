@@ -289,10 +289,20 @@ compress it.**
   ending literally at `// Assert - FieldValue.increment conflicts...`; the archive lists them).
 - **A busy-state widget test cannot use `pumpAndSettle`** — an indeterminate spinner animates
   forever, so settling times out and the timeout reads like a broken fixture. Single `pump()`.
-  Assert the busy arm through the SEMANTICS live region (`find.bySemanticsLabel(RegExp(...))` on
-  `l10n.a11yLoading`, under `tester.ensureSemantics()`), never `find.byType(<SpinnerClass>)` —
-  the label is what a user gets and it survives a swap between approved indicators, which is the
-  edit these branches actually receive (2026-09-07).
+  A spinner in a BUTTON's `icon:` slot IS reachable by semantics label; whether the EXACT form
+  works depends on whether that host merges the label with its own text. An exact
+  `bySemanticsLabel` returning 0 therefore measures the MERGE, not an absent live region — do
+  not conclude the branch is unobservable and fall back to `find.byType`. Prefer the RegExp
+  form, which held on both hosts, and scope the finder to the control: an unscoped one also
+  matches unstubbed fixture text starting with the same word. See the 2026-09-07 archive
+  entries (BUT friend-requests spinner) for the per-host figures and the superseded wordings.
+- **A `find.byType(<SpinnerClass>)` count on a busy screen is the never-TWO pin, and reads as
+  incidental** — `findsOneWidget` reddens when a second surface gains the same busy ternary.
+  Grade such a count before writing a dedicated "no second spinner" test; it is usually already
+  the pin, and the owed edit is a comment saying the COUNT is load-bearing so nobody relaxes it
+  to `findsWidgets`. Note the class is platform-branched (`AdaptiveActivityIndicator` draws
+  Cupertino on an iOS host), so the count holds on the CI hosts and not by construction
+  (2026-09-07).
 - **A widget test driving a real screen can be blocked by an unrelated RENDER assertion in a
   sibling branch of that same screen** — satisfy the tested condition through a branch that does
   not reach it, then FILE the render defect. Weakening a fixture to dodge a crash is legitimate
