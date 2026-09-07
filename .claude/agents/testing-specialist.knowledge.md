@@ -296,13 +296,19 @@ compress it.**
   form, which held on both hosts, and scope the finder to the control: an unscoped one also
   matches unstubbed fixture text starting with the same word. See the 2026-09-07 archive
   entries (BUT friend-requests spinner) for the per-host figures and the superseded wordings.
-- **A `find.byType(<SpinnerClass>)` count on a busy screen is the never-TWO pin, and reads as
-  incidental** — `findsOneWidget` reddens when a second surface gains the same busy ternary.
-  Grade such a count before writing a dedicated "no second spinner" test; it is usually already
-  the pin, and the owed edit is a comment saying the COUNT is load-bearing so nobody relaxes it
-  to `findsWidgets`. Note the class is platform-branched (`AdaptiveActivityIndicator` draws
-  Cupertino on an iOS host), so the count holds on the CI hosts and not by construction
-  (2026-09-07).
+- **An UNSCOPED `find.byType(<SpinnerClass>)` count on a busy screen is the never-TWO pin, and
+  reads as incidental** — `findsOneWidget` reddens when a second surface gains the same busy
+  ternary. Grade such a count before writing a dedicated "no second spinner" test; it is usually
+  already the pin. Note the class is platform-branched (`AdaptiveActivityIndicator` draws
+  Cupertino on an iOS host), so the count holds on the CI hosts and not by construction.
+  **SCOPING that finder DESTROYS the pin while the count still reads as one**: once it becomes
+  `find.descendant(of: byType(TheOneSignalWidget), matching: ...)` it can never exceed 1 — the
+  widget is mounted once and yields one indicator — so `findsOneWidget` vs `findsWidgets`
+  distinguishes nothing and a rival signal elsewhere is invisible. Settle it ANALYTICALLY from
+  the finder's range, not by a probe. The carrier is a round that MOVES a signal and rewrites the
+  count's rationale comment to match the new finder, dropping the old `(measured)`: the pin is
+  lost and the comment claims it is kept. Keep the never-TWO assertion unscoped and SEPARATE from
+  the "the one signal is present" assertion — they need different finders (BUT-2041, 2026-09-07).
 - **A widget test driving a real screen can be blocked by an unrelated RENDER assertion in a
   sibling branch of that same screen** — satisfy the tested condition through a branch that does
   not reach it, then FILE the render defect. Weakening a fixture to dodge a crash is legitimate

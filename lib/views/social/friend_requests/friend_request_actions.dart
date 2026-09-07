@@ -6,15 +6,11 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/base/base_action_handler.dart';
 
 // Theme
-import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 
 // ViewModels
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
-
-// Widgets
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 
 /// Refactored FriendRequestActions using BaseActionHandler
 /// This class provides standardized friend request operations with:
@@ -40,15 +36,11 @@ class FriendRequestActions extends BaseActionHandler with ActionStateMixin {
         // The caller's handler owns the batch, so the FAB only delegates —
         // running it from here too would hand that handler to the batch as its
         // own completion callback. A null onPressed is what refuses a second
-        // press while one runs; the spinner only says so.
+        // press while one runs; what SAYS so is `BatchActivityBar` in the
+        // view, which a cleared selection cannot take off screen (BUT-2041).
         onPressed: batchRunning ? null : onBatchAccept,
         tooltip: context.l10n.socialAcceptSelected,
-        icon: batchRunning
-            ? const LoadingIndicator(
-                size: AppDimensions.iconSizeM,
-                strokeWidth: 2,
-              )
-            : const Icon(Icons.check_circle),
+        icon: const Icon(Icons.check_circle),
         // The label stays put so the button does not resize mid-batch.
         label: Text(context.l10n.socialAcceptCount(selectedIncoming.length)),
         backgroundColor: context.butleryColors.success,

@@ -16,6 +16,7 @@ import 'package:butlery/models/friend_request.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
 
 // Widgets
+import 'package:butlery/widgets/common/indicators/batch_activity_bar.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 
 // Local extracted components
@@ -196,6 +197,11 @@ class _FriendRequestsViewContentState extends State<_FriendRequestsViewContent>
               child: Column(
                 children: [
                   LayoutComponents.offlineIndicator(),
+                  // Outside the TabBarView and gated on the batch rather than
+                  // on a selection, so it survives a tab switch and a cleared
+                  // selection — both of which take every batch control off
+                  // screen (BUT-2041).
+                  BatchActivityBar(active: _batchRunning),
                   FriendRequestsHeaderBuilder.buildErrorDisplay(
                     context,
                     viewModel,

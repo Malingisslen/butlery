@@ -12,7 +12,6 @@ import 'package:butlery/viewmodels/friends_viewmodel.dart';
 
 // Widgets
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 
 // Local
@@ -63,10 +62,6 @@ class FriendRequestsHeaderBuilder {
       actions: [
         // Batch actions for current tab
         if (tabController.index == 0 && selectedIncoming.isNotEmpty)
-          // Inert-only on purpose: the accept FAB is on screen beside this
-          // menu — the two appear and disappear together — and it already
-          // carries the batch's spinner and its live region. A spinner here
-          // would put a second live region on screen for one batch.
           PopupMenuButton<String>(
             enabled: !batchRunning,
             icon: Icon(
@@ -114,19 +109,11 @@ class FriendRequestsHeaderBuilder {
             ],
           ),
         if (tabController.index == 1 && selectedSent.isNotEmpty)
-          // The sent tab has no FAB, so this button is the only control a
-          // batch can speak through — hence the spinner the incoming tab's
-          // menu deliberately does without.
           IconButton(
-            icon: batchRunning
-                ? const LoadingIndicator(
-                    size: AppDimensions.iconSizeM,
-                    strokeWidth: 2,
-                  )
-                : Icon(
-                    Icons.cancel,
-                    color: Theme.of(context).colorScheme.error,
-                  ),
+            icon: Icon(
+              Icons.cancel,
+              color: Theme.of(context).colorScheme.error,
+            ),
             onPressed: batchRunning ? null : onCancelSelected,
             tooltip: context.l10n.socialCancelCount(selectedSent.length),
           ),

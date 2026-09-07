@@ -36031,3 +36031,120 @@ descendants and answers 0 to an exact match; the `IconButton` does not. The RegE
 preferred because it holds on both, not because the exact form cannot work. Third wording of one
 fact in one day, and the second one was written as the fix for the first — the paragraph written
 to BE the correction is where the next unmeasured claim lands.
+
+### 2026-09-07 — BUT-2041: scoping a never-TWO finder silently retires the pin (coverage review)
+
+**Trigger:** coverage review of the staged BUT-2041 diff (friend-requests batch signal moved
+from two per-control spinners into a screen-level `BatchActivityBar`).
+
+**Retired verbatim from `testing-specialist.knowledge.md` (superseded in place):**
+
+> - **A `find.byType(<SpinnerClass>)` count on a busy screen is the never-TWO pin, and reads as
+>   incidental** — `findsOneWidget` reddens when a second surface gains the same busy ternary.
+>   Grade such a count before writing a dedicated "no second spinner" test; it is usually already
+>   the pin, and the owed edit is a comment saying the COUNT is load-bearing so nobody relaxes it
+>   to `findsWidgets`. Note the class is platform-branched (`AdaptiveActivityIndicator` draws
+>   Cupertino on an iOS host), so the count holds on the CI hosts and not by construction
+>   (2026-09-07).
+
+That bullet was written the SAME DAY, one iteration earlier in this ticket family, about the
+unscoped assertion `expect(find.byType(CircularProgressIndicator), findsOneWidget)` in
+`friend_requests_selection_lock_test.dart`. It was true then.
+
+**What BUT-2041 did to it.** The round replaced that line with
+
+```dart
+Finder activeBar() => find.descendant(
+  of: find.byType(BatchActivityBar),
+  matching: find.byType(LinearProgressIndicator),
+);
+...
+expect(activeBar(), findsOneWidget);
+```
+
+and rewrote the rationale comment above it from (HEAD, true, and carrying `(measured)`):
+
+> `findsOneWidget`, not `findsWidgets`: the count is what refuses a second
+> spinner beside the FAB. Giving the app-bar menu's icon the same busy
+> ternary the sent tab's button has makes this find two (measured).
+
+to (staged, FALSE, `(measured)` dropped):
+
+> `findsOneWidget`, not `findsWidgets`: the count is what keeps the screen
+> at ONE loading signal. Giving a control its own busy ternary again makes
+> this find two.
+
+`activeBar()` is scoped to `BatchActivityBar`'s own subtree. `BatchActivityBar` is mounted once
+in the view's `Column` and its `build` returns exactly one `LinearProgressIndicator`, so the
+count is 1 by construction whenever active. `findsOneWidget` and `findsWidgets` are equivalent
+there, and a spinner re-added to the FAB, the app-bar menu or the sent-tab cancel button is
+outside the finder's range entirely. Settled ANALYTICALLY (the predicted probe result was
+GREEN, i.e. the untrustworthy direction).
+
+**Measured after the repair.** Added, beside the unchanged `activeBar()` assertion:
+
+```dart
+expect(find.byType(LoadingIndicator), findsNothing);
+```
+
+Mutant A — re-add `LoadingIndicator` to the accept FAB's `icon:` slot in
+`friend_request_actions.dart`:
+- `friend_requests_selection_lock_test.dart` → RED, exactly one test
+  (`the batch controls are locked while a batch runs and usable again afterwards`),
+  on the new line: `Expected: no matching candidates / Actual: Found 1 widget with type
+  "LoadingIndicator"`. Every other test in the file stayed green — which is the direct
+  measurement that before this edit the whole suite tolerated a second signal.
+- `friend_requests_batch_actions_test.dart` → RED on
+  `while a batch runs the FAB refuses a second press, and says nothing`. So the round's own
+  `find.bySemanticsLabel(a11yLoading) findsNothing` on the FAB IS a real pin with a non-empty
+  kill set (`LoadingIndicator` carries the `a11yLoading` label), not a bare negative — the
+  question the brief asked me to judge.
+
+**Second false sentence, outside every diff hunk.** `cancelButton`'s doc comment in the same
+suite still read:
+
+> Keyed on the tooltip rather than on `Icons.cancel` because the icon
+> slot holds a spinner while the batch runs, which is exactly the state
+> this finder is read in.
+
+The revert made `friend_request_builders.dart` render `icon: Icon(Icons.cancel, ...)`
+unconditionally, so the because-clause is false against the staged production bytes. Present in
+the INDEX as well as the worktree. Struck, not reworded. Found only by sweeping the WHOLE file
+for spinner-era vocabulary (`spinner|CircularProgress|LoadingIndicator|icon slot|busy ternary|
+findsWidgets`) rather than following the hunks.
+
+**New suite added:** `test/widget/common/indicators/batch_activity_bar_test.dart` (4 tests).
+`BatchActivityBar.semanticLabel` had ZERO callers in `lib/` and zero test hits — the `??`
+override branch was unexecuted by anything. The param mirrors `LoadingIndicator.semanticLabel`
+(house convention, BUT-895), so pinning beat deleting. Probes:
+- Mutant B (`semanticLabel ?? context.l10n.a11yLoading` → `context.l10n.a11yLoading`) → RED on
+  `a caller label REPLACES the default rather than joining it`.
+- Mutant C (drop `liveRegion: true` from the `Semantics` wrapper) → RED on
+  `the announcement is a live region, so a reader speaks it unasked`.
+
+**API note.** `SemanticsNode.hasFlag(SemanticsFlag.isLiveRegion)` is deprecated after
+Flutter 3.32.0-0.0.pre and fails `flutter analyze --fatal-infos`. `containsSemantics` takes
+`isLiveRegion:`, NOT `liveRegion:` (the latter is `undefined_named_parameter`). Prefer
+`expect(tester.getSemantics(finder), containsSemantics(isLiveRegion: true))` — non-exhaustive,
+unlike `matchesSemantics`, which asserts every unspecified flag is false.
+
+**Verified non-issues (recorded so a later round does not re-litigate them):**
+- The two new BUT-2041 cases call `find.bySemanticsLabel` with NO `ensureSemantics()` handle.
+  Not a leak from the sent-tab group's handle: `--plain-name "clearing the selection mid-batch
+  does not hide the batch"` passes in isolation. And `findsOneWidget` on a semantics finder
+  cannot pass vacuously — `bySemanticsLabel` throws `StateError` when semantics are disabled.
+- The `switching tab` case's `expect(find.byType(FloatingActionButton), findsNothing)` is
+  over-determined (the FAB is also gone because `tabController.index != 0`), but the test's
+  intent is the bar surviving, and the bar assertions carry it.
+- The `bar always visible regardless of active` mutant is killed by the trailing
+  `expect(activeBar(), findsNothing)` in each new case and by `the controls do not lock while
+  the confirmation is still asking`.
+
+**Restores.** All three mutants restored via `git show :<path> > tmp && cp tmp <path>`, each
+verified by `git hash-object` == `git rev-parse :<path>`:
+`friend_request_actions.dart` a39ddd1fc0b13c5f3614bf543ef865ffb53c5794;
+`batch_activity_bar.dart` a8c30ba2d0409526c591a12721ebddc856bd0745 (twice).
+`git status --porcelain lib/` showed staged-only marks (`M `/`A `) at the end.
+
+**Final:** 35/35 green (4 new + 11 selection-lock + 20 batch-actions), `dart format` 0 changed,
+`flutter analyze --fatal-infos` clean on all six paths.

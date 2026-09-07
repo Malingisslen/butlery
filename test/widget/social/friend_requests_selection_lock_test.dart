@@ -24,6 +24,7 @@ import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/views/social/friend_requests/friend_requests_view.dart';
+import 'package:butlery/widgets/common/indicators/batch_activity_bar.dart';
 import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 
 import '../../test_support/base_unit_test.dart';
@@ -37,6 +38,18 @@ void main() {
 
   const currentUserId = 'test-user-123';
   final requestIds = ['req-1', 'req-2'];
+
+  /// The screen's single loading signal, ACTIVE. `byType` alone would match the
+  /// bar in either state, since it renders an empty box when idle.
+  Finder activeBar() => find.descendant(
+    of: find.byType(BatchActivityBar),
+    matching: find.byType(LinearProgressIndicator),
+  );
+
+  /// The RegExp form is the portable one: a host that merges its descendants'
+  /// labels answers 0 to an exact match (measured on the accept FAB).
+  Finder loadingLabel(AppLocalizations l10n) =>
+      find.bySemanticsLabel(RegExp(RegExp.escape(l10n.a11yLoading)));
 
   FriendRequest incoming(String id) => FriendRequest(
     id: id,
@@ -163,8 +176,8 @@ void main() {
     }
   }
 
-  /// Bounded instead of `pumpAndSettle`: the FAB's progress indicator spins
-  /// for as long as a batch is paused, so settling would never return.
+  /// Bounded instead of `pumpAndSettle`: `BatchActivityBar` animates for as
+  /// long as a batch is paused, so settling would never return.
   Future<void> settle(WidgetTester tester) async {
     for (var i = 0; i < 4; i++) {
       await tester.pump(const Duration(milliseconds: 200));
@@ -252,10 +265,13 @@ void main() {
 
     expect(fabPress(tester), isNull, reason: 'locked while the batch runs');
     expect(menuEnabled(tester), isFalse);
-    // `findsOneWidget`, not `findsWidgets`: the count is what refuses a second
-    // spinner beside the FAB. Giving the app-bar menu's icon the same busy
-    // ternary the sent tab's button has makes this find two (measured).
-    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    expect(activeBar(), findsOneWidget);
+    // The screen-level count, which `activeBar()` cannot carry: that finder is
+    // scoped to the bar's own subtree, so a spinner put back into a control is
+    // invisible to it. BUT-2041 made the bar the batch's only signal, and a
+    // control that grows its own again puts a second live region on screen for
+    // one batch.
+    expect(find.byType(LoadingIndicator), findsNothing);
 
     mockManagement.releaseRequests();
     await settle(tester);
@@ -263,7 +279,7 @@ void main() {
     // req-2 failed, so a control is still on screen — and pressable again.
     expect(fabPress(tester), isNotNull, reason: 'unlocked once it finishes');
     expect(menuEnabled(tester), isTrue);
-    expect(find.byType(CircularProgressIndicator), findsNothing);
+    expect(activeBar(), findsNothing);
   });
 
   testWidgets('a batch where every id throws still unlocks the controls', (
@@ -313,16 +329,16 @@ void main() {
     await tester.tap(find.text(l10n.socialAcceptCount(2)).last);
     await settle(tester);
 
-    // The dialog is open and nothing has been written, so a spinner here
-    // would claim work that has not started — and would have to be taken back
-    // if the user cancels.
+    // The dialog is open and nothing has been written, so a bar here would
+    // claim work that has not started — and would have to be taken back if the
+    // user cancels.
     expect(mockManagement.acceptCalls, isEmpty);
-    expect(find.byType(CircularProgressIndicator), findsNothing);
+    expect(activeBar(), findsNothing);
 
     await tester.tap(find.text(l10n.socialAcceptAll));
     await tester.pump();
 
-    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    expect(activeBar(), findsOneWidget);
     mockManagement.releaseRequests();
     await settle(tester);
   });
@@ -387,6 +403,69 @@ void main() {
     expect(find.byType(FloatingActionButton), findsNothing);
   });
 
+  // BUT-2041. Both controls that could show a batch are conditional on a
+  // SELECTION, and both of these actions empty it mid-batch — which used to
+  // take every trace of the running batch off screen. The bar is mounted in
+  // the view's own column, outside the TabBarView, so neither reaches it.
+  testWidgets('clearing the selection mid-batch does not hide the batch', (
+    tester,
+  ) async {
+    mockManagement.pauseRequests();
+
+    await pumpView(tester);
+    await selectBoth(tester);
+    final l10n = await confirmAcceptAll(tester);
+    await settle(tester);
+
+    await tester.tap(find.text(l10n.commonClear));
+    await settle(tester);
+
+    // The controls are gone with the selection — that part is unchanged.
+    expect(find.byType(FloatingActionButton), findsNothing);
+    expect(activeBar(), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byType(BatchActivityBar),
+        matching: loadingLabel(l10n),
+      ),
+      findsOneWidget,
+    );
+
+    mockManagement.releaseRequests();
+    await settle(tester);
+    expect(activeBar(), findsNothing);
+  });
+
+  testWidgets('switching tab mid-batch does not hide the batch', (
+    tester,
+  ) async {
+    mockManagement.pauseRequests();
+
+    await pumpView(tester);
+    await selectBoth(tester);
+    final l10n = await confirmAcceptAll(tester);
+    await settle(tester);
+
+    // Switching tabs clears BOTH selections, so the sent tab's own control
+    // cannot stand in for the one this leaves behind.
+    await tester.tap(find.text(l10n.socialSent));
+    await settle(tester);
+
+    expect(find.byType(FloatingActionButton), findsNothing);
+    expect(activeBar(), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byType(BatchActivityBar),
+        matching: loadingLabel(l10n),
+      ),
+      findsOneWidget,
+    );
+
+    mockManagement.releaseRequests();
+    await settle(tester);
+    expect(activeBar(), findsNothing);
+  });
+
   group('the sent tab', () {
     /// The three handlers are copies, and only the sent one reads
     /// `_selectedSent`. Driving the incoming tab alone lets a handler that
@@ -408,9 +487,6 @@ void main() {
     /// The IconButton itself, for reading `.onPressed`. `byTooltip` matches
     /// the Tooltip IconButton builds inside itself, so it is only used for
     /// tapping — and the ancestor hop is what gets from it back to the button.
-    /// Keyed on the tooltip rather than on `Icons.cancel` because the icon
-    /// slot holds a spinner while the batch runs, which is exactly the state
-    /// this finder is read in.
     Finder cancelButton(AppLocalizations l10n, int count) => find.ancestor(
       of: find.byTooltip(l10n.socialCancelCount(count)),
       matching: find.byType(IconButton),
@@ -452,38 +528,34 @@ void main() {
       await settle(tester);
       await tester.tap(find.text(l10n.socialCancelAll));
       await tester.pump();
+      // The confirmation route is still popping, and its barrier BLOCKS the
+      // semantics of everything under it — a single pump reads a screen whose
+      // announcements are all suppressed. Bounded, not `pumpAndSettle`: the
+      // bar animates for as long as the batch runs, so settling never returns.
+      await tester.pump(const Duration(milliseconds: 400));
 
       expect(
         tester.widget<IconButton>(cancelButton(l10n, 2)).onPressed,
         isNull,
         reason: 'locked while the batch runs',
       );
-      // The sent tab has no FAB, so this button is the batch's only voice:
-      // inert alone would leave the tab silent about work in flight.
+      // Inert alone would leave the tab silent about work in flight; the bar
+      // is what says so, and it lives in the screen rather than in a control.
+      expect(activeBar(), findsOneWidget);
+      // The same screen-level count as on the incoming tab, repeated because
+      // this is the tab where the cancel button renders: a spinner put back
+      // into ITS icon slot is invisible to every other assertion here.
+      expect(find.byType(LoadingIndicator), findsNothing);
+      // The announcement, not only the widget. Scoped to the bar WIDGET: the
+      // request cards render an unstubbed display name starting with the same
+      // word, so an unscoped finder matches them too.
       expect(
         find.descendant(
-          of: cancelButton(l10n, 2),
-          matching: find.byType(LoadingIndicator),
+          of: find.byType(BatchActivityBar),
+          matching: loadingLabel(l10n),
         ),
         findsOneWidget,
-        reason: 'the busy sent tab shows a spinner, not just a dead button',
-      );
-      // The production comment justifies this button's spinner by what it
-      // SAYS, so the announcement is asserted and not only the widget. Scoped
-      // to the button: the request cards render an unstubbed display name that
-      // starts with the same word, so an unscoped finder matches them too. The
-      // RegExp form is the portable one — on this button an exact-string match
-      // also works, but the accept FAB merges the label with its own text and
-      // answers 0 (both measured).
-      expect(
-        find.descendant(
-          of: cancelButton(l10n, 2),
-          matching: find.bySemanticsLabel(
-            RegExp(RegExp.escape(l10n.a11yLoading)),
-          ),
-        ),
-        findsOneWidget,
-        reason: 'the busy sent tab announces itself to a screen reader',
+        reason: 'a running batch announces itself to a screen reader',
       );
 
       mockManagement.releaseRequests();
@@ -495,19 +567,7 @@ void main() {
         tester.widget<IconButton>(cancelButton(l10n, 1)).onPressed,
         isNotNull,
       );
-      expect(find.byType(LoadingIndicator), findsNothing);
-      // Scoped for the same reason as the busy assertion above, and this one
-      // MEASURED it: unscoped, this found 2 — the two request cards, whose
-      // unstubbed display name renders "Laddar...".
-      expect(
-        find.descendant(
-          of: cancelButton(l10n, 1),
-          matching: find.bySemanticsLabel(
-            RegExp(RegExp.escape(l10n.a11yLoading)),
-          ),
-        ),
-        findsNothing,
-      );
+      expect(activeBar(), findsNothing);
       handle.dispose();
     });
   });

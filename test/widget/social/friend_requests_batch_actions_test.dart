@@ -312,9 +312,6 @@ void main() {
         onAccept: () => batchStarts++,
       );
 
-      final l10n = fabL10n(tester);
-      final handle = tester.ensureSemantics();
-
       await tester.tap(find.byType(FloatingActionButton));
       await tester.pumpAndSettle();
 
@@ -324,20 +321,11 @@ void main() {
       expect(batchStarts, 1);
       expect(mockManagement.acceptCalls, isEmpty);
       expect(find.byType(AlertDialog), findsNothing);
-      // The idle side of the busy boundary below: nothing announces loading
-      // while no batch is running.
-      expect(
-        find.bySemanticsLabel(RegExp(RegExp.escape(l10n.a11yLoading))),
-        findsNothing,
-      );
-
-      handle.dispose();
     },
   );
 
   testWidgets(
-    'while a batch runs the FAB refuses a second press and announces that it '
-    'is busy',
+    'while a batch runs the FAB refuses a second press, and says nothing',
     (tester) async {
       var batchStarts = 0;
 
@@ -357,13 +345,16 @@ void main() {
       // long as the batch runs, so settling never returns.
       await tester.pump();
 
-      // A null onPressed is what refuses the second press; the spinner only
-      // says so, which is why both are asserted here.
+      // A null onPressed is what refuses the second press. The FAB does NOT
+      // announce the batch: that moved to `BatchActivityBar` in the view,
+      // because a signal on this button vanishes with the selection it is
+      // conditional on (BUT-2041). The bar is not in this pumped tree, so the
+      // announcement is pinned in the view's own suite instead.
       expect(batchStarts, 0);
       expect(mockManagement.acceptCalls, isEmpty);
       expect(
         find.bySemanticsLabel(RegExp(RegExp.escape(l10n.a11yLoading))),
-        findsOneWidget,
+        findsNothing,
       );
       // The count stays on the button so it does not resize mid-batch.
       expect(
