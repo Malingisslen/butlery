@@ -1,8 +1,8 @@
 {
-  "lastRun": "2026-08-31",
+  "lastRun": "2026-09-07",
   "dossiersRefreshed": 0,
-  "worldWatchRoles": 3,
+  "worldWatchRoles": 2,
   "retroDue": true,
-  "acceptRate": 0.739,
-  "notes": "No stale dossier markers. World-watch: all 3 roles due (Security Architect, Legal Counsel, Release/App-Store Compliance), lean-scanned; no material findings this cycle, no new issues filed (Google Play's Aug-31 target-API-36 deadline checked and already met). Full retro overdue since 2026-07-25 (never logged since goLive). Accept-rate 0.739, healthy. Cruft sweep: no-op, no tasks/*-plan.md outside archive."
+  "acceptRate": 0.708,
+  "notes": "No stale dossier markers; world-watch scanned Security Architect + Release/Compliance (no new material findings, whisper.cpp issue #234 still open); full org-retro overdue by 44 days."
 }
