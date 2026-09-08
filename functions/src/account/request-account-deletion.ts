@@ -60,6 +60,8 @@ import {
   deletePingsByUser,
   deleteUserReports,
   deleteModerationSystemEvents,
+  deleteModerationRecord,
+  deleteReportHistoryByReporter,
   deleteBlocks,
   deleteBlockMirrors,
   deleteFcmTokens,
@@ -238,6 +240,9 @@ export async function runAccountDeletionWithDeps(
       "moderation_system_events",
       () => deleteModerationSystemEvents(database, uid),
     ],
+    // BUT-2046: the strike record keyed on this uid, and the report rows
+    // beneath it. The REPORTER half is a cross-user sweep and runs after tier 1.
+    ["user_moderation", () => deleteModerationRecord(database, uid)],
     ["fcm_tokens", () => deleteFcmTokens(database, uid)],
     [
       "notification_preferences",
@@ -274,6 +279,16 @@ export async function runAccountDeletionWithDeps(
   // maintenance chain rather than left as an unexported function.
   await runStep("block_mirrors", result, () =>
     deleteBlockMirrors(database, uid),
+  );
+
+  // BUT-2046: the erased uid as a REPORTER, on rows under OTHER people's
+  // moderation records. After tier 1 for the same reason as the block mirrors
+  // above — `onReportCreated` can write such a row while the cascade runs, so
+  // this being last makes it the final word on everything tier 1 removed. It
+  // does not close that race; nothing here can, and the rows carry a 180-day
+  // TTL for exactly that reason.
+  await runStep("report_history_as_reporter", result, () =>
+    deleteReportHistoryByReporter(database, uid),
   );
 
   // Tier 2 (parallel after T1): subcollections under users/{uid}.

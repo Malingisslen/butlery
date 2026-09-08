@@ -220,6 +220,84 @@ export async function probeResidualData(
       errName: err instanceof Error ? err.name : typeof err,
     });
   }
+  // BUT-2046: the erased uid as a REPORTER, on rows under OTHER people's
+  // moderation records, and their OWN moderation record's rows. Two legs
+  // because two deleters, per this file's rule that the deleter stays a strict
+  // superset of the probe. Both are collection-group / subcollection reads,
+  // so neither the `probes` list nor the owner-keyed loop below can serve them.
+  //
+  // Uncapped on purpose: when a sweep DECLINES above
+  // `MAX_REPORT_HISTORY_SWEEP_ROWS` it removes nothing, and this is what says
+  // so. The reporter leg uses the same collection-group index the sweep needs,
+  // so a missing index lands in the catch as a false alarm, never as a false
+  // all-clear.
+  try {
+    const snap = await db
+      .collectionGroup(REPORT_HISTORY)
+      .where("reporterId", "==", uid)
+      .count()
+      .get();
+    const count = snap.data().count ?? 0;
+    if (count > 0) {
+      residual += count;
+      logger.warn("[deletion-cascade] residual report rows as reporter", {
+        uid_prefix: uid.slice(0, 6),
+        count,
+      });
+    }
+  } catch (err) {
+    residual += 1;
+    logger.error("[deletion-cascade] residual probe failed: report_history", {
+      uid_prefix: uid.slice(0, 6),
+      errCode: (err as { code?: number | string }).code ?? null,
+      errName: err instanceof Error ? err.name : typeof err,
+    });
+  }
+  try {
+    const snap = await db
+      .collection(USER_MODERATION)
+      .doc(uid)
+      .collection(REPORT_HISTORY)
+      .count()
+      .get();
+    const count = snap.data().count ?? 0;
+    if (count > 0) {
+      residual += count;
+      logger.warn("[deletion-cascade] residual own moderation rows", {
+        uid_prefix: uid.slice(0, 6),
+        count,
+      });
+    }
+  } catch (err) {
+    residual += 1;
+    logger.error("[deletion-cascade] residual probe failed: user_moderation", {
+      uid_prefix: uid.slice(0, 6),
+      errCode: (err as { code?: number | string }).code ?? null,
+      errName: err instanceof Error ? err.name : typeof err,
+    });
+  }
+  // The PARENT document, whose id is the erased uid and which holds
+  // `totalReports`/`lastReportedAt`. The leg above counts its rows; without
+  // this one a parent standing with no rows beneath it reads as clean.
+  try {
+    const snap = await db.collection(USER_MODERATION).doc(uid).get();
+    if (snap.exists) {
+      residual += 1;
+      logger.warn("[deletion-cascade] residual moderation record", {
+        uid_prefix: uid.slice(0, 6),
+      });
+    }
+  } catch (err) {
+    residual += 1;
+    logger.error(
+      "[deletion-cascade] residual probe failed: user_moderation parent",
+      {
+        uid_prefix: uid.slice(0, 6),
+        errCode: (err as { code?: number | string }).code ?? null,
+        errName: err instanceof Error ? err.name : typeof err,
+      },
+    );
+  }
   // BUT-1917: the erased uid inside OTHER people's block mirrors. Same shape as
   // the poll-vote leg above, and for the same reason — `deleteBlockMirrors` is
   // a cross-user sweep, so nothing under `users/{uid}` can see whether it
@@ -2828,6 +2906,12 @@ export async function deleteUserReports(
  */
 const SYSTEM_EVENTS = "system_events";
 
+/** The moderation strike record, keyed on the REPORTED user's uid (BUT-2046). */
+const USER_MODERATION = "user_moderation";
+
+/** One row per report, beneath a `user_moderation` document (BUT-2046). */
+const REPORT_HISTORY = "report_history";
+
 /**
  * Cap on one erasure's `system_events` sweep. Same contract as
  * `MAX_BLOCK_SWEEP_ROWS` — decline above it rather than truncate, because a
@@ -2979,6 +3063,158 @@ export async function deleteModerationSystemEvents(
   }
 
   return complete;
+}
+
+/**
+ * Cap on one erasure's `report_history` sweeps. Same contract as
+ * `MAX_SYSTEM_EVENT_SWEEP_ROWS`: decline above it rather than truncate.
+ *
+ * BOTH legs need it, and for the roster cap's reason rather than the poll
+ * cap's: the row count is chosen by OTHER PEOPLE. Anyone may report this user
+ * (the owner leg) and there is no client-side throttle on report creation, and
+ * anyone may be reported by them (the reporter leg).
+ */
+const MAX_REPORT_HISTORY_SWEEP_ROWS = 2000;
+
+/**
+ * BUT-2046: the moderation strike record about the erased user, and the report
+ * rows beneath it.
+ *
+ * `user_moderation/{contentOwnerId}` is keyed on the REPORTED person's uid and
+ * holds their strike counter; `report_history/{reportId}` beneath it is one row
+ * per report, each naming a reporter. Firestore never cascade-deletes a
+ * subcollection, so the parent alone leaves every row standing.
+ *
+ * CHILDREN FIRST, parent last. The repo's rule about orphaning is a one-way
+ * door does NOT bite here, and the reason is worth stating so a later reader
+ * does not reason from the conversation-roster case by analogy: those rows are
+ * discovered through a query on the PARENT, so losing the parent loses the
+ * rows forever. These sit at a path derived from the uid alone, so a retry — and
+ * `probeResidualData`'s own leg — reaches them whether or not the parent
+ * survived. The order is kept anyway because it costs nothing and it is what
+ * every sibling in this file does.
+ */
+export async function deleteModerationRecord(
+  db: admin.firestore.Firestore,
+  uid: string,
+): Promise<boolean> {
+  const parent = db.collection(USER_MODERATION).doc(uid);
+  const history = await parent
+    .collection(REPORT_HISTORY)
+    .limit(MAX_REPORT_HISTORY_SWEEP_ROWS + 1)
+    .get();
+
+  if (history.size > MAX_REPORT_HISTORY_SWEEP_ROWS) {
+    logger.error(
+      "[deletion-cascade] implausible report_history count; not sweeping",
+      { uid_prefix: uid.slice(0, 6), rows: history.size },
+    );
+    // The parent is left standing too: deleting it while its rows remain would
+    // hide them from a reader without erasing them, and the probe leg below
+    // counts them either way.
+    return false;
+  }
+
+  if (!history.empty) {
+    await commitInChunks(
+      db,
+      history.docs,
+      (batch, doc) => {
+        batch.delete(doc.ref);
+        stageCascadeAuditEntry(db, batch, {
+          subjectUserId: uid,
+          targetUid: null,
+          operation: "cascade_delete",
+          resourceType: REPORT_HISTORY,
+          resourceId: doc.id,
+        });
+      },
+      {
+        label: `BUT-2046: report_history delete for ${uid.slice(0, 6)}`,
+        opsPerItem: 2,
+      },
+    );
+  }
+
+  const batch = db.batch();
+  batch.delete(parent);
+  stageCascadeAuditEntry(db, batch, {
+    subjectUserId: uid,
+    targetUid: null,
+    operation: "cascade_delete",
+    resourceType: USER_MODERATION,
+    resourceId: uid,
+  });
+  await batch.commit();
+  return true;
+}
+
+/**
+ * BUT-2046: the erased user as the REPORTER — their uid on rows that live under
+ * OTHER people's moderation records.
+ *
+ * A cross-user sweep, and it runs AFTER tier 1 for the same reason
+ * `deleteBlockMirrors` does: `onReportCreated` can write a row while the
+ * cascade is running, and running last makes this the final word on everything
+ * tier 1 removed.
+ *
+ * It does not close that race, and nothing here can. `onReportCreated` is an
+ * `onDocumentCreated` trigger that re-throws for retry and has NO ordering
+ * relationship to account deletion, so a report filed — or a delivery retried —
+ * around the erasure lands a fresh row naming this uid afterwards. Accepted as a
+ * named residual, the same call Malin made for the sibling `system_events` rows
+ * on 2026-09-08, and the reason the 180-day TTL on `expireAt` matters: it is
+ * what eventually removes such a row.
+ *
+ * The legacy shape is NOT reachable from here. Before BUT-2046 these rows were
+ * entries in a `reportHistory` ARRAY on the parent, and a uid inside an array of
+ * maps cannot be queried — so a reporter's uid in somebody else's un-migrated
+ * document is reached by `admin/migrate-report-history.ts` and by nothing else.
+ */
+export async function deleteReportHistoryByReporter(
+  db: admin.firestore.Firestore,
+  uid: string,
+): Promise<boolean> {
+  const snap = await db
+    .collectionGroup(REPORT_HISTORY)
+    .where("reporterId", "==", uid)
+    .limit(MAX_REPORT_HISTORY_SWEEP_ROWS + 1)
+    .get();
+
+  if (snap.size > MAX_REPORT_HISTORY_SWEEP_ROWS) {
+    logger.error(
+      "[deletion-cascade] implausible reporter row count; not sweeping",
+      { uid_prefix: uid.slice(0, 6), rows: snap.size },
+    );
+    return false;
+  }
+
+  if (snap.empty) return true;
+
+  await commitInChunks(
+    db,
+    snap.docs,
+    (batch, doc) => {
+      batch.delete(doc.ref);
+      stageCascadeAuditEntry(db, batch, {
+        subjectUserId: uid,
+        // `resourceId` is the REPORT id, so this row does not record whose
+        // moderation record was touched — the owner leg's `resourceId` is the
+        // uid, this one's is not. Naming the parent owner would put a third
+        // party's uid in `audit_logs`, which is a privacy decision rather than
+        // an omission.
+        targetUid: null,
+        operation: "cascade_delete",
+        resourceType: REPORT_HISTORY,
+        resourceId: doc.id,
+      });
+    },
+    {
+      label: `BUT-2046: reporter rows delete for ${uid.slice(0, 6)}`,
+      opsPerItem: 2,
+    },
+  );
+  return true;
 }
 
 // ─── Tier 1: profile-side own data ───────────────────────────────────────

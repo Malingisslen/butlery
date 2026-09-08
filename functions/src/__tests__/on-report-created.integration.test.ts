@@ -48,7 +48,29 @@ async function totalReports(owner: string): Promise<number> {
   return (snap.data()?.totalReports as number | undefined) ?? 0;
 }
 
+// BUT-2046: rows in a subcollection, not entries in an array on the parent.
+// The array could not be queried, so a reporter's uid inside another person's
+// document was reachable by no erasure path.
 async function historyLength(owner: string): Promise<number> {
+  const snap = await db
+    .collection("user_moderation")
+    .doc(owner)
+    .collection("report_history")
+    .get();
+  return snap.size;
+}
+
+/** The document id IS the report id, which is what dedupes a redelivery. */
+async function historyRowIds(owner: string): Promise<string[]> {
+  const snap = await db
+    .collection("user_moderation")
+    .doc(owner)
+    .collection("report_history")
+    .get();
+  return snap.docs.map((d) => d.id).sort();
+}
+
+async function legacyArrayLength(owner: string): Promise<number> {
   const snap = await db.collection("user_moderation").doc(owner).get();
   const h = snap.data()?.reportHistory as unknown[] | undefined;
   return h?.length ?? 0;
@@ -82,6 +104,14 @@ async function main(): Promise<void> {
   });
   check("first delivery increments to 1", (await totalReports(owner)) === 1);
   check("first delivery records 1 history entry", (await historyLength(owner)) === 1);
+  check(
+    "the row is keyed on the report id",
+    (await historyRowIds(owner)).length === 1,
+  );
+  check(
+    "nothing is written to the legacy array any more",
+    (await legacyArrayLength(owner)) === 0,
+  );
   check(
     "first delivery writes deterministic content_report system_event",
     await docExists("system_events", `content_report_r1-${RUN}`),

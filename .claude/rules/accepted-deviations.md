@@ -950,4 +950,30 @@ files in the same edit.
   **`user_moderation` is deliberately OUT of scope** (ADR-0015): its `reportHistory` is the only
   data surviving the REPORTER's erasure that can answer whether one account repeatedly reports
   the same target, so stripping it is a Trust & Safety decision, not a tidying-up.
+  **SUPERSEDED 2026-09-08 by BUT-2046, below.** That sentence — "its `reportHistory` is the only
+  data surviving the REPORTER's erasure that can answer whether one account repeatedly reports
+  the same target" — is no longer true of the code: the field is gone, the rows live in a
+  `report_history` subcollection, and `deleteReportHistoryByReporter` erases them. The T&S
+  decision it protected was taken and is recorded below; the scope call it records was correct
+  when made.
   BUT-2032, 2026-09-08
+
+- **`user_moderation.reportHistory` is now a `report_history` SUBCOLLECTION with a 180-day
+  TTL, and the brigading signal is deliberately NOT built (BUT-2046, 2026-09-08).** An entry
+  names a REPORTER, and a uid inside an array of maps is unqueryable — so it was reachable by
+  no erasure path and no read. **Malin's explicit calls, 2026-09-08**, over building a
+  queryable reporter-side counter first: measured the same day, nothing in this repo reads the
+  collection, and the array could not answer the brigading question anyway. This ANSWERS
+  ADR-0015's deferred question rather than reversing it.
+  **The Art. 15 exemption rests on TWO grounds, and they must not be merged**: the reporters'
+  identities are third-party data (Art. 15(4), strong); `totalReports` is the requester's OWN
+  data, withheld on the weaker ground that disclosing an in-progress moderation count
+  undermines the moderation. Malin decided the second half separately after the panel showed
+  that the first ground did not cover it.
+  Three residuals, named: a reported person can erase their way out of an open review, and no
+  legal hold stops it; the migration (`admin/migrate-report-history.ts`) is what makes a
+  reporter's uid erasable at all and must run LIVE, after the new writer is deployed, before
+  the gap is closed; and `onReportCreated` has no ordering relationship to deletion, so a late
+  or retried delivery writes a fresh row after the sweep — which the TTL, not the cascade,
+  eventually removes.
+  BUT-2046, 2026-09-08

@@ -3214,4 +3214,78 @@ neither passed an `auditRepository` at all.
   If it is ever built, the array rewrite must read `reportHistory` INSIDE the transaction that
   writes it, with contention retry — the live writer uses `arrayUnion` in its own transaction,
   and a `get()` followed by a later `update()` silently drops a report landing in between.
+  **SUPERSEDED 2026-09-08 by the BUT-2046 entry below, on the same day.** Three sentences here
+  no longer describe the code. "`reportHistory` is the only data surviving the REPORTER's own
+  erasure that can answer whether one account repeatedly reports the same target" and
+  "Butlery's only signal against report-brigading": the field is gone, its rows live in a
+  `report_history` subcollection, and `deleteReportHistoryByReporter` erases them on the
+  reporter's own erasure. And "the array rewrite must read `reportHistory` INSIDE the
+  transaction that writes it": there is no array to rewrite — the hazard it names was removed
+  rather than satisfied, and the migration is what carries the transactional requirement now.
+  The SCOPE call this entry records was correct when made, and the T&S decision it protected
+  was taken.
   BUT-2032, 2026-09-08
+
+- **`user_moderation.reportHistory` becomes a `report_history` SUBCOLLECTION, and the
+  brigading signal it could have carried is deliberately NOT built (BUT-2046, 2026-09-08).**
+  Each entry names a REPORTER — another person's uid — and Firestore cannot query a uid
+  inside an array of maps, so before this the uid was reachable by no erasure path and by no
+  read: `deleteUserReports` could delete the document keyed on the erased user's OWN uid and
+  nothing more. Same move BUT-1832/1835 made with `voterIds`, for the same reason.
+  **Malin's explicit call, 2026-09-08**, over the alternative of building a queryable
+  reporter-side counter first (DSA Art. 23) and erasing afterwards. She was shown that the
+  GDPR gap stays open until such a counter exists, and that nothing is lost today: measured
+  the same day, NO code in this repo reads the collection — the only references are the
+  writer itself and the reset list — and the array shape cannot answer the brigading question
+  anyway. This ANSWERS the question ADR-0015 deferred rather than reversing it.
+  The measurement's limit, stated: the admin dashboard is a separate app this repo cannot
+  grep. If it ever read `reportHistory` as an array, the migration breaks it.
+  **Measured against butlery-app-1 on 2026-09-08, after the build and before any deploy:
+  `user_moderation` holds ZERO documents and `reports` zero rows**, so no legacy array exists
+  anywhere and the migration has nothing to move. That output is attributed, not reproducible
+  from this repo — it was an Admin-SDK read run by hand, committed nowhere. It does not make
+  the migration removable: it is what the erasure path needs the day a first report is filed
+  on an account that predates the deploy.
+  BUT-2046, 2026-09-08
+
+- **The report rows carry a 180-day TTL (BUT-2046, 2026-09-08).** **Malin's explicit call**,
+  over keeping them indefinitely with a dated note. The purpose they were kept for is the one
+  deliberately not built, and storage without a purpose is what Art. 5(1)(e) is about. Same
+  retention as the audit logs and as `report_processing_markers`, the sibling written in the
+  same transaction. It is also what eventually removes a row the late-trigger race writes
+  after the cascade's sweep has run.
+
+- **The whole of `user_moderation` stays out of the Art. 15 export, and the two halves rest
+  on DIFFERENT grounds — only one of which is strong (BUT-2046, 2026-09-08).**
+  Withholding the REPORTERS' identities is a clean Art. 15(4) call: they are third parties,
+  and disclosure would expose them.
+  Withholding `totalReports`/`lastReportedAt` is NOT. Those are the requester's own aggregate
+  about themselves, and Art. 15(4) does not reach a subject's own data. The ground is that
+  disclosing an in-progress moderation count tells a reported person that review is under way,
+  which invites account-switching and undermines the moderation itself. **That is a weaker
+  position and is recorded as one.** **Malin's explicit call, 2026-09-08**, made after the
+  panel showed her that the single "whole collection" justification she was first given
+  covered only the reporter half; the alternative on the table was exporting the count alone.
+  The two grounds must not be merged back into one sentence: that merge is the defect this
+  entry exists to record, and it is the same shape as arguing across collections by analogy.
+  BUT-2046, 2026-09-08
+
+- **A reported person can erase their way out of an open moderation review, and no legal hold
+  stops them (BUT-2046, 2026-09-08).** `deleteModerationRecord` removes the strike record and
+  every row beneath it, including when `totalReports` has already crossed the five-report
+  threshold and a review is outstanding. Named rather than left to be discovered; not weighed
+  by Malin, because Art. 17 has no exception this build could rely on and inventing one is a
+  legal question, not an implementation choice.
+
+- **The migration is what makes a reporter's uid erasable at all, and it is not run by
+  shipping (BUT-2046, 2026-09-08).** `admin/migrate-report-history.ts` moves each legacy array
+  entry into the subcollection; `deleteReportHistoryByReporter` only reaches rows it has
+  moved. Until a LIVE run happens, a reporter's uid inside another person's un-migrated
+  document is reached by no code path. It must run only AFTER the new writer is deployed —
+  an old writer appending to the array while the script clears it loses a report — and the
+  per-document transaction covers a write landing DURING the run, not one landing after it.
+  A dry run deletes nothing. Do not describe the residual as closed on the strength of the
+  script existing: that is precisely the BUT-2010/BUT-2040 failure, where a written-but-unrun
+  script was treated as having cleared what it never touched. The completion evidence is a
+  live run reporting zero remaining `reportHistory` fields.
+  BUT-2046, 2026-09-08

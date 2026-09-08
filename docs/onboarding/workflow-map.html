@@ -5645,7 +5645,7 @@
         {
           "from": "cf-report-created",
           "to": "ds-reports",
-          "payload": "user_moderation/{ownerId}.totalReports +1 + reportHistory; system_events/content_report_{id}; vid tröskel 5 → system_events/moderation_threshold_{ownerId} (critical); moderator-mejl fortfarande TODO (BUT-417)",
+          "payload": "user_moderation/{ownerId}.totalReports +1 + report_history/{reportId} (subsamling, 180 d TTL, BUT-2046); system_events/content_report_{id}; vid tröskel 5 → system_events/moderation_threshold_{ownerId} (critical); moderator-mejl fortfarande TODO (BUT-417)",
           "transport": "Firestore transaction + writes",
           "verified": true
         },

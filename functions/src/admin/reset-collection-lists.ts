@@ -213,8 +213,11 @@ export const COLLECTIONS_TO_DELETE: CollectionTarget[] = [
   // two collections. Do not re-argue the call from it.
   { name: "parse_corrections_v2" },
   // Doc id is the reported user's uid (`feedback/on-report-created.ts`), so
-  // the collection is uid-keyed even though no field says so.
-  { name: "user_moderation" },
+  // the collection is uid-keyed even though no field says so. Its
+  // `report_history` rows carry a REPORTER's uid, i.e. a third party's
+  // (BUT-2046); the recursive walk reaches them whether or not they are named
+  // here, and this list is the reader's inventory.
+  { name: "user_moderation", subcollections: ["report_history"] },
   // Keyed by the report's event id, one marker per report. `reports` is
   // already listed above, so these would outlive what they mark.
   { name: "report_processing_markers" },
@@ -446,6 +449,7 @@ export const KNOWN_SUBCOLLECTION_NAMES = new Set<string>([
   "members", // shared_recipes/{id}, shared_menus/{id}
   "participants", // conversations/{conversationId}
   "poll_votes", // messages/{messageId}
+  "report_history", // user_moderation/{contentOwnerId} (BUT-2046)
   "ratings", // menu_ratings/{menuId}
   "votes", // realtime_menus/{menuId}
   // The PRE-RENAME personal shopping-list subcollection under users/{uid}

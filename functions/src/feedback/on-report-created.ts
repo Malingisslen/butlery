@@ -18,8 +18,6 @@
  * moderator dashboard. This version is idempotent:
  *   - the strike increment is guarded by a per-event marker claimed in the
  *     SAME transaction, so a retried delivery never re-counts;
- *   - `reportHistory` entries are deterministic (no per-run timestamp) so
- *     arrayUnion dedupes;
  *   - system_events use deterministic doc ids + set(merge) so retries
  *     overwrite rather than duplicate.
  * Re-throwing for retry is therefore safe.
@@ -87,18 +85,37 @@ export async function processReport(
         {
           totalReports: admin.firestore.FieldValue.increment(1),
           lastReportedAt: admin.firestore.FieldValue.serverTimestamp(),
-          // Deterministic entry (no per-run timestamp) so arrayUnion dedupes
-          // even if this ever runs outside the marker guard.
-          reportHistory: admin.firestore.FieldValue.arrayUnion({
-            reportId,
-            reporterId,
-            reason,
-            contentType,
-            contentId,
-          }),
         },
         { merge: true },
       );
+      // BUT-2046: one ROW per report, not an entry in an array on the parent.
+      // The array carried `reporterId` — another person's uid — inside an
+      // array of maps, which Firestore cannot query: no erasure path could
+      // reach a reporter's uid sitting in somebody else's document, and no
+      // query could read it back either. Same move BUT-1832/1835 made with
+      // `voterIds`.
+      //
+      // The document id is the REPORT id, which is what now carries the
+      // idempotency the `arrayUnion` used to: a redelivered event rewrites the
+      // same row instead of appending a duplicate. It sits inside the
+      // `markerSnap.exists` guard as well, so today two independent mechanisms
+      // cover it — do not move this write out of the guard on the grounds that
+      // the deterministic id is enough, which would thin that to one.
+      tx.set(moderationRef.collection("report_history").doc(reportId), {
+        reportId,
+        reporterId,
+        reason,
+        contentType,
+        contentId,
+        // 180 days, the same retention as the audit logs and the marker beside
+        // it. Malin's explicit call, 2026-09-08: the purpose these rows were
+        // kept for — spotting a person who reports the same target over and
+        // over — is deliberately not being built (ADR-0015 / BUT-2046), so
+        // keeping them indefinitely would be storage without a purpose.
+        expireAt: admin.firestore.Timestamp.fromDate(
+          new Date(Date.now() + MARKER_RETENTION_DAYS * 24 * 60 * 60 * 1000),
+        ),
+      });
       tx.set(markerRef, {
         reportId,
         processedAt: admin.firestore.FieldValue.serverTimestamp(),

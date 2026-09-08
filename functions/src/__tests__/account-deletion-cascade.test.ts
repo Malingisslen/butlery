@@ -95,6 +95,8 @@ function applyFieldPath(
 
 interface FakeRef {
   path: string;
+  /** BUT-2046: a document read by id, for the moderation-record probe leg. */
+  get(): Promise<{ exists: boolean; data(): DocData | undefined }>;
   delete(): Promise<void>;
   update(data: DocData): Promise<void>;
   collection(name: string): FakeSubcollection;
@@ -140,6 +142,8 @@ interface FakeSubcollection {
   };
   /** BUT-1822: needed by `probeResidualData`'s own subcollection legs. */
   count(): { get(): Promise<{ data(): { count: number } }> };
+  /** BUT-2046: the cap-and-decline read on a subcollection. */
+  limit(max: number): { get(): Promise<FakeQuerySnapshot> };
   listDocuments(): Promise<FakeRef[]>;
 }
 
@@ -211,6 +215,15 @@ class FakeFirestore {
   private makeRef(path: string): FakeRef {
     return {
       path,
+      // BUT-2046: `probeResidualData` reads the `user_moderation/{uid}` PARENT
+      // by id, so the stub needs the one verb a document reference is normally
+      // asked for. Without it the probe's own catch fires and every scenario
+      // that asserts a CLEAN store reports `residual_data_detected` — a fail
+      // shaped exactly like the leg working.
+      get: async () => {
+        const data = this.docs.get(path);
+        return { exists: data !== undefined, data: () => data };
+      },
       delete: async () => {
         this.deletedPaths.push(path);
         this.docs.delete(path);
@@ -286,6 +299,17 @@ class FakeFirestore {
         return {
           get: async () => snapshotOf(this.pathsUnder(`${path}/${name}`)),
           doc: (id: string) => this.makeRef(`${path}/${name}/${id}`),
+          // BUT-2046: an UNFILTERED-but-limited subcollection read, which
+          // `deleteModerationRecord` uses to tell a plausible row count from a
+          // seeded one and DECLINE rather than truncate. The top-level matcher
+          // and the collection-group one already had this; without it here the
+          // deleter throws a TypeError that says nothing about the logic under
+          // test — and because `main()` awaits the scenarios with one catch at
+          // the bottom, that throw takes every scenario after it down too.
+          limit: (max: number) => ({
+            get: async () =>
+              snapshotOf(this.pathsUnder(`${path}/${name}`).slice(0, max)),
+          }),
           count: () => ({
             get: async () => {
               const size = this.pathsUnder(`${path}/${name}`).length;
@@ -646,6 +670,10 @@ class FakeFirestore {
       get: (
         ref: FakeRef,
       ) => Promise<{ exists: boolean; data: () => DocData | undefined }>;
+      getAll: (
+        ...refs: FakeRef[]
+      ) => Promise<{ exists: boolean; data: () => DocData | undefined }[]>;
+      set: (ref: FakeRef, data: DocData) => void;
       update: (ref: FakeRef, data: DocData) => void;
       delete: (ref: FakeRef) => void;
     }) => Promise<T>,
@@ -654,6 +682,19 @@ class FakeFirestore {
       get: async (ref: FakeRef) => {
         const data = this.docs.get(ref.path);
         return { exists: data !== undefined, data: () => data };
+      },
+      // BUT-2046: `migrate-report-history.ts` reads every candidate target in
+      // ONE call after the parent read, rather than a `get` per entry.
+      getAll: async (...refs: FakeRef[]) =>
+        refs.map((ref) => {
+          const data = this.docs.get(ref.path);
+          return { exists: data !== undefined, data: () => data };
+        }),
+      // BUT-2046: `set` CREATES. The batch's `set` had the same gap — routing
+      // it through `applyUpdate` made a write to a new path a silent no-op,
+      // which is the shape this migration's every write has.
+      set: (ref: FakeRef, data: DocData) => {
+        this.docs.set(ref.path, { ...data });
       },
       update: (ref: FakeRef, data: DocData) => {
         this.applyUpdate(ref.path, data);
@@ -1460,6 +1501,10 @@ class FlakyMirrorFirestore extends FakeFirestore {
       get: (
         ref: { path: string },
       ) => Promise<{ exists: boolean; data: () => DocData | undefined }>;
+      getAll: (
+        ...refs: { path: string }[]
+      ) => Promise<{ exists: boolean; data: () => DocData | undefined }[]>;
+      set: (ref: { path: string }, data: DocData) => void;
       update: (ref: { path: string }, data: DocData) => void;
       delete: (ref: { path: string }) => void;
     }) => Promise<T>,
@@ -5681,6 +5726,482 @@ async function scenario_pollVoteIndexIsDeclared(): Promise<void> {
   );
 }
 
+/**
+ * BUT-2046: the collection-group index the reporter sweep needs. Same reasoning
+ * as `scenario_pollVoteIndexIsDeclared` above — automatic single-field indexes
+ * are COLLECTION-scoped, so `collectionGroup('report_history').where('reporterId')`
+ * throws FAILED_PRECONDITION without the override, and a `--force` index deploy
+ * prunes anything absent from the file.
+ *
+ * The TTL half is pinned in the same place: it is what eventually removes a row
+ * the late-trigger race writes after the sweep has run, which is the residual
+ * the deleter's own docstring names.
+ */
+async function scenario_reportHistoryIndexAndTtlAreDeclared(): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const fs = require("fs");
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const path = require("path");
+  const indexes = JSON.parse(
+    fs.readFileSync(
+      path.join(__dirname, "..", "..", "..", "firestore.indexes.json"),
+      "utf8",
+    ),
+  ) as {
+    fieldOverrides?: {
+      collectionGroup: string;
+      fieldPath: string;
+      ttl?: boolean;
+      indexes?: { order?: string; queryScope?: string }[];
+    }[];
+  };
+  const overrides = indexes.fieldOverrides ?? [];
+  const reporter = overrides.find(
+    (o) => o.collectionGroup === "report_history" && o.fieldPath === "reporterId",
+  );
+  check(
+    "report_history.reporterId has a COLLECTION_GROUP single-field index declared",
+    (reporter?.indexes ?? []).some(
+      (i) => i.queryScope === "COLLECTION_GROUP" && i.order === "ASCENDING",
+    ),
+    `override: ${JSON.stringify(reporter)}`,
+  );
+  const ttl = overrides.find(
+    (o) => o.collectionGroup === "report_history" && o.fieldPath === "expireAt",
+  );
+  check(
+    "report_history.expireAt carries the 180-day TTL policy",
+    ttl?.ttl === true,
+    `override: ${JSON.stringify(ttl)}`,
+  );
+}
+
+/**
+ * BUT-2046: the erased user as the REPORTED person — their strike record and
+ * every report row beneath it.
+ *
+ * The other-user rows are what make the assertions non-vacuous: an unfiltered
+ * sweep passes "their rows are gone" exactly as easily as a correct one.
+ */
+async function scenario_moderationRecordAndItsRowsAreErased(): Promise<void> {
+  const {
+    deleteModerationRecord,
+  } = require("../account/account-deletion-cascade");
+
+  const store = new FakeFirestore();
+  store.set(`user_moderation/${UID}`, { totalReports: 2 });
+  store.set(`user_moderation/${UID}/report_history/r1`, {
+    reportId: "r1",
+    reporterId: OTHER,
+  });
+  store.set(`user_moderation/${UID}/report_history/r2`, {
+    reportId: "r2",
+    reporterId: THIRD,
+  });
+  // Another person's record, with a row naming the erased user as REPORTER.
+  // This leg must not touch it — the other leg owns that row.
+  store.set(`user_moderation/${OTHER}`, { totalReports: 1 });
+  store.set(`user_moderation/${OTHER}/report_history/r3`, {
+    reportId: "r3",
+    reporterId: UID,
+  });
+
+  const complete = await deleteModerationRecord(asDb(store), UID);
+
+  check(
+    "the owner leg reports itself complete",
+    complete === true,
+    `returned ${complete}`,
+  );
+  check(
+    "the erased user's own moderation record is deleted",
+    !store.has(`user_moderation/${UID}`),
+    "the parent document survived",
+  );
+  check(
+    "every report row beneath it is deleted",
+    store.pathsUnder(`user_moderation/${UID}/report_history`).length === 0,
+    `left: ${JSON.stringify(store.pathsUnder(`user_moderation/${UID}/report_history`))}`,
+  );
+  check(
+    "the rows go BEFORE the parent, so nothing is orphaned mid-run",
+    store.deletedPaths.indexOf(`user_moderation/${UID}`) ===
+      store.deletedPaths.length - 1,
+    `delete order: ${JSON.stringify(store.deletedPaths)}`,
+  );
+  check(
+    "another person's moderation record is untouched",
+    store.has(`user_moderation/${OTHER}`) &&
+      store.has(`user_moderation/${OTHER}/report_history/r3`),
+    "the owner leg reached beyond the erased user's own document",
+  );
+}
+
+/**
+ * BUT-2046: the erased user as the REPORTER — rows under OTHER people's
+ * records, which is the half no query could reach while the data lived in an
+ * array of maps.
+ */
+async function scenario_reporterRowsUnderOtherPeopleAreErased(): Promise<void> {
+  const {
+    deleteReportHistoryByReporter,
+  } = require("../account/account-deletion-cascade");
+
+  const store = new FakeFirestore();
+  store.set(`user_moderation/${OTHER}/report_history/r1`, {
+    reportId: "r1",
+    reporterId: UID,
+  });
+  store.set(`user_moderation/${THIRD}/report_history/r2`, {
+    reportId: "r2",
+    reporterId: UID,
+  });
+  store.set(`user_moderation/${THIRD}/report_history/r3`, {
+    reportId: "r3",
+    reporterId: OTHER,
+  });
+
+  const complete = await deleteReportHistoryByReporter(asDb(store), UID);
+
+  check(
+    "the reporter leg reports itself complete",
+    complete === true,
+    `returned ${complete}`,
+  );
+  check(
+    "the erased user's rows are gone from every other person's record",
+    !store.has(`user_moderation/${OTHER}/report_history/r1`) &&
+      !store.has(`user_moderation/${THIRD}/report_history/r2`),
+    "a row naming the erased reporter survived",
+  );
+  check(
+    "a row naming somebody else as reporter survives",
+    store.has(`user_moderation/${THIRD}/report_history/r3`),
+    "the sweep is not filtered on reporterId",
+  );
+  check(
+    "the parent records are left standing",
+    store.has(`user_moderation/${THIRD}/report_history/r3`) &&
+      store.deletedPaths.every((p) => p.includes("/report_history/")),
+    `deleted: ${JSON.stringify(store.deletedPaths)}`,
+  );
+}
+
+/**
+ * BUT-2046: both legs stage their own audit rows (ADR-0014).
+ */
+async function scenario_moderationRecordSweepStagesAuditRows(): Promise<void> {
+  const {
+    deleteModerationRecord,
+    deleteReportHistoryByReporter,
+  } = require("../account/account-deletion-cascade");
+
+  const store = new FakeFirestore();
+  store.set(`user_moderation/${UID}`, { totalReports: 1 });
+  store.set(`user_moderation/${UID}/report_history/r1`, {
+    reportId: "r1",
+    reporterId: OTHER,
+  });
+  store.set(`user_moderation/${OTHER}/report_history/r2`, {
+    reportId: "r2",
+    reporterId: UID,
+  });
+
+  await deleteModerationRecord(asDb(store), UID);
+  await deleteReportHistoryByReporter(asDb(store), UID);
+
+  const audits = store
+    .idsIn("audit_logs")
+    .map((id) => store.get(`audit_logs/${id}`))
+    .filter((row): row is DocData => row !== undefined);
+
+  check(
+    "one audit row per deleted moderation document",
+    audits.length === 3,
+    `staged ${audits.length}: ${JSON.stringify(audits.map((a) => a.resourceId))}`,
+  );
+  check(
+    "the parent delete is audited under its own resource type",
+    audits.some((a) => a.resourceType === "user_moderation") &&
+      audits.filter((a) => a.resourceType === "report_history").length === 2,
+    `types: ${JSON.stringify(audits.map((a) => a.resourceType))}`,
+  );
+}
+
+/**
+ * BUT-2046: an implausible row count DECLINES both legs rather than truncating,
+ * and the owner leg leaves the PARENT standing when it declines — deleting it
+ * would hide the rows from a reader without erasing them.
+ */
+async function scenario_implausibleReportHistoryCountDeclines(): Promise<void> {
+  const {
+    deleteModerationRecord,
+    deleteReportHistoryByReporter,
+  } = require("../account/account-deletion-cascade");
+
+  // 2000 is MAX_REPORT_HISTORY_SWEEP_ROWS and the read is `.limit(MAX + 1)`, so
+  // 2001 rows is the smallest count that trips it.
+  const owner = new FakeFirestore();
+  owner.set(`user_moderation/${UID}`, { totalReports: 2001 });
+  for (let i = 0; i < 2001; i++) {
+    owner.set(`user_moderation/${UID}/report_history/r${i}`, {
+      reportId: `r${i}`,
+      reporterId: OTHER,
+    });
+  }
+  const ownerComplete = await deleteModerationRecord(asDb(owner), UID);
+  check(
+    "an implausible own-record row count declines the sweep",
+    ownerComplete === false,
+    `returned ${ownerComplete}`,
+  );
+  check(
+    "the declined owner sweep leaves the parent standing",
+    owner.has(`user_moderation/${UID}`),
+    "the parent was deleted while its rows remained — they are now hidden, not erased",
+  );
+
+  const reporter = new FakeFirestore();
+  for (let i = 0; i < 2001; i++) {
+    reporter.set(`user_moderation/${OTHER}/report_history/r${i}`, {
+      reportId: `r${i}`,
+      reporterId: UID,
+    });
+  }
+  const reporterComplete = await deleteReportHistoryByReporter(
+    asDb(reporter),
+    UID,
+  );
+  check(
+    "an implausible reporter row count declines the sweep",
+    reporterComplete === false,
+    `returned ${reporterComplete}`,
+  );
+  check(
+    "the declined reporter sweep deleted nothing rather than truncating",
+    reporter.has(`user_moderation/${OTHER}/report_history/r0`),
+    "rows were removed above the cap",
+  );
+}
+
+/**
+ * BUT-2046: the probe SEES what either leg missed. Two legs, one dirty store
+ * each — bundled, they would pass on the strength of whichever still worked.
+ */
+async function scenario_probeSeesLeftoverModerationRows(): Promise<void> {
+  const { probeResidualData } = require("../account/account-deletion-cascade");
+
+  const emptyResult = () => ({
+    deletedCollections: [],
+    failedCollections: [] as string[],
+    errors: [],
+  });
+
+  const clean = new FakeFirestore();
+  clean.set(`user_moderation/${OTHER}/report_history/r3`, {
+    reportId: "r3",
+    reporterId: THIRD,
+  });
+  const cleanResult = emptyResult();
+  await probeResidualData(asDb(clean), UID, cleanResult);
+  check(
+    "with only other people's report rows left, the probe stays clean",
+    !cleanResult.failedCollections.includes("residual_data_detected"),
+    `failed: ${JSON.stringify(cleanResult.failedCollections)}`,
+  );
+
+  const asReporter = new FakeFirestore();
+  asReporter.set(`user_moderation/${OTHER}/report_history/r1`, {
+    reportId: "r1",
+    reporterId: UID,
+  });
+  const reporterResult = emptyResult();
+  await probeResidualData(asDb(asReporter), UID, reporterResult);
+  check(
+    "a surviving row naming the erased user as reporter is reported as residual",
+    reporterResult.failedCollections.includes("residual_data_detected"),
+    `failed: ${JSON.stringify(reporterResult.failedCollections)}`,
+  );
+
+  const asOwner = new FakeFirestore();
+  asOwner.set(`user_moderation/${UID}/report_history/r2`, {
+    reportId: "r2",
+    reporterId: OTHER,
+  });
+  const ownerResult = emptyResult();
+  await probeResidualData(asDb(asOwner), UID, ownerResult);
+  check(
+    "a surviving row under the erased user's own record is reported as residual",
+    ownerResult.failedCollections.includes("residual_data_detected"),
+    `failed: ${JSON.stringify(ownerResult.failedCollections)}`,
+  );
+
+  // The PARENT alone, with no rows beneath it. Its document id is the erased
+  // uid and it holds the strike counter, so an empty-but-standing record is a
+  // residual in its own right — and it is the one state the row legs above are
+  // structurally blind to.
+  const parentOnly = new FakeFirestore();
+  parentOnly.set(`user_moderation/${UID}`, { totalReports: 4 });
+  const parentResult = emptyResult();
+  await probeResidualData(asDb(parentOnly), UID, parentResult);
+  check(
+    "a surviving moderation record with no rows is reported as residual",
+    parentResult.failedCollections.includes("residual_data_detected"),
+    `failed: ${JSON.stringify(parentResult.failedCollections)}`,
+  );
+
+  // …and another person's record does not trip it.
+  const someoneElses = new FakeFirestore();
+  someoneElses.set(`user_moderation/${OTHER}`, { totalReports: 4 });
+  const elseResult = emptyResult();
+  await probeResidualData(asDb(someoneElses), UID, elseResult);
+  check(
+    "another person's moderation record leaves the probe clean",
+    !elseResult.failedCollections.includes("residual_data_detected"),
+    `failed: ${JSON.stringify(elseResult.failedCollections)}`,
+  );
+}
+
+/**
+ * BUT-2046: the migration that moves the legacy array into the subcollection.
+ *
+ * It is a hand-run script with a dry-run default, and it is also the ONLY path
+ * that erases a reporter's uid from an un-migrated document — and it DELETES a
+ * field. Its two load-bearing behaviours are pinned here: skip a target that
+ * already exists, and clear the field only when nothing was left behind.
+ *
+ * The stub's transaction is a passthrough with no isolation, so nothing here
+ * proves the chunking resists a real concurrent writer. What it proves is what
+ * the code decides.
+ */
+async function scenario_reportHistoryMigrationMovesAndClears(): Promise<void> {
+  const {
+    migrateDocument,
+  } = require("../admin/migrate-report-history");
+
+  const store = new FakeFirestore();
+  store.set(`user_moderation/${UID}`, {
+    totalReports: 3,
+    reportHistory: [
+      { reportId: "r1", reporterId: OTHER, reason: "spam" },
+      { reportId: "r2", reporterId: THIRD, reason: "abuse" },
+      // Already migrated: a previous run, or the live writer got there first.
+      { reportId: "r3", reporterId: OTHER, reason: "spam" },
+    ],
+  });
+  store.set(`user_moderation/${UID}/report_history/r3`, {
+    reportId: "r3",
+    reporterId: OTHER,
+    reason: "written by the live writer",
+  });
+
+  const outcome = await migrateDocument(asDb(store), UID, false);
+
+  check(
+    "every array entry becomes a row",
+    store.pathsUnder(`user_moderation/${UID}/report_history`).length === 3,
+    `rows: ${JSON.stringify(store.pathsUnder(`user_moderation/${UID}/report_history`))}`,
+  );
+  check(
+    "the moved rows carry the reporter's uid",
+    (store.get(`user_moderation/${UID}/report_history/r1`)
+      ?.reporterId as string) === OTHER,
+    `row: ${JSON.stringify(store.get(`user_moderation/${UID}/report_history/r1`))}`,
+  );
+  check(
+    "a row that already exists is SKIPPED, not overwritten",
+    store.get(`user_moderation/${UID}/report_history/r3`)?.reason ===
+      "written by the live writer" && outcome.skippedExisting === 1,
+    `row: ${JSON.stringify(store.get(`user_moderation/${UID}/report_history/r3`))}`,
+  );
+  check(
+    "the legacy field is cleared once everything is accounted for",
+    store.get(`user_moderation/${UID}`)?.reportHistory === undefined &&
+      outcome.emptied === 1,
+    `parent: ${JSON.stringify(store.get(`user_moderation/${UID}`))}`,
+  );
+  check(
+    "the strike counter is left alone",
+    store.get(`user_moderation/${UID}`)?.totalReports === 3,
+    "the migration touched a field that is not its business",
+  );
+  check(
+    "the outcome counts what it moved",
+    outcome.moved === 2 && outcome.scanned === 3,
+    `outcome: ${JSON.stringify(outcome)}`,
+  );
+}
+
+/**
+ * BUT-2046: an entry the migration CANNOT move keeps the whole field alive.
+ * Clearing it would delete the only copy of a row that names a person.
+ */
+async function scenario_unmovableEntryKeepsTheLegacyField(): Promise<void> {
+  const {
+    migrateDocument,
+  } = require("../admin/migrate-report-history");
+
+  const store = new FakeFirestore();
+  store.set(`user_moderation/${UID}`, {
+    reportHistory: [
+      { reportId: "r1", reporterId: OTHER },
+      // No reportId: there is no id to key it on, and it cannot be dropped.
+      { reporterId: THIRD, reason: "abuse" },
+    ],
+  });
+
+  const outcome = await migrateDocument(asDb(store), UID, false);
+
+  check(
+    "the movable entry is still moved",
+    store.has(`user_moderation/${UID}/report_history/r1`),
+    "a single bad entry stopped the good ones",
+  );
+  check(
+    "the legacy field SURVIVES when an entry could not be moved",
+    Array.isArray(store.get(`user_moderation/${UID}`)?.reportHistory) &&
+      outcome.emptied === 0,
+    `parent: ${JSON.stringify(store.get(`user_moderation/${UID}`))}`,
+  );
+  check(
+    "the failure is reported rather than swallowed",
+    outcome.failures.length === 1,
+    `failures: ${JSON.stringify(outcome.failures)}`,
+  );
+}
+
+/** BUT-2046: a dry run reports what it would do and writes nothing. */
+async function scenario_reportHistoryMigrationDryRunWritesNothing(): Promise<void> {
+  const {
+    migrateDocument,
+  } = require("../admin/migrate-report-history");
+
+  const store = new FakeFirestore();
+  store.set(`user_moderation/${UID}`, {
+    reportHistory: [{ reportId: "r1", reporterId: OTHER }],
+  });
+
+  const outcome = await migrateDocument(asDb(store), UID, true);
+
+  check(
+    "a dry run writes no rows",
+    store.pathsUnder(`user_moderation/${UID}/report_history`).length === 0,
+    "the dry run wrote to the subcollection",
+  );
+  check(
+    "a dry run leaves the legacy field in place",
+    Array.isArray(store.get(`user_moderation/${UID}`)?.reportHistory),
+    "the dry run cleared the field",
+  );
+  check(
+    "a dry run reports what it would move, and empties nothing",
+    outcome.moved === 1 && outcome.emptied === 0,
+    // `emptied` counts fields actually cleared. A dry run clears none, so
+    // reporting 1 here would be the script asserting something it did not do.
+    `outcome: ${JSON.stringify(outcome)}`,
+  );
+}
+
 async function main(): Promise<void> {
   await scenario_directConversationIsErasedWhole();
   await scenario_readsTopLevelNotSubcollection();
@@ -5728,6 +6249,15 @@ async function main(): Promise<void> {
   await scenario_moderationSweepStagesItsAuditRows();
   await scenario_implausibleModerationEventCountDeclines();
   await scenario_probeSeesLeftoverModerationEvents();
+  await scenario_reportHistoryIndexAndTtlAreDeclared();
+  await scenario_moderationRecordAndItsRowsAreErased();
+  await scenario_reporterRowsUnderOtherPeopleAreErased();
+  await scenario_moderationRecordSweepStagesAuditRows();
+  await scenario_implausibleReportHistoryCountDeclines();
+  await scenario_probeSeesLeftoverModerationRows();
+  await scenario_reportHistoryMigrationMovesAndClears();
+  await scenario_unmovableEntryKeepsTheLegacyField();
+  await scenario_reportHistoryMigrationDryRunWritesNothing();
   await scenario_resetScriptDeleteListNamesBlocks();
   await scenario_resetScriptListsDoNotOverlap();
   await scenario_everyCollectionIsDecided();

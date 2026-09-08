@@ -348,6 +348,12 @@ test("BUT-788: full cascade reports every step + writes audit + calls auth.delet
     // scenarios `require()` `deleteModerationSystemEvents` directly, so dropping
     // this tier entry stops the erasure with every one of them still green.
     "moderation_system_events",
+    // BUT-2046, same reason: the cascade suite calls both deleters directly, so
+    // dropping either tier entry stops the erasure with every scenario there
+    // still green. The reporter leg runs AFTER tier 1 and lands in the same
+    // envelope.
+    "user_moderation",
+    "report_history_as_reporter",
     "messages",
     "shared_content",
     "comments_ratings",
