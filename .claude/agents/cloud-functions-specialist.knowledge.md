@@ -273,6 +273,14 @@ from `(err as {code?}).code`.
 - A cascade step keyed on a shared/parent handle destroys that handle LAST,
   after all child cleanup commits — including a purpose-built QUERY HANDLE
   cleared in the same write as the content scrub, ahead of a dependent mirror.
+- **A probe leg whose ONLY deleter lives in `onUserDeleted` is broader by TIMING.**
+  `probeResidualData` runs BEFORE `auth.deleteUser` (the cascade's last step) and
+  `success = authDeleted && !failedCollections.length`, so such a leg returns
+  `success:false` + `gdprCompliant:false` on every affected account while the row
+  IS erased seconds later. `TRIGGER_OWNED_SUBCOLLECTIONS` is that exclusion;
+  `social_requests` is deliberately unprobed. Probe only what a CASCADE step
+  erases — cross-user is no reason to leave the deleter in the trigger
+  (`deleteBlocks` erases rows other users authored, from tier 1).
 - **`probeResidualData` must not be BROADER than the deleter, and the deleter
   must not be NARROWER than the EXPORT's predicate** — Art. 15 must never reach
   a document Art. 17 cannot (`memberPermissions.<uid> != null` = Dart

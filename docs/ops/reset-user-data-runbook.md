@@ -125,18 +125,18 @@ four-box test: it does not repeat weekly, it needs credentials and a person to
 read the output, and "done" is not objective. It belongs on the path to going
 live, when the population stops being test accounts. **Tracked as BUT-2045.**
 
-The first run of this report, 2026-09-08, named collections no list decided —
-among them `users/{uid}/friendCategories`, the same Art. 17 gap BUT-2040 closed
-one spelling over. They are BUT-2044, and they are open. So "read the output" is
-not a formality: the report has never yet run clean.
+The first run of this report, 2026-09-08, named collections no list decided,
+including personal data no erasure path reached (BUT-2044). Read the output on
+every run.
 
-`friendCategories` was NOT fixed in the commit that found it, deliberately.
-Adding a name to the cascade's sweep reddens the Art. 15 export-superset guard
-unless that name is exported or exempted with a written reason — and the live
-spelling `friend_categories` IS exported, so the camelCase twin carries an
-export decision of the same kind BUT-2040 needed Malin's answer for. That is a
-plan, not a two-line ride-along. It must land before launch, while the
-population is still test accounts.
+Two steps this leaves for a person, neither of which the report performs:
+
+- `npx ts-node src/admin/migrate-friend-categories.ts` (dry run) and then
+  `--live` moves any `users/{uid}/friendCategories` row onto the live spelling.
+  Until it runs, such a row is deleted by the cascade rather than exported —
+  see the BUT-2044 entries in `docs/architecture/ACCEPTED_DEVIATIONS.md`.
+- Anything the report names is either a collection needing a decision (into one
+  of the three lists) or an orphan of a rename. Neither closes itself.
 
 ## Before a live run
 

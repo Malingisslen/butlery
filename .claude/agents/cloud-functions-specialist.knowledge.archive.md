@@ -19214,3 +19214,50 @@ retired verbatim, and recorded here as the audit trail requires:
   shortened form on the same bullet.)
 
 Verdict: pass, 0 blocking.
+
+### 2026-09-08 — BUT-2044 gate: a probe leg whose deleter is trigger-owned [cascade][gdpr]
+
+Reviewed the staged BUT-2044 diff (on-user-deleted.ts, account-deletion-cascade.ts,
+reset-collection-lists.ts, new admin/migrate-friend-categories.ts, cascade test).
+Verdict: FAIL, 2 blocking.
+
+MEASURED, not reasoned: `request-account-deletion.ts:285` calls `probeResidualData`,
+`:296` calls `auth.deleteUser(uid)`, `:318` computes
+`success = authDeleted && result.failedCollections.length === 0`. The only sweeper of
+`friend_requests` is `cleanupSocialRequests(userId, LEGACY_FRIEND_REQUESTS)` in
+`on-user-deleted.ts:180`, i.e. inside the Auth-delete trigger. Full read + grep of the
+cascade: no step erases `friend_requests`. So the new `pairProbes` entry makes every
+account holding a legacy row report `success:false` / `gdprCompliant:false` while the
+row is erased seconds later by the trigger. The same file documents this exact shape at
+`account-deletion-cascade.ts:86-105` (`TRIGGER_OWNED_SUBCOLLECTIONS`), and the sibling
+`social_requests` is deliberately unprobed. The two new test cases pin the false
+positive as intended behaviour, so nothing would have reddened.
+
+The change's stated placement rationale ("the cascade's docstring assigns cross-user
+cleanup to onUserDeleted") does not hold: `deleteBlocks` runs in tier 1 and deletes rows
+other living users authored (BUT-1917).
+
+Second blocking finding was prose: `reset-collection-lists.ts` added `daily` to the
+`analytics` subcollections in the same hunk whose comment two lines above still said
+"`daily` is deliberately ABSENT … leaving them out is what keeps the report naming them".
+Strike, not reword.
+
+Also found (non-blocking): `migrateUser`'s skip-existing branch DELETES the legacy doc
+without copying or printing it (irreversible, contents unrecorded); the new
+`KNOWN_SUBCOLLECTION_NAMES` entry `friendCategories` is discovered by source ONLY through
+the one-time migration script's file-local `const LEGACY`, so deleting that script
+reddens `scenario_everyCollectionIsDecided` with a misleading message; no test for
+`migrateUser` or for the legacy sweep; `docs/ops/reset-user-data-runbook.md:128-139`
+still asserts BUT-2044 is open and "friendCategories was NOT fixed … deliberately".
+
+Verified and CLEAN: `tsc --noEmit` 0; cascade suite 301/301; commit provenance in the new
+file's header (b9a95bd02 2026-03-19 added `migrate-collection-names.ts` whose table lists
+both `friendCategories` and `tagConfigs`; 85a5f3ed0 deleted it 2026-03-20; 6091b004c
+2026-03-24 is the social_requests merge); `friend_categories` rules carry no `hasOnly`,
+so a migrated legacy doc cannot brick client writes; the `pairProbes` refactor preserves
+`notification_delivery`'s queries, counts, log strings and per-field try/catch exactly.
+
+Knowledge-file delta: added the TIMING principle above the "probe must not be BROADER
+than the deleter" bullet. The compensating retirement (trimming a redundant parenthetical
+in the block-mirror bullet) was REFUSED by the auto-mode classifier, so the file grew by
+~500 chars this run and still owes a retirement.

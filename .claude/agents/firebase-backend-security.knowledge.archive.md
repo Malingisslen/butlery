@@ -9135,3 +9135,146 @@ export-superset guard unless the camelCase twin gets its own export decision, wh
 BUT-2044.
 
 Verdict: pass, 0 blocking.
+
+---
+
+## 2026-09-08 — BUT-2044 commit gate (GDPR/security half): two legacy-spelling orphans
+
+Staged: `on-user-deleted.ts` (parameterised `cleanupSocialRequests` sweeps `friend_requests`
+too), `account-deletion-cascade.ts` (`pairProbes` gains `friend_requests`
+fromUserId/toUserId; `EXPORT_EXEMPT.friendCategories`; `USER_SUBCOLLECTIONS` gains
+`friendCategories`), `reset-collection-lists.ts` (`friend_requests` to delete-list,
+`analytics.subcollections` gains `daily`, `tagConfigs` register entry,
+`DATABASE_ONLY_ORPHANS`, `KNOWN_SUBCOLLECTION_NAMES` gains `friendCategories`), the cascade
+test suite (`scenario_probeSeesLegacyFriendRequests`, per field, plus a clean control), and
+NEW `admin/migrate-friend-categories.ts`.
+
+Verdict: FAIL, 2 blocking.
+
+B1. `reset-collection-lists.ts` — the three comment lines directly ABOVE the `analytics`
+entry still read "`daily` is deliberately ABSENT: those rows are BUT-2044, still open, and
+leaving them out is what keeps the report naming them (BUT-2043)", while the same commit adds
+`"daily"` to that entry's `subcollections`. Unchanged context in the diff; falsified by the
+`+` lines four rows below it. Remedy: STRIKE those two sentences (the replacement text is
+already written inside the new object literal).
+
+B2. `tagConfigs` was filed in `COLLECTIONS_DELIBERATELY_UNTOUCHED` under the section header
+"--- Anti-abuse state a reset must NOT clear ---". It is a dead pre-rename twin nothing reads;
+the header is a universal over the entries beneath it, so the entry ships a false reason with
+no line of its own text wrong. Measured that the move is assertion-neutral: every consumer
+(`scenario_everyCollectionIsDecided`, `DATABASE_ONLY_ORPHANS`) reads KEYS and value LENGTH,
+none reads position. Correct group: "Collections with no writer on any of the three surfaces".
+
+Non-blocking, in severity order:
+- The migration re-grants a CLIENT READ, not just an export read. `firestore.rules:3045` has a
+  collection-group `friend_categories` rule letting any uid in `friendUserIds` read the row;
+  the camelCase path has no block at all (verified). So moving the row hands its members a
+  read they did not have and re-activates a category dead since 2026-03-19. Neither the
+  docstring nor `EXPORT_EXEMPT.friendCategories` names this; both argue only export+erasure.
+- `EXPORT_EXEMPT.friendCategories` asserts "nothing here is absent from the bundle", which the
+  same commit's `USER_SUBCOLLECTIONS` comment contradicts ("this sweep covers an account that
+  still holds one"), and which the group's own header already records as an open residual
+  ("erasable but were never exportable … Malin's, and has not been asked"). Strike the
+  sentence; the citation carries the entry.
+- `migrate-friend-categories.ts` has no test, though `migrateUser` is exported and its
+  docstring says it returns its outcome "so a test can assert the outcome". The destructive
+  branch (live doc exists ⇒ legacy row deleted unread) is unexercised and, per the ticket's own
+  measurement, unreachable in production — so nothing has ever run it. Either drive it through
+  a small local fake or strike the clause.
+- `DATABASE_ONLY_ORPHANS` carries "5 rows measured 2026-09-08" for `tagConfigs`; the
+  `rateLimits` entry two files over carries "5 rows … on 2026-09-07". Same number, adjacent
+  dates, unverifiable from the repo. Paste the dry-run line or strike the numeral (the date
+  plus "see its register entry" suffices).
+- No audit row for the migration's cross-tree move+delete of personal data; console output
+  only, `process.exitCode` on failure. `--live` is the sole gate, where `reset-user-data.ts`
+  requires a typed `CONFIRMATION_PHRASE`. Bounded: `initializeAdminApp` hard-pins
+  `projectId: "butlery-app-1"`, so wrong-project drift is impossible — checked before filing.
+- The brief stated the two-subject erasure semantics for `friend_requests` are "written as a
+  NAMED RESIDUAL in code". They are not: grepped the whole staged diff — no sentence anywhere
+  says the delete erases the counterparty's record of a pending request, or that nobody has
+  reviewed that. So the residual currently has no record in code OR in
+  `accepted-deviations.md`. A reviewer's brief is as falsifiable as a code comment.
+
+Framing questions answered. (1) The DPO seat's asymmetry (an exemption is a deviation needing
+Malin; disclosing is the default) is SOUND, and the same-data proof is done the way the
+knowledge file demands — via the rename commit, not by name similarity. It is UNDER-SCOPED
+twice: `social_export_manager` ships `entry['data']` whole, so `friendUserIds` (other members'
+uids) rides along, i.e. the inherited decision has an Art. 15(4) component; and the read-grant
+above. (2) Parameterising rather than copying `cleanupSocialRequests` is the right call — one
+implementation of a two-subject contract. But "it inherits" overstates settledness AND the
+residual is unwritten; this repo's convention for a conservative call taken without asking her
+is an OPEN entry in `.claude/rules/accepted-deviations.md` (five entries of that exact form),
+because that file is what a plan greps and a code comment is not.
+
+Clean and worth recording: the parameterised sweep is audited per delete with `targetUid` =
+the other party; the probe leg is per FIELD with its own control, so folding it back into the
+single-field `probes` array reddens; `friendCategories` resolves through the migration's
+file-local `const LEGACY`, so the coverage guard's staleness check sees it and
+`KNOWN_SUBCOLLECTION_NAMES` does not go stale; `CollectionTarget.subcollections` does not
+drive the walk, so adding `daily` changes no destructive behaviour.
+
+---
+
+## 2026-09-08 — BUT-2044 close-out gate (re-review): both blockers fixed, one premise ahead of reality
+
+Re-reviewed the same 16-file staged set after the two blocking findings above were fixed.
+Verdict: pass, 0 blocking.
+
+Both blockers verified closed by reading the files, not the brief. B1: the "`daily` is
+deliberately ABSENT" sentences are gone; the `analytics` entry now carries its reason inside
+the object literal and names the BUT-1789 asymmetry (that deviation governs the ACCOUNT
+cascade; this script deletes `analytics` whole) instead of asserting the aggregates survive.
+B2: `tagConfigs` sits under "Collections with no writer on any of the three surfaces". Prior
+non-blockings applied: the collision branch now leaves the legacy row standing and reports it
+(`skippedExisting` + a `failures` line + `process.exitCode = 1`), pinned by three cases in the
+new `migrate-friend-categories.test.ts` whose fake throws on any collection name other than the
+two literals (so mutating the destination constant reddens); the `EXPORT_EXEMPT` overclaim is
+struck; the `DATABASE_ONLY_ORPHANS` numeral is struck; and the two-subject `friend_requests`
+residual is now a dated OPEN entry in both deviation files, byte-identical (`diff` run).
+
+Re-verified from source rather than accepted (the brief asked for exactly this):
+- `firestore.rules:3045-3048` — `match /{path=**}/friend_categories/{categoryId}` grants
+  `read` to any uid in `resource.data.friendUserIds`. TRUE as the entry states.
+- The camelCase path has NO block: no `friendCategories` anywhere in `firestore.rules`, no
+  `match /users/{userId}/{document=**}` recursive grant (the only `{document=**}` matches are
+  `audit`, `_internal`, `analytics`, `metrics` and the terminal catch-all). So the orphan was
+  Admin-SDK-only, as claimed.
+- The read grant fails CLOSED for a legacy-shaped doc: the collection-group limb dereferences
+  `resource.data.friendUserIds`, so a doc without the field errors and denies. And the owner's
+  update limb is `cannotModify(['ownerId','createdAt'])`, not a `hasOnly` allowlist, so a
+  migrated legacy doc stays writable by its owner — no brick.
+- No claim of a run having happened: the entry is conditional ("moves it, and the members …
+  can then read it"), and the script header's "Measured 2026-09-08 … one row" is a read, not a
+  live move.
+- The removed `pairProbes` leg for `friend_requests` is correct and its replacement comment is
+  accurate: `request-account-deletion.ts:285` probes, `:296` deletes the Auth user, `:318`
+  computes `success`, and the only sweeper is in the trigger.
+
+Non-blocking, in severity order:
+1. `EXPORT_EXEMPT.friendCategories` now reasons "A row … IS moved to the live one by
+   `admin/migrate-friend-categories.ts`, so what the subject receives comes through the
+   reviewed section". That consequence is true only after a LIVE run of a one-time script, and
+   the measured row is still on the dead path; meanwhile `USER_SUBCOLLECTIONS` makes the
+   cascade DELETE that path on the next erasure. Same shape as the sentence superseded in the
+   BUT-2040 entry directly above it in `accepted-deviations.md` ("empties it on its next run"),
+   one collection over, and it is the REPLACEMENT text for a sentence this gate struck last
+   round. Remedy: strike the consequence clause; the "no live writer" half carries the
+   exemption.
+2. The runbook rewrite removed the only ops sentence naming the pending work ("must land
+   before launch") and its replacement names no action, so no ops document tells anyone to run
+   the migration. Remedy: one step under "Run the dry run before launch".
+3. The new deviation entry attributes to Malin the choice between migrating and building a
+   rules block, but the READ WIDENING it is titled after carries no attribution ("Accepted
+   because it is the SAME access…"). This repo's convention is to say which — shown, or chosen
+   conservatively without asking her.
+4. `friend_requests` is now ERASED with no Art. 15 counterpart, while its live twin
+   `social_requests` is exported both directions (`firebase_data_export_repository.dart:343-367`).
+   Nothing reddens: the export-superset guard ranges over `USER_SUBCOLLECTIONS` only, so a
+   TOP-LEVEL legacy spelling is outside every guard. And no client read is possible anyway (no
+   rules block), which is the same shape the `friendCategories` half needed a decision for.
+   Nobody has measured whether the collection holds rows.
+
+Knowledge-file delta: extended the dead-spelling bullet's "argued from that script" sentence to
+cover a one-time MIGRATION and the deleter-now/export-later asymmetry. The compensating
+retirement (trimming the `rate_limits`/`imports` parenthetical) was REFUSED by the auto-mode
+classifier again, so the file grew ~450 chars and still owes a retirement.

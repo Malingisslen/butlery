@@ -893,3 +893,38 @@ files in the same edit.
   The deleter side is NOT a deviation and is simply a defect closed: `probeResidualData`
   enumerates while the deleter walked a hand-written list, so every such erasure reported
   `gdprCompliant: false` about itself, correctly and unclearably. BUT-2040, 2026-09-08
+
+- **A `friend_requests` / `social_requests` row names TWO people, and erasing either
+  account deletes the whole row — including the counterparty's record of a request they
+  sent or received (BUT-2044, 2026-09-08).** `cleanupSocialRequests` runs two queries
+  (`fromUserId`, `toUserId`) and deletes every match, staging one `audit_logs` row per
+  delete with `targetUid` set to the OTHER party. BUT-2044 extended that same function to
+  the pre-rename spelling rather than copying it, so the behaviour is unchanged and one
+  implementation carries it.
+  **Written down because it was NOT inherited from a decision — it was inherited from
+  CODE.** No entry in this file records that the trade was ever put to Malin for
+  `social_requests` itself, so "it inherits" describes what the code does, not a call
+  somebody made. Chosen conservatively without asking her; deciding whether a counterparty
+  keeps their copy of a request is hers, and it is open.
+  Also open, and the reason this is not merely academic: the row carries a free-text
+  `message` one person wrote to the other, so the deleted copy is content, not just a
+  pointer. BUT-2044, 2026-09-08
+
+- **Moving a `friendCategories` row to the live spelling GRANTS ITS MEMBERS A READ they did
+  not have (BUT-2044, 2026-09-08).** `firestore.rules` carries a collection-group rule
+  letting any uid in `friendUserIds` read a `friend_categories` row; the pre-rename
+  camelCase path has no block at all, so a row sitting there was readable by nobody but the
+  Admin SDK. `admin/migrate-friend-categories.ts` moves it, and the members named inside it
+  can then read it.
+  **Malin's explicit call, 2026-09-08**, taken over the alternative: building a new
+  `firestore.rules` read block for the dead spelling so the Art. 15 export could reach it
+  there. The export runs on the CLIENT SDK, so without a block every export read of that
+  path is denied for every user — the choice was a new rules surface for a spelling nothing
+  writes, or moving the row onto the reviewed path. She chose the move.
+  Accepted because it is the SAME access every other category of that owner already grants,
+  and because it is what makes the row erasable by `cleanupGroupMemberships` — which queries
+  `friend_categories` and therefore never reached the orphan, so other people's uids inside
+  it survived THEIR erasure too.
+  Recorded here rather than only in the script's header, because a plan greps these files
+  and not a one-time script. Raised by the `firebase-backend-security` and
+  `cloud-functions-specialist` gates. BUT-2044, 2026-09-08

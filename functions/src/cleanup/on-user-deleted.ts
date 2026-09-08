@@ -175,7 +175,9 @@ export async function cleanupUserSocialData(
   results.friendsRemoved = friendCleanup.friendsRemoved;
 
   // 2. Clean up social requests (sent and received) — formerly friend_requests
-  results.socialRequestsCleaned = await cleanupSocialRequests(userId);
+  results.socialRequestsCleaned =
+    (await cleanupSocialRequests(userId)) +
+    (await cleanupSocialRequests(userId, LEGACY_FRIEND_REQUESTS));
 
   // 3. Remove from group member arrays
   results.groupMembershipsRemoved = await cleanupGroupMemberships(userId);
@@ -747,8 +749,22 @@ async function cleanupFriendshipsAndDecrementCounts(
 }
 
 /**
+ * The pre-rename spelling of `social_requests`, merged away by `6091b004c`
+ * (2026-03-24) with no migration. Not in `Collections` because nothing may
+ * start writing it — it exists here only to be swept (BUT-2044).
+ */
+const LEGACY_FRIEND_REQUESTS = "friend_requests";
+
+/**
  * Clean up social requests (renamed from friend_requests in BUT-761) involving
  * the deleted user.
+ *
+ * BUT-2044: takes the collection as an argument so the PRE-RENAME spelling is
+ * swept by the same code rather than a copy. This docstring already named the
+ * rename while only the new spelling was swept, leaving rows that carry two
+ * uids and a free-text message reachable by no erasure path. They are TOP-LEVEL, so `probeResidualData`'s enumeration under
+ * `users/{uid}` never saw them either — silent, where BUT-2040's equivalent at
+ * least reported itself incomplete.
  *
  * BUT-886: each request delete is a cross-user write — the request doc carries
  * both `fromUserId` and `toUserId`. We stage one audit_logs row per delete
@@ -756,18 +772,30 @@ async function cleanupFriendshipsAndDecrementCounts(
  * request is being scrubbed). Per-doc op count is 2 (delete + audit), so halve
  * the chunk cap to stay under the 500-op Firestore batch limit.
  */
-async function cleanupSocialRequests(userId: string): Promise<number> {
+async function cleanupSocialRequests(
+  userId: string,
+  collection: string = Collections.socialRequests,
+): Promise<number> {
+  return cleanupSocialRequestsWithDb(db, userId, collection);
+}
+
+/** Test seam — injected Firestore lets the sweep run against a stub. */
+export async function cleanupSocialRequestsWithDb(
+  db: admin.firestore.Firestore,
+  userId: string,
+  collection: string = Collections.socialRequests,
+): Promise<number> {
   let count = 0;
 
   // Requests sent by the deleted user
   const sentRequests = await db
-    .collection(Collections.socialRequests)
+    .collection(collection)
     .where("fromUserId", "==", userId)
     .get();
 
   // Requests received by the deleted user
   const receivedRequests = await db
-    .collection(Collections.socialRequests)
+    .collection(collection)
     .where("toUserId", "==", userId)
     .get();
 
@@ -785,7 +813,7 @@ async function cleanupSocialRequests(userId: string): Promise<number> {
       subjectUserId: userId,
       targetUid: typeof otherParty === "string" ? otherParty : null,
       operation: "cascade_delete",
-      resourceType: Collections.socialRequests,
+      resourceType: collection,
       resourceId: doc.id,
     });
     count++;
@@ -807,7 +835,7 @@ async function cleanupSocialRequests(userId: string): Promise<number> {
 
 /**
  * D3: Remove deleted user from group friendUserIds arrays.
- * Uses collectionGroup query to find all friendCategories containing this user.
+ * Uses collectionGroup query to find all friend_categories containing this user.
  *
  * Strict mode: a failed chunk aborts the cascade. The reverse-friendship
  * cleanup (D1) and friend-count decrement (D4) depend on a converged

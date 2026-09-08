@@ -114,6 +114,15 @@ async function run_(): Promise<void> {
   await recvReqRef.set({ fromUserId: otherUser, toUserId: victim, status: "pending" });
   await controlReqRef.set({ fromUserId: friend, toUserId: otherUser, status: "pending" });
 
+  // 2b. BUT-2044: the PRE-RENAME spelling. `cleanupUserSocialData` sweeps it
+  //     with the same function and a second argument, and THIS is the only
+  //     place that argument is pinned — a unit test on the function itself
+  //     stays green when the second call site is deleted.
+  const legacySentRef = db.collection("friend_requests").doc(`legacy-sent-${RUN}`);
+  const legacyCtrlRef = db.collection("friend_requests").doc(`legacy-ctrl-${RUN}`);
+  await legacySentRef.set({ fromUserId: victim, toUserId: otherUser, message: "hej" });
+  await legacyCtrlRef.set({ fromUserId: friend, toUserId: otherUser, message: "hej" });
+
   // 3. feedback authored by victim; another user's feedback as scope control.
   const victimFeedbackRef = db.collection("feedback").doc(`fb-${RUN}`);
   const controlFeedbackRef = db.collection("feedback").doc(`fb-ctrl-${RUN}`);
@@ -138,6 +147,16 @@ async function run_(): Promise<void> {
   check("sent social_request (victim→other) deleted", !(await sentReqRef.get()).exists);
   check("received social_request (other→victim) deleted", !(await recvReqRef.get()).exists);
   check("unrelated social_request (friend→other) retained", (await controlReqRef.get()).exists);
+
+  // ── BUT-2044: the pre-rename spelling is swept by the same run ──
+  check(
+    "legacy friend_requests row involving victim deleted",
+    !(await legacySentRef.get()).exists,
+  );
+  check(
+    "unrelated legacy friend_requests row retained",
+    (await legacyCtrlRef.get()).exists,
+  );
 
   // ── friendsCount decrement ──
   const friendProfile = await db.collection("public_profiles").doc(friend).get();

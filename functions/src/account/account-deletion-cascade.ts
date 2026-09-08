@@ -243,29 +243,45 @@ export async function probeResidualData(
       errName: err instanceof Error ? err.name : typeof err,
     });
   }
-  // BUT-1450: notification_delivery is scoped by senderId / targetUserId, NOT
-  // userId, so it needs its own two-field probe — a userId==uid probe would
-  // silently match zero (the realtime_recipes wrong-field trap).
-  for (const field of ["senderId", "targetUserId"] as const) {
-    try {
-      const snap = await db
-        .collection("notification_delivery")
-        .where(field, "==", uid)
-        .count()
-        .get();
-      const count = snap.data().count ?? 0;
-      if (count > 0) {
-        residual += count;
-        logger.warn(
-          `[deletion-cascade] residual in notification_delivery.${field}: ${count} docs`,
+  // Two-field probes: these collections are scoped by a PAIR of uid fields, not
+  // by `userId`, so a `userId == uid` probe would silently match zero — the
+  // realtime_recipes wrong-field trap.
+  //
+  // BUT-1450: notification_delivery (senderId / targetUserId).
+  //
+  // `friend_requests` is NOT here, and neither is `social_requests`, for the
+  // same reason `TRIGGER_OWNED_SUBCOLLECTIONS` exists: both are swept by
+  // `onUserDeleted`, which `requestAccountDeletion` fires AFTER this probe. A
+  // leg here would count rows the trigger erases seconds later and turn every
+  // affected erasure into `gdprCompliant: false` and `success: false` — a false
+  // failure on an Art. 17 path. What DOES surface an
+  // orphaned spelling is the dry run's unknown-collection report (BUT-2043) —
+  // it reads the database, not the erasure path.
+  const pairProbes: ReadonlyArray<readonly [string, readonly string[]]> = [
+    ["notification_delivery", ["senderId", "targetUserId"]],
+  ];
+  for (const [collection, fields] of pairProbes) {
+    for (const field of fields) {
+      try {
+        const snap = await db
+          .collection(collection)
+          .where(field, "==", uid)
+          .count()
+          .get();
+        const count = snap.data().count ?? 0;
+        if (count > 0) {
+          residual += count;
+          logger.warn(
+            `[deletion-cascade] residual in ${collection}.${field}: ${count} docs`,
+          );
+        }
+      } catch (err) {
+        residual += 1;
+        logger.error(
+          `[deletion-cascade] residual probe failed: ${collection}.${field}`,
+          { err },
         );
       }
-    } catch (err) {
-      residual += 1;
-      logger.error(
-        `[deletion-cascade] residual probe failed: notification_delivery.${field}`,
-        { err },
-      );
     }
   }
   // BUT-1766/BUT-1768: more collections whose owner handle is NOT `userId`, so
@@ -3220,6 +3236,13 @@ export const EXPORT_EXEMPT: Record<string, string> = {
     "received_menus, and the shared menus themselves are exported by the " +
     "shared_content section. Same top-level-vs-subcollection name collision " +
     "as fcm_tokens. Legacy sweep only.",
+  friendCategories:
+    "NO LIVE WRITER of users/{uid}/friendCategories — the PRE-RENAME spelling " +
+    "of friend_categories, which IS exported. `admin/migrate-friend-categories.ts` " +
+    "moves a row under this spelling onto the live one. The alternative was a new " +
+    "firestore.rules read block for the dead spelling, because the export runs " +
+    "on the CLIENT SDK and that path has none. Malin chose the migration, " +
+    "2026-09-08. Legacy sweep only.",
   rateLimits:
     "NO LIVE WRITER of users/{uid}/rateLimits — the PRE-RENAME spelling of " +
     "rate_limits, which is also exempt. One collection under two spellings, " +
@@ -3348,6 +3371,12 @@ export const USER_SUBCOLLECTIONS: readonly string[] = [
   // policy is keyed to an exact collection id, and `rateLimits` is not
   // `rate_limits`.
   "rateLimits",
+  // BUT-2044: the PRE-RENAME spelling of `friend_categories`, from the SAME
+  // rename commit as `rateLimits` above (b9a95bd02, 2026-03-19).
+  // `admin/migrate-friend-categories.ts`
+  // moves such a row to the live spelling; this sweep covers an account that
+  // still holds one, including the collision case that script leaves standing.
+  "friendCategories",
   // Pooled ratings (decision 12): the user's frozen pool events. Each delete
   // fires the Stage-B trigger (onPooledRatingEventWritten), which recomputes
   // the affected pool's canonical_recipe_stats — so erasing the rater also

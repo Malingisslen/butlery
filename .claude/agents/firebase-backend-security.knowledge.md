@@ -546,13 +546,33 @@ name which doc each end touches before approving it.
   re-creates the exact name-collision the export exemptions warn about (`fcm_tokens`,
   `user_shared_menus` — same word, different data), so the suppression must be stated as a
   blind spot in the report's own scope line, never asserted as "accounted for". And when a
-  self-clearing residual is argued from that script, the premise is a LIVE run: a dry run
-  deletes nothing, so "cleared on the next run" is false wherever the next run is the dry
-  run the same change tells the operator to do. Silencing such a report by adding a name to
+  residual is argued from ANY hand-run script — the reset, or a one-time MIGRATION — the
+  premise is a LIVE run: a dry run deletes and moves nothing, so "cleared on the next run",
+  or an export exemption reasoning "the row IS moved, so the bundle carries it", is false
+  until a person runs it, and nothing in the repo records that they did. Grade the two
+  halves by WHEN each takes effect: adding the dead spelling to the cascade's `subs` makes
+  the DELETER live on the next erasure while exportability waits on that run, so the
+  exemption must not claim the subject already receives it. Put the pending run in the ops
+  runbook, not only in the script's own header. Silencing such a report by adding a name to
   a list is a BEHAVIOUR question first: open the consumer and check whether that list only
   documents or also DRIVES the sweep (`CollectionTarget.subcollections` is a reader's aid;
   `.name` is what the walk iterates), because the same edit that quiets a report can widen a
-  destructive run. When a founder's answer turns out to rest on a mechanism that is false,
+  destructive run — and the sentence JUSTIFYING the old contents sits ABOVE the literal, so
+  it ships in the diff as unchanged CONTEXT, where the author's edit and the reviewer's eye
+  both stop ("`daily` is deliberately ABSENT" survived the commit adding `daily`): read the
+  context lines above every changed list literal, and grade a register's SECTION HEADERS as
+  universals over the entries beneath them (a `COLLECTIONS_DELIBERATELY_UNTOUCHED` key filed
+  under "anti-abuse state a reset must NOT clear" ships a false reason with no line of its
+  own text wrong; consumers there read KEYS only, so MOVE it rather than reword the header).
+  MIGRATING rows from a dead spelling to the live one changes THREE reachabilities, not the
+  one the ticket is about: export, erasure, AND CLIENT READ — the live name usually carries a
+  `firestore.rules` block the dead one lacks, often a collection-group read granting the
+  document's own member array, so the move re-grants third parties a read and re-activates a
+  dormant feature. Argue all three, never only the Art. 15 half; and grade the copy-forward's
+  CONFLICT branch (live doc already exists) as destructive — deleting the legacy row there
+  discards divergent content with no dump, on a branch the measurement that authorised the
+  run usually proves unreachable and therefore never exercises.
+  When a founder's answer turns out to rest on a mechanism that is false,
   supersede the MECHANISM in place and leave the DECISION standing — quote the withdrawn
   sentence verbatim so a grep finds both, and say the answer was re-put to her.
 - Replacing a guard's SOURCE-TEXT parse with a real import of the production constant is the

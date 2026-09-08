@@ -134,6 +134,8 @@
     "test:request-account-deletion": "ts-node src/__tests__/request-account-deletion.test.ts",
     "test:account-deletion-cascade": "ts-node src/__tests__/account-deletion-cascade.test.ts",
     "test:unknown-collections": "ts-node src/__tests__/unknown-collections.test.ts",
+    "test:migrate-friend-categories": "ts-node src/__tests__/migrate-friend-categories.test.ts",
+    "test:legacy-friend-requests": "ts-node src/__tests__/legacy-friend-requests.test.ts",
     "test:cleanup-expired-social-requests": "ts-node src/__tests__/cleanup-expired-social-requests.test.ts",
     "test:cleanup-old-notifications": "ts-node src/__tests__/cleanup-old-notifications.test.ts",
     "test:verify-signup-age": "ts-node src/__tests__/verify-signup-age.test.ts",

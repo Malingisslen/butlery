@@ -102,6 +102,13 @@ export const COLLECTIONS_TO_DELETE: CollectionTarget[] = [
   { name: "shared_content" },
   { name: "shared_personal_tags" },
   { name: "social_requests" },
+  // BUT-2044: the PRE-RENAME spelling, merged into `social_requests` by
+  // `6091b004c` (2026-03-24) with no migration. A row carries `fromUserId`,
+  // `toUserId` and a free-text `message`, so it is user data by content, not
+  // just by key. Swept by `cleanupSocialRequests` per account since BUT-2044;
+  // this entry is the separate whole-collection sweep, which the per-uid step
+  // does not cover.
+  { name: "friend_requests" },
   { name: "group_invitations" },
   {
     name: "conversations",
@@ -143,11 +150,16 @@ export const COLLECTIONS_TO_DELETE: CollectionTarget[] = [
   { name: "userFriends" },
   { name: "userSettings" },
   { name: "friend_categories" },
-  // `effectiveness` has a dedicated cascade step (`deleteNotificationEffectiveness`)
-  // and is named by no other register, so the unknown-collection report needs it
-  // here. `daily` is deliberately ABSENT: those rows are BUT-2044, still open,
-  // and leaving them out is what keeps the report naming them (BUT-2043).
-  { name: "analytics", subcollections: ["effectiveness"] },
+  {
+    name: "analytics",
+    // `effectiveness` and `daily` are both erased by the recursive walk; they
+    // are listed so the unknown-collection report stays quiet about them.
+    // `daily` holds the product's own aggregates under seven parents. The
+    // accepted deviation that KEEPS `analytics/feature_retention/daily` governs
+    // the ACCOUNT CASCADE, not this script, which deletes `analytics` whole —
+    // a different call nobody has put side by side with it. Named, not changed.
+    subcollections: ["effectiveness", "daily"],
+  },
   { name: "shopping_list_invitations" },
   { name: "user_shared_menus" },
   { name: "user_shared_shopping_lists" },
@@ -358,6 +370,14 @@ export const COLLECTIONS_DELIBERATELY_UNTOUCHED: Record<string, string> = {
     "functions/src or lib/. Nothing can put a row here, so there is nothing " +
     "for a reset to delete; the block is defence-in-depth, not a live store.",
 
+  tagConfigs:
+    "Dead pre-rename twin of `tag_configs`, from the same commit as the other " +
+    "twelve camelCase renames (b9a95bd02, 2026-03-19). Identical shape minus " +
+    "`uploadedAt`; `updatedBy` is an admin field written by the tag-config " +
+    "tooling, not user content. So a reset of USER data has no business " +
+    "deleting it — and it needs no protection either, because nothing reads " +
+    "it. Clearing the duplicate is its own cleanup, not this script's job.",
+
   notification_metrics:
     "Client writes are `if false` in firestore.rules, and the name appears in " +
     "functions/src only in this register — no Cloud Function writes it. Named " +
@@ -370,6 +390,26 @@ export const COLLECTIONS_DELIBERATELY_UNTOUCHED: Record<string, string> = {
     "holds no uid, email or birth year — only a hashed IP and a count. " +
     "Wiping it hands a fresh quota to whoever just tripped the cap.",
 };
+
+/**
+ * Registered collections the DATABASE holds and no SOURCE names.
+ *
+ * BUT-2044. The coverage guard derives its universe from `firestore.rules` plus
+ * a scan of `functions/src`, and its staleness check reads a register entry
+ * naming nothing in that universe as text describing something that no longer
+ * exists. For an ORPHAN that reading is backwards: the collection is real, has
+ * rows, and is invisible to source precisely because the code stopped naming it
+ * — which is the class BUT-2043's report exists to surface.
+ *
+ * An entry here is exempt from the staleness check and from nothing else. It
+ * still needs a written reason in the register, and the dry run still reports
+ * it until it is registered. Membership is a claim about the DATABASE, so it is
+ * only ever added after a run has measured the rows.
+ */
+export const DATABASE_ONLY_ORPHANS = new Set<string>([
+  // Rows measured 2026-09-08.
+  "tagConfigs",
+]);
 
 /**
  * Names that appear as SUBCOLLECTIONS in this codebase and are not top-level
@@ -397,6 +437,7 @@ export const COLLECTIONS_DELIBERATELY_UNTOUCHED: Record<string, string> = {
 export const KNOWN_SUBCOLLECTION_NAMES = new Set<string>([
   "activeUsers", // recipePresence/{id}, shoppingPresence/{id}, realtime_*/{id}
   "block_mirror", // users/{uid}
+  "friendCategories", // users/{uid}, pre-rename spelling (BUT-2044)
   "comments", // menu_comments/{menuId}, and the {path=**} comment group
   "engagements", // shared_recipes/{id}, shared_menus/{id}
   "items", // unified_shopping_lists/{listId}, shared_shopping_lists/{id}

@@ -3008,8 +3008,14 @@ async function scenario_everyCollectionIsDecided(): Promise<void> {
       "one-word string reads as decided while recording nothing",
   );
 
+  // BUT-2044: an entry naming a DATABASE-ONLY orphan is exempt. Source is not
+  // the universe — that is the premise BUT-2043's report was built to work
+  // around — so for those the "names nothing that exists" reading is inverted:
+  // they exist, with rows, and are invisible to source because the code stopped
+  // naming them. Every other entry is still held to it.
+  const dbOnly: Set<string> = lists.DATABASE_ONLY_ORPHANS;
   const staleUntouched = [...untouchedNames].filter(
-    (name) => !discovered.includes(name),
+    (name) => !discovered.includes(name) && !dbOnly.has(name),
   );
   check(
     "no deliberately-untouched entry names a collection that is gone",
