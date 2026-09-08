@@ -3435,3 +3435,42 @@ hemma i commit-meddelandet och på ärendet, där den går att kontrollera mot n
 **Och en gång till: fixa kopian, missa syskonet.** Jag strök "migrerade ingen" i en fil,
 rapporterade det som gjort, och samma mening stod kvar i två andra. Grep konceptet, inte
 frasen — och verifiera mot den STAGADE bloben, inte mot filen du tänkte på.
+
+---
+
+## BUT-2032 — en stubbe som tappar en skrivning gör en ny assertion tom, och en enda struken sats tvingar fram en ny grindgranskning (2026-09-08)
+
+**En stubbes tysta no-op mätte noll och läste som en riktig mätning.** Kaskadstegets
+auditrader stagas med `batch.set` mot ett nytt dokument. Testfilens `FakeFirestore`
+körde både `batch.set` och `batch.update` genom `applyUpdate`, som returnerar tyst när
+dokumentet inte finns (`if (!existing) return;`) — så varje auditrad kaskaden stagade
+var osynlig för varenda assertion i filen. Mitt scenario räknade dem, fick 0, och
+`audits.every(...)` på en tom array gav dessutom PASS på raden bredvid.
+
+Det syntes bara för att jag råkade assertera en **siffra** på något stubben inte kunde
+skapa. En assertion av formen "raden finns och ser rätt ut" hade varit grön och tom på
+samma gång. Och `.doc()` utan id gav varje anrop `audit_logs/undefined`, så tre rader
+kollapsade till en — en andra väg till samma falska siffra.
+
+Regeln: **när ett nytt kodsteg skriver genom en verb som stubben inte har modellerat,
+verifiera stubben före assertionen.** `set` SKAPAR, `update` kräver att dokumentet finns
+— att köra båda genom samma väg är inte en förenkling, det är en tyst filtrering av den
+ena. Och en `every()`/`all()` över en tom mängd är alltid sann: para den med en
+längdkontroll, annars är den gröna raden ett mått på ingenting.
+
+**Grindens täckning är nycklad på BYTES, så en struken sats efter en godkänd granskning
+fäller commiten.** Jag tog emot granskarens enda fynd (en osann sats i min egen
+kommentar), strök den, och grinden vägrade: reviewern hade läst versionen före
+ändringen, alltså aldrig ändringen. Den befintliga lärdomen handlar om att redigera
+MEDAN en granskare läser; det här är efterläget, och det kostar en hel omgång till.
+Konsekvens: samla fynden, gör alla rättelser i en batch, stage om **en** gång, och
+skicka tillbaka samma agent med exakt vad som ändrats — den läser om på minuter i
+stället för att granska om från noll.
+
+**Det panelen gav som koden inte hade gett mig.** Tre av de elva villkoren gick inte att
+härleda ur filen jag skrev i: taket-med-avböj (tre precedensmönster i samma fil som jag
+inte speglat), att `EXPORT_EXEMPT` strukturellt inte kan hålla en toppnivåsamling (dess
+`stale`-check hade blivit röd), och kapplöpningen mellan `onReportCreated` och
+raderingen — en trigger utan ordningsrelation till kaskaden, vilket är en tredje
+kategori filen inte har ett begrepp för. Det sista hittades av arkeologsätet, som är det
+enda som letar efter historik snarare än efter stake.
