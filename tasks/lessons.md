@@ -3351,3 +3351,46 @@ annat. Min plan ärvde felräkningen ordagrant ur ärendetexten.
 indexet medan de läser, och stagas något om är varje grinds tidigare pass inaktuellt —
 commit-grinden fällde mig på exakt det: `cloud-functions-specialist` hade graderat
 bytesen före elva rättelser.
+
+## Ett verktyg som redan har svaret, och nio rundor rättelser (BUT-2043, 2026-09-08)
+
+**Buggklassen ingen kod kan hitta.** En död namnändring har inga skrivare, så varje
+källskannande vakt är blind för den per konstruktion. Det som hittade BUT-2040 var en
+människa som läste en torrkörnings utskrift. Fixen är inte en schemalagd rutin utan att
+lägga jämförelsen i verktyget: skriptet UPPRÄKNADE redan alla undersamlingsnamn, det
+jämförde dem bara aldrig mot listorna. Rapporten hittade fyra obeslutade samlingar på sin
+FÖRSTA körning, varav en var samma artikel 17-lucka en stavning bort.
+
+**En rapport som alltid larmar är en rapport ingen läser** — och den formen är lätt att
+bygga av misstag. Första utkastet jämförde mot skriptets läsar-inventering, som filen
+själv säger är en läsarhjälp och inte en förteckning: den hade larmat på åtta
+undersamlingar kaskaden raderar korrekt, fyra av dem på i princip varje konto. Läs varje
+register som faktiskt raderar, inte det som råkar vara närmast.
+
+**Härled aldrig en egenskap ur ett variabelnamn.** `TRIGGER_OWNED_SUBCOLLECTIONS` säger
+vem som STÄDAR namnen, inte vem som SKRIVER dem — båda skrivs vid vanlig
+användning. Jag skrev en operativ instruktion på den felslutna slutsatsen: "syns en sådan
+har kill switchen kapplöpts", alltså en feldiagnos på det destruktiva skriptets väg,
+utlöst av något som syns på varje normal körning. Grinden som fångade det var den enda som
+läste SKRIVARNA i stället för namnet.
+
+**Fel prejudikat är samma fel som fel analogi.** Planen ville flytta listan till en
+sidoeffektsfri modul "precis vägen systerfilen gick". Den utbrytningen fanns bara för att
+systerfilen kör `main()` vid import — ett problem kaskaden inte har. Formlikhet är inte
+orsak, och det är felklassen repots eget avvikelseregister finns för att dokumentera.
+
+**Nio granskningsrundor, och varje runda hittade en osann mening i text skriven som en
+RÄTTELSE.** Fem former, alla mätta: en siffra som dubbelbokade ett objekt (tre checkar,
+varav en redan redovisad i ett annat scenario); en dinglande sats efter att jag strukit ett
+led ur en uppräkning, så "Neither" fick ett subjekt och blev falskt; ett resonemang som
+påstod att en variabel konsumeras på ett sätt när den används på två, 35 rader isär; ett
+provenienspåstående dubblerat direkt efter att jag pekat om det första; och feldiagnosen
+ovan. Kurvan är tydlig: rundorna 1-3 hittade defekter, rundorna 5-9 hittade meningar.
+
+**Det som faktiskt fungerar är att STRYKA.** Varje strykning i den här sessionen höll.
+Varje omformulering födde ett nytt fynd. Skriv aldrig en siffra eller en kvantifierare i
+en rättelse — och när en grind säger "stryk, formulera inte om", gör det bokstavligt.
+
+**Commit-grinden vet mer än jag om vad som granskats.** Den fällde ett försök där en
+reviewer hade graderat bytesen före elva rättelser och aldrig läst fyra av filerna. Att
+grindarna passerat en gång betyder inte att de passerat de bytes som ska shippas.
