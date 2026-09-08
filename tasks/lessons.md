@@ -3394,3 +3394,44 @@ en rättelse — och när en grind säger "stryk, formulera inte om", gör det b
 **Commit-grinden vet mer än jag om vad som granskats.** Den fällde ett försök där en
 reviewer hade graderat bytesen före elva rättelser och aldrig läst fyra av filerna. Att
 grindarna passerat en gång betyder inte att de passerat de bytes som ska shippas.
+
+## Sonden, triggern, och sju meningar om vad som hade hänt (BUT-2044, 2026-09-08)
+
+**En vakt kan vara bredare än sin raderare genom TIMING, inte genom täckning.**
+`probeResidualData` körs på rad 285 i raderingsflödet, `auth.deleteUser` på 296, och
+`success` kräver noll residual på 318. Ett sondben för något som `onUserDeleted` sopar
+räknar alltså rader som raderas sekunder senare — och gör varje sådan kontoradering till
+`gdprCompliant: false` och `success: false` mot användaren. Ett FALSKT misslyckande på en
+artikel 17-väg. Filen jag byggde i varnar ordagrant för det, i en kommentar jag citerat två
+timmar tidigare, och mina två nya prov pinnade det falska larmet som AVSETT beteende.
+Innan du lägger till ett sondben: fråga var raderaren körs i förhållande till sonden.
+
+**"Samma form som X" är inte ett skäl att lägga koden där X ligger.** Placeringen avgörs av
+vad som finns på platsen: kaskaden har noll `stageCascadeAuditEntry`, triggern har tretton.
+Att flytta en tvåpersonsradering till kaskaden hade tappat audit-raden som namnger motparten.
+
+**Ett prov kan testa funktionen och inte kopplingen, och skillnaden är hela ändringen.**
+Jag skrev ett prov för raderingen, påstod att det pinnade den, och mutationsprovade: att ta
+bort själva ANROPET lämnade provet grönt. Funktionen fanns redan; det som saknades var att
+någon anropar den med den gamla stavningen. Mutera anropsstället, inte bara funktionen.
+
+**Härled inget ur ett variabelnamn.** `TRIGGER_OWNED_SUBCOLLECTIONS` säger vem som STÄDAR
+namnen, inte vem som SKRIVER dem — båda skrivs vid vanlig användning. På den felslutsatsen
+skrev jag en operativ instruktion ("syns en sådan har kill switchen kapplöpts") som hade
+fått en operatör att feldiagnosticera på ett destruktivt skripts väg.
+
+**En källskannande vakt läser "ingen kod nämner den" som "den finns inte".** För en
+föräldralös samling är det baklänges: den finns, har rader, och är osynlig för källkod
+just för att koden slutade nämna den. Det behövde ett eget begrepp
+(`DATABASE_ONLY_ORPHANS`), inte ett kringgående.
+
+**Sju osanna meningar, alla om att något HÄNT.** "shippades i en dag" (sondbenet fanns
+aldrig i en commit — `git log -S` gav noll), "migrerade ingen" (commiten skrev ett
+migreringsverktyg; om det kördes vet ingen), "rows were MOVED" (sant, men bara efter en
+skarp körning ingen kan belägga ur repot), "the report has been clean exactly once".
+Klassen är: **ett påstående om historik i koden**. Skriv vad koden GÖR; historiken hör
+hemma i commit-meddelandet och på ärendet, där den går att kontrollera mot något.
+
+**Och en gång till: fixa kopian, missa syskonet.** Jag strök "migrerade ingen" i en fil,
+rapporterade det som gjort, och samma mening stod kvar i två andra. Grep konceptet, inte
+frasen — och verifiera mot den STAGADE bloben, inte mot filen du tänkte på.
