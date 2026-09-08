@@ -3474,3 +3474,48 @@ inte speglat), att `EXPORT_EXEMPT` strukturellt inte kan hålla en toppnivåsaml
 raderingen — en trigger utan ordningsrelation till kaskaden, vilket är en tredje
 kategori filen inte har ett begrepp för. Det sista hittades av arkeologsätet, som är det
 enda som letar efter historik snarare än efter stake.
+
+---
+
+## BUT-2046 — en chunkad migrering går på offset, och "läs om och fråga vad som återstår" är en annan sak (2026-09-08)
+
+**Buggen jag byggde och som ett prov fångade.** Migreringen som flyttar en array till en
+subsamling måste chunkas, för en Firestore-transaktion tar högst 500 operationer inklusive
+fältnollningen. Min första chunkning läste om hela arrayen varje varv och frågade vad som
+återstod. Det ser likvärdigt ut med att gå på index och är det inte: raderingen hoppar över
+en rad som redan finns, och en rad ett tidigare varv skrivit är **omöjlig att skilja från en
+rad den levande skrivaren skrev**. Så överhoppade poster och per-post-fel registrerades en
+gång per VARV i stället för en gång per POST. Provet såg det som två identiska felsträngar.
+
+Regeln: **en chunkad migrering går på OFFSET**, så varje post besöks exakt en gång. Läs ändå
+om föräldern inuti varje transaktion — det är det som gör att en samtidig skrivning avbryter
+varvet i stället för att sopas bort av nollningen. Och töm källfältet bara på det varv som når
+SLUTET och bara om ingenting någonstans lämnats kvar; ett varv som ser sin egen slice som
+komplett vet ingenting om svansen.
+
+Räknarhygien i samma andetag: allt som skrivs inuti transaktionskroppen måste tåla att
+kroppen körs om vid konkurrens. Tilldelningar (`scanned = raw.length`) är säkra, ökningar
+(`+= 1`) är det inte om de inte nollställs överst i kroppen. Granskaren spårade det åt mig
+rad för rad, vilket var värt mer än ett omdöme.
+
+**Sonden som var grön för att den inte fanns.** Jag la till ett sondben för
+föräldradokumentet på granskarens rekommendation, körde en mutationssond på det — och sviten
+förblev grön med benet avstängt. Benet hade inget prov alls. Det är inte samma sak som ett
+vacuous prov: här fanns påståendet i koden och ingenting som höll det. **Varje nytt ben får
+sin egen mutationssond, även när det är en rad tillagd på begäran** — särskilt då, för ett
+tillägg gjort på någon annans rekommendation känns redan granskat.
+
+**Två gånger samma dag sprängde en saknad stubb-verb hela körningen.** `FakeSubcollection`
+saknade `limit()`, och `FakeRef` saknade `get()`. Runnern kör scenarierna sekventiellt med en
+enda `.catch()` längst ner, så ett `TypeError` i ett nytt scenario tar med sig alla efter det
+— vilket i utskriften ser ut som att sviten krympt, inte som ett fel. **Innan ett nytt steg
+skrivs: lista vilka VERB det anropar på stubben och kontrollera att de finns.** Lärdomen från
+BUT-2032 gällde ett verb som tyst tappade en skrivning; det här är samma klass, ett steg
+tidigare.
+
+**Och en fråga jag ställde fel.** Jag bad Malin avgöra artikel 15 för "hela samlingen" med
+ETT skäl. DPO-sätet visade att skälet bara bar halva: anmälarnas identiteter är tredje parts
+data (artikel 15(4)), men `totalReports` är personens egen uppgift, som 15(4) inte når. En
+sammanslagen fråga får ett sammanslaget svar som ser mer avgjort ut än det är. **Dela frågan
+efter vems data det är, inte efter var den ligger** — och när ett beslut vilar på ett svagare
+skäl, skriv att det gör det.
