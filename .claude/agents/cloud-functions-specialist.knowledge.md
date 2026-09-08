@@ -86,11 +86,9 @@ Triggers retry on uncaught exception; handlers must be idempotent:
 8. **Concurrent Tier-1 cascade legs (`Promise.all`) can write the same
    collection** — grep sibling legs for writers before claiming "no
    race"; make anonymising legs NOT_FOUND-tolerant PER DOCUMENT,
-   and give every new sweep its own leg in `probeResidualData` — it has
-   top-level-FIELD, `users/{uid}`-ENUMERATION and collectionGroup shapes, so
-   "the probe cannot see this collection" is never true and never a reason to
-   skip one. `strict:false` is why it matters: the deleter reports `true` over
-   a chunk it never committed.
+   and give every new sweep its own leg in `probeResidualData` — its three shapes
+   (top-level FIELD, `users/{uid}` ENUMERATION, collectionGroup) make "the probe
+   cannot see this collection" never a reason to skip one.
 9. A sweep cap's threat model comes from the write RULE it bounds, never a
     copied rationale — a bound's ABSENCE needs the same read. Never cite a rules
     LINE NUMBER.
@@ -287,11 +285,10 @@ from `(err as {code?}).code`.
   a stranger's uid and that user's deletions report `gdprCompliant:false`
   forever.
   GATE any empty-roster DELETE on the uid having been ON that roster AND on EVERY
-  denormalised roster being empty, EACH READ RAW (a DERIVED witness or a
-  `.select()` projection collapses the gate); witnesses are ROSTERS (readers)
-  only, never a discovery handle (`contributorUserIds`). It binds EVERY server
-  writer that can empty a roster, and its NON-delete branch rewrites roster
-  projections PER KEY and drops the whole-field key from the same payload.
+  denormalised roster being empty, EACH READ RAW (a DERIVED witness or `.select()`
+  projection collapses it); witnesses are ROSTERS (readers) only, never a discovery
+  handle (`contributorUserIds`). Binds EVERY server writer that can empty a roster;
+  its NON-delete branch rewrites projections PER KEY and drops the whole-field key.
   A leg with no DIRTY fixture is mutation-invisible and `strict:false` swallows
   a failed chunk, so the probe is the ONLY contradiction to `return true` — leg
   and scenario ship in one edit. A probe ERROR ADDS to residual (a sentinel,
@@ -299,22 +296,24 @@ from `(err as {code?}).code`.
 - **An ENUMERATING probe (`rootRef.listCollections()`) is BROADER than the
   deleter by construction** — any user subcollection no step erases reports
   `gdprCompliant:false` forever. A RENAMED subcollection is the case NO source scan
-  can reach (a dead spelling has no writer): the old name keeps rows the probe counts
-  and a LIST-driven deleter cannot clear, and a TTL policy is keyed to an EXACT
-  collection id, so only a dry run against prod finds it. Sweep BOTH spellings; the
-  legacy name may inherit the live one's Art. 15 exemption by CITATION only — never
-  re-describe its contents, which re-asserts a claim made about the LIVE rows.
+  reaches (a dead spelling has no writer): the old name keeps rows the probe counts,
+  no LIST-driven deleter clears and no TTL reaches (a policy is keyed to an EXACT
+  collection id) — only a prod dry run finds it. Sweep BOTH spellings; the legacy
+  name inherits the live one's Art. 15 exemption by CITATION only, never a
+  re-description of its contents.
   Ship it only with a DERIVED drift test: regex every
   `.collection(users).doc(..).collection("X")` writer across `functions/src` +
   `lib`, spelling the users token `\w*[Uu]sers\w*` (`[A-Za-z_]\w*` misses the bare
   `FirestoreCollections.users` every Dart repo writes);
-  `db.doc("users/${uid}/X/y")` strings are still missed. Bucket each name
-  into the source-PARSED `subs`, the source-PARSED exclusions (load-bearing BOTH
-  ways, own fixture), or a map whose every entry is EXERCISED (seed, run the named
-  deleter, assert gone). A deleter removing ONE DOC BY ID is
-  NOT a deleter for the COLLECTION the probe counts. Every fake
-  doc-ref then needs `listCollections()` derived from stored deeper paths,
-  never `[]` — absent, the outer catch fails CLOSED and every CLEAN fixture reddens.
+  `db.doc("users/${uid}/X/y")` strings are still missed. Bucket each name into the
+  EXPORTED `USER_SUBCOLLECTIONS` or `TRIGGER_OWNED_SUBCOLLECTIONS` — IMPORT them,
+  never parse the cascade as text (a digit-bearing name is invisible to
+  `/"([A-Za-z_]+)"/` and a quoted name in a `/* */` comment reads as an entry) —
+  or into a map whose every entry is EXERCISED (seed, run the named deleter,
+  assert gone). A deleter removing ONE DOC BY ID is NOT a deleter for the
+  COLLECTION the probe counts. Every fake doc-ref then needs `listCollections()`
+  derived from stored deeper paths, never `[]` — absent, the outer catch fails
+  CLOSED and every CLEAN fixture reddens.
 - **EXPORT ⊇ DELETION is the cascade's other drift guard**: every source-parsed
   `subs` name is either read by an export chain or in a reasoned exemption map
   kept in PRODUCTION source, not the test. Such a map is PERMANENT — re-check
@@ -409,18 +408,19 @@ from `(err as {code?}).code`.
   enforcement, so the durable barrier is a HUMAN step nothing can pre-satisfy: a
   typed `CONFIRMATION_PHRASE`, `!dryRun`-scoped, above the first `runPhases(`
   (`admin-init.ts` hardcodes prod). Its Auth-wipe phase fires
-  `onUserDeleted`, which writes into collections the Firestore phase is
-  concurrently deleting. Removing a TEMPORARY refusal falsifies every sentence
-  citing it — grep the flag REPO-wide: the `ACCEPTED_DEVIATIONS.md` amendment
-  (supersede dated), the capped sweep naming it as Art. 17 recovery
-  (`MAX_BLOCK_SWEEP_ROWS`), other agents' `*.knowledge.md`.
+  `onUserDeleted`, which writes into collections Phase 2 is concurrently deleting.
+  Removing a TEMPORARY refusal falsifies every sentence citing it — grep the flag
+  REPO-wide (deviations, the sweep citing it as Art. 17 recovery, sibling
+  knowledge files).
+- **A run-time REPORT of "what no list decides" reads EVERY register the deleters
+  use** (one erased by its OWN tier step — `pantry`, `analytics/effectiveness` —
+  is in no list and fires on every account), never steers the run, and never says
+  what an appearing name MEANS: trigger-owned rows come from ordinary app use.
 - **A source pin owes**: a grep-UNIQUE anchor; the guard's EFFECT, not its position
   (`process.exit(0|1)` INSIDE the gate); `//`-stripping, which stops NEITHER
-  `&& false` NOR a `/* */` wrap, so no such pin is complete; and the INVOKER, its
-  literal DERIVED from the declaration and anchored `/^const NAME = "([^"]+)"/m` —
-  `String.match` takes the FIRST hit, so an unstripped `/** */` quoting it wins.
-  A LIST needs none of it: move the list to a side-effect-free
-  module and IMPORT it, the rule that also keeps a deleter and its probe on ONE const.
+  `&& false` NOR a `/* */` wrap; and the INVOKER, its literal DERIVED from the
+  declaration, anchored `/^const NAME = "([^"]+)"/m` (`String.match` takes the
+  FIRST hit — an unstripped `/** */` quoting it wins).
 - **A "wipes all" claim needs TWO sources, never a number**: `firestore.rules`
   top-level `match` blocks (blind to server-only) UNION a `functions/src` scan
   resolving `Collections.X`, `(export )?const N = "…"` PER FILE (an IMPORTED name

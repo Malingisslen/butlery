@@ -84,6 +84,27 @@ export async function runStep(
 }
 
 /**
+ * The `users/{uid}` subcollections `onUserDeleted` (cleanupContentGuardSubcollections)
+ * owns, which run AFTER `admin.auth().deleteUser(uid)`.
+ *
+ * `probeResidualData` runs BEFORE that, so without the exclusion every single
+ * deletion would report them as residual and `gdprCompliant` would be false
+ * forever, for every user.
+ *
+ * Exported (BUT-2043) so guards and the reset script's unknown-collection
+ * report read the real value instead of parsing this file as source text. The
+ * text parsers matched `[A-Za-z_]+` and stripped only `//` comments, so a name
+ * carrying a digit was invisible to them and a quoted name inside a block
+ * comment was read as a list entry. The `EXPORT_EXEMPT` const below is the
+ * precedent, in this same file: no separate module is needed, because nothing
+ * here runs at import.
+ */
+export const TRIGGER_OWNED_SUBCOLLECTIONS: ReadonlySet<string> = new Set([
+  "notificationCounters",
+  "recentContentHashes",
+]);
+
+/**
  * GDPR canary — query the highest-risk collections AFTER the cascade.
  * Any non-zero count means a delete path silently dropped data. The probe
  * is the safety net, never the cascade itself: errors are logged but never
@@ -385,15 +406,8 @@ export async function probeResidualData(
   // the database what is actually still there, so a subcollection introduced by
   // a future feature shows up here on its first deletion instead of never.
   //
-  // The two exclusions are the ones `deleteUserSubcollections` documents as
-  // belonging to `onUserDeleted` (cleanupContentGuardSubcollections), which
-  // runs after `admin.auth().deleteUser(uid)`. This probe runs BEFORE that, so
-  // without the exclusion every single deletion would report them as residual
-  // and `gdprCompliant` would be false forever, for every user.
-  const TRIGGER_OWNED_SUBCOLLECTIONS = new Set([
-    "notificationCounters",
-    "recentContentHashes",
-  ]);
+  // The two exclusions are TRIGGER_OWNED_SUBCOLLECTIONS, hoisted to module
+  // scope so guards can import it (BUT-2043).
   try {
     const remaining = await db.collection("users").doc(uid).listCollections();
     for (const ref of remaining) {
@@ -3214,7 +3228,7 @@ export const EXPORT_EXEMPT: Record<string, string> = {
     "Malin, 2026-09-03, chose EXEMPT for rate_limits against the " +
     "recommendation to export it, weighing bundle legibility higher " +
     "(ADR-0011). Adding an export section here would reopen that " +
-    "decision without asking her. Legacy sweep only. BUT-2040.",
+    "decision. Legacy sweep only. BUT-2040.",
   user_shared_shopping_lists:
     "NO LIVE WRITER of the users/{uid}/user_shared_shopping_lists " +
     "SUBCOLLECTION. The index is top-level, and the lists themselves are " +
@@ -3251,6 +3265,103 @@ export async function deleteConsentRecords(
   return true;
 }
 
+/**
+ * The `users/{uid}` subcollections `deleteUserSubcollections` sweeps.
+ *
+ * Exported (BUT-2043) so the guards and the reset script's unknown-collection
+ * report read the REAL value instead of parsing this file as source text. Two
+ * guards used to do that with `/"([A-Za-z_]+)"/` over a body with only `//`
+ * comments stripped, which made a name carrying a digit invisible to them and
+ * read a quoted name inside a block comment as a list entry. `EXPORT_EXEMPT`
+ * below is the precedent, in this same file — no separate module is needed,
+ * because nothing here runs at import.
+ */
+export const USER_SUBCOLLECTIONS: readonly string[] = [
+  "conversation_memberships",
+  "user_shared_menus",
+  "user_shared_shopping_lists",
+  "friend_categories",
+  "friends",
+  "category_preferences",
+  "list_category_orders",
+  "report_throttle",
+  // BUT-1957: the win-back / activity-digest notification rows, written by
+  // `analytics/detect-lapsed-users.ts` and `analytics/send-activity-digest.ts`.
+  // They carry the push text ACTUALLY SHOWN to the user (`message`/`bodyShown`)
+  // plus the win-back A/B assignment, and nothing reached them: deleting the
+  // parent user document does not delete its subcollections, so every row
+  // survived erasure.
+  //
+  // `deleteNotifications` is NOT this. That sweeps the TOP-LEVEL collection
+  // `user_notifications` — a different collection whose name is one word away,
+  // which is the likeliest reason this one went unnoticed for so long.
+  "notifications",
+  // Everything below is here for ONE reason: the probe in
+  // `probeResidualData` ENUMERATES what is left under `users/{uid}` instead
+  // of consulting a list. That makes it broader than any hand-written
+  // deleter, and the direction of a disagreement matters — a row the probe
+  // reports and nothing erases is a `gdprCompliant: false` that no code path
+  // can ever clear. So the deleter must be a superset of the probe, which is
+  // the rule `deleteWeeklyMenuPlans` already states about its own four
+  // handles. A `.get()` on a collection that does not exist costs one empty
+  // read, on a path that runs once per account, ever.
+  //
+  // WRITTEN TODAY, with no dedicated tier step of their own. Found by the
+  // `subs` audit BUT-1957 asked for — the first pass of that audit scanned
+  // for the literal `.collection("users").doc(x).collection("y")` chain and
+  // therefore saw only the server; every Dart writer builds the path from a
+  // `FirestoreCollections` constant and was invisible to it. Resolving the
+  // constants is what turned these up.
+  "onboarding", // onboarding_progress_service.dart
+  "ingredients", // firebase_user_ingredient_repository.dart
+  "rate_limits", // firebase_activity_event_repository.dart, and others
+  "counters", // base_shared_content_repository.dart (unread counters)
+  // BUT-612 attribution (channel, campaign, timestamps), written to
+  // `users/{uid}/acquisition/current` by firebase_acquisition_repository.dart.
+  // Found by the `integration-reviewer` gate, NOT by the drift guard, which
+  // could not see it: that repository chains through a file-local `const`
+  // rather than `FirestoreCollections.users` inline. The guard now resolves
+  // local consts too, so the next one of this shape reddens.
+  "acquisition",
+  // NO live writer found in `lib/` or `functions/src`. Swept anyway, because
+  // an account predating a writer's removal can still hold rows, and by the
+  // superset rule above such a row would otherwise be permanently residual.
+  // `fcm_tokens` was named here from the Art. 15 export, which read it while
+  // nothing wrote it — BUT-1990 has since removed that reader.
+  "category_memberships",
+  "connection_tests",
+  "unified_recipes",
+  "conversations",
+  "fcm_tokens",
+  // BUT-2040: the PRE-RENAME spelling of `rate_limits` above — one
+  // collection under two spellings, not two collections. Nothing has
+  // written `users/{uid}/rateLimits` since commit b9a95bd02 (2026-03-19)
+  // renamed `FirestoreCollections.userRateLimits` to `rate_limits`, and
+  // `firestore.rules` has no block for the camelCase path, so no client
+  // can recreate a row. The dry run of `admin/reset-user-data.ts` measured
+  // 5 rows still standing in production on 2026-09-07.
+  //
+  // Without this entry the rows are unreachable: `probeResidualData`
+  // ENUMERATES, so it counts them and stamps `residual_data_detected` on
+  // every deletion of such an account, while no deleter can clear it. The
+  // collection-group TTL on `expireAt` does not reach them either — a TTL
+  // policy is keyed to an exact collection id, and `rateLimits` is not
+  // `rate_limits`.
+  "rateLimits",
+  // Pooled ratings (decision 12): the user's frozen pool events. Each delete
+  // fires the Stage-B trigger (onPooledRatingEventWritten), which recomputes
+  // the affected pool's canonical_recipe_stats — so erasing the rater also
+  // shrinks the public averages they contributed to, with no explicit
+  // recompute call (the established trigger separation).
+  "canonical_rating_events",
+  // BUT-1917: the block mirror, `users/{uid}/block_mirror/current`. This leg
+  // erases the deleted user's OWN mirror — the list of who blocked THEM.
+  // Removing their uid from OTHER people's mirrors is a separate, capped
+  // step (`deleteBlockMirrors`), because that one is a cross-user sweep and
+  // this list is only the owner's own subtree.
+  "block_mirror",
+];
+
 export async function deleteUserSubcollections(
   db: admin.firestore.Firestore,
   uid: string,
@@ -3259,91 +3370,7 @@ export async function deleteUserSubcollections(
   // `notificationCounters` + `recentContentHashes` are intentionally NOT
   // included — `onUserDeleted` (cleanupContentGuardSubcollections) owns
   // those and runs automatically after `admin.auth().deleteUser(uid)`.
-  const subs = [
-    "conversation_memberships",
-    "user_shared_menus",
-    "user_shared_shopping_lists",
-    "friend_categories",
-    "friends",
-    "category_preferences",
-    "list_category_orders",
-    "report_throttle",
-    // BUT-1957: the win-back / activity-digest notification rows, written by
-    // `analytics/detect-lapsed-users.ts` and `analytics/send-activity-digest.ts`.
-    // They carry the push text ACTUALLY SHOWN to the user (`message`/`bodyShown`)
-    // plus the win-back A/B assignment, and nothing reached them: deleting the
-    // parent user document does not delete its subcollections, so every row
-    // survived erasure.
-    //
-    // `deleteNotifications` is NOT this. That sweeps the TOP-LEVEL collection
-    // `user_notifications` — a different collection whose name is one word away,
-    // which is the likeliest reason this one went unnoticed for so long.
-    "notifications",
-    // Everything below is here for ONE reason: the probe in
-    // `probeResidualData` ENUMERATES what is left under `users/{uid}` instead
-    // of consulting a list. That makes it broader than any hand-written
-    // deleter, and the direction of a disagreement matters — a row the probe
-    // reports and nothing erases is a `gdprCompliant: false` that no code path
-    // can ever clear. So the deleter must be a superset of the probe, which is
-    // the rule `deleteWeeklyMenuPlans` already states about its own four
-    // handles. A `.get()` on a collection that does not exist costs one empty
-    // read, on a path that runs once per account, ever.
-    //
-    // WRITTEN TODAY, with no dedicated tier step of their own. Found by the
-    // `subs` audit BUT-1957 asked for — the first pass of that audit scanned
-    // for the literal `.collection("users").doc(x).collection("y")` chain and
-    // therefore saw only the server; every Dart writer builds the path from a
-    // `FirestoreCollections` constant and was invisible to it. Resolving the
-    // constants is what turned these up.
-    "onboarding", // onboarding_progress_service.dart
-    "ingredients", // firebase_user_ingredient_repository.dart
-    "rate_limits", // firebase_activity_event_repository.dart, and others
-    "counters", // base_shared_content_repository.dart (unread counters)
-    // BUT-612 attribution (channel, campaign, timestamps), written to
-    // `users/{uid}/acquisition/current` by firebase_acquisition_repository.dart.
-    // Found by the `integration-reviewer` gate, NOT by the drift guard, which
-    // could not see it: that repository chains through a file-local `const`
-    // rather than `FirestoreCollections.users` inline. The guard now resolves
-    // local consts too, so the next one of this shape reddens.
-    "acquisition",
-    // NO live writer found in `lib/` or `functions/src`. Swept anyway, because
-    // an account predating a writer's removal can still hold rows, and by the
-    // superset rule above such a row would otherwise be permanently residual.
-    // `fcm_tokens` was named here from the Art. 15 export, which read it while
-    // nothing wrote it — BUT-1990 has since removed that reader.
-    "category_memberships",
-    "connection_tests",
-    "unified_recipes",
-    "conversations",
-    "fcm_tokens",
-    // BUT-2040: the PRE-RENAME spelling of `rate_limits` above — one
-    // collection under two spellings, not two collections. Nothing has
-    // written `users/{uid}/rateLimits` since commit b9a95bd02 (2026-03-19)
-    // renamed `FirestoreCollections.userRateLimits` to `rate_limits`, and
-    // `firestore.rules` has no block for the camelCase path, so no client
-    // can recreate a row. The dry run of `admin/reset-user-data.ts` measured
-    // 5 rows still standing in production on 2026-09-07.
-    //
-    // Without this entry the rows are unreachable: `probeResidualData`
-    // ENUMERATES, so it counts them and stamps `residual_data_detected` on
-    // every deletion of such an account, while no deleter can clear it. The
-    // collection-group TTL on `expireAt` does not reach them either — a TTL
-    // policy is keyed to an exact collection id, and `rateLimits` is not
-    // `rate_limits`.
-    "rateLimits",
-    // Pooled ratings (decision 12): the user's frozen pool events. Each delete
-    // fires the Stage-B trigger (onPooledRatingEventWritten), which recomputes
-    // the affected pool's canonical_recipe_stats — so erasing the rater also
-    // shrinks the public averages they contributed to, with no explicit
-    // recompute call (the established trigger separation).
-    "canonical_rating_events",
-    // BUT-1917: the block mirror, `users/{uid}/block_mirror/current`. This leg
-    // erases the deleted user's OWN mirror — the list of who blocked THEM.
-    // Removing their uid from OTHER people's mirrors is a separate, capped
-    // step (`deleteBlockMirrors`), because that one is a cross-user sweep and
-    // this list is only the owner's own subtree.
-    "block_mirror",
-  ];
+  const subs = USER_SUBCOLLECTIONS;
   for (const name of subs) {
     const snap = await userDoc.collection(name).get();
     await batchDeleteAll(db, snap.docs);

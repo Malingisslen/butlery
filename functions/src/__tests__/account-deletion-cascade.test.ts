@@ -4857,8 +4857,8 @@ async function scenario_effectivenessRowWrittenBackAfterTheSweep(): Promise<void
  * Each name must land in exactly one of three buckets, and two of them are read
  * OUT OF THE PRODUCTION SOURCE rather than restated here (a restated copy is
  * what drifts):
- *  1. the `subs` list inside `deleteUserSubcollections`;
- *  2. `TRIGGER_OWNED_SUBCOLLECTIONS` in `probeResidualData` — owned by
+ *  1. `USER_SUBCOLLECTIONS`, exported at module scope by the cascade;
+ *  2. `TRIGGER_OWNED_SUBCOLLECTIONS`, exported beside it — owned by
  *     `onUserDeleted`, which runs after this cascade;
  *  3. `COVERED_BY_OWN_STEP` below, for the ones with a dedicated tier step.
  *
@@ -4990,63 +4990,20 @@ function discoverUserSubcollectionWriters(
 
 async function scenario_everyUserSubcollectionHasADeleter(): Promise<void> {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const fs = require("fs");
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const path = require("path");
   const cascade = require("../account/account-deletion-cascade");
 
   const repoRoot = path.join(__dirname, "..", "..", "..");
-  const cascadeSource = fs.readFileSync(
-    path.join(__dirname, "..", "account", "account-deletion-cascade.ts"),
-    "utf8",
-  ) as string;
-
-  /** Quoted string literals inside the array/set literal that follows `anchor`. */
-  const namesAfter = (anchor: string): string[] => {
-    const start = cascadeSource.indexOf(anchor);
-    if (start < 0) return [];
-    const open = cascadeSource.indexOf("[", start);
-    if (open < 0) return [];
-    // Bracket-matched, not `indexOf("];")`: the exclusion set is written
-    // `new Set([...])`, so its literal closes with `])` and a naive scan ran on
-    // to the next array in the file and swallowed half the module — which is
-    // exactly the shape of over-broad parse that makes a drift guard pass while
-    // ranging over the wrong thing.
-    let depth = 0;
-    let close = -1;
-    for (let i = open; i < cascadeSource.length; i++) {
-      if (cascadeSource[i] === "[") depth++;
-      else if (cascadeSource[i] === "]") {
-        depth--;
-        if (depth === 0) {
-          close = i;
-          break;
-        }
-      }
-    }
-    if (close < 0) return [];
-    const body = cascadeSource
-      .slice(open, close)
-      // Line comments in these blocks name sibling FUNCTIONS and collections in
-      // prose; stripping them keeps the parse to real entries.
-      .replace(/\/\/[^\n]*/g, "");
-    return [...body.matchAll(/"([A-Za-z_]+)"/g)].map((m) => m[1]);
-  };
-
-  const subs = namesAfter("const subs = ");
-  const triggerOwned = namesAfter("const TRIGGER_OWNED_SUBCOLLECTIONS = ");
-  check(
-    "the drift guard can still read `subs` out of the cascade source",
-    subs.length > 5 && subs.includes("notifications"),
-    `parsed subs: ${JSON.stringify(subs)}`,
-  );
-  check(
-    "…and TRIGGER_OWNED_SUBCOLLECTIONS, both entries",
-    triggerOwned.length === 2 &&
-      triggerOwned.includes("notificationCounters") &&
-      triggerOwned.includes("recentContentHashes"),
-    `parsed exclusions: ${JSON.stringify(triggerOwned)}`,
-  );
+  // BUT-2043: the real values, imported. This used to bracket-match the array
+  // literals out of the cascade SOURCE and pull quoted names with
+  // `/"([A-Za-z_]+)"/` after stripping `//` comments — so a name carrying a
+  // digit was invisible to this guard, and a
+  // quoted name inside a `/* */` comment was read as a list entry. The checks
+  // that lived here proved the PARSER still worked; with no parser they
+  // assert nothing, so they went with it. A broken import throws on the first
+  // property access rather than passing vacuously.
+  const subs: string[] = cascade.USER_SUBCOLLECTIONS;
+  const triggerOwned: string[] = [...cascade.TRIGGER_OWNED_SUBCOLLECTIONS];
 
   /** name -> [exported deleter, doc id to seed]. */
   const COVERED_BY_OWN_STEP: Record<string, [string, string]> = {
@@ -5124,11 +5081,10 @@ async function scenario_everyUserSubcollectionHasADeleter(): Promise<void> {
  * defect. Every future widening of `subs` repeats the mistake otherwise, and
  * nothing reddens.
  *
- * Both halves are derived from SOURCE. `subs` is parsed out of the cascade, and
- * the exported set is parsed out of the export repository's
- * `.collection(users).doc(uid).collection(X)` chains. Neither is a hand-kept
- * list, because two hand-kept lists that must agree is precisely how BUT-1957's
- * own two gaps were created.
+ * The exported set is derived from SOURCE — parsed out of the export
+ * repository's `.collection(users).doc(uid).collection(X)` chains, rather than
+ * restated here, because two hand-kept lists that must agree is precisely how
+ * BUT-1957's own two gaps were created.
  *
  * The anchor is the CHAIN, not `ExportResourceType`: that enum has fewer members
  * than the repository has export methods, the mapping is many-to-one, and its
@@ -5152,37 +5108,14 @@ async function scenario_exportCoversEveryDeletedSubcollection(): Promise<void> {
   const cascade = require("../account/account-deletion-cascade");
 
   const repoRoot = path.join(__dirname, "..", "..", "..");
-  const cascadeSource = fs.readFileSync(
-    path.join(__dirname, "..", "account", "account-deletion-cascade.ts"),
-    "utf8",
-  ) as string;
-
-  // Same bracket-matched parse the deletion half uses, for the same reason: a
-  // naive `indexOf("];")` runs past a `new Set([...])` and swallows the module.
-  const subsNames = (): string[] => {
-    const start = cascadeSource.indexOf("const subs = ");
-    const open = cascadeSource.indexOf("[", start);
-    let depth = 0;
-    let close = -1;
-    for (let i = open; i < cascadeSource.length; i++) {
-      if (cascadeSource[i] === "[") depth++;
-      else if (cascadeSource[i] === "]") {
-        depth--;
-        if (depth === 0) {
-          close = i;
-          break;
-        }
-      }
-    }
-    const body = cascadeSource.slice(open, close).replace(/\/\/[^\n]*/g, "");
-    return [...body.matchAll(/"([A-Za-z_]+)"/g)].map((m) => m[1]);
-  };
-
-  const subs = subsNames();
+  // BUT-2043: the real value, imported — see the deletion half's note. The
+  // check that lived here proved the text parser still worked, and there is no
+  // parser now.
+  const subs: string[] = cascade.USER_SUBCOLLECTIONS;
   check(
-    "the export guard can still read `subs` out of the cascade source",
-    subs.length > 5 && subs.includes("ingredients"),
-    `parsed subs: ${JSON.stringify(subs)}`,
+    "USER_SUBCOLLECTIONS is imported and non-empty",
+    Array.isArray(subs) && subs.includes("ingredients"),
+    `USER_SUBCOLLECTIONS: ${JSON.stringify(subs)}`,
   );
 
   // The exempt map is imported from PRODUCTION source, not restated here. An

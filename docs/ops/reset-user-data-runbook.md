@@ -85,6 +85,59 @@ Auth trigger with no bounded delivery time and no `retry`, so an event may still
 arrive after Phase 4 — or may have been dropped entirely. A second sweep can prove
 residue exists; nothing can prove it is finished.
 
+## The unknown-collection report, and the pre-launch dry run (BUT-2043)
+
+Every run prints **Unknown collections (report only, nothing was skipped)** after
+the summary. Two questions, both answered from what the run actually saw in the
+database rather than from what the code says:
+
+- top-level collections present in the database and in none of the three lists;
+- subcollection names the walk met that no inventory, no `KNOWN_SUBCOLLECTION_NAMES`
+  entry and neither of the account cascade's own two lists accounts for.
+
+**Why it exists.** BUT-2040 was `users/{uid}/rateLimits`, a spelling left behind by
+a rename, with 5 rows still on disk. No source-scanning guard could find it — a
+dead spelling has no writer to scan for — and the coverage guard in the cascade
+suite derives its universe from source. It was found because a person read a dry
+run's output closely. This report is that reading, done by the tool.
+
+**The report never changes what a run does.** If it throws, it says so and the
+run's verdict is unaffected.
+
+**Its scope is narrower than it looks, and it prints that itself:** subcollections
+are only enumerated beneath the collections the run DELETES. Nothing beneath a
+kept or deliberately-untouched collection is walked, so "none" here is not a
+clean bill of health for the whole database.
+
+### Run the dry run before launch
+
+```
+cd functions
+npm run reset-user-data:dry-run
+```
+
+Read the unknown-collection section. Anything it names is either a collection
+that needs a decision (add it to one of the three lists) or an orphan like
+BUT-2040's.
+
+**Before launch, not on a schedule.** A recurring routine fails this repo's own
+four-box test: it does not repeat weekly, it needs credentials and a person to
+read the output, and "done" is not objective. It belongs on the path to going
+live, when the population stops being test accounts. **Tracked as BUT-2045.**
+
+The first run of this report, 2026-09-08, named collections no list decided —
+among them `users/{uid}/friendCategories`, the same Art. 17 gap BUT-2040 closed
+one spelling over. They are BUT-2044, and they are open. So "read the output" is
+not a formality: the report has never yet run clean.
+
+`friendCategories` was NOT fixed in the commit that found it, deliberately.
+Adding a name to the cascade's sweep reddens the Art. 15 export-superset guard
+unless that name is exported or exempted with a written reason — and the live
+spelling `friend_categories` IS exported, so the camelCase twin carries an
+export decision of the same kind BUT-2040 needed Malin's answer for. That is a
+plan, not a two-line ride-along. It must land before launch, while the
+population is still test accounts.
+
 ## Before a live run
 
 - The weekly scheduled jobs (`reconcileBlockMirrors`, `cleanup-old-notifications`,

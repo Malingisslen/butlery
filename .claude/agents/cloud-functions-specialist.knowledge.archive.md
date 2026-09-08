@@ -19151,3 +19151,66 @@ Knowledge-file note: the rename principle was folded into the "ENUMERATING probe
 this edit is net +183 chars rather than net-negative. Two of four planned retirements were
 refused by the auto-mode classifier mid-edit; the file stands at 30,959 against a ~25,000
 budget and owes a compaction pass.
+
+### 2026-09-08 — BUT-2043 re-review: the unknown-collection report [admin][gdpr][review]
+
+Second pass over the staged BUT-2043 diff (10 files). The single blocking finding from the
+first pass was fixed by STRIKING, not rewording, and I verified the strike myself.
+
+**What was struck.** `functions/src/admin/unknown-collections.ts`, `findUnknownCollections`
+docstring. The removed text told an operator that a `TRIGGER_OWNED_SUBCOLLECTIONS` name
+"should not appear mid-walk at all", i.e. that seeing one implies the kill switch was raced
+or expired. False: `notification-rate-cap.ts` writes `users/{uid}/notificationCounters` on
+every push and `duplicate-content-guard.ts` writes `users/{uid}/recentContentHashes` on
+every message — ordinary app use, no trigger involved. The surviving sentence is
+"A `TRIGGER_OWNED_SUBCOLLECTIONS` name reaching this function is NOT filtered as an
+oversight — it is accounted for, so it is not reported." Checked for the two failure modes a
+strike has: nothing dangles (no orphaned antecedent), and nothing broadened (the survivor is
+directly readable from `decidedSubcollectionNames()` unioning the set and the `continue` in
+the loop; it makes no claim about writers, reachability, or what an operator should conclude).
+No replacement claim was introduced.
+
+**Swept the concept, not the phrase.** Every sentence in the diff mentioning trigger
+ownership asserts ownership of CLEANUP only — the cascade's new `TRIGGER_OWNED_SUBCOLLECTIONS`
+docstring, the test's bucket list, the unchanged comment in `deleteUserSubcollections`, and
+the `unknown-collections.ts` "what `onUserDeleted` owns" note. None infers a writer.
+
+**One residual quantifier, non-blocking, pre-existing and MOVED VERBATIM.** The new
+`TRIGGER_OWNED_SUBCOLLECTIONS` docstring carries "without the exclusion every single deletion
+would report them as residual and `gdprCompliant` would be false forever, for every user".
+That is true only for an account that actually holds those rows; a user who has never
+received a push nor sent a message has neither subcollection and `listCollections()` returns
+nothing. Reported as an observation, not a required change — the text is a verbatim move of
+the old inline comment, and a reword is what this ticket's whole review has been avoiding.
+
+**Verified rather than accepted.** `npx tsc --noEmit` exit 0; `test:unknown-collections` 7/7;
+`test:account-deletion-cascade` 297/297. Index frozen: `git rev-parse :<path>` ==
+`git hash-object <path>` for all ten files before reading.
+
+**Correctness checks that mattered.**
+- `pantry` and `analytics/effectiveness` are named by NO register (only by their own tier
+  steps `deletePantryItems` / `deleteNotificationEffectiveness`), so without the two new
+  inventory entries the report would have fired on every account that uses the pantry. Both
+  new comments say exactly that, and both are accurate as measured.
+- No deploy/cold-start impact: `unknown-collections.ts` is imported only by
+  `admin/reset-user-data.ts` (a ts-node script). Nothing reaches `index.ts`.
+- Report-only holds mechanically: pure function, caller catches and prints REPORT FAILED
+  without touching the verdict, `console.log` after the summary and before Phase 4.
+- `test:unknown-collections` is registered in `functions/package.json`, so
+  `run-all-tests.js` discovers it and `check-test-registration.js` stays green.
+
+**Knowledge-file edit, net-negative (30,959 -> 30,942 chars).** Added the report principle;
+retired verbatim, and recorded here as the audit trail requires:
+- "A LIST needs none of it: move the list to a side-effect-free module and IMPORT it, the
+  rule that also keeps a deleter and its probe on ONE const." (superseded — the import rule
+  now lives on the ENUMERATING-probe bullet, where the buckets it governs are named.)
+- "Bucket each name into the source-PARSED `subs`, the source-PARSED exclusions (load-bearing
+  BOTH ways, own fixture)" (STALE as of this commit — the two lists are exported consts now,
+  `USER_SUBCOLLECTIONS` and `TRIGGER_OWNED_SUBCOLLECTIONS`, and the guards import them.)
+- "`strict:false` is why it matters: the deleter reports `true` over a chunk it never
+  committed." (duplicated one section down.)
+- "the legacy name may inherit the live one's Art. 15 exemption by CITATION only — never
+  re-describe its contents, which re-asserts a claim made about the LIVE rows." (kept in
+  shortened form on the same bullet.)
+
+Verdict: pass, 0 blocking.

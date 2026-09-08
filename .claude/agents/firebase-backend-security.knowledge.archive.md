@@ -9017,3 +9017,121 @@ BUT-2028's DRY RUN against production (`deleteDocRecursive` accumulates
 
 **Durable rule extracted** into the principles file, merged into the "deleting a parent doc"
 bullet rather than added as a new one.
+
+---
+
+## 2026-09-08 — BUT-2043: exporting the cascade's lists, and the dry-run "unknown collections" report
+
+Commit-gate review (GDPR/security half) of the staged BUT-2043 diff: `USER_SUBCOLLECTIONS`
+and `TRIGGER_OWNED_SUBCOLLECTIONS` hoisted to module scope and exported from
+`functions/src/account/account-deletion-cascade.ts`; two drift guards in
+`account-deletion-cascade.test.ts` switched from bracket-matching the array literals out of
+the cascade SOURCE to importing them; a new pure module
+`functions/src/admin/unknown-collections.ts` + its test; a report block in
+`functions/src/admin/reset-user-data.ts`; runbook and both deviation files amended.
+
+**Verified clean.** The two lists moved verbatim — no change to what a cascade deletes or
+what `probeResidualData` skips. The parser the guards replaced really was blind in both
+directions (`/"([A-Za-z_]+)"/` after stripping only `//` comments). The report is pure,
+report-only, wrapped in its own try/catch, reuses `totals.results` so it costs one extra
+root `listCollections()`, and runs before the dry-run early return. `unknown-collections.ts`'s
+"the inventory omits eight subcollections" count reproduces: 9 `USER_SUBCOLLECTIONS` entries
+are absent from the `users` `CollectionTarget.subcollections`, of which `block_mirror` is
+covered by `KNOWN_SUBCOLLECTION_NAMES`, leaving 8.
+
+**Blocking findings, all three the same class — a sentence falsified by its own commit or by
+another file in this repo:**
+
+1. `account-deletion-cascade.test.ts`, `scenario_exportCoversEveryDeletedSubcollection`
+   docstring: "Both halves are derived from SOURCE. `subs` is parsed out of the cascade" —
+   false as of this commit; `subs` is now `cascade.USER_SUBCOLLECTIONS`.
+2. "Four of those sit on essentially every account" (in `unknown-collections.ts` AND again in
+   `unknown-collections.test.ts`) about the four named omissions — `fcm_tokens` is the one
+   `EXPORT_EXEMPT` records BUT-1990 as having measured never to have had a writer, and
+   `notifications` is written only for lapsed/digest recipients. `onboarding` and
+   `acquisition` are the two that hold; the DESIGN (reading the cascade's list, not the
+   inventory) survives, only the frequency clause is wrong.
+3. Both deviation files: "`admin/reset-user-data.ts` empties it on its next run" — a DRY run
+   deletes nothing (`deleteCollection` returns a count; `deleteDocRecursive` guards its
+   `docRef.delete()` on `!dryRun`), and the runbook added in the same commit instructs the
+   operator to run the dry run. Load-bearing because it is the premise under an attribution
+   to Malin.
+
+**Non-blocking.** `findUnknownCollections` silences a subcollection name whenever a top-level
+collection shares it, and the docstring asserts that as "accounted for by that entry" — the
+same-word/different-data trap `EXPORT_EXEMPT` documents for `fcm_tokens` and
+`user_shared_menus`. Report-only, and it genuinely suppresses real noise (`recipes` under
+`users`), so the fix is to name it in the printed scope line rather than to remove it.
+Exported `USER_SUBCOLLECTIONS` (array) and `TRIGGER_OWNED_SUBCOLLECTIONS` (`Set`) are mutable
+and now decide a live erasure's sweep and the probe's exclusions from any importer's reach —
+freeze them. The runbook's "named four collections" names one of the four.
+
+**`users/{uid}/friendCategories` (BUT-2044) — deferring is correct.** It is BUT-2040's shape
+exactly (camelCase pre-rename spelling of `friend_categories`, 1 row, no writer), but adding
+it to `USER_SUBCOLLECTIONS` immediately reddens
+`scenario_exportCoversEveryDeletedSubcollection` unless it is either exported or given an
+`EXPORT_EXEMPT` entry — and `friend_categories` is NOT exempt, i.e. it is exported. So the
+ride-along is not two lines; it is an Art. 15 decision of the kind that took Malin's answer
+for `rateLimits`, and it belongs in a plan. Bounded meanwhile: one row on a pre-launch test
+account, whose only cost is an unclearable `gdprCompliant:false` on that account's erasure.
+
+**Durable rules extracted** into the principles file: merged into the "deleting a parent doc"
+bullet (grade a dry-run report by what it SILENCES; a self-clearing-residual argument is
+about a LIVE run) and one new bullet on replacing a source-text parse with a real import.
+
+## 2026-09-08 — BUT-2043 re-review: the unknown-collection report (PASS)
+
+Re-review of the staged BUT-2043 diff after failing it with three blocking findings. All
+three verified closed against the bytes, not against the brief.
+
+1. **"`subs` is parsed out of the cascade"** — struck, not reworded, in
+   `account-deletion-cascade.test.ts`; the ~4861 bucket list now names `USER_SUBCOLLECTIONS`
+   and `TRIGGER_OWNED_SUBCOLLECTIONS` as module-scope exports. Residual (Low, non-blocking):
+   the strike left "Neither is a hand-kept list" with ONE antecedent, so as a standalone
+   sentence it can be read as claiming `USER_SUBCOLLECTIONS` is not hand-kept, which is false.
+   Recommended striking the clause rather than re-wording it — the same shape the digest
+   records for a dangling scope clause.
+2. **"Four of those sit on essentially every account"** — struck in both files with no
+   frequency claim replacing it. The surviving claim is a COUNT ("eight subcollections the
+   cascade deletes correctly"), so I recomputed it rather than trusting it:
+   `USER_SUBCOLLECTIONS` minus (`KNOWN_SUBCOLLECTION_NAMES` ∪ every `CollectionTarget
+   .subcollections` ∪ the top-level names) = category_preferences, list_category_orders,
+   report_throttle, notifications, onboarding, acquisition, fcm_tokens,
+   canonical_rating_events. Exactly eight, and `onboarding`/`acquisition` are among them.
+3. **"the residual is self-clearing on the next run"** — a dated SUPERSESSION was appended
+   to both deviation files, byte-identical (verified by md5 over the changed lines of both
+   hunks, `34f157d9…` on each). It quotes the withdrawn sentence verbatim, keeps Malin's
+   DECISION standing, and states that only a LIVE run empties the collection. Its mechanism
+   claims check out: `deleteCollection` returns a `count()` under `if (dryRun)`,
+   `docRef.delete()` sits behind `if (!dryRun)`, the runbook shipped in the same commit tells
+   the operator to do a DRY run, and `ops/resets/{runId}.json` has exactly one writer
+   (`recordRunOutOfBand`) and no reader anywhere in `functions/src`.
+
+**The sibling-gate fix worth recording as a check.** `pantry` and `analytics/effectiveness`
+were added to `reset-collection-lists.ts` to stop the report firing on data the cascade
+handles — i.e. a list edit made to quiet a REPORT, inside the delete list of a destructive
+script. Confirmed harmless only by opening the consumer: `deleteWithSubcollections` iterates
+`target.name` and never reads `target.subcollections`, and `analytics` was already a delete
+target, so nothing a run deletes changed. `daily` is deliberately left out (BUT-2044 open),
+and the report still names it. That "does this list document or drive?" check is now a clause
+in the knowledge file.
+
+**Other things measured this pass.** The restored non-empty check
+(`Array.isArray(subs) && subs.includes("ingredients")`) closes the `[...new Set(undefined)]`
+vacuum on the export half; the deletion half still fails loudly via `subs.includes` throwing.
+`readonly string[]` / `ReadonlySet<string>` are compile-time only — no `Object.freeze` — which
+is acceptable while every importer is TS in this repo, and was filed Low. The hoisted
+`probeResidualData` docstring is back on its function. The new suite is registered as
+`test:unknown-collections` and `scripts/run-all-tests.js` auto-discovers every `test:*`, so it
+genuinely runs in `npm test` rather than being a dormant file. The report itself is pure and
+PII-free: names and integer counts only, one root `listCollections()`, no extra document
+reads.
+
+**Named residual, already documented and ticketed, not a finding:** `users/{uid}/friendCategories`
+(1 row measured) is enumerated by `probeResidualData` and reached by no deleter, so such an
+account's erasure reports `gdprCompliant: false` unclearably. The runbook explains why it was
+NOT ridden along in this commit — adding it to `USER_SUBCOLLECTIONS` reddens the Art. 15
+export-superset guard unless the camelCase twin gets its own export decision, which is a plan.
+BUT-2044.
+
+Verdict: pass, 0 blocking.

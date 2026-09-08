@@ -540,7 +540,29 @@ name which doc each end touches before approving it.
   usually not the commit touching the writer — never by name similarity, and keep the inherited entry to the citation: re-describing the
   content in your own words re-asserts a characterisation the ADR made about the LIVE rows
   (`rate_limits` "one timestamp per gated action" does not describe the same collection's
-  `imports` doc, which holds counters and LLM cost totals).
+  `imports` doc, which holds counters and LLM cost totals). The tool that CAN find the next
+  one is a dry run reporting what the database holds that no list decides — grade it by what
+  it SILENCES: suppressing a subcollection name because a top-level collection shares it
+  re-creates the exact name-collision the export exemptions warn about (`fcm_tokens`,
+  `user_shared_menus` — same word, different data), so the suppression must be stated as a
+  blind spot in the report's own scope line, never asserted as "accounted for". And when a
+  self-clearing residual is argued from that script, the premise is a LIVE run: a dry run
+  deletes nothing, so "cleared on the next run" is false wherever the next run is the dry
+  run the same change tells the operator to do. Silencing such a report by adding a name to
+  a list is a BEHAVIOUR question first: open the consumer and check whether that list only
+  documents or also DRIVES the sweep (`CollectionTarget.subcollections` is a reader's aid;
+  `.name` is what the walk iterates), because the same edit that quiets a report can widen a
+  destructive run. When a founder's answer turns out to rest on a mechanism that is false,
+  supersede the MECHANISM in place and leave the DECISION standing — quote the withdrawn
+  sentence verbatim so a grep finds both, and say the answer was re-put to her.
+- Replacing a guard's SOURCE-TEXT parse with a real import of the production constant is the
+  right fix (a `/"([A-Za-z_]+)"/` scan is blind to a digit-carrying name and reads a quoted
+  name inside a block comment as an entry) — but it owes three things: strike the guard's
+  docstring clause saying the value is "parsed out of" the module, since that commit
+  falsifies it; re-check that the removed parser self-checks were not the only pin on the
+  list being NON-EMPTY (an emptied list makes an "every entry is exported or exempt" loop
+  pass vacuously); and freeze what you export, because a mutable array/`Set` reachable by any
+  importer now decides what a live erasure deletes and what the residual probe skips.
 - "Export ⊇ erasure" is a field-PAIR property — the two filters must target the identical
   field on the identical collection; check both cascades together. When a cascade UNIONS
   several discovery handles (roster + last-writer), the EXPORT's own discovery field must be

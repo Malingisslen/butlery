@@ -53,6 +53,11 @@ export const COLLECTIONS_TO_DELETE: CollectionTarget[] = [
       "user_shared_shopping_lists",
       "ingredients",
       "counters",
+      // Erased by a dedicated cascade step (`deletePantryItems`) rather than by
+      // the `subs` sweep, so no other register names it. Listed here because
+      // the unknown-collection report reads this inventory: without it the
+      // report fires on every account that uses the pantry (BUT-2043).
+      "pantry",
       // BOTH spellings, deliberately (BUT-2040). `rate_limits` is the live one
       // (`FirestoreCollections.userRateLimits`); `rateLimits` is the
       // pre-rename name, with no writer and rows still standing in production
@@ -138,7 +143,11 @@ export const COLLECTIONS_TO_DELETE: CollectionTarget[] = [
   { name: "userFriends" },
   { name: "userSettings" },
   { name: "friend_categories" },
-  { name: "analytics" },
+  // `effectiveness` has a dedicated cascade step (`deleteNotificationEffectiveness`)
+  // and is named by no other register, so the unknown-collection report needs it
+  // here. `daily` is deliberately ABSENT: those rows are BUT-2044, still open,
+  // and leaving them out is what keeps the report naming them (BUT-2043).
+  { name: "analytics", subcollections: ["effectiveness"] },
   { name: "shopping_list_invitations" },
   { name: "user_shared_menus" },
   { name: "user_shared_shopping_lists" },

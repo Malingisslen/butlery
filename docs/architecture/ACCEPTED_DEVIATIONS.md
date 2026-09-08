@@ -3066,14 +3066,41 @@ neither passed an `auditRepository` at all.
   two commands. So the inheritance is evidenced by a rename, which is NOT the "arguing across
   collections by NAME" error BUT-1732 exists to record.
   What it inherits is Malin's explicit call of 2026-09-03 (ADR-0011): EXEMPT, made AGAINST the
-  recommendation to export it, weighing bundle legibility higher. **Chosen without asking
-  her, the way the `chat_groups` projection was; giving the legacy spelling its own decision is
-  hers.**
+  recommendation to export it, weighing bundle legibility higher.
+  **ASKED AND ANSWERED 2026-09-08: the exemption STAYS inherited.** The entry first shipped
+  saying the inheritance was chosen without asking her and that giving the legacy spelling its
+  own decision was hers. It was put to her the same day, with the recommendation to leave it
+  inherited on the ground that two decision records about one fact are the drift BUT-1732
+  exists to document. She took it. There is no separate decision for the camelCase spelling,
+  and one must not be written.
   **Named and open:** the exemption group's own header already says that for an account still
   holding legacy rows they are erasable but WERE never exportable, and that whether that is
   worth an export section is Malin's and has not been asked. Until now nobody knew that set
-  was non-empty. BUT-2028's dry run measured 5 such rows
-  on 2026-09-07. The set being non-empty does not change the decision; it changes what the
+  was non-empty.
+  **ASKED AND ANSWERED 2026-09-08: NO Art. 15 export section is built for `rateLimits`.** She
+  was shown that the measured set is 5 rows on two pre-launch test accounts (see the
+  provenance note below), and that
+  `admin/reset-user-data.ts` empties it on its next run because it enumerates rather than
+  consulting a list — so the residual is self-clearing before there is any real subject to
+  owe a bundle to. The question is REOPENED, not closed, if that set is ever non-empty with
+  live users in it. Nobody is watching for that; it rests on the same dry run as everything
+  else in this entry.
+  **SUPERSEDED 2026-09-08, same day, by the commit-gate review — the MECHANISM in the
+  paragraph above is wrong, and it is the premise Malin answered on.** That paragraph says
+  `admin/reset-user-data.ts` "empties it on its next run because it enumerates rather than
+  consulting a list". The enumeration half is true. The "next run" half is not: a DRY run
+  deletes nothing — `deleteCollection` returns a `count()` and `docRef.delete()` sits behind
+  `if (!dryRun)` — and the runbook shipped in this same commit instructs a DRY run before
+  launch (BUT-2045). Only a LIVE run empties it, and no live run is known to have happened:
+  the script was inert 2026-03-19 to 2026-09-05 (BUT-2010), and the only record a run leaves
+  is `ops/resets/{runId}.json` in Storage, which nothing in this repo reads.
+  **The DECISION is unchanged and still Malin's; what is withdrawn is the sentence saying the
+  residual clears itself.** It clears when someone runs the script live, which is a thing a
+  person must do, not a thing that happens. Raised independently by the
+  `firebase-backend-security` and `integration-reviewer` gates.
+  The population figure it rests on — 5 rows, 2 Auth users — was measured by the dry run
+  against butlery-app-1 on 2026-09-07 and re-measured 2026-09-08; that output is not
+  committed anywhere, so it is attributed, not reproducible from this repo. The set being non-empty does not change the decision; it changes what the
   unasked question is worth.
   The deleter side is NOT a deviation and is simply a defect closed: `probeResidualData`
   enumerates while the deleter walked a hand-written list, so every such erasure reported

@@ -64,6 +64,10 @@ import {
   Verdict,
   verdictFor,
 } from "./reset-verdict";
+import {
+  findUnknownCollections,
+  formatUnknownCollections,
+} from "./unknown-collections";
 
 // BUT-2028: `feedback/` was missing. Feedback screenshots are written to
 // `feedback/{userId}/{timestamp}.png` (`firebase_feedback_repository.dart`),
@@ -685,6 +689,33 @@ async function main() {
     "  Left alone (decided, not protected): " +
       Object.keys(COLLECTIONS_DELIBERATELY_UNTOUCHED).join(", "),
   );
+  console.log();
+
+  // BUT-2043: what the DATABASE holds that no list decides. The three lines
+  // above report what the LISTS say, which is the answer to a different
+  // question — and BUT-2040 is what the difference costs: a spelling left by a
+  // rename, named by no list and no longer by any code, found only because a
+  // person read a dry run's output closely. Report only; nothing below changes
+  // what this run deleted.
+  console.log("Unknown collections (report only, nothing was skipped)");
+  try {
+    const rootCollections = await db.listCollections();
+    const lines = formatUnknownCollections(
+      findUnknownCollections({
+        topLevelInDb: rootCollections.map((c) => c.id),
+        subCountsByTarget: totals.results,
+      }),
+    );
+    for (const line of lines) console.log(line);
+  } catch (err) {
+    // A failed report must not change the run's verdict: it deleted what it
+    // deleted either way, and swallowing the error silently would leave a
+    // reader believing the "none" case was measured.
+    console.log(
+      `  REPORT FAILED (${err instanceof Error ? err.message : String(err)}) ` +
+        "— this run made no statement about unknown collections.",
+    );
+  }
   console.log();
 
   if (dryRun) {
