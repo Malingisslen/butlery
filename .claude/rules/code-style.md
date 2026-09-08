@@ -29,6 +29,16 @@ and names the allowlist, the facade option, and the local-override sentinel.
 - A wrong comment gets STRUCK, not reworded — delete the false sentence rather than write a
   truer version; correct in place only when the true wording is directly readable from the
   code and needs no counting.
+- **A correction may only DELETE.** Text a correction ADDS is a new claim needing the same
+  measurement as any other, and the rule above does not reach it. The shapes that have
+  shipped defects here: narrating what was struck and why (that history belongs in the
+  commit message and the ticket, never in the artefact); the sentence left STANDING by a
+  strike, which can inherit a subject and become false — re-read it alone; and new prose
+  written in the same edit, which is written in the state right after being shown you were
+  wrong, about the same neighbourhood.
+- A decision record is the exception, and the commit gate names it: supersede with a dated
+  entry rather than striking. That forces new prose exactly where it is least reliable, so
+  a supersession states what the CODE does and quotes what it retires — nothing else.
 
 ## Documentation files
 
