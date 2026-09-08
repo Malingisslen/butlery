@@ -218,7 +218,10 @@ from `(err as {code?}).code`.
 - **Cross-check the identity FIELD and COLLECTION NAME across every leg**
   (deleter, export, probe, rules, Dart constant) — a wrong or pre-rename name
   deletes NOTHING silently, and the VALUE searched for must match what the
-  PRODUCER writes. One field can have TWO stores — erase BOTH. A NEW uid
+  PRODUCER writes. A DEAD SPELLING has no writer, so no source scan and no TTL
+  reach it (a policy keys an EXACT id) — sweep BOTH names, only a prod dry run
+  finds one, and the legacy inherits the live Art. 15 exemption by CITATION.
+  One field can have TWO stores — erase BOTH. A NEW uid
   ARRAY on an already-swept doc owes no cascade leg ONLY while every writer
   keeps it a strict SUBSET of the swept field (`categorySeatedUserIds` ⊆
   `memberIds`) — prove it per writer, else add deleter AND probe.
@@ -226,6 +229,9 @@ from `(err as {code?}).code`.
   the server cannot QUERY** — `listDocuments()` is the only Admin-SDK call
   returning refs for MISSING docs with live children (a `count()` reports ZERO);
   use it on sweep AND probe, and `strict:true` for a doomed parent's children.
+  So a step destroys its parent/shared HANDLE LAST, after every child commit —
+  including a QUERY HANDLE cleared in the same write as the scrub, ahead of a
+  dependent mirror.
 - **A server-written PROJECTION of a client collection (`block_mirror` of
   `blocks`) owes**: an existence check on the SUBJECT the constrained user cannot
   forge — `users/{uid}` is owner-DELETABLE, so ask `admin.auth().getUser`, OUTSIDE
@@ -249,17 +255,21 @@ from `(err as {code?}).code`.
 - A "shared" collection also holds SOLO-owner docs to DELETE, not scrub. A scrub
   enumerates every uid in the MODEL's `toFirestore`: array elements, per-uid map
   keys, AND attribution scalars (`lastModifiedBy`, `lastEditedBy`).
-- **A cascade write from a query-time snapshot applied via a plain `.update()`
-  is a lost-update hazard** — wrap in `runTransaction`, re-read, skip on
-  `!fresh.exists`.
 - A rules hard-deny plus an Admin-SDK escape hatch has TWO guards: the callable
   exempts only the first; the model's `toFirestore` coercion is the second.
   Enumerate the SERIALIZER's call sites, not just the rules' writes.
-- A serial `ref.update()` loop over an embedded array: NOT_FOUND aborts the
-  remaining iterations AND the full-array write is a lost update. Per-doc
-  `runTransaction` fixes only the second — try/catch each, throw once, then
-  filter failed ids out of any UNCONDITIONAL write the abort protected.
-  Parameterize fan-out helpers by `CollectionReference`, never a NAME string.
+- **Any write derived from an EARLIER read is a lost update** — a query-time
+  snapshot via plain `.update()`, or a serial `ref.update()` loop over an embedded
+  array, where NOT_FOUND also aborts the remaining iterations. Per-doc
+  `runTransaction` + re-read fixes only the lost update: skip on `!fresh.exists`,
+  try/catch each, throw once, filter failed ids out of any UNCONDITIONAL write the
+  abort protected. Fan-out helpers take a `CollectionReference`, never a NAME.
+- **A chunked migration walks by OFFSET, never by re-reading what is left** —
+  skip-if-exists makes an earlier pass's row look like a duplicate, so counters and
+  failures inflate per pass. Reset per-pass counters INSIDE the transaction body;
+  outcome fields written there are ASSIGNMENTS, never increments. Clear the source
+  field only on the pass reaching the END with zero failures in ALL passes; ≤400
+  rows/pass keeps the clear under 500 ops.
 
 ### Scheduled analytics & lifecycle jobs
 - Never assume a date field's type (ISO vs `Timestamp` varies per collection).
@@ -272,9 +282,6 @@ from `(err as {code?}).code`.
   window, rollup offsets AND active-user cutoff from that one base.
 
 ### GDPR account-deletion cascade
-- A cascade step keyed on a shared/parent handle destroys that handle LAST,
-  after all child cleanup commits — including a purpose-built QUERY HANDLE
-  cleared in the same write as the content scrub, ahead of a dependent mirror.
 - **A probe leg whose ONLY deleter lives in `onUserDeleted` is broader by TIMING.**
   `probeResidualData` runs BEFORE `auth.deleteUser` (the cascade's last step) and
   `success = authDeleted && !failedCollections.length`, so such a leg returns
@@ -287,8 +294,7 @@ from `(err as {code?}).code`.
   must not be NARROWER than the EXPORT's predicate** — Art. 15 must never reach
   a document Art. 17 cannot (`memberPermissions.<uid> != null` = Dart
   `isNull:false`). Union the probe's queries into the deleter's scoping, dedup
-  by `doc.ref.path`; prove the coupling by DELETING the leg and checking BOTH
-  the targeted fixture AND "no failed collections" redden. A leg on an
+  by `doc.ref.path`. A leg on an
   ATTRIBUTION SCALAR (`lastModifiedBy`, `ownerId`) is broader unless
   `firestore.rules` PINS that field to the roster the deleter discovers by —
   read the write limb, never the app's own writer; unpinned, any editor plants
@@ -301,26 +307,20 @@ from `(err as {code?}).code`.
   its NON-delete branch rewrites projections PER KEY and drops the whole-field key.
   A leg with no DIRTY fixture is mutation-invisible and `strict:false` swallows
   a failed chunk, so the probe is the ONLY contradiction to `return true` — leg
-  and scenario ship in one edit. A probe ERROR ADDS to residual (a sentinel,
+  and scenario ship in one edit, and DELETING the leg must redden BOTH the
+  targeted fixture and "no failed collections". A probe ERROR ADDS to residual (a sentinel,
   never a count), never aborts; one try/catch per leg.
 - **An ENUMERATING probe (`rootRef.listCollections()`) is BROADER than the
   deleter by construction** — any user subcollection no step erases reports
-  `gdprCompliant:false` forever. A RENAMED subcollection is the case NO source scan
-  reaches (a dead spelling has no writer): the old name keeps rows the probe counts,
-  no LIST-driven deleter clears and no TTL reaches (a policy is keyed to an EXACT
-  collection id) — only a prod dry run finds it. Sweep BOTH spellings; the legacy
-  name inherits the live one's Art. 15 exemption by CITATION only, never a
-  re-description of its contents.
+  `gdprCompliant:false` forever.
   Ship it only with a DERIVED drift test: regex every
   `.collection(users).doc(..).collection("X")` writer across `functions/src` +
   `lib`, spelling the users token `\w*[Uu]sers\w*` (`[A-Za-z_]\w*` misses the bare
   `FirestoreCollections.users` every Dart repo writes);
   `db.doc("users/${uid}/X/y")` strings are still missed. Bucket each name into the
   EXPORTED `USER_SUBCOLLECTIONS` or `TRIGGER_OWNED_SUBCOLLECTIONS` — IMPORT them,
-  never parse the cascade as text (a digit-bearing name is invisible to
-  `/"([A-Za-z_]+)"/` and a quoted name in a `/* */` comment reads as an entry) —
-  or into a map whose every entry is EXERCISED (seed, run the named deleter,
-  assert gone). A deleter removing ONE DOC BY ID is NOT a deleter for the
+  never parse the cascade as text — or into a map whose every entry is EXERCISED
+  (seed, run the named deleter, assert gone). A deleter removing ONE DOC BY ID is NOT a deleter for the
   COLLECTION the probe counts. Every fake doc-ref then needs `listCollections()`
   derived from stored deeper paths, never `[]` — absent, the outer catch fails
   CLOSED and every CLEAN fixture reddens.

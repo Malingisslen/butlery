@@ -19315,3 +19315,125 @@ Verdict: pass, 0 blocking. Measurements made, so a later run need not redo them:
 - Re-runnability confirmed: deletes find nothing on a retry; the anonymize sets
   `details.contentOwnerId = null` so the `== uid` query returns zero; no
   duplicate audit rows on a retry because only still-matching rows are re-staged.
+
+### 2026-09-08 — report_history subcollection migration, chunked by offset [gdpr-cascade]
+
+Commit-gate review of BUT-2046 (landed as `45ac2fc62`), two rounds.
+`user_moderation/{ownerUid}.reportHistory` — an array of maps each naming a
+REPORTER — became `user_moderation/{ownerUid}/report_history/{reportId}` with a
+180-day TTL, plus two cascade legs (owner, and a collection-group reporter sweep),
+two probe legs, and a one-time migration.
+
+**Principle added** to `### PII scrubbing + GDPR cascade design`:
+
+> - **A chunked migration walks by OFFSET, never by re-reading what is left** —
+>   skip-if-exists makes an earlier pass's row look like a duplicate, so counters and
+>   failures inflate per pass. Reset per-pass counters INSIDE the transaction body;
+>   outcome fields written there are ASSIGNMENTS, never increments. Clear the source
+>   field only on the pass reaching the END with zero failures in ALL passes; ≤400
+>   rows/pass keeps the clear under 500 ops.
+
+Where it came from: the coordinator's first fix re-read the whole array each pass
+and asked what remained. That looks equivalent to an offset walk and is not — a row
+written by an earlier pass of the SAME run comes back as "already exists", so skips
+and per-entry failures were recorded once per PASS instead of once per entry. Their
+own test caught it (duplicated failure strings). The 400 bound exists because a
+Firestore transaction takes at most 500 operations INCLUDING the parent's field
+clear; unchunked, a document with ≥499 entries throws INVALID_ARGUMENT and becomes
+unmigratable by any run, i.e. its reporters' uids stay unerasable — the one thing
+the script exists to prevent.
+
+Verified in review, round 2: `offset` is read inside the transaction body and
+mutated only outside it, so a retry re-slices the identical range; `outcome.scanned`
+and `outcome.emptied` are safe outside the reset block only because they are
+assignments; `atEnd` is computed against the FRESHLY read length, so a concurrent
+`arrayUnion` (which appends) extends the walk rather than being wiped by the clear,
+and an append between the final read and its commit aborts that transaction and
+re-runs it with `atEnd` false. Passes are separate commits, so a process death
+between them is resumable via skip-if-exists.
+
+**Retired to make budget** (~25,000-char principle file was at 31,782). Four folds
+into overlapping neighbours plus two evidence cuts; verbatim text below.
+
+1. Folded into the serial-`ref.update()` bullet, which is its superset — both say a
+   write derived from an earlier read is a lost update, fixed by a per-doc
+   transaction that re-reads. Merged bullet keeps `!fresh.exists`:
+
+> - **A cascade write from a query-time snapshot applied via a plain `.update()`
+>   is a lost-update hazard** — wrap in `runTransaction`, re-read, skip on
+>   `!fresh.exists`.
+
+2. The absorbing bullet, itself rewritten as the merged form:
+
+> - A serial `ref.update()` loop over an embedded array: NOT_FOUND aborts the
+>   remaining iterations AND the full-array write is a lost update. Per-doc
+>   `runTransaction` fixes only the second — try/catch each, throw once, then
+>   filter failed ids out of any UNCONDITIONAL write the abort protected.
+>   Parameterize fan-out helpers by `CollectionReference`, never a NAME string.
+
+3. Folded into the `listDocuments()`/subcollection-orphans bullet — both are the
+   parent-before-children ordering rule:
+
+> - A cascade step keyed on a shared/parent handle destroys that handle LAST,
+>   after all child cleanup commits — including a purpose-built QUERY HANDLE
+>   cleared in the same write as the content scrub, ahead of a dependent mirror.
+
+4. Folded out of the ENUMERATING-probe bullet into the "Cross-check the identity
+   FIELD and COLLECTION NAME across every leg" bullet, which already carried
+   "a wrong or pre-rename name deletes NOTHING silently":
+
+> A RENAMED subcollection is the case NO source scan
+>   reaches (a dead spelling has no writer): the old name keeps rows the probe counts,
+>   no LIST-driven deleter clears and no TTL reaches (a policy is keyed to an EXACT
+>   collection id) — only a prod dry run finds it. Sweep BOTH spellings; the legacy
+>   name inherits the live one's Art. 15 exemption by CITATION only, never a
+>   re-description of its contents.
+
+5. Cut as EVIDENCE for a rule that survives verbatim beside it ("IMPORT them, never
+   parse the cascade as text"), per the file's own "prefer the RULE over the
+   evidence, which rots". This is a deletion, not a fold — recorded so the
+   parser-specific detail is recoverable:
+
+> (a digit-bearing name is invisible to
+>   `/"([A-Za-z_]+)"/` and a quoted name in a `/* */` comment reads as an entry)
+
+6. Folded into the "A leg with no DIRTY fixture is mutation-invisible" clause, which
+   carries the `strict:false` reason the deleted copy did not:
+
+> prove the coupling by DELETING the leg and checking BOTH
+>   the targeted fixture AND "no failed collections" redden.
+
+**Review outcome.** Round 1: one blocking finding — the `on-report-created.ts`
+header still asserted "`reportHistory` entries are deterministic (no per-run
+timestamp) so `arrayUnion` dedupes", false in all three clauses (no field, no
+`arrayUnion`, and the replacement row carries a per-run `expireAt`). Struck, not
+reworded; the true mechanism was already stated at the write site. Six non-blocking
+findings, all closed in round 2: the 500-op bound (M1), `tx.getAll` replacing a
+`tx.get` loop (M2), intra-slice duplicate dedupe (L1), a parent-document existence
+probe leg (L2 — a mutation probe showed it was unpinned, so it also gained a
+clean/dirty/other-user scenario trio), a comment asserting a targetUid distinction
+the code did not make (L3), and three migration scenarios (M3). Round 2 verdict:
+pass, 0 blocking.
+
+**Other things measured and worth keeping.** A `fieldOverrides` TTL is declared per
+collection-group id, so it covers a subcollection under every parent; `report_history`
+is unique as a collection name in this tree and is registered in
+`KNOWN_SUBCOLLECTION_NAMES`, so the policy cannot arm over unrelated documents.
+`Transaction.getAll()` returns snapshots in the order the refs were passed, which is
+what makes the `unique`/`refs`/`existing[i]` index alignment sound. A `count()` on a
+subcollection at a KNOWN path answers correctly even when the parent document is
+missing — the `listDocuments()` rule is about enumerating missing PARENTS in a
+collection, not about querying beneath one. `firestore.rules` has no `user_moderation`
+block at all, so the collection is Admin-SDK-only and the Art. 15 exemption leaves no
+dead export section (contrast BUT-1957). The reporter DELETE sweep and its probe share
+one collection-group index, and a missing or building index surfaces as
+FAILED_PRECONDITION → `failedCollections` → `gdprCompliant:false`, never as a false
+all-clear — which makes deploy ordering (indexes Ready before functions) load-bearing.
+
+**Observation left with the coordinator, not filed:** a dry run stops after the first
+400-entry slice and always reports `emptied: 0` (the early return precedes the clear
+block). Both are documented, and the second is pinned with an explicit rationale —
+`emptied` answers "did it clear", not "would it clear". Measured against
+butlery-app-1 by hand after the build: `user_moderation` holds ZERO documents and
+`reports` zero rows, so no legacy array exists and the migration currently has nothing
+to move. Attributed, not reproducible from this repo.
