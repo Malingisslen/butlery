@@ -14,8 +14,6 @@ import 'package:butlery/core/constants/firestore_collections.dart';
 /// - Basic imports (per-minute, per-hour, per-day)
 /// - LLM operations (enhancement, extraction, vision)
 /// - LLM costs (daily and monthly budgets)
-///
-/// Usage is persisted to Firestore under /users/{userId}/rateLimits/imports
 class ImportRateLimiter extends BaseService {
   @override
   String get serviceName => 'ImportRateLimiter';

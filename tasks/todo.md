@@ -1,107 +1,158 @@
-# BUT-2020 — receptimport från arla.se misslyckas alltid
+# BUT-2040 + BUT-2039 — camelCase-luckan i kontoraderingen, och de osanna meningarna
 
-## Vad som är mätt
+## Vad som är mätt (i dag, i koden — inte hämtat ur ärendetexten)
 
-`ArlaRecipeParser.parseRecipe` returnerade `null` för varje arla.se-sida byggd som den
-hämtade fixturen. Mätt 2026-09-05 mot en sida hämtad samma dag, och pinnat av
-`DEFECT:`-fall i `test/unit/services/extraction/site_parsers/real_structure_test.dart`
-som skrevs för att bli röda när det här landar.
+**BUT-2040.** Under `users/{uid}` finns två stavningar av samma sak:
 
-Tre oberoende orsaker, var och en tillräcklig. Detaljerna står i ärendet; det som styr
-planen är att **orsak 1 och 2 båda måste lagas för att någonting ska ändras** — mätt: att
-bara laga orsak 1 lämnar kvaliteten på 0.70 mot tröskeln 0.80, alltså fortfarande `null`.
+- `rate_limits` — nuvarande. `FirestoreCollections.userRateLimits = 'rate_limits'`,
+  och sex filer i `lib/` skriver dit via konstanten (fyra repositories och två
+  tjänster). Commit `b9a95bd02`, 2026-03-19, är namnändringen.
+- `rateLimits` — camelCase. **Ingen skrivare i `lib/` eller `functions/src`.** Fem rader
+  i produktion, mätta av BUT-2028:s torrkörning mot butlery-app-1.
+
+`deleteUserSubcollections` (`functions/src/account/account-deletion-cascade.ts`) går på
+en handskriven `subs`-lista. Den innehåller `rate_limits`, inte `rateLimits`.
+`probeResidualData` **uppräknar** i stället via `listCollections()`, med bara två
+uteslutningar (`notificationCounters`, `recentContentHashes`) — så sonden ser
+camelCase-raderna, räknar 5 > 0 och sätter `residual_data_detected`.
+
+Nettot: varje radering av ett konto med sådana rader rapporterar `gdprCompliant: false`
+om sig själv, korrekt, och **ingen kodväg kan någonsin rensa det**. Det är exakt den
+riktning filen själv kallar oåterkallelig: superset-regeln DELETER ⊇ PROBE, skriven i
+`subs`-listans egen kommentar.
+
+Dessutom, samma fil-familj: `import_rate_limiter.dart` sade i sin klasskommentar
+`/users/{userId}/rateLimits/imports`. Koden i samma fil skriver via konstanten, alltså
+`rate_limits`. Kommentaren är kvar från före namnändringen.
+
+**BUT-2039.** `functions/src/admin/reset-collection-lists.ts` säger, i posten
+`system_ip_audit_caps`, att den inte är personuppgifter (`so it is not user data`). Nyckeln
+byggs som `hashUid(ip)_hour`, och `hashUid` är osaltad sha256 trunkerad till 48 bitar.
+IPv4-rymden är ~4,3 miljarder adresser, alltså genomräkningsbar av vem som helst som har
+dokumentet. Påståendet är falskt. **Beslutet står** — postens andra skäl ("wiping it
+hands a fresh quota to whoever just tripped the cap") är oberoende tillräckligt.
 
 ## Ändringar
 
-### 1. `lib/utils/recipe_scraper.dart` — läs attributet ur DOM:en, inte ur råtexten
+- [x] **1. `rateLimits` in i `subs`** (`account-deletion-cascade.ts`), i legacy-blocket
+      bredvid `category_memberships`/`fcm_tokens`, med samma skäl som de fem står där av:
+      ingen levande skrivare, men konton som föregår namnändringen håller rader, och utan
+      posten är raden permanent restdata. Kommentaren säger att `rate_limits` är den
+      levande stavningen och att de två är samma data under olika namn — inte två
+      samlingar.
+- [x] **2. `rateLimits` in i `EXPORT_EXEMPT`** (samma fil). **Detta är inte valfritt:**
+      BUT-1992-vakten (`scenario_...ExportSupersetOfDeletion`) rödnar på varje `subs`-post
+      som varken exporteras eller är undantagen med ett skäl. Formuleringen följer
+      `NO LIVE WRITER`-konventionen ordagrant, eftersom en systervakt använder just den
+      inledningen som ankare för att upptäcka om en skrivare senare dyker upp.
+- [x] **3. `rateLimits` in i `NO_OWN_STEP`**
+      (`scenario_steplessSubcollectionsAreErasedNotJustReported` i
+      `functions/src/__tests__/account-deletion-cascade.test.ts`). Den kör raderaren och
+      sonden mot samma fejkade databas och pinnar DELETER ⊇ PROBE per namn. Utan den är
+      punkt 1 en listrad ingenting utövar.
+- [x] **4. Stryk den falska doc-kommentaren** i `import_rate_limiter.dart:18`. **Strykning,
+      inte omskrivning** — code-style säger att en falsk mening tas bort snarare än
+      formuleras om, och sökvägen är ändå läsbar ur konstanten två rader från skrivningen.
+- [x] **5. Nämn båda stavningarna i nollställningsskriptets `users`-inventering**
+      (`reset-collection-lists.ts`). Listan driver inte raderingen —
+      `deleteDocRecursive` uppräknar — men den är vad en läsare griper efter för att lära
+      sig formen, och i dag saknas **båda** stavningarna i den.
+- [x] **6. BUT-2039: stryk den osanna meningen — EN, inte två.** Endast klausulen `so it is not user data,`. **Ingen ersättande juridisk mening skrivs** — en sannare
+      variant är ett nytt omätt påstående, och det är kedjan BUT-2028 betalade sju
+      granskningsrundor för. Vill vi ha en juridisk slutsats hör den hemma i ett ADR.
+      **Rubriken på rad 310 lämnas orörd.** BUT-2039 säger åt att stryka även den, och
+      den instruktionen vilar på en felräkning: rubriken "Operational records that carry
+      no personal data" styr **bara `metrics`** (mätt — `_internal`, `audit`/
+      `notification_metrics` och `system_ip_audit_caps` ligger under tre egna rubriker på
+      rad 322, 330 och 347). `metrics` är aggregat utan uid, så rubriken är sann om den
+      enda post den styr; att stryka den vore att ta bort ett riktigt påstående för att
+      laga ett annat. Ticketen får en kommentar om felräkningen.
 
-`_extractJsonLd` matchade `type=["']?application/ld\+json` med en regex över **rå
-HTML**. Arla skriver `application/ld&#x2B;json`, så den träffar aldrig.
+## Panelens villkor (full-panel, 2026-09-08 — 5 approve, 1 approve-with-conditions)
 
-Fixen är **inte** att lägga till `&#x2B;` i regexen. Nästa sajt stavar det på ett fjärde
-sätt. I stället: tolka dokumentet en gång och plocka `script`-elementen, så löser
-HTML-tolken varje teckenreferens åt oss — det är precis vad en tolk är till för.
+Säten: DPO, Security Architect, DBA, Legal Counsel, Software Architect + Codebase
+Archaeologist. Bortvalda: FinOps, Monetization, Vendor, Data/Integrations (matchade bara
+på `import_rate_limiter.dart`, som här bara får en falsk kommentar struken), T&S och PM
+(ingen moderations- eller produktyta). Noll konflikter, alltså ingen ADR.
 
-Behåll `hadJsonLdBlocks`-signalen. Den är det som skiljer "sidan har ingen strukturerad
-data" från "sidan hade strukturerad data men vi fick inget ur den", och utan den ser båda
-likadana ut. Det är den egenskap `butlery-9f` namngav och som gjorde felet osynligt.
+- [x] **V1.** `EXPORT_EXEMPT`-skälet börjar med exakt `NO LIVE WRITER` — en systervakt
+      ankrar på `why.startsWith("NO LIVE WRITER")` för att rödna den dag en skrivare dyker
+      upp. En omskrivning lämnar posten utanför vakten, tyst.
+- [x] **V2.** Skälet citerar Malins beslut 2026-09-03 (ADR-0011) och säger att det är
+      **samma data före namnändringen**, inte ett nytt undantag. Motsatt form mot
+      `fcm_tokens`/`user_shared_menus`, som är samma NAMN på olika data — den skillnaden
+      måste stå i koden, inte bara här, annars ärver nästa läsare fel prejudikat.
+- [x] **V3.** Ingen artikel 15-sektion för `rateLimits`. Att lägga till en vore att riva
+      upp beslutet från 2026-09-03 utan att fråga.
+- [x] **V4.** Mutationsprovet körs och återställs FÖRE grindarna dispatchas.
+- [x] **V5.** Kommentaren i `subs` skrivs som `//`-rader, aldrig `/* */` — vaktens
+      källtextparser strippar bara radkommentarer, och ett citerat samlingsnamn i ett
+      blockkommentar-parti smyger in ett falskt listnamn i vaktens bild av listan.
+- [x] **V6.** Sökvägen skrivs som `users/{uid}/rateLimits`, ALDRIG som
+      `.collection("users").doc(uid).collection("rateLimits")` — skrivarskanningen läser
+      anropssyntax i prosa som en levande skrivare och skulle rödna på sin egen kommentar.
+- [x] **V7.** De två siffrorna i kommentaren ovanför no-writer-blocket ("The first four…",
+      "All five…") blir falska av den här ändringen. De **stryks** i stället för att räknas
+      om — en siffra som beskriver en fil man själv redigerar går inte att skriva rätt, och
+      den ena räknar dessutom rader i en ANNAN fil.
+- [x] **V8.** Rör inte rubriken på rad 310 (se punkt 6).
+- [x] **V9.** BUT-2039-strykningen växer inte till ett nytt påstående om hashens
+      lämplighet som nyckel — det är en egen omätt fråga, redan noterad på ärendet.
+- [x] **V10.** En TREDJE kopia av samma falska sökväg finns i
+      `docs/architecture/ROLE_RESPONSIBILITY_MAP.md:530`. Den stryks i samma ändring —
+      annars fortsätter dossiern påstå fel sökväg för alltid, utanför commit-grindarna.
+- [x] **V11.** Punkt 5 är dokumentation, inte beteende: `deleteDocRecursive` uppräknar och
+      sopar båda stavningarna redan i dag. Får inte beskrivas som en beteendeändring.
 
-### 2. En delad utplattning av `HowToSection`
+## Namngiven restpost (Software Architect)
 
-`recipeInstructions` kan vara en lista av `HowToSection` vars steg ligger i
-`itemListElement`. Det är standard schema.org, inte Arla-specifikt.
+Ingen källskannande vakt kan någonsin fånga den här buggklassen. Både drift-vakten och
+BUT-1992-vakten letar efter `.collection(users).doc().collection(X)`-kedjor i koden — en
+död namnändring har inga skrivare och är osynlig för dem per konstruktion. De fångar att en
+NY skrivare saknar listrad, aldrig att en GAMMAL rad blivit föräldralös. Det som hittade
+den här var en torrkörning mot riktig data, och det är den enda mekanism som kan hitta
+nästa. Ingen kadens är beslutad för att köra om den.
 
-Fyra filer bär samma trasiga filter — `{arla,ica,koket,recept}_recipe_parser.dart`,
-alla `inst is Map && inst['text'] != null` — plus `RecipeQualityScorer._extractInstructions`.
-Alla fem lagas genom **en** delad hjälpare, inte fem kopior; fem kopior av ett beslut är
-hur de driver isär.
+## Verifiering
 
-`schema_org_tier.dart` hanterar redan formen och är förlagan — **med en avvikelse jag inte
-kopierar**: den lägger till sektionens `name` som ett eget steg, så "Första instruktionen"
-blir instruktion nummer ett. Rubriken är ingen tillagning. Min utplattning tar sektionens
-egna steg och hoppar över dess namn när `itemListElement` finns.
+- [x] `npm run test:account-deletion-cascade` — 297 gröna i dag; punkt 3 lägger till två
+      per namn, och punkt 1+2 måste hålla BUT-1992-vakten och drift-vakten gröna.
+- [x] **Mutationsprov på punkt 1**: ta bort `rateLimits` ur `subs` igen och bekräfta att
+      det nya fallet rödnar. En listrad utan ett prov som dör med den är en oprövad
+      utfästelse — det är precis den formen som lät `reset-user-data` stå trasig i fem och
+      en halv månad.
+- [x] Mutationsprovet körs **före** granskningsgrindarna dispatchas, aldrig samtidigt:
+      provet skriver i `lib/`/`functions/src` och en läsande grind graderar då bytes som
+      inte ska shippas.
+- [x] `flutter analyze` på `import_rate_limiter.dart` (kommentarsändring, men gratis).
+- [x] `dart format` rapporterar 0 ändrade innan grindarna dispatchas.
 
-### 2b. Tillagt 2026-09-05 efter granskning: fixen nådde inte hela vägen
+## Vad som INTE görs
 
-`code-reviewer` mätte att samma matchning över RÅ källkod lever kvar på fler ställen,
-och att ett av dem kör **före** ändringen ovan: `HtmlSanitizer.sanitize()`s `preserveWhen`
-tog bort Arlas script MED innehåll innan schema.org-tiern läste det. Bara den vägen
-saneras: `sanitize()` har en enda anropare i `lib/` (`parsing_context.dart:89`). Tier 2
-och tier 3:s strukturerade halva läser RÅ HTML (`url_import_strategy.dart:133` och
-`:162`); parserhalvorna går via `ParsingContext.fromUrl` och saneras.
+- Ingen bakåtfyllning som städar de fem befintliga raderna. De raderas när respektive
+  konto raderas; skriptet `reset-user-data` uppräknar redan och tar båda stavningarna i
+  dag. Appen är inte lanserad, så populationen är två testkonton.
+- `rateLimits` läggs **inte** till i någon exportsektion. Det vore en artikel 15-sektion
+  för en form ingen levande kod skriver — DPO-sätet namngav den restposten redan under
+  BUT-1957 och den är Malins, oställd.
+- BUT-2038 rörs inte.
 
-Lagat: `html_sanitizer.dart` (`preserveWhen` + `_scriptTagPattern`) och
-`_hasOnlyNonRecipeJsonLd` i `url_import_strategy.dart`.
+## Rättad premiss (var en öppen fråga i första utkastet)
 
-**Detta är en sanerare — varje breddning av ett UNDANTAG är en potentiell försvagning.**
-Två rester, i motsatta riktningar: mönstret är för SVAGT mot ett `type=` inuti ett annat
-attributs värde (BUT-2034), och för STRÄNGT mot stavningar av `+` som parsern löser
-upp (BUT-2037) — en regel, inte en uppräkning.
+Första utkastet av den här planen påstod att rubriken på rad 310 täcker fyra poster.
+Falskt, mätt: den styr en. Påståendet kom från BUT-2039:s egen text och gick vidare
+oprovat in i planen — samma klass som repots lärdom om att ett ärendes eller en
+granskares mätning är ett påstående, inte en mätning. DPO-sätet fångade det; jag
+räknade om själv innan jag trodde på det.
 
-`firebase-backend-security` mätte att `preserveWhen` aldrig krävt ett riktigt
-`type=`-attribut — den testade en naken delsträng, så kryphålet var levande hela tiden.
-Samma granskning visade att en `\b`-avgränsning inte räcker
-(`data-type=` passerar) och att mönstret måste avgränsas i BÅDA ändar.
+## På vanlig svenska
 
-Ingen konsument renderar det sanerade innehållet i dag — alla fyra läsare av
-`sanitizedContent` är parsningstiers — så det här är djupförsvar, inte en levande XSS.
-Nästa konsument som renderar det ärver en.
+Kontoraderingen missar en gammal felstavad mapp under varje användare. Fem sådana rader
+finns i produktionen. Följden är att appens egen kontroll säger "den här raderingen blev
+inte komplett" — och har rätt — utan att något kan laga det. Fixen är en rad i
+raderingslistan plus ett prov som dör om någon tar bort den igen.
 
-### 3. Orsak 3 lagas INTE här
-
-CSS-fallbacken hittar inte Arlas tabell (`<th>` med namn, `<td>` med mängd). Med orsak 1
-och 2 lagade når vi aldrig fallbacken för den här sajten, så den är inte längre på den
-kritiska vägen. Att bygga tabellstöd är en egen ändring med egen risk för de tre andra
-sajterna. Ärendet får en notering; DEFECT-testet för orsak 3 står kvar och är fortfarande
-sant.
-
-## Tester
-
-De fyra DEFECT-fallen för orsak 1 och 2 **ska bli röda** — det är kvittot. De ersätts i
-samma edit av den positiva assertionen: `parseRecipe(realStructureKassler)` ger 8
-ingredienser och 4 steg. Utan den står Arlas fungerande väg opinnad efter lagningen
-(BUT-1849:s klass).
-
-Testet som pinnar att fixturen bär den teckenkodade stavningen står kvar oförändrat och
-ska vara grönt — det skyddar fixturen, inte parsern.
-
-Muteringsprov, ett i taget, med `.dart_tool/flutter_build` rensat mellan mutation och
-körning. Endast rött räknas.
-
-Regressionsyta: hela `test/unit/services/extraction/` och `test/golden/` — de fyra
-parsersviterna delar den hjälpare som ändras, och `koket`/`recept`/`ica` har egna
-instruktionstester som måste stå kvar gröna.
-
-## Risk
-
-Låg och begränsad till receptimport. Värsta utfallet om utplattningen är fel är att steg
-dubbleras eller tappas för en sajt — vilket parsersviterna fångar. Ångras med en revert.
-Ingen användardata, inga regler, ingen Firestore.
-
-## Vad det betyder i klartext
-
-Att importera ett recept från Arla har aldrig fungerat — appen har svarat "hittade inget
-recept" fast receptet fanns. Två saker lagas: vi läser sidan som en webbläsare gör i
-stället för att leta i råtexten, och vi hittar tillagningsstegen även när sajten grupperar
-dem. Testerna som bevisar buggen blir röda när fixen landar, vilket är själva kvittot på
-att den bet.
+Samtidigt rättas ett antal osanna meningar som granskningen hittade: påståenden om
+vilken mapp importkoden skriver till, och ett påstående om att en IP-hash inte är
+personuppgifter fast den går att räkna baklänges på kort tid. Inga beslut ändras av det —
+bara meningar som inte stämde.

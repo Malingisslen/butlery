@@ -53,6 +53,16 @@ export const COLLECTIONS_TO_DELETE: CollectionTarget[] = [
       "user_shared_shopping_lists",
       "ingredients",
       "counters",
+      // BOTH spellings, deliberately (BUT-2040). `rate_limits` is the live one
+      // (`FirestoreCollections.userRateLimits`); `rateLimits` is the
+      // pre-rename name, with no writer and rows still standing in production
+      // (BUT-2040). Neither was listed here before. This inventory does not
+      // drive the deletion — `deleteDocRecursive` enumerates, so it reaches
+      // both — so naming them changes nothing a reset does; it stops a reader
+      // learning the shape from a list that omits half of it. The ACCOUNT
+      // cascade is where the gap was real, and it is closed there.
+      "rate_limits",
+      "rateLimits",
       "connection_tests",
       "unified_recipes",
       "conversations",
@@ -348,9 +358,8 @@ export const COLLECTIONS_DELIBERATELY_UNTOUCHED: Record<string, string> = {
 
   system_ip_audit_caps:
     "Per-IP hourly signup caps (account/verify-signup-age.ts). Deliberately " +
-    "holds no uid, email or birth year — only a hashed IP and a count — so " +
-    "it is not user data, and wiping it hands a fresh quota to whoever just " +
-    "tripped the cap.",
+    "holds no uid, email or birth year — only a hashed IP and a count. " +
+    "Wiping it hands a fresh quota to whoever just tripped the cap.",
 };
 
 /**

@@ -22,7 +22,8 @@ whether or not it is exported.
 ## Collections with no live writer
 
 `category_memberships`, `connection_tests`, `unified_recipes`, the `users/{uid}/conversations`
-SUBCOLLECTION, `users/{uid}/fcm_tokens`, `users/{uid}/user_shared_menus` and
+SUBCOLLECTION, `users/{uid}/fcm_tokens`, `users/{uid}/rateLimits` (the pre-rename spelling of
+`rate_limits`, exempt by inheritance — ADR-0011, BUT-2040), `users/{uid}/user_shared_menus` and
 `users/{uid}/user_shared_shopping_lists`.
 
 Nothing in `lib/` or `functions/src` writes these paths today. They stay in the cascade's

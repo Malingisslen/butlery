@@ -8958,3 +8958,62 @@ and nothing else (no test asserts the two agree); `data_export_service_test.dart
 `data_minimisation` only as `isNotNull`, so its wording can drift without reddening; and the
 `reviewedBy` moderator-uid residual is named in the deviation entry but reachable by no query.
 Verdict: pass, 0 blocking.
+
+## 2026-09-08 — BUT-2040 / BUT-2039: a RENAMED subcollection is an unclearable Art. 17 gap (commit-gate review, PASS)
+
+Reviewed the staged diff adding `users/{uid}/rateLimits` (camelCase) to the account
+cascade's `subs` list plus a matching `EXPORT_EXEMPT` entry, and striking two false
+sentences.
+
+**The bug class.** `probeResidualData` ENUMERATES (`listCollections()`, two exclusions)
+while `deleteUserSubcollections` walks a hand-written list. A collection RENAMED at some
+point in the past (`userRateLimits = 'rateLimits'` -> `'rate_limits'`, commit `b9a95bd02`,
+2026-03-19, `lib/core/constants/firestore_collections.dart`) leaves
+rows under the dead spelling that the probe counts and no deleter can clear — every such
+account's erasure reports `residual_data_detected` / `gdprCompliant:false`, correctly and
+forever. No source-scanning guard can find this: a dead spelling has no writer, so both the
+drift guard and the BUT-1992 export guard are blind to it by construction. What found it was
+BUT-2028's DRY RUN against production (`deleteDocRecursive` accumulates
+`subCounts[subCol.id]`), which counted 5 rows on 2026-09-07.
+
+**Verified myself, not taken from the brief:**
+- `firestore.indexes.json` has a `collectionGroup: "rate_limits"` / `expireAt` / `ttl:true`
+  entry and NOTHING for `rateLimits` — so the comment's "a TTL policy is keyed to an exact
+  collection id" claim holds and the legacy rows had no other exit.
+- `git show b9a95bd02 -- lib/core/constants/firestore_collections.dart` shows
+  `userRateLimits = 'rateLimits'` -> `'rate_limits'` — one constant, one stored path,
+  renamed. The rename is in the CONSTANTS file, and the commit that touches the writer
+  (`7854e2a8a`, `import_rate_limiter.dart`) only swaps a literal for the constant and
+  renames NOTHING — an earlier version of this entry cited it and was wrong. This is
+  genuinely NOT the repo's recorded "arguing across
+  collections by NAME" error (BUT-1732) — it is one collection renamed, evidenced by the
+  rename commit. That distinction is what makes inheriting Malin's ADR-0011 exemption legal
+  rather than a new undecided call.
+- Ran `npm run test:account-deletion-cascade`: 299/299. The new `NO_OWN_STEP` name adds two
+  checks; `gaps`, `stale` and the `why.startsWith("NO LIVE WRITER")` revival guard all green,
+  and the entry sits in the correct exemption group so that anchor covers it.
+- `hashUid` (`functions/src/shared/hash-uid.ts`) is `sha256(uid).hex.substring(0,12)` — 48
+  bits, unsalted — and `verify-signup-age.ts:364` keys `system_ip_audit_caps` on
+  `${hashUid(ip)}_${hour}`. The BUT-2039 strike ("so it is not user data") is correct, and no
+  replacement legal sentence was written, which is right.
+
+**Findings filed (all non-blocking).**
+1. `tasks/todo.md`'s plain-Swedish summary swapped its counts: ONE IP-hash sentence was
+   struck and TWO wrong-path sentences were (`import_rate_limiter.dart` doc comment,
+   `ROLE_RESPONSIBILITY_MAP.md:530`). Strike the enumeration rather than recount.
+2. "NOT the `fcm_tokens` shape (one name, two different stores)", written twice, is false
+   about its exemplar: `fcm_tokens`' second store is the top-level `user_fcm_tokens` — a
+   DIFFERENT name. The real one-name-two-stores entries are `user_shared_menus`,
+   `user_shared_shopping_lists`, `conversations`. Strike the parenthetical; "not two
+   collections" stands on the rename commit.
+3. The inherited reason quotes ADR-0011's "one timestamp per gated action". Faithful to the
+   ADR, but it does not describe what those 5 legacy rows hold: the ImportRateLimiter's
+   `imports` document (per-window counts, `llmCostToday`, `llmCostThisMonth`,
+   `llmOperationsThisMonth`, `expireAt`). Pre-existing in the ADR, not introduced here — do
+   not reword, surface it.
+4. The DPO residual the exemption group's header already records ("erasable but never
+   exportable ... Malin's, and has not been asked") is now MEASURED non-empty for the first
+   time. Still hers, still unasked; the population is two pre-launch test accounts.
+
+**Durable rule extracted** into the principles file, merged into the "deleting a parent doc"
+bullet rather than added as a new one.

@@ -529,7 +529,18 @@ name which doc each end touches before approving it.
   parent delete (best-effort), covering every legacy name variant. TTL fields need three
   things: the `gcloud --enable-ttl` policy (separate admin action), a backfill for
   pre-existing docs, and a deletion-cascade cross-check if the collection carries a raw
-  `userId`.
+  `userId`. A RENAMED collection is the sharpest legacy-variant case and no source scan can
+  find it (a dead spelling has no writer, so writer-scanning guards are blind by
+  construction — only a dry run against real data finds it): the old spelling keeps rows an
+  ENUMERATING probe counts and a list-driven deleter cannot clear, i.e. a permanent
+  unclearable `gdprCompliant:false`, and the TTL does not rescue it because a TTL policy is
+  keyed to an EXACT collection id. Such a name can legitimately
+  inherit another entry's Art. 15 export decision rather than getting a new one — but
+  prove "same data, two names" on the commit that changes the CONSTANT's value — which is
+  usually not the commit touching the writer — never by name similarity, and keep the inherited entry to the citation: re-describing the
+  content in your own words re-asserts a characterisation the ADR made about the LIVE rows
+  (`rate_limits` "one timestamp per gated action" does not describe the same collection's
+  `imports` doc, which holds counters and LLM cost totals).
 - "Export ⊇ erasure" is a field-PAIR property — the two filters must target the identical
   field on the identical collection; check both cascades together. When a cascade UNIONS
   several discovery handles (roster + last-writer), the EXPORT's own discovery field must be

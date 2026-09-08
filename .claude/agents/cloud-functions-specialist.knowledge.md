@@ -298,7 +298,13 @@ from `(err as {code?}).code`.
   never a count), never aborts; one try/catch per leg.
 - **An ENUMERATING probe (`rootRef.listCollections()`) is BROADER than the
   deleter by construction** — any user subcollection no step erases reports
-  `gdprCompliant:false` forever. Ship it only with a DERIVED drift test: regex every
+  `gdprCompliant:false` forever. A RENAMED subcollection is the case NO source scan
+  can reach (a dead spelling has no writer): the old name keeps rows the probe counts
+  and a LIST-driven deleter cannot clear, and a TTL policy is keyed to an EXACT
+  collection id, so only a dry run against prod finds it. Sweep BOTH spellings; the
+  legacy name may inherit the live one's Art. 15 exemption by CITATION only — never
+  re-describe its contents, which re-asserts a claim made about the LIVE rows.
+  Ship it only with a DERIVED drift test: regex every
   `.collection(users).doc(..).collection("X")` writer across `functions/src` +
   `lib`, spelling the users token `\w*[Uu]sers\w*` (`[A-Za-z_]\w*` misses the bare
   `FirestoreCollections.users` every Dart repo writes);
@@ -331,8 +337,7 @@ from `(err as {code?}).code`.
   AI quota would refuse signup or LEAVING a group chat; it re-orders auth/limit
   ABOVE the handler's own eligibility gates (validate + `assertAgeCompliant` /
   `assertAccountMatured` must stay above the limit call); and left beside an
-  inline `checkRateLimit` it burns two tokens per call. `rate_limiter.ts`'s
-  docstring shows the wrapper as THE pattern, so grepping the helper misleads.
+  inline `checkRateLimit` it burns two tokens per call.
 - **Bare `checkRateLimit` + a local throw drops BOTH** the `system_events`
   `rate_limit_violation` row AND `details.retryAfterSeconds`; both spellings are
   live, so copying a sibling is CONSISTENT, not correct. Abuse/cost gates fail
@@ -400,17 +405,15 @@ from `(err as {code?}).code`.
 ### Ingredient sync, allergen data & admin exports/ETL (admin/ family)
 - `admin/` scripts run `main()` at import — extract pure cores to test.
 - **A hand-run script's delete/keep OVERLAP guard no-ops the WHOLE script in
-  silence** (`reset-user-data.ts`), and REPAIRING it removes the header's only
-  enforcement. The durable last barrier is a HUMAN step nothing can pre-satisfy —
-  a typed `CONFIRMATION_PHRASE`, `!dryRun`-scoped, above the first `runPhases(`
-  call (`admin-init.ts` hardcodes prod, no env override). Its Auth-wipe phase fires
+  silence** (`reset-user-data.ts`); repairing it removes the header's only
+  enforcement, so the durable barrier is a HUMAN step nothing can pre-satisfy: a
+  typed `CONFIRMATION_PHRASE`, `!dryRun`-scoped, above the first `runPhases(`
+  (`admin-init.ts` hardcodes prod). Its Auth-wipe phase fires
   `onUserDeleted`, which writes into collections the Firestore phase is
   concurrently deleting. Removing a TEMPORARY refusal falsifies every sentence
   citing it — grep the flag REPO-wide: the `ACCEPTED_DEVIATIONS.md` amendment
   (supersede dated), the capped sweep naming it as Art. 17 recovery
-  (`MAX_BLOCK_SWEEP_ROWS`), other agents' `*.knowledge.md`. One entry usually
-  words the claim TWICE, so key the supersession on the CLAIM — "the paragraph
-  above" leaves the earlier wording live and unsuperseded.
+  (`MAX_BLOCK_SWEEP_ROWS`), other agents' `*.knowledge.md`.
 - **A source pin owes**: a grep-UNIQUE anchor; the guard's EFFECT, not its position
   (`process.exit(0|1)` INSIDE the gate); `//`-stripping, which stops NEITHER
   `&& false` NOR a `/* */` wrap, so no such pin is complete; and the INVOKER, its

@@ -4737,6 +4737,12 @@ async function scenario_steplessSubcollectionsAreErasedNotJustReported(): Promis
     "unified_recipes",
     "conversations",
     "fcm_tokens",
+    // BUT-2040. Measured in production, not inferred: the reset script's dry
+    // run counted 5 rows under this pre-rename spelling on 2026-09-07, while
+    // the deleter's list named only `rate_limits`. The probe enumerates, so
+    // such an account's deletion reports itself incomplete with nothing able
+    // to clear it.
+    "rateLimits",
   ];
 
   for (const name of NO_OWN_STEP) {
@@ -5276,8 +5282,8 @@ async function scenario_exportCoversEveryDeletedSubcollection(): Promise<void> {
 
   // An exemption for something the cascade no longer deletes is dead text that
   // outlives its subject, and a reader cannot tell it from a live decision.
-  // Seven exemptions are justified by the ABSENCE of a writer. That premise was
-  // measured once, at the moment it was written, and nothing re-checks it — so
+  // Some exemptions are justified by the ABSENCE of a writer. That premise is
+  // measured once, at the moment it is written — so
   // the day a feature starts writing one of those paths (`firestore.rules`
   // already permits the owner to write `users/{uid}/conversations`), the cascade
   // would erase rows the export never reproduced and this guard would still be

@@ -19098,3 +19098,56 @@ N2 (an unanchored `String.match` on a source pin). Every other finding across fo
 SENTENCE — three of them planted inside the paragraph written to correct the previous one. The
 per-round arc was 2 blocking / 2 blocking / 2 blocking / 0, and each round's blockers lived in
 text that had not existed before that round.
+
+### 2026-09-08 — BUT-2040/BUT-2039: a RENAMED user subcollection is an unclearable Art. 17 gap [gdpr-cascade][review]
+
+Third pass on the same staged diff (two prior passes: pass). The change adds
+`users/{uid}/rateLimits` — the pre-rename spelling of `rate_limits` — to
+`deleteUserSubcollections`' `subs` list and to `EXPORT_EXEMPT`, plus strikes three false
+sentences elsewhere.
+
+The bug class, verified rather than taken from the brief: `probeResidualData` ENUMERATES via
+`listCollections()` (two exclusions: `notificationCounters`, `recentContentHashes`) while
+`deleteUserSubcollections` walks a hand-written list. `git show b9a95bd02 --
+lib/core/constants/firestore_collections.dart` shows `userRateLimits = 'rateLimits'` ->
+`'rate_limits'` (2026-03-19). `grep -n rateLimits firestore.rules` returns nothing, so no
+client can recreate a row. Net: the probe counts the legacy rows, no deleter clears them, and
+every such account's erasure reports `residual_data_detected` / `gdprCompliant:false`
+correctly and forever. No source-scanning guard can find this by construction — a dead
+spelling has no writer. BUT-2028's dry run against prod counted 5 rows (2026-09-07). A TTL is
+no exit either: the `expireAt` fieldOverride is keyed to the exact collection id `rate_limits`.
+
+Verification run: `npx tsc --noEmit` exit 0; `npm run test:account-deletion-cascade` 299/299,
+including `gaps`, `stale` and the `why.startsWith("NO LIVE WRITER")` revival guard, plus the
+new `NO_OWN_STEP` name. All 11 staged files `git rev-parse :<path>` == `git hash-object <path>`.
+
+This pass graded only the two comment-only edits since the last pass, both in
+`EXPORT_EXEMPT.rateLimits`. Both are strikes and both are correct:
+- "for one timestamp per gated action" removed. It was inherited prose describing the LIVE
+  `rate_limits` collection, and it is not even true of that: `import_rate_limiter.dart` writes
+  `users/{uid}/rate_limits/imports` holding per-window counts, `llmCostToday`,
+  `llmCostThisMonth`, `llmOperationsThisMonth`. The entry now cites `(ADR-0011)` alone.
+- "panel's" removed from "against the panel's recommendation". ADR-0011:134 says "she went
+  against THE recommendation" and the panel was SPLIT — its table row reads
+  "`rate_limits` | EXEMPT | PM — over DPO's 'export counts only'", i.e. the PM seat
+  recommended what she chose. "The panel's recommendation" would have been false.
+
+Neither strike left a dangling clause; "weighing bundle legibility higher (ADR-0011)" is
+grammatical and matches the ADR's own wording. No other copy of either struck claim survives
+IN THE DIFF. Three copies of the timestamp characterisation survive OUTSIDE it and are
+pre-existing (the same file's `EXPORT_EXEMPT.rate_limits` and the docstring above it,
+`docs/security/account-subcollections-retention.md`'s table row) — reported Low, remedy is a
+strike not a reword, and the staged `firebase-backend-security.knowledge.md` principle already
+records the inaccuracy so it is not lost.
+
+Also filed Low, non-blocking: `tasks/todo.md`'s title still says "två osanna meningar" while
+the change now strikes more than two; strike the numeral rather than recount. Scratch file,
+disposable by `code-style.md`.
+
+Verdict: pass, 0 blocking. Same as the two prior passes; every finding across all three rounds
+was a SENTENCE, none was code — the third instance of that arc recorded in this archive.
+
+Knowledge-file note: the rename principle was folded into the "ENUMERATING probe" bullet, but
+this edit is net +183 chars rather than net-negative. Two of four planned retirements were
+refused by the auto-mode classifier mid-edit; the file stands at 30,959 against a ~25,000
+budget and owes a compaction pass.

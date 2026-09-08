@@ -3206,6 +3206,15 @@ export const EXPORT_EXEMPT: Record<string, string> = {
     "received_menus, and the shared menus themselves are exported by the " +
     "shared_content section. Same top-level-vs-subcollection name collision " +
     "as fcm_tokens. Legacy sweep only.",
+  rateLimits:
+    "NO LIVE WRITER of users/{uid}/rateLimits — the PRE-RENAME spelling of " +
+    "rate_limits, which is also exempt. One collection under two spellings, " +
+    "evidenced by the rename commit, not two collections sharing a word. " +
+    "So this inherits the standing decision rather than making a new one: " +
+    "Malin, 2026-09-03, chose EXEMPT for rate_limits against the " +
+    "recommendation to export it, weighing bundle legibility higher " +
+    "(ADR-0011). Adding an export section here would reopen that " +
+    "decision without asking her. Legacy sweep only. BUT-2040.",
   user_shared_shopping_lists:
     "NO LIVE WRITER of the users/{uid}/user_shared_shopping_lists " +
     "SUBCOLLECTION. The index is top-level, and the lists themselves are " +
@@ -3297,18 +3306,31 @@ export async function deleteUserSubcollections(
     // rather than `FirestoreCollections.users` inline. The guard now resolves
     // local consts too, so the next one of this shape reddens.
     "acquisition",
-    // NO live writer found in `lib/` or `functions/src`. The first four are
-    // named as `users/{uid}` subcollections by `admin/reset-user-data.ts`;
-    // `fcm_tokens` is not. It was named here from the Art. 15 export, which
-    // read it while nothing wrote it — BUT-1990 has since removed that reader.
-    // All five are swept because an account predating their removal can still
-    // hold rows, and by the superset rule above such a row would otherwise be
-    // permanently residual.
+    // NO live writer found in `lib/` or `functions/src`. Swept anyway, because
+    // an account predating a writer's removal can still hold rows, and by the
+    // superset rule above such a row would otherwise be permanently residual.
+    // `fcm_tokens` was named here from the Art. 15 export, which read it while
+    // nothing wrote it — BUT-1990 has since removed that reader.
     "category_memberships",
     "connection_tests",
     "unified_recipes",
     "conversations",
     "fcm_tokens",
+    // BUT-2040: the PRE-RENAME spelling of `rate_limits` above — one
+    // collection under two spellings, not two collections. Nothing has
+    // written `users/{uid}/rateLimits` since commit b9a95bd02 (2026-03-19)
+    // renamed `FirestoreCollections.userRateLimits` to `rate_limits`, and
+    // `firestore.rules` has no block for the camelCase path, so no client
+    // can recreate a row. The dry run of `admin/reset-user-data.ts` measured
+    // 5 rows still standing in production on 2026-09-07.
+    //
+    // Without this entry the rows are unreachable: `probeResidualData`
+    // ENUMERATES, so it counts them and stamps `residual_data_detected` on
+    // every deletion of such an account, while no deleter can clear it. The
+    // collection-group TTL on `expireAt` does not reach them either — a TTL
+    // policy is keyed to an exact collection id, and `rateLimits` is not
+    // `rate_limits`.
+    "rateLimits",
     // Pooled ratings (decision 12): the user's frozen pool events. Each delete
     // fires the Stage-B trigger (onPooledRatingEventWritten), which recomputes
     // the affected pool's canonical_recipe_stats — so erasing the rater also

@@ -842,3 +842,27 @@ files in the same edit.
   many rows under their own uid degrades their own erasure — same shape as `deleteCookSnaps`, and
   bounded by BUT-2038 rather than here. Raised by the `firebase-backend-security`
   and `code-reviewer` gates. BUT-2028, 2026-09-07
+
+- **`users/{uid}/rateLimits` INHERITS `rate_limits`' Art. 15 exemption rather than getting a
+  decision of its own, and the DPO residual beside it is now measured NON-EMPTY for the first
+  time (BUT-2040, 2026-09-08).** The camelCase spelling is one collection under two spellings,
+  not two collections: commit `b9a95bd02` (2026-03-19) changed
+  `FirestoreCollections.userRateLimits` from `'rateLimits'` to `'rate_limits'`, and
+  `firestore.rules` has no block for the camelCase path, so no client can create a new row.
+  That rename commit touches the CONSTANTS file, not the writer — the commit touching the
+  writer (`7854e2a8a`) renames nothing, and it was cited as the proof before anyone ran the
+  two commands. So the inheritance is evidenced by a rename, which is NOT the "arguing across
+  collections by NAME" error BUT-1732 exists to record.
+  What it inherits is Malin's explicit call of 2026-09-03 (ADR-0011): EXEMPT, made AGAINST the
+  recommendation to export it, weighing bundle legibility higher. **Chosen without asking
+  her, the way the `chat_groups` projection was; giving the legacy spelling its own decision is
+  hers.**
+  **Named and open:** the exemption group's own header already says that for an account still
+  holding legacy rows they are erasable but WERE never exportable, and that whether that is
+  worth an export section is Malin's and has not been asked. Until now nobody knew that set
+  was non-empty. BUT-2028's dry run measured 5 such rows
+  on 2026-09-07. The set being non-empty does not change the decision; it changes what the
+  unasked question is worth.
+  The deleter side is NOT a deviation and is simply a defect closed: `probeResidualData`
+  enumerates while the deleter walked a hand-written list, so every such erasure reported
+  `gdprCompliant: false` about itself, correctly and unclearably. BUT-2040, 2026-09-08
