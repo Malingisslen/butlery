@@ -3303,3 +3303,51 @@ faktum på en dag, varannan skriven som rättelsen av den förra.
 **4. En rubrik som räknar faller för sin egen commit.** Testfilens huvud sa "The two decisions
 that live in the VIEW"; den här ändringen la till en tredje klass av pin i samma fil. Ingen
 test blir röd av det. Stryk siffran, räkna inte om.
+
+## En raderingslista som handskrivs mot en sond som uppräknar (BUT-2040, 2026-09-08)
+
+**Buggklassen.** `probeResidualData` UPPRÄKNAR (`listCollections()`, två uteslutningar);
+`deleteUserSubcollections` gick på en handskriven lista. En samling som DÖPTS OM lämnar
+rader under den döda stavningen som sonden räknar och ingen raderare når — varje sådan
+radering rapporterar `gdprCompliant: false` om sig själv, korrekt och för alltid.
+
+**Ingen källskannande vakt kan hitta det.** Både drift-vakten och BUT-1992:s exportvakt
+letar efter `.collection(users).doc().collection(X)`-kedjor i koden. En död stavning har
+inga skrivare och är osynlig för dem per konstruktion. De fångar att en NY skrivare saknar
+listrad, aldrig att en GAMMAL rad blivit föräldralös. Det som hittade den var en
+torrkörning mot riktig data, och det är den enda mekanism som hittar nästa.
+
+**Namnändringens bevis ligger i KONSTANTEN, inte hos skrivaren.** `b9a95bd02` ändrar
+`userRateLimits = 'rateLimits'` -> `'rate_limits'` i konstantfilen; commiten som rör
+skrivaren (`7854e2a8a`) byter bara literal mot konstant och döper om ingenting. TVÅ
+granskningsgrindar citerade skrivarcommiten som bevis, jag skrev efter dem, och en tredje
+grind mätte det. En grinds mätning propagerar innan den kontrolleras.
+
+**Fjorton osanna meningar, alla i text skriven som en rättelse.** Formerna, var och en mätt:
+en siffra som blir falsk av ens EGEN ändring ("Seven exemptions" 7->8, "All five are
+swept"); en positionsreferens ("exempt directly above") som pekade på exakt den post
+meningen sa att det inte var; en parentes som beskrev fel exempel (`fcm_tokens` andra
+lagring heter `user_fcm_tokens` — annat NAMN, inte samma namn två lagringar); en
+reparation som påstod att BÅDA strukna siffrorna blev falska när bara den ena gjorde det;
+ett citat som var ordagrant identiskt med en HELT ANNAN avvikelsepost, så en grep landar
+fel; och ett ord ("panelens" rekommendation) som jag rättade i två filer och lämnade kvar
+i en tredje.
+
+**Att fixa en kopia och lämna syskonet upprepades tre gånger i en session** — inklusive i
+min egen plan, där jag rättade en felräkning på två ställen och lät sammanfattningen till
+Malin behålla den. Svep KONCEPTET, inte frasen, och läs om rättelsens grannmening.
+
+**En LISTA har oftare fler kopior än man tror.** Samma no-writer-lista fanns i FYRA
+exemplar: `subs`, `EXPORT_EXEMPT`, provets `NO_OWN_STEP` och — den ingen vakt binder till
+koden — artikel 30-registret i `docs/security/`. Ett register som är en post kort läser
+som komplett.
+
+**Ett ärendes instruktion är lika falsifierbar som en kodkommentar.** BUT-2039 sa åt att
+stryka en sektionsrubrik "eftersom den täcker `system_ip_audit_caps`". Den styr bara
+`metrics`. Att följa instruktionen hade tagit bort ett sant påstående för att laga ett
+annat. Min plan ärvde felräkningen ordagrant ur ärendetexten.
+
+**Grindarna är parallella agenter i samma träd.** Mutationsprova FÖRE dispatch, frys
+indexet medan de läser, och stagas något om är varje grinds tidigare pass inaktuellt —
+commit-grinden fällde mig på exakt det: `cloud-functions-specialist` hade graderat
+bytesen före elva rättelser.
