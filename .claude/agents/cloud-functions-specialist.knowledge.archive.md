@@ -19261,3 +19261,57 @@ Knowledge-file delta: added the TIMING principle above the "probe must not be BR
 than the deleter" bullet. The compensating retirement (trimming a redundant parenthetical
 in the block-mirror bullet) was REFUSED by the auto-mode classifier, so the file grew by
 ~500 chars this run and still owes a retirement.
+
+### 2026-09-08 — BUT-2032 `deleteModerationSystemEvents` commit-gate review [gdpr-cascade]
+
+Reviewed the staged diff for the new `system_events` moderation cascade step.
+Verdict: pass, 0 blocking. Measurements made, so a later run need not redo them:
+
+- `commitInChunks`'s `strict` option DEFAULTS to false (`shared/batch-update.ts`
+  line 260, `if (opts.strict)`). Both new calls omit it, so a failed chunk logs a
+  v1 warn and the step still returns `complete`. The three probe legs
+  (`details.userId`, `details.reporterId`, `details.contentOwnerId`) are
+  therefore the only contradiction to a `true` return — and they are exactly the
+  deleter's three fields, so deleter ⊇ probe holds field-for-field. A failed
+  ANONYMIZE chunk leaves `details.contentOwnerId == uid`, which the third leg
+  still matches: the claimed backstop is real.
+- Ordering: `await commitInChunks(deletions)` precedes `sweep("details.contentOwnerId")`,
+  and Admin-SDK query reads are strongly consistent, so the anonymize query
+  cannot return an already-deleted doc. The `!deletedIds.has(doc.id)` filter is
+  therefore NOT what prevents a NOT_FOUND poison-pill — the ordering is. The
+  filter's only reachable case is a row whose DELETE chunk failed (so it still
+  exists and an update would succeed anyway). The docstring's causal sentence
+  ("the id filter is what stops an update landing on a document this same step
+  just deleted") was raised as a Low finding: strike, not reword. The dedupe
+  INSIDE the deletions loop is legitimate and separate — it stops one row being
+  staged twice and double-audited.
+- `opsPerItem: 2` correct on both calls (mutation + `stageCascadeAuditEntry`'s
+  `batch.set`). 250 items/chunk.
+- No index requirement. `firestore.indexes.json` carries NO `fieldOverrides`
+  entry for `system_events`, so automatic single-field indexes cover a
+  collection-scoped equality on a nested map field. Same as the in-file
+  precedents `metadata.subjectUserId` and `metadata.poll.creatorId`.
+- Cap semantics match `deleteBlocks` exactly: `.limit(CAP+1)`, `logger.error`,
+  decline-not-truncate, `complete = false`, `continue`.
+- Scoping is by FIELD, not by `type`. Checked every `system_events` writer:
+  `middleware/rate_limiter.ts` writes a top-level `userIdHash` (hashed, no
+  `details.userId`), `admin/sync-ingredients.ts` and `audit_logs/purge-expired.ts`
+  write no uid. So today the three legs reach only `feedback/on-report-created.ts`
+  rows, as the docstring says.
+- `stageCascadeAuditEntry` rows land in `audit_logs` with `operation` =
+  `cascade_delete`/`cascade_anonymize`, which fall in `purgeAuditCategoryWithDb`'s
+  `not-in CONSENT_OPERATIONS` general bucket = 180-day retention. No new
+  un-purgeable uid store, and no cascade step deletes `audit_logs`.
+- Downstream consumer checked and clear: `runOpsSnapshot` filters `system_events`
+  on `executedAt`, a field the moderation rows do not carry, so erasing them
+  cannot perturb the ops snapshot.
+- Test fidelity: `FakeFirestore.applyUpdate` returns silently on a missing doc
+  (`if (!existing) return;`), so the suite cannot stage grpc 5 — the NOT_FOUND
+  reasoning is unpinned by construction. Already covered by idempotency rule 10
+  (`updateFailures: Map<path, grpcCode>`). Also noted: the decline scenario seeds
+  rows matching only the THIRD leg, so this step's `continue`-not-`return` on
+  legs 1/2 is unexercised (the shape is covered on `blocks` by
+  `scenario_aDeclinedLegDoesNotStopTheOther`).
+- Re-runnability confirmed: deletes find nothing on a retry; the anonymize sets
+  `details.contentOwnerId = null` so the `== uid` query returns zero; no
+  duplicate audit rows on a retry because only still-matching rows are re-staged.

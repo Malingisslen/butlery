@@ -253,12 +253,14 @@ export const COLLECTIONS_TO_DELETE: CollectionTarget[] = [
   // measured otherwise. `feedback/on-report-created.ts` writes a
   // `moderation_threshold_<uid>` document id and puts raw uids in
   // `details.userId`, `details.reporterId` and `details.contentOwnerId`. The
-  // ingredient-sync and rate-limiter rows beside them are clean, which is how
-  // the false generalisation happened.
+  // ingredient-sync rows beside them are clean, which is how the false
+  // generalisation happened; the rate-limiter row carries a HASHED uid
+  // (`userIdHash`), which is pseudonymous rather than clean.
   //
-  // NAMED RESIDUAL, not closed here: no cascade leg reaches this collection
-  // either, so those uids survive a SINGLE account's erasure. Deleting the
-  // whole collection on a reset does not fix that; it is its own ticket.
+  // A single account's erasure now reaches the moderation rows —
+  // `deleteModerationSystemEvents` in the cascade, BUT-2032. This entry is about
+  // the whole collection on a full reset, which is a different question: the
+  // rows a reset removes include every row about people it is not erasing.
   { name: "system_events" },
 
   // The admin console's own two collections (`admin/bulk-retag.ts`). Both key

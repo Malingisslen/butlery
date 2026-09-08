@@ -165,6 +165,14 @@ class FakeFirestore {
    */
   readonly deletedPaths: string[] = [];
 
+  private autoIdCounter = 0;
+
+  /** Stands in for Firestore's generated document id. */
+  private mintId(): string {
+    this.autoIdCounter += 1;
+    return `auto-${this.autoIdCounter}`;
+  }
+
   set(path: string, data: DocData): void {
     this.docs.set(path, data);
   }
@@ -490,7 +498,11 @@ class FakeFirestore {
         op: string,
         value: unknown,
       ) => matcher(field, op, value),
-      doc: (id: string) => this.makeRef(`${name}/${id}`),
+      // BUT-2032: `.doc()` with no argument mints an id, as Firestore does.
+      // Without it every `collection("audit_logs").doc()` in one run resolved to
+      // the same `audit_logs/undefined` path and three staged rows collapsed
+      // into one — a count that reads as a real measurement.
+      doc: (id?: string) => this.makeRef(`${name}/${id ?? this.mintId()}`),
       get: unfiltered().get,
       limit: (max: number) => unfiltered(max),
       orderBy: (field: string | admin.firestore.FieldPath) => {
@@ -592,6 +604,7 @@ class FakeFirestore {
   } {
     const deletes: string[] = [];
     const updates: { path: string; data: DocData }[] = [];
+    const sets: { path: string; data: DocData }[] = [];
     return {
       delete: (ref) => {
         deletes.push(ref.path);
@@ -600,10 +613,17 @@ class FakeFirestore {
         this.updatedPaths.push(ref.path);
         updates.push({ path: ref.path, data });
       },
+      // BUT-2032: `set` CREATES, where `update` requires the document to exist.
+      // Routing both through `applyUpdate` made a `batch.set` on a new path a
+      // silent no-op, which is the shape `stageCascadeAuditEntry` writes — so an
+      // audit row staged by the cascade was invisible to every assertion in this
+      // file, and a test counting them read zero while the production call was
+      // correct.
       set: (ref, data) => {
-        updates.push({ path: ref.path, data });
+        sets.push({ path: ref.path, data });
       },
       commit: async () => {
+        for (const s of sets) this.docs.set(s.path, { ...s.data });
         for (const u of updates) this.applyUpdate(u.path, u.data);
         for (const path of deletes) {
           this.deletedPaths.push(path);
@@ -3788,6 +3808,266 @@ async function scenario_ingredientSuggestionsErasedAndProbed(): Promise<void> {
 }
 
 /**
+ * BUT-2032: the two moderation row shapes in `system_events`, which no erasure
+ * path reached until this step.
+ *
+ * The fixture seeds BOTH shapes plus rows belonging to other people, because a
+ * sweep with no filter passes "the user's rows are gone" exactly as easily as a
+ * correct one — the point `scenario_ingredientSuggestionsErasedAndProbed` makes
+ * about its own control row.
+ */
+function seedModerationEvents(store: FakeFirestore): void {
+  // The threshold alert about the erased user. Its document id IS their uid.
+  store.set(`system_events/moderation_threshold_${UID}`, {
+    type: "moderation_threshold_reached",
+    details: { userId: UID, totalReports: 5, action: "review_required" },
+  });
+  // A report the erased user FILED against someone still present.
+  store.set("system_events/content_report_r1", {
+    type: "content_report",
+    details: { reportId: "r1", reporterId: UID, contentOwnerId: OTHER },
+  });
+  // A report someone else filed ABOUT the erased user.
+  store.set("system_events/content_report_r2", {
+    type: "content_report",
+    details: { reportId: "r2", reporterId: OTHER, contentOwnerId: UID },
+  });
+  // Controls: a report between two other people, a threshold alert about
+  // somebody else, an ownerless report, and a row from a different writer.
+  store.set("system_events/content_report_r3", {
+    type: "content_report",
+    details: { reportId: "r3", reporterId: OTHER, contentOwnerId: THIRD },
+  });
+  store.set(`system_events/moderation_threshold_${OTHER}`, {
+    type: "moderation_threshold_reached",
+    details: { userId: OTHER, totalReports: 7 },
+  });
+  store.set("system_events/content_report_r4", {
+    type: "content_report",
+    details: { reportId: "r4", reporterId: THIRD, contentOwnerId: null },
+  });
+  store.set("system_events/cleanup_run_1", {
+    type: "audit_log_cleanup",
+    totalDeleted: 12,
+  });
+}
+
+async function scenario_moderationEventsAreErasedAndAnonymized(): Promise<void> {
+  const {
+    deleteModerationSystemEvents,
+  } = require("../account/account-deletion-cascade");
+
+  const store = new FakeFirestore();
+  seedModerationEvents(store);
+
+  const complete = await deleteModerationSystemEvents(asDb(store), UID);
+
+  check(
+    "the step reports itself complete when no leg declined",
+    complete === true,
+    `returned ${complete}`,
+  );
+  check(
+    "the threshold alert keyed on the erased uid is deleted",
+    !store.has(`system_events/moderation_threshold_${UID}`),
+    `left behind: ${JSON.stringify(store.idsIn("system_events"))}`,
+  );
+  check(
+    "a report the erased user FILED is deleted, row and all",
+    !store.has("system_events/content_report_r1"),
+    "ADR-0016: the derived row follows its source `reports` document",
+  );
+  check(
+    "a report ABOUT the erased user is KEPT, not deleted",
+    store.has("system_events/content_report_r2"),
+    "BUT-781 mirror: the row survives, only the identifier goes",
+  );
+  check(
+    "that kept row no longer names the erased user",
+    (store.get("system_events/content_report_r2")?.details as
+      | Record<string, unknown>
+      | undefined)?.contentOwnerId === null,
+    `details: ${JSON.stringify(store.get("system_events/content_report_r2"))}`,
+  );
+  check(
+    "the kept row is stamped with an anonymization tombstone",
+    store.get("system_events/content_report_r2")?.contentOwnerAnonymizedAt !==
+      undefined,
+    `row: ${JSON.stringify(store.get("system_events/content_report_r2"))}`,
+  );
+  check(
+    "the kept row keeps the OTHER party's identifier",
+    (store.get("system_events/content_report_r2")?.details as
+      | Record<string, unknown>
+      | undefined)?.reporterId === OTHER,
+    "the anonymization widened past the field it was aimed at",
+  );
+
+  // The four controls. Each one dies alone: an unfiltered delete kills the
+  // first three, and an anonymize that matches on absence kills the fourth.
+  check(
+    "a report between two other people is untouched",
+    store.has("system_events/content_report_r3") &&
+      (store.get("system_events/content_report_r3")?.details as
+        | Record<string, unknown>
+        | undefined)?.contentOwnerId === THIRD,
+    `row: ${JSON.stringify(store.get("system_events/content_report_r3"))}`,
+  );
+  check(
+    "another user's threshold alert is untouched",
+    store.has(`system_events/moderation_threshold_${OTHER}`),
+    "the threshold leg is not filtered on the erased uid",
+  );
+  check(
+    "a report with NO content owner is left alone",
+    store.has("system_events/content_report_r4") &&
+      store.get("system_events/content_report_r4")
+        ?.contentOwnerAnonymizedAt === undefined,
+    "a null contentOwnerId was read as a match",
+  );
+  check(
+    "an unrelated ops row from another writer is untouched",
+    store.has("system_events/cleanup_run_1"),
+    "the sweep reaches rows it has no filter for",
+  );
+}
+
+/**
+ * ADR-0014: each mutation stages its own `audit_logs` row. This is the first
+ * audit staging in the cascade, so nothing else in this file would notice it
+ * disappearing.
+ */
+async function scenario_moderationSweepStagesItsAuditRows(): Promise<void> {
+  const {
+    deleteModerationSystemEvents,
+  } = require("../account/account-deletion-cascade");
+
+  const store = new FakeFirestore();
+  seedModerationEvents(store);
+
+  await deleteModerationSystemEvents(asDb(store), UID);
+
+  const audits = store
+    .idsIn("audit_logs")
+    .map((id) => store.get(`audit_logs/${id}`))
+    .filter((row): row is DocData => row !== undefined)
+    .filter((row) => row.resourceType === "system_events");
+
+  check(
+    "one audit row per mutated moderation event",
+    audits.length === 3,
+    `staged ${audits.length}: ${JSON.stringify(audits.map((a) => a.resourceId))}`,
+  );
+  check(
+    "the two deletes and the one anonymization are told apart",
+    audits.filter((a) => a.operation === "cascade_delete").length === 2 &&
+      audits.filter((a) => a.operation === "cascade_anonymize").length === 1,
+    `operations: ${JSON.stringify(audits.map((a) => a.operation))}`,
+  );
+  check(
+    "every audit row names the erased user as its subject",
+    audits.length > 0 && audits.every((a) => a.userId === UID),
+    `subjects: ${JSON.stringify(audits.map((a) => a.userId))}`,
+  );
+}
+
+/**
+ * BUT-2032: an implausible row count DECLINES rather than truncating, and says
+ * so through `failedCollections` — the contract `MAX_BLOCK_SWEEP_ROWS` and
+ * `MAX_POLL_VOTE_SWEEP_ROWS` already state. A truncating sweep would report a
+ * clean erasure over rows it never looked at.
+ */
+async function scenario_implausibleModerationEventCountDeclines(): Promise<void> {
+  const {
+    deleteModerationSystemEvents,
+  } = require("../account/account-deletion-cascade");
+
+  const store = new FakeFirestore();
+  // 2000 is MAX_SYSTEM_EVENT_SWEEP_ROWS and the read is `.limit(MAX + 1)`, so
+  // 2001 rows is the smallest count that trips it.
+  for (let i = 0; i < 2001; i++) {
+    store.set(`system_events/content_report_flood_${i}`, {
+      type: "content_report",
+      details: { reportId: `flood-${i}`, reporterId: OTHER, contentOwnerId: UID },
+    });
+  }
+
+  const complete = await deleteModerationSystemEvents(asDb(store), UID);
+
+  check(
+    "an implausible moderation-event count declines the sweep",
+    complete === false,
+    `returned ${complete}`,
+  );
+  check(
+    "the declined sweep anonymized nothing rather than truncating",
+    store.get("system_events/content_report_flood_0")
+      ?.contentOwnerAnonymizedAt === undefined,
+    "rows were mutated above the cap — the sweep truncated instead of declining",
+  );
+}
+
+/**
+ * BUT-2032: the residual probe SEES moderation rows the sweep missed.
+ *
+ * The legs live in the owner-keyed loop and NOT in the `probes` list at the top
+ * of `probeResidualData`, which filters a top-level `userId` field. This
+ * scenario is what makes that difference observable: every row it seeds carries
+ * the uid under `details`, so a leg written the other way reports clean here.
+ */
+async function scenario_probeSeesLeftoverModerationEvents(): Promise<void> {
+  const { probeResidualData } = require("../account/account-deletion-cascade");
+
+  const emptyResult = () => ({
+    deletedCollections: [],
+    failedCollections: [] as string[],
+    errors: [],
+  });
+
+  // Clean: only other people's rows remain.
+  const clean = new FakeFirestore();
+  clean.set("system_events/content_report_r3", {
+    type: "content_report",
+    details: { reportId: "r3", reporterId: OTHER, contentOwnerId: THIRD },
+  });
+  const cleanResult = emptyResult();
+  await probeResidualData(asDb(clean), UID, cleanResult);
+  check(
+    "with only other people's moderation rows left, the probe stays clean",
+    !cleanResult.failedCollections.includes("residual_data_detected"),
+    `failed: ${JSON.stringify(cleanResult.failedCollections)}`,
+  );
+
+  // One dirty store per leg. Bundled into one scenario they would pass on the
+  // strength of whichever leg still worked.
+  const legs: ReadonlyArray<readonly [string, DocData]> = [
+    [
+      "a surviving threshold alert",
+      { type: "moderation_threshold_reached", details: { userId: UID } },
+    ],
+    [
+      "a surviving report the user filed",
+      { type: "content_report", details: { reporterId: UID, contentOwnerId: OTHER } },
+    ],
+    [
+      "a report about the user that was never anonymized",
+      { type: "content_report", details: { reporterId: OTHER, contentOwnerId: UID } },
+    ],
+  ];
+  for (const [label, row] of legs) {
+    const dirty = new FakeFirestore();
+    dirty.set("system_events/leftover", row);
+    const dirtyResult = emptyResult();
+    await probeResidualData(asDb(dirty), UID, dirtyResult);
+    check(
+      `${label} is reported as residual`,
+      dirtyResult.failedCollections.includes("residual_data_detected"),
+      `failed: ${JSON.stringify(dirtyResult.failedCollections)}`,
+    );
+  }
+}
+
+/**
  * BUT-1917: the residual probe SEES a block mirror the sweep missed.
  *
  * `deleteBlockMirrors` is a cross-user sweep, so nothing under `users/{uid}`
@@ -5444,6 +5724,10 @@ async function main(): Promise<void> {
   await scenario_blocksAreErasedInBothDirections();
   await scenario_probeSeesLeftoverBlocks();
   await scenario_ingredientSuggestionsErasedAndProbed();
+  await scenario_moderationEventsAreErasedAndAnonymized();
+  await scenario_moderationSweepStagesItsAuditRows();
+  await scenario_implausibleModerationEventCountDeclines();
+  await scenario_probeSeesLeftoverModerationEvents();
   await scenario_resetScriptDeleteListNamesBlocks();
   await scenario_resetScriptListsDoNotOverlap();
   await scenario_everyCollectionIsDecided();

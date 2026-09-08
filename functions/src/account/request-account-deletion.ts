@@ -59,6 +59,7 @@ import {
   deleteCommentsAndRatings,
   deletePingsByUser,
   deleteUserReports,
+  deleteModerationSystemEvents,
   deleteBlocks,
   deleteBlockMirrors,
   deleteFcmTokens,
@@ -229,6 +230,14 @@ export async function runAccountDeletionWithDeps(
     // erasure becomes silently incomplete.
     ["blocks", () => deleteBlocks(database, uid)],
     ["reports", () => deleteUserReports(database, uid)],
+    // BUT-2032: the moderation rows the report trigger writes into the admin
+    // ops log. Beside `reports` because it is the same event seen from the
+    // other side, and in the CASCADE rather than in `onUserDeleted` because the
+    // residual probe runs before `auth.deleteUser` and the trigger after it.
+    [
+      "moderation_system_events",
+      () => deleteModerationSystemEvents(database, uid),
+    ],
     ["fcm_tokens", () => deleteFcmTokens(database, uid)],
     [
       "notification_preferences",

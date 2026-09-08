@@ -928,3 +928,26 @@ files in the same edit.
   Recorded here rather than only in the script's header, because a plan greps these files
   and not a one-time script. Raised by the `firebase-backend-security` and
   `cloud-functions-specialist` gates. BUT-2044, 2026-09-08
+
+- **A `system_events` row about a report the ERASED USER FILED is DELETED; the row about a
+  report filed AGAINST them is KEPT with `details.contentOwnerId` nulled (BUT-2032,
+  2026-09-08).** Both halves are derived from the two outcomes already decided on the SOURCE
+  collection — `deleteUserReports` hard-deletes the `reports` row when the reporter erases,
+  `anonymizeReportsByContentOwner` (BUT-781) keeps it and nulls the field when the reported
+  person erases — rather than inventing a third policy for one event. **The delete half is
+  Malin's explicit call, 2026-09-08 (ADR-0016)**, over Trust & Safety's alternative of nulling
+  `details.reporterId` and keeping the row; she was shown that an admin then cannot tell
+  "no report was filed" from "the reporter erased", and the runbook says so. The
+  `moderation_threshold_<uid>` row is deleted because its document id IS the identifier. Both
+  legs are found by QUERY, never by rebuilding the id.
+  Three more parts of this ship together and each dies alone: the step runs in the CASCADE
+  (the probe runs before `auth.deleteUser`, the trigger after — BUT-2044) and stages its own
+  audit rows, the FIRST in that file, because BUT-781's analogy carries the action and not the
+  record (ADR-0014); the collection is NOT in the Art. 15 export, and that decision cannot be
+  recorded in `EXPORT_EXEMPT`, which is scoped to `USER_SUBCOLLECTIONS`; and `onReportCreated`
+  has NO ordering relationship to deletion, so a retried or late delivery can write a fresh row
+  naming an erased uid — accepted as a named residual over building a reconciliation pass.
+  **`user_moderation` is deliberately OUT of scope** (ADR-0015): its `reportHistory` is the only
+  data surviving the REPORTER's erasure that can answer whether one account repeatedly reports
+  the same target, so stripping it is a Trust & Safety decision, not a tidying-up.
+  BUT-2032, 2026-09-08

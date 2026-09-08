@@ -99,6 +99,22 @@ Admin actions (status transitions, deletes) currently rely on
 Firestore's built-in audit logs only; a richer moderator-action log is
 tracked in a follow-up ticket.
 
+**What an account deletion leaves behind** (BUT-2032). Read this before
+concluding from the console that nothing happened:
+
+- The person who **filed** a report deletes their account → the
+  `content_report` row is **deleted**, and so is the `reports` document it
+  came from. Nothing records that the report was ever filed. Silence here is
+  not evidence that no report existed. Malin's call, 2026-09-08 (ADR-0016),
+  taken over the alternative of keeping the row with the name removed.
+- The person who was **reported** deletes their account → the
+  `content_report` row **stays**, with `details.contentOwnerId` set to `null`
+  and a `contentOwnerAnonymizedAt` stamp. Their
+  `moderation_threshold_<uid>` alert is deleted, because its document id is
+  the identifier.
+- `user_moderation.totalReports`, the strike counter that drives the
+  five-report threshold, is untouched by either.
+
 ## Email notifications
 
 The `onReportCreated` Cloud Function reads `MODERATOR_EMAIL` from the

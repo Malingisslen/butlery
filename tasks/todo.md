@@ -1,158 +1,289 @@
-# BUT-2040 + BUT-2039 — camelCase-luckan i kontoraderingen, och de osanna meningarna
+# BUT-2032 — låt kontoraderingen nå `system_events`
 
-## Vad som är mätt (i dag, i koden — inte hämtat ur ärendetexten)
+Status: **plan klar och beslutad, inte byggd.** `tools/stakeholder_router.py` returnerar
+`full-panel` (11 roller); fem säten med verklig stake + arkeologen har kritiserat blint och
+parallellt. Villkoren ligger i avsnitt 11. **Malins tre beslut är fattade 2026-09-08** — anmälarens
+rad raderas (ADR-0016), kapplöpningen är en namngiven restrisk (avsnitt 8), och raderna förblir
+utanför artikel 15-exporten (avsnitt 9). Inget blockerar bygget.
 
-**BUT-2040.** Under `users/{uid}` finns två stavningar av samma sak:
+---
 
-- `rate_limits` — nuvarande. `FirestoreCollections.userRateLimits = 'rate_limits'`,
-  och sex filer i `lib/` skriver dit via konstanten (fyra repositories och två
-  tjänster). Commit `b9a95bd02`, 2026-03-19, är namnändringen.
-- `rateLimits` — camelCase. **Ingen skrivare i `lib/` eller `functions/src`.** Fem rader
-  i produktion, mätta av BUT-2028:s torrkörning mot butlery-app-1.
+## 1. Vad som är mätt i koden i dag (inte hämtat ur ärendetexten)
 
-`deleteUserSubcollections` (`functions/src/account/account-deletion-cascade.ts`) går på
-en handskriven `subs`-lista. Den innehåller `rate_limits`, inte `rateLimits`.
-`probeResidualData` **uppräknar** i stället via `listCollections()`, med bara två
-uteslutningar (`notificationCounters`, `recentContentHashes`) — så sonden ser
-camelCase-raderna, räknar 5 > 0 och sätter `residual_data_detected`.
+### 1.1 Vilka rader i `system_events` som faktiskt bär ett uid
 
-Nettot: varje radering av ett konto med sådana rader rapporterar `gdprCompliant: false`
-om sig själv, korrekt, och **ingen kodväg kan någonsin rensa det**. Det är exakt den
-riktning filen själv kallar oåterkallelig: superset-regeln DELETER ⊇ PROBE, skriven i
-`subs`-listans egen kommentar.
+`functions/src/feedback/on-report-created.ts` skriver **två olika radformer**, inte en:
 
-Dessutom, samma fil-familj: `import_rate_limiter.dart` sade i sin klasskommentar
-`/users/{userId}/rateLimits/imports`. Koden i samma fil skriver via konstanten, alltså
-`rate_limits`. Kommentaren är kvar från före namnändringen.
+| Radform | Dokument-id | Uid i fälten |
+|---|---|---|
+| `moderation_threshold_reached` | `moderation_threshold_<contentOwnerId>` — **uid i själva id:t** | `details.userId` = den anmälda |
+| `content_report` | `content_report_<reportId>` — **inget uid** | `details.reporterId` = anmälaren, `details.contentOwnerId` = den anmälda (eller `null`) |
 
-**BUT-2039.** `functions/src/admin/reset-collection-lists.ts` säger, i posten
-`system_ip_audit_caps`, att den inte är personuppgifter (`so it is not user data`). Nyckeln
-byggs som `hashUid(ip)_hour`, och `hashUid` är osaltad sha256 trunkerad till 48 bitar.
-IPv4-rymden är ~4,3 miljarder adresser, alltså genomräkningsbar av vem som helst som har
-dokumentet. Påståendet är falskt. **Beslutet står** — postens andra skäl ("wiping it
-hands a fresh quota to whoever just tripped the cap") är oberoende tillräckligt.
+Ärendetexten räknar upp id:t och de tre fälten i en följd, som om de satt på samma rad. De gör
+inte det, och det avgör designen: **ett raderingssteg som bara går på dokument-id:t missar
+`content_report`-raderna helt — och det är just de som namnger anmälaren.**
 
-## Ändringar
+En tredje radform bär ett **pseudonymt** uid: `middleware/rate_limiter.ts` skriver
+`type: "rate_limit_violation"` med `userIdHash: hashUid(userId)`. `hashUid` är osaltad sha256
+trunkerad till 12 hex-tecken (`functions/src/shared/hash-uid.ts`). Indata är ett Firebase-uid med
+hög entropi, så hashen är inte uppräkningsbar på det sätt en IP-adress är — men den är en stabil
+pseudonym som kan bekräftas mot ett känt uid, alltså persondata i GDPR:s mening.
+**Utanför det här ärendets omfång, namngivet här i stället för att upptäckas senare.**
+(Hittat av arkeologsätet; den första versionen av det här stycket påstod att övriga skrivare
+saknade uid helt.)
 
-- [x] **1. `rateLimits` in i `subs`** (`account-deletion-cascade.ts`), i legacy-blocket
-      bredvid `category_memberships`/`fcm_tokens`, med samma skäl som de fem står där av:
-      ingen levande skrivare, men konton som föregår namnändringen håller rader, och utan
-      posten är raden permanent restdata. Kommentaren säger att `rate_limits` är den
-      levande stavningen och att de två är samma data under olika namn — inte två
-      samlingar.
-- [x] **2. `rateLimits` in i `EXPORT_EXEMPT`** (samma fil). **Detta är inte valfritt:**
-      BUT-1992-vakten (`scenario_...ExportSupersetOfDeletion`) rödnar på varje `subs`-post
-      som varken exporteras eller är undantagen med ett skäl. Formuleringen följer
-      `NO LIVE WRITER`-konventionen ordagrant, eftersom en systervakt använder just den
-      inledningen som ankare för att upptäcka om en skrivare senare dyker upp.
-- [x] **3. `rateLimits` in i `NO_OWN_STEP`**
-      (`scenario_steplessSubcollectionsAreErasedNotJustReported` i
-      `functions/src/__tests__/account-deletion-cascade.test.ts`). Den kör raderaren och
-      sonden mot samma fejkade databas och pinnar DELETER ⊇ PROBE per namn. Utan den är
-      punkt 1 en listrad ingenting utövar.
-- [x] **4. Stryk den falska doc-kommentaren** i `import_rate_limiter.dart:18`. **Strykning,
-      inte omskrivning** — code-style säger att en falsk mening tas bort snarare än
-      formuleras om, och sökvägen är ändå läsbar ur konstanten två rader från skrivningen.
-- [x] **5. Nämn båda stavningarna i nollställningsskriptets `users`-inventering**
-      (`reset-collection-lists.ts`). Listan driver inte raderingen —
-      `deleteDocRecursive` uppräknar — men den är vad en läsare griper efter för att lära
-      sig formen, och i dag saknas **båda** stavningarna i den.
-- [x] **6. BUT-2039: stryk den osanna meningen — EN, inte två.** Endast klausulen `so it is not user data,`. **Ingen ersättande juridisk mening skrivs** — en sannare
-      variant är ett nytt omätt påstående, och det är kedjan BUT-2028 betalade sju
-      granskningsrundor för. Vill vi ha en juridisk slutsats hör den hemma i ett ADR.
-      **Rubriken på rad 310 lämnas orörd.** BUT-2039 säger åt att stryka även den, och
-      den instruktionen vilar på en felräkning: rubriken "Operational records that carry
-      no personal data" styr **bara `metrics`** (mätt — `_internal`, `audit`/
-      `notification_metrics` och `system_ip_audit_caps` ligger under tre egna rubriker på
-      rad 322, 330 och 347). `metrics` är aggregat utan uid, så rubriken är sann om den
-      enda post den styr; att stryka den vore att ta bort ett riktigt påstående för att
-      laga ett annat. Ticketen får en kommentar om felräkningen.
+`feedback_email_failed_<feedbackId>` pekar på en `feedback`-rad som kaskaden raderar — en
+dinglande pekare efter radering, inte persondata.
 
-## Panelens villkor (full-panel, 2026-09-08 — 5 approve, 1 approve-with-conditions)
+### 1.2 Ingen raderingsväg rör samlingen
 
-Säten: DPO, Security Architect, DBA, Legal Counsel, Software Architect + Codebase
-Archaeologist. Bortvalda: FinOps, Monetization, Vendor, Data/Integrations (matchade bara
-på `import_rate_limiter.dart`, som här bara får en falsk kommentar struken), T&S och PM
-(ingen moderations- eller produktyta). Noll konflikter, alltså ingen ADR.
+Mätt med grep över hela `functions/src`: varken `account/account-deletion-cascade.ts` eller
+`cleanup/on-user-deleted.ts` nämner `system_events`. Inget sondben heller. Det enda som rör
+samlingen är `admin/reset-collection-lists.ts`, som tömmer HELA samlingen vid en full miljöreset
+— inte en artikel 17-väg för ett enskilt konto. Kommentaren ovanför den raden kallar det själv
+"its own ticket". Arkeologsätet bekräftar att det aldrig gjorts ett tidigare försök: inga
+commits på `BUT-2032`, och inget som någonsin kopplat ett kaskadben till samlingen.
 
-- [x] **V1.** `EXPORT_EXEMPT`-skälet börjar med exakt `NO LIVE WRITER` — en systervakt
-      ankrar på `why.startsWith("NO LIVE WRITER")` för att rödna den dag en skrivare dyker
-      upp. En omskrivning lämnar posten utanför vakten, tyst.
-- [x] **V2.** Skälet citerar Malins beslut 2026-09-03 (ADR-0011) och säger att det är
-      **samma data före namnändringen**, inte ett nytt undantag. Motsatt form mot
-      `fcm_tokens`/`user_shared_menus`, som är samma NAMN på olika data — den skillnaden
-      måste stå i koden, inte bara här, annars ärver nästa läsare fel prejudikat.
-- [x] **V3.** Ingen artikel 15-sektion för `rateLimits`. Att lägga till en vore att riva
-      upp beslutet från 2026-09-03 utan att fråga.
-- [x] **V4.** Mutationsprovet körs och återställs FÖRE grindarna dispatchas.
-- [x] **V5.** Kommentaren i `subs` skrivs som `//`-rader, aldrig `/* */` — vaktens
-      källtextparser strippar bara radkommentarer, och ett citerat samlingsnamn i ett
-      blockkommentar-parti smyger in ett falskt listnamn i vaktens bild av listan.
-- [x] **V6.** Sökvägen skrivs som `users/{uid}/rateLimits`, ALDRIG som
-      `.collection("users").doc(uid).collection("rateLimits")` — skrivarskanningen läser
-      anropssyntax i prosa som en levande skrivare och skulle rödna på sin egen kommentar.
-- [x] **V7.** De två siffrorna i kommentaren ovanför no-writer-blocket ("The first four…",
-      "All five…") blir falska av den här ändringen. De **stryks** i stället för att räknas
-      om — en siffra som beskriver en fil man själv redigerar går inte att skriva rätt, och
-      den ena räknar dessutom rader i en ANNAN fil.
-- [x] **V8.** Rör inte rubriken på rad 310 (se punkt 6).
-- [x] **V9.** BUT-2039-strykningen växer inte till ett nytt påstående om hashens
-      lämplighet som nyckel — det är en egen omätt fråga, redan noterad på ärendet.
-- [x] **V10.** En TREDJE kopia av samma falska sökväg finns i
-      `docs/architecture/ROLE_RESPONSIBILITY_MAP.md:530`. Den stryks i samma ändring —
-      annars fortsätter dossiern påstå fel sökväg för alltid, utanför commit-grindarna.
-- [x] **V11.** Punkt 5 är dokumentation, inte beteende: `deleteDocRecursive` uppräknar och
-      sopar båda stavningarna redan i dag. Får inte beskrivas som en beteendeändring.
+### 1.3 Varför täckningsvakten inte fångade det
 
-## Namngiven restpost (Software Architect)
+`scenario_everyCollectionIsDecided` frågar om varje samling står i någon av reset-skriptets tre
+listor. `system_events` gör det. Vakten frågar **aldrig** om en samling som bär uid har ett
+kaskadben. Hål-klass, inte enskilt misstag — se avsnitt 6.
 
-Ingen källskannande vakt kan någonsin fånga den här buggklassen. Både drift-vakten och
-BUT-1992-vakten letar efter `.collection(users).doc().collection(X)`-kedjor i koden — en
-död namnändring har inga skrivare och är osynlig för dem per konstruktion. De fångar att en
-NY skrivare saknar listrad, aldrig att en GAMMAL rad blivit föräldralös. Det som hittade
-den här var en torrkörning mot riktig data, och det är den enda mekanism som kan hitta
-nästa. Ingen kadens är beslutad för att köra om den.
+### 1.4 Ingen läsare i det här repot returnerar de här raderna
 
-## Verifiering
+Båda läsarna av `system_events` — `lib/repositories/ops_log_repository.dart` och `runOpsSnapshot`
+i `analytics/daily-snapshots.ts` — filtrerar respektive sorterar på `executedAt`. De två
+modereringsradformerna skriver `timestamp`. Moderatorvyn läser samlingen `reports`.
 
-- [x] `npm run test:account-deletion-cascade` — 297 gröna i dag; punkt 3 lägger till två
-      per namn, och punkt 1+2 måste hålla BUT-1992-vakten och drift-vakten gröna.
-- [x] **Mutationsprov på punkt 1**: ta bort `rateLimits` ur `subs` igen och bekräfta att
-      det nya fallet rödnar. En listrad utan ett prov som dör med den är en oprövad
-      utfästelse — det är precis den formen som lät `reset-user-data` stå trasig i fem och
-      en halv månad.
-- [x] Mutationsprovet körs **före** granskningsgrindarna dispatchas, aldrig samtidigt:
-      provet skriver i `lib/`/`functions/src` och en läsande grind graderar då bytes som
-      inte ska shippas.
-- [x] `flutter analyze` på `import_rate_limiter.dart` (kommentarsändring, men gratis).
-- [x] `dart format` rapporterar 0 ändrade innan grindarna dispatchas.
+**T&S-sätets invändning, som håller:** det beviset säger bara att ingen kod i repot kastar om
+raderna försvinner. Att en admin läser dem i Firebase-konsolen är en verklig förmåga, och
+runbooken kallar dem uttryckligen "audit trail". "Ingen läsare returnerar dem" är alltså inte
+samma påstående som "det är ofarligt att radera dem".
 
-## Vad som INTE görs
+### 1.5 Moderkollektionen `reports` har redan två motsatta beslut
 
-- Ingen bakåtfyllning som städar de fem befintliga raderna. De raderas när respektive
-  konto raderas; skriptet `reset-user-data` uppräknar redan och tar båda stavningarna i
-  dag. Appen är inte lanserad, så populationen är två testkonton.
-- `rateLimits` läggs **inte** till i någon exportsektion. Det vore en artikel 15-sektion
-  för en form ingen levande kod skriver — DPO-sätet namngav den restposten redan under
-  BUT-1957 och den är Malins, oställd.
-- BUT-2038 rörs inte.
+- Anmälaren raderar → `deleteUserReports` (kaskaden, tier 1) **hårdraderar** `reports`-raden.
+- Den anmälda raderar → `anonymizeReportsByContentOwner` (`on-user-deleted.ts`, BUT-781)
+  **behåller raden**, nollar `contentOwnerId`, sätter `contentOwnerAnonymizedAt`.
 
-## Rättad premiss (var en öppen fråga i första utkastet)
+Två avgjorda beslut, inte drift. Planen härleder sin policy ur dem i stället för att uppfinna en
+tredje policy för en härledd kopia av samma händelse.
 
-Första utkastet av den här planen påstod att rubriken på rad 310 täcker fyra poster.
-Falskt, mätt: den styr en. Påståendet kom från BUT-2039:s egen text och gick vidare
-oprovat in i planen — samma klass som repots lärdom om att ett ärendes eller en
-granskares mätning är ett påstående, inte en mätning. DPO-sätet fångade det; jag
-räknade om själv innan jag trodde på det.
+---
 
-## På vanlig svenska
+## 2. Föreslagen policy
 
-Kontoraderingen missar en gammal felstavad mapp under varje användare. Fem sådana rader
-finns i produktionen. Följden är att appens egen kontroll säger "den här raderingen blev
-inte komplett" — och har rätt — utan att något kan laga det. Fixen är en rad i
-raderingslistan plus ett prov som dör om någon tar bort den igen.
+| Vem raderas | Radform | Åtgärd | Varför |
+|---|---|---|---|
+| Den **anmälda** | `moderation_threshold_<uid>` | **Radera dokumentet** | Uid:t *är* dokumentets identitet. Går inte att anonymisera. |
+| Den **anmälda** | `content_report_*` med `details.contentOwnerId == uid` | `details.contentOwnerId → null` + `contentOwnerAnonymizedAt` | Exakt vad BUT-781 gör på moderraden. |
+| **Anmälaren** | `content_report_*` med `details.reporterId == uid` | **Radera dokumentet.** Malins uttryckliga beslut 2026-09-08, mot T&S:s alternativ (ADR-0016). | Källraden i `reports` hårdraderas redan. En härledd kopia överlever inte sin källa. |
 
-Samtidigt rättas ett antal osanna meningar som granskningen hittade: påståenden om
-vilken mapp importkoden skriver till, och ett påstående om att en IP-hash inte är
-personuppgifter fast den går att räkna baklänges på kort tid. Inga beslut ändras av det —
-bara meningar som inte stämde.
+T&S:s villkor rider med på det beslutet: runbooken måste säga rakt ut att en anmälans spår
+försvinner helt när anmälaren raderar sitt konto, så att en admin inte vilseleds av tystnaden.
+
+Strike-räknaren (`user_moderation.totalReports`) påverkas inte. Efterlevnadstillståndet överlever;
+det som försvinner är rader som **namnger** folk.
+
+---
+
+## 3. Var koden ska ligga — och varför inte i triggern
+
+**I `account-deletion-cascade.ts`, tier 1. Inte i `on-user-deleted.ts`.**
+
+`probeResidualData` körs **före** `auth.deleteUser(uid)`; triggern körs **efter**. Ett sondben
+för något triggern städar gör varje sådan radering till `gdprCompliant: false` och
+`success: false` — ett falskt misslyckande på en artikel 17-väg. Lärdomen från BUT-2044.
+
+**Security-sätets skärpning, som ändrar planen:** BUT-781:s anonymisering ligger i triggern, där
+den *får* en `stageCascadeAuditEntry`-rad. "Speglar BUT-781" gäller alltså åtgärden, inte
+revisionsspåret — kaskaden har inga sådana anrop, triggern har dem på varje steg. Den första
+versionen av det här stycket bar en siffra på hur många; den var fel och är struken.
+
+**Följd:** planen accepterar inte längre den sänkningen. De nya stegen stagar sina egna
+auditrader (villkor B, avsnitt 11).
+
+---
+
+## 4. Sonden — fällan som är lätt att gå i
+
+`probeResidualData`:s `probes`-lista frågar `where("userId", "==", uid)` på **toppnivåfält**.
+`system_events` har `details.userId`. Att lägga `"system_events"` i den listan ger **noll träffar
+för alltid** — en frisksedel som är sann av misstag, `realtime_recipes`-fällan (BUT-1801).
+
+Eget ben, fyra frågor:
+
+1. `where("details.userId", "==", uid)`
+2. `where("details.reporterId", "==", uid)`
+3. `where("details.contentOwnerId", "==", uid)` — inte redundant: utan den mäter sonden aldrig att
+   anonymiseringen körde.
+4. `doc("moderation_threshold_" + uid).get()`
+
+**Eget try/catch som räknar varje undantag som residual (fail closed)**, som `poll_votes`- och
+`block_mirror`-benen. Ett svalt undantag här ger en falsk frisksedel på en artikel 17-väg.
+
+Index: punktnotationslikhet på toppnivåsamling är etablerat i samma fil
+(`metadata.subjectUserId`, `metadata.poll.creatorId`), och `firestore.indexes.json` har ingen
+`system_events`-post. Ingen deklaration behövs — verifieras ändå mot emulatorn, inte antas.
+
+---
+
+## 5. Testning
+
+Harnesset är hemsnickrat: varje `scenario_*` måste **också** anropas i `main()`:s linjära lista i
+slutet av filen, annars körs det aldrig.
+
+1. `scenario_moderationThresholdRowIsErased`
+2. `scenario_reporterRowsFollowTheirSourceReport` (formen beror på Malins svar, konflikt 1)
+3. `scenario_contentOwnerRowIsAnonymizedNotDeleted` — och att raden **står kvar**
+4. `scenario_probeSeesLeftoverModerationEvents` — ren/smutsig, ett par per sondben
+5. `scenario_contentReportWithNullOwnerIsUntouched`
+
+Varje scenario får en **överlevande kontrollrad för en annan användare** i samma samling. Utan
+den passerar ett ofiltrerat svep lika grönt som ett korrekt.
+
+**Före allt annat:** `FakeRef` (test-filens stub, rad 96-111) har `delete`, `update`,
+`collection`, `listCollections` — **ingen `get()`**. Sondben 4 kastar då `TypeError`, och
+`main()` kör scenarierna sekventiellt med en enda `.catch()` längst ner, så kastet tar med sig
+varje scenario efter det. `FakeRef.get()` läggs till först, i samma ändring. (QA-sätets fynd,
+verifierat i koden.)
+
+**Kopplingen:** en engångs-mutationssond bevisar att kopplingen finns i dag men lämnar ingen
+stående vakt. Steget läggs till i den permanenta "varje kaskadstegsnamn syns i resultatkuvertet"-
+assertionen i `request-account-deletion.test.ts`. Att definiera funktionen räcker inte — tupeln
+måste in i `tier1`-arrayen i `request-account-deletion.ts`, annars körs den aldrig.
+
+Mutationssonder körs **före** granskningsgrindarna dispatchas (BUT-1951).
+
+---
+
+## 6. Klassen bakom buggen (eget ärende)
+
+Ingen vakt frågar *"bär den här samlingen ett uid, och finns det i så fall ett kaskadben?"*
+`system_events` var "beslutad" och ändå oraderad. Bygg vakten — som eget ärende, inte insmuget.
+
+---
+
+## 7. `user_moderation` — hålls UTANFÖR, efter panelen
+
+`user_moderation/{contentOwnerId}`: dokument-id är den anmäldas uid, `reportHistory` är en array
+som bär `reporterId` för varje anmälan. Ingen kaskad, ingen sond, ingen export.
+
+**Planens första version rekommenderade att vika in den. Det är ändrat efter T&S-sätets
+invändning.** `reportHistory` är den enda datan som överlever *anmälarens egen* radering och som
+kan svara på om ett konto anmäler samma person upprepat (`reports` bär också `reporterId`, men de
+raderna hårdraderas när anmälaren försvinner — mätt). Att stryka `reporterId` där vore att förlora
+Butlerys enda signal mot samordnad eller okynnesanmälan, DSA artikel 23-territorium, som en
+sidoeffekt av att städa två samlingar med samma trigger.
+
+**Beslut: eget ärende, med egen T&S-granskning.** Filas innan BUT-2032 stängs.
+Om det byggs: arrayomskrivningen måste ske **inuti en transaktion som läser `reportHistory` i
+samma transaktion**, med omförsök vid konkurrens — skrivaren använder `arrayUnion` i sin egen
+transaktion, och en `get()` följd av en senare `update()` tappar tyst en anmälan som landar
+emellan.
+
+`report_processing_markers` bär bara `reportId` och tidsstämplar. Ren.
+
+---
+
+## 8. Kapplöpningen ingen tänkt på — arkeologsätets fynd
+
+`onReportCreated` är en `onDocumentCreated`-trigger på `reports/{reportId}`. Den har **ingen
+ordningsrelation alls till kontoraderingen** — till skillnad från `onUserDeleted`, som garanterat
+körs efter `auth.deleteUser`. Handlern kastar om vidare för omförsök.
+
+Konkret: någon anmäler och raderar sitt konto sekunder senare, eller ett omförsök landar efter att
+kaskaden kört. Triggern skriver då en **ny** `content_report_<reportId>`-rad som namnger ett redan
+raderat uid, och inget städar den.
+
+Det är en tredje kategori som filen inte har ett begrepp för: varken kaskad-ägd eller trigger-ägd,
+utan *oberoende utlöst skrivare utan ordningsrelation till raderingen*. Repot har precedens för
+båda utvägarna — block-spegelns motsvarande kapplöpning stängs av en veckovis avstämning
+(`runReconcileBlockMirrors`).
+
+**Malins uttryckliga beslut 2026-09-08: namngiven accepterad restrisk, ingen avstämning.** Hon
+fick se alternativet (en veckovis avstämning, som block-spegeln redan har för samma sorts
+kapplöpning) och dess pris i form av en schemalagd uppgift till. Fönstret kräver en anmälan i
+samma sekundintervall som en radering. Ingen har mätt hur ofta det inträffar — appen är inte
+live. Skrivs in i `accepted-deviations.md` i samma edit som koden.
+
+---
+
+## 9. Följdändringar i text (bara strykningar, per code-style)
+
+- `admin/reset-collection-lists.ts` — "NAMED RESIDUAL, not closed here … it is its own ticket"
+  blir osant den dag det här landar. Stryks. Ersätts inte med en berättelse om vad som ströks.
+- `docs/ops/moderation-runbook.md` — "Audit trail"-stycket måste ange vad som **faktiskt**
+  överlever en radering per radform, inte bara tystna. En admin som konsolläser förlitar sig på
+  det.
+- **Artikel 15: raderna förblir undantagna.** Malins uttryckliga beslut 2026-09-08, mot
+  alternativet att bygga en exportsektion — `firestore.rules` ger användaren ingen läsning av
+  `system_events` alls (`allow read: if isAdmin()`), så en export hade krävt en ny läsyta på en
+  adminsamling. **Inte i `EXPORT_EXEMPT`:** den kartan är scopad till `USER_SUBCOLLECTIONS`
+  (tier 2), och vaktens `stale`-check (`Object.keys(exempt).filter(n => !subs.includes(n))`)
+  blir röd av en toppnivåsamling. Beslutet skrivs i `accepted-deviations.md` + en kommentar vid
+  raderaren.
+- Nya poster i `.claude/rules/accepted-deviations.md` **och** `docs/architecture/ACCEPTED_DEVIATIONS.md`,
+  i samma edit, i samma commit som koden.
+
+---
+
+## 10. Vad det här betyder, i klartext
+
+Butlery sparar en admin-logg över varje anmälan. Loggen namnger både den som anmälde och den som
+blev anmäld. När någon raderar sitt konto städas anmälningarna själva — men den här loggen har
+aldrig städats. Namnen ligger kvar för alltid.
+
+Planen städar loggen på samma sätt som anmälningarna redan städas: den anmäldas namn suddas ur
+raderna men raderna står kvar (så moderering fortfarande går att granska). Strike-räknaren som
+avgör om någon ska granskas rörs inte.
+
+---
+
+## 11. Panelens utfall — villkor och konflikter
+
+**Säten:** DPO (GDPR), Trust & Safety, Security Architect, DBA/datalager, QA, plus
+Codebase Archaeologist. **Alla sex: `approve-with-conditions`. Ingen blockering.**
+
+**Avförda:** Legal Counsel (den enda rättsligt tolkande frågan eskaleras till Malin ändå, och
+DPO-sätet bär den), Product Manager och Software Architect (inget produktval, ingen lagerändring),
+FinOps (fyra extra läsningar en gång per konto), Customer Support/Ops (T&S bär samma runbook-stake),
+Vendor/Procurement (ingen leverantörsyta).
+
+### Villkor som rider med (union, deduplicerad)
+
+- **A. Tak-och-avböj på de två `content_report_*`-svepen.** Obegränsade frågor på fält en motpart
+  kontrollerar. Filen har tre precedensmönster (`MAX_ROSTER_SWEEP_ROWS`, `MAX_BLOCK_SWEEP_ROWS`,
+  `MAX_POLL_VOTE_SWEEP_ROWS`): `.limit(tak+1)`, **avböj** över taket i stället för att trunkera,
+  bredvid en otakad `count()`-sond. *(DBA)*
+- **B. De nya stegen stagar sina egna auditrader**, som `anonymizeReportsByContentOwner`. Sänkningen
+  accepteras inte. *(DPO, Security)*
+- **C. Sondbenet fail-closed i eget try/catch; indexbeteendet verifierat mot emulatorn.** *(Security, DBA)*
+- **D. `FakeRef.get()` läggs till före scenario 4 skrivs;** verifierat att inget scenario efter det
+  aborteras. *(QA)*
+- **E. Varje nytt scenario anropas i `main()`; varje scenario får en överlevande kontrollrad för
+  annan användare; eget rent/smutsigt par per sondben; ett scenario för `contentOwnerId == null`.** *(QA)*
+- **F. Kopplingen blir en permanent assertion i `request-account-deletion.test.ts`,** inte en
+  engångsmutation. *(QA)*
+- **G. Ingen `EXPORT_EXEMPT`-post.** *(Arkeologen)*
+- **H. Kapplöpningen i avsnitt 8 avgörs explicit** — namngiven restrisk eller avstämning. *(Arkeologen)*
+- **I. `user_moderation` filas som eget ärende innan BUT-2032 stängs.** *(DPO, Security, T&S)*
+- **J. Runbookens "Audit trail" anger faktiskt beteende per radform.** *(T&S)*
+- **K. Textstrykningarna landar i samma commit som koden.** *(Security)*
+
+### Konflikter
+
+1. **Anmälarens rad: radera eller anonymisera?** T&S ville anonymisera (nolla `reporterId`,
+   behålla raden) för symmetri med den anmälda-sidan och för att en admin annars inte ens ser att
+   en anmälan funnits. Planen ville radera, för konsekvens med att källraden i `reports` redan
+   hårdraderas. Hög insats (användarsäkerhet + integritet) → eskalerad. **Malin valde RADERA,
+   2026-09-08**, med T&S:s runbook-villkor kvar. ADR-0016.
+2. **`user_moderation` i samma ärende?** Planen ville vika in; T&S sa nej. **Löst av
+   prioritetsordningen** (användarsäkerhet före att hålla en delad sanning): hålls utanför,
+   filas separat. ADR-0015.
+3. **Auditradsänkningen.** Planen accepterade den; DPO och Security krävde ett uttryckligt beslut,
+   och Security visade att BUT-781-analogin inte bär den halvan. **Löst genom att inte sänka** —
+   dataintegritet före kostnad, ~1 extra skrivning per raderad rad. ADR-0014.
+
+Rådgivande. Malin avgör om bygget går vidare.

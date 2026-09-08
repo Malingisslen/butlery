@@ -49,6 +49,11 @@ import {
 // spelling of "remove this member" on a GDPR path is a contract to keep in sync,
 // and this one touches three documents.
 import { stageMemberRemoval } from "../groups/chat-group-writes";
+// BUT-2032 / ADR-0014: the first audit staging in this file. The cascade had
+// none and `on-user-deleted.ts` stages one per mutated row; the panel measured
+// that BUT-781's analogy carries the ACTION and not the record, so the two new
+// steps below keep the trigger's posture rather than inherit the cascade's.
+import { stageCascadeAuditEntry } from "../cleanup/cascade-audit-log";
 
 export interface DeletionResult {
   deletedCollections: string[];
@@ -377,6 +382,22 @@ export async function probeResidualData(
     // the roster and its mirror, so on a plan the user has left this leg is
     // what still reaches the document.
     [Collections.groupWeeklyMenuPlans, "contributorUserIds", "array-contains"],
+    // BUT-2032: the moderation rows in the admin ops log. These belong in THIS
+    // loop and not in the `probes` list at the top of the function, which
+    // filters a TOP-LEVEL `userId` field: `system_events` carries the uid under
+    // `details`, so a leg there would match zero on every erasure forever — an
+    // all-clear that is true by accident, the realtime_recipes trap this file
+    // keeps paying for. Three legs because the deleter has three, and they are
+    // uncapped so they still fire when a leg DECLINED above
+    // `MAX_SYSTEM_EVENT_SWEEP_ROWS` and swept nothing.
+    //
+    // `details.contentOwnerId` is not redundant with the two beside it: it is
+    // the only thing that measures whether the ANONYMIZE half ran, since a
+    // deleted row and an un-anonymized one are indistinguishable to the other
+    // two legs.
+    [SYSTEM_EVENTS, "details.userId", "=="],
+    [SYSTEM_EVENTS, "details.reporterId", "=="],
+    [SYSTEM_EVENTS, "details.contentOwnerId", "=="],
   ] as const) {
     // A `FieldPath` leg carries the uid IN ITS SEGMENTS, and the logger
     // JSON-stringifies whatever it is handed — so logging `field` directly
@@ -2798,6 +2819,166 @@ export async function deleteUserReports(
     .get();
   await batchDeleteAll(db, snap.docs);
   return true;
+}
+
+/**
+ * The admin ops log. Named through a local const because `Collections` does not
+ * carry it; the coverage guard resolves file-local consts, so this stays
+ * discoverable to it (BUT-2043).
+ */
+const SYSTEM_EVENTS = "system_events";
+
+/**
+ * Cap on one erasure's `system_events` sweep. Same contract as
+ * `MAX_BLOCK_SWEEP_ROWS` — decline above it rather than truncate, because a
+ * truncated sweep reports a clean erasure over rows it never looked at.
+ *
+ * The count is chosen by OTHER PEOPLE on one of the three legs: anyone may file
+ * a report naming this user as `contentOwnerId`, and `firestore.rules` has no
+ * write limb on this collection at all — every row here is an Admin-SDK write
+ * from `onReportCreated`, so nothing a client can be rate-limited on bounds it
+ * directly. That is the roster cap's argument, not the poll-vote cap's, and the
+ * two differ (BUT-1801).
+ */
+const MAX_SYSTEM_EVENT_SWEEP_ROWS = 2000;
+
+/**
+ * BUT-2032: the moderation rows in the admin ops log, which no erasure path
+ * reached. `feedback/on-report-created.ts` writes TWO shapes about a report, and
+ * a step written from the document id alone covers only one of them:
+ *
+ *   `moderation_threshold_<contentOwnerId>` — the uid is the document's own
+ *       identity, and `details.userId` repeats it. Deleted: a document whose id
+ *       IS the identifier cannot be anonymized.
+ *   `content_report_<reportId>` — no uid in the id, and BOTH parties in the
+ *       fields (`details.reporterId`, `details.contentOwnerId`).
+ *
+ * The policy is derived from the two already-decided outcomes on the SOURCE
+ * collection rather than invented here, because a third policy for one event is
+ * how two records of one decision drift apart:
+ *
+ *   reporter erases  -> DELETE the row. `deleteUserReports` already hard-deletes
+ *       the `reports` document, so a derived copy must not outlive its source.
+ *       Malin's explicit call, 2026-09-08 (ADR-0016), against Trust & Safety's
+ *       alternative of nulling the field and keeping the row.
+ *   reported erases  -> ANONYMIZE, exactly as `anonymizeReportsByContentOwner`
+ *       does on the source row (BUT-781): the row stays, the identifier goes.
+ *
+ * Each mutation stages its own `audit_logs` row (ADR-0014). The step runs in the
+ * CASCADE and not in `onUserDeleted` because `probeResidualData` runs before
+ * `auth.deleteUser` and the trigger runs after it — a trigger-owned step with a
+ * probe leg turns every affected erasure into a false `gdprCompliant: false`,
+ * which is the defect BUT-2044 records.
+ *
+ * NOT closed by this step, and named rather than left to be discovered:
+ * `onReportCreated` is an `onDocumentCreated` trigger on `reports/{reportId}`
+ * with NO ordering relationship to account deletion in either direction — it
+ * re-throws for retry — so a report created, or a delivery retried, around the
+ * erasure writes a fresh row naming the erased uid afterwards. Malin accepted
+ * that as a named residual on 2026-09-08 rather than build the reconciliation
+ * pass the block mirror has for the same race.
+ */
+export async function deleteModerationSystemEvents(
+  db: admin.firestore.Firestore,
+  uid: string,
+): Promise<boolean> {
+  let complete = true;
+
+  /** Runs one capped leg. Returns null when the leg declined. */
+  const sweep = async (
+    field: string,
+  ): Promise<admin.firestore.QueryDocumentSnapshot[] | null> => {
+    const snap = await db
+      .collection(SYSTEM_EVENTS)
+      .where(field, "==", uid)
+      .limit(MAX_SYSTEM_EVENT_SWEEP_ROWS + 1)
+      .get();
+    if (snap.size > MAX_SYSTEM_EVENT_SWEEP_ROWS) {
+      logger.error(
+        "[deletion-cascade] implausible system_events count; not sweeping",
+        { uid_prefix: uid.slice(0, 6), field, rows: snap.size },
+      );
+      return null;
+    }
+    return snap.docs;
+  };
+
+  // The threshold alert and the reporter-side report rows: both deleted, so they
+  // share one commit. `details.userId` is queried rather than the document id
+  // rebuilt, so a threshold row whose id ever differs from the convention is
+  // still reached, and no audit row is staged for a document that never existed.
+  const deletions: admin.firestore.QueryDocumentSnapshot[] = [];
+  const deletedIds = new Set<string>();
+  for (const field of ["details.userId", "details.reporterId"] as const) {
+    const docs = await sweep(field);
+    if (docs === null) {
+      // `continue`, not `return`: the legs are independent and half an erasure
+      // beats none, as long as the step still reports itself incomplete.
+      complete = false;
+      continue;
+    }
+    for (const doc of docs) {
+      if (deletedIds.has(doc.id)) continue;
+      deletedIds.add(doc.id);
+      deletions.push(doc);
+    }
+  }
+  if (deletions.length > 0) {
+    await commitInChunks(
+      db,
+      deletions,
+      (batch, doc) => {
+        batch.delete(doc.ref);
+        stageCascadeAuditEntry(db, batch, {
+          subjectUserId: uid,
+          targetUid: null,
+          operation: "cascade_delete",
+          resourceType: SYSTEM_EVENTS,
+          resourceId: doc.id,
+        });
+      },
+      {
+        label: `BUT-2032: system_events delete for ${uid.slice(0, 6)}`,
+        opsPerItem: 2,
+      },
+    );
+  }
+
+  // The reported-side rows survive with the identifier removed. Read AFTER the
+  // deletes above so a row naming this user in both roles is already gone.
+  const owned = await sweep("details.contentOwnerId");
+  if (owned === null) {
+    complete = false;
+  } else {
+    const toAnonymize = owned.filter((doc) => !deletedIds.has(doc.id));
+    if (toAnonymize.length > 0) {
+      await commitInChunks(
+        db,
+        toAnonymize,
+        (batch, doc) => {
+          batch.update(doc.ref, {
+            "details.contentOwnerId": null,
+            contentOwnerAnonymizedAt:
+              admin.firestore.FieldValue.serverTimestamp(),
+          });
+          stageCascadeAuditEntry(db, batch, {
+            subjectUserId: uid,
+            targetUid: null,
+            operation: "cascade_anonymize",
+            resourceType: SYSTEM_EVENTS,
+            resourceId: doc.id,
+            extra: { field: "details.contentOwnerId" },
+          });
+        },
+        {
+          label: `BUT-2032: system_events anonymize for ${uid.slice(0, 6)}`,
+          opsPerItem: 2,
+        },
+      );
+    }
+  }
+
+  return complete;
 }
 
 // ─── Tier 1: profile-side own data ───────────────────────────────────────

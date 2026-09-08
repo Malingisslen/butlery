@@ -2961,7 +2961,7 @@
         {
           "from": "cf-request-deletion",
           "to": "ds-users",
-          "payload": "Tier 1 parallellt (recept, menyer, listor, taggar, taggkorrigeringar (tag_overrides_log, BUT-1473), snaps, skafferi, familj, delat, notiser, Storage) → Tier 2/3 sekventiellt → users/{uid} SIST · audit-logg {emailHash, deletedCollections, expireAt +180 d}",
+          "payload": "Tier 1 parallellt (recept, menyer, listor, taggar, taggkorrigeringar (tag_overrides_log, BUT-1473), snaps, skafferi, familj, delat, notiser, moderationsrader i system_events (BUT-2032), Storage) → Tier 2/3 sekventiellt → users/{uid} SIST · audit-logg {emailHash, deletedCollections, expireAt +180 d}",
           "transport": "Admin SDK delete + write",
           "verified": true
         },

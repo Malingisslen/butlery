@@ -115,8 +115,7 @@ Triggers retry on uncaught exception; handlers must be idempotent:
 
 ## Cost & cold-start
 
-- Billed per ms × memory + per-invocation. Narrow imports. 540s is the v2 max;
-  read the real value off `__endpoint`.
+- Narrow imports. 540s is the v2 max; read the real value off `__endpoint`.
 - **An in-code timeout guard is dead unless `timeoutSeconds` is declared on the
   SAME trigger** — global options carry no timeout, so a v2 event function
   defaults to 60s. Pin guard-ms against the manifest's
@@ -210,7 +209,10 @@ from `(err as {code?}).code`.
   that try, so a SYNCHRONOUS validation throw from the callback (`undefined` in
   an array, bad FieldValue) escapes `strict:false` and aborts the step —
   piggyback the existence probe on the SAME `getAll` as the idempotency gate;
-  skip (never `set(merge)`) when absent.
+  skip (never `set(merge)`) when absent. `strict` DEFAULTS to false. A step that
+  DELETES and UPDATES one collection: await the deletes, then RE-QUERY — the
+  re-query is what removes the NOT_FOUND, so a doc-id dedupe across the two
+  halves is dead defence, and rule 10's fake shows neither.
 - A step that early-`return false`s on its own cap skips every leg below it —
   put independent legs first.
 - **Cross-check the identity FIELD and COLLECTION NAME across every leg**

@@ -3140,3 +3140,78 @@ neither passed an `auditRepository` at all.
   Recorded here rather than only in the script's header, because a plan greps these files
   and not a one-time script. Raised by the `firebase-backend-security` and
   `cloud-functions-specialist` gates. BUT-2044, 2026-09-08
+
+- **A `system_events` row about a report the ERASED USER FILED is DELETED, and the row about
+  a report FILED AGAINST THEM is KEPT with the identifier nulled (BUT-2032, 2026-09-08).**
+  `deleteModerationSystemEvents` derives both halves from the two outcomes already decided on
+  the SOURCE collection rather than inventing a third policy for one event: `deleteUserReports`
+  hard-deletes the `reports` document when the reporter erases, and
+  `anonymizeReportsByContentOwner` (BUT-781) keeps the row and nulls `contentOwnerId` when the
+  reported person erases.
+  **The delete half is Malin's explicit call, 2026-09-08 (ADR-0016)**, taken over Trust &
+  Safety's alternative of nulling `details.reporterId` and keeping the row for audit symmetry.
+  She was shown that under her choice an admin reviewing an old `moderation_threshold_reached`
+  alert cannot see that a report was ever filed there — silence and "no report" become
+  indistinguishable. She was NOT shown any measurement of how often a reporter erases with
+  live reports outstanding; nobody has counted it, and the app is not live. The T&S condition
+  rides along: `docs/ops/moderation-runbook.md` states the post-erasure behaviour per row
+  shape, so the console reader is not misled by that silence.
+  The threshold row is deleted rather than anonymized because its document id IS the uid.
+  Both legs are found by QUERY (`details.userId`, `details.reporterId`), never by rebuilding
+  the id, so a row whose id ever departs from the convention is still reached and no audit row
+  is staged for a document that never existed.
+  BUT-2032, 2026-09-08
+
+- **The step runs in the CASCADE and stages its own audit rows — the first
+  `stageCascadeAuditEntry` calls in `account-deletion-cascade.ts` (ADR-0014, 2026-09-08).**
+  Placement is forced: `probeResidualData` runs BEFORE `auth.deleteUser` and `onUserDeleted`
+  after it, so a trigger-owned step with a probe leg turns every affected erasure into a false
+  `gdprCompliant: false` — the BUT-2044 defect. The plan then accepted the cascade's
+  zero-audit posture on the ground that the step "mirrors BUT-781". The panel measured that
+  BUT-781's anonymization runs in the TRIGGER, where it DOES stage a row per mutation, so the
+  analogy carries the action and not the record. Decided by the priority order
+  (data-integrity above cost), roughly one extra write per mutated row on a path that runs
+  once per account. Do not "align" this step with the rest of the cascade by removing the
+  audit staging; the rest of the cascade is what is out of line.
+  BUT-2032, 2026-09-08
+
+- **`system_events` is NOT in the Art. 15 export, and the decision is recorded HERE rather
+  than in `EXPORT_EXEMPT` (BUT-2032, 2026-09-08).** **Malin's explicit call, 2026-09-08**,
+  over the alternative of building an export section: `firestore.rules` gives the collection
+  `allow read: if isAdmin()` and no write limb at all, so exporting it would mean opening a
+  client read on an admin surface. It is an internal ops log.
+  The entry cannot live in `EXPORT_EXEMPT`: that map is scoped to `USER_SUBCOLLECTIONS`, and
+  `scenario_exportCoversEveryDeletedSubcollection` fails any exemption naming something absent
+  from that list — a top-level collection reddens it. The precedent for a Tier-1 top-level
+  collection (`ingredient_suggestions`, BUT-2028) is to ship an export section instead, which
+  is exactly what this decision declines to do, so there is no registry for it to sit in.
+  BUT-2032, 2026-09-08
+
+- **`onReportCreated` has NO ordering relationship to account deletion, so a row naming an
+  erased uid can be written AFTER the erasure — accepted, not closed (BUT-2032, 2026-09-08).**
+  It is an `onDocumentCreated` trigger on `reports/{reportId}` that re-throws for retry, so a
+  report filed seconds before an erasure, or a delivery retried across it, lands a fresh
+  `content_report` row afterwards and nothing sweeps it. This is a THIRD category the cascade
+  has no concept for: neither cascade-owned nor trigger-owned, both of which are defined by
+  their ordering against `auth.deleteUser`.
+  **Malin's explicit call, 2026-09-08**, over the alternative the panel named beside it: a
+  reconciliation pass, the way `runReconcileBlockMirrors` closes the identical race on the
+  block mirror. The window requires a report created in the same seconds as an erasure.
+  Nobody has measured how often that happens; the app is not live. Raised by the
+  `Codebase Archaeologist` seat, which was the only pass looking for it.
+  BUT-2032, 2026-09-08
+
+- **`user_moderation` is deliberately OUT of BUT-2032, and its erasure is a Trust & Safety
+  decision before it is a GDPR one (ADR-0015, 2026-09-08).** The document id is the reported
+  person's uid and `reportHistory` is an array of maps each carrying a `reporterId`. No
+  cascade, no probe, no export reaches it — a real and larger Art. 17 residual than the one
+  BUT-2032 closes.
+  The plan proposed folding it in; T&S showed that `reportHistory` is the only data surviving
+  the REPORTER's own erasure that can answer whether one account repeatedly reports the same
+  target (`reports` carries `reporterId` too, but `deleteUserReports` hard-deletes those rows
+  — measured), i.e. Butlery's only signal against report-brigading, DSA Art. 23 territory.
+  Decided by the priority order: user-safety above the shared-truth consistency argument.
+  If it is ever built, the array rewrite must read `reportHistory` INSIDE the transaction that
+  writes it, with contention retry — the live writer uses `arrayUnion` in its own transaction,
+  and a `get()` followed by a later `update()` silently drops a report landing in between.
+  BUT-2032, 2026-09-08

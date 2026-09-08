@@ -344,6 +344,10 @@ test("BUT-788: full cascade reports every step + writes audit + calls auth.delet
     // suite `require()`s the deleter directly, so removing this tier entry
     // stops the erasure without reddening anything there.
     "ingredient_suggestions",
+    // BUT-2032, and the same reason a third time: the cascade suite's own
+    // scenarios `require()` `deleteModerationSystemEvents` directly, so dropping
+    // this tier entry stops the erasure with every one of them still green.
+    "moderation_system_events",
     "messages",
     "shared_content",
     "comments_ratings",
