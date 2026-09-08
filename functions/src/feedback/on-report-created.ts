@@ -80,6 +80,12 @@ export async function processReport(
       }
 
       totalReports = current + 1;
+      // This key set is COUPLED to two other places, and the coupling is not
+      // visible from here: `firestore.rules` permits the subject's read only
+      // while the document carries nothing but these keys, and the Art. 15 export
+      // projects the same two. Adding a third field here makes the whole
+      // document unreadable to its subject and turns their export section into
+      // a failure envelope until all three are updated together.
       tx.set(
         moderationRef,
         {

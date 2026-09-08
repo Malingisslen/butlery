@@ -583,6 +583,41 @@ class SocialExportManager with SocialExportRedaction {
     }
   }
 
+  /// How many times the user has been REPORTED by others, and when last.
+  ///
+  /// The counterpart to [exportReports], which covers reports they FILED. Only
+  /// the two counters are exported; who reported them is withheld under
+  /// Art. 15(4) — those are other people, and naming them would expose someone
+  /// who used a safety feature.
+  ///
+  /// Malin's explicit call, 2026-09-08, reversing ADR-0017 the same day.
+  Future<Map<String, dynamic>> exportModerationCounters(String userId) async {
+    try {
+      final counters = await _exports.exportModerationCounters(userId);
+      return {
+        'moderation_counters': counters == null
+            ? null
+            : sanitizeForJson(counters),
+        // Art. 12(1): a withholding the reader cannot see is an undisclosed
+        // gap, not a minimisation decision.
+        'data_minimisation':
+            'This shows how many times your content has been reported by other '
+            'people, and when it last happened. Who reported you is not '
+            'included: that is information about them, and disclosing it would '
+            'expose someone who used a safety feature.',
+      };
+    } catch (e) {
+      app_logger.AppLogger.error(
+        '[$_logTag] Failed to export moderation counters',
+        e,
+      );
+      return _failed(
+        'Moderation counters',
+        'moderation-counters-export-failed',
+      );
+    }
+  }
+
   /// BUT-1396: Export group pings the user sent (`pings` collection-group
   /// where `fromUserId == uid`).
   Future<Map<String, dynamic>> exportPings(String userId) async {

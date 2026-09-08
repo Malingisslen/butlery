@@ -36,6 +36,7 @@ enters this file").
 | `users/{uid}/notifications` (server-written, owner-read) | `delivered-notifications-rules.test.ts` | `test:rules:delivered-notifications` |
 | `/blocks/{blockerId}_{blockedId}` (list, get, create, update-deny, delete) | `blocks-rules.test.ts` | `test:rules:blocks` |
 | `/ingredient_suggestions` (owner list/get, client create, update+delete deny) | `ingredient-suggestions-rules.test.ts` | `test:rules:ingredient-suggestions` |
+| `/user_moderation/{uid}` + its `report_history` subcollection, **and** the `friend_categories` / `public_profiles` admin moderation overrides | `moderation-rules.test.ts` | `test:rules:moderation` |
 | All of the above                      | (sequence)                 | `test:rules:all`          |
 
 If the diff touches a collection not listed above, **create a new test file** named
@@ -149,7 +150,16 @@ Standard deny matrix for ownership-checked collections:
   limb dereferencing `resource.data` DENIES the absent case** — a CEL evaluation error, not
   a false. Harmless for a collection reached by query (a listed doc always exists) or by an
   id only the owner can construct; a LIVE BUG exactly when the CLIENT DERIVES the doc id and
-  READS BEFORE CREATING. Triage the sweep by that question, not by counting limbs — ~25 read
+  READS BEFORE CREATING, **and — the second live shape — when an Art. 15 EXPORT reads a
+  SERVER-WRITTEN document that most users simply do not have.** Measured on `user_moderation`
+  (BUT-2046): a field-deny conjunct added to the read limb
+  (`!('reportHistory' in resource.data)`) denied the ABSENT document, i.e. every user never
+  reported, and `_readDoc`'s throw lands in the export manager's `catch` as a FAILURE
+  ENVELOPE — the exact BUT-1957 shape the block existed to remove, reintroduced by the
+  conjunct that closed the previous finding. **Re-probe the absent case after ANY conjunct is
+  added to a read limb; a hardening is where this arrives, never a first draft.** The
+  `resource == null` arm creates NO existence oracle when the limb also carries `isOwner`
+  (measured: absent + stranger stays DENIED). Triage the sweep by that question, not by counting limbs — ~25 read
   limbs in `firestore.rules` share the shape and nearly all are fine. Candidates are the
   composite/deterministic ids (`{groupId}_{ISO week}`, `direct_<a>_<b>`,
   `{blocker}_{blocked}`, `{uid}_{deviceId}`); a PATH-gated read (`planId.matches('^' + uid)`)
@@ -536,7 +546,12 @@ Standard deny matrix for ownership-checked collections:
   naming that pair ARE one document and the later seeder silently overwrites the earlier —
   turning an ALLOW control into a deny while its DENY twin stays green and pins nothing.
   Give a new fixture DEDICATED uids and grep every path in the file before calling it
-  isolated (BUT-1831).
+  isolated (BUT-1831). **The same persistence makes an "absent document" fixture a claim
+  about every test that ran BEFORE it, and the vacuity is total: in a file with no per-test
+  clear, an earlier test's seed means the case never reaches the absent branch and passes
+  with the null arm DELETED** (measured on `user_moderation` UM8, BUT-2046). Seed absence
+  positively — `withSecurityRulesDisabled` DELETE, not "no test wrote it" — and grade it
+  with a null-arm mutant, which must kill that test alone.
 - Never import server-value sentinels (`serverTimestamp`, `increment`, `arrayUnion`,
   `deleteField`) from `firebase-admin/firestore` in a `*-rules.test.ts` — the test
   context is the CLIENT SDK; an admin sentinel throws before any rule runs, which also
@@ -617,6 +632,15 @@ Standard deny matrix for ownership-checked collections:
   carrier anyone adds, and it actively competes with the `grep polymorphic` that is the real
   instruction — a maintainer adding `is list` later stops at the stated number and leaves a
   stale carrier. Strike the numeral; keep only what the case does (BUT-1971, 2026-09-02).
+- **A collection with NO write limb still owes a CREATE-limb deny of its own.** The three
+  verbs sent at a SEEDED document are an update and a delete — `set()` on an existing doc is
+  an update — so the plausible future grant, `allow create: if isOwner(userId)` ("let the
+  client initialise its own record"), is pinned by nothing. Measured on `user_moderation`
+  (BUT-2046): the create mutant passes 18/18 against the suite without a delete-then-`set()`
+  case and kills that one test alone with it. Exploitable, not theoretical — the CF read
+  `totalReports ?? 0` then `increment(1)`, so a client-created record holding a large
+  negative count never reaches the alert threshold, and it satisfies the read gate's key set
+  so nothing else notices. Delete the document inside the write test, then `set()`.
 - **Deny-all server-only collection** (`allow read, write: if false`): matrix
   {read,create,update,delete} × {unauth, non-admin, admin} — admin-still-denied is the
   load-bearing case — plus one Admin-SDK-bypass write that succeeds.
@@ -638,6 +662,18 @@ Standard deny matrix for ownership-checked collections:
   be refactored to `collectionGroup(<name>)`. Before calling `allow write: if false` safe, grep `lib/` for
   the collection CONSTANT — an existing client writer would make it an outage, not a
   hardening.
+  **A grant reads STORED documents; "the document holds only X" is a claim about the WRITER
+  and is refuted by any un-run MIGRATION.** Rules cannot scope a read by field, so a legacy
+  field a hand-run script has not yet cleared ships to whoever the new limb admits — measured
+  on `user_moderation` (BUT-2046): the parent still carried the pre-migration `reportHistory`
+  array of maps, each naming a REPORTER, so the new owner-read handed the reported person the
+  uids of the people who reported them, i.e. the exact disclosure the design withholds. Before
+  passing such a sentence, `git log -S` the field to date when the writer stopped writing it
+  and look for the migration's LIVE-run evidence (a hand-run script defaults to a dry run, and
+  a script existing is not a run — BUT-2010/BUT-2040). The suite cannot see it either: every
+  fixture is built from the CURRENT writer's key set, so seed the LEGACY shape as its own case
+  and pin what it does today. "A rules tightening never cleans stored documents" met from the
+  loosening side, and this is the more dangerous direction.
 - **Owner-scoped subcollection under a `{path=**}/<name>/{id}` collection-group
   catch-all**: a single-doc deny test is not proof — the engine can't show every matched
   doc satisfies an owner predicate for an unconstrained collection-group query, so the

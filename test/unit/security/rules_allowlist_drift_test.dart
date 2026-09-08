@@ -16,8 +16,8 @@
 /// them — retyping is the mechanism that let all five through, including the
 /// hand-written fixture in the rules suite that was supposed to catch it.
 ///
-/// **It does not cover every allowlist.** `firestore.rules` carries thirteen.
-/// Five of the seven here are the ones an actual drift was found in:
+/// **It does not cover every allowlist.** Five of the entries here are the ones
+/// an actual drift was found in:
 /// `isValidTagResult`, `counters`, `conversation_memberships`,
 /// `notification_history` and the deep-link `clicks`. The remaining two,
 /// `participants` and the poll vote, never drifted and could not have — each
@@ -30,9 +30,9 @@
 /// unrelated count and a red test cannot demand a decision. Chronic red disarms
 /// the guard, which is the lesson, not a footnote.
 ///
-/// The other six were each checked against their writer on 2026-08-12 and none
-/// had drifted — but "checked once" is not "guarded", which is why the census
-/// test below fails the moment a fourteenth appears, forcing a decision instead
+/// The rest were each checked against their writer once and none had drifted —
+/// but "checked once" is not "guarded", which is why the census
+/// test below fails the moment a new one appears, forcing a decision instead
 /// of a silent omission.
 ///
 /// **Scope, stated honestly: FOUR of the seven key sets are hand-assembled**,
@@ -361,8 +361,9 @@ class _Uncovered {
   final String anchor;
 }
 
-/// Allowlists deliberately not compared here. Each was read against its writer
-/// on 2026-08-12 and none had drifted.
+/// Allowlists this guard does not compare against a writer. Most were read
+/// against theirs once and none had drifted; the `user_moderation` entry is a
+/// READ gate with no writer, compared instead by its own equality test.
 ///
 /// Each carries an ANCHOR, and the census asserts that the anchor still appears
 /// AND that its block still carries a `keys().hasOnly(` — checked up to the next
@@ -373,7 +374,7 @@ class _Uncovered {
 /// the guard stays green over a list nobody has ever compared.
 ///
 /// Three earlier versions of this docstring were wrong about its own strength.
-/// The first claimed NAMING the six was enough to survive a swap; names never
+/// The first claimed NAMING them was enough to survive a swap; names never
 /// resolved against the file buy diagnosability, not detection. The second added
 /// the anchor and claimed that closed it; it caught a block that DISAPPEARS and
 /// not an allowlist that disappears from a surviving block — which is the more
@@ -386,6 +387,13 @@ class _Uncovered {
 /// sentinel, and renaming its block trips the anchor lookup in
 /// [_allowlistAfter].
 const _knowinglyUncovered = <_Uncovered>[
+  // Covered by `the user_moderation read gate and the Art. 15 projection
+  // agree` rather than by the writer comparison: it is a READ gate, and its
+  // counterpart is a Dart projection, not a `toFirestore`.
+  _Uncovered(
+    'user_moderation — read gate, compared against the Art. 15 projection',
+    'match /user_moderation/{userId}',
+  ),
   _Uncovered('recipe_comments/{id}/likes', 'match /likes/{userId}'),
   _Uncovered(
     'recipe_cook_events — CookEvent.toFirestore',
@@ -424,6 +432,18 @@ String _withoutComments(String source) => source
       (m) => m.group(1)!,
     );
 
+/// The one key set that lives in THREE languages: this READ gate, the Dart
+/// export projection, and the Cloud Function that writes the document. The
+/// first two are compared mechanically below; the third is named in
+/// `ACCEPTED_DEVIATIONS.md` as its own ticket.
+///
+/// Divergence breaks in BOTH directions, which is why an equality test rather
+/// than a subset one: rules wider than the projection means a field nobody
+/// decided about becomes readable to the subject; the projection wider than
+/// rules means the server denies the whole document and the Art. 15 section
+/// fails for every reported user.
+const _moderationCounterKeys = {'totalReports', 'lastReportedAt'};
+
 void main() {
   late String rules;
 
@@ -441,13 +461,59 @@ void main() {
     rules = _withoutComments(File('firestore.rules').readAsStringSync());
   });
 
+  test('the user_moderation read gate and the Art. 15 projection agree', () {
+    // The rules side, extracted from the file rather than restated.
+    expect(
+      _allowlistAfter(rules, 'match /user_moderation/{userId}', 'totalReports'),
+      _moderationCounterKeys,
+    );
+
+    // The Dart side, read out of the repository source for the same reason:
+    // a second hand-kept copy of a key set is the drift this file exists for.
+    final dart = File(
+      'lib/repositories/firebase/firebase_data_export_repository.dart',
+    ).readAsStringSync();
+    // Anchored at the method, for the reason `_allowlistAfter`'s own docstring
+    // gives about the rules side: an unanchored scan rebinds silently the day a
+    // second `for (final key in const [...])` appears above this one.
+    final at = dart.indexOf('exportModerationCounters');
+    expect(
+      at,
+      isNot(-1),
+      reason: 'exportModerationCounters is gone or renamed',
+    );
+    final loop = RegExp(
+      r'for \(final key in const \[([^\]]*)\]\)',
+    ).firstMatch(dart.substring(at));
+    expect(
+      loop,
+      isNotNull,
+      reason:
+          'the projection allowlist in exportModerationCounters is gone or '
+          'rewritten in a form this guard cannot see — if it moved, move this '
+          'assertion with it rather than deleting it',
+    );
+    expect(
+      RegExp(
+        "'([^']+)'",
+      ).allMatches(loop!.group(1)!).map((m) => m.group(1)!).toSet(),
+      _moderationCounterKeys,
+    );
+  });
+
   test('every keys().hasOnly allowlist is guarded here or knowingly excluded', () {
-    // The census. Without it, a fourteenth allowlist lands unguarded and
+    // The census. Without it, a new allowlist lands unguarded and
     // nothing says so — which is precisely how the five drifts of 2026-08-12
     // happened, one silent omission at a time.
-    // Scope: `keys().hasOnly` only. Of the 34 `hasOnly(` calls in the file, 13
-    // are this form; 16 are `affectedKeys().hasOnly` update restrictions, one
-    // is `values().hasOnly`, two are set differences and two sit in comments.
+    // Scope: `keys().hasOnly` only. The rest are `affectedKeys().hasOnly`
+    // update restrictions, one `values().hasOnly`, set differences, and calls
+    // sitting in comments.
+    //
+    // The fourteenth is a READ gate, not a write allowlist: `user_moderation`
+    // permits the subject's read only while the document's key set is exactly
+    // the two counters, so an undecided field denies rather than leaks
+    // (BUT-2046 follow-up). It is covered by its own equality test below
+    // rather than by the writer-side comparison the entries above make.
     // The update restrictions deny just as silently, but they pin a DIFF, not a
     // payload, so a writer-derived key set is the wrong instrument for them.
     // They want a second guard, not a wider count here.
@@ -457,21 +523,24 @@ void main() {
     // doing its job: a number that only ever moves for a reason.
     // Assert the FULL classification, not just this guard's slice. A rule
     // written as `let k = data.keys(); … k.hasOnly([...])` would slip past
-    // `_allowlistCall` with the count still 13; it cannot slip past the total.
+    // `_allowlistCall` without moving its count; it cannot slip past the total.
     expect(
       'hasOnly('.allMatches(rules).length,
-      32,
+      33,
       reason:
-          'the `hasOnly(` population changed. Reclassify before touching the '
-          'numbers below: 13 keys().hasOnly + 16 affectedKeys().hasOnly + 1 '
-          'values().hasOnly + 2 set differences. (32, not 34: the file also '
-          'carries two inside COMMENTS, and this text is comment-stripped — '
-          'which is the whole reason a commented-out allowlist cannot satisfy '
-          'anything here.) If the new one is a keys() allowlist written in a '
-          'form the regex cannot see, this is the only assertion that says so.',
+          'the `hasOnly(` population changed. Reclassify the new call before '
+          'touching this number — it counts `keys().hasOnly`, '
+          '`affectedKeys().hasOnly`, `values().hasOnly` and set differences '
+          'together, and this text is comment-stripped, which is the whole '
+          'reason a commented-out allowlist cannot satisfy anything here. If '
+          'the new one is a keys() allowlist written in a form the regex '
+          'cannot see, this is the only assertion that says so. (A breakdown '
+          'by category stood here and was wrong within a day of the fourteenth '
+          'allowlist landing: it is the instruction somebody follows when this '
+          'reddens, so a stale one sends them to "correct" the number back.)',
     );
     final total = _allowlistCall.allMatches(rules).length;
-    // Resolve every excused allowlist against the file. A swap among the six
+    // Resolve every excused allowlist against the file. A swap among the
     // uncovered ones leaves the total unchanged and is invisible to a count.
     // Both halves are needed: the block must still be there, AND it must still
     // carry a key constraint. Checking only the first passes over a rule that

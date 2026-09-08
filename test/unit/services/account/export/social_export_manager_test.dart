@@ -227,6 +227,85 @@ class _ThrowingFriendsRepository extends Fake
 }
 
 void main() {
+  group('SocialExportManager moderation counters (BUT-2046 follow-up)', () {
+    test('exports the two counters and says what is withheld', () async {
+      // A real `Timestamp`, because that is what production stores —
+      // `on-report-created.ts` writes `serverTimestamp()`. With a String here
+      // `sanitizeForJson` is indistinguishable from its absence and deleting
+      // the call stays green, while in production an unsanitised `Timestamp`
+      // throws inside `JsonEncoder.convert` AFTER every manager's catch has
+      // returned: the data subject then gets NO export at all, rather than one
+      // bad section.
+      final reportedAt = DateTime.utc(2026, 4, 5, 6, 7, 8);
+      final section = await SocialExportManager(
+        dataExportRepository: _ModerationCountersRepository({
+          'totalReports': 3,
+          'lastReportedAt': Timestamp.fromDate(reportedAt),
+        }),
+      ).exportModerationCounters('uid-42');
+
+      final counters = section['moderation_counters'] as Map<String, dynamic>;
+      expect(counters['totalReports'], 3);
+      expect(counters['lastReportedAt'], isNot(isA<Timestamp>()));
+      // Compared as an INSTANT, not as a literal date string: `toDate()` comes
+      // back local-flagged, so the rendered text carries the runner's offset
+      // and no fixed literal is portable. Parsing back also proves the VALUE
+      // survived, where a `contains` only proves a date appeared.
+      expect(
+        DateTime.parse(counters['lastReportedAt'] as String).toUtc(),
+        reportedAt,
+      );
+      // Art. 12(1): the reader is told the reporters are withheld. Pinned on
+      // the SENTENCE, not on its type — `isA<String>()` passes for '' and for
+      // a rewrite claiming the opposite.
+      expect(
+        section['data_minimisation'],
+        contains('Who reported you is not included'),
+      );
+      expect(section.containsKey('error'), isFalse);
+    });
+
+    test(
+      'a user who has never been reported gets a null, not a failure',
+      () async {
+        final section = await SocialExportManager(
+          dataExportRepository: _ModerationCountersRepository(null),
+        ).exportModerationCounters('uid-42');
+
+        // Key PRESENCE, not just a null value: dropping the key entirely would
+        // ship a section that never names its own subject, and an `isNull`
+        // assertion cannot tell the two apart.
+        expect(section.containsKey('moderation_counters'), isTrue);
+        expect(section['moderation_counters'], isNull);
+        expect(
+          section['data_minimisation'],
+          contains('Who reported you is not included'),
+        );
+        expect(section.containsKey('error'), isFalse);
+      },
+    );
+
+    test(
+      'a failed read carries a stable token and never the raw exception',
+      () async {
+        final section = await SocialExportManager(
+          dataExportRepository: _ThrowingModerationCountersRepository(),
+        ).exportModerationCounters('uid-42');
+
+        expect(section['error_code'], 'moderation-counters-export-failed');
+        // A failed read must not ALSO present a null, which reads as "you have
+        // never been reported" — a claim a failure is in no position to make.
+        expect(section.containsKey('moderation_counters'), isFalse);
+        final encoded = jsonEncode(section);
+        expect(
+          encoded,
+          isNot(contains(_ThrowingModerationCountersRepository.foreignUid)),
+        );
+        expect(encoded, isNot(contains('create_composite')));
+      },
+    );
+  });
+
   group('SocialExportManager failure envelope (BUT-1721)', () {
     test('a failed friends read carries a stable token and never the raw '
         'exception', () async {
@@ -2187,6 +2266,35 @@ void main() {
       });
     });
   });
+}
+
+/// BUT-2046 follow-up: the moderation-counter section. The repository is faked
+/// so the projection under test is the MANAGER's contract, not Firestore's.
+class _ModerationCountersRepository extends Fake
+    implements FirebaseDataExportRepository {
+  _ModerationCountersRepository(this.counters);
+
+  final Map<String, dynamic>? counters;
+
+  @override
+  Future<Map<String, dynamic>?> exportModerationCounters(String userId) async =>
+      counters;
+}
+
+class _ThrowingModerationCountersRepository extends Fake
+    implements FirebaseDataExportRepository {
+  /// Another person's uid and an index URL — what the failure envelope exists
+  /// for. A message carrying only the requester's own uid would not test the
+  /// rule as written.
+  static const String foreignUid = 'uid-of-another-person-7c1d';
+  static const String leakyText =
+      'PERMISSION_DENIED reading user_moderation/$foreignUid;'
+      ' https://console.firebase.google.com/project/butlery-prod-42/firestore/'
+      'indexes?create_composite=reportHistory';
+
+  @override
+  Future<Map<String, dynamic>?> exportModerationCounters(String userId) async =>
+      throw StateError(leakyText);
 }
 
 /// A capped-section row with a stable, per-index id so a trimmed payload can be

@@ -407,7 +407,14 @@ other suites prove:
   invisible to every suite that fakes the repository or `require()`s the deleter directly. Grep
   the key / the step NAME as the FIRST step of the review. A source-derived TS drift guard does
   not close it — it proves a path is SPELLED, not that any manager calls it (BUT-1732/1957/1992,
-  BUT-1800/1956).
+  BUT-1800/1956). **The `_buildExportBundle` key has now shipped unpinned FOUR times, each
+  round with the previous warnings visible in the same file — treat it as owed, not as a
+  candidate.**
+- **A `firestore.rules` edit owes a run of `test/unit/security/rules_allowlist_drift_test.dart`
+  before any verdict** — its census pins the file's comment-stripped `hasOnly(` population by
+  NUMBER, so ANY new allowlist reddens it, a READ gate included, which the guard's name does
+  not suggest. A change that ran only its own new suites ships red (BUT-2046 follow-up). The
+  census demands a classification; bumping the number is the repair it names as forbidden.
 - A **telemetry constant** added in the same commit as the behaviour it measures (the sibling
   SUCCESS event is pinned, its FAILURE twin is not, emitted from the very `catch` the change made
   reachable) (BUT-1962).

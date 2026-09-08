@@ -36148,3 +36148,78 @@ verified by `git hash-object` == `git rev-parse :<path>`:
 
 **Final:** 35/35 green (4 new + 11 selection-lock + 20 batch-actions), `dart format` 0 changed,
 `flutter analyze --fatal-infos` clean on all six paths.
+
+### 2026-09-08 — BUT-2046 follow-up (moderation counters Art. 15 section): commit-gate review
+
+Trigger: commit-gate review of a staged diff adding `ExportResourceType.userModeration`,
+`FirebaseDataExportRepository.exportModerationCounters` (allowlist projection),
+`SocialExportManager.exportModerationCounters`, one `_buildExportBundle` key, a
+`firestore.rules` read block, and two suites (4 new repository tests, 3 new manager tests).
+Brief said `dart analyze` clean, both suites 59/59, allowlist mutation-probed. Asked to find a
+third vacuous test, three gates having already found two.
+
+Measured findings (no `lib/` writes; the two vacuity claims were settled ANALYTICALLY):
+
+1. **An existing suite was RED as staged, unrun.** `firestore.rules` gained
+   `resource.data.keys().hasOnly(['totalReports','lastReportedAt'])` on the `user_moderation`
+   READ limb. `test/unit/security/rules_allowlist_drift_test.dart`'s census asserts the
+   comment-stripped population: expected `hasOnly(` == 32, actual 33; and
+   `keys().hasOnly` total 13 vs the guarded 7 + 6 knowingly-uncovered. Ran it:
+   `+7 -1`, failing at line 461 with `Expected: <32> Actual: <33>`. A shell `grep -c` says 13
+   both sides because the new call is line-WRAPPED — the Dart regex `\.keys\(\)\s*\.hasOnly\(`
+   matches across the newline, a python re-implementation of the guard's own strip+regex gives
+   33/14. Lesson: a rules edit is a test-suite edit; the census is the only thing that says so,
+   and it is invisible to a per-file review.
+
+2. **`sanitizeForJson` unpinned, and the fixture cannot stage the hazard.** Manager test seeds
+   `{'totalReports': 3, 'lastReportedAt': 'when'}` — a String. `sanitizeForJson` returns an
+   equal map for a map of primitives, so `sanitizeForJson(counters)` and `counters` are
+   indistinguishable to `expect(section['moderation_counters'], {...})`; deleting the call is
+   green. Production writes `lastReportedAt: FieldValue.serverTimestamp()`
+   (`functions/src/feedback/on-report-created.ts`), read back as a `Timestamp`. Blast radius is
+   the WHOLE bundle, not the section: the encode happens in `_buildExportBundle` after every
+   manager's try/catch has returned, so the Timestamp throws at `JsonEncoder.convert` and
+   `exportUserData` rethrows. The sibling poll-vote test 1500 lines up in the SAME file does it
+   correctly (`Timestamp.fromDate(...)` + `isNot(isA<Timestamp>())`) — the local pattern existed
+   and was not reused.
+
+3. **Fourth repeat of the `_buildExportBundle` bundle-key miss.** `moderation_counters` has
+   zero hits in `test/`. `data_export_service_test.dart` already carries three recorded
+   incidents ("the THIRD section to ship without this assertion despite the two warnings above
+   saying exactly why"), each with a measured "dropping the entry left the whole suite passing".
+   The lane is well-worn: that suite drives the real managers over `FakeFirebaseFirestore` and
+   seeds e.g. `reports` directly.
+
+4. `throwsA(anything)` on the ownership refusal. `validateOwnership` throws
+   `PermissionDeniedException` (`permission_validation_mixin.dart:121`), so the type is
+   available. `anything` cannot separate a refusal from a crash — e.g. a `doc.data()!` regression
+   in `_readDoc` would throw on the missing victim document with the guard deleted, and the test
+   stays green. The fixture also seeds the REQUESTER's doc, not the victim's, so nothing proves
+   another person's data did not surface. It does still kill the plain guard-deletion mutant
+   (missing doc -> null -> no throw -> red).
+
+5. **The fake cannot see production's real failure mode.** The rules read limb gates on the
+   document carrying NOTHING BUT the two counters, so the very document the headline repository
+   test stages (`internalRiskScore`, legacy `reportHistory`) is DENIED whole by the server — as
+   ADR-0017's DBA-seat correction records, measured on the emulator. `FakeFirebaseFirestore`
+   enforces no rules, so the projection test is green over a state the server refuses. Keep the
+   test (defence in depth if the rule is ever relaxed) but the untested, unnamed behaviour is what
+   a pre-migration user actually receives: a whole `moderation-counters-export-failed` section.
+
+6. Lifecycle asymmetry: `BaseUnitTest.setupUnit()` in `setUpAll` paired with
+   `TestServiceLocator.reset()` in `tearDown` — tests 2..4 run with the locator torn down.
+   Green today (nothing on this path resolves from it); still a state difference between the
+   first test and the rest.
+
+7. Failure-envelope test does not assert `containsKey('moderation_counters') == false`. The
+   friends test 60 lines below asserts exactly that for `friends`. Sharper here: a null beside a
+   failure reads as "you have never been reported", a claim a failed read cannot make.
+
+8. No Dart test pins `FirestoreCollections.userModeration == 'user_moderation'`. The suite seeds
+   and reads through the same constant, so a value change is self-consistent and green while the
+   Cloud Function and `firestore.rules` keep the old spelling. Subsumed by the better repair in
+   (1): pin EQUALITY between the rules `hasOnly` key set and the Dart projection allowlist —
+   Dart wider means the server denies the whole document, rules wider means undecided fields
+   become owner-readable.
+
+Verdict: fail (3 blocking: 1, 2, 3).

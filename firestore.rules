@@ -3440,6 +3440,56 @@ service cloud.firestore {
       allow read: if isAdmin();
     }
 
+    // ========================================
+    // OWNER-READ MODERATION RECORD (server-written, subject-readable)
+    // ========================================
+    // This ends the admin-only section above: the block below admits an
+    // ORDINARY CLIENT reading their own document, so it cannot sit under a
+    // header whose body says "Admin-only, read-only — clients and non-admins
+    // are denied".
+    //
+    // Keyed on the REPORTED user's uid. The subject reads their own, which is
+    // what makes the Art. 15 export section work at all: the export runs on the
+    // CLIENT SDK, so a section reading a collection with no rules block returns
+    // its failure envelope for every user on every export while the
+    // documentation claims the row ships (BUT-1957).
+    //
+    // The `hasOnly` conjunct is the control, and it is not defensive
+    // decoration. Rules cannot scope a read by FIELD, so the read is instead
+    // gated on the document carrying NOTHING BUT the two counters.
+    //
+    // It fails CLOSED twice over. Before BUT-2046 this document carried a
+    // `reportHistory` array whose entries each named a REPORTER, so on a
+    // document the migration has not yet moved, an ungated owner read hands the
+    // reported person the uid of whoever reported them — measured on the
+    // emulator by the `firestore-rules-tester` gate before any conjunct
+    // existed. And a field nobody has decided about yet (a moderator's uid on
+    // a `lastReviewedBy`, say) is denied the day it is written, rather than
+    // becoming owner-readable because no human noticed. A deny-list of the one
+    // field we know about would have covered the first case and not the second.
+    // Neither needs a promise that anybody ran `admin/migrate-report-history.ts`.
+    //
+    // The `resource == null` arm is not a formality: `user_moderation/{uid}`
+    // exists only once somebody has reported you, so without it the rule
+    // denies every user who never has been — measured on the emulator, where
+    // the first version of this conjunct denied the absent document and every
+    // Art. 15 bundle would have announced itself incomplete. A deref of
+    // `resource.data` on a missing document errors, and an error is a deny.
+    //
+    // The reporters themselves live in the `report_history` subcollection,
+    // which has no block of its own and is therefore denied to everyone, its
+    // own subject included — a subcollection inherits nothing from this rule.
+    //
+    // No write limb: every writer is the Admin SDK (`on-report-created.ts`),
+    // and a client able to write here could edit its own strike count.
+    match /user_moderation/{userId} {
+      allow read: if isOwner(userId)
+                  && (resource == null
+                      || resource.data.keys()
+                          .hasOnly(['totalReports', 'lastReportedAt']));
+    }
+
+
     // Deny all other document access by default
     match /{document=**} {
       allow read, write: if false;

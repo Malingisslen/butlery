@@ -977,3 +977,88 @@ files in the same edit.
   or retried delivery writes a fresh row after the sweep — which the TTL, not the cascade,
   eventually removes.
   BUT-2046, 2026-09-08
+
+
+- **SUPERSEDES the Art. 15 half of the `user_moderation` entry above, same day: the report
+  COUNT IS EXPORTED (2026-09-08).** That entry withholds `totalReports`/`lastReportedAt` on the
+  ground that "disclosing an in-progress moderation count tells a reported person that review
+  is under way", and labels it the weaker of two grounds. It is weaker than that: withholding a
+  subject's OWN data to protect an ongoing process is a GDPR Art. 23 restriction, and Art. 23
+  requires a legislative measure. None was found for this. **Malin reversed her own call the
+  same day, having been told that.**
+  What ships: `user_moderation/{uid}` gains a `firestore.rules` read limb for its own subject,
+  and the export section projects the two counters through an ALLOWLIST. The REPORTERS stay
+  withheld — that half rests on Art. 15(4), which does reach third-party data, and is unchanged.
+  **The rules limb's conjunct is a control rather than decoration.** Rules cannot scope a read by FIELD, and before BUT-2046 this
+  document carried a `reportHistory` array whose entries each named a REPORTER — so a plain owner
+  read on a document the migration has not moved hands the reported person the uid of whoever
+  reported them, which is the exact Art. 15(4) disclosure the other half of this decision exists
+  to prevent. The `firestore-rules-tester` gate MEASURED that on the emulator before the conjunct
+  existed. An un-migrated document is now denied whole, which needs no promise that anybody ran
+  `admin/migrate-report-history.ts`.
+  The first version of this entry justified the limb by asserting the document "holds NOTHING but"
+  the two counters. That was a claim about the WRITER; the collection is what it is about, and
+  three gates found it independently. The sentence is struck rather than reworded.
+  The reporters themselves live in the `report_history` subcollection, which has no block of its
+  own and is therefore denied to everyone including its own subject.
+  **The conjunct is `hasOnly(['totalReports','lastReportedAt'])`, not a deny-list naming
+  `reportHistory`.** The deny-list covers the shape we know about; `hasOnly` also denies the day
+  somebody writes a field nobody has decided about — a moderator uid on a `lastReviewedBy`, say —
+  instead of it becoming owner-readable because no human noticed. Both spellings were measured
+  against six states by the `firestore-rules-tester` gate; their profiles differ on exactly that
+  row.
+  It carries a `resource == null` arm, and that arm is not a formality: the document exists only
+  once somebody has reported you, so without it the rule denies every user who never has been, and
+  the export section would return a FAILURE envelope where it should return "nothing to report" —
+  the same BUT-1957 shape the block exists to prevent, reintroduced by the fix for the previous
+  finding. Two gates measured that independently on the absent document.
+  Pins: UM4 (the subcollection deny, which must never be "simplified" into a wildcard), UM5 (the
+  un-migrated document), UM6 (no write limb), UM7 (the collection-group route), UM8/UM9 (the
+  absent document, owner and stranger), UM10 (the undecided field), and
+  `firebase_data_export_repository_moderation_test.dart` for the projection — which three gates
+  found was executed by NOTHING, because every test faked the repository method it lives in.
+  **The price, stated where the person who will pay it reads:** `hasOnly` couples the read to
+  every WRITER of that document. The day someone legitimately adds a field — the moderator tool
+  writing a `lastReviewedBy`, this entry's own example — the whole document becomes unreadable to
+  its subject and the Art. 15 section fails closed and LOUD, carrying a warning and a
+  `data_completeness` line for every reported user until the rule and the Dart projection are
+  updated together. That is the intended direction, and it is easy to meet as an outage first.
+  The key set lives in three languages — the rule, the Dart projection and the Cloud Function's
+  write payload. The first two are now compared MECHANICALLY by
+  `rules_allowlist_drift_test.dart`, which reads both out of their source files; the writer is
+  still coupled by prose alone, and a key-set assertion over its payload is its own ticket.
+  Three drift directions, and only two are loud: rules wider than the projection leaks a field
+  nobody decided about; the projection wider than rules denies the whole document and fails the
+  section for every reported user. **The third is SILENT** — rules and the writer widen together
+  while the projection does not, and the new field is simply dropped from the bundle with nothing
+  reddening. That is the direction the drift test cannot see, because it compares the two halves
+  that now agree.
+  UM8 was itself VACUOUS when first written: this suite shares one emulator and clears nothing
+  between tests, so an earlier test's seed made "absent" a lie, and the case passed with the null
+  arm deleted. It deletes the document first now.
+  **Deploy order for this change is load-bearing and is NOT the order BUT-2046 states:** the
+  functions (the new writer) go BEFORE the rules, or the old writer is still creating the exact
+  documents the conjunct then denies.
+  ADR-0017 carries the reversal. BUT-2046 follow-up, 2026-09-08
+
+- **A legal hold for open moderation cases is DECIDED and NOT BUILT (2026-09-08).** The
+  BUT-2046 entry says "a reported person can erase their way out of an open moderation review,
+  and no legal hold stops them … not weighed by Malin, because Art. 17 has no exception this
+  build could rely on". **That last clause is false and is retired**: Art. 17(3)(e) covers the
+  open-case window and 17(3)(b) the period once a DSA Art. 17 statement-of-reasons duty is live.
+  DSA Art. 17 sits in Section 2, which Art. 19 does NOT exempt micro/small enterprises from.
+  **Malin's explicit call, 2026-09-08: build the hold.** It is planned (`tasks/todo.md`) and
+  reviewed by a four-seat panel, and it is NOT in this commit — the panel measured it as a
+  larger change than the plan described, and a half-built erasure path is worse than a named
+  gap. Until it ships, the residual stands exactly as the BUT-2046 entry describes it.
+  What the panel added, and what the build must carry: a lawful hold must NOT be expressed as
+  `gdprCompliant: false` (that field means "something went wrong" throughout the cascade, and a
+  disclosed refusal is not that); `probeResidualData` would otherwise flip it false permanently
+  with nothing able to clear it; the hold needs an OUTER TIME CAP independent of case-close,
+  because a case nobody triages never closes; the notice owes the person the Art. 12(4)
+  elements, i.e. the right to complain to IMY and to a judicial remedy; the predicate is
+  `status != 'closed'` and nothing narrower; and the hold as scoped is ONE-DIRECTIONAL —
+  `deleteUserReports`, the reporter leg of `deleteModerationSystemEvents` (ADR-0016, decided
+  hours earlier) and `deleteReportHistoryByReporter` all destroy the same evidence with no
+  status check, so a REPORTER's erasure still empties an open case.
+  BUT-2046 follow-up, 2026-09-08

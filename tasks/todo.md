@@ -1,166 +1,220 @@
-# BUT-2046 — `user_moderation` når raderingen, och `reportHistory` slutar vara en array
+# Modereringen: exportera antalet, och håll kvar underlaget vid öppet ärende
 
-Status: **BYGGD 2026-09-08.** Uppföljning på BUT-2032. Granskad av reducerad panel (DPO, DBA, arkeologen); ADR-0017 för den enda konflikten. Malins fem beslut inskrivna nedan.
-
----
-
-## 1. Mätt i koden i dag
-
-`user_moderation/{contentOwnerId}` skrivs av `functions/src/feedback/on-report-created.ts`
-i samma transaktion som anmälan hanteras:
-
-- **Dokument-id:t är den anmälda personens uid.**
-- `totalReports`, `lastReportedAt` — strike-räknaren som driver femanmälningströskeln.
-- `reportHistory` — en **array av maps**, en post per anmälan, var och en med `reporterId`,
-  alltså **andra personers uid**.
-
-Tre mätningar som avgör designen:
-
-1. **Ingen läser samlingen.** Enda träffarna i hela repot är skrivaren själv och
-   `admin/reset-collection-lists.ts`. Ingen moderatorvy, ingen export.
-   (Admin-dashboarden är en separat app som inte går att greppa härifrån.)
-2. **Ingen `firestore.rules`-post finns.** Samlingen är oåtkomlig för klienten; varje
-   skrivning är Admin SDK.
-3. **`reporterId` inuti en array-av-maps går inte att fråga på.** Att svara "anmäler konto
-   X samma person upprepat?" kräver en läsning av hela samlingen — och en radering av
-   anmälarens uid ur *andra* personers dokument är omöjlig utan samma svep.
-
-Punkt 3 är buggen: **en anmälares uid i någon annans dokument är i dag oåtkomligt för
-varje raderingsväg som inte skannar hela samlingen.**
+Malins två beslut 2026-09-08, båda fattade efter att mina egna skäl visat sig inte hålla.
+Uppföljning på BUT-2032/BUT-2046. **Del A är BYGGD 2026-09-08. Del B är planerad och
+granskad, inte byggd** — panelen mätte den som större än planen beskrev, och en halvbyggd
+raderingsväg är sämre än en namngiven lucka.
 
 ---
 
-## 2. Malins beslut, 2026-09-08
+## 0. Varför det här alls är uppe igen
 
-1. **Släpp brigading-ambitionen.** Anmälarens uid raderas när anmälaren raderar sitt
-   konto, utan ersättande räknare. Hon fick se alternativet (bygg en frågbar
-   anmälar-räknare först, DSA artikel 23) och dess pris: GDPR-luckan står öppen tills
-   det är byggt. Vi förlorar ingen förmåga vi faktiskt har — inget läser datan, och
-   ingen fråga kan ställas mot den i den form den ligger.
-   Detta **omprövar inte** ADR-0015, som avgjorde att frågan skulle ställas separat; det
-   är svaret på den frågan.
-2. **Flytta `reportHistory` till en subsamling.** Samma grepp som BUT-1832/1835 gjorde med
-   `voterIds`: en rad per anmälan i stället för en array. Befintliga rader migreras.
-3. **Artikel 15: hela samlingen undantas — på TVÅ skäl, inte ett.** Anmälarnas identiteter
-   är tredje parts data och skyddas av artikel 15(4). `totalReports` är personens EGEN
-   uppgift om sig själv, och 15(4) når inte dit; det undantas på det svagare skälet att ett
-   pågående anmälningsantal röjer att granskning sker. Malin tog den andra halvan separat
-   2026-09-08, efter att DPO-sätet visat att det första skälet inte täckte den. ADR-0017.
-   De två skälen får inte slås ihop till en mening igen.
+Jag lämnade två poster som "juridik utan svar". Malin frågade varför vi lämnar saker. Båda
+gick att besvara på tio minuter:
 
----
+- **DSA artikel 23** ("åtgärder mot missbruk", som T&S-sätet åberopade för brigading-signalen)
+  **gäller inte mikro- och småföretag** — artikel 19 undantar artiklarna 20-23. Beslutet att
+  inte bygga signalen var alltså aldrig i konflikt med en skyldighet. ADR-0015 citerar den som
+  om den band oss.
+- **DSA artikel 17** (motivering vid moderering) ligger i avsnitt 2 och **gäller även
+  småföretag**. Tillsammans med GDPR artikel 17.3 b (rättslig skyldighet) ger den en rimlig
+  grund att behålla modereringsunderlag trots en raderingsbegäran. Min mening "artikel 17 har
+  inget undantag den här ändringen kunde luta sig mot" var alltså fel.
+- **Att undanhålla personens eget anmälningsantal** är en artikel 23-begränsning (GDPR), och
+  den kräver stöd i lag. Ingen sådan hittad. Artikel 15(4) räcker till anmälarnas identiteter
+  och inte längre.
 
-## 3. Bygget
-
-### 3.1 Ny form
-
-`user_moderation/{contentOwnerId}/report_history/{reportId}` — ett dokument per anmälan:
-`reportId`, `reporterId`, `reason`, `contentType`, `contentId`.
-
-Dokument-id:t **är** `reportId`, vilket ersätter det `arrayUnion` gjorde: en omkörd
-trigger skriver samma dokument igen i stället för att lägga till en dubblett. Idempotensen
-är alltså bevarad genom formen, inte genom en dedupe.
-
-`totalReports` och `lastReportedAt` blir kvar på föräldern — de är räknare, inte
-persondata om tredje part.
-
-### 3.2 Skrivaren
-
-`processReport` skriver `tx.set(historyRef, {...})` i **samma transaktion** som strike-
-räknaren och markören. Ingen ny transaktion, ingen ny felväg.
-
-### 3.3 Raderingen — tre ben, i kaskaden
-
-Placeringen är avgjord av samma sak som i BUT-2032: sonden körs före `auth.deleteUser`,
-triggern efter.
-
-1. **Den erasade är den ANMÄLDA:** radera `user_moderation/{uid}` **och** dess
-   `report_history`-subsamling. Firestore kaskadraderar aldrig subsamlingar, så föräldern
-   ensam räcker inte.
-2. **Den erasade är ANMÄLAREN:** `collectionGroup("report_history").where("reporterId","==",uid)`
-   → radera raderna. Tak med avböj som i BUT-2032.
-3. **Den gamla formen:** ett dokument som ännu inte migrerats bär arrayen. Benet raderar
-   hela dokumentet när den erasade är ÄGAREN (ben 1 täcker det), men en anmälares uid inuti
-   *någon annans* array är oåtkomligt utan totalsvep. **Det är migreringen som stänger
-   det**, inte raderingen — se 3.5.
-
-### 3.4 Sonden
-
-- `collectionGroup("report_history").where("reporterId","==",uid).count()`
-- föräldradokumentets existens plus en `count()` på dess subsamling
-
-Kräver en `fieldOverrides`-post för `report_history.reporterId` med både `COLLECTION` och
-`COLLECTION_GROUP`, exakt formen `poll_votes.voterId` redan har i `firestore.indexes.json`.
-Utan den fallerar frågan — och den fallerar **stängt** i sondens try/catch, alltså som
-falsklarm och aldrig som falsk frisksedel.
-
-### 3.5 Migreringen är bärande, inte kosmetisk
-
-`admin/migrate-report-history.ts`, samma form som `admin/migrate-friend-categories.ts`:
-läs varje `user_moderation`-dokument, skriv en `report_history`-rad per arraypost, ta bort
-`reportHistory`-fältet från föräldern.
-
-Den är det enda som gör en anmälares uid i någon annans dokument raderbart. **Namngiven
-restrisk:** körs den inte, kan ett sådant uid inte nås av någon raderingsväg. Appen är inte
-live, och samlingen är liten.
-
-### 3.6 Register och text
-
-- `reset-collection-lists.ts`: `user_moderation` får `subcollections: ["report_history"]`,
-  och namnet läggs i `KNOWN_SUBCOLLECTION_NAMES`.
-- Artikel 15-undantaget skrivs i `accepted-deviations.md` — **inte** i `EXPORT_EXEMPT`,
-  som är scopad till `USER_SUBCOLLECTIONS` och vars `stale`-check reddnar på en
-  toppnivåsamling (samma sak som BUT-2032 fick lära sig).
-- ADR-0015 superseders inte; den avgjorde att frågan skulle ställas, och det är gjort.
-
-### 3.7 Prov
-
-I kaskadsviten, alla mutationsprovade: ägarfallet (förälder + subsamling), anmälarfallet
-över collection-group, sondens rena/smutsiga par, tak-och-avböj, och att en **annan**
-persons rader överlever varje ben. Kopplingen läggs i den permanenta
-`request-account-deletion.test.ts`-assertionen. Skrivarens nya form provas i
-`on-report-created`-sviten, inklusive att en omkörd trigger inte dubblerar raden.
+Sökningar, inte juridisk rådgivning — men de gör två öppna poster till två beslut.
 
 ---
 
-## 4. Vad det betyder, i klartext
+## 1. Del A — antalet in i artikel 15-exporten
 
-I dag sparar Butlery, för varje person som blivit anmäld, en lista över vem som anmälde
-dem. Den listan städas inte när anmälaren raderar sitt konto — och den ligger i ett format
-som gör den omöjlig att städa. Efter det här ligger varje anmälan som en egen rad, som går
-att hitta och radera, och den försvinner när anmälaren försvinner.
+### 1.1 Vad som exporteras
 
-Vi bygger medvetet ingen funktion för att upptäcka den som anmäler folk i onödan. Den
-funktionen finns inte i dag heller — datan går varken att läsa eller söka i. Om vi vill ha
-den bygger vi den som en riktig funktion, inte som en biprodukt av data vi råkat spara.
+`user_moderation/{uid}` innehåller efter BUT-2046 **bara** `totalReports` och
+`lastReportedAt`. Anmälarna ligger i `report_history`-subsamlingen. Det är precis vad som gör
+den här delen enkel: föräldern kan läsas av sitt eget subjekt utan att röja någon annan.
+
+Sektionen exporterar de två fälten. Ingenting annat.
+
+### 1.2 Rules — och varför sektionen är död utan dem
+
+Exporten körs på **klient-SDK:n**, och `firestore.rules` har i dag **ingen** post för
+`user_moderation` — alltså nekas varje läsning. En exportsektion utan regelblock returnerar
+sitt felkuvert för varje användare vid varje export, medan dokumentationen påstår att raden
+exporteras. Det är BUT-1957 ordagrant.
+
+Nytt block:
+
+```
+match /user_moderation/{userId} {
+  allow read: if isOwner(userId)
+              && (resource == null
+                  || resource.data.keys()
+                      .hasOnly(['totalReports', 'lastReportedAt']));
+}
+```
+
+Ingen skrivning (servern äger dem), och **ingen regel för `report_history`** — en subsamling
+ärver ingenting, default är neka, och det är det som håller anmälarna borta.
+
+Konjunkten kom till under granskningen: utan den lämnar en ägarläsning ut anmälarnas uid ur
+ett dokument migreringen inte flyttat, och `resource == null`-armen behövs för att dokumentet
+bara finns om någon anmält dig.
+
+### 1.3 Regelprov
+
+En `firestore.rules`-ändring triggar `firestore-rules-tester`. Prov som krävs:
+
+1. Ägaren läser sitt eget `user_moderation`-dokument → ALLOW.
+2. Någon annan läser det → DENY.
+3. Ägaren läser sin egen `report_history`-subsamling → **DENY**. Det är hela poängen.
+4. Utloggad → DENY.
+
+Prov 3 är det som dör ensamt om någon senare "förenklar" med en wildcard-regel.
+
+---
+
+## 2. Del B — legal hold vid öppet modereringsärende
+
+### 2.1 Vad "öppet ärende" betyder
+
+Hållet gäller när den raderade är `contentOwnerId` på minst en rad i icke-terminal status.
+Predikatet är `status != 'closed'` — mätt av panelen, se villkor F i avsnitt 6.
+
+### 2.2 Konflikten med BUT-781, som måste lösas först
+
+`anonymizeReportsByContentOwner` nollar `contentOwnerId` när den anmälda raderar sig. Det är
+ett **avgjort beslut**. Ett håll som bevarar underlaget men låter den kopplingen kapas bevarar
+bevis ingen kan koppla till ett ärende — hållet blir teater.
+
+Två vägar, och valet är Malins (se avsnitt 4):
+
+- **(a) Undanta hållna ärenden från anonymiseringen.** `contentOwnerId` står kvar tills ärendet
+  stängs. Snävast möjliga avsteg från BUT-781 — men det ÄR ett avsteg och skrivs som ett.
+- **(b) Ersätt uid:t med en ärendelokal pseudonym** moderatorn kan följa men som inte är ett
+  konto-id. Bevarar kopplingen utan att bevara uid:t; mer kod, och pseudonymen blir en ny
+  identifierare med egen livslängd att besluta om.
+
+### 2.3 Vad hållet gör
+
+`deleteModerationRecord` och `anonymizeReportsByContentOwner` frågar först: finns ett öppet
+ärende? I så fall bevaras det ärendet behöver, och **ingenting annat** — resten av kaskaden
+körs oförändrad.
+
+### 2.4 Beskedet till personen — inte valfritt
+
+En radering som inte fullföljs helt måste kunna förklaras. Kaskadens `failedCollections` duger
+inte: det här är inget fel. Behövs:
+
+- ett eget fält i raderingskvittot som säger att något behållits, på vilken grund, och hur
+  länge (till dess ärendet stängs),
+- och en formulering i appen. Svensk UI-text, kort, utan juridikjargong.
+
+Det är den här biten som gör Del B till mer än ett predikat.
+
+### 2.5 Vad som händer när ärendet stängs
+
+Underlaget måste raderas då — annars är hållet en permanent retention med en tillfällig
+motivering, vilket är precis vad artikel 17.3 inte tillåter. Alternativ:
+
+- en städning i moderatorns "stäng ärende"-väg (deterministisk, exakt utlösande händelse),
+- eller en svepning (ny återkommande jobb-yta).
+
+Rekommendation: den första. Fyrafältstestet för ny automation talar emot ett schemalagt jobb
+för något som har en exakt händelse att hänga på.
+
+---
+
+## 3. Följdändringar i text
+
+- **ADR-0015 superseders** med en daterad post: DSA artikel 23 gäller inte mikro-/småföretag,
+  så T&S-argumentets rättsliga halva föll. Beslutet (bygg inte signalen) står — det vilar nu
+  på produktavvägningen ensam, vilket är en ärligare grund än en felciterad artikel.
+- **ADR-0017 superseders**: antalet exporteras, och skälet som höll inne det saknade stöd.
+- **`ACCEPTED_DEVIATIONS.md`**: posten som säger att ingen legal hold finns skrivs om med den
+  rättsliga grunden — min mening "artikel 17 har inget undantag" citeras och pensioneras.
+
+---
+
+## 4. Frågan i 2.2 är besvarad av panelen
+
+Väg **(a)**: behåll uid:t. Se villkor G i avsnitt 6 — en pseudonym kapar precis det en
+moderator kan göra med ett hållet ärende och köper ingen minimering, eftersom kontot är borta
+ändå. DPO lutade åt pseudonymen men flaggade själv att slutsatsen vilar på ett antagande om
+`audit_logs` som ingen mätt.
+
+---
+
+## 5. Vad det betyder, i klartext
+
+**Del A:** den som begär ut sina uppgifter får veta hur många gånger hen anmälts. Aldrig av
+vem — det skyddas fortfarande, och den delen har det starkaste stödet.
+
+**Del B:** om någon anmälts och ärendet fortfarande granskas, försvinner inte underlaget bara
+för att personen raderar sitt konto. Det är vad DSA räknar med att en plattform kan göra. Men
+personen ska få veta att något behållits, och det måste raderas när ärendet stängs — annars
+har vi bara hittat ett sätt att spara data längre.
 
 
 ---
 
-## 5. Panelens utfall och vad som ändrades
+## 6. Panelens utfall för Del B (fyra säten, alla approve-with-conditions)
 
-Tre säten, alla `approve-with-conditions`. Avförda: T&S (dess fråga var den Malin just
-besvarat), Security (samlingen har ingen klientyta), och de fem övriga som i BUT-2032.
+**Säten:** Legal Counsel, DPO, Trust & Safety, Codebase Archaeologist. Avförda: Product
+Manager och Software Architect (inget produktval, ingen lagerändring), FinOps, Performance,
+Data Analyst, DBA, Security, Support, Vendor — ingen av dem har en stake den här ändringen rör.
 
-**Vad panelen ändrade i planen:**
+### Villkor som måste rida med när Del B byggs
 
-- **Migreringen blev transaktionell per dokument.** Som jag först skrev den — läs arrayen,
-  kopiera, nolla fältet — kunde en anmälan som landar mellan läsningen och nollningen
-  försvinna tyst. `migrate-friend-categories.ts`, förlagan, har ingen levande skrivare att
-  kappas med; den här har det. Skriptet dokumenterar också att det får köras först när den
-  nya skrivaren är deployad.
-- **Tak-och-avböj lades på ÄGARBENET** också, inte bara anmälarbenet. Radantalet där styrs
-  av andra människor, vilket är exakt villkoret som kräver tak i den filen.
-- **Anmälarbenet flyttades till EFTER tier 1**, som `deleteBlockMirrors`, för att vinna
-  samma kapplöpning mot triggern.
-- **Artikel 15-motiveringen delades i två.** Se avsnitt 2, punkt 3 och ADR-0017.
-- **Retentionsbeslut** togs (180 dagar) — tystnad var inget beslut.
+- **A. Ett håll får INTE uttryckas som `gdprCompliant: false`.** Det fältet betyder "något gick
+  fel" genom hela kaskaden. En laglig, redovisad vägran är inte det, och att blanda dem gör en
+  bugg omöjlig att skilja från efterlevnad. Eget fält på kvittot och i auditraden. *(DPO)*
+- **B. `probeResidualData` skulle annars slå om `gdprCompliant` till false permanent** — sonden
+  har två ben som räknar exakt det ett håll medvetet behåller, och flaggan beräknas en gång vid
+  raderingen och skrivs till auditloggen. Ingen kodväg kan rätta den i efterhand. *(arkeologen,
+  mätt i koden)*
+- **C. En yttre tidsgräns oberoende av att ärendet stängs.** Malin är ensam moderator; ett
+  ärende ingen triagerar stängs aldrig, och hållet blir då permanent retention med en
+  tillfällig motivering. Återanvänd 180-dagarskonstanten. *(Legal, DPO, T&S — alla tre)*
+- **D. Beskedet måste bära artikel 12.4:** rätten att klaga till IMY och till rättsligt
+  prövning, utöver vad/varför/hur länge. *(Legal, DPO)*
+- **E. Rättslig grund: 17.3(e) primärt** för fönstret innan beslut (rättsliga anspråk), 17.3(b)
+  sekundärt när DSA-motiveringsplikten faktiskt är levande. Min plan vilade allt på (b), vilket
+  är fel för det tidiga fönstret. *(Legal)*
+- **F. Predikatet är `status != 'closed'`.** Enda terminala statusen — `watchOpenReports()`
+  filtrerar på just det och "actioned" ligger kvar i kön. Behöver inte härledas i bygget: det
+  står redan i `ReportStatus`, i `firestore.rules` och i `report_service.dart`. Ett håll blir
+  en FJÄRDE plats där samma faktum måste hållas i takt. *(T&S, Legal, arkeologen)*
+- **G. Behåll uid:t, inte en pseudonym.** Det moderatorn faktiskt kan göra med ett hållet ärende
+  är att korsläsa strike-räknaren och andra öppna ärenden mot samma person; en pseudonym kapar
+  precis det och köper ingenting, eftersom kontot är borta ändå. *(T&S)*
+- **H. Hållet är ENKELRIKTAT som det är skissat.** `deleteUserReports`, anmälarbenet i
+  `deleteModerationSystemEvents` (ADR-0016, beslutat samma dag) och
+  `deleteReportHistoryByReporter` raderar alla samma bevis utan statuskoll — så en ANMÄLARES
+  radering tömmer ett öppet ärende ändå. Antingen i scope eller uttryckligen utanför, men inte
+  otänkt. *(arkeologen, T&S)*
+- **I. Nytt sammansatt index** `(contentOwnerId, status)` på `reports` — det befintliga är
+  `(status, createdAt)` och tjänar en annan fråga. Diffa mot levande index före deploy, aldrig
+  blint `--force`. *(arkeologen)*
+- **J. Städningen vid stängning kräver en NY server-trigger.** `closeReport()` är en ren
+  klientskrivning; ingen Cloud Function ser den. Och predikatet måste räkna om över ALLA öppna
+  ärenden mot samma person — att stänga ett ärende lyfter inte hållet om ett annat står öppet.
+  *(arkeologen)*
+- **K. Följdfiler planen missade:** `docs/ops/moderation-runbook.md` (som redan beskriver vad
+  som överlever en radering, per radform) och `docs/legal/privacy_policy.md` § retention, som
+  redan listar en 17.3(b)-grund i samma format. *(arkeologen)*
+- **L. Hållet är ett uttryckligt undantag från husregeln** "raderaren är en äkta övermängd av
+  sonden", som filen upprepar dussintals gånger. Det ska skrivas som ett undantag, inte smygas
+  in i koden. *(arkeologen)*
 
-**Namngivna restrisker, alla i avvikelsefilerna:** en anmäld kan radera sig ur en pågående
-granskning och ingen legal hold hindrar det; migreringen är inte klar förrän den KÖRTS
-skarpt; och kapplöpningen med triggern stängs av TTL:en, inte av kaskaden.
+### Vad Del A faktiskt blev
 
-**Mätt:** tsc rent, kaskadsviten 337/337, orkestreringen 4/4, registreringsvakten 20/20,
-workflow-map-lintern OK. Sju mutationssonder röda-sedan-gröna: föräldern raderad före sina
-rader, avstängt tak på ägarbenet, sondbenet på fel fält, anmälarsvepet utan filter,
-borttagen auditstagning, och båda kopplingarna i orkestreraren.
+`user_moderation/{uid}` fick en läsregel för sitt eget subjekt, och exporten en sektion som
+projicerar `totalReports` och `lastReportedAt` genom en allowlist. Subsamlingen `report_history`
+är fortsatt nekad för alla, inklusive sitt eget subjekt — det är UM4 i regelprovet, och det är
+det provet som dör ensamt om någon senare lägger en wildcard-regel.
+
+Mätt mot emulatorn och i Dart-sviterna, med varje ben mutationsprovat — siffrorna står i
+commit-meddelandet, som inte kan falsifieras av nästa ändring i den här filen.

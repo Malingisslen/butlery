@@ -37,6 +37,7 @@ enum ExportResourceType {
   // subcollection `users/{uid}/notifications`. The tag spells the path out so a
   // log line cannot be read as the other.
   userDeliveredNotifications('users/{uid}/notifications'),
+  userModeration('user_moderation'),
   userNotificationPreferences('user_notification_preferences'),
   userFcmTokens('user_fcm_tokens'),
   categoryPreferences('category_preferences'),
@@ -874,6 +875,32 @@ class FirebaseDataExportRepository extends BaseFirebaseRepository<Object> {
     ExportResourceType.userDeliveredNotifications,
     limit: maxDocuments,
   );
+
+  /// `user_moderation/{userId}` — how many times the user has been reported.
+  ///
+  /// PROJECTED to `totalReports` and `lastReportedAt`, through an ALLOWLIST.
+  /// `firebase_data_export_repository_moderation_test` pins that against a
+  /// document carrying more than the two.
+  ///
+  /// The reporters live in the `report_history` subcollection, which
+  /// `firestore.rules` grants no client any read on.
+  ///
+  /// Malin's explicit call, 2026-09-08, REVERSING the exemption she chose
+  /// earlier the same day — see ADR-0017 for the reasoning.
+  Future<Map<String, dynamic>?> exportModerationCounters(
+    String userId,
+  ) async {
+    final raw = await _readDoc(
+      firestore.collection(FirestoreCollections.userModeration).doc(userId),
+      userId,
+      ExportResourceType.userModeration,
+    );
+    if (raw == null) return null;
+    return {
+      for (final key in const ['totalReports', 'lastReportedAt'])
+        if (raw.containsKey(key)) key: raw[key],
+    };
+  }
 
   /// `user_notification_preferences/{userId}` single-doc fetch.
   Future<Map<String, dynamic>?> exportNotificationPreferences(String userId) =>

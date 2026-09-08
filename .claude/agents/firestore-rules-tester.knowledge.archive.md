@@ -4754,3 +4754,203 @@ Process note: `lib/services/account/export/content_export_manager.dart` and
 (worktree mtime 10:02, mid-probe) — the four reviewed files were hash-verified index==worktree,
 so the review graded shipping bytes, but the export section's `data_minimisation` string is
 being rewritten unstaged.
+
+## 2026-09-08 — BUT-2046: `user_moderation` owner-read, and the field the migration has not cleared
+
+Commit-gate review of a staged `firestore.rules` change adding
+`match /user_moderation/{userId} { allow read: if isOwner(userId); }`, so the Art. 15
+export section (`exportModerationCounters`) can read the subject's own strike count from
+the CLIENT SDK. Four new tests, UM1-UM4, in `moderation-rules.test.ts`.
+
+**Verified clean, by grep + one emulator probe:**
+- No other path reaches the collection. The `{document=**}` catch-alls in the file are
+  `audit/`, `_internal/`, `analytics/`, `metrics/` and the terminal deny-all; the
+  `{path=**}/X/{id}` collection-group blocks are members, friend_categories, engagements,
+  comments, ratings, recipes, pings. None matches `user_moderation` or `report_history`.
+- No write limb, and the deny is attributable: the emulator reported
+  `false for 'update' @ L3466`, the terminal `match /{document=**} { allow read, write: if
+  false; }`. Nothing inherits a write.
+- A client `collectionGroup('report_history').get()` is DENIED today, owner included
+  (measured). `firestore.indexes.json` declares a COLLECTION_GROUP index on
+  `report_history.reporterId`, but an index grants no read; the only collection-group
+  reader is the account cascade, which runs under the Admin SDK.
+- `isOwner` is the right helper and matches the export's `.doc(userId).get()` production
+  read shape; a single-doc allow IS the production proof here, unusually (no list query).
+- The rule never dereferences `resource`, so the absent-document read is permitted rather
+  than CEL-erroring — which is what the export needs, since `_readDoc` returns null on
+  `!doc.exists` and distinguishes that from a throw.
+
+**The blocking finding — the safety claim is false for stored data.** The rule's comment,
+both deviations files, the Dart collection constant and the export docstring all say the
+document holds NOTHING but `totalReports`/`lastReportedAt`. That is a claim about the
+CURRENT writer. `on-report-created.ts` stopped appending to the legacy `reportHistory`
+array only in commit 45ac2fc62, the same day; `admin/migrate-report-history.ts` is what
+moves those array entries into the subcollection, it is hand-run, it defaults to a dry run,
+and the repo's OWN deviation entry says the completion evidence is a live run reporting
+zero remaining fields — no such run is recorded anywhere.
+
+Probed on the emulator with the un-migrated shape seeded via `withSecurityRulesDisabled`:
+
+    READ ALLOWED. keys = lastReportedAt,reportHistory,totalReports
+    legacy reportHistory returned to the SUBJECT =
+      [{"reportId":"r1","reporterId":"probe-reporter","reason":"spam"}]
+
+So the new limb hands the reported person the uid of whoever reported them — the exact
+Art. 15(4) disclosure ADR-0017 keeps withholding, arriving one level ABOVE the
+subcollection everybody was watching. `report_history` itself is intact; UM4 is fine and
+its wildcard mutant is a real kill. The export bundle is clean (the projection is an
+allowlist), but the bundle is not the boundary: the grant is document-wide and any client
+`get()` returns the array.
+
+It also falsifies, in the same commit series, the older BUT-2046 entry's sentence that an
+un-migrated reporter uid "is reached by no code path" — this commit is the code path.
+
+**Why no test could see it:** UM1's fixture is built from the current writer's key set
+(`{totalReports, lastReportedAt}`), as is every other fixture in the file. Both rules
+mutants the author ran (remove the block; add a `{document=**}` wildcard) are blind to it,
+because neither changes what the parent document CONTAINS. The missing case is a fixture,
+not a mutant.
+
+**Other gaps filed:** no write-deny test at all, so the comment's "a client able to write
+here could edit its own strike count" is pinned by nothing and a future
+`allow write: if isOwner(userId)` would redden zero tests; no collection-group deny pin;
+and UM3's comment asserts an unrun counterfactual (that `request.auth.uid == userId`
+"alone would let through as null == null") — with `request.auth == null` that spelling
+CEL-errors and denies, and `userId` is a path segment that is never null, so neither
+spelling allows. Same class as the repo's standing lesson about comments asserting what a
+guard CATCHES.
+
+Probe was a throwaway `functions/src/__tests__/zz-probe-legacy.test.ts`, deleted by a
+`trap ... EXIT` in the same Bash call; `git status` re-verified the staged index untouched.
+
+### 2026-09-08, round 2 — the repair for the legacy field denied the ABSENT document
+
+The conjunct added to close round 1 was `isOwner(userId) && !('reportHistory' in
+resource.data)`. It does close round 1: UM5 pins the un-migrated deny and the mutation
+kills UM5 alone. But `resource` is null on a read of a document that does not exist, so
+`resource.data` CEL-errors and the limb denies the absent case — which for this collection
+is every user who has never been reported, i.e. nearly all of them.
+
+Measured, three rulesets over six states (staged file untouched; the two variants were
+copies in the scratchpad, read through a `PROBE_RULES_PATH` env var in a throwaway probe):
+
+| state | A: staged | B: `resource == null \|\| !('reportHistory' in …)` | C: `resource == null \|\| keys().hasOnly([...])` |
+|---|---|---|---|
+| absent doc, owner | DENIED | ALLOWED | ALLOWED |
+| un-migrated doc, owner | DENIED | DENIED | DENIED |
+| migrated doc, owner | ALLOWED | ALLOWED | ALLOWED |
+| future field added, owner | ALLOWED | ALLOWED | DENIED |
+| partial doc (`totalReports` only) | ALLOWED | ALLOWED | ALLOWED |
+| migrated doc, stranger | DENIED | DENIED | DENIED |
+
+Consequence in the app: `_readDoc` does `ref.get()`, the denial throws, and
+`SocialExportManager.exportModerationCounters`'s `catch` returns
+`_failed('Moderation counters', 'moderation-counters-export-failed')`. So the majority
+bundle carries a FAILURE envelope rather than "nothing to report" — the exact BUT-1957
+shape quoted in the rule's own comment as the reason the block exists, reintroduced by the
+conjunct written to close the previous finding. The `catch` also hides it: nothing reddens,
+and the suite cannot see it because every fixture seeds the document first.
+
+`resource == null` creates no existence oracle here: the limb still carries `isOwner`, and
+absent + stranger stayed DENIED under both repairs (measured, column B/C row 1 vs the
+stranger row).
+
+Also answered, on the "any other legacy shape" question: `git log -p --follow` over the
+only writer shows exactly three fields ever written to the parent — `totalReports`,
+`lastReportedAt`, `reportHistory` — and `git log -S user_moderation --all` turns up no
+second writer. So the deny-list of one name is complete TODAY. Column C is nevertheless
+the stronger spelling for a privacy grant whose whole premise is "nothing else on this
+document is disclosable": it fails closed on a field nobody has decided about, which is the
+case the rule's comment used to name in prose and now relies on a human noticing.
+
+Verified clean this round: the block still denies writes at the terminal catch-all (UM6),
+the collection-group route is denied (UM7), the stranger and signed-out denies hold, and
+UM5's mutation kill is real.
+
+### 2026-09-08, round 3 — spelling C shipped; three-mutant grid verified independently
+
+Shipped rule:
+
+    allow read: if isOwner(userId)
+                && (resource == null
+                    || resource.data.keys()
+                        .hasOnly(['totalReports', 'lastReportedAt']));
+
+Re-ran the suite myself: 18/18. Built three mutants as scratchpad COPIES of the rules file
+(the suite gained no env seam, so I ran a `sed`-derived copy of the test file carrying
+`PROBE_RULES_PATH`/`PROBE_PROJECT_ID` defaults, deleted by a `trap` in the same call; the
+`path` import stays used because the substitution is `?? path.resolve(...)`):
+
+| mutant | kills |
+|---|---|
+| M1: drop `resource == null` | UM8 alone (17/18) |
+| M2: `hasOnly` -> `!('reportHistory' in resource.data)` | UM10 alone (17/18) |
+| M3: drop the whole second conjunct | UM5 + UM10 (16/18), UM8 stays green |
+
+M3 is the one the coordinator did not run, and it is what re-attributes UM5: the rule was
+REPLACED between rounds, so UM5's original kill (measured against the deny-list spelling)
+did not carry over on its own. It does hold.
+
+`git rev-parse :<path>` matched `git hash-object <path>` for both reviewed files, so this
+graded the bytes that ship.
+
+UM8 was vacuous as first written — the file shares one emulator and clears nothing between
+tests, so an earlier seed meant "absent" was false and the case passed with the null arm
+deleted. Now it DELETEs the document first. Merged into the emulator-persistence principle:
+an absent-document fixture is a claim about every test that ran before it, and the fix is a
+positive delete plus a null-arm mutant.
+
+One finding left, non-blocking: `exportModerationCounters`'s docstring says the allowlist
+projection means "a field added to that document later is withheld until somebody decides
+otherwise". Under the shipped rule the whole READ is denied for such a document, so the
+section returns its failure envelope and the projection never runs on it — the field is not
+withheld, the section fails. The Dart test named beside the sentence pins the projection
+against a fake with no rules, so it cannot see this. Strike the clause; the projection is
+still worth keeping as the fail-safe if the rule is ever relaxed.
+
+Named consequence, not a defect: the day anyone adds a field to that document, every
+affected user's Art. 15 section becomes a failure envelope rather than partial data. That
+is the fail-closed direction UM10 buys, and the rules comment says so.
+
+### 2026-09-08, round 4 — re-measured at the final bytes; the create limb and the drift guard
+
+Re-ran everything at the shipped bytes (`git rev-parse :<path>` == `git hash-object <path>`
+for both reviewed files). Baseline 18/18, and the grid is now four mutants:
+
+| mutant | kills |
+|---|---|
+| drop `resource == null` | UM8 alone |
+| `hasOnly` -> deny-list | UM10 alone |
+| drop the whole second conjunct | UM5 + UM10 |
+| add `allow create: if isOwner(userId)` | UM6 alone |
+
+The create-limb mutant is the round's real lesson, and it needed a second measurement to
+attribute: run it against a copy of the suite with UM6's new create assertion REMOVED and it
+passes **18/18** — the mutant survives entirely. So a collection with NO write limb still
+owes a create-limb deny of its own: all three original verbs (`set`, `update`, `delete`) ran
+against a SEEDED document, so `set()` evaluated as an UPDATE and the plausible future grant
+(`allow create`, the "let the client initialise its own record" shape) was pinned by nothing.
+It is exploitable rather than theoretical: `on-report-created.ts` reads `totalReports ?? 0`
+and applies `increment(1)`, so a client that creates its own record with a large negative
+count never reaches `MODERATION_THRESHOLD` — and such a document passes the read gate's key
+set, so nothing else notices.
+
+`clearFirestore()` landed in `setup()` and is correctly ordered — BEFORE the `admins/{uid}`
+seed, so the admin fixture survives. It runs once, outside the loop, so it isolates a run
+from the previous run's residue and does NOT clear between tests; the suite's own comment
+says so rather than overclaiming, and UM8/UM9 still delete positively.
+
+`rules_allowlist_drift_test.dart` gained an equality test tying the rules key set to the
+Dart export projection. Verified green (9/9) and certified in six directions by REPLICATING
+its own extraction over mutated buffers in `node` — no `lib/` write, so no risk to a
+concurrent reviewer's bytes. Fires on: a third key in the rules allowlist, a key dropped
+from it, a key added to the Dart projection, the method renamed, the rules block renamed.
+It fails CLOSED on a missing anchor (extraction returns null). Independently re-counted
+`hasOnly(` in the comment-stripped file: 33, matching the assertion.
+
+Process finding for the coordinator, not a rules defect: `docs/onboarding/workflow-map.stale`
+is staged as ADDED, with `functions/src/feedback/on-report-created.ts` as its trigger.
+CLAUDE.md says to re-trace the matching flows, update the map, run the linter and DELETE the
+marker. Committing the marker ships a permanent stale flag over an un-updated map. The
+signature (a hook artefact swept into the index) is what `git-workflow.md` warns about for
+broad `git add`.

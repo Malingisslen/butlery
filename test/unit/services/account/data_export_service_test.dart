@@ -655,6 +655,17 @@ void main() {
           (data['shared_shopping_lists'] as Map).containsKey('error'),
           isFalse,
         );
+        // BUT-2046 follow-up, and the FOURTH section to need this assertion
+        // after three warnings in this very file said why: the manager suite
+        // drives `exportModerationCounters` directly and never sees the bundle,
+        // so dropping the one map entry in `_buildExportBundle` leaves every
+        // Dart suite green while the data subject silently stops being told how
+        // many times they have been reported.
+        expect(data['moderation_counters'], isNotNull);
+        expect(
+          (data['moderation_counters'] as Map).containsKey('error'),
+          isFalse,
+        );
         expect(data['personal_tags'], isNotNull);
         // Social data
         expect(data['friends'], isNotNull);

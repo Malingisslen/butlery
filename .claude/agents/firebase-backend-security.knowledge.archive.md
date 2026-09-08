@@ -9278,3 +9278,181 @@ Knowledge-file delta: extended the dead-spelling bullet's "argued from that scri
 cover a one-time MIGRATION and the deleter-now/export-later asymmetry. The compensating
 retirement (trimming the `rate_limits`/`imports` parenthetical) was REFUSED by the auto-mode
 classifier again, so the file grew ~450 chars and still owes a retirement.
+
+### 2026-09-08 — BUT-2046 follow-up: Art. 15 moderation-counter section + its rules read block [gdpr-export][rules]
+
+Commit-gate review of the staged diff adding `ExportResourceType.userModeration`,
+`FirebaseDataExportRepository.exportModerationCounters` (allowlist projection over
+`totalReports`/`lastReportedAt`), `SocialExportManager.exportModerationCounters`, one
+`DataExportService` wiring line, `FirestoreCollections.userModeration`, the
+`match /user_moderation/{userId} { allow read: if isOwner(userId); }` block, three Dart
+tests and four rules tests (UM1-UM4).
+
+**Verified clean:** the new repository method goes through `_readDoc` -> `_guardSelfExport`
+-> `validateOwnership(requireCurrentUserId(), userId)`, which THROWS
+`PermissionDeniedException` on a mismatch, so a cross-user export is refused client-side and
+again by `isOwner`. The failure envelope uses the file's `_failed` helper (stable sentence +
+`moderation-counters-export-failed`), never `e.toString()`; the section is caught internally
+so `Future.wait(eagerError: true)` cannot fail the bundle; the failure sets both `error` and
+`error_code`, so `DataExportService` renders "could not be exported" and lists it in
+`data_completeness`. No `*_truncated` key is needed (single document). No stale
+`EXPORT_EXEMPT` entry — that map is scoped to `USER_SUBCOLLECTIONS` and `user_moderation` is
+top-level. `AppLogger.error` hands the raw exception to Crashlytics, but the message string
+is a literal and the only uid the path can carry is the requester's own — identical to every
+sibling section in the file.
+
+**BLOCKING 1 — the rules grant's stated safety rests on a migration nobody has run.**
+The block's comment, and the same sentence in `.claude/rules/accepted-deviations.md` and
+`docs/architecture/ACCEPTED_DEVIATIONS.md`, say the grant is "safe to grant only because the
+document holds NOTHING but `totalReports` and `lastReportedAt`". True of today's writer
+(`on-report-created.ts` sets exactly those two, merge). NOT true of stored data: the
+pre-BUT-2046 writer put `reportHistory` — an ARRAY OF MAPS EACH CARRYING `reporterId` — on
+that same parent document, and only `admin/migrate-report-history.ts` clears it
+(`FieldValue.delete()` on the pass that reaches the end of the array). That script is
+hand-run, `--live` gated, and the BUT-2046 entry two paragraphs above the new one says so
+itself: "the migration ... must run LIVE, after the new writer is deployed, before the gap is
+closed". So the new read limb can hand the REPORTED person the uids of everyone who reported
+them — the exact disclosure ADR-0017's surviving Art. 15(4) half exists to prevent, and a
+harm the export's projection does not bound, because a rules grant is not scoped to the
+export. Same class as BUT-2044's "moving a `friendCategories` row GRANTS ITS MEMBERS A READ",
+which was put to Malin; this one was not.
+
+**BLOCKING 2 — the allowlist projection has no test at all.** `grep -rln
+exportModerationCounters test/` returns one file, and both fixtures there
+(`_ModerationCountersRepository`, `_ThrowingModerationCountersRepository`) override the
+repository method the projection lives IN — the test file's own docstring says it pins "the
+MANAGER's contract, not Firestore's". Replacing the projection body with `return raw;` leaves
+the whole suite green. That matters beyond hygiene while Blocking 1 stands: the allowlist is
+the only thing keeping a legacy `reportHistory` array of reporter uids out of the Art. 15
+bundle. UM4 pins the SUBCOLLECTION deny, not the projection, though both deviations entries
+name it as "the pin".
+
+**MEDIUM — the rules block sits under a section header it falsifies.** It was inserted
+between `system_events` and `parse_events`, i.e. inside "ADMIN DASHBOARD READS (admin-only
+aggregate / ops data) ... Admin-only, read-only — clients and non-admins are denied". The new
+block is an owner read by an ordinary client. Fix by MOVING the block, not rewording the
+header (the header is correct about every other entry beneath it).
+
+**MEDIUM — the `data_minimisation` sentence is pinned only as `isA<String>()`.** Every
+sibling section pins a substantive phrase (`contains('profile pictures')`). As staged the
+disclosure could be rewritten to say the opposite with the suite green.
+
+**Answer to "can the future-field hazard be made mechanical":** not in rules (no field
+scoping on reads), but yes on the writer — a key-set assertion in `functions/src/__tests__`
+over the payload `processReport` sets on `user_moderation/{uid}` reddens the day a third
+field joins the document, which is the event the comment describes. Pair it with a Dart test
+of the projection itself.
+
+### 2026-09-08 — same review, round 2: the repair for the round-1 finding denied the empty state [rules][gdpr-export]
+
+Both round-1 blocking findings were genuinely closed. The rules limb gained
+`&& !('reportHistory' in resource.data)`, which denies an un-migrated document whole and
+removes the dependence on a hand-run migration nobody can evidence (UM5 pins it, and the
+`firestore-rules-tester` gate had measured the exposure independently). The projection got
+`test/unit/repositories/firebase_data_export_repository_moderation_test.dart`, backed by
+`FakeFirebaseFirestore` and seeded with `internalRiskScore` AND a legacy `reportHistory`
+array, asserting the EXACT key set — `return raw;` reddens it. The "holds NOTHING but"
+sentence was struck rather than reworded everywhere it appeared.
+
+**The repair introduced a new blocking defect, and it is the one this file already
+predicted.** `resource.data` is dereferenced unconditionally, so a `get` on a document that
+does NOT exist errors and denies — i.e. every user who has never been reported, which is
+every user today. Measured on the emulator against the staged `firestore.rules` (probe in
+the session scratchpad, three runs):
+
+    absent_document: DENIED      clean_document: ALLOWED        (staged rules)
+    without_the_conjunct_absent_document: ALLOWED               (single-variable attribution)
+    with (resource == null || ...): absent ALLOWED, un-migrated DENIED,
+      clean ALLOWED, stranger DENIED, stranger-on-absent DENIED (repair, all five hold)
+
+Consequence on this path specifically: `_readDoc` throws `permission-denied`, the manager's
+catch returns `_failed(...)` with both `error` and `error_code`, and `DataExportService`
+lifts that into `export_metadata.warnings` plus `data_completeness: "Some sections could not
+be exported…"`. So nearly every Art. 15 bundle would falsely announce itself incomplete, and
+the section's own "never reported gets a null, not a failure" behaviour is unreachable in
+production. Neither suite could see it: the 15 rules tests have no absent-document case
+(UM1-UM7 all seed first), and the Dart tests run on `fake_cloud_firestore`, which enforces
+no rules.
+
+Why the existing principle did not catch it in round 1: it was worded "a read rule whose
+ONLY arm dereferences `resource.data`", and this rule's first arm is a perfectly safe
+`isOwner(userId)`. Re-worded to ANY arm, with the safe-arm-plus-absence-conjunct shape named
+as the live one.
+
+Still open from round 1 and NOT closed despite being reported as done: the block still sits
+between `system_events` and `parse_events`, under the `====` header "ADMIN DASHBOARD READS
+(admin-only aggregate / ops data) … Admin-only, read-only — clients and non-admins are
+denied". It gained its own `── banner ──` inside that section, which does not end the
+header's scope. Also new and minor: the repository docstring names the pinning test
+`firestore_data_export_repository_moderation_test`, but the file is
+`firebase_data_export_repository_moderation_test.dart` — a pointer that greps to nothing.
+
+### 2026-09-08 — same review, round 3: the limb measured across eight states; three stale spellings left [rules][decision-records]
+
+The round-2 defect is fixed and then some: the limb is now
+
+    allow read: if isOwner(userId)
+                && (resource == null
+                    || resource.data.keys().hasOnly(['totalReports', 'lastReportedAt']));
+
+Measured myself on the emulator against the staged `firestore.rules`, eight states, all
+correct: absent ALLOWED, both-keys ALLOWED, one-key subset ALLOWED, legacy `reportHistory`
+DENIED, undecided `lastReviewedBy` DENIED, stranger DENIED, signed-out DENIED,
+`report_history` subcollection DENIED. UM8 is written as a DELETE rather than an omitted
+seed, which is the right fix for the vacuity the coordinator's own probe caught — this suite
+shares one emulator and clears nothing between tests. The section-header placement finding
+was closed correctly (the block now sits below `parse_events`), and the coordinator
+volunteered that their earlier "it moved" report had been a false completion claim.
+
+**Left open: three copies of a conjunct spelling the code does not have.**
+`.claude/rules/accepted-deviations.md:992`, `docs/architecture/ACCEPTED_DEVIATIONS.md:3304`
+and `docs/org/adr/ADR-0017…:49` all assert the limb "carries a
+`!('reportHistory' in resource.data)` conjunct". Two of them are 13 lines above their own
+correction (`:1005`/`:3317`, "The conjunct is `hasOnly(...)`, not a deny-list"), so one
+entry states X and then not-X about one security control, with the false copy first and
+bolded. A grep of `firestore.rules` for the named spelling returns nothing. Same class as
+round 1's blocking finding, in the same paragraph, and the fix is a strike of the spelling
+clause — every surviving sentence stays true under either spelling.
+
+**New principle** added beside the `resource.data` one: prefer `hasOnly` over a deny-list on
+a read gate (it denies the NEXT undecided field, and still permits a subset), but record its
+price — the gate is coupled to every writer of the document, so a legitimately added field
+makes the whole document unreadable and the Art. 15 section fails closed and loud for every
+subject until rules and projection move together. That consequence is in the rules comment
+but not in the deviation entry, where the person adding the field would look.
+
+### 2026-09-08 — same review, round 4 (text only): closed [rules][decision-records]
+
+`grep -rn "reportHistory' in resource"` over both deviation files, `docs/org/adr/` and
+`firestore.rules` returns zero. Both surviving sentences read true standalone — "The rules
+limb's conjunct is a control rather than decoration." and, in ADR-0017, "The two are
+separable only after that migration, so an un-migrated document is denied whole." No
+supersession block was written, correctly: no decision moved, only a spelling died.
+
+The rules limb and both suites are byte-identical to the eight states I measured in round 3
+(`sed`-checked against the staged file). The `hasOnly` price paragraph landed in both
+deviation files and is accurate where it could easily not have been: "for every reported
+user" is correctly scoped, because a user with no document takes the `resource == null` arm
+and is unaffected, and the "warning and a `data_completeness` line" claim matches what
+`DataExportService` actually emits from `error` + `error_code`. The three-languages coupling
+is recorded as its own ticket.
+
+One residual, Low and left with the coordinator: the concept-sweep of the struck "the
+allowlist is the layer that decides what reaches the bundle" reached the repository and the
+manager but not `firebase_data_export_repository_moderation_test.dart:7`, which still says
+"The allowlist decides which of the document's fields reach the bundle." Once the rules gate
+permits only a subset of the two keys, the projection is defence in depth — the test remains
+worth having for exactly that reason, but the sentence is the third copy of a claim struck
+twice. Principle extended in place: a key-set gate landing in rules DEMOTES the projection,
+and that stale-comment sweep covers three files, not the two a diff touches.
+
+Verdict: pass. Four rounds, two blocking findings in round 1 (a whole-document grant resting
+on an unevidenced migration; an allowlist executed by nothing), one in round 2 (the repair
+denied the empty state — measured, attributed single-variable, and the repair verified across
+five states), one in round 3 (three copies of a conjunct spelling the code did not have).
+
+Addendum, same day: the round-4 residual is closed by strike —
+`firebase_data_export_repository_moderation_test.dart` line 7 is deleted, the paragraph ends
+at "…left both suites green", and the surviving sentences read true standalone (the
+following paragraph's subject is the test file, so it inherits nothing from the removed
+line). Third copy of a claim struck twice; the concept sweep is what missed it.

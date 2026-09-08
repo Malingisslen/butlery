@@ -52,6 +52,12 @@ abstract final class FirestoreCollections {
   /// Written only by the Admin SDK (win-back job, activity digest); read by the
   /// GDPR export and erased by the account-deletion cascade.
   static const String userDeliveredNotifications = 'notifications';
+
+  /// The moderation strike record, keyed on the REPORTED user's uid. The
+  /// reports themselves live in its `report_history` subcollection, which no
+  /// client may read (BUT-2046).
+  static const String userModeration = 'user_moderation';
+
   static const String userNotificationPreferences =
       'user_notification_preferences';
   static const String userFcmTokens = 'user_fcm_tokens';

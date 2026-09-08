@@ -287,6 +287,9 @@ class DataExportService extends BaseService {
       // omitted (Art. 15 right-of-access). `group_weekly_menu_plans` wires in
       // the already-implemented-but-orphaned ContentExportManager method.
       'reports': _socialManager.exportReports(userId),
+      // The other side of the same subject: reports FILED by them above,
+      // reports ABOUT them here (BUT-2046 follow-up, 2026-09-08).
+      'moderation_counters': _socialManager.exportModerationCounters(userId),
       'pings': _socialManager.exportPings(userId),
       'realtime_recipes': _contentManager.exportRealtimeRecipes(userId),
       'ingredient_suggestions': _contentManager.exportIngredientSuggestions(

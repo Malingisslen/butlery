@@ -303,6 +303,16 @@ name which doc each end touches before approving it.
   admin-only collection-group rule can make "no match block" a false claim; word it "no
   rule grants a CLIENT this read." A denied read inside a shared `try` DISCARDS sibling
   reads already collected — give each probe in a multi-read section its own inner try.
+  The MIRROR hazard when that block is finally added: a read grant covers the whole
+  DOCUMENT, so "safe because it holds nothing but X and Y" is a claim about STORED data,
+  never about today's writer. Open the writer's history — a field a pre-migration writer
+  put there (an array of maps naming third parties is the recurring shape) survives until a
+  one-time script is RUN LIVE, and a hand-run script's effect is a premise, not a fact. A
+  first-ever client read of such a collection is therefore a NEW third-party disclosure and
+  needs its own recorded decision, exactly like a migration that re-homes rows onto a
+  rules-covered path. Grade a rules SECTION HEADER as a universal over the blocks beneath
+  it too ("admin-only, clients denied"), and MOVE a block that falsifies it rather than
+  rewording the header.
 - A DETERMINISTIC COMPOSITE DOC ID (`{parentId}_{uid}`) is an identity claim only if
   something binds body to path (models parse identity from the body; the cheap rule pins
   only the path). Require both: the rule concatenates the id, and the repository's
@@ -316,8 +326,26 @@ name which doc each end touches before approving it.
   `consentVersion == currentConsentVersion` (a re-grant is a `create()`, so without that it
   can re-date a stale record). Read the stored doc directly, never `exists()` (swallows a
   failed read as false).
-- A read rule whose ONLY arm dereferences `resource.data` DENIES a document that does not
-  exist — `resource` is null, the deref errors, and an error is a deny. That kills the empty
+- ANY arm that dereferences `resource.data` DENIES a document that does not exist —
+  `resource` is null, the deref errors, and an error is a deny. Do not read this as being
+  about the ONLY arm: the live shape is a SAFE arm (`isOwner(userId)`) that later gains a
+  field-ABSENCE conjunct (`!('legacyField' in resource.data)`) to fence off an un-migrated
+  document, which then denies the empty state too — i.e. every user the collection has no
+  row for, usually the overwhelming majority. On an Art. 15 path that is not a quiet
+  degrade: `_readDoc` throws, the section returns its failure envelope, and the bundle
+  announces itself incomplete for nearly everyone. Repair is `(resource == null || ...)`;
+  the test set for such a conjunct is FOUR cases, and the absent one is the one that gets
+  written last — absent, legacy-shaped, clean, stranger. `fake_cloud_firestore` enforces no
+  rules, so the Dart suite asserting "a user with no row gets null" passes either way. The
+  absent case is also where a shared-emulator suite goes VACUOUS: nothing clears documents
+  between tests, so "absent" must be a DELETE in the test body, not an omitted seed.
+  Prefer `resource.data.keys().hasOnly([...])` over a deny-list naming the one legacy field
+  — it denies the next undecided field the day it is written instead of waiting for a human
+  to notice (`hasOnly` still permits a SUBSET, so a partially-written document reads fine).
+  Its price, which belongs in the deviation entry rather than only in the rule: the read
+  gate is now coupled to EVERY writer of that document, and the day a legitimate field is
+  added the whole document goes unreadable, so an Art. 15 section fails closed and loud for
+  every subject until rules and projection are updated together. That kills the empty
   state and every read-before-create flow (`readOrBuild*`), and it looks like "you are not a
   member" to real members. Path-gated rules (`planId.matches('^'+uid+'_')`) are immune. The
   `(resource == null || <membership>)` repair's residual runs the OPPOSITE way to how it is
@@ -455,7 +483,15 @@ name which doc each end touches before approving it.
   field and the list then drops the requester's OWN content — and check what the list is keyed
   to: a Dart field list mirroring a TypeScript interface in `functions/src` is coupled by
   nothing but a comment, so grep for a test asserting the two agree before crediting the
-  coupling. Word that sentence as WHAT is
+  coupling. Check the allowlist is PINNED at all: a section test that fakes the repository
+  method the projection lives in has faked away the projection itself, so replacing the
+  list with `return raw;` stays green — grep the projecting METHOD's name across `test/`,
+  and note the fail-closed direction is mechanical only if a writer-side key-set assertion
+  reddens when a new field joins the document. If a key-set gate later lands in
+  `firestore.rules`, the projection DEMOTES to defence in depth, and every comment calling
+  it "the layer that decides what reaches the bundle" goes stale in that same commit —
+  sweep the CONCEPT across repository, manager and test header, not the two files the diff
+  happened to touch. Word that sentence as WHAT is
   withheld, never WHOSE data it is: a moderator's free-text note ABOUT the requester is the
   requester's own personal data by any reading, so telling them it "concerns another person"
   is an Art. 12(1) defect — and on a collection with no rows nobody can measure whose data it
