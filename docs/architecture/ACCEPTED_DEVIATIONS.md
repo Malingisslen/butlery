@@ -3288,6 +3288,15 @@ neither passed an `auditRepository` at all.
   script existing: that is precisely the BUT-2010/BUT-2040 failure, where a written-but-unrun
   script was treated as having cleared what it never touched. The completion evidence is a
   live run reporting zero remaining `reportHistory` fields.
+  **RAN LIVE 2026-09-09, after the writer deploy:**
+  `{"mode":"live","scanned":0,"moved":0,"skippedExisting":0,"emptied":0,"failures":[]}`.
+  Measured against butlery-app-1 immediately before it: `user_moderation` held 0 documents,
+  0 carrying a legacy `reportHistory` array, and `reports` held 0 rows. The residual is
+  therefore closed by there being nothing to migrate rather than by the script having moved
+  anything — the gap was real in the code and empty in the data. The output is attributed,
+  not reproducible from this repo: a hand run, committed nowhere.
+  Deploy order held: indexes (waited to READY), then functions
+  (`onReportCreated`, `requestAccountDeletion`, both `ACTIVE`), then rules, then this.
   BUT-2046, 2026-09-08
 
 

@@ -976,6 +976,14 @@ files in the same edit.
   the gap is closed; and `onReportCreated` has no ordering relationship to deletion, so a late
   or retried delivery writes a fresh row after the sweep — which the TTL, not the cascade,
   eventually removes.
+  **The migration RAN LIVE on 2026-09-09, after the writer deploy, and moved nothing:**
+  `{"mode":"live","scanned":0,"moved":0,"skippedExisting":0,"emptied":0,"failures":[]}`.
+  Measured immediately before it, against butlery-app-1: `user_moderation` held 0 documents,
+  0 of them carrying a legacy `reportHistory` array, and `reports` held 0 rows. So the second
+  residual is closed by there being nothing to migrate rather than by the script having moved
+  anything — the gap was real in the code and empty in the data, which is the order you want.
+  That output is attributed, not reproducible from this repo: it was a hand run, committed
+  nowhere. The other two residuals stand unchanged.
   BUT-2046, 2026-09-08
 
 
