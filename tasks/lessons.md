@@ -2511,8 +2511,10 @@ Example: lib/services/menu/parser/text_normalizer.dart _noWordBefore/_noWordAfte
   already did ("do not judge it, do not summarise it — the caller classifies"). And close
   such a gap in both directions: the invented path is the visible failure, the OMITTED one
   is the dangerous failure, because an under-reported list silently shrinks what gets
-  reviewed and committed. Fixed in the delivery plugin (`ac8f010`), pinned by S34/S34b/S34c.
-  Same shape still open in that engine's `precondition` step.
+  reviewed and committed. Fixed in the delivery plugin (`ac8f010`), pinned by S34/S34b/S34c, and in
+  the `precondition` step (`9899e70`, S35/S35b/S35c/S35d) — where the omitted path
+  is the expensive direction, because a dirty file left out of the summary lets
+  `git add -A` sweep somebody's in-flight work into a sprint commit.
 
 ### [Testing] A service wrapped in executeServiceOperation makes a stubbed-repo test green without ever calling the repo
 - **Date**: 2026-08-23 (BUT-1937)
