@@ -118,8 +118,8 @@ async function run_(): Promise<void> {
   //     with the same function and a second argument, and THIS is the only
   //     place that argument is pinned — a unit test on the function itself
   //     stays green when the second call site is deleted.
-  const legacySentRef = db.collection("friend_requests").doc(`legacy-sent-${RUN}`);
-  const legacyCtrlRef = db.collection("friend_requests").doc(`legacy-ctrl-${RUN}`);
+  const legacySentRef = db.collection("friend_requests").doc(`legacy-sent-${RUN}`); // LEGACY-SWEEP-OK
+  const legacyCtrlRef = db.collection("friend_requests").doc(`legacy-ctrl-${RUN}`); // LEGACY-SWEEP-OK
   await legacySentRef.set({ fromUserId: victim, toUserId: otherUser, message: "hej" });
   await legacyCtrlRef.set({ fromUserId: friend, toUserId: otherUser, message: "hej" });
 

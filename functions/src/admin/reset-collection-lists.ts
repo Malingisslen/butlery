@@ -108,7 +108,7 @@ export const COLLECTIONS_TO_DELETE: CollectionTarget[] = [
   // just by key. Swept by `cleanupSocialRequests` per account since BUT-2044;
   // this entry is the separate whole-collection sweep, which the per-uid step
   // does not cover.
-  { name: "friend_requests" },
+  { name: "friend_requests" }, // LEGACY-SWEEP-OK
   { name: "group_invitations" },
   {
     name: "conversations",

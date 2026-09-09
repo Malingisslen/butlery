@@ -98,7 +98,7 @@ async function main(): Promise<void> {
     "friend_requests/strangers": { fromUserId: OTHER, toUserId: "third", message: "hej" },
   };
   const db = fakeDb(rows);
-  const n = await cleanupSocialRequestsWithDb(db, UID, "friend_requests");
+  const n = await cleanupSocialRequestsWithDb(db, UID, "friend_requests"); // LEGACY-SWEEP-OK
 
   check("a request the user SENT is erased", rows["friend_requests/sent"] === undefined);
   check("a request the user RECEIVED is erased", rows["friend_requests/received"] === undefined);

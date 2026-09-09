@@ -764,7 +764,7 @@ async function cleanupFriendshipsAndDecrementCounts(
  * (2026-03-24) with no migration. Not in `Collections` because nothing may
  * start writing it — it exists here only to be swept (BUT-2044).
  */
-const LEGACY_FRIEND_REQUESTS = "friend_requests";
+const LEGACY_FRIEND_REQUESTS = "friend_requests"; // LEGACY-SWEEP-OK
 
 /**
  * Clean up social requests (renamed from friend_requests in BUT-761) involving

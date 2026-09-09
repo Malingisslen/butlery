@@ -115,6 +115,35 @@ const TARGETS: {
     writer: "functions/src/feedback/on-report-created.ts",
     stamp: /expireAt:\s*admin\.firestore\.Timestamp\./,
   },
+  // BUT-2046 — the reporter-side rows moved out of `user_moderation.reportHistory`
+  // into a subcollection, and got a retention with them. TWO entries, because
+  // two writers stamp the field: the live trigger and the one-shot migration.
+  // Anchoring only the first would leave the second free to rename the key
+  // while this suite stays green and migrated rows never expire — the same
+  // hole the two `activeUsers` entries below exist to close.
+  //
+  // Both anchors are scoped to their own write rather than to the file: the
+  // live writer stamps the identical `expireAt: admin.firestore.Timestamp.`
+  // shape for `report_processing_markers` a few lines below, so the shared
+  // regex used above would pass without the report_history write existing at
+  // all. The bound is the next `tx.set(` and not a character count — a count
+  // goes vacuous the day an intervening comment shrinks, silently.
+  {
+    group: "report_history",
+    field: "expireAt",
+    retention: "180d",
+    writer: "functions/src/feedback/on-report-created.ts",
+    stamp:
+      /collection\("report_history"\)(?:(?!tx\.set\()[\s\S])*?expireAt:\s*admin\.firestore\.Timestamp\./,
+  },
+  {
+    group: "report_history",
+    field: "expireAt",
+    retention: "180d",
+    writer: "functions/src/admin/migrate-report-history.ts",
+    stamp:
+      /collection\(CHILD\)(?:(?!tx\.set\()[\s\S])*?expireAt:\s*admin\.firestore\.Timestamp\./,
+  },
   {
     group: "system_ip_audit_caps",
     field: "expireAt",
@@ -138,11 +167,8 @@ const TARGETS: {
   // to rename the field while this suite stays green and shopping-presence rows
   // silently stop being reaped. That is the exact hole the suite exists to
   // close, reached from the one direction a per-collection list does not cover.
-  // Every entry above names a single STAMPING writer because its collection
-  // has one. Not a single writer full stop — `scheduled_notifications` is also
-  // updated by `deliver-scheduled-notifications.ts`, and three of the five are
-  // deleted from by `on-user-deleted.ts`. What this suite anchors is whoever
-  // sets the EXPIRY FIELD, which is the only writer a renamed field can break.
+  // What this suite anchors is whoever sets the EXPIRY FIELD, which is the only
+  // writer a renamed field can break.
   {
     group: "activeUsers",
     field: "expiresAt",
@@ -154,7 +180,8 @@ const TARGETS: {
 ];
 
 /**
- * Every TTL policy declared today: 13 pre-existing + 2 (BUT-1699) + 4 (BUT-1792).
+ * Every TTL policy declared today: 13 pre-existing + 2 (BUT-1699) + 4 (BUT-1792)
+ * + 1 (BUT-2046, `report_history`).
  *
  * The SET, not just the count. A count catches a `--force` prune (net loss),
  * which is the main threat — but it stays green when one entry is deleted and
@@ -165,9 +192,10 @@ const TARGETS: {
  * 13 of these were live and ACTIVE before the BUT-1699 deploy, and the 2 that
  * ticket added went from absent to present after it — which is also the
  * empirical proof that declaring in this file is what creates a policy. The 4
- * BUT-1792 entries have NOT been checked against a project: they are declared
- * here and become real on the next `firebase deploy --only firestore:indexes`.
- * Do not extend the 2026-07-31 verification to cover them.
+ * BUT-1792 entries have NOT been checked against a project, and neither has the
+ * BUT-2046 one: they are declared here and become real on the next
+ * `firebase deploy --only firestore:indexes`. Do not extend the 2026-07-31
+ * verification to cover them.
  */
 const EXPECTED_TTL_GROUPS = [
   "activeUsers",
@@ -184,6 +212,7 @@ const EXPECTED_TTL_GROUPS = [
   "notification_opened_events",
   "notification_send_events",
   "parse_events",
+  "report_history",
   "report_processing_markers",
   "rate_limits",
   "scheduled_notifications",
@@ -224,7 +253,7 @@ function ttlPoliciesDeclared(): void {
       ? fs.readFileSync(writerPath, "utf8")
       : "";
     record(
-      `${target.writer} actually STAMPS ${target.field} (not merely mentions it)`,
+      `${target.writer} actually STAMPS ${target.field} for ${target.group} (not merely mentions it)`,
       target.stamp.test(src),
       src === ""
         ? `writer not found at ${target.writer} — the path moved, so this policy may now target a field nothing stamps`
