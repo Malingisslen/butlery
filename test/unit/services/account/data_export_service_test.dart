@@ -1907,38 +1907,36 @@ void main() {
       });
     });
 
-    group('FirebaseDataExportRepository — direct queries (BUT-748)', () {
+    group('FirebaseDataExportRepository — direct queries (BUT-2018)', () {
       test(
-        'exportIncomingBlocks queries canonical `blockedId` field',
+        'exportOutgoingBlocks returns only the blocks this user placed',
         () async {
-          // BUT-748: prior code queried `blockedUserId`, returning zero rows
-          // because FirebaseBlockRepository writes `blockedId`. This test
-          // would have failed under the old field name.
+          // BUT-2018: the incoming direction has no export method at all, so
+          // this is the layer where an incoming row could still reach the
+          // bundle — by the outgoing query matching on the wrong field. The
+          // rows below differ only in which field carries the requester's
+          // uid.
           final repo = FirebaseDataExportRepository(
             firestore: fakeFirestore,
             authRepository: mockAuthRepository,
           );
 
-          await fakeFirestore.collection('blocks').doc('in1').set({
-            'blockerId': 'other-user',
-            'blockedId': testUserId,
-          });
-          await fakeFirestore.collection('blocks').doc('in2').set({
-            'blockerId': 'another-user',
-            'blockedId': testUserId,
-          });
-          // Outgoing — must NOT appear in incoming results.
           await fakeFirestore.collection('blocks').doc('out1').set({
             'blockerId': testUserId,
             'blockedId': 'someone-else',
           });
+          await fakeFirestore.collection('blocks').doc('in1').set({
+            'blockerId': 'other-user',
+            'blockedId': testUserId,
+          });
 
-          final incoming = await repo.exportIncomingBlocks(testUserId);
+          final outgoing = await repo.exportOutgoingBlocks(testUserId);
 
+          expect(outgoing, hasLength(1));
           expect(
-            incoming,
-            hasLength(2),
-            reason: 'incoming blocks where blockedId == userId',
+            json.encode(outgoing),
+            isNot(contains('other-user')),
+            reason: 'a blocker uid in the bundle is what BUT-2018 removed',
           );
         },
       );

@@ -4330,22 +4330,19 @@ async function scenario_implausibleMirrorCountDeclines(): Promise<void> {
 }
 
 /**
- * BUT-1917: the block mirror's export exemption rests on `incoming_blocks`, and
- * this is what stops the two drifting apart in silence.
+ * BUT-2018: the block mirror's export exemption and the absent `incoming_blocks`
+ * section are two halves of one decision, and this is what stops them drifting.
  *
- * `EXPORT_EXEMPT.block_mirror` says the mirror need not be exported because the
- * bundle already reproduces the same facts under `incoming_blocks`, which reads
- * the `blocks` collection the mirror is derived from. That is an argument about
- * content identity inside ONE bundle — but it is only true while that section
- * exists. Malin DECIDED on 2026-09-05 (BUT-2018) that `incoming_blocks` should
- * stop telling a requester exactly who blocked them, so the section this
- * exemption leans on is one a decision already taken will remove. Not built
- * yet, which is the only reason the premise still holds.
+ * Malin decided on 2026-09-05 that an Art. 15 bundle must not tell a requester
+ * who blocked them. `EXPORT_EXEMPT.block_mirror` withholds the server's
+ * projection of that fact; `SocialExportManager.exportBlocks` withholds the
+ * `blocks` rows it derives from. Either one shipping without the other hands
+ * over the same disclosure through the other door.
  *
  * Bound by a test rather than by prose because prose is exactly what would stay
- * behind, still reading as a decided call, on the day the section goes.
+ * behind, still reading as a decided call, on the day the section returns.
  */
-async function scenario_blockMirrorExemptionRestsOnIncomingBlocks(): Promise<void> {
+async function scenario_blockMirrorExemptionRestsOnTheSameDecision(): Promise<void> {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const fs = require("fs");
   // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -4364,6 +4361,14 @@ async function scenario_blockMirrorExemptionRestsOnIncomingBlocks(): Promise<voi
     `EXPORT_EXEMPT keys: ${JSON.stringify(Object.keys(exempt))}`,
   );
 
+  check(
+    "…and its reason is the decision, not redundancy with a live section",
+    (exempt[Collections.blockMirror] ?? "").includes("BUT-2018"),
+    "`EXPORT_EXEMPT.block_mirror` must argue the withholding on Malin's " +
+      "2026-09-05 decision. A reason resting on `incoming_blocks` being " +
+      "exported describes a bundle that no longer exists.",
+  );
+
   const managerPath = path.join(
     repoRoot,
     "lib",
@@ -4375,14 +4380,22 @@ async function scenario_blockMirrorExemptionRestsOnIncomingBlocks(): Promise<voi
   const manager = fs.readFileSync(managerPath, "utf8") as string;
 
   check(
-    "…and the section its reasoning depends on is still exported",
-    manager.includes("'incoming_blocks'"),
-    "`EXPORT_EXEMPT.block_mirror` argues the mirror is redundant because the " +
-      "bundle reproduces the same uids under `incoming_blocks`. That section " +
-      "is gone from social_export_manager.dart, so the exemption now excuses " +
-      "the ONLY copy of those facts. Revisit it (BUT-2018) rather than " +
-      "re-pointing this assertion.",
+    "…and the section the same decision removed has not come back",
+    // Dart has no backtick literal, so a backticked mention in a doc comment
+    // is deliberately NOT a match — that file's own comment names the token.
+    !/['"]incoming_blocks['"]/.test(manager),
+    "`social_export_manager.dart` names an `incoming_blocks` key again. That " +
+      "is the half of BUT-2018 the exemption above assumes is gone, so the " +
+      "bundle now discloses who blocked the requester while the exemption " +
+      "claims the decision covers it. Revisit both, or neither. This reads " +
+      "the source as text, so it sees the quoted key and not the behaviour: " +
+      "a return under some other key name is caught by nothing here and by " +
+      "nothing on the Dart side.",
   );
+
+  // The guard is only as live as its CI trigger: it reads a Dart file, so the
+  // workflow must re-run it when that file changes.
+  assertGuardTriggersCoverItsDartInputs(repoRoot, [managerPath]);
 }
 
 /**
@@ -7236,7 +7249,7 @@ async function main(): Promise<void> {
   await scenario_probeSeesLeftoverBlockMirrors();
   await scenario_blockMirrorsLoseTheErasedUid();
   await scenario_implausibleMirrorCountDeclines();
-  await scenario_blockMirrorExemptionRestsOnIncomingBlocks();
+  await scenario_blockMirrorExemptionRestsOnTheSameDecision();
   await scenario_blocksAreErasedInBothDirections();
   await scenario_probeSeesLeftoverBlocks();
   await scenario_openCaseHoldsTheModerationRecord();

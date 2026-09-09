@@ -2962,6 +2962,19 @@ neither passed an `auditRepository` at all.
   also kill the Art. 15 `incoming_blocks` section, not just the ballot strip. That section is
   the one BUT-2018 already decides to remove — so the two questions are the same question,
   and should be put to her together.
+  **SUPERSEDED 2026-09-09 by BUT-2018, which is built.** `SocialExportManager.exportBlocks`
+  returns only `outgoing_blocks`, and `FirebaseDataExportRepository.exportIncomingBlocks` is
+  deleted. Retired verbatim: "That decision is recorded on the
+  ticket and is NOT yet built, so the export still ships the section today." Retired verbatim:
+  "the split it offers Malin (`allow get` both
+  directions, `allow list` blocker-only) would
+  also kill the Art. 15 `incoming_blocks` section, not just the ballot strip. That section is
+  the one BUT-2018 already decides to remove — so the two questions are the same question,
+  and should be put to her together." The split now costs the ballot strip alone. Retired
+  verbatim: "`FirebaseDataExportRepository.getIncomingBlocks`
+  (`lib/repositories/firebase/firebase_data_export_repository.dart:687`)" — the method was
+  named `exportIncomingBlocks` and no longer exists. The correction's own point stands: the
+  enumeration capability predates BUT-1917 and that ticket widened no permission.
 
 - **Making the tally two-directional WIDENS an existing provenance gap on the group menu, and
   that is named rather than left to be discovered (BUT-1917, 2026-09-05).** `closePoll`
@@ -3624,3 +3637,53 @@ neither passed an `auditRepository` at all.
   the two above on purpose: conflating them is how a working pin gets deleted as vacuous. The Dart pins were probed in the
   earlier round; the widget suite's date pair was not re-probed after the fix round.
   BUT-2046 follow-up, 2026-09-09
+
+- **The Art. 15 bundle does NOT report who has blocked the requester — not the uids, not a
+  count (BUT-2018, 2026-09-05).** `SocialExportManager.exportBlocks` returns only
+  `outgoing_blocks`, the blocks this user PLACED; `FirebaseDataExportRepository.exportIncomingBlocks`
+  is deleted rather than left callable, because dead code that looks callable is how a removed
+  section returns.
+  **Malin's explicit call, 2026-09-05**, over the two alternatives she was shown: keeping the
+  uids unredacted with a dated entry here, and keeping a bare count without the uids. She chose
+  the strictest of the three. **What she was NOT shown, stated because an attribution is a claim
+  about a person no test can hold:** no reason is recorded for refusing the count specifically,
+  and the argument that would have supported it was not put to her — a count is not one fact but
+  a series, so a requester who exports twice reads the DIFFERENCE against what they did in
+  between, which can re-identify the blocker the uids were withheld to protect. That argument is
+  the review panel's, made after the decision, and it is written here so nobody later reads it
+  back as hers.
+  The basis is Art. 15(4): the right to a copy may not adversely affect the rights and freedoms
+  of others, and a block is placed by someone wanting distance from — often — the very person now
+  requesting the copy. Decided on the `blocks` collection's own facts. NOT derived from BUT-1450,
+  BUT-1732 or BUT-1772, each of which says in its own text that arguing across collection
+  boundaries is the error it exists to record.
+  **The omission is STATED in the section's `data_minimisation` line, and that line is emitted on
+  every path including the failure one.** Two separate requirements, and the second is the
+  control: an omission the subject cannot see is an Art. 12(1) gap rather than a minimisation
+  decision, and a note that appeared — or read differently — only when somebody HAD blocked them
+  would reconstruct the withheld fact from its own presence. `exportBlocks` issues no query
+  against the incoming direction at all, so it cannot know either way; the byte-identical note
+  across an empty read, a populated one and a refusal is pinned.
+  **`EXPORT_EXEMPT.block_mirror` is RE-ARGUED by this change, not inherited.** It previously
+  excused the server's projection as redundant, retired verbatim: "the SAME facts the bundle
+  already reproduces under `incoming_blocks`, which reads the `blocks` collection this mirror
+  is derived from". That premise dies with the section. The mirror is now withheld
+  by the SAME decision, which is about the FACT and therefore reaches every store of it: withholding
+  the source while exporting the copy would hand over the disclosure through a second door. The
+  guard test is inverted with it (`scenario_blockMirrorExemptionRestsOnTheSameDecision`): it now
+  fails if the section COMES BACK, so the two halves cannot drift apart in silence.
+  **Named residual, and the reason this is a disclosure removal rather than a closed door:** the
+  `blocks` read rule still permits `blockedId == request.auth.uid`, because
+  `FirebaseBlockRepository`'s three list queries need it for BUT-1917's ballot strip. A client —
+  the app's own code, or a hand-rolled one — can therefore still enumerate exactly who blocked it,
+  and `public_profiles` resolves each uid to a name. What BUT-2018 removes is the export handing
+  that list over as a document. Do not read this entry as saying the capability is gone.
+  **This makes the open rules question CHEAPER, and it is still Malin's.** BUT-1917's offer to
+  split the `blocks` read limb (`allow get` both directions, `allow list` blocker-only) priced
+  it as killing both the ballot strip and the Art. 15 section; that pricing is retired in the
+  BUT-1917 entry itself. The split now costs only the ballot strip — which covers votes
+  cast before the poll-vote rule landed, and the app is not live, so today it covers nothing.
+  Measured, not assumed: the three readers are `.where()` LIST queries, so the split does break
+  them. Verified in the same review that no privacy-policy or in-app copy claims this data is
+  exported — `docs/legal/privacy_policy.md` and its Swedish twin describe the export by right,
+  never by section. BUT-2018, 2026-09-05

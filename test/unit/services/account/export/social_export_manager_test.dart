@@ -2,7 +2,7 @@
 ///
 /// Proves the GDPR Article-15/20 *social* export contract: friends, friend
 /// requests (both directions), friend categories, conversations + messages,
-/// shared content received, blocks (both directions), and conversation
+/// shared content received, blocks, and conversation
 /// memberships each appear, correctly reshaped, in the exported payload.
 /// A refactor dropping any of these record types would fail an assertion
 /// here even though the bundle would still assemble.
@@ -34,7 +34,6 @@ class _FakeDataExportRepository extends Fake
     this.sharedMenus = const [],
     this.sharedShoppingLists = const [],
     this.outgoingBlocks = const [],
-    this.incomingBlocks = const [],
     this.memberships = const [],
     this.chatGroups = const [],
   });
@@ -48,12 +47,10 @@ class _FakeDataExportRepository extends Fake
   final List<Map<String, dynamic>> sharedMenus;
   final List<Map<String, dynamic>> sharedShoppingLists;
   final List<Map<String, dynamic>> outgoingBlocks;
-  final List<Map<String, dynamic>> incomingBlocks;
 
-  /// Block-section keys whose read throws (BUT-2004). The two directions are
-  /// separate queries against separate fields, so the fixture has to be able
-  /// to refuse exactly one of them.
-  Set<String> failingBlockLegs = const <String>{};
+  /// BUT-2018: one direction is left, so refusing it is a bool rather than a
+  /// set of leg keys.
+  bool failOutgoingBlocks = false;
   final List<Map<String, dynamic>> memberships;
 
   /// BUT-1838. Overridden rather than left to `Fake`'s throw, because the
@@ -177,21 +174,10 @@ class _FakeDataExportRepository extends Fake
     String userId, {
     int maxDocuments = 500,
   }) async {
-    if (failingBlockLegs.contains('outgoing_blocks')) {
+    if (failOutgoingBlocks) {
       throw StateError('permission-denied reading outgoing blocks');
     }
     return outgoingBlocks;
-  }
-
-  @override
-  Future<List<Map<String, dynamic>>> exportIncomingBlocks(
-    String userId, {
-    int maxDocuments = 500,
-  }) async {
-    if (failingBlockLegs.contains('incoming_blocks')) {
-      throw StateError('permission-denied reading incoming blocks');
-    }
-    return incomingBlocks;
   }
 
   @override
@@ -1842,8 +1828,8 @@ void main() {
     });
   });
 
-  group('SocialExportManager.exportBlocks (BUT-1438)', () {
-    test('includes blocks in both directions, sanitized for JSON', () async {
+  group('SocialExportManager.exportBlocks (BUT-1438/BUT-2018)', () {
+    test('includes the blocks you placed, sanitized for JSON', () async {
       // Unlike other record types, blocks pass the whole raw map through
       // sanitizeForJson with no id/data envelope. Including a DateTime proves
       // sanitization actually ran (it must become an ISO-8601 string) — not
@@ -1854,9 +1840,6 @@ void main() {
           outgoingBlocks: [
             {'blockedUserId': 'x', 'blockedAt': blockedAt},
           ],
-          incomingBlocks: [
-            {'blockerUserId': 'y'},
-          ],
         ),
       );
 
@@ -1865,9 +1848,6 @@ void main() {
       expect(result['outgoing_blocks'], [
         {'blockedUserId': 'x', 'blockedAt': blockedAt.toIso8601String()},
       ]);
-      expect(result['incoming_blocks'], [
-        {'blockerUserId': 'y'},
-      ]);
       expect(
         result.containsKey('error_code'),
         isFalse,
@@ -1875,57 +1855,110 @@ void main() {
       );
     });
 
-    // BUT-2004. The two directions shared one `try`, so a refusal on the
-    // second discarded rows the first had already returned and the bundle
-    // reported the whole section lost.
-    test('a refused direction keeps the one that returned', () async {
-      final repo = _FakeDataExportRepository(
-        outgoingBlocks: [
-          {'blockedUserId': 'x'},
-        ],
+    // BUT-2018. Malin decided 2026-09-05 that the bundle must not tell a
+    // requester who blocked them, nor how many people did.
+    test('no incoming-direction key ships under three spellings', () async {
+      final manager = SocialExportManager(
+        dataExportRepository: _FakeDataExportRepository(
+          outgoingBlocks: [
+            {'blockedUserId': 'x'},
+          ],
+        ),
       );
-      repo.failingBlockLegs = const {'incoming_blocks'};
 
+      final result = await manager.exportBlocks('user-uid');
+
+      // Keyed on the whole encoded section rather than on one absent key, so
+      // a count or an error stub is caught alongside the list itself. Three
+      // spellings the section must never contain. A return under a key none
+      // of them matches is caught by nothing here or in the cascade guard.
+      final encoded = json.encode(result);
+      expect(encoded, isNot(contains('incoming')));
+      expect(encoded, isNot(contains('blocked_by')));
+      expect(encoded, isNot(contains('blockerUserId')));
+    });
+
+    // The other half of the failure contract. `a refused read…` pins that an
+    // unreadable direction emits NO key; this pins that a readable empty one
+    // emits the key with an empty list.
+    test('an empty successful read still ships the key', () async {
       final result = await SocialExportManager(
-        dataExportRepository: repo,
+        dataExportRepository: _FakeDataExportRepository(),
       ).exportBlocks('user-uid');
 
-      expect(result['outgoing_blocks'], [
-        {'blockedUserId': 'x'},
-      ]);
-      // No empty list for the refused direction: `incoming_blocks: []` reads
-      // as "nobody has blocked you", which the section cannot know.
-      expect(result.containsKey('incoming_blocks'), isFalse);
-      expect(
-        result['incoming_blocks_error_code'],
-        'incoming_blocks-export-failed',
-      );
-      // Partial, not outright — `DataExportService` renders the two
-      // differently, and "could not be exported" would be false about the
-      // direction the subject did receive.
-      expect(result['error_code'], 'blocks-partial-export-failure');
+      expect(result.containsKey('outgoing_blocks'), isTrue);
+      expect(result['outgoing_blocks'], isEmpty);
+      expect(result.containsKey('error_code'), isFalse);
       expect(result.containsKey('error'), isFalse);
     });
 
-    test('both directions refused is the outright failure', () async {
-      final repo = _FakeDataExportRepository();
-      repo.failingBlockLegs = const {'outgoing_blocks', 'incoming_blocks'};
+    // The note is the Art. 12(1) half: an omission the subject cannot see is
+    // a gap rather than a minimisation decision.
+    test('states the omission and its legal basis', () async {
+      final manager = SocialExportManager(
+        dataExportRepository: _FakeDataExportRepository(),
+      );
 
-      final result = await SocialExportManager(
-        dataExportRepository: repo,
+      final result = await manager.exportBlocks('user-uid');
+
+      expect(result['data_minimisation'], contains('Article 15(4)'));
+      expect(result['data_minimisation'], contains('blocked YOU'));
+    });
+
+    // The note's UNCONDITIONALITY is the control, not its presence: a
+    // sentence that appeared only when somebody had blocked the requester
+    // would reconstruct the withheld fact from its own presence. Identical
+    // bytes across an empty read, a populated one and a refusal is what
+    // proves the section cannot leak that way.
+    test('the omission note is byte-identical on every path', () async {
+      final empty = await SocialExportManager(
+        dataExportRepository: _FakeDataExportRepository(),
       ).exportBlocks('user-uid');
 
-      expect(result['error'], 'Blocked users could not be exported.');
-      // The outright token, not the partial one — a section where BOTH
-      // directions failed must not name itself "partial" beside a rendered
-      // sentence that says it could not be exported at all.
-      expect(result['error_code'], 'blocks-export-failed');
-      expect(
-        json.encode(result),
-        isNot(contains('permission-denied')),
-        reason: 'a raw exception string can carry another subject\'s uid',
-      );
+      final populated = await SocialExportManager(
+        dataExportRepository: _FakeDataExportRepository(
+          outgoingBlocks: [
+            {'blockedUserId': 'x'},
+          ],
+        ),
+      ).exportBlocks('user-uid');
+
+      final failingRepo = _FakeDataExportRepository()
+        ..failOutgoingBlocks = true;
+      final refused = await SocialExportManager(
+        dataExportRepository: failingRepo,
+      ).exportBlocks('user-uid');
+
+      expect(populated['data_minimisation'], empty['data_minimisation']);
+      expect(refused['data_minimisation'], empty['data_minimisation']);
+      expect(empty['data_minimisation'], isNotNull);
     });
+
+    test(
+      'a refused read is the outright failure, with no list beside it',
+      () async {
+        final repo = _FakeDataExportRepository(
+          outgoingBlocks: [
+            {'blockedUserId': 'x'},
+          ],
+        )..failOutgoingBlocks = true;
+
+        final result = await SocialExportManager(
+          dataExportRepository: repo,
+        ).exportBlocks('user-uid');
+
+        expect(result['error'], 'Blocked users could not be exported.');
+        expect(result['error_code'], 'blocks-export-failed');
+        // No empty list beside the failure marker: `outgoing_blocks: []` reads
+        // as "you have blocked nobody", which the section cannot know.
+        expect(result.containsKey('outgoing_blocks'), isFalse);
+        expect(
+          json.encode(result),
+          isNot(contains('permission-denied')),
+          reason: "a raw exception string can carry another subject's uid",
+        );
+      },
+    );
   });
 
   group('SocialExportManager.exportConversationMemberships (BUT-1438)', () {

@@ -673,27 +673,6 @@ class FirebaseDataExportRepository extends BaseFirebaseRepository<Object> {
     includeIds: false,
   );
 
-  /// Incoming blocks (`blocks` where `blockedId == userId`).
-  ///
-  /// BUT-748: Field name canonicalised to `blockedId` to match
-  /// [FirebaseBlockRepository] (which writes/queries `blockedId`). Earlier
-  /// code queried `blockedUserId` here, returning zero rows in production.
-  /// No data migration is needed because no production write path ever
-  /// emitted `blockedUserId` — `FirebaseBlockRepository.blockUser` has
-  /// always written `blockedId` via `BlockRecord.toFirestore()`.
-  Future<List<Map<String, dynamic>>> exportIncomingBlocks(
-    String userId, {
-    int maxDocuments = 500,
-  }) => _queryList(
-    firestore
-        .collection(FirestoreCollections.blocks)
-        .where('blockedId', isEqualTo: userId),
-    userId,
-    ExportResourceType.blocks,
-    limit: maxDocuments,
-    includeIds: false,
-  );
-
   /// `users/{uid}/conversation_memberships` subcollection.
   Future<List<Map<String, dynamic>>> exportConversationMemberships(
     String userId, {

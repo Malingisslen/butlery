@@ -418,10 +418,18 @@ service cloud.firestore {
       // have blocked them. Letting them read it in real time would disclose
       // that, and would do it silently and continuously. The Art. 15 export
       // route was the deliberate alternative, and Malin closed it on
-      // 2026-09-05 (BUT-2018): `incoming_blocks` is to be dropped from the
-      // bundle. Not built yet, so the section still ships today.
+      // 2026-09-05 (BUT-2018): the bundle carries the blocks this user
+      // PLACED and no longer reports the incoming direction, in ids or in a
+      // count. So neither route discloses it.
       // A blocked person learning who blocked them is the outcome blocking
       // exists to prevent.
+      //
+      // The `blocks` collection itself is untouched by that decision: its
+      // read rule still permits `blockedId == request.auth.uid`,
+      // because `FirebaseBlockRepository`'s three list queries need it to
+      // strip a blocked person's ballot (BUT-1917). A client can therefore
+      // still enumerate its own blockers; what BUT-2018 removed is the
+      // export handing that list over as a document.
       //
       // This block is not what makes the mirror unreachable today — the
       // terminal `match /{document=**}` already denies it, and did while the

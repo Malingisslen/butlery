@@ -3685,11 +3685,8 @@ async function scrubLastEditor(
  * Recording it because a future reader will otherwise assume the security
  * argument won, and re-litigate a decision that was made on other grounds.
  *
- * The bundle SAYS the withheld-on-purpose collections above are held:
- * `PreferencesExportManager
- * .exportAccountSubcollections` names them in its `data_minimisation` line. An
- * exemption the subject cannot see is an undisclosed gap, not a minimisation
- * decision (Art. 12(1), the BUT-1971 precedent).
+ * An exemption the subject cannot see is an undisclosed gap, not a
+ * minimisation decision (Art. 12(1), the BUT-1971 precedent).
  */
 export const EXPORT_EXEMPT: Record<string, string> = {
   // ── Withheld on purpose, with a live writer. These are the decisions. ──
@@ -3717,20 +3714,24 @@ export const EXPORT_EXEMPT: Record<string, string> = {
     "Named in the bundle's data_minimisation line like the two above.",
 
   block_mirror:
-    "PROJECTION, not a source. `users/{uid}/block_mirror/current` holds the " +
-    "uids of everyone who has blocked this user — the SAME facts the bundle " +
-    "already reproduces under `incoming_blocks`, which reads the `blocks` " +
-    "collection this mirror is derived from. Exporting both would hand the " +
-    "subject one list twice, and the mirror's copy is the less accurate one " +
-    "(it is capped, and it lags the source by a trigger). This argues content " +
-    "identity WITHIN one bundle, never by analogy from another collection. " +
-    "BUT-1917. ⚠ The premise is `incoming_blocks` continuing to be exported, " +
-    "and Malin DECIDED on 2026-09-05 (BUT-2018) to drop that section, so this " +
-    "premise is time-limited rather than open-ended. Not built yet, so the " +
-    "section still ships today; when it goes, this exemption loses its reason " +
-    "and must be re-argued rather than inherited. " +
-    "`scenario_blockMirrorExemptionRestsOnIncomingBlocks` fails if the two " +
-    "drift apart, so the dependency is enforced rather than described.",
+    "WITHHELD BY THE SAME DECISION as the `blocks` incoming direction, and " +
+    "argued on its own facts rather than inherited. " +
+    "`users/{uid}/block_mirror/current` holds the uids of everyone who has " +
+    "blocked this user. Malin decided on 2026-09-05 (BUT-2018) that an " +
+    "Art. 15 bundle must not tell a requester who blocked them nor how many " +
+    "people did: Art. 15(4) permits withholding a copy that would adversely " +
+    "affect the rights and freedoms of others, and a block is placed by " +
+    "someone wanting distance from — often — the requester themselves. That " +
+    "reasoning is about the FACT, so it reaches every store of it: the " +
+    "`blocks` rows the mirror derives from, and this projection of them. " +
+    "Withholding the source while exporting the copy would hand over the " +
+    "same disclosure through a second door. " +
+    "The omission is disclosed to the subject in the blocks section's own " +
+    "`data_minimisation` line, which states that who has blocked them is " +
+    "left out and why. " +
+    "`scenario_blockMirrorExemptionRestsOnTheSameDecision` fails if that " +
+    "section returns, so the dependency stays enforced rather than " +
+    "described.",
   // ── No writer of the `users/{uid}` path. Swept for legacy rows only. ──
   // The cascade sweeps these so an account predating their removal cannot hold
   // rows the probe reports forever. Nothing writes them today, so for a current

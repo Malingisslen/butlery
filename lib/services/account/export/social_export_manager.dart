@@ -476,66 +476,63 @@ class SocialExportManager with SocialExportRedaction {
     }
   }
 
-  /// Export blocked users (both directions)
+  /// Export the blocks this user PLACED. The other direction — who has
+  /// blocked them — is deliberately absent.
   ///
-  /// BUT-2004: the two directions are isolated from each other. Under one `try`
-  /// a refusal on the incoming query threw away the outgoing rows that had
-  /// already been fetched, and the bundle then claimed the whole section
-  /// failed. They are separate queries against separate fields, so one being
-  /// refused says nothing about the other.
+  /// BUT-2018: an Art. 15 bundle must not tell a requester who blocked them,
+  /// nor how many people did. Art. 15(4) permits withholding a copy where it
+  /// would adversely affect the rights and freedoms of others, and a block is
+  /// placed by someone wanting distance from — often — the very person now
+  /// requesting the copy. Malin's explicit call, 2026-09-05, over keeping the
+  /// uids and over keeping a bare count.
   ///
-  /// A failed leg emits its error keys and NO list: an empty list beside a
-  /// failure marker reads as "nobody blocked you", which is a claim this
-  /// section is in no position to make.
+  /// The omission is STATED in `data_minimisation`: an omission the subject
+  /// cannot see is an Art. 12(1) gap rather than a minimisation decision.
+  ///
+  /// That sentence is emitted on every path, including the failure one, and
+  /// that is a control rather than a style choice. This method issues no query
+  /// against the incoming direction, so it cannot know whether anyone has
+  /// blocked this user — a note that appeared, or read differently, only when
+  /// somebody had would reconstruct the exact fact the section withholds.
+  ///
+  /// A failed read emits its error envelope and NO list: an empty list beside
+  /// a failure marker reads as "you have blocked nobody", which is a claim
+  /// this section is in no position to make.
+  ///
+  /// Coupled across languages: `scenario_blockMirrorExemptionRestsOnTheSameDecision`
+  /// in `functions/src/__tests__/account-deletion-cascade.test.ts` reads THIS
+  /// FILE as text and fails on a single- or double-quoted `incoming_blocks`
+  /// key. The server's block-mirror export exemption rests on the same
+  /// decision, and that is what stops the two halves drifting apart.
   Future<Map<String, dynamic>> exportBlocks(String userId) async {
-    final section = <String, dynamic>{};
-    var attemptedLegs = 0;
-    var failedLegs = 0;
+    const dataMinimisation =
+        'Only the blocks you placed are included. Who has blocked YOU is left '
+        'out of this export deliberately, and so is how many people have. '
+        'GDPR Article 15(4) allows us to withhold a copy where releasing it '
+        'would adversely affect someone else, and a block is placed by a '
+        'person who wants distance. This sentence is part of every export, so '
+        'its presence tells you nothing about whether anyone has blocked you.';
 
-    Future<void> readLeg(
-      String key,
-      Future<List<Map<String, dynamic>>> Function() fetch,
-    ) async {
-      attemptedLegs++;
-      try {
-        section[key] = (await fetch()).map(sanitizeForJson).toList();
-      } catch (e) {
-        failedLegs++;
-        app_logger.AppLogger.error(
-          '[$_logTag] Failed to export $key',
-          e,
-        );
-        section['${key}_error'] = 'Could not export $key.';
-        section['${key}_error_code'] = '$key-export-failed';
-      }
-    }
-
-    await readLeg(
-      'outgoing_blocks',
-      () => _exports.exportOutgoingBlocks(userId),
-    );
-    await readLeg(
-      'incoming_blocks',
-      () => _exports.exportIncomingBlocks(userId),
-    );
-
-    return {
-      ...section,
-      // `error_code` alone marks the section incomplete and points at it;
-      // `error` claims the section could not be exported at all, which is only
-      // true when neither direction returned. See `DataExportService`'s
-      // warning aggregation, which reads the two keys as different claims.
-      // Counted, not the literal 2 — a third direction would otherwise
-      // disable the outright-failure branch with nothing reddening. Two
-      // tokens, because one saying "partial" over a section where BOTH
-      // directions failed contradicts the sentence rendered beside it.
-      if (failedLegs > 0 && failedLegs < attemptedLegs)
-        'error_code': 'blocks-partial-export-failure',
-      // The file's own envelope helper, not a second spelling of the same
-      // map: two spellings of one contract in one file is how they drift.
-      if (failedLegs > 0 && failedLegs == attemptedLegs)
+    try {
+      final outgoing = await _exports.exportOutgoingBlocks(userId);
+      return {
+        'outgoing_blocks': outgoing.map(sanitizeForJson).toList(),
+        'data_minimisation': dataMinimisation,
+      };
+    } catch (e) {
+      app_logger.AppLogger.error(
+        '[$_logTag] Failed to export outgoing_blocks',
+        e,
+      );
+      // `error` and `error_code` together: `DataExportService`'s warning
+      // aggregation reads them as different claims, and with one direction
+      // left there is no partial outcome to report — the section either
+      // returned or it did not.
+      return {
         ..._failed('Blocked users', 'blocks-export-failed'),
-    };
+        'data_minimisation': dataMinimisation,
+      };
+    }
   }
 
   /// Export conversation memberships
