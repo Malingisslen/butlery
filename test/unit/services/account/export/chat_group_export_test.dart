@@ -240,6 +240,11 @@ void main() {
     test('empty-safe — no groups is not an error', () async {
       final section = await ChatGroupExport(repository).export(userId);
 
+      // PRESENT and empty. Its counterpart — 'a repository failure yields the
+      // error_code marker instead of throwing' — pins the key's ABSENCE, and
+      // BUT-2014 is the ticket that made those two states mean different
+      // things. Asserting only `isEmpty` would not read as "the key is here".
+      expect(section.containsKey('chat_groups'), isTrue);
       expect(section['chat_groups'], isEmpty);
       expect(
         section.containsKey('error_code'),
@@ -259,7 +264,10 @@ void main() {
           _ThrowingExportRepository(),
         ).export(userId);
 
-        expect(section['chat_groups'], isEmpty);
+        // BUT-2014: ABSENCE, not an empty list. An empty list beside a
+        // failure marker reads as "you belong to no groups", which is an
+        // answer this leg did not obtain.
+        expect(section.containsKey('chat_groups'), isFalse);
         expect(section['error_code'], 'chat-groups-export-failed');
         // Still encodable: a degraded section must not break the bundle
         // either.

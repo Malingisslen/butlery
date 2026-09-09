@@ -364,6 +364,20 @@ class SocialExportManager with SocialExportRedaction {
       // stopped being true the moment a whole ROW could be withheld: a bundle
       // that overclaims its own completeness is as false as one that redacts
       // silently.
+      // BUT-2014: the chat_groups sentence is CONDITIONAL on that section
+      // actually being here. Since the leg's failure branch omits its key
+      // rather than shipping an empty list, describing what the section
+      // contains would, on a failed leg, describe something the bundle does
+      // not carry — a note that misstates the artefact it is attached to,
+      // which is the Art. 12(1) defect the omission was made to avoid.
+      final chatGroupsNote = messagesData.containsKey('chat_groups')
+          ? 'The chat_groups section beside it is a summary rather than a '
+                'copy: it carries the group name, who created it, who '
+                'administers it and who added YOU — not the other members you '
+                'can already see above.'
+          : 'The chat_groups section could not be read on this export and has '
+                'been left out entirely rather than shown as empty; see '
+                'chat_groups_error_code.';
       messagesData['data_minimisation'] =
           "Other participants' profile pictures have been removed, as have "
           'their own notification settings for this conversation (muted, '
@@ -371,9 +385,7 @@ class SocialExportManager with SocialExportRedaction {
           'joined it. Rows where the app stopped a duplicate message that '
           'someone ELSE sent have been left out entirely — yours are kept. '
           'Of the rows that ARE here, nothing else has been changed. '
-          'The chat_groups section beside it is a summary rather than a '
-          'copy: it carries the group name, who created it, who administers it '
-          'and who added YOU — not the other members you can already see above.';
+          '$chatGroupsNote';
 
       return messagesData;
     } catch (e) {

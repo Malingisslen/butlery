@@ -54,10 +54,16 @@ class ChatGroupExport {
       // `DataExportService` lifts into the bundle's own completeness summary,
       // so a flag it does not recognise is a failure the bundle claims did not
       // happen.
-      return <String, dynamic>{
-        'chat_groups': const <Map<String, dynamic>>[],
-        'error_code': 'chat-groups-export-failed',
-      };
+      // BUT-2014: the error code travels WITHOUT a `chat_groups` key. An empty
+      // list beside a failure marker reads as an answer, and the answer it
+      // reads as — "you belong to no groups" — is one this leg is in no
+      // position to give.
+      //
+      // A body key is not enough to prevent that: `DataExportService` builds
+      // its bundle-level warnings from `error` / `error_code` at a SECTION's
+      // root only, so `chat_groups_error_code` reaches no warning of its own.
+      // Absence is what makes the section unanswerable rather than answered.
+      return <String, dynamic>{'error_code': 'chat-groups-export-failed'};
     }
   }
 }

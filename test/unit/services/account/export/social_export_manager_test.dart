@@ -971,6 +971,11 @@ void main() {
               'the whole-ROW drop must be disclosed, not just the field '
               'strips',
         );
+        // BUT-2014 made the closing sentence CONDITIONAL, and this is the arm
+        // a healthy export takes. The failure arm is pinned in the
+        // double-failure test below.
+        expect(line, contains('is a summary rather than a copy'));
+        expect(line, isNot(contains('could not be read on this export')));
         // The completeness claim must stay scoped to the rows that survived.
         // Three assertions, pinning three DIFFERENT things — not three
         // directions of one property. None of them can decide whether a
@@ -1504,10 +1509,61 @@ void main() {
               'section-root key, which is the only one DataExportService '
               'turns into a warning',
         );
-        // The successful half of the merge still lands: lifting the code out
-        // must not drop the payload beside it.
-        expect(result['chat_groups'], isEmpty);
-        expect(result.containsKey('chat_groups'), isTrue);
+        // BUT-2014 flips what this pins. It used to assert the key SURVIVES
+        // the code being lifted out, which was the right thing to pin while
+        // the failure branch still shipped an empty list. That branch now
+        // omits the key, so the same requirement — the merge must not invent
+        // a payload — is pinned as absence.
+        expect(result.containsKey('chat_groups'), isFalse);
+        // The note must not describe a section that is not here.
+        expect(
+          result['data_minimisation'],
+          contains('could not be read on this export'),
+        );
+      },
+    );
+
+    test(
+      'a chat-groups-only failure takes the section-root code, so the bundle '
+      'still warns',
+      () async {
+        // The `??=` on the root key is pinned only in its YIELDING direction
+        // by the double-failure test above, where the conversations branch has
+        // already claimed the key. Deleting that line entirely left the whole
+        // suite green.
+        //
+        // BUT-2014 raised what that costs. The failure branch no longer ships
+        // an empty `chat_groups` list, so the root `error_code` is the only
+        // structural signal the section was attempted at all: without it
+        // `DataExportService` emits no warning and the bundle simply has no
+        // chat-groups section, silently.
+        const userId = 'user-uid';
+        final result = await SocialExportManager(
+          dataExportRepository: _FakeDataExportRepository(
+            failChatGroups: true,
+            conversations: [
+              {
+                'id': 'c1',
+                'data': {'title': 'Frisk tråd'},
+                'messages': const <Map<String, dynamic>>[],
+              },
+            ],
+          ),
+        ).exportMessages(userId);
+
+        expect(
+          result['error_code'],
+          'chat-groups-export-failed',
+          reason:
+              'no louder claim took the root key, so the `??=` must FIRE — '
+              'it is what turns this into a bundle-level warning',
+        );
+        expect(result['chat_groups_error_code'], 'chat-groups-export-failed');
+        expect(result.containsKey('chat_groups'), isFalse);
+        expect(
+          result['data_minimisation'],
+          contains('could not be read on this export'),
+        );
       },
     );
 
