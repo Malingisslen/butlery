@@ -3734,3 +3734,49 @@ neither passed an `auditRepository` at all.
   `data_minimisation` text" was struck from `docs/security/account-subcollections-retention.md`
   and its twin from `account-deletion-cascade.ts`: the register now names each exemption's own
   disclosure site instead. BUT-2018, 2026-09-09
+
+- **A blocked person MAY READ comments on the blocker's recipe, and that is a decision rather
+  than a gap (BUT-2054, 2026-09-09).** The `recipe_comments` read limb carries no blocking
+  conjunct — it is author OR `recipeOwnerId` OR `sharedWithUserIds`, plus the admin path — while
+  the notification gate denies a blocked caller outright, and the comment and rating gates deny
+  one whose payload carries `recipeOwnerId`. What that person may DO is gated; what they may SEE
+  of a half-public surface is not.
+  **Named residual, measured by the `firestore-rules-tester` gate while recording this:** those
+  two gates read `!('recipeOwnerId' in request.resource.data) || isNotBlockedBy(...)`, so a
+  hand-rolled client that OMITS the denormalised field is not gated at all. No suite pairs an
+  omitting payload with a blocked actor. That is a separate defect from this decision and is
+  filed as BUT-2057 — do not read this entry as saying the write side is closed.
+  **Malin's explicit call,
+  2026-09-09**, over adding the conjunct: hiding the comments would tell the blocked person that
+  a block exists, which is the same reasoning that keeps the poll TALLY visible to them
+  (BUT-1917) and that makes the ballot strip one-directional.
+  Do not read the existing deny test as evidence for the other answer. `recipe_comments: blocked
+  user cannot read comments on blocker's recipe` is a DUPLICATE of the stranger deny, measured
+  with a fixture mutant: repoint the block document to an unused uid and that case still passes
+  while the four cases that do turn on blocking go red (20/24). Its comment claimed
+  "defence-in-depth … reading another blocked user's prior comment would still leak", which
+  attributed the deny to blocking; that clause is struck rather than reworded. The test itself
+  stays — a duplicate of the stranger deny is harmless, and deleting it costs a read-limb case.
+  **Named residual, and the direction that would make today's fixture dangerous:** if
+  `isNotBlockedBy` ever moves from a bare `exists()` to a FIELD READ, this suite's fixture
+  starts deciding verdicts, and a gate written with a defaulting
+  `.get('blockerId', '')` would pass silently on the wrong content. Raised by the
+  `firestore-rules-tester` gate. BUT-2054, 2026-09-09
+
+- **A `data_minimisation` note that carries a THIRD PARTY's fact is byte-invariant; one that
+  reports OUR OWN read failing may vary with the outcome. The asymmetry is the decision
+  (BUT-2056, 2026-09-09).** Two sections now answer the same question opposite ways, and nothing
+  recorded which rule governs which — so a future "harmonise the export notes" would look like
+  tidying and would break a decided privacy control in one direction while reddening nothing.
+  BUT-2018's BLOCKS note is deliberately identical across an empty read, a populated one and a
+  refusal, and that invariance is pinned: a note that read differently when somebody HAD blocked
+  the requester would reconstruct the withheld fact from its own presence.
+  BUT-2014's MESSAGES note is deliberately CONDITIONAL on whether the chat-groups leg answered:
+  with the payload key now absent on failure, an unconditional sentence would describe a section
+  the bundle does not carry, which is an Art. 12(1) defect in the other direction.
+  **Malin's explicit call, 2026-09-09.** The criterion is whose fact the sentence bears, not
+  which section it sits in — so it does not license arguing across collection boundaries, which
+  the BUT-1732 entry records as the error it exists to document. A note reporting a read WE
+  attempted and failed discloses nothing about anyone else; `error_code` already says so.
+  A future edit that makes a third-party note vary must be caught by a test, not by this entry.
+  BUT-2056, 2026-09-09

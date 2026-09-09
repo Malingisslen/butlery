@@ -225,9 +225,20 @@ test("recipe_comments: random user cannot read other people's comments", async (
   await assertFails(ctx.firestore().doc(`recipe_comments/c-stranger-read`).get());
 });
 
-// DENY: a blocked user cannot read comments on the blocker's recipe
-// (defence-in-depth — the create rule already denies, but reading
-// another blocked user's prior comment would still leak).
+// DENY: a blocked user cannot read comments on the blocker's recipe.
+//
+// BUT-2054: the deny is the STRANGER deny, not a blocking deny. Measured with
+// a fixture mutant (the block document repointed to an unused uid): this case
+// still passes with no block in existence, while the four cases that do turn
+// on blocking go red. The read limb carries no blocking conjunct — it is
+// author OR recipeOwnerId OR sharedWithUserIds, plus the admin path — and
+// BLOCKED_UID is none of those, exactly like STRANGER_UID above.
+//
+// Malin's explicit call, 2026-09-09: a blocked person MAY read comments on the
+// blocker's recipe, and that is the decision rather than a gap. Hiding them
+// would tell the blocked person they are blocked, which is the same reasoning
+// that keeps the poll tally visible (BUT-1917). See
+// `.claude/rules/accepted-deviations.md`.
 test("recipe_comments: blocked user cannot read comments on blocker's recipe", async () => {
   await seedComment("c-blocked-read", validCommentBody(AUTHOR_UID));
   const ctx = env.authenticatedContext(BLOCKED_UID);
