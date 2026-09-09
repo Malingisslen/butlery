@@ -3,7 +3,7 @@
 GDPR Article 30 record of processing for the personal `users/{uid}` subcollections the
 account-deletion cascade erases, and their data-subject-access (Art. 15) export treatment.
 Companion to `notification-analytics-retention.md`, `family-data-retention.md` and
-`audit-logs-retention.md`. Sources: BUT-1957 (2026-09-02), BUT-1992 (2026-09-03).
+`audit-logs-retention.md`. Sources: BUT-1957 (2026-09-02), BUT-1992 (2026-09-03), BUT-1917/BUT-2018 (2026-09-09).
 
 Art. 30 records PROCESSING, not export status, so every collection below has a row here
 whether or not it is exported.
@@ -18,6 +18,7 @@ whether or not it is exported.
 | `rate_limits` | One timestamp per rate-limited action | Anti-abuse throttling | `firebase_activity_event_repository.dart` and others | **Exempt** |
 | `counters` | Unread-badge totals over shared content | Render unread badges | `base_shared_content_repository.dart` | **Exempt** |
 | `report_throttle` | Cooldown between abuse reports | Anti-abuse throttling | `firebase_report_repository.dart` | **Exempt** |
+| `block_mirror` | The uids of everyone who has blocked this user, in one `current` document | Let `firestore.rules` refuse a blocked person's poll vote without a per-participant read of `blocks` | `sync-block-mirror.ts` (Admin SDK only; every client write is denied) | **Exempt** |
 
 ## Collections with no live writer
 
@@ -41,11 +42,20 @@ the same data; that confusion is what BUT-1990 cost a round on.
 Contract (Art. 6(1)(b)) for `ingredients` and `onboarding`: they are the service the user
 signed up for. Legitimate interests (Art. 6(1)(f)) for `rate_limits`, `counters`,
 `report_throttle` and `acquisition` — service integrity and growth measurement respectively.
+Legitimate interests (Art. 6(1)(f)) for `block_mirror` too, on a different interest: the
+safety of the person who placed the block, whose choice it enforces.
 
 ## Retention
 
 Erased on account deletion by `deleteUserSubcollections` in
 `functions/src/account/account-deletion-cascade.ts`. No TTL policy applies.
+
+`block_mirror` takes TWO legs, because the uid appears in two places. Its own row is in
+`deleteUserSubcollections`' list, which erases the leaving user's mirror — the list of who
+blocked THEM. Their uid inside OTHER people's mirrors is a cross-user sweep,
+`deleteBlockMirrors`, which is capped and DECLINES rather than truncating above
+`MAX_MIRROR_SWEEP_ROWS`. Deleting only the first leg would leave the uid behind in every
+mirror naming it.
 
 ⚠ `firestore.indexes.json` declares `expireAt` collection-group TTLs whose ids collide with
 `ingredients` and `rate_limits`. Whether user-scoped documents carry that field is unmeasured
@@ -62,9 +72,20 @@ ownership-scoped through `FirebaseDataExportRepository._guardSelfExport`.
 call on 2026-09-03 against a product objection that it reads as surprising; the campaign name
 must not be stripped later without reopening ADR-0011.
 
-Each exempt collection is named in that section's own `data_minimisation` text, so the
-data subject can see that it is held. An exemption the subject cannot see is an undisclosed
-gap rather than a minimisation decision (Art. 12(1), the BUT-1971 precedent).
+An exemption the subject cannot see is an undisclosed gap rather than a minimisation
+decision (Art. 12(1), the BUT-1971 precedent), so each exempt collection names where its own
+omission is disclosed.
+
+`rate_limits`, `counters` and `report_throttle` are named in that section's own
+`data_minimisation` text.
+
+`block_mirror` is not, and that is a decision rather than an oversight. Its omission is
+disclosed instead by the BLOCKS section's `data_minimisation` line, which tells the subject
+that who has blocked them is left out and why (Art. 15(4)). **Malin's explicit call,
+2026-09-09**, over the alternative of naming the mirror in the bundle: the bundle already
+withholds that fact and says so, and enumerating our internal copies of it would tell the
+subject we keep a list of who blocked whom — a disclosure nobody asked for, on the same fact
+BUT-2018 exists to withhold.
 
 `report_throttle` was **not** put to Malin — it was not among the three questions she was
 asked. Nor is it the same shape as `rate_limits`, despite sitting beside it: its doc id is the

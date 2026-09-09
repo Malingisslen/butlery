@@ -3687,3 +3687,50 @@ neither passed an `auditRepository` at all.
   them. Verified in the same review that no privacy-policy or in-app copy claims this data is
   exported — `docs/legal/privacy_policy.md` and its Swedish twin describe the export by right,
   never by section. BUT-2018, 2026-09-05
+
+- **The `blocks` read limb is NOT split, and the sentence that priced the split was false
+  (BUT-1917/BUT-2018, 2026-09-09).** `allow read` keeps both disjuncts, so
+  `FirebaseBlockRepository`'s three `.where('blockedId', isEqualTo: uid)` list queries keep
+  working and a client can still enumerate its own blockers. **Malin's explicit call,
+  2026-09-09**, taken twice: once on a price that was wrong, and again on the measured one.
+  Retired verbatim, from the BUT-1917 entry: "What that half actually covers is votes cast
+  BEFORE the rule landed, and
+  the app is not live, so today it covers nothing." Retired verbatim, from the BUT-2018 entry:
+  "The split now costs only the ballot strip — which covers votes
+  cast before the poll-vote rule landed, and the app is not live, so today it covers nothing."
+  Both are true of the OUTGOING direction and false of the INCOMING one, which is the half the
+  split would actually remove.
+  Measured in `blocked_user_filter.dart` and `firestore.rules`: `notBlockedByAnyoneHere()` is
+  one-directional BY DESIGN — it refuses the blocked person's vote and lets the blocker vote
+  normally, because refusing the blocker would punish the person who used the safety feature.
+  So no server rule has ever covered a BLOCKER's ballot, and none is planned to. The client's
+  incoming strip is the only thing that removes it, and it sits on the DECISION path
+  (`MessagingService.closePoll` unions `requireBlockedByIds()` into the set it resolves the
+  winner from), not only on the display path. That is a permanent case, not a pre-rule
+  residue.
+  So the split's real price is that a person who has blocked you gets their ballot counted in a
+  poll you close, and the recipe it wins lands in your week. Weighed against an exposure that
+  reaches only a hand-rolled client — BUT-2018 already stopped the export handing the list over
+  as a document — and declined.
+  **The open question BUT-1917 left for Malin is therefore CLOSED, not still open.** A future
+  reader must not re-offer the split as cheap; if it is ever re-proposed, the incoming half of
+  the tally has to be replaced first, and the only shape that does not re-disclose the fact is
+  moving poll closure to the Admin SDK. That was offered and declined on cost, 2026-09-09.
+  The false pricing was carried from BUT-1917 into BUT-2018 unmeasured, in the same commit that
+  claimed "Measured, not assumed" about the neighbouring clause — the measurement covered which
+  queries the split breaks, never what the broken half was protecting.
+  BUT-1917/BUT-2018, 2026-09-09
+
+- **The Art. 15 bundle does NOT name the block mirror among what it withholds
+  (BUT-2018, 2026-09-09).** `EXPORT_EXEMPT.block_mirror` stays exempt and its omission is
+  disclosed through the BLOCKS section's `data_minimisation` line, which tells the subject that
+  who has blocked them is left out and why. It is deliberately NOT named in
+  `PreferencesExportManager.exportAccountSubcollections`' `data_minimisation` text, where
+  `rate_limits`, `counters` and `report_throttle` are.
+  **Malin's explicit call, 2026-09-09**, over naming it: the bundle already withholds that fact
+  and says so, and enumerating our internal copies would tell the subject we keep a list of who
+  blocked whom — a disclosure nobody asked for, on the very fact BUT-2018 exists to withhold.
+  This is why the universal "each exempt collection is named in that section's own
+  `data_minimisation` text" was struck from `docs/security/account-subcollections-retention.md`
+  and its twin from `account-deletion-cascade.ts`: the register now names each exemption's own
+  disclosure site instead. BUT-2018, 2026-09-09
