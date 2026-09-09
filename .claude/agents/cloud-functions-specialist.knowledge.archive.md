@@ -19624,3 +19624,112 @@ evaluates `outcome.retained.first.holdUntil` as an ARGUMENT, so on an empty `ret
 `.first` throws `StateError` before any dialog is built — the outer catch pops and shows the
 error dialog with the exception text. No notice is ever shown. The finding stands: the fourth
 arm is real, the mutant does survive, and the `retained.isNotEmpty` conjunct was unpinned.
+
+### 2026-09-09 — BUT-2018 commit-gate review: dropping `incoming_blocks` from the Art. 15 bundle [gdpr][review]
+
+Staged: 9 files. My half is `functions/src/account/account-deletion-cascade.ts` (the
+`EXPORT_EXEMPT.block_mirror` reason re-argued) and its guard scenario, renamed
+`scenario_blockMirrorExemptionRestsOnIncomingBlocks` -> `…RestsOnTheSameDecision` and
+INVERTED: it now asserts `!manager.includes("'incoming_blocks'")` plus that the reason
+cites BUT-2018. Dart half deletes `FirebaseDataExportRepository.exportIncomingBlocks` and
+the `incoming_blocks` section. No runtime, region, retry, secrets or cold-start impact —
+the functions half is string + test only. 411/411 reported, three mutation probes reported
+caught; not re-run.
+
+Verdict: **fail (1 blocking)**.
+
+**Blocking — two sentences in the SAME two files the diff edits, falsified by this commit.**
+`.claude/rules/accepted-deviations.md:772` (twin `docs/architecture/ACCEPTED_DEVIATIONS.md:2946`)
+still reads "That decision is recorded on the ticket and is NOT yet built, so the export
+still ships the section today", and :788/:2962 prices the open `blocks` rules split as
+"would also kill the Art. 15 `incoming_blocks` section, not just the ballot strip" — which
+the new entry 550 lines below contradicts ("This makes the open rules question CHEAPER").
+Both live in an always-on rules file, and the second one is the price a future session
+would quote to Malin on a question that is still open. Same "refuted by its own commit"
+shape the BUT-1917 round-4 review filed as blocking. Remedy: supersede in place (decision
+record → dated supersession quoting the retired sentence), never a silent delete.
+`:782` additionally cites `firebase_data_export_repository.dart:687` for a method this
+commit deletes.
+
+**Medium — the new guard's CI trigger is not derived.** It opens
+`lib/services/account/export/social_export_manager.dart`; only the workflow's
+`lib/services/account/**` glob reaches that, and `assertGuardTriggersCoverItsDartInputs`
+(same file) ranges over the OTHER scenario's inputs only — its own docstring calls that
+glob "deliberate breadth, not a derived input". One line closes it:
+`assertGuardTriggersCoverItsDartInputs(repoRoot, [managerPath])`. This is the BUT-2002
+failure one door over, in the reverse direction (Dart-only RE-addition).
+
+**Medium — false docstring above `EXPORT_EXEMPT`** ("the withheld-on-purpose collections
+above … `PreferencesExportManager.exportAccountSubcollections` names them in its
+`data_minimisation` line"). Measured at `preferences_export_manager.dart:252-260`: it names
+`rate_limits`, `counters`, `report_throttle` and nothing else; `block_mirror` sits in that
+group. Substantive Art. 12(1) is met by the blocks section's new note ("Who has blocked YOU
+is left out … and so is how many people have"), so the defect is the sentence. Strike it
+rather than adding `block_mirror` to the preferences note — that would be a fresh
+disclosure decision and is Malin's.
+
+**Low —** the absence assertion is spelling-bound (`"'incoming_blocks'"`, single quotes
+only); a double-quoted or renamed key evades it. The behavioural pin (`never reports the
+incoming direction`, asserting over the whole encoded section) is the real control.
+
+Verified clean, so a later run need not re-measure: the reason's new prefix ("WITHHELD BY
+THE SAME DECISION") keeps it OUT of `why.startsWith("NO LIVE WRITER") && writers.has(name)`,
+which is correct because `syncBlockMirror` IS a live writer; ≥20-char reason holds;
+`block_mirror` is still in `USER_SUBCOLLECTIONS`, so "no exemption names a collection the
+cascade has stopped deleting" still passes; nothing anywhere reads `exportIncomingBlocks`
+or the retired `blocks-partial-export-failure` code; the rules comment's "three list
+queries" is true (`firebase_block_repository.dart:190/208/224`); `docs/legal/privacy_policy*.md`
+and `docs/security/account-subcollections-retention.md` make no claim this section is
+exported.
+
+### 2026-09-09 — BUT-2018, review round 2 (index frozen, 9 files) [gdpr][review]
+
+Round 1's three named findings verified applied: the BUT-1917 deviation entry now carries a
+dated SUPERSEDED paragraph quoting all three retired sentences verbatim (identical in both
+files — diffed, only the path header differs); `assertGuardTriggersCoverItsDartInputs(repoRoot,
+[managerPath])` is the last line of the new scenario (419 assertions, up from 411); the false
+`PreferencesExportManager` universal is struck; the token match is widened to
+`/['"]incoming_blocks['"]/`.
+
+Verdict: **fail (1 blocking)** — a NEW defect created by the fix round.
+
+**Blocking — three sentences form a CIRCULAR coverage claim for a case neither guard covers.**
+`account-deletion-cascade.test.ts` (guard message): "a return under some other key is caught by
+the Dart side, which encodes the whole section." `social_export_manager_test.dart:1873`: "a
+return under some other key is caught by the cascade guard, not here." Measured: the TS guard
+matches the quoted literal `incoming_blocks` only; the Dart test asserts three literal spellings
+absent (`incoming`, `blocked_by`, `blockerUserId`). A section returned as
+`'people_who_blocked_you'` passes both. Each file points at the other; nothing holds it.
+Third sentence, same round, `social_export_manager.dart:504-507`: "fails if the token
+`incoming_blocks` appears in it … Naming the token in a comment here reddens that suite" — false
+against its own file, which names the token in backticks while the suite is green. Strike the two
+reciprocal clauses, narrow "the token" to "a single- or double-quoted key", and NAME the
+rename-escape as a residual instead of describing it as covered.
+
+**Low — the docstring replacing the struck universal states a new one**: "each entry below names
+where its own omission is disclosed to the subject". True of the four withheld-on-purpose
+entries; the nine `NO LIVE WRITER … Legacy sweep only.` entries name no disclosure site (they
+withhold nothing for a current account). Scope it to the first group.
+
+Reusable: a text-scanning guard and a behavioural test are complementary, not covering — the
+moment each cites the other, the union has a hole in the middle and both sentences read as proof.
+
+### 2026-09-09 — BUT-2018, review round 3: verdict pass [gdpr][review]
+
+Four blobs re-read; the other five unchanged since round 2 (hashes checked, index == worktree
+on all nine). Round 2's blocking finding closed by DELETION in all three places: the TS guard
+message and the Dart test comment no longer defer to each other and now state the residual
+("a return under some other key name is caught by nothing here and by nothing on the Dart
+side" / "caught by nothing here or in the cascade guard"), and `social_export_manager.dart`
+narrows "the token" to "a single- or double-quoted `incoming_blocks` key" with the false
+"Naming the token in a comment here reddens that suite" deleted — that file still names the
+token only in backticks, which the regex does not match, so the comment cannot redden its own
+guard. The Low was struck rather than scoped, per the deletion-only rule; the Art. 12(1)
+sentence stands alone and the `block_mirror` entry still names its own disclosure site.
+
+Nothing was ADDED in round 3 except the one narrowing correction, which is directly readable
+from the regex — the shape that keeps producing findings here is a repair that writes new
+prose, and this round did not.
+
+**pass (0 blocking).** Named residual, now carried by the code rather than by a review note:
+the incoming direction re-introduced under a different key name escapes both guards.

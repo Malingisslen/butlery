@@ -36355,3 +36355,121 @@ correct, the ship is not gated on them, and another round of rewording is itself
 hazard.
 
 Verdict: pass (0 blocking).
+
+### 2026-09-09 — BUT-2018 (Art. 15 blocks section reduced to one direction) — commit-gate test review
+
+Staged: 9 files. Change removes `incoming_blocks` from the Art. 15 bundle, deletes
+`FirebaseDataExportRepository.exportIncomingBlocks`, collapses `exportBlocks` to a single leg
+(so the two-leg partial machinery — readLeg/attemptedLegs/failedLegs/`blocks-partial-export-failure`
+— goes with it), re-argues `EXPORT_EXEMPT.block_mirror` off its dead premise, and inverts the
+cross-language guard (`scenario_blockMirrorExemptionRestsOnIncomingBlocks` ->
+`…OnTheSameDecision`, now failing if the section RETURNS).
+
+Angle 1 — five new `exportBlocks` tests, kill set each, none vacuous, none entailed:
+  A happy path — kills a dropped `sanitizeForJson` (DateTime must become ISO-8601), a renamed
+    key, an id/data envelope wrap.
+  B `never reports the incoming direction` — kills any emitted key/value whose JSON encoding
+    contains `incoming` / `blocked_by` / `blockerUserId`. Overlaps the cascade source-text
+    guard only on quoted `incoming_blocks`; the other two spellings are its own. Different
+    SEAM from the cascade guard (runtime output vs source text), so not a duplicate under the
+    "duplicate is measurable" rule.
+  C `states the omission and its legal basis` — kills a rewritten/deleted Art. 15(4) sentence.
+  D `byte-identical on every path` — kills a `data_minimisation` conditional on the list being
+    non-empty AND its omission from the catch branch. Already probed red by the author. C
+    cannot see the failure path; D cannot see the wording. Both needed.
+  E `a refused read is the outright failure` — kills `outgoing_blocks: []` beside the failure
+    envelope, `e.toString()` in the envelope, a dropped `error_code`.
+
+Angle 2 — deleting the BUT-748 test loses nothing. `blockedId` on the INCOMING direction is
+held by `firebase_block_repository_test.dart:408` (`the INCOMING readers query blockedId, not
+blockerId`, a mocktail field capture), by `block_record_test.dart` (round-trip), by
+`blocks-rules.test.ts` (`where("blockedId","==",ME)` allow/deny), and by the cascade's
+`scenario_blocksAreErasedInBothDirections`. Verified by grep, not inherited from the brief.
+
+Angle 3 — the replacement is non-vacuous, and the discrimination lives in the SECOND
+assertion, not the first. Fixture: out1 {blockerId: uid}, in1 {blockedId: uid}. Repointing
+`where('blockerId')` -> `where('blockedId')` still returns exactly ONE row, so `hasLength(1)`
+survives; what reddens is `isNot(contains('other-user'))`, reachable because
+`exportOutgoingBlocks` passes `includeIds: false` and the row's own data carries the blocker
+uid. A repoint to a NON-EXISTENT field dies on `hasLength(1)`. Two mutants, two different
+assertions — neither is redundant.
+
+Angle 4 — one owed test, the only finding. The section's whole failure semantics rest on
+"key ABSENT = we could not say" vs "key present and EMPTY = you blocked nobody". E pins the
+first; NOTHING pins the second. Mutant `if (outgoing.isNotEmpty) 'outgoing_blocks': ...`
+survives all five tests (A is populated; B/C/D read only the note; E asserts absence). Grep
+confirms `outgoing_blocks` appears in no other suite, so the bundle-level file cannot see it
+either. The same file already carries the sibling pattern for friends (`all four record-type
+keys present even when empty`) and the moderation group states the rationale explicitly
+("dropping the key entirely would ship a section that never names its own subject"), so this
+is an omission against the file's own convention. Non-blocking: the mutant still differs from
+a failure by `error`/`error_code`.
+
+Angle 5 — one Low. Test B's NAME (`never reports the incoming direction`) claims more than its
+assertions can hold: it proves three spellings are absent, not that no incoming key of any name
+ships. The test's own comment discloses exactly that ("A return under a key none of them
+matches is caught by nothing here or in the cascade guard"), so the name and comment disagree
+in strength. Suggested narrowing rather than a strike, since a test name is not a measured
+claim. Nothing else: the manager's doc comment about the cross-language coupling is accurate
+(the guard regex is `/['"]incoming_blocks['"]/`, and the doc comment's own mention is
+backticked, so it cannot self-trip — the cascade test says so in a comment and it is true);
+`assertGuardTriggersCoverItsDartInputs` pre-existed (5698) and is correctly passed the Dart
+input the guard reads.
+
+Also verified: `functions/lib/*.js` still contains the old `incoming_blocks` string but is
+untracked, so it is not a stale committed twin. `docs/legal/privacy_policy.md` mentions no
+block section, which is what the new deviation entry claims.
+
+No mutation probe run — three gates had already graded these bytes and the brief forbade a
+`lib/` write; every claim above is from reading, grep, or arithmetic over the fixtures.
+
+Verdict: pass (0 blocking).
+
+#### Round 2 (same day) — re-read of `test/unit/services/account/export/social_export_manager_test.dart`
+
+Blob `ed1f5752c01b009a97ea4e5ca0e14dd8e94720ab`; `git rev-parse :<path>` == `git hash-object
+<path>`, so index and worktree agree and the verdict is against the bytes that ship. Group is
+now six tests.
+
+Both findings taken correctly.
+- `an empty successful read still ships the key` (1886-1895) closes the absent-vs-empty pair:
+  `containsKey` true, value `isEmpty`, neither `error` nor `error_code`. Non-vacuous by
+  construction (the default fake returns `const []`, i.e. a SUCCESSFUL empty read), and the
+  author's probe of the mutant I named reddens only this test — so it is entailed by none of
+  the five. Its comment names the sibling VERBATIM (`a refused read…`) and states which side of
+  the input split each pins, which is the boundary-clause shape rather than a test→mutant map.
+- The rename `never reports the incoming direction` -> `no incoming-direction key ships under
+  three spellings` makes the name and the three assertions agree.
+
+One Low left standing, deliberately NOT sent back for a third wording: "three spellings" is a
+count over the test's own contents and has an insertion seam — a fourth `isNot` falsifies the
+name. Recorded rather than re-filed, because another round on one sentence is itself the
+documented hazard and the edit adding a fourth assertion would touch the name anyway.
+
+Verdict: pass (0 blocking).
+
+#### Round 3 (same day) — strike of the WHY-clause on `an empty successful read still ships the key`
+
+Blob `7f17491b7f3e1d6228ffc9c751e5dfd82b707056`, index == worktree. Isolate-diff against the
+round-2 blob (`git cat-file -p <old> > scratch && diff -u --strip-trailing-cr`) shows ONE hunk:
+three comment lines removed, nothing added, no assertion, name or fixture touched.
+
+The struck claim was false and the strike is right: dropping the key on an empty SUCCESSFUL
+read yields `{data_minimisation}` while the failure path yields `{error, error_code,
+data_minimisation}` — different shapes, so "the same shape in the bundle" overclaimed. It is
+the BUT-2047 principle already in the knowledge file (the CONSEQUENCE stated for a surviving
+mutant is a separate claim, written into the repair's comment before anyone traces it), and it
+contradicted the harm bound I had myself written in round 1 ("the mutant still differs from a
+failure by `error`/`error_code`") — which I did not carry into grading the comment that was
+written from my own finding. Worth remembering: my own bound is the thing to check the
+resulting comment against.
+
+Struck with no replacement, per the rule. Graded the residue: the surviving two clauses carry
+no antecedent into the deleted text and no orphaned ordinal ("the other half" resolves to the
+sibling named in the next clause). Swept the CONCEPT for a paraphrase rather than the phrase —
+the two neighbouring sentences about an empty list beside a failure marker (the sibling test's
+comment and the manager's doc comment in `lib/`, both unchanged and pre-graded) assert what the
+KEY would read as, not that the two states are indistinguishable, so neither is a surviving
+copy of the struck claim.
+
+Verdict: pass (0 blocking).

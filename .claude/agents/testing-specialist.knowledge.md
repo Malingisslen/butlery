@@ -622,6 +622,11 @@ other suites prove:
   assertions hold under every mutant. Drive the refused ACTION to the point where it would write —
   and read the inserted call's OWN early-returns against the state the failure left, because the
   same failed read that armed the guard usually nulls what the driving call needs (BUT-1939/1962).
+  **Where a section distinguishes an ABSENT key ("we could not say") from a PRESENT-but-EMPTY
+  one ("a true negative"), that is TWO pins and a round writes only the failure one** — a
+  mutant emitting the key only when the list is non-empty then survives the whole group. Grep
+  the key across `test/`; a sibling section in the same file usually already carries the "keys
+  present even when empty" case to copy (BUT-2018).
 - **The silent-return→throw rewrite seen from the other end**: putting `await expectLater(call,
   throwsA(...))` ABOVE a surviving "nothing was written" assertion makes that assertion
   UNREACHABLE when the throw is missing, so it no longer carries the missing-guard mutant. What it

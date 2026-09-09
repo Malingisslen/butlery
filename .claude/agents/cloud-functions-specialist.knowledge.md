@@ -118,9 +118,8 @@ Triggers retry on uncaught exception; handlers must be idempotent:
 - Narrow imports. 540s is the v2 max; read the real value off `__endpoint`.
 - **An in-code timeout guard is dead unless `timeoutSeconds` is declared on the
   SAME trigger** — global options carry no timeout, so a v2 event function
-  defaults to 60s. Pin guard-ms against the manifest's
-  `__endpoint.timeoutSeconds`; a constant-vs-constant test stays green after
-  the declaration is deleted.
+  defaults to 60s. Pin guard-ms against `__endpoint.timeoutSeconds`; a
+  constant-vs-constant test survives deleting the declaration.
 - **A `retry:true` trigger enumerating a client-writable collection has
   unbounded fan-out** — cap the READ (`.limit(CAP+1).get()`), chunk-delete with
   a per-item `.catch` on grpc code only, never throw. The over-cap verdict
@@ -241,16 +240,15 @@ from `(err as {code?}).code`.
   the transaction (Auth is not transactional), answering `auth/user-not-found` and
   `auth/invalid-uid` as "gone", rethrowing every other code; a DELETE of an
   orphan (a late rebuild re-creates the erased uid's doc post-probe; Auth
-  deletion is the cascade's LAST step, so the subject exists throughout it); a
-  cross-user sweep that STAMPS the revision guard (`arrayRemove` leaves it untouched,
-  so an in-flight older rebuild wins); a run AFTER the source tier; and a CAP flag
-  unread by the consuming rules gate under-enforces on input OTHER people choose
+  deletion is the cascade's LAST step); a cross-user sweep that STAMPS the
+  revision guard (`arrayRemove` leaves it untouched, so an older in-flight
+  rebuild wins); a run AFTER the source tier; and a CAP flag unread by the
+  consuming rules gate under-enforces on input OTHER people choose
   (`.limit(cap+1)` with NO `orderBy` keeps the lowest doc ids, so sockpuppets sort a
   real entry off the end). Trigger + reconcile NARROWS the window, never closes it;
-  a task LAST in `WEEKLY_REPORT_TASKS` is what `runTaskChain` SKIPS first. A TIMEOUT
-  aborts the chain at ANY index and skips everything behind it, so first position
-  is where that costs the most — a safety sweep put there needs its own wall-clock
-  budget, not just a row cap.
+  a task LAST in `WEEKLY_REPORT_TASKS` is what `runTaskChain` SKIPS first, and a
+  TIMEOUT aborts the chain at ANY index — so a safety sweep needs its own
+  wall-clock budget, not just a row cap.
 - **A compare-before-repair reconciliation resolves EXISTENCE once per uid ABOVE
   every branch, and counts a DELETE as drift on every branch.** `stored == expected`
   never settles orphanhood — an EMPTY orphan matches an empty expectation, and a
@@ -337,9 +335,11 @@ from `(err as {code?}).code`.
 - **EXPORT ⊇ DELETION is the cascade's other drift guard**: every source-parsed
   `subs` name is either read by an export chain or in a reasoned exemption map
   kept in PRODUCTION source, not the test. Such a map is PERMANENT — re-check
-  each "no live writer" exemption against the same writer scan, and name every
-  withheld collection in the bundle's `data_minimisation` line, or the gap is
-  undisclosed (Art. 12(1)).
+  each "no live writer" exemption against the same writer scan; an exemption
+  reasoned from ANOTHER export SECTION dies with that section, so re-argue it
+  in the commit removing it AND supersede every decision-record sentence that
+  commit falsifies. Name every withheld collection in a `data_minimisation`
+  line, verifying WHICH line names it, or the gap is undisclosed (Art. 12(1)).
 - **A SCHEDULED JOB writing uid-keyed rows under a non-`users/{uid}` path is
   invisible to both of the cascade's structural loops** (e.g.
   `analytics/notifications/effectiveness`) — give each its own probe leg; a
@@ -382,10 +382,10 @@ from `(err as {code?}).code`.
 - Unbounded collection-group folds use `.aggregate({count, average})`, never
   `.get()`; ANY filtered `collectionGroup` query — equality or
   `array-contains` — needs a `fieldOverrides` entry with
-  `queryScope:"COLLECTION_GROUP"`, in `firestore.indexes.json`, staged in the
-  SAME commit (precedent: `participants/participantId`). Missing, a cascade leg
+  `queryScope:"COLLECTION_GROUP"` in `firestore.indexes.json`, staged in the
+  SAME commit (precedent: `participants/participantId`) — missing, a cascade leg
   throws FAILED_PRECONDITION on every real erasure while the fake stays green.
-  A COLLECTION-scoped equality needs none unless `fieldOverrides` EXEMPTS that
+  COLLECTION-scoped equality needs none unless `fieldOverrides` EXEMPTS the
   field — check exemptions, not `indexes`.
 
 ### Verify-signup-age, account callables & minor-safety triggers
@@ -415,11 +415,10 @@ from `(err as {code?}).code`.
 
 ### LLM prompts & prompts-config
 - Compiled-in prompt edits are INERT while a Firestore `system/prompts`
-  override doc is live — ship a matching prod-doc update with the change.
-- A new prompt field must be OPTIONAL with per-field fallback — a
-  required-keys set reverts every live override. When
-  mirroring a config field, grep every test fixture, or a stale one flips to
-  fallback and passes vacuously.
+  override doc is live — ship a matching prod-doc update. A new prompt field
+  must be OPTIONAL with per-field fallback (a required-keys set reverts every
+  live override), and mirroring a config field means grepping every test
+  fixture, or a stale one flips to fallback and passes vacuously.
 
 ### Ingredient sync, allergen data & admin exports/ETL (admin/ family)
 - `admin/` scripts run `main()` at import — extract pure cores to test.
@@ -465,9 +464,12 @@ from `(err as {code?}).code`.
 - **A guard READING files outside `functions/src` is asleep unless the workflow
   `paths:` reach them** — derive the list from what the guard OPENS and assert
   it against BOTH the `push` and `pull_request` blocks; fixing one is the
-  half-miss. A hand-rolled `paths:` parser fails CLOSED — an unknown glob shape
-  reports UNCOVERED. Breadth must reach the ORCHESTRATOR that assembles the
-  output, not only the helper directory it calls.
+  half-miss. A hand-rolled `paths:` parser fails CLOSED. Assert PER GUARD — a
+  sibling scenario's derived assertion covers only ITS inputs — and reach the
+  ORCHESTRATOR assembling the output, not just the helper directory. Two guards
+  in two languages must never cite EACH OTHER for a case neither covers: a
+  TEXT scan sees the token, the behavioural test sees named keys, and a rename
+  escapes both — name the residual, never describe it as covered.
 - **A TTL field is INERT without a policy** — `fieldOverrides` `"ttl": true` +
   `firebase deploy --only firestore:indexes`. `--force` deletes every live
   override absent from the file; only `gcloud firestore fields ttls list`
