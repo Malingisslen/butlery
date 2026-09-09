@@ -36320,3 +36320,38 @@ Verified good this round: the fourth arm (`nothingKept`, `accountDeleted: true`,
 empty) kills `=> accountDeleted` analytically and was probed RED; the `?? const []` fail-open
 witness landed on the existing ordinary-deletion case as recommended, probed RED; the widget
 file's header enumeration was struck rather than extended.
+
+### 2026-09-09 — BUT-2047 round 3: both strikes verified, and one of my own remedies withdrawn
+
+All 12 re-read at the current index bytes (24 staged, 0 MM/AM). Both blocking findings from
+round 2 are closed:
+  - deletion_retention_notice_test.dart:362-366 — the false consequence clause is gone; the
+    two surviving sentences ("every arm above still agrees with `=> accountDeleted`", and why
+    `accountDeleted` is seeded true) are both measured, and the StateError chain was correctly
+    NOT substituted.
+  - The provisional head clause is struck in both ARBs, in the regenerated
+    app_localizations.dart (gen-l10n ran in the same edit — all three copies now read
+    identically), in the widget test, and in auth_action_handler.dart, whose surviving
+    sentence ("a provisional hold reports `ok: false`, which lands in `failedCollections` and
+    makes `success` false") is true on BOTH server branches. The coordinator's own concept
+    grep found a sixth copy at erasure-hold.ts:283 that my table had missed.
+
+WITHDRAWN, my error: round 2 demanded the trailing clause "when nothing measured one" be
+struck from the ARB descriptions along with the head clause. With the head gone that tail is a
+CONDITIONAL — "the notice must not assert a pending review as fact WHEN nothing measured one" —
+and a conditional rule is true regardless of which branch placed the hold. I graded it as false
+by reading it as an indicative claim about the provisional path. Withdrawn outright rather than
+re-filed narrowed.
+
+The distinction is the transferable part, and it decides what a strike must take with it:
+  CONDITIONAL survivor ("must not assert X when nothing measured one") — true, keep.
+  INDICATIVE survivor ("asserting X would tell them something nobody measured") — false,
+  because it ranges over the hold-write branch where a case IS known open.
+By that test three indicative survivors remain, all Low and all non-blocking (no assertion
+depends on any of them, and no user-facing string is involved):
+  profile_dialogs.dart:140-143, retained_record.dart:33-35, and the widget test at 156-157.
+Filed as fold-in-when-next-touched rather than as a fifth round on one sentence — the code is
+correct, the ship is not gated on them, and another round of rewording is itself the documented
+hazard.
+
+Verdict: pass (0 blocking).

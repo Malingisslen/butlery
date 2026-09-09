@@ -19616,3 +19616,11 @@ a non-empty `retained`, `=> accountDeleted` survives, and under it every ordinar
 deletion shows a notice claiming a moderation review that does not exist. Its comment names
 why the fixture must seed `accountDeleted: true` — the constructor default would agree with
 the mutant.
+
+Correction, 2026-09-09, to the `owesRetentionNotice` paragraph above. It says that under the
+surviving `=> accountDeleted` mutant "every ordinary successful deletion shows a notice
+claiming a moderation review that does not exist". Measured: `auth_action_handler.dart:127-133`
+evaluates `outcome.retained.first.holdUntil` as an ARGUMENT, so on an empty `retained` the
+`.first` throws `StateError` before any dialog is built — the outer catch pops and shows the
+error dialog with the exception text. No notice is ever shown. The finding stands: the fourth
+arm is real, the mutant does survive, and the `retained.isNotEmpty` conjunct was unpinned.

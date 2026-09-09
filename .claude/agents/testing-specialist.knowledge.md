@@ -477,6 +477,11 @@ other suites prove:
   list throws before any dialog is built. Trace the mutant through the CALLER to its first
   observable, or file the survival and stop: the finding does not need the consequence, and a
   wrong one ships as code (BUT-2047).
+  **When ordering a strike, say WHICH clause — a CONDITIONAL survivor is true where the
+  INDICATIVE one is false.** "must not assert X when nothing measured one" holds once the
+  false head clause goes; "asserting X would tell them something nobody measured" does not,
+  because it ranges over a branch where something did. I demanded both go and was wrong about
+  the first; withdraw such an over-reach outright rather than re-file it narrowed (BUT-2047).
 - **The test closing ONE conjunct discriminates only while the fixture leaves every OTHER
   conjunct SATISFIED — usually via an unremarked property of a stub nobody would defend.** Name
   the conjuncts the fixture is holding open in the test, or a later tidy vacuums it (BUT-1971).
