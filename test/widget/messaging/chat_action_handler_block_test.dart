@@ -311,12 +311,18 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Kunde inte blockera användare'), findsOneWidget);
-    // colorScheme.secondary is what the error arm sets.
-    final bar = tester.widget<SnackBar>(find.byType(SnackBar));
-    final scheme = Theme.of(
-      tester.element(find.byType(SnackBar)),
-    ).colorScheme;
-    expect(bar.backgroundColor, equals(scheme.secondary));
+    // BUT-2025: the colour does not say WHICH arm emitted this — and
+    // `blockedUserIds` cannot stand in for it, because the fake records only
+    // successes and is empty either way.
+    //
+    // The attempt counter is what the shared snackbar cannot satisfy.
+    expect(
+      friendsViewModel.blockAttempts,
+      1,
+      reason:
+          'the block must have been ATTEMPTED and refused, not abandoned '
+          'before BlockUserAction was reached',
+    );
     expect(friendsViewModel.blockedUserIds, isEmpty);
   });
 

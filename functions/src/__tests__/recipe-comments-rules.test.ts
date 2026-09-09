@@ -81,7 +81,14 @@ async function setup(): Promise<void> {
     await ctx
       .firestore()
       .doc(`blocks/${OWNER_UID}_${BLOCKED_UID}`)
-      .set({ blockedAt: new Date() });
+      // BUT-2025: the shape `BlockRecord.toFirestore` actually writes — the two
+      // id fields plus an ISO STRING stamp. `isNotBlockedBy` is a bare
+      // `exists()` and reads no field.
+      .set({
+        blockerId: OWNER_UID,
+        blockedId: BLOCKED_UID,
+        blockedAt: new Date().toISOString(),
+      });
 
   });
 }

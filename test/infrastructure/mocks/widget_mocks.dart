@@ -514,8 +514,15 @@ class MockFriendsViewModel extends MockBaseViewModel
   void setFriendshipStatus(String userId, FriendshipStatus status) =>
       _statuses[userId] = status;
 
+  /// BUT-2025: counts ATTEMPTS, where `blockedUserIds` records only successes.
+  /// A refused block leaves that list empty, which is also what a caller that
+  /// never reached the block at all produces — so the list alone cannot say
+  /// which happened.
+  int blockAttempts = 0;
+
   @override
   Future<bool> blockUser(String userId) async {
+    blockAttempts += 1;
     if (blockSucceeds) {
       blockedUserIds.add(userId);
       _statuses[userId] = FriendshipStatus.blocked;

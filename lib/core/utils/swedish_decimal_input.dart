@@ -157,8 +157,6 @@ double? parseSwedishDecimal(String raw) {
 String formatSwedishDecimal(double amount) {
   // Infinity and NaN are what this guards. Neither has a digit spelling, and
   // this function seeds a field that opens with the value already in it.
-  // Since BUT-1912 the FIELD can no longer produce infinity. Other producers
-  // can: `QuantityParser.parse` has no finiteness guard.
   if (!amount.isFinite) return amount.toString();
   // Also catches -0.0, which `toStringAsFixed` spells "-0".
   if (amount == 0) return '0';

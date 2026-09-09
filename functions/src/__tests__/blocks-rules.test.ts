@@ -100,7 +100,7 @@ async function seed(): Promise<void> {
     ]) {
       await db
         .doc(`blocks/${blockId(blockerId, blockedId)}`)
-        .set({ blockerId, blockedId, createdAt: new Date() });
+        .set({ blockerId, blockedId, blockedAt: new Date().toISOString() });
     }
   });
 }
@@ -206,7 +206,7 @@ test("blocks: I may create a block where I am the blocker", async () => {
     db.doc(`blocks/${blockId(ME, STRANGER_A)}`).set({
       blockerId: ME,
       blockedId: STRANGER_A,
-      createdAt: new Date(),
+      blockedAt: new Date().toISOString(),
     })
   );
 });
@@ -234,7 +234,7 @@ test("blocks: I may not create a block in somebody else's name", async () => {
     db.doc(`blocks/${unseeded}`).set({
       blockerId: STRANGER_A,
       blockedId: ME,
-      createdAt: new Date(),
+      blockedAt: new Date().toISOString(),
     })
   );
 });
@@ -249,7 +249,7 @@ test("blocks: the doc id must match the fields", async () => {
     db.doc(`blocks/${blockId(ME, STRANGER_A)}`).set({
       blockerId: ME,
       blockedId: STRANGER_B,
-      createdAt: new Date(),
+      blockedAt: new Date().toISOString(),
     })
   );
 });
@@ -262,7 +262,7 @@ test("blocks: I may not block myself", async () => {
     db.doc(`blocks/${blockId(ME, ME)}`).set({
       blockerId: ME,
       blockedId: ME,
-      createdAt: new Date(),
+      blockedAt: new Date().toISOString(),
     })
   );
 });
@@ -275,7 +275,7 @@ test("blocks: a block cannot be edited, only deleted", async () => {
   await assertFails(
     db
       .doc(`blocks/${blockId(ME, BLOCKED)}`)
-      .update({ createdAt: new Date() })
+      .update({ blockedAt: new Date().toISOString() })
   );
 });
 

@@ -691,13 +691,13 @@ class ChatActionHandler {
         false;
   }
 
+  // BUT-2025: through `SnackBarUtils`. The raw `ScaffoldMessenger` this
+  // replaced painted `colorScheme.error`, so `socialCouldNotBlockUser` —
+  // reachable from here AND from `block_user_action.dart`, which already used
+  // the shared helper — arrived in two different colours inside one blocking
+  // flow.
   void _showErrorSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Theme.of(context).colorScheme.error,
-      ),
-    );
+    SnackBarUtils.showError(context, message);
   }
 
   void _showSuccessSnackBar(String message) {

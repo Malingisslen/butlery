@@ -107,6 +107,19 @@ void main() {
 
     expect(find.text(weeklyPlanReadFailedMessage), findsOneWidget);
     expect(find.text('Ingen meny för den veckan'), findsNothing);
+    // BUT-2025: pins that this handler's error bar goes through
+    // `SnackBarUtils.showError` (which paints `colorScheme.secondary`) rather
+    // than the raw `ScaffoldMessenger` it used to build itself, which painted
+    // `colorScheme.error`. Without this, reverting the reroute leaves this
+    // suite green while the same sentence arrives in two different colours
+    // depending on where in a flow it was raised.
+    final errorBar = tester.widget<SnackBar>(find.byType(SnackBar));
+    expect(
+      errorBar.backgroundColor,
+      equals(
+        Theme.of(tester.element(find.byType(SnackBar))).colorScheme.secondary,
+      ),
+    );
     verifyNever(
       () => messagingService.sendMenuShare(
         conversationId: any(named: 'conversationId'),

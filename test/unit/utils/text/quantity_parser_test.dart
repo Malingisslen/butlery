@@ -199,5 +199,33 @@ void main() {
         },
       );
     });
+
+    group('BUT-1943: non-finite quantities never reach the amount field', () {
+      // `double.tryParse` answers Infinity from 309 nines and is still finite
+      // at 308. Both numbers are asserted, so a future change to the fallback
+      // cannot be read as having moved the boundary.
+      test('309 nines is Infinity and falls back to 1.0', () {
+        expect(double.tryParse('9' * 309), equals(double.infinity));
+        expect(QuantityParser.parse('9' * 309), equals(1.0));
+      });
+
+      test('308 nines is finite and is returned unchanged', () {
+        final finite = double.parse('9' * 308);
+        expect(finite.isFinite, isTrue);
+        expect(QuantityParser.parse('9' * 308), equals(finite));
+      });
+
+      test('the unicode-fraction branch has its own guard', () {
+        // This path never reaches the check on the standard branch: it parses
+        // its whole part separately and returns `whole + fraction`, which is
+        // Infinity when the whole part overflows.
+        expect(QuantityParser.parse('${'9' * 309}½'), equals(1.0));
+        // The same shape at 308 does not fall back.
+        expect(
+          QuantityParser.parse('${'9' * 308}½'),
+          equals(double.parse('9' * 308) + 0.5),
+        );
+      });
+    });
   });
 }

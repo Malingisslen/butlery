@@ -429,7 +429,11 @@ void main() {
         when(() => doc.data()).thenReturn({
           'blockerId': 'they-blocked-me',
           'blockedId': 'me',
-          'createdAt': Timestamp.fromDate(DateTime.utc(2026, 1, 1)),
+          // BUT-2025: `blockedAt`, an ISO STRING — what `BlockRecord.toFirestore`
+          // actually writes. The old `createdAt: Timestamp` matched no producer
+          // in the app. Nothing on this path reads the stamp, so it was not a
+          // live bug; it was a trap for whoever next writes a test that does.
+          'blockedAt': DateTime.utc(2026, 1, 1).toIso8601String(),
         });
         when(() => doc.id).thenReturn('they-blocked-me_me');
         when(() => snapshot.docs).thenReturn([doc]);

@@ -111,6 +111,13 @@ class QuantityParser {
         if (parts.length == 2) {
           final whole =
               double.tryParse(parts[0].trim().replaceAll(',', '.')) ?? 0;
+          // BUT-1943: this branch has its OWN parse and its own return, so a
+          // finiteness check on the standard path below never reaches it.
+          // `Infinity + ¼` is `Infinity`, which travels to
+          // `UnifiedShoppingItem.amount` and reopens the edit dialog with the
+          // word "Infinity" in the amount field — not a number, and
+          // `parseSwedishDecimal` refuses to read it back.
+          if (!whole.isFinite) return _invalidQuantityFallback(qtyString);
           return whole + entry.value;
         }
       }
@@ -151,6 +158,33 @@ class QuantityParser {
       return 1.0;
     }
 
+    // BUT-1943: `double.tryParse` answers `Infinity` from 309 nines and is
+    // still finite at 308 — measured. `parsed < 0` above does not catch
+    // `+Infinity`, and nothing downstream does either: the value travels
+    // through `IngredientProcessor` into shopping-list generation and back into
+    // `formatSwedishDecimal`, which renders it as the word "Infinity". The
+    // amount field then cannot be edited out of that state without retyping the
+    // whole field. The bound BUT-1912 put on the FIELD does not reach this
+    // path, which is fed by imported and OCR-read recipe rows.
+    //
+    // It shares the invalid-input fallback rather than getting a signal of its
+    // own: `parse` returns 1.0 for unparseable input by its own contract, and a
+    // second channel would need every one of this method's callers to handle
+    // it. That a silent 1.0 is itself a quiet wrong answer is true of the
+    // negative and unparseable cases already — it is the contract, not a new
+    // concession.
+    if (!parsed.isFinite) return _invalidQuantityFallback(qtyString);
+
     return parsed;
+  }
+
+  /// The 1.0 that [parse] returns for input it will not use, with the warning
+  /// that makes a spike visible in observability.
+  static double _invalidQuantityFallback(String qtyString) {
+    AppLogger.warning(
+      'Non-finite quantity "$qtyString" coerced to 1.0',
+      'QuantityParser',
+    );
+    return 1.0;
   }
 }
