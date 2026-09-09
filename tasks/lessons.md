@@ -2499,6 +2499,20 @@ Example: lib/services/menu/parser/text_normalizer.dart _noWordBefore/_noWordAfte
   ARTEFACT is asserting that artefact exists, and that assertion is checkable in one
   command. `git ls-files | grep` the cited name before spending a batch on it. A block whose
   subject does not exist indicts the gate, not the diff, and the fix belongs in the gate.
+- **Cause, found 2026-09-09**: the sprint engine's review surface was the APPLY agent's
+  self-reported `files[]` — an LLM's transcription of `git status --porcelain`, taken as
+  authoritative with nothing comparing it to the tree. A path nothing produced then fails
+  both blocking conditions at once, and for the same reason: no reviewer can open a file
+  that is not there, so it lands in `unclaimed`, and no read of it can reach the ledger, so
+  it lands in `ledgerBlocking`. The instruction was already right ("this list is the only
+  thing that gets reviewed and committed"); the verification was missing.
+- **Generalised rule**: where an agent is asked to CLASSIFY a command's output, ask it for
+  the output VERBATIM and classify in code — the engine's own hold and close-out steps
+  already did ("do not judge it, do not summarise it — the caller classifies"). And close
+  such a gap in both directions: the invented path is the visible failure, the OMITTED one
+  is the dangerous failure, because an under-reported list silently shrinks what gets
+  reviewed and committed. Fixed in the delivery plugin (`ac8f010`), pinned by S34/S34b/S34c.
+  Same shape still open in that engine's `precondition` step.
 
 ### [Testing] A service wrapped in executeServiceOperation makes a stubbed-repo test green without ever calling the repo
 - **Date**: 2026-08-23 (BUT-1937)
