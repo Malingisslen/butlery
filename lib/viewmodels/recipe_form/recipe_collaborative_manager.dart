@@ -13,6 +13,7 @@ import 'package:butlery/models/permissions/edit_mode.dart';
 import 'package:butlery/models/shared_recipe.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/user_service.dart';
+import 'package:butlery/core/mixins/disposal_guard_mixin.dart';
 import 'package:butlery/repositories/collaborative_recipe_repository.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
@@ -20,8 +21,15 @@ import 'package:butlery/core/mixins/stream_management_mixin.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Manages real-time collaborative editing for recipe forms.
+/// BUT-2015: this manager `await`s and then notifies from its own statements,
+/// so a continuation can land on it after the form closed. The notifying
+/// statement is the MANAGER'S OWN in each case, not a parent's continuation —
+/// so no parent guard covers it.
+///
+/// `dispose()` below keeps its own cleanup and ends on `super.dispose()`, which
+/// is what reaches [DisposalGuardMixin] and flips the flag.
 class RecipeCollaborativeManager extends ChangeNotifier
-    with StreamManagementMixin {
+    with StreamManagementMixin, DisposalGuardMixin {
   final PermissionService _permissionService;
   final CollaborativeRecipeRepository _collaborativeRepository;
   final ConnectivityMonitoringService _connectivityService;

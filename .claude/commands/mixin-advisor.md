@@ -37,6 +37,15 @@ description: >
 | Async ops | + `AsyncOperationMixin` | SmartImportViewModel |
 | Komplex | + `ErrorCoordinatorMixin` | RecipeFormViewModel |
 | State notify | + `StateNotifierMixin` | FormViewModel |
+| Notifierar efter dispose | `DisposalGuardMixin` (fristående, inte additiv) | SocialEngagementManager, RecipeCollaborativeManager |
+
+`DisposalGuardMixin` (BUT-2015) gör `notifyListeners()` till en no-op efter
+`dispose()`. Ta den när hållaren kan notifiera EFTER att den avyttrats — ett
+`await` mellan ingång och notifiering, men lika gärna en `StreamSubscription`,
+en `Timer`-kropp eller en lyssnare den registrerat någon annanstans. Behövs INTE
+för något som ärver `BaseViewModel`, som har vakten inbyggd. Läs mixinens eget
+filhuvud innan du kombinerar den med `ErrorHandlingMixin` eller
+`StreamManagementMixin`; det står där vad de flaggorna gör och inte gör.
 
 ## Beslutstabell
 

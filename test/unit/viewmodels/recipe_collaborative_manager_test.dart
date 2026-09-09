@@ -949,5 +949,60 @@ void main() {
         expect(() => manager.dispose(), returnsNormally);
       });
     });
+
+    group('BUT-2015: disposal guard', () {
+      test('carries the guard', () {
+        expect(manager.isDisposed, isFalse);
+        manager.dispose();
+        expect(manager.isDisposed, isTrue);
+      });
+
+      test('a notification after dispose is swallowed, not thrown', () {
+        manager.dispose();
+
+        // Without the guard, `ChangeNotifier.notifyListeners` asserts on a
+        // disposed notifier. Swallowing is the decided answer: whoever reaches
+        // here is a callback or continuation finishing after the form closed.
+        expect(manager.notifyListeners, returnsNormally);
+      });
+
+      test(
+        'a continuation landing after dispose does not throw out of the method',
+        () async {
+          // The case the ticket asked for, on a REAL manager rather than on the
+          // mixin's stand-in: dispose while an `await` is genuinely in flight,
+          // then let the future land. `inviteUserToCollaboration` is the
+          // clean shape — it awaits the injected repository and then runs its
+          // own `notifyListeners()`.
+          //
+          // Without the guard this does not merely notify a dead object: the
+          // assert throws, the method's own `catch (e)` swallows it and rethrows
+          // `Exception(errorGeneric)`, so the future completes with an error and
+          // the caller is told the invite failed when it did not.
+          await manager.enableCollaborativeMode(testRecipe);
+
+          final gate = Completer<void>();
+          when(
+            () => mockRepository.updateRealtimeRecipe(any()),
+          ).thenAnswer((_) => gate.future);
+
+          final inFlight = manager.inviteUserToCollaboration(
+            'invited-user',
+            'Inbjuden',
+            ResourcePermission.editor,
+          );
+
+          manager.dispose();
+          gate.complete();
+
+          await expectLater(inFlight, completes);
+          // Reachability anchor. `inviteUserToCollaboration` early-returns when
+          // `_realtimeRecipe == null`, and on that branch it never awaits, so
+          // `completes` would pass with the guard deleted. This file exercises
+          // that branch elsewhere.
+          verify(() => mockRepository.updateRealtimeRecipe(any())).called(1);
+        },
+      );
+    });
   });
 }
