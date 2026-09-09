@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:butlery/models/account/retained_record.dart';
 import 'package:butlery/viewmodels/profile/profile_viewmodel.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/user_service.dart';
@@ -168,22 +169,30 @@ void main() {
     });
 
     group('deleteAccount', () {
-      // Behavior: returns true when account deletion succeeds
-      test('should return true when deletion succeeds', () async {
-        when(
-          () => mockAccountDeletionService.deleteUserAccount(
-            reason: any(named: 'reason'),
-            createAuditLog: any(named: 'createAuditLog'),
-          ),
-        ).thenAnswer((_) async => {'success': true});
+      // Behavior: reports success, and keeps nothing
+      test(
+        'reports success, and keeps nothing, on an ordinary deletion',
+        () async {
+          when(
+            () => mockAccountDeletionService.deleteUserAccount(
+              reason: any(named: 'reason'),
+              createAuditLog: any(named: 'createAuditLog'),
+            ),
+          ).thenAnswer((_) async => {'success': true});
 
-        final result = await viewModel.deleteAccount(
-          reason: 'No longer needed',
-        );
+          final result = await viewModel.deleteAccount(
+            reason: 'No longer needed',
+          );
 
-        expect(result, isTrue);
-        expect(viewModel.isLoading, isFalse);
-      });
+          expect(result.success, isTrue);
+          // BUT-2046 follow-up: an ordinary deletion keeps nothing, so the
+          // Art. 12(4) notice is not shown. The common path must stay exactly
+          // as it was.
+          expect(result.retained, isEmpty);
+          expect(result.hasRetainedRecords, isFalse);
+          expect(viewModel.isLoading, isFalse);
+        },
+      );
 
       // Behavior: passes reason and audit log flag to deletion service
       test('should pass reason to deletion service', () async {
@@ -204,9 +213,46 @@ void main() {
         ).called(1);
       });
 
-      // Behavior: returns false when deletion reports failure
+      // Behavior: carries a legal hold OUT of the service and into the outcome
+      test('carries a retained record through to the outcome', () async {
+        // Every other stub in this file omits `retained`, so the extraction in
+        // `deleteAccount` was only ever exercised on its NULL branch —
+        // replacing the read with a constant empty list passed all of them.
+        // This is the wiring, not the parse: `RetainedRecord.listFrom` is
+        // pinned separately as a pure function.
+        final holdUntil = DateTime.utc(2027, 3, 8);
+        when(
+          () => mockAccountDeletionService.deleteUserAccount(
+            reason: any(named: 'reason'),
+            createAuditLog: any(named: 'createAuditLog'),
+          ),
+        ).thenAnswer(
+          (_) async => {
+            'success': true,
+            'retained': [
+              RetainedRecord(
+                resourceType: 'user_moderation',
+                legalBasis: 'GDPR Art. 17(3)(e)',
+                holdUntil: holdUntil,
+              ),
+            ],
+          },
+        );
+
+        final result = await viewModel.deleteAccount(reason: 'Testing');
+
+        expect(result.success, isTrue);
+        expect(result.hasRetainedRecords, isTrue);
+        expect(result.retained, hasLength(1));
+        // The DATE specifically: the dialog renders it, so losing it here
+        // would show the notice without the one fact that bounds the hold.
+        expect(result.retained.first.holdUntil, holdUntil);
+        expect(result.retained.first.legalBasis, 'GDPR Art. 17(3)(e)');
+      });
+
+      // Behavior: reports the failure, and keeps nothing either way
       test(
-        'should return false when deletion result is not successful',
+        'reports failure when the deletion result is not successful',
         () async {
           when(
             () => mockAccountDeletionService.deleteUserAccount(
@@ -222,48 +268,62 @@ void main() {
 
           final result = await viewModel.deleteAccount(reason: 'Testing');
 
-          expect(result, isFalse);
+          expect(result.success, isFalse);
+          // A FAILED deletion keeps nothing either — `retained` records a
+          // lawful hold, never an error. Pinned so the two can never be read
+          // as the same signal.
+          expect(result.retained, isEmpty);
         },
       );
 
-      // Behavior: returns false when no user is logged in
-      test('should return false when no user is logged in', () async {
-        mockAuthService.setAuthState(isAuthenticated: false);
-        final noUserVM = ProfileViewModel(
-          authService: mockAuthService,
-          userService: mockUserService,
-          accountDeletionService: mockAccountDeletionService,
-        );
+      // Behavior: the exception escapes; no outcome is produced
+      test(
+        'throws rather than returning an outcome when no user is logged in',
+        () async {
+          mockAuthService.setAuthState(isAuthenticated: false);
+          final noUserVM = ProfileViewModel(
+            authService: mockAuthService,
+            userService: mockUserService,
+            accountDeletionService: mockAccountDeletionService,
+          );
 
-        bool result = false;
-        try {
-          result = await noUserVM.deleteAccount(reason: 'Test');
-        } catch (_) {
-          // executeAsync rethrows the 'No user logged in' exception
-        }
+          AccountDeletionOutcome? result;
+          try {
+            result = await noUserVM.deleteAccount(reason: 'Test');
+          } catch (_) {
+            // executeAsync rethrows the 'No user logged in' exception
+          }
 
-        expect(result, isFalse);
-        noUserVM.dispose();
-      });
+          expect(result, isNull);
+          noUserVM.dispose();
+        },
+      );
 
-      // Behavior: returns false when deletion service throws
-      test('should return false when deletion service throws', () async {
-        when(
-          () => mockAccountDeletionService.deleteUserAccount(
-            reason: any(named: 'reason'),
-            createAuditLog: any(named: 'createAuditLog'),
-          ),
-        ).thenThrow(Exception('Network error'));
+      // Behavior: the exception escapes; no outcome is produced
+      test(
+        'throws rather than returning an outcome when the service throws',
+        () async {
+          when(
+            () => mockAccountDeletionService.deleteUserAccount(
+              reason: any(named: 'reason'),
+              createAuditLog: any(named: 'createAuditLog'),
+            ),
+          ).thenThrow(Exception('Network error'));
 
-        bool result = false;
-        try {
-          result = await viewModel.deleteAccount(reason: 'Test');
-        } catch (_) {
-          // executeAsync rethrows
-        }
+          AccountDeletionOutcome? result;
+          try {
+            result = await viewModel.deleteAccount(reason: 'Test');
+          } catch (_) {
+            // executeAsync rethrows
+          }
 
-        expect(result, isFalse);
-      });
+          // Null because the throw escaped before any outcome was built. Written
+          // as a null check rather than a `success` check on a default outcome:
+          // a default would let a future refactor return "not held, not
+          // successful" here and read the same.
+          expect(result, isNull);
+        },
+      );
 
       // Behavior: manages loading state during deletion
       test('should set loading during account deletion', () async {

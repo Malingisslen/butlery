@@ -8,6 +8,7 @@ import 'package:butlery/repositories/interfaces/search_repository.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
+import 'package:butlery/models/account/retained_record.dart';
 
 /// BUT-788: client wrapper for the server-side account-deletion callable.
 ///
@@ -60,6 +61,8 @@ class AccountDeletionService extends BaseService {
   ///   - `auditLogId` (String?) — id of the deletion-audit row.
   ///   - `requiresReauth` (bool) — set when the CF rejects on stale
   ///     `auth_time`; caller must trigger re-authentication and retry.
+  ///   - `retained` (`List<RetainedRecord>`) — records lawfully kept under
+  ///     GDPR Art. 17(3); empty on an ordinary deletion.
   Future<Map<String, dynamic>> deleteUserAccount({
     required String reason,
     bool createAuditLog = true,
@@ -70,6 +73,13 @@ class AccountDeletionService extends BaseService {
       'failedCollections': <String>[],
       'errors': <String>[],
       'auditLogId': null,
+      // BUT-2046 follow-up: records kept under GDPR Art. 17(3), so the profile
+      // screen can give the person the Art. 12(4) notice before it navigates
+      // away — this method signs out before it returns, so the notice is the
+      // last thing shown, not the last thing shown while signed in. Empty on
+      // every ordinary deletion, which is the common case and must stay
+      // indistinguishable from the old behaviour.
+      'retained': <RetainedRecord>[],
     };
 
     final uid = _authService.currentUserId;
@@ -209,5 +219,9 @@ class AccountDeletionService extends BaseService {
     if (data['auditLogId'] is String) {
       result['auditLogId'] = data['auditLogId'];
     }
+    // Parsed here rather than passed through raw: the dialog must not read a
+    // map straight off the wire, and a shape the server never sends degrades to
+    // "nothing kept" instead of throwing away the notice.
+    result['retained'] = RetainedRecord.listFrom(data['retained']);
   }
 }

@@ -12060,5 +12060,34 @@
         "type": "int"
       }
     }
+  },
+  "profileDeletionNoticeTitle": "Ditt konto är raderat",
+  "@profileDeletionNoticeTitle": {
+    "description": "Title of the GDPR Art. 12(4) notice shown when an account deletion lawfully retained moderation evidence"
+  },
+  "profileDeletionNoticeWhat": "En sak har sparats: en pågående granskning av innehåll som anmälts.",
+  "@profileDeletionNoticeWhat": {
+    "description": "Says WHAT was kept after the account deletion"
+  },
+  "profileDeletionNoticeWhy": "Varför: vi måste kunna hantera anmälningen färdigt.",
+  "@profileDeletionNoticeWhy": {
+    "description": "Says WHY it was kept (the legal ground, in plain language)"
+  },
+  "profileDeletionNoticeHowLong": "Hur länge: tills granskningen är klar, senast {date}.",
+  "@profileDeletionNoticeHowLong": {
+    "description": "Says HOW LONG the retained record is kept. {date} is the outer cap transmitted by the server, never a hardcoded number.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "profileDeletionNoticeRights": "Du kan klaga till IMY eller vända dig till domstol om du inte håller med.",
+  "@profileDeletionNoticeRights": {
+    "description": "The Art. 12(4) remedies: the supervisory authority (IMY) and a judicial remedy"
+  },
+  "profileDeletionNoticeHowLongUnknown": "Hur länge: tills granskningen är klar.",
+  "@profileDeletionNoticeHowLongUnknown": {
+    "description": "The HOW LONG line when the server sent no parsable outer-cap date. Says less rather than saying a number nobody measured."
   }
 }

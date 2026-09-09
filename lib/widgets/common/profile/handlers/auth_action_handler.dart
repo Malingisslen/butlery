@@ -95,26 +95,48 @@ class AuthActionHandler {
     try {
       // Perform deletion using ProfileViewModel
       final profileViewModel = ServiceLocator.get<ProfileViewModel>();
-      final success = await profileViewModel.deleteAccount(
+      final outcome = await profileViewModel.deleteAccount(
         reason: 'User requested account deletion',
       );
+      final success = outcome.success;
 
       if (context.mounted) {
         Navigator.pop(context); // Close loading indicator
 
         if (success) {
-          // Account deleted successfully
+          // BUT-2046 follow-up: when the erasure lawfully kept moderation
+          // evidence, GDPR Art. 12(4) owes this person a notice — and this is
+          // the only moment it can be given. The account and the session are
+          // both already gone (`deleteUserAccount` signs out before it
+          // returns), so there is no signed-in surface afterwards and no
+          // second channel: email infra does not exist (BUT-417).
+          //
+          // AWAITED, and before the navigation: `pushNamedAndRemoveUntil` tears
+          // down this route, so a dialog shown after it goes with it. The
+          // ordinary deletion keeps the snackbar it always had.
+          //
+          // The cap DATE comes from the server rather than the copy — a
+          // hardcoded "180 days" is a promise the constant can silently break.
+          if (outcome.hasRetainedRecords) {
+            await ProfileDialogs.showRetentionNoticeDialog(
+              context,
+              holdUntil: outcome.retained.first.holdUntil,
+            );
+            if (!context.mounted) return;
+          }
           Navigator.pushNamedAndRemoveUntil(
             context,
             '/auth',
             (route) => false,
           );
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(context.l10n.profileAccountDeletedPermanently),
-              backgroundColor: context.butleryColors.success,
-            ),
-          );
+          if (!outcome.hasRetainedRecords) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(context.l10n.profileAccountDeletedPermanently),
+                backgroundColor: context.butleryColors.success,
+              ),
+            );
+          }
         } else {
           // Deletion failed
           ProfileDialogs.showErrorDialog(

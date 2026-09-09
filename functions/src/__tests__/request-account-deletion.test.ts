@@ -45,6 +45,28 @@ interface RecordedAuditRow {
 
 interface FakeDbState {
   auditRows: RecordedAuditRow[];
+  /**
+   * BUT-2046 follow-up. This fake answers every read with an empty snapshot,
+   * so the legal-hold path was unreachable from here and the callable's RETURN
+   * — the hop the Art. 12(4) dialog is rendered from — had no test at all.
+   *
+   * The seam is deliberately narrow: it seeds ONE `reports` row, and only for a
+   * query carrying TWO `where` clauses. `hasOpenModerationCase` is the only
+   * reader on this collection that chains two, so `deleteUserReports` (a single
+   * `reporterId` equality) still sees the empty snapshot it always saw and no
+   * other step's behaviour moves.
+   */
+  openReportRow?: Record<string, unknown>;
+  /**
+   * Every `(collection, field)` this run was asked to filter on.
+   *
+   * The `held` ARGUMENT at the cascade's call site was pinned by nothing:
+   * `deleteModerationSystemEvents(db, uid, held)` has `held = false`, so
+   * deleting the third argument compiles, and the deleter's own scenarios grade
+   * the FUNCTION by calling it directly. Recording the queries lets this suite
+   * grade the WIRING, which is the only place that argument exists.
+   */
+  queries?: Array<[string, string]>;
 }
 
 function emptySnapshot(): {
@@ -74,10 +96,20 @@ function makeBatch() {
 }
 
 function makeFakeDb(state: FakeDbState): admin.firestore.Firestore {
-  function makeCollection(name: string): unknown {
+  function makeCollection(name: string, whereDepth = 0): unknown {
+    // See `FakeDbState.openReportRow`: two chained `where` clauses on `reports`
+    // is `hasOpenModerationCase` and nothing else in the cascade.
+    const seeded =
+      name === "reports" && whereDepth >= 2 && state.openReportRow !== undefined
+        ? state.openReportRow
+        : undefined;
     const query: {
       get(): Promise<ReturnType<typeof emptySnapshot>>;
-      where(): typeof query;
+      where(
+        field?: string | admin.firestore.FieldPath,
+        op?: string,
+        value?: unknown,
+      ): typeof query;
       limit(): typeof query;
       orderBy(): typeof query;
       startAt(): typeof query;
@@ -88,10 +120,30 @@ function makeFakeDb(state: FakeDbState): admin.firestore.Firestore {
       add(data: RecordedAuditRow): Promise<{ id: string }>;
     } = {
       async get() {
-        return emptySnapshot();
+        if (seeded === undefined) return emptySnapshot();
+        return {
+          empty: false,
+          size: 1,
+          docs: [
+            {
+              id: "rep1",
+              data: () => seeded,
+              get: (f: string) => seeded[f],
+              ref: { id: "rep1", delete: async () => undefined },
+            },
+          ],
+          data: () => ({ count: 1 }),
+        } as ReturnType<typeof emptySnapshot>;
       },
-      where() {
-        return query;
+      where(
+        field?: string | admin.firestore.FieldPath,
+        _op?: string,
+        _value?: unknown,
+      ) {
+        if (typeof field === "string") {
+          (state.queries ??= []).push([name, field]);
+        }
+        return makeCollection(name, whereDepth + 1) as typeof query;
       },
       // BUT-1838/BUT-1801 gave the capped sweeps a `.limit(CAP + 1)` so they can
       // DECLINE an implausible row count instead of truncating one. Without this
@@ -470,6 +522,139 @@ test("BUT-788: audit row carries a 180-day expireAt", async () => {
   const drift = Math.abs(expireMs - expectedMs);
   if (drift > 60_000) {
     throw new Error(`expireAt drift too large: ${drift}ms (expected ~180d)`);
+  }
+});
+
+
+test("BUT-2046: an open moderation case is retained, and the RETURN carries it", async () => {
+  const state: FakeDbState = {
+    auditRows: [],
+    openReportRow: {
+      reporterId: "uid-bob",
+      contentOwnerId: "uid-alice",
+      status: "in_review",
+    },
+  };
+  const db = makeFakeDb(state);
+  const authCalls: FakeAuthCalls = { deleteUserUid: null, throwOnDelete: false };
+  const storageCalls: FakeStorageCalls = { deletePrefixes: [] };
+
+  const result = await runAccountDeletionWithDeps(
+    { db, auth: makeFakeAuth(authCalls), storage: makeFakeStorage(storageCalls) },
+    "uid-alice",
+    "alice@example.com",
+    "user_request",
+  );
+
+  // The hop OUT of the function. `retained` reaching `DeletionResult` is not
+  // enough: the callable returns a hand-written allowlist, and the Art. 12(4)
+  // dialog is rendered from what crosses that boundary. Nothing in the cascade
+  // suite exercises this return.
+  if (result.retained.length !== 1) {
+    throw new Error(
+      `expected one retained record on the RETURN, got ${JSON.stringify(result.retained)}`,
+    );
+  }
+  if (result.retained[0].legalBasis !== "GDPR Art. 17(3)(e)") {
+    throw new Error(`wrong basis: ${JSON.stringify(result.retained[0])}`);
+  }
+  // A `Timestamp` does not survive the callable boundary; the client parses a
+  // string. Asserting only "is set" would pass on the wrong type.
+  if (typeof result.retained[0].holdUntil !== "string") {
+    throw new Error(
+      `holdUntil must cross as a string, got ${typeof result.retained[0].holdUntil}`,
+    );
+  }
+
+  // Condition A: a lawful hold is NOT a failure, which is the whole reason
+  // `retained` is a field beside `failedCollections` rather than inside it.
+  if (!result.success) {
+    throw new Error(
+      `a held erasure must still report success, failed: ${JSON.stringify(result.failedCollections)}`,
+    );
+  }
+  if (!result.deletedCollections.includes("erasure_hold_evaluated")) {
+    throw new Error(
+      `expected the 'erasure_hold_evaluated' step, got ${JSON.stringify(result.deletedCollections)}`,
+    );
+  }
+  // The audit row must not claim `user_moderation` was deleted on the same
+  // erasure whose `retained` says it was kept — two answers about one document.
+  if (result.deletedCollections.includes("user_moderation")) {
+    throw new Error(
+      "a held erasure must not report user_moderation as deleted",
+    );
+  }
+  // The audit row is the operator's only record of the hold, and no other test
+  // reads it: deleting the `retained:` mapping from `writeDeletionAuditLog`
+  // leaves every other suite green.
+  const audit = state.auditRows[0] as unknown as {
+    gdprCompliant: boolean;
+    retained: unknown[];
+  };
+  if (audit.gdprCompliant !== true) {
+    throw new Error("a lawful hold must not flip gdprCompliant");
+  }
+  if (!Array.isArray(audit.retained) || audit.retained.length !== 1) {
+    throw new Error(
+      `audit row lost 'retained': ${JSON.stringify(audit.retained)}`,
+    );
+  }
+
+  // The `held` ARGUMENT, graded at the call site. Production returns from
+  // `deleteModerationSystemEvents` BEFORE the `details.contentOwnerId` sweep
+  // when held, so that query's absence is the argument arriving. Dropping the
+  // third argument compiles (`held = false`) and is green everywhere else —
+  // the deleter's own scenarios call the function directly and never see the
+  // wiring.
+  const owner = (state.queries ?? []).filter(
+    ([c, f]) => c === "system_events" && f === "details.contentOwnerId",
+  );
+  if (owner.length !== 0) {
+    throw new Error(
+      "a held erasure must not sweep system_events on details.contentOwnerId",
+    );
+  }
+  // And the reporter leg DID run — the hold is one-directional, so its absence
+  // would mean the whole step was skipped rather than the argument honoured.
+  const reporter = (state.queries ?? []).filter(
+    ([c, f]) => c === "system_events" && f === "details.reporterId",
+  );
+  if (reporter.length === 0) {
+    throw new Error(
+      "the reporter leg must still run under a hold — one-directional by design",
+    );
+  }
+});
+
+test("BUT-2046: with no open case the return is unchanged — retained is empty", async () => {
+  const state: FakeDbState = { auditRows: [] };
+  const db = makeFakeDb(state);
+  const authCalls: FakeAuthCalls = { deleteUserUid: null, throwOnDelete: false };
+  const storageCalls: FakeStorageCalls = { deletePrefixes: [] };
+
+  const result = await runAccountDeletionWithDeps(
+    { db, auth: makeFakeAuth(authCalls), storage: makeFakeStorage(storageCalls) },
+    "uid-alice",
+    "alice@example.com",
+    "user_request",
+  );
+
+  if (result.retained.length !== 0) {
+    throw new Error(
+      `no open case must retain nothing, got ${JSON.stringify(result.retained)}`,
+    );
+  }
+  // The positive control for the assertion above: with no hold, the owner leg
+  // IS swept. Without this, "the query is absent" would pass on a run that
+  // never reached the step at all.
+  const owner = (state.queries ?? []).filter(
+    ([c, f]) => c === "system_events" && f === "details.contentOwnerId",
+  );
+  if (owner.length === 0) {
+    throw new Error(
+      "an unheld erasure must sweep system_events on details.contentOwnerId",
+    );
   }
 });
 

@@ -77,6 +77,10 @@ const ok = (name: string, sink: string[]) =>
 
 async function testRegistryMembership(): Promise<void> {
   const expectedDaily = [
+    // BUT-2046 follow-up: FIRST, and this test is the only thing pinning that.
+    // A legal hold ends nowhere else, and a tail task is the first one dropped
+    // under budget pressure.
+    "sweepErasureHolds",
     "trackDayNRetention",
     "computeFeatureRetention",
     // User-facing (win-back push) — ahead of the reporting tasks on purpose.
@@ -93,7 +97,7 @@ async function testRegistryMembership(): Promise<void> {
   ];
   const actualDaily = DAILY_ANALYTICS_TASKS.map((t) => t.name);
   record(
-    "DAILY_ANALYTICS_TASKS holds exactly the ten merged daily jobs",
+    "DAILY_ANALYTICS_TASKS holds exactly the merged daily jobs, in order",
     JSON.stringify(actualDaily) === JSON.stringify(expectedDaily),
     `got ${JSON.stringify(actualDaily)}`,
   );

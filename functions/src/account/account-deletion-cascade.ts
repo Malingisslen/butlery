@@ -55,10 +55,35 @@ import { stageMemberRemoval } from "../groups/chat-group-writes";
 // steps below keep the trigger's posture rather than inherit the cascade's.
 import { stageCascadeAuditEntry } from "../cleanup/cascade-audit-log";
 
+/**
+ * One thing kept, and why — the Art. 12(4) notice is rendered from this.
+ *
+ * Declared here rather than beside the hold logic in `moderation/erasure-hold.ts`
+ * so that file can import from this one and this one need not import back: a
+ * value cycle between the cascade and the hold is avoidable, so it is avoided.
+ */
+export interface RetainedRecord {
+  /** Collection the retained rows live in. */
+  resourceType: string;
+  /** GDPR article the retention rests on. */
+  legalBasis: string;
+  /** When the hold lifts at the latest, regardless of the case. */
+  holdUntil: admin.firestore.Timestamp;
+}
+
 export interface DeletionResult {
   deletedCollections: string[];
   failedCollections: string[];
   errors: string[];
+  /**
+   * Records LAWFULLY kept, with the article they rest on (BUT-2046 follow-up).
+   *
+   * Deliberately separate from `failedCollections`: a disclosed refusal under
+   * Art. 17(3) is not a failure, and expressing one as `gdprCompliant: false`
+   * would say "something went wrong" about a decision that went right — and
+   * nothing could ever clear the flag.
+   */
+  retained: RetainedRecord[];
 }
 
 export type Step = () => Promise<boolean>;
@@ -122,6 +147,32 @@ export async function probeResidualData(
   uid: string,
   result: DeletionResult,
 ): Promise<void> {
+  /**
+   * BUT-2046 follow-up. A lawful hold makes the probe's own house rule — the
+   * deleter is a true superset of the probe — false for the legs the hold
+   * keeps, and that exception is written here rather than left to be inferred:
+   * without it every held erasure reports `gdprCompliant: false` about itself,
+   * permanently, with no code path able to clear it.
+   *
+   * The set must stay in step with `deleteModerationSystemEvents`'s own `legs`
+   * array. They are two spellings of one decision about which rows survive a
+   * hold, and the day they disagree the erasure lies about itself.
+   *
+   * Scoped to the RESOURCE, not to `retained` being non-empty: `RetainedRecord`
+   * is a general shape, so the day a second Art. 17(3) hold ships over some
+   * other collection, a length test would silently disarm the legs below for a
+   * hold that has nothing to do with moderation.
+   *
+   * The skipped legs are named by their LOG LABELS below, not by collection,
+   * because `report_history` has two legs and only one of them is held. The other —
+   * "residual report rows as reporter" — must keep firing: it is the reporter
+   * side, which the hold is deliberately one-directional about, and silencing
+   * it would hide a real failure of `deleteReportHistoryByReporter`.
+   */
+  const held = result.retained.some(
+    (r) => r.resourceType === USER_MODERATION,
+  );
+
   // `recipes` is NOT in this list, and must never be added back. These probes are
   // top-level collections filtered by a `userId` FIELD; recipes live in the
   // subcollection `users/{uid}/recipes` and are probed separately below. Reading
@@ -253,7 +304,9 @@ export async function probeResidualData(
       errName: err instanceof Error ? err.name : typeof err,
     });
   }
-  try {
+  // Skipped under a hold: the held person's OWN rows. The reporter leg above
+  // is NOT skipped — see the note on `held`.
+  if (!held) try {
     const snap = await db
       .collection(USER_MODERATION)
       .doc(uid)
@@ -279,7 +332,9 @@ export async function probeResidualData(
   // The PARENT document, whose id is the erased uid and which holds
   // `totalReports`/`lastReportedAt`. The leg above counts its rows; without
   // this one a parent standing with no rows beneath it reads as clean.
-  try {
+  //
+  // Skipped under a hold.
+  if (!held) try {
     const snap = await db.collection(USER_MODERATION).doc(uid).get();
     if (snap.exists) {
       residual += 1;
@@ -465,17 +520,31 @@ export async function probeResidualData(
     // filters a TOP-LEVEL `userId` field: `system_events` carries the uid under
     // `details`, so a leg there would match zero on every erasure forever — an
     // all-clear that is true by accident, the realtime_recipes trap this file
-    // keeps paying for. Three legs because the deleter has three, and they are
+    // keeps paying for. One leg per field the deleter sweeps, and they are
     // uncapped so they still fire when a leg DECLINED above
     // `MAX_SYSTEM_EVENT_SWEEP_ROWS` and swept nothing.
     //
-    // `details.contentOwnerId` is not redundant with the two beside it: it is
+    // `details.contentOwnerId` is not redundant with the legs beside it: it is
     // the only thing that measures whether the ANONYMIZE half ran, since a
-    // deleted row and an un-anonymized one are indistinguishable to the other
-    // two legs.
-    [SYSTEM_EVENTS, "details.userId", "=="],
+    // deleted row and an un-anonymized one are indistinguishable to the legs
+    // beside it.
+    // Both of these are skipped under a hold, and they must move TOGETHER with
+    // the deleter's `legs` array — two spellings of one decision about which
+    // rows survive a hold, and the day they disagree the erasure lies about
+    // itself: `details.userId` carries the REPORTED
+    // person's uid on the threshold alert, which a hold keeps, and
+    // `details.contentOwnerId` is the leg whose own comment calls it the only
+    // thing measuring whether the anonymize half ran — which, under a hold,
+    // deliberately did not. Counting either would report residue for a decision
+    // that went right, on every held erasure, forever, with no code path able
+    // to clear it.
+    ...(held ? [] : ([[SYSTEM_EVENTS, "details.userId", "=="]] as const)),
+    // NOT skipped: this is the genuinely reporter-side leg, and the hold is
+    // one-directional by design.
     [SYSTEM_EVENTS, "details.reporterId", "=="],
-    [SYSTEM_EVENTS, "details.contentOwnerId", "=="],
+    ...(held
+      ? []
+      : ([[SYSTEM_EVENTS, "details.contentOwnerId", "=="]] as const)),
   ] as const) {
     // A `FieldPath` leg carries the uid IN ITS SEGMENTS, and the logger
     // JSON-stringifies whatever it is handed — so logging `field` directly
@@ -2906,8 +2975,13 @@ export async function deleteUserReports(
  */
 const SYSTEM_EVENTS = "system_events";
 
-/** The moderation strike record, keyed on the REPORTED user's uid (BUT-2046). */
-const USER_MODERATION = "user_moderation";
+/**
+ * The moderation strike record, keyed on the REPORTED user's uid (BUT-2046).
+ *
+ * Exported because `held` is keyed on it in TWO files, and the comments on both
+ * say they must agree — a second string literal is how they stop agreeing.
+ */
+export const USER_MODERATION = "user_moderation";
 
 /** One row per report, beneath a `user_moderation` document (BUT-2046). */
 const REPORT_HISTORY = "report_history";
@@ -2917,7 +2991,7 @@ const REPORT_HISTORY = "report_history";
  * `MAX_BLOCK_SWEEP_ROWS` — decline above it rather than truncate, because a
  * truncated sweep reports a clean erasure over rows it never looked at.
  *
- * The count is chosen by OTHER PEOPLE on one of the three legs: anyone may file
+ * The count is chosen by OTHER PEOPLE on the owner-keyed legs: anyone may file
  * a report naming this user as `contentOwnerId`, and `firestore.rules` has no
  * write limb on this collection at all — every row here is an Admin-SDK write
  * from `onReportCreated`, so nothing a client can be rate-limited on bounds it
@@ -2945,7 +3019,7 @@ const MAX_SYSTEM_EVENT_SWEEP_ROWS = 2000;
  *       the `reports` document, so a derived copy must not outlive its source.
  *       Malin's explicit call, 2026-09-08 (ADR-0016), against Trust & Safety's
  *       alternative of nulling the field and keeping the row.
- *   reported erases  -> ANONYMIZE, exactly as `anonymizeReportsByContentOwner`
+ *   reported erases  -> ANONYMIZE, exactly as `anonymizeReportsByContentOwnerWithDb`
  *       does on the source row (BUT-781): the row stays, the identifier goes.
  *
  * Each mutation stages its own `audit_logs` row (ADR-0014). The step runs in the
@@ -2965,6 +3039,20 @@ const MAX_SYSTEM_EVENT_SWEEP_ROWS = 2000;
 export async function deleteModerationSystemEvents(
   db: admin.firestore.Firestore,
   uid: string,
+  /**
+   * BUT-2046 follow-up. Under a legal hold every row ABOUT this person is kept:
+   * the `details.contentOwnerId` anonymize does not run, and the
+   * `details.userId` threshold alert is not deleted — that field carries the
+   * REPORTED person's uid (`feedback/on-report-created.ts` writes
+   * `userId: contentOwnerId`), so deleting it would keep the report and destroy
+   * the alert derived from it, which is a half-held case.
+   *
+   * Only `details.reporterId` is genuinely the other party, and that leg runs
+   * unchanged: the hold is one-directional by design.
+   *
+   * `sweepErasureHolds` calls this again with the default once the hold lifts.
+   */
+  held = false,
 ): Promise<boolean> {
   let complete = true;
 
@@ -2987,13 +3075,16 @@ export async function deleteModerationSystemEvents(
     return snap.docs;
   };
 
-  // The threshold alert and the reporter-side report rows: both deleted, so they
-  // share one commit. `details.userId` is queried rather than the document id
+  // The rows this erasure DELETES, sharing one commit. Which legs those are
+  // depends on `held` — see the array below. `details.userId` is queried rather than the document id
   // rebuilt, so a threshold row whose id ever differs from the convention is
   // still reached, and no audit row is staged for a document that never existed.
   const deletions: admin.firestore.QueryDocumentSnapshot[] = [];
   const deletedIds = new Set<string>();
-  for (const field of ["details.userId", "details.reporterId"] as const) {
+  const legs = held
+    ? (["details.reporterId"] as const)
+    : (["details.userId", "details.reporterId"] as const);
+  for (const field of legs) {
     const docs = await sweep(field);
     if (docs === null) {
       // `continue`, not `return`: the legs are independent and half an erasure
@@ -3030,6 +3121,13 @@ export async function deleteModerationSystemEvents(
 
   // The reported-side rows survive with the identifier removed. Read AFTER the
   // deletes above so a row naming this user in both roles is already gone.
+  //
+  // Under a hold the identifier STAYS — that is the whole exception, and the
+  // reports rows one collection over are held by the same decision. Returning
+  // here rather than filtering below is deliberate: the sweep itself would be a
+  // read whose only product is rows nothing may touch.
+  if (held) return complete;
+
   const owned = await sweep("details.contentOwnerId");
   if (owned === null) {
     complete = false;

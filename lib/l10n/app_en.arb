@@ -11998,5 +11998,34 @@
         "type": "int"
       }
     }
+  },
+  "profileDeletionNoticeTitle": "Your account has been deleted",
+  "@profileDeletionNoticeTitle": {
+    "description": "Title of the GDPR Art. 12(4) notice shown when an account deletion lawfully retained moderation evidence"
+  },
+  "profileDeletionNoticeWhat": "One thing has been kept: an ongoing review of content that was reported.",
+  "@profileDeletionNoticeWhat": {
+    "description": "Says WHAT was kept after the account deletion"
+  },
+  "profileDeletionNoticeWhy": "Why: we have to be able to finish handling the report.",
+  "@profileDeletionNoticeWhy": {
+    "description": "Says WHY it was kept (the legal ground, in plain language)"
+  },
+  "profileDeletionNoticeHowLong": "How long: until the review is finished, at most {date}.",
+  "@profileDeletionNoticeHowLong": {
+    "description": "Says HOW LONG the retained record is kept. {date} is the outer cap transmitted by the server, never a hardcoded number.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "profileDeletionNoticeRights": "You can complain to IMY or go to court if you disagree.",
+  "@profileDeletionNoticeRights": {
+    "description": "The Art. 12(4) remedies: the supervisory authority (IMY) and a judicial remedy"
+  },
+  "profileDeletionNoticeHowLongUnknown": "How long: until the review is finished.",
+  "@profileDeletionNoticeHowLongUnknown": {
+    "description": "The HOW LONG line when the server sent no parsable outer-cap date. Says less rather than saying a number nobody measured."
   }
 }

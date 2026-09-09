@@ -19437,3 +19437,77 @@ block). Both are documented, and the second is pinned with an explicit rationale
 butlery-app-1 by hand after the build: `user_moderation` holds ZERO documents and
 `reports` zero rows, so no legacy array exists and the migration currently has nothing
 to move. Attributed, not reproducible from this repo.
+
+### 2026-09-09 — BUT-2046 follow-up: the legal hold, four review rounds [gdpr][cascade][review]
+
+Commit-gate review of the Art. 17(3)(e) legal hold over an open moderation case
+(`functions/src/moderation/erasure-hold.ts`, new). Four rounds, five blocking findings,
+all fixed before the pass.
+
+R1 — H1: the hold evaluation FAILED OPEN. `result.retained = await applyErasureHold(...)`
+inside `runStep`: any throw skipped the assignment, `held` went false, and tier 1 then
+deleted `user_moderation` while the trigger anonymized `reports`. A transient Firestore
+error produced exactly the outcome the article was invoked to prevent. H2: the TTL push
+that keeps held `report_history` rows from ageing out on the REPORT's clock ran through
+`commitInChunks` with the default `strict:false`, so a failed chunk warned with `{err}`
+(which serialises to `{}`) and the hold was recorded anyway — silently unprotected rows,
+invisible because the two probe legs that would have seen them are the ones a hold skips.
+
+R2 — H3: the M2 fix made the deleter KEEP `system_events.details.userId` (the threshold
+alert, which carries the REPORTED person's uid) under a hold, but the probe's owner-keyed
+loop still counted it. Every held erasure of a threshold-crossing user would have reported
+`gdprCompliant:false` and `success:false` permanently, with no code path able to clear it.
+Invisible to the suite: `holdStore()` seeded no `moderation_threshold_` row, and the
+scenario's own docstring said "exactly three legs". Both deviation files carried the same
+count beside a later sentence saying the fourth leg was held — the contradiction was
+written down before the code was. H4: the R1 fail-closed wrapper stopped one line short of
+the TTL push, which `strict:true` had just made far likelier to throw; the escape landed in
+the same fail-open window, now with a hold document standing over rows the cascade erased.
+
+R3 — the module split (`moderation/anonymize-reports.ts`) is clean, no cycle. M13: the new
+provisional-hold recovery write inside the trigger guard's catch was itself unguarded, and
+the outage that fails the read fails the write, so the throw would drop the gen1 event and
+lose `cleanupRecipeCookEvents`. Fixed and pinned by a double-failure scenario.
+
+R4 — the testing gate found that the `held` ARGUMENT at the cascade's call site was graded
+by nothing (`held = false` default, so dropping the third argument compiles). Closed with a
+query recorder in the orchestration fake plus a positive control.
+
+Left open at pass, both Low: both deviation files answer "what makes first chain position
+defensible" twice, the second answer contradicting the first (additive correction instead of
+a strike); and the runbook's "never makes an erasure report itself non-compliant" is now
+absolute-and-false, since an `ok:false` hold does flip the flag.
+
+Recurring shape across all four rounds: every blocking finding was a place where two lists
+had to agree about one decision (deleter legs vs probe legs; `retained` vs `ok`; the
+argument vs the default), and the count word in the prose was the tell each time.
+
+### 2026-09-09 — BUT-2046 follow-up, closing note on the entry above [gdpr][review]
+
+Two corrections to my own entry, appended rather than edited.
+
+1. That entry ends "Left open at pass, both Low", naming the doubled first-position answer in
+the deviation files and the runbook's "never makes an erasure report itself non-compliant".
+Both were closed later in the same commit, and I verified both: the first-position paragraph
+now gives one answer with the row cap keeping its real role, and the runbook says the hold is
+not a failure but a hold whose own steps went wrong is. The paragraph was an honest snapshot
+of the moment; it is not a live list of open work.
+
+2. The knowledge edit I made in that round BARE-STRUCK two clauses — "Deleting a cascade LEG
+needs a `__tests__` grep for writers of that path" and "a task LAST in `WEEKLY_REPORT_TASKS`
+is what `runTaskChain` SKIPS first" — without retiring either here, which is the one thing
+this file's own contract forbids. Two gates blocked on it (`grep -c "SKIPS first"` returned 0
+in both files), and both were restored in place rather than archived, which is the right
+remedy: the second clause is the reasoning the deviation entry and the dispatcher comment
+BOTH cite for putting the sweep first, deleted in the commit that leans on it. It now carries
+what this build added — a task FIRST is what a timeout aborts the chain on, so a safety sweep
+there needs a wall-clock budget and not only a row cap. I was retiring clauses to make room
+for my own additions and treated "subsumed elsewhere" as licence to delete; the budget
+pressure in this file's header is not authority to drop a principle without archiving it.
+
+Correction to the line above, same day: I paraphrased the restored clause as "a task FIRST is
+what a timeout aborts the chain on". That is too narrow and is not what the knowledge file
+says. Measured at `maintenance-dispatchers.ts:204-223`: `timedOut` is computed inside the
+per-task catch and the `if (timedOut)` break fires at ANY index, skipping every task behind
+it. First position is where that costs the most, not where it uniquely happens — which is the
+wording the clause actually carries.

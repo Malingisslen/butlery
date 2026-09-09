@@ -16380,4 +16380,28 @@ class AppLocalizationsEn extends AppLocalizations {
   String socialRequestsCancelledPartial(int succeeded, int total) {
     return '$succeeded of $total requests cancelled';
   }
+
+  @override
+  String get profileDeletionNoticeTitle => 'Your account has been deleted';
+
+  @override
+  String get profileDeletionNoticeWhat =>
+      'One thing has been kept: an ongoing review of content that was reported.';
+
+  @override
+  String get profileDeletionNoticeWhy =>
+      'Why: we have to be able to finish handling the report.';
+
+  @override
+  String profileDeletionNoticeHowLong(String date) {
+    return 'How long: until the review is finished, at most $date.';
+  }
+
+  @override
+  String get profileDeletionNoticeRights =>
+      'You can complain to IMY or go to court if you disagree.';
+
+  @override
+  String get profileDeletionNoticeHowLongUnknown =>
+      'How long: until the review is finished.';
 }

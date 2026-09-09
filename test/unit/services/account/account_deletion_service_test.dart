@@ -13,6 +13,7 @@
 library;
 
 import 'package:butlery/repositories/interfaces/search_repository.dart';
+import 'package:butlery/models/account/retained_record.dart';
 import 'package:butlery/services/account/account_deletion_service.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/notifications/notification_service.dart'
@@ -95,6 +96,75 @@ void main() {
       if (GetIt.instance.isRegistered<notif.NotificationService>()) {
         GetIt.instance.unregister<notif.NotificationService>();
       }
+    });
+
+    /// BUT-2046 follow-up: the callable's `retained` list survives the hop
+    /// into the result map, as PARSED records rather than raw maps.
+    ///
+    /// Nothing else witnessed this line: every other stub in this file and in
+    /// the viewmodel suite omits `retained`, so deleting
+    /// `result['retained'] = RetainedRecord.listFrom(...)` was green
+    /// everywhere — and a user under a legal hold would then get no Art. 12(4)
+    /// notice, with `RetainedRecord.listFrom` still passing as a pure function.
+    test('carries a retained record off the wire and parses it', () async {
+      callResult = _FakeCallableResult({
+        'success': true,
+        'deletedCollections': <String>[],
+        'failedCollections': <String>[],
+        'errors': <String>[],
+        'auditLogId': 'audit-9',
+        // The shape the callable really sends: `holdUntil` as an ISO string,
+        // because a Timestamp does not cross the callable boundary.
+        'retained': [
+          {
+            'resourceType': 'user_moderation',
+            'legalBasis': 'GDPR Art. 17(3)(e)',
+            'holdUntil': '2027-03-08T00:00:00.000Z',
+          },
+        ],
+      });
+      when(
+        () => callable.call<Map<dynamic, dynamic>>(any()),
+      ).thenAnswer((_) async => callResult);
+
+      final service = AccountDeletionService(
+        authService: auth,
+        functions: functions,
+      );
+
+      final result = await service.deleteUserAccount(reason: 'user_request');
+
+      final retained = result['retained'] as List<RetainedRecord>;
+      expect(retained, hasLength(1));
+      expect(retained.first.legalBasis, 'GDPR Art. 17(3)(e)');
+      expect(
+        retained.first.holdUntil,
+        DateTime.parse('2027-03-08T00:00:00.000Z'),
+      );
+    });
+
+    /// And the ordinary deletion, where the server sends no such field — the
+    /// common path, which must stay exactly as it was.
+    test('an ordinary deletion carries an empty retained list', () async {
+      callResult = _FakeCallableResult({
+        'success': true,
+        'deletedCollections': <String>[],
+        'failedCollections': <String>[],
+        'errors': <String>[],
+        'auditLogId': 'audit-10',
+      });
+      when(
+        () => callable.call<Map<dynamic, dynamic>>(any()),
+      ).thenAnswer((_) async => callResult);
+
+      final service = AccountDeletionService(
+        authService: auth,
+        functions: functions,
+      );
+
+      final result = await service.deleteUserAccount(reason: 'user_request');
+
+      expect(result['retained'], isEmpty);
     });
 
     /// Test 1: a successful CF response maps cleanly onto the legacy result

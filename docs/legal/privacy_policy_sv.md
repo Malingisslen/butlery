@@ -1,7 +1,7 @@
 # Integritetspolicy
 
 **Status:** Utkast. Ska granskas av juridiskt ombud och publiceras på en stabil URL (planerad: `butlery.se/integritet` när BUT-680 levereras).
-**Senast uppdaterad:** 2026-05-21
+**Senast uppdaterad:** 2026-09-09
 **Träder i kraft:** TBD vid publicering.
 
 ## 1. Vilka vi är
@@ -56,6 +56,7 @@ Molnbaserad AI-bearbetning (Mistral via Vertex AI) används för receptanalys fr
 - **Raderad kontoinformation:** bearbetas inom **30 dagar** efter din raderingsbegäran, med undantag av:
   - **Granskningsloggar:** lagras i **365 dagar** enligt GDPR Artikel 17.3(b)-undantaget (rättslig efterlevnad av våra kaskad-raderingsloggningskrav).
   - **Säkerhetskopior:** som innehåller raderad data upphör inom **30 dagar** efter raderingsbegäran.
+  - **Underlag i en pågående innehållsgranskning:** om någon har anmält innehåll från dig och granskningen inte är avslutad när du raderar kontot, sparas anmälan, den tillhörande räknaren och din identifierare tills granskningen är klar — och som längst **180 dagar** från raderingen. Grunden är GDPR Artikel 17.3(e). Du får ett besked i appen när det sker, med vad som sparats och hur länge.
 - **Kraschrapporter:** 90 dagar.
 - **Analyshändelser:** 14 månader (Firebase Analytics-standard).
 
@@ -94,7 +95,7 @@ Du har rätt att:
 
 - **Få tillgång till** dina uppgifter (Artikel 15) — dataexport i appen under Konto → Integritet & Data.
 - **Rätta** felaktigheter (Artikel 16) — redigera vilket fält som helst i appen, eller kontakta oss.
-- **Radera** dina uppgifter (Artikel 17) — kontoborttagning i appen under Kontosäkerhet.
+- **Radera** dina uppgifter (Artikel 17) — kontoborttagning i appen under Kontosäkerhet. Undantag: underlag i en pågående innehållsgranskning sparas tills granskningen är klar, som längst 180 dagar (Artikel 17.3(e), se avsnitt 6). Du får veta om det gäller dig, och du kan klaga till IMY eller vända dig till domstol.
 - **Begränsa** behandling (Artikel 18) — kontakta oss.
 - **Dataportabilitet** (Artikel 20) — JSON-export tillgänglig i appen.
 - **Invända** mot behandling (Artikel 21) — kontakta oss.

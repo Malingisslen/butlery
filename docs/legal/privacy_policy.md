@@ -1,7 +1,7 @@
 # Privacy Policy
 
 **Status:** Draft. To be reviewed by legal counsel and published at a stable URL (planned: `butlery.se/privacy` once BUT-680 lands).
-**Last updated:** 2026-05-21
+**Last updated:** 2026-09-09
 **Effective:** TBD upon publication.
 
 ## 1. Who we are
@@ -57,6 +57,7 @@ Cloud-based AI processing (Mistral via Vertex AI) is used for recipe parsing fro
 - **Deleted account data:** processed within **30 days** of your deletion request, except:
   - **Audit logs:** retained for **365 days** under the GDPR Article 17(3)(b) derogation (legal compliance with our cascade-delete logging obligations).
   - **Backups:** containing deleted data expire within **30 days** of the deletion request.
+  - **Evidence in an ongoing content review:** if someone has reported content of yours and the review is not finished when you delete your account, the report, its counter and your identifier are kept until the review closes — and at most **180 days** from the deletion. The ground is GDPR Article 17(3)(e). You are told in-app when this happens, including what was kept and for how long.
 - **Crash reports:** 90 days.
 - **Analytics events:** 14 months (Firebase Analytics default).
 
@@ -95,7 +96,7 @@ You have the right to:
 
 - **Access** your data (Article 15) — in-app data export under Account → Privacy & Data.
 - **Rectify** inaccuracies (Article 16) — edit any field in-app, or contact us.
-- **Erase** your data (Article 17) — in-app account deletion under Account Security.
+- **Erase** your data (Article 17) — in-app account deletion under Account Security. Exception: evidence in an ongoing content review is kept until the review closes, at most 180 days (Article 17(3)(e), see section 6). You are told if this applies to you, and you may complain to IMY or seek a judicial remedy.
 - **Restrict** processing (Article 18) — contact us.
 - **Data portability** (Article 20) — JSON export available in-app.
 - **Object** to processing (Article 21) — contact us.

@@ -1,7 +1,7 @@
 /**
  * Per-feature DAU + rolling 7d/28d WAU/MAU (BUT-599).
  *
- * Runs as the second task in the `dailyAnalytics` chain (06:00 UTC — see
+ * Runs in the `dailyAnalytics` chain (06:00 UTC — see
  * `scheduled/maintenance-dispatchers.ts`); it no longer owns a Cloud
  * Scheduler job. It shares a process with `trackDayNRetention` and runs
  * strictly after it, so the two user-iteration scans can no longer overlap

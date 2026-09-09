@@ -1,7 +1,7 @@
 /**
  * Track Day-N Retention (BUT-605 extends BUT prior).
  *
- * Runs as the first task in the `dailyAnalytics` chain (06:00 UTC — see
+ * Runs in the `dailyAnalytics` chain (06:00 UTC — see
  * `scheduled/maintenance-dispatchers.ts`); it no longer owns a Cloud
  * Scheduler job. For each user, computes days since signup
  * and writes a retention event when the user hits day 1, 7, 14, 30, 90,

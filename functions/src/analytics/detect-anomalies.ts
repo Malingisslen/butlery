@@ -6,7 +6,7 @@
  * for each monitored group and flags a metric as anomalous when today's value
  * is a statistical outlier versus the trailing baseline.
  *
- * It runs as the ninth task in the `dailyAnalytics` chain (06:00 UTC — see
+ * It runs in the `dailyAnalytics` chain (06:00 UTC — see
  * `scheduled/maintenance-dispatchers.ts`); it no longer owns a Cloud Scheduler
  * job. Its position is load-bearing: the five snapshot tasks are its producers
  * and run ahead of it in the same chain. A missing producer doc is SKIPPED,

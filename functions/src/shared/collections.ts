@@ -78,4 +78,10 @@ export const Collections = {
   // one per blocker: rules read it with a single `get()`, and the whole point
   // is turning N lookups into one.
   blockMirrorDoc: "current",
+  // BUT-2046 follow-up: one document per erasure held under GDPR Art. 17(3)(e).
+  // The SOLE spelling among this collection's callers — two on an erasure path
+  // is drift this repo has already paid for. (`admin/reset-collection-lists.ts`
+  // carries a literal like every other entry in that register, which is a list
+  // of names rather than a caller.)
+  erasureHolds: "erasure_holds",
 } as const;

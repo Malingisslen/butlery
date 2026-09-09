@@ -266,6 +266,15 @@ export const COLLECTIONS_TO_DELETE: CollectionTarget[] = [
   // rows a reset removes include every row about people it is not erasing.
   { name: "system_events" },
 
+  // BUT-2046 follow-up: the legal-hold decisions, one document per held
+  // erasure, keyed on the erased uid. `COLLECTIONS_TO_DELETE` and not
+  // `COLLECTIONS_DELIBERATELY_UNTOUCHED`, deliberately: a reset removes the
+  // reports and the moderation record a hold exists to protect, so a hold left
+  // standing would point at nothing and would keep a person's uid past the
+  // reset that erased everything it guarded. The register list has no runtime
+  // teeth and would have left exactly that.
+  { name: "erasure_holds" },
+
   // The admin console's own two collections (`admin/bulk-retag.ts`). Both key
   // on a raw admin uid — `admin_rate_limits` in BOTH the document id
   // `{adminUid}_bulkRetag_{date}` and an `adminUid` field, `admin_audit_logs`

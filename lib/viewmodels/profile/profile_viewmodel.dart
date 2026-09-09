@@ -9,6 +9,7 @@ import 'package:butlery/core/mixins/state_notifier_mixin.dart';
 import 'package:butlery/core/mixins/async_operation_mixin.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
+import 'package:butlery/models/account/retained_record.dart';
 
 /// ViewModel for profile management and user account operations.
 /// Handles:
@@ -72,9 +73,13 @@ class ProfileViewModel extends ChangeNotifier
   /// - Deletes Firebase Authentication account
   /// - Cannot be undone
   /// [reason] - Required reason for account deletion (for audit log)
-  /// Returns true if successful, false otherwise
-  Future<bool> deleteAccount({required String reason}) async {
+  ///
+  /// Returns an [AccountDeletionOutcome]: a deletion can succeed and still
+  /// lawfully retain moderation evidence under GDPR Art. 17(3)(e), which a
+  /// boolean cannot carry.
+  Future<AccountDeletionOutcome> deleteAccount({required String reason}) async {
     bool success = false;
+    var retained = const <RetainedRecord>[];
 
     await executeAsync(() async {
       try {
@@ -94,6 +99,9 @@ class ProfileViewModel extends ChangeNotifier
         );
 
         success = result['success'] as bool? ?? false;
+        retained =
+            result['retained'] as List<RetainedRecord>? ??
+            const <RetainedRecord>[];
 
         if (success) {
           AppLogger.info('Account deleted successfully');
@@ -108,7 +116,7 @@ class ProfileViewModel extends ChangeNotifier
       }
     });
 
-    return success;
+    return AccountDeletionOutcome(success: success, retained: retained);
   }
 
   /// Update user profile
@@ -138,4 +146,27 @@ class ProfileViewModel extends ChangeNotifier
     AppLogger.debug('ProfileViewModel disposed');
     super.dispose();
   }
+}
+
+/// What an account deletion did — and, when the law required it, what it kept.
+///
+/// BUT-2046 follow-up. This replaces a bare `bool`: a deletion can succeed and
+/// still lawfully retain moderation evidence under GDPR Art. 17(3)(e), and the
+/// person is owed a notice saying so (Art. 12(4)). A boolean cannot carry that,
+/// and the screen has exactly one moment to show it.
+class AccountDeletionOutcome {
+  const AccountDeletionOutcome({
+    required this.success,
+    this.retained = const <RetainedRecord>[],
+  });
+
+  /// Whether the erasure completed. A lawful hold does NOT make this false —
+  /// retention under an Art. 17(3) exception is a compliant outcome.
+  final bool success;
+
+  /// Records kept, empty on every ordinary deletion.
+  final List<RetainedRecord> retained;
+
+  /// Whether the person must be shown the Art. 12(4) notice.
+  bool get hasRetainedRecords => retained.isNotEmpty;
 }

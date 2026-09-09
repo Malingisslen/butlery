@@ -1,7 +1,7 @@
 /**
  * Detect Lapsed Users (BUT-688 win-back A/B variant resolution).
  *
- * Runs as the third task in the `dailyAnalytics` chain (06:00 UTC — see
+ * Runs in the `dailyAnalytics` chain (06:00 UTC — see
  * `scheduled/maintenance-dispatchers.ts`); it no longer owns a Cloud
  * Scheduler job. Deliberately ahead of the reporting tasks because it is the
  * one task in that chain that reaches a user. Identifies users inactive

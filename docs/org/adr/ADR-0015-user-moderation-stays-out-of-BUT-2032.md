@@ -60,3 +60,19 @@ a GDPR one. The DBA condition above is a precondition on that future build, reco
 it is not rediscovered during implementation.
 
 Advisory only. Malin decides whether BUT-2032 proceeds at all.
+
+---
+
+## SUPERSEDED IN PART — 2026-09-09 (BUT-2046 follow-up)
+
+What this record says, quoted so a grep returns both: *"DSA Art. 23 expects a platform to
+identify users who repeatedly file"*. DSA Art. 23 sits in Section 3, which Art. 19 DOES
+exempt micro and small enterprises from — so it does not bind Butlery, and the Trust &
+Safety seat's legal half fell away.
+
+What the CODE does now: the brigading signal was not built, `reportHistory` is a
+`report_history` subcollection with a 180-day TTL that the cascade erases, and a legal hold
+under GDPR Art. 17(3)(e) keeps an open case's evidence past the reported person's erasure.
+
+The decision this record argued for is unchanged; the argument it rests on is not the one
+it states. Nothing above is edited.

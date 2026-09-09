@@ -16422,4 +16422,28 @@ class AppLocalizationsSv extends AppLocalizations {
   String socialRequestsCancelledPartial(int succeeded, int total) {
     return '$succeeded av $total förfrågningar avbrutna';
   }
+
+  @override
+  String get profileDeletionNoticeTitle => 'Ditt konto är raderat';
+
+  @override
+  String get profileDeletionNoticeWhat =>
+      'En sak har sparats: en pågående granskning av innehåll som anmälts.';
+
+  @override
+  String get profileDeletionNoticeWhy =>
+      'Varför: vi måste kunna hantera anmälningen färdigt.';
+
+  @override
+  String profileDeletionNoticeHowLong(String date) {
+    return 'Hur länge: tills granskningen är klar, senast $date.';
+  }
+
+  @override
+  String get profileDeletionNoticeRights =>
+      'Du kan klaga till IMY eller vända dig till domstol om du inte håller med.';
+
+  @override
+  String get profileDeletionNoticeHowLongUnknown =>
+      'Hur länge: tills granskningen är klar.';
 }

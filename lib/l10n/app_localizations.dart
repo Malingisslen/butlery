@@ -27322,6 +27322,42 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'{succeeded} av {total} förfrågningar avbrutna'**
   String socialRequestsCancelledPartial(int succeeded, int total);
+
+  /// Title of the GDPR Art. 12(4) notice shown when an account deletion lawfully retained moderation evidence
+  ///
+  /// In sv, this message translates to:
+  /// **'Ditt konto är raderat'**
+  String get profileDeletionNoticeTitle;
+
+  /// Says WHAT was kept after the account deletion
+  ///
+  /// In sv, this message translates to:
+  /// **'En sak har sparats: en pågående granskning av innehåll som anmälts.'**
+  String get profileDeletionNoticeWhat;
+
+  /// Says WHY it was kept (the legal ground, in plain language)
+  ///
+  /// In sv, this message translates to:
+  /// **'Varför: vi måste kunna hantera anmälningen färdigt.'**
+  String get profileDeletionNoticeWhy;
+
+  /// Says HOW LONG the retained record is kept. {date} is the outer cap transmitted by the server, never a hardcoded number.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hur länge: tills granskningen är klar, senast {date}.'**
+  String profileDeletionNoticeHowLong(String date);
+
+  /// The Art. 12(4) remedies: the supervisory authority (IMY) and a judicial remedy
+  ///
+  /// In sv, this message translates to:
+  /// **'Du kan klaga till IMY eller vända dig till domstol om du inte håller med.'**
+  String get profileDeletionNoticeRights;
+
+  /// The HOW LONG line when the server sent no parsable outer-cap date. Says less rather than saying a number nobody measured.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hur länge: tills granskningen är klar.'**
+  String get profileDeletionNoticeHowLongUnknown;
 }
 
 class _AppLocalizationsDelegate

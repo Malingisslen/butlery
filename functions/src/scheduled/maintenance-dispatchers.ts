@@ -42,6 +42,7 @@ import { runCorrelateNotificationEffectiveness } from "../analytics/correlate-no
 import { runDetectAnomalies } from "../analytics/detect-anomalies";
 import { runWeeklyActivityDigest } from "../analytics/send-activity-digest";
 import { runReconcileBlockMirrors } from "../social/sync-block-mirror";
+import { runSweepErasureHolds } from "../moderation/erasure-hold";
 import { runNorthStarWeekly } from "../scheduled/north-star-weekly";
 import { drainRatingAggregationQueue } from "../ratings/rating-aggregation";
 import { drainPoolAggregationQueue } from "../ratings/pool-aggregation";
@@ -82,9 +83,9 @@ export const CHAIN_DEADLINE_MS = 500_000;
  * budget, and if it uses all of it the chain records a TIMEOUT and abandons
  * everything behind it.
  *
- * That window is reachable by construction on the daily chain: ten tasks at 60s
- * is 600_000ms of budget inside a 500_000ms deadline, so the chain is
- * over-subscribed by design and relies on tasks finishing early. Tracked as
+ * That window is reachable by construction on the daily chain: the per-task
+ * budgets sum past the chain deadline, so the chain is over-subscribed by
+ * design and relies on tasks finishing early. Tracked as
  * BUT-1814 — either size the budgets to fit or make truncation a hard skip.
  */
 export const TASK_TIMEOUT_MS = 60_000;
@@ -125,8 +126,8 @@ export interface ChainResult {
  *
  * Failure semantics, deliberately chosen:
  *   - A task that THROWS is logged as `maintenance.task_failed` and the chain
- *     CONTINUES. Nine of the ten daily tasks write an idempotent, date-keyed
- *     doc, so a neighbour's failure cannot corrupt them. The exception is
+ *     CONTINUES. A daily task that writes an idempotent, date-keyed doc cannot
+ *     be corrupted by a neighbour's failure. The exception is
  *     `correlateNotificationEffectiveness`, which writes auto-id rows and
  *     WOULD duplicate a day if the chain were re-fired by hand — do not treat
  *     "one task failed, just run it again" as safe for that one until its doc
@@ -252,7 +253,7 @@ export async function runTaskChain(
 /**
  * Daily analytics chain, 06:00 UTC.
  *
- * Order is load-bearing in two places and pinned by
+ * Order is load-bearing and pinned by
  * `__tests__/maintenance-dispatchers.test.ts`:
  *   1. The four non-ops snapshots produce what `detectAnomalies` consumes, so
  *      it runs LAST (`cloud-functions-specialist.knowledge.md:826-828` — a
@@ -270,22 +271,35 @@ export async function runTaskChain(
  * `notification_history` at 500/page + chunked `getAll` + batch commits), and a
  * timeout in it aborts everything behind it. Nothing behind it is the point.
  *
- * `detectLapsedUsers` is THIRD, not seventh: it is the one USER-FACING task in
- * this chain (it sends win-back push via
+ * `detectLapsedUsers` runs ahead of the reporting tasks: it is the one
+ * USER-FACING task in this chain (it sends win-back push via
  * `sendPushToUserRespectingPreferences`). Suppressing a user's notification
  * because `recipeMethodSnapshot` was slow is the wrong trade. Its send time
  * moves 05:00 → ~06:00 UTC, which is 08:00 Swedish summer time — still outside
- * quiet hours, but the exact minute now varies with the two tasks ahead of it.
+ * quiet hours, but the exact minute now varies with the tasks ahead of it.
  *
  * KNOWN, ACCEPTED, TICKETED SEPARATELY: `runDetectLapsedUsers` commits
  * notification batches per threshold but advances its resume cursor only at the
  * very end (BUT-1567, deliberate). A run raced out mid-threshold leaves
  * committed notification docs behind an un-advanced cursor, and the next run
- * re-sends. Moving it to position 3 shrinks the window; the real fix is a
+ * re-sends. Moving it earlier shrinks the window; the real fix is a
  * deterministic per-user/threshold/day notification doc id, which is a
  * data-semantics change and does not belong in a mechanical trigger merge.
  */
 export const DAILY_ANALYTICS_TASKS: MaintenanceTask[] = [
+  // BUT-2046 follow-up. FIRST, not last: this is the only thing that ends a
+  // legal hold, and a task in the tail is the first thing dropped when the
+  // chain runs short of budget — the repo has already paid for putting a
+  // silent safety control there.
+  //
+  // First position has its own cost, stated so a later reader weighs both: a
+  // task that TIMES OUT aborts the chain, so a slow sweep takes every task
+  // behind it down with it. What makes that acceptable is the sweep's own
+  // wall-clock budget (`SWEEP_DEADLINE_MS`), which stops early and defers the
+  // rest a day; the row cap beside it bounds what is READ, not how long the
+  // run takes. An UNBOUNDED sweep in first position is the combination to
+  // avoid.
+  { name: "sweepErasureHolds", run: () => runSweepErasureHolds(), timeoutMs: TASK_TIMEOUT_MS },
   { name: "trackDayNRetention", run: () => runTrackRetention(), timeoutMs: TASK_TIMEOUT_MS },
   { name: "computeFeatureRetention", run: () => runComputeFeatureRetention(), timeoutMs: TASK_TIMEOUT_MS },
   { name: "detectLapsedUsers", run: () => runDetectLapsedUsers(), timeoutMs: TASK_TIMEOUT_MS },

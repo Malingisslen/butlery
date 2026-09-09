@@ -489,7 +489,7 @@
       "id": "cf-request-deletion",
       "label": "requestAccountDeletion + kaskad",
       "context": "cloud-function",
-      "path": "functions/src/account/request-account-deletion.ts, account-deletion-cascade.ts"
+      "path": "functions/src/account/request-account-deletion.ts, account-deletion-cascade.ts, functions/src/moderation/erasure-hold.ts"
     },
     {
       "id": "cf-on-user-deleted",
@@ -2954,14 +2954,14 @@
         {
           "from": "svc-account-deletion",
           "to": "cf-request-deletion",
-          "payload": "{reason} · App Check-krav · 9 min klienttimeout",
+          "payload": "{reason} · App Check-krav · 9 min klienttimeout · retur bär retained[] (artikel 12.4-besked, BUT-2046)",
           "transport": "callable CF",
           "verified": true
         },
         {
           "from": "cf-request-deletion",
           "to": "ds-users",
-          "payload": "Tier 1 parallellt (recept, menyer, listor, taggar, taggkorrigeringar (tag_overrides_log, BUT-1473), snaps, skafferi, familj, delat, notiser, moderationsrader i system_events (BUT-2032), Storage) → Tier 2/3 sekventiellt → users/{uid} SIST · audit-logg {emailHash, deletedCollections, expireAt +180 d}",
+          "payload": "erasure_hold FÖRST (öppet modereringsärende ⇒ underlaget behålls, GDPR 17.3(e), BUT-2046) → Tier 1 parallellt (recept, menyer, listor, taggar, taggkorrigeringar (tag_overrides_log, BUT-1473), snaps, skafferi, familj, delat, notiser, moderationsrader i system_events (BUT-2032), Storage) → Tier 2/3 sekventiellt → users/{uid} SIST · audit-logg {emailHash, deletedCollections, expireAt +180 d}",
           "transport": "Admin SDK delete + write",
           "verified": true
         },

@@ -74,7 +74,9 @@ import {
   deleteConsentRecords,
   deleteUserSubcollections,
   deleteUserProfile,
+  USER_MODERATION,
 } from "./account-deletion-cascade";
+import { applyErasureHold } from "../moderation/erasure-hold";
 
 const db = admin.firestore();
 
@@ -95,6 +97,20 @@ export interface RequestAccountDeletionResponse {
   failedCollections: string[];
   errors: string[];
   auditLogId: string | null;
+  /**
+   * BUT-2046 follow-up: records lawfully KEPT under Art. 17(3), so the client
+   * can give the person the Art. 12(4) notice before it logs them out.
+   *
+   * This list is a hand-written allowlist and the timestamp does not survive
+   * the callable boundary as a `Timestamp`, so `holdUntil` is sent as an ISO
+   * string. Adding a field to `DeletionResult` does NOT put it here — that gap
+   * is the whole reason this field is written down rather than assumed.
+   */
+  retained: Array<{
+    resourceType: string;
+    legalBasis: string;
+    holdUntil: string;
+  }>;
 }
 
 /**
@@ -192,7 +208,36 @@ export async function runAccountDeletionWithDeps(
     deletedCollections: [],
     failedCollections: [],
     errors: [],
+    retained: [],
   };
+
+  // BUT-2046 follow-up: evaluate the legal hold BEFORE tier 1, because steps
+  // inside it, the residual probe, and the `onUserDeleted` trigger afterwards
+  // all need the answer — and an answer computed twice at two times is two
+  // answers. It is EVALUATED once here and READ everywhere else; the daily
+  // sweep recomputes only whether the case is still open, never the scope.
+  //
+  // A failure here is a failure of the erasure, not a silent "no hold":
+  // `applyErasureHold` reports one through `ok`, which `runStep` records in
+  // `failedCollections` exactly as it records a throw. Falling through to
+  // `retained: []` would erase evidence the law says to keep, quietly.
+  // NOT a collection name: `deletedCollections` is the ops-readable record of
+  // what an erasure removed, and this step removes nothing — under a hold it
+  // WRITES. A collection-shaped name there would put two answers about one
+  // document in the same audit row, beside `retained` saying it was kept.
+  await runStep("erasure_hold_evaluated", result, async () => {
+    const outcome = await applyErasureHold(database, uid);
+    // Assigned BEFORE the failure is reported: `ok: false` means the erasure is
+    // incomplete, but `retained` is still the authoritative answer, and losing
+    // it would let the steps below destroy what the hold decided to keep.
+    result.retained = outcome.retained;
+    return outcome.ok;
+  });
+  // Scoped to the resource rather than to `retained` being non-empty — see the
+  // note on `held` in `probeResidualData`, which must agree with this line.
+  const held = result.retained.some(
+    (r) => r.resourceType === USER_MODERATION,
+  );
 
   // Tier 1 (parallel): own content + own writes on cross-user surfaces.
   const tier1: Array<[string, () => Promise<boolean>]> = [
@@ -238,11 +283,23 @@ export async function runAccountDeletionWithDeps(
     // residual probe runs before `auth.deleteUser` and the trigger after it.
     [
       "moderation_system_events",
-      () => deleteModerationSystemEvents(database, uid),
+      () => deleteModerationSystemEvents(database, uid, held),
     ],
     // BUT-2046: the strike record keyed on this uid, and the report rows
     // beneath it. The REPORTER half is a cross-user sweep and runs after tier 1.
-    ["user_moderation", () => deleteModerationRecord(database, uid)],
+    //
+    // Under a hold the whole step is skipped and reported DONE, not failed —
+    // the record is the evidence being kept, and `sweepErasureHolds` runs this
+    // exact function once the hold lifts.
+    // Under a hold the step is not registered at all, rather than registered
+    // as a no-op success: pushing "user_moderation" into `deletedCollections`
+    // would claim the record was deleted on the same audit row where
+    // `retained` says it was kept.
+    ...(held
+      ? []
+      : ([
+          ["user_moderation", () => deleteModerationRecord(database, uid)],
+        ] as Array<[string, () => Promise<boolean>]>)),
     ["fcm_tokens", () => deleteFcmTokens(database, uid)],
     [
       "notification_preferences",
@@ -353,6 +410,11 @@ export async function runAccountDeletionWithDeps(
     failedCollections: result.failedCollections,
     errors: result.errors,
     auditLogId,
+    retained: result.retained.map((r) => ({
+      resourceType: r.resourceType,
+      legalBasis: r.legalBasis,
+      holdUntil: r.holdUntil.toDate().toISOString(),
+    })),
   };
 }
 
@@ -399,7 +461,17 @@ async function writeDeletionAuditLog(
     failedCollections: result.failedCollections,
     deletionTimestamp: admin.firestore.FieldValue.serverTimestamp(),
     expireAt,
+    // Unchanged, and deliberately so: `gdprCompliant` is driven by
+    // `failedCollections` ALONE. A lawful hold is recorded beside it, never
+    // inside it — an Art. 17(3) exception is a compliant outcome, and folding
+    // it into this flag would report a correct erasure as a broken one with
+    // nothing able to clear the record.
     gdprCompliant: result.failedCollections.length === 0,
+    retained: result.retained.map((r) => ({
+      resourceType: r.resourceType,
+      legalBasis: r.legalBasis,
+      holdUntil: r.holdUntil,
+    })),
   });
   return docRef.id;
 }

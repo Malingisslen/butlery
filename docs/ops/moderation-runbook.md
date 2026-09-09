@@ -47,6 +47,33 @@ each request.
 
 Typical turnaround: under 24 hours from report creation to action.
 
+### Closing a report against an account that was already deleted
+
+If the reported person deletes their account while their case is open, the erasure
+does **not** take the evidence with it. A legal hold under GDPR Art. 17(3)(e) keeps
+the report, the `user_moderation` counter and the reported person's uid until the
+last open case against them closes — or 180 days from the deletion, whichever comes
+first. That person was told, in a dialog, before the app navigated them away.
+
+What this means at the console:
+
+- A report can name a `contentOwnerId` whose account no longer exists. That is the
+  hold working, not stale data.
+- **Closing the report is what releases the erasure.** A daily sweep
+  (`sweepErasureHolds`, first task in `dailyAnalytics`, 06:00 UTC) then finishes the
+  deletion, so the uid disappears within about a day of your click rather than at the
+  moment of it.
+- `actioned` does **not** release the hold — only `closed` does. If you act on a case
+  and leave it there, the evidence is kept until you close it or the 180 days run out.
+- A hold is one-directional: if the **reporter** deletes their account, their report
+  is erased even while the case is open, and nothing preserves it.
+
+A hold is recorded in `erasure_holds/{uid}` (Admin SDK only), and the kept
+records are listed under `retained` on the `deletion_audit_logs` row beside
+`gdprCompliant`. The hold itself is not a failure and does not flip that flag —
+but a hold whose own steps went wrong (a failed TTL push, say) does, because
+that is a real failure and is reported as one.
+
 ## SLA notes (Apple 1.2 / Google Play UGC)
 
 - Apple guideline 1.2 requires "a method for filtering objectionable
@@ -111,9 +138,8 @@ concluding from the console that nothing happened:
   `content_report` row **stays**, with `details.contentOwnerId` set to `null`
   and a `contentOwnerAnonymizedAt` stamp. Their
   `moderation_threshold_<uid>` alert is deleted, because its document id is
-  the identifier.
-- `user_moderation.totalReports`, the strike counter that drives the
-  five-report threshold, is untouched by either.
+  the identifier. Both of those are deferred while a legal hold stands — see
+  the section above.
 
 ## Email notifications
 

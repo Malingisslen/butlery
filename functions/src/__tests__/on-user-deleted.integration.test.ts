@@ -232,6 +232,51 @@ async function run_(): Promise<void> {
     JSON.stringify(retryRes),
   );
 
+  // ── BUT-2046 follow-up: the legal hold, graded at THIS call site ──
+  //
+  // `cleanupUserSocialData` reaches `anonymizeReportsUnlessHeldWithDb` at step
+  // 13, and nothing else in this repo drives that call. Swapping it back to the
+  // unguarded anonymizer compiles, so without these two runs the guard that
+  // keeps a held person's uid on `reports` is graded by nothing at all.
+  //
+  // Two subjects rather than two assertions on one: the guard reads the hold
+  // DOCUMENT, so the document's presence has to be the discriminator.
+  const reported = `reported-${RUN}`;
+  const heldUser = `held-${RUN}`;
+  const unheldReportRef = db.collection("reports").doc(`rep-unheld-${RUN}`);
+  const heldReportRef = db.collection("reports").doc(`rep-held-${RUN}`);
+  await unheldReportRef.set({
+    reporterId: otherUser,
+    contentOwnerId: reported,
+    status: "new",
+  });
+  await heldReportRef.set({
+    reporterId: otherUser,
+    contentOwnerId: heldUser,
+    status: "in_review",
+  });
+  await db.collection("erasure_holds").doc(heldUser).set({
+    holdUntil: admin.firestore.Timestamp.fromDate(
+      new Date(Date.now() + 180 * 24 * 60 * 60 * 1000),
+    ),
+    legalBasis: "GDPR Art. 17(3)(e)",
+    provisional: false,
+  });
+
+  await cleanupUserSocialData(reported);
+  check(
+    "BUT-2046: with no hold, the trigger anonymizes the report as BUT-781 does",
+    (await unheldReportRef.get()).data()?.contentOwnerId === null,
+    JSON.stringify((await unheldReportRef.get()).data()),
+  );
+
+  await cleanupUserSocialData(heldUser);
+  check(
+    "BUT-2046: with a hold recorded, the reported person's uid SURVIVES",
+    (await heldReportRef.get()).data()?.contentOwnerId === heldUser,
+    JSON.stringify((await heldReportRef.get()).data()),
+  );
+
   console.log(`\n${run - failed}/${run} passed` + (failed ? `, ${failed} failed` : ""));
   if (failed > 0) process.exit(1);
 }

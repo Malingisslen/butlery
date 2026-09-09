@@ -3383,3 +3383,176 @@ neither passed an `auditRepository` at all.
   hours earlier) and `deleteReportHistoryByReporter` all destroy the same evidence with no
   status check, so a REPORTER's erasure still empties an open case.
   BUT-2046 follow-up, 2026-09-08
+
+- **The legal hold for an open moderation case is BUILT, and it keeps the reported person's
+  uid while it stands (2026-09-09).** The entry above says the hold is "DECIDED and NOT
+  BUILT". It ships here. What it does: when the erased account is `contentOwnerId` on at
+  least one `reports` row whose `status != 'closed'`, the cascade keeps
+  `user_moderation/{uid}`, its `report_history` rows, and that uid on both the report and on
+  the `system_events` row derived from it. Everything else in the cascade runs unchanged.
+  **Malin's explicit call, 2026-09-09: keep the uid while the hold lasts** — a deviation from
+  BUT-781, which nulls `contentOwnerId` when the reported person erases. She was shown the two
+  alternatives and what each costs: nulling it anyway (the hold then preserves evidence nobody
+  can attach to a person, which the Trust & Safety seat called theatre), and not building the
+  hold at all (the residual stays named, she is the sole moderator, and the system holds zero
+  reports). The uid is nulled when the hold lifts, through the same two anonymizers as today.
+  **What she was NOT shown**, stated because an attribution is a claim about a person that no
+  test can hold: no measurement of how long a real case stays open (there are no reports to
+  measure), that the hold is one-directional, and that the `report_history` TTL was about to
+  eat the evidence mid-hold. The last two are the build's responsibility and are closed below.
+  **The decision lives in `erasure_holds/{uid}`, NOT as a field on `user_moderation/{uid}`.**
+  That document's read limb is `hasOnly(['totalReports','lastReportedAt'])`, and the entry
+  above states the price of that allowlist in its own words: "the day someone legitimately
+  adds a field … the whole document becomes unreadable to its subject and the Art. 15 section
+  fails closed and LOUD". A hold field would have been that day. Worse than the general case,
+  because the hold is written BEFORE `auth.deleteUser`: an erasure aborting after that write
+  leaves a LIVE account whose Art. 15 moderation section is broken permanently. The new
+  collection has no `firestore.rules` block, so the terminal `match /{document=**}` denies
+  every client. `firestore.rules`, the Dart projection and `rules_allowlist_drift_test.dart`
+  are untouched by this change, and that is the point.
+  **`report_history.expireAt` is rewritten to `holdUntil` on the held rows.** The TTL policy
+  runs 180 days from when the REPORT was written; the hold runs 180 days from the ERASURE. A
+  report filed a month before the account is deleted would have aged out mid-hold and left the
+  sweep guarding nothing. Somebody else's rows keep their own clock.
+  **`gdprCompliant` is untouched and must stay untouched.** It is driven by
+  `failedCollections` alone; `retained` sits beside it. A lawful Art. 17(3) refusal is a
+  compliant outcome, and folding it into that flag would report a correct erasure as a broken
+  one with nothing able to clear the record. For the same reason `probeResidualData` skips
+  the legs a hold KEEPS — `residual own moderation rows`, `residual moderation
+  record`, `[system_events, "details.userId", "=="]` (the threshold alert, which carries the
+  REPORTED person's uid) and `[system_events, "details.contentOwnerId", "=="]`, whose own
+  comment calls it "the only thing that measures whether the ANONYMIZE half ran". The set must
+  stay in step with `deleteModerationSystemEvents`'s `legs` array — two spellings of one
+  decision, and the day they disagree the erasure lies about itself. Named by LOG LABEL, not by
+  collection: `report_history` has two legs, and the other one,
+  `residual report rows as reporter`, must NEVER be skipped — it is the reporter side, and
+  silencing it would hide a real failure of `deleteReportHistoryByReporter`.
+  **TWO anonymizers are held, not one.** `anonymizeReportsByContentOwnerWithDb`
+  (`moderation/anonymize-reports.ts`) and the cascade's own `system_events` sweep
+  (`account-deletion-cascade.ts`). A first version of this build named only the first; holding
+  the report while nulling its ops-log counterpart is a half-held case, and it would also have
+  tripped the probe leg above on every held erasure, permanently.
+  **The predicate is `status != 'closed'` and nothing narrower, so an `actioned` case is still
+  open.** `actioned` reads as finished — the moderator HAS acted — and is deliberately held
+  until they close it. The cautious direction, and the consequence is stated rather than
+  implied: the close button now decides when evidence is destroyed.
+  **ONE-DIRECTIONAL, and this is a gap rather than a subtlety.** `deleteUserReports`, the
+  reporter leg of `deleteModerationSystemEvents` and `deleteReportHistoryByReporter` carry no
+  status check, so a REPORTER erasing their account still empties an open case. Out of scope,
+  named rather than left to be discovered.
+  **The Art. 12(4) notice is ONE-SHOT and unrecoverable.** It is shown in a dialog, awaited,
+  before the sign-out navigation — the last moment anything can be shown, because the account
+  is already gone and there is no signed-in surface afterwards. If the app is killed,
+  backgrounded or offline in that moment, the person never receives it, and there is no second
+  channel: email infrastructure does not exist (BUT-417).
+  **The sweep runs FIRST in `DAILY_ANALYTICS_TASKS`, and that has a cost in both directions.**
+  Last would put the only thing that ever ENDS a hold in the tail, which is what gets dropped
+  under budget pressure — the mistake this repo has already paid for with a silent safety
+  control. First means a slow sweep aborts the whole chain, because `runTaskChain` aborts on a
+  timeout. What makes first position survivable is the sweep's own wall-clock budget
+  (`SWEEP_DEADLINE_MS`), which stops early and defers the rest a day. `MAX_ERASURE_HOLD_SWEEP_ROWS`
+  beside it DECLINES rather than truncating, like every sibling cap in this domain, but it bounds
+  what is READ rather than how long the run takes. An unbounded, unbudgeted sweep in first
+  position is the combination to avoid. The chain runs `retryCount: 0`, so a failed sweep waits a day —
+  acceptable against a 180-day cap.
+  **`erasure_holds` is in `COLLECTIONS_TO_DELETE`, not in the register-only list.** A reset
+  run removes the reports and the moderation record a hold protects, so a hold left standing
+  would point at nothing while keeping a uid past the reset that erased everything it guarded.
+  `COLLECTIONS_DELIBERATELY_UNTOUCHED` has no runtime teeth and would have left exactly that —
+  the same trap the `metrics` entry records.
+  **The hold FAILS CLOSED on an unanswerable question.** If the predicate or the hold write
+  throws, `applyErasureHold` records a PROVISIONAL hold rather than resolving to "nothing was
+  held"; if the TTL push throws, the hold document is already written and it returns THAT one
+  (not a provisional) with `ok: false`. Either way the answer survives the failure — because `held` is what stops the cascade's moderation steps and the trigger from
+  destroying the evidence, so a transient Firestore error would otherwise produce exactly the
+  outcome Art. 17(3)(e) was invoked to prevent, irreversibly. A provisional hold is not a guess
+  that a case is open; it records that we could not tell, and the sweep lifts it on the first
+  clean run. The `onUserDeleted` read fails closed the same way, and for a second reason: a
+  gen1 trigger has no `failurePolicy`, so an unhandled throw there costs the steps behind it.
+  Three gates found the fail-open independently, and all three then found that my fix for it
+  had the same shape one level down: the fallback write was itself unguarded, so a read failure
+  followed by a write failure — one outage, both calls — would have dropped every cascade step
+  behind step 13. It is wrapped, and the doubly-failed case is pinned. That case leaves NO
+  handle, which is accepted and named: the uid stays on third parties' `reports` rows, reached
+  by no cascade, probe, sweep or export.
+  **The TTL push is STRICT and the lift is RE-PROBED**, because `commitInChunks` defaults to
+  swallowing a failed chunk with a warn and returns rows MATCHED rather than commits that
+  succeeded. Without the strict flag, held rows would silently keep dying on the report's clock
+  while the two probe legs that would have seen them are the ones a hold skips. Without the
+  re-probe, a swallowed anonymize failure would delete the hold document — after which a report
+  still naming the erased uid is reachable by NOTHING: no cascade (the account is gone), no
+  probe (it ran months earlier and has no `reports` leg), and no sweep (its only handle was the
+  document just removed).
+  **`held` is keyed on `resourceType`, not on `retained` being non-empty.** `RetainedRecord` is
+  a general shape, so a length test would silently disarm the moderation probe legs the day a
+  second Art. 17(3) hold ships over some other collection.
+  **The `details.userId` threshold alert is held too.** That field carries the REPORTED
+  person's uid, not the reporter's — `on-report-created.ts` writes `userId: contentOwnerId` —
+  so deleting it while keeping the report would destroy the alert derived from it. The first
+  version of this build got that wrong in code and described it wrongly in a comment; the
+  comment was struck rather than reworded.
+  **The Art. 12(4) notice renders the cap DATE the server sent**, never a number in the copy: a
+  hardcoded "180 days" becomes a false promise to the person it is legally owed to the moment
+  `ERASURE_HOLD_MAX_DAYS` changes. A missing date says less rather than saying something
+  unmeasured.
+  **TWO OPEN QUESTIONS FOR MALIN, about the wording of a legal notice — named here rather
+  than left in a handoff message, because an open question that lives outside this file is
+  invisible to the next grep.** Neither is a mechanism question and neither was decided here.
+  (1) On the PROVISIONAL path the notice speaks in the indicative — "En sak har sparats: en
+  pågående granskning av innehåll som anmälts" — about a case the code could not determine
+  exists. Say it plainly anyway, or hedge that one line? A hedge costs a fifth string, not a
+  redesign. (2) The copy says "En sak" and `auth_action_handler.dart` renders
+  `retained.first`, while the server is built to be able to hold more than one record. Today
+  it emits at most one, so this is consistency rather than a defect — but
+  `probeResidualData`'s own comment plans explicitly for a second Art. 17(3) hold, and on the
+  day that ships BOTH the copy and the `.first` must change with it. Nothing today would tell
+  whoever builds it; that is the tripwire this paragraph is.
+  **The trigger's call site is graded in the EMULATOR lane, not the unit lane.** This entry
+  first said it was "graded by nothing" and that `cleanupUserSocialData` "has no unit harness at
+  all, and building one is a larger job than this build". The second half was false —
+  `on-user-deleted.integration.test.ts` already drives that function — and it is the exact shape
+  a false coverage pointer takes: the sentence a later run cites to skip writing the test. The
+  gap is closed there instead, with a held and an unheld subject.
+  **And the replacement sentence was false too, one notch weaker — the third revision of this
+  paragraph and the second false coverage claim in it.** It said the guard is graded "in the
+  emulator lane", which names a lane that does not contain the file. Measured:
+  `functions/scripts/check-test-registration.js` lists
+  `on-user-deleted.integration.test.ts` in `KNOWN_UNREACHABLE` ("BUT-1702 — emulator suite,
+  unverified in CI"), the CI unit runner excludes every `test:integration:` prefix, and
+  `test:rules:all` does not name it. NO automated lane runs it. The pin is real and was run
+  (21/21 against a local emulator, and mutation-probed), but it is proven by a HAND run — while
+  its `system_events` twin is proven in the unit lane. Wiring the suite up is BUT-1702's
+  ticket, not this build's.
+  **Not pinned, and said plainly rather than implied by a coverage claim:** the branch in
+  `auth_action_handler.dart` that chooses the dialog over the snackbar has no widget test. Its
+  two collaborators are reached through `ServiceLocator` behind a re-auth step, and the setup
+  was out of proportion to the line. Also unmeasured: whether `AuthWrapper`'s rebuild on
+  sign-out can tear the notice down before it is read. What IS pinned: both halves of the
+  hold's server side (`system_events` and `reports`, each with a control arm and, for the
+  reports guard, a third arm proving it reads the DECISION rather than re-deriving the
+  predicate), the dialog's four Art. 12(4) elements, the rendered date in both directions,
+  `hasRetainedRecords` in both directions, the callable's RETURN, and the audit row's
+  `retained`.
+  **A hold that cannot be LIFTED outlives its own cap.** The 180 days end the PREDICATE, not the
+  retention: if `liftErasureHold` keeps returning false — a missing index on the `system_events`
+  sweep, say — the hold stands past the cap, logged at ERROR and counted in
+  `HoldSweepResult.failed` every day, with nothing else raising it. Named rather than left to be
+  discovered.
+  **Mutation-probed, and this list is what the word covers**: the deleter's held `details.userId`
+  leg, the probe's matching skip, the TTL-push failure still returning the hold, the undecidable
+  predicate holding provisionally, the trigger guard leaving a handle, the lift's `reports`
+  re-probe, both anonymizers on the lift, the `actioned` predicate, the chain's first position,
+  the wrapped fallback write in the trigger guard (the doubly-failed case), the `held` ARGUMENT
+  at the cascade's call site, `held` being keyed on `resourceType`, all three bounded branches
+  (row cap, wall-clock budget, `report_history` cap), the sweep's per-uid isolation, the
+  `cascade_retain` audit row, both Dart hops that carry `retained` out of the callable, and the
+  trigger guard at its real call site — that last one against a live emulator (21/21), where
+  swapping it back to the unguarded anonymizer reddens the held assertion. Two of them went
+  GREEN on the first attempt and were real gaps rather than probe
+  errors — the lift's re-probe had no scenario staging a silently-failed anonymize, and the
+  `details.userId` leg had no fixture carrying the field. Three MORE probe runs came back INVALID — a mutant that left an unused
+  import, so `tsc` aborted before a single assertion ran and the output carried neither
+  FAIL nor a crash. Those are probe ERRORS, not results, and are counted separately from
+  the two above on purpose: conflating them is how a working pin gets deleted as vacuous. The Dart pins were probed in the
+  earlier round; the widget suite's date pair was not re-probed after the fix round.
+  BUT-2046 follow-up, 2026-09-09

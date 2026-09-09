@@ -15,6 +15,7 @@
 import * as v1 from "firebase-functions/v1";
 import * as admin from "firebase-admin";
 import { Collections } from "../shared/collections";
+import { anonymizeReportsUnlessHeldWithDb } from "../moderation/erasure-hold";
 import { withTimeout } from "../shared/with-timeout";
 import { cleanUserFromLearnedAliases } from "../analytics/analyze-corrections";
 import { cascadeArrayRemove, commitInChunks } from "../shared/batch-update";
@@ -258,8 +259,18 @@ export async function cleanupUserSocialData(
   //     `contentOwnerId`. We don't delete — reports are moderation evidence
   //     and reporters retain their right to read their own submissions. We
   //     only erase the linked PII (contentOwnerId → null + tombstone date).
-  results.reportsAnonymized =
-      await anonymizeReportsByContentOwner(userId);
+  //     BUT-2046 follow-up: skipped while a legal hold stands. The guard lives
+  //     in `anonymizeReportsUnlessHeldWithDb` so it has the same injectable
+  //     shape as its twin on `system_events` — this is ONE decision in two
+  //     places, each graded at its own call site: the twin by the orchestration
+  //     suite's query recorder, this one by `on-user-deleted.integration.test.ts`
+  //     driving a held and an unheld subject through this very function — a
+  //     suite NO CI lane runs (`KNOWN_UNREACHABLE`, BUT-1702), so that half is
+  //     proven by a hand run against a local emulator and nothing else.
+  results.reportsAnonymized = await anonymizeReportsUnlessHeldWithDb(
+    db,
+    userId,
+  );
 
   // 14. GDPR (BUT-838): purge the per-user recipe cook-event log at
   //     recipe_cook_events/{userId}/... — one event doc per cook action
@@ -952,61 +963,6 @@ export async function cleanupPresenceRowsWithDb(
   }
 
   return total;
-}
-
-/**
- * BUT-781: anonymize /reports rows where the deleted user was the reported
- * `contentOwnerId`. The reports themselves are moderation evidence (and the
- * reporter retains read access to their own submissions), so deletion would
- * destroy a record the reporter is GDPR-entitled to access. Anonymizing
- * removes the linked PII (contentOwnerId → null, plus a `contentOwnerAnonymizedAt`
- * tombstone for audit) while keeping the rest of the row intact.
- *
- * Best-effort per chunk: a failed batch commit logs a warn and continues.
- */
-async function anonymizeReportsByContentOwner(userId: string): Promise<number> {
-  return anonymizeReportsByContentOwnerWithDb(db, userId);
-}
-
-/** Test seam — accepts an injected Firestore so the cascade can run against a stub. */
-export async function anonymizeReportsByContentOwnerWithDb(
-  database: admin.firestore.Firestore,
-  userId: string
-): Promise<number> {
-  const snapshot = await database
-    .collection("reports")
-    .where("contentOwnerId", "==", userId)
-    .get();
-  if (snapshot.empty) return 0;
-
-  return commitInChunks(
-    database,
-    snapshot.docs,
-    (batch, doc) => {
-      batch.update(doc.ref, {
-        contentOwnerId: null,
-        contentOwnerAnonymizedAt: admin.firestore.FieldValue.serverTimestamp(),
-      });
-      // BUT-886: anonymize cascade — the deleted user's id is being scrubbed
-      // from /reports rows authored by other users (reporters). The report
-      // itself is moderation evidence retained for the reporter's GDPR
-      // access right; targetUid is null since the reporter is not the
-      // direct subject of the anonymization.
-      stageCascadeAuditEntry(database, batch, {
-        subjectUserId: userId,
-        targetUid: null,
-        operation: "cascade_anonymize",
-        resourceType: "reports",
-        resourceId: doc.id,
-        extra: { field: "contentOwnerId" },
-      });
-    },
-    {
-      label: `BUT-781: report anonymize for ${userId}`,
-      // BUT-886: mutate stages update + audit = 2 ops per item.
-      opsPerItem: 2,
-    }
-  );
 }
 
 /**

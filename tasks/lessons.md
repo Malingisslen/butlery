@@ -3519,3 +3519,69 @@ data (artikel 15(4)), men `totalReports` är personens egen uppgift, som 15(4) i
 sammanslagen fråga får ett sammanslaget svar som ser mer avgjort ut än det är. **Dela frågan
 efter vems data det är, inte efter var den ligger** — och när ett beslut vilar på ett svagare
 skäl, skriv att det gör det.
+
+## Ett grönt mutationsprov kan vara ett kompileringsavbrott, och en plan kan gå i sin egen dokumenterade fälla (BUT-2046 uppföljning, 2026-09-09)
+
+**Sex mutationssonder, två gröna — och båda gröna var fel av olika skäl.**
+
+Den ena var en verklig lucka: sonden tog bort anropet till `anonymizeReportsByContentOwnerWithDb`
+i lyftvägen och sviten förblev grön, eftersom mitt scenario bara läste `system_events`-raden.
+Två anonymiserare, en assertion. Den andra hade inget med provet att göra: sonden tog bort
+raden ur `DAILY_ANALYTICS_TASKS`, vilket lämnade importen oanvänd, vilket gav `TS6133`, vilket
+avbröt ts-node innan en enda assertion kördes. Utdatan innehöll varken `FAIL` eller `crashed`,
+så min sondrapport läste avbrottet som **GRÖNT — provet är tomt**. Det är samma fälla som
+`lessons-digest-testing.md` redan beskriver ("en sond som bara raderar anropsställen kompilerar
+inte"), men den beskriver den som ett *rött* falsklarm. Åt det här hållet är den värre: den
+säger att en levande pinne är död, och nästa steg efter "provet är tomt" är att ta bort provet.
+
+En sondrapport måste därför skilja på TRE utfall, inte två: rött, grönt, och **ogiltigt**
+(kompileringsfel). Och mutanten ska väljas så att den *kompilerar* — flytta posten sist i
+listan i stället för att radera den; då rödnade ordningspinnen på en gång.
+
+**Planen skrev ett fält i ett dokument vars läsregel jag själv hade shippat dagen innan.**
+`user_moderation/{uid}` fick i går en `hasOnly(['totalReports','lastReportedAt'])`-läsregel,
+och avvikelseposten jag skrev till den namnger priset ordagrant: "the day someone legitimately
+adds a field … the whole document becomes unreadable to its subject and the Art. 15 section
+fails closed and LOUD". Nästa dags plan lade `erasureHold` där. Att ha *skrivit* varningen
+skyddar inte mot att gå i den — det som fångade det var en fristående plangranskare som läste
+avvikelsefilen kall. Att äga en regel är inte att minnas den.
+
+**Granskningsrundorna hittade något av en annan sort varje gång — och mönstret jag skrev ner
+här höll inte ens en runda till.** Runda 1–2: två
+substantiella designfel (fältet ovan; att `report_history`-radernas TTL går på anmälningens
+klocka medan hållet går på raderingens, så beviset åldras ut mitt i hållet). Runda 3: att
+kaskaden har en EGEN `system_events`-anonymiserare skild från den planen namngav — ett halvhållet
+ärende, och dessutom ett sondben som hade slagit om `gdprCompliant` permanent. Runda 4: bara
+meningar, varav en var min egen falska hänvisning ("systerfrågan skriver det redan så" — den
+har `orderBy` och ett sammansatt index).
+
+Här skrev jag "de sena rundorna hittar text, inte kod". **Nästa runda motbevisade det direkt**:
+den hittade tre blockerande KODfel, alla införda av min egen rättningsrunda — ett håll som föll
+öppet i TTL-steget, en sond som räknade en rad raderaren nyss börjat behålla, och en felsäker
+väg som lämnade ett tillstånd ingenting kunde återhämta. Lärdomen är alltså inte att sena
+rundor blir textrundor, utan att **rättningsrundan är den farligaste koden i ändringen** — den
+skrivs under press, sist, och granskas minst. Att skriva ner ett mönster om sina egna misstag
+är i sig ett påstående med halveringstid.
+
+**Ett villkor kan falla på en mätning i stället för att byggas.** Panelens villkor I krävde ett
+nytt sammansatt index. Det behövdes inte: likhet plus `in` utan `orderBy` betjänas av
+enkelfältsindexen. Ett bokstavligt `!=` hade krävt indexet, och det var den formen villkoret
+antog. Kontrollera formen på frågan innan du bygger indexet — det tog bort en fil och en
+`--force`-deploy ur ändringen.
+
+**En delta till en återupptagen granskare räknas från MOTTAGARENS senaste läsning, inte från
+mitt senaste meddelande.** Jag skrev "fyra filer ändrade efter ditt pass" till fyra granskare
+samtidigt. Det var sant för den som passerade sist och falskt för de tre andra — mellan deras
+läsningar och nu hade hela rättningsrundan landat, inklusive en helt ny provfil. Två grindar
+mätte indexet själva i stället för att lita på siffran (en rapporterade tio ändrade blobbar där
+jag sagt fyra) och tog rätt mängd ändå; en tredje påpekade att en granskare som litat på mig
+hade graderat gamla bytes och att commit-grinden då nekar. Liggaren är innehållsadresserad, så
+en delta som underskattar mängden är inte en oartighet utan ett provfel. Räkna den med
+`git rev-parse :<path>` mot vad den granskaren faktiskt läste, aldrig ur minnet av vad jag
+skrev sist.
+
+**Och den falska täckningspekaren är farligare än den falska siffran.** I samma runda skrev jag
+att en vakt inte kunde pinnas eftersom `cleanupUserSocialData` "har ingen provsele alls, och att
+bygga en är större än det här bygget". Selen fanns — emulatorsviten drev redan funktionen. En felaktig siffra rättas av nästa läsare; en felaktig *anledning* till att något inte
+går att prova är den mening en senare körning citerar för att slippa skriva provet. Luckan
+stängdes där i stället, med två ämnen och ett hållsdokument som diskriminator.

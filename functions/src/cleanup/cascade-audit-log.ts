@@ -35,8 +35,20 @@ export interface CascadeAuditEntry {
   subjectUserId: string;
   /** Other user (or null for own-data cleanup) affected by the cascade. */
   targetUid: string | null;
-  /** What kind of cascade ran: 'cascade_delete' | 'cascade_anonymize' | 'cascade_tombstone'. */
-  operation: "cascade_delete" | "cascade_anonymize" | "cascade_tombstone";
+  /**
+   * What kind of cascade ran.
+   *
+   * `cascade_retain` is the odd one and is deliberately not a flavour of the
+   * other three: it records data KEPT under a lawful Art. 17(3) exception
+   * rather than data removed, so an erasure carrying one is complete and
+   * compliant. Do not fold it into `cascade_tombstone`, which marks something
+   * that WAS erased.
+   */
+  operation:
+    | "cascade_delete"
+    | "cascade_anonymize"
+    | "cascade_tombstone"
+    | "cascade_retain";
   /** Collection or surface name (e.g. 'friends', 'friend_categories', 'public_profiles'). */
   resourceType: string;
   /** Affected document id (often the target uid). */

@@ -203,7 +203,10 @@ from `(err as {code?}).code`.
   for every client. Delete the doc, or prune/skip at the cap; before revoking
   the last holder, name what re-creates the id.
 - A step's throw is CAUGHT by `runStep` → `failedCollections` +
-  `gdprCompliant:false`; no automatic retry, recovery is a human.
+  `gdprCompliant:false`; no automatic retry, recovery is a human. So a step that
+  DECIDES something the later steps read (a lawful hold) reports its failure by
+  RETURNING false with the decision intact, never by throwing — a throw skips the
+  caller's assignment and the destructive steps then run on the default.
 - **`batch.update()` on a concurrently-deleted doc fails the WHOLE chunk with
   NOT_FOUND** under `strict:false`; and `commitInChunks` calls `mutate` OUTSIDE
   that try, so a SYNCHRONOUS validation throw from the callback (`undefined` in
@@ -244,7 +247,10 @@ from `(err as {code?}).code`.
   unread by the consuming rules gate under-enforces on input OTHER people choose
   (`.limit(cap+1)` with NO `orderBy` keeps the lowest doc ids, so sockpuppets sort a
   real entry off the end). Trigger + reconcile NARROWS the window, never closes it;
-  a task LAST in `WEEKLY_REPORT_TASKS` is what `runTaskChain` SKIPS first.
+  a task LAST in `WEEKLY_REPORT_TASKS` is what `runTaskChain` SKIPS first. A TIMEOUT
+  aborts the chain at ANY index and skips everything behind it, so first position
+  is where that costs the most — a safety sweep put there needs its own wall-clock
+  budget, not just a row cap.
 - **A compare-before-repair reconciliation resolves EXISTENCE once per uid ABOVE
   every branch, and counts a DELETE as drift on every branch.** `stored == expected`
   never settles orphanhood — an EMPTY orphan matches an empty expectation, and a
@@ -294,7 +300,11 @@ from `(err as {code?}).code`.
   must not be NARROWER than the EXPORT's predicate** — Art. 15 must never reach
   a document Art. 17 cannot (`memberPermissions.<uid> != null` = Dart
   `isNull:false`). Union the probe's queries into the deleter's scoping, dedup
-  by `doc.ref.path`. A leg on an
+  by `doc.ref.path`. A LAWFUL-HOLD exception narrows the deleter on purpose:
+  every field it then KEEPS must be spread out of the probe by the SAME flag —
+  one decision in two lists, keyed on the retained record's `resourceType`, never
+  on `retained.length` — or each held erasure reports `gdprCompliant:false`
+  forever with no path able to clear it. A leg on an
   ATTRIBUTION SCALAR (`lastModifiedBy`, `ownerId`) is broader unless
   `firestore.rules` PINS that field to the roster the deleter discovers by —
   read the write limb, never the app's own writer; unpinned, any editor plants
