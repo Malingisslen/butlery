@@ -79,6 +79,7 @@ class ProfileViewModel extends ChangeNotifier
   /// boolean cannot carry.
   Future<AccountDeletionOutcome> deleteAccount({required String reason}) async {
     bool success = false;
+    var accountDeleted = false;
     var retained = const <RetainedRecord>[];
 
     await executeAsync(() async {
@@ -102,6 +103,16 @@ class ProfileViewModel extends ChangeNotifier
         retained =
             result['retained'] as List<RetainedRecord>? ??
             const <RetainedRecord>[];
+        // The Auth account specifically, which is NOT the same as the erasure
+        // succeeding: the callable pushes `auth_deletion` into
+        // `failedCollections` when `auth.deleteUser` throws, and every other
+        // failed step leaves the account genuinely gone.
+        // Fails OPEN on a missing key — an absent list reads as "the account
+        // is gone". The real service always populates it, and the direction is
+        // stated rather than left to be inferred because it is the one this
+        // flag exists to prevent.
+        final failed = result['failedCollections'] as List? ?? const [];
+        accountDeleted = !failed.contains('auth_deletion');
 
         if (success) {
           AppLogger.info('Account deleted successfully');
@@ -116,7 +127,11 @@ class ProfileViewModel extends ChangeNotifier
       }
     });
 
-    return AccountDeletionOutcome(success: success, retained: retained);
+    return AccountDeletionOutcome(
+      success: success,
+      accountDeleted: accountDeleted,
+      retained: retained,
+    );
   }
 
   /// Update user profile
@@ -157,6 +172,7 @@ class ProfileViewModel extends ChangeNotifier
 class AccountDeletionOutcome {
   const AccountDeletionOutcome({
     required this.success,
+    this.accountDeleted = false,
     this.retained = const <RetainedRecord>[],
   });
 
@@ -164,9 +180,24 @@ class AccountDeletionOutcome {
   /// retention under an Art. 17(3) exception is a compliant outcome.
   final bool success;
 
+  /// Whether the Auth account itself is gone.
+  ///
+  /// Distinct from [success], which also requires every cascade step to have
+  /// completed. The Art. 12(4) notice opens with "Ditt konto är raderat", so it
+  /// must not be shown when `auth.deleteUser` failed and the account is still
+  /// there — the retention is real but the sentence above it would not be.
+  final bool accountDeleted;
+
   /// Records kept, empty on every ordinary deletion.
   final List<RetainedRecord> retained;
 
   /// Whether the person must be shown the Art. 12(4) notice.
+  ///
+  /// Data being KEPT is what triggers the duty, not the erasure completing —
+  /// Malin's call, 2026-09-09 (BUT-2047). It does require the account to be
+  /// gone, because the notice's own title says it is.
+  bool get owesRetentionNotice => retained.isNotEmpty && accountDeleted;
+
+  /// Whether anything was kept at all, regardless of what else happened.
   bool get hasRetainedRecords => retained.isNotEmpty;
 }

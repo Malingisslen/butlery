@@ -161,7 +161,7 @@ class _SettingsBodyState extends State<_SettingsBody> {
     // bool, because a deletion can succeed and still lawfully retain
     // moderation evidence. This harness mirrors the production handler's
     // SUCCESS branch only; the Art. 12(4) notice the real handler shows on
-    // `hasRetainedRecords` is out of this journey's scope.
+    // `owesRetentionNotice` is out of this journey's scope.
     final outcome = await vm.deleteAccount(reason: 'Journey test');
     if (outcome.success && context.mounted) {
       widget.onDeleted();

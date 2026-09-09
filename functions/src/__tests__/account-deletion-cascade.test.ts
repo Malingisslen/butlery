@@ -6495,6 +6495,7 @@ async function scenario_heldRecordIsNotCountedAsResidual(): Promise<void> {
       resourceType: "user_moderation",
       legalBasis: "GDPR Art. 17(3)(e)",
       holdUntil: admin.firestore.Timestamp.fromDate(new Date("2027-03-08")),
+      provisional: false,
     },
   ];
   const heldResult: DeletionResult = {
@@ -6535,6 +6536,7 @@ async function scenario_heldRecordIsNotCountedAsResidual(): Promise<void> {
         resourceType: "some_other_hold",
         legalBasis: "GDPR Art. 17(3)(b)",
         holdUntil: admin.firestore.Timestamp.fromDate(new Date("2027-03-08")),
+        provisional: false,
       },
     ],
   };
@@ -6796,6 +6798,14 @@ async function scenario_holdFailsClosedWhenItCannotDecide(): Promise<void> {
     hold?.provisional === true,
     `got ${JSON.stringify(hold)}`,
   );
+  // The flag must also reach the RECORD, not only the document: the Art. 12(4)
+  // notice hedges its wording on it (BUT-2047), and the document never crosses
+  // the callable boundary.
+  check(
+    "and the retained RECORD says so too, which is what the notice reads",
+    retained[0].provisional === true,
+    `got ${JSON.stringify(retained[0])}`,
+  );
 }
 
 /**
@@ -6889,6 +6899,13 @@ async function scenario_ttlPushFailureKeepsTheAnswer(): Promise<void> {
     (store.get(`erasure_holds/${UID}`) as { provisional?: boolean })
       ?.provisional === false,
     `got ${JSON.stringify(store.get(`erasure_holds/${UID}`))}`,
+  );
+  // The control for the arm above: a TTL failure is not an undecidable
+  // predicate, so the notice must keep its confident wording.
+  check(
+    "and the record is NOT provisional — the predicate was answered",
+    retained[0].provisional === false,
+    `got ${JSON.stringify(retained[0])}`,
   );
 }
 

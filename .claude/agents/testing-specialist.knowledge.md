@@ -465,6 +465,18 @@ other suites prove:
   deleting the block reddens, stripping every conjunct but the one the finding named stays green.
   Grade each conjunct for HARM before filing: some are analytically inert, some degrade to a
   no-op, and usually ONE carries the real hazard (BUT-1971).
+  **On a two-conjunct GETTER the blind conjunct is the one whose false arm is built from the
+  OTHER conjunct's CONSTRUCTOR DEFAULT** — a three-arm test reading "in both directions" then
+  survives `=> otherConjunct`, because every arm agrees with it. Walk the conjuncts, not the
+  arms: each needs a fixture false in IT and true in every sibling. Same walk settles a
+  `?? <default>` fail-open — a direction stated in a comment is unwitnessed until one fixture
+  OMITS the key and asserts the flag (BUT-2047).
+  **The CONSEQUENCE you state for a surviving mutant is a separate claim, and it gets written
+  into the repair's comment before anyone traces it** — "the notice would be shown to every
+  user" was false because the caller reads `retained.first` inside the same `if`, so an empty
+  list throws before any dialog is built. Trace the mutant through the CALLER to its first
+  observable, or file the survival and stop: the finding does not need the consequence, and a
+  wrong one ships as code (BUT-2047).
 - **The test closing ONE conjunct discriminates only while the fixture leaves every OTHER
   conjunct SATISFIED — usually via an unremarked property of a stub nobody would defend.** Name
   the conjuncts the fixture is holding open in the test, or a later tidy vacuums it (BUT-1971).

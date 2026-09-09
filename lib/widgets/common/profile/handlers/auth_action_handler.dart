@@ -103,32 +103,44 @@ class AuthActionHandler {
       if (context.mounted) {
         Navigator.pop(context); // Close loading indicator
 
+        // BUT-2046 follow-up: when the erasure lawfully kept moderation
+        // evidence, GDPR Art. 12(4) owes this person a notice — and this is
+        // the only moment it can be given. The account and the session are
+        // both already gone (`deleteUserAccount` signs out before it returns),
+        // so there is no signed-in surface afterwards and no second channel:
+        // email infra does not exist (BUT-417).
+        //
+        // OUTSIDE the success branch, and that placement is the decision
+        // (Malin, 2026-09-09, BUT-2047). Art. 12(4) is owed because data was
+        // KEPT, which does not depend on the rest of the erasure completing.
+        // While the notice lived inside `if (success)` it was unreachable on
+        // the path that hedges its wording: a provisional hold reports
+        // `ok: false`, which lands in `failedCollections` and makes `success`
+        // false — so the person was shown "could not be fully deleted" and
+        // never told that anything had been kept, or why.
+        //
+        // AWAITED, and before the navigation: `pushNamedAndRemoveUntil` tears
+        // down this route, so a dialog shown after it goes with it.
+        //
+        // The cap DATE comes from the server rather than the copy — a
+        // hardcoded "180 days" is a promise the constant can silently break.
+        if (outcome.owesRetentionNotice) {
+          await ProfileDialogs.showRetentionNoticeDialog(
+            context,
+            holdUntil: outcome.retained.first.holdUntil,
+            provisional: outcome.retained.first.provisional,
+          );
+          if (!context.mounted) return;
+        }
+
         if (success) {
-          // BUT-2046 follow-up: when the erasure lawfully kept moderation
-          // evidence, GDPR Art. 12(4) owes this person a notice — and this is
-          // the only moment it can be given. The account and the session are
-          // both already gone (`deleteUserAccount` signs out before it
-          // returns), so there is no signed-in surface afterwards and no
-          // second channel: email infra does not exist (BUT-417).
-          //
-          // AWAITED, and before the navigation: `pushNamedAndRemoveUntil` tears
-          // down this route, so a dialog shown after it goes with it. The
-          // ordinary deletion keeps the snackbar it always had.
-          //
-          // The cap DATE comes from the server rather than the copy — a
-          // hardcoded "180 days" is a promise the constant can silently break.
-          if (outcome.hasRetainedRecords) {
-            await ProfileDialogs.showRetentionNoticeDialog(
-              context,
-              holdUntil: outcome.retained.first.holdUntil,
-            );
-            if (!context.mounted) return;
-          }
           Navigator.pushNamedAndRemoveUntil(
             context,
             '/auth',
             (route) => false,
           );
+          // The ordinary deletion keeps the snackbar it always had; a deletion
+          // that kept something has just said more than a snackbar could.
           if (!outcome.hasRetainedRecords) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
@@ -138,7 +150,9 @@ class AuthActionHandler {
             );
           }
         } else {
-          // Deletion failed
+          // Deletion failed. Shown AFTER the retention notice when both apply:
+          // the person is owed both facts, and the one they cannot get later is
+          // what was kept.
           ProfileDialogs.showErrorDialog(
             context,
             context.l10n.profileAccountCouldNotBeFullyDeleted,

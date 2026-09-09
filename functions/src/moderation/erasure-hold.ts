@@ -189,7 +189,7 @@ export async function applyErasureHold(
     // run. If THIS write fails too there is nothing left to fall back on, so
     // the throw escapes and the erasure reports itself incomplete.
     await writeHoldDocument(db, uid, holdUntil, { provisional: true });
-    return { retained: [retainedRecord(holdUntil)], ok: false };
+    return { retained: [retainedRecord(holdUntil, true)], ok: false };
   }
 
   // Only now the TTL push, and STRICTLY. `report_history` rows carry a live
@@ -220,7 +220,7 @@ export async function applyErasureHold(
         "[erasure-hold] implausible report_history count; TTL not pushed",
         { uid_prefix: uid.slice(0, 6), rows: history.size },
       );
-      return { retained: [retainedRecord(holdUntil)], ok: false };
+      return { retained: [retainedRecord(holdUntil, false)], ok: false };
     }
 
     if (!history.empty) {
@@ -251,19 +251,21 @@ export async function applyErasureHold(
         errName: err instanceof Error ? err.name : typeof err,
       },
     );
-    return { retained: [retainedRecord(holdUntil)], ok: false };
+    return { retained: [retainedRecord(holdUntil, false)], ok: false };
   }
 
-  return { retained: [retainedRecord(holdUntil)], ok: true };
+  return { retained: [retainedRecord(holdUntil, false)], ok: true };
 }
 
 function retainedRecord(
   holdUntil: admin.firestore.Timestamp,
+  provisional: boolean,
 ): RetainedRecord {
   return {
     resourceType: USER_MODERATION,
     legalBasis: LEGAL_BASIS,
     holdUntil,
+    provisional,
   };
 }
 
@@ -278,8 +280,8 @@ async function writeHoldDocument(
     holdUntil,
     createdAt: admin.firestore.FieldValue.serverTimestamp(),
     legalBasis: LEGAL_BASIS,
-    // True when the predicate could not be evaluated. Descriptive only — the
-    // sweep treats both kinds identically, because it recomputes openness.
+    // Descriptive only — the sweep treats both kinds identically, because it
+    // recomputes openness.
     provisional: opts.provisional,
   });
   stageCascadeAuditEntry(db, batch, {

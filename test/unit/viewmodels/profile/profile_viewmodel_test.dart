@@ -190,6 +190,10 @@ void main() {
           // as it was.
           expect(result.retained, isEmpty);
           expect(result.hasRetainedRecords, isFalse);
+          // The fixture omits `failedCollections` entirely, which makes this
+          // the witness for the `?? const []` fail-open direction: flipping
+          // that default closed would redden here.
+          expect(result.accountDeleted, isTrue);
           expect(viewModel.isLoading, isFalse);
         },
       );
@@ -234,6 +238,7 @@ void main() {
                 resourceType: 'user_moderation',
                 legalBasis: 'GDPR Art. 17(3)(e)',
                 holdUntil: holdUntil,
+                provisional: true,
               ),
             ],
           },
@@ -248,6 +253,48 @@ void main() {
         // would show the notice without the one fact that bounds the hold.
         expect(result.retained.first.holdUntil, holdUntil);
         expect(result.retained.first.legalBasis, 'GDPR Art. 17(3)(e)');
+        // The flag the Art. 12(4) notice hedges on (BUT-2047). Seeded TRUE on
+        // purpose: the constructor defaults it to false, so a fixture that left
+        // it out would assert the default rather than the pass-through.
+        expect(result.retained.first.provisional, isTrue);
+      });
+
+      // Behavior: tells a failed AUTH delete apart from any other failed step
+      test('accountDeleted is false only when auth deletion failed', () async {
+        // The Art. 12(4) notice opens with "Ditt konto är raderat", so it hangs
+        // on THIS and not on `success`. Every other failed step still leaves
+        // the account genuinely gone, which is the distinction being pinned.
+        when(
+          () => mockAccountDeletionService.deleteUserAccount(
+            reason: any(named: 'reason'),
+            createAuditLog: any(named: 'createAuditLog'),
+          ),
+        ).thenAnswer(
+          (_) async => {
+            'success': false,
+            'failedCollections': ['auth_deletion'],
+          },
+        );
+        final authFailed = await viewModel.deleteAccount(reason: 'x');
+        expect(authFailed.accountDeleted, isFalse);
+
+        when(
+          () => mockAccountDeletionService.deleteUserAccount(
+            reason: any(named: 'reason'),
+            createAuditLog: any(named: 'createAuditLog'),
+          ),
+        ).thenAnswer(
+          (_) async => {
+            'success': false,
+            'failedCollections': ['erasure_hold_evaluated'],
+          },
+        );
+        final otherStepFailed = await viewModel.deleteAccount(reason: 'x');
+        expect(
+          otherStepFailed.accountDeleted,
+          isTrue,
+          reason: 'a failed hold evaluation does not keep the account alive',
+        );
       });
 
       // Behavior: reports the failure, and keeps nothing either way

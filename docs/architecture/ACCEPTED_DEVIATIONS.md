@@ -3460,9 +3460,10 @@ neither passed an `auditRepository` at all.
   would point at nothing while keeping a uid past the reset that erased everything it guarded.
   `COLLECTIONS_DELIBERATELY_UNTOUCHED` has no runtime teeth and would have left exactly that —
   the same trap the `metrics` entry records.
-  **The hold FAILS CLOSED on an unanswerable question.** If the predicate or the hold write
-  throws, `applyErasureHold` records a PROVISIONAL hold rather than resolving to "nothing was
-  held"; if the TTL push throws, the hold document is already written and it returns THAT one
+  **The hold FAILS CLOSED on an unanswerable question.** If the predicate query or the hold
+  write throws — so a case KNOWN to be open whose hold write fails is provisional too —
+  `applyErasureHold` records a PROVISIONAL hold rather than resolving
+  to "nothing was held"; if the TTL push throws, the hold document is already written and it returns THAT one
   (not a provisional) with `ok: false`. Either way the answer survives the failure — because `held` is what stops the cascade's moderation steps and the trigger from
   destroying the evidence, so a transient Firestore error would otherwise produce exactly the
   outcome Art. 17(3)(e) was invoked to prevent, irreversibly. A provisional hold is not a guess
@@ -3495,6 +3496,69 @@ neither passed an `auditRepository` at all.
   hardcoded "180 days" becomes a false promise to the person it is legally owed to the moment
   `ERASURE_HOLD_MAX_DAYS` changes. A missing date says less rather than saying something
   unmeasured.
+  **RESOLVED 2026-09-09 (BUT-2047) — Malin, TWO calls: hedge the provisional wording, and show
+  the notice whenever something was KEPT rather than only when the erasure fully succeeded.**
+  The second call was not one of the questions put to her. It surfaced because the first answer
+  could not be built: a provisional hold returns `ok: false`, `runStep` lands that in
+  `failedCollections`, `success` goes false, and the handler showed the ERROR dialog — so the
+  hedged wording was unreachable on the only path that sets the flag, and a first version of
+  this paragraph claimed it shipped. The `code-reviewer` gate traced it.
+  What that uncovered is larger than the wording and predates this build: a person whose hold
+  could not be evaluated was told "kontot kunde inte raderas helt" and never told that anything
+  had been kept, or why. Malin's call: **Art. 12(4) is owed because data was KEPT, which does
+  not depend on the rest of the erasure completing.** The notice now sits OUTSIDE the success
+  branch; when both apply the person sees the notice first and the failure notice after, because
+  the fact they cannot obtain later is what was kept.
+  **But NOT when `auth.deleteUser` itself failed.** The notice opens with "Ditt konto är
+  raderat", so showing it while the account is still there would put a false sentence above a
+  true one. `AccountDeletionOutcome.owesRetentionNotice` therefore requires BOTH something
+  retained and the Auth account gone, and `accountDeleted` is derived from
+  `failedCollections` not containing `auth_deletion` — every OTHER failed step still leaves the
+  account genuinely deleted, and that distinction is pinned in both directions. Found while
+  building Malin's call, not by a gate; the first version of the hoist would have shipped it.
+  **Named residual: `auth/user-not-found` is the one auth failure where the account IS gone** —
+  a retried callable after a timed-out first run, or an out-of-band deletion. `authDeleted` goes
+  false anyway, so a genuinely erased person with a live hold gets the error dialog and no
+  Art. 12(4) notice. The direction is the safe one (withhold rather than print a title saying
+  the account is deleted when it may not be), and the alternative — answering that code as
+  "gone" in the callable — changes `success` on an existing path and is Malin's, not an edit.
+  **Second residual, pre-existing and now paired with the notice:** the failure branch never
+  navigated to `/auth`, so on the newly reachable combination (erasure incomplete, account gone,
+  something kept) the person sees the notice, then the failure dialog. What happens to the
+  route after that is NOT measured — `deleteUserAccount` signs out before returning and
+  `AuthWrapper` rebuilds on that, which this entry already names as unmeasured below.
+  On the wording itself: when the hold is provisional the WHAT line reads
+  `profileDeletionNoticeWhatUnclear` instead of `profileDeletionNoticeWhat`. She was shown the
+  argument on the other side — a vague line in a rights notice is its own problem — and chose
+  the honest one.
+  **ASKED AND ANSWERED 2026-09-09, after the build: the hedge stays on ONE line.** The
+  `integration-reviewer` gate read the notice as a whole and found that the two lines beneath
+  still assert as fact what the first withdraws — "Varför: vi måste kunna hantera anmälningen
+  färdigt" and "Hur länge: tills granskningen är klar, senast {date}". Malin was shown that, and
+  the two alternatives (provisional variants for all three lines; or one line carrying the whole
+  reservation). **Her call: leave it.** The first line already says we do not know, and Art. 12(4)
+  also requires the notice to be intelligible — hedging every line reads as a disclaimer rather
+  than as information. Named residual, not an oversight.
+  **ASKED AND ANSWERED the same day: the wording UNDER-CLAIMS on one branch, and stays.** The
+  string says "vi kunde inte slutföra kontrollen", which is true when the predicate query threw
+  and false when it succeeded and the hold WRITE threw — there the check did finish and did find
+  a case. She was shown a wording covering both ("vi kunde inte bekräfta detta färdigt") and
+  chose to leave it: the branch is narrow, and the sentence claims LESS than the truth rather
+  than more, which is the only direction a notice like this may err in.
+  The flag crosses the whole chain (`RetainedRecord.provisional` in TS, the callable's
+  hand-written allowlist, the Dart model, the outcome, the dialog). Probed: the producer's flag
+  on the undecidable path, the callable allowlist, the model's parse, and the dialog's string
+  choice. The allowlist probe was GREEN first — the assertion was answered by a fixture that
+  could only produce a NON-provisional hold — so the orchestration fake gained a
+  `throwOnReportsQuery` seam, narrowed to the two-`where` predicate query so it cannot also fail
+  `deleteUserReports`. NOT probed: the handler line that passes the flag, which is the same
+  unpinned wiring named below.
+  Question 2 STANDS as it was, deliberately: "En sak" is true today because the server emits at
+  most one record, and the tripwire below is the right size of protection rather than a rewrite
+  of a legal notice for a case that does not exist yet.
+  **THE ORIGINAL QUESTIONS, kept because the decision is only legible beside them — and note
+  that Question 1's premise ("On the PROVISIONAL path the notice speaks in the indicative") was
+  itself false when it was put to her: on that path there was no notice at all.**
   **TWO OPEN QUESTIONS FOR MALIN, about the wording of a legal notice — named here rather
   than left in a handoff message, because an open question that lives outside this file is
   invisible to the next grep.** Neither is a mechanism question and neither was decided here.
@@ -3524,7 +3588,11 @@ neither passed an `auditRepository` at all.
   its `system_events` twin is proven in the unit lane. Wiring the suite up is BUT-1702's
   ticket, not this build's.
   **Not pinned, and said plainly rather than implied by a coverage claim:** the branch in
-  `auth_action_handler.dart` that chooses the dialog over the snackbar has no widget test. Its
+  `auth_action_handler.dart` that shows the notice has no widget test — and since BUT-2047 that
+  same block carries two more decisions: it passes `provisional` through, and it sits OUTSIDE
+  the success branch. An edit moving it back inside would restore the exact gap this change
+  closed, silently. Both the dialog's own behaviour on the flag and the model's parsing of it
+  ARE pinned; it is the wiring between them that is not. Its
   two collaborators are reached through `ServiceLocator` behind a re-auth step, and the setup
   was out of proportion to the line. Also unmeasured: whether `AuthWrapper`'s rebuild on
   sign-out can tear the notice down before it is read. What IS pinned: both halves of the

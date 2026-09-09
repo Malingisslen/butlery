@@ -16446,4 +16446,8 @@ class AppLocalizationsSv extends AppLocalizations {
   @override
   String get profileDeletionNoticeHowLongUnknown =>
       'Hur länge: tills granskningen är klar.';
+
+  @override
+  String get profileDeletionNoticeWhatUnclear =>
+      'En sak kan ha sparats: vi kunde inte slutföra kontrollen av om det finns en pågående granskning av innehåll som anmälts.';
 }

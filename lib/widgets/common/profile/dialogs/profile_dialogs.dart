@@ -137,9 +137,14 @@ class ProfileDialogs {
   /// stated as a number in the copy: a hardcoded "180 days" becomes untrue to
   /// the person it is legally owed to the moment `ERASURE_HOLD_MAX_DAYS`
   /// changes. A null says less instead of saying something unmeasured.
+  /// [provisional] hedges the WHAT line. A provisional hold is placed without
+  /// the predicate being answered — the query threw, or the hold write did —
+  /// so asserting a pending review as fact would tell the person something
+  /// nobody measured. Malin's call, 2026-09-09 (BUT-2047).
   static Future<void> showRetentionNoticeDialog(
     BuildContext context, {
     DateTime? holdUntil,
+    bool provisional = false,
   }) {
     final l10n = context.l10n;
     final howLong = holdUntil == null
@@ -163,7 +168,11 @@ class ProfileDialogs {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(l10n.profileDeletionNoticeWhat),
+            Text(
+              provisional
+                  ? l10n.profileDeletionNoticeWhatUnclear
+                  : l10n.profileDeletionNoticeWhat,
+            ),
             const SizedBox(height: AppDimensions.spacingMd),
             Text(l10n.profileDeletionNoticeWhy),
             const SizedBox(height: AppDimensions.spacingMd),

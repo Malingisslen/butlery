@@ -67,6 +67,18 @@ interface FakeDbState {
    * grade the WIRING, which is the only place that argument exists.
    */
   queries?: Array<[string, string]>;
+  /**
+   * Makes the `reports` PREDICATE query throw — gated on two `where` clauses
+   * like the seeding branch above, so `deleteUserReports` (a single equality on
+   * the same collection) is untouched and the failure stays isolated to the
+   * hold evaluation.
+   *
+   * Without it the suite could only ever produce a NON-provisional hold, and
+   * the assertion that the callable carries `provisional` was answered by the
+   * fixture rather than by the code — a mutant hard-wiring `provisional: false`
+   * in the allowlist passed.
+   */
+  throwOnReportsQuery?: boolean;
 }
 
 function emptySnapshot(): {
@@ -120,6 +132,9 @@ function makeFakeDb(state: FakeDbState): admin.firestore.Firestore {
       add(data: RecordedAuditRow): Promise<{ id: string }>;
     } = {
       async get() {
+        if (name === "reports" && whereDepth >= 2 && state.throwOnReportsQuery) {
+          throw Object.assign(new Error("unavailable"), { code: 14 });
+        }
         if (seeded === undefined) return emptySnapshot();
         return {
           empty: false,
@@ -565,6 +580,14 @@ test("BUT-2046: an open moderation case is retained, and the RETURN carries it",
       `holdUntil must cross as a string, got ${typeof result.retained[0].holdUntil}`,
     );
   }
+  // The Art. 12(4) notice hedges its wording on this (BUT-2047), and the hold
+  // DOCUMENT never crosses the callable boundary — so the allowlist is the only
+  // thing that can carry it. An ordinary hold is not provisional.
+  if (result.retained[0].provisional !== false) {
+    throw new Error(
+      `an answered predicate must not read as provisional: ${JSON.stringify(result.retained[0])}`,
+    );
+  }
 
   // Condition A: a lawful hold is NOT a failure, which is the whole reason
   // `retained` is a field beside `failedCollections` rather than inside it.
@@ -600,6 +623,21 @@ test("BUT-2046: an open moderation case is retained, and the RETURN carries it",
       `audit row lost 'retained': ${JSON.stringify(audit.retained)}`,
     );
   }
+  // The FIELDS, not only the count. `writeDeletionAuditLog` builds its own
+  // hand-written projection — the third of three for this record — so a field
+  // reaching the callable's return does not reach the ops row by itself.
+  const keptRow = audit.retained[0] as {
+    resourceType?: string;
+    provisional?: boolean;
+  };
+  if (keptRow.resourceType !== "user_moderation") {
+    throw new Error(`audit row lost resourceType: ${JSON.stringify(keptRow)}`);
+  }
+  if (keptRow.provisional !== false) {
+    throw new Error(
+      `the ops row must be able to tell a decided hold from an undecidable one: ${JSON.stringify(keptRow)}`,
+    );
+  }
 
   // The `held` ARGUMENT, graded at the call site. Production returns from
   // `deleteModerationSystemEvents` BEFORE the `details.contentOwnerId` sweep
@@ -624,6 +662,50 @@ test("BUT-2046: an open moderation case is retained, and the RETURN carries it",
     throw new Error(
       "the reporter leg must still run under a hold — one-directional by design",
     );
+  }
+});
+
+test("BUT-2047: an undecidable predicate crosses as a PROVISIONAL hold", async () => {
+  const state: FakeDbState = { auditRows: [], throwOnReportsQuery: true };
+  const db = makeFakeDb(state);
+  const authCalls: FakeAuthCalls = { deleteUserUid: null, throwOnDelete: false };
+  const storageCalls: FakeStorageCalls = { deletePrefixes: [] };
+
+  const result = await runAccountDeletionWithDeps(
+    { db, auth: makeFakeAuth(authCalls), storage: makeFakeStorage(storageCalls) },
+    "uid-alice",
+    "alice@example.com",
+    "user_request",
+  );
+
+  // Held, because an unanswerable question must not resolve to "nothing kept".
+  if (result.retained.length !== 1) {
+    throw new Error(
+      `an undecidable predicate must still hold: ${JSON.stringify(result.retained)}`,
+    );
+  }
+  // And flagged, because the Art. 12(4) notice hedges its wording on this
+  // (BUT-2047). The hold DOCUMENT never crosses the callable boundary, so this
+  // allowlist is the only thing that can carry it.
+  if (result.retained[0].provisional !== true) {
+    throw new Error(
+      `an undecidable predicate must read as provisional: ${JSON.stringify(result.retained[0])}`,
+    );
+  }
+  // And the ops row carries the same answer, which is the arm that makes the
+  // assertion in the sibling test discriminate rather than pin a constant.
+  const auditRow = (state.auditRows[0] as unknown as {
+    retained: Array<{ provisional?: boolean }>;
+  }).retained[0];
+  if (auditRow?.provisional !== true) {
+    throw new Error(
+      `audit row must record the hold as provisional: ${JSON.stringify(auditRow)}`,
+    );
+  }
+  // The erasure reports itself incomplete — the failure costs the REPORT, not
+  // the answer.
+  if (result.success) {
+    throw new Error("a failed hold evaluation must not report success");
   }
 });
 

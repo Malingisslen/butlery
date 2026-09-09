@@ -69,6 +69,16 @@ export interface RetainedRecord {
   legalBasis: string;
   /** When the hold lifts at the latest, regardless of the case. */
   holdUntil: admin.firestore.Timestamp;
+  /**
+   * True when the hold was placed without the predicate being answered — the
+   * query threw, or the hold write did.
+   *
+   * It crosses to the client because the Art. 12(4) notice must not assert a
+   * pending review as fact when nothing measured one — Malin's call, 2026-09-09
+   * (BUT-2047). The sweep treats both kinds identically; only the wording
+   * differs.
+   */
+  provisional: boolean;
 }
 
 export interface DeletionResult {

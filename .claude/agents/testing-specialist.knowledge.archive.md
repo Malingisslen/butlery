@@ -36223,3 +36223,100 @@ Measured findings (no `lib/` writes; the two vacuity claims were settled ANALYTI
    become owner-readable.
 
 Verdict: fail (3 blocking: 1, 2, 3).
+
+### 2026-09-09 — BUT-2047 commit gate: a two-conjunct getter, one conjunct blind
+
+Trigger: reviewing the staged BUT-2047 follow-up (the Art. 12(4) notice hedge + the hoist of
+the notice out of `if (success)`). Brief asked me to hunt for vacuity of the shape that had
+already bitten twice in the same change (a callable-allowlist assertion answered by a fixture
+that could only produce a NON-provisional hold; the `accountDeleted` derivation with no
+`auth_deletion` fixture).
+
+Two survivors found, both settled ANALYTICALLY by substituting the mutant into the fixtures'
+own values — no probe run, index frozen.
+
+1. `AccountDeletionOutcome.owesRetentionNotice => retained.isNotEmpty && accountDeleted`
+   (`lib/viewmodels/profile/profile_viewmodel.dart:199`). Its only test is
+   `deletion_retention_notice_test.dart` "decides whether the notice is shown — in both
+   directions", three arms:
+     held               (retained 1, accountDeleted true)  -> expect true
+     heldButAccountSurvived (retained 1, accountDeleted false) -> expect false
+     heldOnFailedErasure    (retained 1, accountDeleted true)  -> expect true
+   Mutant `=> accountDeleted` agrees with all three. The fourth arm does not exist: the file's
+   `ordinary = AccountDeletionOutcome(success: true)` leaves `accountDeleted` at its
+   constructor default FALSE, and only `hasRetainedRecords` is asserted on it — so the
+   "nothing kept" case answers the mutant identically. The surviving mutant shows the Art.
+   12(4) retention notice to every user on an ordinary successful deletion. Repair named:
+   one arm, `AccountDeletionOutcome(success: true, accountDeleted: true)` ->
+   `owesRetentionNotice` isFalse.
+
+2. `final failed = result['failedCollections'] as List? ?? const [];` in
+   `ProfileViewModel.deleteAccount`. Every fixture that OMITS `failedCollections` asserts
+   `success`/`retained` and never `accountDeleted`; the new test supplies the key on both
+   arms. So `?? const ['auth_deletion']` (fail CLOSED) is green, while the production comment
+   states the fail-OPEN direction explicitly as the one the flag exists to prevent. Repair:
+   `expect(result.accountDeleted, isTrue)` on the existing ordinary-deletion test, whose
+   `{'success': true}` fixture already omits the key — no new test.
+
+Graded and CLEARED (recorded so a later round does not re-open them): the provisional widget
+case discriminates in both directions (its non-provisional control kills the inverted
+ternary); its "only the WHAT line moves" comment does range over every other string the dialog
+renders (title/why/how-long/rights), so the comment is what the test pins; assertions are
+against the rendered tree (`find.text` + `tester.element(find.byType(AlertDialog))`), the
+`contains('IMY')`/`contains('domstol')` checks being labelled content checks beside a rendered
+one; the `findsNothing` on '180' has its positive control in the same test; both new
+`failedCollections` literals are the real server spellings
+(`request-account-deletion.ts:229,381`), and `erasure_hold_evaluated` is precisely the step a
+provisional hold fails, so the second arm is the exact production combination the ticket
+exists for; the service test's `provisional: true` and the VM test's `provisional: true` are
+both seeded off-default deliberately; the `result['retained'] = listFrom(...)` wiring is
+double-witnessed (the ordinary test's `expect(result['retained'], isEmpty)` fails on the null
+a deleted line would leave). l10n chain verified across all five files — ARB pair, abstract
+(description + sv string quoted), both delegates; gen-l10n output is consistent with the
+sources.
+
+Third, Low: the widget file's header enumerates "What is pinned here, each failing for a
+different reason: 1..3", falsified by the round's own two new groups (the provisional hedge,
+the `AccountDeletionOutcome` group) — the same "the falsifier is in the same file" shape.
+Repair filed as a STRIKE of the framing clause, never a fourth item.
+
+Verdict: fail (1 blocking).
+
+### 2026-09-09 — BUT-2047 round 2: my own consequence sentence was false, and it shipped as a code comment
+
+CORRECTION to the entry above, which is kept verbatim per the append-only contract. That entry
+says of the surviving `=> accountDeleted` mutant: "The surviving mutant shows the Art. 12(4)
+retention notice to every user on an ordinary successful deletion." **That is false**, and the
+coordinator quoted it back and wrote it into the fourth arm's comment
+(`deletion_retention_notice_test.dart`).
+
+Measured from the caller: `auth_action_handler.dart` reads
+`outcome.retained.first.holdUntil` INSIDE `if (outcome.owesRetentionNotice)`. Under the mutant
+`retained` is empty on an ordinary deletion, so `List.first` throws `StateError` before the
+dialog is built — the person hits the outer `catch (e)`, gets a second `Navigator.pop` and an
+error dialog carrying "Bad state: No element", and never reaches `/auth`. Still a broken
+ordinary path, so the finding's BLOCKING status was right; the consequence was not.
+
+The general shape, now a principle: a reviewer's stated CONSEQUENCE of a surviving mutant is a
+claim distinct from its SURVIVAL, and it is the half that gets copied into the repair. Trace it
+through the caller to its first observable or omit it.
+
+Round 2 also found the provisional clause alive in four more wordings after the round reported
+striking it in "all five" copies:
+  lib/l10n/app_sv.arb:12095, lib/l10n/app_en.arb:12033 and the gen-l10n copy in
+  lib/l10n/app_localizations.dart:27362 carry "placed without the predicate being answered"
+  with NO disjunction; lib/widgets/.../auth_action_handler.dart:117-118 still carries the
+  pre-strike wording "a hold placed because the predicate could not be evaluated";
+  deletion_retention_notice_test.dart:156 carries the short form.
+`erasure-hold.ts:175-193` measures why all of them are false: the `catch` wraps
+`hasOpenModerationCase` AND `writeHoldDocument({provisional:false})`, so on the hold-write
+branch the predicate WAS answered — a case is known open. Only `retained_record.dart:30-31`,
+`profile_dialogs.dart:140-143` and `account-deletion-cascade.ts:73` carry the repairing
+disjunction. Fourth wording of one sentence; remedy filed as a STRIKE of both the head clause
+and the trailing "when nothing measured one", never a fifth wording. ARB→gen-l10n coupling
+noted: the description is the source and `dart analyze` cannot see the generated copy drift.
+
+Verified good this round: the fourth arm (`nothingKept`, `accountDeleted: true`, retained
+empty) kills `=> accountDeleted` analytically and was probed RED; the `?? const []` fail-open
+witness landed on the existing ordinary-deletion case as recommended, probed RED; the widget
+file's header enumeration was struck rather than extended.

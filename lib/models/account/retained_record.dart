@@ -15,6 +15,7 @@ class RetainedRecord {
     required this.resourceType,
     required this.legalBasis,
     required this.holdUntil,
+    this.provisional = false,
   });
 
   /// Which collection the retained rows live in, as the server names it.
@@ -26,6 +27,17 @@ class RetainedRecord {
   /// The outer cap — when the hold lifts at the latest, whatever the case does.
   final DateTime? holdUntil;
 
+  /// Whether the hold was placed without the predicate being answered — the
+  /// query threw, or the hold write did.
+  ///
+  /// Malin's call, 2026-09-09 (BUT-2047): the notice hedges its "what" line in
+  /// that case. A person is told the truth about their own record, including
+  /// when the truth is that we could not determine it.
+  ///
+  /// A MISSING field reads as false, which is the ordinary hold and what an
+  /// older deployment sends.
+  final bool provisional;
+
   /// Parses one entry of the callable's `retained` list.
   ///
   /// Fails SOFT on a missing or unparsable [holdUntil]: the notice is the last
@@ -36,6 +48,7 @@ class RetainedRecord {
       resourceType: SerializationUtils.safeString(map, 'resourceType'),
       legalBasis: SerializationUtils.safeString(map, 'legalBasis'),
       holdUntil: SerializationUtils.parseDateTimeValue(map['holdUntil']),
+      provisional: SerializationUtils.safeBool(map, 'provisional'),
     );
   }
 

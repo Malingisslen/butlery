@@ -12089,5 +12089,9 @@
   "profileDeletionNoticeHowLongUnknown": "Hur länge: tills granskningen är klar.",
   "@profileDeletionNoticeHowLongUnknown": {
     "description": "The HOW LONG line when the server sent no parsable outer-cap date. Says less rather than saying a number nobody measured."
+  },
+  "profileDeletionNoticeWhatUnclear": "En sak kan ha sparats: vi kunde inte slutföra kontrollen av om det finns en pågående granskning av innehåll som anmälts.",
+  "@profileDeletionNoticeWhatUnclear": {
+    "description": "The WHAT line when the hold is PROVISIONAL. Deliberately hedged: the notice must not assert a pending review as fact when nothing measured one (BUT-2047)."
   }
 }

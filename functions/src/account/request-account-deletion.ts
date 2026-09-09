@@ -110,6 +110,7 @@ export interface RequestAccountDeletionResponse {
     resourceType: string;
     legalBasis: string;
     holdUntil: string;
+    provisional: boolean;
   }>;
 }
 
@@ -414,6 +415,7 @@ export async function runAccountDeletionWithDeps(
       resourceType: r.resourceType,
       legalBasis: r.legalBasis,
       holdUntil: r.holdUntil.toDate().toISOString(),
+      provisional: r.provisional,
     })),
   };
 }
@@ -471,6 +473,15 @@ async function writeDeletionAuditLog(
       resourceType: r.resourceType,
       legalBasis: r.legalBasis,
       holdUntil: r.holdUntil,
+      // The ops row should be able to tell a decided hold from an undecidable
+      // one; `erasure_holds/{uid}` and the `cascade_retain` row both record it,
+      // and a reader who has only this row should not have to go looking.
+      //
+      // This is the SECOND hand-written projection of `RetainedRecord`, and the
+      // warning on the response allowlist is as true here: a field added to
+      // that type reaches the client through one of these and the operator
+      // through the other, and neither by itself.
+      provisional: r.provisional,
     })),
   });
   return docRef.id;

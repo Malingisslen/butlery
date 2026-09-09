@@ -1,19 +1,22 @@
 // BUT-2046 follow-up: the GDPR Art. 12(4) notice shown when an account
 // deletion lawfully retained moderation evidence.
 //
-// What is pinned here, each failing for a different reason:
-//   1. the dialog renders ALL FOUR elements Art. 12(4) requires — what was
-//      kept, why, for how long, and the two remedies. A notice missing one of
-//      them is not a lesser notice, it is a non-compliant one, so each is its
-//      own assertion rather than a single "the dialog appears" check;
-//   2. the "how long" line renders the cap DATE the server sent, never a
-//      number written into the copy — a hardcoded "180 days" becomes a false
-//      promise the moment `ERASURE_HOLD_MAX_DAYS` changes, and the person it
-//      is legally owed to has no way to know;
-//   3. `RetainedRecord` parses what the callable actually sends and degrades
-//      rather than throws on a shape it does not recognise — this is the last
-//      screen the person ever sees, so a malformed date must cost the date and
-//      not the whole notice.
+// Why the assertions here are shaped as they are:
+//
+// The dialog renders ALL FOUR elements Art. 12(4) requires — what was kept,
+// why, for how long, and the two remedies. A notice missing one of them is not
+// a lesser notice, it is a non-compliant one, so each is its own assertion
+// rather than a single "the dialog appears" check.
+//
+// The "how long" line renders the cap DATE the server sent, never a number
+// written into the copy — a hardcoded "180 days" becomes a false promise the
+// moment `ERASURE_HOLD_MAX_DAYS` changes, and the person it is legally owed to
+// has no way to know.
+//
+// `RetainedRecord` parses what the callable actually sends and degrades rather
+// than throws on a shape it does not recognise — this is the last screen the
+// person ever sees, so a malformed date must cost the date and not the whole
+// notice.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -147,6 +150,60 @@ void main() {
       );
     });
 
+    testWidgets('hedges the WHAT line when the hold is PROVISIONAL', (
+      tester,
+    ) async {
+      // Asserting a pending review as fact would tell the person something
+      // nobody measured — Malin's call, BUT-2047.
+      await tester.pumpWidget(
+        _host(
+          (context) => ProfileDialogs.showRetentionNoticeDialog(
+            context,
+            provisional: true,
+          ),
+        ),
+      );
+      await tester.tap(find.text('open'));
+      await tester.pumpAndSettle();
+
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(AlertDialog)),
+      );
+      expect(find.text(l10n.profileDeletionNoticeWhatUnclear), findsOneWidget);
+      expect(
+        find.text(l10n.profileDeletionNoticeWhat),
+        findsNothing,
+        reason: 'the confident wording must not survive a provisional hold',
+      );
+      // Everything else the dialog renders is unchanged — only the WHAT line
+      // hedges, and a repair that swapped the whole notice would redden here.
+      expect(find.text(l10n.profileDeletionNoticeTitle), findsOneWidget);
+      expect(find.text(l10n.profileDeletionNoticeWhy), findsOneWidget);
+      expect(
+        find.text(l10n.profileDeletionNoticeHowLongUnknown),
+        findsOneWidget,
+      );
+      expect(find.text(l10n.profileDeletionNoticeRights), findsOneWidget);
+    });
+
+    testWidgets('states it plainly when the hold is NOT provisional', (
+      tester,
+    ) async {
+      // The control for the case above. Without it, a dialog hard-wired to the
+      // hedged string would pass.
+      await tester.pumpWidget(
+        _host((context) => ProfileDialogs.showRetentionNoticeDialog(context)),
+      );
+      await tester.tap(find.text('open'));
+      await tester.pumpAndSettle();
+
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(AlertDialog)),
+      );
+      expect(find.text(l10n.profileDeletionNoticeWhat), findsOneWidget);
+      expect(find.text(l10n.profileDeletionNoticeWhatUnclear), findsNothing);
+    });
+
     testWidgets('cannot be dismissed by tapping outside it', (tester) async {
       // The account is already gone when this shows, so there is no second
       // chance to give the notice and no signed-in surface to return to.
@@ -214,6 +271,25 @@ void main() {
       },
     );
 
+    test('carries the provisional flag off the wire, in both directions', () {
+      final held = RetainedRecord.listFrom([
+        {
+          'resourceType': 'user_moderation',
+          'legalBasis': 'GDPR Art. 17(3)(e)',
+          'holdUntil': '2027-03-08T00:00:00.000Z',
+          'provisional': true,
+        },
+      ]);
+      expect(held.first.provisional, isTrue);
+
+      // A record with no flag is the ordinary hold, and reads as confident.
+      // Both arms, because a parser hard-wired either way would pass on one.
+      final ordinary = RetainedRecord.listFrom([
+        {'resourceType': 'user_moderation', 'legalBasis': 'x'},
+      ]);
+      expect(ordinary.first.provisional, isFalse);
+    });
+
     test('a field the server never sends reads as nothing kept', () {
       // An older deployment omits `retained` entirely. That must land on the
       // ordinary deletion path, never on an exception.
@@ -229,6 +305,7 @@ void main() {
       // getter and a one-armed test would pass on a getter hard-wired to true.
       const held = AccountDeletionOutcome(
         success: true,
+        accountDeleted: true,
         retained: [
           RetainedRecord(
             resourceType: 'user_moderation',
@@ -241,6 +318,61 @@ void main() {
 
       expect(held.hasRetainedRecords, isTrue);
       expect(ordinary.hasRetainedRecords, isFalse);
+      // The notice is owed when data was KEPT — not only when the erasure fully
+      // succeeded (Malin, BUT-2047) — but it does require the account to be
+      // gone, because the notice's own title says it is.
+      expect(
+        held.owesRetentionNotice,
+        isTrue,
+        reason: 'account gone + something kept',
+      );
+      const heldButAccountSurvived = AccountDeletionOutcome(
+        success: false,
+        accountDeleted: false,
+        retained: [
+          RetainedRecord(
+            resourceType: 'user_moderation',
+            legalBasis: 'GDPR Art. 17(3)(e)',
+            holdUntil: null,
+          ),
+        ],
+      );
+      expect(
+        heldButAccountSurvived.owesRetentionNotice,
+        isFalse,
+        reason:
+            'the notice opens with "Ditt konto är raderat"; it must not be '
+            'shown while the account is still there',
+      );
+      // And the case the whole decision is about: the erasure did NOT fully
+      // succeed, the account IS gone, something was kept — the notice is owed.
+      const heldOnFailedErasure = AccountDeletionOutcome(
+        success: false,
+        accountDeleted: true,
+        retained: [
+          RetainedRecord(
+            resourceType: 'user_moderation',
+            legalBasis: 'GDPR Art. 17(3)(e)',
+            holdUntil: null,
+            provisional: true,
+          ),
+        ],
+      );
+      expect(heldOnFailedErasure.owesRetentionNotice, isTrue);
+      // The arm that grades the OTHER conjunct. Without it `owesRetentionNotice`
+      // could be `=> accountDeleted` and every arm above still agrees.
+      // `accountDeleted` is seeded TRUE here on purpose: the constructor
+      // defaults it to false, so a fixture that left it out would agree with
+      // the mutant too.
+      const nothingKept = AccountDeletionOutcome(
+        success: true,
+        accountDeleted: true,
+      );
+      expect(
+        nothingKept.owesRetentionNotice,
+        isFalse,
+        reason: 'an ordinary deletion kept nothing, so nothing is owed',
+      );
       // A successful deletion that kept something is still a SUCCESS: a lawful
       // Art. 17(3) exception is not a failed erasure.
       expect(held.success, isTrue);

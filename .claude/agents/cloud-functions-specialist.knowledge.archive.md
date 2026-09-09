@@ -19511,3 +19511,108 @@ says. Measured at `maintenance-dispatchers.ts:204-223`: `timedOut` is computed i
 per-task catch and the `if (timedOut)` break fires at ANY index, skipping every task behind
 it. First position is where that costs the most, not where it uniquely happens — which is the
 wording the clause actually carries.
+
+### 2026-09-09 — BUT-2047: the provisional flag, and a fake seam wider than its call [review]
+
+Commit-gate review of the Art. 12(4) wording follow-up (`provisional` crossing
+`erasure-hold.ts` -> `RetainedRecord` -> the callable allowlist -> the Dart model -> the
+dialog). All five return paths of `applyErasureHold` carry the right value (only the
+undecidable branch is `true`; the over-cap skip and the TTL-push failure are `false`, both
+with a control arm in `account-deletion-cascade.test.ts`). A repo-wide grep over `*.ts`/`*.dart`
+confirmed nothing reads the flag for behaviour: the sweep, the lift, `held` and
+`probeResidualData` all key on `resourceType`/`holdUntil`, so it is descriptive as the
+comment claims.
+
+One real finding, and it is an instance of the existing non-vacuity principle rather than a
+new one, which is why nothing was added to the principles file (it is over budget):
+`throwOnReportsQuery` in the orchestration fake throws on EVERY `reports` read, while its own
+docstring says "the `reports` predicate query" and the `openReportRow` seam beside it is
+deliberately gated on `whereDepth >= 2` for exactly this reason. `deleteUserReports`
+(`account-deletion-cascade.ts:2974`) is a single-`where` read on the same collection, so the
+new test also fails that cascade step and its `if (result.success)` assertion is
+over-determined — it would stay red under a mutant that made the hold path return `ok: true`.
+The `provisional` assertions beside it are unaffected and were probed RED. Remedy: gate the
+throw on `whereDepth >= 2`, mirroring the seeding branch.
+
+Two smaller ones: the `RetainedRecord.provisional` doc comment says the flag means the
+PREDICATE could not be evaluated, but the `catch` also covers the hold-document write, so a
+known-open case whose first write throws and whose fallback write succeeds shows the hedged
+copy (the deviation entry states this correctly — "if the predicate or the hold write
+throws"). And the entry's "a test pins that only the WHAT line moves" is pinned for the WHY
+and RIGHTS lines only; the title and the how-long line are not asserted in that case.
+
+Second pass, same day (19 files staged). All four findings verified fixed in the staged
+bytes: the seam is gated on `whereDepth >= 2`, the `RetainedRecord` doc comment now says
+"placed without the predicate being answered — the query threw, or the hold write did", the
+provisional widget case asserts all four Art. 12(4) elements, and the viewmodel fixture seeds
+`provisional: true`. The deviation entry dropped both overclaims I had flagged ("every hop is
+pinned", "a test pins that only the WHAT line moves") and now names what was probed and what
+was not.
+
+The change grew: the notice was hoisted out of `if (success)`, because a provisional hold
+returns `ok: false` -> `failedCollections` -> `success: false`, so the hedged string was
+unreachable and the person got only "kontot kunde inte raderas helt". Checked the new
+`accountDeleted` derivation myself, since it is a claim about which failures imply what:
+`auth_deletion` is pushed at `request-account-deletion.ts:381` and nowhere else in either
+language (grep over `*.ts`/`*.dart`), `success = authDeleted && failedCollections.length === 0`,
+and `AccountDeletionService` passes the CF's `failedCollections` through while adding only
+client-side names (`search_index_user`). So `!contains('auth_deletion')` is exactly the
+callable's `authDeleted`.
+
+One residual it leaves, reported as Low: `auth.deleteUser` throwing `auth/user-not-found`
+means the account IS gone, so the notice's title would be true, yet `accountDeleted` is false
+and the legally owed notice is withheld — reachable on a retried callable. The conservative
+direction (withhold rather than show a false sentence), but the deviation entry's sentence
+"showing it while the account is still there" does not hold for that code. Precedent for the
+alternative exists in this repo: answer `auth/user-not-found` as "gone" rather than as a
+failure. That changes `success` on an existing path, so it is a decision rather than an edit.
+
+Third pass. Measured the delta from `git diff --cached --stat`: exactly three paths moved
+(both deviation files 44 -> 61 added lines, `profile_viewmodel.dart` 29 -> 33); the other
+sixteen carry byte-identical counts and unchanged content in every region re-read. Verified
+the new viewmodel dartdoc's premise myself — `account_deletion_service.dart:70-74`
+initialises `'failedCollections': <String>[]` in the result-map literal, so the key is
+present on every return path including the exception handler.
+
+The finding of this round is the strike landing on ONE of five copies. The clause struck
+from the TS interface — "rather than because a case is known to be open" — still stands in
+`retained_record.dart:30`, `profile_dialogs.dart:141`, the widget test's comment, and BOTH
+ARB descriptions (from which `app_localizations.dart:27362` is generated). Each asserts the
+flag means no review is known to be open, which is false in the hold-write-failure branch:
+the predicate matched, so a case IS known open, and the record is provisional anyway. The
+deviation entry now names that branch explicitly, so the entry and four Dart-side comments
+disagree. This is the repo's named recurring failure (fix the copy the reviewer quoted,
+leave the siblings) and the reason a strike must be swept by CONCEPT rather than by file.
+
+Second, smaller: the deviation entry's new clause "which the wording here once denied" is
+false at sentence scope — the paragraph it edits already read "If the predicate or the hold
+write throws" before the edit (visible in the diff's removed line). It is true only if
+"here" means the whole entry, whose earlier RESOLVED paragraph did deny it and has since
+been rewritten. A narration clause inside a correction, keyed on position; the remedy is to
+strike it, since the corrected sentence stands alone.
+
+Fourth pass, 24 staged. Delta measured from the stat rather than taken: five paths newly
+staged (this archive, the testing-specialist knowledge pair, `events.jsonl`, the journey
+test) and five moved (both deviation files 61 -> 76, `request-account-deletion.ts` 2 -> 6,
+`profile_viewmodel_test.dart` 43 -> 47, `deletion_retention_notice_test.dart` 116 -> 160).
+The Dart chain's wording changes do NOT show in the stat — identical line counts — so they
+were checked by reading: all five copies now carry the TS interface's "placed without the
+predicate being answered — the query threw, or the hold write did", and the two ARB
+descriptions the shortened form with no false clause, regenerated into `app_localizations.dart`.
+
+Finding: `writeDeletionAuditLog`'s new `provisional` projection is unwitnessed. The only
+test reading that row asserts `Array.isArray(audit.retained) && length === 1`, so deleting
+the field leaves every suite green — one field deeper than the hazard the comment two lines
+above it already names ("no other test reads it"). Two lines fix it, and the audit row is
+available on the BUT-2047 path too because `writeDeletionAuditLog` runs unconditionally.
+
+That is now THREE hand-written projections of one record shape — the response allowlist, the
+audit row, the Dart model — and only the first carries the drift warning. A future field
+added to `RetainedRecord` reaches the client through one of them and the operator through
+another; the warning belongs on both.
+
+The fourth `owesRetentionNotice` arm the testing gate added is real: with every arm carrying
+a non-empty `retained`, `=> accountDeleted` survives, and under it every ordinary successful
+deletion shows a notice claiming a moderation review that does not exist. Its comment names
+why the fixture must seed `accountDeleted: true` — the constructor default would agree with
+the mutant.

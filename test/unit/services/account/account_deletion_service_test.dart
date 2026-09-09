@@ -120,6 +120,7 @@ void main() {
             'resourceType': 'user_moderation',
             'legalBasis': 'GDPR Art. 17(3)(e)',
             'holdUntil': '2027-03-08T00:00:00.000Z',
+            'provisional': true,
           },
         ],
       });
@@ -141,6 +142,9 @@ void main() {
         retained.first.holdUntil,
         DateTime.parse('2027-03-08T00:00:00.000Z'),
       );
+      // BUT-2047: the notice's wording hedges on this, so it must survive the
+      // wire→map hop as a parsed bool rather than being dropped.
+      expect(retained.first.provisional, isTrue);
     });
 
     /// And the ordinary deletion, where the server sends no such field — the

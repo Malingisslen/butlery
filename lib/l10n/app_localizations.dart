@@ -27358,6 +27358,12 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Hur länge: tills granskningen är klar.'**
   String get profileDeletionNoticeHowLongUnknown;
+
+  /// The WHAT line when the hold is PROVISIONAL. Deliberately hedged: the notice must not assert a pending review as fact when nothing measured one (BUT-2047).
+  ///
+  /// In sv, this message translates to:
+  /// **'En sak kan ha sparats: vi kunde inte slutföra kontrollen av om det finns en pågående granskning av innehåll som anmälts.'**
+  String get profileDeletionNoticeWhatUnclear;
 }
 
 class _AppLocalizationsDelegate

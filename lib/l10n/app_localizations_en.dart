@@ -16404,4 +16404,8 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get profileDeletionNoticeHowLongUnknown =>
       'How long: until the review is finished.';
+
+  @override
+  String get profileDeletionNoticeWhatUnclear =>
+      'One thing may have been kept: we could not finish checking whether there is an ongoing review of content that was reported.';
 }
