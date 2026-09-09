@@ -3601,3 +3601,38 @@ att en vakt inte kunde pinnas eftersom `cleanupUserSocialData` "har ingen provse
 bygga en är större än det här bygget". Selen fanns — emulatorsviten drev redan funktionen. En felaktig siffra rättas av nästa läsare; en felaktig *anledning* till att något inte
 går att prova är den mening en senare körning citerar för att slippa skriva provet. Luckan
 stängdes där i stället, med två ämnen och ett hållsdokument som diskriminator.
+
+
+## En oprövad prissättning som når grundaren är värre än en osann kodkommentar (BUT-1917/BUT-2018, 2026-09-09)
+
+Jag stängde `incoming_blocks` ur artikel 15-exporten, och frågade sedan Malin om vi också
+skulle strama åt `blocks`-läsregeln. Priset jag gav henne kom ordagrant ur BUT-1917:s
+avvikelsepost: splitten "täcker i praktiken ingenting i dag, eftersom appen inte är live".
+Hon svarade ja. Först när jag skulle bygga mätte jag vad den halvan faktiskt gör.
+
+Meningen var sann om den UTGÅENDE riktningen och falsk om den INGÅENDE — och det är den
+ingående halvan splitten river. `notBlockedByAnyoneHere()` är enkelriktad med flit: den
+vägrar den blockerades röst och låter blockeraren rösta normalt, eftersom att vägra
+blockeraren vore att straffa den som använde säkerhetsfunktionen. Alltså har ingen
+serverregel någonsin täckt en blockerares röst, och ingen planeras. Klientens strippning är
+det enda som tar bort den, och den sitter på BESLUTSVÄGEN (`closePoll` unionerar
+`requireBlockedByIds()` in i mängden vinnaren löses ur), inte bara i visningen. Ett permanent
+fall, inte en kvarleva.
+
+**Tre saker att ta med.**
+
+1. **En avvikelsepost är en oprövad utsaga precis som en kodkommentar, och citeras med mer
+   auktoritet.** Filen auto-laddas, posten var daterad och attribuerad, och den lästes som
+   mätt. Jag skrev till och med "Measured, not assumed" i grannmeningen — men mätningen gällde
+   VILKA FRÅGOR splitten bryter, aldrig vad den brutna halvan skyddade. Ett mätord smittar
+   inte satsen bredvid.
+
+2. **Ett beslut som går till grundaren har en högre bevisbörda än kod.** En osann kommentar
+   fångas av nästa granskare; ett svar från Malin blir ett prejudikat som poster hänvisar
+   till i månader. Innan en fråga ställs ska varje prisuppgift i den vara mätt i koden samma
+   dag — inte ärvd ur en post, hur väl skriven den än är. Kostnaden här var trettio sekunders
+   grep som jag gjorde efter frågan i stället för före.
+
+3. **Rätt åtgärd var att gå tillbaka, inte att bygga.** Frestelsen var att bygga det hon sagt
+   ja till — hon hade ju svarat. Men samtycket gällde ett pris som inte fanns. Att fråga om
+   var billigt och hon ändrade sig direkt.
