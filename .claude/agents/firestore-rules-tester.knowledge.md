@@ -425,14 +425,13 @@ Standard deny matrix for ownership-checked collections:
   literal the discovery can still see (keep `projectId: "…"` at the
   `initializeTestEnvironment` call, or export the default as its own string const).
   **That split then has its OWN failure mode: every OTHER consumer of the id must resolve it
-  the SAME way.** `blocks-rules.test.ts` honours `PROBE_PROJECT_ID` at
-  `initializeTestEnvironment` but interpolates the BARE literal into `clearFirestore()`, so
-  under a probe the per-test clear empties a different namespace from the one under test and
-  the run silently loses its isolation — an earlier allow's write survives and turns a later
-  create-deny into an update-deny, which is the exact mis-attribution the limb-pair mutant
-  exists to catch. Grep every use of the id constant when you add the seam, and until it is
-  fixed, probe such a suite WITHOUT setting `PROBE_PROJECT_ID` (per-test clear+seed keeps
-  mutant writes contained). Assert the mutator's match
+  the SAME way.** A suite that honours `PROBE_PROJECT_ID` at `initializeTestEnvironment` but
+  interpolates the BARE literal into `clearFirestore()` empties a different namespace from
+  the one under test, so the run silently loses its isolation — an earlier allow's write
+  survives and turns a later create-deny into an update-deny, which is the exact
+  mis-attribution the limb-pair mutant exists to catch. Grep every use of the id constant
+  when you add the seam; `blocks-rules.test.ts` resolves it at BOTH sites today (measured
+  2026-09-09), so it may be probed with `PROBE_PROJECT_ID` set. Assert the mutator's match
   count is 1 and diff the mutant against the original before trusting the run. **A probe
   project id must be lowercase** — an uppercase letter (a `createdAt`-derived id) makes the
   run emit NO test lines at all, which greps for `FAIL` as cleanly as a green suite; require
@@ -552,6 +551,16 @@ Standard deny matrix for ownership-checked collections:
   with the null arm DELETED** (measured on `user_moderation` UM8, BUT-2046). Seed absence
   positively — `withSecurityRulesDisabled` DELETE, not "no test wrote it" — and grade it
   with a null-arm mutant, which must kill that test alone.
+- **A fixture seeded inside `withSecurityRulesDisabled` is evaluated by NO limb, so any
+  justification for its SHAPE that cites a future `hasOnly`/`hasRequiredFields` on that
+  collection is false for that fixture.** Measured 2026-09-09 with one mutant file serving two
+  suites: `blocks` create rewritten to `if false` reddens `blocks-rules.test.ts` W1 (a client
+  create) while `recipe-comments-rules.test.ts`, whose `blocks` seed is rules-disabled, stays
+  24/24 with the seed landing normally. Matching the producer is still the right default —
+  nothing would ever tell you such a fixture had drifted — but say so from CONVENTION, not from
+  a write-validation mechanism that cannot reach it. The shape does become load-bearing if a
+  gate ever moves from `exists()` to a FIELD read, which is a read-side change, not a
+  `hasOnly`; that is the direction to name if the justification needs a mechanism at all.
 - Never import server-value sentinels (`serverTimestamp`, `increment`, `arrayUnion`,
   `deleteField`) from `firebase-admin/firestore` in a `*-rules.test.ts` — the test
   context is the CLIENT SDK; an admin sentinel throws before any rule runs, which also

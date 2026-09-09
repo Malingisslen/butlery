@@ -3636,3 +3636,57 @@ fall, inte en kvarleva.
 3. **Rätt åtgärd var att gå tillbaka, inte att bygga.** Frestelsen var att bygga det hon sagt
    ja till — hon hade ju svarat. Men samtycket gällde ett pris som inte fanns. Att fråga om
    var billigt och hon ändrade sig direkt.
+
+---
+
+## En STRYKNING kan skapa en universell utsaga genom att ta bort satsen som avgränsade den (BUT-1943/BUT-2025/BUT-2015, 2026-09-09)
+
+Repots regel är att en felaktig mening ska STRYKAS, inte formuleras om, och att rättelsetexten
+är där nästa osanna mening landar. Den här sprinten hittade en tredje form, som är motsatsen
+till den vanliga: **strykningen i sig gjorde en mening falsk.**
+
+Två gånger i samma ändring, i olika filer, av olika granskare:
+
+1. `chat_action_handler.dart` sa "genom `SnackBarUtils`, som resten av appen och som
+   `_showSuccessSnackBar` nedanför". Den sista satsen var falsk och ströks. Kvar stod "som
+   resten av appen" — en universell utsaga som är falsk om filens två närmaste grannar, och som
+   tidigare avgränsades av just den sats som togs bort. Granskaren som gjort den första
+   strykningen hittade själv den andra och skrev "This is one I caused".
+
+2. Ett testkommentar var en TVÅPOSTS-UPPRÄKNING ("handlerns egen bar målade `error` och den
+   delade hjälparen `secondary`), som per konstruktion inte kan sträcka sig för långt. Jag strök
+   historikhalvan på en granskares förslag; kvar blev "varje arm i det här flödet målar
+   `secondary`" — en kvantifikator över en metod som innehåller en framgångsarm som målar
+   `primary`. Tre granskare hittade den oberoende.
+
+### Varför den är svårare att se än en vanlig felaktig kommentar
+
+Meningen var **sann när den skrevs**. Faran låg latent i NÄSTA redigering. En granskare som
+läser den i dag graderar den grönt och har rätt; den blir falsk först när någon tar bort
+grannsatsen. En av grindarna såg exakt det, namngav mekanismen och **avstod från att fila**
+med motiveringen att meningen var sann som den stod — och två andra grindar bad sedan om
+strykningen ändå.
+
+### Vad man gör
+
+- Efter en strykning: läs den ÖVERLEVANDE meningen ensam. Inte diffen, inte din beskrivning av
+  den — meningen.
+- Fråga specifikt: **vad avgränsade den borttagna satsen?** Om svaret är "omfånget", ska
+  omfånget antingen skrivas in eller påståendet strykas också.
+- En stabil mening får sitt omfång från sitt OBJEKT, inte från en efterföljande sats. "färgen
+  säger inte VILKEN arm som skickade det här" avgränsas av "det här" och kan inte breddas av en
+  senare redigering. "varje arm i flödet" kan.
+- Fila på FORMEN, inte på dagens läsning. Att fila kostar en radering; att låta bli kostar en
+  falsk mening som ingen har skrivit under.
+
+### Sidoresultat från samma runda, värt att minnas
+
+- **Att harmonisera en färg hålkar varje test som använder den som armdiskriminator** — tyst,
+  och medan allt är grönt. Ersättningen måste vara en räknare på medarbetarsömmen, inte ett
+  tillståndsfält: attrappens `blockedUserIds` registrerade bara lyckade fall och var tom i båda
+  de lägen testet skulle skilja på.
+- **En ändring kan göra en kommentar i en ORÖRD fil falsk**, och ingen per-fil-grind ser det.
+  Bara helhetsgranskningen.
+- **En granskares "oförändrad, samma blob" kan vara ett minnesfel.** En grind jämförde en
+  hash mot minnet i stället för mot sitt eget noterade värde och rapporterade rent; commit-
+  grinden var det enda som fångade det. Täckning nyckias på `Read`-verktyget just därför.

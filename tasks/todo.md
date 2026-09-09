@@ -1,3 +1,150 @@
+# Sprint 2026-09-09 — sex ärenden, två kluster
+
+Vald av `/delivery:sprint-execute`. Router på batchens filunion:
+`python tools/stakeholder_router.py --json <10 paths>` -> **`full-panel`**, panel om 10 roller,
+high_stakes_hits: `firestore.rules`, `account-deletion-cascade.ts`, `chat_group_export.dart`.
+`panelPolicy: park` — allt i kluster A och BUT-2014 landar i In Review, inte Done.
+
+---
+
+## Kluster A — backend / regler / Cloud Functions
+
+### [Tier C] BUT-2005 — barnsäkerhetsvräkningen kapar inte menyåtkomsten (High, security)
+Disposition: **build**. Premiss kontrollerad mot main: `cutGroupMenuPlanAccess` har exakt ETT
+anropsställe (`groups/remove-chat-group-member.ts:267`) och är privat i den filen.
+
+Acceptanskriterier:
+- [ ] `{text: "cutGroupMenuPlanAccess ligger i en delad modul och anropas fran alla vagar som tar bort ett uid ur en gruppchatts medlemslista", kind: diff}`
+- [ ] `{text: "Vagarna ar UPPRAKNADE genom grep, inte antagna: varje stalle som skriver bort en medlem ar listat i planen med fil och rad innan wiringen skrivs", kind: diff}`
+- [ ] `{text: "Radera-sista-veckan och befordra-lagsta-uid foljer med till de nya anropsplatserna, och det ar medvetet - ett test per ny anropsplats", kind: diff}`
+- [ ] `{text: "INTE gjort: ingen ny rules-yta, ingen andring av vad cutGroupMenuPlanAccess sjalv gor", kind: diff}`
+
+### [Tier C] BUT-2038 — `ingredient_suggestions` create-limb är obegränsad (Medium, backend)
+Disposition: **build**. Premiss kontrollerad: `firestore.rules:3310-3313` har varken `hasOnly`,
+storleksgräns eller `rateLimitWrite`; `rateLimitWrite` finns som hjälpare på rad 203.
+
+Acceptanskriterier:
+- [ ] `{text: "create-limben har hasOnly over den deklarerade typens falt, rateLimitWrite, och ett tak pa dokumentets falt", kind: diff}`
+- [ ] `{text: "De tva tillat-fixturerna i ingredient-suggestions-rules.test.ts som skickar status blir roda och skrivs om - de aterstalls INTE", kind: diff}`
+- [ ] `{text: "allow create: if false aterupptas INTE (BUT-2028, avgjort)", kind: diff}`
+- [ ] `{text: "deleteIngredientSuggestions obundna .get() far ett tak i samma form som MAX_BLOCK_SWEEP_ROWS", kind: diff}`
+
+---
+
+## Kluster B — Dart, låg risk (router matchade ingen roll på fyra av fem)
+
+### [Tier A] BUT-2014 — exportens chattgruppsben skickar tom lista bredvid felkod (Medium)
+Disposition: **build**. Premiss: `lib/services/account/export/chat_group_export.dart:59`.
+- [ ] `{text: "Felgrenen returnerar felkoden UTAN chat_groups-nyckeln", kind: diff}`
+- [ ] `{text: "social_export_manager_test.dart:s dubbelfelstest pinnar nyckelns FRANVARO - assertionen skrivs om, aterstalls inte", kind: diff}`
+- [ ] `{text: "Mutationsprovad: aterinfor tomma listan, testet blir rott", kind: diff}`
+
+### [Tier A] BUT-1943 — `QuantityParser.parse` saknar finitetskontroll (Medium)
+Premiss: ingen `isFinite` i `lib/utils/text/quantity_parser.dart`; `parsed < 0` fångar ej +Infinity.
+- [ ] `{text: "isFinite-kontroll i QuantityParser.parse, faller tillbaka pa samma 1.0 som ovrig ogiltig indata", kind: diff}`
+- [ ] `{text: "Test for 309 nior (Infinity) och 308 (andligt, oforandrat)", kind: diff}`
+
+### [Tier A] BUT-2015 — två managers kan nå en avyttrad notifierare (Low)
+Premiss: ingen `_isDisposed` i någon av de två filerna.
+- [ ] `{text: "Bada managers har _isDisposed, isDisposed-getter och overskuggad notifyListeners som returnerar tidigt", kind: diff}`
+- [ ] `{text: "Minst ett AKTA async-test: avyttra medan ett await ar i flykt via Completer", kind: diff}`
+- [ ] `{text: "Mutationsprovat rott", kind: diff}`
+- [ ] `{text: "Kommentaren sager vilken sats som nar - managerns egen finally eller foralderns fortsattning - mott, inte antaget", kind: diff}`
+
+### [Tier A] BUT-2025 — två småfel från BUT-1917:s granskning (Low)
+- [ ] `{text: "Blockeringsfixturerna skriver blockedAt (produktionens falt), inte createdAt", kind: diff}`
+- [ ] `{text: "chat_action_handler._showErrorSnackBar gar genom SnackBarUtils", kind: diff}`
+
+---
+
+
+---
+
+## Fas 1.4 — panelens bindande villkor (10 roller, alla blinda)
+
+Loggas i `docs/org/metrics/events.jsonl`. Två fynd ANDRAR omfattningen:
+
+### A. BUT-2038: `rateLimitWrite` byggs INTE, och det ar ett matt beslut
+`Security Architect` och `DBA` fann oberoende att `rateLimitWrite('...', N)` bara LASER
+`users/{uid}/rate_limits/{type}`. Ingen kod i `lib/` skapar ett `ingredient_suggestions`-forslag,
+alltsa finns ingen skrivare som stamplar hinken — regeln skulle bli en INERT kontroll som laser
+som en fix. Samma permanent tomma limiter som repot redan dokumenterar for
+`rateLimitWrite('conversations', 10)`. Byggs: `hasOnly`, ett vardekrav pa `status`,
+`originalName`-taket, och raderingstaket. Rate limit-halvan filas som eget arende.
+
+### B. BUT-2014: `Legal Counsel` sa att premissen ar inaktuell. MATT, och den haller.
+Legal: BUT-1862 lyfte redan ut felkoden till `chat_groups_error_code`, "no new fix needed".
+Matt i `lib/services/account/data_export_service.dart:363` — varningsbyggaren laser ENBART
+`value['error']` / `value['error_code']` i sektionens ROT. `chat_groups_error_code` ar en
+kropps-nyckel och nas aldrig av den. Vid dubbelfel blir det alltsa exakt EN varning, som namner
+konversationsfelet, medan `chat_groups: []` star kvar och laser som ett fullstandigt svar.
+Premissen haller. En granskares matning ar lika falsifierbar som en kommentar.
+
+### Bindande villkor, per arende
+
+**BUT-2005** (T&S, DPO, Security, DBA, Legal, PM, Support — konvergerade)
+- [ ] `{text: "Anropet sker UTANFOR varje db.runTransaction pa bada nya anropsstallen", kind: diff}`
+- [ ] `{text: "Signaturen tar uids: string[] och gor EN skanning plus EN uppdatering per plandokument for alla avgaende uid tillsammans - inte ett anrop per uid i en fan-out-loop", kind: diff}`
+- [ ] `{text: "Identifieraren som skickas ar conversationId, inte chat_groups-dokumentets id - group_weekly_menu_plans.groupId lagrar konversationens id. Pinnat av ett test, inte antaget", kind: diff}`
+- [ ] `{text: "actorId ar uttryckligt beslutat per anropsstalle: kategorisynken skickar callerUid (den som faktiskt andrade rostern), barnsakerhetsvrakningen en systemsentinel - ingen manniska tillskrivs en automatisk atgard", kind: diff}`
+- [ ] `{text: "Inget nytt falt, ingen systemrad och ingen tombstone som later en lasare harleda ATT nagon vrakts som minderarig (BUT-1856)", kind: diff}`
+- [ ] `{text: "Avvikelseposten uppdateras till DELVIS stangning och namner vad som fortfarande ar oppet - den skrivs INTE om till att alla vagar ar fixade", kind: diff}`
+
+**BUT-2038** (Security, DBA, DPO)
+- [ ] `{text: "hasOnly listar exakt de fem klientskrivna falten: userId, ingredientName, originalName, status, createdAt - reviewedBy/reviewNotes ligger UTANFOR (Admin SDK forbigar regler)", kind: diff}`
+- [ ] `{text: "status maste vara 'pending' vid create - hasOnly ensamt stoppar inte en forfalskad approved", kind: diff}`
+- [ ] `{text: "originalName far samma <= 100-tak som ingredientName redan har", kind: diff}`
+- [ ] `{text: "deleteIngredientSuggestions AVBOJER over taket (.limit(CAP+1), logga ERROR, return false) - aldrig en trunkerad radering", kind: diff}`
+- [ ] `{text: "Sonden pa rad ~213 forblir OBEGRANSAD, sa ett over-taket-fall rapporterar gdprCompliant: false", kind: diff}`
+- [ ] `{text: "En regelkommentar sager att en framtida skrivare sjalv maste stampla rate-limit-hinken - annars ar limitern inert (BUT-1482-precedenset)", kind: diff}`
+- [ ] `{text: "Regeltest for varje ny konjunkt. De tva grona tillat-fixturerna som skickar status blir roda och skrivs om", kind: diff}`
+
+**BUT-2014** (DPO)
+- [ ] `{text: "chat_group_export_test.dart:262 skrivs om fran isEmpty till containsKey == false - inte bara manager-testet", kind: diff}`
+- [ ] `{text: "social_export_manager.dart addAll av en karta UTAN nyckeln pinnas som en no-op", kind: diff}`
+
+**BUT-1943** (PM)
+- [ ] `{text: "Aven unicode-brakgrenen (rad 113-115) tacks - den har ett eget double.tryParse och en egen retur som ingen isFinite-kontroll pa rad 121 nar", kind: diff}`
+
+**BUT-2015** (Software Architect - avvaktar)
+**BUT-2025** (Support)
+- [ ] `{text: "SnackBarUtils-stilen matchar ovriga felytor", kind: diff}`
+
+### Skickas till Malin (Legal, punkt d) — beslutas INTE har
+- Ska redan vrakta minderariga backfillas? (framatriktad fix, som repots ovriga kaskadfixar)
+- Rate limit-halvan av BUT-2038 som eget arende: ja/nej.
+
+
+## Needs you (Tier D)
+Inga i denna batch.
+
+## Deviation log
+
+- [deviation] BUT-2038: planen sa `rateLimitWrite` -> tva grindar matte att den bara LASER en
+  hink ingen skrivare stamplar (ingen kod i `lib/` skapar ett forslag) -> byggs INTE; en inert
+  kontroll som laser som en fix ar samre an ingen. Ovriga tre skydd star kvar. Klustret hann
+  inte byggas.
+- [deviation] Fyra sma arenden committades i tre batchar i stallet for en, for att halla
+  <=3 lib-dart-filer per grind (batchAdvisory).
+- [discovery] BUT-2014: en panelgranskare sa att premissen var inaktuell (BUT-1862 skulle redan
+  ha lagat den). Matt i `data_export_service.dart:363` -> varningsbyggaren laser bara sektionens
+  ROT, sa kroppsnyckeln nadde ingen varning. Premissen holl. En granskares matning ar lika
+  falsifierbar som en kommentar.
+- [discovery] BUT-2015: omdirigeringen av felmeddelandet HALKADE ett befintligt test som anvande
+  fargen som armdiskriminator. Bara helhetsgranskningen kunde se det. Ersatt med en raknare.
+- [discovery] BUT-1943/BUT-2025: en STRYKNING gjorde tva meningar falska genom att ta bort den
+  sats som avgransade dem. Lardom skriven, digest-rad i samma edit.
+- [needs-human] BUT-2005 + BUT-2038 byggdes inte. Panelens 13 bindande villkor star i det har
+  dokumentet och ar arbete som inte behover goras om.
+
+## Post-sprint
+- Fyll i utfallsbetyg per kriterium (Fas 2.7)
+- Följdärenden i Linear före commit
+
+---
+
+# ARKIV — föregående plan
+
 # Del B — legal hold vid öppet modereringsärende
 
 Uppföljning på BUT-2032/BUT-2046. **Del A är byggd och deployad 2026-09-09** — antalet ingår i

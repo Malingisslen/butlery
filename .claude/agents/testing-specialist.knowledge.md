@@ -182,7 +182,11 @@ compress it.**
 - **Grade the REPLACEMENT as a fresh claim — the paragraph written to BE the correction is where
   the next false sentence lands.** Recurring re-arming shapes: a measured count swapped for a
   quantifier; a supplied ANTECEDENT that is itself a quantifier over the group's contents (put
-  the head noun INSIDE the surviving noun phrase); an INCREMENTED count; a positional distance
+  the head noun INSIDE the surviving noun phrase) — commonest concrete form: a new head
+  clause quantifying over the FLOW when the true claim is about the MESSAGE ("every arm of
+  this flow paints X", where the SUCCESS arm paints a different role and the survivable
+  claim ranges over every emitter of the asserted STRING); walk the method's arms, not the
+  ones the assertion reaches; an INCREMENTED count; a positional distance
   ("twenty lines up", a derived value a human cannot type); a HISTORY sentence about the file's
   own prior wordings, or about what an EARLIER version of the production code did to the
   fixtures below it (only the review archive can settle either — and both are always
@@ -566,6 +570,17 @@ other suites prove:
   the same node — the snackbar's theme-resolved colour (`showError` paints `cs.secondary`, a
   hand-rolled bar `cs.error`) — which makes such a colour assertion load-bearing rather than
   cosmetic, and its comment must say what it READS, never why it exists (BUT-1951).
+  **The same colour is the ONLY discriminator when a call is REROUTED through the shared
+  helper**: the string is unchanged, so every `find.text` pin stays green under a revert, and
+  the change is real (colour, duration, action button). When one copy of the message already
+  carries a colour pin, that pin covers the OTHER copy — grade per CALL SITE, and add the
+  assertion to whichever existing test already reaches the rerouted arm (BUT-2025).
+  **The mirror is the danger: harmonising the colour HOLLOWS every existing test using it as
+  an ARM discriminator, silently and while green.** Sweep `backgroundColor` across the suites
+  reaching any arm of the rerouted method. Its replacement must be an observable the shared
+  helper cannot satisfy — a COUNTER on the collaborator seam, incremented ABOVE the success
+  branch — never a state field, because a fake recording only SUCCESSES is empty both when
+  the action was refused and when it was never reached (BUT-2025).
 - **A GENERATED `app_localizations*.dart` carries no logic — its only reviewable question is which
   new ARB strings a suite types VERBATIM.** Read the answer as a table. The unpinned ones cluster:
   arms of an enum→l10n `switch` whose ENUM is asserted at VM level, tooltips, sheet titles, and
@@ -626,7 +641,14 @@ other suites prove:
   one ("a true negative"), that is TWO pins and a round writes only the failure one** — a
   mutant emitting the key only when the list is non-empty then survives the whole group. Grep
   the key across `test/`; a sibling section in the same file usually already carries the "keys
-  present even when empty" case to copy (BUT-2018).
+  present even when empty" case to copy (BUT-2018). **The same split reaches PROSE: making a
+  user-facing note CONDITIONAL creates two arms, and the round pins the failure one** — the
+  healthy arm is what every real bundle carries, so an arm SWAP ships a note contradicting its
+  own section with the suite green. Grep a distinctive fragment of each arm; the fix is
+  `contains(<this arm>)` plus `isNot(contains(<the other>))` in each test, the second killing
+  a mutant that emits BOTH. Note `isEmpty` returns false for null, so a present-and-empty
+  assertion does discriminate key absence — but write `containsKey` beside it anyway, or the
+  pin is invisible to the next reader (BUT-2014).
 - **The silent-return→throw rewrite seen from the other end**: putting `await expectLater(call,
   throwsA(...))` ABOVE a surviving "nothing was written" assertion makes that assertion
   UNREACHABLE when the throw is missing, so it no longer carries the missing-guard mutant. What it

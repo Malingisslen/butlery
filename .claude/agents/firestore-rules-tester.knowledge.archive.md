@@ -4954,3 +4954,132 @@ CLAUDE.md says to re-trace the matching flows, update the map, run the linter an
 marker. Committing the marker ships a permanent stale flag over an un-updated map. The
 signature (a hook artefact swept into the index) is what `git-workflow.md` warns about for
 broad `git add`.
+
+---
+
+## 2026-09-09 — BUT-2025, blocks-rules fixture realignment (`createdAt` -> `blockedAt`)
+
+Commit-gate review of a fixture-only change to `functions/src/__tests__/blocks-rules.test.ts`:
+six `createdAt: new Date()` became `blockedAt: new Date().toISOString()`. `firestore.rules`
+byte-identical to HEAD (index and disk both `9817f977`), so this is a test-side change only.
+
+**Does the rule read the stamp?** No, under either spelling. The `match /blocks/{blockId}`
+block carries `isAuthenticated()`, `resource.data.blockerId|blockedId == request.auth.uid`
+on read, `request.resource.data.blockerId == request.auth.uid`, the self-block refusal, the
+doc-id/field agreement conjunct on create, `allow update: if false`, and a blocker-only
+delete. No `hasRequiredFields`, no `hasOnly`, no timestamp conjunct, no rate limit. So the
+change cannot move any verdict, and the three ALLOW cases and eight DENY cases prove exactly
+what they proved before.
+
+**Producer check.** `BlockRecord.toFirestore` (`lib/models/block_record.dart`) emits exactly
+`{blockerId, blockedId, blockedAt: <ISO string>}` and `FirebaseBlockRepository` writes it
+whole with `collection.doc(record.id).set(record.toFirestore())` — no merge, no extra keys.
+So W1's comment ("the block button's own write") is TRUE after the change and was FALSE
+before: the old payload carried a `createdAt` Firestore Timestamp no writer in `lib/` ever
+produced. Because the rule ignores both fields, this was never a live bug — it was a fixture
+that would have silently vacated the first `hasOnly`/`hasRequiredFields` a future ticket adds.
+
+**Runs.** 14/14, 14/14, 14/14 against a local emulator. The coordinator reported the suite
+flaky on unmodified code (14/14, 14/14, 13/14, 14/14 — BUT-2050); no red reproduced in three
+runs here, so nothing to attribute either way.
+
+**W5 attribution (the deny whose payload changed).** Discriminating mutant, slice-anchored on
+`indexOf('match /blocks/{blockId}')` .. `indexOf('match /recipe_ratings/{ratingId}')`:
+`allow update: if false;` -> `allow update: if isAuthenticated() && resource.data.blockerId ==
+request.auth.uid;`. In-slice match count 1, whole-file 7 — the slice is load-bearing here, an
+unanchored replace would have opened six other collections. Result 13/14, killing W5 and
+nothing else. That is simultaneously the fail-closed control: the SAME actor, doc id and
+`blockedAt` ISO payload SUCCEEDS the moment the update limb permits the blocker, so the deny
+is attributable to `allow update: if false` and not to a missing field, a rejected value type,
+or a non-existent document. Settled by the mutant rather than by reading `PERMISSION_DENIED`
+text, per the standing principle that the message fingerprints the rule line, not the actor.
+
+**Knowledge correction, superseded in place.** Retired verbatim from the probe-mechanics
+bullet: "`blocks-rules.test.ts` honours `PROBE_PROJECT_ID` at `initializeTestEnvironment` but
+interpolates the BARE literal into `clearFirestore()`, so under a probe the per-test clear
+empties a different namespace from the one under test and the run silently loses its
+isolation — an earlier allow's write survives and turns a later create-deny into an
+update-deny, which is the exact mis-attribution the limb-pair mutant exists to catch. Grep
+every use of the id constant when you add the seam, and until it is fixed, probe such a suite
+WITHOUT setting `PROBE_PROJECT_ID` (per-test clear+seed keeps mutant writes contained)."
+Measured today: the suite resolves `process.env.PROBE_PROJECT_ID ?? PROJECT_ID` at BOTH the
+`clearFirestore()` path and the `initializeTestEnvironment` call, and this review's mutant ran
+under a fresh probe project id with per-test clear+seed working correctly. The general
+principle (every consumer of the id must resolve it the same way) is unchanged and kept; only
+the named-instance defect and the workaround instruction are retired.
+
+### Same commit, second file: `recipe-comments-rules.test.ts` (BUT-2025)
+
+The `blocks` seed at `setup()` was `{ blockedAt: new Date() }` — a JS `Date` and, worse, NO
+`blockerId` and no `blockedId` at all. It now seeds
+`{blockerId: OWNER_UID, blockedId: BLOCKED_UID, blockedAt: <ISO string>}`.
+
+**The gate reads no field.** `isNotBlockedBy(targetUserId)` is
+`!exists(/databases/$(database)/documents/blocks/$(targetUserId + '_' + request.auth.uid))` —
+a bare existence check on the composite path, dereferencing nothing. Six call sites across the
+rules file, including the `recipe_comments` and `recipe_ratings` create limbs and the
+`user_notifications` create limb this suite exercises. So the fixture content cannot move a
+verdict either way, and `{}` would genuinely have worked.
+
+Runs: 24/24, 24/24, 24/24.
+
+**Fixture mutant answering "what depends on the block document".** Throwaway copy under
+`functions/src/__tests__/` (this suite has no probe seam), one anchor each for the project id
+and the block doc path, both asserted unique, block path repointed to a uid nobody uses,
+deleted in the same call. Result 20/24, killing exactly four: the two `recipe_comments`
+create denies, the `recipe_ratings` create deny, and the `user_notifications` deny. All four
+are attributable to EXISTENCE alone, consistent with the bare `exists()`.
+
+**The mutant also refutes a test comment.** "recipe_comments: blocked user cannot read
+comments on blocker's recipe" SURVIVES the block-absent mutant, so it does not depend on the
+block document at all. The `recipe_comments` read limb has no blocking conjunct — it is
+author OR `recipeOwnerId` OR `sharedWithUserIds`, plus a separate admin override — and
+`BLOCKED_UID` matches none of them, exactly like `STRANGER_UID` in the test above it. Its
+comment ("defence-in-depth — the create rule already denies, but reading another blocked
+user's prior comment would still leak") attributes the deny to blocking, which is measurably
+false. Pre-existing, not introduced by BUT-2025, and reported rather than edited under a
+fixture-only commit.
+
+**On richer-than-necessary fixtures.** Matching the producer is the right default even when
+the rule reads nothing: the alternative (`{}`) is what the previous shape effectively was, and
+it silently vacates the first `hasOnly`/`hasRequiredFields` anyone adds — the BUT-1482 disease.
+The "future reader assumes the rule reads these fields" risk is real but is answered by the
+fixture's own comment, which states that the gate is a bare `exists()`. Residual worth knowing:
+both suites now restate `BlockRecord.toFirestore`'s key set with no mechanical tie to it, so a
+second rename goes stale in two places with nothing reddening — the same way `createdAt` did.
+
+### Correction to the entry above, same day — my Q3 reasoning was wrong for this file
+
+The BUT-2025 fixture comment's causal clause ("a fixture that disagrees with production
+silently vacates the first `hasOnly` anyone adds to this collection") was struck by the
+coordinator after the `cloud-functions-specialist` and `code-reviewer` gates measured that
+this seed runs inside `env.withSecurityRulesDisabled`. My Q3 answer had argued the opposite,
+citing BUT-1482.
+
+**They are right, and I measured it rather than conceding on theory.** One mutant ruleset
+serving two suites: `blocks` create rewritten to `allow create: if false;` (slice-anchored
+between `match /blocks/{blockId}` and `match /recipe_ratings/{ratingId}`, in-slice match count
+asserted 1).
+
+- Positive control — `blocks-rules.test.ts` against that file via its `PROBE_RULES_PATH` seam:
+  13/14, killing W1, the client create. So the mutant file loads and really denies.
+- `recipe-comments-rules.test.ts` against the SAME file, through a throwaway copy with the
+  rules path substituted (kept inside `path.resolve` so `path` stays used and TS6133 cannot
+  abort the run) and a fresh project id: **24/24**, seed landing normally, no verdict moved.
+
+So no limb of `match /blocks/{blockId}` evaluates that seed, and a `hasOnly` added there could
+neither reject it nor change this suite. BUT-1482's disease bites where a CLIENT write is
+validated; nothing in this file is.
+
+The CONCLUSION survives on the other reason I gave, which the coordinator kept: nothing would
+ever tell you the fixture had drifted, so convention is the only guard available. One further
+mechanism, named because it is the direction that would make the shape genuinely load-bearing
+here: if `isNotBlockedBy` ever moved from `exists()` to a FIELD read, this seed WOULD be
+evaluated on the read side in this suite, and a fixture disagreeing with production would then
+move verdicts — silently passing if the new gate were written with a defaulting `.get()`.
+That is read-side, not write-validation, and it is not proposed as comment text.
+
+Emulator note: the emulator died between runs mid-review and the suite printed
+`ECONNREFUSED` with no test lines — the same shape as a crashed probe. Restarted via
+`.claude/hooks/ensure-firestore-emulator.sh` and re-ran; require a `N/N passed` line before
+reading any probe result.

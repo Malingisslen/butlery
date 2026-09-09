@@ -36473,3 +36473,216 @@ KEY would read as, not that the two states are indistinguishable, so neither is 
 copy of the struck claim.
 
 Verdict: pass (0 blocking).
+
+### 2026-09-09 — BUT-2014 review: the Art. 15 chat-groups leg omits its key on failure
+
+Staged diff: `chat_group_export.dart` failure branch stopped returning `chat_groups: []`
+beside its `error_code` and now returns the code alone; the `data_minimisation` sentence in
+`social_export_manager.dart` became a two-armed ternary because it described a section that
+can now be absent. Two existing tests were rewritten from the old contract to assert ABSENCE.
+
+Blob table (round 2, index == worktree on all four):
+  social_export_manager.dart        1513886
+  chat_group_export.dart            255eeff
+  social_export_manager_test.dart   ed14e85
+  chat_group_export_test.dart       de47a63
+
+ROUND 1 — one blocking finding. The ternary's TRUE arm ("is a summary rather than a copy…
+who added YOU") was read by no test: `grep 'summary rather than a copy|who added YOU'
+test/` returned zero. The healthy-path `data_minimisation` test used `buildManager()`, whose
+fixture DOES supply a `chatGroups` row, so the arm executed and was asserted by nothing —
+its four assertions all read the unconditional prefix, and `contains('left out entirely')`
+is satisfied by that prefix ("have been left out entirely — yours are kept"), so it does not
+reach the ternary either. Consequence: swapping the two arms passed 64/64, i.e. every
+successful export would tell the requester their chat_groups section could not be read —
+the exact Art. 12(1) defect the production comment says the omission was made to avoid.
+
+Non-blocking #1: `failChatGroups: true` had exactly ONE call site, the DOUBLE-failure test,
+where the conversations branch has already claimed the root key. So
+`messagesData['error_code'] ??= chatGroupsErrorCode` was pinned only in its YIELDING
+direction — deleting the line entirely left the whole suite green, and a chat-groups-only
+failure then produced a section with no root `error_code`, hence no bundle-level warning.
+Pre-existing (BUT-1862's line), but BUT-2014 raised its stakes: with the key now absent
+rather than `[]`, the root code is the only structural signal the section was attempted.
+
+Non-blocking #2: the success-path case asserted only `expect(section['chat_groups'],
+isEmpty)`. Mechanically that DOES discriminate key absence (matcher's `_Empty.matches`
+returns false for anything not a Map/Iterable/String, so null fails), but it does not READ as
+"the key must be present". The house pattern for exactly this pair was 1600 lines away in the
+same review set: `exportBlocks`' 'an empty successful read still ships the key' asserts
+`containsKey isTrue` AND `isEmpty` with a comment naming its counterpart.
+
+ROUND 2 — all three closed, verdict pass (0 blocking).
+- Blocking: `contains('is a summary rather than a copy')` + `isNot(contains('could not be
+  read on this export'))`. Coordinator measured the arm-swap mutant now reddening THREE
+  tests, matching my predicted red set exactly.
+- #1: new test 'a chat-groups-only failure takes the section-root code, so the bundle still
+  warns'. The discrimination question I was asked to settle: the asserted literal
+  `'chat-groups-export-failed'` is minted in PRODUCTION (`chat_group_export.dart:66`), while
+  the fake throws `StateError('chat groups unreadable')` — a different string appearing
+  nowhere in the assertion. So it is not the fake read back to itself. The precondition that
+  could have made it vacuous holds: the fixture conversation carries no `error_code` and no
+  `poll_votes_error_code`, so neither earlier branch claims the root key and the `??=`
+  genuinely FIRES rather than being masked (guard-chain subsumption does not apply). It also
+  cannot pass through the outer catch, which returns `messages-export-failed`.
+  Paired with the double-failure test, the two now bracket the operator from both sides.
+- #2: `containsKey isTrue` added beside the `isEmpty`, with the counterpart test named.
+- Also removed on the code-reviewer's finding: `expect(result['conversations'], isNotNull)`.
+  Correct removal — `messagesData` is seeded `'conversations': []` and only added to, so the
+  key is non-null on every non-catch path, and the assertion above it already excluded the
+  catch path. Unfailable; the "reads as a measurement, measures nothing" shape.
+
+THE STRIKE (second question I was asked). Struck from `chat_group_export.dart`: the count
+clause "the shape BUT-2004 removed from four sibling sections" (the integration gate measured
+it as four keys across TWO sections), plus two narrative sentences — one rebutting a reviewer
+("BUT-1862 is not the same fix and does not cover this") and one narrating history ("the
+requester saw one warning naming the conversations failure, and an empty `chat_groups` list
+beside it"). Graded each survivor standalone: the empty-list sentence now states the RULE with
+no count, needing no measurement; "A body key is not enough to prevent that" resolves "that"
+to the surviving harm sentence rather than through the struck text, so no dangling antecedent;
+the DataExportService mechanism claim is asserted independently in `social_export_manager.dart`
+and is the premise the new test exercises. Swept for orphans: `BUT-2004` appears in no test
+asserting this clause, and no paraphrase of "four sibling sections" survives anywhere in `lib/`
+or `test/` — the only sibling wording (`preferences_export_manager.dart:172`) states the same
+rule for its own section and carries no count, so it is an independent statement rather than a
+copy that would now disagree. Clean strike: count out, rule kept, no new measured claim added
+by the repair.
+
+PRINCIPLE EXTRACTED (merged into the BUT-2018 absent-vs-empty bullet rather than appended):
+the absent/present-but-empty split reaches PROSE. Making a user-facing note conditional
+creates two arms; the round pins the failure one, and the healthy arm — the one every real
+bundle carries — goes unread. Close with `contains(<this arm>)` + `isNot(contains(<other>))`
+per test, the second killing a mutant that emits both.
+
+### 2026-09-09 — BUT-1943 + BUT-2025 commit-gate review (test half)
+
+Reviewed staged: `lib/utils/text/quantity_parser.dart`,
+`lib/views/messaging/chat_view/chat_action_handler.dart`,
+`test/unit/utils/text/quantity_parser_test.dart`,
+`test/unit/repositories/firebase_block_repository_test.dart`,
+`functions/src/__tests__/blocks-rules.test.ts`. Verdict: pass, 0 blocking.
+
+**The 308 control does DOUBLE DUTY, measured by the suite itself.** The fraction test's
+second assertion, `parse('9'*308 + '½') == double.parse('9'*308) + 0.5`, is what proves the
+fixture reaches the unicode-fraction branch at all. Had it fallen through to the standard
+path, `double.tryParse('999…½')` is null and `parse` returns 1.0 — so the 309 fraction
+assertion would have passed VACUOUSLY (1.0 either way) while the 308 one would have failed.
+It passes, so the branch is reached. Same shape on the standard path: 308 nines returned
+unchanged reddens any guard broadened to a magnitude test rather than `isFinite`. Ran the
+suite: 37/37 green.
+
+**The SDK-premise assertion is not merely testing the SDK.**
+`expect(double.tryParse('9'*309), equals(double.infinity))` catches the one degradation the
+behaviour assertion cannot see: a future SDK answering NULL instead of Infinity leaves
+`parse` returning 1.0 through the unparseable branch, behaviour green, guard unreached.
+Keep it.
+
+**Residual (Low, not filed as blocking):** at 308 the `+ 0.5` is absorbed by the double, so
+the fraction branch's `return whole + entry.value` is not discriminated from `return whole`.
+The comment clause "still adds the fraction rather than falling back" is true of the CODE and
+undiscriminated by the ASSERTION; only the "rather than falling back" half is held.
+
+**BUT-2025 Dart fixture is not a quiet agreement.** `block_record_test.dart:51-54` pins
+`payload['blockedAt']` to the exact ISO string, and
+`firebase_block_repository_test.dart:182` pins the field NAME on the write path
+(`isNotNull`, so a rename reddens, a type change does not). The repointed mock fixture at
+line 436 therefore agrees with a producer that is itself pinned in both name and shape.
+
+**W5 in `blocks-rules.test.ts` denies for the same reason.** `firestore.rules:2578` is
+`allow update: if false`, payload-independent, and the doc is seeded so `.update()`
+necessarily evaluates the update limb. The repoint STRENGTHENS attribution: with `createdAt`
+a future field allowlist on update would have over-determined the denial.
+
+**Unpinned, filed non-blocking:** `_showErrorSnackBar` rerouted to `SnackBarUtils.showError`
+is reached by `chat_action_handler_share_menu_test.dart:100` (the `readFailed` arm), which
+asserts only the message text — unchanged by the reroute. The colour pin that exists
+(`chat_action_handler_block_test.dart:319`, `scheme.secondary`) covers
+`block_user_action.dart`'s copy, not this one. Remedy is one line in the existing
+`readFailed` test.
+
+Flaky-suite note honoured: `blocks-rules.test.ts` was not run (BUT-2050); the review of it is
+static plus the rules read above.
+
+### 2026-09-09 — BUT-1943 + BUT-2025, round 2 (10 staged files)
+
+Re-read all ten staged files with `Read`. Verdict: pass, 0 blocking. Ran
+`chat_action_handler_block_test.dart`, `chat_action_handler_share_menu_test.dart` and
+`firebase_block_repository_test.dart` together: 30/30 green.
+
+**The reroute HOLLOWED a pin, and that is the finding worth keeping.** BUT-1951's refusal
+test used `backgroundColor == cs.secondary` as an ARM discriminator: the handler's own bar
+painted `cs.error`, the shared helper `cs.secondary`, so asserting secondary proved the flow
+reached `BlockUserAction`. Routing the handler through `SnackBarUtils` makes every arm paint
+secondary — the assertion stayed GREEN and stopped discriminating. My own round-1 finding
+caused it; I graded the missing pin and not the pin the fix would destroy.
+
+**`blockAttempts` is a sound replacement, not the tautology one field over.** It observes a
+different EVENT (a call on the `FriendsViewModel` seam) rather than a different spelling of
+`blockedUserIds`, and it is incremented at the top of `blockUser`, ABOVE the
+`blockSucceeds` branch — so it is independent of the flag the test sets. With
+`blockedUserIds.isEmpty` beside it the pair states exactly the test's name: attempted AND
+refused. `blockedUserIds` alone could not: the fake records only successes, so it is empty
+both for a refusal and for a flow that never reached the block. Their probe (replace
+`confirmAndBlock` with a throw → reddens; green before the counter) is a RED probe.
+`== 1` rather than `> 0` additionally kills a double-attempt.
+
+**The share-menu colour assertion pins the ROUTING, not the theme.** It resolves
+`Theme.of(...).colorScheme.secondary` from the live theme, so a palette change moves both
+sides together; it discriminates because the replaced producer painted the `error` role.
+Measured by their red probe. Stated limit: it pins the COLOUR, so a hand-rolled bar painted
+`secondary` would survive while losing the helper's duration and action — the accepted
+boundary of a colour discriminator. `find.byType(SnackBar)` is unscoped, but a second bar
+makes `tester.widget` THROW rather than pass, so it fails in the safe direction.
+
+Verified this round, not taken on report: `SnackBarUtils.showError` paints `cs.secondary`
+(`snackbar_utils.dart:79`) and `showSuccess` `cs.primary`, so the surviving production
+comment is true and the struck `_showSuccessSnackBar` clause was correctly false;
+`isNotBlockedBy` is a bare `exists()` reading no field (`firestore.rules:198-200`), so the
+recipe-comments fixture comment holds; `firestore.rules:2578` is `allow update: if false`,
+so W5 is payload-independent.
+
+Declined to file: the surviving pair in `swedish_decimal_input.dart` ("Since BUT-1912 the
+FIELD can no longer produce infinity. Stored data written before that bound existed still
+can.") is literally true, and asking for a new sentence about BUT-2053 would plant a fresh
+unmeasured claim in the paragraph a strike just touched.
+
+### 2026-09-09 — BUT-1943 + BUT-2025, round 4 (my own optional produced the round's only defect)
+
+Re-read all ten staged files. Verdict: FAIL, 1 blocking.
+
+**The blocking finding is in the prose written to take MY round-3 optional.** Striking the
+two history sentences left the surviving text needing a head clause, and the new head is a
+universal: "every arm of this flow paints `colorScheme.secondary`"
+(`chat_action_handler_block_test.dart:314`). Measured false —
+`_blockFromConversation`'s already-blocked branch (`chat_action_handler.dart:428`) calls
+`SnackBarUtils.showSuccess`, which paints `cs.primary` (`snackbar_utils.dart:33`).
+
+It is not pedantry: the arm it misdescribes is one of the two states the assertion below
+exists to separate ("abandoned before BlockUserAction was reached"), and for that arm the
+colour DOES still discriminate. The sentence therefore overstates the hollowing. What
+colour genuinely cannot separate is the four `_showErrorSnackBar` arms (374/381/411/449)
+from `block_user_action.dart:56` — all secondary, verified.
+
+Filed as a STRIKE of "every arm of this flow paints `colorScheme.secondary`, so ", with no
+replacement wording proposed. Graded the survivor standalone first: every emitter of the
+asserted string paints secondary, so "the colour does not say WHICH one emitted this" holds
+alone, needs no counting, and does not lean on the struck clause.
+
+**The scope trap, stated as the reusable part:** the true claim was about the MESSAGE; the
+new head quantified over the FLOW. A flow contains a success arm the message never reaches.
+
+Cleared this round, each verified rather than taken on report: `swedish_decimal_input.dart`
+(both producer sentences gone, survivor is a claim about the guard itself);
+`chat_action_handler.dart:694` ("like the rest of the app" gone; block_user_action.dart:56
+does use the shared helper, so the two-colours claim holds);
+`recipe-comments-rules.test.ts` (the `hasOnly` clause gone; survivor checked against
+`firestore.rules:198-200`, a bare `exists()`); `chat_action_handler_share_menu_test.dart`
+(narrowed to "this suite", which matches what was probed).
+
+Declined, once, and recorded so a later round does not re-open it: the share-menu comment's
+trailing "the same sentence arrives in two different colours" has a reading that holds (the
+ticket's defect, true of `socialCouldNotBlockUser`) even though `weeklyPlanReadFailedMessage`
+itself has five non-snackbar consumers. Not blocking; not to be re-filed narrowed.
+Also not filed: `chat_action_handler.dart:694` is a history sentence of the same class as the
+one I flagged in the test — I graded it in round 1 and re-filing it at round 4 would be the
+correction chain rather than a finding.
