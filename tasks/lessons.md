@@ -3861,3 +3861,55 @@ villkoret — är den 1?) efter varje redigering av koden fönstret spänner öv
 att provet skrivits; och ankra på KOD, aldrig på konsoltext. Ett fönster som slutade vid
 strängen `"job(s) paused."` hade tömts av en omformulerad utskrift och rott med en anklagelse
 mot produktionskoden i stället för mot sig självt.
+
+## En GRANSKARE som HÅLLER MED är inte en mätning, och kortaste träff är inte högsta täthet (BUT-2037/BUT-2034, 2026-09-10)
+
+Fyra granskningsrundor. Runda ett hittade en verklig säkerhetsdefekt. Rundorna två till fyra
+hittade bara meningar — tre stycken, var och en inuti text skriven som en RÄTTELSE, två av dem
+andra formuleringen. Den delen är repots vanliga mönster. Två saker var nya.
+
+**En granskares bekräftelse läser som verifiering och är det inte.** Jag skrev att en fientlig
+5MB-sida rymmer "miljontals" fragmentparsningar. `code-reviewer` mätte att det överdrev tiofalt
+och bad mig stryka siffran. Jag ersatte den med "en var sjunde byte" — och granskaren
+BEKRÄFTADE den: "inte bara opåstådd, den är HÄRLEDBAR: kortaste sträng mönstret kan matcha är
+`<script`, 7 byte." Det stämde. Slutsatsen gjorde det inte.
+
+`integration-reviewer` mätte:
+
+    "<script>"   (8B) över 5MB:  625000 träffar  =>  8.0 byte/träff
+    "<script"    (7B) över 5MB:       1 träff    =>  hela sidan
+    "<script/>"  (9B) över 5MB:  555556 träffar  =>  9.0 byte/träff
+
+Kortaste TRÄFF och högsta TÄTHET är olika storheter. En 7-bytesträff kan inte UPPREPAS: utan
+något `>` på sidan äter `[^>]*` fram till filslut och hela sidan blir en enda träff. Tätheten
+kräver en avslutare, alltså minst åtta. Och `code-reviewer` hade skrivit ut just den kollapsen
+själv två rundor tidigare, i sin egen analys av `>?` — och motsade den sedan. Två agenter var
+överens om en falsk siffra som båda kunde ha motbevisat ur sin egen tidigare utdata.
+
+**En snabbväg binder inte nödvändigtvis det fall den ser ut att binda.** Jag lade till
+`if (!openingTag.contains('type')) return false;` före parsningen och skrev att den hoppar över
+"den form en fientlig sida upprepar". Mätt över 4 MB:
+
+    "<script type=a>"  266666 taggar  1008 ms   (hoppas INTE över)
+    "<script>"         500000 taggar    45 ms   (hoppas över)
+    "<script src=a>"   235294 taggar    28 ms   (hoppas över)
+
+En angripare väljer den form snabbvägen INTE tar. Snabbvägen binder de billiga fallen; det som
+faktiskt binder det dyra är 5MB-spärren, i en annan fil. Fråga alltid vilken indata en vakt
+FAKTISKT dyrast möter, inte vilken den råkar avvisa snabbast. Filad som BUT-2066.
+
+**Vad som fungerade.** Båda satserna ströks i stället för att formuleras en tredje gång, och
+ingen tredje falsk mening föddes — den kedja av omformuleringar repot betalat för fyra gånger
+terminerade när regeln följdes bokstavligt. Efter varje strykning lästes den ÖVERLEVANDE
+meningen ensam.
+
+**Och `\b`-fällan slog till TVÅ gånger på en timme, på båda parter.** Min mutationssond och
+granskarens sond bar båda ett `\b` genom ett mellanliggande språk, där det blev ett
+backstegstecken; ingen av ankarsträngarna matchade. Min sond hade `assert count(old) == 1` och
+VÄGRADE — så jag fick inget svar i stället för ett falskt. Granskarens hade varken det eller en
+kontroll, så dess `_removeTagWithContent` föll i sin `openMatch == null`-arm och skrev tillbaka
+indata oförändrad; varje rad den rapporterade som "sanerat resultat" var indata i retur, och den
+rapporterade det som en mätning. Den generaliserbara halvan är KONTROLLEN, inte assertionen: en
+saneringssond utan en "det här MÅSTE strykas"-arm kan inte skilja en fungerande strykning från
+ett dött mönster. Jag skrev sedan samma `\b` som ett bokstavligt backstegstecken in i
+lärdomsanteckningen om fällan — tredje gången samma dag.

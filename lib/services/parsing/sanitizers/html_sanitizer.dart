@@ -4,6 +4,11 @@ import 'package:html_unescape/html_unescape.dart';
 
 /// Security-focused HTML and content sanitizer.
 ///
+/// Defence in depth, not the only barrier: `sanitize()`'s output is not
+/// rendered as HTML anywhere — its one caller is `ParsingContext`, which
+/// feeds recipe extraction. Keep that clause attached to any severity claim
+/// written here; without it a finding about this file reads as live XSS.
+///
 /// Provides protection against:
 /// - Script injection attempts
 /// - Homoglyph attacks (Cyrillic/Latin confusion)
@@ -22,21 +27,6 @@ class HtmlSanitizer {
   static final _scriptPatterns = [
     RegExp(r'data:\s*text/html', caseSensitive: false),
   ];
-
-  /// `<script>` tags warrant surfacing as a WARNING (not critical) so the
-  /// security gate logs them without aborting the import. Critical would
-  /// regress URL imports — real recipe sites carry analytics/ad scripts
-  /// inline. JSON-LD structured data (`application/ld+json`) is exempted
-  /// since `sanitize()`'s `preserveWhen` keeps it for schema.org
-  /// extraction.
-  ///
-  /// This pattern and `sanitize()`'s `preserveWhen` must agree on WHICH tags
-  /// are JSON-LD, or one half warns about a tag the other half keeps.
-  /// Both now use [jsonLdScriptOpeningTagPattern].
-  static final _scriptTagPattern = RegExp(
-    '<script\\b(?![^>]*${jsonLdScriptOpeningTagPattern.pattern})',
-    caseSensitive: false,
-  );
 
   /// Pattern for detecting potentially malicious URLs.
   static final _suspiciousUrlPatterns = [
@@ -69,7 +59,36 @@ class HtmlSanitizer {
   };
 
   /// Result of sanitization check.
+  ///
+  /// `<script>` tags surface as a WARNING (not critical) so the security gate
+  /// logs them without aborting the import. Critical would regress URL
+  /// imports — real recipe sites carry analytics/ad scripts inline. JSON-LD
+  /// structured data is exempted, since `sanitize()`'s `preserveWhen` keeps
+  /// it for schema.org extraction.
+  ///
+  /// This half and that one must agree on WHICH tags are JSON-LD, or one
+  /// warns about a tag the other keeps. Both call
+  /// [isJsonLdScriptOpeningTag], and both hand it the opening tag as the
+  /// source spells it — a shared predicate given different bytes still
+  /// disagrees.
   SanitizationResult check(String content) {
+    // Before the per-tag work below, not after: the script loop parses one
+    // fragment per tag.
+    if (content.length > 5000000) {
+      return const SanitizationResult(
+        isClean: false,
+        issues: [
+          SanitizationIssue(
+            type: IssueType.excessiveLength,
+            description: 'Content exceeds maximum safe length (5MB)',
+            position: 0,
+            severity: IssueSeverity.critical,
+          ),
+        ],
+        hasCriticalIssues: true,
+      );
+    }
+
     final issues = <SanitizationIssue>[];
 
     // Check for critical script-injection patterns (data:text/html etc.)
@@ -90,7 +109,8 @@ class HtmlSanitizer {
     // Surface non-JSON-LD <script> tags as warnings. sanitize() still
     // strips them, but the warning lets callers audit/log instead of the
     // tags vanishing silently.
-    for (final match in _scriptTagPattern.allMatches(content)) {
+    for (final match in scriptOpeningTagPattern.allMatches(content)) {
+      if (isJsonLdScriptOpeningTag(match.group(0)!)) continue;
       issues.add(
         SanitizationIssue(
           type: IssueType.scriptInjection,
@@ -123,19 +143,6 @@ class HtmlSanitizer {
           type: IssueType.nullByte,
           description: 'Null byte detected in content',
           position: content.indexOf('\x00'),
-          severity: IssueSeverity.critical,
-        ),
-      );
-    }
-
-    // Check for excessively long strings (potential DoS)
-    if (content.length > 5000000) {
-      // 5MB
-      issues.add(
-        const SanitizationIssue(
-          type: IssueType.excessiveLength,
-          description: 'Content exceeds maximum safe length (5MB)',
-          position: 0,
           severity: IssueSeverity.critical,
         ),
       );
@@ -183,9 +190,7 @@ class HtmlSanitizer {
         result,
         tag,
         // Preserve <script type="application/ld+json"> (structured data).
-        preserveWhen: tag == 'script'
-            ? (openingTag) => jsonLdScriptOpeningTagPattern.hasMatch(openingTag)
-            : null,
+        preserveWhen: tag == 'script' ? isJsonLdScriptOpeningTag : null,
       );
     }
 
@@ -255,7 +260,12 @@ class HtmlSanitizer {
       if (preserveWhen != null) {
         final tagEnd = html.indexOf('>', absOpenStart);
         if (tagEnd >= 0) {
-          final openingTag = lowerHtml.substring(absOpenStart, tagEnd + 1);
+          // ORIGINAL case, never `lowerHtml`. HTML named character
+          // references are case-sensitive, so lowercasing can turn a
+          // non-reference into one: `&PLUS;` resolves to nothing, `&plus;`
+          // resolves to `+`. Handing the predicate a lowercased tag made it
+          // answer about markup the page does not contain.
+          final openingTag = html.substring(absOpenStart, tagEnd + 1);
           if (preserveWhen(openingTag)) {
             // Keep the entire block
             if (closeIdx >= 0) {

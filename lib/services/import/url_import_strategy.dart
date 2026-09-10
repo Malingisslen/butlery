@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:clock/clock.dart';
 import 'package:uuid/uuid.dart';
 import 'package:http/http.dart' as http;
@@ -19,6 +20,7 @@ import 'package:butlery/models/parsing/parse_metadata.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:html/parser.dart' as html_parser;
 import 'package:butlery/utils/recipe_scraper.dart';
 
 import 'package:butlery/services/import/extractors/schema_org_recipe_extractor.dart';
@@ -353,7 +355,7 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
     // it's almost certainly a news article / blog post the schema.org tier
     // already rejected. Surface a strong warning so the user understands
     // the result is unlikely to be a real recipe.
-    final nonRecipeJsonLdDetected = _hasOnlyNonRecipeJsonLd(html);
+    final nonRecipeJsonLdDetected = hasOnlyNonRecipeJsonLd(html);
 
     final textStrategy = TextImportStrategy();
     final textResult = await textStrategy.import(plainText);
@@ -401,27 +403,28 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
     );
   }
 
-  /// BUT-1070: returns true iff the HTML has at least one `<script
-  /// type="application/ld+json">` block with an `@type` and NONE of the
-  /// discovered `@type` values match `Recipe`. Used to escalate the
-  /// "this is probably a news article" signal in the text-fallback tier.
-  bool _hasOnlyNonRecipeJsonLd(String html) {
-    // Built from the shared pattern rather than spelling the media type a
-    // fourth time: a page whose `+` is entity-encoded HAS JSON-LD, and a
-    // matcher blind to that reads it as a page with none, which flips this
-    // signal's answer (BUT-2020).
-    final blocks = RegExp(
-      '<script[^>]*${jsonLdScriptOpeningTagPattern.pattern}[^>]*>(.*?)</script>',
-      caseSensitive: false,
-      dotAll: true,
-    ).allMatches(html);
+  /// BUT-1070: returns true when the HTML has at least one JSON-LD block with
+  /// an `@type` and NONE of the discovered `@type` values match `Recipe`. Used
+  /// to escalate the "this is probably a news article" signal in the
+  /// text-fallback tier.
+  @visibleForTesting
+  bool hasOnlyNonRecipeJsonLd(String html) {
+    // Reads the PARSED document, like `_extractJsonLd` does, so this signal
+    // and the extraction it escalates cannot disagree about which blocks are
+    // JSON-LD. A page whose `+` is entity-encoded HAS JSON-LD, and a matcher
+    // blind to that reads it as a page with none, which flips this signal's
+    // answer (BUT-2020/BUT-2037).
+    final blocks = html_parser
+        .parse(html)
+        .querySelectorAll('script')
+        .where((e) => isJsonLdMediaType(e.attributes['type']));
 
     var sawAnyType = false;
     var sawRecipe = false;
 
-    for (final match in blocks) {
-      final body = match.group(1)?.trim();
-      if (body == null || body.isEmpty) continue;
+    for (final block in blocks) {
+      final body = block.text.trim();
+      if (body.isEmpty) continue;
 
       dynamic decoded;
       try {

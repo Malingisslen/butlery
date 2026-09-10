@@ -3,6 +3,67 @@ import 'package:butlery/services/parsing/sanitizers/html_sanitizer.dart';
 import 'package:butlery/utils/recipe_scraper.dart';
 import 'package:html/parser.dart' as html_parser;
 
+/// The ONE decoy set. Both halves of the JSON-LD decision are pinned against
+/// it — `sanitize()`'s exemption and `check()`'s warning — so they cannot be
+/// given different sets and drift where nothing reddens.
+///
+/// Each entry is (markup, payload). The payload must survive in the markup
+/// and must NOT survive sanitization.
+const jsonLdDecoys = <(String, String)>[
+  (
+    '<script data-note="application/ld+json">alert(1)</script>',
+    'alert(1)',
+  ),
+  (
+    '<script data-note="application/ld&#x2B;json">alert(2)</script>',
+    'alert(2)',
+  ),
+  ('<script data-type="application/ld+json">alert(3)</script>', 'alert(3)'),
+  ('<script x-type="application/ld+json">alert(4)</script>', 'alert(4)'),
+  (
+    '<script data-cfg="type=application/ld+json">alert(5)</script>',
+    'alert(5)',
+  ),
+  (
+    '<script data-cfg="type=application/ld&#43;json">alert(6)</script>',
+    'alert(6)',
+  ),
+  (
+    '<script type="application/ld+jsonx" src="e.js">alert(7)</script>',
+    'alert(7)',
+  ),
+  // BUT-2034: a `type=` sitting inside ANOTHER attribute's value. The parsed
+  // tag carries no `type` attribute at all, so none of these is JSON-LD.
+  (
+    '<script data-cfg=" type=application/ld+json">alert(8)</script>',
+    'alert(8)',
+  ),
+  (
+    '<script data-cfg="text/type=application/ld+json">alert(9)</script>',
+    'alert(9)',
+  ),
+  (
+    '<script data-cfg="a/type=application/ld+json">alert(10)</script>',
+    'alert(10)',
+  ),
+  // Tab and newline before the decoy `type=`.
+  (
+    '<script data-cfg="\ttype=application/ld+json">alert(11)</script>',
+    'alert(11)',
+  ),
+  (
+    '<script data-cfg="\ntype=application/ld+json">alert(12)</script>',
+    'alert(12)',
+  ),
+  // A named character reference the parser does NOT resolve: they are
+  // case-sensitive, so `&PLUS;` is literal text and this media type is not
+  // JSON-LD. Case-folding the tag before asking would make it look like one.
+  (
+    '<script type="application/ld&PLUS;json">alert(13)</script>',
+    'alert(13)',
+  ),
+];
+
 void main() {
   late HtmlSanitizer sanitizer;
 
@@ -170,39 +231,8 @@ void main() {
       });
 
       test('these decoy attributes do NOT exempt a script', () {
-        // Some decoy attributes DO exempt — see the BUT-2034 test below.
-        const decoys = [
-          (
-            '<script data-note="application/ld+json">alert(1)</script>',
-            'alert(1)',
-          ),
-          (
-            '<script data-note="application/ld&#x2B;json">alert(2)</script>',
-            'alert(2)',
-          ),
-          (
-            '<script data-type="application/ld+json">alert(3)</script>',
-            'alert(3)',
-          ),
-          (
-            '<script x-type="application/ld+json">alert(4)</script>',
-            'alert(4)',
-          ),
-          (
-            '<script data-cfg="type=application/ld+json">alert(5)</script>',
-            'alert(5)',
-          ),
-          (
-            '<script data-cfg="type=application/ld&#43;json">alert(6)</script>',
-            'alert(6)',
-          ),
-          (
-            '<script type="application/ld+jsonx" src="e.js">alert(7)</script>',
-            'alert(7)',
-          ),
-        ];
         final result = sanitizer.sanitize(
-          '${decoys.map((d) => d.$1).join()}'
+          '${jsonLdDecoys.map((d) => d.$1).join()}'
           '<script type="application/ld+json">'
           '{"@type":"Recipe","name":"KEEP"}</script>',
         );
@@ -211,66 +241,27 @@ void main() {
         // assertion below green.
         expect(result, contains('KEEP'));
 
-        for (final (markup, payload) in decoys) {
+        for (final (markup, payload) in jsonLdDecoys) {
           expect(markup, contains(payload));
           expect(result, isNot(contains(payload)), reason: markup);
         }
       });
 
-      // DEFECT (BUT-2034): pins today's wrong behaviour green on purpose.
-      test('a value-embedded `type=` still exempts a script (BUT-2034)', () {
-        for (final (bypass, payload) in const [
-          (
-            '<script data-cfg=" type=application/ld+json">alert(8)</script>',
-            'alert(8)',
-          ),
-          (
-            '<script data-cfg="text/type=application/ld+json">alert(9)</script>',
-            'alert(9)',
-          ),
+      // The classification on its own: the suite has no other pin on these
+      // spellings resolving to `+`, and the preservation test below reads as
+      // true for the wrong reason if they ever stop.
+      test('the parser resolves every one of these spellings to `+`', () {
+        for (final spelling in const [
+          'application/ld&plus;json',
+          // Semicolon-less numeric references, with and without leading
+          // zeros. A rule, not a list — these are examples of it.
+          'application/ld&#x2Bjson',
+          'application/ld&#43json',
+          'application/ld&#x02Bjson',
+          'application/ld&#043json',
         ]) {
-          final sanitized = sanitizer.sanitize(bypass);
-
-          const fixed =
-              'BUT-2034 is fixed — delete this test, add the (markup, payload) '
-              'pair to the sanitize decoy list and the bare markup to the '
-              'check() decoy list';
-          expect(sanitized, contains('<script'), reason: '$fixed: $bypass');
-          expect(sanitized, contains(payload), reason: '$fixed: $bypass');
-          expect(
-            sanitizer
-                .check(bypass)
-                .issues
-                .where((i) => i.type == IssueType.scriptInjection),
-            isEmpty,
-            reason: '$fixed — check() half still silent: $bypass',
-          );
-        }
-      });
-
-      // DEFECT (BUT-2037): pins today's wrong behaviour green on purpose.
-      // These are not decoys — the parser resolves each spelling to `+`, so
-      // every one of them IS JSON-LD. sanitize() runs on raw source, refuses
-      // them and deletes the block with its content.
-      test('spellings the parser accepts are deleted anyway (BUT-2037)', () {
-        for (final (spelling, payload) in const [
-          ('application/ld&plus;json', 'LOSTA'),
-          // Semicolon-less numeric references: the parser consumes them, the
-          // pattern requires the `;`. Leading zeros are legal, so this is a
-          // rule, not a list — these are examples of it.
-          ('application/ld&#x2Bjson', 'LOSTB'),
-          ('application/ld&#43json', 'LOSTC'),
-          ('application/ld&#x02Bjson', 'LOSTD'),
-          ('application/ld&#043json', 'LOSTE'),
-        ]) {
-          final markup =
-              '<script type="$spelling">{"@type":"Recipe","name":"$payload"}'
-              '</script>';
-
-          // The classification, not just the harm: without this the comment
-          // above could silently become false while the test stayed green.
           final parsedType = html_parser
-              .parse(markup)
+              .parse('<script type="$spelling">x</script>')
               .querySelector('script')!
               .attributes['type'];
           expect(
@@ -278,43 +269,39 @@ void main() {
             isTrue,
             reason: '$spelling no longer resolves to application/ld+json',
           );
+        }
+      });
 
-          const fixed =
-              'BUT-2037 is fixed — delete every assertion below this string, '
-              'but KEEP the isJsonLdMediaType premise assertion above (the '
-              'suite has no other pin on these spellings resolving). Then add '
-              'the entity fragment of each spelling to `a zero-padded numeric '
-              'reference is preserved too` (renaming it, since &plus; is not '
-              'numeric and the semicolon-less forms are not padded), and the '
-              'whole markup to the `real` list in `check() warns about decoy '
-              'attributes`';
+      // BUT-2037: these are not decoys. The parser resolves each spelling to
+      // `+`, so every one of them IS JSON-LD and must survive.
+      test('spellings the parser accepts are preserved (BUT-2037)', () {
+        for (final (spelling, payload) in const [
+          ('application/ld&plus;json', 'KEEPA'),
+          ('application/ld&#x2Bjson', 'KEEPB'),
+          ('application/ld&#43json', 'KEEPC'),
+          ('application/ld&#x02Bjson', 'KEEPD'),
+          ('application/ld&#043json', 'KEEPE'),
+        ]) {
+          final markup =
+              '<script type="$spelling">{"@type":"Recipe","name":"$payload"}'
+              '</script>';
+
           final sanitized = sanitizer.sanitize(
-            '$markup<script type="application/ld+json">'
-            '{"@type":"Recipe","name":"KEPT"}</script>',
+            '$markup<script>alert("xss")</script>',
           );
-          // Control: without it, deleting `preserveWhen` outright leaves the
-          // assertion below green — it is an absence.
-          expect(sanitized, contains('KEPT'), reason: spelling);
+          // Control: the stripped neighbour. Without it, an exemption that
+          // preserved EVERY script would satisfy the assertion above it.
+          expect(sanitized, isNot(contains('alert')), reason: spelling);
+          expect(sanitized, contains(payload), reason: spelling);
+          // The check() half moves with it — one predicate, not two patterns.
           expect(
-            sanitized,
-            isNot(contains(payload)),
-            reason: '$fixed: $spelling',
-          );
-          // The check() half moves in lockstep: it embeds the same pattern, so
-          // today it warns about a block that is real JSON-LD.
-          expect(
-            sanitizer
-                .check(markup)
-                .issues
-                .any((i) => i.type == IssueType.scriptInjection),
-            isTrue,
-            reason: '$fixed — check() half: $spelling',
+            sanitizer.check(markup).issues,
+            isEmpty,
+            reason: 'check() warned about legitimate JSON-LD: $spelling',
           );
         }
       });
 
-      // Independent of the BUT-2037 defect — it touches neither sanitize()
-      // nor the pattern, so it survives that repair.
       test('a named reference the parser leaves alone is not JSON-LD', () {
         final unresolved = html_parser
             .parse('<script type="application/ld&plusjson">x</script>')
@@ -329,11 +316,9 @@ void main() {
         // The warning pattern and the exemption must agree on which tags are
         // JSON-LD. They disagreed while the exemption was a bare substring
         // test: sanitize() KEPT a decoy that check() warned about.
-        for (final decoy in const [
-          '<script data-note="application/ld+json">alert(1)</script>',
-          '<script data-type="application/ld+json">alert(2)</script>',
-          '<script type="application/ld+jsonx" src="e.js">x</script>',
-        ]) {
+        // The SAME set the sanitize half is pinned against, read from one
+        // place, so the two halves cannot be given different decoys.
+        for (final (decoy, _) in jsonLdDecoys) {
           expect(
             sanitizer
                 .check(decoy)
@@ -374,7 +359,6 @@ void main() {
       });
 
       test('the decimal entity `&#43;` is preserved too', () {
-        // Listed beside `&#x2B;` in the shared pattern.
         final input =
             '<script type="application/ld&#43;json">{"@type":"Recipe","name":"Bulle"}</script>'
             '<script>alert("xss")</script>';
@@ -1098,6 +1082,25 @@ void main() {
         // everything from the open tag onward
         expect(result, equals('Before'));
         expect(result, isNot(contains('evil')));
+      });
+
+      // The optional `>` in `scriptOpeningTagPattern` is what makes the two
+      // halves agree on a truncated final tag: sanitize() deletes from it to
+      // end of input, so check() must not go quiet about it. Make the `>`
+      // mandatory and the finder matches nothing here — check() falls silent
+      // while sanitize() still deletes.
+      test('a truncated final <script tag is refused by both halves', () {
+        const html = '<p>Recept</p><script type="application/ld+json"';
+
+        expect(sanitizer.sanitize(html), equals('<p>Recept</p>'));
+        expect(
+          sanitizer
+              .check(html)
+              .issues
+              .any((i) => i.type == IssueType.scriptInjection),
+          isTrue,
+          reason: 'check() went quiet about a tag sanitize() deleted',
+        );
       });
     });
   });

@@ -115,31 +115,42 @@ bool isJsonLdMediaType(String? typeAttribute) {
       'application/ld+json';
 }
 
-/// Raw-source twin of [isJsonLdMediaType], for callers that match before the
-/// markup is parsed. It spells out encodings of `+` that a parser would have
-/// resolved. The trailing lookahead means `application/ld+jsonx` is not a
-/// match. The leading lookbehind is what stops `data-type="…"` from
-/// exempting itself — a `\b` there would sit inside that name and let it
-/// through.
+/// Finds a `<script …>` opening tag in raw source. Deliberately dumber than a
+/// media-type matcher: it locates the tag, and [isJsonLdScriptOpeningTag]
+/// decides what the tag IS.
 ///
-/// OPEN — BUT-2037: this pattern accepts `+` literally, or a numeric
-/// reference carrying its terminating `;`. The parser resolves more than
-/// that — `&plus;`, and a numeric reference written WITHOUT the `;` — so
-/// those are refused here while being real JSON-LD. The refused set is a
-/// rule, not a list; `&plusjson` does not resolve. Both facts are pinned
-/// green in `html_sanitizer_test.dart`, by the BUT-2037 test and by
-/// `a named reference the parser leaves alone is not JSON-LD`.
-///
-/// OPEN — BUT-2034: the lookbehind is satisfied by whitespace or a slash
-/// anywhere,
-/// so `<script data-cfg=" type=application/ld+json">` and
-/// `<script data-cfg="text/type=application/ld+json">` match without carrying
-/// a `type` attribute at all. Pinned green by the BUT-2034 test in
-/// `html_sanitizer_test.dart`.
-final RegExp jsonLdScriptOpeningTagPattern = RegExp(
-  r'''(?<=[\s/])type\s*=\s*["']?\s*application/ld(?:\+|&#x0*2b;|&#0*43;)json(?=["'\s;>]|$)''',
+/// The trailing `>` is optional so a truncated final tag is still found. Such
+/// a tag can carry no usable `type`, and the predicate refuses it — which is
+/// what `HtmlSanitizer.sanitize` does with it too, so both halves agree on
+/// the malformed case instead of one warning and the other going quiet.
+final RegExp scriptOpeningTagPattern = RegExp(
+  r'<script\b[^>]*>?',
   caseSensitive: false,
 );
+
+/// Whether a `<script …>` OPENING TAG denotes JSON-LD.
+///
+/// Decides on the PARSED tag rather than on its source text, so `type` is read
+/// as an attribute and its value arrives with character references resolved —
+/// the two properties a regex over raw source cannot have at once. A `type=`
+/// sitting inside some other attribute's value is not an attribute and does
+/// not count; `application/ld&plus;json` and the semicolon-less numeric
+/// spellings do, because the parser resolves each to `+`.
+///
+/// Pass the tag as the SOURCE spells it. Named character references are
+/// case-sensitive (`&plus;` resolves, `&PLUS;` does not), so a case-folded
+/// copy is a different question with a different answer.
+///
+/// Takes an opening tag, not a document — no source-offset mapping, and no
+/// second parse of the page.
+bool isJsonLdScriptOpeningTag(String openingTag) {
+  // An attribute NAME is never entity-decoded, so a tag whose source has no
+  // `type` substring cannot yield a `type` attribute. Skips the parse for any
+  // tag carrying no `type` at all.
+  if (!openingTag.toLowerCase().contains('type')) return false;
+  final element = html_parser.parseFragment(openingTag).querySelector('script');
+  return isJsonLdMediaType(element?.attributes['type']);
+}
 
 /// Private helper: extracts JSON-LD of type "Recipe" if present.
 _JsonLdResult _extractJsonLd(String html) {

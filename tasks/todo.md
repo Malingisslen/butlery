@@ -1,3 +1,148 @@
+# Sprint 2026-09-10 — fem ärenden, tre kluster
+
+Vald av `/delivery:sprint-execute`.
+
+**Router, batchens filunion vid urval** (11 sökvägar) -> **`full-panel`**, 14 roller.
+**Router, filunionen SOM DELAS UT** (10 sökvägar, BUT-2057 utplockat) -> **`single`**,
+panel `["Data / Integrations Engineer", "Data / ML Engineer", "Financial Controller / FinOps",
+"Monetization / Subscriptions Lead"]`, `high_stakes_hits: []`.
+Unionen KRYMPTE mellan urval och utdelning, precis den riktning regeln finns för. Panelen om
+14 roller hann köras på den STÖRRE unionen och gäller alltså med marginal.
+
+Panelutfall: 14 säten, 11 agenter, **noll invändningar** — 3 `approve`, 11 `approve-with-conditions`.
+Villkoren är infällda som acceptanskriterier nedan, märkta med rollen som ställde dem.
+
+## BUT-2057 UTPLOCKAT vid steg 0 — den föreslagna fixen går inte att bygga
+
+Defekten är verklig; åtgärden ärendet föreskriver (`hasRequiredFields`) är det inte. Mätt mot HEAD:
+
+- `FirebaseRatingsRepository.rateRecipe` (`lib/repositories/firebase/firebase_ratings_repository.dart:135-180`)
+  skriver **aldrig** `recipeOwnerId`. Ingen Cloud Function heller. Ett obligatoriskt fält på
+  `recipe_ratings` nekar **varje betygsättning i appen**.
+- `FirebaseCommentsRepository:220` skriver fältet bara när `FirebaseRecipeOwnershipResolver.resolve()`
+  svarar, och den returnerar `null` med flit på tre vägar (recept saknas / ingen upplösbar ägare /
+  uppslaget kastar) — filens egen text kallar det "degrade to author-only read".
+
+Bekräftat oberoende av Security Architect och DBA, som inte såg varandras svar. Åtgärden kräver
+dels en mekanisk del (stämpla fältet i `rateRecipe`), dels ett beslut om vad en användare ser när
+ägaren inte går att lösa upp — Malins, inte mitt. Kommenterat på ärendet, står kvar i Backlog.
+
+---
+
+## Kluster A — saneraren (ETT bygge, två ärenden)
+
+### [Tier C] BUT-2037 — teckenkodat `+` raderas av saneraren (Medium, Bug)
+### [Tier C] BUT-2034 — undantaget luras av mellanslag/snedstreck i annat attributs värde (High, security, Bug)
+
+Disposition: **build** (korrekthetsfix, inget produktval — bekräftat av PM-sätet).
+
+**Vald ansats, MÄTT och inte antagen.** Software Architect-sätet prissatte parser-vägen som dyr
+(andra helparsning + spanmappning). Den prissättningen gäller en annan konstruktion än den här:
+`preserveWhen` tar emot **öppningstaggen ensam**, inte dokumentet. En `parseFragment` på just den
+strängen kostar ingen spanmappning och ingen dokumentparsning.
+
+Kört mot 12 fall (`html_parser.parseFragment(openingTag).querySelector('script')?.attributes['type']`):
+
+    <script type="application/ld+json">                ==> application/ld+json
+    <script type="application/ld&#x2b;json">           ==> application/ld+json
+    <script type="application/ld&plus;json">           ==> application/ld+json
+    <script type="application/ld&#x2bjson">            ==> application/ld+json
+    <script type="application/ld&#043json">            ==> application/ld+json
+    <script type="application/ld+json; charset=utf-8"> ==> application/ld+json; charset=utf-8
+    <script data-cfg=" type=application/ld+json">      ==> null
+    <script data-cfg="text/type=application/ld+json">  ==> null
+    <script data-type="application/ld+json">           ==> null
+    <script type="application/ld&plusjson">            ==> application/ld&plusjson
+    <script>                                           ==> null
+    <script type=application/ld+json>                  ==> application/ld+json
+
+Alla fem BUT-2037-förlustfallen bevaras, båda BUT-2034-kringgåendena faller, `; charset=utf-8`
+och `&plusjson`-gränsen är oförändrade. Så `jsonLdScriptOpeningTagPattern` UTGÅR och ersätts av
+EN delad funktion över `isJsonLdMediaType` — vilket också upplöser BUT-2034:s punkt 2 (två kopior
+av ett regex som kan driva isär), eftersom det inte längre finns något regex att kopiera.
+
+Acceptanskriterier:
+- [ ] `{text: "En delad funktion i recipe_scraper.dart avgor JSON-LD-het pa den PARSADE oppningstaggen via isJsonLdMediaType, och jsonLdScriptOpeningTagPattern finns inte kvar", kind: diff}`
+- [x] `{text: "Alla tre konsumenterna avgor JSON-LD-het genom isJsonLdMediaType: de tva sanitizer-halvorna via isJsonLdScriptOpeningTag, och url_import_strategy.hasOnlyNonRecipeJsonLd direkt pa den parsade DOM:en (Data/ML + Integrations + SW Architect: den tredje var oraknad i forsta planen)", kind: diff}`
+- [ ] `{text: "Bada BUT-2034-kringgaendena STRYKS av sanitize() OCH check() ger samma svar", kind: diff}`
+- [ ] `{text: "Alla fem BUT-2037-forlustfallen BEVARAS av sanitize() OCH check() tiger om dem", kind: diff}`
+- [ ] `{text: "Bada DEFECT-testerna RADERAS och ersatts av assertioner pa ratt beteende - testantalet minskar inte (QA)", kind: diff}`
+- [ ] `{text: "isJsonLdMediaType-premissassertionen ur BUT-2037-testet overlever som fristaende test - dess egen reason-strang sager att sviten saknar annan pinne (QA)", kind: diff}`
+- [ ] `{text: "De fyra decoys som bara ar pinnade pa sanitize-halvan far sin check()-motsvarighet, sa parheten ar 7 av 7 (Integrations)", kind: diff}`
+- [ ] `{text: "_hasOnlyNonRecipeJsonLd far ett eget test over BUT-2037- och BUT-2034-fallen (Data/ML risk 3, SW Architect risk 2)", kind: diff}`
+- [ ] `{text: "Bada OPEN-kommentarerna i recipe_scraper.dart tas bort; url_import_strategy.dart iff STRYKS, inte omformuleras", kind: diff}`
+- [ ] `{text: "Omfangssatsen aterstalls explicit: ingen konsument renderar sanitize()-utdata som HTML, sa detta ar djupforsvar - inte en live-XSS (Security Architect, mot lessons.md)", kind: diff}`
+- [ ] `{text: "De tva escalation-gates i _tryHtmlTextParse ar byte-identiska fore och efter (FinOps)", kind: diff}`
+- [ ] `{text: "INTE gjort: web_scraper.dart och recipe_site_content_extractor.dart - eget arende", kind: diff}`
+
+---
+
+## Kluster B — blockering
+
+### [Tier B] BUT-2022 — blockeringen är inte atomär, och vakterna failar öppet (High, Bug)
+Disposition: **build-review**. Malin avgjorde formen 2026-09-05 (båda halvorna i ett bygge).
+PM-sätet flaggar att copyn för ett DELVIS utfall inte omfattas av det beslutet — den detaljen är
+hennes, så ärendet parkeras i In Review oavsett vad grindarna säger.
+
+Acceptanskriterier:
+- [ ] `{text: "blocks-raden skrivs FORST i blockUser; vanskap och forfragningar stadas efterat", kind: diff}`
+- [ ] `{text: "blockUser returvarde harleds ur BLOCKS-skrivningens utfall, inte ur det sista steget (Legal must-have 2, T&S must-have 1)", kind: diff}`
+- [ ] `{text: "FirebaseBlockRepository.blockUser ar OMFORSOKSSAKER: set() mot ett befintligt dokument gar pa update-limben, som ar allow update: if false - en redan skriven blockering ska rakna som lyckad, inte som permission-denied (DBA must-have 3, matt i firestore.rules:2578)", kind: diff}`
+- [ ] `{text: "removeFriend returvarde kastas inte bort", kind: diff}`
+- [ ] `{text: "FriendsViewModel far EN ny publik isBlocked-yta, och FYRA anropsstallen gar genom den: chat_action_handler.dart, block_group_member_dialog.dart, search_result_card.dart, friend_profile_view.dart. Noll direkta _friendsService-anrop fran widget- eller view-filer (SW Architect must-have 2; T&S hittade det fjarde stallet, som saknades i forsta planen)", kind: diff}`
+- [ ] `{text: "En kommentar pa BADA sidor namnger att getFriendshipStatus prioritetsordning och den direkta blockeringskontrollen med FLIT ger olika svar (SW Architect risk 3)", kind: diff}`
+- [ ] `{text: "Ingen anvandarsynlig text pastar att blockeringen ar klar pa en vag dar blocks-raden inte skrevs (Legal must-have 1)", kind: diff}`
+- [ ] `{text: "Test som fejkar fel i vart och ett av de tre stegen, med ordningskansliga assertioner (verifyInOrder), inte bara anropsrakning - och mutationsprovat genom att aterstalla ordningen (QA must-have 3)", kind: diff}`
+- [ ] `{text: "blockUsers-bulkslingans rakning speglar fortfarande blocks-raden, inte allt-lyckades (T&S risk 3)", kind: diff}`
+- [ ] `{text: "INTE gjort: getFriendshipStatus egen ordning andras inte - den har fler anropare", kind: diff}`
+
+---
+
+## Kluster C — Dart, låg risk
+
+### [Tier A] BUT-2053 — `personal_shopping_operations` skriver Infinity i mängdfältet (Medium, Bug)
+- [ ] `{text: "Bada tryParse-stallena i personal_shopping_operations har en finitetskontroll med samma 1.0-fallback som resten av metoden", kind: diff}`
+- [ ] `{text: "Test for 309 siffror (Infinity -> 1.0) och 308 (andligt, oforandrat)", kind: diff}`
+- [ ] `{text: "Mutationsprovat rott", kind: diff}`
+
+### [Tier A] BUT-2052 — connectivity-lyssnaren registreras flera gånger, avregistreras en (Medium, Bug)
+- [ ] `{text: "addListener forekommer pa EXAKT ett stalle i objektets livstid - inte inuti metoden som kors om vid varje reconnect (SW Architect must-have 3)", kind: diff}`
+- [ ] `{text: "Kontrollerat och skrivet: startMonitoring() ar idempotent och billig, eller sa flyttas den inte med (SW Architect risk 1) - matt, inte antaget", kind: diff}`
+- [ ] `{text: "Ett test som pinnar enable -> reconnect -> reconnect -> dispose med verify(...).called(n) i bada riktningarna", kind: diff}`
+- [ ] `{text: "Mutationsprovat rott", kind: diff}`
+- [ ] `{text: "INTE gjort: DisposalGuardMixin-vakten fran BUT-2015 tas inte bort", kind: diff}`
+
+---
+
+## Needs you (Tier D) — inget den här sprinten
+
+## Följdärenden att fila före commit
+- BUT-2057 omplanerad (kommenterad, står kvar i Backlog).
+- DPO: `exportCommentsByAuthor` / `exportRatingsByUser` returnerar rå `doc.data()` utan
+  allowlist — eget ärende, oberoende av BUT-2057.
+- Data/ML: korpus-evalen (`tools/corpus_eval.dart`) körs i ingen CI-lane, så ingen mätning
+  fångar en importregression — eget ärende.
+- QA: `test:rules:all` är en `&&`-kedja; en tidig svit som rödnar hoppar tyst över senare.
+
+## Ej valda, med skäl
+- **BUT-2045** — Tier D, kräver skarp projektåtkomst.
+- **BUT-2027** (getUserProfiles) — Malin-beslutad men rör tio anropare; egen sprint.
+- **BUT-2017**, **BUT-1996**, **BUT-1730** — för stora för en delad batch.
+- `need-malin`-märkta ärenden — står i beslutskön, inte i bygget.
+
+## Deviation log
+- [discovery] BUT-2057: planen sa `hasRequiredFields` -> mätt att två legitima skrivvägar utelämnar fältet (ratings alltid, comments på resolver-null) -> utplockat ur sprinten, kommenterat, inget byggt.
+- [discovery] BUT-2022: planen namngav tre vakter -> T&S och Legal mätte en fjärde (`search_result_card.dart`) och en femte (`friend_profile_view.dart`) -> alla fyra call sites som gatar blockeringsbeteende tas med.
+- [discovery] Kluster A: SW Architect prissatte parser-vägen som dyr -> mätt att `preserveWhen` får öppningstaggen ensam, så `parseFragment` på den räcker -> parser-vägen vald, regexet utgår.
+- [discovery] Kluster A, granskningsrunda 1: jag skrev till granskarna att "alla tre konsumenterna anropar isJsonLdScriptOpeningTag". Falskt — den tredje anropar `isJsonLdMediaType` direkt. `code-reviewer` mätte det. Acceptanskriteriet ovan är omskrivet till vad koden gör.
+- [deviation] Kluster A, granskningsrunda 1: `integration-reviewer` mätte att `preserveWhen` fick en GEMENAGJORD öppningstagg, och att HTML:s namngivna teckenreferenser är skiftlägeskänsliga — så `&PLUS;` (som inte löses upp) blev `&plus;` (som gör det) och ett skript med `alert(1)` BEVARADES. En regression jag införde i samma commit som stänger BUT-2034. Reproducerad, lagad (originalversalerna skickas nu), och pinnad som decoy 13.
+- [discovery] Kluster A, mätt av `integration-reviewer`: `check()` kostar nu en fragmentparsning per `<script>` som bär `type`. På en fientlig 4MB-sida med `<script type="text/javascript">` tar loopen ~530 ms mot ~9 ms för det raderade regexet; med bara `src=` är den 18 ms, alltså gör snabbvägen sitt jobb. Verkliga sidor har tiotals skript, så det är submillisekund i praktiken. Det som binder det fientliga fallet är 5MB-spärren i `check()` — den ligger i en ANNAN fil än predikatet vars kostnad den bundit, och det är därför det står här.
+- [discovery] Kluster A, granskningsrunda 3: min egen mutationssond muterade TYST INGENTING — ankarsträngen bar ett bakstreck-b som Python läste som ett backsteg, så `count(old)==1` föll och körningen jag fick tillbaka var av omuterad kod. Exakt samma fälla som `integration-reviewer` dokumenterade om sin egen sond en runda tidigare. Assertionen fångade det; utan den hade ett grönt "provet är opinnat"-svar sett identiskt ut.
+
+---
+
+# ARKIV — tidigare sprintar
+
 # Sprint 2026-09-09 — sex ärenden, två kluster
 
 Vald av `/delivery:sprint-execute`. Router på batchens filunion:
