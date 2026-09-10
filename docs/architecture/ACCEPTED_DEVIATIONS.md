@@ -2847,6 +2847,10 @@ neither passed an `auditRepository` at all.
   deletion.
   **Chosen conservatively without asking Malin, the way the `chat_groups` projection was —
   STRIPPING the name is hers to decide, and it is open.**
+  **Decision 2026-09-10 — Malin explicitly decided to RETAIN the name.** She was shown that
+  the current implementation already retains it as a pass-through and that stripping the name
+  was the remaining open choice. No code change is required. This supersedes the open question
+  above.
   Residual worth knowing: because this is a pass-through, "every field is safe" is a property of
   two functions' CURRENT field lists, not of the shape. A writer that later stores a counterparty
   uid lands it in a GDPR bundle with no rules change and no red test. Raised by the
