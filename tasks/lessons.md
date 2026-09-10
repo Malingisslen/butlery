@@ -3984,3 +3984,40 @@ Samma runda, andra hållet: en granskare FÖRESLOG en ersättningsmening, jag sk
 mätte sedan sin egen rekommendation som falsk i båda halvorna. Två formuleringar av en
 motivering — då är regeln radera, inte försöka en tredje. Grinden skrev in i sin egen
 kunskapsfil att den ska rekommendera radering i stället för ersättningstext nästa gång.
+
+## En mutationssond har ett UTGÅNGSDATUM: nästa vakt över samma värde upphäver den
+
+Sonden av den första spillvakten i `menu_shopping_aggregator` var giltig när jag körde den —
+och ogiltig två rundor senare, av min egen commit. Jag lade en andra vakt nedströms över
+samma värde, med samma `1.0`-fallback, och då räddade den nedströms vakten det uppströms
+testet: att radera den vakt testet NAMNGER lämnade hela sviten grön. `testing-specialist`
+hittade det; varken jag eller den granskare som redan graderat samma fall som icke-vakuöst
+hade ställt frågan.
+
+Formen är generell: **N vakter över ett värde som faller tillbaka på samma konstant är var
+för sig raderbara-gröna**, och ingen assertion kan märka det, för utfallet är identiskt.
+Fixturen måste ligga på en gren där de andra N−1 inte kan köra. Här blev det `unit: 'st'` —
+en enhet utan mätfamilj, så raden tar passthrough-grenen innan den andra vakten ens finns i
+kontrollflödet. Det är dessutom starkare än det ser ut: null:et kommer från ENHETEN, inte
+från värdet, så räddningen är omöjlig för varje värde och inte bara för fixturens.
+
+Regeln: när du lägger till en vakt, **kör om sonderna för varje befintlig vakt över samma
+värde** — inte bara den nya. Och en sond är ett påstående med ett datum, inte ett kvitto.
+
+## En STRYKNING som lägger till text är inte en strykning
+
+`code-style.md` säger att en rättelse bara får RADERA. Jag strök "de fyra producenterna" och
+skrev i samma andetag "den här vägen kräver bara en siffra i portionsfältet" — som grinden
+mätte falskt: `scalingFactor` är `int / int`, alltså begränsad av ~9.22e18, så spillet kräver
+en ingrediensmängd på ~1.95e289. Meningen låg tre rader ovanför den fixtur som motsäger den.
+
+Det var tredje gången på en kväll att den falska meningen låg i texten skriven SOM rättelsen.
+De två andra: en observabilitetsutfästelse trettio rader ovanför den jag just strukit, och en
+"det enda skrivstället" som en backfill-migrering motbevisade. Mönstret är att man skriver
+självsäkert om grannskapet till det man just haft fel om.
+
+Vad som faktiskt terminerade kedjan: att sluta formulera om. Varje omformulering födde ett
+nytt fynd; varje ren strykning höll. När en granskare underkänner en mening för andra gången
+är rätt drag att radera satsen, inte att skriva en tredje version — och när det som ska bort
+är en LIVENESS-påstående i en beslutspost som redan klarat tre rundor, rätta det där det
+faktiskt står (här: Linear-kommentaren), inte genom att lägga en fjärde formulering i posten.
