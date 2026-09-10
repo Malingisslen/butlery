@@ -3751,3 +3751,67 @@ speglarna radbryter olika, så originalet bryts på ett ställe och citatet på 
 skrev först citatet brutet, mätte 1 i stället för 2, och fick rätta mig själv. Samma runda
 pensionerades den gamla räkne-heuristiken av samma skäl: den ger FALSKLARM på en korrekt
 supersering.
+
+## 2026-09-10 — BUT-2016: rättelsen som inte stagades, och briefingen som avväpnade granskaren
+
+En radering av död kod (utskicket vid stängd matomröstning satt bakom en `isGroup`-test på
+den arm som bara nås när `isGroup` är false). Koddelen var färdig i första rundan. Fyra
+rundor till gick åt till meningar — och de två som kostade mest var mina egna
+gransknings-RUTINER, inte texten.
+
+### En rättelse på en grinds fynd är den redigering som oftast blir kvar ostagad
+
+`code-reviewer` mätte att min kommentar "Kept although no production path calls it any more"
+var falsk: "it" binder till `shareMenuWithFriends`, som har fyra levande anropare. Jag strök
+klausulen, körde sviten, rapporterade — och stagade aldrig. Tre grindar hade redan passerat,
+alla tre läser ARBETSKOPIAN, och commiten läser INDEX. Den falska meningen hade shippat med
+tre godkännanden bakom sig.
+
+Varför just den här redigeringen: en granskningsrunda AVSLUTAS på granskarens verdikt, inte
+på en stagning. Mönstret är "fixa → kör om provet → svara granskaren", och `git add` har
+ingen naturlig plats i den sekvensen. Digesten har redan regeln att `git status` är indexets
+cachade vy; det här är varför man behöver den.
+
+Fångades av `testing-specialist`, som jämförde `git rev-parse :<path>` mot
+`git hash-object <path>` i stället för att lita på min beskrivning. Två instrumentnoter från
+den mätningen: en `diff` av LF-bloben mot CRLF-arbetskopian påstod att alla 1410 rader ändrats
+— `--strip-trailing-cr` är inte valfritt här — och strykningen var 4 rader mot 4, så
+radnumren var identiska i båda kopiorna och kunde inte avslöja divergensen.
+
+**Regeln: staga i ett eget anrop DIREKT efter varje rättelse, före du briefar nästa granskare,
+och avgör frågan med blob-hasharna.**
+
+### Att be en granskare verifiera indexet är att avväpna dess egen täckning
+
+Commit-grinden nekade och namngav `integration-reviewer`: "reviewed, then changed — the review
+describes different bytes". Ingen kod hade ändrats. Orsaken var min briefing: jag hade bett den
+verifiera mot indexet, den gjorde det med `git show :<path>`, och grindens ledger registrerar
+**bara `Read`-verktyget**. En granskning som blir mer noggrann på det sättet blir samtidigt
+osynlig för grinden.
+
+Digesten har redan "ledger coverage is recorded by the Read TOOL alone" om granskare som läser
+via Bash av lathet. Det här är den motsatta riktningen och därför lättare att gå på:
+instruktionen som orsakade luckan var den som skulle höja bevisvärdet.
+
+**Regeln: när du ber en granskare pinna bytes, be den öppna filen med `Read` OCH verifiera
+hashen — aldrig bara hashen.**
+
+### En strykning som fungerade första gången, och två som inte gjorde det
+
+Samma kommentar skrevs i fyra vändor. Runda 2 tog bort en motfaktisk sats och lämnade "the
+tally in **the same method**" utan antecedent — delningen låg i hjälparen, vägran i
+`closePoll`, så en av två läsningar var falsk. Runda 3 ersatte "the same method" med symbolen
+`closePoll`, vilket höll: en symbol namnger sig själv och kan inte dingla. Runda 4 var den
+falska "no production path"-klausulen ovan.
+
+Det som terminerade kedjan var att sista rättelsen var en **symbolsubstitution**, inte ny
+prosa. Två granskare landade oberoende på regeln: hittar en fjärde runda något i samma sats,
+radera satsen i stället för att formulera den en femte gång.
+
+### En grind som loggar ett skalfel och ändå rapporterar ✔️
+
+Commit-körningen skrev `sh: line 2: [: lib/services/messaging_service.dart: binary operator
+expected` mellan `null-filter-guard` och `secret-scan`. Båda stegen rapporterade grönt. Jag
+kunde inte återskapa felet genom att köra något av kommandona för hand med samma filer, så
+attributionen är OKÄND — och det är precis varför det är värt en biljett i stället för en
+gissning: ett skydd som felar och ändå passerar är oskiljbart från ett som gör sitt jobb.
