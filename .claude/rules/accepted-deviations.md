@@ -1527,6 +1527,35 @@ files in the same edit.
   BUT-2060 carries the question.
   Raised by the `integration-reviewer` push gate. BUT-2005, 2026-09-10
 
+- **RESOLVED 2026-09-10 (BUT-2060) — Malin: LEAVE IT. The category sync does not cut
+  group-menu access, and that is now a decision rather than an open question.** Retired
+  verbatim, from the entry above:
+  "Open for Malin, and the reason this half is not built: her call of 2026-09-09 was to build"
+  — the question was put to her and answered the same day. No code changed: this is what
+  already ships.
+  What STAYS open as a consequence, stated because it is the price of the call: the original
+  "THREE other membership-removal paths do NOT cut group-menu access" gap is permanent for
+  `groups/ensure-category-chat.ts`. Somebody an owner removes from a friend category keeps
+  READ and WRITE access to every weekly menu plan of that category's chat group that already
+  exists, indefinitely, until the group loses them by some other path.
+  She was shown: the three options; the concrete case (remove a friend from a category by
+  mistake, re-add them, the chat returns and the menus never do, silently); that a departing
+  set emptying an old week's roster would delete that week; and that the app is not live, so
+  the gap reaches nobody today.
+  **What she was NOT shown**, stated because an attribution is a claim about a person no test
+  can hold: no measurement of how often a category removal is undone in practice — there are
+  no users, so it is not measurable — and no enumeration of how many existing weeks a given
+  category's group typically has. The choice was made on the shape of the trade, not on
+  frequency data.
+  The alternative she declined, and what it would have cost: cutting anyway (a reversible
+  admin action becomes partly one-way, with no error shown), and building a restore path (the
+  correct fix, but no such code exists at all today and it reaches `firestore.rules` and the
+  Art. 15 surfaces, so it needs its own plan). Reversing this is hers; if it is ever
+  re-proposed, the restore path is the half that has to exist first.
+  The pin is `an eviction leaves group-menu access alone — the sync is reversible` in
+  `ensure-category-chat.test.ts`: it reddens the day somebody wires the cut in, so the decision
+  is enforced by a test rather than by this paragraph. BUT-2060, 2026-09-10
+
 - **SUPERSEDES two sentences of the `ingredient_suggestions` Art. 15 entry above
   (BUT-2038, 2026-09-10).** Retired verbatim — note that the two mirrors word this
   decision DIFFERENTLY, a pre-existing drift, so each copy retires its own sentence and a
