@@ -3307,10 +3307,67 @@ service cloud.firestore {
     match /ingredient_suggestions/{suggestionId} {
       allow read: if isAuthenticated()
         && resource.data.userId == request.auth.uid;
+      // BUT-2038. `hasOnly` rather than a deny-list: it also refuses the day
+      // somebody writes a field nobody has decided about, instead of that field
+      // becoming storable because no human noticed.
+      //
+      // The list is the SUBMISSION half of `IngredientSuggestion`
+      // (`functions/src/ingredients/on-suggestion-created.ts`) — the five
+      // required fields plus the three optional content ones. What is
+      // deliberately OUTSIDE it is every field the SERVER writes: `reviewedAt`,
+      // `reviewedBy` and `reviewNotes` from the console, `notifiedAt` and
+      // `sourceApp` from `onSuggestionCreated` itself. All five come through the
+      // Admin SDK, which bypasses rules, so a client-facing allowlist is not
+      // where they belong.
+      //
+      // The three optional fields are in the list rather than denied because
+      // they are content the SUBMITTER writes and the Art. 15 export already
+      // returns them. An allowlist narrower than the declared type denies
+      // silently and fail-closed, which is how the future client path would
+      // have broken with nothing reddening.
+      //
+      // `status` is pinned to 'pending' by VALUE. `hasOnly` alone does not stop
+      // a forged 'approved': the field is in the declared type, so an allowlist
+      // admits it and only a value check refuses it. That is the half that
+      // protects `onSuggestionStatusChanged`'s audit trail and every future flow
+      // that trusts the status.
+      //
+      // Every free-text field is bounded, and the array by element count. Before
+      // this only `ingredientName` was.
+      //
+      // `.size()` is polymorphic: it answers for a string, a list and a map
+      // alike, so the `suggestedProperties` bound buys COUNT, not type — a
+      // 20-character string or a 20-key map satisfies it. Element LENGTH is
+      // unbounded too, capped only by Firestore's 1 MiB document limit. Both
+      // are limits of this shape rather than oversights, and the future client
+      // writer is who will meet them.
+      //
+      // NOT rate-limited, and that is measured rather than forgotten:
+      // `rateLimitWrite` only READS `users/{uid}/rate_limits/{type}`, which the
+      // WRITING repository must stamp in the same batch. No code in `lib/`
+      // creates a suggestion, so there is no writer to stamp it and the limiter
+      // would be inert — a control that reads as a fix and bounds nothing, which
+      // this repo already carries one of. Whoever builds the client path adds
+      // `rateLimitWrite` here AND the stamp there, in one change — and should
+      // know what that buys: the helper FAILS OPEN on a missing bucket and the
+      // bucket is client-writable, so it throttles our own repository and never
+      // a hand-rolled client. Bounding row COUNT needs a callable-mediated
+      // create or a server counter.
       allow create: if isAuthenticated()
         && request.resource.data.userId == request.auth.uid
         && hasRequiredFields(['userId', 'ingredientName', 'originalName', 'status', 'createdAt'])
-        && request.resource.data.ingredientName.size() <= 100;
+        && request.resource.data.keys().hasOnly(
+             ['userId', 'ingredientName', 'originalName', 'status', 'createdAt',
+              'suggestedCategory', 'suggestedProperties', 'recipeContext'])
+        && request.resource.data.status == 'pending'
+        && request.resource.data.ingredientName.size() <= 100
+        && request.resource.data.originalName.size() <= 100
+        && (!('suggestedCategory' in request.resource.data)
+            || request.resource.data.suggestedCategory.size() <= 100)
+        && (!('recipeContext' in request.resource.data)
+            || request.resource.data.recipeContext.size() <= 500)
+        && (!('suggestedProperties' in request.resource.data)
+            || request.resource.data.suggestedProperties.size() <= 20);
       allow update, delete: if false;  // Admin-only via console
     }
 

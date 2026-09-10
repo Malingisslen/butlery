@@ -412,6 +412,17 @@ const _knowinglyUncovered = <_Uncovered>[
     'notification_batches — FirebaseNotificationBatchRepository',
     'match /notification_batches/{batchKey}',
   ),
+  // BUT-2038: no Dart writer exists — nothing in `lib/` creates a suggestion,
+  // so the writer comparison this guard performs has nothing to compare against.
+  // The allowlist is the SUBMISSION half of `IngredientSuggestion`
+  // (`functions/src/ingredients/on-suggestion-created.ts`), and it is pinned by
+  // `ingredient-suggestions-rules.test.ts` C7-C12 instead, where C12 accepts the
+  // optional content fields. The day a Dart
+  // writer lands, this entry goes and the writer comparison takes over.
+  _Uncovered(
+    'ingredient_suggestions — no Dart writer; pinned by its rules suite',
+    'match /ingredient_suggestions/{suggestionId}',
+  ),
 ];
 
 /// Matches the allowlist form this guard covers, tolerating the line wrap the
@@ -506,10 +517,9 @@ void main() {
     // nothing says so — which is precisely how the five drifts of 2026-08-12
     // happened, one silent omission at a time.
     // Scope: `keys().hasOnly` only. The rest are `affectedKeys().hasOnly`
-    // update restrictions, one `values().hasOnly`, set differences, and calls
-    // sitting in comments.
+    // update restrictions, one `values().hasOnly`, and set differences.
     //
-    // The fourteenth is a READ gate, not a write allowlist: `user_moderation`
+    // One is a READ gate, not a write allowlist: `user_moderation`
     // permits the subject's read only while the document's key set is exactly
     // the two counters, so an undecided field denies rather than leaks
     // (BUT-2046 follow-up). It is covered by its own equality test below
@@ -526,7 +536,7 @@ void main() {
     // `_allowlistCall` without moving its count; it cannot slip past the total.
     expect(
       'hasOnly('.allMatches(rules).length,
-      33,
+      34,
       reason:
           'the `hasOnly(` population changed. Reclassify the new call before '
           'touching this number — it counts `keys().hasOnly`, '
@@ -535,7 +545,7 @@ void main() {
           'reason a commented-out allowlist cannot satisfy anything here. If '
           'the new one is a keys() allowlist written in a form the regex '
           'cannot see, this is the only assertion that says so. (A breakdown '
-          'by category stood here and was wrong within a day of the fourteenth '
+          'by category stood here and was wrong within a day of the next '
           'allowlist landing: it is the instruction somebody follows when this '
           'reddens, so a stale one sends them to "correct" the number back.)',
     );

@@ -21,13 +21,18 @@
  * all, so the ownership check, the required-field list and both sides of the
  * length bound are pinned here.
  *
- * What the limb does NOT do — no `hasOnly` allowlist, no document-size bound,
- * no `rateLimitWrite`, so a client can write unbounded rows and set
- * `reviewedBy` or `notifiedAt` itself — is BUT-2038, not a contract, and
- * the cases below do not assert it either way. One caveat, measured: `status`
- * IS in `hasRequiredFields`, so both allow fixtures must send it. Closing that
- * half of the open item by refusing a client-set `status` turns those two
- * green cases red, and that is the fix landing, not a regression.
+ * BUT-2038 closed most of that open item: the limb now carries a `hasOnly`
+ * allowlist, a value pin on `status`, and a length bound on every free-text
+ * field plus the array. The allow fixtures already sent `status: 'pending'`, so
+ * the value pin did NOT turn them red — which is why C9
+ * exists: without it, `hasOnly` admits any value of a field that is in the
+ * declared type, and nothing would refuse a forged approval.
+ *
+ * Deliberately absent, and decided rather than open — Malin's call, 2026-09-09:
+ * `rateLimitWrite`. It only READS
+ * `users/{uid}/rate_limits/{type}`, which the writing repository must stamp in
+ * the same batch, and no code in `lib/` creates a suggestion — so the limiter
+ * would bound nothing. Whoever builds the client path adds both halves.
  *
  * Run with: npx ts-node src/__tests__/ingredient-suggestions-rules.test.ts
  */
@@ -52,7 +57,7 @@ const OTHER_UID = "other-uid";
  * collection the list cases read, so those use a principal of their own. The
  * denied ones write nothing and need none. With `USER_UID` the create
  * cases themselves still passed — what held only by registration order was the
- * SUITE: a list case appended after them saw four rows and failed with a
+ * SUITE: a list case appended after them failed with a
  * message about the export query, pointing at the wrong limb.
  * `clearFirestore()` in setup fixes the cross-RUN version of this and nothing
  * about the intra-run one.
@@ -78,8 +83,7 @@ async function setup(): Promise<void> {
   // emulator. Without this, a document an earlier run created survives into the
   // next one, so an ALLOWED create case lands on an existing document and
   // evaluates the UPDATE limb (`if false`) instead — failing while claiming the
-  // create rule broke. Measured with the clear commented out: the second run
-  // fails exactly the two allowed creates.
+  // create rule broke.
   await env.clearFirestore();
 }
 
@@ -253,8 +257,190 @@ test("an ingredientName of exactly 100 characters is allowed", async () => {
   );
 });
 
-// --- UPDATE / DELETE ----------------------------------------------------
 
+// C7 (BUT-2038) — `hasOnly`. A field outside the SUBMISSION half of the
+// declared type is refused, so a client cannot store data the Art. 15 export's
+// allowlist would then silently drop from its own subject's bundle. The type's
+// three optional content fields are IN the allowlist; C12 pins that.
+test("a create carrying a field outside the declared type is refused", async () => {
+  const db = env.authenticatedContext(USER_UID).firestore();
+  await assertFails(
+    db.doc(`${COLLECTION}/extra-field`).set({
+      ...validBody(USER_UID),
+      somethingNobodyDecidedAbout: "x",
+    })
+  );
+});
+
+// C12 (BUT-2038) — the submission half's OPTIONAL fields are accepted. Without
+// this the allowlist could be narrowed back to the five required fields and
+// every case above would stay green, while the future client path broke
+// silently and fail-closed.
+test("a create carrying the type's optional content fields is allowed", async () => {
+  const db = env.authenticatedContext(CREATOR_UID).firestore();
+  await assertSucceeds(
+    db.doc(`${COLLECTION}/with-optionals`).set({
+      ...validBody(CREATOR_UID),
+      suggestedCategory: "grönsaker",
+      suggestedProperties: ["vegansk", "glutenfri"],
+      recipeContext: "Från ett recept på rotsaksgratäng",
+    })
+  );
+});
+
+// C13-C15 (BUT-2038) — the three optional fields' BOUNDS. C12 proves they are
+// accepted; measured, each bound could be deleted and C12 stayed green, because
+// its fixture sits well inside all three. An allow without a deny is not
+// coverage.
+test("a suggestedCategory over 100 characters is refused", async () => {
+  const db = env.authenticatedContext(USER_UID).firestore();
+  await assertFails(
+    db.doc(`${COLLECTION}/cat-too-long`).set({
+      ...validBody(USER_UID),
+      suggestedCategory: "a".repeat(101),
+    })
+  );
+});
+
+test("a recipeContext over 500 characters is refused", async () => {
+  const db = env.authenticatedContext(USER_UID).firestore();
+  await assertFails(
+    db.doc(`${COLLECTION}/ctx-too-long`).set({
+      ...validBody(USER_UID),
+      recipeContext: "a".repeat(501),
+    })
+  );
+});
+
+test("more than 20 suggestedProperties is refused", async () => {
+  const db = env.authenticatedContext(USER_UID).firestore();
+  await assertFails(
+    db.doc(`${COLLECTION}/props-too-many`).set({
+      ...validBody(USER_UID),
+      suggestedProperties: Array.from({ length: 21 }, (_, i) => `p${i}`),
+    })
+  );
+});
+
+// C17-C19 (BUT-2038) — the at-bound twins. C13-C15 pin the DIRECTION (over the
+// bound denies); only these pin the NUMBER. Measured: tightening all three to
+// `<` left the suite green, because C12's fixture sits at 9 characters and 2
+// entries. `ingredientName` and `originalName` already have this twin.
+test("a suggestedCategory of exactly 100 characters is allowed", async () => {
+  const db = env.authenticatedContext(CREATOR_UID).firestore();
+  await assertSucceeds(
+    db.doc(`${COLLECTION}/cat-at-bound`).set({
+      ...validBody(CREATOR_UID),
+      suggestedCategory: "a".repeat(100),
+    })
+  );
+});
+
+test("a recipeContext of exactly 500 characters is allowed", async () => {
+  const db = env.authenticatedContext(CREATOR_UID).firestore();
+  await assertSucceeds(
+    db.doc(`${COLLECTION}/ctx-at-bound`).set({
+      ...validBody(CREATOR_UID),
+      recipeContext: "a".repeat(500),
+    })
+  );
+});
+
+test("exactly 20 suggestedProperties is allowed", async () => {
+  const db = env.authenticatedContext(CREATOR_UID).firestore();
+  await assertSucceeds(
+    db.doc(`${COLLECTION}/props-at-bound`).set({
+      ...validBody(CREATOR_UID),
+      suggestedProperties: Array.from({ length: 20 }, (_, i) => `p${i}`),
+    })
+  );
+});
+
+// C16 (BUT-2038) — what the guard shape does with a PRESENT-NULL optional, and
+// it is fail-closed today. `!('f' in data) || data.f.size() <= N` reaches
+// `.size()` on a null and CEL-errors, so the create is refused.
+//
+// Pinned because it is a live trap for whoever builds the client writer: a
+// serialiser that emits `recipeContext: null` for "no context" would have every
+// create on this collection refused, and the rule would look correct while doing
+// it. If that behaviour is ever changed, this case is what names the decision.
+test("an optional field present but null is refused", async () => {
+  const db = env.authenticatedContext(USER_UID).firestore();
+  await assertFails(
+    db.doc(`${COLLECTION}/null-optional`).set({
+      ...validBody(USER_UID),
+      recipeContext: null,
+    })
+  );
+});
+
+// C8 (BUT-2038) — the moderator fields specifically. They are written by the
+// Admin SDK and the console, which bypass rules; a client setting them poisons
+// `onSuggestionStatusChanged`'s audit trail.
+test("a create setting reviewedBy or reviewNotes is refused", async () => {
+  const db = env.authenticatedContext(USER_UID).firestore();
+  await assertFails(
+    db.doc(`${COLLECTION}/forged-reviewer`).set({
+      ...validBody(USER_UID),
+      reviewedBy: "some-moderator",
+    })
+  );
+  await assertFails(
+    db.doc(`${COLLECTION}/forged-notes`).set({
+      ...validBody(USER_UID),
+      reviewNotes: "looks fine to me",
+    })
+  );
+});
+
+// C9 (BUT-2038) — `status` by VALUE, which `hasOnly` cannot do. The field is IN
+// the declared type, so an allowlist admits any value and only this refuses a
+// forged approval. Its control is C1, which sends 'pending' and passes.
+test("a create claiming an approved status is refused", async () => {
+  const db = env.authenticatedContext(USER_UID).firestore();
+  await assertFails(
+    db.doc(`${COLLECTION}/forged-status`).set({
+      ...validBody(USER_UID),
+      status: "approved",
+    })
+  );
+});
+
+// C10 (BUT-2038) — `notifiedAt`, the field whose client-set presence made the
+// moderator step skip permanently for that row.
+test("a create pre-setting notifiedAt is refused", async () => {
+  const db = env.authenticatedContext(USER_UID).firestore();
+  await assertFails(
+    db.doc(`${COLLECTION}/forged-notified`).set({
+      ...validBody(USER_UID),
+      notifiedAt: new Date().toISOString(),
+    })
+  );
+});
+
+// C11 (BUT-2038) — `originalName`, which was unbounded before this ticket.
+// Boundary pair, same shape as C5/C6.
+test("an originalName over 100 characters is refused", async () => {
+  const db = env.authenticatedContext(USER_UID).firestore();
+  await assertFails(
+    db.doc(`${COLLECTION}/orig-too-long`).set({
+      ...validBody(USER_UID),
+      originalName: "a".repeat(101),
+    })
+  );
+});
+
+test("an originalName of exactly 100 characters is allowed", async () => {
+  const db = env.authenticatedContext(CREATOR_UID).firestore();
+  await assertSucceeds(
+    db.doc(`${COLLECTION}/orig-exactly-100`).set({
+      ...validBody(CREATOR_UID),
+      originalName: "a".repeat(100),
+    })
+  );
+});
+
+// --- UPDATE / DELETE ----------------------------------------------------
 // U1 — the owner cannot amend their own row, so no client can rewrite a
 // moderation verdict after the fact.
 test("the owner cannot update their own suggestion", async () => {

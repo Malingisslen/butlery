@@ -595,11 +595,8 @@ class ContentExportManager {
   /// `userId` is the requester's own uid and is what the query already filters
   /// on, so it adds nothing to the bundle.
   ///
-  /// The cost of failing closed is real and is the reason the withholding is
-  /// declared in the section: the collection's create rule uses
-  /// `hasRequiredFields`, not `hasOnly`, so a client can store fields outside
-  /// the declared type — and this list would then drop the requester's OWN
-  /// content, which is an Art. 15 defect in the other direction.
+  /// The withholding is declared in the section because a bundle that redacts
+  /// silently states something false about itself.
   static const _ingredientSuggestionFields = <String>[
     'ingredientName',
     'originalName',

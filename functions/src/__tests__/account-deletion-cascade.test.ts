@@ -3858,7 +3858,7 @@ async function scenario_probeSeesLeftoverBlocks(): Promise<void> {
  * BUT-2028: `ingredient_suggestions` is erased, and the probe SEES a leftover.
  *
  * Both halves in one scenario because they only mean anything together — the
- * deleter's own success value is `true` unconditionally (it comes from
+ * deleter's own success value is `true` below the cap (it comes from
  * `batchDeleteAll` -> `commitInChunks(strict: false)`, which swallows a failed
  * chunk), so nothing but the probe can tell a completed sweep from a silently
  * dropped one.
@@ -3926,6 +3926,51 @@ async function scenario_ingredientSuggestionsErasedAndProbed(): Promise<void> {
     "a surviving ingredient suggestion is reported as residual",
     leftoverResult.failedCollections.includes("residual_data_detected"),
     `failed: ${JSON.stringify(leftoverResult.failedCollections)}`,
+  );
+}
+
+/**
+ * BUT-2038: above the cap the sweep DECLINES rather than truncating.
+ *
+ * The direction matters and is the whole reason for the case. A truncating
+ * sweep deletes what it can and returns true, so the erasure reports success
+ * while rows remain. Declining returns false, which lands in
+ * `failedCollections` and makes the run report `gdprCompliant: false` about
+ * itself — an erasure that says it is incomplete is recoverable; one that lies
+ * is not.
+ *
+ * Nothing is deleted on the declining path, deliberately: a partial delete plus
+ * a false return would be the worst of both.
+ */
+async function scenario_ingredientSuggestionsDeclineAboveCap(): Promise<void> {
+  const {
+    deleteIngredientSuggestions,
+    MAX_SUGGESTION_SWEEP_ROWS,
+  } = require("../account/account-deletion-cascade");
+
+  const store = new FakeFirestore();
+  // One past the cap, READ from the module rather than retyped — the constant
+  // is exported for this, so the case cannot drift away from the number it is
+  // about.
+  const cap = MAX_SUGGESTION_SWEEP_ROWS;
+  for (let i = 0; i <= cap; i++) {
+    store.set(`ingredient_suggestions/mine-${i}`, {
+      userId: UID,
+      ingredientName: `ingrediens-${i}`,
+    });
+  }
+
+  const ok = await deleteIngredientSuggestions(asDb(store), UID);
+
+  check(
+    "an implausible suggestion count is DECLINED, not truncated",
+    ok === false,
+    `returned ${ok}; a truncating sweep would report success with rows left`,
+  );
+  check(
+    "and nothing is deleted on the declining path",
+    store.idsIn("ingredient_suggestions").length === cap + 1,
+    `rows left: ${store.idsIn("ingredient_suggestions").length} of ${cap + 1}`,
   );
 }
 
@@ -7271,6 +7316,7 @@ async function main(): Promise<void> {
   await scenario_holdSweepRespectsItsBounds();
   await scenario_oneBadHoldDoesNotStallTheSweep();
   await scenario_ingredientSuggestionsErasedAndProbed();
+  await scenario_ingredientSuggestionsDeclineAboveCap();
   await scenario_moderationEventsAreErasedAndAnonymized();
   await scenario_moderationSweepStagesItsAuditRows();
   await scenario_implausibleModerationEventCountDeclines();

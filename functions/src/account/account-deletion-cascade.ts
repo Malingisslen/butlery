@@ -1420,6 +1420,21 @@ export async function deleteActivityEvents(
 }
 
 /**
+ * BUT-2038. Same SHAPE as `MAX_ROSTER_SWEEP_ROWS`, not the same reason — that
+ * cap exists because a PEER can seat rows keyed on this user. No such route
+ * exists here: the create limb pins `userId == request.auth.uid`, so only the
+ * subject inflates their own count, which is the poll-vote cap's argument.
+ *
+ * What it bounds is the read: an unbounded `.get()` in a callable held to 540s
+ * and 512 MiB is a timeout waiting for somebody who planted the rows
+ * themselves — degrading their own erasure, the same exposure `deleteCookSnaps`
+ * and `deleteActivityEvents` still carry, deliberately not widened into here.
+ *
+ * Exported so its scenario can import it rather than retype the number.
+ */
+export const MAX_SUGGESTION_SWEEP_ROWS = 2000;
+
+/**
  * BUT-2028: ingredient suggestions, the rows `firestore.rules` lets a client
  * write to `ingredient_suggestions`.
  *
@@ -1443,10 +1458,26 @@ export async function deleteIngredientSuggestions(
   db: admin.firestore.Firestore,
   uid: string,
 ): Promise<boolean> {
+  // BUT-2038: DECLINES above the cap rather than truncating, the same verdict
+  // as the roster and block sweeps. Truncating would half-erase somebody and
+  // report success; declining returns false, which lands in `failedCollections`
+  // and reports `gdprCompliant: false` about itself.
+  //
+  // `probeResidualData` counts this collection UNBOUNDED, so an over-cap case is
+  // seen by the probe even though the deleter refused it — the two must not
+  // quietly agree that nothing is left.
   const snap = await db
     .collection("ingredient_suggestions")
     .where("userId", "==", uid)
+    .limit(MAX_SUGGESTION_SWEEP_ROWS + 1)
     .get();
+  if (snap.size > MAX_SUGGESTION_SWEEP_ROWS) {
+    logger.error(
+      "[deletion-cascade] implausible ingredient-suggestion count; not sweeping",
+      { uid_prefix: uid.slice(0, 6), rows: snap.size },
+    );
+    return false;
+  }
   await batchDeleteAll(db, snap.docs);
   return true;
 }

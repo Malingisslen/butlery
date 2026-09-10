@@ -1021,12 +1021,6 @@ void main() {
               'createdAt': Timestamp.fromDate(createdAt),
               'reviewedBy': 'moderator-uid',
               'reviewNotes': 'dubblett av grönkål, avvaktar',
-              // Outside the declared type. The create rule is
-              // `hasRequiredFields`, not `hasOnly`, so a client can store this
-              // — and the allowlist then withholds the requester's OWN
-              // content. That is the accepted cost of failing closed, and it
-              // is pinned so a later flip to a deny-list reddens here and gets
-              // decided rather than drifting.
               'nickname': 'Svarta kålen',
             });
         await fakeFirestore

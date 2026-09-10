@@ -1498,3 +1498,32 @@ files in the same edit.
   an old week outright. The entry accepting that delete was reasoned about ONE leaver on
   `removeChatGroupMember`; the brick argument carries, but these two triggers are not what Malin
   weighed. BUT-2005, 2026-09-09
+
+- **SUPERSEDES two sentences of the `ingredient_suggestions` Art. 15 entry above
+  (BUT-2038, 2026-09-10).** Retired verbatim — note that the two mirrors word this
+  decision DIFFERENTLY, a pre-existing drift, so each copy retires its own sentence and a
+  grep for one will not find the other: "The section fails CLOSED — an allowlist, so a field nobody has declared is withheld — and says so in a `data_minimisation` line, because the create rule uses `hasRequiredFields` rather than `hasOnly`, so a client can store fields outside the type and have its OWN content dropped." The create limb now carries `keys().hasOnly(...)` over the SUBMISSION half
+  of `IngredientSuggestion` — the five required fields plus `suggestedCategory`,
+  `suggestedProperties` and `recipeContext` — so a client cannot store a field the export's
+  allowlist would drop. `reviewedAt`, `reviewedBy`, `reviewNotes`, `notifiedAt` and `sourceApp` are outside it:
+  every one is written by the Admin SDK — the first three by the console, the last two by
+  `onSuggestionCreated` itself — and the Admin SDK bypasses rules. The limb also pins `status == 'pending'` BY VALUE — `hasOnly` admits any
+  value of a field that is in the declared type, so only a value check refuses a forged
+  approval — and bounds every free-text field and the array.
+  Retired verbatim: "Second residual: `deleteIngredientSuggestions` reads unbounded, on a
+  collection whose create limb has no `rateLimitWrite`". It reads `.limit(2000 + 1)` and
+  DECLINES above the cap, returning false into `failedCollections` so the run reports
+  `gdprCompliant: false` rather than silently half-erasing. `probeResidualData` still counts the
+  collection unbounded, so deleter and probe cannot agree that nothing is left.
+  **`rateLimitWrite` is deliberately NOT added, and that is Malin's call, 2026-09-09.** The
+  helper only READS `users/{uid}/rate_limits/{type}`; the WRITING repository stamps that bucket,
+  and no code in `lib/` creates a suggestion — so it would bound nothing and read as a control
+  that never existed, which this repo already carries one of. She was NOT shown the following, which the `firebase-backend-security` gate measured
+  afterwards: the helper FAILS OPEN on a missing bucket and the bucket is
+  client-writable, so even after a client path exists it throttles only the app's own repository,
+  never a hand-rolled one. Row COUNT therefore remains unbounded; what changed is that the
+  cascade's cap turns that into the planter's own degraded erasure rather than a callable
+  timeout. A real bound needs a callable-mediated create or a server counter.
+  Still open and unchanged: whether `reviewedBy`/`reviewNotes` stay withheld is Malin's, and a
+  moderator's uid sitting on somebody else's row is reached by no cascade, probe or export.
+  BUT-2038, 2026-09-10
