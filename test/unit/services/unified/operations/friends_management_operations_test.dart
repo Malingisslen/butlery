@@ -410,7 +410,7 @@ void main() {
       test('blockUsers counts a partial block as a block', () async {
         // The count means "protections now in force", not "everything went
         // perfectly". Narrowing it to `== BlockOutcome.blocked` undercounts
-        // a bulk block in settings — the people ARE blocked.
+        // a bulk block — the people ARE blocked.
         // Both must be FRIENDS, or the cleanup never runs and both blocks
         // come back clean — which is how the first version of this test
         // passed under the very mutant it exists to catch.

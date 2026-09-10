@@ -3913,3 +3913,74 @@ rapporterade det som en mätning. Den generaliserbara halvan är KONTROLLEN, int
 saneringssond utan en "det här MÅSTE strykas"-arm kan inte skilja en fungerande strykning från
 ett dött mönster. Jag skrev sedan samma `\b` som ett bokstavligt backstegstecken in i
 lärdomsanteckningen om fällan — tredje gången samma dag.
+
+## En hängd granskningsagent ser ut som en tänkande, och statusen säger ingenting (BUT-2022/BUT-2068, 2026-09-10)
+
+Två grindar hängde sig i samma sprint. Båda stod som `running`. Malin frågade båda gångerna,
+och första gången svarade jag på statusen i stället för att mäta.
+
+**Vad som faktiskt skiljer en arbetande agent från en död:**
+
+- **Minnet på processen.** En riktig `flutter test`-körning ligger på hundratals MB. Den hängda
+  grinden hade en `dart.exe` på **944 kB**; den levande hade en på **194 MB**.
+- **Skrivningar under `.dart_tool`.** En mutationssond bygger om varje gång. Noll filer på sex
+  minuter betyder att ingenting kör.
+- **Om `lib/` är muterad.** Är den ren pågår ingen sond.
+
+Transkriptfilens mtime duger inte — digesten säger redan att den flushar först vid slut. Det
+här är den positiva motsvarigheten: tre signaler som skiljer de två tillstånden.
+
+**Båda hängningarna var överlastning, och båda var mina.** Den första fick TJUGO filer när
+`batchAdvisory` säger tre — och behövde egentligen EN, eftersom dess mönster
+(`^lib/repositories/`) bara matchade en fil i diffen. Den andra fick sju mutationssonder att
+verifiera. Omkörda smalt gick båda igenom på minuter. **Härled grindens filista ur dess eget
+mönster i `shared-plugin.json`, inte ur diffen** — resten är inte kontext, det är ballast.
+
+**Den första hängningens orsak stod i dess sista rad:** sessionens auto-mode säger åt agenter
+att läsa med Bash, medan granskningsliggaren bara registrerar `Read`. Två regler som säger
+emot varandra, och den som förlorar är alltid granskningen. Filad som BUT-2068. En
+konfigurationsmotsägelse, inte ett omdömesfel hos agenten — samma klass som output-styles-buggen.
+
+## Sonden måste träffa det lager provselen faktiskt når
+
+Jag muterade `FriendsViewModel.isBlocked` för att bevisa att tre widgettester fångade en
+återställning. Allt grönt. Slutsatsen "redan täckt" hade varit falsk: testerna använder
+`MockFriendsViewModel`, som **ersätter** just den metoden, så produktionskoden ligger inte på
+vägen. Rätt mutant var VAKTENS anropsställe — och då rödnade alla tre.
+
+Ett grönt svar från fel lager ser exakt ut som ett grönt svar från rätt. Fråga före varje sond:
+vilket lager av den muterade symbolen når provselen?
+
+## Tre tomma provuppsättningar på en dag, två av samma form
+
+- En rigg uppfylld av en ANDRA sanningskälla: `setBlockedUsers` skrev både blockeringsmängden
+  OCH statusen, så båda läsvägarna svarade "blockerad" och tre vakttest kunde inte se
+  skillnaden de fanns för att mäta.
+- En rigg uppfylld av en gren OVANFÖR: mitt bulktest seedade inga vänner, så städningen aldrig
+  kördes, båda blockeringarna blev rena och muteringen överlevde.
+
+Båda går att hitta genom läsning — men bara om man läser attrappens **seeder** och grenarna
+**ovanför** den man testar, inte testkroppen. Repareras med en premissassertion i testet, så
+att det säger VARFÖR det slutade diskriminera i stället för att tyst bli tomt.
+
+## En syskonkopia kan komma in EFTER strykningen
+
+En falsk mening ströks i runda 1. Tre rundor senare kom en ordagrann kopia in i ändringen, i en
+fil som inte var stagad då — den drogs in av en orelaterad testfix. Ett begreppssvep i runda 1
+kunde omöjligt ha hittat den.
+
+Mekaniskt: **när en fil kommer in i den stagade mängden mitt i en granskning har den aldrig
+graderats mot de fynd som redan stängts — kör om svepen mot just den.** Och svep begreppet över
+`lib/` och `test/` HELA, inte över diffen: den stagade mängden är det enda som fortfarande rör
+sig.
+
+## När en granskare HÅLLER MED är det inte en mätning
+
+Jag strök en siffra, skrev en ersättning, och granskaren bekräftade den som "härledbar". Båda
+hade fel, och båda kunde ha motbevisat den ur sin egen tidigare utdata. En granskare som
+instämmer läser som verifiering och är det inte.
+
+Samma runda, andra hållet: en granskare FÖRESLOG en ersättningsmening, jag skrev den, och den
+mätte sedan sin egen rekommendation som falsk i båda halvorna. Två formuleringar av en
+motivering — då är regeln radera, inte försöka en tredje. Grinden skrev in i sin egen
+kunskapsfil att den ska rekommendera radering i stället för ersättningstext nästa gång.

@@ -130,6 +130,22 @@ Acceptanskriterier:
 - **BUT-2017**, **BUT-1996**, **BUT-1730** — för stora för en delad batch.
 - `need-malin`-märkta ärenden — står i beslutskön, inte i bygget.
 
+## Slutstatus
+
+| Ärende | Utfall | Commit |
+| -- | -- | -- |
+| BUT-2037 + BUT-2034 | **Done** | `3b8bb2433` |
+| BUT-2053 + BUT-2052 | **Done** | `95d74a727` |
+| BUT-2022 | **In Review** — copyn är Malins | `3e49ae340` |
+| BUT-2057 | Utplockat vid steg 0, kommenterat, inget byggt | — |
+
+Filade följdärenden: BUT-2062 (rå `doc.data()` i kommentars-/betygsexporten),
+BUT-2063 (`startMonitoring` inte idempotent), BUT-2064 (korpus-evalen i ingen CI-lane),
+BUT-2065 (`test:rules:all` som `&&`-kedja), BUT-2066 (`check()` på fientlig storsida),
+BUT-2067 (fjärde Infinity-producenten), BUT-2068 (auto mode mot granskningsliggaren),
+BUT-2069 (`unblockUser` + återhämtningsfrågan), BUT-2070 (skippad blockeringskaskad).
+Plus en mätning på BUT-2061 om skalfelet i commit-grinden.
+
 ## Deviation log
 - [discovery] BUT-2057: planen sa `hasRequiredFields` -> mätt att två legitima skrivvägar utelämnar fältet (ratings alltid, comments på resolver-null) -> utplockat ur sprinten, kommenterat, inget byggt.
 - [discovery] BUT-2022: planen namngav tre vakter -> T&S och Legal mätte en fjärde (`search_result_card.dart`) och en femte (`friend_profile_view.dart`) -> alla fyra call sites som gatar blockeringsbeteende tas med.
@@ -138,6 +154,10 @@ Acceptanskriterier:
 - [deviation] Kluster A, granskningsrunda 1: `integration-reviewer` mätte att `preserveWhen` fick en GEMENAGJORD öppningstagg, och att HTML:s namngivna teckenreferenser är skiftlägeskänsliga — så `&PLUS;` (som inte löses upp) blev `&plus;` (som gör det) och ett skript med `alert(1)` BEVARADES. En regression jag införde i samma commit som stänger BUT-2034. Reproducerad, lagad (originalversalerna skickas nu), och pinnad som decoy 13.
 - [discovery] Kluster A, mätt av `integration-reviewer`: `check()` kostar nu en fragmentparsning per `<script>` som bär `type`. På en fientlig 4MB-sida med `<script type="text/javascript">` tar loopen ~530 ms mot ~9 ms för det raderade regexet; med bara `src=` är den 18 ms, alltså gör snabbvägen sitt jobb. Verkliga sidor har tiotals skript, så det är submillisekund i praktiken. Det som binder det fientliga fallet är 5MB-spärren i `check()` — den ligger i en ANNAN fil än predikatet vars kostnad den bundit, och det är därför det står här.
 - [discovery] Kluster A, granskningsrunda 3: min egen mutationssond muterade TYST INGENTING — ankarsträngen bar ett bakstreck-b som Python läste som ett backsteg, så `count(old)==1` föll och körningen jag fick tillbaka var av omuterad kod. Exakt samma fälla som `integration-reviewer` dokumenterade om sin egen sond en runda tidigare. Assertionen fångade det; utan den hade ett grönt "provet är opinnat"-svar sett identiskt ut.
+- [deviation] Kluster B: två grindar HÄNGDE sig, båda på min överlastning (20 filer till en som behövde 1; 7 sonder till en annan). Statusen sa `running` båda gångerna. Mätt i stället: processminne, skrivningar under `.dart_tool`, och om `lib/` är muterad. Orsak bakom den ena filad som BUT-2068.
+- [deviation] Kluster B: min egen sond siktade på fel lager (produktionens `isBlocked` under tester som ersätter just den metoden) och gav ett grönt svar som hade lästs som "redan täckt". Rätt mutant var vaktens anropsställe.
+- [discovery] Kluster B: tre av fyra vakttest var gröna på en återställning till den trasiga läsningen — riggen satte båda läsvägarna till "blockerad". Hittat av test-grinden genom att läsa attrappens seeder.
+- [discovery] Kluster B: push-grinden nekade första pushen — fem granskningsrundor men ingen ENSKILD helhetsgranskning över alla filer i slutgiltigt skick. Kördes och godkändes.
 
 ---
 
