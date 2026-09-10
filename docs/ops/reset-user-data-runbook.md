@@ -2,7 +2,7 @@
 
 `functions/src/admin/reset-user-data.ts` wipes user data from the **production**
 project (`admin-init.ts` hardcodes it — there is no environment switch). This
-runbook covers the one thing about it that can go wrong quietly: the kill switch.
+runbook covers what can go wrong quietly.
 
 ## TL;DR
 
@@ -67,14 +67,13 @@ Phase 4 counts what is left and never deletes. Exit codes:
 | Code | Verdict | Means |
 |---|---|---|
 | 0 | `CLEAN` | every probe answered, and answered zero |
-| 1 | `NOT CLEAN` | rows remain, or the kill switch is still set |
+| 1 | `NOT CLEAN` | a probe answered, and answered something |
 | 2 | `INDETERMINATE` | a probe could not answer, or a phase had a soft failure |
 
 `2` is not a softer `1` — it means the script could not tell.
 
 **Neither code means "run it again."** Re-running is another full destructive
-wipe, and the commonest cause of a `1` is a kill switch left standing, which is
-fixed by deleting one document. Read the printed lines: they name the fault.
+wipe. Read the printed lines: they name the fault.
 
 A third line to know: `EXPIRED before the run ended`. That means the suppression
 lapsed while the wipe was still going, so the cleanup trigger was live during
@@ -140,12 +139,28 @@ Two steps this leaves for a person, neither of which the report performs:
 
 ## Before a live run
 
-- The weekly scheduled jobs (`reconcileBlockMirrors`, `cleanup-old-notifications`,
-  `purge-dormant-family-data`, and others) delete and write in the same
-  collections, unaware a reset is running. Whether to pause Cloud Scheduler for
-  the run is **open and undecided — BUT-2036**. Until it is decided, this is
-  something to weigh yourself before starting a live run; nothing in the script
-  handles it.
+- **The scheduled jobs are paused by the run itself (BUT-2036).** They delete and
+  write in the same collections and read no flag, so a live run enumerates every
+  ENABLED Cloud Scheduler job in the project — every region, asked for at run
+  time rather than listed in the code — pauses them before Phase 1, and releases
+  them when the run ends: in the same block that clears the kill switch, and on
+  Ctrl-C, which bypasses that block. A run that cannot pause them, or cannot set
+  the kill switch once they are paused, resumes what it paused and refuses.
+  Phase 4 then re-reads Cloud Scheduler rather than believing the resume
+  step, and prints a `gcloud scheduler jobs resume` command for anything left
+  paused. A dry run pauses nothing but prints the list.
+
+  **You need `roles/cloudscheduler.admin`** (`cloudscheduler.jobs.list`, `.pause`
+  and `.resume`) on the credentials you run with. Without it a live run REFUSES
+  before Phase 1, with nothing deleted — that is the missing access, not a
+  broken script.
+
+  Things this does not cover, and none closes itself:
+  - A job execution already in flight when the pause lands runs to completion.
+  - A job you had paused by hand before the run stays paused afterwards: the run
+    resumes only what it paused itself.
+  - The list is taken before the confirmation prompt and the pause happens after
+    it. A job enabled in that gap is in no list and is not paused.
 - The run writes its own record to Cloud Storage at `ops/resets/<runId>.json`
   **before** Phase 1, because every Firestore audit collection it could write to
   is in its own delete list. A file there with no matching verdict in the console

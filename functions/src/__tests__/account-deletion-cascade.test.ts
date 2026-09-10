@@ -3792,6 +3792,142 @@ async function scenario_resetScriptRequiresTheConfirmationPhrase(): Promise<void
 }
 
 /**
+ * BUT-2036: the scheduler pause is wired into main(), in both directions.
+ *
+ * Source checks, like their two siblings above, and for the same reason:
+ * `main()` runs at module scope and takes nothing injectable, so ORDER and
+ * REFERENCE are what a test can reach here. What the pause itself decides is
+ * proven against a fake in `reset-scheduler-pause.test.ts`; this is the wiring
+ * that file cannot see, and it is the half that dies quietly — a resume
+ * dropped from the `finally` leaves the project's scheduled work switched off
+ * with nothing on screen to say so.
+ */
+async function scenario_resetScriptPausesAndResumesScheduler(): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const fs = require("fs");
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const path = require("path");
+  const scriptPath = path.join(__dirname, "..", "admin", "reset-user-data.ts");
+  // Comments dropped for the reason the sibling scenarios drop them:
+  // commenting a call out is the cheapest way to disarm it.
+  const source = (fs.readFileSync(scriptPath, "utf8") as string)
+    .split("\n")
+    .filter((line: string) => !line.trim().startsWith("//"))
+    .join("\n");
+
+  const mainAt = source.indexOf("async function main()");
+  const mainBody = mainAt >= 0 ? source.slice(mainAt) : "";
+  const pauseAt = mainBody.indexOf("pauseJobs(");
+  const phasesCalledAt = mainBody.indexOf("runPhases(");
+  check(
+    "main() pauses the scheduled jobs before it reaches the phases",
+    mainAt >= 0 && pauseAt >= 0 && phasesCalledAt > pauseAt,
+    `in main(): pauseJobs at ${pauseAt}, first runPhases call at ` +
+      `${phasesCalledAt} — a pause after Phase 1 leaves the jobs writing ` +
+      "into the collections Phase 2 is deleting",
+  );
+
+  // The refusal is what makes the pause a control rather than an attempt, and
+  // it has to land while nothing has been deleted.
+  //
+  // Scoped to the refusal branch alone, not to everything before the phases:
+  // the kill-switch guard below it resumes and exits too, so a window holding
+  // both is satisfied by either — and the check would then stay green on the
+  // very edit it names.
+  const refusalAt = mainBody.indexOf("paused.failed.length > 0");
+  // Ends at the kill-switch guard, which is the next thing that resumes and
+  // exits — so the window holds the refusal branch alone. Anchored on code
+  // rather than on the console copy between them: a reworded message would
+  // empty the window and redden these checks against production.
+  const afterRefusalAt = mainBody.indexOf("setResetKillSwitch(db, runId)");
+  const refusalBranch =
+    refusalAt >= 0 && afterRefusalAt > refusalAt
+      ? mainBody.slice(refusalAt, afterRefusalAt)
+      : "";
+  check(
+    "a pause that did not fully succeed stops the run",
+    refusalAt >= 0 && refusalBranch.includes("process.exit(1)"),
+    "main() does not exit on a failed pause, so a run that could not " +
+      "protect the wipe would carry on and wipe anyway",
+  );
+  check(
+    "and what it did manage to pause is put back before it exits",
+    refusalBranch.includes("resumeJobs("),
+    "the refusal path does not resume — it would leave the project's " +
+      "scheduled work switched off by a run that deleted nothing",
+  );
+
+  // The window between the first pause and the `try` is outside `finally`,
+  // and it is not empty: the kill switch is set in it. Both checks below are
+  // about that window, and each names a different way out of it.
+  const signalRegisteredAt = mainBody.indexOf('process.on("SIGINT"');
+  // The FIRST occurrence is the one in the live-run block; the refresher
+  // defined below it calls the same function.
+  const killSwitchSetAt = mainBody.indexOf("setResetKillSwitch(db, runId)");
+  check(
+    "the signal handlers are registered before the first job is paused",
+    signalRegisteredAt >= 0 && pauseAt > signalRegisteredAt,
+    `in main(): process.on at ${signalRegisteredAt}, pauseJobs at ` +
+      `${pauseAt} — a Ctrl-C between the first pause and the try block would ` +
+      "hit Node's default handler and leave the schedule off",
+  );
+  const killSwitchWindow =
+    killSwitchSetAt >= 0 && phasesCalledAt > killSwitchSetAt
+      ? mainBody.slice(killSwitchSetAt, phasesCalledAt)
+      : "";
+  check(
+    "a kill switch that cannot be set resumes the jobs rather than throwing " +
+      "past every release path",
+    killSwitchWindow.includes("resumeJobs(") &&
+      killSwitchWindow.includes("process.exit(1)"),
+    "setResetKillSwitch is not guarded — it runs after the jobs are paused " +
+      "and before the try, so a throw there reaches main().catch and no " +
+      "resume ever runs",
+  );
+
+  // Both release paths. They are textually separate and each dies alone: the
+  // `finally` covers a crash or a clean end, the signal handler covers Ctrl-C,
+  // which bypasses `finally` entirely.
+  const finallyAt = mainBody.indexOf("} finally {");
+  const verificationAt = mainBody.indexOf("Phase 4: verification");
+  const finallyBlock =
+    finallyAt >= 0 && verificationAt > finallyAt
+      ? mainBody.slice(finallyAt, verificationAt)
+      : "";
+  check(
+    "the finally that clears the kill switch also resumes the jobs",
+    finallyBlock.includes("resumeJobs("),
+    "the release block does not resume the scheduled jobs, so any run that " +
+      "ends — cleanly or by throwing — leaves them paused",
+  );
+
+  const signalAt = mainBody.indexOf("const onSignal =");
+  // Ends at the live-run block that follows the handler, not at `finally`:
+  // the handler is DEFINED above the pause, so a window reaching `finally`
+  // spans the pause block's own two resumes and is satisfied by either.
+  const afterSignalAt = mainBody.indexOf("if (!dryRun) {", signalAt);
+  const signalBlock =
+    signalAt >= 0 && afterSignalAt > signalAt
+      ? mainBody.slice(signalAt, afterSignalAt)
+      : "";
+  check(
+    "Ctrl-C resumes them too",
+    signalBlock.includes("resumeJobs("),
+    "the signal handler does not resume the scheduled jobs — signals bypass " +
+      "`finally`, so an interrupted wipe would leave the schedule off with " +
+      "no verification pass to report it",
+  );
+
+  // The verification phase must ASK rather than believe the resume step.
+  check(
+    "the verification phase re-reads the jobs' state",
+    source.includes("findStillPausedJobs("),
+    "nothing re-reads Cloud Scheduler, so a resume call that answered " +
+      "without doing anything would be reported as success",
+  );
+}
+
+/**
  * BUT-1917: both `blocks` legs of the residual probe.
  *
  * `deleteBlocks` sweeps through `batchDeleteAll` -> `commitInChunks(strict:
@@ -7336,6 +7472,7 @@ async function main(): Promise<void> {
   await scenario_resetScriptRequiresTheConfirmationPhrase();
   await scenario_resetKillSwitchSelfHeals();
   await scenario_resetKillSwitchIsWiredIn();
+  await scenario_resetScriptPausesAndResumesScheduler();
   await scenario_implausibleBlockCountDeclines();
   await scenario_aDeclinedLegDoesNotStopTheOther();
   await scenario_pollVotesAndAuthorshipAreErased();

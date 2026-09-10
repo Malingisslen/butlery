@@ -1668,6 +1668,44 @@ BUT-2028, 2026-09-06
 **OPEN:** whether Cloud Scheduler must be paused for a live run. The weekly jobs delete and write in the same collections,
 unaware a reset is running. BUT-2036, not a strike. BUT-2028, 2026-09-06
 
+- **SUPERSEDED 2026-09-10 (BUT-2036): the run PAUSES Cloud Scheduler itself, and a run that
+  cannot refuses before Phase 1.** Retired verbatim: `**OPEN:** whether Cloud Scheduler must be paused for a live run. The weekly jobs delete and write in the same collections,`
+  Retired verbatim, from the paragraph above it: `alternative of keeping it until the Cloud Scheduler question (BUT-2036) is decided; that`
+  — that ground no longer exists once the question is decided, so the sentence resting on it
+  goes with the line it qualified.
+  What the code does: `main()` enumerates every ENABLED job in the project through
+  `admin/reset-scheduler-pause.ts` — every region, asked for at run time — writes the list to
+  `ops/resets/{runId}.json` before touching anything, pauses them, and resumes them in the
+  same `finally` that clears the kill switch and in the SIGINT/SIGTERM handler — registered
+  before the first pause, because everything between that pause and the `try` is outside
+  `finally`, and the kill-switch write lives there. That write is guarded too: a run that
+  cannot set the flag resumes what it paused and refuses, rather than throwing past every
+  release path. Only what the run paused is resumed. Phase 4 re-reads Cloud Scheduler rather than the resume step's own
+  report; a job still paused makes the verdict NOT CLEAN and carries its
+  `gcloud scheduler jobs resume` command. A dry run enumerates and prints, and pauses nothing.
+  Why the regions are asked for rather than named: a dry run against butlery-app-1 on
+  2026-09-10 listed 16 enabled jobs, and one of them — `firestore-weekly-export` — sits in
+  europe-west3, not the europe-west1 every function in this repo is pinned to. A region
+  constant would have missed it on the first real run. That output is attributed, not
+  reproducible from this repo; it was a hand run committed nowhere.
+  **Malin's explicit call, 2026-09-10**, over the alternative she was shown: write it down as
+  an accepted risk on the ground that Phase 4 answers NOT CLEAN. She was also shown, and
+  chose, the refusal on a failed pause rather than warn-and-continue, and was told the price:
+  a live run is blocked until the operator holds `roles/cloudscheduler.admin`. No escape flag
+  was built — the shape was removed from this same file on 2026-09-06.
+  **What she was NOT shown**, stated because an attribution is a claim about a person no test
+  can hold: no measurement of how often a scheduled job would actually land inside a wipe
+  window (there is no live population to measure), and no measurement of how long a real wipe
+  takes, which is what decides how wide that window is.
+  Named residuals the pause cannot close: an execution already in flight when the pause lands
+  runs to completion; a job a person paused by hand before the run stays paused after it;
+  and the list is taken before the confirmation prompt while the pause happens after it
+  (`listEnabledSchedulerJobs` above `promptUser`, `pauseJobs` below it), so a job enabled in
+  that gap is in no list. The runbook's "Before a live run" carries them.
+  Pinned by `scenario_resetScriptPausesAndResumesScheduler` (the wiring) and
+  `src/__tests__/reset-scheduler-pause.test.ts` (the decisions, against a fake). Both
+  mutation-probed. BUT-2036, 2026-09-10
+
 **AMENDED 2026-08-15 (BUT-1838) — the cap's stated reason went stale one day after it was
 written; the cap itself is unchanged and still must not be removed.**
 

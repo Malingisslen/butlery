@@ -3815,3 +3815,49 @@ expected` mellan `null-filter-guard` och `secret-scan`. Båda stegen rapporterad
 kunde inte återskapa felet genom att köra något av kommandona för hand med samma filer, så
 attributionen är OKÄND — och det är precis varför det är värt en biljett i stället för en
 gissning: ett skydd som felar och ändå passerar är oskiljbart från ett som gör sitt jobb.
+
+## BUT-2036 — en regionkonstant är en handlista ett steg upp (2026-09-10)
+
+Reset-körningen skulle pausa Cloud Scheduler under en skarp körning. Repot pinnar varenda
+funktion till `europe-west1`, så en regionkonstant hade sett självklart riktig ut, och
+`listJobs(projectId, "europe-west1")` hade varit ett kortare anrop än att först fråga efter
+regionerna.
+
+Torrkörningen mot butlery-app-1 samma dag listade 16 aktiva jobb, och ett av dem —
+`firestore-weekly-export` — ligger i **europe-west3**. Det jobbet skapades inte av den här
+kodbasens deploy. En regionkonstant hade alltså missat det på första
+riktiga körningen, tyst, och lämnat ett skrivande jobb igång genom hela raderingen.
+
+Regeln är den repot redan betalat för två gånger (BUT-2040, BUT-2043: handskriven lista mot
+uppräknande sond) — men den gällde då *samlingar*. Den gäller lika mycket det som avgör VAR
+man letar: region, bucket, plats, prefix. En dimension man hårdkodar är en handlista, oavsett
+att den har ett enda element idag.
+
+Två saker till från samma bygge, båda redan i digesten men bekräftade igen: en mutant som
+lämnar en variabel oanvänd kompilerar inte (TS6133) och ger varken FAIL eller krasch — den
+läser som ett tomt prov, och nästa steg efter det är att radera ett prov som fungerar. Välj en
+mutant som kompilerar (`wanted.size >= 0 && …` i stället för att stryka villkoret). Och den
+skarpa mätningen kom från ett kommando som tog trettio sekunder att köra; den låg före
+attributionen i planen, inte efter.
+
+## BUT-2036 — ett källkodsprov med landmärken tappar sitt omfång när koden mellan dem växer (2026-09-10)
+
+Tre assertioner i `scenario_resetScriptPausesAndResumesScheduler` slutade bevisa något, och
+jag var själv den som avväpnade dem. Provet skär ut fönster ur `main()` mellan två landmärken
+och frågade `includes("resumeJobs(")`. Jag mutationsprovade dem: rött, rätt assertion, klart.
+
+Sedan rättade jag två grindfynd i SAMMA fil. Den ena flyttade `onSignal` ovanför pausblocket;
+den andra lade till en ny `resumeJobs`/`process.exit(1)`-vakt inuti fönstret. Båda var rätta
+fixar. Båda vidgade fönstren så att en GRANNVAKT uppfyllde villkoret — och då var provet grönt
+även om man tog bort exakt det anrop det påstod sig pinna. Att göra vägran till en varning,
+alternativet Malin uttryckligen valde bort, hade passerat.
+
+Ingen assertion i sviten kunde märka det: ett fönsters omfång är en egenskap hos koden MELLAN
+ankarna, och ingenting i provet observerar den koden. Mitt eget provresultat var sant när jag
+körde det och falskt när jag citerade det — samma fel ett steg upp.
+
+Två mekaniska steg, båda billiga: räkna dödsmängden (hur många trådar i fönstret som uppfyller
+villkoret — är den 1?) efter varje redigering av koden fönstret spänner över, inte bara efter
+att provet skrivits; och ankra på KOD, aldrig på konsoltext. Ett fönster som slutade vid
+strängen `"job(s) paused."` hade tömts av en omformulerad utskrift och rott med en anklagelse
+mot produktionskoden i stället för mot sig självt.

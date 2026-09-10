@@ -17,17 +17,15 @@ export type Verdict = "clean" | "not-clean" | "indeterminate";
  * binary). Meant to be reused rather than reinvented:
  *
  *   0  clean          — every probe answered, and answered zero
- *   1  not clean      — a probe found rows, or the kill switch is still set
+ *   1  not clean      — a probe answered, and answered something
  *   2  indeterminate  — a probe could not answer, or the run had a soft failure
  *
  * 2 is not a softer 1. It means the script does not know, which is a
  * different instruction to the operator than "there is residue".
  *
  * Neither code means "run it again". Re-running is a full destructive
- * production wipe, and the commonest cause of a 1 — a kill switch left
- * standing — is fixed by deleting one document, not by wiping again. The
- * printed lines say which fault occurred; `docs/ops/reset-user-data-runbook.md`
- * says what to do about each.
+ * production wipe. The printed lines say which fault occurred;
+ * `docs/ops/reset-user-data-runbook.md` says what to do about each.
  */
 export const EXIT_CODE_BY_VERDICT: Record<Verdict, number> = {
   "clean": 0,

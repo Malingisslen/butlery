@@ -19,6 +19,14 @@
  * switch (`shared/reset-kill-switch.ts`) for its duration and clears it in a
  * `finally`; Phase 4 fails the run if it is still standing.
  *
+ * The scheduled jobs write into those same collections and read no flag, so
+ * the run also PAUSES every enabled Cloud Scheduler job for its duration
+ * (`admin/reset-scheduler-pause.ts`) and releases them when it ends — in the
+ * same `finally` as the kill switch, and on SIGINT/SIGTERM, which bypasses it.
+ * A run that cannot pause them, or cannot set the kill switch once they are
+ * paused, resumes what it paused and refuses before Phase 1, while nothing has
+ * been deleted yet.
+ *
  * Phase 4 counts what is left and answers CLEAN, NOT CLEAN or INDETERMINATE,
  * and the verdict carries the exit code. It cannot answer "finished": a gen1
  * trigger has no bounded delivery time.
@@ -68,6 +76,16 @@ import {
   findUnknownCollections,
   formatUnknownCollections,
 } from "./unknown-collections";
+import {
+  createSchedulerApi,
+  findStillPausedJobs,
+  gcloudResumeCommand,
+  JobName,
+  listEnabledSchedulerJobs,
+  pauseJobs,
+  resumeJobs,
+  SchedulerApi,
+} from "./reset-scheduler-pause";
 
 // BUT-2028: `feedback/` was missing. Feedback screenshots are written to
 // `feedback/{userId}/{timestamp}.png` (`firebase_feedback_repository.dart`),
@@ -231,6 +249,7 @@ async function recordRunOutOfBand(
   projectId: string,
   runId: string,
   args: string[],
+  jobsToPause: JobName[],
 ): Promise<void> {
   const bucket = admin.storage().bucket(`${projectId}.firebasestorage.app`);
   await bucket.file(`ops/resets/${runId}.json`).save(
@@ -241,6 +260,10 @@ async function recordRunOutOfBand(
         startedAt: new Date().toISOString(),
         argv: args,
         killSwitch: RESET_KILL_SWITCH_PATH,
+        // Written BEFORE the pause, so a run that dies between the two leaves
+        // the operator the list to resume by hand. Firestore could not hold
+        // it: Phase 2 deletes every collection this script could write to.
+        schedulerJobsToPause: jobsToPause,
         note:
           "Written before Phase 1 by admin/reset-user-data.ts. The presence " +
           "of this file without a matching verification line means the run " +
@@ -399,6 +422,7 @@ async function verifyReset(
   db: admin.firestore.Firestore,
   totals: PhaseTotals,
   runId: string,
+  scheduler: { api: SchedulerApi; projectId: string; pausedJobs: JobName[] },
 ): Promise<{ verdict: Verdict; lines: string[] }> {
   const lines: string[] = [];
   let sawRows = false;
@@ -484,6 +508,33 @@ async function verifyReset(
     lines.push(`  ${RESET_KILL_SWITCH_PATH}: could not be read — ${message}`);
   }
 
+  // The scheduled jobs must be running again. Cloud Scheduler is ASKED rather
+  // than the resume step's own report being believed: that report says what
+  // the requests answered, and what the operator needs to know is what state
+  // the jobs are in. A job left paused silently stops the weekly safety work
+  // — the block-mirror reconciliation among it — for as long as nobody
+  // notices.
+  try {
+    const stillPaused = await findStillPausedJobs(
+      scheduler.api,
+      scheduler.projectId,
+      scheduler.pausedJobs,
+    );
+    for (const name of stillPaused) {
+      sawRows = true;
+      lines.push(
+        `  scheduler job still PAUSED: ${name} — ${gcloudResumeCommand(name)}`,
+      );
+    }
+  } catch (err: unknown) {
+    sawUnanswerable = true;
+    const message = err instanceof Error ? err.message : String(err);
+    lines.push(
+      "  scheduler jobs: could not be re-read, so this run makes no " +
+        `statement about whether they are running — ${message}`,
+    );
+  }
+
   for (const failure of totals.softFailures) {
     sawUnanswerable = true;
     lines.push(`  unverified: ${failure}`);
@@ -541,6 +592,44 @@ async function main() {
     }
   }
 
+  // BUT-2036: the scheduled jobs write into the collections Phase 2 deletes.
+  // Enumerated in BOTH modes — a dry run's whole purpose is to show what a
+  // live run would do, and this list is not knowable any other way.
+  const schedulerApi = createSchedulerApi();
+  let jobsToPause: JobName[] = [];
+  try {
+    jobsToPause = await listEnabledSchedulerJobs(schedulerApi, projectId);
+    console.log(
+      dryRun
+        ? `Cloud Scheduler jobs a live run would pause: ${jobsToPause.length}`
+        : `Cloud Scheduler jobs to pause: ${jobsToPause.length}`,
+    );
+    for (const name of jobsToPause) console.log(`  ${name}`);
+    console.log();
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    if (dryRun) {
+      // A dry run changes nothing, so refusing it protects nobody and costs
+      // the operator the preview they came for.
+      console.error(
+        `Could not list Cloud Scheduler jobs: ${message} — this dry run ` +
+          "makes no statement about them.",
+      );
+      console.log();
+    } else {
+      console.error(
+        `REFUSED: could not list Cloud Scheduler jobs — ${message}\n` +
+          "  The scheduled jobs write into the collections Phase 2 deletes, " +
+          "so a run that cannot pause them cannot protect the wipe.\n" +
+          "  The account running this needs cloudscheduler.jobs.list, " +
+          "pause and resume (roles/cloudscheduler.admin). Nothing has been " +
+          "deleted; fix the access and run again.\n" +
+          `  gcloud scheduler jobs list --project=${projectId}`,
+      );
+      process.exit(1);
+    }
+  }
+
   // Confirmation gate (live run only)
   if (!dryRun) {
     console.log("This will PERMANENTLY DELETE all user data.");
@@ -558,14 +647,119 @@ async function main() {
   // A dry run neither sets the flag nor writes a run record: it changes
   // nothing, so there is nothing to suppress and nothing to account for.
   //
-  // Both live-run steps sit ABOVE the `try` rather than in a branch beside it,
+  // The live-run steps sit ABOVE the `try` rather than in a branch beside it,
   // so exactly one call reaches the phases. A second call in a dry-run branch
   // would stand textually before the set, which makes "the flag is set before
   // anything runs" unreadable from the source — and source is all a test has
   // here, since `main()` takes no injectable store.
+  // Declared before the handler that closes over it: it is the live record
+  // of what is switched off, and the handler may fire at any point after the
+  // first pause lands.
+  const pausedJobs: JobName[] = [];
+
+  // Signals bypass `finally`. Without this, Ctrl-C during a wipe leaves the
+  // trigger suppressed for the rest of the TTL, with no Phase 4 to report it
+  // and nothing on screen saying so.
+  let signalHandled = false;
+  const onSignal = (signal: NodeJS.Signals) => {
+    // Re-entry guard. A second Ctrl-C is the normal reflex when the first
+    // appears to do nothing during a long delete, and without this it can
+    // reach `process.exit(130)` while the first clear's transaction is still
+    // open — leaving the flag set, which is the state this handler exists to
+    // prevent.
+    if (signalHandled) return;
+    signalHandled = true;
+    console.error(
+      `\nReceived ${signal} — clearing the kill switch and resuming the ` +
+        "scheduled jobs.",
+    );
+    void (async () => {
+      try {
+        await clearResetKillSwitch(db, runId);
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : String(err);
+        console.error(
+          `FAILED TO CLEAR THE KILL SWITCH on ${signal}: ${message} — ` +
+            "delete it by hand; see docs/ops/reset-user-data-runbook.md",
+        );
+      }
+      // An interrupted run must not leave the schedule off. There is no
+      // Phase 4 on this path to report a job left paused, so every failure
+      // has to carry its own recovery command here.
+      const resumed = await resumeJobs(schedulerApi, pausedJobs);
+      for (const failure of resumed.failed) {
+        console.error(
+          `LEFT PAUSED on ${signal}: ${failure.name} (${failure.message}) — ` +
+            gcloudResumeCommand(failure.name),
+        );
+      }
+      process.exit(130);
+    })();
+  };
   if (!dryRun) {
-    await recordRunOutOfBand(projectId, runId, args);
-    await setResetKillSwitch(db, runId);
+    await recordRunOutOfBand(projectId, runId, args, jobsToPause);
+
+    // Registered BEFORE the first pause, not after it. Everything between the
+    // first job going off and the `try` below is outside `finally`, so a
+    // signal — or a throw — in that window would otherwise leave the whole
+    // schedule switched off with nothing on screen saying so.
+    process.on("SIGINT", onSignal);
+    process.on("SIGTERM", onSignal);
+
+    // Paused BEFORE the kill switch and released after it, so the outer thing
+    // acquired is the outer thing released. Recorded per job as it goes: the
+    // returned list arrives only once every job has been tried, and an
+    // interrupt in the middle would find `pausedJobs` empty while jobs were
+    // already off.
+    const paused = await pauseJobs(schedulerApi, jobsToPause, (name) =>
+      pausedJobs.push(name),
+    );
+    if (paused.failed.length > 0) {
+      console.error("REFUSED: could not pause every Cloud Scheduler job.");
+      for (const failure of paused.failed) {
+        // The command is printed for a FAILED pause too. A request that timed
+        // out may still have been applied, and such a job is in no list this
+        // run resumes from and outside Phase 4's scope.
+        console.error(
+          `  ${failure.name}: ${failure.message} — if this pause landed ` +
+            `anyway: ${gcloudResumeCommand(failure.name)}`,
+        );
+      }
+      // Refusing while holding the jobs down is the failure this exists to
+      // prevent, so what was paused goes back before the exit.
+      const rollback = await resumeJobs(schedulerApi, pausedJobs);
+      for (const failure of rollback.failed) {
+        console.error(
+          `  LEFT PAUSED: ${failure.name} (${failure.message}) — ` +
+            gcloudResumeCommand(failure.name),
+        );
+      }
+      console.error(
+        "  Nothing has been deleted. The account running this needs " +
+          "cloudscheduler.jobs.pause and resume (roles/cloudscheduler.admin).",
+      );
+      process.exit(1);
+    }
+    console.log(`Cloud Scheduler: ${pausedJobs.length} job(s) paused.`);
+
+    // Its own guard: this sits between the pause and the `try`, so a throw
+    // here reaches `main().catch` and no `finally` ever runs. The jobs are
+    // already off at this point.
+    try {
+      await setResetKillSwitch(db, runId);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      console.error(`REFUSED: could not set the kill switch — ${message}`);
+      const rollback = await resumeJobs(schedulerApi, pausedJobs);
+      for (const failure of rollback.failed) {
+        console.error(
+          `  LEFT PAUSED: ${failure.name} (${failure.message}) — ` +
+            gcloudResumeCommand(failure.name),
+        );
+      }
+      console.error("  Nothing has been deleted.");
+      process.exit(1);
+    }
     console.log(
       `Kill switch SET (${RESET_KILL_SWITCH_PATH}, run ${runId}) - ` +
         "onUserDeleted is suppressed for this run.",
@@ -598,34 +792,6 @@ async function main() {
         }
       };
 
-  // Signals bypass `finally`. Without this, Ctrl-C during a wipe leaves the
-  // trigger suppressed for the rest of the TTL, with no Phase 4 to report it
-  // and nothing on screen saying so.
-  let signalHandled = false;
-  const onSignal = (signal: NodeJS.Signals) => {
-    // Re-entry guard. A second Ctrl-C is the normal reflex when the first
-    // appears to do nothing during a long delete, and without this it can
-    // reach `process.exit(130)` while the first clear's transaction is still
-    // open — leaving the flag set, which is the state this handler exists to
-    // prevent.
-    if (signalHandled) return;
-    signalHandled = true;
-    console.error(`\nReceived ${signal} — clearing the kill switch.`);
-    void clearResetKillSwitch(db, runId)
-      .catch((err: unknown) => {
-        const message = err instanceof Error ? err.message : String(err);
-        console.error(
-          `FAILED TO CLEAR THE KILL SWITCH on ${signal}: ${message} — ` +
-            "delete it by hand; see docs/ops/reset-user-data-runbook.md",
-        );
-      })
-      .finally(() => process.exit(130));
-  };
-  if (!dryRun) {
-    process.on("SIGINT", onSignal);
-    process.on("SIGTERM", onSignal);
-  }
-
   let totals: PhaseTotals;
   try {
     totals = await runPhases(db, projectId, dryRun, maybeRefreshKillSwitch);
@@ -655,6 +821,28 @@ async function main() {
             " onUserDeleted stays suppressed until this document is deleted " +
             `by hand or its expiry passes (${RESET_KILL_SWITCH_TTL_MINUTES} ` +
             "minutes from when it was set).",
+        );
+      }
+
+      // Its own try, beside the kill switch's rather than inside it: a failure
+      // to clear the flag must not skip the resume, and a failure to resume
+      // must not hide the flag's outcome. Phase 4 re-reads both, so this is
+      // the attempt and not the measurement.
+      try {
+        const resumed = await resumeJobs(schedulerApi, pausedJobs);
+        console.log(`Cloud Scheduler: ${resumed.done.length} job(s) resumed.`);
+        for (const failure of resumed.failed) {
+          console.error(
+            `FAILED TO RESUME ${failure.name}: ${failure.message} — ` +
+              gcloudResumeCommand(failure.name),
+          );
+        }
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : String(err);
+        console.error(
+          `FAILED TO RESUME the Cloud Scheduler jobs: ${message} — they stay ` +
+            "paused until somebody resumes them; see " +
+            "docs/ops/reset-user-data-runbook.md",
         );
       }
       console.log();
@@ -726,7 +914,11 @@ async function main() {
   }
 
   console.log("Phase 4: verification (counts only, deletes nothing)");
-  const { verdict, lines } = await verifyReset(db, totals, runId);
+  const { verdict, lines } = await verifyReset(db, totals, runId, {
+    api: schedulerApi,
+    projectId,
+    pausedJobs,
+  });
   for (const line of lines) console.log(line);
   if (lines.length === 0) console.log("  nothing left to report");
   console.log();

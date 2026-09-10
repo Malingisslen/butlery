@@ -1588,3 +1588,23 @@ files in the same edit.
   Still open and unchanged: whether `reviewedBy`/`reviewNotes` stay withheld is Malin's, and a
   moderator's uid sitting on somebody else's row is reached by no cascade, probe or export.
   BUT-2038, 2026-09-10
+
+- **The reset run PAUSES every enabled Cloud Scheduler job for its duration, and a run that
+  cannot pause them REFUSES before Phase 1 (BUT-2036, 2026-09-10).** This closes the question
+  the BUT-2028 entry left open in `docs/architecture/ACCEPTED_DEVIATIONS.md`; retired verbatim
+  from there: `**OPEN:** whether Cloud Scheduler must be paused for a live run. The weekly jobs delete and write in the same collections,`
+  The jobs are ENUMERATED at run time across every region — a hand-written list is the failure
+  BUT-2040 and BUT-2043 record — and only what the run itself paused is resumed, so a job a
+  person paused by hand stays paused. Release happens in the same `finally` as the kill switch
+  and in the signal handler, which is registered BEFORE the first pause — the kill-switch
+  write sits between the pause and the `try`, outside `finally`, and is itself guarded so a
+  failure there resumes and refuses. Phase 4 re-reads Cloud Scheduler rather than the resume step's
+  own report, and a job left paused makes the verdict NOT CLEAN.
+  **Malin's explicit call, 2026-09-10**, taken over writing the risk down as accepted, and
+  again on the refusal rather than warn-and-continue — she was told it blocks a live run until
+  the operator holds `roles/cloudscheduler.admin`. No escape flag: that shape was removed from
+  this script on 2026-09-06.
+  Named residuals: an execution already in flight when the pause lands runs to completion,
+  and a job enabled between the enumeration and the pause (the confirmation prompt sits
+  between them) is in no list.
+  BUT-2036, 2026-09-10

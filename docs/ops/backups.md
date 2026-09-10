@@ -35,6 +35,10 @@ in the Evidence column. Do not edit a row without re-running its command.
 | Firestore region | **europe-west3 (Frankfurt, EU)** — data; compute pinned to europe-west1 | Resolved in **BUT-819**, 2026-06-14. The EU-region split is **accepted** (both EU → GDPR satisfied). |
 | Restore drill | PASSED 2026-08-29 — restored to a scratch database, contents matched, database deleted | `gcloud firestore databases restore --source-backup=.../90760cc7-4053-429a-a9b0-33ba4a58a232 --destination-database=restore-drill-20260829` → operation `SUCCESSFUL` 100%. Row counts in the restored database matched production exactly: users 2, conversations 1, chat_groups 0, `collectionGroup('recipes')` 8. Drill database deleted the same day (`databases list` returns only `(default)`). BUT-880 |
 
+⚠️ A live `reset-user-data` run pauses `firestore-weekly-export` for its duration and
+resumes it afterwards. If that run's verdict names a job left paused, this is one of the
+jobs it can be. See `docs/ops/reset-user-data-runbook.md`.
+
 ⚠️ The weekly export writes every run to the same `gs://.../weekly/` prefix, so each run
 overwrites the previous one. Only the LATEST weekly export exists at any time, and the
 30-day lifecycle rule therefore never has an older export to delete. The managed daily
