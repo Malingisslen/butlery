@@ -1503,6 +1503,8 @@ files in the same edit.
   and the child-safety backstop does (BUT-2005, 2026-09-10).** Retired verbatim:
   "Both named paths call it now —".
   Retired verbatim: "so the backstop and the category sync can delete".
+  Retired verbatim:
+  "The two call sites with a human actor still write the row."
   `cutGroupMenuPlanAccess` is called from `messaging/enforce-group-minor-membership.ts` and
   from `groups/remove-chat-group-member.ts`. `groups/ensure-category-chat.ts` does not call it,
   and does not import it. So the "THREE other membership-removal paths" entry that BUT-2005
@@ -1512,8 +1514,7 @@ files in the same edit.
   this removal MIRRORS the category. Putting somebody back into the social group must put them
   back into its chat, and a tombstone here would make that impossible." The cut has no inverse.
   Measured: no function under `functions/src` re-adds a plan participant, and
-  `GroupWeeklyMenuPlanService.addParticipant` is the only definition in `lib/` with no caller
-  anywhere, tests included. An owner who removes a friend from a category and re-adds them
+  `GroupWeeklyMenuPlanService.addParticipant` has no caller anywhere, tests included. An owner who removes a friend from a category and re-adds them
   therefore gets the chat membership back and never that person's access to weeks that already
   exist; where the departing set empties an old week's roster the week is deleted outright.
   **Open for Malin, and the reason this half is not built: her call of 2026-09-09 was to build

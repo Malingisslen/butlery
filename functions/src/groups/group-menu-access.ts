@@ -2,9 +2,8 @@
  * BUT-2005: cutting a departing member's access to a group's weekly menu plans.
  *
  * Extracted from `remove-chat-group-member.ts`, which was its only caller until
- * now. Two more paths remove somebody from a chat group and left this untouched:
- * the child-safety backstop (`messaging/enforce-group-minor-membership.ts`) and
- * the category sync's eviction loop (`ensure-category-chat.ts`). A minor evicted
+ * now. The child-safety backstop (`messaging/enforce-group-minor-membership.ts`)
+ * removes somebody from a chat group and left this untouched: a minor evicted
  * for their own protection kept read AND write access to the group's menu.
  *
  * Extraction alone does not stop a FUTURE removal path from forgetting to call
