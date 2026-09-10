@@ -5206,3 +5206,21 @@ left the suite green now kills exactly those three (28/31), with the clean suite
 eight-mutant table re-run against the final suite rather than carried forward, which was worth
 doing — the narrow-back mutant's kill set grew from 1 to 4, because the new at-bound allows
 also carry the optional fields. Never quote a previous round's kill set after the suite grows.
+
+
+### 2026-09-10 — the mirror-supersession COUNT heuristic retired (BUT-2005 push round)
+
+Retired verbatim from the principles file: "Verify a supersession by
+COUNTING the quoted fragment IN EACH FILE — 2 means original plus retirement, 1 means the
+supersession is talking to itself — and expect each file to retire its OWN wording."
+
+It false-alarms on a CORRECT supersession. Both mirrors hard-wrap, so an original can wrap
+mid-phrase while the retirement quote is written unwrapped, and a literal single-line grep then
+matches only the quote. Measured on BUT-2038's own supersession, which is correct: the original
+sits at `.claude/rules/accepted-deviations.md:847` wrapped as `The` / `section fails CLOSED — …`
+while the quote at :1532 is unwrapped, so the fragment counts 1 by literal grep and 2 when
+whitespace-flattened. Two gates measured this independently in the same round.
+
+The replacement in the principles file says to locate and READ the original sentence instead of
+counting. The half that survives unchanged: each mirror retires its OWN wording, because the two
+files word the same decision differently.

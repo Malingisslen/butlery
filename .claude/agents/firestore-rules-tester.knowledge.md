@@ -370,8 +370,11 @@ Standard deny matrix for ownership-checked collections:
   ONE of them and absent from the other.** Found on BUT-2038: the superseding entry quoted the
   `docs/` wording into BOTH files, so in the always-on `.claude/` copy the supersession greped
   to nothing while the sentence it retired stood on undisturbed. Verify a supersession by
-  COUNTING the quoted fragment IN EACH FILE — 2 means original plus retirement, 1 means the
-  supersession is talking to itself — and expect each file to retire its OWN wording.
+  locating the ORIGINAL sentence in the same file and reading it, not by counting a literal
+  fragment: both mirrors hard-wrap, so the original wraps mid-phrase while the quote is
+  written unwrapped and a literal grep matches only the quote. Measured on BUT-2038's own
+  supersession, which is correct and counts 1 in `.claude/`. Expect each file to retire its
+  OWN wording.
 - **A test comment is bound to its test by POSITION only, so the test a review ASKS you to
   insert is what detaches it** — the fix for a stacked-comment finding put a new `test(` in
   between a null-case paragraph and the null-case test, leaving the paragraph heading a

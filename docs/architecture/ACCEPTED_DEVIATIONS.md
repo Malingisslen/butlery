@@ -3812,6 +3812,33 @@ neither passed an `auditRepository` at all.
   `removeChatGroupMember`; the brick argument carries, but these two triggers are not what Malin
   weighed. BUT-2005, 2026-09-09
 
+- **SUPERSEDES the BUT-2005 entry above: the CATEGORY SYNC does not cut group-menu access,
+  and the child-safety backstop does (BUT-2005, 2026-09-10).** Retired verbatim:
+  "Both named paths call it now —".
+  Retired verbatim: "so the backstop and the category sync can delete".
+  `cutGroupMenuPlanAccess` is called from `messaging/enforce-group-minor-membership.ts` and
+  from `groups/remove-chat-group-member.ts`. `groups/ensure-category-chat.ts` does not call it,
+  and does not import it. So the "THREE other membership-removal paths" entry that BUT-2005
+  retired is live again for the category sync, and the emptied-roster DELETE is reachable from
+  the backstop and from `removeChatGroupMember`, not from the sync.
+  The reason is a contract the sync states three lines above where the call sat: "No tombstone:
+  this removal MIRRORS the category. Putting somebody back into the social group must put them
+  back into its chat, and a tombstone here would make that impossible." The cut has no inverse.
+  Measured: no function under `functions/src` re-adds a plan participant, and
+  `GroupWeeklyMenuPlanService.addParticipant` is the only definition in `lib/` with no caller
+  anywhere, tests included. An owner who removes a friend from a category and re-adds them
+  therefore gets the chat membership back and never that person's access to weeks that already
+  exist; where the departing set empties an old week's roster the week is deleted outright.
+  **Open for Malin, and the reason this half is not built: her call of 2026-09-09 was to build
+  both remaining eviction paths, and she was not shown that one of the two mirrors a REVERSIBLE
+  admin action while the cut is one-way.** The backstop half is unaffected — an eviction for a
+  minor's protection has no re-add that should silently restore write access — and ships.
+  The backstop's CALL SITE is pinned by `an evicted minor loses their group weekly menu plan
+  access` in `enforce-group-minor-membership.integration.test.ts`, which is named in
+  `test:rules:all`; passing `[]` there instead of `toRemove` reddens that case and no other.
+  BUT-2060 carries the question.
+  Raised by the `integration-reviewer` push gate. BUT-2005, 2026-09-10
+
 - **SUPERSEDES two sentences of the `ingredient_suggestions` Art. 15 entry above
   (BUT-2038, 2026-09-10).** Retired verbatim — note that the two mirrors word this
   decision DIFFERENTLY, a pre-existing drift, so each copy retires its own sentence and a

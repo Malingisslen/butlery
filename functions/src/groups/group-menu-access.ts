@@ -8,7 +8,7 @@
  * for their own protection kept read AND write access to the group's menu.
  *
  * Extraction alone does not stop a FUTURE removal path from forgetting to call
- * this — three call sites each remembering an import is the same shape that
+ * this — each call site remembering an import is the same shape that
  * produced this ticket. What it buys is one implementation to fix and one place
  * to read.
  *
@@ -20,7 +20,7 @@ import * as admin from "firebase-admin";
 import { Collections } from "../shared/collections";
 
 /**
- * Above this, the pass cuts the capped page rather than declining. Not a
+ * Not a
  * capacity estimate: the create rule ties a writer only to their own submitted
  * `memberPermissions`, so any signed-in account can plant rows carrying another
  * group's `groupId`, and the row count is therefore chosen by a hostile writer
@@ -58,8 +58,7 @@ export const MAX_CONTRIBUTOR_UIDS = 200;
  * `weekly-menu-plans-rules.test.ts` pins.
  *
  * Takes a LIST of departing uids and does one scan and one update per plan
- * document for all of them together. Both new call sites are fan-outs that can
- * evict several people at once, and calling this per uid would multiply an
+ * document for all of them together. Calling this per uid would multiply an
  * up-to-501-row read plus 500 writes by N against the same group.
  *
  * Must be called OUTSIDE any `db.runTransaction`: it does its own
@@ -86,7 +85,6 @@ export const MAX_CONTRIBUTOR_UIDS = 200;
  *
  * This deviates knowingly, and on this path only, from the rule BUT-1971 set on
  * 2026-08-31: a privilege grant this code makes silently belongs in the trail.
- * The two call sites that HAVE a human actor still write the row.
  *
  * A second reason the sentinel was the wrong shape, found by the
  * `integration-reviewer` gate: `GroupWeeklyMenuPlan.contributorUserIdsForWrite`
@@ -261,9 +259,7 @@ export async function cutGroupMenuPlanAccess(
               // promoting. The accepted risk that a trail row names the wrong
               // person (BUT-1971, 2026-08-30) is about CLIENT forgery and does
               // not cover the server writing a wrong actor — which is why the
-              // category sync passes
-              // the person whose own edit caused the removal, not whoever
-              // happened to invoke it, and why the backstop passes null.
+              // backstop passes null.
               actorId: actorUid,
               subjectId: promotedUid,
               at: admin.firestore.Timestamp.now(),

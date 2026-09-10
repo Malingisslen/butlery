@@ -226,13 +226,15 @@ const cases: UnitCase[] = [
     },
   },
   {
-    // BUT-2005: the WIRING, not the function. Until this ticket the sync
-    // evicted somebody from the group and left their read and write access to
-    // the group's weekly menu plans intact. `cutGroupMenuPlanAccess` has its
-    // own cases in `chat-group-callables.test.ts`; deleting the call from THIS
-    // file left every one of them green, which is why the call site needs a
-    // case of its own.
-    name: "an eviction also cuts the evicted member's group-menu access",
+    // BUT-2005 (2026-09-10): INVERTED deliberately. This sync does NOT cut
+    // group-menu access, and this case reddens the day somebody wires it — so
+    // the decision is named in a test rather than left as a silent gap.
+    // The removal above mirrors the CATEGORY and must be reversible (see the
+    // "No tombstone" case). `cutGroupMenuPlanAccess` has no inverse: nothing
+    // under `functions/src` re-adds a plan participant, and
+    // `GroupWeeklyMenuPlanService.addParticipant` has no caller. Wiring it here
+    // would make a re-add restore the chat and never the menu access.
+    name: "an eviction leaves group-menu access alone — the sync is reversible",
     fn: async () => {
       const fake = new FakeFirestore();
       seedPerson(fake, OWNER);
@@ -257,20 +259,25 @@ const cases: UnitCase[] = [
       await fake.db
         .doc(`users/${OWNER}/friend_categories/${CAT}`)
         .update({ friendUserIds: [OWNER, FRIEND] });
-      await ensureCategoryChatWithDeps(fake.db, OWNER, OWNER, CAT);
+      const second = await ensureCategoryChatWithDeps(fake.db, OWNER, OWNER, CAT);
+
+      // Binds this case's own premise. Without it the sync could stop evicting
+      // altogether and the two assertions below would still pass, under a name
+      // that says an eviction happened.
+      assertEqual(second.removedUserIds.join(","), "third", "removedUserIds");
 
       const plan = fake.read(
         `group_weekly_menu_plans/${first.conversationId}_2026-W37`,
       )!;
       assertEqual(
         Object.keys(plan.memberPermissions as Record<string, unknown>).join(","),
-        OWNER,
-        "the evicted member is off memberPermissions, which is what firestore.rules reads",
+        `${OWNER},third`,
+        "the evicted member keeps memberPermissions, which is what firestore.rules reads",
       );
       assertEqual(
         (plan.contributorUserIds as string[] | undefined)?.join(",") ?? "",
-        "third",
-        "and is recorded as a contributor so erasure can still find the plan",
+        "",
+        "and no erasure handle is written, because nothing was cut",
       );
     },
   },

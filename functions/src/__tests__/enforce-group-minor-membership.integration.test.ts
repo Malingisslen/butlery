@@ -99,6 +99,7 @@ async function run(): Promise<void> {
     convRef(convId).collection("participants").doc(uid);
 
   const seededGroups: string[] = [];
+  const seededPlans: string[] = [];
   const seededUsers = new Set<string>();
 
   async function seedUser(uid: string, isMinor: boolean): Promise<void> {
@@ -505,6 +506,58 @@ async function run(): Promise<void> {
     assert(!(await groupRef(gid).get()).exists, "nothing is created for a missing group");
   });
 
+  // 10. BUT-2005: the menu access cut, pinned at THIS CALL SITE rather than on
+  //     the shared function. `cutGroupMenuPlanAccess` has its own unit cases in
+  //     `chat-group-callables.test.ts`, and passing `[]` instead of `toRemove`
+  //     at the call site reddens this case and none of those.
+  //     A minor evicted for their own protection keeping write access to the
+  //     group's menu is what this guards.
+  test("an evicted minor loses their group weekly menu plan access", async () => {
+    const gid = `grp-menu-cut-${RUN}`;
+    const minor = `minor-menu-${RUN}`;
+    await seedUser(creator, false);
+    await seedUser(minor, true);
+    // No friend doc for (minor, creator) → the adder is not their friend.
+    await seedGroup(gid, [creator, minor], {
+      [creator]: creator,
+      [minor]: creator,
+    });
+
+    // `group_weekly_menu_plans.groupId` stores the CONVERSATION id, and
+    // `seedGroup` mints the conversation under the group's own id.
+    const planId = `${gid}_2026-W37`;
+    seededPlans.push(planId);
+    await db.collection("group_weekly_menu_plans").doc(planId).set({
+      groupId: gid,
+      participants: [
+        { userId: creator, permission: "admin" },
+        { userId: minor, permission: "edit" },
+      ],
+      participantUserIds: [creator, minor],
+      memberPermissions: { [creator]: "admin", [minor]: "edit" },
+    });
+
+    await fire(gid);
+
+    const plan = (
+      await db.collection("group_weekly_menu_plans").doc(planId).get()
+    ).data()!;
+    const ids = (plan.participants as { userId: string }[]).map((r) => r.userId);
+    assert(!ids.includes(minor), "the minor is off the plan roster");
+    assert(ids.includes(creator), "the remaining member is untouched");
+    // The two fields `firestore.rules` actually reads. The roster above is what
+    // the Dart model recomputes them from, so a cut that missed these would be
+    // handed straight back on the next client save.
+    assert(
+      !(plan.participantUserIds as string[]).includes(minor),
+      "…and off participantUserIds",
+    );
+    assert(
+      !(minor in (plan.memberPermissions as Record<string, unknown>)),
+      "…and out of memberPermissions",
+    );
+  });
+
   let failed = 0;
   for (const t of tests) {
     try {
@@ -529,6 +582,13 @@ async function run(): Promise<void> {
       await groupRef(gid).delete().catch(() => undefined);
     }),
   );
+  for (const planId of seededPlans) {
+    await db
+      .collection("group_weekly_menu_plans")
+      .doc(planId)
+      .delete()
+      .catch(() => undefined);
+  }
   for (const uid of seededUsers) {
     const friends = await userRef(uid).collection("friends").get();
     await Promise.all(friends.docs.map((d) => d.ref.delete()));
