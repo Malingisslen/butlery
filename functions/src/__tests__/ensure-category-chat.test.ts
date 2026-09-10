@@ -226,6 +226,55 @@ const cases: UnitCase[] = [
     },
   },
   {
+    // BUT-2005: the WIRING, not the function. Until this ticket the sync
+    // evicted somebody from the group and left their read and write access to
+    // the group's weekly menu plans intact. `cutGroupMenuPlanAccess` has its
+    // own cases in `chat-group-callables.test.ts`; deleting the call from THIS
+    // file left every one of them green, which is why the call site needs a
+    // case of its own.
+    name: "an eviction also cuts the evicted member's group-menu access",
+    fn: async () => {
+      const fake = new FakeFirestore();
+      seedPerson(fake, OWNER);
+      seedPerson(fake, FRIEND);
+      seedPerson(fake, "third");
+      seedCategory(fake, [OWNER, FRIEND, "third"]);
+
+      const first = await ensureCategoryChatWithDeps(fake.db, OWNER, OWNER, CAT);
+      // The plan's `groupId` is the CONVERSATION id, not the chat_groups id —
+      // a misleading field name. This case cannot catch a swapped identifier:
+      // in THIS callable the two are the same string.
+      fake.seed(`group_weekly_menu_plans/${first.conversationId}_2026-W37`, {
+        groupId: first.conversationId,
+        participants: [
+          { userId: OWNER, permission: "admin" },
+          { userId: "third", permission: "edit" },
+        ],
+        participantUserIds: [OWNER, "third"],
+        memberPermissions: { [OWNER]: "admin", third: "edit" },
+      });
+
+      await fake.db
+        .doc(`users/${OWNER}/friend_categories/${CAT}`)
+        .update({ friendUserIds: [OWNER, FRIEND] });
+      await ensureCategoryChatWithDeps(fake.db, OWNER, OWNER, CAT);
+
+      const plan = fake.read(
+        `group_weekly_menu_plans/${first.conversationId}_2026-W37`,
+      )!;
+      assertEqual(
+        Object.keys(plan.memberPermissions as Record<string, unknown>).join(","),
+        OWNER,
+        "the evicted member is off memberPermissions, which is what firestore.rules reads",
+      );
+      assertEqual(
+        (plan.contributorUserIds as string[] | undefined)?.join(",") ?? "",
+        "third",
+        "and is recorded as a contributor so erasure can still find the plan",
+      );
+    },
+  },
+  {
     name: "the owner is never removed by the sync, even if the category drops them",
     fn: async () => {
       const fake = new FakeFirestore();

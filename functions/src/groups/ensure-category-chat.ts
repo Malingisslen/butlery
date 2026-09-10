@@ -58,6 +58,7 @@ import {
   stageMemberRemoval,
   type ChatGroupMember,
 } from "./chat-group-writes";
+import { cutGroupMenuPlanAccess } from "./group-menu-access";
 import { resolveMemberProfiles } from "./member-profiles";
 import {
   createChatGroupWithDeps,
@@ -496,6 +497,29 @@ async function reconcile(
       });
     }
   });
+
+  // BUT-2005: the menu access cut, OUTSIDE the transaction above. Until this an
+  // eviction here removed somebody from the group and left their read AND write
+  // access to every one of the group's weekly menu plans intact.
+  //
+  // Outside, because `cutGroupMenuPlanAccess` does its own non-transactional
+  // reads and chunked writes: called from inside the transaction body, a
+  // contention retry would re-run them.
+  //
+  // The actor is `ownerId`, not `callerUid`. This loop mirrors the CATEGORY, and
+  // the person whose edit removed somebody from it is the category's owner —
+  // `callerUid` is merely whichever roster member's client happened to trigger
+  // the sync, and stamping them would say they evicted someone and promoted an
+  // admin when they did nothing of the sort. `stageMemberAdditions` above passes
+  // `callerUid` as `addedBy` for the opposite reason: seating is attributed to
+  // the write that caused it, and there the caller is the writer.
+  await cutGroupMenuPlanAccess(
+    db,
+    conversationId,
+    evicted,
+    ownerId,
+    "ensureCategoryChat",
+  );
 
   // Outside the transaction: a failed courtesy row must not undo a membership
   // change. Every other membership write in this module announces itself, and a

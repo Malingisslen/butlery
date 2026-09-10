@@ -35,6 +35,7 @@ import { logger } from "firebase-functions/logger";
 import * as admin from "firebase-admin";
 import { hashUid } from "../shared/hash-uid";
 import { Collections } from "../shared/collections";
+import { cutGroupMenuPlanAccess } from "../groups/group-menu-access";
 import { isValidDocId } from "../shared/valid-doc-id";
 import {
   computeBlockedMembers,
@@ -436,9 +437,33 @@ export const enforceGroupMinorMembership = onDocumentWritten(
       );
     }
 
+    // BUT-2005: the menu access cut, OUTSIDE the transaction above. Until this
+    // the eviction removed a minor from the group and the conversation and left
+    // their read AND write access to every one of the group's weekly menu plans
+    // intact — so a minor evicted FOR THEIR OWN PROTECTION could still read what
+    // the group was planning and change it.
+    //
+    // Outside, because `cutGroupMenuPlanAccess` does its own non-transactional
+    // reads and chunked writes: called from inside the transaction body, a
+    // contention retry would re-run them.
+    //
+    // A NULL actor, so a promotion this triggers writes no `editTrail` row.
+    // Malin's call, 2026-09-09: the row would be written only by this path, on
+    // a document every plan participant can read, beside a uid that just
+    // vanished with no `memberLeft` row — the same durable inference the absent
+    // `tombstone` above refuses (BUT-1856). The promotion is logged instead.
+    await cutGroupMenuPlanAccess(
+      db,
+      conversationId,
+      toRemove,
+      null,
+      "enforceGroupMinorMembership",
+    );
+
     // Best-effort mirror cleanup: stops the group surfacing in the evicted
-    // member's conversation list. The membership removal above IS the access
-    // cut, so a stale row here costs a list entry, not a disclosure. Errors are
+    // member's conversation list. A stale row here costs a list entry, not a
+    // disclosure — the access cuts are the transaction and the menu cut above.
+    // Errors are
     // logged by CODE, never by `String(e)`: a Firestore error embeds the full
     // document path, which on this path is a raw uid on a child-safety eviction
     // and outlives the group it belonged to.

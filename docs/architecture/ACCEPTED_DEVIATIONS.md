@@ -2624,7 +2624,7 @@ neither passed an `auditRepository` at all.
   discovered, because the person who eventually wires an admin roster control is the one who
   needs to know.
   **AMENDED 2026-08-31:** a leave path now exists and does this correctly —
-  `cutGroupMenuPlanAccess` in `remove-chat-group-member.ts`. Wire an admin control through THAT
+  `cutGroupMenuPlanAccess` in `groups/group-menu-access.ts`. Wire an admin control through THAT
   shape, not through this dormant method. Raised by the
   `integration-reviewer` gate. BUT-1971, 2026-08-30
 
@@ -3780,3 +3780,34 @@ neither passed an `auditRepository` at all.
   attempted and failed discloses nothing about anyone else; `error_code` already says so.
   A future edit that makes a third-party note vary must be caught by a test, not by this entry.
   BUT-2056, 2026-09-09
+
+- **SUPERSEDES the "THREE other membership-removal paths do NOT cut group-menu access" entry
+  above (BUT-2005, 2026-09-09).** Retired verbatim: "OPEN, named rather than left to be found:
+  THREE other membership-removal paths do NOT cut group-menu access. `cutGroupMenuPlanAccess`
+  is wired only into `removeChatGroupMember`." Both named paths call it now —
+  `messaging/enforce-group-minor-membership.ts` (the child-safety backstop) and
+  `groups/ensure-category-chat.ts` (the category sync's eviction loop) — from their existing
+  post-transaction blocks. The function moved to `groups/group-menu-access.ts` and takes a LIST
+  of departing uids, doing one scan and one update per plan for all of them.
+  **Still open, and NOT closed by this:** `GroupWeeklyMenuPlanService.removeParticipant` in
+  `lib/` has no cut. It remains callerless, as its own entry above records.
+  **A promotion nobody performed writes NO `editTrail` row. Malin's explicit call, 2026-09-09**,
+  against the alternative of a `"system"` sentinel in `actorId`. That value would be written
+  only by the backstop, on a document every plan participant can read, in the same update that
+  removes the evicted uid from `participants`, with no `memberLeft` row beside it — the same
+  durable inference BUT-1856 refused a tombstone to prevent. `creatorId` is the plan's sole
+  admin and the creator is whoever closed the poll, so an evicted minor who closed it reaches
+  the promotion branch every time. The promotion
+  still happens and is logged; only the row is skipped. This deviates knowingly, and on this
+  path only, from the rule BUT-1971 set on 2026-08-31: a privilege grant this code makes
+  silently belongs in the trail. The two call sites with a human actor still write the row.
+  A second reason the sentinel was the wrong shape, measured by the `integration-reviewer` gate:
+  `GroupWeeklyMenuPlan.contributorUserIdsForWrite` unions every trail row's `actorId` into the
+  erasure handle, which `firestore.rules` makes append-only and caps at 200 — so a non-uid there
+  is permanent, unclearable by any `arrayRemove(uid)`, and eats a slot for the document's life.
+  The model already excludes the `'deleted'` tombstone for exactly that reason.
+  **Widened and named rather than left to be discovered:** the emptied-roster DELETE now fires
+  when the whole departing SET empties a plan, so the backstop and the category sync can delete
+  an old week outright. The entry accepting that delete was reasoned about ONE leaver on
+  `removeChatGroupMember`; the brick argument carries, but these two triggers are not what Malin
+  weighed. BUT-2005, 2026-09-09

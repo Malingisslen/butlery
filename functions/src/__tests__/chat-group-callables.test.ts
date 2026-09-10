@@ -33,6 +33,7 @@ import {
   MAX_TRAIL_ROWS,
   MAX_CONTRIBUTOR_UIDS,
 } from "../groups/remove-chat-group-member";
+import { cutGroupMenuPlanAccess } from "../groups/group-menu-access";
 import { stageMemberRemoval } from "../groups/chat-group-writes";
 import { stageBackstopRemovals } from "../messaging/enforce-group-minor-membership";
 import { MAX_CHAT_GROUP_MEMBERS } from "../groups/minor-membership-gate";
@@ -578,6 +579,163 @@ const cases: UnitCase[] = [
     },
   },
 
+  // --- BUT-2005: cutGroupMenuPlanAccess, now shared and multi-uid ------------
+  {
+    // The generalisation the two new call sites need. Both are fan-outs that can
+    // evict several people at once; calling the old one-uid function per uid
+    // would multiply an up-to-501-row read plus 500 writes by N for one group.
+    name: "cuts SEVERAL departing members from a plan in ONE update",
+    fn: async () => {
+      const fake = new FakeFirestore();
+      fake.seed("group_weekly_menu_plans/c1_2026-W37", {
+        groupId: "c1",
+        participants: [
+          { userId: "stays", permission: "admin" },
+          { userId: "goes-a", permission: "edit" },
+          { userId: "goes-b", permission: "view" },
+        ],
+        participantUserIds: ["stays", "goes-a", "goes-b"],
+        memberPermissions: { stays: "admin", "goes-a": "edit", "goes-b": "view" },
+      });
+
+      await cutGroupMenuPlanAccess(
+        fake.db,
+        "c1",
+        ["goes-a", "goes-b"],
+        "actor",
+        "test",
+      );
+
+      const plan = fake.read("group_weekly_menu_plans/c1_2026-W37")!;
+      assertEqual(
+        (plan.participants as { userId: string }[]).map((p) => p.userId).join(","),
+        "stays",
+        "both departing members are off the roster",
+      );
+      assertEqual(
+        Object.keys(plan.memberPermissions as Record<string, unknown>).join(","),
+        "stays",
+        "and off memberPermissions, which is what firestore.rules reads",
+      );
+      // ONE update, not one per departing uid — the assertion that makes the
+      // signature change worth having.
+      const updates = fake.writes.filter(
+        (w) =>
+          w.op === "update" && w.path === "group_weekly_menu_plans/c1_2026-W37",
+      );
+      assertEqual(updates.length, 1, "one write for both departures");
+    },
+  },
+  {
+    // The contributor cap is measured against the WHOLE departing set, not one
+    // uid at a time: the array is what account erasure finds the plan by once
+    // the roster no longer names the person, and it must not be unioned past
+    // the 200 the rules bound or every later CLIENT save of that week is
+    // refused.
+    name: "records every departing member as a contributor",
+    fn: async () => {
+      const fake = new FakeFirestore();
+      fake.seed("group_weekly_menu_plans/c1_2026-W37", {
+        groupId: "c1",
+        participants: [
+          { userId: "stays", permission: "admin" },
+          { userId: "goes-a", permission: "edit" },
+          { userId: "goes-b", permission: "view" },
+        ],
+        participantUserIds: ["stays", "goes-a", "goes-b"],
+        memberPermissions: { stays: "admin", "goes-a": "edit", "goes-b": "view" },
+        contributorUserIds: ["goes-a"],
+      });
+
+      await cutGroupMenuPlanAccess(
+        fake.db,
+        "c1",
+        ["goes-a", "goes-b"],
+        "actor",
+        "test",
+      );
+
+      const contributors = fake.read("group_weekly_menu_plans/c1_2026-W37")!
+        .contributorUserIds as string[];
+      assertEqual(
+        [...contributors].sort().join(","),
+        "goes-a,goes-b",
+        "the already-recorded uid is not duplicated and the new one is added",
+      );
+    },
+  },
+  {
+    // BUT-2005's actor decision, Malin 2026-09-09. The child-safety backstop
+    // has no human caller, so a promotion it triggers writes NO trail row: the
+    // row would be written only by that path, and a member reading it beside a
+    // uid that just vanished could infer the eviction was automatic — which on
+    // that path means the person was protected as a minor.
+    name: "a null actor promotes but writes NO trail row",
+    fn: async () => {
+      const fake = new FakeFirestore();
+      fake.seed("group_weekly_menu_plans/c1_2026-W37", {
+        groupId: "c1",
+        participants: [
+          { userId: "the-admin", permission: "admin" },
+          { userId: "zzz", permission: "edit" },
+          { userId: "aaa", permission: "view" },
+        ],
+        participantUserIds: ["the-admin", "zzz", "aaa"],
+        memberPermissions: { "the-admin": "admin", zzz: "edit", aaa: "view" },
+      });
+
+      await cutGroupMenuPlanAccess(fake.db, "c1", ["the-admin"], null, "test");
+
+      const plan = fake.read("group_weekly_menu_plans/c1_2026-W37")!;
+      assertEqual(
+        plan.editTrail === undefined,
+        true,
+        "no trail row is written when nobody performed the promotion",
+      );
+      // The promotion itself still happens — skipping the ROW must not skip the
+      // grant, or the week is left with no admin and nobody can ever change its
+      // membership again.
+      assertEqual(
+        (plan.memberPermissions as Record<string, string>).aaa,
+        "admin",
+        "lowest remaining uid is promoted, deterministically, in the map the rules read",
+      );
+    },
+  },
+  {
+    // The other half of the same decision: a call site that HAS a human actor
+    // still writes the row. Without this the null case above could be satisfied
+    // by a function that never writes a trail row at all.
+    name: "a real actor still writes the promotion row",
+    fn: async () => {
+      const fake = new FakeFirestore();
+      fake.seed("group_weekly_menu_plans/c1_2026-W37", {
+        groupId: "c1",
+        participants: [
+          { userId: "the-admin", permission: "admin" },
+          { userId: "zzz", permission: "edit" },
+          { userId: "aaa", permission: "view" },
+        ],
+        participantUserIds: ["the-admin", "zzz", "aaa"],
+        memberPermissions: { "the-admin": "admin", zzz: "edit", aaa: "view" },
+      });
+
+      await cutGroupMenuPlanAccess(
+        fake.db,
+        "c1",
+        ["the-admin"],
+        "a-real-person",
+        "test",
+      );
+
+      const trail = fake.read("group_weekly_menu_plans/c1_2026-W37")!
+        .editTrail as Record<string, unknown>[];
+      assertEqual(trail.length, 1, "one trail row for the promotion");
+      assertEqual(trail[0].action, "adminPromoted", "and it says what happened");
+      assertEqual(trail[0].actorId, "a-real-person", "stamped with the actor");
+      assertEqual(trail[0].subjectId, "aaa", "and who was promoted");
+    },
+  },
   // --- removeChatGroupMemberWithDeps: the empty-group teardown --------------
   {
     // The last member out takes the group down with them. ORDER MATTERS and it
@@ -925,9 +1083,9 @@ const cases: UnitCase[] = [
   {
     // An ADMIN EVICTION, where the caller and the departing member differ. The
     // trail row must name the caller: stamping the departing uid would say the
-    // person who was removed did the promoting. ADR-0010's accepted "a trail
-    // row can name the wrong person" is about CLIENT forgery and does not reach
-    // the server writing a wrong actor.
+    // person who was removed did the promoting. The accepted risk that a trail
+    // row names the wrong person (BUT-1971, 2026-08-30) is about CLIENT forgery
+    // and does not reach the server writing a wrong actor.
     name: "an eviction's promotion names the admin who evicted, not the evicted",
     fn: async () => {
       const fake = new FakeFirestore();
