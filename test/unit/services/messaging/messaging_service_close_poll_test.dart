@@ -7,6 +7,9 @@
 /// - BUT-405: routing split. Group conversations now write to a
 ///   `GroupWeeklyMenuPlan` (collaborative, per-group). 1:1 conversations
 ///   retain the BUT-340 personal-plan fallback.
+/// - BUT-2016: the reshare is gone. The routing split had put the group branch
+///   in front of it, so it sat behind an `isGroup` test on the arm reached only
+///   when `isGroup` is false. No path closes a poll and shares a menu.
 library;
 
 import 'package:firebase_auth/firebase_auth.dart';
@@ -264,6 +267,10 @@ void main() {
       ),
     ).thenAnswer((_) async {});
 
+    // BUT-2016. Kept deliberately. It is what makes a re-wired share fail on
+    // the `verifyNever` that names the regression; drop it and the same
+    // re-wire dies on an unstubbed mocktail call instead, which reads as a
+    // broken fixture.
     when(
       () => socialMenuOps.shareMenuWithFriends(
         menu: any(named: 'menu'),
@@ -501,6 +508,17 @@ void main() {
         () => groupPlanService.save(
           plan: any(named: 'plan'),
           actorId: any(named: 'actorId'),
+        ),
+      );
+
+      // BUT-2016. Closing a poll shares NOTHING with anyone. Whoever wires an
+      // auto-share back in has to answer the blocking question first: the tally
+      // in `closePoll` refuses to close at all on a block list it cannot read
+      // (BUT-1909/1917/1922).
+      verifyNever(
+        () => socialMenuOps.shareMenuWithFriends(
+          menu: any(named: 'menu'),
+          friendUserIds: any(named: 'friendUserIds'),
         ),
       );
     });

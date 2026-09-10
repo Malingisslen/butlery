@@ -381,6 +381,14 @@ compress it.**
 - **A mocktail matcher goes vacuous only when a named arg's value stops equalling its DEFAULT** —
   `verifyNever` is the dangerous direction: a non-default named param can never match the
   omitted-param form, so the guard is UNFAILABLE. Spell every named param.
+  **Unfailable only where the escaping call is otherwise STUBBED, so measure BOTH shapes
+  rather than filing from the signature.** When the `setUp` stub is spelled just as narrowly
+  as the `verifyNever`, the escaping shape misses the stub too and dies on the unstubbed-call
+  throw — red, but as `type 'Null' is not a subtype of Future<T>`, which reads as a broken
+  fixture rather than a caught regression. Consequence for an INVERTED pin over removed
+  behaviour: the "unused" stub for a call no production path can make is load-bearing for the
+  pin's DIAGNOSABILITY, and a later tidy deleting it as dead downgrades a MATCHING re-wire's
+  failure message while nothing reddens (BUT-2016).
 - A poll-until-condition loop discriminates only if the assertion sits AFTER it, polling the LAST
   observable step. `retry:true` owes a reachability read of `isCascadeEventExpired` as the
   handler's FIRST statement.

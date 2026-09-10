@@ -36777,3 +36777,218 @@ The two non-demands from round 1 were honoured and are NOT re-filed: the "next a
 landing" parenthetical, and `:1004-1005`'s "the fixture the rules' create limb actually
 permits", which is true read as scoped to `createdAt`'s TYPE. Re-filing a declined
 non-blocking finding in narrowed form is the correction chain the strike rule exists to stop.
+
+### 2026-09-10 — BUT-2016 commit-gate test review: the inverted pin over a deleted menu auto-share
+
+Trigger: commit-gate `testing-specialist` review, running alone (both reading gates already
+`pass (0 blocking)`). Staged: `lib/services/messaging_service.dart`,
+`test/unit/services/messaging/messaging_service_close_poll_test.dart`,
+`docs/onboarding/workflow-map.html`, `docs/architecture/ACCEPTED_LARGE_FILES.md`.
+
+The change deletes unreachable code: `_appendWinnerToWeeklyPlanAndShare` held a
+`socialMenuOps.shareMenuWithFriends` block inside `if (conversation.isGroup)`, while
+`closePoll` reaches that helper only on the `else if` arm where `isGroup` is false. Dead
+since `1483e3b0a` (2026-04-18) — measured, that commit is where the group branch was put in
+front of it. Helper renamed `_appendWinnerToWeeklyPlan`; the `conversation` parameter, the
+`SocialMenuOperations` lookup and its import go with it. Test side: an INVERTED pin
+(`verifyNever(shareMenuWithFriends)`) added to the 1:1 test, per BUT-2005/BUT-2060's rule that
+a test for removed behaviour is inverted, not deleted.
+
+**Hash table (index == worktree at verdict time):**
+`lib/services/messaging_service.dart` `f1849447672cbab5e2313c8cbb4005a7da216935`, 1191 lines —
+matches the `ACCEPTED_LARGE_FILES` row this change refreshes (1220 -> 1191).
+
+**The finding I expected to file, and why it dissolved.** The `verifyNever` spells two named
+params (`menu`, `friendUserIds`) of a method with four — `shareMenuWithFriends({menu,
+friendUserIds, message, customTitle})` — and the class's own doc-comment example at
+`social_menu_operations.dart:15` passes `message:`. That is textbook for the knowledge file's
+"spell every named param" bullet: a re-wiring in the shape the docs demonstrate should slip
+past the guard. Measured instead of filed. Mutant A (re-add the share INSIDE
+`_appendWinnerToWeeklyPlan`, carrying `message: 'Veckans meny'`) reddens the same one test,
+twice in separate calls, but with:
+
+```
+type 'Null' is not a subtype of type 'Future<bool>'
+  test\...\messaging_service_close_poll_test.dart 53:7  _MockSocialMenuOps.shareMenuWithFriends
+  package:butlery/services/messaging_service.dart 1100:18  MessagingService._appendWinnerToWeeklyPlan
+```
+
+i.e. the `setUp` stub is spelled just as narrowly as the `verifyNever`, so the escaping shape
+misses the STUB as well and dies on the unstubbed mocktail call. The guard is unfailable only
+where the escaping call is otherwise stubbed. Both plausible re-wiring shapes are therefore
+red: the no-`message` shape on the crisp `verifyNever`, the `message:` shape on the throw.
+Principle updated in place; the reviewer's finding was withdrawn before filing rather than
+narrowed.
+
+**Second-order, and the reason the kept stub is not clutter.** The parent kept
+`when(() => socialMenuOps.shareMenuWithFriends(...)).thenAnswer((_) async => true)` in `setUp`
+"so the `verifyNever` reads naturally" — a stub for a call no production path can now make.
+The measurement gives it a stronger reason than readability: WITH the stub, the matching
+re-wire fails on the `verifyNever` message that names the regression; WITHOUT it, every
+re-wire fails on the `Null`-is-not-`Future<bool>` line, which reads as a broken fixture. A
+later tidy pass deleting it as dead downgrades the pin's diagnosability and nothing reddens.
+Filed as a non-blocking suggestion (one comment beside the stub), not a demand.
+
+**Probe SET, per BUT-1971's "run the probe over the DIRECTORY".** The parent probed one file.
+Verified rather than trusted: mutant A over `test/unit/services/messaging/` +
+`test/unit/services/messaging_service_test.dart` + `test/unit/viewmodels/chat_viewmodel_test.dart`
+gave `+151 -1`, the single red being the 1:1 test in the reviewed file. No sibling suite
+witnesses `_appendWinnerToWeeklyPlan`, so the single-file set was in fact sufficient here.
+Restore: `git show :<path> > tmp && cp`; `git diff --numstat` empty and
+`git rev-parse :<path> == git hash-object <path>`.
+
+**Positive control, settled analytically (which outranks a green probe).** The deleted share
+block sat AFTER `planService.save(updatedPlan)`, and the 1:1 test's `verify(() =>
+planService.save(any())).called(1)` proves that line is reached — so the negative
+assertion below it runs on a fixture that entered the personal arm. Both readers argued this;
+it holds.
+
+**Arm coverage.** The GROUP arm is not left open by this: the pre-existing
+`verifyNever(shareMenuWithFriends)` in `group conversation → writes to
+GroupWeeklyMenuPlan` catches a share added to `_appendWinnerToGroupPlan`, and a third sits in
+`winner without recipeId → no plan write`. Both arms of the `isGroup` branch are
+pinned, which is what makes the header's contract sentence enforced rather than merely
+asserted.
+
+**Header `History:` entry, graded as a fresh claim.** "No path closes a poll and shares a
+menu" is a quantifier over the CODE'S BEHAVIOUR, i.e. a contract, the shape the knowledge file
+says to keep rather than strike. Measured true across the whole chain: `ChatViewModel.closePoll`
+(the sole `lib/` caller) -> `MessagingService.closePoll` -> `_appendWinnerToGroupPlan` /
+`_appendWinnerToWeeklyPlan`, neither of which reaches `SocialMenuOperations`, ->
+`MessageMutationModule.closePoll`, which does one `metadata` update. The historical clause
+about the routing split is true against `1483e3b0a`. The two history sentences would normally
+be strikeable as narration about earlier production code, but this file's OWN header declares
+itself a `History:` block, so a dated entry is in scope by the file's terms — the "read the
+file's own header before grading prose below it" principle argues in favour here.
+
+**Sweeps.** `grep -rn shareMenuWithFriends test/`: the only poll-close hits are this file's
+`verifyNever`s, the `setUp` stub and the header line; every other hit
+(`menu_social_manager_test`, `social_menu_operations_test`, `unified_menu_service_test`,
+`universal_share_dialog_viewmodel`) exercises the deliberate user-initiated share, which is
+untouched. `workflow-map.html`: the two surviving `shareMenuWithFriends` payloads
+belong to `flow-menu-4` "Dela & importera meny", not to the chat flow; the edited payload
+is the `vm-chat -> svc-messaging` step and now stops at "lägger till i grupp-/veckoplan".
+
+Baseline after restore: `+23: All tests passed!`; `flutter analyze --fatal-infos` on both Dart
+files clean.
+
+Not filed, stated once: the new comment's opening sentence ("Whoever wires an auto-share back
+in has to answer the blocking question first") is guidance about a hypothetical rather than a
+measured claim, and could be read by a later run as an invitation to build the recipient-list
+blocking filter Malin declined on 2026-09-10 in favour of deletion. Its factual clause — the
+tally refuses to close on an unreadable block list — is true and pinned by five cases in this
+same file. If it is ever addressed the repair is a STRIKE of the first sentence, not a reword.
+
+Verdict: pass (0 blocking).
+
+### 2026-09-10 — BUT-2016 round 2: the delta comment, and my own quantifier in round 1's principle
+
+Trigger: coordinator delta after taking round 1's non-blocking suggestion. Read-only round —
+`lib/` byte-identical, no mutation run. Motion check: three blobs I graded are unchanged
+(`lib/services/messaging_service.dart` `f184944…`, `workflow-map.html` `972d8e1…`,
+`ACCEPTED_LARGE_FILES.md` `1b9a8b9…`); the test file moved `084e346e…` -> `689a6edc…`. Staged
+set grew to six with my own two knowledge files. Suite re-run on the moved blob: `+23`.
+`git diff` unstaged empty both before and after.
+
+**The delta, graded.** One comment on the `setUp` stub. Quoted as it stood WHEN GRADED, and
+SUPERSEDED in round 3 — its opening sentence was struck by `code-reviewer`, which measured
+that "it" reads as `shareMenuWithFriends`, a method with live callers, so the sentence was
+false as written. The wording graded here was:
+
+```
+// BUT-2016. Kept although no production path calls it any more. It is what
+// makes a re-wired share fail on the `verifyNever` that names the
+// regression; drop it and the same re-wire dies on an unstubbed mocktail
+// call instead, which reads as a broken fixture.
+```
+
+It now opens "Kept deliberately." and is otherwise unchanged. The grading below SURVIVES that
+strike, because it turns on the anaphor in the second clause, which the strike did not touch.
+
+(a) The claim is the one measured, and it does NOT over-claim about the four-param shape.
+The anaphor "the same re-wire" is what scopes it: both clauses bind to one instance, so the
+sentence asserts nothing about a `message:`-carrying re-wire and is silent rather than wrong
+about it. Silence is correct there — that shape is red with the stub present OR absent, so it
+is not what the comment exists to protect. The mechanism itself was directly observed in round
+1's Mutant A: an unmatched stub yields `type 'Null' is not a subtype of type 'Future<bool>'` at
+the `_MockSocialMenuOps.shareMenuWithFriends` frame, propagated by `closePoll`'s `rethrow`
+before any `verifyNever` runs. Stated precisely rather than overstated: the configuration RUN
+was "narrow stub, four-param call" (stub present, fails to match); the configuration the comment
+DESCRIBES is "no stub, two-param call". Same mocktail mechanism, same frame, same error — an
+analytic argument, which outranks a green probe, but not a probe of that exact configuration.
+Deleting the stub to run it would be a `test/` write, refused this round.
+
+(b) No dangling reference introduced. "the `verifyNever` that names the regression" is a
+DESCRIPTIVE definite (three `verifyNever(shareMenuWithFriends)` calls exist; one carries the
+BUT-2016 comment), so it survives insertion and reordering — the form the knowledge file
+prefers over a positional distance. No count, no line number, no cross-file pointer, no test
+name. The seam is clean too: a blank line separates it from the group-plan stub above and it
+attaches to the `when(...)` directly below, so it re-parents nothing.
+
+**My own defect, caught this round and superseded in place.** Round 1's new principle ended
+"…downgrades every re-wiring's failure message while nothing reddens (BUT-2016)." Retired
+verbatim: "a later tidy deleting it as dead downgrades every re-wiring's failure message while nothing reddens". That universal is FALSE for the four-param shape, whose message is the
+unstubbed-call throw with the stub present or absent — unchanged by the deletion, not
+downgraded. It now reads "a MATCHING re-wire's". Exactly the shape the lessons digest records:
+a quantifier planted in text written as the correction, in the same paragraph that measured
+why the quantifier could not hold. The scope was directly readable from the measurement, so
+this is a correction in place rather than a fresh claim.
+
+Consequence declared to the coordinator rather than left silent: this edit moves two STAGED
+blobs (`.knowledge.md`, `.knowledge.archive.md`) after the delta brief, so they must be
+re-staged or the gate grades bytes that will not ship.
+
+Coverage note, stated because it is a gate-configuration fact and not a review finding: the
+two knowledge files are my own authorship this round. The edited region of `.knowledge.md` was
+re-Read after editing; this 3.3 MB append-only archive cannot be Read in full.
+
+Verdict: pass (0 blocking).
+
+### 2026-09-10 — BUT-2016 round 3: two findings against MY archive entry, and an unstaged strike
+
+Trigger: coordinator relayed two `integration-reviewer` findings against my own round-1 entry.
+Both measured against the staged blob before editing; both correct; both taken.
+
+1. **Three line-number citations, each off by exactly four** — `:492`, `:363`, `:560`.
+Measured against `git show :<path>`: `verify(() => planService.save(any())).called(1)` is at
+496, the group-arm `verifyNever` at 367, the `winner without recipeId` one at 564. The
+falsifier is the `setUp` comment MY OWN round-1 suggestion asked for: inserting four lines
+above them pushed all three down by four. The purest form of the digest's ban — a positional
+citation cannot be typed about a file the same commit is still editing, and here the edit that
+falsified it was the one I recommended. Struck and replaced with TEST NAMES, which survive an
+insert.
+
+2. **"this file's four `verifyNever`s" is three.** `shareMenuWithFriends` occurs five times in
+the staged test file: the header line, the `setUp` stub, and three `verifyNever`s. The numeral
+is STRUCK rather than re-counted to three — a count of a test file's contents rots on the next
+legitimate insert, and the sentence needs no number to do its work.
+
+**Sibling sweep, not asked for.** The same entry carried three MORE positional citations of
+the same class in the paragraph I was already editing — `:4793/:4800` and `:6327` against
+`workflow-map.html`, a file whose line numbers shift on every flow edit. Deleted; the flow id
+(`flow-menu-4`) and the step (`vm-chat -> svc-messaging`) already identify them and cannot
+drift. Fixing the three the reviewer quoted and leaving three siblings in the same paragraph is
+the recurring "fixed the copy that was quoted" failure.
+
+**The round's real finding, which neither gate could see, because both read the WORKTREE.**
+`code-reviewer`'s strike of "Kept although no production path calls it any more" is
+WORKTREE-ONLY and was never staged. Measured: worktree `61575ad9…` vs index `689a6edc…`, and
+`git cat-file -p <idx> | diff -u --strip-trailing-cr - <path>` isolates exactly one hunk — the
+four comment lines. The index still carries the false sentence. Committed as-is, the defect
+ships and its fix does not, with three gates on record as having passed the file. Reported to
+the coordinator as an action, not filed as a finding against the code.
+Two instrument notes from getting there: a plain `diff` of an LF blob against the CRLF worktree
+called all 1410 lines changed, which reads as "the whole file was rewritten" — `--strip-trailing-cr`
+is not optional on this machine; and the strike is 4 lines replaced by 4, so the line numbers in
+finding 1 are identical in both copies and the divergence changes nothing about that fix.
+
+**Quote handling.** Round 2 quoted the pre-strike comment verbatim. The block is KEPT — a
+superseded wording retired verbatim is what this archive is for — but marked as graded-then-
+superseded, with the new opening recorded beside it. My round-2 grading survives the strike
+untouched: it turns on the anaphor "the same re-wire" in the second clause, which the strike
+did not reach.
+
+No `lib/` or `test/` write this round.
+
+Verdict: pass (0 blocking) on the reviewed code; ONE staging action outstanding for the
+coordinator.

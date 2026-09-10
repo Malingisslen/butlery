@@ -21,7 +21,6 @@ import 'package:butlery/models/unified/unified_shopping_list.dart'
     show SharedListPermission;
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
 import 'package:butlery/services/menu/group_weekly_menu_plan_service.dart';
-import 'package:butlery/services/unified/operations/social_menu_operations.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -970,10 +969,7 @@ class MessagingService extends BaseService with StreamManagementMixin {
               votedInBy: winner.voterIds,
             );
           } else if (conversation != null) {
-            await _appendWinnerToWeeklyPlanAndShare(
-              winnerRecipeId: winner!.recipeId!,
-              conversation: conversation,
-            );
+            await _appendWinnerToWeeklyPlan(winnerRecipeId: winner!.recipeId!);
           }
         }
       }
@@ -1056,14 +1052,12 @@ class MessagingService extends BaseService with StreamManagementMixin {
   /// Appends the winning recipe to the creator's current-week personal plan
   /// at the next empty middag slot (today-anchored). Creates an empty plan
   /// first if the creator has none.
-  Future<void> _appendWinnerToWeeklyPlanAndShare({
+  Future<void> _appendWinnerToWeeklyPlan({
     required String winnerRecipeId,
-    required Conversation conversation,
   }) async {
     final planService = ServiceLocator.tryGet<WeeklyMenuPlanService>();
     final recipeService = ServiceLocator.tryGet<UnifiedRecipeService>();
-    final socialMenuOps = ServiceLocator.tryGet<SocialMenuOperations>();
-    if (planService == null || recipeService == null || socialMenuOps == null) {
+    if (planService == null || recipeService == null) {
       AppLogger.warning(
         'Auto-resolution skipped — required services not registered',
       );
@@ -1101,29 +1095,6 @@ class MessagingService extends BaseService with StreamManagementMixin {
       recipe: winnerRecipe,
     );
     await planService.save(updatedPlan);
-
-    // Share with the group — for MVP we share the in-progress menu payload
-    // with the other participants of the conversation that hosted the poll.
-    try {
-      final currentUserId = _authRepository.currentUserId;
-      if (conversation.isGroup) {
-        final menuPayload = <String, List<Recipe>>{
-          'middag': [winnerRecipe],
-        };
-        final participantIds = conversation.participantIds
-            .where((id) => id != currentUserId)
-            .toList();
-        if (participantIds.isNotEmpty) {
-          await socialMenuOps.shareMenuWithFriends(
-            menu: menuPayload,
-            friendUserIds: participantIds,
-          );
-        }
-      }
-    } catch (e) {
-      // Share failure shouldn't unwind the plan append — log and continue.
-      AppLogger.warning('Auto-share after poll close failed: $e');
-    }
   }
 
   /// Group-plan auto-resolution path. Appends the winning recipe to a
