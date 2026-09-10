@@ -312,12 +312,112 @@ void main() {
         // Act
         await manager.reconnectToFirebase();
 
-        // Assert - Should setup listeners again
-        // Note: startMonitoring is called during connectivity setup
-        verify(
-          () => mockConnectivityService.startMonitoring(),
-        ).called(2); // Enable + reconnect
+        // Assert - the per-recipe listeners ARE set up again; the
+        // connectivity monitor is armed ONCE per manager. The
+        // startMonitoring assertion read `.called(2)` until BUT-2052:
+        // re-arming per reconnect is the leak, not the contract. The two
+        // stream assertions carry what that count used to be the only
+        // evidence for — that reconnect re-enters the listener setup at all.
+        verify(() => mockRepository.getRealtimeRecipeStream(any())).called(2);
+        verify(() => mockRepository.getParticipantsStream(any())).called(2);
+        verify(() => mockConnectivityService.startMonitoring()).called(1);
       });
+
+      // BUT-2052: dispose() removes ONE listener, so every extra
+      // registration outlives the manager and keeps calling back into it.
+      // Since BUT-2015's DisposalGuardMixin swallows the notification, the
+      // leak is silent — which is why it is pinned by counting rather than
+      // by observing a crash.
+      test(
+        'connectivity add/remove balance over enable, two reconnects, dispose',
+        () async {
+          await manager.enableCollaborativeMode(testRecipe);
+          await manager.reconnectToFirebase();
+          await manager.reconnectToFirebase();
+
+          verify(
+            () => mockConnectivityService.addListener(any()),
+          ).called(1);
+          verifyNever(() => mockConnectivityService.removeListener(any()));
+
+          manager.dispose();
+
+          verify(
+            () => mockConnectivityService.removeListener(any()),
+          ).called(1);
+          // Guard against the opposite mistake: arming once must not mean
+          // arming never.
+          verify(() => mockConnectivityService.startMonitoring()).called(1);
+        },
+      );
+
+      // BUT-2052: the arm guard covers `addListener`/`startMonitoring` and
+      // deliberately NOT the trailing refresh. The manager forces its own
+      // offline state locally (`updateRecipeInFirebase`'s catch, the stream's
+      // onError), and the service notifies only when ITS state changes — so
+      // re-reading the service on re-entry is the only thing that clears it.
+      // Mutation-probed: folding that line back inside the guard — the tidy-up
+      // a reader asking "why is this outside?" would make — reddens this test
+      // and nothing else in the suite.
+      test(
+        're-entry clears an offline state the manager set locally',
+        () async {
+          await manager.enableCollaborativeMode(testRecipe);
+
+          final streamController = StreamController<RealtimeRecipe?>();
+          when(
+            () => mockRepository.getRealtimeRecipeStream(any()),
+          ).thenAnswer((_) => streamController.stream);
+          await manager.leaveCollaborativeMode();
+          await manager.enableCollaborativeMode(testRecipe);
+
+          streamController.addError(Exception('Stream error'));
+          await Future.delayed(const Duration(milliseconds: 100));
+
+          // Premise: the manager is offline by its OWN doing. The service was
+          // never told and still answers connected.
+          expect(manager.isConnectedToFirebase, isFalse);
+          expect(mockConnectivityService.isConnectedToFirebase, isTrue);
+
+          // A fresh stream for the final re-entry: the errored controller is
+          // single-subscription and cannot be listened to twice.
+          final healthy = StreamController<RealtimeRecipe?>();
+          when(
+            () => mockRepository.getRealtimeRecipeStream(any()),
+          ).thenAnswer((_) => healthy.stream);
+
+          await manager.leaveCollaborativeMode();
+          await manager.enableCollaborativeMode(testRecipe);
+
+          expect(manager.isConnectedToFirebase, isTrue);
+          // NOT redundant beside the boolean, and not decorative: the
+          // only producer of this string is the service getter, read
+          // solely inside `_onConnectivityChanged`. An edit that made
+          // the boolean pass without the refresh would still have to
+          // run the refresh to satisfy this line. Deleting it is what
+          // would let this test go vacuous.
+          expect(manager.connectionStatusText, equals('Ansluten'));
+
+          await streamController.close();
+          await healthy.close();
+        },
+      );
+
+      // `reconnectToFirebase` has no caller in `lib/` — the re-entry a user
+      // can actually reach is leave then re-enable, on the SAME manager
+      // (`recipe_form_viewmodel` builds one and never replaces it). That is
+      // the path the double registration was live on, so it gets its own pin.
+      test(
+        'leave then re-enable does not add a second connectivity listener',
+        () async {
+          await manager.enableCollaborativeMode(testRecipe);
+          await manager.leaveCollaborativeMode();
+          await manager.enableCollaborativeMode(testRecipe);
+
+          verify(() => mockConnectivityService.addListener(any())).called(1);
+          verify(() => mockConnectivityService.startMonitoring()).called(1);
+        },
+      );
 
       test('should not reconnect if not in collaborative mode', () async {
         // Act

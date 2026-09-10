@@ -36992,3 +36992,189 @@ No `lib/` or `test/` write this round.
 
 Verdict: pass (0 blocking) on the reviewed code; ONE staging action outstanding for the
 coordinator.
+
+### 2026-09-10 — BUT-2037 + BUT-2034 coverage review (raw-source JSON-LD regex → parsed-tag predicate)
+
+Trigger: review of the staged five-file diff replacing `jsonLdScriptOpeningTagPattern` (raw-source
+regex) with `isJsonLdScriptOpeningTag(openingTag)` (parses the single opening tag, delegates to
+`isJsonLdMediaType`). Consumers: `HtmlSanitizer.preserveWhen`, `HtmlSanitizer.check()`,
+`UrlImportStrategy.hasOnlyNonRecipeJsonLd`.
+
+Hash table (index == worktree == brief, all five, verified before grading):
+
+| file | blob |
+|---|---|
+| lib/utils/recipe_scraper.dart | db3b05e2fd8e461c05a1b56f49641971367531dd |
+| lib/services/parsing/sanitizers/html_sanitizer.dart | 43f79b8ac4241fb0be38860ae031819029e8c211 |
+| lib/services/import/url_import_strategy.dart | 92f3b1c5b6fb53121558b5b883f99c3e1ccf4df4 |
+| test/unit/services/parsing/sanitizers/html_sanitizer_test.dart | 5e9077367f73f1ff5a2ed38dbaa26afed31d08dd |
+| test/unit/services/import/url_import_non_recipe_jsonld_test.dart | 395af9a33ac9e9be844731a345637faaa58773d5 |
+
+VERDICT: pass, 0 blocking.
+
+**Q1 vacuity — the rescue is real, no second one missed.** Two DEFECT tests pinning the old wrong
+behaviour green were deleted. Graded assertion-by-assertion:
+- BUT-2034 test's three assertions (`contains('<script')`, `contains(payload)`,
+  `check().where(scriptInjection) isEmpty`) all inverted into `jsonLdDecoys` entries 8/9 plus the
+  two loops that read that list. Entries 10-13 are NEW coverage the deleted test never had.
+- BUT-2037 test's `isJsonLdMediaType(parsedType) isTrue` premise — the assertion whose own note
+  said "the suite has no other pin on these spellings resolving" — is rescued verbatim into the
+  standalone `the parser resolves every one of these spellings to `+``, with the SAME five
+  spellings (`&plus;`, `&#x2B`, `&#43`, `&#x02B`, `&#043`, all semicolon-less variants included).
+  Verified list-for-list.
+- Its control changed shape (old: a second real `KEPT` block guarding "preserve nothing"; new: a
+  stripped `alert("xss")` neighbour guarding "preserve everything"). The new pair asserts both
+  directions, so it is equivalent-or-better, not a loss.
+- `check(markup).issues isEmpty` is STRONGER than the deleted `.where(scriptInjection).isEmpty`.
+
+**Q2 shared `jsonLdDecoys` — no asymmetric mutant found; measured, not assumed.** Ran the
+check()-side twin of the case-folding bug: `match.group(0)!` → `match.group(0)!.toLowerCase()`
+(anchor asserted unique, `rm -rf .dart_tool/flutter_build`, backup from `git show :<path>`,
+restore in `finally` + SIGINT/SIGTERM, post-restore blob re-verified == 43f79b8ac). RED, killed by
+exactly `check() warns about decoy attributes` (+18 -1). So both halves are symmetrically pinned
+against case-folding. Each test also has controls in both directions: the sanitize half's
+`contains('KEEP')` kills always-strip, its payload loop kills always-preserve; the check half's
+`real` list (6 entries, `issues isEmpty`) kills always-warn, its decoy loop kills always-silent.
+Structural note (non-blocking): decoy 13 (`type="application/ld&PLUS;json"`) is the SOLE entry
+discriminating the case-folding hazard on BOTH halves — entry 2's `&#x2B;` survives lowercasing
+because hex digits in a numeric reference are case-insensitive, and entry 6's `&#43;` has no
+letters. Its comment warns a future tidy.
+
+**Q3 three untested behaviours — one deserves a pin, two do not.**
+1. `>?` in `scriptOpeningTagPattern` — **PIN OWED (non-blocking).** Measured on
+   `<p>Recept</p><script type="application/ld+json"` (truncated opening tag at EOF): sanitize
+   returns `<p>Recept</p>` (strips, because `indexOf('>') == -1` fails the `tagEnd >= 0` guard so
+   `preserveWhen` is never called), check WARNS. They agree, so the doc comment's claim is TRUE.
+   But with a strict `>` the pattern matches NOTHING there, so check goes silent while sanitize
+   still deletes to EOF — the `?` is the only thing making the two halves agree on the malformed
+   case, and that agreement is stated in the comment. Analytically unpinned: `grep -rn
+   '<script[^>]*$' test/` returns one hit and it is an assertion string, not a fixture.
+2. `contains('type')` fast path — **NO PIN.** Behaviour-preserving by construction (attribute
+   names are never entity-decoded), so deletion is unkillable. Measured that decoys 1 and 2
+   (`data-note=`, no "type" substring) already exercise the fast-path FALSE return in both halves,
+   which kills the only wrong versions.
+3. `check()`'s hoisted 5MB early return — **NO PIN.** Measured: returns `[excessiveLength]` alone,
+   dropping nullByte/homoglyph on that path. Observationally inert — the sole consumer is
+   `ParsingContext.fromUrl/fromText`, which reads only `isSecure` = `isClean &&
+   !hasCriticalIssues`; both are `false`/`true` before and after. Nothing in `lib/` reads
+   `.issues`. The existing `should flag content over 5MB as critical in check()` covers what is
+   observable.
+
+**Q4 other suites — none passing for a different reason.** `jsonLdScriptOpeningTagPattern` has
+zero references repo-wide. `test/unit/utils/recipe_scraper_test.dart` is UNMODIFIED and its
+subject (`extractRecipeFromHtml`, `isJsonLdMediaType`) is byte-identical to HEAD, so it is not
+re-grounded; 134 green. Five downstream suites reaching `sanitize()` (`parsing_golden_test`,
+`real_structure_test`, `recipe_parser_service_test`,
+`firebase_recipe_repository_sanitize_test`, `llm_tier_test`) — 110 green.
+
+**Pre-existing residual named, NOT a regression.** A genuine JSON-LD tag whose EARLIER attribute
+value contains a `>` (`<script data-cfg="a>b" type="application/ld+json">`) is stripped by
+sanitize and warned by check: both `[^>]*` and `indexOf('>')` truncate the tag at the quoted `>`,
+so the parsed fragment carries no `type`. The two halves AGREE (the doc's claim holds), and the
+old code truncated identically, so this is a BUT-2037-class loss the change neither introduces
+nor fixes.
+
+`flutter analyze --fatal-infos` clean on all five. Suites re-run: 134 + 110 green.
+
+### 2026-09-10 — BUT-2052/BUT-2053 coverage review (trigger: commit-gate review of a 5-file staged diff)
+
+Reviewed blobs (index == worktree on all five, re-verified after every probe):
+`personal_shopping_operations.dart` 73bc0768, `recipe_collaborative_manager.dart` 42926c61,
+`personal_shopping_operations_test.dart` c90cb303, `recipe_collaborative_manager_test.dart`
+8e87ca0d, `ACCEPTED_LARGE_FILES.md` cfe3aebf.
+
+Baseline 109 green (both changed suites) + 62 green (three untouched neighbours:
+`recipe_collaborative_manager_display_name_test`, `recipe_form_viewmodel_test`,
+`disposal_guard_mixin_test`). `flutter analyze` on the four code files: no issues.
+
+Four mutation probes, each in its own Bash call, backup from `git show :<path>`, restore in
+`finally` + INT/TERM/HUP trap, `assert count(anchor)==1`, `rm -rf .dart_tool/flutter_build`
+between edit and run, `git diff --numstat` empty afterwards each time:
+
+1. `leaveCollaborativeMode` also sets `_isConnectedToFirebase = true` (a plausible future tidy)
+   -> GREEN 56/56. Nothing in the suite notices the tidy itself.
+2. Fold `_onConnectivityChanged()` back INSIDE the arm guard -> RED, exactly
+   `re-entry clears an offline state the manager set locally` and nothing else (55 +1). Verifies
+   the brief's claim and validates the instrument.
+3. BOTH of the above together -> still RED, same single test. **Refutes my own hypothesis** that
+   probe 1 disarms the pin.
+4. Delete `if (value.isFinite) return value;` from `_finiteAmountOr1` (the over-broad "always
+   1.0" fix) -> RED on `308 digits is finite and is kept unchanged` AND on the pre-existing
+   `should create list from recipe ingredients`. The 308 case is a genuine control, not vacuous.
+
+Why probe 3 stayed red, and the lesson: the test asserts TWO observables, and my tidy reset only
+the boolean. For the test to go green the tidy would have to leave `_connectionStatusText ==
+'Ansluten'`, and the only producer of that string is the mock's `connectionStatusText` getter,
+read exclusively inside `_onConnectivityChanged()` — so any vacuuming edit has to call the very
+refresh being pinned, through another door. The status-text assertion is what makes the test
+self-protecting. Answer to the brief's question: no extra pin is owed; adding one is
+over-testing. Residual worth one sentence: that assertion reads as decorative, and deleting it as
+redundant with the boolean is what would arm the fragility.
+
+Hunt items settled:
+- The new `AppLogger.warning` needs NO pin. `grep -rn "onRecord|LogCapture|captureLogs|logRecords"
+  test/` returns ZERO — the repo has no log-capture harness at all — and the precedent the comment
+  copies, `QuantityParser._invalidQuantityFallback`, is unpinned by the same repo. The behavioural
+  half (fallback to 1.0) IS pinned, by probe 4.
+- `should reconnect to Firebase successfully`: no assertion is redundant with another IN THIS
+  TEST — the two stream assertions have disjoint solo mutants (two distinct statements in
+  `_setupRealtimeListeners`, two distinct verify targets). `startMonitoring().called(1)` IS a
+  strict subset of the balance test's kill set through the same seam, i.e. a duplicate by the
+  registry's definition, but it sits where the old wrong `.called(2)` lived and costs nothing.
+  Reported informational, NOT as a fix instruction.
+- The "asserts 1.0, which is also the branch-not-taken default" shape on both shopping tests is
+  covered by siblings in the same file (`should create list from recipe ingredients` asserts
+  1000.0, the Swedish-units test asserts `unit == 'msk'`), so branch-entry is witnessed. Probe 4
+  confirmed it directly.
+- No untouched suite passes for a different reason. `recipe_collaborative_manager_display_name_test`
+  reaches the changed method via `reconnectToFirebase()`, but `_startPresenceTracking()` is
+  outside the arm guard, so it is unaffected; it and the two other neighbours are green.
+
+Comment claims verified against the code (all TRUE): `reconnectToFirebase` has no caller in
+`lib/`; `recipe_form_viewmodel.dart:106` builds one manager into a `late final` and never
+replaces it; `ConnectivityMonitoringService.startMonitoring()` is NOT idempotent — neither
+`_startFirebaseConnectionMonitoring` nor `_startInternetConnectivityMonitoring` cancels before
+re-assigning, so each call orphans a live subscription and a 30-second `Timer.periodic`;
+`ACCEPTED_LARGE_FILES.md`'s new 604 matches `wc -l`.
+
+One observation, non-blocking and NOT measurable from this repo: the arm-guard comment cites
+BUT-2063, which appears in exactly 1 file repo-wide (its own comment), where the sibling refs in
+the same two files appear in 8 (BUT-1943) and 9 (BUT-2015). Linear is external, so repo absence
+does not disprove the ticket — flagged for the author to confirm, not filed.
+
+Verdict: pass, 0 blocking.
+
+### 2026-09-10 — BUT-2052/BUT-2053, follow-up round (trigger: coordinator took the Low, one file moved)
+
+`test/unit/viewmodels/recipe_collaborative_manager_test.dart` 8e87ca0d -> 56ae535f. Other four
+unchanged at the blobs graded in the entry above; index == worktree on all five.
+
+"Comment-only" verified rather than accepted: isolate-diff of the two blobs
+(`git cat-file -p <old> > scratch/old && diff -u --strip-trailing-cr`) shows ONE 6-line
+insertion above `expect(manager.connectionStatusText, equals('Ansluten'))`, and filtering the
+diff for non-comment, non-blank changed lines returns 0. Re-Read the file in full at the new
+blob (a partial read of the changed region does not restore ledger coverage on the whole file).
+Independently re-ran: 56 pass, `flutter analyze` clean.
+
+Graded the new comment as a FRESH claim, per the rule that the paragraph written to BE the
+correction is where the next false sentence lands. Both factual clauses TRUE, measured:
+`_connectivityService.connectionStatusText` is read at line 378 only, which is inside
+`_onConnectivityChanged` (376-380); the four writers of `_connectionStatusText` are line 47
+(`''`), 232 and 252 (both `errorNetwork`) and 378 — so the service string has exactly one
+producer. The counterfactual clause ("an edit that made the boolean pass without the refresh
+would still have to run the refresh") is the one I had already measured as probe 3.
+
+CONSIDERED AND DECLINED filing a hedge on that counterfactual. Strictly it is false for one
+edit: hardcoding `_connectionStatusText = 'Ansluten'` in `leaveCollaborativeMode` satisfies the
+line without the refresh. Declined because that edit means copying a mock stub's Swedish UI
+string into production, which is not a plausible tidy, and because re-filing a narrowed version
+of a finding the coordinator has already actioned is the correction chain the strike rule exists
+to stop. Recording the decision so a later round does not "discover" it and restart the round.
+
+BUT-2063 RESOLVED: a real Linear ticket filed the same session, not a typo. My hit-count
+calibration (1 file for BUT-2063 vs 8 for BUT-1943 and 9 for BUT-2015) is a valid smell for a
+COVERAGE pointer and inverts for an EXTERNAL id — a same-day ticket appears exactly once, in the
+comment citing it. Hedging and handing it back was right; filing it would have been wrong. The
+manager's leak claim, which is what BUT-2063 records, I had already verified independently.
+
+Verdict unchanged: pass, 0 blocking.

@@ -47,6 +47,7 @@ class RecipeCollaborativeManager extends ChangeNotifier
   String _connectionStatusText = '';
   Timer? _presenceTimer;
   Timer? _saveDebounceTimer;
+  bool _connectivityArmed = false;
 
   RecipeCollaborativeManager({
     PermissionService? permissionService,
@@ -347,9 +348,28 @@ class RecipeCollaborativeManager extends ChangeNotifier
     }
   }
 
+  /// Arms connectivity monitoring ONCE per manager, however many times
+  /// collaborative mode is entered or reconnected.
+  ///
+  /// Its caller re-runs on each successful `enableCollaborativeMode` and each
+  /// `reconnectToFirebase`, which is right for the per-recipe streams it also
+  /// sets up and wrong for this: `dispose()` removes ONE listener, so a second
+  /// registration outlives the manager and keeps calling
+  /// [_onConnectivityChanged] on it. `startMonitoring()` is armed once for the
+  /// same reason — it is not idempotent either (BUT-2063), so calling it per
+  /// re-entry leaks a subscription and a 30-second timer each time.
+  ///
+  /// The refresh at the end stays OUTSIDE the arm: `updateRecipeInFirebase`'s
+  /// catch and the realtime stream's `onError` set the offline state LOCALLY,
+  /// and re-reading the service is what clears it. Arming that away would
+  /// leave a stale "Nätverksfel" on every re-entry until the service next
+  /// happened to notify.
   void _setupConnectivityMonitoring() {
-    _connectivityService.startMonitoring();
-    _connectivityService.addListener(_onConnectivityChanged);
+    if (!_connectivityArmed) {
+      _connectivityArmed = true;
+      _connectivityService.startMonitoring();
+      _connectivityService.addListener(_onConnectivityChanged);
+    }
     _onConnectivityChanged();
   }
 
@@ -375,7 +395,11 @@ class RecipeCollaborativeManager extends ChangeNotifier
   void dispose() {
     _cleanupRealtimeListeners();
     _clearPresence();
-    _connectivityService.removeListener(_onConnectivityChanged);
+    // Stays armed: disposal is terminal, and clearing the flag would let a
+    // post-dispose re-entry add a listener no `dispose()` will ever remove.
+    if (_connectivityArmed) {
+      _connectivityService.removeListener(_onConnectivityChanged);
+    }
     super.dispose();
   }
 }

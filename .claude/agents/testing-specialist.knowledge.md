@@ -124,7 +124,21 @@ compress it.**
 - **When a green result is the claim you want, prefer an ANALYTIC argument to a probe**:
   substitute the mutant value into the fixture's own arithmetic, or read that two expressions
   evaluate to the same fixture literal. Analysis outranks a green probe; a green probe outranks
-  nothing.
+  nothing. **A BEHAVIOUR-PRESERVING FAST PATH owes no pin and cannot be given one** — an early
+  return that only skips work the slow path would reach the same answer on (`if
+  (!tag.contains('type')) return false;` before a parse, sound because attribute NAMES are never
+  entity-decoded) is unkillable by deletion; only its WRONG versions are killable, and existing
+  fixtures usually already do that. Say so analytically instead of writing a reflex test.
+- **A SHARED FIXTURE CONST iterated by two consumers is the right shape for two halves of one
+  predicate, and it is graded by mutating EACH consumer's SEAM separately** — one list, both
+  kills, or the halves can be handed different sets and drift where nothing reddens. Check each
+  half has controls in BOTH directions (always-true and always-false mutants), and name the
+  entries that are the SOLE discriminator of a hazard: with one such entry the whole invariant
+  dies to a fixture tidy (BUT-2034/2037).
+- **A LENIENT token in a locating regex (`>?`, an optional delimiter) usually exists to make two
+  consumers agree on MALFORMED input, and no suite has a malformed fixture by default** — every
+  hand-written one is well-formed. Grep the suites for the malformed shape; zero hits IS the
+  finding, and the one-character deletion that breaks the stated agreement stays green.
 
 - **When the question is only "is this line REACHED at all", coverage answers it with no `lib/`
   write** — `flutter test --coverage --coverage-path=<scratchpad>/lcov.info <suites>`, then
@@ -213,6 +227,11 @@ compress it.**
   falsifier is often IN THE SAME FILE. Resolve a cross-file pointer with one grep of the guarded
   CLASS name in the cited file — zero hits IS the finding, and a false coverage pointer is worse
   than a false count because it is the sentence a later run cites to skip writing the test.
+  **The exception is a reference to something EXTERNAL to the repo — a Linear id, a vendor bug.
+  Zero hits is NOT the finding there**: a ticket minted the same day appears exactly once, in the
+  comment citing it, so the hit-count calibration that works for coverage pointers inverts. Hedge
+  and hand it back; do not file (BUT-2052: a 1-vs-8-vs-9 hit spread looked like a typo and the
+  ticket was real).
 - **A test's NAME and its COMMENT are TWO copies of one claim** — grep the concept across names
   separately (`grep "^ *test('"`). Grade every test the round ADDS against the names already in
   the file, and re-grade unqualified `every|all|no ` names whenever the round NARROWS what a
@@ -505,6 +524,13 @@ other suites prove:
 - **The test closing ONE conjunct discriminates only while the fixture leaves every OTHER
   conjunct SATISFIED — usually via an unremarked property of a stub nobody would defend.** Name
   the conjuncts the fixture is holding open in the test, or a later tidy vacuums it (BUT-1971).
+  **Before demanding that naming, ask what VALUE the vacuuming edit would have to PRODUCE and
+  where that value can come from** — a test asserting a second observable whose SOLE producer is
+  the code under test is SELF-PROTECTING, and the extra pin is over-testing. Measured on BUT-2052:
+  a "leave() resets the connection flag" tidy left the re-entry test still RED, because the
+  assertion beside it reads a status STRING the mock only yields through the refresh being pinned.
+  The residual is worth one sentence, not a test: such an assertion reads as decorative, so say
+  what it READS — deleting it as redundant is what would arm the fragility.
 - **Grade a guard PER FIELD it was extended to, and grade the DERIVED writes beside it** — a fix
   round closes one field and extends the same guard to a sibling in the same edit, and the report
   reads one fixture as covering both (BUT-1971).

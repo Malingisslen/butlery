@@ -757,6 +757,93 @@ void main() {
         expect(capturedList.items.first.name, equals('Nytt innehåll'));
       });
 
+      // BUT-2053: the same dead end BUT-1943 closed one producer over.
+      // `double.tryParse` answers Infinity from 309 digits, and `?? 1.0`
+      // catches only the null case — so the value reached
+      // `UnifiedShoppingItem.amount`, was formatted as the word "Infinity"
+      // into the edit dialog, and `parseSwedishDecimal` then refused to read
+      // it back.
+      group('non-finite amounts (BUT-2053)', () {
+        test('309 digits falls back to 1.0 on the text-import path', () async {
+          when(
+            () => mockParent.updateList(any()),
+          ).thenAnswer((_) async => true);
+
+          final huge = '9' * 309;
+          expect(
+            double.tryParse(huge),
+            equals(double.infinity),
+            reason: 'premise: 309 nines must overflow to Infinity',
+          );
+
+          await operations.importItemsFromText(
+            listId: 'test-list-1',
+            text: '$huge kg Mjol',
+            clearExisting: true,
+          );
+
+          final captured =
+              verify(() => mockParent.updateList(captureAny())).captured.single
+                  as UnifiedShoppingList;
+          expect(captured.items.single.amount, equals(1.0));
+        });
+
+        test('308 digits is finite and is kept unchanged', () async {
+          when(
+            () => mockParent.updateList(any()),
+          ).thenAnswer((_) async => true);
+
+          final big = '9' * 308;
+          final parsed = double.parse(big);
+          expect(
+            parsed.isFinite,
+            isTrue,
+            reason: 'premise: 308 nines must stay finite',
+          );
+
+          await operations.importItemsFromText(
+            listId: 'test-list-1',
+            text: '$big kg Mjol',
+            clearExisting: true,
+          );
+
+          final captured =
+              verify(() => mockParent.updateList(captureAny())).captured.single
+                  as UnifiedShoppingList;
+          expect(captured.items.single.amount, equals(parsed));
+        });
+
+        test('an overflowing serving multiplier falls back to 1.0', () async {
+          when(
+            () => mockParent.createPersonalList(
+              any(),
+              items: any(named: 'items'),
+            ),
+          ).thenAnswer((_) async => 'new-list-id');
+
+          // Finite input, finite multiplier, non-finite PRODUCT — the case a
+          // check on the parsed value alone would miss.
+          final big = double.parse('9' * 308);
+          expect((big * 10).isFinite, isFalse, reason: 'premise: overflows');
+
+          await operations.createListFromRecipe(
+            recipeName: 'Kladdkaka',
+            ingredients: ['${'9' * 308} kg Mjol'],
+            servingMultiplier: 10,
+          );
+
+          final captured =
+              verify(
+                    () => mockParent.createPersonalList(
+                      any(),
+                      items: captureAny(named: 'items'),
+                    ),
+                  ).captured.single
+                  as List<UnifiedShoppingItem>;
+          expect(captured.single.amount, equals(1.0));
+        });
+      });
+
       test('should create list from recipe ingredients', () async {
         // Arrange
         when(

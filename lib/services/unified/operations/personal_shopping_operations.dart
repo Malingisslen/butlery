@@ -81,6 +81,22 @@ class PersonalShoppingOperations {
        _clearBoughtItems = clearBoughtItems,
        _uncheckAllItems = uncheckAllItems;
 
+  /// Non-finite amounts coerce to the same `1.0` every other invalid input
+  /// in this file falls back to, and say so — `QuantityParser`'s fallback
+  /// warns for the same reason: a silent coercion makes a spike invisible.
+  ///
+  /// Takes a non-nullable [value] on purpose. "No number here" is a
+  /// different case with a different answer, and it belongs to the caller;
+  /// routing it through this helper would give it the silent branch the
+  /// warning exists to remove.
+  static double _finiteAmountOr1(double value, String? source) {
+    if (value.isFinite) return value;
+    AppLogger.warning(
+      'Non-finite shopping amount from "$source" coerced to 1.0',
+    );
+    return 1.0;
+  }
+
   Future<String?> createList(
     String name, {
     List<UnifiedShoppingItem>? items,
@@ -495,7 +511,14 @@ class PersonalShoppingOperations {
           r'(\d+(?:\.\d+)?)\s*(\w+)?\s*(.+)',
         ).firstMatch(itemName);
         if (amountMatch != null) {
-          amount = double.tryParse(amountMatch.group(1) ?? '1.0') ?? 1.0;
+          // The capture group is unbounded digits, so `double.tryParse` can
+          // answer Infinity — which reaches the edit dialog as the word
+          // "Infinity", a value `parseSwedishDecimal` then refuses to read
+          // back (BUT-1943, the same dead end one producer over).
+          final parsed = double.tryParse(amountMatch.group(1) ?? '1.0');
+          amount = parsed == null
+              ? 1.0
+              : _finiteAmountOr1(parsed, amountMatch.group(1));
           unit = amountMatch.group(2).orEmpty();
           itemName = amountMatch.group(3) ?? itemName;
         }
@@ -546,7 +569,14 @@ class PersonalShoppingOperations {
           final firstPart = parts[0];
           final parsedAmount = double.tryParse(firstPart);
           if (parsedAmount != null) {
-            amount = parsedAmount * servingMultiplier;
+            // The PRODUCT is what lands in the field, so it is the product
+            // that has to be finite: a finite amount times a large
+            // multiplier overflows on its own. Checking the product also
+            // covers the parsed value, and covers what site 1 cannot reach —
+            // `firstPart` is raw ingredient text, and `double.tryParse`
+            // accepts the literal tokens `Infinity` and `NaN`.
+            final scaled = parsedAmount * servingMultiplier;
+            amount = _finiteAmountOr1(scaled, firstPart);
             if (parts.length > 1) {
               unit = parts[1];
               name = parts.skip(2).join(' ');
