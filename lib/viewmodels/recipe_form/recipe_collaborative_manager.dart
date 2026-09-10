@@ -355,9 +355,7 @@ class RecipeCollaborativeManager extends ChangeNotifier
   /// `reconnectToFirebase`, which is right for the per-recipe streams it also
   /// sets up and wrong for this: `dispose()` removes ONE listener, so a second
   /// registration outlives the manager and keeps calling
-  /// [_onConnectivityChanged] on it. `startMonitoring()` is armed once for the
-  /// same reason — it is not idempotent either (BUT-2063), so calling it per
-  /// re-entry leaks a subscription and a 30-second timer each time.
+  /// [_onConnectivityChanged] on it. `startMonitoring()` rides the same arm.
   ///
   /// The refresh at the end stays OUTSIDE the arm: `updateRecipeInFirebase`'s
   /// catch and the realtime stream's `onError` set the offline state LOCALLY,

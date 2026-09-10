@@ -3939,3 +3939,103 @@ neither passed an `auditRepository` at all.
   Still open and unchanged: whether `reviewedBy`/`reviewNotes` stay withheld is Malin's, and a
   moderator's uid sitting on somebody else's row is reached by no cascade, probe or export.
   BUT-2038, 2026-09-10
+
+- **The Art. 15 comments and ratings sections are PROJECTED through a fail-closed allowlist,
+  and four fields on a comment are withheld (BUT-2062, 2026-09-10).**
+  `FirebaseCommentsRepository.exportCommentsByAuthor` and
+  `FirebaseRatingsRepository.exportRatingsByUser` returned `{'id': doc.id, 'data': doc.data()}`
+  — the whole document — so a comment author's own Art. 15 bundle reproduced `recipeOwnerId`
+  (the recipe owner's uid), `sharedWithUserIds` (uids of everyone the recipe was shared with)
+  and `reactions` (a `Map<emoji, List<uid>>` of who reacted with what).
+  Decided on THESE two collections' own writers and rules. Nothing here is derived from
+  BUT-1732, BUT-1772 or BUT-1450 — each of those entries records in its own text that
+  arguing across collection boundaries is the error it exists to document.
+
+  **It is MINIMISATION, not an access control.** The comment's own author may read their
+  whole document under the `recipe_comments` read limb, and the `recipe_ratings` read limb is
+  `allow read: if isAuthenticated()`, so any signed-in account already reads every rating
+  document whole, `userId` and `review` included. The projection closes no disclosure
+  channel. What it changes is what travels inside a durable, machine-readable file the
+  subject may forward — which is where a third party's identifier does real work. A future
+  reader must not cite this entry as having closed a leak.
+
+  **What is KEPT, decided rather than defaulted.** `authorDisplayName` and `authorAvatarUrl`
+  are the requester's own name and avatar; `imageUrls` are their own comment images;
+  `likesCount` and `replyCount` are aggregates about their own row carrying no uid;
+  `recipeId`, `text`, `createdAt`, `updatedAt`, `editedAt`, `parentCommentId` and `isDeleted`
+  are the record itself. The image links are `getDownloadURL()` values carrying a `?token=`
+  BEARER credential — anyone holding the string fetches the file without signing in — so a
+  forwarded bundle forwards that access. Kept anyway: it is the requester's own content and
+  Art. 15 favours inclusion. Stated here rather than in the user-facing note.
+
+  **What is STRIPPED, and why each one.**
+  * `authorId` / `userId` — the requester's own uid AND the query's own filter. Not a
+    withholding of their own data: it adds nothing the bundle does not already say.
+  * `recipeOwnerId` — a third party's raw uid. The requester can see whose recipe it is
+    inside the app, so this is not secrecy: an opaque uid is an identifier they cannot
+    resolve, and reproducing it hands on an identifier for somebody who did not ask for
+    this bundle.
+  * `sharedWithUserIds` — uids of people with no relationship to the requester at all.
+  * `reactions` — a record of other people's behaviour on the requester's row. Withheld
+    WHOLE: the requester's own uid can appear in the map, but splitting it by uid would
+    still disclose how many others reacted and with what.
+
+  **`sharedWithUserIds` is DECIDED, not routed to Malin.** The ticket framed it as an open
+  question for her and the first plan carried it that way. Three seats measured against it:
+  no widget in `lib/` renders the field; no re-share or unshare updates it, so
+  the value is a frozen snapshot and keeping it would
+  export a roster that may be WRONG as well as third-party; and routing a denormalised uid
+  list to her by default is the over-flagging the disposition rule exists to prevent, while
+  three sibling fields were being decided outright in the same commit.
+
+  **`recipeOwnerId` on RATINGS is a decided strip although no writer emits it today.**
+  `FirebaseRatingsRepository.rateRecipe` writes `recipeId, userId, rating, review, createdAt,
+  updatedAt` and nothing else, but `RecipeRating.toFirestore` emits `recipeOwnerId` when it
+  is set and `firestore.rules` permits it on create. BUT-2057 wants to make that field
+  mandatory; naming it here is what stops a security fix widening this bundle on the way.
+
+  **The `rating_id` still carries the uid.** The rating document id is `{recipeId}_{userId}`
+  and the section emits it as `rating_id`. That is the requester's own data and stays. The
+  FIELD is dropped; do not write anywhere that the uid is removed.
+
+  **Layer: the projection lives in the MANAGER (`ActivityExportManager`), not in the two
+  repositories.** The Security Architect seat argued for the repositories, so that a future
+  second caller inherits the narrowing; the Software Architect seat OBJECTED, and the
+  objection carries on two measurements neither the ticket nor the first plan had. First,
+  both interface doc comments already state the layer contract and it is the opposite of the
+  repository placement: raw `{id, data}` is returned "so the data-export pipeline can
+  sanitize timestamps without round-tripping through the model". Second, the file sizes —
+  `firebase_comments_repository.dart` is 479 lines with no `ACCEPTED_LARGE_FILES` row, so a
+  projection there trips the 500-line guard with nothing to fall back on, and
+  `firebase_ratings_repository.dart` is already 536 against a row that says 507. The
+  future-second-caller risk is answered instead by the obligation now written into both
+  interface doc comments and by the writer-derived drift test below. The mechanic — the
+  allowlist loop itself, third copy of one idea — moved to `projectExportFields` in
+  `export_pagination_helper.dart`; the FIELD LISTS stayed with the section, because the list
+  is the privacy decision and belongs where that decision is reviewed.
+
+  **The `data_minimisation` sentence is byte-identical on every path**, including the failure
+  branch, which previously returned only `error`/`error_code`. It bears a fact about third
+  parties, so BUT-2056's invariance half governs: a note that appeared only when a comment
+  HAD reactions, or only when a recipe HAD been shared, would reconstruct from its own
+  presence exactly what it withholds. Pinned across an empty read, a populated one and a
+  refusal.
+
+  **Tests failing in different directions, mutation-probed.** The fail-closed pin
+  (an undeclared field does not travel) proves only the losing behaviour. The direction that
+  reddens NOTHING on its own is the other one: a writer gains a field, the projection does
+  not, and the user's own content disappears from their own bundle in silence. So the second
+  test calls `RecipeComment.toFirestore()` and asserts every key it can emit is in the
+  exported list or the withheld list. Probed: adding `recipeOwnerId` to the keep list reddens
+  the withheld case and the overlap case; dropping the note from the failure branch reddens
+  the invariance case; adding an undecided field to `toFirestore` reddens the writer case.
+
+  **Named residuals.** A reactor's uid sits inside `Map<emoji, List<uid>>`, which Firestore
+  cannot query, so no cascade can erase it — and it is now not exportable either. Un-erasable
+  AND un-exportable: the BUT-1832 shape running the other way, named here rather than left to
+  be discovered. And neither create limb carries `keys().hasOnly` (both use
+  `hasRequiredFields`), so a hand-rolled client can store a field of its own on its own row
+  and have its OWN content dropped by the allowlist — an Art. 15 defect in the other
+  direction. The `data_minimisation` sentence says a field added later may be missing;
+  tightening the two create limbs is a rules change and its own ticket.
+  BUT-2062, 2026-09-10

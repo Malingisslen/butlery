@@ -22,22 +22,46 @@ class ConnectivityMonitoringService extends ChangeNotifier
   String _connectionStatusText = '';
   StreamSubscription<bool>? _firebaseConnectionSubscription;
   Timer? _internetCheckTimer;
+  bool _isMonitoring = false;
 
   bool get isConnectedToInternet => _isConnectedToInternet;
   bool get isConnectedToFirebase => _isConnectedToFirebase;
   bool get isFullyConnected => _isConnectedToInternet && _isConnectedToFirebase;
   String get connectionStatusText => _connectionStatusText;
 
+  /// Idempotent since BUT-2063: a second call is a no-op rather than a second
+  /// subscription and a second 30-second timer.
+  ///
+  /// Neither starter cancelled what it overwrote, so every extra call orphaned
+  /// the previous stream listener AND the previous `Timer.periodic` — both
+  /// still running, and unreachable, because [stopMonitoring] can only cancel
+  /// whatever the LAST call assigned. Five calls meant five timers, each
+  /// firing every thirty seconds.
+  ///
+  /// What that costs today, measured rather than assumed: `startMonitoring()`
+  /// has exactly one caller in `lib/` (`RecipeCollaborativeManager`), and
+  /// BUT-2052 gave that call site its own arming flag. So this is defence in
+  /// depth on a public API, not a battery cost anyone is paying — the guard
+  /// belongs at the source because the call site's flag protects only that
+  /// call site.
   void startMonitoring() {
+    if (_isMonitoring) return;
     AppLogger.info('Starting connectivity monitoring');
+    _isMonitoring = true;
     _startFirebaseConnectionMonitoring();
     _startInternetConnectivityMonitoring();
   }
 
+  /// Clears the fields as well as cancelling, so a stop followed by a start
+  /// genuinely restarts: the guard above reads [_isMonitoring], and leaving it
+  /// set would turn `stop -> start` into a permanent stop.
   void stopMonitoring() {
     AppLogger.info('Stopping connectivity monitoring');
     _firebaseConnectionSubscription?.cancel();
+    _firebaseConnectionSubscription = null;
     _internetCheckTimer?.cancel();
+    _internetCheckTimer = null;
+    _isMonitoring = false;
   }
 
   Future<ConnectivityResult> getCurrentConnectivity() async {

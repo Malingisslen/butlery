@@ -520,6 +520,49 @@ void main() {
         },
       );
 
+      // BUT-2063: startMonitoring() used to overwrite both handles without
+      // cancelling, so a second call orphaned the previous stream listener and
+      // the previous 30-second Timer.periodic — both still running, and
+      // unreachable, since stopMonitoring() can only cancel the last pair.
+      //
+      // The subscription is what a test can COUNT (the timer's callback goes
+      // through a static, so it has no seam); both are created in the same
+      // guarded block, so one call to monitorFirebaseConnection is one timer.
+      group('startMonitoring is idempotent (BUT-2063)', () {
+        test('a second call subscribes nothing new', () {
+          service.startMonitoring();
+          service.startMonitoring();
+          service.startMonitoring();
+
+          verify(() => mockRepository.monitorFirebaseConnection()).called(1);
+        });
+
+        test('stop then start genuinely restarts', () {
+          service.startMonitoring();
+          service.stopMonitoring();
+          service.startMonitoring();
+
+          verify(() => mockRepository.monitorFirebaseConnection()).called(2);
+        });
+
+        test('the restarted listener still receives events', () async {
+          service.startMonitoring();
+          service.stopMonitoring();
+          service.startMonitoring();
+
+          firebaseStreamController.add(false);
+          await Future<void>.delayed(Duration.zero);
+
+          expect(
+            service.isConnectedToFirebase,
+            isFalse,
+            reason:
+                'a guard that never clears turns stop -> start into a '
+                'permanent stop, which no call-count assertion can see',
+          );
+        });
+      });
+
       test('should handle stream controller closed exception', () async {
         // Arrange
         service.startMonitoring();

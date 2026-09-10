@@ -38,6 +38,56 @@ void main() {
       await TestServiceLocator.reset();
     });
 
+    // BUT-2067: a non-finite `UnifiedShoppingItem.amount` prints as the word
+    // "Infinity" through `formatSwedishDecimal` and then `parseSwedishDecimal`
+    // refuses to read it back, so the user cannot edit their way out of the
+    // field.
+    group('non-finite quantities never reach amount (BUT-2067)', () {
+      test('a portion scale that overflows falls back to 1.0', () {
+        final recipe = _makeRecipe(['$_nearMaxQuantity dl mjölk'])
+          ..core.portions = 1;
+
+        final items = ShoppingListGenerator.generateShoppingItemsFromRecipe(
+          recipe,
+          portions: 2,
+        );
+
+        expect(items, hasLength(1));
+        expect(items.first.amount.isFinite, isTrue);
+        expect(items.first.amount, 1.0);
+        // Discriminates the guard from the method's own catch, which builds a
+        // fallback row that also carries amount 1.0 — but with unit 'st'.
+        expect(items.first.unit, 'dl');
+      });
+
+      test('an ordinary portion scale is untouched', () {
+        final recipe = _makeRecipe(['2 dl mjölk'])..core.portions = 2;
+
+        final items = ShoppingListGenerator.generateShoppingItemsFromRecipe(
+          recipe,
+          portions: 4,
+        );
+
+        expect(items.first.amount, 4.0);
+      });
+
+      test('a consolidation sum that overflows falls back to 1.0', () {
+        final menu = {
+          'Måndag': [
+            _makeRecipe(['$_nearMaxQuantity dl mjölk']),
+            _makeRecipe(['$_nearMaxQuantity dl mjölk']),
+          ],
+        };
+
+        final items = ShoppingListGenerator.generateShoppingItemsFromMenu(menu);
+
+        final milk = items.where((i) => i.name.toLowerCase().contains('mjölk'));
+        expect(milk, hasLength(1));
+        expect(milk.first.amount.isFinite, isTrue);
+        expect(milk.first.amount, 1.0);
+      });
+    });
+
     tearDownAll(() async {
       // Final cleanup after all tests
       await BaseUnitTest.teardownUnit();
@@ -631,6 +681,12 @@ class _MockRecipe {
 }
 
 /// Helper to create minimal Recipe objects for testing.
+/// 308 nines: `QuantityParser.parse` returns this as a FINITE double (309
+/// becomes Infinity and BUT-1943 coerces that to 1.0). So a row built from this
+/// is legal input that has entered the pipeline, and the overflow below happens
+/// in the ARITHMETIC rather than in the parse.
+final String _nearMaxQuantity = '9' * 308;
+
 Recipe _makeRecipe(List<String> ingredients) {
   return Recipe(
     core: RecipeCore(

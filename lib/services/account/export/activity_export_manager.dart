@@ -7,7 +7,7 @@ import 'package:butlery/repositories/interfaces/comments_repository.dart';
 import 'package:butlery/repositories/interfaces/feedback_repository.dart';
 import 'package:butlery/repositories/interfaces/ratings_repository.dart';
 import 'package:butlery/services/account/export/export_pagination_helper.dart'
-    show ExportPaginationHelper, sanitizeForJson;
+    show ExportPaginationHelper, projectExportFields, sanitizeForJson;
 
 /// Handles export of user activity: comments and ratings.
 /// Part of GDPR Article 20 (Right to Data Portability) compliance.
@@ -46,6 +46,96 @@ class ActivityExportManager {
   FirebaseDataExportRepository get _exports =>
       _exportRepo ?? ServiceLocator.get<FirebaseDataExportRepository>();
 
+  /// What a `recipe_comments` row contributes to the bundle (BUT-2062).
+  ///
+  /// An ALLOWLIST, so the section fails CLOSED. Derived from the WRITERS, not
+  /// hand-listed: `RecipeComment.toFirestore()` plus the `updatedAt` that
+  /// `FirebaseCommentsRepository.addComment` and `updateComment` stamp.
+  /// `activity_export_projection_test.dart` compares this list and the strip
+  /// list below against `RecipeComment.toFirestore()`. It does not range over
+  /// the repository's own stamps or the server-side writers.
+  ///
+  /// WITHHELD, and why, argued on this collection's own facts:
+  /// * `authorId` — the requester's own uid AND the query's own filter. Not a
+  ///   withholding; it adds nothing the bundle does not already say.
+  /// * `recipeOwnerId` — a third party's raw uid. The requester can see whose
+  ///   recipe it is inside the app, so this is not secrecy: an opaque uid is an
+  ///   identifier they cannot resolve, and reproducing it in a forwardable file
+  ///   hands on an identifier for someone who did not ask for this bundle.
+  /// * `sharedWithUserIds` — uids of everyone the recipe was shared with when
+  ///   the comment was written. People with no relationship to the requester at
+  ///   all. Also a frozen snapshot: nothing updates it when a recipe is
+  ///   re-shared or unshared.
+  /// * `reactions` — a map of emoji to the uids that reacted, i.e. a record of
+  ///   other people's behaviour. Withheld whole: the requester's own uid can
+  ///   appear in it, but splitting the map by uid would still disclose how many
+  ///   others reacted with what.
+  ///
+  /// KEPT and worth naming: `authorAvatarUrl` is the requester's OWN avatar,
+  /// and `imageUrls` are their own comment images. The image links are
+  /// `getDownloadURL()` values carrying a `?token=` bearer credential — anyone
+  /// holding the string can fetch the file without signing in — so a forwarded
+  /// bundle forwards that access. Kept anyway: it is the requester's own
+  /// content and Art. 15 favours inclusion.
+  static const _commentFields = <String>[
+    'recipeId',
+    'text',
+    'createdAt',
+    'updatedAt',
+    'editedAt',
+    'parentCommentId',
+    'isDeleted',
+    'likesCount',
+    'replyCount',
+    'imageUrls',
+    'authorDisplayName',
+    'authorAvatarUrl',
+  ];
+
+  /// What a `recipe_ratings` row contributes (BUT-2062). Derived from
+  /// `RecipeRating.toFirestore()`.
+  ///
+  /// `userId` is the requester's own uid and the query's own filter.
+  /// `recipeOwnerId` is a third party's uid: `FirebaseRatingsRepository`'s own
+  /// writer never emits it today, but the model does when it is set and
+  /// `firestore.rules` permits it on create — so it is a DECIDED strip rather
+  /// than a field that happens to be absent, and a later change that starts
+  /// writing it cannot widen this bundle by accident.
+  static const _ratingFields = <String>[
+    'recipeId',
+    'rating',
+    'review',
+    'createdAt',
+    'updatedAt',
+  ];
+
+  /// Fields the two lists above deliberately drop. Not read at runtime — the
+  /// projection is an allowlist — but read by the test that holds both lists
+  /// against the models' writers.
+  static const commentFieldsWithheld = <String>[
+    'authorId',
+    'recipeOwnerId',
+    'sharedWithUserIds',
+    'reactions',
+  ];
+  static const ratingFieldsWithheld = <String>['userId', 'recipeOwnerId'];
+
+  static const commentFieldsExported = _commentFields;
+  static const ratingFieldsExported = _ratingFields;
+
+  /// BUT-2062: the sentence is byte-identical on every path — an empty read, a
+  /// populated one, and the failure branch below. It bears a fact about third
+  /// parties, so it is in the invariant class (BUT-2056): a note that appeared
+  /// only when a comment HAD reactions, or only when a recipe HAD been shared,
+  /// would reconstruct from its own presence exactly what it withholds.
+  static const _dataMinimisation =
+      'Your own comments and ratings are reproduced here, but identifiers '
+      'belonging to other people are not: who owns the recipe you commented '
+      'on, who that recipe was shared with, and who reacted to your comment '
+      'with which emoji. Your own name, avatar and comment images are '
+      'included. These sections carry only the fields they recognise, so a '
+      'field added later may be missing.';
+
   /// Export user recipe comments and ratings
   Future<Map<String, dynamic>> exportCommentsAndRatings(String userId) async {
     try {
@@ -72,24 +162,38 @@ class ActivityExportManager {
       final recipeComments = results[0];
       final recipeRatings = results[1];
 
+      // BUT-2062: project BEFORE sanitizing, so a withheld field is never
+      // walked. Both repositories return the raw document by design — their
+      // interfaces say so, because the export pipeline is what shapes it —
+      // which is exactly why the shaping has to happen here and not be
+      // forgotten.
       for (final entry in recipeComments.items) {
         data['comments'].add({
           'comment_id': entry['id'],
           'type': 'recipe',
-          'data': sanitizeForJson(entry['data']),
+          'data': sanitizeForJson(
+            projectExportFields(entry['data'], _commentFields),
+          ),
         });
       }
 
       for (final entry in recipeRatings.items) {
         data['ratings'].add({
+          // The document id is `{recipeId}_{userId}`, so the requester's own
+          // uid still travels here. That is their own data and stays; the note
+          // below therefore says the uid FIELD is dropped, never that the uid
+          // is gone.
           'rating_id': entry['id'],
           'type': 'recipe',
-          'data': sanitizeForJson(entry['data']),
+          'data': sanitizeForJson(
+            projectExportFields(entry['data'], _ratingFields),
+          ),
         });
       }
 
       data['total_comments'] = data['comments'].length;
       data['total_ratings'] = data['ratings'].length;
+      data['data_minimisation'] = _dataMinimisation;
       if (recipeComments.truncated || recipeRatings.truncated) {
         data['truncated'] = true;
       }
@@ -115,6 +219,10 @@ class ActivityExportManager {
       return {
         'error': 'Comments and ratings could not be exported.',
         'error_code': 'comments-and-ratings-export-failed',
+        // Same sentence, same bytes, on the path where nothing was read at
+        // all — see [_dataMinimisation]. A note that only appeared when the
+        // section succeeded would say something about what the read found.
+        'data_minimisation': _dataMinimisation,
       };
     }
   }

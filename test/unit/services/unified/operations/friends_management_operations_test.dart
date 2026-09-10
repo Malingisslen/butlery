@@ -38,6 +38,25 @@ class _RecordingSocialTracker extends Fake implements SocialEventsTracker {
       unblocked.add(unblockedUserId);
 }
 
+/// A tracker whose calls THROW, for BUT-2069's question: can telemetry decide
+/// what the user is told? It records the attempt first, so a test can tell
+/// "the call never happened" apart from "the call happened and blew up".
+class _ThrowingSocialTracker extends Fake implements SocialEventsTracker {
+  final attempts = <String>[];
+
+  @override
+  Future<void> logUserBlocked({required String blockedUserId}) async {
+    attempts.add(blockedUserId);
+    throw Exception('analytics backend down');
+  }
+
+  @override
+  Future<void> logUserUnblocked({required String unblockedUserId}) async {
+    attempts.add(unblockedUserId);
+    throw Exception('analytics backend down');
+  }
+}
+
 class _MockAnalyticsService extends Mock implements AnalyticsService {}
 
 void main() {
@@ -323,6 +342,10 @@ void main() {
             isTrue,
           );
 
+          // BUT-2069 made this call `unawaited` too, so drain the microtask
+          // queue the way the block twin above does rather than resting on
+          // `Future.sync` running the closure synchronously.
+          await Future<void>.delayed(Duration.zero);
           expect(socialTracker.unblocked, ['blocked_person']);
           expect(socialTracker.blocked, isEmpty);
         },
@@ -592,6 +615,89 @@ void main() {
 
             expect(outcome, equals(BlockOutcome.blockedWithCleanupIssues));
             verify(() => mockBlockRepo.blockUser('blocked_person')).called(1);
+          },
+        );
+      });
+
+      // BUT-2069: the mirror of the rule above, on the unblock side. The
+      // outcome must answer one question — is the blocks row gone — and
+      // nothing that happens after the row is deleted may change the answer.
+      group('telemetry never decides the unblock outcome (BUT-2069)', () {
+        late _ThrowingSocialTracker throwingTracker;
+
+        setUp(() {
+          throwingTracker = _ThrowingSocialTracker();
+          final analytics = _MockAnalyticsService();
+          when(() => analytics.social).thenReturn(throwingTracker);
+          TestServiceLocator.registerMock<AnalyticsService>(analytics);
+        });
+
+        test(
+          'a throwing analytics call still reports the unblock as done',
+          () async {
+            final result = await managementOperations.unblockUser(
+              'blocked_person',
+            );
+
+            expect(
+              result,
+              isTrue,
+              reason:
+                  'the blocks row is deleted; telling the user it failed is the '
+                  'defect — they see the person still listed as blocked',
+            );
+            verify(() => mockBlockRepo.unblockUser('blocked_person')).called(1);
+            // The call was reached and blew up, so a green result here is the
+            // failure being contained rather than the call being skipped.
+            await Future<void>.delayed(Duration.zero);
+            expect(throwingTracker.attempts, ['blocked_person']);
+          },
+        );
+
+        test('a failed blocks-row delete still reports failure', () async {
+          when(
+            () => mockBlockRepo.unblockUser(any()),
+          ).thenThrow(Exception('permission denied'));
+
+          expect(
+            await managementOperations.unblockUser('blocked_person'),
+            isFalse,
+            reason:
+                'the row still stands, so the person is still blocked — this '
+                'is the one case that must answer false',
+          );
+        });
+
+        test(
+          'unblockUsers counts the row deletes, not the telemetry',
+          () async {
+            expect(
+              await managementOperations.unblockUsers(['a', 'b']),
+              2,
+              reason:
+                  'the bulk loop reads unblockUser, so a telemetry outage must '
+                  'not undercount unblocks that landed',
+            );
+          },
+        );
+
+        test(
+          'a throwing analytics call still reports the BLOCK as standing',
+          () async {
+            mockParentService.setFriendsState(
+              friends: [],
+              incomingRequests: [],
+              outgoingRequests: [],
+              isInitialized: true,
+            );
+
+            final outcome = await managementOperations.blockUser(
+              'blocked_person',
+            );
+
+            expect(outcome.blockLanded, isTrue);
+            await Future<void>.delayed(Duration.zero);
+            expect(throwingTracker.attempts, ['blocked_person']);
           },
         );
       });

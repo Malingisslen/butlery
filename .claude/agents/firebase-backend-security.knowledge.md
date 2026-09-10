@@ -523,7 +523,15 @@ name which doc each end touches before approving it.
   method the projection lives in has faked away the projection itself, so replacing the
   list with `return raw;` stays green — grep the projecting METHOD's name across `test/`,
   and note the fail-closed direction is mechanical only if a writer-side key-set assertion
-  reddens when a new field joins the document. If a key-set gate later lands in
+  reddens when a new field joins the document. A drift test derived from the DART MODEL's
+  `toFirestore()` does not range over the SERVER writers of the same collection — the
+  rename-propagation CF (`on-profile-updated.ts`) and the deletion cascade's anonymizer both
+  write keys onto `recipe_comments`, and a one-time BACKFILL migration writes the very
+  denormalised field the strip decision is argued about. So grade "its only writer is X" and
+  "derived from the writers" as quantifiers over `functions/src` too, and strike the "only
+  writer" clause rather than re-wording it: the argument such a sentence carries (nothing
+  updates the snapshot on re-share/unshare) is usually verifiable on its own and survives
+  the strike. If a key-set gate later lands in
   `firestore.rules`, the projection DEMOTES to defence in depth, and every comment calling
   it "the layer that decides what reaches the bundle" goes stale in that same commit —
   sweep the CONCEPT across repository, manager and test header, not the two files the diff

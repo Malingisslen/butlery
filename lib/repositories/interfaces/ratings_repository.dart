@@ -72,6 +72,12 @@ abstract class RatingsRepository extends Repository<RecipeRating> {
   /// data-export pipeline can sanitize timestamps without round-tripping
   /// through the model. Implementations MUST validate that the caller
   /// owns [userId] (cannot export someone else's ratings).
+  ///
+  /// BUT-2062: `data` is the WHOLE document, and [RecipeRating.toFirestore]
+  /// emits `recipeOwnerId` — a third party's uid — when it is set. A caller
+  /// building an Art. 15 bundle MUST narrow it through an allowlist before it
+  /// reaches the user — `ActivityExportManager` does, via
+  /// `projectExportFields`. Never surface `data` unfiltered.
   Future<List<Map<String, dynamic>>> exportRatingsByUser(
     String userId, {
     int maxDocuments = 1000,

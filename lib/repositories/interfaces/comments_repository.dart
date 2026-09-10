@@ -60,6 +60,12 @@ abstract class CommentsRepository extends Repository<RecipeComment> {
   /// data-export pipeline can sanitize timestamps without round-tripping
   /// through the model. Implementations MUST validate that the caller
   /// owns [userId] (cannot export someone else's comments).
+  ///
+  /// BUT-2062: `data` is the WHOLE document, third-party identifiers included
+  /// (`recipeOwnerId`, `sharedWithUserIds`, the `reactions` uid map). A caller
+  /// building an Art. 15 bundle MUST narrow it through an allowlist before it
+  /// reaches the user — `ActivityExportManager` does, via
+  /// `projectExportFields`. Never surface `data` unfiltered.
   Future<List<Map<String, dynamic>>> exportCommentsByAuthor(
     String userId, {
     int maxDocuments = 1000,

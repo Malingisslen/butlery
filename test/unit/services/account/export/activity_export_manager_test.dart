@@ -185,7 +185,11 @@ void main() {
         ratings: [
           {
             'id': 'r1',
-            'data': {'stars': 5},
+            // BUT-2062: the section projects through an allowlist, so the
+            // fixture uses the field the writer actually emits. An invented
+            // key (`stars`) is now dropped, which would test the projection
+            // rather than the reshaping this case is about.
+            'data': {'rating': 5},
           },
         ],
       );
@@ -206,7 +210,7 @@ void main() {
       expect(ratings.single, {
         'rating_id': 'r1',
         'type': 'recipe',
-        'data': {'stars': 5},
+        'data': {'rating': 5},
       });
       expect(result['total_comments'], 1);
       expect(result['total_ratings'], 1);
@@ -221,7 +225,7 @@ void main() {
           ratings: [
             {
               'id': 'r1',
-              'data': {'stars': 3},
+              'data': {'rating': 3},
             },
           ],
         );

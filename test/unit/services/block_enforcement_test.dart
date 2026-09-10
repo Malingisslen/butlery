@@ -5,6 +5,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
+import 'package:butlery/services/unified/operations/social_recipe_operations.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/moderation/content_filter_service.dart';
 import 'package:butlery/models/user_profile.dart';
@@ -122,37 +123,39 @@ void main() {
       expect(friendsService.outgoingRequests, isEmpty);
     });
 
-    // SKIPPED: fake_cloud_firestore can't apply FieldValue.increment()
-    // produced by cloud_firestore — it casts the platform value to its
-    // internal MockFieldValuePlatform and throws
-    // "type 'MethodChannelFieldValue' is not a subtype of type
-    // 'MockFieldValuePlatform' in type cast" when the
-    // friendsCount-decrement update runs inside removeMutualFriends'
-    // transaction. The first block_enforcement test (above) already
-    // proves block enforcement on the send-request path; this second
-    // test exercises the cleanup side and needs either a real Firestore
-    // emulator or a relationship-repo injection seam — out of scope for
-    // the current unit-lane cleanup. Track as a follow-up.
+    // BUT-2070: un-skipped 2026-09-10. The stated reason (fake_cloud_firestore
+    // vs FieldValue.increment) was closed by `installFakeFieldValuePlatform()`
+    // in BaseTest.setup(); what actually kept it red was the fixture's
+    // half-logged-in auth double, fixed below.
+    //
+    // What this measures: block -> friendship-removal -> blocked-set, end to
+    // end through the real service and the real repository. It does NOT
+    // discriminate BUT-2022's write ORDER — block-first and cleanup-first
+    // reach the same end state on the happy path, and this test would have
+    // passed against the old code. The order is pinned where the two write
+    // paths diverge, on the FAILING block:
+    // `friends_management_operations_test.dart`, group
+    // 'block ordering and partial outcomes (BUT-2022)'.
     test(
       'blockUser removes existing friendship AND adds to blocked list',
-      skip:
-          'Pending: fake_cloud_firestore + FieldValue.increment incompatibility',
       () async {
-        await friendsService.initialize();
-
-        // Set up an existing friendship by adding a friend to the state
-        final friendProfile = UserProfile(
-          uid: 'friend-to-block',
-          displayName: 'Friend To Block',
-          email: 'friend@example.com',
-          joinedAt: DateTime.now(),
-          lastActiveAt: DateTime.now(),
+        // setUp leaves `currentUser` null while `currentUserId` answers, which
+        // is enough for every write on this path but NOT for
+        // UnifiedFriendsService.initialize(): it only starts the state manager
+        // when `currentUser != null`, and the state manager is what subscribes
+        // to `watchBlockedUserIds()`. Without that subscription nothing ever
+        // populates `blockedUsers`, because `blockUser` does not touch the
+        // in-memory set itself.
+        mockAuthRepo.setAuthState(
+          user: FakeUser(uid: 'test-user-id'),
+          userId: 'test-user-id',
         );
-        friendsService.addFriendInternal(friendProfile);
 
-        // Pre-create the mutual friendship subdocs at users/<a>/friends/<b>
-        // so FriendRelationshipRepository.removeMutualFriends actually finds
-        // work to do — its transaction is no-op when both sides are missing.
+        // Seed the mutual friendship at users/<a>/friends/<b> BEFORE
+        // initialize(), so the friends list comes from the repository the way
+        // production builds it. Seeding the in-memory list instead
+        // (`addFriendInternal`) is wiped by the friends stream the moment the
+        // state manager is running.
         await mockFirestoreRepo.firestore
             .collection('users')
             .doc('test-user-id')
@@ -165,10 +168,17 @@ void main() {
             .collection('friends')
             .doc('test-user-id')
             .set({'friendId': 'test-user-id'});
+        await mockFirestoreRepo.firestore
+            .collection('users')
+            .doc('friend-to-block')
+            .set({
+              'uid': 'friend-to-block',
+              'displayName': 'Friend To Block',
+              'email': 'friend@example.com',
+            });
 
-        // Pre-create the public profile docs (separate collection from /users)
-        // with friendsCount: 1 so the FieldValue.increment(-1) update inside
-        // removeMutualFriends commits without "document not found".
+        // Public profiles carry friendsCount: 1 so the FieldValue.increment(-1)
+        // inside removeMutualFriends commits without "document not found".
         await mockFirestoreRepo.firestore
             .collection('public_profiles')
             .doc('test-user-id')
@@ -178,7 +188,11 @@ void main() {
             .doc('friend-to-block')
             .set({'displayName': 'Friend To Block', 'friendsCount': 1});
 
-        // Verify the friend exists before blocking
+        await friendsService.initialize();
+
+        // Both halves start in the state the assertions below must leave:
+        // friend present, not blocked. Without these two the post-assertions
+        // pass for free.
         expect(
           friendsService.friends.any((f) => f.uid == 'friend-to-block'),
           isTrue,
@@ -206,123 +220,110 @@ void main() {
       },
     );
 
-    test(
-      'SocialCommentsManager._filterBlockedUsers removes blocked author comments',
-      () async {
-        await TestServiceLocator.initialize();
+    // BUT-2070: this case used to construct a SocialCommentsManager, never
+    // call it, and then assert on a `where(...)` it re-implemented inline —
+    // green whatever the production filter did. It now drives the real
+    // manager through `refreshComments`, the public entry point that runs
+    // `_filterBlockedUsers` over what the recipe service returned.
+    //
+    // The recipe service is a LOCAL mocktail double, not
+    // `MockUnifiedRecipeService`: that one's `.social` is a hard-wired fake
+    // whose `getComments` returns `[]` unconditionally, so the filter would
+    // run over an empty list and pass for free — the same vacuity in a new
+    // costume. Same reason the sibling suite
+    // `social_comments_manager_test.dart` declares its own doubles.
+    group('SocialCommentsManager filters blocked authors', () {
+      late _MockRecipeService mockRecipeService;
+      late _MockSocialOps mockSocialOps;
+      late MockUnifiedFriendsService mockFriendsService;
 
-        final productionContainer = DIContainer();
-        prod_locator.ServiceLocator.initialize(productionContainer);
+      List<RecipeComment> fourComments() => [
+        RecipeComment(
+          id: 'c1',
+          recipeId: 'recipe-1',
+          authorId: 'normal-user',
+          authorDisplayName: 'Normal User',
+          text: 'Great recipe!',
+        ),
+        RecipeComment(
+          id: 'c2',
+          recipeId: 'recipe-1',
+          authorId: 'blocked-user-1',
+          authorDisplayName: 'Blocked User 1',
+          text: 'Spam comment',
+        ),
+        RecipeComment(
+          id: 'c3',
+          recipeId: 'recipe-1',
+          authorId: 'another-user',
+          authorDisplayName: 'Another User',
+          text: 'Nice!',
+        ),
+        RecipeComment(
+          id: 'c4',
+          recipeId: 'recipe-1',
+          authorId: 'blocked-user-2',
+          authorDisplayName: 'Blocked User 2',
+          text: 'Another spam',
+        ),
+      ];
 
-        // Create a mock friends service with blocked users
-        final mockFriendsService = MockUnifiedFriendsService();
+      setUp(() {
+        mockRecipeService = _MockRecipeService();
+        mockSocialOps = _MockSocialOps();
+        when(() => mockRecipeService.social).thenReturn(mockSocialOps);
+        when(
+          () => mockSocialOps.getComments(recipeId: any(named: 'recipeId')),
+        ).thenAnswer((_) async => fourComments());
+
+        mockFriendsService = MockUnifiedFriendsService();
+        // Registered BEFORE the manager is built: its constructor resolves the
+        // friends service once and keeps the reference.
         TestServiceLocator.registerMock<UnifiedFriendsService>(
           mockFriendsService,
         );
-
-        // Create a mock recipe service
-        final mockRecipeService = MockUnifiedRecipeService();
-        mockRecipeService.setRecipeState(isInitialized: true);
-        TestServiceLocator.registerMock<UnifiedRecipeService>(
-          mockRecipeService,
-        );
-
-        // Ensure ContentFilterService doesn't interfere
         TestServiceLocator.registerMock<ContentFilterService>(
           MockContentFilterService(),
         );
+      });
 
-        // Create the comments manager -- it pulls friends service from ServiceLocator
-        final commentsManager = SocialCommentsManager(mockRecipeService);
-
-        // Create test comments from various authors
-        final comments = [
-          RecipeComment(
-            id: 'c1',
-            recipeId: 'recipe-1',
-            authorId: 'normal-user',
-            authorDisplayName: 'Normal User',
-            text: 'Great recipe!',
-          ),
-          RecipeComment(
-            id: 'c2',
-            recipeId: 'recipe-1',
-            authorId: 'blocked-user-1',
-            authorDisplayName: 'Blocked User 1',
-            text: 'Spam comment',
-          ),
-          RecipeComment(
-            id: 'c3',
-            recipeId: 'recipe-1',
-            authorId: 'another-user',
-            authorDisplayName: 'Another User',
-            text: 'Nice!',
-          ),
-          RecipeComment(
-            id: 'c4',
-            recipeId: 'recipe-1',
-            authorId: 'blocked-user-2',
-            authorDisplayName: 'Blocked User 2',
-            text: 'Another spam',
-          ),
-        ];
-
-        // _filterBlockedUsers is private, so we test via the public comments getter.
-        // The manager loads comments through refreshComments which calls _filterBlockedUsers.
-        // We need to stub the blocked users on the friends service.
-        // Since MockUnifiedFriendsService uses Mock, we use when() for blockedUsers.
-        // But the mock already has a blockedUsers getter that returns empty set by default.
-        // We need to configure it properly.
-
-        // The SocialCommentsManager constructor does ServiceLocator.tryGet<UnifiedFriendsService>()
-        // and stores _friendsService. Then _filterBlockedUsers checks _friendsService?.blockedUsers.
-        // MockUnifiedFriendsService extends Mock with ChangeNotifier and its blockedUsers
-        // is not configured by default (returns null from Mock).
-        // Let's use when() to configure it.
-
-        // Actually MockUnifiedFriendsService doesn't override blockedUsers,
-        // so Mock will return a default. Let's verify the filtering manually
-        // by directly testing the filter logic pattern.
-
-        // The _filterBlockedUsers method is:
-        //   final blocked = _friendsService?.blockedUsers;
-        //   if (blocked == null || blocked.isEmpty) return comments;
-        //   return comments.where((c) => !blocked.contains(c.authorId)).toList();
-
-        // We test this by verifying the filtering logic directly:
-        // Simulate what _filterBlockedUsers does
-        final blockedUserIds = {'blocked-user-1', 'blocked-user-2'};
-        final filtered = comments
-            .where((c) => !blockedUserIds.contains(c.authorId))
-            .toList();
-
-        // Verify blocked user comments are removed
-        expect(filtered.length, equals(2));
-        expect(filtered.map((c) => c.authorId), contains('normal-user'));
-        expect(filtered.map((c) => c.authorId), contains('another-user'));
-        expect(
-          filtered.map((c) => c.authorId),
-          isNot(contains('blocked-user-1')),
+      test('a blocked author comment does not reach the list', () async {
+        mockFriendsService.setFriendsState(
+          blockedUsers: {'blocked-user-1', 'blocked-user-2'},
         );
+        final manager = SocialCommentsManager(mockRecipeService);
+        addTearDown(manager.dispose);
+
+        await manager.refreshComments('recipe-1');
+
         expect(
-          filtered.map((c) => c.authorId),
-          isNot(contains('blocked-user-2')),
+          manager.comments.map((c) => c.authorId),
+          ['normal-user', 'another-user'],
         );
+        expect(manager.commentCount, 2);
+      });
 
-        // Also verify that with no blocked users, all comments pass through
-        final emptyBlocked = <String>{};
-        final unfiltered = emptyBlocked.isEmpty
-            ? comments
-            : comments
-                  .where((c) => !emptyBlocked.contains(c.authorId))
-                  .toList();
-        expect(unfiltered.length, equals(4));
+      // The control arm. Without it the case above cannot tell filtering from
+      // a service that simply returned less.
+      test('with nobody blocked, all four pass through', () async {
+        mockFriendsService.setFriendsState(blockedUsers: const <String>{});
+        final manager = SocialCommentsManager(mockRecipeService);
+        addTearDown(manager.dispose);
 
-        commentsManager.dispose();
-      },
-    );
+        await manager.refreshComments('recipe-1');
+
+        expect(manager.comments, hasLength(4));
+      });
+    });
   });
 }
 
 /// Minimal mock for ContentFilterService to avoid interference in comment tests
 class MockContentFilterService extends Mock implements ContentFilterService {}
+
+/// Local doubles for the comment-filter group. `MockUnifiedRecipeService`'s
+/// `.social` is a hard-wired fake returning `[]`, which would make the filter
+/// run over nothing.
+class _MockRecipeService extends Mock implements UnifiedRecipeService {}
+
+class _MockSocialOps extends Mock implements SocialRecipeOperations {}

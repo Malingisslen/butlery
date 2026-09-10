@@ -9611,3 +9611,68 @@ branch it describes, whose mechanism was measured. Per the redundant-guards prin
 this ticket, a reviewer proposing a replacement clause here is the defect, not the fix.
 
 Verdict: pass. No rules change was needed at any point in this review.
+
+## 2026-09-10 — BUT-2062: Art. 15 projection of comments/ratings; the "only writer" quantifier
+
+Commit-gate review of `lib/repositories/interfaces/comments_repository.dart` and
+`ratings_repository.dart` (doc-comment obligation only) plus the manager-side projection in
+`lib/services/account/export/activity_export_manager.dart`.
+
+Verified clean: `validateOwnership(currentUserId: requireCurrentUserId(), resourceOwnerId:
+userId, ...)` unchanged on both export methods (neither repository file is in the staged
+diff); `ActivityExportManager` is the ONLY production caller of either method, so the
+obligation written into the interfaces is discharged where it says it is; `projectExportFields`
+is an allowlist and fails closed; no permission widened, no read widened — `recipe_ratings`
+already reads `allow read: if isAuthenticated()` and a comment's author already reads their
+own document whole, so the change is minimisation of a forwardable file, exactly as the
+deviation entry says.
+
+The one false claim, in THREE places (`.claude/rules/accepted-deviations.md`,
+`docs/architecture/ACCEPTED_DEVIATIONS.md`, and the manager docstring): "its only writer is
+the create in `addComment`" about `recipe_comments.sharedWithUserIds`.
+`functions/src/migrations/backfill-recipe-comments-denorm.ts` updates that field (and
+`recipeOwnerId`) on existing comments. The DECISION (strip it) is unaffected — a backfill
+writes a snapshot too — but the enumeration is false, and the surviving half of the sentence
+("no re-share or unshare updates it") is independently true: no writer under `lib/` or
+`functions/src` touches the field on a share event. Recommended a strike of the "only writer"
+clause, not a rewrite.
+
+Two non-blocking coverage notes:
+- `activity_export_projection_test.dart` derives its writer-drift assertion from
+  `RecipeComment.toFirestore()` + `updatedAt` only. `on-profile-updated.ts`
+  (`authorDisplayName`, `authorAvatarUrl`) and `account-deletion-cascade.ts` (`authorId`,
+  `authorDisplayName`, `authorAvatarUrl`, `isDeleted`, `text`) also write this collection;
+  every key they emit happens to be decided today, so nothing leaks, but nothing reddens if
+  one of them gains a key.
+- There is no writer-derived assertion for `RecipeRating` at all; the rating lists are
+  complete today (`recipeId, userId, rating, review, createdAt, updatedAt, recipeOwnerId`)
+  by inspection only.
+
+Pre-existing and untouched, now contradicted by the new text: `RecipeComment.sharedWithUserIds`'
+own docstring in `lib/models/recipe_comment.dart` says the field is "Updated when the recipe
+is (re-)shared or unshared". Measured false — nothing updates it on a share event.
+
+### 2026-09-10, round 2 (BUT-2062)
+
+The "only writer" clause is struck in all three copies and the survivors hold as standalone
+sentences ("Also a frozen snapshot: nothing updates it when a recipe is re-shared or
+unshared" — measured true across `lib/` and `functions/src`). The coverage clause is
+narrowed and now UNDERSTATES (the compared set does contain the repository's one `updatedAt`
+stamp, hand-added), which is the safe direction. A `RecipeRating` writer-drift test is built
+and non-vacuous.
+
+New finding, same class one file over: the new rating test's comment says "Both conditional
+keys set … a field the constructor leaves null never enters `written`". `RecipeRating.
+toFirestore` emits `'review': review` UNCONDITIONALLY; only `recipeOwnerId` is conditional.
+The repair round is where the next false sentence lands — again, and this time about a
+serializer three lines from the assertion that reads it.
+
+### 2026-09-10, round 3 (BUT-2062) — clean
+
+Both round-2 findings taken as deletions. `// recipeOwnerId is emitted only when set, so the
+fixture sets it.` matches `RecipeRating.toFirestore`'s one conditional key. The docs entry no
+longer counts tests or claims probing beyond its own probe list. Both deviation entries still
+ground every strip in these two collections' own writers and rules; the struck clauses were
+supporting measurements, never the grounds. Residual noted, not blocking: "the second test"
+in the docs entry lost its antecedent when "Two tests" went — the ordinal survives a strike
+that removed its counting frame, which is the strike-orphaning hazard in its mildest form.

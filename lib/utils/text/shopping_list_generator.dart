@@ -41,6 +41,7 @@ import 'package:butlery/utils/text/unit_converter.dart';
 import 'package:butlery/utils/text/ingredient_parser.dart';
 import 'package:butlery/utils/text/swedish_pluralization.dart';
 import 'package:butlery/utils/text/ingredient_processor.dart';
+import 'package:butlery/utils/text/quantity_parser.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/shopping/ingredient_categorizer.dart';
@@ -235,7 +236,12 @@ class ShoppingListGenerator {
               ? processed.normalizedName
               : '${processed.unit}_${processed.normalizedName}';
 
-          quantities[key] = (quantities[key] ?? 0.0) + processed.quantity;
+          // A SUM, so it needs two near-maximal rows rather than one
+          // overflowing product. Guarded on the same terms anyway.
+          quantities[key] = QuantityParser.finiteQuantityOr1(
+            (quantities[key] ?? 0.0) + processed.quantity,
+            'shopping_list_generator consolidation',
+          );
           units.putIfAbsent(key, () => processed.unit);
           displayNames.putIfAbsent(key, () => processed.originalName.trim());
           categories.putIfAbsent(
@@ -309,8 +315,14 @@ class ShoppingListGenerator {
         // Normalized name improves category detection accuracy
         final processed = IngredientProcessor.parseAndNormalize(rawIngredient);
 
-        // Scale quantity based on portion adjustment
-        final scaledQuantity = processed.quantity * scalingFactor;
+        // BUT-2067: the PRODUCT, not the input. `QuantityParser.parse`
+        // bounds `processed.quantity`, but `scalingFactor` comes from a
+        // portion count the user types, and two finite doubles multiply to
+        // Infinity.
+        final scaledQuantity = QuantityParser.finiteQuantityOr1(
+          processed.quantity * scalingFactor,
+          'shopping_list_generator portion scaling',
+        );
 
         // Determine category using normalized name for better accuracy
         // Example: "hackad lök" → normalized to "lök" → correctly categorized as vegetable

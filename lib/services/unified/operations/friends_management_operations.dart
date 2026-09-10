@@ -438,21 +438,40 @@ class FriendsManagementOperations extends BaseService {
         : BlockOutcome.blockedWithCleanupIssues;
   }
 
+  /// Removes the blocks row, then reports whether that row is gone.
+  ///
+  /// The return value answers ONE question — does the block still stand — and
+  /// the analytics call sits outside the path that decides it, the same way
+  /// [blockUser] does. Before BUT-2069 the call was awaited inside the `try`,
+  /// so a throwing `logUserUnblocked` turned a landed unblock into `false`:
+  /// the app denying something that had already happened, which is the shape
+  /// BUT-2022 removed from [blockUser] and left standing here.
+  ///
+  /// Telemetry failures are logged and nothing else. `AppLogger.warning` writes
+  /// to the dev console only — it reaches neither Crashlytics nor any analytics
+  /// aggregate — so a run of failed unblock events would undercount silently.
+  /// That is the accepted price of not letting telemetry decide what the user
+  /// is told, and it is the same trade [blockUser] already makes.
   Future<bool> unblockUser(String userId) async {
+    final blockRepo = ServiceLocator.get<FirebaseBlockRepository>();
     try {
       // Delete from blocks collection (real-time stream updates in-memory cache)
-      final blockRepo = ServiceLocator.get<FirebaseBlockRepository>();
       await blockRepo.unblockUser(userId);
-
-      AppLogger.success('User unblocked');
-      await _analyticsService?.social.logUserUnblocked(
-        unblockedUserId: userId,
-      );
-      return true;
     } catch (e) {
       AppLogger.error('Failed to unblock user', e);
       return false;
     }
+
+    AppLogger.success('User unblocked');
+    unawaited(
+      Future<void>.sync(
+        () async =>
+            _analyticsService?.social.logUserUnblocked(unblockedUserId: userId),
+      ).catchError((Object e) {
+        AppLogger.warning('Unblock analytics failed: $e');
+      }),
+    );
+    return true;
   }
 
   /// BUT-993: bulk block. Loops [blockUser] per id. A batched Firestore write isn't a clean optimisation here

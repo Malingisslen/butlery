@@ -9,6 +9,7 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/tagging/ingredient_lookup_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/shopping_category_mapper.dart';
+import 'package:butlery/utils/text/quantity_parser.dart';
 import 'package:butlery/services/unified/modules/shopping_category_preferences_module.dart';
 import 'package:butlery/services/unified/modules/shopping_bulk_item_module.dart';
 import 'package:butlery/services/unified/shopping_failure_message.dart';
@@ -198,8 +199,16 @@ class ShoppingItemManagementModule {
         if (matchIndex >= 0) {
           // Merge: sum amounts into existing item
           final existing = existingItems[matchIndex];
+          // BUT-2067: a sum, so the same guard as in
+          // `shopping_list_generator`. This one is reached repeatedly — the
+          // merge runs every time the same item is added again — so an amount
+          // that has already gone non-finite elsewhere would stay non-finite
+          // here forever.
           final merged = existing.copyWith(
-            amount: existing.amount + newItem.amount,
+            amount: QuantityParser.finiteQuantityOr1(
+              existing.amount + newItem.amount,
+              'shopping_item_management duplicate merge',
+            ),
           );
           itemsToUpdate.add(merged);
         } else {

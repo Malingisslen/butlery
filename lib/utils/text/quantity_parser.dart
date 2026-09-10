@@ -148,8 +148,7 @@ class QuantityParser {
     // input. LLM extraction occasionally hallucinates "-2 dl flour" — a
     // negative quantity has no kitchen semantics and would scale into more
     // nonsense (negative grams after unit conversion). Defaulting to 1.0
-    // matches the existing invalid-input contract; the warning lets us
-    // catch this in observability if it spikes.
+    // matches the existing invalid-input contract.
     if (parsed < 0) {
       AppLogger.warning(
         'Negative quantity "$qtyString" coerced to 1.0',
@@ -178,11 +177,38 @@ class QuantityParser {
     return parsed;
   }
 
-  /// The 1.0 that [parse] returns for input it will not use, with the warning
-  /// that makes a spike visible in observability.
+  /// The 1.0 that [parse] returns for input it will not use, with a warning
+  /// so the coercion is not silent.
+  ///
+  /// `AppLogger.warning` writes to the dev console and nothing else — it
+  /// reaches neither Crashlytics nor any analytics aggregate, so this line
+  /// cannot raise an alert and nobody would notice a run of them. Say what it
+  /// does; a sentence promising observability is a promise no channel keeps.
   static double _invalidQuantityFallback(String qtyString) {
     AppLogger.warning(
       'Non-finite quantity "$qtyString" coerced to 1.0',
+      'QuantityParser',
+    );
+    return 1.0;
+  }
+
+  /// The same 1.0, for a quantity ARITHMETIC result rather than parsed input
+  /// (BUT-2067).
+  ///
+  /// [parse] bounds what enters the pipeline; nothing bounded what the
+  /// pipeline then computed. A portion scale is a PRODUCT and two near-maximal
+  /// doubles multiply to `Infinity`, which reaches `UnifiedShoppingItem.amount`,
+  /// prints as the word "Infinity" through `formatSwedishDecimal`, and then
+  /// cannot be read back by `parseSwedishDecimal` — so the user cannot edit
+  /// their way out of the field without retyping it.
+  ///
+  /// Check the RESULT, never the inputs: both operands can be finite and the
+  /// result not be. [source] labels the call site, so a warning says where the
+  /// coercion happened.
+  static double finiteQuantityOr1(double value, String source) {
+    if (value.isFinite) return value;
+    AppLogger.warning(
+      'Non-finite quantity from $source coerced to 1.0',
       'QuantityParser',
     );
     return 1.0;

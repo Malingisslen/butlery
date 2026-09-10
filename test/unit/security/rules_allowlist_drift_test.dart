@@ -412,15 +412,18 @@ const _knowinglyUncovered = <_Uncovered>[
     'notification_batches — FirebaseNotificationBatchRepository',
     'match /notification_batches/{batchKey}',
   ),
-  // BUT-2038: no Dart writer exists — nothing in `lib/` creates a suggestion,
-  // so the writer comparison this guard performs has nothing to compare against.
-  // The allowlist is the SUBMISSION half of `IngredientSuggestion`
-  // (`functions/src/ingredients/on-suggestion-created.ts`), and it is pinned by
-  // `ingredient-suggestions-rules.test.ts` C7-C12 instead, where C12 accepts the
-  // optional content fields. The day a Dart
-  // writer lands, this entry goes and the writer comparison takes over.
+  // BUT-2059: not compared against a WRITER — nothing in `lib/` creates a
+  // suggestion, so there is no `toFirestore` to read. Compared instead against
+  // the Art. 15 export allowlist by `every client-writable
+  // ingredient_suggestions field is exported`, the same way `user_moderation`
+  // above is compared against its projection. It stays in this list because
+  // the census is a count over every `keys().hasOnly` block plus this list's
+  // anchors — removing the line would leave the block counted by nothing and
+  // redden the census. The day a Dart writer lands, this entry goes and the
+  // writer comparison takes over.
   _Uncovered(
-    'ingredient_suggestions — no Dart writer; pinned by its rules suite',
+    'ingredient_suggestions — no Dart writer; compared against the Art. 15 '
+        'projection',
     'match /ingredient_suggestions/{suggestionId}',
   ),
 ];
@@ -509,6 +512,66 @@ void main() {
         "'([^']+)'",
       ).allMatches(loop!.group(1)!).map((m) => m.group(1)!).toSet(),
       _moderationCounterKeys,
+    );
+  });
+
+  // BUT-2059: `ingredient_suggestions` was in `_knowinglyUncovered` because
+  // the writer comparison this file performs needs a Dart WRITER and nothing
+  // in `lib/` creates a suggestion. That left the collection's rules allowlist
+  // and its Art. 15 projection as two hand-kept copies with nothing between
+  // them, and the drift direction that matters reddens nothing on its own:
+  // somebody widens the rules with a new client-writable content field, the
+  // export's fail-closed allowlist does not learn about it, the client stores
+  // it, and the user's own content disappears from their own bundle in
+  // silence.
+  //
+  // The relation is SUBSET, not equality, and neither list contains the other.
+  // `userId` is in the rules and deliberately not in the export — it is the
+  // query's own filter, not a withholding. `reviewedAt`, `notifiedAt` and
+  // `sourceApp` are in the export and not in the rules, because the Admin SDK
+  // writes them and bypasses rules. An assertion written as export ⊆ rules is
+  // wrong in the PERMISSIVE direction.
+  test('every client-writable ingredient_suggestions field is exported', () {
+    final rulesKeys = _allowlistAfter(
+      rules,
+      'match /ingredient_suggestions/{suggestionId}',
+      'ingredientName',
+    );
+
+    final dart = File(
+      'lib/services/account/export/content_export_manager.dart',
+    ).readAsStringSync();
+    // Anchored at the declaration for the reason `_allowlistAfter`'s docstring
+    // gives: an unanchored scan rebinds silently the day a second
+    // `static const _...Fields = <String>[...]` appears above this one.
+    final at = dart.indexOf('_ingredientSuggestionFields');
+    expect(
+      at,
+      isNot(-1),
+      reason: '_ingredientSuggestionFields is gone or renamed',
+    );
+    final list = RegExp(r'<String>\[([^\]]*)\]').firstMatch(dart.substring(at));
+    expect(
+      list,
+      isNotNull,
+      reason:
+          'the Art. 15 allowlist is gone or rewritten in a form this guard '
+          'cannot see — if it moved, move this assertion with it rather than '
+          'deleting it',
+    );
+    final exportKeys = RegExp(
+      "'([^']+)'",
+    ).allMatches(list!.group(1)!).map((m) => m.group(1)!).toSet();
+
+    expect(
+      rulesKeys.difference(exportKeys.union({'userId'})),
+      isEmpty,
+      reason:
+          'a client may write a field the Art. 15 export does not carry. The '
+          "export fails closed, so the field is dropped from that person's "
+          'own bundle without anything reddening — add it to '
+          '_ingredientSuggestionFields, or decide to withhold it and say so in '
+          'the data_minimisation line of that section.',
     );
   });
 

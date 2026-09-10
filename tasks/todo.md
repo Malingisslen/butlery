@@ -1,3 +1,222 @@
+# Sprint 2026-09-10 (kväll) — sju ärenden, fyra kluster
+
+Vald av `/delivery:sprint-execute`. Föregående sprint är stängd (Slutstatus fylld, allt
+committat) och ligger i arkivet nedan.
+
+**Router, batchens filunion vid urval** (9 sökvägar) -> **`single`**, panel
+`["Data Analyst / BI", "Performance Engineer", "Trust & Safety / Content Moderation",
+"Vendor / Procurement Manager"]`, `high_stakes_hits: []`.
+Utdelningen sker i den här sessionen, som kan sammankalla — så kritiken körs FÖRE bygget.
+Om unionen ändras innan bygget körs routern om på den union som faktiskt delas ut.
+
+Steg 0 mot HEAD är gjord för alla sju: varje premiss gäller fortfarande (greparna står
+under respektive ärende).
+
+---
+
+## Kluster A — blockering (två ärenden, samma kod)
+
+### [Tier A] BUT-2069 — `unblockUser` säger "kunde inte avblockera" fast det gick (Medium, Bug)
+
+Disposition: **build-review** — bygget är en ren korrekthetsfix, men ärendets kommentar bär
+en separat öppen fråga till Malin (återhämtningsväg för halvt blockerat läge) som INTE byggs.
+
+Steg 0, mätt: `lib/services/unified/operations/friends_management_operations.dart:448`
+har `await _analyticsService?.social.logUserUnblocked(` inuti `try`; `blockUser` på rad 428
+har redan `unawaited(...)`. Premissen gäller.
+
+Acceptanskriterier:
+- [x] `{text: "logUserUnblocked ligger utanfor den vag som avgor unblockUser returvarde, med egen felhantering - samma form som blockUser rad 428", kind: diff}`
+- [x] `{text: "Ett kastande analysanrop kan inte gora en lyckad avblockering till false; test som fejkar just det, mutationsprovat rott", kind: diff}`
+- [x] `{text: "blockUsers/unblockUsers-slingorna kontrollerade for samma koppling - lagade eller namngivna som fria", kind: diff}`
+- [x] `{text: "De tva metoderna behandlar telemetri likadant, eller sa star det skrivet varfor inte", kind: diff}`
+- [x] `{text: "INTE gjort: ingen atervinningsvag for halvt blockerat lage - Malins fraga, star kvar pa arendet", kind: diff}`
+
+### [Tier A] BUT-2070 — `block_enforcement_test` är skippad på ett skäl som kan vara inaktuellt (Medium, test-gap)
+
+Disposition: **build**.
+
+Steg 0, mätt: `test/unit/services/block_enforcement_test.dart:136-139` bär
+`skip: 'Pending: fake_cloud_firestore + FieldValue.increment incompatibility'`.
+
+Acceptanskriterier:
+- [x] `{text: "skip: borttaget och sviten KORD - utfallet rapporterat, inte antaget", kind: diff}`
+- [x] `{text: "Gront: raden borta. Rott: lagat, eller ett skal som ar MATT i dag och daterat", kind: diff}`
+- [x] `{text: "Kontrollerat att testet fortfarande matter det det pastar efter BUT-2022:s omvanda ordning", kind: diff}`
+
+---
+
+## Kluster B — oändlig mängd och läckta prenumerationer
+
+### [Tier A] BUT-2067 — fjärde producenten av oändlig mängd (Medium, Bug)
+
+Disposition: **build**.
+
+Steg 0, mätt: `shopping_list_generator.dart:313` `processed.quantity * scalingFactor` går
+rakt in i `amount`; `grep isFinite lib/` ger sex träffar och ingen av dem ligger på den
+här vägen. Premissen gäller.
+
+Acceptanskriterier:
+- [x] `{text: "scaledQuantity har finitetskontroll med LOGGAD 1.0-fallback - kontrollen ligger pa PRODUKTEN, inte pa indata", kind: diff}`
+- [x] `{text: "De tva summorna (shopping_list_generator ackumulatorn, shopping_item_management_module dubblettsammanslagningen) har fatt ett MEDVETET beslut - lagade eller namngivna", kind: diff}`
+- [x] `{text: "Test for en portionsskalning som spiller over, mutationsprovat rott", kind: diff}`
+- [x] `{text: "Fyra producenter av samma beslut: delad hjalpare, eller ett skrivet skal till varfor inte", kind: diff}`
+
+### [Tier A] BUT-2063 — `startMonitoring()` är inte idempotent (Medium, performance)
+
+Disposition: **build**.
+
+Steg 0, mätt — och det ÄNDRAR ärendets egen prissättning: `grep -rn "startMonitoring()" lib/`
+ger EN anropare, `recipe_collaborative_manager.dart:370`, och den gjordes idempotent av
+BUT-2052. Så batterikostnaden ärendet oroar sig för kan i dag inte uppstå från appens kod.
+Defekten är verklig (publikt API som läcker vid andra anrop) men den är ett djupförsvar,
+inte en skarp kostnad. Det skrivs i koden, inte som en fotnot här.
+
+Acceptanskriterier:
+- [x] `{text: "Tva startMonitoring()-anrop i rad ger EN prenumeration och EN timer", kind: diff}`
+- [x] `{text: "stopMonitoring() foljt av startMonitoring() fungerar fortfarande - pinnat", kind: diff}`
+- [x] `{text: "Test som pinnar bada, mutationsprovat rott", kind: diff}`
+- [x] `{text: "Anroparrakningen star i koden: EN anropare i lib/, redan idempotent sedan BUT-2052 - alltsa djupforsvar, inte en matt batterikostnad", kind: diff}`
+
+---
+
+## Kluster C — artikel 15 (GDPR)
+
+### [Tier C] BUT-2062 — kommentars- och betygsexporten returnerar rå `doc.data()` (Medium, security)
+
+Disposition: **build-review** — projektionen byggs konservativt (samma mönster som repot
+redan använt), men VAD som behålls är ett beslut. Parkeras In Review.
+(Ursprungligen skrev den här raden att `sharedWithUserIds` är Malins fråga. Panelen
+motbevisade det — se Fas 1.4.)
+
+Steg 0, mätt: `firebase_comments_repository.dart:475-477` och
+`firebase_ratings_repository.dart:532-534` returnerar båda
+`{'id': doc.id, 'data': doc.data()}`. Premissen gäller.
+
+Acceptanskriterier:
+- [x] `{text: "Bada exportmetoderna projicerar genom en allowlist som failar CLOSED - ett odeklarerat falt aker inte med", kind: diff}`
+- [x] `{text: "Sektionerna bar en data_minimisation-mening som sager vad som utelamnats", kind: diff}`
+- [x] `{text: "Beslutet ar daterat i BADA .claude/rules/accepted-deviations.md och docs/architecture/ACCEPTED_DEVIATIONS.md, i samma redigering", kind: diff}`
+- [x] `{text: "Beslutet ar argumenterat pa DE HAR TVA samlingarnas egna fakta - ingen harledning ur BUT-1732/1772/1450, vilket ar felslutet de posterna finns for att dokumentera", kind: diff}`
+- [x] `{text: "Test som pinnar att ett odeklarerat falt INTE aker med, mutationsprovat rott", kind: diff}`
+- [~] `{text: "sharedWithUserIds-fragan star i posten som OPPEN och gar till Malin - den avgors inte har", kind: diff}` — **UPPHÄVT under Fas 1.4.** PM-, Legal- och DPO-sätena mätte oberoende att fältet ska avgöras här, inte skickas vidare. Det är STRUKET och beslutat, och skälet står i båda avvikelseposterna. Kriteriet står kvar oikryssat i stället för raderat, eftersom det är protokollet över vad som ändrades och varför.
+
+### [Tier A] BUT-2059 — inget kopplar reglernas fältlista till exportens (Medium, test-gap)
+
+Disposition: **build**.
+
+Steg 0, mätt: `test/unit/security/rules_allowlist_drift_test.dart:423` bär
+`_knowinglyUncovered`-posten `'ingredient_suggestions — no Dart writer; pinned by its rules suite'`,
+och rad 475 har `user_moderation`-likhetstestet som ärendet pekar ut som instrumentet.
+
+Acceptanskriterier:
+- [x] `{text: "Ett fall som drar BADA listorna ur kallkoden och asserterar rulesKeys delmangd av exportKeys union {userId} - DELMANGD, inte likhet", kind: diff}`
+- [x] `{text: "Mutationsprovat: ett falt i reglernas lista utan motsvarighet i exportens gor testet rott", kind: diff}`
+- [x] `{text: "_knowinglyUncovered-posten for ingredient_suggestions ar antingen borttagen eller sa star skalet till att den stannar", kind: diff}`
+- [x] `{text: "Rakningsassertionen pa rad ~594 stammer efter andringen", kind: diff}`
+
+---
+
+## Kluster D — verktyg
+
+### [Tier A] BUT-2065 — `test:rules:all` är en `&&`-kedja (Medium, test-gap)
+
+Disposition: **build**. Rör bara `functions/package.json` (plus ev. ett litet skript).
+
+Steg 0, mätt: `functions/package.json:70` kedjar ts-node-anropen med `&&`.
+
+Acceptanskriterier:
+- [x] `{text: "En rodnande svit tidigt hindrar inte senare sviter fran att koras", kind: diff}`
+- [x] `{text: "Kedjan failar fortfarande om NAGON svit failar - exitkoden ar icke-noll", kind: diff}`
+- [x] `{text: "Utdatan sager hur manga sviter som kordes och vilka som fol", kind: diff}`
+- [x] `{text: "Sviterna delar en emulator och rensar inte mellan sig - parallellkorning valjs INTE utan att det ar matt", kind: diff}`
+
+---
+
+## Needs you (Tier D) — inget den här sprinten
+
+## Ej valda, med skäl
+- **BUT-2057** — utplockad av gårdagens sprint efter mätning; åtgärden kräver Malins beslut.
+- **BUT-2045** — Tier D, kräver skarp projektåtkomst.
+- **BUT-2017**, **BUT-1996**, **BUT-1730**, **BUT-2020** — för stora för en delad batch.
+- **BUT-2027** (getUserProfiles) — tio anropare, egen sprint.
+- `need-malin`-märkta ärenden — beslutskön, inte bygget.
+
+## Fas 1.4 — panelens bindande villkor
+
+**Två routningar, och den andra ändrade tiern.** Urvalets union (9 sökvägar) gav `single`,
+panel om fyra roller, som kördes blint och svarade: fyra `approve-with-conditions`, noll
+invändningar. När bygget visade att `data_minimisation`-meningen måste skrivas i
+`activity_export_manager.dart` gav samma routning på den FAKTISKA unionen (11 sökvägar)
+**`full-panel`**, `high_stakes_hits: ["lib/services/account/export/activity_export_manager.dart"]`,
+tio roller. Utdelaren är den här sessionen, som kan sammankalla — så de sex återstående
+sätena kördes blint på BUT-2062 innan något byggdes där. Det är precis den VIDGNING
+regeln finns för.
+
+Utfall, tio säten: nio `approve-with-conditions`, **en `object`** (Software Architect, om
+lagerplacering). Ingen invändning gällde om ändringen ska göras.
+
+**Invändningen, och hur den avgjordes.** Security Architect ville lägga projektionen i de två
+REPOSITORIERNA; Software Architect invände och ville ha den i MANAGERN. Avgjort på mätning,
+inte omröstning: bägge gränssnittens dokumentation säger redan att rå `{id, data}` returneras
+just för att exportkedjan ska forma det, och `firebase_comments_repository.dart` är 479 rader
+utan rad i `ACCEPTED_LARGE_FILES.md` (en projektion där spränger 500-radersvakten) medan
+`firebase_ratings_repository.dart` redan är 536 mot en rad som säger 507. Risken som
+motiverade repositoriet — en framtida andra anropare — täcks i stället av skyldigheten som nu
+står i båda gränssnitten och av det skrivardrivna drifttestet. Skrivet i avvikelseposten.
+
+**Villkor som ÄNDRADE bygget** (alltså inte bara bekräftade det):
+- T&S mätte ett FJÄRDE läckfält på kommentaren, `reactions` — en karta emoji -> andras uid:n,
+  som planen inte kände till. Med i strykbeslutet, och restposten namngiven.
+- T&S mätte att det TREDJE testet i `block_enforcement_test.dart` är VAKUÖST: det byggde en
+  `SocialCommentsManager`, anropade den aldrig, och asserterade på ett `where(...)` det
+  skrivit om själv. Omskrivet till att driva den riktiga managern via `refreshComments`,
+  med en kontrollarm. Mutationsprovat.
+- Data Analyst mätte att `AppLogger.warning` INTE når Crashlytics eller något analysaggregat,
+  bara utvecklarkonsolen. Så meningen "makes a spike visible in observability" i
+  `quantity_parser.dart` var falsk och ströks; ingen ny kommentar påstår observerbarhet.
+- PM, Legal och DPO landade oberoende på att `sharedWithUserIds` INTE ska gå till Malin som
+  öppen fråga utan avgöras här. Gjort: struket, med eget skäl.
+- Legal och DPO mätte att `authorAvatarUrl` saknades i BÅDA listorna, alltså skulle ha
+  fallit bort tyst — och det är begärandens EGEN avatar. Nu uttryckligen BEHÅLLEN.
+- Security Architect krävde `recipeOwnerId` som uttryckt strykning på BETYG. Hans radnummer
+  var fel (rad 116 är `validateUpdatePermission`), men sakfrågan höll: `RecipeRating.toFirestore`
+  emitterar fältet när det är satt. Struket som beslut, inte som frånvaro.
+- Security + DPO krävde ett SKRIVARDRIVET drifttest utöver fail-closed-testet. Byggt.
+- Legal, DPO och Security krävde att `data_minimisation`-meningen ligger på FELGRENEN också,
+  byte-identisk. Byggt och pinnat.
+- Vendor mätte att `functions/scripts/run-all-tests.js` redan löser BUT-2065:s form utan
+  beroenden. Följt: noll nya npm-beroenden.
+- Performance krävde att testet asserterar EN prenumeration och EN timer, inte "kraschar
+  inte". Gjort via anropsräkning på repositoriet.
+
+## Slutstatus
+
+| Ärende | Utfall | Vad som gjordes |
+| -- | -- | -- |
+| BUT-2069 | klart | telemetrianropet av utfallsvägen, som `blockUser` |
+| BUT-2070 | klart | skip borttaget, verklig orsak lagad, vakuöst tredje test omskrivet |
+| BUT-2067 | klart | producenterna delar EN finitetskontroll |
+| BUT-2063 | klart | `startMonitoring()` idempotent, `stopMonitoring()` nollar |
+| BUT-2062 | klart | fail-closed projektion + beslut daterat i båda filerna |
+| BUT-2059 | klart | delmängdstest reglerna -> exporten, skrivet ur källan |
+| BUT-2065 | klart | `&&`-kedjan ersatt av en insamlande körare |
+
+## Deviation log
+- [discovery] BUT-2063: ärendet bad om att anroparna RÄKNAS. En enda i `lib/`, och den gjordes idempotent av BUT-2052 -> defekten är verklig men djupförsvar, inte en mätt batterikostnad. Står i koden, inte som fotnot.
+- [deviation] BUT-2062: routern gav `single` vid urval och `full-panel` när `activity_export_manager.dart` kom med i unionen -> sex säten till sammankallades innan något byggdes där.
+- [deviation] BUT-2062: Software Architect INVÄNDE mot lagerplaceringen -> avgjort på 500-radersvakten och gränssnittens egen dokumentation, inte på röstetal. Skrivet i avvikelseposten.
+- [discovery] BUT-2070: skip-skälet var mycket riktigt inaktuellt, men testet föll ändå. Orsaken var fixturens halvt inloggade auth-attrapp (`currentUserId` svarar, `currentUser` är null), så tillståndshanteraren aldrig prenumererade på `watchBlockedUserIds()`. Produktionen var korrekt.
+- [discovery] BUT-2070: min egen kommentar påstod att testet pinnar BUT-2022:s skrivordning. Det gör det inte — block-först och städning-först ger samma sluttillstånd på lyckliga vägen. Meningen omskriven till vad testet mäter, med pekare till gruppen som faktiskt pinnar ordningen.
+- [discovery] BUT-2059: `_knowinglyUncovered`-posten går INTE att ta bort. Folkräkningen är ett antal över varje `keys().hasOnly`-block plus listans ankare, så en borttagen rad rödnar folkräkningen. Posten står kvar med omskriven text som säger vad den nu jämförs mot.
+- [deviation] BUT-2065: autoupptäckt av `test:rules:*`-skript hade tappat NIO sviter (åtta integrationstester plus `analyze-corrections-alias`) — mätt, inte antaget. Listan ligger kvar i `package.json`, också för att `check-test-registration.js` läser filerna ur just den strängen.
+- [discovery] BUT-2065: min egen körare räknade `suites.length - failed.length`, vilket rapporterar "2/3 passed" när två aldrig startade. Mutationssonden fångade det. Räknas nu per körning.
+- [deviation] Två redigeringar genom Python-heredoc tappade Dart-escapes (`'` blev `'`) och gav kompileringsfel — samma fälla lärdomsfilen redan beskriver, två gånger på en kväll.
+
+---
+
+# ARKIV — tidigare sprintar
+
 # Sprint 2026-09-10 — fem ärenden, tre kluster
 
 Vald av `/delivery:sprint-execute`.

@@ -2,6 +2,7 @@ import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/utils/text/quantity_parser.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:clock/clock.dart';
 
@@ -82,20 +83,22 @@ class PersonalShoppingOperations {
        _uncheckAllItems = uncheckAllItems;
 
   /// Non-finite amounts coerce to the same `1.0` every other invalid input
-  /// in this file falls back to, and say so — `QuantityParser`'s fallback
-  /// warns for the same reason: a silent coercion makes a spike invisible.
+  /// in this file falls back to, and say so — a silent coercion leaves no
+  /// trace at all.
+  ///
+  /// BUT-2067 moved the coercion and its warning into
+  /// [QuantityParser.finiteQuantityOr1]. This wrapper stays because [source]
+  /// is nullable here and is not in the shared helper.
   ///
   /// Takes a non-nullable [value] on purpose. "No number here" is a
   /// different case with a different answer, and it belongs to the caller;
   /// routing it through this helper would give it the silent branch the
   /// warning exists to remove.
-  static double _finiteAmountOr1(double value, String? source) {
-    if (value.isFinite) return value;
-    AppLogger.warning(
-      'Non-finite shopping amount from "$source" coerced to 1.0',
-    );
-    return 1.0;
-  }
+  static double _finiteAmountOr1(double value, String? source) =>
+      QuantityParser.finiteQuantityOr1(
+        value,
+        'personal_shopping_operations "$source"',
+      );
 
   Future<String?> createList(
     String name, {

@@ -227,5 +227,42 @@ void main() {
         );
       });
     });
+
+    // BUT-2067: the shared guard. Pinned here rather than only at the call
+    // sites, because the property belongs to the helper and the call sites all
+    // fall back to the same 1.0 — a fixture at one of them cannot tell this
+    // guard from a neighbouring one.
+    group('BUT-2067: finiteQuantityOr1 guards an arithmetic RESULT', () {
+      test('a finite result passes through untouched', () {
+        expect(QuantityParser.finiteQuantityOr1(2.5, 'test'), 2.5);
+        expect(QuantityParser.finiteQuantityOr1(0, 'test'), 0);
+        expect(
+          QuantityParser.finiteQuantityOr1(double.maxFinite, 'test'),
+          double.maxFinite,
+        );
+      });
+
+      test('an overflow falls back to 1.0', () {
+        expect(
+          QuantityParser.finiteQuantityOr1(double.maxFinite * 2, 'test'),
+          1.0,
+        );
+        expect(
+          QuantityParser.finiteQuantityOr1(double.negativeInfinity, 'test'),
+          1.0,
+        );
+      });
+
+      // NaN is the case an `!= double.infinity` guard would let through, and
+      // it is reachable rather than theoretical: `double.tryParse` accepts the
+      // literal token "NaN", and `createListFromRecipe` feeds it raw
+      // ingredient text. `formatSwedishDecimal` renders NaN as the word "NaN"
+      // and `parseSwedishDecimal` refuses to read it back — the same dead end
+      // in the amount field that this ticket exists to close.
+      test('NaN falls back to 1.0', () {
+        expect(QuantityParser.finiteQuantityOr1(double.nan, 'test'), 1.0);
+        expect(QuantityParser.finiteQuantityOr1(0 / 0, 'test'), 1.0);
+      });
+    });
   });
 }

@@ -565,5 +565,99 @@ void main() {
       );
       expect(items.single.sourceCount, 2);
     });
+
+    // BUT-2067: `acc.sum` is read by `menu_shopping_list_generator.dart` and
+    // written straight into `UnifiedShoppingItem.amount` — its `?? 1` covers
+    // null only, so a non-finite total passes straight through to the field.
+    //
+    // The unit is `st` and that is load-bearing: it has no measurement family,
+    // so `toCanonicalBase` returns null and the row goes down the passthrough
+    // branch, where the merge cannot touch it. With `dl` this case passes even
+    // with the guard below deleted — the merge's own guard catches the
+    // Infinity and falls back to the SAME 1.0, so the assertion holds by the
+    // wrong route. Two guards sharing one fallback constant is what makes that
+    // invisible.
+    test('a week total that overflows falls back to 1.0', () {
+      final huge = double.maxFinite;
+      final items = MenuShoppingAggregator.aggregate([
+        _p(
+          _recipe('r1', [
+            RecipeIngredient(
+              amount: huge,
+              unit: 'st',
+              name: 'mjöl',
+              raw: '$huge st mjöl',
+            ),
+          ]),
+        ),
+        _p(
+          _recipe('r2', [
+            RecipeIngredient(
+              amount: huge,
+              unit: 'st',
+              name: 'mjöl',
+              raw: '$huge st mjöl',
+            ),
+          ]),
+        ),
+      ]);
+
+      expect(items, hasLength(1));
+      expect(
+        items.single.amount!.isFinite,
+        isTrue,
+        reason:
+            'a non-finite amount renders as the word "Infinity" and '
+            '`parseSwedishDecimal` then refuses to read it back',
+      );
+      expect(items.single.amount, 1.0);
+    });
+
+    // ONE row, no sum. `toCanonicalBase` multiplies dl by 100 on the way to
+    // ml, so this overflows inside the unit merge — after the guard on the
+    // per-recipe total has already passed it as finite.
+    test('a single row that overflows the unit conversion falls back', () {
+      final items = MenuShoppingAggregator.aggregate([
+        _p(
+          _recipe('r1', [
+            const RecipeIngredient(
+              amount: 1e307,
+              unit: 'dl',
+              name: 'mjölk',
+              raw: '1e307 dl mjölk',
+            ),
+          ]),
+        ),
+      ]);
+
+      expect(items, hasLength(1));
+      expect(
+        items.single.amount!.isFinite,
+        isTrue,
+        reason:
+            'x100 into ml overflows a finite dl total, and RecipeIngredient '
+            'parses its amount with a bare num.tryParse — one imported row is '
+            'enough',
+      );
+      expect(items.single.amount, 1.0);
+    });
+
+    test('an ordinary week total is untouched', () {
+      final items = MenuShoppingAggregator.aggregate([
+        _p(
+          _recipe('r1', const [
+            RecipeIngredient(
+              amount: 2,
+              unit: 'dl',
+              name: 'mjöl',
+              raw: '2 dl mjöl',
+            ),
+          ]),
+          2,
+        ),
+      ]);
+
+      expect(items.single.amount, 4.0);
+    });
   });
 }

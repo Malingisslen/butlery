@@ -493,6 +493,31 @@ void main() {
       expect(notifyCalls, 1);
     });
 
+    /// BUT-2067: the merge is a SUM, and a sum of two finite doubles can be
+    /// Infinity. It needs two near-maximal rows rather than one overflowing
+    /// product. The merge runs every time the same item is added again.
+    test('a merge that overflows falls back to 1.0', () async {
+      final existing = UnifiedShoppingItem(
+        name: 'Mjölk',
+        amount: double.maxFinite,
+        unit: 'dl',
+      );
+      lists.add(_seedList(id: 'L', items: [existing]));
+      activeListId = 'L';
+
+      final dup = UnifiedShoppingItem(
+        name: 'Mjölk',
+        amount: double.maxFinite,
+        unit: 'dl',
+      );
+      final ok = await buildModule().addItemsBatchToActiveList([dup]);
+
+      expect(ok, isTrue);
+      expect(fakeRepo.updatedItems, hasLength(1));
+      expect(fakeRepo.updatedItems.single.amount.isFinite, isTrue);
+      expect(fakeRepo.updatedItems.single.amount, 1.0);
+    });
+
     /// Proves (BUT-1106): when a later repo call throws AFTER some merged
     /// updates already committed, the committed merges are rolled back to
     /// their original amounts and the method returns false. The bug-shape:

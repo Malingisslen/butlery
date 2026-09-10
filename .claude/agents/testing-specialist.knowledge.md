@@ -125,7 +125,16 @@ compress it.**
 - **A green probe on a "nothing changes" test is usually GUARD-CHAIN SUBSUMPTION, not a live
   mutant** — an earlier early-return fires and the guard under test is never reached. The repair is
   a fixture that falls THROUGH the early return (the PARTIAL state, not the complete one), and it
-  usually pins a real recovery invariant nobody had written down.
+  usually pins a real recovery invariant nobody had written down. **Subsumption runs DOWNSTREAM
+  too, and that direction is invisible to a review that only reads the mutated line: a SECOND
+  guard further along the pipeline coerces to the SAME fallback value, so the first guard's own
+  test passes by the other route** (BUT-2067: pass 1's finite-coercion mutant survived because
+  pass 2's re-coerced 1.0 round-tripped to the identical asserted number). When one ticket adds
+  N guards over one value, each owes a fixture on the branch where the OTHER N−1 cannot run —
+  here a unit with no conversion family, which skips pass 2 entirely. **The rival producer
+  of the constant need not be another guard** — a method-wide `catch` that builds a fallback
+  row with the same `amount: 1.0` makes `expect(amount, 1.0)` unable to say WHICH route ran,
+  so pair it with an observable only the guarded route yields (the parsed `unit`, not `'st'`).
 - **When a green result is the claim you want, prefer an ANALYTIC argument to a probe**:
   substitute the mutant value into the fixture's own arithmetic, or read that two expressions
   evaluate to the same fixture literal. Analysis outranks a green probe; a green probe outranks
@@ -509,6 +518,12 @@ other suites prove:
   deleting the block reddens, stripping every conjunct but the one the finding named stays green.
   Grade each conjunct for HARM before filing: some are analytically inert, some degrade to a
   no-op, and usually ONE carries the real hazard (BUT-1971).
+  **A ONE-predicate guard whose negative space holds SEVERAL values owes a fixture per value,
+  and the naturally-occurring one hides the rest**: `!value.isFinite` covers {+Infinity,
+  −Infinity, NaN}, and every overflow fixture anyone writes lands on +Infinity — so
+  `if (value != double.infinity) return value;` survived all 171 tests of BUT-2067 (measured,
+  twice). Enumerate what the predicate REJECTS, not what the bug produced; the production
+  comment naming the extra value (`double.tryParse` accepts the literal `NaN`) is the tell.
   **On a two-conjunct GETTER the blind conjunct is the one whose false arm is built from the
   OTHER conjunct's CONSTRUCTOR DEFAULT** — a three-arm test reading "in both directions" then
   survives `=> otherConjunct`, because every arm agrees with it. Walk the conjuncts, not the
@@ -544,6 +559,15 @@ other suites prove:
   assertion beside it reads a status STRING the mock only yields through the refresh being pinned.
   The residual is worth one sentence, not a test: such an assertion reads as decorative, so say
   what it READS — deleting it as redundant is what would arm the fragility.
+- **A FAIL-CLOSED projection (allowlist) owes its withheld-absent and kept-present assertions in
+  ONE test body, because each half kills a DIFFERENT mutant and the withheld half alone is
+  satisfied by the empty-return route.** Measured (BUT-2062): "always return `const {}`" kills only
+  the kept half; "drop the projection" kills only the withheld half. So splitting the loops, or
+  trimming one as redundant, silently retires a whole direction. A sibling case asserting only an
+  absence (a planted undeclared key) needs one kept-key assertion of its own or it survives the
+  empty-return mutant. Bind any hand-kept whole-document fixture to the decided set with a
+  `containsAll` case — without it, a fixture that loses a key makes its absence assertion pass for
+  free, and nothing else reddens.
 - **Grade a guard PER FIELD it was extended to, and grade the DERIVED writes beside it** — a fix
   round closes one field and extends the same guard to a sibling in the same edit, and the report
   reads one fixture as covering both (BUT-1971).

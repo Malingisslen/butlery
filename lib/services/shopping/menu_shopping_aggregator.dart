@@ -3,6 +3,7 @@
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/shopping/ingredient_categorizer.dart';
+import 'package:butlery/utils/text/quantity_parser.dart';
 import 'package:butlery/utils/text/swedish_character_normalizer.dart';
 import 'package:butlery/utils/text/unit_converter.dart';
 
@@ -102,7 +103,15 @@ class MenuShoppingAggregator {
           // BUT-1613: scale the numeric amount by the placement factor. Never
           // round here — the summed double is displayed downstream; a tiny
           // fraction is honest, a zeroed line is not.
-          acc.sum += entry.amount!.toDouble() * factor;
+          // BUT-2067: a sum of PRODUCTS, and `acc.sum` reaches
+          // `UnifiedShoppingItem.amount` through
+          // `menu_shopping_list_generator.dart`. Guarded on the running total
+          // rather than on the operands, because both can be finite while the
+          // total is not.
+          acc.sum = QuantityParser.finiteQuantityOr1(
+            acc.sum + entry.amount!.toDouble() * factor,
+            'menu_shopping_aggregator week scaling',
+          );
           acc.hasAmount = true;
         }
       }
@@ -158,7 +167,16 @@ class MenuShoppingAggregator {
         '${acc.nameKey}|${canonical.baseUnit}',
         () => _MergeGroup(firstSeen: acc, baseUnit: canonical.baseUnit),
       );
-      group.baseQuantity += canonical.quantity;
+      // BUT-2067: pass 2 needs its own guard, because `toCanonicalBase`
+      // MULTIPLIES on the way to the base unit (x100 for dl, x1000 for l and
+      // kg). A total that pass 1 passed as finite can overflow right here, and
+      // this route needs ONE row rather than two — `RecipeIngredient` parses
+      // its amount with a bare `num.tryParse`, so an imported or OCR-read line
+      // carries any magnitude it likes into the conversion.
+      group.baseQuantity = QuantityParser.finiteQuantityOr1(
+        group.baseQuantity + canonical.quantity,
+        'menu_shopping_aggregator unit merge',
+      );
       group.sourceCount += acc.sourceCount;
     }
 

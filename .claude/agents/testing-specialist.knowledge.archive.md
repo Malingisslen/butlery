@@ -37277,3 +37277,221 @@ failed one. Both too small to hold a commit.
 **Standing confirmation:** zero probes was the right call for round 1 and the coordinator
 asked for it to continue. Both findings were "this mutant survives" claims; a read settles
 those and a green probe cannot.
+
+### 2026-09-10 — BUT-2067/BUT-2069/BUT-2063/BUT-2070 commit gate, batch 1 (probes run alone)
+
+Gated: `friends_management_operations.dart`, `connectivity_monitoring_service.dart`,
+`menu_shopping_aggregator.dart`, `recipe_collaborative_manager.dart`. Baseline 82/82 green.
+
+**Finding (blocking) — downstream guard-chain subsumption.** BUT-2067 added TWO
+`QuantityParser.finiteQuantityOr1` guards to `MenuShoppingAggregator`: pass 1 on the
+per-recipe running total, pass 2 on `_MergeGroup.baseQuantity`. The coordinator probed pass 2
+(reddens only the one-row case). Pass 1 was NOT probed and is UNPINNED.
+
+Mutant M1: `acc.sum = acc.sum + entry.amount!.toDouble() * factor;` (guard deleted).
+Result run B: `flutter test test/unit/services/shopping/ test/unit/utils/text/unit_converter_test.dart`
+→ **89/89 All tests passed**. Test `a week total that overflows falls back to 1.0` survives its
+own mutant.
+
+Mechanism: the fixture uses `dl`. With pass 1 gone the sum is `Infinity`;
+`toCanonicalBase(inf,'dl')` is `Infinity`; pass 2 coerces to `1.0` ml;
+`convertToReadableUnit(1.0,'ml')` falls through every threshold and returns `(1.0,'ml')` — so
+`isFinite` and `== 1.0` both hold by the second route. Same fallback CONSTANT at both guards
+is what makes it invisible.
+
+Killer fixture (measured, scratch `_zz_probe_test.dart`, deleted after): two
+`double.maxFinite` rows with unit `'st'` — no family, `toCanonicalBase` returns null, pass 2
+cannot run. Under M1: `Expected: true / Actual: <false>` (Infinity reaches
+`AggregatedShoppingItem.amount`). On restored code: passes, amount `1.0`. Recommended repair
+is the one-word unit swap in the existing two-row test, and striking the sentence in the
+one-row test's comment that explains the two-row case by "coerced to 1.0 first, and 1.0
+converts harmlessly" — true today, false once the fixture is family-less.
+
+**Probes that came back non-vacuous (all run twice, run B graded):**
+- M2 delete `.catchError` on `unblockUser`'s telemetry → 2 red
+  (`unblockUsers counts the row deletes...`, `a throwing analytics call still reports the BLOCK
+  as standing`). Containment pinned.
+- M3 `await blockRepo.blockUser(userId)` → `await Future<void>.value()` → `block_enforcement`
+  test 2 red (`Expected: true`) and nothing else. Answers the coordinator's Q4: the
+  `blockedUsers.contains` assertion genuinely rides write → `watchBlockedUserIds` → state
+  manager; the in-memory `addBlockedUserInternal` seeding in test 1 belongs to
+  `sendFriendRequest`, which is what test 1 is named for.
+- M4 `Future<void>.sync` → `Future<void>.microtask` in `unblockUser` → exactly ONE red,
+  `an unblock records exactly one unblocked event, and no block`. That older test has no
+  microtask drain while its block twin has one plus a comment saying an assertion must not
+  rest on `Future.sync` running the closure synchronously. Non-blocking fragility; repair is
+  `await Future<void>.delayed(Duration.zero);` before the assertion.
+
+**Second-route check that came back clean:** `MockUnifiedFriendsService` has ONE source
+(`_blockedUsers` → `blockedUsers` getter) and `SocialCommentsManager._filterBlockedUsers`
+reads exactly it — not the two-source `setBlockedUsers` shape BUT-2022 recorded. The control
+arm passes through the `blocked.isEmpty` early return rather than the `where`, which is honest
+for a control.
+
+**Comment claims graded by measurement, all TRUE:** `startMonitoring()` has exactly one caller
+in `lib/` (`recipe_collaborative_manager.dart:368`; the other grep hits are private
+`_startMonitoring` on `firebase_connectivity_repository.dart` and
+`viewmodels/realtime/connection_monitor.dart`); `AppLogger.warning` is `developer.log` only —
+Crashlytics/analytics live on `AppLogger.error`; the `recipe_collaborative_manager` strike
+removed a sentence the BUT-2063 fix falsified and its replacement clause
+("`startMonitoring()` rides the same arm") is directly readable from the `if (!_connectivityArmed)`
+block.
+
+**Named residuals, no test owed:** the timer half of BUT-2063's idempotence has no seam and is
+pinned only by both starters sitting inside one guarded block (stated in the production
+comment); `stopMonitoring`'s `= null` assignments are analytically inert after the cancel;
+`ServiceLocator.get<FirebaseBlockRepository>()` moved OUT of `unblockUser`'s `try`, so a DI
+misconfiguration now throws past two non-catching callers (`FriendsViewModel.unblockUser`,
+`blocked_users_section.dart`) instead of returning `false` — deliberate symmetry with
+`blockUser`.
+
+**Restore discipline:** every mutant restored with `git show :<path> > tmp && cp`; verified by
+`git rev-parse :<path>` vs `git hash-object <path>` on all four gated files (equal).
+`git status` showed `MM` on the aggregator from the stale stat cache with an empty
+`--numstat` — blob equality was the tiebreaker, as the principle says.
+
+### 2026-09-10 — BUT-2062 commit-gate review (batch 2/3): the allowlist projection on the Art. 15 comments/ratings sections
+
+Gated files: `lib/services/account/export/activity_export_manager.dart`,
+`lib/services/account/export/export_pagination_helper.dart`,
+`lib/repositories/interfaces/comments_repository.dart`,
+`lib/repositories/interfaces/ratings_repository.dart`.
+Suites: `test/unit/services/account/export/activity_export_projection_test.dart` (new),
+`activity_export_manager_test.dart`. 30/30 green, `flutter analyze --fatal-infos` clean.
+
+Hash table (index blob == worktree blob after every probe restore):
+
+| file | blob |
+|---|---|
+| activity_export_manager.dart | fdb8142a21 |
+| export_pagination_helper.dart | 5e84948ab6 |
+| comments_repository.dart | 95b8a77161 |
+| ratings_repository.dart | ee4a8a878b |
+| activity_export_projection_test.dart | a103e8bff3 |
+| activity_export_manager_test.dart | 1c41adc039 |
+
+Probes run (each in its own Bash call, anchor-count asserted, restored from `git show :<path>`):
+
+- **P1 — `projectExportFields` always returns `const {}`** (simulating the non-Map fail-closed
+  branch swallowing every row). RED on exactly 3, as predicted:
+  `includes and reshapes both comments and ratings`, and both
+  `every withheld <comment|rating> field is absent, and every kept one is present`.
+- **P2 — projection removed entirely** (`sanitizeForJson(entry['data'])`). RED on exactly 3:
+  the same two loop tests, plus `a field NOBODY has declared does not travel`.
+- **P3 (test-side) — drop `reactions` from `_wholeCommentDocument` and `recipeOwnerId` from
+  `_wholeRatingDocument`.** RED on exactly the two `the whole-document fixture carries every
+  decided <comment|rating> field` cases; the withheld loops stayed GREEN, which is the vacuity
+  those binding cases exist to catch.
+
+The load-bearing finding: P1's and P2's kill sets are COMPLEMENTARY, intersecting only in the two
+loop tests. The withheld half of each loop is individually satisfied by the empty-return route;
+what stops it passing that way is the kept half sitting in the same test body. This is the
+principle recorded in the knowledge file. The one case lacking that control is
+`a field NOBODY has declared does not travel` — it survives P1 and dies only to P2 (Low,
+non-blocking; one `expect(data.containsKey('text'), isTrue)` makes it self-contained).
+
+Factual claims in the new comments, all verified rather than taken:
+- "the `updatedAt` that `FirebaseCommentsRepository.addComment` and `updateComment` stamp" — TRUE
+  (`firebase_comments_repository.dart:212` inside `commentData`, `:305` in the update payload).
+- "`content_export_manager.dart` carries another [projection loop]" — TRUE
+  (`_projectIngredientSuggestion`, `:668`).
+- "`FirebaseRatingsRepository`'s own writer never emits [`recipeOwnerId`] today, but the model does
+  when it is set" — TRUE (`RecipeRating.toFirestore`'s `if (recipeOwnerId != null)`).
+- The interfaces' new "never surface `data` unfiltered" obligation: measured, each method has
+  exactly ONE caller in `lib/` (`ActivityExportManager`) and it projects. Prose-only obligation, no
+  live violation, nothing mechanical would catch a second caller.
+
+Design detail worth keeping: the projection tests on `data.containsKey(field)`, not on the value
+being non-null. The fixture's `editedAt: null` and `parentCommentId: null` are what make that
+load-bearing — a `data[field] != null` variant reddens the kept loops.
+
+Named as unheld by any test (not written, per the review's remit):
+1. `projectExportFields`'s non-Map branch. `entry['data']` is `Object?`; a row without a `data` key
+   yields null and the section emits `data: {}` rather than throwing. Fails closed, unfixtured.
+2. The CONTENT of `_dataMinimisation`. Only non-emptiness and cross-path byte-equality are pinned,
+   so a rewrite saying the opposite of what the code does keeps all 30 green. Consistent with the
+   BUT-2018 sibling's convention (invariance, not content), so named rather than filed.
+3. `_row`'s `{'n': i}` payload is now dropped on the comments and ratings legs. No assertion went
+   vacuous (those tests discriminate on `comment_id` and the totals), but the payload is dead
+   weight on two of the four sections that use the helper.
+
+Verdict: pass, 0 blocking.
+
+### 2026-09-11 — BUT-2067 commit gate, batch 3/3 (quantity finiteness guards)
+
+Trigger: commit-gate review of `quantity_parser.dart`, `shopping_list_generator.dart`,
+`shopping_item_management_module.dart`, `personal_shopping_operations.dart` + their four suites.
+Ran alone; mutation probing permitted.
+
+Hash table (index == worktree, before and after every probe):
+
+| file | blob |
+|---|---|
+| lib/utils/text/quantity_parser.dart | f73f3be0a960107e53e979d772abddf488b6a3c9 |
+| lib/utils/text/shopping_list_generator.dart | 194298db957c8a3ffdb3592bb8427e5da9f4bc15 |
+| lib/services/unified/modules/shopping_item_management_module.dart | af457b48f45074f2c6e4b3ea085ed4d8747406d8 |
+| lib/services/unified/operations/personal_shopping_operations.dart | 81cbb8105fce50204649c08a90d29fba410a06ff |
+
+Baseline: 171 green across the four suites. `flutter analyze` on all eight files: no issues.
+
+Call sites of `QuantityParser.finiteQuantityOr1` repo-wide: 7 (generator x2, module x1,
+`personal_shopping_operations._finiteAmountOr1` x2 through one delegate, and
+`menu_shopping_aggregator.dart` x2 — the last pair belongs to another batch).
+
+**Q1 — per-guard deletion.** Parent had probed generator product / generator accumulator /
+module merge (all red). I probed the two unprobed call sites and the shared helper:
+
+- M3 `: _finiteAmountOr1(parsed, amountMatch.group(1))` -> `: parsed` — RED, exactly
+  `309 digits falls back to 1.0 on the text-import path` (Expected 1.0, Actual Infinity).
+- M4 `amount = _finiteAmountOr1(scaled, firstPart)` -> `amount = scaled` — RED, exactly
+  `an overflowing serving multiplier falls back to 1.0`.
+- M1 `if (value.isFinite) return value;` -> `if (true) return value;` — RED x5, one per call
+  site, no more and no fewer. `quantity_parser_test.dart` contributed ZERO reds: it holds no
+  test of `finiteQuantityOr1` at all; the helper is pinned entirely through its consumers.
+
+No guard's named test is rescued by a sibling guard. The four guards sit in four different
+methods and no two are on one call chain; `menu_shopping_aggregator` does not import
+`ShoppingListGenerator`, so the aggregator's pair is parallel rather than downstream.
+`UnifiedShoppingItem`'s constructor performs no coercion of `amount` (checked), so nothing
+downstream of any guard re-rescues the value.
+
+**Q2 — did delegation move the assertions off `_finiteAmountOr1`'s call sites?** No. M3 and M4
+each redden exactly one test, so both sites are pinned individually and the delegate's own body
+is pinned by M1.
+
+**Q3 — can `parse`'s `_invalidQuantityFallback` satisfy a BUT-2067 fixture?** No, settled
+analytically (outranks a probe): every BUT-2067 fixture that involves the parser multiplies or
+sums the parsed value, so a parser fallback of 1.0 would yield 2.0 (portion x2), 2.0
+(consolidation of two rows) or 10.0 (multiplier) — all of which fail the `equals(1.0)`
+assertion. The two remaining fixtures (`double.maxFinite` merge, `double.tryParse` import) never
+call `QuantityParser.parse`. The suites' own premise assertions (`double.tryParse('9'*309) ==
+infinity`, `double.parse('9'*308).isFinite`) are self-protecting the same way.
+
+**Q4 — surviving mutant, filed non-blocking.**
+`if (value.isFinite)` -> `if (value != double.infinity)` survives ALL 171 tests. Run twice, both
+green, mutant confirmed live on disk after run B. Every fixture in the batch produces exactly
++Infinity (`maxFinite*2`, `maxFinite+maxFinite`, `9.99e307*10`, `tryParse('9'*309)`), so nothing
+discriminates `isFinite` from an infinity-only test. NaN is not hypothetical here:
+`personal_shopping_operations.dart` line 578-580 states in its own comment that
+`double.tryParse` accepts the literal tokens `Infinity` and `NaN`, and `createListFromRecipe`
+feeds raw ingredient text to it. Zero NaN fixtures exist in the four suites (grepped).
+`formatSwedishDecimal` renders NaN as the word "NaN" and `parseSwedishDecimal` refuses to read
+it back — the identical dead end the ticket exists to close.
+
+Second non-blocking item: `a portion scale that overflows falls back to 1.0` asserts only
+`hasLength(1)` and `amount == 1.0`, and `generateShoppingItemsFromRecipe`'s method-wide `catch`
+builds a fallback row that ALSO carries `amount: 1.0` (with `unit: 'st'`, `name:` the raw line).
+The guard-deletion mutant reddens, so the test is not vacuous today, but the assertion cannot
+say which of the two producers of 1.0 ran. One extra `expect(items.first.unit, 'dl')`
+discriminates.
+
+**Prose graded.** The round's replacement sentence in `quantity_parser.dart` —
+"`AppLogger.warning` writes to the dev console and nothing else — it reaches neither
+Crashlytics nor any analytics aggregate" — is TRUE, measured: `AppLogger.warning`
+(`lib/core/utils/logger.dart:159`) calls only `developer.log`; `_logToCrashlytics` and the
+analytics callback are reached from `AppLogger.error` alone. The struck "observability" claims
+it replaces were correctly struck. The module's "would stay non-finite here forever" is a
+counterfactual about the unguarded code but is settled by arithmetic (`Infinity + x` is
+`Infinity`), not by an unrun mutant.
+
+Verdict: pass, 0 blocking.
