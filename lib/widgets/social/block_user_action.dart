@@ -1,5 +1,6 @@
 /// Shared confirm-and-block flow used by every surface that offers blocking.
 
+import 'package:butlery/services/unified/operations/friends_management_operations.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
@@ -15,7 +16,9 @@ import 'package:butlery/theme/app_text_styles.dart';
 class BlockUserAction {
   BlockUserAction._();
 
-  /// Returns true when the block landed.
+  /// Returns true when the BLOCK ROW landed — including when the cleanup
+  /// after it did not. A caller asking this is asking whether the person
+  /// is blocked, which is true in both of those cases.
   /// [staysInGroup] appends the group-chat sentence. Only the group picker
   /// passes it: soft blocking leaves the person among the members, and that is
   /// the expectation the sentence exists to correct.
@@ -47,14 +50,25 @@ class BlockUserAction {
         false;
     if (!confirmed) return false;
 
-    final success = await viewModel.blockUser(userId);
-    if (!context.mounted) return success;
+    final outcome = await viewModel.blockUser(userId);
+    if (!context.mounted) return outcome.blockLanded;
 
-    if (success) {
-      SnackBarUtils.showSuccess(context, l10n.socialUserBlocked(displayName));
-    } else {
-      SnackBarUtils.showError(context, l10n.socialCouldNotBlockUser);
+    // The message follows the BLOCK ROW, not the last step to run. A cleanup
+    // failure after a successful block used to surface as "kunde inte
+    // blockera" — the app denying a protection that was in force, on the
+    // screen someone reaches when they want distance from a person
+    // (BUT-2022).
+    switch (outcome) {
+      case BlockOutcome.blocked:
+        SnackBarUtils.showSuccess(context, l10n.socialUserBlocked(displayName));
+      case BlockOutcome.blockedWithCleanupIssues:
+        SnackBarUtils.showWarning(
+          context,
+          l10n.socialUserBlockedCleanupIncomplete(displayName),
+        );
+      case BlockOutcome.failed:
+        SnackBarUtils.showError(context, l10n.socialCouldNotBlockUser);
     }
-    return success;
+    return outcome.blockLanded;
   }
 }

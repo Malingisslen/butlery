@@ -321,6 +321,25 @@ name which doc each end touches before approving it.
   that check OUT of the DELETE decision when the path already encodes the owner — deciding
   from the path keeps a forged row erasable; deciding from the body makes an Art. 9 doc
   permanently un-erasable.
+- SWALLOWING `permission-denied` as "already done" turns a rules refusal into a claim that a
+  protection is IN FORCE, so grade it on three axes. (1) ENUMERATE every reason the rule can
+  deny that write, not just the intended one — an immutable-row `set()` is denied as an
+  UPDATE, but the same code masks an unauthenticated caller and every FUTURE narrowing of
+  `allow create`; safe only while the confirming read is denied in those cases too, which is
+  a claim about the READ limb. (2) The confirming read must be `Source.server`: a plain
+  `get()` answers from cache without error, so a row the server no longer holds still reports
+  "you are protected" — this is a decision path, not a display path, and the SAFE direction is
+  the read THROWING (catch ⇒ false ⇒ rethrow). (3) A body check re-testing what the composite
+  id + create rule already pin (`blockId == blockerId + '_' + blockedId`, `blockerId ==
+  auth.uid`) is redundant belt-and-braces, harmless because it only makes the code rethrow —
+  but do NOT justify it by a case the READ rule makes unreachable ("a doc whose blockerId is
+  somebody else"): such a doc is unreadable, so the read's denial decides it. The two guards
+  are REDUNDANT WITH EACH OTHER, which is what makes every justification sentence here false
+  in one direction or the other — "safe only because of the body check" and "safe only while
+  the read limb denies foreign rows" are both false necessity claims, and a create-NARROWING
+  cannot be swallowed unsafely at all (no row ⇒ rethrow; the caller's own row ⇒ genuinely
+  idempotent). Do not offer a replacement clause as a reviewer: recommend the DELETION, and
+  say only what the code does.
 - A co-located consent record must be immutable on UPDATE (rule pins `consentGrantedAt`,
   requires a real Timestamp/bool) and CREATE must refuse an existing id / require
   `consentVersion == currentConsentVersion` (a re-grant is a `create()`, so without that it

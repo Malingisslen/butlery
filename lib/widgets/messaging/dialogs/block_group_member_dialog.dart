@@ -65,11 +65,11 @@ class _BlockGroupMemberDialogState extends State<BlockGroupMemberDialog> {
 
     final candidates = widget.participantIds
         .where((id) => id != _permissionService.currentUserId)
-        .where(
-          (id) =>
-              widget.friendsViewModel.getFriendshipStatus(id) !=
-              FriendshipStatus.blocked,
-        )
+        // isBlocked, not getFriendshipStatus: the enum answers `friends`
+        // before it answers `blocked`, so a block whose cleanup is still in
+        // flight would put an already-blocked person back in this list
+        // (BUT-2022).
+        .where((id) => !widget.friendsViewModel.isBlocked(id))
         .toList();
 
     if (candidates.isEmpty) {

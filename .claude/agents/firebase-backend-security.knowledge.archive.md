@@ -9500,3 +9500,114 @@ the specific claim in the bytes. Cheapest instrument all session: `grep -c` on t
 and for the two deviation mirrors a whitespace-normalised per-file count proving each retires
 its OWN wording — they word this decision differently, so a grep for one genuinely does not
 find the other (q1: 2/0, q2: 0/2 across the two files).
+
+---
+
+## 2026-09-10 — BUT-2022: swallowing `permission-denied` in `FirebaseBlockRepository.blockUser`
+
+Gate review of ONE staged file, `lib/repositories/firebase/firebase_block_repository.dart`.
+`blockUser` now catches `FirebaseException` with code `permission-denied`, reads the row back
+via `_blockAlreadyStands(docId, uid)` and returns NORMALLY when the row exists with
+`blockerId == uid`; otherwise it rethrows. Motivated by BUT-2022 reordering the caller
+(`FriendsManagementOperations.blockUser`) to write the block row FIRST and clean up
+(friendship, pending requests) afterwards.
+
+**Rules read (unmodified by the diff, `firestore.rules:2564-2583`).** `allow read` is
+`blockerId == auth.uid || blockedId == auth.uid`; `allow create` pins
+`blockerId == auth.uid`, `blockerId != blockedId` and
+`blockId == blockerId + '_' + blockedId`; `allow update: if false`; delete is blocker-only.
+No rules change is needed — the confirming read of `{uid}_{target}` is the read limb's first
+disjunct, already permitted, and nothing new is written.
+
+**Path trace (the mandate's question 1).** Doc absent ⇒ `exists` false ⇒ rethrow. Read denied
+or throwing ⇒ catch ⇒ false ⇒ rethrow (safe direction). Doc present with someone else's
+`blockerId` ⇒ the READ is denied (neither disjunct holds, since the id form makes
+`blockedId == uid` impossible unless `uid == target`) ⇒ rethrow. Malformed/missing
+`blockerId` ⇒ `null == uid` false ⇒ rethrow. So no path today reports a protection the user
+does not have. Two residuals: the confirming read is a plain `get()`, i.e. cache-answerable,
+on a repository whose own BUT-1922 comment states the display/decision split and provides
+`Source.server` twins for exactly this reason; and the denial reasons the branch masks today
+are exhaustively "row exists" / unauthenticated / self-block, so its safety is a property of
+the CURRENT create limb, not of the code.
+
+**Question 3 answered.** The `blockerId` body check is redundant given the composite id plus
+the create rule's concatenation conjunct; it is harmless (it can only cause a rethrow) but its
+stated justification — "a denial on a document whose `blockerId` is somebody else" — describes
+a document the read rule makes unreadable, so the field comparison never decides that case.
+
+**Comment accuracy (question 5).** "a retry after a failed cleanup lands here routinely" was
+already found false by two other gates in this change (the UI's `isBlocked` guard removes the
+retry path; the branch is reachable mainly in the block-stream lag window and via a duplicated
+id in `blockUsers`) and is STILL in the staged bytes — filed blocking, remedy is deletion of
+the clause, not a reworded frequency. Everything else in the new comment verified true against
+the rules file: `set()` on an existing doc evaluates the UPDATE limb, `allow update: if false`
+at line 2578, and the read really does run only on the `permission-denied` branch, so the
+ordinary block costs one write and no read (the create limb performs no `get()`/`exists()`, so
+no hidden rule-side reads either).
+
+Also noted, pre-existing and out of the diff's scope: `blockUser` writes through
+`collection.doc(id).set(...)` rather than the base `create()`, so none of the four
+`validate*Permission` methods run and no audit row is written — and
+`validateCreatePermission` would be a tautology anyway (`userId == entity.blockerId` where
+`blockerId` is built from the same uid).
+
+### 2026-09-10 — BUT-2022, round 2: the replacement justification was false too, and I wrote it
+
+Re-reviewed the same file after the coordinator struck the "routinely" clause, took the
+`Source.server` hardening and struck the `_blockAlreadyStands` justification. The blocking
+finding and both hardenings verified landed:
+`_blockAlreadyStands` reads `get(const GetOptions(source: Source.server))`, and the suite
+pins it with an explicit `verify(() => docRef.get(const GetOptions(source: Source.server)))`
+beside the `get(any())` stub (const canonicalisation is what makes that equality hold, so a
+non-const call site would redden — the safe direction).
+
+**The finding of this round is a sentence I recommended.** Asked for "the one durable
+sentence worth adding", I offered the Q4 coupling, and it shipped as: "Safe only while the
+read limb keeps denying rows this user did not place: that is what stops a future narrowing
+of `allow create` from being swallowed here as an idempotent repeat." Both halves are false.
+The read limb is not NECESSARY — a foreign row at `{uid}_{target}` is refused by the
+`blockerId == uid` body comparison even if the read limb were widened, and conversely the
+read limb refuses it if the body check were removed; the two guards are redundant with each
+other, so any "safe only because of X" wording is false for whichever X it names. And a
+future narrowing of `allow create` cannot produce an unsafe swallow at all: either no row
+exists (`exists` false ⇒ rethrow) or the row is the caller's own, which is the genuinely
+idempotent case the branch is for.
+
+So this is the SECOND wording of one justification, both false in symmetric ways — the state
+where this repo's rule says delete rather than attempt a third. Filed blocking with the
+remedy stated as a pure deletion of the clause, no replacement text.
+
+Durable correction to my own reviewing: when a comment justifies a redundant belt-and-braces
+guard, a reviewer offering "state the coupling instead" is handing the author a fresh
+unmeasured counterfactual. Recommend the deletion and stop.
+
+Also noted this round, not filed: no test pins that a NON-`permission-denied`
+`FirebaseException` rethrows WITHOUT a confirming read, which is what the doc's "the ordinary
+block still costs one write and no read" asserts — one `verifyNever(() => docRef.get(any()))`
+in the mocked group would cover it. And on the coordinator's question about `blockUser`
+bypassing `create()`: no ticket recommended. `validateCreatePermission` is a tautology here
+(`userId == entity.blockerId`, both from the same uid), so a granted audit row would record
+no decision, and there is no client-side refusal branch to log — the BUT-1981 reasoning
+applies.
+
+### 2026-09-10 — BUT-2022, round 3: clean
+
+Both files re-read whole. Lines 100-102 of `firebase_block_repository.dart` are gone with no
+replacement text, so `_blockAlreadyStands`'s doc now ends after the server-read paragraph and
+carries no necessity claim about either guard. The new test
+`a NON-denial error does not trigger the confirming read` stubs `set` to throw `unavailable`,
+expects the throw and asserts `verifyNever(() => docRef.get(any()))` — it converts the doc's
+"one write and no read" from an assertion into a measurement, and the coordinator's probe
+(dropping the `e.code == 'permission-denied'` conjunct) reddens that test alone.
+
+Graded and deliberately NOT filed, so a later round does not reopen either:
+(1) the reworded "the distinction the other `Source.server` reads in this file were added for
+(BUT-1922)" parses, carries no count and is true of both other server reads — the incoming
+twin was added under BUT-1917 but its own doc says it exists for the same reason, and the
+parenthetical attaches to the distinction, not to the additions; (2) the new test's comment
+says "every failed write pays a server read" where the mutant strictly affects every failed
+write surfacing as a `FirebaseException` — a loose quantifier inside the `on FirebaseException`
+branch it describes, whose mechanism was measured. Per the redundant-guards principle added
+this ticket, a reviewer proposing a replacement clause here is the defect, not the fix.
+
+Verdict: pass. No rules change was needed at any point in this review.

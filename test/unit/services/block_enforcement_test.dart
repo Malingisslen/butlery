@@ -193,7 +193,7 @@ void main() {
           'friend-to-block',
         );
 
-        expect(result, isTrue);
+        expect(result.blockLanded, isTrue);
 
         // Verify friendship was removed
         expect(

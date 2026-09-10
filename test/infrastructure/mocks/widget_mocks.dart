@@ -1,3 +1,4 @@
+import 'package:butlery/services/unified/operations/friends_management_operations.dart';
 import 'package:flutter/material.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:butlery/viewmodels/auth_viewmodel.dart';
@@ -495,7 +496,6 @@ class MockFriendsViewModel extends MockBaseViewModel
   // ===== Blocking (BUT-1951) =====
 
   final List<String> blockedUserIds = [];
-  bool blockSucceeds = true;
 
   /// Per-uid status. Deliberately NOT a blocked/not-blocked pair: with only
   /// two values `!= blocked` and `== none` are the same function, so the
@@ -505,8 +505,15 @@ class MockFriendsViewModel extends MockBaseViewModel
   /// profile screen is actually opened with.
   final Map<String, FriendshipStatus> _statuses = {};
 
+  /// Blocks that already existed when the test started, kept APART from
+  /// [blockedUserIds], which records only the blocks the test itself caused.
+  /// Merging them would make `expect(blockedUserIds, isEmpty)` unwritable
+  /// for any scenario that begins with somebody already blocked.
+  final Set<String> _preBlocked = {};
+
   void setBlockedUsers(Set<String> ids) {
     for (final id in ids) {
+      _preBlocked.add(id);
       _statuses[id] = FriendshipStatus.blocked;
     }
   }
@@ -520,15 +527,39 @@ class MockFriendsViewModel extends MockBaseViewModel
   /// which happened.
   int blockAttempts = 0;
 
+  /// The outcome `blockUser` answers with.
+  ///
+  /// THREE-valued on purpose. A bool fake could emit only `blocked` and
+  /// `failed`, which left `BlockUserAction`'s middle arm — and the
+  /// partial-outcome string — witnessed by nothing: repointing that arm back
+  /// to the error message kept every suite green, reinstating exactly the
+  /// defect BUT-2022 exists to remove. Same shape the knowledge file records
+  /// at BUT-1951, one ticket earlier on this screen.
+  BlockOutcome blockOutcome = BlockOutcome.blocked;
+
+  /// Kept as the bool it was, so existing tests read unchanged; it is a view
+  /// onto [blockOutcome] rather than a second source of truth.
+  bool get blockSucceeds => blockOutcome.blockLanded;
+  set blockSucceeds(bool value) =>
+      blockOutcome = value ? BlockOutcome.blocked : BlockOutcome.failed;
+
   @override
-  Future<bool> blockUser(String userId) async {
+  Future<BlockOutcome> blockUser(String userId) async {
     blockAttempts += 1;
-    if (blockSucceeds) {
+    if (blockOutcome.blockLanded) {
       blockedUserIds.add(userId);
       _statuses[userId] = FriendshipStatus.blocked;
     }
-    return blockSucceeds;
+    return blockOutcome;
   }
+
+  /// Mirrors the production reader: the blocked SET, never the ordered
+  /// friendship enum (BUT-2022). A fake that answered from `_statuses` here
+  /// would let a test pass on a path production reaches differently — the
+  /// enum answers `friends` before `blocked`, which is the whole defect.
+  @override
+  bool isBlocked(String userId) =>
+      _preBlocked.contains(userId) || blockedUserIds.contains(userId);
 
   @override
   FriendshipStatus getFriendshipStatus(String userId) =>

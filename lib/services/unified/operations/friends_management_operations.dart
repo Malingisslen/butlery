@@ -22,6 +22,35 @@ import 'package:butlery/services/notifications/notification_service.dart'
 import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 
+/// What a block attempt actually achieved.
+///
+/// Three states rather than a bool, because "the block row was written but
+/// the friendship is still there" and "you are not blocked from anything"
+/// are different things to tell someone who just blocked a person
+/// (BUT-2022).
+enum BlockOutcome {
+  /// The block stands and everything it implies was cleaned up.
+  blocked,
+
+  /// The block STANDS — the person cannot reach you — but clearing the
+  /// friendship or a pending request did not finish.
+  blockedWithCleanupIssues,
+
+  /// The block row was not written. The user is not protected, and nothing
+  /// else was changed either: the write is attempted before any teardown.
+  failed
+  ;
+
+  /// Whether the protective write landed. The two blocked states share this;
+  /// only [failed] does not. Named apart from
+  /// `FriendsManagementOperations.isBlocked`, which answers about a PERSON
+  /// rather than about an attempt.
+  bool get blockLanded => switch (this) {
+    BlockOutcome.blocked || BlockOutcome.blockedWithCleanupIssues => true,
+    BlockOutcome.failed => false,
+  };
+}
+
 /// Friends management operations handling request lifecycle, relationship management, user discovery, blocking, and notification integration.
 class FriendsManagementOperations extends BaseService {
   @override
@@ -322,14 +351,45 @@ class FriendsManagementOperations extends BaseService {
     return result == true;
   }
 
-  Future<bool> blockUser(String userId) async {
+  /// Blocks [userId]: writes the block row FIRST, then clears the friendship
+  /// and both directions of pending requests.
+  ///
+  /// The order is the whole fix (BUT-2022, Malin's call 2026-09-05). Before
+  /// it, a failure in the block write left the friendship and the requests
+  /// already destroyed while the user was told "kunde inte blockera" — the
+  /// app denying that anything happened at the moment the irreversible part
+  /// had. Written this way round, the step that cannot be undone is the one
+  /// that succeeds, and a failure in the cleanup leaves a block that IS in
+  /// force.
+  ///
+  /// The returned outcome distinguishes the three cases, because they are
+  /// three different things to tell someone who just blocked a person:
+  /// protected, protected-but-something-is-left-over, and not protected.
+  Future<BlockOutcome> blockUser(String userId) async {
+    final blockRepo = ServiceLocator.get<FirebaseBlockRepository>();
     try {
-      // Remove from friends if they are friends
-      if (isFriend(userId)) {
-        await removeFriend(userId);
+      await blockRepo.blockUser(userId);
+    } catch (e) {
+      // Nothing has been torn down yet, so this is the one clean failure:
+      // the user is not protected and nothing else changed.
+      AppLogger.error('Failed to block user', e);
+      return BlockOutcome.failed;
+    }
+
+    AppLogger.success('User blocked');
+    var cleanupComplete = true;
+
+    // From here the block STANDS. Every step below is cleanup, and a failure
+    // in it must never be reported as a failure to block.
+    try {
+      if (isFriend(userId) && !await removeFriend(userId)) {
+        // `removeFriend` swallows its own error and answers false; ignoring
+        // that answer is how a block could stand with the friendship intact
+        // and nobody the wiser.
+        cleanupComplete = false;
+        AppLogger.warning('Block stands, but the friendship was not removed');
       }
 
-      // Remove pending friend requests via state manager and clean up Firebase
       final incomingFromBlocked = _getIncomingRequests()
           .where((r) => r.fromUserId == userId)
           .toList();
@@ -356,18 +416,26 @@ class FriendsManagementOperations extends BaseService {
           ),
         );
       }
-
-      // Write to blocks collection (real-time stream updates in-memory cache)
-      final blockRepo = ServiceLocator.get<FirebaseBlockRepository>();
-      await blockRepo.blockUser(userId);
-
-      AppLogger.success('User blocked');
-      await _analyticsService?.social.logUserBlocked(blockedUserId: userId);
-      return true;
     } catch (e) {
-      AppLogger.error('Failed to block user', e);
-      return false;
+      cleanupComplete = false;
+      AppLogger.error('Block stands, but cleanup after it failed', e);
     }
+
+    // Not awaited into the return path: this method now promises an outcome,
+    // and a telemetry throw would escape it — no caller catches, so the
+    // profile surface would show nothing and the chat surface would report a
+    // failed block that is standing.
+    unawaited(
+      Future<void>.sync(
+        () async =>
+            _analyticsService?.social.logUserBlocked(blockedUserId: userId),
+      ).catchError((Object e) {
+        AppLogger.warning('Block analytics failed: $e');
+      }),
+    );
+    return cleanupComplete
+        ? BlockOutcome.blocked
+        : BlockOutcome.blockedWithCleanupIssues;
   }
 
   Future<bool> unblockUser(String userId) async {
@@ -387,8 +455,7 @@ class FriendsManagementOperations extends BaseService {
     }
   }
 
-  /// BUT-993: bulk block. Loops [blockUser] per id, counting the ones that
-  /// return true. A batched Firestore write isn't a clean optimisation here
+  /// BUT-993: bulk block. Loops [blockUser] per id. A batched Firestore write isn't a clean optimisation here
   /// because each block also triggers removeFriend + cancel-pending-requests
   /// side-effects per user, which can't be coalesced into a single write op.
   ///
@@ -397,7 +464,10 @@ class FriendsManagementOperations extends BaseService {
     if (userIds.isEmpty) return 0;
     var succeeded = 0;
     for (final userId in userIds) {
-      if (await blockUser(userId)) succeeded++;
+      // Counts blocks that LANDED. A leftover friendship still means that
+      // person is blocked, and reporting it as a failure would undercount
+      // protections that are in force.
+      if ((await blockUser(userId)).blockLanded) succeeded++;
     }
     AppLogger.info('Bulk-block: $succeeded of ${userIds.length} succeeded');
     return succeeded;

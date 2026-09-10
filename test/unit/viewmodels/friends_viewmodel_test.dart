@@ -1,3 +1,4 @@
+import 'package:butlery/services/unified/operations/friends_management_operations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
@@ -806,16 +807,58 @@ void main() {
     // SOC-04: block/unblock at the VM layer.
     //
     // The VM surface for the block domain is:
-    //   • blockUser(userId)       — delegates to management, returns bool
+    //   • blockUser(userId)       — delegates to management, returns BlockOutcome
+    //   • isBlocked(userId)       — reads the blocked SET (BUT-2022)
     //   • unblockUser(userId)     — delegates to management, returns bool
     //   • getFriendshipStatus()   — reads blockedUsers from the service (covered above)
     //
     // Notification-firing is NOT asserted here: FriendsViewModel.notifyListeners()
-    // schedules via addPostFrameCallback, so the bool-return contract is the
+    // schedules via addPostFrameCallback, so the returned outcome is the
     // correct, stable VM-level boundary to pin.
     group('Block / Unblock', () {
+      // BUT-2022. `FriendsViewModel.isBlocked` was reached by no test at all:
+      // replacing its body with
+      // `getFriendshipStatus(userId) == FriendshipStatus.blocked` left the
+      // whole suite green while silently reverting the four UI guards to the
+      // ordered enum — which answers `friends` FIRST and so misses a block
+      // whose cleanup has not finished. This is the case that makes the
+      // delegation irreversible by accident.
+      test('isBlocked reads the blocked SET, not the ordered enum', () async {
+        const blocked = 'blocked-and-still-a-friend';
+        final profile = UserProfile(
+          uid: blocked,
+          email: 'b@example.com',
+          displayName: 'Blocked',
+          joinedAt: DateTime(2026),
+          lastActiveAt: DateTime(2026),
+        );
+
+        // The exact state the reorder makes reachable: the block row landed,
+        // the friendship removal has not.
+        mockManagement.setManagementState(blockedUsers: {blocked});
+        mockFriendsService.setFriendsState(
+          friends: [profile],
+          management: mockManagement,
+        );
+
+        expect(
+          viewModel.getFriendshipStatus(blocked),
+          equals(FriendshipStatus.friends),
+          reason:
+              'premise: the ordered enum answers friends first — if this ever '
+              'stops being true, the assertion below proves nothing',
+        );
+        expect(viewModel.isBlocked(blocked), isTrue);
+      });
+
+      test('isBlocked is false for someone who is not blocked', () async {
+        // Control: without it, `isBlocked => true` satisfies the case above.
+        mockManagement.setManagementState(blockedUsers: <String>{});
+        expect(viewModel.isBlocked('a-stranger'), isFalse);
+      });
+
       test(
-        'blockUser returns true and delegates to management service on success',
+        'blockUser answers blocked and delegates to the management service',
         () async {
           // BUT-1951: before this the VM had no blockUser at all, so every
           // block surface in the app was a view-layer stub that wrote nothing.
@@ -823,7 +866,7 @@ void main() {
 
           final result = await viewModel.blockUser('block-target-abc');
 
-          expect(result, isTrue);
+          expect(result, equals(BlockOutcome.blocked));
           // The bool alone cannot tell block from unblock — the fake answers
           // both the same way, so a swap survives without these two.
           expect(mockManagement.blockCalls, equals(['block-target-abc']));
@@ -831,15 +874,36 @@ void main() {
         },
       );
 
+      test('blockUser passes the PARTIAL outcome through unchanged', () async {
+        // The VM is the only layer between the service (which produces this
+        // value) and the widget (which renders a different message for it),
+        // and it was the one layer with no fixture that could express it.
+        // Collapsing the pass-through to `blockLanded ? blocked : failed`
+        // stayed green everywhere and re-hid the warning arm app-wide.
+        mockManagement.setManagementState(shouldSucceed: true);
+        mockManagement.blockOutcomeOverride =
+            BlockOutcome.blockedWithCleanupIssues;
+
+        final result = await viewModel.blockUser('block-target-abc');
+
+        expect(result, equals(BlockOutcome.blockedWithCleanupIssues));
+        expect(
+          result.blockLanded,
+          isTrue,
+          reason: 'the person IS blocked — this is not a failure',
+        );
+      });
+
       test(
-        'blockUser returns false when management service reports failure',
+        'blockUser answers failed when the management service reports failure',
         () async {
           // Failure must propagate, or the UI reports a block that never landed.
           mockManagement.setManagementState(shouldSucceed: false);
 
           final result = await viewModel.blockUser('block-target-abc');
 
-          expect(result, isFalse);
+          expect(result, equals(BlockOutcome.failed));
+          expect(result.blockLanded, isFalse);
           expect(mockManagement.blockCalls, equals(['block-target-abc']));
         },
       );

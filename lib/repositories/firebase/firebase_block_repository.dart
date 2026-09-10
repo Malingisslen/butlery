@@ -56,6 +56,18 @@ class FirebaseBlockRepository extends BaseFirebaseRepository<BlockRecord> {
     return blockerId == userId;
   }
 
+  /// Writes the block row, treating "already blocked" as success.
+  ///
+  /// A `set()` against an existing document is evaluated as an UPDATE, and
+  /// `firestore.rules` makes a block immutable (`allow update: if false`) — so
+  /// re-blocking someone already blocked comes back permission-denied. That is
+  /// not a failure to protect the user: the protection is in force. BUT-2022
+  /// writes this row FIRST and cleans up afterwards, so reporting the refusal
+  /// as a failure would tell the user the block did not happen while it is
+  /// standing.
+  ///
+  /// The confirming read runs only on the denied path, so the ordinary block
+  /// still costs one write and no read.
   Future<void> blockUser(String targetId) async {
     final uid = requireCurrentUserId();
     final record = BlockRecord.create(blockerId: uid, blockedId: targetId);
@@ -63,9 +75,36 @@ class FirebaseBlockRepository extends BaseFirebaseRepository<BlockRecord> {
     try {
       await collection.doc(record.id).set(record.toFirestore());
       AppLogger.info('Blocked user: $targetId');
+    } on FirebaseException catch (e) {
+      if (e.code == 'permission-denied' &&
+          await _blockAlreadyStands(record.id, uid)) {
+        AppLogger.info('Block already in force: $targetId');
+        return;
+      }
+      AppLogger.error('Failed to block user: $targetId', e);
+      rethrow;
     } catch (e) {
       AppLogger.error('Failed to block user: $targetId', e);
       rethrow;
+    }
+  }
+
+  /// Whether [docId] is an existing block placed by [uid].
+  ///
+  /// Reads from the SERVER. This answer decides whether the user is told they
+  /// are protected, and a cached row is not evidence that the server holds
+  /// one — the distinction the other `Source.server` reads in this file were
+  /// added for (BUT-1922). A throw lands in the catch below, which is the
+  /// safe direction.
+  Future<bool> _blockAlreadyStands(String docId, String uid) async {
+    try {
+      final snapshot = await collection
+          .doc(docId)
+          .get(const GetOptions(source: Source.server));
+      return snapshot.exists && snapshot.data()?['blockerId'] == uid;
+    } catch (e) {
+      AppLogger.warning('Could not confirm existing block: $e');
+      return false;
     }
   }
 

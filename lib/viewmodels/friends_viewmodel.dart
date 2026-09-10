@@ -4,6 +4,7 @@
 // lib/viewmodels/friends_viewmodel.dart
 
 import 'dart:async';
+import 'package:butlery/services/unified/operations/friends_management_operations.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
@@ -263,11 +264,22 @@ class FriendsViewModel extends BaseViewModel {
   /// requests both ways — unblocking does not restore any of it, and it is the
   /// service that records the analytics, so a caller that skips this ViewModel
   /// still counts.
-  Future<bool> blockUser(String userId) async {
-    final success = await _friendsService.management.blockUser(userId);
-    if (success) notifyListeners();
-    return success;
+  Future<BlockOutcome> blockUser(String userId) async {
+    final outcome = await _friendsService.management.blockUser(userId);
+    if (outcome.blockLanded) notifyListeners();
+    return outcome;
   }
+
+  /// Whether [userId] is blocked, read straight from the blocked set.
+  ///
+  /// Deliberately NOT [getFriendshipStatus]. That method answers with a
+  /// single enum and tests `friends` / `requestSent` / `requestReceived`
+  /// BEFORE `blocked`, so while a block's cleanup is still in flight — or
+  /// failed — it answers `friends` about someone who IS blocked. Every
+  /// surface whose job is to hide or gate a blocked person asks this
+  /// instead, so the safety answer never depends on the read order
+  /// (BUT-2022). The asymmetry between the two is the decision.
+  bool isBlocked(String userId) => _friendsService.management.isBlocked(userId);
 
   /// Unblock a user
   Future<bool> unblockUser(String userId) async {
@@ -447,7 +459,14 @@ class FriendsViewModel extends BaseViewModel {
         .toList();
   }
 
-  /// Get relationship status with user
+  /// Get relationship status with user.
+  ///
+  /// The order below is load-bearing and is NOT the safety answer: `friends`
+  /// / `requestSent` / `requestReceived` are all tested before `blocked`, so
+  /// during (or after a failed) block cleanup this returns `friends` about
+  /// someone who is blocked. Surfaces that gate on blocking call [isBlocked]
+  /// instead. Deliberately left as it is — it has other callers whose
+  /// meaning depends on this precedence (BUT-2022).
   FriendshipStatus getFriendshipStatus(String userId) {
     // Check if user is already a friend
     if (_friendsService.friends.any((friend) => friend.uid == userId)) {

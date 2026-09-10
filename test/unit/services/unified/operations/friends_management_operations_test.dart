@@ -299,10 +299,17 @@ void main() {
           );
 
           expect(
-            await managementOperations.blockUser('blocked_person'),
+            (await managementOperations.blockUser(
+              'blocked_person',
+            )).blockLanded,
             isTrue,
           );
 
+          // The analytics call is `unawaited` since BUT-2022, so drain the
+          // microtask queue rather than relying on `Future.sync` running the
+          // closure synchronously — true today, and not a property this
+          // assertion should rest on.
+          await Future<void>.delayed(Duration.zero);
           expect(socialTracker.blocked, ['blocked_person']);
           expect(socialTracker.unblocked, isEmpty);
         },
@@ -343,9 +350,9 @@ void main() {
           () => mockParentService.updateFriendRequestStatus(any()),
         ).thenAnswer((_) async {});
 
-        final success = await managementOperations.blockUser('blocked_person');
+        final outcome = await managementOperations.blockUser('blocked_person');
 
-        expect(success, isTrue);
+        expect(outcome, equals(BlockOutcome.blocked));
         verify(
           () => mockParentService.removeIncomingRequestInternal('inc_req_1'),
         ).called(1);
@@ -377,9 +384,9 @@ void main() {
           () => mockParentService.updateFriendRequestStatus(any()),
         ).thenAnswer((_) async {});
 
-        final success = await managementOperations.blockUser('blocked_person');
+        final outcome = await managementOperations.blockUser('blocked_person');
 
-        expect(success, isTrue);
+        expect(outcome, equals(BlockOutcome.blocked));
         verify(
           () => mockParentService.removeOutgoingRequestInternal('out_req_1'),
         ).called(1);
@@ -394,10 +401,199 @@ void main() {
           isInitialized: true,
         );
 
-        final success = await managementOperations.blockUser('stranger');
+        final outcome = await managementOperations.blockUser('stranger');
 
-        expect(success, isTrue);
+        expect(outcome, equals(BlockOutcome.blocked));
         verify(() => mockBlockRepo.blockUser('stranger')).called(1);
+      });
+
+      test('blockUsers counts a partial block as a block', () async {
+        // The count means "protections now in force", not "everything went
+        // perfectly". Narrowing it to `== BlockOutcome.blocked` undercounts
+        // a bulk block in settings — the people ARE blocked.
+        // Both must be FRIENDS, or the cleanup never runs and both blocks
+        // come back clean — which is how the first version of this test
+        // passed under the very mutant it exists to catch.
+        UserProfile friend(String uid) => UserProfile(
+          uid: uid,
+          email: '$uid@example.com',
+          displayName: uid,
+          joinedAt: DateTime.now(),
+          lastActiveAt: DateTime.now(),
+        );
+        mockParentService.setFriendsState(
+          friends: [friend('a'), friend('b')],
+          incomingRequests: [],
+          outgoingRequests: [],
+          isInitialized: true,
+        );
+        when(
+          () => mockParentService.removeFriendInternal(any()),
+        ).thenReturn(null);
+        when(
+          () => mockRelationshipRepo.removeMutualFriends(any(), any()),
+        ).thenThrow(Exception('cleanup failed'));
+
+        // Premise: each block lands but its cleanup does not.
+        expect(
+          await managementOperations.blockUser('a'),
+          equals(BlockOutcome.blockedWithCleanupIssues),
+        );
+
+        final count = await managementOperations.blockUsers(['a', 'b']);
+
+        expect(count, 2);
+      });
+
+      // BUT-2022. Before this, the friendship and both directions of pending
+      // requests were destroyed BEFORE the block row was attempted — so a
+      // failure in the write returned false and the user was told "kunde inte
+      // blockera" while the irreversible part had already happened.
+      group('block ordering and partial outcomes (BUT-2022)', () {
+        setUp(() {
+          mockParentService.setFriendsState(
+            friends: [],
+            incomingRequests: [],
+            outgoingRequests: [],
+            isInitialized: true,
+          );
+        });
+
+        test('the block row is written BEFORE any teardown', () async {
+          final friend = UserProfile(
+            uid: 'blocked_person',
+            email: 'b@example.com',
+            displayName: 'Blocked',
+            joinedAt: DateTime.now(),
+            lastActiveAt: DateTime.now(),
+          );
+          mockParentService.setFriendsState(
+            friends: [friend],
+            incomingRequests: [],
+            outgoingRequests: [],
+            isInitialized: true,
+          );
+          when(
+            () => mockParentService.removeFriendInternal('blocked_person'),
+          ).thenReturn(null);
+          when(
+            () => mockRelationshipRepo.removeMutualFriends(any(), any()),
+          ).thenAnswer((_) async {});
+
+          await managementOperations.blockUser('blocked_person');
+
+          // Order, not counts: a call-count assertion passes whichever way
+          // round these run, and the order IS the fix.
+          verifyInOrder([
+            () => mockBlockRepo.blockUser('blocked_person'),
+            () => mockRelationshipRepo.removeMutualFriends(any(), any()),
+          ]);
+        });
+
+        test(
+          'a failed block row reports failed and tears nothing down',
+          () async {
+            final friend = UserProfile(
+              uid: 'blocked_person',
+              email: 'b@example.com',
+              displayName: 'Blocked',
+              joinedAt: DateTime.now(),
+              lastActiveAt: DateTime.now(),
+            );
+            mockParentService.setFriendsState(
+              friends: [friend],
+              incomingRequests: [],
+              outgoingRequests: [],
+              isInitialized: true,
+            );
+            when(
+              () => mockBlockRepo.blockUser(any()),
+            ).thenThrow(Exception('network'));
+
+            final outcome = await managementOperations.blockUser(
+              'blocked_person',
+            );
+
+            expect(outcome, equals(BlockOutcome.failed));
+            expect(outcome.blockLanded, isFalse);
+            // The point of the reorder: the friendship survives a failed block.
+            verifyNever(
+              () => mockRelationshipRepo.removeMutualFriends(any(), any()),
+            );
+            verifyNever(
+              () => mockParentService.updateFriendRequestStatus(any()),
+            );
+          },
+        );
+
+        test(
+          'a failed friendship cleanup still reports the block as standing',
+          () async {
+            final friend = UserProfile(
+              uid: 'blocked_person',
+              email: 'b@example.com',
+              displayName: 'Blocked',
+              joinedAt: DateTime.now(),
+              lastActiveAt: DateTime.now(),
+            );
+            mockParentService.setFriendsState(
+              friends: [friend],
+              incomingRequests: [],
+              outgoingRequests: [],
+              isInitialized: true,
+            );
+            // removeFriend swallows this and answers false rather than throwing,
+            // which is precisely the return value the old code discarded.
+            when(
+              () => mockRelationshipRepo.removeMutualFriends(any(), any()),
+            ).thenThrow(Exception('permission denied'));
+
+            final outcome = await managementOperations.blockUser(
+              'blocked_person',
+            );
+
+            expect(outcome, equals(BlockOutcome.blockedWithCleanupIssues));
+            expect(
+              outcome.blockLanded,
+              isTrue,
+              reason:
+                  'the person IS blocked; reporting failure here is the defect',
+            );
+            verify(() => mockBlockRepo.blockUser('blocked_person')).called(1);
+          },
+        );
+
+        test(
+          'a failed request cleanup still reports the block as standing',
+          () async {
+            final incoming = FriendRequest(
+              id: 'inc_req_1',
+              fromUserId: 'blocked_person',
+              toUserId: 'current_user',
+              status: FriendRequestStatus.pending,
+              sentAt: DateTime.now(),
+            );
+            mockParentService.setFriendsState(
+              friends: [],
+              incomingRequests: [incoming],
+              outgoingRequests: [],
+              isInitialized: true,
+            );
+            when(
+              () => mockParentService.removeIncomingRequestInternal(any()),
+            ).thenReturn(null);
+            when(
+              () => mockParentService.updateFriendRequestStatus(any()),
+            ).thenThrow(Exception('offline'));
+
+            final outcome = await managementOperations.blockUser(
+              'blocked_person',
+            );
+
+            expect(outcome, equals(BlockOutcome.blockedWithCleanupIssues));
+            verify(() => mockBlockRepo.blockUser('blocked_person')).called(1);
+          },
+        );
       });
     });
 

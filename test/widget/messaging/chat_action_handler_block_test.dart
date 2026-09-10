@@ -201,10 +201,12 @@ void main() {
     tester,
   ) async {
     // The app bar has no ViewModel, so it offers Blockera unconditionally.
-    // Writing again is REFUSED by firestore.rules (a block is immutable and
-    // the repository uses set()), so without the handler's guard the user is
-    // told the block failed while it is already in force.
     friendsViewModel.setBlockedUsers({_them});
+    // Seeded as blocked AND still reading as a friend — the state the
+    // BUT-2022 reorder makes reachable. `setBlockedUsers` also writes the
+    // status, so without this line `getFriendshipStatus` answers `blocked`
+    // too and a revert of the guard to the ordered enum stays green.
+    friendsViewModel.setFriendshipStatus(_them, FriendshipStatus.friends);
 
     await openMenu(tester, _conversation());
     await tester.tap(find.text('Blockera').last);
@@ -234,6 +236,9 @@ void main() {
     'a group asks which member, and skips me and the already-blocked',
     (tester) async {
       friendsViewModel.setBlockedUsers({_third});
+      // See the note above: without this the guard's revert to the
+      // ordered enum would stay green here too.
+      friendsViewModel.setFriendshipStatus(_third, FriendshipStatus.friends);
 
       await openMenu(
         tester,

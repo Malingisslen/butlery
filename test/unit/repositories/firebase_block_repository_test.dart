@@ -245,6 +245,117 @@ void main() {
       });
     });
 
+    // BUT-2022: a second block of somebody already blocked.
+    // `set()` on an existing document is evaluated as an UPDATE, and
+    // `firestore.rules` makes a block immutable — so that retry comes back
+    // permission-denied. `fake_cloud_firestore` enforces no rules, which is
+    // exactly why this group uses a mocked collection: the behaviour under
+    // test is what happens WHEN the server refuses.
+    group('re-blocking someone already blocked (BUT-2022)', () {
+      late _MockFirestore firestore;
+      late _MockCollection collectionRef;
+      late _MockDocRef docRef;
+      late FirebaseBlockRepository mockedRepo;
+
+      setUpAll(() {
+        registerFallbackValue(<String, dynamic>{});
+        registerFallbackValue(const GetOptions());
+      });
+
+      setUp(() {
+        firestore = _MockFirestore();
+        collectionRef = _MockCollection();
+        docRef = _MockDocRef();
+
+        when(() => firestore.collection(any())).thenReturn(collectionRef);
+        when(() => collectionRef.doc(any())).thenReturn(docRef);
+        when(() => docRef.set(any())).thenThrow(
+          FirebaseException(
+            plugin: 'cloud_firestore',
+            code: 'permission-denied',
+          ),
+        );
+
+        mockedRepo = FirebaseBlockRepository(
+          firestore: firestore,
+          authRepository: mockAuthRepo,
+        );
+      });
+
+      void stubExistingRow({required bool exists, String? blockerId}) {
+        final snap = _MockDocSnapshot();
+        when(() => snap.exists).thenReturn(exists);
+        when(() => snap.data()).thenReturn(
+          blockerId == null
+              ? null
+              : {'blockerId': blockerId, 'blockedId': 'target-456'},
+        );
+        when(() => docRef.get(any())).thenAnswer((_) async => snap);
+      }
+
+      test(
+        'a denial over MY existing block row is treated as success',
+        () async {
+          stubExistingRow(exists: true, blockerId: 'user-123');
+          await expectLater(mockedRepo.blockUser('target-456'), completes);
+
+          // From the SERVER, not the cache. This read decides whether the
+          // user is told they are protected, and a cached row is not
+          // evidence that the server holds one (the BUT-1922 distinction the
+          // other reads in this file already make). `any()` above matches
+          // either, so without this the option is unpinned.
+          verify(
+            () => docRef.get(
+              const GetOptions(source: Source.server),
+            ),
+          ).called(1);
+        },
+      );
+
+      test('a denial over a row SOMEBODY ELSE placed still throws', () async {
+        // The document id is derived from my own uid, so this should not
+        // arise — but answering "already blocked" from a row I did not place
+        // would report a protection I do not have.
+        stubExistingRow(exists: true, blockerId: 'somebody-else');
+        await expectLater(
+          mockedRepo.blockUser('target-456'),
+          throwsA(isA<FirebaseException>()),
+        );
+      });
+
+      test('a NON-denial error does not trigger the confirming read', () async {
+        // The doc says the ordinary block costs one write and no read. This
+        // is what holds the `e.code == 'permission-denied'` conjunct: drop it
+        // and every failed write pays a server read before rethrowing.
+        when(() => docRef.set(any())).thenThrow(
+          FirebaseException(plugin: 'cloud_firestore', code: 'unavailable'),
+        );
+
+        await expectLater(
+          mockedRepo.blockUser('target-456'),
+          throwsA(isA<FirebaseException>()),
+        );
+        verifyNever(() => docRef.get(any()));
+      });
+
+      test('a denial with NO existing row still throws', () async {
+        stubExistingRow(exists: false);
+        await expectLater(
+          mockedRepo.blockUser('target-456'),
+          throwsA(isA<FirebaseException>()),
+        );
+      });
+
+      test('a denial whose confirming read ALSO fails still throws', () async {
+        // Fails closed: unable to confirm is not the same as confirmed.
+        when(() => docRef.get(any())).thenThrow(Exception('offline'));
+        await expectLater(
+          mockedRepo.blockUser('target-456'),
+          throwsA(isA<FirebaseException>()),
+        );
+      });
+    });
+
     group('Edge Cases', () {
       test(
         'should throw AuthenticationException when blocking while unauthenticated',
@@ -464,6 +575,12 @@ class _MockFirestore extends Mock implements FirebaseFirestore {}
 
 class _MockCollection extends Mock
     implements CollectionReference<Map<String, dynamic>> {}
+
+class _MockDocRef extends Mock
+    implements DocumentReference<Map<String, dynamic>> {}
+
+class _MockDocSnapshot extends Mock
+    implements DocumentSnapshot<Map<String, dynamic>> {}
 
 class _MockQuery extends Mock implements Query<Map<String, dynamic>> {}
 

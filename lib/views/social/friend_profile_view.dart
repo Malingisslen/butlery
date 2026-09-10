@@ -94,8 +94,10 @@ class _FriendProfileViewState extends State<FriendProfileView> {
               }
             },
             itemBuilder: (context) => [
-              if (_friendsViewModel.getFriendshipStatus(friend.uid) !=
-                  FriendshipStatus.blocked)
+              // isBlocked, not getFriendshipStatus (BUT-2022): the enum
+              // answers `friends` before `blocked`, which would offer
+              // "Blockera" for someone already blocked.
+              if (!_friendsViewModel.isBlocked(friend.uid))
                 PopupMenuItem(
                   value: 'block',
                   child: Row(

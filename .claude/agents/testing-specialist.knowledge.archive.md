@@ -37178,3 +37178,102 @@ comment citing it. Hedging and handing it back was right; filing it would have b
 manager's leak claim, which is what BUT-2063 records, I had already verified independently.
 
 Verdict unchanged: pass, 0 blocking.
+
+### 2026-09-10 — BUT-2022 test-coverage review (trigger: commit-gate review of staged tests)
+
+Reviewed: `test/widget/social/block_user_action_outcome_test.dart` (new),
+`test/widget/social/search_result_card_blocked_test.dart` (new), the `MockFriendsViewModel`
+region of `test/infrastructure/mocks/widget_mocks.dart`, the `Block / Unblock` group of
+`test/unit/viewmodels/friends_viewmodel_test.dart`, and the `Block User Cascade` group of
+`test/unit/services/unified/operations/friends_management_operations_test.dart`.
+
+ZERO mutation probes run, deliberately (budget was two). Both findings are
+"this mutant SURVIVES" claims, i.e. the green direction, and both were settled
+analytically from the fakes' own source — which the principles file already says outranks a
+green probe.
+
+**Finding 1 (blocking, filed).** BUT-2022 moved four UI guards from
+`getFriendshipStatus(...) == blocked` to `FriendsViewModel.isBlocked(...)`. Only ONE of the
+four has a fixture that can tell the two readers apart — the new
+`search_result_card_blocked_test.dart` case 'blocked WINS over a friendship the cleanup has
+not cleared yet', which seeds the block and then overwrites the status with `friends`. The
+other three (`friend_profile_block_test.dart:126`,
+`chat_action_handler_block_test.dart:207`, same file `:236`) seed with
+`setBlockedUsers({...})` alone, and that seeder writes `_preBlocked` AND
+`_statuses[id] = FriendshipStatus.blocked` (`widget_mocks.dart:514-519`), while
+`getFriendshipStatus` returns `_statuses[userId] ?? friends` (`:565-566`). Both readers
+therefore answer `blocked` on that fixture, so reverting any of those three guards to the
+ordered enum is green. Fix is one line per test, placed AFTER the `setBlockedUsers` call.
+
+**Finding 2 (non-blocking, filed).** `BlockOutcome.blockedWithCleanupIssues` exists in the
+service suite (produced by the real ops) and in the widget suite (injected into
+`MockFriendsViewModel`), and in NO test between them.
+`friends_viewmodel_test.dart:867/883` are the only suites driving the real
+`FriendsViewModel.blockUser`, and their collaborator
+`MockFriendsManagementOperations.blockUser` returns `_shouldSucceed ? blocked : failed`
+(`production_mocks.dart:2644-2647`) — the exact two-valued shape the widget fake's own
+comment says BUT-2022 had to fix one layer up. So
+`return outcome.blockLanded ? BlockOutcome.blocked : BlockOutcome.failed;` on the VM is
+green everywhere and re-hides the warning arm app-wide.
+
+**Graded sound, with reasons.** The two new widget tests are non-vacuous: each of the three
+`BlockUserAction` arms asserts its own unique Swedish literal plus the absence of a
+sibling's, so each arm has a one-directional killer; the search card's three cases have
+disjoint unique kills (case 1 uniquely holds the enum's own `blocked` arm, case 2 the new
+guard, case 3 the always-unblock control). The `blockOutcome`/`blockSucceeds` seam changed
+no existing test's reason for passing: `blockSucceeds` has exactly ONE consumer repo-wide
+(`chat_action_handler_block_test.dart:305`, `= false`), which maps to `failed`, which is
+byte-for-byte the old bool-false behaviour through the fake. The `_preBlocked` /
+`blockedUserIds` split hides nothing — the union is the right reader; the masking risk is
+the seeder's companion STATUS write, which is Finding 1.
+
+**Noted, not filed.** The union is write-only: `MockFriendsViewModel` overrides no
+`unblockUser`, so `isBlocked` can never go false within a test and an unblock-flow test on
+this fake is not writable today. `blockUsers`' `blockLanded` count
+(`friends_management_operations.dart:470`) has no test — a mutant narrowing it to
+`== BlockOutcome.blocked` undercounts a bulk block in settings.
+
+### 2026-09-10 — BUT-2022 review, round 2 (trigger: coordinator's fix round, five files)
+
+All five re-read. Both findings closed, and the coordinator's probes confirmed round 1's
+analytic arguments in the red direction — which is the direction a probe is worth running.
+
+**Finding 1 closed.** `friend_profile_block_test.dart:131`,
+`chat_action_handler_block_test.dart:212` and `:244` now call `setFriendshipStatus(x,
+FriendshipStatus.friends)` AFTER `setBlockedUsers`, each with a comment naming the seeder's
+double write. Reverting all three guards to `getFriendshipStatus(...) != blocked` reddens
+three for three; before the fixture change it was green. Predicted from reading the seeder,
+confirmed by his probe.
+
+**His probe misfire, worth more than the fix.** His FIRST attempt mutated production
+`FriendsViewModel.isBlocked` and came back all-green — but these are widget tests using
+`MockFriendsViewModel`, which OVERRIDES `isBlocked`, so production is never on the path. A
+green there proves nothing and would have been reported as "already covered". Promoted to a
+principle: mutate the layer the harness reaches, which for a repointed guard is the `if` at
+the call site.
+
+**Finding 2 closed.** `MockFriendsManagementOperations.blockOutcomeOverride`
+(`production_mocks.dart:2652`, nullable, defaulting through `_shouldSucceed`) plus
+`blockUser passes the PARTIAL outcome through unchanged`
+(`friends_viewmodel_test.dart:877`). The exact mutant from round 1 reddens that test alone.
+No cross-test leak: `mockManagement` is reconstructed in `setUp` (`:82`), and a leak would
+redden `blockUser answers failed` two tests below anyway.
+
+**Finding 3 closed, after HIS test shipped vacuous first.** `blockUsers counts a partial
+block as a block` (`friends_management_operations_test.dart:410`) was first written with
+`friends: []`, so `isFriend` was false, the cleanup never ran, both blocks returned clean
+and the narrowing mutant survived — textbook guard-chain subsumption, the fixture answered
+by a branch ABOVE the one under test. Repaired by seeding both as friends and asserting the
+premise (`blockUser('a')` returns `blockedWithCleanupIssues`) before the count. Caught by
+his own probe, not by reading.
+
+**Not filed, noted.** `chat_action_handler_block_test.dart:370` ('a group with nobody left
+to block says so') also cannot see the guard revert, deliberately — its intent is the
+empty-candidate state, and its sibling at `:241` discriminates the reorder through the same
+filter. And `expect(count, 2)` in the bulk test survives a mutant returning
+`userIds.length` unconditionally; there is no bulk fixture mixing a landed block with a
+failed one. Both too small to hold a commit.
+
+**Standing confirmation:** zero probes was the right call for round 1 and the coordinator
+asked for it to continue. Both findings were "this mutant survives" claims; a read settles
+those and a green probe cannot.

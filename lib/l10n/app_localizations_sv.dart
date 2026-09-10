@@ -8094,6 +8094,11 @@ class AppLocalizationsSv extends AppLocalizations {
   String get socialCouldNotBlockUser => 'Kunde inte blockera användare';
 
   @override
+  String socialUserBlockedCleanupIncomplete(String name) {
+    return '$name är blockerad. Vi hann inte rensa bort vänskapen eller en förfrågan.';
+  }
+
+  @override
   String get socialCouldNotCancelAllRequests =>
       'Kunde inte avbryta alla förfrågningar';
 

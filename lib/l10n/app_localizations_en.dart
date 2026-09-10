@@ -8084,6 +8084,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get socialCouldNotBlockUser => 'Could not block user';
 
   @override
+  String socialUserBlockedCleanupIncomplete(String name) {
+    return '$name is blocked. We did not finish clearing the friendship or a pending request.';
+  }
+
+  @override
   String get socialCouldNotCancelAllRequests => 'Could not cancel all requests';
 
   @override

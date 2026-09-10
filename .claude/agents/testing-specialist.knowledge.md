@@ -106,6 +106,11 @@ compress it.**
   still live on disk. Restore with `git show :<path> > tmp && cp tmp <path>` (deterministic,
   and it is the copy the parent commits) and verify with `git diff --numstat <path>` EMPTY —
   never against a remembered hash.
+- **Mutate the CALL SITE, not the member a fake overrides.** A widget suite injecting
+  `MockFriendsViewModel` never executes production `FriendsViewModel.isBlocked`, so
+  mutating it is all-green by construction and reads as "these tests are fine". Before
+  probing, ask which of the mutated symbol's layers the harness actually reaches; for a
+  repointed GUARD that is the `if` in the widget, not the method it calls (BUT-2022).
 - **A green probe over the SUITE YOU WROTE cannot support a "no other witness" claim** — that
   needs the suites found by `grep -rl '<mutated symbol>' test/`, a different set from the files
   you edited. "Raising this constant leaves every suite green" shipped false because the probe
@@ -521,6 +526,14 @@ other suites prove:
   false head clause goes; "asserting X would tell them something nobody measured" does not,
   because it ranges over a branch where something did. I demanded both go and was wrong about
   the first; withdraw such an over-reach outright rather than re-file it narrowed (BUT-2047).
+- **When a fix REPOINTS a read from source A to source B, every existing test whose SEEDER
+  writes BOTH sources is green on the revert** — the fixture cannot tell the two readers
+  apart, so the guard reads as pinned at every surface that has a test. Read the fake's
+  seeder, not the test body: `setBlockedUsers` wrote `_preBlocked` AND `_statuses[id]`, so 3
+  of 4 repointed guards survived reverting `isBlocked` to the ordered enum. The killer
+  fixture DIVERGES the two sources (seed B, then overwrite A with the value that used to
+  win), and ordering matters because the seeder writes A last. Same shape as the
+  authed-uid-vs-passed-uid collapse (BUT-2022).
 - **The test closing ONE conjunct discriminates only while the fixture leaves every OTHER
   conjunct SATISFIED — usually via an unremarked property of a stub nobody would defend.** Name
   the conjuncts the fixture is holding open in the test, or a later tidy vacuums it (BUT-1971).

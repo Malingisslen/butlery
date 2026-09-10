@@ -419,12 +419,12 @@ class ChatActionHandler {
 
         // The app bar offers Blockera unconditionally — it has no ViewModel to
         // ask — so this branch is where an already-blocked counterparty is
-        // caught. Writing again would be REFUSED: the repository uses `set()`
-        // and `firestore.rules` makes a block immutable, so the user would be
-        // told the block failed when it is already in force. The picker's
-        // group branch filters the same case out of its list instead.
-        if (friendsViewModel.getFriendshipStatus(counterpartId) ==
-            FriendshipStatus.blocked) {
+        // caught. The picker's group branch filters the same case out of its
+        // list instead.
+        // isBlocked, not getFriendshipStatus — see BUT-2022: the enum
+        // answers `friends` first, so this guard would miss an
+        // already-blocked counterparty whose cleanup did not finish.
+        if (friendsViewModel.isBlocked(counterpartId)) {
           SnackBarUtils.showSuccess(
             context,
             context.l10n.socialUserBlocked(displayName),

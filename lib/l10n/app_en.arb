@@ -5567,6 +5567,7 @@
   "socialCancelSelectedRequestsConfirm": "Cancel all selected requests?",
   "socialCouldNotAcceptAllRequests": "Could not accept all requests",
   "socialCouldNotBlockUser": "Could not block user",
+  "socialUserBlockedCleanupIncomplete": "{name} is blocked. We did not finish clearing the friendship or a pending request.",
   "socialCouldNotCancelAllRequests": "Could not cancel all requests",
   "socialCouldNotRejectAllRequests": "Could not reject all requests",
   "socialCouldNotRemoveFriend": "Could not remove friend",

@@ -5590,6 +5590,15 @@
   "socialCancelSelectedRequestsConfirm": "Avbryt alla valda förfrågningar?",
   "socialCouldNotAcceptAllRequests": "Kunde inte acceptera alla förfrågningar",
   "socialCouldNotBlockUser": "Kunde inte blockera användare",
+  "socialUserBlockedCleanupIncomplete": "{name} är blockerad. Vi hann inte rensa bort vänskapen eller en förfrågan.",
+  "@socialUserBlockedCleanupIncomplete": {
+    "description": "BUT-2022: shown when the block row was written but clearing the friendship/pending requests did not finish. The block IS in force — the copy must lead with that and never read as a failure. Follows the groupMembersPartiallyRemoved precedent (BUT-997): name what succeeded, then name only the part that did not. It offers no remedy on purpose: every surface that can start a block hides itself once the person is blocked, so a retry instruction would name an action the app does not have.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "socialCouldNotCancelAllRequests": "Kunde inte avbryta alla förfrågningar",
   "socialCouldNotRejectAllRequests": "Kunde inte avvisa alla förfrågningar",
   "socialCouldNotRemoveFriend": "Kunde inte ta bort vän",

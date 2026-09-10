@@ -111,9 +111,8 @@ void main() {
   });
 
   testWidgets('a FRIEND is still offered Blockera', (tester) async {
-    // The screen's condition is `!= blocked`. Inverting it to `== none` is
-    // invisible to a two-valued fake, and it hides Blockera from every friend
-    // — which is everyone who can reach this screen at all.
+    // Hiding Blockera from a friend hides it from everyone who can reach
+    // this screen at all.
     friendsViewModel.setFriendshipStatus(_them, FriendshipStatus.friends);
 
     await openMenu(tester);
@@ -125,6 +124,11 @@ void main() {
     tester,
   ) async {
     friendsViewModel.setBlockedUsers({_them});
+    // Seeded as blocked AND still reading as a friend — the state the
+    // BUT-2022 reorder makes reachable. `setBlockedUsers` also writes the
+    // status, so without this line `getFriendshipStatus` answers `blocked`
+    // too and a revert of the guard to the ordered enum stays green.
+    friendsViewModel.setFriendshipStatus(_them, FriendshipStatus.friends);
 
     await openMenu(tester);
 

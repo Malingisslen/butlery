@@ -2640,10 +2640,22 @@ class MockFriendsManagementOperations extends Mock
 
   @override
   Future<bool> removeFriend(String friendId) async => _shouldSucceed;
+
+  /// The outcome `blockUser` answers with, defaulting to whatever
+  /// `_shouldSucceed` says.
+  ///
+  /// THREE-valued for the same reason the widget fake is: derived from a
+  /// bool it could emit only `blocked` and `failed`, so the ViewModel's
+  /// pass-through of `blockedWithCleanupIssues` was witnessed by nothing —
+  /// collapsing it to `blockLanded ? blocked : failed` stayed green and
+  /// re-hid the partial-outcome message app-wide.
+  BlockOutcome? blockOutcomeOverride;
+
   @override
-  Future<bool> blockUser(String userId) async {
+  Future<BlockOutcome> blockUser(String userId) async {
     blockCalls.add(userId);
-    return _shouldSucceed;
+    return blockOutcomeOverride ??
+        (_shouldSucceed ? BlockOutcome.blocked : BlockOutcome.failed);
   }
 
   @override

@@ -13573,6 +13573,12 @@ abstract class AppLocalizations {
   /// **'Kunde inte blockera användare'**
   String get socialCouldNotBlockUser;
 
+  /// BUT-2022: shown when the block row was written but clearing the friendship/pending requests did not finish. The block IS in force — the copy must lead with that and never read as a failure. Follows the groupMembersPartiallyRemoved precedent (BUT-997): name what succeeded, then name only the part that did not. It offers no remedy on purpose: every surface that can start a block hides itself once the person is blocked, so a retry instruction would name an action the app does not have.
+  ///
+  /// In sv, this message translates to:
+  /// **'{name} är blockerad. Vi hann inte rensa bort vänskapen eller en förfrågan.'**
+  String socialUserBlockedCleanupIncomplete(String name);
+
   /// No description provided for @socialCouldNotCancelAllRequests.
   ///
   /// In sv, this message translates to:

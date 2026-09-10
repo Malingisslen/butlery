@@ -32,6 +32,14 @@ class SearchResultCard {
     UserProfile user,
     FriendsViewModel viewModel,
   ) {
+    // Blocked wins over every other state, asked separately (BUT-2022).
+    // `getFriendshipStatus` answers `friends` before it answers `blocked`,
+    // so a block whose cleanup is still in flight would draw "Vänner" — and
+    // offer the ordinary friend actions — for someone already blocked.
+    if (viewModel.isBlocked(user.uid)) {
+      return _buildBlockedButton(context, user, viewModel);
+    }
+
     final friendshipStatus = viewModel.getFriendshipStatus(user.uid);
 
     switch (friendshipStatus) {
