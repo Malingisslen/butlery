@@ -19733,3 +19733,162 @@ prose, and this round did not.
 
 **pass (0 blocking).** Named residual, now carried by the code rather than by a review note:
 the incoming direction re-introduced under a different key name escapes both guards.
+
+### 2026-09-09 — BUT-2054/BUT-2056: no server-side consumer depends on the recipe_comments read deny [gate]
+
+Commit gate, staged: `functions/src/__tests__/recipe-comments-rules.test.ts` (comment strike
+only), plus the twin deviation files. Narrow brief: does any `functions/src` code assume a
+blocked person CANNOT read `recipe_comments`, and does any CF behave differently under
+"a blocked person still reads half-public surfaces"?
+
+MEASURED, `functions/src` production files only (`__tests__` excluded):
+- Every production reader of `Collections.recipeComments` filters on `authorId == <the
+  subject's own uid>`: `analytics/send-activity-digest.ts:100`,
+  `social/on-profile-updated.ts:113`, and the `onDocumentCreated` guard
+  `social/duplicate-content-guard.ts:502`. Plus `migrations/backfill-recipe-comments-denorm.ts`,
+  which WRITES the two denorm fields the read limb reads. None reads a `blocks` document, and
+  none carries a comment attributing anything to blocking. Nothing to file.
+- Grep for `Collections.blocks|blockedByUserIds|isBlocked|blockMirror|block_mirror` across
+  production returns exactly three consumers: `social/sync-block-mirror.ts` (the projection),
+  `account/account-deletion-cascade.ts` + `account/request-account-deletion.ts` (erasure), and
+  `messaging/sync-conversation-last-message.ts:381`, whose local `isBlocked` is
+  `DUPLICATE_BLOCKED_TYPE` (BUT-1904's duplicate mark) and has nothing to do with user blocking
+  — a name collision that reads like a hit.
+- `notifications/*.ts` and `analytics/winback-context.ts` consult `blocks` NOWHERE, so no
+  server-sent push is block-filtered. Pre-existing, unchanged here, and asserted by neither
+  deviation entry.
+
+Deviation claims checked against `firestore.rules`, not against the entries' own prose:
+read limb at 1398-1410 is exactly author OR `recipeOwnerId` OR `sharedWithUserIds` plus a
+separate admin `allow read`; `isNotBlockedBy` (198-200) is a bare `exists()` on
+`blocks/$(target + '_' + uid)`; its callers are 742 (social_requests), 1440 (comment create),
+2608 (rating create), 2654 (notification create) — all on `request.resource.data`, i.e. creates
+only, which is what makes "what they may DO is cut, what they may SEE is not" true of the code.
+Both copies of the entry are byte-identical in the new region.
+
+Ran: `npx tsc --noEmit` clean; `npm run test:rules:recipe-comments` 24/24 against the live
+emulator (consistent with the entry's 20/24 under the fixture mutant);
+`node scripts/check-test-registration.js` OK, 141 files, 4 accepted-debt warnings unchanged.
+
+No new principle: the transferable lesson (attribute a DENY to its single-variable ALLOW
+control) is already in the testing digest and belongs to `firestore-rules-tester`. The
+principles file stays untouched — it is over budget, and a negative measurement is archive
+material.
+
+**pass (0 blocking).**
+
+### 2026-09-10 — BUT-2005: cutGroupMenuPlanAccess shared across three removal paths [review]
+
+Commit gate on five staged files (`groups/group-menu-access.ts` NEW,
+`groups/remove-chat-group-member.ts`, `groups/ensure-category-chat.ts`,
+`messaging/enforce-group-minor-membership.ts`, `__tests__/chat-group-callables.test.ts`).
+Verdict: **fail (2 blocking)**.
+
+What held, measured:
+- The call is outside every `db.runTransaction` at both new sites.
+- Signature is `uids: string[]`; one scan and one update per plan document for the whole
+  departing set. Pinned by "cuts SEVERAL departing members from a plan in ONE update".
+- The identifier is the CONVERSATION id at both sites (`chat_groups.conversationId`,
+  minted `groupRef.id` in `create-chat-group.ts:159` or the `categoryChatId` hash).
+- Contributor cap arithmetic is right for the multi-uid case:
+  `known.length + unrecorded.length <= MAX_CONTRIBUTOR_UIDS` is the size AFTER the union,
+  and the `unrecorded.length === 0` arm keeps the "already in a capped array" pin green
+  without a partial-record branch.
+- No FOURTH removal path gap. `account-deletion-cascade.ts:4068` (`stageMemberRemoval`)
+  correctly does not call this: `deleteWeeklyMenuPlans` (~1603-1710) discovers group plans
+  by FOUR handles (`participantUserIds`, `lastModifiedBy`, `memberPermissions.<uid>`,
+  `contributorUserIds`), scrubs the uid and deletes an emptied plan under its
+  three-witness gate. The cascade erases where this cuts.
+- Retry: no double-apply. The only rethrow in `enforceGroupMinorMembership` is a non-grpc-5
+  transaction error, which happens BEFORE the cut; a retried delivery recomputes the same
+  `toRemove` from the same event payload and the cut is idempotent (departing uids already
+  off `participants` short-circuits to "skipped" before any write, `arrayUnion` is a no-op,
+  and the promotion branch is unreachable once an admin remains). The eviction write's own
+  re-fire returns at `toRemove.length === 0`.
+
+Blocking 1 (High) — the sentinel actor IS a marker. `enforce-group-minor-membership.ts`
+asserts "Writes no field that distinguishes this from an ordinary departure". False:
+`actorId: SYSTEM_ACTOR_ID` ("system") on the `adminPromoted` trail row is written only by
+the backstop — the other two sites pass real uids — onto a document every plan participant
+can read, in the same update that removes the evicted uid from `participants`. Not exotic:
+`GroupWeeklyMenuPlan` makes `creatorId` the SOLE admin participant, and the creator is
+whoever closed the poll, so an evicted minor who closed the poll triggers the promotion
+branch every time. Same class as BUT-1856's tombstone, one field over. Collides with
+ADR-0010 (no unaudited privilege grant), so the residual is Malin's, not an edit.
+
+Blocking 2 (Medium/High) — false COVERAGE pointer. The re-export block in
+`remove-chat-group-member.ts` says `weekly-menu-plans-rules.test.ts` "compares all three
+against the rules text". Measured: that file imports TWO (`MAX_TRAIL_ROWS`,
+`MAX_CONTRIBUTOR_UIDS`) and its loop covers `editTrail` and `contributorUserIds` only.
+`MAX_GROUP_MENU_PLANS` has no counterpart in `firestore.rules` at all — it is a CF-side
+plausibility bound. A future author moving it would read the comment as a drift guard.
+
+Non-blocking: the mirror-cleanup paragraph in the trigger was orphaned above the new call
+(it describes the `conversation_memberships` delete two statements down); neither new call
+SITE is pinned (deleting either `await cutGroupMenuPlanAccess(...)` leaves 36/36 green,
+while `ensureCategoryChatWithDeps` is fully DI'd and the trigger has a live emulator suite
+in `test:rules:all`); `groupKey` is logged raw in the new module while every other
+conversation-id log in its new caller goes through `logSafeConversationId` (safe today,
+measured — no `direct_` id reaches either site).
+
+Retired verbatim from the principles file in this edit:
+- "Deleting a cascade LEG needs a `__tests__` grep for writers of that path." (idempotency
+  rule 10 — the same instruction survives, stronger, in the GDPR-cascade section: "leg and
+  scenario ship in one edit, and DELETING the leg must redden BOTH the targeted fixture and
+  'no failed collections'".)
+- "Rules can't iterate an array, so a per-member rule on GROUP-shaped data lives in a CF
+  (`groups/minor-membership-gate.ts`) with a trigger backstop."
+
+**fail (2 blocking).**
+
+Also retired verbatim from the principles file in the same edit, to stay inside the budget
+(its rationale now ships in production source, in the `enforceRateLimit` comments of both
+`groups/remove-chat-group-member.ts` and `groups/ensure-category-chat.ts`):
+- "**`retryAfterSeconds` beats the client's 60s fallback only where the config declares
+  `dailyLimit`** — never write daily-cap rationale onto a capless bucket."
+
+### 2026-09-10 — BUT-2005 round 3: the sentinel is gone [review]
+
+Malin removed `SYSTEM_ACTOR_ID` entirely rather than accept the marker: the actor parameter
+is `string | null`, the backstop passes `null`, the promotion still happens and is logged,
+and no trail row is written. Better than either option the round-1 finding named. The
+`integration-reviewer` gate found a second, independent reason the sentinel was wrong, which
+I verified rather than inherited: `GroupWeeklyMenuPlan.contributorUserIdsForWrite`
+(`lib/models/menu/group_weekly_menu_plan.dart:291-292`) unions every trail row's `actorId`
+into the erasure handle, and lines 297-301 already exclude the `'deleted'` tombstone for
+exactly that reason — so `"system"` would have been permanent and unclearable inside a
+rules-capped append-only array.
+
+Also verified from the callers rather than the factory default, because the decision record
+rests on it: `messaging_service.dart:1165-1174` seeds every conversation participant as
+`edit` and the closer as the sole `admin`, so "creatorId is the plan's sole admin and the
+creator is whoever closed the poll" is true on the only path that creates a group plan.
+
+Superseded in place in the principles file this round. Retired verbatim:
+"- **A no-tombstone rule binds every CONSTANT a system path writes** — a
+  sentinel actor (`SYSTEM_ACTOR_ID`) in a member-readable trail row
+  marks the eviction as well as a tombstone would, read against the uid removed
+  in the same write. Re-ask it whenever a shared cleanup gains a TRIGGER caller,
+  and pin the CALL SITE — testing the shared function leaves deleting the call green."
+The replacement drops the dead constant, records that the ANSWER is a nullable actor and no
+row rather than a nicer sentinel, and carries the append-only-array reason.
+
+Round-3 finding, and the shape worth remembering: a QUOTED sentence attributed to an ADR
+often lives in `accepted-deviations.md` instead. `grep -c "unaudited privilege grant"
+docs/org/adr/ADR-0010*.md` returns 0 (the sentence is at `.claude/rules/accepted-deviations.md:582`,
+BUT-1971 2026-08-31), and `grep -c "name the wrong person"` on the same ADR also returns 0
+(it is at line 445, BUT-1971 2026-08-30). Three copies of the first were fixed; a fourth
+copy of the second survived in the same file, at `group-menu-access.ts:264`. Fixing the
+copies a gate quotes and leaving the sibling is this repo's recorded pattern. The third
+ADR-0010 reference in that file, at line 129, IS accurate — ADR-0010 lines 103-104 say "the
+trail is a readable history, the audit row is the record that can be relied on", and the
+comment paraphrases rather than quotes.
+
+**fail (1 blocking).**
+
+Merged into that bullet in the same edit, and retired verbatim from the principles file:
+"- **A cleanup helper spawned from a callable needs `callerUid` passed IN if it
+  writes any ATTRIBUTION row** — deriving the actor from the SUBJECT is right
+  only for a self-leave and misnames an eviction."
+It is the ancestor of the same rule: who the actor is, and where it comes from. The merged
+bullet keeps both halves and adds the trigger case, at no net size.

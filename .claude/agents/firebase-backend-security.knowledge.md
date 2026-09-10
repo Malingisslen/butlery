@@ -385,7 +385,24 @@ name which doc each end touches before approving it.
 - `rateLimitWrite(collection, seconds)` is live only PER BUCKET — grep `.doc('<bucket>')`
   under `userRateLimits` before calling any conjunct live or dead (live today: `messages`,
   `comments`, `social_requests`, `activity_events`; most others, incl. `audit_logs`, are
-  inert).
+  inert). It is never a CONTROL against a hostile client, only a throttle on our own
+  repository: the helper is `!exists(limitsPath) || ...`, i.e. FAILS OPEN on a missing
+  bucket, and `users/{uid}/rate_limits/{type}` is `allow read, write: if isOwner(userId)` —
+  so a hand-rolled client that simply never stamps the bucket is unlimited forever. Say that
+  out loud whenever one is proposed, added or deferred; bounding row COUNT needs a
+  callable-mediated create or a server counter.
+- A `hasOnly` allowlist derived from the collection's `hasRequiredFields` list is NARROWER
+  than the declared type, and the gap is exactly the OPTIONAL content fields — which deny
+  silently and fail-closed the day a client writer sends one (the `configRevision` outage
+  shape). Diff the allowlist against the TS interface / model, not against the required
+  list beside it. `.size()` is polymorphic (string, list and map alike), so such a bound
+  buys COUNT and never type, and never element length.
+- Any rules diff adding a `keys().hasOnly` must run the DART guard
+  `test/unit/security/rules_allowlist_drift_test.dart`, not only the emulator suite: its
+  census counts every `hasOnly(` in the file and reddens on the new one until it is either
+  compared against a writer or registered in `_knowinglyUncovered` with an anchor. A
+  TypeScript-only verification run ships it red, and this file's own docstring records that
+  chronic red is what disarmed the guard last time.
 - Moving a denied client write into a CALLABLE puts the doc behind an Admin-SDK read, so
   every distinguishable response is an oracle for a doc the caller can't read — collapse
   not-found/not-a-member/already-done into one reply, but first prove the doc EXISTS on the

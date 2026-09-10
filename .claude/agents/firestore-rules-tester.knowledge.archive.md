@@ -5083,3 +5083,126 @@ Emulator note: the emulator died between runs mid-review and the suite printed
 `ECONNREFUSED` with no test lines — the same shape as a crashed probe. Restarted via
 `.claude/hooks/ensure-firestore-emulator.sh` and re-ran; require a `N/N passed` line before
 reading any probe result.
+
+## 2026-09-09 — BUT-2054/BUT-2056 commit gate: the conditional blocking gate on comments/ratings
+
+Reviewed a comment-and-decision-record commit (no `firestore.rules` change). Re-measured my
+own previous fixture mutant (block doc repointed to an unused uid, PROJECT_ID suffixed so the
+emulator's persisted block row could not leak in): 20/24, the four blocking cases red, the
+`blocked user cannot read comments on blocker's recipe` case green — reproducing the earlier
+figure exactly. Unmutated suite: 24/24.
+
+Verified the read limb (`match /recipe_comments/{commentId}`): `isAuthenticated() && (author
+|| ('recipeOwnerId' in resource.data && uid == …) || ('sharedWithUserIds' in resource.data &&
+uid in …))`, plus a separate `allow read: if isAdmin()`. No blocking conjunct — the staged
+comment's claim holds.
+
+New finding, and the reason the deviation entry was sent back: its contrast clause "create,
+rating and notification all deny a blocked caller" is false of the RULES. Both the comment and
+the rating create limbs spell the gate as
+`!('recipeOwnerId' in request.resource.data) || isNotBlockedBy(request.resource.data.recipeOwnerId)`,
+so a blocked caller who simply omits the denormalised field passes it; only the notification
+gate (`isNotBlockedBy(request.resource.data.userId)`, a required field) is unconditional. Every
+fixture in the suite supplies `recipeOwnerId`, so no test could have shown this — the rules'
+own comments call it the legacy-caller fallback.
+
+Second finding: the BUT-2056 entry's "Only the invariant direction is pinned today" is false —
+`social_export_manager_test.dart` pins the messages note's CONDITIONAL variation in both arms
+(`isNot(contains('could not be read on this export'))` on the healthy path,
+`contains(...)` in the double-failure test), beside the blocks note's byte-invariance test.
+
+Third, wording: `isNotBlockedBy` has four call sites and all four are CREATE limbs, so the
+residual's "this suite starts evaluating the block document on the read side" conflates a
+field-read of the block document with the recipe_comments read limb.
+
+### Second round, same day (BUT-2054 gate)
+
+Both blocking findings were taken. The repair prose then carried two more, both of the class
+the first round had just named:
+
+1. The struck universal survived four lines lower in the SAME bullet — the new opening reads
+   "What that person may DO is gated", and the untouched original "What that person may DO is
+   cut; what they may SEE of a half-public surface is not." still sat below it, directly
+   contradicting the new residual's "do not read this entry as saying the write side is
+   closed". A decision record contradicting itself inside one bullet.
+2. "Every fixture supplies it, so no test could surface it" — measured false:
+   `functions/src/__tests__/recipe-ratings-rules.test.ts` has ZERO occurrences of
+   `recipeOwnerId` (its rating fixtures omit the field entirely) and zero occurrences of
+   "blocked". The conclusion holds, for a different reason than the entry gives: no suite
+   pairs an omitting payload with a blocked actor.
+
+Verified true in the repair: the notification gate is unconditional for a notification aimed
+at the blocker (`userId` is in `hasRequiredFields` and is read directly by the gate, so an
+omission CEL-errors rather than skipping it — the self-notify disjunct only covers
+`userId == uid`); the comment and rating gates do deny a blocked caller whose payload carries
+`recipeOwnerId`; the quoted CEL predicate matches both call sites verbatim; and the revised
+residual ("this suite's fixture starts deciding verdicts") is accurate now that "on the read
+side" is gone.
+
+## 2026-09-10 — BUT-2038, `ingredient_suggestions` create-limb hardening (review gate)
+
+Staged: `firestore.rules`, `ingredient-suggestions-rules.test.ts`,
+`account-deletion-cascade.ts` + its unit suite.
+
+Re-measured, not accepted: rules suite 23/23, cascade suite 421/421. Four mutants built
+against a scratchpad COPY (real file md5 `213005d5…` unchanged before and after):
+`hasOnly` -> 20/23, killing C7 / C8 / C10; `status == 'pending'` -> 22/23, killing C9 alone;
+`originalName` bound -> C11 alone; `ingredientName` bound -> C5 alone. So C5 and C11 do not
+cover for each other and the allowlist does not cover the value pin.
+
+The `status == 'pending'` needle is 2 whole-file / 1 in-slice — the second copy is
+`social_requests`, which sits EARLIER in the file, so a non-global unsliced `replace()`
+mutates the wrong collection and returns a fully green run. That is the "invalid probe"
+the author reported hitting, reproduced here as the reason to slice.
+
+Q1 answered: the BUT-2046 `hasOnly` read-coupling trap does not transfer. That entry's cost
+comes from the conjunct sitting on a READ limb over stored documents; here it is on CREATE,
+the read limb is unchanged (`resource.data.userId == request.auth.uid`), `allow update,
+delete: if false` means no client ever writes the moderator fields, and the Admin SDK
+bypasses rules — which is why `reviewedBy`/`reviewNotes` are correctly OUTSIDE the list.
+
+Q4 answered TRUE: `git show HEAD:` the suite — `validBody` already carried
+`status: "pending"` before this change, so the value pin reddened neither allow fixture.
+The ticket's prediction was wrong and the header correction is accurate.
+
+Two POSITION-detachment defects found, one per test file, both from inserting a test/scenario
+above an existing doc comment — the same principle already in the knowledge file, arriving
+twice in one diff. Plus one false claim ("read from the module rather than retyped" above a
+retyped `const cap = 2000`; the constant is not exported).
+
+### 2026-09-10, rounds 2-3 of the same review (BUT-2038)
+
+Round 2: the limb was widened after my first pass (`firebase-backend-security` found the
+five-key allowlist was narrower than `IngredientSuggestion`'s submission half). Re-ran the
+whole table, eight mutants, `&& true` as the replacement so the rule still parses. The
+allowlist width was pinned (narrow-back kills C12 alone) but the three NEW bounds killed
+NOTHING — 24/24 each — because the only case carrying those fields sent short values.
+Filed; four cases were built (C13-C16), and the re-run has every conjunct killing exactly its
+own case, with `recipeContext` killing two because the present-null case shares the field.
+
+The present-null case (C16) came out of a paragraph rather than a list: `!('f' in d) ||
+d.f.size() <= N` reaches `.size()` on a null and CEL-errors, so a future serialiser emitting
+`recipeContext: null` for "no context" would have every create on the collection refused while
+the rule looked correct. Worth writing the residual paragraph even when the finding beside it
+is the one that gets fixed.
+
+Then measured what the new denies still do not buy: tightening all three bounds from `<=` to
+`<` leaves 28/28. A deny at N+1 pins the direction, not the number.
+
+Round 2's B5 was RIGHT and its DIAGNOSIS was incomplete — a good reminder that "the quote is
+wrong" and "the file is wrong" are different findings. The quote was verbatim for
+`docs/architecture/ACCEPTED_DEVIATIONS.md` and absent from `.claude/rules/accepted-deviations.md`;
+the two "mirrors" word this decision differently, pre-existing drift neither side knew about.
+Now in the principles.
+
+Two invalid probes, one each side: the coordinator's `suggestedProperties` deletion took the
+statement terminator with it (28/28, measuring nothing), and mine wrote a mutant to a
+bash-mangled `C:\c\Users\...` path so the suite never loaded it — no `passed` line in either
+case, which is the signature. The existing "require a `N/N passed` line" principle held both
+times; what is new is that the `&& true` replacement avoids the terminator class entirely.
+
+Round 4 closed it: the at-bound twins shipped (C17-C19) and the `<=` -> `<` mutant that had
+left the suite green now kills exactly those three (28/31), with the clean suite at 31/31. Full
+eight-mutant table re-run against the final suite rather than carried forward, which was worth
+doing — the narrow-back mutant's kill set grew from 1 to 4, because the new at-bound allows
+also carry the optional fields. Never quote a previous round's kill set after the suite grows.

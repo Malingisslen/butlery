@@ -36686,3 +36686,94 @@ itself has five non-snackbar consumers. Not blocking; not to be re-filed narrowe
 Also not filed: `chat_action_handler.dart:694` is a history sentence of the same class as the
 one I flagged in the test — I graded it in round 1 and re-filing it at round 4 would be the
 correction chain rather than a finding.
+
+### 2026-09-10 — BUT-2038 Dart half: a rules tightening falsified a fixture comment in an unstaged suite
+
+Trigger: commit-gate review of the Dart half of BUT-2038 (`firestore.rules` gains a
+`keys().hasOnly` on `ingredient_suggestions`' create limb; two Dart files pulled into an
+otherwise TypeScript/rules commit).
+
+Reviewed (Read tool): `lib/services/account/export/content_export_manager.dart`,
+`test/unit/security/rules_allowlist_drift_test.dart`.
+
+Measured this round:
+- `test/unit/security/rules_allowlist_drift_test.dart` 9/9 green after the fix.
+- Python replica of the suite's own comment stripper over the STAGED `firestore.rules`:
+  `hasOnly(` occurrences 34 (raw, uncommented file: 36 — the diff's own prose carries two);
+  `\.keys\(\)\s*\.hasOnly\(` occurrences 15 = 7 `_allowlists` + 8 `_knowinglyUncovered`.
+  The bounded window `[anchor, next 'match ')` for
+  `match /ingredient_suggestions/{suggestionId}` is 1494 chars and DOES contain a
+  `keys().hasOnly(`, so the new `_Uncovered` entry's second half is live, not vacuous.
+  Settled analytically rather than by mutating `firestore.rules` while sibling gates read it.
+- `grep -rn "ingredient_suggestions\|ingredientSuggestions" lib/`: reads only (the export
+  repository, the collection constant, the pagination cap). No `toFirestore`, no writer.
+  So `_knowinglyUncovered` is the correct classification — the writer comparison has
+  nothing to derive — and it is verbatim what the census's own failure message instructs.
+- Coverage pointer `ingredient-suggestions-rules.test.ts` C7-C12 resolves: C7 (unknown
+  field refused), C8 (reviewedBy/reviewNotes), C10 (notifiedAt), C12 (optional content
+  fields accepted). C9 and C11 sit inside the cited RANGE and pin other conjuncts
+  (status-by-value, originalName bound); the enumeration after the colon is exact.
+- `index == worktree` blobs for all four files touched by the review at verdict time.
+
+Blocking finding (1): `test/unit/services/account/data_export_service_test.dart:1024-1029`
+carries the same premise the commit strikes in `content_export_manager.dart` and supersedes
+in both deviation records — "The create rule is `hasRequiredFields`, not `hasOnly`, so a
+client can store this". The commit's own `firestore.rules` change is what makes it false.
+The file is UNSTAGED and clean at HEAD, so no diff-following sweep opens it. The FIXTURE
+still earns its place (an undeclared field can still arrive via the console/Admin SDK,
+which bypasses rules, and the projection's fail-closed behaviour is what the assertions
+pin), and the header bullet at :1010-1011 already states the fixture's purpose and reads
+true standing alone — so the repair is a pure deletion of :1024-1029 plus `git add`, never
+a replacement sentence.
+
+Non-blocking, recorded, not demanded: the replacement docstring sentence in
+`content_export_manager.dart` is new prose written as a correction (code-style says a
+correction may only DELETE), though its claim is directly readable from the section's
+unconditional `data_minimisation` entry; the reworded parenthetical "wrong within a day of
+the next allowlist landing" is a history sentence the strike rule would rather see deleted
+than renumbered; and `:1004-1005`'s "the fixture the rules' create limb actually permits"
+is true read as scoped to `createdAt`'s TYPE and false read as a claim about the whole
+`set()` — flagged, not ordered, because demanding a reword of an arguably-true scoped
+clause is the correction chain the strike rule exists to stop.
+
+Principle merged into `testing-specialist.knowledge.md` under "Grading a reported STRIKE or
+REWORD": a rules tightening carries a false sentence into `test/` with every assertion
+green; grep `test/` for comments citing what the old rule allowed; strike the
+justification, keep the case.
+
+#### 2026-09-10 — BUT-2038 round 2 (verdict: pass, 0 blocking)
+
+Blob table, my round-1 read → verdict-time (index == worktree on all nine staged files):
+
+| file | round 1 | round 2 |
+|---|---|---|
+| `test/unit/security/rules_allowlist_drift_test.dart` | b5361ea6 | c21a4e99 (MOVED) |
+| `test/unit/services/account/data_export_service_test.dart` | 87871ff1 (unstaged, clean at HEAD) | 6559468f (STAGED) |
+| `lib/services/account/export/content_export_manager.dart` | 36598f53 | 36598f53 (unmoved) |
+| `firestore.rules` | e169f0e2 | e169f0e2 (unmoved — so round 1's 34 stripped / 15 keys / 7+8 stand unrecomputed) |
+| `functions/src/__tests__/ingredient-suggestions-rules.test.ts` | a3f4322b | e712f1b0 (MOVED, sibling gates) |
+
+Isolate-diff (`git cat-file -p <round-1 blob> | diff -u --strip-trailing-cr`) confirms both
+Dart files carry ONLY the reported edits — no unreported production or test change dragged
+in with the remedy. The census strike is a pure deletion of the clause another gate found
+false; the survivor ("pinned by `ingredient-suggestions-rules.test.ts` C7-C12 instead, where
+C12 accepts the optional content fields") was re-graded as a fresh claim and the pointer
+re-resolved against the MOVED `.ts` bytes: C7-C12 all still present, C12 still an
+`assertSucceeds` over the three optional content fields (now on `CREATOR_UID`). The
+`data_export_service_test.dart` strike removed exactly the six comment lines and kept
+`'nickname': 'Svarta kålen',` with its `containsKey` assertion at what is now :1061; the
+header bullet at :1010-1011 stands alone and true.
+
+Verdict-time sweep: `grep -rn "hasRequiredFields" test/ lib/ --include=*.dart` returns only
+hits about OTHER collections (the `SerializationUtils` helper, `shopping_lists`,
+`shared_content`, `notification_preferences`) plus this suite's own MIRROR-family header
+note, which is general and unaffected. `"can store this"` / "not \`hasOnly\`" → zero hits.
+
+Suites at verdict time: census 9/9; `data_export_service_test.dart` 42/42 (my measurement —
+the coordinator reported 51 for its run; not adjudicated, both green). `dart format
+--set-exit-if-changed` on all three Dart files: 0 changed.
+
+The two non-demands from round 1 were honoured and are NOT re-filed: the "next allowlist
+landing" parenthetical, and `:1004-1005`'s "the fixture the rules' create limb actually
+permits", which is true read as scoped to `createdAt`'s TYPE. Re-filing a declined
+non-blocking finding in narrowed form is the correction chain the strike rule exists to stop.

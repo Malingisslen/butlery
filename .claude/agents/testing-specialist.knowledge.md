@@ -177,6 +177,14 @@ compress it.**
   security fix changes WHICH DOCUMENT a check reads, the corrected wording lands in the markdown
   the gate quoted while the paraphrase survives in `firestore.rules` and in a fixture comment —
   so the commit that CLOSES a hole ships two sentences asserting it is open (BUT-1917).
+  **A rules TIGHTENING is a carrier of this shape into `test/` with every assertion still
+  green**: a fixture whose comment justifies an odd field by what the OLD rule PERMITTED
+  ("the create rule is `hasRequiredFields`, not `hasOnly`, so a client can store this")
+  is falsified by the commit adding the allowlist, and lives in an UNSTAGED file no
+  diff-following sweep opens. After any `hasOnly`/bound tightening, grep `test/` for
+  comments citing what that rule allows — the fixture usually still earns its place
+  (Admin-SDK writers bypass rules), so the repair is to STRIKE the justification, not
+  delete the case (BUT-2038).
 - **STOP rule, or the sweep never terminates: a sentence saying only what the code REFUSES
   asserts no outcome and is not a carrier. Only a clause asserting what the write WOULD DO is.**
 - **Grade the REPLACEMENT as a fresh claim — the paragraph written to BE the correction is where

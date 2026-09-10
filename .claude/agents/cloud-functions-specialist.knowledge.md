@@ -93,8 +93,7 @@ Triggers retry on uncaught exception; handlers must be idempotent:
     copied rationale — a bound's ABSENCE needs the same read. Never cite a rules
     LINE NUMBER.
 10. A fake whose `update()` no-ops on a missing doc can't stage grpc 5 —
-    give it an injectable `updateFailures: Map<path, grpcCode>`. Deleting a
-    cascade LEG needs a `__tests__` grep for writers of that path.
+    give it an injectable `updateFailures: Map<path, grpcCode>`.
 11. **Resolve-or-create keyed on a QUERY is not idempotent.** A
     `where(...).limit(1).get()` outside the transaction lets two concurrent
     callers both create, and no fake can show it (single-threaded). Derive
@@ -370,8 +369,6 @@ from `(err as {code?}).code`.
   `enforceRateLimit` and `logRateLimitViolation` read `getFirestore()`, so
   `__setFirestoreForTest` + a throwing fake reaches the fail-closed branch. The
   ALLOWED path is unreachable — `getDb()` is a bare `admin.firestore()`.
-- **`retryAfterSeconds` beats the client's 60s fallback only where the config
-  declares `dailyLimit`** — never write daily-cap rationale onto a capless bucket.
 - **`rateLimitWrite(bucket, s)` is INERT unless a client writes
   `users/{uid}/rate_limits/<bucket>`** — grep the Dart writers per bucket before
   citing it as a control; several rules name buckets nothing writes.
@@ -389,14 +386,17 @@ from `(err as {code?}).code`.
   field — check exemptions, not `indexes`.
 
 ### Verify-signup-age, account callables & minor-safety triggers
-- Rules can't iterate an array, so a per-member rule on GROUP-shaped data lives in
-  a CF (`groups/minor-membership-gate.ts`) with a trigger backstop.
+- **A cleanup helper writing an ATTRIBUTION row takes the ACTOR as an argument,
+  and a no-tombstone rule binds every CONSTANT it writes.** Deriving the actor
+  from the SUBJECT misnames an eviction; a SENTINEL marks that eviction as well
+  as a tombstone would, correlated with the uid removed in the same write. For a
+  TRIGGER caller the answer is a NULLABLE actor and NO row, never a nicer
+  sentinel — a non-uid also sticks permanently in any append-only uid array the
+  client derives from that row. Pin the CALL SITE: testing the shared function
+  leaves deleting the call green.
 - **A callable that READS a doc before checking caller membership is an ORACLE,
   and its idempotent no-op branch is the leak** — collapse `!exists` +
   non-member into ONE uniform response.
-- **A cleanup helper spawned from a callable needs `callerUid` passed IN if it
-  writes any ATTRIBUTION row** — deriving the actor from the SUBJECT is right
-  only for a self-leave and misnames an eviction.
 - **A client-chosen document id is not unique across accounts.** A
   server-side pointer to one (`friend_categories/{uuid}`) must be keyed on
   OWNER + id, or an ex-member re-creating that id under their own uid is

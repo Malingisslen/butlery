@@ -197,7 +197,18 @@ Standard deny matrix for ownership-checked collections:
 ### `hasOnly` / allow-list coverage
 - **`hasOnly` bounds a document's SHAPE, not its VALUES** — passing the key-set check
   proves nothing about what is inside a permitted key; a validator on an enum or numeric
-  field is a separate conjunct with its own malformed-payload test.
+  field is a separate conjunct with its own malformed-payload test. Measured on
+  `ingredient_suggestions` (BUT-2038): the `hasOnly` mutant kills only the extra-field
+  cases and leaves a forged `status: 'approved'` ALLOWED, while the value-pin mutant kills
+  that one case alone — so an allowlist and a value pin are never each other's coverage.
+- **The `hasOnly` read-coupling trap is READ-SIDE ONLY; on a CREATE limb it costs nothing
+  and must not be argued against by citing `user_moderation`.** BUT-2046's cost — a
+  legitimate new field makes the whole document unreadable to its own subject and fails the
+  Art. 15 section closed — comes from rules being unable to scope a READ by field, over
+  STORED documents written by anyone. A create-side allowlist judges only the payload in
+  front of it, the Admin SDK bypasses it entirely (so server-written moderator fields
+  belong OUTSIDE the list, not inside), and a client denial is loud and immediate. Check
+  which limb carries the conjunct before transferring that entry's warning.
 - **An `affectedKeys().hasOnly([...])` allow-list needs one deny test PER KEY THE APP
   MIGHT PLAUSIBLY ADD, not one per key a test happened to try.** Widening the messages
   RECEIPT branch by one token (`+ 'metadata'`) — a one-token edit a future ticket would
@@ -286,7 +297,12 @@ Standard deny matrix for ownership-checked collections:
   survived four rounds, the last carrier sitting in `firestore.rules` directly above the
   rule it misdescribed. Sweep by grepping the CLAIM's own keywords repo-wide, never by
   fixing the copy you happened to notice.** Grep the test file for the claim's keywords whenever a rules comment is
-  corrected, and the reverse. **Sweep it by STRIKE-AND-POINT, never by writing the
+  corrected, and the reverse. **The nearest carrier is inside the SAME paragraph you just
+  repaired**: a struck universal ("the write side denies a blocked caller") came back four
+  lines below its own retraction, as "what that person may DO is cut", in the very entry whose
+  new residual says not to read it that way — so a decision record can contradict itself within
+  one bullet. After striking a claim, re-read the WHOLE entry to its end, not the sentence you
+  replaced (BUT-2054, 2026-09-09). **Sweep it by STRIKE-AND-POINT, never by writing the
   correction into both files** — the copy names the canonical site ("the account lives at
   the rule itself; do not restate it here") and makes no claim of its own, so there is one
   thing to re-measure instead of two that drift. **Sweep the keywords, not the comment
@@ -349,6 +365,13 @@ Standard deny matrix for ownership-checked collections:
   rule and is two.
 - **Never cite a rules LINE NUMBER in a comment or report — the file renumbers on every
   edit.** Cite the `match` pattern or function name instead.
+- **`.claude/rules/accepted-deviations.md` and `docs/architecture/ACCEPTED_DEVIATIONS.md` are
+  called mirrors and are not byte-identical, so a "Retired verbatim" quote can be verbatim for
+  ONE of them and absent from the other.** Found on BUT-2038: the superseding entry quoted the
+  `docs/` wording into BOTH files, so in the always-on `.claude/` copy the supersession greped
+  to nothing while the sentence it retired stood on undisturbed. Verify a supersession by
+  COUNTING the quoted fragment IN EACH FILE — 2 means original plus retirement, 1 means the
+  supersession is talking to itself — and expect each file to retire its OWN wording.
 - **A test comment is bound to its test by POSITION only, so the test a review ASKS you to
   insert is what detaches it** — the fix for a stacked-comment finding put a new `test(` in
   between a null-case paragraph and the null-case test, leaving the paragraph heading a
@@ -606,6 +629,14 @@ Standard deny matrix for ownership-checked collections:
   "nothing proved that" clause justifying why the allow was added is a claim about the
   SUITE, and the deny a reviewer asks for the next round refutes it inside the same file.
   Strike the justification clause; leave only what the test itself does.
+- **An allow fixture sitting WELL INSIDE a bound proves the field is ACCEPTED, never that it
+  is BOUNDED — and without an at-bound allow twin an off-by-one is invisible.** Measured on
+  `ingredient_suggestions` (BUT-2038): a case sending three optional fields at 9 chars / 2
+  entries stayed green with all three bounds deleted, and after the over-cap denies were added
+  it still stayed 28/28 with every bound tightened from `<=` to `<`; once the at-bound allows
+  shipped, that same mutant killed exactly those three. The deny pins the
+  DIRECTION; only the at-bound allow pins the NUMBER. Ship the pair whenever the number is
+  worth anything.
 - **Optional-list field validator** (`!('f' in d) || (d.f is list && d.f.size()<=N)`):
   five-test cluster — present+valid, present+empty, present+at-cap (boundary inclusive),
   present+over-cap (deny), present+wrong-type (deny); absent is already covered by the
@@ -754,6 +785,19 @@ Standard deny matrix for ownership-checked collections:
   writer's REAL `WriteBatch` (roster + membership in one commit) — a failed batch prints
   a `false` verdict for EVERY doc in it, including ones allowed on their own, so attribute
   the deny with a separate probe.
+- **A blocking conjunct guarded by `!('f' in request.resource.data) ||` is DEFEATED BY
+  OMITTING `f`, so "the write side denies a blocked caller" is true of OUR client and false
+  of the rule.** `recipe_comments` and `recipe_ratings` spell the BUT-459 gate
+  `!('recipeOwnerId' in request.resource.data) || isNotBlockedBy(...)`; `user_notifications`
+  reads a REQUIRED field (`userId`) and is unconditional. Every suite fixture supplies the
+  denormalised field, so nothing reddens and the gap is invisible from the test names. Check
+  each blocking call site for its guard before passing any sentence contrasting an open READ
+  limb with a closed write side — that contrast is the load-bearing clause of the deviation
+  entry it usually sits in (BUT-2054, 2026-09-09).
+- **`isNotBlockedBy` sits on CREATE limbs only** (`social_requests`, `recipe_comments`,
+  `recipe_ratings`, `user_notifications`) and is a bare `exists()` reading no field — so no
+  READ limb in `firestore.rules` is block-gated, and a sentence saying a change to the helper
+  would put it "on the read side" confuses reading the block doc's FIELDS with the read limb.
 - **Household membership** (`households`/`diner_profiles`/`family_ratings`) is a
   DOC-READ gate (`get(households/{hid})` + uid in `memberUserIds`), not a path segment —
   every test must seed the household first. Household-admin is separate from app-level

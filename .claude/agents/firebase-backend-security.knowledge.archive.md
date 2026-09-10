@@ -9456,3 +9456,47 @@ Addendum, same day: the round-4 residual is closed by strike —
 at "…left both suites green", and the surviving sentences read true standalone (the
 following paragraph's subject is the test file, so it inherits nothing from the removed
 line). Third copy of a claim struck twice; the concept sweep is what missed it.
+
+## 2026-09-10 — BUT-2038, `ingredient_suggestions` create limb + capped erasure
+
+Gate review I had raised myself (BUT-2028 follow-up). Four rounds, 6 + 3 + 1 blocking.
+
+**Measured, kept as principles:** `rateLimitWrite` fails OPEN on a missing bucket
+(`!exists(limitsPath) || ...`) and `users/{uid}/rate_limits/{type}` is owner-writable, so it
+throttles our own repository and never a hand-rolled client — this turned "inert today" into
+"never a control", and Malin's deferral was recorded with the measurement marked as arriving
+AFTER her call. The create limb's `hasOnly` was first derived from `hasRequiredFields` and so
+excluded three OPTIONAL content fields (`suggestedCategory`, `suggestedProperties`,
+`recipeContext`) that the declared type and the Art. 15 export both carry — fixed by adding
+them with bounds. `.size()` measured polymorphic on the live emulator: a 20-char STRING and a
+20-key MAP both satisfy `suggestedProperties.size() <= 20`, and one 900-char element is
+accepted, so the bound buys count, never type or element length.
+
+**The census.** `test/unit/security/rules_allowlist_drift_test.dart` went red (33 → 34) on the
+new `keys().hasOnly` and the commit was staged past it, because only the TypeScript suites had
+been run. Also falsified two ORDINALS in that same file ("the fourteenth is a READ gate" —
+`user_moderation` moved from 14th to 15th, measured by occurrence order: the new allowlist sits
+at rules line ~3348, ahead of `user_moderation` at ~3542).
+
+**Art. 15/17.** The gap I had originally filed — a client storing a field the export's allowlist
+silently drops — is closed by `hasOnly`; the two lists are deliberately different sets
+(client-writable ⊆ export ∪ {userId}) and nothing but the census binds them. The erasure leg now
+DECLINES above 2000 rather than truncating, verified end to end: `false` → `runStep` →
+`failedCollections` → `gdprCompliant: false`, with `probeResidualData`'s unbounded `count()`
+still contradicting a silent all-clear.
+
+**Four rounds, and every finding after round 1 was a SENTENCE, not code.** A stale
+`hasRequiredFields, not hasOnly` clause in `content_export_manager.dart` AND in both
+`ACCEPTED_DEVIATIONS` mirrors; a test comment claiming the cap was "read from the module" when
+2000 was retyped and the constant was not exported; a docstring stranded onto the wrong function
+by an insertion, carrying "the deleter's own success value is `true` unconditionally", which the
+same diff falsified; and `notifiedAt`/`sourceApp` labelled "moderation fields" in four carriers
+when `on-suggestion-created.ts:89-90` writes both in the CREATE trigger — a mislabel that
+propagated from a rules comment into a decision record inside one commit.
+
+**Twice the coordinator reported a fix that had not landed** (the stranded docstring; the
+polymorphism note), both verified by intent rather than by grep, both caught by searching for
+the specific claim in the bytes. Cheapest instrument all session: `grep -c` on the exact token,
+and for the two deviation mirrors a whitespace-normalised per-file count proving each retires
+its OWN wording — they word this decision differently, so a grep for one genuinely does not
+find the other (q1: 2/0, q2: 0/2 across the two files).
