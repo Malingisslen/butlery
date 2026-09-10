@@ -3690,3 +3690,64 @@ strykningen ändå.
 - **En granskares "oförändrad, samma blob" kan vara ett minnesfel.** En grind jämförde en
   hash mot minnet i stället för mot sitt eget noterade värde och rapporterade rent; commit-
   grinden var det enda som fångade det. Täckning nyckias på `Read`-verktyget just därför.
+
+
+## Att KOPPLA UR något faller sina egna dokument, och samtycket gällde en premiss som inte fanns (BUT-2005/BUT-2060, 2026-09-10)
+
+Malin sa: bygg båda utkastningsvägarna. Jag byggde båda. Push-grinden — den enda granskning
+som ser hela ändringen på en gång — fällde den ena, och den hade rätt: kategorisynkens
+utkastning är med FLIT återställbar, och koden säger det rakt ut tre rader ovanför där jag
+lade anropet ("Ingen gravsten: den här borttagningen SPEGLAR kategorin"). Menyklippet har
+ingen väg tillbaka. Fem filgranskningar hade godkänt det.
+
+### Det som gör detta till en lärdom och inte bara ett fynd
+
+Rätt drag var INTE att bygga det hon sagt ja till. Samtycket gällde ett pris hon aldrig fick
+se: hon fick veta att tre vägar lämnade en lucka, aldrig att en av dem speglar en handling
+byggd för att ångras. Repot hade redan skrivit ner exakt det dagen innan (BUT-1917/2018), och
+jag följde det: byggde halvan vars premiss höll, lämnade halvan vars premiss brast, och gick
+tillbaka till henne med tre alternativ (BUT-2060).
+
+Att bygga hälften av ett beslut kräver då tre saker, annars är det bara ofärdigt arbete:
+beslutsposten superserad med vad koden GÖR, en biljett med frågan, och ett prov som INVERTERAS
+i stället för raderas — det som pinnade inkopplingen pinnar nu frånvaron och rodnar den dag
+någon kopplar in det. Beslutet syns i stället för att luckan är tyst.
+
+### Urkopplingen faller dokumenten i den FIL man kopplar ur ifrån
+
+Att ta bort ett anrop gjorde fem meningar i den delade hjälpfilens egen dokumentation falska,
+och ingen av dem låg i filen jag redigerade:
+
+- tre rakneord ("three call sites", "Both new call sites", "The two call sites that HAVE a
+  human actor"),
+- en sats som förklarade varför ETT AV ANROPSSTÄLLENA skickar som det gör — anropsstället jag
+  just raderat,
+- modulhuvudet, som fortfarande räknade upp vägen som en modulen täcker.
+
+Regeln: **grepa hjälparens EGEN fil, inte bara anroparen du ändrade.** Varje "which is why X
+passes…" är ett påstående om en anropare, och varje siffra räknar dem.
+
+### Tre rundor i rad var defekten ett SYSKON, aldrig nytt arbete
+
+Runda 1 hittade koddefekten. Runda 2-4 hittade meningar, och varje gång var det en kopia av
+något jag redan strukit: kodmeningen ströks, spegelmeningen stod kvar; sedan en superlativ jag
+skrev I RUNDAN SOM STRÖK ("the only definition in `lib/` with no caller"), motbevisad av posten
+fyra rader ovanför. Svepet terminerade först när det nycklades på PÅSTÅENDET i stället för på
+frasen.
+
+### Två mätfel av mig i samma runda, båda i text skriven som rättelsen
+
+- Min nya provkommentar påstod ett prov som **inte går att kompilera**: att radera anropet
+  lämnar importen oanvänd, TS6133 avbryter före första assertion. Repots egen kunskapsfil
+  varnar ordagrant för det. Välj en mutant som KOMPILERAR — här `[]` i stället för `toRemove`.
+- Mitt inverterade prov band inte sin egen premiss: hade synken slutat kasta ut någon alls hade
+  det förblivit grönt under ett namn som säger att en utkastning skedde. Ett prov som pinnar en
+  FRÅNVARO måste assertera att handlingen ändå hände.
+
+### Och ett citat måste ligga på EN rad
+
+En supersering vars citat radbryts mitt i frasen greppas inte av den som söker efter det —
+speglarna radbryter olika, så originalet bryts på ett ställe och citatet på ett annat. Jag
+skrev först citatet brutet, mätte 1 i stället för 2, och fick rätta mig själv. Samma runda
+pensionerades den gamla räkne-heuristiken av samma skäl: den ger FALSKLARM på en korrekt
+supersering.
