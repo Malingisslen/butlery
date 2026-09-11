@@ -3,7 +3,9 @@
 import 'package:clock/clock.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/repositories/interfaces/ratings_repository.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/services/analytics_service.dart';
+import 'package:butlery/services/analytics/analytics_events.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -78,6 +80,15 @@ class RecipeRatingSystem {
           ? socialOwner
           : (createdBy != null && createdBy.isNotEmpty ? createdBy : null);
 
+      // BUT-2073: counted BEFORE the write, because it describes the call we
+      // are about to make and not its outcome — an owner we could not resolve
+      // is a rating the block gate will not run on whether the write succeeds
+      // or fails. Emitted here rather than where the field is written, since
+      // this is the only place that can see BOTH source fields were empty.
+      if (recipeOwnerId == null) {
+        AnalyticsService.tryLog(AnalyticsEvents.recipeRatingOwnerUnresolved);
+      }
+
       await _ratingsRepository.rateRecipe(
         recipeId: recipeId,
         userId: currentUserId,
@@ -97,6 +108,18 @@ class RecipeRatingSystem {
 
       return true;
     } catch (e) {
+      // BUT-2073: a refusal by `firestore.rules` is the block gate (BUT-2057)
+      // doing its job, OR the `recipeOwnerId` stamping being wrong and denying
+      // legitimate ratings broadly. Both reach the user as the same generic
+      // error, so without this counter the second case is invisible until
+      // somebody reports that their rating "disappeared".
+      //
+      // Narrowed to permission-denied on purpose: this catch also covers a
+      // network failure and a malformed write, and folding those in would make
+      // the number unreadable as a gate signal.
+      if (e is FirebaseException && e.code == 'permission-denied') {
+        AnalyticsService.tryLog(AnalyticsEvents.recipeRatingDenied);
+      }
       AppLogger.error('❌ Failed to rate recipe', e);
       return false;
     }

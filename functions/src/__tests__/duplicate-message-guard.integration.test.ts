@@ -25,6 +25,10 @@
  *       `onDocumentCreated` is at-least-once, so this is not hypothetical.
  *   D9. The stored entry carries the DOCUMENT's createTime, not the trigger's
  *       run time. The invariant D2 only catches by accident of clock skew.
+ *   D12. BUT-1952: a BLOCKED message increments the day's block counter by
+ *       exactly one, and an accepted one leaves it alone.
+ *   D13. BUT-1952: the same, for the COMMENT surface — the live one, which had
+ *       no end-to-end coverage at all.
  *   D8. The same event redelivered AFTER the rolling window has been flushed
  *       -> the message still survives. This is the one the eventId-based guard
  *       could not do: once its own bookkeeping was evicted by 20 later
@@ -71,10 +75,15 @@ function assert(cond: boolean, msg: string): void {
 }
 
 const writtenMessageIds: string[] = [];
+const writtenCommentIds: string[] = [];
 
 async function run(): Promise<void> {
-  console.log("BUT-1898: guardDuplicateMessage INTEGRATION tests (firestore emulator)");
-  console.log("=====================================================================\n");
+  console.log(
+    "BUT-1898: guardDuplicateMessage INTEGRATION tests (firestore emulator)",
+  );
+  console.log(
+    "=====================================================================\n",
+  );
 
   await requireEmulatorsOrSkip(
     [{ name: "Firestore", hostPort: FIRESTORE_HOST }],
@@ -88,7 +97,11 @@ async function run(): Promise<void> {
 
   // Import AFTER initializeApp so the modules bind to the emulator app.
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { guardDuplicateMessage } = require("../social/duplicate-content-guard");
+  const {
+    guardDuplicateMessage,
+    guardDuplicateComment,
+    BLOCK_COUNTER_FIELD,
+  } = require("../social/duplicate-content-guard");
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const {
     __setChatGuardFlagForTests,
@@ -96,6 +109,7 @@ async function run(): Promise<void> {
   } = require("../social/duplicate-message-flag");
 
   const msgRef = (id: string) => db.collection("messages").doc(id);
+  const commentRef = (id: string) => db.collection("recipe_comments").doc(id);
 
   /**
    * Write a message and fire the REAL trigger with a real snapshot, the way
@@ -188,6 +202,29 @@ async function run(): Promise<void> {
     );
   }
 
+  /** The document BUT-1952's counter increments, for today's UTC date. */
+  function blockCounterDoc(): admin.firestore.DocumentReference {
+    const dateKey = new Date().toISOString().slice(0, 10);
+    return db
+      .collection("analytics")
+      .doc("duplicate_guard")
+      .collection("daily")
+      .doc(dateKey);
+  }
+
+  /**
+   * BUT-1952: how many chat blocks the guard has counted today.
+   *
+   * Read as a DELTA around each action rather than as an absolute: the
+   * emulator keeps data across runs, and the counter is deliberately a running
+   * total with nothing run-scoped to filter on.
+   */
+  async function countBlockEvents(): Promise<number> {
+    const snap = await blockCounterDoc().get();
+    const value = snap.data()?.[BLOCK_COUNTER_FIELD.chat];
+    return typeof value === "number" ? value : 0;
+  }
+
   /**
    * The guard's rolling hash docs — cleared between cases so each starts cold.
    *
@@ -264,6 +301,139 @@ async function run(): Promise<void> {
     );
   });
 
+  // D12 (BUT-1952): the guard has run in production with no measurement at all
+  // — one `logger.info` nothing reads. This is the case that proves the count
+  // exists and is attributable to a block rather than to traffic.
+  //
+  // It deliberately asserts BOTH directions. A counter that fires on every
+  // message would look healthy in the aggregate and mean nothing, and that is
+  // not a hypothetical shape: the row is written from the trigger, which wakes
+  // on every create.
+  test("flag ON: a blocked message increments the day counter by one, an accepted one does not", async () => {
+    __setChatGuardFlagForTests(true);
+    await clearHashes();
+    const before = await countBlockEvents();
+
+    // Ids namespaced to THIS case. `set()` preserves `createTime`, so an id
+    // shared with another case hands that case a stamp written here and its
+    // stated premise stops describing the run.
+    const a = `d12a-${RUN}`;
+    await writeAndFire(a, body(CONV_A, LONG_BODY));
+    await assertIntact(a, LONG_BODY, "the first message must be untouched");
+    assert(
+      (await countBlockEvents()) === before,
+      "an ACCEPTED message must not be counted as a block",
+    );
+
+    const b = `d12b-${RUN}`;
+    await writeAndFire(b, body(CONV_A, LONG_BODY));
+    await assertBlocked(b, "the repeat must be marked");
+    const after = await countBlockEvents();
+    assert(
+      after === before + 1,
+      `a blocked message must be counted exactly once, got ${after - before}`,
+    );
+
+    // A REDELIVERED accept must not move the counter. Without this the guard
+    // could count on `outcome !== "accepted"` instead of `=== "rejected"`, and
+    // `retry-noop` and `gone` are outcomes rather than blocks — counting them
+    // is exactly the inflation this metric exists to avoid.
+    const snap = await msgRef(a).get();
+    await guardDuplicateMessage.run({
+      params: { messageId: a },
+      data: snap,
+      id: `evt-${a}`,
+    });
+    assert(
+      (await countBlockEvents()) === after,
+      "a redelivered ACCEPT is a retry-noop, not a block — it must not be counted",
+    );
+
+    // The document carries COUNTS and a date, never a person. A uid, a
+    // conversation id or the message text here would put content nobody asked
+    // for into a collection whose whole purpose is a number.
+    const keys = Object.keys((await blockCounterDoc().get()).data() ?? {});
+    const allowed = [
+      "date",
+      BLOCK_COUNTER_FIELD.chat,
+      BLOCK_COUNTER_FIELD.comment,
+    ];
+    const unexpected = keys.filter((k) => !allowed.includes(k));
+    assert(
+      unexpected.length === 0,
+      `the counter must carry only a date and the two surface counts, got: ${unexpected.join(",")}`,
+    );
+    // An allowlist alone passes on an EMPTY document, so pin the one key this
+    // case has just proven must be there. Without it the assertion above is
+    // satisfied by a counter that was never written.
+    assert(
+      keys.includes(BLOCK_COUNTER_FIELD.chat),
+      "the chat count must be present after a block",
+    );
+  });
+
+  // D13 (BUT-1952): the COMMENT surface's counter.
+  //
+  // Added because the cloud-functions and integration gates both measured the
+  // same gap: D12 covers CHAT, which ships behind a kill switch that is OFF,
+  // while the comment surface has been live since 2026-05-04 and its
+  // `recordBlockEvent` call was reached by no test at all. The tested half was
+  // the dormant half.
+  //
+  // The comment surface DELETES rather than marks (ADR-0009), so "was it
+  // blocked" is read as absence here and as a stamped row in D12. That
+  // asymmetry is the decision, not drift.
+  test("the COMMENT surface counts a block under its own key", async () => {
+    // Own clear, like every other case. Inheriting the previous case's
+    // teardown makes this one's meaning depend on test ORDER: any case
+    // inserted above that writes a comment turns the first `fire` below into
+    // a duplicate and inverts what this proves.
+    await clearHashes();
+    const col = blockCounterDoc();
+    const before =
+      ((await col.get()).data()?.[BLOCK_COUNTER_FIELD.comment] as number) ?? 0;
+
+    const fire = async (id: string, text: string) => {
+      // Registered for the shared teardown BEFORE the write: cleaning up inside
+      // the case body leaks both documents into a permanent emulator on any
+      // mid-case failure, which is the state this whole suite is isolated
+      // against.
+      writtenCommentIds.push(id);
+      await commentRef(id).set({ authorId: SENDER, text });
+      const snap = await commentRef(id).get();
+      await guardDuplicateComment.run({
+        params: { commentId: id },
+        data: snap,
+        id: `evt-${id}`,
+      });
+    };
+
+    const first = `c13a-${RUN}`;
+    const second = `c13b-${RUN}`;
+    await fire(first, LONG_BODY);
+    assert(
+      (await commentRef(first).get()).exists,
+      "the first comment must survive",
+    );
+    assert(
+      (((await col.get()).data()?.[BLOCK_COUNTER_FIELD.comment] as number) ??
+        0) === before,
+      "an accepted comment must not be counted",
+    );
+
+    await fire(second, LONG_BODY);
+    assert(
+      !(await commentRef(second).get()).exists,
+      "the duplicate comment must be deleted — this surface deletes, it does not mark",
+    );
+    const after =
+      ((await col.get()).data()?.[BLOCK_COUNTER_FIELD.comment] as number) ?? 0;
+    assert(
+      after === before + 1,
+      `a blocked comment must be counted exactly once, got ${after - before}`,
+    );
+  });
+
   // D3: the false positive the panel formed around. Before the scoped key this
   // deleted the second message — the same text to two different people inside
   // five minutes, which is ordinary chat rather than spam.
@@ -295,8 +465,16 @@ async function run(): Promise<void> {
     const b = `d4b-${RUN}`;
     await writeAndFire(a, body(CONV_A, SHORT_BODY));
     await writeAndFire(b, body(CONV_A, SHORT_BODY));
-    await assertIntact(a, SHORT_BODY, "the first short message must be untouched");
-    await assertIntact(b, SHORT_BODY, "a repeated short message must be untouched");
+    await assertIntact(
+      a,
+      SHORT_BODY,
+      "the first short message must be untouched",
+    );
+    await assertIntact(
+      b,
+      SHORT_BODY,
+      "a repeated short message must be untouched",
+    );
   });
 
   // D5: system rows. `writeGroupSystemMessage` writes senderId "system" for
@@ -381,7 +559,10 @@ async function run(): Promise<void> {
     for (let i = 0; i < 20; i++) {
       await writeAndFire(
         `d8-filler-${i}-${RUN}`,
-        body(CONV_A, `Fyllnadsmeddelande nummer ${i} som ar tillrackligt langt`),
+        body(
+          CONV_A,
+          `Fyllnadsmeddelande nummer ${i} som ar tillrackligt langt`,
+        ),
       );
     }
 
@@ -512,7 +693,9 @@ async function run(): Promise<void> {
     // contains the literal sequence it hunts for, which would make this case
     // fail on itself.
     const banned = "assert(" + "await exists(";
-    const matches = source.match(new RegExp("assert\\(\\s*await exists\\(", "g"));
+    const matches = source.match(
+      new RegExp("assert\\(\\s*await exists\\(", "g"),
+    );
     assert(
       matches === null,
       `a bare \`${banned}…)\` cannot tell an untouched message from a ` +
@@ -538,7 +721,14 @@ async function run(): Promise<void> {
   for (const id of writtenMessageIds) {
     await msgRef(id).delete();
   }
+  for (const id of writtenCommentIds) {
+    await commentRef(id).delete();
+  }
   await clearHashes();
+  // BUT-1952: the day's counter too. The emulator keeps data across runs, and
+  // D12 reads a DELTA, which a stale running total makes misleading the day
+  // somebody writes an absolute assertion against it.
+  await blockCounterDoc().delete();
 
   console.log(
     `\n${tests.length - failed}/${tests.length} passed` +

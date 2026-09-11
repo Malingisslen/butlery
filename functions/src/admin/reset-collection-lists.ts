@@ -154,7 +154,7 @@ export const COLLECTIONS_TO_DELETE: CollectionTarget[] = [
     name: "analytics",
     // `effectiveness` and `daily` are both erased by the recursive walk; they
     // are listed so the unknown-collection report stays quiet about them.
-    // `daily` holds the product's own aggregates under seven parents. The
+    // `daily` holds the product's own aggregates. The
     // accepted deviation that KEEPS `analytics/feature_retention/daily` governs
     // the ACCOUNT CASCADE, not this script, which deletes `analytics` whole —
     // a different call nobody has put side by side with it. Named, not changed.
@@ -332,7 +332,6 @@ export const COLLECTIONS_TO_KEEP = [
   // `tag_configs` above.
   "menu_lexicon",
 ];
-
 
 /**
  * Collections deliberately left alone, each with the reason it is left alone.

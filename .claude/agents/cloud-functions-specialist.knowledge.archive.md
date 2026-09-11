@@ -19930,3 +19930,108 @@ Its content survives in two places the remaining text carries: idempotency rule 
 the hazard in its own premise, and `functions/src/__tests__/_fake-firestore.ts`'s module
 doc states the faithful behaviour in full, backed by the implementation. So the retirement
 creates no suppressor.
+
+### 2026-09-11 — BUT-1952: counting a duplicate-guard block [idempotency][cost][observability]
+
+Review of the staged `functions/src` diff (`social/duplicate-content-guard.ts` + its two
+suites). Two rounds: the first graded a `system_events` sink, the second an
+`analytics/duplicate_guard/daily/{date}` counter after the integration gate refuted the
+first sink's premise.
+
+**Measured, round 1.** `runOpsSnapshot` (`analytics/daily-snapshots.ts`) ranges
+`system_events` on `executedAt` over `[startOfUtcDay(now), +24h)` and does
+`bump(byType, data.type)` — so the row's two fields did reach the bucket, with no new
+reader, query or index. The account-deletion cascade sweeps that collection by
+FIELD-FILTERED queries (`details.userId`, `details.contentOwnerId`), so a row with no
+`details` matches zero, costs nothing, and cannot push a sweep past
+`MAX_SYSTEM_EVENT_SWEEP_ROWS`, which counts matched rows.
+
+**What round 1 missed, and the integration gate caught.** The query was right and the
+CLOCK was wrong: `dailyAnalytics` fires `0 6 * * *` UTC and aggregates the CURRENT day,
+then never revisits the document — so rows written after 06:00 UTC are counted by nothing,
+and a realtime trigger fires when people are awake. Neither the gate nor I had opened the
+schedule; I verified the query and stopped there. The general form is now folded into the
+"daily job probing today" principle: ask what a SCANNED collection's reader window is
+before putting realtime rows in it, and check its other readers
+(`lib/repositories/ops_log_repository.dart` takes `orderBy('executedAt').limit(50)`
+unfiltered — verified — so per-event rows evict the scheduled-job rows from the ops tab).
+
+**Idempotency, the round-1 finding that survived the redesign.** The counter is written
+outside `runTransaction` and keyed on the returned outcome, which is attempt-safe: a
+non-transactional write issued inside a retried body executes per attempt. It is NOT
+delivery-safe. `retry-noop` keys on an entry carrying this `eventId`, and only the ACCEPT
+path reaches `appendAndPrune` — the reject branch returns first — so a redelivered REJECT
+re-counts. Accepted knowingly (it over-reports a block that happened, the safe direction
+for an alarm), documented in the code, and no comment claims exactly-once.
+
+**Findings raised and fixed:** `d10a`/`d10b` collided with the pre-existing delete-race
+case, and `set()` preserves `createTime`, so that case would have inherited a stamp from
+the new one and gone vacuous once the suite's runtime exceeded the 5-minute window;
+"at the single call site below" (there are two); a `countBlockEvents` docstring
+enumerating fields the row does not have.
+
+**Findings raised in round 2:** two unit-test assertion messages still citing
+`runOpsSnapshot`'s `byType` bucket after the sink moved; "Every existing writer is a
+scheduled job that runs before 06:00" refuted by `middleware/rate_limiter.ts:502`,
+`feedback/on-report-created.ts` and `feedback/on-feedback-created.ts`, all realtime; and a
+count of the parents under `analytics/*/daily` in the untouched
+`admin/reset-collection-lists.ts`, which this change grows by one.
+
+**Verified needing NO change:** `firestore.rules` already covers the path under
+`match /analytics/{document=**} { allow read: if isAdmin(); }` with no write limb; the
+reset script already lists `analytics` with a `daily` subcollection, so the
+unknown-collection report stays quiet; no cascade or probe leg, because the document holds
+no uid. **Verified MISSING:** nothing in this repo reads
+`analytics/duplicate_guard/daily` — the only other `duplicate_guard` hits are the
+unrelated `enable_chat_duplicate_guard` flag.
+
+**Mutants:** M1 (`outcome !== "accepted"`) and M2 (deleting the comment-surface call) were
+named as survivors in round 1 and are killed in round 2 by a redelivered-accept assertion
+in D12 and by the new comment-surface case D13. Still unkilled and not cheaply killable:
+moving the write back INSIDE the transaction body — the emulator does not contend, so the
+placement is reasoned rather than pinned.
+
+**Retired verbatim from the knowledge file in this edit** (net −35 chars; the file remains
+over budget at ~33.2k):
+
+"- **A cap generalised from a SCALAR to a LIST leaves its boundary untested** —
+  every inherited fixture routes through the single-item caller, which can
+  overshoot by at most 1. Call the shared function DIRECTLY with N≥2 astride the
+  bound; only the AT-cap case discriminates `<=` from `<`."
+
+"- **A hand-rolled Firestore fake needs `.limit()` on BOTH `collection()` and
+  `collectionGroup()`** — the caps split across them, so one missing method
+  reports a GDPR step FAILED, not skipped, and an always-empty fake cannot
+  stage the over-cap DECLINE. `.select()` must PROJECT or THROW, never pass
+  through (flat-key `data()` ≠ real nested shape)."
+
+"- **A fake `commit()` that RE-DERIVES the intended effect instead of
+  APPLYING the write payload makes the write vacuous** — dispatch on the
+  `FieldValue` transform's `constructor.name`."
+
+"1. **Aggregate writes** → `FieldValue.increment` + an event-id guard doc
+   (`processed-events/{id}`) in the same transaction."
+
+"4. **Sends** → write a `sent-events/{id}` guard BEFORE sending."
+
+All three retired test-seam bullets are hand-rolled-fake fidelity rules whose principle is
+carried by the repo's auto-loaded `.claude/rules/lessons-digest-testing.md` (the BUT-2032
+entry on a stub that drops a write, and the BUT-1957 entry on a probe whose fake lacks the
+method it calls). Rules 1 and 4 were consolidated rather than dropped — both ideas survive
+in the new rule 1, and the NUMBERS were preserved because other bullets in the file
+reference "rule 10".
+
+**Rounds 3-4 (same day), comment-only.** Four edits and one block move; no behaviour changed.
+Worth recording because of HOW the last one closed: the B6 repair was a REWORD ("under seven
+parents" -> ", one group per parent") described to me as a strike, and the replacement was
+itself a new unmeasured claim — the parent document IS the group, so it drew a distinction
+between two things that are one. Caught by a cross-file gate, not by me: I had read the
+replacement and passed it, because a reword that reads as true is exactly what a strike rule
+exists to prevent and exactly what a reviewer stops noticing. The pure strike was available
+from the start. Two more of the same class fell in the same round: "a TYPE named after the
+action" (last survivor of the `system_events` shape, four lines above messages already struck)
+and "the FIVE scheduled snapshots" (true today, insertion seam, sentence identical without it).
+A rename landed here too — `BLOCK_EVENT_TYPE` -> `BLOCK_COUNTER_FIELD` — and the integration
+test reaches it through `require()` destructuring, which is untyped: a missed site would have
+been `undefined` at runtime rather than a tsc error. Grep the symbol repo-wide after any rename
+a `require()` consumer reads; 13 sites, all moved, verified.

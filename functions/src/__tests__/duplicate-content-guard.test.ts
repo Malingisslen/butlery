@@ -28,6 +28,7 @@ import {
   guardDuplicateMessage,
   isChatDuplicateCandidate,
   isDuplicate,
+  BLOCK_COUNTER_FIELD,
 } from "../social/duplicate-content-guard";
 import { Collections } from "../shared/collections";
 import { assertEqual, runTests, UnitCase } from "./_unit-runner";
@@ -76,8 +77,11 @@ const cases: UnitCase[] = [
     fn: () => {
       const now = 1_000_000;
       const recent = [{ hash: "abc", at: ts(now - 1000) }] as any;
-      assertEqual(isDuplicate("abc", recent, now, 5 * 60 * 1000, now), true,
-        "1s ago < 5min window → duplicate");
+      assertEqual(
+        isDuplicate("abc", recent, now, 5 * 60 * 1000, now),
+        true,
+        "1s ago < 5min window → duplicate",
+      );
     },
   },
   {
@@ -85,8 +89,11 @@ const cases: UnitCase[] = [
     fn: () => {
       const now = 1_000_000;
       const recent = [{ hash: "abc", at: ts(now - 6 * 60 * 1000) }] as any;
-      assertEqual(isDuplicate("abc", recent, now, 5 * 60 * 1000, now), false,
-        "6min ago > 5min window → not duplicate");
+      assertEqual(
+        isDuplicate("abc", recent, now, 5 * 60 * 1000, now),
+        false,
+        "6min ago > 5min window → not duplicate",
+      );
     },
   },
   {
@@ -94,8 +101,11 @@ const cases: UnitCase[] = [
     fn: () => {
       const now = 1_000_000;
       const recent = [{ hash: "xyz", at: ts(now - 1000) }] as any;
-      assertEqual(isDuplicate("abc", recent, now, 5 * 60 * 1000, now), false,
-        "different hash → not duplicate even within window");
+      assertEqual(
+        isDuplicate("abc", recent, now, 5 * 60 * 1000, now),
+        false,
+        "different hash → not duplicate even within window",
+      );
     },
   },
   {
@@ -223,8 +233,16 @@ const cases: UnitCase[] = [
       // `authorId:body` and nothing else, so replying "Jag kommer klockan sju"
       // to two different people inside the five-minute window collided and the
       // SECOND message was deleted. Ordinary chat, not spam.
-      const a = computeDuplicateHash("user1", "Jag kommer klockan sju", "conv-a");
-      const b = computeDuplicateHash("user1", "Jag kommer klockan sju", "conv-b");
+      const a = computeDuplicateHash(
+        "user1",
+        "Jag kommer klockan sju",
+        "conv-a",
+      );
+      const b = computeDuplicateHash(
+        "user1",
+        "Jag kommer klockan sju",
+        "conv-b",
+      );
       if (a === b) {
         throw new Error(
           "same text in two conversations must not share a duplicate key",
@@ -237,8 +255,16 @@ const cases: UnitCase[] = [
     fn: () => {
       // The control for the test above. Without it, a scope that simply broke
       // hashing would pass the first test for the wrong reason.
-      const a = computeDuplicateHash("user1", "Jag kommer klockan sju", "conv-a");
-      const b = computeDuplicateHash("user1", "Jag kommer klockan sju", "conv-a");
+      const a = computeDuplicateHash(
+        "user1",
+        "Jag kommer klockan sju",
+        "conv-a",
+      );
+      const b = computeDuplicateHash(
+        "user1",
+        "Jag kommer klockan sju",
+        "conv-a",
+      );
       assertEqual(a, b, "same author, same text, same conversation → same key");
     },
   },
@@ -503,6 +529,40 @@ const cases: UnitCase[] = [
           `"${body}" is ordinary conversation and must never be hashed`,
         );
       }
+    },
+  },
+  {
+    name: "BUT-1952: each surface counts under its OWN counter key",
+    fn: () => {
+      // The whole file establishes that chat and comment are not symmetric —
+      // chat MARKS and comment DELETES, the keys are scoped differently, and
+      // only chat sits behind a flag. One shared counter would average two
+      // populations whose meanings differ and answer nothing about either.
+      //
+      // These are FIELD NAMES on `analytics/duplicate_guard/daily/{date}`,
+      // incremented in place — so collapsing them to one value would make the
+      // day's document report a sum nobody can decompose again, and changing
+      // either one orphans every count already accumulated under it.
+      //
+      // A `chat !== comment` assertion was tried here and is not possible:
+      // the map is `as const`, so TypeScript proves the two literals differ
+      // and rejects the comparison (TS2367). The compiler holds that half; the
+      // two pins below hold the half it cannot, which is the VALUES.
+      //
+      // The names say SURFACE, not action. `delete` vs `mark` is an
+      // implementation choice this file has already changed once (BUT-1904,
+      // ADR-0009), and a name taken from the action would have had to change
+      // then, orphaning every count accumulated before it.
+      assertEqual(
+        BLOCK_COUNTER_FIELD.chat,
+        "chat_duplicate_blocked",
+        "the counter field name on analytics/duplicate_guard/daily/{date}",
+      );
+      assertEqual(
+        BLOCK_COUNTER_FIELD.comment,
+        "comment_duplicate_blocked",
+        "the counter field name on analytics/duplicate_guard/daily/{date}",
+      );
     },
   },
 ];

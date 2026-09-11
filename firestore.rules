@@ -3496,7 +3496,7 @@ service cloud.firestore {
     // ========================================
     // ADMIN DASHBOARD READS (admin-only aggregate / ops data)
     // ========================================
-    // These collections are written server-side by scheduled Cloud Functions
+    // These collections are written server-side by Cloud Functions
     // (analytics rollups, north-star snapshots, cleanup-job logs) and read by
     // the admin dashboard. Admin-only, read-only — clients and non-admins are
     // denied. Writes remain server-side (admin SDK bypasses rules).

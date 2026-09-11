@@ -5,7 +5,9 @@ import 'package:mocktail/mocktail.dart';
 import 'package:butlery/services/unified/operations/modules/recipe_rating_system.dart';
 import 'package:butlery/repositories/interfaces/ratings_repository.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/services/analytics_service.dart';
+import 'package:butlery/services/analytics/analytics_events.dart';
 import 'package:butlery/core/providers/application_provider.dart'
     as app_provider;
 import '../../../../../test_support/base_unit_test.dart';
@@ -345,6 +347,227 @@ void main() {
             recipeOwnerId: null,
           ),
         ).called(1);
+      });
+    });
+
+    // BUT-2073. Two counters that measure OPPOSITE halves of the BUT-2057 block
+    // gate: one counts it firing, one counts it never running. Neither carries a
+    // uid or free text — the assertions below check that too, because "no uid in
+    // the event" is the condition the ticket makes binding, and a parameter map
+    // that quietly grew one would otherwise ship unnoticed.
+    group('Block-gate measurement (BUT-2073)', () {
+      late MockAnalyticsService analytics;
+
+      setUp(() {
+        analytics =
+            app_provider.ServiceLocator.get<AnalyticsService>()
+                as MockAnalyticsService;
+        analytics.clearCapturedEvents();
+      });
+
+      List<({String name, Map<String, Object>? parameters})> eventsNamed(
+        String name,
+      ) => analytics.capturedEvents.where((e) => e.name == name).toList();
+
+      test('a permission-denied rating write is counted', () async {
+        when(
+          () => mockRatingsRepository.rateRecipe(
+            recipeId: any(named: 'recipeId'),
+            userId: any(named: 'userId'),
+            rating: any(named: 'rating'),
+            review: any(named: 'review'),
+            recipeOwnerId: any(named: 'recipeOwnerId'),
+          ),
+        ).thenThrow(
+          FirebaseException(
+            plugin: 'cloud_firestore',
+            code: 'permission-denied',
+          ),
+        );
+
+        final result = await ratingSystem.rateRecipe(
+          recipeId: 'recipe_1',
+          rating: 4.0,
+          currentUserId: 'user_123',
+          currentUserDisplayName: 'Test User',
+          canRateValidator: (_) => true,
+          recipeGetter: (id) => testRecipe,
+        );
+
+        expect(result, isFalse);
+        final denied = eventsNamed(AnalyticsEvents.recipeRatingDenied);
+        expect(denied, hasLength(1));
+        expect(
+          denied.single.parameters,
+          anyOf(isNull, isEmpty),
+          reason:
+              'the event must carry a COUNT and nothing else — no uid, no recipe id, no free text',
+        );
+      });
+
+      test('a SUCCESSFUL rating is not counted as denied', () async {
+        when(
+          () => mockRatingsRepository.rateRecipe(
+            recipeId: any(named: 'recipeId'),
+            userId: any(named: 'userId'),
+            rating: any(named: 'rating'),
+            review: any(named: 'review'),
+            recipeOwnerId: any(named: 'recipeOwnerId'),
+          ),
+        ).thenAnswer((_) async {});
+
+        final result = await ratingSystem.rateRecipe(
+          recipeId: 'recipe_1',
+          rating: 4.0,
+          currentUserId: 'user_123',
+          currentUserDisplayName: 'Test User',
+          canRateValidator: (_) => true,
+          recipeGetter: (id) => testRecipe,
+        );
+
+        expect(result, isTrue);
+        expect(eventsNamed(AnalyticsEvents.recipeRatingDenied), isEmpty);
+      });
+
+      test('an ordinary failure is NOT counted as a refusal', () async {
+        // The catch block also covers a dropped connection and a malformed
+        // write. Folding those in would make the number unreadable as a signal
+        // about the gate, which is the only thing it is for.
+        when(
+          () => mockRatingsRepository.rateRecipe(
+            recipeId: any(named: 'recipeId'),
+            userId: any(named: 'userId'),
+            rating: any(named: 'rating'),
+            review: any(named: 'review'),
+            recipeOwnerId: any(named: 'recipeOwnerId'),
+          ),
+        ).thenThrow(
+          FirebaseException(plugin: 'cloud_firestore', code: 'unavailable'),
+        );
+
+        final result = await ratingSystem.rateRecipe(
+          recipeId: 'recipe_1',
+          rating: 4.0,
+          currentUserId: 'user_123',
+          currentUserDisplayName: 'Test User',
+          canRateValidator: (_) => true,
+          recipeGetter: (id) => testRecipe,
+        );
+
+        expect(result, isFalse);
+        expect(eventsNamed(AnalyticsEvents.recipeRatingDenied), isEmpty);
+      });
+
+      test('an UNRESOLVABLE recipe owner is counted separately', () async {
+        // Both source fields empty: `socialData.ownerId` and `core.createdBy`.
+        // This is the population Malin's 2026-09-11 decision rests on, and
+        // nobody has ever counted it.
+        final ownerless = RecipeBuilder()
+            .withId('recipe_1')
+            .withCreatedBy('')
+            .withSocialData(const RecipeSocialData(ownerId: ''))
+            .build();
+
+        when(
+          () => mockRatingsRepository.rateRecipe(
+            recipeId: any(named: 'recipeId'),
+            userId: any(named: 'userId'),
+            rating: any(named: 'rating'),
+            review: any(named: 'review'),
+            recipeOwnerId: any(named: 'recipeOwnerId'),
+          ),
+        ).thenAnswer((_) async {});
+
+        final result = await ratingSystem.rateRecipe(
+          recipeId: 'recipe_1',
+          rating: 4.0,
+          currentUserId: 'user_123',
+          currentUserDisplayName: 'Test User',
+          canRateValidator: (_) => true,
+          recipeGetter: (id) => ownerless,
+        );
+
+        // The rating is still WRITTEN — Malin chose measuring over refusing,
+        // and a counter that changed the outcome would be the refusal she
+        // declined.
+        expect(result, isTrue);
+        final unresolved = eventsNamed(
+          AnalyticsEvents.recipeRatingOwnerUnresolved,
+        );
+        expect(unresolved, hasLength(1));
+        expect(unresolved.single.parameters, anyOf(isNull, isEmpty));
+        expect(eventsNamed(AnalyticsEvents.recipeRatingDenied), isEmpty);
+      });
+
+      test('an unresolvable owner whose write is REFUSED fires both', () async {
+        // The case that pins WHERE the unresolved counter is emitted. Moving it
+        // below the write would silently turn it into a counter of SUCCESSFUL
+        // ownerless writes, biasing exactly the population Malin's 2026-09-11
+        // decision is to be re-opened on.
+        final ownerless = RecipeBuilder()
+            .withId('recipe_1')
+            .withCreatedBy('')
+            .withSocialData(const RecipeSocialData(ownerId: ''))
+            .build();
+
+        when(
+          () => mockRatingsRepository.rateRecipe(
+            recipeId: any(named: 'recipeId'),
+            userId: any(named: 'userId'),
+            rating: any(named: 'rating'),
+            review: any(named: 'review'),
+            recipeOwnerId: any(named: 'recipeOwnerId'),
+          ),
+        ).thenThrow(
+          FirebaseException(
+            plugin: 'cloud_firestore',
+            code: 'permission-denied',
+          ),
+        );
+
+        final result = await ratingSystem.rateRecipe(
+          recipeId: 'recipe_1',
+          rating: 4.0,
+          currentUserId: 'user_123',
+          currentUserDisplayName: 'Test User',
+          canRateValidator: (_) => true,
+          recipeGetter: (id) => ownerless,
+        );
+
+        expect(result, isFalse);
+        expect(
+          eventsNamed(AnalyticsEvents.recipeRatingOwnerUnresolved),
+          hasLength(1),
+          reason:
+              'the unresolved count describes the CALL, so a refused write must still carry it',
+        );
+        expect(eventsNamed(AnalyticsEvents.recipeRatingDenied), hasLength(1));
+      });
+
+      test('a resolvable owner emits NO unresolved count', () async {
+        when(
+          () => mockRatingsRepository.rateRecipe(
+            recipeId: any(named: 'recipeId'),
+            userId: any(named: 'userId'),
+            rating: any(named: 'rating'),
+            review: any(named: 'review'),
+            recipeOwnerId: any(named: 'recipeOwnerId'),
+          ),
+        ).thenAnswer((_) async {});
+
+        await ratingSystem.rateRecipe(
+          recipeId: 'recipe_1',
+          rating: 4.0,
+          currentUserId: 'user_123',
+          currentUserDisplayName: 'Test User',
+          canRateValidator: (_) => true,
+          recipeGetter: (id) => testRecipe,
+        );
+
+        expect(
+          eventsNamed(AnalyticsEvents.recipeRatingOwnerUnresolved),
+          isEmpty,
+        );
       });
     });
 

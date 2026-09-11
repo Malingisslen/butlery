@@ -66,11 +66,16 @@ without approval (mismatch = silent client-side "not found").
 ## Idempotency rules (the most bug-prone area)
 
 Triggers retry on uncaught exception; handlers must be idempotent:
-1. **Aggregate writes** → `FieldValue.increment` + an event-id guard doc
-   (`processed-events/{id}`) in the same transaction.
+1. **Aggregate/counter writes** → `FieldValue.increment` + an event-id guard
+   doc (`processed-events/{id}`) in the same transaction. A counter written
+   AFTER the transaction, keyed on its outcome, is ATTEMPT-safe ONLY — safe
+   under a `runTransaction` retry, NOT under redelivery, unless the counting
+   branch also wrote the event-id bookkeeping — a reject branch that returns
+   before it re-counts on every redelivery. Exactly-once is `doc(eventId).create()` + swallow ALREADY_EXISTS, never a
+   post-hoc `add()`; `set(merge:true)`+`increment` needs no transaction.
 2. **Cascade deletes** → a target already gone on retry is success.
 3. **External-API calls** → derive a stable idempotency-key from the event.
-4. **Sends** → write a `sent-events/{id}` guard BEFORE sending.
+4. **Sends** → same shape: a `sent-events/{id}` guard BEFORE sending.
 5. **`retry:true` needs every write safe on a MISSING doc** — `.update()`
    throws NOT_FOUND (grpc `5`), turning a drop-once into a permanent loop.
 6. **Client-supplied strings in a doc path are a poison-pill surface** —
@@ -183,18 +188,6 @@ from `(err as {code?}).code`.
   `where()` field MUST special-case `FieldPath` (read `.segments`): it HAS
   `.split`, so it matches ZERO in silence. Type EVERY fake query seam
   `string | FieldPath` — an `as unknown as Firestore` cast checks none.
-- **A fake `commit()` that RE-DERIVES the intended effect instead of
-  APPLYING the write payload makes the write vacuous** — dispatch on the
-  `FieldValue` transform's `constructor.name`.
-- **A cap generalised from a SCALAR to a LIST leaves its boundary untested** —
-  every inherited fixture routes through the single-item caller, which can
-  overshoot by at most 1. Call the shared function DIRECTLY with N≥2 astride the
-  bound; only the AT-cap case discriminates `<=` from `<`.
-- **A hand-rolled Firestore fake needs `.limit()` on BOTH `collection()` and
-  `collectionGroup()`** — the caps split across them, so one missing method
-  reports a GDPR step FAILED, not skipped, and an always-empty fake cannot
-  stage the over-cap DECLINE. `.select()` must PROJECT or THROW, never pass
-  through (flat-key `data()` ≠ real nested shape).
 ### PII scrubbing + GDPR cascade design
 - **A server write leaving a doc unable to satisfy its own UPDATE limb BRICKS a
   DETERMINISTIC doc id** (`{groupId}_{ISO week}`). Two forms: emptying
@@ -285,7 +278,12 @@ from `(err as {code?}).code`.
   doc. `Math.floor(elapsed/DAY)` mis-classifies the sub-day remainder.
 - **A daily job probing "today" only measures the hours BEFORE its own run
   time** — probe the PREVIOUS COMPLETED UTC day and derive date, query
-  window, rollup offsets AND active-user cutoff from that one base.
+  window, rollup offsets AND active-user cutoff from that one base. A
+  REALTIME writer into a SCANNED collection is invisible for the hours after
+  the run (`runOpsSnapshot`, 06:00 UTC over `system_events`), and evicts job
+  rows from that collection's other readers. Put a realtime counter in an
+  ADDRESSED doc (`analytics/{group}/daily/{date}` + `increment`) and name its
+  reader, or it is a number nobody sees.
 
 ### GDPR account-deletion cascade
 - **A probe leg whose ONLY deleter lives in `onUserDeleted` is broader by TIMING.**

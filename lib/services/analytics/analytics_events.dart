@@ -155,6 +155,42 @@ abstract final class AnalyticsEvents {
   static const messageSendDeniedClockAhead = 'message_send_denied_clock_ahead';
   static const commentCreated = 'comment_created';
   static const recipeRated = 'recipe_rated';
+
+  // BUT-2073, the two halves of whether the rating block gate (BUT-2057) is
+  // doing its job. They measure OPPOSITE things and must never be merged: the
+  // first counts the gate FIRING, the second counts it never running at all.
+  //
+  // Read both as a lower bound and read NEITHER in the admin dashboard. Same
+  // two caveats as `messageSendDeniedClockAhead`, and they are not decoration:
+  //   - analytics consent fails closed, so anyone without an explicit stored
+  //     grant is invisible to both numbers;
+  //   - these are GA4 events. The admin dashboard reads the Firestore daily
+  //     aggregates under `analytics/{group}/daily/{date}` and nothing here
+  //     reaches it, so "I cannot see it in the panel" is the expected state
+  //     rather than a bug.
+  //
+  // Neither event carries a uid or any free text. A count is the whole ask;
+  // WHO was refused is not something we need or should store.
+
+  /// A rating write the SERVER refused. The interesting case is not a blocked
+  /// person being stopped — it is a bug in the `recipeOwnerId` stamping
+  /// refusing legitimate ratings broadly, which reaches the user as nothing
+  /// but a generic "could not rate" and would otherwise be invisible.
+  ///
+  /// Count it against [recipeRated] from this same stream for a denominator.
+  static const recipeRatingDenied = 'recipe_rating_denied';
+
+  /// A rating written with NO resolvable recipe owner, so `recipeOwnerId` was
+  /// omitted and the block gate did not run at all.
+  ///
+  /// Malin decided on 2026-09-11 to keep writing the rating in this case rather
+  /// than refuse it, and to settle the question by measuring instead: near zero
+  /// closes it permanently, anything else sends it back to her with the number
+  /// that was missing when she answered. Nobody has counted how many recipes
+  /// carry neither `socialData.ownerId` nor `core.createdBy` — that is the gap
+  /// this exists to close, so do not delete it as redundant with the event
+  /// above until the number exists.
+  static const recipeRatingOwnerUnresolved = 'recipe_rating_owner_unresolved';
   static const groupCreated = 'group_created';
   static const groupJoined = 'group_joined';
   static const groupLeft = 'group_left';

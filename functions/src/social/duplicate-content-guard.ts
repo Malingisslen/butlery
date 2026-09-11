@@ -267,8 +267,8 @@ export function isDuplicate(
       // safe. `duplicate-content-guard.test.ts` has a fixture sitting exactly
       // on the boundary for this, and it is the only thing anywhere that
       // tells `<` from `<=` — measured: the flipped comparator passes the
-      // whole of `duplicate-message-guard.integration.test.ts` (9/9) and
-      // every other case in the unit suite.
+      // whole of `duplicate-message-guard.integration.test.ts` and every
+      // other case in the unit suite.
       //
       // The residual, unchanged: those same-millisecond twins both survive,
       // because the stamp is truncated to milliseconds ON BOTH SIDES of the
@@ -342,6 +342,125 @@ function selfCreatedAtMs(snap: {
   return snap.createTime?.toMillis() ?? Date.now();
 }
 
+/**
+ * BUT-1952: the counter field incremented once per BLOCKED item.
+ *
+ * TWO values, one per surface, and they must never be merged into one. This
+ * file spends its header establishing that the surfaces are not symmetric —
+ * chat MARKS and comment DELETES, the keys are scoped differently, and only
+ * chat sits behind a feature flag — so a single count would average two
+ * populations whose meanings differ and answer nothing about either.
+ *
+ * The counter carries the surface and a date. NO uid, NO conversation id, NO
+ * message text and no content hash: the question is "is the guard firing more
+ * than we thought", not "who was stopped". The `logger.info` beside the call
+ * site keeps the hashed handles for debugging one case, and that is the only
+ * place they belong.
+ */
+export const BLOCK_COUNTER_FIELD = {
+  chat: "chat_duplicate_blocked",
+  comment: "comment_duplicate_blocked",
+} as const;
+
+/** The UTC day a block is counted under, as `YYYY-MM-DD`. */
+function utcDateKey(nowMs: number): string {
+  return new Date(nowMs).toISOString().slice(0, 10);
+}
+
+/**
+ * The document a block is counted into: `analytics/duplicate_guard/daily/{date}`.
+ *
+ * Mirrors `dailyDocRef` in `functions/src/analytics/daily-snapshots.ts` — same
+ * `analytics/{group}/daily/{date}` shape the scheduled snapshots use — but its
+ * OWN group, written by increment rather than by a nightly recompute.
+ */
+function blockCounterRef(dateKey: string): admin.firestore.DocumentReference {
+  return db()
+    .collection("analytics")
+    .doc("duplicate_guard")
+    .collection("daily")
+    .doc(dateKey);
+}
+
+/**
+ * Count one blocked item, best effort.
+ *
+ * ## Why this is NOT a `system_events` row
+ *
+ * That was the first shape, recommended by the Data Analyst seat on the ground
+ * that `runOpsSnapshot` already buckets that collection by `type` and would
+ * pick these up for free. Two measurements refuted it, and both were invisible
+ * to every per-file review:
+ *
+ *   1. `runOpsSnapshot` runs at `0 6 * * *` UTC and aggregates the CURRENT day
+ *      (`resolveDayWindow` -> `[startOfUtcDay(now), +24h)`), then never
+ *      revisits that document. So it can only ever see rows written between
+ *      00:00 and 06:00 UTC. A realtime trigger fires when people are awake, and
+ *      a Swedish evening is ~16:00-20:00 UTC — 18 hours of every 24 would have
+ *      been counted by nothing.
+ *   2. `lib/repositories/ops_log_repository.dart` reads `system_events`
+ *      `orderBy('executedAt').limit(50)` with NO type filter, and the admin
+ *      ops-log tab renders its newest row as "last run". Per-block rows would
+ *      have become that card, and a burst of blocks would have pushed the
+ *      scheduled-job rows out of the only surface that answers "did the jobs
+ *      run".
+ *
+ * A counter keyed on the date the block HAPPENED cannot be missed by a reader's
+ * window, because it is not scanned — it is addressed. It also costs the same
+ * one write per block, needs no index, and leaves `system_events` alone.
+ *
+ * ## Two properties of this shape, named because the `.add()` it replaces had
+ * ## neither
+ *
+ * ONE document per day means `increment` contends: Firestore sustains roughly
+ * one write per second to a single document, and a spam burst — the case this
+ * alarm exists for — is the one case that can exceed it. The contention error
+ * lands in the catch below as a log nobody reads, so the count under-reports
+ * exactly when it matters most. Left unsharded: pre-launch this is theoretical,
+ * and sharding a counter nothing reads yet would be the wrong order of work.
+ *
+ * NOTHING READS IT. There is no dashboard tile, no anomaly series
+ * (`detect-anomalies.ts`'s `MONITORED_SERIES` does not name this group) and no
+ * Dart reader. `DailySnapshotRepository.getLatest('duplicate_guard')` would
+ * surface it with no new server code. Said plainly here for the same reason the
+ * two GA4 constants say it: a number with no reader is not a measurement yet,
+ * and the next person should know which half is missing.
+ *
+ * ## Containment
+ *
+ * Called OUTSIDE the transaction and unable to throw. The guard's contract is
+ * open-by-default — an error leaves the content intact — so a failure to COUNT
+ * a block must never undo the block itself, and a transaction retry must not be
+ * able to double-count.
+ *
+ * Attempt-safe, NOT delivery-safe: the reject branch returns before
+ * `appendAndPrune`, so a rejected delivery writes no event-id bookkeeping and a
+ * redelivery counts again. Accepted knowingly — it over-reports a block that
+ * genuinely happened, which is the safe direction for an alarm signal. Do not
+ * write a sentence here claiming exactly-once.
+ */
+async function recordBlockEvent(
+  surface: "comment" | "chat",
+  eventId: string,
+): Promise<void> {
+  try {
+    const dateKey = utcDateKey(Date.now());
+    await blockCounterRef(dateKey).set(
+      {
+        date: dateKey,
+        [BLOCK_COUNTER_FIELD[surface]]: admin.firestore.FieldValue.increment(1),
+      },
+      { merge: true },
+    );
+  } catch (err) {
+    logger.error(
+      `[duplicate-content-guard] could not count the block ` +
+        `(surface=${surface}, event=${eventId})`,
+      err,
+    );
+  }
+}
+
 async function evaluateAndRecord(args: {
   authorId: string;
   body: string;
@@ -400,7 +519,9 @@ async function evaluateAndRecord(args: {
     const data = (snap.data() ?? {}) as RecentContentDoc;
     const recent = (data.hashes ?? []).filter(
       (e): e is RecentHash =>
-        !!e && typeof e.hash === "string" && e.at instanceof admin.firestore.Timestamp,
+        !!e &&
+        typeof e.hash === "string" &&
+        e.at instanceof admin.firestore.Timestamp,
     );
 
     // Self-retry detection: if THIS exact event already wrote the hash on
@@ -464,6 +585,10 @@ async function evaluateAndRecord(args: {
           `${scope ? `, conversation=${logSafeConversationId(scope)}` : ""}` +
           `, event=${eventId})`,
       );
+      // BUT-1952. Nothing is counted here: this runs inside the transaction
+      // body, which Firestore may retry, and a write issued here would be
+      // counted once per attempt. Each caller counts on the returned outcome,
+      // after the transaction has resolved.
       return "rejected" as const;
     }
 
@@ -508,7 +633,7 @@ export const guardDuplicateComment = onDocumentCreated(
     if (!authorId || !text) return;
 
     try {
-      await evaluateAndRecord({
+      const outcome = await evaluateAndRecord({
         authorId,
         body: text,
         docRef: event.data!.ref,
@@ -519,6 +644,9 @@ export const guardDuplicateComment = onDocumentCreated(
         // Unchanged since 2026-05-04. BUT-1904 changed the CHAT action only.
         rejectAction: "delete",
       });
+      if (outcome === "rejected") {
+        await recordBlockEvent("comment", event.id);
+      }
     } catch (err) {
       // Open-by-default: leave the comment intact if the guard errors.
       logger.error("[duplicate-content-guard] Comment evaluation failed", err);
@@ -606,7 +734,7 @@ export const guardDuplicateMessage = onDocumentCreated(
     if (!(await isChatDuplicateGuardEnabled())) return;
 
     try {
-      await evaluateAndRecord({
+      const outcome = await evaluateAndRecord({
         authorId: senderId,
         body: content,
         docRef: event.data!.ref,
@@ -617,6 +745,9 @@ export const guardDuplicateMessage = onDocumentCreated(
         scope: conversationId,
         rejectAction: "mark",
       });
+      if (outcome === "rejected") {
+        await recordBlockEvent("chat", event.id);
+      }
     } catch (err) {
       logger.error("[duplicate-content-guard] Message evaluation failed", err);
     }
