@@ -138,11 +138,7 @@ dynamic sanitizeForJson(dynamic value) {
 /// Narrows a raw Firestore document to the fields an export section declares.
 ///
 /// An ALLOWLIST, so the projection fails CLOSED: a field [keep] does not name
-/// is withheld, including one nobody has decided about yet. Neither
-/// `recipe_comments` nor `recipe_ratings` bounds its create limb with
-/// `keys().hasOnly`, so a hand-rolled client can store a field of its own —
-/// which this drops, and which is why every section using this owes its reader
-/// a `data_minimisation` sentence saying so.
+/// is withheld, including one nobody has decided about yet.
 ///
 /// The mechanic lives here rather than in each section so the two
 /// comments-and-ratings sections share one loop (`content_export_manager.dart`

@@ -29,7 +29,6 @@ import 'package:butlery/core/utils/logger.dart';
 /// - **Rating Range Validation**: Enforces 1-5 star rating constraints
 /// - **Permission Logging**: Comprehensive audit trail for rating operations
 /// - **Ownership Verification**: Validates rating ownership before modifications
-/// - **Input Sanitization**: Validates and sanitizes review text content
 /// **Statistics and Analytics:**
 /// - **Real-time Statistics**: Live rating statistics with distribution analysis
 /// - **Average Calculation**: Precise average rating computation
@@ -184,61 +183,6 @@ class FirebaseRatingsRepository extends BaseFirebaseRepository<RecipeRating>
       userId: currentUser,
       resource: 'recipe_rating',
       operation: 'create',
-      granted: true,
-      details: 'Recipe: $recipeId, Rating: $rating',
-    );
-  }
-
-  @override
-  Future<void> updateRating({
-    required String recipeId,
-    required String userId,
-    required double rating,
-    String? review,
-  }) async {
-    // Validate user is updating their own rating
-    final currentUser = requireCurrentUserId();
-    await validateSelfOperation(
-      currentUserId: currentUser,
-      targetUserId: userId,
-      operation: 'update rating',
-    );
-
-    // Validate rating range
-    if (rating < 1 || rating > 5) {
-      throw SecurityViolationException(
-        'Rating must be between 1 and 5',
-        details: 'Rating was: $rating',
-      );
-    }
-
-    final ratingId = '${recipeId}_$userId';
-
-    // Verify rating exists
-    final doc = await getDocumentWithPermissionCheck(
-      docRef: collection.doc(ratingId),
-      currentUserId: currentUser,
-      resourceType: 'recipe_rating',
-    );
-
-    if (!doc.exists) {
-      throw ResourceNotFoundException(
-        'Rating not found',
-        resourceType: 'recipe_rating',
-        resourceId: ratingId,
-      );
-    }
-
-    await collection.doc(ratingId).update({
-      'rating': rating,
-      'review': review,
-      'updatedAt': timestampProvider.serverTimestamp(),
-    });
-
-    logPermissionCheck(
-      userId: currentUser,
-      resource: 'recipe_rating',
-      operation: 'update',
       granted: true,
       details: 'Recipe: $recipeId, Rating: $rating',
     );

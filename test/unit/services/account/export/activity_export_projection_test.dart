@@ -145,10 +145,9 @@ void main() {
       }
     });
 
-    test('a field NOBODY has declared does not travel — the create limbs use '
-        'hasRequiredFields, not hasOnly, so a client can store one', () async {
+    test('a field NOBODY has declared does not travel', () async {
       final planted = _wholeCommentDocument()
-        ..['aFieldNoWriterEmits'] = 'planted by a hand-rolled client';
+        ..['aFieldNoWriterEmits'] = 'planted';
 
       final result = await _manager(
         comments: [

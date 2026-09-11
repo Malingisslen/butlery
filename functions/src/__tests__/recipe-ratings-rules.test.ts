@@ -1,6 +1,6 @@
 /**
  * Firestore rules tests for the pre-release-audit WS2 recipe_ratings integrity
- * pin: a rating update may change only rating/review/updatedAt — never the
+ * pin: a rating update may change only rating/review/updatedAt/recipeOwnerId — never the
  * identity/anchor fields (recipeId, userId, createdAt). Without the pin a user
  * could re-point their rating doc at another recipe or backdate it.
  *
@@ -16,6 +16,7 @@ import {
   assertFails,
   assertSucceeds,
 } from "@firebase/rules-unit-testing";
+import { serverTimestamp } from "firebase/firestore";
 
 const PROJECT_ID = "butlery-recipe-ratings-test";
 const RULES_PATH = path.resolve(__dirname, "../../../firestore.rules");
@@ -33,6 +34,14 @@ const BLOCKED_RATING_ID = `${RECIPE}_${BLOCKED_RATER}`;
 const OK_RATING_ID = `${RECIPE}_${USER}_owned`;
 const MERGE_DENY_ID = `${RECIPE}_${BLOCKED_RATER}_merge`;
 const MERGE_OK_ID = `${RECIPE}_${USER}_merge`;
+
+// BUT-2077: the update limb requires isAgeCompliant(), so every update below
+// authenticates with the claim unless the case is about its absence.
+const AGE_OK = { ageCompliant: true };
+
+// The emulator keeps documents between runs, and a create-allow case aimed at
+// a fixed id that already exists would be evaluated as an UPDATE.
+const RUN = Date.now().toString(36);
 
 let env: RulesTestEnvironment;
 
@@ -97,7 +106,7 @@ function test(name: string, fn: TestFn): void {
 
 test("owner can update rating/review (allowed fields)", async () => {
   await seedRating();
-  const ctx = env.authenticatedContext(USER);
+  const ctx = env.authenticatedContext(USER, AGE_OK);
   await assertSucceeds(
     ctx.firestore().doc(`recipe_ratings/${RATING_ID}`).update({
       rating: 5,
@@ -109,7 +118,7 @@ test("owner can update rating/review (allowed fields)", async () => {
 
 test("owner CANNOT re-point the rating to another recipe", async () => {
   await seedRating();
-  const ctx = env.authenticatedContext(USER);
+  const ctx = env.authenticatedContext(USER, AGE_OK);
   await assertFails(
     ctx.firestore().doc(`recipe_ratings/${RATING_ID}`).update({
       rating: 5,
@@ -120,7 +129,7 @@ test("owner CANNOT re-point the rating to another recipe", async () => {
 
 test("owner CANNOT change userId on the rating", async () => {
   await seedRating();
-  const ctx = env.authenticatedContext(USER);
+  const ctx = env.authenticatedContext(USER, AGE_OK);
   await assertFails(
     ctx.firestore().doc(`recipe_ratings/${RATING_ID}`).update({
       rating: 5,
@@ -131,7 +140,7 @@ test("owner CANNOT change userId on the rating", async () => {
 
 test("owner CANNOT backdate createdAt", async () => {
   await seedRating();
-  const ctx = env.authenticatedContext(USER);
+  const ctx = env.authenticatedContext(USER, AGE_OK);
   await assertFails(
     ctx.firestore().doc(`recipe_ratings/${RATING_ID}`).update({
       rating: 5,
@@ -145,7 +154,7 @@ test("owner CANNOT backdate createdAt", async () => {
 test("blocked rater CANNOT change a rating that carries recipeOwnerId", async () => {
   await seedBlock();
   await seedRatingFor(BLOCKED_RATING_ID, BLOCKED_RATER, true);
-  const ctx = env.authenticatedContext(BLOCKED_RATER);
+  const ctx = env.authenticatedContext(BLOCKED_RATER, AGE_OK);
   await assertFails(
     ctx.firestore().doc(`recipe_ratings/${BLOCKED_RATING_ID}`).update({
       rating: 1,
@@ -160,7 +169,7 @@ test("blocked rater CANNOT change a rating that carries recipeOwnerId", async ()
 test("blocked rater CAN change a legacy rating with no recipeOwnerId", async () => {
   await seedBlock();
   await seedRatingFor(BLOCKED_RATING_ID, BLOCKED_RATER, false);
-  const ctx = env.authenticatedContext(BLOCKED_RATER);
+  const ctx = env.authenticatedContext(BLOCKED_RATER, AGE_OK);
   await assertSucceeds(
     ctx.firestore().doc(`recipe_ratings/${BLOCKED_RATING_ID}`).update({
       rating: 1,
@@ -172,14 +181,11 @@ test("blocked rater CAN change a legacy rating with no recipeOwnerId", async () 
 
 // The PRODUCTION verb. `rateRecipe` writes set(merge: true), so a legacy
 // row acquires recipeOwnerId on the next re-rate — absent -> present, a
-// transition neither .update() case above exercises. It is also the only
-// shape a `cannotModify(['recipeOwnerId'])` hardening would refuse, so
-// without these two the suite stays green while a legacy re-rate
-// breaks in production.
+// transition neither .update() case above exercises.
 test("blocked rater merge-ADDING recipeOwnerId to a legacy row is DENIED", async () => {
   await seedBlock();
   await seedRatingFor(MERGE_DENY_ID, BLOCKED_RATER, false);
-  const ctx = env.authenticatedContext(BLOCKED_RATER);
+  const ctx = env.authenticatedContext(BLOCKED_RATER, AGE_OK);
   await assertFails(
     ctx
       .firestore()
@@ -193,12 +199,12 @@ test("blocked rater merge-ADDING recipeOwnerId to a legacy row is DENIED", async
 test("non-blocked rater merge-ADDING recipeOwnerId to a legacy row is ALLOWED", async () => {
   await seedBlock();
   await seedRatingFor(MERGE_OK_ID, USER, false);
-  const ctx = env.authenticatedContext(USER);
+  const ctx = env.authenticatedContext(USER, AGE_OK);
   await assertSucceeds(
     ctx
       .firestore()
       .doc(`recipe_ratings/${MERGE_OK_ID}`)
-      .set({ rating: 2, recipeOwnerId: OWNER, updatedAt: Date.now() }, { merge: true })
+      .set({ rating: 1, recipeOwnerId: OWNER, updatedAt: Date.now() }, { merge: true })
   );
 });
 
@@ -207,12 +213,120 @@ test("non-blocked rater merge-ADDING recipeOwnerId to a legacy row is ALLOWED", 
 test("non-blocked rater CAN change a rating that carries recipeOwnerId", async () => {
   await seedBlock();
   await seedRatingFor(OK_RATING_ID, USER, true);
-  const ctx = env.authenticatedContext(USER);
+  const ctx = env.authenticatedContext(USER, AGE_OK);
   await assertSucceeds(
     ctx.firestore().doc(`recipe_ratings/${OK_RATING_ID}`).update({
       rating: 5,
       updatedAt: Date.now(),
     })
+  );
+});
+
+// Allowed twin of the three pin denials above: the same `rating: 5` update
+// with no identity field in it.
+test("owner CAN update the rating alone (twin of the pin denials)", async () => {
+  await seedRating();
+  const ctx = env.authenticatedContext(USER, AGE_OK);
+  await assertSucceeds(
+    ctx.firestore().doc(`recipe_ratings/${RATING_ID}`).update({ rating: 5 })
+  );
+});
+
+// BUT-2077. Twin: "owner can update rating/review (allowed fields)" — same
+// actor, same row, same payload, with the claim.
+test("owner WITHOUT the ageCompliant claim CANNOT update a rating", async () => {
+  await seedRating();
+  const ctx = env.authenticatedContext(USER);
+  await assertFails(
+    ctx.firestore().doc(`recipe_ratings/${RATING_ID}`).update({
+      rating: 5,
+      review: "great",
+      updatedAt: Date.now(),
+    })
+  );
+});
+
+// BUT-2077 R1: an update may change only rating/review/updatedAt/recipeOwnerId.
+test("merging an undeclared field into an existing rating is DENIED", async () => {
+  await seedRating();
+  const ctx = env.authenticatedContext(USER, AGE_OK);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`recipe_ratings/${RATING_ID}`)
+      .set({ rating: 3, updatedAt: Date.now(), featured: true }, { merge: true })
+  );
+});
+
+// The payload `FirebaseRatingsRepository.rateRecipe` sends when the row
+// already exists: set(merge: true) with no createdAt, identity fields
+// restated unchanged, review cleared to null, owner stamped.
+test("app re-rate of an existing row (merge, review null, owner) is ALLOWED", async () => {
+  await seedRating();
+  const ctx = env.authenticatedContext(USER, AGE_OK);
+  await assertSucceeds(
+    ctx
+      .firestore()
+      .doc(`recipe_ratings/${RATING_ID}`)
+      .set(
+        {
+          recipeId: RECIPE,
+          userId: USER,
+          rating: 3,
+          review: null,
+          recipeOwnerId: OWNER,
+          updatedAt: serverTimestamp(),
+        },
+        { merge: true }
+      )
+  );
+});
+
+/** The map `rateRecipe` writes on a new row. */
+function appCreateBody(raterUid: string, withOwner: boolean): Record<string, unknown> {
+  const body: Record<string, unknown> = {
+    recipeId: RECIPE,
+    userId: raterUid,
+    rating: 4,
+    review: null,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  };
+  if (withOwner) body.recipeOwnerId = OWNER;
+  return body;
+}
+
+test("app create payload WITH recipeOwnerId and review null is ALLOWED", async () => {
+  const uid = `create-owner-${RUN}`;
+  const ctx = env.authenticatedContext(uid, AGE_OK);
+  await assertSucceeds(
+    ctx
+      .firestore()
+      .doc(`recipe_ratings/${RECIPE}_${uid}`)
+      .set(appCreateBody(uid, true), { merge: true })
+  );
+});
+
+test("app create payload WITHOUT recipeOwnerId is ALLOWED", async () => {
+  const uid = `create-noowner-${RUN}`;
+  const ctx = env.authenticatedContext(uid, AGE_OK);
+  await assertSucceeds(
+    ctx
+      .firestore()
+      .doc(`recipe_ratings/${RECIPE}_${uid}`)
+      .set(appCreateBody(uid, false), { merge: true })
+  );
+});
+
+// BUT-2079. Twin: the WITH-recipeOwnerId create above, plus one key.
+test("create carrying an undeclared field is DENIED", async () => {
+  const uid = `create-extra-${RUN}`;
+  const ctx = env.authenticatedContext(uid, AGE_OK);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`recipe_ratings/${RECIPE}_${uid}`)
+      .set({ ...appCreateBody(uid, true), featured: true }, { merge: true })
   );
 });
 

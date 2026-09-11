@@ -4161,3 +4161,20 @@ neither passed an `auditRepository` at all.
   refusal without that figure, and do not delete the second counter as redundant with the
   first — they measure opposite halves (the gate firing, and the gate never running).
   BUT-2057/BUT-2073, 2026-09-11
+
+- **SUPERSEDES the BUT-2062 entry's named residual about the two create limbs (BUT-2079,
+  2026-09-11).** The `recipe_comments` and `recipe_ratings` create limbs in `firestore.rules`
+  carry `keys().hasOnly([...])` over the key set of their client writer's map
+  (`FirebaseCommentsRepository.addComment`, `FirebaseRatingsRepository.rateRecipe`). The
+  `recipe_ratings` update limb carries `isAgeCompliant()` and
+  `diff(resource.data).affectedKeys().hasOnly(['rating', 'review', 'updatedAt', 'recipeOwnerId'])`
+  (BUT-2077). `rules_allowlist_drift_test.dart` holds each create list against
+  `ActivityExportManager`'s exported and withheld lists.
+  Retired verbatim (fragment; the original wraps): "And neither create limb carries `keys().hasOnly` (both use `hasRequiredFields`), so a hand-rolled client can store a field of its own on its own row and have its OWN content dropped by the allowlist — an Art. 15 defect in the other direction."
+  The two mirrors word this fact DIFFERENTLY; the sibling supersession in
+  `.claude/rules/accepted-deviations.md` quotes that file's wording. BUT-2079, 2026-09-11
+
+- **SUPERSEDES the BUT-2057 entry's large-files sentence (BUT-2080, 2026-09-11).**
+  `firebase_ratings_repository.dart` has no `ACCEPTED_LARGE_FILES` row; deleting `updateRating`
+  took it under the 500-line limit.
+  Retired verbatim (fragment; the original wraps): "The `ACCEPTED_LARGE_FILES` row is updated in this commit to the measured"

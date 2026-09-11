@@ -4,6 +4,8 @@
 /// statistics calculation, permission validation, and real-time updates.
 library;
 
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:clock/clock.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
@@ -346,94 +348,38 @@ void main() {
 
         expect(data.containsKey('recipeOwnerId'), isFalse);
       });
-    });
 
-    group('Update Rating', () {
-      test('should update existing rating successfully', () async {
-        // Arrange
-        const recipeId = 'recipe-1';
-        const ratingId = '${recipeId}_user-123';
-        final existingRating = _createRating(
-          recipeId,
-          'user-123',
-          3.0,
-          id: ratingId,
-        );
-        await _seedRating(fakeFirestore, ratingId, existingRating);
-
-        // Act
-        await repository.updateRating(
-          recipeId: recipeId,
+      test('the widest first rating sends only keys the recipe_ratings create '
+          'rule allows', () async {
+        // The create limb carries `keys().hasOnly([...])`, so a key this writer
+        // adds that the list lacks denies every rating. The set checked here is
+        // the one the writer really produced, not a retyped copy of it; the
+        // allowlist is read out of firestore.rules.
+        await repository.rateRecipe(
+          recipeId: 'recipe-1',
           userId: 'user-123',
-          rating: 4.5,
-          review: 'Updated review',
+          rating: 4.0,
+          review: 'Gott',
+          recipeOwnerId: 'owner-abc',
         );
 
-        // Assert
-        final doc = await fakeFirestore
-            .collection('recipe_ratings')
-            .doc(ratingId)
-            .get();
-        final data = doc.data()!;
-        expect(data['rating'], equals(4.5));
-        expect(data['review'], equals('Updated review'));
-      });
+        final sent =
+            (await fakeFirestore
+                    .collection('recipe_ratings')
+                    .doc('recipe-1_user-123')
+                    .get())
+                .data()!
+                .keys
+                .toSet();
+        final allowed = _ratingsCreateAllowlist();
 
-      test('should reject invalid rating during update', () async {
-        // Arrange
-        const recipeId = 'recipe-1';
-        const ratingId = '${recipeId}_user-123';
-        final existingRating = _createRating(
-          recipeId,
-          'user-123',
-          3.0,
-          id: ratingId,
-        );
-        await _seedRating(fakeFirestore, ratingId, existingRating);
-
-        // Act & Assert
+        expect(sent, contains('recipeOwnerId'));
         expect(
-          () => repository.updateRating(
-            recipeId: recipeId,
-            userId: 'user-123',
-            rating: 6.0,
-          ),
-          throwsA(isA<SecurityViolationException>()),
-        );
-      });
-
-      test('should reject updating another user\'s rating', () async {
-        // Arrange
-        const recipeId = 'recipe-1';
-        const ratingId = '${recipeId}_other-user';
-        final existingRating = _createRating(
-          recipeId,
-          'other-user',
-          3.0,
-          id: ratingId,
-        );
-        await _seedRating(fakeFirestore, ratingId, existingRating);
-
-        // Act & Assert
-        expect(
-          () => repository.updateRating(
-            recipeId: recipeId,
-            userId: 'other-user',
-            rating: 4.0,
-          ),
-          throwsA(isA<PermissionDeniedException>()),
-        );
-      });
-
-      test('should throw when rating does not exist', () async {
-        // Act & Assert
-        expect(
-          () => repository.updateRating(
-            recipeId: 'recipe-1',
-            userId: 'user-123',
-            rating: 4.0,
-          ),
-          throwsA(isA<ResourceNotFoundException>()),
+          sent.difference(allowed),
+          isEmpty,
+          reason:
+              'sends ${sent.toList()..sort()}, rules allow '
+              '${allowed.toList()..sort()}',
         );
       });
     });
@@ -849,6 +795,27 @@ void main() {
 }
 
 // ===== TEST HELPERS =====
+
+/// The first `hasOnly([...])` list inside the `recipe_ratings` block of
+/// firestore.rules, read with comments stripped so prose cannot satisfy it.
+Set<String> _ratingsCreateAllowlist() {
+  final rules = File('firestore.rules')
+      .readAsStringSync()
+      .replaceAll(RegExp(r'/\*[\s\S]*?\*/'), '')
+      .replaceAllMapped(
+        RegExp(r'(^|[^:])//.*$', multiLine: true),
+        (m) => m.group(1)!,
+      );
+  final at = rules.indexOf('match /recipe_ratings/{ratingId}');
+  expect(at, isNot(-1), reason: 'recipe_ratings block not found');
+  final call = rules.indexOf('hasOnly(', at);
+  expect(call, isNot(-1), reason: 'no hasOnly( in the recipe_ratings block');
+  final open = rules.indexOf('[', call);
+  final close = rules.indexOf(']', open);
+  return RegExp(
+    "'([^']+)'",
+  ).allMatches(rules.substring(open, close)).map((m) => m.group(1)!).toSet();
+}
 
 /// Create a test recipe rating
 RecipeRating _createRating(

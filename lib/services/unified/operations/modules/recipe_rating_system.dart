@@ -2,6 +2,7 @@
 
 import 'package:clock/clock.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/recipe/recipe_ownership.dart';
 import 'package:butlery/repositories/interfaces/ratings_repository.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/services/analytics_service.dart';
@@ -74,17 +75,12 @@ class RecipeRatingSystem {
       // field's PRESENCE, so `recipeOwnerId: ''` takes the enforcing disjunct
       // and then looks up `blocks/_<rater>`, which never exists — presence
       // without enforcement.
-      final socialOwner = recipe.socialData?.ownerId;
-      final createdBy = recipe.core.createdBy;
-      final recipeOwnerId = (socialOwner != null && socialOwner.isNotEmpty)
-          ? socialOwner
-          : (createdBy != null && createdBy.isNotEmpty ? createdBy : null);
+      final recipeOwnerId = recipe.ownerUid;
 
       // BUT-2073: counted BEFORE the write, because it describes the call we
       // are about to make and not its outcome — an owner we could not resolve
       // is a rating the block gate will not run on whether the write succeeds
-      // or fails. Emitted here rather than where the field is written, since
-      // this is the only place that can see BOTH source fields were empty.
+      // or fails. Emitted here rather than where the field is written.
       if (recipeOwnerId == null) {
         AnalyticsService.tryLog(AnalyticsEvents.recipeRatingOwnerUnresolved);
       }
@@ -108,8 +104,8 @@ class RecipeRatingSystem {
 
       return true;
     } catch (e) {
-      // BUT-2073: a refusal by `firestore.rules` is the block gate (BUT-2057)
-      // doing its job, OR the `recipeOwnerId` stamping being wrong and denying
+      // BUT-2073: a refusal by `firestore.rules` can be the block gate (BUT-2057)
+      // doing its job, or the `recipeOwnerId` stamping being wrong and denying
       // legitimate ratings broadly. Both reach the user as the same generic
       // error, so without this counter the second case is invisible until
       // somebody reports that their rating "disappeared".
@@ -159,47 +155,6 @@ class RecipeRatingSystem {
     } catch (e) {
       AppLogger.error('❌ Failed to get recipe ratings', e);
       return [];
-    }
-  }
-
-  /// Update existing rating
-  Future<bool> updateRating({
-    required String recipeId,
-    required String userId,
-    required double rating,
-    String? review,
-  }) async {
-    try {
-      AppLogger.info('✏️ Updating rating for recipe $recipeId');
-
-      if (rating < 1.0 || rating > 5.0) {
-        AppLogger.error('❌ Rating must be between 1.0 and 5.0');
-        return false;
-      }
-
-      // Check if rating exists
-      final existingRating = await _ratingsRepository.getUserRating(
-        recipeId,
-        userId,
-      );
-      if (existingRating == null) {
-        AppLogger.error('❌ Cannot update: Rating not found');
-        return false;
-      }
-
-      // Update rating using repository
-      await _ratingsRepository.updateRating(
-        recipeId: recipeId,
-        userId: userId,
-        rating: rating,
-        review: review?.trim(),
-      );
-
-      AppLogger.success('✅ Rating updated successfully');
-      return true;
-    } catch (e) {
-      AppLogger.error('❌ Failed to update rating', e);
-      return false;
     }
   }
 
@@ -340,8 +295,7 @@ class RecipeRatingSystem {
     if (currentUserId == null) return false;
 
     // Can't rate own recipe
-    final ownerId = recipe.socialData?.ownerId ?? recipe.core.createdBy;
-    if (ownerId == currentUserId) return false;
+    if (recipe.ownerUid == currentUserId) return false;
 
     // For personal recipes, can't rate unless you're the owner (already excluded above)
     if (recipe.isPersonal) return false;
@@ -363,8 +317,7 @@ class RecipeRatingSystem {
     if (currentUserId == null) return false;
 
     // Always can view own recipes' ratings
-    final ownerId = recipe.socialData?.ownerId ?? recipe.core.createdBy;
-    if (ownerId == currentUserId) return true;
+    if (recipe.ownerUid == currentUserId) return true;
 
     // For personal recipes, only owner has access
     if (recipe.isPersonal) return false;

@@ -5,6 +5,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:butlery/services/unified/operations/modules/recipe_rating_system.dart';
 import 'package:butlery/repositories/interfaces/ratings_repository.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/analytics/analytics_events.dart';
@@ -47,11 +48,13 @@ void main() {
       // Create mocks
       mockRatingsRepository = MockRatingsRepository();
 
-      // Create test data
+      // The owner differs from the rater (`user_123`) used throughout, so an
+      // assertion that must tell the two apart cannot be satisfied by the
+      // fixture alone.
       testRecipe = RecipeBuilder()
           .withId('recipe_1')
           .withTitle('Test Recipe')
-          .withCreatedBy('user_123')
+          .withCreatedBy('recipe_owner')
           .build();
 
       // Initialize production ServiceLocator with MockDIContainer
@@ -121,7 +124,7 @@ void main() {
             userId: 'user_123',
             rating: 4.5,
             review: 'Great recipe!',
-            recipeOwnerId: any(named: 'recipeOwnerId'),
+            recipeOwnerId: 'recipe_owner',
           ),
         ).called(1);
       });
@@ -499,6 +502,39 @@ void main() {
         expect(eventsNamed(AnalyticsEvents.recipeRatingDenied), isEmpty);
       });
 
+      test('a recipe with NEITHER owner field set is counted too', () async {
+        // Both fields null, not empty.
+        final ownerless = (RecipeBuilder()..createdBy = null)
+            .withId('recipe_1')
+            .build();
+
+        when(
+          () => mockRatingsRepository.rateRecipe(
+            recipeId: any(named: 'recipeId'),
+            userId: any(named: 'userId'),
+            rating: any(named: 'rating'),
+            review: any(named: 'review'),
+            recipeOwnerId: any(named: 'recipeOwnerId'),
+          ),
+        ).thenAnswer((_) async {});
+
+        await ratingSystem.rateRecipe(
+          recipeId: 'recipe_1',
+          rating: 4.0,
+          currentUserId: 'user_123',
+          currentUserDisplayName: 'Test User',
+          canRateValidator: (_) => true,
+          recipeGetter: (id) => ownerless,
+        );
+
+        expect(ownerless.socialData, isNull);
+        expect(ownerless.core.createdBy, isNull);
+        expect(
+          eventsNamed(AnalyticsEvents.recipeRatingOwnerUnresolved),
+          hasLength(1),
+        );
+      });
+
       test('an unresolvable owner whose write is REFUSED fires both', () async {
         // The case that pins WHERE the unresolved counter is emitted. Moving it
         // below the write would silently turn it into a counter of SUCCESSFUL
@@ -563,6 +599,49 @@ void main() {
           canRateValidator: (_) => true,
           recipeGetter: (id) => testRecipe,
         );
+
+        expect(
+          eventsNamed(AnalyticsEvents.recipeRatingOwnerUnresolved),
+          isEmpty,
+        );
+      });
+
+      test('an owner resolvable from EITHER field alone emits no unresolved '
+          'count', () async {
+        // One fixture per field, each with the OTHER field empty: the count
+        // fires only when both are unusable.
+        final ownerOnlyInSocial = RecipeBuilder()
+            .withId('recipe_1')
+            .withCreatedBy('')
+            .withSocialData(const RecipeSocialData(ownerId: 'owner_abc'))
+            .build();
+        final ownerOnlyInCreatedBy = RecipeBuilder()
+            .withId('recipe_1')
+            .withCreatedBy('fallback_owner')
+            .withSocialData(const RecipeSocialData(ownerId: ''))
+            .build();
+
+        when(
+          () => mockRatingsRepository.rateRecipe(
+            recipeId: any(named: 'recipeId'),
+            userId: any(named: 'userId'),
+            rating: any(named: 'rating'),
+            review: any(named: 'review'),
+            recipeOwnerId: any(named: 'recipeOwnerId'),
+          ),
+        ).thenAnswer((_) async {});
+
+        for (final recipe in [ownerOnlyInSocial, ownerOnlyInCreatedBy]) {
+          final result = await ratingSystem.rateRecipe(
+            recipeId: 'recipe_1',
+            rating: 4.0,
+            currentUserId: 'user_123',
+            currentUserDisplayName: 'Test User',
+            canRateValidator: (_) => true,
+            recipeGetter: (id) => recipe,
+          );
+          expect(result, isTrue);
+        }
 
         expect(
           eventsNamed(AnalyticsEvents.recipeRatingOwnerUnresolved),
@@ -749,6 +828,92 @@ void main() {
       });
     });
 
+    // BUT-2078: the owner check reads the shared accessor, so an EMPTY
+    // `socialData.ownerId` falls through to `createdBy` instead of reading as
+    // a uid nobody has.
+    group('Owner check with an empty socialData.ownerId', () {
+      Recipe ownRecipe() => RecipeBuilder()
+          .withId('recipe_1')
+          .withType(RecipeType.collaborative)
+          .withCreatedBy('user_123')
+          .withSocialData(
+            const RecipeSocialData(
+              ownerId: '',
+              memberPermissions: {'user_123': ResourcePermission.viewer},
+            ),
+          )
+          .build();
+
+      test('the owner may not rate their own recipe', () {
+        expect(
+          RecipeRatingSystem.canUserRateRecipe(
+            recipe: ownRecipe(),
+            currentUserId: 'user_123',
+          ),
+          isFalse,
+        );
+      });
+
+      test('a member who is not the owner may rate it', () {
+        final recipe = RecipeBuilder()
+            .withId('recipe_1')
+            .withType(RecipeType.collaborative)
+            .withCreatedBy('recipe_owner')
+            .withSocialData(
+              const RecipeSocialData(
+                ownerId: '',
+                memberPermissions: {'user_123': ResourcePermission.viewer},
+              ),
+            )
+            .build();
+
+        expect(
+          RecipeRatingSystem.canUserRateRecipe(
+            recipe: recipe,
+            currentUserId: 'user_123',
+          ),
+          isTrue,
+        );
+      });
+
+      test(
+        'the owner may view ratings on a recipe they are not a member of',
+        () {
+          final recipe = RecipeBuilder()
+              .withId('recipe_1')
+              .withType(RecipeType.collaborative)
+              .withCreatedBy('user_123')
+              .withSocialData(const RecipeSocialData(ownerId: ''))
+              .build();
+
+          expect(
+            RecipeRatingSystem.canUserViewRatings(
+              recipe: recipe,
+              currentUserId: 'user_123',
+            ),
+            isTrue,
+          );
+        },
+      );
+
+      test('a non-member may not view ratings when no owner resolves', () {
+        final recipe = RecipeBuilder()
+            .withId('recipe_1')
+            .withType(RecipeType.collaborative)
+            .withCreatedBy('')
+            .withSocialData(const RecipeSocialData(ownerId: ''))
+            .build();
+
+        expect(
+          RecipeRatingSystem.canUserViewRatings(
+            recipe: recipe,
+            currentUserId: 'user_123',
+          ),
+          isFalse,
+        );
+      });
+    });
+
     group('Get Rating Operations', () {
       test('should get user rating for recipe', () async {
         // Arrange
@@ -842,65 +1007,6 @@ void main() {
 
         // Assert
         expect(result, isEmpty);
-      });
-    });
-
-    group('Update Rating Operations', () {
-      test('should update existing rating', () async {
-        // Arrange
-        final existingRating = RecipeRating(
-          id: 'rating_1',
-          recipeId: 'recipe_1',
-          userId: 'user_123',
-          rating: 4.0,
-          review: 'Good',
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
-        );
-
-        when(
-          () => mockRatingsRepository.getUserRating('recipe_1', 'user_123'),
-        ).thenAnswer((_) async => existingRating);
-
-        when(
-          () => mockRatingsRepository.updateRating(
-            recipeId: 'recipe_1',
-            userId: 'user_123',
-            rating: 5.0,
-            review: 'Amazing!',
-          ),
-        ).thenAnswer((_) async {});
-
-        // Act
-        final result = await ratingSystem.updateRating(
-          recipeId: 'recipe_1',
-          userId: 'user_123',
-          rating: 5.0,
-          review: 'Amazing!',
-        );
-
-        // Assert
-        expect(result, isTrue);
-        verify(
-          () => mockRatingsRepository.updateRating(
-            recipeId: 'recipe_1',
-            userId: 'user_123',
-            rating: 5.0,
-            review: 'Amazing!',
-          ),
-        ).called(1);
-      });
-
-      test('should validate rating value on update', () async {
-        // Act
-        final result = await ratingSystem.updateRating(
-          recipeId: 'recipe_1',
-          userId: 'user_123',
-          rating: 6.0, // Invalid
-        );
-
-        // Assert
-        expect(result, isFalse);
       });
     });
 

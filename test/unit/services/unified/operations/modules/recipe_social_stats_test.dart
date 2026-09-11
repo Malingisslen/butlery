@@ -198,6 +198,74 @@ void main() {
         });
       });
 
+      // BUT-2078. An EMPTY `socialData.ownerId` is not an owner.
+      group('an empty socialData.ownerId (BUT-2078)', () {
+        late Recipe emptyOwnerRecipe;
+
+        RecipeSocialStats statsAs(String uid) => RecipeSocialStats(
+          getCurrentUserId: () => uid,
+          getCurrentUserDisplayName: () => 'Test User',
+          getRecipes: () => [emptyOwnerRecipe, anotherRecipe],
+          ratingsRepository: mockRatingsRepository,
+          firestoreRepository: mockFirestoreRepository,
+          notificationService: mockNotificationService,
+        );
+
+        setUp(() {
+          emptyOwnerRecipe = Recipe(
+            core: RecipeCore(
+              id: 'recipe_3',
+              title: 'Empty Owner Recipe',
+              description: 'socialData.ownerId is an empty string',
+              ingredients: ['ingredient 3'],
+              instructions: ['step 3'],
+              mealType: 'Middag',
+              createdBy: 'user_123',
+              createdAt: DateTime.now(),
+              updatedAt: DateTime.now(),
+            ),
+            type: RecipeType.collaborative,
+            socialData: const RecipeSocialData(ownerId: ''),
+          );
+        });
+
+        test('denormalizes the aggregate onto createdBy', () async {
+          final firestore = mockFirestoreRepository.firestore;
+          await firestore.collection('recipe_ratings').add(<String, dynamic>{
+            'recipeId': 'recipe_3',
+            'userId': 'user_789',
+            'rating': 4.0,
+          });
+          await firestore
+              .collection('users')
+              .doc('user_123')
+              .collection('recipes')
+              .doc('recipe_3')
+              .set(<String, dynamic>{'core': <String, dynamic>{}});
+
+          await statsAs('user_789').updateMultipleRatingAggregates([
+            'recipe_3',
+          ]);
+
+          final owner = await firestore
+              .collection('users')
+              .doc('user_123')
+              .collection('recipes')
+              .doc('recipe_3')
+              .get();
+          final ownerCore =
+              (owner.data()?['core'] ?? <String, dynamic>{}) as Map;
+          expect(ownerCore['ratingCount'], equals(1));
+        });
+
+        test('counts the recipe among its creator\'s own recipes', () async {
+          final result = await statsAs('user_123').getUserSocialStats();
+
+          // `anotherRecipe` belongs to user_456, so it must not be counted.
+          expect(result['total_recipes'], equals(1));
+        });
+      });
+
       test('should return current user display name', () {
         expect(stats.currentUserDisplayName, equals('Test User'));
       });

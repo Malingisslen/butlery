@@ -16,11 +16,10 @@
 /// them — retyping is the mechanism that let all five through, including the
 /// hand-written fixture in the rules suite that was supposed to catch it.
 ///
-/// **It does not cover every allowlist.** Five of the entries here are the ones
-/// an actual drift was found in:
+/// **It does not cover every allowlist.** An actual drift was found in:
 /// `isValidTagResult`, `counters`, `conversation_memberships`,
-/// `notification_history` and the deep-link `clicks`. The remaining two,
-/// `participants` and the poll vote, never drifted and could not have — each
+/// `notification_history` and the deep-link `clicks`.
+/// `participants` and the poll vote never drifted and could not have — each
 /// `match` block was new when it was added here, so those writes were failing on
 /// default-deny, not on a stale allowlist. Both are guarded because a brand-new
 /// allowlist is the likeliest of all to drift next.
@@ -35,10 +34,9 @@
 /// test below fails the moment a new one appears, forcing a decision instead
 /// of a silent omission.
 ///
-/// **Scope, stated honestly: FOUR of the seven key sets are hand-assembled**,
+/// **Scope, stated honestly: some key sets are hand-assembled**,
 /// not derived, because their writer builds its map inline in a repository with
-/// no model to call — the notification-history row, the deep-link click, the
-/// poll vote, and the share counters. The counters entry looks derived and is
+/// no model to call. The counters entry looks derived and is
 /// only half so: the field NAMES come from `UserCounterIncrements`, but WHICH
 /// keys the writer sends is read off `base_shared_content_repository.dart` and
 /// retyped, so adding a key to that `set({...})` leaves this guard green. Every
@@ -92,6 +90,7 @@ import 'package:butlery/models/tagging/tag_decision.dart';
 import 'package:butlery/models/tagging/tag_result.dart';
 import 'package:butlery/models/user_counters.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
+import 'package:butlery/services/account/export/activity_export_manager.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// One `hasOnly([...])` list, located by the text that uniquely precedes it.
@@ -191,6 +190,25 @@ const _allowlists = <_Allowlist>[
         'votePoll — the transaction.set at the end of the method (named, not '
         'line-numbered: a method name survives the edits a line number does '
         'not)',
+  ),
+  // BUT-2079. Anchored on the block: the create limb's list is the first
+  // `hasOnly(` in each, and the sentinel is a key the update limbs' lists
+  // below it do not carry.
+  _Allowlist(
+    label: 'recipe_comments create',
+    mustContain: 'authorDisplayName',
+    anchor: 'match /recipe_comments/{commentId}',
+    writer:
+        'lib/repositories/firebase/firebase_comments_repository.dart '
+        'addComment — the commentData map and its two conditional keys',
+  ),
+  _Allowlist(
+    label: 'recipe_ratings create',
+    mustContain: 'createdAt',
+    anchor: 'match /recipe_ratings/{ratingId}',
+    writer:
+        'lib/repositories/firebase/firebase_ratings_repository.dart '
+        'rateRecipe — the docRef.set map',
   ),
 ];
 
@@ -315,6 +333,32 @@ Map<String, Set<String>> _writtenKeys() => {
     'voterId',
     'optionIds',
     'votedAt',
+  },
+  // Hand-built maps, the widest each writer can send: `recipeOwnerId` and
+  // `imageUrls` are emitted only when populated, `createdAt` only on a new row.
+  'recipe_comments create': {
+    'recipeId',
+    'authorId',
+    'authorDisplayName',
+    'text',
+    'parentCommentId',
+    'createdAt',
+    'updatedAt',
+    'isDeleted',
+    'likesCount',
+    'replyCount',
+    'sharedWithUserIds',
+    'recipeOwnerId',
+    'imageUrls',
+  },
+  'recipe_ratings create': {
+    'recipeId',
+    'userId',
+    'rating',
+    'review',
+    'recipeOwnerId',
+    'createdAt',
+    'updatedAt',
   },
 };
 
@@ -575,6 +619,39 @@ void main() {
     );
   });
 
+  // BUT-2079 (R8): a key the create limb admits but the Art. 15 section
+  // neither exports nor deliberately withholds would be dropped from the
+  // person's own bundle with nothing reddening, because the projection fails
+  // closed. Read from the manager's own lists, not retyped.
+  for (final (label, anchor, sentinel, exported, withheld) in [
+    (
+      'recipe_comments',
+      'match /recipe_comments/{commentId}',
+      'authorDisplayName',
+      ActivityExportManager.commentFieldsExported,
+      ActivityExportManager.commentFieldsWithheld,
+    ),
+    (
+      'recipe_ratings',
+      'match /recipe_ratings/{ratingId}',
+      'createdAt',
+      ActivityExportManager.ratingFieldsExported,
+      ActivityExportManager.ratingFieldsWithheld,
+    ),
+  ]) {
+    test('every $label create key is exported or withheld by Art. 15', () {
+      final createKeys = _allowlistAfter(rules, anchor, sentinel);
+      expect(
+        createKeys.difference({...exported, ...withheld}),
+        isEmpty,
+        reason:
+            'a client may create a $label field the Art. 15 section neither '
+            'exports nor lists as withheld in ActivityExportManager — decide '
+            'which, in that file.',
+      );
+    });
+  }
+
   test('every keys().hasOnly allowlist is guarded here or knowingly excluded', () {
     // The census. Without it, a new allowlist lands unguarded and
     // nothing says so — which is precisely how the five drifts of 2026-08-12
@@ -599,7 +676,7 @@ void main() {
     // `_allowlistCall` without moving its count; it cannot slip past the total.
     expect(
       'hasOnly('.allMatches(rules).length,
-      34,
+      37,
       reason:
           'the `hasOnly(` population changed. Reclassify the new call before '
           'touching this number — it counts `keys().hasOnly`, '

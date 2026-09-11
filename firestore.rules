@@ -1424,6 +1424,14 @@ service cloud.firestore {
         // but could still post comments (subject only to the 5s rate limit).
         && isAccountMatured()
         && hasRequiredFields(['authorId', 'recipeId', 'text', 'createdAt'])
+        // BUT-2079: the key set of the map FirebaseCommentsRepository.addComment
+        // builds (lib/repositories/firebase/firebase_comments_repository.dart),
+        // including the conditional recipeOwnerId and imageUrls and the
+        // null-valued parentCommentId.
+        && request.resource.data.keys().hasOnly(['recipeId', 'authorId',
+            'authorDisplayName', 'text', 'parentCommentId', 'createdAt',
+            'updatedAt', 'isDeleted', 'likesCount', 'replyCount',
+            'sharedWithUserIds', 'recipeOwnerId', 'imageUrls'])
         && request.resource.data.text.size() > 0
         && request.resource.data.text.size() <= 2000
         && isServerTimestamp('createdAt')
@@ -2595,13 +2603,18 @@ service cloud.firestore {
       // BUT-459: when the new optional `recipeOwnerId` field is present,
       // the rater must not be blocked by the recipe owner. Legacy
       // callers without the field skip the gate (rest of validation
-      // still applies; rate limit + auth uid pinning prevent spam).
+      // still applies).
       allow create: if isAuthenticated()
         && request.auth.uid == request.resource.data.userId
         && isAgeCompliant()
         && request.resource.data.rating >= 1
         && request.resource.data.rating <= 5
         && hasRequiredFields(['recipeId', 'userId', 'rating', 'createdAt'])
+        // BUT-2079: the key set of the map FirebaseRatingsRepository.rateRecipe
+        // writes (lib/repositories/firebase/firebase_ratings_repository.dart),
+        // including the conditional recipeOwnerId and the null-valued review.
+        && request.resource.data.keys().hasOnly(['recipeId', 'userId',
+            'rating', 'review', 'recipeOwnerId', 'createdAt', 'updatedAt'])
         && isServerTimestamp('createdAt')
         && (
           !('recipeOwnerId' in request.resource.data)
@@ -2610,8 +2623,7 @@ service cloud.firestore {
         && rateLimitWrite('recipe_ratings', 5);
 
       // Can update only your own ratings. Pin identity/anchor fields so a
-      // rating can't be re-pointed to another recipe/user or backdated
-      // (the client only ever changes rating/review/updatedAt).
+      // rating can't be re-pointed to another recipe/user or backdated.
       // BUT-2057: the client re-rates with set(merge: true), which evaluates
       // this limb on an existing row, so the create limb's blocking gate is
       // repeated here. In an update request.resource.data is the full resulting
@@ -2619,15 +2631,21 @@ service cloud.firestore {
       // row that still lacks it is not — same field-presence condition as
       // create. recipeOwnerId is deliberately NOT in cannotModify: on a legacy
       // row the field goes absent -> present, which affectedKeys() reports.
+      // BUT-2077: no rateLimitWrite on this limb. The helper reads
+      // users/{uid}/rate_limits/recipe_ratings and allows when that document is
+      // absent, and nothing in lib/ writes it, so it would bound nothing.
       allow update: if isAuthenticated()
         && request.auth.uid == resource.data.userId
+        && isAgeCompliant()
         && request.resource.data.rating >= 1
         && request.resource.data.rating <= 5
         && (
           !('recipeOwnerId' in request.resource.data)
           || isNotBlockedBy(request.resource.data.recipeOwnerId)
         )
-        && cannotModify(['recipeId', 'userId', 'createdAt']);
+        && cannotModify(['recipeId', 'userId', 'createdAt'])
+        && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['rating', 'review', 'updatedAt', 'recipeOwnerId']);
 
       // Can delete only your own ratings
       allow delete: if isAuthenticated()

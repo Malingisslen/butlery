@@ -10,22 +10,13 @@ abstract class RatingsRepository extends Repository<RecipeRating> {
   /// `recipe_ratings` rules read to enforce `isNotBlockedBy(...)`. When it is
   /// null OR EMPTY the implementation MUST omit the key entirely. Absent
   /// means the gate is skipped, which is how a caller that cannot resolve the
-  /// owner behaves. Not on [updateRating]: the owner does not change after
-  /// create.
+  /// owner behaves.
   Future<void> rateRecipe({
     required String recipeId,
     required String userId,
     required double rating,
     String? review,
     String? recipeOwnerId,
-  });
-
-  /// Update an existing rating
-  Future<void> updateRating({
-    required String recipeId,
-    required String userId,
-    required double rating,
-    String? review,
   });
 
   /// Remove a rating

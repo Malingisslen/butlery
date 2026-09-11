@@ -106,8 +106,7 @@ const RUN = Date.now().toString(36);
 // BUT-1386 (ADR-0002): recipe_comments + recipe_ratings create require
 // `isAgeCompliant()` (custom claim `ageCompliant == true`).
 // BUT-1419: recipe_comments create ADDITIONALLY requires `isAccountMatured()`
-// (email_verified OR user-doc createdAt >= 60min); recipe_ratings was already
-// maturity-gated by BUT-659. Every authed context that performs a create on a
+// (email_verified OR user-doc createdAt >= 60min). Every authed context that performs a create on a
 // gated path therefore carries BOTH `ageCompliant:true` and `email_verified:true`
 // so each test keeps isolating its intended gate (blocking / imageUrls /
 // impersonation), not the age or maturity gate. Without maturity every comment
@@ -352,9 +351,7 @@ test("recipe_comments: blocked user CAN create a comment when recipeOwnerId is a
 // ----------------------------------------------------------------------------
 // A4: recipe_comments create — imageUrls validator (BUT-1049)
 //
-// The create rule does NOT restrict the field-set (it uses hasAll, a subset
-// check), so imageUrls was already accepted unvalidated. BUT-1049 adds a
-// conditional validator: when present, imageUrls must be a list of size <= 3.
+// BUT-1049 adds a conditional validator: when present, imageUrls must be a list of size <= 3.
 // The author identity check (auth.uid == authorId) is unchanged and must
 // still gate every create.
 // ----------------------------------------------------------------------------
@@ -469,6 +466,71 @@ test("recipe_comments: cannot create an image comment impersonating another auth
           imageUrls: ["https://example.com/a.jpg"],
         })
       )
+  );
+});
+
+// ----------------------------------------------------------------------------
+// BUT-2079: recipe_comments create — keys().hasOnly
+// ----------------------------------------------------------------------------
+
+/** The map `FirebaseCommentsRepository.addComment` builds, every key present. */
+function appCommentBody(authorUid: string): Record<string, unknown> {
+  return {
+    recipeId: "recipe-1",
+    authorId: authorUid,
+    authorDisplayName: "Testperson",
+    text: "ser gott ut!",
+    parentCommentId: null,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+    isDeleted: false,
+    likesCount: 0,
+    replyCount: 0,
+    sharedWithUserIds: [SHARED_UID],
+    recipeOwnerId: OWNER_UID,
+    imageUrls: ["https://example.com/a.jpg"],
+  };
+}
+
+// ALLOW: the real write — the comment plus the rate_limits stamp in one
+// batch, as addComment commits it. A per-run author, because the stamp
+// arms the 5-second limit for whoever wrote it.
+test("recipe_comments: the app's full create batch (comment + rate_limits) is allowed", async () => {
+  const uid = `batch-author-${RUN}`;
+  const ctx = env.authenticatedContext(uid, AGE_OK_MATURED);
+  const db = ctx.firestore();
+  const batch = db.batch();
+  batch.set(db.doc(`recipe_comments/c-app-batch-${RUN}`), appCommentBody(uid));
+  batch.set(
+    db.doc(`users/${uid}/rate_limits/comments`),
+    {
+      lastWrite: serverTimestamp(),
+      expireAt: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
+    },
+    { merge: true }
+  );
+  await assertSucceeds(batch.commit());
+});
+
+// DENY: the same body plus one key the writer never sends.
+test("recipe_comments: create carrying an undeclared field is denied", async () => {
+  const ctx = env.authenticatedContext(AUTHOR_UID, AGE_OK_MATURED);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`recipe_comments/c-extra-${RUN}`)
+      .set({ ...appCommentBody(AUTHOR_UID), featured: true })
+  );
+});
+
+// ALLOW twin of the deny above: same actor, same body, without the extra key.
+test("recipe_comments: the app's comment body alone is allowed", async () => {
+  const ctx = env.authenticatedContext(AUTHOR_UID, AGE_OK_MATURED);
+  await assertSucceeds(
+    ctx
+      .firestore()
+      .doc(`recipe_comments/c-app-body-${RUN}`)
+      .set(appCommentBody(AUTHOR_UID))
   );
 });
 

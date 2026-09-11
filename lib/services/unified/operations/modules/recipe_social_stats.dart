@@ -4,6 +4,7 @@ import 'package:butlery/repositories/interfaces/ratings_repository.dart'
     hide RatingStatistics;
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/recipe/recipe_ownership.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/notifications/notification_service.dart';
 
@@ -58,7 +59,7 @@ class RecipeSocialStats {
   String? _recipeOwnerId(String recipeId) {
     final recipe = _getRecipe(recipeId);
     if (recipe == null) return null;
-    return recipe.socialData?.ownerId ?? recipe.core.createdBy;
+    return recipe.ownerUid;
   }
 
   /// Rate a recipe
@@ -94,8 +95,7 @@ class RecipeSocialStats {
       // Send notification using RatingNotifications
       final recipe = _getRecipe(recipeId);
       if (recipe != null) {
-        final ownerId = recipe.socialData?.ownerId ?? recipe.core.createdBy;
-        if (ownerId != userId) {
+        if (recipe.ownerUid != userId) {
           await RatingNotifications.sendRatingNotification(
             notificationService: _notificationService,
             recipe: recipe,
@@ -230,10 +230,7 @@ class RecipeSocialStats {
 
     // Get user's recipes
     final allRecipes = recipes;
-    final userRecipes = allRecipes.where((r) {
-      final ownerId = r.socialData?.ownerId ?? r.core.createdBy;
-      return ownerId == userId;
-    }).toList();
+    final userRecipes = allRecipes.where((r) => r.ownerUid == userId).toList();
 
     return SocialEngagementMetrics.calculateUserSocialStats(
       firestore: _firestoreRepository.firestore,
