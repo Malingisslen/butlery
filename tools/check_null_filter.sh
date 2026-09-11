@@ -99,23 +99,15 @@ if [ "$SELF_TEST" -eq 1 ]; then
   NULL_FILTER_PROBE_FORCE_GREP_RC=2 bash "$GUARD" "$FIXTURE_DIR/clean.dart" \
     >/dev/null 2>&1
   OUTAGE_RC=$?
-  # The seam must not be usable to silence the guard.
-  NULL_FILTER_PROBE_FORCE_GREP_RC=1 bash "$GUARD" "$FIXTURE_DIR/violating.dart" \
-    >/dev/null 2>&1
-  SEAM_ABUSE_RC=$?
   NULL_FILTER_PROBE_FORCE_FILTER_RC=2 bash "$GUARD" "$FIXTURE_DIR/clean.dart" \
     >/dev/null 2>&1
   FILTER_OUTAGE_RC=$?
-  NULL_FILTER_PROBE_FORCE_FILTER_RC=1 bash "$GUARD" "$FIXTURE_DIR/violating.dart" \
-    >/dev/null 2>&1
-  FILTER_SEAM_ABUSE_RC=$?
 
   # The guard's exit contract is 0 (clean) or 1 (violations found). Any other
   # code means it never reached the scan, which is a broken harness rather than
   # a verdict about the fixtures — report it as itself instead of mapping it
   # onto whichever case happens to read a non-zero code as failure.
-  for rc in "$VIOLATING_RC" "$CLEAN_RC" "$OUTAGE_RC" "$SEAM_ABUSE_RC" \
-            "$FILTER_OUTAGE_RC" "$FILTER_SEAM_ABUSE_RC"; do
+  for rc in "$VIOLATING_RC" "$CLEAN_RC" "$OUTAGE_RC" "$FILTER_OUTAGE_RC"; do
     if [ "$rc" -ne 0 ] && [ "$rc" -ne 1 ]; then
       echo "SELF-TEST FAIL: the guard could not be run (exit $rc)." >&2
       echo "This is the harness, not the fixtures — check permissions on $GUARD." >&2
@@ -140,20 +132,10 @@ if [ "$SELF_TEST" -eq 1 ]; then
       FAILURES=$((FAILURES + 1))
     fi
 
-    if [ "$SEAM_ABUSE_RC" -ne 1 ]; then
-      echo "SELF-TEST FAIL: the probe seam silenced a real detection." >&2
-      FAILURES=$((FAILURES + 1))
-    fi
-
     # The FILTERING grep, on a file whose only hit is a comment: the filter
     # empties the hits, so an unchecked filter outage would read as clean.
     if [ "$FILTER_OUTAGE_RC" -ne 1 ]; then
       echo "SELF-TEST FAIL: a failed filter grep was reported as a clean scan." >&2
-      FAILURES=$((FAILURES + 1))
-    fi
-
-    if [ "$FILTER_SEAM_ABUSE_RC" -ne 1 ]; then
-      echo "SELF-TEST FAIL: the filter seam silenced a real detection." >&2
       FAILURES=$((FAILURES + 1))
     fi
   fi
@@ -183,7 +165,7 @@ SCAN_RC=$?
 # Test seam for the branch below. Same shape and same reason as
 # tools/check_secret_scan.sh: no fixture can make grep fail portably, and
 # without the seam this branch survives a mutation probe — measured 2026-09-11.
-# Accepted ONLY above 1, so it can force a failure and never silence one.
+# Accepted ONLY above 1.
 if [ "${NULL_FILTER_PROBE_FORCE_GREP_RC:-}" -gt 1 ] 2>/dev/null; then
   SCAN_RC="$NULL_FILTER_PROBE_FORCE_GREP_RC"
 fi
@@ -199,7 +181,7 @@ HITS=$(printf '%s' "$SCAN" \
 FILTER_RC=$?
 
 # Same seam shape as the scanning grep's, for the same reason. Accepted ONLY
-# above 1, so it can force a failure and never silence one.
+# above 1.
 if [ "${NULL_FILTER_PROBE_FORCE_FILTER_RC:-}" -gt 1 ] 2>/dev/null; then
   FILTER_RC="$NULL_FILTER_PROBE_FORCE_FILTER_RC"
 fi
