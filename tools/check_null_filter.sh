@@ -65,8 +65,8 @@ PATTERN='(isNotEqualTo|isEqualTo)[[:space:]]*:[[:space:]]*null'
 #
 # grep prints `path:line:content`; a comment line has `//`, `///` or a doc-block
 # `*` as its first non-space content AFTER that prefix.
-# The guard's own detection test. Three cases, because each is a way this guard
-# has already been observed to fail or could silently stop working:
+# The guard's own detection test. Each case is a way this guard has already been
+# observed to fail or could silently stop working:
 #   1. a construction site is an ERROR (the pattern still matches at all)
 #   2. a WHY-comment naming the spelling is NOT an error (the comment filter
 #      still works — without it the four fixed sites would flag themselves and
@@ -96,12 +96,19 @@ if [ "$SELF_TEST" -eq 1 ]; then
   VIOLATING_RC=$?
   bash "$GUARD" "$FIXTURE_DIR/clean.dart" >/dev/null 2>&1
   CLEAN_RC=$?
+  NULL_FILTER_PROBE_FORCE_GREP_RC=2 bash "$GUARD" "$FIXTURE_DIR/clean.dart" \
+    >/dev/null 2>&1
+  OUTAGE_RC=$?
+  # The seam must not be usable to silence the guard.
+  NULL_FILTER_PROBE_FORCE_GREP_RC=1 bash "$GUARD" "$FIXTURE_DIR/violating.dart" \
+    >/dev/null 2>&1
+  SEAM_ABUSE_RC=$?
 
   # The guard's exit contract is 0 (clean) or 1 (violations found). Any other
   # code means it never reached the scan, which is a broken harness rather than
   # a verdict about the fixtures — report it as itself instead of mapping it
   # onto whichever case happens to read a non-zero code as failure.
-  for rc in "$VIOLATING_RC" "$CLEAN_RC"; do
+  for rc in "$VIOLATING_RC" "$CLEAN_RC" "$OUTAGE_RC" "$SEAM_ABUSE_RC"; do
     if [ "$rc" -ne 0 ] && [ "$rc" -ne 1 ]; then
       echo "SELF-TEST FAIL: the guard could not be run (exit $rc)." >&2
       echo "This is the harness, not the fixtures — check permissions on $GUARD." >&2
@@ -119,6 +126,17 @@ if [ "$SELF_TEST" -eq 1 ]; then
       echo "SELF-TEST FAIL: a WHY-comment or isNull: false was flagged." >&2
       FAILURES=$((FAILURES + 1))
     fi
+
+    # BUT-2061: a scan that could not RUN must not read as a clean tree.
+    if [ "$OUTAGE_RC" -ne 1 ]; then
+      echo "SELF-TEST FAIL: a failed grep was reported as a clean scan." >&2
+      FAILURES=$((FAILURES + 1))
+    fi
+
+    if [ "$SEAM_ABUSE_RC" -ne 1 ]; then
+      echo "SELF-TEST FAIL: the probe seam silenced a real detection." >&2
+      FAILURES=$((FAILURES + 1))
+    fi
   fi
 
   if [ "$FAILURES" -ne 0 ]; then
@@ -130,7 +148,34 @@ if [ "$SELF_TEST" -eq 1 ]; then
   exit 0
 fi
 
-HITS=$(grep -RInH -E "$PATTERN" --include='*.dart' "${TARGETS[@]}" 2>/dev/null \
+# BUT-2061: read the SCANNING grep's own status, not just its output. Before
+# this the whole pipeline was captured with `|| true` and only its content was
+# tested, so a grep that could not run (bad path, unreadable file) produced an
+# empty `$HITS` and passed — indistinguishable from a clean tree. `2>/dev/null`
+# hides exactly the message that would have said so, which is why the status is
+# the only remaining signal.
+#
+# grep's contract: 0 = matched, 1 = no match, >1 = it failed. Only >1 is an
+# outage. The FILTERING grep's status is deliberately not checked: it exits 1
+# whenever every hit was a comment, which is a legitimate clean result.
+SCAN=$(grep -RInH -E "$PATTERN" --include='*.dart' "${TARGETS[@]}" 2>/dev/null)
+SCAN_RC=$?
+
+# Test seam for the branch below. Same shape and same reason as
+# tools/check_secret_scan.sh: no fixture can make grep fail portably, and
+# without the seam this branch survives a mutation probe — measured 2026-09-12.
+# Accepted ONLY above 1, so it can force a failure and never silence one.
+if [ "${NULL_FILTER_PROBE_FORCE_GREP_RC:-}" -gt 1 ] 2>/dev/null; then
+  SCAN_RC="$NULL_FILTER_PROBE_FORCE_GREP_RC"
+fi
+
+if [ "$SCAN_RC" -gt 1 ]; then
+  echo "❌ check_null_filter.sh could NOT run (grep exit $SCAN_RC)." >&2
+  echo "   Treated as a failure, not as a clean scan." >&2
+  exit 1
+fi
+
+HITS=$(printf '%s' "$SCAN" \
   | grep -vE '^[^:]*:[0-9]+:[[:space:]]*(//|\*)' || true)
 
 if [ -n "$HITS" ]; then

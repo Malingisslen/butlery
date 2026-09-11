@@ -34,6 +34,19 @@ violations="$(git diff --cached -U0 --no-color -- lib/ | awk '
     }
   }
 ')"
+PIPE_RC=$?
+
+# BUT-2061: `set -uo pipefail` without `-e` means the pipeline's status was
+# discarded and only its CONTENT tested — so an awk that crashed, or a `git
+# diff` that failed, produced an empty `$violations` and passed, which is
+# indistinguishable from a staged diff with no violations in it. `pipefail`
+# already makes the status the first non-zero in the chain; this reads it.
+if [ "$PIPE_RC" -ne 0 ]; then
+  echo "❌ check_staged_arch_guards.sh could NOT run (exit $PIPE_RC)." >&2
+  echo "   Treated as a failure, not as a clean diff: a guard that cannot run" >&2
+  echo "   must not be indistinguishable from one that found nothing." >&2
+  exit 1
+fi
 
 if [ -n "$violations" ]; then
   echo "❌ BUT-581 (pre-commit): raw \`?? ''\` added under lib/ — use .orEmpty()."

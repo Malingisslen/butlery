@@ -14,16 +14,19 @@ pre-commit:
       run: dart format {staged_files} && git add {staged_files}
       priority: 1
 
-    # Scan for potential secrets in staged files
-    # firebase_options.dart excluded (standard FlutterFire file with client-side API keys)
-    # Pre-filter the file list because xargs -r is unreliable on Windows MinGW
-    # (incorrectly invokes grep on empty input, falsely tripping the && cascade)
-    # BUT-812: regex extended for Stripe (sk_live/sk_test), Slack bot tokens + webhooks.
-    # AWS AKIA + Google AIza + OpenAI sk- + cert bodies + npm/GitHub tokens + service
-    # accounts retained from prior coverage.
+    # Scan staged files for credential shapes. The pattern, the
+    # firebase_options.dart exclusion and the exit contract live in the script,
+    # which carries a --self-test that `script-guard-tests` runs.
+    #
+    # BUT-2061/BUT-1921: this was an inline `run:` string until 2026-09-12 and
+    # could not fail a commit — a trailing `|| true` swallowed its own deliberate
+    # `exit 1`. Keep it in a file: a YAML double-quoted scalar is a second
+    # escaping layer between the text and the shell, and it had already turned
+    # a `\n` into a real line break here.
     secret-scan:
       glob: "*.{dart,ts,json,yaml,yml,env}"
-      run: "files=$(echo {staged_files} | tr ' ' '\n' | grep -v firebase_options.dart || true); if [ -z \"$files\" ]; then exit 0; fi; echo \"$files\" | xargs grep -lE '(AKIA[0-9A-Z]{16}|AIza[0-9A-Za-z_-]{35}|sk-[a-zA-Z0-9]{20,}|sk_live_[A-Za-z0-9]{24,}|sk_test_[A-Za-z0-9]{24,}|xoxb-[0-9]+-[0-9]+-[A-Za-z0-9]+|hooks\\.slack\\.com/services/T[A-Z0-9]+/B[A-Z0-9]+/[A-Za-z0-9]+|-----BEGIN (RSA|EC) PRIVATE KEY|npm_[a-zA-Z0-9]{36}|ghp_[a-zA-Z0-9]{36}|gho_[a-zA-Z0-9]{36}|ghs_[a-zA-Z0-9]{36}|\"type\":\\s*\"service_account\")' && echo Potential secrets detected! && exit 1 || true"
+      run: bash tools/check_secret_scan.sh {staged_files}
+      fail_text: "A staged file matches a known credential shape (see above). Move the value to an environment variable or Secret Manager — never commit it and delete it after. If it is a false positive, narrow the pattern in tools/check_secret_scan.sh and add a --self-test case for the shape you excluded."
 
     # Run Flutter analyze (fatal on infos).
     # Wrapped in `timeout` because `dart analyze` has hung indefinitely on Windows
@@ -167,7 +170,12 @@ pre-commit:
         - "scripts/check_test_real_time.sh"
         - "scripts/test_real_time_baseline.txt"
         - "scripts/__tests__/**"
-      run: node functions/scripts/__tests__/check-test-registration.test.js && node functions/scripts/__tests__/rules-coverage-report.test.js && bash scripts/__tests__/check_test_real_time_test.sh
+        # BUT-2061: without these two the step could not see an edit to the very
+        # guards its --self-test arms exercise, so weakening one of them would
+        # have run no test at all.
+        - "tools/check_secret_scan.sh"
+        - "tools/check_null_filter.sh"
+      run: node functions/scripts/__tests__/check-test-registration.test.js && node functions/scripts/__tests__/rules-coverage-report.test.js && bash scripts/__tests__/check_test_real_time_test.sh && bash tools/check_secret_scan.sh --self-test && bash tools/check_null_filter.sh --self-test
       fail_text: "A CI-wiring guard's own tests failed (see above). The guards decide what CI runs — fix the guard or the fixture before committing, never the assertion."
       priority: 7
 
