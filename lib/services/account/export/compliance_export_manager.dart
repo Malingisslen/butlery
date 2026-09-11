@@ -5,7 +5,7 @@ import 'package:butlery/core/utils/logger.dart' as app_logger;
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/repositories/firebase/firebase_data_export_repository.dart';
 import 'package:butlery/services/account/export/export_pagination_helper.dart'
-    show ExportPaginationHelper, sanitizeForJson;
+    show ExportPaginationHelper, sanitizeForJson, sanitizeTimestamp;
 
 /// Thrown when a GDPR compliance export hits a non-recoverable error.
 ///
@@ -116,7 +116,10 @@ class ComplianceExportManager {
           final r = Map<String, dynamic>.from(row);
           auditLogs.add({
             'audit_log_id': r['id'],
-            'timestamp': r['timestamp'] ?? 'unknown',
+            'timestamp':
+                sanitizeTimestamp(r['timestamp']) ??
+                r['timestamp'] ??
+                'unknown',
             'operation': r['operation'] ?? 'unknown',
             'resource_type': r['resourceType'] ?? 'unknown',
             'resource_id': r['resourceId'],
@@ -225,8 +228,7 @@ class ComplianceExportManager {
         consentRecords.add({
           'consent_id': entry['id'],
           'consent_version': data['consentVersion'] ?? 'unknown',
-          'timestamp':
-              data['timestamp']?.toDate()?.toIso8601String() ?? 'unknown',
+          'timestamp': sanitizeTimestamp(data['timestamp']) ?? 'unknown',
           'purposes': data['purposes'] ?? {},
           'ip_address': data['ipAddress'],
           'user_agent': data['userAgent'],

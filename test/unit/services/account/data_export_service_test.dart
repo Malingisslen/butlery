@@ -27,13 +27,25 @@ import 'package:butlery/repositories/firebase/firebase_personal_tag_repository.d
 import 'package:butlery/repositories/firebase/firebase_audit_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_data_export_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_weekly_menu_plan_repository.dart';
+import 'package:butlery/repositories/interfaces/diner_profile_repository.dart';
+import 'package:butlery/repositories/interfaces/family_rating_repository.dart';
 import 'package:butlery/repositories/interfaces/household_repository.dart';
+import 'package:butlery/models/diner_profile.dart';
+import 'package:butlery/models/family_rating.dart';
 import 'package:butlery/models/household.dart';
 import 'dart:convert';
 
 import '../../../test_support/base_unit_test.dart';
 import '../../../infrastructure/di/test_service_locator.dart';
 import '../../../infrastructure/mocks/production_mocks.dart';
+
+/// A string leading with an ISO-8601 date-and-time. Deliberately loose at the
+/// tail so a zone-less stamp matches and is then judged by [_carriesZone] —
+/// a pattern demanding the zone up front would simply skip the defect.
+final _isoDateTimeLead = RegExp(r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}');
+
+/// `Z`, or a numeric `+hh:mm` / `-hh:mm` offset, at the end.
+final _carriesZone = RegExp(r'(Z|[+-]\d{2}:?\d{2})$');
 
 // Mocks
 class MockFirestoreRepository extends Mock implements FirestoreRepository {}
@@ -60,6 +72,12 @@ class _FakeUserMetadata extends Fake implements UserMetadata {
 // short-circuits to an empty section (no 'family-export-failed' warning)
 // instead of throwing on an unregistered/unstubbed repo.
 class _MockHouseholdRepository extends Mock implements HouseholdRepository {}
+
+class _MockDinerProfileRepository extends Mock
+    implements DinerProfileRepository {}
+
+class _MockFamilyRatingRepository extends Mock
+    implements FamilyRatingRepository {}
 
 HouseholdRepository _emptyFamilyHouseholdRepo() {
   final repo = _MockHouseholdRepository();
@@ -349,35 +367,25 @@ void main() {
       await TestServiceLocator.initialize();
     });
 
-    setUp(() {
-      fakeFirestore = FakeFirebaseFirestore();
-      mockAuthRepository = FakeAuthRepository();
-      mockUser = MockUser();
-      mockFirestoreRepository = MockFirestoreRepository();
-
-      mockUser.setUserState(uid: testUserId, email: testEmail);
-      // See [_FakeUserMetadata]: without these two stubs the profile section
-      // fails in every test in this file. `MockUser` covers `uid`, `email` and
-      // `displayName` only, and mocktail throws on any other non-nullable
-      // getter — `emailVerified` and `metadata` are both read by
-      // `_exportUserProfile`.
-      when(() => mockUser.emailVerified).thenReturn(true);
-      when(() => mockUser.metadata).thenReturn(_FakeUserMetadata());
-      mockAuthRepository.setAuthState(
-        user: mockUser,
-        userId: testUserId,
-        isAuthenticated: true,
-      );
-
-      when(() => mockFirestoreRepository.firestore).thenReturn(fakeFirestore);
-
-      // BUT-501: wire fake-firestore-backed repos so the new export-via-repo
-      // paths exercise end-to-end instead of falling through to ServiceLocator
-      // and silently turning into `{'error': ...}` payloads.
-      service = DataExportService(
+    // BUT-501: wire fake-firestore-backed repos so the new export-via-repo
+    // paths exercise end-to-end instead of falling through to ServiceLocator
+    // and silently turning into `{'error': ...}` payloads.
+    //
+    // BUT-2000: extracted from `setUp` so ONE test can hand in a populated
+    // family household without changing what every other test in this group
+    // exports. The three family seams are the only parameters, because they
+    // are the only ones that test varies.
+    DataExportService buildService({
+      HouseholdRepository? householdRepository,
+      DinerProfileRepository? dinerProfileRepository,
+      FamilyRatingRepository? familyRatingRepository,
+    }) {
+      return DataExportService(
         authRepository: mockAuthRepository,
         firestoreRepository: mockFirestoreRepository,
-        householdRepository: _emptyFamilyHouseholdRepo(),
+        householdRepository: householdRepository ?? _emptyFamilyHouseholdRepo(),
+        dinerProfileRepository: dinerProfileRepository,
+        familyRatingRepository: familyRatingRepository,
         // Inject a manager wired to the fake-functions stub so the
         // constructor doesn't hit FirebaseFunctions.instanceFor().
         // BUT-842: also inject a fake-firestore-backed dataExportRepository so
@@ -446,6 +454,31 @@ void main() {
           authRepository: mockAuthRepository,
         ),
       );
+    }
+
+    setUp(() {
+      fakeFirestore = FakeFirebaseFirestore();
+      mockAuthRepository = FakeAuthRepository();
+      mockUser = MockUser();
+      mockFirestoreRepository = MockFirestoreRepository();
+
+      mockUser.setUserState(uid: testUserId, email: testEmail);
+      // See [_FakeUserMetadata]: without these two stubs the profile section
+      // fails in every test in this file. `MockUser` covers `uid`, `email` and
+      // `displayName` only, and mocktail throws on any other non-nullable
+      // getter — `emailVerified` and `metadata` are both read by
+      // `_exportUserProfile`.
+      when(() => mockUser.emailVerified).thenReturn(true);
+      when(() => mockUser.metadata).thenReturn(_FakeUserMetadata());
+      mockAuthRepository.setAuthState(
+        user: mockUser,
+        userId: testUserId,
+        isAuthenticated: true,
+      );
+
+      when(() => mockFirestoreRepository.firestore).thenReturn(fakeFirestore);
+
+      service = buildService();
     });
 
     tearDown(() async {
@@ -630,6 +663,299 @@ void main() {
         expect(data['export_metadata']['user_id'], testUserId);
         expect(data['export_metadata']['format'], 'JSON');
       });
+
+      test(
+        'BUT-2000: every ISO stamp in the assembled bundle carries a zone, '
+        'and the metadata names it',
+        () async {
+          // The `export_date` and `firebase_auth` stamps come from the
+          // assembler itself, so no seed reaches them.
+          await fakeFirestore
+              .collection('user_notifications')
+              .doc('zone-notif')
+              .set({
+                'userId': testUserId,
+                'type': 'social',
+                'title': 'Hej',
+                'body': 'Ett meddelande',
+                'createdAt': Timestamp.fromDate(DateTime(2026, 5, 6, 9)),
+                'readAt': Timestamp.fromDate(DateTime(2026, 5, 6, 10)),
+                'isRead': true,
+              });
+          await fakeFirestore
+              .collection('users')
+              .doc(testUserId)
+              .collection('consent')
+              .doc('zone-consent')
+              .set({
+                'consentVersion': '1.0',
+                'timestamp': Timestamp.fromDate(DateTime(2026, 4, 1, 12)),
+                'purposes': {'analytics': true},
+              });
+          // `BlockRecord.toFirestore()` stores the instant as a STRING, not a
+          // Timestamp, so it reaches `sanitizeForJson`'s primitive arm and is
+          // passed through verbatim. Seeded exactly as that writer writes it —
+          // a local `toIso8601String()` with no zone — because a Timestamp
+          // here would exercise a route this field never takes.
+          await fakeFirestore.collection('blocks').doc('zone-block').set({
+            'blockerId': testUserId,
+            'blockedId': 'someone-else',
+            'blockedAt': DateTime(2026, 6, 7, 8).toIso8601String(),
+          });
+
+          // `conversation_action_operations` writes both stamps as a local
+          // `clock.now().toIso8601String()`, and `_redactOtherParticipants`
+          // KEEPS the requester's own `perUserSettings` entry by decision
+          // (BUT-1774) — so this is the route those two stamps take into the
+          // bundle. Seeded as that writer writes it, a zone-less String.
+          await fakeFirestore.collection('conversations').doc('zone-convo').set(
+            {
+              'participantIds': [testUserId, 'someone-else'],
+              'perUserSettings': {
+                testUserId: {
+                  'isPinned': true,
+                  'pinnedAt': DateTime(2026, 3, 4, 5).toIso8601String(),
+                  'isArchived': true,
+                  'archivedAt': DateTime(2026, 3, 5, 6).toIso8601String(),
+                },
+              },
+            },
+          );
+
+          // `RecipeCore.toFirestore()` delegates two fields to `toJson()`
+          // methods that write a local `toIso8601String()`, so both are STORED
+          // zone-less, unlike the recipe's own `createdAt`/`updatedAt`
+          // Timestamps beside them.
+          //
+          // Seeded NESTED under `core`, which is the shape
+          // `RecipeSerialization.toFirestore` writes. A flat document is the
+          // legacy shape `fromMap` still reads, seeded as a second row so both
+          // spellings stay covered.
+          await fakeFirestore
+              .collection('users')
+              .doc(testUserId)
+              .collection('recipes')
+              .doc('zone-recipe')
+              .set({
+                'core': {
+                  'title': 'Pannkakor',
+                  'userId': testUserId,
+                  'sourceArtefact': {
+                    'type': 'url',
+                    'payload': 'https://example.test/pannkakor',
+                    'fetchedAt': DateTime(2026, 2, 3, 4).toIso8601String(),
+                  },
+                  'tagOverrides': {
+                    'addedTags': <String>[],
+                    'removedTags': <String>[],
+                    'lastEditedAt': DateTime(2026, 2, 9, 10).toIso8601String(),
+                  },
+                  'createdAt': Timestamp.fromDate(DateTime(2026, 2, 3, 4)),
+                  'updatedAt': Timestamp.fromDate(DateTime(2026, 2, 3, 4)),
+                },
+                // `realtimeData` is the SIBLING branch of `core`, written by
+                // the same `RecipeSerialization.toFirestore` call. `lastSeenAt`
+                // is keyed by uid, so it needs the map-value walk rather than
+                // a named leaf.
+                'realtimeData': {
+                  'lastEditedAt': DateTime(2026, 2, 5, 6).toIso8601String(),
+                  'lastSeenAt': {
+                    testUserId: DateTime(2026, 2, 6, 7).toIso8601String(),
+                  },
+                },
+              });
+          await fakeFirestore
+              .collection('users')
+              .doc(testUserId)
+              .collection('recipes')
+              .doc('zone-recipe-legacy')
+              .set({
+                'title': 'Vafflor',
+                'userId': testUserId,
+                'sourceArtefact': {
+                  'type': 'url',
+                  'payload': 'https://example.test/vafflor',
+                  'fetchedAt': DateTime(2026, 2, 4, 5).toIso8601String(),
+                },
+                // A flat document is exactly the era that would carry a flat
+                // `tagOverrides`; without it the legacy spelling of that path
+                // is in the list but reached by no seed.
+                'tagOverrides': {
+                  'addedTags': <String>[],
+                  'removedTags': <String>[],
+                  'lastEditedAt': DateTime(2026, 2, 4, 6).toIso8601String(),
+                },
+                'createdAt': Timestamp.fromDate(DateTime(2026, 2, 4, 5)),
+                'updatedAt': Timestamp.fromDate(DateTime(2026, 2, 4, 5)),
+              });
+
+          // `realtime_recipes` embeds a WHOLE serialised recipe under `recipe`,
+          // so the same zone-less stamps appear one level deeper. The section
+          // was empty in this fixture, which is why the walk was green over it.
+          await fakeFirestore.collection('realtime_recipes').doc('zone-rt').set(
+            {
+              'ownerId': testUserId,
+              'recipe': {
+                'core': {
+                  'title': 'Semlor',
+                  'sourceArtefact': {
+                    'type': 'url',
+                    'payload': 'https://example.test/semlor',
+                    'fetchedAt': DateTime(2026, 2, 7, 8).toIso8601String(),
+                  },
+                },
+                'realtimeData': {
+                  'lastEditedAt': DateTime(2026, 2, 8, 9).toIso8601String(),
+                  'lastSeenAt': {
+                    testUserId: DateTime(2026, 2, 8, 10).toIso8601String(),
+                  },
+                },
+              },
+            },
+          );
+
+          // The family section serialises MODELS, so its stamps never pass a
+          // Firestore document at all — `toJson()` emits `toIso8601String()`
+          // on a LOCAL `DateTime`. The group's default household repository
+          // returns nothing, so this test builds its own service rather than
+          // seeding: the other tests in the group must keep exporting an
+          // empty family section.
+          final householdRepo = _MockHouseholdRepository();
+          when(() => householdRepo.getForUser(any())).thenAnswer(
+            (_) async => [
+              Household(
+                id: 'zone-household',
+                name: 'Vårt hushåll',
+                members: const [],
+                createdBy: testUserId,
+                createdAt: DateTime(2026, 1, 1),
+                updatedAt: DateTime(2026, 1, 1),
+              ),
+            ],
+          );
+          final dinerRepo = _MockDinerProfileRepository();
+          when(() => dinerRepo.getByHousehold(any())).thenAnswer(
+            (_) async => [
+              DinerProfile(
+                id: 'zone-diner',
+                householdId: 'zone-household',
+                name: 'Ella',
+                ageBand: DinerAgeBand.child,
+                createdBy: testUserId,
+                guardianConsent: GuardianConsent(
+                  byUid: testUserId,
+                  at: DateTime(2026, 1, 2, 3),
+                  consentVersion: '1.0',
+                ),
+                createdAt: DateTime(2026, 1, 3, 4),
+                updatedAt: DateTime(2026, 1, 4, 5),
+              ),
+            ],
+          );
+          final ratingRepo = _MockFamilyRatingRepository();
+          when(() => ratingRepo.getForHousehold(any())).thenAnswer(
+            (_) async => [
+              FamilyRating(
+                id: 'zone-rating',
+                recipeId: 'zone-recipe',
+                householdId: 'zone-household',
+                memberId: testUserId,
+                memberType: HouseholdMemberType.user,
+                stars: 5,
+                enteredByUid: testUserId,
+                createdAt: DateTime(2026, 1, 5, 6),
+                lastUpdatedAt: DateTime(2026, 1, 6, 7),
+              ),
+            ],
+          );
+          final familyService = buildService(
+            householdRepository: householdRepo,
+            dinerProfileRepository: dinerRepo,
+            familyRatingRepository: ratingRepo,
+          );
+
+          final data =
+              json.decode(await familyService.exportUserData())
+                  as Map<String, dynamic>;
+
+          expect(
+            data['export_metadata']['timezone'],
+            'UTC (all timestamps in this export end with Z)',
+            reason:
+                'an omission the subject cannot see is an Art. 12(1) gap; the '
+                'string is unconditional so it cannot vary with the outcome',
+          );
+
+          // Walks the decoded bundle instead of enumerating today's keys, so
+          // a section added later is covered without editing this test.
+          final stamps = <String, String>{};
+          void walk(dynamic node, String path) {
+            if (node is Map) {
+              node.forEach((k, v) => walk(v, '$path/$k'));
+            } else if (node is List) {
+              for (var i = 0; i < node.length; i++) {
+                walk(node[i], '$path[$i]');
+              }
+            } else if (node is String && _isoDateTimeLead.hasMatch(node)) {
+              stamps[path] = node;
+            }
+          }
+
+          walk(data, '');
+
+          final zoneless = stamps.entries
+              .where((e) => !_carriesZone.hasMatch(e.value))
+              .map((e) => '${e.key} = ${e.value}')
+              .toList();
+          expect(
+            zoneless,
+            isEmpty,
+            reason:
+                'an ISO-8601 stamp with neither Z nor a numeric offset cannot '
+                'be placed in time without knowing the exporting device zone',
+          );
+
+          // The walk above passes on a bundle holding no stamp at all, and on
+          // one where the route this ticket changed produced nothing. Naming
+          // the paths rather than counting them keeps this true when a section
+          // is added.
+          const ownSettingsPath =
+              '/messages/conversations[0]/conversation_info/perUserSettings/'
+              '$testUserId';
+          expect(
+            stamps.keys,
+            containsAll(<String>[
+              '/export_metadata/export_date',
+              '/profile/firebase_auth/creation_time',
+              '/profile/firebase_auth/last_sign_in',
+              '/notifications/notifications[0]/created_at',
+              '/notifications/notifications[0]/read_at',
+              '/consent_records/consent_history[0]/timestamp',
+              '/blocks/outgoing_blocks[0]/blockedAt',
+              // The routes BUT-2000 closed second. Each is a stamp a
+              // MODEL or a service wrote as a local ISO string rather than as
+              // a Timestamp, so none of them reaches the walk above unless
+              // its seed above is present.
+              '/family/diner_profiles[0]/createdAt',
+              '/family/diner_profiles[0]/updatedAt',
+              '/family/diner_profiles[0]/guardianConsent/at',
+              '/family/family_ratings[0]/createdAt',
+              '/family/family_ratings[0]/lastUpdatedAt',
+              '$ownSettingsPath/pinnedAt',
+              '$ownSettingsPath/archivedAt',
+              '/recipes/recipes[0]/data/core/sourceArtefact/fetchedAt',
+              '/recipes/recipes[0]/data/core/tagOverrides/lastEditedAt',
+              '/recipes/recipes[0]/data/realtimeData/lastEditedAt',
+              '/recipes/recipes[0]/data/realtimeData/lastSeenAt/$testUserId',
+              '/recipes/recipes[1]/data/sourceArtefact/fetchedAt',
+              '/recipes/recipes[1]/data/tagOverrides/lastEditedAt',
+              '/realtime_recipes/realtime_recipes[0]/data/recipe/core/sourceArtefact/fetchedAt',
+              '/realtime_recipes/realtime_recipes[0]/data/recipe/realtimeData/lastEditedAt',
+              '/realtime_recipes/realtime_recipes[0]/data/recipe/realtimeData/lastSeenAt/$testUserId',
+            ]),
+          );
+        },
+      );
 
       test('should include all required sections', () async {
         final jsonString = await service.exportUserData();

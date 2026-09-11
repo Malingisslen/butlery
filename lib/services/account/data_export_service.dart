@@ -32,7 +32,7 @@ import 'package:butlery/services/account/export/compliance_export_manager.dart';
 import 'package:butlery/services/account/export/preferences_export_manager.dart';
 import 'package:butlery/services/account/export/family_export_manager.dart';
 import 'package:butlery/services/account/export/export_pagination_helper.dart'
-    show sanitizeForJson;
+    show sanitizeForJson, sanitizeTimestamp;
 
 /// GDPR Compliance - Right to Data Portability (Article 20) and Right of Access (Article 15)
 /// Exports all user data including:
@@ -320,7 +320,11 @@ class DataExportService extends BaseService {
 
     final exportData = <String, dynamic>{
       'export_metadata': {
-        'export_date': clock.now().toIso8601String(),
+        'export_date': sanitizeTimestamp(clock.now()),
+        // Stated unconditionally, the same string on every export: a bundle
+        // whose stamps cannot be placed in time without knowing the exporting
+        // device's zone is a bundle that misdescribes itself (Art. 12(1)).
+        'timezone': 'UTC (all timestamps in this export end with Z)',
         'export_version': '2.0',
         'gdpr_compliance': {
           'article_15': 'Right of Access',
@@ -494,10 +498,17 @@ class DataExportService extends BaseService {
                 'uid': userId,
                 'email': currentUser?.email,
                 'email_verified': currentUser?.emailVerified,
-                'creation_time': currentUser?.metadata.creationTime
-                    ?.toIso8601String(),
-                'last_sign_in': currentUser?.metadata.lastSignInTime
-                    ?.toIso8601String(),
+                // These two arrive UTC already (`UserMetadata` builds them with
+                // `isUtc: true`), so the helper reformats nothing here. They go
+                // through it anyway: the bundle-wide property is then enforced
+                // in one place rather than resting on a plugin's constructor
+                // argument.
+                'creation_time': sanitizeTimestamp(
+                  currentUser?.metadata.creationTime,
+                ),
+                'last_sign_in': sanitizeTimestamp(
+                  currentUser?.metadata.lastSignInTime,
+                ),
               },
             };
           },

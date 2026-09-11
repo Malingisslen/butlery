@@ -5,7 +5,7 @@ import 'package:butlery/core/utils/logger.dart' as app_logger;
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/repositories/firebase/firebase_data_export_repository.dart';
 import 'package:butlery/services/account/export/export_pagination_helper.dart'
-    show ExportPaginationHelper, sanitizeForJson;
+    show ExportPaginationHelper, sanitizeForJson, sanitizeTimestamp;
 
 /// Handles export of user preferences: settings, notifications.
 /// Part of GDPR Article 20 (Right to Data Portability) compliance.
@@ -362,9 +362,8 @@ class PreferencesExportManager {
           'type': data['type'] ?? 'unknown',
           'title': data['title'] ?? '',
           'body': data['body'] ?? '',
-          'created_at':
-              data['createdAt']?.toDate()?.toIso8601String() ?? 'unknown',
-          'read_at': data['readAt']?.toDate()?.toIso8601String(),
+          'created_at': sanitizeTimestamp(data['createdAt']) ?? 'unknown',
+          'read_at': sanitizeTimestamp(data['readAt']),
           'is_read': data['isRead'] ?? false,
           'data': sanitizeForJson(data['data']),
         });
@@ -425,10 +424,6 @@ class PreferencesExportManager {
       // the same never-answers defect BUT-1990 removed one field over.
       // `lastSeen` is the fallback because the device-info write refreshes only
       // that one.
-      // Ordered on the INSTANT, not on the formatted string: the format is
-      // local and zone-less (the whole export layer's convention, BUT-2000), so
-      // across a DST fall-back two stamps an hour apart compare in the wrong
-      // order as text while their instants do not.
       DateTime? newest;
       for (final row in tokens) {
         final stamp = row['lastUpdated'] ?? row['lastSeen'];
@@ -436,7 +431,7 @@ class PreferencesExportManager {
         final at = stamp.toDate();
         if (newest == null || at.isAfter(newest)) newest = at;
       }
-      final fcmTokenUpdatedAt = newest?.toIso8601String();
+      final fcmTokenUpdatedAt = sanitizeTimestamp(newest);
 
       return {
         'preferences': prefs != null ? sanitizeForJson(prefs) : null,

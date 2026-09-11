@@ -1,7 +1,7 @@
 /// Direct unit tests for the export helpers (BUT-1149 coverage burndown —
 /// previously zero direct coverage).
 ///
-/// Covers the two pure pieces that don't need a live Firestore: [sanitizeForJson]
+/// Covers the pure pieces that don't need a live Firestore: [sanitizeForJson]
 /// (turns Firestore-native types into JSON-safe values for GDPR exports) and
 /// ExportPaginationHelper.getLimitForType (per-content-type export caps). The
 /// cursor-pagination methods (paginatedQuery etc.) drive real Query/get() calls
@@ -36,6 +36,29 @@ void main() {
     test('converts a Timestamp to a string', () {
       final result = sanitizeForJson(Timestamp.fromDate(DateTime.utc(2026)));
       expect(result, isA<String>());
+    });
+
+    test(
+      'converts a LOCAL DateTime to UTC, so the printed instant carries Z',
+      () {
+        // Expected side is computed, never a literal: a literal would pin the
+        // host's offset and pass or fail by where the suite runs.
+        final local = DateTime(2026, 1, 1, 9);
+        expect(
+          local.isUtc,
+          isFalse,
+          reason: 'the fixture must be local to bite',
+        );
+        expect(sanitizeForJson(local), local.toUtc().toIso8601String());
+      },
+    );
+
+    test('converts a LOCAL Timestamp to UTC', () {
+      final local = DateTime(2026, 1, 1, 9);
+      expect(
+        sanitizeForJson(Timestamp.fromDate(local)),
+        local.toUtc().toIso8601String(),
+      );
     });
 
     test('converts a GeoPoint to a lat/long map', () {
@@ -88,6 +111,33 @@ void main() {
       final structured = exported['structuredIngredients'] as List<dynamic>;
       expect((structured[0] as Map)['section'], 'Deg');
       expect((structured[1] as Map)['section'], 'Fyllning');
+    });
+  });
+
+  group('sanitizeTimestamp', () {
+    test('leaves a string that already carries Z alone', () {
+      expect(
+        sanitizeTimestamp('2026-05-06T09:00:00.000Z'),
+        '2026-05-06T09:00:00.000Z',
+      );
+    });
+
+    test('reads a zone-less string as local and prints it as UTC', () {
+      final local = DateTime(2026, 5, 6, 9);
+      expect(
+        sanitizeTimestamp(local.toIso8601String()),
+        local.toUtc().toIso8601String(),
+      );
+    });
+
+    test('returns null for anything it cannot render as an instant', () {
+      // The null arm is what lets a caller keep its own fallback: the
+      // audit-log chain is `sanitizeTimestamp(..) ?? raw ?? 'unknown'`, so a
+      // value this cannot parse must be passed through rather than replaced.
+      expect(sanitizeTimestamp('inte ett datum'), isNull);
+      expect(sanitizeTimestamp(''), isNull);
+      expect(sanitizeTimestamp(42), isNull);
+      expect(sanitizeTimestamp(null), isNull);
     });
   });
 

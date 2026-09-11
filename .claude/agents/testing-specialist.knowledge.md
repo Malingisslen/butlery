@@ -122,6 +122,12 @@ compress it.**
   reported green. Predict the exact red SET before running and treat any shortfall as an
   instrument fault first. Two mutants hitting the same test through DIFFERENT assertions are also
   non-disjoint: `expect` stops at the first failure.
+  **The exception is an assertion that AGGREGATES — collect every violation into a list, then
+  `expect(violations, isEmpty)`.** It cannot mask, because every mutant's contribution shows in
+  one failure message, and the message NAMES each one. That is a reason to prefer the shape when
+  a test guards a property over many routes: on BUT-2000 a two-entry mutant printed both offending
+  bundle paths with their values, where two separate `expect`s would have hidden the second
+  (measured both ways in the same file — the aggregating walker vs. the key/prose pair).
 - **A green probe on a "nothing changes" test is usually GUARD-CHAIN SUBSUMPTION, not a live
   mutant** — an earlier early-return fires and the guard under test is never reached. The repair is
   a fixture that falls THROUGH the early return (the PARTIAL state, not the complete one), and it
@@ -149,6 +155,25 @@ compress it.**
   half has controls in BOTH directions (always-true and always-false mutants), and name the
   entries that are the SOLE discriminator of a hazard: with one such entry the whole invariant
   dies to a fixture tidy (BUT-2034/2037).
+- **Grading a LOOP-HALT (`break`): deleting it is the WRONG mutant, and a fixture holding exactly
+  cap+1 items cannot grade it at all.** Where the guard block's body also FALLS THROUGH to the
+  normal path, deleting `break` makes the capped item emit BOTH observables and reddens a count
+  assertion for a reason unrelated to halting — which reads as "the halt is pinned". `break` →
+  `continue` is the mutant that grades the halt, and it stays green until the fixture holds cap+2.
+  The halt's COST is a separate measurement, never the ticket's: the work SKIPPED past the cap is
+  usually the expensive part, so the halt itself bought ~21 ms of a claimed ~1 s (BUT-2066).
+  **Raising a fixture to catch a new mutant can trade away the kill it already had — re-run the
+  OLD mutant against the NEW fixture in the same round.**
+- **Only the `[E]`-marked line names a failing test.** `flutter test` prints the cumulative
+  `+passed -failed` beside the test currently STARTING, so a report pasting the lines after a
+  failure names the WRONG tests while the tally is right. Grep `\[E\]`, never the running names.
+- **A REACHABILITY refutation ("that input can't get past the size guard") is decided by the
+  FLOOR of the input range, not by one hand-chosen spelling.** A gate costed a "minimal" script
+  tag WITH an attribute (24 B) and declared the 266k case unreachable; the real minimum is
+  `<script></script>` (17 B), and the counter only needs OPENING tags (8 B) — measured reachable
+  three ways. Ask what the quantifier ranges over before letting such a finding strike anything,
+  and when a refutation takes one mention of a fact and leaves an equivalent one standing
+  elsewhere in the file, the SURVIVOR is the tell that the premise is wrong (BUT-2066).
 - **A LENIENT token in a locating regex (`>?`, an optional delimiter) usually exists to make two
   consumers agree on MALFORMED input, and no suite has a malformed fixture by default** — every
   hand-written one is well-formed. Grep the suites for the malformed shape; zero hits IS the
@@ -463,6 +488,33 @@ other suites prove:
   BUT-1800/1956). **The `_buildExportBundle` key has now shipped unpinned FOUR times, each
   round with the previous warnings visible in the same file — treat it as owed, not as a
   candidate.**
+- **A WHOLE-BUNDLE WALKER test grades only the routes its own fixture SEEDS, and the routes its
+  comment ENUMERATES are exactly the ones to probe one by one.** A walk that decodes the bundle,
+  collects every leaf matching a shape and asserts a property over them reads as covering the
+  change everywhere, and its `containsAll` anti-vacuity list makes it look audited. Probe each
+  named route SEPARATELY by reverting that route alone: on BUT-2000 the generic `sanitizeForJson`
+  walk — the route every whole-document section takes, and the only one with a pre-existing direct
+  suite — was deletable-green over the whole account-export directory, because every fixture in
+  that suite built its stamps with `DateTime.utc(...)`, for which `.toUtc()` is a no-op. **A
+  UTC-only fixture corpus makes a UTC-normalising change unfalsifiable**, and the repair is one
+  LOCAL fixture per branch with the expected side COMPUTED (`local.toUtc().toIso8601String()`),
+  never a literal that would pin the host offset. Same round, same shape: the helper's own NEW
+  function had zero `grep` hits in `test/` while reading as covered through its callers.
+- **A per-FIELD normalisation list, and the fixture that seeds exactly the fields it names, is a
+  closed loop that certifies itself.** A section naming `['sourceArtefact.fetchedAt']` plus a
+  seed carrying that one field passes every assertion while a SIBLING field of the same document
+  ships unnormalised. Grade the LIST, never the test: open the model's `toFirestore()` and check
+  every nested `toJson()`/`toFirestore()` delegation — a writer that hands one child `toJson()`
+  and its neighbours `toFirestore()` is the tell, because only the JSON one stringifies the
+  instant. On BUT-2000 that was `tagOverrides?.toJson()` sitting one line between two
+  `toFirestore()` calls, missed by two review rounds and an integration gate. The cheap
+  whole-class check is a `grep -rn "toIso8601String()" lib/models/ | grep -v toUtc` census, which
+  is also the guard this owes. **Close such a list by ENUMERATION, not by fixing what a gate
+  found**: tabulate every nested serialiser the writer calls and mark each covered / no-stamp /
+  excluded — that is what turns "the three routes we happened to find" into a claim. And when the
+  list moves behind a SHARED helper taking a `prefix`/discriminator, grade the PARAMETER by
+  neutering it (`p = ''`), never by deleting a call site: only that shows the two call sites are
+  actually distinguished, and it reddens one section while leaving the other green (BUT-2000 P5).
 - **A `firestore.rules` edit owes a run of `test/unit/security/rules_allowlist_drift_test.dart`
   before any verdict** — its census pins the file's comment-stripped `hasOnly(` population by
   NUMBER, so ANY new allowlist reddens it, a READ gate included, which the guard's name does

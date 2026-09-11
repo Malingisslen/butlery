@@ -3,13 +3,125 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
 
+/// Renders a Firestore [Timestamp] or a [DateTime] as an ISO-8601 string in
+/// UTC, so the printed instant carries a `Z` and reads the same wherever the
+/// bundle is opened.
+///
+/// `Timestamp.toDate()` returns a LOCAL `DateTime`, and `toIso8601String()` on
+/// a local `DateTime` emits neither `Z` nor a numeric offset. `.toUtc()` on a
+/// `DateTime` already in UTC returns it unchanged, so a source that is already
+/// UTC — Firebase Auth's `UserMetadata`, which builds its two stamps with
+/// `isUtc: true` — passes through this untouched.
+///
+/// A String is accepted because writers store an instant as text rather
+/// than as a [Timestamp] — `BlockRecord.toFirestore()` and the audit-log
+/// callable — so those values reach the bundle without passing through any
+/// [Timestamp] branch. An unparseable string yields null rather than a guess,
+/// leaving the caller its own fallback.
+///
+/// Returns null for anything it cannot render as an instant, null included,
+/// so a caller decides its own absent-value wording.
+String? sanitizeTimestamp(dynamic value) {
+  if (value is Timestamp) return value.toDate().toUtc().toIso8601String();
+  if (value is DateTime) return value.toUtc().toIso8601String();
+  if (value is String) {
+    return DateTime.tryParse(value)?.toUtc().toIso8601String();
+  }
+  return null;
+}
+
+/// Rewrites the instants at [paths] of [row] to UTC, in place.
+///
+/// A path is a dot-separated walk through nested maps (`guardianConsent.at`),
+/// so a section NAMES the few fields it knows hold an instant. That narrowness
+/// is the whole design: a recursive sweep rewriting every date-shaped string
+/// would also rewrite user content that merely looks like a stamp — a recipe
+/// step, a pasted source artefact, a chat message — which is why
+/// [sanitizeForJson] leaves strings alone and why this runs AFTER it instead of
+/// inside it.
+///
+/// Only a value [sanitizeTimestamp] can render as an instant is replaced, so a
+/// field holding something else is left as stored rather than nulled:
+/// under-normalising is visible in the bundle, destroying a value is not.
+///
+/// Needed because a model's `toJson()`/`toFirestore()` can store an instant as
+/// a LOCAL `toIso8601String()` — no `Z`, no numeric offset — which reaches the
+/// bundle through [sanitizeForJson]'s primitive arm untouched, under an
+/// `export_metadata.timezone` line that promises every stamp is UTC.
+void normalizeTimestampPaths(Map<String, dynamic> row, List<String> paths) {
+  for (final path in paths) {
+    final segments = path.split('.');
+    dynamic node = row;
+    for (var i = 0; i < segments.length - 1 && node is Map; i++) {
+      node = node[segments[i]];
+    }
+    if (node is! Map) continue;
+    final leaf = segments.last;
+    if (!node.containsKey(leaf)) continue;
+    final normalised = sanitizeTimestamp(node[leaf]);
+    if (normalised != null) node[leaf] = normalised;
+  }
+}
+
+/// Normalises every zone-less stamp a serialised RECIPE document carries,
+/// under [prefix] ('' for the document root, 'recipe' where a realtime
+/// document embeds a whole recipe).
+///
+/// These are the fields `RecipeSerialization.toFirestore` delegates to a
+/// `toJson()` rather than writing as a `Timestamp`. They are enumerated rather
+/// than discovered, so a field added to one of those `toJson()` methods is NOT
+/// covered until it is named here — and there is deliberately ONE list, because
+/// two sections embed this document at different depths.
+///
+/// Both the `core.`-nested and the flat spelling are carried: the live writer
+/// nests, while `RecipeSerialization.fromMap` still reads a flat document as a
+/// legacy shape. A path whose parent is absent is skipped, so the spelling that
+/// does not apply costs nothing.
+void normalizeRecipeDocumentStamps(
+  Map<String, dynamic> row, {
+  String prefix = '',
+}) {
+  final p = prefix.isEmpty ? '' : '$prefix.';
+  normalizeTimestampPaths(row, [
+    '${p}core.sourceArtefact.fetchedAt',
+    '${p}core.tagOverrides.lastEditedAt',
+    '${p}sourceArtefact.fetchedAt',
+    '${p}tagOverrides.lastEditedAt',
+    '${p}realtimeData.lastEditedAt',
+  ]);
+  // Keys are uids, so there is no leaf to name.
+  normalizeTimestampMapValues(row, '${p}realtimeData.lastSeenAt');
+}
+
+/// Normalises every VALUE of the map at [path], for a field whose keys are
+/// data rather than a fixed name — a uid-keyed map of instants cannot be
+/// addressed by [normalizeTimestampPaths], which needs a leaf to name.
+///
+/// A value [sanitizeTimestamp] cannot render is left as stored, for the same
+/// reason: under-normalising is visible in the bundle, destroying a value is
+/// not.
+void normalizeTimestampMapValues(Map<String, dynamic> row, String path) {
+  final segments = path.split('.');
+  dynamic node = row;
+  for (var i = 0; i < segments.length - 1 && node is Map; i++) {
+    node = node[segments[i]];
+  }
+  if (node is! Map) return;
+  final target = node[segments.last];
+  if (target is! Map) return;
+  for (final key in target.keys.toList()) {
+    final normalised = sanitizeTimestamp(target[key]);
+    if (normalised != null) target[key] = normalised;
+  }
+}
+
 /// Sanitizes Firestore data for JSON serialization.
 /// Converts Timestamp, GeoPoint, DocumentReference, and other
 /// non-JSON-serializable types to safe representations.
 dynamic sanitizeForJson(dynamic value) {
   if (value == null) return null;
-  if (value is Timestamp) return value.toDate().toIso8601String();
-  if (value is DateTime) return value.toIso8601String();
+  if (value is Timestamp) return sanitizeTimestamp(value);
+  if (value is DateTime) return sanitizeTimestamp(value);
   if (value is GeoPoint) {
     return {'latitude': value.latitude, 'longitude': value.longitude};
   }

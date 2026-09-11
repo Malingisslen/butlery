@@ -104,7 +104,7 @@ class AuditLog {
     };
   }
 
-  /// Convert to JSON for GDPR data export
+  /// Convert to JSON.
   Map<String, dynamic> toJson() {
     return {
       'id': id,

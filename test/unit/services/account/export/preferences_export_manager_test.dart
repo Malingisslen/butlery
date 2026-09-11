@@ -551,7 +551,7 @@ void main() {
         expect(result['fcm_token_registered'], isTrue);
         expect(
           result['fcm_token_updated_at'],
-          DateTime(2026, 5, 6, 7).toIso8601String(),
+          DateTime(2026, 5, 6, 7).toUtc().toIso8601String(),
           reason: 'the most recent stamp across the devices',
         );
       },
@@ -573,7 +573,7 @@ void main() {
 
         expect(
           result['fcm_token_updated_at'],
-          DateTime(2026, 3, 4, 5).toIso8601String(),
+          DateTime(2026, 3, 4, 5).toUtc().toIso8601String(),
         );
       },
     );

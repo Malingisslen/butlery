@@ -54,6 +54,18 @@ VALUES, so anything a create rule does not constrain is client-writable — incl
 server-only MARKER a Cloud Function stamps (`type: 'duplicateBlocked'`, text and all). Never
 rest a privacy argument on "the server empties it first"; read the create rule.
 
+A gate written as `!('f' in request.resource.data) || check(...)` is DEAD until a writer
+stamps `f` — grep the repository's hand-built map (not the model's `toFirestore()`, which a
+merge-writing method may bypass) before calling such a rule a control, and grade the rules
+test the same way: a fixture builder that unconditionally stamps `f` proves a payload
+production never sends, and goes green for years. Two corollaries. A client writing with
+`set(merge: true)` evaluates the UPDATE limb on the second write, so a gate on CREATE alone
+is bypassed by everyone who already has a row — repeat the conjunct or the control only
+covers first-timers. And the field cannot then be pinned by `cannotModify`: on a legacy row
+it goes absent -> present, which `affectedKeys()` reports, so pinning it refuses every
+existing row's update. That leaves the field forgeable, which is a residual to name, not a
+gap to paper over — closing it needs the rule to `get()` the parent document.
+
 The `firestore-rules-tester` agent owns proving rule behavior — hand off after rule changes
 rather than writing rules tests yourself.
 
@@ -579,6 +591,22 @@ name which doc each end touches before approving it.
   skips the filter and exports the field WHOLE. Check what the write rule actually permits
   before calling that unreachable — a `.get('f', []).size() <= N` cap bounds ROW COUNT, not
   TYPE, so a map with N keys satisfies it. Put the else-branch on the container too.
+- A BUNDLE-WIDE claim in `export_metadata` ("all timestamps end with Z", "nothing here is
+  another person's") is a universal over EVERY assembly route, and the routes that falsify it
+  are the ones that never touch a raw document: a section serialising a MODEL
+  (`d.toJson()`, a `toFirestore()` delegating to a nested `toJson()`) emits
+  `toIso8601String()` on a LOCAL `DateTime`, which reaches the bundle through the
+  sanitizer's PRIMITIVE arm untouched — the `Timestamp` arm everyone grades never runs.
+  So enumerate by ROUTE, not by section: raw doc, model `toJson()`, and a service writing a
+  string directly (`clock.now().toIso8601String()` into a map a redaction decision KEEPS).
+  Fix at the export boundary, never in the model — its `toJson()` is also the local-cache and
+  Firestore write format, so "fixing" it is a migration. The normalisation must NAME its key
+  paths: a recursive rewrite of every date-shaped string also rewrites user content that
+  merely looks like a stamp. The test is the half that matters and goes vacuous the easy way
+  — a walker over the decoded bundle passes on a bundle holding no such stamp, so seed every
+  route AS ITS REAL WRITER WRITES IT (a local ISO STRING, never a `Timestamp`, which exercises
+  a branch the field never takes) and pin each path in an anti-vacuity `containsAll`. Probe
+  one route at a time; a combined probe masks whichever route the fixture forgot.
 - A denormalized ERASURE HANDLE (flat `array-contains` trail, needed because Firestore
   can't filter inside an array of maps) must be extended by EVERY write path (derive the
   obligation from the payload so a new path inherits it by construction), removed in the

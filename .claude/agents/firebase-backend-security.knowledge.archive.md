@@ -9676,3 +9676,130 @@ ground every strip in these two collections' own writers and rules; the struck c
 supporting measurements, never the grounds. Residual noted, not blocking: "the second test"
 in the docs entry lost its antecedent when "Two tests" went — the ordinal survives a strike
 that removed its counting frame, which is the strike-orphaning hazard in its mildest form.
+
+---
+
+## 2026-09-11 — BUT-2057: a presence-conditional rules gate nobody was arming
+
+Built (not reviewed): `recipe_ratings`' blocking gate was live in `firestore.rules` since
+BUT-459 and had never once run. The create limb reads
+`!('recipeOwnerId' in request.resource.data) || isNotBlockedBy(...)`, and
+`FirebaseRatingsRepository.rateRecipe` hand-builds its map — bypassing
+`RecipeRating.toFirestore()`, which DOES emit the field — so the left disjunct was always
+true. Measured by the panel: a blocked person reaches the rating UI today (nothing filters
+the recipe surfaces, `blockUser` does not touch `shared_recipes`), so this was a live hole
+rather than defence in depth.
+
+Three things worth keeping.
+
+1. The rules test for it was GREEN and had been for as long as it existed:
+   `validRatingBody()` in `recipe-comments-rules.test.ts` unconditionally stamps
+   `recipeOwnerId`, so the suite proved a payload production never sent. A fixture builder
+   that always supplies the gating field is the exact shape that hides a dead gate.
+2. The client re-rates with `set(..., SetOptions(merge: true))`, which evaluates the UPDATE
+   limb once a row exists — and that limb carried no blocking conjunct. Stamping the field
+   alone would have bought nothing for anyone who had already rated. The same conjunct was
+   added there; in an update `request.resource.data` is the full resulting document, so the
+   field-presence condition means the same thing on both limbs.
+3. `recipeOwnerId` deliberately did NOT join `cannotModify(['recipeId','userId','createdAt'])`.
+   `cannotModify` is `!diff(...).affectedKeys().hasAny(fields)`, and a legacy row takes the
+   field from absent to present on its first re-rate, so pinning it would have refused every
+   existing rating's update. The field therefore stays mutable and forgeable — named as a
+   residual, not closed, since closing it needs the rule to `get()` the recipe.
+
+Null handling was the one real trap in the Dart half: `'f' in request.resource.data` is TRUE
+for an explicit null, and `isNotBlockedBy(null)` breaks the helper's string concatenation, so
+writing null converts a skipped gate into a hard failure. The key is omitted instead
+(`'recipeOwnerId': ?recipeOwnerId` — the null-aware map entry the repo's lint requires over
+an `if`), and a Dart case asserts ABSENCE rather than non-nullness.
+
+Probes, all run and all reddening the predicted case: deleting the new update conjunct flips
+the update DENY to ALLOW; deleting the `!('f' in ...) ||` hatch on each of the three limbs
+flips that limb's absent-field ALLOW to DENY (the update one additionally reddens the
+pre-existing "owner can update rating/review" case, whose seed carries no owner — consistent).
+Dart: deleting the map key reddens only the stamping case, and the absence case stays green by
+design. The service-layer wiring got its own pin and its own probe, because the repository
+test cannot see it — the module's existing fixture had the recipe's owner EQUAL to the rater's
+uid, so a wiring that passed the rater's own uid would have satisfied it; the new case uses a
+recipe owned by somebody else. Adding the named parameter also silently un-matched nine
+mocktail stubs in `recipe_rating_system_test.dart` (four tests red), the documented
+signature-change trap.
+
+One probe run came back INVALID rather than red or green: a parallel `flutter test` in another
+session collided on `build/test_cache`, and the `PathExistsException` prints in the same place a
+compile error would. Re-run, not read.
+
+---
+
+## 2026-09-11 — BUT-2000 follow-up: three more zone-less routes into the Art. 15 bundle
+
+`export_metadata.timezone` ships UNCONDITIONALLY as
+`'UTC (all timestamps in this export end with Z)'`. A commit-gate integration review found
+three routes that made that sentence false. All three were verified in the code before
+fixing; none of them passes a Firestore `Timestamp` at any point, which is why the
+`sanitizeForJson` Timestamp arm — the thing every previous pass graded — never ran.
+
+1. **family** — `family_export_manager.dart` serialises MODELS
+   (`d.toJson()` / `r.toJson()`), not documents. `DinerProfile.toJson` emits
+   `createdAt`/`updatedAt` and `guardianConsent.at`, `FamilyRating.toJson` emits
+   `createdAt`/`lastUpdatedAt`, each `toIso8601String()` on a `DateTime` that
+   `SerializationUtils.parseDateTimeValue` built from `Timestamp.toDate()` — which is LOCAL.
+   (`UserAllergenPreferences` was checked and carries no instant, so the five paths are the
+   whole set.)
+2. **messages** — `conversation_info` ships the conversation document, and
+   `_redactOtherParticipants` KEEPS the requester's own `perUserSettings` entry by decision
+   (BUT-1774). `conversation_action_operations.dart` writes `pinnedAt` / `archivedAt` as
+   `clock.now().toIso8601String()` — a service writing a local string straight into a map a
+   privacy decision deliberately preserves.
+3. **recipes** — `RecipeUnified.toFirestore()` writes its own stamps as `Timestamp`s but
+   delegates `sourceArtefact` to `SourceArtefact.toJson()`, which writes `fetchedAt` as a
+   local ISO string. So it is STORED zone-less, sitting beside two correctly-stored
+   Timestamps in the same document.
+
+**Fix** — one shared `normalizeTimestampPaths(Map, List<String>)` in
+`export_pagination_helper.dart`, run AFTER `sanitizeForJson` at the four assembly sites
+(the three above plus `exportBlocks`, whose bespoke block was folded into it so one
+mechanism carries the job). Dot-separated key paths, so it rewrites only fields a section
+NAMES: a recursive rewrite of every date-shaped string would also rewrite user content that
+merely looks like a stamp, which is exactly why `sanitizeForJson` leaves strings alone. It
+replaces only what `sanitizeTimestamp` can render, so an unrecognised value is left as
+stored rather than nulled. Not fixed in the models: `toJson()` is also the local-cache and
+Firestore write format, so changing it there is a migration.
+
+**Why the test was green before.** The BUT-2000 walker
+(`data_export_service_test.dart`) decodes the bundle and asserts no ISO-lead string lacks a
+zone — but it passes on a bundle holding no such stamp at all. Its `setUp` injected
+`_emptyFamilyHouseholdRepo()`, so the family section contributed nothing, and no fixture
+seeded a conversation with `perUserSettings` or a recipe with `sourceArtefact`. The walker
+was grading the diff, not the claim. All three are now seeded as their real writers write
+them — local ISO STRINGS, never `Timestamp`s, which would exercise a branch the field never
+takes — and all eight new paths are in the `containsAll` anti-vacuity list so a dropped seed
+reddens. The family seed needed its own service instance: `setUp`'s construction was
+extracted to a `buildService({household, diners, ratings})` local so one test can populate
+the household without changing what the other tests in the group export.
+
+Same fixture defect one file over: `social_export_manager_test.dart`'s blocks case seeded
+`blockedAt` as `DateTime.utc(...)` while `BlockRecord.toFirestore()` stores a String, so the
+normalisation branch was unexercised in its own suite while the test read as covering the
+field. Now a local ISO string, asserted against `.toUtc().toIso8601String()` — which
+discriminates even on a UTC machine, since only the expected side carries `Z`.
+
+**Mutation probes, one route at a time** (a combined probe masks whichever route the fixture
+forgot). Each disabled exactly one call by passing `const []`, anchor-count asserted at 1,
+restored from a backup in a `finally` plus signal handlers:
+
+- family -> RED, naming all five: `/family/diner_profiles[0]/{guardianConsent/at,createdAt,
+  updatedAt}` and `/family/family_ratings[0]/{createdAt,lastUpdatedAt}`.
+- messages -> RED, naming
+  `/messages/conversations[0]/conversation_info/perUserSettings/user-123/{pinnedAt,archivedAt}`.
+- recipes -> RED, naming `/recipes/recipes[0]/data/sourceArtefact/fetchedAt`.
+
+The probe script's own `restored md5 matches original` line printed False on the recipes run.
+That was the SCRIPT, not the restore: it compared an md5 of a text-mode read (CRLF
+normalised to LF by Python) against the bytes on disk, and `content_export_manager.dart` is
+CRLF where the other two files are LF. Settled against git instead — the three anchors are
+back verbatim and no `.probe-backup` file survives.
+
+`dart analyze --fatal-infos` clean over `lib/services/account/export/` and
+`test/unit/services/account/`; `dart format` reports 0 changed;
+`flutter test test/unit/services/account/` is 345/345, the same tally as before the change.

@@ -6,7 +6,7 @@ import 'package:butlery/repositories/firebase/firebase_data_export_repository.da
 import 'package:butlery/services/account/export/social_export_redaction.dart';
 import 'package:butlery/services/account/export/chat_group_export.dart';
 import 'package:butlery/services/account/export/export_pagination_helper.dart'
-    show ExportPaginationHelper, sanitizeForJson;
+    show ExportPaginationHelper, normalizeTimestampPaths, sanitizeForJson;
 
 /// Handles export of social data: friends, messages, shared content.
 /// Part of GDPR Article 20 (Right to Data Portability) compliance.
@@ -269,12 +269,29 @@ class SocialExportManager with SocialExportRedaction {
           });
         }
 
+        final conversationInfo = _redactOtherParticipants(
+          sanitizeForJson(convo['data']) as Map<String, dynamic>,
+          userId,
+        );
+        // The requester's OWN `perUserSettings` entry survives the redaction
+        // above by decision (BUT-1774), and `conversation_action_operations`
+        // writes both of its stamps as a local `clock.now().toIso8601String()`
+        // — no `Z`, no offset — so they reach the bundle as plain strings under
+        // a metadata line promising UTC. The uid is resolved by lookup rather
+        // than spelled into a dotted path, so the walk cannot depend on what
+        // characters a uid may contain.
+        final ownSettings =
+            (conversationInfo['perUserSettings'] as Map?)?[userId];
+        if (ownSettings is Map<String, dynamic>) {
+          normalizeTimestampPaths(ownSettings, const [
+            'pinnedAt',
+            'archivedAt',
+          ]);
+        }
+
         final conversationData = <String, dynamic>{
           'conversation_id': convo['id'],
-          'conversation_info': _redactOtherParticipants(
-            sanitizeForJson(convo['data']) as Map<String, dynamic>,
-            userId,
-          ),
+          'conversation_info': conversationInfo,
           'messages': messagesList,
           'message_count': messagesList.length,
         };
@@ -528,7 +545,16 @@ class SocialExportManager with SocialExportRedaction {
     try {
       final outgoing = await _exports.exportOutgoingBlocks(userId);
       return {
-        'outgoing_blocks': outgoing.map(sanitizeForJson).toList(),
+        // `blockedAt` is stored as a STRING by `BlockRecord.toFirestore()`,
+        // so it reaches `sanitizeForJson`'s primitive arm and would ship with
+        // whatever zone the blocking device had — under a bundle that says
+        // every stamp is UTC. Normalised here rather than in `sanitizeForJson`,
+        // which must not rewrite strings that are user content.
+        'outgoing_blocks': outgoing.map((block) {
+          final row = sanitizeForJson(block) as Map<String, dynamic>;
+          normalizeTimestampPaths(row, const ['blockedAt']);
+          return row;
+        }).toList(),
         'data_minimisation': dataMinimisation,
       };
     } catch (e) {

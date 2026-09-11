@@ -37495,3 +37495,434 @@ counterfactual about the unguarded code but is settled by arithmetic (`Infinity 
 `Infinity`), not by an unrun mutant.
 
 Verdict: pass, 0 blocking.
+
+### 2026-09-11 — BUT-2066/BUT-2035 commit-gate testing review (measurement round)
+
+Hash table at verdict time (worktree == index for all five):
+
+| file | blob |
+|---|---|
+| `lib/services/parsing/sanitizers/html_sanitizer.dart` | `0ed2ac5d` |
+| `lib/services/extraction/extractors/recipe_site_content_extractor.dart` | `3bb09ffc` |
+| `lib/services/extraction/web_scraper.dart` | `660c8830` |
+| `test/unit/services/parsing/sanitizers/html_sanitizer_test.dart` | `62957ab6` |
+| `test/unit/services/extraction/extractors/recipe_site_content_extractor_test.dart` | `b5398fca` |
+
+Baseline 99 green (96 sanitizer + 3 extractor).
+
+**The brief's question: "deleting the `break` at html_sanitizer.dart:151 leaves all 96 green
+while the ~1s regression returns" (the `code-reviewer`'s claim). REFUTED on both halves.**
+
+- M1 `break;` deleted → **95 +1 -1, reproducible over two runs.** Killer:
+  `check() classifies up to the cap, then emits ONE aggregate warning`, `Expected: <1001>
+  Actual: <1002>`. Cause: the cap block has no `continue`, so without the `break` the 1001st
+  tag FALLS THROUGH to `isJsonLdScriptOpeningTag` and emits its individual warning too — two
+  issues from one tag. The red grades the double-emission, NOT the halt.
+- M2 `break;` → `continue;` → **96/96 GREEN, both runs.** This is the real coverage hole: the
+  iteration halt is unpinned. Measured counts (scratch probe, HEAD vs M2):
+  1001 tags → 1001 / 1001 (identical — the shipped fixture sits exactly on the blind spot);
+  1002 tags → 1001 / 1002; 1005 tags → 1001 / 1005.
+- **Cost of M2 measured, because the brief asserted it:** `check()` over 266 000 `<script type=a>`
+  tags (3 990 000 bytes). HEAD 158 ms / 1001 issues; M2 179 ms / 266 000 issues. So the halt is
+  worth ~21 ms and 265k object allocations — NOT the ~1008 ms. The ~1 s is bought by the cap
+  SKIPPING `isJsonLdScriptOpeningTag`, which M2 preserves and which the existing tests do pin.
+  The production comment at :130-135 is consistent with this (it calls the fragment parse "the
+  expensive part"); the brief's consequence sentence was the false one.
+- **Consequence for BUT-2075: a `Stopwatch` pin modelled on the file's own
+  `lessThan(1000)` precedent would be VACUOUS for this mutant (179 ms < 1000 ms).** The cheapest
+  honest pin is a COUNT, not a clock: raise the existing fixture from 1001 to ~1005 tags and keep
+  `issues.length == 1001`. Measured to kill M2 (1005 vs 1001) and still kill M1 (fallthrough
+  doubles it further).
+
+Other probes, each its own Bash call, all restored with `git show :<path>`:
+- M3 `>` → `>=` on the cap comparison → kills T1 and T2. Confirms
+  `check() does NOT aggregate when the tag count sits exactly at the cap` is a genuine boundary
+  pin (its LENGTH assertion survives; the `any(... 'Many script tags')` isFalse is the killer).
+- M4 sanitize-side cap → 2 → kills `should preserve multiple JSON-LD blocks`,
+  `these decoy attributes do NOT exempt a script`, `an ordinary page (tens of scripts)…`.
+  **Does NOT kill `sanitize() still preserves JSON-LD sitting WITHIN the cap`** — its JSON-LD
+  block is the FIRST script in the fixture (`'$withinCap${_repeatedScriptTags(998)}'`), so it is
+  check #1 and survives a 500x cap reduction. The test's NAME claims a boundary property its
+  fixture does not exercise; T5 ('ordinary page', JSON-LD at position 25) is what actually holds
+  the position-within-cap behaviour.
+- M5 (extractor): replaced the live `Array.from(document.querySelectorAll('script')).filter(...)`
+  with a dead `getElementsByTagName('nope')` and left the original text in a `//` comment →
+  **3/3 GREEN.** Demonstrated false green, not hypothesised: the suite reads raw source text
+  including comments, so one "keep the old approach as a note" edit retires BUT-2035's only pin.
+  The repo principle for this already exists (strip comments first, blanking to the same LENGTH
+  so `indexOf` offsets in `stripped` match `raw` — BUT-1946); this file predates applying it.
+
+**Fourth false comment claim (three were struck earlier in the round), extractor test header:**
+"The real JS semantics (media-type splitting) were hand-verified against a real Node engine with
+a stubbed `document` during BUT-2035's build." `grep isJsonLdType` over everything outside `lib/`
+returns exactly one file — this test. No Node harness, fixture or script records that run. It is
+the history-claim class (`tasks/lessons.md`, BUT-2044) AND a coverage pointer, i.e. the sentence
+a later run cites to skip building the real pin. Strike, do not reword.
+Weaker sibling, same class: the test NAME `an ordinary page (tens of scripts) behaves exactly as
+before the fix` asserts equivalence to code that is no longer present and cannot be measured.
+
+Instrument note: every restore used `git show :<path> > tmp && cp tmp <path>`, verified with
+`git diff --numstat` empty plus worktree-hash == index-hash. Three scratch `_zz_probe_*_test.dart`
+files were used for the count/timing measurements and deleted.
+
+### 2026-09-11 — BUT-2066/BUT-2035 re-review round (fixes verified on the shipping bytes)
+
+Re-keyed ledger. Production blobs UNCHANGED from round 1 (`0ed2ac5d`, `3bb09ffc`, `660c8830`);
+both test files moved: `html_sanitizer_test.dart` `62957ab6` → `ed7526b4`,
+`recipe_site_content_extractor_test.dart` `b5398fca` → `bd7f1b99`. index == worktree for all five.
+
+Every probe claim in the fix report was RE-RUN rather than taken (a reviewer/coordinator agreeing
+is not a measurement):
+
+- M2 `break` → `continue` against the raised 1005-tag fixture → **+95 −1**,
+  `Expected: <1001> Actual: <1005>`. BUT-2066's deliverable is pinned for the first time.
+- M1 `break` deleted, re-run against the SAME raised fixture → **+95 −1**, `Actual: <1010>`.
+  Checked deliberately: raising a fixture to catch a new mutant can trade away the kill it
+  already had. It did not — both mutants die on one assertion.
+- M5 (live gather moved into a `//` comment) against the comment-blanking `setUpAll` → **+2 −1**,
+  killer `does not gather scripts by an exact type= attribute match`. Was 3/3 GREEN before.
+  Note the other two tests stay green under M5 and correctly so — their anchors
+  (`isJsonLdType`'s body, the for/try/catch structure) are untouched by that mutant.
+  **Reading-the-output note:** the fix report pasted `+0 -1: the predicate splits…` /
+  `+1 -1: each script's WHOLE body…` and those are NOT the failures — `flutter test` prints the
+  cumulative tally beside the test currently STARTING, so the failing test is the one BEFORE the
+  first line whose `-N` increments. Only the `[E]`-marked line names a failure. Same final tally,
+  different test named; grep `\[E\]` rather than reading the names off the running lines.
+
+Comment-blanking implementation graded: blanks from the first `//` on each line, substituting
+spaces so `raw.length == source.length`, with `expect(source.length, raw.length)` in `setUpAll`
+pinning that. Correct, and necessary because test 3 compares `indexOf`/`lastIndexOf` OFFSETS.
+Measured today: the production file contains no `//` outside line comments, so nothing blanks a
+live anchor. Residual is in the SAFE direction — a future `//` inside a JS string literal (a URL)
+would blank an anchor and produce a false RED against correct code, never a false green.
+
+Surviving defect, non-blocking, reported: the raised fixture's rationale comment is a botched
+strike — "Past the cap the tags must not get / its own individually-parsed classification."
+The old sentence's singular subject ("the 1001st") was replaced with a plural while "its own"
+survived. Not FALSE (tags past the cap genuinely must not each be classified), just incoherent,
+and it is the exact "sentence left STANDING by a strike inherits a subject" shape. Repair is to
+delete the trailing clause; the two measured sentences before it are accurate and earn their place.
+
+### 2026-09-11 — BUT-2066 third round: a GATE's arithmetic refuted by measurement
+
+Ledger re-keyed again. `html_sanitizer.dart` `0ed2ac5d` → `cf22efde`,
+`html_sanitizer_test.dart` `ed7526b4` → `342c24fa`; other three unchanged. index == worktree
+for all five. Both struck strings verified absent from worktree AND index (0/0). Suites 99/99.
+
+Both strikes are clean deletions with no replacement prose — correct per the repo's
+"a correction may only DELETE" rule, and the botched-strike fragment I filed is gone.
+
+**The integration gate's justification for the SECOND strike is FALSE, measured.** It costed a
+"minimal closed `<script type=a></script>`" at ~24 bytes, multiplied by 266,000 to 6.38 MB, and
+concluded the 266k case cannot reach the loop because `check()`/`sanitize()` bail at 5 MB.
+That is true of THAT SHAPE ONLY. Measured (scratch probe, `check()` over 266,000 repetitions):
+
+| unit | bytes | total | over guard | issues | loop reached |
+|---|---|---|---|---|---|
+| `<script></script>` | 17 | 4 522 000 | no | 1001 | YES |
+| `<script>` | 8 | 2 128 000 | no | 1001 | YES |
+| `<script type=a>` | 15 | 3 990 000 | no | 1001 | YES |
+| `<script type=a></script>` | 24 | 6 384 000 | YES | 1 | no |
+
+The MINIMAL closed script tag is `<script></script>` (17 B), not the gate's 24 B — it added a
+`type=a` attribute and then reasoned from that as if it were the floor. And the cap counts
+OPENING-TAG MATCHES, so a closer is not required at all. The original BUT-2066 report's own
+figures corroborate the reachable reading: ~4 MB at 266k tags is ~15 B/tag, i.e. exactly
+`<script type=…>` — the shape the surviving first paragraph of the doc comment describes.
+
+**Nothing false SHIPS**, so this was filed non-blocking: the comment now ends at "1000 is ~9x
+that measured worst case", which is true, and the deletion cost information rather than adding
+error. Restoring prose would be a fresh claim needing its own measurement, so the repair belongs
+in the ticket, not the file.
+
+**The live risk this creates, and why it was worth a probe:** the doc comment's FIRST paragraph
+still says a page carrying hundreds of thousands of `<script type=…>` tags cost ~1 s. If the
+gate's premise were sound, that sentence would be false too and would have to go in the next
+round — on arithmetic I have now measured as wrong. The surviving TRUE sentence is itself the
+tell that the strike was misjudged: a sound refutation of "the 266k case" would have taken both.
+Flagged so nobody strikes it later citing this round.
+
+Instrument note: the gate's error is the recurring "a reviewer's measurement is as falsifiable as
+a comment, and it propagates before it is checked" shape — here it reached a code strike and was
+on its way into a ticket. The generalisable check is to ask what the quantifier RANGES OVER: the
+claim was about "a 266k-tag page", the evidence was about one hand-chosen tag spelling, and the
+floor of the range is what decides reachability.
+
+### 2026-09-11 — BUT-2000 / BUT-2055 commit-gate TESTING review (export timestamps)
+
+Trigger: commit-gate testing review of 8 staged files. BUT-2000 routes every export timestamp
+through a new `sanitizeTimestamp(dynamic)` that renders UTC; BUT-2055 pins a key name inside the
+bundle's `data_minimisation` prose.
+
+Host offset +02:00 (W. Europe Standard Time), so `.toUtc()` mutants are observable here.
+Baseline: 159 green over the three staged suites; 340 green over `test/unit/services/account/`.
+
+Mutants (each in its own Bash call; restore via `git show :<path> > tmp && cp`, verified with
+`git hash-object` vs `git ls-files -s` on all 8 reviewed paths):
+
+- **M1** drop `.toUtc()` from all three branches of `sanitizeTimestamp`. RED, 3 tests. The
+  BUT-2000 walker names 5 of its 7 `containsAll` paths, each with its value:
+  `/export_metadata/export_date`, `/consent_records/consent_history[0]/timestamp`,
+  `/notifications/notifications[0]/created_at`, `.../read_at`,
+  `/blocks/outgoing_blocks[0]/blockedAt`. The two `/profile/firebase_auth/*` paths do NOT appear
+  — `_FakeUserMetadata` returns `DateTime.utc(...)`, matching the production comment that
+  `UserMetadata` builds both stamps with `isUtc: true` (verified in
+  `firebase_auth_platform_interface-*/lib/src/user_metadata.dart:22,32`). All three branches
+  (Timestamp / DateTime / String) are witnessed by a distinct path.
+- **M2** delete the `blocks` seed from the test. RED: `containsAll` reports "has too few elements
+  (6 < 7)" and names the missing path. The anti-vacuity guard works in both directions.
+- **M3** rename the production key `chat_groups_error_code` -> `chat_groups_failure_code`,
+  leaving the prose. RED, 2 tests — both KEY assertions. So the BUT-2055 comment's clause
+  "and the key assertion on its own does not see that" is FALSE; that mutant is exactly what the
+  key assertion does see.
+- **M4** reword the prose to drop the literal key name, leaving the key. RED, exactly 1 test —
+  the new BUT-2055 assertion. The pin is non-vacuous and uniquely covers prose drift. Note M3 and
+  M4 are NOT disjoint through one test: in `a chat-groups-only failure…` the key assertion runs
+  before the prose assertion, so M3 masks the prose assertion entirely. Only M4 grades it.
+- **M5** revert ONLY `sanitizeForJson`'s Timestamp/DateTime branches to the pre-BUT-2000
+  zone-less form, keeping `sanitizeTimestamp` correct. GREEN twice over
+  `test/unit/services/account/` (340/340). Suites grepped for the symbol first
+  (`sanitizeForJson|export_pagination_helper` -> 7 test files, all inside that directory plus
+  `architecture_test.dart`). Cause: every stamp fixture in `export_pagination_helper_test.dart`
+  is `DateTime.utc(...)` / `Timestamp.fromDate(DateTime.utc(...))`, for which `.toUtc()` is the
+  identity, and the Timestamp case asserts only `isA<String>()`.
+- **M6** replace the compliance audit-log site `sanitizeTimestamp(r['timestamp']) ?? r['timestamp']
+  ?? 'unknown'` with the literal `'MUTANT-M6'`. GREEN twice over the same 340. Every audit-log
+  fixture in the repo supplies an already-`Z` string and nothing asserts the exported value.
+
+String-branch behaviour, measured with a scratch `_zz_probe_test.dart` (deleted afterwards):
+`'2026-05-06'` -> `'2026-05-05T22:00:00.000Z'`; `'20260506'` -> same; `'…T09:00:00.000Z'`
+unchanged; `'…T09:00:00.000'` -> `'…T07:00:00.000Z'`; `'…+05:00'` -> `'…T04:00:00.000Z'`;
+`'inte ett datum'`, `''`, `'2026'`, `'2026-05'`, `'Svartkål 2026-05-06'`, `null`, `5` -> null.
+So a bare date becomes a midnight instant AND moves to the previous calendar day in the printed
+text. Reachability: `BlockRecord.toFirestore` writes `clock.now().toIso8601String()` (full
+date-time) and `functions/src/exports/audit-logs.ts:137` writes `.toISOString()`, falling back to
+a stored string at :138 — so no identified writer emits a date-only string and no fixture seeds
+one. Residual is a hand-rolled client. Direction note: before this change those String values hit
+`.toDate()` and threw `NoSuchMethodError`, failing the section loudly; now they render silently.
+
+Findings filed (3 blocking): (A) strike "Seeded to reach every formatting route: `sanitizeForJson`'s
+generic walk, the hand-written per-field sites in PreferencesExportManager and
+ComplianceExportManager, and the STRING-valued route below." — two of the three named routes are
+reached by no seed (M5, M6). (B) strike "and the key assertion on its own does not see that" (M3).
+(C) close the `sanitizeForJson` gap with a non-UTC fixture in `export_pagination_helper_test.dart`,
+and give `sanitizeTimestamp` — zero `grep` hits in `test/` — its own direct cases, the null-returning
+arm included.
+
+Confirmed by construction for the reviewer's question 3: nothing would catch a future MODEL
+reintroducing a zone-less string in an exported section. The walker judges only what its one
+fixture seeds and its `containsAll` is a fixed 7-path literal derived from nothing. Cheapest guard
+named but NOT built: a comment-stripped source census over `lib/models/*.dart` requiring every
+`toIso8601String()` call site to be spelled `.toUtc().toIso8601String()` or sit on an allowlist,
+in the shape of `rules_allowlist_drift_test.dart`.
+
+Instrument note: M3/M4 is the cleanest recorded case of the "two mutants hitting one test through
+different assertions are non-disjoint" rule — `expect` stops at the first failure, so the mutant
+that looks like the obvious grade for a pin can be the one that hides it.
+
+### 2026-09-11 — BUT-2000 / BUT-2055, re-review round (fix verification)
+
+Trigger: coordinator reported all three blocking findings fixed and re-staged; staged set grew
+from 8 to 11 (`export_pagination_helper_test.dart` plus these two knowledge files).
+
+Motion check: worktree == index on all 11. The five PRODUCTION blobs are BYTE-IDENTICAL to the
+ones graded in the round above (`2c081d6`, `1a72589`, `9861874`, `af73ad4`, `598360c`), so every
+mutant from that round stays valid and none needed re-running for staleness. Isolate-diffs against
+the blobs I graded show the two comment fixes are PURE DELETIONS — no replacement prose — and the
+new file's change is the header strike plus five cases and nothing else.
+
+Re-measurement (the point of the round):
+
+- **M5 re-run.** The exact mutant that was GREEN 340/340 in the round above — revert only
+  `sanitizeForJson`'s Timestamp/DateTime branches — is now **RED, 2 tests**, one per branch
+  (`converts a LOCAL DateTime to UTC…`, `converts a LOCAL Timestamp to UTC`). Finding C is closed
+  by measurement, not by report.
+- **M7, new.** `.toUtc()` removed from the **String branch ALONE** (the coordinator's probe removed
+  it from all three at once, which is the non-disjoint shape). RED, 2 tests: the bundle walker via
+  `/blocks/outgoing_blocks[0]/blockedAt`, and the new direct `reads a zone-less string as local…`.
+  So each of the three branches is independently graded.
+
+Fixture-hollowing analysis the probes do not show, done by substitution rather than by running:
+the two new `sanitizeForJson` cases are HOST-INDEPENDENT. On a UTC runner, `DateTime(2026,1,1,9)`
+still has `isUtc == false`, so the mutant prints no `Z` while the computed expectation does — the
+kill comes from the `Z`, not from the offset. The `expect(local.isUtc, isFalse)` premise guards a
+different hazard, correctly stated in its own `reason`: a later tidy changing the fixture to
+`DateTime.utc(...)` would make `toIso8601String()` emit `Z` on its own and hollow the case. Its
+absence on the `Timestamp` sibling is RIGHT, not an oversight — `Timestamp.toDate()` returns a
+local `DateTime` whatever the fixture was built from, so that branch's `.toUtc()` is load-bearing
+unconditionally and no fixture tidy can hollow it.
+
+`leaves a string that already carries Z alone` kills no `.toUtc()` mutant and does not claim to:
+`tryParse('…Z')` yields a UTC `DateTime`, so with or without `.toUtc()` the output is identical.
+It is an idempotence pin; its name says exactly that.
+
+Still unpinned, and NOT escalated because it was never filed as blocking — the same non-blocking
+residual as the round above: the compliance audit-log CALL SITE. M6 (replace the whole
+`sanitizeTimestamp(..) ?? raw ?? 'unknown'` expression with a literal) was green then and nothing
+this round targets it. What changed is that the helper's contract is now pinned directly, so a
+future edit to that line breaks a documented contract rather than an undocumented one.
+
+One new NON-BLOCKING finding, the same class as the two struck: the file header's colon-list
+("Covers the pure pieces … : [sanitizeForJson] … and ExportPaginationHelper.getLimitForType")
+reads as exhaustive and omits `sanitizeTimestamp` and the pre-existing `fetchCapped` group. The
+count word was struck correctly; the LIST is the same claim in another shape. Remedy is a strike
+of the colon-clause, never a re-enumeration. Left open deliberately: it UNDER-claims coverage, so
+its failure mode is a duplicate test rather than a skipped one, and a round spent on it is the
+correction chain the strike rule exists to stop.
+
+Instrument note for the round above: its own entry records M5 as "GREEN twice … (340/340)". That
+is correct as the record of those bytes and must not be edited — but it is exactly the
+"a mutation probe has an EXPIRY DATE" shape from BUT-2067, arriving one day later from the other
+direction: there a probe was invalidated by a new guard making it green, here by a new fixture
+making it red. Both mean the same thing — a probe result is a claim about a tree, not about a
+line. The stale `340` was struck from the principle above for the same reason.
+
+### 2026-09-11 — BUT-2000 / BUT-2055, third round (the integration gate's three routes)
+
+Trigger: the integration gate acted on my round-1 answer to "would anything catch a future model
+reintroducing a zone-less string" — the answer was no, and it turned out not to be a FUTURE risk:
+three such routes already existed (family via `toJson()` models, `recipes` via
+`sourceArtefact.fetchedAt`, `messages` via `perUserSettings.<uid>.pinnedAt`/`archivedAt`). All
+three routed through a new shared `normalizeTimestampPaths(row, paths)` and all three seeded, and
+the `containsAll` list grew from 7 to 15 paths.
+
+Motion: 4 of 9 previously-graded blobs moved, 3 files new to the set (`lib/models/audit_log.dart`,
+`content_export_manager.dart`, `family_export_manager.dart`). `preferences_export_manager.dart`,
+`compliance_export_manager.dart`, `data_export_service.dart`,
+`preferences_export_manager_test.dart` and `export_pagination_helper_test.dart` UNMOVED, so their
+round-2 grading stands. Both knowledge files staged byte-identical to what I wrote in round 2.
+
+**The finding: the path list and the fixture form a closed loop that certifies itself.**
+`content_export_manager.dart` normalises `const ['sourceArtefact.fetchedAt']` and the new fixture
+seeds exactly that field. Measured: `RecipeUnified.toFirestore()` line 736 calls
+`tagResult?.toFirestore()` (writes `Timestamp.fromDate`), line 738 `heirloom?.toFirestore()`
+(same) — and line 737 calls `tagOverrides?.toJson()`, because `TagOverrides` has no
+`toFirestore()` at all. `tag_overrides.dart:203` writes `lastEditedAt!.toIso8601String()` on a
+`DateTime` set from `clock.now()` at SEVEN mutator sites (112/127/139/151/165/179/187), driven by
+`TagEditingService` from the recipe-detail and edit-recipe views. So any user who has edited a
+recipe's tags ships a zone-less stamp under the metadata line promising `Z`.
+
+Proven twice, the second time through the production path: a scratch probe over the section's own
+`sanitizeForJson` + `normalizeTimestampPaths` call printed
+`ZONED /sourceArtefact/fetchedAt` beside `ZONELESS /tagOverrides/lastEditedAt`; then a TEST-side
+mutation seeding the field the way its writer stores it made the ticket's own walker name it:
+`Actual: ['/recipes/recipes[0]/data/tagOverrides/lastEditedAt = 2026-02-09T10:00:00.000']`.
+Test-side mutation is the right instrument here — the defect is an ABSENT list entry, and no
+`lib/` mutant can express a missing string.
+
+Three candidate findings WITHDRAWN before filing, each by one measurement — recorded because the
+withdrawals are the discipline, not the leftovers:
+- `heirloom.addedAt` looked zone-less in my scratch probe. That was MY OWN seeded string used as a
+  control; `heirloom_metadata.dart:98` writes `Timestamp.fromDate(addedAt)`. Not a defect. A probe
+  output cannot distinguish a control arm from a result — label them in the probe itself.
+- A twin loop in `exportRecipes` with no normalisation: there is no twin. Lines 188/202 of
+  `content_export_manager.dart` are `exportMenus`, a different method.
+- `tagResult.generatedAt`: `tag_result.dart:451` writes a Timestamp.
+
+Census run read-only while grading: 47 `toIso8601String()` call sites in `lib/models/` without
+`.toUtc()`. Most are cache-only `toJson()`s that never reach a bundle, but the number is why the
+`lib/models/` source census is the real close and why a per-field list is a stopgap. It is on
+BUT-2000 as the follow-up (Linear's issue limit is exhausted, so it is a comment there).
+
+Also graded this round: the `setUp` extraction to `buildService(...)` is scoped as reported — only
+the three family seams are parameters and every other test keeps the empty household repo; the
+blocks fixture now seeds `blockedAt` as a local ISO STRING with the expectation computed via
+`.toUtc()`, which finally makes the string branch killable in the suite that owns it; and the
+`audit_log.dart` comment change strikes a false usage pointer (`AuditLog.toJson()` has zero
+callers in `lib/`).
+
+Rot hazard created by the fix I am asking for: the fixture comment says "The three routes BUT-2000
+closed second". Adding `tagOverrides.lastEditedAt` makes that numeral false, so it is struck in
+the same edit.
+
+### 2026-09-11 — BUT-2000 / BUT-2055, fourth round (frozen index, finding closed)
+
+Index confirmed against the blobs the coordinator named: `content_export_manager.dart`
+= `c070257da`, `data_export_service_test.dart` = `75d4edf28`. Whole reviewed set worktree ==
+index at grading time.
+
+My round-3 blocking finding is closed in both halves, reproduced INDEPENDENTLY rather than
+accepted:
+
+- **P1** (= the coordinator's probe, re-run by me): remove the two `core.*` spellings. RED, naming
+  `/recipes/recipes[0]/data/core/sourceArtefact/fetchedAt` and
+  `/recipes/recipes[0]/data/core/tagOverrides/lastEditedAt`, byte-identical to what was reported.
+- **P2** (NOT run by them): remove the two FLAT spellings. RED, naming ONLY
+  `/recipes/recipes[1]/data/sourceArtefact/fetchedAt`. So the legacy half IS pinned, and — the
+  reason to run it — the flat `tagOverrides.lastEditedAt` entry contributed nothing, because the
+  legacy seed carries no `tagOverrides`. That entry is deletable-green: the round's own recurring
+  shape (a list entry no seed exercises) surviving in its fourth instance, now as an unpinned
+  CORRECT entry rather than a missing one. Filed non-blocking with a 4-line remedy.
+
+Verified rather than assumed: the new comment's `fromMap` is a real method
+(`recipe_serialization.dart:59`, whose line 61 `data['core'] ?? data` is what makes the flat shape
+legacy), so the method name in the rationale is right. The struck numeral leaves
+"The routes BUT-2000 closed second. Each is a stamp a MODEL or a service wrote…" which reads
+correctly standing alone and now quantifies over the list below it. `recipes[0]`/`recipes[1]`
+ordering rests on the implicit `__name__` ascending order (`zone-recipe` < `zone-recipe-legacy`) —
+a third seed would shift indices and redden LOUDLY, so it is acceptable rather than fragile.
+
+**Instrument lesson, new and worth the entry: an AGGREGATING assertion is immune to mutant
+masking.** The walker collects every zone-less stamp into a list and asserts `isEmpty`, so a
+two-entry mutant prints both paths with their values. That is the exception to this file's
+"grouped mutants can mask" rule — which held in the SAME change for the key/prose pair, where
+`expect` stopped at the first failure and the key mutant hid the prose assertion entirely. One
+file, both behaviours, so the discriminator is the assertion SHAPE, not the mutant.
+
+**Process, recorded because it cost a round:** the tree moved under me twice. The second time the
+worktree diverged mid-refactor while the index stayed frozen — a half-landed extraction
+(`normalizeRecipeDocumentStamps`) made the whole suite fail to LOAD, which prints as
+`loading … [E]` and reads like a broken fixture rather than a moving tree. The tell was an
+undefined-method error, not an assertion. My probe scripts' `assert count(old) == 1` refused to
+land on the changed bytes, and restoring from a backup captured moments earlier clobbered nothing
+(verified by hash). **A `loading … [E]` on a suite that was green minutes ago is a TREE question,
+not a test question — measure `git hash-object` vs `git rev-parse :<path>` before debugging it.**
+
+The in-flight refactor also reveals a FOURTH route, unstaged and outside this review:
+`realtime_recipes` embeds a whole serialised recipe under `recipe`
+(`serializeRealtimeContent`), carrying the same zone-less stamps one level deeper. It owes a seed
+of its own or the shape repeats a fourth time.
+
+### 2026-09-11 — BUT-2000 / BUT-2055, fifth round (shared helper + realtime route)
+
+The refactor I flagged mid-flight last round landed: one `normalizeRecipeDocumentStamps(row,
+{prefix})` serving the personal subcollection (`''`) and `realtime_recipes` (`'recipe'`), plus a
+new `normalizeTimestampMapValues` for the uid-keyed `realtimeData.lastSeenAt`. `containsAll` is
+21 paths.
+
+Two probes nobody had run:
+- **P4** — delete the `normalizeTimestampMapValues` call inside the shared helper. RED, naming
+  BOTH `lastSeenAt` paths (`/recipes/recipes[0]/…` and
+  `/realtime_recipes/realtime_recipes[0]/data/recipe/…`). The new helper is pinned at BOTH
+  prefixes, not just one — the thing a shared-helper refactor can silently lose.
+- **P5** — neuter the `prefix` parameter (`p = ''`) instead of deleting a call site. RED, naming
+  exactly the three REALTIME paths while every personal path stays green. That is the probe that
+  proves two call sites are genuinely distinguished; deleting a call site cannot show it.
+
+**Completeness of the recipe field list, established by ENUMERATION rather than by what a gate
+found** — every nested serialiser `RecipeSerialization.toFirestore` reaches:
+`core.sourceArtefact.toJson()` (covered), `core.tagOverrides.toJson()` (covered),
+`core.tagResult.toFirestore()` / `core.heirloom.toFirestore()` (Timestamps),
+`core.nutritionInfo.toFirestore()` / `core.structuredIngredients[].toJson()` /
+`core.personalTags[].toMap()` (no stamps — note `RecipePersonalTag.toMap` is a DIFFERENT class
+from the zone-less `PersonalTag.toJson`, which belongs to the `personal_tags` SECTION and the
+census), `socialData.toJson()` (no stamps), `realtimeData.toJson()` (both covered),
+`offlineData` (excluded from Firestore by the writer). `realtimeData` is a SIBLING of `core`, so
+its paths correctly carry no `core.` prefix — verified at `recipe_serialization.dart:53`, and
+`serializeRealtimeContent:19` confirms the `recipe` nesting the `prefix` spells.
+
+Sixth-round delta was comment-only, proven mechanically: stripping `//` comments and blank lines
+from both blobs (`a449e8b2d` vs `cee2556f4`) leaves them byte-identical, so P1/P2/P4/P5 carry over
+without re-running. The strike removed a block whose count had gone stale as the helper grew and
+which attributed `realtimeData` to `RecipeCore.toFirestore` (wrong writer); the "both spellings"
+rationale it also removed was TRUE but had migrated into the helper's own docstring, so no fact
+was lost — check that before accepting a strike of a true sentence.
+
+`ACCEPTED_LARGE_FILES.md`: the staged copy changes exactly ONE row (`content_export_manager.dart`
+678 -> 679) and the staged blob is 679 lines. An earlier staged version also carried a
+`firebase_ratings_repository.dart` row for a file NOT in this commit; rebuilding the doc from HEAD
+removed it. **A shared derived-value table is a cross-cluster contamination surface** — grade its
+rows against the STAGED blobs, not the worktree. Residual, non-blocking and reported: the
+`social_export_manager.dart` row says 590 against a staged 677 (it was 651 at HEAD, so already
+stale; this commit enlarges it while correctly refreshing three neighbouring rows) — the
+"sweep the whole file, not the diff-adjacent region" failure in a table.

@@ -1564,6 +1564,16 @@ void main() {
           result['data_minimisation'],
           contains('could not be read on this export'),
         );
+        // BUT-2055. The note points the subject at a sibling key by NAME. The
+        // key assertion above and this one are one requirement in two halves:
+        // renaming the key while leaving the prose sends the reader of an
+        // Art. 15 bundle to a field the bundle does not carry.
+        expect(
+          result['data_minimisation'],
+          contains('chat_groups_error_code'),
+          reason:
+              'the prose names the key, so the two must be renamed together',
+        );
       },
     );
 
@@ -1887,14 +1897,18 @@ void main() {
   group('SocialExportManager.exportBlocks (BUT-1438/BUT-2018)', () {
     test('includes the blocks you placed, sanitized for JSON', () async {
       // Unlike other record types, blocks pass the whole raw map through
-      // sanitizeForJson with no id/data envelope. Including a DateTime proves
-      // sanitization actually ran (it must become an ISO-8601 string) — not
-      // just that the value was forwarded unchanged.
-      final blockedAt = DateTime.utc(2026, 1, 2, 3, 4, 5);
+      // sanitizeForJson with no id/data envelope.
+      //
+      // BUT-2000: seeded as `BlockRecord.toFirestore()` stores it — a LOCAL
+      // `toIso8601String()` string, not a `DateTime`. A `DateTime` fixture
+      // reaches `sanitizeForJson`'s own Timestamp/DateTime arm and never the
+      // string arm the normalisation exists for, so it left that branch
+      // unexercised in this suite while asserting the field was handled.
+      final blockedAt = DateTime(2026, 1, 2, 3, 4, 5);
       final manager = SocialExportManager(
         dataExportRepository: _FakeDataExportRepository(
           outgoingBlocks: [
-            {'blockedUserId': 'x', 'blockedAt': blockedAt},
+            {'blockedUserId': 'x', 'blockedAt': blockedAt.toIso8601String()},
           ],
         ),
       );
@@ -1902,7 +1916,10 @@ void main() {
       final result = await manager.exportBlocks('user-uid');
 
       expect(result['outgoing_blocks'], [
-        {'blockedUserId': 'x', 'blockedAt': blockedAt.toIso8601String()},
+        {
+          'blockedUserId': 'x',
+          'blockedAt': blockedAt.toUtc().toIso8601String(),
+        },
       ]);
       expect(
         result.containsKey('error_code'),

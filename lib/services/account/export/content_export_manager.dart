@@ -14,7 +14,7 @@ import 'package:butlery/repositories/interfaces/pantry_repository.dart';
 import 'package:butlery/repositories/interfaces/recipe_repository.dart';
 import 'package:butlery/repositories/interfaces/weekly_menu_plan_repository.dart';
 import 'package:butlery/services/account/export/export_pagination_helper.dart'
-    show ExportPaginationHelper, sanitizeForJson;
+    show ExportPaginationHelper, normalizeRecipeDocumentStamps, sanitizeForJson;
 import 'package:butlery/services/account/export/shared_shopping_list_export.dart';
 
 /// Handles export of user content: recipes, menus, shopping lists.
@@ -146,10 +146,14 @@ class ContentExportManager {
         );
         truncated = truncated || personal.truncated;
         for (final entry in personal.items) {
+          final row = sanitizeForJson(entry['data']) as Map<String, dynamic>;
+          // Normalised here rather than in the models, whose `toJson()` is also
+          // the local cache format.
+          normalizeRecipeDocumentStamps(row);
           recipes.add({
             'recipe_id': entry['id'],
             'type': 'personal',
-            'data': sanitizeForJson(entry['data']),
+            'data': row,
           });
         }
       }
@@ -572,14 +576,14 @@ class ContentExportManager {
     try {
       final recipes = await _exports.exportRealtimeRecipesByOwner(userId);
       return {
-        'realtime_recipes': recipes
-            .map(
-              (entry) => {
-                'recipe_id': entry['id'],
-                'data': sanitizeForJson(entry['data']),
-              },
-            )
-            .toList(),
+        'realtime_recipes': recipes.map((entry) {
+          // A realtime document embeds a WHOLE serialised recipe under
+          // `recipe` (`RecipeSerialization.serializeRealtimeContent`), so
+          // it carries the same zone-less stamps one level deeper.
+          final row = sanitizeForJson(entry['data']) as Map<String, dynamic>;
+          normalizeRecipeDocumentStamps(row, prefix: 'recipe');
+          return {'recipe_id': entry['id'], 'data': row};
+        }).toList(),
         'total_count': recipes.length,
       };
     } catch (e) {

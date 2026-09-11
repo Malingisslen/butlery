@@ -6,7 +6,7 @@ import 'package:butlery/repositories/interfaces/diner_profile_repository.dart';
 import 'package:butlery/repositories/interfaces/family_rating_repository.dart';
 import 'package:butlery/repositories/interfaces/household_repository.dart';
 import 'package:butlery/services/account/export/export_pagination_helper.dart'
-    show sanitizeForJson;
+    show normalizeTimestampPaths, sanitizeForJson;
 
 /// Exports the household family-rating data for GDPR Article 15/20 (BUT family
 /// Phase 5 item 14): the non-account diner profiles the user manages, plus the
@@ -72,10 +72,26 @@ class FamilyExportManager {
         'household_id': householdId,
         'diner_profiles_count': diners.length,
         'family_ratings_count': mine.length,
+        // Both sections serialise MODELS, not raw documents, and `toJson()`
+        // emits `toIso8601String()` on a `DateTime` that
+        // `SerializationUtils.parseDateTimeValue` built from
+        // `Timestamp.toDate()` — which is LOCAL, so the string carries neither
+        // `Z` nor an offset and passes through `sanitizeForJson` as a plain
+        // primitive. Normalised at this boundary rather than in the models:
+        // `toJson()` is also the local-cache and Firestore write format, so
+        // changing it there would be a migration.
         'diner_profiles': [
-          for (final d in diners) sanitizeForJson(d.toJson()),
+          for (final d in diners)
+            _utcStamps(d.toJson(), const [
+              'createdAt',
+              'updatedAt',
+              'guardianConsent.at',
+            ]),
         ],
-        'family_ratings': [for (final r in mine) sanitizeForJson(r.toJson())],
+        'family_ratings': [
+          for (final r in mine)
+            _utcStamps(r.toJson(), const ['createdAt', 'lastUpdatedAt']),
+        ],
       };
     } catch (e) {
       // Log the full error, but return a generic stable token + error_code so
@@ -88,6 +104,15 @@ class FamilyExportManager {
         'error_code': 'family-export-failed',
       };
     }
+  }
+
+  Map<String, dynamic> _utcStamps(
+    Map<String, dynamic> json,
+    List<String> paths,
+  ) {
+    final row = sanitizeForJson(json) as Map<String, dynamic>;
+    normalizeTimestampPaths(row, paths);
+    return row;
   }
 
   Map<String, dynamic> _empty(String? householdId) => {
