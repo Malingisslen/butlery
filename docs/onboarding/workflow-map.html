@@ -5303,7 +5303,7 @@
         {
           "from": "ds-recipe-comments",
           "to": "cf-comment-dup-guard",
-          "payload": "onDocumentCreated — hash(authorId+text) inom 5 min-fönster raderas tyst (best-effort spamskydd, öppnar vid fel, ej säkerhetsgrind)",
+          "payload": "onDocumentCreated — hash(authorId+text) inom 5 min-fönster raderas tyst (best-effort spamskydd, öppnar vid fel, ej säkerhetsgrind) — varje stopp räknas på analytics/duplicate_guard/daily/{datum}, fältet comment_duplicate_blocked (BUT-1952)",
           "transport": "Firestore trigger",
           "verified": true
         },
@@ -6138,7 +6138,7 @@
         {
           "from": "cf-chat-dup-guard",
           "to": "ds-messages",
-          "payload": "dubblett töms och märks duplicateBlocked på plats — raderas inte (BUT-1904)",
+          "payload": "dubblett töms och märks duplicateBlocked på plats — raderas inte (BUT-1904) — stoppet räknas på analytics/duplicate_guard/daily/{datum}, fältet chat_duplicate_blocked (BUT-1952)",
           "transport": "write",
           "verified": true
         },

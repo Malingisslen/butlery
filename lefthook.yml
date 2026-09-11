@@ -18,7 +18,7 @@ pre-commit:
     # firebase_options.dart exclusion and the exit contract live in the script,
     # which carries a --self-test that `script-guard-tests` runs.
     #
-    # BUT-2061/BUT-1921: this was an inline `run:` string until 2026-09-12 and
+    # BUT-2061/BUT-1921: this was an inline `run:` string until 2026-09-11 and
     # could not fail a commit — a trailing `|| true` swallowed its own deliberate
     # `exit 1`. Keep it in a file: a YAML double-quoted scalar is a second
     # escaping layer between the text and the shell, and it had already turned
@@ -175,7 +175,8 @@ pre-commit:
         # have run no test at all.
         - "tools/check_secret_scan.sh"
         - "tools/check_null_filter.sh"
-      run: node functions/scripts/__tests__/check-test-registration.test.js && node functions/scripts/__tests__/rules-coverage-report.test.js && bash scripts/__tests__/check_test_real_time_test.sh && bash tools/check_secret_scan.sh --self-test && bash tools/check_null_filter.sh --self-test
+        - "tools/check_swedish_boundary.sh"
+      run: node functions/scripts/__tests__/check-test-registration.test.js && node functions/scripts/__tests__/rules-coverage-report.test.js && bash scripts/__tests__/check_test_real_time_test.sh && bash tools/check_secret_scan.sh --self-test && bash tools/check_null_filter.sh --self-test && bash tools/check_swedish_boundary.sh --self-test
       fail_text: "A CI-wiring guard's own tests failed (see above). The guards decide what CI runs — fix the guard or the fixture before committing, never the assertion."
       priority: 7
 

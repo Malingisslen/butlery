@@ -495,7 +495,7 @@ function newBlockPaths({ base, baseSource, blocks }) {
  * discovery that has to accommodate it, not the other way round.
  *
  * Capturing the `??` fallback is correct while `PROBE_PROJECT_ID` is set
- * nowhere — measured across every workflow and script, 2026-09-12. It becomes
+ * nowhere — measured across every workflow and script, 2026-09-11. It becomes
  * wrong the day someone sets that variable for a targeted run, because the
  * suite would then write coverage under a different project than the one named
  * here. That is the same class one layer down; it is not closed.

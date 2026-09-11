@@ -4075,3 +4075,25 @@ bara ändrat kommentarer i.
 efterföljande ändringar. Repot har lärt sig det här förut. Det som fungerade: räkna med
 `wc -l` i SAMMA anrop som stagar, och byt ut prosan som upprepar siffran mot en mening om
 vad diffen GÖR ("raden uppdateras i den här commiten till den mätta siffran").
+
+### En aggregatläsare avgör med sitt FÖNSTER om en skrivare någonsin räknas — inte med sin existens
+
+En stakeholder-panel rekommenderade att spamspärrens räknare skulle skrivas som en
+`system_events`-rad, eftersom `runOpsSnapshot` redan hinkar den samlingen per `type` "gratis".
+Jag fällde in det som ett BINDANDE villkor. Påståendet stämde om frågan och var fel om klockan:
+jobbet kör `0 6 * * *` UTC och läser `[startOfUtcDay(now), +24h)`, sedan aldrig om. Det kan bara
+se rader skrivna 00:00-06:00, och en realtidstrigger fyrar när folk är vakna — räknaren hade
+varit blind 18 timmar av 24, på en biljett vars hela poäng är att spärren är omätt. Samma rad
+hade dessutom kapat adminpanelens "senaste körning"-kort, eftersom ops-loggen läser samlingen
+utan typfilter. Tre filnivågrindar såg ingetdera; bara helhetsgrinden gjorde det.
+
+Två regler. (1) Innan en skrivare "ansluter till en befintlig läsare", läs läsarens SCHEMA och
+FÖNSTER, och grepa varje ANNAN läsare av samma samling — existensen av en läsare säger ingenting
+om huruvida den någonsin ser din rad. En räknare som ADRESSERAS på datumet händelsen skedde kan
+inte missas av ett fönster; en rad som SKANNAS kan det. (2) En panels rekommendation är ett
+påstående med samma bevisbörda som en kommentar; att den kommer från en roll gör den inte mätt.
+
+Samma sprint, samma klass åt andra hållet: jag bytte ut en inaktuell sats mot en ny och
+beskrev det för granskaren som "struken, inte omräknad". Grinden läste diffen och såg
+ersättningen. Det som skedde och det jag sa att jag gjorde var olika saker — beskriv en
+redigering först efter att ha läst diffen av den (BUT-1952, 2026-09-11).

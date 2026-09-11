@@ -163,7 +163,7 @@ SCAN_RC=$?
 
 # Test seam for the branch below. Same shape and same reason as
 # tools/check_secret_scan.sh: no fixture can make grep fail portably, and
-# without the seam this branch survives a mutation probe — measured 2026-09-12.
+# without the seam this branch survives a mutation probe — measured 2026-09-11.
 # Accepted ONLY above 1, so it can force a failure and never silence one.
 if [ "${NULL_FILTER_PROBE_FORCE_GREP_RC:-}" -gt 1 ] 2>/dev/null; then
   SCAN_RC="$NULL_FILTER_PROBE_FORCE_GREP_RC"

@@ -2,7 +2,7 @@
 # BUT-2061/BUT-1921: block committing a credential that matches a known key shape.
 #
 # This scan used to live as an inline `run:` string in lefthook.yml, and it could
-# not fail a commit. Two independent defects, both measured 2026-09-12:
+# not fail a commit. Two independent defects, both measured 2026-09-11:
 #
 #   1. The command ended `... && echo Potential secrets detected! && exit 1 || true`.
 #      `||` binds after the whole `&&` chain, so the `|| true` swallowed the
@@ -163,7 +163,7 @@ GREP_RC=$?
 # Test seam for the branch below, which no fixture can reach portably: making
 # grep fail needs an unreadable file, and Windows ignores the permission bits
 # this repo's guards run under. Without the seam that branch survives a mutation
-# probe — measured 2026-09-12, and it is the one branch whose failure mode is an
+# probe — measured 2026-09-11, and it is the one branch whose failure mode is an
 # outage reading as a clean scan.
 #
 # The override is accepted ONLY for values above 1, so it can force the guard to
