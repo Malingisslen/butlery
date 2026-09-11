@@ -1745,3 +1745,28 @@ files in the same edit.
   hand-rolled client omitting the field is still ungated; what changed is that it is now pinned
   rather than unobserved.
   Retired verbatim (fragment; the original wraps): "hand-rolled client that OMITS the denormalised field is not gated at all. No suite pairs an"
+
+- **RESOLVED 2026-09-11 (BUT-2057) — Malin: an UNRESOLVABLE recipe owner keeps writing the
+  rating ungated, and the open question is answered by MEASURING rather than by a refusal.**
+  The BUT-2057 entries above describe the mechanism (the key is omitted when the owner is
+  null or empty, so the gate is skipped); what was open, and named on the ticket rather than
+  here, was whether that case should instead be refused. It is not.
+  No code changed: this is what already ships.
+  **She was shown:** that a refusal lands on the person RATING, not on the person who
+  blocked — a new visible error path, with no copy written, on a recipe where nothing is
+  wrong to them; that the owner is derived from the `Recipe` the caller already holds
+  (`socialData.ownerId`, else `core.createdBy`), so the case arises only when BOTH are
+  absent or empty; and that the behaviour is unchanged from before BUT-2057, the difference
+  being that it is now a decision rather than a side effect.
+  **What she was NOT shown, stated because an attribution is a claim about a person no test
+  can hold:** nobody has counted how many recipes carry neither field. The expectation that
+  it is almost none is an expectation, not a measurement, and no sentence anywhere may call
+  the case negligible until somebody runs it.
+  **The decision is deliberately PROVISIONAL and carries its own tripwire.** BUT-2073, which
+  already owes a counter for how often the gate refuses a rating, is extended in the same
+  breath to count how often `RecipeRatingSystem.rateRecipe` reaches the write with an
+  unresolvable owner. Near zero closes this question permanently; anything else sends it
+  back to her with the number that was missing when she answered. Do not re-propose the
+  refusal without that figure, and do not delete the second counter as redundant with the
+  first — they measure opposite halves (the gate firing, and the gate never running).
+  BUT-2057/BUT-2073, 2026-09-11
