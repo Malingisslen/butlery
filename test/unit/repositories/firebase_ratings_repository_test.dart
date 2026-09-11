@@ -172,10 +172,6 @@ void main() {
     });
 
     group('Rate Recipe', () {
-      // NOTE: These tests are skipped due to FakeFirebaseFirestore limitations
-      // with FieldValue.serverTimestamp(). The rateRecipe() method uses server timestamps.
-      // These operations are tested in integration tests with real Firebase.
-
       test('should rate recipe successfully', () async {
         // Arrange
         const recipeId = 'recipe-1';
@@ -284,6 +280,71 @@ void main() {
         );
         expect(data['rating'], equals(5.0));
         expect(data['review'], equals('Changed my mind'));
+      });
+
+      test('stamps recipeOwnerId so the rules blocking gate has a field to '
+          'key on', () async {
+        const recipeId = 'recipe-1';
+
+        await repository.rateRecipe(
+          recipeId: recipeId,
+          userId: 'user-123',
+          rating: 4.0,
+          recipeOwnerId: 'owner-abc',
+        );
+
+        final data =
+            (await fakeFirestore
+                    .collection('recipe_ratings')
+                    .doc('${recipeId}_user-123')
+                    .get())
+                .data()!;
+
+        expect(data['recipeOwnerId'], equals('owner-abc'));
+      });
+
+      test(
+        'omits recipeOwnerId when the caller passes an EMPTY string',
+        () async {
+          // The shared writer normalises, rather than trusting the caller: the
+          // rules gate keys on PRESENCE, so an empty value would take the
+          // enforcing branch and then resolve a blocks document that cannot
+          // exist — presence without enforcement.
+          await repository.rateRecipe(
+            recipeId: 'recipe-1',
+            userId: 'user-123',
+            rating: 4.0,
+            recipeOwnerId: '',
+          );
+
+          final doc = await fakeFirestore
+              .collection('recipe_ratings')
+              .doc('recipe-1_user-123')
+              .get();
+          expect(doc.data()!.containsKey('recipeOwnerId'), isFalse);
+        },
+      );
+      test('omits recipeOwnerId entirely when the owner is unknown', () async {
+        // Intent: the rules gate keys on `'recipeOwnerId' in
+        // request.resource.data`, which is TRUE for an explicit null.
+        // Absence, not null, is what a caller that cannot
+        // resolve the owner must produce.
+        const recipeId = 'recipe-2';
+
+        await repository.rateRecipe(
+          recipeId: recipeId,
+          userId: 'user-123',
+          rating: 4.0,
+        );
+
+        final data =
+            (await fakeFirestore
+                    .collection('recipe_ratings')
+                    .doc('${recipeId}_user-123')
+                    .get())
+                .data()!;
+
+        expect(data.containsKey('recipeOwnerId'), isFalse);
       });
     });
 

@@ -330,6 +330,25 @@ test("recipe_comments: blocked user cannot create a comment on blocker's recipe"
   );
 });
 
+// C3 (BUT-2057) ALLOW: the blocking gate is keyed on the PRESENCE of
+// recipeOwnerId, so a payload that omits it is not gated at all — a blocked
+// actor writes successfully. This is knowingly open: a hand-rolled client can
+// bypass the gate by omitting the field, and the app's own comment writer
+// omits it too whenever its ownership resolver yields nothing (absent resolver,
+// resolver throw, or a recipe whose owner it cannot read). Closing it needs the
+// rule to get() the recipe document.
+test("recipe_comments: blocked user CAN create a comment when recipeOwnerId is absent (gate skipped)", async () => {
+  const ctx = env.authenticatedContext(BLOCKED_UID, AGE_OK_MATURED);
+  const body = validCommentBody(BLOCKED_UID);
+  delete body.recipeOwnerId;
+  await assertSucceeds(
+    ctx
+      .firestore()
+      .doc(`recipe_comments/c-create-noowner-${RUN}`)
+      .set(body)
+  );
+});
+
 // ----------------------------------------------------------------------------
 // A4: recipe_comments create — imageUrls validator (BUT-1049)
 //
@@ -474,6 +493,21 @@ test("recipe_ratings: blocked user cannot rate the blocker's recipe", async () =
       .firestore()
       .doc(`recipe_ratings/recipe-1_${BLOCKED_UID}`)
       .set(validRatingBody(BLOCKED_UID))
+  );
+});
+
+// R3 (BUT-2057) ALLOW: same field-presence property as C3 on the ratings
+// create limb — omit recipeOwnerId and the gate does not run, so a blocked
+// rater succeeds. Knowingly open against a hand-rolled client.
+test("recipe_ratings: blocked user CAN rate when recipeOwnerId is absent (gate skipped)", async () => {
+  const ctx = env.authenticatedContext(BLOCKED_UID, AGE_OK_MATURED);
+  const body = validRatingBody(BLOCKED_UID);
+  delete body.recipeOwnerId;
+  await assertSucceeds(
+    ctx
+      .firestore()
+      .doc(`recipe_ratings/recipe-1_${BLOCKED_UID}_noowner_${RUN}`)
+      .set(body)
   );
 });
 

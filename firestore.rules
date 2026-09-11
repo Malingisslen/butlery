@@ -2612,10 +2612,21 @@ service cloud.firestore {
       // Can update only your own ratings. Pin identity/anchor fields so a
       // rating can't be re-pointed to another recipe/user or backdated
       // (the client only ever changes rating/review/updatedAt).
+      // BUT-2057: the client re-rates with set(merge: true), which evaluates
+      // this limb on an existing row, so the create limb's blocking gate is
+      // repeated here. In an update request.resource.data is the full resulting
+      // document, so a merge that carries recipeOwnerId is gated and a legacy
+      // row that still lacks it is not — same field-presence condition as
+      // create. recipeOwnerId is deliberately NOT in cannotModify: on a legacy
+      // row the field goes absent -> present, which affectedKeys() reports.
       allow update: if isAuthenticated()
         && request.auth.uid == resource.data.userId
         && request.resource.data.rating >= 1
         && request.resource.data.rating <= 5
+        && (
+          !('recipeOwnerId' in request.resource.data)
+          || isNotBlockedBy(request.resource.data.recipeOwnerId)
+        )
         && cannotModify(['recipeId', 'userId', 'createdAt']);
 
       // Can delete only your own ratings

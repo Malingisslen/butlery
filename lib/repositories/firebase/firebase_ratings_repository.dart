@@ -137,6 +137,7 @@ class FirebaseRatingsRepository extends BaseFirebaseRepository<RecipeRating>
     required String userId,
     required double rating,
     String? review,
+    String? recipeOwnerId,
   }) async {
     // Validate user is rating with their own account
     final currentUser = requireCurrentUserId();
@@ -161,11 +162,20 @@ class FirebaseRatingsRepository extends BaseFirebaseRepository<RecipeRating>
     // A plain set() (no merge) overwrites the whole doc, so only stamp
     // createdAt when the rating doesn't already exist, and merge otherwise.
     final existing = await docRef.get();
+    final ownerOrNull = (recipeOwnerId == null || recipeOwnerId.isEmpty)
+        ? null
+        : recipeOwnerId;
     await docRef.set({
       'recipeId': recipeId,
       'userId': userId,
       'rating': rating,
       'review': review,
+      // Omit the key when the owner is unresolved: the rules gate keys on the
+      // field's PRESENCE, so an empty string would make it evaluate
+      // isNotBlockedBy on a value that resolves no blocks document, instead of
+      // skipping. Normalised here rather than trusted from the caller, because
+      // this is the shared writer.
+      'recipeOwnerId': ?ownerOrNull,
       if (!existing.exists) 'createdAt': timestampProvider.serverTimestamp(),
       'updatedAt': timestampProvider.serverTimestamp(),
     }, SetOptions(merge: true));

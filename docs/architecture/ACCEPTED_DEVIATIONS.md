@@ -4039,3 +4039,100 @@ neither passed an `auditRepository` at all.
   direction. The `data_minimisation` sentence says a field added later may be missing;
   tightening the two create limbs is a rules change and its own ticket.
   BUT-2062, 2026-09-10
+
+- **The block gate on `recipe_ratings` stays CONDITIONAL on `recipeOwnerId`, on BOTH
+  limbs, and the app now writes the field so the gate actually runs (BUT-2057, 2026-09-11).**
+  Until this change `FirebaseRatingsRepository.rateRecipe` never wrote the field, so the
+  left disjunct was always true and `isNotBlockedBy` never ran: **a blocked person could
+  rate the recipe of someone who blocked them, from the ordinary app.** Measured, not
+  inferred — `BlockedUserFilter` has exactly two consumers (`messaging_service.dart`,
+  `comment_crud_operations.dart`), neither on a recipe surface, and `blockUser` does not
+  touch `shared_recipes`/`sharedWithUserIds`, so an already-shared recipe keeps drawing a
+  live star row.
+  Making the field REQUIRED was the ticket's own prescribed fix and is refused: two
+  legitimate write paths omit it — the ratings path before this change, and
+  `FirebaseRecipeOwnershipResolver.resolve()` returning null deliberately in three cases
+  for comments, which that file calls "degrade to author-only read". `hasRequiredFields`
+  would have denied every rating in the app the second the rules deployed.
+  The owner is derived from the `Recipe` object `RecipeRatingSystem.rateRecipe` ALREADY
+  holds, so the stamp costs ZERO extra Firestore reads. A repository-side lookup was
+  rejected twice over: the repository does not hold the owner uid, so it cannot
+  construct the `users/{uid}/recipes` path, and the value was already in memory one
+  frame above the call.
+  **The key is OMITTED when the owner is null OR EMPTY, never written as either.**
+  `'x' in data` is true for an explicit null, so a null would make the
+  rule evaluate `isNotBlockedBy(null)` and break the path concatenation — converting a
+  skipped gate into a hard failure.
+
+- **The UPDATE limb carries the same conjunct, and that is not tidying (BUT-2057,
+  2026-09-11).** `rateRecipe` writes with `set(merge: true)`, so re-rating an existing row
+  evaluates UPDATE, which had no block conjunct. Without this the fix would be half a
+  gate: a blocked person who had already rated could keep changing the score forever.
+  Found independently by the Security Architect, Trust & Safety and DBA seats.
+
+- **`recipeOwnerId` is deliberately NOT in `cannotModify`, so the field stays FORGEABLE
+  and mutable (BUT-2057, 2026-09-11).** Measured: `cannotModify(fields)` is
+  `!request.resource.data.diff(resource.data).affectedKeys().hasAny(fields)`, and a
+  re-rate of a legacy row takes the field from absent to present — which `affectedKeys()`
+  reports. Pinning it would therefore REFUSE re-rating of every rating row written before
+  this change.
+  The residual is named rather than left to be discovered: neither limb verifies that
+  `recipeOwnerId` equals the recipe's actual owner, so a hand-rolled client can forge a
+  non-blocking uid and bypass the gate. The only close is a rule that reads the recipe
+  document, which costs a read per write — and cannot be spelled as a plain `get()`,
+  because the path needs the very uid that is not trusted. Own ticket (BUT-2071).
+
+- **Forward-only: rating rows written before this change carry no `recipeOwnerId`
+  (BUT-2057, 2026-09-11).** No backfill, and one was considered and
+  refused: the field's only consumer is the write gate, which never re-evaluates existing
+  rows, so a backfill would buy zero enforcement while stamping a third party's uid onto
+  rows that do not carry one. The comments precedent
+  (`backfill-recipe-comments-denorm.ts`) does not transfer, because there the same field
+  also drives the READ rule.
+
+- **NAMED RESIDUAL, and it is Malin's to decide, not closed here: the stamp puts the
+  recipe owner's uid on a row ANY signed-in account can read, and no erasure path reaches
+  it (BUT-2057, 2026-09-11).** `recipe_ratings` read is `allow read: if isAuthenticated()`,
+  so the field is not merely stored but broadly readable. A grep over
+  `functions/src/account/` returns ZERO occurrences of `recipeOwnerId`. So an owner's uid
+  sitting on other people's rating rows is reached by no cascade leg and no probe leg — and
+  BUT-2062 already strips it from the Art. 15 export. That is the BUT-1832 shape exactly:
+  un-erasable AND un-exportable. Before this change the exposure was irregular; this makes
+  it happen on every new rating. The Art. 15 half needs no change — BUT-2062's allowlist
+  was written in anticipation of exactly this writer. The ERASURE half is open (BUT-2072).
+
+- **The refusal is deliberately SILENT and generic, and must stay so (BUT-2057,
+  2026-09-11).** A refused rating surfaces `context.l10n.ratingError` — no block-specific
+  copy, no distinct icon. A refusal that named the block would turn a silent safety control
+  into a notification, which is the same reasoning that keeps the poll tally visible to a
+  blocked person (BUT-1917) and the comments readable (BUT-2054).
+
+- **The control ships UNMEASURED (BUT-2057, 2026-09-11).** Nothing counts how often a
+  rating is refused for blocking. Same shape as BUT-1952. Named rather than built, because
+  the counter is a new analytics surface and this change is a correctness fix. The case
+  that makes it matter is not the blocked rater but a bug in the stamping: a wrong owner
+  would deny ratings broadly and the user would see only a generic error (BUT-2073).
+
+- **SUPERSEDES the BUT-2062 entry's claims about the ratings WRITER, which BUT-2057 falsified
+  in the same repo (BUT-2057, 2026-09-11).** `FirebaseRatingsRepository.rateRecipe` now writes
+  `recipeOwnerId` on every rating the app creates, derived from the already-fetched recipe, and
+  omits the key only when the owner is unresolvable. The BUT-2062 STRIP decision is unchanged and
+  still correct: the field is withheld from the Art. 15 bundle by `_ratingFields`, which this
+  commit does not touch.
+  Retired verbatim: "**`recipeOwnerId` on RATINGS is a decided strip although no writer emits it today.**"
+  Retired verbatim (fragment; the original wraps): "`FirebaseRatingsRepository.rateRecipe` writes `recipeId, userId, rating, review, createdAt,"
+  Retired verbatim (fragment; the original wraps): "is set and `firestore.rules` permits it on create. BUT-2057 wants to make that field"
+  Retired verbatim: "`firebase_ratings_repository.dart` is already 536 against a row that says 507"
+  BUT-2057 did NOT make the field mandatory: that was measured to deny every rating in the app,
+  and its own entry records the refusal. The `ACCEPTED_LARGE_FILES` row is updated in this commit to the measured
+  count. The layer argument that count supported is unaffected.
+  The two mirrors word this fact DIFFERENTLY, so a grep for one misses the other. The sibling
+  supersession is in `.claude/rules/accepted-deviations.md` and quotes that file's wording.
+
+- **SUPERSEDES the BUT-2054 entry's coverage claim, which BUT-2057's own suites falsified
+  (BUT-2057, 2026-09-11).** `recipe-comments-rules.test.ts` now carries C3 and R3: a blocked
+  actor with an OMITTING payload, ALLOWED, on `recipe_comments` and on `recipe_ratings`, each
+  commented as knowingly open. The DEFECT that entry records is unchanged and still open — a
+  hand-rolled client omitting the field is still ungated; what changed is that it is now pinned
+  rather than unobserved.
+  Retired verbatim (fragment; the original wraps): "hand-rolled client that OMITS the denormalised field is not gated at all. No suite pairs an"

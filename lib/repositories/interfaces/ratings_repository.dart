@@ -4,12 +4,20 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 /// Repository interface for recipe rating operations
 abstract class RatingsRepository extends Repository<RecipeRating> {
-  /// Rate a recipe
+  /// Rate a recipe.
+  ///
+  /// BUT-2057: [recipeOwnerId] is the denormalized recipe owner the
+  /// `recipe_ratings` rules read to enforce `isNotBlockedBy(...)`. When it is
+  /// null OR EMPTY the implementation MUST omit the key entirely. Absent
+  /// means the gate is skipped, which is how a caller that cannot resolve the
+  /// owner behaves. Not on [updateRating]: the owner does not change after
+  /// create.
   Future<void> rateRecipe({
     required String recipeId,
     required String userId,
     required double rating,
     String? review,
+    String? recipeOwnerId,
   });
 
   /// Update an existing rating
@@ -95,10 +103,9 @@ class RecipeRating {
   final DateTime updatedAt;
 
   /// BUT-459: Denormalized recipe owner so security rules can enforce
-  /// `isNotBlockedBy(recipeOwnerId)` on create. Optional — legacy
-  /// callers that can't resolve the owner write a rating without this
-  /// field and the rule's blocking-gate predicate is skipped (the rest
-  /// of the create checks still apply).
+  /// `isNotBlockedBy(recipeOwnerId)`. Optional — legacy callers that can't
+  /// resolve the owner write a rating without this field and the rule's
+  /// blocking-gate predicate is skipped.
   final String? recipeOwnerId;
 
   RecipeRating({

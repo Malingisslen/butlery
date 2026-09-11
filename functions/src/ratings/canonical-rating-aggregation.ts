@@ -9,13 +9,12 @@
  *   users/{uid}/canonical_rating_events/{poolKey} = {poolKey, ratingValue, recipeId, createdAt}
  *
  * DATA MODEL (verified 2026-07-03): `recipe_ratings` is a TOP-LEVEL collection
- * (doc-id `{recipeId}_{userId}`) carrying only {recipeId,userId,rating,review,
- * createdAt,updatedAt} — NO owner uid. Recipe CONTENT is USER-SCOPED at
+ * (doc-id `{recipeId}_{userId}`). Recipe CONTENT is USER-SCOPED at
  * `users/{uid}/recipes/{recipeId}` (firestore.rules has only the nested match;
  * FirebaseRecipeRepository is UserScoped). So the mirror reads the RATER'S OWN
  * copy `users/{userId}/recipes/{recipeId}` — which is the pooled model's primary
  * case (each user rates their own imported copy). A rating on a friend's recipe
- * that the rater doesn't own is not locatable server-side and simply doesn't
+ * that the rater doesn't own simply doesn't
  * pool in v1 (skipped_no_recipe).
  *
  * Guarantees this module enforces (not the security rules):

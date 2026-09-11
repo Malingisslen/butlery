@@ -64,12 +64,26 @@ class RecipeRatingSystem {
         currentUserId,
       );
 
-      // Create or update rating using repository
+      // Create or update rating using repository. The owner is derived from the
+      // recipe already fetched above so the rules blocking gate has a field to
+      // key on (BUT-2057) without a second read.
+      //
+      // An EMPTY owner must resolve to null, not to ''. The rule keys on the
+      // field's PRESENCE, so `recipeOwnerId: ''` takes the enforcing disjunct
+      // and then looks up `blocks/_<rater>`, which never exists — presence
+      // without enforcement.
+      final socialOwner = recipe.socialData?.ownerId;
+      final createdBy = recipe.core.createdBy;
+      final recipeOwnerId = (socialOwner != null && socialOwner.isNotEmpty)
+          ? socialOwner
+          : (createdBy != null && createdBy.isNotEmpty ? createdBy : null);
+
       await _ratingsRepository.rateRecipe(
         recipeId: recipeId,
         userId: currentUserId,
         rating: rating,
         review: review?.trim(),
+        recipeOwnerId: recipeOwnerId,
       );
 
       AppLogger.success('✅ Recipe rated successfully');

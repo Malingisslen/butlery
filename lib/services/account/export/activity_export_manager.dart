@@ -96,11 +96,10 @@ class ActivityExportManager {
   /// `RecipeRating.toFirestore()`.
   ///
   /// `userId` is the requester's own uid and the query's own filter.
-  /// `recipeOwnerId` is a third party's uid: `FirebaseRatingsRepository`'s own
-  /// writer never emits it today, but the model does when it is set and
+  /// `recipeOwnerId` is a third party's uid;
   /// `firestore.rules` permits it on create — so it is a DECIDED strip rather
-  /// than a field that happens to be absent, and a later change that starts
-  /// writing it cannot widen this bundle by accident.
+  /// than a field that happens to be absent, and a change that writes it
+  /// cannot widen this bundle by accident.
   static const _ratingFields = <String>[
     'recipeId',
     'rating',
