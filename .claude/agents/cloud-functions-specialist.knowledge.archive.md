@@ -19892,3 +19892,41 @@ Merged into that bullet in the same edit, and retired verbatim from the principl
   only for a self-leave and misnames an eviction."
 It is the ancestor of the same rule: who the actor is, and where it comes from. The merged
 bullet keeps both halves and adds the trigger case, at no net size.
+
+### 2026-09-11 — BUT-2058: N>1 fixtures for the contributor cap [test-gap]
+
+`cutGroupMenuPlanAccess` (`functions/src/groups/group-menu-access.ts:220-223`) bounds
+`contributorUserIds` at `MAX_CONTRIBUTOR_UIDS = 200`, measured against the WHOLE departing
+set. BUT-2005 generalised the function from one uid to a list, but both existing cap
+fixtures route through `removeChatGroupMemberWithDeps`, which passes exactly one uid — so
+`known.length + unrecorded.length` was never exercised with a summand above 1.
+
+Added two cases to `functions/src/__tests__/chat-group-callables.test.ts`, calling
+`cutGroupMenuPlanAccess` directly:
+- 199 known + 2 departing = 201 > 200: the union is skipped ENTIRELY (array stays at 199,
+  neither uid present — truncation to 200 fails it), and the access cut still lands on
+  `memberPermissions` and `participantUserIds`.
+- 198 known + 2 departing = 200: the union applies, array reaches exactly 200 with both uids.
+
+MEASURED. Lane `npm run test:chat-group-callables` (auto-discovered by
+`scripts/run-ci-unit-tests.js`, not in `KNOWN_UNREACHABLE`): 39/39 green.
+Mutation probe, `<=` -> `<` on line 223 (compiles, pure operator swap), applied with an
+`assert count(old) == 1` unique-anchor guard: 38/39, the sole failure being
+`exactly at the contributor cap with TWO departing, the union applies` —
+`the array reaches the cap exactly: expected 200, got 198`. The over-cap case did NOT
+redden, as predicted: at 201 both operators take the same branch, so the AT-cap case is the
+sole discriminator. Mutant reverted; `git diff` on the production file is empty.
+
+The ERROR log is not assertable here and no seam was added: the CF unit harness is plain
+`ts-node` (`_unit-runner.ts`), `logger` is imported at module scope in
+`group-menu-access.ts:17`, and a repo-wide grep found no log-capture helper anywhere under
+`functions/src`. The assertions read stored state and the write payload instead.
+
+Production arithmetic measured CORRECT; no production change.
+
+Retired verbatim from the fake-commit bullet in the principles file:
+"reject `update()` on a MISSING doc with grpc 5"
+Its content survives in two places the remaining text carries: idempotency rule 10 states
+the hazard in its own premise, and `functions/src/__tests__/_fake-firestore.ts`'s module
+doc states the faithful behaviour in full, backed by the implementation. So the retirement
+creates no suppressor.

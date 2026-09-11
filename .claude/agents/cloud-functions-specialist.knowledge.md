@@ -185,8 +185,11 @@ from `(err as {code?}).code`.
   `string | FieldPath` — an `as unknown as Firestore` cast checks none.
 - **A fake `commit()` that RE-DERIVES the intended effect instead of
   APPLYING the write payload makes the write vacuous** — dispatch on the
-  `FieldValue` transform's `constructor.name`; reject `update()` on a
-  MISSING doc with grpc 5.
+  `FieldValue` transform's `constructor.name`.
+- **A cap generalised from a SCALAR to a LIST leaves its boundary untested** —
+  every inherited fixture routes through the single-item caller, which can
+  overshoot by at most 1. Call the shared function DIRECTLY with N≥2 astride the
+  bound; only the AT-cap case discriminates `<=` from `<`.
 - **A hand-rolled Firestore fake needs `.limit()` on BOTH `collection()` and
   `collectionGroup()`** — the caps split across them, so one missing method
   reports a GDPR step FAILED, not skipped, and an always-empty fake cannot

@@ -581,9 +581,8 @@ const cases: UnitCase[] = [
 
   // --- BUT-2005: cutGroupMenuPlanAccess, now shared and multi-uid ------------
   {
-    // The generalisation the two new call sites need. Both are fan-outs that can
-    // evict several people at once; calling the old one-uid function per uid
-    // would multiply an up-to-501-row read plus 500 writes by N for one group.
+    // Calling the old one-uid function per uid would multiply an up-to-501-row
+    // read plus 500 writes by N for one group.
     name: "cuts SEVERAL departing members from a plan in ONE update",
     fn: async () => {
       const fake = new FakeFirestore();
@@ -661,6 +660,113 @@ const cases: UnitCase[] = [
         [...contributors].sort().join(","),
         "goes-a,goes-b",
         "the already-recorded uid is not duplicated and the new one is added",
+      );
+    },
+  },
+  {
+    // BUT-2058: the cap arithmetic with N>1 departing. The two existing cap
+    // cases route through `removeChatGroupMemberWithDeps`, which passes exactly
+    // one uid, so neither reaches `known.length + unrecorded.length` with a
+    // summand above 1.
+    //
+    // 199 + 2 = 201 is over the cap, and the whole union is skipped rather than
+    // truncated to 200. Losing a uid is the one thing this array exists to
+    // prevent: it is what account erasure finds the plan by once the roster no
+    // longer names the person, so a partial record is worse than a logged
+    // absence (BUT-1971, decided).
+    name: "over the cap with TWO departing, the union is skipped entirely",
+    fn: async () => {
+      const fake = new FakeFirestore();
+      fake.seed("group_weekly_menu_plans/c1_2026-W37", {
+        groupId: "c1",
+        participants: [
+          { userId: "stays", permission: "admin" },
+          { userId: "goes-a", permission: "edit" },
+          { userId: "goes-b", permission: "view" },
+        ],
+        participantUserIds: ["stays", "goes-a", "goes-b"],
+        memberPermissions: { stays: "admin", "goes-a": "edit", "goes-b": "view" },
+        // Non-overlapping, so both departing uids count as unrecorded.
+        contributorUserIds: Array.from(
+          { length: MAX_CONTRIBUTOR_UIDS - 1 },
+          (_, i) => `other-${i}`,
+        ),
+      });
+
+      await cutGroupMenuPlanAccess(
+        fake.db,
+        "c1",
+        ["goes-a", "goes-b"],
+        "actor",
+        "test",
+      );
+
+      const plan = fake.read("group_weekly_menu_plans/c1_2026-W37")!;
+      const contributors = (plan.contributorUserIds as string[]) ?? [];
+      assertEqual(
+        contributors.length,
+        MAX_CONTRIBUTOR_UIDS - 1,
+        "the array is left as it was, not topped up to the cap",
+      );
+      assertEqual(
+        contributors.includes("goes-a") || contributors.includes("goes-b"),
+        false,
+        "neither departing uid was recorded — a truncating union would record one",
+      );
+      // The access cut is independent of the recording, on the skip path too.
+      assertEqual(
+        Object.keys(plan.memberPermissions as Record<string, unknown>).join(","),
+        "stays",
+        "both departing members are off memberPermissions, which the rules read",
+      );
+      assertEqual(
+        (plan.participantUserIds as string[]).join(","),
+        "stays",
+        "and off the projection beside it",
+      );
+    },
+  },
+  {
+    // The boundary the case above sits one uid past: 198 + 2 lands exactly ON
+    // the cap, where `firestore.rules` still accepts the document, so the union
+    // applies and both uids are recorded.
+    name: "exactly at the contributor cap with TWO departing, the union applies",
+    fn: async () => {
+      const fake = new FakeFirestore();
+      fake.seed("group_weekly_menu_plans/c1_2026-W37", {
+        groupId: "c1",
+        participants: [
+          { userId: "stays", permission: "admin" },
+          { userId: "goes-a", permission: "edit" },
+          { userId: "goes-b", permission: "view" },
+        ],
+        participantUserIds: ["stays", "goes-a", "goes-b"],
+        memberPermissions: { stays: "admin", "goes-a": "edit", "goes-b": "view" },
+        contributorUserIds: Array.from(
+          { length: MAX_CONTRIBUTOR_UIDS - 2 },
+          (_, i) => `other-${i}`,
+        ),
+      });
+
+      await cutGroupMenuPlanAccess(
+        fake.db,
+        "c1",
+        ["goes-a", "goes-b"],
+        "actor",
+        "test",
+      );
+
+      const contributors = (fake.read("group_weekly_menu_plans/c1_2026-W37")!
+        .contributorUserIds as string[]) ?? [];
+      assertEqual(
+        contributors.length,
+        MAX_CONTRIBUTOR_UIDS,
+        "the array reaches the cap exactly",
+      );
+      assertEqual(
+        contributors.includes("goes-a") && contributors.includes("goes-b"),
+        true,
+        "and both departing uids are in it",
       );
     },
   },
