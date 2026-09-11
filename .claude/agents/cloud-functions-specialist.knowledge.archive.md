@@ -20035,3 +20035,46 @@ A rename landed here too — `BLOCK_EVENT_TYPE` -> `BLOCK_COUNTER_FIELD` — and
 test reaches it through `require()` destructuring, which is untyped: a missed site would have
 been `undefined` at runtime rather than a tsc error. Grep the symbol repo-wide after any rename
 a `require()` consumer reads; 13 sites, all moved, verified.
+
+### 2026-09-12 — analytics prune on the reset script [admin]
+
+`analytics` moved from `COLLECTIONS_TO_DELETE` to `COLLECTIONS_TO_KEEP` (BUT-2044): the
+measurement series survive a clean slate, the per-person rows under them do not. Four rounds
+of review on a ~200-line change, and the shape of the findings is the record worth keeping.
+
+The prune is a fail-closed allowlist (`isKeptAnalyticsSeries`), not a delete-list, because a
+hand-written delete-list keeps tomorrow's per-person collection in silence — the BUT-2040 and
+BUT-2043 class. The direction of failure is the decision: an undeclared series is deleted and
+the run prints it; an undeclared per-person collection would have been kept and printed
+nothing.
+
+Three defects the file-level reading could not produce, all found by the gate:
+
+1. `PruneOptions.dryRun` was declared, passed and never read — the module delegates deletion
+   to the injected `deleteDocRecursive`, which honours the flag itself. A second flag reads as
+   a control on a destructive helper while deciding nothing. Deleted rather than documented.
+2. A subcollection-level prune cannot see a FIELD written onto `analytics/{group}` itself.
+   The first version answered that with a comment asserting what the parents carry today —
+   a universal quantifier over production that no test holds. Replaced by a parent leg in
+   `countAnalyticsResidue` that reports any field outside `KEPT_PARENT_FIELDS` into the
+   verdict.
+3. The startup "preserved collections" probe was `.limit(1).get()`, which returns nothing for
+   a collection whose parents hold only subcollections — so the safety line would have printed
+   "empty" over the 546 rows the change exists to protect. Fixed as query-first with a
+   `listDocuments()` fallback, so the enumeration's per-document billing is paid only in the
+   case the query cannot answer.
+
+The writer scan in the test is what stops a future `daily` collection inheriting the exemption
+unread. It has to see both spellings — the literal chain and `dailyDocRef(db, "<group>", …)` —
+and a third form neither covers: a chain whose parent is a VARIABLE. Those are listed by FILE
+and reviewed by name, which immediately surfaced a file I had not considered
+(`account-deletion-cascade.ts`, looping `RETENTION_ANALYTICS_PARENTS`). The first version of
+that guard was `every()` over a set nothing asserted non-empty — green forever if the regex
+ever stops matching; the reverse direction was added beside it.
+
+Rounds 3 and 4 found only sentences, and every one of them sat in text written as the fix for
+round 2: three surviving copies of a struck numeral ("five of them via `dailyDocRef`") in files
+the mirrors point at, an unmeasured "the one job cursor that lives on them" left standing
+beside the very sentence that exists because we stopped relying on such assertions, and a
+fresh quantifier ("the scheduled snapshots all take this form") introduced BY the strike that
+removed the previous one. Each was closed by deleting the clause, never by a third wording.

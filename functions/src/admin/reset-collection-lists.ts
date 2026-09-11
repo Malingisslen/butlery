@@ -150,16 +150,6 @@ export const COLLECTIONS_TO_DELETE: CollectionTarget[] = [
   { name: "userFriends" },
   { name: "userSettings" },
   { name: "friend_categories" },
-  {
-    name: "analytics",
-    // `effectiveness` and `daily` are both erased by the recursive walk; they
-    // are listed so the unknown-collection report stays quiet about them.
-    // `daily` holds the product's own aggregates. The
-    // accepted deviation that KEEPS `analytics/feature_retention/daily` governs
-    // the ACCOUNT CASCADE, not this script, which deletes `analytics` whole —
-    // a different call nobody has put side by side with it. Named, not changed.
-    subcollections: ["effectiveness", "daily"],
-  },
   { name: "shopping_list_invitations" },
   { name: "user_shared_menus" },
   { name: "user_shared_shopping_lists" },
@@ -331,7 +321,41 @@ export const COLLECTIONS_TO_KEEP = [
   // `allow write: if false` in firestore.rules — the same class as
   // `tag_configs` above.
   "menu_lexicon",
+  // The product's own measurement series. KEPT per the dated entry in
+  // `.claude/rules/accepted-deviations.md`, which also states what a reset
+  // still deletes under it: `pruneAnalytics` removes every subcollection that
+  // `isKeptAnalyticsSeries` does not name, which is where the per-person rows
+  // live. Membership here is therefore narrower than it reads, and the run's
+  // closing summary in `reset-user-data.ts` prints the exception beside the
+  // list for the same reason.
+  "analytics",
 ];
+
+/**
+ * Is this subcollection under `analytics/{parentId}` a measurement series the
+ * reset keeps?
+ *
+ * An ALLOWLIST, so the answer for anything undeclared is "delete". The
+ * direction is the decision: a new series that nobody adds here is lost on a
+ * reset, which the run prints, while a new PER-PERSON collection is deleted
+ * without anyone having to notice it exists. A delete-list would invert both.
+ *
+ * `daily` matches under any parent because that is the shape the scheduled
+ * snapshots write (`dailyDocRef` in `analytics/daily-snapshots.ts`), and a
+ * per-parent list would have to be extended for each new series to keep
+ * working.
+ */
+export function isKeptAnalyticsSeries(
+  parentId: string,
+  subId: string,
+): boolean {
+  if (subId === "daily") return true;
+  // The per-type notification rates (`analytics/correlate-notifications.ts`),
+  // keyed by date like every `daily` series and carrying no uid. Its sibling
+  // `effectiveness` holds one row per notification WITH a `userId`, which is
+  // why this is a name and not a parent-wide exemption.
+  return parentId === "notifications" && subId === "summary";
+}
 
 /**
  * Collections deliberately left alone, each with the reason it is left alone.

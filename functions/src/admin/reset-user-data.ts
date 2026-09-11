@@ -5,6 +5,10 @@
  * (Auth + Firestore + Storage), preserving config/seed data (site_configs,
  * tag_configs, ingredients, etc.).
  *
+ * `analytics` is preserved with an exception: its measurement series survive
+ * and the rows about individual people under it do not
+ * (`admin/reset-analytics-prune.ts`).
+ *
  * Every collection this repo knows about is now DECIDED — it is in
  * `COLLECTIONS_TO_DELETE`, in `COLLECTIONS_TO_KEEP`, or in
  * `COLLECTIONS_DELIBERATELY_UNTOUCHED` with the reason it is left alone. A
@@ -76,6 +80,10 @@ import {
   findUnknownCollections,
   formatUnknownCollections,
 } from "./unknown-collections";
+import {
+  countAnalyticsResidue,
+  pruneAnalytics,
+} from "./reset-analytics-prune";
 import {
   createSchedulerApi,
   findStillPausedJobs,
@@ -350,6 +358,33 @@ async function runPhases(
     const subStr = subSummary ? ` (subs: ${subSummary})` : "";
     console.log(` ${parentCount} docs${subStr}`);
   }
+
+  // `analytics` is KEPT, and the per-person rows under it are not. The deep
+  // delete is the same one the loop above runs on.
+  process.stdout.write("  analytics (kept, pruning per-person rows)...");
+  const prune = await pruneAnalytics(db, {
+    maybeRefreshKillSwitch,
+    deleteDocDeep: (docRef) =>
+      deleteDocRecursive(docRef, {}, dryRun, maybeRefreshKillSwitch),
+  });
+  for (const entry of prune.deleted) {
+    // `subs` stays EMPTY. `results` is what the unknown-collections report
+    // ranges over, and with `analytics` out of COLLECTIONS_TO_DELETE the names
+    // beneath it are no longer decided by any list — so naming them here would
+    // make the report flag `events` on every run. The report's universe is
+    // unchanged by this step.
+    results.push({ collection: entry.path, docs: entry.docs, subs: {} });
+  }
+  const keptSummary = prune.kept
+    .map((entry) => `${entry.parentId}/${entry.subId}=${entry.docs}`)
+    .join(", ");
+  const prunedSummary = prune.deleted
+    .map((entry) => `${entry.parentId}/${entry.subId}=${entry.docs}`)
+    .join(", ");
+  console.log(
+    ` ${dryRun ? "would delete" : "deleted"} [${prunedSummary || "none"}], ` +
+      `kept [${keptSummary || "none"}]`,
+  );
   console.log();
   await maybeRefreshKillSwitch();
 
@@ -456,6 +491,28 @@ async function verifyReset(
       const message = err instanceof Error ? err.message : String(err);
       lines.push(`  ${target.name}: could not be counted — ${message}`);
     }
+  }
+
+  // The kept collection's deleted half. Same two answers as the loop above: a
+  // surviving row is residue, and a failed read is unanswerable rather than
+  // clean — a pass that cannot see `analytics` must not report on it.
+  try {
+    const residue = await countAnalyticsResidue(db);
+    for (const entry of residue.subcollections) {
+      sawRows = true;
+      lines.push(`  ${entry.path}: ${entry.docs} document(s) remain`);
+    }
+    for (const entry of residue.parentFields) {
+      sawRows = true;
+      lines.push(
+        `  ${entry.path}: parent document holds ${entry.fields.join(", ")} — ` +
+          "the prune deletes subcollections, so a field here survives it",
+      );
+    }
+  } catch (err: unknown) {
+    sawUnanswerable = true;
+    const message = err instanceof Error ? err.message : String(err);
+    lines.push(`  analytics: pruned paths could not be counted — ${message}`);
   }
 
   // The kill switch must be gone. `clearResetKillSwitch` deletes rather than
@@ -573,11 +630,20 @@ async function main() {
   console.log();
 
   // Safety: verify preserved collections exist
-  console.log("Preserved collections (will NOT be touched):");
+  console.log("Preserved collections:");
   for (const col of COLLECTIONS_TO_KEEP) {
+    // The query answers for every collection whose documents carry fields,
+    // and costs one read. `analytics` is the exception: its rows sit under
+    // parents that carry no fields of their own, so the query returns none of
+    // them and the safety line would say "empty" over the whole measurement
+    // series this list exists to protect. `listDocuments()` sees those
+    // parents, and bills one read per reference — so it runs only where the
+    // cheap answer was "nothing", which is the case it exists for.
     const snapshot = await db.collection(col).limit(1).get();
-    const status = snapshot.empty ? "empty" : "has data";
-    console.log(`  ${col}: ${status}`);
+    const hasData =
+      !snapshot.empty ||
+      (await db.collection(col).listDocuments()).length > 0;
+    console.log(`  ${col}: ${hasData ? "has data" : "empty"}`);
   }
   console.log();
 
@@ -869,6 +935,13 @@ async function main() {
     `  Storage files ${dryRun ? "to delete" : "deleted"}: ${totals.storageFiles}`,
   );
   console.log("  Preserved: " + COLLECTIONS_TO_KEEP.join(", "));
+  // `analytics` is on that list and is not untouched: `pruneAnalytics` deletes
+  // every subcollection under it that is not a measurement series. Saying so
+  // beside the list, because a name in a "preserved" line reads as whole.
+  console.log(
+    "  Preserved with exceptions: analytics — its measurement series are " +
+      "kept, its per-person rows are deleted",
+  );
   // The register, printed beside the list with teeth. A collection that is
   // neither deleted nor protected is the shape this ticket was filed about, so
   // a summary that names only the protected ones reproduces the silence one

@@ -162,9 +162,12 @@ export function formatUnknownCollections(
   }
 
   lines.push(
-    "  Scope: subcollections are only enumerated beneath the collections " +
-      "this run deletes. Nothing beneath a kept or deliberately-untouched " +
-      "collection is walked, so a clean result here is not a full inventory " +
+    "  Scope: this report ranges over the subcollections enumerated beneath " +
+      "the collections this run deletes. The prune under the kept " +
+      "`analytics` collection walks and reports separately and is not " +
+      "included here, and nothing beneath any other kept or " +
+      "deliberately-untouched collection is walked at all — so a clean " +
+      "result here is not a full inventory " +
       "of the database. A subcollection is also silenced by a TOP-LEVEL " +
       "collection of the same name, and by any name the account cascade " +
       "sweeps anywhere — both silence by NAME, so a genuinely new " +

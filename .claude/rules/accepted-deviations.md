@@ -1795,3 +1795,45 @@ files in the same edit.
   2026-09-11**, over the alternative of honouring the setting (own allergies plus the floor),
   which she was shown drops a present child's non-floor allergy on that path. She was NOT shown
   how often a total roster failure happens; the path has no caller yet (BUT-1625). BUT-2076, 2026-09-11
+
+- **A reset KEEPS the `analytics` measurement series and DELETES the per-person rows beneath
+  them (BUT-2044, 2026-09-12).** `analytics` moved from `COLLECTIONS_TO_DELETE` to
+  `COLLECTIONS_TO_KEEP`, and `pruneAnalytics` (`admin/reset-analytics-prune.ts`) removes every
+  subcollection under it that `isKeptAnalyticsSeries` does not name. Measured against
+  butlery-app-1 2026-09-11 and confirmed by a dry run the next day: that is
+  `feature_retention/users` (82 rows, uid in the document id and in `userId`) and
+  `lapsed_users/events` (19 rows, `userId`), while 546 rows of dated aggregates stay. Three
+  further uid-carrying paths exist in code with no rows yet — `retention/events`,
+  `notifications/effectiveness`, `ingredients/learned_aliases`.
+  **Malin's decision, stated 2026-09-11 and dated by her to 2026-09-08: the measurement series
+  are kept.** **What she was NOT shown when she made it:** that per-person rows sat under
+  `analytics` at all, so the split is this build's answer to that and not something she chose;
+  and her framing — "525 rows under seven parents" — was already stale when she used it (546
+  under seven, beside an eighth parent `duplicate_guard` that BUT-1952 created hours earlier
+  and that has no rows).
+  **A SECOND and separate call, 2026-09-11 (AskUserQuestion): `parsing/corrections` and
+  `ingredients/unmatched` are DELETED**, over keeping both or keeping the ingredient queue
+  alone. She was shown what each holds and that the queue's `exampleRecipes` point at recipes
+  the same run deletes. She was shown no row counts, because both are empty today.
+  **NOT derived from BUT-1789**, which governs the account CASCADE. The two agree on the
+  outcome for the same rows and disagree on the ground: there, Art. 17 does not reach an
+  aggregate; here, a reset removes the test period's people and their content and keeps the
+  product's own history. Citing either as authority for the other is the error the BUT-1732
+  entry exists to record.
+  **The allowlist decides by NAME, and that is the residual**: a future subcollection called
+  `daily` that carries a uid would be kept. Measured today, no uid-shaped string appears in any
+  of the 546 rows, including for accounts already erased.
+  `reset-analytics-prune.test.ts` scans `functions/src` for every `analytics/<group>/daily`
+  writer in BOTH spellings — the literal chain and `dailyDocRef(db, "<group>", …)` — and
+  reddens on a writer no reviewed list names, so a new series is a decision rather than an
+  inheritance. A chain whose parent is a VARIABLE names no series the scan can read; the files
+  holding one are listed by name, so a new one reddens too.
+  The prune works on subcollections, so a field written onto an `analytics/{group}` document
+  would outlive it. `countAnalyticsResidue` reads the parents and reports any field outside
+  `KEPT_PARENT_FIELDS` (today: the lapsed-users job cursor), which makes Phase 4 answer NOT
+  CLEAN instead of a comment asserting what the parents carry.
+  Deleting `ingredients/learned_aliases` costs the alias review queue and the ability to revoke
+  an alias already approved; an approved alias is written onto the ingredient itself, which is
+  kept.
+  The run prints "Preserved with exceptions" for this collection, because a name on a
+  preserved line otherwise reads as untouched. BUT-2044, 2026-09-12

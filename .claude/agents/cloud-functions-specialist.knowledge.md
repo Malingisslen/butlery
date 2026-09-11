@@ -433,9 +433,17 @@ from `(err as {code?}).code`.
   REPO-wide (deviations, the sweep citing it as Art. 17 recovery, sibling
   knowledge files).
 - **A run-time REPORT of "what no list decides" reads EVERY register the deleters
-  use** (one erased by its OWN tier step — `pantry`, `analytics/effectiveness` —
-  is in no list and fires on every account), never steers the run, and never says
+  use** (one erased by its OWN tier step — `pantry` — is in no list and fires on
+  every account), never steers the run, and never says
   what an appearing name MEANS: trigger-owned rows come from ordinary app use.
+- **Moving a collection to `COLLECTIONS_TO_KEEP` only half-decides it.** Its
+  SUBCOLLECTIONS need a fail-closed allowlist, and a subcollection-level prune
+  leaves PARENT-DOCUMENT FIELDS behind — measure them in the verification pass
+  rather than promising them in a comment. A kept-collection existence probe
+  (`.limit(1).get()`) reports "empty" for a collection whose parents hold only
+  subcollections; `listDocuments()` answers, and bills one read per document. A
+  `dryRun` flag on a helper that DELEGATES deletion is inert unless the helper
+  reads it — delete it.
 - **A source pin owes**: a grep-UNIQUE anchor; the guard's EFFECT, not its position
   (`process.exit(0|1)` INSIDE the gate); `//`-stripping, which stops NEITHER
   `&& false` NOR a `/* */` wrap; and the INVOKER, its literal DERIVED from the

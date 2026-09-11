@@ -4186,3 +4186,50 @@ neither passed an `auditRepository` at all.
   2026-09-11**, over the alternative of honouring the setting (own allergies plus the floor),
   which she was shown drops a present child's non-floor allergy on that path. She was NOT shown
   how often a total roster failure happens; the path has no caller yet (BUT-1625). BUT-2076, 2026-09-11
+
+### [Privacy/GDPR] A clean-slate reset preserves the analytics time series and prunes the rows about individual people underneath them (BUT-2044)
+
+`analytics` is in `COLLECTIONS_TO_KEEP`, so the recursive walk never enters it, and
+`pruneAnalytics` (`functions/src/admin/reset-analytics-prune.ts`) then deletes every
+subcollection beneath it that `isKeptAnalyticsSeries` does not name. Kept: any `daily`
+subcollection, plus `notifications/summary`. Deleted: `feature_retention/users`, `retention/events`,
+`lapsed_users/events`, `notifications/effectiveness`, `ingredients/learned_aliases`,
+`parsing/corrections` and `ingredients/unmatched`. The parent documents stay, so the kept
+series is never orphaned. A prune that works on subcollections cannot see a field written onto a parent
+document, so Phase 4 reads the parents too and reports any field outside `KEPT_PARENT_FIELDS`
+rather than leaving that to a comment about what they carry today.
+
+**Why the split rather than the whole collection either way.** The measured population, read
+against butlery-app-1 on 2026-09-11 with a dry run the following day agreeing: 546 aggregate
+rows carrying no uid and no uid-shaped string, 82 `feature_retention/users` rows carrying a uid
+in the document id and in a field, 19 `lapsed_users/events` rows carrying a `userId`. Keeping
+the collection whole would have preserved a behavioural profile per person per day for accounts
+the same run deletes from Auth; deleting it whole loses a time series nothing can recompute
+once its inputs are gone — which is the argument that already keeps `metrics`.
+
+**Why an allowlist and not a list of the five uid paths.** A hand-written delete list keeps
+tomorrow's per-person collection in silence, which is the failure BUT-2040 and BUT-2043 were
+filed about. An allowlist fails the other way: a new series nobody declares is deleted, the run
+prints that it was, and the loss is recoverable in a way an unnoticed retention is not. The
+cost is that a series is recognised by the NAME `daily`, so
+`functions/src/__tests__/reset-analytics-prune.test.ts` scans the whole of `functions/src` for
+writers in both spellings and reddens when it finds one no reviewed list accounts for.
+
+**Decision.** Malin, stated 2026-09-11 and dated by her to 2026-09-08: the measurement series
+are kept. She was not shown, at that point, that per-person rows existed under `analytics` —
+the split answers that and is not a choice she made — and the row count she reasoned from was
+already out of date. Separately the same day, asked with three options, she chose to delete
+`parsing/corrections` and `ingredients/unmatched`; she saw what both hold and that the
+ingredient queue references recipes the run deletes, and saw no row counts, both being empty.
+
+**Relationship to BUT-1789, which is a different decision about the same rows.** That entry
+governs an ACCOUNT ERASURE: the cascade erases `analytics/feature_retention/users` and leaves
+`analytics/feature_retention/daily`, because Art. 17 has nothing to reach in five integers and
+a date. This entry governs the pre-launch reset, where the ground is not Art. 17 at all but
+what a clean slate is for. The two outcomes coincide; the reasoning does not transfer in either
+direction.
+
+**Named cost.** Deleting `ingredients/learned_aliases` empties the alias review queue and
+removes the ability to revoke an alias that was already approved. An approved alias is written
+onto the ingredient document itself, which is preserved, so the aliases in use are unaffected.
+— 2026-09-12
