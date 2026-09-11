@@ -169,7 +169,7 @@ app-level coverage exists), follow the escalation playbook below.
 
 After `pod install` runs on the macOS build agent, fail the build if any
 linked pod is missing a manifest. Add the following step to the iOS build
-job (e.g. `.github/workflows/ios-archive.yml` or its sprint successor):
+job:
 
 ```bash
 # Fail if any pod in ios/Pods is missing PrivacyInfo.xcprivacy.

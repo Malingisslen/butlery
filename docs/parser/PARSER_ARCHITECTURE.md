@@ -152,7 +152,7 @@ see `docs/architecture/RECIPE_PIPELINE.md` truth table and the roadmap):
 
 ### Golden Dataset
 
-433-entry human-verified test set (`test/golden/crf_ingredients.json`). Automated evaluation via `test/evaluation/crf_evaluator.dart` computes per-label token-level P/R/F1, span-level metrics, and per-field exact match. Minimum threshold: 85% all-fields exact match.
+433-entry human-verified test set (`test/golden/crf_ingredients.json`). Automated evaluation via `test/evaluation/crf_evaluator_test.dart` computes per-label token-level P/R/F1, span-level metrics, and per-field exact match. Minimum threshold: 85% all-fields exact match.
 
 ---
 
@@ -249,7 +249,7 @@ scripts/ner/
 
 test/
 ├── golden/crf_ingredients.json      # 433-entry golden dataset
-├── evaluation/crf_evaluator.dart    # Automated accuracy evaluation
+├── evaluation/crf_evaluator_test.dart # Automated accuracy evaluation
 └── benchmark/parser_accuracy_benchmark.dart
 ```
 
