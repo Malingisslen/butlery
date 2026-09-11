@@ -181,6 +181,27 @@ void main() {
   );
 
   testWidgets(
+    "an incomplete who's-eating union shows the same roster warning "
+    '(BUT-2076)',
+    (tester) async {
+      final vm = vmWith(
+        hiddenCount: 2,
+        prefSource: MenuPrefSource.presentIncomplete,
+        unknownSoft: false,
+        recipe: RecipeFactory.build(id: 'r1', title: 'Köttbullar'),
+      );
+
+      await pumpMenuContent(tester, vm);
+
+      expect(
+        find.textContaining('listan över allergier kan vara ofullständig'),
+        findsOneWidget,
+      );
+      expect(find.textContaining('familjens allergier'), findsNothing);
+    },
+  );
+
+  testWidgets(
     'no hint row at all when nothing was hidden',
     (tester) async {
       final vm = vmWith(

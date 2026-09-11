@@ -38159,3 +38159,137 @@ conversations_viewmodel.dart:138), and deleting the whole clause would have cost
 to fix one false member. Lesson: when one member of an enumeration is false, strike THAT member;
 strike the clause only when what's left is still false or unmeasurable. The other five files'
 blobs are unchanged from round 2.
+
+### 2026-09-11 — ratings cluster batch 2 (updateRating deletion + BUT-2079 hasOnly) [trigger: commit-gate review]
+
+Gated: ratings_repository.dart, firebase_ratings_repository.dart, export_pagination_helper.dart
+(comment-only). `updateRating` deleted from interface + impl; zero callers in lib/ or test/ (grep
+hits only in the two deviation docs). The four deleted tests called only updateRating; every
+surviving method keeps its own tests (removeRating's three cover getDocumentWithPermissionCheck +
+ResourceNotFoundException; rateRecipe's reject tests cover validateSelfOperation + range).
+
+rateRecipe write shape, graded analytically against the existing suite: owner-omitted (null and
+'') and owner-stamped pinned by containsKey/equals; createdAt-only-on-new and merge:true both die
+to the re-rate test (createdAt value, or null cast on a non-merge overwrite). GAP: the rules
+create limb now carries keys().hasOnly, and rules_allowlist_drift_test's 'recipe_ratings create'
+writer set is HAND-TYPED, so a key ADDED to the writer's map reddened nothing. Mutant: inserted
+`'source': 'app',` after `'review': review,` (anchor count 1), rm .dart_tool/flutter_build, ran
+ratings + pooled + drift suites twice: run A and B both `+57 -1`, the sole [E] the new test
+`the widest first rating sends only keys the recipe_ratings create rule allows`. Restored via
+`git show :<path>`, numstat empty, hash == index. Post-restore 58/58.
+
+Carrier found outside the gated set (knowledge principle BUT-2038 again): activity_export_
+projection_test.dart test NAME "...the create limbs use hasRequiredFields, not hasOnly, so a
+client can store one" — falsified by BUT-2079; file clean at HEAD, so no diff sweep opened it.
+Struck the clause and the fixture value's "by a hand-rolled client"; case kept (Admin SDK /
+legacy rows can still carry an undeclared field). _dataMinimisation text is neutral, untouched.
+Deviation docs already carry the BUT-2079 supersession of the BUT-2062 residual.
+
+Hashes (index == worktree for gated files):
+  lib/repositories/interfaces/ratings_repository.dart            3da86a687648e305bc71f4a11770cb5565f61d1c
+  lib/repositories/firebase/firebase_ratings_repository.dart     c8cd89cf24c44699e5497e0e248dfd3e3090432e
+  lib/services/account/export/export_pagination_helper.dart      84c3a9039b3098e96aa25e44fa787dd9ff2842ba
+  test/unit/repositories/firebase_ratings_repository_test.dart   484ec47b08679dd5732f427bc040544fd11370c2 (worktree, unstaged; index 3a294a71)
+  test/unit/services/account/export/activity_export_projection_test.dart  d036c9142e9b10c8ca27ca3c9870f9af6ef9c861 (worktree, unstaged)
+
+### 2026-09-11 — BUT-2076 menu cluster batch 2 (present-diner resolver extraction) [trigger: commit-gate review]
+
+Gated: menu_generator.dart (enum gains presentIncomplete + isRosterIncomplete getter; the
+`_presentAllergenPrefs` body moved to PresentDinerPrefsResolver; ternary on resolved.isComplete)
+and menu_content_widgets.dart (hint keyed on isRosterIncomplete). All worktree-only, unstaged;
+the probes restored from scratchpad backups (not `git show :<path>`, since index == HEAD there).
+
+Baseline of six suites (present_aware, visibility widget, generator, household_allergen,
+swap_scoring, personalization): 110/110.
+Probe 1 = M1 widget condition reverted to `== householdIncomplete` + M3 ternary -> always
+`present`. Predicted 7, run A and B both `+103 -7`: the six present_aware presentIncomplete cases
++ the widget "incomplete who's-eating union" case.
+Probe 2 = M2 getter drops the presentIncomplete disjunct + M4 ternary -> always presentIncomplete.
+Predicted 5, A and B both `+105 -5`: the four present-asserting present_aware cases + the same
+widget case. Disjoint suites per mutant, so grouping was valid.
+Sibling files (household_service, household_roster_service, resolver, probed by another agent)
+hashed before and after every run: unchanged. Post-restore 110/110; analyze clean on 5 files.
+
+Instrument incident: the first probe-1 script asserted the generator anchor with LF after
+already writing the widget mutant; generator is CRLF, assert failed, widget left mutated alone.
+Caught by the hash check before any run. Principle added to the mutation-probe section.
+
+Analytics `pref_source: 'presentIncomplete'`: emitted by the path-agnostic `.name`; the wiring
+is pinned by the 'householdIncomplete' literal in menu_household_allergen_test and the value by
+the six present_aware prefSource cases. Only an enum-member RENAME survives both; no in-repo
+consumer of the string outside lib/test (grep). Graded non-blocking.
+
+Hashes:
+  lib/viewmodels/menu/menu_generator.dart                         2ac0332a8caa570dcf0f7da8d3a1e03cfb99fec0 (worktree; index/HEAD 492f4c0b)
+  lib/widgets/menu/menu_content_widgets.dart                      ef6658f9618168d5ed928f884252c5da7e5d88d2 (worktree; index/HEAD 63319e03)
+  test/unit/viewmodels/menu/menu_generator_present_aware_test.dart 93b71c1fb0d6ea8edc14ee8ced4aec7d7678d498 (worktree; index 48755be7)
+  test/unit/viewmodels/menu/menu_generator_test.dart              68dbb820788a90f8fd4f947c0f7cd927fac4da64 (== index)
+  test/widget/menu/menu_allergen_visibility_test.dart             e727f4c942cb04e44d8b0481354a8663037f235a (worktree; index b7712764)
+
+### 2026-09-11 — BUT-2078/BUT-2080 ratings cluster batch 1 (ownerUid accessor, dead updateRating)
+Trigger: commit-gate test review. Gated: recipe_ownership.dart, recipe_rating_system.dart, recipe_social_stats.dart.
+Verdict: pass once the two WORKTREE-ONLY test files are staged; every probe restored byte-identical to the index.
+Probes (each its own call, fresh .dart_tool/flutter_build, two runs, grade run B, mutant hash printed before and after each run):
+- M1+M2 revert both static owner checks to `socialData?.ownerId ?? createdBy`: red exactly "the owner may not rate their own recipe" + "the owner may view ratings on a recipe they are not a member of" (pre-existing tests in the batch).
+- M3+M4 revert `_recipeOwnerId` and the `getUserSocialStats` filter: GREEN on the staged suite (no fixture with an empty ownerId reached them). Added group "an empty socialData.ownerId (BUT-2078)" in recipe_social_stats_test.dart; red exactly its two tests (Actual null = denormalization skipped by `_denormalizeOntoRecipe`'s isEmpty guard; Actual 0 = recipe not counted).
+- M10 owner check in canUserViewRatings -> `|| currentUserId.isNotEmpty`: no false-direction test existed for that gate anywhere; added "a non-member may not view ratings when no owner resolves"; red exactly it.
+- M11 unresolved-event guard -> fires only when both NULL: red exactly the two pre-existing empty-string unresolved tests.
+- M13 guard keyed on `createdBy` alone, M14 guard `|| socialData.ownerId == ''`: both survived the staged suite; added "an owner resolvable from EITHER field alone emits no unresolved count"; each red exactly it.
+- M15 guard fires only when both are `''`: survived; added "a recipe with NEITHER owner field set is counted too" (RecipeBuilder defaults createdBy to 'test_user_123' -> cascade `..createdBy = null`, premise asserted); red exactly it.
+Instrument fault: M10+M11 run B came back all-green (34/34) after run A hit exactly the predicted 3; runs C/D with the mutant hash verified before and after each were red on the same 3. Concurrent session on shared .dart_tool is the likely cause; not attributed further.
+Anchor note: a multi-line anchor counted 0 on recipe_social_stats.dart (line endings); the count==1 assert refused before writing. Use single-line anchors.
+Analytic, not probed: notification site `recipe.ownerUid != userId` in RecipeSocialStats.rateRecipe is reached only when `_canRateRecipe` (same accessor) already refused the owner, so old/new differ only for userId ''. Owes no pin. Site-level `recipe.core.createdBy` swap at either static gate survives (every gate fixture has an empty social owner); the preference lives in the accessor suite.
+Struck my own comment "every owner read in this facade falls back to createdBy": getTopEngagingRecipes -> SocialEngagementMetrics._hasAccessToRecipe and RatingNotifications still use the old `??` spelling.
+Hashes at verdict:
+- `lib/models/recipe/recipe_ownership.dart` worktree `9b637df301e7a281d44f841dc691e447030cd724` index `9b637df301e7a281d44f841dc691e447030cd724` SAME
+- `lib/services/unified/operations/modules/recipe_rating_system.dart` worktree `6d33a6bbbc1b2c5fd3b8e02d0b65e03aa1c9e1e3` index `6d33a6bbbc1b2c5fd3b8e02d0b65e03aa1c9e1e3` SAME
+- `lib/services/unified/operations/modules/recipe_social_stats.dart` worktree `7e7238d1f2dcf154dc67bf3ef66b56404e0b7308` index `7e7238d1f2dcf154dc67bf3ef66b56404e0b7308` SAME
+- `test/unit/models/recipe/recipe_ownership_test.dart` worktree `006cfc34c872759ceb9a775b9368d16a2fba0511` index `006cfc34c872759ceb9a775b9368d16a2fba0511` SAME
+- `test/unit/services/unified/operations/modules/recipe_rating_system_test.dart` worktree `6f0981f378533bda8123b096093ab197285953fa` index `5664060932f7fa24d4a15d0d5a6d1d542d8d4220` WORKTREE-ONLY
+- `test/unit/services/unified/operations/modules/recipe_social_stats_test.dart` worktree `703804ea33764da8a01fc2dbf66a34f8192aee10` index `60ebb7531122349ad9398075d4c0c2cd51fdd1c8` WORKTREE-ONLY
+
+
+### 2026-09-11 — BUT-2076 menu cluster batch 1 (household_service / roster / present-diner resolver) [trigger: commit-gate review]
+
+Gated: lib/services/household_service.dart (aggregateAllergenPreferencesFor, static
+widenWithSafetyFloor, _resolveMembers extraction), lib/services/family/household_roster_service.dart
+(tryGetRoster), lib/services/menu/present_diner_prefs_resolver.dart (new, untracked). All
+worktree-only; the ratings cluster was staged and the index was not touched.
+
+Three branches the other reviewers had named as untested, all on the allergen path, all closed
+with tests: the resolver's two missing-HouseholdService branches, the For-method's own fallback,
+and tryGetRoster null-on-failure. Also added: a diners-only meal (pins `isComplete ?? true`,
+`includeUnknown ?? true`, and present-subset selection via verifyNever on the profile lookup),
+and a cautious diner closing the UNKNOWN hatch (domain invariant nobody had written).
+
+Probes: NO lib/ write. A parallel agent was probing menu_generator.dart against the present-aware
+suite, which uses the REAL HouseholdService, so a lib mutant would have poisoned their battery.
+Per-mutant replica files under test/ (_zz_tm1_ prefix), one flutter test over all 18 probe suites,
+run A and run B identical (+214 -20). The HouseholdService replica is a SUBCLASS registered under the
+real type, so the real resolver dispatched into it. Controls green for every replica.
+  resolver C (complete + no floor, the bug shape) / C1 (floor dropped) -> "a present adult gets the floor"
+  resolver D (_unreadable null-service base = defaults) -> "imposes no diet"
+  resolver E (isComplete ?? false) / F (includeUnknown ?? false) / H (all roster accounts) -> "diners only"
+  resolver G (diner hatch line deleted) -> "one cautious diner"
+  hs MA (floor line 401 deleted) -> present-aware M4 (binding condition M4 measured) + 7 household cases
+  hs MB (For fallback -> complete) / MB2 (fallback without floor) -> the new fallback test
+  roster R1 (defaultValue []) -> both failure tests; R3 (missing household throws) -> "does not exist"
+  roster R2 (.catchError swallow of the diner read) -> GREEN in A and B. Instrument fault: my stub
+  `thenAnswer((_) async => throw ...)` infers Future<Never>, on which the catchError handler's list
+  is a type error, so the future still failed and tryGetRoster still answered null. Retyped both
+  failure stubs to Future<T>.error; R2 then red, and R2b (try/catch swallow) red, A and B.
+
+Resolver doc claim "a roster read that returns at all has read every diner document" checked
+against FirebaseDinerProfileRepository.getByHousehold + FirebaseHouseholdRepository.isMember/_loadRaw:
+errors propagate (no swallow); the only [] return is the non-member branch, reachable only by a
+household deleted between the two reads. Now pinned at the roster layer by the diner-failure test.
+
+Hashes at verdict (worktree):
+  059191620ed506e5d84470b2e7ba992513b7098b test/unit/services/menu/present_diner_prefs_resolver_test.dart (untracked, new)
+  81c7c453e18c4628569547556a29bde0cb1def24 test/unit/services/household_service_test.dart
+  2f65a66736eaf060fd91365504d0596fe2c78e54 test/unit/services/family/household_roster_service_test.dart
+  93b71c1fb0d6ea8edc14ee8ced4aec7d7678d498 test/unit/viewmodels/menu/menu_generator_present_aware_test.dart (unchanged by me)
+  8069e4f3832bd68454924e1b9e28441d17872038 lib/services/household_service.dart (unchanged by me)
+  d9fc2cc5d5f08a8b189a6aa4a8520f79d4faf3f9 lib/services/family/household_roster_service.dart (unchanged by me)
+  7b3c9bb7605e8d38feb06b2b12d65a2ace08e008 lib/services/menu/present_diner_prefs_resolver.dart (untracked, unchanged by me)
+Final: analyze --fatal-infos clean on all 7; 62/62 across the four suites.

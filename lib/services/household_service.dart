@@ -136,6 +136,40 @@ class HouseholdService extends BaseService {
     return HouseholdAllergenAggregate.degraded(preferences: _floorOnly);
   }
 
+  /// The same per-member resolution as [aggregateAllergenPreferences], over
+  /// [memberIds] — ACCOUNT holders only — instead of the whole household.
+  ///
+  /// This is how the who's-eating-today path resolves the present adults: one
+  /// implementation of BUT-1663's floor and BUT-1693's shared lists for both
+  /// paths, because two copies of a safety rule drift.
+  Future<HouseholdAllergenAggregate> aggregateAllergenPreferencesFor(
+    Set<String> memberIds,
+  ) async {
+    final result = await executeServiceOperation(
+      () => _resolveMembers(memberIds.toList()),
+      operationName: 'aggregateAllergenPreferencesFor',
+    );
+    if (result != null) return result;
+    AppLogger.warning(
+      'Allergen aggregation for the present members failed; falling back to '
+      'the common-allergen floor with UNKNOWN recipes excluded',
+      serviceName,
+    );
+    return HouseholdAllergenAggregate.degraded(preferences: _floorOnly);
+  }
+
+  /// [base] widened with the common-allergen floor and the UNKNOWN escape
+  /// hatch shut — the answer for a set of diners this device could not read.
+  /// Dietary choices pass through untouched, for the reason given on
+  /// [_allergenSafetyFloor].
+  static UserAllergenPreferences widenWithSafetyFloor(
+    UserAllergenPreferences base,
+  ) => _buildPreferences(
+    allergens: {...base.trackedAllergens, ..._allergenSafetyFloor},
+    dietary: base.trackedDietary,
+    includeUnknown: false,
+  );
+
   /// The fallback used whenever nothing reliable is known about the household:
   /// the common-allergen floor, no dietary restrictions, and the UNKNOWN escape
   /// hatch shut so only recipes proven free get through. Kept in one place —
@@ -217,17 +251,19 @@ class HouseholdService extends BaseService {
     }
   }
 
-  Future<HouseholdAllergenAggregate> _aggregatePreferences() async {
+  Future<HouseholdAllergenAggregate> _aggregatePreferences() {
     // BUT-1663: `allMemberIds` is `[ownerId, ...friendUserIds]` and
     // `migrateOwnersAsMembers()` appends the owner INTO `friendUserIds` on
     // every login, so the owner arrives twice for any migrated household.
-    // Dedupe before counting: the duplicate inflates the single-member check
-    // below and would list the same id twice in the unresolved report.
-    final memberIds = getHouseholdMemberIds().toSet().toList();
+    // Dedupe before counting: the duplicate would list the same id twice in
+    // the unresolved report.
+    return _resolveMembers(getHouseholdMemberIds().toSet().toList());
+  }
 
-    // DEFENSIVE, not a live path: both callers gate on `hasHousehold`, and a
-    // household's `allMemberIds` always leads with a non-nullable `ownerId`,
-    // so this cannot currently be reached. It exists because removing the old
+  Future<HouseholdAllergenAggregate> _resolveMembers(
+    List<String> memberIds,
+  ) async {
+    // This check exists because removing the old
     // single-member early return made "no members" fall through to an empty
     // union with UNKNOWN allowed — every allergen filter silently off, dressed
     // up as a healthy roster. An empty roster is UNKNOWN, never safe.
@@ -253,7 +289,7 @@ class HouseholdService extends BaseService {
     // round-trips in front of two user-visible waits — menu generation and the
     // allergen opt-out dialog, which shows nothing until this returns. Safe to
     // parallelise: `lookupUserProfile` catches its own errors (so no future
-    // rejects), the ids are deduped above, and the accumulators below are two
+    // rejects), and the accumulators below are two
     // set unions plus an AND-fold, none of which depend on completion order.
     // `Future.wait` preserves input order, so the diagnostic lists still come
     // out in roster order.
@@ -436,7 +472,7 @@ class HouseholdService extends BaseService {
     );
   }
 
-  UserAllergenPreferences _buildPreferences({
+  static UserAllergenPreferences _buildPreferences({
     required Set<String> allergens,
     required Set<String> dietary,
     required bool includeUnknown,

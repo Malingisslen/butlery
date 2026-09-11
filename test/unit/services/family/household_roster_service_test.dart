@@ -278,4 +278,38 @@ void main() {
       verifyNever(() => dinerRepo.getByHousehold(any()));
     });
   });
+
+  group('tryGetRoster tells "nobody" from "could not find out" (BUT-2076)', () {
+    test('a failed household read is null, while getRoster still answers '
+        'empty', () async {
+      when(
+        () => householdRepo.read(_hh),
+      ).thenAnswer((_) => Future<Household?>.error(StateError('offline')));
+
+      expect(await service.tryGetRoster(_hh), isNull);
+      expect(await service.getRoster(_hh), isEmpty);
+    });
+
+    test('a household that does not exist is an empty roster, not a '
+        'failure', () async {
+      when(() => householdRepo.read('ghost')).thenAnswer((_) async => null);
+
+      final roster = await service.tryGetRoster('ghost');
+
+      expect(roster, isNotNull);
+      expect(roster, isEmpty);
+    });
+
+    test('a failed diner-profile read fails the whole roster rather than '
+        'returning the account holders alone', () async {
+      when(() => householdRepo.read(_hh)).thenAnswer((_) async => _household());
+      // Typed as production's future. Against an `async => throw` stub, which
+      // is a Future<Never>, a `.catchError` swallow of this read stayed green.
+      when(() => dinerRepo.getByHousehold(_hh)).thenAnswer(
+        (_) => Future<List<DinerProfile>>.error(StateError('offline')),
+      );
+
+      expect(await service.tryGetRoster(_hh), isNull);
+    });
+  });
 }

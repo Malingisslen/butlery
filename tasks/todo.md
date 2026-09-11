@@ -1,3 +1,203 @@
+# Sprint 2026-09-11 (natt) — sex ärenden, fyra kluster
+
+Vald av `/delivery:sprint-execute`. Föregående sprint (2026-09-11 kväll) är stängd och ligger i
+arkivet nedan. Steg 0 mot HEAD `ddae7776f` är gjord för alla; greparna står under respektive ärende.
+Routern körs om på den filunion som faktiskt delas ut, per kluster.
+
+**Utanför sprinten, med skäl:**
+- BUT-2083 — **premissen borta**: `friends_profile_cache_manager.dart:78,84` maskerar redan båda
+  id-mängderna (`maskedUserId`), landat i `23b4f8d97` (BUT-2027). Stängs.
+- BUT-1826 — **needs-approval**: att få cache-skrivningen att fungera öppnar en skrivväg där vilken
+  inloggad klient som helst lägger receptdata (ingredienser, alltså allergener) som ANDRA användare
+  läser vid import av samma URL. Det är ett val mellan tre vägar (klientskrivning, serverskrivning,
+  ta bort cachen), inte en reparation. Kommentar med rekommendation på ärendet.
+- BUT-1716 — väntar redan på Malins val (radera vägen eller landa stashen); kommenterat i kväll.
+
+---
+
+## Kluster M — allergengolvet i närvaro-vägen
+
+### [Tier B] BUT-2076 — oläsbar hushållsmedlem räknas som "inga allergier" (High, menu/Bug)
+
+Disposition: **build**. Säkerhetsfix som följer ett mönster som redan är live (BUT-1663-golvet).
+Tier B eftersom den befintliga "rostern är ofullständig"-raden visas i ett nytt läge — ingen ny text.
+
+Steg 0, mätt mot HEAD:
+- `menu_generator.dart:261-269` unionerar bara `if (prefs != null)`.
+- `household_roster_service.dart:66-72` VET `unavailableIds` (BUT-2027) men returnerar en vanlig lista;
+  `:79-80` lägger en oläsbar medlem som `allergenPreferences: null`.
+- Totalfel: `getRoster` sväljer felet och returnerar `[]` (`:35`) — då matchar ingen närvarande
+  medlem, unionen blir TOM och `_resolveActivePrefs` returnerar den som `present`. Ett ofiltrerat
+  resultat, värre än delfallet. Samma fix måste täcka det.
+- Hushållsvägens golv: `household_service.dart:81` `_allergenSafetyFloor`, `degraded`, `_floorOnly`.
+
+Router (union `menu_generator.dart`, `household_roster_service.dart`): **`single`**, panel
+`["Product Manager"]`, `high_stakes_hits: []`.
+
+Acceptanskriterier:
+- [ ] `{text: "En narvarande medlem vars profillasning FELADE (unavailable) breddar allergenunionen med golvet (ENBART allergener, aldrig trackedDietary) och stanger UNKNOWN-luckan; en medlem vars profil SAKNAS (missing) degraderar inte", kind: diff}`
+- [ ] `{text: "Totalfel pa rosterlasningen ger inte langre en tom, ofiltrerad union - den faller till golvet eller till hushallsvagen, aldrig till ofiltrerat", kind: diff}`
+- [ ] `{text: "Anvandaren ser den befintliga roster-ofullstandig-raden aven i narvarovagen; ingen ny ARB-strang", kind: diff}`
+- [ ] `{text: "Test med tre armar (full traff, delvis fel, totalfel), mutationsprovade", kind: diff}`
+
+---
+
+## Kluster R — betyg: en ägaraccessor, en död metod, två regelgrenar
+
+### [Tier A] BUT-2078 — fyra stavningar av "vem äger receptet" (Low, social/tech-debt)
+
+Disposition: **build**. Steg 0: `recipe_rating_system.dart:343,366`, `recipe_social_stats.dart:61,97,234`
+skriver `socialData?.ownerId ?? core.createdBy`; `??` fångar inte tom sträng. Premissen gäller (fem
+ställen, inte fyra).
+
+- [ ] `{text: "EN accessor pa Recipe dar tom strang raknas som saknad, anvand pa alla stallen i recipe_rating_system.dart och recipe_social_stats.dart (inklusive rateRecipe)", kind: diff}`
+- [ ] `{text: "Ett test som rodnar om accessorn slutar behandla tom strang som saknad", kind: diff}`
+- [ ] `{text: "Standardfixturen i recipe_rating_system_test.dart har skilda uid for agare och betygsattare", kind: diff}`
+- [ ] `{text: "INTE gjort: en oloslig agare nekas inte - Malins beslut 2026-09-11 (BUT-2057) star; firebase_recipe_repository.dart:s egna stavningar ror inte", kind: diff}`
+
+### [Tier A] BUT-2080 — `updateRating` går inte att nå (Low, tech-debt)
+
+Disposition: **build** (radera). Steg 0: anropare i HELA repot är bara definitionerna
+(`ratings_repository.dart:24`, `firebase_ratings_repository.dart:193`, `recipe_rating_system.dart:166,191`)
+och deras egna tester.
+
+- [ ] `{text: "updateRating borta pa bada lagren, grep over lib/ test/ functions/ tools/ visar noll traffar", kind: diff}`
+- [ ] `{text: "Grannskapskommentarer som resonerar om metoden ar strukna", kind: diff}`
+
+### [Tier C] BUT-2077 + BUT-2079 — `recipe_ratings`/`recipe_comments` regelgrenar (Medium, backend/security)
+
+Disposition: **build**, parkeras In Review (full panel, `panelPolicy: park`).
+
+Steg 0:
+- UPDATE-grenen `firestore.rules:2622-2630` saknar `isAgeCompliant()` och `rateLimitWrite`.
+- **`rateLimitWrite` är inert här**: ingen kod i `lib/` skriver `users/{uid}/rate_limits/recipe_ratings`
+  (grep på `rate_limits`/`userRateLimits` ger bara konstanten), och hjälparen släpper igenom när hinken
+  saknas (`firestore.rules:203-207`). Samma läge som BUT-2038, där Malin 2026-09-09 beslöt att INTE
+  lägga till en inert spärr. BUT-2077 kriterium 1 tillåter "skrivet varför".
+- Create-grenarna: `recipe_ratings` `:2599`, `recipe_comments` `:1418`, båda `hasRequiredFields` utan `hasOnly`.
+
+Router: se Fas 1.4 nedan.
+
+- [ ] `{text: "BUT-2077: UPDATE-grenen har isAgeCompliant(); regeltest bade allow och deny, mutationsprovat", kind: diff}`
+- [ ] `{text: "BUT-2077: rateLimitWrite laggs INTE till pa update; regelkommentaren sager varfor (ingen skrivare stamplar hinken), och en foljdbiljett for en verklig broms pa update-recipe-rating-stats ar filad", kind: diff}`
+- [ ] `{text: "BUT-2079: bada create-grenarna har keys().hasOnly, upprknat mot varje skrivvag med fil och rad (inkl. recipeOwnerId och kommentarernas resolver-null-vag)", kind: diff}`
+- [ ] `{text: "BUT-2079: regeltest per samling - ett odeklarerat falt NEKAS, appens riktiga payload TILLATS, och en omsattning (merge) av en befintlig rad TILLATS", kind: diff}`
+- [ ] `{text: "BUT-2079: data_minimisation-meningen om falt som kan saknas ar struken eller fortfarande sann", kind: diff}`
+
+---
+
+## Kluster P — stängning av omröstning
+
+### [Tier A] BUT-1925 — en upprepad stängning kan lägga samma recept två gånger (Medium, social/Bug)
+
+Disposition: **build-review** — detaljen som är Malins: vilket delfel appen väljer (stängd omröstning
+utan rätt, eller öppen omröstning som kan köras om).
+
+Steg 0: `message_mutation_module.dart:487` kontrollerar bara `creatorId`; `isClosed` sätts på `:492`
+och läses aldrig i `lib/repositories/`. `messaging_service.dart:941-944` skriver planen FÖRE flaggan.
+
+Router (union `messaging_service.dart`, `message_mutation_module.dart`): **`single`**, panel
+`["Data Analyst / BI", "Performance Engineer", "Trust & Safety / Content Moderation"]`. Ägande roll: T&S.
+
+- [ ] `{text: "En omkorning efter en halvt misslyckad stangning lagger INTE till receptet en andra gang - bevisat av ett test som simulerar flaggfel efter lyckad planskrivning", kind: diff}`
+- [ ] `{text: "Repositoryts closePoll kontrollerar isClosed i samma skrivning (transaktion) och en redan stangd omrostning ger ett urskiljbart svar", kind: diff}`
+- [ ] `{text: "Doc-kommentaren ovanfor MessagingService.closePoll beskriver det nya beteendet och pekar inte langre pa BUT-1925 som oppen", kind: diff}`
+- [ ] `{text: "Mutationsprovat", kind: diff}`
+
+---
+
+## Fas 1.4 — kritikens bindande villkor
+
+**Kluster R** — router på unionen (7 sökvägar): `full-panel`, 13 säten, alla blinda, alla svarade.
+**Kluster M** — `single`, Product Manager. **Kluster P** — `single`, Trust & Safety.
+
+### M (BUT-2076) — PM
+- PM mätte: närvaro-vägen kan ALDRIG läsa en annan vuxens allergier (`users/{uid}` ägarläsning
+  `firestore.rules:333`, allergier bara i privata inställningar, `fetchProfiles` läser
+  `public_profiles`). Andra vuxna kommer tillbaka som "found" utan allergier, INTE som `unavailable`.
+  Planens kriterium 1 hade alltså aldrig slagit till för dem.
+- M1. Närvaro-vägen använder SAMMA per-medlem-upplösning som hushållsvägen (`household_service.dart:283-372`:
+  `lookupUserProfile`, delade listor BUT-1693, golv för `!settingsMerged && shared == null` utan
+  degradering, degradering + stängd UNKNOWN för `unavailable`/`foundSettingsUnavailable`, `missing`
+  degraderar inte). En kopia av den logiken är förbjuden — extrahera och återanvänd.
+- M2. Beslut om golv/degradering tas på läsningens status, aldrig på `prefs == null`.
+- M3. Totalfel / ingen närvarande matchar: aldrig `present` med tom union. Resultatet är hushållsunionen
+  VIDGAD med golvet, UNKNOWN stängd, källa = ofullständig — inte ren hushållsväg, eftersom den inte
+  innehåller barnprofiler (diners) och ett barns allergi då skulle falla bort.
+- M4. Två-vuxen-test: den andra vuxna närvarande ger filtrerad pool; ta bort golvet -> testet rodnar.
+- Beslutat här, inte Malins: delade listor gäller även närvaro-vägen (samma kod, flaggan styr);
+  totalfel = vidgad union (strikt säkrare än båda alternativen PM ställde upp). Syns i In Review-kommentaren.
+
+### R (BUT-2078/2080/2077/2079) — 13 säten
+- R1 (Säk, DPO, DBA). UPDATE-grenen på `recipe_ratings` binder vilka nycklar en ändring får röra:
+  `diff(resource.data).affectedKeys().hasOnly(['rating','review','updatedAt','recipeOwnerId'])`
+  (affectedKeys, inte keys, så äldre rader kan betygsättas om). Test: en merge av ett odeklarerat
+  fält in i en befintlig rad NEKAS.
+- R2 (Säk, T&S, DBA, QA, PM). Create-listorna härleds ur skrivarens faktiska map, med fil:rad:
+  betyg `firebase_ratings_repository.dart:168-181`, kommentarer `firebase_comments_repository.dart:205-227`
+  (alla nycklar inkl. `authorDisplayName`, `isDeleted`, `likesCount`, `replyCount`, `parentCommentId`,
+  villkorade `recipeOwnerId`, `imageUrls`). Modellens `toFirestore` är INTE källan.
+- R3 (QA, PM, DBA). "Riktig payload TILLÅTS" som namngivna fall: betyg med `review: null`, med och utan
+  `recipeOwnerId`; kommentar med `parentCommentId: null`, `authorDisplayName`, `updatedAt`, som den
+  riktiga batchen (inkl. rate_limits-skrivningen).
+- R4 (QA). Alla update-test i `recipe-ratings-rules.test.ts` loggar in med `ageCompliant:true`; ett nytt
+  fall NEKAS enbart för saknat anspråk; varje befintlig nekning har en tillåten tvilling som skiljer i en sak.
+- R5 (QA). Mutationsprov: ta bort varje `hasOnly` -> "okänt fält nekas" rodnar; ta bort `isAgeCompliant`
+  på update -> ålderstestet rodnar.
+- R6 (Legal, DPO). Samma `isAgeCompliant()`-hjälpare; DELETE- och READ-grenarna orörda.
+- R7 (Säk, Vendor, DBA). Regelkommentaren om rateLimitWrite gäller BARA `recipe_ratings` (kommentarernas
+  skrivare stämplar sin hink, `firebase_comments_repository.dart:233-246`) och ger sitt eget skäl utan
+  att luta sig på BUT-2038. Följdbiljetten beskriver kostnaden så som koden gör den (utlösaren hoppar
+  över oförändrade stjärnor och debouncas per recept; läsningen per körning är obegränsad i storlek)
+  och att den är omätt (inte i `MONITORED_SERIES`).
+- R8 (DPO, QA). `rules_allowlist_drift_test.dart` utökas: varje nyckel i de nya listorna finns i
+  exportens exporterade eller undanhållna lista för samlingen (`activity_export_manager.dart`).
+- R9 (Legal, DPO, DBA). Påståendet att create-grenarna saknar `hasOnly` superseras: daterad
+  beslutspost i båda avvikelsefilerna (citerar den pensionerade meningen ordagrant) och kommentaren
+  i `export_pagination_helper.dart:141-145`. `_dataMinimisation` byte-identisk.
+- R10 (Arkitekt, DA). Accessorn ersätter även `recipe_rating_system.dart:77-81`, och
+  `recipeRatingOwnerUnresolved` slår till exakt när den gör i dag (båda fälten saknas/tomma).
+- R11 (Arkitekt). `ACCEPTED_LARGE_FILES.md`-raden för `firebase_ratings_repository.dart` räknas om ur
+  `wc -l` i samma anrop som commit.
+- Följdbiljetter: en person kan skapa flera betyg per recept (dok-id kontrolleras inte, Säk);
+  review saknar typ/längdtak (Säk — längden N är Malins).
+
+### P (BUT-1925) — T&S
+- T&S mätte att planens kriterium 2 (transaktion i repositoryt) INTE stoppar dubbletten: den inaktuella
+  förläsningen släpper igenom omkörningen och andra tillägget körs före transaktionen.
+- Rätt fix kräver ett nytt fält på planens rätter (omröstningens meddelande-id) i både personlig och
+  gruppvecka — modell, serialisering, export och en förfalskningsbar rad på gruppmenyn. Större än
+  ärendet beskrev. **Lyfts ur sprinten**, stannar i Todo med den mätta specen som kommentar.
+
+## Deviation log
+
+- [deviation] BUT-1925: planen sa transaktion i repositoryt -> T&S mätte att den inte stoppar dubbletten; rätt fix kräver ett provenansfält på planens rätter -> lyft ur sprinten, spec som kommentar.
+- [discovery] BUT-2076: planen antog att andra vuxnas profiler kan läsas -> de kan aldrig läsas; kopplar närvaro-vägen till hushållsvägens upplösning i stället för egen logik.
+- [discovery] BUT-2076: närvaro-vägen har ingen anropare i appen (`presentMemberIds` sätts aldrig, BUT-1611 -> BUT-1625) -> fixen härdar en väg som inte är påslagen -> byggd ändå, sägs i In Review-kommentaren.
+- [deviation] BUT-2076: planen lade resolvern under lib/viewmodels/menu -> granskningen: affärslogik hör hemma i tjänstelagret -> flyttad till lib/services/menu/.
+- [discovery] BUT-2077: ärendets kostnadspremiss ("varje ombetygsättning utlöser en obegränsad läsning") mätt falsk -> utlösaren hoppar över oförändrade stjärnor och debouncas; det obegränsade är läsningen per körning -> BUT-2084.
+- [deviation] BUT-2079: panelen krävde nyckelbindning även på UPDATE (affectedKeys) -> byggd, annars kringgås create-listan med en merge.
+- [needs-human] BUT-2079: recensionens längdgräns är Malins -> fråga på ärendet.
+- [discovery] Linear vägrade nya ärenden efter BUT-2084 -> tre följdpunkter som kommentarer på BUT-2071, BUT-1823 och BUT-2079; en fjärde på BUT-2078.
+
+## Slutstatus (2026-09-11 natt)
+
+- **Kluster R — `ac4eb8d6a`, pushad.** BUT-2078 och BUT-2080 **Done** (Tier A, alla kriterier pass).
+  BUT-2077 och BUT-2079 **In Review** (regeländring, full panel, `panelPolicy: park`); 16/16 kriterier
+  pass hos fristående kontrollant. Regelsviter 16/16 + 29/29, Dart 116/116.
+- **Kluster M — se commit nedan.** BUT-2076 **In Review** (Tier B): 7/7 kriterier pass, 69/69 i
+  kontrollantens körning. Närvaro-vägen har ingen anropare i appen än (BUT-1625), så fixen härdar en
+  väg som inte är påslagen.
+- **Utanför:** BUT-2083 stängd (redan fixad i `23b4f8d97`); BUT-1826 needs-approval med
+  rekommendation; BUT-1925 lyft ur med mätt spec; BUT-1716 väntar på Malin.
+- **Följdpunkter:** BUT-2084 (ny). Linear vägrade fler ärenden, så resten ligger som kommentarer:
+  BUT-2071 (flera betyg per person), BUT-2079 (recensionens längd — Malins), BUT-1823 (kommentarernas
+  skrivare ej knuten till listan), BUT-2078 (två grannfiler med gamla ägarstavningen), BUT-1694
+  (möjligt levande fel: ny användare utan inställningar kan få en helt vegansk meny — omätt).
+- **Grindar:** varje .dart-, regel- och testfil granskad av sin grind; alla slutverdikt pass.
+
+---
+
 # Sprint 2026-09-11 — sju ärenden, fyra kluster
 
 Vald av `/delivery:sprint-execute`. Föregående sprint (2026-09-11) är stängd

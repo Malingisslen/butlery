@@ -4097,3 +4097,16 @@ Samma sprint, samma klass åt andra hållet: jag bytte ut en inaktuell sats mot 
 beskrev det för granskaren som "struken, inte omräknad". Grinden läste diffen och såg
 ersättningen. Det som skedde och det jag sa att jag gjorde var olika saker — beskriv en
 redigering först efter att ha läst diffen av den (BUT-1952, 2026-09-11).
+
+### Ett ärende kan namnge fel TILLSTÅND för sitt eget fel (BUT-2076, 2026-09-11)
+
+BUT-2076 beskrev felet som "en hushållsmedlem vars profil inte går att läsa" och föreslog ett
+golv för medlemmar som läsningen misslyckas för (`unavailable`). PM-sätet mätte kedjan och fann att
+en annan vuxen i hushållet ALDRIG kommer tillbaka som `unavailable`: deras allergier ligger i
+privata inställningar som bara ägaren får läsa, så de kommer tillbaka som `found` med inga
+allergier — varje gång, inte bara vid ett fel. Planens första kriterium hade alltså aldrig slagit
+till för det vanligaste fallet, och fixen hade sett färdig ut med gröna tester.
+
+Regel: innan en fix designas kring ett statusvärde, mät vilket status den verkliga populationen
+faktiskt producerar — spåra läsregeln, var fältet lagras och vilken läsväg som fyller det. Ett
+ärendes ord för felet ("oläsbar") är en beskrivning, inte en enum.

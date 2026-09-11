@@ -5295,3 +5295,29 @@ R3 strike leaves "Knowingly open against a hand-rolled client" standing as the s
 clause, narrower than the truth the strike established — tolerated only because its own first
 sentence points at C3, which carries the complete account. If that line is ever edited, the
 edit is deleting "against a hand-rolled client", never adding prose.
+
+## 2026-09-11 — BUT-2077 + BUT-2079 commit-gate review (recipe_ratings / recipe_comments)
+
+Staged diff: `recipe_ratings` create gains `keys().hasOnly([recipeId, userId, rating, review,
+recipeOwnerId, createdAt, updatedAt])`; update gains `isAgeCompliant()` and
+`diff().affectedKeys().hasOnly([rating, review, updatedAt, recipeOwnerId])` BESIDE the existing
+`cannotModify([recipeId, userId, createdAt])`; `recipe_comments` create gains a 13-key
+`keys().hasOnly`. Read/delete limbs untouched (verified on `git diff --cached`). Index blob ==
+worktree blob for all three reviewed files. Suites: ratings 16/16, comments 29/29.
+
+Key lists checked against the WRITERS, not the models: `rateRecipe` map (7 keys, `recipeOwnerId`
+via null-aware `?ownerOrNull`, `createdAt` only when absent) and `addComment` map (13 keys,
+`recipeOwnerId`/`imageUrls` conditional, `parentCommentId` nullable). No other client CREATE
+path exists for either collection (`recipe_service_adapter` deletes, `comment_reactions_system`
+and `comment_utilities` go through the UNCHANGED update limbs).
+
+New pattern: adding an `affectedKeys().hasOnly(...)` allowlist that EXCLUDES the keys of an
+existing `cannotModify(...)` makes `cannotModify` MASKED — every pin denial is now denied by
+both conjuncts, so deleting `cannotModify` reddens nothing. Not measured here (the brief forbade
+probes); inferred from the two lists being disjoint. The pin tests stay correct; their
+attribution moves to "guards the pair".
+
+Non-blocking notes filed in the report: the undeclared-merge deny's named "twin" (the app
+re-rate) differs in several keys, not just `featured`; no reply-shaped comment (string
+`parentCommentId` + parent `replyCount` increment in the same batch) is pinned; both new rules
+comments cite `file:line` ranges in another file, which rot.

@@ -282,6 +282,12 @@
       "path": "lib/viewmodels/menu/menu_generator.dart"
     },
     {
+      "id": "vm-present-diner-resolver",
+      "label": "PresentDinerPrefsResolver",
+      "context": "service",
+      "path": "lib/services/menu/present_diner_prefs_resolver.dart"
+    },
+    {
       "id": "vm-weekly-plan",
       "label": "WeeklyMenuPlanViewModel",
       "context": "viewmodel",
@@ -2596,8 +2602,29 @@
         },
         {
           "from": "vm-menu-generator",
+          "to": "vm-present-diner-resolver",
+          "payload": "resolve(presentMemberIds) — generatorns opt-in-väg, prövas FÖRE hushålls-toggeln men är BYGGD MEN OWIRAD: ingen vy sätter presentMemberIds i dag, och veckomenyns per-pass-närvaro ”vem är hemma” (BUT-1611) matar den avsiktligt INTE. Närvaro styr visning/portioner/vem-åt-loggen, aldrig generationens pool — säker närvaro-styrd generering är uppskjuten (accepted-deviation BUT-1611 → BUT-1625)",
+          "transport": "method call",
+          "verified": true
+        },
+        {
+          "from": "vm-present-diner-resolver",
           "to": "svc-household",
-          "payload": "getAggregatedAllergenPreferences — hushållsunionen är STANDARDVÄGEN, men läses bara när useHouseholdAllergens är true (BUT-1465 opt-out-reglage i Inställningar, live sedan 2026-07-11 — av faller tillbaka till egna preferenser); generatorn har DESSUTOM en opt-in-väg (presentMemberIds) som filtrerar mot enbart de närvarandes allergener via familjerostern (konton OCH matgästprofiler) och går då FÖRE hushålls-toggeln — men den är BYGGD MEN OWIRAD: ingen vy sätter presentMemberIds i dag, och veckomenyns per-pass-närvaro ”vem är hemma” (BUT-1611) matar den avsiktligt INTE. Närvaro styr visning/portioner/vem-åt-loggen, aldrig generationens pool — säker närvaro-styrd generering är uppskjuten (accepted-deviation BUT-1611 → BUT-1625)",
+          "payload": "tryGetRoster(householdId) via HouseholdRosterService (konton + matgästprofiler), sedan aggregateAllergenPreferencesFor(presentAccountIds) för de närvarande KONTONA — samma per-medlem-upplösning (BUT-1663-golvet, BUT-1693 delade listor) som hela hushållsvägen; närvarande MATGÄSTPROFILER bidrar direkt ur rostern. En rosterläsning som misslyckas widenar nu med säkerhetsgolvet i stället för att tyst falla igenom (BUT-2076)",
+          "transport": "method call",
+          "verified": true
+        },
+        {
+          "from": "vm-present-diner-resolver",
+          "to": "vm-menu-generator",
+          "payload": "PresentDinerPrefs(preferences, isComplete) — isComplete:false ger MenuPrefSource.presentIncomplete, som delar samma ofullständig-hint i UI:t som householdIncomplete (MenuPrefSource.isRosterIncomplete)",
+          "transport": "in-memory return",
+          "verified": true
+        },
+        {
+          "from": "vm-menu-generator",
+          "to": "svc-household",
+          "payload": "getAggregatedAllergenPreferences — hushållsunionen är STANDARDVÄGEN, men läses bara när useHouseholdAllergens är true (BUT-1465 opt-out-reglage i Inställningar, live sedan 2026-07-11 — av faller tillbaka till egna preferenser); prövas EFTER den närvarostyrda opt-in-vägen ovan om presentMemberIds är tom/null",
           "transport": "method call",
           "verified": true
         },

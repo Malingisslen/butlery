@@ -27,13 +27,17 @@ class HouseholdRosterService extends BaseService {
   /// Resolve every member of [householdId] — accounts first (in stored member
   /// order), then diner profiles. Returns an empty list if the household is
   /// missing or the caller is not a member.
-  Future<List<HouseholdRosterMember>> getRoster(String householdId) async {
-    final result = await executeServiceOperation(
-      () => _resolveRoster(householdId),
-      operationName: 'getRoster',
-    );
-    return result ?? const <HouseholdRosterMember>[];
-  }
+  Future<List<HouseholdRosterMember>> getRoster(String householdId) async =>
+      await tryGetRoster(householdId) ?? const <HouseholdRosterMember>[];
+
+  /// [getRoster], except that a FAILED read returns null rather than an empty
+  /// list. A caller deciding what is safe to eat must be able to tell "nobody
+  /// is in this household" from "we could not find out" (BUT-2076).
+  Future<List<HouseholdRosterMember>?> tryGetRoster(String householdId) =>
+      executeServiceOperation(
+        () => _resolveRoster(householdId),
+        operationName: 'getRoster',
+      );
 
   Future<List<HouseholdRosterMember>> _resolveRoster(
     String householdId,
@@ -49,12 +53,7 @@ class HouseholdRosterService extends BaseService {
     //
     // A failed read (BUT-2027's `unavailableIds`) is logged rather than
     // silently absorbed into the same fallback as a confirmed-absent
-    // profile: this roster feeds present-diner allergen filtering
-    // (`MenuGenerator._presentAllergenPrefs`), and that union already treats
-    // a null `allergenPreferences` as "no allergens declared" with no floor
-    // for "could not check" — a residual named here rather than fixed, since
-    // closing it is a BUT-1663-style safety redesign of that union, not a
-    // migration of this method's return type.
+    // profile.
     final userIds = household.members.map((m) => m.userId).toList();
     final batch = userIds.isEmpty
         ? const ProfileBatchLookup(

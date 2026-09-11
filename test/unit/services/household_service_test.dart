@@ -819,4 +819,78 @@ void main() {
       verifyNever(() => userService.lookupUserProfile(any()));
     },
   );
+
+  group('aggregateAllergenPreferencesFor (BUT-2076)', () {
+    test(
+      'resolves only the members it is given, with the same floor for '
+      'another account holder, and without degrading',
+      () async {
+        stubSelf(prefs: _prefs({'ägg'}));
+        stubOtherMember('partner');
+        // Would degrade the result if it were read.
+        stubLookup('kid', const ProfileLookup.unavailable());
+
+        final aggregate = await service.aggregateAllergenPreferencesFor({
+          'owner',
+          'partner',
+        });
+
+        expect(
+          aggregate.preferences.trackedAllergens,
+          {'ägg', ...UserAllergenPreferences.defaults.trackedAllergens},
+        );
+        expect(aggregate.isRosterComplete, isTrue);
+        verifyNever(() => userService.lookupUserProfile('kid'));
+      },
+    );
+
+    test('an unreadable member degrades the subset exactly as it would the '
+        'household', () async {
+      stubSelf();
+      stubLookup('partner', const ProfileLookup.unavailable());
+
+      final aggregate = await service.aggregateAllergenPreferencesFor({
+        'owner',
+        'partner',
+      });
+
+      expect(aggregate.isRosterComplete, isFalse);
+      expect(aggregate.unresolvedMemberIds, ['partner']);
+      expect(aggregate.preferences.includeUnknownInMenu, isFalse);
+    });
+
+    test('a failed aggregation of the subset falls back to the floor with '
+        'UNKNOWN closed and reports the roster incomplete', () async {
+      // Signed out: executeServiceOperation's auth pre-flight returns null.
+      (TestServiceLocator.get<AuthRepository>() as FakeAuthRepository)
+          .setAuthState(userId: null);
+
+      final aggregate = await service.aggregateAllergenPreferencesFor({
+        'owner',
+        'partner',
+      });
+
+      expect(aggregate.isRosterComplete, isFalse);
+      expect(
+        aggregate.preferences.trackedAllergens,
+        UserAllergenPreferences.defaults.trackedAllergens,
+      );
+      expect(aggregate.preferences.includeUnknownInMenu, isFalse);
+      expect(aggregate.preferences.trackedDietary, isEmpty);
+      verifyNever(() => userService.lookupUserProfile(any()));
+    });
+
+    test('widenWithSafetyFloor adds allergens only, never a diet', () {
+      final widened = HouseholdService.widenWithSafetyFloor(
+        _prefs({'sesam'}, dietary: {'vegansk'}),
+      );
+
+      expect(
+        widened.trackedAllergens,
+        {'sesam', ...UserAllergenPreferences.defaults.trackedAllergens},
+      );
+      expect(widened.trackedDietary, {'vegansk'});
+      expect(widened.includeUnknownInMenu, isFalse);
+    });
+  });
 }

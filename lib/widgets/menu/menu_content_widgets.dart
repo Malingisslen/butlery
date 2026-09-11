@@ -193,7 +193,7 @@ class MenuContentWidgets {
         // this menu does not have. The warning is keyed to the ROSTER, not to
         // the hidden count: the uncertainty exists even when nothing was
         // hidden.
-        if (viewModel.hiddenPrefSource == MenuPrefSource.householdIncomplete)
+        if (viewModel.hiddenPrefSource.isRosterIncomplete)
           _buildRosterIncompleteHint(context)
         // BUT-1464 (PM condition 1): explain the pool shrink — a menu made
         // smaller by allergen filtering must never look like a bug.
@@ -315,8 +315,8 @@ class MenuContentWidgets {
     );
   }
 
-  /// Warning row for a menu generated while at least one household member's
-  /// profile could not be read (BUT-1663 → BUT-1685). Replaces the hidden-count
+  /// Warning row for a menu generated from an incomplete roster
+  /// (BUT-1663 → BUT-1685). Replaces the hidden-count
   /// hint rather than joining it: attributing the shrink to the family's
   /// allergies would over-claim, since the floor did part of the filtering.
   static Widget _buildRosterIncompleteHint(BuildContext context) {

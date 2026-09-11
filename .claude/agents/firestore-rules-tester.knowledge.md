@@ -258,6 +258,10 @@ Standard deny matrix for ownership-checked collections:
   rating" is true only while no row has the field — and the SAME COMMIT's repository change
   starts writing it, i.e. the sentence rots by its own commit. Probe the exclusion with TWO
   fixtures, legacy and already-populated, and quantify over the legacy population only.
+  **An `affectedKeys().hasOnly([...])` added BESIDE a `cannotModify([...])` whose keys it
+  excludes MASKS the whole `cannotModify`** — every pin deny is then denied twice, so deleting
+  `cannotModify` reddens nothing (`recipe_ratings`, BUT-2077). Re-attribute the pin tests to
+  the pair; do not call either conjunct proven alone.
 - **A single-conjunct removal that reddens NOTHING can mean the conjunct is MASKED by a
   neighbour, not that the test is dead.** In `A && B`, if B CEL-errors whenever A is
   false, dropping A alone changes no verdict. Attribute a masked test with the SMALLEST

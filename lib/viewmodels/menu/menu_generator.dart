@@ -23,10 +23,8 @@ import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/services/household_service.dart';
-import 'package:butlery/services/family/household_roster_service.dart';
-import 'package:butlery/repositories/interfaces/household_repository.dart';
-import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/viewmodels/menu/menu_quality_analyzer.dart';
+import 'package:butlery/services/menu/present_diner_prefs_resolver.dart';
 
 /// Result of a recipe swap operation, including alternatives info.
 class SwapResult {
@@ -49,7 +47,21 @@ class SwapResult {
 /// member's profile could not be read (BUT-1663): the pool was filtered by a
 /// widened, safety-floored set rather than the household's real preferences,
 /// so telemetry must not report it as a plain [household] run.
-enum MenuPrefSource { present, household, householdIncomplete, singleUser }
+/// [presentIncomplete] is the same situation for the who's-eating-today union
+/// (BUT-2076).
+enum MenuPrefSource {
+  present,
+  presentIncomplete,
+  household,
+  householdIncomplete,
+  singleUser
+  ;
+
+  /// The pool was filtered by a widened safety floor because someone eating
+  /// could not be read — the menu must say so rather than claim precision.
+  bool get isRosterIncomplete =>
+      this == presentIncomplete || this == householdIncomplete;
+}
 
 /// Pool statistics from the last [MenuGenerator.getAvailableRecipesAsync]
 /// run, so the menu UI can explain a shrunken pool instead of it looking
@@ -213,8 +225,17 @@ class MenuGenerator {
   _resolveActivePrefs() async {
     final present = presentMemberIds;
     if (present != null && present.isNotEmpty) {
-      final prefs = await _presentAllergenPrefs(present);
-      if (prefs != null) return (prefs, MenuPrefSource.present);
+      final resolved = await const PresentDinerPrefsResolver().resolve(
+        present,
+      );
+      if (resolved != null) {
+        return (
+          resolved.preferences,
+          resolved.isComplete
+              ? MenuPrefSource.present
+              : MenuPrefSource.presentIncomplete,
+        );
+      }
     }
     if (useHouseholdAllergens) {
       final householdService = ServiceLocator.tryGet<HouseholdService>();
@@ -229,49 +250,6 @@ class MenuGenerator {
       }
     }
     return (_userService.allergenPreferences, MenuPrefSource.singleUser);
-  }
-
-  /// Union of the present diners' allergens/dietary prefs, resolved from the
-  /// family roster (accounts + diner profiles). Returns null when the roster
-  /// can't be resolved (no household, services unavailable) so the caller can
-  /// fall back to the existing filtering. Read-only: uses `getForUser` (never
-  /// creates a household).
-  Future<UserAllergenPreferences?> _presentAllergenPrefs(
-    List<String> presentIds,
-  ) async {
-    final rosterService = ServiceLocator.tryGet<HouseholdRosterService>();
-    final householdRepo = ServiceLocator.tryGet<HouseholdRepository>();
-    final permission = ServiceLocator.tryGet<PermissionService>();
-    if (rosterService == null || householdRepo == null || permission == null) {
-      return null;
-    }
-    final uid = permission.currentUserId;
-    if (uid == null) return null;
-
-    final households = await householdRepo.getForUser(uid);
-    if (households.isEmpty) return null;
-    final roster = await rosterService.getRoster(households.first.id);
-
-    final present = presentIds.toSet();
-    final allergens = <String>{};
-    final dietary = <String>{};
-    // Safety-conservative: exclude untagged (UNKNOWN) recipes if ANY present
-    // diner opts out of unknowns — one cautious diner makes the union cautious.
-    var includeUnknown = true;
-    for (final member in roster) {
-      if (!present.contains(member.memberId)) continue;
-      final prefs = member.allergenPreferences;
-      if (prefs != null) {
-        allergens.addAll(prefs.trackedAllergens);
-        dietary.addAll(prefs.trackedDietary);
-        if (!prefs.includeUnknownInMenu) includeUnknown = false;
-      }
-    }
-    return UserAllergenPreferences(
-      trackedAllergens: allergens,
-      trackedDietary: dietary,
-      includeUnknownInMenu: includeUnknown,
-    );
   }
 
   /// Filter recipes using explicit prefs — the ONE allergen/dietary filter

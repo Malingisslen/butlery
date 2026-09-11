@@ -101,6 +101,10 @@ compress it.**
   restore** — extra reds belong to the PREVIOUS mutant's kill set. A superset reads as "this
   mutant is broader than I predicted" rather than as an instrument fault, which is why it gets
   believed (BUT-1897, BUT-1971 M2).
+- **The mirror fault: an all-GREEN run B under a hash-verified LIVE mutant.** When run A hit
+  exactly the predicted set and the previous mutant's kill set is disjoint, run A cannot be a
+  phantom — a green B is the instrument (a concurrent session's `flutter test` on the shared
+  `.dart_tool`). Re-run as C/D printing `git hash-object` before AND after each run (BUT-2078).
 - **Do not trust a `mktemp`+`trap` restore, even one whose own md5 reads clean** — measured on
   BUT-1971, the restoring call printed the pre-mutation md5 and the NEXT call found the mutant
   still live on disk. Restore with `git show :<path> > tmp && cp tmp <path>` (deterministic,
@@ -128,6 +132,10 @@ compress it.**
   a test guards a property over many routes: on BUT-2000 a two-entry mutant printed both offending
   bundle paths with their values, where two separate `expect`s would have hidden the second
   (measured both ways in the same file — the aggregating walker vs. the key/prose pair).
+- **A MULTI-FILE probe script must match EVERY anchor before its FIRST write** — line endings
+  differ per file here (`menu_generator.dart` CRLF, `menu_content_widgets.dart` LF), so an
+  LF-anchored assert on file 2 fails AFTER file 1 is written, leaving a half-applied probe the
+  next run would grade. Derive the newline per file; hash both files before running (BUT-2076).
 - **A green probe on a "nothing changes" test is usually GUARD-CHAIN SUBSUMPTION, not a live
   mutant** — an earlier early-return fires and the guard under test is never reached. The repair is
   a fixture that falls THROUGH the early return (the PARTIAL state, not the complete one), and it
@@ -934,7 +942,10 @@ other suites prove:
 - A source-text guard pinning `keys().hasOnly([...])` has five vacuity seams: widest payload;
   complete writer set (forever); anchor sentinel checked against the NEXT match, not global
   uniqueness; blind to the `hasAll` mirror; can't see a SWAP (delete+add, count unchanged). Prove by
-  neutralising the call and watching the WRONG-LIST message (BUT-1830).
+  neutralising the call and watching the WRONG-LIST message (BUT-1830). **A HAND-TYPED writer
+  set in that guard pins the RULES side only** — a key the writer ADDS reddens nothing there; the
+  writer's own suite owes a subset check over the keys a real write STORED against the list read
+  out of `firestore.rules` (BUT-2079, `rateRecipe`).
 - **A write the RULES refuse is 100% green under mocks, and its TWINS stay refused — grep the file,
   not the ticket.** Every field the write touches: grep `firestore.rules` for a deny; each surviving
   twin owes a comment naming the rule LINE. A comment quoting a deny-list beside a round-trip
@@ -1553,7 +1564,10 @@ re-collapses `''` to "unchanged" — pin the consumer's own `x ?? current` line 
   Selection-guard tests need the owner's OWN tile, not all-strangers.
 - Clear-on-cancel: assert the count returns to the ORIGINAL, not zero. Copy-paste id-field mismatches
   are invisible unless a fixture makes the fields DIFFER.
-- Async error stubs: `thenAnswer((_) => Future<int>.error(...))` — never `thenThrow`.
+- Async error stubs: `thenAnswer((_) => Future<T>.error(...))` with production's `T` — never
+  `thenThrow`, and never `(_) async => throw`, which infers `Future<Never>`: a `.catchError((_)
+  => [])` swallow in production then throws a type error instead of swallowing, so that
+  regression stays green (measured, BUT-2076).
 
 ### Extraction seams & duplicated-logic-across-surfaces
 - Pure decisions locked in a DI-heavy widget → extract `@visibleForTesting static`, not a DI bridge.
@@ -1626,7 +1640,11 @@ re-collapses `''` to "unchanged" — pin the consumer's own `x ?? current` line 
   green/red asymmetry bullet for why mutant BATTERIES must not be looped.)
 - A WHOLE-CLASS replica scales this: copy class + suite to the SESSION SCRATCHPAD (not `test/`),
   rename, repoint the import — the only route when the `lib/` file is STAGED or edits are forbidden.
-  Run the unmutated copy as control first.
+  Run the unmutated copy as control first. **Beside a live session probing the SAME suites**, make
+  the replica a SUBCLASS registered under the real type (`class Mut extends T`, body re-declared)
+  so a real consumer's `ServiceLocator.tryGet<T>()` dispatches into it; one file pair per mutant
+  and ONE `flutter test` over all of them attributes reds by path and serves no stale kernel
+  (BUT-2076).
 - READ THE MUTATED LINE BACK before believing a red count — a shell heredoc can mangle backslashes
   silently. Write probes with the Write tool, raw Dart strings, never a bash heredoc. Never pipe a
   mutation driver into `head` (SIGPIPE kills its own cleanup).
