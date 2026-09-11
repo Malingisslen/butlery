@@ -5,8 +5,13 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/repositories/firebase/firebase_data_export_repository.dart';
 import 'package:butlery/services/account/export/social_export_redaction.dart';
 import 'package:butlery/services/account/export/chat_group_export.dart';
+import 'package:butlery/models/messaging/history_cutoff.dart';
 import 'package:butlery/services/account/export/export_pagination_helper.dart'
-    show ExportPaginationHelper, normalizeTimestampPaths, sanitizeForJson;
+    show
+        ExportPaginationHelper,
+        normalizeTimestampPaths,
+        sanitizeForJson,
+        sanitizeTimestamp;
 
 /// Handles export of social data: friends, messages, shared content.
 /// Part of GDPR Article 20 (Right to Data Portability) compliance.
@@ -128,6 +133,12 @@ class SocialExportManager with SocialExportRedaction {
   /// the requester's own entry. Names, user ids, `lastReadTimestamps` and
   /// message content are deliberately kept.
   ///
+  /// BUT-1854 (Malin, 2026-09-11) adds one more removal, and it is a different
+  /// KIND: `lastMessage` goes when the preview predates
+  /// the requester's own `memberSince` on a GROUP conversation. Those
+  /// withhold another person's data; this one applies an access rule the
+  /// requester is already subject to everywhere else in the app.
+  ///
   /// This is the OPPOSITE redaction to [SharedShoppingListExport], which strips
   /// names and keeps ids, and the asymmetry is the decision rather than an
   /// oversight: a shopping row's cached `addedByDisplayName` is a denormalised
@@ -148,6 +159,28 @@ class SocialExportManager with SocialExportRedaction {
     String userId,
   ) {
     final copy = Map<String, dynamic>.from(source);
+
+    // BUT-1854. Read from `source`, the untouched input, rather than from the
+    // `copy` the loop below rewrites.
+    //
+    // Moving this read below the loop changes NO outcome today. The loop narrows
+    // `memberSince` to the requester's OWN entry, which is the one entry this
+    // predicate wants, and on its fail-closed branch removes the field — which
+    // this predicate also reads as "no stamp" and drops the preview for.
+    //
+    // It reads from `source` anyway, and the reason is what it cannot do rather
+    // than what it does: taking the input directly means a future change to
+    // that loop's narrowing cannot silently change which stamp this compares
+    // against. That is a property of the shape, not a defect being prevented,
+    // so do not write a test claiming it catches something.
+    final rawMemberSince = source['memberSince'];
+    final ownJoinedAt = rawMemberSince is Map
+        ? sanitizeTimestamp(rawMemberSince[userId])
+        : null;
+    // `!= null`, the test `Conversation.canReadMessageAt` applies: an empty
+    // string is a group there, and a cast here would throw a non-String
+    // value out of the whole messages section.
+    final isGroup = source['groupId'] != null;
 
     // Three uid-keyed maps, one rule: keep the requester's own entry, drop
     // everyone else's. Written once rather than three times because three
@@ -182,8 +215,33 @@ class SocialExportManager with SocialExportRedaction {
     // the sender's avatar rides along here even while `messages` carries nothing
     // (BUT-1767).
     final lastMessage = copy['lastMessage'];
-    if (lastMessage != null) {
-      if (lastMessage is Map) {
+    if (lastMessage is Map) {
+      // BUT-1854, Malin's call of 2026-09-11 (option A). The preview is a
+      // denormalised copy of a message, and a group member may not read one
+      // sent before they joined — `firestore.rules` refuses it, and the chat
+      // screen, the conversations list and the messages section of this very
+      // bundle all honour that.
+      //
+      // `sentAt` reaches here as an ISO string: the caller passes
+      // `sanitizeForJson(convo['data'])`, so nothing in this map is still a
+      // `Timestamp`. The comparison itself is `isWithinJoinedHistory`, shared
+      // with `Conversation.canReadMessageAt`.
+      //
+      // A DIRECT chat has no cut-off at all and keeps its preview — dropping it
+      // there would withhold the requester's own data, which is the opposite
+      // Art. 15 failure. A GROUP with no readable stamp for this user fails
+      // closed and drops it, matching `canReadMessageAt`.
+      final previewSentAt = sanitizeTimestamp(lastMessage['sentAt']);
+      final withinHistory =
+          !isGroup ||
+          (previewSentAt != null &&
+              ownJoinedAt != null &&
+              isWithinJoinedHistory(
+                sentAt: DateTime.parse(previewSentAt),
+                memberSince: DateTime.parse(ownJoinedAt),
+              ));
+
+      if (withinHistory) {
         copy['lastMessage'] = dropAvatarUnlessOwn(
           Map<String, dynamic>.from(lastMessage.cast<String, dynamic>()),
           ownerIdField: 'senderId',
@@ -191,9 +249,13 @@ class SocialExportManager with SocialExportRedaction {
           userId: userId,
         );
       } else {
+        // NOT `redaction_fell_back`. That flag means "a shape we do not
+        // recognise".
         copy.remove('lastMessage');
-        copy['redaction_fell_back'] = true;
       }
+    } else if (lastMessage != null) {
+      copy.remove('lastMessage');
+      copy['redaction_fell_back'] = true;
     }
 
     return copy;
@@ -401,6 +463,10 @@ class SocialExportManager with SocialExportRedaction {
           'pinned, archived) and, for a group chat, the moment each of THEM '
           'joined it. Rows where the app stopped a duplicate message that '
           'someone ELSE sent have been left out entirely — yours are kept. '
+          'For a group chat, the one-line preview of the most '
+          'recent message is left out when that message was sent before you '
+          'joined — the same cut-off the app itself applies, so the preview '
+          'cannot show you something the chat will not. '
           'Of the rows that ARE here, nothing else has been changed. '
           '$chatGroupsNote';
 

@@ -297,17 +297,14 @@ class ConversationListItem extends StatelessWidget {
     // `syncConversationLastMessage` overwrites the preview — but that write is
     // best-effort, so the stale preview can outlive it.
     //
-    // `Conversation.canReadMessageAt` is the ONE spelling of this comparison,
-    // shared with the search filter so the two surfaces of the SAME row cannot
-    // disagree. The message query is deliberately NOT a third caller — it needs
+    // `Conversation.canReadMessageAt` is shared with the search filter so the
+    // two surfaces of the SAME row cannot disagree. The message query is deliberately NOT a third caller — it needs
     // the cut-off as a Firestore bound and takes `historyQueryStartFor`, which
     // answers null (no filter) where this answers false. The two therefore
     // disagree in exactly the fail-closed cases below; harmless, because a
     // reader in either state is denied the conversation document itself, but do
-    // not read this method as proof the query is fail-closed. A THIRD spelling
-    // exists and is meant to: `firebase_data_export_repository.dart` reads
-    // `memberSince` off a raw map because it never builds a `Conversation` —
-    // do not "consolidate" it into this one. `canReadMessageAt` fails closed
+    // not read this method as proof the query is fail-closed.
+    // `canReadMessageAt` fails closed
     // twice, matching the rule's
     // `.get(uid, request.time)` default: an empty reader id (the signed-in user
     // is momentarily unknown — every caller here passes `.orEmpty()`) and a

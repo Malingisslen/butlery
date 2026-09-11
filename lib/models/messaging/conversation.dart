@@ -59,6 +59,7 @@
 import 'package:clock/clock.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/contextual_time_formatter.dart';
+import 'package:butlery/models/messaging/history_cutoff.dart';
 import 'package:butlery/models/messaging/message.dart';
 import 'package:uuid/uuid.dart';
 
@@ -207,17 +208,17 @@ class Conversation {
   DateTime? historyQueryStartFor(String userId) =>
       groupId == null ? null : memberSince[userId];
 
-  /// Whether [sentAt] is inside the history [userId] may read — one home for
-  /// the in-memory comparison the list row and the search filter would
-  /// otherwise spell twice. The message QUERY does not use this: it needs the
-  /// cut-off as a Firestore bound and takes [historyQueryStartFor], whose null
-  /// means "no filter" where this answers false. Fails CLOSED like the rules
-  /// (`.get(uid, request.time)`): unknown reader or missing stamp ⇒ false.
+  /// Whether [sentAt] is inside the history [userId] may read — what the list
+  /// row and the search filter go through. An unknown reader is false; the
+  /// comparison itself, and why the message QUERY is not a caller, live in
+  /// [isWithinJoinedHistory].
   bool canReadMessageAt(DateTime sentAt, String userId) {
     if (groupId == null) return true;
     if (userId.isEmpty) return false;
-    final start = memberSince[userId];
-    return start != null && !sentAt.isBefore(start);
+    return isWithinJoinedHistory(
+      sentAt: sentAt,
+      memberSince: memberSince[userId],
+    );
   }
 
   /// Whether to show the "du gick med här" divider — a DIFFERENT question from

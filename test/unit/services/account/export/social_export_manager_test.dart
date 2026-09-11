@@ -1234,6 +1234,189 @@ void main() {
       },
     );
 
+    // BUT-1854 (Malin's call, 2026-09-11, option A). The bundle used to say two
+    // different things about a late joiner's history: the messages section
+    // applied the `memberSince` cut-off and the conversation row handed back
+    // the `lastMessage` preview regardless.
+    //
+    // No fixture above can reach this branch — the `memberSince` cases stage no
+    // `lastMessage` and the `lastMessage` cases stage no `groupId`, no
+    // `memberSince` and no `sentAt` — so every case here is built new rather
+    // than extended, which is what keeps them from passing for the wrong
+    // reason.
+    group('lastMessage history cut-off (BUT-1854)', () {
+      const beforeJoin = '2025-12-24T10:00:00.000Z';
+      const joined = '2026-01-01T01:01:01.000Z';
+      const afterJoin = '2026-02-02T02:02:02.000Z';
+
+      Future<Map<String, dynamic>?> exportPreview({
+        String? groupId,
+        bool? isGroup,
+        Map<String, dynamic>? memberSince,
+        String? previewSentAt,
+      }) async {
+        final manager = SocialExportManager(
+          dataExportRepository: _FakeDataExportRepository(
+            conversations: [
+              {
+                'id': 'conv1',
+                'data': {
+                  'participantIds': [userId, otherUid],
+                  'groupId': ?groupId,
+                  'isGroup': ?isGroup,
+                  'memberSince': ?memberSince,
+                  'lastMessage': {
+                    'senderId': otherUid,
+                    'content': 'preview text',
+                    'sentAt': ?previewSentAt,
+                  },
+                },
+                'messages': const <Map<String, dynamic>>[],
+              },
+            ],
+          ),
+        );
+        final result = await manager.exportMessages(userId);
+        final convo =
+            (result['conversations'] as List).single as Map<String, dynamic>;
+        return (convo['conversation_info'] as Map<String, dynamic>)
+            as Map<String, dynamic>?;
+      }
+
+      test(
+        'a group preview from BEFORE the requester joined is dropped',
+        () async {
+          final info = await exportPreview(
+            groupId: 'chat-group-1',
+            memberSince: {userId: joined, otherUid: joined},
+            previewSentAt: beforeJoin,
+          );
+
+          expect(info!.containsKey('lastMessage'), isFalse);
+          expect(
+            info.containsKey('redaction_fell_back'),
+            isFalse,
+            reason:
+                'this is a policy decision on a shape we read fine, not an '
+                'unrecognised shape — conflating the two misreports the bundle',
+          );
+        },
+      );
+
+      test('a group preview from AFTER the requester joined is kept', () async {
+        final info = await exportPreview(
+          groupId: 'chat-group-1',
+          memberSince: {userId: joined, otherUid: joined},
+          previewSentAt: afterJoin,
+        );
+
+        expect(info!['lastMessage'], isA<Map<String, dynamic>>());
+        expect(
+          (info['lastMessage'] as Map)['content'],
+          'preview text',
+          reason:
+              'withholding readable history is the opposite Art. 15 failure',
+        );
+      });
+
+      test('a preview sent exactly AT the join stamp is kept', () async {
+        // `firestore.rules` refuses `sentAt < memberSince`, so the boundary
+        // itself is readable.
+        final info = await exportPreview(
+          groupId: 'chat-group-1',
+          memberSince: {userId: joined, otherUid: joined},
+          previewSentAt: joined,
+        );
+
+        expect(info!['lastMessage'], isA<Map<String, dynamic>>());
+      });
+
+      test('a DIRECT chat keeps its preview, stamp or no stamp', () async {
+        // No `groupId`, so no cut-off applies at all. Dropping it here would
+        // withhold the requester's own data.
+        final unstamped = await exportPreview(previewSentAt: beforeJoin);
+        expect(unstamped!['lastMessage'], isA<Map<String, dynamic>>());
+
+        final stamped = await exportPreview(
+          memberSince: {userId: joined},
+          previewSentAt: beforeJoin,
+        );
+        expect(
+          stamped!['lastMessage'],
+          isA<Map<String, dynamic>>(),
+          reason: 'a stamp without a groupId is still a direct chat',
+        );
+
+        // The legacy shape: `isGroup` set, no `groupId`. `canReadMessageAt`
+        // answers on `groupId` alone, so this is not a group for the cut-off
+        // and its preview is the requester's own readable data.
+        final legacy = await exportPreview(
+          isGroup: true,
+          memberSince: {userId: joined},
+          previewSentAt: beforeJoin,
+        );
+        expect(legacy!['lastMessage'], isA<Map<String, dynamic>>());
+      });
+
+      test(
+        'an EMPTY-string groupId is a group, as the model reads it',
+        () async {
+          final info = await exportPreview(
+            groupId: '',
+            memberSince: {userId: joined},
+            previewSentAt: beforeJoin,
+          );
+
+          expect(info!.containsKey('lastMessage'), isFalse);
+        },
+      );
+
+      test('a group preview that cannot be dated is dropped', () async {
+        final info = await exportPreview(
+          groupId: 'chat-group-1',
+          memberSince: {userId: joined},
+        );
+
+        expect(info!.containsKey('lastMessage'), isFalse);
+      });
+
+      test('a GROUP with no stamp for the requester fails CLOSED', () async {
+        // Matches `Conversation.canReadMessageAt`.
+        final info = await exportPreview(
+          groupId: 'chat-group-1',
+          memberSince: {otherUid: joined},
+          previewSentAt: afterJoin,
+        );
+
+        expect(info!.containsKey('lastMessage'), isFalse);
+      });
+
+      test('the bundle SAYS the preview can be left out', () async {
+        // An omission the subject cannot see is an Art. 12(1) gap rather than a
+        // minimisation decision. Asserted on a bundle where nothing was
+        // dropped, so the sentence cannot be one that only appears when it was.
+        final manager = SocialExportManager(
+          dataExportRepository: _FakeDataExportRepository(
+            conversations: [
+              {
+                'id': 'conv1',
+                'data': {
+                  'participantIds': [userId, otherUid],
+                },
+                'messages': const <Map<String, dynamic>>[],
+              },
+            ],
+          ),
+        );
+
+        final result = await manager.exportMessages(userId);
+        expect(
+          result['data_minimisation'] as String,
+          contains('before you joined'),
+        );
+      });
+    });
+
     test(
       'perUserSettings keeps the requester s own entry and drops everyone '
       'else s',

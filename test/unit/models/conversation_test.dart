@@ -862,9 +862,9 @@ void main() {
       );
     });
 
-    // BUT-1838 review follow-up. `canReadMessageAt` is the ONE spelling of the
-    // comparison the list row, the search filter and the message query used to
-    // hand-roll separately — and unlike `historyQueryStartFor`, whose null means
+    // BUT-1838 review follow-up. `canReadMessageAt` replaces the comparison the
+    // list row and the search filter used to hand-roll
+    // separately — and unlike `historyQueryStartFor`, whose null means
     // "no cut-off", it fails CLOSED in the two states where the rules deny:
     // an unknown reader and a `groupId` conversation with no stamp for them.
     group('canReadMessageAt', () {

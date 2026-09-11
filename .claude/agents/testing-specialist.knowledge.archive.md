@@ -38104,3 +38104,58 @@ actor + omitting payload, ALLOWED) present exactly as the two ACCEPTED_DEVIATION
 describe; call-site mutant `recipeOwnerId: null` in `recipe_rating_system.dart` reddened exactly
 the 3 service cases asserting a non-null literal (22 +/- 3), restored and hash-verified; the four
 suites that mock `RatingsRepository` after the signature change ran 239/239.
+
+### 2026-09-11 — BUT-1854 lastMessage history cut-off in the Art. 15 export (two rounds)
+
+Trigger: commit-gate review of the export dropping a GROUP conversation's `lastMessage` preview
+when it predates the requester's own `memberSince`; comparison extracted to
+`isWithinJoinedHistory` (lib/models/messaging/history_cutoff.dart), shared with
+`Conversation.canReadMessageAt`.
+
+Round 1 (fail, 3 blocking):
+- The export COMPUTED its own group predicate (`social_export_manager.dart`, then
+  `(source['groupId'] as String?)?.isNotEmpty ?? false`) instead of calling the model's guard, and
+  the test helper `exportPreview` staged groupId and memberSince together (group = both, direct =
+  neither). Test named "a DIRECT chat keeps its preview, stamp or no stamp" staged NO stamp.
+  Surviving mutants, analytic at the time: M1 `isGroup = rawMemberSince is Map`; M2
+  `isGroup = source['isGroup'] == true || <groupId check>`. conversation_test's LEGACY case does
+  not reach the export's copy.
+- Future provenance date "2026-09-12" in 4 comments; local `date` read 2026-09-11 21:07.
+- history_cutoff header counted "three spellings"; a fourth exists at
+  firebase_data_export_repository.dart:429-438 (its own `sentAt >=` bound).
+- Non-blocking: `previewSentAt != null` conjunct unpinned (M3 `previewSentAt == null || ...`).
+- Answered: read ordering (source vs copy) is observationally equivalent for every input
+  (`{u: ?v[u]}[u] == v[u]`), so unpinnable; shared function's null branch correctly guarded
+  only by conversation_test (export guards before calling).
+
+Round 2 (coordinator's report, probes run by coordinator, each own call, rm -rf
+.dart_tool/flutter_build, twice, graded run B, over test/unit/services/account/export/):
+M1 +245 -1, M2 (adapted to new `source['groupId'] != null` line) +245 -1, M3 +245 -1.
+Prediction held (green before the fixes, red only in the new arms after).
+Remaining finding: conversation_test.dart:865-867 REWORD of "ONE spelling" to
+"`canReadMessageAt` replaces the comparison the list row, the search filter and the message
+query used to hand-roll separately" — carries the false "message query" member, contradicting
+the staged history_cutoff.dart:23 and conversation_list_item.dart:301 ("deliberately NOT a
+caller"). Strike the history clause. Also noted: the conversation_list_item strike removed a TRUE
+sentence (the export REPOSITORY still reads memberSince off a raw map); the coordinator's stated
+reason "no longer holds" was wrong, loss minor because history_cutoff keeps the don't-consolidate
+warning for query bounds.
+
+Hashes (round 2, index == worktree):
+  lib/models/messaging/history_cutoff.dart                       10e61175f7c303d230b0592b63dd88e402feb82b
+  lib/models/messaging/conversation.dart                         dda273123372f14d95e088f57fcc3f681062ec4b
+  lib/services/account/export/social_export_manager.dart         3391d9885b801a4c808cd8ad9d844b8610d87b4c
+  lib/widgets/messaging/conversation_list_item.dart              3da307c959139ef2057088c9a206e55f18d8da82
+  test/unit/services/account/export/social_export_manager_test.dart  a51d3c2ad09331058d23f88bfb1a996249602e1f
+  test/unit/models/conversation_test.dart                        16c378978b9514df836090fa93f08f0f693bdf6d
+
+### 2026-09-11 — BUT-1854 round 3 (B4 closed by a narrower strike than I proposed)
+
+The coordinator removed only ", and the message query" from conversation_test.dart:865-867
+(blob 6845e750bba10adb9395bd803a3c0eaecff41ac8, index == worktree). I had proposed striking the
+whole "replaces the comparison ..." clause. The coordinator was right: what's left is true by grep
+(`canReadMessageAt(` has exactly two callers in lib/ — conversation_list_item.dart:324 and
+conversations_viewmodel.dart:138), and deleting the whole clause would have cost a true sentence
+to fix one false member. Lesson: when one member of an enumeration is false, strike THAT member;
+strike the clause only when what's left is still false or unmeasurable. The other five files'
+blobs are unchanged from round 2.

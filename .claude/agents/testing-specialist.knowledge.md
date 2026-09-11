@@ -280,7 +280,8 @@ compress it.**
 - **A test's NAME and its COMMENT are TWO copies of one claim** — grep the concept across names
   separately (`grep "^ *test('"`). Grade every test the round ADDS against the names already in
   the file, and re-grade unqualified `every|all|no ` names whenever the round NARROWS what a
-  method returns.
+  method returns. A name joining two states ("stamp or no stamp") claims a FIXTURE for each —
+  count them; the missing arm is where the surviving mutant lives (BUT-1854).
 - **A comment naming a STATE ("this is the case where X") is a claim about the FIXTURE THREE LINES
   DOWN, not about the feature's story — check it there.** Read as motivating background it slides
   through: I passed "an empty result is the case where every selected request had vanished" in two
@@ -1068,6 +1069,9 @@ and a probe would only return an untrustworthy green.**
   null`. **The carrier that outlives the round is a fixture BUILDER that DERIVES one member of the
   pair from the other** — the collapse is then invisible at every call site and survives the very
   commit that fixes the production line. **Read the BUILDER, not the fixtures** (BUT-1856/1971).
+  **The pair also recurs wherever a predicate is RE-COMPUTED in a second caller instead of called**
+  — the model suite's discriminating fixture (the LEGACY `isGroup`-without-`groupId` case) does not
+  reach the copy, so each copy owes its own; grep the copy's LINE, not the shared function (BUT-1854).
 - **An assertion ENTAILED BY ITS NEIGHBOURS.** `expect` is fail-fast, so a line evaluates only when
   the lines above passed; when those pin BOTH operands, its kill set is EMPTY by construction. The
   commonest carrier is a LEAK test: an exact-string equality above an `isNot(contains(leak))` loop
