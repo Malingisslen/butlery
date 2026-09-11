@@ -116,16 +116,24 @@ class GroupWeeklyMenuViewModel extends BaseViewModel {
         .toList();
     if (missing.isEmpty) return;
     _nameLookupsAttempted.addAll(missing);
-    try {
-      final profiles = await _userService.getUserProfiles(missing);
-      if (isDisposed) return;
-      for (final profile in profiles) {
-        _displayNames[profile.uid] = profile.displayName;
-      }
-      notifyListeners();
-    } catch (e) {
-      AppLogger.warning('Could not resolve group menu participant names: $e');
+    final result = await _userService.getUserProfiles(missing);
+    if (isDisposed) return;
+    for (final profile in result.profiles) {
+      _displayNames[profile.uid] = profile.displayName;
     }
+    // `_nameLookupsAttempted` stays marked even on a failed read (BUT-2027's
+    // `unavailableIds`) — deliberately NOT retried on every subsequent
+    // snapshot of this live-synced screen, which is the request storm the
+    // attempted-set exists to prevent. The cost of that: a name that failed
+    // to resolve stays blank for the rest of this screen's lifetime; a fresh
+    // navigation to the week (a new ViewModel) tries again.
+    if (result.unavailableIds.isNotEmpty) {
+      AppLogger.warning(
+        'Could not resolve ${result.unavailableIds.length} group menu '
+        'participant name(s) — will not retry on this screen',
+      );
+    }
+    notifyListeners();
   }
 
   /// Entries for [day] in `MealSlot` declaration order — lunch, middag, övrigt.

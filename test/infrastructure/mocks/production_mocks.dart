@@ -60,6 +60,7 @@ import 'package:butlery/services/image_picker_service.dart';
 import 'package:butlery/services/voice/voice_capture_service.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/models/profile_lookup.dart';
 import 'package:butlery/models/friend_request.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/models/shared_recipe.dart';
@@ -1669,16 +1670,23 @@ class MockUserService extends Mock implements UserService {
   bool _isLoading = false;
   String? _error;
 
+  /// Ids whose profile read should report as UNAVAILABLE (the read threw),
+  /// as opposed to confirmed-absent. Without this the failure branch of every
+  /// `getUserProfiles` caller is unreachable from any suite using this mock.
+  Set<String> _unavailableIds = const {};
+
   void setUserState({
     UserProfile? currentUser,
     Map<String, UserProfile>? users,
     bool isLoading = false,
     String? error,
+    Set<String>? unavailableIds,
   }) {
     _currentUser = currentUser;
     if (users != null) _users = users;
     _isLoading = isLoading;
     _error = error;
+    if (unavailableIds != null) _unavailableIds = unavailableIds;
   }
 
   // Getters for test access
@@ -1696,11 +1704,18 @@ class MockUserService extends Mock implements UserService {
   }
 
   @override
-  Future<List<UserProfile>> getUserProfiles(List<String> userIds) async {
-    return userIds
-        .where((id) => _users.containsKey(id))
-        .map((id) => _users[id]!)
+  Future<ProfileBatchLookup> getUserProfiles(List<String> userIds) async {
+    final unavailable = userIds.where(_unavailableIds.contains).toSet();
+    final found = userIds
+        .where((id) => _users.containsKey(id) && !unavailable.contains(id))
         .toList();
+    return ProfileBatchLookup(
+      profiles: found.map((id) => _users[id]!).toList(),
+      missingIds: userIds
+          .where((id) => !found.contains(id) && !unavailable.contains(id))
+          .toSet(),
+      unavailableIds: unavailable,
+    );
   }
 }
 

@@ -7,6 +7,7 @@ import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/friend_request.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 
 class FriendsProfileCacheManager extends ChangeNotifier {
@@ -54,12 +55,12 @@ class FriendsProfileCacheManager extends ChangeNotifier {
           '👥 Loading ${uncachedUserIds.length} user profiles for requests',
         );
 
-        final profiles = await _userService.getUserProfiles(uncachedUserIds);
+        final batch = await _userService.getUserProfiles(uncachedUserIds);
 
         if (_isDisposed) return;
 
         // Update cache with LRU eviction
-        for (final profile in profiles) {
+        for (final profile in batch.profiles) {
           _requestUserProfiles.remove(profile.uid);
           _requestUserProfiles[profile.uid] = profile;
           if (_requestUserProfiles.length > _maxCacheSize) {
@@ -68,17 +69,19 @@ class FriendsProfileCacheManager extends ChangeNotifier {
         }
 
         AppLogger.success(
-          '✅ ${profiles.length}/${uncachedUserIds.length} user profiles loaded',
+          '✅ ${batch.profiles.length}/${uncachedUserIds.length} user profiles loaded',
         );
 
-        // Log missing profiles
-        final loadedIds = profiles.map((p) => p.uid).toSet();
-        final missingIds = uncachedUserIds.where(
-          (id) => !loadedIds.contains(id),
-        );
-        if (missingIds.isNotEmpty) {
+        if (batch.missingIds.isNotEmpty) {
           AppLogger.warning(
-            '⚠️ Could not load profiles for: ${missingIds.join(', ')}',
+            '⚠️ No profile exists for: '
+            '${batch.missingIds.map((i) => i.maskedUserId).join(', ')}',
+          );
+        }
+        if (batch.unavailableIds.isNotEmpty) {
+          AppLogger.warning(
+            '⚠️ Could not read profiles for: '
+            '${batch.unavailableIds.map((i) => i.maskedUserId).join(', ')}',
           );
         }
       }

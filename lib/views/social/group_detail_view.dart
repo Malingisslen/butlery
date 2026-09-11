@@ -354,6 +354,16 @@ class _GroupDetailViewState extends State<GroupDetailView>
     // Get decision from ViewModel (business logic)
     final decision = _viewModel.checkLeaveGroupRequirements();
 
+    // A subset cannot be told apart from a whole group, so neither owner
+    // branch may run on one (BUT-2027).
+    if (decision.rosterIncomplete) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(context.l10n.errorGeneric)),
+      );
+      return;
+    }
+
     // Handle empty group scenario
     if (decision.groupIsEmpty) {
       final shouldDeleteEmptyGroup = await EmptyGroupDeleteDialog.show(

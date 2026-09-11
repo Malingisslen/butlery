@@ -77,34 +77,22 @@ class _BlockGroupMemberDialogState extends State<BlockGroupMemberDialog> {
       return;
     }
 
-    // `getUserProfiles` swallows its own repository failure and returns what
-    // it has — [] on a total failure, a subset on a partial one. So a throw is
-    // not the signal: zero profiles for a non-empty candidate list is. Without
-    // this the empty state would tell the user there is nobody to block, which
-    // is a claim about the GROUP made when nothing loaded.
-    //
-    // Two residuals, named rather than left to be discovered. A PARTIAL
-    // failure still renders a subset with no notice, so a member you cannot
-    // see is a member you cannot block; closing that needs a caller-visible
-    // failure signal on `getUserProfiles`, which has other callers. And a
-    // group whose every candidate has no public profile at all (deleted
-    // accounts) lands in the error state permanently, with a retry that can
-    // never succeed.
-    try {
-      final profiles = await _userService.getUserProfiles(candidates);
-      if (!mounted) return;
-      if (profiles.isEmpty) {
-        AppLogger.error(
-          'No profiles returned for ${candidates.length} block candidates',
-        );
-        setState(() => _failed = true);
-        return;
-      }
-      setState(() => _members = profiles);
-    } catch (e) {
-      AppLogger.error('Failed to load group members for blocking', e);
-      if (mounted) setState(() => _failed = true);
+    // `getUserProfiles` now reports which candidate ids it could not resolve,
+    // and why (BUT-2027) — so a genuinely profile-less candidate (a deleted
+    // account) and a failed read are told apart. Only the latter is a
+    // failure here: it means we cannot say who is left to block, where the
+    // former means we asked and correctly found nobody.
+    final result = await _userService.getUserProfiles(candidates);
+    if (!mounted) return;
+    if (result.unavailableIds.isNotEmpty) {
+      AppLogger.error(
+        'Could not resolve ${result.unavailableIds.length}/'
+        '${candidates.length} block candidate profile(s)',
+      );
+      setState(() => _failed = true);
+      return;
     }
+    setState(() => _members = result.profiles);
   }
 
   @override

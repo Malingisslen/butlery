@@ -12,10 +12,11 @@
 /// 3. A group asks WHICH member first. Blocking "the conversation" has no
 ///    meaning there, and the picker must not offer the signed-in user or
 ///    anyone already blocked.
-/// 4. A member load that returns nothing is a FAILURE, not an empty group.
-///    `UserService.getUserProfiles` swallows its own error and returns [], so
-///    the empty state would otherwise state a fact about the group at the
-///    moment the app knows nothing.
+/// 4. A member load `getUserProfiles` could not resolve at all (BUT-2027's
+///    `unavailableIds`) is a FAILURE, not an empty group — even when it is
+///    only PARTIAL, because a subset that renders successfully looks exactly
+///    like a complete member list. A candidate with no public profile at all
+///    (`missingIds`) is a different, legitimate empty answer.
 library;
 
 import 'package:flutter/material.dart';
@@ -25,6 +26,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
 import 'package:butlery/models/messaging/conversation.dart';
+import 'package:butlery/models/profile_lookup.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/services/messaging_service.dart';
@@ -60,6 +62,13 @@ UserProfile _profile(String uid, String name) => UserProfile(
   displayName: name,
   joinedAt: DateTime.utc(2026, 1, 1),
   lastActiveAt: DateTime.utc(2026, 1, 1),
+);
+
+/// A fully successful batch read — every asked-for id resolved.
+ProfileBatchLookup _lookupOf(List<UserProfile> profiles) => ProfileBatchLookup(
+  profiles: profiles,
+  missingIds: const {},
+  unavailableIds: const {},
 );
 
 /// Mirrors what production writes: `conversation_mutation_module` gives a
@@ -116,10 +125,11 @@ void main() {
       _third: 'Björn Ek',
     };
     when(() => userService.getUserProfiles(any())).thenAnswer(
-      (invocation) async =>
-          (invocation.positionalArguments.first as List<String>)
-              .map((id) => _profile(id, names[id] ?? id))
-              .toList(),
+      (invocation) async => _lookupOf(
+        (invocation.positionalArguments.first as List<String>)
+            .map((id) => _profile(id, names[id] ?? id))
+            .toList(),
+      ),
     );
 
     TestServiceLocator.registerMock<MessagingService>(messaging);
@@ -331,38 +341,114 @@ void main() {
     expect(friendsViewModel.blockedUserIds, isEmpty);
   });
 
-  testWidgets('a failed member load offers a retry that succeeds', (
-    tester,
-  ) async {
-    // The real collaborator does NOT throw: UserService.getUserProfiles
-    // catches its own repository failure and returns what it has, so a failed
-    // load arrives as an empty list. A fixture that throws would pin a branch
-    // production cannot enter.
-    var attempt = 0;
-    when(() => userService.getUserProfiles(any())).thenAnswer((
-      invocation,
-    ) async {
-      attempt++;
-      if (attempt == 1) return <UserProfile>[];
-      return (invocation.positionalArguments.first as List<String>)
-          .map((id) => _profile(id, 'Anna Svensson'))
-          .toList();
-    });
+  testWidgets(
+    'a TOTAL member load failure offers a retry that succeeds',
+    (tester) async {
+      // The real collaborator does NOT throw: UserService.getUserProfiles
+      // catches its own repository failure and reports every requested id as
+      // UNAVAILABLE rather than throwing or silently dropping them
+      // (BUT-2027). A fixture that throws would pin a branch production
+      // cannot enter.
+      var attempt = 0;
+      when(() => userService.getUserProfiles(any())).thenAnswer((
+        invocation,
+      ) async {
+        attempt++;
+        final asked = invocation.positionalArguments.first as List<String>;
+        if (attempt == 1) {
+          return ProfileBatchLookup(
+            profiles: const [],
+            missingIds: const {},
+            unavailableIds: asked.toSet(),
+          );
+        }
+        return _lookupOf(
+          asked.map((id) => _profile(id, 'Anna Svensson')).toList(),
+        );
+      });
 
-    await openMenu(
-      tester,
-      _conversation(groupId: 'group-1', participantIds: const [_me, _them]),
-    );
-    await tester.tap(find.text('Blockera').last);
-    await tester.pumpAndSettle();
+      await openMenu(
+        tester,
+        _conversation(groupId: 'group-1', participantIds: const [_me, _them]),
+      );
+      await tester.tap(find.text('Blockera').last);
+      await tester.pumpAndSettle();
 
-    expect(find.text('Ett fel uppstod. Försök igen.'), findsOneWidget);
+      expect(find.text('Ett fel uppstod. Försök igen.'), findsOneWidget);
 
-    await tester.tap(find.text('Försök igen'));
-    await tester.pumpAndSettle();
+      await tester.tap(find.text('Försök igen'));
+      await tester.pumpAndSettle();
 
-    expect(find.text('Anna Svensson'), findsOneWidget);
-  });
+      expect(find.text('Anna Svensson'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'a PARTIAL member load failure also shows the error, not a subset '
+    '(BUT-2027)',
+    (tester) async {
+      // Two candidates: `_them` resolves, `_third` does not. The dangerous
+      // failure mode this guards is exactly a resolved SUBSET rendering as if
+      // it were the whole group — so this must land on the error state, not
+      // silently show only Anna Svensson.
+      when(() => userService.getUserProfiles(any())).thenAnswer((
+        invocation,
+      ) async {
+        final asked = invocation.positionalArguments.first as List<String>;
+        return ProfileBatchLookup(
+          profiles: [_profile(_them, 'Anna Svensson')],
+          missingIds: const {},
+          unavailableIds: asked.where((id) => id != _them).toSet(),
+        );
+      });
+
+      await openMenu(
+        tester,
+        _conversation(
+          groupId: 'group-1',
+          participantIds: const [_me, _them, _third],
+        ),
+      );
+      await tester.tap(find.text('Blockera').last);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Ett fel uppstod. Försök igen.'), findsOneWidget);
+      expect(find.text('Anna Svensson'), findsNothing);
+    },
+  );
+
+  testWidgets(
+    'a candidate with no public profile at all is a legitimate empty '
+    'answer, not a failure (BUT-2027)',
+    (tester) async {
+      // Both candidates are CONFIRMED absent (deleted accounts) — the read
+      // succeeded, it just found nobody. This must render the empty state,
+      // not the error one.
+      when(() => userService.getUserProfiles(any())).thenAnswer((
+        invocation,
+      ) async {
+        final asked = invocation.positionalArguments.first as List<String>;
+        return ProfileBatchLookup(
+          profiles: const [],
+          missingIds: asked.toSet(),
+          unavailableIds: const {},
+        );
+      });
+
+      await openMenu(
+        tester,
+        _conversation(groupId: 'group-1', participantIds: const [_me, _them]),
+      );
+      await tester.tap(find.text('Blockera').last);
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text('Det finns ingen annan att blockera här'),
+        findsOneWidget,
+      );
+      expect(find.text('Ett fel uppstod. Försök igen.'), findsNothing);
+    },
+  );
 
   testWidgets('a group with nobody left to block says so', (tester) async {
     friendsViewModel.setBlockedUsers({_them});

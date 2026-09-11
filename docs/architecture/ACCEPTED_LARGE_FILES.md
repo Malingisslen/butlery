@@ -95,7 +95,7 @@ Already modular services or well-organized modules within service facades. Furth
 | `friends_state_manager.dart` | 646 | Friends list state + stream management |
 | `tagging_service.dart` | 546 | Auto-tagging orchestrator (BUT-553: per-phase budget runner extracted to `tagging_pipeline_runner.dart`) |
 | `realtime_recipe_operations.dart` | 630 | Realtime recipe collaboration ops |
-| `user_service.dart` | 1032 | User profile + settings service. Row refreshed 2026-07-25 (was recorded at 810, drift unnoticed); BUT-1663 added `lookupUserProfile`, whose result type was put in its own `lib/models/profile_lookup.dart` rather than growing this file further, and folded three copies of the cache-expiry arithmetic into one helper. |
+| `user_service.dart` | 1083 | User profile + settings service. Row refreshed 2026-07-25 (was recorded at 810, drift unnoticed); BUT-1663 added `lookupUserProfile`, whose result type was put in its own `lib/models/profile_lookup.dart` rather than growing this file further, and folded three copies of the cache-expiry arithmetic into one helper. |
 | `messaging_service.dart` | 1191 | Chat/messaging service. The poll block (close, winner resolution, plan append, ballot strip) is the obvious next facade module — BUT-1923. |
 | `text_import_strategy.dart` | 1038 | Text-based recipe import strategy |
 | `friends_management_operations.dart` | 687 | Add/remove/block friends operations |
@@ -122,7 +122,7 @@ Already modular services or well-organized modules within service facades. Furth
 | `notification_service.dart` | 764 | Push notification dispatch |
 | `share_service.dart` | 580 | Multi-content type sharing — recipes, menus, shopping lists |
 | `import_rate_limiter.dart` | 524 | Single-responsibility Firestore rate-limiter; coherent single concern |
-| `base_social_coordinator.dart` | 522 | Abstract base coordinator using Template Method pattern; no mixed concerns |
+| `base_social_coordinator.dart` | 534 | Abstract base coordinator using Template Method pattern; no mixed concerns |
 | `tiktok_pipeline.dart` | 519 | Single 4-tier import pipeline for one platform; coherent extraction strategy |
 | `recipe_persistence_manager.dart` | 518 | Focused manager for atomic save/fork/delete delegated from form VM |
 | `shared_shopping_viewmodel.dart` | 514 | Specialized sub-VM inheriting base; single domain (shopping collaboration) |
@@ -212,7 +212,7 @@ UI files that are already extracted or represent cohesive single-screen implemen
 | `shopping_item_dialogs.dart` | 579 | Shopping list item dialogs |
 | `shared_content_search_viewmodel.dart` | 567 | Shared content search VM |
 | `consent_management_view.dart` | 705 | GDPR consent management screen |
-| `group_detail_view.dart` | 654 | Group social detail screen |
+| `group_detail_view.dart` | 664 | Group social detail screen |
 | `tag_detail_view.dart` | 591 | Tag detail/editing screen |
 | `conversations_list_view.dart` | 564 | Conversations list screen |
 | `base_dialog.dart` | 541 | Base dialog widget |
@@ -254,7 +254,7 @@ UI files that are already extracted or represent cohesive single-screen implemen
 | `photo_import_viewmodel.dart` | 872 | **candidate**: mixes OCR, multi-page, heirloom form, draft, and quality-score concerns |
 | `friends_viewmodel.dart` | 622 | **candidate**: VM mixing search, profile-cache, selection, group-creation, and stream subscriptions |
 | `performance_monitoring_service.dart` | 516 | **candidate**: mixes frame, network, cache, memory, and custom metrics in one service |
-| `social_group_detail_viewmodel.dart` | 524 | **candidate**: VM mixing group load, events, leave, ownership transfer, and content sharing |
+| `social_group_detail_viewmodel.dart` | 568 | **candidate**: VM mixing group load, events, leave, ownership transfer, and content sharing |
 | `fcm_service.dart` | 728 | **candidate**: mixes FCM token management, permission-gating, deep-link routing, and notification display |
 | `user_profile_viewmodel.dart` | 561 | Profile form VM: fields, avatar upload, privacy settings and live Swedish validation share one form-state object |
 | `recipe_detail_metadata.dart` | 508 | Inline metadata row (time, portions, rating, badges) — one cohesive widget plus its state |
@@ -272,7 +272,7 @@ Files marked **candidate** above that are worth splitting in a future refactor s
 | `shopping_sharing_status_dialog.dart` | 533 | 5+ distinct sections in one dialog; extract as private sub-widgets |
 | `menu_content_widgets.dart` | 665 | Multiple static widget builders for distinct menu sections; group by section into separate files |
 | `performance_monitoring_service.dart` | 516 | Frame, network, cache, memory, and custom metrics can each be a focused sub-service |
-| `social_group_detail_viewmodel.dart` | 524 | Group load, events, leave, ownership transfer, content sharing — extract managers |
+| `social_group_detail_viewmodel.dart` | 568 | Group load, events, leave, ownership transfer, content sharing — extract managers |
 | `collaborative_shopping_items.dart` | 595 | Three view-mode rendering paths + claim logic — split by mode |
 | `tag_result_display.dart` | 608 | Allergen, dietary, and coverage sections are independently renderable sub-widgets. Re-measured 2026-08-18. NOTE this file is listed TWICE in this document (see the Views/Widgets table above) — pre-existing, and it means a refresh has to touch both rows or one silently rots. |
 | `onboarding_viewmodel.dart` | 608 | Age-gate, allergens, seeding, analytics — each a candidate for an extracted manager |

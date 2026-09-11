@@ -135,8 +135,20 @@ class SocialParticipantResolverModule {
         ...list.memberPermissions.keys,
       ];
 
-      // Resolve user profiles
-      return await userService.getUserProfiles(participantIds);
+      // Resolve user profiles. A member whose profile can't be read is left
+      // out of the avatar row rather than turning the whole widget into an
+      // error state, with a log so the drop is not invisible. The subset is
+      // cached by CollaborativeStatusViewModel, so the drop outlives the read
+      // that caused it, until the next refresh (BUT-2027).
+      final result = await userService.getUserProfiles(participantIds);
+      if (result.unavailableIds.isNotEmpty) {
+        AppLogger.warning(
+          'Could not resolve ${result.unavailableIds.length}/'
+          '${participantIds.length} shopping list participant profile(s) '
+          'for $listId',
+        );
+      }
+      return result.profiles;
     } catch (e) {
       AppLogger.error('Failed to get shopping list participants', e);
       return [];

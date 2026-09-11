@@ -19,6 +19,7 @@ import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
 import 'package:butlery/models/menu/group_weekly_menu_plan.dart';
 import 'package:butlery/models/messaging/conversation.dart';
+import 'package:butlery/models/profile_lookup.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/services/menu/group_weekly_menu_plan_service.dart';
 import 'package:butlery/services/messaging_service.dart';
@@ -106,7 +107,13 @@ void main() {
     ).thenAnswer(
       (_) => const Stream<GroupWeeklyMenuPlan?>.empty().listen((_) {}),
     );
-    when(() => userService.getUserProfiles(any())).thenAnswer((_) async => []);
+    when(() => userService.getUserProfiles(any())).thenAnswer(
+      (_) async => const ProfileBatchLookup(
+        profiles: [],
+        missingIds: {},
+        unavailableIds: {},
+      ),
+    );
 
     TestServiceLocator.registerMock<MessagingService>(messaging);
     TestServiceLocator.registerMock<PermissionService>(permissions);

@@ -173,8 +173,20 @@ abstract class BaseSocialCoordinator<TContent, TSharedContent>
       AppLogger.info(
         '🔍 DEBUG: Adding ${inviteeUserIds.length} members to subcollection for $invitationId',
       );
-      final inviteeProfiles = await userService.getUserProfiles(inviteeUserIds);
-      final profileMap = {for (final p in inviteeProfiles) p.uid: p};
+      final inviteeBatch = await userService.getUserProfiles(inviteeUserIds);
+      if (inviteeBatch.unavailableIds.isNotEmpty) {
+        // The member subcollection row is denormalised display data, not the
+        // membership grant — that is `sharedToUserIds` on the invitation
+        // itself, already written above. A name we can't resolve now writes
+        // as "?" (existing fallback below) rather than failing the whole
+        // invitation; logged so a persistently blank name is traceable
+        // (BUT-2027).
+        AppLogger.warning(
+          'Could not resolve ${inviteeBatch.unavailableIds.length}/'
+          '${inviteeUserIds.length} invitee profile(s) for $invitationId',
+        );
+      }
+      final profileMap = {for (final p in inviteeBatch.profiles) p.uid: p};
 
       for (final inviteeId in inviteeUserIds) {
         AppLogger.info('🔍 DEBUG: Adding member $inviteeId to $invitationId');

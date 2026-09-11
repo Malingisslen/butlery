@@ -701,16 +701,101 @@ void main() {
         );
 
         // Act
-        final results = await userService.getUserProfiles(['user1', 'user2']);
+        final result = await userService.getUserProfiles(['user1', 'user2']);
 
         // Assert
-        expect(results, hasLength(2));
-        expect(results[0].uid, equals('user1'));
-        expect(results[1].uid, equals('user2'));
+        expect(result.profiles, hasLength(2));
+        expect(result.profiles[0].uid, equals('user1'));
+        expect(result.profiles[1].uid, equals('user2'));
+        expect(result.missingIds, isEmpty);
+        expect(result.unavailableIds, isEmpty);
         verify(
           () => mockUserRepository.fetchProfiles(['user1', 'user2']),
         ).called(1);
       });
+
+      test(
+        'a fetch that throws marks every uncached id UNAVAILABLE, not '
+        'missing — whether they exist is unknown, not confirmed absent '
+        '(BUT-2027)',
+        () async {
+          when(
+            () => mockUserRepository.fetchProfiles(['user1', 'user2']),
+          ).thenThrow(Exception('network down'));
+
+          final result = await userService.getUserProfiles([
+            'user1',
+            'user2',
+          ]);
+
+          expect(result.profiles, isEmpty);
+          expect(result.missingIds, isEmpty);
+          expect(result.unavailableIds, {'user1', 'user2'});
+          expect(result.isComplete, isFalse);
+        },
+      );
+
+      test(
+        'a fetch that returns only SOME ids reports the rest as MISSING, '
+        'not unavailable — the read succeeded, so their absence is '
+        'confirmed (BUT-2027)',
+        () async {
+          when(
+            () => mockUserRepository.fetchProfiles(['user1', 'user2']),
+          ).thenAnswer(
+            (_) async => [
+              MockFactory.createUserProfile(
+                userId: 'user1',
+                displayName: 'User 1',
+                email: 'user1@example.com',
+              ),
+            ],
+          );
+
+          final result = await userService.getUserProfiles([
+            'user1',
+            'user2',
+          ]);
+
+          expect(result.profiles.map((p) => p.uid), ['user1']);
+          expect(result.missingIds, {'user2'});
+          expect(result.unavailableIds, isEmpty);
+          expect(result.isComplete, isTrue);
+        },
+      );
+
+      test(
+        'a cache hit plus a failed fetch for the rest keeps the cached '
+        'profile and reports only the failed ids as unavailable — a '
+        'partial failure must not silently drop the whole batch '
+        '(BUT-2027)',
+        () async {
+          when(
+            () => mockUserRepository.fetchProfiles(['user1']),
+          ).thenAnswer(
+            (_) async => [
+              MockFactory.createUserProfile(
+                userId: 'user1',
+                displayName: 'User 1',
+                email: 'user1@example.com',
+              ),
+            ],
+          );
+          await userService.getUserProfiles(['user1']); // warms the cache
+
+          when(
+            () => mockUserRepository.fetchProfiles(['user2']),
+          ).thenThrow(Exception('network down'));
+
+          final result = await userService.getUserProfiles([
+            'user1',
+            'user2',
+          ]);
+
+          expect(result.profiles.map((p) => p.uid), ['user1']);
+          expect(result.unavailableIds, {'user2'});
+        },
+      );
     });
 
     group('Online Status', () {

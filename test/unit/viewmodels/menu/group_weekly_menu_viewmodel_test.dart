@@ -15,6 +15,7 @@ import 'package:mocktail/mocktail.dart';
 
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/models/menu/group_weekly_menu_plan.dart';
+import 'package:butlery/models/profile_lookup.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart'
     show SharedListPermission;
@@ -122,7 +123,13 @@ void main() {
     // Answers only what it is ASKED for. A stub that returns its fixtures
     // regardless makes `_resolveNames`' id set unobservable, so widening it
     // to proposers and voters could be reverted with every suite green.
-    when(() => userService.getUserProfiles(any())).thenAnswer((_) async => []);
+    when(() => userService.getUserProfiles(any())).thenAnswer(
+      (_) async => const ProfileBatchLookup(
+        profiles: [],
+        missingIds: {},
+        unavailableIds: {},
+      ),
+    );
     // `undoLastRemoval` goes through the service now (BUT-1971), so the trail
     // records an undo. Mirrors the real mutator: idempotent, appends the dish.
     when(
@@ -1209,15 +1216,19 @@ void main() {
   group('participant names', () {
     test('a resolved profile reaches the face row', () async {
       when(() => userService.getUserProfiles(any())).thenAnswer(
-        (_) async => [
-          UserProfile(
-            uid: _alice,
-            displayName: 'Malin Gisslén',
-            email: 'm@example.com',
-            joinedAt: DateTime.utc(2026, 1, 1),
-            lastActiveAt: DateTime.utc(2026, 1, 1),
-          ),
-        ],
+        (_) async => ProfileBatchLookup(
+          profiles: [
+            UserProfile(
+              uid: _alice,
+              displayName: 'Malin Gisslén',
+              email: 'm@example.com',
+              joinedAt: DateTime.utc(2026, 1, 1),
+              lastActiveAt: DateTime.utc(2026, 1, 1),
+            ),
+          ],
+          missingIds: const {},
+          unavailableIds: const {},
+        ),
       );
       stubRead(_plan());
       await vm.loadWeek(_week);
@@ -1360,6 +1371,14 @@ void main() {
 
   group('costs', () {
     test('a uid whose profile cannot be read is asked for once', () async {
+      when(() => userService.getUserProfiles(any())).thenAnswer((inv) async {
+        final asked = (inv.positionalArguments.first as List<String>).toSet();
+        return ProfileBatchLookup(
+          profiles: const [],
+          missingIds: const {},
+          unavailableIds: asked,
+        );
+      });
       stubRead(_plan());
       await vm.loadWeek(_week);
 
@@ -1368,9 +1387,10 @@ void main() {
       stream.add(_plan(entries: [_entry('e2')]));
       await Future<void>.delayed(Duration.zero);
 
-      // The stub returns no profiles, so the uid never lands in the name map.
-      // Without the attempted-set it would be re-fetched on every snapshot of
-      // a live-synced screen.
+      // The uid is reported UNAVAILABLE, which is the state a failed read
+      // actually produces — an all-empty lookup is unreachable in production,
+      // because a successful read of a non-empty id list always reports its
+      // unresolved ids.
       verify(() => userService.getUserProfiles(any())).called(1);
     });
   });

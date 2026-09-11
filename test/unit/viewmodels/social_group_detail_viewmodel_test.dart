@@ -265,6 +265,49 @@ void main() {
         expect(decision.availableNewOwners, hasLength(1));
         expect(decision.availableNewOwners.first.uid, equals(otherUserId));
       });
+
+      // The destructive one. `_members` is a SUBSET when a profile read
+      // throws, and it is indistinguishable from a genuinely empty group —
+      // the view routes `groupIsEmpty` straight into a delete dialog, so an
+      // owner would be offered deletion of a group that still has members.
+      test(
+        'a member whose profile read FAILED does not make the group look empty',
+        () async {
+          final soloGroup = testGroup.copyWith(
+            friendUserIds: [testUserId, otherUserId],
+          );
+          when(
+            () => mockFriendsService.getCategoryById(testGroupId),
+          ).thenReturn(soloGroup);
+          mockUserService.setUserState(
+            users: {testUserId: currentUser},
+            unavailableIds: {otherUserId},
+          );
+
+          await viewModel.loadGroupData();
+          final decision = viewModel.checkLeaveGroupRequirements();
+
+          expect(viewModel.hasUnresolvedMembers, isTrue);
+          expect(
+            decision.rosterIncomplete,
+            isTrue,
+            reason: 'the view must not offer either owner branch on a subset',
+          );
+          expect(decision.groupIsEmpty, isFalse);
+          expect(decision.requiresOwnershipTransfer, isFalse);
+          expect(decision.availableNewOwners, isEmpty);
+        },
+      );
+
+      test('a fully-resolved roster reports rosterIncomplete false', () async {
+        await viewModel.loadGroupData();
+
+        expect(viewModel.hasUnresolvedMembers, isFalse);
+        expect(
+          viewModel.checkLeaveGroupRequirements().rosterIncomplete,
+          isFalse,
+        );
+      });
     });
 
     group('leaveGroup', () {

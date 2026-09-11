@@ -1,7 +1,8 @@
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/household_roster_member.dart';
-import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/models/profile_lookup.dart';
 import 'package:butlery/repositories/interfaces/diner_profile_repository.dart';
 import 'package:butlery/repositories/interfaces/household_repository.dart';
 import 'package:butlery/services/user_service.dart';
@@ -45,13 +46,31 @@ class HouseholdRosterService extends BaseService {
     // Account holders. Batch the profile fetch so a five-person household is one
     // read, not five; fall back to the bare userId for a display name if a
     // profile can't be resolved (deleted account, transient miss).
+    //
+    // A failed read (BUT-2027's `unavailableIds`) is logged rather than
+    // silently absorbed into the same fallback as a confirmed-absent
+    // profile: this roster feeds present-diner allergen filtering
+    // (`MenuGenerator._presentAllergenPrefs`), and that union already treats
+    // a null `allergenPreferences` as "no allergens declared" with no floor
+    // for "could not check" — a residual named here rather than fixed, since
+    // closing it is a BUT-1663-style safety redesign of that union, not a
+    // migration of this method's return type.
     final userIds = household.members.map((m) => m.userId).toList();
-    final profiles = userIds.isEmpty
-        ? <String, UserProfile>{}
-        : {
-            for (final p in await _userService.getUserProfiles(userIds))
-              p.uid: p,
-          };
+    final batch = userIds.isEmpty
+        ? const ProfileBatchLookup(
+            profiles: [],
+            missingIds: {},
+            unavailableIds: {},
+          )
+        : await _userService.getUserProfiles(userIds);
+    if (batch.unavailableIds.isNotEmpty) {
+      AppLogger.warning(
+        'HouseholdRosterService: could not read '
+        '${batch.unavailableIds.length}/${userIds.length} member profile(s) '
+        'for household $householdId',
+      );
+    }
+    final profiles = {for (final p in batch.profiles) p.uid: p};
     for (final member in household.members) {
       final profile = profiles[member.userId];
       members.add(

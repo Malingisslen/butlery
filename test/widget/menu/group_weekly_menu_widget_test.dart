@@ -19,6 +19,7 @@ import 'package:provider/provider.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/menu/group_weekly_menu_plan.dart';
+import 'package:butlery/models/profile_lookup.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart'
     show SharedListPermission;
@@ -37,6 +38,14 @@ class _MockRealtime extends Mock implements RealtimeGroupMenuModule {}
 class _MockUserService extends Mock implements UserService {}
 
 class _FakePlan extends Fake implements GroupWeeklyMenuPlan {}
+
+/// Wraps a fixture list the way a `getUserProfiles` batch read reports it,
+/// with nothing missing or unavailable (BUT-2027).
+ProfileBatchLookup _lookupOf(List<UserProfile> profiles) => ProfileBatchLookup(
+  profiles: profiles,
+  missingIds: const {},
+  unavailableIds: const {},
+);
 
 const _groupId = 'group-1';
 const _alice = 'user-alice';
@@ -89,7 +98,9 @@ void main() {
     // Answers only what it is ASKED for. A stub that returns its fixtures
     // regardless makes `_resolveNames`' id set unobservable, so widening it
     // to proposers and voters could be reverted with every suite green.
-    when(() => userService.getUserProfiles(any())).thenAnswer((_) async => []);
+    when(
+      () => userService.getUserProfiles(any()),
+    ).thenAnswer((_) async => _lookupOf(const []));
     // `undoLastRemoval` goes through the service now (BUT-1971), so the trail
     // records an undo. Mirrors the real mutator: idempotent, appends the dish.
     when(
@@ -569,7 +580,7 @@ void main() {
         invocation,
       ) async {
         final asked = invocation.positionalArguments.first as List<String>;
-        return profiles.where((p) => asked.contains(p.uid)).toList();
+        return _lookupOf(profiles.where((p) => asked.contains(p.uid)).toList());
       });
       stubRead(
         _plan(
@@ -672,7 +683,7 @@ void main() {
     testWidgets('a name that resolves after the sheet opens reaches it', (
       tester,
     ) async {
-      final gate = Completer<List<UserProfile>>();
+      final gate = Completer<ProfileBatchLookup>();
       when(
         () => userService.getUserProfiles(any()),
       ).thenAnswer((_) => gate.future);
@@ -697,15 +708,17 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Okänd medlem'), findsOne);
 
-      gate.complete([
-        UserProfile(
-          uid: 'user-bob',
-          email: 'b@b.se',
-          displayName: 'Bosse',
-          joinedAt: DateTime.utc(2026, 1, 1),
-          lastActiveAt: DateTime.utc(2026, 1, 1),
-        ),
-      ]);
+      gate.complete(
+        _lookupOf([
+          UserProfile(
+            uid: 'user-bob',
+            email: 'b@b.se',
+            displayName: 'Bosse',
+            joinedAt: DateTime.utc(2026, 1, 1),
+            lastActiveAt: DateTime.utc(2026, 1, 1),
+          ),
+        ]),
+      );
       await tester.pumpAndSettle();
 
       expect(find.text('Bosse'), findsOne);
@@ -718,7 +731,7 @@ void main() {
       tester,
     ) async {
       when(() => userService.getUserProfiles(any())).thenAnswer(
-        (_) async => [
+        (_) async => _lookupOf([
           UserProfile(
             uid: 'user-bob',
             email: 'b@b.se',
@@ -726,7 +739,7 @@ void main() {
             joinedAt: DateTime.utc(2026, 1, 1),
             lastActiveAt: DateTime.utc(2026, 1, 1),
           ),
-        ],
+        ]),
       );
       stubRead(
         _plan(
@@ -762,7 +775,7 @@ void main() {
         invocation,
       ) async {
         final asked = invocation.positionalArguments.first as List<String>;
-        return [
+        return _lookupOf([
           for (final uid in asked)
             if (uid.startsWith('user-') && uid != _alice)
               UserProfile(
@@ -772,7 +785,7 @@ void main() {
                 joinedAt: DateTime.utc(2026, 1, 1),
                 lastActiveAt: DateTime.utc(2026, 1, 1),
               ),
-        ];
+        ]);
       });
       stubRead(
         _plan(
@@ -837,7 +850,7 @@ void main() {
         invocation,
       ) async {
         final asked = invocation.positionalArguments.first as List<String>;
-        return profiles.where((p) => asked.contains(p.uid)).toList();
+        return _lookupOf(profiles.where((p) => asked.contains(p.uid)).toList());
       });
       stubRead(
         _plan(

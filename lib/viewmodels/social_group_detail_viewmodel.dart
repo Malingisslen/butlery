@@ -57,10 +57,17 @@ class LeaveGroupDecision {
   final bool groupIsEmpty;
   final List<UserProfile> availableNewOwners;
 
+  /// At least one member's profile could not be READ, so the member list this
+  /// decision was taken from is a subset of unknown size. Both other outcomes
+  /// are then unsafe: `groupIsEmpty` routes the owner to a delete dialog, and
+  /// `availableNewOwners` would offer a truncated candidate list.
+  final bool rosterIncomplete;
+
   const LeaveGroupDecision({
     required this.requiresOwnershipTransfer,
     required this.groupIsEmpty,
     required this.availableNewOwners,
+    this.rosterIncomplete = false,
   });
 }
 
@@ -78,6 +85,7 @@ class SocialGroupDetailViewModel extends ChangeNotifier
   // State
   FriendCategory? _group;
   List<UserProfile> _members = [];
+  Set<String> _unresolvedMemberIds = {};
   List<GroupInvitation> _pendingInvitations = [];
   StreamSubscription<GroupEventType>? _eventSubscription;
   DateTime? _lastRefresh;
@@ -99,6 +107,13 @@ class SocialGroupDetailViewModel extends ChangeNotifier
 
   /// List of group members with full profiles.
   List<UserProfile> get members => List.unmodifiable(_members);
+
+  /// True when the last load could not read every member's profile — the
+  /// member list above is a real but possibly INCOMPLETE roster, not
+  /// necessarily the whole group (BUT-2027). Read by
+  /// [checkLeaveGroupRequirements], which refuses to call a group empty on a
+  /// subset it cannot vouch for.
+  bool get hasUnresolvedMembers => _unresolvedMemberIds.isNotEmpty;
 
   /// List of pending invitations for this group.
   List<GroupInvitation> get pendingInvitations =>
@@ -230,11 +245,25 @@ class SocialGroupDetailViewModel extends ChangeNotifier
 
       if (_group != null) {
         // Get member profiles from UserService batch fetch
-        // This ensures all group members are shown, even if not in friends list
-        final memberProfiles = await _userService.getUserProfiles(
+        // This ensures all group members are shown, even if not in friends list.
+        //
+        // A read failure here (`unavailableIds`) means the roster below is
+        // possibly INCOMPLETE — a member exists but couldn't be shown — which
+        // is a fact this member list should not hide (BUT-2027). Surfacing
+        // it as its own dedicated banner is a UI decision left to a follow-up;
+        // `hasUnresolvedMembers` carries the signal rather than dropping it.
+        final memberBatch = await _userService.getUserProfiles(
           _group!.friendUserIds,
         );
-        _members = memberProfiles;
+        _members = memberBatch.profiles;
+        _unresolvedMemberIds = memberBatch.unavailableIds;
+        if (_unresolvedMemberIds.isNotEmpty) {
+          AppLogger.warning(
+            'SocialGroupDetailViewModel: could not resolve '
+            '${_unresolvedMemberIds.length} member profile(s) for group '
+            '$groupId',
+          );
+        }
 
         // Get pending invitations for this group from sent invitations
         _pendingInvitations = _friendsService.sentInvitations
@@ -242,6 +271,7 @@ class SocialGroupDetailViewModel extends ChangeNotifier
             .toList();
       } else {
         _members = [];
+        _unresolvedMemberIds = {};
         _pendingInvitations = [];
       }
     });
@@ -273,6 +303,20 @@ class SocialGroupDetailViewModel extends ChangeNotifier
         requiresOwnershipTransfer: false,
         groupIsEmpty: false,
         availableNewOwners: [],
+      );
+    }
+
+    // An owner whose members failed to load would otherwise be told the group
+    // is EMPTY and offered deletion — `_members` is the same subset
+    // `hasUnresolvedMembers` warns about, and the view routes `groupIsEmpty`
+    // straight into a delete dialog. Refused rather than guessed: the failure
+    // is transient, and re-reading is free.
+    if (hasUnresolvedMembers) {
+      return const LeaveGroupDecision(
+        requiresOwnershipTransfer: false,
+        groupIsEmpty: false,
+        availableNewOwners: [],
+        rosterIncomplete: true,
       );
     }
 

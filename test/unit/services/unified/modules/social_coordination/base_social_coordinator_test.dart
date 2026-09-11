@@ -72,6 +72,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as app_prov;
 import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/models/profile_lookup.dart';
 import 'package:butlery/repositories/firebase/base_shared_content_repository.dart';
 import 'package:butlery/services/unified/modules/social_coordination/base_social_coordinator.dart';
 import 'package:butlery/services/user_service.dart';
@@ -137,8 +138,12 @@ class _FakeUserService extends Fake implements UserService {
   UserProfile? get currentUserProfile => currentProfile;
 
   @override
-  Future<List<UserProfile>> getUserProfiles(List<String> userIds) async {
-    return profilesToReturn;
+  Future<ProfileBatchLookup> getUserProfiles(List<String> userIds) async {
+    return ProfileBatchLookup(
+      profiles: profilesToReturn,
+      missingIds: const {},
+      unavailableIds: const {},
+    );
   }
 }
 

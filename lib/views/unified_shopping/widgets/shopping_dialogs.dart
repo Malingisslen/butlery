@@ -231,10 +231,20 @@ class ShoppingDialogs {
           ...activeList.memberPermissions.keys,
         }.toList();
 
-        final profiles = await userService.getUserProfiles(allUserIds);
-        for (final profile in profiles) {
+        final result = await userService.getUserProfiles(allUserIds);
+        for (final profile in result.profiles) {
           final name = profile.displayName.trim();
           if (name.isNotEmpty) userDisplayNames[profile.uid] = name;
+        }
+        // This dialog shows who a list is shared with, not a decision
+        // surface — a name it can't resolve simply falls back to whatever
+        // the member-management dialog already renders for a missing entry.
+        // Logged so a persistently unresolved member is traceable (BUT-2027).
+        if (result.unavailableIds.isNotEmpty) {
+          AppLogger.warning(
+            'Could not resolve ${result.unavailableIds.length}/'
+            '${allUserIds.length} member name(s) for the sharing dialog',
+          );
         }
 
         if (!userDisplayNames.containsKey(activeList.ownerId) &&

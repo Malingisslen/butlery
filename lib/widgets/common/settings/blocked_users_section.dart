@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/user_profile.dart';
@@ -42,9 +43,18 @@ class _BlockedUsersSectionState extends State<BlockedUsersSection> {
     final Map<String, UserProfile> profiles = {};
     if (blocked.isNotEmpty) {
       final userService = ServiceLocator.get<UserService>();
-      final fetchedProfiles = await userService.getUserProfiles(blocked);
-      for (final profile in fetchedProfiles) {
+      final result = await userService.getUserProfiles(blocked);
+      for (final profile in result.profiles) {
         profiles[profile.uid] = profile;
+      }
+      // `_unblockUser` already falls back to the bare userId when a name is
+      // missing, so an unresolved profile degrades gracefully; logged so the
+      // drop is not invisible (BUT-2027).
+      if (result.unavailableIds.isNotEmpty) {
+        AppLogger.warning(
+          'Could not resolve ${result.unavailableIds.length}/'
+          '${blocked.length} blocked user profile(s)',
+        );
       }
     }
 

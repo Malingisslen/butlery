@@ -431,9 +431,18 @@ class UserService extends ChangeNotifier
     return profile;
   }
 
-  /// Get multiple profiles efficiently (batch)
-  Future<List<UserProfile>> getUserProfiles(List<String> userIds) async {
-    if (userIds.isEmpty) return [];
+  /// Get multiple profiles efficiently (batch). Reports which ids, if any,
+  /// could not be resolved — and whether that is because they are confirmed
+  /// absent or because the read itself failed — rather than silently
+  /// returning a subset that looks complete (BUT-2027).
+  Future<ProfileBatchLookup> getUserProfiles(List<String> userIds) async {
+    if (userIds.isEmpty) {
+      return const ProfileBatchLookup(
+        profiles: [],
+        missingIds: {},
+        unavailableIds: {},
+      );
+    }
 
     final results = <UserProfile>[];
     final uncachedIds = <String>[];
@@ -452,19 +461,41 @@ class UserService extends ChangeNotifier
       }
     }
 
-    if (uncachedIds.isNotEmpty) {
-      try {
-        final fetched = await _repository.fetchProfiles(uncachedIds);
-        for (final profile in fetched) {
-          results.add(profile);
-          _cacheProfile(profile.uid, profile);
-        }
-      } catch (e) {
-        AppLogger.error('❌ Kunde inte hämta profilbatch: $e');
-      }
+    if (uncachedIds.isEmpty) {
+      return ProfileBatchLookup(
+        profiles: results,
+        missingIds: const {},
+        unavailableIds: const {},
+      );
     }
 
-    return results;
+    try {
+      final fetched = await _repository.fetchProfiles(uncachedIds);
+      for (final profile in fetched) {
+        results.add(profile);
+        _cacheProfile(profile.uid, profile);
+      }
+      // The call returned, so every id it was asked for and did not return
+      // is a CONFIRMED absence, not a dropped read.
+      final fetchedIds = fetched.map((p) => p.uid).toSet();
+      final missing = uncachedIds
+          .where((id) => !fetchedIds.contains(id))
+          .toSet();
+      return ProfileBatchLookup(
+        profiles: results,
+        missingIds: missing,
+        unavailableIds: const {},
+      );
+    } catch (e) {
+      AppLogger.error('❌ Kunde inte hämta profilbatch: $e');
+      // The call threw, so nothing about these ids is known — they are
+      // UNAVAILABLE, never folded into "missing" or dropped outright.
+      return ProfileBatchLookup(
+        profiles: results,
+        missingIds: const {},
+        unavailableIds: uncachedIds.toSet(),
+      );
+    }
   }
 
   /// Update user's online status

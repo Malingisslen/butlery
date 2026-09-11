@@ -61,3 +61,48 @@ class ProfileLookup {
   /// [ProfileLookupStatus.foundSettingsUnavailable].
   final UserProfile? profile;
 }
+
+/// Result of a BATCH profile read — the plural counterpart to [ProfileLookup]
+/// (BUT-2027).
+///
+/// `UserService.getUserProfiles` used to catch its own repository failure and
+/// return whatever it had: `[]` on a TOTAL failure, and a SILENT SUBSET on a
+/// PARTIAL one (some ids already sat in cache; the rest were dropped when the
+/// fetch for the remainder threw). A caller could not tell "every profile was
+/// resolved" from "none were" from "some were, and the rest simply vanished
+/// from the list" — and the third case is the dangerous one, because the
+/// list still looks complete.
+///
+/// The distinction mirrors [ProfileLookupStatus]: an id the read CONFIRMED
+/// has no profile document belongs in [missingIds]; an id the batch fetch
+/// could not resolve at all — because the underlying call threw — belongs in
+/// [unavailableIds], because whether it has a profile is unknown.
+///
+/// `fetchProfiles` reads Firestore in `whereIn` chunks and reports no
+/// per-id outcome, so the two sets can only be told apart at the WHOLE-CALL
+/// level: a call that returns tells us every id it was given that did not
+/// come back is truly absent; a call that throws leaves every id it was
+/// given unresolved. There is no per-id "some of this chunk failed" — the
+/// finer-grained [ProfileLookupStatus.foundSettingsUnavailable] case has no
+/// batch counterpart, because `fetchProfiles` never touches private settings.
+class ProfileBatchLookup {
+  const ProfileBatchLookup({
+    required this.profiles,
+    required this.missingIds,
+    required this.unavailableIds,
+  });
+
+  /// Every profile resolved — from cache or from a successful fetch.
+  final List<UserProfile> profiles;
+
+  /// Ids the read confirmed have no profile document. Not transient.
+  final Set<String> missingIds;
+
+  /// Ids the read could not resolve at all — the underlying fetch threw, so
+  /// whether a profile exists is unknown. Transient; a retry may succeed.
+  final Set<String> unavailableIds;
+
+  /// True when nothing was dropped by a failure. A confirmed absence in
+  /// [missingIds] does not affect this — it is a real answer, not a gap.
+  bool get isComplete => unavailableIds.isEmpty;
+}
