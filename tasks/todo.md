@@ -1,3 +1,327 @@
+# Sprint 2026-09-11 — sju ärenden, fyra kluster
+
+Vald av `/delivery:sprint-execute`. Föregående sprint (2026-09-11) är stängd
+(Slutstatus fylld, allt committat) och ligger i arkivet nedan.
+
+**Routing körs PER KLUSTER**, eftersom utdelningen sker kluster för kluster. Rå utdata från
+`python tools/stakeholder_router.py --json` står under varje kluster. Utdelningen sker i den
+här sessionen, som KAN sammankalla — så varje kritik körs FÖRE bygget. Ändras ett klusters
+filunion före bygget körs routern om på den union som faktiskt delas ut.
+
+Steg 0 mot HEAD är gjord för alla sju; greparna står under respektive ärende.
+
+Genomgående tema: **fyra av sju ärenden är samma klass** — ett skydd som kör men inte mäts,
+eller en kontroll som rapporterar grönt fast den inte gjort sitt jobb. Repot har en lärdom om
+precis den formen ("en otestad UTFÄSTELSE och en hållen utfästelse är samma artefakt").
+
+---
+
+## Kluster A — två säkerhetsspärrar som går live omätta
+
+Router: **`single`**, panel `["Data Analyst / BI", "Growth Marketer / ASO",
+"Monetization / Subscriptions Lead", "Performance Engineer", "Product Manager",
+"Trust & Safety / Content Moderation", "Vendor / Procurement Manager"]`,
+`high_stakes_hits: []`. Ägande roll för kritiken: **Data Analyst / BI**.
+
+### [Tier A] BUT-2073 — blockeringsspärren på betyg går live omätt (Low, analytics/social)
+
+Disposition: **build**. Ren mätbarhet, inget produktval — Malin har redan beslutat
+BÅDA halvorna (2026-09-11): behåll skrivningen vid olöslig ägare, och mät den.
+
+Steg 0, mätt mot HEAD:
+- `firebase_ratings_repository.dart:140,165-178` skriver `recipeOwnerId` när ägaren går att lösa upp (utelämnar nyckeln annars). Stämplingen finns alltså.
+- Ingen träff på `permission-denied` i betygsvägen — inget fångar det nekade anropet.
+- `RecipeRatingSystem.rateRecipe` (`lib/services/unified/operations/modules/recipe_rating_system.dart:31`) är stället där ägaren löses upp.
+
+Premissen gäller: två räknare saknas, båda.
+
+Acceptanskriterier:
+- [ ] `{text: "En nekad betygsskrivning (permission-denied fran rateRecipe) producerar en raknebar signal utan uid och utan fritext", kind: diff}`
+- [ ] `{text: "En andra raknare: RecipeRatingSystem.rateRecipe naar skrivningen med OLOSLIG agare (bade socialData.ownerId och core.createdBy saknas/tomma). Raknas separat fran den forsta - de mater motsatta halvor (spaerren slaar till / spaerren kor aldrig) och faar inte slaas ihop", kind: diff}`
+- [ ] `{text: "Test som visar att signalen skrivs paa ett nekat anrop och INTE paa ett lyckat, och ett som visar den andra raknaren paa ett recept utan bada agarfalten", kind: diff}`
+- [ ] `{text: "Mutationsprovat: ta bort vardera emitteringen och se respektive test rodna", kind: diff}`
+- [ ] `{text: "INTE gjort: ingen ny nekande felvag for oloslig agare - Malins beslut 2026-09-11 ar att skrivningen fortsatter", kind: diff}`
+
+### [Tier A] BUT-1952 — spamspärren går live blind (Medium, social)
+
+Disposition: **build**. Villkor från Trust & Safety-panelen 2026-08-26, inte ett produktval.
+
+Steg 0, mätt mot HEAD:
+- `functions/src/social/duplicate-content-guard.ts:461` har EN `logger.info` vid märkning och inget annat. Ingen räknare, inget `system_event`, inget dagligt aggregat.
+
+Premissen gäller.
+
+Acceptanskriterier:
+- [ ] `{text: "En markning av ett dubblettmeddelande producerar en raknebar signal - raknare, system_event eller dagligt aggregat - utan uid och utan meddelandetext", kind: diff}`
+- [ ] `{text: "Signalen gaar att lasa utan att oppna en anvandares data", kind: diff}`
+- [ ] `{text: "Test som visar att signalen skrivs vid en markning och inte vid ett vanligt meddelande", kind: diff}`
+- [ ] `{text: "Mutationsprovat", kind: diff}`
+- [ ] `{text: "INTE gjort: ADR-0007:s lucka om admin-insyn och overklagandevag - egen biljett, roers inte har", kind: diff}`
+
+---
+
+## Kluster B — täckningsrapporten ser inte fyra (nu sex) regelsviter
+
+Router vid urval, med probsömmen inne: **`full-panel`** (åtta säten), dragen in av EN fil —
+`functions/src/__tests__/weekly-menu-plans-rules.test.ts`.
+
+**Omfånget krympt vid utdelning, och routern körd om på den union som faktiskt delas ut**
+(regeln säger uttryckligen att krympningen är den riktning som brukar missas):
+`python tools/stakeholder_router.py --json functions/scripts/rules-coverage-report.js package.json functions/package.json`
+→ **`single`**, panel `["Vendor / Procurement Manager"]`, `high_stakes_hits: []`.
+Ägande roll: **Vendor / Procurement Manager**.
+
+Probsömmen på veckoplanernas regeltest lyfts UR bygget och filas som egen uppföljning. Den
+är BUT-1966:s "ta samtidigt"-bonus, inte defekten, och den ensam kostar en åttasätespanel.
+Defekten — upptäckten i rapporten plus grinden som jämför två tal — är orörd av krympningen.
+
+### [Tier C] BUT-2011 + BUT-1966 — samma defekt, två biljetter (båda Medium, test-gap)
+
+Disposition: **build**. Byggs som ETT arbete; båda stängs mot samma commit.
+
+Steg 0, mätt mot HEAD:
+- `functions/scripts/rules-coverage-report.js:487,489` kräver strängliteral i båda sökuttrycken.
+- `grep -rln PROBE_PROJECT_ID functions/src/__tests__/*.ts` ger sex filer.
+- **Men FYRA av dem är osynliga för upptäckten, precis som båda biljetterna säger.** Mätt genom att köra upptäckten före och efter: 32 sviter före, 36 efter. De fyra är `chat-groups`, `conversations`, `cook-snaps-and-message-mod`, `poll-votes`. De andra två (`blocks`, `delivered-notifications`) håller konstanten som en BAR literal och lägger override:n på anropsstället — med en kommentar som förklarar varför, alltså en känd kringgång av just den här buggen.
+- 36 `*-rules.test.ts` på disk; `test:rules:all` namnger 45 sviter.
+
+Premissen gäller. **Rättelse av den här planens egen text:** ett tidigare utkast
+påstod att omfånget var SEX och att siffran fyra i båda biljetterna var stale. Det
+var fel, och mätningen ovan motbevisar det. Biljetterna hade rätt; inget ska rättas
+i dem.
+
+Acceptanskriterier:
+- [x] `{text: "De fyra osynliga sviterna bidrar till tackningsunionen. Verifierat genom att kora UPPTACKTEN fore och efter: 32 sviter fore, 36 efter", kind: diff}` — MATT
+- [ ] `{text: "Sommen fungerar fortfarande: PROBE_RULES_PATH/PROBE_PROJECT_ID pekar om projektet paa minst en av de fyra", kind: diff}`
+- [ ] `{text: "Rapporten FALERAR (eller rodnar en grind) nar antalet upptackta sviter ar farre an antalet *-rules.test.ts paa disk - det ar jamforelsen av tvaa tal som gjorde hela klassen tyst", kind: diff}`
+- [ ] `{text: "INTE gjort: probsommen paa weekly-menu-plans-rules.test.ts. Lyft ur omfanget vid utdelning for att en enda testfil drog in en attasatespanel; filad som egen uppfoljning innan commit", kind: diff}`
+- [x] `{text: "INGEN rattelse behovs i biljetterna: de sager fyra, och fyra ar matt korrekt. Det var den har planens forsta utkast som sa sex, och den meningen ar struken", kind: diff}` — MATT
+- [ ] `{text: "Rapporten kord fore och efter mot en emulator, med bada utdata inklistrade i sprintrapporten", kind: run}`
+
+---
+
+## Kluster C — en commit-grind rapporterar grönt fast skalet felade
+
+Router: **`single`**, panel `["DevOps / SRE"]`, `high_stakes_hits: []`.
+Ägande roll: **DevOps / SRE**.
+
+### [Tier A] BUT-2061 + BUT-1921 — samma defekt, två sightings (Medium + Low, tech-debt/Bug)
+
+Disposition: **build**. BUT-1921 ligger redan i Todo och säger att källan är ohittad;
+BUT-2061 är samma symptom sett igen med mer utdata. De byggs som ett arbete.
+
+Steg 0, mätt mot HEAD:
+- `lefthook.yml:26` (`secret-scan`) slutar på `... && exit 1 || true`. Den `|| true` är där för att grep-rc=1 ("ingen träff") inte ska fälla steget — men den sväljer **också** ett äkta fel. Det är exakt punkt 3 i BUT-2061: egenskapen, inte symptomet.
+- `lefthook.yml:143-147` (`null-filter-guard`) startas med `bash`, inte `sh` — meddelandet sade `sh: line 2`, så steget som äger utdatan är ännu inte identifierat.
+
+Premissen gäller. **Viktigast är punkt 3**, inte att hitta det ena `[`-uttrycket.
+
+Acceptanskriterier:
+- [ ] `{text: "Det steg som ager sh: line 2-utdatan ar IDENTIFIERAT med namn, eller sa ar det skrivet rakt ut att det inte gick att reproducera - ingen gissad orsakssats", kind: diff}`
+- [ ] `{text: "Roten: inget commit-grindsteg kan langre skriva till stderr, fela, och anda rapporteras groent. Konkret ska secret-scans avslutande || true inte langre svalja en icke-noll status som INTE ar grep-rc=1", kind: diff}`
+- [ ] `{text: "Varje ovrigt steg i lefthook.yml ar genomgaanget for samma form (|| true, pipe utan pipefail, ociterad variabel i ett test-uttryck) - uppraknat med radnummer, inte bara det steg som raakade synas", kind: diff}`
+- [ ] `{text: "Ett negativt prov: ett avsiktligt trasigt kommando i ett steg FALLER commiten i stallet for att rapporteras groent", kind: diff}`
+
+---
+
+## Kluster D — artikel 15-bunten motsäger sig själv om en sen medlems chatthistorik
+
+Router: **`full-panel`**, panel `["Data Analyst / BI", "Financial Controller / FinOps",
+"Legal Counsel", "Performance Engineer", "Privacy / Data Protection Officer (GDPR)",
+"Product Manager", "Security Architect", "Software Architect",
+"Trust & Safety / Content Moderation"]`,
+`high_stakes_hits: ["lib/services/account/export/social_export_manager.dart"]`.
+
+### [Tier C] BUT-1854 — exporten hedrar `memberSince` i ena halvan (High, account/social/security)
+
+Disposition: **build — Malins uttryckliga val, 2026-09-11: alternativ A.**
+
+Ärendet var på väg att parkeras som `needs-approval`, för att kommentarskontrollen på
+kortlistan hittade en OBESVARAD fråga på biljetten från 2026-08-23: A eller B, ställd
+direkt till Malin, aldrig besvarad. Att bygga A då hade varit att svara åt henne.
+Hon är närvarande i den här sessionen (hon skrev kommandot), så frågan ställdes om i stället
+för att parkeras en andra gång, och hon valde **A**.
+
+Vad hon SÅGS: att appen redan vägrar visa meddelanden som skickades innan man gick med, att
+exporten utelämnar dem i ena halvan men skickar med "senaste meddelande"-förhandsvisningen
+i den andra, samt vad A och B kostar var för sig.
+Vad hon INTE sågs, sagt rakt ut eftersom en attribution är ett påstående om en person som
+inget test kan hålla: ingen har mätt hur ofta en gruppchatts senaste meddelande faktiskt
+predaterar en medlems inträde, och T&S-sätets följdfråga (ska en bortsållad förhandsvisning
+gå att skilja från en som aldrig funnits) ställdes till henne först efter bygget.
+
+Steg 0 mäts i Fas 2 mot de två filerna biljetten namnger (rad 376-386 respektive 184-197).
+**Om raderna flyttat sedan 2026-08-15 gäller premissen ändå bara om BÅDA halvorna
+fortfarande finns — annars är ärendet obsolet och stängs.**
+
+Acceptanskriterier:
+- [ ] `{text: "En sen medlems bunt utelamnar conversations.lastMessage nar den predaterar personens egen memberSince-stampel, och behaller den nar den inte gor det", kind: diff}`
+- [ ] `{text: "EN delad hjalpare for predikatet, inte en andra kopia - BUT-1798-posten finns for att tre sektioner som implementerar ett beslut var for sig ar hur de driver isar", kind: diff}`
+- [ ] `{text: "Test paa bada fallen, mutationsprovat", kind: diff}`
+- [ ] `{text: "INTE gjort: den tredje stavningen av avskarningen (raa kartlasning for Firestore-intervall) konsolideras INTE - koden sager varfor, och biljetten sager uttryckligen att den inte ska roeras", kind: diff}`
+- [ ] `{text: "Parkeras In Review med valet A-mot-B skrivet paa vanlig svenska till Malin", kind: diff}`
+
+---
+
+## Fas 1.4 — kritikernas villkor, infällda som bindande
+
+Alla kritiker körda FÖRE bygget. Metrikrader loggade (`docs/org/metrics/events.jsonl`).
+
+### Kluster A — Data Analyst / BI
+1. **BUT-2073 kan bara nå GA4, och det är en känd blind fläck.** Klienten har just fått en
+   Firestore-skrivning nekad, så den kan inte också skriva en Firestore-räknare.
+   `AnalyticsEvents` är enda nåbara ytan — men adminpanelen läser
+   `analytics/{group}/daily/{date}`-aggregat, inte GA4. **Båda nya konstanterna ska bära
+   samma varningskommentar som `messageSendDeniedClockAhead`** (`analytics_events.dart`),
+   inklusive dess samtyckesförbehåll. Skriv INTE att siffran syns i panelen.
+2. **Räknare (b) behöver en nämnare.** "Nära noll" kräver något att vara nära noll MOT.
+   Läs den som kvot mot `recipeRated` ur SAMMA GA4-ström — en Firestore-hämtad nämnare
+   snedvrider kvoten via olika samtyckesgrindar.
+3. **BUT-1952 skriver ett `system_events`-dokument, inte en ny samling.** Då plockas den
+   upp gratis av `runOpsSnapshot`s `byType`-hink (`functions/src/analytics/daily-snapshots.ts`).
+4. **Två skilda `type`-värden för chatt och kommentar, aldrig hopslagna** — filen ägnar
+   fyrtio rader åt att slå fast att de två ytorna är asymmetriska (ADR-0009). Om
+   `guardDuplicateComment` lämnas oräknad ska det stå rakt ut, inte glida.
+5. Namnge konstanterna smalt. Och: chattens räknare läser NOLL så länge
+   `enable_chat_duplicate_guard` är av — det får inte gå att läsa som "inga dubbletter".
+
+### Kluster B — Vendor / Procurement Manager
+1. **Sluta regexa över källkod.** Härled sviterna ur `test:rules:all`-kedjan i
+   `functions/package.json` — den strängen parsas redan av
+   `functions/scripts/check-test-registration.js`. **Dela den parsern**; en fjärde
+   parser av ett och samma faktum är defekten en nivå upp.
+2. **Räkna INTE unika projekt-id mot antal filer på disk.** `discoverProjectIds()` ger en
+   MÄNGD; två sviter får dela projekt-id, och då larmar grinden varje körning på ett
+   friskt repo. Jämför mot samma auktoritativa population som `check-test-registration.js`
+   redan beräknar.
+3. "0 upptäckta" (totalt avbrott) och "N-1 av N" (en svit tappad) får inte skriva samma text.
+4. `PROBE_PROJECT_ID` sätts ingenstans i något workflow eller skript i dag, så
+   reservvärdet är alltid det som gäller. Att fånga reservvärdet är rätt NU och tyst fel
+   den dag någon sätter variabeln — skriv det i kommentaren, låt det inte se stängt ut.
+
+### Kluster C — DevOps / SRE
+1. **`secret-scan` kan aldrig fälla en commit.** `A && B && exit 1 || true` är
+   vänsterassociativt, så `|| true` sväljer det AVSIKTLIGA `exit 1` — inte bara grep:s
+   ofarliga "ingen träff". Vakten som ska hitta läckta nycklar är inert. Det här är
+   allvarligare än symptomet i biljetten.
+2. **Attributionen är AVGJORD, mätt:** `secret-scan` är det ENDA `run:`-värdet i
+   `lefthook.yml` som blir flerradigt efter YAML-tolkning, och dess `[` ligger på rad 2 —
+   vilket är exakt vad `sh: line 2` pekar på. Orsaken till flerradigheten är att `run:`
+   är en YAML-**dubbelciterad** skalär, så `'\n'` blir ett riktigt radbrott.
+   **Men:** att köra den tolkade strängen under `sh` och `bash` med en tvåfilslista
+   återskapar INTE `[`-felet (rc=0 båda). Alltså: platsen är mätt, den utlösande indatan
+   är det inte. Ingen orsakssats skrivs om den senare.
+3. Två fler av samma form, båda kastar rörledningens utgångsstatus och testar bara
+   innehåll: `tools/check_null_filter.sh:133-136` och `tools/check_staged_arch_guards.sh:25-36`.
+4. Fixens form: flytta det avsiktliga felet in i ett `if`, så att inget följer efter det
+   som kan svälja det. Och bevisa den med en `--self-test` enligt `check_null_filter.sh`s
+   mall, inkopplad i `script-guard-tests`.
+
+### Kluster D — nio säten i två grupper. EN konflikt, avgjord genom MÄTNING.
+Ingen konflikt inom respektive grupp. Mellan grupperna: `Security Architect` gjorde det
+bindande att jämföra `lastMessage['sentAt']` som en rå `Timestamp`; `Software Architect`
+mätte att exporthanteraren ser ISO-**strängar**. Jag mätte om:
+`social_export_manager.dart:272-273` anropar `_redactOtherParticipants(sanitizeForJson(convo['data']))`
+— alltså strängar. **Software Architect har rätt; Security Architects villkor bygger på en
+felaktig premiss och är inte bindande i den formen.**
+Vad som däremot står kvar av det villkoret, och är bindande: det ska finnas EN stavning av
+jämförelsen i kodbasen. Lösningen som uppfyller båda säten: bryt ut själva jämförelsen ur
+`Conversation.canReadMessageAt` till en fristående funktion som metoden själv anropar, och
+låt exporthanteraren tolka sina två ISO-strängar och anropa SAMMA funktion.
+Repositoryts Firestore-gräns förblir den avsiktliga tredje stavningen och rörs inte.
+
+Övriga bindande villkor från kluster D:
+1. **Ordningen är bärande.** Slingan på rad 161-183 kollapsar redan `copy['memberSince']`
+   till `{userId: ownStamp}` — eller raderar fältet helt på sin fail-closed-gren — INNAN
+   `lastMessage`-blocket körs. Predikatet måste läsa stämpeln före den reduktionen, annars
+   testar det mot ingenting.
+2. **Frånvaro avgörs per fall, aldrig med en förvald sida.** 1:1-chatt (`groupId == null`)
+   → behåll alltid, `memberSince` gäller inte där. Gruppchatt med uid saknat i kartan →
+   fail closed, alltså släng, precis som `canReadMessageAt` redan dokumenterar.
+3. `redaction_fell_back: true` på en okänd form — men INTE som signal för ett
+   policybeslut. T&S: en slängd förhandsvisning och en chatt som helt saknar en får inte
+   bli oskiljbara genom att återanvända en flagga som betyder "form vi inte känner igen".
+4. **`data_minimisation`-prosan behöver en ny mening.** Klassningen är avgjord av alla tre
+   säten: det här är den sökandes EGET utfall, inte en tredje parts faktum, så BUT-2056:s
+   byte-invarianskrav binder den INTE — den får variera. Om den blir villkorad ska
+   villkoret pinnas av ett test, som BUT-2014:s `chatGroupsNote`-ternär.
+5. `social_export_manager.dart` ligger på 677 rader mot en `ACCEPTED_LARGE_FILES`-rad som
+   säger 677. Varje tillägg spräcker den — raden räknas om i SAMMA commit, ur `wc -l`.
+   (`firebase_data_export_repository.dart` står på 1199 mot uppmätta 1205. Förbefintlig
+   drift, rörs inte av den här ändringen, filas separat.)
+6. **Fixturluckan är verklig och mätt** av QA-sätet: i
+   `test/unit/services/account/export/social_export_manager_test.dart` stagar
+   `memberSince`-testerna (1159-1235) inget `lastMessage`, och `lastMessage`-testerna
+   (1035-1109) stagar varken `groupId`, `memberSince` eller `sentAt`. **Ingen befintlig
+   fixtur kan nå den nya grenen.** En ny måste byggas; en återanvänd ger ett grönt test
+   som pinnar ingenting.
+7. Mutationsprovet måste vända BÅDE ett behåll- och ett släng-fall, inte bara ett.
+
+### Öppen fråga till Malin, buren vidare (ej byggd)
+T&S vill att en bortsållad förhandsvisning ska gå att SKILJA från en chatt som aldrig haft
+någon. Det ligger utanför vad "släng `lastMessage` när den predaterar `memberSince`"
+bokstavligen säger, och de två andra sätena hade det inte med. Byggs INTE här; ställs till
+henne i slutrapporten.
+
+## Slutstatus (2026-09-11)
+
+Sprinten är stängd. Sju ärenden, sju kodcommits.
+
+| Ärende | Commit | Läge |
+|---|---|---|
+| BUT-2061 + BUT-1921 | `9e5d401fc`, `fe929b219`, `cbcc16d85`, `ed39dca7e` | Done |
+| BUT-2011 + BUT-1966 | `930a3b710` | **In Review** — kriterium 4 kräver en levande emulatorkörning |
+| BUT-2073 | `d45769834` | Done |
+| BUT-1952 | `d45769834`, `fe929b219` (kartan) | Done |
+| BUT-1854 | `abeb79068` | **In Review** — GDPR, Malins val A i dag |
+
+Utfallsverifieraren (färsk kontext, inte implementatören): BUT-2073 och BUT-1952 alla
+kriterier godkända; BUT-2011/1966 1–3 godkända, 4 väntar på körning; BUT-2061/1921
+underkänd två gånger — `check_swedish_boundary.sh` och sedan null-filter-vaktens
+filtrerande grep — och godkänd på tredje körningen efter `fe929b219` och `cbcc16d85`.
+
+Grindar: alla fem på kluster A, tre på BUT-1854, efter tre rundor vardera. Varje
+blockerande fynd efter första rundan var en mening jag skrivit som rättelse.
+
+Två beslut av Malin i sessionen: BUT-1854 alternativ A, och T&S-följdfrågan (ingen
+markering per rad). Båda registrerade på biljetten.
+
+Veckogränsen för Opus nåddes en gång; ingen grind nedgraderades för att komma förbi.
+
+Lessons-post + digestrad skrivna i samma redigering (CLAUDE.md regel 9).
+
+## Needs you (Tier D)
+
+Inga i den här batchen.
+
+## Behöver Malin (parkerade / ej valda)
+
+- **BUT-2072** (`need-malin`) — receptägarens uid på andras betygsrader nås av ingen radering. Direkt syskon till BUT-2073. Inte valt: det är en ren fråga till Malin, inte ett bygge.
+- **BUT-1854** parkerar i In Review med A-mot-B-valet, se ovan.
+
+## Deviation log
+
+- [deviation] Kluster B: planen sa att probsömmen på `weekly-menu-plans-rules.test.ts` skulle ingå → routern gav `full-panel` med åtta säten, draget in av den ENDA filen → lyfte ur den, körde om routern på den union som faktiskt delas ut (`single`), och filade resten som kommentar på BUT-1966.
+- [discovery] Kluster B: mätningen motbevisade planens egen siffra. Planen sa SEX osynliga sviter; upptäckten före/efter ger 32 → 36, alltså FYRA, precis som båda biljetterna säger. Planens mening struken, biljetterna orörda.
+- [discovery] Kluster B: en FEMTE svit var trasig på ett sätt ingen biljett beskriver. `blocks-rules.test.ts` bär en kommentar som ordagrant innehåller `PROJECT_ID = "..."`, och det gamla mönstret använde `exec` (första träffen) — så den bidrog med projekt-id:t `...` och aldrig sitt riktiga. Fetchen rapporterade det påhittade projektet som en vanlig "skip", alltså ett friskt utseende. Hittad av ett av de nya testerna, inte av läsning.
+- [discovery] Kluster C: `secret-scan` kunde inte fälla en commit i något läge — `&& exit 1 || true` svalde sitt eget avsiktliga fel. Allvarligare än symptomet biljetten beskriver, och utanför vad den bad om. Byggt ändå: det är roten biljettens punkt 3 pekar på.
+- [discovery] Kluster C: mutant 3 ÖVERLEVDE första omgången — inget fall nådde grenen där grepen själv felar. Luckan stängdes i stället för att beskrivas; den krävde en probsöm, eftersom ingen fixtur kan få grep att fela portabelt.
+- [deviation] Kluster C: två syskondefekter av samma form lagades utöver biljetten (`check_null_filter.sh`, `check_staged_arch_guards.sh`). Sex vaktskript med samma `|| true`-form som INTE är inkopplade i pre-commit lämnades — utanför biljettens omfång, namngivna i commit-meddelandet.
+- [deviation] Kluster A: ett unit-testfall skrevs som `chat !== comment` och gick inte att kompilera — `as const` gör att TypeScript bevisar att literalerna skiljer sig och avvisar jämförelsen (TS2367). Fallet slogs ihop med värdepinnarna i stället, och varför står i testets kommentar.
+- [needs-human] Kluster D: T&S-sätet vill att en bortsållad `lastMessage` ska gå att SKILJA från en chatt som aldrig haft någon. Utanför vad alternativ A bokstavligen säger; de två andra sätena hade det inte med. Byggs inte; ställs till Malin i slutrapporten.
+- [discovery] Kluster D: de två panelgrupperna motsade varandra om hjälparens form. `Security Architect` gjorde det bindande att jämföra `lastMessage['sentAt']` som en rå `Timestamp`; `Software Architect` sa ISO-strängar. Mätt: `social_export_manager.dart:272-273` anropar `_redactOtherParticipants(sanitizeForJson(convo['data']))`, och testfixturerna lagrar `memberSince` som `'2026-01-01T01:01:01.000Z'`. Software Architect har rätt. Det bindande som står kvar av det andra villkoret är EN stavning av jämförelsen, inte dess typ.
+- [discovery] Linears ärendetak är nått igen, så uppföljningar filas som kommentarer på moderärendena i stället för som egna ärenden.
+- [discovery] Veckogränsen för Opus nåddes mitt i kluster D: tre grindagenter dog på HTTP 429. Ingen grind nedgraderades till en billigare modell för att ta sig förbi — det hade varit att kringgå en grind. Ett nytt försök gick igenom när gränsen släppte för sessionen.
+- [deviation] ALLA datum jag skrev i sprinten stod som 2026-09-12; det var 2026-09-11. Fångat av code-reviewer-grinden, mätt mot `date` och HEAD:s committid. Rättat i kod på main (`fe929b219`), i den stagade BUT-1854-mängden, i fyra Linear-kommentarer och här. Commit-meddelandena i `9e5d401fc`, `930a3b710` och `d45769834` bär samma fel och kan inte ändras.
+- [discovery] Utfallsverifieraren underkände BUT-2061 två gånger, båda gångerna rätt: först `check_swedish_boundary.sh` (`if grep; then … fi; exit 0`, rc=2 i else-grenen), sedan `check_null_filter.sh`s FILTRERANDE grep, som slutade på `|| true` i kod jag själv skrev för biljetten — med en kommentar som bara ursäktade rc=1. Min uppräkning grepade efter strängar och missade formen. Mitt commit-meddelande i `9e5d401fc` påstod att de tre formerna var de enda; det var fel.
+- [deviation] Första försöket att laga null-filter-vakten KORRUPTERADE skriptet: redigeringarna applicerades i fel ordning, en infogning ovanför gjorde filterradens index inaktuellt och ersättningen landade tolv rader för högt. Syntaxfel, fångat innan commit; filen återställd ur HEAD med byte-identitet kontrollerad. Andra försöket lokaliserar alla ankare först och applicerar strikt fallande.
+- [discovery] Kodgranskaren och helhetsgranskaren underkände BUT-1854 på en mening jag hade "rättat på plats" i `conversation_test.dart` — omformuleringen bar med sig det falska påståendet med ett nytt verb. Samma klass som hela sprinten: rättelsen är där nästa fel hamnar.
+- [needs-human] Malins svar på T&S-frågan (2026-09-11): ingen markering per chattrad när förhandsvisningen utelämnas. Registrerat på BUT-1854.
+
+---
+
+# ARKIV — tidigare sprintar
+
 # Sprint 2026-09-11 — sju ärenden, fem kluster
 
 Vald av `/delivery:sprint-execute`. Föregående sprint (2026-09-10 kväll) är stängd
