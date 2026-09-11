@@ -4178,3 +4178,11 @@ neither passed an `auditRepository` at all.
   `firebase_ratings_repository.dart` has no `ACCEPTED_LARGE_FILES` row; deleting `updateRating`
   took it under the 500-line limit.
   Retired verbatim (fragment; the original wraps): "The `ACCEPTED_LARGE_FILES` row is updated in this commit to the measured"
+
+- **A total failure on the who's-eating menu path filters for the whole household plus the
+  common-allergen floor, even when the user has turned household allergens OFF (BUT-2076,
+  2026-09-11).** `PresentDinerPrefsResolver._unreadable` widens the household union with the
+  floor and closes UNKNOWN without reading `useHouseholdAllergens`. **Malin's explicit call,
+  2026-09-11**, over the alternative of honouring the setting (own allergies plus the floor),
+  which she was shown drops a present child's non-floor allergy on that path. She was NOT shown
+  how often a total roster failure happens; the path has no caller yet (BUT-1625). BUT-2076, 2026-09-11
