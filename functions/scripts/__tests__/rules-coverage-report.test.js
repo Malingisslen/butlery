@@ -25,6 +25,9 @@ const {
   newBlockPaths,
   stripCommentsAndStrings,
   UNTESTED_BLOCK_POLICY,
+  discoverProjectIds,
+  rulesChainFiles,
+  undiscoveredSuites,
 } = require("../rules-coverage-report.js");
 
 const REPO_ROOT = path.resolve(__dirname, "..", "..", "..");
@@ -646,6 +649,109 @@ test("coverage is read while the emulator is still up", () => {
   assert.ok(
     coverageAt < stopAt,
     "the :ruleCoverage report dies with the emulator — the gate must run before it is stopped",
+  );
+});
+
+// ── suite discovery (BUT-2011 / BUT-1966) ─────────────────────────────────
+
+// A helper build of `discoverProjectIds`'s return shape, so the gate can be
+// driven through states the real repository is not in. Driving it off the real
+// tree only would make every assertion here a restatement of today's files.
+const discovery = (byFile, noIdFound = []) => ({
+  ids: [...new Set(Object.values(byFile).flat())].sort(),
+  byFile: new Map(Object.entries(byFile)),
+  noIdFound,
+});
+
+test("the probe seam spelling is discovered, not skipped", () => {
+  const d = discoverProjectIds();
+  for (const name of [
+    "chat-groups-rules.test.ts",
+    "conversations-rules.test.ts",
+    "cook-snaps-and-message-mod-rules.test.ts",
+    "poll-votes-rules.test.ts",
+  ]) {
+    assert.ok(
+      d.byFile.has(name),
+      `${name} spells PROJECT_ID with the process.env.PROBE_PROJECT_ID ?? "literal" seam. Before BUT-2011 both discovery patterns required a bare literal, so it contributed nothing to the coverage union while running green.`,
+    );
+  }
+});
+
+test("an id is read from the assignment, never from a comment mentioning one", () => {
+  // delivered-notifications-rules.test.ts carries a comment block discussing
+  // PROJECT_ID and PROBE_PROJECT_ID at length. A pattern loose enough to match
+  // prose would collect a project that no suite writes coverage under, and the
+  // fetch for it would then be reported as a skip rather than as a defect.
+  const d = discoverProjectIds();
+  for (const ids of d.byFile.values()) {
+    for (const id of ids) {
+      assert.ok(
+        /^[a-z0-9-]+$/.test(id),
+        `discovered project id ${JSON.stringify(id)} is not a project id — the pattern matched prose`,
+      );
+    }
+  }
+});
+
+test("every suite the rules job runs yields a project id", () => {
+  assert.deepStrictEqual(
+    undiscoveredSuites(discoverProjectIds(), rulesChainFiles()),
+    [],
+    "a suite in test:rules:all contributes nothing to the coverage union — it runs green and its coverage is silently never collected",
+  );
+});
+
+test("one regressed suite FAILS, and says so as one suite", () => {
+  const d = discovery({ "a-rules.test.ts": ["p-a"] }, ["b-rules.test.ts"]);
+  const lines = undiscoveredSuites(
+    d,
+    new Set(["a-rules.test.ts", "b-rules.test.ts"]),
+  );
+  assert.ok(lines.length > 0, "an undiscovered suite must fail the report");
+  assert.ok(
+    lines[0].includes("1 of 2 suites"),
+    `expected a per-suite count, got: ${lines[0]}`,
+  );
+  assert.ok(lines.some((l) => l.includes("b-rules.test.ts")));
+});
+
+test("a TOTAL discovery outage does not print as a regressed suite", () => {
+  // The distinction is the whole point: "0 found" means discovery itself broke
+  // and the union would be empty, "N-1 of N" means one file changed spelling.
+  // One shared message for both is how the original defect stayed invisible.
+  const d = discovery({}, ["a-rules.test.ts", "b-rules.test.ts"]);
+  const lines = undiscoveredSuites(
+    d,
+    new Set(["a-rules.test.ts", "b-rules.test.ts"]),
+  );
+  assert.ok(lines[0].includes("NO suite at all"), lines[0]);
+  assert.ok(
+    !lines[0].includes(" of "),
+    "the outage message must not be phrased as a fraction of suites",
+  );
+});
+
+test("two suites sharing ONE project id is not a failure", () => {
+  // The gate deliberately does NOT compare unique project ids against files:
+  // discoverProjectIds returns a SET, so a legitimate shared id would make that
+  // comparison fire on a healthy repo, every run, forever.
+  const d = discovery({
+    "a-rules.test.ts": ["shared"],
+    "b-rules.test.ts": ["shared"],
+  });
+  assert.strictEqual(d.ids.length, 1);
+  assert.deepStrictEqual(
+    undiscoveredSuites(d, new Set(["a-rules.test.ts", "b-rules.test.ts"])),
+    [],
+  );
+});
+
+test("a missing test:rules:all is fatal, not a silent clean pass", () => {
+  const lines = undiscoveredSuites(discovery({}), null);
+  assert.ok(
+    lines.length > 0,
+    "with no authoritative suite list there is nothing to check discovery against — that must fail, not pass",
   );
 });
 

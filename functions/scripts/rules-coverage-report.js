@@ -477,20 +477,126 @@ function newBlockPaths({ base, baseSource, blocks }) {
   };
 }
 
-/** Project ids used by the rules suites — coverage is scoped per project. */
+/**
+ * Project ids used by the rules suites — coverage is scoped per project.
+ *
+ * Returns per FILE as well as the union, because the two are different
+ * populations and only the per-file view can answer "did we find every suite".
+ * A suite contributing no id is invisible to the union, and an invisible suite
+ * is indistinguishable from one that does not exist (BUT-2011/BUT-1966).
+ *
+ * Six suites spell the constant with a mutation-probe seam:
+ *
+ *   const PROJECT_ID = process.env.PROBE_PROJECT_ID ?? "butlery-rules-x";
+ *
+ * and pass the CONSTANT at the call site. Both original patterns required a
+ * string literal in both positions, so all six contributed zero. The seam is
+ * the repo's standard way to point a suite at a mutated rules file; it is the
+ * discovery that has to accommodate it, not the other way round.
+ *
+ * Capturing the `??` fallback is correct while `PROBE_PROJECT_ID` is set
+ * nowhere — measured across every workflow and script, 2026-09-12. It becomes
+ * wrong the day someone sets that variable for a targeted run, because the
+ * suite would then write coverage under a different project than the one named
+ * here. That is the same class one layer down; it is not closed.
+ */
 function discoverProjectIds() {
   const ids = new Set();
+  const byFile = new Map();
+  const noIdFound = [];
   for (const name of fs.readdirSync(TESTS_DIR)) {
     if (!name.endsWith(".test.ts")) continue;
     const source = fs.readFileSync(path.join(TESTS_DIR, name), "utf8");
     if (!source.includes("initializeTestEnvironment")) continue;
-    const constMatch = /\bPROJECT_ID\s*=\s*["']([^"']+)["']/.exec(source);
-    if (constMatch) ids.add(constMatch[1]);
-    for (const m of source.matchAll(/projectId:\s*["']([^"']+)["']/g)) {
-      ids.add(m[1]);
+    const found = new Set();
+    // Comment lines are dropped BEFORE matching, and that is not tidiness.
+    // `blocks-rules.test.ts` explains its seam in prose containing the literal
+    // text `PROJECT_ID = "..."`; the old pattern used `exec`, which returns the
+    // FIRST match, so that suite contributed the id `...` and never its real
+    // project — a bogus project the fetch then reported as an ordinary skip.
+    // That reads as a healthy report, which is worse than contributing nothing.
+    const code = source
+      .split("\n")
+      .filter((line) => !/^\s*(\/\/|\*|\/\*)/.test(line))
+      .join("\n");
+    // The optional `process.env.X ??` prefix covers the probe seam. Every
+    // assignment is collected, not just the first: a file with two is a file
+    // whose second one would otherwise vanish without a word.
+    for (const m of code.matchAll(
+      /\bPROJECT_ID\s*=\s*(?:process\.env\.[A-Z_][A-Z0-9_]*\s*\?\?\s*)?["']([^"']+)["']/g,
+    )) {
+      found.add(m[1]);
     }
+    for (const m of code.matchAll(
+      /projectId:\s*(?:process\.env\.[A-Z_][A-Z0-9_]*\s*\?\?\s*)?["']([^"']+)["']/g,
+    )) {
+      found.add(m[1]);
+    }
+    for (const id of found) ids.add(id);
+    if (found.size === 0) noIdFound.push(name);
+    else byFile.set(name, [...found].sort());
   }
-  return [...ids].sort();
+  return { ids: [...ids].sort(), byFile, noIdFound };
+}
+
+/**
+ * The suites the Firestore Rules job actually runs, from `test:rules:all`.
+ *
+ * Parsed with `check-test-registration.js`'s own `referencedTestFiles` rather
+ * than a second split of the same string: that script already parses this
+ * script and cross-checks it against the workflow's `paths:` blocks, so a
+ * hand-rolled copy here would be a third reader of one fact, free to drift
+ * from the two that agree.
+ */
+function rulesChainFiles() {
+  const pkgPath = path.join(__dirname, "..", "package.json");
+  const pkg = JSON.parse(fs.readFileSync(pkgPath, "utf8"));
+  const command = pkg.scripts?.["test:rules:all"];
+  if (!command) return null;
+  const { referencedTestFiles } = require("./check-test-registration.js");
+  return referencedTestFiles(command);
+}
+
+/**
+ * Fail when a suite the rules job runs contributes nothing to the union.
+ *
+ * Deliberately NOT "unique project ids vs files on disk": `discoverProjectIds`
+ * returns a SET, and two suites may legitimately share one project id, so that
+ * comparison fires on a healthy repo and becomes noise. The comparable
+ * populations are the suites the CHAIN names and the suites discovery could
+ * read an id from.
+ *
+ * Returns an array of message lines; empty means clean.
+ */
+function undiscoveredSuites(discovery, chain) {
+  if (!chain) {
+    return [
+      "functions/package.json has no `test:rules:all` script, so there is no authoritative suite list to check discovery against.",
+    ];
+  }
+  const missing = [...chain].filter(
+    (file) => !discovery.byFile.has(file) && discovery.noIdFound.includes(file),
+  );
+  if (missing.length === 0) return [];
+
+  // A total outage and a single regressed suite must not print the same text:
+  // the first means discovery itself broke, the second means one file changed
+  // spelling. Collapsing them is how the original defect stayed invisible.
+  const lines =
+    discovery.byFile.size === 0
+      ? [
+          `rules-coverage-report: discovery found a project id in NO suite at all (${missing.length} in the test:rules:all chain).`,
+          "  That is discovery breaking, not one suite regressing — the union below would be empty and every block would read as untested.",
+        ]
+      : [
+          `rules-coverage-report: ${missing.length} of ${chain.size} suites in test:rules:all contribute nothing to the coverage union.`,
+          "  They run and pass; their coverage is simply never collected, so the untested-block count is inflated and the new-block gate can flag a block that is already covered.",
+        ];
+  for (const file of missing) lines.push(`  - ${file}`);
+  lines.push(
+    "  Fix the discovery patterns in discoverProjectIds(), not the suites: how a suite spells its project id is the suite's business.",
+  );
+  return lines;
 }
 
 function fetchCoverage(projectId) {
@@ -601,7 +707,13 @@ async function main() {
     process.exit(1);
   }
 
-  const projectIds = discoverProjectIds();
+  const discovery = discoverProjectIds();
+  const discoveryFailures = undiscoveredSuites(discovery, rulesChainFiles());
+  if (discoveryFailures.length > 0) {
+    for (const line of discoveryFailures) console.error(line);
+    process.exit(1);
+  }
+  const projectIds = discovery.ids;
   const merged = new Map();
   const fetched = [];
   const skipped = [];
@@ -806,6 +918,9 @@ module.exports = {
   ownBodyText,
   stripCommentsAndStrings,
   UNTESTED_BLOCK_POLICY,
+  discoverProjectIds,
+  rulesChainFiles,
+  undiscoveredSuites,
 };
 
 if (require.main === module) {
