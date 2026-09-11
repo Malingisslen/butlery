@@ -35,6 +35,22 @@ class HtmlSanitizer {
     RegExp(r'vbscript:', caseSensitive: false),
   ];
 
+  /// Cap on how many `<script>` opening tags `check()` and `sanitize()` will
+  /// individually classify (JSON-LD vs not) before falling back to a cheap
+  /// default for the rest. Each classification parses an HTML fragment
+  /// (`isJsonLdScriptOpeningTag`), and a page carrying hundreds of thousands
+  /// of `<script type=…>` tags made that ~1s of main-isolate work — a
+  /// reported-issue cap does not help, because the expensive call runs
+  /// before the report/skip decision (BUT-2066).
+  ///
+  /// Measured 2026-09-11 against 9 real, live-fetched recipe pages (7
+  /// Swedish recipe sites plus 2 international ones, raw HTTP GET, no JS
+  /// execution): total `<script>` counts ranged 6-110, and the heaviest page
+  /// (delish.com, US, ad-heavy) placed its own JSON-LD block as the 107th of
+  /// its 110 script tags — genuinely late among a page's other scripts, not
+  /// merely present. 1000 is ~9x that measured worst case.
+  static const int _maxScriptTagsToClassify = 1000;
+
   /// Common Cyrillic homoglyphs that look like Latin characters.
   /// Maps Cyrillic character to Latin equivalent for detection.
   static const _cyrillicHomoglyphs = {
@@ -109,7 +125,29 @@ class HtmlSanitizer {
     // Surface non-JSON-LD <script> tags as warnings. sanitize() still
     // strips them, but the warning lets callers audit/log instead of the
     // tags vanishing silently.
+    //
+    // Past _maxScriptTagsToClassify, stop and break out of the match
+    // iterator entirely rather than merely capping how many issues get
+    // reported. `allMatches` finds matches lazily as the loop advances, so
+    // breaking here also stops the regex scan for further tags — not only
+    // the per-tag isJsonLdScriptOpeningTag() fragment parse, which is the
+    // expensive part (BUT-2066).
+    var scriptTagsSeen = 0;
     for (final match in scriptOpeningTagPattern.allMatches(content)) {
+      scriptTagsSeen++;
+      if (scriptTagsSeen > _maxScriptTagsToClassify) {
+        issues.add(
+          SanitizationIssue(
+            type: IssueType.scriptInjection,
+            description:
+                'Many script tags present (over $_maxScriptTagsToClassify) '
+                '- stopped classifying individually',
+            position: match.start,
+            severity: IssueSeverity.warning,
+          ),
+        );
+        break;
+      }
       if (isJsonLdScriptOpeningTag(match.group(0)!)) continue;
       issues.add(
         SanitizationIssue(
@@ -245,6 +283,16 @@ class HtmlSanitizer {
     final closeTag = '</$tagName>';
     final result = StringBuffer();
     var searchStart = 0;
+    // Only meaningful when preserveWhen != null (the 'script' tag). Unlike
+    // check()'s loop, this one cannot just break once the cap is hit — every
+    // tag still needs a preserve-or-strip verdict so the rest of the
+    // document is written out correctly. Past the cap the verdict defaults
+    // to "strip", skipping the fragment parse that makes preserveWhen
+    // expensive: over-stripping loses data, which is never a security
+    // regression, so it is the safe default once a page carries far more
+    // script tags than any real recipe page measured (BUT-2066, see
+    // _maxScriptTagsToClassify).
+    var preserveChecksDone = 0;
 
     while (searchStart < html.length) {
       final openMatch = openPattern.allMatches(html, searchStart).firstOrNull;
@@ -257,7 +305,9 @@ class HtmlSanitizer {
       final closeIdx = lowerHtml.indexOf(closeTag, absOpenStart);
 
       // Check if this tag should be preserved
-      if (preserveWhen != null) {
+      if (preserveWhen != null &&
+          preserveChecksDone < _maxScriptTagsToClassify) {
+        preserveChecksDone++;
         final tagEnd = html.indexOf('>', absOpenStart);
         if (tagEnd >= 0) {
           // ORIGINAL case, never `lowerHtml`. HTML named character

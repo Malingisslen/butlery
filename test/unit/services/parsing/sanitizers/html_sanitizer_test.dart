@@ -64,6 +64,17 @@ const jsonLdDecoys = <(String, String)>[
   ),
 ];
 
+/// `count` `<script type="$type">` tags in a row, each with distinct
+/// (irrelevant) content — used to exercise HtmlSanitizer's per-tag
+/// classification cap (BUT-2066) without hand-writing a thousand tags.
+String _repeatedScriptTags(int count, {String type = 'text/javascript'}) {
+  final buffer = StringBuffer();
+  for (var i = 0; i < count; i++) {
+    buffer.write('<script type="$type">noop$i()</script>');
+  }
+  return buffer.toString();
+}
+
 void main() {
   late HtmlSanitizer sanitizer;
 
@@ -1102,6 +1113,114 @@ void main() {
           reason: 'check() went quiet about a tag sanitize() deleted',
         );
       });
+    });
+
+    // ---------------------------------------------------------------
+    // BUT-2066: cap on per-tag script classification
+    // ---------------------------------------------------------------
+    group('script-tag classification cap (BUT-2066)', () {
+      test(
+        'check() classifies up to the cap, then emits ONE aggregate warning',
+        () {
+          // 1005 tags, not 1001: at exactly cap+1 a loop that keeps going
+          // instead of halting still yields 1001 issues, so the fixture sat on
+          // the one count that cannot tell a halt from a skip.
+          final result = sanitizer.check(_repeatedScriptTags(1005));
+
+          expect(result.issues.length, equals(1001));
+          expect(
+            result.issues
+                .take(1000)
+                .every(
+                  (i) =>
+                      i.description ==
+                      'Non-JSON-LD script tag present (will be stripped by sanitize)',
+                ),
+            isTrue,
+          );
+          expect(
+            result.issues.last.description,
+            contains('Many script tags present'),
+          );
+        },
+      );
+
+      test(
+        'check() does NOT aggregate when the tag count sits exactly at the cap',
+        () {
+          final result = sanitizer.check(_repeatedScriptTags(1000));
+
+          expect(result.issues.length, equals(1000));
+          expect(
+            result.issues.any(
+              (i) => i.description.contains('Many script tags present'),
+            ),
+            isFalse,
+          );
+        },
+      );
+
+      test(
+        'sanitize() strips a JSON-LD block sitting PAST the cap, without parsing it',
+        () {
+          // Over-stripping loses data; it is never a security regression, so
+          // this is the accepted trade-off once a page carries far more
+          // script tags than any real recipe page measured.
+          final pastCap =
+              '<script type="application/ld+json">'
+              '{"@type":"Recipe","name":"PastCap"}</script>';
+          final result = sanitizer.sanitize(
+            '${_repeatedScriptTags(1000)}$pastCap',
+          );
+
+          expect(
+            result,
+            isNot(contains('PastCap')),
+            reason:
+                'a JSON-LD block past the classification cap must be '
+                'stripped, not preserved by a check nobody ran',
+          );
+        },
+      );
+
+      test(
+        'sanitize() still preserves JSON-LD sitting WITHIN the cap',
+        () {
+          final withinCap =
+              '<script type="application/ld+json">'
+              '{"@type":"Recipe","name":"WithinCap"}</script>';
+          final result = sanitizer.sanitize(
+            '$withinCap${_repeatedScriptTags(998)}',
+          );
+
+          expect(result, contains('WithinCap'));
+        },
+      );
+
+      test(
+        'an ordinary page (tens of scripts) behaves exactly as before the fix',
+        () {
+          const jsonLd =
+              '<script type="application/ld+json">'
+              '{"@type":"Recipe","name":"Pannkakor"}</script>';
+          final html =
+              '${_repeatedScriptTags(24)}$jsonLd${_repeatedScriptTags(24)}';
+
+          final sanitizeResult = sanitizer.sanitize(html);
+          expect(sanitizeResult, contains('Pannkakor'));
+          expect(sanitizeResult, isNot(contains('noop')));
+
+          final checkResult = sanitizer.check(html);
+          expect(
+            checkResult.issues.any(
+              (i) => i.description.contains('Many script tags present'),
+            ),
+            isFalse,
+          );
+          // One warning per plain script tag; none for the JSON-LD one.
+          expect(checkResult.issues.length, equals(48));
+        },
+      );
     });
   });
 }

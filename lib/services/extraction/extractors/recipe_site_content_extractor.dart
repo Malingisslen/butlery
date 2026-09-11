@@ -35,61 +35,83 @@ class RecipeSiteContentExtractor {
         source: '''
         (function() {
           try {
-            const scripts = document.querySelectorAll('script[type="application/ld+json"]');
+            // Second implementation of the same rule as Dart's
+            // isJsonLdMediaType() (lib/utils/recipe_scraper.dart) — this runs
+            // inside evaluateJavascript() and cannot call into Dart, so keep
+            // the two in sync by hand. An exact `[type="application/ld+json"]`
+            // attribute selector would miss `application/ld+json;
+            // charset=utf-8` (BUT-2035).
+            function isJsonLdType(typeAttr) {
+              if (!typeAttr) return false;
+              return typeAttr.split(';')[0].trim().toLowerCase() === 'application/ld+json';
+            }
+
+            const scripts = Array.from(document.querySelectorAll('script')).filter(
+              s => isJsonLdType(s.getAttribute('type'))
+            );
+
+            function isRecipeType(t) {
+              if (typeof t === 'string') return t === 'Recipe' || t.endsWith('/Recipe');
+              if (Array.isArray(t)) return t.some(i => typeof i === 'string' && isRecipeType(i));
+              return false;
+            }
+
             for (const script of scripts) {
-              const data = JSON.parse(script.textContent);
+              // Per-script isolation: one malformed JSON-LD block must not
+              // abort extraction of every script that follows it on the page
+              // (BUT-2035) — mirrors Dart's own per-script try/catch in
+              // recipe_scraper.dart's _extractJsonLd().
+              try {
+                const data = JSON.parse(script.textContent);
+                // Handle single recipe or array of recipes
+                const recipes = Array.isArray(data) ? data : [data];
 
-              function isRecipeType(t) {
-                if (typeof t === 'string') return t === 'Recipe' || t.endsWith('/Recipe');
-                if (Array.isArray(t)) return t.some(i => typeof i === 'string' && isRecipeType(i));
-                return false;
-              }
+                for (const item of recipes) {
+                  if (isRecipeType(item['@type']) || (item['@graph'] && item['@graph'].some(g => isRecipeType(g['@type'])))) {
+                    const recipe = isRecipeType(item['@type']) ? item : item['@graph'].find(g => isRecipeType(g['@type']));
 
-              // Handle single recipe or array of recipes
-              const recipes = Array.isArray(data) ? data : [data];
+                    let recipeText = '';
 
-              for (const item of recipes) {
-                if (isRecipeType(item['@type']) || (item['@graph'] && item['@graph'].some(g => isRecipeType(g['@type'])))) {
-                  const recipe = isRecipeType(item['@type']) ? item : item['@graph'].find(g => isRecipeType(g['@type']));
+                    if (recipe.name) recipeText += recipe.name + '\\n\\n';
+                    if (recipe.description) recipeText += recipe.description + '\\n\\n';
 
-                  let recipeText = '';
+                    if (recipe.recipeIngredient) {
+                      recipeText += 'Ingredienser:\\n';
+                      recipe.recipeIngredient.forEach(ing => recipeText += '- ' + ing + '\\n');
+                      recipeText += '\\n';
+                    }
 
-                  if (recipe.name) recipeText += recipe.name + '\\n\\n';
-                  if (recipe.description) recipeText += recipe.description + '\\n\\n';
+                    if (recipe.recipeInstructions) {
+                      recipeText += 'Instruktioner:\\n';
+                      recipe.recipeInstructions.forEach((inst, i) => {
+                        const text = typeof inst === 'string' ? inst : inst.text;
+                        recipeText += (i + 1) + '. ' + text + '\\n';
+                      });
+                      recipeText += '\\n';
+                    }
 
-                  if (recipe.recipeIngredient) {
-                    recipeText += 'Ingredienser:\\n';
-                    recipe.recipeIngredient.forEach(ing => recipeText += '- ' + ing + '\\n');
-                    recipeText += '\\n';
+                    if (recipe.nutrition && recipe.nutrition.calories) {
+                      recipeText += 'Kalorier: ' + recipe.nutrition.calories + '\\n';
+                    }
+
+                    if (recipe.totalTime || recipe.prepTime || recipe.cookTime) {
+                      recipeText += 'Tid: ';
+                      if (recipe.totalTime) recipeText += 'Total: ' + recipe.totalTime + ' ';
+                      if (recipe.prepTime) recipeText += 'Förberedelse: ' + recipe.prepTime + ' ';
+                      if (recipe.cookTime) recipeText += 'Tillagning: ' + recipe.cookTime;
+                      recipeText += '\\n';
+                    }
+
+                    if (recipe.recipeYield) {
+                      recipeText += 'Portioner: ' + recipe.recipeYield + '\\n';
+                    }
+
+                    return recipeText.trim();
                   }
-
-                  if (recipe.recipeInstructions) {
-                    recipeText += 'Instruktioner:\\n';
-                    recipe.recipeInstructions.forEach((inst, i) => {
-                      const text = typeof inst === 'string' ? inst : inst.text;
-                      recipeText += (i + 1) + '. ' + text + '\\n';
-                    });
-                    recipeText += '\\n';
-                  }
-
-                  if (recipe.nutrition && recipe.nutrition.calories) {
-                    recipeText += 'Kalorier: ' + recipe.nutrition.calories + '\\n';
-                  }
-
-                  if (recipe.totalTime || recipe.prepTime || recipe.cookTime) {
-                    recipeText += 'Tid: ';
-                    if (recipe.totalTime) recipeText += 'Total: ' + recipe.totalTime + ' ';
-                    if (recipe.prepTime) recipeText += 'Förberedelse: ' + recipe.prepTime + ' ';
-                    if (recipe.cookTime) recipeText += 'Tillagning: ' + recipe.cookTime;
-                    recipeText += '\\n';
-                  }
-
-                  if (recipe.recipeYield) {
-                    recipeText += 'Portioner: ' + recipe.recipeYield + '\\n';
-                  }
-
-                  return recipeText.trim();
                 }
+              } catch (e) {
+                console.error('JSON-LD parsing error:', e);
+                continue;
               }
             }
             return null;

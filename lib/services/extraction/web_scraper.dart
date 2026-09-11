@@ -288,7 +288,14 @@ class WebScraper {
       'meta[property="og:description"]',
     ],
     pd.SourcePlatform.recipesite: [
-      // Recipe structured data (JSON-LD and microdata)
+      // Recipe structured data (JSON-LD and microdata). These first 3
+      // entries are never queried directly — RecipeSiteContentExtractor
+      // skips them (`selectors.skip(3)` in `_extractRecipeContent`) because
+      // strategies 1 and 2 already handle structured data with their own
+      // hand-written JS, not this list. In particular, the exact
+      // `[type="application/ld+json"]` match below does NOT decide what
+      // counts as JSON-LD anywhere live — that predicate lives in
+      // `_extractJsonLd()` (BUT-2035).
       'script[type="application/ld+json"]',
       '[itemtype*="Recipe"]',
       '[itemscope][itemtype*="Recipe"]',
