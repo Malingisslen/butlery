@@ -103,12 +103,19 @@ if [ "$SELF_TEST" -eq 1 ]; then
   NULL_FILTER_PROBE_FORCE_GREP_RC=1 bash "$GUARD" "$FIXTURE_DIR/violating.dart" \
     >/dev/null 2>&1
   SEAM_ABUSE_RC=$?
+  NULL_FILTER_PROBE_FORCE_FILTER_RC=2 bash "$GUARD" "$FIXTURE_DIR/clean.dart" \
+    >/dev/null 2>&1
+  FILTER_OUTAGE_RC=$?
+  NULL_FILTER_PROBE_FORCE_FILTER_RC=1 bash "$GUARD" "$FIXTURE_DIR/violating.dart" \
+    >/dev/null 2>&1
+  FILTER_SEAM_ABUSE_RC=$?
 
   # The guard's exit contract is 0 (clean) or 1 (violations found). Any other
   # code means it never reached the scan, which is a broken harness rather than
   # a verdict about the fixtures — report it as itself instead of mapping it
   # onto whichever case happens to read a non-zero code as failure.
-  for rc in "$VIOLATING_RC" "$CLEAN_RC" "$OUTAGE_RC" "$SEAM_ABUSE_RC"; do
+  for rc in "$VIOLATING_RC" "$CLEAN_RC" "$OUTAGE_RC" "$SEAM_ABUSE_RC" \
+            "$FILTER_OUTAGE_RC" "$FILTER_SEAM_ABUSE_RC"; do
     if [ "$rc" -ne 0 ] && [ "$rc" -ne 1 ]; then
       echo "SELF-TEST FAIL: the guard could not be run (exit $rc)." >&2
       echo "This is the harness, not the fixtures — check permissions on $GUARD." >&2
@@ -137,6 +144,18 @@ if [ "$SELF_TEST" -eq 1 ]; then
       echo "SELF-TEST FAIL: the probe seam silenced a real detection." >&2
       FAILURES=$((FAILURES + 1))
     fi
+
+    # The FILTERING grep, on a file whose only hit is a comment: the filter
+    # empties the hits, so an unchecked filter outage would read as clean.
+    if [ "$FILTER_OUTAGE_RC" -ne 1 ]; then
+      echo "SELF-TEST FAIL: a failed filter grep was reported as a clean scan." >&2
+      FAILURES=$((FAILURES + 1))
+    fi
+
+    if [ "$FILTER_SEAM_ABUSE_RC" -ne 1 ]; then
+      echo "SELF-TEST FAIL: the filter seam silenced a real detection." >&2
+      FAILURES=$((FAILURES + 1))
+    fi
   fi
 
   if [ "$FAILURES" -ne 0 ]; then
@@ -156,8 +175,8 @@ fi
 # the only remaining signal.
 #
 # grep's contract: 0 = matched, 1 = no match, >1 = it failed. Only >1 is an
-# outage. The FILTERING grep's status is deliberately not checked: it exits 1
-# whenever every hit was a comment, which is a legitimate clean result.
+# outage — for BOTH greps below. The filtering grep exits 1 when every hit was
+# a comment, which is a clean result.
 SCAN=$(grep -RInH -E "$PATTERN" --include='*.dart' "${TARGETS[@]}" 2>/dev/null)
 SCAN_RC=$?
 
@@ -176,7 +195,20 @@ if [ "$SCAN_RC" -gt 1 ]; then
 fi
 
 HITS=$(printf '%s' "$SCAN" \
-  | grep -vE '^[^:]*:[0-9]+:[[:space:]]*(//|\*)' || true)
+  | grep -vE '^[^:]*:[0-9]+:[[:space:]]*(//|\*)')
+FILTER_RC=$?
+
+# Same seam shape as the scanning grep's, for the same reason. Accepted ONLY
+# above 1, so it can force a failure and never silence one.
+if [ "${NULL_FILTER_PROBE_FORCE_FILTER_RC:-}" -gt 1 ] 2>/dev/null; then
+  FILTER_RC="$NULL_FILTER_PROBE_FORCE_FILTER_RC"
+fi
+
+if [ "$FILTER_RC" -gt 1 ]; then
+  echo "❌ check_null_filter.sh could NOT filter its hits (grep exit $FILTER_RC)." >&2
+  echo "   Treated as a failure, not as a clean scan." >&2
+  exit 1
+fi
 
 if [ -n "$HITS" ]; then
   echo "$HITS"

@@ -155,8 +155,6 @@ if [ "${#TARGETS[@]}" -eq 0 ]; then
   exit 0
 fi
 
-# `-H` is load-bearing with a single file argument: without it grep prints the
-# matching line and not the path, and the message below would name no file.
 HITS=$(grep -lE "$PATTERN" "${TARGETS[@]}")
 GREP_RC=$?
 
