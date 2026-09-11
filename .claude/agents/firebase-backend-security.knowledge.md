@@ -65,6 +65,15 @@ covers first-timers. And the field cannot then be pinned by `cannotModify`: on a
 it goes absent -> present, which `affectedKeys()` reports, so pinning it refuses every
 existing row's update. That leaves the field forgeable, which is a residual to name, not a
 gap to paper over — closing it needs the rule to `get()` the parent document.
+Such a field has THREE states, not two, and the two non-absent ones behave oppositely: an
+EMPTY STRING satisfies `in`, makes the `exists()` path match no document, and skips the gate
+SILENTLY (presence without enforcement), while an explicit NULL makes the helper's string
+concat an evaluation ERROR, i.e. a hard deny. So normalise unresolvable-to-ABSENT inside the
+shared writer (never at one call site), and do not write a comment treating null and empty
+as one case — the claim about null is a rules-semantics assertion that needs the emulator.
+When the writer derives the value from an object the caller ALREADY holds (the recipe behind
+a rating), the stamp costs zero extra reads and a repository-side lookup is usually
+impossible anyway — a user-scoped parent path needs the very uid being resolved.
 
 The `firestore-rules-tester` agent owns proving rule behavior — hand off after rule changes
 rather than writing rules tests yourself.

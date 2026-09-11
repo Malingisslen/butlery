@@ -1,3 +1,236 @@
+# Sprint 2026-09-11 — sju ärenden, fem kluster
+
+Vald av `/delivery:sprint-execute`. Föregående sprint (2026-09-10 kväll) är stängd
+(Slutstatus fylld, allt committat) och ligger i arkivet nedan.
+
+**Routing körs PER KLUSTER**, eftersom utdelningen sker kluster för kluster och skillnaden
+mot hela batchens union är stor (hela unionen ger `full-panel` med fjorton säten).
+Rå utdata från `python tools/stakeholder_router.py --json` står under varje kluster.
+Utdelningen sker i den här sessionen, som KAN sammankalla — så varje kritik körs FÖRE
+bygget. Ändras ett klusters filunion före bygget körs routern om på den union som faktiskt
+delas ut.
+
+Steg 0 mot HEAD är gjord för alla sju; greparna står under respektive ärende.
+
+---
+
+## Kluster A — blockering på betyg (ett ärende)
+
+Router: **`full-panel`**, panel `["Customer Support / Operations", "Data Analyst / BI",
+"Database Administrator / Data-layer Engineer", "Financial Controller / FinOps",
+"Legal Counsel", "Performance Engineer", "Privacy / Data Protection Officer (GDPR)",
+"Product Manager", "QA / Test Engineer", "Security Architect", "Software Architect",
+"Trust & Safety / Content Moderation", "Vendor / Procurement Manager"]`,
+`high_stakes_hits: ["firestore.rules", "functions/src/__tests__/recipe-ratings-rules.test.ts"]`.
+
+### [Tier C] BUT-2057 — blockeringsspärren på betyg körs aldrig (High, Bug/security)
+
+Disposition: **build-review**. Den mekaniska halvan är en ren korrekthetsfix (spärren är
+tänkt att köra och gör det inte). Ärendet bär dessutom EN fråga som är Malins och som
+INTE byggs: vad som ska hända när receptägaren inte går att lösa upp.
+
+Steg 0, mätt mot HEAD:
+- `firestore.rules:2607-2608` bär `!('recipeOwnerId' in request.resource.data) || isNotBlockedBy(request.resource.data.recipeOwnerId)` på `recipe_ratings`.
+- `firestore.rules:1439-1440` bär samma form på `recipe_comments`.
+- `grep -n recipeOwnerId lib/repositories/firebase/firebase_ratings_repository.dart` ger noll träffar — fältet skrivs aldrig på betygsvägen, så vänsterledet är alltid sant.
+
+Premissen gäller.
+
+**Föreskriven fix som INTE ska byggas:** `hasRequiredFields` på `recipeOwnerId`. Ärendet
+mäter att två legitima skrivvägar utelämnar fältet, så det skulle neka varje betygsättning
+i appen. Regeln förblir villkorad.
+
+Acceptanskriterier:
+- [ ] `{text: "FirebaseRatingsRepository.rateRecipe skriver recipeOwnerId nar agaren gar att losa upp - och varje skrivvag till recipe_ratings ar uppraknad med fil och rad i arendet", kind: diff}`
+- [ ] `{text: "Regeltest som visar att en blockerad person NEKAS pa recipe_ratings nar faltet finns, och ett som visar att appens egen payload nu bar faltet", kind: diff}`
+- [ ] `{text: "Ingen legitim skrivvag borjar neka: regeln ar fortfarande VILLKORAD, inte hasRequiredFields, pinnat av ett test dar faltet saknas och skrivningen slapps igenom", kind: diff}`
+- [ ] `{text: "Steg 1 matt i KOD och skrivet i arendet: nas betygs-UI:t av en blockerad person - grep efter BlockedUserFilter over receptytorna, svaret angivet med fil och rad", kind: diff}`
+- [ ] `{text: "INTE gjort: ingen ny nekande felvag for oloslig agare - Malins fraga, star kvar oppen pa arendet", kind: diff}`
+- [ ] `{text: "Bada regeltesterna mutationsprovade", kind: diff}`
+
+---
+
+## Kluster B — GDPR-exporten (två ärenden)
+
+Router: **`full-panel`**, panel `["Financial Controller / FinOps", "Legal Counsel",
+"Privacy / Data Protection Officer (GDPR)", "Product Manager", "Security Architect",
+"Software Architect"]`, `high_stakes_hits`: alla fem exportfilerna.
+
+### [Tier C] BUT-2000 — exportens tidsstämplar är lokal tid utan tidszon (Medium)
+
+Disposition: **build**.
+
+Steg 0, mätt: `grep -rn toUtc lib/services/account/` ger NOLL träffar, medan
+`toIso8601String()` står på nio ställen (bl.a. `export_pagination_helper.dart:11-12`,
+`preferences_export_manager.dart:366-367`, `compliance_export_manager.dart:229`).
+Premissen gäller.
+
+Acceptanskriterier:
+- [ ] `{text: "sanitizeForJson i export_pagination_helper.dart ger UTC med Z, och varje handskrivet anropsstalle foljer med i samma commit - uppraknat med fil och rad", kind: diff}`
+- [ ] `{text: "Ett test som haller att varje tidsstampel i en bunt slutar pa Z", kind: diff}`
+- [ ] `{text: "Varje befintligt test som byggde sin forvantan med lokal DateTime ar genomgatt och rattat - inte tyst lamnat, och inte rattat genom att forsvaga assertionen", kind: diff}`
+- [ ] `{text: "Mutationsprovat: ta bort toUtc och se Z-testet rodna", kind: diff}`
+
+### [Tier A] BUT-2055 — exportens felmening pekar på en opinnad nyckel (Low, test-gap)
+
+Disposition: **build**. Ärendet erbjuder två vägar och lutar åt väg 2 (ta bort nyckelnamnet).
+**Väg 1 väljs**: behåll nyckelnamnet och PINNA strängen. Den stänger defekten (drift rödnar)
+utan att ta bort felsökningsvärdet supporten har av att buntens prosa namnger felkoden.
+
+Steg 0, mätt: `social_export_manager.dart` skriver `chat_groups_error_code`; koden myntas i
+`chat_group_export.dart`. Premissen gäller.
+
+Acceptanskriterier:
+- [ ] `{text: "Testet asserterar att data_minimisation-prosan innehaller strangen chat_groups_error_code, sa ett namnbyte pa nyckeln rodnar prosan ocksa", kind: diff}`
+- [ ] `{text: "Mutationsprovat: byt nyckelnamnet och se bada assertionerna rodna", kind: diff}`
+
+---
+
+## Kluster C — getUserProfiles (ett ärende)
+
+Router: **`single`**, panel `["Software Architect", "Product Manager"]`, inga high-stakes-träffar.
+
+### [Tier C] BUT-2027 — getUserProfiles sväljer sitt eget fel (Medium, Bug)
+
+Disposition: **build**. Malin beslutade 2026-09-05: laga i TJÄNSTEN, inte per anropare.
+
+Steg 0, mätt: `user_service.dart:435` fångar och loggar, returnerar `results`.
+Tio anropare; `block_group_member_dialog.dart:80-94` bär en kommentar som namnger just den
+här bristen. Premissen gäller.
+
+Acceptanskriterier:
+- [ ] `{text: "getUserProfiles ger anroparen mojlighet att se ATT en lasning misslyckades och FOR VILKA id:n - formen ar oppen, men den gamla signaturen far inte tyst behalla sitt beteende for befintliga anropare", kind: diff}`
+- [ ] `{text: "block_group_member_dialog.dart anvander signalen och ritar inte langre en tyst delmangd; kommentaren som namnger resten tas bort i samma andring", kind: diff}`
+- [ ] `{text: "Var och en av de ovriga anroparna har fatt ett MEDVETET beslut, uppraknat med fil och rad - inte en tyst vidarekoppling", kind: diff}`
+- [ ] `{text: "Test som fejkar totalt fel, delvis fel och full traff, och som visar vad blockeringsvaljaren gor i vart och ett av lagena", kind: diff}`
+
+---
+
+## Kluster D — JSON-LD och sanerarens kostnad (två ärenden)
+
+Router: **`single`**, panel `["Data / Integrations Engineer",
+"Data / ML Engineer (parsing & tagging integrity)"]`, inga high-stakes-träffar.
+
+### [Tier A] BUT-2035 — tre svar på frågan om något är JSON-LD (Medium, tech-debt)
+
+Disposition: **build**.
+
+Steg 0, mätt: `web_scraper.dart:292` och
+`extractors/recipe_site_content_extractor.dart:38` bär båda den exakta attributselektorn,
+medan `url_import_strategy.dart:420` och `recipe_scraper.dart:152,164` går via
+`isJsonLdMediaType`. Premissen gäller.
+
+Acceptanskriterier:
+- [ ] `{text: "Bada DOM-vagarna avgor JSON-LD-het med isJsonLdMediaType, inte med en egen attributselektor", kind: diff}`
+- [ ] `{text: "En arla-liknande sida med teckenreferens-stavat plustecken i type-attributet ger strukturerad data hela vagen till utvinningen - test pa DOM-vagen, inte bara pa saneraren", kind: diff}`
+- [ ] `{text: "charset-varianten fungerar pa DOM-vagen, med eget testfall", kind: diff}`
+- [ ] `{text: "Mutationsprovat: aterinfor den exakta selektorn och se bada nya fallen rodna", kind: diff}`
+
+### [Tier A] BUT-2066 — check() kan stanna huvudisolatet ~1s (Low, performance)
+
+Disposition: **build**. Ärendet bär `code-reviewer`-grindens rekommendation: **tak på hur
+många skript-issues loopen rapporterar**, eftersom det binder ALLA former, till skillnad
+från predikat-snabbvägen som bara binder de billiga.
+
+Steg 0, mätt: `html_sanitizer.dart:77` och `:181` bär 5 MB-spärren; snabbvägen
+`contains('type')` finns i samma fil. Premissen gäller.
+
+Acceptanskriterier:
+- [ ] `{text: "Loopen rapporterar hogst N skript-issues och lagger darefter EN samlad issue - taket bunder alla taggformer, inte bara de billiga", kind: diff}`
+- [ ] `{text: "sanitize-vagens preserveWhen ar kontrollerad for samma kostnadsform - lagad eller namngiven som fri, med fil och rad", kind: diff}`
+- [ ] `{text: "Test som pinnar taket, och ett som visar att en vanlig sida med tiotals skript beter sig ofrandrat", kind: diff}`
+- [ ] `{text: "Mutationsprovat: hoj taket och se takfallet rodna", kind: diff}`
+
+---
+
+## Kluster E — bidragsgivartaket (ett ärende)
+
+Router: **`single`**, panel `["QA / Test Engineer", "Security Architect",
+"Vendor / Procurement Manager"]`, inga high-stakes-träffar.
+
+### [Tier A] BUT-2058 — takets flerpersonsaritmetik är opinnad (Low, test-gap)
+
+Disposition: **build**. Rent testarbete; ingen produktionskod ändras om aritmetiken visar
+sig korrekt — och om den inte gör det är det en korrekthetsfix.
+
+Steg 0: `functions/src/groups/group-menu-access.ts` bär villkoret
+`unrecorded.length === 0 || known.length + unrecorded.length <= MAX_CONTRIBUTOR_UIDS`.
+Premissen kontrolleras mot filen som första steg i bygget.
+
+Acceptanskriterier:
+- [ ] `{text: "Ett fall dar known ligger strax under taket och TVA eller fler avgaende skulle ta det over: unionen hoppas over HELT och ERROR-loggas, inte trunkeras", kind: diff}`
+- [ ] `{text: "Ett fall exakt pa gransen som slapps igenom", kind: diff}`
+- [ ] `{text: "Mutationsprovat med en mutant som KOMPILERAR: byt <= mot < och se gransfallet rodna", kind: diff}`
+
+---
+
+## Needs you (Tier D / behöver Malin)
+
+Inget ärende i den här batchen är ops-blockerat. Följande valdes bort och är dina:
+
+- **BUT-2057:s öppna fråga** — vad ska hända när receptägaren inte går att lösa upp? I dag
+  skrivs raden utan spärr. Alternativen är att neka (ny synlig felväg, ingen copy skriven)
+  eller behålla fallbacken och stänga luckan på annat sätt. Byggs inte här.
+- **BUT-2045** — kör `reset-user-data --dry-run` skarpt före lansering. Kräver konsolåtkomst.
+- **BUT-1989** — QA-svep på fysisk telefon (BUT-1179, 1361, 1368, 1649).
+- Allt med `need-malin`: BUT-2033, BUT-2031, BUT-2013, BUT-2006, BUT-1731.
+
+## Avvaldes, med skäl
+
+- **BUT-2050** (flakig `blocks-rules.test.ts`) — ärendets klart-när är nästan helt
+  `run`-kriterier (fånga FAIL-raden i loop, tjugo gröna körningar mot emulator). En
+  obevakad sprint kan inte producera dem. Står kvar i Backlog.
+- **BUT-2048** (sprintmotorns precondition litar på självrapporterad dirtyFiles) —
+  **premissen borta**: `sprint-execute-parallel.js:198-202` läser numera `porcelain`
+  ordagrant och jämför. Stängs som obsolet med hänvisning till commit b56454bd2.
+
+## Deviation log
+
+- [discovery] BUT-2048: premissen borta, stängd som obsolet mot commit b56454bd2. Ingen kod.
+- [deviation] BUT-2057: ärendets föreskrivna fix (`hasRequiredFields`) byggdes INTE — mätt
+  att den nekar varje betyg i appen. Villkorad spärr + klientstämpel i stället.
+- [deviation] BUT-2057: `cannotModify(['recipeOwnerId'])` byggdes INTE — mätt att
+  `affectedKeys()` rapporterar övergången frånvarande -> närvarande, så varje äldre rad hade
+  blivit omöjlig att ombetygsätta. Förfalskningsbarheten filad som BUT-2071.
+- [needs-human] BUT-2057:s öppna fråga (vad händer när ägaren inte går att lösa upp) är kvar
+  hos Malin. Beteendet är oförändrat, men nu ett medvetet val i stället för en bieffekt.
+- [discovery] Linears ärendegräns tog slut efter BUT-2075. Senare uppföljningar ligger som
+  kommentarer på föräldrabiljetten.
+- [discovery] Tre grindrundor på BUT-2057, och varje blockerande fynd efter det första låg i
+  TEXT — inte i kod. Ett rött prov (fixturens användar-id), ett falskt påstående i min egen
+  kommentar om null-riktningen i reglerna, och ett daterat påstående i en ORÖRD fil som den
+  här ändringen gjorde falskt. Lessons-posten bär mönstret.
+- [deviation] Arbetsflödeskartan: en regex-rundtur över `<script id="data">` raderade allt
+  utanför blocket. Återställd från HEAD, gjord om som värdebyte i råtexten.
+
+---
+
+## Slutstatus (2026-09-11)
+
+Sprinten är stängd. Fem commits, alla pushade till main.
+
+| Ärende | Commit | Läge |
+|---|---|---|
+| BUT-2058 | `fe165cb0b` | Done |
+| BUT-2035 + BUT-2066 | `4b2f15bbf` | Done |
+| BUT-2000 + BUT-2055 | `6db7ae0a7` | Done |
+| BUT-2027 | `23b4f8d97` | Done |
+| BUT-2057 | `1a9d133e9` | **In Review** (build-review) |
+| BUT-2048 | — | Stängd som obsolet (b56454bd2) |
+
+Grindar på BUT-2057: `code-reviewer`, `firebase-backend-security`, `testing-specialist`,
+`cloud-functions-specialist`, `integration-reviewer` — alla pass (0 blockerande) på de
+bytes som faktiskt shippade, efter tre rundor.
+
+Arbetsflödeskartan: tre steg omskrivna, markören borttagen, lintern grön
+(371 noder, 54 flöden, täckning 143/137).
+
+Lessons-post + digestrad skrivna i samma redigering (CLAUDE.md regel 9).
+
+Kvar hos Malin: BUT-2057:s öppna fråga, plus det som redan stod under "Needs you".
+
+# ARKIV — tidigare sprintar
+
 # Sprint 2026-09-10 (kväll) — sju ärenden, fyra kluster
 
 Vald av `/delivery:sprint-execute`. Föregående sprint är stängd (Slutstatus fylld, allt
@@ -215,7 +448,6 @@ står i båda gränssnitten och av det skrivardrivna drifttestet. Skrivet i avvi
 
 ---
 
-# ARKIV — tidigare sprintar
 
 # Sprint 2026-09-10 — fem ärenden, tre kluster
 

@@ -250,6 +250,14 @@ Standard deny matrix for ownership-checked collections:
   (measured 2026-08-27). The deny test is real; only its ATTRIBUTION is wrong. Probe every
   key of a multi-key `cannotModify` list separately, and report an unreachable key as
   "guards the pair" rather than as covered.
+  **A comment arguing a field is EXCLUDED from `cannotModify` because "absent -> present is
+  an affectedKeys() hit" is scoped to LEGACY rows ONLY, and the quantifier is where it goes
+  false.** Measured on `recipe_ratings` (BUT-2057): adding the field to the list kills the
+  legacy merge-add and SPARES a re-rate of a row that already carries it (the key is not in
+  the diff when the value is re-sent unchanged), so "would refuse every re-rate of an existing
+  rating" is true only while no row has the field — and the SAME COMMIT's repository change
+  starts writing it, i.e. the sentence rots by its own commit. Probe the exclusion with TWO
+  fixtures, legacy and already-populated, and quantify over the legacy population only.
 - **A single-conjunct removal that reddens NOTHING can mean the conjunct is MASKED by a
   neighbour, not that the test is dead.** In `A && B`, if B CEL-errors whenever A is
   false, dropping A alone changes no verdict. Attribute a masked test with the SMALLEST
@@ -333,7 +341,13 @@ Standard deny matrix for ownership-checked collections:
   (BUT-1904, 2026-08-26).
 - An `allow update` textually identical to `allow create` still needs its OWN allow
   test — a client `set()` on an existing doc is an update, and a toggle/edit path can
-  live entirely there, unproven by create-side coverage alone.
+  live entirely there, unproven by create-side coverage alone. **A presence-keyed conjunct
+  (`!('f' in request.resource.data) || gate(...)`) copied onto an UPDATE limb is pinned only
+  by the production verb that ADDS `f`, i.e. `set(merge:true)`; a `.update()` of unrelated
+  keys exercises the already-present and the still-absent states and never the transition.**
+  Measured on `recipe_ratings` (BUT-2057): the suite went 7/7 with the merge-add case absent,
+  and that case is the only one the `cannotModify` hardening would redden. Read the
+  repository's real write verb before choosing the fixture's verb.
 - **A conjunct on `resource.data.<f>` (PRE-state) is only proven by a payload that MOVES
   `<f>`.** A deny whose payload leaves the field alone passes identically under
   `request.resource.data.<f>` — the likeliest wrong edit, since both spellings read as "the

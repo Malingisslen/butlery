@@ -37926,3 +37926,181 @@ rows against the STAGED blobs, not the worktree. Residual, non-blocking and repo
 `social_export_manager.dart` row says 590 against a staged 677 (it was 651 at HEAD, so already
 stale; this commit enlarges it while correctly refreshing three neighbouring rows) — the
 "sweep the whole file, not the diff-adjacent region" failure in a table.
+
+### 2026-09-11 — BUT-2057 commit-gate testing review (Dart halves of the ratings block gate)
+
+Staged: `recipe_rating_system.dart`, `firebase_ratings_repository.dart`,
+`ratings_repository.dart`, `activity_export_manager.dart`, and the two suites.
+Baseline 59/59 green. Seven mutants, each in its own Bash call, run twice, graded on run B.
+
+| # | mutant | killer | verdict |
+|---|---|---|---|
+| M1 | delete `'recipeOwnerId': ?recipeOwnerId,` from the repo write | `stamps recipeOwnerId so the rules blocking gate has a field to key on` | RED, sole |
+| M2 | `?recipeOwnerId` -> `recipeOwnerId` (explicit null) | `omits recipeOwnerId entirely when the owner is unknown` | RED, sole |
+| M3 | drop the socialData branch | `prefers socialData.ownerId over createdBy` | RED, sole |
+| M4 | `socialOwner ?? createdBy` (drop both isNotEmpty guards) | `an EMPTY owner resolves to null, not to an empty string` | RED, sole |
+| M5 | drop the createdBy fallback | `passes the recipe owner to the repository, not the rater` | RED, sole |
+| M6 | empty socialOwner short-circuits to null instead of falling through to createdBy | none | GREEN — unpinned |
+| M7 | gate the socialData branch on `isCollaborative` (i.e. harmonise onto `_resolveOwnerId`) | `prefers socialData.ownerId over createdBy` | RED |
+
+M2 settles what a previous gate had argued analytically: `fake_cloud_firestore`'s
+`mock_document_reference.dart` assigns unconditionally, so an explicit null DOES create the
+key and the `containsKey` assertion is non-vacuous. Measured rather than reasoned.
+
+M6 is the combination the brief flagged: `socialData.ownerId == ''` with a NON-empty
+`createdBy`. No fixture in the suite pairs those, so the fall-through is unwitnessed.
+Corroborated analytically — the four fixtures are (createdBy set, no socialData) x2,
+(both set, socialOwner non-empty), (both empty).
+
+M7 is the finding that matters: the production comment says "Same shape as
+`FirebaseRecipeOwnershipResolver._resolveOwnerId`" and M7 reddens, so the shapes differ.
+`_resolveOwnerId` gates its socialData branch on `isCollaborative` and returns
+`recipe.createdBy` WITHOUT an empty check — the empty->null coercion the comment is attached
+to lives in the CALLER, `resolve()` line 53. Two ways false, one of them measured.
+
+Second false claim, same class: the `prefers socialData.ownerId over createdBy` comment says
+"On a COLLABORATIVE recipe the two differ", but `RecipeBuilder.type` defaults to
+`RecipeType.personal` (`recipe_builder.dart:29`), `withSocialData` does not change it, and
+`isCollaborative` is `type == RecipeType.collaborative` (`recipe_unified.dart:1510`). The
+fixture is personal. The test is nevertheless strong — it kills M3 AND M7 — but for the
+opposite reason to the one stated: it is the ABSENCE of an isCollaborative gate that the
+personal fixture exercises.
+
+Decision records falsified by this same commit and not superseded, worded differently in the
+two mirrors so one grep misses the other: `.claude/rules/accepted-deviations.md:1634` ("although
+`FirebaseRatingsRepository` never writes it") and `docs/architecture/ACCEPTED_DEVIATIONS.md:3991`
+("although no writer emits it today", plus a field list ending "and nothing else", plus
+"BUT-2057 wants to make that field mandatory" — which this commit's own new entry refuses).
+Same paragraph family, both mirrors: "is already 536 against a row saying 507" — the staged blob
+is 541 and this commit sets the row to 541, so both halves are false.
+
+Sibling-suite check for the signature change: `RatingsRepository.rateRecipe` is stubbed in
+exactly one suite (`recipe_rating_system_test.dart`, 15 call sites, all updated). Every other
+`rateRecipe` hit in `test/` is `SocialRecipeOperations`/`RecipeSocialStats.rateRecipe`, which
+gained no parameter. `FirebaseRatingsRepository` is the sole implementer. 115/115 green across
+the two suites plus `rules_allowlist_drift_test.dart`, `activity_export_projection_test.dart`,
+`recipe_social_stats_test.dart`, `recipe_service_adapter_test.dart`.
+
+The Art. 15 strip is genuinely pinned against the new writer:
+`activity_export_projection_test.dart` seeds `recipeOwnerId: 'the-recipe-owner'` in both the raw
+fixture and the model fixture, so BUT-2057 cannot widen the bundle.
+
+Tree restored: index blob == worktree blob on both probed files
+(`ffb8f666…`, `e3442fad…`), `git status` clean apart from the six expected staged paths.
+
+### 2026-09-11 — BUT-2057 round 2 (re-review after all six fixes)
+
+Moved since round 1: `recipe_rating_system.dart` (e3442fad -> 0cd0480a), both suites, both
+decision mirrors. Unmoved and still graded from round 1: `firebase_ratings_repository.dart`,
+`ratings_repository.dart`, `activity_export_manager.dart`. Index == worktree on all 12.
+
+Verified fixed: B1 is a PURE strike (no replacement text; the surviving sentence reads
+standalone). B2 now says only that the two fields differ, which the fixture establishes.
+B3/B4 superseded in both mirrors; `_ratingFields` byte-identical to HEAD, so the BUT-2062
+strip decision is genuinely untouched. N2's two lines gone.
+
+N1 re-probed rather than inherited from the pasted output: the empty-socialOwner mutant now
+reddens exactly `an empty socialData.ownerId falls through to createdBy` and nothing else.
+The gap round 1 measured is closed.
+
+TWO NEW BLOCKING FINDINGS, both in text written AS the fix — the pattern the sprint keeps
+paying for, arriving for the fourth and fifth time in one change.
+
+1. The N2 strike PROMOTED a false coverage pointer. The group note was three sentences; two
+were struck, and the survivor is "These operations are tested in integration tests with real
+Firebase." Measured: zero files under `test/integration/` or `integration_test/` reference
+`rateRecipe`. It was equally false before, but the struck clause ("these tests are skipped")
+was what framed it as an excuse; alone it is a bare coverage claim, and per the file's own
+principle that is the sentence a later run cites to skip writing the test. Exactly the
+"a STRIKE can make the surviving sentence false by removing the clause that bounded it"
+lesson (BUT-1943/BUT-2025), first instance of it I have filed against my own accepted fix.
+
+2. The N1 comment carries a COUNT that is false: "the two preferring cases set a non-empty
+socialOwner". Measured by grepping `withSocialData` across the file — exactly THREE fixtures
+set socialData (`owner_abc`, `''`, `''`), so exactly ONE sets a non-empty socialOwner.
+`othersRecipe` sets no socialData at all, so its socialOwner is null, not non-empty. Under
+either reading of "the two preferring cases" the claim is false. The first clause ("the
+fall-through, which neither neighbour reaches") is measured true and survives alone.
+
+NON-BLOCKING: two of the four "Retired verbatim" quotes in the docs mirror are RE-FLOWED, not
+verbatim — the originals wrap across HEAD lines 3992-3993 and 3994-3995, so `grep -F` on the
+quote as written returns 0 in the source. The other two match (count 1 each). The
+reader-facing direction still resolves via a shorter fragment and no decision is misstated,
+so it is a mechanism defect rather than a false decision. General rule worth carrying: when
+the sentence being retired WRAPS in the source, a one-line quote of it cannot be verbatim —
+quote a single-line FRAGMENT instead, and check every quote with `grep -cF` against
+`git show HEAD:<file>` before claiming "verbatim".
+
+Suites: 80/80 across both ratings suites plus `activity_export_projection_test.dart` and
+`rules_allowlist_drift_test.dart`. Tree restored, index == worktree.
+
+### 2026-09-11 — BUT-2057 round 3 (verdict round)
+
+Moved: both test files and both decision mirrors. Both PRODUCTION files unmoved
+(`0cd0480a`, `ffb8f666`), so rounds 1-2 grading of the derivation and the write stands and
+no re-probe was needed. All 12 staged paths: index == worktree.
+
+R1 and R2 are PURE strikes, isolate-diffed: R1 removed the whole group note (nothing in that
+group is skipped, so no note is the right outcome); R2 removed only the enumeration clause.
+Graded the R2 survivor standalone, which is the discipline R1 existed to teach: "The
+fall-through, which neither neighbour reaches. A refactor reading 'an empty owner means no
+owner' would short-circuit to null here and stay green without it." Both clauses are measured
+— the first by M6 surviving before the case existed, the second by M6 reddening only that case
+after. This is the rare legitimate mutant-counterfactual in a comment: I ran it, twice, in two
+rounds.
+
+R3 closed, and MY OWN round-2 verification of it was wrong in a way worth recording. I checked
+the `.claude` quote by hand-typing a grep of a TRUNCATED prefix ending at "never"; it matched
+HEAD line 1634 and I reported the quote "exists verbatim". The full quote continued "never
+writes it" across the wrap at 1634-1635, so it did not. The coordinator caught it by extracting
+every quote mechanically. Three of the six were wrapped, not two.
+The general form: a PREFIX grep answers a different question from the one asked, and its output
+is byte-identical to the answer you wanted — the same shape as "a check run correctly against
+the WRONG OBJECT is indistinguishable from a clean bill of health". Extract the strings with a
+script and test whole-string membership; never hand-type the needle.
+Final state: all six quotes HIT against HEAD, and the three re-flowed ones are LABELLED
+"(fragment; the original wraps)" rather than claiming verbatim — so no sentence overclaims.
+
+Round-3 mirror edits are three quote lines and nothing else; no new prose, so no new claims.
+
+Suites 60/60 across the two ratings suites. No findings. Verdict: pass.
+
+THE PATTERN, across all three rounds and worth carrying as the ticket's headline: every
+finding after round 1's B1 lived in text written AS A FIX — B1/B2 in the repair comments,
+R1 in the strike that fixed N2, R2 in the comment shipped with N1, R3 in the supersession that
+fixed B3, and my own false "verbatim" in the verification of R3. Five instances in one commit,
+including one by the reviewer. Every clean STRIKE held; every REWORD or replacement produced
+the next finding. The chain terminated only when the last edits were strikes and
+label-corrections rather than new prose.
+
+### 2026-09-11 — BUT-2057 re-review: an emulator "evaluation error" is not attribution
+
+Trigger: grading `functions/src/__tests__/recipe-ratings-rules.test.ts` (+116 lines) for the
+`recipe_ratings` UPDATE-limb blocking gate.
+
+Observed: every DENY in the suite printed
+`PERMISSION_DENIED: evaluation error at L2622:24 for 'update' @ L2622, false for 'update' @ L3571,
+false for 'update' @ L2622, ...` — including the three PRE-EXISTING denies (re-point recipeId,
+change userId, backdate createdAt) which refuse through `cannotModify`, a plain false. The same
+write reported both an "evaluation error" and a "false" for L2622, and L2622 is the `allow update:`
+line itself, not any conjunct. Read naively it says the limb throws and the new
+`isNotBlockedBy` conjunct is never evaluated.
+
+Settled by mutation, not by reading: deleted the new conjunct
+
+    && (
+      !('recipeOwnerId' in request.resource.data)
+      || isNotBlockedBy(request.resource.data.recipeOwnerId)
+    )
+
+from `firestore.rules`, re-ran the suite against the live emulator → 7/9, and the two reds were
+exactly `blocked rater CANNOT change a rating that carries recipeOwnerId` and `blocked rater
+merge-ADDING recipeOwnerId to a legacy row is DENIED`. Their three single-variable controls
+(legacy row with no field; non-blocked rater with the field; non-blocked merge-add) stayed green.
+Restored via `git show :firestore.rules`, hash-verified against `git rev-parse :firestore.rules`.
+
+Also measured this round: `recipe-comments-rules.test.ts` 26/26 with the new C3/R3 cases (blocked
+actor + omitting payload, ALLOWED) present exactly as the two ACCEPTED_DEVIATIONS supersessions
+describe; call-site mutant `recipeOwnerId: null` in `recipe_rating_system.dart` reddened exactly
+the 3 service cases asserting a non-null literal (22 +/- 3), restored and hash-verified; the four
+suites that mock `RatingsRepository` after the signature change ran 239/239.

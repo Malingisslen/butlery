@@ -271,6 +271,12 @@ compress it.**
   comment citing it, so the hit-count calibration that works for coverage pointers inverts. Hedge
   and hand it back; do not file (BUT-2052: a 1-vs-8-vs-9 hit spread looked like a typo and the
   ticket was real).
+  **A SHAPE pointer ("same shape as `<Sibling>._method`") is a third kind, and grepping resolves
+  only its EXISTENCE — grade it by MUTATING the new code INTO the cited shape and running.** A red
+  says the two shapes differ, i.e. the sentence is false; and the pointer is the licence a later
+  "harmonise these two" edit cites. Check it against the property the sentence is ATTACHED to, which
+  is usually not where the cited symbol implements it (BUT-2057: the cited resolver gates its branch
+  on `isCollaborative` and does NOT coerce empty→null at all — that coercion lives in its CALLER).
 - **A test's NAME and its COMMENT are TWO copies of one claim** — grep the concept across names
   separately (`grep "^ *test('"`). Grade every test the round ADDS against the names already in
   the file, and re-grade unqualified `every|all|no ` names whenever the round NARROWS what a
@@ -292,6 +298,19 @@ compress it.**
   the accurate numeral near the finding gets fixed and the false one further down rides through.
   A present-tense sentence about a committed ARTEFACT (including a binary, where the claim is a
   DIMENSION no string grep sees) is measured against `git show :<path>`, never HEAD.
+- **A STRIKE can PROMOTE a survivor into a claim it was never making — re-read what is left as a
+  standalone sentence, and resolve it.** Striking two of three sentences left "These operations are
+  tested in integration tests with real Firebase" as a group's sole note; zero files under
+  `test/integration/` reference the method. It was false before too, but the struck clause was what
+  framed it as an excuse, and alone it is the false coverage pointer a later run cites to skip the
+  test. Grade your OWN accepted fixes this way — round 2 of a review is where this lands (BUT-2057).
+- **"Retired verbatim" is checkable, and a WRAPPED source sentence cannot be quoted verbatim on one
+  line** — the supersession needs one line to be greppable, so quote a single-line FRAGMENT and LABEL
+  it one. **EXTRACT the quoted strings programmatically and test each WHOLE string for membership in
+  `git show HEAD:<file>`** — never hand-type a grep of it. I typed a TRUNCATED prefix, it matched the
+  source's first line, and I reported "exists verbatim" about a quote that spanned the wrap; the
+  coordinator found the third instance I had certified. A prefix grep answers a different question
+  than the one asked, and its output is identical to the answer you wanted (BUT-2057: 3 of 6 wrapped).
 - **Grade the strike with cheap mechanical checks**: grep the struck string (0 hits); grep the
   ORDINAL or pointer it CARRIED (an orphaned "the second X" is a dangling reference); re-read
   the paragraphs left ADJACENT, whose "this"/"that" antecedents resolved through deleted text;
@@ -333,6 +352,10 @@ compress it.**
   what makes household/presence surfaces reachable from a widget test; note a VM can resolve a
   repository in its CONSTRUCTOR on a path that never calls it, and
   `test_service_locator.dart` may not register one (BUT-1982).
+- **`fake_cloud_firestore` CREATES the key on an explicit null, so `expect(data.containsKey(k),
+  isFalse)` is a real pin on a null-aware `'k': ?v` write — measured, not argued** (BUT-2057:
+  changing `?recipeOwnerId` to `recipeOwnerId` reddens exactly that one case). Worth writing
+  wherever a Firestore rule keys on a field's PRESENCE, since there absent and null differ.
 - **The FieldValue wall is CLOSED at the bootstrap, and a `skip:` naming it is now always
   stale. Do not compress this.** `FieldValue.serverTimestamp()` and every other sentinel resolve
   through `FieldValueFactoryPlatform.instance`, a PROCESS-WIDE SINGLETON that freezes on first
@@ -1635,6 +1658,13 @@ re-collapses `''` to "unchanged" — pin the consumer's own `x ?? current` line 
 - Hand-rolled `npx ts-node` runners against `127.0.0.1:8080` time out without the emulator running
   first; `npx tsc --noEmit` DOES typecheck `src/__tests__` — a free non-emulator check on a rules suite
   you can't run.
+- **An emulator deny printed as `evaluation error at L<n>:<col>` names the LIMB's own position, not
+  the conjunct that refused, and it says nothing about that limb throwing** — pre-existing deny cases
+  that refuse via a plain-false `cannotModify` print the byte-identical string, and one write can
+  report an error AND a false for the same line. So it cannot be read as "the new conjunct is never
+  reached" or as "the rule errors". The only settling probe is deleting the conjunct from
+  `firestore.rules` and re-running: the reds are its kill set, the greens are its controls
+  (BUT-2057: 2 of 9, the two new denies, with all three controls green).
 - **A client-side filter test on the fake says NOTHING about whether the SERVER accepts that query** —
   rules refuse a whole QUERY when any candidate doc fails the read rule. A membership-filtered read
   owes THREE assertions: filtered-ALLOW (SDK's own spelling, with a non-empty premise check);

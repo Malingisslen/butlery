@@ -5345,14 +5345,14 @@
         {
           "from": "svc-ratings",
           "to": "repo-ratings",
-          "payload": "rateRecipe(recipeId, userId, rating, review) — komposit-id recipeId_userId, en per användare",
+          "payload": "rateRecipe(recipeId, userId, rating, review, recipeOwnerId?) — komposit-id recipeId_userId, en per användare. recipeOwnerId härleds ur receptet anroparen redan håller (socialData.ownerId, annars createdBy) och utelämnas helt när den inte går att lösa.",
           "transport": "method call",
           "verified": true
         },
         {
           "from": "repo-ratings",
           "to": "ds-recipe-ratings",
-          "payload": "recipe_ratings/{recipeId_userId} set",
+          "payload": "recipe_ratings/{recipeId_userId} set(merge) \u2014 firestore.rules avvisar skrivningen p\u00e5 b\u00e5de create och update n\u00e4r recipeOwnerId finns med och den personen har blockerat den som betygs\u00e4tter",
           "transport": "Firestore write",
           "verified": true
         },
@@ -5777,7 +5777,7 @@
         {
           "from": "vm-social-group-detail",
           "to": "repo-friend-category",
-          "payload": "transferOwnership (transaktion)",
+          "payload": "transferOwnership (transaktion) \u2014 b\u00e5da \u00e4garvalen erbjuds inte alls n\u00e4r medlemsl\u00e4sningen misslyckats (rosterIncomplete)",
           "transport": "call",
           "verified": true
         },

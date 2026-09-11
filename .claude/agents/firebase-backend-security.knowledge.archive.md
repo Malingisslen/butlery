@@ -9803,3 +9803,72 @@ back verbatim and no `.probe-backup` file survives.
 `dart analyze --fatal-infos` clean over `lib/services/account/export/` and
 `test/unit/services/account/`; `dart format` reports 0 changed;
 `flutter test test/unit/services/account/` is 345/345, the same tally as before the change.
+
+---
+
+## 2026-09-11 — BUT-2057: the `recipe_ratings` blocking gate goes live, and the three states of a presence-keyed field
+
+Commit-gate review of the BUT-2057 staged tree (12 paths, frozen). Marker files:
+`lib/repositories/firebase/firebase_ratings_repository.dart`,
+`lib/repositories/interfaces/ratings_repository.dart`. Context read: `firestore.rules`
+(the `recipe_ratings` block at 2589-2638 and `isNotBlockedBy` at 198),
+`lib/services/unified/operations/modules/recipe_rating_system.dart`,
+`lib/services/account/export/activity_export_manager.dart`,
+`functions/src/__tests__/recipe-ratings-rules.test.ts`.
+
+**What the change is.** The rules gate
+`!('recipeOwnerId' in request.resource.data) || isNotBlockedBy(request.resource.data.recipeOwnerId)`
+existed on CREATE since BUT-459 and was DEAD: no writer in `lib/` stamped the field, so the
+left disjunct was always true. `RecipeRatingSystem.rateRecipe` now derives the owner from the
+`Recipe` it already holds (`socialData.ownerId`, falling back to `core.createdBy`, empty
+treated as unset) and the repository normalises null-or-empty to ABSENT via
+`'recipeOwnerId': ?ownerOrNull`. The same conjunct was added to the UPDATE limb, which is the
+production verb (`set(merge: true)` evaluates UPDATE on the second write).
+
+**Verified during the pass, none of it a finding.**
+- The live call chain is single: `recipe_detail_viewmodel` -> `social.rateRecipe` ->
+  `recipe_social_stats.rateRecipe` -> `RecipeRatingSystem.rateRecipe` -> repository. The
+  family-rating path (`family_rating_service`) goes through the same `social.rateRecipe`, so
+  there is no second unstamped writer.
+- On a re-rate where the owner is unresolvable, the key is omitted and `merge: true` leaves
+  the STORED owner in place; in an UPDATE `request.resource.data` is the full resulting
+  document, so the gate still runs. Stronger than the comment claims.
+- The pooled-ratings mirror (`canonical-rating-aggregation.ts`) reads only
+  `userId`/`recipeId`/`rating` and writes a hand-built event body, so the owner uid does NOT
+  reach `users/{uid}/canonical_rating_events`, which the Art. 15 section exports UNPROJECTED.
+  That was the one route by which BUT-2062's strip could have been bypassed.
+- `_ratingFields` in `ActivityExportManager` already withholds `recipeOwnerId`, written in
+  anticipation of this writer, so the bundle is not widened.
+
+**Findings reported (none blocking).**
+1. Low — the repository comment says an explicit NULL and an empty string both make the rule
+   "evaluate isNotBlockedBy on a value that resolves no blocks document". True of `''`
+   (`blocks/_<rater>` never exists -> skip); for NULL the helper's `targetUserId + '_' + uid`
+   is an evaluation error, i.e. a DENY. Recommended STRIKING the null clause rather than
+   rewording, and measuring it with `firestore-rules-tester` if it is to be restated. The
+   code is correct either way — it omits in both cases.
+2. Medium, pre-existing — the UPDATE limb carries no `rateLimitWrite`. Every re-rate triggers
+   `update-recipe-rating-stats`, which runs an unbounded
+   `recipe_ratings where recipeId == recipeId` read, so a client toggling its own row forces
+   O(N) reads per write. Not introduced here; own ticket.
+3. Low, pre-existing — the UPDATE limb carries no `isAgeCompliant()`, so the age gate the
+   2026-07-24 deviation entry records covers creates only.
+
+Already-recorded decisions checked against `.claude/rules/accepted-deviations.md` and NOT
+filed against: `recipeOwnerId` deliberately out of `cannotModify` (forgeable, BUT-2071);
+REQUIRED refused because two legitimate writers omit it; forward-only, no backfill; the
+owner's uid on an `allow read: if isAuthenticated()` row reached by no erasure leg (BUT-2072);
+the silent generic refusal; the unmeasured control (BUT-2073).
+
+Verdict: pass, 0 blocking.
+
+**Re-grade, same day.** The Low was taken as a pure strike: the repository comment now reads
+"so an empty string would make it evaluate isNotBlockedBy on a value that resolves no blocks
+document", null half deleted, no code changed (`dart format` reflowed two following lines).
+The coordinator swept the CONCEPT rather than the phrase and found one sibling carrying the
+same unmeasured direction — the intent comment on `omits recipeOwnerId entirely when the
+owner is unknown` in `test/unit/repositories/firebase_ratings_repository_test.dart` — and
+struck it too. Both surviving sentences were re-read ALONE and are true as standalone text:
+the test's now claims only that `'recipeOwnerId' in request.resource.data` is TRUE for an
+explicit null, which is the presence fact, not the consequence. Findings 2 and 3 accepted as
+pre-existing and ticketed rather than changed in-commit. Verdict re-issued: pass, 0 blocking.

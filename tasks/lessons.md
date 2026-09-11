@@ -4021,3 +4021,57 @@ nytt fynd; varje ren strykning höll. När en granskare underkänner en mening f
 är rätt drag att radera satsen, inte att skriva en tredje version — och när det som ska bort
 är en LIVENESS-påstående i en beslutspost som redan klarat tre rundor, rätta det där det
 faktiskt står (här: Linear-kommentaren), inte genom att lägga en fjärde formulering i posten.
+
+
+## Ett NYTT FÄLT motbevisar daterade uppräkningar i ORÖRDA filer (BUT-2057, 2026-09-11)
+
+Ändringen stämplade `recipeOwnerId` på varje betygsrad appen skapar. Fem filgranskningar
+godkände diffen. Helhetsgrinden hittade det ingen av dem kunde se: modulhuvudet i
+`canonical-rating-aggregation.ts` — en fil diffen inte rörde — räknade upp, daterat, exakt
+vilka fält en betygsrad bär, och avslutade "NO owner uid". Meningen var sann när den skrevs
+och blev falsk av en skrivning i ett annat lager.
+
+Värre än uppräkningen var slutsatsen den matade: "A rating on a friend's recipe that the
+rater doesn't own is not locatable server-side". Med fältet på raden ÄR sökvägen upplösbar.
+Det är den meningen en framtida läsare citerar för att avgöra om en funktion går att bygga.
+
+**Regeln: när du inför ett fält på en samling, grepa efter UPPRÄKNINGAR av samlingens form,
+inte efter fältnamnet.** Fältnamnet finns per definition inte i texten som blir falsk. Sök
+på samlingsnamnet plus "carrying only", "NO ", "endast", "bara", och på varje
+`DATA MODEL`/`verified <datum>`-huvud.
+
+### En GRANSKARES rena betyg täcker bara det den undersökte
+
+`code-reviewer` skrev "No overclaim in any of those four comments" om en mening vars ena
+halva `firebase-backend-security` samma minut mätte som falsk. Ingen av dem hade fel:
+den första kontrollerade tomsträngsfallet, den andra null-fallet, och meningen påstod samma
+riktning om båda. Ett godkännande är ett påstående om det granskaren läste — fråga vilken
+halva som faktiskt mättes innan en ren rapport räknas som täckning.
+
+### Ett RÖTT provsvar är inte ett sondresultat förrän fallet är namngivet
+
+Jag körde ett mutationsprov, fick rött och höll på att rapportera mutanten som dödad.
+Rödheten kom från ett fixturfel i mitt EGET nya prov: `user_123` mot svitens autentiserade
+`user-123`, så anropet kastade på behörighetsvägen och assertionen kördes aldrig. Samma
+klass som "en mutant som inte kompilerar är inte ett rött prov", en nivå upp — den här
+kompilerade och körde, den mätte bara något annat. Kör alltid med en rapportör som NAMNGER
+det röda fallet, och läs namnet.
+
+### Att redigera en databärare inuti en värdfil
+
+Två fel i en och samma reparation av `workflow-map.html`. (1) En regex som fångade
+`<script id="data">…</script>` och skrev tillbaka `head + body + tail` raderade allt utanför
+blocket — 311 rader bort, filen började inte längre med `<!doctype html>`. (2) När jag sedan
+körde formateraren på en TS-fil jag bara kommenterat i, skrev den om orelaterad kod (efterföljande
+kommatecken, radbrytningar i anropskedjor) och drog in 19/11 rader i en säkerhetscommit.
+
+Byt VÄRDET i råtexten i stället för att serialisera om, och assertera efteråt att filen
+fortfarande börjar och slutar rätt och att den VÄXTE. Kör inte en formaterare på en fil du
+bara ändrat kommentarer i.
+
+### En siffra som beskriver en fil du fortfarande redigerar går inte att skriva
+
+`ACCEPTED_LARGE_FILES`-raden sa 541; filen var 546 när den stagades, för mina egna
+efterföljande ändringar. Repot har lärt sig det här förut. Det som fungerade: räkna med
+`wc -l` i SAMMA anrop som stagar, och byt ut prosan som upprepar siffran mot en mening om
+vad diffen GÖR ("raden uppdateras i den här commiten till den mätta siffran").

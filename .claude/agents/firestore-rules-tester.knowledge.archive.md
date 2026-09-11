@@ -5224,3 +5224,74 @@ whitespace-flattened. Two gates measured this independently in the same round.
 The replacement in the principles file says to locate and READ the original sentence instead of
 counting. The half that survives unchanged: each mirror retires its OWN wording, because the two
 files word the same decision differently.
+
+---
+
+## 2026-09-11 — BUT-2057: the blocking gate on the `recipe_ratings` UPDATE limb
+
+Commit-gate rules review of a staged diff: `firestore.rules` (one hunk, the
+`recipe_ratings` update limb), `recipe-ratings-rules.test.ts`,
+`recipe-comments-rules.test.ts`.
+
+**Suites.** `test:rules:recipe-ratings` 7/7, `test:rules:recipe-comments` 26/26. Both are
+named in `test:rules:all`; neither is in `check-test-registration.js`'s `KNOWN_UNREACHABLE`.
+
+**Does the conjunct evaluate correctly on an UPDATE?** Yes, measured. A throwaway probe sent
+the PRODUCTION verb — `FirebaseRatingsRepository.rateRecipe` writes
+`set(..., SetOptions(merge: true))` with a null-aware `'recipeOwnerId': ?recipeOwnerId` — as a
+merge that ADDS `recipeOwnerId` to a legacy fieldless row:
+- blocked rater, merge-ADD: DENIED
+- non-blocked rater, merge-ADD: ALLOWED
+- non-blocked rater, row already carrying the field: ALLOWED
+So `request.resource.data` is the full resulting document and the transition case is gated.
+
+**The `cannotModify` claim.** Mutant adding `'recipeOwnerId'` to
+`cannotModify(['recipeId','userId','createdAt'])`, sliced to the ratings block, anchor count
+asserted 1: the legacy merge-add flips to DENIED, the already-populated re-rate stays ALLOWED
+(2/3). So the mechanism is real and the QUANTIFIER is false — the exclusion refuses every
+re-rate of a LEGACY row, not "every re-rate of an existing rating", and the same commit's
+repository change begins producing non-legacy rows.
+
+**Mutants on the shipped suites** (all built by slicing on `match /recipe_ratings`, diffed
+before running, real file byte-identical throughout):
+- delete the whole new update conjunct -> 6/7, kills exactly
+  `blocked rater CANNOT change a rating that carries recipeOwnerId`.
+- delete `!('recipeOwnerId' in request.resource.data) ||` from the UPDATE limb -> 5/7, kills
+  `blocked rater CAN change a legacy rating with no recipeOwnerId` AND the pre-existing
+  `owner can update rating/review` (a legacy row: `isNotBlockedBy(null)` CEL-errors).
+- same deletion on the ratings CREATE limb -> 25/26 on the comments suite, kills exactly
+  `recipe_ratings: blocked user CAN rate when recipeOwnerId is absent`.
+
+**Two false comment sentences.**
+1. R3's comment: "`FirebaseRatingsRepository.rateRecipe` now always sends the field ... so this
+   branch covers legacy rows and foreign clients, not the shipped path." False.
+   `recipe.socialData?.ownerId ?? recipe.core.createdBy` is `String?` on both operands
+   (`RecipeSocialData.ownerId`, `RecipeCore.createdBy`), and the repository omits the key on
+   null BY DESIGN — the `RatingsRepository` interface doc in the same commit says so ("which is
+   how a caller that cannot resolve the owner behaves"). The shipped path reaches the ungated
+   branch. C3, four hundred lines up, states the identical property CORRECTLY for the comments
+   writer (`if (ownership?.recipeOwnerId != null)`), so one commit carries both the right and
+   the wrong wording of one fact.
+2. The rules comment's `cannotModify` quantifier, above.
+
+**Coverage gap.** The shipped ratings suite's update cases all use
+`.update({rating, updatedAt})`, never the merge-set that ADDS the field — so the production
+write shape of the branch this commit adds is pinned by nothing, and the rejected `cannotModify`
+hardening would leave the suite 7/7 green while breaking every legacy re-rate.
+
+Probe mechanics worth repeating: `sed 's|...|...|'` is unusable on CEL containing `||` (the
+delimiter clashes; it failed with "unknown option to `s'" and silently produced seam-less
+copies that then ran against the REAL rules and read as green). Use `node` with an asserted
+occurrence count instead.
+
+**Re-review, same day.** All three blocking findings closed by STRIKES plus two new cases;
+independently re-measured against the re-staged index. Baseline 9/9 and 26/26. The rejected
+`cannotModify(['…','recipeOwnerId'])` hardening now reddens exactly the new
+`non-blocked rater merge-ADDING recipeOwnerId to a legacy row is ALLOWED` (8/9); deleting the
+update-limb conjunct reddens exactly the two DENY cases (7/9) — so the transition case is the
+suite's only witness to that hardening, which is the whole reason it had to be committed.
+`check-test-registration` OK, 142 files, 45 rules suites. Residual noted and NOT filed: the
+R3 strike leaves "Knowingly open against a hand-rolled client" standing as the sole scope
+clause, narrower than the truth the strike established — tolerated only because its own first
+sentence points at C3, which carries the complete account. If that line is ever edited, the
+edit is deleting "against a hand-rolled client", never adding prose.
