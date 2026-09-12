@@ -9872,3 +9872,350 @@ struck it too. Both surviving sentences were re-read ALONE and are true as stand
 the test's now claims only that `'recipeOwnerId' in request.resource.data` is TRUE for an
 explicit null, which is the presence fact, not the consequence. Findings 2 and 3 accepted as
 pre-existing and ticketed rather than changed in-commit. Verdict re-issued: pass, 0 blocking.
+
+---
+
+## 2026-09-12 — BUT-1718, shared-list self-removal (`unified_shared_shopping_lists`)
+
+Commit-gate review of the staged diff. Scope: `firebase_shopping_repository.dart`,
+`shopping_list_permission_guards.dart`, `shopping_repository_routing_module.dart`,
+`shopping_repository.dart` (interface), read against the `unified_shared_shopping_lists`
+rules block and ADR-0004.
+
+**Verdict: pass, 0 blocking.** Two Medium findings, two Low, filed rather than changed
+in-commit (the index was frozen).
+
+**Mirror parity (ADR-0004's requirement) — verified equivalent.** `requireSelfRemovalOnly`'s
+five conditions map one-to-one onto `removesOnlySelfFromMembers()`:
+`!isOwner` ↔ `uid != resource.data.ownerId`; `wasMember` ↔ `uid in resource.data.memberPermissions`;
+`isGone` ↔ `!(uid in request.resource.data.memberPermissions)`;
+`othersUntouched` (`_sameMembers(stored.memberPermissions - uid, proposed.memberPermissions)`,
+which given `isGone` forces set equality) ↔ the map `diff().affectedKeys().hasOnly([uid])`;
+`_touchesNothingBut` (union of both `toFirestore()` key sets, exempting `memberPermissions`
+and `updatedAt`) ↔ the doc-level `hasOnly(['memberPermissions','updatedAt'])`.
+The ONE condition on the server and not the client is `keepsContributorTrail()`, which sits
+outside the OR and therefore binds this arm too. Unreachable through this path and so benign:
+`contributorUserIds` is not in `UnifiedShoppingList.toFirestore()`, and
+`_withContributorTrail` returns the payload untouched when it carries no `items` key — which
+a leave never does. Nothing on the client is present-and-absent-on-the-server.
+
+**GDPR checks, both clean, with the mechanism.** `contributorUserIds` cannot shrink: it is
+absent from the model serializer, absent from the narrowed payload, preserved by the
+field-path `update()`, and `keepsContributorTrail()`'s `hasAll` denies a shrink anyway —
+three independent covers. `lastActivityByUserId` cannot be cleared: `narrowUpdatePayload`
+emits a key only when proposed and stored DIFFER, and if it did differ, `_touchesNothingBut`
+refuses the whole leave first. The cascade keeps four discovery handles
+(`memberPermissions.<uid>`, `ownerId`, `contributorUserIds`, `lastActivityByUserId`), and the
+leave removes only the first.
+
+**Intent scoping, clean.** `MembershipWriteIntent.selfRemoval` skips `requireEditRights` and
+`requireNoPrivilegeEscalation`, and neither skip opens anything: `requireEditRights`'s
+`validateUpdatePermission` reduces to a membership test on a collaborative list, which
+`wasMember` already makes; `requireNoPrivilegeEscalation`'s `ownerId`/`memberPermissions`/
+`createdAt` triple is a strict SUBSET of what `_touchesNothingBut` refuses. No route reaches
+`selfRemoval` except `updateCollaborativeListMembership`, whose `intent` is REQUIRED (the
+ADR-002 lesson applied); `update()` and the deprecated `saveCollaborativeList` both default
+to `ordinary`.
+
+**Multi-member forge (question 5), not reachable.** Add+remove keeping the count, promoting a
+peer on the way out, or seizing `ownerId` all fail `_sameMembers`' length-then-entry scan or
+`_touchesNothingBut`, and independently fail the rule's two `hasOnly`s. Rules-test coverage
+exists for each (SSL42/SSL53 and the leave-and-promote case), plus SSL55/SSL56 for
+`ownerStaysSeated()` with a control arm.
+
+**Finding 1 (Medium) — the guard logs `granted: true` before the write.**
+`requireSelfRemovalOnly` is the only guard in `ShoppingListPermissionGuards` that emits a
+grant; `requireEditRights`, `requireNoPrivilegeEscalation` and `requireSelfOwnedCreate` are
+all refusal-only and let the METHOD log the grant after the write. Consequences: every
+successful leave writes TWO grant rows (the guard's, plus
+`updateCollaborativeList`'s end-of-method row), and a leave that passes the guard and then
+fails — a server `permission-denied` on `docRef.update`, the `baseIsCached` refusal in
+`narrowUpdatePayload`, a `StaleAccessControlBaseException` — leaves a standing grant row for
+a write that never landed. That is the shape the class docstring says these guards exist to
+prevent ("stop an audit row claiming a grant nobody made"). Remedy: make the guard
+refusal-only, or move its grant row to after `docRef.update(write)` returns.
+
+**Finding 2 (Medium) — a leave is refused whenever the caller's cached list is stale in ANY
+field.** `leaveList` builds its entity from the stream copy (`getListById`) and the guard
+compares that WHOLE entity against a fresh server read. Any server-side drift — an item
+ticked by another member, `lastActivityAt`/`lastActivityBy*` restamped, a rename — makes
+`_touchesNothingBut` false and the departure is refused with "the write also changes a field
+outside memberPermissions"; a membership drift makes `othersUntouched` false and it is
+refused with "the write also changes another member's entry". Both sentences are true OF THE
+WRITE and read to the user as their own fault, which is the wrong-cause class BUT-1696 exists
+to remove. Not a security hole — the server denies identically, so client and server agree —
+but it is an availability defect on the one operation this ticket exists to make work.
+Remedy: for `selfRemoval`, construct the proposed entity from `stored` inside the repository
+(`stored.copyWith(memberPermissions - uid, updatedAt: now)`); the write is fully determined
+by (uid, stored), so the caller's copy has nothing to contribute.
+
+**Finding 3 (Low) — leaving is impossible while offline.** `baseIsCached` is
+`accessControlBase != null && docSnapshot.metadata.isFromCache`, and `selfRemoval` always
+declares a base, so a cached read refuses the departure in `narrowUpdatePayload`. Correct
+(a membership change must not replay a local answer) and the error copy is accurate; noted
+because "leave" now joins add/remove/permission-change as online-only.
+
+**Finding 4 (Low, informational) — `ownerStaysSeated()` dereferences
+`request.resource.data.memberPermissions` with no absence arm.** A document lacking the field
+would deny the owner every update by evaluation error. Safe today: the create limb's
+`hasRequiredFields` names `memberPermissions`, and this is an update-only arm. Separately
+measured while checking the population: `account-deletion-cascade.ts` deletes
+`memberPermissions.<uid>` and nulls `ownerDisplayName` but LEAVES `ownerId` raw when an owner
+erases while others remain, so `ownerId ∉ memberPermissions` documents do exist — but only
+for accounts that no longer exist, so no live user is ever gated by the new conjunct there.
+Pre-existing and out of scope.
+
+**Not re-filed** (recorded as decided): silent leave, no contributor union on leave, the
+Art. 15 gap for a list somebody left (BUT-1747), and the owner-arm change itself (Malin,
+2026-09-12).
+
+**Principles updated:** the audit bullet gains the before-the-write/double-row shape; the
+targeted-`update()` bullet gains the client-mirror availability rule from finding 2.
+
+### 2026-09-12 — BUT-1718, round 2 (re-review after both Mediums were fixed)
+
+Both findings from round 1 were built rather than named, and the second changed the design.
+Re-read all four pattern files. **Verdict: pass, 0 blocking.** Three Low findings.
+
+**Audit finding — closed.** `requireSelfRemovalOnly` is refusal-only, matching its three
+siblings; the comment in place of the grant row states the reason (grant before the write,
+double row, standing grant for a refused write). `updateCollaborativeList` writes one grant
+after `docRef.update(write)`.
+
+**Stale-cache finding — closed structurally.** New
+`ShoppingListPermissionGuards.resolveMembershipWrite(uid, proposed, stored, intent)` runs the
+guard the intent calls for and ANSWERS with the entity to write; for `selfRemoval` that is
+`stored.copyWith(memberPermissions − uid, updatedAt: proposed.updatedAt)`. VERIFIED against
+the model rather than taken: `copyWith` has no `ownerId`/`createdAt`/`id`/`type` parameter at
+all and every other field is `x ?? this.x`, so the ONLY stray default is
+`updatedAt ?? clock.now()` — which the derivation passes explicitly. So `departed` differs
+from `stored` in exactly `memberPermissions` and `updatedAt`, by construction. That check was
+load-bearing: a stray default there would have made `_touchesNothingBut` always FALSE and
+refused every departure, and the mutation probe quoted in the doc comment could not have
+distinguished that from always-TRUE.
+
+**Coordinator's question — do three now-tautological conjuncts stop being a mirror? Answer:
+KEEP them,** on three grounds. `requireSelfRemovalOnly` is PUBLIC on the class and takes an
+arbitrary `proposed`, so the conjuncts are the contract of a callable method, not dead code
+inside a closed derivation. ADR-0004 requires the client predicate to be scoped IDENTICALLY to
+the rule; trimming to two would leave the rule at five and the client at two, and that drift is
+invisible. And the fail direction is closed. The doc comment's "Measured:" claim is credible
+and the suite backs it — `the owner may not leave their own list` pins `isOwner`, `somebody who
+was never a member` pins `wasMember` (its own comment records the mutation probe that found the
+gap), and three sanitisation cases show the other three cannot be reached with a bad value.
+
+**Finding 1 (Low) — two residual refusals survive the derivation.** (a)
+`restrictAccessControlToDeclaredBase` still runs for `selfRemoval`: `privileged` is non-empty
+(`memberPermissions.<uid>`), `declaredBase` is always non-null on this path, so an
+`ownerId`/`memberPermissions` disagreement between the caller's cached base and `stored` throws
+`StaleAccessControlBaseException` — even though the written entity is derived from `stored` and
+touches only the caller's own key. Far narrower than before (ACL drift only, not every item
+tick) and self-healing on retry, but the caller's copy can still REFUSE the departure. Remedy:
+skip the drift check for `selfRemoval`. (b) `leaveList`'s "already gone is a SUCCESS" shortcut
+reads the CACHED list while the authority is now `stored`, so an owner who removed the member
+seconds earlier turns the leave into a `wasMember` refusal — the wrong-cause class that
+shortcut exists to prevent. Pre-existing; now the one place the two sources disagree.
+
+**Finding 2 (Low) — `intent` and `accessControlBase` must agree and nothing makes them.**
+`updateCollaborativeList` is public on the module with both optional. `selfRemoval` + null base
+passes the guard, then the `declaredBase == null` branch DROPS the `memberPermissions.<uid>`
+key, so the write narrows to `updatedAt` alone while the method logs `granted: true` and returns
+`departed` — a departure the caller sees succeed that never happened. Unreachable today and the
+shape predates this change, but it is ADR-002's exact failure mode one optional argument away.
+Remedy: assert `intent == selfRemoval ⇒ accessControlBase != null`, or skip the strip for that
+intent (which also closes finding 1a).
+
+**Finding 3 (Low, comment) — one clause in `resolveMembershipWrite`'s doc overclaims.** "so the
+write is fully determined by (uid, server state) and the client's copy contributes nothing but
+staleness." The line three below passes `updatedAt: proposed.updatedAt`, and `accessControlBase`
+— the same client copy at the caller — can still refuse the write (finding 1a). The preceding
+sentence carries the whole fact and is exactly true. STRIKE the clause; do not write a
+replacement.
+
+**GDPR re-confirmed, now stronger in both halves.** `lastActivityByUserId` is carried from
+`stored` by `copyWith` and therefore CANNOT differ, so `narrowUpdatePayload` emits no key for it
+— previously it was "would differ ⇒ the guard refuses", now it is unreachable.
+`contributorUserIds` gains one more cover: the payload is provably exactly two keys, so
+`_withContributorTrail` no-ops, the field-path `update()` leaves the array alone, and
+`keepsContributorTrail()`'s `hasAll` denies a shrink independently.
+
+**Round-1 question 5 changed answer, in the safe direction:** a multi-member forge is no longer
+REFUSED, it is not EXPRESSIBLE — the caller's map is discarded. Pinned by `the self-removal
+intent CANNOT boot somebody else — it is sanitised` and `a promotion smuggled into a departure
+is discarded`.
+
+**Derived counts checked** (the repo's most-repeated defect class): the three new
+`ACCEPTED_LARGE_FILES` rows read 504/510/505 and `git show :<path> | wc -l` returns 504/510/505.
+Their provenance claims are measured too — `git show HEAD:` gives 350/498/500, so "took it from
+350", "sat at 498" and "pushed it past 500" are all true.
+
+**Not graded here:** the deleted `isRemovingSelf` bypass in `list_member_operations.dart` and
+`shopping_leave_list_action.dart` are outside this pattern.
+
+**Principle updated:** the client-mirror bullet gains the derivation's three obligations — read
+`copyWith`'s BODY for a stray default, strike any "the client's copy contributes nothing" clause
+because a sibling gate still reads it, and keep now-tautological conjuncts on a PUBLIC guard,
+noting that forcing a conjunct true cannot distinguish always-true from always-false.
+
+### 2026-09-12 — BUT-1718, round 3 (final pass on the current bytes)
+
+Five files re-read, including the first read of the post-change
+`shopping_offline_write_module.dart`. **Verdict: pass, 0 blocking.** One Low.
+
+**Finding 2 closed, and the comment above the branch checks out line by line.** Verified each
+claim against the code: the ternary does skip `restrictAccessControlToDeclaredBase` entirely for
+`selfRemoval`; the `declaredBase == null` branch does compute `privileged` on
+`key.split('.').first`, so `memberPermissions.<uid>` IS dropped, leaving `{updatedAt}`, which
+`write.isNotEmpty` writes, after which the method logs `granted: true` and returns `writable` —
+exactly the silent success the comment describes; and the drift refusal has genuinely lost its
+subject, since `payload` comes from `narrowUpdatePayload(uid, writable, stored)` where
+`writable` is the derived entity. The comment says only what the code does.
+Two things the skip cannot lose, checked rather than assumed: the strip's unconditional
+`createdAt` removal is moot (`copyWith` has no `createdAt` parameter, so the key is never in a
+departure payload, and `_touchesNothingBut` would refuse it upstream anyway), and the skip
+cannot WIDEN anything because the payload it declines to filter was computed from `stored`.
+The skip's predicate and `resolveMembershipWrite`'s branch read the same local `intent`, so they
+cannot silently disagree; and adding a third intent fails in the SAFE direction (forget the
+routing module and the strip runs; forget the guard and there is no derived entity to skip
+filtering on).
+
+**Finding 3 struck, and the surviving text reads correctly alone** — "It is derived from
+[stored] — the caller's own key removed, nothing else touched." No replacement written. The
+strike left a short ragged line (`dart format` does not reflow doc comments); cosmetic only.
+
+**Finding 1 (Low) — the struck overclaim came back in the INTERFACE, in different words.**
+`updateCollaborativeListMembership`'s doc says under `selfRemoval` that "[updated] contributes
+only its `updatedAt`". Two counterexamples in the same call chain the paragraph describes:
+`updated.id` selects the document (`sharedListsRef.doc(entity.id)` — `base.id` is used nowhere,
+so the caller's entity chooses which list is read, guarded and written), and `updated.type`
+gates the call in `updateCollaborativeListMembership`. No exposure — for `selfRemoval` the guard
+checks membership in whatever document `updated.id` named, so you can still only leave a list
+you belong to, and the `ordinary` path refuses a mismatched pair on drift. Purely comment
+accuracy. Remedy: strike the clause; the preceding sentence carries the point without the
+quantifier.
+
+**The clause the coordinator asked about is TRUE.** "[base] … still decides the OFFLINE refusal":
+`baseIsCached: accessControlBase != null && docSnapshot.metadata.isFromCache`, so base being
+non-null is a real conjunct, and `narrowUpdatePayload` runs BEFORE the skip, so a departure is
+still refused offline. The reasoning is right too — under `isFromCache` the derived entity is
+derived from the CACHED `stored`, so `wasMember`/`othersUntouched` were checked against stale
+state. One nuance, not a finding: at the INTERFACE `base` is non-nullable, so an interface caller
+cannot fail to arm the refusal; the sentence is true of the implementation, and its practical
+message (keep passing base) is the one worth having.
+
+**The offline-module header is a REWORD, not a strike** — "so that module stays a routing facade
+under the 500-line limit" became ", which stays a routing facade", turning a purpose clause into
+an assertion. The added clause is TRUE (the module reads, delegates to the guards, delegates
+narrowing, delegates the trail, audits — and its `ACCEPTED_LARGE_FILES` row argues exactly that),
+so the result is sound; noted only because `code-style.md` says a correction may only delete. The
+SIBLING copy was caught: the same 500-line clause was struck from
+`shopping_list_permission_guards.dart`'s header in the same round, and the guards file's
+surviving "as its own doc says it should" still resolves — the routing module's class doc does
+describe itself as routing.
+
+**GDPR re-confirmed on the current bytes, unchanged.** The departure payload is still exactly
+`{memberPermissions.<uid>: FieldValue.delete(), updatedAt}`, so `_withContributorTrail` no-ops
+(no `items` key), the array is untouched by the field-path `update()`, and `keepsContributorTrail()`
+denies a shrink independently; `lastActivityByUserId` is carried by `copyWith` and therefore
+cannot differ, so no key is emitted for it.
+
+**Residual 1b left open, correctly.** `leaveList`'s already-gone shortcut reads the cached list
+while the authority is `stored`, so an owner who removed the member seconds earlier turns the
+leave into a "not a member of the list" refusal. It is in `list_member_operations.dart`, outside
+this pattern, and the clean fix is either to consult the same authority the guard does or to make
+the guard's `!wasMember` branch report SUCCESS for a self-removal — the second changes a security
+guard's semantics and needs its own review, which is why it did not belong in a fix round on a
+frozen index.
+
+**Principle updated:** the client-mirror bullet's overclaim clause now also names the entity's
+`id` as a contribution and says to grep the INTERFACE doc after striking the implementation's
+copy — this round's finding was the struck sentence returning one file over, in new words.
+
+### 2026-09-12 — BUT-1718, round 4 (confirmation; all three strikes are pure deletions)
+
+Re-read the three changed files plus the two the coordinator reported unchanged — the gate is
+byte-keyed and "same blob" is a reviewer's claim like any other. **Verdict: pass, 0 blocking.
+No new findings.**
+
+**All three strikes verified as DELETIONS, with each surviving sentence re-read ALONE** (the
+hazard being a strike that removes a bounding clause and leaves a broader claim standing):
+- Guards, `resolveMembershipWrite`: now "It is derived from [stored] — the caller's own key
+  removed." True standalone, and silent about `updatedAt` rather than false about it. Neighbours
+  keep their antecedents — "the derived entity", "the derivation above" both still resolve.
+- Offline module header: now "Split out of `ShoppingRepositoryRoutingModule`." The invented
+  purpose clause from round 3 is gone; the following sentence is independent and untouched.
+- Interface: the "contributes only its `updatedAt`" clause is gone with no replacement
+  quantifier. What survives — "A caller cannot express a departure that touches anybody else …
+  a caller that reads the return value gets the derived list, not its own" — is true of the code.
+
+**Concept sweep run rather than a phrase check**, since the whole point of the round-3 finding
+was the claim re-landing one file over in new words: `grep -rniE "contributes|nothing else
+touched|only its .updatedAt|caller's (copy|entity)" lib/` returns two hits on this surface, and
+both are NEGATIVE assertions that survive correctly — the guards' "a departure's answer is NOT
+the caller's entity" and the routing module's "built from `stored`, not from the caller's copy".
+Nothing in `lib/` now asserts what the caller's entity DOES contribute. The other hits are
+unrelated features.
+
+**Deliberately did NOT ask for a replacement sentence** anywhere. A reader of the guards doc
+could now infer `updatedAt` also comes from `stored`; it does not (`updatedAt: proposed.updatedAt`
+sits three lines below and says so). Writing that into the doc would be a new unmeasured claim in
+text authored as a correction, which is the loop these four rounds have been terminating — the
+strikes held every time, the rewords did not.
+
+**The guards header's "as its own doc says it should" still resolves** after the offline module's
+purpose clause was deleted: it points at the ROUTING module's class doc ("Module handling
+collection routing…"), not at the offline module's. Checked because a deletion in one file is how
+a cross-file pointer goes stale.
+
+Everything previously confirmed is unchanged on these bytes: the GDPR covers, the derivation, the
+skip's two-halves comment, the ordinary path, the large-files rows. Residual 1b
+(`leaveList`'s cached already-gone shortcut vs `stored` as the authority) remains open by
+agreement — the clean fix turns a guard's refusal into a success on a user-withdrawal path and
+needs its own review.
+
+**No principle change.** Round 3's sharpening ("strike it, then grep the INTERFACE doc") is what
+this round exercised, and it worked; nothing new is durable enough to earn a line.
+
+### 2026-09-12 — BUT-1718, round 5 (a pointer I signed off as resolved was false)
+
+One file, one comment strike. **Verdict: pass, 0 blocking.** The substance of this round is my
+own round-4 error, verified rather than accepted.
+
+**The clause WAS false, measured three ways.** The guards header said "the module stays a routing
+facade, as its own doc says it should". `git show :…shopping_repository_routing_module.dart`
+lines 24-27 read "Module handling collection routing between personal and collaborative shopping
+lists. / Routes CRUD operations to appropriate Firestore collections:" — and `grep -in "facade"`
+over that file returns NOTHING, at HEAD or staged. So the pointer named a prescription that has
+never existed in the target.
+
+**How I missed it, stated plainly because it is the reusable half.** In round 4 I checked whether
+the routing module's doc describes ROUTING — it does — and reported the pointer as resolving. The
+clause does not claim the target mentions routing; it claims the target says the module SHOULD
+stay a FACADE. I verified the topic and signed off the predicate. My own knowledge file already
+carries the general form of this ("a pointer is a QUANTIFIED claim: it must resolve for every
+symbol the sentence ranges over"), and I applied it to the wrong half of the sentence.
+
+**The carrier is real and I confirmed it.** At HEAD the clause sits at lines 16-17 behind a
+DIFFERENT head: "Split out of that module when BUT-1719/BUT-1725 pushed it past the 500-line
+limit; the module stays a routing facade, as its own doc says it should." Round 3 struck the
+500-line head, which re-emitted the byte-identical tail as that commit's bytes. The line therefore
+appears in the diff as CHANGED, the eye grades the change, and the false tail rides in reading as
+inherited text. A diff-based review is structurally blind to this; only `git show HEAD:<file>` on
+the sentence separates "new clause" from "re-emitted clause".
+
+**The fix is a pure deletion** — the header ends at "Split out of that module by
+BUT-1719/BUT-1725." Read alone it is true, and "that module" still resolves: the paragraph above
+names `ShoppingRepositoryRoutingModule` explicitly.
+
+**Concept sweep run, not a phrase check:** `grep -rni "facade" lib/repositories/` returns seven
+hits, none about the shopping routing module — they are the data-export, friends, message-deletion
+and `firestore_repository` files describing their own structures. No copy of the struck claim
+survives.
+
+**Counts re-measured in the same call as the sweep:** 502 / 526 / 505 against rows reading
+502 / 526 / 505.
+
+**Principle updated** with both halves, merged into the existing overclaim clause rather than a
+new bullet: grade a pointer on the target's PREDICATE not its topic, and treat a sentence whose
+head you edited as re-emitting its tail — `git show HEAD:` on the sentence, because the diff
+cannot show it.

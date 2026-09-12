@@ -109,6 +109,55 @@ Separately, this strictening *exposed* (rather than caused) a product gap:
 offered to every member, but the update rule lets no non-owner touch `memberPermissions`.
 That UI is dead, and now says so out loud.
 
+### SUPERSEDED IN PART, 2026-09-12 (BUT-1718)
+
+Retired verbatim: "`leaveList` is
+offered to every member, but the update rule lets no non-owner touch `memberPermissions`."
+Both halves were wrong, in opposite directions, and each is now false for its own reason.
+
+`leaveList` was offered to NO member: the method existed and no widget in `lib/` called it.
+That sentence described the intent of the code rather than its callers, which is the same
+class of claim this ADR exists to record.
+
+It is offered now, and it works. `firestore.rules` carries a third arm on
+`unified_shared_shopping_lists`' `allow update` letting a member remove exactly their own
+key from `memberPermissions` and change nothing else — an allowlist over
+`['memberPermissions', 'updatedAt']`, decided in
+`docs/org/adr/ADR-0004-shared-list-self-removal-rule-allowlist.md`. Client-side,
+`updateCollaborativeListMembership` takes a required `MembershipWriteIntent`, and
+`selfRemoval` runs `ShoppingListPermissionGuards.requireSelfRemovalOnly` in place of
+`requireEditRights` + `requireNoPrivilegeEscalation`, which refuse that write. The named
+method this ADR mandates is still the only membership write path; the intent is REQUIRED
+rather than defaulted, because the shape this ADR rejects was an optional argument nobody
+passed.
+
+**The other half of the gap stands, and is now the only one:** a non-owner holding `admin`
+still sees "Hantera delning", and every add, removal and permission change made there is
+still refused to any non-owner by the update rule. Self-removal is open; acting on somebody
+else is not.
+
+`lib/repositories/interfaces/shopping_repository.dart` also gains the enum and the reason
+the argument is required.
+
+**Two more sentences retired by the same change**, found by the `integration-reviewer` gate
+reading this record against the code that shipped beside it — a decision record is
+superseded, never struck, so they are quoted here rather than edited in place.
+
+Retired verbatim, from the Context: "`firestore.rules` forbids a non-owner from touching either, so any
+write carrying one of those keys is making an access-control statement rather than editing
+content." It still holds of `ownerId`. It no longer holds of `memberPermissions`: a member
+may remove their own key, and the write carrying it is a departure rather than an
+access-control statement about anybody else.
+
+Retired verbatim, from the service-seam option: "Every
+   add / remove / permission-change / leave is re-typed at compile time instead of relying
+   on each call site remembering to pass a flag." A leave no longer travels that injected
+function. It has its own — `leaveMembership` → `UnifiedShoppingService.leaveSharedList` →
+`ShoppingListManagementModule.leaveList` — because the two are held to different guards and
+the local state after them differs: a departure removes the list from this user's view,
+which is the one membership change that does. The Cross-references list below names only the
+first chain; the second is that one, with `leave` in each name.
+
 ## Cross-references
 
 - Interface contract: `lib/repositories/interfaces/shopping_repository.dart`

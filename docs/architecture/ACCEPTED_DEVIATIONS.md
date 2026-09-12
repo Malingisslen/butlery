@@ -4233,3 +4233,148 @@ direction.
 removes the ability to revoke an alias that was already approved. An approved alias is written
 onto the ingredient document itself, which is preserved, so the aliases in use are unaffected.
 — 2026-09-12
+
+### [Security] A member can leave a shared shopping list, and the owner can no longer leave theirs (BUT-1718)
+
+`firestore.rules` gains a third arm on `unified_shared_shopping_lists`' `allow update`:
+
+```
+request.auth.uid != resource.data.ownerId
+  && request.auth.uid in resource.data.memberPermissions
+  && !(request.auth.uid in request.resource.data.memberPermissions)
+  && request.resource.data.memberPermissions
+       .diff(resource.data.memberPermissions)
+       .affectedKeys().hasOnly([request.auth.uid])
+  && request.resource.data.diff(resource.data).affectedKeys()
+       .hasOnly(['memberPermissions', 'updatedAt'])
+```
+
+**Why an ALLOWLIST.** `docs/org/adr/ADR-0004-shared-list-self-removal-rule-allowlist.md`
+decided this on 2026-07-31, before the code existed. Under a deny-list everything not named
+stays writable, so a VIEW-ONLY member — who cannot touch `items` at all through the member
+arm — could wipe the entire item array in the same accepted write as leaving. A one-shot
+grief on the way out. The same ADR records an override that widened the allowlist to three
+keys on an unverified claim about what the client sends: with `contributorUserIds` in it, a
+member could union up to 200 foreign uids into the append-only array `account-deletion-cascade.ts`
+selects lists by, dragging a stranger's Art. 17 cascade into a household they were never in.
+Two keys, and no third.
+
+The map `diff` is what makes this self-removal rather than eviction. A keys-only comparison
+sees who left the map; `affectedKeys()` also reports a changed VALUE, so promoting a remaining
+member to `admin` on the way out is refused by the same conjunct. This is the file's first
+nested-map `diff()` — every other one operates on the whole document — and it was measured on
+the emulator rather than assumed.
+
+`keepsContributorTrail()` stays OUTSIDE the OR and binds every arm, so a departure can never
+be the write that strips the erasure handle.
+
+**The owner half is Malin's explicit call, 2026-09-12.** Before `ownerStaysSeated()` the owner
+arm carried no field constraint at all, so the server accepted an owner writing their own key
+out of `memberPermissions` while `ownerId` still named them — and every other limb of this
+collection gates on that map, so the document would be left unreadable and unwritable by
+anyone. Only `ListMemberOperations.leaveList` refused it, which is a product rule in the app,
+not a control. She was shown that closing it widens the change past what she decided on
+2026-07-31, and that no legitimate owner path goes through that arm (deleting the list and
+converting it to personal both delete the document; there is no ownership transfer). **What
+she was NOT shown**, because an attribution is a claim about a person that no test can hold:
+any measurement of how often an owner reaches that state. There are no users, so it is not
+measurable. SSL56 is the control case — a too-broad conjunct on the owner arm would hide
+behind a green deny test, so the pair asserts the owner can still remove somebody else.
+
+**Client-side mirror, and why the argument is REQUIRED.** `updateCollaborativeListMembership`
+takes a `MembershipWriteIntent`, and `selfRemoval` runs
+`ShoppingListPermissionGuards.requireSelfRemovalOnly` instead of `requireEditRights` +
+`requireNoPrivilegeEscalation`. Those two refuse exactly this write — the first turns a
+view-only member away before any membership logic runs, the second throws for any non-owner
+whose write touches the member map, including one removing only their own key. The intent is
+required rather than defaulted because ADR-002's shipped incident was an OPTIONAL argument
+nobody passed: green tests, and every membership write silently writing nothing. The guard's
+predicate is scoped to the same two fields as the rule, so client and server cannot drift.
+
+**Do not re-gate the button on `canManageShoppingList` / `_canManageSharing`.** Those govern
+acting on OTHER members, which the rules still refuse to every non-owner, and hanging the
+leave affordance on them would hide it from exactly the view-only member most likely to need
+it. "Lämna listan" is gated on *not the owner* and *is a member*, and nothing else.
+
+**Coverage.** The self-removal section of
+`functions/src/__tests__/shared-shopping-lists-rules.test.ts`, run against the emulator. Each
+conjunct was mutation-probed by deleting it alone; the cases no single conjunct flips are
+marked OVER-DETERMINED in the file.
+
+On the Dart side the decision that matters is the INTENT at the one production call site, and
+it was executed by nothing until the `testing-specialist` gate read line coverage and found
+every line of `ShoppingListManagementModule.leaveList` at zero. The widget suite mocks the
+operations layer, the operations suite mocks the service, and the repository suite hand-passes
+the argument — a fake sandwich with the real decision in the middle, which is verbatim the
+ADR-002 incident. `shopping_list_management_leave_test.dart` closes it by constructing the real
+module against a mock repository and capturing the intent; swapping `selfRemoval` for
+`ordinary` there now reddens, as do the local-cleanup lines beside it.
+
+The service wrapper above it — the try/catch that maps a refusal to a Swedish sentence — was
+the last unreached line, and it is reached now: `unified_shopping_service_test.dart` gains four
+cases against the real service, pinning the intent, its ordinary sibling as the control, the
+parked reason on a refusal and its absence on a success. The first version of this paragraph
+recorded that as a named gap and said closing it "needs a real-service harness that does not
+exist". The harness existed. That sentence is the false-coverage-pointer shape this repo has
+paid for before — an effort estimate a later run cites to skip the work — and the
+`testing-specialist` gate measured it false in the same round it was written. On the Dart side, the two pre-existing `leaveList` tests were green
+for months while the feature was impossible in production — they asserted that the method
+called *something*, and that something was the write path the rules refuse. They now name the
+seam, and routing a departure back through the ordinary one reddens them.
+
+**Named residual — the export.** A list a member has LEFT is not in their Art. 15 bundle. The
+contributor probe that would find it is refused by `firestore.rules` (the read limb requires
+`ownerId == uid || uid in memberPermissions`, and a leaver is neither), so only an Admin-SDK
+path can reach it. **BUT-1747** carries that and has been open since 2026-07-30. This is NOT
+inherited silently from the BUT-1732 entry: that decision was taken when the only way out was
+the owner removing you, and this change makes leaving a thing the user chooses, so the gap
+goes from rare to routine. Shipped anyway — leaving people stuck in a household list to
+protect an export that already misses the same rows protects nobody. Erasure is unaffected:
+the cascade still finds the list by `contributorUserIds` and `lastActivityByUserId`.
+
+**Named residual — the trail.** A leave does not union the departing member into
+`contributorUserIds`. Every path that can put their uid or name on the document (adding an
+item, ticking one, editing one, claiming one — which is self-only) is a write carrying
+`items`, and `_withContributorTrail` stamps the trail on exactly those, so somebody not
+already in it has left no name to erase. Unioning them anyway would create a new durable
+record that a PASSIVE member was ever there, the minimisation objection recorded when the same
+handle was built for the group weekly menus.
+
+**Leaving is SILENT, and that is the decision.** No notification reaches the owner or the
+other members, matching the owner-initiated removal that already ships. Trust & Safety's
+reasoning: an announcement would tell a controlling household member that somebody left, and
+possibly why. Do not add one for symmetry. The paired gap is real and is filed rather than
+left to be discovered — `addMember` has no consent step either, so an owner can put a departed
+member straight back, repeatedly, with no notice and no refusal. That is **BUT-2089**. It
+predates this change; what this change does is make it reachable. — 2026-09-12
+
+**Two residuals the commit gates found, named rather than left to be discovered; both are
+BUT-2090.**
+
+*The empty roster.* After the OWNER erases their account, the remaining members can each
+leave until `memberPermissions` is `{}`. Every limb of this collection gates on
+`ownerId == uid || uid in memberPermissions`, and `account-deletion-cascade.ts` deliberately
+KEEPS `ownerId` while other members remain — so the surviving owner uid belongs to no
+account, and the document becomes unreadable, unwritable and undeletable by every client,
+permanently. It is still ERASABLE: the Admin SDK reaches it by `contributorUserIds`, so this
+is an orphan shell rather than an Art. 17 gap, and it is the same shape already accepted for
+the chat roster (`tryClearRoster`, BUT-1795/BUT-1825, 2026-08-12). It composes from two
+decisions that are each correct alone — the cascade keeping `ownerId`, and the new arm
+admitting every non-owner — which is why no single-file review could see it; the
+`cloud-functions-specialist` gate did. The only rules-level fix is to refuse the LAST
+member's departure, which is exactly the trap BUT-1718 exists to remove, so it is a decision
+rather than an edit.
+
+*The contributor cap.* A list already past 200 entries in `contributorUserIds` cannot be LEFT:
+`keepsContributorTrail()` binds every arm including the new one, and its size bound reads the
+post-write array, so a departure that does not touch the trail at all is refused. SSL60 pins
+it. The same freeze on an items-only update is the older SSL20; what leaving adds is that the
+person it traps is the one trying to get out. Only reachable through the Admin SDK today,
+since no client write can push the array past the cap.
+
+*Offline.* A departure declares an access-control base, so `narrowUpdatePayload`'s
+cached-base refusal fires and the user sees "du saknar behörighet att redigera denna delade
+inköpslista" on a button that says "Lämna listan". The refusal is correct and inherited
+deliberately (BUT-1726: a membership change computed against a cached document must never be
+replayed). The wording is the BUT-1696 invented-cause class, now reachable from a new
+affordance. Raised by the `integration-reviewer` and `firebase-backend-security` gates.

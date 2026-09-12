@@ -12,6 +12,7 @@ import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/views/unified_shopping/widgets/dialogs/shopping_leave_list_action.dart';
 import 'package:butlery/views/unified_shopping/widgets/dialogs/shopping_member_management_dialog.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 
@@ -86,6 +87,32 @@ class ShoppingShareStatusDialog extends StatelessWidget {
               Navigator.pop(context);
               _showManageSharing(context);
             },
+          ),
+        // BUT-1718: gated on "not the owner", NOT on `_canManageSharing`.
+        // That predicate governs a different capability — managing OTHER
+        // members — which the rules still refuse to every non-owner, so hanging
+        // the leave button on it would hide it from exactly the view-only
+        // member most likely to want out.
+        if (list.isCollaborative &&
+            currentUserId != null &&
+            list.ownerId != currentUserId &&
+            list.memberPermissions.containsKey(currentUserId))
+          ActionButtons.textButton(
+            context,
+            label: context.l10n.shoppingLeaveList,
+            style: TextButton.styleFrom(
+              foregroundColor: Theme.of(context).colorScheme.error,
+            ),
+            onPressed: () => ShoppingLeaveListAction.confirmAndLeave(
+              context,
+              list,
+              // Closes THIS dialog once the question is answered yes, before
+              // the write lands. The read rule denies this document the instant
+              // it does, so a dialog still rendering the member list would be
+              // sitting on a stream about to fail — and popping any earlier
+              // would take the confirm dialog's own context with it.
+              onConfirmed: () => Navigator.pop(context),
+            ),
           ),
         ActionButtons.primaryButton(
           context,

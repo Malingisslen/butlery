@@ -27370,6 +27370,36 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'En sak kan ha sparats: vi kunde inte slutföra kontrollen av om det finns en pågående granskning av innehåll som anmälts.'**
   String get profileDeletionNoticeWhatUnclear;
+
+  /// No description provided for @shoppingLeaveList.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lämna listan'**
+  String get shoppingLeaveList;
+
+  /// No description provided for @shoppingLeaveListConfirm.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vill du lämna \"{name}\"? Du förlorar åtkomst till listan. Detta går inte att ångra — ägaren måste bjuda in dig igen.'**
+  String shoppingLeaveListConfirm(String name);
+
+  /// No description provided for @shoppingLeave.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lämna'**
+  String get shoppingLeave;
+
+  /// No description provided for @shoppingLeftList.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du har lämnat \"{name}\"'**
+  String shoppingLeftList(String name);
+
+  /// No description provided for @shoppingCouldNotLeaveList.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte lämna listan'**
+  String get shoppingCouldNotLeaveList;
 }
 
 class _AppLocalizationsDelegate

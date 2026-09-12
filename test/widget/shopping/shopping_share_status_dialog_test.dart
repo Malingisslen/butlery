@@ -216,4 +216,79 @@ void main() {
       expect(find.text('Bob'), findsNWidgets(2));
     });
   });
+
+  // BUT-1718: who sees "Lämna listan".
+  //
+  // The pair is the point. A `findsOneWidget` alone would pass just as well if
+  // the button were rendered unconditionally, and a `findsNothing` alone would
+  // pass if it were never built at all — so each case co-asserts against the
+  // other actor on the same fixture.
+  group('leave button', () {
+    testWidgets('a non-owner member sees it', (tester) async {
+      GetIt.instance.unregister<PermissionService>();
+      GetIt.instance.registerSingleton<PermissionService>(
+        FakePermissionService()..setPermissionState(currentUserId: 'cecilia'),
+      );
+
+      // `cecilia` holds `view` in the fixture — the permission level the
+      // client's own edit-rights guard refuses outright, and the one the
+      // "Hantera delning" button is hidden from. If this button is ever hung
+      // on that same predicate, this case reddens.
+      await pumpDialog(
+        tester,
+        list: _sharedList(),
+        userDisplayNames: const {
+          _ownerId: 'Malin',
+          'bob': 'Bob',
+          'cecilia': 'Cecilia',
+        },
+      );
+
+      expect(find.text(l10n.shoppingLeaveList), findsOneWidget);
+      expect(find.text(l10n.shoppingManageSharing), findsNothing);
+    });
+
+    testWidgets('the owner does not', (tester) async {
+      // Same fixture, same dialog, only the signed-in user differs — so an
+      // absence here cannot be a build that failed upstream. The co-asserted
+      // positive is "Hantera delning", which only the owner sees.
+      await pumpDialog(
+        tester,
+        list: _sharedList(),
+        userDisplayNames: const {
+          _ownerId: 'Malin',
+          'bob': 'Bob',
+          'cecilia': 'Cecilia',
+        },
+      );
+
+      expect(find.text(l10n.shoppingLeaveList), findsNothing);
+      expect(find.text(l10n.shoppingManageSharing), findsOneWidget);
+    });
+
+    testWidgets('somebody who is not on the list at all does not', (
+      tester,
+    ) async {
+      GetIt.instance.unregister<PermissionService>();
+      GetIt.instance.registerSingleton<PermissionService>(
+        FakePermissionService()..setPermissionState(currentUserId: 'stranger'),
+      );
+
+      await pumpDialog(
+        tester,
+        list: _sharedList(),
+        userDisplayNames: const {
+          _ownerId: 'Malin',
+          'bob': 'Bob',
+          'cecilia': 'Cecilia',
+        },
+      );
+
+      // The positive co-assertion is the member roster, which renders for
+      // anyone the dialog is handed — so the missing button is about
+      // membership, not about the dialog having failed to build.
+      expect(find.text(l10n.shoppingLeaveList), findsNothing);
+      expect(find.text('Bob'), findsOneWidget);
+    });
+  });
 }

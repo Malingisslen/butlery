@@ -144,6 +144,7 @@ class UnifiedShoppingService
     final memberOps = ListMemberOperations(
       getCurrentUserId: () => currentUserId,
       updateMembership: updateSharedListMembership,
+      leaveMembership: leaveSharedList,
       // The clear must happen HERE, at the true entry point, not inside
       // [updateSharedListMembership]: every member operation has early
       // `return false` branches (list gone, may not manage, already a member,
@@ -462,6 +463,34 @@ class UnifiedShoppingService
     } catch (e) {
       AppLogger.warning(
         'Membership change on shared list ${updated.id} failed: $e',
+        'ShoppingService',
+      );
+      _failMutation(shoppingFailureMessage(e, shared: true));
+      return false;
+    }
+  }
+
+  /// BUT-1718: the signed-in user leaves [base], removing only their own key.
+  ///
+  /// Separate from [updateSharedListMembership] because the two are held to
+  /// different permission predicates on both the client and the server — the
+  /// ordinary path refuses a view-only member outright, and refuses any
+  /// non-owner who touches the member map at all.
+  ///
+  /// Reports failure the same way its sibling does: a Swedish sentence read
+  /// back through [consumeMutationError], never a bare `false` that makes a
+  /// refused departure look like a member who simply would not disappear.
+  Future<bool> leaveSharedList(
+    UnifiedShoppingList updated,
+    UnifiedShoppingList base,
+  ) async {
+    _beginMutation();
+    try {
+      await _listManagement.leaveList(updated, base);
+      return true;
+    } catch (e) {
+      AppLogger.warning(
+        'Leaving shared list ${base.id} failed: $e',
         'ShoppingService',
       );
       _failMutation(shoppingFailureMessage(e, shared: true));

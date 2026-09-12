@@ -1,6 +1,10 @@
 // lib/repositories/firebase/modules/shopping_list_permission_guards.dart
 
+import 'package:collection/collection.dart';
+
 import 'package:butlery/models/unified/unified_shopping_list.dart';
+import 'package:butlery/repositories/interfaces/shopping_repository.dart'
+    show MembershipWriteIntent;
 import 'package:butlery/repositories/firebase/modules/shopping_offline_write_module.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 
@@ -10,11 +14,18 @@ import 'package:butlery/core/exceptions/permission_exceptions.dart';
 /// The rules are the real enforcement; these turn a raw `permission-denied`
 /// from the server into a decision the audit log records, and stop an audit
 /// row claiming a grant nobody made. Every write path in
-/// `ShoppingRepositoryRoutingModule` runs them, which is why they live in one
-/// place rather than beside a single caller.
+/// `ShoppingRepositoryRoutingModule` runs one of them, which is why they live
+/// in one place rather than beside a single caller.
 ///
-/// Split out of that module when BUT-1719/BUT-1725 pushed it past the 500-line
-/// limit; the module stays a routing facade, as its own doc says it should.
+/// "One of them" and not "both", since BUT-1718: a SELF-REMOVAL runs
+/// [requireSelfRemovalOnly] INSTEAD of [requireEditRights] +
+/// [requireNoPrivilegeEscalation], because those two refuse exactly the write
+/// leaving a list has to make. It is still a guard in this class and still
+/// audited; what changes is which predicate the write is held to, and that
+/// predicate is scoped to the same two fields as the rule's own allowlist so
+/// client and server cannot drift (ADR-0004).
+///
+/// Split out of that module by BUT-1719/BUT-1725.
 class ShoppingListPermissionGuards {
   /// BUT-1741: the audit sink is asynchronous, so the callback type says so.
   /// Typed `void` it still ACCEPTED the async implementation — Dart allows a
@@ -283,6 +294,147 @@ class ShoppingListPermissionGuards {
       resource: 'collaborative_list:${entity.id}',
       userId: uid,
     );
+  }
+
+  /// Runs the guard [intent] calls for and answers with the entity that may
+  /// actually be written.
+  ///
+  /// BUT-1718: a departure's answer is NOT the caller's entity. It is derived
+  /// from [stored] — the caller's own key removed.
+  /// Before this, a departure built from a
+  /// stream copy that another member had ticked an item into carried `items`,
+  /// which the allowlist refuses; the user was told they lacked permission to
+  /// EDIT a list they were trying to leave. That is the invented-cause class
+  /// BUT-1696 exists to remove, on the one action this ticket exists to make
+  /// work.
+  ///
+  /// [requireSelfRemovalOnly] still runs on the derived entity. Three of its
+  /// five conditions are then satisfied by construction and only two can fail —
+  /// owner, and not a member — which are the authorization decision. Measured:
+  /// neutralising each condition in turn and re-running
+  /// `shopping_repository_routing_module_test.dart` reddens it for those two and for
+  /// neither of the other three.
+  ///
+  /// It is kept whole anyway. The three are the client mirror ADR-0004 requires
+  /// the rule to be checked against, and the day somebody hands this method an
+  /// entity from somewhere other than the derivation above, they are the only
+  /// thing between that entity and the write.
+  Future<UnifiedShoppingList> resolveMembershipWrite(
+    String uid,
+    UnifiedShoppingList proposed,
+    UnifiedShoppingList stored,
+    MembershipWriteIntent intent,
+  ) async {
+    if (intent != MembershipWriteIntent.selfRemoval) {
+      // Same edit-rights bar as the item path: `validateUpdatePermission` alone
+      // accepts any member key including a view-only one, and this writes the
+      // WHOLE list, so it must not be the weaker of the two gates.
+      await requireEditRights(uid, proposed.id, stored);
+      await requireNoPrivilegeEscalation(uid, proposed, stored);
+      return proposed;
+    }
+
+    final departed = stored.copyWith(
+      memberPermissions: Map<String, SharedListPermission>.from(
+        stored.memberPermissions,
+      )..remove(uid),
+      updatedAt: proposed.updatedAt,
+    );
+    await requireSelfRemovalOnly(uid, departed, stored);
+    return departed;
+  }
+
+  /// BUT-1718: throws unless [proposed] removes exactly [uid]'s own key from
+  /// [stored]'s `memberPermissions` and changes nothing else.
+  ///
+  /// The client-side mirror of the `removesOnlySelfFromMembers()` arm, scoped
+  /// to the same five conditions so the two cannot drift: the caller is not the
+  /// owner, was a member, is gone afterwards, no other member's entry moved,
+  /// and no other field moved either.
+  ///
+  /// [requireEditRights] is deliberately NOT run for this write, and that is
+  /// the point rather than an oversight. Leaving is not an edit — it is the
+  /// removal of one's own membership — and a VIEW-ONLY member, who that guard
+  /// refuses outright, is the person most likely to need it. Do not "fix" a
+  /// self-removal by routing it back through the ordinary update path.
+  ///
+  /// The last conjunct is the one a reader is most likely to drop as
+  /// redundant. It is not: without it the client would happily send a write
+  /// carrying `items` alongside the membership change, the server would refuse
+  /// the whole thing, and the audit row would already have claimed a grant.
+  Future<void> requireSelfRemovalOnly(
+    String uid,
+    UnifiedShoppingList proposed,
+    UnifiedShoppingList stored,
+  ) async {
+    final isOwner = stored.ownerId == uid;
+    final wasMember = stored.memberPermissions.containsKey(uid);
+    final isGone = !proposed.memberPermissions.containsKey(uid);
+    final othersUntouched = _sameMembers(
+      {...stored.memberPermissions}..remove(uid),
+      proposed.memberPermissions,
+    );
+    final onlyMembersChanged = _touchesNothingBut(proposed, stored);
+
+    if (!isOwner &&
+        wasMember &&
+        isGone &&
+        othersUntouched &&
+        onlyMembersChanged) {
+      // Refusal-only, like the three guards beside it. A grant row here would
+      // be written BEFORE the write, so a departure the server then refuses —
+      // a cached-base refusal, a stale base, a rules denial — would leave a
+      // standing grant for something that never happened, and every successful
+      // leave would log two. `updateCollaborativeList` writes the grant once
+      // the write has landed.
+      return;
+    }
+
+    final reason = isOwner
+        ? 'the owner cannot leave their own list'
+        : !wasMember
+        ? 'not a member of the list'
+        : !isGone
+        ? 'the write does not remove the caller'
+        : !othersUntouched
+        ? "the write also changes another member's entry"
+        : 'the write also changes a field outside memberPermissions';
+    await logPermissionCheck(
+      userId: uid,
+      resource: 'collaborative_shopping_list',
+      operation: 'update',
+      granted: false,
+      details: 'List: ${stored.id}, refused self-removal — $reason',
+    );
+    throw PermissionDeniedException(
+      'User $uid may not leave collaborative shopping list ${stored.id}: '
+      '$reason',
+      resource: 'collaborative_list:${stored.id}',
+      userId: uid,
+    );
+  }
+
+  /// True when [proposed] and [stored] differ in nothing but their member map.
+  ///
+  /// `updatedAt` is excluded because the rule's allowlist names it — the leave
+  /// write stamps it, and a comparison that counted it would refuse every real
+  /// departure.
+  bool _touchesNothingBut(
+    UnifiedShoppingList proposed,
+    UnifiedShoppingList stored,
+  ) {
+    const equality = DeepCollectionEquality();
+    final next = proposed.toFirestore();
+    final current = stored.toFirestore();
+    return next.keys
+        .followedBy(current.keys)
+        .toSet()
+        .every(
+          (key) =>
+              key == 'memberPermissions' ||
+              key == 'updatedAt' ||
+              equality.equals(next[key], current[key]),
+        );
   }
 
   /// Throws [PermissionDeniedException] unless [uid] may edit [live]'s items.

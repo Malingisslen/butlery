@@ -16413,4 +16413,23 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get profileDeletionNoticeWhatUnclear =>
       'One thing may have been kept: we could not finish checking whether there is an ongoing review of content that was reported.';
+
+  @override
+  String get shoppingLeaveList => 'Leave list';
+
+  @override
+  String shoppingLeaveListConfirm(String name) {
+    return 'Leave \"$name\"? You will lose access to the list. This cannot be undone — the owner has to invite you again.';
+  }
+
+  @override
+  String get shoppingLeave => 'Leave';
+
+  @override
+  String shoppingLeftList(String name) {
+    return 'You have left \"$name\"';
+  }
+
+  @override
+  String get shoppingCouldNotLeaveList => 'Could not leave the list';
 }

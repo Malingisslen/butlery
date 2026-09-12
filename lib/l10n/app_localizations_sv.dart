@@ -16455,4 +16455,23 @@ class AppLocalizationsSv extends AppLocalizations {
   @override
   String get profileDeletionNoticeWhatUnclear =>
       'En sak kan ha sparats: vi kunde inte slutföra kontrollen av om det finns en pågående granskning av innehåll som anmälts.';
+
+  @override
+  String get shoppingLeaveList => 'Lämna listan';
+
+  @override
+  String shoppingLeaveListConfirm(String name) {
+    return 'Vill du lämna \"$name\"? Du förlorar åtkomst till listan. Detta går inte att ångra — ägaren måste bjuda in dig igen.';
+  }
+
+  @override
+  String get shoppingLeave => 'Lämna';
+
+  @override
+  String shoppingLeftList(String name) {
+    return 'Du har lämnat \"$name\"';
+  }
+
+  @override
+  String get shoppingCouldNotLeaveList => 'Kunde inte lämna listan';
 }

@@ -2,6 +2,23 @@ import 'package:butlery/repositories/interfaces/repository.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 
+/// What a membership write is FOR, which decides which guard it is held to.
+///
+/// BUT-1718: an add, a removal by the owner and a permission change are all
+/// somebody acting on the roster and are refused to anyone but the owner. A
+/// self-removal is a member withdrawing their own access, which the same guards
+/// refuse outright — including for a view-only member, who cannot write
+/// anything else at all. The two cases are structurally identical edits to one
+/// map, so the write has to say which it is; the server draws the same line in
+/// `firestore.rules`.
+enum MembershipWriteIntent {
+  /// Add, remove somebody else, or change a permission level.
+  ordinary,
+
+  /// The caller removing their own key, and nothing else.
+  selfRemoval,
+}
+
 /// Repository interface for shopping list operations.
 abstract class ShoppingRepository extends Repository<UnifiedShoppingList> {
   /// Stream of collaborative lists for real-time updates from Firestore
@@ -48,11 +65,12 @@ abstract class ShoppingRepository extends Repository<UnifiedShoppingList> {
   /// says so here by handing over [base] — the exact copy of the list it
   /// computed [updated] from.
   ///
-  /// [base] is compared against the server's current copy. A disagreement means
-  /// the answer being replayed was computed about state that no longer exists,
-  /// and the write is refused with a [StaleAccessControlBaseException] rather
-  /// than applied. This is NOT a merge point: the caller must re-read and let
-  /// the user decide again against what the list actually says now.
+  /// For an [MembershipWriteIntent.ordinary] write, [base] is compared against
+  /// the server's current copy. A disagreement means the answer being replayed
+  /// was computed about state that no longer exists, and the write is refused
+  /// with a [StaleAccessControlBaseException] rather than applied. This is NOT a
+  /// merge point: the caller must re-read and let the user decide again against
+  /// what the list actually says now.
   ///
   /// Only [ListType.collaborative] lists have members; a personal list throws.
   ///
@@ -61,10 +79,28 @@ abstract class ShoppingRepository extends Repository<UnifiedShoppingList> {
   /// writing nothing — is recorded in
   /// `docs/architecture/ADR-002-collaborative-list-membership-guard.md`
   /// (BUT-1726/BUT-1752). Read it before widening this signature.
+  ///
+  /// [intent] is REQUIRED rather than defaulted, and that is ADR-002's lesson
+  /// applied to its own file: the shape that shipped green while writing
+  /// nothing was an OPTIONAL argument nobody passed. A default of
+  /// `ordinary` would silently hold a departure to the guards that refuse it.
+  ///
+  /// **Under [MembershipWriteIntent.selfRemoval], [updated] is NOT what gets
+  /// written, and the [base] paragraph above does not apply.** The
+  /// implementation derives the write from the stored document — the caller's
+  /// own key removed — and returns THAT. A caller cannot express a departure
+  /// that touches anybody else, which is the point; a caller that reads the
+  /// return value gets the derived list, not its own.
+  ///
+  /// [base] is therefore not compared for this intent: a derived write makes no
+  /// claim about anyone, so there is no stale claim to refuse. It is still
+  /// required, and still decides the OFFLINE refusal — a membership change
+  /// computed against a cached document is not replayable either way.
   Future<UnifiedShoppingList> updateCollaborativeListMembership(
     UnifiedShoppingList updated,
-    UnifiedShoppingList base,
-  );
+    UnifiedShoppingList base, {
+    required MembershipWriteIntent intent,
+  });
 
   /// BUT-1723: how many items the SERVER holds for [listId], or null when that
   /// could not be confirmed (cached read, missing list, failed read). Callers

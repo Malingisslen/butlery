@@ -7,6 +7,8 @@ import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/repositories/firebase/modules/shopping_list_permission_guards.dart';
 import 'package:butlery/repositories/firebase/modules/shopping_offline_write_module.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
+import 'package:butlery/repositories/interfaces/shopping_repository.dart'
+    show MembershipWriteIntent;
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/utils/logger.dart';
 
@@ -207,6 +209,7 @@ class ShoppingRepositoryRoutingModule {
   Future<UnifiedShoppingList> updateCollaborativeList(
     UnifiedShoppingList entity, {
     UnifiedShoppingList? accessControlBase,
+    MembershipWriteIntent intent = MembershipWriteIntent.ordinary,
   }) async {
     final uid = requireCurrentUserId();
 
@@ -227,11 +230,15 @@ class ShoppingRepositoryRoutingModule {
     // rather than assumed. The caller-supplied `entity` cannot be trusted for
     // this — it carries whatever memberPermissions the client sent.
     final stored = fromFirestore(docSnapshot);
-    // Same edit-rights bar as the item path: `validateUpdatePermission` alone
-    // accepts any member key including a view-only one, and this method writes
-    // the WHOLE list, so it must not be the weaker of the two gates.
-    await _guards.requireEditRights(uid, entity.id, stored);
-    await _guards.requireNoPrivilegeEscalation(uid, entity, stored);
+    // Runs the guard [intent] calls for, and answers with the entity that may
+    // actually be written — which for a departure is built from `stored`, not
+    // from the caller's copy.
+    final writable = await _guards.resolveMembershipWrite(
+      uid,
+      entity,
+      stored,
+      intent,
+    );
 
     // BUT-1719: write only what the caller actually changed, and never let a
     // cached base carry an access-control change. See [narrowUpdatePayload].
@@ -241,19 +248,35 @@ class ShoppingRepositoryRoutingModule {
     // fail an offline rename that was never going to touch the ACL.
     final payload = await _offline.narrowUpdatePayload(
       uid,
-      entity,
+      writable,
       stored,
       baseIsCached:
           accessControlBase != null && docSnapshot.metadata.isFromCache,
     );
+    // BUT-1718: a departure skips the declared-base machinery entirely, and both
+    // halves of that matter.
+    //
+    // The STRIP is what it protects against: with no declared base the
+    // privileged keys are dropped, so a `selfRemoval` reaching here without one
+    // would narrow to `updatedAt` alone, log a grant and return the departed
+    // entity — a leave the caller sees succeed that never happened, which is
+    // ADR-002's incident one optional argument away.
+    //
+    // The DRIFT REFUSAL has lost its subject: it exists to stop a membership
+    // decision computed against a roster the user never saw, and this payload is
+    // computed from `stored` inside `resolveMembershipWrite`. Left in, it
+    // refuses a provably safe departure because some OTHER member changed
+    // meanwhile, and tells the user to reload a list they are trying to leave.
     final write = _withContributorTrail(
-      await _guards.restrictAccessControlToDeclaredBase(
-        uid,
-        entity.id,
-        payload,
-        declaredBase: accessControlBase,
-        stored: stored,
-      ),
+      intent == MembershipWriteIntent.selfRemoval
+          ? payload
+          : await _guards.restrictAccessControlToDeclaredBase(
+              uid,
+              entity.id,
+              payload,
+              declaredBase: accessControlBase,
+              stored: stored,
+            ),
       uid,
     );
     if (write.isNotEmpty) await docRef.update(write);
@@ -263,13 +286,13 @@ class ShoppingRepositoryRoutingModule {
       resource: 'collaborative_shopping_list',
       operation: 'update',
       granted: true,
-      details: 'List: ${entity.name}',
+      details: 'List: ${writable.name}',
     );
 
     AppLogger.info(
-      'Updated collaborative list "${entity.name}" with ${entity.items.length} items in shared collection',
+      'Updated collaborative list "${writable.name}" with ${writable.items.length} items in shared collection',
     );
-    return entity;
+    return writable;
   }
 
   /// BUT-1726: the one production caller that declares an [accessControlBase] —
@@ -277,8 +300,9 @@ class ShoppingRepositoryRoutingModule {
   /// "remove this member" into a write of `updatedAt` alone.
   Future<UnifiedShoppingList> updateCollaborativeListMembership(
     UnifiedShoppingList updated,
-    UnifiedShoppingList base,
-  ) {
+    UnifiedShoppingList base, {
+    required MembershipWriteIntent intent,
+  }) {
     // A personal list has no members, and routing one through here would write
     // it into the SHARED collection. Fail loudly rather than duplicate it.
     if (updated.type != ListType.collaborative) {
@@ -288,7 +312,11 @@ class ShoppingRepositoryRoutingModule {
         'Membership can only be changed on a collaborative list',
       );
     }
-    return updateCollaborativeList(updated, accessControlBase: base);
+    return updateCollaborativeList(
+      updated,
+      accessControlBase: base,
+      intent: intent,
+    );
   }
 
   /// BUT-1665: apply [mutate] to a collaborative list inside a Firestore

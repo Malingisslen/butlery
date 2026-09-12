@@ -18,10 +18,9 @@ import 'package:butlery/core/utils/logger.dart';
 /// whole-list path had the same hole, so the narrowing rule lives here once and
 /// both paths use it ([narrowUpdatePayload]).
 ///
-/// Split out of `ShoppingRepositoryRoutingModule` so that module stays a
-/// routing facade under the 500-line limit. The rule mirrors that decide
-/// WHETHER a caller may write live in `ShoppingListPermissionGuards`; this
-/// module only decides WHAT the write says.
+/// Split out of `ShoppingRepositoryRoutingModule`. The rule mirrors that
+/// decide WHETHER a caller may write live in `ShoppingListPermissionGuards`;
+/// this module only decides WHAT the write says.
 class ShoppingOfflineWriteModule {
   /// The three keys `firestore.rules` forbids a non-owner from touching on
   /// `/unified_shared_shopping_lists`. A write that carries one of them is

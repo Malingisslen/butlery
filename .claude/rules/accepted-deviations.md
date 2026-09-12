@@ -1837,3 +1837,84 @@ files in the same edit.
   kept.
   The run prints "Preserved with exceptions" for this collection, because a name on a
   preserved line otherwise reads as untouched. BUT-2044, 2026-09-12
+
+- **A member may remove their OWN key from a shared shopping list's `memberPermissions`, and
+  the owner may no longer remove theirs (BUT-1718, 2026-09-12).** `firestore.rules` gains a
+  third arm on `unified_shared_shopping_lists`' `allow update`, allowlisting exactly
+  `['memberPermissions', 'updatedAt']` per `docs/org/adr/ADR-0004-shared-list-self-removal-rule-allowlist.md`
+  — not a deny-list, because everything a deny-list does not name stays writable and a
+  VIEW-ONLY member could wipe the item array in the same accepted write as leaving.
+  `keepsContributorTrail()` stays outside the OR and binds every arm.
+  Separately, **Malin's explicit call, 2026-09-12**: the owner arm gains `ownerStaysSeated()`.
+  Before it, the server let an owner write their own key out of the roster while `ownerId`
+  still named them, and only the client refused — a product rule, not a control. She was shown
+  that this widens the change past what she decided on 2026-07-31, and that no legitimate
+  owner path goes through that arm. **What she was NOT shown:** any measurement of how often
+  an owner reaches that state. There are no users, so it is not measurable.
+  Client-side, `updateCollaborativeListMembership` takes a REQUIRED `MembershipWriteIntent`
+  and `selfRemoval` runs `requireSelfRemovalOnly` in place of `requireEditRights` +
+  `requireNoPrivilegeEscalation`, which refuse exactly this write — the first before a
+  view-only member reaches any membership logic at all. Required rather than defaulted
+  because ADR-002's incident was an OPTIONAL argument nobody passed.
+  **Do not** re-gate the "Lämna listan" button on `canManageShoppingList`/`_canManageSharing`:
+  those govern acting on OTHER members, which the rules still refuse to every non-owner, and
+  a view-only member is the one most likely to need the exit.
+  The self-removal section of `shared-shopping-lists-rules.test.ts` pins it; each conjunct was
+  mutation-probed alone, and the cases no single conjunct flips are marked OVER-DETERMINED in
+  the file.
+
+- **A leave does NOT union the departing member into `contributorUserIds` (BUT-1718,
+  2026-09-12).** Every path that can put a uid or a name on the document — adding an item,
+  ticking one, editing one, and claiming one, which is self-only — is a write carrying
+  `items`, and `_withContributorTrail` stamps the trail on exactly those. So a member who is
+  not already in the trail has left no name on the list to erase. Unioning them anyway would
+  create a new durable record that a PASSIVE member was ever there, which is the minimisation
+  objection recorded when the same handle was built for the group menus.
+
+- **A list a member has LEFT is not in their Art. 15 export, and self-service leaving makes
+  that gap common rather than rare (BUT-1718, 2026-09-12).** The contributor probe that would
+  find it is refused by `firestore.rules` — the read limb requires `ownerId == uid || uid in
+  memberPermissions`, and a leaver is neither — so only an Admin-SDK path can reach it.
+  **BUT-1747** carries that, open since 2026-07-30.
+  This is NOT inherited silently from the BUT-1732 entry above: that decision was taken when
+  the only way out was the owner removing you, and this change makes departure a thing the
+  user chooses. Shipped anyway, because leaving people stuck in a household list to protect an
+  export that already misses the same rows protects nobody. Erasure is unaffected — the
+  cascade still finds the list by `contributorUserIds` and `lastActivityByUserId`.
+
+- **Leaving is SILENT, and the asymmetry with being ADDED is now a filed gap (BUT-1718,
+  2026-09-12).** No notification reaches the owner or the other members, matching the
+  owner-initiated removal that already ships. Trust & Safety's reasoning, and it is the
+  decision rather than an omission: an announcement would tell a controlling household member
+  that someone left, and possibly why. Do not add one "for symmetry".
+  The paired gap — `addMember` has no consent step either, so an owner can put somebody
+  straight back — is **BUT-2089**, filed rather than left to be discovered. It predates this
+  change; what this change does is make it reachable.
+
+- **Named residual, BUT-2090: after the OWNER erases their account, the remaining members can
+  leave one by one until `memberPermissions` is `{}`, and the document is then unreachable by
+  every client (BUT-1718, 2026-09-12).** Every limb of this collection gates on
+  `ownerId == uid || uid in memberPermissions`, and the cascade deliberately KEEPS `ownerId`
+  when other members remain — so the surviving uid belongs to no account. Not an Art. 17 gap:
+  the Admin SDK still reaches the document by `contributorUserIds`. It is the same
+  orphan-shell shape already accepted for the chat roster (`tryClearRoster`, 2026-08-12), and
+  it composes from two decisions that are each right on their own, which is why no single-file
+  review could see it. The only rules-level fix is to refuse the LAST member's departure,
+  which is the trap this ticket exists to remove. Found by the `cloud-functions-specialist`
+  gate.
+
+- **Named residual, BUT-2090: a list already past the 200-contributor cap cannot be LEFT
+  (BUT-1718, 2026-09-12).** `keepsContributorTrail()` binds every arm including the new one and
+  reads the post-write array, so a departure that never touches the trail is refused. SSL20
+  pinned the same freeze for an items-only update; what leaving adds is that the person it traps
+  is the one trying to get out. Only reachable through the Admin SDK today, since no client
+  write can push the array past the cap. SSL60 pins it.
+
+- **Named residual, BUT-2090: leaving is impossible offline and says the wrong thing about why
+  (BUT-1718, 2026-09-12).** A departure declares an access-control base, so
+  `narrowUpdatePayload`'s cached-base refusal fires and `shoppingFailureMessage` maps it to
+  "du saknar behörighet att redigera denna delade inköpslista" — a permission sentence for a
+  connectivity cause, on a button that says "Lämna listan". The REFUSAL is correct and
+  inherited deliberately (BUT-1726: a membership change computed against a cached document
+  must not be replayed). The WORDING is the BUT-1696 class, now reachable from a new
+  affordance. Found by the `integration-reviewer` and `firebase-backend-security` gates.

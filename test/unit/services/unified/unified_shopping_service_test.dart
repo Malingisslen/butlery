@@ -142,6 +142,24 @@ class _FakeShoppingRepository extends Fake implements ShoppingRepository {
     _lists.remove(id);
   }
 
+  /// BUT-1718. `intent` is CAPTURED rather than ignored: it is the whole
+  /// decision the departure path exists to carry, and a fake that dropped it
+  /// would let the service ask for the wrong one invisibly.
+  MembershipWriteIntent? lastMembershipIntent;
+  Object? throwOnMembership;
+
+  @override
+  Future<UnifiedShoppingList> updateCollaborativeListMembership(
+    UnifiedShoppingList updated,
+    UnifiedShoppingList base, {
+    required MembershipWriteIntent intent,
+  }) async {
+    lastMembershipIntent = intent;
+    if (throwOnMembership != null) throw throwOnMembership!;
+    _lists[updated.id] = updated;
+    return updated;
+  }
+
   @override
   Future<void> addItem(String listId, UnifiedShoppingItem item) async {
     if (throwOnAddItem != null) throw throwOnAddItem!;
@@ -1278,6 +1296,81 @@ void main() {
       expect(await service.uncheckAllItems(), isTrue);
       expect(service.activeList!.items.single.bought, isFalse);
       expect(service.error, isNull);
+      expect(service.consumeMutationError(), isNull);
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // leaveSharedList (BUT-1718)
+  // -------------------------------------------------------------------------
+  //
+  // The last line of the departure path that no test reached. The widget suite
+  // mocks the operations layer and the operations suite mocks THIS method, so
+  // the try/catch that turns a refusal into a Swedish sentence was asserted by
+  // nobody — while the widget test's "reports the service reason" case assumes
+  // it exists. Found by the `testing-specialist` gate reading line coverage.
+
+  group('leaveSharedList', () {
+    Future<UnifiedShoppingList> seedShared() async {
+      await service.initialize();
+      final list = UnifiedShoppingList.collaborative(
+        name: 'Familjehandling',
+        ownerId: 'owner-uid',
+        ownerDisplayName: 'Malin',
+        memberPermissions: const {},
+        items: [UnifiedShoppingItem(name: 'Bröd', amount: 1)],
+      );
+      fakeRepo.seed(list);
+      fakeRepo.emitCollab([list]);
+      await Future<void>.delayed(Duration.zero);
+      return list;
+    }
+
+    test('asks the repository for a SELF-REMOVAL', () async {
+      final list = await seedShared();
+
+      expect(await service.leaveSharedList(list, list), isTrue);
+      expect(fakeRepo.lastMembershipIntent, MembershipWriteIntent.selfRemoval);
+    });
+
+    /// The single-variable control: same service, same fake, the sibling
+    /// method. Without it a mutant hardcoding `selfRemoval` satisfies the case
+    /// above.
+    test('the ordinary membership write still asks for ORDINARY', () async {
+      final list = await seedShared();
+
+      expect(await service.updateSharedListMembership(list, list), isTrue);
+      expect(fakeRepo.lastMembershipIntent, MembershipWriteIntent.ordinary);
+    });
+
+    /// A refusal must reach the user as a SENTENCE, not as a bare false. This
+    /// is the mapping `shopping_leave_list_action.dart` reads back through
+    /// `consumeMutationError()`; without it the dialog falls back to a generic
+    /// line while a truer one is never produced.
+    test(
+      'a refused departure parks a reason rather than a bare false',
+      () async {
+        final list = await seedShared();
+        fakeRepo.throwOnMembership = PermissionDeniedException(
+          'nope',
+          resource: 'collaborative_list:${list.id}',
+          userId: 'u',
+        );
+
+        expect(await service.leaveSharedList(list, list), isFalse);
+        expect(service.consumeMutationError(), isNotNull);
+        // NOT a full-screen error state — a departure that fails is a sentence
+        // in the dialog, the same call BUT-1696 made for a failed tick.
+        expect(service.error, isNull);
+      },
+    );
+
+    /// Control for the case above: a successful departure records nothing, so
+    /// the reason cannot be something the path always parks.
+    test('a successful departure leaves no reason', () async {
+      final list = await seedShared();
+
+      expect(await service.leaveSharedList(list, list), isTrue);
       expect(service.consumeMutationError(), isNull);
     });
   });

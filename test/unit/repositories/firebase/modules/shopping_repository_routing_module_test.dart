@@ -20,6 +20,8 @@ import 'package:mocktail/mocktail.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
+import 'package:butlery/repositories/interfaces/shopping_repository.dart'
+    show MembershipWriteIntent;
 import 'package:butlery/repositories/firebase/modules/shopping_repository_routing_module.dart';
 
 import '../../../../infrastructure/mocks/production_mocks.dart';
@@ -555,6 +557,7 @@ void main() {
           },
         ),
         saved,
+        intent: MembershipWriteIntent.ordinary,
       );
 
       final snap = await firestore.collection(_sharedPath).doc(saved.id).get();
@@ -586,6 +589,7 @@ void main() {
             memberPermissions: {_userId: SharedListPermission.admin},
           ),
           saved,
+          intent: MembershipWriteIntent.ordinary,
         );
 
         final snap = await firestore
@@ -724,6 +728,7 @@ void main() {
           memberPermissions: {_userId: SharedListPermission.admin},
         ),
         saved,
+        intent: MembershipWriteIntent.ordinary,
       );
 
       final data = (await firestore.collection(_sharedPath).doc(saved.id).get())
@@ -773,7 +778,11 @@ void main() {
       );
 
       expect(
-        () => owner.updateCollaborativeListMembership(personal, saved),
+        () => owner.updateCollaborativeListMembership(
+          personal,
+          saved,
+          intent: MembershipWriteIntent.ordinary,
+        ),
         throwsA(isA<ArgumentError>()),
       );
     });
@@ -815,6 +824,7 @@ void main() {
             },
           ),
           saved,
+          intent: MembershipWriteIntent.ordinary,
         ),
         // The specific subtype, because the WORDING turns on it: the owner is
         // not missing a right, their copy is old, and only that story tells
@@ -1789,6 +1799,295 @@ void main() {
       );
       expect(permissionCalls.last.granted, isFalse);
       expect(permissionCalls.last.details, contains('createdAt'));
+    });
+  });
+
+  // BUT-1718. These grade the CLIENT and nothing else: `fake_cloud_firestore`
+  // enforces no rules at all. The server half is the self-removal section of
+  // `shared-shopping-lists-rules.test.ts` against the emulator, and neither
+  // substitutes for the other — that gap is how BUT-1766 and BUT-1788 stayed
+  // hidden.
+  group('self-removal is held to its own guard', () {
+    UnifiedShoppingList withoutSelf(UnifiedShoppingList list, String uid) =>
+        list.copyWith(
+          memberPermissions: Map<String, SharedListPermission>.from(
+            list.memberPermissions,
+          )..remove(uid),
+        );
+
+    test('a VIEW-ONLY member may remove themselves', () async {
+      final firestore = FakeFirebaseFirestore();
+      final owner = _routing(firestore);
+      final saved = await owner.createCollaborativeList(
+        UnifiedShoppingList.collaborative(
+          name: 'Veckans handla',
+          ownerId: _userId,
+          ownerDisplayName: 'Alice',
+          memberPermissions: const {'cecilia': SharedListPermission.view},
+        ),
+      );
+
+      final permissionCalls = <_PermissionCall>[];
+      final cecilia = _routing(
+        firestore,
+        currentUid: 'cecilia',
+        permissionCalls: permissionCalls,
+      );
+
+      await cecilia.updateCollaborativeListMembership(
+        withoutSelf(saved, 'cecilia'),
+        saved,
+        intent: MembershipWriteIntent.selfRemoval,
+      );
+
+      final stored =
+          (await firestore.collection(_sharedPath).doc(saved.id).get()).data()!;
+      expect(
+        (stored['memberPermissions'] as Map).containsKey('cecilia'),
+        isFalse,
+      );
+    });
+
+    test('the ORDINARY intent refuses the same write', () async {
+      // The single-variable control for the case above: same actor, same two
+      // lists, only the intent differs. Without it, that allow could be
+      // explained by the guards having stopped refusing anything.
+      final firestore = FakeFirebaseFirestore();
+      final owner = _routing(firestore);
+      final saved = await owner.createCollaborativeList(
+        UnifiedShoppingList.collaborative(
+          name: 'Veckans handla',
+          ownerId: _userId,
+          ownerDisplayName: 'Alice',
+          memberPermissions: const {'cecilia': SharedListPermission.view},
+        ),
+      );
+      final cecilia = _routing(firestore, currentUid: 'cecilia');
+
+      await expectLater(
+        () => cecilia.updateCollaborativeListMembership(
+          withoutSelf(saved, 'cecilia'),
+          saved,
+          intent: MembershipWriteIntent.ordinary,
+        ),
+        throwsA(isA<PermissionDeniedException>()),
+      );
+    });
+
+    // The entity a caller hands in is DISCARDED for this intent: the write is
+    // derived from the stored document, so an attempt to remove cecilia removes
+    // BOB and leaves her seated. That is stronger than refusing it — a caller
+    // cannot express the bad write at all.
+    test(
+      'the self-removal intent CANNOT boot somebody else — it is sanitised',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        final owner = _routing(firestore);
+        final saved = await owner.createCollaborativeList(
+          UnifiedShoppingList.collaborative(
+            name: 'Veckans handla',
+            ownerId: _userId,
+            ownerDisplayName: 'Alice',
+            memberPermissions: const {
+              'bob': SharedListPermission.edit,
+              'cecilia': SharedListPermission.view,
+            },
+          ),
+        );
+        final bob = _routing(firestore, currentUid: 'bob');
+
+        // A sentinel stamp, because the discriminating question is not whether
+        // `updatedAt` MOVED — `copyWith` stamps `clock.now()` when it is
+        // omitted, which moves it too — but whether the derivation carried the
+        // CALLER's value. Only equality can tell those apart.
+        final stamp = DateTime.utc(2031, 3, 4, 5, 6, 7);
+        await bob.updateCollaborativeListMembership(
+          withoutSelf(saved, 'cecilia').copyWith(updatedAt: stamp),
+          saved,
+          intent: MembershipWriteIntent.selfRemoval,
+        );
+
+        final stored =
+            (await firestore.collection(_sharedPath).doc(saved.id).get())
+                .data()!;
+        final members = stored['memberPermissions'] as Map;
+        expect(members.containsKey('cecilia'), isTrue, reason: 'she stays');
+        expect(members.containsKey('bob'), isFalse, reason: 'he is the caller');
+        expect(
+          stored['updatedAt'],
+          Timestamp.fromDate(stamp),
+          reason:
+              'the derivation carries the caller-supplied stamp; drop that one '
+              'line and copyWith silently substitutes clock.now()',
+        );
+      },
+    );
+
+    // Same sanitisation from the other side: the promotion a caller tries to
+    // smuggle into the departure is simply not in the write.
+    test('a promotion smuggled into a departure is discarded', () async {
+      final firestore = FakeFirebaseFirestore();
+      final owner = _routing(firestore);
+      final saved = await owner.createCollaborativeList(
+        UnifiedShoppingList.collaborative(
+          name: 'Veckans handla',
+          ownerId: _userId,
+          ownerDisplayName: 'Alice',
+          memberPermissions: const {
+            'bob': SharedListPermission.edit,
+            'cecilia': SharedListPermission.view,
+          },
+        ),
+      );
+      final permissionCalls = <_PermissionCall>[];
+      final bob = _routing(
+        firestore,
+        currentUid: 'bob',
+        permissionCalls: permissionCalls,
+      );
+
+      await bob.updateCollaborativeListMembership(
+        saved.copyWith(
+          memberPermissions: const {
+            _userId: SharedListPermission.admin,
+            'cecilia': SharedListPermission.admin,
+          },
+        ),
+        saved,
+        intent: MembershipWriteIntent.selfRemoval,
+      );
+
+      final stored =
+          (await firestore.collection(_sharedPath).doc(saved.id).get()).data()!;
+      final members = stored['memberPermissions'] as Map;
+      expect(members['cecilia'], 'view', reason: 'the promotion is discarded');
+      expect(members.containsKey('bob'), isFalse, reason: 'bob still leaves');
+    });
+
+    test('the owner may not leave their own list', () async {
+      final firestore = FakeFirebaseFirestore();
+      final permissionCalls = <_PermissionCall>[];
+      final owner = _routing(firestore, permissionCalls: permissionCalls);
+      final saved = await owner.createCollaborativeList(_collabList());
+
+      await expectLater(
+        () => owner.updateCollaborativeListMembership(
+          withoutSelf(saved, _userId),
+          saved,
+          intent: MembershipWriteIntent.selfRemoval,
+        ),
+        throwsA(isA<PermissionDeniedException>()),
+      );
+      expect(permissionCalls.last.details, contains('owner cannot leave'));
+    });
+
+    // The derivation is what makes the "a leave does NOT union the leaver into
+    // `contributorUserIds`" deviation true, and nothing else sees it: before
+    // it, a departure carrying stale `items` put `items` in the payload, and
+    // `_withContributorTrail` keys on exactly that — the leaver would have been
+    // stamped into the erasure trail on the way out. The sanitisation case
+    // above uses `name`, whose kill set cannot reach this.
+    test(
+      'a departure carrying stale items does not extend the trail',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        final owner = _routing(firestore);
+        final saved = await owner.createCollaborativeList(_collabList());
+        final before =
+            ((await firestore.collection(_sharedPath).doc(saved.id).get())
+                        .data()!['contributorUserIds']
+                    as List)
+                .cast<String>();
+        final bob = _routing(firestore, currentUid: 'bob');
+
+        await bob.updateCollaborativeListMembership(
+          withoutSelf(saved, 'bob').copyWith(
+            items: [
+              UnifiedShoppingItem(
+                id: 'stale-1',
+                name: 'Mjölk',
+                amount: 1,
+                addedByUserId: 'bob',
+                addedByDisplayName: 'Bob',
+              ),
+            ],
+          ),
+          saved,
+          intent: MembershipWriteIntent.selfRemoval,
+        );
+
+        final stored =
+            (await firestore.collection(_sharedPath).doc(saved.id).get())
+                .data()!;
+        expect(
+          (stored['contributorUserIds'] as List).cast<String>(),
+          before,
+          reason: 'bob never wrote an item, so nothing owes him a trail entry',
+        );
+        expect(
+          stored['items'],
+          isEmpty,
+          reason: 'and the stale row is dropped',
+        );
+      },
+    );
+
+    test('somebody who was never a member cannot use the intent', () async {
+      // The conjunct this pins is `wasMember`, and it survived a mutation probe
+      // until this case existed: a stranger is absent from the proposed map too,
+      // so "is gone afterwards" is trivially satisfied and every other conjunct
+      // reads a no-op write as clean. Without this, neutralising the membership
+      // check left the whole suite green.
+      final firestore = FakeFirebaseFirestore();
+      final owner = _routing(firestore);
+      final saved = await owner.createCollaborativeList(_collabList());
+      final permissionCalls = <_PermissionCall>[];
+      final stranger = _routing(
+        firestore,
+        currentUid: 'mallory',
+        permissionCalls: permissionCalls,
+      );
+
+      await expectLater(
+        () => stranger.updateCollaborativeListMembership(
+          saved,
+          saved,
+          intent: MembershipWriteIntent.selfRemoval,
+        ),
+        throwsA(isA<PermissionDeniedException>()),
+      );
+      expect(permissionCalls.last.granted, isFalse);
+      expect(permissionCalls.last.details, contains('not a member'));
+    });
+
+    // And from the third side: a stale or hostile field on the caller's copy
+    // never reaches the document, which is what makes a departure immune to a
+    // concurrent tick landing in the client's cached list.
+    test('an unrelated field change rides along with nothing', () async {
+      final firestore = FakeFirebaseFirestore();
+      final owner = _routing(firestore);
+      final saved = await owner.createCollaborativeList(_collabList());
+      final permissionCalls = <_PermissionCall>[];
+      final bob = _routing(
+        firestore,
+        currentUid: 'bob',
+        permissionCalls: permissionCalls,
+      );
+
+      await bob.updateCollaborativeListMembership(
+        withoutSelf(saved, 'bob').copyWith(name: 'Kapad lista'),
+        saved,
+        intent: MembershipWriteIntent.selfRemoval,
+      );
+
+      final stored =
+          (await firestore.collection(_sharedPath).doc(saved.id).get()).data()!;
+      expect(stored['name'], 'Veckans handla', reason: 'the rename is dropped');
+      expect(
+        (stored['memberPermissions'] as Map).containsKey('bob'),
+        isFalse,
+        reason: 'and the departure still lands',
+      );
     });
   });
 }

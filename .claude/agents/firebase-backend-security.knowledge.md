@@ -224,14 +224,43 @@ name which doc each end touches before approving it.
   write. Shipped shape: diff the proposed doc against the stored one, emit only differing
   keys (map fields as per-key paths so deletion survives `merge:`), empty diff = skip the
   write, THROW if a privileged key differs while the base is from cache
-  (`metadata.isFromCache`).
+  (`metadata.isFromCache`). The CLIENT MIRROR of a doc-level `hasOnly` rule has the matching
+  failure, and it is an AVAILABILITY bug rather than a drift: a guard comparing the caller's
+  WHOLE entity against a fresh server read refuses whenever that entity is stale in ANY
+  serialized field (a tick, an activity stamp), even though the intent — leave, un-share,
+  withdraw — is fully determined by (actor, `stored`). Client and server agree, so nothing
+  reddens; the operation just fails with a message naming the caller's write as the cause.
+  Where the write is fully determined, BUILD the proposed entity from `stored` in the
+  repository instead of trusting the caller's copy. That derivation owes three checks.
+  `copyWith` must carry every other field — one stray `?? clock.now()` makes the derived
+  entity trip the allowlist for EVERY caller, so read the body, not the parameter list. The
+  caller's copy usually still reaches a SIBLING gate (a declared-base drift check, a cached-base
+  refusal) that can refuse the write, and its `id` still SELECTS the document read and written,
+  so any "the client's copy contributes nothing / only X" clause is an overclaim — strike it,
+  then grep the INTERFACE doc, because that is where it comes back in different words once the
+  implementation's copy is gone. Grade a POINTER clause ("as its own doc says it should") on the
+  target's PREDICATE, not its topic — a doc that describes routing does not say a module should
+  stay a FACADE, and checking only the topic is how a reviewer signs one off as resolved. And
+  a sentence whose HEAD you edit RE-EMITS its tail as your commit's bytes: the line shows as
+  changed, the eye grades the change, and an inherited false clause ships as new. `git show
+  HEAD:<file>` on the sentence is the only thing that separates the two; a diff cannot. And the mirror's now-tautological conjuncts STAY when the guard is
+  PUBLIC: they are then a method contract, not dead code. Grade the probe that proved them
+  tautological with care — neutralising a conjunct (forcing it true) reddens nothing whether it
+  is always-TRUE or always-FALSE, so the green baseline, not the mutation, is the half carrying
+  that claim.
 - A guard set is scoped to a method's callers; promoting it to a public INTERFACE
   invalidates that scope — review the promotion and its sibling as one change, require
   guard parity. An injected `void Function({...})` callback silently drops the `await` on a
   `Future<void>`-returning `logPermissionCheck` (Dart void-covariance) — declare it
   `Future<void> Function({...})` and await, only once the sink can't throw.
 - `requireCurrentUserId()` then `logPermissionCheck(granted:true)` with no real check
-  forges the trail. Run the actual `validate*Permission`, log its verdict, fix every sibling
+  forges the trail. A guard logging `granted:true` BEFORE the write forges it a second way:
+  where every SIBLING guard in the file is refusal-only and the METHOD logs the grant after
+  the write, a new guard emitting its own grant yields TWO rows per operation and an ORPHAN
+  grant whenever the write then fails (a rules deny, a stale-base refusal, an offline
+  refusal) — so grade a new guard against the file's existing grant/refusal convention, not
+  against "does it log". Keep guards refusal-only; emit a decision-specific grant AFTER the
+  write returns. Run the actual `validate*Permission`, log its verdict, fix every sibling
   (create/update/mutate) in one pass, checking EVERY conjunct of the matching rule. Its
   `userId:` must be the AUTHENTICATED caller, never the entity's CLAIMED owner — the
   `audit_logs` create rule pins `request.auth.uid == request.resource.data.userId`, so

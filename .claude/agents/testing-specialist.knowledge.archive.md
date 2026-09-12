@@ -38293,3 +38293,266 @@ Hashes at verdict (worktree):
   d9fc2cc5d5f08a8b189a6aa4a8520f79d4faf3f9 lib/services/family/household_roster_service.dart (unchanged by me)
   7b3c9bb7605e8d38feb06b2b12d65a2ace08e008 lib/services/menu/present_diner_prefs_resolver.dart (untracked, unchanged by me)
 Final: analyze --fatal-infos clean on all 7; 62/62 across the four suites.
+
+### 2026-09-12 — BUT-1718 commit-gate review (leave a shared shopping list) — trigger: two blocking findings, both measured
+
+Reviewed at index == worktree (verified per file with `git rev-parse :<path>` vs `git hash-object`;
+all 11 `lib/` + `firestore.rules` paths equal, nothing moved during the pass, no `lib/` mutant written).
+
+**Verified from the brief:** `flutter analyze lib test` clean (160s, "No issues found"); `dart format
+--set-exit-if-changed` 0 changed on the three edited/new files; the four named Dart suites 126/126;
+the emulator rules suite 60/60 (`npx ts-node src/__tests__/shared-shopping-lists-rules.test.ts`,
+emulator already up on 127.0.0.1:8080). Every figure in the brief reproduced exactly.
+
+**BLOCKING 1 — `test/unit/security/rules_allowlist_drift_test.dart` ships RED.**
+```
+every keys().hasOnly allowlist is guarded here or knowingly excluded [E]
+  Expected: <37>
+    Actual: <39>
+```
+Attribution, one command:
+```
+HEAD: 37   index: 39   worktree: 39      (sed 's://.*::' | grep -c 'hasOnly(')
+```
+Both new occurrences are this change's, in `removesOnlySelfFromMembers()`:
+`.affectedKeys().hasOnly([request.auth.uid])` and `.hasOnly(['memberPermissions','updatedAt'])`.
+Second occurrence of this exact shape (first: BUT-2046 follow-up). The carrier both times is that
+the census lives in `test/unit/security/`, a directory the feature never touches, so "I ran the
+suites for my change" is green and CI is red. `rules_numeric_bound_drift_test.dart` passed (the cap
+constants are untouched).
+
+**BLOCKING 2 — the ticket's one production decision is executed by nothing.**
+`ShoppingListManagementModule.leaveList` is the ONLY `lib/` site that passes
+`intent: MembershipWriteIntent.selfRemoval`. Coverage over `test/unit/services/unified` +
+`test/widget/shopping` + `test/unit/repositories/firebase/modules` (2313 tests, all passing):
+```
+shopping_list_management_module.dart  DA:269,0 273,0 282,0 283,0 284,0 287,0 288,0 291,0 292,0
+unified_shopping_service.dart          DA:483,0 487,0 489,0 492,0 493,0 496,0
+```
+Every line of `leaveList` and of `UnifiedShoppingService.leaveSharedList` is DA:0. The fake sandwich:
+`shopping_leave_list_action_test.dart` mocks `CollaborativeShoppingOperations`;
+`collaborative_shopping_operations_test.dart` mocks `leaveSharedList` on the service;
+`grep -rn 'UnifiedShoppingService(' test/` has ONE non-mock hit and that suite names neither
+`leaveSharedList` nor `leaveList`. So swapping `selfRemoval` → `ordinary` at the single production
+call site leaves every suite green while the server refuses every real departure — which is
+verbatim the BUT-1726/ADR-002 incident the routing suite's own line 546 comment warns about
+("hand-passing it here is exactly how the strip shipped unnoticed"), and the routing suite does
+hand-pass it. Contrast the guards, which ARE reached: `shopping_list_permission_guards.dart`
+DA 323/329/333/334/338-344 and 366-378, 403-413 all ≥1.
+
+**NON-BLOCKING, measured analytically (no probe owed — the mutant's only observable is unread):**
+- `resolveMembershipWrite`'s `updatedAt: proposed.updatedAt` is deletable-green. `grep -n updatedAt`
+  across `shopping_repository_routing_module_test.dart` and `shopping_list_permission_guards_test.dart`
+  returns ONE hit, in a comment. The sole observables of that expression are the stored doc's
+  `updatedAt` and payload emptiness; the payload still carries `memberPermissions.<uid>: delete()`,
+  so it stays non-empty. Note `UnifiedShoppingList.copyWith` bumps `updatedAt` to `clock.now()` when
+  the argument is omitted (line 455), so the mutant is a real value change, not an identity — the
+  first version of this analysis assumed identity and was wrong.
+- `ListMemberOperations.leaveList`'s `_beginMutation()` is deletable-green: the ops suite counts
+  `beginMutationCalls` in exactly one test, `addMember`'s early refusal. The reachable
+  false-without-report branches for a non-owner (list gone, not authenticated) would then surface a
+  stale unrelated sentence through `confirmAndLeave`'s `consumeMutationError()` — the BUT-1696
+  invented-cause class, on the path this ticket builds.
+
+**Confirmed, not re-filed (the brief's two named gaps):**
+- `context.mounted ? context : appNavigatorKey.currentContext` executes only the `mounted` arm in the
+  harness. Sharper than "executed by nothing": production takes the OTHER arm — the sharing dialog's
+  `onConfirmed: () => Navigator.pop(context)` unmounts the very context passed in, so the branch the
+  suite exercises is the one the app never takes.
+- Three of `requireSelfRemovalOnly`'s five conjuncts and their three refusal strings are unreachable
+  from any production caller; `grep -rl` confirms `resolveMembershipWrite` is the method's only
+  caller and it always hands in the derived entity. Kept deliberately per ADR-0004; the doc comment
+  says exactly this.
+
+**Non-vacuity of the three rewritten "asserts the stored doc was sanitised" cases — each names a
+different killer, and no single mutant keeps all three green:**
+- "CANNOT boot somebody else": deriving from `proposed.memberPermissions` instead of `stored`'s drops
+  cecilia → red. Only case asserting a THIRD PARTY survives.
+- "a promotion smuggled into a departure is discarded": same mutant makes `othersUntouched` false →
+  throws → red. Only case asserting a VALUE is not promoted.
+- "an unrelated field change rides along with nothing": survives that mutant, dies to "return
+  `proposed` instead of `departed`" (the name would be stored) and to removing the derivation
+  (`onlyMembersChanged` false → throw). Only case on a non-member field.
+Deleting the `requireSelfRemovalOnly` CALL is killed twice over, by "the owner may not leave their
+own list" and by "somebody who was never a member" (the latter narrows to an empty payload, skips
+the write via `write.isNotEmpty`, and logs a grant).
+
+### 2026-09-12 — BUT-1718 commit-gate review, ROUND 2 (re-verify after both blockers closed)
+
+Index re-frozen at 35 staged files; `git rev-parse :<path>` == `git hash-object` for every one
+(checked by loop over `git diff --cached --name-only`, zero DIVERGED). No `lib/` mutant written
+this round, so nothing to restore.
+
+**Re-measured, all reproduced:** `flutter analyze lib test` clean (63s); `dart format
+--set-exit-if-changed` 0 changed over the five touched files; 145/145 across the six Dart suites;
+`test/unit/security` 16/16 (census AND numeric-bound); emulator rules 60/60.
+
+**BLOCKING 1 closed correctly — reclassified, not bumped.** `rules_allowlist_drift_test.dart`
+37 → 39 with a comment naming both new calls as `affectedKeys()` DIFF restrictions inside
+`removesOnlySelfFromMembers()`. Its exclusivity claim — "the nested one is this file's first
+`diff()` on a map field rather than on the document" — is TRUE, measured by enumerating every
+`.diff(` in the comment-stripped rules: 25 sites, and L2515
+(`request.resource.data.memberPermissions.diff(resource.data.memberPermissions)`) is the only one
+whose receiver is a field.
+
+**BLOCKING 2 closed correctly.** `test/unit/services/unified/modules/shopping_list_management_leave_test.dart`
+constructs the real `ShoppingListManagementModule` over `MockShoppingRepository`. The intent pin
+plus the `updateListMembership`-asks-for-`ordinary` control are a genuine single-variable pair —
+a mutant hardcoding either value reddens one of them, settled analytically, no probe needed. The
+active-id pair (cleared when it IS the list / untouched when it is not) kills the unconditional
+`setActiveListId(null)`. Note `base.id` and `updated.id` are the same literal in every fixture,
+so a `base.id`→`updated.id` swap is unkillable — analytically INERT, because production always
+derives both from one list and `copyWith` is never handed an `id`. No pin owed.
+
+**Both round-1 survivors closed, and both first attempts were themselves vacuous — the
+coordinator said so unprompted, which is the behaviour to keep:**
+- `updatedAt`: the repaired assertion is `expect(stored['updatedAt'], Timestamp.fromDate(stamp))`
+  against a caller-supplied `DateTime.utc(2031,3,4,5,6,7)`. Kills both mutants — `updatedAt:
+  stored.updatedAt` (no diff, so the field never reaches the payload and the stored value stays
+  `saved`'s) and deleting the line (`copyWith` substitutes `clock.now()`). The first attempt,
+  `isNot(seeded stamp)`, was satisfied by BOTH the fix and the mutant. This is the
+  `UnifiedShoppingList.copyWith` gotcha at line 455 biting the repair.
+- `_beginMutation()` in `leaveList`: `expect(beginMutationCalls, 1)` added to the view-only leave
+  case. Kills deletion. **Residual, filed Low:** it does NOT kill MOVING the call below the early
+  returns, which is the historical defect shape the sibling `addMember` case
+  ("an early refusal still clears any parked failure reason") exists to catch. One line in
+  `should not allow owner to leave list` would close it.
+
+**NEW BLOCKING — a false effort claim in `ACCEPTED_DEVIATIONS.md`.** The named-gap paragraph for
+`UnifiedShoppingService.leaveSharedList` ends "and closing it needs a real-service harness that
+does not exist." Measured false: `test/unit/services/unified/unified_shopping_service_test.dart:346`
+constructs the real `UnifiedShoppingService` with `shoppingRepository: fakeRepo` and the
+production `ServiceLocator` bridged at line 344. What is actually missing is one
+`updateCollaborativeListMembership` override on `_FakeShoppingRepository` (line 86, `extends Fake`,
+no such member today) plus an arm flag for the refusal case. Exactly the shape the BUT-2046
+follow-up already paid for, and the clause sits in an AUTO-LOADED decision record, which is worse
+than a test header. Remedy is a STRIKE of that clause alone — the rest of the sentence
+("Measured: its sibling `updateSharedListMembership` is not either, so this is the shape of that
+seam rather than something this change introduced") is true, independently verified, and is the
+record of an unresolved gap, so it must survive.
+
+**A file listed as changed that did not change.** The brief names
+`lib/repositories/firebase/modules/shopping_list_permission_guards.dart` as "comment only — one
+overclaiming clause struck". Re-read WHOLE this round (1-75, 76-295, 296-425, 417-503; 503 lines,
+same as round 1) and every line matches the copy graded in round 1. Either the strike landed
+before round 1 and the list is over-inclusive, or it did not land — not distinguishable from any
+artefact, since the struck text would have been added by this same change and so is invisible to
+`git diff HEAD`. Flagged rather than asserted. The file's one remaining measured-counterfactual
+clause is `resolveMembershipWrite`'s "Measured: neutralising each condition in turn … reddens it
+for those two and for neither of the other three", and it is TRUE: with the derivation in place
+`isGone`, `othersUntouched` and `onlyMembersChanged` are satisfied by construction (the derived
+entity is `stored.copyWith` over members + `updatedAt`, and `_touchesNothingBut` exempts
+`updatedAt`), so neutralising any of the three to `true` changes nothing, while `isOwner` and
+`wasMember` are reddened by the owner and stranger cases. Verified analytically.
+
+**Confirmed accepted:** the `appNavigatorKey` reading (production takes the arm the suite cannot),
+recorded as unfixed because the harness cannot unmount its own host — correct, and the right call
+at this size.
+
+### 2026-09-12 — BUT-1718 commit-gate review, ROUND 3 (both round-2 items closed by building)
+
+Index frozen at 36 staged files, index == worktree on every path (loop over
+`git diff --cached --name-only`, zero DIVERGED). No `lib/` mutant written this round.
+
+**Motion check since round 2** (blob compare against the five hashes recorded in the round-2
+entry): `shopping_list_management_leave_test.dart` UNMOVED; the census test, the routing suite,
+the ops suite, `guards.dart` and `ACCEPTED_DEVIATIONS.md` MOVED. Line-count delta on the rest of
+the `lib/` list identified exactly two more movers, both −1 line: the interface and the offline
+module header. Everything else byte-identical to the round-1 Reads, l10n included (27437/16435/16477).
+
+**Re-measured, all reproduced:** analyze clean (109s); `dart format --set-exit-if-changed` over
+all 20 staged Dart files, 0 changed; 187 green over the seven suites plus
+`rules_numeric_bound_drift_test.dart` (their 185 = mine minus that file's 2 cases, reproduces
+exactly); emulator rules 60/60; `tsc --noEmit` clean.
+
+**My round-2 blocker closed by BUILDING, which was the right call.** `_FakeShoppingRepository`
+gains `updateCollaborativeListMembership` capturing `lastMembershipIntent` plus a
+`throwOnMembership` arm; four cases in `unified_shopping_service_test.dart`. The intent pin and
+the `updateSharedListMembership`-asks-`ordinary` control are a real single-variable pair; the
+refusal case asserts `consumeMutationError() isNotNull` AND `service.error isNull` (the BUT-1696
+not-a-full-screen-error split) and the success case asserts `consumeMutationError() isNull`,
+which is the control that kills "always parks".
+
+**My round-2 Low closed correctly.** `expect(beginMutationCalls, 1)` added to the OWNER refusal
+in the ops suite — an early-return path, so it kills MOVING `_beginMutation()` below the guards,
+which the success-path copy could not.
+
+**The three deletions since round 2, each graded:**
+- Stale `SSL44-SSL56` replaced by a range-free pointer ("the self-removal section of
+  `shared-shopping-lists-rules.test.ts`"). Resolvable and true — that file carries a
+  `SELF-REMOVAL — BUT-1718 / ADR-0004` section header. Repo-wide grep for the range: 0 hits.
+- Two `expect(permissionCalls, isNotEmpty)` deleted from the routing suite. Genuinely entailed:
+  both sit in tests whose `await` would have thrown before reaching any `expect` had the method
+  failed between `docRef.update` and the log line, so reaching the assertions implies the log ran.
+- Three overclaiming clauses struck: `nothing else touched` (guards — false, the derivation
+  carries the caller's `updatedAt`); `so [updated] contributes only its updatedAt` (interface —
+  false, `updated` also supplies the doc id and the `ListType` check); `, which stays a routing
+  facade` (offline module header). Every surviving sentence re-read standalone and holds.
+
+**ACCEPTED_LARGE_FILES counts verified against `wc -l`, including the historical halves that have
+been wrong three times on this ticket:** guards 503 (HEAD 350 — "took it from 350 past the
+limit" ✓), routing module 526 (HEAD 498 — "sat at 498" ✓), repository 505 (HEAD exactly 500 —
+"pushed it past 500" ✓), dialog 560, service 826. All accurate.
+
+**NEW BLOCKING — the sweep struck one copy of the facade claim and shipped the sibling.**
+`shopping_list_permission_guards.dart:28-29` reads "Split out of that module by
+BUT-1719/BUT-1725; the module stays a routing facade, as its own doc says it should." Measured
+false in its checkable half: `shopping_repository_routing_module.dart`'s class doc (lines 24-27)
+says only that it routes CRUD to two collections, and `grep -rn facade` over
+`lib/repositories/firebase/modules/` returns that guards line and `message_deletion_module.dart`
+— the word does not occur in the routing module at all. This is the SIBLING of the clause the
+same round struck from the offline module header, and it is not inherited text: HEAD reads
+"limit; the module stays a routing facade, as its own doc says it should", so the commit rewrote
+the head of that sentence and re-emitted the clause, which makes it this commit's claim. Remedy
+is a STRIKE of "; the module stays a routing facade, as its own doc says it should", leaving
+"Split out of that module by BUT-1719/BUT-1725." — the same shape already applied to the sibling.
+
+**The three named-and-not-closed items, all CONFIRMED rather than re-filed:**
+- `appNavigatorKey`: both files byte-unchanged since round 1, so the reading stands — production
+  takes the arm the harness cannot reach, because `onConfirmed: () => Navigator.pop(context)`
+  unmounts the context passed in.
+- The grant-row ordering (`logPermissionCheck(granted: true)` after `docRef.update`) is indeed
+  pinned by nothing: every existing assertion holds under a mutant that moves the log above the
+  write, and the four throwing-sink cases assert only the throw. Correctly named, correctly out
+  of scope — it predates BUT-1718. One correction to the framing, for whoever picks it up: it is
+  NOT unpinnable. `_MockCollectionRef`/`_MockDocRef` already exist in the routing suite (the
+  BUT-1696 cache-miss case), so an `update` that throws plus `expect(permissionCalls.where((c) =>
+  c.granted), isEmpty)` would pin it. "Not this ticket" is the right reason; "cannot be tested"
+  would not be.
+- Three `requireSelfRemovalOnly` conjuncts unreachable since the derivation: confirmed again,
+  and the comment asserting it is true — `isGone`, `othersUntouched` and `onlyMembersChanged` are
+  satisfied by construction for a `stored.copyWith` over members plus `updatedAt`, which
+  `_touchesNothingBut` exempts.
+
+### 2026-09-12 — BUT-1718 commit-gate review, ROUND 4 (verdict: pass)
+
+One file moved. Isolate-diff of `shopping_list_permission_guards.dart` against the round-2 blob
+shows exactly two hunks, both pure deletions and both previously graded: the facade clause
+(round-3 finding) and `nothing else touched` (round-3 sweep). No added text anywhere, which is
+what the "a correction may only DELETE" rule asks for.
+
+Strike verified on its own terms: line 28 now reads `Split out of that module by
+BUT-1719/BUT-1725.`, the survivor resolves standalone (`that module` still binds to
+`ShoppingRepositoryRoutingModule`, named at line 17), and `grep -rn facade
+lib/repositories/firebase/modules/` returns one hit, `message_deletion_module.dart`, which is a
+different module describing itself.
+
+`ACCEPTED_LARGE_FILES` guards row recomputed to 502 and `wc -l` agrees; the other five rows
+unchanged and still exact. Index frozen at 36, index == worktree on every path, zero unstaged.
+
+Re-measured on the final bytes: analyze clean, `dart format` 0 changed over all 20 staged Dart
+files, 187 green, emulator 60/60.
+
+**What this review cost and what produced the findings.** Four rounds, two blocking findings, and
+NEITHER came from reading the diff. Blocking 2 (the ticket's one production decision — the
+`selfRemoval` intent — executed by nothing) came from a `--coverage` DA read over the three
+directories around the change, after a `grep -rn '<ClassName>(' test/` returned no non-mock
+construction. Blocking 1 (the rules census red) came from running a suite in a directory the
+feature never touches. Both are cheap, mechanical, and neither is visible in a diff — which is
+the argument for running them FIRST rather than after reading the change.
+
+The coordinator's own tally by the end: five sibling copies survived a strike across the change,
+two of them carried by a sentence the same commit rewrote. That second carrier is the one worth
+keeping — the clause reads as inherited, so the diff cannot show it, and only `git show
+HEAD:<file>` on the SURVIVING copy distinguishes "inherited text" from "re-emitted as this
+commit's claim". It is now a principle in the knowledge file.

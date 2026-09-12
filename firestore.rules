@@ -2483,6 +2483,55 @@ service cloud.firestore {
         // since there is no prior array to preserve.
         && request.resource.data.get('contributorUserIds', []).size() <= 200;
 
+      // BUT-1718: a member removing ONLY their own key from `memberPermissions`.
+      //
+      // An ALLOWLIST, not a deny-list, per ADR-0004. Under a deny-list every
+      // field not named stays writable, so a VIEW-ONLY member — who cannot
+      // touch `items` at all through the member arm below — could wipe the
+      // whole item array in the same accepted write as leaving. The two keys
+      // are exactly what the client can send: the write is derived from the
+      // STORED document inside `ShoppingListPermissionGuards.resolveMembershipWrite`
+      // — the caller's own key removed — so it narrows to
+      // `memberPermissions.<uid>` plus `updatedAt` whatever the caller passed.
+      //
+      // `contributorUserIds` is deliberately NOT a third key. ADR-0004 records
+      // the override that added it on an unverified claim: with it allowlisted,
+      // a member could union up to 200 foreign uids into the append-only array
+      // that `account-deletion-cascade.ts` selects lists by, dragging a
+      // stranger's Art. 17 cascade into a household they were never in.
+      //
+      // The map diff is what makes this self-removal rather than eviction: it
+      // reports a changed VALUE as well as a removed key, so promoting another
+      // member on the way out is refused too.
+      //
+      // Not gated on `edit`/`admin`: leaving is not an edit, it is the removal
+      // of one's own membership, and a view-only member is the one most likely
+      // to want out.
+      function removesOnlySelfFromMembers() {
+        return request.auth.uid != resource.data.ownerId
+          && request.auth.uid in resource.data.memberPermissions
+          && !(request.auth.uid in request.resource.data.memberPermissions)
+          && request.resource.data.memberPermissions
+               .diff(resource.data.memberPermissions)
+               .affectedKeys().hasOnly([request.auth.uid])
+          && request.resource.data.diff(resource.data).affectedKeys()
+               .hasOnly(['memberPermissions', 'updatedAt']);
+      }
+
+      // BUT-1718 (Malin, 2026-09-12): the owner must still be a member after
+      // their own write.
+      //
+      // The owner arm carries no other field constraint, so before this the
+      // server let an owner write their own key out of `memberPermissions`
+      // while `ownerId` still named them — leaving a list whose every other
+      // limb gates on that map. Only the client refused it
+      // (`ListMemberOperations.leaveList`), which is a product rule, not a
+      // control. No legitimate owner path goes through this arm: deleting the
+      // list and converting it to personal both delete the document.
+      function ownerStaysSeated() {
+        return request.auth.uid in request.resource.data.memberPermissions;
+      }
+
       // Can update if you're a member with edit/admin permission (for real-time collaboration).
       // BUT-238: claim/unclaim (assignedToUserId/assignedToDisplayName/assignedAt fields on items[])
       // is just an item-array mutation — allowed for edit/admin. View-only members cannot write.
@@ -2490,11 +2539,12 @@ service cloud.firestore {
       // included — the owner is as able to strip a departed member's uid as
       // anyone else, and the cascade needs it either way.
       allow update: if isAuthenticated() && keepsContributorTrail() && (
-        request.auth.uid == resource.data.ownerId ||
+        (request.auth.uid == resource.data.ownerId && ownerStaysSeated()) ||
         (request.auth.uid in resource.data.memberPermissions
          && resource.data.memberPermissions[request.auth.uid] in ['edit', 'admin']
          && !request.resource.data.diff(resource.data).affectedKeys()
-            .hasAny(['ownerId', 'memberPermissions', 'createdAt']))
+            .hasAny(['ownerId', 'memberPermissions', 'createdAt'])) ||
+        removesOnlySelfFromMembers()
       );
 
       // Can delete if you're the owner

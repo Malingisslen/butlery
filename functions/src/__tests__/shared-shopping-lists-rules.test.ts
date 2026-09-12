@@ -1,5 +1,5 @@
 /**
- * Firestore rules tests for /unified_shared_shopping_lists (BUT-1725).
+ * Firestore rules tests for /unified_shared_shopping_lists.
  *
  * BUT-1725 added an append-only guard on the erasure trail:
  *
@@ -54,7 +54,7 @@ import {
 // Client-SDK sentinels only — `ctx.firestore()` is the CLIENT SDK, and an
 // admin sentinel throws `invalid-argument` before any rule is evaluated (which
 // would also make an assertFails deny test pass for the wrong reason).
-import { arrayUnion, arrayRemove } from "firebase/firestore";
+import { arrayUnion, arrayRemove, deleteField } from "firebase/firestore";
 
 const PROJECT_ID = "butlery-shared-shopping-lists-test";
 const RULES_PATH = path.resolve(__dirname, "../../../firestore.rules");
@@ -67,6 +67,11 @@ const STRANGER = "stranger-uid";
 // person the trail exists for. Their uid is what a household member must not
 // be able to strip.
 const DEPARTED = "departed-member-uid";
+// BUT-1718: a member holding `admin` who is NOT `ownerId`. The base fixture has
+// no such actor — OWNER is both — so the self-removal tests that need one seed
+// it through `validListBody`'s `extra` rather than widening the fixture forty
+// other assertions rest on.
+const ADMIN_MEMBER = "list-admin-member-uid";
 
 const COL = "unified_shared_shopping_lists";
 const CAP = 200;
@@ -433,7 +438,7 @@ test("shared lists: a list already over 200 contributors is frozen — even an i
 });
 
 // ====================================================================
-// UPDATE — actor gates unchanged by the diff (3 assertions across 3 tests)
+// UPDATE — actor gates unchanged by the diff
 // ====================================================================
 
 // SSL21: view-only members stay read-only. Proves the new conjunct did not
@@ -804,10 +809,319 @@ test("shared lists: a non-member CAN run the filtered query and gets nothing", a
   }
 });
 
+// ====================================================================
+// SELF-REMOVAL — BUT-1718 / ADR-0004
+// ====================================================================
+//
+// The `removesOnlySelfFromMembers()` arm has five conjuncts, so one shared
+// mutant cannot grade it. Every conjunct below was probed by deleting it from
+// `firestore.rules` alone and re-running this suite; the attributions in the
+// comments are what those runs measured, not what the predicate looks like it
+// should do.
+//
+// Every case gets its own document id — this suite shares one emulator and
+// clears nothing between tests, so a reused id turns a create into an update
+// and an assertion into a coincidence.
+
+/** The write `leaveList` narrows to: one member key deleted, plus the stamp. */
+function leavePayload(uid: string): Record<string, unknown> {
+  return {
+    [`memberPermissions.${uid}`]: deleteField(),
+    updatedAt: new Date("2026-09-12T00:00:00.000Z"),
+  };
+}
+
+// SSL44: the arm itself. EDITOR holds `edit`, so the member arm below could
+// never carry this write — it denies any diff touching `memberPermissions`.
+test("shared lists: an edit member CAN remove their own memberPermissions key", async () => {
+  await seedList("leave-editor");
+  const ctx = env.authenticatedContext(EDITOR);
+  await assertSucceeds(
+    ctx.firestore().doc(`${COL}/leave-editor`).update(leavePayload(EDITOR))
+  );
+});
+
+// SSL45: the case the whole ticket exists for. A view-only member cannot write
+// ANYTHING through the member arm (`in ['edit','admin']`), and is the person
+// most likely to want out. If this denies, the feature is useless to exactly
+// the population it was built for.
+test("shared lists: a VIEW-ONLY member CAN remove their own memberPermissions key", async () => {
+  await seedList("leave-viewer");
+  const ctx = env.authenticatedContext(VIEWER);
+  await assertSucceeds(
+    ctx.firestore().doc(`${COL}/leave-viewer`).update(leavePayload(VIEWER))
+  );
+});
+
+// SSL46: a non-owner `admin`. Distinct from SSL44 — `canManageShoppingList`
+// grants this actor member management in the CLIENT while the rules grant it
+// nothing, so its permission level must not be what decides a leave.
+test("shared lists: a non-owner ADMIN member CAN remove their own memberPermissions key", async () => {
+  await seedList("leave-admin-member", {
+    memberPermissions: {
+      [OWNER]: "admin",
+      [EDITOR]: "edit",
+      [VIEWER]: "view",
+      [ADMIN_MEMBER]: "admin",
+    },
+  });
+  const ctx = env.authenticatedContext(ADMIN_MEMBER);
+  await assertSucceeds(
+    ctx
+      .firestore()
+      .doc(`${COL}/leave-admin-member`)
+      .update(leavePayload(ADMIN_MEMBER))
+  );
+});
+
+// SSL47: the control for SSL44, one variable apart — same actor, same write
+// shape, somebody else's key. Proves the allow is about SELF, not about
+// `memberPermissions` having become writable.
+// OVER-DETERMINED, measured: two conjuncts refuse it independently — the caller
+// is still in the map afterwards, AND the changed key is not theirs — so
+// deleting either one alone leaves this green. It flips only when both go.
+// SSL48 is the single-conjunct anchor for the map diff.
+test("shared lists: an edit member CANNOT remove ANOTHER member's key", async () => {
+  await seedList("leave-boot-other");
+  const ctx = env.authenticatedContext(EDITOR);
+  await assertFails(
+    ctx.firestore().doc(`${COL}/leave-boot-other`).update(leavePayload(VIEWER))
+  );
+});
+
+// SSL48: leaving while promoting somebody. This is the case the MAP diff buys
+// over a keys-only comparison: the key set shrinks by exactly the caller, and
+// `affectedKeys()` still reports VIEWER because their value changed.
+// The single-conjunct anchor for `affectedKeys().hasOnly([request.auth.uid])`,
+// measured: delete that conjunct and this case alone goes green.
+test("shared lists: an edit member CANNOT change another member's level while leaving", async () => {
+  await seedList("leave-and-promote");
+  const ctx = env.authenticatedContext(EDITOR);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`${COL}/leave-and-promote`)
+      .update({
+        ...leavePayload(EDITOR),
+        [`memberPermissions.${VIEWER}`]: "admin",
+      })
+  );
+});
+
+// SSL49: ADR-0004's second mandatory case. The array is append-only and capped,
+// so `keepsContributorTrail()` ALLOWS a union — only the two-key allowlist
+// refuses it. Run against a three-key version of the rule this must wrongly
+// pass, which is what makes it the pin on the override ADR-0004 records.
+// Conjunct: the document-level `hasOnly(['memberPermissions','updatedAt'])`.
+test("shared lists: a leaving member CANNOT union a foreign uid into the trail", async () => {
+  await seedList("leave-union-trail");
+  const ctx = env.authenticatedContext(EDITOR);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`${COL}/leave-union-trail`)
+      .update({
+        ...leavePayload(EDITOR),
+        contributorUserIds: arrayUnion("outsider-uid"),
+      })
+  );
+});
+
+// SSL50: the other direction on the same field. OVER-DETERMINED and kept
+// anyway: the allowlist refuses it and so does `keepsContributorTrail()`, which
+// binds every arm. Kept because those two predicates are edited independently
+// and a leave must never be the write that strips the erasure handle.
+test("shared lists: a leaving member CANNOT shrink the trail", async () => {
+  await seedList("leave-shrink-trail");
+  const ctx = env.authenticatedContext(EDITOR);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`${COL}/leave-shrink-trail`)
+      .update({
+        ...leavePayload(EDITOR),
+        contributorUserIds: arrayRemove(DEPARTED),
+      })
+  );
+});
+
+// SSL51: ADR-0004's first mandatory case, `items` half. Under the deny-list
+// draft this ALLOWS — a view-only member wiping the list on the way out — which
+// is why the arm is an allowlist.
+// Conjunct: the document-level `hasOnly(['memberPermissions','updatedAt'])`.
+// The fixture is seeded WITH a row, because the base fixture's `items` is `[]`
+// and writing `[]` over `[]` is no diff at all — the first version of this test
+// passed an empty array and ALLOWED, proving nothing about the allowlist.
+test("shared lists: a leaving member CANNOT touch items in the same write", async () => {
+  await seedList("leave-wipe-items", {
+    items: [{ id: "i20", name: "Kaffe", isBought: false }],
+  });
+  const ctx = env.authenticatedContext(VIEWER);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`${COL}/leave-wipe-items`)
+      .update({ ...leavePayload(VIEWER), items: [] })
+  );
+});
+
+// SSL52: ADR-0004's first mandatory case, `name` half. Same conjunct as SSL51
+// and kept separately because `items` is the damaging field while `name` is the
+// one a deny-list naming only the access-control keys would also let through.
+test("shared lists: a leaving member CANNOT rename the list in the same write", async () => {
+  await seedList("leave-rename");
+  const ctx = env.authenticatedContext(EDITOR);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`${COL}/leave-rename`)
+      .update({ ...leavePayload(EDITOR), name: "Kapad lista" })
+  );
+});
+
+// SSL53: seizing ownership on the way out. OVER-DETERMINED: the new arm's
+// allowlist and the member arm's deny-list each refuse it. SSL42 pins the same
+// grab through the member arm.
+test("shared lists: a leaving member CANNOT seize ownerId in the same write", async () => {
+  await seedList("leave-seize-owner");
+  const ctx = env.authenticatedContext(EDITOR);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`${COL}/leave-seize-owner`)
+      .update({ ...leavePayload(EDITOR), ownerId: EDITOR })
+  );
+});
+
+// SSL54: a stranger removing a key they never held. Denied by the membership
+// conjunct, not by the map diff — without it, `hasOnly([auth.uid])` says
+// nothing about whether the caller was ever seated.
+// Conjunct: `request.auth.uid in resource.data.memberPermissions`.
+test("shared lists: a STRANGER CANNOT remove a memberPermissions key", async () => {
+  await seedList("leave-stranger");
+  const ctx = env.authenticatedContext(STRANGER);
+  await assertFails(
+    ctx.firestore().doc(`${COL}/leave-stranger`).update(leavePayload(STRANGER))
+  );
+});
+
+// SSL55 (BUT-1718, Malin 2026-09-12): the owner cannot write themselves out of
+// the roster. Before `ownerStaysSeated()` this ALLOWED — the owner arm carried
+// no field constraint at all — and only the client refused it, which is a
+// product rule rather than a control. Every limb of this collection gates on
+// `memberPermissions`, so an owner-less roster bricks the document.
+// Denied by TWO conjuncts, measured: `ownerStaysSeated()` on the owner arm, and
+// the self-removal arm's own `uid != ownerId` which keeps the owner out of it.
+// Deleting either one alone flips this to allow, so it grades both.
+test("shared lists: the OWNER CANNOT remove their own memberPermissions key", async () => {
+  await seedList("leave-owner");
+  const ctx = env.authenticatedContext(OWNER);
+  await assertFails(
+    ctx.firestore().doc(`${COL}/leave-owner`).update(leavePayload(OWNER))
+  );
+});
+
+// SSL57: deleting the WHOLE member map, not a key in it.
+//
+// It passes the document-level allowlist — `memberPermissions` is one of the
+// two permitted keys — and is refused past it. OVER-DETERMINED, measured:
+// defaulting the `in` conjunct with `.get('memberPermissions', {})` leaves this
+// case denying, and it flips only when the map-diff conjunct goes as well.
+// Deleting the whole map is an eviction of everyone, so the map diff refuses it
+// on the merits.
+//
+// Kept because nothing else in this file sends a mass-eviction payload, and
+// every limb of this collection gates on that map — an allow here would brick
+// the document for the whole household.
+test("shared lists: a leaving member CANNOT delete the whole memberPermissions map", async () => {
+  await seedList("leave-nuke-map");
+  const ctx = env.authenticatedContext(VIEWER);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`${COL}/leave-nuke-map`)
+      .update({
+        memberPermissions: deleteField(),
+        updatedAt: new Date("2026-09-12T00:00:00.000Z"),
+      })
+  );
+});
+
+// SSL58: an owner who is NOT a key in their own member map cannot update at
+// all, because `ownerStaysSeated()` asks about the POST-write document and an
+// items-only write leaves them absent.
+//
+// The population is not hypothetical: `account-deletion-cascade.ts` deletes
+// `memberPermissions.<owner>` while leaving `ownerId` raw when other members
+// remain, so an erased owner's list has this shape. No live user is gated by it
+// — that uid belongs to no account — and the create limb has required the owner
+// seated since 2026-04, so no client produces one. Pinned so the verdict is a
+// decision rather than a side effect.
+test("shared lists: an UNSEATED owner cannot update (ownerStaysSeated reads the post-write doc)", async () => {
+  await seedList("owner-unseated", {
+    memberPermissions: { [EDITOR]: "edit", [VIEWER]: "view" },
+  });
+  const ctx = env.authenticatedContext(OWNER);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`${COL}/owner-unseated`)
+      .update({ items: [{ id: "i30", name: "Salt" }] })
+  );
+});
+
+// SSL59: the same unseated owner CAN write themselves back in, so the state
+// above is recoverable rather than terminal. The control for SSL58 — without
+// it, a blanket deny on this document shape would look identical.
+test("shared lists: an unseated owner CAN seat themselves again", async () => {
+  await seedList("owner-reseat", {
+    memberPermissions: { [EDITOR]: "edit" },
+  });
+  const ctx = env.authenticatedContext(OWNER);
+  await assertSucceeds(
+    ctx
+      .firestore()
+      .doc(`${COL}/owner-reseat`)
+      .update({ [`memberPermissions.${OWNER}`]: "admin" })
+  );
+});
+
+// SSL60: a list already past the 200-contributor cap cannot be LEFT.
+//
+// `keepsContributorTrail()` binds every arm including the new one, and its
+// size bound reads the POST-write array, so a document seeded over the cap
+// refuses a departure that does not touch the trail at all. SSL20 pins the same
+// freeze for an items-only update; this is the scope the freeze gained when
+// leaving became possible, and the person it traps is the one trying to get
+// out.
+test("shared lists: a member CANNOT leave a list already over the contributor cap", async () => {
+  await seedList("leave-over-cap", {
+    contributorUserIds: bulkContributors(CAP + 1, "over"),
+  });
+  const ctx = env.authenticatedContext(EDITOR);
+  await assertFails(
+    ctx.firestore().doc(`${COL}/leave-over-cap`).update(leavePayload(EDITOR))
+  );
+});
+
+// SSL56: the control for SSL55. A new conjunct on the owner arm can deny far
+// more than it was aimed at, and a too-broad refusal hides behind a green deny
+// test — this is the assertion that would redden. SSL43 (owner revokes a
+// member) is the same guard from the other side and stays green.
+test("shared lists: the owner CAN still remove ANOTHER member with the new conjunct", async () => {
+  await seedList("leave-owner-control");
+  const ctx = env.authenticatedContext(OWNER);
+  await assertSucceeds(
+    ctx
+      .firestore()
+      .doc(`${COL}/leave-owner-control`)
+      .update(leavePayload(VIEWER))
+  );
+});
+
 async function run(): Promise<void> {
   console.log(
-    "unified_shared_shopping_lists rules tests " +
-      "(BUT-1725 trail, BUT-1706 read/create/delete, BUT-1746 query path)\n"
+    "unified_shared_shopping_lists rules tests\n"
   );
   console.log("=============================\n");
   await setup();

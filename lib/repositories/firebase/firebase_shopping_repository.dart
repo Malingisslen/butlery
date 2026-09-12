@@ -264,8 +264,13 @@ class FirebaseShoppingRepository
   @override
   Future<UnifiedShoppingList> updateCollaborativeListMembership(
     UnifiedShoppingList updated,
-    UnifiedShoppingList base,
-  ) => _routingModule.updateCollaborativeListMembership(updated, base);
+    UnifiedShoppingList base, {
+    required MembershipWriteIntent intent,
+  }) => _routingModule.updateCollaborativeListMembership(
+    updated,
+    base,
+    intent: intent,
+  );
 
   /// Override read method to search both collaborative and personal collections
   @override

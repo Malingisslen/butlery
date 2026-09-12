@@ -671,12 +671,20 @@ void main() {
     // the message read/delivery receipts — moved this total without touching
     // anything the per-entry comparisons below can see. That is the census
     // doing its job: a number that only ever moves for a reason.
+    // BUT-1718 added two more of the same category, both inside
+    // `removesOnlySelfFromMembers()` on `unified_shared_shopping_lists`: one
+    // `affectedKeys().hasOnly([request.auth.uid])` over the member MAP's diff,
+    // and one `affectedKeys().hasOnly(['memberPermissions', 'updatedAt'])` over
+    // the document's. Both restrict a DIFF rather than a payload key set, so
+    // neither is comparable against a writer's fields, and the nested one is
+    // the first `diff()` in `firestore.rules` whose receiver is a map field
+    // rather than the document.
     // Assert the FULL classification, not just this guard's slice. A rule
     // written as `let k = data.keys(); … k.hasOnly([...])` would slip past
     // `_allowlistCall` without moving its count; it cannot slip past the total.
     expect(
       'hasOnly('.allMatches(rules).length,
-      37,
+      39,
       reason:
           'the `hasOnly(` population changed. Reclassify the new call before '
           'touching this number — it counts `keys().hasOnly`, '

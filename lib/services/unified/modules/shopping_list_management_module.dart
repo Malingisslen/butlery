@@ -245,6 +245,7 @@ class ShoppingListManagementModule {
     final saved = await repository.updateCollaborativeListMembership(
       updated,
       base,
+      intent: MembershipWriteIntent.ordinary,
     );
 
     final listIndex = lists.indexWhere((l) => l.id == saved.id);
@@ -255,6 +256,40 @@ class ShoppingListManagementModule {
 
     AppLogger.success('Updated membership on list: ${saved.name}');
     return saved;
+  }
+
+  /// BUT-1718: the signed-in user removes their own key from [base]'s members.
+  ///
+  /// Local state is handled the way [deleteList] does it, not the way
+  /// [updateListMembership] does: after a departure the list is GONE from this
+  /// user's view — the collaborative stream filters on
+  /// `memberPermissions.<uid>` — so leaving the stale copy in [lists] would
+  /// keep a list on screen that the server has already stopped serving, and
+  /// whose next snapshot is a permission denial.
+  Future<void> leaveList(
+    UnifiedShoppingList updated,
+    UnifiedShoppingList base,
+  ) async {
+    await repository.updateCollaborativeListMembership(
+      updated,
+      base,
+      intent: MembershipWriteIntent.selfRemoval,
+    );
+
+    // Re-find after the await: the collaborative snapshot handler rebuilds the
+    // same `lists` instance during the round-trip, so an index captured before
+    // it can point at a different list by now.
+    final leftIndex = lists.indexWhere((l) => l.id == base.id);
+    if (leftIndex >= 0) {
+      lists.removeAt(leftIndex);
+    }
+
+    if (getActiveListId() == base.id) {
+      setActiveListId(null);
+    }
+
+    notifyListeners();
+    AppLogger.success('Left shared list: ${base.name}');
   }
 
   Future<bool> deleteList(String listId) async {

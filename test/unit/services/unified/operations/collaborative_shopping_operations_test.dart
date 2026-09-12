@@ -239,6 +239,13 @@ void main() {
       when(
         () => mockParentService.updateSharedListMembership(any(), any()),
       ).thenAnswer((_) async => true);
+      // BUT-1718: a DEPARTURE has its own seam, because the guards behind
+      // `updateSharedListMembership` refuse exactly that write for every member
+      // who is not the owner. A leave that reached the stub above would be
+      // green here and denied by the server in the app.
+      when(
+        () => mockParentService.leaveSharedList(any(), any()),
+      ).thenAnswer((_) async => true);
       when(
         () => mockParentService.deleteList(any()),
       ).thenAnswer((_) async => true);
@@ -277,6 +284,7 @@ void main() {
       final memberOps = ListMemberOperations(
         getCurrentUserId: () => mockParentService.currentUserId,
         updateMembership: mockParentService.updateSharedListMembership,
+        leaveMembership: mockParentService.leaveSharedList,
         beginMutation: () => beginMutationCalls++,
         lifecycleOps: lifecycleOps,
       );
@@ -969,12 +977,200 @@ void main() {
         final result = await operations.leaveList('collab_list_1');
 
         // Assert
-        // FIXED: Users can now leave collaborative lists regardless of permission level
-        // (as long as they're not the owner)
         expect(result, isTrue);
-        verify(
+        // BUT-1718: the SEAM is the assertion, not just the bool. Both of these
+        // tests were green for months while leaving was impossible in
+        // production — they proved `leaveList` called something, and the
+        // something it called was the write path the rules refuse to every
+        // non-owner. Naming the seam is what makes them able to fail.
+        final [updated, base] = verify(
+          () => mockParentService.leaveSharedList(captureAny(), captureAny()),
+        ).captured;
+        verifyNever(
           () => mockParentService.updateSharedListMembership(any(), any()),
-        ).called(1);
+        );
+        expect(
+          (updated as UnifiedShoppingList).memberPermissions.containsKey(
+            'user_456',
+          ),
+          isFalse,
+          reason: 'the write must remove the caller',
+        );
+        expect(
+          (base as UnifiedShoppingList).memberPermissions.keys,
+          containsAll(['user_123', 'user_456', 'user_789']),
+          reason: 'the base is the roster as it stood before the departure',
+        );
+        expect(
+          updated.memberPermissions.keys,
+          containsAll(['user_123', 'user_789']),
+          reason: 'and nobody else may be removed on the way out',
+        );
+      });
+
+      test('a VIEW-ONLY member can leave', () async {
+        // The population the client guards refused hardest: `requireEditRights`
+        // turns a view-only member away before any membership logic runs, so
+        // without its own case the seam could be gated on edit rights and every
+        // other test here would stay green.
+        mockParentService.setShoppingState(
+          collaborativeLists: [testCollaborativeList, testSharedList],
+          personalLists: [testPersonalList],
+          currentUserId: 'user_789',
+          currentUserDisplayName: 'Viewer User',
+        );
+        mockPermissionService.setPermissionState(
+          isAuthenticated: true,
+          currentUserId: 'user_789',
+          permissions: {
+            'collab_list_1': {
+              ResourcePermission.owner: false,
+              ResourcePermission.admin: false,
+              ResourcePermission.write: false,
+              ResourcePermission.editor: false,
+              ResourcePermission.read: true,
+              ResourcePermission.viewer: true,
+            },
+          },
+        );
+
+        final result = await operations.leaveList('collab_list_1');
+
+        expect(result, isTrue);
+        // `_beginMutation()` clears a failure reason parked by some earlier,
+        // unrelated operation. `leaveList` has early `return false` branches
+        // that never reach the service, and the dialog reads
+        // `consumeMutationError()` on exactly those — so without the clear the
+        // user sees a stale sentence as the cause of a failed departure.
+        expect(beginMutationCalls, 1);
+        final [updated, _] = verify(
+          () => mockParentService.leaveSharedList(captureAny(), captureAny()),
+        ).captured;
+        expect(
+          (updated as UnifiedShoppingList).memberPermissions.containsKey(
+            'user_789',
+          ),
+          isFalse,
+        );
+      });
+
+      test('a refused write reports false', () async {
+        mockParentService.setShoppingState(
+          collaborativeLists: [testCollaborativeList, testSharedList],
+          personalLists: [testPersonalList],
+          currentUserId: 'user_456',
+          currentUserDisplayName: 'Other User',
+        );
+        mockPermissionService.setPermissionState(
+          isAuthenticated: true,
+          currentUserId: 'user_456',
+          permissions: {
+            'collab_list_1': {
+              ResourcePermission.owner: false,
+              ResourcePermission.admin: false,
+              ResourcePermission.write: true,
+              ResourcePermission.editor: true,
+              ResourcePermission.read: true,
+              ResourcePermission.viewer: true,
+            },
+          },
+        );
+        when(
+          () => mockParentService.leaveSharedList(any(), any()),
+        ).thenAnswer((_) async => false);
+
+        final result = await operations.leaveList('collab_list_1');
+
+        // The service parks a Swedish reason on the failing path; what this
+        // level owes its caller is an honest bool, never a `true` over a write
+        // the server refused.
+        expect(result, isFalse);
+      });
+
+      test(
+        'leaving a list you are no longer on succeeds without a write',
+        () async {
+          // Another device, or the owner, got there first. A write would be
+          // denied and surface as "du saknar behörighet" — an invented cause for
+          // an outcome the user already has.
+          mockParentService.setShoppingState(
+            collaborativeLists: [
+              testCollaborativeList.copyWith(
+                memberPermissions: const {
+                  'user_123': SharedListPermission.admin,
+                  'user_789': SharedListPermission.view,
+                },
+              ),
+              testSharedList,
+            ],
+            personalLists: [testPersonalList],
+            currentUserId: 'user_456',
+            currentUserDisplayName: 'Other User',
+          );
+          mockPermissionService.setPermissionState(
+            isAuthenticated: true,
+            currentUserId: 'user_456',
+            permissions: {
+              'collab_list_1': {
+                ResourcePermission.owner: false,
+                ResourcePermission.admin: false,
+                ResourcePermission.write: true,
+                ResourcePermission.editor: true,
+                ResourcePermission.read: true,
+                ResourcePermission.viewer: true,
+              },
+            },
+          );
+
+          final result = await operations.leaveList('collab_list_1');
+
+          expect(result, isTrue);
+          verifyNever(() => mockParentService.leaveSharedList(any(), any()));
+        },
+      );
+
+      test('removeMember refuses the caller their own uid', () async {
+        // BUT-1718 deleted the `isRemovingSelf` bypass that used to sit here:
+        // it let a member past the manage-members check and into a write the
+        // client guards and `firestore.rules` both refuse, worded as a missing
+        // edit permission. Self-removal is `leaveList`.
+        //
+        // The actor is a non-owner ADMIN, and that is the whole fixture: an
+        // ordinary member is refused by `canManageMembers` one line below, so
+        // the case would pass with the refusal deleted and prove nothing. Only
+        // somebody who WOULD clear that check can tell the two apart —
+        // mutation-probed, and it reddens.
+        mockParentService.setShoppingState(
+          collaborativeLists: [testCollaborativeList, testSharedList],
+          personalLists: [testPersonalList],
+          currentUserId: 'user_456',
+          currentUserDisplayName: 'Other User',
+        );
+        mockPermissionService.setPermissionState(
+          isAuthenticated: true,
+          currentUserId: 'user_456',
+          permissions: {
+            'collab_list_1': {
+              ResourcePermission.owner: false,
+              ResourcePermission.admin: true,
+              ResourcePermission.write: true,
+              ResourcePermission.editor: true,
+              ResourcePermission.read: true,
+              ResourcePermission.viewer: true,
+            },
+          },
+        );
+
+        final result = await operations.removeMember(
+          listId: 'collab_list_1',
+          userId: 'user_456',
+        );
+
+        expect(result, isFalse);
+        verifyNever(
+          () => mockParentService.updateSharedListMembership(any(), any()),
+        );
+        verifyNever(() => mockParentService.leaveSharedList(any(), any()));
       });
 
       test('should not allow owner to leave list', () async {
@@ -983,6 +1179,15 @@ void main() {
 
         // Assert
         expect(result, isFalse);
+        // The clear must happen at the ENTRY POINT, above this early return —
+        // the defect it replaced had it inside the service, below every
+        // `return false`, so a refusal showed whatever sentence an earlier
+        // unrelated failure had parked. The success-path assertion kills
+        // deleting the call; only a refusal kills MOVING it down.
+        expect(beginMutationCalls, 1);
+        verifyNever(
+          () => mockParentService.leaveSharedList(any(), any()),
+        );
         verifyNever(
           () => mockParentService.updateSharedListMembership(any(), any()),
         );

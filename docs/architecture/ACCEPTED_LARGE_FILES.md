@@ -78,6 +78,9 @@ Tightly coupled to base classes. Extraction yields only 15-25% reduction while a
 | `content_export_manager.dart` | 679 | GDPR Art. 15 facade for the content sections. Row refreshed 2026-08-31 (556 -> 589; BUT-1971's follow-up added the group-plan erasure-handle strip and the left-group sentence). Row refreshed 2026-09-07 (BUT-2028 added the ingredient-suggestions section and its fail-closed field allowlist). BUT-1801 (2026-08-17) REMOVED a read and added the comment explaining why it could never have worked — every Art. 15 bundle had been losing its whole recipe section to it. Each section is a self-contained try/catch by design; the amplifier this file documents is two reads sharing one catch, which is an argument against merging sections, not for it. |
 | `preferences_export_manager.dart` | 626 | GDPR Art. 15 facade for the preferences, notification and account-subcollection sections. Crossed the limit in BUT-1992 (2026-09-03), which added the `account_subcollections` section and widened the settings read from one document to its collection. BUT-2003/BUT-2004 (2026-09-03) then isolated the reads INSIDE two of those sections, so a section is no longer one try/catch and the sections are no longer uniform: `exportAccountSubcollections` catches per collection and derives its terminal branch from a count, while `exportPreferences` isolates one of its two reads and not the other. What keeps them in one file is the BUT-1760 envelope table that grades all of them against `DataExportService`'s two-token rendering — splitting them across files would put that contract in two places. |
 | `data_export_service.dart` | 520 | The bundle assembler: one `Future.wait` over the named sections plus the BUT-1721 depth-limited metadata sweep. Crossed the limit in BUT-1992 (2026-09-03) by one section entry and its comment. Deliberately flat — the map IS the list of what an Art. 15 bundle contains, and a reader checking whether a collection is exported reads it top to bottom. Extracting groups of entries would hide exactly that. |
+| `shopping_list_permission_guards.dart` | 502 | The client-side mirror of every `firestore.rules` conjunct on `/unified_shared_shopping_lists` — create, edit rights, privilege escalation, the declared-base refusal and BUT-1718's self-removal. Splitting it by conjunct would scatter one rule block across several files and is the drift ADR-0004 requires it not to have: the whole point is that the mirror sits where the rule can be read beside it. Itself an extraction from the routing module (BUT-1719/BUT-1725); BUT-1718 took it from 350 past the limit. |
+| `shopping_repository_routing_module.dart` | 526 | The one seam that owns a collaborative-list write: it reads the stored document, hands it to the guards, narrows the payload, stamps the erasure trail and audits the outcome. Twice split already — `shopping_offline_write_module.dart` took what a write SAYS, `shopping_list_permission_guards.dart` took who may write it — and what is left is the ordering between them, which is the module. It sat at 498 by chance rather than by design; BUT-1718's membership intent pushed it over, and a third split would put one call's steps in three files. |
+| `firebase_shopping_repository.dart` | 505 | Facade over six modules — routing, query, items, templates, offline writes and guards — most of whose public surface is a one-line hand-off. What is not (`create`'s items-batch step, `read`'s two-collection search, `delete`, the three `validate*Permission` bodies, module wiring) is the part that decides WHICH module answers, which is the facade's own job. BUT-1718 pushed it past 500 by widening one delegate with a required argument. |
 | `shopping_item_operations_module.dart` | 595 | Six item-write operations (add/update/remove × single+batch), each fanning to a personal-subcollection leg and a collaborative-inline leg. The dual-storage split IS the module's reason to exist, so splitting by operation would duplicate that fork six times and splitting by storage would put one caller's two halves in different files. Was already 512 and undeclared when BUT-1762 added the day-coalesced parent stamp; row added then rather than left silent. |
 
 ## Service Modules / Facades
@@ -113,7 +116,7 @@ Already modular services or well-organized modules within service facades. Furth
 | `fcm_token_manager.dart` | 652 | FCM token lifecycle management |
 | `deep_link_service.dart` | 559 | Deep link routing service |
 | `llm_tier.dart` | 707 | LLM-based recipe parsing tier |
-| `unified_shopping_service.dart` | 794 | Shopping service facade |
+| `unified_shopping_service.dart` | 826 | Shopping service facade |
 | `realtime_recipe_service.dart` | 525 | Explicit facade; delegates to RecipeContentOperations + RecipeParticipants |
 | `realtime_menu_service.dart` | 512 | Explicit facade; delegates to MenuOperations + MenuParticipants modules |
 | `file_import_strategy.dart` | 599 | File-format (CSV/Excel) import strategy; coherent single-platform pipeline |
@@ -238,7 +241,7 @@ UI files that are already extracted or represent cohesive single-screen implemen
 | `image_gallery_widget.dart` | 536 | Image gallery widget |
 | `social_facade.dart` | 517 | Social UI facade widget |
 | `duplicate_merge_sheet.dart` | 507 | Single-purpose bottom sheet; merge logic and UI tightly coupled by design |
-| `shopping_sharing_status_dialog.dart` | 533 | **candidate**: dialog rendering 5+ distinct sections that could become private sub-widgets |
+| `shopping_sharing_status_dialog.dart` | 560 | **candidate**: dialog rendering 5+ distinct sections that could become private sub-widgets |
 | `calendar_cells.dart` | 573 | Focused stateless widget for calendar cell rendering; extracted for reuse |
 | `selection_app_bar.dart` | 559 | Single-purpose bulk-selection app bar extracted from `mina_recept_view` |
 | `shared_content_actions.dart` | 528 | Static action helper with one responsibility: import/dismiss shared content |
@@ -269,7 +272,7 @@ Files marked **candidate** above that are worth splitting in a future refactor s
 | `friend_category_manager.dart` | 519 | Friend-picker UI and category-management UI are independent; split into picker + management sub-widgets |
 | `veckomeny_view.dart` | 519 | Top-level weekly-menu view pulling many widget builders; extract section sub-widgets |
 | `collection_stats_view.dart` | 521 | Stats sections (_HeroBanner, _SectionHeader, etc.) are self-contained; good widget-extraction candidates |
-| `shopping_sharing_status_dialog.dart` | 533 | 5+ distinct sections in one dialog; extract as private sub-widgets |
+| `shopping_sharing_status_dialog.dart` | 560 | 5+ distinct sections in one dialog; extract as private sub-widgets |
 | `menu_content_widgets.dart` | 665 | Multiple static widget builders for distinct menu sections; group by section into separate files |
 | `performance_monitoring_service.dart` | 516 | Frame, network, cache, memory, and custom metrics can each be a focused sub-service |
 | `social_group_detail_viewmodel.dart` | 568 | Group load, events, leave, ownership transfer, content sharing — extract managers |

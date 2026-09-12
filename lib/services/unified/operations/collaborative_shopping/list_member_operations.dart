@@ -25,6 +25,20 @@ class ListMemberOperations {
   )
   _updateMembership;
 
+  /// BUT-1718: the same shape as [_updateMembership] but a DIFFERENT seam, not
+  /// a convenience alias.
+  ///
+  /// Leaving is refused by the guards the ordinary membership write runs — a
+  /// view-only member never reaches them, and a non-owner is refused for
+  /// touching the member map at all — so the write has to declare which of the
+  /// two it is. Routing a departure through [_updateMembership] compiles, and
+  /// is refused before the write for every member who is not the owner.
+  final Future<bool> Function(
+    UnifiedShoppingList updated,
+    UnifiedShoppingList base,
+  )
+  _leaveMembership;
+
   /// Clears any parked failure reason, so a caller reading
   /// `consumeMutationError()` after one of these operations can only ever see a
   /// reason describing THIS operation.
@@ -46,10 +60,16 @@ class ListMemberOperations {
       UnifiedShoppingList base,
     )
     updateMembership,
+    required Future<bool> Function(
+      UnifiedShoppingList updated,
+      UnifiedShoppingList base,
+    )
+    leaveMembership,
     required void Function() beginMutation,
     required ListLifecycleOperations lifecycleOps,
   }) : _getCurrentUserId = getCurrentUserId,
        _updateMembership = updateMembership,
+       _leaveMembership = leaveMembership,
        _beginMutation = beginMutation,
        _lifecycleOps = lifecycleOps;
 
@@ -115,8 +135,17 @@ class ListMemberOperations {
       return false;
     }
 
-    final isRemovingSelf = _getCurrentUserId() == userId;
-    if (!isRemovingSelf && !canManageMembers(listId)) {
+    // BUT-1718: a self-removal is [leaveList], not this. This method writes
+    // through the ordinary membership seam, which the client guards and
+    // `firestore.rules` both refuse to every non-owner — so the bypass that
+    // used to sit here ("removing yourself needs no manage right") let a member
+    // past this check and into a refusal worded as a missing edit permission.
+    if (_getCurrentUserId() == userId) {
+      AppLogger.error('Cannot remove yourself here: use leaveList');
+      return false;
+    }
+
+    if (!canManageMembers(listId)) {
       AppLogger.error('Cannot remove member: No permission to manage members');
       return false;
     }
@@ -255,10 +284,32 @@ class ListMemberOperations {
       return false;
     }
 
-    return await removeMember(
-      listId: listId,
-      userId: currentUserId,
+    // Already gone is a SUCCESS, not a refusal. Another device, or the owner,
+    // may have removed the key between this screen rendering and the tap; a
+    // write would then be denied and reported as "du saknar behörighet", which
+    // is the invented cause BUT-1696 exists to remove. The user asked to be off
+    // the list and they are.
+    if (!list.memberPermissions.containsKey(currentUserId)) {
+      AppLogger.info('Already not a member of ${list.name}');
+      return true;
+    }
+
+    final updatedPermissions = Map<String, SharedListPermission>.from(
+      list.memberPermissions,
+    )..remove(currentUserId);
+
+    final updatedList = list.copyWith(
+      memberPermissions: updatedPermissions,
+      updatedAt: clock.now(),
     );
+
+    if (!await _leaveMembership(updatedList, list)) {
+      AppLogger.error('Leave rejected for ${list.name}');
+      return false;
+    }
+
+    AppLogger.success('Left shared list ${list.name}');
+    return true;
   }
 
   bool canManageMembers(String listId) {

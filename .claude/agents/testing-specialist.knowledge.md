@@ -246,6 +246,15 @@ compress it.**
   comments citing what that rule allows — the fixture usually still earns its place
   (Admin-SDK writers bypass rules), so the repair is to STRIKE the justification, not
   delete the case (BUT-2038).
+  **The sibling that survives a same-round sweep is usually the one sitting inside a sentence the
+  SAME commit REWROTE around it** — the author reads the line as "mine, already handled" because
+  the head of it changed. Re-emitting a false clause in a rewritten sentence makes it the
+  commit's own claim, not inherited text, so `git show HEAD:<file>` on the surviving copy is the
+  check: identical clause + changed surroundings IS the finding. Grep the CONCEPT across every
+  file the round touched, not the file the strike landed in (BUT-1718: `, which stays a routing
+  facade` struck from one module header while `; the module stays a routing facade, as its own
+  doc says it should` shipped in the sibling — and the cross-file half was measurably false, the
+  cited doc containing no such sentence and the word `facade` not occurring in that file at all).
 - **STOP rule, or the sweep never terminates: a sentence saying only what the code REFUSES
   asserts no outcome and is not a carrier. Only a clause asserting what the write WOULD DO is.**
 - **Grade the REPLACEMENT as a fresh claim — the paragraph written to BE the correction is where
@@ -263,7 +272,14 @@ compress it.**
   round ADDED for its own widening sit OUTSIDE the historical claim's range, so a "every decoy
   here survived the old check" universal is false about exactly the new ones, and a count about
   an intermediate never-committed repair is settled by no artefact at all — BUT-2020); a sentence NAMING its own
-  verification command (it flips with the commit); and a WHY-clause justifying an assertion
+  verification command (it flips with the commit); **an effort claim about the gap a round did
+  NOT close — "closing it needs a harness that does not exist" — which is a false COVERAGE
+  pointer wearing a cost estimate, lands in the paragraph recording the gate's own finding, and
+  is the sentence the next run cites to skip the work (measured false twice now: BUT-2046, where
+  the emulator suite already drove the function, and BUT-1718, where the real-service harness
+  already existed and only a `Fake` override was missing). Resolve every such clause with a grep
+  for a real construction of the class before letting it ship, and STRIKE it rather than
+  re-costing it**; and a WHY-clause justifying an assertion
   the round's OWN fixture change just invalidated — making a fixture faithful (a DM's
   `title: ''`) removes the collision the "that is why this finder is scoped" sentence cites,
   so re-read every rationale beside a changed fixture. **The repair is to STRIKE, never to
@@ -465,6 +481,13 @@ compress it.**
   group. Read the callee's `catch` before choosing HOW the stub fails, and where the neutral value
   is ambiguous, pin the two states apart with `verifyNever` on the seam the genuinely-empty case
   must not reach (BUT-1951).
+- **A CLEAR-ON-ENTRY call (`_beginMutation`, "reset the parked reason") pinned by a count on the
+  SUCCESS path is graded against DELETION only, never against being MOVED below the early
+  returns — and moving it is the historical defect, not deleting it.** Both mutants are
+  identical from a happy-path fixture. The pin has to sit on a branch that `return false`s
+  before reaching the collaborator; a sibling method in the same suite usually already has that
+  case to copy. Same shape as the guard-POSITION rule above, wearing an error-reporting costume
+  (BUT-1718).
 - **A test asserting that a value SURVIVES a rebuild cannot tell "carried through" from "never
   rebuilt"** — the fixture REACHING the branch is a separate fact from the assertion
   DISCRIMINATING it. Pin the rebuild itself beside the carry (BUT-1971).
@@ -548,10 +571,15 @@ other suites prove:
   neutering it (`p = ''`), never by deleting a call site: only that shows the two call sites are
   actually distinguished, and it reddens one section while leaving the other green (BUT-2000 P5).
 - **A `firestore.rules` edit owes a run of `test/unit/security/rules_allowlist_drift_test.dart`
-  before any verdict** — its census pins the file's comment-stripped `hasOnly(` population by
-  NUMBER, so ANY new allowlist reddens it, a READ gate included, which the guard's name does
-  not suggest. A change that ran only its own new suites ships red (BUT-2046 follow-up). The
-  census demands a classification; bumping the number is the repair it names as forbidden.
+  AND `rules_numeric_bound_drift_test.dart` before any verdict** — the census pins the file's
+  comment-stripped `hasOnly(` population by NUMBER, so ANY new allowlist reddens it, a READ gate
+  included, which the guard's name does not suggest. **Twice now the change ran its own new
+  suites green and shipped this red** (BUT-2046 follow-up, BUT-1718): the tell is a rules diff
+  whose author reports a clean run over the feature's own files, because the census lives in a
+  directory the feature never touches. Settle it in one command before grading anything else —
+  `git show HEAD:firestore.rules | sed 's://.*::' | grep -c 'hasOnly('` vs the same on the index
+  both attributes the delta and proves it is yours. The census demands a classification; bumping
+  the number is the repair it names as forbidden.
 - A **telemetry constant** added in the same commit as the behaviour it measures (the sibling
   SUCCESS event is pinned, its FAILURE twin is not, emitted from the very `catch` the change made
   reachable) (BUT-1962).
@@ -1577,6 +1605,14 @@ re-collapses `''` to "unchanged" — pin the consumer's own `x ?? current` line 
 - **LIVE-PATH CHECK, before writing any test for a bug fix**: grep the call chain from the view down to
   the write and confirm the fixed method is ON it — a fix on a parallel facade with no `lib/` callers
   ships nothing. A tested caller + a tested callee ≠ a tested seam.
+  **The FAKE SANDWICH is the recurring form, and a whole ticket's worth of green suites hides it:**
+  when a change adds a method at layer N, the suite at N+1 mocks layer N and the suite at N−1 mocks
+  layer N−1's own collaborator, so nothing ever constructs N. Settle it with `grep -rn '<ClassName>(' test/`
+  (zero non-Mock hits IS the finding) and confirm with a `--coverage` DA read — no `lib/` write, and an
+  all-`DA:...,0` method body is unarguable. On BUT-1718 the ticket's ONE production decision
+  (`intent: selfRemoval` at the module's single call site) sat in such a body while 2313 tests passed
+  over it, and the layer's sibling hand-passes that same argument in its own suite — which is the exact
+  incident that layer's comments already warn about.
 - An optional nullable callback seam is invisible when every harness omits it — grep the seam's name
   across `test/`; zero hits IS the finding. **Hits are not the answer either: split them by LAYER** —
   all hits inside the widget's own suite means the view that WIRES it is unpinned, and deleting the
