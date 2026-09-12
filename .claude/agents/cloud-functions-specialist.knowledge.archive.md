@@ -20140,3 +20140,212 @@ in CLAUDE.md, so it did not need a second home in this file):
 "Removing a TEMPORARY refusal falsifies every sentence citing it — grep the flag
   REPO-wide (deviations, the sweep citing it as Art. 17 recovery, sibling
   knowledge files)."
+
+### 2026-09-12 — BUT-1716 step 3: an orphaned child row is NOT unerasable [gdpr][cascade][review]
+
+Re-review of the staged `functions/src` set for BUT-1716 step 3 (removal of the
+client item API on `shared_content/{id}/items` plus its `firestore.rules` block,
+and the comment-only edits the removal falsified in the cascade, its test file and
+`social/on-profile-updated.ts`).
+
+Verdict: pass, 0 blocking. Three Low findings, all comment strikes.
+
+The one worth keeping. Two sentences in
+`__tests__/account-deletion-cascade.test.ts` survived a strike that removed only
+their rules justification, and what survived is measurably false:
+"an orphaned row is unreadable and unerasable forever" (~line 1680) and
+"deleting it over surviving rows puts them beyond every client and every future
+erasure" (~line 1767). The CLIENT half is true and is now stronger than before —
+with the block gone the terminal `match /{document=**}` denies every verb on that
+path. The ERASURE half is not: `scrubSharedContentItemAttribution` discovers by
+`db.collectionGroup("items").where(<uidField>, "==", uid)` and path-scopes with
+`doc.ref.parent.parent` + `isSharedContentParent`, and neither step reads the
+parent DOCUMENT — so a later erasure of a DIFFERENT uid on the same row still
+finds and scrubs it. The same file argues the property from the other side at
+`deleteShoppingLists` (~line 1060): `listDocuments()` is used precisely because a
+MISSING parent still owns live `items`. Folded into the knowledge file's orphan
+principle, which said "orphans the server cannot QUERY" and invited exactly this
+conclusion; it now says parent-KEYED reads, and names the collectionGroup escape.
+
+Two other Lows. (1) The new cascade paragraph and the new `on-profile-updated`
+clause both assert what a ticket DID ("BUT-1716 removed the repository methods
+that did, and the rules block with them"). The measurable half is verified true —
+every `items` writer in `lib/` goes through `getUserCollection(...)` in
+`shopping_item_operations_module.dart`, i.e. the personal path, and the rules
+block is gone — but the historical form is the BUT-2044 class. (2) "TWO storage
+shapes" in `on-profile-updated.ts` is contradicted by this same ticket's accepted
+deviation recording `shared_content/{id}.listData` as a third shape nothing
+maintains; the numeral should be struck rather than re-counted. The third shape's
+SCOPE is a decided deferral and was not re-filed.
+
+Verified true and left alone: the surviving parenthetical in bullet 1 now scopes
+only `users/{uid}/unified_shopping_lists/{listId}/items`, which `firestore.rules`
+still grants (~line 402) and `deleteShoppingLists` still sweeps; "the query below
+still reaches any row left on disk there" (Admin SDK bypasses rules); "reaches
+both" keeps its antecedent; and the un-struck `items`-plus-rules claim at cascade
+line ~1057 points at the personal path and is still accurate. No surviving
+sentence in the three files claims a client can write these rows.
+
+`iter102-rules.test.ts`: `clearFirestore()` is correctly placed after
+`initializeTestEnvironment` and before any seeding, is project-scoped so it cannot
+touch a sibling suite on the shared emulator, and the comment's premise holds —
+`set()` on an existing doc evaluates UPDATE, and both notification collections
+have `allow create` only, so D1/D2/E1/E2 really do flip red on a second run
+against a persistent local emulator (CI starts a fresh one, which is why it never
+reddened there). No inter-case leak: distinct parent ids throughout. All five new
+denies were checked against the removed block recovered with
+`git show HEAD:firestore.rules` and would each have been ALLOWED under it, so the
+suite can see the rule come back — the `members/{uid}` seeding is load-bearing,
+because `isSharedMember` is what the old block's `hasSharedAccess` resolved a
+recipient through. One disclosed weak spot: the `collectionGroup("items")`
+assertion cannot detect a restored path-scoped block (a nested `match` never
+serves a collection-group query) and is additionally over-determined by the live
+personal `items` block; the case's other assertion is the discriminating one, and
+the comment says so. Registration confirmed in all four places and PROJECT_ID is a
+unique bare literal.
+
+Process note: the coordinator's brief named blob `a81eba30…` for the iter102 file;
+the staged and worktree blob is `fb6c578f…` (index == worktree, verified with
+`git hash-object` vs `git ls-files -s`), so the graded bytes are the shipping
+ones and the brief's hash was stale. The 7855-line cascade test file was read by
+range (1-1300, 1505-1924), not in full; the cascade itself was read whole.
+
+### 2026-09-12 — BUT-1716 step 3, round 2: what a strike leaves behind [review][comments]
+
+Re-review after all three of my lows were taken as deletions, plus a fifth file
+(`__tests__/on-profile-updated.test.ts`) entering the set. Pass, 0 blocking, two
+Lows — and both are the second-order cost of striking rather than rewording,
+which is worth recording because the strike rule is correct and still has this
+tail.
+
+**A strike can orphan a CONNECTIVE.** `account-deletion-cascade.ts` ~2962 now
+reads "unreachable by any client and therefore unerasable by anyone but this
+cascade". The clause the "therefore" used to draw from is gone, so it now infers
+server erasability from client reachability — two independent facts, since the
+Admin SDK bypasses rules entirely. The conclusion is true on other grounds. The
+defect is PRE-EXISTING (the old premise was client-scoped too), and the remedy is
+a one-word deletion. Read every connective — "therefore", "so", "which means" —
+after striking the clause on either side of it.
+
+**A strike keyed on the PHRASE misses the sibling in a file that joins the set
+later.** "TWO storage shapes" was struck in `social/on-profile-updated.ts`;
+`__tests__/on-profile-updated.test.ts` ~741 still says "Both storage shapes in
+one scenario", the same claim, falsified by the same accepted-deviation entry
+(`shared_content/{id}.listData`, a third copy nothing maintains). It was
+invisible on the first pass because that file was not in the set. Sweep the CLAIM
+across `functions/src` whole, not the diff. Checked and deliberately NOT filed:
+`account-deletion-cascade.ts` ~3048 and its test ~1533 say "the two shapes",
+whose referent is the two SCRUBS (subcollection vs array-path), which really are
+two; and `lib/repositories/firebase/modules/shopping_repository_query_module.dart`
+~145 enumerates the two shapes that one method probes. Same words, different
+claims.
+
+**The good outcome of a strike, recorded so it is not read as a loss.** At
+`__tests__/account-deletion-cascade.test.ts` ~1765 the struck justification was
+propping up a surviving assertion label, "…so the surviving rows are still
+reachable through it". That label turns out to be true in a STRONGER sense than
+the struck text claimed: `removeFromSharedContent` rediscovers an owned share's
+children through the parent (`owned` query by `sharedByUserId`, then
+`doc.ref.collection("items")`), and `scrubSharedContentItemAttribution`
+deliberately SKIPS owned parents (`ownedParentIds.has(...)`) — so for the erased
+user's own rows the parent really is the only handle on a retry. The struck
+sentence had been bounding a true claim with a false reason. Nothing needed
+adding.
+
+**One real code change this round, and it strengthens a control.** The iter102
+recipient CONTROL now seeds `validSharedContentBody(SHARER_UID, [])`. The parent
+`allow get` has three disjuncts; with an empty `sharedToUserIds` and a recipient
+who is not the sharer, only `isSharedMember` can grant the read — which is
+exactly the premise the create- and update-denies rest on, since the removed
+`items` block gated on `hasSharedAccess` and never read `sharedToUserIds`. The
+control was previously satisfied by the wrong disjunct and proved nothing about
+the `members/` seed. Delete the seed now and it reddens. Also struck in that file:
+"the denials above", where "above" had gone false — two of the denies sit BELOW
+the controls comment.
+
+Read coverage this round, at the quoted index blobs (all five verified
+`git rev-parse :<path>` == `git hash-object`): `on-profile-updated.test.ts` and
+`iter102-rules.test.ts` whole; `on-profile-updated.ts` and both cascade files by
+range around the hunks.
+
+### 2026-09-12 — correction to the entry above, same day, my own sentence [review][correction]
+
+The round-2 entry says of the iter102 recipient control: "The control was
+previously satisfied by the wrong disjunct and proved nothing about the
+`members/` seed." The second half stands. The first half is FALSE, by the same
+measurement the `firestore-rules-tester` gate used to strike the coordinator's
+clause six words long.
+
+`allow get` on `shared_content/{contentId}` is, in order: `sharedByUserId` ==
+uid; `isSharedMember(...)`; `uid in sharedToUserIds`. CEL `||` short-circuits
+left to right, so under the OLD fixture disjunct 2 — `isSharedMember`, satisfied
+by the `members/` seed — returned true first and disjunct 3 was never reached.
+The old control was therefore granted THROUGH the seed, not around it.
+
+What was actually wrong with the old fixture is OVER-DETERMINATION: disjuncts 2
+and 3 were BOTH true, so deleting the `members/` seed left the case green and the
+control proved nothing. Emptying `sharedToUserIds` kills disjunct 3 and makes the
+seed load-bearing. Same fix, different reason — and the distinction matters,
+because "wrong disjunct" implies the engine never touched the mechanism under
+test, which would have made the control evidence of the OPPOSITE thing.
+
+The generalisable bit: a control's discriminating power is a property of the
+OUTCOME SET (would it still pass with the fixture element removed?), never of
+which disjunct the engine reached first. Short-circuit order is irrelevant to
+whether a case is over-determined, and reasoning about it is how both this
+sentence and the one the gate struck went wrong — in opposite directions, hours
+apart, about the same six lines.
+
+Third time this ticket that the false sentence was the one written to EXPLAIN a
+correct change: the coordinator's clause, and now mine, both inside text authored
+as the fix.
+
+### 2026-09-12 — BUT-1716 step 3, final round: "I cannot measure that" was false [review][scope]
+
+The fifth and last copy of the bad count. `iter102-rules.test.ts` :367 said the
+`items` subcollection "carried an unused way to store a shared list's rows; **the
+live one** is the embedded array on the list document". I flagged the definite
+article as the same closed enumeration as the four already struck, then declined
+to call it a finding on the ground that I could not settle the referent of "the
+list document" by measurement.
+
+That ground was wrong. It was settleable in one command, by opening the WRITER:
+`lib/services/unified/operations/modules/shopping_social_share_module.dart` reads
+the whole list document at line 71, embeds it as `listData` at line 82, and
+`set()`s it onto `shared_content` at line 98 — unconditional, every share, live
+client code. Reproduced myself rather than taken from the gate that found it.
+So there IS a second live store of those rows and the clause was false on its own
+axis, which is unused-versus-live.
+
+**The error was a scope error masquerading as an epistemic one.** This agent owns
+server-side TypeScript, so I treated `lib/` as unavailable. Scope governs what I
+CHANGE and what I GRADE; it never governed what I may READ to check a claim. A
+`functions/src` comment asserting something is "live" or "unused" is usually a
+claim about a Dart writer, and the writer is the only place it can be settled.
+Folded into the principles file.
+
+Note also the near-miss that makes this worth recording: the `integration-reviewer`
+gate had CLEARED the same clause an hour earlier, reasoning from the deviation
+entry's "nothing maintains it". True premise, false conclusion — maintained and
+live are different properties. Two passes and my own caution all landed on the
+same sentence and all three got it wrong in different ways.
+
+Second lesson, smaller: my declining was itself the second time this evening I
+called something "defensible" or "unmeasurable" that a gate then decided against
+me (the first was `nothing can reach those rows afterwards to try again`). The
+pattern is that both hedges appeared when the deciding evidence sat OUTSIDE the
+file I was reading. Treat "I can't settle this from here" as a prompt to widen the
+read, not as a verdict.
+
+Final state graded: the sentence is now "The `shared_content/{id}/items`
+subcollection carried an unused way to store a shared list's rows. It has no rules
+block." The replacement is new text and was measured: the
+`match /shared_content/{contentId}` block contains `members`, `views`,
+`engagements`, `dismissals` and `collaborators`, and no `items`. The struck
+second half ("Its rules block was removed together with the repository API, after
+a production count returned zero rows") was the history-and-measurement class —
+correctly relocated, since the production count lives in the deviation record
+where it is attributed, not in a test comment where it cannot be reproduced.
+
+Path correction for future greps: the writer is under
+`lib/services/unified/operations/modules/`, not `lib/services/unified/modules/`.

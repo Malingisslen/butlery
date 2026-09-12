@@ -4479,7 +4479,8 @@ they wrote. Rows are scoped by path to a top-level `shared_content` parent, beca
 race over the same rows.
 
 **Art. 15.** The bundle carries the `shared_content` PARENT rows and
-`users/{uid}/unified_shopping_lists/*/items`, and no item rows from `shared_content`. So this
+`users/{uid}/unified_shopping_lists/*/items`, and no item rows from the `shared_content`
+SUBCOLLECTION. So this
 change makes rows erasable that are not exportable. Unlike the BUT-1832/BUT-2057 cases they are
 the requester's own content — name, note, price, priority — on a path their own client may read
 (`allow read: hasSharedAccess(...)`), so there is no Art. 15(4) argument for withholding them.
@@ -4521,3 +4522,89 @@ reachable by no query, because discovery is field-keyed. The cap counts rows BEF
 path-scoping, so personal-list rows spend it too. And a concurrent row delete (the `items` delete limb is `hasSharedAccess`)
 poisons a chunk with grpc 5 and flips the run to `gdprCompliant: false`, where the array twin
 tolerates exactly that case; the error direction is the safe one.
+
+## BUT-1716 — the shared-list item subcollection API is removed (2026-09-12)
+
+**What ships.** Ten public methods on `FirebaseSharedShoppingRepository` that read and wrote
+`shared_content/{id}/items` are deleted, together with `_updateItemCount` and
+`validateListAccess`, which only they used; the `match /items/{itemId}` block under
+`shared_content` in `firestore.rules`; the dedicated suite
+`test/unit/repositories/firebase/firebase_shared_shopping_items_test.dart`; and the item group in
+`test/unit/repositories/firebase_shared_shopping_repository_test.dart`. The repository shrinks by the whole
+item block.
+
+**Why.** A shared shopping list's rows live in the embedded array on
+`unified_shared_shopping_lists/{id}`, which is what the app reads and writes.
+Nothing in `lib/` called any of the subcollection's ten methods.
+
+**The premise I first gave Malin was false, and the record should carry that.** The
+recommendation to remove rested on "every write on that path is refused by the server". The plan
+auditor challenged it and the measurement went the other way: `UnifiedShoppingItem` carries
+`addedByUserId` and `lastModifiedByUserId`, and `addItem`/`addItemsBatch`/`updateItem` write
+`item.toFirestore()`, so a caller building an item the ordinary way satisfies the create and
+update limbs. Only `toggleItemBought` and `uncheckAllItems` hand-build maps without
+`lastModifiedByUserId` and were structurally denied. `allow read` and `allow delete` required only
+`hasSharedAccess`, so reading and deleting worked. A provenance argument in the same paragraph was
+wrong too: `54df5d65a` introduced the rules conjuncts and `addItem` in one commit. The path was
+UNUSED, not broken. Malin was shown the correction and the alternatives — keep the path and fix
+the two denied methods, or land only the erasure half — and chose removal on the corrected facts.
+
+**The removal was gated on a production count, and the gate was real.** Measured 2026-09-12
+against `butlery-app-1`: `shared_content` held zero documents and zero item rows, and is not a
+root collection there. The same connection returned `ingredients: 2235`, `users: 2`,
+`public_profiles: 2`, `conversations: 1` — the control that makes the zero a measurement rather
+than a misdirected query. With rows present, removing the rules block would have put them beyond
+every client, and the decision would have gone back to Malin. The count is attributed, not
+reproducible from this repo: a one-off Admin-SDK read, committed nowhere.
+
+**What pins the absence.** Cases in `iter102-rules.test.ts` covering every verb the deleted
+block granted — read, create, update, delete — plus list and the `collectionGroup("items")`
+route, and two controls: the sharer and a seated recipient can both still read the PARENT
+document. Each denial cites the terminal catch-all in the emulator's own evaluation trace, which
+is visible from a probe rather than from the suite's own output. Probed by putting the block
+back, whole and one limb at a time: the denials redden, the controls stay green, and restoring
+only the update limb reddens the update case alone.
+
+**The erasure half stays.** BUT-1716 step 1 taught the account-deletion cascade to erase
+attribution from these rows and to delete them with an owned share. That code is not removed:
+rows can exist on disk in a project this one is not, and a cascade that stops looking is how a
+residual becomes permanent.
+
+**Found on the way, and fixed here:** `iter102-rules.test.ts` never cleared its emulator project,
+so a second run saw every seeded document already present and turned each `create` into an
+`update` — two of its cases were green on the first run and red on every run after. It calls
+`clearFirestore()` in setup now. A suite that only passes once cannot grade a mutation probe,
+which is how this surfaced.
+
+## BUT-1716 — step 3 supersedes three premises of step 1 (2026-09-12)
+
+The step-1 entry above reasons from the `items` rules block, which step 3 removed on the same
+day. Its decisions stand; three of its stated premises do not, and they are quoted from THIS
+file because the `.claude/rules` mirror words them differently — a grep for one will not find
+the other.
+
+Retired verbatim: "on a path their own client may read
+(`allow read: hasSharedAccess(...)`), so there is no Art. 15(4) argument for withholding them."
+Measured after the removal, from the emulator's own trace: a sharer's `get` on one of those rows
+denies at the terminal catch-all, as does a seated recipient's, and so does the
+`collectionGroup("items")` route. The Art. 15 conclusion is unchanged — the rows are the
+requester's own content, which is what the argument turns on — but it no longer rests on client
+readability. **This matters beyond tidiness: the open question on BUT-2094 was put to Malin with
+that premise in it.**
+
+Retired verbatim: "A remaining member whose screen cached a pre-scrub copy
+restores the erased uid on their next edit — `FirebaseSharedShoppingRepository.updateItem`
+writes the whole item and the `items` update limb pins only `lastModifiedByUserId`; the accepted
+stale-client class." Both the method and the limb are deleted. No client can resurrect a scrubbed
+row on this path any more.
+
+Retired verbatim: "And a concurrent row delete (the `items` delete limb is `hasSharedAccess`)
+poisons a chunk with grpc 5 and flips the run to `gdprCompliant: false`, where the array twin
+tolerates exactly that case". There is no client delete limb; only the Admin SDK reaches these
+rows, so the concurrent deleter this described cannot exist.
+
+What does NOT change: the cascade still erases these rows, and must. Rows can exist in a project
+this one is not, and a cascade that stops looking is how a residual becomes permanent.
+
+Raised by the `code-reviewer` and `firestore-rules-tester` gates, which measured it
+independently — the second from an emulator trace rather than from a reading of the rules file.

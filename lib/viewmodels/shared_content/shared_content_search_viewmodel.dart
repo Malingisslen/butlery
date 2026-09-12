@@ -522,11 +522,9 @@ class SharedContentSearchViewModel extends ChangeNotifier {
     SharedShoppingList list,
     String query,
   ) {
-    // Issue #015: Items now in subcollection, can't search without loading
     // Simplified scoring without item-level search
     final lowerQuery = query.toLowerCase();
     return _scoreTitleMatch(list.listName, query) +
-        // Note: Can't search item names without loading from repository.getItems()
         (list.listDescription?.toLowerCase().contains(lowerQuery) == true
             ? 4.0
             : 0.0) +

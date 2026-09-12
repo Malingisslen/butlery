@@ -38556,3 +38556,108 @@ two of them carried by a sentence the same commit rewrote. That second carrier i
 keeping — the clause reads as inherited, so the diff cannot show it, and only `git show
 HEAD:<file>` on the SURVIVING copy distinguishes "inherited text" from "re-emitted as this
 commit's claim". It is now a principle in the knowledge file.
+
+### 2026-09-12 — BUT-1716 step 3: grading a REMOVAL, and a control that proves nothing
+
+Coverage gate on the staged removal of ten `shared_content/{id}/items` repository methods, the
+`match /items/{itemId}` rules block, the dedicated Dart suite and the item group in the surviving
+suite. Verdict: fail, one blocking finding — a comment, not code.
+
+**Nothing lost its only pin.** `validateListAccess`, `streamItems`, `_updateItemCount` and
+`getItems(` return ZERO hits across `lib/`, `test/` and `functions/src` after the removal. The
+surviving name hits (`addItemsBatch`, `toggleItemBought`, `uncheckAllItems`, `removeItem`,
+`updateItem`) are all the PERSONAL family in `shopping_item_operations_module.dart` — the
+same-name-different-class decoy. No test stubs any removed method on the shared-shopping mock.
+Every test deleted from the surviving suite targeted a deleted method; the model and coordinator
+diffs are comment-only (verified by reading the staged diff, not the report). `itemCount` keeps
+its only writer, `SocialShoppingCoordinator.createSharedContentModel`
+(`contentSnapshot.items.length`), pinned by the coordinator suite's `itemCount == 3` case;
+`_updateItemCount` had no live caller, so removing it changes no behaviour — the count was already
+a write-once snapshot.
+
+**BLOCKING — the second control in `iter102-rules.test.ts` is vacuous for its stated purpose.**
+The comment says "the seated RECIPIENT's read proves the membership fixture really seats them —
+which is what the create deny above depends on". Measured analytically from the rule, which beats
+a probe: `allow get` on `shared_content/{contentId}` is
+`uid == sharedByUserId || isSharedMember(...) || uid in resource.data.sharedToUserIds`, and
+`validSharedContentBody(SHARER_UID, [RECIPIENT_UID])` puts the recipient in `sharedToUserIds`. So
+the control passes with the `members/{uid}` seat deleted, and the seat is pinned by nothing. The
+second clause is false a second way: the create deny does NOT depend on the seat either — it
+denies at the terminal catch-all seated or not. The seat is load-bearing only for the mutation
+PROBE (a restored `hasSharedAccess` limb must ADMIT the actor). Remedy is a strike, and the strike
+must take "Two arms, because one actor cannot cover both halves:" with it or that head clause
+dangles over one surviving arm. If the seat is wanted as a pinned fact, the honest arm is the
+recipient reading their OWN `members/{uid}` row, which `match /members/{userId}` grants on
+`userId == request.auth.uid` and nothing else.
+
+**Non-blocking — the mutant the seven cases do not catch.** Each verb is probed by exactly one
+actor: read/list/delete by the SHARER, create/update by the seated RECIPIENT. The deleted limbs
+were all `hasSharedAccess` (both actors), so any faithful restoration reddens; an actor-NARROWED
+restoration (`allow read: if isSharedMember(...)`, or an owner-only create) leaves all seven
+green. The cases are otherwise well built: each denied payload satisfies every conjunct the old
+limb carried (`id == itemId`, `addedByUserId == uid`, `lastModifiedByUserId == uid`), so a
+restored limb really would ALLOW.
+
+**Ran what the brief did not list.** A `firestore.rules` edit owes
+`rules_allowlist_drift_test.dart` + `rules_numeric_bound_drift_test.dart`; the brief named neither.
+16/16 green. The `hasOnly(` census is unchanged at 39 (the deleted block carried
+`hasRequiredFields`, 42 -> 41), which is why the census assertion did not redden — worth knowing
+that a block removal can be census-neutral and still needs the run.
+
+**`clearFirestore()` belongs in this commit.** It is the precondition for grading this commit's
+own probes (a suite that only passes once cannot grade a mutant), it is test-only, and splitting
+it would leave the new absence cases ungradeable on a second run. It makes nothing else vacuous:
+every case seeds its own uniquely-id'd documents and no assertion depended on cross-run residue.
+It clears once at setup, not between tests, so within-run ordering still matters — S2 (recipient
+filtered list) runs before the item fixtures, and a reorder past a doc naming a different
+recipient would still be fine because the query filters on the uid.
+
+Non-blocking tidies reported, not applied: the surviving suite's `createTestItem`/`createTestItems`
+now exist only to yield the literal 3 through `createTestItems().length`; and the "empty items"
+edge case passes `items: []` where nothing asserts the resulting count — `expect(listDoc.data()
+?['itemCount'], 0)` would make the test's own name true again and would be the only assertion that
+`itemCount` reaches Firestore through the repository's create path.
+
+Index == worktree for all 19 staged paths (`git rev-parse :<f>` vs `git hash-object <f>`), so the
+verdict is against what ships. The staged repository blob is 360 lines, under the 500 guard, so
+dropping its `ACCEPTED_LARGE_FILES` row is correct; the earlier "drops to 362" sentence another
+gate found is gone rather than re-numbered.
+
+**Resolved the same day, same review.** The coordinator struck the whole clause, including the
+"Two arms, because one actor cannot cover both halves:" head, so nothing dangles over one
+surviving arm. Re-read the file at `fb6c578f`: the replacement comment claims only that the
+controls prove the ruleset loaded and the parent grant still works, and keeps the honest sentence
+that no control here can see a misspelled path. Both control tests and the seat write stay — the
+seat is load-bearing for the PROBE, and the header comment already says so without claiming the
+seat is pinned. Suite 21/21 after the strike; the other 18 staged blobs re-verified byte-identical
+to what was graded. Verdict flipped to pass.
+
+## 2026-09-12 — BUT-1716: "its only writer" was false, measured
+
+An earlier entry in this archive says `itemCount` keeps "its only writer,
+`SocialShoppingCoordinator.createSharedContentModel`". Correction, appended rather
+than edited because this file is append-only: there is a SECOND live writer.
+`lib/utils/social_content_features.dart:268` calls
+`SharedShoppingList.create(..., itemCount: shoppingList.items.length)` from
+`_createSharedShoppingListInvitation` (:232), reached from the public
+`shareContentWithFriends` (:139), whose importer is
+`lib/viewmodels/universal_share_dialog_viewmodel.dart`. Traced to a live entry point,
+not inferred from the definition existing.
+
+The conclusion the false premise supported still holds on independent grounds, which is
+why no code changed: the deleted suite exercised `_updateItemCount`, which had no live
+caller, so nothing went homeless however many writers `itemCount` has. The pin at
+`social_shopping_coordinator_test.dart:522-524` is also non-vacuous — the coordinator
+passes no `listItems`, so `itemCount ?? listItems?.length ?? 0` makes the 0-or-hardcoded
+mutant its reason-string names redden it.
+
+The lesson is the shape, not the fact: "its only writer" is a quantifier over the whole
+tree, and it was written from the writer that the file under review happened to name.
+Found by the `integration-reviewer` push gate, which was the first pass to read the
+coordinator and its suite as a pair.
+
+Named residual, out of that commit's range: the second writer's `itemCount` is pinned by
+nothing (`social_sharing_viewmodel_test.dart` mocks the coordinator), and
+`shopping_social_share_module.dart` writes a `shared_content` document with no
+`itemCount` field at all, so a list shared through the universal dialog parses back as
+`itemCount: 0` while `listData` holds the rows.

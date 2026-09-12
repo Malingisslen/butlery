@@ -671,6 +671,14 @@ other suites prove:
   assertion beside it reads a status STRING the mock only yields through the refresh being pinned.
   The residual is worth one sentence, not a test: such an assertion reads as decorative, so say
   what it READS — deleting it as redundant is what would arm the fragility.
+- **A CONTROL arm is graded by WHICH DISJUNCT grants it, never by what its comment claims it
+  proves.** A "the seated member can still read the PARENT" control is granted by a different
+  limb (`uid in sharedToUserIds`) than the fixture it is said to certify (`members/{uid}`), so
+  deleting the seat leaves it green and the seat is pinned by nothing — and in a REMOVED-block
+  suite every deny passes seat-or-no-seat, so nothing else can see it either. Read the granting
+  rule's disjuncts and pin the fixture through the one that NEEDS it (the member's own
+  `members/{uid}` read); a control whose comment claims to prove a fixture is the commonest
+  place that claim is false (BUT-1716).
 - **A FAIL-CLOSED projection (allowlist) owes its withheld-absent and kept-present assertions in
   ONE test body, because each half kills a DIFFERENT mutant and the withheld half alone is
   satisfied by the empty-return route.** Measured (BUT-2062): "always return `const {}`" kills only

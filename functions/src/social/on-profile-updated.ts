@@ -208,16 +208,18 @@ export async function propagateProfileUpdate(
     // ships in the Art. 15 bundle (`shared_shopping_list_export.dart`), so its
     // staleness is an accuracy problem on a downloadable artifact too.
     //
-    // TWO storage shapes, and a fix that covers one leaves the other stale:
+    // The storage shapes, and a fix that covers one leaves the others stale:
     //
     //   * a SUBCOLLECTION — `users/{uid}/unified_shopping_lists/{listId}/items`
-    //     (the path `firestore.rules` grants and the deletion cascade sweeps)
-    //     and `shared_content/{contentId}/items`. A collection-group query
+    //     (the path `firestore.rules` grants and the deletion cascade sweeps).
+    //     `firestore.rules` carries no block for the shared twin
+    //     under `shared_content/{contentId}/items`; the query below still
+    //     reaches any row left on disk there. A collection-group query
     //     reaches both wherever they are nested; it needs the declared
     //     COLLECTION_GROUP field overrides in `firestore.indexes.json`, since
     //     Firestore's automatic single-field indexes are collection-scoped.
     //
-    //   * an EMBEDDED ARRAY on the shared list document — `firestore.rules`
+    //   * an EMBEDDED ARRAY on `unified_shared_shopping_lists/{id}` — `firestore.rules`
     //     says it outright ("items are embedded in the list doc"). No query can
     //     filter on a field inside an array element and no update can patch one
     //     in place, so that leg reads the document and rewrites the array.

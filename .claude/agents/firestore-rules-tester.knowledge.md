@@ -37,6 +37,7 @@ enters this file").
 | `/blocks/{blockerId}_{blockedId}` (list, get, create, update-deny, delete) | `blocks-rules.test.ts` | `test:rules:blocks` |
 | `/ingredient_suggestions` (owner list/get, client create, update+delete deny) | `ingredient-suggestions-rules.test.ts` | `test:rules:ingredient-suggestions` |
 | `/user_moderation/{uid}` + its `report_history` subcollection, **and** the `friend_categories` / `public_profiles` admin moderation overrides | `moderation-rules.test.ts` | `test:rules:moderation` |
+| `/shared_content` list/get, `notification_delivery`+`notification_engagement` create, **and the REMOVED `shared_content/{id}/items` block** | `iter102-rules.test.ts` | `test:rules:iter102` |
 | All of the above                      | (sequence)                 | `test:rules:all`          |
 
 If the diff touches a collection not listed above, **create a new test file** named
@@ -383,6 +384,15 @@ Standard deny matrix for ownership-checked collections:
   rule and is two.
 - **Never cite a rules LINE NUMBER in a comment or report — the file renumbers on every
   edit.** Cite the `match` pattern or function name instead.
+- **Deleting a limb falsifies every DECISION RECORD that cites it, and the nearest carrier is
+  an entry from the SAME TICKET shipped hours earlier.** BUT-1716 step 3 removed
+  `shared_content/{id}/items` while step 1's entry — in the same two files the commit edits —
+  still argued an Art. 15 question from "a path their own client may read
+  (`allow read: hasSharedAccess(...)`)", and named residuals from an `items` update limb and
+  an `items` delete limb that no longer exist. Grep the deleted limb's HELPER NAME and the
+  deleted METHOD names across both deviation mirrors before calling a removal complete; the
+  repair is a dated SUPERSESSION quoting each mirror's own wording (they hard-wrap
+  differently), never a strike.
 - **`.claude/rules/accepted-deviations.md` and `docs/architecture/ACCEPTED_DEVIATIONS.md` are
   called mirrors and are not byte-identical, so a "Retired verbatim" quote can be verbatim for
   ONE of them and absent from the other.** Found on BUT-2038: the superseding entry quoted the
@@ -702,6 +712,22 @@ Standard deny matrix for ownership-checked collections:
   `totalReports ?? 0` then `increment(1)`, so a client-created record holding a large
   negative count never reaches the alert threshold, and it satisfies the read gate's key set
   so nothing else notices. Delete the document inside the write test, then `set()`.
+- **A REMOVED match block** (the path falls through to the terminal `match /{document=**}`):
+  the coverage universe is the verbs the DELETED block granted, not the verbs a reviewer
+  finds natural. Pin one deny PER GRANTED VERB, sent by the actor the old block would have
+  ADMITTED (owner/seated member), plus a fail-closed control on the PARENT document —
+  without it a wrong path, an unseated fixture or a ruleset that failed to load passes every
+  deny for free. Measured on `shared_content/{id}/items` (BUT-1716): a read/create/delete
+  triple survives the likeliest partial restoration, an `allow update` limb alone, because no
+  case sends an update. Attribute each deny by the trace's LINE — every verb must name the
+  catch-all's line, and a deny at any other line means an outer or collection-group rule still
+  reaches the path. Check `collectionGroup(<name>)` too: a `{path=**}/<name>` rule elsewhere
+  would keep the rows reachable after the specific block is gone.
+- **A write deny prints its trace in the emulator's `GrpcConnection` log; a READ deny does
+  NOT** — the `false for 'get' @ L<n>` string is only on the thrown error, which `assertFails`
+  swallows, so a suite run can attribute the writes and say nothing about the reads. Capture
+  it with a throwaway probe that catches and prints `err.message`, and do not filter the
+  output on `^false for` — the trace sits on the line AFTER the message's leading `\n`.
 - **Deny-all server-only collection** (`allow read, write: if false`): matrix
   {read,create,update,delete} × {unauth, non-admin, admin} — admin-still-denied is the
   load-bearing case — plus one Admin-SDK-bypass write that succeeds.

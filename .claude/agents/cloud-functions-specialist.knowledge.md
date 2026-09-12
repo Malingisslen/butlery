@@ -223,9 +223,13 @@ from `(err as {code?}).code`.
   keeps it a strict SUBSET of the swept field (`categorySeatedUserIds` ⊆
   `memberIds`) — prove it per writer, else add deleter AND probe.
 - **A parent deleted by plain `doc(id).delete()` leaves subcollection orphans
-  the server cannot QUERY** — `listDocuments()` is the only Admin-SDK call
+  no PARENT-KEYED read can reach** — `listDocuments()` is the only Admin-SDK call
   returning refs for MISSING docs with live children (a `count()` reports ZERO);
   use it on sweep AND probe, and `strict:true` for a doomed parent's children.
+  The CHILDREN stay reachable: a `collectionGroup` query on the row's OWN field,
+  path-scoped via `ref.parent.parent`, returns them whatever happened to the
+  parent — so "orphaned = unerasable forever" is FALSE for such a leg, however
+  true it is for every CLIENT. Never write it without naming which reader.
   So a step destroys its parent/shared HANDLE LAST, after every child commit —
   including a QUERY HANDLE cleared in the same write as the scrub, ahead of a
   dependent mirror.
@@ -238,9 +242,9 @@ from `(err as {code?}).code`.
   deletion is the cascade's LAST step); a cross-user sweep that STAMPS the
   revision guard (`arrayRemove` leaves it untouched, so an older in-flight
   rebuild wins); a run AFTER the source tier; and a CAP flag unread by the
-  consuming rules gate under-enforces on input OTHER people choose
-  (`.limit(cap+1)` with NO `orderBy` keeps the lowest doc ids, so sockpuppets sort a
-  real entry off the end). Trigger + reconcile NARROWS the window, never closes it;
+  consuming gate under-enforces on input OTHERS choose (`.limit(cap+1)` with no
+  `orderBy` keeps the lowest doc ids, so sockpuppets sort a real entry off the
+  end). Trigger + reconcile NARROWS the window, never closes it;
   a task LAST in `WEEKLY_REPORT_TASKS` is what `runTaskChain` SKIPS first, and a
   TIMEOUT aborts the chain at ANY index — so a safety sweep needs its own
   wall-clock budget, not just a row cap.
@@ -336,12 +340,16 @@ from `(err as {code?}).code`.
   CLOSED and every CLEAN fixture reddens.
 - **EXPORT ⊇ DELETION is the cascade's other drift guard**: every source-parsed
   `subs` name is either read by an export chain or in a reasoned exemption map
-  kept in PRODUCTION source, not the test. Such a map is PERMANENT — re-check
-  each "no live writer" exemption against the same writer scan; an exemption
-  reasoned from ANOTHER export SECTION dies with that section, so re-argue it
-  in the commit removing it AND supersede every decision-record sentence that
-  commit falsifies. Name every withheld collection in a `data_minimisation`
-  line, verifying WHICH line names it, or the gap is undisclosed (Art. 12(1)).
+  kept in PRODUCTION source, not the test. That map is PERMANENT — re-check each "no live writer"
+  exemption against the writer scan; one reasoned from another export SECTION dies
+  with it, so re-argue it in the removing commit and supersede every
+  decision-record sentence it falsifies. Name each withheld collection in a
+  `data_minimisation` line, verifying WHICH line, or the gap is undisclosed
+  (Art. 12(1)).
+- **Scope limits what you CHANGE, not what you may READ.** Whether a TS comment's
+  "live"/"unused" claim holds is often decided by the Dart WRITER one file away
+  ("maintained by nothing" != "not live"). Open it before calling a referent
+  unsettleable.
 - **A SCHEDULED JOB writing uid-keyed rows under a non-`users/{uid}` path is
   invisible to both of the cascade's structural loops** (e.g.
   `analytics/notifications/effectiveness`) — give each its own probe leg; a

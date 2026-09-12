@@ -111,7 +111,7 @@ void main() {
       expect(_build().contentTypeName, 'shopping_list');
     });
 
-    test('contentSnapshot is empty (items stored in subcollection)', () {
+    test('contentSnapshot is empty', () {
       expect(_build().contentSnapshot, isEmpty);
     });
 

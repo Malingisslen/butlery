@@ -31,15 +31,14 @@
 ///   defaults shareMessage to '' when null, and uses `items.length` for
 ///   itemCount (NOT a hardcoded zero).
 /// - `createImportedContent`: produces a COLLABORATIVE list (not
-///   personal); always starts with `items: []` per the Issue #015
-///   subcollection contract; uses sharedByUserId as ownerId; adds the
+///   personal); always starts with `items: []`; uses sharedByUserId as
+///   ownerId; adds the
 ///   joining user as `edit` permission; allowGuestEditing forced to
 ///   false. Owner auto-gets admin via the factory.
 /// - `createImportedContent` newTitle override: if `newTitle` is null,
 ///   falls back to `sharedContent.listName`; if provided, overrides it.
 /// - `getOriginalContentFromShared`: returns a fresh UnifiedShoppingList
-///   (NOT the items subcollection content — known limitation: returns
-///   empty items per Issue #015). Owner gets admin permission.
+///   (known limitation: returns empty items). Owner gets admin permission.
 /// - `getSharedByUserId`: pure pass-through (`shared.sharedByUserId`).
 ///   Underpins CoW ownership routing.
 /// - `triggerCopyOnWriteForContent`: shopping lists DON'T use CoW —
@@ -613,11 +612,8 @@ void main() {
         },
       );
 
-      /// Issue #015 contract: items start EMPTY because they're stored
-      /// in a subcollection now and must be loaded separately. A bug
-      /// that populated items inline would create duplicate items on
-      /// the live list and the subcollection.
-      test('items always start empty (Issue #015 — load from subcollection)', () {
+      /// The imported list starts EMPTY.
+      test('items always start empty', () {
         final shared = _sharedList(itemCount: 42);
 
         final imported = coordinator.createImportedContent(
@@ -628,8 +624,7 @@ void main() {
         expect(
           imported.items,
           isEmpty,
-          reason:
-              'itemCount may be 42 but items list MUST be empty — caller loads from repo',
+          reason: 'itemCount may be 42 but the items list MUST be empty',
         );
       });
 
@@ -659,7 +654,7 @@ void main() {
     // ---------------------------------------------------------------------
     group('getOriginalContentFromShared', () {
       /// Returns a UnifiedShoppingList reconstructed from the SharedShoppingList
-      /// metadata. Owner gets admin permission. Items are empty (subcollection).
+      /// metadata. Owner gets admin permission. Items are empty.
       test('returns collaborative list with owner as admin, empty items', () {
         final shared = _sharedList(
           sharedByUserId: 'sender',

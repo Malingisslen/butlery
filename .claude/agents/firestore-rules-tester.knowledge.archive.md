@@ -5321,3 +5321,54 @@ Non-blocking notes filed in the report: the undeclared-merge deny's named "twin"
 re-rate) differs in several keys, not just `featured`; no reply-shaped comment (string
 `parentCommentId` + parent `replyCount` increment in the same batch) is pinned; both new rules
 comments cite `file:line` ranges in another file, which rot.
+
+## 2026-09-12 — BUT-1716 step 3: proving a REMOVED rules block (`shared_content/{id}/items`)
+
+Reviewed the staged removal of `match /items/{itemId}` under `shared_content`, together with
+ten repository methods over that path. Ran `npx ts-node src/__tests__/iter102-rules.test.ts`
+against the live emulator on 127.0.0.1:8080 TWICE: 18/18 both runs (the suite gained
+`clearFirestore()` in setup in this same diff, which is what makes the second run
+reproducible — before it, two cases went red on every run after the first).
+
+Evaluation traces, measured rather than inferred. The suite's own output carries the WRITE
+denials (`false for 'create' @ L3629`, `false for 'update' @ L3629`, `false for 'delete' @
+L3629`); L3629 is `allow read, write: if false;` inside the terminal `match /{document=**}`.
+The READ denial prints nothing there — the trace lives on the thrown error that `assertFails`
+swallows. A throwaway probe (created under `functions/src/__tests__/`, deleted in the same
+Bash call; `git status` re-verified clean afterwards) caught and printed the messages:
+
+    SHARER    GET    "\nfalse for 'get' @ L3629"
+    SHARER    LIST   "\nfalse for 'list' @ L3629"
+    SHARER    UPDATE "7 PERMISSION_DENIED: \nfalse for 'update' @ L3629"
+    RECIPIENT GET/LIST/UPDATE  — identical, same line
+    collectionGroup("items")   "\nfalse for 'list' @ L3629"
+
+So every verb, for the owner AND for a seated member (`members/{uid}` row present, i.e. both
+actors would have satisfied the old `hasSharedAccess`), lands on the catch-all and on nothing
+else. No `{path=**}/items` collection-group rule exists, and the fixture row was confirmed
+present under `withSecurityRulesDisabled` before each read, so the denials are not
+missing-document artefacts.
+
+VERB-SET GAP, the finding worth keeping: the four new cases cover read, create and delete.
+The deleted block granted read, create, UPDATE and delete, and the update limb was its own
+argued grant (BUT-238 claim/unclaim, "any member may edit"). A partial restoration of the
+update limb alone therefore leaves all four cases green. List is the cheaper second gap — the
+production reader was a collection query — but a restored READ limb already reddens the GET
+case, so update is the one that matters.
+
+No other suite in `functions/src/__tests__` asserts anything about the removed block: the only
+`/items` hits under `shared_content` are in `iter102-rules.test.ts`; `shared-shopping-lists-rules.test.ts`
+is the ARRAY twin (`unified_shared_shopping_lists`), and the cascade suites drive the Admin SDK
+through fakes, where rules never run. So nothing went vacuous and nothing broke. Registration is
+complete (`test:rules:iter102`, in `test:rules:all`, both `paths:` blocks;
+`check-test-registration.js` OK, 45 rules suites).
+
+Two documentation defects found, both in staged files:
+1. `ACCEPTED_DEVIATIONS.md` says the repository "drops from 802 lines to 362". The staged blob
+   is 360 lines (`git show :<path> | wc -l`).
+2. The step-1 entry of the SAME ticket, in both mirrors, still reasons from limbs this commit
+   deleted — "on a path their own client may read (`allow read: hasSharedAccess(...)`)", the
+   `updateItem` / `items` update-limb residual, and "(the `items` delete limb is
+   `hasSharedAccess`)". The first is load-bearing: it is the premise of an Art. 15 question
+   standing open for Malin. Decision records supersede rather than strike, and each mirror
+   wraps differently, so each needs its own verbatim quote.

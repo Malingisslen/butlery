@@ -131,8 +131,6 @@ class SocialShoppingCoordinator
     required UnifiedShoppingList contentSnapshot,
     Map<String, dynamic>? additionalData,
   }) {
-    // Issue #015: Pass itemCount instead of listItems (items now stored in subcollection)
-    // Note: Items will be added to subcollection separately after SharedShoppingList creation
     return SharedShoppingList.create(
       sharedByUserId: sharedByUserId,
       sharedByDisplayName: sharedByDisplayName,
@@ -154,9 +152,6 @@ class SocialShoppingCoordinator
     // For shopping lists, we create a collaborative list that users join directly
     // This is different from recipes/menus which use copy-on-write
 
-    // Issue #015: Items stored in subcollection, not in SharedShoppingList model.
-    // Start with empty items array - caller should load items from repository.getItems()
-    // after creating the imported content.
     return UnifiedShoppingList.collaborative(
       name: newTitle ?? sharedContent.listName,
       ownerId: sharedContent.sharedByUserId,
@@ -166,8 +161,7 @@ class SocialShoppingCoordinator
         newOwnerId: SharedListPermission.edit,
       },
       description: sharedContent.listDescription,
-      items:
-          [], // Note: Items in subcollection - caller should load via repository.getItems()
+      items: [],
       allowGuestEditing: false,
     );
   }
@@ -192,8 +186,6 @@ class SocialShoppingCoordinator
     // For shopping lists, the shared content contains the full list data
     // We can reconstruct the original from the shared data
 
-    // Issue #015: Items stored in subcollection, not in SharedShoppingList model.
-    // Return list with empty items - caller should load items from repository.getItems()
     return UnifiedShoppingList.collaborative(
       name: sharedContent.listName,
       ownerId: sharedContent.sharedByUserId,
@@ -202,8 +194,7 @@ class SocialShoppingCoordinator
         sharedContent.sharedByUserId: SharedListPermission.admin,
       },
       description: sharedContent.listDescription,
-      items:
-          [], // Note: Items in subcollection - caller should load via repository.getItems()
+      items: [],
       allowGuestEditing: false,
     );
   }

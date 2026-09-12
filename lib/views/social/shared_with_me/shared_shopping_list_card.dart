@@ -334,10 +334,8 @@ class SharedShoppingListCard {
               padding: const EdgeInsets.symmetric(
                 horizontal: AppDimensions.paddingL,
               ),
-              // Issue #015: Items in subcollection - show placeholder
               itemCount: 1,
               itemBuilder: (context, index) {
-                // Note: Items need to be loaded from repository.getItems() for display
                 return ListTile(
                   leading: const Icon(
                     Icons.shopping_basket_outlined,

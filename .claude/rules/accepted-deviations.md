@@ -1987,8 +1987,8 @@ files in the same edit.
   `assignedToDisplayName` is the export redaction (`dropOtherMembersNamesInListData`, Malin's
   2026-08-01 call), which is what proves the fields are in there. Item attribution inside a
   document FIELD is unqueryable, so no cascade and no probe can reach it: the BUT-1832 shape.
-  Its own ticket — folding a third shape into the commit whose claim is that the other two now
-  answer identically would be the drift this entry exists to name.
+  Its own ticket — folding a third shape into the commit would be the drift this entry exists
+  to name.
 
 - **BUT-1716's item scrub has no probe leg, deliberately (2026-09-12).** `probeResidualData`'s
   only `shared_content` leg reads the parent's `sharedToUserIds`, which this scrub does not
@@ -2006,3 +2006,46 @@ files in the same edit.
   discovery is field-keyed; the cap counts rows BEFORE path-scoping, so personal-list rows spend it too; and a concurrent row delete
   (`items` delete is `hasSharedAccess`) poisons the chunk with grpc 5 and flips the run to
   `gdprCompliant: false`, where the array twin tolerates exactly that case.
+
+- **The shared-list item subcollection API is gone (BUT-1716, 2026-09-12).**
+  `FirebaseSharedShoppingRepository` carried
+  ten public methods over `shared_content/{id}/items` — add, batch-add, read one, read all,
+  update, remove, toggle bought, clear completed, uncheck all, stream — plus the two helpers only
+  they used. Nothing in `lib/` called any of them; the app stores a shared list's rows in the
+  embedded array on `unified_shared_shopping_lists/{id}`. The `match /items/{itemId}` block under `shared_content`
+  went with them, so the terminal `match /{document=**}` now denies every verb there — rules do
+  NOT cascade, and no outer `shared_content` match reaches a subcollection beneath it.
+  **Malin's explicit call, 2026-09-12**, taken TWICE: once on a premise that turned out false,
+  and again on the measured one. The first recommendation said every write on that path was
+  refused by the server. Measured after the plan auditor challenged it: `UnifiedShoppingItem`
+  carries both attribution fields and `addItem` writes `item.toFirestore()`, so a caller building
+  an item normally would have passed the rule; only `toggleItemBought` and `uncheckAllItems`
+  hand-build maps and were structurally denied; and READ and DELETE needed no attribution at all,
+  so they worked. The path was UNUSED, not broken. She was shown that correction and the two
+  alternatives — keep it and fix the two denied methods, or build only the erasure half — and
+  chose removal anyway: two forms for one thing, one of them never called, is the two-track shape
+  this repo has already paid for several times.
+  **Measured before removal, and the condition the removal was gated on:** `shared_content` held
+  ZERO documents and zero item rows in `butlery-app-1` on 2026-09-12 — it is not even a root
+  collection there, while the same connection returned `ingredients: 2235` and `users: 2`, which
+  is what makes the zero a measurement rather than a misdirected query. Had rows existed, removing
+  the rules block would have locked them away from every client, and the decision would have gone
+  back to Malin instead. That count is attributed, not reproducible from this repo: it was a
+  one-off Admin-SDK read, committed nowhere.
+  Do not rebuild it. The erasure half BUT-1716 step 1 added stays — rows can exist on disk in a
+  project this one is not, and a cascade that stops looking is how a residual becomes permanent.
+
+- **SUPERSEDES three clauses of BUT-1716 step 1's entries above, same ticket, same day
+  (BUT-1716, 2026-09-12).** Step 3 removed the `items` rules block, which those clauses reason
+  from. The DECISIONS they record are unchanged; the premises are not.
+  Retired, quoted as the fragment that sits on ONE source line here so a grep returns both
+  copies: "read (`allow read: hasSharedAccess(...)`), so no Art. 15(4) argument withholds them." Measured after removal: a sharer's `get` on such a row
+  denies at the terminal catch-all. The conclusion still holds — the rows are the requester's own
+  content — but it no longer rests on client readability, and **that matters because the open
+  Art. 15 question on BUT-2094 was put to Malin on the retired premise.**
+  Retired verbatim: "copy restores the erased uid on their next edit" — `updateItem` and the update limb are both
+  gone, so no client can resurrect a scrubbed row.
+  Retired verbatim: "(`items` delete is `hasSharedAccess`) poisons the chunk with grpc 5" — no client delete limb
+  exists; only the Admin SDK reaches these rows now.
+  Raised by the `code-reviewer` and `firestore-rules-tester` gates, which measured it
+  independently. BUT-1716, 2026-09-12

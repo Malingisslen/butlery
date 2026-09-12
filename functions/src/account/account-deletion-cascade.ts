@@ -2959,14 +2959,13 @@ export async function removeFromSharedContent(
     // BUT-1716: `items` joins `members` here. Firestore does not delete a
     // subcollection with its parent, so every item the sharer and their
     // recipients wrote — each stamped with a uid and a display name — outlived
-    // the share document, unreachable through the rules (every limb reads the
-    // parent) and therefore unerasable by anyone but this cascade.
+    // the share document, unreachable by any client and unerasable by
+    // anyone but this cascade.
     //
     // Children first and STRICT, parent only if they went: the same contract
     // `deleteRealtimeDocsWithChildren` states in this file. Ordering alone does
     // not prevent an orphan — a swallowed chunk plus an unconditional parent
-    // delete does exactly what the ordering is there to stop, and nothing can
-    // reach those rows afterwards to try again.
+    // delete does exactly what the ordering is there to stop.
     const [childMembers, childItems] = await Promise.all([
       doc.ref.collection("members").get(),
       doc.ref.collection("items").get(),
@@ -3038,6 +3037,11 @@ function isSharedContentParent(ref: admin.firestore.DocumentReference): boolean 
  * and is erased by `deleteShoppingLists`, so rows are scoped by PATH to a
  * top-level `shared_content` parent — the two paths must not fight over the same
  * rows.
+ *
+ * No code in `lib/` writes this path, and `firestore.rules` carries no block for
+ * it. This leg is kept anyway: rows can
+ * exist on disk in a project this repo is not looking at, and a cascade that
+ * stops looking is how a residual becomes permanent.
  *
  * The four pairs mirror the array-path scrub in `deleteShoppingLists` field for
  * field — the two shapes must not drift: `assignedTo*` and `purchasedBy*` are

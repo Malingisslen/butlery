@@ -118,7 +118,6 @@ class SharedShoppingViewModel
         content.sharedByDisplayName.toLowerCase().contains(query) ||
         (content.shareMessage?.toLowerCase().contains(query) ?? false) ||
         (content.listDescription?.toLowerCase().contains(query) ?? false);
-    // Note (Issue #015): Items now in subcollection, can't search without loading all items
   }
 
   @override
@@ -184,13 +183,11 @@ class SharedShoppingViewModel
   }
 
   /// Get total items across all shopping lists
-  /// Issue #015: Uses itemCount field (items in subcollection)
   int get totalItemsInLists {
     return content.fold(0, (total, list) => total + list.itemCount);
   }
 
   /// Get shopping lists with items
-  /// Issue #015: Uses itemCount field (items in subcollection)
   List<SharedShoppingList> get listsWithItems {
     return content.where((list) => list.itemCount > 0).toList();
   }
@@ -342,12 +339,9 @@ class SharedShoppingViewModel
   }
 
   /// Get shopping list summary for display
-  /// Issue #015: Items in subcollection - can't determine checked/unchecked without loading items
   String getShoppingListSummary(SharedShoppingList list) {
     final totalItems = list.itemCount;
-    // Note: Can't determine checkedItems without loading from repository.getItems()
-    const checkedItems =
-        0; // Note: Would require loading items from subcollection
+    const checkedItems = 0;
     final remainingItems = totalItems;
 
     if (totalItems == 0) return AppLocale.current.shoppingListEmpty;
@@ -489,8 +483,6 @@ class SharedShoppingViewModel
   }
 
   /// Get item completion statistics across all lists
-  /// Issue #015: Items in subcollection - returns count-based stats only
-  /// For detailed completion stats, need to load items from repository.getItems()
   Map<String, int> getItemCompletionStats() {
     int totalItems = 0;
 
@@ -498,17 +490,14 @@ class SharedShoppingViewModel
       totalItems += list.itemCount;
     }
 
-    // Note: Can't determine completed vs remaining without loading all items
     return {
       'totalItems': totalItems,
-      'completedItems':
-          0, // Note: Would require loading items from subcollection
+      'completedItems': 0,
       'remainingItems': totalItems,
       'completionPercentage': 0,
     };
   }
 
   /// Placeholder for future analytics - currently unused.
-  /// Items are stored in subcollections, requiring async loading.
   Map<String, int> getMostCommonItems({int limit = 10}) => {};
 }

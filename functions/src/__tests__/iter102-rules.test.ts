@@ -53,6 +53,13 @@ async function setup(): Promise<void> {
     projectId: PROJECT_ID,
     firestore: { rules, host: "127.0.0.1", port: 8080 },
   });
+  // The emulator keeps this project's documents between runs, so a second run
+  // saw every seeded document already present and turned each `create` into an
+  // `update` — cases here went red on the second run and green on the first,
+  // with no code change between them. Found while mutation-probing
+  // BUT-1716: a probe reads its red cases off a repeat run, so a suite that
+  // only passes once cannot grade one.
+  await env.clearFirestore();
 }
 
 async function teardown(): Promise<void> {
@@ -350,6 +357,178 @@ test("notification_engagement: cannot create with another user's userId", async 
       .firestore()
       .doc("notification_engagement/ne-impersonate")
       .set(validEngagementBody(RECIPIENT_UID, { expireAt: new Date() }))
+  );
+});
+
+// ============================================================================
+// SHARED_CONTENT / ITEMS — the block is GONE (BUT-1716)
+// ============================================================================
+
+// The `shared_content/{id}/items` subcollection carried an unused way to
+// store a shared list's rows. It has no rules block.
+//
+// These cases pin the ABSENCE, which is the part a reader cannot see in the
+// rules file: with no block the terminal `match /{document=**}` denies every
+// verb, because rules do NOT cascade — an `allow read` on `shared_content`
+// grants nothing on a subcollection beneath it. A sharer and a seated recipient
+// are used deliberately: both would have passed `hasSharedAccess` under the old
+// block, so a rule that came back would redden these rather than pass them.
+test("shared_content/items: the SHARER cannot read a row (no block, no cascade)", async () => {
+  await seed(
+    "shared_content/sc-items-gone",
+    validSharedContentBody(SHARER_UID, [RECIPIENT_UID])
+  );
+  await seed("shared_content/sc-items-gone/items/row", {
+    id: "row",
+    name: "Mjolk",
+    amount: 1,
+    unit: "st",
+    category: "dairy",
+    bought: false,
+    addedByUserId: SHARER_UID,
+  });
+  const ctx = env.authenticatedContext(SHARER_UID);
+  await assertFails(
+    ctx.firestore().doc("shared_content/sc-items-gone/items/row").get()
+  );
+});
+
+test("shared_content/items: a seated RECIPIENT cannot create a row", async () => {
+  await seed(
+    "shared_content/sc-items-create",
+    validSharedContentBody(SHARER_UID, [RECIPIENT_UID])
+  );
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    await ctx
+      .firestore()
+      .doc(`shared_content/sc-items-create/members/${RECIPIENT_UID}`)
+      .set({ userId: RECIPIENT_UID, addedBy: SHARER_UID, addedAt: new Date() });
+  });
+  const ctx = env.authenticatedContext(RECIPIENT_UID);
+  await assertFails(
+    ctx.firestore().doc("shared_content/sc-items-create/items/new-row").set({
+      id: "new-row",
+      name: "Brod",
+      amount: 1,
+      unit: "st",
+      category: "bakery",
+      bought: false,
+      addedByUserId: RECIPIENT_UID,
+    })
+  );
+});
+
+test("shared_content/items: the SHARER cannot delete a row either", async () => {
+  await seed(
+    "shared_content/sc-items-delete",
+    validSharedContentBody(SHARER_UID, [RECIPIENT_UID])
+  );
+  await seed("shared_content/sc-items-delete/items/row", {
+    id: "row",
+    name: "Applen",
+    amount: 3,
+    unit: "st",
+    category: "produce",
+    bought: false,
+    addedByUserId: SHARER_UID,
+  });
+  const ctx = env.authenticatedContext(SHARER_UID);
+  await assertFails(
+    ctx.firestore().doc("shared_content/sc-items-delete/items/row").delete()
+  );
+});
+
+// The CONTROLS. They prove the rules file loaded and that the parent grant
+// still works, so the denials are about the subcollection. Neither can
+// see a misspelled `items` path; nothing in this suite can, because an unknown
+// path denies too. What proved the spelling is a probe that put the block back.
+test("shared_content/items: CONTROL — the PARENT document is still readable", async () => {
+  await seed(
+    "shared_content/sc-items-control",
+    validSharedContentBody(SHARER_UID, [RECIPIENT_UID])
+  );
+  const ctx = env.authenticatedContext(SHARER_UID);
+  await assertSucceeds(
+    ctx.firestore().doc("shared_content/sc-items-control").get()
+  );
+});
+
+test("shared_content/items: a seated RECIPIENT cannot UPDATE a row", async () => {
+  // The verb the deleted block argued for by name (BUT-238: claim/unclaim, any
+  // member may edit). A partial restoration of the update limb alone is the most
+  // plausible way this comes back, and every other case here stays green under
+  // it — so without this one the suite cannot see that return.
+  await seed(
+    "shared_content/sc-items-update",
+    validSharedContentBody(SHARER_UID, [RECIPIENT_UID])
+  );
+  await seed("shared_content/sc-items-update/items/row", {
+    id: "row",
+    name: "Smor",
+    amount: 1,
+    unit: "st",
+    category: "dairy",
+    bought: false,
+    addedByUserId: SHARER_UID,
+  });
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    await ctx
+      .firestore()
+      .doc("shared_content/sc-items-update/members/" + RECIPIENT_UID)
+      .set({ userId: RECIPIENT_UID, addedBy: SHARER_UID, addedAt: new Date() });
+  });
+  const ctx = env.authenticatedContext(RECIPIENT_UID);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc("shared_content/sc-items-update/items/row")
+      .update({ bought: true, lastModifiedByUserId: RECIPIENT_UID })
+  );
+});
+
+test("shared_content/items: neither LIST nor the collection-group route reaches a row", async () => {
+  // The read shape the deleted `getItems` used, plus the one route a path-scoped
+  // block would not have covered anyway: no `{path=**}/items` rule exists.
+  await seed(
+    "shared_content/sc-items-list",
+    validSharedContentBody(SHARER_UID, [RECIPIENT_UID])
+  );
+  await seed("shared_content/sc-items-list/items/row", {
+    id: "row",
+    name: "Agg",
+    amount: 6,
+    unit: "st",
+    category: "dairy",
+    bought: false,
+    addedByUserId: SHARER_UID,
+  });
+  const ctx = env.authenticatedContext(SHARER_UID);
+  await assertFails(
+    ctx.firestore().collection("shared_content/sc-items-list/items").get()
+  );
+  await assertFails(ctx.firestore().collectionGroup("items").get());
+});
+
+test("shared_content/items: CONTROL — a seated RECIPIENT can still read the PARENT", async () => {
+  // `sharedToUserIds` is EMPTY on purpose: the parent read limb has a
+  // disjunct for it, so a recipient listed there passes — and
+  // `isSharedMember` is the whole of the create- and update-denies' claim
+  // that the old block would have admitted this actor. Emptied, this read can
+  // only succeed through the `members/` seed, so it proves that premise
+  // instead of assuming it.
+  await seed(
+    "shared_content/sc-items-ctrl-recipient",
+    validSharedContentBody(SHARER_UID, [])
+  );
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    await ctx
+      .firestore()
+      .doc("shared_content/sc-items-ctrl-recipient/members/" + RECIPIENT_UID)
+      .set({ userId: RECIPIENT_UID, addedBy: SHARER_UID, addedAt: new Date() });
+  });
+  const ctx = env.authenticatedContext(RECIPIENT_UID);
+  await assertSucceeds(
+    ctx.firestore().doc("shared_content/sc-items-ctrl-recipient").get()
   );
 });
 

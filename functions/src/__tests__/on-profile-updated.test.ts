@@ -672,8 +672,6 @@ void (async () => {
               },
             },
           ],
-          // shared_content keeps its own `items` subcollection with the same
-          // two attribution pairs — the collection group must reach it too.
           "shared_content/A/items": [
             {
               id: "i3",
@@ -740,7 +738,7 @@ void (async () => {
         // `purchasedByDisplayName` ships in the Art. 15 bundle. A version of
         // this leg covering only addedBy/lastModifiedBy renamed two fields with
         // no reader and left both of these stale — the exact symptom the ticket
-        // describes. Both storage shapes in one scenario.
+        // describes.
         const fake = makeFakeDb({
           "shared_content/A/items": [
             {

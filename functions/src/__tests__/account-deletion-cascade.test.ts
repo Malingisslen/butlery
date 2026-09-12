@@ -1523,8 +1523,8 @@ async function scenario_adHocSharedContentMembershipIsScrubbed(): Promise<void> 
  * down, `shared_content/{id}/items/{itemId}` carried the same person's uid and
  * display name on every row they added, ticked or claimed — and Firestore does
  * not delete a subcollection with its parent, so on an OWNED share those rows
- * outlived the share document itself, unreachable through the rules (every limb
- * there reads the parent) and erasable by nothing but this cascade.
+ * outlived the share document itself, unreachable by any client and erasable by
+ * nothing but this cascade.
  *
  * The four pairs are treated as the array-shaped twin treats them
  * (`deleteShoppingLists`): `assignedTo*` and `purchasedBy*` cleared to null with
@@ -1677,8 +1677,7 @@ async function scenario_sharedContentItemAttributionIsScrubbed(): Promise<void> 
     `still present: ${JSON.stringify(db.get("shared_content/my-list/items/row"))}`,
   );
   // "Both are gone" cannot tell the fixed code from code that deletes the
-  // parent first and orphans the rows — every rules limb reads the parent, so
-  // an orphaned row is unreadable and unerasable forever. Only the ORDER can.
+  // parent first and orphans the rows. Only the ORDER can.
   const itemAt = db.deletedPaths.indexOf("shared_content/my-list/items/row");
   const parentAt = db.deletedPaths.indexOf("shared_content/my-list");
   check(
@@ -1763,9 +1762,7 @@ async function scenario_sharedContentItemScrubReportsItsOwnFailure(): Promise<vo
     `left: ${JSON.stringify(stillThere)}`,
   );
 
-  // 2. An OWNED share whose children cannot be deleted. The parent must STAY:
-  //    every rules limb on `items` reads the parent, so deleting it over
-  //    surviving rows puts them beyond every client and every future erasure.
+  // 2. An OWNED share whose children cannot be deleted. The parent must STAY.
   const childFails = new FakeFirestore();
   childFails.set("shared_content/my-list", {
     contentType: "shopping_list",

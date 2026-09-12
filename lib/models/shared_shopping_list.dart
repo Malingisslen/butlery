@@ -15,7 +15,7 @@ class SharedShoppingList
   final String listName;
   final String? listDescription;
 
-  /// Cached count from items subcollection for UI performance.
+  /// Cached count, kept on the share document for UI performance.
   final int itemCount;
 
   final String originalOwnerId;
@@ -79,7 +79,7 @@ class SharedShoppingList
     required String listName,
     String? listDescription,
     String? shoppingListId,
-    @Deprecated('Items stored in subcollection')
+    @Deprecated('Use itemCount; a share carries no item rows')
     List<UnifiedShoppingItem>? listItems,
     int? itemCount,
   }) {

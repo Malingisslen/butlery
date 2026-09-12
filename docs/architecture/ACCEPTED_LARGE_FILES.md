@@ -63,7 +63,6 @@ Tightly coupled to base classes. Extraction yields only 15-25% reduction while a
 | File | Lines | Reason |
 |------|-------|--------|
 | `firebase_recipe_repository.dart` | 1064 | Recipe CRUD + sync/caching — module-extracted (tag/query/gdpr-export ops) per BUT-536 (was 931, drifted to 1104, now 998) |
-| `firebase_shared_shopping_repository.dart` | 802 | Shared shopping — member management + item ops |
 | `base_shared_content_repository.dart` | 799 | Base class for shared content metadata |
 | `firebase_storage_repository.dart` | 647 | Storage operations — upload, resize, cache |
 | `firebase_user_repository.dart` | 874 | User profile CRUD + settings + GDPR cascade methods (BUT-498). Row refreshed 2026-07-25 (was recorded at 791). |

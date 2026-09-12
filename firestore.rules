@@ -13,7 +13,7 @@ service cloud.firestore {
     //
     // Social / shared:
     //   public_profiles, social_requests,
-    //   shared_content(/members/views/engagements/dismissals/collaborators/items),
+    //   shared_content(/members/views/engagements/dismissals/collaborators),
     //   recipe_comments(/likes), recipe_ratings,
     //   recipe_social_stats (server-only),
     //   canonical_recipe_stats (pooled-ratings aggregate, server-only)
@@ -876,23 +876,11 @@ service cloud.firestore {
         );
       }
 
-      match /items/{itemId} {
-        allow read: if isAuthenticated() && hasSharedAccess('shared_content', contentId);
-        allow create: if isAuthenticated()
-          && hasSharedAccess('shared_content', contentId)
-          && hasRequiredFields(['id', 'name', 'amount', 'unit', 'category', 'bought'])
-          && request.resource.data.id == itemId
-          && request.resource.data.addedByUserId == request.auth.uid;
-        // BUT-238: update covers claim/unclaim (assignedToUserId/DisplayName/At).
-        // Authorization is hasSharedAccess — ANY member may edit a shared
-        // (collaborative) list. The lastModifiedByUserId check is
-        // attribution-only: it forces the writer to stamp their OWN uid; it
-        // does NOT restrict who may write.
-        allow update: if isAuthenticated()
-          && hasSharedAccess('shared_content', contentId)
-          && request.resource.data.lastModifiedByUserId == request.auth.uid;
-        allow delete: if isAuthenticated() && hasSharedAccess('shared_content', contentId);
-      }
+      // BUT-1716: the `items` subcollection block is GONE, and its absence is
+      // the decision. This collection carried an unused way to store a
+      // shared list's rows. With no block here the terminal `match /{document=**}` denies
+      // every verb — rules do NOT cascade, so no outer `shared_content` match
+      // reaches a subcollection beneath it.
     }
 
     // ========================================
