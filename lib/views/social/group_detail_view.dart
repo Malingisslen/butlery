@@ -359,7 +359,7 @@ class _GroupDetailViewState extends State<GroupDetailView>
     if (decision.rosterIncomplete) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(context.l10n.errorGeneric)),
+        SnackBar(content: Text(context.l10n.groupLeaveRosterIncomplete)),
       );
       return;
     }

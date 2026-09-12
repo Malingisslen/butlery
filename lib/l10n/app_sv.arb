@@ -4188,6 +4188,7 @@
   "groupAddMembers": "Lägg till medlemmar",
   "groupAllFriendsAlreadyMembers": "Alla dina vänner är redan medlemmar i denna grupp, eller så har du redan skickat inbjudningar till dem.",
   "groupCouldNotLoadMembers": "Kunde inte ladda gruppmedlemmar",
+  "groupLeaveRosterIncomplete": "Vi kunde inte läsa alla medlemmar. Försök igen.",
   "groupCouldNotTransferOwnership": "Kunde inte överföra ägande. Försök igen.",
   "groupDeleted": "Gruppen \"{name}\" har tagits bort",
   "@groupDeleted": {

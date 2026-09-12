@@ -4182,6 +4182,7 @@
   "groupAddMembers": "Add members",
   "groupAllFriendsAlreadyMembers": "All your friends are already members of this group, or you have already sent invitations to them.",
   "groupCouldNotLoadMembers": "Could not load group members",
+  "groupLeaveRosterIncomplete": "We could not load all group members. Please try again.",
   "groupCouldNotTransferOwnership": "Could not transfer ownership. Try again.",
   "groupDeleted": "Group \"{name}\" has been deleted",
   "@groupDeleted": {

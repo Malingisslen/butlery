@@ -10387,6 +10387,12 @@ abstract class AppLocalizations {
   /// **'Kunde inte ladda gruppmedlemmar'**
   String get groupCouldNotLoadMembers;
 
+  /// No description provided for @groupLeaveRosterIncomplete.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vi kunde inte läsa alla medlemmar. Försök igen.'**
+  String get groupLeaveRosterIncomplete;
+
   /// No description provided for @groupCouldNotTransferOwnership.
   ///
   /// In sv, this message translates to:

@@ -6165,6 +6165,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get groupCouldNotLoadMembers => 'Could not load group members';
 
   @override
+  String get groupLeaveRosterIncomplete =>
+      'We could not load all group members. Please try again.';
+
+  @override
   String get groupCouldNotTransferOwnership =>
       'Could not transfer ownership. Try again.';
 

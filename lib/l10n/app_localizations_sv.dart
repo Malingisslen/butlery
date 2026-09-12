@@ -6172,6 +6172,10 @@ class AppLocalizationsSv extends AppLocalizations {
   String get groupCouldNotLoadMembers => 'Kunde inte ladda gruppmedlemmar';
 
   @override
+  String get groupLeaveRosterIncomplete =>
+      'Vi kunde inte läsa alla medlemmar. Försök igen.';
+
+  @override
   String get groupCouldNotTransferOwnership =>
       'Kunde inte överföra ägande. Försök igen.';
 
