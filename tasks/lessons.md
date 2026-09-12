@@ -4151,3 +4151,37 @@ en siffra du skriver för hand. Och kör täckning och grannsviter innan du läs
 
 Det som avslutade kedjan: sluta formulera om. Varje ren strykning höll; varje omformulering födde
 nästa fynd.
+
+## 2026-09-12 — En BRIEF till en grind är ett påstående, och den upprepade felet den beskrev (BUT-1925/BUT-2027)
+
+Fyra grindar, fyra rundor, fyra blockerande fynd. **Tre av fyra gällde något jag hade PÅSTÅTT,
+inte kod**, och två av dem stod i briefen jag själv skrev till granskaren.
+
+**Det dyraste fyndet var en oprövad KOPPLING.** `FirebaseMessagingRepository.closePoll` är en
+enradig vidarekoppling. Returtypen breddades från `void` till `bool`, och det svaret är hela
+korrekthetsanspråket i ändringen. Ingen svit körde den raden: modulsviten går in ETT lager under,
+varje tjänste- och vy-svit attrapperar repositoryt. En mutant som `await`:ade modulen och
+returnerade `true` var grön i HELA repot och återinförde exakt den defekt biljetten fanns för.
+Testgrinden mätte det; mina fyra egna sonder hade alla suttit på ändarna, aldrig på vidarekopplingen.
+Regel: när en returtyp BREDDAS, leta efter den svit som kör den KOMPONERANDE raden. Finns ingen
+är fixen två fall i fasadsviten, inte ett resonemang om att modulen är täckt.
+
+**En brief som säger "markören städas i commiten" om en OSPÅRAD fil är en omöjlighet.** Jag
+skrev det två gånger. En untracked fil kan inte raderas av en commit, och `workflow-map.html`
+beskrev dessutom fortfarande den gamla ordningen i två nyttolaststrängar. Helhetsgrinden fällde
+det; jag hade skrivit "inga kartdata ändras" i runda ett utan att öppna kartan.
+
+**En brief som räknar delta från MITT senaste meddelande är fel.** Granskaren räknar från sin
+egen senaste LÄSNING. Kodgranskaren hittade fem stagade filer som rört sig och som ingen brief
+nämnde, genom att räkna upp indexet i stället för att lita på listan. Hade den litat på mig hade
+den registrerat ett pass över bytes den aldrig läst. Mät med `git rev-parse :<path>` mot vad
+mottagaren senast läste, aldrig mot vad du senast skrev.
+
+**Och: commit-grinden läser INDEX, granskarna läser bytes.** Att acceptera ett fynd och stryka en
+mening ogiltigförklarar hela det passet — grinden säger då att granskaren "beskriver andra bytes".
+Det kostade en extra runda per grind. Bunta varje rättelse, staga EN gång, brief:a sedan om med
+exakt vad som rörde sig och vilken hash.
+
+Det som höll genom alla rundor: varje ren STRYKNING. Det som födde nya fynd: varje omformulering.
+En mening som kallades "mätt" om något ingen kört skrevs om till vem som LÄST den och att ingen
+kört det — och den formuleringen stod sig.
