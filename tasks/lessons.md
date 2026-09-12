@@ -4110,3 +4110,44 @@ till för det vanligaste fallet, och fixen hade sett färdig ut med gröna teste
 Regel: innan en fix designas kring ett statusvärde, mät vilket status den verkliga populationen
 faktiskt producerar — spåra läsregeln, var fältet lagras och vilken läsväg som fyller det. Ett
 ärendes ord för felet ("oläsbar") är en beskrivning, inte en enum.
+
+### En mening vars HUVUD du redigerar återutger sin svans som din (BUT-1718, 2026-09-12)
+
+Sju granskningsrundor, sex grindar. Två blockerande fynd var verkliga defekter; allt annat var
+meningar jag skrev SOM rättelse. Fyra former, alla mätta:
+
+**1. Återutgivningen.** Vaktfilens rubrik påstod att routingmodulen "förblir en routing-fasad,
+som dess egen dok säger att den ska". Ordet *fasad* finns inte i routingmodulen — inte nu och
+inte vid HEAD. Satsen var ärvd, men jag skrev om meningens HUVUD i en tidigare runda, och det
+**återutgav svansen som den här commitens påstående** medan den fortsätter läsa som gammal text.
+Varken diffen eller en fristående läsning av överlevaren visar det; bara `git show HEAD:<fil>` på
+just den meningen gör det. Det är en andra ordningens kostnad av "stryk hellre än formulera om":
+varje strykning som kortar en mening ger dess överlevande satser ett nytt commit-datum.
+`firebase-backend-security` hade godkänt samma pekare rundan innan genom att kontrollera målets
+ÄMNE ("beskriver dokumentet routing? ja") i stället för dess PREDIKAT ("säger dokumentet att
+modulen ska förbli en fasad? nej").
+
+**2. Svep på PÅSTÅENDET, inte på platserna.** Ett fynd räknade upp tre ställen där ett föråldrat
+intervall (`SSL44-SSL56`) stod. Jag strök de tre. Ett fjärde överlevde — i en fil jag redigerade i
+samma runda — för att jag nycklade svepet på fyndets lista i stället för på strängen. Digesten
+säger redan detta; den här gången hade jag fixen i handen och svepte fel axel ändå.
+
+**3. En siffra som beskriver en fil du fortfarande redigerar går inte att skriva.** Tre omgångar
+radantal i `ACCEPTED_LARGE_FILES.md` blev falska av mina EGNA redigeringar i nästa runda. Det som
+fungerade var att räkna fram dem med `wc -l` i samma Bash-anrop som stagade.
+
+**4. Två blockerare som en diff inte kan visa.** Ärendets enda produktionsbeslut —
+`intent: selfRemoval` på en enda rad — kördes av INGET prov: widgetprovet attrapperade
+operationslagret, operationsprovet attrapperade tjänsten, repositoryprovet skickade in argumentet
+för hand. En attrapp-smörgås med beslutet i mitten, och att byta det mot `ordinary` hade lämnat
+varje svit grön medan servern nekade varje riktigt utträde — ordagrant ADR-002:s incident. Den
+andra: en regelcensus i en katalog funktionen aldrig rör sköt rött. Båda hittades på sekunder av
+`--coverage` respektive att köra grannsviten, och ingen av dem syns i en diff. Kör dem FÖRE du
+läser ändringen, inte efter.
+
+Regel: efter varje strykning, kör `git show HEAD:<fil>` på den överlevande meningen och fråga om
+du just återutgav någon annans påstående som ditt. Nyckla svepet på påståendet. Räkna aldrig fram
+en siffra du skriver för hand. Och kör täckning och grannsviter innan du läser diffen.
+
+Det som avslutade kedjan: sluta formulera om. Varje ren strykning höll; varje omformulering födde
+nästa fynd.
