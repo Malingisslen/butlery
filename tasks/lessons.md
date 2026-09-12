@@ -4185,3 +4185,76 @@ exakt vad som rörde sig och vilken hash.
 Det som höll genom alla rundor: varje ren STRYKNING. Det som födde nya fynd: varje omformulering.
 En mening som kallades "mätt" om något ingen kört skrevs om till vem som LÄST den och att ingen
 kört det — och den formuleringen stod sig.
+
+## 2026-09-12 — BUT-1716 steg 3: ett storleksanspråk i nio exemplar, och en hash jag hittade på
+
+Borttagningen av en oanvänd väg tog tio granskningsrundor över sex grindar. Koden var klar i
+runda ett. Allt efter det var meningar.
+
+**Ett och samma anspråk levde i nio exemplar, i sex filer och fyra grammatiska former.** Det
+sa att det finns två sätt att lagra en delad listas varurader. Det finns tre. Formerna:
+ett räkneord ("TVÅ storage shapes"), en uppräkning ("Both storage shapes in one scenario"),
+ett räkneord i löptext ("a second, unused way" — i två OLIKA formuleringar, så en grep på den
+ena missar den andra), och, efter att räkneorden strukits, en **bestämd artikel**: "the live
+one is the embedded array". Den sista överlevde två grindars godkännande.
+
+Det generaliserbara: **stryk räkneordet OCH anaforen som ärver det, i samma redigering.** En
+räkning gömmer sig i en bestämd artikel, i "the only", i "it". Läs om den överlevande meningen
+efter varje strykning och fråga vad den fortfarande påstår om STORLEK — inte bara vad den
+fortfarande påstår. Två strykningar samma kväll blev bredare av att deras avgränsande ord togs
+bort: "the denials above" -> "the denials", och "a second" som lämnade "the live one" kvar.
+
+**Svep PÅSTÅENDET i alla dess formuleringar, aldrig frasen som just ströks.** Den grind som
+stängde det svepte `answer identically | the other two | only form | a second way | third shape
+| two forms` — ingen av de sista två träffarna hade returnerats av en grep på det struket ordet.
+
+**Två grindar kan vara oense, och den som öppnat SKRIVAREN vinner.** En gate friade "the live
+one" med posten som stöd ("nothing maintains it" — sant), en annan öppnade
+`shopping_social_share_module.dart` och mätte att hela listdokumentet skrivs som `listData` vid
+varje delning. UNDERHÅLLEN och LEVANDE är olika egenskaper. Regeln, från den grind som hade fel:
+**en post kan berätta att ett anspråk finns; bara en skrivare kan berätta om det är levande.**
+En annan grind formulerade sin egen variant efter att ha avstått från ett fynd den kallade
+omätbart: **omfång styr vad du ÄNDRAR, aldrig vad du får LÄSA för att pröva ett påstående.**
+
+**Det nionde exemplaret var det enda som kostade något.** `docs/architecture/ACCEPTED_DEVIATIONS.md`
+sa att artikel 15-bundeln inte bär några varurader från `shared_content`. Den bär dem, via
+`listData` på föräldradokumentet, redigerad enligt Malins eget beslut. Det är den meningen som
+ramar in en öppen fråga till henne — så anspråket hade gått vidare som underlag för ett beslut,
+vilket är skillnaden mellan en slarvig kommentar och en dyr sådan. Systerspegeln hade
+avgränsningsordet ("SUBCOLLECTION"); rättelsen var att importera det, inte att skriva nytt.
+
+**Speglarnas avsiktliga divergens skär åt två håll.** Samma fakta formulerade olika i de två
+avvikelsefilerna gör varje fix till ett tvåställsjobb och varje grep till en halv sökning. Den
+räddade en pronomenfix (den ena spegeln sa "them" med antecedenten kvar) och kostade två
+saknade avgränsningar (ett kvalificerande ord fanns i den ena spegeln och aldrig i den andra —
+ingen STRYKNING orsakade det, och inget i respektive fils egen historik avslöjar det; det syns
+bara om man läser speglarna MOT varandra, vilket är ingens jobb per default).
+
+**Jag hittade på en blob-hash.** I meddelandet där jag berömde en grind för att ha fångat min
+handskrivna fillista skrev jag `18e8b70f…` för en fil jag inte kört `git rev-parse` på, plus
+"se hashen jag skriver ut nedan" om en hash jag aldrig skrev ut. Grinden hittade det själv
+(`git cat-file -t` -> `could not get object info`) innan min rättelse kom fram.
+
+Det är värre än ett felaktigt räkneord, och grinden formulerade varför: **ett felaktigt tal är
+falsifierbart mot artefakten det beskriver; en påhittad identifierare är falsifierbar bara via
+uppslagning, och en misslyckad uppslagning är tvetydig mellan "påståendet är falskt" och "filen
+saknas".** Den naturliga läsningen är den andra, så den pekar läsaren mot repot i stället för
+mot anspråket. Asymmetrin som avgör var skyddet ska sitta: en hash som är fel i ÄNDRAD riktning
+är ofarlig (granskaren letar, hittar inget, frågar); en som är fel i OFÖRÄNDRAD riktning säger
+åt granskaren att hoppa över en omläsning, tyst. Därför ska fillistan härledas ur intervallet,
+oberoende av vems ärlighet som helst — en inaktuell hash och en påhittad failar likadant.
+Formen: **en hash, ett radnummer, ett testnamn och ett datum är alla identifierare, och det
+enda ärliga sättet att producera en är att köra kommandot i samma meddelande som man skriver
+den i.**
+
+**Jag skrev också "stashen är borttagen" i en Linear-kommentar innan jag tagit bort den** — samma
+presens-om-ogjort-arbete som digesten redan förbjuder i svar till Malin. Den gäller varje
+artefakt, inte bara chattsvaret.
+
+Två fynd till, båda från grindar som rättade sig själva: en granskares egen mätning ("its only
+writer") var ett kvantifierarpåstående över hela trädet skrivet utifrån den skrivare filen råkade
+nämna — det fanns en andra, levande. Och en av mina briefar räknade delta från MITT senaste
+meddelande i stället för från mottagarens senaste LÄSNING.
+
+Det som höll: varje ren strykning. Det som födde nya fynd: varje omformulering. Kedjan
+terminerade först när sista rättelsen var en symbolsubstitution (`its` -> `the subcollection's`).
