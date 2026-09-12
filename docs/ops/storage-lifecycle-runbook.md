@@ -26,7 +26,7 @@ Recovery target:
 
 Sister runbooks for the same DR tier:
 
-- `docs/ops/backups.md` — Firestore PITR + weekly GCS exports (BUT-418).
+- `docs/ops/backups.md` — Firestore PITR + managed daily/weekly backups (BUT-418).
 - `docs/ops/gcp-alerting-runbook.md` — GCP alerting policies (BUT-450, same
   fail-loud script pattern).
 
