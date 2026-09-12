@@ -27383,6 +27383,18 @@ abstract class AppLocalizations {
   /// **'En sak kan ha sparats: vi kunde inte slutföra kontrollen av om det finns en pågående granskning av innehåll som anmälts.'**
   String get profileDeletionNoticeWhatUnclear;
 
+  /// The neutral first line of the RE-SHOWN Art. 12(4) notice, before 'Visa mer' is tapped. Malin's call 2026-09-12, option (b): on a shared device the next person must not be told that the previous account holder had content under moderation review. Says nothing the expanded notice says. The notice shown live, right after the deletion, has no collapsed state — there is no bystander there.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ett meddelande om ett raderat konto på den här enheten.'**
+  String get profileDeletionNoticeCollapsed;
+
+  /// Pre-deletion warning row in the delete-account confirmation, shown only when the user's own totalReports counter is above zero. The hedge is LOAD-BEARING: totalReports counts reports ever filed, not open cases, so this must never assert that a review is under way. Do not edit it into a statement of fact.
+  ///
+  /// In sv, this message translates to:
+  /// **'Om det finns en pågående granskning av innehåll du anmälts för kan vi behöva spara den granskningen även efter att kontot raderats. Du får i så fall veta det när raderingen är klar.'**
+  String get profileDeleteAccountMayHaveReview;
+
   /// No description provided for @shoppingLeaveList.
   ///
   /// In sv, this message translates to:

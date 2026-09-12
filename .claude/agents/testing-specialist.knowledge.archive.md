@@ -38661,3 +38661,46 @@ nothing (`social_sharing_viewmodel_test.dart` mocks the coordinator), and
 `shopping_social_share_module.dart` writes a `shared_content` document with no
 `itemCount` field at all, so a list shared through the universal dialog parses back as
 `itemCount: 0` while `listData` holds the rows.
+
+### 2026-09-13 — BUT-2046 follow-up (Art. 12(4) retention-notice delivery): a reviewer's own suggested guard shipped unproven
+
+Coverage review over the staged diff for the retention-notice delivery change
+(`PendingRetentionNoticeStore`, `PendingNoticeGate`, `ReportService.ownReportStatus`,
+`AuthActionHandler.handleDeleteAccount`). Six rounds. Four blocking findings, all of one
+class — a DECISION line evaluated by no test:
+
+1. `reportStatus == OwnReportStatus.reported` in the handler. ADR-0019 built a three-value
+   enum so a FAILED read could not read as innocence; the enum was pinned at the service and
+   the dialog was pinned given the flag, but the fake answered `none` unconditionally, so
+   widening the comparison to `!= none` — which shows moderation text to every user whose
+   read failed — was green repo-wide.
+2. `PendingNoticeGate` executed by nothing: `startCollapsed: true` (Malin's option (b)),
+   `clear()` after the awaited dialog, the empty-store return, the `recovered` counter.
+3. `markDeliveredLive()`'s CALL SITE and its `&& context.mounted` conjunct, introduced by the
+   fix for (2) and graded through a suite that staged the flag by hand.
+4. A comment whose backticked spans had been eaten by an intermediate tool (`// .`,
+   `the fake answered  unconditionally`) plus "these two cases" over a group of three.
+
+**The lesson worth keeping: I recommended the one-line post-read re-check that closed the
+duplicate-notice window, the coordinator added it, probed it — and the mutant SURVIVED.**
+Deleting the line left every case green. A guard a REVIEWER asked for arrives feeling
+pre-reviewed and is exactly as unproven as any other line. Staging the interleaving needed
+`_ClaimsDuringReadStore extends PendingRetentionNoticeStore`, overriding `read()` to call
+`super.read()` and THEN `markDeliveredLive()` — the claim lands while the gate's read is in
+the air. That is NOT the "mutate the call site, not the member a fake overrides" trap: the
+member under test is the gate's post-read branch, the double only schedules a side effect,
+and production's real `read()` still runs through `super`.
+
+Second-order, and the reason the pre-read check needs no pin: once the post-read check
+exists, deleting the pre-read one is unobservable (every state reaches the same outcome via
+the second check), so it is a behaviour-preserving fast path. Its rationale comment then went
+false — it still claimed to be what prevented the stacking — created by the very fix I had
+recommended.
+
+Three status-line lessons. (a) The coordinator's repo-wide totals went 8011 -> 7998 while
+ADDING a case; reconciled as two different PATH SETS (drift suite's 14 omitted, +1 new),
+measured by running drift alone. Never compare two totals from different invocations. (b) My
+own independent run of the five touched suites (44/44, breakdown per file) is what made the
+question answerable without blocking on it. (c) B4 was correctly NOT built:
+`FakeFirebaseFirestore` ignores `GetOptions`, so a test for the new
+`Source.server` read would have claimed to pin behaviour it cannot stage.

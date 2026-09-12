@@ -11,6 +11,32 @@ import 'package:butlery/repositories/firebase/firebase_report_repository.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart' as auth;
 
+/// Whether the signed-in user has ever been reported — three answers, not two.
+///
+/// ADR-0019. The read can fail, and a failure must not read as innocence:
+/// `user_moderation`'s read rule is a `hasOnly` allowlist that fails CLOSED, so
+/// a field added to that document by any writer refuses the read for EVERY
+/// user. Collapsed into a bool, that outage is indistinguishable from "nobody
+/// has ever been reported", and the pre-deletion warning would stop firing for
+/// exactly the people with an open case, indefinitely, with nothing reddening.
+///
+/// The UI treats [unknown] exactly as [none] — no row, no moderation-adjacent
+/// text — which is Trust & Safety's condition. The difference is that [unknown]
+/// is recorded as itself. Do not "simplify" this back into a bool; the two
+/// render identically in every state a test is likely to stage, so the loss
+/// would be invisible until the day it mattered.
+enum OwnReportStatus {
+  /// At least one report has been filed. Says nothing about whether any case
+  /// is OPEN — the counter does not distinguish.
+  reported,
+
+  /// Confirmed: no report has ever been filed against this user.
+  none,
+
+  /// The read did not answer — denied, failed, or timed out.
+  unknown,
+}
+
 /// Service for submitting and managing content reports, including the
 /// admin-gated moderation workflow.
 class ReportService extends BaseService {
@@ -28,6 +54,46 @@ class ReportService extends BaseService {
   }) : _reportRepository = reportRepository,
        _authRepository = authRepository,
        _firestore = firestoreRepository;
+
+  /// How long the pre-deletion check may take before it gives up.
+  ///
+  /// The delete-account confirmation opens instantly today, and a slow or
+  /// offline connection must not leave the button looking dead. Short enough
+  /// that no spinner is warranted; a timeout answers [OwnReportStatus.unknown],
+  /// never [OwnReportStatus.none].
+  static const Duration ownReportLookupTimeout = Duration(seconds: 2);
+
+  /// Has the signed-in user ever been reported?
+  ///
+  /// Used before an account deletion, to warn that a moderation review may have
+  /// to be kept afterwards. Never throws — every failure path answers
+  /// [OwnReportStatus.unknown], which the caller must not treat as "no".
+  Future<OwnReportStatus> ownReportStatus() async {
+    final userId = _authRepository.currentUserId;
+    if (userId == null) return OwnReportStatus.unknown;
+
+    try {
+      final counters = await _reportRepository
+          .fetchOwnModerationCounters(userId)
+          .timeout(ownReportLookupTimeout);
+      if (counters == null) {
+        AppLogger.warning(
+          '[ReportService] Own moderation counters unreadable; '
+          'answering unknown rather than none',
+        );
+        return OwnReportStatus.unknown;
+      }
+      return counters.hasAnyReport
+          ? OwnReportStatus.reported
+          : OwnReportStatus.none;
+    } catch (e) {
+      AppLogger.warning(
+        '[ReportService] Own moderation counters did not answer in time '
+        'or threw; answering unknown rather than none ($e)',
+      );
+      return OwnReportStatus.unknown;
+    }
+  }
 
   /// Submit a content report.
   Future<bool> submitReport({

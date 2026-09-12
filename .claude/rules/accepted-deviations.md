@@ -2049,3 +2049,62 @@ files in the same edit.
   exists; only the Admin SDK reaches these rows now.
   Raised by the `code-reviewer` and `firestore-rules-tester` gates, which measured it
   independently. BUT-1716, 2026-09-12
+
+- **The Art. 12(4) notice now survives a missed dialog — on THIS DEVICE only (2026-09-12).**
+  The BUT-2046 follow-up entry above calls it "ONE-SHOT and unrecoverable"; that entry is NOT
+  superseded, because it still describes what happens in that moment. What changes is
+  afterwards: the delete-account confirmation WARNS before anything is deleted, the notice is
+  written to the device BEFORE the dialog, and it is re-shown on the sign-in screen if it was
+  never acknowledged. No server change at all — `functions/src`, `firestore.rules` and the
+  indexes are untouched, and no new personal data is stored anywhere. The moderation read
+  goes to the SERVER (`Source.server`): offline persistence is on, so a plain `.get()` can
+  answer "no such document" from the cache WITHOUT throwing, which would return zero, resolve
+  to "not reported" and suppress the warning with nothing able to see it.
+  **`PendingRetentionNoticeStore.deliveredLiveInThisProcess` is the arbiter between the two
+  readers of one record**, and it is not decoration: the record stays on disk while the live
+  dialog is up, and the sign-out that dialog follows rebuilds the signed-out branch — so
+  without it the gate stacks a second notice on a working one AND logs a recovery on the one
+  run that needed none, making the number that decides whether this mechanism is worth
+  keeping read near-100%. It is claimed **before the WRITE**, not merely before the dialog:
+  `shared_preferences` publishes to its in-process cache before `setString`'s future
+  completes, so a claim taken afterwards leaves a window where the record is readable and
+  unclaimed. It is RELEASED when the context died during the write, because then no live
+  dialog is coming and the gate is the only delivery left. Process-scoped and never
+  persisted, so an app that dies still delivers from disk at next launch. A SECOND check
+  sits after the gate's read, for the ordering the position cannot cover. Named residual,
+  as the general property: the gate makes ONE attempt per mount and never retries, so any
+  interleaving it loses defers delivery to the next launch rather than costing it. Nothing
+  is lost — the record is untouched and the flag dies with the process.
+  **Device-local was Malin's explicit call**, over a server record keyed on the email address:
+  that would retain an identifier for a person we had just erased, a hashed email is not
+  anonymous (the address space is guessable), and it would tell anyone registering with
+  somebody else's address that that person had been under moderation review. **Still lost
+  permanently:** uninstall, a wiped device, "clear app data", a new phone. The gap is
+  narrower, not closed.
+  **The write sits OUTSIDE the `context.mounted` gate in `handleDeleteAccount`, and that
+  placement IS the mechanism** — `deleteUserAccount` signs out inside itself, `AuthWrapper`
+  rebuilds on that and can dispose the context, which is exactly the run where the live dialog
+  never appears. Inside the gate, the same race that loses the dialog loses the record and the
+  feature is a no-op on the only runs it exists for. Its pin was VACUOUS when first written
+  (the fake deletion resolved while the context was still mounted, and the mutant survived); it
+  now gates on a `Completer` released after the tree is torn down. Do not remove that gate.
+  **The RE-SHOWN notice opens COLLAPSED; the LIVE one does not — Malin's explicit call, option
+  (b)**, because on a shared family device the next person would otherwise be told the previous
+  account holder had content under moderation review. No bystander exists in a session that has
+  not ended, and an extra tap there would only make the original easier to miss. Do not
+  harmonise the two; both halves are pinned. ONE method with `startCollapsed`, never two
+  dialogs, and the expansion state is per CALL — a static stays set when a dialog is torn down
+  without completing and hands the next person the expanded notice.
+  **`ownReportStatus` returns THREE values, not a bool (ADR-0019):** the `user_moderation` read
+  rule is a `hasOnly` allowlist that fails CLOSED, so a field added by any writer refuses the
+  read for EVERY user — collapsed to `false` that is indistinguishable from "never reported",
+  and the warning would silently stop firing for exactly the people with an open case. The UI
+  treats `unknown` as `none`; the state is recorded as itself. Do not "simplify" it back.
+  **The warning OVER-WARNS deliberately** — `totalReports` counts reports ever filed, not open
+  cases — so `profileDeleteAccountMayHaveReview` must never be edited into a statement of fact.
+  Named residuals: the store is a SINGLE SLOT with no key, so a second deletion on one device
+  before the first notice is read overwrites it silently (keying it would reintroduce an
+  identifier); there is no per-person delivery receipt and there must not be one, so the
+  consent-gated counters are an undercount and never proof; the device file is forgeable; and
+  the pre-deletion warning is a heads-up a reported person could act on outside the app.
+  Nothing here discharges a future DSA Art. 17 statement-of-reasons duty.

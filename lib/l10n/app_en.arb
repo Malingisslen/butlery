@@ -12038,6 +12038,14 @@
   "@profileDeletionNoticeWhatUnclear": {
     "description": "The WHAT line when the hold is PROVISIONAL. Deliberately hedged: the notice must not assert a pending review as fact when nothing measured one (BUT-2047)."
   },
+  "profileDeletionNoticeCollapsed": "A message about a deleted account on this device.",
+  "@profileDeletionNoticeCollapsed": {
+    "description": "The neutral first line of the RE-SHOWN Art. 12(4) notice, before 'Show more' is tapped. Malin's call 2026-09-12, option (b): on a shared device the next person must not be told that the previous account holder had content under moderation review. Says nothing the expanded notice says. The notice shown live, right after the deletion, has no collapsed state — there is no bystander there."
+  },
+  "profileDeleteAccountMayHaveReview": "If there is an ongoing review of content you were reported for, we may need to keep that review even after the account is deleted. You will be told if so, when the deletion is done.",
+  "@profileDeleteAccountMayHaveReview": {
+    "description": "Pre-deletion warning row in the delete-account confirmation, shown only when the user's own totalReports counter is above zero. The hedge is LOAD-BEARING: totalReports counts reports ever filed, not open cases, so this must never assert that a review is under way. Do not edit it into a statement of fact."
+  },
   "shoppingLeaveList": "Leave list",
   "shoppingLeaveListConfirm": "Leave \"{name}\"? You will lose access to the list. This cannot be undone — the owner has to invite you again.",
   "@shoppingLeaveListConfirm": {

@@ -36,7 +36,19 @@ class ProfileDialogs {
   }
 
   /// Show delete account confirmation dialog.
-  static Future<bool?> showDeleteAccountDialog(BuildContext context) {
+  ///
+  /// [mayHaveOpenReview] adds a hedged line saying a moderation review may have
+  /// to be kept after the deletion. It comes from the user's own
+  /// `totalReports` counter, which counts reports EVER FILED and cannot tell a
+  /// closed case from an open one — so the copy must stay conditional. Do not
+  /// edit `profileDeleteAccountMayHaveReview` into a statement of fact; the
+  /// hedge is the only thing keeping the sentence true.
+  ///
+  /// Defaults to false, so every caller that does not know stays as it was.
+  static Future<bool?> showDeleteAccountDialog(
+    BuildContext context, {
+    bool mayHaveOpenReview = false,
+  }) {
     final l10n = context.l10n;
 
     return showDialog<bool>(
@@ -65,6 +77,10 @@ class ProfileDialogs {
                   color: Theme.of(context).colorScheme.error,
                 ),
               ),
+              if (mayHaveOpenReview) ...[
+                const SizedBox(height: AppDimensions.spacingMd),
+                Text(l10n.profileDeleteAccountMayHaveReview),
+              ],
             ],
           ),
         ),
@@ -141,10 +157,25 @@ class ProfileDialogs {
   /// the predicate being answered — the query threw, or the hold write did —
   /// so asserting a pending review as fact would tell the person something
   /// nobody measured. Malin's call, 2026-09-09 (BUT-2047).
+  /// [startCollapsed] opens on a neutral line with a "Visa mer" button, and is
+  /// for the notice RE-SHOWN on the sign-in screen — where the person reading
+  /// may not be the person the notice is about. Malin's call, 2026-09-12,
+  /// option (b): on a shared family device the next person must not be told
+  /// that the previous account holder had content under moderation review.
+  ///
+  /// The notice shown live, right after the deletion, passes false — there is
+  /// no bystander in a session that has not ended yet, and an extra tap there
+  /// would only make the original easier to miss. That asymmetry is the
+  /// decision, not an oversight.
+  ///
+  /// ONE method rather than two dialogs: the four Art. 12(4) elements exist at
+  /// exactly one place in this codebase, and a second implementation of a legal
+  /// notice is how the two drift apart.
   static Future<void> showRetentionNoticeDialog(
     BuildContext context, {
     DateTime? holdUntil,
     bool provisional = false,
+    bool startCollapsed = false,
   }) {
     final l10n = context.l10n;
     final howLong = holdUntil == null
@@ -155,41 +186,63 @@ class ProfileDialogs {
             ).format(holdUntil),
           );
 
+    // Per CALL, never a static: the bystander protection is per-showing, and a
+    // flag living on the class would stay set when a dialog is torn down
+    // without completing — handing the next person the expanded notice, which
+    // is the exact disclosure the collapsed state exists to prevent.
+    bool expanded = !startCollapsed;
+
     return showDialog<void>(
       context: context,
       barrierDismissible: false,
-      builder: (dialogContext) => AlertDialog(
-        // Scrollable because the four blocks below grow with the text scale,
-        // and the one clipped at the bottom would be the remedies line —
-        // exactly the Art. 12(4) element a notice most easily ships without.
-        scrollable: true,
-        title: Text(l10n.profileDeletionNoticeTitle),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              provisional
-                  ? l10n.profileDeletionNoticeWhatUnclear
-                  : l10n.profileDeletionNoticeWhat,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (builderContext, setState) {
+          return AlertDialog(
+            // Scrollable because the four blocks below grow with the text
+            // scale, and the one clipped at the bottom would be the remedies
+            // line — exactly the Art. 12(4) element a notice most easily ships
+            // without.
+            scrollable: true,
+            title: Text(
+              expanded
+                  ? l10n.profileDeletionNoticeTitle
+                  : l10n.profileDeletionNoticeCollapsed,
             ),
-            const SizedBox(height: AppDimensions.spacingMd),
-            Text(l10n.profileDeletionNoticeWhy),
-            const SizedBox(height: AppDimensions.spacingMd),
-            Text(howLong),
-            const SizedBox(height: AppDimensions.spacingMd),
-            Text(
-              l10n.profileDeletionNoticeRights,
-              style: AppTextStyles.bodySmall,
-            ),
-          ],
-        ),
-        actions: [
-          FilledButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: Text(l10n.commonClose),
-          ),
-        ],
+            content: expanded
+                ? Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        provisional
+                            ? l10n.profileDeletionNoticeWhatUnclear
+                            : l10n.profileDeletionNoticeWhat,
+                      ),
+                      const SizedBox(height: AppDimensions.spacingMd),
+                      Text(l10n.profileDeletionNoticeWhy),
+                      const SizedBox(height: AppDimensions.spacingMd),
+                      Text(howLong),
+                      const SizedBox(height: AppDimensions.spacingMd),
+                      Text(
+                        l10n.profileDeletionNoticeRights,
+                        style: AppTextStyles.bodySmall,
+                      ),
+                    ],
+                  )
+                : null,
+            actions: [
+              if (!expanded)
+                TextButton(
+                  onPressed: () => setState(() => expanded = true),
+                  child: Text(l10n.commonShowMore),
+                ),
+              FilledButton(
+                onPressed: () => Navigator.pop(dialogContext),
+                child: Text(l10n.commonClose),
+              ),
+            ],
+          );
+        },
       ),
     );
   }

@@ -16423,6 +16423,14 @@ class AppLocalizationsEn extends AppLocalizations {
       'One thing may have been kept: we could not finish checking whether there is an ongoing review of content that was reported.';
 
   @override
+  String get profileDeletionNoticeCollapsed =>
+      'A message about a deleted account on this device.';
+
+  @override
+  String get profileDeleteAccountMayHaveReview =>
+      'If there is an ongoing review of content you were reported for, we may need to keep that review even after the account is deleted. You will be told if so, when the deletion is done.';
+
+  @override
   String get shoppingLeaveList => 'Leave list';
 
   @override

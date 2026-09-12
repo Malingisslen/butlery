@@ -923,7 +923,15 @@ name which doc each end touches before approving it.
   rethrowing and reserving null for `!exists` is the fix, but a `!exists` answer resolved
   from CACHE is still not proof of absence, so any comment claiming null means absent "and
   nothing else" overclaims unless it checks `metadata.isFromCache` — the same cache path is
-  why a "refuse when unreadable" gate never covers "readable but STALE". Closing THAT is a
+  why a "refuse when unreadable" gate never covers "readable but STALE". The TRIGGER to apply
+  this, stated so it fires without the ADR being open: any read on a DECISION path whose
+  absent/zero answer is the INNOCENT one (has this user been reported, does a block stand, is
+  a hold in force) must be `Source.server`, because a plain `get()` under
+  `persistenceEnabled: true` answers a never-cached document as `exists == false` with no
+  error — so a three-state design that separates FAILED from ABSENT is defeated by the cache
+  in the only state anyone built it for, and no timeout or `catch` sees it. A doc comment
+  saying "null means the read failed, zero means never" is then a contract the code does not
+  keep; fix the read, never the sentence. Closing THAT is a
   SERVER-SOURCED sibling read (`GetOptions(source: Source.server)`, which throws `unavailable`
   offline) on the PROPAGATING variant only, and that variant must neither read nor write the
   shared latch — a display path that latched a cache-served set offline otherwise answers the

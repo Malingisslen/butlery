@@ -51,6 +51,7 @@ import 'package:butlery/core/providers/locale_provider.dart';
 
 // Account/GDPR services
 import 'package:butlery/services/account/account_deletion_service.dart';
+import 'package:butlery/services/account/pending_retention_notice_store.dart';
 import 'package:butlery/services/account/age_verification_service.dart';
 import 'package:butlery/services/social/profile_searchability_service.dart';
 import 'package:butlery/services/account/data_export_service.dart';
@@ -110,6 +111,7 @@ class CoreModule implements DIModule {
       WinbackAttributionService,
       InAppReviewService,
       AccountDeletionService,
+      PendingRetentionNoticeStore,
       AgeVerificationService,
       ProfileSearchabilityService,
       DataExportService,
@@ -291,6 +293,13 @@ class CoreModule implements DIModule {
       // Persistence service for local data storage and caching
       container.registerLazySingleton<PersistenceService>(
         () => PersistenceService(),
+      );
+
+      // Holds the Art. 12(4) retention notice on this device until it has been
+      // read, so a killed or backgrounded app does not cost the one moment it
+      // can be shown.
+      container.registerLazySingleton<PendingRetentionNoticeStore>(
+        () => PendingRetentionNoticeStore(),
       );
 
       // Account deletion service for GDPR Article 17 (Right to Erasure).

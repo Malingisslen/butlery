@@ -23,6 +23,20 @@ abstract final class AnalyticsEvents {
   static const mfaEnrolled = 'mfa_enrolled';
   static const mfaUnenrolled = 'mfa_unenrolled';
   static const accountDeleted = 'account_deleted';
+  // The GDPR Art. 12(4) notice shown when an account deletion lawfully kept
+  // moderation evidence. Three bare counters, no parameters and no uid.
+  // `closed` is emitted by BOTH call sites, `shown` by the live one only, so
+  // `closed` is not a denominator for `shown`. `recovered` counts the times
+  // the one-shot dialog was missed and the device copy delivered it instead.
+  //
+  // An UNDERCOUNT by construction, and it must never be described as proof of
+  // delivery: analytics starts disabled and stays off until consent is
+  // verified, so a person who never granted it emits nothing. There is no
+  // per-person delivery receipt and there must not be one — that would be new
+  // personal data about somebody we just erased.
+  static const retentionNoticeShown = 'retention_notice_shown';
+  static const retentionNoticeClosed = 'retention_notice_closed';
+  static const retentionNoticeRecovered = 'retention_notice_recovered';
   static const sessionTimeoutPaused = 'session_timeout_paused';
   static const sessionTimeoutResumed = 'session_timeout_resumed';
   static const sessionTimeoutWarningShown = 'session_timeout_warning_shown';

@@ -557,6 +557,31 @@ void main() {
       ).allMatches(loop!.group(1)!).map((m) => m.group(1)!).toSet(),
       _moderationCounterKeys,
     );
+
+    // The THIRD reader, added with the pre-deletion warning: the rule fails
+    // CLOSED, so a field added to this document by any writer refuses the read
+    // for every user rather than narrowing it — and that outage is invisible
+    // here unless every reader of the key set is held against the same rule.
+    final repo = File(
+      'lib/repositories/firebase/firebase_report_repository.dart',
+    ).readAsStringSync();
+    final fields = RegExp(
+      r'static const readableFields = \[([^\]]*)\]',
+    ).firstMatch(repo);
+    expect(
+      fields,
+      isNotNull,
+      reason:
+          'ModerationCounters.readableFields is gone or rewritten in a form '
+          'this guard cannot see — if it moved, move this assertion with it '
+          'rather than deleting it',
+    );
+    expect(
+      RegExp(
+        "'([^']+)'",
+      ).allMatches(fields!.group(1)!).map((m) => m.group(1)!).toSet(),
+      _moderationCounterKeys,
+    );
   });
 
   // BUT-2059: `ingredient_suggestions` was in `_knowinglyUncovered` because

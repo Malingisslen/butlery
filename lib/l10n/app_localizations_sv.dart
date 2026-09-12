@@ -16465,6 +16465,14 @@ class AppLocalizationsSv extends AppLocalizations {
       'En sak kan ha sparats: vi kunde inte slutföra kontrollen av om det finns en pågående granskning av innehåll som anmälts.';
 
   @override
+  String get profileDeletionNoticeCollapsed =>
+      'Ett meddelande om ett raderat konto på den här enheten.';
+
+  @override
+  String get profileDeleteAccountMayHaveReview =>
+      'Om det finns en pågående granskning av innehåll du anmälts för kan vi behöva spara den granskningen även efter att kontot raderats. Du får i så fall veta det när raderingen är klar.';
+
+  @override
   String get shoppingLeaveList => 'Lämna listan';
 
   @override

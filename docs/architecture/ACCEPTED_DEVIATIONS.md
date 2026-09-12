@@ -4608,3 +4608,156 @@ this one is not, and a cascade that stops looking is how a residual becomes perm
 
 Raised by the `code-reviewer` and `firestore-rules-tester` gates, which measured it
 independently — the second from an emulator trace rather than from a reading of the rules file.
+
+---
+
+## The Art. 12(4) notice survives a missed dialog, on this device only (2026-09-12)
+
+The BUT-2046 follow-up entry describes the Art. 12(4) retention notice as "ONE-SHOT and
+unrecoverable": shown in a dialog after the account is gone and before the sign-out
+navigation, with no second channel because email infrastructure does not exist (BUT-417).
+That entry is NOT superseded — it still describes correctly what happens in that moment.
+What changes is what happens afterwards.
+
+**Three things ship together, and the first is what makes the other two worth having.**
+
+1. The delete-account confirmation warns BEFORE anything is deleted, when the user's own
+   `totalReports` is above zero. A notice that is never needed cannot be missed.
+2. The notice is written to the device before the dialog is shown, and re-shown on the
+   sign-in screen if it was never acknowledged.
+3. Three bare counters, all on item 2: the live notice shown, either notice closed, and a
+   notice recovered from the device. Nothing counts item 1.
+
+**Device-local was Malin's explicit call, 2026-09-12**, over a server record keyed on the
+email address. She was shown that the server route is the only one reaching a new device,
+and what it costs: retaining an identifier for a person whose account we had just erased, on
+a new legal basis; a hashed email that is not anonymous, because the address space is
+guessable; and a disclosure to anyone registering with somebody else's address that that
+person had been under moderation review. **What she was NOT shown:** any measurement of how
+often a deleted account is re-registered from a new device within the hold window. There are
+no users, so it is not measurable.
+
+**Named residual, and the reason this is a reduction rather than a fix:** uninstall, a wiped
+device, "clear app data" and a new phone all still lose the notice permanently. The gap is
+narrower, not closed.
+
+**Second residual, named rather than left to be discovered (DPO):** the store holds ONE slot
+with no key. A second account deleted on the same device before the first notice is read
+overwrites it, silently and unrecoverably. Keying it would reintroduce an identifier for an
+erased person, which is the objection that sank the server route — so this is the price of
+that decision, not an oversight. Pinned by `a second deletion overwrites the first, unread
+notice`.
+
+**Third residual:** there is no per-person record that anybody received the notice, and
+there must not be one — such a record is new personal data about somebody we just erased.
+The counters are consent-gated aggregates and are an undercount by construction. They must
+never be described as proof of delivery.
+
+**The re-shown notice opens COLLAPSED; the live one does not. Malin's explicit call,
+2026-09-12, option (b)**, over showing it as-is and over requiring the email address to
+expand. On a shared family device the next person would otherwise be told that the previous
+account holder had content under moderation review — no name travels, but the fact does.
+Trust & Safety and Legal recommended (b) independently, Legal placing it in its own lane as
+an Art. 5(1)(c) minimisation call rather than product taste, and Trust & Safety noting that
+showing it as-is is the one option repeating a pattern this repo has rejected in every prior
+analogous decision (BUT-1917's one-directional ballot strip, BUT-2054's readable comments,
+BUT-1904's silent duplicate guard). **The asymmetry is the decision:** there is no bystander
+in a session that has not ended yet, and an extra tap on the live notice would only make the
+original easier to miss. Do not harmonise the two; both halves are pinned.
+It is ONE method with a `startCollapsed` flag, never two dialogs — the four Art. 12(4)
+elements exist at exactly one place in this codebase, and a second implementation of a legal
+notice is how two copies drift apart.
+The expansion state is per CALL, never a static: a flag on the class stays set when a dialog
+is torn down without completing, which hands the next person the expanded notice. That bug
+was written and caught by its own test before it shipped.
+
+**The write sits OUTSIDE the `context.mounted` gate in `handleDeleteAccount`, and that
+placement IS the mechanism.** `deleteUserAccount` signs out inside itself before returning,
+and `AuthWrapper` rebuilds to the signed-out tree on that, which can dispose the context the
+handler holds — that is precisely the run where the live dialog never appears and the
+persisted record is the only delivery left. Written inside the gate, the same race that
+loses the dialog loses the record, and the feature is a no-op on exactly the runs it exists
+for. Found by the `Codebase Archaeologist` seat at plan time; the natural reading of "write
+before the dialog" would have put it inside.
+The pin for it was VACUOUS when first written — the fake deletion resolved immediately, so
+the context was still mounted and the mutant survived. It now gates the deletion on a
+`Completer` the test releases only after tearing the tree down, and the mutant is killed.
+Do not remove that gate to "simplify" the test.
+
+**`ownReportStatus` returns THREE values, not a bool (ADR-0019).** `user_moderation`'s read
+rule is a `hasOnly` allowlist that fails CLOSED, so a field added to that document by any
+writer refuses the read for EVERY user rather than narrowing it. Collapsed into `false` that
+outage is indistinguishable from "never reported", and the warning would stop firing for
+exactly the people with an open case, indefinitely, with nothing reddening. The UI treats
+`unknown` exactly as `none` — no row, no moderation-adjacent text, which was Trust & Safety's
+condition — but the state is recorded as itself. **Do not "simplify" it back to a bool:** the
+two render identically in every state a test is likely to stage.
+`ModerationCounters.readableFields` is held against the rule and the Art. 15 projection by
+`rules_allowlist_drift_test.dart`, so a third hand-kept copy cannot drift in silence.
+
+**The warning OVER-WARNS, deliberately.** `totalReports` counts reports ever filed and
+cannot tell a closed or dismissed case from an open one, so somebody whose case is finished
+is warned too. That is the price of adding no new server surface; an exact answer needs a
+callable running `hasOpenModerationCase`. The copy is hedged for the same reason, and the
+hedge is load-bearing: `profileDeleteAccountMayHaveReview` must never be edited into a
+statement of fact. Pinned by a test that reads the rendered string.
+
+**Named residual (Trust & Safety):** the warning is a heads-up that could prompt a reported
+person to act outside the app before the hold is placed — contacting the reporter, removing
+corroborating material elsewhere. The hold itself is unaffected: it is evaluated server-side
+from report status, not from anything the client showed.
+
+**Nothing on the server changes.** `functions/src`, `firestore.rules`, the indexes and the
+Cloud Functions are untouched, and no new personal data is stored anywhere — not on the
+server, and not in the device record, which carries a date, a boolean and a timestamp and no
+identifier of any kind. That key set is pinned.
+The device file is plaintext and unauthenticated-writable, so on a rooted device or through
+an ADB backup it is a **forgeable trigger for a legal-sounding notice**. Nothing leaves the
+device and nothing beyond a Close button acts on it, and secure storage would not stop a
+rooted device either. Named because OWASP MASVS-STORAGE scopes at-rest protection by
+security relevance rather than by PII alone.
+
+**The moderation read goes to the SERVER (`Source.server`), and that is a control rather
+than a preference.** Offline persistence is on, so a plain `.get()` answers
+`exists == false` for a document merely absent from the cache — WITHOUT throwing. That would
+return zero, resolve to "not reported", and suppress the warning for a reported person with
+nothing in the three-state design able to see it: no throw means the catch never runs and
+`unknown` is never reached, and a negative cache entry has no expiry. Offline the server read
+throws `unavailable`, lands in the catch and answers `unknown`, which is what the caller
+wants. Same shape as `FirebaseBlockRepository._blockAlreadyStands` (BUT-1922). The price,
+named: offline is now a routine entrant into the error log on this path.
+
+**`PendingRetentionNoticeStore.deliveredLiveInThisProcess` arbitrates between the two readers
+of one record, and it is claimed BEFORE the write — not merely before the dialog.** The
+record stays on disk while the live dialog is up (it is cleared only once the person closes
+it), and the sign-out that dialog follows rebuilds the signed-out branch, so
+`PendingNoticeGate` can mount and read a record that is still there. Without the claim it
+stacks a second notice on a working one AND logs a recovery — corrupting the one number that
+says whether the device copy is worth keeping, in the direction that makes it read near-100%.
+The claim's POSITION is load-bearing and was wrong once: `shared_preferences` publishes to its
+in-process cache before `setString`'s future completes, and `read` hits that same cache, so a
+claim taken after the write leaves a window where the record is readable and unclaimed. The
+claim is RELEASED when the context died during the write — no live dialog is coming then, and
+the gate is the only delivery left, which is the run the whole feature exists for.
+Process-scoped and never persisted, so an app that dies still delivers from disk at next
+launch. Both the claim and the release are mutation-probed. A SECOND check sits after the
+gate's read, covering the one ordering the position cannot: the gate passing its first check
+before the claim exists and resolving its read after. It shipped unpinned — the first probe
+SURVIVED — and is now staged by a store subclass that claims inside its own `read()`.
+
+**Named residual, stated as the general property rather than as one race:** the gate makes ONE
+attempt per mount and never retries, so any interleaving it loses defers delivery to the next
+launch rather than costing it. That covers the window between the claim and the release on a
+run whose context died during the write, and equally the gate mounting before the record is
+written — and it keeps covering the next such window without a third clause. Nothing is lost
+in any of them: the record is untouched, the flag dies with the process, and the expiry is the
+hold date or 30 days. The ordering suite's `deliveredLiveInThisProcess == false` assertion is
+what keeps the release honest.
+
+**Nothing here satisfies a future DSA Art. 17 statement-of-reasons duty.** An Art. 12(4)
+retention notice is a different obligation; the delivery mechanism is a reasonable technical
+precedent for that duty, and must not be read as discharging it.
+
+Reviewed by a full stakeholder panel (DPO, Legal Counsel, Trust & Safety, Security
+Architect, Software Architect, Codebase Archaeologist): six approve-with-conditions, zero
+blocks, one conflict reconciled as ADR-0019, one escalation answered by Malin the same day.

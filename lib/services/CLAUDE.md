@@ -43,6 +43,9 @@ These services intentionally don't extend `BaseService` because they're pure-com
 - `lib/services/voice/voice_capture_service.dart` (device I/O: mic capture + on-device whisper.cpp FFI inference — no Firebase user data; same category as the two ONNX services)
 - `lib/services/voice/tts_service.dart` (3rd-party OS TTS wrapper — Android `TextToSpeech`/iOS `AVSpeechSynthesizer` passthrough, no Firebase ops; same category as the ONNX services)
 - `lib/services/monitoring/app_monitoring_service.dart`
+- `lib/services/account/pending_retention_notice_store.dart` (pure local storage —
+  `shared_preferences` read/write/clear for the Art. 12(4) notice that must outlive a missed
+  dialog; no Firebase, no async service lifecycle)
 
 If a new service fits one of these patterns, document the reason inline and skip the `BaseService` extension. Otherwise, extend it.
 

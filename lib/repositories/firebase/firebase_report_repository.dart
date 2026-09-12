@@ -5,6 +5,34 @@ import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
 
+/// The signed-in user's own moderation counters, projected to the fields
+/// `firestore.rules` lets them read.
+///
+/// The key set is held against the rule and the Art. 15 projection by
+/// `rules_allowlist_drift_test.dart`; a third hand-written copy that nothing
+/// compares is how the three drift apart.
+class ModerationCounters {
+  const ModerationCounters({required this.totalReports});
+
+  /// The fields `firestore.rules` permits the subject to read on
+  /// `user_moderation/{uid}` — the rule is a `hasOnly` allowlist, so this is
+  /// the whole document as far as any client is concerned.
+  ///
+  /// Declared rather than inlined so `rules_allowlist_drift_test.dart` can
+  /// read it out of this file and hold it against the rule and the Art. 15
+  /// projection. Three hand-kept copies of one key set is how the three drift
+  /// apart, and that drift is silent in the direction that matters: rules and
+  /// the writer widening together while a reader does not.
+  static const readableFields = ['totalReports', 'lastReportedAt'];
+
+  /// How many reports have ever been filed against this user — NOT how many
+  /// cases are open. A closed or dismissed report counts here too, which is
+  /// why every sentence built on it has to be hedged.
+  final int totalReports;
+
+  bool get hasAnyReport => totalReports > 0;
+}
+
 /// Repository for content reports, extending BaseFirebaseRepository for
 /// CRUD + audit logging + permission validation.
 class FirebaseReportRepository extends BaseFirebaseRepository<ContentReport> {
@@ -123,6 +151,63 @@ class FirebaseReportRepository extends BaseFirebaseRepository<ContentReport> {
     } catch (e) {
       AppLogger.error('[ReportRepository] Failed to get user reports', e);
       return [];
+    }
+  }
+
+  /// The signed-in user's own moderation counters, or null when the read did
+  /// not answer.
+  ///
+  /// Null means the read FAILED or was denied — never "this person has never
+  /// been reported", which is an absent document and returns zero. The caller
+  /// must keep the two apart: `firestore.rules` gates this document on
+  /// `hasOnly(['totalReports','lastReportedAt'])`, so the day any writer adds a
+  /// field here the read is refused for EVERYONE rather than narrowed, and a
+  /// null collapsed into "not reported" would switch the pre-deletion warning
+  /// off silently for exactly the people who have an open case.
+  ///
+  /// Reads `user_moderation`, not this repository's own `reports` collection,
+  /// so the inherited permission methods — scoped to `reports` — cannot apply
+  /// to it. `firestore.rules` is authoritative here. Kept on this repository
+  /// rather than given one of its own on the precedent of
+  /// `FirebaseDataExportRepository.exportModerationCounters`, which reads the
+  /// same document from a repository whose own collection differs.
+  ///
+  /// The projection mirrors the rule's allowlist rather than taking
+  /// `doc.data()` whole: a field nobody has decided about must not ride along
+  /// silently.
+  Future<ModerationCounters?> fetchOwnModerationCounters(String userId) async {
+    try {
+      // From the SERVER, never the cache. Offline persistence is on, so a
+      // plain `.get()` answers `exists == false` for a document simply not in
+      // the cache — WITHOUT throwing. That would return zero, resolve to
+      // `none`, and silently suppress the warning for a reported person, with
+      // nothing in the three-state design able to see it: no throw, so the
+      // catch never runs, and `unknown` is never reached. A negative cache
+      // entry has no expiry, so it can outlast the install.
+      //
+      // Offline this throws `unavailable`, lands in the catch below and
+      // answers `unknown` — which is what the caller already wants. Same shape
+      // as `FirebaseBlockRepository._blockAlreadyStands` (BUT-1922): an answer
+      // that decides what the user is told is not evidence unless the server
+      // gave it.
+      final doc = await firestore
+          .collection(FirestoreCollections.userModeration)
+          .doc(userId)
+          .get(const GetOptions(source: Source.server));
+
+      final data = doc.data();
+      if (!doc.exists || data == null) {
+        return const ModerationCounters(totalReports: 0);
+      }
+      return ModerationCounters(
+        totalReports: (data['totalReports'] as num?)?.toInt() ?? 0,
+      );
+    } catch (e) {
+      AppLogger.error(
+        '[ReportRepository] Could not read own moderation counters',
+        e,
+      );
+      return null;
     }
   }
 

@@ -10219,3 +10219,63 @@ survives.
 new bullet: grade a pointer on the target's PREDICATE not its topic, and treat a sentence whose
 head you edited as re-emitting its tail — `git show HEAD:` on the sentence, because the diff
 cannot show it.
+
+---
+
+## 2026-09-12 — BUT-2046 follow-up / ADR-0019: the three-state moderation read is defeated by the offline cache
+
+Gated file: `lib/repositories/firebase/firebase_report_repository.dart`, one new method
+`fetchOwnModerationCounters(userId)` plus a `ModerationCounters` projection. No rules, index
+or Cloud Function change in the commit.
+
+**What is right and was checked rather than assumed.** The cross-collection read
+(`user_moderation` from a repository whose `collectionName` is `reports`) is documented
+inline and the precedent it cites is real — `FirebaseDataExportRepository.exportModerationCounters`
+reads the same document from a repository whose own collection also differs, and projects the
+same two keys. `FirestoreCollections.userModeration == 'user_moderation'` matches the rule's
+match block. The absent document returns zero, which the rule's `resource == null` arm
+permits, so the empty state is not a failure envelope. A denied read, a wrong-typed
+`totalReports` (`as num?` on a String) and a timeout all land in the catch and answer null,
+which the service maps to `OwnReportStatus.unknown` — the fail direction ADR-0019 exists for.
+`ModerationCounters.readableFields` is genuinely held against the rule and the Art. 15
+projection by `rules_allowlist_drift_test.dart`, which now parses this file too.
+
+**The defect.** The `get()` passes no `GetOptions`, and `firestore_bootstrap.dart` sets
+`persistenceEnabled: true`. So the answer can come from the local cache, and a document never
+cached answers `exists == false` without error — the same cached-absence behaviour this repo
+built `getDocCacheFirst(acceptCachedAbsence:)` for and warns about in `base_firebase_repository.dart`
+("a negative entry has no expiry … it must not reach anything an allergen or a permission
+decision reads"). The method then returns zero, the service returns `none`, and the
+pre-deletion warning is silently suppressed for a reported user on an answer no server gave.
+The three-state design, the 2s timeout and the catch are all blind to it: nothing throws.
+
+The in-repo precedent for the fix is `FirebaseBlockRepository._blockAlreadyStands`
+(BUT-1922): "Reads from the SERVER. This answer decides whether the user is told they are
+protected, and a cached row is not evidence that the server holds one." Same shape here, one
+noun different. `GetOptions(source: Source.server)` throws offline, lands in the existing
+catch, answers null, and the service records `unknown` — which is also what the caller's own
+comment says it wants offline ("the timeout … keeps this from stalling the dialog offline").
+So the fix costs nothing the design wanted and is one line.
+
+Not covered by the deviation entry for this change ("The Art. 12(4) notice survives a missed
+dialog, on this device only", 2026-09-12), which is read in full: it decides device-local
+storage, the collapsed re-show, the over-warning counter and the three-state enum, and says
+nothing about the read's source. So this is a new finding, not a re-argument.
+
+Verdict: fail (1 blocking, High). Secondary, non-blocking: the method's doc comment asserts
+the null/zero contract the code does not keep offline — it must be closed by the read, not by
+a caveat sentence, so no wording change was recommended.
+
+**Principle updated** in place, merged into the existing cache/`Source.server` clause rather
+than a new bullet: the trigger is now stated as a property of the READ (any decision-path
+read whose absent/zero answer is the innocent one), so it fires without an ADR being open.
+
+**RESOLVED same review, 2026-09-12.** The read is
+`.get(const GetOptions(source: Source.server))`, re-read with `Read`. The doc comment's
+null/zero contract sentence is unchanged and is now true — the read was fixed, not the
+sentence, which is the direction the finding asked for. The trap is also written into
+`.claude/rules/accepted-deviations.md`'s new entry, so the next person planning near this
+path meets it before writing the read. Verdict re-issued: pass. One Low left unfiled as a
+change request: offline is now a routine entrant into the `AppLogger.error` branch
+(Crashlytics), which is telemetry noise rather than a defect — the payload is the exception
+only, no uid.

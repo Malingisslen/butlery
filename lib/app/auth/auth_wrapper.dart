@@ -20,6 +20,8 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/app/auth/pending_notice_gate.dart';
+import 'package:butlery/services/account/pending_retention_notice_store.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/onboarding/onboarding_progress_service.dart';
 import 'package:butlery/services/user_service.dart';
@@ -100,6 +102,15 @@ class _AuthWrapperState extends State<AuthWrapper> {
           DeepLinkHandler().processPendingDeepLink(context);
           // BUT-941: a photo shared in before login routes once authed.
           IncomingShareHandler().processPendingShare();
+          // Somebody else now owns this device session, so an unread Art. 12(4)
+          // notice about a DIFFERENT account must not surface to them. Without
+          // this the record survives until it expires, so a third family member
+          // could meet it weeks later — a much wider window than "the next
+          // person who opens the app". Best-effort and silent: the store logs
+          // its own failures, and there is nothing useful to do here on one.
+          unawaited(
+            ServiceLocator.get<PendingRetentionNoticeStore>().clear(),
+          );
         }
       } else {
         AppLogger.debug('AuthWrapper: User signed out');
@@ -199,7 +210,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
     }
 
     AppLogger.debug('AuthWrapper: No user logged in, showing auth view');
-    return const AuthView();
+    return const PendingNoticeGate(child: AuthView());
   }
 }
 

@@ -115,6 +115,14 @@ compress it.**
   mutating it is all-green by construction and reads as "these tests are fine". Before
   probing, ask which of the mutated symbol's layers the harness actually reaches; for a
   repointed GUARD that is the `if` in the widget, not the method it calls (BUT-2022).
+- **A guard a REVIEWER asked for is exactly as unproven as any other line, and probing it is the
+  reviewer's job to demand** — a one-line re-check I recommended shipped GREEN (deletable with
+  every case passing) until the probe said so. Staging an INTERLEAVING to kill it needs a
+  subclass double that delegates (`super.read()`) and then schedules the side effect: that is
+  not the override trap above, because production's method still runs and only the timing is
+  staged. Expect the fix to falsify the rationale comment on the guard it now subsumes — and a
+  check made redundant by a later one is a behaviour-preserving fast path that owes no pin
+  (BUT-2046 follow-up, 2026-09-13).
 - **A green probe over the SUITE YOU WROTE cannot support a "no other witness" claim** — that
   needs the suites found by `grep -rl '<mutated symbol>' test/`, a different set from the files
   you edited. "Raising this constant leaves every suite green" shipped false because the probe

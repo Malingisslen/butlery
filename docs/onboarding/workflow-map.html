@@ -1416,6 +1416,12 @@
       "path": "lib/services/moderation/report_service.dart"
     },
     {
+      "id": "svc-pending-notice",
+      "label": "PendingRetentionNoticeStore — artikel 12.4-beskedet på enheten",
+      "context": "service",
+      "path": "lib/services/account/pending_retention_notice_store.dart"
+    },
+    {
       "id": "repo-friends",
       "label": "FirebaseFriendsRepository (fasad)",
       "context": "repository",
@@ -2959,6 +2965,13 @@
         },
         {
           "from": "vm-profile",
+          "to": "svc-report",
+          "payload": "egen totalReports (user_moderation/{uid}, ägarläsning, Source.server — cachen kan svara 'finns inte' utan att kasta) → förvarning i bekräftelserutan om en granskning kan behöva sparas. Tre lägen: anmäld / bekräftat inte anmäld / kunde inte avgöra — det sista är tyst i UI:t men loggas, eftersom regelns hasOnly-allowlist failar CLOSED (ADR-0019). 2 s timeout; offline blir kunde-inte-avgöra.",
+          "transport": "method call (.ownReportStatus)",
+          "verified": true
+        },
+        {
+          "from": "vm-profile",
           "to": "svc-auth",
           "payload": "lösenord → re-autentisering (klientsidig, redundant med serverkollen)",
           "transport": "method call",
@@ -3013,13 +3026,22 @@
           "transport": "Firestore writes",
           "verified": true
         },
+
         {
           "from": "svc-account-deletion",
           "to": "svc-auth",
           "payload": "resetForLogout + signOut",
           "transport": "method call",
           "verified": true
+        },
+        {
+          "from": "vm-profile",
+          "to": "svc-pending-notice",
+          "payload": "artikel 12.4-beskedet skrivs till enheten UTANFÖR context.mounted-grinden, före dialogen — utloggningen sker inuti deleteUserAccount och kan hinna riva kontexten, vilket är precis den körning där livedialogen aldrig visas. Rensas när beskedet lästs, när någon annan loggar in på enheten, eller när hållet löpt ut. Visas hopfällt på inloggningsskärmen (Malin 2026-09-12, alternativ b) av PendingNoticeGate — som står tillbaka när deliveredLiveInThisProcess är satt, annars skulle den stapla ett besked ovanpå ett fungerande och räkna det som en räddning. Hävdet tas före skrivningen (shared_preferences publicerar till processcachen innan future:n är klar) och släpps om kontexten dog under tiden.",
+          "transport": "method call (.write/.clear)",
+          "verified": true
         }
+
       ],
       "area": "konto & säkerhet",
       "features": [
