@@ -4462,3 +4462,62 @@ suites cannot show that two concurrent closers serialise — `fake_cloud_firesto
 is a passthrough with no isolation — and both the module and its tests say so.
 
 Raised by the `code-reviewer` and `firebase-backend-security` gates.
+
+## BUT-1716 — the shared-list item subcollection: erasable, not exportable (2026-09-12)
+
+**What ships.** `removeFromSharedContent` now erases one user's identity from
+`shared_content/{id}/items`: the rows under a share they OWN are deleted before the parent, and
+their attribution is scrubbed out of rows in shares other people keep. Discovery is four
+`collectionGroup("items").where(<uid field>, "==", uid)` queries — the item fields themselves,
+not membership. Membership is the wrong handle and the array-shaped twin already pays for that
+lesson with `contributorUserIds`: `BaseSharedContentRepository.removeMember` deletes the
+`members/{uid}` row and `arrayRemove`s the uid from `sharedToUserIds` in ONE call, so somebody
+who LEFT a list is invisible to both handles while their uid and display name stay on every row
+they wrote. Rows are scoped by path to a top-level `shared_content` parent, because
+`users/{uid}/unified_shopping_lists/{id}/items` shares the collection-group id, is owned by
+`deleteShoppingLists`, and runs in the same Tier-1 `Promise.all` — unscoped, the two steps would
+race over the same rows.
+
+**Art. 15.** The bundle carries the `shared_content` PARENT rows and
+`users/{uid}/unified_shopping_lists/*/items`, and no item rows from `shared_content`. So this
+change makes rows erasable that are not exportable. Unlike the BUT-1832/BUT-2057 cases they are
+the requester's own content — name, note, price, priority — on a path their own client may read
+(`allow read: hasSharedAccess(...)`), so there is no Art. 15(4) argument for withholding them.
+**The gap is a property of the code as it ships, not of how many rows exist in production.**
+Whether an export SECTION ships is Malin's decision and is asked on the ticket; the production
+count decides the build, never whether the gap is real. It is not recorded in `EXPORT_EXEMPT`,
+which is scoped to `USER_SUBCOLLECTIONS` and whose guard scenario does not range over
+`shared_content` — an entry there would sit under a false header and redden nothing. The
+`firebase-backend-security` gate argued for recording it here; the `cloud-functions-specialist`
+gate argued the build decision is Malin's rather than a reviewer's. Both are honoured: the fact
+is written down, the question is on the ticket.
+
+**The third shape.** `shared_content/{id}.listData` is a whole copy of the sender's list,
+written by `shopping_social_share_module.dart`, carrying the same four per-item name fields.
+Measured while reviewing this change: the rename propagator's `renameEmbeddedShoppingItems`
+queries `unified_shared_shopping_lists` only, and this cascade reaches the subcollection and the
+parent array — so the nested copy is maintained by NOTHING, in either direction. The only code
+that knows those fields are in there is the export redaction
+(`dropOtherMembersNamesInListData`, Malin's 2026-08-01 call). Attribution inside a document
+field is unqueryable, so no cascade and no probe can reach it: the BUT-1832 shape. Its own
+ticket — a third storage shape does not belong in the commit whose claim is that the other two
+now answer the same erasure question identically.
+
+**No probe leg, and that is a decision.** `probeResidualData`'s only `shared_content` leg reads
+the parent's `sharedToUserIds`, which this scrub does not write. The step now returns false on
+any failure — a failed scrub, a declined cap, or an owned share whose children could not be
+deleted — so `runStep` files it in `failedCollections` and the run reports
+`gdprCompliant: false`. A probe would buy one more thing the scrub cannot: a row written or
+re-written AFTER the scrub passed over it. Both gates named the trap in building one: `count()`
+cannot path-scope, so it would count `users/{uid}/…/items` too, and a probe broader than its
+deleter is a permanent `gdprCompliant: false` nobody can clear. It must be a `.get()` filtered
+by the same `isSharedContentParent` predicate, or nothing.
+
+**Named residuals, none built.** A remaining member whose screen cached a pre-scrub copy
+restores the erased uid on their next edit — `FirebaseSharedShoppingRepository.updateItem`
+writes the whole item and the `items` update limb pins only `lastModifiedByUserId`; the accepted
+stale-client class. A row whose uid field was overwritten while its display NAME survived is
+reachable by no query, because discovery is field-keyed. The cap counts rows BEFORE
+path-scoping, so personal-list rows spend it too. And a concurrent row delete (the `items` delete limb is `hasSharedAccess`)
+poisons a chunk with grpc 5 and flips the run to `gdprCompliant: false`, where the array twin
+tolerates exactly that case; the error direction is the safe one.

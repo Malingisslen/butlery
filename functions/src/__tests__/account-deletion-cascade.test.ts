@@ -97,8 +97,35 @@ function applyFieldPath(
   target[head] = child;
 }
 
+/**
+ * BUT-1716: the collection a document sits in, and the document that owns that
+ * collection — `doc.ref.parent.parent` in the real SDK.
+ *
+ * `removeFromSharedContent` resolves a `members/{uid}` row back to its
+ * `shared_content` parent that way, and scopes on `parent.parent.id` because a
+ * collection-GROUP read also returns `members` rows nested under other
+ * collections. Without this the production line throws a TypeError, which under
+ * this file's single bottom-level catch reads as a shrunken suite rather than a
+ * failure — and the path-scoping assertion could not be written at all.
+ */
+interface FakeCollectionRef {
+  /** The collection segment, e.g. `members`. */
+  id: string;
+  /** The document that owns it, or null for a top-level collection. */
+  parent: FakeRef | null;
+}
+
 interface FakeRef {
   path: string;
+  /**
+   * BUT-1716: the document id. Real `DocumentReference`s carry it, this stub did
+   * not, and the gap was invisible in the usual direction: production code that
+   * reads `ref.id` got `undefined` here and simply took the other branch. The
+   * owned-share SKIP in `scrubSharedContentItemAttribution` is keyed on it, so
+   * without this the suite graded a skip that never happened.
+   */
+  id: string;
+  parent: FakeCollectionRef;
   /** BUT-2046: a document read by id, for the moderation-record probe leg. */
   get(): Promise<{ exists: boolean; data(): DocData | undefined }>;
   delete(): Promise<void>;
@@ -166,6 +193,13 @@ class FakeFirestore {
    */
   readonly updateFailures = new Map<string, number>();
   /**
+   * Path -> grpc code that a BATCH commit touching that path should reject
+   * with. Separate from `updateFailures` because the two write shapes reach
+   * different code: `commitInChunks` batches, and its strict/swallow posture is
+   * only observable through this one.
+   */
+  readonly batchFailures = new Map<string, number>();
+  /**
    * Every path deleted, in order. BUT-1822 turns on an ORDERING invariant —
    * roster rows before the conversation document — and "both are gone at the
    * end" is exactly the assertion that cannot tell the fixed code from the
@@ -217,8 +251,15 @@ class FakeFirestore {
   }
 
   private makeRef(path: string): FakeRef {
+    const segments = path.split("/");
+    const parentDocPath = segments.slice(0, -2).join("/");
     return {
       path,
+      id: segments[segments.length - 1],
+      parent: {
+        id: segments[segments.length - 2],
+        parent: parentDocPath === "" ? null : this.makeRef(parentDocPath),
+      },
       // BUT-2046: `probeResidualData` reads the `user_moderation/{uid}` PARENT
       // by id, so the stub needs the one verb a document reference is normally
       // asked for. Without it the probe's own catch fires and every scenario
@@ -714,6 +755,25 @@ class FakeFirestore {
         sets.push({ path: ref.path, data });
       },
       commit: async () => {
+        // BUT-1716: the seam the `updateFailures` map above cannot reach. A
+        // `batch.update`/`batch.delete` never goes through `makeRef`, so every
+        // strict-vs-swallow posture in `commitInChunks` was unstageable — and a
+        // swallowed chunk is exactly how an erasure reports success over rows it
+        // left behind. Keyed on a path IN the batch, so a test names the write
+        // it wants to fail rather than the chunk it happens to land in.
+        for (const path of [
+          ...sets.map((s) => s.path),
+          ...updates.map((u) => u.path),
+          ...deletes,
+        ]) {
+          const injected = this.batchFailures.get(path);
+          if (injected !== undefined) {
+            throw Object.assign(
+              new Error(`injected batch failure on ${path}`),
+              { code: injected },
+            );
+          }
+        }
         for (const s of sets) this.docs.set(s.path, { ...s.data });
         for (const u of updates) this.applyUpdate(u.path, u.data);
         for (const path of deletes) {
@@ -1455,6 +1515,285 @@ async function scenario_adHocSharedContentMembershipIsScrubbed(): Promise<void> 
     "an unrelated share between two other people is left alone",
     (unrelated.sharedToUserIds as string[]).length === 2,
     `to: ${JSON.stringify(unrelated.sharedToUserIds)}`,
+  );
+}
+
+/**
+ * BUT-1716. The membership scrub above rewrites the PARENT document. One level
+ * down, `shared_content/{id}/items/{itemId}` carried the same person's uid and
+ * display name on every row they added, ticked or claimed — and Firestore does
+ * not delete a subcollection with its parent, so on an OWNED share those rows
+ * outlived the share document itself, unreachable through the rules (every limb
+ * there reads the parent) and erasable by nothing but this cascade.
+ *
+ * The four pairs are treated as the array-shaped twin treats them
+ * (`deleteShoppingLists`): `assignedTo*` and `purchasedBy*` cleared to null with
+ * their timestamp, `addedBy*` and `lastModifiedBy*` anonymized to `"deleted"`
+ * because the client model reads `isCollaborative => addedByUserId != null`.
+ * The two shapes must answer the same erasure question the same way, and no
+ * assertion in either suite can see them drift — so this scenario mirrors that
+ * one field for field.
+ */
+async function scenario_sharedContentItemAttributionIsScrubbed(): Promise<void> {
+  const db = new FakeFirestore();
+
+  // A list somebody else keeps, which the deleted user contributed to.
+  db.set("shared_content/their-list", {
+    contentType: "shopping_list",
+    sharedByUserId: OTHER,
+    sharedToUserIds: [OTHER, UID],
+  });
+  db.set("shared_content/their-list/items/i-added", {
+    name: "Mjölk",
+    addedByUserId: UID,
+    addedByDisplayName: "Raderad Person",
+    lastModifiedByUserId: UID,
+    lastModifiedByDisplayName: "Raderad Person",
+  });
+  db.set("shared_content/their-list/items/i-claimed-and-ticked", {
+    name: "Ägg",
+    addedByUserId: OTHER,
+    addedByDisplayName: "Någon Annan",
+    assignedToUserId: UID,
+    assignedToDisplayName: "Raderad Person",
+    assignedAt: "2026-09-01T10:00:00Z",
+    purchasedByUserId: UID,
+    purchasedByDisplayName: "Raderad Person",
+    purchasedAt: "2026-09-01T11:00:00Z",
+  });
+  db.set("shared_content/their-list/items/somebody-elses", {
+    name: "Smör",
+    addedByUserId: OTHER,
+    addedByDisplayName: "Någon Annan",
+  });
+
+  // A share the deleted user OWNS, whose items go with it.
+  db.set("shared_content/my-list", {
+    contentType: "shopping_list",
+    sharedByUserId: UID,
+    sharedToUserIds: [UID, OTHER],
+  });
+  db.set("shared_content/my-list/items/row", {
+    name: "Bröd",
+    addedByUserId: UID,
+  });
+  db.set("shared_content/my-list/members/" + OTHER, { userId: OTHER });
+
+  // A shared RECIPE the deleted user received: no items collection at all.
+  db.set("shared_content/their-recipe", {
+    contentType: "recipe",
+    sharedByUserId: OTHER,
+    sharedToUserIds: [OTHER, UID],
+  });
+
+  // A list the deleted user LEFT. `BaseSharedContentRepository.removeMember`
+  // deletes the `members/{uid}` row and arrayRemoves the uid from
+  // `sharedToUserIds` in one call, so neither membership handle names them —
+  // while their uid and display name stay on every row they wrote. This is the
+  // residual the leg exists for, and discovering parents through membership
+  // (the first version of this change) walks straight past it.
+  db.set("shared_content/left-list", {
+    contentType: "shopping_list",
+    sharedByUserId: OTHER,
+    sharedToUserIds: [OTHER, THIRD],
+  });
+  db.set("shared_content/left-list/items/written-before-leaving", {
+    name: "Kanel",
+    addedByUserId: UID,
+    addedByDisplayName: "Raderad Person",
+  });
+
+  // A `members` row for this user under a DIFFERENT collection. `members` is
+  // read as a collection GROUP, so this row comes back too — and resolving its
+  // parent would take the scrub somewhere it has no business being.
+  db.set("chat_groups/g1/members/" + UID, { userId: UID });
+  db.set("chat_groups/g1/items/not-a-shopping-row", {
+    name: "should not be touched",
+    addedByUserId: UID,
+  });
+
+  const { removeFromSharedContent } =
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    require("../account/account-deletion-cascade");
+  await removeFromSharedContent(asDb(db), UID);
+
+  const added = db.get(
+    "shared_content/their-list/items/i-added",
+  ) as DocData;
+  check(
+    "an item the deleted user ADDED keeps the row but loses the person",
+    added.addedByUserId === "deleted" &&
+      added.addedByDisplayName === null &&
+      added.lastModifiedByUserId === "deleted" &&
+      added.lastModifiedByDisplayName === null,
+    `left: ${JSON.stringify(added)}`,
+  );
+  check(
+    "…and the row itself survives, with its name",
+    added.name === "Mjölk",
+    `left: ${JSON.stringify(added)}`,
+  );
+
+  const claimed = db.get(
+    "shared_content/their-list/items/i-claimed-and-ticked",
+  ) as DocData;
+  check(
+    "a claim and a tick are NULLED, timestamps included — not anonymized",
+    claimed.assignedToUserId === null &&
+      claimed.assignedToDisplayName === null &&
+      claimed.assignedAt === null &&
+      claimed.purchasedByUserId === null &&
+      claimed.purchasedByDisplayName === null &&
+      claimed.purchasedAt === null,
+    `left: ${JSON.stringify(claimed)}`,
+  );
+  check(
+    "…while the other person's authorship on that same row is untouched",
+    claimed.addedByUserId === OTHER &&
+      claimed.addedByDisplayName === "Någon Annan",
+    `left: ${JSON.stringify(claimed)}`,
+  );
+
+  check(
+    "a row nobody's deletion touches is not written at all",
+    !db.updatedPaths.includes(
+      "shared_content/their-list/items/somebody-elses",
+    ),
+    `wrote: ${JSON.stringify(db.updatedPaths)}`,
+  );
+
+  // The scrub skips parents this user owns, because the loop below deletes
+  // those rows: writing one on its way out is wasted, and the skip is keyed on
+  // the parent's document id — which this file's stub did not model until
+  // BUT-1716, so a skip that never happened would have graded green.
+  check(
+    "a row under an OWNED share is never scrubbed on its way to deletion",
+    !db.updatedPaths.includes("shared_content/my-list/items/row"),
+    `wrote: ${JSON.stringify(db.updatedPaths)}`,
+  );
+  check(
+    "items under an OWNED share are deleted with it",
+    !db.has("shared_content/my-list/items/row"),
+    `still present: ${JSON.stringify(db.get("shared_content/my-list/items/row"))}`,
+  );
+  // "Both are gone" cannot tell the fixed code from code that deletes the
+  // parent first and orphans the rows — every rules limb reads the parent, so
+  // an orphaned row is unreadable and unerasable forever. Only the ORDER can.
+  const itemAt = db.deletedPaths.indexOf("shared_content/my-list/items/row");
+  const parentAt = db.deletedPaths.indexOf("shared_content/my-list");
+  check(
+    "…and before the parent, so nothing is orphaned on the way",
+    itemAt >= 0 && parentAt >= 0 && itemAt < parentAt,
+    `order: ${JSON.stringify(db.deletedPaths)}`,
+  );
+
+  const left = db.get(
+    "shared_content/left-list/items/written-before-leaving",
+  ) as DocData;
+  check(
+    "a row written by somebody who LEFT the list is still reached",
+    left.addedByUserId === "deleted" && left.addedByDisplayName === null,
+    `left: ${JSON.stringify(left)}`,
+  );
+
+  const foreign = db.get(
+    "chat_groups/g1/items/not-a-shopping-row",
+  ) as DocData;
+  check(
+    "an items row under ANOTHER collection is out of scope",
+    foreign !== undefined && foreign.addedByUserId === UID,
+    `left: ${JSON.stringify(foreign)}`,
+  );
+  // The membership scrub three lines above the new code reads the SAME
+  // collection-group snapshot and was never scoped. Unscoped, it writes an
+  // empty `sharedToUserIds` onto a stranger's parent document.
+  check(
+    "…and the membership scrub does not write that foreign parent either",
+    !db.updatedPaths.includes("chat_groups/g1"),
+    `wrote: ${JSON.stringify(db.updatedPaths)}`,
+  );
+}
+
+/**
+ * BUT-1716. The two ways this leg can leave a uid on disk while reporting a
+ * clean erasure — the failure posture both commit gates called blocking.
+ *
+ * Neither is reachable through the `updateFailures` seam: `commitInChunks`
+ * writes through a BATCH, which never goes through `makeRef`. That is why the
+ * fake grew `batchFailures`, and why the guards these two cases hold were
+ * unpinned when they were first written.
+ */
+async function scenario_sharedContentItemScrubReportsItsOwnFailure(): Promise<void> {
+  // 1. The scrub's own commit fails. The rows keep the uid, so the STEP must
+  //    say so: `runStep` turns false into `failedCollections` and
+  //    `gdprCompliant: false`, and nothing else can contradict a clean audit
+  //    row — no probe leg reaches these item rows.
+  const scrubFails = new FakeFirestore();
+  scrubFails.set("shared_content/their-list", {
+    contentType: "shopping_list",
+    sharedByUserId: OTHER,
+    sharedToUserIds: [OTHER, UID],
+  });
+  scrubFails.set("shared_content/their-list/items/mine", {
+    name: "Mjölk",
+    addedByUserId: UID,
+    addedByDisplayName: "Raderad Person",
+  });
+  scrubFails.batchFailures.set(
+    "shared_content/their-list/items/mine",
+    13, // INTERNAL
+  );
+
+  const { removeFromSharedContent } =
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    require("../account/account-deletion-cascade");
+  const scrubResult = await removeFromSharedContent(asDb(scrubFails), UID);
+
+  check(
+    "a failed item scrub reports the STEP as incomplete",
+    scrubResult === false,
+    `returned: ${JSON.stringify(scrubResult)}`,
+  );
+  const stillThere = scrubFails.get(
+    "shared_content/their-list/items/mine",
+  ) as DocData;
+  check(
+    "…and says so because the uid really is still on the row",
+    stillThere.addedByUserId === UID,
+    `left: ${JSON.stringify(stillThere)}`,
+  );
+
+  // 2. An OWNED share whose children cannot be deleted. The parent must STAY:
+  //    every rules limb on `items` reads the parent, so deleting it over
+  //    surviving rows puts them beyond every client and every future erasure.
+  const childFails = new FakeFirestore();
+  childFails.set("shared_content/my-list", {
+    contentType: "shopping_list",
+    sharedByUserId: UID,
+    sharedToUserIds: [UID, OTHER],
+  });
+  childFails.set("shared_content/my-list/items/row", {
+    name: "Bröd",
+    addedByUserId: UID,
+  });
+  childFails.batchFailures.set("shared_content/my-list/items/row", 13);
+
+  const childResult = await removeFromSharedContent(asDb(childFails), UID);
+
+  check(
+    "an owned share whose items could not be deleted KEEPS its parent",
+    childFails.has("shared_content/my-list"),
+    `deleted: ${JSON.stringify(childFails.deletedPaths)}`,
+  );
+  check(
+    "…so the surviving rows are still reachable through it",
+    childFails.has("shared_content/my-list/items/row"),
+    `store: ${JSON.stringify(childFails.deletedPaths)}`,
+  );
+  check(
+    "…and that erasure reports itself incomplete too",
+    childResult === false,
+    `returned: ${JSON.stringify(childResult)}`,
   );
 }
 
@@ -7398,6 +7737,8 @@ async function main(): Promise<void> {
   await scenario_messagesInLeftConversationsAreReached();
   await scenario_groupConversationDocumentIsScrubbed();
   await scenario_adHocSharedContentMembershipIsScrubbed();
+  await scenario_sharedContentItemAttributionIsScrubbed();
+  await scenario_sharedContentItemScrubReportsItsOwnFailure();
   await scenario_anotherMembersLastMessageIsNotTombstoned();
   await scenario_realtimeMenusOwnedAreDeleted();
   await scenario_realtimeMenuLastEditorIsScrubbed();

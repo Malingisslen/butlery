@@ -246,14 +246,18 @@ from `(err as {code?}).code`.
   wall-clock budget, not just a row cap.
 - **A compare-before-repair reconciliation resolves EXISTENCE once per uid ABOVE
   every branch, and counts a DELETE as drift on every branch.** `stored == expected`
-  never settles orphanhood — an EMPTY orphan matches an empty expectation, and a
-  NON-EMPTY one matches whenever the source sweep DECLINED or a `strict:false` chunk
-  failed — so scoping the fix to the empty case leaves both defects one branch over.
-  Never reach the existence seam THROUGH the repair call: it rewrites the benign doc
-  and files it as drift.
+  never settles orphanhood (an EMPTY orphan matches an empty expectation), and the
+  existence seam must not be reached THROUGH the repair call.
 - A "shared" collection also holds SOLO-owner docs to DELETE, not scrub. A scrub
   enumerates every uid in the MODEL's `toFirestore`: array elements, per-uid map
   keys, AND attribution scalars (`lastModifiedBy`, `lastEditedBy`).
+  **DISCOVER those rows by collectionGroup query PER UID FIELD, never by current
+  MEMBERSHIP** — `removeMember` drops `members/{uid}` AND `arrayRemove`s the
+  roster in one call, so a departed member is invisible to both handles while the
+  name stays. Check `firestore.indexes.json` first: the COLLECTION_GROUP
+  overrides may already exist for a rename propagator. PATH-scope each row
+  (`parent.id === X && parent.parent === null`, BOTH limbs) where a sibling path
+  shares the group id, and scope BEFORE counting against a cap.
 - A rules hard-deny plus an Admin-SDK escape hatch has TWO guards: the callable
   exempts only the first; the model's `toFirestore` coercion is the second.
   Enumerate the SERIALIZER's call sites, not just the rules' writes.
@@ -264,11 +268,9 @@ from `(err as {code?}).code`.
   try/catch each, throw once, filter failed ids out of any UNCONDITIONAL write the
   abort protected. Fan-out helpers take a `CollectionReference`, never a NAME.
 - **A chunked migration walks by OFFSET, never by re-reading what is left** —
-  skip-if-exists makes an earlier pass's row look like a duplicate, so counters and
-  failures inflate per pass. Reset per-pass counters INSIDE the transaction body;
-  outcome fields written there are ASSIGNMENTS, never increments. Clear the source
-  field only on the pass reaching the END with zero failures in ALL passes; ≤400
-  rows/pass keeps the clear under 500 ops.
+  full rule in `lessons-digest.md` (BUT-2046): per-pass counters are ASSIGNMENTS
+  inside the transaction, clear the source only on a pass ending with zero
+  failures anywhere, ≤400 rows/pass.
 
 ### Scheduled analytics & lifecycle jobs
 - Never assume a date field's type (ISO vs `Timestamp` varies per collection).
@@ -429,9 +431,6 @@ from `(err as {code?}).code`.
   typed `CONFIRMATION_PHRASE`, `!dryRun`-scoped, above the first `runPhases(`
   (`admin-init.ts` hardcodes prod). Its Auth-wipe phase fires
   `onUserDeleted`, which writes into collections Phase 2 is concurrently deleting.
-  Removing a TEMPORARY refusal falsifies every sentence citing it — grep the flag
-  REPO-wide (deviations, the sweep citing it as Art. 17 recovery, sibling
-  knowledge files).
 - **A run-time REPORT of "what no list decides" reads EVERY register the deleters
   use** (one erased by its OWN tier step — `pantry` — is in no list and fires on
   every account), never steers the run, and never says

@@ -2870,7 +2870,14 @@ export async function removeFromSharedContent(
       members.docs,
       (batch, doc) => {
         const parentRef = doc.ref.parent.parent;
-        if (parentRef) {
+        // BUT-1716: scoped by PATH, like the item scrub below. `members` is a
+        // collection GROUP read, so it returns rows under every collection that
+        // has a `members` subcollection — and an unscoped update writes an empty
+        // `sharedToUserIds` onto a stranger's parent, or NOT_FOUND-poisons the
+        // chunk when that parent document does not exist. Raised by the
+        // `cloud-functions-specialist` and `firebase-backend-security` gates
+        // once the new scoping sat three lines below an unscoped copy of itself.
+        if (parentRef && isSharedContentParent(parentRef)) {
           batch.update(parentRef, {
             sharedToUserIds: admin.firestore.FieldValue.arrayRemove(uid),
           });
@@ -2879,6 +2886,10 @@ export async function removeFromSharedContent(
       { label: "scrubSharedToUserIds", strict: false },
     );
   }
+  // The DELETE stays unscoped where the UPDATE above is scoped, on the same
+  // snapshot, and the asymmetry is deliberate: the update writes a stranger's
+  // parent document, while a `members` row naming this user should go wherever
+  // it sits.
   await batchDeleteAll(db, members.docs);
 
   // BUT-1798 — the members-subcollection scrub above reaches ONLY content shared
@@ -2932,17 +2943,186 @@ export async function removeFromSharedContent(
   });
   await batchDeleteAll(db, engagements.docs);
 
-  // Delete shared_content owned by uid (members subcollection first).
+  // Delete shared_content owned by uid (subcollections first). Queried BEFORE
+  // the item scrub so the scrub can skip these parents: their rows are deleted
+  // a few lines down, and scrubbing a row on its way out is a wasted write.
   const owned = await db
     .collection("shared_content")
     .where("sharedByUserId", "==", uid)
     .get();
+  const ownedIds = new Set(owned.docs.map((doc) => doc.id));
+
+  const itemScrub = await scrubSharedContentItemAttribution(db, uid, ownedIds);
+
+  const orphanedParents = new Set<string>();
   for (const doc of owned.docs) {
-    const childMembers = await doc.ref.collection("members").get();
-    await batchDeleteAll(db, childMembers.docs);
+    // BUT-1716: `items` joins `members` here. Firestore does not delete a
+    // subcollection with its parent, so every item the sharer and their
+    // recipients wrote — each stamped with a uid and a display name — outlived
+    // the share document, unreachable through the rules (every limb reads the
+    // parent) and therefore unerasable by anyone but this cascade.
+    //
+    // Children first and STRICT, parent only if they went: the same contract
+    // `deleteRealtimeDocsWithChildren` states in this file. Ordering alone does
+    // not prevent an orphan — a swallowed chunk plus an unconditional parent
+    // delete does exactly what the ordering is there to stop, and nothing can
+    // reach those rows afterwards to try again.
+    const [childMembers, childItems] = await Promise.all([
+      doc.ref.collection("members").get(),
+      doc.ref.collection("items").get(),
+    ]);
+    try {
+      await commitInChunks(
+        db,
+        [...childMembers.docs, ...childItems.docs],
+        (batch, child) => batch.delete(child.ref),
+        { label: "deleteSharedContentChildren", strict: true },
+      );
+    } catch (err) {
+      orphanedParents.add(doc.id);
+      logger.error("[deletion-cascade] shared_content children not deleted", {
+        uid_prefix: uid.slice(0, 6),
+        errCode: (err as { code?: number | string }).code ?? null,
+        errName: err instanceof Error ? err.name : typeof err,
+      });
+    }
   }
-  await batchDeleteAll(db, owned.docs);
-  return true;
+  await batchDeleteAll(
+    db,
+    owned.docs.filter((doc) => !orphanedParents.has(doc.id)),
+  );
+
+  // The step is INCOMPLETE if either half left the uid behind. `runStep` turns
+  // false into `failedCollections` and `gdprCompliant: false` — the only thing
+  // that can contradict a clean audit row, since no probe leg reaches these
+  // item rows.
+  return itemScrub.ok && orphanedParents.size === 0;
+}
+
+/** The four fields on an item row that name a person by uid. */
+const ITEM_UID_FIELDS = [
+  "addedByUserId",
+  "lastModifiedByUserId",
+  "assignedToUserId",
+  "purchasedByUserId",
+] as const;
+
+/**
+ * A shared-list row cap in the shape every sibling sweep in this file uses:
+ * DECLINE rather than truncate, because a truncated erasure reports success
+ * over rows it never touched.
+ */
+const MAX_SHARED_ITEM_ROWS = 2000;
+
+/** True for `shared_content/{id}`, and for nothing nested deeper. */
+function isSharedContentParent(ref: admin.firestore.DocumentReference): boolean {
+  return ref.parent.id === "shared_content" && ref.parent.parent === null;
+}
+
+/**
+ * BUT-1716: erase one user's identity from the items of shared lists OTHER
+ * people keep.
+ *
+ * Discovery is a collection-group query PER UID FIELD, not a walk of the
+ * parents this user is currently a member of. Membership is the wrong handle,
+ * and for the reason the array-shaped twin already carries `contributorUserIds`:
+ * `BaseSharedContentRepository.removeMember` deletes the `members/{uid}` row and
+ * `arrayRemove`s the uid from `sharedToUserIds` in one call, so somebody who
+ * LEFT a shared list is invisible to both handles while their uid and display
+ * name stay on every row they wrote. That is the residual this leg exists to
+ * close, so it must not be discovered through the thing that forgets them. The
+ * four `COLLECTION_GROUP` field overrides are declared in
+ * `firestore.indexes.json`.
+ *
+ * `users/{uid}/unified_shopping_lists/{id}/items` shares the collection-group id
+ * and is erased by `deleteShoppingLists`, so rows are scoped by PATH to a
+ * top-level `shared_content` parent — the two paths must not fight over the same
+ * rows.
+ *
+ * The four pairs mirror the array-path scrub in `deleteShoppingLists` field for
+ * field — the two shapes must not drift: `assignedTo*` and `purchasedBy*` are
+ * cleared to null with their timestamp (a claim and a tick are facts about a
+ * person, and the item is still the list's), while `addedBy*` and
+ * `lastModifiedBy*` are ANONYMIZED to the sentinel `"deleted"` because the
+ * client model reads `isCollaborative => addedByUserId != null` and nulling it
+ * would flip a shared row back to a personal one for every remaining member.
+ * Display names go in every case.
+ */
+async function scrubSharedContentItemAttribution(
+  db: admin.firestore.Firestore,
+  uid: string,
+  ownedParentIds: Set<string>,
+): Promise<{ ok: boolean }> {
+  const rows = new Map<string, admin.firestore.QueryDocumentSnapshot>();
+  for (const field of ITEM_UID_FIELDS) {
+    const snap = await db
+      .collectionGroup("items")
+      .where(field, "==", uid)
+      .limit(MAX_SHARED_ITEM_ROWS + 1)
+      .get();
+    if (snap.size > MAX_SHARED_ITEM_ROWS) {
+      logger.error("[deletion-cascade] implausible shared item count", {
+        uid_prefix: uid.slice(0, 6),
+        field,
+        rows: snap.size,
+      });
+      return { ok: false };
+    }
+    for (const doc of snap.docs) {
+      const parentRef = doc.ref.parent.parent;
+      if (!parentRef || !isSharedContentParent(parentRef)) continue;
+      // Rows under a share this user owns are deleted with it by the caller.
+      if (ownedParentIds.has(parentRef.id)) continue;
+      rows.set(doc.ref.path, doc);
+    }
+  }
+
+  if (rows.size === 0) return { ok: true };
+
+  try {
+    await commitInChunks(
+      db,
+      [...rows.values()],
+      (batch, doc) => {
+        const data = doc.data();
+        const update: Record<string, unknown> = {};
+        if (data.assignedToUserId === uid) {
+          update.assignedToUserId = null;
+          update.assignedToDisplayName = null;
+          update.assignedAt = null;
+        }
+        if (data.purchasedByUserId === uid) {
+          update.purchasedByUserId = null;
+          update.purchasedByDisplayName = null;
+          update.purchasedAt = null;
+        }
+        if (data.addedByUserId === uid) {
+          update.addedByUserId = "deleted";
+          update.addedByDisplayName = null;
+        }
+        if (data.lastModifiedByUserId === uid) {
+          update.lastModifiedByUserId = "deleted";
+          update.lastModifiedByDisplayName = null;
+        }
+        batch.update(doc.ref, update);
+      },
+      { label: "scrubSharedContentItems", strict: true },
+    );
+  } catch (err) {
+    logger.error("[deletion-cascade] shared_content item scrub failed", {
+      uid_prefix: uid.slice(0, 6),
+      rows: rows.size,
+      errCode: (err as { code?: number | string }).code ?? null,
+      errName: err instanceof Error ? err.name : typeof err,
+    });
+    return { ok: false };
+  }
+
+  logger.info("[deletion-cascade] shared_content item attribution scrub", {
+    uid_prefix: uid.slice(0, 6),
+    items: rows.size,
+  });
+  return { ok: true };
 }
 
 export async function deleteCommentsAndRatings(

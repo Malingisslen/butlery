@@ -20078,3 +20078,65 @@ the mirrors point at, an unmeasured "the one job cursor that lives on them" left
 beside the very sentence that exists because we stopped relying on such assertions, and a
 fresh quantifier ("the scheduled snapshots all take this form") introduced BY the strike that
 removed the previous one. Each was closed by deleting the clause, never by a third wording.
+
+### 2026-09-12 — BUT-1716: membership is the wrong discovery handle for an attribution scrub [gdpr-cascade]
+
+Reviewed the staged `removeFromSharedContent` change (two rounds, blobs
+6bd03aad → 8b7eeea8). Round 1 discovered item parents by walking the two
+membership handles the function already held (`members/{uid}` rows and
+`sharedToUserIds`). Measured against `lib/repositories/firebase/base_shared_content_repository.dart:428-452`:
+`removeMember` deletes the members row AND `arrayRemove`s the uid from the
+roster in one call, so a user who left or was removed is invisible to BOTH
+handles while `addedByUserId`/`addedByDisplayName` stay on every row they wrote
+— the BUT-1705/BUT-1725 residual re-introduced one storage shape over, cited in
+the change's own comment as already closed.
+
+The remedy was already on disk and nobody had looked: `firestore.indexes.json`
+declares COLLECTION_GROUP single-field overrides for `items` on all four uid
+fields, and `functions/src/social/on-profile-updated.ts:224-232` (the rename
+propagator, BUT-1770) already sweeps that exact collection group for the exact
+same four pairs, naming `shared_content/{contentId}/items` in its comment. So
+"four queries instead of a parent walk" cost nothing to adopt. Round 2 did, with
+`isSharedContentParent` (`parent.id === "shared_content" && parent.parent ===
+null`) scoping rows away from `users/{uid}/unified_shopping_lists/{id}/items`,
+which shares the collection-group id.
+
+Second blocking finding: `commitInChunks(strict:false)` + a `void` return +
+`return true` meant a swallowed chunk left the uid on disk under
+`gdprCompliant: true`, with no probe leg able to contradict it — while the
+array-shaped twin in the same file accumulates failures and throws once at the
+end. Round 2 made it `strict:true`, catch-and-return `{ok:false}`, children-first
+strict per owned parent with the parent excluded from the delete when its
+children failed, and `return itemScrub.ok && orphanedParents.size === 0`.
+
+Retired verbatim from the principles file, superseded by a pointer to the same
+lesson in `lessons-digest.md`:
+"- **A chunked migration walks by OFFSET, never by re-reading what is left** —
+  skip-if-exists makes an earlier pass's row look like a duplicate, so counters and
+  failures inflate per pass. Reset per-pass counters INSIDE the transaction body;
+  outcome fields written there are ASSIGNMENTS, never increments. Clear the source
+  field only on the pass reaching the END with zero failures in ALL passes; ≤400
+  rows/pass keeps the clear under 500 ops."
+
+Non-blocking residue reported and not built: the cap counts rows BEFORE path
+scoping; the cap's rationale sentence justifies itself from the `members` create
+limb, a handle the redesign no longer uses (the peer-choosable field is really
+`assignedToUserId`, which neither items limb pins — create pins `addedByUserId`,
+update pins `lastModifiedByUserId`); no per-document NOT_FOUND tolerance, so a
+concurrent item delete by another member flips a whole Art. 17 run to
+`gdprCompliant: false`; and the `members` DELETE at the top of the function stays
+unscoped while its UPDATE is now scoped, undocumented.
+
+Also retired verbatim in the same edit, compressed in place (the operative rule
+survives; the enumeration of the two matching cases does not):
+"never settles orphanhood — an EMPTY orphan matches an empty expectation, and a
+  NON-EMPTY one matches whenever the source sweep DECLINED or a `strict:false` chunk
+  failed — so scoping the fix to the empty case leaves both defects one branch over.
+  Never reach the existence seam THROUGH the repair call: it rewrites the benign doc
+  and files it as drift."
+
+Retired verbatim in the same edit (covered by the repo-wide strike/supersede rule
+in CLAUDE.md, so it did not need a second home in this file):
+"Removing a TEMPORARY refusal falsifies every sentence citing it — grep the flag
+  REPO-wide (deviations, the sweep citing it as Art. 17 recovery, sibling
+  knowledge files)."

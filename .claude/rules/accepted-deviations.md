@@ -1961,3 +1961,48 @@ files in the same edit.
   one-way close, and the recovery is the new "lägg in den själv" sentence rather than a retry.
   The existing sentence is not reworded; this names what changed. Read by the
   `firebase-backend-security` gate; nobody ran it. BUT-1925, 2026-09-12
+
+- **The cascade erases `shared_content/{id}/items` attribution, and the Art. 15 bundle carries
+  no item rows from that collection — erasable, not exportable (BUT-1716, 2026-09-12).** The
+  export takes the `shared_content` PARENT rows and `users/{uid}/unified_shopping_lists/*/items`;
+  the shared subcollection is in neither. Unlike the BUT-1832/BUT-2057 cases the rows are the
+  requester's OWN content — item name, note, price, priority — on a path their own client may
+  read (`allow read: hasSharedAccess(...)`), so no Art. 15(4) argument withholds them.
+  The gap is a property of the code as it ships, not of how many rows exist: this change is what
+  makes the rows erasable, and nothing makes them exportable. Whether a SECTION ships is Malin's,
+  and it is asked on the ticket — the production count decides the build, never whether the gap
+  is real. It cannot be recorded in `EXPORT_EXEMPT`: that map is scoped to `USER_SUBCOLLECTIONS`
+  and its guard scenario does not range over `shared_content`, so an entry there would sit under
+  a false header and redden nothing. Raised by the `firebase-backend-security` gate; the
+  `cloud-functions-specialist` gate agreed the gap is real and put the build decision on the
+  ticket rather than in the diff.
+
+- **`shared_content/{id}.listData` is a THIRD storage shape for the same item attribution, and
+  NOTHING maintains it (BUT-1716, 2026-09-12).** `shopping_social_share_module.dart` writes a
+  whole copy of the sender's list onto the share document. Measured by the
+  `firebase-backend-security` gate: the rename propagator's `renameEmbeddedShoppingItems` queries
+  `unified_shared_shopping_lists` only, and this cascade reaches the subcollection and the parent
+  array — so the nested copy is touched by neither. The only code that knows it carries per-item
+  `addedByDisplayName`, `purchasedByDisplayName`, `lastModifiedByDisplayName` and
+  `assignedToDisplayName` is the export redaction (`dropOtherMembersNamesInListData`, Malin's
+  2026-08-01 call), which is what proves the fields are in there. Item attribution inside a
+  document FIELD is unqueryable, so no cascade and no probe can reach it: the BUT-1832 shape.
+  Its own ticket — folding a third shape into the commit whose claim is that the other two now
+  answer identically would be the drift this entry exists to name.
+
+- **BUT-1716's item scrub has no probe leg, deliberately (2026-09-12).** `probeResidualData`'s
+  only `shared_content` leg reads the parent's `sharedToUserIds`, which this scrub does not
+  write. Both gates agreed a probe is optional now that the step returns false and
+  `gdprCompliant: false` on any failure — and both gates named the
+  trap in building one: `count()` cannot path-scope, so it would also count
+  `users/{uid}/…/items`, which `deleteShoppingLists` owns and which runs in the SAME Tier-1
+  `Promise.all` — a probe broader than its deleter is a permanent `gdprCompliant: false` nobody
+  can clear. If it is ever built it must be a `.get()` filtered by the same
+  `isSharedContentParent` predicate.
+  Named residuals on the same leg, none built: a remaining member whose screen cached a pre-scrub
+  copy restores the erased uid on their next edit (`updateItem` writes the whole item and the
+  update limb pins only `lastModifiedByUserId`) — the accepted stale-client class; a row whose
+  uid field was overwritten while its display NAME survived is reachable by no query, since
+  discovery is field-keyed; the cap counts rows BEFORE path-scoping, so personal-list rows spend it too; and a concurrent row delete
+  (`items` delete is `hasSharedAccess`) poisons the chunk with grpc 5 and flips the run to
+  `gdprCompliant: false`, where the array twin tolerates exactly that case.
