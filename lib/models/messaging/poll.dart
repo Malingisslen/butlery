@@ -318,3 +318,22 @@ class PollCloseRefusedException implements Exception {
   @override
   String toString() => 'PollCloseRefusedException(${reason.name})';
 }
+
+/// Thrown by `MessagingService.closePoll` when the poll IS closed but the
+/// winning recipe never reached the weekly plan (BUT-1925).
+///
+/// The close is one-way and the plan write now happens after it, so this names
+/// the one outcome the ordinary failure sentence would describe falsely: the
+/// user asked to end the vote, the vote ended, and the dish is missing. Without
+/// a type of its own the failure lands in `ChatViewModel.closePoll`'s generic
+/// catch, which says the close did not happen.
+///
+/// [cause] is the underlying error, kept for the log rather than for the user.
+class PollClosedWithoutPlanException implements Exception {
+  const PollClosedWithoutPlanException(this.cause);
+
+  final Object cause;
+
+  @override
+  String toString() => 'PollClosedWithoutPlanException($cause)';
+}

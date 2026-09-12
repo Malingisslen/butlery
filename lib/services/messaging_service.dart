@@ -36,6 +36,15 @@ import 'package:butlery/services/social/blocking/blocked_user_filter.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:uuid/uuid.dart';
 
+/// The plan write a poll close has prepared but not yet performed (BUT-1925).
+///
+/// It must perform exactly one WRITE and no reads. Every read belongs in the
+/// `_prepareWinnerFor…` that built it, because those run while the poll is
+/// still open and a refusal there is recoverable — a read moved in here fails
+/// after the one-way close instead, which gives up BUT-1928's guarantee with
+/// every suite still green.
+typedef PlanCommit = Future<void> Function();
+
 /// Messaging service implementing the facade pattern for real-time communication.
 ///
 /// ## Usage
@@ -839,12 +848,17 @@ class MessagingService extends BaseService with StreamManagementMixin {
   /// votes; ties broken by chronological order (first option in the options
   /// list wins).
   ///
-  /// Double-fire across concurrent callers is guarded by a pre-read of the
-  /// poll message — if already closed, the plan write is skipped on this call.
-  /// That pre-read is the ONLY such guard and it is not atomic: the
-  /// repository's re-read checks `creatorId`, never `isClosed`, so a retry
-  /// after a half-failed close can plant the same recipe in a second slot
-  /// (BUT-1925).
+  /// Double-fire across concurrent callers is guarded by the CLOSE itself: the
+  /// repository closes inside a transaction that refuses an already-closed
+  /// poll, and this method writes the plan only when that transaction says it
+  /// was the one that closed (BUT-1925). The pre-read below is a cheap skip,
+  /// not the guard.
+  ///
+  /// Everything that can REFUSE runs before the close, so a refusal still
+  /// leaves the poll open for a retry. The window that remains is the plan
+  /// write: if it fails, the poll is closed with no dish planned, and the
+  /// caller is told so through [PollClosedWithoutPlanException]. Malin's call,
+  /// 2026-09-12, taken over stamping the plan entry with the poll's id.
   Future<void> closePoll({required String messageId}) async {
     try {
       final currentUserId = _authRepository.currentUserId;
@@ -938,14 +952,14 @@ class MessagingService extends BaseService with StreamManagementMixin {
       final filtered = _stripBlockedBallots(existing, blocked);
       final resolvablePoll = _extractPoll(filtered) ?? existingPoll;
 
-      // Resolve + persist the plan write BEFORE marking the poll closed.
-      // If the plan save fails, the poll stays open so the creator can
-      // retry — the pre-read `isClosed` guard above is the idempotency
-      // anchor, and it must still be false for a retry to reach here.
+      // READ everything the plan write needs, and keep the write itself for
+      // after the close. Every refusal in here therefore happens while the
+      // poll is still open (BUT-1925).
       //
       // Only creator-triggered closes resolve into a plan. A non-creator's
-      // close writes NOTHING: the repository returns early when
+      // close writes NOTHING: the repository refuses when
       // `pollMap['creatorId'] != closerId`.
+      PlanCommit? commitPlan;
       if (resolvablePoll.creatorId == currentUserId) {
         final winner = _resolveWinner(resolvablePoll);
         if (winner?.recipeId != null) {
@@ -955,7 +969,7 @@ class MessagingService extends BaseService with StreamManagementMixin {
           final isGroup = conversation?.isGroup ?? false;
 
           if (isGroup && conversation != null) {
-            await _appendWinnerToGroupPlan(
+            commitPlan = await _prepareWinnerForGroupPlan(
               winnerRecipeId: winner!.recipeId!,
               conversation: conversation,
               creatorId: currentUserId,
@@ -969,22 +983,53 @@ class MessagingService extends BaseService with StreamManagementMixin {
               votedInBy: winner.voterIds,
             );
           } else if (conversation != null) {
-            await _appendWinnerToWeeklyPlan(winnerRecipeId: winner!.recipeId!);
+            commitPlan = await _prepareWinnerForWeeklyPlan(
+              winnerRecipeId: winner!.recipeId!,
+            );
           }
         }
       }
 
-      // Plan write succeeded (or there was nothing to write). Now close
-      // the poll — if THIS fails, the plan already has the winner, which
-      // is the preferred failure mode vs. a closed poll with no plan.
-      await _messagingRepository.closePoll(
+      // Close first. The transaction refuses a poll somebody else already
+      // closed, and that refusal is what makes the plan write below happen at
+      // most once — a caller whose pre-read said "open" still loses here.
+      final closedByThisCall = await _messagingRepository.closePoll(
         messageId: messageId,
         closerId: currentUserId,
       );
+
+      if (!closedByThisCall) {
+        AppLogger.debug(
+          'Poll $messageId was closed by someone else — writing no plan',
+        );
+        return;
+      }
+
+      // The one-way door is shut. A failure from here on leaves the poll
+      // closed with no dish planned, which is the trade Malin took — so it
+      // gets its own type rather than the sentence that says the close failed.
+      // `commitPlan` is null for the paths that legitimately write nothing
+      // (a non-creator's close, no winner, an unresolvable recipe, a service
+      // the locator does not hold): those close and stop, as they always did.
+      if (commitPlan != null) {
+        try {
+          await commitPlan();
+        } catch (e) {
+          AppLogger.error(
+            'Poll $messageId closed but the winner never reached the plan',
+            e,
+          );
+          throw PollClosedWithoutPlanException(e);
+        }
+      }
     } on PollCloseRefusedException {
       // BUT-1926: already logged, at the warning level the refusal deserves.
       // Re-logging it as an error made every deliberate guard look like a
       // crash in the log, twice over.
+      rethrow;
+    } on PollClosedWithoutPlanException {
+      // Logged where it was raised, with the underlying cause. The generic
+      // branch below would log "Failed to close poll", and the poll DID close.
       rethrow;
     } catch (e) {
       AppLogger.error('Failed to close poll $messageId', e);
@@ -1049,10 +1094,13 @@ class MessagingService extends BaseService with StreamManagementMixin {
     return (day: DayOfWeek.values[anchorIndex], slot: MealSlot.ovrigt);
   }
 
-  /// Appends the winning recipe to the creator's current-week personal plan
-  /// at the next empty middag slot (today-anchored). Creates an empty plan
-  /// first if the creator has none.
-  Future<void> _appendWinnerToWeeklyPlan({
+  /// Reads what the personal-plan append needs and returns the WRITE as a
+  /// closure, or null when there is nothing to write.
+  ///
+  /// Split from the write (BUT-1925) so every refusal below happens while the
+  /// poll is still open. The close is one-way, so a read that fails after it
+  /// would cost the user their retry.
+  Future<PlanCommit?> _prepareWinnerForWeeklyPlan({
     required String winnerRecipeId,
   }) async {
     final planService = ServiceLocator.tryGet<WeeklyMenuPlanService>();
@@ -1061,7 +1109,7 @@ class MessagingService extends BaseService with StreamManagementMixin {
       AppLogger.warning(
         'Auto-resolution skipped — required services not registered',
       );
-      return;
+      return null;
     }
 
     final winnerRecipe = _findWinnerRecipe(recipeService, winnerRecipeId);
@@ -1069,16 +1117,16 @@ class MessagingService extends BaseService with StreamManagementMixin {
       AppLogger.warning(
         'Auto-resolution skipped — winner recipe $winnerRecipeId not found',
       );
-      return;
+      return null;
     }
 
     final now = clock.now();
     // BUT-1928. `getWeek` answers a failed read with an EMPTY plan, so the
     // save below would write a one-entry week built from nothing. On a week
     // that already exists the server refuses it (the empty plan's fresh
-    // `createdAt`; W2 in `weekly-menu-plans-rules.test.ts`). Throwing
-    // leaves the poll open (the close happens after this returns), which is the
-    // recoverable failure; a silent skip would burn a one-way close instead.
+    // `createdAt`; W2 in `weekly-menu-plans-rules.test.ts`). Throwing leaves
+    // the poll open, because this runs BEFORE the close (BUT-1925), which is
+    // the recoverable failure; a silent skip would burn a one-way close.
     final read = await planService.readWeek(now);
     if (read.readFailed) {
       throw StateError(
@@ -1094,17 +1142,18 @@ class MessagingService extends BaseService with StreamManagementMixin {
       slot: target.slot,
       recipe: winnerRecipe,
     );
-    await planService.save(updatedPlan);
+    return () => planService.save(updatedPlan);
   }
 
-  /// Group-plan auto-resolution path. Appends the winning recipe to a
-  /// shared `GroupWeeklyMenuPlan` (creates it with all conversation
-  /// participants as editors if none exists for the ISO week).
+  /// Group-plan auto-resolution path. Reads what the append needs and returns
+  /// the WRITE as a closure, or null when there is nothing to write.
   ///
-  /// The group plan lives at a deterministic doc ID
-  /// (`{groupId}_{YYYY}-W{WW}`), so two closes race on ONE document; that makes
-  /// the upsert idempotent, not the append (BUT-1925).
-  Future<void> _appendWinnerToGroupPlan({
+  /// The group plan lives at a deterministic doc ID (`{groupId}_{YYYY}-W{WW}`),
+  /// so two closes race on ONE document; that makes the upsert idempotent, not
+  /// the append. What keeps a second append from landing is the close itself,
+  /// which is now a transaction and runs BETWEEN this read and that write
+  /// (BUT-1925).
+  Future<PlanCommit?> _prepareWinnerForGroupPlan({
     required String winnerRecipeId,
     required Conversation conversation,
     required String creatorId,
@@ -1117,7 +1166,7 @@ class MessagingService extends BaseService with StreamManagementMixin {
       AppLogger.warning(
         'Auto-resolution (group) skipped — required services not registered',
       );
-      return;
+      return null;
     }
 
     final winnerRecipe = _findWinnerRecipe(recipeService, winnerRecipeId);
@@ -1125,7 +1174,7 @@ class MessagingService extends BaseService with StreamManagementMixin {
       AppLogger.warning(
         'Auto-resolution (group) skipped — winner recipe $winnerRecipeId not found',
       );
-      return;
+      return null;
     }
 
     final now = clock.now();
@@ -1149,7 +1198,8 @@ class MessagingService extends BaseService with StreamManagementMixin {
     //
     // BUT-1928, and the reason this is `readOrBuildWeek`: building on a FAILED
     // read produces a fresh empty plan whose id is the same deterministic
-    // `{groupId}_{ISO week}`. Throwing leaves the poll open for a retry.
+    // `{groupId}_{ISO week}`. Throwing here leaves the poll open for a retry,
+    // because this whole method runs before the close (BUT-1925).
     final read = await groupService.readOrBuildWeek(
       groupId: conversation.id,
       creatorId: creatorId,
@@ -1174,7 +1224,7 @@ class MessagingService extends BaseService with StreamManagementMixin {
       proposedBy: proposedBy,
       votedInBy: votedInBy,
     );
-    await groupService.save(plan: updatedPlan, actorId: creatorId);
+    return () => groupService.save(plan: updatedPlan, actorId: creatorId);
   }
 
   @override

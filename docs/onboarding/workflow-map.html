@@ -6365,7 +6365,7 @@
         {
           "from": "svc-messaging",
           "to": "repo-messaging",
-          "payload": "closePoll(closerId) + planuppdatering",
+          "payload": "closePoll(closerId) → true om DENNA anropare stängde; planuppdateringen skrivs först därefter",
           "transport": "call",
           "verified": true
         },
@@ -6379,7 +6379,7 @@
         {
           "from": "vm-chat",
           "to": "v-chat-view",
-          "payload": "svensk vägran-text vid PollCloseRefusedException (snackbar) — egen text när enheten är offline, eftersom \"Försök igen\" inte hjälper utan nät",
+          "payload": "svensk vägran-text vid PollCloseRefusedException (snackbar) — egen text när enheten är offline, eftersom \"Försök igen\" inte hjälper utan nät; egen text vid PollClosedWithoutPlanException, där omröstningen stängdes men rätten inte nådde menyn",
           "transport": "call",
           "verified": true
         }

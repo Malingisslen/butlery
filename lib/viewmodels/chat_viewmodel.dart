@@ -529,6 +529,12 @@ class ChatViewModel extends ChangeNotifier
     try {
       await _messagingService.closePoll(messageId: messageId);
       return null;
+    } on PollClosedWithoutPlanException catch (e) {
+      // BUT-1925: the vote DID end; the dish did not reach the week. Without
+      // this branch the failure falls into the generic catch below, which says
+      // the close failed — a sentence the user can check and find false.
+      AppLogger.error('Poll closed but the winner never reached the plan', e);
+      return l.pollClosedWithoutPlan;
     } on PollCloseRefusedException catch (e) {
       // Deliberately not logged as an error: a refusal is the guard working.
       AppLogger.debug('Poll close refused (${e.reason.name})');

@@ -201,12 +201,16 @@ void main() {
       () => authRepo.currentUser,
     ).thenReturn(_FakeUser(creatorId, displayName: 'Creator'));
 
+    // BUT-1925: the repository answers whether THIS call closed the poll, and
+    // the service writes the plan only on true. The default is the ordinary
+    // case — this caller won — so tests that care about losing the race say so
+    // themselves.
     when(
       () => messagingRepo.closePoll(
         messageId: any(named: 'messageId'),
         closerId: any(named: 'closerId'),
       ),
-    ).thenAnswer((_) async {});
+    ).thenAnswer((_) async => true);
 
     // Default — group conversation. Overridden per-test for 1:1 cases.
     when(() => messagingRepo.getConversation(conversationId)).thenAnswer(
@@ -621,19 +625,20 @@ void main() {
       expect(recipe.id, equals('recipe-first'));
     });
 
-    test('plan append must happen BEFORE the poll is closed — if the plan '
-        'save fails, the poll stays open so the user can retry', () async {
+    test('a failed plan save AFTER the close raises the closed-without-plan '
+        'signal — the poll is closed and the caller is told', () async {
       final winnerRecipe = _recipe('recipe-winner', 'Tacos');
       when(() => recipeService.recipes).thenReturn([winnerRecipe]);
 
-      // BUT-1962 relies on this case: the group service used to swallow a
-      // refused save, so the close ran anyway. What the SERVICE does with a
-      // refusal is pinned in `group_weekly_menu_plan_service_test.dart`; this
-      // pins how `closePoll` reacts to one.
+      // BUT-1925 reversed the order this case used to pin: the close now runs
+      // first, so a refused save can no longer leave the poll open. What it
+      // must do instead is raise its own type, because the ordinary failure
+      // sentence says the close did not happen — and here it did.
       //
-      // Make the group-plan save blow up. The repo close must NOT have
-      // been called — otherwise the poll would be closed with no plan
-      // entry and the idempotency guard would block retry.
+      // BUT-1962 relies on the save actually refusing: the group service used
+      // to swallow one. What the SERVICE does with a refusal is pinned in
+      // `group_weekly_menu_plan_service_test.dart`; this pins how `closePoll`
+      // reacts to one.
       when(
         () => groupPlanService.save(
           plan: any(named: 'plan'),
@@ -663,20 +668,137 @@ void main() {
         ),
       );
 
-      // Expect the error to propagate.
       await expectLater(
         service.closePoll(messageId: messageId),
-        throwsException,
+        throwsA(isA<PollClosedWithoutPlanException>()),
       );
 
-      // Poll close must NOT have fired — plan write is the first side-effect.
-      verifyNever(
+      // The close DID fire, and it fired before the save was attempted.
+      verify(
         () => messagingRepo.closePoll(
-          messageId: any(named: 'messageId'),
-          closerId: any(named: 'closerId'),
+          messageId: messageId,
+          closerId: creatorId,
         ),
-      );
+      ).called(1);
+      verify(
+        () => groupPlanService.save(
+          plan: any(named: 'plan'),
+          actorId: any(named: 'actorId'),
+        ),
+      ).called(1);
     });
+
+    test(
+      'the PERSONAL path raises the same signal when its save fails',
+      () async {
+        // The sibling above drives the group service. Both branches share one
+        // `try`, so this is the case a later split of that block would separate
+        // — and the 1:1 path is the one a household without a group chat uses.
+        final now = DateTime.now();
+        final winnerRecipe = _recipe('recipe-winner', 'Tacos');
+        when(() => recipeService.recipes).thenReturn([winnerRecipe]);
+        when(() => planService.readWeek(any())).thenAnswer(
+          (_) async => WeeklyMenuPlanRead(
+            plan: WeeklyMenuPlan.empty(userId: creatorId, date: now),
+            readFailed: false,
+          ),
+        );
+        when(
+          () => messagingRepo.getConversation(directConversationId),
+        ).thenAnswer(
+          (_) async =>
+              _directConversation(directConversationId, [creatorId, 'user-2']),
+        );
+        when(
+          () => planService.save(any()),
+        ).thenThrow(Exception('simulated firestore failure'));
+
+        final poll = Poll(
+          id: 'poll-direct-fail',
+          question: 'Vad ska vi äta ikväll?',
+          creatorId: creatorId,
+          createdAt: now,
+          options: [
+            PollOption(
+              id: 'opt-1',
+              text: 'Tacos',
+              voterIds: const ['user-2'],
+              recipeId: 'recipe-winner',
+            ),
+          ],
+        );
+        when(() => messagingRepo.getMessage(messageId)).thenAnswer(
+          (_) async => _pollMessage(
+            messageId: messageId,
+            conversationId: directConversationId,
+            poll: poll,
+          ),
+        );
+
+        await expectLater(
+          service.closePoll(messageId: messageId),
+          throwsA(isA<PollClosedWithoutPlanException>()),
+        );
+
+        verify(
+          () => messagingRepo.closePoll(
+            messageId: messageId,
+            closerId: creatorId,
+          ),
+        ).called(1);
+      },
+    );
+
+    test(
+      'losing the close race writes NO plan — the winner already wrote it',
+      () async {
+        final winnerRecipe = _recipe('recipe-winner', 'Tacos');
+        when(() => recipeService.recipes).thenReturn([winnerRecipe]);
+
+        // BUT-1925's whole point: this caller's pre-read says the poll is open
+        // (the fixture below is an OPEN poll), so the old code would have
+        // appended the recipe a second time. The transaction in the repository
+        // says otherwise, and the service must believe it.
+        when(
+          () => messagingRepo.closePoll(
+            messageId: any(named: 'messageId'),
+            closerId: any(named: 'closerId'),
+          ),
+        ).thenAnswer((_) async => false);
+
+        final poll = Poll(
+          id: 'poll-race',
+          question: 'Vad ska vi äta?',
+          creatorId: creatorId,
+          createdAt: DateTime.now(),
+          options: [
+            PollOption(
+              id: 'opt-1',
+              text: 'Tacos',
+              voterIds: const ['user-2'],
+              recipeId: 'recipe-winner',
+            ),
+          ],
+        );
+        when(() => messagingRepo.getMessage(messageId)).thenAnswer(
+          (_) async => _pollMessage(
+            messageId: messageId,
+            conversationId: conversationId,
+            poll: poll,
+          ),
+        );
+
+        await service.closePoll(messageId: messageId);
+
+        verifyNever(
+          () => groupPlanService.save(
+            plan: any(named: 'plan'),
+            actorId: any(named: 'actorId'),
+          ),
+        );
+        verifyNever(() => planService.save(any()));
+      },
+    );
 
     test('already-closed poll → no plan write (double-fire guard)', () async {
       final winnerRecipe = _recipe('recipe-winner', 'Tacos');
@@ -1270,8 +1392,8 @@ void main() {
   // Both plan services answer a failed fetch with "nothing there": an empty
   // `WeeklyMenuPlan` and a null `GroupWeeklyMenuPlan`.
   //
-  // Refusing leaves the poll OPEN (the close is written after the plan), so a
-  // retry once the read works is the recovery.
+  // Refusing leaves the poll OPEN, so a retry once the read works is the
+  // recovery.
   group('closePoll refuses to write over an unread week (BUT-1928)', () {
     setUp(() {
       when(() => recipeService.recipes).thenReturn([

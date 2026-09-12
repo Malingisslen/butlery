@@ -1918,3 +1918,46 @@ files in the same edit.
   inherited deliberately (BUT-1726: a membership change computed against a cached document
   must not be replayed). The WORDING is the BUT-1696 class, now reachable from a new
   affordance. Found by the `integration-reviewer` and `firebase-backend-security` gates.
+
+- **Closing a meal poll LOCKS the poll first and writes the winning dish after, so a close can
+  be spent with nothing planned (BUT-1925, 2026-09-12).** `MessageMutationModule.closePoll`
+  moved to `message_poll_mutation_module.dart` and runs in a transaction that refuses an
+  already-closed poll and reports whether THIS call closed it;
+  `MessagingService.closePoll` writes the plan only on that answer. Before this the plan write
+  came first and the only double-fire guard was a non-atomic pre-read, so a half-failed close
+  plus a retry could plant one recipe in two slots.
+  **Malin's explicit call, 2026-09-12**, taken over stamping the plan entry with the poll's id
+  (a new field on both the personal and the group plan, with its own GDPR pass) and over
+  leaving the duplicate risk alone. **What she was NOT shown:** any measurement of how often a
+  close half-fails — there are no users, so it is not measurable — and the interaction below,
+  which was found while planning and is what the build had to work around.
+  BUT-1928's unreadable-week refusal, BUT-1908's unread tally and BUT-1909/1917/1922/1926's
+  block-list refusals each leave the poll OPEN for a retry, which only holds while they precede
+  the close.
+  The two plan-append helpers were therefore split into `_prepareWinnerFor…` (every read, every
+  refusal, returns the write as a closure or null) and a commit that runs after the lock. A
+  future edit that moves a read INSIDE that closure gives the guarantee up silently.
+  **The residual, stated plainly:** a refused or failed plan save now costs the DISH rather than
+  the retry. The poll is closed, no dish is planned, and the user's only recourse is adding it
+  by hand — `PollClosedWithoutPlanException` and `pollClosedWithoutPlan` exist to say so rather
+  than let the old sentence claim the close failed. Do not "simplify" that exception away: the
+  ViewModel's generic catch says the close did not happen, which the user can check and find
+  false.
+  **Not a server-side one-way door.** `metadata.poll.isClosed` carries no `firestore.rules`
+  conjunct on the sender limb, so the poll's own creator can write it back to false and close
+  again. The transaction serialises two honest clients, which is what this change set out to
+  do; it does not bind a hand-rolled one. Pre-existing, named rather than left to be found, and
+  filed with the owed rules test.
+  Raised by the `code-reviewer` and `firebase-backend-security` gates. BUT-1925, 2026-09-12
+
+- **AMENDED 2026-09-12 (BUT-1925): the BUT-1961 cached-absence entry's stated cost is now
+  incomplete on the poll path.** That entry ends a stale cached absence with
+  "the server keeps what another device wrote and the user loses their own" — the quote stops
+  at the source's line break, and sits on one line here, so a grep of it returns both copies.
+  Still true of the server. What the reordering adds:
+  `readWeek` mints `readFailed: false` for a cached absence,
+  so BUT-1928's guard does not fire, the one-entry week is built and refused by the update
+  limb — and that refusal now lands AFTER the close. The same path therefore also spends the
+  one-way close, and the recovery is the new "lägg in den själv" sentence rather than a retry.
+  The existing sentence is not reworded; this names what changed. Read by the
+  `firebase-backend-security` gate; nobody ran it. BUT-1925, 2026-09-12

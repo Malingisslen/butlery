@@ -9624,6 +9624,10 @@
   "@pollCloseRefusedVotesUnread": {
     "description": "Snackbar when closePoll refused because the tally was never read."
   },
+  "pollClosedWithoutPlan": "The poll is closed, but the dish could not be added to the menu. Add it yourself.",
+  "@pollClosedWithoutPlan": {
+    "description": "Shown when closePoll succeeded but the winning recipe never reached the weekly plan (BUT-1925). The close is one-way and now happens BEFORE the plan write, so this is the one outcome pollCloseFailed would describe falsely."
+  },
   "pollCloseRefusedBlockList": "The poll was not closed — your block list could not be read, so blocked votes cannot be excluded. Try again.",
   "@pollCloseRefusedBlockList": {
     "description": "Snackbar when closePoll refused because the viewer's block list was unreadable."

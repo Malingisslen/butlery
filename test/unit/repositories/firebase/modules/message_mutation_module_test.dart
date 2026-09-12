@@ -1,9 +1,10 @@
 /// Unit tests for MessageMutationModule.
 ///
 /// Targets the sendMessage write module that handles its atomic
-/// 3-doc batch + poll mutation. Tests focus on the documented contracts
-/// (atomic write, a missing or unreadable conversation, permission gates,
-/// poll vote toggling) rather than method-call presence.
+/// 3-doc batch. Tests focus on the documented contracts rather than
+/// method-call presence. The poll writes reached here delegate to
+/// [MessagePollMutationModule]; exercising them through this seam is
+/// deliberate, because that delegation is what the callers see.
 library;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -955,6 +956,70 @@ void main() {
       await expectLater(
         module.closePoll(messageId: 'missing', closerId: 'user-1'),
         completes,
+      );
+    });
+
+    // BUT-1925. The answer is what `MessagingService.closePoll` writes the
+    // weekly plan on, so each of these four is a branch of the plan write too.
+    //
+    // What these CANNOT show: that two concurrent closers serialise.
+    // `fake_cloud_firestore.runTransaction` is a passthrough with no
+    // isolation, so the second close here is sequential — it reads the flag
+    // the first one wrote, which is the branch under test.
+    test('the creator closing an OPEN poll is told it was this call', () async {
+      final firestore = FakeFirebaseFirestore();
+      final module = _newModule(firestore);
+      await firestore.collection(_messagesPath).doc('msg-1').set({
+        'metadata': {
+          'poll': {'creatorId': 'user-1', 'isClosed': false},
+        },
+      });
+
+      expect(
+        await module.closePoll(messageId: 'msg-1', closerId: 'user-1'),
+        isTrue,
+      );
+    });
+
+    test('a second close of the same poll answers false', () async {
+      final firestore = FakeFirebaseFirestore();
+      final module = _newModule(firestore);
+      await firestore.collection(_messagesPath).doc('msg-1').set({
+        'metadata': {
+          'poll': {'creatorId': 'user-1', 'isClosed': false},
+        },
+      });
+
+      await module.closePoll(messageId: 'msg-1', closerId: 'user-1');
+
+      expect(
+        await module.closePoll(messageId: 'msg-1', closerId: 'user-1'),
+        isFalse,
+      );
+    });
+
+    test('a non-creator is told it was not this call', () async {
+      final firestore = FakeFirebaseFirestore();
+      final module = _newModule(firestore);
+      await firestore.collection(_messagesPath).doc('msg-1').set({
+        'metadata': {
+          'poll': {'creatorId': 'user-1', 'isClosed': false},
+        },
+      });
+
+      expect(
+        await module.closePoll(messageId: 'msg-1', closerId: 'user-2'),
+        isFalse,
+      );
+    });
+
+    test('a missing message answers false', () async {
+      final firestore = FakeFirebaseFirestore();
+      final module = _newModule(firestore);
+
+      expect(
+        await module.closePoll(messageId: 'missing', closerId: 'user-1'),
+        isFalse,
       );
     });
   });

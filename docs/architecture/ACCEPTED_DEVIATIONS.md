@@ -2380,7 +2380,19 @@ What bounds it is the rules layer, not the client: `firestore.rules`' `weekly_me
 update limb gates on `cannotModify(['userId','createdAt'])`, and `WeeklyMenuPlan.empty`
 stamps a fresh `createdAt`. The write is therefore DENIED at reconnect. The server keeps
 whatever another device wrote; what is lost is the user's own local edit, plus an
-unexplained failure. That is the same residual shape BUT-1939 already accepted, and it is
+unexplained failure.
+
+**AMENDED 2026-09-12 (BUT-1925).** The sentence above — "The server keeps whatever another
+device wrote; what is lost is the user's own local edit, plus an unexplained failure" — is
+quoted from this file rather than from its twin in `.claude/rules/accepted-deviations.md`,
+which words the same fact differently; each mirror carries its own amendment because a grep
+for one wording does not find the other. It still holds of the server. On the MEAL-POLL path
+it is now incomplete in two ways. `readWeek` mints `readFailed: false` for a cached absence,
+so BUT-1928's guard does not fire, the one-entry week is built, and the refusal lands AFTER
+the poll has been closed — so that path also spends a one-way close. And the failure is no
+longer unexplained there: the user is told the vote ended without the dish being added, and
+asked to add it by hand. Read by the `firebase-backend-security` gate while reviewing
+BUT-1925; nobody ran it offline. That is the same residual shape BUT-1939 already accepted, and it is
 why this is a deviation rather than a bug.
 
 **Do not widen it.** A negative cache entry has no expiry — it lives until the cache passes
@@ -4378,3 +4390,75 @@ inköpslista" on a button that says "Lämna listan". The refusal is correct and 
 deliberately (BUT-1726: a membership change computed against a cached document must never be
 replayed). The wording is the BUT-1696 invented-cause class, now reachable from a new
 affordance. Raised by the `integration-reviewer` and `firebase-backend-security` gates.
+
+## BUT-1925 — closing a meal poll locks first and plans after (2026-09-12)
+
+**The defect.** `MessagingService.closePoll` wrote the winning recipe into a weekly plan and
+flipped `isClosed` afterwards. The only guard against a double fire was a pre-read of the poll
+message in the service; the repository re-read the document but tested `creatorId` alone, never
+`isClosed` (`grep -n isClosed lib/repositories/` returned one hit, the assignment). A plan write
+that succeeded followed by a failed flag flip, plus a user tapping "Stäng omröstning" again,
+planted the same recipe in a second slot. The group path has the same shape — its deterministic
+`{groupId}_{ISO week}` document id makes the UPSERT idempotent, not the APPEND.
+
+**The decision.** Malin's explicit call, 2026-09-12: close first, write the dish after. She was
+shown two alternatives and what each costs — stamping the plan entry with the poll's id (keeps
+today's "rather a dish than a closed vote" ordering, but adds a field to both the personal and
+the group plan, with the GDPR pass that implies), and leaving it alone (it needs a partial
+failure and a retry, and the harm is a duplicate row the user can delete). What she was NOT
+shown: any measurement of how often a close half-fails, because the app has no users and the
+number does not exist.
+
+**What ships.** `pollVotesRef`, `votePoll` and `closePoll` moved to
+`lib/repositories/firebase/modules/message_poll_mutation_module.dart` (the original file was 498
+lines with no `ACCEPTED_LARGE_FILES` row). `closePoll` now runs in `runTransaction`, keeps the
+`creatorId` check, refuses an already-closed poll, and returns whether this call closed it;
+the return type carries through `MessagingRepository` and `FirebaseMessagingRepository`.
+`MessagingService.closePoll` resolves and READS everything the plan write needs, closes, and
+commits the write only when the transaction says it won.
+
+**The ordering is the control, and it is positional.** BUT-1928's unreadable-week refusal,
+BUT-1908's unread tally and the BUT-1909/1917/1922/1926 block-list refusals each leave the poll
+OPEN so the user can retry. That guarantee survives only while they precede the close, which is
+why both plan-append helpers were split into `_prepareWinnerFor…` (every read and every refusal,
+returning the write as a closure, or null when there is nothing to write) and a commit that runs
+after the lock. Nothing mechanical holds the invariant: an edit that moves a read inside the
+returned closure breaks BUT-1928 with every suite still green. The type is named
+`PlanCommit` and its doc comment states the constraint where a future author will be standing.
+
+**The residual.** A refused or failed plan save now costs the dish rather than the retry: the
+poll is closed, nothing is planned, and the only recovery is adding the dish by hand.
+`PollClosedWithoutPlanException` and the `pollClosedWithoutPlan` string exist so the app says
+that instead of the older sentence, which claimed the close itself failed — something the user
+can check and find false. Two branches the new sentence cannot reach. A lost race, a
+non-creator close or a vanished message all return silently, as they did before — read
+directly in this change. And a device that drops between the committed transaction and the
+save leaves `save` pending with no exception to carry the sentence: that one rests on
+`WeeklyMenuPlanService.save`'s own docstring (BUT-1965/1975, the future never completes
+offline), read by the `firebase-backend-security` gate. Nobody ran it.
+
+**BUT-1971's stale-client mitigation is stretched, not false.** That entry answers the
+resurrect-an-erased-uid residual with "the poll-close path re-reads first". The re-read still
+precedes the write, so the sentence holds — but the group plan's whole-document `set()` is
+built from a read that now has the close transaction between it and the write, one server
+round trip further away. Named here rather than left for a reviewer to find; no change is
+owed to that entry.
+
+**Not a server-side one-way door.** `metadata.poll.isClosed` has no conjunct on the messages
+sender limb in `firestore.rules`, so the poll's creator can write it back to false and close
+again. The transaction serialises two honest clients — which is what this change set out to do —
+and does not bind a hand-rolled one. Pre-existing; filed with the rules test that is owed for
+the `metadata`-only sender update (creator-and-sender ALLOW, non-sender participant DENY, and
+the creator≠sender case). That third case is the gate's reading of the rule, not an emulator
+run; settling what it does today is the owed test's first job.
+
+**Measured, not assumed.** Four mutation probes, each restored byte-identical and each naming
+its red case: dropping the already-closed refusal reddens "a second close of the same poll
+answers false"; making the lost-race branch unreachable reddens "losing the close race writes NO
+plan"; replacing the carrier throw with a rethrow reddens "a failed plan save AFTER the close
+raises the closed-without-plan signal"; replacing the ViewModel's new return with
+`pollCloseFailed` reddens "closePoll says the vote ENDED when only the plan write failed". The
+suites cannot show that two concurrent closers serialise — `fake_cloud_firestore.runTransaction`
+is a passthrough with no isolation — and both the module and its tests say so.
+
+Raised by the `code-reviewer` and `firebase-backend-security` gates.

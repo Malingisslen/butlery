@@ -268,7 +268,7 @@ class FirebaseMessagingRepository extends BaseFirebaseRepository<Conversation>
   );
 
   @override
-  Future<void> closePoll({
+  Future<bool> closePoll({
     required String messageId,
     required String closerId,
   }) async => _messageMutationModule.closePoll(

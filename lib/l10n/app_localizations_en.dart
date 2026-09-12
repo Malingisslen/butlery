@@ -13865,6 +13865,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'The poll was not closed — its votes were never loaded, and it must not be closed on numbers nobody read. Reopen the chat and try again.';
 
   @override
+  String get pollClosedWithoutPlan =>
+      'The poll is closed, but the dish could not be added to the menu. Add it yourself.';
+
+  @override
   String get pollCloseRefusedBlockList =>
       'The poll was not closed — your block list could not be read, so blocked votes cannot be excluded. Try again.';
 

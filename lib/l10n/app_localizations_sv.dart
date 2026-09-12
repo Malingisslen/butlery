@@ -13897,6 +13897,10 @@ class AppLocalizationsSv extends AppLocalizations {
       'Omröstningen avslutades inte — rösterna har inte hämtats, och den får inte stängas på siffror som inte är lästa. Öppna chatten igen och försök på nytt.';
 
   @override
+  String get pollClosedWithoutPlan =>
+      'Omröstningen är avslutad, men rätten kunde inte läggas in i menyn. Lägg in den själv.';
+
+  @override
   String get pollCloseRefusedBlockList =>
       'Omröstningen avslutades inte — din blockeringslista kunde inte läsas, så blockerade röster går inte att räkna bort. Försök igen.';
 

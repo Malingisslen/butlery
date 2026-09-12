@@ -9682,6 +9682,10 @@
   "@pollCloseRefusedVotesUnread": {
     "description": "Snackbar when closePoll refused because the tally was never read."
   },
+  "pollClosedWithoutPlan": "Omröstningen är avslutad, men rätten kunde inte läggas in i menyn. Lägg in den själv.",
+  "@pollClosedWithoutPlan": {
+    "description": "Shown when closePoll succeeded but the winning recipe never reached the weekly plan (BUT-1925). The close is one-way and now happens BEFORE the plan write, so this is the one outcome pollCloseFailed would describe falsely."
+  },
   "pollCloseRefusedBlockList": "Omröstningen avslutades inte — din blockeringslista kunde inte läsas, så blockerade röster går inte att räkna bort. Försök igen.",
   "@pollCloseRefusedBlockList": {
     "description": "Snackbar when closePoll refused because the viewer's block list was unreadable."

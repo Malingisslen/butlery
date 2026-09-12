@@ -190,8 +190,14 @@ abstract class MessagingRepository {
     required bool allowMultiple,
   });
 
-  /// Close a poll (creator only)
-  Future<void> closePoll({
+  /// Close a poll (creator only). Returns true when THIS call closed it, false
+  /// when it changed nothing — no such message, not the creator, or somebody
+  /// else closed it first.
+  ///
+  /// BUT-1925: the answer is what makes the close idempotent. A caller that
+  /// resolves the poll into a weekly plan must write that plan only on true,
+  /// or a retry after a half-failed close plants the same recipe twice.
+  Future<bool> closePoll({
     required String messageId,
     required String closerId,
   });

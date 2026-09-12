@@ -972,6 +972,51 @@ void main() {
         expect(message, contains('rösterna har inte hämtats'));
       });
 
+      // BUT-1925: the poll closed, the dish never reached the week. The
+      // generic catch below this branch says the close failed, which the user
+      // can check and find false — so this outcome carries its own type and
+      // its own sentence.
+      test(
+        'closePoll says the vote ENDED when only the plan write failed',
+        () async {
+          when(
+            () => mockMessagingService.closePoll(
+              messageId: any(named: 'messageId'),
+            ),
+          ).thenThrow(
+            PollClosedWithoutPlanException(Exception('save refused')),
+          );
+
+          final message = await viewModel.closePoll('p1');
+
+          // The literal, not the symbol — the sibling tests type their Swedish
+          // out for the same reason.
+          expect(message, contains('Omröstningen är avslutad'));
+          expect(message, contains('Lägg in den själv'));
+        },
+      );
+
+      test('a plain failure still says the CLOSE failed', () async {
+        // The discriminator for the test above: without it, a viewmodel that
+        // returned the closed-without-plan sentence for every error would pass.
+        when(
+          () => mockMessagingService.closePoll(
+            messageId: any(named: 'messageId'),
+          ),
+        ).thenThrow(Exception('network'));
+
+        final message = await viewModel.closePoll('p1');
+
+        expect(
+          message,
+          isNot(contains('Omröstningen är avslutad')),
+          reason:
+              'negative-only, so it passes on an empty string too — the '
+              'isNotNull sibling below is what closes that half. Deleting '
+              'either as redundant hollows the other.',
+        );
+      });
+
       test('closePoll tells the refusals apart', () async {
         // The whole reason the refusal carries a reason: one sentence for all of
         // them would be wrong for whichever user got a different one.

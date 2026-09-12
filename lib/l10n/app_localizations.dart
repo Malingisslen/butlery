@@ -23189,6 +23189,12 @@ abstract class AppLocalizations {
   /// **'Omröstningen avslutades inte — rösterna har inte hämtats, och den får inte stängas på siffror som inte är lästa. Öppna chatten igen och försök på nytt.'**
   String get pollCloseRefusedVotesUnread;
 
+  /// Shown when closePoll succeeded but the winning recipe never reached the weekly plan (BUT-1925). The close is one-way and now happens BEFORE the plan write, so this is the one outcome pollCloseFailed would describe falsely.
+  ///
+  /// In sv, this message translates to:
+  /// **'Omröstningen är avslutad, men rätten kunde inte läggas in i menyn. Lägg in den själv.'**
+  String get pollClosedWithoutPlan;
+
   /// Snackbar when closePoll refused because the viewer's block list was unreadable.
   ///
   /// In sv, this message translates to:

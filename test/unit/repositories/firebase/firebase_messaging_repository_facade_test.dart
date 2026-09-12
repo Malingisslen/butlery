@@ -274,6 +274,44 @@ void main() {
       },
     );
   });
+
+  // BUT-1925. `MessagingService.closePoll` writes the winning recipe into a
+  // weekly plan on this answer alone, so the line that carries it out of the
+  // transaction is the whole correctness claim. Without a case here,
+  // `return true;` in place of the delegation is green across the repo and the
+  // service believes it won every race.
+  group('facade delegation — closePoll carries the transaction\'s answer', () {
+    Future<void> seedOpenPoll(FakeFirebaseFirestore firestore) =>
+        firestore.collection('messages').doc('msg-1').set({
+          'metadata': {
+            'poll': {'creatorId': 'alice', 'isClosed': false},
+          },
+        });
+
+    test('the creator closing an open poll gets true', () async {
+      final firestore = FakeFirebaseFirestore();
+      final repo = _repo(firestore);
+      await seedOpenPoll(firestore);
+
+      expect(
+        await repo.closePoll(messageId: 'msg-1', closerId: 'alice'),
+        isTrue,
+      );
+    });
+
+    test('a second close gets false through the same path', () async {
+      final firestore = FakeFirebaseFirestore();
+      final repo = _repo(firestore);
+      await seedOpenPoll(firestore);
+
+      await repo.closePoll(messageId: 'msg-1', closerId: 'alice');
+
+      expect(
+        await repo.closePoll(messageId: 'msg-1', closerId: 'alice'),
+        isFalse,
+      );
+    });
+  });
 }
 
 /// Overrides `collection()` only: `conversations` throws, anything else goes

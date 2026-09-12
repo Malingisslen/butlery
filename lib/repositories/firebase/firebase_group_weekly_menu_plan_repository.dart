@@ -155,8 +155,7 @@ class FirebaseGroupWeeklyMenuPlanRepository
           auditRepository: auditRepository,
         );
         // Was a silent `return`. On the meal-poll close that meant the poll
-        // closed on a one-way door with the winner never written. Throwing
-        // leaves it open for a retry.
+        // closed on a one-way door with the winner never written.
         throw PermissionDeniedException(
           'Group menu plan save denied',
           resource: collectionName,
