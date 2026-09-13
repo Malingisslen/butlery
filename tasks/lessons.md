@@ -4258,3 +4258,54 @@ meddelande i stället för från mottagarens senaste LÄSNING.
 
 Det som höll: varje ren strykning. Det som födde nya fynd: varje omformulering. Kedjan
 terminerade först när sista rättelsen var en symbolsubstitution (`its` -> `the subcollection's`).
+
+---
+
+## En vakt du blev TILLSAGD att lägga till är lika oprövad som en du hittat på (BUT — artikel 12.4-leveransen, 2026-09-12)
+
+Sex granskningsrundor, fyra grindar, sju blockerande fynd. **Två var koddefekter; resten var
+meningar jag skrivit.** Men det dyraste fyndet var att två av mina mutationssonder ÖVERLEVDE —
+alltså prov som såg ut som täckning och inte var det.
+
+**Den ena överlevande sonden satt på en rad en GRANSKARE bett mig lägga till.** Den kom med
+"one line closes it if anyone wants to", jag lade in den, och varje fall förblev grönt när den
+raderades. En rekommendation från en granskare anländer med känslan av att redan vara
+granskad — den är det inte. Den är en hypotes om produktionskod, precis som ens egen, och
+äger samma sond. (Granskaren skrev själv efteråt att det var rundans viktigaste argument.)
+
+**Den andra överlevande sonden var mitt eget "viktigaste prov i hela bygget".** Provet skulle
+bevisa att en skrivning sker UTANFÖR en `context.mounted`-grind. Attrappen svarade direkt, så
+kontexten var fortfarande monterad när utfallet kom, och mutanten som flyttade skrivningen IN i
+grinden gick igenom med alla fyra fallen gröna. Formen: **ett prov som påstår att något sker
+på en död kontext måste bevisa att kontexten hann dö** — gata utfallet på en `Completer` som
+testet släpper först efter rivningen, och lägg dit en premissassertion (`store.read()` är
+`null` innan släppet) så att borttagen grind RÖDNAR i stället för att tyst göra fallet vakuöst.
+
+**Att iscensätta en ordning ett enkeltrådat prov inte når kräver en subklass som agerar INUTI
+den inväntade metoden.** Grinden hann förbi sin kontroll innan hävdet fanns, men löste sin
+läsning efter — omöjligt att träffa utifrån. `_ClaimsDuringReadStore extends
+PendingRetentionNoticeStore` som anropar `markDeliveredLive()` efter `super.read()` gör det.
+Det är INTE fällan "mutera anropsstället, inte medlemmen attrappen ersätter": medlemmen under
+prövning är grindens efterkontroll, inte `read()`, och `super` kör den riktiga koden. Skillnaden
+är om attrappen ERSÄTTER beteendet som prövas eller bara SCHEMALÄGGER en händelse i det.
+
+**En briefs DELTA ska härledas ur `git diff --cached --name-only`, aldrig ur minnet.** Jag
+underskattade det två gånger, och båda gångerna var de utelämnade filerna PRODUKTIONSKOD som
+bar just den mekanism briefen beskrev. Granskaren fångade det bara för att ändringen jag
+BESKREV omöjligt kunde bo i filerna jag NAMNGAV. Samma klass som den redan nedskrivna
+"räkna från mottagarens senaste läsning", ett steg värre: här var listan fel, inte bara kort.
+
+**En repo-vid provtotal citerad över körningar med olika filuppsättningar läser som en
+krympande svit.** Jag skrev 8011 i en brief och 7998 i nästa, medan rundan LADE TILL ett fall.
+Granskaren stannade upp — rätt, för "färre prov, fortfarande grönt" är det enda misslyckandet
+som skrivs ut som framgång. Differensen var drift-sviten (14 fall) som fanns med i den ena
+sökvägslistan. Rapportera per uppsättning, eller mät totalen om du ska citera den.
+
+**Två parallella bakgrundskörningar av samma svit dödades av minnesbrist.** Kör en.
+
+Det som höll, igen: varje ren strykning. Tre kommentarer ströks (en läsgrad vars två räknare
+inte delade nämnare, ett räkneord som blev falskt av samma rundas egen nya post, en
+motivering som var sann om mekanismen och falsk om sin egen rad). Ingen av dem föddes om som
+nytt fynd. En granskare föreslog dessutom att en namngiven restrisk skulle skrivas som den
+GENERELLA egenskapen ("grinden gör ett försök per montering") i stället för som den specifika
+kapplöpningen — då täcker posten nästa fönster utan att någon behöver lägga till en tredje sats.
