@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/services/unified/operations/friends_invitations_operations.dart';
+import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/group_invitation.dart';
 import 'package:butlery/repositories/firebase/firebase_friends_repository.dart';
 import 'package:butlery/repositories/firebase/friends/friend_category_repository.dart';
@@ -312,6 +313,48 @@ void main() {
         expect(results['invalid-email'], isFalse);
         expect(results['abc!'], isFalse);
         expect(mockParentService.sentInvitationsList.length, equals(1));
+      });
+    });
+
+    group('Group Invitations', () {
+      test('the saved invitation id carries neither party uid', () async {
+        const inviteeUid = 'invitee-uid-456';
+        final categoriesOps = MockFriendsCategoriesOperations()
+          ..setCategoriesState(
+            friendCategories: [
+              FriendCategory(
+                id: 'group-1',
+                name: 'Familjen',
+                ownerId: 'test-user-123',
+                createdAt: DateTime(2026, 1, 1),
+                updatedAt: DateTime(2026, 1, 1),
+              ),
+            ],
+          );
+        mockParentService.setFriendsState(categories: categoriesOps);
+        when(
+          () => mockFriendsRepository.saveInvitation(any()),
+        ).thenAnswer((_) async {});
+
+        final senderUid = mockParentService.currentUserId;
+        expect(senderUid, isNotNull, reason: 'premise: a signed-in sender');
+
+        final ok = await operations.sendGroupInvitationToUser(
+          userId: inviteeUid,
+          groupId: 'group-1',
+        );
+
+        expect(ok, isTrue);
+        final captured = verify(
+          () => mockFriendsRepository.saveInvitation(captureAny()),
+        ).captured;
+        expect(captured, hasLength(1), reason: 'premise: saveInvitation ran');
+        final invitation = captured.single as GroupInvitation;
+        expect(invitation.fromUserId, senderUid);
+        expect(invitation.toUserId, inviteeUid);
+        expect(invitation.id, isNotEmpty);
+        expect(invitation.id, isNot(contains(senderUid)));
+        expect(invitation.id, isNot(contains(inviteeUid)));
       });
     });
 

@@ -52,6 +52,7 @@ import {
   assertFails,
   assertSucceeds,
 } from "@firebase/rules-unit-testing";
+import { serverTimestamp } from "firebase/firestore";
 
 // MUTATION-PROBE SEAM (BUT-1838). Both values are overridable so a mutation
 // probe can point this suite at a MUTATED COPY of firestore.rules in a scratch
@@ -171,6 +172,31 @@ function convBody(
   };
 }
 
+/**
+ * Creates `conversations/{conversationId}` as [uid] together with the
+ * `users/{uid}/rate_limits/conversations` stamp keyed on the conversation id,
+ * in one batch, the way the app's create path commits it.
+ */
+function createConversation(
+  uid: string,
+  conversationId: string,
+  body: Record<string, unknown>
+): Promise<void> {
+  const db = env.authenticatedContext(uid).firestore();
+  const batch = db.batch();
+  batch.set(db.doc(`conversations/${conversationId}`), body);
+  batch.set(
+    db.doc(`users/${uid}/rate_limits/conversations`),
+    {
+      lastWrite: serverTimestamp(),
+      expireAt: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
+      lastDocId: conversationId,
+    },
+    { merge: true }
+  );
+  return batch.commit();
+}
+
 // ============================================================================
 // CONVERSATIONS — 1:1 minor-DM gate (BUT-674)
 // ============================================================================
@@ -182,21 +208,24 @@ function convBody(
 // most of what the older tests meant to prove, so every one of them carries a
 // conforming id and a conforming metadata map. Otherwise the deny is real and
 // the test is vacuous: it would go green with the minor gate deleted.
+//
+// The same holds for `rateLimitStamped('conversations', 3, conversationId)`:
+// every create test below commits through `createConversation`, which writes
+// the stamp keyed on the conversation id in the same batch. C2 is the only
+// create by FRIEND_UID, and C1/C4 are refused, so STRANGER_UID never stamps.
 
 // C1: DENY — a non-friend of a minor cannot open a 1:1 DM with that minor.
 // This is the core protection: minor's isMinor == true, no friend doc. The id
 // and metadata conform, so the minor gate is the ONLY failing conjunct.
 test("conversations: non-friend cannot create a 1:1 DM with a minor", async () => {
-  const ctx = env.authenticatedContext(STRANGER_UID);
   await assertFails(
-    ctx
-      .firestore()
-      .doc(`conversations/${directId(STRANGER_UID, MINOR_UID)}`)
-      .set(
-        convBody([STRANGER_UID, MINOR_UID], {
-          metadata: { creatorId: STRANGER_UID },
-        })
-      )
+    createConversation(
+      STRANGER_UID,
+      directId(STRANGER_UID, MINOR_UID),
+      convBody([STRANGER_UID, MINOR_UID], {
+        metadata: { creatorId: STRANGER_UID },
+      })
+    )
   );
 });
 
@@ -204,33 +233,30 @@ test("conversations: non-friend cannot create a 1:1 DM with a minor", async () =
 // Proves the deny in C1 is the FRIENDSHIP gate, not an unrelated failure:
 // identical body/shape, only the friend doc differs.
 test("conversations: friend of a minor can create a 1:1 DM with the minor", async () => {
-  const ctx = env.authenticatedContext(FRIEND_UID);
   await assertSucceeds(
-    ctx
-      .firestore()
-      .doc(`conversations/${directId(FRIEND_UID, MINOR_UID)}`)
-      .set(
-        convBody([FRIEND_UID, MINOR_UID], {
-          metadata: { creatorId: FRIEND_UID },
-        })
-      )
+    createConversation(
+      FRIEND_UID,
+      directId(FRIEND_UID, MINOR_UID),
+      convBody([FRIEND_UID, MINOR_UID], {
+        metadata: { creatorId: FRIEND_UID },
+      })
+    )
   );
 });
 
 // C3: ALLOW — a non-friend can open a 1:1 DM with an ADULT target.
 // Adults are unaffected: isMinor absent -> otherIsMinor() false -> gate passes.
 test("conversations: non-friend can create a 1:1 DM with an adult", async () => {
-  const ctx = env.authenticatedContext(STRANGER_UID);
+  const actor = peer("c3-actor");
   const other = peer("c3");
   await assertSucceeds(
-    ctx
-      .firestore()
-      .doc(`conversations/${directId(STRANGER_UID, other)}`)
-      .set(
-        convBody([STRANGER_UID, other], {
-          metadata: { creatorId: STRANGER_UID },
-        })
-      )
+    createConversation(
+      actor,
+      directId(actor, other),
+      convBody([actor, other], {
+        metadata: { creatorId: actor },
+      })
+    )
   );
 });
 
@@ -239,16 +265,14 @@ test("conversations: non-friend can create a 1:1 DM with an adult", async () => 
 // 1. Here the minor is at index 0 and the (non-friend) creator at index 1 ->
 // must still DENY. (Order-sensitivity guard on the deny side.)
 test("conversations: non-friend 1:1 DM with minor is denied when minor is first in the array", async () => {
-  const ctx = env.authenticatedContext(STRANGER_UID);
   await assertFails(
-    ctx
-      .firestore()
-      .doc(`conversations/${directId(MINOR_UID, STRANGER_UID)}`)
-      .set(
-        convBody([MINOR_UID, STRANGER_UID], {
-          metadata: { creatorId: STRANGER_UID },
-        })
-      )
+    createConversation(
+      STRANGER_UID,
+      directId(MINOR_UID, STRANGER_UID),
+      convBody([MINOR_UID, STRANGER_UID], {
+        metadata: { creatorId: STRANGER_UID },
+      })
+    )
   );
 });
 
@@ -264,16 +288,15 @@ test("conversations: non-friend 1:1 DM with minor is denied when minor is first 
 // on every add. If this ever goes back to ALLOW, the id binding was removed and
 // the child-safety gate is bypassable again.
 test("conversations: a client cannot create a group (size 3) conversation at all", async () => {
-  const ctx = env.authenticatedContext(STRANGER_UID);
+  const actor = peer("c5-actor");
   await assertFails(
-    ctx
-      .firestore()
-      .doc(`conversations/c-group-deny-${RUN}`)
-      .set(
-        convBody([STRANGER_UID, MINOR_UID, ADULT_UID], {
-          metadata: { creatorId: STRANGER_UID },
-        })
-      )
+    createConversation(
+      actor,
+      `c-group-deny-${RUN}`,
+      convBody([actor, MINOR_UID, ADULT_UID], {
+        metadata: { creatorId: actor },
+      })
+    )
   );
 });
 
@@ -282,17 +305,16 @@ test("conversations: a client cannot create a group (size 3) conversation at all
 // first, so the id-shaped disguise buys nothing. Pairs with C5: one proves an
 // arbitrary group id fails, this proves a plausible one does too.
 test("conversations: a 3-person conversation is denied even at a direct_-shaped id", async () => {
-  const ctx = env.authenticatedContext(STRANGER_UID);
+  const actor = peer("c5b-actor");
   const other = peer("c5b");
   await assertFails(
-    ctx
-      .firestore()
-      .doc(`conversations/${directId(STRANGER_UID, other)}`)
-      .set(
-        convBody([STRANGER_UID, other, ADULT_UID], {
-          metadata: { creatorId: STRANGER_UID },
-        })
-      )
+    createConversation(
+      actor,
+      directId(actor, other),
+      convBody([actor, other, ADULT_UID], {
+        metadata: { creatorId: actor },
+      })
+    )
   );
 });
 
@@ -306,17 +328,16 @@ test("conversations: a 3-person conversation is denied even at a direct_-shaped 
 // conversation at all. Adult 1:1 target
 // so this isolates the creatorId binding, not the minor-DM gate.
 test("conversations: cannot create with metadata.creatorId set to another uid", async () => {
-  const ctx = env.authenticatedContext(STRANGER_UID);
+  const actor = peer("c6-actor");
   const other = peer("c6");
   await assertFails(
-    ctx
-      .firestore()
-      .doc(`conversations/${directId(STRANGER_UID, other)}`)
-      .set(
-        convBody([STRANGER_UID, other], {
-          metadata: { creatorId: FRIEND_UID },
-        })
-      )
+    createConversation(
+      actor,
+      directId(actor, other),
+      convBody([actor, other], {
+        metadata: { creatorId: FRIEND_UID },
+      })
+    )
   );
 });
 
@@ -327,13 +348,14 @@ test("conversations: cannot create with metadata.creatorId set to another uid", 
 // map is a CEL evaluation error and denies. Distinct from C7B (metadata present
 // with value null) — that is a different CEL path and gets its own test.
 test("conversations: a create with no metadata key at all is denied", async () => {
-  const ctx = env.authenticatedContext(STRANGER_UID);
+  const actor = peer("c6b-actor");
   const other = peer("c6b");
   await assertFails(
-    ctx
-      .firestore()
-      .doc(`conversations/${directId(STRANGER_UID, other)}`)
-      .set(convBody([STRANGER_UID, other]))
+    createConversation(
+      actor,
+      directId(actor, other),
+      convBody([actor, other])
+    )
   );
 });
 
@@ -384,16 +406,18 @@ test("conversations: a create with no metadata key at all is denied", async () =
 // `direct_<caller>_<peer>`. The create rule now evaluates `directIdBinds` BEFORE
 // the metadata conjunct, so at the old id this test would have kept passing
 // while proving nothing about metadata at all — green with the metadata
-// conjunct deleted. C7 immediately below is its fail-closed control: same
-// caller, same shape, same id family, only `metadata` differs, and it ALLOWS.
+// conjunct deleted. C7 immediately below is its fail-closed control: an
+// unseeded caller with an empty bucket, same shape, same id family, and it
+// ALLOWS.
 test("conversations: a create carrying metadata: null is denied", async () => {
-  const ctx = env.authenticatedContext(STRANGER_UID);
+  const actor = peer("c7b-actor");
   const other = peer("c7b");
   await assertFails(
-    ctx
-      .firestore()
-      .doc(`conversations/${directId(STRANGER_UID, other)}`)
-      .set(convBody([STRANGER_UID, other], { metadata: null }))
+    createConversation(
+      actor,
+      directId(actor, other),
+      convBody([actor, other], { metadata: null })
+    )
   );
 });
 
@@ -404,20 +428,20 @@ test("conversations: a create carrying metadata: null is denied", async () => {
 // `metadata: {'creatorId': user1Id}`. Both LIVE paths carry it, so the binding
 // never blocks a real create; the factory named here before did not.
 //
-// Also the fail-closed control for C6, C6B and C7B: identical caller, identical
-// participant shape, identical id family. Only `metadata` differs.
+// Also the fail-closed control for C6, C6B and C7B: each of the four uses an
+// unseeded caller with an empty rate-limit bucket, identical participant shape,
+// identical id family.
 test("conversations: can create with metadata.creatorId equal to the caller", async () => {
-  const ctx = env.authenticatedContext(STRANGER_UID);
+  const actor = peer("c7-actor");
   const other = peer("c7");
   await assertSucceeds(
-    ctx
-      .firestore()
-      .doc(`conversations/${directId(STRANGER_UID, other)}`)
-      .set(
-        convBody([STRANGER_UID, other], {
-          metadata: { creatorId: STRANGER_UID },
-        })
-      )
+    createConversation(
+      actor,
+      directId(actor, other),
+      convBody([actor, other], {
+        metadata: { creatorId: actor },
+      })
+    )
   );
 });
 
@@ -438,17 +462,16 @@ test("conversations: can create with metadata.creatorId equal to the caller", as
 
 // C15: ALLOW — array order matches id order.
 test("conversations: a direct create is allowed when the id matches [a, b] in that order", async () => {
-  const ctx = env.authenticatedContext(STRANGER_UID);
+  const actor = peer("c15-actor");
   const other = peer("c15");
   await assertSucceeds(
-    ctx
-      .firestore()
-      .doc(`conversations/${directId(STRANGER_UID, other)}`)
-      .set(
-        convBody([STRANGER_UID, other], {
-          metadata: { creatorId: STRANGER_UID },
-        })
-      )
+    createConversation(
+      actor,
+      directId(actor, other),
+      convBody([actor, other], {
+        metadata: { creatorId: actor },
+      })
+    )
   );
 });
 
@@ -457,17 +480,16 @@ test("conversations: a direct create is allowed when the id matches [a, b] in th
 // directIdBinds to a single ordering and every conversation whose stored array
 // happens to be sorted the other way stops being creatable.
 test("conversations: a direct create is allowed when the id matches [b, a] reversed", async () => {
-  const ctx = env.authenticatedContext(STRANGER_UID);
+  const actor = peer("c16-actor");
   const other = peer("c16");
   await assertSucceeds(
-    ctx
-      .firestore()
-      .doc(`conversations/${directId(STRANGER_UID, other)}`)
-      .set(
-        convBody([other, STRANGER_UID], {
-          metadata: { creatorId: STRANGER_UID },
-        })
-      )
+    createConversation(
+      actor,
+      directId(actor, other),
+      convBody([other, actor], {
+        metadata: { creatorId: actor },
+      })
+    )
   );
 });
 
@@ -476,18 +498,17 @@ test("conversations: a direct create is allowed when the id matches [b, a] rever
 // shape that let an attacker seed a document at an id somebody else's client
 // would later try to create.
 test("conversations: a direct create whose id names a different peer than participantIds is denied", async () => {
-  const ctx = env.authenticatedContext(STRANGER_UID);
+  const actor = peer("c17-actor");
   const idPeer = peer("c17-id");
   const bodyPeer = peer("c17-body");
   await assertFails(
-    ctx
-      .firestore()
-      .doc(`conversations/${directId(STRANGER_UID, idPeer)}`)
-      .set(
-        convBody([STRANGER_UID, bodyPeer], {
-          metadata: { creatorId: STRANGER_UID },
-        })
-      )
+    createConversation(
+      actor,
+      directId(actor, idPeer),
+      convBody([actor, bodyPeer], {
+        metadata: { creatorId: actor },
+      })
+    )
   );
 });
 
@@ -497,14 +518,14 @@ test("conversations: a direct create whose id names a different peer than partic
 // pre-creating (and thereby owning the shape of) a conversation between two
 // people who have never talked.
 test("conversations: a user cannot mint a direct conversation between two other people", async () => {
-  const ctx = env.authenticatedContext(STRANGER_UID);
+  const actor = peer("c18-actor");
   const a = peer("c18-a");
   const b = peer("c18-b");
   await assertFails(
-    ctx
-      .firestore()
-      .doc(`conversations/${directId(a, b)}`)
-      .set(convBody([a, b], { metadata: { creatorId: STRANGER_UID } }))
+    createConversation(
+      actor,
+      directId(a, b),
+      convBody([a, b], { metadata: { creatorId: actor } }))
   );
 });
 
@@ -514,16 +535,15 @@ test("conversations: a user cannot mint a direct conversation between two other 
 // A self-DM is worthless, and a rule that accepted it would also accept
 // `participantIds: [self]` padded out to length two.
 test("conversations: a direct create naming the same uid twice is denied", async () => {
-  const ctx = env.authenticatedContext(STRANGER_UID);
+  const actor = peer("c19-actor");
   await assertFails(
-    ctx
-      .firestore()
-      .doc(`conversations/${directId(STRANGER_UID, STRANGER_UID)}`)
-      .set(
-        convBody([STRANGER_UID, STRANGER_UID], {
-          metadata: { creatorId: STRANGER_UID },
-        })
-      )
+    createConversation(
+      actor,
+      directId(actor, actor),
+      convBody([actor, actor], {
+        metadata: { creatorId: actor },
+      })
+    )
   );
 });
 
@@ -531,15 +551,15 @@ test("conversations: a direct create naming the same uid twice is denied", async
 // keeps every downstream conjunct (`toSet()`, `in`, `p[0]`) from being handed
 // something it cannot reason about.
 test("conversations: a create whose participantIds is not a list is denied", async () => {
-  const ctx = env.authenticatedContext(STRANGER_UID);
+  const actor = peer("c20-actor");
   await assertFails(
-    ctx
-      .firestore()
-      .doc(`conversations/${directId(STRANGER_UID, peer("c20"))}`)
-      .set({
-        participantIds: STRANGER_UID,
+    createConversation(
+      actor,
+      directId(actor, peer("c20")),
+      {
+        participantIds: actor,
         createdAt: new Date(),
-        metadata: { creatorId: STRANGER_UID },
+        metadata: { creatorId: actor },
       })
   );
 });
@@ -2144,8 +2164,8 @@ test("participants: the client's old create-group batch (3 rosters + 3 membershi
 });
 
 // P25: ALLOW — the DIRECT path in full, and after BUT-1838 the ONLY end-to-end
-// client path left: the client writes the top-level conversation first
-// (awaited), then commits the 2+2 batch. It is the load-bearing allow of this
+// client path left: the client writes the top-level conversation and its
+// rate-limit stamp in one batch first (awaited), then commits the 2+2 batch. It is the load-bearing allow of this
 // whole block — every deny above survives a rule that froze the roster
 // completely, and only this one would go red.
 //
@@ -2154,7 +2174,7 @@ test("participants: the client's old create-group batch (3 rosters + 3 membershi
 test("participants: the module's real create-direct sequence (conversation, then 2 rosters + 2 memberships) commits end to end", async () => {
   const db = env.authenticatedContext(ADULT_UID).firestore();
   await assertSucceeds(
-    db.doc(`conversations/${P_BATCH_DIRECT}`).set({
+    createConversation(ADULT_UID, P_BATCH_DIRECT, {
       participantIds: [ADULT_UID, FRIEND_UID],
       createdAt: new Date(),
       isGroup: false,

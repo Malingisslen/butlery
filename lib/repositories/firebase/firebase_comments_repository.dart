@@ -1,10 +1,10 @@
 // lib/repositories/firebase/firebase_comments_repository.dart
 
-import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/repositories/interfaces/comments_repository.dart';
 import 'package:butlery/models/recipe_comment.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
+import 'package:butlery/repositories/firebase/rate_limit_stamp.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -230,19 +230,13 @@ class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
     final batch = firestore.batch();
     final docRef = collection.doc();
     batch.set(docRef, commentData);
-    batch.set(
-      firestore
-          .collection(FirestoreCollections.users)
-          .doc(userId)
-          .collection(FirestoreCollections.userRateLimits)
-          .doc('comments'),
-      {
-        'lastWrite': timestampProvider.serverTimestamp(),
-        'expireAt': Timestamp.fromDate(
-          clock.now().add(const Duration(days: 90)),
-        ),
-      },
-      SetOptions(merge: true),
+    stampRateLimit(
+      batch,
+      firestore,
+      userId: userId,
+      type: 'comments',
+      guardedDocId: docRef.id,
+      timestampProvider: timestampProvider,
     );
 
     // Increment parent comment's replyCount when creating a reply

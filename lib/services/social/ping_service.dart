@@ -1,8 +1,7 @@
 /// Group-scoped ping primitive.
 ///
 /// Rate limit: 5/hour/user — enforced client-side via a count-aggregate query,
-/// plus a 60s burst guard in Firestore rules. A Cloud Function sweeper for the
-/// strict hourly cap is a tracked follow-up.
+/// plus a 60s burst guard in Firestore rules.
 library;
 
 import 'dart:async';
@@ -19,6 +18,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/models/social/ping.dart';
+import 'package:butlery/repositories/firebase/rate_limit_stamp.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/repositories/mixins/permission_validation_mixin.dart';
 import 'package:butlery/services/notifications/notification_service.dart';
@@ -116,7 +116,17 @@ class PingService extends BaseService with PermissionValidationMixin {
       message: message,
     );
 
-    await _pingsCollection(groupId).doc(ping.id).set(ping.toMap());
+    final firestore = _firestoreRepository.firestore;
+    final batch = firestore.batch();
+    batch.set(_pingsCollection(groupId).doc(ping.id), ping.toMap());
+    stampRateLimit(
+      batch,
+      firestore,
+      userId: userId,
+      type: 'pings',
+      guardedDocId: '$groupId/${ping.id}',
+    );
+    await batch.commit();
 
     // Fire-and-forget — push failures must not block the write; the in-app
     // stream still delivers.

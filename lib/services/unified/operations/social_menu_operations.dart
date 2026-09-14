@@ -8,6 +8,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/core/extensions/iterable_extensions.dart';
+import 'package:butlery/repositories/firebase/rate_limit_stamp.dart';
 
 /// Social menu operations for friend-based and group sharing with import/export and activity tracking.
 /// Follows SRP - handles only social menu interactions (not basic CRUD or recipe operations).
@@ -118,14 +119,29 @@ class SocialMenuOperations {
         'menuType': 'personal_shared',
       };
 
-      // Create shared menu document in Firestore
+      // The shared document, every recipient's record and both rate-limit
+      // stamps commit together, so a refused record cannot leave a shared
+      // document that reaches nobody. Every record carries the shared
+      // document's id, which is the id both stamps are keyed on.
       final sharedMenuRef = _firestore
           .collection(FirestoreCollections.sharedContent)
           .doc();
-      await sharedMenuRef.set(menuData);
-
-      // Create individual share records for each friend
       final batch = _firestore.batch();
+      batch.set(sharedMenuRef, menuData);
+      stampRateLimit(
+        batch,
+        _firestore,
+        userId: currentUser.uid,
+        type: 'shared_content',
+        guardedDocId: sharedMenuRef.id,
+      );
+      stampRateLimit(
+        batch,
+        _firestore,
+        userId: currentUser.uid,
+        type: 'received_menu',
+        guardedDocId: sharedMenuRef.id,
+      );
 
       for (final friendId in friendUserIds) {
         final shareRecordRef = _firestore
@@ -135,6 +151,7 @@ class SocialMenuOperations {
             .doc(sharedMenuRef.id);
 
         batch.set(shareRecordRef, {
+          'menuId': sharedMenuRef.id,
           'sharedMenuId': sharedMenuRef.id,
           'sharedByUserId': currentUser.uid,
           'sharedByDisplayName': sharedByDisplayName,

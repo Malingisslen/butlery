@@ -10,6 +10,7 @@ import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/parsing/sanitizers/recipe_sanitizer.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/repositories/firebase/rate_limit_stamp.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -769,7 +770,17 @@ class RecipeSharingManager {
       // A plain create — no `SetOptions(merge: true)`. Merge existed to fold
       // into a pre-existing row at the recipeId slot; against a fresh auto-id
       // it would only hide a bug, since there is nothing to merge with.
-      await sharedContentRef.set(payload);
+      final firestore = _firestoreRepository.firestore;
+      final batch = firestore.batch();
+      batch.set(sharedContentRef, payload);
+      stampRateLimit(
+        batch,
+        firestore,
+        userId: currentUserId,
+        type: 'shared_content',
+        guardedDocId: sharedContentRef.id,
+      );
+      await batch.commit();
 
       AppLogger.debug(
         '✅ Recipe written to shared_content collection for group discovery',

@@ -92,7 +92,7 @@ Future<void> _seed(
 
 void main() {
   group('createRequest', () {
-    test('writes request doc and rate-limit doc atomically', () async {
+    test('writes request doc and rate-limit doc', () async {
       final firestore = FakeFirebaseFirestore();
       final repo = _repo(firestore);
 
@@ -113,7 +113,18 @@ void main() {
           .doc('social_requests')
           .get();
       expect(rateDoc.exists, isTrue);
-      expect(rateDoc.data()?['expireAt'], isNotNull);
+      expect(
+        rateDoc.data()!.keys.toSet(),
+        {'lastWrite', 'expireAt', 'lastDocId'},
+        reason: 'the rate_limits rule admits exactly these keys',
+      );
+      expect(
+        rateDoc.data()!['lastDocId'],
+        'req-1',
+        reason:
+            'firestore.rules accepts the request only when the stamp in the '
+            'same request names the request document',
+      );
     });
 
     test('rejects non-pending initial status', () async {

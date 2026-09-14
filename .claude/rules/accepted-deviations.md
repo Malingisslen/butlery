@@ -2108,3 +2108,50 @@ files in the same edit.
   consent-gated counters are an undercount and never proof; the device file is forgeable; and
   the pre-deletion warning is a heads-up a reported person could act on outside the app.
   Nothing here discharges a future DSA Art. 17 statement-of-reasons duty.
+
+- **Burst guards are stamped in the same request, and messages carry none (ADR-0020,
+  2026-09-14).** `rateLimitStamped` in `firestore.rules` accepts a guarded create only when the
+  same request stamps `users/{uid}/rate_limits/{type}` with `lastWrite == request.time` and
+  `lastDocId` equal to the call site's key (the guarded document's id; `<groupId>/<pingId>` for
+  pings), and the previous stamp is older than the
+  window. The `rate_limits/{type}` match accepts exactly `lastWrite`, `expireAt` and `lastDocId`
+  from the owner and no client delete; `imports` and `friendSearchMigrated` keep plain owner
+  writes. The stamp's only writer is `stampRateLimit` (`lib/repositories/firebase/rate_limit_stamp.dart`).
+  Guarded: `social_requests` 10 s, `comments` 5 s, `activity_events` 2 s, `shared_content` 3 s,
+  `pings` 60 s, `conversations` 3 s, `received_list` 3 s, `received_menu` 3 s, `cook_snaps` 5 s,
+  `recipe_ratings` create 5 s. Struck: `messages`, `shared_content_counter`,
+  `conversation_membership`, `presence`, `audit_logs`, `friendsCount`, `friend_category_member`,
+  `chat_group_rename`, `globalRecipeCache_access`, `deep_link_click`. `globalRecipeCache` create
+  keeps the old `rateLimitWrite`, pending BUT-1826.
+  **Malin's explicit calls, 2026-09-14:** this mechanism over a Cloud Function; no burst guard on
+  messages; comments keep theirs; sharing and new-DM windows at 3 s. She was shown the emulator
+  measurement that two stamped writes queued offline lose the second on reconnect (web SDK; the
+  Flutter mobile SDK was not measured), and that stranger spam in chat is gated earlier by
+  membership, account maturity and the new-DM guard. She was NOT shown any measurement of flooding
+  inside an existing conversation, which is now bounded only by blocking. The first framing of
+  the comments question wrongly said strangers could not reach comments; it was corrected and
+  asked again before she answered.
+  Do not re-add a guard to a struck path without its writer's stamp in the same change: without
+  one, `rateLimitStamped` denies every write.
+  Named residuals: the guard is per account, so a new account starts fresh; one share reaches any
+  number of recipients in one request; two guarded actions of one type queued offline still lose
+  all but the first; `rate_limits/imports` holds client-writable LLM usage counters.
+  Retired verbatim, from the BUT-2038 entry: "afterwards: the helper FAILS OPEN on a missing bucket and the bucket is"
+  Retired verbatim, from the BUT-2038 entry: "and no code in `lib/` creates a suggestion — so it would bound nothing and read as a control"
+  The BUT-2038 decision itself is unchanged: `ingredient_suggestions` carries no guard.
+
+- **A burst stamp's `lastDocId` can hold another person's uid, normally for a few days
+  (ADR-0020, 2026-09-14).** For a new direct conversation the key is `direct_<uidA>_<uidB>`, so
+  the creator's own `users/{uid}/rate_limits/conversations` names the other participant, and that
+  participant's account erasure does not reach it. `stampRateLimit` writes `expireAt` 2 days from
+  the device clock; the `rate_limits/{type}` match accepts an `expireAt` after server time and at
+  most 4 days ahead of it; the `rate_limits` TTL policy was measured ACTIVE on 2026-09-14, and
+  Firebase documents deletion as typically within 24 hours of expiry. Only the stamp's owner can
+  read it. Group invitations use random ids, so their stamps carry no uid. The pings stamp is
+  keyed on `<groupId>/<pingId>`; `/` cannot occur in a document id, so one stamp matches one ping.
+  **Malin's explicit calls, 2026-09-14:** the short lifetime, over erasing such stamps in the
+  account deletion cascade and over removing the guard on new conversations; and the Art. 15
+  exemption for `rate_limits` STANDS for stamps carrying this key. She was shown that the id stays
+  until the stamp expires, that no one else can read it, and that the 2026-09-03 exemption was
+  decided when a stamp held only a timestamp; she was NOT shown a measurement of how quickly the
+  TTL deletes in practice.

@@ -268,38 +268,83 @@ test("recipe_comments: admin can read any comment (moderation)", async () => {
 });
 
 // ----------------------------------------------------------------------------
+// Create helpers
+//
+// A recipe_comments or recipe_ratings create is refused unless the same batch
+// stamps `users/{uid}/rate_limits/{comments|recipe_ratings}` keyed on the new
+// document's id (`rateLimitStamped`). A blocked actor gets its own block record from `blockedActor`.
+// ----------------------------------------------------------------------------
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+function actor(tag: string): string {
+  return `rc-${tag}-${RUN}`;
+}
+
+/** A per-run actor that OWNER_UID has blocked. */
+async function blockedActor(tag: string): Promise<string> {
+  const uid = `rc-blocked-${tag}-${RUN}`;
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    await ctx.firestore().doc(`blocks/${OWNER_UID}_${uid}`).set({
+      blockerId: OWNER_UID,
+      blockedId: uid,
+      blockedAt: new Date().toISOString(),
+    });
+  });
+  return uid;
+}
+
+function createStamped(
+  uid: string,
+  type: "comments" | "recipe_ratings",
+  docPath: string,
+  body: Record<string, unknown>,
+  claims: Record<string, unknown> = AGE_OK_MATURED
+): Promise<void> {
+  const db = env.authenticatedContext(uid, claims).firestore();
+  const batch = db.batch();
+  batch.set(db.doc(docPath), body);
+  batch.set(
+    db.doc(`users/${uid}/rate_limits/${type}`),
+    {
+      lastWrite: serverTimestamp(),
+      expireAt: new Date(Date.now() + 2 * DAY_MS),
+      lastDocId: docPath.split("/").pop() as string,
+    },
+    { merge: true }
+  );
+  return batch.commit();
+}
+
+// ----------------------------------------------------------------------------
 // A3: recipe_comments create — blocking gate (BUT-459)
 // ----------------------------------------------------------------------------
 
 // ALLOW: a non-blocked, matured, age-compliant user can comment on the recipe
 // owner's recipe.
 test("recipe_comments: non-blocked user can create a comment", async () => {
-  const ctx = env.authenticatedContext(AUTHOR_UID, AGE_OK_MATURED);
+  const uid = actor("create-allow");
   await assertSucceeds(
-    ctx
-      .firestore()
-      .doc(`recipe_comments/c-create-allow-${RUN}`)
-      .set(validCommentBody(AUTHOR_UID))
+    createStamped(uid, "comments", `recipe_comments/c-create-allow-${RUN}`, validCommentBody(uid))
   );
 });
 
 // BUT-1419 DENY: a fresh, unverified account (email_verified false, no matured
 // user doc) cannot create a comment even when age-compliant. This is the
 // load-bearing deny for the new maturity gate — proves a "register → blast →
-// abandon" bot is blocked from comments the same way it is from DMs. FRESH_UID
+// abandon" bot is blocked from comments the same way it is from DMs. The actor
 // has NO seeded users/{uid} doc, so isAccountMatured()'s second branch (createdAt
 // >= 60min) is also false; the write fails closed.
 test("recipe_comments: fresh unverified account cannot create a comment", async () => {
-  const FRESH_UID = "fresh-comment-author-uid";
-  const ctx = env.authenticatedContext(FRESH_UID, {
-    ageCompliant: true,
-    email_verified: false,
-  });
+  const uid = actor("fresh");
   await assertFails(
-    ctx
-      .firestore()
-      .doc(`recipe_comments/c-fresh-${RUN}`)
-      .set(validCommentBody(FRESH_UID, { recipeOwnerId: FRESH_UID }))
+    createStamped(
+      uid,
+      "comments",
+      `recipe_comments/c-fresh-${RUN}`,
+      validCommentBody(uid, { recipeOwnerId: uid }),
+      { ageCompliant: true, email_verified: false }
+    )
   );
 });
 
@@ -308,24 +353,18 @@ test("recipe_comments: fresh unverified account cannot create a comment", async 
 // The allow-with-maturity companion to the fresh-account deny above; without it a
 // blanket-deny regression of the maturity gate would pass the deny test silently.
 test("recipe_comments: verified-email account can create a comment immediately", async () => {
-  const ctx = env.authenticatedContext(AUTHOR_UID, AGE_OK_MATURED);
+  const uid = actor("verified");
   await assertSucceeds(
-    ctx
-      .firestore()
-      .doc(`recipe_comments/c-verified-${RUN}`)
-      .set(validCommentBody(AUTHOR_UID))
+    createStamped(uid, "comments", `recipe_comments/c-verified-${RUN}`, validCommentBody(uid))
   );
 });
 
 // DENY: a user who has been blocked by the recipe owner cannot create a
 // comment on that recipe (blocking-gate kicks in via recipeOwnerId).
 test("recipe_comments: blocked user cannot create a comment on blocker's recipe", async () => {
-  const ctx = env.authenticatedContext(BLOCKED_UID, AGE_OK_MATURED);
+  const uid = await blockedActor("create");
   await assertFails(
-    ctx
-      .firestore()
-      .doc(`recipe_comments/c-create-blocked`)
-      .set(validCommentBody(BLOCKED_UID))
+    createStamped(uid, "comments", `recipe_comments/c-create-blocked-${RUN}`, validCommentBody(uid))
   );
 });
 
@@ -337,14 +376,11 @@ test("recipe_comments: blocked user cannot create a comment on blocker's recipe"
 // resolver throw, or a recipe whose owner it cannot read). Closing it needs the
 // rule to get() the recipe document.
 test("recipe_comments: blocked user CAN create a comment when recipeOwnerId is absent (gate skipped)", async () => {
-  const ctx = env.authenticatedContext(BLOCKED_UID, AGE_OK_MATURED);
-  const body = validCommentBody(BLOCKED_UID);
+  const uid = await blockedActor("create-noowner");
+  const body = validCommentBody(uid);
   delete body.recipeOwnerId;
   await assertSucceeds(
-    ctx
-      .firestore()
-      .doc(`recipe_comments/c-create-noowner-${RUN}`)
-      .set(body)
+    createStamped(uid, "comments", `recipe_comments/c-create-noowner-${RUN}`, body)
   );
 });
 
@@ -358,79 +394,78 @@ test("recipe_comments: blocked user CAN create a comment when recipeOwnerId is a
 
 // ALLOW: author creates a comment with a valid imageUrls list (<= 3 strings).
 test("recipe_comments: author can create a comment with <=3 image URLs", async () => {
-  const ctx = env.authenticatedContext(AUTHOR_UID, AGE_OK_MATURED);
+  const uid = actor("img-ok");
   await assertSucceeds(
-    ctx
-      .firestore()
-      .doc(`recipe_comments/c-img-ok-${RUN}`)
-      .set(
-        validCommentBody(AUTHOR_UID, {
-          imageUrls: [
-            "https://example.com/a.jpg",
-            "https://example.com/b.jpg",
-            "https://example.com/c.jpg",
-          ],
-        })
-      )
+    createStamped(
+      uid,
+      "comments",
+      `recipe_comments/c-img-ok-${RUN}`,
+      validCommentBody(uid, {
+        imageUrls: [
+          "https://example.com/a.jpg",
+          "https://example.com/b.jpg",
+          "https://example.com/c.jpg",
+        ],
+      })
+    )
   );
 });
 
 // ALLOW (back-compat): a comment with no imageUrls field still creates — the
 // validator only fires when the field is present.
 test("recipe_comments: author can create a comment with no imageUrls (back-compat)", async () => {
-  const ctx = env.authenticatedContext(AUTHOR_UID, AGE_OK_MATURED);
+  const uid = actor("img-absent");
   await assertSucceeds(
-    ctx
-      .firestore()
-      .doc(`recipe_comments/c-img-absent-${RUN}`)
-      .set(validCommentBody(AUTHOR_UID))
+    createStamped(uid, "comments", `recipe_comments/c-img-absent-${RUN}`, validCommentBody(uid))
   );
 });
 
 // ALLOW: an empty imageUrls list is a valid list of size 0.
 test("recipe_comments: author can create a comment with an empty imageUrls list", async () => {
-  const ctx = env.authenticatedContext(AUTHOR_UID, AGE_OK_MATURED);
+  const uid = actor("img-empty");
   await assertSucceeds(
-    ctx
-      .firestore()
-      .doc(`recipe_comments/c-img-empty-${RUN}`)
-      .set(validCommentBody(AUTHOR_UID, { imageUrls: [] }))
+    createStamped(
+      uid,
+      "comments",
+      `recipe_comments/c-img-empty-${RUN}`,
+      validCommentBody(uid, { imageUrls: [] })
+    )
   );
 });
 
 // DENY: more than 3 image URLs exceeds the size cap.
 test("recipe_comments: create with >3 image URLs is denied", async () => {
-  const ctx = env.authenticatedContext(AUTHOR_UID, AGE_OK_MATURED);
+  const uid = actor("img-toomany");
   await assertFails(
-    ctx
-      .firestore()
-      .doc(`recipe_comments/c-img-toomany`)
-      .set(
-        validCommentBody(AUTHOR_UID, {
-          imageUrls: [
-            "https://example.com/a.jpg",
-            "https://example.com/b.jpg",
-            "https://example.com/c.jpg",
-            "https://example.com/d.jpg",
-          ],
-        })
-      )
+    createStamped(
+      uid,
+      "comments",
+      `recipe_comments/c-img-toomany-${RUN}`,
+      validCommentBody(uid, {
+        imageUrls: [
+          "https://example.com/a.jpg",
+          "https://example.com/b.jpg",
+          "https://example.com/c.jpg",
+          "https://example.com/d.jpg",
+        ],
+      })
+    )
   );
 });
 
 // DENY: imageUrls of the wrong type (a string, not a list) is rejected by the
 // `is list` guard.
 test("recipe_comments: create with non-list imageUrls is denied", async () => {
-  const ctx = env.authenticatedContext(AUTHOR_UID, AGE_OK_MATURED);
+  const uid = actor("img-wrongtype");
   await assertFails(
-    ctx
-      .firestore()
-      .doc(`recipe_comments/c-img-wrongtype`)
-      .set(
-        validCommentBody(AUTHOR_UID, {
-          imageUrls: "https://example.com/a.jpg",
-        })
-      )
+    createStamped(
+      uid,
+      "comments",
+      `recipe_comments/c-img-wrongtype-${RUN}`,
+      validCommentBody(uid, {
+        imageUrls: "https://example.com/a.jpg",
+      })
+    )
   );
 });
 
@@ -440,32 +475,32 @@ test("recipe_comments: create with non-list imageUrls is denied", async () => {
 // Here the blocked user (who the owner blocked) tries to create a comment with
 // images — the impersonation/blocking gate is unaffected by the new validator.
 test("recipe_comments: blocked user cannot create an image comment on blocker's recipe", async () => {
-  const ctx = env.authenticatedContext(BLOCKED_UID, AGE_OK_MATURED);
+  const uid = await blockedActor("img");
   await assertFails(
-    ctx
-      .firestore()
-      .doc(`recipe_comments/c-img-blocked`)
-      .set(
-        validCommentBody(BLOCKED_UID, {
-          imageUrls: ["https://example.com/a.jpg"],
-        })
-      )
+    createStamped(
+      uid,
+      "comments",
+      `recipe_comments/c-img-blocked-${RUN}`,
+      validCommentBody(uid, {
+        imageUrls: ["https://example.com/a.jpg"],
+      })
+    )
   );
 });
 
 // DENY (author check): a user cannot create a comment whose authorId is
 // someone else's, regardless of a valid imageUrls list.
 test("recipe_comments: cannot create an image comment impersonating another author", async () => {
-  const ctx = env.authenticatedContext(STRANGER_UID, AGE_OK_MATURED);
+  const uid = actor("img-impersonate");
   await assertFails(
-    ctx
-      .firestore()
-      .doc(`recipe_comments/c-img-impersonate`)
-      .set(
-        validCommentBody(AUTHOR_UID, {
-          imageUrls: ["https://example.com/a.jpg"],
-        })
-      )
+    createStamped(
+      uid,
+      "comments",
+      `recipe_comments/c-img-impersonate-${RUN}`,
+      validCommentBody(AUTHOR_UID, {
+        imageUrls: ["https://example.com/a.jpg"],
+      })
+    )
   );
 });
 
@@ -492,20 +527,22 @@ function appCommentBody(authorUid: string): Record<string, unknown> {
   };
 }
 
-// ALLOW: the real write — the comment plus the rate_limits stamp in one
-// batch, as addComment commits it. A per-run author, because the stamp
-// arms the 5-second limit for whoever wrote it.
+// ALLOW: the real write — the comment plus the rate_limits stamp keyed on the
+// comment id, in one batch, as addComment commits it. A per-run author,
+// because the stamp arms the 5-second limit for whoever wrote it.
 test("recipe_comments: the app's full create batch (comment + rate_limits) is allowed", async () => {
   const uid = `batch-author-${RUN}`;
+  const commentId = `c-app-batch-${RUN}`;
   const ctx = env.authenticatedContext(uid, AGE_OK_MATURED);
   const db = ctx.firestore();
   const batch = db.batch();
-  batch.set(db.doc(`recipe_comments/c-app-batch-${RUN}`), appCommentBody(uid));
+  batch.set(db.doc(`recipe_comments/${commentId}`), appCommentBody(uid));
   batch.set(
     db.doc(`users/${uid}/rate_limits/comments`),
     {
       lastWrite: serverTimestamp(),
-      expireAt: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
+      expireAt: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
+      lastDocId: commentId,
     },
     { merge: true }
   );
@@ -514,23 +551,21 @@ test("recipe_comments: the app's full create batch (comment + rate_limits) is al
 
 // DENY: the same body plus one key the writer never sends.
 test("recipe_comments: create carrying an undeclared field is denied", async () => {
-  const ctx = env.authenticatedContext(AUTHOR_UID, AGE_OK_MATURED);
+  const uid = actor("extra");
   await assertFails(
-    ctx
-      .firestore()
-      .doc(`recipe_comments/c-extra-${RUN}`)
-      .set({ ...appCommentBody(AUTHOR_UID), featured: true })
+    createStamped(uid, "comments", `recipe_comments/c-extra-${RUN}`, {
+      ...appCommentBody(uid),
+      featured: true,
+    })
   );
 });
 
-// ALLOW twin of the deny above: same actor, same body, without the extra key.
-test("recipe_comments: the app's comment body alone is allowed", async () => {
-  const ctx = env.authenticatedContext(AUTHOR_UID, AGE_OK_MATURED);
+// ALLOW twin of the deny above: the same stamped create and body, without the
+// extra key.
+test("recipe_comments: the app's comment body without the undeclared key is allowed", async () => {
+  const uid = actor("app-body");
   await assertSucceeds(
-    ctx
-      .firestore()
-      .doc(`recipe_comments/c-app-body-${RUN}`)
-      .set(appCommentBody(AUTHOR_UID))
+    createStamped(uid, "comments", `recipe_comments/c-app-body-${RUN}`, appCommentBody(uid))
   );
 });
 
@@ -539,22 +574,16 @@ test("recipe_comments: the app's comment body alone is allowed", async () => {
 // ----------------------------------------------------------------------------
 
 test("recipe_ratings: non-blocked user can rate a recipe", async () => {
-  const ctx = env.authenticatedContext(AUTHOR_UID, AGE_OK_MATURED);
+  const uid = actor("rate-allow");
   await assertSucceeds(
-    ctx
-      .firestore()
-      .doc(`recipe_ratings/recipe-1_${AUTHOR_UID}_${RUN}`)
-      .set(validRatingBody(AUTHOR_UID))
+    createStamped(uid, "recipe_ratings", `recipe_ratings/recipe-1_${uid}`, validRatingBody(uid))
   );
 });
 
 test("recipe_ratings: blocked user cannot rate the blocker's recipe", async () => {
-  const ctx = env.authenticatedContext(BLOCKED_UID, AGE_OK_MATURED);
+  const uid = await blockedActor("rate");
   await assertFails(
-    ctx
-      .firestore()
-      .doc(`recipe_ratings/recipe-1_${BLOCKED_UID}`)
-      .set(validRatingBody(BLOCKED_UID))
+    createStamped(uid, "recipe_ratings", `recipe_ratings/recipe-1_${uid}`, validRatingBody(uid))
   );
 });
 
@@ -562,14 +591,11 @@ test("recipe_ratings: blocked user cannot rate the blocker's recipe", async () =
 // create limb — omit recipeOwnerId and the gate does not run, so a blocked
 // rater succeeds. Knowingly open against a hand-rolled client.
 test("recipe_ratings: blocked user CAN rate when recipeOwnerId is absent (gate skipped)", async () => {
-  const ctx = env.authenticatedContext(BLOCKED_UID, AGE_OK_MATURED);
-  const body = validRatingBody(BLOCKED_UID);
+  const uid = await blockedActor("rate-noowner");
+  const body = validRatingBody(uid);
   delete body.recipeOwnerId;
   await assertSucceeds(
-    ctx
-      .firestore()
-      .doc(`recipe_ratings/recipe-1_${BLOCKED_UID}_noowner_${RUN}`)
-      .set(body)
+    createStamped(uid, "recipe_ratings", `recipe_ratings/recipe-1_${uid}`, body)
   );
 });
 

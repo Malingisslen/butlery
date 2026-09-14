@@ -1,7 +1,7 @@
 /// Unit tests for MessageMutationModule.
 ///
 /// Targets the sendMessage write module that handles its atomic
-/// 3-doc batch. Tests focus on the documented contracts rather than
+/// batch. Tests focus on the documented contracts rather than
 /// method-call presence. The poll writes reached here delegate to
 /// [MessagePollMutationModule]; exercising them through this seam is
 /// deliberate, because that delegation is what the callers see.
@@ -63,7 +63,7 @@ Message _textMessage({
 void main() {
   group('MessageMutationModule.sendMessage', () {
     test(
-      'atomically writes message + conversation update + sender rate-limit doc',
+      'atomically writes message + conversation update, with no rate-limit stamp',
       () async {
         final firestore = FakeFirebaseFirestore();
         final convo = _twoPersonConvo();
@@ -92,15 +92,15 @@ void main() {
         expect(convoDoc.exists, isTrue);
         expect(convoDoc.data()?['lastMessage'], isA<Map<String, dynamic>>());
 
-        // 3. Sender rate-limit doc written under users/<sender>/rate_limits/messages
-        final rateDoc = await firestore
+        // 3. No rate-limit stamp: messages carry no burst guard, because
+        //    queued offline sends replay back to back and a guard refuses all
+        //    but the first.
+        final rateLimits = await firestore
             .collection('users')
             .doc(msg.senderId)
             .collection('rate_limits')
-            .doc('messages')
             .get();
-        expect(rateDoc.exists, isTrue);
-        expect(rateDoc.data()?['expireAt'], isNotNull);
+        expect(rateLimits.docs, isEmpty);
       },
     );
 

@@ -1,4 +1,3 @@
-import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/models/social/activity_event.dart';
 import 'package:butlery/repositories/interfaces/activity_event_repository.dart';
@@ -9,6 +8,7 @@ import 'package:butlery/core/extensions/iterable_extensions.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/repositories/firebase/firestore_batch_utils.dart';
+import 'package:butlery/repositories/firebase/rate_limit_stamp.dart';
 
 /// Firebase implementation for social activity events.
 ///
@@ -91,25 +91,15 @@ class FirebaseActivityEventRepository
       );
     }
 
-    // Batch the event create with a rate-limit marker so the firestore.rules
-    // `rateLimitWrite('activity_events', 2)` gate is actually armed. Without
-    // this doc the rule always takes the `!exists(limitsPath)` branch and the
-    // 2-second burst guard never fires.
     final batch = firestore.batch();
     batch.set(collection.doc(event.id), toFirestore(event));
-    batch.set(
-      firestore
-          .collection(FirestoreCollections.users)
-          .doc(userId)
-          .collection(FirestoreCollections.userRateLimits)
-          .doc(FirestoreCollections.activityEvents),
-      {
-        'lastWrite': timestampProvider.serverTimestamp(),
-        'expireAt': Timestamp.fromDate(
-          clock.now().add(const Duration(days: 90)),
-        ),
-      },
-      SetOptions(merge: true),
+    stampRateLimit(
+      batch,
+      firestore,
+      userId: userId,
+      type: FirestoreCollections.activityEvents,
+      guardedDocId: event.id,
+      timestampProvider: timestampProvider,
     );
     await batch.commit();
 

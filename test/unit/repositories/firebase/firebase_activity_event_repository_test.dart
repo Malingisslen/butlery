@@ -2,7 +2,7 @@
 ///
 /// `addEvent` is the only write path that bypasses [BaseFirebaseRepository.create]
 /// to commit a two-document batch: the activity event itself plus a per-user
-/// rate-limit marker that arms the firestore.rules `rateLimitWrite` burst gate.
+/// rate-limit marker.
 /// These tests pin three behaviours of that path:
 ///   1. Deny path — a non-owner actorId is rejected with [PermissionDeniedException]
 ///      and writes nothing.
@@ -121,8 +121,7 @@ void main() {
       expect(eventDoc.data()!['recipeTitle'], 'Köttbullar');
 
       // 2) The rate-limit marker lands under the actor's rate_limits subcollection,
-      //    keyed by the activity_events collection name, with a lastWrite +
-      //    expireAt so the rules' burst gate is armed.
+      //    keyed by the activity_events collection name.
       final markerDoc = await firestore
           .collection(FirestoreCollections.users)
           .doc(_alice)
@@ -131,8 +130,18 @@ void main() {
           .get();
       expect(markerDoc.exists, isTrue);
       final marker = markerDoc.data()!;
-      expect(marker.containsKey('lastWrite'), isTrue);
-      expect(marker.containsKey('expireAt'), isTrue);
+      expect(
+        marker.keys.toSet(),
+        {'lastWrite', 'expireAt', 'lastDocId'},
+        reason: 'the rate_limits rule admits exactly these keys',
+      );
+      expect(
+        marker['lastDocId'],
+        'evt-1',
+        reason:
+            'firestore.rules accepts the event only when the stamp '
+            'names the event document',
+      );
     });
 
     test(

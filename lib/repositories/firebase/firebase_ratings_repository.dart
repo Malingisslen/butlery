@@ -3,6 +3,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/repositories/interfaces/ratings_repository.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
+import 'package:butlery/repositories/firebase/rate_limit_stamp.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/core/extensions/iterable_extensions.dart';
@@ -38,33 +39,8 @@ import 'package:butlery/core/utils/logger.dart';
 /// - **Stream Updates**: Real-time statistics updates for dynamic UI
 /// **Performance Optimizations:**
 /// - **Composite Keys**: Efficient rating identification with `recipeId_userId` format
-/// - **Batch Processing**: Bulk statistics calculation with Firestore batch operations
 /// - **Query Optimization**: Proper indexing for recipe and user-based queries
-/// - **Statistics Caching**: Future-ready for denormalized statistics storage
 /// - **Pagination Support**: Scalable rating retrieval for large datasets
-/// **Usage Examples:**
-/// ```dart
-/// final ratingsRepo = FirebaseRatingsRepository(
-///   authRepository: ServiceLocator.get<AuthRepository>(),
-/// );
-/// // Rate a recipe
-/// await ratingsRepo.rateRecipe(
-///   recipeId: recipeId,
-///   userId: currentUserId,
-///   rating: 4.5,
-///   review: 'Delicious and easy to make!',
-/// );
-/// // Get real-time statistics
-/// ratingsRepo.getRatingStatisticsStream(recipeId).listen((stats) {
-///   updateRatingDisplay(stats.averageRating);
-///   updateDistributionChart(stats.ratingDistribution);
-/// });
-/// // Bulk statistics for recipe list
-/// final bulkStats = await ratingsRepo.getBulkRatingStatistics(recipeIds);
-/// for (final entry in bulkStats.entries) {
-///   updateRecipeRating(entry.key, entry.value);
-/// }
-/// ```
 class FirebaseRatingsRepository extends BaseFirebaseRepository<RecipeRating>
     implements RatingsRepository {
   FirebaseRatingsRepository({
@@ -164,7 +140,8 @@ class FirebaseRatingsRepository extends BaseFirebaseRepository<RecipeRating>
     final ownerOrNull = (recipeOwnerId == null || recipeOwnerId.isEmpty)
         ? null
         : recipeOwnerId;
-    await docRef.set({
+    final batch = firestore.batch();
+    batch.set(docRef, {
       'recipeId': recipeId,
       'userId': userId,
       'rating': rating,
@@ -178,6 +155,19 @@ class FirebaseRatingsRepository extends BaseFirebaseRepository<RecipeRating>
       if (!existing.exists) 'createdAt': timestampProvider.serverTimestamp(),
       'updatedAt': timestampProvider.serverTimestamp(),
     }, SetOptions(merge: true));
+    // Only a first rating is rate-limited (the rules gate the create limb), so
+    // a re-rate does not move the window for rating another recipe.
+    if (!existing.exists) {
+      stampRateLimit(
+        batch,
+        firestore,
+        userId: userId,
+        type: 'recipe_ratings',
+        guardedDocId: ratingId,
+        timestampProvider: timestampProvider,
+      );
+    }
+    await batch.commit();
 
     logPermissionCheck(
       userId: currentUser,

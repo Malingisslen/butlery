@@ -290,6 +290,47 @@ void main() {
     );
 
     test(
+      'addCookSnap stamps the cook_snaps rate limit with the snap id',
+      () async {
+        final snap = CookSnap(
+          id: 'snap-new',
+          recipeId: 'r1',
+          userId: viewer,
+          userDisplayName: 'Viewer',
+          photoUrl: 'https://example.com/new.jpg',
+        );
+
+        await repo.addCookSnap(snap);
+
+        final written = await fakeFirestore
+            .collection('cook_snaps')
+            .doc('snap-new')
+            .get();
+        expect(written.exists, isTrue, reason: 'premise: the snap landed');
+
+        final stamp = await fakeFirestore
+            .collection('users')
+            .doc(viewer)
+            .collection('rate_limits')
+            .doc('cook_snaps')
+            .get();
+        expect(stamp.exists, isTrue);
+        expect(
+          stamp.data()!.keys.toSet(),
+          {'lastWrite', 'expireAt', 'lastDocId'},
+          reason: 'the rate_limits rule admits exactly these keys',
+        );
+        expect(
+          stamp.data()!['lastDocId'],
+          'snap-new',
+          reason:
+              'firestore.rules accepts the snap only when the stamp '
+              'names the snap document',
+        );
+      },
+    );
+
+    test(
       'watchCookSnaps cancellation cancels every inner chunk subscription '
       '(no leaks)',
       () async {

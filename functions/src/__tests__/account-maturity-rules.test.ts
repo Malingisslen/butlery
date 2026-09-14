@@ -5,6 +5,12 @@
  * - `social_requests/{requestId}` (friend requests + group invites)
  * - `messages/{messageId}` (top-level messages collection)
  *
+ * A `social_requests` create is also refused unless the same batch stamps
+ * `users/{uid}/rate_limits/social_requests` keyed on the request id
+ * (`rateLimitStamped`). Every social_requests case below — ALLOW and DENY —
+ * writes that stamp, so maturity stays the only variable. `messages` carry no
+ * such guard.
+ *
  * The predicate considers an account "matured" when EITHER:
  *   - the auth token's `email_verified` claim is true, OR
  *   - the user's `users/{uid}.createdAt` is at least 60 minutes old.
@@ -24,6 +30,7 @@ import {
   assertFails,
   assertSucceeds,
 } from "@firebase/rules-unit-testing";
+import { serverTimestamp } from "firebase/firestore";
 
 // NOTE: seed + body timestamps use plain `Date` (stored as a Firestore
 // Timestamp), NOT `admin.firestore.Timestamp`. The rules-unit-testing contexts
@@ -137,6 +144,31 @@ function friendRequestBody(fromUid: string, toUid: string): Record<string, unkno
   };
 }
 
+/**
+ * Creates `social_requests/{requestId}` together with the rate-limit stamp the
+ * app's writer commits in the same batch.
+ */
+function createStampedRequest(
+  uid: string,
+  claims: Record<string, unknown>,
+  requestId: string,
+  body: Record<string, unknown>,
+): Promise<void> {
+  const db = env.authenticatedContext(uid, claims).firestore();
+  const batch = db.batch();
+  batch.set(db.doc(`social_requests/${requestId}`), body);
+  batch.set(
+    db.doc(`users/${uid}/rate_limits/social_requests`),
+    {
+      lastWrite: serverTimestamp(),
+      expireAt: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
+      lastDocId: requestId,
+    },
+    { merge: true },
+  );
+  return batch.commit();
+}
+
 function messageBody(senderUid: string): Record<string, unknown> {
   return {
     senderId: senderUid,
@@ -150,15 +182,13 @@ function messageBody(senderUid: string): Record<string, unknown> {
 test(
   "social_requests: new unverified account is blocked from creating friend requests",
   async () => {
-    const ctx = env.authenticatedContext(NEW_USER, {
-      email_verified: false,
-      ...AGE_OK,
-    });
     await assertFails(
-      ctx
-        .firestore()
-        .doc("social_requests/req-1")
-        .set(friendRequestBody(NEW_USER, OTHER_USER)),
+      createStampedRequest(
+        NEW_USER,
+        { email_verified: false, ...AGE_OK },
+        "req-1",
+        friendRequestBody(NEW_USER, OTHER_USER),
+      ),
     );
   },
 );
@@ -167,15 +197,13 @@ test(
 test(
   "social_requests: matured unverified account can create friend requests",
   async () => {
-    const ctx = env.authenticatedContext(OLD_USER, {
-      email_verified: false,
-      ...AGE_OK,
-    });
     await assertSucceeds(
-      ctx
-        .firestore()
-        .doc("social_requests/req-2")
-        .set(friendRequestBody(OLD_USER, OTHER_USER)),
+      createStampedRequest(
+        OLD_USER,
+        { email_verified: false, ...AGE_OK },
+        "req-2",
+        friendRequestBody(OLD_USER, OTHER_USER),
+      ),
     );
   },
 );
@@ -185,15 +213,13 @@ test(
 test(
   "social_requests: verified-email new account can create friend requests",
   async () => {
-    const ctx = env.authenticatedContext(VERIFIED_USER, {
-      email_verified: true,
-      ...AGE_OK,
-    });
     await assertSucceeds(
-      ctx
-        .firestore()
-        .doc("social_requests/req-3")
-        .set(friendRequestBody(VERIFIED_USER, OTHER_USER)),
+      createStampedRequest(
+        VERIFIED_USER,
+        { email_verified: true, ...AGE_OK },
+        "req-3",
+        friendRequestBody(VERIFIED_USER, OTHER_USER),
+      ),
     );
   },
 );

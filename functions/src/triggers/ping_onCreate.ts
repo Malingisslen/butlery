@@ -1,11 +1,8 @@
 /**
  * BUT-627: Server-side hourly rate-limit enforcement on ping creates.
  *
- * The Firestore rule for pings carries a 60s burst guard via
- * `rateLimitWrite`, but that guard never binds: `rateLimitWrite` passes
- * whenever the bucket document is absent, and nothing writes
- * `users/{uid}/rate_limits/pings`. The 5/h aggregate cap is likewise
- * documented but not enforced server-side — clients run the count
+ * The Firestore rule for pings carries a 60s burst guard. The 5/h aggregate cap is
+ * documented — clients run the count
  * themselves, which a malicious actor can bypass by writing directly
  * via the SDK.
  *

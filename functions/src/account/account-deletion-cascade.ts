@@ -2274,11 +2274,7 @@ export async function deleteMessages(
  *      the parent to name the writer AND the subject, and a direct conversation
  *      `direct_A_B` names both — so A may write B's row. A may also create that
  *      conversation: two adults need no friendship (`passesMinorDmGate` only
- *      fires when the other party is a minor), and the 10-second
- *      `rateLimitWrite('conversations', 10)` does NOT cap the rate: it reads
- *      `users/{uid}/rate_limits/conversations`, a bucket nothing in `lib/` ever
- *      writes, so `!exists(limitsPath)` is permanently true — and the bucket is
- *      self-written, so a tampered client would omit the stamp anyway. Against a
+ *      fires when the other party is a minor). Against a
  *      CHOSEN victim this yields at most two rows per distinct peer account —
  *      `directIdBinds` accepts both orderings, so A may create `direct_A_V`
  *      and `direct_V_A`, each holding one such row — so it is unbounded only
@@ -2298,8 +2294,7 @@ export async function deleteMessages(
  * erasure for the same alarm.
  *
  * The cost of declining, stated: rows planted by routes 1 or 2 — or by a user
- * inflating their OWN count, at whatever rate a client can issue creates, since
- * nothing caps it (above) — block the sweep of
+ * inflating their OWN count — block the sweep of
  * that user's LEGITIMATE roster rows,
  * and nothing retries automatically — the auth user is gone by then, so
  * recovery needs a human with the Admin SDK. The alarm is what makes that
@@ -3895,8 +3890,8 @@ async function scrubLastEditor(
  * panel's split. She went AGAINST the recommendation on `rate_limits`, which was
  * to export it: the Security seat had measured that nothing secret is disclosed
  * (the limits live in client code and are already visible in the throttling copy
- * the user sees). That measurement stands and was never disputed — she weighed
- * bundle legibility higher for a row that is one timestamp per gated action.
+ * the user sees). She weighed
+ * bundle legibility higher.
  * Recording it because a future reader will otherwise assume the security
  * argument won, and re-litigate a decision that was made on other grounds.
  *
@@ -3906,10 +3901,8 @@ async function scrubLastEditor(
 export const EXPORT_EXEMPT: Record<string, string> = {
   // ── Withheld on purpose, with a live writer. These are the decisions. ──
   rate_limits:
-    "PLUMBING. One timestamp per rate-limited action. Discloses nothing about " +
-    "the user that the throttling message does not already say on screen — " +
-    "measured by the Security seat, who recommended exporting it anyway. " +
-    "Malin, 2026-09-03, AGAINST that recommendation, weighing bundle " +
+    "PLUMBING. " +
+    "Malin, 2026-09-03, weighing bundle " +
     "legibility higher. Named in the bundle's data_minimisation line.",
   counters:
     "PLUMBING. Derived unread tallies over content this export already " +

@@ -15,7 +15,7 @@ whether or not it is exported.
 | `ingredients` | The user's own ingredient entries | Their personal ingredient library | `firebase_user_ingredient_repository.dart` | **Exported** |
 | `onboarding` | Progress flags through first-run setup | Resume onboarding where the user left off | `onboarding_progress_service.dart` | **Exported** |
 | `acquisition` | Install attribution: source, medium, campaign, first-seen stamp | Growth measurement (BUT-612) | `firebase_acquisition_repository.dart` | **Exported, unprojected** |
-| `rate_limits` | One timestamp per rate-limited action | Anti-abuse throttling | `firebase_activity_event_repository.dart` and others | **Exempt** |
+| `rate_limits` | Burst stamps (a timestamp and the key of the guarded write, bounded by the rules to expire within 4 days, ADR-0020), import usage counters, a one-time migration flag | Anti-abuse throttling | `firebase_activity_event_repository.dart` and others | **Exempt** |
 | `counters` | Unread-badge totals over shared content | Render unread badges | `base_shared_content_repository.dart` | **Exempt** |
 | `report_throttle` | Cooldown between abuse reports | Anti-abuse throttling | `firebase_report_repository.dart` | **Exempt** |
 | `block_mirror` | The uids of everyone who has blocked this user, in one `current` document | Let `firestore.rules` refuse a blocked person's poll vote without a per-participant read of `blocks` | `sync-block-mirror.ts` (Admin SDK only; every client write is denied) | **Exempt** |
@@ -48,7 +48,7 @@ safety of the person who placed the block, whose choice it enforces.
 ## Retention
 
 Erased on account deletion by `deleteUserSubcollections` in
-`functions/src/account/account-deletion-cascade.ts`. No TTL policy applies.
+`functions/src/account/account-deletion-cascade.ts`.
 
 `block_mirror` takes TWO legs, because the uid appears in two places. Its own row is in
 `deleteUserSubcollections`' list, which erases the leaving user's mirror — the list of who
@@ -58,7 +58,7 @@ blocked THEM. Their uid inside OTHER people's mirrors is a cross-user sweep,
 mirror naming it.
 
 ⚠ `firestore.indexes.json` declares `expireAt` collection-group TTLs whose ids collide with
-`ingredients` and `rate_limits`. Whether user-scoped documents carry that field is unmeasured
+`ingredients`. Whether user-scoped documents carry that field is unmeasured
 and tracked as BUT-1996 — a TTL armed over a user's own ingredient library would delete
 content this register says is retained until account deletion.
 

@@ -2727,7 +2727,7 @@
         {
           "from": "svc-social-share",
           "to": "ds-social",
-          "payload": "shared_content-metadata {recipeId, sharedByUserId, sharedByDisplayName, sharedToUserIds[], isActive}. Mottagarlistan skrivs under EN stavning, `sharedToUserIds` — den enda `firestore.rules` 'allow list' (:722) känner igen, och den GDPR-exporten och raderingskaskaden båda läser. Den skrevs en tid under två stavningar så att rader från före fixen förblev läsbara; avvecklat 2026-08-03, eftersom projektet bara innehåller testdata och två kopior av samma faktum bara kunde glida isär.",
+          "payload": "shared_content-metadata {recipeId, sharedByUserId, sharedByDisplayName, sharedToUserIds[], isActive}. Mottagarlistan skrivs under EN stavning, `sharedToUserIds` — den enda `firestore.rules` 'allow list' (:722) känner igen, och den GDPR-exporten och raderingskaskaden båda läser. Den skrevs en tid under två stavningar så att rader från före fixen förblev läsbara; avvecklat 2026-08-03, eftersom projektet bara innehåller testdata och två kopior av samma faktum bara kunde glida isär. Skrivs i en batch med stämpeln users/{uid}/rate_limits/shared_content (lastDocId = radens id), som firestore.rules kräver.",
           "transport": "Firestore set/merge",
           "verified": true
         },
@@ -4853,7 +4853,7 @@
         {
           "from": "svc-social-menu-operations",
           "to": "ds-shared-content",
-          "payload": "skapa delad-meny-dokument i shared_content (contentType 'menu') + ett mottagningskvitto per vän. BUT-1775: mottagarlistan skrivs nu även som sharedToUserIds — utan den är den delade menyn både oläsbar och oexporterbar för mottagarna — och sharedByDisplayName/standardtiteln bygger på profilnamnet, inte Auth-kontots namn.",
+          "payload": "skapa delad-meny-dokument i shared_content (contentType 'menu') + ett mottagningskvitto per vän. BUT-1775: mottagarlistan skrivs nu även som sharedToUserIds — utan den är den delade menyn både oläsbar och oexporterbar för mottagarna — och sharedByDisplayName/standardtiteln bygger på profilnamnet, inte Auth-kontots namn. Delningsdokumentet, kvittona och stämplarna shared_content och received_menu skrivs i EN batch.",
           "transport": "Firestore write",
           "verified": true
         },
@@ -5345,7 +5345,7 @@
         {
           "from": "repo-comments",
           "to": "ds-recipe-comments",
-          "payload": "recipe_comments-dokument skapas",
+          "payload": "recipe_comments-dokument skapas, i samma batch som stämpeln users/{uid}/rate_limits/comments (lastDocId = kommentarens id)",
           "transport": "Firestore create",
           "verified": true
         },
@@ -5401,7 +5401,7 @@
         {
           "from": "repo-ratings",
           "to": "ds-recipe-ratings",
-          "payload": "recipe_ratings/{recipeId_userId} set(merge) \u2014 firestore.rules avvisar skrivningen p\u00e5 b\u00e5de create och update n\u00e4r recipeOwnerId finns med och den personen har blockerat den som betygs\u00e4tter",
+          "payload": "recipe_ratings/{recipeId_userId} set(merge) i en batch; ett första betyg stämplar även users/{uid}/rate_limits/recipe_ratings \u2014 firestore.rules avvisar skrivningen p\u00e5 b\u00e5de create och update n\u00e4r recipeOwnerId finns med och den personen har blockerat den som betygs\u00e4tter",
           "transport": "Firestore write",
           "verified": true
         },
@@ -5551,7 +5551,7 @@
         {
           "from": "repo-cook-snap",
           "to": "ds-cook-snaps",
-          "payload": "cook_snaps-dokument {userId, recipeId, photoUrls[], visibility}",
+          "payload": "cook_snaps-dokument {userId, recipeId, photoUrls[], visibility} + stämpeln users/{uid}/rate_limits/cook_snaps i samma batch",
           "transport": "Firestore create",
           "verified": true
         },
@@ -5572,7 +5572,7 @@
         {
           "from": "repo-activity-event",
           "to": "ds-activity-events",
-          "payload": "activity_events-dokument skapas",
+          "payload": "activity_events-dokument skapas + stämpeln users/{uid}/rate_limits/activity_events i samma batch",
           "transport": "Firestore create",
           "verified": true
         },
@@ -5880,7 +5880,7 @@
         {
           "from": "repo-social-request",
           "to": "ds-social-requests",
-          "payload": "ny gruppinbjudan (type=groupInvitation)",
+          "payload": "ny gruppinbjudan (type=groupInvitation) + stämpeln users/{uid}/rate_limits/social_requests i samma batch",
           "transport": "write",
           "verified": true
         },

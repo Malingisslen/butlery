@@ -10,7 +10,10 @@
  *             (friend doc at users/{actorId}/friends/{auth.uid}).
  *   - create: actor-only (request.auth.uid == actorId) + shape validation
  *             (required actorId/type/recipeId/createdAt; recipeId <= 200;
- *             recipeTitle, if present, string <= 300) + burst rate limit.
+ *             recipeTitle, if present, string <= 300) + a rate-limit stamp
+ *             on users/{uid}/rate_limits/activity_events written in the same
+ *             batch, keyed on the event id, outside a 2s window
+ *             (`rateLimitStamped`).
  *   - update: actor-only; actorId/recipeId/createdAt immutable.
  *   - delete: actor-only.
  *
@@ -32,6 +35,7 @@ import {
   assertFails,
   assertSucceeds,
 } from "@firebase/rules-unit-testing";
+import { serverTimestamp } from "firebase/firestore";
 
 const PROJECT_ID = "butlery-rules-activity-events";
 const RULES_PATH = path.resolve(__dirname, "../../../firestore.rules");
@@ -154,11 +158,58 @@ test("activity_events: unauthenticated user cannot read the event", async () => 
 // ACTIVITY EVENTS — create (actor-only, shape-validated)
 // ============================================================================
 
+// Every authenticated create below goes through `createEvent`, which commits the
+// event and its `users/{uid}/rate_limits/activity_events` stamp in one batch,
+// the way the app writes it. Each case has its own per-run actor, so its bucket
+// is empty unless the case seeds it: a DENY then differs from AE5 only in the
+// variable it names instead of also failing on a missing or too-recent stamp.
+// AE7 has no actor and therefore no bucket to stamp.
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+function actor(tag: string): string {
+  return `ae-${tag}-${RUN}`;
+}
+
+function createEvent(
+  uid: string,
+  claims: Record<string, unknown> | undefined,
+  eventId: string,
+  body: Record<string, unknown>
+): Promise<void> {
+  const db = env.authenticatedContext(uid, claims).firestore();
+  const batch = db.batch();
+  batch.set(db.doc(`activity_events/${eventId}`), body);
+  batch.set(
+    db.doc(`users/${uid}/rate_limits/activity_events`),
+    {
+      lastWrite: serverTimestamp(),
+      expireAt: new Date(Date.now() + 2 * DAY_MS),
+      lastDocId: eventId,
+    },
+    { merge: true }
+  );
+  return batch.commit();
+}
+
+/** Seeds [uid]'s bucket as if its previous stamp was written [ageMs] ago. */
+async function seedBucket(uid: string, ageMs: number): Promise<void> {
+  await env.withSecurityRulesDisabled(async (admin) => {
+    await admin
+      .firestore()
+      .doc(`users/${uid}/rate_limits/activity_events`)
+      .set({
+        lastWrite: new Date(Date.now() - ageMs),
+        expireAt: new Date(Date.now() + 2 * DAY_MS),
+        lastDocId: "seeded",
+      });
+  });
+}
+
 // AE5: the actor can create a valid event for themselves.
 test("activity_events: actor can create a valid event", async () => {
-  const ctx = env.authenticatedContext(ACTOR_UID, AGE_OK);
+  const uid = actor("create-ok");
   await assertSucceeds(
-    ctx.firestore().doc(`activity_events/ae-create-ok-${RUN}`).set(validEventBody())
+    createEvent(uid, AGE_OK, `ae-create-ok-${RUN}`, validEventBody({ actorId: uid }))
   );
 });
 
@@ -167,28 +218,35 @@ test("activity_events: actor can create a valid event", async () => {
 // actorId. Load-bearing deny for the new age gate: fails closed on a missing
 // claim (CEL `request.auth.token.ageCompliant` undefined -> `== true` false).
 test("activity_events: actor without ageCompliant claim cannot create an event", async () => {
-  const ctx = env.authenticatedContext(ACTOR_UID);
+  const uid = actor("noclaim");
   await assertFails(
-    ctx.firestore().doc(`activity_events/ae-noclaim-${RUN}`).set(validEventBody())
+    createEvent(uid, undefined, `ae-noclaim-${RUN}`, validEventBody({ actorId: uid }))
   );
 });
 
 // AE5c: BUT-1418 DENY — an explicit ageCompliant:false claim is rejected too.
 test("activity_events: actor with ageCompliant=false cannot create an event", async () => {
-  const ctx = env.authenticatedContext(ACTOR_UID, { ageCompliant: false });
+  const uid = actor("agefalse");
   await assertFails(
-    ctx.firestore().doc(`activity_events/ae-agefalse-${RUN}`).set(validEventBody())
+    createEvent(
+      uid,
+      { ageCompliant: false },
+      `ae-agefalse-${RUN}`,
+      validEventBody({ actorId: uid })
+    )
   );
 });
 
 // AE6: a user cannot forge an event attributed to someone else (actorId spoof).
 test("activity_events: cannot create an event with a spoofed actorId", async () => {
-  const ctx = env.authenticatedContext(STRANGER_UID, AGE_OK);
+  const uid = actor("spoof");
   await assertFails(
-    ctx
-      .firestore()
-      .doc(`activity_events/ae-create-spoof-${RUN}`)
-      .set(validEventBody({ actorId: ACTOR_UID }))
+    createEvent(
+      uid,
+      AGE_OK,
+      `ae-create-spoof-${RUN}`,
+      validEventBody({ actorId: ACTOR_UID })
+    )
   );
 });
 
@@ -205,99 +263,94 @@ test("activity_events: unauthenticated user cannot create an event", async () =>
 
 // AE8: missing required field (recipeId) is rejected.
 test("activity_events: create without recipeId is rejected", async () => {
-  const ctx = env.authenticatedContext(ACTOR_UID, AGE_OK);
-  const body = validEventBody();
+  const uid = actor("no-recipe");
+  const body = validEventBody({ actorId: uid });
   delete (body as Record<string, unknown>).recipeId;
-  await assertFails(
-    ctx.firestore().doc(`activity_events/ae-no-recipe-${RUN}`).set(body)
-  );
+  await assertFails(createEvent(uid, AGE_OK, `ae-no-recipe-${RUN}`, body));
 });
 
 // AE9: missing required field (createdAt) is rejected.
 test("activity_events: create without createdAt is rejected", async () => {
-  const ctx = env.authenticatedContext(ACTOR_UID, AGE_OK);
-  const body = validEventBody();
+  const uid = actor("no-created");
+  const body = validEventBody({ actorId: uid });
   delete (body as Record<string, unknown>).createdAt;
-  await assertFails(
-    ctx.firestore().doc(`activity_events/ae-no-created-${RUN}`).set(body)
-  );
+  await assertFails(createEvent(uid, AGE_OK, `ae-no-created-${RUN}`, body));
 });
 
 // AE9b: missing required field (type) is rejected. `type` is in
 // hasRequiredFields but had no dedicated deny — without this a future drop of
 // 'type' from the required list would go unnoticed.
 test("activity_events: create without type is rejected", async () => {
-  const ctx = env.authenticatedContext(ACTOR_UID, AGE_OK);
-  const body = validEventBody();
+  const uid = actor("no-type");
+  const body = validEventBody({ actorId: uid });
   delete (body as Record<string, unknown>).type;
-  await assertFails(
-    ctx.firestore().doc(`activity_events/ae-no-type-${RUN}`).set(body)
-  );
+  await assertFails(createEvent(uid, AGE_OK, `ae-no-type-${RUN}`, body));
 });
 
 // AE9c: non-string type is rejected (`type is string`).
 test("activity_events: non-string type is rejected", async () => {
-  const ctx = env.authenticatedContext(ACTOR_UID, AGE_OK);
+  const uid = actor("type-num");
   await assertFails(
-    ctx
-      .firestore()
-      .doc(`activity_events/ae-type-num-${RUN}`)
-      .set(validEventBody({ type: 7 }))
+    createEvent(uid, AGE_OK, `ae-type-num-${RUN}`, validEventBody({ actorId: uid, type: 7 }))
   );
 });
 
 // AE10: non-string recipeId is rejected (`is string`).
 test("activity_events: non-string recipeId is rejected", async () => {
-  const ctx = env.authenticatedContext(ACTOR_UID, AGE_OK);
+  const uid = actor("recipe-num");
   await assertFails(
-    ctx
-      .firestore()
-      .doc(`activity_events/ae-recipe-num-${RUN}`)
-      .set(validEventBody({ recipeId: 42 }))
+    createEvent(
+      uid,
+      AGE_OK,
+      `ae-recipe-num-${RUN}`,
+      validEventBody({ actorId: uid, recipeId: 42 })
+    )
   );
 });
 
 // AE11: oversized recipeId (201 chars) is rejected (size() <= 200).
 test("activity_events: oversized recipeId is rejected", async () => {
-  const ctx = env.authenticatedContext(ACTOR_UID, AGE_OK);
+  const uid = actor("recipe-big");
   await assertFails(
-    ctx
-      .firestore()
-      .doc(`activity_events/ae-recipe-big-${RUN}`)
-      .set(validEventBody({ recipeId: "x".repeat(201) }))
+    createEvent(
+      uid,
+      AGE_OK,
+      `ae-recipe-big-${RUN}`,
+      validEventBody({ actorId: uid, recipeId: "x".repeat(201) })
+    )
   );
 });
 
 // AE12: oversized recipeTitle (301 chars) is rejected (size() <= 300).
 test("activity_events: oversized recipeTitle is rejected", async () => {
-  const ctx = env.authenticatedContext(ACTOR_UID, AGE_OK);
+  const uid = actor("title-big");
   await assertFails(
-    ctx
-      .firestore()
-      .doc(`activity_events/ae-title-big-${RUN}`)
-      .set(validEventBody({ recipeTitle: "x".repeat(301) }))
+    createEvent(
+      uid,
+      AGE_OK,
+      `ae-title-big-${RUN}`,
+      validEventBody({ actorId: uid, recipeTitle: "x".repeat(301) })
+    )
   );
 });
 
-// AE12c: a create within the 2s burst window is rejected by
-// rateLimitWrite('activity_events', 2). Seed the rate-limit doc with a fresh
-// lastWrite for a dedicated actor (so AE5's actor stays clean), then prove the
-// next create denies. Without this the rate-limit clause is unproven — a drop
-// of the clause would silently pass every other create test.
+// AE12c: a correctly stamped create is rejected while the bucket's previous
+// stamp is younger than the 2s window. AE12d is its ALLOW control: same batch,
+// only the seeded stamp's age differs.
 test("activity_events: create within the rate-limit window is rejected", async () => {
-  const RL_UID = "activity-ratelimited-uid";
-  await env.withSecurityRulesDisabled(async (admin) => {
-    await admin
-      .firestore()
-      .doc(`users/${RL_UID}/rate_limits/activity_events`)
-      .set({ lastWrite: new Date() });
-  });
-  const ctx = env.authenticatedContext(RL_UID, AGE_OK);
+  const uid = actor("ratelimited");
+  await seedBucket(uid, 0);
   await assertFails(
-    ctx
-      .firestore()
-      .doc(`activity_events/ae-ratelimited-${RUN}`)
-      .set(validEventBody({ actorId: RL_UID }))
+    createEvent(uid, AGE_OK, `ae-ratelimited-${RUN}`, validEventBody({ actorId: uid }))
+  );
+});
+
+// AE12d: ALLOW control for AE12c — the seeded stamp is older than the window.
+test("activity_events: create after the rate-limit window has passed is allowed", async () => {
+  const uid = actor("window-passed");
+  await seedBucket(uid, 10_000);
+  await assertSucceeds(
+    createEvent(uid, AGE_OK, `ae-window-passed-${RUN}`, validEventBody({ actorId: uid }))
   );
 });
 

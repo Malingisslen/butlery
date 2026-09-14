@@ -65,6 +65,53 @@ void main() {
           .doc('direct_user-a_user-b')
           .get();
       expect(doc.data()?['title'], equals('preexisting'));
+      final stamps = await firestore.collectionGroup('rate_limits').get();
+      expect(
+        stamps.docs,
+        isEmpty,
+        reason:
+            'no conversation is written, so no stamp is either — a stamp '
+            'naming an existing conversation would spend the creator\'s burst '
+            'window on nothing',
+      );
+    });
+
+    test('stamps the CREATOR\'s conversations rate limit with the '
+        'conversation id', () async {
+      final firestore = FakeFirebaseFirestore();
+      final module = ConversationMutationModule(
+        firestore: firestore,
+        collectionName: _convoCollection,
+      );
+
+      // user1 sorts SECOND.
+      final id = await module.createDirectConversation(
+        user1Id: 'user-b',
+        user1DisplayName: 'B',
+        user2Id: 'user-a',
+        user2DisplayName: 'A',
+      );
+
+      final stamp = await firestore
+          .collection('users')
+          .doc('user-b')
+          .collection('rate_limits')
+          .doc('conversations')
+          .get();
+      expect(stamp.exists, isTrue);
+      expect(
+        stamp.data()!.keys.toSet(),
+        {'lastWrite', 'expireAt', 'lastDocId'},
+        reason: 'the rate_limits rule admits exactly these keys',
+      );
+      expect(stamp.data()!['lastDocId'], id);
+      final otherUser = await firestore
+          .collection('users')
+          .doc('user-a')
+          .collection('rate_limits')
+          .doc('conversations')
+          .get();
+      expect(otherUser.exists, isFalse);
     });
 
     test('persists the new conversation when none exists', () async {

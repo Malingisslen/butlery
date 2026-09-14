@@ -284,6 +284,86 @@ void main() {
         expect(data['review'], equals('Changed my mind'));
       });
 
+      test(
+        'a FIRST rating stamps the recipe_ratings rate limit with the rating id',
+        () async {
+          await repository.rateRecipe(
+            recipeId: 'recipe-1',
+            userId: 'user-123',
+            rating: 4.0,
+          );
+
+          final stamp = await fakeFirestore
+              .collection('users')
+              .doc('user-123')
+              .collection('rate_limits')
+              .doc('recipe_ratings')
+              .get();
+          expect(stamp.exists, isTrue);
+          expect(
+            stamp.data()!.keys.toSet(),
+            {
+              'lastWrite',
+              'expireAt',
+              'lastDocId',
+            },
+            reason: 'the rate_limits rule admits exactly these keys',
+          );
+          expect(
+            stamp.data()!['lastDocId'],
+            'recipe-1_user-123',
+            reason:
+                'firestore.rules accepts the create only when the stamp in the '
+                'same request names the {recipeId}_{userId} rating document',
+          );
+        },
+      );
+
+      test('a RE-rate leaves the recipe_ratings stamp untouched', () async {
+        // The rating already exists, and the stamp names a DIFFERENT rating —
+        // so any stamp write on this path would change lastDocId.
+        const ratingId = 'recipe-1_user-123';
+        await _seedRating(
+          fakeFirestore,
+          ratingId,
+          _createRating('recipe-1', 'user-123', 3.0, id: ratingId),
+        );
+        final seededStamp = <String, dynamic>{
+          'lastWrite': Timestamp.fromDate(DateTime.utc(2026, 1, 1)),
+          'expireAt': Timestamp.fromDate(DateTime.utc(2026, 4, 1)),
+          'lastDocId': 'recipe-9_user-123',
+        };
+        final stampRef = fakeFirestore
+            .collection('users')
+            .doc('user-123')
+            .collection('rate_limits')
+            .doc('recipe_ratings');
+        await stampRef.set(seededStamp);
+
+        await repository.rateRecipe(
+          recipeId: 'recipe-1',
+          userId: 'user-123',
+          rating: 5.0,
+        );
+
+        final rating = await fakeFirestore
+            .collection('recipe_ratings')
+            .doc(ratingId)
+            .get();
+        expect(
+          rating.data()!['rating'],
+          5.0,
+          reason: 'premise: the re-rate itself was written',
+        );
+        expect(
+          (await stampRef.get()).data(),
+          seededStamp,
+          reason:
+              'only the create limb is rate-limited, so a re-rate must not '
+              'move the window for rating another recipe',
+        );
+      });
+
       test('stamps recipeOwnerId so the rules blocking gate has a field to '
           'key on', () async {
         const recipeId = 'recipe-1';

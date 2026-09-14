@@ -9,6 +9,7 @@ import 'package:butlery/models/cook_snap.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/repositories/interfaces/cook_snap_repository.dart';
 import 'package:butlery/repositories/firebase/firestore_batch_utils.dart';
+import 'package:butlery/repositories/firebase/rate_limit_stamp.dart';
 
 /// Firebase implementation for CookSnap storage.
 ///
@@ -166,7 +167,7 @@ class FirebaseCookSnapRepository extends BaseFirebaseRepository<CookSnap>
 
   @override
   Future<CookSnap> addCookSnap(CookSnap snap) async {
-    requireCurrentUserId();
+    final userId = requireCurrentUserId();
     // BUT-965: server-authoritative createdAt. Model produces an optimistic
     // client timestamp (needed for unit-test determinism + immediate UI);
     // we override at the write boundary so the persisted value defends
@@ -174,7 +175,17 @@ class FirebaseCookSnapRepository extends BaseFirebaseRepository<CookSnap>
     // optimistic time — the next read resolves to the server value.
     final data = toFirestore(snap);
     data['createdAt'] = FieldValue.serverTimestamp();
-    await collection.doc(snap.id).set(data);
+    final batch = firestore.batch();
+    batch.set(collection.doc(snap.id), data);
+    stampRateLimit(
+      batch,
+      firestore,
+      userId: userId,
+      type: 'cook_snaps',
+      guardedDocId: snap.id,
+      timestampProvider: timestampProvider,
+    );
+    await batch.commit();
     return snap;
   }
 

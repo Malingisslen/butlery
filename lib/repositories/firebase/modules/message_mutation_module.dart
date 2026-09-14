@@ -10,7 +10,6 @@ import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/utils/timestamp_provider.dart';
-import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/repositories/firebase/modules/message_poll_mutation_module.dart';
 
 /// Message mutation module for write operations (including complex sendMessage).
@@ -156,22 +155,6 @@ class MessageMutationModule {
       );
       AppLogger.debug(
         '📤 [MessageMutation] Added conversation update to batch: ${message.conversationId.maskedConversationId}',
-      );
-
-      // 3. Update rate limit doc for server-side enforcement
-      batch.set(
-        firestore
-            .collection(FirestoreCollections.users)
-            .doc(message.senderId)
-            .collection(FirestoreCollections.userRateLimits)
-            .doc('messages'),
-        {
-          'lastWrite': timestampProvider.serverTimestamp(),
-          'expireAt': Timestamp.fromDate(
-            clock.now().add(const Duration(days: 90)),
-          ),
-        },
-        SetOptions(merge: true),
       );
 
       // Commit batch - all writes succeed or all fail (atomicity guaranteed)

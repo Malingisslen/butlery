@@ -4309,3 +4309,29 @@ motivering som var sann om mekanismen och falsk om sin egen rad). Ingen av dem f
 nytt fynd. En granskare föreslog dessutom att en namngiven restrisk skulle skrivas som den
 GENERELLA egenskapen ("grinden gör ett försök per montering") i stället för som den specifika
 kapplöpningen — då täcker posten nästa fönster utan att någon behöver lägga till en tredje sats.
+
+
+## 2026-09-14 — En skärpt regel är bara så sann som skrivar-inventeringen, och regeltestet bevisade egna payloads (ADR-0020)
+
+**Inventeringen av skrivare missade den skrivare som gällde.** När `rateLimitWrite` byttes mot en
+spärr som kräver stämpel i samma request listade kartläggningen EN skrivare per samling. För
+`social_requests` hittade den repositoryt, men vänförfrågan från sökvyn går genom
+`friends_firebase_sync.syncFriendRequestToFirebase`, en tjänst som skrev `.add()` direkt. Hela
+bygget, två paneler, en plangranskning och tolv filgrindar passerade utan att någon såg den; bara
+helhetsgranskningen, som läste reglerna mot varje skrivverb, hittade den. Formen: **när en regel
+skärps, räkna upp skrivarna via SKRIVVERBEN (`.add(`, `.set(`, `batch.set(`, `transaction.set(`)
+i varje fil som nämner samlingens konstant eller namn — aldrig via "vilket repository äger
+samlingen"**. En tjänst som skriver Firestore direkt är just den skrivare en repository-inventering
+inte ser.
+
+**Regeltestet godkände en payload ingen skriver.** `received_lists`/`received_menus` kräver
+`listId`/`menuId`; appen skrev `sharedListId`/`sharedMenuId`, så delning av veckomeny med vänner
+har aldrig kunnat lyckas. Det nya regeltestet skrev `listId` själv och gick grönt, och
+Dart-sviterna kör `fake_cloud_firestore`, som inte tolkar regler. Två halvor som var för sig var
+gröna, och ingen jämförde dem. Formen: **ett regeltest som påstår sig pröva "det appen skriver"
+ska bygga sin payload ur skrivarens nycklar, nyckel för nyckel, och en Dart-svit ska assertera
+regelns obligatoriska fält på det som skrivs.**
+
+Samma bygge, samma klass en nivå ned: ett numeriskt värde som delas av en Dart-skrivare och ett
+regelfönster (stämpelns `expireAt`) var olåst tills en grind frågade vad som hände om någon satte
+tillbaka 90 dagar — regeltesterna byggde egna stämplar och såg aldrig skrivarens tal.

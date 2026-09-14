@@ -242,6 +242,40 @@ void main() {
       expect(doc.data()?['listName'], 'Veckohandling');
     });
 
+    test(
+      'stamps the shared_content rate limit with the created doc id',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        final repo = _repo(firestore);
+
+        final id = await repo.createSharedContent(_list());
+
+        final stamp = await firestore
+            .collection('users')
+            .doc(_userId)
+            .collection('rate_limits')
+            .doc('shared_content')
+            .get();
+        expect(stamp.exists, isTrue);
+        expect(
+          stamp.data()!.keys.toSet(),
+          {
+            'lastWrite',
+            'expireAt',
+            'lastDocId',
+          },
+          reason: 'the rate_limits rule admits exactly these keys',
+        );
+        expect(
+          stamp.data()!['lastDocId'],
+          id,
+          reason:
+              'firestore.rules accepts the create only when the stamp in the '
+              'same request names the auto-id shared_content document',
+        );
+      },
+    );
+
     test('initialSharedToUserIds becomes denormalized array', () async {
       final firestore = FakeFirebaseFirestore();
       final repo = _repo(firestore);

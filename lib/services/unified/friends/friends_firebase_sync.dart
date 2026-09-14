@@ -7,6 +7,7 @@ import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/core/extensions/iterable_extensions.dart';
+import 'package:butlery/repositories/firebase/rate_limit_stamp.dart';
 
 /// Firebase synchronization operations for friends data.
 /// Handles direct Firebase operations for friend requests, friend relationships,
@@ -23,7 +24,11 @@ class FriendsFirebaseSyncOperations {
   /// Sync friend request to Firebase
   Future<void> syncFriendRequestToFirebase(FriendRequest request) async {
     try {
-      await firestore.collection(FirestoreCollections.socialRequests).add({
+      final ref = firestore
+          .collection(FirestoreCollections.socialRequests)
+          .doc();
+      final batch = firestore.batch();
+      batch.set(ref, {
         'type': 'friend',
         'fromUserId': request.fromUserId,
         'toUserId': request.toUserId,
@@ -31,6 +36,14 @@ class FriendsFirebaseSyncOperations {
         'sentAt': request.sentAt,
         'status': request.status.toString().split('.').last,
       });
+      stampRateLimit(
+        batch,
+        firestore,
+        userId: request.fromUserId,
+        type: 'social_requests',
+        guardedDocId: ref.id,
+      );
+      await batch.commit();
       AppLogger.success('Synced friend request to Firebase');
     } catch (e) {
       AppLogger.error('Failed to sync friend request to Firebase', e);

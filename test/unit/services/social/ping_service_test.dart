@@ -168,6 +168,34 @@ void main() {
       expect(notifications.calls.single, equals([memberId]));
     });
 
+    test('stamps the pings rate limit with the group and ping id', () async {
+      final ping = await service.sendPing(
+        groupId: groupId,
+        toUserId: memberId,
+        type: PingType.nudge,
+      );
+
+      final stamp = await firestore
+          .collection('users')
+          .doc(ownerId)
+          .collection('rate_limits')
+          .doc('pings')
+          .get();
+      expect(stamp.exists, isTrue);
+      expect(
+        stamp.data()!.keys.toSet(),
+        {'lastWrite', 'expireAt', 'lastDocId'},
+        reason: 'the rate_limits rule admits exactly these keys',
+      );
+      expect(
+        stamp.data()!['lastDocId'],
+        '$groupId/${ping.id}',
+        reason:
+            'firestore.rules accepts the ping only when the stamp '
+            'names its group and ping id',
+      );
+    });
+
     test('cross-group write is rejected (user not in group)', () async {
       // Outsider attempts to ping into a group they're not a member of.
       perm.setUserId(outsiderId);

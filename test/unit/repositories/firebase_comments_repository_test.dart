@@ -211,6 +211,44 @@ void main() {
         expect(result.likesCount, equals(0));
       });
 
+      test('stamps the comments rate limit with the new comment id', () async {
+        final result = await repository.addComment(
+          recipeId: 'recipe-1',
+          userId: 'user-123',
+          content: 'Great recipe!',
+        );
+
+        final comment = await fakeFirestore
+            .collection('recipe_comments')
+            .doc(result.id)
+            .get();
+        expect(comment.exists, isTrue, reason: 'premise: the comment landed');
+
+        final stamp = await fakeFirestore
+            .collection('users')
+            .doc('user-123')
+            .collection('rate_limits')
+            .doc('comments')
+            .get();
+        expect(stamp.exists, isTrue);
+        expect(
+          stamp.data()!.keys.toSet(),
+          {
+            'lastWrite',
+            'expireAt',
+            'lastDocId',
+          },
+          reason: 'the rate_limits rule admits exactly these keys',
+        );
+        expect(
+          stamp.data()!['lastDocId'],
+          result.id,
+          reason:
+              'firestore.rules accepts the comment only when the stamp in the '
+              'same request names the auto-id comment document',
+        );
+      });
+
       test('should add reply comment successfully', () async {
         // Arrange - the reply's batch increments the PARENT's replyCount, so
         // the parent must exist: batch.update fails on a missing document in

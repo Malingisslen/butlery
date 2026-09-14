@@ -7,6 +7,7 @@ import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/repositories/firebase/base_view_repository.dart';
 import 'package:butlery/repositories/firebase/base_engagement_repository.dart';
 import 'package:butlery/repositories/firebase/base_dismissal_repository.dart';
+import 'package:butlery/repositories/firebase/rate_limit_stamp.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/exceptions/repository_exception.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -142,7 +143,17 @@ abstract class BaseSharedContentRepository<T>
       // `addMember`, which arrayUnions them into this same field, exactly as
       // before.
       entityData['sharedToUserIds'] = initialSharedToUserIds ?? <String>[uid];
-      await docRef.set(entityData);
+      final batch = firestore.batch();
+      batch.set(docRef, entityData);
+      stampRateLimit(
+        batch,
+        firestore,
+        userId: uid,
+        type: 'shared_content',
+        guardedDocId: docRef.id,
+        timestampProvider: timestampProvider,
+      );
+      await batch.commit();
 
       logPermissionCheck(
         userId: uid,

@@ -18,6 +18,10 @@
  *   3. The four UGC create paths now also require `&& isAgeCompliant()`:
  *      recipe_comments, messages, social_requests, recipe_ratings.
  *
+ * recipe_comments, social_requests and recipe_ratings creates are also refused
+ * unless the same batch stamps `users/{uid}/rate_limits/{type}` keyed on the
+ * created document's id (`rateLimitStamped`); messages carry no such guard.
+ *
  * The rules-unit-testing lib seeds custom claims via the second arg of
  * `env.authenticatedContext(uid, { ageCompliant: true })`.
  *
@@ -151,6 +155,34 @@ async function seedDoc(
   await env.withSecurityRulesDisabled(async (ctx) => {
     await ctx.firestore().doc(docPath).set(body);
   });
+}
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+/**
+ * Creates [docPath] as [uid] together with the `users/{uid}/rate_limits/{type}`
+ * stamp keyed on the document's id, in one batch, the way the app writes it.
+ */
+function createStamped(
+  uid: string,
+  claims: Record<string, unknown> | undefined,
+  type: string,
+  docPath: string,
+  body: Record<string, unknown>
+): Promise<void> {
+  const db = env.authenticatedContext(uid, claims).firestore();
+  const batch = db.batch();
+  batch.set(db.doc(docPath), body);
+  batch.set(
+    db.doc(`users/${uid}/rate_limits/${type}`),
+    {
+      lastWrite: serverTimestamp(),
+      expireAt: new Date(Date.now() + 2 * DAY_MS),
+      lastDocId: docPath.split("/").pop() as string,
+    },
+    { merge: true }
+  );
+  return batch.commit();
 }
 
 // ============================================================================
@@ -701,6 +733,11 @@ test("public_profiles: server write of minor isSearchable:true survives; client 
 // ageCompliant:false -> DENIED. messages + social_requests also require
 // isAccountMatured(), satisfied with email_verified:true so the age claim is
 // the sole variable.
+//
+// The comment, request and rating arms each create through `createStamped`
+// with an actor of their own: a stamp written by the ALLOW arm would otherwise
+// put the DENY arms inside its window, and an unstamped DENY would fail on the
+// missing stamp whatever the age claim said.
 // ============================================================================
 
 // --- recipe_comments ---
@@ -712,12 +749,15 @@ test("public_profiles: server write of minor isSearchable:true survives; client 
 test(
   "recipe_comments: age-compliant matured author can create a comment",
   async () => {
-    const ctx = env.authenticatedContext(USER_UID, AGE_OK_MATURED);
+    const uid = `rc-allow-uid-${RUN}`;
     await assertSucceeds(
-      ctx
-        .firestore()
-        .doc(`recipe_comments/rc-allow-${RUN}`)
-        .set(commentBody(USER_UID))
+      createStamped(
+        uid,
+        AGE_OK_MATURED,
+        "comments",
+        `recipe_comments/rc-allow-${RUN}`,
+        commentBody(uid)
+      )
     );
   }
 );
@@ -745,12 +785,15 @@ test(
 test(
   "recipe_comments: author without ageCompliant claim cannot create a comment",
   async () => {
-    const ctx = env.authenticatedContext(USER_UID, MATURED_ONLY);
+    const uid = `rc-noclaim-uid-${RUN}`;
     await assertFails(
-      ctx
-        .firestore()
-        .doc(`recipe_comments/rc-noclaim-${RUN}`)
-        .set(commentBody(USER_UID))
+      createStamped(
+        uid,
+        MATURED_ONLY,
+        "comments",
+        `recipe_comments/rc-noclaim-${RUN}`,
+        commentBody(uid)
+      )
     );
   }
 );
@@ -759,12 +802,15 @@ test(
 test(
   "recipe_comments: author with ageCompliant=false cannot create a comment",
   async () => {
-    const ctx = env.authenticatedContext(USER_UID, AGE_FALSE_MATURED);
+    const uid = `rc-false-uid-${RUN}`;
     await assertFails(
-      ctx
-        .firestore()
-        .doc(`recipe_comments/rc-false-${RUN}`)
-        .set(commentBody(USER_UID))
+      createStamped(
+        uid,
+        AGE_FALSE_MATURED,
+        "comments",
+        `recipe_comments/rc-false-${RUN}`,
+        commentBody(uid)
+      )
     );
   }
 );
@@ -858,12 +904,15 @@ test(
 test(
   "social_requests: age-compliant matured user can create a friend request",
   async () => {
-    const ctx = env.authenticatedContext(USER_UID, AGE_OK_MATURED);
+    const uid = `sr-allow-uid-${RUN}`;
     await assertSucceeds(
-      ctx
-        .firestore()
-        .doc(`social_requests/sr-allow-${RUN}`)
-        .set(socialRequestBody(USER_UID, OTHER_UID))
+      createStamped(
+        uid,
+        AGE_OK_MATURED,
+        "social_requests",
+        `social_requests/sr-allow-${RUN}`,
+        socialRequestBody(uid, OTHER_UID)
+      )
     );
   }
 );
@@ -872,12 +921,15 @@ test(
 test(
   "social_requests: matured user without ageCompliant claim cannot create a request",
   async () => {
-    const ctx = env.authenticatedContext(USER_UID, MATURED_ONLY);
+    const uid = `sr-noclaim-uid-${RUN}`;
     await assertFails(
-      ctx
-        .firestore()
-        .doc(`social_requests/sr-noclaim-${RUN}`)
-        .set(socialRequestBody(USER_UID, OTHER_UID))
+      createStamped(
+        uid,
+        MATURED_ONLY,
+        "social_requests",
+        `social_requests/sr-noclaim-${RUN}`,
+        socialRequestBody(uid, OTHER_UID)
+      )
     );
   }
 );
@@ -886,12 +938,15 @@ test(
 test(
   "social_requests: matured user with ageCompliant=false cannot create a request",
   async () => {
-    const ctx = env.authenticatedContext(USER_UID, AGE_FALSE_MATURED);
+    const uid = `sr-false-uid-${RUN}`;
     await assertFails(
-      ctx
-        .firestore()
-        .doc(`social_requests/sr-false-${RUN}`)
-        .set(socialRequestBody(USER_UID, OTHER_UID))
+      createStamped(
+        uid,
+        AGE_FALSE_MATURED,
+        "social_requests",
+        `social_requests/sr-false-${RUN}`,
+        socialRequestBody(uid, OTHER_UID)
+      )
     );
   }
 );
@@ -902,12 +957,15 @@ test(
 test(
   "recipe_ratings: age-compliant rater can create a rating",
   async () => {
-    const ctx = env.authenticatedContext(USER_UID, AGE_OK);
+    const uid = `rr-allow-uid-${RUN}`;
     await assertSucceeds(
-      ctx
-        .firestore()
-        .doc(`recipe_ratings/recipe-1_${USER_UID}_${RUN}`)
-        .set(ratingBody(USER_UID))
+      createStamped(
+        uid,
+        AGE_OK,
+        "recipe_ratings",
+        `recipe_ratings/recipe-1_${uid}`,
+        ratingBody(uid)
+      )
     );
   }
 );
@@ -916,12 +974,15 @@ test(
 test(
   "recipe_ratings: rater without ageCompliant claim cannot create a rating",
   async () => {
-    const ctx = env.authenticatedContext(USER_UID);
+    const uid = `rr-noclaim-uid-${RUN}`;
     await assertFails(
-      ctx
-        .firestore()
-        .doc(`recipe_ratings/recipe-1_${USER_UID}_noclaim_${RUN}`)
-        .set(ratingBody(USER_UID))
+      createStamped(
+        uid,
+        undefined,
+        "recipe_ratings",
+        `recipe_ratings/recipe-1_${uid}`,
+        ratingBody(uid)
+      )
     );
   }
 );
@@ -930,12 +991,15 @@ test(
 test(
   "recipe_ratings: rater with ageCompliant=false cannot create a rating",
   async () => {
-    const ctx = env.authenticatedContext(USER_UID, { ageCompliant: false });
+    const uid = `rr-false-uid-${RUN}`;
     await assertFails(
-      ctx
-        .firestore()
-        .doc(`recipe_ratings/recipe-1_${USER_UID}_false_${RUN}`)
-        .set(ratingBody(USER_UID))
+      createStamped(
+        uid,
+        { ageCompliant: false },
+        "recipe_ratings",
+        `recipe_ratings/recipe-1_${uid}`,
+        ratingBody(uid)
+      )
     );
   }
 );

@@ -107,10 +107,8 @@ export const RATE_LIMIT_CONFIGS: Record<string, RateLimitConfig> = {
 
   // BUT-1838: chat-group membership callables. These replace CLIENT writes whose
   // create rules carried `rateLimitWrite('conversations', 10)` and
-  // `('conversation_membership', 5)` — conjuncts that never actually bound:
-  // `rateLimitWrite` is `!exists(bucket) || …`, and nothing in `lib/` writes
-  // either bucket, so both were permanently true. (The bucket is self-written
-  // too, so a tampered client would skip the stamp regardless.) The Admin SDK
+  // `('conversation_membership', 5)` — conjuncts that never actually bound.
+  // The Admin SDK
   // bypasses rules either way, so this token bucket ESTABLISHES the first real
   // bound on these operations rather than restoring one — which is a stronger
   // reason to keep it, not a weaker one. Denominated in CALLS, not members — a single add-members call

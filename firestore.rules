@@ -199,7 +199,19 @@ service cloud.firestore {
       return !exists(/databases/$(database)/documents/blocks/$(targetUserId + '_' + request.auth.uid));
     }
 
-    // P3-13: Server-side UGC rate limiting via rate_limits subcollection
+    // Burst guard: one guarded write per `seconds` per user and type. The
+    // writer must stamp users/{uid}/rate_limits/{collection} in the SAME request
+    // with lastWrite == request.time and lastDocId == the call site's key
+    // (lib/repositories/firebase/rate_limit_stamp.dart); the `rate_limits/{type}`
+    // match pins that shape and refuses a client delete.
+    function rateLimitStamped(collection, seconds, key) {
+      let p = /databases/$(database)/documents/users/$(request.auth.uid)/rate_limits/$(collection);
+      return existsAfter(p)
+        && getAfter(p).data.get('lastWrite', null) == request.time
+        && getAfter(p).data.get('lastDocId', '') == key
+        && (!exists(p) || get(p).data.lastWrite + duration.value(seconds, 's') <= request.time);
+    }
+
     function rateLimitWrite(collection, seconds) {
       let limitsPath = /databases/$(database)/documents/users/$(request.auth.uid)/rate_limits/$(collection);
       return !exists(limitsPath)
@@ -530,8 +542,7 @@ service cloud.firestore {
                .difference(resource.data.friendUserIds.toSet())
                .union(resource.data.friendUserIds.toSet()
                   .difference(request.resource.data.friendUserIds.toSet()))
-               .hasOnly([request.auth.uid])
-          && rateLimitWrite('friend_category_member', 5);
+               .hasOnly([request.auth.uid]);
 
         // Moderation override (BUT-511): admins may read + delete any
         // reported group via the reports workflow. Read is needed so the
@@ -544,16 +555,28 @@ service cloud.firestore {
         allow read, write: if isOwner(userId);
       }
 
-      // P3-06: Rate limit tracking subcollection — owner read/write only
+      // P3-06: Rate limit tracking subcollection.
+      // `imports` (import and LLM usage counters) and `friendSearchMigrated`
+      // (a one-time flag) share this subcollection but are not burst stamps, so
+      // they keep plain owner writes.
       match /rate_limits/{type} {
-        allow read, write: if isOwner(userId);
+        allow read: if isOwner(userId);
+        allow write: if isOwner(userId)
+          && (type == 'imports' || type == 'friendSearchMigrated');
+        allow create, update: if isOwner(userId)
+          && type != 'imports' && type != 'friendSearchMigrated'
+          && request.resource.data.keys().hasOnly(['lastWrite', 'expireAt', 'lastDocId'])
+          && request.resource.data.lastWrite == request.time
+          && request.resource.data.expireAt is timestamp
+          && request.resource.data.expireAt > request.time + duration.value(60, 's')
+          && request.resource.data.expireAt <= request.time + duration.value(4, 'd')
+          && request.resource.data.lastDocId is string;
       }
 
       // Shared content counters — cross-user writes for sharing notifications
       match /counters/{counterId} {
         allow read: if isOwner(userId);
         // Any authenticated user can increment counters (sharing notifications)
-        // Rate limited to prevent counter-spam attacks
         allow create, update: if isAuthenticated()
           // BUT-1482 sprint, 2026-08-12: these used to name the counterTypeKey
           // strings ('shared_recipes'), but the writer sends FIELD names from
@@ -567,8 +590,7 @@ service cloud.firestore {
             'unreadSharedShoppingLists',
             'totalSharedContent', 'lastUpdated'
           ])
-          && isServerTimestamp('lastUpdated')
-          && rateLimitWrite('shared_content_counter', 5);
+          && isServerTimestamp('lastUpdated');
         allow delete: if isOwner(userId);
       }
 
@@ -586,8 +608,7 @@ service cloud.firestore {
             'lastActivityAt', 'hasUnread', 'joinedAt', 'isArchived',
             'isMuted', 'isPinned'
           ])
-          && request.resource.data.conversationId == conversationId
-          && rateLimitWrite('conversation_membership', 5);
+          && request.resource.data.conversationId == conversationId;
       }
 
       // User settings subcollection — owner-only.
@@ -685,7 +706,7 @@ service cloud.firestore {
       // addMutualFriends() creates the friend document and updates the count
       // in the same transaction — rules see pre-transaction state, so the
       // friend doc doesn't exist yet when the count update is evaluated.
-      // The ±1 constraint and rate limiting mitigate abuse.
+      // The ±1 constraint mitigates abuse.
       allow update: if (isOwner(userId)
         && !request.resource.data.diff(resource.data).affectedKeys().hasAny([
           'fcmToken', 'fcmTokenUpdatedAt', 'notificationsEnabled',
@@ -707,9 +728,7 @@ service cloud.firestore {
         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['friendsCount']) &&
         // friendsCount change is exactly +1 or -1 (adding or removing friend)
         (request.resource.data.friendsCount == resource.data.get('friendsCount', 0) + 1 ||
-         request.resource.data.friendsCount == resource.data.get('friendsCount', 0) - 1) &&
-        // Rate limit: max one friendsCount update per 5 seconds
-        rateLimitWrite('friendsCount', 5)
+         request.resource.data.friendsCount == resource.data.get('friendsCount', 0) - 1)
       );
       allow delete: if isOwner(userId);
 
@@ -742,7 +761,7 @@ service cloud.firestore {
         && isNotBlockedBy(request.resource.data.toUserId)
         && isAccountMatured()
         && isAgeCompliant()
-        && rateLimitWrite('social_requests', 10);
+        && rateLimitStamped('social_requests', 10, requestId);
 
       // Recipient can accept/reject/expire
       allow update: if isAuthenticated()
@@ -816,7 +835,7 @@ service cloud.firestore {
         && request.auth.uid == request.resource.data.sharedByUserId
         && hasRequiredFields(['sharedByUserId', 'contentType', 'sharedAt', 'sharedToUserIds'])
         && request.resource.data.sharedToUserIds is list
-        && rateLimitWrite('shared_content', 10);
+        && rateLimitStamped('shared_content', 3, contentId);
 
       // Update stays for the in-place edits the menu and shopping-list flows
       // make to a row they already own (title, isActive, recipient list). It is
@@ -1272,10 +1291,10 @@ service cloud.firestore {
     // Rate-limit tradeoff: Firestore rules cannot efficiently run
     // count-over-window aggregations. The client enforces a strict 5/h cap by
     // querying `fromUserId` + `createdAt` in the last hour. The rule below
-    // provides a burst guard (1 ping per 60s per user) via the existing
-    // `rateLimitWrite` helper. A Cloud Function sweeper is tracked as a
-    // follow-up to enforce the 5/h aggregate cap server-side and to purge
-    // expired pings (see `kPingDefaultTtl` on the model).
+    // provides a burst guard (1 ping per 60s per user) via the
+    // `rateLimitStamped` helper, keyed on the group AND the ping id so one
+    // stamp cannot cover pings in several groups. A Cloud Function sweeper is
+    // tracked as a follow-up to purge expired pings (see `kPingDefaultTtl` on the model).
     //
     // Group membership: pings live OUTSIDE the `users/{ownerId}/` tree so we
     // can't reuse the `users/{userId}/friend_categories/{categoryId}` rule.
@@ -1321,8 +1340,8 @@ service cloud.firestore {
         // Message length cap (mirrors client-side kPingMaxMessageLength).
         && (request.resource.data.get('message', '') == null
             || request.resource.data.get('message', '').size() <= 100)
-        // Burst guard — hourly aggregate cap handled client-side + CF sweeper.
-        && rateLimitWrite('pings', 60);
+        // Burst guard.
+        && rateLimitStamped('pings', 60, groupId + '/' + pingId);
 
       // Updates: only the `acknowledged` flag may be flipped to true, and
       // only by the recipient (directed pings) or any group member
@@ -1435,7 +1454,7 @@ service cloud.firestore {
           !('recipeOwnerId' in request.resource.data)
           || isNotBlockedBy(request.resource.data.recipeOwnerId)
         )
-        && rateLimitWrite('comments', 5);
+        && rateLimitStamped('comments', 5, commentId);
 
       // Can update only your own comments — immutable fields protected
       allow update: if isAuthenticated()
@@ -1518,7 +1537,7 @@ service cloud.firestore {
               && request.resource.data.caption.size() <= 200)
         )
         && isValidSnapVisibility()
-        && rateLimitWrite('cook_snaps', 5);
+        && rateLimitStamped('cook_snaps', 5, snapId);
 
       // Update: only the snap-owner. Identity fields are immutable.
       // Visibility IS mutable (owner may retro-hide or re-share a snap).
@@ -1616,7 +1635,7 @@ service cloud.firestore {
           || (request.resource.data.recipeTitle is string
               && request.resource.data.recipeTitle.size() <= 300)
         )
-        && rateLimitWrite('activity_events', 2);
+        && rateLimitStamped('activity_events', 2, eventId);
 
       // Update: only the actor, and the identity/anchor fields are immutable.
       allow update: if isAuthenticated()
@@ -1720,7 +1739,7 @@ service cloud.firestore {
         // our own client, a presence requirement binds a tampered one too. Do
         // not re-introduce the `||` hatches to "restore" the old warning.
         && request.resource.data.metadata.creatorId == request.auth.uid
-        && rateLimitWrite('conversations', 10);
+        && rateLimitStamped('conversations', 3, conversationId);
 
       // Can update if you're a participant (but cannot modify participantIds,
       // createdAt or the recorded creator).
@@ -2047,8 +2066,7 @@ service cloud.firestore {
              .hasOnly(['name', 'updatedAt'])
         && request.resource.data.name is string
         && request.resource.data.name.size() > 0
-        && request.resource.data.name.size() <= 100
-        && rateLimitWrite('chat_group_rename', 5);
+        && request.resource.data.name.size() <= 100;
 
       // Create, delete and EVERY membership change: Admin SDK only.
       // `adminIds` is immutable after creation — promoting or demoting an admin
@@ -2097,10 +2115,9 @@ service cloud.firestore {
                .data.get('memberSince', {}).get(request.auth.uid, request.time)
         );
 
-      // Can create messages if you're the sender, within rate limit.
+      // Can create messages if you're the sender.
       // BUT-659: also gate behind the new-account cooldown — DMs are a
-      // primary spam vector and per-user 5/min rate limit alone doesn't
-      // stop a freshly-registered bot from blasting 50 unrelated users.
+      // primary spam vector.
       // BUT-1838: the sender must actually be IN the conversation. This rule
       // checked only that you were who you claimed to be, so any signed-in user
       // who knew a conversation id could inject messages into strangers' chats —
@@ -2203,8 +2220,7 @@ service cloud.firestore {
         && request.resource.data.sentAt is timestamp
         && request.resource.data.sentAt <= request.time + duration.value(1, 'h')
         && isAccountMatured()
-        && isAgeCompliant()
-        && rateLimitWrite('messages', 5);
+        && isAgeCompliant();
 
       // Can update your own messages (content only — identity fields are immutable)
       //
@@ -2575,7 +2591,7 @@ service cloud.firestore {
       allow create: if isAuthenticated()
         && request.auth.uid == request.resource.data.sharedByUserId
         && hasRequiredFields(['sharedByUserId', 'listId', 'sharedAt'])
-        && rateLimitWrite('received_list', 10);
+        && rateLimitStamped('received_list', 3, listId);
       allow update: if isOwner(userId);
     }
 
@@ -2588,7 +2604,7 @@ service cloud.firestore {
       allow create: if isAuthenticated()
         && request.auth.uid == request.resource.data.sharedByUserId
         && hasRequiredFields(['sharedByUserId', 'menuId', 'sharedAt'])
-        && rateLimitWrite('received_menu', 10);
+        && rateLimitStamped('received_menu', 3, menuId);
       allow update: if isOwner(userId);
     }
 
@@ -2599,8 +2615,7 @@ service cloud.firestore {
     match /presence/{userId} {
       allow read: if isAuthenticated();
       allow write: if isAuthenticated()
-        && request.auth.uid == userId
-        && rateLimitWrite('presence', 30);
+        && request.auth.uid == userId;
     }
 
     // ========================================
@@ -2658,7 +2673,7 @@ service cloud.firestore {
           !('recipeOwnerId' in request.resource.data)
           || isNotBlockedBy(request.resource.data.recipeOwnerId)
         )
-        && rateLimitWrite('recipe_ratings', 5);
+        && rateLimitStamped('recipe_ratings', 5, ratingId);
 
       // Can update only your own ratings. Pin identity/anchor fields so a
       // rating can't be re-pointed to another recipe/user or backdated.
@@ -2669,9 +2684,7 @@ service cloud.firestore {
       // row that still lacks it is not — same field-presence condition as
       // create. recipeOwnerId is deliberately NOT in cannotModify: on a legacy
       // row the field goes absent -> present, which affectedKeys() reports.
-      // BUT-2077: no rateLimitWrite on this limb. The helper reads
-      // users/{uid}/rate_limits/recipe_ratings and allows when that document is
-      // absent, and nothing in lib/ writes it, so it would bound nothing.
+      // BUT-2077: no rate limit on this limb.
       allow update: if isAuthenticated()
         && request.auth.uid == resource.data.userId
         && isAgeCompliant()
@@ -2792,8 +2805,7 @@ service cloud.firestore {
       // SECURITY: User can only create audit logs for themselves (prevents tampering).
       allow create: if isAuthenticated()
         && request.auth.uid == request.resource.data.userId
-        && hasRequiredFields(['userId', 'operation', 'resourceType', 'timestamp'])
-        && rateLimitWrite('audit_logs', 2);
+        && hasRequiredFields(['userId', 'operation', 'resourceType', 'timestamp']);
 
       // No updates or deletes allowed (immutable audit trail)
       allow update, delete: if false;
@@ -2986,8 +2998,7 @@ service cloud.firestore {
       // Prevents modification of cached recipe data
       allow update: if isAuthenticated()
         && request.resource.data.diff(resource.data).affectedKeys()
-            .hasOnly(['accessCount', 'lastAccessedAt'])
-        && rateLimitWrite('globalRecipeCache_access', 10);
+            .hasOnly(['accessCount', 'lastAccessedAt']);
 
       // No deletes from client - cleanup handled by Cloud Functions
       allow delete: if false;
@@ -3318,11 +3329,10 @@ service cloud.firestore {
       allow create: if isAuthenticated()
         && request.resource.data.createdBy == request.auth.uid
         && hasRequiredFields(['longUrl', 'createdAt', 'createdBy']);
-      // Creator can update all fields; any user can update click tracking (rate limited)
+      // Creator can update all fields; any user can update click tracking
       allow update: if isAuthenticated()
         && (resource.data.createdBy == request.auth.uid
-          || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['clickCount', 'lastClickedAt'])
-              && rateLimitWrite('deep_link_click', 10)));
+          || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['clickCount', 'lastClickedAt']));
       allow delete: if isAuthenticated()
         && resource.data.createdBy == request.auth.uid;
 
@@ -3340,8 +3350,7 @@ service cloud.firestore {
           // should exist at all is recorded in tasks/todo.md, not decided here.
           // Writer: firebase_deeplink_repository.dart:201-205.
           && request.resource.data.keys().hasOnly(['userId', 'timestamp'])
-          && request.resource.data.userId == request.auth.uid
-          && rateLimitWrite('deep_link_click', 10);
+          && request.resource.data.userId == request.auth.uid;
         allow update, delete: if false;
       }
     }
@@ -3410,16 +3419,12 @@ service cloud.firestore {
       // writer is who will meet them.
       //
       // NOT rate-limited, and that is measured rather than forgotten:
-      // `rateLimitWrite` only READS `users/{uid}/rate_limits/{type}`, which the
-      // WRITING repository must stamp in the same batch. No code in `lib/`
-      // creates a suggestion, so there is no writer to stamp it and the limiter
-      // would be inert — a control that reads as a fix and bounds nothing, which
-      // this repo already carries one of. Whoever builds the client path adds
-      // `rateLimitWrite` here AND the stamp there, in one change — and should
-      // know what that buys: the helper FAILS OPEN on a missing bucket and the
-      // bucket is client-writable, so it throttles our own repository and never
-      // a hand-rolled client. Bounding row COUNT needs a callable-mediated
-      // create or a server counter.
+      // `rateLimitStamped` only accepts a write whose WRITING repository stamps
+      // `users/{uid}/rate_limits/{type}` in the same batch. No code in `lib/`
+      // creates a suggestion, so there is no writer to stamp it. Whoever builds
+      // the client path adds `rateLimitStamped` here AND the stamp there, in one
+      // change. Bounding row COUNT needs a callable-mediated create or a server
+      // counter.
       allow create: if isAuthenticated()
         && request.resource.data.userId == request.auth.uid
         && hasRequiredFields(['userId', 'ingredientName', 'originalName', 'status', 'createdAt'])

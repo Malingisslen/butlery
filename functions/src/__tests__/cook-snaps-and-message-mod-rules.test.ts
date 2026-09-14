@@ -28,6 +28,7 @@ import {
   assertFails,
   assertSucceeds,
 } from "@firebase/rules-unit-testing";
+import { serverTimestamp } from "firebase/firestore";
 
 // Overridable so a mutation probe can point the suite at a MUTATED COPY of the
 // rules in a scratch directory, under its own project id, without editing
@@ -132,6 +133,36 @@ function validSnapBody(
     createdAt: new Date(),
     ...extra,
   };
+}
+
+// A cook_snaps create is refused unless the same batch stamps
+// `users/{uid}/rate_limits/cook_snaps` keyed on the snap id
+// (`rateLimitStamped`). Every create case below commits through `createSnap`
+// with a per-run actor of its own, so a DENY is not also refused for a missing
+// stamp or for landing inside an earlier case's window.
+function snapActor(tag: string): string {
+  return `snap-${tag}-${RUN_TOKEN}`;
+}
+
+function createSnap(
+  uid: string,
+  claims: Record<string, unknown> | undefined,
+  snapId: string,
+  body: Record<string, unknown>
+): Promise<void> {
+  const db = env.authenticatedContext(uid, claims).firestore();
+  const batch = db.batch();
+  batch.set(db.doc(`cook_snaps/${snapId}`), body);
+  batch.set(
+    db.doc(`users/${uid}/rate_limits/cook_snaps`),
+    {
+      lastWrite: serverTimestamp(),
+      expireAt: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
+      lastDocId: snapId,
+    },
+    { merge: true }
+  );
+  return batch.commit();
 }
 
 // ============================================================================
@@ -304,24 +335,28 @@ test("cook_snaps: legacy snap without visibility is NOT friend-readable (backfil
 
 // create accepts both enum values…
 test("cook_snaps: owner can create an onlyMe snap", async () => {
-  const ctx = env.authenticatedContext(OWNER_UID, AGE_OK);
+  const uid = snapActor("create-onlyme");
   await assertSucceeds(
-    ctx
-      .firestore()
-      .doc(`cook_snaps/cs-create-onlyme`)
-      .set(validSnapBody({ visibility: "onlyMe" }))
+    createSnap(
+      uid,
+      AGE_OK,
+      "cs-create-onlyme",
+      validSnapBody({ userId: uid, visibility: "onlyMe" })
+    )
   );
 });
 
 // …but rejects a forged value (would be get-readable yet query-invisible —
 // an inconsistent state the validation refuses to persist).
 test("cook_snaps: create with forged visibility value is rejected", async () => {
-  const ctx = env.authenticatedContext(OWNER_UID, AGE_OK);
+  const uid = snapActor("create-forged");
   await assertFails(
-    ctx
-      .firestore()
-      .doc(`cook_snaps/cs-create-forged`)
-      .set(validSnapBody({ visibility: "everyone" }))
+    createSnap(
+      uid,
+      AGE_OK,
+      "cs-create-forged",
+      validSnapBody({ userId: uid, visibility: "everyone" })
+    )
   );
 });
 
@@ -450,9 +485,9 @@ test("cook_snaps: query that would include a stranger's snap is denied", async (
 // authenticated user can create a snap with userId == auth.uid and all
 // required fields.
 test("cook_snaps: owner can create a valid snap", async () => {
-  const ctx = env.authenticatedContext(OWNER_UID, AGE_OK);
+  const uid = snapActor("create-ok");
   await assertSucceeds(
-    ctx.firestore().doc(`cook_snaps/cs-create-ok`).set(validSnapBody())
+    createSnap(uid, AGE_OK, "cs-create-ok", validSnapBody({ userId: uid }))
   );
 });
 
@@ -461,60 +496,64 @@ test("cook_snaps: owner can create a valid snap", async () => {
 // the load-bearing deny for the new age gate: it fails closed on a missing
 // claim (CEL `request.auth.token.ageCompliant` is undefined -> `== true` false).
 test("cook_snaps: owner without ageCompliant claim cannot create a snap", async () => {
-  const ctx = env.authenticatedContext(OWNER_UID);
+  const uid = snapActor("noclaim");
   await assertFails(
-    ctx.firestore().doc(`cook_snaps/cs-noclaim`).set(validSnapBody())
+    createSnap(uid, undefined, "cs-noclaim", validSnapBody({ userId: uid }))
   );
 });
 
 // BUT-1418: DENY — an explicit ageCompliant:false claim is also rejected.
 test("cook_snaps: owner with ageCompliant=false cannot create a snap", async () => {
-  const ctx = env.authenticatedContext(OWNER_UID, { ageCompliant: false });
+  const uid = snapActor("agefalse");
   await assertFails(
-    ctx.firestore().doc(`cook_snaps/cs-agefalse`).set(validSnapBody())
+    createSnap(
+      uid,
+      { ageCompliant: false },
+      "cs-agefalse",
+      validSnapBody({ userId: uid })
+    )
   );
 });
 
 // cannot impersonate — userId in body must match auth.uid.
 test("cook_snaps: cannot create a snap impersonating another user", async () => {
-  const ctx = env.authenticatedContext(STRANGER_UID, AGE_OK);
+  const uid = snapActor("impersonate");
   await assertFails(
-    ctx
-      .firestore()
-      .doc(`cook_snaps/cs-impersonate`)
-      .set(validSnapBody({ userId: OWNER_UID }))
+    createSnap(uid, AGE_OK, "cs-impersonate", validSnapBody({ userId: OWNER_UID }))
   );
 });
 
 // missing required field (photoUrl) is rejected.
 test("cook_snaps: create without required photoUrl is rejected", async () => {
-  const ctx = env.authenticatedContext(OWNER_UID, AGE_OK);
-  const bodyMissing = { ...validSnapBody() } as Record<string, unknown>;
+  const uid = snapActor("no-photo");
+  const bodyMissing = { ...validSnapBody({ userId: uid }) } as Record<string, unknown>;
   delete bodyMissing.photoUrl;
-  await assertFails(
-    ctx.firestore().doc(`cook_snaps/cs-no-photo`).set(bodyMissing)
-  );
+  await assertFails(createSnap(uid, AGE_OK, "cs-no-photo", bodyMissing));
 });
 
 // oversized userDisplayName (>100) is rejected.
 test("cook_snaps: oversized userDisplayName is rejected", async () => {
-  const ctx = env.authenticatedContext(OWNER_UID, AGE_OK);
+  const uid = snapActor("big-name");
   await assertFails(
-    ctx
-      .firestore()
-      .doc(`cook_snaps/cs-big-name`)
-      .set(validSnapBody({ userDisplayName: "x".repeat(101) }))
+    createSnap(
+      uid,
+      AGE_OK,
+      "cs-big-name",
+      validSnapBody({ userId: uid, userDisplayName: "x".repeat(101) })
+    )
   );
 });
 
 // oversized caption (>200) is rejected.
 test("cook_snaps: oversized caption is rejected", async () => {
-  const ctx = env.authenticatedContext(OWNER_UID, AGE_OK);
+  const uid = snapActor("big-caption");
   await assertFails(
-    ctx
-      .firestore()
-      .doc(`cook_snaps/cs-big-caption`)
-      .set(validSnapBody({ caption: "x".repeat(201) }))
+    createSnap(
+      uid,
+      AGE_OK,
+      "cs-big-caption",
+      validSnapBody({ userId: uid, caption: "x".repeat(201) })
+    )
   );
 });
 

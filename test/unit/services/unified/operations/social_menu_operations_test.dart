@@ -250,6 +250,66 @@ void main() {
         },
       );
 
+      test(
+        'stamps shared_content AND received_menu, both keyed on the shared '
+        'doc id, beside the shared doc and every record',
+        () async {
+          final result = await operations.shareMenuWithFriends(
+            menu: testMenu,
+            friendUserIds: ['friend-1', 'friend-2'],
+            customTitle: 'Weekly Menu Plan',
+          );
+          expect(result, isTrue);
+
+          final firestore = mockFirestoreRepository.firestore;
+          final sharedDocs = await firestore.collection('shared_content').get();
+          expect(sharedDocs.docs, hasLength(1));
+          final sharedId = sharedDocs.docs.single.id;
+          for (final friendId in ['friend-1', 'friend-2']) {
+            final records = await firestore
+                .collection('user_shared_menus')
+                .doc(friendId)
+                .collection('received_menus')
+                .get();
+            expect(
+              records.docs.map((d) => d.id),
+              [sharedId],
+              reason: '$friendId gets a record keyed on the shared doc id',
+            );
+            final record = records.docs.single.data();
+            expect(
+              record.keys,
+              containsAll(['sharedByUserId', 'menuId', 'sharedAt']),
+              reason: 'the received_menus create rule requires these fields',
+            );
+            expect(record['menuId'], sharedId);
+            expect(record['sharedByUserId'], 'test-user-123');
+          }
+
+          for (final type in ['shared_content', 'received_menu']) {
+            final stamp = await firestore
+                .collection('users')
+                .doc('test-user-123')
+                .collection('rate_limits')
+                .doc(type)
+                .get();
+            expect(stamp.exists, isTrue, reason: '$type stamp must be written');
+            expect(
+              stamp.data()!.keys.toSet(),
+              {'lastWrite', 'expireAt', 'lastDocId'},
+              reason: '$type: the rate_limits rule admits exactly these keys',
+            );
+            expect(
+              stamp.data()!['lastDocId'],
+              sharedId,
+              reason:
+                  '$type: firestore.rules accepts the guarded write only when '
+                  'the stamp names the shared document id',
+            );
+          }
+        },
+      );
+
       test('should not share empty menu', () async {
         // Act
         final result = await operations.shareMenuWithFriends(

@@ -13,6 +13,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 
+import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/friend_request.dart';
 import 'package:butlery/services/unified/friends/friends_utility_operations.dart';
@@ -308,6 +309,41 @@ void main() {
       expect(data['type'], equals('friend'));
       expect(data['status'], equals('pending'));
     });
+
+    test(
+      'the request is stamped, keyed on its own id',
+      () async {
+        final request = FriendRequest(
+          id: 'req-stamp',
+          fromUserId: 'sender-uid',
+          toUserId: 'target-user',
+          sentAt: DateTime.utc(2026, 9, 1),
+          status: FriendRequestStatus.pending,
+        );
+
+        await syncOps.syncFriendRequestToFirebase(request);
+
+        final requests = await fakeFirestore
+            .collection(FirestoreCollections.socialRequests)
+            .get();
+        expect(requests.docs, hasLength(1));
+        final requestDocId = requests.docs.single.id;
+
+        final stamp = await fakeFirestore
+            .collection(FirestoreCollections.users)
+            .doc('sender-uid')
+            .collection(FirestoreCollections.userRateLimits)
+            .doc('social_requests')
+            .get();
+        expect(stamp.exists, isTrue, reason: 'the sender must be stamped');
+        expect(stamp.data()!.keys.toSet(), {
+          'lastWrite',
+          'expireAt',
+          'lastDocId',
+        });
+        expect(stamp.data()!['lastDocId'], requestDocId);
+      },
+    );
 
     test('should update friend request status to accepted', () async {
       final request = FriendRequest(

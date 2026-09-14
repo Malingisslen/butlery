@@ -208,7 +208,13 @@ const _allowlists = <_Allowlist>[
     anchor: 'match /recipe_ratings/{ratingId}',
     writer:
         'lib/repositories/firebase/firebase_ratings_repository.dart '
-        'rateRecipe — the docRef.set map',
+        'rateRecipe — the map batched onto docRef',
+  ),
+  _Allowlist(
+    label: 'users/{uid}/rate_limits stamp',
+    mustContain: 'lastDocId',
+    anchor: 'match /rate_limits/{type}',
+    writer: 'lib/repositories/firebase/rate_limit_stamp.dart stampRateLimit',
   ),
 ];
 
@@ -360,6 +366,8 @@ Map<String, Set<String>> _writtenKeys() => {
     'createdAt',
     'updatedAt',
   },
+  // Hand-built map; `stampRateLimit` is its only writer.
+  'users/{uid}/rate_limits stamp': {'lastWrite', 'expireAt', 'lastDocId'},
 };
 
 /// Pulls the first `hasOnly([...])` list appearing after [anchor].
@@ -709,7 +717,7 @@ void main() {
     // `_allowlistCall` without moving its count; it cannot slip past the total.
     expect(
       'hasOnly('.allMatches(rules).length,
-      39,
+      40,
       reason:
           'the `hasOnly(` population changed. Reclassify the new call before '
           'touching this number — it counts `keys().hasOnly`, '

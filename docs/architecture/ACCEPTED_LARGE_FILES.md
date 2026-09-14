@@ -63,13 +63,13 @@ Tightly coupled to base classes. Extraction yields only 15-25% reduction while a
 | File | Lines | Reason |
 |------|-------|--------|
 | `firebase_recipe_repository.dart` | 1064 | Recipe CRUD + sync/caching — module-extracted (tag/query/gdpr-export ops) per BUT-536 (was 931, drifted to 1104, now 998) |
-| `base_shared_content_repository.dart` | 799 | Base class for shared content metadata |
+| `base_shared_content_repository.dart` | 818 | Base class for shared content metadata |
 | `firebase_storage_repository.dart` | 647 | Storage operations — upload, resize, cache |
 | `firebase_user_repository.dart` | 874 | User profile CRUD + settings + GDPR cascade methods (BUT-498). Row refreshed 2026-07-25 (was recorded at 791). |
 | `firebase_ingredient_repository.dart` | 562 | Ingredient CRUD + batch operations |
 | `firebase_friends_repository.dart` | 507 | Explicit facade coordinating three focused sub-repositories |
 | `firebase_data_export_repository.dart` | 1199 | Read-only GDPR export gateway — funnels ~30 residual-collection reads through one ownership-guarded query helper (`_guardSelfExport`/`_queryList`). Transitional-by-design per BUT-501 (shrinks as typed `exportXxxByUser` repos grow); cohesive one-method-per-collection, splitting would scatter the single ownership choke-point. +80 from BUT-1450 notification analytics. +94 from BUT-1774/1775/1798 (shared_content legs repointed, and the shopping-list leg that had never been exported at all). +69 from BUT-1832 (the per-poll vote probe, its read budget and its failure logging). +26 from BUT-1957 (the `users/{uid}/notifications` export leg). +72 from BUT-1992 (three `users/{uid}` export legs the deletion cascade already erased, and the settings read widened from one document to its collection). Row refreshed 2026-09-07 (BUT-2028 added the ingredient-suggestions export leg). |
-| `firebase_social_request_repository.dart` | 520 | Single unified social-request collection; clean extension of base repo class |
+| `firebase_social_request_repository.dart` | 515 | Single unified social-request collection; clean extension of base repo class |
 | `firebase_analytics_repository.dart` | 608 | Analytics writes with per-install salted SHA-256 PII hashing (GDPR Art.7); single-concern repository |
 | `algolia_search_repository.dart` | 515 | Single search backend; deliberate Algolia bypass rationale documented in code |
 | `friend_category_repository.dart` | 504 | Clean single-collection repo; user-scoped friend category CRUD only |
@@ -111,7 +111,7 @@ Already modular services or well-organized modules within service facades. Furth
 | `personal_shopping_operations.dart` | 604 | Personal shopping list CRUD |
 | `fcm_service.dart` | 728 | FCM push notification service |
 | `social_recipe_sharing_service.dart` | 505 | The universal-share-dialog path: resolves friend categories to members, converts personal → collaborative, and writes the secondary `shared_content` row with bounded self-heal (BUT-1503). Crossed 500 in BUT-1797 (+56): the `grantsByUserId` attribution captured before the member union, and the two `RecipeShareGrants.forShare`/`mergeCategoryIds` call sites. The grant algebra itself was deliberately lifted OUT to `recipe_share_grants.dart` rather than kept here. Splitting the remaining group-resolution half would separate the union from the attribution it exists to preserve. |
-| `recipe_sharing_manager.dart` | 782 | Recipe sharing operations module. The create-only `sharedAt` stamping with the fail-open existence probe (a rules `get` on a non-existent doc denies, so the first share of any recipe was silently lost). +90 from BUT-1797: re-sharing an already-collaborative recipe wrote only the `shared_recipes` row, so the new people were notified about a recipe they could not open — `_grantAccessOnReshare` adds the permission entry and records why it exists. The dual membership spelling this row used to cite was retired 2026-08-03. |
+| `recipe_sharing_manager.dart` | 796 | Recipe sharing operations module. The create-only `sharedAt` stamping with the fail-open existence probe (a rules `get` on a non-existent doc denies, so the first share of any recipe was silently lost). +90 from BUT-1797: re-sharing an already-collaborative recipe wrote only the `shared_recipes` row, so the new people were notified about a recipe they could not open — `_grantAccessOnReshare` adds the permission entry and records why it exists. The dual membership spelling this row used to cite was retired 2026-08-03. |
 | `fcm_token_manager.dart` | 652 | FCM token lifecycle management |
 | `deep_link_service.dart` | 559 | Deep link routing service |
 | `llm_tier.dart` | 707 | LLM-based recipe parsing tier |
@@ -129,7 +129,7 @@ Already modular services or well-organized modules within service facades. Furth
 | `recipe_persistence_manager.dart` | 518 | Focused manager for atomic save/fork/delete delegated from form VM |
 | `shared_shopping_viewmodel.dart` | 514 | Specialized sub-VM inheriting base; single domain (shopping collaboration) |
 | `notification_batch_manager.dart` | 512 | Single-concern module: batching + spam-prevention only |
-| `social_menu_operations.dart` | 509 | SRP module: social menu sharing only (explicit "does not contain" comment) |
+| `social_menu_operations.dart` | 552 | SRP module: social menu sharing only (explicit "does not contain" comment) |
 | `text_import_viewmodel.dart` | 508 | Thin VM extending base + mixin; actual logic is in ImportManager |
 | `social_engagement_metrics.dart` | 508 | SRP module: engagement calculation only (explicit "does not contain" comment) |
 | `url_import_strategy.dart` | 507 | Single multi-tier URL extraction strategy; coherent pipeline |

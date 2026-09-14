@@ -1,15 +1,20 @@
 // test/unit/services/unified/operations/modules/recipe_sharing_manager_test.dart
 
-// BUT-1812 mocks two sealed cloud_firestore types so the payload of the
-// auto-id `shared_content` create can be captured off the DocumentReference
-// itself. `fake_cloud_firestore` evaluates no rules, so nothing about
+// BUT-1812 mocks sealed cloud_firestore types so the payload of the
+// auto-id `shared_content` create can be captured off the write batch. `fake_cloud_firestore` evaluates no rules, so nothing about
 // `allow create` can be provoked here — the payload is what a unit test can
 // see, and what the rule's required set is checked against. Same convention
 // and the same reason as shopping_repository_routing_module_test.dart.
 // ignore_for_file: subtype_of_sealed_class
 
 import 'package:cloud_firestore/cloud_firestore.dart'
-    show CollectionReference, DocumentReference, Timestamp;
+    show
+        CollectionReference,
+        DocumentReference,
+        FirebaseFirestore,
+        SetOptions,
+        Timestamp,
+        WriteBatch;
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -18,6 +23,7 @@ import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
+import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/core/providers/application_provider.dart'
     as app_provider;
@@ -415,23 +421,12 @@ void main() {
       /// without `sharedAt`, the catch around the whole method swallows the
       /// denial, and the recipient silently loses both their read grant and
       /// their Art. 15 row.
-      ///
-      /// The capture is on a mocked `DocumentReference` rather than the fake
-      /// Firestore because it also pins that the write goes through
-      /// `collection(...).doc()` with NO id argument — re-deriving the id from
-      /// the recipe is exactly what BUT-1812 had to undo.
       test(
         'the shared_content create is unconditional and stamps sharedAt',
         () async {
           final docRef = _MockSharedContentDoc();
-          final captured = <Map<String, dynamic>>[];
+          when(() => docRef.id).thenReturn('auto-share-id');
           final repository = _CapturingRepository(docRef);
-
-          when(() => docRef.set(any(), any())).thenAnswer((invocation) async {
-            captured.add(
-              invocation.positionalArguments[0] as Map<String, dynamic>,
-            );
-          });
 
           final manager = RecipeSharingManager(
             getCurrentUserId: () => mockParentService.currentUserId,
@@ -452,13 +447,26 @@ void main() {
             memberDisplayNames: const {'user_456': 'Member One'},
           );
 
+          final captured = [
+            for (final (ref, data) in repository.batchWrites)
+              if (identical(ref, docRef)) data,
+          ];
+          final stamps = [
+            for (final (_, data) in repository.batchWrites)
+              if (data.containsKey('lastDocId')) data,
+          ];
+          expect(
+            stamps.single['lastDocId'],
+            'auto-share-id',
+            reason:
+                'firestore.rules accepts the create only when the same request '
+                'stamps the rate limit with the created row\'s id',
+          );
           expect(
             captured,
             isNotEmpty,
             reason:
-                'the row is written on every share, with nothing read first — '
-                'the whole method sits inside a catch, so a skipped write is '
-                'invisible everywhere except here',
+                'the row is written on every share, with nothing read first',
           );
           expect(
             captured.first.containsKey('sharedAt'),
@@ -476,6 +484,24 @@ void main() {
                 'recipeId key BUT-1812 removed, which made a re-share an '
                 'update of whatever row already sat at that slot',
           );
+          expect(repository.requestedCollections, ['shared_content']);
+
+          final stamperId = app_provider.ServiceLocator.get<PermissionService>()
+              .currentUserId;
+          expect(stamperId, isNotNull);
+          expect(
+            stamperId,
+            isNot(mockParentService.currentUserId),
+            reason:
+                'premise: the two uid sources differ, so the path below '
+                'shows which one the stamp reads',
+          );
+          expect(
+            repository.stampPathSegments.join('/'),
+            'users/$stamperId/rate_limits/shared_content',
+          );
+          verify(() => repository.mockFirestore.batch()).called(1);
+          verify(() => repository.mockBatch.commit()).called(1);
         },
       );
 
@@ -967,7 +993,7 @@ void main() {
 
 /// BUT-1812. `_writeToSharedRecipesCollection` builds its own `shared_content`
 /// payload and writes it to an AUTO id — `collection(...).doc()` with no
-/// argument, then a plain `set`. Nothing is read first.
+/// argument. Nothing is read first.
 ///
 /// These mocks exist to capture that payload and that id. `fake_cloud_firestore`
 /// evaluates no rules, so a unit test can never see `allow create` refuse a row;
@@ -981,9 +1007,63 @@ class _MockSharedContentCollection extends Mock
 class _MockSharedContentDoc extends Mock
     implements DocumentReference<Map<String, dynamic>> {}
 
+class _MockFirestore extends Mock implements FirebaseFirestore {}
+
+class _MockWriteBatch extends Mock implements WriteBatch {}
+
 class _CapturingRepository extends Fake implements FirestoreRepository {
-  _CapturingRepository(this.docRef);
+  _CapturingRepository(this.docRef) {
+    registerFallbackValue(_MockSharedContentDoc());
+    registerFallbackValue(<String, dynamic>{});
+    registerFallbackValue(SetOptions(merge: true));
+    void record(Invocation invocation) => batchWrites.add((
+      invocation.positionalArguments[0]
+          as DocumentReference<Map<String, dynamic>>,
+      invocation.positionalArguments[1] as Map<String, dynamic>,
+    ));
+    when(
+      () => _batch.set<Map<String, dynamic>>(any(), any()),
+    ).thenAnswer(record);
+    when(
+      () => _batch.set<Map<String, dynamic>>(any(), any(), any()),
+    ).thenAnswer(record);
+    when(() => _batch.commit()).thenAnswer((_) async {});
+    when(() => _firestore.batch()).thenReturn(_batch);
+    // The rate-limit stamp's own path: users/{uid}/rate_limits/{type}.
+    final stampCollection = _MockSharedContentCollection();
+    final stampDoc = _MockSharedContentDoc();
+    when(() => _firestore.collection(any())).thenAnswer((invocation) {
+      stampPathSegments.add(invocation.positionalArguments.first as String);
+      return stampCollection;
+    });
+    when(() => stampCollection.doc(any())).thenAnswer((invocation) {
+      stampPathSegments.add(invocation.positionalArguments.first as String);
+      return stampDoc;
+    });
+    when(() => stampDoc.collection(any())).thenAnswer((invocation) {
+      stampPathSegments.add(invocation.positionalArguments.first as String);
+      return stampCollection;
+    });
+  }
   final DocumentReference<Map<String, dynamic>> docRef;
+  final _firestore = _MockFirestore();
+  final _batch = _MockWriteBatch();
+
+  _MockFirestore get mockFirestore => _firestore;
+  _MockWriteBatch get mockBatch => _batch;
+
+  /// Every segment the stamp path was built from, in call order.
+  final stampPathSegments = <String>[];
+
+  /// Every path passed to this repository's own `collection(...)`.
+  final requestedCollections = <String>[];
+
+  /// Every `batch.set` the manager made, in order.
+  final batchWrites =
+      <(DocumentReference<Map<String, dynamic>>, Map<String, dynamic>)>[];
+
+  @override
+  FirebaseFirestore get firestore => _firestore;
 
   /// The id each `.doc(...)` call asked for. `null` is the auto-id case; a
   /// non-null entry means a writer re-derived the document id from the content,
@@ -992,6 +1072,7 @@ class _CapturingRepository extends Fake implements FirestoreRepository {
 
   @override
   CollectionReference<Map<String, dynamic>> collection(String path) {
+    requestedCollections.add(path);
     final col = _MockSharedContentCollection();
     when(() => col.doc(any())).thenAnswer((invocation) {
       final args = invocation.positionalArguments;

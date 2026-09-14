@@ -10,6 +10,7 @@ import 'package:butlery/models/social_request.dart';
 import 'package:butlery/models/friend_request.dart';
 import 'package:butlery/models/group_invitation.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
+import 'package:butlery/repositories/firebase/rate_limit_stamp.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 
@@ -101,19 +102,13 @@ class FirebaseSocialRequestRepository
     // Batch write: request + rate limit doc for server-side enforcement
     final batch = firestore.batch();
     batch.set(_requestsRef.doc(request.id), request.toFirestore());
-    batch.set(
-      firestore
-          .collection(FirestoreCollections.users)
-          .doc(currentUser)
-          .collection(FirestoreCollections.userRateLimits)
-          .doc('social_requests'),
-      {
-        'lastWrite': timestampProvider.serverTimestamp(),
-        'expireAt': Timestamp.fromDate(
-          clock.now().add(const Duration(days: 90)),
-        ),
-      },
-      SetOptions(merge: true),
+    stampRateLimit(
+      batch,
+      firestore,
+      userId: currentUser,
+      type: 'social_requests',
+      guardedDocId: request.id,
+      timestampProvider: timestampProvider,
     );
     await batch.commit();
 

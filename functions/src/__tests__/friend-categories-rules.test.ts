@@ -13,10 +13,6 @@
  *   - Member: cannot mutate non-allowed fields (e.g. `name`).
  *   - Member: no-op update (only updatedAt) is allowed.
  *
- * Test isolation: each test uses a unique MEMBER UID + unique CATEGORY ID
- * to dodge the `rateLimitWrite('friend_category_member', 5)` 5s collision
- * window that would otherwise collapse same-actor reuse into denies.
- *
  * Prerequisite: Firestore emulator must be running locally
  *   (`firebase emulators:start --only firestore`).
  *

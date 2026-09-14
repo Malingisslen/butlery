@@ -282,6 +282,29 @@ test("app re-rate of an existing row (merge, review null, owner) is ALLOWED", as
   );
 });
 
+/**
+ * A rating CREATE is refused unless the same batch stamps
+ * `users/{uid}/rate_limits/recipe_ratings` keyed on the rating id
+ * (`rateLimitStamped`). Each create case commits the row and that stamp
+ * together under its own per-run rater; updates carry no stamp.
+ */
+function createRating(uid: string, body: Record<string, unknown>): Promise<void> {
+  const ratingId = `${RECIPE}_${uid}`;
+  const db = env.authenticatedContext(uid, AGE_OK).firestore();
+  const batch = db.batch();
+  batch.set(db.doc(`recipe_ratings/${ratingId}`), body, { merge: true });
+  batch.set(
+    db.doc(`users/${uid}/rate_limits/recipe_ratings`),
+    {
+      lastWrite: serverTimestamp(),
+      expireAt: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
+      lastDocId: ratingId,
+    },
+    { merge: true }
+  );
+  return batch.commit();
+}
+
 /** The map `rateRecipe` writes on a new row. */
 function appCreateBody(raterUid: string, withOwner: boolean): Record<string, unknown> {
   const body: Record<string, unknown> = {
@@ -298,35 +321,19 @@ function appCreateBody(raterUid: string, withOwner: boolean): Record<string, unk
 
 test("app create payload WITH recipeOwnerId and review null is ALLOWED", async () => {
   const uid = `create-owner-${RUN}`;
-  const ctx = env.authenticatedContext(uid, AGE_OK);
-  await assertSucceeds(
-    ctx
-      .firestore()
-      .doc(`recipe_ratings/${RECIPE}_${uid}`)
-      .set(appCreateBody(uid, true), { merge: true })
-  );
+  await assertSucceeds(createRating(uid, appCreateBody(uid, true)));
 });
 
 test("app create payload WITHOUT recipeOwnerId is ALLOWED", async () => {
   const uid = `create-noowner-${RUN}`;
-  const ctx = env.authenticatedContext(uid, AGE_OK);
-  await assertSucceeds(
-    ctx
-      .firestore()
-      .doc(`recipe_ratings/${RECIPE}_${uid}`)
-      .set(appCreateBody(uid, false), { merge: true })
-  );
+  await assertSucceeds(createRating(uid, appCreateBody(uid, false)));
 });
 
 // BUT-2079. Twin: the WITH-recipeOwnerId create above, plus one key.
 test("create carrying an undeclared field is DENIED", async () => {
   const uid = `create-extra-${RUN}`;
-  const ctx = env.authenticatedContext(uid, AGE_OK);
   await assertFails(
-    ctx
-      .firestore()
-      .doc(`recipe_ratings/${RECIPE}_${uid}`)
-      .set({ ...appCreateBody(uid, true), featured: true }, { merge: true })
+    createRating(uid, { ...appCreateBody(uid, true), featured: true })
   );
 });
 

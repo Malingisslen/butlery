@@ -487,6 +487,63 @@ void main() {
       },
     );
 
+    test('stamps shared_content AND received_list, both keyed on the shared '
+        'doc id, beside the shared doc and every record', () async {
+      await _seedPersonalList(firestore, listId: 'l1');
+
+      final ok = await module.shareWithFriends(
+        listId: 'l1',
+        friendIds: const ['friend-1', 'friend-2'],
+      );
+      expect(ok, isTrue);
+
+      final sharedDocs = await _allShared(firestore);
+      expect(sharedDocs, hasLength(1));
+      final sharedId = sharedDocs.single.id;
+      for (final friendId in ['friend-1', 'friend-2']) {
+        final received = await _receivedFor(firestore, friendId);
+        expect(
+          received.map((d) => d.id),
+          [sharedId],
+          reason: '$friendId gets a record keyed on the shared doc id',
+        );
+        final record = received.single.data();
+        expect(
+          record.keys,
+          containsAll(['sharedByUserId', 'listId', 'sharedAt']),
+          reason: 'the received_lists create rule requires these fields',
+        );
+        expect(record['listId'], sharedId);
+        expect(record['sharedByUserId'], _me);
+      }
+
+      for (final type in ['shared_content', 'received_list']) {
+        final stamp = await firestore
+            .collection(FirestoreCollections.users)
+            .doc(_me)
+            .collection(FirestoreCollections.userRateLimits)
+            .doc(type)
+            .get();
+        expect(stamp.exists, isTrue, reason: '$type stamp must be written');
+        expect(
+          stamp.data()!.keys.toSet(),
+          {
+            'lastWrite',
+            'expireAt',
+            'lastDocId',
+          },
+          reason: '$type: the rate_limits rule admits exactly these keys',
+        );
+        expect(
+          stamp.data()!['lastDocId'],
+          sharedId,
+          reason:
+              '$type: firestore.rules accepts the guarded write only when the '
+              'stamp names the shared document id',
+        );
+      }
+    });
+
     /// The fallback half of BUT-1775, and the reason `tryGet` is used rather
     /// than `get`: with no service graph the module must stamp the localized
     /// unknown-user label. What it must NEVER do is quietly reach for

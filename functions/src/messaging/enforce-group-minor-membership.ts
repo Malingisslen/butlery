@@ -168,15 +168,7 @@ export const MAX_ROSTER_ROWS = MAX_GROUP_PARTICIPANTS * 5;
  *      conversation `direct_A_B` it names both — so A may write B's row with a
  *      `displayName` of A's choosing. A may also create that conversation:
  *      two adults need no friendship (`passesMinorDmGate` only fires when the
- *      other party is a minor), and NOTHING caps the rate: the create rule's
- *      `rateLimitWrite('conversations', 10)` reads
- *      `users/{uid}/rate_limits/conversations`, a bucket nothing in `lib/` ever
- *      writes. The only documents that collection ever holds are
- *      `activity_events`, `comments`, `social_requests`, `messages`, `imports`
- *      and `friendSearchMigrated` (the last a migration flag squatting in the
- *      namespace, not a rate stamp) — so `!exists(limitsPath)` is permanently
- *      true. The bucket is self-written anyway, so a tampered client would omit
- *      the stamp.
+ *      other party is a minor).
  * Do not read "the bootstrap branch is gone" as "no client can write here".
  * Source 3 is unreachable for BOTH group-side callers: `deleteEmptyGroup` only
  * passes group conversations, and `deleteChatGroupMemberships` takes its

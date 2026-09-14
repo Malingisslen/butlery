@@ -251,8 +251,10 @@ class PreferencesExportManager {
       // they could act on.
       'data_minimisation':
           'Some collections are held but not reproduced here, because they '
-          'are internal plumbing rather than a record of you: rate_limits (a '
-          'timestamp per rate-limited action, used to stop spam), counters '
+          'are internal plumbing rather than a record of you: rate_limits '
+          '(short-lived stamps recording when you last did a rate-limited '
+          'action and which item it concerned, used to stop spam, plus your '
+          'import usage counters and a one-time migration flag), counters '
           '(unread badge totals derived from content that already appears '
           'elsewhere in this export), and report_throttle (when you last '
           'reported a piece of content — the reports themselves are in the '

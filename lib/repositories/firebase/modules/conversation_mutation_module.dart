@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/repositories/firebase/dtos/conversation_dto.dart';
 import 'package:butlery/repositories/firebase/modules/conversation_participant_module.dart';
+import 'package:butlery/repositories/firebase/rate_limit_stamp.dart';
 import 'package:butlery/models/messaging/conversation.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -106,13 +107,20 @@ class ConversationMutationModule {
         metadata: {'creatorId': user1Id},
       );
 
-      await firestore
-          .collection(collectionName)
-          .doc(conversationId)
-          .set(
-            ConversationDto.toFirestore(conversation),
-            SetOptions(merge: true),
-          );
+      final batch = firestore.batch();
+      batch.set(
+        firestore.collection(collectionName).doc(conversationId),
+        ConversationDto.toFirestore(conversation),
+        SetOptions(merge: true),
+      );
+      stampRateLimit(
+        batch,
+        firestore,
+        userId: user1Id,
+        type: 'conversations',
+        guardedDocId: conversationId,
+      );
+      await batch.commit();
 
       // Write to participant subcollections for scalability
       await participantModule?.addParticipants(

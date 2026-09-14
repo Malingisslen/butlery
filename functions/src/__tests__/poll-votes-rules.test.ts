@@ -42,6 +42,7 @@ import {
   assertFails,
   assertSucceeds,
 } from "@firebase/rules-unit-testing";
+import { serverTimestamp } from "firebase/firestore";
 
 // MUTATION-PROBE SEAM (same contract as chat-groups-rules.test.ts): both values
 // are overridable so a probe can point this suite at a MUTATED COPY of
@@ -998,20 +999,48 @@ test("messages: a recipient cannot edit content", async () => {
 // ============================================================================
 // SHARED CONTENT — the create shape BUT-1812 relies on
 // ============================================================================
+//
+// A shared_content create is refused unless the same batch stamps
+// `users/{uid}/rate_limits/shared_content` keyed on the new document's id
+// (`rateLimitStamped`). `createShare` commits the row and that stamp together,
+// as `BaseSharedContentRepository.createSharedContent` does, for ALLOW and DENY
+// alike. Each case has its own per-run sharer: `seed()` does not reset rate-limit
+// buckets, so a shared sharer would put later cases inside an earlier window.
+
+function sharer(tag: string): string {
+  return `pv-sharer-${tag}-${RUN}`;
+}
+
+function createShare(uid: string, body: Record<string, unknown>): Promise<void> {
+  const db = env.authenticatedContext(uid).firestore();
+  const ref = db.collection("shared_content").doc();
+  const batch = db.batch();
+  batch.set(ref, body);
+  batch.set(
+    db.doc(`users/${uid}/rate_limits/shared_content`),
+    {
+      lastWrite: serverTimestamp(),
+      expireAt: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
+      lastDocId: ref.id,
+    },
+    { merge: true }
+  );
+  return batch.commit();
+}
 
 // S1: ALLOW — a share row with an auto-id. Each share is now its own document
 // rather than one keyed on the recipeId, so re-sharing can never collide with a
 // row another user owns (which `allow get`/`allow update` both refuse, so no
 // payload could rescue it).
 test("shared_content: a sharer can create a row naming its recipients", async () => {
-  const ctx = env.authenticatedContext(AUTHOR_UID);
+  const uid = sharer("s1");
   await assertSucceeds(
-    ctx.firestore().collection("shared_content").add({
+    createShare(uid, {
       contentType: "recipe",
       recipeId: `r-${RUN}`,
       title: "Köttbullar",
-      sharedByUserId: AUTHOR_UID,
-      sharedToUserIds: [AUTHOR_UID, VOTER_UID],
+      sharedByUserId: uid,
+      sharedToUserIds: [uid, VOTER_UID],
       sharedAt: new Date(),
       isActive: true,
     })
@@ -1024,12 +1053,12 @@ test("shared_content: a sharer can create a row naming its recipients", async ()
 // row without it is reachable only by whoever already knows its id — the same
 // silent loss BUT-1812 produced, reached from the other direction.
 test("shared_content: a row with no sharedToUserIds is refused", async () => {
-  const ctx = env.authenticatedContext(AUTHOR_UID);
+  const uid = sharer("s2");
   await assertFails(
-    ctx.firestore().collection("shared_content").add({
+    createShare(uid, {
       contentType: "recipe",
       recipeId: `r2-${RUN}`,
-      sharedByUserId: AUTHOR_UID,
+      sharedByUserId: uid,
       sharedAt: new Date(),
       isActive: true,
     })
@@ -1038,9 +1067,9 @@ test("shared_content: a row with no sharedToUserIds is refused", async () => {
 
 // S3: DENY — claiming to be somebody else's share.
 test("shared_content: sharedByUserId must be the caller", async () => {
-  const ctx = env.authenticatedContext(VOTER_UID);
+  const uid = sharer("s3");
   await assertFails(
-    ctx.firestore().collection("shared_content").add({
+    createShare(uid, {
       contentType: "recipe",
       recipeId: `r3-${RUN}`,
       sharedByUserId: AUTHOR_UID,
@@ -1064,13 +1093,13 @@ test("shared_content: sharedByUserId must be the caller", async () => {
 // .createSharedContent` — one place, all three types. These two tests are the
 // shape that stamp has to keep producing; if either starts failing, the rule and
 // the writer have drifted apart again.
-function menuSharePayload(): Record<string, unknown> {
+function menuSharePayload(uid: string): Record<string, unknown> {
   return {
     // BaseSharedContentRepository.createSharedContent
     contentType: "menu",
-    sharedToUserIds: [AUTHOR_UID],
+    sharedToUserIds: [uid],
     // getCommonFirestoreFields()
-    sharedByUserId: AUTHOR_UID,
+    sharedByUserId: uid,
     sharedByDisplayName: "Malin i appen",
     sharedAt: FIXTURE_SENT_AT,
     shareMessage: null,
@@ -1093,30 +1122,26 @@ function menuSharePayload(): Record<string, unknown> {
 }
 
 test("shared_content: a menu share with its real payload is allowed", async () => {
-  const ctx = env.authenticatedContext(AUTHOR_UID);
-  await assertSucceeds(
-    ctx.firestore().collection("shared_content").add(menuSharePayload())
-  );
+  const uid = sharer("s4");
+  await assertSucceeds(createShare(uid, menuSharePayload(uid)));
 });
 
 test("shared_content: a menu share missing the stamped list is refused", async () => {
-  const ctx = env.authenticatedContext(AUTHOR_UID);
-  const withoutList = menuSharePayload();
+  const uid = sharer("s4-nolist");
+  const withoutList = menuSharePayload(uid);
   delete withoutList.sharedToUserIds;
-  await assertFails(
-    ctx.firestore().collection("shared_content").add(withoutList)
-  );
+  await assertFails(createShare(uid, withoutList));
 });
 
 test("shared_content: a shopping-list share with its real payload is allowed", async () => {
-  const ctx = env.authenticatedContext(AUTHOR_UID);
+  const uid = sharer("s5");
   await assertSucceeds(
-    ctx.firestore().collection("shared_content").add({
+    createShare(uid, {
       // BaseSharedContentRepository.createSharedContent
       contentType: "shopping_list",
-      sharedToUserIds: [AUTHOR_UID],
+      sharedToUserIds: [uid],
       // getCommonFirestoreFields()
-      sharedByUserId: AUTHOR_UID,
+      sharedByUserId: uid,
       sharedByDisplayName: "Malin i appen",
       sharedAt: FIXTURE_SENT_AT,
       shareMessage: null,
@@ -1132,7 +1157,7 @@ test("shared_content: a shopping-list share with its real payload is allowed", a
       listName: "Veckohandling",
       listDescription: null,
       itemCount: 0,
-      originalOwnerId: AUTHOR_UID,
+      originalOwnerId: uid,
       originalOwnerDisplayName: "Malin i appen",
       joinedCount: 0,
     })

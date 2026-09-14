@@ -8,6 +8,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/repositories/firebase/rate_limit_stamp.dart';
 
 /// Module handling social shopping list sharing with friends and groups.
 /// Provides complete social sharing functionality with Firebase integration.
@@ -91,14 +92,29 @@ class ShoppingSocialShareModule {
         'listType': 'shopping_list_shared',
       };
 
-      // Create shared list document in Firestore
+      // The shared document, every recipient's record and both rate-limit
+      // stamps commit together, so a refused record cannot leave a shared
+      // document that reaches nobody. Every record carries the shared
+      // document's id, which is the id both stamps are keyed on.
       final sharedListRef = _firestore
           .collection(FirestoreCollections.sharedContent)
           .doc();
-      await sharedListRef.set(sharedListData);
-
-      // Create individual share records for each friend
       final batch = _firestore.batch();
+      batch.set(sharedListRef, sharedListData);
+      stampRateLimit(
+        batch,
+        _firestore,
+        userId: currentUser.uid,
+        type: 'shared_content',
+        guardedDocId: sharedListRef.id,
+      );
+      stampRateLimit(
+        batch,
+        _firestore,
+        userId: currentUser.uid,
+        type: 'received_list',
+        guardedDocId: sharedListRef.id,
+      );
 
       for (final friendId in friendIds) {
         final shareRecordRef = _firestore
@@ -108,6 +124,7 @@ class ShoppingSocialShareModule {
             .doc(sharedListRef.id);
 
         batch.set(shareRecordRef, {
+          'listId': sharedListRef.id,
           'sharedListId': sharedListRef.id,
           'sharedByUserId': currentUser.uid,
           'sharedByDisplayName': sharedByDisplayName,
