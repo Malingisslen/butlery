@@ -1,8 +1,8 @@
 {
-  "lastRun": "2026-09-07",
+  "lastRun": "2026-09-14",
   "dossiersRefreshed": 0,
   "worldWatchRoles": 2,
   "retroDue": true,
-  "acceptRate": 0.708,
-  "notes": "No stale dossier markers; world-watch scanned Security Architect + Release/Compliance (no new material findings, whisper.cpp issue #234 still open); full org-retro overdue by 44 days."
+  "acceptRate": 0.702,
+  "notes": "No stale dossier markers; Security Architect + Release/App-Store Compliance Manager scanned (nothing material); full org-retro overdue (77+ days, none logged)."
 }

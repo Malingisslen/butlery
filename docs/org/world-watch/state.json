@@ -61,7 +61,7 @@
           "type": "release-notes"
         }
       ],
-      "lastScan": "2026-09-07",
+      "lastScan": "2026-09-14",
       "snapshot": {
         "https://github.com/talsec/Free-RASP-Flutter/releases.atom": "2026-09-07: direct fetch succeeded — new release v8.2.2 (2026-08-26): 'addressed reporting issues in root and hook detection for Android' — a fix to detection-result reporting, not a threshold, attack-coverage, or callback-API change. pubspec.yaml stays PINNED at 8.0.0 (BUT-1218 review). Not filed — bug-fix release, no CVE, no breaking change.",
         "https://github.com/OWASP/owasp-mastg/releases.atom": "2026-09-07: direct fetch succeeded — still v2.0.0 (2026-06-30) as latest, no new release since baseline. No change.",
@@ -88,6 +88,11 @@
           "date": "2026-09-07",
           "via": "weekly-janitor-sweep (cloud sandbox, no Linear)",
           "note": "WebFetch direct-hit on 5/8 sources this cycle (github.com and developer.apple.com reachable; support.google.com/docs.cloud.google.com/dart.dev egress-blocked, no search fallback available in this sandbox — 3 sources carried forward from 2026-08-31 baseline unverified). freeRASP v8.2.2 (2026-08-26, reporting-only fix) — not material. whisper.cpp v1.9.3 reconfirmed as already-ticketed (#234), still open, still current — no duplicate filed. No new issues this cycle."
+        },
+        {
+          "date": "2026-09-14",
+          "via": "weekly-janitor-sweep (cloud sandbox, no Linear)",
+          "note": "Lean WebSearch pass (cloud sandbox, no Linear). freeRASP: latest pub.dev release found is 7.5.0 series with no CVE-specific content surfaced; app stays pinned per BUT-1218, no delta from 2026-09-07 baseline. Dart/pub CVEs: only the standing CVE-2026-27704 (Zip Slip, Low, already below patched SDK) surfaced, nothing new. No new material item this cycle."
         }
       ]
     },
@@ -213,7 +218,7 @@
           "type": "rss"
         }
       ],
-      "lastScan": "2026-09-07",
+      "lastScan": "2026-09-14",
       "snapshot": {
         "https://developer.apple.com/news/rss/news.rss": "2026-09-07: direct WebFetch succeeded — new items since 08-24: Hello Developer Sep2026 (Sep2), Rosetta-for-Intel-macOS deprecation timeline (Sep1, N/A — no macOS/Intel distribution), tax/VAT updates for Morocco/Congo/Tanzania (Aug27, N/A — Butlery pricing unaffected by these specific markets today), Apple Event announcement (Aug26, N/A). No new UGC/age-rating/privacy/DPLA item beyond the already-filed issue #235 (EU business terms/DPLA Attachment 14, still the live gate on the next submission) and issue #215 (age-rating questionnaire). No new material item.",
         "https://developer.apple.com/news/upcoming-requirements/": "2026-09-07: direct WebFetch succeeded — unchanged: SDK minimum (Xcode 26+, since 2026-04-28), age-rating migration (deadline 2026-01-31, passed). No new hard gate.",
@@ -239,6 +244,11 @@
           "date": "2026-09-07",
           "via": "weekly-janitor-sweep (cloud sandbox, no Linear)",
           "note": "4/7 sources direct-fetched (developer.apple.com reachable); support.google.com and play.google.com both egress-blocked this cycle, no search fallback in this sandbox — 3 sources carried forward from 2026-08-31 baseline unverified. No new material item; issues #215/#220/#223/#235 remain the live tickets. No new issues filed."
+        },
+        {
+          "date": "2026-09-14",
+          "via": "weekly-janitor-sweep (cloud sandbox, no Linear)",
+          "note": "Lean WebSearch pass (cloud sandbox, no Linear). Apple: App Review Guidelines text unchanged since the June 8 update as of 2026-09-13; Brazil CADE commission-rate/alt-payment changes (effective Oct 1 2026) found but scoped to Brazil market entitlements, not applicable to Butlery. Google Play: Oct 1 2026 external-links/alt-billing fee reporting applies only to developers enrolled in those US programs — Butlery is not enrolled, not material. No new item beyond issues #215/#220/#223/#235 already tracked."
         }
       ]
     }
