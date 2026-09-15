@@ -16,7 +16,6 @@ activation:
 
 - **MTTD** (mean time to detect) for CF errors and CF latency regressions
   drops from "next time the founder logs in" to ~5 minutes.
-- Both policies fire to `info@butlery.se` (the project's ops mailbox).
 - Re-running the script is safe — it skips policies whose `displayName`
   already exists.
 
@@ -147,8 +146,8 @@ gcloud alpha monitoring policies list \
   --format='value(displayName, enabled, notificationChannels[0])'
 ```
 
-You should see two rows, both `enabled=True` and routed to the
-notification channel from step 3.
+Every policy should be `enabled=True` and routed to the notification
+channel from step 3.
 
 GCP normally sends a verification email when the channel is created
 (step 3) — clicking it confirms the channel works. If no email arrives,

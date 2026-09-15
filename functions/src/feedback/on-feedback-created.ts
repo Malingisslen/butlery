@@ -40,6 +40,30 @@ export const onFeedbackCreated = onDocumentCreated(
 );
 
 /**
+ * The email carries no personal data: the category, a dashboard link and the
+ * document id. Resend is not a listed data processor in the privacy policy, so
+ * description, email address, device info and screenshot stay in Firestore and
+ * are read in the admin feedback inbox (Malin, 2026-09-15).
+ */
+export function buildFeedbackEmail(
+  feedbackId: string,
+  data: FirebaseFirestore.DocumentData,
+  dashboardBase: string | undefined
+): { subject: string; html: string } {
+  const category = escapeHtml(String(data.category ?? "okänd"));
+  const dashboardLink = dashboardBase
+    ? `<p><a href="${dashboardBase}">Öppna i admin-dashboarden</a></p>`
+    : "";
+  return {
+    subject: `Butlery feedback: ${String(data.category ?? "okänd")}`,
+    html:
+      `<h2>Ny feedback (${category})</h2>` +
+      dashboardLink +
+      `<p style="color:#999">id: ${escapeHtml(feedbackId)}</p>`,
+  };
+}
+
+/**
  * Sends a triage email via Resend. Degrades to a log line (never throws) when
  * the API key or recipient isn't configured, so a missing secret can never
  * break feedback ingestion.
@@ -60,32 +84,11 @@ async function notifyByEmail(
     return;
   }
 
-  const dashboardBase = process.env.FEEDBACK_DASHBOARD_URL;
-  const dashboardLink = dashboardBase
-    ? `<p><a href="${dashboardBase}">Öppna i admin-dashboarden</a></p>`
-    : "";
-  // screenshotUrl is user-controllable (Firestore create rules don't constrain
-  // its shape), so only embed it when it's a real https URL — blocks a
-  // malicious beta user from slipping a javascript:/data: link into our inbox.
-  const safeScreenshotUrl =
-    typeof data.screenshotUrl === "string" &&
-    /^https:\/\//.test(data.screenshotUrl)
-      ? data.screenshotUrl
-      : null;
-  const screenshot = safeScreenshotUrl
-    ? `<p>Skärmdump: <a href="${safeScreenshotUrl}">` +
-      `${escapeHtml(safeScreenshotUrl)}</a></p>`
-    : "<p>(ingen skärmdump)</p>";
-
-  const subject = `Butlery feedback: ${data.category ?? "okänd"}`;
-  const html =
-    `<h2>Ny feedback (${data.category ?? "okänd"})</h2>` +
-    `<p>${escapeHtml(String(data.description ?? ""))}</p>` +
-    `<p>E-post: ${escapeHtml(String(data.email ?? "—"))}</p>` +
-    `<p>Enhet: ${escapeHtml(String(data.deviceInfo ?? "—"))}</p>` +
-    screenshot +
-    dashboardLink +
-    `<p style="color:#999">id: ${feedbackId}</p>`;
+  const { subject, html } = buildFeedbackEmail(
+    feedbackId,
+    data,
+    process.env.FEEDBACK_DASHBOARD_URL
+  );
 
   try {
     const res = await fetch("https://api.resend.com/emails", {

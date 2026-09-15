@@ -60,7 +60,7 @@ create_policy_if_missing() {
 # ----------------------------------------------------------------------------
 # Policy 1: Cloud Functions error rate >5% over 5min
 # ----------------------------------------------------------------------------
-echo "[1/2] Cloud Functions error rate..."
+echo "[1/4] Cloud Functions error rate..."
 cat > "$WORKDIR/cf-error.json" <<EOF
 {
   "displayName": "Cloud Functions - High Error Rate",
@@ -92,7 +92,7 @@ create_policy_if_missing "Cloud Functions - High Error Rate" "$WORKDIR/cf-error.
 # ----------------------------------------------------------------------------
 # Policy 2: Cloud Functions p99 execution time >10s
 # ----------------------------------------------------------------------------
-echo "[2/2] Cloud Functions latency..."
+echo "[2/4] Cloud Functions latency..."
 cat > "$WORKDIR/cf-latency.json" <<EOF
 {
   "displayName": "Cloud Functions - High Latency",
@@ -122,6 +122,63 @@ cat > "$WORKDIR/cf-latency.json" <<EOF
 EOF
 create_policy_if_missing "Cloud Functions - High Latency" "$WORKDIR/cf-latency.json"
 
+# ----------------------------------------------------------------------------
+# Policy 3: Moderation - report needs review
+# ----------------------------------------------------------------------------
+echo "[3/4] Moderation - report needs review..."
+cat > "$WORKDIR/moderation_review_needed.json" <<EOF
+{
+  "displayName": "Moderation - report needs review",
+  "documentation": {
+    "content": "A user report was filed. Open the moderator review screen. See docs/ops/moderation-runbook.md.",
+    "mimeType": "text/markdown"
+  },
+  "conditions": [{
+    "displayName": "moderation_review_needed logged",
+    "conditionMatchedLog": {
+      "filter": "jsonPayload.message=\"moderation_review_needed\""
+    }
+  }],
+  "alertStrategy": {
+    "notificationRateLimit": {"period": "300s"},
+    "autoClose": "1800s"
+  },
+  "combiner": "OR",
+  "notificationChannels": ["$NOTIFICATION_CHANNEL"],
+  "enabled": true
+}
+EOF
+create_policy_if_missing "Moderation - report needs review" "$WORKDIR/moderation_review_needed.json"
+
+# ----------------------------------------------------------------------------
+# Policy 4: Moderation - ingredient suggestion needs review
+# ----------------------------------------------------------------------------
+echo "[4/4] Moderation - ingredient suggestion needs review..."
+cat > "$WORKDIR/ingredient_suggestion_review_needed.json" <<EOF
+{
+  "displayName": "Moderation - ingredient suggestion needs review",
+  "documentation": {
+    "content": "An ingredient suggestion was submitted. Review it in the admin dashboard.",
+    "mimeType": "text/markdown"
+  },
+  "conditions": [{
+    "displayName": "ingredient_suggestion_review_needed logged",
+    "conditionMatchedLog": {
+      "filter": "jsonPayload.message=\"ingredient_suggestion_review_needed\""
+    }
+  }],
+  "alertStrategy": {
+    "notificationRateLimit": {"period": "300s"},
+    "autoClose": "1800s"
+  },
+  "combiner": "OR",
+  "notificationChannels": ["$NOTIFICATION_CHANNEL"],
+  "enabled": true
+}
+EOF
+create_policy_if_missing "Moderation - ingredient suggestion needs review" "$WORKDIR/ingredient_suggestion_review_needed.json"
+
+
 # Two Firebase-product alerts (Firestore read rate, Auth failure rate) are
 # deliberately NOT shipped here:
 # - Firestore: `firestore.googleapis.com/document/read_count` requires a
@@ -137,13 +194,15 @@ create_policy_if_missing "Cloud Functions - High Latency" "$WORKDIR/cf-latency.j
 # when needed — the metric picker resolves resource types automatically.
 
 # ----------------------------------------------------------------------------
-# Verify all four policies are now live and routed to the channel.
+# Verify every policy above is live and routed to the channel.
 # ----------------------------------------------------------------------------
 echo
 echo "Verifying..."
 EXPECTED=(
   "Cloud Functions - High Error Rate"
   "Cloud Functions - High Latency"
+  "Moderation - report needs review"
+  "Moderation - ingredient suggestion needs review"
 )
 PRESENT="$(existing_policies)"
 MISSING=()
@@ -159,7 +218,7 @@ if [[ ${#MISSING[@]} -gt 0 ]]; then
   exit 1
 fi
 
-echo "OK — 2 alert policies live, routed to $NOTIFICATION_CHANNEL"
+echo "OK — ${#EXPECTED[@]} alert policies live, routed to $NOTIFICATION_CHANNEL"
 echo
 echo "Console: https://console.cloud.google.com/monitoring/alerting/policies?project=$PROJECT_ID"
 echo

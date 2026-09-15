@@ -2881,7 +2881,7 @@
       ],
       "area": "socialt",
       "features": [
-        "ENG-21"
+        "ENG-21", "REC-17", "MENU-17"
       ]
     },
     {
@@ -5494,7 +5494,7 @@
         "SOC-13",
         "SOC-14",
         "SOC-15",
-        "SOC-19"
+        "SOC-19", "SOC-20"
       ]
     },
     {
@@ -5656,7 +5656,7 @@
     {
       "id": "flow-soc-6",
       "label": "rapportera & moderering",
-      "description": "Rapportera innehåll (kommentar/recept/meddelande/cook-snap/grupp/profil) från flera ytor via samma dialog, se sina egna rapporters status, och en admin-granskningskö som kan eskalera status eller ta bort/dölja innehåll. Modereringströskeln (5 rapporter) larmar automatiskt men e-postutskick till moderator är fortfarande stubbat (BUT-417). BUT-1609: granskningskön märker nu innehåll vars ägare är ett minderårigt konto med en ”Minderårigt konto”-badge så moderatorn tar extra hänsyn (GDPR/barnsäkerhet) innan åtgärd — ReportService.isMinorAccount läses serverauktoritativt (isMinor skrivs bara av verifySignupAge), admin-gated i firestore.rules, cachas 30 min och fail-closar (null vid misslyckad slagning döljer aldrig ett verkligt minderårigt konto). ViewModel:en löser ägarna parallellt, memoiserar bara lösta träffar och ritar bara om när en minderårig faller ut. Samma ticket fixade en bugg där moderatorskärmen fastnade i en spinner för varje icke-admin (watchIsAdmin emittar nu false, fail-closed).",
+      "description": "Rapportera innehåll (kommentar/recept/meddelande/cook-snap/grupp/profil) från flera ytor via samma dialog, se sina egna rapporters status, och en admin-granskningskö som kan eskalera status eller ta bort/dölja innehåll. Modereringströskeln (5 rapporter) larmar automatiskt. BUT-1609: granskningskön märker nu innehåll vars ägare är ett minderårigt konto med en ”Minderårigt konto”-badge så moderatorn tar extra hänsyn (GDPR/barnsäkerhet) innan åtgärd — ReportService.isMinorAccount läses serverauktoritativt (isMinor skrivs bara av verifySignupAge), admin-gated i firestore.rules, cachas 30 min och fail-closar (null vid misslyckad slagning döljer aldrig ett verkligt minderårigt konto). ViewModel:en löser ägarna parallellt, memoiserar bara lösta träffar och ritar bara om när en minderårig faller ut. Samma ticket fixade en bugg där moderatorskärmen fastnade i en spinner för varje icke-admin (watchIsAdmin emittar nu false, fail-closed).",
       "features": [
         "SOC-18",
         "SET-13",
@@ -5694,7 +5694,7 @@
         {
           "from": "cf-report-created",
           "to": "ds-reports",
-          "payload": "user_moderation/{ownerId}.totalReports +1 + report_history/{reportId} (subsamling, 180 d TTL, BUT-2046); system_events/content_report_{id}; vid tröskel 5 → system_events/moderation_threshold_{ownerId} (critical); moderator-mejl fortfarande TODO (BUT-417)",
+          "payload": "user_moderation/{ownerId}.totalReports +1 + report_history/{reportId} (subsamling, 180 d TTL, BUT-2046); system_events/content_report_{id}; vid tröskel 5 → system_events/moderation_threshold_{ownerId} (critical)",
           "transport": "Firestore transaction + writes",
           "verified": true
         },

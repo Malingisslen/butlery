@@ -4,7 +4,6 @@
  * When a user suggests an unknown ingredient:
  * 1. Logs the suggestion for monitoring
  * 2. Updates suggestion with metadata
- * 3. (Future) Sends email notification to admin
  *
  * This enables crowdsourced improvement of the ingredient database.
  */
@@ -73,8 +72,6 @@ export const onSuggestionCreated = onDocumentCreated(
       // still undefined, so the old snapshot-based guard never fired. Claim
       // the suggestion transactionally instead, using the doc's own
       // `notifiedAt` as the marker (mirrors onReportCreated's marker claim).
-      // If a future real email send is wired in, a retried delivery will
-      // skip here rather than send a duplicate moderator email.
       const docRef = getDb()
         .collection("ingredient_suggestions")
         .doc(suggestionId);
@@ -105,25 +102,10 @@ export const onSuggestionCreated = onDocumentCreated(
         }
       );
 
-      // Admin notification — stubbed until email infra lands (BUT-417),
-      // mirroring onReportCreated. We log a structured payload so it's
-      // alertable in Cloud Logging today and trivial to swap for a real send
-      // later. UID is hashed (never log a raw uid — see hash-uid).
-      const adminEmail = process.env.MODERATOR_EMAIL;
-      if (adminEmail) {
-        // Log only stable ids (never the free-text originalName — it's
-        // user-submitted and could carry PII). The admin looks up the
-        // suggested name in the doc by suggestionId.
-        logger.info(
-          `[ingredient-suggestion-email:TODO] would dispatch to ${adminEmail} ` +
-            `— suggestion=${suggestionId} userHash=${hashUid(suggestion.userId)}`,
-        );
-      } else {
-        logger.warn(
-          `[ingredient-suggestion-email] MODERATOR_EMAIL not set; skipping ` +
-            `admin notification for suggestion ${suggestionId}`,
-        );
-      }
+      // The alert policy matches this message exactly; renaming it silences
+      // the admin notification. Only the id is logged, never the free-text
+      // originalName, which is user-submitted.
+      logger.info("ingredient_suggestion_review_needed", { suggestionId });
 
     } catch (error) {
       logger.error(

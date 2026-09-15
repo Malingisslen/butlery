@@ -9,7 +9,12 @@
  */
 
 import * as admin from "firebase-admin";
-import { recordEmailFailure } from "../feedback/on-feedback-created";
+import { readFileSync } from "fs";
+import { join } from "path";
+import {
+  buildFeedbackEmail,
+  recordEmailFailure,
+} from "../feedback/on-feedback-created";
 
 let run = 0;
 let failed = 0;
@@ -94,6 +99,57 @@ async function run_(): Promise<void> {
       threw = true;
     }
     check("recordEmailFailure never throws even if the write fails", !threw);
+  }
+
+  // ── The triage email carries no personal data ──
+  {
+    const { subject, html } = buildFeedbackEmail(
+      "fb-pii",
+      {
+        category: "bug",
+        description: "Min telefon 070-1234567 kraschar",
+        email: "person@example.com",
+        deviceInfo: "Pixel 8, Android 15",
+        screenshotUrl: "https://storage.example/shot.png",
+        userId: "uid-abc",
+      },
+      "https://admin.example/feedback",
+    );
+    const body = subject + html;
+    for (const [label, value] of [
+      ["description", "070-1234567"],
+      ["email", "person@example.com"],
+      ["deviceInfo", "Pixel 8"],
+      ["screenshotUrl", "shot.png"],
+      ["userId", "uid-abc"],
+    ]) {
+      check(`email omits ${label}`, !body.includes(value), body);
+    }
+    check(
+      "email keeps category, dashboard link and id",
+      html.includes("bug") &&
+        html.includes("https://admin.example/feedback") &&
+        html.includes("fb-pii"),
+      html,
+    );
+    // notifyByEmail is not exported, so its wiring is pinned in the source: the
+    // html it sends must come from buildFeedbackEmail, not from inline fields.
+    const source = readFileSync(
+      join(__dirname, "../feedback/on-feedback-created.ts"),
+      "utf8",
+    );
+    const sender = source.slice(source.indexOf("async function notifyByEmail"));
+    check(
+      "notifyByEmail builds its email only through buildFeedbackEmail",
+      sender.includes("buildFeedbackEmail(") &&
+        !/data\.(description|email|deviceInfo|screenshotUrl|userId)/.test(sender),
+    );
+    const hostile = buildFeedbackEmail("fb-x", { category: "<b>x</b>" }, undefined);
+    check(
+      "category is HTML-escaped",
+      !hostile.html.includes("<b>") && hostile.html.includes("&lt;b&gt;"),
+      hostile.html,
+    );
   }
 
   console.log(`\n${run - failed}/${run} passed` + (failed ? `, ${failed} failed` : ""));

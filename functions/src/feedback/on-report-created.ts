@@ -4,7 +4,7 @@
  * Triggered when a user submits a report (content moderation report).
  * - Increments a strike counter on the reported user (if known)
  * - Writes an admin system_events entry flagging review required
- * - Logs a moderator-email payload when MODERATOR_EMAIL is configured
+ * - Logs `moderation_review_needed`, which a Cloud Monitoring alert watches
  *
  * Apple App Store guideline 1.2 and Google Play UGC policy require a
  * moderator path with 24-hour action capability. This trigger is the entry
@@ -22,8 +22,8 @@
  *     overwrite rather than duplicate.
  * Re-throwing for retry is therefore safe.
  *
- * Email delivery is still stubbed (logged at info) until email infra lands —
- * tracked by BUT-417. Do NOT block report intake on that.
+ * The moderator is notified by a log-based alert policy
+ * (`infrastructure/alerting/setup-gcp-alerts.sh`), not by email from here.
  */
 
 import { onDocumentCreated } from "firebase-functions/v2/firestore";
@@ -214,27 +214,22 @@ export const onReportCreated = onDocumentCreated(
       status: report.status,
     });
 
+    // The alert policy matches this message exactly; renaming it silences
+    // the moderator notification. Logged before processing so a failed strike
+    // or system_events write still notifies.
+    logger.info("moderation_review_needed", {
+      reportId,
+      contentType: report.contentType,
+      reason: report.reason,
+    });
+
     try {
       await processReport(db, { reportId, eventId: event.id, report });
-
-      // Email notification — stubbed until email infra lands (BUT-417).
-      const moderatorEmail = process.env.MODERATOR_EMAIL;
-      if (moderatorEmail) {
-        logger.info(
-          `[moderation-email:TODO] would dispatch to ${moderatorEmail} — ` +
-            `report=${reportId} type=${report.contentType} reason=${report.reason}`,
-        );
-      } else {
-        logger.warn(
-          `[moderation-email] MODERATOR_EMAIL env var not set; skipping ` +
-            `notification for report ${reportId}`,
-        );
-      }
 
       logger.info(`Report ${reportId} processed successfully`);
     } catch (error) {
       logger.error(`Failed to process report ${reportId}:`, error);
-      throw error; // Retry — idempotent, so re-delivery is safe.
+      throw error; // Idempotent, so a re-delivery is safe.
     }
   },
 );

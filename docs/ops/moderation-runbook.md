@@ -141,10 +141,14 @@ concluding from the console that nothing happened:
   the identifier. Both of those are deferred while a legal hold stands — see
   the section above.
 
-## Email notifications
+## Notifications
 
-The `onReportCreated` Cloud Function reads `MODERATOR_EMAIL` from the
-function environment. Until the email-delivery infra lands, it logs the
-payload at `info` level - set a Cloud Logging alert on the log filter
-`resource.type="cloud_function" AND jsonPayload.message:"moderation-email:TODO"`
-to page the on-call admin.
+`onReportCreated` logs `moderation_review_needed` (report id, content type,
+reason) and `onSuggestionCreated` logs `ingredient_suggestion_review_needed`
+(suggestion id). Two Cloud Monitoring log-match alert policies, created by
+`infrastructure/alerting/setup-gcp-alerts.sh`, email the "Butlery Alerts"
+notification channel when either appears, at most once per 5 minutes each.
+The email says a condition was met and links the incident; open the moderator
+review screen for the details. No email provider is involved.
+
+Renaming either log message silences its alert.
