@@ -14,11 +14,8 @@ import 'package:butlery/services/parsing/remote_model_loader.dart';
 
 /// Downloads updated CRF weights from Firebase Storage when available.
 ///
-/// The active learning loop:
-/// 1. User corrections are stored in Firestore (ParsingCorrectionRepository)
-/// 2. A Cloud Function periodically retrains the CRF model from corrections
-/// 3. New weights are uploaded to Firebase Storage with a version number
-/// 4. This loader checks for newer weights and downloads them
+/// New weights reach Firebase Storage by hand (`scripts/crf/retrain_with_corrections.sh`);
+/// this loader checks for newer weights and downloads them.
 ///
 /// Weights are cached locally so the app works offline after first download.
 /// The loader is fire-and-forget -- failures never block parsing.
