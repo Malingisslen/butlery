@@ -28,12 +28,21 @@ class HtmlSanitizer {
     RegExp(r'data:\s*text/html', caseSensitive: false),
   ];
 
-  /// Pattern for detecting potentially malicious URLs.
-  static final _suspiciousUrlPatterns = [
-    RegExp(r'javascript:', caseSensitive: false),
-    RegExp(r'data:', caseSensitive: false),
-    RegExp(r'vbscript:', caseSensitive: false),
-  ];
+  /// A value whose SCHEME is dangerous, tested in [sanitizeUrl] against the
+  /// value it returns rather than the raw input.
+  ///
+  /// Anchored, because `sourceUrl` is also a free-text provenance field and
+  /// "Kopierat från: Tårta med data: 3 ägg" is not a URL. The leading class
+  /// is every C0 control plus space — what a browser's URL parser strips
+  /// before reading the scheme.
+  static final _dangerousSchemePattern = RegExp(
+    r'^[\x00-\x20]*(?:javascript|data|vbscript):',
+    caseSensitive: false,
+  );
+
+  /// Tab, CR and LF, which a browser's URL parser removes from ANYWHERE in
+  /// the value, so `java<TAB>script:` is still a `javascript:` URL.
+  static final _urlParserStrippedChars = RegExp(r'[\t\n\r]');
 
   /// Cap on how many `<script>` opening tags `check()` and `sanitize()` will
   /// individually classify (JSON-LD vs not) before falling back to a cheap
@@ -347,23 +356,21 @@ class HtmlSanitizer {
   }
 
   /// Sanitize a URL for safe use.
+  ///
+  /// The scheme check runs on the value this returns, after every rewrite:
+  /// a check on the input would pass `java\x00script:`, a Cyrillic
+  /// `jаvascript:` or a leading U+00A0 (which `trim` removes), and the
+  /// rewrites would then hand back a clean `javascript:`. Null bytes go
+  /// before `trim`, so a null cannot shield whitespace from it.
   String sanitizeUrl(String url) {
-    // Check for dangerous protocols
-    for (final pattern in _suspiciousUrlPatterns) {
-      if (pattern.hasMatch(url)) {
-        AppLogger.warning('HtmlSanitizer: Blocked suspicious URL: $url');
-        return '';
-      }
+    final result = normalizeHomoglyphs(url.replaceAll('\x00', '').trim());
+
+    if (_dangerousSchemePattern.hasMatch(
+      result.replaceAll(_urlParserStrippedChars, ''),
+    )) {
+      AppLogger.warning('HtmlSanitizer: Blocked suspicious URL: $url');
+      return '';
     }
-
-    // Normalize and clean
-    var result = url.trim();
-
-    // Remove null bytes
-    result = result.replaceAll('\x00', '');
-
-    // Normalize homoglyphs
-    result = normalizeHomoglyphs(result);
 
     return result;
   }

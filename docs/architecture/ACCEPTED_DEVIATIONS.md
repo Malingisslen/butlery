@@ -1285,6 +1285,26 @@ Pinned by `test/unit/repositories/firebase_recipe_repository_sanitize_test.dart`
 fixture proving a bare colon is harmless, so a future reader cannot mistake the
 rule for "any colon blanks the field". BUT-1819, 2026-08-10
 
+**SUPERSEDED 2026-09-15 — the counter-argument above is built.** `sanitizeUrl` first builds
+the value it returns (null bytes removed, trimmed, homoglyphs folded), then tests ONE anchored
+pattern, `^[\x00-\x20]*(?:javascript|data|vbscript):` (case-insensitive), against that value
+with tab/CR/LF removed, and returns `''` on a match. A value that merely CONTAINS `data:`
+keeps its provenance.
+Retired verbatim: "`HtmlSanitizer.sanitizeUrl` matches `javascript:`, `data:` and `vbscript:` as"
+Retired verbatim: "**unanchored** substrings (`html_sanitizer.dart` :40-44). Turning the recipe"
+Retired verbatim: "Decision: accepted, and deliberately not fixed in this ticket. 2026-08-10."
+Retired verbatim: "(`a sentence CONTAINING data: is blanked`), which also carries a discriminator"
+— that test is now `a sentence CONTAINING data: keeps its provenance — only a leading scheme blanks`.
+**Malin's explicit call, 2026-09-14**, taken over the literal `^\s*(javascript|data|vbscript):` the
+counter-argument proposed. She was shown that the literal pattern lets a dangerous scheme
+through behind a leading control character or null byte — which the unanchored pattern had
+blocked — and that the markdown share export (`share_service.dart`) turns `sourceUrl` into a
+link with no scheme check of its own. **What she was NOT shown:** a measurement of how many
+stored `sourceUrl` values carry `data:` mid-sentence.
+The homoglyph-rewrite paragraph above is unchanged. The discriminator fixture stays in
+`firebase_recipe_repository_sanitize_test.dart`; the anchoring is pinned by the
+`sanitizeUrl - scheme anchoring` group in `html_sanitizer_test.dart`.
+
 ## Messaging — the conversation roster (2026-08-12)
 
 > **SUPERSEDED IN PART, 2026-08-22 (BUT-1831).** The section below describes

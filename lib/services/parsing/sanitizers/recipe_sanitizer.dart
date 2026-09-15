@@ -22,12 +22,8 @@
 /// homoglyphs to Latin. **It does not remove HTML** — that is not this
 /// function's job and nothing downstream relies on it doing so.
 ///
-/// `sanitizeUrl` is the part that matters: it blanks a value containing
-/// `javascript:`, `data:` or `vbscript:`. Note the patterns are UNANCHORED
-/// substring matches, so a provenance sentence that merely contains `data:`
-/// loses the whole field. That is accepted rather than unnoticed — see the
-/// BUT-1819 entry in `docs/architecture/ACCEPTED_DEVIATIONS.md` — and it is why
-/// the render guard in
+/// `sanitizeUrl` is the part that matters: it blanks a value whose scheme is
+/// `javascript:`, `data:` or `vbscript:`. The render guard in
 /// `lib/core/utils/external_link.dart` is the user-facing protection rather than
 /// this function alone.
 library;

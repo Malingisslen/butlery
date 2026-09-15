@@ -45,3 +45,12 @@ A new deviation in this area is appended HERE and in that document, in the same 
   this as a bug; do not "simplify" the discriminator fixture that proves a bare colon is
   harmless. BUT-1819, 2026-08-10
 
+- **SUPERSEDES the BUT-1819 `sourceUrl` entry above (2026-09-15): the counter-argument is
+  built.** `sanitizeUrl` tests `^[\x00-\x20]*(?:javascript|data|vbscript):` against the value
+  it returns (null bytes removed, trimmed, homoglyphs folded) with tab/CR/LF removed, and blanks
+  on a match; a `data:` mid-sentence is kept.
+  Retired verbatim: "`sanitizeUrl`'s patterns are UNANCHORED substrings, and `sourceUrl` is a free-text"
+  **Malin's explicit call, 2026-09-14**, over the literal `^\s*…` pattern, after being shown
+  that it would pass a dangerous scheme behind a leading control character or null byte. Keep
+  the discriminator fixture.
+

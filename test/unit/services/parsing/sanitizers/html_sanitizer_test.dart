@@ -715,6 +715,64 @@ void main() {
       });
     });
 
+    group('sanitizeUrl - scheme anchoring', () {
+      test('keeps a provenance sentence that merely CONTAINS data:', () {
+        const provenance = 'Kopierat från: Tårta med data: 3 ägg';
+
+        expect(sanitizer.sanitizeUrl(provenance), equals(provenance));
+      });
+
+      test('keeps an http URL whose path contains javascript:', () {
+        const url = 'https://example.com/?q=javascript:alert';
+
+        expect(sanitizer.sanitizeUrl(url), equals(url));
+      });
+
+      test('blanks a dangerous scheme after leading whitespace', () {
+        expect(sanitizer.sanitizeUrl('  JavaScript:alert(1)'), isEmpty);
+      });
+
+      test('blanks a dangerous scheme after a leading control character', () {
+        expect(sanitizer.sanitizeUrl('\x01javascript:alert(1)'), isEmpty);
+      });
+
+      test('blanks a dangerous scheme after a leading null byte', () {
+        expect(sanitizer.sanitizeUrl('\x00javascript:alert(1)'), isEmpty);
+      });
+
+      test('blanks a dangerous scheme split by a tab', () {
+        expect(sanitizer.sanitizeUrl('java\tscript:alert(1)'), isEmpty);
+      });
+
+      test('blanks a dangerous scheme split by a newline', () {
+        expect(sanitizer.sanitizeUrl('java\nscript:alert(1)'), isEmpty);
+      });
+
+      test('blanks a dangerous scheme split by a null byte', () {
+        expect(sanitizer.sanitizeUrl('java\x00script:alert(1)'), isEmpty);
+      });
+
+      test('blanks a dangerous scheme after a leading NBSP', () {
+        expect(sanitizer.sanitizeUrl('\u00A0javascript:alert(1)'), isEmpty);
+      });
+
+      test('blanks a dangerous scheme after a leading byte-order mark', () {
+        expect(sanitizer.sanitizeUrl('\uFEFFjavascript:alert(1)'), isEmpty);
+      });
+
+      test('blanks a dangerous scheme after a null byte and an NBSP', () {
+        expect(
+          sanitizer.sanitizeUrl('\x00\u00A0javascript:alert(1)'),
+          isEmpty,
+        );
+      });
+
+      test('blanks a dangerous scheme spelled with a Cyrillic homoglyph', () {
+        // U+0430 CYRILLIC SMALL LETTER A in place of the first `a`.
+        expect(sanitizer.sanitizeUrl('j\u0430vascript:alert(1)'), isEmpty);
+      });
+    });
+
     // ---------------------------------------------------------------
     // Null byte removal
     // ---------------------------------------------------------------

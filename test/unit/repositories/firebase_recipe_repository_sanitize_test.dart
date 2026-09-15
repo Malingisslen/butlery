@@ -194,13 +194,8 @@ void main() {
     });
 
     test(
-      'a sentence CONTAINING data: is blanked — accepted, not a surprise',
+      'a sentence CONTAINING data: keeps its provenance — only a leading scheme blanks',
       () async {
-        // `HtmlSanitizer._suspiciousUrlPatterns` matches as an UNANCHORED
-        // substring, so this loses the whole field. Pinned deliberately: it is a
-        // real consequence of turning the sanitizer on, it is recorded in the
-        // BUT-1819 plan as accepted, and anchoring the pattern is a separate
-        // judgement about how aggressive URL blocking should be.
         final recipe = RecipeFactory.build(
           id: 'r-over',
           createdBy: uid,
@@ -223,16 +218,12 @@ void main() {
         await repository.create(withColon);
         expect(
           (await storedCore('r-over2'))['sourceUrl'],
-          isEmpty,
-          reason: 'contains "data:" anywhere -> whole field blanked',
+          equals('Kopierat fran: Tarta med data: 3 agg'),
+          reason: '"data:" mid-sentence is not a scheme -> kept',
         );
 
-        // The discriminator. The two fixtures above differ on BOTH colons at
-        // once, so together they cannot tell "contains `data:`" from "contains
-        // any colon" — a sanitizer that blanked every colon would pass them
-        // both. This one has the colon `recipeCopiedFrom` really produces and no
-        // `data:`, so it must survive. It is also the only create-path fixture
-        // carrying å/ä/ö through the homoglyph fold.
+        // The discriminator: the colon `recipeCopiedFrom` really produces and
+        // no `data:`, so a sanitizer that blanked every colon fails here.
         final colonNoData = RecipeFactory.build(
           id: 'r-over3',
           createdBy: uid,
@@ -243,8 +234,7 @@ void main() {
         expect(
           (await storedCore('r-over3'))['sourceUrl'],
           equals('Kopierat från: Tårta med data 3 ägg'),
-          reason:
-              'a colon alone is harmless — only the literal "data:" matches',
+          reason: 'a colon alone is harmless',
         );
       },
     );
