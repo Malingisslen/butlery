@@ -14,7 +14,7 @@ Butlery is a recipe management application that lets you store, import, and shar
 
 ## 3. Eligibility
 
-You must be at least 16 years old to create an account. By creating an account, you confirm that you meet this age requirement.
+You must be at least 15 years old to create an account. By creating an account, you confirm that you meet this age requirement.
 
 ## 4. Account responsibilities
 

@@ -1,6 +1,6 @@
 # LLM Golden Tests
 
-Closed-loop quality measurement for Butlery's 6 LLM-driven flows (BUT-784).
+Closed-loop quality measurement for Butlery's LLM-driven flows (BUT-784).
 
 ## What this prevents
 
@@ -21,12 +21,13 @@ that goldens catch and PR review can't:
 | `.github/workflows/golden-llm.yml` | Nightly cron + manual dispatch |
 | `docs/testing/llm-golden-tests.md` | This document |
 
-## The 6 corpora (planned)
+## Corpora
 
 | Corpus | Status | Scoring | Cost per run |
 |--------|--------|---------|--------------|
 | `categorize_ingredient` | foundation (10 seed cases) | `exact` | free (on-device) |
 | `ner` | foundation (5 seed cases) | `jaccard ≥ 0.80` | free (on-device) |
+| `adversarial` | built (BUT-804 HIGH-AI4) — prompt-injection / jailbreak / structural-attack inputs against the deterministic categorizer; asserts the output stays inside the `ShoppingCategory` schema. Runs as a plain `flutter test` on CI shards, not in the nightly golden job. | schema-bound | free (on-device) |
 | `recipe_from_url` | deferred → follow-up | `similarity ≥ 0.85` | ~$0.10/run |
 | `ocr_recipe` | deferred → follow-up | `similarity ≥ 0.85` | ~$0.20/run |
 | `enhance_recipe` | deferred → follow-up | `similarity ≥ 0.85` | ~$0.15/run |

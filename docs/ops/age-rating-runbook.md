@@ -6,7 +6,7 @@
 - `docs/ops/play-data-safety-runbook.md` — data-collection inventory (must stay consistent with answers below).
 - `docs/ops/moderation-runbook.md` — UGC moderation pipeline that defends "infrequent/mild" UGC ratings under Apple 1.2 / Google Play UGC policy.
 - `assets/legal/community_guidelines_en.md` — content rules cited by reviewers when probing UGC defense.
-- `assets/legal/privacy_policy_{en,sv}.md` — age-gate language (`birthYear` GDPR Art. 8 compliance).
+- `assets/legal/privacy_policy_{en,sv}.md` — age-gate language (15+).
 - `lib/widgets/social/report_content_dialog.dart`, `lib/views/social/friend_profile_view.dart` — in-app report + block surfaces.
 
 This document is the authoritative answer set. If app capabilities change (new feature, new UGC surface, new sharing pattern), update this file *before* re-submitting.
@@ -63,7 +63,7 @@ App Store Connect → My Apps → Butlery → **App Information** → **Age Rati
 | Unrestricted Web Access | **No** | App does not embed a web browser. External links open in OS browser and point only to `butlery.app`, `support@butlery.se`, privacy policy, community guidelines. |
 | Gambling and Contests | **No** | None. |
 | User-Generated Content | **Yes** | Recipes (titles, ingredients, instructions, photos), comments, ratings, group messages, 1:1 pings. **Moderation:** report flow on every UGC surface; 24-h SLA; admin review screen at Settings → Review reports. **Block:** `lib/views/social/friend_profile_view.dart` exposes block on friend profiles. **Filter:** Community Guidelines + automated heuristics. This combination satisfies App Store Review Guideline 1.2. |
-| Made for Kids | **No** | App is 12+, not in the Kids category. Sign-up enforces `birthYear ≤ 2013` (i.e., user is at least 13) at Firestore-rules layer. |
+| Made for Kids | **No** | App is 12+, not in the Kids category. Sign-up refuses under-15s server-side: `verifySignupAge` (`MIN_AGE_YEARS = 15`) is the only `birthYear` writer and sets the `ageCompliant` claim that `firestore.rules → isAgeCompliant()` requires on UGC write paths. |
 | Social media capabilities (declaration, from ~Sept 2026) | **Yes** | Friend graph, recipe sharing, comments, group chat and 1:1 pings meet Apple's "redistribute / amplify / interact with UGC via a social feed or similar" definition — not a close call. Declaring Yes carries a minimum **13+** rating (BUT-1382). |
 
 **Resulting Apple rating:** 12+ today (driven by Profanity/Crude Humor "Infrequent/Mild" + Alcohol References "Infrequent/Mild" + Unrestricted UGC = Yes). Moves to **13+** once the social-media declaration below applies.
@@ -100,7 +100,7 @@ First-pass quick answers — full-question detail in §5 below.
 - **GRAC (KR): 12**
 - **IARC default: 12+**
 
-These map to a Play Console minimum age of **13** (Play Families threshold), which aligns with the in-app age gate (`birthYear ≤ 2013`).
+These map to a Play Console minimum age of **13** (Play Families threshold), which is below the in-app age gate (15+). The store value is a content rating; the app's own gate is deliberately stricter.
 
 ---
 
@@ -176,7 +176,7 @@ This section is the long-form answer pack: every IARC category, the question Pla
 ### 5.6 Digital purchases
 
 - **IARC question (paraphrase):** "Does the app facilitate digital purchases or in-app spending?"
-- **Answer:** **No.** No in-app purchases, no subscriptions, no digital goods, no virtual currency. Monetization decisions are deferred per `MEMORY.md` ("No monetization decisions yet — just build the app").
+- **Answer:** **No.** No in-app purchases, no subscriptions, no digital goods, no virtual currency. Butlery is free to users; no consumer subscription is planned (decided 2026-06-15).
 - **Apple equivalent:** Not part of the age-rating questionnaire; declared instead in App Store Connect → **Pricing and Availability** (Free, no IAP).
 
 ### 5.7 Drug, alcohol, and tobacco references
@@ -217,7 +217,7 @@ Re-fill **both** questionnaires (Apple + IARC) and re-submit if any of the follo
 | Adding **alcohol promotion** (cocktail-of-the-week feature, alcohol-only recipe section, partnership content) | Moves §5.7 from "references only" to "promotion". | Apple 17+, Play Mature 17+. |
 | Adding **third-party ads** | Forces declaration of advertising ID, may add in-app browser, changes data-safety form. | Rating unchanged unless ad targeting includes mature content. |
 | Adding **a general web browser / WebView with arbitrary URL input** | Changes "Unrestricted Web Access" from No to Yes. | Apple 17+. |
-| Removing the **age gate at sign-up** (`birthYear ≤ 2013`) | Both stores require the gate when UGC + messaging are present. Removal forces Made-for-Kids re-classification and stricter content rules. | Either Made-for-Kids (Play Families) with much stricter rules, or rejection. |
+| Removing the **age gate at sign-up** (`verifySignupAge`, 15+) | Both stores require the gate when UGC + messaging are present. Removal forces Made-for-Kids re-classification and stricter content rules. | Either Made-for-Kids (Play Families) with much stricter rules, or rejection. |
 | **Lowering moderation SLA below 24 h response** or removing the report flow | Apple Guideline 1.2 explicitly requires both. | Outright rejection on next review. |
 
 When any trigger lands: update this runbook → re-fill both questionnaires → re-submit → update the §4 history log.
@@ -238,13 +238,14 @@ made for kids" questionnaires. Cross-references:
 
 ### Evidence supporting the not-directed-at-children determination
 
-1. **13+ age gate at sign-up (BUT-413).** `OnboardingAgeGatePage` enforces
-   `birthYear ≤ 2013` before account creation succeeds; users who fail the
-   gate are routed to `OnboardingAgeGateBlockedView` and cannot proceed.
-   The same constraint is enforced server-side via Firestore rules on
-   `users/{uid}/settings/preferences` (`birthYear` required, range
-   [1900, 2013]). This satisfies COPPA §312.5 ("verifiable parental
-   consent") by structurally excluding children under 13.
+1. **15+ age gate at sign-up (ADR-0001/ADR-0002).** `OnboardingAgeGatePage`
+   collects the birth year; users under 15 are routed to
+   `OnboardingAgeGateBlockedView` and cannot proceed. The gate is
+   server-authoritative: the `verifySignupAge` callable (`MIN_AGE_YEARS = 15`)
+   is the only writer of `birthYear`, refuses under-15 signups, and sets the
+   `ageCompliant` claim that `firestore.rules → isAgeCompliant()` requires on
+   UGC write paths. Children under 13 are structurally excluded, which is
+   what the COPPA not-directed-at-children stance rests on.
 2. **No child-friendly UI motifs.** Visual identity targets adult home
    cooks: cream / forest-green / rust palette, Swedish bistro idiom,
    monochrome line illustrations. No bright primary colors, cartoon
@@ -262,7 +263,7 @@ made for kids" questionnaires. Cross-references:
    under Play's "primary OR appealing" two-prong test.
 5. **UGC + messaging surface targets adult-to-adult communication.**
    Friend graph, group chat, comments, and pings are scoped to people
-   who passed the 13+ age gate. Block + report flow on every UGC surface
+   who passed the 15+ age gate. Block + report flow on every UGC surface
    (cross-ref §2 / §5.4 above).
 
 ### Apple App Store Connect — Made for Kids workflow
@@ -272,14 +273,15 @@ made for kids" questionnaires. Cross-references:
 - This is consistent with the **12+** age rating from §1 (Apple's
   Made-for-Kids program is separate from the age-rating questionnaire).
 - If reviewers ask follow-up: cite the four evidence points above and
-  the existing `birthYear` age-gate enforcement at the Firestore-rules
-  layer.
+  the server-side `verifySignupAge` gate and the `isAgeCompliant()`
+  rules check.
 
 ### Google Play Console — Target audience and content workflow
 
 - Play Console → Butlery → **Policy** → **App content** → **Target
   audience and content** → **Manage**.
-- **Target age groups:** select **13–15, 16–17, 18 and over**. Do NOT
+- **Target age groups:** select **13–15, 16–17, 18 and over** (15-year-olds
+  sit in the 13–15 group; the app's own gate still refuses 13–14). Do NOT
   tick **Ages 5 and under**, **Ages 6–8**, or **Ages 9–12** — those would
   invoke Play Families policy (Designed for Families program) and force
   COPPA compliance burdens that don't apply here.
@@ -288,9 +290,8 @@ made for kids" questionnaires. Cross-references:
   required): "Butlery is a meal-planning and recipe app for adult home
   cooks. The visual identity uses a muted bistro palette and adult
   typographic style; no cartoon mascots, gamification, or child-targeted
-  artwork. Sign-up enforces a 13+ age gate (`birthYear ≤ 2013`) at the
-  Firestore-rules layer and rejects under-13 users before any data is
-  collected."
+  artwork. Sign-up enforces a server-side 15+ age gate and rejects
+  under-15 users."
 - **Designed for Families program:** **Do not opt in.** This program is
   for apps explicitly targeting children, which Butlery is not.
 - **Appeal questionnaire (Play "Does your app appeal to children?"):**
@@ -309,7 +310,7 @@ made for kids" questionnaires. Cross-references:
 - **BUT-624** (App Store / Play Console age rating) — closed; the
   resulting 12+ / Teen rating is consistent with this COPPA stance.
 - **`OnboardingAgeGatePage`** + **`OnboardingAgeGateBlockedView`** —
-  in-app structural enforcement of the 13+ floor.
+  in-app half of the 15+ floor; `verifySignupAge` is the server-authoritative half.
 
 ### When to revisit
 
@@ -317,7 +318,7 @@ Re-read this section if any of the following lands:
 
 - New feature targeting children (kids' recipes section, sticker book,
   parent-supervised mode, school-lunch planner).
-- Removal or weakening of the 13+ age gate.
+- Removal or weakening of the 15+ age gate.
 - Visual rebrand toward child-friendly motifs.
 - Marketing campaign aimed at the under-13 demographic.
 - New SDK that collects data from children (e.g., a kids-content network).

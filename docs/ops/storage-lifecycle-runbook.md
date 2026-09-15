@@ -1,6 +1,6 @@
 # Cloud Storage Versioning & Lifecycle (BUT-419)
 
-**Status: PENDING — script ready, gcloud activation user-blocked.**
+**Status: ACTIVE — see "Activation status" below.**
 
 Operational runbook for object versioning + 30-day noncurrent-version retention
 on the Butlery Firebase Storage bucket.

@@ -14,7 +14,7 @@ Butlery är en receptapp där du kan lagra, importera och dela recept; hålla ko
 
 ## 3. Behörighet
 
-Du måste vara minst 16 år för att skapa ett konto. Genom att skapa ett konto bekräftar du att du uppfyller åldersgränsen.
+Du måste vara minst 15 år för att skapa ett konto. Genom att skapa ett konto bekräftar du att du uppfyller åldersgränsen.
 
 ## 4. Kontoansvar
 
