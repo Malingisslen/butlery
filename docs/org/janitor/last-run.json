@@ -1,8 +1,13 @@
 {
-  "lastRun": "2026-09-14",
-  "dossiersRefreshed": 0,
-  "worldWatchRoles": 2,
-  "retroDue": true,
-  "acceptRate": 0.702,
-  "notes": "No stale dossier markers; Security Architect + Release/App-Store Compliance Manager scanned (nothing material); full org-retro overdue (77+ days, none logged)."
+  "lastRun": "2026-09-15",
+  "dossiersRefreshed": 22,
+  "worldWatchRoles": 0,
+  "retroFired": true,
+  "acceptRate": 0.625,
+  "scratchCleared": 34,
+  "healthChecks": {
+    "tagcheck": "0 scored: 242 predictions written, 119 skipped, no verified tags.gold.json answer keys",
+    "sprint-scratch": "34 stale patch entries removed, 0 tagged stashes"
+  },
+  "notes": "Local run. 27 markers found (cloud janitor cannot see them: gitignored); 5 refreshed by a parallel session (c0f32c636), 22 here. World-watch: none due. Full org-retro fired (docs/org/metrics/retro-2026-09-15-full.md). Accept-rate counted 269 autonomous commits vs 47 in the 09-14 cloud run: window not comparable. Memory curation skipped (live sessions, dirty memory tree). Knowledge distill not run: archives growing (uncommitted edits from another session). 5 shipped plans archived. State backup pushed (was 9 days old)."
 }
