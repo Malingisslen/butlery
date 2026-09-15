@@ -73,9 +73,9 @@ const Map<int, String> kExpectedLineClassifierModelHashes = <int, String>{
 /// custom-metadata integer on `models/crf_ingredient_weights.json`.
 ///
 /// BUT-1238: empty because no remote weights have ever been published —
-/// verified 2026-06-11 via Firebase Storage (404 on the object path). The
-/// retraining Cloud Function publishing a first version MUST land its hash
-/// here in the same PR as the upload, or every client refuses the download
+/// verified 2026-06-11 via Firebase Storage (404 on the object path). A first
+/// published version MUST land its hash here in the same PR as the upload,
+/// or every client refuses the download
 /// (empty/absent registry fail-closes; the bundled weights keep parsing).
 const Map<int, String> kExpectedCrfWeightHashes = <int, String>{};
 

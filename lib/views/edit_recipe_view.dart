@@ -549,9 +549,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
       TextFormField(
         // BUT-1910. The TWIN of the field in `skriv_sjalv_recept_view.dart`.
         // Fixing one without the other leaves the bug on the other screen, and
-        // this is the one reached by editing a saved recipe. `initialValue`
-        // seeds a comma too, so the field no longer opens with a period it
-        // then rewrites.
+        // this is the one reached by editing a saved recipe.
         initialValue: viewModel.rating == null
             ? ''
             : formatSwedishDecimal(viewModel.rating!),

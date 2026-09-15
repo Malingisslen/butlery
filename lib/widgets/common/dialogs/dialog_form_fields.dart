@@ -140,8 +140,8 @@ class DialogFormFields {
 
   /// Amount/quantity field with numeric validation.
   ///
-  /// Reads and writes the Swedish decimal COMMA, through the same formatter and
-  /// parser every other hand-typed amount in the app uses. It did neither until
+  /// Reads and writes through the same formatter and parser every other
+  /// hand-typed amount in the app uses. It did neither until
   /// BUT-1920: it filtered the field down to digits and a PERIOD with an
   /// ANCHORED pattern, so everything from a typed comma onward was discarded,
   /// and read what was left with a bare `double.tryParse`. It had no callers in

@@ -155,7 +155,7 @@ class PantryItem {
   /// BUT-1910: this used to `toString()` the fraction, so a shopping item read
   /// "1,5" and a pantry item "1.5" — one screen apart, for the same kind of
   /// number. It is also what seeds the edit sheet's amount field, and that
-  /// field parses both separators, so the comma round-trips.
+  /// field parses both separators.
   String get formattedQuantity => formatSwedishDecimal(quantity);
 
   bool get isExpired {

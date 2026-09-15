@@ -3,10 +3,11 @@
 import 'package:flutter/services.dart';
 
 import 'package:butlery/core/extensions/default_value_extensions.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 // WHICH FORMATTER APPLIES (BUT-1910)
 //
-// This app has several places that turn a period into a comma and read one
+// This app has several places that rewrite a decimal separator and read one
 // back, and nothing said when each wins, so the next reader picks at random.
 // This is a ROUTING rule, not a census — deliberately, because a count of them
 // would be wrong the week after it was written. Each entry carries the property
@@ -14,7 +15,8 @@ import 'package:butlery/core/extensions/default_value_extensions.dart';
 //
 //   * `parseSwedishDecimal` / `formatSwedishDecimal` (here) — every hand-typed,
 //     round-tripped field. The parser returns NULL and lets the caller decide
-//     what an unreadable field means.
+//     what an unreadable field means. These follow the app language
+//     ([displayDecimalSeparator]); the two below always write a comma.
 //   * `TextFormatting.parseSwedishNumber` / `formatFractional` — non-interactive
 //     recipe-text parsing. `parseSwedishNumber` falls back to 1.0 on input it
 //     cannot read, which is an accepted default when scraping a recipe and a
@@ -33,8 +35,9 @@ import 'package:butlery/core/extensions/default_value_extensions.dart';
 /// Swedish writes the decimal separator as a comma, Dart's `double` parses only
 /// a period, and a phone keyboard offers whichever one the OS locale feels like.
 /// Every field that takes a fractional amount therefore needs all three of:
-/// accept both separators, show back the comma, and hand a parseable string to
-/// `double`. Splitting those across a formatter here and an ad-hoc
+/// accept both separators, show back the app language's separator
+/// ([displayDecimalSeparator]), and hand a parseable string to `double`.
+/// Splitting those across a formatter here and an ad-hoc
 /// `replaceAll(',', '.')` at the call site is how BUT-1891 happened — the field
 /// stripped the separator before the parse ever saw it, so the parse looked
 /// correct and was unreachable.
@@ -61,11 +64,12 @@ class SwedishDecimalInputFormatter extends TextInputFormatter {
     TextEditingValue oldValue,
     TextEditingValue newValue,
   ) {
+    final separator = displayDecimalSeparator();
     final buffer = StringBuffer();
     var separatorTaken = false;
     // Counted rather than derived from the length delta: the transform is not
     // length-preserving (a rejected keystroke drops a character) and it is not
-    // a pure filter either (a period becomes a comma), so the only reliable
+    // a pure filter either, so the only reliable
     // cursor is "how many characters SURVIVED from before the caret".
     var caret = 0;
 
@@ -76,10 +80,9 @@ class SwedishDecimalInputFormatter extends TextInputFormatter {
       if (!keep) continue;
 
       if (isSeparator) separatorTaken = true;
-      // A typed period is rewritten, not refused. Refusing it would be a
-      // second, invisible rule for anyone whose keyboard offers a period, and
-      // the app's own display convention is the comma.
-      buffer.write(isSeparator ? ',' : char);
+      // Either separator is rewritten, not refused. Refusing one would be a
+      // second, invisible rule for anyone whose keyboard offers it.
+      buffer.write(isSeparator ? separator : char);
       if (i < newValue.selection.baseOffset) caret++;
     }
 
@@ -89,7 +92,8 @@ class SwedishDecimalInputFormatter extends TextInputFormatter {
     // Refusing only what does not shrink the field is what lets someone edit
     // their way out of an over-long amount that arrived from stored data — a
     // flat refusal would freeze that field for good.
-    if (_exceedsBounds(text) && text.length >= oldValue.text.length) {
+    if (_exceedsBounds(text, separator) &&
+        text.length >= oldValue.text.length) {
       return oldValue;
     }
     return TextEditingValue(
@@ -98,11 +102,11 @@ class SwedishDecimalInputFormatter extends TextInputFormatter {
     );
   }
 
-  /// [text] has already been filtered to digits and at most one comma.
-  static bool _exceedsBounds(String text) {
-    final separator = text.indexOf(',');
-    final integerDigits = separator < 0 ? text.length : separator;
-    final fractionDigits = separator < 0 ? 0 : text.length - separator - 1;
+  /// [text] has already been filtered to digits and at most one [separator].
+  static bool _exceedsBounds(String text, String separator) {
+    final at = text.indexOf(separator);
+    final integerDigits = at < 0 ? text.length : at;
+    final fractionDigits = at < 0 ? 0 : text.length - at - 1;
     return integerDigits > maxIntegerDigits ||
         fractionDigits > maxFractionDigits;
   }
@@ -113,7 +117,8 @@ class SwedishDecimalInputFormatter extends TextInputFormatter {
   }
 }
 
-/// Reads a hand-typed Swedish amount, or null when there is no number in it.
+/// Reads a hand-typed amount written with either separator, or null when
+/// there is no number in it. The app language does not change what it accepts.
 ///
 /// Returns null rather than a default so the caller decides what an unreadable
 /// field means — on the add dialog that is 1, on the edit dialog it is the
@@ -136,7 +141,8 @@ double? parseSwedishDecimal(String raw) {
   return double.tryParse(trimmed.replaceAll(',', '.'));
 }
 
-/// The Swedish spelling of an amount, with no trailing `,0` on a whole number.
+/// An amount spelled with [displayDecimalSeparator], with no trailing
+/// separator-and-zero on a whole number.
 ///
 /// Kept beside the parser because the two are meant as one round trip — but the
 /// trip production actually takes is format -> FIELD -> parse, and the field is
@@ -163,7 +169,9 @@ String formatSwedishDecimal(double amount) {
   if (amount == amount.roundToDouble()) return _wholeDigits(amount);
 
   final decimal = amount.toString();
-  if (!decimal.contains('e')) return decimal.replaceAll('.', ',');
+  if (!decimal.contains('e')) {
+    return decimal.replaceAll('.', displayDecimalSeparator());
+  }
   return _digitsBelowExponentThreshold(amount);
 }
 
@@ -200,7 +208,13 @@ String _digitsBelowExponentThreshold(double amount) {
   // Everything rounded away: "-0" is a worse answer than "0", and neither is
   // the amount, so say the one a reader can act on.
   if (!trimmed.contains(RegExp(r'[1-9]'))) return '0';
-  return trimmed.replaceAll('.', ',');
+  return trimmed.replaceAll('.', displayDecimalSeparator());
 }
+
+/// The decimal separator a hand-typed amount is shown with: a comma in the
+/// Swedish UI, a period otherwise. Read on every call rather than cached, so
+/// the formatter and [formatSwedishDecimal] agree after a language switch.
+String displayDecimalSeparator() =>
+    AppLocale.current.localeName.startsWith('sv') ? ',' : '.';
 
 final RegExp _positiveExponentShape = RegExp(r'^(-?)(\d)(?:\.(\d+))?e\+(\d+)$');

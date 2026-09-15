@@ -8,8 +8,10 @@
 // silently falls back to its default amount.
 
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart' show Locale;
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/swedish_decimal_input.dart';
 
 void main() {
@@ -294,6 +296,53 @@ void main() {
       // over the bound: every keystroke rejected, including backspace.
       final seeded = '9' * 30;
       expect(typed('9' * 29, previous: seeded), '9' * 29);
+    });
+  });
+
+  group('the separator follows the app language', () {
+    setUp(() => AppLocale.initialize(const Locale('en')));
+    tearDown(() => AppLocale.initialize(const Locale('sv')));
+
+    test('English shows a period, and a typed comma becomes one', () {
+      expect(displayDecimalSeparator(), '.');
+      expect(typed('1.5'), '1.5');
+      expect(typed('1,5'), '1.5');
+      expect(typed('1,5.5'), '1.55');
+    });
+
+    test('English formats with a period', () {
+      expect(formatSwedishDecimal(1.5), '1.5');
+      expect(formatSwedishDecimal(2), '2');
+      expect(formatSwedishDecimal(5e-7), '0.0000005');
+    });
+
+    test('the parser reads both separators in either language', () {
+      expect(parseSwedishDecimal('1.5'), 1.5);
+      expect(parseSwedishDecimal('1,5'), 1.5);
+    });
+
+    test('format -> field -> parse round-trips in English', () {
+      for (final amount in <double>[1.5, 0.25, 1000.75, 5e-7]) {
+        final shown = typed(formatSwedishDecimal(amount));
+        expect(parseSwedishDecimal(shown), amount, reason: 'amount $amount');
+      }
+    });
+
+    test('the digit bound counts around the period', () {
+      final atBound =
+          '${'9' * SwedishDecimalInputFormatter.maxIntegerDigits}.5';
+      expect(typed(atBound), atBound);
+      expect(
+        typed('9$atBound', previous: atBound),
+        atBound,
+        reason: 'one digit over the integer bound is refused',
+      );
+    });
+
+    test('switching back to Swedish restores the comma', () {
+      AppLocale.initialize(const Locale('sv'));
+      expect(typed('1.5'), '1,5');
+      expect(formatSwedishDecimal(1.5), '1,5');
     });
   });
 }

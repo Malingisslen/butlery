@@ -423,13 +423,8 @@ class UnifiedShoppingItem {
   double get quantity => amount;
 
   /// Formats the item amount with intelligent decimal precision for optimal display.
-  /// Drops the decimals from a whole number, and writes a fraction the Swedish
-  /// way.
-  ///
-  /// The separator is a comma because that is what the user typed and what
-  /// [displayText] has always promised in its own examples; `toString()` spells
-  /// it with a period, so every fractional amount used to be shown back in a
-  /// notation the quantity field will not even accept (BUT-1891).
+  /// Drops the decimals from a whole number, and writes a fraction with
+  /// [displayDecimalSeparator].
   /// **Examples:**
   /// - 2.0 → "2"
   /// - 1.5 → "1,5"
