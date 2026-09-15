@@ -142,3 +142,7 @@ ENG-23,Account deletion cascade / GDPR engine,Engine & Background,Verified,"Dele
 ENG-24,Scheduled storage & data cleanup jobs,Engine & Background,Partial,"Orphaned files and stale data cleaned up automatically","Several cleanup jobs lack dedicated tests"
 ENG-25,PWA install prompt (web),Engine & Background,Untested,"Web user adds Butlery to their home screen","Web-only, low risk"
 ENG-26,Recipe print (web),Engine & Background,Untested,"Web user prints a clean copy of a recipe or saves as PDF","Web-only, low risk"
+REC-17,Family rating (household verdicts per recipe),Recipe Management,Partial,"Each household member — account holders and managed diner profiles — leaves their own star verdict on a recipe","Entry + breakdown screens untested at the widget layer"
+IMP-12,Voice recipe import (Tala in recept),Recipe Import,Verified,"User dictates a recipe's title, ingredients and steps by voice instead of typing",
+MENU-17,Who's eating today (per-meal presence),Menu & Shopping,Partial,"Planner marks who's actually home for a meal so allergen filtering reflects real attendance, not the whole household by default","Picker sheet's own tap/confirm interaction untested at the widget layer"
+SOC-20,Butlery-betyget (pooled community rating pill),Social,Verified,"User sees one trustworthy community score for a dish, pooled across every copy of it rather than fragmented per import","Behind Remote Config flag enable_pooled_ratings, default OFF"

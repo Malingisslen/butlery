@@ -2,7 +2,7 @@
 
 > **What this is.** A single, plain-language map of every user-facing feature in Butlery, what each is supposed to do (read from the actual code, not from tickets), and whether a test currently proves it works. Built 2026-06-21 by reading the codebase cluster-by-cluster.
 >
-> **How to read it.** Start with *Coverage at a glance* and *Gaps worth ticketing*. The *Master index* lists all 137 features with their test status. The *Detailed records* hold the full story per feature. A companion sortable spreadsheet lives at `docs/feature_inventory.csv` (import into Google Sheets).
+> **How to read it.** Start with *Coverage at a glance* and *Gaps worth ticketing*. The *Master index* lists every feature with its test status. The *Detailed records* hold the full story per feature. A companion sortable spreadsheet lives at `docs/feature_inventory.csv` (import into Google Sheets).
 >
 > **Test status legend.** **Verified** = a test exists that would fail if this broke. **Partial** = the logic underneath is tested but the screen/flow on top isn't, *or* only part of the feature is covered. **Untested** = no test found.
 >
@@ -13,15 +13,15 @@
 | Area | Features | Verified | Partial | Untested |
 |---|---|---|---|---|
 | Auth & Onboarding (AUTH) | 14 | 12 | 1 | 1 |
-| Recipe Management (REC) | 15 | 1 | 11 | 3 |
-| Recipe Import (IMP) | 11 | 5 | 6 | 0 |
-| Menu & Shopping (MENU) | 15 | 13 | 2 | 0 |
-| Social (SOC) | 18 | 12 | 3 | 3 |
+| Recipe Management (REC) | 17 | 2 | 12 | 3 |
+| Recipe Import (IMP) | 12 | 6 | 6 | 0 |
+| Menu & Shopping (MENU) | 17 | 14 | 3 | 0 |
+| Social (SOC) | 20 | 14 | 3 | 3 |
 | Groups & Messaging (GRP) | 12 | 7 | 4 | 1 |
-| Cooking, Pantry & Search (COOK) | 12 | 9 | 3 | 0 |
+| Cooking, Pantry & Search (COOK) | 14 | 11 | 3 | 0 |
 | Settings, Legal & Admin (SET) | 14 | 7 | 3 | 4 |
 | Engine & Background (ENG) | 26 | 16 | 8 | 2 |
-| **Total** | **137** | **82** | **41** | **14** |
+| **Total** | **146** | **89** | **43** | **14** |
 
 > _Partial refresh 2026-07-14:_ the AUTH and IMP rows above were re-verified against the current test suite (AUTH-11, AUTH-14 now Verified; IMP-06 now Partial — see the Tier-1 list below). The other rows still reflect the 2026-06-21 audit and have not been re-run wholesale.
 
@@ -96,6 +96,7 @@ _Closed since the 2026-06-21 build (verified 2026-07-14):_
 | REC-14 | Personal tags & collections | Partial |
 | REC-15 | Tag detail + automation rules | Partial |
 | REC-16 | Voice recipe search (Tala in din sökning) | Verified |
+| REC-17 | Family rating (household verdicts per recipe) | Partial |
 
 ### Recipe Import
 | ID | Feature | Tests |
@@ -111,6 +112,7 @@ _Closed since the 2026-06-21 build (verified 2026-07-14):_
 | IMP-09 | Import from archive (restore) | Partial |
 | IMP-10 | Assisted import wizard | Partial |
 | IMP-11 | Ingredient-line parsing (CRF/NER/ONNX) | Partial |
+| IMP-12 | Voice recipe import (Tala in recept) | Verified |
 
 ### Menu & Shopping
 | ID | Feature | Tests |
@@ -131,6 +133,7 @@ _Closed since the 2026-06-21 build (verified 2026-07-14):_
 | MENU-14 | Browse shared shopping lists | Partial |
 | MENU-15 | Share an existing shopping list | Verified |
 | MENU-16 | Voice menu prompt (Tala in veckomenyn) | Verified |
+| MENU-17 | Who's eating today (per-meal presence) | Partial |
 
 ### Social
 | ID | Feature | Tests |
@@ -154,6 +157,7 @@ _Closed since the 2026-06-21 build (verified 2026-07-14):_
 | SOC-17 | Activity feed | Verified |
 | SOC-18 | Report content / user | Untested |
 | SOC-19 | Voice comment on recipes (Tala in en kommentar) | Verified |
+| SOC-20 | Butlery-betyget (pooled community rating pill) | Verified |
 
 ### Groups & Messaging
 | ID | Feature | Tests |
@@ -465,6 +469,47 @@ _Closed since the 2026-06-21 build (verified 2026-07-14):_
 - **Edge cases:** Denied mic → typed search untouched; model missing → "inte tillgänglig" notice with typing pointer; hidden on web.
 - **Test coverage:** Verified — `search_filter_widget_test.dart` (spoken query → onSearchChanged; no mic by default), plus the shared `voice_prompt_button_test.dart` degradation suite.
 
+#### REC-17: Family rating (household verdicts per recipe)
+- **Entry:** Auto-chained from "Mark as cooked" (who's-eating picker →
+  `showFamilyRatingEntry`) when attendance was picked; manually via the recipe
+  detail's "Betygsätt som familj" button. The breakdown is an inline, collapsible
+  recipe-detail section (`FamilyRatingBreakdown`), hidden until the household has
+  rated.
+- **User story:** As a household, I want everyone who ate a dish — account holders
+  and non-account "diner profiles" like kids or grandparents — to leave their own
+  star verdict, so the household's shared opinion of a recipe is more than just
+  whoever happened to open the app.
+- **Expected behavior:** The entry screen lists every present household member (from
+  the shared roster: real accounts + managed diner profiles) with an individually
+  tappable 1–5 star row. A row for another account holder (not the device's own user)
+  is marked as a proxy entry ("inmatat av X") and never overwrites that other
+  account's own private rating. Saving writes one `FamilyRating` document per member
+  to the `family_ratings` collection, scoped to the household. The breakdown section
+  shows the family average, a per-diner row that deep-links back into the entry
+  screen focused on just that member (live-refreshing off the same Firestore
+  listener), and a comparison against the recipe's community average and the
+  viewer's own personal rating. A private note tells the user ratings stay inside the
+  household.
+- **Edge cases:** A solo account (no household members beyond the owner) never shows
+  the who's-eating step, so the whole feature stays invisible until family exists.
+  Save is disabled until at least one star rating is set. A failed persist keeps the
+  form open rather than losing the input. Re-editing one diner from the breakdown
+  reopens the same entry screen scoped to just that member.
+- **Validation:** Stars are enforced 1–5 at the data boundary
+  (`FirebaseFamilyRatingRepository._assertValidStars`, thrown as
+  `SecurityViolationException`) on create/update/batch, independent of any UI check.
+  Update also forbids re-parenting a rating into a different household, and every
+  permission check requires household membership.
+- **Test coverage:** Partial — model, service and repository logic are covered
+  (`test/unit/models/family_rating_test.dart`,
+  `test/unit/services/family/family_rating_service_test.dart`,
+  `test/unit/repositories/firebase/firebase_family_rating_repository_test.dart`), and
+  both screens' view-models have unit tests
+  (`test/unit/viewmodels/family/family_rating_entry_viewmodel_test.dart`,
+  `test/unit/viewmodels/family/family_rating_breakdown_viewmodel_test.dart`); neither
+  `family_rating_entry_view.dart` nor `family_rating_breakdown.dart` has a dedicated
+  widget test.
+
 ### Recipe Import
 
 #### IMP-01: URL import (single + multi-URL batch)
@@ -548,6 +593,34 @@ _Closed since the 2026-06-21 build (verified 2026-07-14):_
 - **Expected behavior:** Tiered parsing — Swedish heuristics + a CRF parser (Viterbi) and an ONNX-backed NER path (WordPiece) with remote model loading + hash verification. A line classifier separates ingredient vs instruction vs noise.
 - **Edge cases:** Model load fail / hash mismatch → rule-based fallback; garbage lines filtered.
 - **Test coverage:** Partial — strategy/normalizer tests exist; CRF/NER/ONNX have a separate test subtree outside this cluster's sweep.
+
+#### IMP-12: Voice recipe import (Tala in recept)
+- **Entry:** `/voiceImport` (deferred-loaded `VoiceImportView`), reached from the
+  add-recipe hub's mic tile.
+- **User story:** As a user with my hands busy or who prefers speaking, I want to
+  dictate a recipe's title, ingredients and steps section by section so that I can add
+  a recipe without typing.
+- **Expected behavior:** Three guided checklist cards (title / ingredients / steps),
+  recordable in any order, each backed by on-device KB-Whisper transcription
+  (`VoiceCaptureService`, 3-minute cap with auto-stop). Every field stays typable — voice
+  is always an offer, never a gate — and re-dictating a section replaces just that
+  text. On import, the three transcripts are assembled into one canonical recipe text
+  and parsed through the same tiered parser as text/paste import
+  (`TextImportStrategy`), then the resulting recipe's provenance is overridden to
+  `SourceArtefactType.voiceDictation` and its parse-correction telemetry tagged
+  `voice` — kept out of the pasted-text training bucket. A needs-assistance result
+  falls back to the assisted-import dialog, same as any other import path.
+- **Edge cases:** Mic permission denied → rationale dialog with a settings deep link
+  on permanent denial. No Swedish TTS/model available or mic busy → capture reports
+  unavailable, card stays typable (never a dead end). The 3-minute auto-stop lands the
+  capped transcript exactly like a manual stop, and the on-screen text field resyncs
+  even when the stop happened automatically (not from a user tap). Import stays locked
+  until all three sections have non-empty text.
+- **Validation:** Each section requires non-empty text before the submit button
+  unlocks; the assembled text then goes through `TextImportStrategy`'s own validation.
+- **Test coverage:** Verified — `test/unit/services/import/voice_import_strategy_test.dart`,
+  `test/unit/viewmodels/import/voice_import_viewmodel_test.dart`,
+  `test/widget/views/voice_import_view_test.dart`.
 
 ### Menu & Shopping
 
@@ -665,6 +738,41 @@ _Closed since the 2026-06-21 build (verified 2026-07-14):_
 - **Expected behavior:** Push-to-talk → on-device KB-Whisper transcription (Swedish; model OTA-delivered + SHA-256 fail-closed) → transcript lands EDITABLE in the prompt field → normal generation. Spoken register handled by the parser (filler strip, last-wins self-corrections). Audio deleted after transcription on every exit path, never uploaded.
 - **Edge cases:** Denied/permanently-denied mic → rationale/settings snackbar, typed input untouched; missing model or failed transcription → quiet snackbar pointing back to typing; silence hallucinations parse to empty, never a garbage menu; hidden on web.
 - **Test coverage:** Verified — `voice_capture_service_test.dart` (all-exit-path audio cleanup), `whisper_model_manager_test.dart` (fail-close delivery), `voice_prompt_button_test.dart` (states + degradation), `spoken_prompt_golden_test.dart` (29 spoken transcripts). Real-device latency check pending (founder).
+
+#### MENU-17: Who's eating today (per-meal presence)
+- **Entry:** Tap the presence-faces row under a lunch/middag cell on the weekly menu
+  calendar (BUT-1611).
+- **User story:** As a planner, I want to mark which household members are actually
+  home for a given meal — or the whole day — so that the menu's allergen and dietary
+  filtering reflects who's really eating, not the whole household by default.
+- **Expected behavior:** A seeded bottom sheet lists the household roster (accounts +
+  diner profiles), pre-checked with that slot's current presence (or everyone, by
+  default). Confirming applies to "this meal" only or "the whole day" (sets both
+  slots at once). Selecting the entire roster stores `null` — the "everyone" unset
+  default — to keep the presence map sparse rather than redundantly listing everyone.
+  `PresentDinerPrefsResolver` turns the present set into an allergen/dietary union for
+  that slot's recipe pool: present account holders go through the normal per-member
+  household resolution (BUT-1663's safety floor applies), present diner profiles
+  contribute their own stored preferences, and one cautious diner (e.g.
+  "don't show unknown-safety recipes") closes that hatch for the whole meal. The
+  presence row itself is invisible for a solo account (roster ≤ 1) — the feature
+  stays hidden until there's a household to have opinions about.
+- **Edge cases:** Presence never reshuffles an already-generated week — changing who's
+  home after generation only affects future placements, and a snackbar says so when
+  a menu already exists. An unreadable roster degrades to a safety-floored filter
+  rather than an unfiltered menu (BUT-2076) instead of silently showing everything. A
+  dismissed sheet or a failed save makes no change to the stored presence.
+- **Validation:** N/A beyond the confirm button requiring a non-empty selection
+  unless the sheet explicitly allows "nobody home" (the presence variant does; the
+  cook-log variant doesn't).
+- **Test coverage:** Partial — the allergen-union resolver logic is thoroughly tested
+  (`test/unit/services/menu/present_diner_prefs_resolver_test.dart`), the shared
+  picker view-model's BUT-1611 seeding rules are tested
+  (`test/unit/viewmodels/family/who_is_eating_viewmodel_test.dart`), and the
+  calendar's presence-row visibility (shown for a household, hidden for solo) is
+  tested (`test/widget/menu/calendar_presence_test.dart`); the picker sheet's own
+  tap-to-toggle-then-confirm interaction (`_WhoIsEatingSheet`) has no dedicated
+  widget test.
 
 ### Social
 
@@ -807,6 +915,44 @@ _Closed since the 2026-06-21 build (verified 2026-07-14):_
 - **Expected behavior:** Push-to-talk → on-device KB-Whisper transcription → transcript APPENDS editable to the comment field and flows through the same onChanged path as typing — draft persistence, the profanity gate (BUT-1393) and the account-maturity gate (BUT-1419) all see it as typed text. Nothing posts automatically. Audio deleted after transcription, never uploaded.
 - **Edge cases:** Denied mic → typed text untouched; busy states (posting/uploading) disable the mic; hidden on web.
 - **Test coverage:** Verified — `comment_form_widget_test.dart` (append+editable+draft parity, denied-mic fallback), plus the shared `voice_prompt_button_test.dart` degradation suite.
+
+#### SOC-20: Butlery-betyget (pooled community rating pill)
+- **Entry:** Green pill on the recipe card (replaces the per-copy "alla" pill once
+  the pool clears the display floor) and on the recipe detail page's labelled pooled
+  section.
+- **User story:** As a user browsing recipes, I want to see one trustworthy community
+  score for a dish — pooled across everyone who has that same dish, not just people
+  who happened to import the exact same file — so a popular recipe's real reputation
+  isn't fragmented across separate copies.
+- **Expected behavior:** Behind the `enable_pooled_ratings` Remote Config flag
+  (default **OFF**). Reads the server-authoritative `canonical_recipe_stats/{poolKey}`
+  aggregate — count + average across every user who rated the same dish identity,
+  keyed independently of whose copy it is. Only renders once the pool clears the
+  anti-gaming/k-anonymity display floor (`count >= 5`); below the floor, with the flag
+  off, or on a read error, no pill shows at all (never a blank or broken one). When
+  the pooled pill shows, it takes over the card's community slot and the
+  household/personal rating pill is visually demoted to neutral so only one green
+  pill is ever on screen. The average is formatted Swedish-style with a decimal comma
+  (e.g. "4,3 · 12 betyg"), shared by all three rating-pill variants
+  (`formatRatingComma`) so the format can't drift between them.
+  Batch pooled-stat reads for list screens are chunked (Firestore `whereIn` limit)
+  and de-duplicated by pool key rather than one read per card.
+- **Edge cases:** No pool document yet → treated as no pill (never a zero/blank
+  pill). A whole-number average still renders one decimal (4,0). A pooled rating
+  never detaches when the underlying recipe is later edited — it stays frozen to the
+  dish it originally judged (accepted edge case, not a bug).
+- **Validation:** N/A — read-only display. The underlying `rateRecipe` write that
+  feeds the pool enforces its own 1–5 range and block/permission gates (see SOC-15).
+- **Test coverage:** Verified —
+  `test/unit/repositories/firebase/firebase_ratings_repository_pooled_stats_test.dart`
+  (display-floor logic + aggregate parsing),
+  `test/widget/recipe/butlery_betyg_pill_test.dart` (rendering, decimal-comma
+  formatting, accessibility label),
+  `test/widget/views/recipe_detail/recipe_detail_metadata_pooled_pill_test.dart`
+  (flag on/off, below-floor, and read-error fallback), and
+  `test/widget/recipe/recipe_card_test.dart` (pooled-vs-per-copy pill precedence and
+  demotion on the card).
+
 ### Groups & Messaging
 
 #### GRP-01: Create social group (friend category)

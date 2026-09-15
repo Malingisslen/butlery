@@ -84,7 +84,7 @@ audit's core finding — check it before trusting any description of the pipelin
 | 5-tier parse waterfall + ingredient cascade | **LIVE** | Works as documented; short-circuit at 0.65 quality; selective LLM enhance before full LLM. |
 | Site-config success counters → routing | **LIVE, closed loop** | `logParseEvent` increments per-domain counters; `computedQualityScore` flips to live data at ≥5 samples; `isReliable` raises the LLM-avoidance threshold. The one fully automatic flywheel. |
 | Alias learning (corrections → `learnedAliasesSv`) | **LIVE but dormant** | Auto-writes production ingredient master data at 3 distinct users; unreachable pre-launch; **no review/revert path** (roadmap P1). |
-| CRF retrain pipeline | **HALF-BUILT** | Corrections→CoNLL→retrain script works; but no Storage upload step, hash registry forces an app release anyway, and no golden-set eval gate before shipping weights. |
+| CRF retrain pipeline | **HALF-BUILT** | Corrections→CoNLL→retrain script works; but the hash registry forces an app release anyway. |
 | `parse_corrections_v2` (per-field, scrubbed) | **WRITE-ONLY** | Built by BUT-595 to be queryable; nothing queries it. The CRF export reads the *old* unscrubbed aggregate collection instead. |
 | `llm_response_samples` capture | **WRITE-ONLY** | Every paid Gemini call captured "for mining"; no reader exists; 30-day TTL deletes before use. |
 | Prompt A/B infrastructure | **BUILT, unused** | Bucketing + per-bucket logging fully threaded; no experiment configured. |

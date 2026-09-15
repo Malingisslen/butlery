@@ -144,9 +144,8 @@ see `docs/architecture/RECIPE_PIPELINE.md` truth table and the roadmap):
    imports; photo/OCR, text-paste, social, and URL tiers 2-7 capture nothing*
 2. `export-corrections.ts` Cloud Function exports corrections as training data ✅ *works,
    but reads the unscrubbed aggregate collection, not `parse_corrections_v2`*
-3. CRF weights retrained → `scripts/crf/retrain_with_corrections.sh` ✅ *works* — but there
-   is **no Storage upload step**, no golden-set eval gate, and the hash registry requires a
-   code change + app release for OTA weights to be accepted
+3. CRF weights retrained → `scripts/crf/retrain_with_corrections.sh` ✅ *works* — but the hash
+   registry requires a code change + app release for OTA weights to be accepted
 4. `RemoteWeightLoader` picks up new weights on next check ✅ *loader half works and is tested*
 5. BERT NER model retrained periodically via Python pipeline (`scripts/ner/`) — manual
 
