@@ -10,6 +10,7 @@ import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/utils/external_link.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/deep_link_service.dart';
@@ -161,12 +162,19 @@ class ShareService extends BaseService {
     return buffer.toString();
   }
 
-  /// Format recipe as Markdown
+  /// Format recipe as Markdown.
+  ///
+  /// Every recipe text field is written through [_escapeMarkdownLinkSyntax],
+  /// and tag ids through [_codeSpanSafe] (escapes do nothing inside a code
+  /// span), so text a user or an import put in a recipe cannot become a link in the
+  /// reader's Markdown viewer — `[x](javascript:…)` and `<javascript:…>` are
+  /// both valid Markdown links.
   String formatRecipeMarkdown(Recipe recipe) {
     final buffer = StringBuffer();
+    const esc = _escapeMarkdownLinkSyntax;
 
     // Main heading
-    buffer.writeln('# ${recipe.title}');
+    buffer.writeln('# ${esc(recipe.title)}');
     buffer.writeln();
 
     // Metadata
@@ -187,14 +195,14 @@ class ShareService extends BaseService {
     }
     if (recipe.mealType.isNotEmpty) {
       buffer.writeln(
-        '${AppLocale.current.shareTypeLabelBold} ${recipe.mealType}',
+        '${AppLocale.current.shareTypeLabelBold} ${esc(recipe.mealType)}',
       );
     }
     buffer.writeln();
 
     // Description
     if (recipe.description.isNotEmpty) {
-      buffer.writeln('> ${recipe.description}');
+      buffer.writeln('> ${esc(recipe.description)}');
       buffer.writeln();
     }
 
@@ -202,7 +210,7 @@ class ShareService extends BaseService {
     if (recipe.ingredients.isNotEmpty) {
       buffer.writeln('## $_ingredientsTitle');
       for (final ingredient in recipe.ingredients) {
-        buffer.writeln('- $ingredient');
+        buffer.writeln('- ${esc(ingredient)}');
       }
       buffer.writeln();
     }
@@ -211,7 +219,7 @@ class ShareService extends BaseService {
     if (recipe.instructions.isNotEmpty) {
       buffer.writeln('## $_instructionsTitle');
       for (int i = 0; i < recipe.instructions.length; i++) {
-        buffer.writeln('${i + 1}. ${recipe.instructions[i]}');
+        buffer.writeln('${i + 1}. ${esc(recipe.instructions[i])}');
       }
       buffer.writeln();
     }
@@ -219,20 +227,44 @@ class ShareService extends BaseService {
     // Tags
     if (recipe.personalTagIds != null && recipe.personalTagIds!.isNotEmpty) {
       buffer.writeln('## ${AppLocale.current.shareTagsLabel}');
-      buffer.writeln(recipe.personalTagIds!.map((tag) => '`$tag`').join(' '));
+      buffer.writeln(
+        recipe.personalTagIds!
+            .map((tag) => '`${_codeSpanSafe(tag)}`')
+            .join(' '),
+      );
       buffer.writeln();
     }
 
     // Source
-    if (recipe.sourceUrl != null && recipe.sourceUrl!.isNotEmpty) {
+    final sourceUrl = recipe.sourceUrl;
+    if (sourceUrl != null && sourceUrl.isNotEmpty) {
       buffer.writeln('---');
-      buffer.writeln(
-        '*$_sourceLabel [${recipe.sourceUrl}](${recipe.sourceUrl})*',
-      );
+      buffer.writeln('*$_sourceLabel ${_markdownSource(sourceUrl)}*');
     }
 
     return buffer.toString();
   }
+
+  /// `sourceUrl` is a free-text provenance field, so it becomes a link only
+  /// when [isSafeExternalUrl] accepts it — the predicate the recipe detail
+  /// view draws its source link with. The destination is the parsed [Uri]
+  /// (which percent-encodes whitespace, `<` and `>`) inside `<…>`, so a `)`
+  /// in the URL cannot end the link early.
+  static String _markdownSource(String sourceUrl) {
+    final text = _escapeMarkdownLinkSyntax(sourceUrl);
+    if (!isSafeExternalUrl(sourceUrl)) return text;
+    return '[$text](<${Uri.parse(sourceUrl)}>)';
+  }
+
+  /// Backslash-escapes the characters that open a Markdown link, an autolink
+  /// or a raw HTML tag, and the backslash itself.
+  static String _escapeMarkdownLinkSyntax(String text) =>
+      text.replaceAllMapped(RegExp(r'[\\\[\]<>]'), (m) => '\\${m[0]}');
+
+  /// [tag] without the backticks and line breaks that could end its code span
+  /// early and let the rest render as Markdown.
+  static String _codeSpanSafe(String tag) =>
+      tag.replaceAll(RegExp('[`\r\n]'), '');
 
   /// Translate language-neutral category constant to localized display name for sharing.
   static String _categoryDisplayName(String category) {

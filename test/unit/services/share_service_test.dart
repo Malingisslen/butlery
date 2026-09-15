@@ -305,6 +305,112 @@ void main() {
       });
     });
 
+    group('Recipe Formatting - Markdown link safety', () {
+      String markdownFor({
+        String title = 'Kladdkaka',
+        String description = 'Kladdig',
+        List<String> ingredients = const [],
+        List<String> instructions = const [],
+        String mealType = 'Middag',
+        List<String>? personalTagIds,
+        String? sourceUrl,
+      }) => shareService.formatRecipeMarkdown(
+        RecipeFactory.build(
+          title: title,
+          description: description,
+          ingredients: ingredients,
+          instructions: instructions,
+          mealType: mealType,
+          personalTagIds: personalTagIds,
+          sourceUrl: sourceUrl,
+        ),
+      );
+
+      test('an http source becomes a link', () {
+        expect(
+          markdownFor(sourceUrl: 'https://example.com/recipe'),
+          contains(
+            '*Källa: [https://example.com/recipe](<https://example.com/recipe>)*',
+          ),
+        );
+      });
+
+      test('a javascript: source is written as text, not a link', () {
+        final markdown = markdownFor(sourceUrl: 'javascript:alert(1)');
+
+        expect(markdown, contains('*Källa: javascript:alert(1)*'));
+        expect(markdown, isNot(contains('](')));
+      });
+
+      test('a provenance sentence source is written as text', () {
+        expect(
+          markdownFor(sourceUrl: 'Kopierat från: Tårta'),
+          contains('*Källa: Kopierat från: Tårta*'),
+        );
+      });
+
+      test('link syntax inside a non-URL source is escaped', () {
+        final markdown = markdownFor(
+          sourceUrl: 'se [här](javascript:alert(1))',
+        );
+
+        expect(markdown, contains(r'*Källa: se \[här\](javascript:alert(1))*'));
+      });
+
+      test('a ) in an http source cannot end the link early', () {
+        final markdown = markdownFor(
+          sourceUrl: 'https://a.com/x) [klick](javascript:alert(1)',
+        );
+
+        expect(
+          markdown,
+          contains('(<https://a.com/x)%20%5Bklick%5D(javascript:alert(1)>)'),
+        );
+      });
+
+      test('link syntax in recipe text is escaped', () {
+        final markdown = markdownFor(
+          title: '[klick](javascript:alert(1))',
+          ingredients: ['<javascript:alert(1)>', r'1\2 dl'],
+        );
+
+        expect(markdown, contains(r'# \[klick\](javascript:alert(1))'));
+        expect(markdown, contains(r'- \<javascript:alert(1)\>'));
+        expect(markdown, contains(r'- 1\\2 dl'));
+      });
+
+      test(
+        'link syntax in description, instructions and meal type is escaped',
+        () {
+          final markdown = markdownFor(
+            description: '[a](javascript:alert(1))',
+            instructions: ['<javascript:alert(2)>'],
+            mealType: '[c](javascript:alert(3))',
+          );
+
+          expect(markdown, contains(r'> \[a\](javascript:alert(1))'));
+          expect(markdown, contains(r'1. \<javascript:alert(2)\>'));
+          expect(markdown, contains(r'**Typ:** \[c\](javascript:alert(3))'));
+        },
+      );
+
+      test('a tag cannot close its code span early', () {
+        final markdown = markdownFor(
+          personalTagIds: [
+            'a` [x](javascript:alert(1)) `b',
+            'c\n\n[y](javascript:alert(2))',
+          ],
+        );
+
+        expect(
+          markdown,
+          contains(
+            '`a [x](javascript:alert(1)) b` `c[y](javascript:alert(2))`',
+          ),
+        );
+      });
+    });
+
     group('Smart Format Selection', () {
       test('should select complete format for recipes with source URL', () {
         // Act

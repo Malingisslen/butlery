@@ -1305,6 +1305,17 @@ The homoglyph-rewrite paragraph above is unchanged. The discriminator fixture st
 `firebase_recipe_repository_sanitize_test.dart`; the anchoring is pinned by the
 `sanitizeUrl - scheme anchoring` group in `html_sanitizer_test.dart`.
 
+**AMENDED 2026-09-15 — the markdown export premise.** `ShareService.formatRecipeMarkdown`
+writes `sourceUrl` as a link only when `isSafeExternalUrl` accepts it, and backslash-escapes
+`\`, `[`, `]`, `<` and `>` in the title, description, meal type, ingredients and instructions;
+tag ids are written in code spans with backticks and line breaks removed. It is reached only through
+`shareRecipeWithFormat`, `getFormattedRecipe` and `copyRecipe`, none of which is called from
+`lib/` outside `share_service.dart`; the app's share button calls `shareRecipe`, which writes
+plain text. Retired verbatim: "blocked — and that the markdown share export (`share_service.dart`) turns `sourceUrl` into a"
+Malin was told the path is unreachable on 2026-09-15 and chose to ship the escaping anyway.
+The anchoring decision above was not re-asked. Pinned by `Recipe Formatting - Markdown link safety`
+in `test/unit/services/share_service_test.dart`.
+
 ## Messaging — the conversation roster (2026-08-12)
 
 > **SUPERSEDED IN PART, 2026-08-22 (BUT-1831).** The section below describes
