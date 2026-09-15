@@ -4335,3 +4335,18 @@ regelns obligatoriska fält på det som skrivs.**
 Samma bygge, samma klass en nivå ned: ett numeriskt värde som delas av en Dart-skrivare och ett
 regelfönster (stämpelns `expireAt`) var olåst tills en grind frågade vad som hände om någon satte
 tillbaka 90 dagar — regeltesterna byggde egna stämplar och såg aldrig skrivarens tal.
+
+## 2026-09-15 — En sanerare som PRÖVAR en sträng och SPARAR en annan har ett hål i avståndet mellan dem (BUT-1819 förankring)
+
+Förankringen av `sanitizeUrl` prövade mönstret mot en egen "kontrollform" (tab/radbrytning bort,
+homoglyfer vikta) medan det sparade värdet byggdes separat med `trim()` och null-byte-strykning.
+Två grindar hittade oberoende att `trim()` tar bort Unicode-blanksteg (U+00A0, U+FEFF, U+2028)
+som mönstrets `[\x00-\x20]` inte ser, och att null-byte ströks först EFTER kontrollen — så
+` javascript:` och `java\x00script:` sparades som rena `javascript:`-länkar. Jag hade själv
+resonerat exakt så om homoglyfvikningen och skrivit det i kommentaren, men bara för det steg jag
+tänkte på. Formen: **en säkerhetskontroll ska köras på det värde som returneras, efter VARJE
+omskrivning — inte på en parallell normalisering som försöker återskapa en del av dem.** Varje
+steg man lägger till i utdata-kedjan är annars ett nytt hål, och kontrollformen ljuger tyst.
+
+Samma bygge: testfixturer med invisibla tecken (NBSP, BOM, kyrilliskt а) skrevs som literala
+tecken och blir vakuösa den dag en editor städar bort dem — skriv dem som `\u`-escapes.
