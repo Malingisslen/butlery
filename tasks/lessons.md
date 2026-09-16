@@ -4350,3 +4350,30 @@ steg man lägger till i utdata-kedjan är annars ett nytt hål, och kontrollform
 
 Samma bygge: testfixturer med invisibla tecken (NBSP, BOM, kyrilliskt а) skrevs som literala
 tecken och blir vakuösa den dag en editor städar bort dem — skriv dem som `\u`-escapes.
+
+## Commit-gate coverage is recorded PER RUN, not per file (2026-09-16, BUT-1693)
+
+Six gates passed this change and the commit was still refused. The ledger
+attributes a file to the RUN that read it, together with the verdict that run
+ended on — so the thirteen files read by a `code-reviewer` run ending on
+"fail (1 blocking)" counted for nothing once the finding was fixed, and the
+follow-up run that confirmed the fix had only re-read ONE file. Same for the
+`integration-reviewer`, which had reached four files through `git show` and diffs
+rather than `Read`.
+
+The consequence for planning a gate round: after the LAST accepted finding, one
+run per gate must re-read the WHOLE file list and end on a pass verdict. Resuming
+an agent with just the delta is right for grading the fix, and is NOT sufficient
+for the ledger. Budget that final full pass; it is not optional and it is not free.
+
+Second lesson from the same change, and the expensive one: every round of review
+found its defect in text written AS a correction. My strike of a false clause in
+`household_service.dart` left the sub-clause "nobody can have shared" standing on
+the premise the strike had just removed. My replacement comment on R4 invented a
+fresh enumeration ("spans h4 and h5") that two gates measured false from the seed.
+My rules comment justified a reorder with a billing claim no test could measure.
+All three were struck rather than reworded, and the chain terminated only when the
+edits stopped adding prose. A reviewer is not immune either: the rules gate
+asserted "B is a member of h1 only", having read a fixture comment about A's
+membership as a claim about B's, and retracted it when two other gates measured
+the seed.
