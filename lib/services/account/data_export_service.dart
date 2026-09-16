@@ -197,16 +197,6 @@ class DataExportService extends BaseService {
   /// Exactly ONE audit row per export request, written HERE rather than in
   /// [FirebaseDataExportRepository].
   ///
-  /// The gateway would be the obvious home — it already guards every read with
-  /// `validateOwnership` — but a bundle makes ~30 of those calls, so wiring an
-  /// audit repository into it would write ~30 near-identical rows per export.
-  /// That is both noise in the one collection an auditor reads and a fight with
-  /// `firestore.rules`, which caps `audit_logs` creates at
-  /// `rateLimitWrite('audit_logs', 2)` per minute: rows 3..30 would be rejected
-  /// and the trail would be arbitrarily partial. One row per REQUEST is what
-  /// Art. 30 asks for anyway — the processing activity is "the user exported
-  /// their data", not "the export read `friend_categories`".
-  ///
   /// Fire-and-forget by contract ([FirebaseAuditRepository.logPermissionCheck]
   /// swallows its own failures): a failed audit write must never turn a
   /// successful Art. 15 export into an error the data subject sees.

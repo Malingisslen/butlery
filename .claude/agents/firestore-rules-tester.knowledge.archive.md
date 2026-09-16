@@ -5530,3 +5530,67 @@ reviewed edit to a rule literal, and the bound governs consent freshness rather 
 `integration-reviewer` gate reached the same verdict independently and named the design constraint
 to carry into the ticket: an 11-minute deny sits one minute from the bound and is timed against the
 emulator's `request.time` versus the test host's `Date.now()`, so it needs designing, not rushing.
+
+## 2026-09-16 — `household_allergen_shares` round 4 (BUT-1693): R13, and a measured note I was wrong to defend
+
+Rules `452e81a6` (unchanged from round 3), suite `5efc443c`, staged index == worktree
+(`git rev-parse :<path>` == `git hash-object <path>`). 52/52 against a running emulator.
+The staged suite diff over HEAD, non-comment lines only, is exactly the four lines of the NEW
+R13 test — so the suite went 51 -> 52 this round, and every mutant figure below was measured
+against this 52-test state.
+
+R13: `a corrupt row is unreadable even to its own owner` — A reads `h6_A`, whose seeded body is
+`{trackedAllergens: ["ägg"]}` and carries neither `userId` nor `householdId`.
+
+THE DISAGREEMENT, and my reversal.
+
+In round 3 I measured the read limb's three arms with an error-text probe and concluded the
+comment above R13 was accurate as written: arm 1 (`resource == null`) a clean false, arms 2 and
+3 CEL-erroring on the absent `userId` / `householdId`, verdict by error-absorption. I said do
+not strike. The `cloud-functions-specialist` and `integration-reviewer` gates had both filed the
+note as over-claiming, on two grounds: a deny prints one interchangeable `PERMISSION_DENIED`
+naming a rule line, so which arm fired is not observable from the suite; and `households/h6` is
+never seeded, so the membership arm is dead regardless.
+
+The founder struck the clause anyway. That was the right call, and my "do not strike" was wrong
+on MORE than the point the gates made.
+
+1. My probe and the gates' objection were not in conflict — they answer different questions. An
+   error-text probe measures the RULE's evaluation. A comment above a test asserts what the TEST
+   holds. R13 pins the VERDICT, not the mechanism: a defaulting-accessor rewrite
+   (`resource.data.get('userId','') == request.auth.uid || isHouseholdMember(resource.data.get('householdId',''))`)
+   keeps the deny and leaves the suite green. So the note was TRUE and GRADED BY NOTHING, which
+   is the most durable kind of comment rot — nothing reddens on the day it goes false. My own
+   knowledge file already carries this class ("a comment explaining WHY a guard is shaped as it
+   is asserts what it CATCHES — a counterfactual about an unrun mutant"), and I did not apply it
+   to my own measurement.
+2. An extra reason, measured this round and not raised by anyone in round 3: the seed writes
+   `households/` h1,h2,h3,h4,h5,h7,h8,h9,hx_y and NO h6. So the membership arm is dead twice
+   over — `householdId` is absent (CEL error today) AND the household document does not exist
+   (false under any defaulting rewrite). Naming that arm in a three-arm walk reads as
+   attribution of an over-determined arm. The gates' h6 point was not a side note; it independently
+   sinks the note's usefulness.
+
+The shipped wording claims strictly less and every clause is directly readable or verified:
+the body carries neither field (seed); the read is denied to the row's own owner (the assertion
+itself); `revoke`'s catch records a withdrawal when the pre-delete read fails (verified in
+`firebase_household_allergen_share_repository.dart` — `revoke` reads raw, the `catch` sets
+`existed = true`, and `_logConsent('consent_revoked', ...)` runs after a successful `delete`);
+D4 pins the delete still works because the limb is path-derived. No third wording was proposed.
+
+WHAT THE REPO WOULD HAVE LOST, and where it went instead.
+
+The measurement is worth keeping; the comment was the wrong home for it. Its audience is a
+future reviewer deciding whether the read limb may be harmonised, not a reader of R13. It is now
+a principle under "proving a deny test is not vacuous".
+
+The durable artefact is not a comment at all — it is R13 itself. The kill-one mutant: adding the
+path-derived delete's own arm (`shareId.split('_')[1] == request.auth.uid`) to the read limb
+goes 51/52, killing R13 alone. That makes R13 the SOLE guard against making READ path-derived to
+match DELETE — a plausible future edit, because the repository's own docstring documents the
+delete limb's path-derivation as deliberate ("Erasure is decided from the PATH, deliberately")
+and invites exactly that symmetry. The repository is right to derive DELETE from the path and
+the rules are right to refuse the same for READ: a corrupt row must stay erasable by its owner,
+and must not become readable to whoever can construct the id.
+
+Verdict: pass, 0 blocking. 52/52, R13 passing, registration unchanged.

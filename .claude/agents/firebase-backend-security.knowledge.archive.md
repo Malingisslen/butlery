@@ -10519,3 +10519,67 @@ tile (out of this diff) owes it a comprehensible message before the flag flips.
 
 Principle merged in place: arm order inside an OR'd read limb is a billing decision
 (Cost principles bullet).
+
+## 2026-09-16 — BUT-1773 strike round: `rateLimitWrite('audit_logs', 2)` removed (commit gate)
+
+Reviewed `firebase_data_export_repository.dart` (staged `7c7eca0f`, then `1bfcf8f2` after the
+fix round). Verdict pass, 0 blocking, both passes.
+
+**The strike is correct and this closes a finding open in this archive since 2026-07-30.**
+Residual 4 of the BUT-1772 entry and the 2026-08-14 BUT-1838 correction both recorded that
+BUT-1773's one-row-per-export decision was argued in three places from "rows 3..30 would be
+rejected by `rateLimitWrite('audit_logs', 2)`", which is false. Measured again here:
+`rateLimitWrite` has exactly ONE call site in `firestore.rules` (line 3066,
+`globalRecipeCache`); the `match /audit_logs/{logId}` create limb is
+`isAuthenticated() && request.auth.uid == request.resource.data.userId && hasRequiredFields([...])`
+with no rate-limit conjunct; ADR-0020 lists `audit_logs` among the STRUCK burst-guard paths.
+All three copies are now struck (gateway docblock, `data_export_service._logExportAudit` doc,
+the test `reason:`), and a concept-level sweep over `lib/`, `test/`, `docs/`, `functions/` and
+`.claude/rules/` returns no fourth copy.
+
+**The decision survives the strike, on three measured supports** (these are what the
+coordinator took to Malin): the requirement is a house rule, not a legal one
+(`lib/repositories/CLAUDE.md`, Art. 30 is a register of processing categories, checked
+2026-08-29); the refusal is not lost, because `_guardSelfExport`'s throw propagates to
+`exportUserData`'s catch which writes ONE persisted row (`granted:false`, `outcome:'failed'`)
+under the auth uid, satisfying the create limb; and the ~30 rows would be TAUTOLOGICAL —
+`exportUserData` sets `final userId = user.uid` and fans that one value to every manager, so
+`validateOwnership(currentUserId: requireCurrentUserId(), resourceOwnerId: userId)` compares
+the authenticated uid to itself and can only catch mis-wiring. Same trade BUT-1981 accepted.
+
+**Finding taken (Medium, non-blocking, found independently by the `integration-reviewer`
+gate): the SURVIVING sentence carried a second false mechanism.** "so [validateOwnership]'s
+`logPermissionCheck` stays a local log line here ... persisting each would write ~30 rows"
+presupposed a call that does not exist: `validateOwnership`
+(`permission_validation_mixin.dart:103-128`) never calls `logPermissionCheck` — it emits
+`AppLogger.warning` and throws — and the gateway never calls it either. `BaseFirebaseRepository`
+DOES accept `auditRepository` (line 28) but consumes it only in its own CRUD methods (108, 148,
+188, 218, 248, 433), all four of which this gateway overrides to `throw UnsupportedError`. So
+passing one in writes ZERO extra rows, not ~30. Struck in both mirrors, not reworded; the
+service's whole justification paragraph went rather than leave "That is noise…" with its
+subject removed, and the Art. 30 sentence with it (`FirebaseAuditRepository`'s own header says
+"What it is NOT: an Art. 30 record"). Promoted to a principle bullet.
+
+**Residuals named, none blocking, none in this commit.** (1) The bare "One bundle makes ~30
+guarded reads" survives with its causal clause gone: measured, the gateway declares 44 public
+export methods and ALL 44 have call sites in `lib/services/account/`, so the number understates
+the guard count by ~47% and now serves no argument — strike or re-measure, and the staged test
+`reason:` repeats it. (2) THREE sibling "Art. 30" wordings about these same rows survive in
+`data_export_service.dart` (line 69 "the Art. 30 record of the Art. 15 request itself", line 157,
+line 43), directly contradicting the audit repository's header and the mixin's line 385 — this
+is the sibling-copy hazard, left standing by the commit that deleted the fourth. (3) Two stale
+`firestore.rules` line-number citations (`:722`, `:720-728` for `shared_content`, whose block is
+at 784) — both PREDICATES verified true, only the coordinates rotted; deferred to the BUT-1693
+follow-up by agreement rather than growing a tidy commit.
+
+**Re-verified as still true this pass** (every other rules claim in the file): no
+collection-group block for `poll_votes` (the seven `{path=**}` matches do not include it) and
+the ×3 probe cost (`inPollConversation()` = two rule `get()`s + the client read); BUT-1838's
+`memberSince` cut-off on the `messages` read limb, which the export mirrors as
+`where('sentAt','>=')` exactly as the rule's own comment instructs; the unconstrained
+`settings/{settingId}` id on an owner-only create; `report_history` denied to every client
+including its subject; `user_fcm_tokens` field-filter parity; `ingredient_suggestions` and
+`household_allergen_shares` list queries provable against the field their read limb tests; and
+`unified_shared_shopping_lists`' `ownerId == uid || uid in memberPermissions`. Also confirmed
+CLOSED: the MEDIUM arm-order billing finding filed on this collection 2026-09-16 — the owner arm
+now sits FIRST, ahead of the `isHouseholdMember()` `get()` arm.

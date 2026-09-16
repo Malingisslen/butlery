@@ -38837,3 +38837,76 @@ in `CONSENT_OPERATIONS` (purge-expired.ts); DPIA R5 is the accountability record
 lingering-share risk, matching the repository and feature-flag comments that cite them. Concept sweep
 for the struck "the rules block is absent" claim found zero surviving copies in `lib/` or `test/`.
 Verdict: pass, 0 blocking.
+
+### 2026-09-16 — BUT-1773 docblock-strike commit gate: the fire-and-forget contract is unpinned
+
+Trigger: commit-gate review (testing-specialist, running alone, mutation probes permitted) of
+a docblock-STRIKE commit on `lib/repositories/firebase/firebase_data_export_repository.dart`
+(idx 46e992a400c87b45bdc029e3ffc75da99bd75f91) and
+`lib/services/account/data_export_service.dart` (idx b160953435542bf310eee93ba52142425be56f0c),
+plus one `reason:` string in `test/unit/services/account/data_export_service_test.dart`
+(idx f916ef7944507903071f886b36765aa5a382bf6f). No logic changed.
+
+Hash table (all three worktree == index at verdict time, re-verified after every probe):
+| path | wt = idx | HEAD |
+| firebase_data_export_repository.dart | 46e992a4 | f57fa686 |
+| data_export_service.dart | b1609534 | 1d2544d4 |
+| data_export_service_test.dart | f916ef79 | 0bb10366 |
+| firebase_audit_repository.dart (probed, untouched by commit) | 09b0aa52 | 09b0aa52 |
+
+Struck claims re-measured independently, all four confirmed FALSE before grading the strike:
+1. `rateLimitWrite('audit_logs', 2)` — `grep -n rateLimitWrite firestore.rules` returns exactly
+   two lines: the helper definition (:215) and ONE call site, `globalRecipeCache` (:3066). The
+   `audit_logs` create limb (:2877-2879) is `isAuthenticated() && uid == data.userId &&
+   hasRequiredFields([...])`. No rate-limit conjunct.
+2. `validateOwnership` calls `logPermissionCheck` — false.
+   `permission_validation_mixin.dart:103-128` throws `PermissionDeniedException` and logs via
+   `AppLogger.warning`; it takes no `auditRepository` and calls nothing. And the gateway's four
+   CRUD permission hooks all `throw UnsupportedError`, so the base class's audit-carrying paths
+   (`base_firebase_repository.dart` :103/:148/:188/:218/:248/:433) are unreachable on it:
+   injecting an audit repo writes ZERO rows, not ~30.
+3. "One row per REQUEST is what Art. 30 asks for" — refuted by `FirebaseAuditRepository`'s own
+   header ("What it is NOT: an Art. 30 record", citing BUT-1981).
+4. "~30 guarded reads" — undercount; deliberately left, see `tasks/household-share-erasure-plan.md` item 7.
+
+Sweep on the CLAIM (not the phrase) across `lib/ test/ docs/ functions/src/` and over
+`git show :<path>` for all three staged blobs: zero surviving copies. The only hits are
+another session's worktree under `.claude/worktrees/`, the append-only knowledge archives, and
+`tasks/household-share-erasure-plan.md`, which records the claim AS false.
+
+Probes (each in its own Bash call, backup taken immediately before, restore verified by md5
+against the backup AND by `git hash-object` vs `git rev-parse :<path>`):
+- M2 — delete the granted `_logExportAudit(...)` call in `exportUserData`. RED, exactly one
+  `[E]`: `a granted export writes exactly ONE row` (+44 -1). Lower bound live.
+- M3 — DUPLICATE the granted `_logExportAudit(...)` call. RED, the same single test. Upper
+  bound live at the service seam. So the test is not vacuous in either direction; what it
+  cannot see is the "per READ" direction, and that is unreachable by construction (finding 2
+  above), not a test defect. The struck `reason:` had claimed a rules cap it never tested.
+- M1 — `FirebaseAuditRepository.logPermissionCheck`'s `catch` gains `rethrow;`.
+  GREEN across three runs (63/63, mutant hash verified live before and after each run), over
+  BOTH `firebase_audit_repository_test.dart` and `data_export_service_test.dart`.
+  Analytic confirmation, so this is not a green-probe-only conclusion: (a) the export suite's
+  `_SpyAuditRepository` OVERRIDES `logPermissionCheck` with a recording body that never calls
+  `super`, so production's method never executes there; (b) the audit-repo suite's three cases
+  are `expectLater(..., completes)` over a FakeFirebaseFirestore write that SUCCEEDS, so the
+  catch is never entered — the file's own NOTE ("catches all errors silently") is the only
+  statement of the contract.
+  Consequence: the docblock this commit LEFT STANDING —
+  `data_export_service.dart:200-202`, "Fire-and-forget by contract … a failed audit write must
+  never turn a successful Art. 15 export into an error the data subject sees" — rests entirely
+  on that unpinned catch. `_logExportAudit` is `await`ed inside `exportUserData`'s `try`, so if
+  the swallow is ever removed, a granted export's audit write throws into the `catch`, the
+  `failed` audit call runs, and the exception is `rethrow`n: a produced bundle is discarded and
+  the user sees a failed Art. 15 request. Nothing reddens. Filed as the round's single Medium.
+
+CRLF note, worth keeping: `data_export_service.dart` is CRLF in the worktree and LF in the
+blob, so a `\n`-anchored probe script asserts 0 matches and refuses (which is the assert doing
+its job), and a restore via `git show :<path> > f` silently converts the worktree copy to LF —
+byte-different, blob-identical, and `git diff --numstat` stays empty so nothing tells you.
+Detect the newline per file (`'\r\n' if '\r\n' in s else '\n'`) and restore from a byte-exact
+`cp` backup, not from the index, when the file is CRLF.
+
+Non-blocking, already filed as item 8 of the same plan and predating this commit: four more
+Art. 30 claims survive in `data_export_service.dart` (:43, :69, :157, :326), one of them ten
+lines above the paragraph this commit struck. :326 is SHIPPED bundle text, not a comment, so
+the four move together or not at all — correctly left for Malin rather than drive-by struck.

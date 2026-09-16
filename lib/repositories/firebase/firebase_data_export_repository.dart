@@ -180,11 +180,7 @@ class FirebaseDataExportRepository extends BaseFirebaseRepository<Object> {
   /// own data. Every public method funnels through this.
   ///
   /// BUT-1773: this gateway is constructed WITHOUT a `FirebaseAuditRepository`
-  /// on purpose, so [validateOwnership]'s `logPermissionCheck` stays a local
-  /// log line here. One bundle makes ~30 guarded reads; persisting each would
-  /// write ~30 near-identical Art. 30 rows per export, and `firestore.rules`
-  /// caps `audit_logs` creates at `rateLimitWrite('audit_logs', 2)` — rows
-  /// 3..30 would be rejected, leaving an arbitrarily partial trail. The single
+  /// on purpose. The single
   /// row per REQUEST is written one layer up, in
   /// [DataExportService._logExportAudit]. Do not pass an audit repository in.
   Future<void> _guardSelfExport(

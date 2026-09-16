@@ -271,6 +271,23 @@ Standard deny matrix for ownership-checked collections:
   about B. The TEST is self-guarding (it asserts failure, so a seed change making every match
   readable reddens it); the ENUMERATION in its comment is not guarded by anything, so strike
   it rather than reword — a corrected enumeration is a fresh unmeasured claim.
+- **A deny on a CORRUPT body (the gated fields absent) is produced by error-absorption across
+  EVERY arm of a multi-arm read limb, so no arm is attributable — the comment above such a test
+  states the VERDICT and its production consequence, never the mechanism.** Measured on
+  `household_allergen_shares` R13 (BUT-1693, rules `452e81a6` / suite `5efc443c`): reading
+  `h6_A`, body `{trackedAllergens:[…]}`, leaves the `resource == null` arm a clean false and
+  both remaining arms CEL-erroring on the absent `userId`/`householdId`. True, and graded by
+  NOTHING — a defaulting rewrite (`resource.data.get('userId','') == request.auth.uid`) keeps
+  the deny and the suite green — which is the most durable kind of comment rot. The membership
+  arm is dead TWICE over wherever the fixture never seeds the household (`households/h6` is not
+  in the seed), so naming it reads as attribution of an over-determined arm. An error-text probe
+  measures the RULE's evaluation, which is a DIFFERENT OBJECT from the TEST's coverage; only the
+  latter belongs above a test, so such a measurement is archived, never commented.
+  **What such a test IS worth is its ONE kill: the HARMONISATION mutant.** Adding the
+  path-derived delete's own arm (`shareId.split('_')[1] == request.auth.uid`) to the read limb
+  goes 51/52, killing R13 alone — so it is the sole guard against making READ path-derived to
+  match DELETE, the plausible edit, since the repository documents the delete limb's
+  path-derivation as deliberate and invites the symmetry.
 - **A `cannotModify([...])` key can be STRUCTURALLY unreachable when a neighbouring
   conjunct pins the same field to `request.auth.uid` on BOTH the pre- and post-state.**
   `weekly_menu_plans` names `userId` in `cannotModify` while also requiring

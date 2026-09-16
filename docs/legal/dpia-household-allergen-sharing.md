@@ -261,7 +261,7 @@ leaves the household, and never contributes to any public or aggregate figure.
   disagree, and the settings row's catch then hides the row entirely — so a member whose
   own share document is corrupt could neither withdraw nor replace it. The repository's
   fail-loud read is deliberate and right; the UI's response to it is not. Render the row
-  ON for that case (`revoke` never reads the body) before the flag is flipped.
+  ON for that case before the flag is flipped.
 
 ### R8 — The list leaks into a data export it does not belong in
 - **Position:** a member's own export contains their **own** shared list and

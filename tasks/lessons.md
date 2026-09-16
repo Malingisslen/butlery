@@ -4377,3 +4377,18 @@ edits stopped adding prose. A reviewer is not immune either: the rules gate
 asserted "B is a member of h1 only", having read a fixture comment about A's
 membership as a claim about B's, and retracted it when two other gates measured
 the seed.
+
+## A mutation probe invalidates the prober's OWN ledger coverage (2026-09-16, BUT-1693 follow-up)
+
+The commit gate records which reviewer read which BYTES. `testing-specialist`
+mutates `lib/` to probe, so its recorded reads include the mutant blobs, not the
+shipping ones — and the commit is then refused for the very files it graded most
+carefully. Its pass was real; its coverage was not.
+
+The order that works: probe in one run, then a SEPARATE read-only run over the
+final bytes as the last thing before committing. Budget both.
+
+Same root as the per-run rule recorded earlier today, one level down: coverage is
+keyed on (agent, file, bytes, verdict-of-that-run). A run ending on "fail" covers
+nothing, a resumed run covers only what it re-read, and a run that WROTE to the
+file covers bytes that no longer exist.

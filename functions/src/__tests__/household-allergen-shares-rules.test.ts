@@ -184,6 +184,15 @@ test("R11 a signed-out read of a missing id is refused", async () => {
   await assertFails(db.doc(`${COLLECTION}/h3_${E}`).get());
 });
 
+// The body carries neither `userId` nor `householdId`, and the read is denied to
+// the row's own owner — so `revoke`'s catch, which records a withdrawal when the
+// pre-delete read fails, is reachable on this row. D4 pins that the delete still
+// works, because it is path-derived.
+test("R13 a corrupt row is unreadable even to its own owner", async () => {
+  const db = env.authenticatedContext(A).firestore();
+  await assertFails(db.doc(`${COLLECTION}/h6_${A}`).get());
+});
+
 test("R12 a missing id with a third '_' part is not readable by the uid in its second", async () => {
   await env.withSecurityRulesDisabled(async (ctx) => {
     const snap = await ctx.firestore().doc(`${COLLECTION}/h3_${E}_x`).get();

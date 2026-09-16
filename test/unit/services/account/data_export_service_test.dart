@@ -544,12 +544,7 @@ void main() {
         expect(
           spyAudit.calls,
           hasLength(1),
-          reason:
-              'One row per REQUEST, not per read. The gateway makes ~30 '
-              'ownership-guarded reads per bundle, and firestore.rules caps '
-              'audit_logs creates at rateLimitWrite(audit_logs, 2) — a row per '
-              'read would be rejected from the third one on and leave an '
-              'arbitrarily partial trail.',
+          reason: 'One row per REQUEST, not per read.',
         );
         final row = spyAudit.calls.single;
         expect(row['userId'], testUserId);

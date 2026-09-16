@@ -799,7 +799,15 @@ name which doc each end touches before approving it.
   Renaming/retiring a token: grep CONSUMERS and `git log -S` the old spelling and writer
   METHOD, since rows outlive their caller. `auditRepository` is an OPTIONAL constructor arg
   some DI modules don't pass — check DI registration, not the repository, before crediting a
-  trail as live. A GDPR ARTICLE cited in a comment is a measured claim about that article's
+  trail as live. Grade the INVERSE the same way: a stated VOLUME COST of wiring one in
+  ("~30 near-identical rows per export") is a claim that the class REACHES
+  `logPermissionCheck`, and a read-only gateway usually does not — `validateOwnership` never
+  calls it (it emits `AppLogger.warning` and throws), and `BaseFirebaseRepository` consumes
+  `_auditRepository` only inside the four CRUD methods such a gateway overrides to throw. So
+  the cost can be a counterfactual the class cannot produce, and the rows it would add are
+  tautological anyway wherever the guard's call site derives both uids from one session
+  (BUT-1981's accepted trade). Striking such a clause leaves its NUMBER standing with no
+  argument to serve — re-measure it or strike it too. A GDPR ARTICLE cited in a comment is a measured claim about that article's
   TEXT: Art. 30 is a register of processing categories and purposes and mandates no
   per-operation access log, so "Art. 30 requires this row" turned a house rule into a legal
   one across ~17 files (BUT-1981). Retracting it in the code is only half — grep the paired

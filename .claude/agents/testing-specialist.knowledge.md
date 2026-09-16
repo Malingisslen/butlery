@@ -115,6 +115,12 @@ compress it.**
   mutating it is all-green by construction and reads as "these tests are fine". Before
   probing, ask which of the mutated symbol's layers the harness actually reaches; for a
   repointed GUARD that is the `if` in the widget, not the method it calls (BUT-2022).
+  **The same override also makes the overridden member's own CONTRACT unpinnable from the
+  consuming suite**: a spy subclass recording `logPermissionCheck` means no test in the
+  consumer's file can observe that production SWALLOWS its failures, so a docblock reading
+  "fire-and-forget by contract" is unpinned while the suite reads as thorough — measured, a
+  `rethrow` mutant left both suites green. That pin belongs in the OWNER's suite, driven by a
+  failing sink, and a `completes` case whose write SUCCEEDS never enters the catch (BUT-1773).
 - **A guard a REVIEWER asked for is exactly as unproven as any other line, and probing it is the
   reviewer's job to demand** — a one-line re-check I recommended shipped GREEN (deletable with
   every case passing) until the probe said so. Staging an INTERLEAVING to kill it needs a
