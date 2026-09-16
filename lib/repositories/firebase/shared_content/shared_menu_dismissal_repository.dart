@@ -2,7 +2,7 @@
 /// Extends BaseDismissalRepository to track when users dismiss shared menus.
 /// Storage: shared_content/{menuId}/dismissals/{userId}
 /// **Use Case**: Hide menu from user's shared content feed
-/// **GDPR**: Audit logs all dismissal operations (Article 30)
+/// **GDPR**: Audit logs all dismissal operations
 
 import 'package:butlery/repositories/firebase/base_dismissal_repository.dart';
 

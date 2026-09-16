@@ -620,6 +620,16 @@ Standard deny matrix for ownership-checked collections:
   **Re-run the affected suite anyway.** A comment cannot change CEL evaluation, so the run
   is not owed for behaviour — but it is the only check on the one thing a comment edit CAN
   break: a ruleset that no longer compiles.
+  **"Does any guard key on this COMMENT?" is enumerable, not arguable**: `grep -rl
+  "firestore\.rules"` over `test/ lib/ functions/ .github/ .claude/hooks` yields every
+  consumer, and each text consumer owes a NAMED mechanism — the two Dart drift guards strip
+  comments in `setUpAll` BEFORE any assertion and anchor on `match` paths and `function`
+  names; `rules-coverage-report.js` blanks comments to spaces character-for-character
+  (offsets preserved) and diffs block PATHS. Three concurring reviewers are not that answer.
+  **A RED on the owed re-run is not evidence about the diff until emulator state is
+  excluded** — see the persistence bullet below: measured 2026-09-16, one suite went 19/19,
+  then 17/19 on bytes differing by ONE comment, then 19/19 again after clearing the
+  namespace. Attributing that red to the comment is the available wrong answer.
 - **A mutant built by PREFIXING a CEL predicate is not the mutant you wrote — `&&` binds
   tighter than `||`.** `return false && !exists(X) || Y` collapses to `Y`, so an intended
   "deny always" silently became "delete the leading fail-open disjunct" and killed a
@@ -656,6 +666,12 @@ Standard deny matrix for ownership-checked collections:
   with the null arm DELETED** (measured on `user_moderation` UM8, BUT-2046). Seed absence
   positively — `withSecurityRulesDisabled` DELETE, not "no test wrote it" — and grade it
   with a null-arm mutant, which must kill that test alone.
+  **The FINGERPRINT of this artefact is that the failures land on exactly the client
+  CREATE-ALLOW tests**, because a surviving doc turns the create into an UPDATE, and these
+  collections commonly carry `allow update: if false`. Measured 2026-09-16 on
+  `audit-logs-rules.test.ts`, which calls `clearFirestore()` NOWHERE: `setup()` only seeds
+  and `teardown()` calls `env.cleanup()`, which disposes the ENV, not the data. Before
+  blaming the diff, probe one create-allow doc id and clear.
 - **A fixture seeded inside `withSecurityRulesDisabled` is evaluated by NO limb, so any
   justification for its SHAPE that cites a future `hasOnly`/`hasRequiredFields` on that
   collection is false for that fixture.** Measured 2026-09-09 with one mutant file serving two
@@ -679,8 +695,13 @@ Standard deny matrix for ownership-checked collections:
   `/emulator/v1/projects/<pid>:securityRules` directly; a 200 with only WARNING
   severities means it compiles. Space probe runs one or two per shell call; a retry loop
   inside one call does not clear it.
-- `curl -X DELETE .../databases/(default)/documents` from Bash silently no-ops (parens
-  glob-expand, exit 7) — use each test file's own `clearFirestore()` helper.
+- Clearing a project's emulator data from Bash needs the URL QUOTED (the parens glob-expand
+  otherwise, exit 7) and an owner bearer, or the REST API answers 403 under the rules:
+  `curl -X DELETE -H "Authorization: Bearer owner"
+  "http://127.0.0.1:8080/emulator/v1/projects/<projectId>/databases/(default)/documents"` —
+  measured 2026-09-16, HTTP 200, and a probed doc went 200 -> 404. The same quoting and
+  header read a doc back, which is how you prove a stale fixture rather than assume one. A
+  suite's own `clearFirestore()` is still the first choice where it has one; several do not.
 - `test:rules:all` is not one atomic run — a Storage-emulator-dependent suite mid-chain
   hard-fails `ECONNREFUSED` without the Storage emulator up, aborting the `&&` chain so
   every later suite silently never executes. Check WHERE the chain stopped before

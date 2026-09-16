@@ -501,7 +501,7 @@ void main() {
       });
     });
 
-    /// BUT-1773: the Art. 15 export wrote no Art. 30 record at all — neither
+    /// BUT-1773: the Art. 15 export wrote no record at all — neither
     /// for a bundle it produced nor for a request it refused. A right-of-access
     /// pipeline that leaves no trace of having run is unauditable: nothing can
     /// answer "did this user export their data, and when".
@@ -1774,7 +1774,7 @@ void main() {
         final metadata = data['export_metadata']['gdpr_compliance'];
         expect(metadata['article_15'], contains('Right of Access'));
         expect(metadata['article_20'], contains('Data Portability'));
-        expect(metadata['article_30'], contains('Audit Logs'));
+        expect(metadata.containsKey('article_30'), isFalse);
         expect(metadata['article_7'], contains('Consent'));
       });
 

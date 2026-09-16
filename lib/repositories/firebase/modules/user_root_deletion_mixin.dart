@@ -43,14 +43,13 @@ mixin UserRootDeletionMixin on BaseFirebaseRepository<UserProfile> {
     // GDPR Article 17 erasure must leave an audit entry on the SUCCESS path —
     // validateOwnership only logs on deny. Mirror the granted:true logging that
     // every other mutating method in this repository does, and forward
-    // auditRepository so the entry PERSISTS to the Art.30 trail (BUT-1286), not
+    // auditRepository so the entry PERSISTS to the trail (BUT-1286), not
     // just the console.
     //
     // BUT-1287 (behavioral note): passing auditRepository here is what flips
     // this success-path log from console-only to Firestore-persisted. Without
     // the argument logPermissionCheck() still emits to AppLogger but writes
-    // nothing durable — so a root-doc erasure would leave no Art.30 record an
-    // auditor could retrieve. The presence of `auditRepository:` is the
+    // nothing durable. The presence of `auditRepository:` is the
     // load-bearing difference; do not drop it when refactoring.
     logPermissionCheck(
       userId: currentUser,

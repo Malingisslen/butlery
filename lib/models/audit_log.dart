@@ -1,7 +1,7 @@
 /// Audit log entry for GDPR compliance and security monitoring.
 /// Represents a single audit log entry recording a permission check or security event.
-/// These logs are persisted to Firestore to satisfy GDPR Article 30 (Records of Processing)
-/// requirements, enabling data subject access requests and security auditing.
+/// These logs are persisted to Firestore, enabling data subject access
+/// requests and security auditing.
 ///
 /// **Retention** (BUT-808 reconcile, single source of truth):
 /// Authority: `functions/src/audit_logs/purge-expired.ts` (`purgeExpiredAuditLogs`).
@@ -11,7 +11,6 @@
 /// `timestamp` directly so the retention policy can change in one place.
 ///
 /// **GDPR Compliance:**
-/// - Article 30: Records of Processing Activities
 /// - Article 15: Right of Access by the Data Subject (export via `exportAuditLogs` callable, BUT-770)
 /// - Article 17: Right to Erasure (audit logs retained per legal requirements)
 ///

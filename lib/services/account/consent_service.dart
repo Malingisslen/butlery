@@ -226,7 +226,6 @@ class ConsentService extends BaseService implements Listenable {
   }
 
   // Note: Audit logging for consent changes is now handled automatically by FirebaseConsentRepository
-  // This ensures GDPR compliance with Article 30 (Records of Processing Activities)
 
   /// Clear session cache on logout to prevent cross-user data leakage.
   /// Broadcasts the invalidation to other web tabs so they all drop their

@@ -2,7 +2,7 @@
 /// Extends BaseEngagementRepository to track when users join shared shopping lists.
 /// Storage: shared_content/{listId}/engagements/{userId}
 /// **Use Case**: Track list joins/imports to personal collection
-/// **GDPR**: Audit logs all join operations (Article 30)
+/// **GDPR**: Audit logs all join operations
 
 import 'package:butlery/repositories/firebase/base_engagement_repository.dart';
 

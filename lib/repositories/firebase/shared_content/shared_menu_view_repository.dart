@@ -2,7 +2,7 @@
 /// Extends BaseViewRepository to track when users view shared menus.
 /// Storage: shared_content/{menuId}/views/{userId}
 /// **Use Case**: Mark menu as viewed when user opens it
-/// **GDPR**: Audit logs all view operations (Article 30)
+/// **GDPR**: Audit logs all view operations
 
 import 'package:butlery/repositories/firebase/base_view_repository.dart';
 

@@ -967,7 +967,7 @@ class PersonalRecipeModule with StreamManagementMixin {
   /// the recipe with a "failed" tagResult (coverage: 0, version: 'failed')
   /// to indicate retagging is needed.
   ///
-  /// GDPR Article 30: Logs tag modifications for allergen/dietary audit trail.
+  /// Logs tag modifications for allergen/dietary audit trail.
   Future<Recipe> _applyTagging(
     Recipe recipe, {
     String source = 'auto_tagging',
@@ -987,7 +987,7 @@ class PersonalRecipeModule with StreamManagementMixin {
           '(coverage: ${(tagResult.coverage * 100).toStringAsFixed(0)}%)',
         );
 
-        // GDPR Article 30: Audit trail for allergen/dietary changes
+        // Audit trail for allergen/dietary changes
         await _logTagModification(
           recipe: recipe,
           previousTags: previousTagResult,
@@ -1036,7 +1036,7 @@ class PersonalRecipeModule with StreamManagementMixin {
     );
   }
 
-  /// Logs tag modification for GDPR Article 30 compliance.
+  /// Logs tag modification.
   /// Fire-and-forget - audit logging failures don't affect tagging operations.
   Future<void> _logTagModification({
     required Recipe recipe,

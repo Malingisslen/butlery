@@ -810,12 +810,21 @@ name which doc each end touches before approving it.
   argument to serve — re-measure it or strike it too. A GDPR ARTICLE cited in a comment is a measured claim about that article's
   TEXT: Art. 30 is a register of processing categories and purposes and mandates no
   per-operation access log, so "Art. 30 requires this row" turned a house rule into a legal
-  one across ~17 files (BUT-1981). Retracting it in the code is only half — grep the paired
-  `docs/security/*-retention.md`, which is the actual Art. 30 register and may derive the
-  rows' LAWFUL BASIS (Art. 6(1)(c) "legal obligation") and the Art. 17(3)(b) erasure
-  exemption from the same retracted premise. Strike the false clause rather than re-point it
-  at a doc whose own basis is now in doubt, and file the register's correction as its own
-  ticket.
+  one across the repo (BUT-1981, swept 2026-09-16). Retracting such a claim is keyed on the
+  CLAIM, not the PHRASE: the heaviest carriers spelled it `Art.30` with NO SPACE, so a sweep
+  grepping `Art. 30` came back clean for three gates at once, and the two strongest asserted
+  that an auditor could RETRIEVE such a record — an obligation the article does not create.
+  Grep the paired `docs/security/*-retention.md`, which is the actual Art. 30 register and
+  may derive the rows' LAWFUL BASIS (Art. 6(1)(c) "legal obligation") and the Art. 17(3)(b)
+  erasure exemption from the same retracted premise — but do NOT sweep it: a register ABOUT
+  a collection is not the same as the collection BEING the register, and that distinction is
+  what keeps a comment sweep out of the legal documents. Strike the false clause rather than
+  re-point it at a doc whose own basis is now in doubt, and file the register's correction as
+  its own ticket. Expect two second-order failures. The retraction's own decision record
+  usually carries a "the sweep is NOT done, X still asserts it" sentence that the DISCHARGING
+  commit falsifies — supersede it in that same commit. And the prose written AS the correction
+  is where the next false claim lands: a provenance clause crediting the commit with files it
+  never touched, and unmeasured numerals, one of them inside the supersession block itself.
 - A UI gate hiding a CONSENT control must key on the absence of a live consent, not only
   the precondition that made it offerable (Art. 7(3)) — read "do I have a record?" BEFORE
   the eligibility check. A one-shot backfill needs a REQUEST-LEVEL resume cursor (both

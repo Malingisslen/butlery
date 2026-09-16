@@ -1,4 +1,4 @@
-/// Unit tests for AuditLog (GDPR Article 30 records).
+/// Unit tests for AuditLog.
 library;
 
 import 'package:cloud_firestore/cloud_firestore.dart';

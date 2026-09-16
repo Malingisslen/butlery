@@ -62,7 +62,7 @@ abstract class BaseEngagementRepository
   /// [action] Type of engagement ('import', 'join', 'copy', etc.)
   /// [targetId] Optional ID of created entity (imported recipe ID, etc.)
   /// **Security**: Validates metadata access and enforces self-annotation
-  /// **Audit**: Logs engagement operation to FirebaseAuditRepository (GDPR Article 30)
+  /// **Audit**: Logs engagement operation to FirebaseAuditRepository
   /// **Use Case**: User imports shared recipe → mark as imported with target recipe ID
   Future<void> markAsEngaged(
     String resourceId, {

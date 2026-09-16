@@ -61,7 +61,7 @@ abstract class BaseDismissalRepository
   /// [resourceId] ID of the content being dismissed
   /// [reason] Optional reason for dismissal ('not_interested', 'already_have', etc.)
   /// **Security**: Validates metadata access and enforces self-annotation
-  /// **Audit**: Logs dismissal operation to FirebaseAuditRepository (GDPR Article 30)
+  /// **Audit**: Logs dismissal operation to FirebaseAuditRepository
   /// **Use Case**: User clicks "Not interested" on shared recipe → hide from feed
   Future<void> dismiss(String resourceId, {String? reason}) async {
     final userId = requireCurrentUserId();

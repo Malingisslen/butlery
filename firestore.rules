@@ -2855,7 +2855,7 @@ service cloud.firestore {
     }
 
     // ========================================
-    // AUDIT LOGS - GDPR Article 30 compliance
+    // AUDIT LOGS
     // ========================================
 
     match /audit_logs/{logId} {
@@ -2868,7 +2868,7 @@ service cloud.firestore {
       //  detection). Only admins can read audit logs (via backend tools)."
       // GDPR Article 15 (Right of Access) is satisfied via a server-side
       // export Cloud Function that uses the Admin SDK to bypass these
-      // rules — see follow-up: /functions/src/exports/audit-logs.ts (TBD).
+      // rules — see follow-up: /functions/src/exports/audit-logs.ts.
       allow read: if isAdmin();
 
       // Client-side fire-and-forget creates remain allowed: users can

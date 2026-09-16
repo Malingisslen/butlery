@@ -5594,3 +5594,69 @@ the rules are right to refuse the same for READ: a corrupt row must stay erasabl
 and must not become readable to whoever can construct the id.
 
 Verdict: pass, 0 blocking. 52/52, R13 passing, registration unchanged.
+
+## 2026-09-16 — comment-only `firestore.rules` diff (Art. 30 banner strike), two rounds
+
+THE DIFF. Round 1 struck `- GDPR Article 30 compliance` from the banner above
+`match /audit_logs/{logId}`. Round 2, after the finding below, struck the token `(TBD)` from
+the same block's body. Blobs: HEAD `452e81a6a`, round 1 `0a26a0a34`, round 2 `b8e8d8f78`;
+index == worktree at each round.
+
+PROOF OF COMMENT-ONLYNESS, two methods that fail differently, computed in one call each time
+(the digest fingerprints the strip pipeline as much as the bytes, so it travels nowhere):
+comment-stripped md5 `244437fa9847d30b0df4beb5585c2c65` over **1493 surviving lines** — the
+SAME digest and count for all three blobs; `git diff --cached -U0 | grep '^[+-]' | grep -v
+'^[+-]\s*//'` empty; raw line count 3705 unchanged, so no rule line even moved position;
+`grep '://'` empty, so the strip pipeline had nothing to truncate. Sizes 192877 -> 192848
+(-29, the phrase) -> 192842 (-6, the token).
+
+THE CONSUMER QUESTION, answered by enumeration rather than by agreement. `grep -rl
+"firestore\.rules"` over `test/ lib/ functions/ .github/ .claude/hooks` returns ~200 files;
+exactly THREE read the file as text, and each is comment-blind by its own mechanism:
+`rules_allowlist_drift_test.dart` and `rules_numeric_bound_drift_test.dart` call
+`_withoutComments` in `setUpAll` before any assertion and anchor on `match` paths and
+`function` names (the allowlist guard's own docstring records that the strip is load-bearing:
+without it, commenting a `hasOnly` out is self-compensating); `rules-coverage-report.js`
+blanks comments to spaces CHARACTER-FOR-CHARACTER so offsets cannot shift, and its new-block
+gate diffs fully-qualified block PATHS. The `audit_logs` block carries no `keys().hasOnly`, so
+it is in neither `_allowlists` nor `_knowinglyUncovered` and the census cannot move. Measured,
+not reasoned: the two Dart guards ran 19/19.
+
+THE STALE-EMULATOR TRAP, which cost a round and is the reusable part. The audit-logs suite ran
+19/19 in round 1, then **17/19** in round 2 on bytes differing by ONE comment. A comment cannot
+change CEL evaluation, so that red is either a compile failure (it was not — 17 tests
+evaluated) or state. Measured rather than assumed: `al-self-create` and `al-existing` answered
+HTTP 200 to an owner-bearer GET before the clear and 404 after, and the suite then went 19/19
+on the unchanged bytes. The two failures were exactly the two CLIENT CREATE-ALLOW tests —
+`audit_logs/al-self-create`, and the precedence regression, which self-creates
+`audit_logs/al-precedence-check` — because a surviving document turns a create into an UPDATE
+and this block carries `allow update, delete: if false`. Cause: the suite calls
+`clearFirestore()` nowhere; `setup()` only seeds through `withSecurityRulesDisabled` and
+`teardown()` calls `env.cleanup()`, which disposes the ENV, not the data. The knowledge file
+already carried the persistence principle; what it lacked was the FINGERPRINT (failures land
+on the create-allow tests) and a working clear recipe — the old bullet said the `curl -X
+DELETE` no-ops, which is true unquoted and false with the URL quoted plus
+`Authorization: Bearer owner` (HTTP 200, measured). Both are now in the file.
+
+THE FINDING, and why it belonged on this ticket. The same block's body read `see follow-up:
+/functions/src/exports/audit-logs.ts (TBD)`, while that file exists and `exportAuditLogs` is
+referenced from `index.ts`, `request-account-deletion.ts` and its own test. A false liveness
+claim, pre-existing, non-blocking — but the sibling two lines below the claim the commit exists
+to remove, which is the fix-one-copy shape. Reported as a STRIKE of the token, never a reword;
+the coordinator applied it and verified the file's existence first. Round 2's proof shows the
+strike carried nothing else in with it.
+
+Verdict: pass, 0 blocking, both rounds. No rule branch changed, so no allow/deny coverage was
+owed — a coverage claim here would have been vacuous by construction, and that is stated rather
+than dressed up as a green. I edited no file during review; the knowledge and archive writes
+happened only after the coordinator lifted the ban for these two paths.
+
+RETIRED VERBATIM from `firestore-rules-tester.knowledge.md`, superseded in place by the clear
+recipe above. The source bullet wraps, so each line is quoted as its own line here — a grep on
+either fragment returns both copies:
+"- `curl -X DELETE .../databases/(default)/documents` from Bash silently no-ops (parens"
+"  glob-expand, exit 7) — use each test file's own `clearFirestore()` helper."
+What went false: only the UNQUOTED invocation no-ops. Quoted, with `Authorization: Bearer
+owner`, it returns HTTP 200 and the data is gone (measured 2026-09-16, a probed doc 200 -> 404).
+The `clearFirestore()` advice was not wrong, but it is unusable for a suite that has no such
+call, which is the case this round hit.

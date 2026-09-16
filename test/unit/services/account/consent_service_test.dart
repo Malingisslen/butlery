@@ -808,7 +808,6 @@ void main() {
       });
 
       test('should maintain audit trail via repository', () async {
-        // GDPR Article 30: Records of Processing Activities
         // Audit logging is handled by FirebaseConsentRepository
 
         // Arrange
@@ -847,8 +846,6 @@ void main() {
       });
 
       test('should provide consent history for accountability', () async {
-        // GDPR Article 30: Demonstration of compliance
-
         // Arrange
         final history = [testUserConsent];
         when(

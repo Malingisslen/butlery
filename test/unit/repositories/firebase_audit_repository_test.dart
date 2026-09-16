@@ -1,6 +1,6 @@
 /// Comprehensive unit tests for FirebaseAuditRepository (GDPR-critical)
 ///
-/// Tests persistent audit logging functionality required for GDPR Article 30 compliance.
+/// Tests persistent audit logging functionality.
 /// Validates secure storage, retrieval, and querying of audit logs with proper error handling.
 library;
 

@@ -1218,7 +1218,7 @@ void main() {
 
     group('GDPR success-path audit trail (BUT-1286)', () {
       // Intent: GDPR Art.17 erasure must leave a granted:true entry on the
-      // Art.30 audit trail when a delete SUCCEEDS — validateOwnership only logs
+      // audit trail when a delete SUCCEEDS — validateOwnership only logs
       // on DENY, so without an explicit success-path log the erasure of a user
       // would be invisible to the audit record. We inject a spy audit repository
       // (a real FirebaseAuditRepository subclass whose persistence method is
@@ -1262,7 +1262,7 @@ void main() {
             isTrue,
             reason:
                 'a successful GDPR profile erasure must record granted:true '
-                'on the audit trail (Art.30)',
+                'on the audit trail',
           );
           expect(entry.userId, equals('user-123'));
           expect(entry.resourceId, equals('user-123'));
@@ -1290,7 +1290,7 @@ void main() {
             isTrue,
             reason:
                 'a successful GDPR root-doc erasure must record '
-                'granted:true on the audit trail (Art.30)',
+                'granted:true on the audit trail',
           );
           expect(entry.userId, equals('user-123'));
           expect(entry.resourceId, equals('user-123'));

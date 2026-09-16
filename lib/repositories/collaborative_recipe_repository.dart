@@ -6,7 +6,7 @@
 ///
 /// **Security Features:**
 /// - Uses PermissionValidationMixin for comprehensive permission checks
-/// - Audit logging for all collaborative operations (GDPR Article 30 compliance)
+/// - Audit logging for all collaborative operations
 /// - Authentication required for all write operations
 ///
 /// **Architecture Integration:**

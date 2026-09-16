@@ -2542,7 +2542,15 @@ write.
 
 The same retraction was applied to `FirebaseAuditRepository`'s header and
 `PermissionValidationMixin`. The sweep is NOT done: `lib/models/audit_log.dart` — the model of the row itself — still
-calls it an Art. 30 record, and it is not the only one. **The heaviest survivor is not code:**
+calls it an Art. 30 record, and it is not the only one.
+**[SUPERSEDED 2026-09-16 — retired verbatim, quoted on one line so a grep returns both copies:
+"The sweep is NOT done: `lib/models/audit_log.dart` — the model of the row itself — still".
+`lib/models/audit_log.dart` no longer calls it an Art. 30 record, and neither does any other
+file under `lib/` or `test/`: the claim is struck, including the
+`firestore.rules` section banner. The sentences BELOW about
+`docs/security/audit-logs-retention.md` are NOT superseded and remain true — that register
+still rests on the retracted premise and is still a legal document to re-derive.]**
+**The heaviest survivor is not code:**
 `docs/security/audit-logs-retention.md` is titled as the Art. 30 record for `audit_logs`, gives
 every field the lawful basis "Art 6(1)(c) — legal obligation (Art 30 record)", and keeps a
 deleted user's rows on Art 17(3)(b) on the same ground. That register rests on the premise
@@ -4886,3 +4894,30 @@ blocks, one conflict reconciled as ADR-0019, one escalation answered by Malin th
   row accompanies it, because that logging lives in the app — so such a row has no Art. 7(1)
   trail, which is the part that is actually lost.
   Raised by the `firebase-backend-security` gate. BUT-1693, 2026-09-15
+
+- **The Art. 15 bundle no longer names Article 30, and the code comments claiming the audit
+  log IS an Art. 30 record are struck (2026-09-16).** `data_export_service.dart`'s
+  `gdpr_compliance` map lists `article_15`, `article_20` and `article_7` only, and the audit
+  section's own line reads `'gdpr_article': 'Article 15 - Right of Access'`. The rows still
+  ship, still declared by `includes_audit_logs: true`.
+  **Malin's explicit call, 2026-09-16**, taken over rewording the label. Art. 30 is the
+  CONTROLLER's register obligation — purposes, categories, retention — and confers no
+  data-subject right, so naming it in a copy the subject receives described our paperwork
+  rather than their data. The audit rows reach them under Art. 15, which is what both
+  surfaces now say.
+  **What she was NOT shown**, stated because an attribution is a claim about a person no test
+  can hold: no legal advice was taken on whether naming Art. 30 in a bundle is affirmatively
+  wrong rather than merely unhelpful, and no measurement of whether any user has ever read the
+  metadata block.
+  The premise is older than the decision: `firebase_audit_repository.dart`'s header already
+  said "**What it is NOT:** an Art. 30 record", `permission_validation_mixin.dart` agreed, and
+  BUT-1981 recorded the same measurement on 2026-08-29. What shipped for months were
+  comments contradicting the file they described.
+  `data_export_service_test.dart` pins the ABSENCE (`containsKey('article_30')` is false), so
+  re-adding the key reddens rather than passing quietly.
+  **Deliberately untouched:** every `docs/security/*-retention.md`. Those are genuine Art. 30
+  records ABOUT the processing; a register about a collection is not the same as the
+  collection being the register. `audit-logs-retention.md` additionally derives each field's
+  lawful basis from "Art 6(1)(c) — legal obligation (Art 30 record)", which rests on the
+  premise BUT-1981 retracted — a legal document to re-derive on its own ticket, not a comment
+  to strike. Raised by the `firebase-backend-security` and `integration-reviewer` gates.

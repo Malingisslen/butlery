@@ -2,7 +2,7 @@
 /// Extends BaseDismissalRepository to track when users dismiss shared recipes.
 /// Storage: shared_content/{recipeId}/dismissals/{userId}
 /// **Use Case**: Hide recipe from user's shared content feed
-/// **GDPR**: Audit logs all dismissal operations (Article 30)
+/// **GDPR**: Audit logs all dismissal operations
 
 import 'package:butlery/repositories/firebase/base_dismissal_repository.dart';
 

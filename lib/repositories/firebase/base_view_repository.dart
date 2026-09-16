@@ -58,7 +58,7 @@ abstract class BaseViewRepository extends BaseMetadataRepository<ViewMetadata> {
   /// This is a convenience wrapper around addMetadata() with clearer semantics.
   /// [resourceId] ID of the content being marked as viewed
   /// **Security**: Validates metadata access and enforces self-annotation
-  /// **Audit**: Logs view operation to FirebaseAuditRepository (GDPR Article 30)
+  /// **Audit**: Logs view operation to FirebaseAuditRepository
   /// **Use Case**: User opens recipe detail view → mark as viewed
   Future<void> markAsViewed(String resourceId) async {
     final userId = requireCurrentUserId();

@@ -40,7 +40,7 @@ import 'package:butlery/services/account/export/export_pagination_helper.dart'
 /// - Recipes, menus, shopping lists
 /// - Social data (friends, messages)
 /// - Comments, ratings, activity
-/// - **Audit logs (Article 30)** - All permission checks and data processing activities
+/// - **Audit logs**
 /// - **Consent records (Article 7)** - User consent history
 /// - Notification data and preferences
 /// - All shared content
@@ -66,7 +66,7 @@ class DataExportService extends BaseService {
   // profile read can use it directly.
   late final FirebaseDataExportRepository _exportRepo;
 
-  // BUT-1773: the Art. 30 record of the Art. 15 request itself. Held HERE and
+  // BUT-1773: the record of the Art. 15 request itself. Held HERE and
   // deliberately not handed to [_exportRepo] — see [_logExportAudit].
   late final FirebaseAuditRepository _auditRepository;
 
@@ -154,9 +154,8 @@ class DataExportService extends BaseService {
   Future<String> exportUserData() async {
     final user = _authRepository.currentUser;
     if (user == null) {
-      // A refused request is a processing activity too — Art. 30 records the
-      // attempt, not just the successes, and a bundle that was never produced
-      // is exactly the case a data subject later disputes.
+      // A refused request is a processing activity too, and a bundle that was
+      // never produced is exactly the case a data subject later disputes.
       await _logExportAudit(
         userId: _unauthenticatedActor,
         granted: false,
@@ -323,7 +322,6 @@ class DataExportService extends BaseService {
         'gdpr_compliance': {
           'article_15': 'Right of Access',
           'article_20': 'Right to Data Portability',
-          'article_30': 'Records of Processing Activities (Audit Logs)',
           'article_7': 'Consent Records',
         },
         'user_id': userId,

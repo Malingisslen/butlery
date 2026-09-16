@@ -4,7 +4,7 @@
 /// Architecture Integration:
 /// - Uses PermissionValidationMixin for security enforcement
 /// - Integrates with AuthRepository for user authentication
-/// - Integrates with FirebaseAuditRepository for GDPR Article 30 compliance
+/// - Integrates with FirebaseAuditRepository
 /// - Provides injectable FirebaseStorage instance for testability
 /// Key Features:
 /// - Path-based security validation (users can only access their own directories)
@@ -48,7 +48,7 @@ import 'package:butlery/repositories/firebase/firebase_audit_repository.dart';
 /// Base class for Firebase Storage repositories.
 /// This class consolidates common storage operation patterns and security validation:
 /// - Unified permission validation for path-based access control
-/// - Unified audit logging for GDPR Article 30 compliance
+/// - Unified audit logging
 /// - Unified recursive directory deletion for right to erasure
 /// - Unified file listing and metadata operations
 /// Pattern Usage:

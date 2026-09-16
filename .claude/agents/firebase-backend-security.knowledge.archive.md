@@ -10583,3 +10583,80 @@ including its subject; `user_fcm_tokens` field-filter parity; `ingredient_sugges
 `unified_shared_shopping_lists`' `ownerId == uid || uid in memberPermissions`. Also confirmed
 CLOSED: the MEDIUM arm-order billing finding filed on this collection 2026-09-16 — the owner arm
 now sits FIRST, ahead of the `isHouseholdMember()` `get()` arm.
+
+## 2026-09-16 — the Art. 30 sweep: a retraction keyed on the phrase, and two rounds of false corrections
+
+Commit-gate review of a one-claim sweep striking the assertion that audit logging "is" GDPR
+Art. 30 compliance, across 30 files. Verdict FAIL twice (3 blocking, then 2), PASS on the third
+pass. Every blocking finding was a SENTENCE; the code half was correct from the first read and
+never changed.
+
+**The substantive question was answered NO, and it held.** Removing the claims weakens no
+compliance position: Art. 30 is the controller's register obligation and confers no
+data-subject right, the genuine registers under `docs/security/*-retention.md` are untouched
+(no file under `docs/security/` was staged), `article_30` had zero consumers in `functions/src`,
+and the shipped policy (`assets/legal/privacy_policy_{en,sv}.md`) never named the article at
+all. Nor is the subject under-disclosed: the rows still ship, still declared by
+`includes_audit_logs: true`, still labelled `'gdpr_article': 'Article 15 - Right of Access'`,
+and the in-app line already read "GDPR Artikel 15". The deleted string
+(`'Records of Processing Activities (Audit Logs)'`) carried no Art. 15(1)(a)-(h) element — it
+named our paperwork, not their data.
+
+**B1 — the sweep was keyed on the PHRASE.** Four carriers survived it, spelled `Art.30` with
+NO SPACE: `user_root_deletion_mixin.dart:46,:52` and `firebase_user_repository.dart:853,:858`,
+plus three in the paired test. The coordinator's grep and two other gates came back clean.
+Worse, the two strongest were the survivors: "would leave no Art.30 record an auditor could
+RETRIEVE" asserts a retrieval obligation the article does not create — a stronger falsehood
+than the twenty comments the sweep did strike. Remedy was strike, never reword; where striking
+the noun phrase would have left a subjectless clause the whole clause went, and both mirrors
+now terminate cleanly at "writes nothing durable." with the load-bearing sentence intact
+("The presence of `auditRepository:` is the load-bearing difference").
+
+**B2/B3 — the decision record discharged by the commit that falsified it.** BUT-1981's entry
+in `docs/architecture/ACCEPTED_DEVIATIONS.md` said "The sweep is NOT done:
+`lib/models/audit_log.dart` … still calls it an Art. 30 record" — a sentence this very commit
+made false. Superseded in the same commit, retired verbatim on ONE source line so a grep
+returns both copies (verified: 2 hits), with the entry's OTHER claim explicitly preserved —
+`audit-logs-retention.md` still rests on the retracted premise and is still a legal document
+to re-derive, not a comment to strike. Malin's 2026-09-16 call also needed an entry in both
+mirrors and had none.
+
+**The expensive lesson: BOTH rounds of prose written AS the correction carried fresh false
+claims.** Round one produced (a) "including the two user-facing strings" — measured false: no
+l10n file was staged, both ARB strings already read Article 15 at HEAD, and `git log -S` proved
+no l10n string ever carried the claim; the only reading that made it true was redundant with a
+sentence two lines above. And (b) three unmeasured `~30` numerals, one sitting INSIDE the
+supersession block just written; the real count was 43 occurrences across 28 of 30 files, and
+"~30" collided with the FILE count, the reading it did not claim. Both closed by deletion only,
+with no substitute numeral — the unquantified sentence beside it states the fact and is
+measured-true.
+
+**A reviewer's provenance claim is falsifiable too, and this one was.** The coordinator
+explained the numerals away as "you graded a blob that had already moved". Measured the other
+way: `git diff --cached` had printed `~30` for both mirrors while index equalled worktree at
+`7e19098463cc` / `b77002cd3b0f`, and those blobs became `2400591764f0` / `f8f83e741084`
+afterwards — the mirrors moved AFTER the pass, not before. Raised calmly and accepted; the
+value of insisting is that a belief the reviewer grades stale bytes can later wave off a real
+finding.
+
+**Declined deliberately, and recorded so a later pass does not "fix" it:** after the N1
+deletion the sentence reads "the claim is struck, including the `firestore.rules` section
+banner", attaching "including" to an item outside the `lib/`/`test/` scope named before it.
+True, merely loose. Not filed — a third wording of that justification is how the chain
+continues, and this commit had already paid two rounds for exactly that.
+
+**Do not read "the claim is gone" as "zero mentions".** The survivor sweep returns seven hits
+in `lib/`/`test/`/`firestore.rules`, ALL on the correct side: four negations
+(`firebase_audit_repository.dart:4`, `permission_validation_mixin.dart:385`,
+`firebase_weekly_menu_plan_repository.dart:127`, `parsing_correction_repository.dart:25`), the
+house rule in `lib/repositories/CLAUDE.md:26`, the weekly-menu test's negation, and the new
+`containsKey('article_30') is false` assertion that makes re-adding the key redden.
+
+**Non-blocking, still open, filed here rather than lost:** three documents give three different
+retention figures for audit-type rows — `docs/legal/privacy_policy.md:58` says 365 days under an
+Art. 17(3)(b) derogation, `assets/legal/privacy_policy_en.md:221-222` says security logs 90 /
+deletion audit logs 180, and `docs/security/audit-logs-retention.md` says 180 general / 730
+consent while recording that the 365-day claim was stale "in the dangerous direction". Also
+`docs/architecture/ROLE_RESPONSIBILITY_MAP.md:220` claims the bundled policy "explicitly covers
+Articles 7, 15, 17, 20, 30"; grep of `assets/legal/` finds no Article 30 in either language.
+All pre-existing, none touched by this commit.

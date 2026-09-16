@@ -124,6 +124,10 @@ void main() {
         contains('Full actor history'),
         reason: 'happy path note must NOT include the "Capped at" warning',
       );
+      // The other half of the 2026-09-16 decision. The bundle's metadata key is
+      // pinned by its ABSENCE in data_export_service_test.dart; this label had
+      // no assertion at all, so Art. 30 could return here with the suite green.
+      expect(result['gdpr_article'], equals('Article 15 - Right of Access'));
 
       // Page 1 is unscoped, pages 2+ pass `before: <cursor>`.
       expect(callable.receivedParameters[0], isNull);

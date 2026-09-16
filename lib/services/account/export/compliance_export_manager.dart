@@ -48,8 +48,7 @@ const _transientFunctionsErrorCodes = <String>{
 };
 
 /// Handles export of GDPR compliance data: audit logs, consent records.
-/// Implements Article 7 (Consent), Article 15 (Right of Access), and
-/// Article 30 (Records of Processing).
+/// Implements Article 7 (Consent) and Article 15 (Right of Access).
 ///
 /// BUT-501 (closed): consent reads route through
 /// [FirebaseDataExportRepository].
@@ -80,8 +79,7 @@ class ComplianceExportManager {
   FirebaseDataExportRepository get _exports =>
       _exportRepo ?? ServiceLocator.get<FirebaseDataExportRepository>();
 
-  /// Export audit logs for GDPR Article 15 (Right of Access) +
-  /// Article 30 (Records of Processing) compliance.
+  /// Export audit logs for GDPR Article 15 (Right of Access).
   ///
   /// BUT-770: routes through the `exportAuditLogs` Cloud Function so the
   /// admin-only `audit_logs` collection is reachable for the data subject
@@ -138,8 +136,7 @@ class ComplianceExportManager {
         'note': pages >= _maxAuditLogPages
             ? 'Capped at $_maxAuditLogPages pages (~50,000 entries); contact support for older history'
             : 'Full actor history exported via server-side admin export',
-        'gdpr_article':
-            'Article 15 - Right of Access; Article 30 - Records of Processing',
+        'gdpr_article': 'Article 15 - Right of Access',
         'summary': {
           'total_granted': auditLogs
               .where((log) => log['granted'] == true)

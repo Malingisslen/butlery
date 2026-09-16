@@ -2,7 +2,7 @@
 /// Extends BaseEngagementRepository to track when users import shared menus.
 /// Storage: shared_content/{menuId}/engagements/{userId}
 /// **Use Case**: Track menu imports to personal collection
-/// **GDPR**: Audit logs all import operations (Article 30)
+/// **GDPR**: Audit logs all import operations
 
 import 'package:butlery/repositories/firebase/base_engagement_repository.dart';
 

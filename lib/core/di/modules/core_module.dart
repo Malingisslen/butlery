@@ -188,7 +188,7 @@ class CoreModule implements DIModule {
       // Core repositories form the foundation of the data access layer
       container.registerSingleton<AuthRepository>(FirebaseAuthRepository());
 
-      // Audit repository for GDPR Article 30 compliance (persistent audit logging)
+      // Audit repository (persistent audit logging)
       container.registerLazySingleton<FirebaseAuditRepository>(
         () => FirebaseAuditRepository(),
       );
