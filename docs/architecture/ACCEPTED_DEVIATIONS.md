@@ -4921,3 +4921,35 @@ blocks, one conflict reconciled as ADR-0019, one escalation answered by Malin th
   lawful basis from "Art 6(1)(c) — legal obligation (Art 30 record)", which rests on the
   premise BUT-1981 retracted — a legal document to re-derive on its own ticket, not a comment
   to strike. Raised by the `firebase-backend-security` and `integration-reviewer` gates.
+
+### [Sharing/GDPR] SUPERSEDES the BUT-1798 entry's rules COORDINATES and its dual-write MECHANISM — the decisions stand (2026-09-16)
+
+Two classes of aged text in the BUT-1798 material, neither of which changes a decision.
+
+**1. The `firestore.rules` line numbers rotted.** `match /shared_content/{contentId}` does not
+begin anywhere near the cited lines any more, so each coordinate now resolves into an unrelated
+block — worse than dangling, because it reads as checkable. Retired verbatim, each quoted on one
+source line so a grep returns both copies:
+"`firestore.rules` :720-728 — they are in `sharedToUserIds`, which is what grants the read. So the"
+"`firestore.rules`' recipient branch at :722/:727 recognises) and `sharedWithUserIds` (written"
+"`sharedToUserIds` — the field `firestore.rules` grants recipient read on (:722, :727), the"
+What the rules do is unchanged and is what those sentences were about: `allow list` admits the
+sharer's own uid or `request.auth.uid in resource.data.sharedToUserIds`, and `allow get` admits
+those two plus `isSharedMember`. Cite them by path and rule type; the same rot was struck from
+every carrier in `lib/` and `test/` in commit 15653d3ef, and from the workflow map here.
+
+**2. The dual write is described as current; it was retired 2026-08-03.** Retired verbatim:
+"**Both spellings are named deliberately.** The writers emit the same recipient list twice, as"
+"unexportable. All three direct writers now emit both fields; the export reads the rules-sanctioned"
+`recipe_sharing_manager.dart`, `social_menu_operations.dart` and `shopping_social_share_module.dart`
+write `sharedToUserIds` only. The `.claude/rules/accepted-deviations.md` mirror already records the
+removal and needed no entry.
+**The DECISION is untouched**, and so is the warning it exists to carry: `sharedToUserIds` is the
+sole membership field on `shared_content`, and `sharedWithUserIds` remains the legitimate SOLE field
+on `recipe_comments` — scope any change by COLLECTION, never by field name. A sweep keyed on the
+field name would strike correct code, which is the mirror image of the inverted comment found in
+`social_menu_operations_test.dart` during this sweep.
+Rows written before 2026-08-03 under the retired spelling are still unreachable by any client query;
+that backfill is unbuilt and unchanged by this entry.
+
+Raised by the `firebase-backend-security` and `integration-reviewer` gates. — 2026-09-16

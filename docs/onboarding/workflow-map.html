@@ -2727,7 +2727,7 @@
         {
           "from": "svc-social-share",
           "to": "ds-social",
-          "payload": "shared_content-metadata {recipeId, sharedByUserId, sharedByDisplayName, sharedToUserIds[], isActive}. Mottagarlistan skrivs under EN stavning, `sharedToUserIds` — den enda `firestore.rules` 'allow list' (:722) känner igen, och den GDPR-exporten och raderingskaskaden båda läser. Den skrevs en tid under två stavningar så att rader från före fixen förblev läsbara; avvecklat 2026-08-03, eftersom projektet bara innehåller testdata och två kopior av samma faktum bara kunde glida isär. Skrivs i en batch med stämpeln users/{uid}/rate_limits/shared_content (lastDocId = radens id), som firestore.rules kräver.",
+          "payload": "shared_content-metadata {recipeId, sharedByUserId, sharedByDisplayName, sharedToUserIds[], isActive}. Mottagarlistan skrivs under EN stavning, `sharedToUserIds` — den enda `firestore.rules` 'allow list' känner igen, och den GDPR-exporten och raderingskaskaden båda läser. Den skrevs en tid under två stavningar så att rader från före fixen förblev läsbara; avvecklat 2026-08-03, eftersom projektet bara innehåller testdata och två kopior av samma faktum bara kunde glida isär. Skrivs i en batch med stämpeln users/{uid}/rate_limits/shared_content (lastDocId = radens id), som firestore.rules kräver.",
           "transport": "Firestore set/merge",
           "verified": true
         },
