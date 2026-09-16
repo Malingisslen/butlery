@@ -121,6 +121,11 @@ compress it.**
   "fire-and-forget by contract" is unpinned while the suite reads as thorough — measured, a
   `rethrow` mutant left both suites green. That pin belongs in the OWNER's suite, driven by a
   failing sink, and a `completes` case whose write SUCCEEDS never enters the catch (BUT-1773).
+  **The failing sink may fail at the NEAREST member rather than at the write** — a `Fake`
+  throwing from `collection()` avoids implementing the sealed `Query` and still kills the
+  `rethrow` mutant, because the getter is dereferenced inside the same `try` statement. What it
+  cannot discriminate is a DROPPED `await`: a synchronous throw is caught either way, while a
+  real rejection would escape unhandled. Settle that analytically; a green probe proves nothing.
 - **A guard a REVIEWER asked for is exactly as unproven as any other line, and probing it is the
   reviewer's job to demand** — a one-line re-check I recommended shipped GREEN (deletable with
   every case passing) until the probe said so. Staging an INTERLEAVING to kill it needs a

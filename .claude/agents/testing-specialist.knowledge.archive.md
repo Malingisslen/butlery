@@ -38910,3 +38910,66 @@ Non-blocking, already filed as item 8 of the same plan and predating this commit
 Art. 30 claims survive in `data_export_service.dart` (:43, :69, :157, :326), one of them ten
 lines above the paragraph this commit struck. :326 is SHIPPED bundle text, not a comment, so
 the four move together or not at all — correctly left for Malin rather than drive-by struck.
+
+### 2026-09-16 — BUT-1773 follow-up: the fire-and-forget pin lands, M1 flips GREEN -> RED
+
+Commit-gate review, run ALONE (no other reviewer reading `.dart`), so probing was permitted.
+This commit is the remedy for the single Medium filed in the entry immediately above, which
+recorded M1 (`logPermissionCheck`'s `catch` gains `rethrow;`) as GREEN across three runs over
+both suites.
+
+Hash table, worktree / index, verified at BOTH brief time and verdict time (all six identical,
+and identical to the hashes the brief pinned):
+
+| file | blob |
+|---|---|
+| `lib/repositories/firebase/firebase_data_export_repository.dart` | 5fd49783 |
+| `lib/services/unified/operations/modules/recipe_sharing_manager.dart` | 5fd71a51 |
+| `lib/services/unified/operations/modules/shopping_social_share_module.dart` | cc74db82 |
+| `lib/services/unified/operations/social_menu_operations.dart` | 776e7541 |
+| `test/unit/repositories/firebase_audit_repository_test.dart` | ebabc2ab |
+| `lib/repositories/firebase/firebase_audit_repository.dart` (probe target, unstaged) | 09b0aa52 |
+
+M1 RE-DERIVED, not inherited. Backup by byte-exact `cp` (md5 a4549013…), anchor asserted
+unique (`count(old)==1`), mutant applied, suite run TWICE in SEPARATE Bash calls per the
+stale-kernel rule. Run A and run B both `+18 -1`, the single `[E]` naming
+`fire-and-forget contract a Firestore failure is swallowed, not thrown to the caller`, with the
+mutant's md5 printed live during run B. Restored from the `cp` backup; md5 back to a4549013…,
+worktree blob == index blob, `git status --porcelain lib/` shows the four staged comment files
+with CLEAN worktrees and nothing else. No mutant left in the tree.
+
+Baseline 19/19 green. `dart analyze` over all six touched files: "No issues found!".
+
+**The fixture nuance, which is the reviewable part and is now a principle.** `_ThrowingFirestore
+extends Fake implements FirebaseFirestore` throws from `collection()`, not from `add()`. That is
+sound for the mutant it exists to kill: `_collection` is a GETTER
+(`_firestore.collection(FirestoreCollections.auditLogs)`) dereferenced inside the same `try`
+statement as `.add()`, so both failures reach the same `catch (e)`. It is also the cheap choice —
+faking a `CollectionReference` means implementing the sealed `Query`.
+What it CANNOT discriminate, settled analytically rather than by a green probe: a DROPPED `await`
+on `await _collection.add(...)`. A synchronous throw from `collection()` is caught with or without
+the `await`, while a real `add()` rejection would escape the `try` unhandled. So the pin holds
+"the catch exists and swallows", not "the write's failure is awaited into it". Named, not filed —
+the docblock's sentence is about the swallow, and the swallow is what is now pinned.
+
+Two claims in the new test's own comment CHECKED rather than taken: `_SpyAuditRepository extends
+FirebaseAuditRepository` with an `@override` of `logPermissionCheck` and no `super` call (so the
+export suite structurally cannot witness the swallow — true), and "every other case in this file
+writes to a fake that succeeds, so the catch is never entered" — corroborated by M1 reddening
+exactly ONE case out of 19.
+
+Comment-only strikes on the four `lib/` files: rotted `firestore.rules` line citations
+(`:722`, `:727`, `:720-728`). Verified 0 hits in the INDEX copy, not just the worktree.
+The one SUBSTANTIVE strike, `recipe_sharing_manager.dart` — "grants recipient read on this and
+nothing else" — is correct and measured: `firestore.rules:797-802` gives `allow get` THREE
+disjuncts (`sharedByUserId`, `isSharedMember`, `sharedToUserIds`) while `allow list` has two, so
+the clause was true of `list` and false of `get`.
+Graded the SURVIVING sentence standalone per the strike-promotion rule: "The single membership
+field. `firestore.rules` grants recipient read on this, and it is what …" — still true, because
+`isSharedMember` is `exists(.../{docId}/members/{uid})`, a SUBCOLLECTION, so it is not a rival
+membership FIELD. The strike promoted no false claim.
+
+Observation, not a finding: `testing-specialist.knowledge.md` is at ~157k chars against its
+stated ~25k budget. Its own rule says SPLIT the largest section rather than compress again, and
+names ~250k as the point where Step 0 degrades. Out of scope for a commit gate; flagged for a
+future run.
