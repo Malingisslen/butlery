@@ -4953,3 +4953,33 @@ Rows written before 2026-08-03 under the retired spelling are still unreachable 
 that backfill is unbuilt and unchanged by this entry.
 
 Raised by the `firebase-backend-security` and `integration-reviewer` gates. — 2026-09-16
+
+- **`getByHousehold` DECLINES above its cap; it must never clip or skip a member
+  (Malin's explicit call, 2026-09-16).** The read is the one unbounded query in
+  `FirebaseHouseholdAllergenShareRepository`, and it feeds menu generation. A clipped
+  or skipped roster drops a member's allergens silently and the menu is filtered as if
+  they had none; a decline lands on the behaviour BUT-1663 already decided — the
+  common-allergen floor, UNKNOWN closed, and `isRosterComplete: false` surfaced to the
+  user. Fewer allergens is the failure this whole area exists to prevent; more is
+  survivable. It also matches every sibling cap in this domain, which decline rather
+  than truncate.
+  **NOT BUILT.** The cap is unreachable until a household can hold a second member, so
+  it ships with the membership work (the DPIA gate), not before — building it now would
+  pin a number against no population.
+  **What she was NOT shown:** no measurement of how many shares a real household would
+  carry, because there are no users, and no cap number was proposed. BUT-1693, 2026-09-16
+
+- **A failed audit write must not cost the data subject their Art. 15 bundle
+  (Malin's explicit call, 2026-09-16).** `DataExportService._logExportAudit` is awaited
+  inside `exportUserData`'s try, so a throwing sink would discard a bundle that was
+  already produced and tell the person their request failed. Today that cannot happen
+  because `FirebaseAuditRepository.logPermissionCheck` swallows its own failures — a
+  contract now pinned by `a Firestore failure is swallowed, not thrown to the caller`,
+  which reddens if the swallow is removed. The decision is that the service must not
+  DEPEND on another file's catch: a lost traceability row is an internal cost, a lost
+  bundle is a failed legal right.
+  **NOT BUILT, deliberately, and this is the timing she agreed to:** it changes a
+  working GDPR path, so it rides with the next change that touches
+  `data_export_service.dart` rather than opening that path on its own.
+  **What she was NOT shown:** no measurement of how often such a write could fail —
+  it cannot today — and no proposed shape for the wrapper. BUT-1693, 2026-09-16
