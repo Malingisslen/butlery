@@ -335,7 +335,7 @@ void main() {
                 'every recipient s Article-15 bundle',
           );
           // `sharedToUserIds` is the membership field `firestore.rules`'
-          // recipient branch (:722/:727) and the GDPR export both read, and
+          // recipient branch and the GDPR export both read, and
           // since 2026-08-03 the only one written. Writing the row under the
           // RETIRED spelling `sharedWithUserIds` instead made it
           // permission-denied for the very people it was shared with, and kept

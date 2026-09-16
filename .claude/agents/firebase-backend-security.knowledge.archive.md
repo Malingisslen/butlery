@@ -10660,3 +10660,199 @@ consent while recording that the 365-day claim was stale "in the dangerous direc
 `docs/architecture/ROLE_RESPONSIBILITY_MAP.md:220` claims the bundled policy "explicitly covers
 Articles 7, 15, 17, 20, 30"; grep of `assets/legal/` finds no Article 30 in either language.
 All pre-existing, none touched by this commit.
+
+## 2026-09-16 — rules-coordinate rot: five citations across four files, all closed; three found only by keying on the CLAIM
+
+Commit-gate review of a two-line deletion in
+`lib/repositories/firebase/firebase_data_export_repository.dart` (staged blob
+`5fd49783afb4a5f60e12acd943959f677dadd5c6`), closing my own Finding 2 from earlier the same
+day. Verdict PASS, 0 blocking. The diff was deletions ONLY — the rotted coordinates `(:722)`
+and `:720-728` — with both sentences left standing, which is the shape the house rule asks
+for: a correction that adds prose adds a fresh unmeasured claim.
+
+**Both surviving sentences measured true standalone**, which is the whole risk of striking a
+coordinate: the sentence must now carry itself. Against `match /shared_content/{contentId}`,
+`allow list` is `sharedByUserId` OR `uid in sharedToUserIds` — two arms, the first the
+SHARER's own uid, so "the only membership field `allow list` recognises" holds, and the
+`isSharedMember` limb exists only on `allow get`. The rules file states the same thing in its
+own comment, so the two agree rather than drift. Recipient readability of the PARENT row is
+granted by `list` arm 2 and `get` arm 3; the writer corroborates
+(`shopping_social_share_module.dart` writes `contentType: 'shopping_list'` and
+`sharedToUserIds` into `shared_content`).
+
+**The BUT-1716 near-miss, recorded because the danger runs the OTHER way.** BUT-1716 retired
+near-identical wording — "readable by the recipient … `allow read: hasSharedAccess(...)`" —
+but that was about the `items` SUBCOLLECTION, whose block is gone and which the terminal
+`match /{document=**}` now denies. The sentence under review is about the parent document.
+A later sweep keyed on resemblance would strike a true sentence for looking like a retired
+one; the test is which PATH the sentence is about, never how it reads.
+
+**The sweep failure, third spelling on this ticket.** Keying on the two known spots would have
+closed two of five `lib/` citations. Keying on the CLAIM found three more, one per file:
+`recipe_sharing_manager.dart:752`, `shopping_social_share_module.dart:88`,
+`social_menu_operations.dart:113` — the latter two both saying "see the note in
+`recipe_sharing_manager`", so all three routed to one rotted citation. Same failure as this
+ticket's earlier rounds in two other spellings (`Art. 30` vs `Art.30`, where the four
+survivors carried the STRONGEST falsehoods; and the phrase-keyed strike that missed its own
+sibling inside the text written as the fix). Three times, three spellings, one lesson: key on
+the assertion, never on the string that happens to express it.
+
+**The sibling sweep found the one SUBSTANTIVE error; the coordinates were the cheap half.**
+`recipe_sharing_manager.dart:752` read "`firestore.rules` :722/:727 grants recipient read on
+this **and nothing else**" — true of `allow list`, false of `allow get`, which also admits
+`isSharedMember('shared_content', contentId)`, so a `shared_content/{id}/members/{uid}` row
+grants a `get`. A coordinate-only sweep would have refreshed the numbers and shipped the false
+universal. Closed by STRIKING the clause, not rewording it; the surviving sentence measures
+true.
+
+**Five rules-coordinate citations across four `lib/` files, ALL FIVE closed in this commit —
+and the claim has two more homes outside `lib/`.** Verified in the STAGED blobs rather than the
+worktree: the gateway's two (now clean at :593 and :644), plus `recipe_sharing_manager.dart:752`,
+`shopping_social_share_module.dart:88` and `social_menu_operations.dart:113`.
+`docs/architecture/ACCEPTED_DEVIATIONS.md:159` carries `firestore.rules :720-728` and `:208`
+carries "`firestore.rules`' recipient branch at :722/:727" — the same claim at the same
+coordinates. That file is a DECISION RECORD: supersede with a dated entry, never strike, and
+it is Malin's call, not a reviewer's. The auto-loaded mirror `.claude/rules/accepted-deviations.md`
+is clean of coordinates, measured. So the claim spans 7 citations across 5 files; the five in
+`lib/` ship closed here, the two in the decision record do not, and an entry saying "all closed"
+without that scope would repeat, inside the paragraph recording the sweep failure, the exact
+failure it records.
+
+**Second-order, same two paragraphs, pre-existing and NOT filed:** `ACCEPTED_DEVIATIONS.md`
+:164-166 ("The writers emit the same recipient list twice") and :206-214 ("All three direct
+writers now emit both fields") describe the `sharedWithUserIds` dual write as CURRENT. It was
+retired 2026-08-03, which the Dart comments and the rules mirror both state. The DECISION is
+not stale; its stated mechanism is. Supersede-not-strike, and the coordinator's to place.
+
+**Index vs worktree, measured rather than taken on report.** At review time `lib/` grepped
+clean on both patterns — but all three sibling files were worktree-only, index ≠ worktree
+(`recipe_sharing_manager` index `cff7144d2e04`, worktree `5fd71a51e27f`;
+`shopping_social_share_module` `08720bbb79a5` / `cc74db8252d6`; `social_menu_operations`
+`a4cb3405972f` / `776e754126be`). The commit reads the INDEX. This is the BUT-2016 shape
+exactly — a correction made on a gate's finding is the edit most often left unstaged, because
+a review round ends on a verdict and `git add` has no natural place in it. Settle it with
+`git rev-parse :<path>` against `git hash-object <path>`; `git status` and a clean grep of the
+worktree both answer the wrong question.
+Re-measured after the coordinator staged them, and recorded beside the original rather than
+replacing it, because both were true when taken: all four files now index == worktree (the
+three siblings at `5fd71a51e27f` / `cc74db8252d6` / `776e754126be`), and `git show :<path>`
+confirms no coordinate survives in any staged blob. The gateway's blob never moved
+(`5fd49783afb4a5f60e12acd943959f677dadd5c6`), so the PASS still grades the bytes that ship.
+The hazard was real and is closed; the check is what closed it.
+
+**The same class landed a fourth time on this ticket, in a TEST comment.** The `code-reviewer`
+gate failed the coordinator's commit on it: the comment written for the new fire-and-forget test
+claimed `_logExportAudit` "awaits this call INSIDE its own try, on all three paths". Verified
+here rather than carried, because a gate's measurement propagates before it is checked — and
+it is false on BOTH readings. The method (`data_export_service.dart:202-219`) is a bare
+`await _auditRepository.logPermissionCheck(...)` with no try at all; and of its three call
+sites one PRECEDES the service's `try` (:159, the unauthenticated-refusal row), one sits inside
+it (:173), one inside its `catch` (:181). Struck rather than reworded — the staged comment now
+stops at "awaits this call", which measures true. By the coordinator's count this is the fourth
+time on this ticket that the false sentence sat in text written AS the fix, and the artefacts
+differ every time: a decision record, two rounds of correction prose, now a test comment. The
+constant is not the file type; it is the state of writing a correction.
+That four is a DIFFERENT count from the "three spellings" above, and the two must not be read
+as one: three ranges over SWEEP-KEYING failures (how the search was keyed), four over false
+sentences written as fixes. The sets overlap without coinciding — a collided count is the
+hazard the Art. 30 entry in this same archive already paid for.
+
+**The true claim is "all RULES coordinates closed", NOT "all line citations closed".** Two SDK
+citations survive in the same gateway file — `query.dart:659` and `query.dart:676-682`, in the
+`isNull: false` comment on `exportSharedShoppingListsAsMember`. Same rot class, different
+artefact, deliberately not swept here. Recorded so the entry is not read as wider than it is,
+and so a later pass knows they were SEEN and LEFT rather than missed.
+
+**Not to be swept:** `firestore.rules:NNN` citations in other agents' `*.knowledge.archive.md`
+files are append-only historical records of what was measured on a given day. They are
+supposed to rot. A future coordinate sweep must exclude them by construction.
+
+### CORRECTION, appended same day — two counts above are false, and the paragraph that gets them wrong is the one that says how not to
+
+Appended, not struck: the convention for a `*.knowledge*.md` is the append trail, and the
+commit gate names it. Nothing above is edited.
+
+**A further home existed while the entry above said the claim was closed.** The
+`integration-reviewer` gate found it by keying on the CLAIM:
+`test/unit/services/unified/operations/modules/recipe_sharing_manager_test.dart`, in the
+comment above the `sharedToUserIds` assertion. It escaped every string-keyed grep — the
+coordinator's, mine, and the gate's own earlier one — because the prose WRAPS: the phrase
+`firestore.rules'` ends one line and the coordinate opens the next, and no pattern anchored
+on the phrase can match across that break. The bare-coordinate pattern can, which is the
+pattern that would have caught it on day one. It is struck now, and the surviving sentence
+reads "the membership field `firestore.rules`' recipient branch and the GDPR export both
+read", which measures true.
+
+So "the claim has two more homes outside `lib/`" and the citation/file figures in the
+paragraph above are FALSE — and the paragraph carrying them is the one recording "key on the
+assertion, never on the string that happens to express it". It reproduced the failure it
+documents, which is the part worth having in the record.
+
+**No replacement figures, deliberately.** Strike-and-recount both rot; a number measured while
+the diff is still moving is wrong by the time it is typed. What the code does instead: the
+bare sweep (`:722`, `:727`, `720-728`) over `lib/` and `test/` returns NOTHING, so the claim is
+closed in both trees. The surviving homes are named as identifiers rather than counted —
+`docs/architecture/ACCEPTED_DEVIATIONS.md` at :159, :208 and :638; `docs/onboarding/workflow-map.html:2730`
+(a Swedish payload string in the map's `<script id="data">`, which CI gates and a generator
+owns — fix the SOURCE, never the generated file); `tasks/archive/butlery-collapse-shared-membership-field-plan.md:9`;
+and the SDK citations `query.dart:659` / `query.dart:676-682` in the gateway, which are a
+different artefact and were left knowingly.
+
+**The instruction that produced this correction was itself short by three.** It named the
+decision record's homes as two; the bare sweep finds :638 as well, plus the workflow map and
+the archived plan. Measured here, not carried. That is the same class one more time, arriving
+inside the message telling me not to re-count — which is the strongest available evidence for
+the rule it was stating.
+
+**Third time on this ticket a string-keyed sweep missed a sibling the claim-keyed sweep found,
+and the FIRST time such a miss reached a STAGED artefact rather than a comment.** The earlier
+two were caught while still in the worktree; this one was already in the index, behind a PASS.
+
+**The mechanical rule, which is what to carry forward:** sweep on the BARE identifier — the
+coordinate, the symbol, the id — never on the phrase that frames it. Prose wraps wherever the
+formatter left it, so a phrase-anchored pattern silently cannot cross a line break, and a
+clean result from one is not evidence. Two exclusions are correct and must stay: other agents'
+`*.knowledge.archive.md` (append-only records that are SUPPOSED to rot) and
+`.claude/worktrees/<id>/`, which is a parallel session's full checkout — its pre-fix copies
+are not this tree's to sweep or edit.
+
+### CORRECTION 2, appended same day — the workflow-map MECHANISM above is false, and a false mechanism misdirects the repair
+
+Appended, nothing struck. The paragraph above says `docs/onboarding/workflow-map.html` is a
+file "a generator owns — fix the SOURCE, never the generated file". **There is no generator
+and there is no source file.** Measured three ways:
+
+- The map's own header: "single self-contained file, opens offline (double-click). DATA-DRIVEN:
+  to add a flow, add one entry to DATA.actions. **No build step, no framework, no external
+  requests.**"
+- `CLAUDE.md` prescribes the OPPOSITE action: update the map's `<script id="data">` JSON and
+  nothing else, run the linter, delete the marker, commit both — "**Don't rebuild the map.**"
+- Nothing in the tree writes the HTML. Every tracked file that references it READS or names it:
+  `tools/check_workflow_map.py` and `tools/check_map_gate_roots.sh` are linters,
+  `.claude/hooks/map_stamp.py` and `map-freshness-stamp.sh` stamp staleness, and
+  `.github/workflows/architecture-validation.yml` with `lefthook.yml` gate it.
+
+The "which CI gates" half is TRUE and stands. What is false is the generator half, and it is
+the more expensive kind of wrong: a bad COUNT miscounts, while a bad MECHANISM sends the next
+reader hunting a source that does not exist and tells them not to do the one thing the repo
+instructs — so the carrier at `:2730` would never have been closed. The true repair is to edit
+that JSON string in place, run the linter, and commit.
+
+**Provenance, which is the useful part: the false half was not mine to measure and I wrote it
+anyway.** It arrived in the coordinator's brief, and I recorded it without opening the file —
+in the same append whose whole subject is unverified claims propagating through corrections.
+By their count it is the fourth time on this ticket that an unmeasured claim of theirs reached
+an artefact through a brief, and the first that would have misdirected a REPAIR rather than a
+tally. The rule that follows is not "check counts": a MECHANISM claim ("X is generated", "X has
+a source", "a job rebuilds it") is exactly as falsifiable as a number, costs more when wrong,
+and reads as settled because it arrives from whoever owns the repo. Open the artefact before
+writing how it is produced.
+
+**Naming the quotation case, on judgement rather than instruction.**
+`tasks/household-share-erasure-plan.md` carries the coordinates at :165, :166 and :294, and
+they are NOT carriers: they are quotations of the very strings the plan ordered struck,
+recording what was removed. A future bare sweep WILL return them, so leaving them unnamed
+invites the next sweeper to "fix" a quotation and destroy the record of what was struck —
+the same reason this entry already excludes the append-only archives. The plan itself now
+records the distinction. A quotation of a rotted coordinate is evidence; only a citation that
+a reader would FOLLOW is a carrier.

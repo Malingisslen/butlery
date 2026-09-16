@@ -230,8 +230,7 @@ void main() {
             'Malin i appen',
           );
           // The membership spelling firestore.rules' recipient branch and the
-          // GDPR export both read. Writing only `sharedToUserIds` made the
-          // row unreadable by the very people it was shared with.
+          // GDPR export both read.
           expect(
             sharedDocs.docs.first.data()['sharedToUserIds'],
             contains('friend-1'),

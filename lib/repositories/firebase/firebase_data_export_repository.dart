@@ -590,7 +590,7 @@ class FirebaseDataExportRepository extends BaseFirebaseRepository<Object> {
   /// a recipient.
   ///
   /// Filtered on `sharedToUserIds` because that is the only membership field
-  /// `firestore.rules`' `allow list` recognises (:722) — filtering on anything
+  /// `firestore.rules`' `allow list` recognises — filtering on anything
   /// else is refused for every recipient, which fails the whole section rather
   /// than returning the rows.
   ///
@@ -641,7 +641,7 @@ class FirebaseDataExportRepository extends BaseFirebaseRepository<Object> {
   /// recipient.
   ///
   /// BUT-1798. `shopping_social_share_module` has always written this third
-  /// `contentType`, readable by the recipient under `firestore.rules` :720-728,
+  /// `contentType`, readable by the recipient under `firestore.rules`,
   /// and nothing exported it. `exportSharedShoppingLists*` is NOT coverage —
   /// those read `unified_shared_shopping_lists`, a different collection with a
   /// different provenance (a list you were made a MEMBER of, rather than one a

@@ -110,7 +110,7 @@ class SocialMenuOperations {
         'sharedByDisplayName': sharedByDisplayName,
         'sharedByAvatarUrl': currentUser.avatarUrl,
         'sharedAt': FieldValue.serverTimestamp(),
-        // Same list under the spelling `firestore.rules` (:722/:727) and the
+        // Same list under the spelling `firestore.rules` and the
         // GDPR export both speak — see the note in `recipe_sharing_manager`.
         // Without it a shared menu is unreadable AND unexportable to the very
         // people it was shared with.

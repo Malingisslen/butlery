@@ -455,7 +455,7 @@ void main() {
           List<String>.from(sharedData['sharedToUserIds'] as List),
           equals(['friend-1', 'friend-2', 'friend-3']),
           reason:
-              'firestore.rules:720-728 grants recipient read on THIS spelling '
+              'firestore.rules grants recipient read on THIS spelling '
               'only, and the Art. 15 export selects on it. The two sibling '
               'writers pin theirs; this one was the last unguarded of the '
               'three, so dropping the field reddened nothing while recipients '

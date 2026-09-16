@@ -749,8 +749,8 @@ class RecipeSharingManager {
             ServiceLocator.tryGet<UserService>()?.profileDisplayName ??
             AppLocale.current.displayUnknownUser,
         'sharedByAvatarUrl': permissionService.currentUser?.avatarUrl,
-        // The single membership field. `firestore.rules` :722/:727 grants
-        // recipient read on this and nothing else, and it is what
+        // The single membership field. `firestore.rules` grants
+        // recipient read on this, and it is what
         // `BaseSharedContentRepository`, the GDPR export and the deletion
         // cascade all speak. It was briefly written twice, under a second
         // spelling, so rows predating the fix stayed readable — retired

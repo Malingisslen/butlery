@@ -483,6 +483,36 @@ void main() {
         },
       );
     });
+
+    group('fire-and-forget contract', () {
+      // `DataExportService._logExportAudit` awaits this call. If a failure
+      // here escaped, a bundle that was
+      // successfully produced would be discarded and the data subject told
+      // their Art. 15 request failed. The swallow is what prevents that, and
+      // nothing held it: the export suite's spy overrides this method, and
+      // every other case in this file writes to a fake that succeeds, so the
+      // catch is never entered.
+      test(
+        'a Firestore failure is swallowed, not thrown to the caller',
+        () async {
+          final firestore = _ThrowingFirestore();
+          final failing = FirebaseAuditRepository(firestore);
+
+          await expectLater(
+            failing.logPermissionCheck(
+              userId: 'user-1',
+              operation: 'gdpr_export',
+              resourceType: 'data_export',
+              granted: true,
+            ),
+            completes,
+          );
+
+          // Premise: without this the case passes on a fake that never failed.
+          expect(firestore.collectionCalls, 1);
+        },
+      );
+    });
   });
 }
 
@@ -531,4 +561,20 @@ AuditLog _createAuditLog(
     timestamp: timestamp ?? DateTime.now(),
     metadata: metadata,
   );
+}
+
+/// A Firestore that fails the one member [FirebaseAuditRepository] reaches, so
+/// the catch in `logPermissionCheck` is actually entered.
+///
+/// It fails at `collection()` rather than at `add()` because faking a
+/// `CollectionReference` means implementing the sealed `Query`. Both throw
+/// inside the same `try`, which is what the catch is being held to.
+class _ThrowingFirestore extends Fake implements FirebaseFirestore {
+  int collectionCalls = 0;
+
+  @override
+  CollectionReference<Map<String, dynamic>> collection(String path) {
+    collectionCalls++;
+    throw FirebaseException(plugin: 'cloud_firestore', code: 'unavailable');
+  }
 }
