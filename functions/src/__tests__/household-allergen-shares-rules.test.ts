@@ -89,6 +89,8 @@ async function seed(): Promise<void> {
     await db.doc("households/h7").set({ memberUserIds: [B] });
     await db.doc("households/h8").set({ memberUserIds: [F] });
     await db.doc("households/h9").set({ memberUserIds: [G] });
+    await db.doc("households/h10").set({ memberUserIds: [C] });
+    await db.doc("households/h11").set({ memberUserIds: [C] });
     await db.doc("households/hx_y").set({ memberUserIds: [D] });
     await db
       .doc(`${COLLECTION}/h1_${A}`)
@@ -494,13 +496,46 @@ async function run(): Promise<void> {
   if (failed > 0) process.exit(1);
 }
 
-// Placed last on purpose: it is the one create case that SUCCEEDS at h3_E, and
-// every create case above requires that document to be absent.
+// It is the one create case that SUCCEEDS at h3_E.
 test("C24 a consent timestamp 9 minutes in the past is accepted", async () => {
   const db = env.authenticatedContext(E).firestore();
   await assertSucceeds(
     db.doc(`${COLLECTION}/h3_${E}`).set(
       share("h3", E, { consentGrantedAt: new Date(Date.now() - 9 * 60000) }),
+    ),
+  );
+});
+
+// C6 and C7 sit a full day out, so they pin the DIRECTION of the consent-stamp
+// window but not its size.
+//
+// 9 and 11 rather than at-bound: `consentGrantedAt` is a host clock value and
+// the rule compares it to the emulator's `request.time`, so a case one second
+// from the bound would race the two clocks. A minute of slack on each side is
+// what makes these deterministic.
+test("C25 a consent timestamp 11 minutes in the past is refused", async () => {
+  const db = env.authenticatedContext(C).firestore();
+  await assertFails(
+    db.doc(`${COLLECTION}/h2_${C}`).set(
+      share("h2", C, { consentGrantedAt: new Date(Date.now() - 11 * 60000) }),
+    ),
+  );
+});
+
+test("C26 a consent timestamp 11 minutes in the future is refused", async () => {
+  const db = env.authenticatedContext(C).firestore();
+  await assertFails(
+    db.doc(`${COLLECTION}/h10_${C}`).set(
+      share("h10", C, { consentGrantedAt: new Date(Date.now() + 11 * 60000) }),
+    ),
+  );
+});
+
+test("C27 a consent timestamp 9 minutes in the future is accepted", async () => {
+  const db = env.authenticatedContext(C).firestore();
+  await assertSucceeds(
+    db.doc(`${COLLECTION}/h11_${C}`).set(
+      share("h11", C, { consentGrantedAt: new Date(Date.now() + 9 * 60000) }),
     ),
   );
 });

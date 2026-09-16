@@ -5660,3 +5660,83 @@ What went false: only the UNQUOTED invocation no-ops. Quoted, with `Authorizatio
 owner`, it returns HTTP 200 and the data is gone (measured 2026-09-16, a probed doc 200 -> 404).
 The `clearFirestore()` advice was not wrong, but it is unusable for a suite that has no such
 call, which is the case this round hit.
+
+## 2026-09-16 — `household_allergen_shares` consent-stamp window bracketed (BUT-1693)
+
+THE DIFF. Three create cases added after C24 and two households added to `seed()`: C25 (11 min
+past, DENY, `h2_C`), C26 (11 min future, DENY, `h10_C`), C27 (9 min future, ALLOW, `h11_C`).
+With C24 (9 min past, ALLOW, `h3_E`) they bracket both edges of the rule's 10-minute window to
+within two minutes. Blobs: `91a44a95b` (round 1), `0c948bfc1` (round 2, one comment sentence
+struck), `2e1ee7368` (round 3, both blockers plus the Low struck), `e302222e3` (round 4, the CF gate's
+find: appending C25-C27 falsified `// Placed last on purpose:` above C24, the file's only
+positional warning about the h3_E ordering, which then pointed a future author at the bottom
+as a safe place to add an h3_E deny — the positional clause deleted, the invariant kept);
+index == worktree at each, and `firestore.rules` `b8e8d8f78` identical to HEAD throughout — no
+rule text moved. Every blob after the first is comment-only against its predecessor, proved by
+the `grep -v '^[+-]\s*//'` filter coming back empty each time.
+
+THE RULE. The create limb spells the window as TWO separate conjuncts,
+`consentGrantedAt > request.time - duration.value(10, 'm')` and `< request.time + …`, each
+occurring exactly once in the file (anchor counts asserted 1/1 before every mutant).
+
+THE FOUR-MUTANT TABLE, which is the reusable part. Mutants written to scratchpad COPIES of the
+rules file, reached through a throwaway suite copy under `functions/src/__tests__/` deleted in
+the same Bash call under a `trap` (this suite hardcodes `PROJECT_ID` and `RULES_PATH`, so it has
+no env seam; the copy substitutes both and deletes the now-orphaned `import * as path`, or
+TS6133 aborts ts-node before a single assertion runs).
+
+| mutant | result | kills |
+|---|---|---|
+| past limb -> `&& true` | 52/55 | C6, **C25**, *C24* |
+| future limb -> `&& true` | 52/55 | C7, **C26**, *C24* |
+| both -> 60m | 53/55 | **C25, C26** |
+| both -> 1m | 53/55 | **C24, C27** |
+
+Two findings came out of it, and neither is visible from a number-only probe (widen/narrow
+both limbs, which is what the coordinator had run). FIRST: the per-conjunct pair shows C25 dies
+only with the past limb and C26 only with the future one, so neither deny is covering for the
+other — the coordinator's own note is that this answered a question he did not know to ask.
+SECOND, and the new principle: C24 dies under BOTH directional mutants for a reason that is not
+about C24's payload. C24 writes `h3_E`, the id ~20 deny cases target; neutralising a limb admits
+C6 (or C7), which CREATES `h3_E`, and C24 then evaluates as an UPDATE. Its red is contamination,
+not attribution, and only the 1m mutant grades the two allows cleanly. It fails SAFE — C24
+always moves `consentGrantedAt` and the update limb's `cannotModify` names that field, so the
+outcome is a red rather than a vacuous green — which is what made a fifth household unnecessary
+rather than merely inconvenient.
+
+THE COMMENT FINDINGS, both blocking, both one-line strikes, both in text written as explanation.
+(1) "widening `duration.value(10, 'm')` to an hour reddens nothing" — measured FALSE at the blob
+it sat in: 60m reddens C25 and C26. It was true before these cases existed, and round 2's strike
+of the neighbouring sentence removed the clause that scoped it to that old state, so the
+survivor read as an unqualified claim about its own file. The correction CREATED the defect —
+the second-order cost of strike-over-reword, and the sharpest instance of it I have measured.
+(2) "Each case has its OWN household, so none can decide another's verdict", plus its `seed()`
+twin "One household per consent-window case" — false twice over: the seed adds two households
+for three cases, C25 reuses the pre-existing `h2` and C24 sits on `h3` which ~20 cases share,
+and the isolating property is the DOC ID rather than the household, which the C6/C7 -> C24
+coupling refutes as a universal. A Low beside them (a paragraph narrating the first attempt's
+one-id configuration) carried a rotting count and claimed the hazard was designed out while it
+is live for C24. All three struck, nothing replaced; the file header's lines 11-12 already state
+the operative rule truthfully.
+
+MARGIN. 9/11 endorsed and unchanged. `consentGrantedAt` is a host `Date.now()` compared against
+the emulator's `request.time`; the real distance is the round trip, which SHRINKS the margin
+rather than growing it, so 60 s of slack is three orders of magnitude clear and survives a
+loaded CI container where an at-bound case would flake. It kills every window a human would
+plausibly write (1m, 5m, 15m, 30m, 1h, 24h) and leaves only 10m +/- 1m undistinguished, which
+nobody writes.
+
+CO-CARRIER, reported not fixed (outside the scope the coordinator lifted). The struck sentence
+also lives in `tasks/household-share-erasure-plan.md` around line 357: "Each case now has its
+own household (`h2`, `h10`, `h11`), so no case's write can decide another's verdict." The plan
+then contradicts itself ten lines later, where the CF gate's own residual paragraph records that
+C25's correctness depends on C3 staying a deny.
+Same fix-one-copy shape the knowledge file already warns about; the grep that found it keyed on
+the CLAIM ("own household", "reddens nothing", "all three on one id"), not on the struck phrase.
+
+Verdict: round 1 and 2 fail (2 blocking), round 3 pass, 0 blocking. 55/55 at every blob,
+`tsc --noEmit` clean, `check-test-registration.js` OK (47 rules suites, 2 paths blocks), the
+round-3 diff proved comment-only by `git diff -U0 | grep '^[+-]' | grep -v '^[+-]\s*//'` coming
+back empty. No probe copies survived the call that made them; the tree carried exactly one `M`
+file at every checkpoint. I edited no file during review — these two knowledge writes happened
+only after the coordinator lifted the ban for these paths.

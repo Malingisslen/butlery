@@ -360,7 +360,14 @@ Standard deny matrix for ownership-checked collections:
   lines below its own retraction, as "what that person may DO is cut", in the very entry whose
   new residual says not to read it that way — so a decision record can contradict itself within
   one bullet. After striking a claim, re-read the WHOLE entry to its end, not the sentence you
-  replaced (BUT-2054, 2026-09-09). **Sweep it by STRIKE-AND-POINT, never by writing the
+  replaced (BUT-2054, 2026-09-09). **And re-read the SURVIVOR standalone: a strike can delete
+  the clause that SCOPED a neighbouring sentence, promoting a sentence that was true of the
+  file's OLD state into a false claim about its current one.** Measured on
+  `household_allergen_shares` (2026-09-16): "widening `duration.value(10, 'm')` to an hour
+  reddens nothing" was true before the window cases existed, and the strike of the sentence
+  that scoped it to that state left it standing as an unqualified claim the very cases in the
+  paragraph below it refute (60m reddens two). The hazard is created BY the correction, so a
+  second strike is the fix — never a replacement measurement. **Sweep it by STRIKE-AND-POINT, never by writing the
   correction into both files** — the copy names the canonical site ("the account lives at
   the rule itself; do not restate it here") and makes no claim of its own, so there is one
   thing to re-measure instead of two that drift. **Sweep the keywords, not the comment
@@ -732,6 +739,19 @@ Standard deny matrix for ownership-checked collections:
   "nothing proved that" clause justifying why the allow was added is a claim about the
   SUITE, and the deny a reviewer asks for the next round refutes it inside the same file.
   Strike the justification clause; leave only what the test itself does.
+  **A bound spelled as TWO conjuncts (`> t - W && < t + W`) needs a PER-CONJUNCT mutant, and an
+  edge ALLOW may only be graded by the NARROWING one.** Widening, or neutralising one limb,
+  admits the far-out DENY cases — and any of them sharing the allow's doc id then CREATES the
+  document, turning the allow into an UPDATE, so its red is contamination rather than
+  attribution. Measured on `household_allergen_shares.consentGrantedAt` (BUT-1693, 10-minute
+  window, each limb occurring exactly once in the file): neutralising the PAST limb killed C6,
+  C25 **and** C24 (52/55) and the FUTURE limb killed C7, C26 and C24, while widening both to
+  60m killed C25+C26 alone and narrowing both to 1m killed C24+C27 alone. Only the narrowing
+  run grades the allows. The contamination fails SAFE — a red, never a vacuous green — exactly
+  when the update limb's `cannotModify` names the field the allow MOVES; check that before
+  accepting it, because without it the same collision returns a false green. A number-only
+  mutant (both limbs at once) also cannot show that each direction carries its own deny: that
+  needs the per-conjunct pair.
 - **An allow fixture sitting WELL INSIDE a bound proves the field is ACCEPTED, never that it
   is BOUNDED — and without an at-bound allow twin an off-by-one is invisible.** Measured on
   `ingredient_suggestions` (BUT-2038): a case sending three optional fields at 9 chars / 2
