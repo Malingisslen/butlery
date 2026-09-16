@@ -86,6 +86,16 @@ files in the same edit.
   even when they shared, because a share can lag behind the list its owner already changed.
   Behind `enable_household_allergen_sharing`, OFF — with the flag off nobody can have shared,
   which is knowledge, not an outage, so it must never degrade.
+  **SUPERSEDED 2026-09-16 (BUT-1693) — the DECISION stands, its stated reason does not.**
+  Retired verbatim: "with the flag off nobody can have shared,". `firestore.rules` now
+  carries a `household_allergen_shares` block whose create limb admits a household member
+  writing their own valid, consented row, and rules cannot read a Remote Config flag — so a
+  hand-rolled client can write a share while the flag is off (Malin's call, 2026-09-15, its
+  own entry below). What is still true, and is what the decision rests on: with the flag off
+  `_sharedListsByMember` returns an EMPTY map without reading anything, so the app treats it
+  as a known-empty result rather than an outage, and the roster is not degraded. The
+  behaviour is unchanged and correct on the new facts — such a row is simply not read, so
+  that member keeps the common-allergen floor, which is the safe direction.
 
 - **`socialFeatures` consent gates nothing, by design** — social runs on the GDPR contract
   basis, not consent; wiring it would be consent theatre and would fail closed for every

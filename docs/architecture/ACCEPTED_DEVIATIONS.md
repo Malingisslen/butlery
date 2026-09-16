@@ -556,6 +556,18 @@ does degrade, because someone may have shared a list the menu is now filtering w
 Do NOT file "the floor is missing for member X" without first checking whether X shared.
 — 2026-08-12
 
+**SUPERSEDED 2026-09-16 (BUT-1693) — the DECISION stands, one premise does not.** Note that
+the two mirrors word this differently, so a grep for one will not find the other; this entry
+retires its own sentence. Retired verbatim: "a household where nobody could possibly have
+shared is not". `firestore.rules` now carries a `household_allergen_shares` block, and its
+create limb admits a household member writing their own valid, consented row; rules cannot
+read a Remote Config flag, so the flag gates the APP and not the server (Malin's call,
+2026-09-15, recorded in its own entry). A share CAN therefore exist while the flag is off.
+What the decision actually rests on is unchanged: with the flag off `_sharedListsByMember`
+returns an EMPTY map without reading anything, which is a known-empty result rather than an
+outage. No code changes — such a row is not read, so that member keeps the floor, which is
+the safe direction. — 2026-09-16
+
 ### [Tagging/Safety] The safety floor takes allergens only — `trackedDietary` is deliberately NOT inherited from the defaults (BUT-1663)
 `HouseholdService._allergenSafetyFloor` is `UserAllergenPreferences.defaults.trackedAllergens`
 and nothing else. `defaults` also carries `trackedDietary: {vegetarisk, vegansk}`, and every
