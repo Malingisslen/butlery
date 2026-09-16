@@ -10856,3 +10856,51 @@ invites the next sweeper to "fix" a quotation and destroy the record of what was
 the same reason this entry already excludes the append-only archives. The plan itself now
 records the distinction. A quotation of a rotted coordinate is evidence; only a citation that
 a reader would FOLLOW is a carrier.
+
+---
+
+## 2026-09-16 — BUT-1954 follow-up: one-word strike in `message_query_module.dart`, verified clean
+
+Staged: one file, `lib/repositories/firebase/modules/message_query_module.dart`, blob
+`1af3420fa7c7` (index == worktree, confirmed with `git rev-parse :<path>` vs
+`git hash-object`). The whole diff is the word `passthrough` deleted from the
+`searchMessages` carve-out comment at :175. No executable line, no query, no rule, no field.
+
+Falsified by `47402e103`: `MessagingService.searchMessages` (:714) now returns
+`_withoutOthersBlockedRows(hits)`, so the service is no longer a passthrough. Clean strike —
+the edit only DELETES, adds no new claim, and the survivor ("its only callers are the service
+(no view, viewmodel or widget calls it) and \"rensa chatt\", which deletes rather than draws")
+reads as a standalone sentence and is still true. Re-read alone per the standing rule: the
+parenthetical's "it" still resolves, and the sentence now asserts nothing about what the
+service DOES with the result, which is the point.
+
+Three things measured rather than assumed:
+
+- **No filtering guarantee anywhere in the module.** The file's only universal-sounding
+  sentence is the BUT-1832 hydration note at :162 ("Everything above the repository therefore
+  sees exactly what it saw before, which is why the change stops here"). Its subject is the
+  vote-STORAGE move (`voterIds` folded back from the subcollection), not row visibility, and
+  it sits under that section's own header — still true, not a privacy claim, deliberately not
+  flagged. The word "block" does not occur in the file at all, so nothing here can be read as
+  claiming the blocked-AUTHOR filter runs (BUT-2103's residual is unclaimed, as required).
+- **The "rensa chatt" clause is accurate.** `MessageManagementOperations.deleteAllMessages`
+  (:113) calls `messagingRepository.searchMessages(query: '', limit: 1000)` and at :136
+  deletes only `message.senderId == currentUserId`. It draws nothing and logs a COUNT, not
+  content. Note the two callers are genuinely distinct paths: `MessagingService.searchMessages`
+  returns `[]` for an empty query (:694), so the delete sweep cannot reach the service's filter
+  — which is exactly why the comment enumerates two callers rather than one.
+- **The carve-out's ARGUMENT survives.** Grep confirms no view, viewmodel or widget calls
+  `MessagingService.searchMessages`; the only `lib/` callers of the repository method are the
+  service and `deleteAllMessages`. So "stays unhydrated" is still earned.
+
+The interface-doc check the principles file demands after any struck implementation claim was
+run and came back clean: `lib/repositories/interfaces/messaging_repository.dart:168` is a bare
+`/// Search messages in conversation` with no passthrough or filtering claim to inherit, and
+`firebase_messaging_repository.dart:332` is uncommented delegation. The module's own test group
+(`message_query_module_test.dart:353-422`) restates no carve-out wording either. So the retired
+claim has no sibling copy waiting to come back — which is the usual second-order failure here
+and the reason the check exists.
+
+No new durable rule: the existing bullet ("strike it, then grep the INTERFACE doc, because that
+is where it comes back in different words once the implementation's copy is gone") already
+predicted this shape and was discharged by it. Principles file untouched.

@@ -172,7 +172,7 @@ class MessageQueryModule {
   // write is correct; the screen that led to it was not.
   //
   // `searchMessages` below is the deliberate exception and stays unhydrated: its
-  // only callers are the service passthrough (no view, viewmodel or widget calls
+  // only callers are the service (no view, viewmodel or widget calls
   // it) and "rensa chatt", which deletes rather than draws. If a search UI ever
   // lands, route it through `_hydratePollVotes` — that is the day this carve-out
   // stops being true.
