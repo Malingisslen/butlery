@@ -87,10 +87,12 @@ import 'dart:io';
 import 'package:butlery/models/messaging/conversation_membership.dart';
 import 'package:butlery/models/messaging/conversation_participant.dart';
 import 'package:butlery/models/tagging/tag_decision.dart';
+import 'package:butlery/models/household_allergen_share.dart';
 import 'package:butlery/models/tagging/tag_result.dart';
 import 'package:butlery/models/user_counters.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/services/account/export/activity_export_manager.dart';
+import 'package:butlery/services/account/export/family_export_manager.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// One `hasOnly([...])` list, located by the text that uniquely precedes it.
@@ -209,6 +211,14 @@ const _allowlists = <_Allowlist>[
     writer:
         'lib/repositories/firebase/firebase_ratings_repository.dart '
         'rateRecipe — the map batched onto docRef',
+  ),
+  // Anchored on the helper, which holds the block's only `keys().hasOnly`; the
+  // create and update limbs both call it.
+  _Allowlist(
+    label: 'household_allergen_shares',
+    mustContain: 'includeUnknownInMenu',
+    anchor: 'function allergenShareValid',
+    writer: 'lib/models/household_allergen_share.dart toFirestore',
   ),
   _Allowlist(
     label: 'users/{uid}/rate_limits stamp',
@@ -366,6 +376,19 @@ Map<String, Set<String>> _writtenKeys() => {
     'createdAt',
     'updatedAt',
   },
+  // Both dates set: `toFirestore` omits each when null, and the guard needs
+  // the widest set the writer can send.
+  'household_allergen_shares': HouseholdAllergenShare(
+    householdId: 'h',
+    userId: 'u',
+    trackedAllergens: const {'gluten'},
+    trackedDietary: const {},
+    includeUnknownInMenu: false,
+    consentGranted: true,
+    consentVersion: 'v1',
+    consentGrantedAt: DateTime(2026),
+    updatedAt: DateTime(2026),
+  ).toFirestore().keys.toSet(),
   // Hand-built map; `stampRateLimit` is its only writer.
   'users/{uid}/rate_limits stamp': {'lastWrite', 'expireAt', 'lastDocId'},
 };
@@ -685,6 +708,37 @@ void main() {
     });
   }
 
+  // BUT-1693: the share block's allowlist and the Art. 15 projection are two
+  // hand-kept copies of one key set, and the permissive direction reddens
+  // nothing on its own — a key added to the rules that the export does not
+  // carry is dropped from the person's own bundle in silence, because the
+  // projection fails closed.
+  //
+  // SUBSET, not equality: `userId` is in the rules and deliberately not in the
+  // export, where it is the query's own filter rather than a withholding.
+  test('every writable household_allergen_shares field is exported', () {
+    final rulesKeys = _allowlistAfter(
+      rules,
+      'function allergenShareValid',
+      'includeUnknownInMenu',
+    );
+
+    expect(
+      rulesKeys.difference({
+        ...FamilyExportManager.householdAllergenShareFields,
+        'userId',
+      }),
+      isEmpty,
+      reason:
+          'a client may write a field the Art. 15 export does not carry. The '
+          "export fails closed, so the field is dropped from that person's own "
+          'bundle without anything reddening — add it to '
+          'FamilyExportManager.householdAllergenShareFields, or decide to '
+          'withhold it and say so in the data_minimisation line of that '
+          'section.',
+    );
+  });
+
   test('every keys().hasOnly allowlist is guarded here or knowingly excluded', () {
     // The census. Without it, a new allowlist lands unguarded and
     // nothing says so — which is precisely how the five drifts of 2026-08-12
@@ -717,7 +771,7 @@ void main() {
     // `_allowlistCall` without moving its count; it cannot slip past the total.
     expect(
       'hasOnly('.allMatches(rules).length,
-      40,
+      41,
       reason:
           'the `hasOnly(` population changed. Reclassify the new call before '
           'touching this number — it counts `keys().hasOnly`, '

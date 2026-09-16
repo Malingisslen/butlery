@@ -38,6 +38,7 @@ enters this file").
 | `/ingredient_suggestions` (owner list/get, client create, update+delete deny) | `ingredient-suggestions-rules.test.ts` | `test:rules:ingredient-suggestions` |
 | `/user_moderation/{uid}` + its `report_history` subcollection, **and** the `friend_categories` / `public_profiles` admin moderation overrides | `moderation-rules.test.ts` | `test:rules:moderation` |
 | `/shared_content` list/get, `notification_delivery`+`notification_engagement` create, **and the REMOVED `shared_content/{id}/items` block** | `iter102-rules.test.ts` | `test:rules:iter102` |
+| `/household_allergen_shares/{householdId}_{userId}` (member+owner read, consent-bound create/update, path-derived delete) | `household-allergen-shares-rules.test.ts` | `test:rules:household-allergen-shares` |
 | All of the above                      | (sequence)                 | `test:rules:all`          |
 
 If the diff touches a collection not listed above, **create a new test file** named
@@ -157,7 +158,18 @@ Standard deny matrix for ownership-checked collections:
   (`!('reportHistory' in resource.data)`) denied the ABSENT document, i.e. every user never
   reported, and `_readDoc`'s throw lands in the export manager's `catch` as a FAILURE
   ENVELOPE — the exact BUT-1957 shape the block existed to remove, reintroduced by the
-  conjunct that closed the previous finding. **Re-probe the absent case after ANY conjunct is
+  conjunct that closed the previous finding. **A third live shape: a REPOSITORY that reads
+  its own deterministic id as a "not already shared" pre-check before `set()`, or a `getOwn`
+  that answers null for absent** — `household_allergen_shares` shipped a read limb of
+  `isHouseholdMember(resource.data.householdId) || resource.data.userId == uid` with no null
+  arm, so the grant flow could never reach its create (measured, BUT-1693). Grep the repo for
+  `.doc(<id>).get()` before passing any read limb. When the id embeds the uid, scope the null
+  arm to it (`resource == null && shareId.split('_')[1] == request.auth.uid`): measured, that
+  kills the stranger existence oracle a bare `resource == null ||` opens. Each conjunct of
+  that arm needs its own MISSING-id case: the `split('_').size() == 2` guard is reached only
+  by an ABSENT 3-part id carrying the caller's uid second — a SEEDED 3-part id (the delete
+  limb's fixture) has non-null `resource` and never enters the arm (measured, 49/49 green
+  without it until R12). **Re-probe the absent case after ANY conjunct is
   added to a read limb; a hardening is where this arrives, never a first draft.** The
   `resource == null` arm creates NO existence oracle when the limb also carries `isOwner`
   (measured: absent + stranger stays DENIED). Triage the sweep by that question, not by counting limbs — ~25 read
@@ -231,7 +243,12 @@ Standard deny matrix for ownership-checked collections:
 - **Two new conjuncts can mask each other**: a missing-required-key test alone can pass
   even with the neighbouring `is list`/`is map` type-guard deleted, because the absent
   key already CEL-errors first. Pin the type guard separately with a WRONG-TYPE payload,
-  not just a missing-field one.
+  not just a missing-field one. The converse holds too: a `hasAll([...])` whose every key
+  also carries an `is <type>`/`== value` conjunct is UNREACHABLE (deleting it reddens
+  nothing) — report it as redundant, not as covered by the missing-field denies. And pick
+  the wrong type per guard: `.size()` answers on list, map AND string, so an `is list` or
+  `is string` beside a size bound is pinned only by a type that still has `.size()`
+  (a string for a list, a one-element list for a string).
 - A collection with no root `keys().hasOnly()` validator silently accepts new top-level
   fields — pin a regression test that fails the day a `hasOnly([...])` is added without
   the new field, rather than trusting the absence of a validator to stay noticed.
@@ -243,6 +260,17 @@ Standard deny matrix for ownership-checked collections:
   non-vacuity with (a) a **fail-closed control** — same doc/id/actor/payload with only
   the gate satisfied → must ALLOW — and (b) a **discriminating mutation** — rewrite the
   gate so the two actors' fates diverge, and confirm they do.
+- **In a rules-are-not-filters LIST deny, WHICH rows force the refusal is a quantifier over
+  the SEED — and a MEMBERSHIP arm can make another person's row readable to the caller.**
+  Walk the read limb per matching row against the fixture; never infer the set from a
+  neighbouring fixture comment, whose subject is usually a DIFFERENT actor. Measured on
+  `household_allergen_shares` (BUT-1693): "h4 and h5 are what refuse this query" was false,
+  because the seed makes B a member of h5, so B reads A's `h5_A` through the membership arm
+  (the arm tests the HOUSEHOLD, not the row's owner) and `h4_A` alone refuses. The sentence
+  came from the fixture comment "A is not a member of h5" — a fact about A, read as a fact
+  about B. The TEST is self-guarding (it asserts failure, so a seed change making every match
+  readable reddens it); the ENUMERATION in its comment is not guarded by anything, so strike
+  it rather than reword — a corrected enumeration is a fresh unmeasured claim.
 - **A `cannotModify([...])` key can be STRUCTURALLY unreachable when a neighbouring
   conjunct pins the same field to `request.auth.uid` on BOTH the pre- and post-state.**
   `weekly_menu_plans` names `userId` in `cannotModify` while also requiring
@@ -487,8 +515,8 @@ Standard deny matrix for ownership-checked collections:
   when you add the seam; `blocks-rules.test.ts` resolves it at BOTH sites today (measured
   2026-09-09), so it may be probed with `PROBE_PROJECT_ID` set. Assert the mutator's match
   count is 1 and diff the mutant against the original before trusting the run. **A probe
-  project id must be lowercase** — an uppercase letter (a `createdAt`-derived id) makes the
-  run emit NO test lines at all, which greps for `FAIL` as cleanly as a green suite; require
+  project id must be lowercase with NO underscores** — an uppercase letter (a `createdAt`-derived
+  id) or an `_` (a mutant name like `c_age` interpolated raw) makes the run emit NO test lines at all, which greps for `FAIL` as cleanly as a green suite; require
   a `passed` line before reading any probe result. A suite that ships WITHOUT the two env
   hooks has to be probed through a throwaway `sed`-derived copy under
   `functions/src/__tests__/`, deleted in the same call — workable, but add the hooks when
@@ -506,7 +534,13 @@ Standard deny matrix for ownership-checked collections:
 - **A parallel session can edit the suite MID-REVIEW** — this file went 30 -> 32 tests between
   the first run and the report, so a quoted total and a "no test covers X" claim both age
   inside one review. Re-`Read` the test file and re-`ls -l` it before quoting any count, and
-  never carry a probe's pass total from an earlier run into the write-up.
+  never carry a probe's pass total from an earlier run into the write-up. **The session
+  scratchpad is SHARED with parallel agents too**: a generic `mut.js` was overwritten between
+  two rounds by another agent's mutator, the rebuild threw, and the rest of the call ran on the
+  PREVIOUS round's mutant file, printing a plausible 4/5 against stale rules. Give every probe
+  file a unique name, `rm -f` the mutant path before rebuilding, abort the call when the
+  mutator fails, and grep the mutant for the CURRENT rule's new literal before reading a result
+  (2026-09-14).
 - A standalone probe script must live UNDER `functions/src/` — from the OS temp dir,
   `npx ts-node` resolves neither `@firebase/rules-unit-testing` nor the tsconfig and dies
   on TS2307/implicit-any. Delete it in the SAME Bash call that created it (`trap ... EXIT
@@ -800,14 +834,30 @@ Standard deny matrix for ownership-checked collections:
   and a `!('status' in request.resource.data)` mutant reddens both create-allows (measured,
   BUT-2028) while a `hasOnly` over the same five keys reddens nothing. Probe the disclaimed
   hardening itself before passing the sentence, and scope it to the fields no fixture sends.
-- A `rateLimitWrite(...)` conjunct is invisible to the whole suite unless a test SEEDS
-  `users/{uid}/rate_limits/{collection}` — no Butlery client writes those docs itself, so
-  its removal reddens nothing without an explicit seeded-doc deny test. Report an
-  un-seeded rate-limit conjunct as an uncovered branch, not as proven.
+- **`rateLimitStamped(type, s, key)` (ADR-0020) turns every guarded create into a BATCH**
+  (guarded doc + `users/{uid}/rate_limits/{type}` stamp keyed on the doc id), so every
+  ALLOW and every DENY on that path must carry the stamp or the deny is over-determined.
+  A refused batch lands NO stamp, so DENY tests do not open a window: several denies and
+  the ONE allow declared after them can share an actor, which keeps a "same caller, only X
+  differs" control single-variable. Giving each case a fresh actor also works, but then
+  strike every "only X differs" sentence. The per-collection missing/foreign/in-window
+  stamp denies live in `rate-limit-rules.test.ts`, so feature suites owe only the stamped
+  shape.
 - A per-key immutability guard needs an ALLOW that changes a NEIGHBOURING key in the
   same map, not just denies on the pinned key — otherwise every deny in the cluster would
   also survive a future blanket freeze of the whole map, with nothing proving the rest
   stays mutable.
+- **A stamp keyed on the LAST path segment binds one write per request only when that segment
+  is unique across every document the batch can reach.** A guarded path with a second wildcard
+  (`pings/{groupId}/pings/{pingId}`, `.../{userId}/received_lists/{listId}`) lets one stamp
+  keyed `X` license `X` under N parents — measured on `pings`: 50 directed pings to 50
+  recipients, one stamp, ALLOWED. For every `rateLimitStamped(..., key)` site, list the path's
+  wildcards and ask which ones the key omits; that set is the per-request fan-out, and a
+  "1 per N s" comment beside it is false. Pin the fan-out as its own case either way.
+  **A composite key joined by a character the ids may contain is still a fan-out.**
+  `groupId + '_' + pingId` lets `x0_x1_…_x29` split 29 ways across `(groupId, pingId)` pairs:
+  one stamp, 29 pings, ALLOWED (measured). Join on `/`, which no path segment can hold, and
+  pin a split-collision case, not only a two-groups-same-id case.
 - A collection-group read rule UNIONS with the specific match it overlays, all-or-nothing
   per doc — an admin-only collection-group grant also grants a direct `get()` on any
   single scoped doc; there is no way to express "query but not direct-get" in this shape.

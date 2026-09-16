@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
@@ -30,13 +31,13 @@ import 'package:butlery/repositories/interfaces/household_repository.dart';
 /// Firestore rules are the authoritative isolation layer; these checks are the
 /// client-side first line and the audit trail.
 ///
-/// **Inert until the rules commit lands.** `firestore.rules` has no match block
-/// for this collection yet, so the catch-all `match /{document=**}` denies every
-/// read and write here in production. Every caller — the household aggregate's
-/// read and the settings row's grant/withdraw — sits behind
-/// `enable_household_allergen_sharing` (OFF), so nothing reaches Firestore yet.
-/// Do not read the sentence above as describing a live control until the block
-/// and its emulator tests exist.
+/// Every caller in this app — the household aggregate's read and the settings
+/// row's grant/withdraw — sits behind `enable_household_allergen_sharing`
+/// (OFF). That flag gates the APP, not the server: `firestore.rules` has a
+/// block for this collection, so a household member using a hand-rolled client
+/// can write a share before the flag is on (Malin's call, 2026-09-15; see
+/// ACCEPTED_DEVIATIONS.md). Such a row is erasable and exportable, and carries
+/// no consent row, because that logging lives here.
 class FirebaseHouseholdAllergenShareRepository
     extends BaseFirebaseRepository<HouseholdAllergenShare>
     implements HouseholdAllergenShareRepository {
@@ -140,7 +141,42 @@ class FirebaseHouseholdAllergenShareRepository
       isGrant: true,
     );
     await _assertNotAlreadyShared(entity);
-    return super.create(entity);
+    final created = await super.create(entity);
+    await _logConsent('consent_granted', entity.userId, entity.id, {
+      'householdId': entity.householdId,
+      'consentVersion': entity.consentVersion,
+    });
+    return created;
+  }
+
+  /// Audit `resourceType` for a share's consent rows. Not `user_consent`,
+  /// which the account-level consent document uses for its own
+  /// `consent_revoked`, so the two withdrawals stay distinguishable.
+  static const consentAuditResourceType = 'household_allergen_share';
+
+  /// DPIA R5: the grant and the withdrawal are recorded apart from the share,
+  /// because deleting the share removes the only other record that consent
+  /// was ever given. Both spellings are in `CONSENT_OPERATIONS`
+  /// (`functions/src/audit_logs/purge-expired.ts`), which keeps them for the
+  /// 730-day consent period. Written only on a grant and a withdrawal, never
+  /// on an edit.
+  Future<void> _logConsent(
+    String operation,
+    String userId,
+    String shareId,
+    Map<String, dynamic> metadata,
+  ) async {
+    await auditRepository?.logPermissionCheck(
+      userId: userId,
+      operation: operation,
+      resourceType: consentAuditResourceType,
+      resourceId: shareId,
+      granted: true,
+      metadata: {
+        ...metadata,
+        'timestamp': clock.now().toUtc().toIso8601String(),
+      },
+    );
   }
 
   /// Full-document overwrite, not the inherited merge-`update()`. A member who
@@ -210,7 +246,13 @@ class FirebaseHouseholdAllergenShareRepository
       _assertSelfDeclaredWithConsent(userId, entity, isGrant: true);
       await _assertNotAlreadyShared(entity);
     }
-    return super.createBatch(entities);
+    await super.createBatch(entities);
+    for (final entity in entities) {
+      await _logConsent('consent_granted', entity.userId, entity.id, {
+        'householdId': entity.householdId,
+        'consentVersion': entity.consentVersion,
+      });
+    }
   }
 
   @override
@@ -363,7 +405,30 @@ class FirebaseHouseholdAllergenShareRepository
   @override
   Future<void> revoke(String householdId) async {
     final userId = requireCurrentUserId();
-    await delete(HouseholdAllergenShare.documentId(householdId, userId));
+    final id = HouseholdAllergenShare.documentId(householdId, userId);
+    // Read raw, never through [fromFirestore]: a corrupt row must stay
+    // erasable. The version only enriches the audit row, so a failed read
+    // does not block the withdrawal.
+    String? consentVersion;
+    var existed = false;
+    try {
+      final snap = await collection.doc(id).get();
+      existed = snap.exists;
+      final version = snap.data()?['consentVersion'];
+      if (version is String) consentVersion = version;
+    } catch (e) {
+      AppLogger.warning('Could not read allergen share before withdrawal: $e');
+      existed = true;
+    }
+    await delete(id);
+    // Logged after the delete succeeds, so a failed delete records no
+    // withdrawal.
+    if (existed) {
+      await _logConsent('consent_revoked', userId, id, {
+        'householdId': householdId,
+        'consentVersion': ?consentVersion,
+      });
+    }
   }
 
   /// The inherited single-document reads are consent-blind: they would hand a

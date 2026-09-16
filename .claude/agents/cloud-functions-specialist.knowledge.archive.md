@@ -20349,3 +20349,140 @@ where it is attributed, not in a test comment where it cannot be reproduced.
 
 Path correction for future greps: the writer is under
 `lib/services/unified/operations/modules/`, not `lib/services/unified/modules/`.
+
+### 2026-09-14 — ADR-0020 comment strikes: a dangling "(above)" survived [review]
+
+Commit-gate review of comment-only strikes in account-deletion-cascade.ts,
+enforce-group-minor-membership.ts and rate_limiter.ts, which removed "rateLimitWrite
+('conversations', 10) never binds" after firestore.rules moved conversations to
+rateLimitStamped('conversations', 3, conversationId). Two strikes were clean.
+The cascade's MAX_ROSTER_SWEEP_ROWS doc kept "a user inflating their OWN count,
+at whatever rate a client can issue creates, since nothing caps it (above)" —
+its "(above)" pointed at the struck sentence, and the conversations create is now
+capped at one per 3 s per user. Verdict fail (1 blocking). Knowledge bullet on
+rateLimitWrite being inert replaced: only globalRecipeCache still calls it.
+
+### 2026-09-14 — commit-gate review: rateLimitStamped batch (ping_onCreate, rate-limit-rules, activity-events-rules) [rules-rate-limit]
+
+Reviewed `functions/src/triggers/ping_onCreate.ts`, the new
+`functions/src/__tests__/rate-limit-rules.test.ts` and
+`functions/src/__tests__/activity-events-rules.test.ts` against the staged blobs
+(hash-object == index for all three). Verdict pass, 0 blocking.
+
+Retired verbatim from the knowledge file (superseded in place):
+"- **`rateLimitWrite(bucket, s)` is INERT unless a client writes
+  `users/{uid}/rate_limits/<bucket>`** — grep the Dart writers per bucket before
+  citing it as a control; several rules name buckets nothing writes."
+Reason: the ten burst-guarded creates now call `rateLimitStamped`, which denies an
+unstamped write. Measured: `rateLimitWrite(` is still called once in
+`firestore.rules`, on `globalRecipeCache`.
+
+Non-blocking notes raised:
+- ping_onCreate.ts header: the strike's surviving first sentence is true
+  (rule `rateLimitStamped('pings', 60, pingId)`; `PingService.sendPing` calls
+  `stampRateLimit(... type: 'pings', guardedDocId: ping.id)`). The next sentence,
+  "The 5/h aggregate cap is documented but not enforced server-side", is
+  pre-existing and false in the present tense: `onPingCreated` is exported from
+  `index.ts` and enforces it. Strike recommended.
+- Same stale "CF sweeper is a tracked follow-up" claim in `firestore.rules` pings
+  header and `lib/services/social/ping_service.dart` library doc — out of batch.
+- AE12c / rate-limit "inside the window" cases seed `Date.now()` and rely on the
+  seed-to-commit gap staying under the window (2s for activity_events). Same host
+  clock as the emulator; low flake risk.
+- `node scripts/check-test-registration.js` exit 0; PROJECT_ID
+  `butlery-rules-rate-limit` unique; both `paths:` blocks and `test:rules:all` carry
+  the suite.
+
+### 2026-09-14 — re-review: EXPORT_EXEMPT.rate_limits shape text [review]
+
+The blocking "(above)" strike landed as proposed (staged blob 73be0c997 = worktree).
+The same round rewrote EXPORT_EXEMPT.rate_limits' first sentence as "Per rate-limited
+type, a timestamp and the id of the guarded document, written to expire after 2 days".
+That is false for two documents in the same subcollection: `imports` holds
+UsageLimits counters (import_rate_limiter.dart transaction.set, merge, no expireAt)
+and `friendSearchMigrated` holds `{migratedAt}` (friends_firebase_sync.dart).
+firestore.rules' own rate_limits block names both as sharing it. The surviving
+"Discloses nothing about the user that the throttling message does not already say
+on screen" is false for a stamp carrying lastDocId, and "That measurement stands
+and was never disputed" in the block comment is present-tense over the same row.
+Whether the 09-03 exemption still holds for a row carrying item ids and a peer uid
+was not recorded as re-asked; ADR-0020 decision 4 covers the lifetime only.
+Verdict fail (3 blocking).
+
+### 2026-09-14 — re-review: pings stamp key `groupId + '_' + pingId` collides [rules-rate-limit]
+
+Re-review after the rules gate's fan-out fix (rule key `groupId + '_' + pingId`,
+client `'${groupId}_${ping.id}'`). Staged blobs verified: ping_onCreate.ts
+0f06a0be1, rate-limit-rules.test.ts 7c8d4e0d5 (hash-object == index). Verdict
+fail, 1 blocking.
+
+MEASURED on the running emulator with a scratch script (unique project id, rules
+read from the worktree file, nothing written to the repo):
+- Control arm: two pings in two groups (`x<RUN>/p1`, `y<RUN>/p2`), one stamp
+  keyed `x<RUN>_p1` -> DENIED.
+- Collision arm: three pings `a<RUN>/b_c_d`, `a<RUN>_b/c_d`, `a<RUN>_b_c/d`,
+  one stamp keyed `a<RUN>_b_c_d` -> ALLOWED. So one stamp still covers pings in
+  several groups; the split count is bounded only by id length.
+- Remedy probe (rules string replaced in memory, anchor count asserted == 1):
+  key `groupId + '/' + pingId`. The same collision batch keyed on each of the
+  three slash keys, and on the old underscore key -> all DENIED. Single ping in
+  group `a<RUN>_b` keyed `a<RUN>_b/c_d` on a fresh uid -> ALLOWED.
+
+The suite's new fan-out case only stages the same-pingId shape, so it stays
+green with the collision open.
+
+Knowledge file: the rateLimitStamped bullet now carries the delimiter principle;
+wording compressed in the same edit.
+
+### 2026-09-14 — re-review 2: `/` separator landed, expiry bounds [rules-rate-limit]
+
+Staged blobs: rate-limit-rules.test.ts 1cf5a50a0, activity-events-rules.test.ts
+51e55ffe1, ping_onCreate.ts 0f06a0be1 (hash-object == index). Verdict pass, 0 blocking.
+- Reran the scratch collision probe against the worktree `firestore.rules`
+  (key `groupId + '/' + pingId`, line 1344): the three-way `a<RUN>` split
+  batch, stamped with the old underscore key, is now DENIED. The control is
+  still DENIED.
+- The new split case (`a<RUN>/b_c` + `a<RUN>_b/c`) stages the collision shape
+  and asserts DENY under both the `/` key and the `_`-joined key.
+- Expiry: `rate_limit_stamp.dart` writes `clock.now() + 2 days`; rule accepts
+  `> request.time` and `<= request.time + 4d` (ADR-0020 decision text). Tests
+  cover expired, +5d, +1d, +3d. Consequence noted, decided: a device clock off
+  by more than 2 days cannot write any burst-guarded document.
+
+### 2026-09-14 — re-review 2: rate_limits exemption strikes applied [review]
+
+Staged cascade blob b1610b0e4 = worktree. All three strikes landed as delete-only;
+the surviving EXPORT_EXEMPT.rate_limits string and the "She weighed" sentence read
+true alone. Malin re-decided the exemption 2026-09-14 with lastDocId in view
+(accepted-deviations last entry, ADR-0020 decision 4). Verdict pass (0 blocking).
+
+### 2026-09-14 — re-review 3: expireAt floor at the longest window [rules-rate-limit]
+
+Staged rate-limit-rules.test.ts 56ac5c971 (hash-object == index). Verdict pass, 0 blocking.
+Rule: `expireAt > request.time + duration.value(60, 's')` and `<= +4d`. Measured the
+largest `rateLimitStamped` window literal in firestore.rules: 60 (pings), so the floor
+equals it. New DENY case at +30s sits 30s under the floor. Its allow controls are +1d and +3d.
+Note: the "already expired" (-60s) case also lies below the new floor, so the same
+single conjunct decides both. Harmless.
+
+### 2026-09-14 — re-review 3: "one timestamp per gated action" struck [review]
+
+Staged cascade blob 12aaca865 = worktree. Integration gate struck the row-shape
+clause from the EXPORT_EXEMPT header comment; survivor "She weighed bundle
+legibility higher." reads true alone, and "had measured that nothing secret is
+disclosed (the limits live in client code …)" stays a past-tense claim about the
+LIMITS, not the row. Verdict pass (0 blocking).
+
+### 2026-09-14 — re-review 4: receipt() helper and list/menu share-batch loop [rules-rate-limit]
+
+Staged rate-limit-rules.test.ts c94d9f9be (hash-object == index). Verdict pass, 0 blocking.
+- `receipt()` compared against the writers: `shopping_social_share_module.dart`
+  and `social_menu_operations.dart` each write 8 recipient keys. Both helper
+  branches carry exactly those keys, so the "key for key" comment holds.
+- `received_lists`/`received_menus` create rules require `sharedByUserId`, the
+  id key and `sharedAt`, with no `hasOnly`.
+- The share-batch loop's `shared_content` body is a SUBSET of the writers'
+  keys: it lacks `listData`/`listType` (list) and `menu`/`totalRecipes`/`menuType`
+  (menu). Harmless today, because the `shared_content` create rule is
+  `hasRequiredFields` with no `hasOnly`. If a key allowlist is ever added
+  there, this fixture would stay green while the real share is denied.

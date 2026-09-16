@@ -2155,3 +2155,37 @@ files in the same edit.
   until the stamp expires, that no one else can read it, and that the 2026-09-03 exemption was
   decided when a stamp held only a timestamp; she was NOT shown a measurement of how quickly the
   TTL deletes in practice.
+
+- **Leaving or being removed from a household does NOT delete that member's
+  `household_allergen_shares` row (2026-09-15).** Account deletion does
+  (`deleteHouseholdAllergenShares`, with a probe leg), and withdrawal does (`revoke`).
+  Nothing in the app adds or removes a household member today —
+  `HouseholdRepository` has no add/remove/leave method and `Household.addMember` /
+  `removeMember` have no caller — so there is no event to attach deletion to. DPIA
+  `docs/legal/dpia-household-allergen-sharing.md` §3 R7 names both as gates on
+  switching `enable_household_allergen_sharing` on.
+  **Tripwire:** the change that first lets a household gain or lose a member must
+  delete the departing member's share in the same change, on both the leave and the
+  removal path. Until then a departed member's share is invisible to the household
+  (`getByHousehold` filters on the current roster) but stays on disk, and its owner
+  can still delete it: the rules' delete limb has no membership conjunct.
+  **Malin's decisions, 2026-09-15:** build the erasure, export and consent parts
+  before the flag, and let every household member read a share. She was NOT shown a
+  design for the leave and removal paths, because none exists to show.
+
+- **The feature flag gates the APP, not the server: a hand-rolled client can write a
+  `household_allergen_shares` row before `enable_household_allergen_sharing` is on
+  (2026-09-15).** Until the rules block landed, the terminal `match /{document=**}` denied
+  every write, so the flag was a server gate by accident. The block's create limb now admits
+  a household member writing their own valid, consented row, and `firestore.rules` cannot read
+  a Remote Config flag.
+  **Malin's explicit call, 2026-09-15**, over closing create and update until the flag-flip
+  commit. She was shown that the privacy policy's clause for this processing (Annex B,
+  ADR-0005) only goes live with the flag, so such a row would be processing described in no
+  published text. What she was NOT shown: any estimate of how likely a hand-rolled client is
+  pre-launch, because there is none — the app is not released.
+  Bounded: the row is the writer's OWN Art. 9 data, only their household can read it, it is
+  erased by the account-deletion cascade and carried by the Art. 15 export. No `consent_granted`
+  row accompanies it, because that logging lives in the app — so such a row has no Art. 7(1)
+  trail, which is the part that is actually lost.
+  Raised by the `firebase-backend-security` gate. BUT-1693, 2026-09-15

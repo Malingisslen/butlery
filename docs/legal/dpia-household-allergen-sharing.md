@@ -205,6 +205,13 @@ leaves the household, and never contributes to any public or aggregate figure.
   writer now emits `consent_revoked`.
 - **Residual:** Low **once built**; until then the withdrawal half of the Art.
   7(1) trail does not exist.
+- **STATUS 2026-09-15 — built.** `FirebaseHouseholdAllergenShareRepository` writes
+  `consent_granted` on `create` and `createBatch`, and `consent_revoked` on `revoke`
+  after the delete succeeds, both with `resourceType: 'household_allergen_share'`
+  and the share's `consentVersion` (absent when the stored row carries none). No
+  row is written on an edit, or for a share that did not exist. Pinned by the
+  "consent audit trail" group in
+  `test/unit/repositories/firebase/firebase_household_allergen_share_repository_test.dart`.
 
 ### R6 — Dietary choices are bundled with allergens, and can narrow the household's menu
 - **What happens:** the controller decided (§9, decision 1) that one toggle
@@ -236,6 +243,13 @@ leaves the household, and never contributes to any public or aggregate figure.
   mitigated today and the four triggers are named gates on flipping the flag.
 - **Residual:** Low **once built**; today unmitigated-but-unreachable. Subject to the
   erasure tests passing before release.
+- **STATUS 2026-09-15 — PARTIAL.** Built: withdrawal (`revoke`), and account
+  deletion (`deleteHouseholdAllergenShares` in the cascade's Tier 1, its
+  `probeResidualData` leg, and the admin reset list). Not built: leaving the
+  household and being removed from it — nothing in the app adds or removes a
+  household member (the sixth gate below), so there is no event to attach them to.
+  Those two remain gates on switching the flag on. `firestore.rules` now has a block
+  for the collection, and the requester's own shares are in the Art. 15 export.
 - **A sixth gate, found 2026-08-13 and not previously written down:** nothing in the
   app can put a SECOND account holder into a `households/{id}`. `ensureForUser` creates
   a solo household, `Household.addMember` has no caller, and the only server-side
@@ -258,6 +272,10 @@ leaves the household, and never contributes to any public or aggregate figure.
   no** — other people's allergies are not the requester's personal data, and
   Art. 15 does not reach them.
 - **Residual:** open until §9, decision 5.
+- **SUPERSEDED 2026-09-15.** Retired verbatim: "- **Residual:** open until §9, decision 5."
+  Decision 5 in §9 carries its own date (decided 2026-08-12), and
+  `FamilyExportManager.exportHouseholdAllergenShares` ships that scope: the Art. 15
+  section returns the requester's own shares only.
 
 ---
 
@@ -319,15 +337,27 @@ public.
 
 ## 8. Engineering attestation
 
-**None yet — nothing is built.** This document precedes the code by the
-controller's instruction. The attestation is added, with the test evidence, when
-the implementation is complete and before the feature flag is switched on.
+**PARTIAL (2026-09-15).** This document precedes the code by the controller's
+instruction. What is built, with its evidence:
+
+- Rules: `functions/src/__tests__/household-allergen-shares-rules.test.ts` (emulator).
+- Account deletion and residual probe: the household-allergen-share scenarios in
+  `functions/src/__tests__/account-deletion-cascade.test.ts`.
+- Art. 15 export: the BUT-1693 case in
+  `test/unit/services/account/data_export_service_test.dart`.
+- R5 consent trail: the "consent audit trail" group in
+  `test/unit/repositories/firebase/firebase_household_allergen_share_repository_test.dart`.
+
+Open before the feature flag is switched on: R7's leave and removal triggers, the
+household-join flow (sixth gate), the corrupt-row settings case (seventh gate), and
+Annex B in the shipping privacy policy.
 
 ## 9. Controller decisions & sign-off
 
 Decisions 1–4 were taken by Malin Gisslén on **2026-08-11**, before this document
 was drafted, and are reproduced here because the assessment depends on them.
-Decision 5 is open.
+**SUPERSEDED 2026-09-15.** Retired verbatim: "Decision 5 is open." Decision 5 below
+is dated 2026-08-12, and `FamilyExportManager.exportHouseholdAllergenShares` ships it.
 
 1. **What is shared:** allergens **and** dietary choices, in one toggle — not
    allergens alone. Consequence assessed at R6.

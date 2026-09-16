@@ -179,6 +179,13 @@ void main() {
         500,
       );
     });
+
+    test('the household-allergen-shares cap is declared', () {
+      expect(
+        ExportPaginationHelper.exportLimits['household_allergen_shares'],
+        50,
+      );
+    });
   });
 
   // BUT-1662: fetchCapped is the single primitive every GDPR export section

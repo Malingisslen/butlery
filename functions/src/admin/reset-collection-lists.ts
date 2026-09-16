@@ -216,6 +216,9 @@ export const COLLECTIONS_TO_DELETE: CollectionTarget[] = [
   // (`deleteIngredientSuggestions`, with a probe leg), so this script and a
   // single erasure now agree about it.
   { name: "ingredient_suggestions" },
+  // A member's shared allergen list (BUT-1693). The cascade reaches it too
+  // (`deleteHouseholdAllergenShares`, with a probe leg).
+  { name: "household_allergen_shares" },
   // Captured model input and output for QA. Both are PII-scrubbed at capture
   // and the uid is stored as `authUidHash`, never raw — so the ground for
   // deleting these is not that they are personal data but that they are a

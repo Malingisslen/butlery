@@ -24,15 +24,9 @@ abstract class HouseholdAllergenShareRepository
   /// Withdraws the consent: deletes the document. The list itself must not
   /// survive the consent.
   ///
-  /// What survives a withdrawal today is the PERMISSION-CHECK row in
-  /// `audit_logs` (actor, resource, operation, timestamp, granted). That is not
-  /// yet a consent record: it carries no `consentVersion`, and its operation
-  /// spelling puts it in the 180-day general retention bucket rather than the
-  /// 730-day `consent_*` one. DPIA R5 expects a real `consent_granted` /
-  /// `consent_revoked` pair (the spelling `CONSENT_OPERATIONS` already
-  /// carries — do not mint a second token for one act). The consent UI shipped WITHOUT it (BUT-1693,
-  /// 2026-08-12) — it is a named gate on turning the feature flag on, not
-  /// something already scheduled elsewhere. Do not describe the Art. 7(1)
-  /// trail as complete until it exists.
+  /// What survives a withdrawal is a `consent_revoked` row in `audit_logs`
+  /// carrying the share's `consentVersion`, written by the Firebase
+  /// implementation after the delete succeeds (DPIA R5). Its `resourceType`
+  /// separates it from the account-level consent document's own row.
   Future<void> revoke(String householdId);
 }

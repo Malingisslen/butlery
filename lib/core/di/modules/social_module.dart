@@ -162,8 +162,7 @@ class SocialModule implements DIModule {
 
     // The audit repository is not optional here the way it is for the siblings:
     // without it `logPermissionCheck` persists nothing, and these rows are the
-    // only record of a share that outlives its own deletion. They are NOT yet
-    // the consent trail — see the interface doc for what is still missing.
+    // only record of a share that outlives its own deletion.
     container.registerLazySingleton<HouseholdAllergenShareRepository>(
       () => FirebaseHouseholdAllergenShareRepository(
         authRepository: container<AuthRepository>(),

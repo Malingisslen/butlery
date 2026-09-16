@@ -84,7 +84,13 @@ rather than writing rules tests yourself.
   billed as a document read, the per-evaluation cache only collapses repeats of the SAME
   document within ONE request, and a missing document still bills one read; a probe behind
   a rule chaining two lookups costs 3x per probe. Re-derive any "N reads worst case" claim
-  by opening the rule, not just the query.
+  by opening the rule, not just the query. ARM ORDER inside an OR'd read limb is therefore a
+  billing decision, invisible in any behaviour test: a membership arm that `get()`s a parent
+  (`isHouseholdMember(resource.data.householdId)`) placed BEFORE a free self-field arm
+  (`resource.data.userId == request.auth.uid`) short-circuits the wrong way and bills one
+  parent read per ROW of every list query the self arm exists to authorise — the Art. 15
+  export is the usual victim, at cap+1 rows. Put the field-only arm first; the limb is
+  logically identical.
 - Avoid unnecessary reads/writes. Batch (Firestore limit: 500 ops/batch; a consolidated
   update is 1 op/doc). Cache aggressively; use indexed queries; prefer deterministic logic
   over LLM calls.
@@ -451,15 +457,30 @@ name which doc each end touches before approving it.
   `auth.uid in resource.data.someMap` checks MAP KEYS, not values; self-only set edits need
   symmetric-difference CEL + `affectedKeys().hasOnly([...])`, and a self-leave needs
   `removeAll()` both directions.
-- `rateLimitWrite(collection, seconds)` is live only PER BUCKET — grep `.doc('<bucket>')`
-  under `userRateLimits` before calling any conjunct live or dead (live today: `messages`,
-  `comments`, `social_requests`, `activity_events`; most others, incl. `audit_logs`, are
-  inert). It is never a CONTROL against a hostile client, only a throttle on our own
-  repository: the helper is `!exists(limitsPath) || ...`, i.e. FAILS OPEN on a missing
-  bucket, and `users/{uid}/rate_limits/{type}` is `allow read, write: if isOwner(userId)` —
-  so a hand-rolled client that simply never stamps the bucket is unlimited forever. Say that
-  out loud whenever one is proposed, added or deferred; bounding row COUNT needs a
-  callable-mediated create or a server counter.
+- Burst guards come in two shapes; grade them differently. The legacy
+  `rateLimitWrite(collection, seconds)` is `!exists(limitsPath) || ...` over an owner-writable
+  bucket: it FAILS OPEN, so a client that never stamps is unlimited. It is a throttle on our
+  own repository, never a control. `rateLimitStamped(collection, seconds, key)` (ADR-0020)
+  requires the SAME request to stamp `rate_limits/{type}` with `lastWrite == request.time` and
+  `lastDocId == key`. Omitting the stamp denies, so every writer of a guarded path must batch
+  `stampRateLimit`. Grep each guarded collection's writers for it, or the rule denies every
+  write. When reviewing a stamp writer, check three things. (1) The stamp uid must be the
+  AUTH uid: the rule builds the path from `request.auth.uid`. (2) Read-then-batch
+  "first write only" logic: the batch is atomic, so a misclassified race denies the whole
+  batch rather than orphaning a stamp. Check what the update limb already refuses (e.g. a
+  `createdAt` in the merge). (3) `lastDocId` copies the DOCUMENT ID into an Art. 15-exempt
+  bucket. A composite id (`<from>_<to>_...`, `direct_<a>_<b>`) therefore stores a third
+  party's raw uid where their erasure never reaches. The exemption's "one timestamp per
+  action" premise does not describe that content. Row COUNT still needs a callable or a
+  server counter: a new account starts with a fresh window. A RETENTION promise resting on a
+  client-written `expireAt` is a bound only if the rule caps it from ABOVE: a lower bound alone
+  (`>= request.time + 1d`) lets any device clock set any lifetime, and shortening the writer's
+  offset toward that floor shrinks the clock-skew tolerance of every guarded write. Also grade
+  a description of `rate_limits` as a universal over its DOC IDS: non-stamp documents
+  (`imports`, `friendSearchMigrated`) share the collection. A CLIENT-clock `expireAt` checked
+  against a rules floor (`>= request.time + N`) denies whenever the device is slow by more
+  than (lifetime - N), so shortening the lifetime shrinks that margin: re-check the floor and
+  the rules-test fixtures (which usually still carry the old lifetime).
 - A `hasOnly` allowlist derived from the collection's `hasRequiredFields` list is NARROWER
   than the declared type, and the gap is exactly the OPTIONAL content fields — which deny
   silently and fail-closed the day a client writer sends one (the `configRevision` outage

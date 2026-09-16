@@ -143,6 +143,7 @@ class DataExportService extends BaseService {
       householdRepository: householdRepository,
       dinerProfileRepository: dinerProfileRepository,
       familyRatingRepository: familyRatingRepository,
+      dataExportRepository: _exportRepo,
     );
   }
 
@@ -283,6 +284,9 @@ class DataExportService extends BaseService {
         userId,
       ),
       'family': _familyManager.exportFamily(userId),
+      'household_allergen_shares': _familyManager.exportHouseholdAllergenShares(
+        userId,
+      ),
       // BUT-1396: PII the deletion cascade erases but the export previously
       // omitted (Art. 15 right-of-access). `group_weekly_menu_plans` wires in
       // the already-implemented-but-orphaned ContentExportManager method.

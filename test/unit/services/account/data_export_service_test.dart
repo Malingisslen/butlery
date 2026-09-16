@@ -1396,6 +1396,99 @@ void main() {
         expect(note, contains('notes'));
       });
 
+      test(
+        'BUT-1693: the user\'s own shared allergen lists export under '
+        'every household, projected, and another member\'s does not',
+        () async {
+          // Two households for the same user: an export that looked up the
+          // user's current household would return one and miss the other.
+          final grantedAt = DateTime.utc(2026, 9, 1, 10);
+          Map<String, dynamic> share(String hid, String uid) => {
+            'householdId': hid,
+            'userId': uid,
+            'trackedAllergens': ['gluten'],
+            'trackedDietary': <String>[],
+            'includeUnknownInMenu': false,
+            'consentGranted': true,
+            'consentVersion': 'v1',
+            'consentGrantedAt': Timestamp.fromDate(grantedAt),
+          };
+          await fakeFirestore
+              .collection('household_allergen_shares')
+              .doc('h1_$testUserId')
+              .set({...share('h1', testUserId), 'nickname': 'x'});
+          await fakeFirestore
+              .collection('household_allergen_shares')
+              .doc('h2_$testUserId')
+              .set(share('h2', testUserId));
+          await fakeFirestore
+              .collection('household_allergen_shares')
+              .doc('h1_other-user')
+              .set(share('h1', 'other-user'));
+
+          final jsonString = await service.exportUserData();
+          final data = json.decode(jsonString) as Map<String, dynamic>;
+
+          final section =
+              data['household_allergen_shares'] as Map<String, dynamic>;
+          expect(section.containsKey('error'), isFalse);
+          expect(section['total_count'], 2);
+
+          final rows = section['household_allergen_shares'] as List<dynamic>;
+          final ids = rows
+              .map((r) => (r as Map<String, dynamic>)['share_id'])
+              .toSet();
+          expect(ids, {'h1_$testUserId', 'h2_$testUserId'});
+
+          final payload =
+              (rows.firstWhere(
+                        (r) =>
+                            (r as Map<String, dynamic>)['share_id'] ==
+                            'h1_$testUserId',
+                      )
+                      as Map<String, dynamic>)['data']
+                  as Map<String, dynamic>;
+          expect(payload['trackedAllergens'], ['gluten']);
+          expect(payload['consentVersion'], 'v1');
+          expect(
+            DateTime.parse(payload['consentGrantedAt'] as String).toUtc(),
+            grantedAt,
+          );
+          expect(payload.containsKey('nickname'), isFalse);
+          expect(payload.containsKey('userId'), isFalse);
+          expect(section['data_minimisation'], contains('other household'));
+        },
+      );
+
+      test(
+        'BUT-1693: shares above the cap are truncated, and the bundle says so',
+        () async {
+          // The cap lives in export_pagination_helper.dart; this asserts the
+          // section actually asks for it, rather than reading the collection
+          // whole and calling itself capped.
+          for (var i = 0; i < 51; i++) {
+            await fakeFirestore
+                .collection('household_allergen_shares')
+                .doc('h${i}_$testUserId')
+                .set({
+                  'householdId': 'h$i',
+                  'userId': testUserId,
+                  'trackedAllergens': ['gluten'],
+                  'consentGranted': true,
+                });
+          }
+
+          final jsonString = await service.exportUserData();
+          final data = json.decode(jsonString) as Map<String, dynamic>;
+          final section =
+              data['household_allergen_shares'] as Map<String, dynamic>;
+
+          expect(section.containsKey('error'), isFalse);
+          expect(section['total_count'], 50);
+          expect(section['truncated'], isTrue);
+        },
+      );
+
       test('BUT-1396: group pings the user sent export via the pings '
           'collection-group (total==1)', () async {
         // Pings nest under pings/{groupId}/pings/{pingId}; the export uses a
@@ -1446,6 +1539,8 @@ void main() {
           // section — no code in the app creates a suggestion, so it is the
           // expected state.
           'ingredient_suggestions',
+          // BUT-1693: no share is seeded, so the zero-row case is under test.
+          'household_allergen_shares',
         ]) {
           final section = data[key] as Map<String, dynamic>;
           expect(

@@ -47,6 +47,7 @@ import {
   deleteCookSnaps,
   deleteActivityEvents,
   deleteIngredientSuggestions,
+  deleteHouseholdAllergenShares,
   deleteFeatureRetentionFlags,
   deleteRetentionAnalytics,
   deleteNotificationEffectiveness,
@@ -255,6 +256,12 @@ export async function runAccountDeletionWithDeps(
     [
       "ingredient_suggestions",
       () => deleteIngredientSuggestions(database, uid),
+    ],
+    // BUT-1693: a member's shared allergen list. Ships with its probe leg;
+    // finds zero rows while the feature flag is off.
+    [
+      "household_allergen_shares",
+      () => deleteHouseholdAllergenShares(database, uid),
     ],
     // BUT-1789: one behavioural row per active day, kept forever until now.
     ["feature_retention", () => deleteFeatureRetentionFlags(database, uid)],

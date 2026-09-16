@@ -62,7 +62,9 @@ enum ExportResourceType {
   // export omitted entirely (Art. 15 ⊇ Art. 17).
   sharedShoppingLists('shared_shopping_lists'),
   // BUT-2028: ingredient suggestions (Art. 15 ⊇ Art. 17).
-  ingredientSuggestions('ingredient_suggestions')
+  ingredientSuggestions('ingredient_suggestions'),
+  // BUT-1693: a member's own shared allergen list (Art. 15 ⊇ Art. 17).
+  householdAllergenShares('household_allergen_shares')
   ;
 
   const ExportResourceType(this.tag);
@@ -1015,6 +1017,21 @@ class FirebaseDataExportRepository extends BaseFirebaseRepository<Object> {
         .where('userId', isEqualTo: userId),
     userId,
     ExportResourceType.ingredientSuggestions,
+    limit: maxDocuments,
+  );
+
+  /// Top-level `household_allergen_shares` where `userId == userId` — the
+  /// user's own shared allergen lists, under every household id. The flat
+  /// field is the filter the rules' owner arm can prove for a list query.
+  Future<List<Map<String, dynamic>>> exportHouseholdAllergenShares(
+    String userId, {
+    int maxDocuments = 50,
+  }) => _queryList(
+    firestore
+        .collection(FirestoreCollections.householdAllergenShares)
+        .where('userId', isEqualTo: userId),
+    userId,
+    ExportResourceType.householdAllergenShares,
     limit: maxDocuments,
   );
 

@@ -203,6 +203,8 @@ export async function probeResidualData(
     // shape as the rest of this list — top-level, filtered on a `userId`
     // field — so it belongs here rather than needing a leg of its own.
     "ingredient_suggestions",
+    // BUT-1693: the collection `deleteHouseholdAllergenShares` erases.
+    "household_allergen_shares",
   ] as const;
   let residual = 0;
   for (const col of probes) {
@@ -1474,6 +1476,44 @@ export async function deleteIngredientSuggestions(
   if (snap.size > MAX_SUGGESTION_SWEEP_ROWS) {
     logger.error(
       "[deletion-cascade] implausible ingredient-suggestion count; not sweeping",
+      { uid_prefix: uid.slice(0, 6), rows: snap.size },
+    );
+    return false;
+  }
+  await batchDeleteAll(db, snap.docs);
+  return true;
+}
+
+/**
+ * Hard ceiling for [deleteHouseholdAllergenShares]. The document id is
+ * `{householdId}_{userId}`, so a user holds at most one share per household;
+ * above this the sweep declines.
+ *
+ * Exported so its scenario can import it rather than retype the number.
+ */
+export const MAX_HOUSEHOLD_SHARE_SWEEP_ROWS = 50;
+
+/**
+ * BUT-1693: a member's own allergen list shared with their household
+ * (`household_allergen_shares`, Art. 9 data under explicit consent).
+ *
+ * Found by the flat `userId` field, never through the user's current
+ * household: the id format lets one user hold shares under several household
+ * ids. Declines above [MAX_HOUSEHOLD_SHARE_SWEEP_ROWS] rather than truncating,
+ * like [deleteIngredientSuggestions].
+ */
+export async function deleteHouseholdAllergenShares(
+  db: admin.firestore.Firestore,
+  uid: string,
+): Promise<boolean> {
+  const snap = await db
+    .collection("household_allergen_shares")
+    .where("userId", "==", uid)
+    .limit(MAX_HOUSEHOLD_SHARE_SWEEP_ROWS + 1)
+    .get();
+  if (snap.size > MAX_HOUSEHOLD_SHARE_SWEEP_ROWS) {
+    logger.error(
+      "[deletion-cascade] implausible household allergen share count; not sweeping",
       { uid_prefix: uid.slice(0, 6), rows: snap.size },
     );
     return false;

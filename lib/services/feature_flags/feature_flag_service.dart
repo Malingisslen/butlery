@@ -100,19 +100,17 @@ class FeatureFlagService {
     'enable_on_device_ocr': false,
     // BUT-1693: lets a household member share their own allergen list so menu
     // generation reads it instead of guessing a four-allergen floor. The
-    // consent UI shipped 2026-08-12; what is still missing before this may be
-    // flipped is (a) the firestore.rules block for `household_allergen_shares`,
-    // (b) the atomic settings+share write, without which a shared list silently
-    // lags its owner's edits (DPIA R4), and (c) the
-    // consent_granted/consent_revoked audit pair (DPIA R5), and (d) the
-    // erasure and access wiring — the account-deletion cascade step, its
-    // probeResidualData leg, the reset-user-data entry and the GDPR export
-    // section, none of which exist (`grep household_allergen functions/src` is
-    // empty). This list is the launch checklist, so keep it exhaustive rather
-    // than naming the interesting items. With the rules
-    // absent, flipping this does not merely learn nothing: the denied query
-    // makes every multi-member household report an incomplete roster, which
-    // changes the menu and the opt-out dialog.
+    // consent UI shipped 2026-08-12. Built since (2026-09-15): the
+    // firestore.rules block, the consent_granted/consent_revoked audit pair
+    // (DPIA R5), and the erasure and access wiring — cascade step,
+    // probeResidualData leg, reset-user-data entry and GDPR export section.
+    // What is still missing before this may be flipped is (a) the atomic
+    // settings+share write, without which a shared list silently lags its
+    // owner's edits (DPIA R4), (b) deleting a share when a member leaves or is
+    // removed from a household (DPIA R7; no code adds or removes a member yet),
+    // (c) a way to put a second account holder in a household at all, and
+    // (d) Annex B in the shipping privacy policy. This list is the launch
+    // checklist, so keep it exhaustive rather than naming the interesting items.
     'enable_household_allergen_sharing': false,
     // Decides WHICH of the on-device recognizer's two strings the parser sees —
     // the one built from its measured lines, or ML Kit's own assembly — AND
@@ -530,9 +528,8 @@ abstract final class FeatureFlags {
   // ships anyway on Malin's 2026-08-03 call; read the defaults map above and
   // ACCEPTED_DEVIATIONS.md before changing it.
   static const enableOnDeviceOcr = 'enable_on_device_ocr';
-  // Household allergen sharing (BUT-1693). OFF: the collection is default-denied
-  // until the rules block lands. The settings row that writes a share and the
-  // menu aggregate that reads one both sit behind this flag.
+  // Household allergen sharing (BUT-1693). The settings row that writes a share
+  // and the menu aggregate that reads one both sit behind this flag.
   static const enableHouseholdAllergenSharing =
       'enable_household_allergen_sharing';
   // Layout-aware recipe splitting — the split path is LIVE behind this flag;

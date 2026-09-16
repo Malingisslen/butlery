@@ -380,9 +380,11 @@ from `(err as {code?}).code`.
   `enforceRateLimit` and `logRateLimitViolation` read `getFirestore()`, so
   `__setFirestoreForTest` + a throwing fake reaches the fail-closed branch. The
   ALLOWED path is unreachable — `getDb()` is a bare `admin.firestore()`.
-- **`rateLimitWrite(bucket, s)` is INERT unless a client writes
-  `users/{uid}/rate_limits/<bucket>`** — grep the Dart writers per bucket before
-  citing it as a control; several rules name buckets nothing writes.
+- **Client burst guards are `rateLimitStamped(type, s, key)`** (ADR-0020):
+  same-request stamp on `request.time` + `lastDocId`. A COMPOSITE key joins ids
+  with `/` (no id holds it): `'_'` lets `a_b`+`c` and `a`+`b_c` share one stamp.
+  Sweep "(above)" back-references to prose a rules swap falsifies. `rate_limits`
+  also holds non-stamps (`imports`, `friendSearchMigrated`) — shape claims cover all.
 - `system_events` has no TTL — every enforced callable adds an unbounded
   write-per-denial stream, and `resource-exhausted` is client-RETRYABLE.
 

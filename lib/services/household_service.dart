@@ -199,10 +199,8 @@ class HouseholdService extends BaseService {
     if (flags == null) return null;
 
     if (!flags.isEnabled(FeatureFlags.enableHouseholdAllergenSharing)) {
-      // Off is KNOWLEDGE, not ignorance: nobody can have shared, so this is an
-      // empty result rather than an unknown one, and it must not degrade the
-      // roster. It also spends nothing — with the rules block still absent the
-      // read below would be denied on a user-visible path and learn nothing.
+      // Off is KNOWLEDGE, not ignorance: this is an empty result rather than
+      // an unknown one, and it must not degrade the roster.
       return const {};
     }
 

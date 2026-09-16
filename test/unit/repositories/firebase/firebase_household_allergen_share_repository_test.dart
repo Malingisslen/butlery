@@ -15,6 +15,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/models/household.dart';
 import 'package:butlery/models/household_allergen_share.dart';
+import 'package:butlery/repositories/firebase/firebase_audit_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_household_allergen_share_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_household_repository.dart';
 
@@ -29,6 +30,7 @@ const _otherHouseholdId = 'hh-2';
 FirebaseHouseholdAllergenShareRepository _repo(
   FakeFirebaseFirestore fs, {
   String authedUserId = _malin,
+  FirebaseAuditRepository? auditRepository,
 }) {
   final mockAuth = FakeAuthRepository();
   mockAuth.setAuthState(
@@ -39,6 +41,42 @@ FirebaseHouseholdAllergenShareRepository _repo(
   return FirebaseHouseholdAllergenShareRepository(
     firestore: fs,
     authRepository: mockAuth,
+    auditRepository: auditRepository,
+    householdRepository: FirebaseHouseholdRepository(
+      firestore: fs,
+      authRepository: mockAuth,
+    ),
+  );
+}
+
+/// A repository whose delete always throws, so the withdrawal's ordering — the
+/// audit row after the delete, never before — can be observed.
+class _FailingDeleteRepo extends FirebaseHouseholdAllergenShareRepository {
+  _FailingDeleteRepo({
+    required super.householdRepository,
+    required super.firestore,
+    required super.authRepository,
+    super.auditRepository,
+  });
+
+  @override
+  Future<void> delete(String id) => Future<void>.error(StateError('offline'));
+}
+
+_FailingDeleteRepo _failingDeleteRepo(
+  FakeFirebaseFirestore fs, {
+  FirebaseAuditRepository? auditRepository,
+}) {
+  final mockAuth = FakeAuthRepository();
+  mockAuth.setAuthState(
+    user: FakeUser(uid: _malin),
+    userId: _malin,
+    isAuthenticated: true,
+  );
+  return _FailingDeleteRepo(
+    firestore: fs,
+    authRepository: mockAuth,
+    auditRepository: auditRepository,
     householdRepository: FirebaseHouseholdRepository(
       firestore: fs,
       authRepository: mockAuth,
@@ -584,6 +622,118 @@ void main() {
             _johan,
             '${_householdId}_$_malin',
           ),
+          isFalse,
+        );
+      });
+    });
+
+    // DPIA R5: the consent record must outlive the share it authorised.
+    group('consent audit trail', () {
+      Future<List<Map<String, dynamic>>> consentRows() async {
+        final snap = await fs.collection('audit_logs').get();
+        return snap.docs
+            .map((d) => d.data())
+            .where(
+              (r) =>
+                  r['resourceType'] ==
+                  FirebaseHouseholdAllergenShareRepository
+                      .consentAuditResourceType,
+            )
+            .toList();
+      }
+
+      test('a grant writes one consent_granted row with its version', () async {
+        final repo = _repo(fs, auditRepository: FirebaseAuditRepository(fs));
+        await repo.create(_share());
+
+        final rows = await consentRows();
+        expect(rows.map((r) => r['operation']), ['consent_granted']);
+        expect(rows.single['userId'], _malin);
+        expect(rows.single['resourceId'], '${_householdId}_$_malin');
+        expect(
+          (rows.single['metadata'] as Map)['consentVersion'],
+          HouseholdAllergenShare.currentConsentVersion,
+        );
+      });
+
+      test('an edit writes no consent row', () async {
+        final audit = FirebaseAuditRepository(fs);
+        final repo = _repo(fs, auditRepository: audit);
+        await repo.create(_share());
+        await repo.update(_share(allergens: {'selleri'}));
+
+        final rows = await consentRows();
+        expect(rows.map((r) => r['operation']), ['consent_granted']);
+      });
+
+      test('a withdrawal writes consent_revoked after the delete', () async {
+        final repo = _repo(fs, auditRepository: FirebaseAuditRepository(fs));
+        await repo.create(_share());
+        await repo.revoke(_householdId);
+
+        final stored = await fs
+            .collection('household_allergen_shares')
+            .doc('${_householdId}_$_malin')
+            .get();
+        expect(stored.exists, isFalse);
+        final rows = await consentRows();
+        expect(rows.map((r) => r['operation']).toSet(), {
+          'consent_granted',
+          'consent_revoked',
+        });
+        final revoked = rows.firstWhere(
+          (r) => r['operation'] == 'consent_revoked',
+        );
+        expect(
+          (revoked['metadata'] as Map)['consentVersion'],
+          HouseholdAllergenShare.currentConsentVersion,
+        );
+      });
+
+      test('withdrawing a share that was never there writes no row', () async {
+        final repo = _repo(fs, auditRepository: FirebaseAuditRepository(fs));
+        await repo.revoke(_householdId);
+
+        expect(await consentRows(), isEmpty);
+      });
+
+      test('a withdrawal that fails to delete records nothing', () async {
+        // The production comment promises the row is written only after the
+        // delete succeeds. Without this, logging first would leave a
+        // withdrawal on record while the share — and the household's read of
+        // it — stayed live.
+        final repo = _repo(fs, auditRepository: FirebaseAuditRepository(fs));
+        await repo.create(_share());
+        final failing = _failingDeleteRepo(
+          fs,
+          auditRepository: FirebaseAuditRepository(fs),
+        );
+
+        await expectLater(failing.revoke(_householdId), throwsStateError);
+
+        final rows = await consentRows();
+        expect(rows.map((r) => r['operation']), ['consent_granted']);
+        final stored = await fs
+            .collection('household_allergen_shares')
+            .doc('${_householdId}_$_malin')
+            .get();
+        expect(stored.exists, isTrue);
+      });
+
+      test('a corrupt row withdrawal is recorded without a version', () async {
+        await fs
+            .collection('household_allergen_shares')
+            .doc('${_householdId}_$_malin')
+            .set({
+              'trackedAllergens': ['ägg'],
+            });
+        final repo = _repo(fs, auditRepository: FirebaseAuditRepository(fs));
+        await repo.revoke(_householdId);
+
+        final rows = await consentRows();
+        expect(rows.map((r) => r['operation']), ['consent_revoked']);
+        expect(
+          (rows.single['metadata'] as Map).containsKey('consentVersion'),
           isFalse,
         );
       });

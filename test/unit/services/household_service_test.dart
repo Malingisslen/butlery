@@ -156,7 +156,7 @@ void main() {
     final flags = _MockFeatureFlags();
     // The CONSTANT is stubbed last so it wins: with only a wildcard, repointing
     // the constant at a different (default-true) flag would keep every test
-    // green while shipping the feature live against an absent rules block.
+    // green while shipping the feature live.
     when(() => flags.isEnabled(any())).thenReturn(false);
     when(
       () => flags.isEnabled(FeatureFlags.enableHouseholdAllergenSharing),
@@ -235,8 +235,7 @@ void main() {
     test('the feature ships OFF by default', () {
       // Asked of the REAL service with a remote config that has no value for
       // it, which is what a device sees before any rollout — so this pins the
-      // shipped default, not a stub. It must stay false until the rules block
-      // lands and something writes a share.
+      // shipped default, not a stub.
       final remoteConfig = _MockRemoteConfig();
       when(
         () => remoteConfig.getBool(
@@ -276,7 +275,7 @@ void main() {
           reason: 'a switched-off feature is knowledge, not an outage',
         );
         // The half of "nothing is read" that the preferences cannot show: no
-        // denied query on a user-visible path while the rules block is absent.
+        // query on a user-visible path.
         verifyNever(() => lastHouseholdRepository.getForUser(any()));
       },
     );

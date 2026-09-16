@@ -5372,3 +5372,161 @@ Two documentation defects found, both in staged files:
    `hasSharedAccess`)". The first is load-bearing: it is the premise of an Art. 15 question
    standing open for Malin. Decision records supersede rather than strike, and each mirror
    wraps differently, so each needs its own verbatim quote.
+
+## 2026-09-14 — ADR-0020 commit gate, batch: account-maturity + friend-categories (verified clean)
+
+- Staged blobs matched the worktree (account-maturity e75dddd6, friend-categories f582257c).
+- Runs: account-maturity 5/5, friend-categories 9/9.
+- Probe A (via a throwaway copy with its own project id): in the `social_requests` block, `isAccountMatured()` was replaced with `true`. Result 4/5, with AM1 as the only failure. So AM1 is denied by the maturity check alone, even though it now writes a valid stamp.
+- Probe B: `rateLimitWrite('friend_category_member', 5)` was put back on the member-update limb. Result 9/9. No test depended on the removed guard. The suite never writes a `rate_limits` doc, so the guard's `!exists` arm always passed. Nothing broke because a guard that never binds cannot affect a verdict.
+- The `createStampedRequest` fixture matches `stampRateLimit` in lib/repositories/firebase/rate_limit_stamp.dart: same three keys, merge, 90-day expireAt.
+- No new principle came out of this.
+
+## 2026-09-14 — ADR-0020 stamp migration review (conversations, cook-snaps, poll-votes suites)
+
+Retired verbatim from the knowledge file: "A `rateLimitWrite(...)` conjunct is invisible to the whole suite unless a test SEEDS `users/{uid}/rate_limits/{collection}` — no Butlery client writes those docs itself, so its removal reddens nothing without an explicit seeded-doc deny test. Report an un-seeded rate-limit conjunct as an uncovered branch, not as proven." Superseded because `rateLimitStamped` makes the client write the stamp in the same batch (`lib/repositories/firebase/rate_limit_stamp.dart`).
+
+Commit-gate review of the three suites after guarded creates moved to `rateLimitStamped`. Run: conversations 89/89, cook-snaps-and-message-mod 51/51, poll-votes 47/47. Per-collection missing-stamp denies are in `rate-limit-rules.test.ts` (table rows for shared_content, cook_snaps, conversations).
+Findings: conversations C7/C7B comments still said "Only `metadata` differs" after the four cases (C6, C6B, C7B, C7) moved to distinct fresh actors, so the caller uid differs too. The actor is inert to every conjunct on that limb, but the sentence is false. The directly readable repair is one shared actor for the four: the three denies land no stamp (atomic batch) and the C7 allow is declared last. The section header's "every other create test uses an unseeded actor of its own" is false for P25, which creates as ADULT_UID: that uid has a seeded profile and is shared with other tests. P25 still mirrors `createDirectConversation` (conversation + stamp in one batch, then the roster/membership batch). Production merge-sets the conversation doc, which is the same create limb on an absent doc.
+
+## 2026-09-14 — ADR-0020 commit gate, batch: firestore.rules + rate-limit-rules + activity-events
+
+- Staged blobs matched the worktree: firestore.rules 983ce1058e, rate-limit-rules be3f40acd4, activity-events 26b4916b0b.
+- Probe (throwaway file under functions/src/__tests__, removed in the same call; real rules, fresh project id): one batch of 50 `pings/g-i/pings/p1` creates, each directed at a different `toUserId`, plus one `rate_limits/pings` stamp with `lastDocId: 'p1'` was ALLOWED. The one-group control was also allowed. `rateLimitStamped('pings', 60, pingId)` omits `groupId` from the key, so the bound is one REQUEST per 60 s. The comment above the pings block, which this diff edits, says "1 ping per 60s per user". The accepted-deviations residual "one share reaches any number of recipients in one request" covers shares only.
+- HEAD writers (activity_events, comments, social_requests, messages) stamped `{lastWrite, expireAt}` with merge. A legacy bucket therefore passes the new `hasOnly` once `lastDocId` is merged in, and it carries `lastWrite` for the window read, so there is no lockout.
+- Bucket-rule masking, read from the structure (not probed, per the brief): on the create/update limb, `type != 'imports' && type != 'friendSearchMigrated'` is masked by the OR with the imports/friendSearchMigrated write limb. `expireAt is timestamp` is masked by the `>=` comparison, which errors on a missing key or a non-timestamp. No case sends a stamp missing `lastDocId` or with a non-string one. These do not open a bypass, because the helper re-checks `lastDocId == key` and `lastWrite`.
+- activity-events: every create deny now differs from AE5 in exactly one variable (a per-run actor stamps its own bucket). AE12c/AE12d is a clean age-only pair.
+
+## 2026-09-14 — ADR-0020 re-review after the pings key fix
+
+- Re-staged blobs: firestore.rules 7369e4c0ef, rate-limit-rules 7c8d4e0d50, ping_service 84e1c8684e.
+- The fix changed the key to `groupId + '_' + pingId`, and the writer stamps `${groupId}_${ping.id}`.
+- Probe (throwaway file, real rules): key `x0_x1_…_x29`, with 29 creates at `pings/<x0…xi>/pings/<x(i+1)…x29>`, one per split point. One stamp, ALLOWED. Control: one ping, ALLOWED. Both ids are attacker-chosen strings and may contain `_`, so the fan-out survives as a split collision.
+- The header sentence "so one stamp cannot cover pings in several groups" is false as measured. The new test covers only two groups sharing one ping id.
+- Sibling carrier: the inline comment on the pings create limb still says "hourly aggregate cap handled client-side + CF sweeper", although the header sentence making the same claim was struck.
+
+## 2026-09-14 — ADR-0020 third round: `/` separator and new expiry bounds
+
+- Staged blobs: firestore.rules 5d80def5d4, rate-limit-rules 1cf5a50a06, activity-events 51e55ffe13, ping_service 98ac3936c2.
+- The rules delta against the previous round's blob is exactly two hunks: the `expireAt` bounds and the pings key plus its comment.
+- Pings: with key `groupId + '/' + pingId`, a path segment cannot contain `/`, so the key names exactly one (group, ping) pair. Both header claims now hold ("keyed on the group AND the ping id so one stamp cannot cover pings in several groups", "1 ping per 60s per user"). The split case is pinned, and so is its `_`-joined key.
+- Expiry bounds (Malin's decision 4): `expireAt > request.time && <= request.time + 4d`. A TTL policy is active on `rate_limits.expireAt` (firestore.indexes.json). The lower bound lets a hand-rolled client stamp with an expiry milliseconds away, so TTL may delete the bucket shortly afterwards, and the next guarded write then passes the `!exists(p)` arm of the window check. Deletion timing is not attacker-controlled (documented as typically within 24 h), so each deletion buys at most one early write. The decision record does not name this. Raising the lower bound to the longest window (60 s) keeps the privacy lifetime and the skew tolerance. Not probed (TTL does not run in the emulator).
+- The expiry tests are one-variable against the server-time control. The exact 4-day boundary is not pinned (5 d DENY, 3 d ALLOW); that is Low given clock-derived fixtures.
+
+## 2026-09-14 — ADR-0020 fourth round: 60 s expiry floor
+
+- Staged blobs: firestore.rules 7ae8130dd6, rate-limit-rules 56ac5c9711.
+- The rules delta against 5d80def5d4 is exactly one line: `expireAt > request.time + duration.value(60, 's')`. The test delta is one DENY case (now+30 s), a one-variable pair with the server-time control (+2 d).
+- The coordinator's probe (floor reverted to `> request.time`) turned only the new case red, which is the expected kill set.
+- The 4-day `<=`/`<` boundary cannot be discriminated with a client-computed `Date.now()+4d`, which always lands before `request.time + 4d`. Accepted as untestable, not as a gap.
+
+## 2026-09-14 — ADR-0020 commit gate, batch: recipe-comments + recipe-ratings + age-gate suites
+
+- Run: recipe-comments 29/29, recipe-ratings 16/16, age-gate 39/39.
+- Probes used sed-derived copies under functions/src/__probe_{a,b}. RULES_PATH and PROJECT_ID were read from env; the directories were removed by trap and confirmed absent. Mutants were CRLF-normalised copies of firestore.rules, sliced per match block, with the match count asserted as 1.
+- Kill sets (each named deny died alone, and no allow died): comments isAgeCompliant killed age-gate C2 and C3. isAccountMatured killed rc "fresh unverified". The authorId check killed rc "impersonating". The block conjunct killed rc "blocked create" and "blocked image". hasOnly killed rc "undeclared field". The imageUrls validator killed rc ">3" and "non-list". Ratings isAgeCompliant (create) killed age-gate RR2 and RR3. Ratings block killed rc "blocked user cannot rate". Ratings hasOnly killed rr "create carrying an undeclared field". social_requests isAgeCompliant killed SR2 and SR3.
+- Removing rateLimitStamped from the comments and ratings create limbs killed NOTHING in any of the three suites. So no deny rests on the stamp, and the stamped denies are not over-determined.
+- Invalid probe: the first run used project ids containing `_` (`probe-a-c_age-...`). It printed no test lines at all and exited like a clean run. Re-run with hyphens.
+- Test names vs HEAD: none lost. One was renamed ("the app's comment body alone is allowed").
+- Finding: the new recipe-comments "Create helpers" banner says "Every create case below, ALLOW and DENY, goes through `createStamped` with a per-run actor of its own". That is false for "the app's full create batch" (a hand-rolled batch) and for the three user_notifications creates (no helper, shared actors, one fixed id `n-blocked`).
+- Re-review, same day: that sentence was struck, and so was age-gate's "The matrix below writes that stamp in every arm; ". The index blob matched the worktree for recipe-comments f3a534973c, recipe-ratings 9ea45c6de3 and age-gate c2e7a74eee. Surviving recipe-comments banner: the create refusal plus "A blocked actor gets its own block record from `blockedActor`". Both true. Surviving age-gate header: three guarded collections, and messages carry no guard. True: the messages create limb has no `rateLimitStamped`. The diff was comment-only since the probed pass, so the kill sets above still apply.
+- Second re-review, same day: the only fixture change was the stamp `expireAt` going from +90d to +2d (recipe-comments 2 sites, recipe-ratings 1, age-gate 1). Blob diffs against the previous pass showed nothing else. firestore.rules now bounds a bucket's `expireAt` to `> request.time && <= request.time + 4d`, and +2d sits inside it. firestore.rules had also changed (staged 5d80def5d4 == worktree). All 12 probe anchors still matched exactly once in the create limbs, so the named conjuncts are unchanged and the earlier kill sets carry over. Runs: 29/29, 16/16, 39/39.
+
+## 2026-09-14 — re-review of the conversations-rules.test.ts strikes (same change)
+
+Both blocking sentences were struck; the index blob matched the working copy (218bdc28). Probe for whether C7 is still an honest control now that C6/C6B/C7B/C7 each use a different fresh caller: removed `&& request.resource.data.metadata.creatorId == request.auth.uid` from a scratch copy of the rules (match count 1), ran through PROBE_RULES_PATH/PROBE_PROJECT_ID. Result: 86/89. The failures were exactly C6, C6B and C7B; C7 stayed green. So the metadata conjunct alone attributes the three denies even with the stamps added, and the caller difference is inert. Leftover Low: after the strike, C7B's "same shape" no longer says the metadata differs, while C7's "identical participant shape" is precise.
+
+## 2026-09-14 — third pass on the same three suites (stamp expiry change)
+
+The rate_limits create now bounds `expireAt > request.time && <= request.time + 4d`. Each suite's stamp helper changed its fixture from +90d to +2d, one occurrence per file. Verified: index == worktree for all three (829c44d4 / 28a22521 / 2d9c0f16). The blob diff 218bdc28 -> 829c44d4 (conversations) is that one line only. Cook-snaps and poll-votes diff stats are unchanged from the first pass (111, 77). Runs: 89/89, 51/51, 47/47. The C7B "same shape" Low stays open and non-blocking.
+
+## 2026-09-14 — ADR-0020 commit gate, re-review: account-maturity stamp expireAt +90d -> +2d
+
+- The coordinator re-froze the index. Staged blob and worktree both 6e60c081 (account-maturity); friend-categories is still f582257c.
+- The only diff change: `createStampedRequest`'s `expireAt` is now `Date.now() + 2 * 24 * 60 * 60 * 1000`. The `rate_limits/{type}` rule now bounds it to `> request.time && <= request.time + duration.value(4, 'd')`. `stampRateLimit` in lib/repositories/firebase/rate_limit_stamp.dart writes `Duration(days: 2)`, so the fixture again matches the writer.
+- Runs: account-maturity 5/5, friend-categories 9/9.
+- The first re-run of probe A was INVALID. Another agent had overwritten the generic scratchpad `mut.js`, the rebuild threw EISDIR, and the call went on using round 1's `A.rules`, which was built from the rules before the 4-day cap. It printed 4/5 anyway.
+- Valid re-run: fresh `mutA2.js`, match count asserted at 1 inside the block, and the diff against the real rules showed only line 762 (`isAccountMatured()` -> `true`). `grep "duration.value(4, 'd')"` found 1 match in the mutant. Result 4/5, with only AM1 failing. AM1 is still denied by maturity alone.
+- Probe B (the removed guard restored on friend_categories) was not re-run. Neither that suite nor its rules limb changed.
+- Principle updated in place: the shared-scratchpad hazard was merged into the "parallel session can edit the suite MID-REVIEW" bullet.
+
+## 2026-09-15 — BUT-1693 commit gate: new `household_allergen_shares` block
+
+- Staged: firestore.rules 663c1cc4 (never modified; hash re-checked after probing), the new suite, package.json, firestore-rules.yml, rules_allowlist_drift_test.dart.
+- BLOCKING, measured: the read limb has no `resource == null` arm. A `get()` on an absent share is DENIED ("Null value error" at the read limb) for a member reading their own id. `FirebaseHouseholdAllergenShareRepository.create` calls `_assertNotAlreadyShared` (`collection.doc(entity.id).get()`) before `set()`, and `getOwn` reads the id directly. So every first-time grant throws PERMISSION_DENIED before the create, and `getOwn` throws where it should return null. The suite could not see this: no case reads an absent document.
+- Fix variants, measured with a throwaway probe. (a) `resource == null || ...` allows own-absent AND stranger-absent (C reading `h1_uidB`), and still denies a present doc to a stranger, so it is an existence oracle. (b) `(resource == null && shareId.split('_').size() == 2 && shareId.split('_')[1] == request.auth.uid) || ...` allows own-absent and denies both stranger cases. The extended suite ran 46/46 under (b).
+- The staged suite (31 tests), graded against the conjunct mutants below: U5 was over-determined. Its seeded `h5_A` had `consentGrantedAt: new Date()` and U5 sent a fresh `new Date()`, so `cannotModify(consentGrantedAt)` denied it too. Dropping `isHouseholdMember(resource...)` from update left 31/31 green. hasAll-drop also 31/31.
+- Added 15 cases (C14-C23, U6-U8, D6, D7) and repaired U5 (seed and payload now both carry SEEDED_CONSENT_AT). 46/46 on the real rules.
+- 45 mutants via PROBE_RULES_PATH on a scratch copy of the suite (`has-mutate.js` asserts match count 1 inside the block slice). Every mutant printed a total line. Kill sets: read member-arm R1,R5; owner-arm R3; owner-arm loosened R2,R4; create userId C2; create member C3; hasOnly C5,U6; hasAll NONE; hh '_' C21; uid '_' C22; id-bind C8; allergens is-list C14; ≤49 C23; ≤51 C11; dietary is-list C15; ≤19 C23; ≤21 C16; bool C17; consentGranted==true C4; version is-string C18; version >0 C10; ≤19 C23; ≤21 C19; consentGrantedAt is-timestamp NONE; updatedAt clause dropped C20; updatedAt required U8; window low C6; window high C7; update owner U3; update member U5; update validator U6; cannotModify householdId NONE; userId NONE; consentGranted U7; consentVersion U4; consentGrantedAt U2; delete size==2 D6; delete split[1] D2; isAuthenticated on create, update and delete NONE; read opened R2,R4,R6,R7,R8; update false U1,U8; create false C1,C23; delete false D1,D3,D4,D7; bare null arm NONE.
+- Unreachable or masked, by construction: `hasAll` (every key also has a type/value conjunct); `consentGrantedAt is timestamp` (the create window errors on a non-timestamp, and update has cannotModify); cannotModify householdId and userId (the id binding plus the owner conjunct guard the pair); the isAuthenticated conjuncts (uid comparisons already error on null auth). C9 and C13 are therefore attributable to the type conjuncts, not to hasAll.
+
+## 2026-09-15 — household_allergen_shares read-limb null arm, re-review (BUT-1693)
+
+Commit-gate re-review after the previous run's blocking finding (read limb had no null arm, so
+the repository's pre-grant `get()` of its own id was denied). Fix under review:
+`(resource == null && shareId.split('_').size() == 2 && shareId.split('_')[1] == request.auth.uid) || isHouseholdMember(resource.data.householdId) || (isAuthenticated() && resource.data.userId == request.auth.uid)`.
+
+Probed through sed-derived copies (suite has no PROBE_* env seam), fresh lowercase project id
+per run, mutants built by slicing the block and regex-replacing (CRLF-tolerant):
+- baseline 49/49
+- null arm removed: 48/49, kills R9 only
+- arm loosened to bare `resource == null`: 47/49, kills R10, R11
+- uid comparison dropped: 47/49, kills R10, R11
+- `size() == 2` dropped: 49/49 — UNPINNED. D6 seeds `h1_A_x`, so resource is non-null and
+  the read arm is never entered. Added R12 (absent `h3_uidE_x`, absence asserted under
+  rules-disabled, read by E -> deny). Re-run: 50/50 real, mutant 49/50 killing R12 alone,
+  null-arm-removed mutant still 49/50 killing R9 alone.
+- membership arm -> `true`: kills R2, R4, R6, R7, R8, R10, R11
+- owner arm -> `isAuthenticated()`: kills R2, R4, R6, R7, R10
+So the new OR arm masks none of the earlier read denies. R11 is over-determined with R10 by
+the uid comparison (no mutant separates them); R8 is killed only by opening the membership arm.
+Registration check OK; comment-stripped census `hasOnly(` 41, `keys().hasOnly` 19 = 11 guarded
++ 8 uncovered in the drift test. firestore.rules unchanged (085f992d).
+
+## 2026-09-16 — BUT-1693 commit gate, three ledger rounds over the shipped block
+
+Three passes in one session, none of them probing (edits were forbidden, and the suite ships no
+`PROBE_*` env seam). The mutant grading behind this block is the two 2026-09-15 entries above;
+these rounds graded bytes, diffs and runs only.
+
+- Round 1 — rules `085f992d`, suite 50 cases, 50/50. Registration `OK — 145 test files, 47 rules
+  suites, 2 paths blocks`. Two Lows: R4's name attributed its deny to a conjunct that does not
+  exist (there is no rule restricting a list by `userId`), and the ±10 min consent window was
+  pinned by direction only (C6/C7 sit a full day out, so widening the bound reddens nothing).
+- Round 2 — rules `ba658186`, suite `849df31f`, 51/51, `tsc` 0. The read limb's owner arm moved
+  ahead of `isHouseholdMember`. Recovered the prior blob from the object store and diffed:
+  8 changed lines, all inside the block (4 comment lines + the arm swap), nothing else in 3703
+  lines. R4 renamed and commented; C24 added (9-minutes-past ALLOW). New structural Low: C24's
+  `test(...)` sat BELOW the `run()` invocation and registered in time only because `run()`
+  suspends at the first `await` in `setup()` before reaching its loop.
+- Round 3 — rules `452e81a6`, suite `1a9d3640`, 51/51, `tsc` 0. Diffs against the round-2 blobs:
+  rules = 4 comment lines replaced by 3, NO rule text touched, arm order unchanged; suite = the
+  2 R4 comment lines + the `run().catch(...)` move to the end. Structural Low closed.
+
+TWO ERRORS OF MINE, both in text I wrote as review output.
+
+1. The R4 enumeration. My round-2 report said "B is a member of h1 only, so h4/h5 are what refuse
+   the query". False. Seed line 88 is `households/h5` = `{memberUserIds: [B]}`, so B reaches A's
+   `h5_A` through the MEMBERSHIP arm — that arm tests the household, not the row's owner — and
+   `h4_A` (`memberUserIds: [A]`) alone forces the refusal. The source is traceable: seed line 100
+   carries the comment "A is not a member of h5", a fact about A, which I read as a fact about B.
+   Found independently by the `cloud-functions-specialist` and `integration-reviewer` gates. The
+   shipped comment's enumerating clause was STRUCK rather than corrected; a rewritten enumeration
+   would have been a fresh unmeasured claim. Principle added in place under "proving a deny test
+   is not vacuous".
+2. The billing sentence. Round 2's rules comment said the arm order means the Art. 15 list query
+   "bills one parent read per row it already owns", and my round-2 report called that comment
+   accurate. It was not measured, and could not be by this suite: 51/51 measures correctness, not
+   read counts. The `integration-reviewer` gate struck it. What survives states only what is
+   readable from the code — the owner arm reads no other document, `isHouseholdMember` performs a
+   `households/{hid}` get(). I had even written in the same report that no test can distinguish
+   the two orderings, and still passed the cost clause; the observation and the claim contradicted
+   each other inside one report.
+
+Verdict all three rounds: pass, 0 blocking. The consent-window bracketing (an 11-minute-past DENY
+beside C24; a +9m allow and +11m deny for the future limb) is a FOLLOW-UP, not a blocker — both
+directions are already pinned by DENY, the unpinned direction is WIDENING and reachable only by a
+reviewed edit to a rule literal, and the bound governs consent freshness rather than access. The
+`integration-reviewer` gate reached the same verdict independently and named the design constraint
+to carry into the ticket: an 11-minute deny sits one minute from the bound and is timed against the
+emulator's `request.time` versus the test host's `Date.now()`, so it needs designing, not rushing.

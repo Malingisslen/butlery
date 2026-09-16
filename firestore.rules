@@ -1166,6 +1166,77 @@ service cloud.firestore {
       allow delete: if isHouseholdMember(resource.data.householdId);
     }
 
+    // One member's own allergen list, shared with their household under Art.
+    // 9(2)(a) consent (BUT-1693, docs/legal/dpia-household-allergen-sharing.md).
+    // Doc id `{householdId}_{userId}`; neither half may contain '_'.
+    //
+    // Read: any member of the named household, or the owner. The owner arm is
+    // what makes the Art. 15 export's `where('userId', '==', uid)` list legal:
+    // rules are not filters, and the membership arm cannot be proven for a
+    // query that does not pin `householdId`.
+    //
+    // Delete is decided from the PATH and has no membership conjunct, unlike
+    // `diner_profiles` above: a member who has left the household, or whose row
+    // is corrupt, must still be able to erase their own Art. 9 data.
+    match /household_allergen_shares/{shareId} {
+      function allergenShareValid(d) {
+        return d.keys().hasOnly(['householdId', 'userId', 'trackedAllergens',
+                 'trackedDietary', 'includeUnknownInMenu', 'consentGranted',
+                 'consentVersion', 'consentGrantedAt', 'updatedAt'])
+          && d.keys().hasAll(['householdId', 'userId', 'trackedAllergens',
+                 'trackedDietary', 'includeUnknownInMenu', 'consentGranted',
+                 'consentVersion', 'consentGrantedAt'])
+          && d.householdId is string && d.householdId.size() > 0
+          && !d.householdId.matches('.*_.*')
+          && d.userId is string && d.userId.size() > 0
+          && !d.userId.matches('.*_.*')
+          && shareId == d.householdId + '_' + d.userId
+          && d.trackedAllergens is list && d.trackedAllergens.size() <= 50
+          && d.trackedDietary is list && d.trackedDietary.size() <= 20
+          && d.includeUnknownInMenu is bool
+          && d.consentGranted == true
+          && d.consentVersion is string
+          && d.consentVersion.size() > 0 && d.consentVersion.size() <= 20
+          && d.consentGrantedAt is timestamp
+          && (!('updatedAt' in d) || d.updatedAt is timestamp);
+      }
+
+      // The null arm lets a member read their OWN id before a share exists:
+      // the repository reads it before every first grant. It is scoped to the
+      // caller's uid in the path, so nobody can probe whether someone else has
+      // shared.
+      // The owner arm is FIRST because it reads no other document, while
+      // `isHouseholdMember` performs a `households/{hid}` get(). The arms are
+      // logically interchangeable.
+      allow read: if (resource == null
+            && shareId.split('_').size() == 2
+            && shareId.split('_')[1] == request.auth.uid)
+        || (isAuthenticated() && resource.data.userId == request.auth.uid)
+        || isHouseholdMember(resource.data.householdId);
+
+      // The consent timestamp is bound to the request, so the Art. 7(1)
+      // evidence cannot be written with a date the grant did not happen on.
+      allow create: if isAuthenticated()
+        && request.resource.data.userId == request.auth.uid
+        && isHouseholdMember(request.resource.data.householdId)
+        && allergenShareValid(request.resource.data)
+        && request.resource.data.consentGrantedAt > request.time - duration.value(10, 'm')
+        && request.resource.data.consentGrantedAt < request.time + duration.value(10, 'm');
+
+      // An edit carries the stored consent record forward; a new grant is
+      // revoke (delete) then create.
+      allow update: if isAuthenticated()
+        && resource.data.userId == request.auth.uid
+        && isHouseholdMember(resource.data.householdId)
+        && allergenShareValid(request.resource.data)
+        && cannotModify(['householdId', 'userId', 'consentGranted',
+             'consentVersion', 'consentGrantedAt']);
+
+      allow delete: if isAuthenticated()
+        && shareId.split('_').size() == 2
+        && shareId.split('_')[1] == request.auth.uid;
+    }
+
     // ========================================
     // REALTIME RECIPES - Collaborative editing
     // ========================================

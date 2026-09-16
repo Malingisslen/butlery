@@ -56,15 +56,17 @@ export const CONSENT_OPERATION_PREFIX = "consent_";
  *     → "consent_updated" (saveConsent, LIVE) and "consent_revoked"
  *       (deleteConsent, which has had no caller since BUT-788, 2026-05-22 —
  *       listed so the spelling is already classified when one is wired)
- *   - LEGACY, no live writer: "consent_granted" has never been written by any
- *     Dart or TS code; "consent_deleted" was written by deleteConsent between
+ *   - lib/repositories/firebase/firebase_household_allergen_share_repository.dart
+ *     → "consent_granted" (create/createBatch) and "consent_revoked" (revoke),
+ *       resourceType "household_allergen_share"; behind a feature flag
+ *   - LEGACY, no live writer: "consent_deleted" was written by deleteConsent between
  *     BUT-498 (2026-04-27) and BUT-788 (2026-05-22), when the client-side
  *     deletion path existed, and rows from that window are still in
- *     audit_logs. Both stay listed — dropping a legacy token silently
+ *     audit_logs. Dropping a legacy token silently
  *     reclassifies existing rows into the 180-day bucket. "consent_deleted"
  *     becomes droppable once its youngest row passes 730 days, i.e. after
  *     2028-05-22; before that date, removing it deletes evidence.
- * Last audited: 2026-08-13.
+ * Last audited: 2026-09-15.
  *
  * Firestore `not-in` supports up to 10 values; if this list exceeds 10,
  * switch to a `retentionTier` field on new writes + backfill (ops-blocked).

@@ -380,6 +380,9 @@ class ExportPaginationHelper {
     // falls back to 500 with nothing reddening. A cap different from
     // `defaultBatchSize` is what would make key, value and wiring all pinnable.
     'ingredient_suggestions': 500,
+    // BUT-1693: a user holds at most one share per household. Different from
+    // `defaultBatchSize` on purpose, so a deleted entry changes behaviour.
+    'household_allergen_shares': 50,
   };
 
   /// Get export limit for content type

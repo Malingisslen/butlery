@@ -38704,3 +38704,136 @@ own independent run of the five touched suites (44/44, breakdown per file) is wh
 question answerable without blocking on it. (c) B4 was correctly NOT built:
 `FakeFirebaseFirestore` ignores `GetOptions`, so a test for the new
 `Source.server` read would have claimed to pin behaviour it cannot stage.
+
+### 2026-09-14 — ADR-0020 rate-limit stamp: ping stamp, invitation UUID id, export sentence [trigger: commit-gate review, read-only]
+
+Reviewed index == worktree (hash-object == rev-parse :path for all six):
+- lib/services/social/ping_service.dart 98ac3936c2ec
+- lib/services/unified/operations/friends_invitations_operations.dart ff282fc937c3
+- lib/services/account/export/preferences_export_manager.dart c0d779934600
+- test/unit/services/social/ping_service_test.dart 07a8d0979066
+- test/unit/services/unified/operations/friends_invitations_operations_test.dart 1c12883a12ab
+- test/unit/services/account/export/preferences_export_manager_test.dart 2f4350c326d4
+
+No probes run (brief forbade lib/ writes). Findings:
+1. BLOCKING: `sendGroupInvitationToUser` is constructed by NO test. All 9 `test/` hits
+   (add_members_to_group_viewmodel_test, account_maturity_cta_test) stub a mock; the
+   operations suite never calls it. The id change exists for a GDPR property: the id flows
+   `saveInvitation` (keeps `invitation.id`) -> `SocialRequest.id` -> `createRequest` stamp
+   `lastDocId: request.id` (pinned in firebase_social_request_repository_test.dart:121). So
+   reverting to `'${currentUserId}_${userId}_...'` puts the invitee uid back into the
+   inviter's `rate_limits/social_requests` doc (Art. 15-exempt) with every suite green.
+   Friend/recipe-share requests already mint `const Uuid().v4()` in social_request.dart, so
+   this was the only composite. Seeding note: `MockUnifiedFriendsService.categories` returns
+   a FRESH `MockFriendsCategoriesOperations` unless one is set, so `getCategoryById` answers
+   null and the method returns false before minting; seed the ops via setFriendsState and
+   `setCategoriesState(categories: [...])`.
+2. Not owed: pinning the new rate_limits `data_minimisation` wording. The names pin already
+   holds the Art. 12(1) disclosure; the new clause describes the requester's own data.
+3. Ping stamp test: the key-set assertion is load-bearing (the `rate_limits/{type}` match has
+   `keys().hasOnly(['lastWrite','expireAt','lastDocId'])`, fail-closed). Its reason says "the
+   rules stamp check reads exactly these keys", but `rateLimitStamped` reads only lastWrite and
+   lastDocId; the hasOnly is in the match block. Loose, not false for the file as a whole. Not
+   filed. Header survivor "60s burst guard" checked: `rateLimitStamped('pings', 60, ...)`.
+
+Round 2 (same day): index == worktree; ping_service_test 7d6ffc47cc47,
+friends_invitations_operations_test 9466490a1b98, the other four unchanged. New test seeds
+the categories ops via setFriendsState, asserts `ok` true + captured hasLength(1) (reach
+premise), then uid-absence for sender and invitee, no regex. Coordinator's probe (composite id
+restored) RED. Ping reasons now "the rate_limits rule admits exactly these keys" (true:
+hasOnly at firestore.rules:568) and "accepts the ping only when the stamp names its group and
+ping id" (a necessary condition, true). Verdict pass.
+
+### 2026-09-14 — ADR-0020 share writers: batch capture, fake batch, emulator shape pointer
+
+Trigger: commit-gate test review (read-only, no probes) of recipe_sharing_manager,
+shopping_social_share_module, social_menu_operations and their suites. All findings analytic.
+
+1. `recipe_sharing_manager_test.dart` `_CapturingRepository` records `batch.set` and stubs
+   `commit()` without verifying it. Deleting `await batch.commit();` stays green, though the test's
+   own reason says a skipped write is invisible everywhere except here. Filed blocking.
+2. Same harness: `_firestore.collection(any())` / `stampCollection.doc(any())` accept any path, so
+   the stamp's `type:` and `userId:` at the call site are unpinned (`stamps.single['lastDocId']`
+   only). The module suites pin both through real fake paths. Filed blocking.
+3. `requestedDocIds == [null]` still pins the no-id `.doc()`: the stamp resolves through the
+   mocked FirebaseFirestore, not the repository's `collection` override, so the list stays clean.
+4. fake_cloud_firestore 4.0.x `MockWriteBatch.commit()` loops `task.document.set(...)`, so the
+   pre-change shape (direct shared-doc `.set()` then a batch) stays green in both module suites.
+   Filed non-blocking; a delegating batch recorder over FakeFirebaseFirestore would pin it.
+5. `functions/src/__tests__/rate-limit-rules.test.ts` share-batch case is commented "The shape
+   `shopping_social_share_module` and `social_menu_operations` write", but its record body carries
+   `listId`; the Dart writers send `sharedListId`/`sharedMenuId`, and
+   `hasRequiredFields(['sharedByUserId','listId','sharedAt'])` (menus: `menuId`) is unchanged
+   from HEAD. The app's real batch fails that conjunct. Pre-existing field defect; the commit
+   turns a partial failure (shared doc lands, records denied) into a whole-share denial. Menu
+   batch has no emulator case at all. Filed blocking.
+
+Round 2 (same day, index == worktree for all seven reviewed paths; hashes: shopping module
+08720bbb, menu ops a4cb3405, recipe manager cff7144d (unchanged), recipe test 3165d01d, shopping
+test c4980b12, menu test 840971a2, rate-limit-rules.test.ts c94d9f9b). All three blockers closed:
+writers emit `listId`/`menuId`; `receipt()` matches each writer's record map key for key;
+share-batch test runs list and menu arms; recipe test verifies `batch()`/`commit()` once and
+asserts `users/<PermissionService uid>/rate_limits/shared_content` with a differing-uid premise
+(production reads `permissionService.currentUserId`, manager :678). The share-batch
+`shared_content` body omits `listData`/`listType`/`menu`/`totalRecipes`/`menuType`; harmless,
+since the create rule (:834-838) has no `hasOnly`. Suite is in `test:rules:all` (package.json:72
+names the file) and the workflow paths. Finding 4 (fake batch membership) stays non-blocking.
+Verdict pass (0 blocking).
+
+### 2026-09-14 — rate-limit stamp pins (trigger: commit-gate reviewers found them unpinned)
+- New `test/unit/repositories/firebase/rate_limit_stamp_test.dart`: expireAt window derived from
+  the rule's 60 s / 4 d bounds under `withClock(Clock.fixed(t))`; exact key set + lastDocId;
+  lastWrite from `TestTimestampProvider` AND from a fixed provider distinct from the clock (the
+  first alone collapses with `clock.now()`).
+- `friends_invitations_operations_test.dart`: captureAny on `saveInvitation`, id non-empty and
+  free of both uids; premise `hasLength(1)` on captures. Group lookup seeded through
+  `MockFriendsCategoriesOperations.setCategoriesState(friendCategories: ...)`.
+- `unified_friends_service_test.dart`: one social_requests doc, stamp at
+  users/{fromUserId}/rate_limits/social_requests, lastDocId == doc id. Bare FakeFirebaseFirestore
+  handles the default ServerTimestampProvider sentinel in that batch.
+- `recipe_sharing_manager_test.dart`: `_CapturingRepository` now records stamp path segments and
+  repository collection paths; stamp path uses `PermissionService.currentUserId`
+  ('test-user-123'), premise-asserted to differ from the manager's `getCurrentUserId`
+  ('user_123'); verify batch() and commit() called(1).
+- Shopping/menu receipt tests: records carry sharedByUserId, listId/menuId (== shared doc id),
+  sharedAt.
+- No mutation probes run (main session probes). Analytic: 90 d or 0 d expiry reddens the window test.
+
+### 2026-09-16 — BUT-1693 household allergen shares: commit-gate review, five probes all RED [Pattern]
+Last gate on the staged BUT-1693 change (consent audit trail, Art. 15 export section, erasure wiring).
+Baselines: repo 36, drift 17, pagination 21+, data-export 45, household-service 32; clean re-run 157 green.
+
+Five mutants, each in its OWN Bash call, run TWICE, run B graded. Every one RED, naming the predicted
+test and NOTHING else — so none of the new assertions is vacuous:
+1. `projectExportFields(...)` bypassed in `family_export_manager.dart` -> "BUT-1693: the user's own
+   shared allergen lists export under every household, projected, and another member's does not".
+2. `type: 'household_allergen_shares'` -> `'..._TYPO'` -> "BUT-1693: shares above the cap are
+   truncated, and the bundle says so". This binds because the cap is 50 and `defaultBatchSize` is
+   500; the sibling `ingredient_suggestions` entry (500 == 500) is unprovable this way and is why
+   that one needs a MAP-level assertion instead. The contrast is the principle merged into the
+   live file.
+3. `_logConsent('consent_revoked', ...)` moved BEFORE `await delete(id)` -> "a withdrawal that fails
+   to delete records nothing". The `_FailingDeleteRepo` subclass double (overrides `delete` to throw)
+   is the legitimate stage-a-failure shape, not the Mock-with-a-body anti-pattern.
+4. `'updatedAt'` removed from `FamilyExportManager.householdAllergenShareFields` -> "every writable
+   household_allergen_shares field is exported" (rules-vs-projection SUBSET, `userId` unioned in).
+5. `if (existed)` -> `if (true)` in `revoke` -> "withdrawing a share that was never there writes no row".
+
+PROBE-INSTRUMENT errors of my own, both single-file (the existing bullet covers the MULTI-file case):
+an anchor containing a bare `\n` matched 0 times against a CRLF file, and `'updatedAt',` was not
+unique in `family_export_manager.dart` (it also sits in the diner `_utcStamps` path). Both were
+caught by `assert count(old)==1` BEFORE any write, so no half-applied probe ran — that assertion is
+what made a failed probe a non-event rather than a silently mutated tree.
+
+Recurring trap CHECKED and correctly green: `rules_numeric_bound_drift_test.dart`. My own knowledge
+says a `firestore.rules` edit owes it and that it has shipped red twice, and the caller had not run
+it. Ran it: 2/2 green, and green is CORRECT here rather than a missed red — that suite compares two
+NAMED group-menu caps against Dart constants, so the share block's new bounds are outside its range
+by construction. Measured headroom on those new bounds: vocabulary is 19 allergens (rules cap 50)
+and 9 dietary (cap 20), so no Dart-side counterpart constant exists to drift against.
+
+Cross-document claims verified rather than trusted: `consent_granted` and `consent_revoked` ARE both
+in `CONSENT_OPERATIONS` (purge-expired.ts); DPIA R5 is the accountability record and R7 the
+lingering-share risk, matching the repository and feature-flag comments that cite them. Concept sweep
+for the struck "the rules block is absent" claim found zero surviving copies in `lib/` or `test/`.
+Verdict: pass, 0 blocking.

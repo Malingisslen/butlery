@@ -10279,3 +10279,243 @@ path meets it before writing the read. Verdict re-issued: pass. One Low left unf
 change request: offline is now a routine entrant into the `AppLogger.error` branch
 (Crashlytics), which is telemetry noise rather than a defect — the payload is the exception
 only, no uid.
+
+## 2026-09-14 — ADR-0020 stamp writers batch (cook snaps, ratings, social requests)
+
+Commit-gate review of `firebase_cook_snap_repository.dart`, `firebase_ratings_repository.dart`,
+`firebase_social_request_repository.dart` moving to `stampRateLimit` in a WriteBatch.
+- Stamp uid: addCookSnap `requireCurrentUserId()`; rateRecipe `userId` after
+  `validateSelfOperation` (throws on mismatch, permission_validation_mixin.dart:275);
+  createRequest `currentUser` (same). All equal `request.auth.uid`, which the rule's path uses.
+- rateRecipe read-then-batch race: both misclassifications were ALREADY denied before the change
+  — stale "absent" puts `createdAt` in a merge onto an existing row (update limb
+  `cannotModify(['createdAt'])` + affectedKeys hasOnly), stale "exists" omits `createdAt` on a
+  create (`hasRequiredFields`). Batch atomicity means no orphaned stamp. Not a finding.
+- FINDING (blocking): `lastDocId` = document id. Live group-invitation path
+  `friends_invitations_operations.dart:160` builds `'${currentUserId}_${userId}_${groupId}_ms'`
+  -> `firebase_friends_repository.dart:335 saveInvitation` -> `createRequest`, so the INVITEE's
+  raw uid and the group id land in the inviter's `users/{uid}/rate_limits/social_requests`
+  (TTL 90d via firestore.indexes.json). `EXPORT_EXEMPT.rate_limits`
+  (account-deletion-cascade.ts:3904) still reasons "One timestamp per rate-limited action",
+  a premise Malin decided on 2026-09-03; the ADR-0020 deviation entry does not name it.
+  Same shape likely for `conversations` (`direct_<a>_<b>`), outside this batch.
+
+---
+
+## 2026-09-14 — ADR-0020 stamp helper, batch: rate_limit_stamp.dart, activity events, comments
+
+**Scope:** `stampRateLimit` (new top-level helper) and its two repository callers
+`FirebaseActivityEventRepository.addEvent` / `FirebaseCommentsRepository.addComment`.
+
+**Verified clean in the batch:** both stamps are written under the authenticated uid
+(`addEvent`: `requireCurrentUserId()`; `addComment`: the `userId` param, which
+`validateSelfOperation` THROWS on when it differs from `requireCurrentUserId()` —
+`permission_validation_mixin.dart:275`). Type strings match the rules (`'activity_events'`
+== `FirestoreCollections.activityEvents`; `'comments'`). `lastDocId` is `event.id` (a
+`Uuid().v4()`) and `docRef.id` (auto-id). The payload keys equal the rules `hasOnly`
+(`lastWrite`, `expireAt`, `lastDocId`); `expireAt` is +90d against the rule's >= +1d; a
+`rate_limits` TTL on `expireAt` exists in `firestore.indexes.json`. The helper does no logging. No
+data-source-rule surface.
+
+**Blocking finding (outside the batch's files, inside the question asked):** the brief's
+premise "lastDocId is an id of the user's own content" is false for
+`conversation_mutation_module.dart`, which stamps `guardedDocId: conversationId`, built as
+`direct_${sortedIds[0]}_${sortedIds[1]}` (line 60). So `users/{initiator}/rate_limits/conversations`
+now holds the counterparty's raw uid — the same id `LogSanitizer.maskConversationId` hashes
+in logs because it is two raw uids. That doc is Art. 15-exempt on the recorded reason
+"One timestamp per rate-limited action. Discloses nothing..." (`EXPORT_EXEMPT.rate_limits`,
+account-deletion-cascade.ts; the bundle's own `data_minimisation` line in
+preferences_export_manager.dart:254-255 "a timestamp per rate-limited action"; retention doc
+row 18), all falsified by the change. The counterparty's erasure cascade does not reach
+another user's `rate_limits`; the TTL bounds it at ~90 days or the initiator's next DM start.
+Social requests (Uuid v4), ratings (`{recipeId}_{ownUid}`), and the auto-id share docs are fine.
+
+**Principle retired verbatim from the knowledge file (superseded in place by the ADR-0020
+burst-guard bullet):**
+"- `rateLimitWrite(collection, seconds)` is live only PER BUCKET — grep `.doc('<bucket>')`
+  under `userRateLimits` before calling any conjunct live or dead (live today: `messages`,
+  `comments`, `social_requests`, `activity_events`; most others, incl. `audit_logs`, are
+  inert). It is never a CONTROL against a hostile client, only a throttle on our own
+  repository: the helper is `!exists(limitsPath) || ...`, i.e. FAILS OPEN on a missing
+  bucket, and `users/{uid}/rate_limits/{type}` is `allow read, write: if isOwner(userId)` —
+  so a hand-rolled client that simply never stamps the bucket is unlimited forever. Say that
+  out loud whenever one is proposed, added or deferred; bounding row COUNT needs a
+  callable-mediated create or a server counter."
+
+**Correction to the entry above, same review:** the knowledge-file edit it describes did NOT
+land. The file was modified by a parallel edit between read and write, and that edit already
+carries the ADR-0020 principle, including the composite-`lastDocId` point. The quoted
+"retired" text is the pre-ADR-0020 wording as this run read it, not text this run removed.
+
+## 2026-09-14 — ADR-0020 stamp batch: base_shared_content_repository / conversation_mutation_module / message_mutation_module
+
+Independent re-review of the same staged range, batch of three. Verified rather than inherited
+from the entry above:
+- `createDirectConversation`'s only production caller is `MessagingService.startDirectConversation`
+  (messaging_service.dart:138-147), passing `_authRepository.currentUser.uid` = Firebase Auth uid.
+  A mismatch was already denied before this change by `metadata.creatorId == request.auth.uid`,
+  so the stamp adds no new failure mode there.
+- `createSharedContent` stamps under `requireCurrentUserId()`; the create limb already pins
+  `sharedByUserId == auth.uid`. Checked for two stamped `shared_content` creates in one user
+  action within 3 s: none found — `RecipeSharingManager.shareRecipe` writes one row;
+  `SocialRecipeSharingService.shareRecipeWithUsers` writes one via `createSharedRecipe`, whose
+  BUT-1132 idempotency query turns the friends-then-groups second call into `addMember`. Its
+  150/300 ms retry only re-hits the window if a prior attempt committed, and then the idempotency
+  query answers first.
+- Existence-read-fails-but-doc-exists in `createDirectConversation`: the merge set evaluates the
+  UPDATE limb, whose deny-list refuses the fresh `createdAt`; the atomic batch drops the stamp too.
+- The counterparty-uid-in-`lastDocId` finding reproduces. The bundle sentence cited above lives at
+  `lib/services/account/export/preferences_export_manager.dart:255` (the path quoted above,
+  `preferences_export_manager.dart:254-255` without a directory, resolves; a `lib/services/gdpr/`
+  guess does not). TTL on `rate_limits.expireAt` is declared in firestore.indexes.json.
+No new principle; the knowledge bullet already carries it.
+
+## 2026-09-14 — re-review after Malin's 2-day stamp expiry call (ADR-0020 residual)
+
+Checked the corrected descriptors, not the decision. The staged `rate_limits/{type}` rule
+bounds `expireAt` from BELOW only (`>= request.time + duration.value(1, 'd')`), and
+`stampRateLimit` sets it from `clock.now()` (device) + 2 days. Two consequences:
+- "expires after 2 days" / "kept for two days" is not enforced. A device clock set ahead
+  stores any lifetime, and a hand-rolled client can pass any `expireAt` of at least a day.
+- Every guarded write now fails when the device clock is more than ~24 h behind. With the
+  old +90 d offset the tolerance was ~89 days.
+Scope: `users/{uid}/rate_limits` also holds `imports` (import/LLM usage counters,
+import_rate_limiter.dart:198) and `friendSearchMigrated` (`{migratedAt}`,
+friends_firebase_sync.dart:167). Neither is a stamp and neither expires, yet all three new
+descriptors (bundle sentence, EXPORT_EXEMPT, retention register row 18) describe the whole
+collection that way. The EXPORT_EXEMPT head was edited and still ends with the tail
+"Discloses nothing about the user that the throttling message does not already say on screen",
+which was measured on 2026-09-03 for a timestamp-only row. The retention register still says
+"No TTL policy applies" (line 51) under a row that now says documents expire. Every stamp
+call site was enumerated. Only `conversations` carries a composite id with a uid;
+`pings` uses `<groupId>_<pingId>`. Not verified by this run: "Group invitations use random ids".
+
+## 2026-09-14 — third round: pass
+
+What I checked in the frozen index, and what it showed:
+- **Rule:** `rate_limits/{type}` requires `expireAt > request.time && <= request.time + 4d`.
+  With the writer's +2 d device offset, that tolerates roughly ±2 days of clock skew.
+- **Rules tests:** `rate-limit-rules.test.ts:468/479/492` covers expired, 5 d, device a day
+  behind, and 3 d ahead. I did not mutation-probe it; this agent may not write rules.
+- **Pings key:** `groupId + '/' + pingId` (rules :1344), which matches `ping_service.dart:127`.
+- **Group invitations:** `const Uuid().v4()` at `friends_invitations_operations.dart:161`.
+- **Deviation entries:** the new entries in both deviation files are byte-identical.
+- **Descriptors:** the bundle sentence names all three document shapes and makes no lifetime
+  promise. `EXPORT_EXEMPT` was struck down to its decision. Register row 18 names all three
+  shapes and states the rule's 4-day bound.
+- **Low:** the `imports` doc carries `expireAt` +90 d (`rate_limit_models.dart:283`), so the
+  active TTL deletes idle usage counters. Nothing false, since the register does not say
+  counters never expire, but row 18 is silent on it.
+- **Low:** a legacy +90 d burst stamp is not re-bounded until its type is stamped again
+  (`messages` never is).
+- **Low:** after the strike, "weighing bundle legibility higher" lost the thing it compared
+  against.
+
+## 2026-09-14 — re-review: ADR-0020 decision 4 resolves the invitation-id finding
+
+`friends_invitations_operations.dart:161` now `const Uuid().v4()`; `stampRateLimit` expireAt 2 days;
+decision recorded in ADR-0020 §4 and the last accepted-deviations entry (Malin's call: short TTL
+over cascade erasure; the `direct_<a>_<b>` conversation stamp is the named residual).
+Id consumers checked, none parse it: `findDuplicateGroupInvitation` matches toUserId+groupId+status;
+accept/reject/cancel look up by id equality; `saveInvitation` -> `createRequest` passes it opaque;
+deep links carry `id` as an opaque query param (UUID is URL-safe; link/email/SMS invites use their
+own millis ids and never reach Firestore); functions `accept-friend-request.ts:72` uses doc(requestId)
+opaque, send-notification/cleanup/on-user-deleted query by fields. Only `split('_')` hits in lib are
+presence keys and locale names. Pre-existing social_requests docs keep old composite ids, which the
+doc's own erasure (cleanupSocialRequests) removes. Verdict pass.
+
+## 2026-09-14 (re-review) — ADR-0020 decision 4: 2-day stamp lifetime
+
+Malin chose a short stamp lifetime for the `direct_<a>_<b>` `lastDocId` finding. Re-read:
+rate_limit_stamp.dart, preferences_export_manager.dart:252-261, account-subcollections-retention.md,
+account-deletion-cascade.ts (EXPORT_EXEMPT + docblock), ADR-0020, and the last accepted-deviations entry.
+
+**New blocking finding:** `stampRateLimit` computes `expireAt` from the device clock
+(`clock.now() + 2d`) while `firestore.rules:571` requires `expireAt >= request.time + 1d`. A
+device slower than about 24h is therefore refused on EVERY stamped write (comments, shares,
+ratings, new DMs, pings, cook snaps, activity events, social requests). Under 90 days the
+margin was about 89 days. `rate-limit-rules.test.ts` fixtures still use `90 * DAY_MS`, so no
+rules test exercises the value that ships.
+
+**Sentences:** the retention register's "## Retention" still says "No TTL policy applies.", and
+its ⚠ paragraph still calls `expireAt` presence on `rate_limits` unmeasured. The EXPORT_EXEMPT
+string keeps "Discloses nothing about the user that the throttling message does not already say
+on screen — measured by the Security seat", which was measured on timestamp-only content. The
+bundle's "kept for two days" states a retention the system does not guarantee: 2 days from the
+LAST stamp of that type, plus TTL lag with no upper bound. The deviation entry's title
+"for up to about 3 days" is a bound, but its body cites only "typically within 24 hours" and
+says no latency was measured. Pings key `<groupId>_<pingId>` is not a document id, while three
+texts say "the guarded document's id" (Low).
+The original finding is closed as a recorded decision with a named residual.
+Principle added in place: a client-clock expireAt versus a rules floor.
+
+## 2026-09-14 (re-review 2) — clock-skew window and text fixes
+
+Re-read: firestore.rules (`rateLimitStamped`, `match /rate_limits/{type}`, pings call site),
+rate_limit_stamp.dart, preferences_export_manager.dart:248-263, account-subcollections-retention.md,
+account-deletion-cascade.ts:3884-3909, rate-limit-rules.test.ts:440-509, ADR-0020, and the
+accepted-deviations.md tail (2112-2157).
+
+Closed: the rule now accepts `expireAt > request.time && <= request.time + 4d`, so a writer at
+device +2d is accepted from a device about 2 days slow to 2 days fast. The emulator cases cover
+expired, over 4 days, and devices a day behind (+1d) and a day ahead (+3d). Suite fixtures use +2d.
+The texts are corrected: "kept for two days" is gone, "No TTL policy applies." and "and `rate_limits`"
+are struck, the "Discloses nothing … measured" clause is struck, and the title no longer says "up to".
+The ping key is `'$groupId/${ping.id}'`, matching `groupId + '/' + pingId` in the rules.
+Legacy-key hazard checked: `git log -S userRateLimits` shows only `lastWrite`/`expireAt` ever
+written through that chain in lib. The server throttle uses `system_rate_limits`.
+Low: the EXPORT_EXEMPT string now ends "Malin, 2026-09-03, weighing bundle legibility higher."
+The strike removed the comparative's object ("AGAINST that recommendation"); the docblock above carries it.
+Low: clients predating this change (90-day expireAt, no lastDocId) are denied on every guarded
+write once the rules deploy. The project notes say the app is not live.
+Verdict: pass.
+
+## 2026-09-14 — re-review 2: friends_firebase_sync stamp + ratings doc strikes
+
+`FriendsFirebaseSyncOperations.syncFriendRequestToFirebase` (live search-UI friend request) did a
+bare `.add()` on social_requests, which the new `rateLimitStamped('social_requests', 10, requestId)`
+would deny for every request: a second, unstamped writer of a guarded collection that the
+repository-scoped review did not reach (found by the integration gate). Now `.doc()` + batch +
+`stampRateLimit(userId: request.fromUserId, guardedDocId: ref.id)`. `fromUserId` is
+`currentUserId!` from `PermissionService.currentUserId` (friends_management_operations.dart:134,168;
+unified_friends_service.dart:210-211), i.e. the auth side, correctly. A mismatch would fail CLOSED
+anyway: the create limb pins fromUserId == auth.uid and `rate_limits` is isOwner, and the batch is
+atomic. The auto id carries no uid. Pre-existing Low: the local FriendRequest.id (UUID) differs from
+the Firestore doc id; no audit row on this service-layer path. Ratings file: doc-comment deletions
+only, 480 lines, ACCEPTED_LARGE_FILES row gone. Verdict pass.
+
+## 2026-09-16 — BUT-1693 household allergen shares (commit gate, second pass)
+
+Reviewed: `firebase_household_allergen_share_repository.dart`,
+`firebase_data_export_repository.dart`, `household_allergen_share_repository.dart`, plus the
+staged `firestore.rules` block, the cascade step + probe leg, the reset list, the Art. 15
+section in `family_export_manager.dart`, `purge-expired.ts` CONSENT_OPERATIONS, the drift
+test and the flag/DPIA prose. Verdict pass, 0 blocking.
+
+Clean and worth recording as precedent: erasure decided from the PATH (`endsWith('_$uid')`)
+with `householdId`/`userId` rules-forbidden from containing `_`, so a forged or corrupt
+Art. 9 row stays deletable while `fromFirestore` still fails loud on read; consent
+immutability split across `cannotModify` (rules) and `withStoredConsent` (repo) with
+re-grant routed through delete+create so the create limb's `consentGrantedAt` ±10 min
+binding cannot be re-dated; `create` guarded by a RAW `get()` rather than the swallowing
+`exists()`; export/erasure field parity on the flat `userId`, both `where('userId','==',uid)`,
+so Art. 15 ⊇ Art. 17 holds and the export's list query is provable under the owner read arm
+(pinned R3/R4); export projection through the shared `projectExportFields` allowlist, capped
+at 50 with an N+1 probe and a 51-row test; audit sink confirmed non-throwing
+(`FirebaseAuditRepository.logPermissionCheck` swallows), so a failed consent row cannot
+strand a grant behind the already-exists guard.
+
+Findings filed (none blocking): (1) MEDIUM — the read limb evaluates the household-`get()`
+arm before the free owner arm, billing a parent read per exported row; reorder. (2) MEDIUM —
+`getByHousehold` issues an unbounded `where('householdId','==',...)` read, the only query in
+this class with no `.limit()`. (3) LOW — `revoke()`'s catch sets `existed = true`, so a failed
+pre-delete read can log a `consent_revoked` for a share that never existed (safe direction;
+over-recording an Art. 7(1) withdrawal). (4) LOW — `updatedAt` is client-written and bounded
+only by type; nothing decides safety from it TODAY, so the tripwire is DPIA R4's atomic
+settings+share write: whatever first reads it as a freshness signal must land with a
+`request.time` bound in the same change. (5) LOW — the ±10 min consent-stamp window is a
+device-clock dependency whose refusal surfaces as a generic permission error; the settings
+tile (out of this diff) owes it a comprehensible message before the flag flips.
+
+Principle merged in place: arm order inside an OR'd read limb is a billing decision
+(Cost principles bullet).

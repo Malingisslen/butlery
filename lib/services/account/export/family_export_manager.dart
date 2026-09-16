@@ -2,11 +2,16 @@
 
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
+import 'package:butlery/repositories/firebase/firebase_data_export_repository.dart';
 import 'package:butlery/repositories/interfaces/diner_profile_repository.dart';
 import 'package:butlery/repositories/interfaces/family_rating_repository.dart';
 import 'package:butlery/repositories/interfaces/household_repository.dart';
 import 'package:butlery/services/account/export/export_pagination_helper.dart'
-    show normalizeTimestampPaths, sanitizeForJson;
+    show
+        ExportPaginationHelper,
+        normalizeTimestampPaths,
+        projectExportFields,
+        sanitizeForJson;
 
 /// Exports the household family-rating data for GDPR Article 15/20 (BUT family
 /// Phase 5 item 14): the non-account diner profiles the user manages, plus the
@@ -29,6 +34,7 @@ class FamilyExportManager {
   final HouseholdRepository? _householdRepo;
   final DinerProfileRepository? _dinerRepo;
   final FamilyRatingRepository? _familyRatingRepo;
+  final FirebaseDataExportRepository? _exportRepo;
 
   static const String _logTag = 'FamilyExportManager';
 
@@ -36,9 +42,11 @@ class FamilyExportManager {
     HouseholdRepository? householdRepository,
     DinerProfileRepository? dinerProfileRepository,
     FamilyRatingRepository? familyRatingRepository,
+    FirebaseDataExportRepository? dataExportRepository,
   }) : _householdRepo = householdRepository,
        _dinerRepo = dinerProfileRepository,
-       _familyRatingRepo = familyRatingRepository;
+       _familyRatingRepo = familyRatingRepository,
+       _exportRepo = dataExportRepository;
 
   HouseholdRepository get _households =>
       _householdRepo ?? ServiceLocator.get<HouseholdRepository>();
@@ -46,6 +54,66 @@ class FamilyExportManager {
       _dinerRepo ?? ServiceLocator.get<DinerProfileRepository>();
   FamilyRatingRepository get _familyRatings =>
       _familyRatingRepo ?? ServiceLocator.get<FamilyRatingRepository>();
+  FirebaseDataExportRepository get _exports =>
+      _exportRepo ?? ServiceLocator.get<FirebaseDataExportRepository>();
+
+  /// The fields of a share this section carries. An allowlist, so a field
+  /// nobody has decided about is withheld rather than exported. `userId` is
+  /// left out: it is the requester's own uid and the query's filter.
+  static const householdAllergenShareFields = <String>[
+    'householdId',
+    'trackedAllergens',
+    'trackedDietary',
+    'includeUnknownInMenu',
+    'consentGranted',
+    'consentVersion',
+    'consentGrantedAt',
+    'updatedAt',
+  ];
+
+  /// BUT-1693: the user's OWN shared allergen lists, under every household
+  /// id (DPIA §9 decision 5). Other members' shares are never read here.
+  Future<Map<String, dynamic>> exportHouseholdAllergenShares(
+    String userId,
+  ) async {
+    try {
+      final entries = await ExportPaginationHelper.fetchCapped(
+        type: 'household_allergen_shares',
+        fetch: (max) =>
+            _exports.exportHouseholdAllergenShares(userId, maxDocuments: max),
+      );
+      return {
+        'total_count': entries.items.length,
+        'household_allergen_shares': entries.items
+            .map(
+              (entry) => {
+                'share_id': entry['id'],
+                'data': sanitizeForJson(
+                  projectExportFields(
+                    entry['data'],
+                    householdAllergenShareFields,
+                  ),
+                ),
+              },
+            )
+            .toList(),
+        if (entries.truncated) 'truncated': true,
+        'data_minimisation':
+            'Only allergen lists you shared yourself are included, not those '
+            'other household members shared. This section carries only the '
+            'fields it recognises, so a field added later may be missing.',
+      };
+    } catch (e) {
+      app_logger.AppLogger.error(
+        '[$_logTag] Failed to export household allergen shares',
+        e,
+      );
+      return {
+        'error': 'Shared allergen lists could not be exported.',
+        'error_code': 'household-allergen-shares-export-failed',
+      };
+    }
+  }
 
   Future<Map<String, dynamic>> exportFamily(String userId) async {
     try {

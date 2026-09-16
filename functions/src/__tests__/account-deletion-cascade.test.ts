@@ -4414,6 +4414,7 @@ async function scenario_ingredientSuggestionsErasedAndProbed(): Promise<void> {
  * Nothing is deleted on the declining path, deliberately: a partial delete plus
  * a false return would be the worst of both.
  */
+
 async function scenario_ingredientSuggestionsDeclineAboveCap(): Promise<void> {
   const {
     deleteIngredientSuggestions,
@@ -4443,6 +4444,122 @@ async function scenario_ingredientSuggestionsDeclineAboveCap(): Promise<void> {
     "and nothing is deleted on the declining path",
     store.idsIn("ingredient_suggestions").length === cap + 1,
     `rows left: ${store.idsIn("ingredient_suggestions").length} of ${cap + 1}`,
+  );
+}
+
+/**
+ * BUT-1693: `household_allergen_shares` is erased by the flat `userId` field,
+ * across every household id, and the probe SEES a leftover.
+ *
+ * The two households for the same user are the point: a sweep that looked up
+ * the user's current household would delete one and leave the other. The
+ * other member's share makes the delete assertion non-vacuous.
+ */
+async function scenario_householdAllergenSharesErasedAndProbed(): Promise<void> {
+  const {
+    deleteHouseholdAllergenShares,
+    probeResidualData,
+  } = require("../account/account-deletion-cascade");
+
+  const store = new FakeFirestore();
+  store.set(`household_allergen_shares/h1_${UID}`, {
+    householdId: "h1",
+    userId: UID,
+    trackedAllergens: ["gluten"],
+  });
+  store.set(`household_allergen_shares/h2_${UID}`, {
+    householdId: "h2",
+    userId: UID,
+    trackedAllergens: ["mjölk"],
+  });
+  store.set(`household_allergen_shares/h1_${OTHER}`, {
+    householdId: "h1",
+    userId: OTHER,
+    trackedAllergens: ["ägg"],
+  });
+
+  await deleteHouseholdAllergenShares(asDb(store), UID);
+
+  check(
+    "the user's shares in every household are deleted",
+    !store.has(`household_allergen_shares/h1_${UID}`) &&
+      !store.has(`household_allergen_shares/h2_${UID}`),
+    `left behind: ${JSON.stringify(store.idsIn("household_allergen_shares"))}`,
+  );
+  check(
+    "another member's share survives the sweep",
+    store.has(`household_allergen_shares/h1_${OTHER}`),
+    "the sweep is not filtered on userId — it deleted a row it does not own",
+  );
+
+  const emptyResult = () => ({
+    deletedCollections: [],
+    failedCollections: [] as string[],
+    errors: [],
+    retained: [],
+  });
+
+  const cleanResult = emptyResult();
+  await probeResidualData(asDb(store), UID, cleanResult);
+  check(
+    "with only another member's share left, the probe stays clean",
+    !cleanResult.failedCollections.includes("residual_data_detected"),
+    `failed: ${JSON.stringify(cleanResult.failedCollections)}`,
+  );
+
+  const leftover = new FakeFirestore();
+  leftover.set(`household_allergen_shares/h9_${UID}`, {
+    householdId: "h9",
+    userId: UID,
+  });
+  const leftoverResult = emptyResult();
+  await probeResidualData(asDb(leftover), UID, leftoverResult);
+  check(
+    "a surviving household allergen share is reported as residual",
+    leftoverResult.failedCollections.includes("residual_data_detected"),
+    `failed: ${JSON.stringify(leftoverResult.failedCollections)}`,
+  );
+}
+
+/**
+ * BUT-1693: above the cap the sweep declines and deletes nothing.
+ */
+async function scenario_householdAllergenSharesDeclineAboveCap(): Promise<void> {
+  const {
+    deleteHouseholdAllergenShares,
+    MAX_HOUSEHOLD_SHARE_SWEEP_ROWS,
+  } = require("../account/account-deletion-cascade");
+
+  const store = new FakeFirestore();
+  const cap = MAX_HOUSEHOLD_SHARE_SWEEP_ROWS;
+  for (let i = 0; i <= cap; i++) {
+    store.set(`household_allergen_shares/h${i}_${UID}`, {
+      householdId: `h${i}`,
+      userId: UID,
+    });
+  }
+
+  const ok = await deleteHouseholdAllergenShares(asDb(store), UID);
+
+  check("above the cap the share sweep returns false", ok === false, `returned ${ok}`);
+  check(
+    "above the cap nothing is deleted",
+    store.idsIn("household_allergen_shares").length === cap + 1,
+    `remaining: ${store.idsIn("household_allergen_shares").length}`,
+  );
+
+  const atCap = new FakeFirestore();
+  for (let i = 0; i < cap; i++) {
+    atCap.set(`household_allergen_shares/h${i}_${UID}`, {
+      householdId: `h${i}`,
+      userId: UID,
+    });
+  }
+  const okAtCap = await deleteHouseholdAllergenShares(asDb(atCap), UID);
+  check(
+    "at the cap the share sweep deletes everything and returns true",
+    okAtCap === true && atCap.idsIn("household_allergen_shares").length === 0,
+    `returned ${okAtCap}, remaining ${atCap.idsIn("household_allergen_shares").length}`,
   );
 }
 
@@ -7791,6 +7908,8 @@ async function main(): Promise<void> {
   await scenario_oneBadHoldDoesNotStallTheSweep();
   await scenario_ingredientSuggestionsErasedAndProbed();
   await scenario_ingredientSuggestionsDeclineAboveCap();
+  await scenario_householdAllergenSharesErasedAndProbed();
+  await scenario_householdAllergenSharesDeclineAboveCap();
   await scenario_moderationEventsAreErasedAndAnonymized();
   await scenario_moderationSweepStagesItsAuditRows();
   await scenario_implausibleModerationEventCountDeclines();

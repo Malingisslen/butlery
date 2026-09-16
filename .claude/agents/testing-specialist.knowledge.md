@@ -444,6 +444,12 @@ compress it.**
   broke it". Remove your own additions IN PLACE (script it, assert each anchor unique, keep the
   removed text in the scratchpad). Same reason a probe RESTORE cannot use `git show :<path>` when
   the fix under test is worktree-only (BUT-1972/1982).
+- **`TestTimestampProvider` reads `clock.now()`, so under `withClock` its value equals every
+  clock-derived value in the same write** — a "lastWrite comes from the provider" pin using it
+  alone cannot tell the provider from a direct `clock.now()`. Add a provider returning an
+  instant the clock never produces. Same shape wherever two uid sources collapse in a fixture:
+  assert the premise that they DIFFER before asserting which one a path uses (rate-limit stamp
+  tests, 2026-09-14).
 - `MockUnifiedRecipeService.setRecipeState()` defaults `isInitialized: false` — pass it.
 - Debounced VM: `fakeAsync` + `async.elapse(300ms)`; `executeDebounced` fires 3 notifications.
   `test/views/` is journey-test territory (owned by `e2e-test-specialist`).
@@ -474,6 +480,13 @@ compress it.**
   and OUTRANKS a mutation probe. A cross-language DRIFT guard pins EQUALITY between two copies,
   never the VALUE — and the moment one lands, every "nothing ties these two copies" comment on
   the other side goes false (BUT-1971).
+  **A DECLARED CONSTANT equal to the fallback it replaces is unprovable end-to-end, and one that
+  DIFFERS is the cheapest real pin available** — an export cap of 500 beside `defaultBatchSize`
+  500 leaves the section's type literal untestable (a typo falls back to the same number and
+  reads identically), so it owes a MAP-level assertion; a cap of 50 binds the wiring, and a
+  cap+1-row fixture then kills a mistyped literal AND a deleted map entry in one case. Ask
+  whether the constant differs from the fallback before grading such a test as covered
+  (BUT-1693 vs BUT-2028).
 - **A stub must reproduce the production return's IDENTITY, not just its VALUE, whenever the code
   under test branches on `identical(...)`** — a stub calling `copyWith` unconditionally hands
   back a fresh object, the short-circuit never fires, and a test written for that branch passes
@@ -606,6 +619,13 @@ other suites prove:
   at all — no finding asked for a test and the round's budget went to the findings that did. The
   tell is a method at `DA:0` whose class siblings are pinned; read the fix report for guards
   mentioned in passing as "also changed by the other gates" (BUT-1971).
+- A **write moved INTO a `WriteBatch`**: a mocked-batch capture of `batch.set` pins STAGING, not
+  the write — dropping `commit()` stays green unless the test verifies it; and
+  `fake_cloud_firestore`'s `MockWriteBatch` replays sets one by one at commit, so batch
+  MEMBERSHIP is unobservable there (a direct `.set()` beside the batch stays green). An emulator
+  rules test commented "the shape <Dart writer> writes" is a coverage pointer: diff its body's
+  KEYS against the writer's map before believing it (ADR-0020: `listId` in the test,
+  `sharedListId` in the app, `hasRequiredFields` requires `listId`).
 - A **DETECTOR added beside a well-tested MUTATOR** reads as covered because the suite EXECUTES
   it and asserts nothing about it. A completeness signal is observable only through its FAILING
   state — grep the result flag's own name (`gdprCompliant`) rather than trusting the function ran
@@ -820,7 +840,11 @@ other suites prove:
   widened qualifier is a NEW claim with no test (BUT-1897).
 - **A collection's DOCUMENT-ID SCHEME change (deterministic→auto-id) breaks every reader that
   addresses/dedupes by it, invisibly** — grade writers keyed on `doc(x)`, mergers doing
-  `byId[doc.id]=doc` (silent double-render), and field-keyed cascades.
+  `byId[doc.id]=doc` (silent double-render), and field-keyed cascades. **When the change exists
+  for a PRIVACY property (the id stops carrying a uid, because the id is copied into a stamp or
+  log), the only witness is a test that constructs the REAL id-minting class** — grep the
+  method across `test/`; all-mock hits means a revert to the composite id is green everywhere.
+  Pin uid-ABSENCE for both parties on the captured id, never a UUID regex (BUT — ADR-0020).
 - When a fix SPLITS one write/event across destinations, or teaches a method a new side-field,
   grep every WRITER/reader's OWN SUITE (not `lib/`) — the list grows mid-round.
 
