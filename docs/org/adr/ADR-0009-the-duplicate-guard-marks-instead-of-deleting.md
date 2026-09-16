@@ -111,6 +111,14 @@ the row exists — but it is gone as a copy.
   hand-rolled client applies none. The conclusion holds; the reason did not. The Art. 15 export
   deliberately keeps such a row (`isOthersBlockedRow` requires `content == ''`); BUT-1954 carries
   `searchMessages`, which filters neither.
+
+  **SUPERSEDED 2026-09-16 (BUT-1954).** Retired verbatim: "`searchMessages`, which filters neither."
+  `MessagingService.searchMessages` runs the same
+  `_withoutOthersBlockedRows` the conversation read paths run, so another participant's stamped
+  row is dropped from a hit list with its text. The Art. 15 export's narrower predicate is
+  untouched. No view, viewmodel or widget calls the method, so nothing a user can see changes.
+  The `firestore.rules` half is still open: bounding what `type` may be written TO needs a
+  migration for already-stamped rows.
 - **Comments still delete.** `guardDuplicateComment` is unchanged: a global per-author key, no
   length floor, no flag, and `tx.delete` on a duplicate — live since 2026-05-04. A duplicate
   one-word comment is spam; a duplicate one-word chat message is conversation. The asymmetry

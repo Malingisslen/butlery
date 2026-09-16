@@ -404,7 +404,25 @@ files in the same edit.
   does not apply one. The Art. 15 export deliberately DIVERGES here and keeps such a row
   (`isOthersBlockedRow` requires `content == ''`): withholding a record from its own subject is
   the worse failure. Do not harmonise the two. BUT-1954 carries the third surface,
-  `searchMessages`, which filters neither. Load-bearing parts, each of which dies alone: the guard uses `tx.update`
+  `searchMessages`, which filters neither.
+  **SUPERSEDED 2026-09-16 (BUT-1954): `MessagingService.searchMessages` applies the sender-only
+  filter.** Retired verbatim (fragment; the original wraps, so this quote sits on one line here):
+  "BUT-1954 carries the third surface,". It runs the SAME `_withoutOthersBlockedRows` the
+  conversation read paths run, never a second copy of the predicate, so another participant's
+  stamped row is dropped from a hit list with its text.
+  The export's predicate is UNTOUCHED and still narrower (`isOthersBlockedRow` requires
+  `content == ''`) — the sentence above forbidding harmonisation stands.
+  No view, viewmodel or widget calls `MessagingService.searchMessages`, so nothing a user can
+  see changes; this is the guard in place for the day a search UI lands. Pinned by
+  `another participant's blocked row is dropped (search)`, mutation-probed — removing the call
+  reddens that case and no other.
+  **NOT closed here:** the `firestore.rules` half, bounding what `type` may be written TO, still
+  needs a migration for already-stamped rows.
+  **Named residual, pre-existing and NOT introduced by this change:** `searchMessages` does not
+  run `_filterBlocked`, the blocked-AUTHOR filter the two read paths run, so a blocked person's
+  ordinary messages still match a search. Its own ticket. BUT-1954, 2026-09-16
+
+  Load-bearing parts, each of which dies alone: the guard uses `tx.update`
   and never a merge-set, so a message its sender deleted first is not resurrected;
   `firestore.rules` refuses a client update to an already-blocked message, or the sender could
   write the duplicate text straight back in; `syncConversationLastMessage` tests `after.type`

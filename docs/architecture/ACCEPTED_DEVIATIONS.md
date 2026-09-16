@@ -2340,6 +2340,25 @@ failure. Do not harmonise the two. BUT-1954 carries the third surface, `searchMe
 filters neither. Mirrored from `.claude/rules/accepted-deviations.md`, which was amended in the
 same change; both files are edited together by this file's own header rule.)*
 
+**SUPERSEDED 2026-09-16 (BUT-1954): `MessagingService.searchMessages` applies the sender-only
+filter.** Retired verbatim: "failure. Do not harmonise the two. BUT-1954 carries the third surface, `searchMessages`, which"
+
+`searchMessages` runs the SAME `_withoutOthersBlockedRows` the conversation read paths run, never
+a second copy of the predicate, so another participant's stamped row is dropped from a hit list
+with its text. The refusal to harmonise with the EXPORT is unchanged and still correct:
+`isOthersBlockedRow` keeps its `content == ''` conjunct and this change does not touch it.
+
+No view, viewmodel or widget calls `MessagingService.searchMessages`, so nothing a user can see
+changes; this is the guard in place for the day a search UI lands. Pinned by `another
+participant's blocked row is dropped (search)` in `messaging_service_test.dart`, mutation-probed
+-- removing the call reddens that case and no other.
+
+**NOT closed here:** the `firestore.rules` half, bounding what `type` may be written TO, still
+needs a migration for already-stamped rows. **Named residual, pre-existing and NOT introduced by
+this change:** `searchMessages` does not run `_filterBlocked`, the blocked-AUTHOR filter the two
+read paths run, so a blocked person's ordinary messages still match a search. Its own ticket.
+BUT-1954, 2026-09-16
+
 *(The sentence that stood here explaining why both placement cases exist — "neither kills the
 other's" — was STRUCK 2026-08-26. The testing-specialist gate measured it false: on the
 into-the-catch move the unregistered-filter case kills the throwing-filter case's mutant as

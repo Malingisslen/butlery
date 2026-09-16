@@ -2066,6 +2066,50 @@ void main() {
         expect(live.map((m) => m.id), ['msg-ordinary']);
       });
 
+      Future<List<Message>> readSearch(List<Message> stored) {
+        when(
+          () => mockMessagingRepo.searchMessages(
+            conversationId: conversationId,
+            query: any(named: 'query'),
+            limit: any(named: 'limit'),
+          ),
+        ).thenAnswer((_) async => stored);
+        return messagingService.searchMessages(
+          conversationId: conversationId,
+          query: 'klockan',
+        );
+      }
+
+      test("another participant's blocked row is dropped (search)", () async {
+        // BUT-1954. A row the thread hides must be hidden in a hit list of that
+        // same thread — and the hit list is where such a row can still be
+        // CARRYING the sentence that matched it, since no `firestore.rules`
+        // limb bounds what `type` is written TO or empties the text beside it.
+        //
+        // No block-filter stub: search does not run the author filter, so the
+        // foreign ORDINARY row below is expected to survive. That is what makes
+        // the assertion discriminating — `searchMessages` catches and returns
+        // `[]`, so "the foreign notice is gone" passes for free on any throw,
+        // and only finding the rows this reader is owed tells the two apart.
+        final hits = await readSearch([
+          ordinaryRow(senderId: 'other-user'),
+          blockedRow(
+            senderId: 'other-user',
+            id: 'msg-blocked-foreign',
+            content: 'Jag kommer klockan sju ikvall',
+          ),
+          blockedRow(senderId: 'test-user-id', id: 'msg-blocked-mine'),
+        ]);
+
+        expect(
+          hits.map((m) => m.id),
+          ['msg-ordinary', 'msg-blocked-mine'],
+          reason:
+              'the sender keeps their own notice; nobody else is shown one, '
+              'text and all',
+        );
+      });
+
       // The placement cases: 'a block lookup that THROWS still hides the row (BUT-1904)'
       // and 'an unregistered block filter still hides the row'. Each stages an
       // EARLY RETURN out of the block filter, which is the only way to tell
@@ -2154,9 +2198,6 @@ void main() {
           // the requester RECEIVED stays in their bundle. This one must NOT:
           // rendering it draws "Du har redan skickat det här" over somebody
           // else's message, a sentence that is false for the viewer.
-          //
-          // Without this case the two spellings can be harmonised in either
-          // direction with the suite green.
           TestServiceLocator.registerMock<BlockedUserFilter>(
             _StubBlockedUserFilter(const <String>{}),
           );

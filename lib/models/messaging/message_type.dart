@@ -107,10 +107,7 @@ enum MessageType {
   /// third limb, the read-receipts update, forbids `type` outright via
   /// `affectedKeys().hasOnly`.)
   ///
-  /// The sender-only rule is applied in `MessagingService`, on the two
-  /// conversation read paths. `searchMessages` does not go through it, and a
-  /// client-stamped row can still be carrying the text a query would match.
-  /// BUT-1954.
+  /// The sender-only rule is applied in `MessagingService`. BUT-1954.
   ///
   /// The wire value is `name`, so this must stay spelled exactly as
   /// `DUPLICATE_BLOCKED_TYPE` in `functions/src/social/duplicate-content-guard.ts`.

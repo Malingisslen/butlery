@@ -693,7 +693,7 @@ class MessagingService extends BaseService with StreamManagementMixin {
     try {
       if (query.trim().isEmpty) return [];
 
-      return await _messagingRepository.searchMessages(
+      final hits = await _messagingRepository.searchMessages(
         conversationId: conversationId,
         query: query.trim(),
         // Resolved here rather than asked of the caller: this is the layer
@@ -702,6 +702,16 @@ class MessagingService extends BaseService with StreamManagementMixin {
         historyStart: await _historyStartFor(conversationId),
         limit: limit,
       );
+
+      // BUT-1954: a row hidden in the thread must be hidden in a hit list of
+      // that same thread. The stamped row says "you already sent this", which
+      // is true for its sender alone, and no `firestore.rules` limb bounds what
+      // `type` is written TO or empties the text beside it — so such a row can
+      // still be carrying the sentence a query matched.
+      //
+      // The Art. 15 export's predicate is deliberately narrower
+      // (`SocialExportRedaction.isOthersBlockedRow`); do not copy it here.
+      return _withoutOthersBlockedRows(hits);
     } catch (e) {
       AppLogger.error(
         'Failed to search messages in ${conversationId.maskedConversationId}',
