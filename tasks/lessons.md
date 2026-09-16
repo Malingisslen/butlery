@@ -4392,3 +4392,49 @@ Same root as the per-run rule recorded earlier today, one level down: coverage i
 keyed on (agent, file, bytes, verdict-of-that-run). A run ending on "fail" covers
 nothing, a resumed run covers only what it re-read, and a run that WROTE to the
 file covers bytes that no longer exist.
+
+## A JUSTIFICATION is a claim about the code path you did NOT open (2026-09-16, BUT-1954)
+
+The fix was five lines and was right from the first draft: `searchMessages` gained
+the sender-only filter the two conversation read paths already ran. Four gate
+rounds produced zero findings against it. Every finding was a SENTENCE.
+
+The expensive one was the justification. I wrote, on the call site and then in
+three decision records, that the filter had to sit in the SERVICE because "rensa
+chatt" enumerates what it deletes through the same repository method, so a filter
+further down would leave exactly these rows undeleted. I never opened
+`deleteAllMessages`. It deletes only where `message.senderId == currentUserId`,
+and the rows this filter drops are other people's — so a lower filter would have
+left NOTHING undeleted. The sentence was not merely unmeasured, it was backwards:
+the filter KEEPS your own rows, which are the only ones that loop touches.
+
+Why it survived so long is the lesson. A justification reads as REASONING rather
+than as a claim, so it does not trip the habit that catches a number or a
+quantifier. This one passed my own writing, an approved plan, a fresh-context plan
+audit that graded eleven checklist sections, and it reached four artefacts in the
+repo plus an external Linear ticket before a gate opened the consumer and measured
+it.
+
+The rule: when a sentence says "X belongs here, because otherwise Y would break",
+Y is a code path you are not editing. Open Y's source before the sentence exists.
+A placement or scoping argument is exactly as falsifiable as a count, and it names
+the file you have to read to check it.
+
+Corollary, and it is what made this one expensive rather than routine: the false
+claim propagated OUTWARD, into a ticket. A Linear description is downstream of a
+code comment and no gate reaches it. When a gate refutes a claim, sweep the
+external artefacts you have already written from it — the ticket had to be patched
+after the commit was already green.
+
+Second shape, same day, in text written as the careful correction: the follow-up
+ticket I filed about a stale comment said "both halves measured false". One half
+was narrower than that. The comment claims the Art. 15 export ships another
+participant's blocked row verbatim; the export DROPS the duplicate guard's own
+product (empty `content`) and deliberately KEEPS a client-stamped row carrying
+text. So the sentence is false at the place it sits — three lines above the kill
+switch, describing the guard's own output — and true of a row the flag does not
+produce. A reviewer's precision beat mine in the artefact I wrote most carefully.
+
+What terminated the chain, again: every clean STRIKE held, and nothing I reworded
+did. The placement now sits unexplained in all four locations, which is the
+correct end state of "strike, do not reword" rather than a gap to be filled.
