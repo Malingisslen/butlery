@@ -5740,3 +5740,76 @@ round-3 diff proved comment-only by `git diff -U0 | grep '^[+-]' | grep -v '^[+-
 back empty. No probe copies survived the call that made them; the tree carried exactly one `M`
 file at every checkpoint. I edited no file during review — these two knowledge writes happened
 only after the coordinator lifted the ban for these paths.
+
+## 2026-09-17 — `recipe_ratings.review` type + length bound, and what `size()` counts (BUT-2079)
+
+The field had NO check of any kind before this: it sits in the `keys().hasOnly` allowlists on
+both limbs, which admit the KEY, and nothing constrained the VALUE — so a string of any length,
+a number, or a map all passed. Shipped conjunct, on create AND update, shape borrowed from
+`cook_snaps.caption`:
+
+```
+&& (
+  !('review' in request.resource.data)
+  || request.resource.data.review == null
+  || (request.resource.data.review is string
+      && request.resource.data.review.size() <= 2000)
+)
+```
+
+Three arms because three states are real: two sibling suites' fixtures (`age-gate-rules`
+`ratingBody`, `recipe-comments-rules` `validRatingBody`) omit the key entirely, and the app's
+own writer sends `review: null` on every rating. A two-arm version denies live fixtures.
+
+**The `size()` question, settled by running it.** Nothing in this repo documented what `size()`
+counts on a string. On one change two reviewers asserted opposite answers — UTF-16 code units
+and UTF-8 bytes — and neither had measured. A throwaway probe wrote three strings that are all
+2000 JS `.length` units but differ in code points and bytes:
+
+| string | units | code points | UTF-8 bytes | verdict |
+|---|---|---|---|---|
+| `'a'.repeat(2000)` | 2000 | 2000 | 2000 | ALLOW |
+| `'ä'.repeat(2000)` | 2000 | 2000 | 4000 | ALLOW |
+| `'🍕'.repeat(1000)` | 2000 | 1000 | 4000 | ALLOW |
+| `'🍕'.repeat(2000)` | 4000 | 2000 | 8000 | DENY |
+| `'a'.repeat(2001)` | 2001 | 2001 | 2001 | DENY (control) |
+
+UTF-16 code units. The 'ä' row rules out bytes; the 2000-emoji row rules out code points; the
+2001 row proves the probe was reading this conjunct at all.
+
+**Probe results, 6 mutants, each killed by its named case** (suite 33/33 green unmutated,
+file restored byte-identical by sha256 at every step):
+
+| mutant | killed by |
+|---|---|
+| create `<=` → `<` | `create with review at exactly 2000 units is ALLOWED` (+ the 'ä' twin) |
+| update `<=` → `<` | `update setting review to exactly 2000 units is ALLOWED` (+ merge twin, + stored-value twin) |
+| create: drop `is string` | `create with a MAP as review is DENIED` |
+| create: drop `== null` | `app create payload WITH recipeOwnerId and review null is ALLOWED` |
+| create: drop absent-key arm | `create with the review key ABSENT is ALLOWED` |
+| update: drop `is string` | `update setting review to a MAP is DENIED` |
+
+**The sixth mutant is there because both commit gates found its arm unpinned, independently,
+and one of them measured it.** The first version of this change shipped a map case on the
+CREATE limb only, and the update limb's sole type case was a number — which denies either way.
+`firestore-rules-tester` deleted the arm from the update limb alone and got a fully green
+suite, then showed its own discriminating case flipping DENIED → ALLOWED against that mutant.
+The general form is now a bullet in the live knowledge file: **each limb carries its own copy
+of a conjunct, so a case on one limb grades nothing on the other** — which is easy to miss
+precisely because the two copies are textually identical.
+
+**Two probe errors worth keeping.** The `is string` mutant came back INVALID on the first run —
+deleting the arm alone leaves `(&& ...)`, which does not parse, so the emulator rejected the
+ruleset, the suite never ran, and the output had neither a FAIL line nor a pass count. That
+reads exactly like a clean run to a script grepping for failures; the probe now reports three
+outcomes and the mutant takes the `&&` with it. Second: the NUMBER fixture does NOT discriminate
+the type arm — `5.size()` is an evaluation error and denies with or without it — so the map is
+the pin and the number case is marked over-determined in the suite rather than deleted.
+
+**The update limb re-validates a STORED value.** `request.resource.data` there is the full
+resulting document, so a row whose stored `review` fails the bound cannot be updated again, not
+even by a write touching only `rating`. Both directions are pinned (`...storing a 2000-unit
+review is ALLOWED` / `...2001-unit review is DENIED`). Scoping to `affectedKeys()` was offered by
+the DBA seat and declined: it would let a stored value escape the bound for good. Empty in the
+data — `recipe_ratings` is not a root collection in `butlery-app-1`, measured with a control
+query that did return `ingredients` rows.

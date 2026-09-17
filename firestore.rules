@@ -2739,6 +2739,23 @@ service cloud.firestore {
         // including the conditional recipeOwnerId and the null-valued review.
         && request.resource.data.keys().hasOnly(['recipeId', 'userId',
             'rating', 'review', 'recipeOwnerId', 'createdAt', 'updatedAt'])
+        // BUT-2079 follow-up: `review` is free text every signed-in account can
+        // read. hasOnly admits the KEY; this bounds its VALUE. Three arms,
+        // because FirebaseRatingsRepository.rateRecipe always writes the key
+        // and its value is null on every write the app makes today, while two
+        // rules-test fixtures omit the key entirely. `is string` is what closes
+        // the type hole: size() is polymorphic, so without it a map of <= 2000
+        // keys satisfies the bound.
+        // size() counts UTF-16 CODE UNITS on a string, measured on the emulator
+        // 2026-09-17: 2000 'ä' allow (4000 UTF-8 bytes), 1000 emoji allow (2000
+        // units), 2000 emoji deny (4000 units). So the bound is 2000 Swedish
+        // letters, and an astral character costs two.
+        && (
+          !('review' in request.resource.data)
+          || request.resource.data.review == null
+          || (request.resource.data.review is string
+              && request.resource.data.review.size() <= 2000)
+        )
         && isServerTimestamp('createdAt')
         && (
           !('recipeOwnerId' in request.resource.data)
@@ -2766,6 +2783,19 @@ service cloud.firestore {
           || isNotBlockedBy(request.resource.data.recipeOwnerId)
         )
         && cannotModify(['recipeId', 'userId', 'createdAt'])
+        // BUT-2079 follow-up: the same value bound as create. It is repeated
+        // here rather than left to create because the client re-rates with
+        // set(merge: true), which evaluates this limb. request.resource.data is
+        // the full resulting document, so this re-validates a stored `review`
+        // the current write never touched — a row whose stored value fails it
+        // cannot be updated again. Deliberate: scoping to affectedKeys() would
+        // let a stored value escape the bound for good.
+        && (
+          !('review' in request.resource.data)
+          || request.resource.data.review == null
+          || (request.resource.data.review is string
+              && request.resource.data.review.size() <= 2000)
+        )
         && request.resource.data.diff(resource.data).affectedKeys()
             .hasOnly(['rating', 'review', 'updatedAt', 'recipeOwnerId']);
 

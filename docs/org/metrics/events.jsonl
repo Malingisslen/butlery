@@ -258,3 +258,6 @@
 {"ts":"2026-09-16T19:38:22.547Z","type":"trigger","fired":true,"signals":"delete,firestore.rules","ran":null}
 {"ts":"2026-09-16T19:44:28.562Z","type":"trigger","fired":true,"signals":"delete,firestore.rules","ran":null}
 {"ts":"2026-09-16T19:44:38.541Z","type":"trigger","fired":true,"signals":"delete,firestore.rules","ran":null}
+{"ts":"2026-09-17T06:42:46.780Z","type":"trigger","fired":true,"signals":"age-gate,firestore.rules,functions/src,gdpr,trust & safety","ran":null}
+{"ts":"2026-09-17T06:48:16.786Z","type":"trigger","fired":true,"signals":"age-gate,firestore.rules,functions/src,gdpr,trust & safety","ran":null}
+{"type":"review","tier":"full","panel":["Security Architect","Privacy / Data Protection Officer (GDPR)","Database Administrator / Data-layer Engineer","QA / Test Engineer","Trust & Safety / Content Moderation","Codebase Archaeologist"],"outcome":"approve-with-conditions","ran":true,"must_haves":20,"conflicts":0,"escalations":1,"adrs":[],"rubber_stamp":false,"via":"manual","plan":"but-2079-review-limit-plan — review type+length bound on recipe_ratings; both commit gates independently found the update-limb is-string arm unpinned","ts":"2026-09-17"}

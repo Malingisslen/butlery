@@ -5002,3 +5002,45 @@ Raised by the `firebase-backend-security` and `integration-reviewer` gates. — 
   `data_export_service.dart` rather than opening that path on its own.
   **What she was NOT shown:** no measurement of how often such a write could fail —
   it cannot today — and no proposed shape for the wrapper. BUT-1693, 2026-09-16
+
+- **`recipe_ratings.review` is bounded at 2000 UTF-16 CODE UNITS and must be a string, on
+  BOTH limbs (BUT-2079 follow-up, 2026-09-17).** Before this the field had no check of any
+  kind — it appears in the `keys().hasOnly` allowlists, which admit the KEY, and nothing
+  constrained the VALUE, so it could be a string of any length, a number, or a map.
+  **Malin's explicit call, 2026-09-17: 2000**, matching `recipe_comments.text`, taken over
+  1000. She had said 1000 the same day on the recommendation that it was "the number the
+  code already uses"; that premise was then measured false and she was told so before
+  choosing again — `RecipeRatingSystem.isValidReview` has NO caller and dates to a single
+  commit (`f17a4a78a`) alongside a review feature whose UI was never built, so it is
+  unbuilt rather than reverted. She was also shown that the DBA seat calls the number
+  immaterial to Firestore (the 1 MiB document limit dwarfs both), making it a UX choice.
+  **What she was NOT shown**, stated because an attribution is a claim about a person no
+  test can hold: no measurement of how long a real review runs. There is none — no review
+  has ever been written in this app.
+  `size()` counts **UTF-16 code units** on a string, measured on the emulator 2026-09-17:
+  2000 'ä' ALLOW (4000 UTF-8 bytes), 1000 emoji ALLOW (2000 units), 2000 emoji DENY (4000
+  units), 2001 ASCII DENY as the control. So the bound is 2000 Swedish letters and an
+  astral character costs two. Nothing in this repo documented that before; do not restate
+  it from memory, it is measured.
+  **`is string` is load-bearing, not decoration:** `size()` is polymorphic, so without it a
+  map of ≤ 2000 keys satisfies the bound.
+  **The update limb is deliberately NOT scoped to `affectedKeys()`.** It re-validates the
+  full resulting document, so a row whose STORED `review` fails the bound cannot be updated
+  again — not even by a write that only changes the stars. The DBA seat offered scoping as
+  the alternative; it was declined because it would let a stored value escape the bound
+  permanently, and because the risk is empty in the data: `recipe_ratings` is not even a
+  root collection in `butlery-app-1` (measured 2026-09-17 with a control query that did
+  return rows from `ingredients`; attributed, not reproducible from this repo). Both
+  directions are pinned.
+  **This is input validation and storage hygiene. It is NOT any of the following, and three
+  panel seats independently asked that this be written rather than implied:** it is not a
+  GDPR change — `review` stays in the Art. 15 export allowlist (`_ratingFields`) and the
+  cascade still erases by `userId`; it is not an abuse control — `review` never passes
+  `ContentFilterService`, and `ContentType` has no `rating` value, so a review cannot be
+  reported through any UI path at all (both pre-existing, filed separately); and it does not
+  close BUT-2084, the unbounded per-run read in `update-recipe-rating-stats.ts`.
+  **Named residuals:** the `recipeRatingDenied` counter (BUT-2073) gains a third possible
+  cause, so a future spike in it can no longer be read as evidence for either original cause
+  without ruling this out. And two numbers now exist for one concept — the dead
+  `isValidReview` says 1000, the rule says 2000; whoever builds a review UI must rewrite the
+  validator rather than inherit it. BUT-2079, 2026-09-17

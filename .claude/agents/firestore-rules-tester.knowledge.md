@@ -547,7 +547,10 @@ Standard deny matrix for ownership-checked collections:
   you touch the file. **Substituting `RULES_PATH` in that copy orphans the `import * as path`
   line, and `noUnusedLocals` then aborts ts-node on TS6133 before any test runs** — an exit
   that greps for `FAIL` exactly like a green suite. Delete the import in the same `sed`, and
-  require a `N/N passed` line before reading any probe result.
+  require a `N/N passed` line before reading any probe result. **A mutant that breaks the
+  rules file's SYNTAX is the same failure one layer down**: deleting `x is string` from
+  `(x is string && x.size() <= N)` leaves `(&& …)`, so the emulator rejects the whole ruleset
+  and the run again emits no verdict line — take the `&&` with the arm (BUT-2079).
 - **A probe script written through a heredoc or `node -e` inherits the SHELL's escaping, and
   the collapse is silent**: `"function\\s+"` came back as `function\s+` inside a JS *string*
   literal, i.e. the pattern `functions+`, which matched nothing and read as "the rule is gone"
@@ -957,6 +960,20 @@ Standard deny matrix for ownership-checked collections:
   DOC-READ gate (`get(households/{hid})` + uid in `memberUserIds`), not a path segment —
   every test must seed the household first. Household-admin is separate from app-level
   `isAdmin()`.
+- **`size()` on a STRING counts UTF-16 CODE UNITS** — JS `.length`, not characters and not
+  UTF-8 bytes. Measured on the emulator against the `recipe_ratings.review` bound
+  (`<= 2000`), 2026-09-17: 2000 'ä' ALLOW (4000 UTF-8 bytes), 1000 emoji ALLOW (2000 units),
+  2000 emoji DENY (4000 units), 2001 ASCII DENY as the control. So a Swedish å/ä/ö costs ONE
+  and an astral character costs TWO, and a bound written as "N characters" is honest for
+  Swedish prose and generous by half for emoji. Before this, two reviewers on one change
+  asserted opposite answers (UTF-16 vs UTF-8 bytes) and neither had run it. `size()` is also
+  polymorphic across string/list/map, which is the separate fact above — a length bound with
+  no `is string` beside it is satisfied by a map of that many KEYS (BUT-2079, 2026-09-17).
+- **A NUMBER fixture cannot discriminate a missing `is string`** — `5.size()` is a CEL
+  evaluation error, so the write denies with or without the type arm, and a suite whose only
+  type case is a number grades nothing. The killing case is a MAP, which satisfies `size()`
+  polymorphically. And each LIMB carries its own copy of a conjunct: a map case on CREATE
+  grades nothing on UPDATE (BUT-2079, 2026-09-17).
 
 ---
 

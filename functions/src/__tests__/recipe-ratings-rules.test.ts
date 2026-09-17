@@ -337,6 +337,237 @@ test("create carrying an undeclared field is DENIED", async () => {
   );
 });
 
+// BUT-2079 follow-up: `review` carries a type + length bound on both limbs.
+// Malin chose 2000 on 2026-09-17, matching recipe_comments.text.
+
+/** Seeds one rating row with an explicit `review` value (any type). */
+async function seedRatingWithReview(
+  docId: string,
+  review: unknown
+): Promise<void> {
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    await ctx.firestore().doc(`recipe_ratings/${docId}`).set({
+      recipeId: RECIPE,
+      userId: USER,
+      rating: 4,
+      review,
+      createdAt: Date.now(),
+    });
+  });
+}
+
+/** Seeds one rating row with no `review` key at all. */
+async function seedRatingNoReview(docId: string): Promise<void> {
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    await ctx.firestore().doc(`recipe_ratings/${docId}`).set({
+      recipeId: RECIPE,
+      userId: USER,
+      rating: 4,
+      createdAt: Date.now(),
+    });
+  });
+}
+
+// CREATE limb. Each DENY below differs from the ALLOW above it in exactly one
+// variable — length for the 2001 case, type for the number case.
+
+test("create with review at exactly 2000 units is ALLOWED", async () => {
+  const uid = `create-2000-${RUN}`;
+  await assertSucceeds(
+    createRating(uid, { ...appCreateBody(uid, true), review: "a".repeat(2000) })
+  );
+});
+
+test("create with review at 2001 units is DENIED", async () => {
+  const uid = `create-2001-${RUN}`;
+  await assertFails(
+    createRating(uid, { ...appCreateBody(uid, true), review: "a".repeat(2001) })
+  );
+});
+
+// 2000 Swedish letters are 2000 code units, so the bound is not halved by
+// non-ASCII text. Measured, not assumed — see the comment beside the rule.
+test("create with 2000 Swedish letters in review is ALLOWED", async () => {
+  const uid = `create-aring-${RUN}`;
+  await assertSucceeds(
+    createRating(uid, { ...appCreateBody(uid, true), review: "ä".repeat(2000) })
+  );
+});
+
+// An astral character is TWO code units, so 2000 of them exceed the bound.
+test("create with 2000 emoji in review is DENIED", async () => {
+  const uid = `create-emoji-${RUN}`;
+  await assertFails(
+    createRating(uid, { ...appCreateBody(uid, true), review: "🍕".repeat(2000) })
+  );
+});
+
+// The `is string` arm. A map of few keys passes size() <= 2000 on its own, so
+// without the type check this write would be accepted.
+test("create with a MAP as review is DENIED", async () => {
+  const uid = `create-map-${RUN}`;
+  await assertFails(
+    createRating(uid, { ...appCreateBody(uid, true), review: { a: 1 } })
+  );
+});
+
+// OVER-DETERMINED, and kept anyway: a number is refused with or without the
+// `is string` arm, because size() on a number is an evaluation error. Dropping
+// the arm reddens the MAP case above and this one stays green — measured, so
+// the map is the discriminating case and this one is breadth.
+test("create with a NUMBER as review is DENIED", async () => {
+  const uid = `create-number-${RUN}`;
+  await assertFails(
+    createRating(uid, { ...appCreateBody(uid, true), review: 5 })
+  );
+});
+
+// The app's own create sends review: null, and two sibling suites' fixtures
+// omit the key entirely. Both must stay allowed.
+test("create with the review key ABSENT is ALLOWED", async () => {
+  const uid = `create-absent-${RUN}`;
+  const body = appCreateBody(uid, true);
+  delete body.review;
+  await assertSucceeds(createRating(uid, body));
+});
+
+// UPDATE limb. request.resource.data is the full resulting document here, so
+// each case is also a statement about the STORED value.
+
+test("update setting review to exactly 2000 units is ALLOWED", async () => {
+  const id = `${RECIPE}_${USER}_u2000`;
+  await seedRatingWithReview(id, "ok");
+  const ctx = env.authenticatedContext(USER, AGE_OK);
+  await assertSucceeds(
+    ctx.firestore().doc(`recipe_ratings/${id}`).update({
+      review: "a".repeat(2000),
+      updatedAt: Date.now(),
+    })
+  );
+});
+
+test("update setting review to 2001 units is DENIED", async () => {
+  const id = `${RECIPE}_${USER}_u2001`;
+  await seedRatingWithReview(id, "ok");
+  const ctx = env.authenticatedContext(USER, AGE_OK);
+  await assertFails(
+    ctx.firestore().doc(`recipe_ratings/${id}`).update({
+      review: "a".repeat(2001),
+      updatedAt: Date.now(),
+    })
+  );
+});
+
+// OVER-DETERMINED on this limb too, for the same reason as its create twin:
+// `5.size()` is an evaluation error, so a number denies with or without the
+// `is string` arm. Breadth, not the pin — the map case below is the pin.
+test("update setting review to a NUMBER is DENIED", async () => {
+  const id = `${RECIPE}_${USER}_unum`;
+  await seedRatingWithReview(id, "ok");
+  const ctx = env.authenticatedContext(USER, AGE_OK);
+  await assertFails(
+    ctx.firestore().doc(`recipe_ratings/${id}`).update({
+      review: 5,
+      updatedAt: Date.now(),
+    })
+  );
+});
+
+// The `is string` arm on the UPDATE limb, which the create-limb map case does
+// not reach: the two limbs carry separate copies of the conjunct. Measured —
+// dropping the arm from this limb alone leaves every other case green and
+// lets this write through.
+test("update setting review to a MAP is DENIED", async () => {
+  const id = `${RECIPE}_${USER}_umap`;
+  await seedRatingWithReview(id, "ok");
+  const ctx = env.authenticatedContext(USER, AGE_OK);
+  await assertFails(
+    ctx.firestore().doc(`recipe_ratings/${id}`).update({
+      review: { a: 1 },
+      updatedAt: Date.now(),
+    })
+  );
+});
+
+test("update clearing review to null is ALLOWED", async () => {
+  const id = `${RECIPE}_${USER}_unull`;
+  await seedRatingWithReview(id, "ok");
+  const ctx = env.authenticatedContext(USER, AGE_OK);
+  await assertSucceeds(
+    ctx.firestore().doc(`recipe_ratings/${id}`).update({
+      review: null,
+      updatedAt: Date.now(),
+    })
+  );
+});
+
+// The PRODUCTION verb, separately from .update(): rateRecipe re-rates with
+// set(merge: true), which BUT-2057 already showed exercises a different path.
+test("merge re-rate carrying a 2001-unit review is DENIED", async () => {
+  const id = `${RECIPE}_${USER}_m2001`;
+  await seedRatingWithReview(id, "ok");
+  const ctx = env.authenticatedContext(USER, AGE_OK);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`recipe_ratings/${id}`)
+      .set(
+        { rating: 3, review: "a".repeat(2001), updatedAt: Date.now() },
+        { merge: true }
+      )
+  );
+});
+
+test("merge re-rate carrying a 2000-unit review is ALLOWED", async () => {
+  const id = `${RECIPE}_${USER}_m2000`;
+  await seedRatingWithReview(id, "ok");
+  const ctx = env.authenticatedContext(USER, AGE_OK);
+  await assertSucceeds(
+    ctx
+      .firestore()
+      .doc(`recipe_ratings/${id}`)
+      .set(
+        { rating: 3, review: "a".repeat(2000), updatedAt: Date.now() },
+        { merge: true }
+      )
+  );
+});
+
+// A row that has never carried the key stays updatable.
+test("update of a row with NO review key is ALLOWED", async () => {
+  const id = `${RECIPE}_${USER}_unokey`;
+  await seedRatingNoReview(id);
+  const ctx = env.authenticatedContext(USER, AGE_OK);
+  await assertSucceeds(
+    ctx.firestore().doc(`recipe_ratings/${id}`).update({ rating: 5 })
+  );
+});
+
+// The regression pin for the merge landmine: this limb re-validates a stored
+// `review` the write never touches, so a row sitting AT the bound must stay
+// editable by a write that only changes the stars.
+test("update touching only rating on a row storing a 2000-unit review is ALLOWED", async () => {
+  const id = `${RECIPE}_${USER}_ustored`;
+  await seedRatingWithReview(id, "a".repeat(2000));
+  const ctx = env.authenticatedContext(USER, AGE_OK);
+  await assertSucceeds(
+    ctx.firestore().doc(`recipe_ratings/${id}`).update({ rating: 5 })
+  );
+});
+
+// The other side of the same landmine, stated as behaviour rather than as a
+// warning: a row whose stored review is over the bound cannot be edited at
+// all, not even by a write that leaves the review alone. Production holds no
+// such row (recipe_ratings is empty), and no client write can create one.
+test("update touching only rating on a row storing a 2001-unit review is DENIED", async () => {
+  const id = `${RECIPE}_${USER}_ufrozen`;
+  await seedRatingWithReview(id, "a".repeat(2001));
+  const ctx = env.authenticatedContext(USER, AGE_OK);
+  await assertFails(
+    ctx.firestore().doc(`recipe_ratings/${id}`).update({ rating: 5 })
+  );
+});
+
 async function run(): Promise<void> {
   console.log("recipe_ratings integrity-pin rules tests (WS2)\n");
   console.log("=============================\n");
