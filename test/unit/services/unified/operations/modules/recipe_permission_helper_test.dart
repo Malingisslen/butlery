@@ -635,5 +635,37 @@ void main() {
         );
       });
     });
+
+    // BUT-2087. `Recipe.ownerUid` counts an EMPTY ownerId as missing and falls
+    // back to `createdBy`; the old `socialData?.ownerId ?? createdBy` chain
+    // stopped at `''`, which then read as a real uid.
+    group('empty ownerId falls back to createdBy (BUT-2087)', () {
+      test('the owner cannot rate their own recipe when ownerId is empty', () {
+        mockParentService.setRecipeState(currentUserId: 'user_123');
+
+        final recipe = Recipe(
+          core: RecipeCore(
+            id: 'recipe_empty_owner',
+            title: 'Tom ägare',
+            description: '',
+            ingredients: ['ingredient 1'],
+            instructions: ['step 1'],
+            mealType: 'Middag',
+            createdBy: 'user_123',
+            createdAt: DateTime.now(),
+            updatedAt: DateTime.now(),
+          ),
+          type: RecipeType.collaborative,
+          socialData: const RecipeSocialData(
+            ownerId: '',
+            memberPermissions: {'user_123': ResourcePermission.owner},
+          ),
+        );
+
+        // Reddens on the old spelling: `'' != 'user_123'` walked past the
+        // own-recipe guard, and the member check then answered yes.
+        expect(helper.canRateRecipe(recipe), isFalse);
+      });
+    });
   });
 }

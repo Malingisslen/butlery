@@ -3,6 +3,7 @@
 import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/recipe/recipe_ownership.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
@@ -368,7 +369,7 @@ class SocialEngagementMetrics {
   /// Check if user has access to recipe for engagement viewing
   static bool _hasAccessToRecipe(Recipe recipe, String currentUserId) {
     // Always can view own recipes
-    final ownerId = recipe.socialData?.ownerId ?? recipe.core.createdBy;
+    final ownerId = recipe.ownerUid;
     if (ownerId == currentUserId) return true;
 
     // For personal recipes, only owner has access

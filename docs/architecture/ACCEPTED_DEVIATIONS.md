@@ -2359,6 +2359,21 @@ this change:** `searchMessages` does not run `_filterBlocked`, the blocked-AUTHO
 read paths run, so a blocked person's ordinary messages still match a search. Its own ticket.
 BUT-1954, 2026-09-16
 
+**SUPERSEDED 2026-09-17 (BUT-2103): `searchMessages` runs `_filterBlocked`.** Retired verbatim:
+"this change:** `searchMessages` does not run `_filterBlocked`, the blocked-AUTHOR filter the two"
+
+Retired verbatim (the adjacent mutation claim, falsified by the same change):
+"-- removing the call reddens that case and no other."
+
+The call site returns `_filterBlocked(hits)`, which runs `_withoutOthersBlockedRows` as its own
+first statement, so the sender-only drop is unchanged; the blocked-AUTHOR filter and the
+BUT-1909/BUT-1917 ballot strip now apply to a hit list as well. A hit list holding a poll
+therefore reaches `currentBlockedByIds()`, the incoming-block read `_filterBlocked` defers until
+a page holds one -- that deferral's reasoning did not range over this caller. Pinned by `a
+blocked sender's message is dropped from a search` in `messaging_service_test.dart`,
+mutation-probed: reverting the call site reddens that case and no other, while its CONTROL stays
+green. BUT-2103, 2026-09-17
+
 *(The sentence that stood here explaining why both placement cases exist — "neither kills the
 other's" — was STRUCK 2026-08-26. The testing-specialist gate measured it false: on the
 into-the-catch move the unregistered-filter case kills the throwing-filter case's mutant as

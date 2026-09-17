@@ -1,6 +1,7 @@
 // lib/services/unified/operations/modules/recipe_permission_helper.dart
 
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/recipe/recipe_ownership.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/services/unified/operations/modules/legacy_recipe_ownership_resolver.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -25,7 +26,7 @@ class RecipePermissionHelper {
       }
 
       // Owner can always view their own recipes
-      final ownerId = recipe.socialData?.ownerId ?? recipe.createdBy;
+      final ownerId = recipe.ownerUid;
       if (ownerId == currentUserId) {
         return true;
       }
@@ -56,7 +57,7 @@ class RecipePermissionHelper {
       if (currentUserId == null) return false;
 
       // Owner can always edit their recipes
-      final ownerId = recipe.socialData?.ownerId ?? recipe.createdBy;
+      final ownerId = recipe.ownerUid;
       if (ownerId == currentUserId) {
         return true;
       }
@@ -118,7 +119,7 @@ class RecipePermissionHelper {
       if (!recipe.isCollaborative) return false;
 
       // Owner can always manage members
-      final ownerId = recipe.socialData?.ownerId ?? recipe.createdBy;
+      final ownerId = recipe.ownerUid;
       if (ownerId == currentUserId) {
         return true;
       }
@@ -145,7 +146,7 @@ class RecipePermissionHelper {
       if (!allowMemberInvites) return false;
 
       // Owner can always invite
-      final ownerId = recipe.socialData?.ownerId ?? recipe.createdBy;
+      final ownerId = recipe.ownerUid;
       if (ownerId == currentUserId) {
         return true;
       }
@@ -167,13 +168,13 @@ class RecipePermissionHelper {
 
       // Personal recipes: only owner can comment
       if (recipe.isPersonal) {
-        final ownerId = recipe.socialData?.ownerId ?? recipe.createdBy;
+        final ownerId = recipe.ownerUid;
         return ownerId == currentUserId;
       }
 
       // Collaborative recipes: all members can comment
       if (recipe.isCollaborative) {
-        final ownerId = recipe.socialData?.ownerId ?? recipe.createdBy;
+        final ownerId = recipe.ownerUid;
         if (ownerId == currentUserId) return true;
         return recipe.socialData?.memberPermissions?.containsKey(
               currentUserId,
@@ -194,7 +195,7 @@ class RecipePermissionHelper {
       if (currentUserId == null) return false;
 
       // Can't rate own recipe
-      final ownerId = recipe.socialData?.ownerId ?? recipe.createdBy;
+      final ownerId = recipe.ownerUid;
       if (ownerId == currentUserId) return false;
 
       // Personal recipes cannot be rated by others
@@ -218,7 +219,7 @@ class RecipePermissionHelper {
   ResourcePermission getUserPermission(Recipe recipe, String userId) {
     try {
       // Owner has owner-level permissions
-      final ownerId = recipe.socialData?.ownerId ?? recipe.createdBy;
+      final ownerId = recipe.ownerUid;
       if (ownerId == userId) {
         return ResourcePermission.owner;
       }
@@ -413,7 +414,7 @@ class RecipePermissionHelper {
         'recipe_id': recipe.id,
         'recipe_type': recipe.isPersonal ? 'personal' : 'collaborative',
         'user_permission': permission.name,
-        'is_owner': (recipe.socialData?.ownerId ?? recipe.createdBy) == userId,
+        'is_owner': recipe.ownerUid == userId,
         'is_member':
             recipe.socialData?.memberPermissions?.containsKey(userId) ?? false,
         'available_actions': getAvailableActions(recipe, userId),

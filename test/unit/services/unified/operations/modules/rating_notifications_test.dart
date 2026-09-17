@@ -555,5 +555,40 @@ void main() {
         );
       });
     });
+
+    // BUT-2087. With an empty ownerId the old chain resolved the owner to `''`
+    // rather than to `createdBy`.
+    group('empty ownerId falls back to createdBy (BUT-2087)', () {
+      test('a rater who owns the recipe gets no notification', () {
+        final recipe = Recipe(
+          core: RecipeCore(
+            id: 'recipe_empty_owner',
+            title: 'Tom ägare',
+            description: '',
+            ingredients: ['Flour'],
+            instructions: ['Mix'],
+            mealType: 'dinner',
+            createdBy: 'user_456',
+            createdAt: DateTime.now(),
+            updatedAt: DateTime.now(),
+          ),
+          type: RecipeType.collaborative,
+          socialData: const RecipeSocialData(
+            ownerId: '',
+            memberPermissions: {'user_456': ResourcePermission.editor},
+          ),
+        );
+
+        // Reddens on the old spelling: `'' != 'user_456'` cleared the
+        // own-recipe guard and the membership check then said yes.
+        expect(
+          RatingNotifications.shouldSendRatingNotification(
+            recipe: recipe,
+            raterUserId: 'user_456',
+          ),
+          isFalse,
+        );
+      });
+    });
   });
 }

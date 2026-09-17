@@ -370,6 +370,38 @@ void main() {
         expect(stats['collaborative_recipes'], equals(0));
       });
     });
+
+    // BUT-2087. `_hasAccessToRecipe` resolved the owner with the old chain, so
+    // for a recipe whose ownerId is empty the owner failed their own access
+    // check.
+    group('empty ownerId falls back to createdBy (BUT-2087)', () {
+      test('the owner still sees their own recipe when ownerId is empty', () {
+        final recipe = Recipe(
+          core: RecipeCore(
+            id: 'recipe_empty_owner',
+            title: 'Tom ägare',
+            description: '',
+            ingredients: ['Salt'],
+            instructions: ['Mix'],
+            mealType: 'dinner',
+            createdBy: 'user_123',
+            createdAt: DateTime.now(),
+            updatedAt: DateTime.now(),
+          ),
+          type: RecipeType.personal,
+          socialData: const RecipeSocialData(ownerId: ''),
+        );
+
+        final top = SocialEngagementMetrics.getTopEngagingRecipes(
+          recipes: [recipe],
+          currentUserId: 'user_123',
+        );
+
+        // Reddens on the old spelling: `'' != 'user_123'` failed the owner
+        // check, and a personal recipe then has no second way in.
+        expect(top, hasLength(1));
+      });
+    });
   });
 }
 

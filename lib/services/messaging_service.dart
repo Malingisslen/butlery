@@ -711,7 +711,19 @@ class MessagingService extends BaseService with StreamManagementMixin {
       //
       // The Art. 15 export's predicate is deliberately narrower
       // (`SocialExportRedaction.isOthersBlockedRow`); do not copy it here.
-      return _withoutOthersBlockedRows(hits);
+      //
+      // BUT-2103: `_filterBlocked`, not `_withoutOthersBlockedRows` — it runs
+      // that helper as its own first step, so a hit list gets the same
+      // filtering the two conversation read paths run. A second copy of either
+      // predicate down in the repository is the two-track shape BUT-1954
+      // exists to record.
+      //
+      // WHICH FAILURE CONTRACT WINS, decided rather than inherited: a failed
+      // block-list fetch is caught INSIDE `_filterBlocked`, which serves the
+      // list unfiltered, so that fail-open reaches the caller and the `catch`
+      // below does not fire. The `catch` below still owns a throwing
+      // repository read, and still answers it with an empty list.
+      return _filterBlocked(hits);
     } catch (e) {
       AppLogger.error(
         'Failed to search messages in ${conversationId.maskedConversationId}',

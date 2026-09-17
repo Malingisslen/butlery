@@ -2086,9 +2086,8 @@ void main() {
         // CARRYING the sentence that matched it, since no `firestore.rules`
         // limb bounds what `type` is written TO or empties the text beside it.
         //
-        // No block-filter stub: search does not run the author filter, so the
-        // foreign ORDINARY row below is expected to survive. That is what makes
-        // the assertion discriminating — `searchMessages` catches and returns
+        // The foreign ORDINARY row below is expected to survive. That is what
+        // makes the assertion discriminating — `searchMessages` catches and returns
         // `[]`, so "the foreign notice is gone" passes for free on any throw,
         // and only finding the rows this reader is owed tells the two apart.
         final hits = await readSearch([
@@ -2228,6 +2227,77 @@ void main() {
         ]);
 
         expect(page.map((m) => m.id), ['msg-ordinary']);
+      });
+    });
+
+    // ══ BUT-2103 — the blocked-AUTHOR filter reaches the SEARCH path ════════
+    //
+    // `searchMessages` ran only `_withoutOthersBlockedRows`, so a person the
+    // viewer had blocked kept their ordinary messages in a hit list while the
+    // same rows were gone from the thread. `_filterBlocked` runs that helper
+    // itself and adds the author filter, so the call site takes it instead of
+    // stacking a second predicate.
+    group('blocked authors on the search path (BUT-2103)', () {
+      const searchConversationId = 'conv-search-block';
+
+      // Same reason as the BUT-1909 group: TestServiceLocator skips the
+      // production ServiceLocator, and `_filterBlocked` resolves its filter
+      // through `ServiceLocator.tryGet`.
+      setUp(() => production.ServiceLocator.initialize(DIContainer()));
+      tearDown(production.ServiceLocator.reset);
+
+      // REAL `Message`s, not this file's `FakeMessage`.
+      Message hitFrom(String senderId) => Message(
+        id: 'msg-$senderId',
+        conversationId: searchConversationId,
+        senderId: senderId,
+        senderDisplayName: senderId,
+        content: 'Check out this recipe',
+        type: MessageType.text,
+        status: MessageStatus.sent,
+        sentAt: DateTime.utc(2026, 1, 1),
+      );
+
+      Future<List<Message>> search() {
+        when(
+          () => mockMessagingRepo.searchMessages(
+            conversationId: searchConversationId,
+            query: any(named: 'query'),
+            historyStart: any(named: 'historyStart'),
+            limit: any(named: 'limit'),
+          ),
+        ).thenAnswer((_) async => [hitFrom('blocked-1'), hitFrom('clean-1')]);
+        return messagingService.searchMessages(
+          conversationId: searchConversationId,
+          query: 'recipe',
+        );
+      }
+
+      test('the CONTROL: with nobody blocked both hits survive', () async {
+        TestServiceLocator.registerMock<BlockedUserFilter>(
+          _StubBlockedUserFilter(const <String>{}),
+        );
+
+        final hits = await search();
+
+        expect(hits.map((m) => m.senderId), ['blocked-1', 'clean-1']);
+      });
+
+      test("a blocked sender's message is dropped from a search", () async {
+        TestServiceLocator.registerMock<BlockedUserFilter>(
+          _StubBlockedUserFilter(const {'blocked-1'}),
+        );
+
+        final hits = await search();
+
+        // Asserting the SURVIVOR, not `isEmpty`: an empty list is also what
+        // the `catch` in `searchMessages` returns for a thrown read, so
+        // `isEmpty` would pass without the filter ever running.
+        expect(
+          hits.map((m) => m.senderId),
+          ['clean-1'],
+          reason: 'a search must hide what browsing the thread already hides',
+        );
       });
     });
   });

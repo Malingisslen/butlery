@@ -2,6 +2,7 @@
 
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/recipe/recipe_ownership.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/notification_helper.dart';
 import 'package:butlery/services/notifications/notification_service.dart';
@@ -24,7 +25,7 @@ class RatingNotifications {
     String? review,
   }) async {
     final stars = '⭐' * rating.round();
-    final ownerId = recipe.socialData?.ownerId ?? recipe.core.createdBy;
+    final ownerId = recipe.ownerUid;
 
     if (ownerId != null) {
       await NotificationHelper.sendImmediateSafely(
@@ -61,7 +62,7 @@ class RatingNotifications {
     required int totalRatings,
     required double averageRating,
   }) async {
-    final ownerId = recipe.socialData?.ownerId ?? recipe.core.createdBy;
+    final ownerId = recipe.ownerUid;
     if (ownerId == null) return;
 
     // Check if this is a milestone worth celebrating
@@ -142,7 +143,7 @@ class RatingNotifications {
     required String raterName,
     String? review,
   }) async {
-    final ownerId = recipe.socialData?.ownerId ?? recipe.core.createdBy;
+    final ownerId = recipe.ownerUid;
     if (ownerId == null) return;
 
     final stars = '⭐' * rating.round();
@@ -350,7 +351,7 @@ class RatingNotifications {
     required Recipe recipe,
     required String raterUserId,
   }) {
-    final ownerId = recipe.socialData?.ownerId ?? recipe.core.createdBy;
+    final ownerId = recipe.ownerUid;
 
     // Don't notify if rating own recipe
     if (ownerId == raterUserId) return false;

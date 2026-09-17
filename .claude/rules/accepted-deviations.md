@@ -421,6 +421,18 @@ files in the same edit.
   **Named residual, pre-existing and NOT introduced by this change:** `searchMessages` does not
   run `_filterBlocked`, the blocked-AUTHOR filter the two read paths run, so a blocked person's
   ordinary messages still match a search. Its own ticket. BUT-1954, 2026-09-16
+  **SUPERSEDED 2026-09-17 (BUT-2103): `searchMessages` runs `_filterBlocked`.** Retired verbatim
+  (fragment; the original wraps, so this quote sits on one line here):
+  "run `_filterBlocked`, the blocked-AUTHOR filter the two read paths run, so a blocked person's".
+  Retired verbatim (the adjacent mutation claim, falsified by the same change):
+  "`another participant's blocked row is dropped (search)`, mutation-probed — removing the call".
+  The call site returns `_filterBlocked(hits)`, which runs `_withoutOthersBlockedRows` as its own
+  first statement — so the sender-only drop above is unchanged, and the blocked-AUTHOR filter and
+  the BUT-1909/BUT-1917 ballot strip now apply to a hit list as well. A hit list holding a poll
+  therefore reaches `currentBlockedByIds()`, the incoming-block read `_filterBlocked` defers
+  until a page holds one; that deferral's reasoning did not range over this caller.
+  Pinned by `a blocked sender's message is dropped from a search`, mutation-probed — reverting
+  the call site reddens that case and no other, while its CONTROL stays green. BUT-2103, 2026-09-17
 
   Load-bearing parts, each of which dies alone: the guard uses `tx.update`
   and never a merge-set, so a message its sender deleted first is not resurrected;
