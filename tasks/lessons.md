@@ -4524,3 +4524,66 @@ rationale copied verbatim from a sibling test group whose fixtures carry the met
 that makes it true. Every clean strike held; the one clause I reworded instead of
 struck came back as a finding in the next round. The strike rule is not a style
 preference, it is the only thing that terminates the chain.
+
+## A file staged for DELETION cannot be covered through Bash (2026-09-17, BUT-1850)
+
+The review ledger records the `Read` TOOL and nothing else. I briefed six gates to
+inspect the two files this change DELETES via `git show HEAD:<path>` — which is the
+natural move, since the files are not on disk — and every one of them complied. The
+commit gate then refused three of them with "never read by", for exactly those two
+paths, after they had passed on everything else. The reads never happened as far as
+the ledger is concerned.
+
+The block message suggests `git checkout HEAD -- <path>`. Do NOT use it: that rewrites
+the INDEX as well as the worktree, silently unstaging the deletion whose blobs five
+gates had already graded. `git show HEAD:<path> > <path>` restores the worktree ONLY.
+The tells that it worked are worth knowing, because they look like breakage: `git
+rev-parse :<path>` fails with "exists on disk, but not in the index" (that failure IS
+the proof the deletion still ships), `git diff --cached --name-only | wc -l` is
+unchanged, and `git status` shows the same path as both `D ` and `??` at once. Never
+`git add -A` in that window. Afterwards delete EVERY restored copy, not just the
+interesting one — the orphaned test imports the deleted class and reddens the suite.
+
+Two second-order costs, both paid here. First, having a reviewer read the removed
+MODEL is not ceremony: it is what proved the deleted test pinned no shared helper.
+Its `fromFirestore` leans on `SerializationUtils.safeString/safeBool/safeDateTime`,
+which have 97 consumers in `lib/`, so if that test had been their only exercise the
+deletion would have quietly dropped coverage of a live util. Four dedicated suites
+cover them, measured — but nobody could have known that from the file list.
+
+Second, and the part worth remembering: I warned all three agents that the restored
+model would break `dart analyze` because it referenced the deleted
+`FirestoreCollections.userConversationMemberships`. It imports `clock`,
+`cloud_firestore` and `serialization_utils` and nothing else. I never opened it; I
+inferred the import from the fact that it modelled the collection. A gate corrected
+me. A CAUTION carries the same burden of proof as any other claim, and it is easier
+to ship unmeasured precisely because it sounds like care.
+
+## Only the whole-diff pass sees a sentence its own commit falsifies (2026-09-17, BUT-1850)
+
+I wrote "those rows are erasable but were never exportable" into four
+differently-worded copies — the deletion cascade's `EXPORT_EXEMPT` reason, both
+accepted-deviation mirrors and the Art. 30 register. It is false, and the same commit
+is what makes it false: until this change the collection had a live Art. 15 section
+(`data_export_service` -> `SocialExportManager.exportConversationMemberships` -> the
+repository), a rules read limb of `allow read, delete: if isOwner(userId)`, and a test
+group pinning that section. The rows WERE exportable, right up to the commit that says
+they never were.
+
+No per-file gate could see it. The evidence sits three files away, in content the diff
+DELETES, so the reviewer of any single file reads a true-looking sentence. Only the
+integration pass, holding the decision records and the code together, caught it — and
+it is the second time in this repo that the whole-diff pass is the only one that could.
+
+The part I should have caught: earlier in the SAME change I struck "read by nothing in
+the app" from the Art. 30 register, and the reason I struck it was that the Art. 15
+export read the collection live. Then I wrote "never exportable" four files over. The
+correction and the new false claim rest on the same measurement, in opposite
+directions, hours apart.
+
+So: after correcting a claim, sweep the CLAIM across the whole range in every spelling,
+not the phrase just struck — a grep for the struck wording returns none of the
+paraphrases, and here the four copies shared no common substring. And when the
+survivors are legal-register prose, strike and write NO replacement: a "truer"
+historical sentence is a fresh unmeasured claim in the one place a future GDPR reviewer
+will trust it.
