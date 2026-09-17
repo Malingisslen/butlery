@@ -110,8 +110,10 @@ withholds that fact and says so, and enumerating our internal copies of it would
 subject we keep a list of who blocked whom — a disclosure nobody asked for, on the same fact
 BUT-2018 exists to withhold.
 
-`report_throttle` was **not** put to Malin — it was not among the three questions she was
-asked. Nor is it the same shape as `rate_limits`, despite sitting beside it: its doc id is the
+`report_throttle` is exempt by **Malin's explicit call, 2026-09-17**, taken over exporting it.
+It was not among the three questions ADR-0011 put to her on 2026-09-03 and was decided
+separately; that ADR's 2026-09-17 section records what she was shown and what she was not.
+Nor is it the same shape as `rate_limits`, despite sitting beside it: its doc id is the
 REPORTED user's uid (`contentOwnerId`), where `rate_limits` ids are operation names. What
 makes it exempt is that the reports themselves ARE exported (`reports` where
 `reporterId == uid`, each already carrying `contentOwnerId`), so the throttle adds only a

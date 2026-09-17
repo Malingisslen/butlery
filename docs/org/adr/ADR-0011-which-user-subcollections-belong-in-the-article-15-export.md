@@ -181,6 +181,36 @@ merits, and widening or reversing it remains hers.
 
 The decision lines above are unchanged; this amendment records what was found after them.
 
+## RESOLVED 2026-09-17 — Malin decided `report_throttle` on its merits
+
+Retired verbatim: "It was exempted **without asking her** — it was not among the three questions — on the"
+Retired verbatim: "ACCEPTED as delivered — deliberately a weaker statement than the five above, which she"
+Retired verbatim: "She was not asked to judge this one on its"
+
+`report_throttle` is EXEMPT from the Art. 15 bundle by **Malin's explicit call, 2026-09-17**,
+taken over exporting it. It is the same kind of decision as the five above, weighed on its own
+facts rather than inherited from `rate_limits`, which sits beside it and has a different shape.
+
+She was shown: that the doc id is the REPORTED person's uid, where `rate_limits` ids are
+operation names; that the reports themselves are exported (`reports` where `reporterId == uid`,
+each already carrying `contentOwnerId`), so the throttle adds only a derived recency stamp on
+top of rows the subject already receives; that exporting it would ship a third party's uid a
+second time; and that the omission is named in the bundle's `data_minimisation` text, so the
+subject can see it is held.
+
+What she was NOT shown, stated because an attribution is a claim about a person no test can
+hold: no row counts; no legal advice on whether Art. 15(4) reaches an identifier the exported
+reports already carry in a field; and no third option, such as exporting the stamp with its
+document id stripped.
+
+No code changed by this decision. The exemption, its `data_minimisation` line and
+`scenario_exportCoversEveryDeletedSubcollection` are untouched.
+
+**Decided the same day: the row does NOT go into `.claude/rules/accepted-deviations.md`.** That
+file exists to stop a plan re-proposing a decided no and is loaded into every session; nothing
+is proposing to export this collection, and the decision is reachable here and in
+`docs/security/account-subcollections-retention.md`.
+
 ## Consequences of leaving it open
 
 The gap is live and grows with every future widening of the cascade — which is the argument
