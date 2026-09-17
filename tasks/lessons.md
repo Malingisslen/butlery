@@ -4482,3 +4482,45 @@ What this costs if nobody writes it down: the honest reading of a third refusal
 is that the gate is structurally unsatisfiable, and the temptation at that point
 is to route around it. It was satisfiable the whole time; the agent was simply
 not saying the one line that records what it had already concluded.
+
+## A BLIND panel does not decorrelate an error the shared brief seeded (2026-09-17, BUT-2101)
+
+Eleven seats critiqued the BUT-2101 batch blind — none saw another's reply. Four of
+them (FinOps, DPO, Trust & Safety, Customer Support) independently priced the fix
+against `ConversationParticipantModule.updateConversationActivity` writing one
+membership row per participant on every message send, in groups of 100+, and two
+built refusals on top of that number. Measured afterwards: that method has NO caller
+in `lib/`. Neither does `updateLastRead`. Only their definitions, one doc comment and
+their unit tests. The single live client writer is `createDirectConversation`, two
+rows, parent already committed — about two extra reads per new direct conversation,
+not N per message.
+
+Blindness buys independence of REASONING, not independence of PREMISES. Every seat
+read the same ticket, and the ticket named those two writers as "the legitimate
+writers". A false premise in the shared brief arrives at all eleven desks
+simultaneously, and four agreeing seats then read as convergent evidence — which is
+the most expensive way for a panel to be wrong, because agreement is exactly the
+signal a synthesiser is looking for.
+
+The check is cheap and belongs in the brief, not after it: for every symbol the brief
+names as a live caller, grep `lib/` for a caller before writing the sentence. I did
+not, so I seeded it; the correction cost nothing because the fix was deferred anyway,
+but had it shipped, the deferral of a real security fix would have rested on a cost
+that does not exist.
+
+Corollary for the synthesis step: when N seats agree on a NUMBER, that is not N
+measurements. Ask which of them measured it and which inherited it from the brief.
+Here the answer was zero and four. Same class as the digest's "a reviewer's
+measurement is as falsifiable as a comment", one level up — at the panel rather than
+at the gate.
+
+Second, smaller, from the same sprint: of ~13 review rounds over a five-line code
+change, the gates found ZERO defects in the code and roughly a dozen false sentences
+in the prose around it — false reach ("the interface offering the rate button", on a
+method with no UI caller), false composition ("the notification passed the guard and
+was then addressed to…", a two-step sequence nothing performs), a false universal
+("dropped out of the list entirely", false for one recipe type), and a `copyWith`
+rationale copied verbatim from a sibling test group whose fixtures carry the metadata
+that makes it true. Every clean strike held; the one clause I reworded instead of
+struck came back as a finding in the next round. The strike rule is not a style
+preference, it is the only thing that terminates the chain.
