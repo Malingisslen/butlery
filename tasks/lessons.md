@@ -4438,3 +4438,47 @@ produce. A reviewer's precision beat mine in the artefact I wrote most carefully
 What terminated the chain, again: every clean STRIKE held, and nothing I reworded
 did. The placement now sits unexplained in all four locations, which is the
 correct end state of "strike, do not reword" rather than a gap to be filled.
+
+## A reviewer can deliver COVERAGE without a VERDICT, and that reads as a skipped review (2026-09-17, BUT-2079)
+
+Proof of review is written by two hooks, not one. `review-ledger.mjs` records
+which bytes an agent opened with the `Read` tool. `review-verdict.mjs` is a
+SubagentStop recorder that reads ONLY the agent's final assistant message and
+matches a `REVIEW-VERDICT:` line. Neither is sufficient: coverage without a
+verdict is an agent that read files and never judged them.
+
+The failure mode is that an agent can deliver the first and not the second, and
+from the outside that is indistinguishable from a reviewer that never opened the
+files. The `firestore-rules-tester` gate reviewed this change across four runs,
+reported a blocking finding, had it fixed, and passed — and the commit was
+refused three times. Measured in the ledger: that agent had thirty-odd `read`
+rows at exactly the staged blob shas and ZERO `verdict` rows, while the
+`cloud-functions-specialist` gate logged three verdicts in the same window. The
+fifth run, freshly spawned and explicitly told to end on the line, still ended on
+"DECISION: READY TO MERGE." The verdict landed only when I resumed that agent and
+asked for the line as its entire reply.
+
+The block message already names which half is missing, and the WORD is the
+diagnosis: "read, but no run ended on REVIEW-VERDICT: pass" is the verdict half,
+"never read by" is the coverage half. I read the first as the second and spent a
+full run re-establishing coverage that was already recorded. Read the predicate
+when a gate refuses — `proofStatus` returns `unread`, `drifted` or `verdict-fail`,
+and those are three different repairs.
+
+The repair for the verdict half is one message, not one run: resume the SAME
+agent and ask for the bare line, which attaches the verdict to the aid whose
+reads are already in the ledger. Spawning a fresh reviewer re-reads everything
+and can fail the same way again.
+
+Two mechanical notes that cost time on their own. The ledger cannot be inspected
+through Bash at all: its write-guard string-matches its own path, so even a
+read-only `grep` naming the file is refused as a write attempt — use the Read
+tool, and it is 600 KB, so read it by offset. And the already-documented
+"latest run" trap recurred here because I briefed a follow-up round to re-read
+only the DELTA; the last round must re-read the whole gated fileset however small
+the change. That one is in the digest twice now, and it still bit.
+
+What this costs if nobody writes it down: the honest reading of a third refusal
+is that the gate is structurally unsatisfiable, and the temptation at that point
+is to route around it. It was satisfiable the whole time; the agent was simply
+not saying the one line that records what it had already concluded.
