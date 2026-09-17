@@ -258,9 +258,6 @@ class DataExportService extends BaseService {
       'notification_preferences': _preferencesManager
           .exportNotificationPreferences(userId),
       'blocks': _socialManager.exportBlocks(userId),
-      'conversation_memberships': _socialManager.exportConversationMemberships(
-        userId,
-      ),
       'feedback': _activityManager.exportFeedback(userId),
       'fcm_tokens': _preferencesManager.exportFcmTokens(userId),
       // BUT-1992: erased by the deletion cascade since BUT-1957, and until

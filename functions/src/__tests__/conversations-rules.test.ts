@@ -1474,11 +1474,10 @@ test("messages: a sentAt inside the one-hour bound is allowed", async () => {
 // ============================================================================
 //
 // `conversations/{id}/participants/{uid}` had NO match block, so every write
-// hit default-deny. ConversationParticipantModule writes it in one WriteBatch
-// with users/{uid}/conversation_memberships, and addParticipants has no local
-// catch — the commit throws up through createDirectConversation /
-// createGroupConversation. The flag that gates it, enable_subcollection_
-// participants, defaults to TRUE.
+// hit default-deny. ConversationParticipantModule writes it, and
+// addParticipants has no local catch — the commit throws up through
+// createDirectConversation / createGroupConversation. The flag that gates it,
+// enable_subcollection_participants, defaults to TRUE.
 //
 // BUT-1838 REWROTE THE AUTHORIZATION MODEL HERE. Until 2026-08-13 there were
 // two write branches — ATTESTED (the parent conversation names writer AND
@@ -1566,27 +1565,6 @@ function participantBody(
   };
   if (omitAvatar) delete body.avatarUrl;
   return { ...body, ...extra };
-}
-
-// Mirrors ConversationMembership.toFirestore
-// (lib/models/messaging/conversation_membership.dart:74-86). The module writes
-// one of these next to every participant row in the SAME batch, so the
-// end-to-end tests below only prove anything if this shape is real.
-function membershipBody(
-  conversationId: string,
-  isGroup: boolean
-): Record<string, unknown> {
-  return {
-    conversationId,
-    conversationTitle: isGroup ? "Middagsgänget" : "",
-    isGroup,
-    lastActivityAt: P_JOINED_AT,
-    joinedAt: P_JOINED_AT,
-    hasUnread: false,
-    isMuted: false,
-    isPinned: false,
-    isArchived: false,
-  };
 }
 
 async function seedParticipantFixtures(): Promise<void> {
@@ -2133,10 +2111,9 @@ test("participants: a stranger cannot delete a roster row", async () => {
 
 // --- END TO END: the module's real WriteBatch ------------------------------
 
-// P24: DENY — THE FLIP. This is the exact batch
+// P24: DENY — THE FLIP. The batch
 // ConversationParticipantModule.addParticipants used to commit on the GROUP
-// path: one participant row AND one users/{uid}/conversation_memberships row per
-// participant, atomically, with no top-level conversation document in existence.
+// path, with no top-level conversation document in existence.
 //
 // Under BUT-1838 a client does not create groups at all — `createChatGroup` does
 // it under the Admin SDK after the minor-membership gate has cleared every
@@ -2145,7 +2122,7 @@ test("participants: a stranger cannot delete a roster row", async () => {
 //
 // A batch is all-or-nothing, so the assertion says only "this commit fails". The
 // attributable half is P1 above, which denies the roster row on its own.
-test("participants: the client's old create-group batch (3 rosters + 3 memberships, no parent doc) is now denied end to end", async () => {
+test("participants: the client's old create-group batch (3 rosters, no parent doc) is now denied end to end", async () => {
   const db = env.authenticatedContext(ADULT_UID).firestore();
   const batch = db.batch();
   for (const uid of [ADULT_UID, FRIEND_UID, MINOR_UID]) {
@@ -2155,23 +2132,19 @@ test("participants: the client's old create-group batch (3 rosters + 3 membershi
         role: uid === ADULT_UID ? "owner" : "member",
       })
     );
-    batch.set(
-      db.doc(`users/${uid}/conversation_memberships/${P_BATCH_GROUP}`),
-      membershipBody(P_BATCH_GROUP, true)
-    );
   }
   await assertFails(batch.commit());
 });
 
 // P25: ALLOW — the DIRECT path in full, and after BUT-1838 the ONLY end-to-end
 // client path left: the client writes the top-level conversation and its
-// rate-limit stamp in one batch first (awaited), then commits the 2+2 batch. It is the load-bearing allow of this
+// rate-limit stamp in one batch first (awaited), then commits the batch. It is the load-bearing allow of this
 // whole block — every deny above survives a rule that froze the roster
 // completely, and only this one would go red.
 //
 // The conversation id now BINDS to its participants (`directIdBinds`), so this
 // also proves the new create rule and the roster block do not fight each other.
-test("participants: the module's real create-direct sequence (conversation, then 2 rosters + 2 memberships) commits end to end", async () => {
+test("participants: the module's real create-direct sequence (conversation, then 2 rosters) commits end to end", async () => {
   const db = env.authenticatedContext(ADULT_UID).firestore();
   await assertSucceeds(
     createConversation(ADULT_UID, P_BATCH_DIRECT, {
@@ -2187,10 +2160,6 @@ test("participants: the module's real create-direct sequence (conversation, then
       db.doc(`conversations/${P_BATCH_DIRECT}/participants/${uid}`),
       participantBody(P_BATCH_DIRECT, uid)
     );
-    batch.set(
-      db.doc(`users/${uid}/conversation_memberships/${P_BATCH_DIRECT}`),
-      membershipBody(P_BATCH_DIRECT, false)
-    );
   }
   await assertSucceeds(batch.commit());
 });
@@ -2204,10 +2173,6 @@ test("participants: a stranger's identically-shaped batch against an existing co
   batch.set(
     db.doc(`conversations/${P_BATCH_DENY}/participants/${STRANGER_UID}`),
     participantBody(P_BATCH_DENY, STRANGER_UID)
-  );
-  batch.set(
-    db.doc(`users/${STRANGER_UID}/conversation_memberships/${P_BATCH_DENY}`),
-    membershipBody(P_BATCH_DENY, true)
   );
   await assertFails(batch.commit());
 });

@@ -89,11 +89,8 @@ async function run(): Promise<void> {
   const userRef = (uid: string) => db.collection("users").doc(uid);
   const groupRef = (id: string) => db.collection("chat_groups").doc(id);
   const convRef = (id: string) => db.collection("conversations").doc(id);
-  const membershipRef = (uid: string, convId: string) =>
-    userRef(uid).collection("conversation_memberships").doc(convId);
-  // The TOP-LEVEL roster row: a separate document from the membership mirror
-  // above, in a separate collection, and the one that carries a display name and
-  // an avatar. An evicted member whose row survives keeps both readable by the
+  // The TOP-LEVEL roster row: the document that carries a display name and an
+  // avatar. An evicted member whose row survives keeps both readable by the
   // group that removed them.
   const rosterRef = (uid: string, convId: string) =>
     convRef(convId).collection("participants").doc(uid);
@@ -118,7 +115,7 @@ async function run(): Promise<void> {
   /**
    * Seeds the three documents a real group is made of — written the way
    * `stageGroupCreation` writes them, from one timestamp — plus each member's
-   * roster row and conversation-membership mirror.
+   * roster row.
    */
   async function seedGroup(
     groupId: string,
@@ -162,7 +159,6 @@ async function run(): Promise<void> {
     });
     await Promise.all(
       members.flatMap((uid) => [
-        membershipRef(uid, convId).set({ convId }),
         rosterRef(uid, convId).set({
           conversationId: convId,
           participantId: uid,
@@ -253,14 +249,6 @@ async function run(): Promise<void> {
       (await rosterRef(adult, conv).get()).exists,
       "the adult's roster row must be left intact — the cut is scoped to the removed uids",
     );
-    assert(
-      !(await membershipRef(minor, conv).get()).exists,
-      "the evicted minor's conversation_memberships mirror must be cleaned up",
-    );
-    assert(
-      (await membershipRef(adult, conv).get()).exists,
-      "the adult's membership mirror must be left intact",
-    );
   });
 
   // 2. THE CASE THE OLD TRIGGER COULD NOT EXPRESS, and the reason BUT-1838
@@ -332,10 +320,6 @@ async function run(): Promise<void> {
       (await rosterRef(friendMinor, conv).get()).exists,
       "kept minor's roster row stays — the cleanup must not fire on the keep path",
     );
-    assert(
-      (await membershipRef(friendMinor, conv).get()).exists,
-      "kept minor's membership mirror stays",
-    );
   });
 
   // 4. CONVERGENCE. The eviction write re-fires this same trigger, so the second
@@ -388,7 +372,7 @@ async function run(): Promise<void> {
       (_, i) => `filler-${i}-${RUN}`,
     );
     // Written directly rather than through `seedGroup`: no user documents, no
-    // roster rows and no mirrors for the filler uids, because the guard must
+    // roster rows for the filler uids, because the guard must
     // return BEFORE any read. A fixture that needed them seeded would be
     // measuring the reads instead of the refusal — and would litter the shared
     // demo-test namespace with 100 unswept users.
@@ -440,8 +424,7 @@ async function run(): Promise<void> {
   // 7. The conversation is deleted mid-flight, so the transaction's update
   //    against it throws NOT_FOUND (grpc 5). That is DETERMINISTIC: rethrowing
   //    it would hand a retry:true trigger an error to loop on forever, re-billing
-  //    the read fan-out each time. The handler must swallow exactly that code and
-  //    still finish its best-effort mirror cleanup.
+  //    the read fan-out each time. The handler must swallow exactly that code.
   test("a conversation deleted mid-flight does not become a retry loop", async () => {
     const gid = `grp-race-${RUN}`;
     const minor = `minor-race-${RUN}`;
@@ -463,10 +446,6 @@ async function run(): Promise<void> {
       threw = (e as Error).message;
     }
     assert(threw === "", `the handler must not rethrow NOT_FOUND, got ${threw}`);
-    assert(
-      !(await membershipRef(minor, conv).get()).exists,
-      "the best-effort mirror cleanup must still run after the swallowed code-5",
-    );
   });
 
   // 8. A group with members and no usable conversation id: nothing to cut access
@@ -592,8 +571,6 @@ async function run(): Promise<void> {
   for (const uid of seededUsers) {
     const friends = await userRef(uid).collection("friends").get();
     await Promise.all(friends.docs.map((d) => d.ref.delete()));
-    const memberships = await userRef(uid).collection("conversation_memberships").get();
-    await Promise.all(memberships.docs.map((d) => d.ref.delete()));
     await userRef(uid).delete().catch(() => undefined);
   }
 

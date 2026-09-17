@@ -5813,3 +5813,57 @@ review is ALLOWED` / `...2001-unit review is DENIED`). Scoping to `affectedKeys(
 the DBA seat and declined: it would let a stored value escape the bound for good. Empty in the
 data — `recipe_ratings` is not a root collection in `butlery-app-1`, measured with a control
 query that did return `ingredients` rows.
+
+## 2026-09-17 — BUT-1850: removing the `conversation_memberships` match block
+
+Reviewed `firestore.rules` (af60d36060d5, then 7557353f83e9) and
+`functions/src/__tests__/conversations-rules.test.ts` (d531efe9e818, then db6232a7298b).
+
+**Measured, not inferred.** Throwaway probe (own project id, deleted in the same Bash
+call): as the OWNER, `get`, `list`, `create`, `update` and `delete` on
+`users/{uid}/conversation_memberships/{id}` all DENY, every one attributed to the terminal
+`match /{document=**}` and no other line, with a sibling owner-scoped write (
+`category_preferences`) ALLOWED as the fail-closed control. Confirms rules do not cascade
+here and no `{path=**}` rule reaches the path (the seven that exist are members,
+friend_categories, engagements, comments, ratings, recipes, pings).
+`npm run test:rules:conversations` 89/89 on both revisions.
+
+**Round 1, two blocking findings, both stale COUNTS in text the same diff partly updated.**
+The diff renamed P25 and left P24's name asserting "3 rosters + 3 memberships" over a batch
+that now writes three roster rows; P25's comment still said "the 2+2 batch". Neither is a
+rules defect — both are the class where a removal falsifies an enumeration in a sibling the
+edit did not finish sweeping.
+
+**Round 2 — the durable lesson, about what a strike LEAVES.** The coordinator additionally
+struck a present-tense clause at the roster comment ("Code: the CF **now** deletes the
+roster row alongside the membership mirror") and deliberately KEPT a dated one ~100 lines
+above ("as of 2026-08-13 ... in the same batch as the memberships mirror"). That split is
+correct, and it is the refinement now merged into the survivor bullet: the DATE is the
+license. A dated sentence describes a past state and a change cannot falsify it; the same
+mechanism clause in the present tense is precisely what a removal breaks. Note the strike
+here NARROWED the surviving claim rather than broadening it, which is the safe direction —
+the usual hazard runs the other way.
+
+Verifying the survivor needed a file neither review file pointed at.
+`enforceGroupMinorMembership` stages `stageMemberRemoval`
+(`groups/chat-group-writes.ts`), whose last statement is
+`tx.delete(convoRef.collection(participants).doc(uid))` — so "the CF deletes the roster row"
+is TRUE, in the eviction transaction, and this commit removed only the
+`conversation_memberships` mirror cleanup. `tryClearRoster` is DEFINED in the trigger file
+and has NO call site in it (three callers, all in other modules), so its survival does not
+bear on the sentence at all. General form: a comment asserting a Cloud Function's behaviour
+is unverifiable from the trigger file when the write is staged by a helper, and a helper
+defined in a file may be called only from elsewhere.
+
+**Coverage gap, reported and filed as BUT-2111 rather than built here.** The removal ships
+with ZERO deny coverage in any rules suite — the diff deleted tests and added none, against
+the repo's own BUT-1716 precedent (`shared_content/{id}/items` shipped a deny cluster in
+`iter102-rules.test.ts`). Shape recorded on the ticket: one deny per verb the old block
+granted, sent by the OWNER (a stranger deny passes for free), plus a fail-closed control on
+a sibling owner-scoped path, each attributed to the catch-all line. A probe measured it; a
+probe is not a pin.
+
+Also verified mechanically: the drift test's census literal 41 -> 40 matches
+`hasOnly(` over the comment-stripped rules text, and no deny in the suite was ever
+attributable to the removed block (both batches' membership writes would have been ALLOWED
+by it — own uid, conforming key set — so removing them moved no attribution).

@@ -114,7 +114,7 @@ class SocialExportManager with SocialExportRedaction {
       friendsData['total_categories'] = friendsData['friend_categories'].length;
       // `friend_categories` still rides the repository's own default cap and is
       // not probed here — tracked on BUT-1701 with the other implicit-default
-      // caps (blocks, memberships, reports, pings, the conversation list).
+      // caps (blocks, reports, pings, the conversation list).
       if (friends.truncated ||
           sentRequests.truncated ||
           receivedRequests.truncated) {
@@ -636,27 +636,6 @@ class SocialExportManager with SocialExportRedaction {
         ..._failed('Blocked users', 'blocks-export-failed'),
         'data_minimisation': dataMinimisation,
       };
-    }
-  }
-
-  /// Export conversation memberships
-  Future<Map<String, dynamic>> exportConversationMemberships(
-    String userId,
-  ) async {
-    try {
-      final memberships = await _exports.exportConversationMemberships(userId);
-      return {
-        'memberships': memberships.map(sanitizeForJson).toList(),
-      };
-    } catch (e) {
-      app_logger.AppLogger.error(
-        '[$_logTag] Failed to export conversation memberships',
-        e,
-      );
-      return _failed(
-        'Conversation memberships',
-        'conversation-memberships-export-failed',
-      );
     }
   }
 

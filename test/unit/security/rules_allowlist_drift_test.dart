@@ -9,7 +9,7 @@
 /// It cost three weeks of production once already — `configRevision` was added
 /// to `TagResult` on 2026-07-23 and every recipe create and update was denied
 /// until 2026-08-12, unnoticed because nobody saved a recipe in the window.
-/// The review of that fix then found four more live drifts and one latent.
+/// The review of that fix then found more live drifts and one latent.
 ///
 /// So this test compares an allowlist against the keys the writer ACTUALLY
 /// SENDS, and it derives those keys by calling the model rather than retyping
@@ -17,7 +17,7 @@
 /// hand-written fixture in the rules suite that was supposed to catch it.
 ///
 /// **It does not cover every allowlist.** An actual drift was found in:
-/// `isValidTagResult`, `counters`, `conversation_memberships`,
+/// `isValidTagResult`, `counters`,
 /// `notification_history` and the deep-link `clicks`.
 /// `participants` and the poll vote never drifted and could not have — each
 /// `match` block was new when it was added here, so those writes were failing on
@@ -84,7 +84,6 @@ library;
 
 import 'dart:io';
 
-import 'package:butlery/models/messaging/conversation_membership.dart';
 import 'package:butlery/models/messaging/conversation_participant.dart';
 import 'package:butlery/models/tagging/tag_decision.dart';
 import 'package:butlery/models/household_allergen_share.dart';
@@ -140,12 +139,6 @@ const _allowlists = <_Allowlist>[
         'incrementUnreadCounter, decrementUnreadCounter, and the recalculate '
         'path (named, not line-numbered: the line numbers were already off by '
         'one, and a method name survives the edits a number does not)',
-  ),
-  _Allowlist(
-    label: 'users/{uid}/conversation_memberships',
-    mustContain: 'conversationTitle',
-    anchor: 'match /conversation_memberships/{conversationId}',
-    writer: 'lib/models/messaging/conversation_membership.dart toFirestore',
   ),
   _Allowlist(
     label: 'conversations/{id}/participants',
@@ -276,13 +269,6 @@ Map<String, Set<String>> _writtenKeys() => {
         reason: 'fixture',
       ),
     ],
-  ).toFirestore().keys.toSet(),
-  'users/{uid}/conversation_memberships': ConversationMembership(
-    conversationId: 'c',
-    conversationTitle: 't',
-    isGroup: false,
-    lastActivityAt: DateTime(2026),
-    joinedAt: DateTime(2026),
   ).toFirestore().keys.toSet(),
   // avatarUrl is emitted only when non-null, so the fixture carries one: the
   // guard has to compare against the WIDEST set the writer can send, not the
@@ -766,12 +752,15 @@ void main() {
     // neither is comparable against a writer's fields, and the nested one is
     // the first `diff()` in `firestore.rules` whose receiver is a map field
     // rather than the document.
+    // BUT-1850 removed the `conversation_memberships` block, and its
+    // `keys().hasOnly` went with it. Unlike the movers above, a removal in that
+    // category also moves the `_allowlistCall` total asserted below.
     // Assert the FULL classification, not just this guard's slice. A rule
     // written as `let k = data.keys(); … k.hasOnly([...])` would slip past
     // `_allowlistCall` without moving its count; it cannot slip past the total.
     expect(
       'hasOnly('.allMatches(rules).length,
-      41,
+      40,
       reason:
           'the `hasOnly(` population changed. Reclassify the new call before '
           'touching this number — it counts `keys().hasOnly`, '

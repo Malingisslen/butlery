@@ -7,7 +7,7 @@ service cloud.firestore {
     // User-scoped (under users/{userId}):
     //   recipes, unified_shopping_lists(/items), ingredients, personal_tags,
     //   personal_tag_groups, friends, friend_categories, conversations,
-    //   rate_limits, counters, conversation_memberships,
+    //   rate_limits, counters,
     //   settings, consent, category_preferences, list_category_orders,
     //   canonical_rating_events (pooled-ratings pool events, server-only writes)
     //
@@ -592,23 +592,6 @@ service cloud.firestore {
           ])
           && isServerTimestamp('lastUpdated');
         allow delete: if isOwner(userId);
-      }
-
-      // Conversation memberships — cross-user writes when adding to group chats
-      match /conversation_memberships/{conversationId} {
-        allow read, delete: if isOwner(userId);
-        allow create, update: if isAuthenticated()
-          // BUT-1482 sprint, 2026-08-12: `isMuted` and `isPinned` were missing,
-          // so every membership write was denied. Unlike the other four this
-          // one is NOT swallowed — addParticipants has no local catch, so
-          // batch.commit() throws up through createDirectConversation /
-          // createGroupConversation. Writer: ConversationMembership.toFirestore.
-          && request.resource.data.keys().hasOnly([
-            'conversationId', 'conversationTitle', 'isGroup',
-            'lastActivityAt', 'hasUnread', 'joinedAt', 'isArchived',
-            'isMuted', 'isPinned'
-          ])
-          && request.resource.data.conversationId == conversationId;
       }
 
       // User settings subcollection — owner-only.
@@ -1874,11 +1857,7 @@ service cloud.firestore {
       // ------------------------------------------------------------------
       // PARTICIPANT ROSTER (BUT-1482 sprint, 2026-08-12)
       // ------------------------------------------------------------------
-      // Half of the two-way index whose other half is
-      // users/{uid}/conversation_memberships above; both halves are written in
-      // ONE WriteBatch by ConversationParticipantModule.addParticipants, gated
-      // on `enable_subcollection_participants`, which defaults to TRUE. This
-      // path had no match block at all, so every write hit default-deny — and
+      // This path had no match block at all, so every write hit default-deny — and
       // unlike the other four drifts in this sprint the failure is NOT
       // swallowed: addParticipants has no local catch, so batch.commit() throws
       // up through createDirectConversation / createGroupConversation.
@@ -2012,7 +1991,7 @@ service cloud.firestore {
         // day later — see RESIDUALS below, where the fallback goes away
         // entirely. Rules: the fallback was scoped to a
         // parentless roster, which closed the LIVE-parent case. Code: the CF
-        // now deletes the roster row alongside the membership mirror, which is
+        // now deletes the roster row, which is
         // the only possible fix for the other case. This trigger no longer owns
         // a conversation's lifecycle — the collapse-and-delete decision moved to
         // removeChatGroupMember — and where a conversation IS destroyed, rules

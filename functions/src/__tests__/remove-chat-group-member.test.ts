@@ -73,8 +73,8 @@ function verdict(
 // ---------------------------------------------------------------------------
 // Fixtures for the ORCHESTRATION half.
 //
-// A three-person group, its conversation, its roster rows and the per-user
-// membership mirrors — every document the removal path touches, so an assertion
+// A three-person group, its conversation and its roster rows — every document
+// the removal path touches, so an assertion
 // that one of them changed is not an assertion about an absent document.
 // ---------------------------------------------------------------------------
 
@@ -129,7 +129,6 @@ function seedGroup(
       displayName: names[uid] ?? "?",
       joinedAt: JOINED,
     });
-    fake.seed(`users/${uid}/conversation_memberships/c1`, { convId: "c1" });
   }
 }
 
@@ -342,7 +341,7 @@ const cases: UnitCase[] = [
 
   // --- removeChatGroupMemberWithDeps: orchestration ------------------------
   {
-    name: "an admin removal empties every copy, clears both mirrors and writes one system message",
+    name: "an admin removal empties every copy and writes one system message",
     fn: async () => {
       const fake = new FakeFirestore();
       seedGroup(fake);
@@ -399,12 +398,6 @@ const cases: UnitCase[] = [
         true,
         "the cleanup is scoped to the removed uid",
       );
-      assertEqual(
-        fake.has("users/member/conversation_memberships/c1"),
-        false,
-        "membership mirror deleted",
-      );
-
       const thread = messages(fake);
       assertEqual(thread.length, 1, "exactly one system message");
       assertEqual(thread[0].conversationId, "c1", "message conversationId");
@@ -481,33 +474,6 @@ const cases: UnitCase[] = [
     },
   },
   {
-    // Best-effort mirror cleanup: the membership cut IS the access revocation,
-    // so a mirror failure must not fail the user's leave — and must not skip
-    // the system message that follows it.
-    name: "a failing mirror cleanup still completes the leave",
-    fn: async () => {
-      const fake = new FakeFirestore({
-        failDeleteAt: (path) => path.includes("conversation_memberships"),
-      });
-      seedGroup(fake);
-
-      const res = await removeChatGroupMemberWithDeps(
-        fake.db,
-        "member",
-        "g1",
-        "member",
-      );
-      assertEqual(res.success, true, "leave still succeeds");
-      assertEqual(res.removed, true, "still removed");
-      assertEqual(
-        (fake.read("chat_groups/g1")?.memberIds as string[]).includes("member"),
-        false,
-        "membership write landed",
-      );
-      assertEqual(messages(fake).length, 1, "system message still written");
-    },
-  },
-  {
     // The system message is decoration on top of an already-committed access
     // cut. If its write could fail the call, the user would be told the leave
     // failed for a group they are already out of — and their retry now hits the
@@ -526,11 +492,6 @@ const cases: UnitCase[] = [
       assertEqual(res.success, true, "leave still succeeds");
       assertEqual(res.removed, true, "still removed");
       assertEqual(res.remainingMembers, 2, "count still reported");
-      assertEqual(
-        fake.has("users/member/conversation_memberships/c1"),
-        false,
-        "mirror still cleared",
-      );
     },
   },
   {

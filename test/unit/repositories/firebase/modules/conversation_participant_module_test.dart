@@ -1,7 +1,6 @@
 /// Unit tests for ConversationParticipantModule.
 ///
-/// Targets the subcollection two-way-index repo (188 testable lines, was 0%
-/// covered). Every public method short-circuits when the
+/// Targets the subcollection repo. Every public method short-circuits when the
 /// enableSubcollectionParticipants feature flag is false, so each happy-path
 /// test enables the flag and the disabled-path test is a single batch.
 library;
@@ -50,12 +49,10 @@ void main() {
 
     group('addParticipant', () {
       test(
-        'writes to both conversation/participants and user/memberships',
+        'writes the participant row',
         () async {
           await module.addParticipant(
             conversationId: 'conv-1',
-            conversationTitle: 'Test Convo',
-            isGroup: true,
             participantId: 'user-a',
             displayName: 'User A',
             avatarUrl: 'https://x/a.png',
@@ -69,16 +66,6 @@ void main() {
               .get();
           expect(pDoc.exists, isTrue);
           expect(pDoc.data()?['displayName'], equals('User A'));
-
-          final mDoc = await firestore
-              .collection('users')
-              .doc('user-a')
-              .collection('conversation_memberships')
-              .doc('conv-1')
-              .get();
-          expect(mDoc.exists, isTrue);
-          expect(mDoc.data()?['conversationTitle'], equals('Test Convo'));
-          expect(mDoc.data()?['isGroup'], isTrue);
         },
       );
 
@@ -87,8 +74,6 @@ void main() {
 
         await module.addParticipant(
           conversationId: 'conv-1',
-          conversationTitle: 'T',
-          isGroup: false,
           participantId: 'user-a',
           displayName: 'User A',
         );
@@ -104,11 +89,9 @@ void main() {
     });
 
     group('addParticipants', () {
-      test('batch-writes all participants + memberships', () async {
+      test('batch-writes all participants', () async {
         await module.addParticipants(
           conversationId: 'conv-1',
-          conversationTitle: 'Group',
-          isGroup: true,
           participantDisplayNames: const {
             'user-a': 'User A',
             'user-b': 'User B',
@@ -141,8 +124,6 @@ void main() {
 
         await module.addParticipants(
           conversationId: 'conv-1',
-          conversationTitle: 'X',
-          isGroup: false,
           participantDisplayNames: const {'user-a': 'A'},
           participantAvatarUrls: const {'user-a': null},
         );
@@ -157,11 +138,9 @@ void main() {
     });
 
     group('removeParticipant', () {
-      test('deletes both subcollection entries', () async {
+      test('deletes the participant row', () async {
         await module.addParticipant(
           conversationId: 'conv-1',
-          conversationTitle: 'T',
-          isGroup: false,
           participantId: 'user-a',
           displayName: 'A',
         );
@@ -177,14 +156,7 @@ void main() {
             .collection('participants')
             .doc('user-a')
             .get();
-        final mDoc = await firestore
-            .collection('users')
-            .doc('user-a')
-            .collection('conversation_memberships')
-            .doc('conv-1')
-            .get();
         expect(pDoc.exists, isFalse);
-        expect(mDoc.exists, isFalse);
       });
 
       test('is a no-op when flag is disabled', () async {
@@ -202,12 +174,10 @@ void main() {
 
     group('updateLastRead', () {
       test(
-        'updates lastReadAt on participant and hasUnread=false on membership',
+        'updates lastReadAt on the participant row',
         () async {
           await module.addParticipant(
             conversationId: 'conv-1',
-            conversationTitle: 'T',
-            isGroup: false,
             participantId: 'user-a',
             displayName: 'A',
           );
@@ -224,14 +194,6 @@ void main() {
               .doc('user-a')
               .get();
           expect(pDoc.data()?['lastReadAt'], isNotNull);
-
-          final mDoc = await firestore
-              .collection('users')
-              .doc('user-a')
-              .collection('conversation_memberships')
-              .doc('conv-1')
-              .get();
-          expect(mDoc.data()?['hasUnread'], isFalse);
         },
       );
 
@@ -247,71 +209,10 @@ void main() {
       });
     });
 
-    group('updateConversationActivity', () {
-      test(
-        'updates lastActivityAt for all + hasUnread for non-senders',
-        () async {
-          // Seed three participants.
-          await module.addParticipants(
-            conversationId: 'conv-1',
-            conversationTitle: 'G',
-            isGroup: true,
-            participantDisplayNames: const {
-              'u-1': 'One',
-              'u-2': 'Two',
-              'u-3': 'Three',
-            },
-            participantAvatarUrls: const {
-              'u-1': null,
-              'u-2': null,
-              'u-3': null,
-            },
-          );
-
-          await module.updateConversationActivity(
-            conversationId: 'conv-1',
-            senderId: 'u-1',
-            participantIds: ['u-1', 'u-2', 'u-3'],
-          );
-
-          final senderM = await firestore
-              .collection('users')
-              .doc('u-1')
-              .collection('conversation_memberships')
-              .doc('conv-1')
-              .get();
-          // Sender should NOT have hasUnread flipped to true.
-          expect(senderM.data()?['hasUnread'], isFalse);
-
-          final otherM = await firestore
-              .collection('users')
-              .doc('u-2')
-              .collection('conversation_memberships')
-              .doc('conv-1')
-              .get();
-          expect(otherM.data()?['hasUnread'], isTrue);
-        },
-      );
-
-      test('is a no-op when flag is disabled', () async {
-        _disableFlag(flags);
-        await expectLater(
-          module.updateConversationActivity(
-            conversationId: 'conv-1',
-            senderId: 'x',
-            participantIds: ['x'],
-          ),
-          completes,
-        );
-      });
-    });
-
     group('getParticipants', () {
       test('returns all participant docs as models', () async {
         await module.addParticipants(
           conversationId: 'conv-1',
-          conversationTitle: 'G',
-          isGroup: true,
           participantDisplayNames: const {'u-1': 'One', 'u-2': 'Two'},
           participantAvatarUrls: const {'u-1': null, 'u-2': null},
         );
@@ -333,8 +234,6 @@ void main() {
       test('emits the current participant set on subscription', () async {
         await module.addParticipant(
           conversationId: 'conv-1',
-          conversationTitle: 'T',
-          isGroup: false,
           participantId: 'u-1',
           displayName: 'One',
         );
@@ -352,67 +251,10 @@ void main() {
       });
     });
 
-    group('getUserMemberships', () {
-      test('returns memberships for a user', () async {
-        await module.addParticipant(
-          conversationId: 'conv-1',
-          conversationTitle: 'Convo 1',
-          isGroup: false,
-          participantId: 'u-1',
-          displayName: 'One',
-        );
-        await module.addParticipant(
-          conversationId: 'conv-2',
-          conversationTitle: 'Convo 2',
-          isGroup: true,
-          participantId: 'u-1',
-          displayName: 'One',
-        );
-
-        final ms = await module.getUserMemberships('u-1');
-
-        expect(ms, hasLength(2));
-        expect(
-          ms.map((m) => m.conversationId),
-          containsAll(['conv-1', 'conv-2']),
-        );
-      });
-
-      test('returns [] when flag disabled', () async {
-        _disableFlag(flags);
-        final ms = await module.getUserMemberships('u-1');
-        expect(ms, isEmpty);
-      });
-    });
-
-    group('watchUserMemberships', () {
-      test('emits memberships that are not archived', () async {
-        await module.addParticipant(
-          conversationId: 'conv-1',
-          conversationTitle: 'C1',
-          isGroup: false,
-          participantId: 'u-1',
-          displayName: 'One',
-        );
-
-        final stream = module.watchUserMemberships('u-1');
-        final first = await stream.first;
-        expect(first.map((m) => m.conversationId), contains('conv-1'));
-      });
-
-      test('emits the const empty stream when flag disabled', () async {
-        _disableFlag(flags);
-        final stream = module.watchUserMemberships('u-1');
-        await expectLater(stream, emitsDone);
-      });
-    });
-
     group('isParticipant', () {
       test('true when participant exists', () async {
         await module.addParticipant(
           conversationId: 'conv-1',
-          conversationTitle: 'T',
-          isGroup: false,
           participantId: 'u-1',
           displayName: 'One',
         );
@@ -445,7 +287,7 @@ void main() {
     });
 
     group('migrateToSubcollection', () {
-      test('creates participant + membership entries for each user and flips '
+      test('creates participant entries for each user and flips '
           'usesSubcollectionParticipants flag', () async {
         // Seed the conversation doc so the .update inside migrate succeeds.
         await firestore.collection('conversations').doc('conv-1').set({
@@ -455,8 +297,6 @@ void main() {
         final now = DateTime.utc(2026, 1, 1);
         await module.migrateToSubcollection(
           conversationId: 'conv-1',
-          conversationTitle: 'Migrated',
-          isGroup: true,
           participantIds: const ['u-1', 'u-2', 'u-3'],
           displayNames: const {'u-1': 'One', 'u-2': 'Two', 'u-3': 'Three'},
           avatarUrls: const {'u-1': null, 'u-2': null, 'u-3': null},
@@ -485,8 +325,6 @@ void main() {
         await expectLater(
           module.migrateToSubcollection(
             conversationId: 'conv-1',
-            conversationTitle: 'X',
-            isGroup: false,
             participantIds: const ['u-1'],
             displayNames: const {'u-1': 'One'},
             avatarUrls: const {'u-1': null},

@@ -23,7 +23,6 @@ enum ExportResourceType {
   conversations('conversations'),
   sharedContent('shared_content'),
   blocks('blocks'),
-  conversationMemberships('conversation_memberships'),
   userConsent('user_consent'),
   userSettings('user_settings'),
   // BUT-1992: three `users/{uid}` subcollections the deletion cascade erases
@@ -76,7 +75,7 @@ enum ExportResourceType {
 ///
 /// **Why this exists:** Several export-only collections (menus, shopping
 /// lists, settings, notification preferences, friend categories,
-/// conversation memberships, friends subcollection, social_requests,
+/// friends subcollection, social_requests,
 /// blocks, conversations + messages, FCM tokens, category preferences,
 /// list category orders, public profile, private profile, consent
 /// subcollection) don't have typed interface-level repositories yet.
@@ -667,21 +666,6 @@ class FirebaseDataExportRepository extends BaseFirebaseRepository<Object> {
         .where('blockerId', isEqualTo: userId),
     userId,
     ExportResourceType.blocks,
-    limit: maxDocuments,
-    includeIds: false,
-  );
-
-  /// `users/{uid}/conversation_memberships` subcollection.
-  Future<List<Map<String, dynamic>>> exportConversationMemberships(
-    String userId, {
-    int maxDocuments = 500,
-  }) => _queryList(
-    firestore
-        .collection(FirestoreCollections.users)
-        .doc(userId)
-        .collection(FirestoreCollections.userConversationMemberships),
-    userId,
-    ExportResourceType.conversationMemberships,
     limit: maxDocuments,
     includeIds: false,
   );

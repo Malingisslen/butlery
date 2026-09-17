@@ -2,8 +2,8 @@
 ///
 /// Proves the GDPR Article-15/20 *social* export contract: friends, friend
 /// requests (both directions), friend categories, conversations + messages,
-/// shared content received, blocks, and conversation
-/// memberships each appear, correctly reshaped, in the exported payload.
+/// shared content received, and blocks each appear, correctly reshaped, in the
+/// exported payload.
 /// A refactor dropping any of these record types would fail an assertion
 /// here even though the bundle would still assemble.
 ///
@@ -34,7 +34,6 @@ class _FakeDataExportRepository extends Fake
     this.sharedMenus = const [],
     this.sharedShoppingLists = const [],
     this.outgoingBlocks = const [],
-    this.memberships = const [],
     this.chatGroups = const [],
   });
 
@@ -51,7 +50,6 @@ class _FakeDataExportRepository extends Fake
   /// BUT-2018: one direction is left, so refusing it is a bool rather than a
   /// set of leg keys.
   bool failOutgoingBlocks = false;
-  final List<Map<String, dynamic>> memberships;
 
   /// BUT-1838. Overridden rather than left to `Fake`'s throw, because the
   /// chat-groups leg is composed INTO the messages section: an unoverridden
@@ -72,7 +70,7 @@ class _FakeDataExportRepository extends Fake
   /// `exportChatGroups` are asserted as -1 precisely because the manager
   /// passes them nothing and they therefore ride an implicit cap with no
   /// truncation probe (BUT-1701). Only overrides no assertion reads at all
-  /// (blocks, memberships) keep the repository's real defaults.
+  /// (blocks) keep the repository's real defaults.
   final Map<String, int> capturedMax = <String, int>{};
 
   /// `exportConversationsAndMessages` takes TWO caps, so it records into its
@@ -179,12 +177,6 @@ class _FakeDataExportRepository extends Fake
     }
     return outgoingBlocks;
   }
-
-  @override
-  Future<List<Map<String, dynamic>>> exportConversationMemberships(
-    String userId, {
-    int maxDocuments = 500,
-  }) async => memberships;
 }
 
 /// BUT-1721: a repository whose first capped read throws, carrying exactly the
@@ -2215,24 +2207,6 @@ void main() {
         );
       },
     );
-  });
-
-  group('SocialExportManager.exportConversationMemberships (BUT-1438)', () {
-    test('includes membership records', () async {
-      final manager = SocialExportManager(
-        dataExportRepository: _FakeDataExportRepository(
-          memberships: [
-            {'conversationId': 'conv1', 'role': 'member'},
-          ],
-        ),
-      );
-
-      final result = await manager.exportConversationMemberships('user-uid');
-
-      expect(result['memberships'], [
-        {'conversationId': 'conv1', 'role': 'member'},
-      ]);
-    });
   });
 
   // BUT-1698: these sections applied their caps SILENTLY — no `truncated` key

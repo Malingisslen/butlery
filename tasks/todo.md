@@ -262,38 +262,38 @@ så den rödnar inte i CI. Den måste redigeras för hand i samma commit.
 
 ## Acceptanskriterier
 
-- [ ] `{text: "En grep over hela repot visar noll referenser kvar - lib, functions/src, firestore.rules, test - utom de TRE medvetet kvarlamnade: USER_SUBCOLLECTIONS, reset-collection-lists.ts och EXPORT_EXEMPT.conversation_memberships", kind: diff}`
-- [ ] `{text: "De tre CF-spegelraderingarna ar borta och rosterraderingen bredvid var och en ar ORORD, visat rad for rad", kind: diff}`
-- [ ] `{text: "Art. 15-sektionen ar borta i alla tre lagren, med daterad post i BADA speglarna i samma redigering, som sager att uppgifterna inte langre finns", kind: diff}`
-- [ ] `{text: "rules_allowlist_drift_test.dart passerar - posten borttagen, inte ankaret lamnat att rodna", kind: diff}`
-- [ ] `{text: "npm run test:rules:all rodnar inte NYA fall jamfort med baslinjen 41/47 (BUT-2105 ager de sex befintliga)", kind: run}`
-- [ ] `{text: "flutter test pa de berorda sviterna gront, och kontoraderingens prov uppdaterade sa att de inte pinnar en spegel som inte finns", kind: run}`
-- [ ] `{text: "Radantalet i produktion ommatt OMEDELBART fore regelblocket tas bort. Ar det INTE noll stoppas andringen och gar tillbaka till Malin - inget osperificerat produktionssvep pa eget bevag", kind: run}`
-- [ ] `{text: "USER_SUBCOLLECTIONS och reset-collection-lists.ts ar MEDVETET ororda, och en uppfoljningsbiljett finns for att ta bort dem efter en matt nolla", kind: diff}`
-- [ ] `{text: "EXPORT_EXEMPT.conversation_memberships tillagd med en motivering pa minst 20 tecken som INTE inleds med NO LIVE WRITER, och scenario_exportCoversEveryDeletedSubcollection kors gront", kind: run}`
-- [ ] `{text: "Uppfoljningsbiljetten sager uttryckligen att den maste ta bort subs-posten OCH EXPORT_EXEMPT-posten i SAMMA redigering, annars faller stale-kontrollen", kind: diff}`
-- [ ] `{text: "De tre Dart-proven (conversation_participant_module_test, conversation_query_module_test, social_export_manager_test) ar uppdaterade sa att de kompilerar och inte pinnar borttagen yta", kind: diff}`
-- [ ] `{text: "flutter analyze --fatal-infos rent pa varje andrad fil", kind: run}`
-- [ ] `{text: "ADR-0006 lasts och andras bara om den ar falsk - den beskriver en borttagen gren, inte kollektionens existens", kind: diff}`
-- [ ] `{text: "ADR-0020:s strukna spargrindslista namner conversation_membership i bada speglarna - avgjort medvetet (historisk post over vad som STROKS, ror inte kollektionens existens) i stallet for att upptackas senare", kind: diff}`
+- [x] `{text: "En grep over hela repot visar noll referenser kvar - lib, functions/src, firestore.rules, test - utom de TRE medvetet kvarlamnade: USER_SUBCOLLECTIONS, reset-collection-lists.ts och EXPORT_EXEMPT.conversation_memberships", kind: diff}`
+- [x] `{text: "De tre CF-spegelraderingarna ar borta och rosterraderingen bredvid var och en ar ORORD, visat rad for rad", kind: diff}`
+- [x] `{text: "Art. 15-sektionen ar borta i alla tre lagren, med daterad post i BADA speglarna i samma redigering, som sager att uppgifterna inte langre finns", kind: diff}`
+- [x] `{text: "rules_allowlist_drift_test.dart passerar - posten borttagen, inte ankaret lamnat att rodna", kind: diff}`
+- [x] `{text: "npm run test:rules:all rodnar inte NYA fall jamfort med baslinjen 41/47 (BUT-2105 ager de sex befintliga)", kind: run}`
+- [x] `{text: "flutter test pa de berorda sviterna gront, och kontoraderingens prov uppdaterade sa att de inte pinnar en spegel som inte finns", kind: run}`
+- [x] `{text: "Radantalet i produktion ommatt OMEDELBART fore regelblocket tas bort. Ar det INTE noll stoppas andringen och gar tillbaka till Malin - inget osperificerat produktionssvep pa eget bevag", kind: run}`
+- [x] `{text: "USER_SUBCOLLECTIONS och reset-collection-lists.ts ar MEDVETET ororda, och en uppfoljningsbiljett finns for att ta bort dem efter en matt nolla", kind: diff}`
+- [x] `{text: "EXPORT_EXEMPT.conversation_memberships tillagd med en motivering pa minst 20 tecken som INTE inleds med NO LIVE WRITER, och scenario_exportCoversEveryDeletedSubcollection kors gront", kind: run}`
+- [x] `{text: "Uppfoljningsbiljetten sager uttryckligen att den maste ta bort subs-posten OCH EXPORT_EXEMPT-posten i SAMMA redigering, annars faller stale-kontrollen", kind: diff}`
+- [x] `{text: "De tre Dart-proven (conversation_participant_module_test, conversation_query_module_test, social_export_manager_test) ar uppdaterade sa att de kompilerar och inte pinnar borttagen yta", kind: diff}`
+- [x] `{text: "flutter analyze --fatal-infos rent pa varje andrad fil", kind: run}`
+- [x] `{text: "ADR-0006 lasts och andras bara om den ar falsk - den beskriver en borttagen gren, inte kollektionens existens", kind: diff}`
+- [x] `{text: "ADR-0020:s strukna spargrindslista namner conversation_membership i bada speglarna - avgjort medvetet (historisk post over vad som STROKS, ror inte kollektionens existens) i stallet for att upptackas senare", kind: diff}`
 - [ ] `{text: "BUT-2101 och BUT-1829 stangs med hanvisning till commiten", kind: diff}`
 
 ## Panelens bindande villkor (tolv säten, blint, 2026-09-17)
 
 - [ ] `{text: "FLAGGAN FORST: enable_subcollection_participants slas av i Remote Config fore regeldeployen, och AC7 laser om BADE radantalet och flaggans live-varde", kind: run}`
-- [ ] `{text: "Steg 3 tar bort SATSEN pa alla tre stallena, aldrig blocket. remove-chat-group-member.ts: writeGroupSystemMessage(memberLeft) och remaining===0-kollapsen ar byte-identiska efter andringen", kind: diff}`
-- [ ] `{text: "enforce-group-minor-membership.integration.test.ts rosterassertioner (rosterraden raderad, vuxnas rad intakt) ar byte-identiska mot git show HEAD:, och mutationsprovas efter steg 3 - avaktivera rosterraderingen, de MASTE rodna", kind: run}`
-- [ ] `{text: "Kaskadprov: sa en conversation_memberships-rad, kor kaskaden, assertera residual==0 och gdprCompliant:true. Mutationsprovas genom att ta bort subs-posten - det MASTE rodna", kind: run}`
-- [ ] `{text: "conversations/{id}/participants-halvan ar ORORD: varje trimmad metods participantRef-anrop byte-identiskt, firestore.rules participants-blocket och conversation_participant.dart visar noll diff, och ConversationParticipantModule finns kvar och konstrueras fortfarande", kind: diff}`
-- [ ] `{text: "updateConversationActivity raderas HELT (den skriver bara medlemskapsrefs - strippad committar den en TOM batch, en tyst no-op); updateLastRead trimmas eftersom den behaller en participant-skrivning", kind: diff}`
-- [ ] `{text: "Art. 30-registret docs/security/account-subcollections-retention.md far en rad for conversation_memberships i SAMMA commit", kind: diff}`
-- [ ] `{text: "EXPORT_EXEMPT-motiveringen ar ett pastaende om KODEN, skopad, inte formulerad som ett undanhallande, utan Art. 15(4), och utan universell fanns-aldrig-formulering", kind: diff}`
-- [ ] `{text: "AC1 undantar uttryckligen firestore.rules:1876-2020 och rate_limiter.ts:110 - historiskt sanna kommentarer som INTE far strykas", kind: diff}`
-- [ ] `{text: "Regelprov pa den nya createDirectConversation-batchen: tva participants-rader, en for den ANDRA anvandaren, TILLATS", kind: run}`
-- [ ] `{text: "firestore.indexes.json-diffen ar tom och inget indexdeploy-steg tillkommer", kind: diff}`
+- [x] `{text: "Steg 3 tar bort SATSEN pa alla tre stallena, aldrig blocket. remove-chat-group-member.ts: writeGroupSystemMessage(memberLeft) och remaining===0-kollapsen ar byte-identiska efter andringen", kind: diff}`
+- [x] `{text: "enforce-group-minor-membership.integration.test.ts rosterassertioner (rosterraden raderad, vuxnas rad intakt) ar byte-identiska mot git show HEAD:, och mutationsprovas efter steg 3 - avaktivera rosterraderingen, de MASTE rodna", kind: run}`
+- [x] `{text: "Kaskadprov: sa en conversation_memberships-rad, kor kaskaden, assertera residual==0 och gdprCompliant:true. Mutationsprovas genom att ta bort subs-posten - det MASTE rodna", kind: run}`
+- [x] `{text: "conversations/{id}/participants-halvan ar ORORD: varje trimmad metods participantRef-anrop byte-identiskt, firestore.rules participants-blocket och conversation_participant.dart visar noll diff, och ConversationParticipantModule finns kvar och konstrueras fortfarande", kind: diff}`
+- [x] `{text: "updateConversationActivity raderas HELT (den skriver bara medlemskapsrefs - strippad committar den en TOM batch, en tyst no-op); updateLastRead trimmas eftersom den behaller en participant-skrivning", kind: diff}`
+- [x] `{text: "Art. 30-registret docs/security/account-subcollections-retention.md far en rad for conversation_memberships i SAMMA commit", kind: diff}`
+- [x] `{text: "EXPORT_EXEMPT-motiveringen ar ett pastaende om KODEN, skopad, inte formulerad som ett undanhallande, utan Art. 15(4), och utan universell fanns-aldrig-formulering", kind: diff}`
+- [x] `{text: "AC1 undantar uttryckligen firestore.rules:1876-2020 och rate_limiter.ts:110 - historiskt sanna kommentarer som INTE far strykas", kind: diff}`
+- [x] `{text: "Regelprov pa den nya createDirectConversation-batchen: tva participants-rader, en for den ANDRA anvandaren, TILLATS", kind: run}`
+- [x] `{text: "firestore.indexes.json-diffen ar tom och inget indexdeploy-steg tillkommer", kind: diff}`
 - [ ] `{text: "AC7:s matresultat (siffran, noll eller inte) skrivs in i commit-meddelandet OCH som Linear-kommentar pa BUT-1850", kind: run}`
 - [ ] `{text: "Commit-kroppen sager att Admin SDK kringgar firestore.rules - det ar mekanismen som gor skyddsnatet effektivt, och far inte lamnas underforstatt", kind: diff}`
-- [ ] `{text: "Beslutsposten sager att borttagningen adderar NOLL nya lasningar till limit(500)-fragan, och namner den numeriska omprovningstriggern (~p95 konversationer per anvandare mot 100)", kind: diff}`
+- [x] `{text: "Beslutsposten sager att borttagningen adderar NOLL nya lasningar till limit(500)-fragan, och namner den numeriska omprovningstriggern (~p95 konversationer per anvandare mot 100)", kind: diff}`
 
 **Löst konflikt mellan två säten, dokumenterad hellre än begravd:** DBA-sätet ville radera
 `migrateToSubcollection` helt; Software Architect-sätet vägrade varje diff som raderar den i
@@ -305,6 +305,62 @@ skalningsrattar (`shouldMigrate`, `max_inline_participants`) får en egen biljet
 ---
 
 ## Deviation log
+
+- [discovery] AC292: planen ville ett NYTT regelprov på createDirectConversation-batchen.
+  P25 i `conversations-rules.test.ts` gör redan exakt det (två participants-rader, en för
+  FRIEND_UID, `assertSucceeds`) sedan medlemskapsskrivningarna togs bort ur den. Inget nytt
+  prov skrevs — ett duplikat hade varit vakuöst.
+- [deviation] AC286: kaskadprovet lades i `NO_OWN_STEP` i
+  `scenario_steplessSubcollectionsAreErasedNotJustReported` i stället för ett eget scenario.
+  Den listan sår raden, kör hela kaskaden och asserterar att den uppräknande sonden inte
+  rapporterar något — vilket är precis påståendet om att `subs`-posten är bärande — och
+  mutationsprovet är att ta bort posten. Mätt: 451/453 med posten borta, och det namngivna
+  fallet rödnar.
+- [discovery] `rules_allowlist_drift_test.dart`: census-literalen gick 41 -> 40. Rätt siffra
+  verifierades genom att räkna `hasOnly(` i den kommentarsstrippade filen, inte genom att
+  lita på deltat — rå grep ger 42/43, eftersom två träffar sitter i kommentarer.
+- [discovery] Tre kommentarer mätte falska EFTER borttagningen och är STRUKNA, inte
+  omformulerade: `firestore.rules` (båda halvorna skrivs i EN WriteBatch),
+  `conversation_participant_module.dart` (BUT-1850-stycket, som påstod att indexet lästes av
+  ingenting och därmed motsade systerfilen), och `conversation_query_module.dart`:s
+  historikblock (det namngav `updateConversationActivity`, som den här ändringen raderar).
+- [discovery] Art. 30-registerraden påstod att indexet lästes av ingenting i appen. Mätt
+  falskt: Art. 15-exporten LÄSTE kollektionen live
+  (`firebase_data_export_repository.dart` -> `data_export_service.dart`), och den sektionen
+  är halva den här ändringen. Satsen struken. `getConversationIdsViaInverseIndex` hade
+  däremot ingen produktionsanropare — bara sitt eget prov.
+- [discovery] Båda spegelposterna citerade rubriken "Withheld on purpose, with a live
+  writer" från planen. Filens verkliga rubrik är "Collections with a live writer". Citatet
+  struket ur båda — en ärvd parafras som aldrig öppnades mot filen.
+- [discovery] Mutationsprov 2 var först OGILTIGT, inte rött: baslinjen föll också, på 0s,
+  därför att `node scripts/run-rules-tests.js` utan `node_modules/.bin` på PATH inte hittar
+  `ts-node`. Med PATH satt: baslinje 1/1 grön, mutant 0/1 med rosterassertionerna namngivna.
+- [needs-human] AC283 (flaggan av i Remote Config), AC279 (stäng BUT-2101/BUT-1829), AC294
+  och AC295 står okryssade: de fullbordas vid commit/stängning eller på deploydagen, som är
+  Malins sekvens.
+- [deviation] Grindrundan drog in en fil planen aldrig namngav:
+  `lib/repositories/firebase/firebase_messaging_repository.dart`. `code-reviewer` mätte att
+  borttagningen av den omvända indexfrågan gjorde `participantModule` i
+  `ConversationQueryModule` till en död söm — fältet och konstruktorparametern hade noll
+  användningar (tre vid HEAD; den tredje var `getUserMemberships`) medan anropsstället
+  fortfarande skickade in den. Fältet, parametern, argumentet och den därmed oanvända
+  importen är borta. Mutationsmodulens eget `participantModule` är ORÖRT — det används.
+  Detta är rundans enda KODdefekt.
+- [discovery] Tre grindar rödnade, tillsammans 13 blockerande fynd, varav tolv var MENINGAR
+  som borttagningen gjorde falska och en var koddefekten ovan. Alla tolv är rena
+  strykningar; varje överlevande mening lästes om ensam efteråt. Två av dem var halva
+  uppdateringar i min egen diff: P25:s testnamn hade uppdaterats till "2 rosters" medan
+  syskonet P24 och P25:s egen kropp behöll "+ 3 memberships" respektive "2+2".
+- [discovery] `firestore.rules:1993` låg inom det skyddade intervallet 1876-2020 men var
+  ändå falsk: "the CF **now** deletes the roster row alongside the membership mirror" är ett
+  påstående om NUVARANDE mekanism, inte historik. Struken. Den daterade meningen på :1892
+  ("as of 2026-08-13 ... in the same batch as the memberships mirror") är DATERAD och därmed
+  historiskt sann — den står kvar, och det är dateringen som räddar den.
+- [discovery] BUT-2111 filad: den borttagna regelvägens nekande är obevisat av någon svit.
+  `firestore-rules-tester` mätte nekandet med en engångssond (alla fem verb, attribuerade
+  till catch-all-raden, med fail-closed-kontroll) men en mätning är inte en pinne.
+  Icke-blockerande, så det byggs inte här — repots prejudikat (BUT-1716) säger att det bör
+  byggas.
 
 ---
 

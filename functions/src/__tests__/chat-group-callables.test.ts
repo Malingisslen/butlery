@@ -121,7 +121,6 @@ function seedExistingGroup(
       participantId: uid,
       joinedAt: EARLIER,
     });
-    fake.seed(`users/${uid}/conversation_memberships/c1`, { convId: "c1" });
     seedProfile(fake, uid, uid);
   }
 }

@@ -128,7 +128,6 @@ abstract final class FirestoreCollections {
   static const String userPersonalTagGroups = 'personal_tag_groups';
   static const String userSettings = 'settings';
   static const String userConsent = 'consent';
-  static const String userConversationMemberships = 'conversation_memberships';
   static const String userRateLimits = 'rate_limits';
   // BUT-1992: the export repository reads these through the constants so the
   // export⊇deletion drift guard resolves them. Their WRITERS still hold their

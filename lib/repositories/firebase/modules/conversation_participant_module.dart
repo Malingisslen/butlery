@@ -3,7 +3,6 @@
 import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/models/messaging/conversation_participant.dart';
-import 'package:butlery/models/messaging/conversation_membership.dart';
 import 'package:butlery/services/feature_flags/feature_flag_service.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
@@ -11,15 +10,7 @@ import 'package:butlery/core/utils/log_sanitizer.dart';
 
 /// Module for managing conversation participants using subcollections.
 ///
-/// Uses two-way indexing for efficient queries:
-/// 1. `conversations/{id}/participants/{userId}` - Get participants for a conversation
-/// 2. `users/{userId}/conversationMemberships/{conversationId}` - Get conversations for a user
-///
-/// This replaces `arrayContains` queries with direct subcollection queries,
-/// scaling better for:
-/// - Large group conversations (100+ participants)
-/// - Users with many conversations
-/// - Independent participant metadata updates
+/// Writes `conversations/{id}/participants/{userId}`.
 class ConversationParticipantModule {
   final FirebaseFirestore firestore;
   final FeatureFlagService featureFlags;
@@ -35,13 +26,9 @@ class ConversationParticipantModule {
   int get _maxInlineParticipants =>
       featureFlags.getInt(FeatureFlags.maxInlineParticipants);
 
-  /// Add a participant to a conversation using subcollections.
-  /// Creates entries in both the conversation's participants subcollection
-  /// and the user's conversationMemberships subcollection.
+  /// Add a participant to a conversation's participants subcollection.
   Future<void> addParticipant({
     required String conversationId,
-    required String conversationTitle,
-    required bool isGroup,
     required String participantId,
     required String displayName,
     String? avatarUrl,
@@ -51,7 +38,6 @@ class ConversationParticipantModule {
 
     final batch = firestore.batch();
 
-    // 1. Add to conversation's participants subcollection
     final participant = ConversationParticipant.create(
       conversationId: conversationId,
       participantId: participantId,
@@ -68,21 +54,6 @@ class ConversationParticipantModule {
 
     batch.set(participantRef, participant.toFirestore());
 
-    // 2. Add to user's conversationMemberships subcollection (inverse index)
-    final membership = ConversationMembership.create(
-      conversationId: conversationId,
-      conversationTitle: conversationTitle,
-      isGroup: isGroup,
-    );
-
-    final membershipRef = firestore
-        .collection(FirestoreCollections.users)
-        .doc(participantId)
-        .collection(FirestoreCollections.userConversationMemberships)
-        .doc(conversationId);
-
-    batch.set(membershipRef, membership.toFirestore());
-
     await batch.commit();
     AppLogger.debug(
       'Added participant $participantId to conversation ${conversationId.maskedConversationId} (subcollection)',
@@ -92,8 +63,6 @@ class ConversationParticipantModule {
   /// Add multiple participants to a conversation.
   Future<void> addParticipants({
     required String conversationId,
-    required String conversationTitle,
-    required bool isGroup,
     required Map<String, String> participantDisplayNames,
     required Map<String, String?> participantAvatarUrls,
     String? ownerId,
@@ -110,7 +79,6 @@ class ConversationParticipantModule {
           ? ParticipantRole.owner
           : ParticipantRole.member;
 
-      // 1. Add to conversation's participants subcollection
       final participant = ConversationParticipant.create(
         conversationId: conversationId,
         participantId: participantId,
@@ -126,21 +94,6 @@ class ConversationParticipantModule {
           .doc(participantId);
 
       batch.set(participantRef, participant.toFirestore());
-
-      // 2. Add to user's conversationMemberships subcollection
-      final membership = ConversationMembership.create(
-        conversationId: conversationId,
-        conversationTitle: conversationTitle,
-        isGroup: isGroup,
-      );
-
-      final membershipRef = firestore
-          .collection(FirestoreCollections.users)
-          .doc(participantId)
-          .collection(FirestoreCollections.userConversationMemberships)
-          .doc(conversationId);
-
-      batch.set(membershipRef, membership.toFirestore());
     }
 
     await batch.commit();
@@ -158,7 +111,6 @@ class ConversationParticipantModule {
 
     final batch = firestore.batch();
 
-    // 1. Remove from conversation's participants subcollection
     final participantRef = firestore
         .collection(FirestoreCollections.conversations)
         .doc(conversationId)
@@ -166,15 +118,6 @@ class ConversationParticipantModule {
         .doc(participantId);
 
     batch.delete(participantRef);
-
-    // 2. Remove from user's conversationMemberships subcollection
-    final membershipRef = firestore
-        .collection(FirestoreCollections.users)
-        .doc(participantId)
-        .collection(FirestoreCollections.userConversationMemberships)
-        .doc(conversationId);
-
-    batch.delete(membershipRef);
 
     await batch.commit();
     AppLogger.debug(
@@ -192,7 +135,6 @@ class ConversationParticipantModule {
     final now = clock.now().toUtc();
     final batch = firestore.batch();
 
-    // 1. Update in participants subcollection
     final participantRef = firestore
         .collection(FirestoreCollections.conversations)
         .doc(conversationId)
@@ -202,45 +144,6 @@ class ConversationParticipantModule {
     batch.update(participantRef, {
       'lastReadAt': Timestamp.fromDate(now),
     });
-
-    // 2. Update hasUnread in membership
-    final membershipRef = firestore
-        .collection(FirestoreCollections.users)
-        .doc(participantId)
-        .collection(FirestoreCollections.userConversationMemberships)
-        .doc(conversationId);
-
-    batch.update(membershipRef, {
-      'hasUnread': false,
-    });
-
-    await batch.commit();
-  }
-
-  /// Update conversation activity for all participants.
-  Future<void> updateConversationActivity({
-    required String conversationId,
-    required String senderId,
-    required List<String> participantIds,
-  }) async {
-    if (!_isEnabled) return;
-
-    final now = clock.now().toUtc();
-    final batch = firestore.batch();
-
-    for (final participantId in participantIds) {
-      final membershipRef = firestore
-          .collection(FirestoreCollections.users)
-          .doc(participantId)
-          .collection(FirestoreCollections.userConversationMemberships)
-          .doc(conversationId);
-
-      batch.update(membershipRef, {
-        'lastActivityAt': Timestamp.fromDate(now),
-        // Mark as unread for everyone except sender
-        if (participantId != senderId) 'hasUnread': true,
-      });
-    }
 
     await batch.commit();
   }
@@ -280,42 +183,6 @@ class ConversationParticipantModule {
         );
   }
 
-  /// Get conversation memberships for a user (inverse index query).
-  Future<List<ConversationMembership>> getUserMemberships(String userId) async {
-    if (!_isEnabled) return [];
-
-    final snapshot = await firestore
-        .collection(FirestoreCollections.users)
-        .doc(userId)
-        .collection(FirestoreCollections.userConversationMemberships)
-        .orderBy('lastActivityAt', descending: true)
-        .limit(50)
-        .get();
-
-    return snapshot.docs
-        .map((doc) => ConversationMembership.fromFirestore(doc))
-        .toList();
-  }
-
-  /// Stream conversation memberships for a user.
-  Stream<List<ConversationMembership>> watchUserMemberships(String userId) {
-    if (!_isEnabled) return const Stream.empty();
-
-    return firestore
-        .collection(FirestoreCollections.users)
-        .doc(userId)
-        .collection(FirestoreCollections.userConversationMemberships)
-        .where('isArchived', isEqualTo: false)
-        .orderBy('lastActivityAt', descending: true)
-        .limit(50)
-        .snapshots()
-        .map(
-          (snapshot) => snapshot.docs
-              .map((doc) => ConversationMembership.fromFirestore(doc))
-              .toList(),
-        );
-  }
-
   /// Check if a user is a participant in a conversation.
   Future<bool> isParticipant({
     required String conversationId,
@@ -337,8 +204,6 @@ class ConversationParticipantModule {
   /// Called when a conversation exceeds maxInlineParticipants.
   Future<void> migrateToSubcollection({
     required String conversationId,
-    required String conversationTitle,
-    required bool isGroup,
     required List<String> participantIds,
     required Map<String, String> displayNames,
     required Map<String, String?> avatarUrls,
@@ -375,23 +240,6 @@ class ConversationParticipantModule {
           .doc(participantId);
 
       batch.set(participantRef, participant.toFirestore());
-
-      // Create membership entry
-      final membership = ConversationMembership(
-        conversationId: conversationId,
-        conversationTitle: conversationTitle,
-        isGroup: isGroup,
-        lastActivityAt: clock.now().toUtc(),
-        joinedAt: clock.now().toUtc(), // Approximate
-      );
-
-      final membershipRef = firestore
-          .collection(FirestoreCollections.users)
-          .doc(participantId)
-          .collection(FirestoreCollections.userConversationMemberships)
-          .doc(conversationId);
-
-      batch.set(membershipRef, membership.toFirestore());
     }
 
     // Mark conversation as migrated

@@ -3980,6 +3980,26 @@ export const EXPORT_EXEMPT: Record<string, string> = {
     "`scenario_blockMirrorExemptionRestsOnTheSameDecision` fails if that " +
     "section returns, so the dependency stays enforced rather than " +
     "described.",
+  // ── Removed collection. Not a withholding, and not the family below. ──
+  conversation_memberships:
+    "REMOVED COLLECTION (BUT-1850, 2026-09-17). This is NOT a withholding " +
+    "decision and rests on no Art. 15(4) argument — it is a claim about the " +
+    "code: the client writer, the model and the firestore.rules block are all " +
+    "deleted in the same change, so no new row can be created and no client " +
+    "could read one if it were. Deliberately NOT prefixed NO LIVE WRITER: " +
+    "that family means the collection is still readable and holds legacy rows " +
+    "only, which is a materially different state from a deleted rules block. " +
+    "The name stays in USER_SUBCOLLECTIONS for one release because it is then " +
+    "the only remaining erasure handle — probeResidualData ENUMERATES, so " +
+    "dropping it would leave a row written in the deploy window counted " +
+    "forever with no deleter able to clear it. Scoped residual: for an " +
+    "account that still holds rows written before the rules deploy, those " +
+    "rows are erasable. BUT-2109 removes this entry " +
+    "and the subs entry in the SAME edit — taking either alone reddens " +
+    "scenario_exportCoversEveryDeletedSubcollection from one side or the " +
+    "other. No disclosure site, deliberately: nothing is withheld, so no " +
+    "data_minimisation line names it.",
+
   // ── No writer of the `users/{uid}` path. Swept for legacy rows only. ──
   // The cascade sweeps these so an account predating their removal cannot hold
   // rows the probe reports forever. Nothing writes them today, so for a current
@@ -4354,16 +4374,6 @@ export async function deleteChatGroupMemberships(
         await groupDoc.ref.delete();
       }
 
-      await db
-        .collection(Collections.users)
-        .doc(uid)
-        .collection("conversation_memberships")
-        .doc(conversationId)
-        .delete()
-        .catch(() => {
-          // Cosmetic mirror; the membership cut above is the erasure. Never
-          // named in the log — the id would carry the conversation.
-        });
     } catch (e) {
       complete = false;
       logger.error("[deletion-cascade] chat-group removal failed", {

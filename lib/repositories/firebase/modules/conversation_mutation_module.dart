@@ -125,8 +125,6 @@ class ConversationMutationModule {
       // Write to participant subcollections for scalability
       await participantModule?.addParticipants(
         conversationId: conversationId,
-        conversationTitle: '', // Direct conversations don't have titles
-        isGroup: false,
         participantDisplayNames: {
           user1Id: user1DisplayName,
           user2Id: user2DisplayName,

@@ -2,24 +2,20 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/models/messaging/conversation.dart';
-import 'package:butlery/repositories/firebase/modules/conversation_participant_module.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
 
 /// Conversation query module for read-only operations.
-/// Supports both legacy arrayContains queries and new subcollection-based queries.
 class ConversationQueryModule {
   final FirebaseFirestore firestore;
   final String collectionName;
   final Conversation Function(DocumentSnapshot<Map<String, dynamic>>)
   fromFirestore;
-  final ConversationParticipantModule? participantModule;
 
   ConversationQueryModule({
     required this.firestore,
     required this.collectionName,
     required this.fromFirestore,
-    this.participantModule,
   });
 
   /// Stream all conversations for a user with real-time updates.
@@ -140,27 +136,7 @@ class ConversationQueryModule {
 
   /// Get count of conversations with unread messages.
   ///
-  /// Reads the conversations themselves. It used to prefer the inverse index
-  /// (`users/{uid}/conversation_memberships`) and return early whenever that
-  /// was non-empty — which made this method answer 0 for every user holding at
-  /// least one such row. Those rows are written with `hasUnread: false` and
-  /// nothing ever sets it true:
-  /// `ConversationParticipantModule.updateConversationActivity` is the only
-  /// writer that would, and it has no production caller (no production writer
-  /// in `functions/src` either — the one literal there is a rules fixture, and
-  /// it writes `false`). So any user with one direct conversation had a
-  /// non-empty list of all-false rows, the early return fired, and the query
-  /// below never ran — for ALL their chats, groups included. The badge in
-  /// `profile_menu.dart` read 0 for them from the day the membership write
-  /// shipped. Only a user with NO rows at all fell through and counted
-  /// correctly, and since BUT-1838's group conversations get no membership
-  /// rows, that meant a group-only user. The gap between those two
-  /// populations is what made the defect visible.
-  ///
-  /// Do not reinstate the shortcut by having the server write those rows —
-  /// they would arrive `hasUnread: false` too. It needs `hasUnread` to be
-  /// MAINTAINED, which is BUT-1850 along with the question of whether that
-  /// half-built index should exist at all.
+  /// Reads the conversations themselves.
   Future<int> getUnreadConversationsCount(String userId) async {
     try {
       // `limit(500)` is a ceiling, not a prefetch — Firestore bills per
@@ -186,19 +162,6 @@ class ConversationQueryModule {
         e,
       );
       return 0;
-    }
-  }
-
-  /// Get conversation IDs for a user using inverse index.
-  /// Returns empty list if subcollection participants not enabled.
-  Future<List<String>> getConversationIdsViaInverseIndex(String userId) async {
-    try {
-      final memberships = await participantModule?.getUserMemberships(userId);
-      if (memberships == null) return [];
-      return memberships.map((m) => m.conversationId).toList();
-    } catch (e) {
-      AppLogger.error('Failed to get conversation IDs via inverse index', e);
-      return [];
     }
   }
 }

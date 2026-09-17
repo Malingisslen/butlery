@@ -59,7 +59,6 @@ class FirebaseMessagingRepository extends BaseFirebaseRepository<Conversation>
       firestore: firestore,
       collectionName: collectionName,
       fromFirestore: fromFirestore,
-      participantModule: _participantModule,
     );
 
     _conversationMutationModule = ConversationMutationModule(

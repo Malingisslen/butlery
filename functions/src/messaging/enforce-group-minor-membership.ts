@@ -452,30 +452,5 @@ export const enforceGroupMinorMembership = onDocumentWritten(
       "enforceGroupMinorMembership",
     );
 
-    // Best-effort mirror cleanup: stops the group surfacing in the evicted
-    // member's conversation list. A stale row here costs a list entry, not a
-    // disclosure — the access cuts are the transaction and the menu cut above.
-    // Errors are
-    // logged by CODE, never by `String(e)`: a Firestore error embeds the full
-    // document path, which on this path is a raw uid on a child-safety eviction
-    // and outlives the group it belonged to.
-    await Promise.all(
-      toRemove.map((uid) =>
-        db
-          .doc(`users/${uid}/conversation_memberships/${conversationId}`)
-          .delete()
-          .catch((e: unknown) =>
-            logger.error(
-              "[enforceGroupMinorMembership] membership cleanup failed",
-              {
-                groupId,
-                errCode:
-                  (e as { code?: number | string } | null)?.code ?? "unknown",
-                errName: (e as Error | null)?.name,
-              },
-            ),
-          ),
-      ),
-    );
   },
 );

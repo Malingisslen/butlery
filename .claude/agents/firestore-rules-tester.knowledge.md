@@ -367,7 +367,16 @@ Standard deny matrix for ownership-checked collections:
   reddens nothing" was true before the window cases existed, and the strike of the sentence
   that scoped it to that state left it standing as an unqualified claim the very cases in the
   paragraph below it refute (60m reddens two). The hazard is created BY the correction, so a
-  second strike is the fix — never a replacement measurement. **Sweep it by STRIKE-AND-POINT, never by writing the
+  second strike is the fix — never a replacement measurement. **Split that sweep by TENSE
+  AND DATE, not by paragraph: an explicitly dated clause ("as of <date>, X") is a claim
+  about a PAST state and a change cannot falsify it, while the same mechanism clause in the
+  PRESENT tense ("the CF NOW deletes X") is exactly what a removal breaks.** Measured on
+  BUT-1850, where one comment block held both and only the "now" clause had to go; note
+  that strike NARROWED the surviving claim, the safe direction, unlike the broadening case
+  above. Verify such a survivor by opening the function it asserts about: a claim about a
+  Cloud Function is not readable from the trigger file when the write is staged by a helper
+  (`stageMemberRemoval`), and a helper DEFINED in that file can have no call site in it
+  (`tryClearRoster`). **Sweep it by STRIKE-AND-POINT, never by writing the
   correction into both files** — the copy names the canonical site ("the account lives at
   the rule itself; do not restate it here") and makes no claim of its own, so there is one
   thing to re-measure instead of two that drift. **Sweep the keywords, not the comment

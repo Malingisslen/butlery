@@ -2465,8 +2465,8 @@ async function scenario_rosterIndexIsDeclared(): Promise<void> {
 /**
  * Seeds a chat group the way `groups/chat-group-writes.ts` writes one: the group
  * document, its conversation (carrying `groupId`, which is what marks the
- * conversation group-owned), a roster row per member and each member's
- * conversation-membership mirror. Every uid-keyed carrier is populated, because
+ * conversation group-owned) and a roster row per member. Every uid-keyed
+ * carrier is populated, because
  * an assertion that a key is GONE proves nothing over a key that was never there.
  */
 function seedChatGroup(
@@ -2512,9 +2512,6 @@ function seedChatGroup(
   });
   for (const uid of members) {
     seedRosterRow(db, conversationId, uid, uid === UID ? "Raderad" : `Namn ${uid}`);
-    db.set(`users/${uid}/conversation_memberships/${conversationId}`, {
-      conversationId,
-    });
   }
 }
 
@@ -2610,10 +2607,6 @@ async function scenario_chatGroupMembershipIsErasedEverywhere(): Promise<void> {
   check(
     "the group and its conversation keep running for everyone else",
     db.has("chat_groups/g-keep") && db.has("conversations/cg-keep"),
-  );
-  check(
-    "the erased user's conversation-membership mirror is cleared",
-    !db.has(`users/${UID}/conversation_memberships/cg-keep`),
   );
 }
 
@@ -5799,6 +5792,10 @@ async function scenario_steplessSubcollectionsAreErasedNotJustReported(): Promis
     "unified_recipes",
     "conversations",
     "fcm_tokens",
+    // BUT-1850 removed the writer, the model, the rules block and the export
+    // section. The `subs` entry stays: rows written before that removal are
+    // reached by nothing else, and the probe enumerates.
+    "conversation_memberships",
     // BUT-2040. Measured in production, not inferred: the reset script's dry
     // run counted 5 rows under this pre-rename spelling on 2026-09-07, while
     // the deleter's list named only `rate_limits`. The probe enumerates, so

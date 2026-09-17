@@ -235,20 +235,6 @@ export async function removeChatGroupMemberWithDeps(
   });
 
   if (outcome.removed && outcome.conversationId) {
-    await db
-      .collection(Collections.users)
-      .doc(targetUid)
-      .collection("conversation_memberships")
-      .doc(outcome.conversationId)
-      .delete()
-      .catch((e) =>
-        logger.error("[removeChatGroupMember] membership mirror cleanup failed", {
-          groupId,
-          errCode: (e as { code?: number | string } | null)?.code ?? "unknown",
-          errName: (e as Error | null)?.name,
-        }),
-      );
-
     await writeGroupSystemMessage(db, {
       conversationId: outcome.conversationId,
       event: SystemGroupEvent.memberLeft,

@@ -2328,3 +2328,20 @@ files in the same edit.
   without ruling this out. And two numbers now exist for one concept — the dead
   `isValidReview` says 1000, the rule says 2000; whoever builds a review UI must rewrite the
   validator rather than inherit it. BUT-2079, 2026-09-17
+
+- **The `conversation_memberships` collection is GONE, and so is its Art. 15 export section
+  (BUT-1850, 2026-09-17).** Writer, model, rules block and all three export layers removed;
+  the terminal `match /{document=**}` denies every client there now.
+  **The reason is that the collection no longer exists, NOT that we chose to withhold it** —
+  no Art. 15(4) argument is involved.
+  Rows written before this change stay erasable; do not widen that
+  into "these rows never existed".
+  **Do NOT delete the three surviving references as dead code.** `USER_SUBCOLLECTIONS`,
+  `admin/reset-collection-lists.ts` and `EXPORT_EXEMPT.conversation_memberships` are the only
+  remaining erasure handle: `probeResidualData` enumerates, so a surviving row with no `subs`
+  entry is a permanent `residual_data_detected` nobody can clear. The `subs` and
+  `EXPORT_EXEMPT` entries die in the SAME edit or the cascade suite reddens either way.
+  BUT-2109 owns that, after a second measured zero.
+  Measured 2026-09-17 against `butlery-app-1`: no `conversation_memberships` under either
+  account. Attributed, not reproducible here; re-measure before the rules deploy.
+  BUT-1850, 2026-09-17

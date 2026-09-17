@@ -5059,3 +5059,38 @@ Raised by the `firebase-backend-security` and `integration-reviewer` gates. — 
   without ruling this out. And two numbers now exist for one concept — the dead
   `isValidReview` says 1000, the rule says 2000; whoever builds a review UI must rewrite the
   validator rather than inherit it. BUT-2079, 2026-09-17
+
+- **`users/{uid}/conversation_memberships` is REMOVED, and its Art. 15 export section with
+  it (BUT-1850, 2026-09-17).** The writer, the model, the `firestore.rules` block and the
+  export section in all three layers (`firebase_data_export_repository.dart`,
+  `social_export_manager.dart`, `data_export_service.dart`) are gone, so the terminal
+  `match /{document=**}` now denies every client on that path and no code in `lib/` or
+  `functions/src` writes a row.
+  **The section is removed because the collection is removed — this is not a decision to
+  withhold anything, and it rests on no Art. 15(4) balancing.**
+  **Scoped deliberately, with no universal "these rows never existed" claim:** for an
+  account still holding rows written before this change, those rows remain ERASABLE — the
+  `USER_SUBCOLLECTIONS` entry stays and the cascade still sweeps them.
+  **Three things are left in place on purpose, and they are the remaining erasure handle
+  rather than a cosmetic residue:** the `USER_SUBCOLLECTIONS` entry, the inventory entry in
+  `admin/reset-collection-lists.ts`, and `EXPORT_EXEMPT.conversation_memberships`, which the
+  first one forces. `probeResidualData` ENUMERATES via `listCollections()` rather than
+  consulting a list, so dropping the `subs` entry while a row survived would stamp
+  `residual_data_detected` on every deletion of that account with no deleter able to clear
+  it — the shape the cascade already documents for `rateLimits`.
+  **The `subs` entry and the `EXPORT_EXEMPT` entry must be removed in the SAME edit**, or
+  `account-deletion-cascade.test.ts` reddens in one direction or the other: the stale check
+  fails if `subs` goes alone, the gap check fails if the exemption goes alone. BUT-2109
+  carries that removal, after a second measured zero.
+  **The removal adds ZERO new reads.** `getUnreadConversationsCount` already read the
+  conversations themselves under `limit(500)`; no work moved onto that query and no new query
+  replaces the deleted one. Re-review the 500 only if measured p95 conversations per user
+  approaches 100 — the number `getUnreadMessageCount` uses, which ADR-0006 declined to
+  harmonise because the two diverge only above 100 conversations.
+  **Nothing is superseded here.** The sentence "Erasure of the user's OWN
+  `conversation_memberships` rows is untouched by all of this" is TRUE in this release,
+  because the cascade still sweeps them; BUT-2109 supersedes it, not this entry.
+  Measured against `butlery-app-1` on 2026-09-17, immediately before the rules block was
+  removed: `listCollections()` returns no `conversation_memberships` under either of the two
+  accounts. Attributed, not reproducible from this repo — it was a one-off read, committed
+  nowhere, and it must be re-measured before the rules deploy. BUT-1850, 2026-09-17

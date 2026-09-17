@@ -37,6 +37,29 @@ Several are named after a live TOP-LEVEL collection holding different data —
 Those top-level collections have their own export sections. Do not read the similar name as
 the same data; that confusion is what BUT-1990 cost a round on.
 
+## Removed collection
+
+`conversation_memberships` — an inverse index of a user's conversations, written on every
+participant-add. Removed 2026-09-17 (BUT-1850, Malin's call):
+the client writer, the model and the `firestore.rules` block are gone, so no new row can be
+created and no client could read one if it were.
+
+It is listed separately from the section above on purpose. Those collections are still
+readable and merely have no writer; this one has no rules block at all, so a row surviving the
+deploy is reachable by the Admin SDK only. Its `EXPORT_EXEMPT` entry says so in those terms
+and deliberately does not use the `NO LIVE WRITER` prefix, which would assert the weaker
+state.
+
+It stays in the cascade's `subs` list for one release because that entry is then the only
+erasure handle left — `probeResidualData` enumerates, so removing it would leave any row
+written in the deploy window counted as residual forever with nothing able to clear it.
+**BUT-2109** removes the `subs` entry and the `EXPORT_EXEMPT` entry in the same edit; taking
+either alone reddens `scenario_exportCoversEveryDeletedSubcollection`.
+
+Art. 15: no section, and no `data_minimisation` line names it — nothing is withheld, so there
+is nothing to disclose. Scoped residual: an account still holding rows written before the
+rules deploy has rows that are erasable.
+
 ## Lawful basis
 
 Contract (Art. 6(1)(b)) for `ingredients` and `onboarding`: they are the service the user
