@@ -88,10 +88,10 @@ En blind kritik konvenas före bygget. Båda **Tier A**.
 Disposition: **build**. Steg 0, `messaging_service.dart:688-721`: returnerar
 `_withoutOthersBlockedRows(hits)`, inget `_filterBlocked`. Premissen gäller.
 
-- [ ] `{text: "searchMessages kor _filterBlocked i TJANSTEN, inte i repositoryt eller MessageQueryModule", kind: diff}`
-- [ ] `{text: "Motet mellan _filterBlocked fail-open och searchMessages egna catch-som-returnerar-tom-lista ar ett medvetet val, skrivet i koden", kind: diff}`
-- [ ] `{text: "Test i messaging_service_test.dart med riktiga Message-fixturer (inte Fake) som inte kan ga gront via tom lista", kind: diff}`
-- [ ] `{text: "INTE gjort: att binda type i firestore.rules - samma oppna post som BUT-1954 lamnade", kind: diff}`
+- [x] `{text: "searchMessages kor _filterBlocked i TJANSTEN, inte i repositoryt eller MessageQueryModule", kind: diff}`
+- [x] `{text: "Motet mellan _filterBlocked fail-open och searchMessages egna catch-som-returnerar-tom-lista ar ett medvetet val, skrivet i koden", kind: diff}`
+- [x] `{text: "Test i messaging_service_test.dart med riktiga Message-fixturer (inte Fake) som inte kan ga gront via tom lista", kind: diff}`
+- [x] `{text: "INTE gjort: att binda type i firestore.rules - samma oppna post som BUT-1954 lamnade", kind: diff}`
 
 ### [Tier A] BUT-2087 — tre filer räknar ut receptägaren på det gamla sättet (Low, tech-debt)
 
@@ -101,9 +101,9 @@ Disposition: **build**. Steg 0: `rating_notifications.dart` (rad 27, 64, 145, 35
 `Recipe.ownerUid` finns i `lib/models/recipe/recipe_ownership.dart:11`. Premissen gäller — men
 `recipe_permission_helper.dart` har åtta ställen, inte ett; biljetten nämner bara `canRateRecipe`.
 
-- [ ] `{text: "Alla tre filerna anvander Recipe.ownerUid pa varje stalle dar de idag skriver socialData ownerId med createdBy som fallback", kind: diff}`
-- [ ] `{text: "Ett test per fil med tomt socialData.ownerId som rodnar om den gamla stavningen kommer tillbaka", kind: diff}`
-- [ ] `{text: "recipe_permission_helper.dart rad 88 (_legacyResolver.determineOwnership) ror inte - det ar en annan vag", kind: diff}`
+- [x] `{text: "Alla tre filerna anvander Recipe.ownerUid pa varje stalle dar de idag skriver socialData ownerId med createdBy som fallback", kind: diff}`
+- [x] `{text: "Ett test per fil med tomt socialData.ownerId som rodnar om den gamla stavningen kommer tillbaka", kind: diff}`
+- [x] `{text: "recipe_permission_helper.dart rad 88 (_legacyResolver.determineOwnership) ror inte - det ar en annan vag", kind: diff}`
 
 ---
 
@@ -143,9 +143,9 @@ Disposition: **build** (verifiering). Biljetten säger att kollen måste köras 
 `gcloud`. Firebase-MCP:n har en egen backup-läsare — den prövas först (CLAUDE.md regel 11).
 Minnesnotering: `--location=eur3` döljer schemat, använd `europe-west3`.
 
-- [ ] `{text: "Backuplistan ar last och rapporterad: finns en backup daterad omkring 2026-09-13, eller inte", kind: run}`
-- [ ] `{text: "Om ingen backup finns: en biljett med vad som saknas, inte en tyst stangning", kind: diff}`
-- [ ] `{text: "Om den landade: prioriteten satts tillbaka till Medium vid stangning, som biljetten sjalv begar", kind: run}`
+- [x] `{text: "Backuplistan ar last och rapporterad: finns en backup daterad omkring 2026-09-13, eller inte", kind: run}`
+- [x] `{text: "Om ingen backup finns: en biljett med vad som saknas, inte en tyst stangning", kind: diff}`
+- [x] `{text: "Om den landade: prioriteten satts tillbaka till Medium vid stangning, som biljetten sjalv begar", kind: run}`
 
 ---
 

@@ -1310,6 +1310,12 @@ and a probe would only return an untrustworthy green.**
   fail-open catch, or an AUTH-PRE-FLIGHT harness all INVERT the observable: without them the
   FAILURE arms pass and the SUCCESS arm reddens. The disproof is almost always IN THE SAME FILE —
   that success arm is why the harness exists. STRIKE rather than reword (BUT-1909/1928).
+  **A `Fake`-vs-real FIXTURE rationale is the same claim about a SUBSTITUTION, and it is decided by
+  walking THIS group's fixture to the member it names** — "real `Message`s, because the filter calls
+  `copyWith`, which a `Fake` throws on and the fail-open catch swallows" is TRUE where the fixture
+  carries poll metadata and FALSE where it does not, since a null `metadata` early-returns before the
+  strip and every member then touched is one the `Fake` overrides. A rationale COPIED from a sibling
+  group is where this lands; the premise travels, the fixture does not (BUT-2103).
 - A guard classifying OLD vs NEW mutation is untested when every fixture base is EMPTY or the same
   LENGTH — need the MIXED case. Same for a re-found index after `await` and a field-exclusion
   decision.

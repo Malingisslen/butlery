@@ -38973,3 +38973,70 @@ Observation, not a finding: `testing-specialist.knowledge.md` is at ~157k chars 
 stated ~25k budget. Its own rule says SPLIT the largest section rather than compress again, and
 names ~250k as the point where Step 0 degrades. Out of scope for a commit gate; flagged for a
 future run.
+
+### 2026-09-17 — BUT-2103 search-path block filter: a copied `Fake` rationale, struck [Pattern]
+
+Commit-gate review of `MessagingService.searchMessages` swapping `_withoutOthersBlockedRows(hits)`
+for `_filterBlocked(hits)`, plus a new test group. Probing was FORBIDDEN by the coordinator (three
+other gates reading concurrently); the coordinator had probed before dispatch and pasted results,
+and the one finding was settled ANALYTICALLY, which is what that constraint forces and what it was
+right to force here.
+
+Hash table (index == worktree at both rounds, verified per path with `git rev-parse :<path>` vs
+`git hash-object`):
+
+| file | round 1 (fail) | round 2 (pass) |
+|---|---|---|
+| `lib/services/messaging_service.dart` | 657390e2 | 657390e2 (unmoved) |
+| `test/unit/services/messaging_service_test.dart` | (pre-strike) | b3e21a91 |
+
+**The finding, and the pattern now in the knowledge file.** The new group's fixture comment read:
+"REAL `Message`s, not this file's `FakeMessage`: the filter rebuilds rows with `copyWith`, and a
+`Fake` throws on any member it does not implement, which the fail-open catch then swallows. With a
+`Fake` here the case would pass whether or not the filter ever ran."
+
+False for THIS group's fixtures, measured by walking the path rather than probing it: `hitFrom(...)`
+passes no `metadata`, so `_filterBlocked` touches only `.type`, `.senderId` and `.metadata`;
+`_isPoll` is false; `_withoutBlockedBallots` reaches `_stripBlockedBallots`, which returns at
+`if (metadata == null)`. `copyWith` is never invoked, nothing throws, the fail-open catch is never
+entered — and all three members touched ARE overridden on this file's `FakeMessage`, so a `Fake`
+would have behaved identically and the drop case would still have reddened under the reverted call
+site. The sentence claimed the case would go vacuous; it would not.
+
+Provenance is the reusable half: the identical rationale is TRUE in the sibling BUT-1909 group,
+whose `pollMessage()` carries `metadata.poll.options[].voterIds` so the strip genuinely reaches
+`copyWith` — and the BUT-1926 case one group down uses a `FakeMessage` deliberately AS its throw
+instrument for exactly that reason. The wording was copied to fixtures the premise does not reach.
+Remedy was a STRIKE (coordinator deleted the two clauses, colon → full stop, no replacement
+justification written); the survivor, "REAL `Message`s, not this file's `FakeMessage`.", is a
+statement of what the fixture IS and carries no counterfactual. Graded standalone per the
+strike-promotion rule: clean.
+
+Second staged hunk, not in the brief and found by diffing the index rather than trusting the delta:
+a strike at :2089 removing "No block-filter stub: search does not run the author filter, so the" —
+a sentence THIS change falsifies. Correct, and the promoted survivor ("The foreign ORDINARY row
+below is expected to survive…") is still true: that case registers no filter, so `tryGet` answers
+null and `_filterBlocked` returns after the sender-only helper.
+
+Graded and CLEAN: both new cases are `MessageType.text`, so `_withoutOthersBlockedRows` drops
+neither and `['clean-1']` is producible only by the author filter actually running; the drop case
+asserts the SURVIVOR, which defeats both free-pass routes (`searchMessages`' catch returns `[]`,
+`_filterBlocked`'s fail-open returns BOTH rows); the group stands up its own
+`production.ServiceLocator.initialize(DIContainer())`, without which `tryGet` is null and the case
+reddens rather than silently passing. Production comment checked claim by claim, including "the two
+conversation read paths" (exactly two).
+
+Non-blocking, pre-existing, measured OUTSIDE the staged hunks: the BUT-1904 group header at :1959
+carries the same `copyWith` rationale, and its fixtures (`blockedRow`/`ordinaryRow`, no metadata)
+do not reach `copyWith` either. Same class as the struck clause, not introduced by this commit, so
+named rather than filed.
+
+Cross-file pointer raised in round 1 and SETTLED in round 2: `.claude/rules/accepted-deviations.md`
+DOES carry the BUT-2103 supersession, at :424 immediately after the residual at :423 — a grep for
+the residual's own wording returns the un-superseded-looking line first, so adjacency reads exactly
+like absence. Both mirrors have one supersession each. Flagging it was right; asserting it was
+missing would have been wrong.
+
+Process note worth keeping: round 1 ended on `fail`, so its coverage counted for nothing and round 2
+had to re-`Read` BOTH files IN FULL — a partial/offset re-read of only the changed region would have
+left the ledger holding a fragment. Budget one full-file pass per gate run that ends on a pass.
