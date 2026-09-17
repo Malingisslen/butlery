@@ -1,3 +1,208 @@
+# Sprint 2026-09-17 — åtta ärenden, tre kluster
+
+Vald av `/delivery:sprint-execute`. Föregående sprint (2026-09-11 natt) är stängd och arkiverad
+nedan. Steg 0 mot HEAD `3b54c46c3` är körd för alla åtta; greparna står under respektive ärende.
+Inga kommentarer fanns på något av de åtta ärendena (kontrollerat).
+
+**Utanför sprinten, med skäl:**
+- BUT-1989 (`need-malin`) och BUT-1848 — **Tier D**: båda kräver en fysisk telefon. BUT-1848 säger
+  det själv ("Det går inte att köra headless", ML Kit finns bara på enheten) och är dessutom
+  blockerad bakom BUT-1847.
+- BUT-1847 — kvarvarande arbete är dagar av manuell bildgradering av 189 poster, inte kod.
+- BUT-2102 — klientens AI-kostnadsräknare. FinOps-formen (flytta skrivningen till Cloud Function,
+  klienten läser en spegel) är en arkitekturändring, inte en reparation. Lämnas i backloggen.
+- BUT-1826 — `needs-approval` sedan förra sprinten, oförändrat.
+
+**BUT-1829 är en dubblett av BUT-2101** (samma regelbrist, samma kollektion). BUT-1829 bär den
+bättre analysen och dess "Option 2" är exakt den fix BUT-2101 föreslår. Byggs under BUT-2101;
+BUT-1829 stängs som dubblett vid ship.
+
+---
+
+## Kluster R — firestore.rules (fyra hål) — router: **full-panel**
+
+Router körd på den faktiska filunionen (`firestore.rules` plus de tre regelsviterna):
+`{"tier": "full-panel", "panel": [Customer Support, DBA, FinOps, Legal Counsel, DPO, Product
+Manager, QA, Security Architect, Software Architect, Trust & Safety, Vendor]}`.
+Panelen konvenas FÖRE bygget (Fas 1.4). `panelPolicy: park` → parkeras i In Review, aldrig Done.
+Alla fyra är **Tier C** (säkerhetsregeländring).
+
+### [Tier C] BUT-2101 — `conversation_memberships` saknar deltagarkontroll (High, Bug)
+
+Disposition: **build**. Steg 0 mot HEAD, `firestore.rules:598-612`: `allow create, update` kräver
+bara `isAuthenticated()`, en nyckelmängd och att `conversationId` matchar sökvägen. Ingen
+deltagarkontroll. Premissen gäller.
+
+Legitima skrivare, mätta i `conversation_participant_module.dart`: `addParticipant`/`addParticipants`
+(skriver MOTPARTERS rader i en batch), `updateLastRead` och `updateConversationActivity` (uppdaterar
+alla deltagares rader). Alla fyra sker från en klient som själv är deltagare.
+`removeParticipant` raderar — och `allow delete` är redan `isOwner`, så den korsanvändarraderingen
+nekas redan idag; noteras, ändras inte här.
+
+- [ ] `{text: "create och update kraver att bade skrivaren och radens subjekt finns i conversations/{conversationId}.participantIds", kind: diff}`
+- [ ] `{text: "conversationTitle bunden till strang med en langdgrans", kind: diff}`
+- [ ] `{text: "Regelfall: framling NEKAS, deltagare TILLATS, raderad foralder NEKAS - mutationsprovade", kind: diff}`
+- [ ] `{text: "De fyra legitima skrivvagarna tillats fortfarande, bevisat med modulens egen batchform", kind: diff}`
+
+### [Tier C] BUT-2100 — vem som helst kan skriva vilket värde som helst i någons olästräknare (Medium, Bug)
+
+Disposition: **build**. Steg 0, `firestore.rules:577-595`: nyckelmängden är bunden, VÄRDENA är det
+inte. Skrivaren är `base_shared_content_repository.dart:58-72` (`FieldValue.increment(1)` på ett
+fält plus `totalSharedContent`, best-effort, fel sväljs). Ingen regelsvit täcker kollektionen idag.
+
+- [ ] `{text: "Andringen ar bunden (+1 per falt, som friendsCount) sa en frammande inte kan satta ett godtyckligt varde", kind: diff}`
+- [ ] `{text: "Den riktiga skrivaren (increment(1) plus totalSharedContent plus lastUpdated) TILLATS fortfarande", kind: diff}`
+- [ ] `{text: "En ny regelsvit for counters med allow- och deny-fall, mutationsprovad", kind: diff}`
+
+### [Tier C] BUT-2092 — `metadata.poll.isClosed` är obunden i reglerna (Medium, security)
+
+Disposition: **build**. Steg 0: `isClosed` förekommer i `firestore.rules` bara på rad 2379 (en
+kommentar) och 2418 (`pollIsOpen()` i `poll_votes`-blocket). Avsändargrenen på `messages`
+bär `cannotModify(['senderId','conversationId','sentAt'])` och dubblettvaktens villkor — inget
+villkor på `metadata`. Premissen gäller.
+
+- [ ] `{text: "isClosed kan inte ga fran true till false pa messages sandargren, ELLER ett skrivet beslut om varfor inte", kind: diff}`
+- [ ] `{text: "De tre regelfallen ur biljetten finns: skapare+avsandare TILLATS, annan deltagare NEKAS, skapare som inte ar avsandare - mutationsprovade", kind: diff}`
+- [ ] `{text: "Fall 3 har egen felmening eller ett skrivet beslut om att den generiska duger", kind: diff}`
+- [ ] `{text: "INTE gjort: BUT-1832:s poll-narvarohal (metadata som map utan poll-nyckel) - det ar en beslutad avvikelse och ror inte denna gren", kind: diff}`
+
+### [Tier C] BUT-2086 — flera betyg på samma recept (Medium, security)
+
+Disposition: **build**. Steg 0, `firestore.rules:2721-2764`: create-grenen binder `userId`,
+`rating`, nyckelmängd, `review`-längd och blockering — men `ratingId` används bara i
+`rateLimitStamped`. Ingen dokument-id-form. Premissen gäller.
+
+- [ ] `{text: "Ett regelfall visar halet fore fixen (andra betyget med annat id), och NEKAS efter", kind: diff}`
+- [ ] `{text: "Create-grenen kraver att dokument-id ar recipeId plus understreck plus request.auth.uid", kind: diff}`
+- [ ] `{text: "Appens riktiga skrivning TILLATS fortfarande; befintliga regeltesters icke-standardiserade id ar uppdaterade, inte borttagna", kind: diff}`
+
+---
+
+## Kluster S — tjänstelagret (Dart) — router: **single**
+
+Router på unionen: `{"tier": "single", "panel": ["Software Architect", "Product Manager"]}`.
+En blind kritik konvenas före bygget. Båda **Tier A**.
+
+### [Tier A] BUT-2103 — `searchMessages` kör inte blockeringsfiltret (Low, Bug)
+
+Disposition: **build**. Steg 0, `messaging_service.dart:688-721`: returnerar
+`_withoutOthersBlockedRows(hits)`, inget `_filterBlocked`. Premissen gäller.
+
+- [ ] `{text: "searchMessages kor _filterBlocked i TJANSTEN, inte i repositoryt eller MessageQueryModule", kind: diff}`
+- [ ] `{text: "Motet mellan _filterBlocked fail-open och searchMessages egna catch-som-returnerar-tom-lista ar ett medvetet val, skrivet i koden", kind: diff}`
+- [ ] `{text: "Test i messaging_service_test.dart med riktiga Message-fixturer (inte Fake) som inte kan ga gront via tom lista", kind: diff}`
+- [ ] `{text: "INTE gjort: att binda type i firestore.rules - samma oppna post som BUT-1954 lamnade", kind: diff}`
+
+### [Tier A] BUT-2087 — tre filer räknar ut receptägaren på det gamla sättet (Low, tech-debt)
+
+Disposition: **build**. Steg 0: `rating_notifications.dart` (rad 27, 64, 145, 353),
+`recipe_permission_helper.dart` (rad 28, 59, 121, 148, 170, 176, 197, 221),
+`social_engagement_metrics.dart` (rad 371) skriver alla `socialData?.ownerId ?? createdBy`.
+`Recipe.ownerUid` finns i `lib/models/recipe/recipe_ownership.dart:11`. Premissen gäller — men
+`recipe_permission_helper.dart` har åtta ställen, inte ett; biljetten nämner bara `canRateRecipe`.
+
+- [ ] `{text: "Alla tre filerna anvander Recipe.ownerUid pa varje stalle dar de idag skriver socialData ownerId med createdBy som fallback", kind: diff}`
+- [ ] `{text: "Ett test per fil med tomt socialData.ownerId som rodnar om den gamla stavningen kommer tillbaka", kind: diff}`
+- [ ] `{text: "recipe_permission_helper.dart rad 88 (_legacyResolver.determineOwnership) ror inte - det ar en annan vag", kind: diff}`
+
+---
+
+## Kluster T — röda prov och en ops-kontroll
+
+### [Tier A] BUT-2105 — röda regelsviter (Medium, Bug) — PREMISSEN OMSKRIVEN VID STEG 0
+
+Disposition: **build**, men omskopad. Biljetten säger "45/47, båda röda i `audit-logs-rules.test.ts`".
+**Mätt vid urvalet 2026-09-17 mot HEAD `3b54c46c3`, hela sviten i en körning (193 s):**
+
+```
+Rules suites: 41/47 passed, 47 ran
+Failed suites:
+  - src/__tests__/reports-rules.test.ts
+  - src/__tests__/audit-logs-rules.test.ts
+  - src/__tests__/menus-rules.test.ts
+  - src/__tests__/realtime-menus-rules.test.ts
+  - src/__tests__/comment-images-storage-rules.test.ts
+  - src/__tests__/acquisition-rules.test.ts
+```
+
+Alltså **sex** röda sviter, inte en. Biljettens siffra är inte längre sann. Vad som INTE är mätt
+ännu: hur många enskilda fall som är röda per svit, och om de sex har en gemensam orsak (den
+uppenbara kandidaten är ADR-0020:s stämpelkrav, som landade 2026-09-14 och rör create-grenar brett)
+eller sex olika. Diagnosen är första steget och ska mätas, inte gissas — det är biljettens egen
+instruktion och den gäller fortfarande.
+
+- [ ] `{text: "Antalet roda FALL per svit ar matt for alla sex sviterna, inte bara antalet sviter", kind: diff}`
+- [ ] `{text: "Orsaken per svit ar MATT, inte gissad; om flera delar orsak ar det visat och inte antaget", kind: diff}`
+- [ ] `{text: "npm run test:rules:all ger 47 av 47, ELLER en skriven redovisning av vilka som inte gick att laga i denna sprint och varfor", kind: diff}`
+- [ ] `{text: "Ett prov som slutat prova det det pastar lagas sa att det provar det igen - aldrig sa att det bara blir gront", kind: diff}`
+- [ ] `{text: "Biljettens kropp ar uppdaterad med den matta siffran innan bygget borjar", kind: diff}`
+
+### [Tier A] BUT-2098 — bekräfta att första veckovisa Firestore-backupen landade (Urgent)
+
+Disposition: **build** (verifiering). Biljetten säger att kollen måste köras från Malins maskin med
+`gcloud`. Firebase-MCP:n har en egen backup-läsare — den prövas först (CLAUDE.md regel 11).
+Minnesnotering: `--location=eur3` döljer schemat, använd `europe-west3`.
+
+- [ ] `{text: "Backuplistan ar last och rapporterad: finns en backup daterad omkring 2026-09-13, eller inte", kind: run}`
+- [ ] `{text: "Om ingen backup finns: en biljett med vad som saknas, inte en tyst stangning", kind: diff}`
+- [ ] `{text: "Om den landade: prioriteten satts tillbaka till Medium vid stangning, som biljetten sjalv begar", kind: run}`
+
+---
+
+## Needs you (Tier D)
+
+- **BUT-1989** — QA-svep på fysisk telefon (fyra pass). Kräver dig och en telefon.
+- **BUT-1848** — kör kokbokskorpusen genom ML Kit på en riktig telefon. Blockerad bakom BUT-1847.
+
+## Deviation log
+
+- [discovery] BUT-2105: planen sa "45/47, två röda fall i en svit" → mätt 41/47 och sex röda
+  sviter mot HEAD `3b54c46c3` → ärendet omskopat före bygget, biljettkroppen ska uppdateras.
+- [discovery] BUT-2100: biljettens fix ("+1 per fält") är MÄTT FEL. Tre skrivarformer finns:
+  `incrementUnreadCounter` (+1, `set(merge:true)` på ett dokument som kanske inte finns),
+  `decrementUnreadCounter` (`increment(-1)`, utan `totalSharedContent`, tre levande anropare),
+  `recalculateUnreadCount` (absolut `set`, noll anropare). En `friendsCount`-formad regel utan
+  create-arm nekar första delningen för ALLA och varje badge-rensning — tyst, eftersom skrivaren
+  sväljer sina fel. Fångat av Security, DPO, QA och DBA oberoende; verifierat i koden.
+- [discovery] BUT-2101: biljettens fix saknar `!('groupId' in parentDoc().data)`. Syskonblocket
+  `participants` bär den (`firestore.rules:1954`) just för att en klient inte ska kunna skriva
+  gruppmedlemskap och gå runt barnsäkerhetsgrinden BUT-1838 stängde. Utan den LEGITIMERAR fixen
+  den skrivningen. Fångat av Trust & Safety; verifierat.
+- [deviation] BUT-2101: fyra säten prissatte fixen mot `updateConversationActivity` "vid varje
+  skickat meddelande, en rad per deltagare, 100+ grupper". MÄTT FALSKT idag: varken
+  `updateConversationActivity` eller `updateLastRead` har någon anropare i `lib/` — bara sina
+  definitioner, en dokumentationskommentar och sina enhetstester. Enda levande skrivvägen är
+  `createDirectConversation` (2 rader, föräldern committad först). Kostnaden är verklig till
+  formen men når ingen levande väg. Prissättningen ärvs INTE.
+- [needs-human] BUT-2101 krockar med **BUT-1850** (High, öppen sedan 2026-08-15), vars alternativ
+  2 är att RADERA hela kollektionen. DBA-sätet vägrade härdningen med just det skälet. Att härda
+  något ett öppnare ärende föreslår att ta bort är Malins avvägning, inte min.
+- [discovery] BUT-2087: den gamla stavningen finns i ~15 filer, inte 3. Biljettens tre byggs;
+  resten får en egen biljett hellre än att tyst vidga omfånget — en 3-av-15-migrering läser som
+  klar medan samma bugg lever kvar överallt annars (Software Architect-sätet).
+
+## Panelens bindande villkor (infällda i acceptanskriterierna)
+
+- BUT-2100: separat **create-arm** (`resource` är null vid create) OCH **ägar-arm**; bunden
+  `== gammalt ± 1` i BÅDA riktningarna, aldrig bara +1. Provet måste skicka den riktiga
+  `FieldValue.increment`-sentineln via den verkliga skrivaren, inte ett heltal.
+  Precedens: `firestore.rules:727-731` (`friendsCount`) — sentineln ÄR läsbar i
+  `request.resource.data`, verifierat.
+- BUT-2092: villkoret måste kedja `.get('metadata', {}).get('poll', {}).get('isClosed', false)`
+  på BÅDA sidor och får INTE neka meddelanden utan `metadata` eller utan `poll`-nyckel
+  (BUT-1832 beslutade att den formen förblir skrivbar). Fyra fall: metadata saknas / null /
+  map utan `poll` / `poll` finns.
+- BUT-2086: bindningen gäller **CREATE ONLY** — omgradering är `set(merge:true)`, alltså UPDATE.
+- BUT-2101: mät åtkomsttaket med en riktig WriteBatch (N=11, N=21) INNAN regeln skrivs.
+- Ingen ny användarsynlig sträng i något av de fyra (Product Manager-sätet); avslag faller
+  igenom till befintlig generisk copy, aldrig en text som avslöjar mekanismen.
+- Ingen `rateLimitStamped` på `counters` eller `conversation_memberships` — ADR-0020 STRÖK båda.
+
+
+---
+
+# ARKIV
+
 # Sprint 2026-09-11 (natt) — sex ärenden, fyra kluster
 
 Vald av `/delivery:sprint-execute`. Föregående sprint (2026-09-11 kväll) är stängd och ligger i
