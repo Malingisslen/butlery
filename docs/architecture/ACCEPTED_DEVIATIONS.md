@@ -5094,3 +5094,58 @@ Raised by the `firebase-backend-security` and `integration-reviewer` gates. — 
   removed: `listCollections()` returns no `conversation_memberships` under either of the two
   accounts. Attributed, not reproducible from this repo — it was a one-off read, committed
   nowhere, and it must be re-measured before the rules deploy. BUT-1850, 2026-09-17
+
+## Art. 15 — the four open withholding questions, answered (2026-09-17)
+
+**Every answer keeps the code as it ships.** The wording below is this file's own; the
+mirror in `.claude/rules/accepted-deviations.md` retires its own copies.
+
+Each quote below sits on ONE line here; where the original wraps, the lines are joined.
+
+Retired verbatim (BUT-1838, row 1): `**That redaction was chosen conservatively without asking Malin**; widening it to keep other members' stamps is hers to decide.`
+Retired verbatim (BUT-1971, row 2): `Chosen conservatively without asking Malin, the way the `chat_groups` projection was; KEEPING it is hers to decide.`
+Retired verbatim (BUT-2028, row 3): `**Chosen conservatively WITHOUT asking Malin, the way the `chat_groups` projection was. KEEPING `reviewedBy`/`reviewNotes` is hers to decide, and it is OPEN.**`
+Retired verbatim (BUT-2038, row 3's confirmation): `Still open and unchanged: whether `reviewedBy`/`reviewNotes` stay withheld is Malin's, and a`
+Retired verbatim (BUT-1716, row 4): `Whether an export SECTION ships is Malin's decision and is asked on the ticket;`
+
+**What the code does, unchanged by this.** `_redactOtherParticipants` strips other participants'
+`memberSince` and keeps the requester's own; `_redactGroupPlan` removes `contributorUserIds`;
+`ContentExportManager._ingredientSuggestionFields` omits `reviewedBy` and `reviewNotes`; no export
+leg reads `shared_content/{id}/items`.
+
+**Row 2 was asked twice, and she reversed her own first answer.** Her first call was to KEEP
+`contributorUserIds` in the bundle. The panel then measured three facts the question had not
+carried. The field is CLIENT-written and `firestore.rules` bounds only append-only writes and the
+200 cap, so nothing verifies that a uid was ever a participant.
+`match /public_profiles/{userId}` is `allow read: if isAuthenticated()`, so any signed-in account
+resolves a uid to that profile. And `MessagingService._prepareWinnerForGroupPlan` seeds the plan roster
+from `conversation.participantIds`, so a minor in the chat group can be in the
+field (BUT-1838). Shown those three and three ways out — stand fast, keep it filtered to her own
+uid, or keep stripping — she chose to keep STRIPPING. Recorded as ADR-0021.
+
+**Row 4 was also asked twice.** The first framing offered the section as an ordinary build. BUT-1716
+step 3 had removed the `items` rules block five days earlier, so the terminal `match /{document=**}`
+denies every client and the Art. 15 export runs on the client SDK: a section needs either a new
+rules surface for a path nothing writes, or an Admin-SDK path. She deferred it to BUT-1747, which
+now carries two gaps with one solution, and Legal's condition rides with it — BUT-1747 is a
+PRE-LAUNCH gate, because the Art. 12(3) deadline starts from the day real rows exist.
+
+**Each decided on its own collection's facts.** None of the four is authority for another, and row 2
+is not authority for the identically named field on `unified_shared_shopping_lists` — arguing across
+collections by field NAME is the error the BUT-1732 entry exists to document.
+
+**What she was NOT shown**, stated because an attribution is a claim about a person no test can
+hold: no count of how many uids a real week's `contributorUserIds` holds, and no count of rows
+carrying `reviewedBy` — there are no users, so neither is measurable. And `shared_content` held zero
+documents in butlery-app-1 when it was measured 2026-09-12, so row 4's section would export nothing
+today whichever way it were built.
+
+**Still open, and NOT answered by row 2:** BUT-2006 question 1 — whether `contributorUserIds` should
+union PASSIVE participants at all. Named beside it and unmeasured: whether `email`, which the
+`public_profiles` create rule requires, is readable in those rows.
+
+Panel: router `tier: full-panel` on the real file union; seated DPO, Legal Counsel, Security
+Architect, UX Writer, Technical Writer and the Codebase Archaeologist. Six of six
+`approve-with-conditions`, no blocks. The Archaeologist measured no reverted history — the row-2
+strip was introduced once (`6039d86e1`, BUT-1971) and never touched since.
+BUT-1838/BUT-1971/BUT-2028/BUT-1716, 2026-09-17

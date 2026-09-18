@@ -2345,3 +2345,42 @@ files in the same edit.
   Measured 2026-09-17 against `butlery-app-1`: no `conversation_memberships` under either
   account. Attributed, not reproducible here; re-measure before the rules deploy.
   BUT-1850, 2026-09-17
+
+- **ASKED AND ANSWERED 2026-09-17 — all four open Art. 15 withholding questions are now
+  DECISIONS, and every one of them keeps the code as it ships.**
+  All four were verified in the source first, then put to her in one sitting.
+  Each quote below sits on ONE line here; where the original wraps, the lines are joined.
+  Retired verbatim (BUT-1838, row 1): `**Chosen conservatively without asking Malin; widening it to keep other members' stamps is hers to decide.**`
+  Retired verbatim (BUT-1971, row 2): `Chosen conservatively without asking Malin, the way the `chat_groups` projection was; KEEPING it is hers to decide.`
+  Retired verbatim (BUT-2028, row 3): `**Chosen conservatively WITHOUT asking Malin, the way the `chat_groups` projection was; KEEPING the two fields is hers to decide, and it is open.**`
+  Retired verbatim (BUT-2038, row 3's confirmation): `Still open and unchanged: whether `reviewedBy`/`reviewNotes` stay withheld is Malin's, and a`
+  Retired verbatim (BUT-1716, row 4): `Whether a SECTION ships is Malin's, and it is asked on the ticket`
+  What the code does, unchanged by this: `_redactOtherParticipants` strips other participants'
+  `memberSince`; `_redactGroupPlan` removes `contributorUserIds`; `_ingredientSuggestionFields`
+  omits `reviewedBy` and `reviewNotes`; no export leg reads `shared_content/{id}/items`.
+  **Row 2 was asked TWICE and she reversed her own first answer.** Her first call was to KEEP the
+  field. The panel then measured three things the question had not carried: `contributorUserIds`
+  is CLIENT-written and `firestore.rules` bounds only append-only and the 200 cap, so nothing
+  verifies that a uid was ever a participant; `match /public_profiles/{userId}` is
+  `allow read: if isAuthenticated()`, so any signed-in account resolves a uid to that profile;
+  and `MessagingService._prepareWinnerForGroupPlan` seeds the plan roster from
+  `conversation.participantIds`, so a minor in the chat group can be in the field (BUT-1838).
+  Shown those and three ways out, she chose to keep STRIPPING. ADR-0021.
+  **Row 4 was also asked twice.** The first framing offered a section as an ordinary build. BUT-1716
+  step 3 had removed the `items` rules block five days earlier, so the terminal
+  `match /{document=**}` denies every client and the export runs on the client SDK — a section
+  needs a new rules surface for a path nothing writes, or an Admin-SDK path. She deferred it to
+  BUT-1747, which now carries two gaps with one solution, and Legal's condition rides with it:
+  it is a PRE-LAUNCH gate, because the Art. 12(3) deadline starts the day real rows exist.
+  **Decided on each collection's own facts.** None of the four is authority for another, and row 2
+  is not authority for the identically named field on `unified_shared_shopping_lists` — arguing
+  across collections by field NAME is the error the BUT-1732 entry exists to document.
+  **What she was NOT shown**, because an attribution is a claim about a person no test can hold:
+  no count of how many uids a real week's `contributorUserIds` holds, and no count of rows
+  carrying `reviewedBy` — there are no users. And `shared_content` held zero documents in
+  butlery-app-1 when it was measured 2026-09-12, so row 4's section would export nothing today.
+  **Still open, and not answered by row 2:** BUT-2006 question 1 — whether the field should union
+  PASSIVE participants at all. Unmeasured and named beside it: whether `email`, which the
+  `public_profiles` create rule requires, is readable in those rows.
+  Full panel: DPO, Legal Counsel, Security Architect, UX Writer, Technical Writer and the
+  Codebase Archaeologist, six of six `approve-with-conditions`. BUT-1838/BUT-1971/BUT-2028/BUT-1716, 2026-09-17

@@ -72,7 +72,7 @@ Note the near-collision that hid `users/{uid}/notifications` for so long: the to
   received and read that exact push text on their own device, so the export discloses nothing
   new, and redacting it would hand them a falsified copy of their own record. Decided on these
   facts alone, NOT by analogy to the conversations or shopping-list entries, which govern
-  different collections. Chosen conservatively without asking Malin; stripping it is hers.
+  different collections.
 - `analytics/notifications/effectiveness` is **not** exported. It holds no content the user has not
   already received: notificationId, their own uid, and whether they opened it. Its human-readable
   counterpart is `notification_history`, which is exported in full. Recorded here rather than left

@@ -503,11 +503,10 @@ class ContentExportManager {
     // exactly that — the app now shows the voters by name — and that ground
     // does not reach a field the app never shows.
     //
-    // Chosen conservatively without asking Malin, the way the `chat_groups`
-    // projection was; keeping it is hers to decide. Do not read the identically
-    // named field's keep decision on `unified_shared_shopping_lists` as
-    // authority: that entry itself records that arguing across collections by
-    // field NAME is the error it exists to document.
+    // Do not read the identically named field's keep decision on
+    // `unified_shared_shopping_lists` as authority: that entry itself records
+    // that arguing across collections by field NAME is the error it exists to
+    // document.
     copy.remove('contributorUserIds');
     return copy;
   }

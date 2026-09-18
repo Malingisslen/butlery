@@ -295,7 +295,6 @@ class PreferencesExportManager {
   /// facts — NOT carried over from the conversations decision, which governs a
   /// different collection; `.claude/rules/accepted-deviations.md` records that
   /// arguing across collections by analogy is the error it exists to document.
-  /// Chosen conservatively without asking Malin; STRIPPING it is hers to decide.
   Future<Map<String, dynamic>> exportDeliveredNotifications(
     String userId,
   ) async {
