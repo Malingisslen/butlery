@@ -129,11 +129,19 @@ tracked in a follow-up ticket.
 **What an account deletion leaves behind** (BUT-2032). Read this before
 concluding from the console that nothing happened:
 
-- The person who **filed** a report deletes their account → the
-  `content_report` row is **deleted**, and so is the `reports` document it
-  came from. Nothing records that the report was ever filed. Silence here is
-  not evidence that no report existed. Malin's call, 2026-09-08 (ADR-0016),
-  taken over the alternative of keeping the row with the name removed.
+- The person who **filed** a report deletes their account while the case is
+  **closed** → the `content_report` row is **deleted**, and so is the `reports`
+  document it came from. Nothing records that the report was ever filed.
+  Silence here is not evidence that no report existed (ADR-0016).
+- The person who **filed** a report deletes their account while the case is
+  **open** → the report **stays** so you can finish it. It shows "Anmälarens
+  konto är raderat" where the reporter's id was; their own words
+  (`description`) are still there. The `content_report` and `report_history`
+  rows stay too, with the reporter's id set to `null`. When you close the
+  case, or 180 days after their deletion at the latest, the daily sweep
+  deletes all three — even if the reported person's legal hold is still
+  standing (Malin, 2026-09-18). You cannot tell the reporter the
+  outcome — there is no account left to tell.
 - The person who was **reported** deletes their account → the
   `content_report` row **stays**, with `details.contentOwnerId` set to `null`
   and a `contentOwnerAnonymizedAt` stamp. Their

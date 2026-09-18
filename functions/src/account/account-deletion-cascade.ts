@@ -54,6 +54,11 @@ import { stageMemberRemoval } from "../groups/chat-group-writes";
 // that BUT-781's analogy carries the ACTION and not the record, so the two new
 // steps below keep the trigger's posture rather than inherit the cascade's.
 import { stageCascadeAuditEntry } from "../cleanup/cascade-audit-log";
+import {
+  isClosedReportStatus,
+  REPORTER_RETENTION_DAYS,
+  REPORTS,
+} from "../moderation/report-status";
 
 /**
  * One thing kept, and why — the Art. 12(4) notice is rendered from this.
@@ -554,6 +559,10 @@ export async function probeResidualData(
     // NOT skipped: this is the genuinely reporter-side leg, and the hold is
     // one-directional by design.
     [SYSTEM_EVENTS, "details.reporterId", "=="],
+    // `deleteUserReports` deletes a closed report and nulls `reporterId` on an
+    // open one, so either way this counts zero after a clean run. Never gated
+    // on `held`: that is the REPORTED person's hold, a different axis.
+    [REPORTS, "reporterId", "=="],
     ...(held
       ? []
       : ([[SYSTEM_EVENTS, "details.contentOwnerId", "=="]] as const)),
@@ -3216,16 +3225,118 @@ export async function deletePingsByUser(
   return true;
 }
 
+export interface ReporterErasureOutcome {
+  ok: boolean;
+  /** Reports kept because their case was still open. */
+  keptOpen: number;
+  /** When a kept report is deleted at the latest, whatever its case does. */
+  retainUntil: admin.firestore.Timestamp;
+}
+
+function reporterRetainUntilFrom(now: Date): admin.firestore.Timestamp {
+  return admin.firestore.Timestamp.fromDate(
+    new Date(now.getTime() + REPORTER_RETENTION_DAYS * 24 * 60 * 60 * 1000),
+  );
+}
+
+/**
+ * The erased user as the person who FILED a report.
+ *
+ * A closed case's report is deleted. An open one is KEPT with the reporter's
+ * uid removed, so the case can still be decided — Malin's call, 2026-09-18.
+ * Its free text (`description`) stays: it is often all a moderator has beyond
+ * the `reason` category. `reporter-retention.ts` deletes the row once the case
+ * closes or `reporterRetainUntil` passes.
+ *
+ * ONE equality, and the status is read off the row rather than filtered in the
+ * query: the orchestration suite's fixture keys on "two chained `where`s on
+ * `reports`" to recognise `hasOpenModerationCase`, and a second chained filter
+ * here would be answered by it.
+ *
+ * STRICT: a failed chunk throws, so the step is reported failed rather than
+ * leaving the uid behind under a success.
+ */
 export async function deleteUserReports(
   db: admin.firestore.Firestore,
   uid: string,
-): Promise<boolean> {
+  now: Date = new Date(),
+): Promise<ReporterErasureOutcome> {
+  const retainUntil = reporterRetainUntilFrom(now);
   const snap = await db
-    .collection("reports")
+    .collection(REPORTS)
     .where("reporterId", "==", uid)
     .get();
-  await batchDeleteAll(db, snap.docs);
-  return true;
+  if (snap.empty) return { ok: true, keptOpen: 0, retainUntil };
+
+  let keptOpen = 0;
+  await commitInChunks(
+    db,
+    snap.docs,
+    (batch, doc) => {
+      if (isClosedReportStatus(doc.get("status"))) {
+        batch.delete(doc.ref);
+        stageCascadeAuditEntry(db, batch, {
+          subjectUserId: uid,
+          targetUid: null,
+          operation: "cascade_delete",
+          resourceType: REPORTS,
+          resourceId: doc.id,
+        });
+        return;
+      }
+      keptOpen += 1;
+      batch.update(doc.ref, {
+        reporterId: null,
+        reporterErasedAt: admin.firestore.FieldValue.serverTimestamp(),
+        reporterRetainUntil: retainUntil,
+      });
+      stageCascadeAuditEntry(db, batch, {
+        subjectUserId: uid,
+        targetUid: null,
+        operation: "cascade_anonymize",
+        resourceType: REPORTS,
+        resourceId: doc.id,
+        extra: { field: "reporterId" },
+      });
+    },
+    {
+      label: `reporter reports for ${uid.slice(0, 6)}`,
+      opsPerItem: 2,
+      strict: true,
+    },
+  );
+  return { ok: true, keptOpen, retainUntil };
+}
+
+/**
+ * Whether each linked report's case is still open, keyed by report id.
+ *
+ * Read one document at a time in bounded groups rather than with `getAll`: the
+ * sweeps it serves are capped at 2000 rows, and neither cascade test fake
+ * implements a top-level `getAll`.
+ *
+ * A report that does not exist reads as NOT open — its case can no longer be
+ * decided. Throws when a read fails; callers treat that as "open".
+ */
+async function openReportIds(
+  db: admin.firestore.Firestore,
+  reportIds: string[],
+): Promise<Set<string>> {
+  const open = new Set<string>();
+  const unique = [...new Set(reportIds)];
+  const GROUP = 100;
+  for (let i = 0; i < unique.length; i += GROUP) {
+    const group = unique.slice(i, i + GROUP);
+    const snaps = await Promise.all(
+      group.map((id) => db.collection(REPORTS).doc(id).get()),
+    );
+    snaps.forEach((snap, i) => {
+      if (snap.exists && !isClosedReportStatus(snap.data()?.status)) {
+        open.add(group[i]);
+      }
+    });
+  }
+  return open;
 }
 
 /**
@@ -3261,6 +3372,17 @@ const REPORT_HISTORY = "report_history";
 const MAX_SYSTEM_EVENT_SWEEP_ROWS = 2000;
 
 /**
+ * The report a `content_report_<reportId>` row is about. The trigger writes the
+ * id both into `details.reportId` and into the document id.
+ */
+function reportIdOfEvent(doc: admin.firestore.QueryDocumentSnapshot): string {
+  return (
+    (doc.get("details.reportId") as string | undefined) ??
+    doc.id.replace(/^content_report_/, "")
+  );
+}
+
+/**
  * BUT-2032: the moderation rows in the admin ops log, which no erasure path
  * reached. `feedback/on-report-created.ts` writes TWO shapes about a report, and
  * a step written from the document id alone covers only one of them:
@@ -3275,10 +3397,9 @@ const MAX_SYSTEM_EVENT_SWEEP_ROWS = 2000;
  * collection rather than invented here, because a third policy for one event is
  * how two records of one decision drift apart:
  *
- *   reporter erases  -> DELETE the row. `deleteUserReports` already hard-deletes
- *       the `reports` document, so a derived copy must not outlive its source.
- *       Malin's explicit call, 2026-09-08 (ADR-0016), against Trust & Safety's
- *       alternative of nulling the field and keeping the row.
+ *   reporter erases  -> the row follows its `reports` document: DELETED when
+ *       that case is closed (ADR-0016, 2026-09-08), KEPT with
+ *       `details.reporterId` nulled while it is open (Malin, 2026-09-18).
  *   reported erases  -> ANONYMIZE, exactly as `anonymizeReportsByContentOwnerWithDb`
  *       does on the source row (BUT-781): the row stays, the identifier goes.
  *
@@ -3341,6 +3462,8 @@ export async function deleteModerationSystemEvents(
   // still reached, and no audit row is staged for a document that never existed.
   const deletions: admin.firestore.QueryDocumentSnapshot[] = [];
   const deletedIds = new Set<string>();
+  // Reporter rows whose case is still open: kept, with the reporter removed.
+  const reporterAnonymizations: admin.firestore.QueryDocumentSnapshot[] = [];
   const legs = held
     ? (["details.reporterId"] as const)
     : (["details.userId", "details.reporterId"] as const);
@@ -3352,11 +3475,66 @@ export async function deleteModerationSystemEvents(
       complete = false;
       continue;
     }
+    let open = new Set<string>();
+    if (field === "details.reporterId") {
+      // The row follows its `reports` document: an open case keeps it, with
+      // the reporter's uid nulled, exactly as `deleteUserReports` keeps the
+      // report. A failed read keeps every row — keeping is recoverable,
+      // deleting an open case's record is not — and the step says so.
+      try {
+        open = await openReportIds(
+          db,
+          docs.map(reportIdOfEvent),
+        );
+      } catch (err) {
+        logger.error(
+          "[deletion-cascade] report status unreadable; keeping reporter rows",
+          {
+            uid_prefix: uid.slice(0, 6),
+            errCode: (err as { code?: number | string }).code ?? null,
+            errName: err instanceof Error ? err.name : typeof err,
+          },
+        );
+        complete = false;
+        open = new Set(
+          docs.map(reportIdOfEvent),
+        );
+      }
+    }
     for (const doc of docs) {
       if (deletedIds.has(doc.id)) continue;
+      if (field === "details.reporterId" && open.has(reportIdOfEvent(doc))) {
+        reporterAnonymizations.push(doc);
+        continue;
+      }
       deletedIds.add(doc.id);
       deletions.push(doc);
     }
+  }
+  if (reporterAnonymizations.length > 0) {
+    await commitInChunks(
+      db,
+      reporterAnonymizations,
+      (batch, doc) => {
+        batch.update(doc.ref, {
+          "details.reporterId": null,
+          reporterErasedAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+        stageCascadeAuditEntry(db, batch, {
+          subjectUserId: uid,
+          targetUid: null,
+          operation: "cascade_anonymize",
+          resourceType: SYSTEM_EVENTS,
+          resourceId: doc.id,
+          extra: { field: "details.reporterId" },
+        });
+      },
+      {
+        label: `system_events reporter anonymize for ${uid.slice(0, 6)}`,
+        opsPerItem: 2,
+        strict: true,
+      },
+    );
   }
   if (deletions.length > 0) {
     await commitInChunks(
@@ -3380,7 +3558,7 @@ export async function deleteModerationSystemEvents(
   }
 
   // The reported-side rows survive with the identifier removed. Read AFTER the
-  // deletes above so a row naming this user in both roles is already gone.
+  // deletes above.
   //
   // Under a hold the identifier STAYS — that is the whole exception, and the
   // reports rows one collection over are held by the same decision. Returning
@@ -3549,10 +3727,42 @@ export async function deleteReportHistoryByReporter(
 
   if (snap.empty) return true;
 
+  // The row follows its `reports` document (the doc id IS the report id): an
+  // open case keeps it with the reporter's uid nulled. A failed read keeps
+  // every row, and the step reports itself incomplete.
+  let complete = true;
+  let open: Set<string>;
+  try {
+    open = await openReportIds(db, snap.docs.map((d) => d.id));
+  } catch (err) {
+    logger.error(
+      "[deletion-cascade] report status unreadable; keeping reporter rows",
+      {
+        uid_prefix: uid.slice(0, 6),
+        errCode: (err as { code?: number | string }).code ?? null,
+        errName: err instanceof Error ? err.name : typeof err,
+      },
+    );
+    complete = false;
+    open = new Set(snap.docs.map((d) => d.id));
+  }
+
   await commitInChunks(
     db,
     snap.docs,
     (batch, doc) => {
+      if (open.has(doc.id)) {
+        batch.update(doc.ref, { reporterId: null });
+        stageCascadeAuditEntry(db, batch, {
+          subjectUserId: uid,
+          targetUid: null,
+          operation: "cascade_anonymize",
+          resourceType: REPORT_HISTORY,
+          resourceId: doc.id,
+          extra: { field: "reporterId" },
+        });
+        return;
+      }
       batch.delete(doc.ref);
       stageCascadeAuditEntry(db, batch, {
         subjectUserId: uid,
@@ -3572,7 +3782,7 @@ export async function deleteReportHistoryByReporter(
       opsPerItem: 2,
     },
   );
-  return true;
+  return complete;
 }
 
 // ─── Tier 1: profile-side own data ───────────────────────────────────────

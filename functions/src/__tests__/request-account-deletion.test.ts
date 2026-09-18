@@ -79,6 +79,12 @@ interface FakeDbState {
    * in the allowlist passed.
    */
   throwOnReportsQuery?: boolean;
+  /**
+   * A report the ERASED user filed. Answered only for a query with exactly ONE
+   * `where` on `reports` — `deleteUserReports`'s `reporterId` equality — so the
+   * two-`where` predicate seam above is untouched.
+   */
+  filedReportRow?: Record<string, unknown>;
 }
 
 function emptySnapshot(): {
@@ -134,6 +140,26 @@ function makeFakeDb(state: FakeDbState): admin.firestore.Firestore {
       async get() {
         if (name === "reports" && whereDepth >= 2 && state.throwOnReportsQuery) {
           throw Object.assign(new Error("unavailable"), { code: 14 });
+        }
+        if (
+          name === "reports" &&
+          whereDepth === 1 &&
+          state.filedReportRow !== undefined
+        ) {
+          const row = state.filedReportRow;
+          return {
+            empty: false,
+            size: 1,
+            docs: [
+              {
+                id: "filed1",
+                data: () => row,
+                get: (f: string) => row[f],
+                ref: { id: "filed1", path: "reports/filed1" },
+              },
+            ],
+            data: () => ({ count: 1 }),
+          } as ReturnType<typeof emptySnapshot>;
         }
         if (seeded === undefined) return emptySnapshot();
         return {
@@ -738,6 +764,76 @@ test("BUT-2046: with no open case the return is unchanged — retained is empty"
   if (owner.length === 0) {
     throw new Error(
       "an unheld erasure must sweep system_events on details.contentOwnerId",
+    );
+  }
+});
+
+test("2026-09-18: a report the erased user FILED in an open case is retained, and the RETURN carries it", async () => {
+  const state: FakeDbState = {
+    auditRows: [],
+    filedReportRow: {
+      reporterId: "uid-alice",
+      contentOwnerId: "uid-bob",
+      status: "new",
+    },
+  };
+  const db = makeFakeDb(state);
+  const authCalls: FakeAuthCalls = { deleteUserUid: null, throwOnDelete: false };
+  const storageCalls: FakeStorageCalls = { deletePrefixes: [] };
+
+  const result = await runAccountDeletionWithDeps(
+    { db, auth: makeFakeAuth(authCalls), storage: makeFakeStorage(storageCalls) },
+    "uid-alice",
+    "alice@example.com",
+    "user_request",
+  );
+
+  const kept = result.retained.filter(
+    (r: { resourceType: string }) => r.resourceType === "reports",
+  );
+  if (kept.length !== 1) {
+    throw new Error(
+      `expected one reporter-side retained record, got ${JSON.stringify(result.retained)}`,
+    );
+  }
+  if (kept[0].legalBasis !== "GDPR Art. 17(3)(b)") {
+    throw new Error(`wrong basis: ${JSON.stringify(kept[0])}`);
+  }
+  if (typeof kept[0].holdUntil !== "string" || kept[0].provisional !== false) {
+    throw new Error(`malformed record: ${JSON.stringify(kept[0])}`);
+  }
+  // It is not the REPORTED person's hold: nothing else was retained.
+  if (result.retained.length !== 1) {
+    throw new Error(`unexpected extra record: ${JSON.stringify(result.retained)}`);
+  }
+  if (!result.success) {
+    throw new Error(`a kept report is not a failure: ${JSON.stringify(result.failedCollections)}`);
+  }
+});
+
+test("2026-09-18: a report the erased user FILED in a CLOSED case retains nothing", async () => {
+  const state: FakeDbState = {
+    auditRows: [],
+    filedReportRow: {
+      reporterId: "uid-alice",
+      contentOwnerId: "uid-bob",
+      status: "closed",
+    },
+  };
+  const db = makeFakeDb(state);
+  const authCalls: FakeAuthCalls = { deleteUserUid: null, throwOnDelete: false };
+  const storageCalls: FakeStorageCalls = { deletePrefixes: [] };
+
+  const result = await runAccountDeletionWithDeps(
+    { db, auth: makeFakeAuth(authCalls), storage: makeFakeStorage(storageCalls) },
+    "uid-alice",
+    "alice@example.com",
+    "user_request",
+  );
+
+  if (result.retained.length !== 0) {
+    throw new Error(
+      `a closed case must retain nothing, got ${JSON.stringify(result.retained)}`,
     );
   }
 });

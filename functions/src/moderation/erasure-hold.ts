@@ -14,11 +14,6 @@
  * that pair is the whole point (a report kept without its ops-log row is a
  * half-held case).
  *
- * ONE-DIRECTIONAL, DELIBERATELY. `deleteUserReports`, the reporter leg of
- * `deleteModerationSystemEvents` and `deleteReportHistoryByReporter` carry no
- * status check, so a REPORTER's erasure still empties an open case. Out of
- * scope, named rather than left to be discovered.
- *
  * WHERE THE DECISION LIVES. `erasure_holds/{uid}`, its own collection with no
  * `firestore.rules` block — the terminal `match /{document=**}` denies every
  * client, so only the Admin SDK reads it. It is deliberately NOT a field on
@@ -52,8 +47,8 @@ import {
 } from "../account/account-deletion-cascade";
 import { Collections } from "../shared/collections";
 import { anonymizeReportsByContentOwnerWithDb } from "./anonymize-reports";
+import { OPEN_REPORT_STATUSES, REPORTS } from "./report-status";
 
-const REPORTS = "reports";
 const REPORT_HISTORY = "report_history";
 
 /**
@@ -91,19 +86,6 @@ export const MAX_ERASURE_HOLD_SWEEP_ROWS = 500;
  */
 export const MAX_REPORT_HISTORY_ROWS = 2000;
 
-/**
- * Every status that is NOT terminal. `ReportStatus` (the Dart model) has four
- * values and `closed` is the only one this treats as finished — `actioned`
- * reads as done, and is deliberately still held: a case a moderator has acted
- * on but not closed keeps its evidence until they close it. The cautious
- * direction, and it gives the close button a consequence it did not have.
- *
- * The `in` filter, rather than `!=`, is what keeps this query servable by the
- * single-field indexes: equality plus `in` with no `orderBy` needs no composite
- * index, while a literal `!=` would need one.
- */
-const OPEN_REPORT_STATUSES = ["new", "in_review", "actioned"] as const;
-
 export type { RetainedRecord };
 
 /**
@@ -120,10 +102,6 @@ export interface HoldOutcome {
 
 /**
  * Is at least one report against [uid] still open?
- *
- * The ONE implementation of the predicate. It is now the fourth place the same
- * fact is spelled — beside `ReportStatus`, `firestore.rules` and
- * `report_service.dart` — so it does not get spelled a fifth time inline.
  */
 export async function hasOpenModerationCase(
   db: admin.firestore.Firestore,

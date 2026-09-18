@@ -78,6 +78,10 @@ import {
   USER_MODERATION,
 } from "./account-deletion-cascade";
 import { applyErasureHold } from "../moderation/erasure-hold";
+import {
+  REPORTER_RETENTION_BASIS,
+  REPORTS,
+} from "../moderation/report-status";
 
 const db = admin.firestore();
 
@@ -284,7 +288,24 @@ export async function runAccountDeletionWithDeps(
     // `probeResidualData`'s own list: a deleter without a probe is how an
     // erasure becomes silently incomplete.
     ["blocks", () => deleteBlocks(database, uid)],
-    ["reports", () => deleteUserReports(database, uid)],
+    // An open case's report is KEPT with the reporter removed (Malin,
+    // 2026-09-18), which is a retention the person is owed an Art. 12(4)
+    // notice about — so it lands in `retained` beside the reported-side hold.
+    [
+      "reports",
+      async () => {
+        const outcome = await deleteUserReports(database, uid);
+        if (outcome.keptOpen > 0) {
+          result.retained.push({
+            resourceType: REPORTS,
+            legalBasis: REPORTER_RETENTION_BASIS,
+            holdUntil: outcome.retainUntil,
+            provisional: false,
+          });
+        }
+        return outcome.ok;
+      },
+    ],
     // BUT-2032: the moderation rows the report trigger writes into the admin
     // ops log. Beside `reports` because it is the same event seen from the
     // other side, and in the CASCADE rather than in `onUserDeleted` because the

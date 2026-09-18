@@ -2412,3 +2412,42 @@ files in the same edit.
   let no client remove an entry, and an Admin-SDK sweep is out of scope. **What she was NOT
   shown:** any count of such rows; there are no users, so it is not measurable.
   BUT-2006, 2026-09-18
+
+- **A REPORTER's erasure keeps an OPEN case's report, without their uid and WITH their free
+  text, until the case closes or 180 days pass (2026-09-18).** What the code does:
+  `deleteUserReports` deletes a report whose `status` is exactly `closed`; any other status,
+  including a missing one, is kept with `reporterId: null`, `reporterErasedAt` and
+  `reporterRetainUntil` (erasure + `REPORTER_RETENTION_DAYS`), and `description` untouched.
+  The reporter legs of `deleteModerationSystemEvents` and `deleteReportHistoryByReporter` read
+  each linked `reports/{id}`: open → the row is kept with the reporter's uid nulled; closed or
+  missing → deleted; unreadable → kept, and the step reports itself incomplete. Every mutation
+  stages an `audit_logs` row. A kept report puts a `RetainedRecord` with `resourceType: "reports"`
+  and `legalBasis: "GDPR Art. 17(3)(b)"` in `retained`, and the Art. 12(4) notice names it.
+  `sweepRetainedReporterReports` (daily chain, second) deletes the report and both derived rows
+  once the case is closed or `reporterRetainUntil` has passed. It selects on
+  `reporterId == null`, which only the cascade can produce: the create rule pins `reporterId` to
+  the caller and the update rule forbids changing it, while a client may put any other field on
+  its own report. `probeResidualData` gains `reports.reporterId`.
+  **Malin's explicit calls, 2026-09-18**, over a symmetric erasure hold keeping the reporter's
+  uid: (1) keep the report, drop the reporter's identity; (2) keep `description` — Trust &
+  Safety's point that it is often all a moderator has beyond `reason`, which `firestore.rules`
+  limits to an enum; (3) yes, the REPORTED person can then no longer learn who reported them,
+  put to her in those words by Legal Counsel's condition; (4) treat what is left as capable of
+  singling the reporter out, so it is retained personal data and the notice is owed; (5) delete
+  on close, at the latest after 180 days — asked again after (2) and (4) falsified the premise
+  of the earlier "keep it anonymously after close"; (6) when the reported person is under an
+  erasure hold, the REPORTER's cap still wins — the rows go on the reporter's date and that hold
+  may lift early, since both notices say "at the latest".
+  **What she was NOT shown:** any count of reporters who erase with a case open (there are no
+  users); and `GDPR Art. 17(3)(b)` as the legal basis was chosen without asking her.
+  **Named residuals:** the sweep writes no `audit_logs` row, because the erased reporter's uid
+  is gone; and the pre-deletion warning still speaks only of being reported, so a reporter
+  learns what was kept only from the notice after the fact; and a deletion retried after
+  `auth.deleteUser` failed finds no report still naming the person, so it puts no `reports`
+  record in `retained` and the notice for it is not shown — the first run's notice was not shown
+  either, because the account still existed.
+  Retired verbatim (fragment; the original wraps): "**ONE-DIRECTIONAL, and this is a gap rather than a subtlety.** `deleteUserReports`, the reporter leg of `deleteModerationSystemEvents` and `deleteReportHistoryByReporter` carry no status check, so a REPORTER erasing their account still empties an open case. Out of scope, named rather than left to be discovered."
+  Retired for OPEN cases only (fragment; the original wraps): "A `system_events` row about a report the ERASED USER FILED is DELETED;" — a closed
+  case's row is still deleted, which is what ADR-0016 decided.
+  Full panel: DPO, Legal Counsel, Trust & Safety, Security Architect, DBA and the Codebase
+  Archaeologist, six of six `approve-with-conditions`. 2026-09-18

@@ -81,6 +81,8 @@ async function testRegistryMembership(): Promise<void> {
     // A legal hold ends nowhere else, and a tail task is the first one dropped
     // under budget pressure.
     "sweepErasureHolds",
+    // Ends a kept report from an erased reporter.
+    "sweepRetainedReporterReports",
     "trackDayNRetention",
     "computeFeatureRetention",
     // User-facing (win-back push) — ahead of the reporting tasks on purpose.

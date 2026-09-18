@@ -1,7 +1,7 @@
 # Privacy Policy
 
 **Status:** Draft. To be reviewed by legal counsel and published at a stable URL (planned: `butlery.se/privacy` once BUT-680 lands).
-**Last updated:** 2026-09-09
+**Last updated:** 2026-09-18
 **Effective:** TBD upon publication.
 
 ## 1. Who we are
@@ -58,6 +58,7 @@ Cloud-based AI processing (Mistral via Vertex AI) is used for recipe parsing fro
   - **Audit logs:** retained for **365 days** under the GDPR Article 17(3)(b) derogation (legal compliance with our cascade-delete logging obligations).
   - **Backups:** containing deleted data expire within **30 days** of the deletion request.
   - **Evidence in an ongoing content review:** if someone has reported content of yours and the review is not finished when you delete your account, the report, its counter and your identifier are kept until the review closes — and at most **180 days** from the deletion. The ground is GDPR Article 17(3)(e). You are told in-app when this happens, including what was kept and for how long.
+  - **A report you made that is still being handled:** if you reported someone else's content and that case is not finished when you delete your account, the report is kept **without your identifier** but with what you wrote, until the case closes — and at most **180 days** from the deletion. The ground is GDPR Article 17(3)(b): we have to finish handling a report once it is made. You are told in-app when this happens.
 - **Crash reports:** 90 days.
 - **Analytics events:** 14 months (Firebase Analytics default).
 

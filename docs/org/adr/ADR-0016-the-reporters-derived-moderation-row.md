@@ -2,6 +2,7 @@
 
 - **Date:** 2026-09-08
 - **Status:** Escalated to Malin → **DELETE** (her choice, 2026-09-08)
+- **Superseded for OPEN cases, 2026-09-18:** an open case's row is kept with `details.reporterId` nulled until the case closes or 180 days pass; a closed case's row is still deleted. See the dated entry in `docs/architecture/ACCEPTED_DEVIATIONS.md`.
 - **Trigger:** `tasks/todo.md` — BUT-2032, make the account-deletion cascade reach `system_events`
 - **Blast-radius tier:** full-panel
 - **Stakeholders seated:** Privacy/DPO, Trust & Safety, Security Architect, DBA/Data-layer, QA, Codebase Archaeologist

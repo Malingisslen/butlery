@@ -1,7 +1,7 @@
 # Integritetspolicy
 
 **Status:** Utkast. Ska granskas av juridiskt ombud och publiceras på en stabil URL (planerad: `butlery.se/integritet` när BUT-680 levereras).
-**Senast uppdaterad:** 2026-09-09
+**Senast uppdaterad:** 2026-09-18
 **Träder i kraft:** TBD vid publicering.
 
 ## 1. Vilka vi är
@@ -57,6 +57,7 @@ Molnbaserad AI-bearbetning (Mistral via Vertex AI) används för receptanalys fr
   - **Granskningsloggar:** lagras i **365 dagar** enligt GDPR Artikel 17.3(b)-undantaget (rättslig efterlevnad av våra kaskad-raderingsloggningskrav).
   - **Säkerhetskopior:** som innehåller raderad data upphör inom **30 dagar** efter raderingsbegäran.
   - **Underlag i en pågående innehållsgranskning:** om någon har anmält innehåll från dig och granskningen inte är avslutad när du raderar kontot, sparas anmälan, den tillhörande räknaren och din identifierare tills granskningen är klar — och som längst **180 dagar** från raderingen. Grunden är GDPR Artikel 17.3(e). Du får ett besked i appen när det sker, med vad som sparats och hur länge.
+  - **En anmälan du gjort som fortfarande hanteras:** om du har anmält någon annans innehåll och ärendet inte är avslutat när du raderar kontot, sparas anmälan **utan din identifierare** men med det du skrev, tills ärendet är klart — och som längst **180 dagar** från raderingen. Grunden är GDPR Artikel 17.3(b): vi måste hantera en anmälan färdigt när den väl är gjord. Du får ett besked i appen när det sker.
 - **Kraschrapporter:** 90 dagar.
 - **Analyshändelser:** 14 månader (Firebase Analytics-standard).
 

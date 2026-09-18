@@ -196,11 +196,12 @@ from `(err as {code?}).code`.
   rules cap (`contributorUserIds` 200), which freezes the doc
   for every client. Delete the doc, or prune/skip at the cap; before revoking
   the last holder, name what re-creates the id.
-- A step's throw is CAUGHT by `runStep` → `failedCollections` +
-  `gdprCompliant:false`; no automatic retry, recovery is a human. So a step that
-  DECIDES something the later steps read (a lawful hold) reports its failure by
-  RETURNING false with the decision intact, never by throwing — a throw skips the
-  caller's assignment and the destructive steps then run on the default.
+- `runStep` CATCHES a throw → `failedCollections` + `gdprCompliant:false`, no
+  auto-retry. A step that DECIDES something read later (a hold, a `retained`
+  record) RETURNS false with the decision intact, never throws — a throw skips
+  the caller's assignment. A `retained` record derived from rows the step itself
+  anonymizes vanishes on a user's RE-RUN (its query handle was nulled) — persist
+  it uid-keyed (`erasure_holds`) or the retry's Art. 12(4) notice omits it.
 - **`batch.update()` on a concurrently-deleted doc fails the WHOLE chunk with
   NOT_FOUND** under `strict:false`; and `commitInChunks` calls `mutate` OUTSIDE
   that try, so a SYNCHRONOUS validation throw from the callback (`undefined` in
@@ -271,10 +272,8 @@ from `(err as {code?}).code`.
   `runTransaction` + re-read fixes only the lost update: skip on `!fresh.exists`,
   try/catch each, throw once, filter failed ids out of any UNCONDITIONAL write the
   abort protected. Fan-out helpers take a `CollectionReference`, never a NAME.
-- **A chunked migration walks by OFFSET, never by re-reading what is left** —
-  full rule in `lessons-digest.md` (BUT-2046): per-pass counters are ASSIGNMENTS
-  inside the transaction, clear the source only on a pass ending with zero
-  failures anywhere, ≤400 rows/pass.
+- **A chunked migration walks by OFFSET** — full rule in `lessons-digest.md`
+  (BUT-2046).
 
 ### Scheduled analytics & lifecycle jobs
 - Never assume a date field's type (ISO vs `Timestamp` varies per collection).

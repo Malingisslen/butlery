@@ -43,6 +43,7 @@ import { runDetectAnomalies } from "../analytics/detect-anomalies";
 import { runWeeklyActivityDigest } from "../analytics/send-activity-digest";
 import { runReconcileBlockMirrors } from "../social/sync-block-mirror";
 import { runSweepErasureHolds } from "../moderation/erasure-hold";
+import { runSweepRetainedReporterReports } from "../moderation/reporter-retention";
 import { runNorthStarWeekly } from "../scheduled/north-star-weekly";
 import { drainRatingAggregationQueue } from "../ratings/rating-aggregation";
 import { drainPoolAggregationQueue } from "../ratings/pool-aggregation";
@@ -300,6 +301,9 @@ export const DAILY_ANALYTICS_TASKS: MaintenanceTask[] = [
   // run takes. An UNBOUNDED sweep in first position is the combination to
   // avoid.
   { name: "sweepErasureHolds", run: () => runSweepErasureHolds(), timeoutMs: TASK_TIMEOUT_MS },
+  // Right behind it, and for its reason: it ends the retention of a report
+  // whose reporter erased their account (2026-09-18).
+  { name: "sweepRetainedReporterReports", run: () => runSweepRetainedReporterReports(), timeoutMs: TASK_TIMEOUT_MS },
   { name: "trackDayNRetention", run: () => runTrackRetention(), timeoutMs: TASK_TIMEOUT_MS },
   { name: "computeFeatureRetention", run: () => runComputeFeatureRetention(), timeoutMs: TASK_TIMEOUT_MS },
   { name: "detectLapsedUsers", run: () => runDetectLapsedUsers(), timeoutMs: TASK_TIMEOUT_MS },

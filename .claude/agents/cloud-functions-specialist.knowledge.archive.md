@@ -20486,3 +20486,20 @@ Staged rate-limit-rules.test.ts c94d9f9be (hash-object == index). Verdict pass, 
   (menu). Harmless today, because the `shared_content` create rule is
   `hasRequiredFields` with no `hasOnly`. If a key allowlist is ever added
   there, this fixture would stay green while the real share is denied.
+
+### 2026-09-18 — reporter-side erasure retention: retained record lost on re-run [review]
+Commit-gate review of `deleteUserReports` / `openReportIds` / reporter legs (ADR-0022).
+`deleteUserReports` pushes a `RetainedRecord{resourceType:"reports"}` only when THIS run
+finds `reporterId == uid` rows with an open status — but it nulls that very field. A user
+whose first run failed `auth.deleteUser` (no notice shown: `owesRetentionNotice` needs the
+account gone) and who retries gets `keptOpen: 0`, `retained` without the reports record, and
+never receives the Art. 12(4) notice for the kept report. Same loss if a strict multi-chunk
+commit throws after an earlier chunk committed. The reported-side hold does not have this
+problem because `applyErasureHold` persists its decision in `erasure_holds/{uid}`.
+Also noted: `report-status.ts` claims "open" is "spelled once", but `OPEN_REPORT_STATUSES`
+(`in` filter, missing/unknown = not open, used by the hold) and `isClosedReportStatus`
+(missing/unknown = open, used for reporters) disagree on a missing/unknown status.
+Race analysis: tier-1 `reports` and `moderation_system_events` are concurrent but benign —
+`deleteUserReports` never deletes an open report, so a concurrent status read of a deleted
+row always meant closed. Suites: cascade 488/488, request-account-deletion 9/9 (re-run by
+reviewer). Principle folded into the `runStep` bullet.
