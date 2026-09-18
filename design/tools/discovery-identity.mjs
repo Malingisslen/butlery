@@ -40,7 +40,7 @@ export function familjesignatur(o, mekanismer) {
     malar: o.harFyllning ? 'fyll' : o.helRam ? 'ram' : o.malar ? 'outline' : 'omalad',
     display: /flex/.test(o.display) ? 'flex' : o.display, pillerKnopp: !!(o.piller && o.harKnopp),
     segment: o.segmentgrupp >= 3, barKontroller: o.barDeklareradeKontroller > 0,
-    hitTarget: !!o.hitTarget, ankare: String(o.anker || 'ram').split(':')[0] };
+    hitTarget: !!o.hitTarget, ankare: String(o.anker || 'ram').split(':')[0], grafikroll: o.tagg === 'svg' ? (o.grafikroll || '-') : undefined };
 }
 export const familjeId = (o, mek) => 'FAM::' + h(familjesignatur(o, mek));
 
@@ -53,6 +53,9 @@ export function agarGrund(o, klass) {
   if (o.occ) return { niva: 2, id: o.art + '::occ::' + slug(o.occ) };
   if (o.hitTarget) return { niva: 2, id: o.art + '::hit-target::' + slug(o.hitTarget) };
   if (o.egenTextLangd > 0 && slug(o.text)) return { niva: 3, id: o.art + '::' + klass.toLowerCase() + '::' + slug(o.text) };
+  // Fristaende grafik: den kallforfattade glyfen (data-icon) ar funktionellt ankare. Tva lika
+  // glyfer i samma ram kolliderar och faller stangt i tilldelaAgare.
+  if (o.tagg === 'svg' && o.ikoner && o.ikoner.length) return { niva: 3, id: o.art + '::' + klass.toLowerCase() + '::glyf-' + slug(o.ikoner[0]) };
   if (o.anker && /^namn:/.test(o.anker) && o.komponent) return { niva: 4, id: o.art + '::' + slug(o.anker) + '::' + o.komponent };
   return null;
 }

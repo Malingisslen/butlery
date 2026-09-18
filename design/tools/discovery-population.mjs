@@ -22,11 +22,35 @@ import { mekanismerFor, arDeklarerad } from './control-shape-discovery.mjs';
 import { skorda } from './discovery-harvest.mjs';
 import { forekomstId, familjeId, familjesignatur, tilldelaAgare, slug } from './discovery-identity.mjs';
 
+const mek = o => o.grafikkandidat ? [GRAFIKMEKANISM] : mekanismerFor(o);
 const ROT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const fail = m => { throw new Error('FAIL CLOSED: ' + m); };
 const h = x => createHash('sha256').update(JSON.stringify(x)).digest('hex').slice(0, 16);
 const prep = xs => xs.map(o => ({ ...o, ordinal: o.ordProd, foraldrakedja: o.foraldraProd }));
-const traffar = xs => prep(xs).filter(o => !o.iSvg && !arDeklarerad(o) && mekanismerFor(o).length > 0);
+const traffar = xs => prep(xs).filter(o => !o.iSvg && !arDeklarerad(o) && mek(o).length > 0);
+
+/* ── FRISTAENDE GRAFIK (omgang 6). Detektorn ser aldrig svg (iSvg). En glyf som bar
+      funktion men saknar kontrollagare blev darfor osynlig. Den tas med HAR — inte
+      i detektorn — och bara nar kallan sjalv signalerar funktion:
+        data-graphic-role="required"  · binding · data-hit-target
+        data-graphic-role="redundant" dar forsta forfadern saknar egen text
+          (redundans kraver synlig text med samma information; utan text kan
+          pastaendet inte provas, box-graphics.mjs)
+      Aldrig: glyf inuti deklarerad kontroll (grafikbarn), glyf som ar enda innehallet
+      i en kandidat (omslaget ar agarfragan), dekorativ glyf.                         */
+export const GRAFIKMEKANISM = 'STANDALONE_GRAPHIC';
+export function grafikkandidater(xs, kandidater) {
+  const p = prep(xs), perId = new Map(p.map(o => [o.art + '|' + o.ordinal, o]));
+  const omslag = new Set(kandidater.filter(k => k.egenTextLangd === 0 && k.svgAntal === 1).map(k => k.art + '|' + k.ordinal));
+  return p.filter(o => {
+    if (o.tagg !== 'svg' || arDeklarerad(o)) return false;
+    if ((o.foraldrakedja || []).some(a => omslag.has(o.art + '|' + a))) return false;
+    const binding = o.attr && Object.keys(o.attr).length > 0;
+    const forfar = (o.foraldrakedja || []).length ? perId.get(o.art + '|' + o.foraldrakedja[0]) : null;
+    const redundansOprovbar = o.grafikroll === 'redundant' && (!forfar || forfar.egenTextLangd === 0);
+    return o.grafikroll === 'required' || binding || !!o.hitTarget || redundansOprovbar;
+  }).map(o => ({ ...o, grafikkandidat: true }));
+}
 
 /* ── registrerade verdikt ─────────────────────────────────────────────── */
 const HID = /^[a-z0-9-]+\|\d+$/;
@@ -54,7 +78,7 @@ export function verdiktregister(rot) {
 
 /* ── entydig harkomst historisk → idag. Nyckeln ar bara ett matchningsvillkor;
       tva eller fler traffar pa nagon sida ger INGEN overforing.                */
-const harkomstnyckel = o => [o.art, o.anker, o.tagg, o.komponent || '-', slug(o.text), (o.ikoner || []).join('+'), mekanismerFor(o).join('+')].join('|');
+const harkomstnyckel = o => [o.art, o.anker, o.tagg, o.komponent || '-', slug(o.text), (o.ikoner || []).join('+'), mek(o).join('+')].join('|');
 
 /* ── positiv kallforfattad evidens, i prioritetsordning ─────────────────── */
 export function kallregel(o, ctx) {
@@ -89,7 +113,8 @@ export function kontrollsignal(o, mek) {
 
 export async function population({ rot, filordning, historisk, historiskPopulation }) {
   const objekt = await skorda(rot, { filordning });
-  const tr = traffar(objekt);
+  const tr0 = traffar(objekt);
+  const tr = [...tr0, ...grafikkandidater(objekt, tr0)];
   const REG = JSON.parse(readFileSync(join(rot, 'artifacts.json'), 'utf8')).artifacts;
   const iScope = new Set(REG.filter(a => a.viewportProfile).map(a => a.sourceElementId));
   const hitAgare = new Map();
@@ -104,7 +129,7 @@ export async function population({ rot, filordning, historisk, historiskPopulati
     try {
       execFileSync('git', ['-C', rot, 'archive', '-o', join(kat, '_t.tar'), historisk]);
       execFileSync('tar', ['-xf', '_t.tar'], { cwd: kat });
-      hist = traffar(await skorda(kat));
+      hist = traffar(await skorda(kat));   // HISTORICAL_SCOPE: bara detektorns scope, ingen grafikutvidgning
     } finally { rmSync(kat, { recursive: true, force: true }); }
     if (historiskPopulation) {
       const H = new Set(JSON.parse(readFileSync(historiskPopulation, 'utf8')).A_population.medlemmar);
@@ -114,14 +139,14 @@ export async function population({ rot, filordning, historisk, historiskPopulati
     const V = verdiktregister(rot);
     const hNyckel = new Map(), iNyckel = new Map();
     for (const o of hist) { const k = harkomstnyckel(o); hNyckel.set(k, (hNyckel.get(k) || []).concat(o)); }
-    for (const o of tr) { const k = harkomstnyckel(o); iNyckel.set(k, (iNyckel.get(k) || []).concat(o)); }
+    for (const o of tr0) { const k = harkomstnyckel(o); iNyckel.set(k, (iNyckel.get(k) || []).concat(o)); }
     // (1) Oforandrad ram: hela ramens produktstruktur ar identisk historiskt och idag.
     //     Da ar ordinal→ordinal exakt harkomst (samma dokument), inte en gissning.
     const ramavtryck = xs => { const m = new Map(); for (const o of xs) m.set(o.art, (m.get(o.art) || []).concat(o));
-      return new Map([...m].map(([a, os]) => [a, h(os.sort((p, q) => p.ordinal - q.ordinal).map(o => [o.ordinal, o.tagg, o.klass, o.komponent, slug(o.text), (o.ikoner || []).join('+'), mekanismerFor(o).join('+')]))])); };
-    const hRam = ramavtryck(hist), iRam = ramavtryck(tr);
+      return new Map([...m].map(([a, os]) => [a, h(os.sort((p, q) => p.ordinal - q.ordinal).map(o => [o.ordinal, o.tagg, o.klass, o.komponent, slug(o.text), (o.ikoner || []).join('+'), mek(o).join('+')]))])); };
+    const hRam = ramavtryck(hist), iRam = ramavtryck(tr0);
     const oforandrade = new Set([...hRam].filter(([a, f]) => iRam.get(a) === f).map(([a]) => a));
-    for (const o of tr) if (oforandrade.has(o.art)) {
+    for (const o of tr0) if (oforandrade.has(o.art)) {
       const v = V[o.art + '|' + o.ordinal];
       if (v) overforda.set(forekomstId(o), { ...v, historisk: o.art + '|' + o.ordinal, harkomst: 'oforandrad ram' });
     }
@@ -136,7 +161,7 @@ export async function population({ rot, filordning, historisk, historiskPopulati
   }
 
   const poster = tr.map(o => {
-    const mek = mekanismerFor(o);
+    const mk = mek(o);
     let klass, grund, verdikt = overforda.get(forekomstId(o)) || null;
     const k0 = kallregel(o, { iScope, hitAgare });
     if (k0 && (k0[0] === 'OUT_OF_SCOPE' || k0[0] === 'DUPLICATE_OF_CANONICAL_OWNER')) [klass, grund] = k0;
@@ -144,7 +169,7 @@ export async function population({ rot, filordning, historisk, historiskPopulati
     else if (k0) [klass, grund] = k0;
     else if (verdikt) { klass = 'UNKNOWN_SEMANTICS'; grund = 'granskad, UNKNOWN (' + verdikt.historisk + ')'; }
     else { klass = 'UNKNOWN_SEMANTICS'; grund = 'ogranskad'; }
-    return { forekomst: forekomstId(o), familj: familjeId(o, mek), klass, grund, granskad: !!verdikt, objekt: o, mek };
+    return { forekomst: forekomstId(o), familj: familjeId(o, mk), klass, grund, granskad: !!verdikt, objekt: o, mek: mk };
   });
   const medAgare = tilldelaAgare(poster);
 
@@ -178,6 +203,7 @@ export async function population({ rot, filordning, historisk, historiskPopulati
   const ut = {
     SKORD_OBJEKT: objekt.length, SKORD_FINGERAVTRYCK: h(objekt), DISCOVERY_TOTAL: tr.length, SUMMA_KLASSER: summa, IMPLICIT_DROPS: tr.length - summa,
     OCCURRENCE_COLLISIONS: 0, OWNER_COLLISIONS: 0, perKlass, perAgarStatus, UNKNOWN_GRANSKADE: medAgare.filter(p => p.klass === 'UNKNOWN_SEMANTICS' && p.granskad).length,
+    DETEKTOR_SCOPE: tr0.length, GRAFIK_SCOPE: tr.length - tr0.length,
     FAMILJER: familjer.length, UNKNOWN_FAMILJER: familjer.filter(f => f.UNKNOWN_COUNT > 0).length, HISTORISK_AVSTAMNING: histAvstamning,
     VERDIKT_OVERFORDA: overforda.size,
     FINGERAVTRYCK: { forekomster: h([...forekomstIds].sort()), klassning: h(medAgare.map(p => [p.forekomst, p.klass]).sort()),
