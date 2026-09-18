@@ -52,6 +52,15 @@ class RetainedRecord {
     );
   }
 
+  /// The `resourceType` of a report the deleted person FILED and whose case
+  /// was still open: kept without their name, with their own words (Malin,
+  /// 2026-09-18).
+  static const String ownReportResource = 'reports';
+
+  /// Whether this record is a report the person filed, rather than a review
+  /// of content they were reported for.
+  bool get isOwnReport => resourceType == ownReportResource;
+
   /// Parses the callable's `retained` field, whatever shape it arrives in.
   ///
   /// An older deployment does not send the field at all, which reads here as
@@ -64,4 +73,48 @@ class RetainedRecord {
         .map((e) => RetainedRecord.fromMap(Map<String, dynamic>.from(e)))
         .toList();
   }
+}
+
+/// What the Art. 12(4) notice has to say, folded from every retained record.
+///
+/// The notice names each KIND of thing kept rather than rendering one record,
+/// because one deletion can keep both: a review of the person's content and a
+/// report they filed.
+class RetentionNoticeFacts {
+  const RetentionNoticeFacts({
+    required this.reviewKept,
+    required this.ownReportKept,
+    required this.provisional,
+    required this.holdUntil,
+  });
+
+  factory RetentionNoticeFacts.from(List<RetainedRecord> records) {
+    final reviews = records.where((r) => !r.isOwnReport);
+    DateTime? latest;
+    for (final r in records) {
+      final until = r.holdUntil;
+      if (until != null && (latest == null || until.isAfter(latest))) {
+        latest = until;
+      }
+    }
+    return RetentionNoticeFacts(
+      reviewKept: reviews.isNotEmpty,
+      ownReportKept: records.any((r) => r.isOwnReport),
+      provisional: reviews.any((r) => r.provisional),
+      holdUntil: latest,
+    );
+  }
+
+  /// A review of content the person was reported for.
+  final bool reviewKept;
+
+  /// A report the person filed, whose case was still open.
+  final bool ownReportKept;
+
+  /// Whether the review hold was placed without the check completing.
+  final bool provisional;
+
+  /// The LATEST cap among the records: the notice gives one "at the latest"
+  /// date, and an earlier one would promise too little.
+  final DateTime? holdUntil;
 }

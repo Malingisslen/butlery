@@ -177,7 +177,9 @@ class _ReportCard extends StatelessWidget {
               ),
             const SizedBox(height: AppDimensions.spacingXs),
             Text(
-              '${context.l10n.moderatorReporterLabel}: ${report.reporterId}',
+              report.reporterErased
+                  ? context.l10n.moderatorReporterErased
+                  : '${context.l10n.moderatorReporterLabel}: ${report.reporterId}',
               style: AppTextStyles.metadataEmphasized.copyWith(
                 color: cs.outline,
               ),

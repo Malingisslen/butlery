@@ -85,6 +85,41 @@ void main() {
       },
     );
 
+    test('a report whose reporter was erased reads as reporterErased', () async {
+      // The server nulls reporterId on an open case's report when the reporter
+      // deletes their account, and keeps what they wrote.
+      final firestore = FakeFirebaseFirestore();
+      await firestore.collection('reports').doc('kept').set({
+        'reporterId': null,
+        'contentType': ContentType.comment.wireName,
+        'contentId': 'comment1',
+        'contentOwnerId': 'owner1',
+        'reason': 'harassment',
+        'description': 'what they wrote',
+        'status': 'in_review',
+        'createdAt': Timestamp.fromDate(DateTime.utc(2026, 9, 1)),
+      });
+      await firestore.collection('reports').doc('live').set({
+        'reporterId': 'reporter1',
+        'contentType': ContentType.comment.wireName,
+        'contentId': 'comment1',
+        'reason': 'spam',
+        'createdAt': Timestamp.fromDate(DateTime.utc(2026, 9, 1)),
+      });
+
+      final kept = ContentReport.fromFirestore(
+        await firestore.collection('reports').doc('kept').get(),
+      );
+      final live = ContentReport.fromFirestore(
+        await firestore.collection('reports').doc('live').get(),
+      );
+
+      expect(kept, isNotNull);
+      expect(kept!.reporterErased, isTrue);
+      expect(kept.description, 'what they wrote');
+      expect(live!.reporterErased, isFalse);
+    });
+
     test('legacy doc without guidelineVersion still parses', () async {
       final firestore = FakeFirebaseFirestore();
       final docRef = await firestore.collection('reports').add({

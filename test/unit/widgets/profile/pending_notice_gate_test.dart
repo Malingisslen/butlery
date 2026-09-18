@@ -162,6 +162,32 @@ void main() {
     expect(find.textContaining('IMY'), findsOneWidget);
   });
 
+  testWidgets('a kept report the person FILED comes back as that, collapsed', (
+    tester,
+  ) async {
+    await store.write(
+      holdUntil: _farFuture,
+      provisional: false,
+      reviewKept: false,
+      ownReportKept: true,
+    );
+
+    await tester.pumpWidget(_host());
+    await tester.pumpAndSettle();
+    // Collapsed first: nothing about a report shows to whoever holds the device.
+    expect(find.textContaining('du har gjort'), findsNothing);
+
+    await tester.tap(find.text('Visa mer'));
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('anmälningar du har gjort'), findsOneWidget);
+    expect(
+      find.textContaining('granskning av innehåll som anmälts'),
+      findsNothing,
+      reason: 'only a filed report was kept, not a review of their content',
+    );
+  });
+
   testWidgets('the record survives until the notice is actually closed', (
     tester,
   ) async {

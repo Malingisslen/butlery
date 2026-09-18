@@ -73,6 +73,11 @@ class ContentReport {
     this.guidelineVersion,
   });
 
+  /// The reporter deleted their account while the case was open: the server
+  /// nulls `reporterId` and keeps the report (Malin, 2026-09-18), which
+  /// [fromFirestore] reads as an empty id.
+  bool get reporterErased => reporterId.isEmpty;
+
   /// Best-effort parse. Returns null when the persisted contentType is
   /// unknown — e.g. a legacy report submitted under a since-retired type.
   /// Callers iterating reports must `.whereType<ContentReport>()` to filter

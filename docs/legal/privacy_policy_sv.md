@@ -96,7 +96,7 @@ Du har rätt att:
 
 - **Få tillgång till** dina uppgifter (Artikel 15) — dataexport i appen under Konto → Integritet & Data.
 - **Rätta** felaktigheter (Artikel 16) — redigera vilket fält som helst i appen, eller kontakta oss.
-- **Radera** dina uppgifter (Artikel 17) — kontoborttagning i appen under Kontosäkerhet. Undantag: underlag i en pågående innehållsgranskning sparas tills granskningen är klar, som längst 180 dagar (Artikel 17.3(e), se avsnitt 6). Du får veta om det gäller dig, och du kan klaga till IMY eller vända dig till domstol.
+- **Radera** dina uppgifter (Artikel 17) — kontoborttagning i appen under Kontosäkerhet. Undantag: underlag i en pågående innehållsgranskning sparas tills granskningen är klar, som längst 180 dagar (Artikel 17.3(e), se avsnitt 6), och en anmälan du gjort som fortfarande hanteras sparas utan din identifierare, som längst 180 dagar (Artikel 17.3(b), se avsnitt 6). Du får veta om det gäller dig, och du kan klaga till IMY eller vända dig till domstol.
 - **Begränsa** behandling (Artikel 18) — kontakta oss.
 - **Dataportabilitet** (Artikel 20) — JSON-export tillgänglig i appen.
 - **Invända** mot behandling (Artikel 21) — kontakta oss.

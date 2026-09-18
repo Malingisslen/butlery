@@ -246,6 +246,80 @@ void main() {
     },
   );
 
+  testWidgets(
+    'a report the person FILED reaches both the dialog and the device copy',
+    (tester) async {
+      // The handler folds every retained record, not the first one: a
+      // deletion that kept a review AND a filed report must say both, live and
+      // on the re-shown copy (2026-09-18).
+      final outcome = AccountDeletionOutcome(
+        success: true,
+        accountDeleted: true,
+        retained: [
+          ..._heldOutcome().retained,
+          RetainedRecord(
+            resourceType: RetainedRecord.ownReportResource,
+            legalBasis: 'GDPR Art. 17(3)(b)',
+            holdUntil: DateTime.utc(2999, 6, 1),
+          ),
+        ],
+      );
+      final store = await _setUpLocator(outcome);
+      await tester.pumpWidget(_host());
+
+      await _requestDeletion(tester);
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('Två saker har sparats'), findsOneWidget);
+      expect(find.textContaining('1 juni 2999'), findsOneWidget);
+      expect(find.textContaining('11 mars 2999'), findsNothing);
+      final stored = await store.read();
+      expect(stored, isNotNull);
+      expect(stored!.reviewKept, isTrue);
+      expect(stored.ownReportKept, isTrue);
+      expect(
+        stored.holdUntil,
+        DateTime.utc(2999, 6, 1),
+        reason: 'the later of the two caps, so the date promises enough',
+      );
+    },
+  );
+
+  testWidgets(
+    'a person who only FILED a report is not told about a review of their content',
+    (tester) async {
+      // Both flags carry the non-default value here, so dropping either
+      // argument at either call site in the handler changes what is shown or
+      // stored.
+      final outcome = AccountDeletionOutcome(
+        success: true,
+        accountDeleted: true,
+        retained: [
+          RetainedRecord(
+            resourceType: RetainedRecord.ownReportResource,
+            legalBasis: 'GDPR Art. 17(3)(b)',
+            holdUntil: DateTime.utc(2999, 6, 1),
+          ),
+        ],
+      );
+      final store = await _setUpLocator(outcome);
+      await tester.pumpWidget(_host());
+
+      await _requestDeletion(tester);
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('anmälningar du har gjort'), findsOneWidget);
+      expect(
+        find.textContaining('granskning av innehåll som anmälts'),
+        findsNothing,
+      );
+      final stored = await store.read();
+      expect(stored, isNotNull);
+      expect(stored!.reviewKept, isFalse);
+      expect(stored.ownReportKept, isTrue);
+    },
+  );
+
   testWidgets('the record is cleared once the notice has been read', (
     tester,
   ) async {

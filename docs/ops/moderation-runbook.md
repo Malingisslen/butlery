@@ -65,8 +65,6 @@ What this means at the console:
   moment of it.
 - `actioned` does **not** release the hold — only `closed` does. If you act on a case
   and leave it there, the evidence is kept until you close it or the 180 days run out.
-- A hold is one-directional: if the **reporter** deletes their account, their report
-  is erased even while the case is open, and nothing preserves it.
 
 A hold is recorded in `erasure_holds/{uid}` (Admin SDK only), and the kept
 records are listed under `retained` on the `deletion_audit_logs` row beside

@@ -175,9 +175,23 @@ class ProfileDialogs {
     BuildContext context, {
     DateTime? holdUntil,
     bool provisional = false,
+    bool reviewKept = true,
+    bool ownReportKept = false,
     bool startCollapsed = false,
   }) {
     final l10n = context.l10n;
+    final String what;
+    if (reviewKept && ownReportKept) {
+      what = provisional
+          ? l10n.profileDeletionNoticeWhatBothUnclear
+          : l10n.profileDeletionNoticeWhatBoth;
+    } else if (ownReportKept) {
+      what = l10n.profileDeletionNoticeWhatOwnReport;
+    } else {
+      what = provisional
+          ? l10n.profileDeletionNoticeWhatUnclear
+          : l10n.profileDeletionNoticeWhat;
+    }
     final howLong = holdUntil == null
         ? l10n.profileDeletionNoticeHowLongUnknown
         : l10n.profileDeletionNoticeHowLong(
@@ -213,11 +227,7 @@ class ProfileDialogs {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        provisional
-                            ? l10n.profileDeletionNoticeWhatUnclear
-                            : l10n.profileDeletionNoticeWhat,
-                      ),
+                      Text(what),
                       const SizedBox(height: AppDimensions.spacingMd),
                       Text(l10n.profileDeletionNoticeWhy),
                       const SizedBox(height: AppDimensions.spacingMd),

@@ -10896,6 +10896,10 @@
   "@moderatorReporterLabel": {
     "description": "BUT-417: label prefix for the reporter's user id."
   },
+  "moderatorReporterErased": "Anmälarens konto är raderat",
+  "@moderatorReporterErased": {
+    "description": "Shown in place of the reporter line when the reporter deleted their account while the case was open; the report is kept without their id."
+  },
   "moderatorMinorAccountBadge": "Minderårigt konto",
   "@moderatorMinorAccountBadge": {
     "description": "BUT-1609: badge on a moderation report card when the reported content's owner account belongs to a minor."
@@ -12107,6 +12111,18 @@
   "profileDeletionNoticeWhatUnclear": "En sak kan ha sparats: vi kunde inte slutföra kontrollen av om det finns en pågående granskning av innehåll som anmälts.",
   "@profileDeletionNoticeWhatUnclear": {
     "description": "The WHAT line when the hold is PROVISIONAL. Deliberately hedged: the notice must not assert a pending review as fact when nothing measured one (BUT-2047)."
+  },
+  "profileDeletionNoticeWhatOwnReport": "En sak har sparats: en eller flera anmälningar du har gjort som ännu inte är färdigbehandlade. Ditt namn är borttaget från dem, men det du skrev finns kvar.",
+  "@profileDeletionNoticeWhatOwnReport": {
+    "description": "The WHAT line when only a report the person FILED was kept: its case was still open, so it stays without their name until it closes (Malin, 2026-09-18)."
+  },
+  "profileDeletionNoticeWhatBoth": "Två saker har sparats: en pågående granskning av innehåll som anmälts, och en eller flera anmälningar du har gjort som ännu inte är färdigbehandlade. Ditt namn är borttaget från anmälningarna, men det du skrev finns kvar.",
+  "@profileDeletionNoticeWhatBoth": {
+    "description": "The WHAT line when both a review of the person's content and a report they filed were kept."
+  },
+  "profileDeletionNoticeWhatBothUnclear": "En eller flera anmälningar du har gjort som ännu inte är färdigbehandlade har sparats utan ditt namn men med det du skrev. En sak till kan ha sparats: vi kunde inte slutföra kontrollen av om det finns en pågående granskning av innehåll som anmälts.",
+  "@profileDeletionNoticeWhatBothUnclear": {
+    "description": "The WHAT line when a report they filed was kept and the review hold is PROVISIONAL. The review half stays hedged, as in profileDeletionNoticeWhatUnclear (BUT-2047)."
   },
   "profileDeletionNoticeCollapsed": "Ett meddelande om ett raderat konto på den här enheten.",
   "@profileDeletionNoticeCollapsed": {

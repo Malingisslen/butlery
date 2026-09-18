@@ -10,6 +10,7 @@ import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/models/account/retained_record.dart';
 import 'package:butlery/services/account/pending_retention_notice_store.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/moderation/report_service.dart';
@@ -145,9 +146,12 @@ class AuthActionHandler {
         // then stack a second notice on the live one and log a recovery for a
         // delivery that worked.
         store.markDeliveredLive();
+        final facts = RetentionNoticeFacts.from(outcome.retained);
         await store.write(
-          holdUntil: outcome.retained.first.holdUntil,
-          provisional: outcome.retained.first.provisional,
+          holdUntil: facts.holdUntil,
+          provisional: facts.provisional,
+          reviewKept: facts.reviewKept,
+          ownReportKept: facts.ownReportKept,
         );
 
         // The context died during the write, so no live dialog is coming and
@@ -194,10 +198,13 @@ class AuthActionHandler {
           unawaited(
             analytics.logEvent(name: AnalyticsEvents.retentionNoticeShown),
           );
+          final facts = RetentionNoticeFacts.from(outcome.retained);
           await ProfileDialogs.showRetentionNoticeDialog(
             context,
-            holdUntil: outcome.retained.first.holdUntil,
-            provisional: outcome.retained.first.provisional,
+            holdUntil: facts.holdUntil,
+            provisional: facts.provisional,
+            reviewKept: facts.reviewKept,
+            ownReportKept: facts.ownReportKept,
           );
           unawaited(
             analytics.logEvent(name: AnalyticsEvents.retentionNoticeClosed),

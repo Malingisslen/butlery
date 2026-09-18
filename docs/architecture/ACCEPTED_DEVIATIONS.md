@@ -5216,3 +5216,17 @@ BUT-1838/BUT-1971/BUT-2028/BUT-1716, 2026-09-17
   case's row is still deleted, which is what ADR-0016 decided.
   Full panel: DPO, Legal Counsel, Trust & Safety, Security Architect, DBA and the Codebase
   Archaeologist, six of six `approve-with-conditions`. 2026-09-18
+
+- **SUPERSEDES the BUT-2047 tripwire on the Art. 12(4) notice: the server can now keep TWO kinds
+  of record, and the client folds them (2026-09-18).** What the code does: `retained` may carry a
+  `user_moderation` record (the reported-person hold) and a `reports` record (a report the person
+  FILED whose case is open). `RetentionNoticeFacts.from` folds every record: which kinds were
+  kept, `provisional` from the review record only, and the LATEST `holdUntil`.
+  `AuthActionHandler` uses it for both the device copy and the live dialog. The WHAT line is one of
+  five strings; the three new ones say "en eller flera anmälningar", because the server sends one
+  `reports` record however many reports it kept — **Malin's explicit call, 2026-09-18**, over
+  carrying the count through the pipeline.
+  Retired verbatim (fragment; the original wraps): "Question 2 STANDS as it was, deliberately: "En sak" is true today because the server emits at most one record, and the tripwire below is the right size of protection rather than a rewrite of a legal notice for a case that does not exist yet."
+  Retired verbatim (fragment; the original wraps): "(2) The copy says "En sak" and `auth_action_handler.dart` renders `retained.first`, while the server is built to be able to hold more than one record. Today it emits at most one, so this is consistency rather than a defect"
+  The tripwire fired as written: the change that added the second record changed both the copy
+  and the `.first`. 2026-09-18

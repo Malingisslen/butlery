@@ -15459,6 +15459,9 @@ class AppLocalizationsSv extends AppLocalizations {
   String get moderatorReporterLabel => 'Rapporterat av';
 
   @override
+  String get moderatorReporterErased => 'Anmälarens konto är raderat';
+
+  @override
   String get moderatorMinorAccountBadge => 'Minderårigt konto';
 
   @override
@@ -16463,6 +16466,18 @@ class AppLocalizationsSv extends AppLocalizations {
   @override
   String get profileDeletionNoticeWhatUnclear =>
       'En sak kan ha sparats: vi kunde inte slutföra kontrollen av om det finns en pågående granskning av innehåll som anmälts.';
+
+  @override
+  String get profileDeletionNoticeWhatOwnReport =>
+      'En sak har sparats: en eller flera anmälningar du har gjort som ännu inte är färdigbehandlade. Ditt namn är borttaget från dem, men det du skrev finns kvar.';
+
+  @override
+  String get profileDeletionNoticeWhatBoth =>
+      'Två saker har sparats: en pågående granskning av innehåll som anmälts, och en eller flera anmälningar du har gjort som ännu inte är färdigbehandlade. Ditt namn är borttaget från anmälningarna, men det du skrev finns kvar.';
+
+  @override
+  String get profileDeletionNoticeWhatBothUnclear =>
+      'En eller flera anmälningar du har gjort som ännu inte är färdigbehandlade har sparats utan ditt namn men med det du skrev. En sak till kan ha sparats: vi kunde inte slutföra kontrollen av om det finns en pågående granskning av innehåll som anmälts.';
 
   @override
   String get profileDeletionNoticeCollapsed =>

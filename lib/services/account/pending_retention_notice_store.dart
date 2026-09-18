@@ -19,8 +19,7 @@ import 'package:butlery/core/utils/logger.dart';
 /// `lib/services/CLAUDE.md`, where it is listed.
 ///
 /// **It carries no identifier.** No uid, no email, no name, no `resourceType`,
-/// no `legalBasis` — only the outer-cap date, whether the hold was provisional,
-/// and when the record was written. The dialog's text is in the app. That is
+/// no `legalBasis`. The dialog's text is in the app. That is
 /// what makes `shared_preferences` the right store rather than
 /// `flutter_secure_storage`, whose extra failure modes on Android would fall on
 /// exactly the delivery this exists to protect. Anything added here later needs
@@ -90,6 +89,8 @@ class PendingRetentionNoticeStore {
   Future<void> write({
     required DateTime? holdUntil,
     required bool provisional,
+    bool reviewKept = true,
+    bool ownReportKept = false,
     DateTime? now,
   }) async {
     try {
@@ -99,6 +100,8 @@ class PendingRetentionNoticeStore {
         jsonEncode({
           'holdUntil': holdUntil?.toIso8601String(),
           'provisional': provisional,
+          'reviewKept': reviewKept,
+          'ownReportKept': ownReportKept,
           'writtenAt': (now ?? DateTime.now()).toIso8601String(),
         }),
       );
@@ -132,6 +135,9 @@ class PendingRetentionNoticeStore {
       return PendingRetentionNotice(
         holdUntil: holdUntil,
         provisional: map['provisional'] as bool? ?? false,
+        // A record written before these fields existed was always a review.
+        reviewKept: map['reviewKept'] as bool? ?? true,
+        ownReportKept: map['ownReportKept'] as bool? ?? false,
       );
     } catch (e) {
       AppLogger.error('Could not read the retention notice', e);
@@ -155,6 +161,8 @@ class PendingRetentionNotice {
   const PendingRetentionNotice({
     required this.holdUntil,
     required this.provisional,
+    this.reviewKept = true,
+    this.ownReportKept = false,
   });
 
   /// When the hold lifts at the latest. Absent when the server sent no
@@ -165,4 +173,10 @@ class PendingRetentionNotice {
   /// Whether the hold was placed without the predicate being answered, which
   /// hedges the notice's "what" line (BUT-2047).
   final bool provisional;
+
+  /// A review of content the person was reported for was kept.
+  final bool reviewKept;
+
+  /// A report the person filed was kept.
+  final bool ownReportKept;
 }

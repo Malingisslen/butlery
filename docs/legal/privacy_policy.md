@@ -97,7 +97,7 @@ You have the right to:
 
 - **Access** your data (Article 15) — in-app data export under Account → Privacy & Data.
 - **Rectify** inaccuracies (Article 16) — edit any field in-app, or contact us.
-- **Erase** your data (Article 17) — in-app account deletion under Account Security. Exception: evidence in an ongoing content review is kept until the review closes, at most 180 days (Article 17(3)(e), see section 6). You are told if this applies to you, and you may complain to IMY or seek a judicial remedy.
+- **Erase** your data (Article 17) — in-app account deletion under Account Security. Exception: evidence in an ongoing content review is kept until the review closes, at most 180 days (Article 17(3)(e), see section 6), and a report you made that is still being handled is kept without your identifier, at most 180 days (Article 17(3)(b), see section 6). You are told if this applies to you, and you may complain to IMY or seek a judicial remedy.
 - **Restrict** processing (Article 18) — contact us.
 - **Data portability** (Article 20) — JSON export available in-app.
 - **Object** to processing (Article 21) — contact us.

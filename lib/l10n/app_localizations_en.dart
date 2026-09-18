@@ -15421,6 +15421,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get moderatorReporterLabel => 'Reported by';
 
   @override
+  String get moderatorReporterErased =>
+      'The reporter\'s account has been deleted';
+
+  @override
   String get moderatorMinorAccountBadge => 'Minor account';
 
   @override
@@ -16421,6 +16425,18 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get profileDeletionNoticeWhatUnclear =>
       'One thing may have been kept: we could not finish checking whether there is an ongoing review of content that was reported.';
+
+  @override
+  String get profileDeletionNoticeWhatOwnReport =>
+      'One thing has been kept: one or more reports you made that have not finished being handled. Your name has been removed from them, but what you wrote is still there.';
+
+  @override
+  String get profileDeletionNoticeWhatBoth =>
+      'Two things have been kept: an ongoing review of content that was reported, and one or more reports you made that have not finished being handled. Your name has been removed from the reports, but what you wrote is still there.';
+
+  @override
+  String get profileDeletionNoticeWhatBothUnclear =>
+      'One or more reports you made that have not finished being handled have been kept without your name but with what you wrote. One more thing may have been kept: we could not finish checking whether there is an ongoing review of content that was reported.';
 
   @override
   String get profileDeletionNoticeCollapsed =>

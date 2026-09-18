@@ -25835,6 +25835,12 @@ abstract class AppLocalizations {
   /// **'Rapporterat av'**
   String get moderatorReporterLabel;
 
+  /// Shown in place of the reporter line when the reporter deleted their account while the case was open; the report is kept without their id.
+  ///
+  /// In sv, this message translates to:
+  /// **'Anmälarens konto är raderat'**
+  String get moderatorReporterErased;
+
   /// BUT-1609: badge on a moderation report card when the reported content's owner account belongs to a minor.
   ///
   /// In sv, this message translates to:
@@ -27382,6 +27388,24 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'En sak kan ha sparats: vi kunde inte slutföra kontrollen av om det finns en pågående granskning av innehåll som anmälts.'**
   String get profileDeletionNoticeWhatUnclear;
+
+  /// The WHAT line when only a report the person FILED was kept: its case was still open, so it stays without their name until it closes (Malin, 2026-09-18).
+  ///
+  /// In sv, this message translates to:
+  /// **'En sak har sparats: en eller flera anmälningar du har gjort som ännu inte är färdigbehandlade. Ditt namn är borttaget från dem, men det du skrev finns kvar.'**
+  String get profileDeletionNoticeWhatOwnReport;
+
+  /// The WHAT line when both a review of the person's content and a report they filed were kept.
+  ///
+  /// In sv, this message translates to:
+  /// **'Två saker har sparats: en pågående granskning av innehåll som anmälts, och en eller flera anmälningar du har gjort som ännu inte är färdigbehandlade. Ditt namn är borttaget från anmälningarna, men det du skrev finns kvar.'**
+  String get profileDeletionNoticeWhatBoth;
+
+  /// The WHAT line when a report they filed was kept and the review hold is PROVISIONAL. The review half stays hedged, as in profileDeletionNoticeWhatUnclear (BUT-2047).
+  ///
+  /// In sv, this message translates to:
+  /// **'En eller flera anmälningar du har gjort som ännu inte är färdigbehandlade har sparats utan ditt namn men med det du skrev. En sak till kan ha sparats: vi kunde inte slutföra kontrollen av om det finns en pågående granskning av innehåll som anmälts.'**
+  String get profileDeletionNoticeWhatBothUnclear;
 
   /// The neutral first line of the RE-SHOWN Art. 12(4) notice, before 'Visa mer' is tapped. Malin's call 2026-09-12, option (b): on a shared device the next person must not be told that the previous account holder had content under moderation review. Says nothing the expanded notice says. The notice shown live, right after the deletion, has no collapsed state — there is no bystander there.
   ///

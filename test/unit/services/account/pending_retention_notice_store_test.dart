@@ -29,10 +29,10 @@ void main() {
       expect(notice.provisional, isTrue);
     });
 
-    test('carries no identifier — the stored keys are exactly three', () async {
+    test('carries no identifier — the stored keys are exactly these', () async {
       // The minimisation decision, pinned rather than described: no uid, no
       // email, no name, no resourceType, no legalBasis. This is what makes
-      // plaintext storage of a legal notice defensible, so a fourth key is a
+      // plaintext storage of a legal notice defensible, so another key is a
       // decision somebody has to make deliberately, not a line to slip in.
       await store.write(holdUntil: DateTime.utc(2027), provisional: false);
 
@@ -41,9 +41,51 @@ void main() {
 
       expect(
         stored.keys.toSet(),
-        {'holdUntil', 'provisional', 'writtenAt'},
+        {
+          'holdUntil',
+          'provisional',
+          'reviewKept',
+          'ownReportKept',
+          'writtenAt',
+        },
       );
     });
+
+    test('which kinds were kept survives the round trip', () async {
+      await store.write(
+        holdUntil: DateTime.utc(2027),
+        provisional: false,
+        reviewKept: false,
+        ownReportKept: true,
+      );
+
+      final notice = await store.read(now: DateTime.utc(2026, 9, 18));
+
+      expect(notice, isNotNull);
+      expect(notice!.reviewKept, isFalse);
+      expect(notice.ownReportKept, isTrue);
+    });
+
+    test(
+      'a record written before the kinds existed reads as a review',
+      () async {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString(
+          key,
+          jsonEncode({
+            'holdUntil': DateTime.utc(2027).toIso8601String(),
+            'provisional': false,
+            'writtenAt': DateTime.utc(2026, 9, 1).toIso8601String(),
+          }),
+        );
+
+        final notice = await store.read(now: DateTime.utc(2026, 9, 18));
+
+        expect(notice, isNotNull);
+        expect(notice!.reviewKept, isTrue);
+        expect(notice.ownReportKept, isFalse);
+      },
+    );
 
     test('a missing hold date survives the round trip as null', () async {
       // The server sent no parsable date, so the notice says less rather than
