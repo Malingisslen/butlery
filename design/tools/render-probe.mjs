@@ -105,9 +105,19 @@ let planned = 0, ranCases = 0, measured = 0, failed = 0;
 // Vilka artefakter körs, och på vilken profil? Ur REGISTRET — bord och
 // annoteringar får ingen viewportprofil och körs därför inte.
 const cases = [];
+const NA = [];
+const DARKIDS = new Set();
+if (DARK) for (const f of new Set(REG.artifacts.map(a => a.sourceFile))) {
+  for (const m of readFileSync(f, 'utf8').matchAll(/<[^>]*class="sc-item"[^>]*>/g)) {
+    const id = (/\bid="([^"]+)"/.exec(m[0]) || [])[1];
+    const st = (/data-theme-support="([^"]*)"/.exec(m[0]) || [])[1] || '';
+    if (id && st.split(/\s+/).includes('dark')) DARKIDS.add(id);
+  }
+}
 for (const a of REG.artifacts) {
   if (!a.viewportProfile) continue;
   if (ONLY && a.sourceElementId !== ONLY) continue;
+  if (DARK && !DARKIDS.has(a.sourceElementId)) { NA.push({ artifactId: a.artifactId, sourceElementId: a.sourceElementId, skal: 'NOT_APPLICABLE_NO_DARK_SUPPORT' }); continue; }
   const p = PROFILES.get(a.viewportProfile);
   if (!p) { toolErrors.push('profilen ' + a.viewportProfile + ' för ' + a.artifactId + ' finns inte i layoutkontraktet'); continue; }
   if (AT !== null) {
@@ -131,7 +141,8 @@ for (const c of cases) {
 // Gränsproberna körs mot EN representativ fil per läge — de mäter gränsen,
 // inte artefakten.
 const probeFile = [...new Set(REG.artifacts.filter(a => a.viewportClass === 'wide').map(a => a.sourceFile))][0];
-for (const pr of (AT === null ? LC.probes : [])) {
+if (DARK) for (const pr of LC.probes) NA.push({ probe: pr.width, skal: 'NOT_APPLICABLE_WIDTH_PROBE_IN_DARK' });
+for (const pr of (AT === null && !DARK ? LC.probes : [])) {
   if (!probeFile) break;
   byKey.set('PROB|' + pr.width, { file: probeFile, probe: pr,
     profile: { id: 'prob-' + pr.width, width: pr.width, height: 900, mode: pr.expectMode } });
@@ -197,6 +208,8 @@ try {
       netFails.length = 0;
       const nav = await send('Page.navigate', { url });
       if (nav.errorText) throw new Error('navigationsfel: ' + nav.errorText);
+      // Vanta pa dokumentet OCH pa jobbets ramar innan temat satts (ramarna byggs under laddning).
+      await send('Runtime.evaluate', { expression: `(async () => { if (document.readyState !== 'complete') await new Promise(r => addEventListener('load', r, { once: true })); const ids = ${JSON.stringify(job.ids || [])}; for (let i = 0; i < 200 && !ids.every(id => document.getElementById(id)); i++) await new Promise(r => setTimeout(r, 50)); return ids.every(id => document.getElementById(id)); })()`, awaitPromise: true, returnByValue: true, timeout: 40000 });
 
       // Vänta på dokument, typsnitt och bilder — var för sig, med egna fel.
       if (DARK) {
@@ -205,6 +218,8 @@ try {
         const harSentinel = /id="arkivimport"/.test(readFileSync(job.file, 'utf8'));
         if (!tv || !tv.attributSentinel || (harSentinel && !tv.berknadSentinel))
           throw new Error('authored dark theme slog inte igenom: ' + ((tv && tv.skal) || 'ingen sentinel'));
+        const utanTema = job.ids.filter(id => !tv.rorda.includes(id));
+        if (utanTema.length) throw new Error('artefakter utan applicerat morkt tema: ' + utanTema.join(', '));
       }
       const ready = await send('Runtime.evaluate', {
         expression: `(async () => {
@@ -267,7 +282,7 @@ try {
 
 writeFileSync(join(outAbs, 'render-raw.json'), JSON.stringify({
   chrome: LC.render.chromeVersion, dpr: DPR, contractVersion: LC.version, colorScheme: DARK ? 'authored-dark' : 'light', temamekanism: DARK ? 'data-theme' : 'ingen',
-  plannedCases: byKey.size, ranCases, measured, failedCases: failed, plannedArtifacts: planned, toolErrors, results
+  notApplicable: NA, darkIds: [...DARKIDS].sort(), plannedCases: byKey.size, ranCases, measured, failedCases: failed, plannedArtifacts: planned, toolErrors, results
 }, null, 1));
 
 console.log('RENDER-SUMMARY planned_cases=' + byKey.size + ' ran_cases=' + ranCases +
