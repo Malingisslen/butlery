@@ -1,265 +1,185 @@
-# Plan — Art. 15-exportens fyra öppna frågor: Malins beslut 2026-09-17
+# Plan — BUT-2006 fråga 1: smalna av `contributorUserIds` till dem som lämnat ett spår
 
 ## Context
 
-Fyra poster i `docs/architecture/ACCEPTED_DEVIATIONS.md` och `.claude/rules/accepted-deviations.md`
-sade att något hålls tillbaka ur Art. 15-bunten, att valet gjordes konservativt **utan att fråga
-Malin**, och att motsatsen är hennes beslut. Två hade ticket (BUT-2006, BUT-2094), två levde bara i
-regelfilen och var osynliga i backloggen. Alla fyra strypningarna verifierades i källan 2026-09-17
-innan frågorna ställdes — koden gjorde exakt vad posterna påstod.
+`contributorUserIds` på gruppens veckomeny (`group_weekly_menu_plans`) finns för att göra en
+avhoppare RADERBAR: när någon lämnar tas hen ur rostern, men id:t ligger kvar på rätter och i
+redigeringsspåret, och listan är handtaget raderingskaskaden hittar dokumentet med. I dag unionerar
+listan dock HELA rostern, så en passiv deltagare — som aldrig föreslog, röstade, redigerade eller
+var föremål för en spårrad — får ett bestående id på dokumentet utan att det finns något av hen att
+radera. Det är lagring utan syfte (art. 5.1 c), och sedan 2026-09-17 syns listan inte ens i
+exporten. **Malins beslut 2026-09-18: smalna av.**
 
-Utfallet efter en full panel och en eskalering: **ingen beteendeändring i exporten.** Alla fyra
-strypningarna står kvar, men som BESLUT i stället för som ärvda konservativa val. Kvar att bygga är
-en ärlighetsmening om en lucka bunten redan har, två strukna kommentarssatser som blivit falska, och
-beslutsposterna.
+## Kvar att avgöra
 
-| # | Sak | Beslut |
-|---|---|---|
-| 1 | Andra medlemmars `memberSince`, konversationsexporten | **Fortsätt stryp** |
-| 2 | `contributorUserIds`, gruppens veckomenyexport | **Fortsätt stryp** (omvänt svar) |
-| 3 | `reviewedBy` / `reviewNotes`, ingrediensförslag | **Fortsätt stryp** |
-| 4 | Ny sektion för delade listors varurader | **Bordlägg till BUT-1747** |
+**Inget.** Båda besluten är tagna: smalna av, och läs rätterna vid behov (valt framför "bara
+appen", "acceptera luckan" och "låt vara"). Resten av planen är bygget och ändrar inget beteende
+användaren ser.
 
----
+**Svagaste punkten:** testfixturen för desynk-grenen. Grenen har inget test i dag, och en fixtur som
+av misstag hamnar i radera-grenen i stället gör att testet passerar utan att pröva något. Den bär
+därför en premissassertion.
 
-# A — Kvar att avgöra
+## Mätt 2026-09-18 (inte hämtat ur poster)
 
-Alla fyra huvudbesluten är dina och redan tagna. Det här är vad som återstår, och där en rimlig
-person kan tycka annat.
+- **Huvudkällan är appen, inte avhoppet.** `GroupWeeklyMenuPlan.contributorUserIdsForWrite`
+  (`lib/models/menu/group_weekly_menu_plan.dart:281-303`) unionerar lagrat värde + varje
+  `participants[].userId` + `entries[].proposedBy`/`votedInBy` + `editTrail[].actorId`/`subjectId` +
+  `lastModifiedBy` (utom tombstonen `'deleted'`), på VARJE sparning (`toFirestore()` rad 371). En
+  passiv medlem hamnar alltså i listan så fort någon sparar veckan.
+- **Avhoppet unionerar villkorslöst.** `cutGroupMenuPlanAccess`
+  (`functions/src/groups/group-menu-access.ts:218-240`) `arrayUnion(...departing)` utom när taket
+  200 skulle passeras.
+- **Id-bärande fält på dokumentet:** `participants[].userId`, `participantUserIds`,
+  `memberPermissions`-nycklar, `lastModifiedBy`, `entries[].proposedBy`, `entries[].votedInBy`,
+  `editTrail[].actorId`, `editTrail[].subjectId`, `contributorUserIds`. Inget persisterat
+  `creatorId`.
+- **Vad ett avhopp tar bort:** `participants`, `participantUserIds`, `memberPermissions` skrivs om ur
+  kvarvarande. Kvar: rätter, spår, `lastModifiedBy`.
+- **Undantaget:** i desynk-grenen (`group-menu-access.ts:323-354`) skrivs `participants` INTE om —
+  avhopparens `userId` ligger kvar där, loggat på ERROR. Kaskadens fyra upptäcktshandtag
+  (`account-deletion-cascade.ts:1693-1719`: `participantUserIds`, `lastModifiedBy`,
+  `memberPermissions.<uid>`, `contributorUserIds`) läser INTE `participants`. Där är unionen alltså
+  det enda som gör en passiv avhoppare raderbar, och den måste stå kvar.
+- **Svar på den öppna frågan:** en passiv deltagare som lämnat har sitt id i INGET annat fält än
+  `contributorUserIds` — utom i desynk-grenen. Rekommendationen håller med det undantaget.
 
-### ① Den befintliga meningen som blir falsk — kvalificera eller stryka?
+## Vad som ändras
 
-`social_export_manager.dart:554-555` säger i dag `'Everything else these shares held is kept as it
-was stored.'` Den blir falsk i samma stund luckan deklareras bredvid den. Tre säten fann det
-oberoende.
+### 1. Appens modell — huvudändringen
 
-- **Kvalificera** (mitt förslag): meningen får ett undantag för varuraderna. Läsaren behåller den
-  sanna försäkran om resten av delningen.
-- **Stryk den helt**: kortare och kan inte bli falsk igen, men bunten tappar en sann mening om att
-  inget annat rörts. Kostnad: läsaren får mindre, inte mer.
+`contributorUserIdsForWrite` slutar unionera `participants[].userId`. Kvar: lagrat värde (så
+reglernas append-only `hasAll` aldrig bryts), rätternas föreslagare och röstare, spårets aktör och
+föremål, och `lastModifiedBy` utom tombstonen. En medlem som LÄMNAT ett spår kommer därmed in i
+listan i samma sparning som skapar spåret — före avhoppet, som i dag.
 
-*Vill du ha strykningen i stället, säg "stryk den".*
+### 2. Servern — villkorad union vid avhopp, med riktad läsning (Malins val 2026-09-18)
 
-### ② Ska grannfilens falska rad med i samma commit?
+**Varför det inte räcker att kontrollera det servern redan läser** (säkerhetsarkitekten, mätt):
+`cutGroupMenuPlanAccess` läser med `.select("participants", "participantUserIds",
+"memberPermissions", "editTrail", "contributorUserIds")` (`group-menu-access.ts:129-135`) och väljer
+medvetet bort `entries`, som kan vara upp till 1 MB per vecka gånger upp till 500 veckor. Reglerna
+har inget storlekstak på `entries`. Och `entries[].proposedBy`/`votedInBy` är förfalskningsbara av
+vilken redaktör som helst, utanför modellen. Kontrollerar servern bara det den redan läser, kan ett
+id som ett eget program lagt in bland rätterna inte raderas efter avhopp. Att lägga `entries` i
+huvudläsningen riskerar i stället minnet, och ett avhopp som kraschar lämnar kvar åtkomsten.
 
-`preferences_export_manager.dart:298` bär `/// Chosen conservatively without asking Malin;
-STRIPPING it is hers to decide.` om `delivered_notifications`. Den har varit **falsk sedan
-2026-09-10**, då du beslutade att behålla namnet — posten superseddades i båda avvikelsefilerna,
-kommentaren följde aldrig med.
+**Design — normalgrenen, per vecka och per avgående uid `u`:**
+1. `u` står redan i lagrat `contributorUserIds` → ingen åtgärd (unionen vore en no-op).
+2. `u` är `actorId` eller `subjectId` i `editTrail` (redan läst) → unionera.
+3. `lastModifiedBy === u` → unionera. `lastModifiedBy` läggs till i `.select()` — en sträng, ingen
+   minnesrisk.
+4. Annars: **riktad läsning av just den veckans `entries`**, ett dokument i taget (Admin SDK
+   `getAll(ref, { fieldMask: ["entries"] })`), och unionera om `u` är `proposedBy` eller i
+   `votedInBy`. **En läsning per vecka, inte per avgående:** alla avgående som fortfarande är
+   oavgjorda för den veckan prövas mot samma läsning, så att flera som lämnar samtidigt inte ger
+   flera läsningar av samma dokument. Minnet är begränsat till ett dokument. Kostnaden är en extra läsning per vecka där en
+   avgående varken är registrerad eller står i spåret — i praktiken en passiv avhoppare, och avhopp
+   är sällsynta.
+5. **Misslyckas den riktade läsningen → unionera ändå** och logga. Kan vi inte avgöra om det finns
+   ett spår, väljer vi raderbarhet framför minimering.
 
-- **Ta med den** (mitt förslag): en rad, samma klass, och precis den syskonkopia lektionerna säger
-  blir kvarlämnad.
-- **Egen commit**: håller diffen smalare, men en falsk kommentar ligger kvar längre.
+**Takaritmetiken räknas på den FILTRERADE mängden** — de avgående som faktiskt ska unioneras.
+Skippa-i-stället-för-trunkera är oförändrat.
 
-*Vill du ha den i en egen commit, säg "egen commit".*
+**Desynk-grenen: unionen står kvar villkorslöst**, av skälet ovan.
 
-### Svagaste punkten
+### 2b. Kommentarer som blir falska — stryks, skrivs inte om (arkeologen)
 
-Den exakta ordalydelsen på rad 4:s nya mening är inte skriven än. UX-sätet ställde två krav som drar
-i olika riktningar: den måste vara smal nog att inte läsas på systersektionen (som *har* sina
-varurader med), och ändå läsas som en obyggd lucka snarare än en integritetsstrykning. Jag skriver
-den vid redigeringen och pinnar den; om den blir klumpig är det där det syns.
+Tre kodkommentarer påstår den gamla villkorslösa unionen och blir falska av ändringen:
+- `group-menu-access.ts` rad ~47-52: "…so `contributorUserIds` is unioned here in the same write" —
+  gäller inte längre normalgrenen.
+- `group_weekly_menu_plan.dart` fältets doc (~177-190): "every uid the document currently names" —
+  falskt, en passiv rostermedlem nämns av dokumentet men unioneras inte.
+- `group_weekly_menu_plan.dart` `contributorUserIdsForWrite`-doc (~272-280): "Any field that can hold
+  a uid … must be unioned here" — falskt, `participants` unioneras inte längre.
 
----
+Den falska satsen stryks. Ny text bara där koden annars saknar förklaring, och då bara vad koden
+GÖR (villkorad union, undantaget i desynk-grenen) — aldrig varför det en gång var annorlunda.
 
-# B — Bygget
+### 3. Oförändrat, medvetet
 
-### Rad 4 — den enda produktionsändringen
+- `firestore.rules`: taket och append-only påverkas inte — unionen blir mindre, aldrig större.
+  Rules-sviten bygger sina payloads för hand (`groupPlanBody`), inte ur modellen, så den berörs
+  inte. Ingen drift-test binder unionslogiken (`rules_numeric_bound_drift_test.dart` binder bara
+  siffran 200), och kartan beskriver fältets SYFTE, som är oförändrat.
+- Kaskaden och `probeResidualData`: `contributorUserIds` är fortfarande ett av fyra handtag.
+- Exporten: fältet stryps redan (beslut 2026-09-17).
+- **Framåtriktat:** passiva id som redan ligger i listan blir kvar tills kontot raderas — reglerna
+  tillåter ingen klient att ta bort en post, och en rensning via Admin SDK är inte i scope. Appen har
+  inga användare; antalet sådana rader i produktion är INTE mätt.
 
-`lib/services/account/export/social_export_manager.dart`, `exportSharedContent`s
-`data_minimisation` (rad 549-555):
+### 4. Beslutsposter och ärende
 
-- Den blanka meningen kvalificeras (eller stryks, per ①).
-- En mening säger att varuraderna i en lista *en vän skickat dig en kopia av* inte ingår, formulerad
-  som obyggd lucka och scopad lika tätt som `provenance`-strängen bredvid, så den inte kan läsas på
-  systersektionen som läser `unified_shared_shopping_lists` och skickar sina varurader.
-- Engelsk prosa i samma register som resten av blocket — konventionen i båda exportfilerna, oavsett
-  att appens UI är svenskt.
+Daterad supersederande post i båda speglarna. Den retirerar posten "The union can create the only
+surviving record that a PASSIVE participant was ever on a week … A minimisation question for Malin
+rather than a defect, and unasked." — ordagrant, per fil, på en rad, matchad på fullt citat plus
+ticket. Posten säger vad koden gör, desynk-undantaget och att ändringen är framåtriktad. BUT-2006:
+fråga 1 besvarad; ärendet stängs.
 
-**Avvisat, med mätning:** UX-sätet föreslog en `data_completeness`-nyckel i stället. Den är ingen
-sektionsnyckel — den ligger i `export_metadata` och byggs i `data_export_service.dart:397-419` ur
-trunkering och sektionsfel. En obyggd lucka där vore ett påstående om ett fel som inte hänt.
+## Test
 
-### Beslutsposter — fyra rader, två filer
-
-En daterad supersederande post per rad i BÅDA filerna. Superseder, aldrig stryk: posterna är
-beslutsregister och commit-grinden namnger regeln. Varje kopia citerar sin EGEN mening ordagrant, på
-EN rad, matchad på **fullt citat plus ticketnummer** — aldrig på den delade frasen.
-
-**Ingen siffra här, och det är avsiktligt.** Arkeologen sa att frasen återkommer tre gånger per fil;
-jag skrev en egen rättelse med högre siffror, och planauditören mätte att MIN siffra var fel — mitt
-sökmönster var bredare än frasen jag namngav, så det räknade in poster med varianter av ordalydelsen
-(`Chosen without asking Malin` utan "conservatively" på docs 2829, BUT-1971:s tomma-roster-post;
-`without asking her` i BUT-2044). Räkneordet stryks i stället för att räknas om en tredje gång.
-
-Regeln, som inte rostar: **matcha på fullt citat plus ticketnummer.** Flera obesläktade poster bär
-varianter av "chosen without asking", och minst två får inte röras — BUT-1957 (avgjord 2026-09-10)
-och BUT-2044 (`social_requests`, öppen, annan fråga). En grep på frasen i någon form är därför inte
-ett säkert urval; citatet och ticketen är det.
-
-Verifierade citat, per fil:
-- Rad 1 — regelfilen 357-358 / docs 2009-2010. Olika ordalydelse (docs börjar `**That redaction was
-  chosen conservatively without asking Malin**`).
-- Rad 2 — regelfilen 698-699 / docs 2908-2909. Identiska här.
-- Rad 3 — regelfilen 894-895 (`the two fields` … `it is open.`) / docs 3199-3200
-  (`reviewedBy`/`reviewNotes` … `it is OPEN.`), plus den bekräftande meningen i BUT-2038-posten,
-  regelfilen 1628-1629.
-- Rad 4 — regelfilen 2012-2013 / docs 4573. Olika ordalydelse: docs säger `Whether an export SECTION
-  ships is Malin's decision and is asked on the ticket;`. Förra planversionen citerade regelfilens
-  ordalydelse för båda — Technical Writer fann det, jag verifierade det.
-
-Rad 2:s post måste bära det panelen mätte: att fältet är klient-skrivet och bara append-only-
-begränsat (ingen kontroll av att ett uid någonsin var deltagare), att `public_profiles/{uid}` har
-`allow read: if isAuthenticated()` så vilket inloggat konto som helst löser ett uid till profilen,
-att ett minderårigt uid kan ligga där, och att BUT-2006 fråga 1 står kvar öppen. Och att beslutet
-gäller DENNA samling — inte auktoritet för fältet med samma namn på
-`unified_shared_shopping_lists`, vilket är det fel BUT-1732:s post finns till för att dokumentera.
-
-Rad 4:s post: bordlagd till serverbygget, inte avvisad; BUT-1747 bär nu två luckor med samma
-lösning; och den är en **förlanseringsgrind** — Art. 12(3)-fristen gäller från den dag riktiga rader
-finns.
-
-### ADR-0021
-
-Eskaleringen får en ADR: panelen mätte tre fakta som inte låg i underlaget, och Malin vände sitt eget
-beslut från behåll till stryp. Nästa lediga nummer är 0021. En rad i `docs/org/adr/README.md`.
-
-### Linear
-
-- **BUT-2006**: fråga 2 besvarad — strypningen står, nu som beslut. Fråga 1 stängs INTE med den.
-- **BUT-2094**: bordlagd, med den korrigerade premissen i klartext och länk till BUT-1747.
-- **BUT-1747**: bär nu två luckor med samma Admin-SDK-lösning; markeras som förlanseringsgrind.
-- Rad 1 och 3 får inget nytt ticket — beslutet hör hemma i posten, och ett ticket som föds stängt är
-  brus. Nämns i commit-meddelandet.
-- Review-händelsen appendas till `docs/org/metrics/events.jsonl` (inget loggarskript finns):
-  `tier: full-panel`, `panel: 6`, `outcome: escalated`, `conflicts: 1`, `escalations: 1`,
-  `adrs: ["ADR-0021"]`, `rubber_stamp: false`, `via: "exit-plan"`.
-
----
-
-# C — Mekaniskt, inga beslut
-
-Två strukna kommentarssatser som blivit falska, och de två radantalen.
-
-- `content_export_manager.dart:506-507`: satsen `Chosen conservatively without asking Malin, the way
-  the` chat_groups `projection was; keeping it is hers to decide.` **stryks.** Resten av blocket står
-  kvar — argumentet för strypningen är nu det beslutade skälet. Ingen ny prosa i samma redigering;
-  läs den överlevande texten ensam efteråt.
-- `preferences_export_manager.dart:298`: enradsstrykning per ②. **Mätt:**
-  `_redactOtherParticipants` i `social_export_manager.dart` bär INGEN sådan sats — en grep över hela
-  `lib/` ger exakt dessa två träffar.
-- `ACCEPTED_LARGE_FILES.md`: båda raderna räknas fram med `wc -l` i samma anrop som stagar.
-  `social_export_manager.dart`-raden säger 743 och filen mäter **722** — redan stale.
+- `test/unit/models/menu/group_weekly_menu_plan_test.dart`: `'unions every uid the document names'`
+  förväntar sig inte längre `roster-uid`. Nytt fall: en rostermedlem utan spår unioneras INTE. Nytt
+  fall: en rostermedlem som ÄR föreslagare unioneras. `'keeps a stored uid…'` står kvar oförändrat.
+- `functions/src/__tests__/chat-group-callables.test.ts`: `'records every departing member as a
+  contributor'` delas: en avgående MED spår registreras, en passiv registreras INTE.
+- **Desynk-grenen har i dag NOLL tester** (arkeologen). Nytt test, ny fixtur: en medvetet
+  inkonsistent seed där `participants` lämnar `remaining.length === 0` medan `memberPermissions` /
+  `participantUserIds` fortfarande nämner en överlevare — så att klipp-per-nyckel-grenen nås och
+  INTE radera-grenen. Testet bär en premissassertion att just den grenen nåddes (loggraden eller
+  att `participants` är orörd), annars kan sond (c) passera vakuöst.
+- **Spår bara bland rätterna** (säkerhetsarkitekten): en avgående vars id står i
+  `entries[].proposedBy` men varken i `contributorUserIds` eller i `editTrail` — formen ett eget
+  program kan skapa — ska registreras. Detta är testet som bevisar att den riktade läsningen körs.
+- **Riktad läsning misslyckas** → den avgående registreras ändå.
+- **Passiv avhoppare räknas inte mot taket:** en fixtur nära 200 där en passiv och en spårbärande
+  lämnar samtidigt; den spårbärande registreras.
+- **Båda** takfallen (`'over the cap with TWO departing…'`, `'exactly at the contributor cap…'`)
+  får spår på sina avgående; utan det slutar de pröva takaritmetiken och prövar i stället
+  villkoret.
+- Mutationssonder, i egen körning före grindarna: (a) återinför roster-unionen i modellen → fallet
+  "passiv unioneras inte" rodnar; (b) gör CF-unionen villkorslös → fallet "passiv registreras inte" rodnar; (c) gör
+  desynk-unionen villkorad → desynk-fallet rodnar; (d) hoppa över den riktade läsningen → fallet
+  "spår bara bland rätterna" rodnar; (e) låt ett läsfel resultera i ingen union → fallet "riktad
+  läsning misslyckas" rodnar. Varje sond ska göra exakt ett fall rött.
 
 ## Verifiering
 
-1. `dart format` rapporterar 0 ändrade filer FÖRE grindarna dispatchas.
-2. `flutter analyze --fatal-infos` rent.
-3. `flutter test test/unit/services/account/export/social_export_manager_test.dart` — den nya
-   meningen pinnas här (gruppen `exportSharedContent — shared shopping lists (BUT-1798)`, rad 2332),
-   ankrad på en fras bara DEN meningen bär.
-4. `flutter test test/unit/services/account/export/content_export_manager_test.dart` — grön UTAN
-   ändring. Rad 2 blev stryp, så `'drops the erasure handle from the bundle'` och dess
-   `data_minimisation`-assertion står kvar precis som de är. Rodnar något där är slutsatsen fel.
-5. `flutter test test/unit/security/rules_allowlist_drift_test.dart` — grön utan ändring.
-6. Mutationssond på den nya pinnade frasen, i EGEN körning (sonden skriver till `lib/`), följd av ett
-   **läs-endast** pass över de slutliga bytesen innan commit.
-7. `docs/onboarding/workflow-map.stale`: saknas nu, men båda exportfilerna matchar noden
-   `svc-export-managers`. Kontrolleras efter redigeringen; finns den, körs CLAUDE.md:s protokoll i
-   samma commit.
-8. `/verify`.
-9. Grindar: `code-reviewer` och `firebase-backend-security` (lib/ + GDPR-yta), samt
-   `integration-reviewer` på hela diffen — det enda passet som ser en beslutspost och koden som gör
-   den falsk i samma commit. Komplett fillista ur `git diff --cached --name-only`; varje grind
-   instrueras att öppna varje fil med `Read`. Staged mot granskade bytes avgörs med
-   `git rev-parse :<path>` mot `git hash-object <path>`, aldrig `git status`.
-
-## Vad som INTE ingår
-
-- Ingen sektion för `shared_content/{id}/items`. Ingen ny regelyta, ingen callable.
-- Ingen ändring i `firestore.rules`, inga cap- eller append-only-konjunkt.
-- BUT-2006 fråga 1 — din, obesvarad.
-- Om `email` ligger läsbar i `public_profiles`-raderna: omätt, nämns i posten som omätt, egen biljett.
-- Att exportbunten är engelsk medan användarna är svenska: UX-sätets världsmodellflagga, egen biljett.
+1. `dart format` 0 ändrade; `flutter analyze --fatal-infos` rent.
+2. `flutter test test/unit/models/menu/group_weekly_menu_plan_test.dart` och sviterna som läser
+   modellen (grep `contributorUserIdsForWrite` över `test/`, kör varje träff).
+3. `functions`: `npx tsc --noEmit` och CF-sviten för `chat-group-callables`; rules-sviten
+   `weekly-menu-plans-rules.test.ts` körs oförändrad och ska vara grön.
+4. Sonderna ovan, sedan läs-endast-pass.
+5. Grindar: `cloud-functions-specialist` (functions/src), `code-reviewer` + `testing-specialist`
+   (Dart), `firebase-backend-security` (modell som når Firestore), `integration-reviewer` (post mot
+   kod). Komplett fillista ur `git diff --cached --name-only`, varje fil med `Read`.
 
 ## Open questions
 
-**Inga arkitekturändrande okända.** De fyra besluten ställdes via AskUserQuestion 2026-09-17 och är
-infoldade, inklusive rad 2 som ställdes en andra gång när panelen mätte att underlaget var
-ofullständigt, och rad 4 som ställdes om när mätningen visade att klienten inte får läsa vägen alls.
-Det som återstår i tier A (① ordalydelse, ② commit-granularitet) är formuleringsval med
-förskrivna svarsstartare, inte okända — de ändrar ingen struktur och inget beteende.
+**Inga arkitekturändrande okända.** Besluten är Malins (2026-09-18): smalna av, och läs rätterna vid
+behov när säkerhetsarkitekten visat att servern annars inte ser dem. Antaganden, mätta i dag: listan
+över id-bärande fält ovan är komplett; kaskaden läser inte `participants`; desynk-grenen är den enda
+väg där en passiv avhoppare lämnar sitt id kvar utanför listan.
 
-**Antaganden som bygget vilar på**, var och en mätt i dag och inte hämtad ur en post:
-- `_redactGroupPlan` behåller sin strypning, så `content_export_manager_test.dart` är grön utan
-  ändring. Rodnar den är antagandet fel.
-- `rules_allowlist_drift_test.dart` binder reglerna ⊆ exporten ∪ `{userId}`, och
-  `reviewedBy`/`reviewNotes` står inte i regel-tillåtlistan — därför kräver rad 3 ingen kodändring.
-- Den nya meningen kan pinnas i `social_export_manager_test.dart` gruppen på rad 2332; det är den
-  enda sviten som anropar `exportSharedContent`.
-- Exakt två kommentarssatser i `lib/` bär det nu falska "hers to decide"-påståendet.
-
-**Namngivna, utanför den här ändringen, rangordnade efter blast radius:**
-1. **BUT-2006 fråga 1** — ska `contributorUserIds` unionera passiva deltagare alls? Din, obesvarad.
-   Störst räckvidd: den avgör om fältet skapar den enda noteringen om att någon som aldrig gjorde
-   något fanns på en vecka. Rad 2:s stryp svarar inte på den.
-2. **BUT-1747** — serverbygget som stänger både lämnade listor och delade listors varurader.
-   Förlanseringsgrind enligt Legal.
-3. **Ligger `email` läsbar i `public_profiles`-raderna?** Skrivregeln kräver fältet och läsregeln är
-   `isAuthenticated()`. Omätt; jag påstår varken att den är exponerad eller inte. Egen biljett.
-4. **Engelsk exportbunt för svenska användare** (Art. 12(1) "klart och tydligt språk") — UX-sätets
-   världsmodellflagga, egen biljett.
-
-## Panel och vad du inte fick se
-
-Router på den faktiska filunionen: `tier: full-panel`, nio säten. Seatade fem med genuin insats plus
-arkeologen: DPO, Legal Counsel, Security Architect, UX Writer, Technical Writer, Codebase
-Archaeologist. Bortvalda: FinOps (noll nya Firestore-läsningar), Product Manager (produktbeslutet är
-ditt och togs i dag), Software Architect (ingen lagerändring), Harness Owner (inget agentbeteende
-ändras). Sex av sex `approve-with-conditions`, noll block. Arkeologen: ingen återkallad historik —
-strypningen infördes en gång (`6039d86e1`, BUT-1971) och har aldrig rörts.
-
-**Vad du inte fick se**, skrivet därför att en attribution är ett påstående om en person inget prov
-kan hålla: ingen mätning av hur många uid en verklig veckas `contributorUserIds` innehåller, eller
-hur många rader som bär `reviewedBy` — det finns inga användare. Och `shared_content` hade noll
-dokument i butlery-app-1 när det mättes 2026-09-12, så rad 4:s sektion skulle inte exportera något i
-dag oavsett väg.
-
----
+**Verifieras först i bygget, inte antaget:** att Admin SDK:s `getAll` med `fieldMask` finns i den
+version `functions/` använder och hämtar bara det fältet. Håller det inte, blir den riktade läsningen
+en vanlig `get()` av ett dokument i taget — samma minnesgräns, fler bytes.
 
 ## What this means in plain language
 
-- **Ingenting ändras i vad du eller någon annan får ut ur sin dataexport.** Alla fyra sakerna du
-  svarade om hålls tillbaka precis som i dag. Skillnaden är att det nu är bestämt, inte ärvt.
-- **En sak blir ärligare.** Bunten får en mening som säger att varorna du lagt in i en lista en vän
-  skickat dig en kopia av inte följer med. De städas när du raderar kontot, men de exporteras inte —
-  och i dag står det ingenstans.
-- **Du ändrade dig om en av dem, och det var rätt.** Du sa först ja till att ta med listan över alla
-  som varit på en gruppvecka. Granskningen mätte tre saker som inte låg i mitt underlag: vem som
-  helst som kan redigera veckan kan smyga in någon annans id i listan, vilket inloggat konto som helst
-  kan slå upp ett id och få namnet, och ett barns id kan ligga där. Du vände till nej.
-- **Två kommentarer i koden var osanna och stryks.** Den ena har varit fel i en vecka — den sa att en
-  fråga väntade på dig, fast du redan svarat.
-- **Risken är låg och lätt att ångra.** Inget beteende ändras utom en mening i en textfil som ingen
-  funktion läser. Allt annat är anteckningar och biljetter. Går att backa med en commit.
-- **En sak väntar fortfarande på dig**, men inte i dag: ska den interna listan över alla som varit på
-  en gruppvecka ens innehålla folk som aldrig gjorde något? Den frågan står kvar öppen.
-
----
-
-## Tillägg 2026-09-18 — rad 4:s mening shippar INTE (Malins beslut)
-
-`code-reviewer` underkände meningen i `exportSharedContent`s `data_minimisation`: "item rows stored
-with the share itself" beskriver också listkopians `listData.items`, som REDAN exporteras
-(`shopping_social_share_module.dart` skriver hela listdokumentet på delningen, och
-`social_export_manager_test.dart` visar att raderna når bunten). Det som saknas är en separat
-undersamling som ingen kod skriver och som har noll rader. Meningen skulle ha sagt till den
-registrerade att något saknas i en bunt som innehåller det.
-
-Malin fick två vägar — ingen mening, eller en ny exakt mening som måste granskas om — och valde
-**ingen mening**. Strängen återställs till sina bytes före ändringen och testet tas bort. Luckan står
-kvar i avvikelseposterna och i BUT-1747, inte i bunten. Det avviker från planens klarspråkspunkt
-"En sak blir ärligare"; den punkten är inte längre sann.
-
-Kvar i `lib/` efter detta: de två strukna kommentarssatserna i `content_export_manager.dart` och
-`preferences_export_manager.dart`. Inget exportbeteende ändras.
+- **Ingenting ändras för den som använder appen.** Menyn, rösterna och gruppen fungerar som förut.
+- **Vi slutar spara en onödig anteckning.** Den som bara varit med i en gruppvecka utan att göra
+  något hamnar inte längre på en intern lista som finns kvar efter att hen lämnat.
+- **Den som gjort något går fortfarande att radera helt.** Listan fyller sin uppgift för dem.
+- **Ett undantag finns:** om gruppens deltagarlista har hamnat i otakt sparas personen ändå, eftersom
+  det annars inte skulle gå att radera hen.
+- **Det gäller framåt.** Redan sparade anteckningar ligger kvar tills kontot raderas. Appen har inga
+  användare, så i praktiken är det inget.
+- **När någon lämnar läser servern ibland rätterna**, en vecka i taget, för att se om personen har
+  föreslagit eller röstat på något. Det kostar lite mer arbete vid avhopp, som är sällsynta.
+- **Om servern inte kan avgöra saken sparas personen ändå**, så att hen alltid går att radera.
+- **Risk:** låg. Om listan skulle missa någon som faktiskt har spår på en vecka går den personen inte
+  att radera fullt ut — det är därför testerna prövar just det, även för spår som lagts in utanför
+  appen.

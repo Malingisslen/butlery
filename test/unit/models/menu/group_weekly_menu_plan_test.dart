@@ -330,7 +330,7 @@ void main() {
         );
       }
 
-      test('unions every uid the document names', () {
+      test('unions every uid that left a trace, and NOT the roster', () {
         final plan = planWith(
           participants: [_p('roster-uid')],
           entries: [
@@ -355,10 +355,10 @@ void main() {
           ],
         );
 
+        // BUT-2006.
         expect(
           plan.contributorUserIdsForWrite,
           unorderedEquals([
-            'roster-uid',
             'proposer-uid',
             'voter-uid',
             'actor-uid',
@@ -366,6 +366,25 @@ void main() {
             'writer-uid',
           ]),
         );
+      });
+
+      test('a roster member who DID something is unioned', () {
+        // The narrowing drops the roster as a SOURCE, not the people on it:
+        // being a participant must not stop a proposer from being recorded.
+        final plan = planWith(
+          participants: [_p('member-uid')],
+          entries: [
+            WeeklyMenuPlanEntry.create(
+              day: DayOfWeek.tue,
+              slot: MealSlot.middag,
+              recipeId: 'r',
+              recipeTitle: 'Soppa',
+              proposedBy: 'member-uid',
+            ),
+          ],
+        );
+
+        expect(plan.contributorUserIdsForWrite, ['member-uid']);
       });
 
       test('never unions the cascade tombstone', () {
@@ -376,9 +395,19 @@ void main() {
         final plan = planWith(
           participants: [_p('user-a')],
           lastModifiedBy: 'deleted',
+          editTrail: [
+            GroupMenuEditTrailRow(
+              actorId: 'user-a',
+              entryId: 'e1',
+              at: DateTime(2026, 4, 14),
+              action: 'removed',
+            ),
+          ],
         );
 
         expect(plan.contributorUserIdsForWrite, isNot(contains('deleted')));
+        // The control: the union ran, so the tombstone's absence is a decision
+        // rather than an empty result.
         expect(plan.contributorUserIdsForWrite, contains('user-a'));
       });
 
@@ -398,6 +427,7 @@ void main() {
         final plan = planWith(
           participants: [_p('user-a')],
           stored: const ['departed-uid'],
+          lastModifiedBy: 'user-a',
         );
         final decoded = GroupWeeklyMenuPlan.fromMap(
           plan.id,
@@ -418,6 +448,7 @@ void main() {
         // one there.
         final plan = planWith(participants: const []);
 
+        expect(plan.contributorUserIdsForWrite, isEmpty, reason: 'premise');
         expect(plan.toFirestore().containsKey('contributorUserIds'), isTrue);
       });
 

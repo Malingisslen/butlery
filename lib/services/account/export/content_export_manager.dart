@@ -554,8 +554,8 @@ class ContentExportManager {
             'included in full for the groups you are still a member of. '
             'Weeks in groups you have LEFT are not included at all. Your '
             'name is still removed from them when you delete your account. '
-            'The internal list each week keeps of everyone who has been on '
-            'it is not included: it exists only so your name '
+            'The internal list each week keeps is not included: it '
+            'exists only so your name '
             'can be erased, and it holds identifiers belonging to others.',
         if (entries.truncated) 'truncated': true,
       };

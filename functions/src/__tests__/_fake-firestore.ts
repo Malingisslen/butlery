@@ -267,8 +267,23 @@ export class FakeFirestore {
     return this.docRef(path);
   }
 
-  async getAll(...refs: FakeDocRef[]): Promise<FakeDocSnap[]> {
-    return refs.map((ref) => this.snapshot(ref.path));
+  /**
+   * Accepts a trailing `{ fieldMask }` the way the Admin SDK's `ReadOptions`
+   * does, and projects on it; without this the options object would be read
+   * as a document reference.
+   */
+  async getAll(
+    ...args: Array<FakeDocRef | { fieldMask?: string[] }>
+  ): Promise<FakeDocSnap[]> {
+    const last = args[args.length - 1];
+    const options =
+      last !== undefined && !("path" in last)
+        ? (args.pop() as { fieldMask?: string[] })
+        : undefined;
+    const fields = options?.fieldMask ?? null;
+    return (args as FakeDocRef[]).map((ref) =>
+      this.snapshot(ref.path, fields),
+    );
   }
 
   async runTransaction<T>(fn: (tx: unknown) => Promise<T>): Promise<T> {

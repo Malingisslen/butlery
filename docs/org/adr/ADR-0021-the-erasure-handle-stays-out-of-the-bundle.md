@@ -69,3 +69,8 @@ untouched and still Malin's.
 The pricing failure is the lesson worth keeping: her first answer was given on an incomplete
 question, and the correct move was to return to her with the measurement rather than build what she
 had said yes to. Advisory only.
+
+**Superseded in part, 2026-09-18.** BUT-2006 question 1 is answered: `contributorUserIds` now records
+uids that left a trace on the week (Malin's call). Retired: "BUT-2006 question 1 — whether the
+field should union passive participants at all — is untouched and still Malin's." The decision is
+recorded in the 2026-09-18 entry of `.claude/rules/accepted-deviations.md`.

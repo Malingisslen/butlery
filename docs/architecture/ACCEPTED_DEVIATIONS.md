@@ -5149,3 +5149,31 @@ Architect, UX Writer, Technical Writer and the Codebase Archaeologist. Six of si
 `approve-with-conditions`, no blocks. The Archaeologist measured no reverted history — the row-2
 strip was introduced once (`6039d86e1`, BUT-1971) and never touched since.
 BUT-1838/BUT-1971/BUT-2028/BUT-1716, 2026-09-17
+
+- **ASKED AND ANSWERED 2026-09-18 (BUT-2006, question 1) — `contributorUserIds` on the group
+  weekly menu plan records uids that left a trace on the week, not the roster.**
+  Each quote below sits on ONE line here; where the original wraps, the lines are joined.
+  Retired verbatim (BUT-1971): `` `contributorUserIds` unions every roster member, not only people who wrote something, so a member who never proposed, voted or edited gains a durable uid on the document at the moment they leave — where previously the roster entry was removed and nothing remained. ``
+  Retired verbatim (BUT-1971): `It is what makes erasure able to find them, so it is not removable without giving that up.`
+  Retired verbatim (BUT-1971): `A minimisation question for Malin rather than a defect, and unasked.`
+  Retired verbatim (2026-09-17 section): `` **Still open, and NOT answered by row 2:** BUT-2006 question 1 — whether `contributorUserIds` should union PASSIVE participants at all. ``
+  What the code does: `GroupWeeklyMenuPlan.contributorUserIdsForWrite` unions the stored value,
+  every `entries[].proposedBy` and `votedInBy`, every `editTrail[].actorId` and `subjectId`, and
+  `lastModifiedBy` except the tombstone — and no longer `participants`. `cutGroupMenuPlanAccess`
+  unions a departing uid if it left a trace: a trail row as actor or subject, the last
+  write, the promotion row the cut itself adds (whose actor is the leaver on a self-leave), or a
+  dish. `entries` is read per document with `getAll(ref, { fieldMask: ["entries"] })`, and only
+  when the cheaper fields do not settle it; a failed read records every uid it could not settle.
+  On a desynced roster the leavers stay in `participants`, which no erasure query reads, so the
+  ones that document still names are recorded regardless. The cap is measured on the uids being
+  recorded.
+  **Malin's explicit calls, 2026-09-18:** narrow the field; then, when the security review
+  measured that the server does not read `entries`, read the dishes on demand — chosen over
+  narrowing the app alone (a passive member would still be recorded on leaving), accepting the
+  gap as a deviation, and leaving it as it was. The read exists because dishes are client-written
+  and unvalidated element-wise: without it, a uid a hand-rolled client planted in `entries` would
+  be un-erasable once its owner left.
+  **Forward-only.** Passive uids already recorded stay until the account is erased — the rules
+  let no client remove an entry, and an Admin-SDK sweep is out of scope. **What she was NOT
+  shown:** any count of such rows; there are no users, so it is not measurable.
+  BUT-2006, 2026-09-18

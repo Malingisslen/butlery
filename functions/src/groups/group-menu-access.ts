@@ -34,6 +34,91 @@ export const MAX_TRAIL_ROWS = 50;
 export const MAX_CONTRIBUTOR_UIDS = 200;
 
 /**
+ * The uids in [candidates] that left a trace on the week [d]: a trail row as
+ * actor or subject, the last write, the promotion row this cut is about to add
+ * (its actor is the person departing on a self-leave), or a dish they proposed
+ * or voted for.
+ *
+ * `entries` is read only when the cheaper fields do not settle it, and through
+ * [oneAtATime], so a single dish read is in flight at any moment: the scan
+ * leaves `entries` out, and a hostile writer chooses
+ * how many weeks reach this read. Dishes are client-written and unvalidated
+ * element-wise, so a uid can sit there without having reached
+ * `contributorUserIds` through the app — the read is what keeps that uid
+ * erasable.
+ *
+ * A failed read records every uid it could not settle: when we cannot tell
+ * whether there is anything to erase, erasability wins over minimisation.
+ */
+async function departingWithATrace(
+  db: admin.firestore.Firestore,
+  d: admin.firestore.QueryDocumentSnapshot,
+  candidates: string[],
+  actorUid: string | null,
+  promotedUid: string | null,
+  groupKey: string,
+  logTag: string,
+  oneAtATime: <T>(read: () => Promise<T>) => Promise<T>,
+): Promise<string[]> {
+  if (candidates.length === 0) return [];
+  const traced = new Set<string>();
+
+  const trailRaw = d.get("editTrail");
+  if (Array.isArray(trailRaw)) {
+    for (const row of trailRaw as Record<string, unknown>[]) {
+      if (!row || typeof row !== "object") continue;
+      for (const key of ["actorId", "subjectId"]) {
+        const u = row[key];
+        if (typeof u === "string" && candidates.includes(u)) traced.add(u);
+      }
+    }
+  }
+  const writer = d.get("lastModifiedBy");
+  if (typeof writer === "string" && candidates.includes(writer)) {
+    traced.add(writer);
+  }
+  if (
+    promotedUid !== null &&
+    actorUid !== null &&
+    candidates.includes(actorUid)
+  ) {
+    traced.add(actorUid);
+  }
+
+  const unsettled = candidates.filter((u) => !traced.has(u));
+  if (unsettled.length === 0) return [...traced];
+  try {
+    const [full] = await oneAtATime(() =>
+      db.getAll(d.ref, { fieldMask: ["entries"] }),
+    );
+    const entries = full?.get("entries");
+    if (Array.isArray(entries)) {
+      for (const e of entries as Record<string, unknown>[]) {
+        if (!e || typeof e !== "object") continue;
+        const proposedBy = e.proposedBy;
+        if (typeof proposedBy === "string" && unsettled.includes(proposedBy)) {
+          traced.add(proposedBy);
+        }
+        const votedInBy = e.votedInBy;
+        if (Array.isArray(votedInBy)) {
+          for (const u of votedInBy) {
+            if (typeof u === "string" && unsettled.includes(u)) traced.add(u);
+          }
+        }
+      }
+    }
+  } catch (e) {
+    for (const u of unsettled) traced.add(u);
+    logger.error(`[${logTag}] dish read failed; recording departing uids`, {
+      groupKey,
+      planId: d.id,
+      errCode: (e as { code?: number | string } | null)?.code ?? "unknown",
+    });
+  }
+  return [...traced];
+}
+
+/**
  * BUT-1971 follow-up: a member who LEAVES a group that still has other members
  * keeps read AND write access to every week that existed while they were in it,
  * because `firestore.rules` gates `group_weekly_menu_plans` on
@@ -46,10 +131,11 @@ export const MAX_CONTRIBUTOR_UIDS = 200;
  * write. Editing only the projections would work until the next `save()`
  * regenerated them from the untouched roster and handed the access back.
  *
- * Their uid stays on the dishes and in the trail — Malin's call, 2026-08-30 —
- * so `contributorUserIds` is unioned here in the same write. That array is what
- * account erasure finds the document by once the roster no longer names the
- * person.
+ * Their uid stays on the dishes and in the trail — Malin's call, 2026-08-30.
+ * `contributorUserIds` is what account erasure finds the document by once the
+ * roster no longer names the person, so a departing uid that left a trace on a
+ * week is unioned into it in the same write (BUT-2006, Malin's call
+ * 2026-09-18).
  *
  * [groupKey] is the CONVERSATION id, not the `chat_groups` document id:
  * `group_weekly_menu_plans.groupId` stores `conversation.id` (minted by
@@ -110,11 +196,16 @@ export async function cutGroupMenuPlanAccess(
   );
   if (departing.length === 0) return;
   const departingSet = new Set(departing);
+  let readQueue: Promise<unknown> = Promise.resolve();
+  const oneAtATime = <T>(read: () => Promise<T>): Promise<T> => {
+    const next = readQueue.then(read);
+    readQueue = next.catch(() => undefined);
+    return next;
+  };
 
   try {
     // Named fields rather than a field-LESS `.select()`. A bare `.get()` would
-    // pull up to 1 MB per row for `entries` it never reads, which is the
-    // exposure that makes the cap of 500 safe here. The trail is itself capped
+    // pull up to 1 MB per row. The trail is itself capped
     // at 50 rows by `firestore.rules`.
     //
     // The trail is rewritten WHOLE rather than `arrayUnion`ed, which is a
@@ -132,6 +223,7 @@ export async function cutGroupMenuPlanAccess(
         "memberPermissions",
         "editTrail",
         "contributorUserIds",
+        "lastModifiedBy",
       )
       .limit(MAX_GROUP_MENU_PLANS + 1)
       .get();
@@ -199,6 +291,58 @@ export async function cutGroupMenuPlanAccess(
             ),
           };
 
+          // A departing uid that left something on THIS week to erase is
+          // recorded (BUT-2006). A member who never proposed, voted, edited or
+          // was the subject of a trail row leaves nothing here, and recording
+          // them would be the only trace that they were ever on the week.
+          //
+          // Except on a desynced roster (handled below): the leavers then STAY
+          // in `participants`, which no erasure query reads, so the ones this
+          // week still names are recorded whether or not they left a trace.
+          const mirrorRaw = d.get("participantUserIds");
+          const mirrorSurvivors = Array.isArray(mirrorRaw)
+            ? (mirrorRaw as unknown[]).filter(
+                (id) => !departingSet.has(id as string),
+              )
+            : [];
+          const permsRaw = d.get("memberPermissions");
+          const permSurvivors =
+            permsRaw && typeof permsRaw === "object"
+              ? Object.keys(permsRaw as Record<string, unknown>).filter(
+                  (id) => !departingSet.has(id),
+                )
+              : [];
+          const emptiesTheWeek =
+            remaining.length === 0 &&
+            mirrorSurvivors.length === 0 &&
+            permSurvivors.length === 0;
+
+          const knownRaw = d.get("contributorUserIds");
+          const known = Array.isArray(knownRaw) ? (knownRaw as unknown[]) : [];
+          const candidates = departing.filter((u) => !known.includes(u));
+          const toRecord = new Set(
+            emptiesTheWeek
+              ? []
+              : await departingWithATrace(
+                  db,
+                  d,
+                  candidates,
+                  actorUid,
+                  promotedUid,
+                  groupKey,
+                  logTag,
+                  oneAtATime,
+                ),
+          );
+          if (remaining.length === 0) {
+            for (const r of rows) {
+              const u = r?.userId;
+              if (typeof u === "string" && candidates.includes(u)) {
+                toRecord.add(u);
+              }
+            }
+          }
+
           // Bounded, for the same reason the trail is pruned one branch below:
           // the Admin SDK bypasses `firestore.rules`, so a union past the
           // 200-uid cap would be accepted here and would then refuse every
@@ -209,34 +353,21 @@ export async function cutGroupMenuPlanAccess(
           // rather than a free choice: it costs erasability on one exceptional
           // document, against certainly freezing the week for everyone. Logged
           // at ERROR because nothing retries this step, and that stream is the
-          // only signal anywhere that erasability was lost on a document — so
-          // the already-present arm is there to keep it from firing about a uid
-          // that IS recorded.
-          //
-          // Measured against the WHOLE departing set rather than one uid: the
-          // cap must hold after the union, not before it.
-          const knownRaw = d.get("contributorUserIds");
-          const known = Array.isArray(knownRaw) ? (knownRaw as unknown[]) : [];
-          const unrecorded = departing.filter((u) => !known.includes(u));
-          if (
-            unrecorded.length === 0 ||
-            known.length + unrecorded.length <= MAX_CONTRIBUTOR_UIDS
-          ) {
-            // The whole departing set, not just the unrecorded part: an
-            // `arrayUnion` of a value already present is a no-op, and sending
-            // it keeps this branch identical to the one-uid version the
-            // "already in a capped array" case pins.
-            update.contributorUserIds =
-              admin.firestore.FieldValue.arrayUnion(...departing);
-          } else {
-            logger.error(
-              `[${logTag}] contributor trail at cap; uids not recorded`,
-              {
-                groupKey,
-                contributors: known.length,
-                unrecorded: unrecorded.length,
-              },
-            );
+          // only signal anywhere that erasability was lost on a document.
+          if (toRecord.size > 0) {
+            if (known.length + toRecord.size <= MAX_CONTRIBUTOR_UIDS) {
+              update.contributorUserIds =
+                admin.firestore.FieldValue.arrayUnion(...toRecord);
+            } else {
+              logger.error(
+                `[${logTag}] contributor trail at cap; uids not recorded`,
+                {
+                  groupKey,
+                  contributors: known.length,
+                  unrecorded: toRecord.size,
+                },
+              );
+            }
           }
 
           if (promotedUid !== null && actorUid === null) {
@@ -292,24 +423,7 @@ export async function cutGroupMenuPlanAccess(
           // whose `participants` names only the leavers while a projection
           // still names somebody else is a desync, and deleting on the one
           // field is destructive.
-          const mirrorRaw = d.get("participantUserIds");
-          const mirrorSurvivors = Array.isArray(mirrorRaw)
-            ? (mirrorRaw as unknown[]).filter(
-                (id) => !departingSet.has(id as string),
-              )
-            : [];
-          const permsRaw = d.get("memberPermissions");
-          const permSurvivors =
-            permsRaw && typeof permsRaw === "object"
-              ? Object.keys(permsRaw as Record<string, unknown>).filter(
-                  (id) => !departingSet.has(id),
-                )
-              : [];
-          if (
-            remaining.length === 0 &&
-            mirrorSurvivors.length === 0 &&
-            permSurvivors.length === 0
-          ) {
+          if (emptiesTheWeek) {
             // Preconditioned on the version this step READ. The roster came
             // from a query snapshot, and poll-close mints the same
             // deterministic id — so without this a week re-planned between the

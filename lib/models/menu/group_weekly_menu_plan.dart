@@ -174,7 +174,9 @@ class GroupWeeklyMenuPlan {
   /// shallow enough that the document cannot grow without limit.
   static const int maxEditTrailRows = 50;
 
-  /// The stored array unioned with every uid the document currently names. Not
+  /// The stored array unioned with every uid that left a trace on the week — a
+  /// dish proposed or voted for, a trail row, the last write. Not the roster
+  /// (BUT-2006). Not
   /// a complete history: there is no backfill, so a uid that left a document
   /// before this field existed is not in it. Kept as a top-level
   /// array purely so account erasure can FIND the plan
@@ -267,10 +269,10 @@ class GroupWeeklyMenuPlan {
       participants.map((p) => p.userId).toList(growable: false);
 
   /// [contributorUserIds] as it must be WRITTEN: the stored value unioned with
-  /// every uid the document currently names.
+  /// every uid that left a trace on the week.
   ///
-  /// **Any field that can hold a uid, added to this model or to any type it
-  /// walks below — [GroupMenuParticipant], [WeeklyMenuPlanEntry],
+  /// **Any field that records something a person did on the week, added to this
+  /// model or to any type it walks below — [WeeklyMenuPlanEntry],
   /// [GroupMenuEditTrailRow] — must be unioned here.** A uid left out cannot be
   /// erased once a departure clears the roster, which is the failure this array
   /// exists to prevent. Stated as a rule rather than a checklist of the current
@@ -280,9 +282,6 @@ class GroupWeeklyMenuPlan {
   /// to keep reachable.
   List<String> get contributorUserIdsForWrite {
     final union = <String>{...contributorUserIds};
-    for (final p in participants) {
-      union.add(p.userId);
-    }
     for (final e in entries) {
       final proposedBy = e.proposedBy;
       if (proposedBy != null) union.add(proposedBy);

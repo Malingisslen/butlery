@@ -266,3 +266,5 @@
 {"ts":"2026-09-17T18:08:40.536Z","type":"trigger","fired":true,"signals":"erasure,firestore.rules,gdpr","ran":null}
 {"ts":"2026-09-17T18:09:20.337Z","type":"trigger","fired":true,"signals":"erasure,firestore.rules,gdpr","ran":null}
 {"type": "review", "tier": "full-panel", "panel": 6, "plan": "art15-oppna-fragor (streamed-greeting-conway.md)", "outcome": "escalated", "must_haves": 18, "findings_material": 5, "conflicts": 1, "escalations": 1, "adrs": ["ADR-0021"], "rubber_stamp": false, "ran": true, "via": "exit-plan", "tickets": ["BUT-1838", "BUT-1971", "BUT-2028", "BUT-1716", "BUT-2006", "BUT-2094"], "note": "four open Art. 15 withholding questions answered; founder reversed her own row-2 keep after the panel measured the field is client-written, uid-resolvable via public_profiles, and can hold a minor's uid", "ts": "2026-09-17T18:12:43.464511+00:00"}
+{"ts":"2026-09-18T12:43:12.189Z","type":"trigger","fired":true,"signals":"delete,deletion,firestore.rules,functions/src","ran":null}
+{"ts":"2026-09-18T12:43:24.776Z","type":"trigger","fired":true,"signals":"delete,deletion,firestore.rules,functions/src","ran":null}

@@ -965,6 +965,11 @@ void main() {
             'the left-groups clause beside it, so it would stop '
             'discriminating the day somebody reworded that one',
       );
+      expect(
+        result['data_minimisation'],
+        isNot(contains('everyone who has been on it')),
+        reason: 'BUT-2006',
+      );
     });
 
     test(

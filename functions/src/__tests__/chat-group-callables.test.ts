@@ -625,12 +625,10 @@ const cases: UnitCase[] = [
     },
   },
   {
-    // The contributor cap is measured against the WHOLE departing set, not one
-    // uid at a time: the array is what account erasure finds the plan by once
-    // the roster no longer names the person, and it must not be unioned past
-    // the 200 the rules bound or every later CLIENT save of that week is
-    // refused.
-    name: "records every departing member as a contributor",
+    // `contributorUserIds` is what account erasure finds the plan by once the
+    // roster no longer names the person. A departing member with a trace on the
+    // week must land in it.
+    name: "records a departing member who left a trace",
     fn: async () => {
       const fake = new FakeFirestore();
       fake.seed("group_weekly_menu_plans/c1_2026-W37", {
@@ -642,6 +640,7 @@ const cases: UnitCase[] = [
         ],
         participantUserIds: ["stays", "goes-a", "goes-b"],
         memberPermissions: { stays: "admin", "goes-a": "edit", "goes-b": "view" },
+        editTrail: [{ actorId: "goes-b", action: "removed", entryId: "e1" }],
         contributorUserIds: ["goes-a"],
       });
 
@@ -658,15 +657,235 @@ const cases: UnitCase[] = [
       assertEqual(
         [...contributors].sort().join(","),
         "goes-a,goes-b",
-        "the already-recorded uid is not duplicated and the new one is added",
+        "the already-recorded uid is not duplicated and the traced one is added",
       );
     },
   },
   {
-    // BUT-2058: the cap arithmetic with N>1 departing. The two existing cap
-    // cases route through `removeChatGroupMemberWithDeps`, which passes exactly
-    // one uid, so neither reaches `known.length + unrecorded.length` with a
-    // summand above 1.
+    // BUT-2006 (Malin, 2026-09-18). A member who never proposed, voted, edited
+    // or was the subject of a trail row leaves nothing on the week to erase, so
+    // recording them would be the only trace that they were ever there.
+    name: "does NOT record a departing member who left no trace",
+    fn: async () => {
+      const fake = new FakeFirestore();
+      fake.seed("group_weekly_menu_plans/c1_2026-W37", {
+        groupId: "c1",
+        participants: [
+          { userId: "stays", permission: "admin" },
+          { userId: "passive", permission: "view" },
+        ],
+        participantUserIds: ["stays", "passive"],
+        memberPermissions: { stays: "admin", passive: "view" },
+        entries: [{ id: "e1", recipeId: "r", proposedBy: "stays" }],
+        contributorUserIds: [],
+      });
+
+      await cutGroupMenuPlanAccess(fake.db, "c1", ["passive"], "passive", "test");
+
+      const plan = fake.read("group_weekly_menu_plans/c1_2026-W37")!;
+      assertEqual(
+        ((plan.contributorUserIds as string[]) ?? []).includes("passive"),
+        false,
+        "a member with no trace on the week is not recorded",
+      );
+      // The access cut is independent of the recording.
+      assertEqual(
+        Object.keys(plan.memberPermissions as Record<string, unknown>).join(","),
+        "stays",
+        "and is still cut from memberPermissions, which the rules read",
+      );
+    },
+  },
+  {
+    // Dishes are client-written and unvalidated element-wise, so a uid can sit
+    // in `entries` without having reached `contributorUserIds` through the app.
+    // The scan does not read `entries`; the targeted read is what finds it.
+    name: "records a departing member whose ONLY trace is a dish",
+    fn: async () => {
+      const fake = new FakeFirestore();
+      fake.seed("group_weekly_menu_plans/c1_2026-W37", {
+        groupId: "c1",
+        participants: [
+          { userId: "stays", permission: "admin" },
+          { userId: "cook", permission: "edit" },
+          { userId: "voter", permission: "view" },
+        ],
+        participantUserIds: ["stays", "cook", "voter"],
+        memberPermissions: { stays: "admin", cook: "edit", voter: "view" },
+        entries: [
+          { id: "e1", recipeId: "r", proposedBy: "cook", votedInBy: ["voter"] },
+        ],
+        contributorUserIds: [],
+      });
+
+      await cutGroupMenuPlanAccess(
+        fake.db,
+        "c1",
+        ["cook", "voter"],
+        "actor",
+        "test",
+      );
+
+      const contributors = (fake.read("group_weekly_menu_plans/c1_2026-W37")!
+        .contributorUserIds as string[]) ?? [];
+      assertEqual(
+        [...contributors].sort().join(","),
+        "cook,voter",
+        "a proposer and a voter found only in `entries` are both recorded",
+      );
+    },
+  },
+  {
+    // When the dish read fails we cannot tell whether there is anything to
+    // erase, and erasability wins over minimisation.
+    name: "records a departing member when the dish read FAILS",
+    fn: async () => {
+      const fake = new FakeFirestore();
+      fake.seed("group_weekly_menu_plans/c1_2026-W37", {
+        groupId: "c1",
+        participants: [
+          { userId: "stays", permission: "admin" },
+          { userId: "unknown", permission: "view" },
+        ],
+        participantUserIds: ["stays", "unknown"],
+        memberPermissions: { stays: "admin", unknown: "view" },
+        contributorUserIds: [],
+      });
+      const db = fake.db as unknown as { getAll: () => Promise<never> };
+      db.getAll = async () => {
+        throw Object.assign(new Error("unavailable"), { code: 14 });
+      };
+
+      await cutGroupMenuPlanAccess(fake.db, "c1", ["unknown"], "actor", "test");
+
+      const plan = fake.read("group_weekly_menu_plans/c1_2026-W37")!;
+      assertEqual(
+        ((plan.contributorUserIds as string[]) ?? []).includes("unknown"),
+        true,
+        "an unsettled uid is recorded when the read that would settle it fails",
+      );
+      assertEqual(
+        Object.keys(plan.memberPermissions as Record<string, unknown>).join(","),
+        "stays",
+        "and the access cut still happens",
+      );
+    },
+  },
+  {
+    // The cap is measured on the uids actually being recorded. A passive leaver
+    // must not push a traced one over it: 199 + 1 fits, 199 + 2 would not.
+    name: "a passive leaver does not count against the contributor cap",
+    fn: async () => {
+      const fake = new FakeFirestore();
+      fake.seed("group_weekly_menu_plans/c1_2026-W37", {
+        groupId: "c1",
+        participants: [
+          { userId: "stays", permission: "admin" },
+          { userId: "traced", permission: "edit" },
+          { userId: "passive", permission: "view" },
+        ],
+        participantUserIds: ["stays", "traced", "passive"],
+        memberPermissions: { stays: "admin", traced: "edit", passive: "view" },
+        editTrail: [{ actorId: "traced", action: "removed", entryId: "e1" }],
+        contributorUserIds: Array.from(
+          { length: MAX_CONTRIBUTOR_UIDS - 1 },
+          (_, i) => `other-${i}`,
+        ),
+      });
+
+      await cutGroupMenuPlanAccess(
+        fake.db,
+        "c1",
+        ["traced", "passive"],
+        "actor",
+        "test",
+      );
+
+      const contributors = (fake.read("group_weekly_menu_plans/c1_2026-W37")!
+        .contributorUserIds as string[]) ?? [];
+      assertEqual(
+        contributors.includes("traced"),
+        true,
+        "the traced leaver is recorded, landing exactly on the cap",
+      );
+      assertEqual(
+        contributors.includes("passive"),
+        false,
+        "and the passive one is not",
+      );
+    },
+  },
+  {
+    // The promotion row this cut writes names its ACTOR, who on a self-leave is
+    // the person departing. That row is a trace written in the same update, so
+    // the leaver must be recorded even with nothing else on the week.
+    name: "a self-leave that promotes records the leaver named by the new row",
+    fn: async () => {
+      const fake = new FakeFirestore();
+      fake.seed("group_weekly_menu_plans/c1_2026-W37", {
+        groupId: "c1",
+        participants: [
+          { userId: "leaver", permission: "admin" },
+          { userId: "left-behind", permission: "edit" },
+        ],
+        participantUserIds: ["leaver", "left-behind"],
+        memberPermissions: { leaver: "admin", "left-behind": "edit" },
+        contributorUserIds: [],
+      });
+
+      await cutGroupMenuPlanAccess(fake.db, "c1", ["leaver"], "leaver", "test");
+
+      const plan = fake.read("group_weekly_menu_plans/c1_2026-W37")!;
+      const trail = (plan.editTrail as { actorId: string }[]) ?? [];
+      assertEqual(
+        trail.some((r) => r.actorId === "leaver"),
+        true,
+        "premise: the promotion row names the leaver",
+      );
+      assertEqual(
+        ((plan.contributorUserIds as string[]) ?? []).includes("leaver"),
+        true,
+        "so the leaver is recorded, or that row's uid would be un-erasable",
+      );
+    },
+  },
+  {
+    // The desynced-roster branch: `participants` names only the leaver while a
+    // projection still names somebody else, so the delete gate refuses and the
+    // cut goes per key — leaving the leaver IN `participants`, which no erasure
+    // query reads. Recording them is then the only thing that keeps them
+    // erasable, whether or not they left a trace.
+    name: "a desynced roster records even a leaver with no trace",
+    fn: async () => {
+      const fake = new FakeFirestore();
+      fake.seed("group_weekly_menu_plans/c1_2026-W37", {
+        groupId: "c1",
+        participants: [{ userId: "passive", permission: "view" }],
+        participantUserIds: ["passive", "other"],
+        memberPermissions: { passive: "view", other: "admin" },
+        contributorUserIds: [],
+      });
+
+      await cutGroupMenuPlanAccess(fake.db, "c1", ["passive"], "actor", "test");
+
+      const plan = fake.read("group_weekly_menu_plans/c1_2026-W37");
+      assertEqual(plan !== undefined, true, "premise: the week was NOT deleted");
+      assertEqual(
+        (plan!.participants as { userId: string }[])
+          .map((p) => p.userId)
+          .join(","),
+        "passive",
+        "premise: the per-key branch ran, leaving `participants` untouched",
+      );
+      assertEqual(
+        ((plan!.contributorUserIds as string[]) ?? []).includes("passive"),
+        true,
+        "the leaver still named by `participants` is recorded",
+      );
+    },
+  },
+  {
+    // BUT-2058: the cap arithmetic with N>1 departing.
     //
     // 199 + 2 = 201 is over the cap, and the whole union is skipped rather than
     // truncated to 200. Losing a uid is the one thing this array exists to
@@ -685,6 +904,12 @@ const cases: UnitCase[] = [
         ],
         participantUserIds: ["stays", "goes-a", "goes-b"],
         memberPermissions: { stays: "admin", "goes-a": "edit", "goes-b": "view" },
+        // Both leavers carry a trace, or neither would be recorded at all and
+        // this would test the trace condition instead of the cap.
+        editTrail: [
+          { actorId: "goes-a", action: "removed", entryId: "e1" },
+          { actorId: "goes-b", action: "removed", entryId: "e2" },
+        ],
         // Non-overlapping, so both departing uids count as unrecorded.
         contributorUserIds: Array.from(
           { length: MAX_CONTRIBUTOR_UIDS - 1 },
@@ -741,6 +966,10 @@ const cases: UnitCase[] = [
         ],
         participantUserIds: ["stays", "goes-a", "goes-b"],
         memberPermissions: { stays: "admin", "goes-a": "edit", "goes-b": "view" },
+        editTrail: [
+          { actorId: "goes-a", action: "removed", entryId: "e1" },
+          { actorId: "goes-b", action: "removed", entryId: "e2" },
+        ],
         contributorUserIds: Array.from(
           { length: MAX_CONTRIBUTOR_UIDS - 2 },
           (_, i) => `other-${i}`,
@@ -1314,6 +1543,9 @@ const cases: UnitCase[] = [
         ],
         participantUserIds: ["stay", "leaver"],
         memberPermissions: { stay: "admin", leaver: "edit" },
+        // A trace, or the leaver would be skipped for having none and this
+        // would test the trace condition instead of the cap.
+        editTrail: [{ actorId: "leaver", action: "removed", entryId: "e1" }],
         contributorUserIds: Array.from(
           { length: MAX_CONTRIBUTOR_UIDS },
           (_, i) => `other-${i}`,
@@ -1337,47 +1569,54 @@ const cases: UnitCase[] = [
     },
   },
   {
-    // The already-present arm of the cap condition. Invisible in STORED state —
-    // unioning a uid the array already holds is a no-op — so this reads the
-    // recorded write PAYLOAD instead. Without the arm the field is omitted and
-    // a false "uid not recorded" ERROR fires about a uid that IS recorded, and
-    // that stream is the only signal anywhere that erasability was lost.
-    name: "a uid already in a capped array is still written, not reported missing",
+    // A uid the array already holds is not a candidate for the union, so it
+    // does not spend a place under the cap: 199 stored including the leaver,
+    // plus one new traced leaver, lands exactly on 200. Counting the
+    // already-recorded uid again would make it 201 and skip both.
+    name: "an already-recorded leaver does not spend a place under the cap",
     fn: async () => {
       const fake = new FakeFirestore();
-      seedExistingGroup(fake, ["stay", "leaver"], ["stay"]);
       fake.seed("group_weekly_menu_plans/c1_2026-W16", {
         groupId: "c1",
         participants: [
           { userId: "stay", permission: "admin" },
           { userId: "leaver", permission: "edit" },
+          { userId: "new", permission: "edit" },
         ],
-        participantUserIds: ["stay", "leaver"],
-        memberPermissions: { stay: "admin", leaver: "edit" },
+        participantUserIds: ["stay", "leaver", "new"],
+        memberPermissions: { stay: "admin", leaver: "edit", new: "edit" },
+        editTrail: [
+          { actorId: "leaver", action: "removed", entryId: "e1" },
+          { actorId: "new", action: "removed", entryId: "e2" },
+        ],
         contributorUserIds: [
           "leaver",
           ...Array.from(
-            { length: MAX_CONTRIBUTOR_UIDS - 1 },
+            { length: MAX_CONTRIBUTOR_UIDS - 2 },
             (_, i) => `other-${i}`,
           ),
         ],
       });
 
-      await removeChatGroupMemberWithDeps(fake.db, "leaver", "g1", "leaver");
-
-      const write = fake.writes.find(
-        (w) =>
-          w.op === "update" &&
-          w.path === "group_weekly_menu_plans/c1_2026-W16",
+      await cutGroupMenuPlanAccess(
+        fake.db,
+        "c1",
+        ["leaver", "new"],
+        "actor",
+        "test",
       );
-      assertEqual(write !== undefined, true, "the plan was written");
+
+      const contributors = (fake.read("group_weekly_menu_plans/c1_2026-W16")!
+        .contributorUserIds as string[]) ?? [];
       assertEqual(
-        Object.prototype.hasOwnProperty.call(
-          write!.data ?? {},
-          "contributorUserIds",
-        ),
+        contributors.includes("new"),
         true,
-        "the union is still sent for a uid the array already holds",
+        "the new traced leaver is recorded, landing exactly on the cap",
+      );
+      assertEqual(
+        contributors.length,
+        MAX_CONTRIBUTOR_UIDS,
+        "and the already-recorded one was not counted twice",
       );
     },
   },
