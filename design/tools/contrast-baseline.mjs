@@ -145,7 +145,20 @@ const rapport = {
 const fel = [];
 // 319 sedan de nio komponentpanelerna fick viewportprofil. Fore det var
 // namnaren 310 och de nio matt es inte av nagon motor alls.
-if (populationer.registrerade_produktartefakter_st !== 319)
+// Morkt (authored-dark) mats bara dar morkt ar tillampligt: namnaren ar render-probens
+// darkIds (ramar med data-theme-support ~ dark), inte hela produktpopulationen. En
+// saknad tillamplig ram faller fortfarande; ej tillampliga redovisas explicit.
+if (D.colorScheme === 'authored-dark') {
+  const tillampliga = Array.isArray(D.darkIds) ? D.darkIds : null;
+  populationer.morkt = { EXPECTED_DARK_FRAME_COUNT: tillampliga ? tillampliga.length : null,
+    NOT_APPLICABLE_st: Array.isArray(D.notApplicable) ? D.notApplicable.length : null };
+  if (!tillampliga) fel.push('mork rendering saknar darkIds — tillampligheten kan inte bevisas');
+  else {
+    const saknas = tillampliga.filter(id => !idProdukt.has(id)), extra = [...idProdukt].filter(id => !tillampliga.includes(id));
+    if (saknas.length) fel.push('tillampliga morka ramar saknas: ' + saknas.join(', '));
+    if (extra.length) fel.push('ramar utan morkt stod matta som morka: ' + extra.join(', '));
+  }
+} else if (populationer.registrerade_produktartefakter_st !== 319)
   fel.push('produktpopulationen är ' + populationer.registrerade_produktartefakter_st + ', förväntat 319');
 if (mätningar.some(m => !m.applicability))
   fel.push('en kontrollmätning saknar applicability — fail closed');
