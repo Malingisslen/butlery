@@ -6,7 +6,8 @@
 //   ST-01..07  lage/varde i namnet ar aldrig identitet (semantiska lagesfraser, inte skiljetecken)
 //   C01..C14   innehallsobjekt: synligt innehall byts, agaren bestar
 //   G01..G06   fail closed: legacy-skuld, veckomenyns byten, innehallsmallar, varde utan objekt
-import { semantiskAgare, tilldela, narmasteAnkare, ankarRevision, LEGACY_IDENTITY_DEBT, POLICY, handoffMatris } from './semantic-owner-identity.mjs';
+//   R12-01..10, R12-SW01..04, R12-EP01..02  kallbundna handoffmonster (ankare → monster)
+import { semantiskAgare, tilldela, narmasteAnkare, ankarRevision, LEGACY_IDENTITY_DEBT, POLICY, handoffMatris, MONSTERBINDNINGAR } from './semantic-owner-identity.mjs';
 import { readFileSync, existsSync } from 'node:fs';
 
 const res = [];
@@ -103,6 +104,32 @@ lika('G03', 'veckomenyns byte med ankare: ratten byts, agaren bestar (inte H15)'
 { const x = semantiskAgare(f({ art: 'veckobyt', namn: 'Byt ut Tacos', ramEtikett: 'Veckomeny · byt', kedja: inne('occ-veckoplats', ['Tacos']) })); prov('G04', 'veckomenyns byte styrs inte av H15', !x.monster && /handling::replace-dish$/.test(x.nyckel), x.nyckel); }
 olost('G05', 'rostning utan objektankare faller stangt', f({ art: 'veckorostning', roll: 'radio', namn: 'Rösta på Tacos' }));
 olost('G06', 'valt varde utan ankrat installningsobjekt faller stangt', f({ art: 'installningar', namn: 'Svenska' }));
+
+// ── R12 · kallbundna handoffmonster (ankare → monster; namn, glyf, tvilling och lage ar aldrig identitet)
+const bind = (art, handling) => Object.entries(MONSTERBINDNINGAR).filter(([, b]) => b.art === art && (!handling || b.handling === handling)).map(([occ]) => occ);
+const [STANG] = bind('lagamorkt', 'close'), [EPOST] = bind('epostverif'), [KEBAB] = bind('storsttext'), [KAMERA] = bind('hemtom'), KORT = bind('cooksnapgalleri'), RAD = bind('notisinstallningar');
+const sj = (art, occ, x) => f({ art, roll: 'button', kedja: self(occ), ...x });
+lika('R12-01', 'avvikande nuvarande namn → handoffens namn: agaren oforandrad', sj('lagamorkt', STANG, { namn: 'Avsluta matlagningsläget', glyf: 'x' }), sj('lagamorkt', STANG, { namn: 'Stäng matlagningsläget', glyf: 'x' }));
+lika('R12-02', 'glyfen byts: agaren oforandrad', sj('storsttext', KEBAB, { namn: 'Fler val', glyf: 'more-vertical' }), sj('storsttext', KEBAB, { namn: 'Fler val', glyf: 'more-horizontal' }));
+lika('R12-03', 'tvillingen forsvinner efter avgorandet (ingen glyf, inget tvillingbevis): agaren oforandrad', sj('hemtom', KAMERA, { namn: 'Fota en receptsida', glyf: 'camera' }), sj('hemtom', KAMERA, { namn: 'Fota en receptsida', glyf: null }));
+lika('R12-04', 'syskon infogas fore (ordinal laser inte)', sj('storsttext', KEBAB, { namn: 'Fler val', ordProd: 5 }), sj('storsttext', KEBAB, { namn: 'Fler val', ordProd: 6 }));
+lika('R12-05', 'kontrollen flyttas bland syskonen', sj('storsttext', KEBAB, { namn: 'Fler val', x: 300 }), sj('storsttext', KEBAB, { namn: 'Fler val', x: 10 }));
+{ const a = f({ art: 'cooksnapgalleri', roll: 'button', namn: 'Alternativ för din bild', kedja: inne(KORT[0], ['Du', '2 h']) }), b = f({ art: 'cooksnapgalleri', roll: 'button', namn: 'Alternativ för Annas bild', kedja: inne(KORT[1], ['Anna', 'i går']) });
+  const r = tilldela([a, b]); prov('R12-06', 'samma monster i tva olika ankrade kort → skilda agare', r[0].id && r[1].id && r[0].id !== r[1].id, r.map(x => x.id).join(' / ')); }
+{ const r = tilldela([f({ art: 'cooksnapgalleri', roll: 'button', namn: 'Alternativ för din bild', kedja: inne(KORT[0], []) }), f({ art: 'cooksnapgalleri', roll: 'button', namn: 'Dela bilden', kedja: inne(KORT[0], []) })]);
+  prov('R12-07', 'tva kandidater i samma bundna kort utan starkare skillnad → fail closed', r.every(x => x.id === null), r.map(x => x.status).join(',')); }
+lika('R12-08', 'lagesformulering byts: agaren oforandrad', sj('onbimport', bind('onbimport')[0], { namn: 'Fotografera ett recept, avstängd till dess kameran tillåts' }), sj('onbimport', bind('onbimport')[0], { namn: 'Fotografera ett recept' }));
+{ const nu = n(sj('vanprofildelning', bind('vanprofildelning')[0], { namn: 'Fler alternativ för profilen' })), sen = n(sj('vanprofildelning', bind('vanprofildelning')[0], { namn: 'Fler åtgärder för profilen' }));
+  prov('R12-09', 'nuvarande och framtida namn → samma agare med monstrets handling', nu === sen && /::handling::more-actions$/.test(nu), nu + ' / ' + sen); }
+{ const x = n(f({ art: 'lagamorkt', roll: 'button', namn: 'Rensa sökningen', glyf: 'x' })); prov('R12-10', 'orelaterad kontroll med samma glyf binds inte till monstret', !/::handling::close$/.test(x) && !/objekt::/.test(x), x); }
+const sw = (occ, x) => f({ art: 'notisinstallningar', roll: 'switch', namn: 'Reglage', kedja: inne(occ, ['Recept']), ...x });
+lika('R12-SW01', '"Reglage" → radens etikett: agaren oforandrad', sw(RAD[0]), sw(RAD[0], { namn: 'Recept' }));
+{ const r = tilldela([sw(RAD[0]), sw(RAD[1])]); prov('R12-SW02', 'tva rader med samma nuvarande namn forblir skilda', r[0].id && r[1].id && r[0].id !== r[1].id, r.map(x => x.id).join(' / ')); }
+lika('R12-SW03', 'radens etikett byts: agaren oforandrad', sw(RAD[0], { kedja: inne(RAD[0], ['Recept']) }), sw(RAD[0], { kedja: inne(RAD[0], ['Nya recept']) }));
+lika('R12-SW04', 'reglagets lage byts: agaren oforandrad', sw(RAD[0], { namn: 'Recept, på' }), sw(RAD[0], { namn: 'Recept, avstängd' }));
+lika('R12-EP01', 'epostverif: synlig formulering byts, den verkliga handlingen bestar', f({ art: 'epostverif', roll: 'button', namn: 'Skicka igen', kedja: self(EPOST) }), f({ art: 'epostverif', roll: 'button', namn: 'Skicka länken igen', kedja: self(EPOST) }));
+{ const a = n(f({ art: 'epostverif', roll: 'button', namn: 'Skicka igen', kedja: self(EPOST) })), b = n(f({ art: 'epostverif', roll: 'button', namn: 'Skicka koden igen', kedja: self(EPOST) }));
+  prov('R12-EP02', 'handoffens namnkonflikt ("Skicka koden igen") andrar inte agaren; handlingen ar lanken, inte koden', a === b && /::handling::resend-verification-link$/.test(a), a + ' / ' + b); }
 
 // ── P · policyn tacker handoffens 49 regler (om handoffen finns i roten)
 const H = 'Butlery tillganglighetshandoff.dc.html';

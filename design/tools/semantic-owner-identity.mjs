@@ -226,9 +226,47 @@ export const LOKALA_HANDLINGAR = [
   ['current-value', k => VARDEN.test(String(k.namn).trim()), 'installningens valda varde (sprak, på/av) — vardet ar lage, inte identitet']];
 export const lokalHandling = k => (LOKALA_HANDLINGAR.find(([, f]) => f(k)) || [null])[0];
 
+// KALLBUNDNA HANDOFFMONSTER (R12). Ett kallankare som bevisats instansiera ett handoffmonster binds har
+// uttryckligen: ankare → regel + handling. Beviset (glyf, tvilling, sammanhang) anvandes EN gang vid
+// avgorandet och lases aldrig igen — namn, glyf, lage och tvillingar kan andras utan att agaren andras.
+// bunden: SJALV = det ankrade elementet ar kontrollen; annars rollen hos den kontroll i objektet som bindningen
+// avser (en tvetydig traff faller stangt via tilldela). Ingen visuell heuristik ("kryssglyf => close").
+// epostverif: handoffens H41 (nedrakning/skicka igen) men vyn skickar en LANK — handlingen ar
+// resend-verification-link; namnkravet "Skicka koden igen" ar ett separat, olost normkonflikt.
+export const MONSTERBINDNINGAR = Object.freeze({
+  'occ-sqwgjvtaefne': { art: 'allergener', regel: 'H20', handling: 'toggle-setting', bunden: 'switch' },
+  'occ-onayqntglegj': { art: 'allergener', regel: 'H20', handling: 'toggle-setting', bunden: 'switch' },
+  'occ-iiomdcbgckdf': { art: 'allergener', regel: 'H20', handling: 'toggle-setting', bunden: 'switch' },
+  'occ-kajlctktzblm': { art: 'cooksnapgalleri', regel: 'H04', handling: 'more-actions', bunden: 'button' },
+  'occ-eforxhockavf': { art: 'cooksnapgalleri', regel: 'H04', handling: 'more-actions', bunden: 'button' },
+  'occ-felravaojrkb': { art: 'epostverif', regel: 'H41', handling: 'resend-verification-link', bunden: 'SJALV' },
+  'occ-yqothacnvnhd': { art: 'hemtom', regel: 'H48', handling: 'take-photo', bunden: 'SJALV' },
+  'occ-eowhvihfuelh': { art: 'installningar', regel: 'H20', handling: 'toggle-setting', bunden: 'switch' },
+  'occ-uqcmuermtfbl': { art: 'lagaliggande', regel: 'H03', handling: 'close', bunden: 'SJALV' },
+  'occ-imaflvduaqco': { art: 'lagamorkt', regel: 'H03', handling: 'close', bunden: 'SJALV' },
+  'occ-jekixzlgfkan': { art: 'lagastaende', regel: 'H03', handling: 'close', bunden: 'SJALV' },
+  'occ-rjuqllmkiouu': { art: 'lagastaende320', regel: 'H03', handling: 'close', bunden: 'SJALV' },
+  'occ-aukacbsbrdew': { art: 'notisinstallningar', regel: 'H20', handling: 'toggle-setting', bunden: 'switch' },
+  'occ-irtjvpvvevly': { art: 'notisinstallningar', regel: 'H20', handling: 'toggle-setting', bunden: 'switch' },
+  'occ-zaqxkctxeiqv': { art: 'notisinstallningar', regel: 'H20', handling: 'toggle-setting', bunden: 'switch' },
+  'occ-durbkqquvyzz': { art: 'notisinstallningar', regel: 'H20', handling: 'toggle-setting', bunden: 'switch' },
+  'occ-ynqewhlxcxvv': { art: 'notisinstallningar', regel: 'H20', handling: 'toggle-setting', bunden: 'switch' },
+  'occ-dxtzbgmkzywa': { art: 'notisinstallningar', regel: 'H20', handling: 'toggle-setting', bunden: 'switch' },
+  'occ-esunrbxqhghe': { art: 'notisinstallningar', regel: 'H20', handling: 'toggle-setting', bunden: 'switch' },
+  'occ-xnjjfrzeodza': { art: 'onbimport', regel: 'H48', handling: 'take-photo', bunden: 'SJALV' },
+  'occ-xvuwbgpxqzoz': { art: 'storsttext', regel: 'H04', handling: 'more-actions', bunden: 'SJALV' },
+  'occ-obfjmqzimeic': { art: 'vanprofildelning', regel: 'H04', handling: 'more-actions', bunden: 'SJALV' },
+});
+/** Bindning for en kontroll vars narmaste ankare ar bundet, annars null. */
+export function monsterBindning(k) {
+  const o = k.objekt; if (!o || !o.ankare) return null; const b = MONSTERBINDNINGAR[o.ankare]; if (!b || b.art !== k.art) return null;
+  return (o.agerSjalv ? b.bunden === 'SJALV' : b.bunden !== 'SJALV' && k.roll === b.bunden) ? b : null;
+}
+
 /**
  * Agarnyckel ur semantiska fakta, i prioritetsordning:
  *   1 kallforfattat ankare ur upptackten (kallAnkare) — ororat
+ *   1b kallbundet handoffmonster (MONSTERBINDNINGAR): <ram>::objekt::<ankare>::handling::<handling>
  *   2 handoffregel → SEMANTIC_PATTERN_KEY (objektankare nar regeln kraver det eller vid upprepning)
  *   3 innehallsburen agare → objektankaret; namnet bara utan objektets innehall
  *   4 dokumenterad handling, grupp eller stabilt namn
@@ -241,6 +279,8 @@ export function semantiskAgare(k0) {
   const lage = lagesSemantik(k0.namn, k0.roll);
   const k = lage ? { ...k0, namn: lage.stabil, lage: lage.tillstand } : k0;
   const o = k.objekt || null;
+  const b = monsterBindning(k);
+  if (b) return { nyckel: 'OWNER::' + k.art + '::objekt::' + slug(o.ankare) + '::handling::' + b.handling, regel: 'BINDNING', monster: b.regel };
   const monster = styrandeRegel(k);
   if (monster) {
     const behover = kraverObjektankare(monster) || k.anvandAnkare;
