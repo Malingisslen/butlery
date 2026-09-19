@@ -16,7 +16,19 @@ rule is internalised (roughly six weeks).
 
 ## Current
 
-### En laglig utfästelse i bunten, och ett påhittat symbolnamn i en ADR (2026-09-17)
+### [Delivery] A withdrawal patch goes stale once a later fix edits the batch's own regions (BUT-1808, 2026-08-01)
+Date: 2026-08-01
+Trigger: The 2026-08-01 parallel sprint withdrew failing batches with `git apply -R`. Later automated fixes had already edited the regions those batches created — doc comments, added tests, follow-up hardening — so reversing meant deleting text the batch never wrote, and the 3-way merge could not resolve it: 3/7, 4/7 and 5/7 files across three batches, the accepted-deviations ledger among them.
+Rule: A batch patch reverses only while its post-image is still the file's content. `git apply -R --3way` implies `--index`, so with unstaged modifications present it refuses before attempting any merge — "does not match index" is a precondition artifact, not the verdict. Get the real verdict by reproducing the 3-way merge per file outside the repo from the pre/post blobs in the patch's `index A..B` header (they stay in the object database). Then regenerate the withdrawal patch against CURRENT contents, or redo the ticket's work forward on top of the tree. Never retry the stale patch, and never hand-resolve a ledger file.
+Example: 2026-08-01 — captured on BUT-1808 while the tree was stranded (BUT-1793); folded in 2026-09-19.
+
+### [Delivery] `flutter pub get` in a fresh worktree dirties tracked files every parallel batch also touches (BUT-1808, 2026-08-01)
+Date: 2026-08-01
+Trigger: In a fresh worktree the mandatory `flutter pub get` regenerates tracked plugin-registrant files under `linux/`, `macos/` and `windows/`. Four batches in the 2026-08-01 sprint hit this, and each chose explicit pathspec staging over the harness's `git add -A` on its own.
+Rule: Stage a batch by explicit path, never `git add -A` — `.claude/rules/git-workflow.md` already requires it when parallel work exists. Four independent rediscoveries mean the instruction is wrong at its source; fix the harness, not each batch.
+Example: 2026-09-19 — the sprint worker instruction now stages only the files its tickets changed and reports the rest as `leftOut` (claude-plugins 92341ba).
+
+### [Workflow] En laglig utfästelse i bunten, och ett påhittat symbolnamn i en ADR (2026-09-17)
 Date: 2026-09-17
 Trigger: Fyra öppna artikel 15-frågor gick till Malin; alla fyra svar behöll koden som den är, så den enda produktionsändringen var EN mening i `data_minimisation`. Tre panelsäten hade funnit att den befintliga meningen "Everything else these shares held is kept as it was stored" blev falsk bredvid en deklarerad lucka, så jag skrev den ärliga ersättningen: luckan är obyggd, "and the rows are still erased when you delete your account". Säkerhetsgrinden mätte den satsen mot `functions/src/account/account-deletion-cascade.ts`: `scrubSharedContentItemAttribution` gör `batch.update` — nollar `assignedTo*`/`purchasedBy*`, sätter `addedByUserId`/`lastModifiedByUserId` till sentinel `"deleted"` — och HOPPAR ÖVER de delningar användaren äger (`ownedParentIds.has(parentRef.id)`). Radering sker bara under egna delningar. Min mening var scopad till "a list a friend sent you a copy of", alltså exakt den icke-ägda mängden som aldrig raderas, och den var ovillkorlig fast benet AVBÖJER över `MAX_SHARED_ITEM_ROWS`. I samma diff hade jag skrivit `MessagingService._autoResolveGroupPoll` i en ADR och i BÅDA beslutsfilerna. `git log -S"_autoResolveGroupPoll" --all` returnerar noll: symbolen har aldrig funnits. Det rätta namnet är `_prepareWinnerForGroupPlan`. Jag hade läst just den regionen (raderna 1181-1231) — men signaturraden låg utanför fönstret, så namnet kom ur minnet.
 Rule: En mening i en användarvänd JURIDISK artefakt som säger vad som HÄNDER MED DATA är ett påstående om en SKRIVARE, aldrig om en avvikelsepost — öppna kaskaden, raderaren eller triggern och läs verbet (`update` mot `delete`), dess hopp-över-grenar och dess avböjningar, innan satsen finns. Anonymisering är inte radering, och en sats som lovar det senare är en utfästelse till den registrerade i en fil hon kan vidarebefordra. Rätt åtgärd är att STRYKA satsen; varje "sannare" ersättning är ett nytt omätt påstående om sentinel-semantik. Och: en IDENTIFIERARE (symbol, fil, rad, hash, testnamn) i en beslutspost eller ADR ska klistras in ur ett verktygsresultat i samma tur den skrivs — ett felaktigt TAL går att motbevisa mot artefakten, ett påhittat NAMN bara via uppslagning, och en misslyckad uppslagning läses som "koden har flyttat", inte som "påståendet var påhittat". Att ha LÄST regionen är inget skydd när fönstret inte innehöll signaturen. Båda felen låg i text skriven SOM rättelsen, vilket nu är den återkommande formen snarare än en tendens.
@@ -252,7 +264,7 @@ equal today, measured, rather than claiming the distinction is proven.
 - **Example**: BUT-1906 parked In Review, blocked by BUT-1911, with the four aspect-ratio measurements in the ticket.
 - **Files**: `tasks/todo.md` (deviation log)
 
-### A shared choke point makes OTHER files' tests vacuous, and only a whole-diff read sees it (2026-08-20)
+### [Workflow] A shared choke point makes OTHER files' tests vacuous, and only a whole-diff read sees it (2026-08-20)
 - **Date**: 2026-08-20
 - **Trigger**: Six single-file reviewers passed a PII change. The integration pass then found
   three things none of them could see. (a) The exception classes were fixed to keep their TYPE
@@ -3001,7 +3013,7 @@ fully covered. It is not: MOVING a member out of `_offlineCodes` into the outer 
 the mapper green (the union is unchanged) while the narrower predicate silently loses it. Grade
 membership per SET and per direction, not per code.
 
-## BUT-1917, 2026-09-05 — a debugging story invented a measurement, and shipped it as a dated fact
+### BUT-1917, 2026-09-05 — a debugging story invented a measurement, and shipped it as a dated fact
 
 `poll_votes` gained a block gate. The first version failed with an evaluation error on four
 tests, and I fixed it by inlining a path that had been returned from a rules helper. The tests
@@ -3047,7 +3059,7 @@ confident claim (that my change added a fifth `isNotBlockedBy` call) was itself 
 I could check in one command. Brief them adversarially, then verify what they hand back. Both
 halves.
 
-## BUT-2010, 2026-09-05 — a promise that is never tested looks like a promise that is kept
+### BUT-2010, 2026-09-05 — a promise that is never tested looks like a promise that is kept
 
 `admin/reset-user-data.ts` had done nothing for five and a half months. `tag_configs` sat in
 both `COLLECTIONS_TO_DELETE` and `COLLECTIONS_TO_KEEP`, so the script's own overlap guard hit
@@ -3095,7 +3107,7 @@ Two measurement errors of my own, both caught by gates, both from searching for 
   had just written.
 
 
-## 2026-09-06 — BUT-2028: a correction is written where a claim cannot be checked
+### 2026-09-06 — BUT-2028: a correction is written where a claim cannot be checked
 
 Ten review rounds across three commits. The tally is the lesson: **two code defects, and
 everything else was a sentence** — and of the sentences, most were planted inside the
@@ -3150,7 +3162,7 @@ repair of one sentence, DELETE the clause. The runbook line about the kill switc
 wrong in three successive wordings — each repair fixing the previous round's error and adding
 its own — and was closed by striking it and pointing at the section that explains the state.
 
-## 2026-09-06 — BUT-2020/2037: the replacement text is where the struck claim comes back
+### 2026-09-06 — BUT-2020/2037: the replacement text is where the struck claim comes back
 
 Nine review rounds over five files produced **two code findings and roughly twenty false
 sentences**, almost all inside text written as the previous round's repair. The BUT-2028
@@ -3204,7 +3216,7 @@ untouched, which is the safe direction and is why the assert is there. And
 "did this ship": `git status` showed three files as locally modified that `git diff` proved
 identical to origin, because it hashes CRLF bytes against LF blobs.
 
-## Granskningsledgern räknar agentens SENASTE körning, inte allt den någonsin läst (2026-09-06, bulk-vänförfrågningar)
+### [Delivery] Granskningsledgern räknar agentens SENASTE körning, inte allt den någonsin läst (2026-09-06, bulk-vänförfrågningar)
 
 Fyra granskningsronder över tre grindar. Rond 4 ändrade EN rad i EN fil, så jag bad varje
 agent läsa om just den filen — vilket är rätt hushållning med kontext och fel mot grinden.
@@ -3240,7 +3252,7 @@ heredoc vägras som ett skrivförsök. Samma klass som säkerhetshooken som matc
 kommandon inne i commit-MEDDELANDEN. Text som nämner en skyddad sökväg skrivs med
 Write/Edit, aldrig genom skalet.
 
-## 2026-09-07 — BUT-2028: en rättelse kan motsäga meningen den skrevs för att rädda
+### 2026-09-07 — BUT-2028: en rättelse kan motsäga meningen den skrevs för att rädda
 
 Fortsättning på 2026-09-06-posten ovan, som redan slår fast att rättelsetexten är där nästa
 falska mening landar. Det som är NYTT den här gången är tre mekaniska kontroller som den
@@ -3289,7 +3301,7 @@ påstående om att något är blockerat är lika falsifierbart som ett påståen
 CLAUDE.md regel #11 säger uttryckligen att man ska kontrollera sina egna verktyg först.
 
 
-## 2026-09-07 — Grindarna är parallella agenter i samma träd, och commit-grinden blockerar hela Bash-anropet
+### 2026-09-07 — Grindarna är parallella agenter i samma träd, och commit-grinden blockerar hela Bash-anropet
 
 En liten röd arkitekturregel (rå `CircularProgressIndicator` i `lib/views/`) och en
 uppföljande enhetlighetsfix drog nio granskningsrundor. Två av dem var rena
@@ -3326,7 +3338,7 @@ faktum på en dag, varannan skriven som rättelsen av den förra.
 that live in the VIEW"; den här ändringen la till en tredje klass av pin i samma fil. Ingen
 test blir röd av det. Stryk siffran, räkna inte om.
 
-## En raderingslista som handskrivs mot en sond som uppräknar (BUT-2040, 2026-09-08)
+### En raderingslista som handskrivs mot en sond som uppräknar (BUT-2040, 2026-09-08)
 
 **Buggklassen.** `probeResidualData` UPPRÄKNAR (`listCollections()`, två uteslutningar);
 `deleteUserSubcollections` gick på en handskriven lista. En samling som DÖPTS OM lämnar
@@ -3374,7 +3386,7 @@ indexet medan de läser, och stagas något om är varje grinds tidigare pass ina
 commit-grinden fällde mig på exakt det: `cloud-functions-specialist` hade graderat
 bytesen före elva rättelser.
 
-## Ett verktyg som redan har svaret, och nio rundor rättelser (BUT-2043, 2026-09-08)
+### Ett verktyg som redan har svaret, och nio rundor rättelser (BUT-2043, 2026-09-08)
 
 **Buggklassen ingen kod kan hitta.** En död namnändring har inga skrivare, så varje
 källskannande vakt är blind för den per konstruktion. Det som hittade BUT-2040 var en
@@ -3417,7 +3429,7 @@ en rättelse — och när en grind säger "stryk, formulera inte om", gör det b
 reviewer hade graderat bytesen före elva rättelser och aldrig läst fyra av filerna. Att
 grindarna passerat en gång betyder inte att de passerat de bytes som ska shippas.
 
-## Sonden, triggern, och sju meningar om vad som hade hänt (BUT-2044, 2026-09-08)
+### Sonden, triggern, och sju meningar om vad som hade hänt (BUT-2044, 2026-09-08)
 
 **En vakt kan vara bredare än sin raderare genom TIMING, inte genom täckning.**
 `probeResidualData` körs på rad 285 i raderingsflödet, `auth.deleteUser` på 296, och
@@ -3460,7 +3472,7 @@ frasen — och verifiera mot den STAGADE bloben, inte mot filen du tänkte på.
 
 ---
 
-## BUT-2032 — en stubbe som tappar en skrivning gör en ny assertion tom, och en enda struken sats tvingar fram en ny grindgranskning (2026-09-08)
+### BUT-2032 — en stubbe som tappar en skrivning gör en ny assertion tom, och en enda struken sats tvingar fram en ny grindgranskning (2026-09-08)
 
 **En stubbes tysta no-op mätte noll och läste som en riktig mätning.** Kaskadstegets
 auditrader stagas med `batch.set` mot ett nytt dokument. Testfilens `FakeFirestore`
@@ -3499,7 +3511,7 @@ enda som letar efter historik snarare än efter stake.
 
 ---
 
-## BUT-2046 — en chunkad migrering går på offset, och "läs om och fråga vad som återstår" är en annan sak (2026-09-08)
+### BUT-2046 — en chunkad migrering går på offset, och "läs om och fråga vad som återstår" är en annan sak (2026-09-08)
 
 **Buggen jag byggde och som ett prov fångade.** Migreringen som flyttar en array till en
 subsamling måste chunkas, för en Firestore-transaktion tar högst 500 operationer inklusive
@@ -3542,7 +3554,7 @@ sammanslagen fråga får ett sammanslaget svar som ser mer avgjort ut än det ä
 efter vems data det är, inte efter var den ligger** — och när ett beslut vilar på ett svagare
 skäl, skriv att det gör det.
 
-## Ett grönt mutationsprov kan vara ett kompileringsavbrott, och en plan kan gå i sin egen dokumenterade fälla (BUT-2046 uppföljning, 2026-09-09)
+### Ett grönt mutationsprov kan vara ett kompileringsavbrott, och en plan kan gå i sin egen dokumenterade fälla (BUT-2046 uppföljning, 2026-09-09)
 
 **Sex mutationssonder, två gröna — och båda gröna var fel av olika skäl.**
 
@@ -3609,7 +3621,7 @@ går att prova är den mening en senare körning citerar för att slippa skriva 
 stängdes där i stället, med två ämnen och ett hållsdokument som diskriminator.
 
 
-## En oprövad prissättning som når grundaren är värre än en osann kodkommentar (BUT-1917/BUT-2018, 2026-09-09)
+### En oprövad prissättning som når grundaren är värre än en osann kodkommentar (BUT-1917/BUT-2018, 2026-09-09)
 
 Jag stängde `incoming_blocks` ur artikel 15-exporten, och frågade sedan Malin om vi också
 skulle strama åt `blocks`-läsregeln. Priset jag gav henne kom ordagrant ur BUT-1917:s
@@ -3645,7 +3657,7 @@ fall, inte en kvarleva.
 
 ---
 
-## En STRYKNING kan skapa en universell utsaga genom att ta bort satsen som avgränsade den (BUT-1943/BUT-2025/BUT-2015, 2026-09-09)
+### En STRYKNING kan skapa en universell utsaga genom att ta bort satsen som avgränsade den (BUT-1943/BUT-2025/BUT-2015, 2026-09-09)
 
 Repots regel är att en felaktig mening ska STRYKAS, inte formuleras om, och att rättelsetexten
 är där nästa osanna mening landar. Den här sprinten hittade en tredje form, som är motsatsen
@@ -3665,7 +3677,7 @@ Två gånger i samma ändring, i olika filer, av olika granskare:
    `secondary`" — en kvantifikator över en metod som innehåller en framgångsarm som målar
    `primary`. Tre granskare hittade den oberoende.
 
-### Varför den är svårare att se än en vanlig felaktig kommentar
+#### Varför den är svårare att se än en vanlig felaktig kommentar
 
 Meningen var **sann när den skrevs**. Faran låg latent i NÄSTA redigering. En granskare som
 läser den i dag graderar den grönt och har rätt; den blir falsk först när någon tar bort
@@ -3673,7 +3685,7 @@ grannsatsen. En av grindarna såg exakt det, namngav mekanismen och **avstod fr�
 med motiveringen att meningen var sann som den stod — och två andra grindar bad sedan om
 strykningen ändå.
 
-### Vad man gör
+#### Vad man gör
 
 - Efter en strykning: läs den ÖVERLEVANDE meningen ensam. Inte diffen, inte din beskrivning av
   den — meningen.
@@ -3685,7 +3697,7 @@ strykningen ändå.
 - Fila på FORMEN, inte på dagens läsning. Att fila kostar en radering; att låta bli kostar en
   falsk mening som ingen har skrivit under.
 
-### Sidoresultat från samma runda, värt att minnas
+#### Sidoresultat från samma runda, värt att minnas
 
 - **Att harmonisera en färg hålkar varje test som använder den som armdiskriminator** — tyst,
   och medan allt är grönt. Ersättningen måste vara en räknare på medarbetarsömmen, inte ett
@@ -3698,7 +3710,7 @@ strykningen ändå.
   grinden var det enda som fångade det. Täckning nyckias på `Read`-verktyget just därför.
 
 
-## Att KOPPLA UR något faller sina egna dokument, och samtycket gällde en premiss som inte fanns (BUT-2005/BUT-2060, 2026-09-10)
+### Att KOPPLA UR något faller sina egna dokument, och samtycket gällde en premiss som inte fanns (BUT-2005/BUT-2060, 2026-09-10)
 
 Malin sa: bygg båda utkastningsvägarna. Jag byggde båda. Push-grinden — den enda granskning
 som ser hela ändringen på en gång — fällde den ena, och den hade rätt: kategorisynkens
@@ -3706,7 +3718,7 @@ utkastning är med FLIT återställbar, och koden säger det rakt ut tre rader o
 lade anropet ("Ingen gravsten: den här borttagningen SPEGLAR kategorin"). Menyklippet har
 ingen väg tillbaka. Fem filgranskningar hade godkänt det.
 
-### Det som gör detta till en lärdom och inte bara ett fynd
+#### Det som gör detta till en lärdom och inte bara ett fynd
 
 Rätt drag var INTE att bygga det hon sagt ja till. Samtycket gällde ett pris hon aldrig fick
 se: hon fick veta att tre vägar lämnade en lucka, aldrig att en av dem speglar en handling
@@ -3719,7 +3731,7 @@ beslutsposten superserad med vad koden GÖR, en biljett med frågan, och ett pro
 i stället för raderas — det som pinnade inkopplingen pinnar nu frånvaron och rodnar den dag
 någon kopplar in det. Beslutet syns i stället för att luckan är tyst.
 
-### Urkopplingen faller dokumenten i den FIL man kopplar ur ifrån
+#### Urkopplingen faller dokumenten i den FIL man kopplar ur ifrån
 
 Att ta bort ett anrop gjorde fem meningar i den delade hjälpfilens egen dokumentation falska,
 och ingen av dem låg i filen jag redigerade:
@@ -3733,7 +3745,7 @@ och ingen av dem låg i filen jag redigerade:
 Regeln: **grepa hjälparens EGEN fil, inte bara anroparen du ändrade.** Varje "which is why X
 passes…" är ett påstående om en anropare, och varje siffra räknar dem.
 
-### Tre rundor i rad var defekten ett SYSKON, aldrig nytt arbete
+#### Tre rundor i rad var defekten ett SYSKON, aldrig nytt arbete
 
 Runda 1 hittade koddefekten. Runda 2-4 hittade meningar, och varje gång var det en kopia av
 något jag redan strukit: kodmeningen ströks, spegelmeningen stod kvar; sedan en superlativ jag
@@ -3741,7 +3753,7 @@ skrev I RUNDAN SOM STRÖK ("the only definition in `lib/` with no caller"), motb
 fyra rader ovanför. Svepet terminerade först när det nycklades på PÅSTÅENDET i stället för på
 frasen.
 
-### Två mätfel av mig i samma runda, båda i text skriven som rättelsen
+#### Två mätfel av mig i samma runda, båda i text skriven som rättelsen
 
 - Min nya provkommentar påstod ett prov som **inte går att kompilera**: att radera anropet
   lämnar importen oanvänd, TS6133 avbryter före första assertion. Repots egen kunskapsfil
@@ -3750,7 +3762,7 @@ frasen.
   det förblivit grönt under ett namn som säger att en utkastning skedde. Ett prov som pinnar en
   FRÅNVARO måste assertera att handlingen ändå hände.
 
-### Och ett citat måste ligga på EN rad
+#### Och ett citat måste ligga på EN rad
 
 En supersering vars citat radbryts mitt i frasen greppas inte av den som söker efter det —
 speglarna radbryter olika, så originalet bryts på ett ställe och citatet på ett annat. Jag
@@ -3758,14 +3770,14 @@ skrev först citatet brutet, mätte 1 i stället för 2, och fick rätta mig sj�
 pensionerades den gamla räkne-heuristiken av samma skäl: den ger FALSKLARM på en korrekt
 supersering.
 
-## 2026-09-10 — BUT-2016: rättelsen som inte stagades, och briefingen som avväpnade granskaren
+### 2026-09-10 — BUT-2016: rättelsen som inte stagades, och briefingen som avväpnade granskaren
 
 En radering av död kod (utskicket vid stängd matomröstning satt bakom en `isGroup`-test på
 den arm som bara nås när `isGroup` är false). Koddelen var färdig i första rundan. Fyra
 rundor till gick åt till meningar — och de två som kostade mest var mina egna
 gransknings-RUTINER, inte texten.
 
-### En rättelse på en grinds fynd är den redigering som oftast blir kvar ostagad
+#### En rättelse på en grinds fynd är den redigering som oftast blir kvar ostagad
 
 `code-reviewer` mätte att min kommentar "Kept although no production path calls it any more"
 var falsk: "it" binder till `shareMenuWithFriends`, som har fyra levande anropare. Jag strök
@@ -3787,7 +3799,7 @@ radnumren var identiska i båda kopiorna och kunde inte avslöja divergensen.
 **Regeln: staga i ett eget anrop DIREKT efter varje rättelse, före du briefar nästa granskare,
 och avgör frågan med blob-hasharna.**
 
-### Att be en granskare verifiera indexet är att avväpna dess egen täckning
+#### Att be en granskare verifiera indexet är att avväpna dess egen täckning
 
 Commit-grinden nekade och namngav `integration-reviewer`: "reviewed, then changed — the review
 describes different bytes". Ingen kod hade ändrats. Orsaken var min briefing: jag hade bett den
@@ -3802,7 +3814,7 @@ instruktionen som orsakade luckan var den som skulle höja bevisvärdet.
 **Regeln: när du ber en granskare pinna bytes, be den öppna filen med `Read` OCH verifiera
 hashen — aldrig bara hashen.**
 
-### En strykning som fungerade första gången, och två som inte gjorde det
+#### En strykning som fungerade första gången, och två som inte gjorde det
 
 Samma kommentar skrevs i fyra vändor. Runda 2 tog bort en motfaktisk sats och lämnade "the
 tally in **the same method**" utan antecedent — delningen låg i hjälparen, vägran i
@@ -3814,7 +3826,7 @@ Det som terminerade kedjan var att sista rättelsen var en **symbolsubstitution*
 prosa. Två granskare landade oberoende på regeln: hittar en fjärde runda något i samma sats,
 radera satsen i stället för att formulera den en femte gång.
 
-### En grind som loggar ett skalfel och ändå rapporterar ✔️
+#### En grind som loggar ett skalfel och ändå rapporterar ✔️
 
 Commit-körningen skrev `sh: line 2: [: lib/services/messaging_service.dart: binary operator
 expected` mellan `null-filter-guard` och `secret-scan`. Båda stegen rapporterade grönt. Jag
@@ -3822,7 +3834,7 @@ kunde inte återskapa felet genom att köra något av kommandona för hand med s
 attributionen är OKÄND — och det är precis varför det är värt en biljett i stället för en
 gissning: ett skydd som felar och ändå passerar är oskiljbart från ett som gör sitt jobb.
 
-## BUT-2036 — en regionkonstant är en handlista ett steg upp (2026-09-10)
+### BUT-2036 — en regionkonstant är en handlista ett steg upp (2026-09-10)
 
 Reset-körningen skulle pausa Cloud Scheduler under en skarp körning. Repot pinnar varenda
 funktion till `europe-west1`, så en regionkonstant hade sett självklart riktig ut, och
@@ -3846,7 +3858,7 @@ mutant som kompilerar (`wanted.size >= 0 && …` i stället för att stryka vill
 skarpa mätningen kom från ett kommando som tog trettio sekunder att köra; den låg före
 attributionen i planen, inte efter.
 
-## BUT-2036 — ett källkodsprov med landmärken tappar sitt omfång när koden mellan dem växer (2026-09-10)
+### BUT-2036 — ett källkodsprov med landmärken tappar sitt omfång när koden mellan dem växer (2026-09-10)
 
 Tre assertioner i `scenario_resetScriptPausesAndResumesScheduler` slutade bevisa något, och
 jag var själv den som avväpnade dem. Provet skär ut fönster ur `main()` mellan två landmärken
@@ -3868,7 +3880,7 @@ att provet skrivits; och ankra på KOD, aldrig på konsoltext. Ett fönster som 
 strängen `"job(s) paused."` hade tömts av en omformulerad utskrift och rott med en anklagelse
 mot produktionskoden i stället för mot sig självt.
 
-## En GRANSKARE som HÅLLER MED är inte en mätning, och kortaste träff är inte högsta täthet (BUT-2037/BUT-2034, 2026-09-10)
+### En GRANSKARE som HÅLLER MED är inte en mätning, och kortaste träff är inte högsta täthet (BUT-2037/BUT-2034, 2026-09-10)
 
 Fyra granskningsrundor. Runda ett hittade en verklig säkerhetsdefekt. Rundorna två till fyra
 hittade bara meningar — tre stycken, var och en inuti text skriven som en RÄTTELSE, två av dem
@@ -3920,7 +3932,7 @@ saneringssond utan en "det här MÅSTE strykas"-arm kan inte skilja en fungerand
 ett dött mönster. Jag skrev sedan samma `\b` som ett bokstavligt backstegstecken in i
 lärdomsanteckningen om fällan — tredje gången samma dag.
 
-## En hängd granskningsagent ser ut som en tänkande, och statusen säger ingenting (BUT-2022/BUT-2068, 2026-09-10)
+### En hängd granskningsagent ser ut som en tänkande, och statusen säger ingenting (BUT-2022/BUT-2068, 2026-09-10)
 
 Två grindar hängde sig i samma sprint. Båda stod som `running`. Malin frågade båda gångerna,
 och första gången svarade jag på statusen i stället för att mäta.
@@ -3947,7 +3959,7 @@ att läsa med Bash, medan granskningsliggaren bara registrerar `Read`. Två regl
 emot varandra, och den som förlorar är alltid granskningen. Filad som BUT-2068. En
 konfigurationsmotsägelse, inte ett omdömesfel hos agenten — samma klass som output-styles-buggen.
 
-## Sonden måste träffa det lager provselen faktiskt når
+### Sonden måste träffa det lager provselen faktiskt når
 
 Jag muterade `FriendsViewModel.isBlocked` för att bevisa att tre widgettester fångade en
 återställning. Allt grönt. Slutsatsen "redan täckt" hade varit falsk: testerna använder
@@ -3957,7 +3969,7 @@ vägen. Rätt mutant var VAKTENS anropsställe — och då rödnade alla tre.
 Ett grönt svar från fel lager ser exakt ut som ett grönt svar från rätt. Fråga före varje sond:
 vilket lager av den muterade symbolen når provselen?
 
-## Tre tomma provuppsättningar på en dag, två av samma form
+### Tre tomma provuppsättningar på en dag, två av samma form
 
 - En rigg uppfylld av en ANDRA sanningskälla: `setBlockedUsers` skrev både blockeringsmängden
   OCH statusen, så båda läsvägarna svarade "blockerad" och tre vakttest kunde inte se
@@ -3969,7 +3981,7 @@ Båda går att hitta genom läsning — men bara om man läser attrappens **seed
 **ovanför** den man testar, inte testkroppen. Repareras med en premissassertion i testet, så
 att det säger VARFÖR det slutade diskriminera i stället för att tyst bli tomt.
 
-## En syskonkopia kan komma in EFTER strykningen
+### En syskonkopia kan komma in EFTER strykningen
 
 En falsk mening ströks i runda 1. Tre rundor senare kom en ordagrann kopia in i ändringen, i en
 fil som inte var stagad då — den drogs in av en orelaterad testfix. Ett begreppssvep i runda 1
@@ -3980,7 +3992,7 @@ graderats mot de fynd som redan stängts — kör om svepen mot just den.** Och 
 `lib/` och `test/` HELA, inte över diffen: den stagade mängden är det enda som fortfarande rör
 sig.
 
-## När en granskare HÅLLER MED är det inte en mätning
+### När en granskare HÅLLER MED är det inte en mätning
 
 Jag strök en siffra, skrev en ersättning, och granskaren bekräftade den som "härledbar". Båda
 hade fel, och båda kunde ha motbevisat den ur sin egen tidigare utdata. En granskare som
@@ -3991,7 +4003,7 @@ mätte sedan sin egen rekommendation som falsk i båda halvorna. Två formulerin
 motivering — då är regeln radera, inte försöka en tredje. Grinden skrev in i sin egen
 kunskapsfil att den ska rekommendera radering i stället för ersättningstext nästa gång.
 
-## En mutationssond har ett UTGÅNGSDATUM: nästa vakt över samma värde upphäver den
+### En mutationssond har ett UTGÅNGSDATUM: nästa vakt över samma värde upphäver den
 
 Sonden av den första spillvakten i `menu_shopping_aggregator` var giltig när jag körde den —
 och ogiltig två rundor senare, av min egen commit. Jag lade en andra vakt nedströms över
@@ -4010,7 +4022,7 @@ från värdet, så räddningen är omöjlig för varje värde och inte bara för
 Regeln: när du lägger till en vakt, **kör om sonderna för varje befintlig vakt över samma
 värde** — inte bara den nya. Och en sond är ett påstående med ett datum, inte ett kvitto.
 
-## En STRYKNING som lägger till text är inte en strykning
+### En STRYKNING som lägger till text är inte en strykning
 
 `code-style.md` säger att en rättelse bara får RADERA. Jag strök "de fyra producenterna" och
 skrev i samma andetag "den här vägen kräver bara en siffra i portionsfältet" — som grinden
@@ -4029,7 +4041,7 @@ nytt fynd; varje ren strykning höll. När en granskare underkänner en mening f
 faktiskt står (här: Linear-kommentaren), inte genom att lägga en fjärde formulering i posten.
 
 
-## Ett NYTT FÄLT motbevisar daterade uppräkningar i ORÖRDA filer (BUT-2057, 2026-09-11)
+### Ett NYTT FÄLT motbevisar daterade uppräkningar i ORÖRDA filer (BUT-2057, 2026-09-11)
 
 Ändringen stämplade `recipeOwnerId` på varje betygsrad appen skapar. Fem filgranskningar
 godkände diffen. Helhetsgrinden hittade det ingen av dem kunde se: modulhuvudet i
@@ -4046,7 +4058,7 @@ inte efter fältnamnet.** Fältnamnet finns per definition inte i texten som bli
 på samlingsnamnet plus "carrying only", "NO ", "endast", "bara", och på varje
 `DATA MODEL`/`verified <datum>`-huvud.
 
-### En GRANSKARES rena betyg täcker bara det den undersökte
+#### En GRANSKARES rena betyg täcker bara det den undersökte
 
 `code-reviewer` skrev "No overclaim in any of those four comments" om en mening vars ena
 halva `firebase-backend-security` samma minut mätte som falsk. Ingen av dem hade fel:
@@ -4054,7 +4066,7 @@ den första kontrollerade tomsträngsfallet, den andra null-fallet, och meningen
 riktning om båda. Ett godkännande är ett påstående om det granskaren läste — fråga vilken
 halva som faktiskt mättes innan en ren rapport räknas som täckning.
 
-### Ett RÖTT provsvar är inte ett sondresultat förrän fallet är namngivet
+#### Ett RÖTT provsvar är inte ett sondresultat förrän fallet är namngivet
 
 Jag körde ett mutationsprov, fick rött och höll på att rapportera mutanten som dödad.
 Rödheten kom från ett fixturfel i mitt EGET nya prov: `user_123` mot svitens autentiserade
@@ -4063,7 +4075,7 @@ klass som "en mutant som inte kompilerar är inte ett rött prov", en nivå upp 
 kompilerade och körde, den mätte bara något annat. Kör alltid med en rapportör som NAMNGER
 det röda fallet, och läs namnet.
 
-### Att redigera en databärare inuti en värdfil
+#### Att redigera en databärare inuti en värdfil
 
 Två fel i en och samma reparation av `workflow-map.html`. (1) En regex som fångade
 `<script id="data">…</script>` och skrev tillbaka `head + body + tail` raderade allt utanför
@@ -4075,7 +4087,7 @@ Byt VÄRDET i råtexten i stället för att serialisera om, och assertera efter�
 fortfarande börjar och slutar rätt och att den VÄXTE. Kör inte en formaterare på en fil du
 bara ändrat kommentarer i.
 
-### En siffra som beskriver en fil du fortfarande redigerar går inte att skriva
+#### En siffra som beskriver en fil du fortfarande redigerar går inte att skriva
 
 `ACCEPTED_LARGE_FILES`-raden sa 541; filen var 546 när den stagades, för mina egna
 efterföljande ändringar. Repot har lärt sig det här förut. Det som fungerade: räkna med
@@ -4158,7 +4170,7 @@ en siffra du skriver för hand. Och kör täckning och grannsviter innan du läs
 Det som avslutade kedjan: sluta formulera om. Varje ren strykning höll; varje omformulering födde
 nästa fynd.
 
-## 2026-09-12 — En BRIEF till en grind är ett påstående, och den upprepade felet den beskrev (BUT-1925/BUT-2027)
+### 2026-09-12 — En BRIEF till en grind är ett påstående, och den upprepade felet den beskrev (BUT-1925/BUT-2027)
 
 Fyra grindar, fyra rundor, fyra blockerande fynd. **Tre av fyra gällde något jag hade PÅSTÅTT,
 inte kod**, och två av dem stod i briefen jag själv skrev till granskaren.
@@ -4192,7 +4204,7 @@ Det som höll genom alla rundor: varje ren STRYKNING. Det som födde nya fynd: v
 En mening som kallades "mätt" om något ingen kört skrevs om till vem som LÄST den och att ingen
 kört det — och den formuleringen stod sig.
 
-## 2026-09-12 — BUT-1716 steg 3: ett storleksanspråk i nio exemplar, och en hash jag hittade på
+### 2026-09-12 — BUT-1716 steg 3: ett storleksanspråk i nio exemplar, och en hash jag hittade på
 
 Borttagningen av en oanvänd väg tog tio granskningsrundor över sex grindar. Koden var klar i
 runda ett. Allt efter det var meningar.
@@ -4267,7 +4279,7 @@ terminerade först när sista rättelsen var en symbolsubstitution (`its` -> `th
 
 ---
 
-## En vakt du blev TILLSAGD att lägga till är lika oprövad som en du hittat på (BUT — artikel 12.4-leveransen, 2026-09-12)
+### En vakt du blev TILLSAGD att lägga till är lika oprövad som en du hittat på (BUT — artikel 12.4-leveransen, 2026-09-12)
 
 Sex granskningsrundor, fyra grindar, sju blockerande fynd. **Två var koddefekter; resten var
 meningar jag skrivit.** Men det dyraste fyndet var att två av mina mutationssonder ÖVERLEVDE —
@@ -4317,7 +4329,7 @@ GENERELLA egenskapen ("grinden gör ett försök per montering") i stället för
 kapplöpningen — då täcker posten nästa fönster utan att någon behöver lägga till en tredje sats.
 
 
-## 2026-09-14 — En skärpt regel är bara så sann som skrivar-inventeringen, och regeltestet bevisade egna payloads (ADR-0020)
+### 2026-09-14 — En skärpt regel är bara så sann som skrivar-inventeringen, och regeltestet bevisade egna payloads (ADR-0020)
 
 **Inventeringen av skrivare missade den skrivare som gällde.** När `rateLimitWrite` byttes mot en
 spärr som kräver stämpel i samma request listade kartläggningen EN skrivare per samling. För
@@ -4342,7 +4354,7 @@ Samma bygge, samma klass en nivå ned: ett numeriskt värde som delas av en Dart
 regelfönster (stämpelns `expireAt`) var olåst tills en grind frågade vad som hände om någon satte
 tillbaka 90 dagar — regeltesterna byggde egna stämplar och såg aldrig skrivarens tal.
 
-## 2026-09-15 — En sanerare som PRÖVAR en sträng och SPARAR en annan har ett hål i avståndet mellan dem (BUT-1819 förankring)
+### 2026-09-15 — En sanerare som PRÖVAR en sträng och SPARAR en annan har ett hål i avståndet mellan dem (BUT-1819 förankring)
 
 Förankringen av `sanitizeUrl` prövade mönstret mot en egen "kontrollform" (tab/radbrytning bort,
 homoglyfer vikta) medan det sparade värdet byggdes separat med `trim()` och null-byte-strykning.
@@ -4357,7 +4369,7 @@ steg man lägger till i utdata-kedjan är annars ett nytt hål, och kontrollform
 Samma bygge: testfixturer med invisibla tecken (NBSP, BOM, kyrilliskt а) skrevs som literala
 tecken och blir vakuösa den dag en editor städar bort dem — skriv dem som `\u`-escapes.
 
-## Commit-gate coverage is recorded PER RUN, not per file (2026-09-16, BUT-1693)
+### Commit-gate coverage is recorded PER RUN, not per file (2026-09-16, BUT-1693)
 
 Six gates passed this change and the commit was still refused. The ledger
 attributes a file to the RUN that read it, together with the verdict that run
@@ -4384,7 +4396,7 @@ asserted "B is a member of h1 only", having read a fixture comment about A's
 membership as a claim about B's, and retracted it when two other gates measured
 the seed.
 
-## A mutation probe invalidates the prober's OWN ledger coverage (2026-09-16, BUT-1693 follow-up)
+### A mutation probe invalidates the prober's OWN ledger coverage (2026-09-16, BUT-1693 follow-up)
 
 The commit gate records which reviewer read which BYTES. `testing-specialist`
 mutates `lib/` to probe, so its recorded reads include the mutant blobs, not the
@@ -4399,7 +4411,7 @@ keyed on (agent, file, bytes, verdict-of-that-run). A run ending on "fail" cover
 nothing, a resumed run covers only what it re-read, and a run that WROTE to the
 file covers bytes that no longer exist.
 
-## A JUSTIFICATION is a claim about the code path you did NOT open (2026-09-16, BUT-1954)
+### A JUSTIFICATION is a claim about the code path you did NOT open (2026-09-16, BUT-1954)
 
 The fix was five lines and was right from the first draft: `searchMessages` gained
 the sender-only filter the two conversation read paths already ran. Four gate
@@ -4445,7 +4457,7 @@ What terminated the chain, again: every clean STRIKE held, and nothing I reworde
 did. The placement now sits unexplained in all four locations, which is the
 correct end state of "strike, do not reword" rather than a gap to be filled.
 
-## A reviewer can deliver COVERAGE without a VERDICT, and that reads as a skipped review (2026-09-17, BUT-2079)
+### A reviewer can deliver COVERAGE without a VERDICT, and that reads as a skipped review (2026-09-17, BUT-2079)
 
 Proof of review is written by two hooks, not one. `review-ledger.mjs` records
 which bytes an agent opened with the `Read` tool. `review-verdict.mjs` is a
@@ -4489,7 +4501,7 @@ is that the gate is structurally unsatisfiable, and the temptation at that point
 is to route around it. It was satisfiable the whole time; the agent was simply
 not saying the one line that records what it had already concluded.
 
-## A BLIND panel does not decorrelate an error the shared brief seeded (2026-09-17, BUT-2101)
+### A BLIND panel does not decorrelate an error the shared brief seeded (2026-09-17, BUT-2101)
 
 Eleven seats critiqued the BUT-2101 batch blind — none saw another's reply. Four of
 them (FinOps, DPO, Trust & Safety, Customer Support) independently priced the fix
@@ -4531,7 +4543,7 @@ that makes it true. Every clean strike held; the one clause I reworded instead o
 struck came back as a finding in the next round. The strike rule is not a style
 preference, it is the only thing that terminates the chain.
 
-## A file staged for DELETION cannot be covered through Bash (2026-09-17, BUT-1850)
+### A file staged for DELETION cannot be covered through Bash (2026-09-17, BUT-1850)
 
 The review ledger records the `Read` TOOL and nothing else. I briefed six gates to
 inspect the two files this change DELETES via `git show HEAD:<path>` — which is the
@@ -4565,7 +4577,7 @@ inferred the import from the fact that it modelled the collection. A gate correc
 me. A CAUTION carries the same burden of proof as any other claim, and it is easier
 to ship unmeasured precisely because it sounds like care.
 
-## Only the whole-diff pass sees a sentence its own commit falsifies (2026-09-17, BUT-1850)
+### Only the whole-diff pass sees a sentence its own commit falsifies (2026-09-17, BUT-1850)
 
 I wrote "those rows are erasable but were never exportable" into four
 differently-worded copies — the deletion cascade's `EXPORT_EXEMPT` reason, both
