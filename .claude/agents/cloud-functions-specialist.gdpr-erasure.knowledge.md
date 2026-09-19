@@ -25,6 +25,16 @@
   halves is dead defence, and rule 10's fake shows neither.
 - A step that early-`return false`s on its own cap skips every leg below it —
   put independent legs first.
+- **Delete-then-decrement a PARENT counter in two passes** when the child can
+  outlive its parent (`recipe_comments/{id}/likes`): strict deletes first, then
+  `get()` each parent and `increment(-1)` only where it exists with count > 0.
+  Deleting first makes a SEQUENTIAL re-run exactly-once. It does not protect a
+  CONCURRENT second callable: both read the rows before either deletes. Only
+  a per-row transaction keyed on the child's existence protects that case.
+  The row->parent MAPPING in a grouped re-read (`group[j]` per `GROUP`) is
+  pinned only by a fixture with more than `GROUP` rows whose parents EXIST — an
+  at-cap fixture with missing parents walks the loop and asserts nothing about
+  which counter moved.
 - **A scenario that calls two steps in sequence pins that they COMPOSE, never
   the orchestrator's ORDER** — moving the runStep into (or above) a parallel
   tier stays green. Pin order in `request-account-deletion.test.ts` via

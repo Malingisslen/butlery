@@ -20526,3 +20526,45 @@ comparison against the first `recipe_ratings`/`recipeOwnerId` query would redden
 Also noted: the failed-chunk scenario injects grpc 5 (NOT_FOUND), the code that in production
 means the row was already deleted (e.g. the rater's concurrent erasure). No at-cap control.
 Both suites re-run green on staged bytes (worktree == index hash). Verdict pass (Medium/Low only).
+
+### 2026-09-19 — BUT-2112 comment owner/shared-with scrub + comment likes erasure [review]
+Commit-gate review of account-deletion-cascade.ts, request-account-deletion.ts,
+reset-collection-lists.ts (plus firestore.indexes.json likes.userId override). Verified:
+the likes rule pins the doc id `{userId}` and the `userId` field to auth.uid, so there is
+one like per user per comment. That means there are no duplicate parents in the decrement
+pass, and the `userId` probe/deleter field matches the producer
+(comment_likes_operations.dart). No trigger maintains likesCount (the client batch does), so
+the server decrement does not double-count against a trigger. The read rule tests the
+PRESENCE of `recipeOwnerId`, and membership in `sharedWithUserIds`, so FieldValue.delete and
+arrayRemove leave the comment readable by author/other recipients. There is no
+recipe_comments fieldOverride exemption, so automatic single-field indexes serve both
+scrubs. The only `likes` subcollection in rules/lib/functions is under recipe_comments, so
+the raw-cap-before-path-filter is currently equivalent to scope-then-cap. Steps run after
+tier 1, so there is no race with the strict:false own-comment anonymizer. Noted (non-blocking):
+- "cannot decrement twice" holds for a sequential re-run only; two concurrent callables
+  both read rows before deleting.
+- scrubCommentField has a strict:true NOT_FOUND on a comment the author deleted mid-run.
+  It fails loud, the same shape as scrubRatingRecipeOwner.
+- The index must deploy before functions, or FAILED_PRECONDITION -> step failed / probe
+  fail-closed.
+Verdict pass (Low/Info only). Principle folded into the gdpr-erasure chapter.
+
+### 2026-09-19 — BUT-2112 test batch: grouped decrement mapping unpinned [review]
+Gate review of the staged cascade suite (8 comment scenarios + INCREMENT shim), the
+request-account-deletion `expected` additions, and the backfill header strike.
+- Fixtures match the Dart writer (`comment_likes_operations.dart`: `likes/{userId}`
+  with `{userId, likedAt}`; rules pin both). cook_snaps/likes has no rules block, so
+  that fixture is a synthetic path-scope control, fine as such.
+- `deleteCommentLikes` re-reads parents in groups of 100 and maps with `group[j]`.
+  Only the c1 fixture (one group, 3 rows) exercises a live parent; the at-cap fixture
+  has 2000 rows but no parents. By reasoning, a `rows[j]` mutant stays green. Not
+  probed (probing writes production code during a gate). Medium, non-blocking.
+- Order of the three new runSteps is not load-bearing: tier-1 `deleteCommentsAndRatings`
+  anonymizes recipe_comments by UPDATE (disjoint fields), nothing in tier 1 deletes
+  comments or likes. No state.queries order pin needed, unlike BUT-2072.
+- Backfill header strike correct (code skips on recipeOwnerId alone). Survivor left
+  standing: callable JSDoc "Idempotent — safe to re-run; already-migrated comments are
+  skipped." now contradicts "Do not run again after BUT-2112". Info.
+- INCREMENT shim: dotted-key path (`applyFieldPath`) does not resolve the marker. No
+  current caller. Low.
+Verdict pass. Principle folded into the gdpr-erasure chapter (grouped mapping bullet).
