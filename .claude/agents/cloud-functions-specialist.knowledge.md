@@ -137,9 +137,11 @@ Triggers retry on uncaught exception; handlers must be idempotent:
 - `npm run test:rules:all` — a new rules/integration suite is FOUR
   registrations: its own `test:*` script, an append to the `&&` chain in
   `test:rules:all`, BOTH `paths:` blocks in `firestore-rules.yml`, and a UNIQUE
-  **bare-literal** `const PROJECT_ID = "..."` (`rules-coverage-report.js` discovers
-  ids by regex; an env-defaulted const drops the suite from the coverage union —
-  put a probe override at the `projectId:` CALL SITE).
+  `const PROJECT_ID` whose id is a LITERAL in that assignment —
+  `rules-coverage-report.js` discovers ids with a regex that accepts both the bare
+  form and `process.env.PROBE_PROJECT_ID ?? "id"`, so the probe seam is free; any
+  other spelling (a concatenated const, or the id written only at the `projectId:`
+  call site) drops the suite from the coverage union.
   Details are `firestore-rules-tester`'s; hand rules off.
   `test:rules*`/`test:integration:*` are excluded from the unit lane by prefix.
 - `scripts/run-ci-unit-tests.js` — the real CI gate. Hand-rolled harness,

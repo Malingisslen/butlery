@@ -39451,3 +39451,43 @@ Verbatim from `testing-specialist.knowledge.md`, in the original order.
   any guard fix by running the guard's OWN fixture suite against `git show HEAD:<script>`; identical
   pass counts IS the finding, and the killer fixture INVERTS the expected code (BUT-1904).
 
+
+### 2026-09-20 — BUT-1864: a struck clause whose true copies live one scope down (commit-gate review, pantry sheet)
+
+Trigger: commit-gate review of a doc-comment-only strike in
+`lib/views/pantry/add_pantry_item_sheet.dart`. The struck clause on `AddPantryItemSheet.unitOptions`
+read "… Same seam as `RecipeFormState.mealTypeOptions`, for the same bug class — but keyed on the
+STORED unit rather than the current selection, so the injected row survives a pick and can be chosen
+back. That divergence is deliberate; do not harmonise the two."
+
+Measured: `unitOptions(String storedUnit)` and `RecipeFormState.mealTypeOptions(String storedValue)`
+are byte-for-byte the same shape — each keys on its own argument. The divergence is entirely in the
+CALL SITES: the pantry `build()` passes `(widget.existingItem?.unit).orEmpty()` (stored, unchanged by
+a pick), while `edit_recipe_view.dart` and `skriv_sjalv_recept_view.dart` both pass
+`viewModel.mealType`, which `RecipeFormState.setMealType` rewrites on every pick. So the clause is
+false as a property of the helper it was written on, and true as a property of the caller.
+
+The grep-the-corrected-sentence-across-`test/` step (BUT-1883 principle) returned three surviving
+copies, and none of them is a finding:
+- `add_pantry_item_sheet.dart` build site, beside `items:` — "Derived from the STORED unit, not from
+  `_unit`, so an off-list row stays on offer after the user picks something else and can be picked
+  back." Directly readable from the two lines above it. True.
+- `test/widget/views/pantry/add_pantry_item_sheet_test.dart`, test 8's header — same claim, plus
+  "…`RecipeFormState.mealTypeOptions`, whose injected row disappears the moment you pick something
+  else", verified against both recipe-form call sites. True, and it is what the test drives.
+- `.claude/rules/accepted-deviations-pantry.md` — decision record; superseded, never struck (the
+  round's own plan says so).
+
+Test verdict: comment-only diff, no production behaviour change, no new test owed. Tests 7 and 8 are
+not misdescribed by the surviving prose. Harmonisation mutant graded ANALYTICALLY (no `lib/` write
+during a gate review, per the BUT-1693 ledger lesson): keying `items:` off `_unit` leaves test 8's
+first list assertion reading `[...offeredUnits]` after the 'dl' pick where it expects
+`['knippe', ...offeredUnits]` → red; test 7 never picks → green. That is exactly what
+`accepted-deviations-pantry.md` claims of the pair.
+
+Runs: `flutter test test/unit/views/pantry/pantry_unit_options_test.dart
+test/widget/views/pantry/add_pantry_item_sheet_test.dart` → +21, all passed.
+`flutter analyze lib/views/pantry/add_pantry_item_sheet.dart` → no issues.
+
+Principle recorded in the widgets-ui chapter: the sentence-sweep grep's hits are graded by SCOPE —
+strike only the copy whose subject cannot carry the claim.

@@ -97,7 +97,12 @@
 - `SemanticsService.announce` in a fire-and-forget handler is skippable UNTIL the view gains a DI
   seam — dated, not permanent. **A comment-only CORRECTION owes a grep of the CORRECTED SENTENCE
   across `test/`**: a covering suite's group header quotes production prose, so the false claim has a
-  third copy there (BUT-1883). **A premise ANOTHER gate measured false mid-round gets the same
+  third copy there (BUT-1883). **That grep's HITS are not automatically findings — grade each
+  copy by the SCOPE it sits at.** A claim about a pure helper's ARGUMENT can be false on the
+  helper's doc and true verbatim at the `build()` line that chooses the argument, and true again
+  in the test header that drives that line; strike only the copy whose subject cannot carry it
+  (BUT-1864: `unitOptions`/`mealTypeOptions` are keyed identically, the divergence is entirely in
+  the two call sites). **A premise ANOTHER gate measured false mid-round gets the same
   concept sweep, and it is the one that gets skipped** — the fix lands on the copy that gate
   quoted while paraphrases survive in sibling comments and in a TEST NAME the same round wrote,
   leaving one file carrying both verdicts (BUT-1922: "scope pop"/"Reachable"/"signing out"

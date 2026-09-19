@@ -5977,3 +5977,67 @@ Retired verbatim from `firestore-rules-tester.probing.knowledge.md` (Emulator go
 > and `teardown()` calls `env.cleanup()`, which disposes the ENV, not the data.
 
 Measured this review: both suites went 19/19 and 21/21 twice in a row on one long-lived emulator. A copy of the audit-logs suite with the clear line removed, run straight after on the leftover namespace, went 17/19. The two reds were exactly the create-allows (`al-self-create`, `al-precedence-check`), which is the fingerprint described in the probing chapter. Every create-DENY in both suites targets an id that no test writes, so a once-per-run clear leaves no deny test landing on the update limb.
+
+## 2026-09-20 — BUT-2100 (`users/{uid}/counters` ±1 step) + BUT-2111 (removed `conversation_memberships`)
+
+Rules under review (worktree, unstaged): the counters block split into a stranger `allow update`
+(`countersShapeOk()` + `counterStepOk()` x4), a stranger `allow create` (`counterCreateOk()` x4),
+and `allow create, update: if isOwner(userId) && countersShapeOk()`. `counterStepOk` gained a
+`>= 0` limb mid-review (Security Architect seat), which is why the suite is 14 cases, not 13.
+
+Suite runs on real rules: shared-content-counters 14/14, conversations 95/95.
+`node scripts/check-test-registration.js` → OK, 48 rules suites, 2 paths blocks.
+
+Mutants (PROBE_RULES_PATH copies in the scratchpad, anchor count asserted 1 each):
+- p1 delete the `-1` disjunct from `counterStepOk` → 14/14 GREEN (nothing pins it).
+- p2 delete `>= 0` → 13/14, kills "a stranger driving a counter below zero is DENIED".
+- p3 `counterStepOk` body → `field == field` → 10/14, kills arbitrary-value, step-by-two,
+  zeroing, below-zero.
+- p4 `counterCreateOk` body → `field == field` → 13/14, kills the stranger-create deny.
+- p5 owner arm → `if false` → 13/14, kills "the owner may write an absolute recomputed value".
+  The `-1` clearing allow SURVIVES both p1 and p5 — over-determined.
+- p6 stranger create arm → `if false` → 13/14, kills "the FIRST share creates the counter document".
+- p7 delete `+1` → 13/14; p8 delete the unchanged arm → 13/14; both kill "a later share steps
+  the existing counter" (the share write moves two fields and leaves two).
+- p9 (conversations) insert `match /{document=**} { allow read, write: if isOwner(userId); }`
+  inside `match /users/{userId}` → 90/95, killing EXACTLY the five BUT-2111 denies; the
+  `category_preferences` control stayed green and no other case moved.
+
+Writer inventory for `users/{uid}/counters/shared_content` (grep of `_getUserCountersRef`
+and every caller): `incrementUnreadCounter` (merge-set, two `FieldValue.increment(1)`,
+serverTimestamp; the only cross-user writer), `decrementUnreadCounter` (update, one −1, no
+`totalSharedContent`), `recalculateUnreadCount` (merge-set, absolute int + serverTimestamp,
+`requireCurrentUserId()` guard). The last two are reached only with the CURRENT user's uid —
+`markAsViewed` in the three repositories, `BaseSocialCoordinator.markAsViewed`, the three
+coordinators and `MenuSocialManager` all pass `currentUserId`, and
+`recalculateUnreadCount` throws `PermissionDeniedException` for any other uid. So the
+stranger arm's `-1` allowance serves no shipped writer. `UserCounters.toFirestore()` emits
+`unreadMessages`/`pendingFriendRequests` and a millis `lastUpdated`, i.e. it would fail
+`countersShapeOk()`, but grep shows no production caller (tests and the model only). No
+Cloud Function writes the doc; the deletion cascade only deletes it.
+
+### 2026-09-20, round 2 — BUT-2100 after the `-1` removal (rules md5 `c4aeb64c…`, suite md5 `7807d302…`)
+
+The stranger arm is now `>= 0 && (unchanged || +1)`; the comment states the measured
+owner-only fact about `decrementUnreadCounter`/`recalculateUnreadCount` instead of naming
+decrement as a stranger writer. Suite 21/21; `rate-limit-rules.test.ts` 64/64 as a neighbour.
+
+Mutants on the new bytes, one per conjunct, each 20/21 killing exactly its own case:
+re-add the `-1` disjunct → "a stranger stepping a counter DOWN is DENIED"; owner
+`countersShapeOk()` off → "the OWNER carrying an undeclared key is DENIED"; menus step off →
+the menus arbitrary-value deny; menus create off → the high-menus create deny; total step off
+→ the total-by-five deny.
+
+The one survivor: deleting `>= 0` → **21/21 GREEN**. With `-1` gone the disjunction already
+refuses a below-zero post-state, so the floor is masked; under the re-add-`-1` mutant the
+below-zero case stays green, which is where `>= 0` does the refusing. Reachable only from a
+STORED negative (legacy rows, since the pre-BUT-2100 rule accepted any value) — a seed of
+`unreadSharedRecipes: -3` plus the ordinary stranger +1 would kill it.
+
+### 2026-09-20, round 3 — the floor is pinned (rules unchanged, md5 `c4aeb64c…`; suite 22 cases)
+
+"a stranger cannot step a STORED negative back up" seeds `unreadSharedRecipes: -3` /
+`totalSharedContent: -3` and sends the ordinary `incrementUnreadCounter` shape; -2 satisfies
+`+1`, so only `>= 0` refuses it. Suite 22/22; the delete-`>= 0` mutant that went 21/21 green in
+round 2 now goes **21/22, killing that case alone**. The sentinel clause in the header was
+struck rather than narrowed a third time.

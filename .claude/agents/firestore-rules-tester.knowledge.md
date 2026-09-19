@@ -26,6 +26,7 @@ chapter over 20,000.
 | `/user_moderation/{uid}` + its `report_history` subcollection, **and** the `friend_categories` / `public_profiles` admin moderation overrides | `moderation-rules.test.ts` | `test:rules:moderation` |
 | `/shared_content` list/get, `notification_delivery`+`notification_engagement` create, **and the REMOVED `shared_content/{id}/items` block** | `iter102-rules.test.ts` | `test:rules:iter102` |
 | `/household_allergen_shares/{householdId}_{userId}` (member+owner read, consent-bound create/update, path-derived delete) | `household-allergen-shares-rules.test.ts` | `test:rules:household-allergen-shares` |
+| `users/{uid}/counters/{counterId}` (stranger ±1 step, owner absolute) | `shared-content-counters-rules.test.ts` | `test:rules:shared-content-counters` |
 | All of the above                      | (sequence)                 | `test:rules:all`          |
 
 ---
@@ -168,7 +169,3 @@ chapter over 20,000.
   the mutator to a heredoc FILE and `diff` the mutant before running it — quoting a CEL
   string list inside `node -e '...'` lets bash eat the quotes, yielding undefined
   identifiers, i.e. a deny-everything mutant that reddens plenty and proves nothing.
-- **1:1 DM minor gate** (`passesMinorDmGate`): size!=2, or other party not minor, or
-  creator is their friend. Group conversations (size>2) are DELIBERATELY ungated in
-  rules — minor protection there is the separate `enforceGroupMinorMembership` Cloud
-  Function; don't file "group DM has no minor gate" as a rules finding.

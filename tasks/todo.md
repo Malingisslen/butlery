@@ -1,48 +1,39 @@
-# Sprint 2026-09-19 (sprint-execute, /loop, unattended)
+# Sprint 2026-09-19 runda 2 (sprint-execute, /loop, unattended)
 
-Selection: Step-0 grep of main confirmed every premise below still holds (HEAD `a35576566`).
-Router output pasted per ticket (raw `python tools/stakeholder_router.py --json <paths>`).
-panelPolicy = park → full-panel tickets build and park In Review.
+Router on the fileset (`firestore.rules functions/src/__tests__/conversations-rules.test.ts
+lib/views/pantry/add_pantry_item_sheet.dart`) → **full-panel**; panelPolicy = park, so the
+rules work goes to In Review. Step-0 greps confirmed every premise on current main.
 
-## Comment / doc strikes (Tier A)
-
-- [x] BUT-2104 [Tier A] build — strike stale kill-switch comment, `functions/src/social/duplicate-content-guard.ts`. Router: single (T&S, Vendor).
-  - AC1 (diff): the "Art. 15 export ships … verbatim" and "Undecided, so no rule file carries it; the ADR is its only home" sentences are gone.
-  - AC2 (diff): no new claim added beyond an optional bare pointer "Read ADR-0009 before switching this on"; the ships-OFF reasoning is unchanged.
-- [x] BUT-2108 [Tier A] build — strike the copyWith rationale in the BUT-1904 group, `test/unit/services/messaging_service_test.dart`. Router: single (SW Arch, PM).
-  - AC1 (diff): the four-line copyWith rationale in the BUT-1904 group is deleted, nothing added.
-  - AC2 (diff): the `content`-is-a-PARAMETER paragraph and the BUT-1909 group's true copy are untouched.
-- [x] BUT-2097 [Tier A] build — move `items` const out of the shared-content heading; delete the uncompilable Usage Examples block. Router: single.
-  - AC1 (diff): `items` no longer sits under `// ── Shared content subcollections ──`; heading text not reworded.
-  - AC2 (diff): the class-header Usage Examples block in `firebase_shared_shopping_repository.dart` is removed; analyze clean.
-- [x] BUT-2096 [Tier A→park: full-panel file] build — strike "and no later erasure can find them" in `account-deletion-cascade.ts`; re-read survivor. Router: full-panel (comment-only diff).
-  - AC1 (diff): the false clause is gone; "unreachable PII" no longer rests on the struck half.
-  - AC2 (diff): `deleteRealtimeDocsWithChildren`'s true sentence untouched; no code change.
-
-## Small UI bug (Tier B)
-
-- [x] BUT-1863 [Tier B] build — trailing space in pantry quantity line when unit is empty. Router: single (SW Arch, PM).
-  - AC1 (diff): empty unit renders `"1"` without a trailing space; non-empty unit renders `"1 st"` unchanged.
-  - AC2 (diff): a widget/unit test pins both cases.
-
-## Rules suites (Tier C, full-panel → park In Review)
-
-- [x] BUT-2105 [Tier C] build — diagnose the red rules suites by MEASUREMENT, fix test or rule per cause.
-  - AC1 (diff/run): each red suite's failing cases named with measured cause.
-  - AC2 (diff): no ALLOW case is fixed by weakening a rule without a written reason.
-- [x] BUT-2086 [Tier C] build — `recipe_ratings` create requires doc id `recipeId + '_' + auth.uid`.
-  - AC1: rules test shows a second rating under another id DENIED.
-  - AC2: the app's real write (`{recipeId}_{uid}`) still ALLOWED.
-- [x] BUT-2092 [Tier C] build — `metadata.poll.isClosed` cannot go true→false on messages sender-update.
-  - AC1: a rules conjunct refuses isClosed true→false; creator-as-sender close still allowed.
-  - AC2: three rules cases (creator-sender allowed, other participant denied, creator-not-sender denied) mutation-probed.
+- [x] BUT-2100 [Tier C] build — bound the shared-content unread counters in `firestore.rules`.
+  The ticket's own "±1 per field" fix is measured WRONG (its Linear comment); build the form
+  that comment specifies: own create arm, owner arm allowing absolute values (the documented
+  repair path `recalculateUnreadCount`), stranger arm bound to `old ± 1` in BOTH directions.
+  - AC1 (diff): a stranger writing an arbitrary value is DENIED; a stranger's +1 via the real
+    `FieldValue.increment` sentinel through the real writer shape is ALLOWED.
+  - AC2 (diff): first share for a user (document absent) is ALLOWED; a badge clear
+    (`decrementUnreadCounter`, -1, no `totalSharedContent`) is ALLOWED.
+  - AC3 (diff): the owner may still write an absolute recomputed value.
+  - AC4 (diff): a new rules suite with its own project id + `clearFirestore()`, mutation-probed
+    per arm.
+- [x] BUT-2111 [Tier A] build — deny cluster pinning the removed `conversation_memberships`
+  path in `conversations-rules.test.ts`.
+  - AC1 (diff): one DENY per verb the old block granted (read/list, create, update, delete),
+    sent by the OWNER, attributable to the catch-all line.
+  - AC2 (diff): a fail-closed control on a sibling path under the same owner is ALLOWED.
+- [x] BUT-1864 [Tier A] build — strike the false "keyed on" clause in
+  `add_pantry_item_sheet.dart`. Correction may only DELETE; the ticket's suggested rewrite is
+  new text and is NOT taken. `.claude/rules/accepted-deviations.md` is a decision record —
+  do not strike it; file it if it is wrong.
+  - AC1 (diff): the false clause is gone; no replacement sentence.
+  - AC2 (diff): the surviving sentences read true alone; no code change.
+- [!] BUT-2050 [Tier A] build — catch the flaky case in `blocks-rules.test.ts`.
+  - AC1 (run): a FAIL line captured, or N consecutive green runs recorded as the measurement.
+  - AC2 (diff): the cause is named and fixed at the root, not by retrying.
 
 ## Needs you (Tier D)
-
 - none this run.
 
 ## Deviation log
-- [discovery] BUT-2105: plan expected rule drift → all five reds were test harness (leftover emulator data in 4 suites, no storage emulator for the 5th) → fixed test-side only; no rule touched.
-- [deviation] BUT-2092: panel (Security Architect) asked to freeze the whole closed poll payload → kept ticket scope (one-way isClosed) and filed BUT-2116; rules-tester added the delete-and-recreate bypass to it.
-- [discovery] BUT-2105 side finding: realtime menu votes use a random id where rules require uid → BUT-2118 (not measured).
-- [deviation] Stakeholder "single" critique for the comment/pantry batch ran after the edits, not before (the edits were deletions); no conditions came back.
+- [discovery] BUT-2050: 20 consecutive runs of blocks-rules.test.ts were green, so no FAIL line was captured and no root cause named. Not built; the measurement is the outcome.
+- [deviation] BUT-2100: the ticket's own suggested fix was measured wrong before this run; built the form its review comment specifies instead of re-planning it.
+- [deviation] Panel and gate findings were folded in only where they were one-line pins (zero floor, per-field denies, owner-shape deny); the cross-field desync, the +1 spam, the wildcard path and the Dart-side owner guard went to BUT-2121/2122/2123 instead of widening scope.

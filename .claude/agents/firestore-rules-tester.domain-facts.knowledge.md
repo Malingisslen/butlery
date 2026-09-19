@@ -57,6 +57,11 @@ and malformed shapes when the validator changes.
   `recipe_ratings`, `user_notifications`) and is a bare `exists()` reading no field — so no
   READ limb in `firestore.rules` is block-gated, and a sentence saying a change to the helper
   would put it "on the read side" confuses reading the block doc's FIELDS with the read limb.
+- **1:1 DM minor gate** (`passesMinorDmGate`): size!=2, or other party not minor, or
+  creator is their friend. Group conversations (size>2) are DELIBERATELY ungated in
+  rules — minor protection there is the separate `enforceGroupMinorMembership` Cloud
+  Function; don't file "group DM has no minor gate" as a rules finding. (Moved here from
+  the core card 2026-09-20 to keep that card under its cap; text unchanged.)
 - **Household membership** (`households`/`diner_profiles`/`family_ratings`) is a
   DOC-READ gate (`get(households/{hid})` + uid in `memberUserIds`), not a path segment —
   every test must seed the household first. Household-admin is separate from app-level

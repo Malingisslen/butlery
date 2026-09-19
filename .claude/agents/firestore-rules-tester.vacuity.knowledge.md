@@ -48,6 +48,33 @@
   the wrong type per guard: `.size()` answers on list, map AND string, so an `is list` or
   `is string` beside a size bound is pinned only by a type that still has `.size()`
   (a string for a list, a one-element list for a string).
+- **A ±1 STEP rule is THREE disjuncts (unchanged / +1 / −1) and needs one mutant PER
+  DISJUNCT; the one with no production writer stays green when deleted.** Measured on
+  `users/{uid}/counters` (BUT-2100): deleting the `−1` disjunct from the stranger arm left
+  the suite 14/14, because every shipped decrement (`decrementUnreadCounter`, reached only
+  through `markAsViewed(..., currentUserId)`) runs as the counter's OWNER and is caught by
+  the owner's absolute-write arm instead. The −1 ALLOW test in the suite is sent by the
+  owner, so it is over-determined: it survives the no-−1 mutant AND the owner-arm-off
+  mutant. Before crediting a step rule's direction, ask which ACTOR the writer runs as, and
+  send the allow from the actor the arm exists for. The other five mutants each killed
+  exactly their own set (+1 → the share-step allow; unchanged → the same allow, since the
+  share leaves two fields still; `>= 0` → the below-zero deny; create-arm value bound → the
+  stranger-create deny; owner arm → the absolute-repair allow).
+  **REMOVING one disjunct then MASKS the floor conjunct beside it, and the suite cannot
+  see it.** Once `-1` was dropped, `>= 0 && (unchanged || +1)` refuses a below-zero write on
+  the disjunction alone: deleting `>= 0` left the suite 21/21, while re-adding `-1` killed
+  only the new down-step deny and left the below-zero case green (there `>= 0` is what
+  refuses it). A floor beside a step rule is reachable only from a STORED out-of-range
+  value — seeding a NEGATIVE counter and sending the ordinary +1 pins it (measured: with
+  that case the same deletion goes 21/22, killing it alone), and without such a case the
+  conjunct is unfalsifiable by construction.
+- **A split of one `allow create, update` into per-limb statements makes `resource`-null a
+  DESIGN fact, and the split needs a limb mutant each way.** With a stranger `update` arm
+  reading `resource.data.get(f, 0)` and a separate `create` arm that cannot, the emulator
+  prints an EVALUATION ERROR for the limb that does not apply while another `allow`
+  statement still grants the write — so a per-limb "evaluation error" line in the emulator
+  log is not evidence of a broken rule. Prove the grant with the ALLOW test, never with the
+  deny log.
 - A collection with no root `keys().hasOnly()` validator silently accepts new top-level
   fields — pin a regression test that fails the day a `hasOnly([...])` is added without
   the new field, rather than trusting the absence of a validator to stay noticed.
