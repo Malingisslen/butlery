@@ -37,6 +37,7 @@ Future<AppLocalizations> _open(
   required bool reviewKept,
   required bool ownReportKept,
   bool provisional = false,
+  DateTime? holdUntil,
 }) async {
   await tester.pumpWidget(
     _host(
@@ -45,6 +46,7 @@ Future<AppLocalizations> _open(
         reviewKept: reviewKept,
         ownReportKept: ownReportKept,
         provisional: provisional,
+        holdUntil: holdUntil,
       ),
     ),
   );
@@ -63,8 +65,14 @@ void main() {
         findsOneWidget,
       );
       expect(find.text(l10n.profileDeletionNoticeWhat), findsNothing);
-      // The other three Art. 12(4) elements are unchanged.
-      expect(find.text(l10n.profileDeletionNoticeWhy), findsOneWidget);
+      // WHY and HOW LONG speak of the handling, not of a review.
+      expect(find.text(l10n.profileDeletionNoticeWhyHandling), findsOneWidget);
+      expect(find.text(l10n.profileDeletionNoticeWhy), findsNothing);
+      expect(
+        find.text(l10n.profileDeletionNoticeHowLongHandlingUnknown),
+        findsOneWidget,
+      );
+      expect(find.text(l10n.profileDeletionNoticeHowLongUnknown), findsNothing);
       expect(find.text(l10n.profileDeletionNoticeRights), findsOneWidget);
     });
 
@@ -74,6 +82,7 @@ void main() {
       expect(find.text(l10n.profileDeletionNoticeWhatBoth), findsOneWidget);
       expect(find.text(l10n.profileDeletionNoticeWhat), findsNothing);
       expect(find.text(l10n.profileDeletionNoticeWhatOwnReport), findsNothing);
+      expect(find.text(l10n.profileDeletionNoticeWhyHandling), findsOneWidget);
     });
 
     testWidgets('both, with the review hold provisional, stays hedged', (
@@ -98,6 +107,52 @@ void main() {
 
       expect(find.text(l10n.profileDeletionNoticeWhat), findsOneWidget);
       expect(find.text(l10n.profileDeletionNoticeWhatOwnReport), findsNothing);
+      expect(find.text(l10n.profileDeletionNoticeWhy), findsOneWidget);
+      expect(
+        find.text(l10n.profileDeletionNoticeHowLongUnknown),
+        findsOneWidget,
+      );
+      expect(find.text(l10n.profileDeletionNoticeWhyHandling), findsNothing);
+    });
+
+    // The dated HOW LONG line, both arms, as exact text: the server normally
+    // sends a date, so this is the line people actually read.
+    testWidgets('with a date, a review alone still speaks of the review', (
+      tester,
+    ) async {
+      await _open(
+        tester,
+        reviewKept: true,
+        ownReportKept: false,
+        holdUntil: DateTime.utc(2027, 3, 11),
+      );
+
+      expect(
+        find.text(
+          'Hur länge: tills granskningen är klar, senast 11 mars 2027.',
+        ),
+        findsOneWidget,
+      );
+      expect(find.textContaining('handläggningen'), findsNothing);
+    });
+
+    testWidgets('with a date, a filed report speaks of the handling', (
+      tester,
+    ) async {
+      await _open(
+        tester,
+        reviewKept: false,
+        ownReportKept: true,
+        holdUntil: DateTime.utc(2027, 3, 11),
+      );
+
+      expect(
+        find.text(
+          'Hur länge: tills handläggningen är klar, senast 11 mars 2027.',
+        ),
+        findsOneWidget,
+      );
+      expect(find.textContaining('granskningen är klar'), findsNothing);
     });
   });
 

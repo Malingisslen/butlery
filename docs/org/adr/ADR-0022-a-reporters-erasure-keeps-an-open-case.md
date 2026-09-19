@@ -46,5 +46,6 @@ She was NOT shown any count of reporters who erase with a case open; there are n
   (`sweepRetainedReporterReports`) that ends it.
 - ADR-0016 is superseded for OPEN cases; a closed case's row is still deleted.
 - The legal basis for the reporter side, GDPR Art. 17(3)(b), was chosen without asking Malin.
+- **2026-09-19:** Malin approved GDPR Art. 17(3)(b) as that basis.
 
 Advisory record. Malin decided.

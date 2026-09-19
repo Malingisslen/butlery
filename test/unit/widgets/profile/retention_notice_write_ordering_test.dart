@@ -270,7 +270,13 @@ void main() {
       await _requestDeletion(tester);
       await tester.pumpAndSettle();
 
-      expect(find.textContaining('Två saker har sparats'), findsOneWidget);
+      expect(find.textContaining('Det här har sparats'), findsOneWidget);
+      expect(
+        find.text(
+          'Hur länge: tills handläggningen är klar, senast 1 juni 2999.',
+        ),
+        findsOneWidget,
+      );
       expect(find.textContaining('1 juni 2999'), findsOneWidget);
       expect(find.textContaining('11 mars 2999'), findsNothing);
       final stored = await store.read();

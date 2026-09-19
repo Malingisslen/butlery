@@ -27389,23 +27389,41 @@ abstract class AppLocalizations {
   /// **'En sak kan ha sparats: vi kunde inte slutföra kontrollen av om det finns en pågående granskning av innehåll som anmälts.'**
   String get profileDeletionNoticeWhatUnclear;
 
-  /// The WHAT line when only a report the person FILED was kept: its case was still open, so it stays without their name until it closes (Malin, 2026-09-18).
+  /// The WHAT line when only reports the person FILED were kept: their cases were still open, so they stay without the person's name until they close (Malin, 2026-09-18). Count-neutral, because the server does not send how many.
   ///
   /// In sv, this message translates to:
-  /// **'En sak har sparats: en eller flera anmälningar du har gjort som ännu inte är färdigbehandlade. Ditt namn är borttaget från dem, men det du skrev finns kvar.'**
+  /// **'En eller flera anmälningar du har gjort som ännu inte är färdigbehandlade har sparats. Ditt namn är borttaget från dem, men det du skrev finns kvar.'**
   String get profileDeletionNoticeWhatOwnReport;
 
-  /// The WHAT line when both a review of the person's content and a report they filed were kept.
+  /// The WHAT line when both a review of the person's content and reports they filed were kept.
   ///
   /// In sv, this message translates to:
-  /// **'Två saker har sparats: en pågående granskning av innehåll som anmälts, och en eller flera anmälningar du har gjort som ännu inte är färdigbehandlade. Ditt namn är borttaget från anmälningarna, men det du skrev finns kvar.'**
+  /// **'Det här har sparats: en pågående granskning av innehåll som anmälts, och en eller flera anmälningar du har gjort som ännu inte är färdigbehandlade. Ditt namn är borttaget från anmälningarna, men det du skrev finns kvar.'**
   String get profileDeletionNoticeWhatBoth;
 
-  /// The WHAT line when a report they filed was kept and the review hold is PROVISIONAL. The review half stays hedged, as in profileDeletionNoticeWhatUnclear (BUT-2047).
+  /// The WHAT line when reports they filed were kept and the review hold is PROVISIONAL. The review half stays hedged, as in profileDeletionNoticeWhatUnclear (BUT-2047).
   ///
   /// In sv, this message translates to:
   /// **'En eller flera anmälningar du har gjort som ännu inte är färdigbehandlade har sparats utan ditt namn men med det du skrev. En sak till kan ha sparats: vi kunde inte slutföra kontrollen av om det finns en pågående granskning av innehåll som anmälts.'**
   String get profileDeletionNoticeWhatBothUnclear;
+
+  /// The WHY line whenever reports the person filed were kept (alone or beside a review): speaks of the handling, not of a review of their content.
+  ///
+  /// In sv, this message translates to:
+  /// **'Varför: vi måste kunna slutföra handläggningen.'**
+  String get profileDeletionNoticeWhyHandling;
+
+  /// The HOW LONG line whenever reports the person filed were kept. {date} is the latest cap the server sent, never a hardcoded number.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hur länge: tills handläggningen är klar, senast {date}.'**
+  String profileDeletionNoticeHowLongHandling(String date);
+
+  /// The HOW LONG line whenever reports the person filed were kept and no date was sent.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hur länge: tills handläggningen är klar.'**
+  String get profileDeletionNoticeHowLongHandlingUnknown;
 
   /// The neutral first line of the RE-SHOWN Art. 12(4) notice, before 'Visa mer' is tapped. Malin's call 2026-09-12, option (b): on a shared device the next person must not be told that the previous account holder had content under moderation review. Says nothing the expanded notice says. The notice shown live, right after the deletion, has no collapsed state — there is no bystander there.
   ///

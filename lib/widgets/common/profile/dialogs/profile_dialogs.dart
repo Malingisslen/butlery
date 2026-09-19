@@ -192,13 +192,24 @@ class ProfileDialogs {
           ? l10n.profileDeletionNoticeWhatUnclear
           : l10n.profileDeletionNoticeWhat;
     }
-    final howLong = holdUntil == null
-        ? l10n.profileDeletionNoticeHowLongUnknown
-        : l10n.profileDeletionNoticeHowLong(
-            DateFormat.yMMMMd(
-              Localizations.localeOf(context).languageCode,
-            ).format(holdUntil),
-          );
+    // A kept report of the person's own is being HANDLED, not reviewed, so
+    // those two lines speak of the handling whenever one is among the records.
+    final why = ownReportKept
+        ? l10n.profileDeletionNoticeWhyHandling
+        : l10n.profileDeletionNoticeWhy;
+    final String howLong;
+    if (holdUntil == null) {
+      howLong = ownReportKept
+          ? l10n.profileDeletionNoticeHowLongHandlingUnknown
+          : l10n.profileDeletionNoticeHowLongUnknown;
+    } else {
+      final date = DateFormat.yMMMMd(
+        Localizations.localeOf(context).languageCode,
+      ).format(holdUntil);
+      howLong = ownReportKept
+          ? l10n.profileDeletionNoticeHowLongHandling(date)
+          : l10n.profileDeletionNoticeHowLong(date);
+    }
 
     // Per CALL, never a static: the bystander protection is per-showing, and a
     // flag living on the class would stay set when a dialog is torn down
@@ -229,7 +240,7 @@ class ProfileDialogs {
                     children: [
                       Text(what),
                       const SizedBox(height: AppDimensions.spacingMd),
-                      Text(l10n.profileDeletionNoticeWhy),
+                      Text(why),
                       const SizedBox(height: AppDimensions.spacingMd),
                       Text(howLong),
                       const SizedBox(height: AppDimensions.spacingMd),

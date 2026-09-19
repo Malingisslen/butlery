@@ -40,8 +40,7 @@ export const REPORTER_RETENTION_DAYS = 180;
 /**
  * The article the reporter-side retention rests on: the obligation to process
  * a notice diligently (DSA Art. 16(6)) is a legal obligation, which is what
- * GDPR Art. 17(3)(b) excepts. Chosen without asking Malin; the deviation entry
- * names it.
+ * GDPR Art. 17(3)(b) excepts.
  */
 export const REPORTER_RETENTION_BASIS = "GDPR Art. 17(3)(b)";
 

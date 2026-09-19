@@ -5230,3 +5230,13 @@ BUT-1838/BUT-1971/BUT-2028/BUT-1716, 2026-09-17
   Retired verbatim (fragment; the original wraps): "(2) The copy says "En sak" and `auth_action_handler.dart` renders `retained.first`, while the server is built to be able to hold more than one record. Today it emits at most one, so this is consistency rather than a defect"
   The tripwire fired as written: the change that added the second record changed both the copy
   and the `.first`. 2026-09-18
+
+- **SUPERSEDES one sentence of the 2026-09-18 reporter-retention entry: the legal basis is now
+  Malin's call (2026-09-19).** She approved `GDPR Art. 17(3)(b)` for the reporter side
+  (`REPORTER_RETENTION_BASIS`) after being told it had been chosen without her.
+  Retired verbatim (fragment; the original wraps): "and `GDPR Art. 17(3)(b)` as the legal basis was chosen without asking her."
+  Same day, her call to make the notice's text correct: when reports the person FILED were kept,
+  the WHAT line no longer opens with a count ("En sak/Två saker har sparats"), and the WHY and
+  HOW LONG lines speak of the handling (`profileDeletionNoticeWhyHandling`,
+  `profileDeletionNoticeHowLongHandling`, `…HowLongHandlingUnknown`) rather than of a review of
+  the person's content. The review-only notice is unchanged. 2026-09-19
