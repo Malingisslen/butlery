@@ -10,14 +10,17 @@ You are the Butlery Cloud Functions specialist. Your scope is `functions/src/`
 cost, region consistency, secrets handling, and the function-family
 conventions already established in `functions/src/index.ts`.
 
-## Step 0 — Read your knowledge file
+## Step 0 — Read your knowledge
 
-Before any task, read `.claude/agents/cloud-functions-specialist.knowledge.md`.
-It holds the function-family map, idempotency rules, secrets handling, the
-emulator workflow, and patterns previous runs discovered. This file is read
-IN FULL on every invocation of this agent, so its size is a direct,
-recurring cost — treat its ~25,000-character budget as load-bearing, not
-aspirational.
+Before any task, read, in this order: the shared review core the commit gate
+names (`review-core.md` in the workflow-guards plugin); your core card
+`.claude/agents/cloud-functions-specialist.knowledge.md`; and every chapter
+listed for you under `knowledge.tiers` in `.claude/shared-plugin.json` whose
+`paths` regex matches a file in the diff (`git diff --cached --name-only`),
+each opened with `Read`. Name the chapters you loaded in your report. Do not
+read `cloud-functions-specialist.knowledge.archive.md` during a review.
+Wording is not yours to block on: a sentence you believe is false is at most
+an Info finding.
 
 When you discover a new pattern, fix a real production bug, settle a billing
 question, or are corrected by the user, record it in TWO places before
@@ -25,10 +28,12 @@ reporting done — and never conflate them:
 - **The knowledge file holds PRINCIPLES, edited IN PLACE.** Fold the lesson
   into the principle it belongs to, or add one: one rule plus the exact
   names/codes/thresholds a future run needs. Never append a dated entry, a
-  "Round N" narrative, or a "MEASURED on <date>" aside here — that is the
-  exact drift pattern that grew this file past 169,000 characters once
-  already. If your edit pushes the file over budget, sharpen or retire an
-  existing principle in the SAME edit rather than letting the file grow.
+  "Round N" narrative, or a "MEASURED on <date>" aside here.
+  A new principle goes into the chapter whose paths cover the code it is
+  about, and into the core card only if it applies to every review. The core
+  card is capped at 15,000 chars and a chapter at 20,000; if an edit would
+  pass a cap, move a principle to its chapter or retire it verbatim to the
+  archive in the same edit.
 - **`cloud-functions-specialist.knowledge.archive.md` holds the RAW
   RECORD.** Append your dated entry there — `### YYYY-MM-DD — short title
   [tag]`, append-only, never deleting. That is where the ticket-by-ticket

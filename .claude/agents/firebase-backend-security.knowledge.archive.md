@@ -10904,3 +10904,98 @@ and the reason the check exists.
 No new durable rule: the existing bullet ("strike it, then grep the INTERFACE doc, because that
 is where it comes back in different words once the implementation's copy is gone") already
 predicted this shape and was discharged by it. Principles file untouched.
+
+### 2026-09-19 — moved out of the reviewer knowledge in the three-tier split (BUT-1944, BUT-2074)
+
+Verbatim from `firebase-backend-security.knowledge.md`, in the original order.
+
+## GDPR compliance baseline
+
+Required for every user-data-touching feature (Critical finding if any is missing):
+
+- [ ] Consent before collection
+- [ ] Data minimization
+- [ ] Right to access (export)
+- [ ] Right to deletion (cascading through subtrees)
+- [ ] Right to rectification
+- [ ] Data portability
+- [ ] Privacy policy linked from any consent surface
+
+## Security best practices
+
+- Input validation/sanitization on every write boundary.
+- Audit logging for security-critical operations. No exposed keys/credentials (`.env`
+  gitignored). HTTPS-only, encryption at rest.
+
+## Performance & query optimization
+
+- Compound queries need composite indexes (`firestore.indexes.json`). `where()`: indexed
+  fields first. Always `limit()`. No whole-collection reads on user-facing paths. Use
+  subcollections for scalable per-user data.
+
+## Real-time listener hygiene
+
+- StreamBuilder/StreamProvider, never raw `onSnapshot` in widgets. Listeners attached in
+  `initState`/VM `init`, disposed in `dispose()`. Stream errors handled.
+## Severity tagging for findings
+
+- **Critical** — security vulnerability, GDPR violation, data-loss risk, memory leak.
+- **High** — missing permission check, missing index for a deployed query, performance
+  issue at scale.
+- **Medium** — optimization opportunity, incomplete validation.
+- **Low** — code organization, documentation.
+
+Always include specific code examples and remediation steps.
+
+---
+
+- A class-doc or block comment that summarises "the permission methods here enforce X" is a
+  UNIVERSAL over the four `validate*Permission` methods, and the member that falsifies it is
+  almost always the one that `return true`s unconditionally (delete, or read on a null
+  entity). A repair for an UNDERSTATEMENT swings straight into it: the corrected sentence
+  credits every method with the check only one or two of them run. Strike the generalisation
+  and let each method's own body speak. Check direction too — a repo copy can be WEAKER than
+  the rule it "mirrors" (create accepting any participant where the rule demands
+  `edit`/`admin`), so "belt-and-braces" belongs on the specific method that refuses, never on
+  the group. The REPAIR round then smuggles a fresh authority claim in the other direction:
+  naming the client-side SERVICE LAYER alongside `firestore.rules` as "the authoritative
+  gates" promotes a layer a hand-rolled client skips. Only rules are authoritative; a Dart
+  layer "also checks". Before writing such a sentence, grep the SAME FILE — the correct
+  formulation is usually already sitting a few lines away, and the fix is to strike the added
+  clause, not to re-word either. The THIRD wording adds a new failure mode: it names the
+  DENORMALISED field the RULES read (`memberPermissions`, a derived write-side getter) as
+  what the Dart methods read, when they walk the structured `participants` list — so open
+  the model and check which of the two shapes the method actually consults, and remember a
+  method-scoped "belt-and-braces" sentence on `save` usually already says it correctly.
+  A CALLER's comment that describes a shared helper's INTERNALS ("wraps only its cache read
+  in a try, returns the server read unguarded") is falsified by the commit that edits the
+  helper, in a file the diff shows only as context — grep the helper's NAME across callers'
+  comments in the same edit, and strike the mechanism clause rather than re-describing it.
+  Deleting a client symbol that a RULES comment cites as the reason a conjunct exists leaves
+  a false sentence in `firestore.rules` (and often in the rules tests): grep both for the
+  deleted symbol in the same edit, and STRIKE the clause rather than reword it — the
+  conjunct usually still stands on its own, only its stated motive died. Mirror case: a
+  comment naming the TEST that pins an invariant dies when that test is deleted along with
+  the code it sat inside — re-point only to an assertion GREPPED in the current tree (the
+  invariant often survives in the DTO/serializer test), never to where you remember it.
+  The commit that CORRECTS an inverted comment is where the inversion is re-asserted as
+  HISTORY: "tickets A, B and C all argue from <the true fact>" is false whenever A and B
+  argued the opposite and this diff is what fixes them. Any "N tickets rest on this"
+  provenance clause is a measured claim about `git show HEAD:<file>`, not about the code —
+  strike it and state the code fact alone. Re-verify the WHOLE file on the repair round, not
+  the struck sentence: the same claim comes back lower down in new wording ("every 'damage is
+  bounded' sentence in A/B/C rests on this", as a per-test comment, after the header sentence
+  saying it was deleted). A "we chose X over Y" comment is checkable only where Y EXISTS in
+  that method: an audit row beside a ONE-document write has no granularity to trade, so
+  "logged per save to keep volume down" is fabricated deliberation — strike it and leave the
+  bare requirement sentence (`lib/repositories/CLAUDE.md`). The N-document sibling in the same
+  file (a per-user cascade) may carry that identical wording legitimately, so judge per METHOD
+  and do not sweep the twin.
+
+- An ARB `@key.description` is COPIED into `lib/l10n/app_localizations.dart` by
+  `flutter gen-l10n`, so a description corrected AFTER the last generation leaves the old —
+  often already-refuted — sentence standing in the generated Dart, where nothing reddens: the
+  STRING still matches, `dart analyze` is clean, and no test reads a doc comment. Diff the
+  description against the generated doc comment whenever an ARB is touched in a review round,
+  and fix it by re-running the generator, never by hand-editing the generated file.
+

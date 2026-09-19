@@ -20503,3 +20503,15 @@ Race analysis: tier-1 `reports` and `moderation_system_events` are concurrent bu
 `deleteUserReports` never deletes an open report, so a concurrent status read of a deleted
 row always meant closed. Suites: cascade 488/488, request-account-deletion 9/9 (re-run by
 reviewer). Principle folded into the `runStep` bullet.
+
+### 2026-09-19 — moved out of the reviewer knowledge in the three-tier split (BUT-1944, BUT-2074)
+
+Verbatim from `cloud-functions-specialist.knowledge.md`, in the original order.
+
+**OVER the ~25,000-char budget — every edit must retire more than it adds.**
+- **A chunked migration walks by OFFSET** — full rule in `lessons-digest.md`
+  (BUT-2046).
+- **Scope limits what you CHANGE, not what you may READ.** Whether a TS comment's
+  "live"/"unused" claim holds is often decided by the Dart WRITER one file away
+  ("maintained by nothing" != "not live"). Open it before calling a referent
+  unsettleable.

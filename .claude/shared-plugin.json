@@ -179,7 +179,242 @@
       ".claude/rules/lessons-digest-testing.md",
       ".claude/rules/lessons-digest-flutter.md"
     ],
-    "digestCoreMaxChars": 14000
+    "digestCoreMaxChars": 14000,
+    "tiers": {
+      "coreMaxChars": 15000,
+      "chapterMaxChars": 20000,
+      "agents": {
+        "testing-specialist": {
+          "core": ".claude/agents/testing-specialist.knowledge.md",
+          "chapters": [
+            {
+              "file": ".claude/agents/testing-specialist.widgets-ui.knowledge.md",
+              "paths": [
+                "^lib/(views|widgets|theme)/",
+                "^lib/l10n/"
+              ]
+            },
+            {
+              "file": ".claude/agents/testing-specialist.gdpr-export.knowledge.md",
+              "paths": [
+                "^lib/services/account/",
+                "^lib/repositories/.*(export|deletion|audit|consent)",
+                "^lib/(services|viewmodels|models)/.*(gdpr|export|deletion|consent|retention|age_|maturity)"
+              ]
+            },
+            {
+              "file": ".claude/agents/testing-specialist.firestore-data.knowledge.md",
+              "paths": [
+                "^lib/repositories/",
+                "^lib/services/unified/",
+                "^lib/services/.*(firebase|firestore|user_service|settings|sharing|share)",
+                "^lib/models/"
+              ]
+            },
+            {
+              "file": ".claude/agents/testing-specialist.state-async.knowledge.md",
+              "paths": [
+                "^lib/viewmodels/",
+                "^lib/services/"
+              ]
+            },
+            {
+              "file": ".claude/agents/testing-specialist.guards.knowledge.md",
+              "paths": [
+                "^lib/(services|viewmodels|repositories|utils|models|core|data)/"
+              ]
+            },
+            {
+              "file": ".claude/agents/testing-specialist.mock-harness.knowledge.md",
+              "paths": [
+                "^lib/(services|viewmodels|repositories|utils|models|core|data)/"
+              ]
+            },
+            {
+              "file": ".claude/agents/testing-specialist.parsing-tagging-menu.knowledge.md",
+              "paths": [
+                "^lib/utils/(text|parsing)/",
+                "^lib/services/.*(tagging|menu|import|pars|recipe_extract|shopping_list_gen|quantity)",
+                "^lib/models/tagging/",
+                "^lib/(services|utils)/.*(ingredient|unit|swedish)"
+              ]
+            }
+          ],
+          "archive": ".claude/agents/testing-specialist.knowledge.archive.md"
+        },
+        "firebase-backend-security": {
+          "core": ".claude/agents/firebase-backend-security.knowledge.md",
+          "chapters": [
+            {
+              "file": ".claude/agents/firebase-backend-security.rules.knowledge.md",
+              "paths": [
+                "^firestore\\.rules$",
+                "^storage\\.rules$",
+                "^firestore\\.indexes\\.json$",
+                "^functions/src/__tests__/.*rules\\.test\\.ts$",
+                "^lib/repositories/",
+                "^lib/core/.*(permission|rules)"
+              ]
+            },
+            {
+              "file": ".claude/agents/firebase-backend-security.repo-guards-audit.knowledge.md",
+              "paths": [
+                "^lib/repositories/",
+                "^lib/core/.*(permission|audit|mixin)",
+                "^lib/services/.*(audit|consent)",
+                "^functions/src/audit_logs/",
+                "^functions/src/admin/",
+                "(^|/)CLAUDE\\.md$"
+              ]
+            },
+            {
+              "file": ".claude/agents/firebase-backend-security.gdpr-export.knowledge.md",
+              "paths": [
+                "^lib/services/account/",
+                "export",
+                "gdpr",
+                "^functions/src/account/",
+                "^docs/security/",
+                "retention"
+              ]
+            },
+            {
+              "file": ".claude/agents/firebase-backend-security.gdpr-erasure.knowledge.md",
+              "paths": [
+                "^functions/src/",
+                "^lib/services/account/",
+                "(delet|erasure|cascade|purge|reset|migrat|ttl)",
+                "^firestore\\.indexes\\.json$",
+                "^firebase\\.json$"
+              ]
+            },
+            {
+              "file": ".claude/agents/firebase-backend-security.reads-cache-offline.knowledge.md",
+              "paths": [
+                "^lib/repositories/",
+                "^lib/services/",
+                "^lib/core/",
+                "^lib/viewmodels/"
+              ]
+            },
+            {
+              "file": ".claude/agents/firebase-backend-security.pii-logging-platform.knowledge.md",
+              "paths": [
+                "^lib/services/monitoring/",
+                "(logger|log_sanitiz|sanitiz|scrub|pii|web_error|crash)",
+                "^lib/services/llm/",
+                "^lib/services/(parsing|import|recipe_import)",
+                "^functions/src/(llm|ai|vertex|parsing|moderation)",
+                "(storage|upload|image)",
+                "(age_|_age|minor|auth|verify-signup|public_profile|user_profile|user_repository|user_service|search|presence|online)",
+                "^lib/core/"
+              ]
+            }
+          ],
+          "archive": ".claude/agents/firebase-backend-security.knowledge.archive.md"
+        },
+        "firestore-rules-tester": {
+          "core": ".claude/agents/firestore-rules-tester.knowledge.md",
+          "chapters": [
+            {
+              "file": ".claude/agents/firestore-rules-tester.probing.knowledge.md",
+              "paths": [
+                "^functions/src/__tests__/.*-rules\\.test\\.ts$",
+                "^functions/package\\.json$",
+                "^\\.github/workflows/firestore-rules\\.yml$",
+                "^functions/scripts/check-test-registration\\.js$"
+              ]
+            },
+            {
+              "file": ".claude/agents/firestore-rules-tester.vacuity.knowledge.md",
+              "paths": [
+                "^functions/src/__tests__/.*-rules\\.test\\.ts$"
+              ]
+            },
+            {
+              "file": ".claude/agents/firestore-rules-tester.bounds-and-stamps.knowledge.md",
+              "paths": [
+                "^functions/src/__tests__/(weekly-menu-plans|shared-shopping-lists|ingredient-suggestions|household-allergen-shares|recipe-comments|recipe-ratings|rate-limit|account-maturity|activity-events|age-gate|conversations|cook-snaps-and-message-mod|poll-votes|feedback|comment-images-storage|friend-categories|chat-groups)-rules\\.test\\.ts$"
+              ]
+            },
+            {
+              "file": ".claude/agents/firestore-rules-tester.server-written-and-removed.knowledge.md",
+              "paths": [
+                "^functions/src/__tests__/(moderation|delivered-notifications|iter102|llm-response-samples|audit-logs|collection-group-wildcards|members-collection-group|canonical-stats|admin-dashboard|reports|parse-corrections-v2|tag-overrides-log|acquisition|ingredient-suggestions|cook-events)-rules\\.test\\.ts$"
+              ]
+            },
+            {
+              "file": ".claude/agents/firestore-rules-tester.domain-facts.knowledge.md",
+              "paths": [
+                "^functions/src/__tests__/(firestore|age-gate|account-maturity|recipe-comments|recipe-ratings|conversations|chat-groups|blocks|poll-votes|household-allergen-shares|family-rating|friends-accept|menus|realtime-menus|recipe-shared-read)-rules\\.test\\.ts$"
+              ]
+            },
+            {
+              "file": ".claude/agents/firestore-rules-tester.prose-claims.knowledge.md",
+              "paths": [
+                "^\\.claude/rules/accepted-deviations\\.md$",
+                "^docs/architecture/ACCEPTED_DEVIATIONS\\.md$",
+                "^docs/org/adr/.*\\.md$",
+                "^test/unit/security/rules_.*_test\\.dart$"
+              ]
+            }
+          ],
+          "archive": ".claude/agents/firestore-rules-tester.knowledge.archive.md"
+        },
+        "cloud-functions-specialist": {
+          "core": ".claude/agents/cloud-functions-specialist.knowledge.md",
+          "chapters": [
+            {
+              "file": ".claude/agents/cloud-functions-specialist.gdpr-erasure.knowledge.md",
+              "paths": [
+                "^functions/src/(account|cleanup|social|groups|messaging|family|moderation|feedback|notifications|exports|audit_logs|analytics|ratings)/",
+                "^functions/src/shared/(collections|batch-update|commit-in-chunks)\\.ts$",
+                "^functions/src/__tests__/.*(account-deletion|user-deleted|request-account|block-mirror|chat-group|group-menu|minor-membership|family|purge|cleanup|export|report|moderation|social|friend)",
+                "^firestore\\.indexes\\.json$"
+              ]
+            },
+            {
+              "file": ".claude/agents/cloud-functions-specialist.scheduled-jobs.knowledge.md",
+              "paths": [
+                "^functions/src/(analytics|scheduled|family|cleanup|triggers)/",
+                "^functions/src/index\\.ts$",
+                "^functions/src/__tests__/.*(analytics|retention|anomaly|snapshot|scheduled|weekly|daily|digest)"
+              ]
+            },
+            {
+              "file": ".claude/agents/cloud-functions-specialist.client-guards.knowledge.md",
+              "paths": [
+                "^firestore\\.rules$",
+                "^functions/src/middleware/",
+                "^functions/src/__tests__/.*(rate-limit|-rules\\.test\\.ts$)",
+                "^lib/repositories/firebase/rate_limit_stamp\\.dart$"
+              ]
+            },
+            {
+              "file": ".claude/agents/cloud-functions-specialist.data-pipelines.knowledge.md",
+              "paths": [
+                "^functions/src/(admin|migrations|ingredients|llm|ratings|events|storage)/",
+                "^functions/src/__tests__/.*(reset|migrat|sync|ingredient|prompt|ocr|llm|canonical|pool|export-llm|parity|admin)",
+                "^shared/",
+                "^tools/"
+              ]
+            },
+            {
+              "file": ".claude/agents/cloud-functions-specialist.ci-wiring.knowledge.md",
+              "paths": [
+                "^functions/src/index\\.ts$",
+                "^\\.github/workflows/",
+                "^functions/scripts/",
+                "^functions/package\\.json$",
+                "^functions/src/ci/",
+                "^functions/src/__tests__/.*(deploy-manifest|registration|app-check|guard|binary)"
+              ]
+            }
+          ],
+          "archive": ".claude/agents/cloud-functions-specialist.knowledge.archive.md"
+        }
+      }
+    }
   },
   "docsSweep": {
     "exemptGlobs": [

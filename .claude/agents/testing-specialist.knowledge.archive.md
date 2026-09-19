@@ -39040,3 +39040,414 @@ missing would have been wrong.
 Process note worth keeping: round 1 ended on `fail`, so its coverage counted for nothing and round 2
 had to re-`Read` BOTH files IN FULL — a partial/offset re-read of only the changed region would have
 left the ledger holding a fragment. Budget one full-file pass per gate run that ends on a pass.
+
+### 2026-09-19 — moved out of the reviewer knowledge in the three-tier split (BUT-1944, BUT-2074)
+
+Verbatim from `testing-specialist.knowledge.md`, in the original order.
+
+- **This file has drifted back four times (35K→432K 2026-07-24; 262K→112K 2026-08-09;
+  162K→2026-08-17; 186K→here 2026-09-03) the same way: not dated entries (never used here)
+  but individual principles absorbing worked-example detail — measured red counts, failure
+  output, round-by-round narrative — instead of citing the ticket and archiving the detail.**
+  When adding an example, ask if the sentence stands without it; if yes, archive the example
+  and cite the ticket. A number you would have to MEASURE belongs in the archive, not here.
+- **Budget ~25,000 chars** — a smell, not the control; the rule above is. Every principle the
+  pre-2026-09-03 file carried survives here, merged, or verbatim in the archive's 2026-09-03
+  snapshot entry (which supersedes nothing — it preserves).
+- **The floor is set by the PRINCIPLE COUNT, not by prose.** At the 1-4 line rule above, the
+  budget buys roughly one line per principle, which most of these rules do not fit in. So once
+  the bullets are at that size, the only honest levers left are SPLITTING the file or RETIRING
+  principles that no longer change what a run does — never one-lining a rule until it stops
+  being actionable, and never deleting one to hit a number.
+- **The real trigger is the Read tool, not char count** — past ~250,000 chars Step 0 silently
+  degrades to grepping. Next time this approaches that, SPLIT THE LARGEST SECTION into its own
+  file rather than compress again; measure which one it is at that moment, and do not carry a
+  named guess forward (the guess in this paragraph was stale within one pass).
+- **Confirm bytes actually MOVED before re-reviewing** — hash + `wc -l` per file, both ends of
+  the round; mtime lies. Isolate what changed since YOUR copy with `git cat-file -p <blob> >
+  scratch/old && diff -u --strip-trailing-cr scratch/old <f>` — NOT `git diff <blob> $(git
+  hash-object <f>)` (dies "bad object"), and never a plain `diff` (LF blob vs CRLF worktree
+  calls every line changed). Diffing against HEAD buries the hunk in the round's other work.
+- **A tree that moves DURING the round needs the same isolate-diff at VERDICT time** —
+  re-verify every finding against the CURRENT bytes before filing and say which copy the
+  verdict is against. `git diff <path>` empty ≠ unmoved (staged shows only in `git diff HEAD` /
+  `git show :<path>`). Hash a suite's runtime INPUT files too (a source-text guard reading
+  `firestore.rules`). **Write the hash TABLE into every round's archive entry, prose-only
+  rounds included** — it is what makes the next round's attribution mechanical (BUT-1837/1904).
+- **The brief is pinned to a hash and expires with it** — a `sed -n` printing different content
+  at the same lines means re-Read and rebuild the mutant list; skip mutants already measured on
+  an unchanged hash. A brief asserting an UNCOMMITTED diff ("the formatter's output never landed,
+  `git diff HEAD` is N/M") is that same expiring claim and dies to ONE blob comparison per file —
+  worktree `git hash-object` vs `git ls-files -s` vs `git rev-parse HEAD:<f>`; all three equal means
+  the work is already IN the commit the brief says omitted it and the follow-up would be empty, which
+  an empty `git diff` cannot tell you on its own (BUT-1951).
+- **The motion check is the map: moved PRODUCTION ∩ unmoved SUITES = unasserted by
+  construction** — `git show :<path>` on such a file is a free pre-fix mutant.
+- **Coverage of a reviewed file is recorded by the `Read` TOOL and by nothing else** — `cat`,
+  `sed`, `head`, Grep excerpts and `git diff` leave no ledger trace, so a review that read that
+  way is treated as never having happened and must be re-run file-by-file. Auto mode's
+  "prefer Bash for file access" pulls straight into this; the review mandate outranks it.
+- **Re-run the motion check against the FIX REPORT, not just your own copy** — a round's remedy
+  routinely drags in production edits the report never mentions. Diff EVERY path, sort by
+  production-vs-test, and grade the unreported production edits FIRST: nothing has asked whether
+  a test can see them. The recurring shape is a fix for finding N landing an unpinned behaviour
+  change beside it (BUT-1904). **A brief's COUNT of what moved is one of those claims** — "four
+  files moved" for six, the unlisted one a test-infrastructure comment (2026-09-06).
+- **An UNTRACKED file's pin cannot be isolate-diffed later** — `git hash-object` writes no blob,
+  so `git cat-file -p` fails on your own prior round's hash and the whole file reads as ADDED.
+  Re-read such a file in full rather than grading the "+"-only diff as the round's change
+  (2026-09-06).
+- **A live parallel session poisons a battery both ways**: their edits are FALSE KILLS in your
+  run (attribute by test name vs mutant blast radius, re-hash before verdict); an identical md5
+  + fresh mtime is THEIR mutate-and-restore, and your `finally` can clobber their in-flight
+  write — prefer a production-free `test/`-side probe beside a live session.
+
+- **The phantom arrives as a SUPERSET, on the mutant applied in the call right after a
+  restore** — extra reds belong to the PREVIOUS mutant's kill set. A superset reads as "this
+  mutant is broader than I predicted" rather than as an instrument fault, which is why it gets
+  believed (BUT-1897, BUT-1971 M2).
+- **The mirror fault: an all-GREEN run B under a hash-verified LIVE mutant.** When run A hit
+  exactly the predicted set and the previous mutant's kill set is disjoint, run A cannot be a
+  phantom — a green B is the instrument (a concurrent session's `flutter test` on the shared
+  `.dart_tool`). Re-run as C/D printing `git hash-object` before AND after each run (BUT-2078).
+- **Grouping several mutants into ONE run is legitimate and halves the runs, but only where they
+  touch disjoint EXPRESSIONS *and* disjoint ASSERTIONS — otherwise one mutant MASKS another and the
+  missing red reads as "that guard is unpinned".** Measured on BUT-1806: zeroing an increment made
+  an opened `docsCreated == 2` guard unobservable in the same run, so a genuinely-killed mutant
+  reported green. Predict the exact red SET before running and treat any shortfall as an
+  instrument fault first. Two mutants hitting the same test through DIFFERENT assertions are also
+  non-disjoint: `expect` stops at the first failure.
+  **The exception is an assertion that AGGREGATES — collect every violation into a list, then
+  `expect(violations, isEmpty)`.** It cannot mask, because every mutant's contribution shows in
+  one failure message, and the message NAMES each one. That is a reason to prefer the shape when
+  a test guards a property over many routes: on BUT-2000 a two-entry mutant printed both offending
+  bundle paths with their values, where two separate `expect`s would have hidden the second
+  (measured both ways in the same file — the aggregating walker vs. the key/prose pair).
+- **A MULTI-FILE probe script must match EVERY anchor before its FIRST write** — line endings
+  differ per file here (`menu_generator.dart` CRLF, `menu_content_widgets.dart` LF), so an
+  LF-anchored assert on file 2 fails AFTER file 1 is written, leaving a half-applied probe the
+  next run would grade. Derive the newline per file; hash both files before running (BUT-2076).
+- **"Only `dart format`" is provable, not assumed**: walk `git cat-file --batch-all-objects` and
+  compare whitespace-stripped bytes blob-to-blob (not blob-to-disk — CRLF differs by one
+  byte/line). The formatter can insert a trailing comma, so fall back to raw `diff`.
+- **"Staging — resolved" isn't resolved until `git show :<path>` diff is empty.** `Read` returns
+  the WORKTREE and the parent commits the INDEX, so a repair can be real and still absent from
+  what ships. When the BRIEF says a finding is "already applied", run `git diff --numstat` on
+  the reviewed paths BEFORE grading, not at verdict time; grade BOTH copies and say which the
+  verdict is against — the index copy of a struck sentence is a SECOND claim, not a stale
+  duplicate. **A round whose remedy was "strike a false sentence" is the highest-risk shape**:
+  the verdict-time grep answers "gone" from the worktree while the index still carries every
+  copy — grep `git show :<path>` (BUT-1909/1925/1971).
+- **Two ways that check answers "clean" while proving nothing.** (1) A path-scoped git command
+  run from the WRONG cwd prints nothing, byte-identical to "no differences" — every verification
+  call gets an explicit `cd` and an echoed `pwd`. (2) `git status --porcelain` and `git diff`
+  genuinely DISAGREE (stale stat cache: `MM` with an empty diff). Neither is the tiebreaker —
+  compare `git ls-files -s <f>`'s blob to `git hash-object <f>`, then `update-index --refresh`
+  (BUT-1910).
+- **An analyze finding contradicting the source you just read, or a suite passing against code
+  analyze says can't compile, means re-md5sum BOTH files** — a timestamp-preserving restore can
+  leave stale bytes running.
+- When a parallel session lands a test for the same guard, delete yours with a pointer comment.
+
+**Grading a reported STRIKE or REWORD** (the single most repeated failure class — see BUT-1837,
+1897, 1904, 1909, 1910, 1912, 1961, 1962, 1971, 1982 in the archive):
+- **Verify by grepping the OLD STRING in the worktree AND `git show :<path>` AT VERDICT TIME,
+  never by the motion check** — a file that moved for the round's other edits passes every hash
+  test with the sentence still present. **Your OWN prior round's reported strike gets that grep
+  too**; rounds that re-read the DIFF cannot see a pre-existing block sitting outside every hunk.
+- **A literal grep answers "gone" whenever the surviving copy is a PARAPHRASE.** Sweep the whole
+  file by CONCEPT, and expect copies in different syntactic roles (inline comment, module doc
+  comment, nested local-function doc, a suite's `group(` header, a presupposition in a sibling
+  method). Sweep `test/` as well as `lib/` — a clean-at-HEAD suite is invisible to every
+  diff-following sweep and rides into the NEXT ticket's commit. **And across LANGUAGES**: when a
+  security fix changes WHICH DOCUMENT a check reads, the corrected wording lands in the markdown
+  the gate quoted while the paraphrase survives in `firestore.rules` and in a fixture comment —
+  so the commit that CLOSES a hole ships two sentences asserting it is open (BUT-1917).
+  **A rules TIGHTENING is a carrier of this shape into `test/` with every assertion still
+  green**: a fixture whose comment justifies an odd field by what the OLD rule PERMITTED
+  ("the create rule is `hasRequiredFields`, not `hasOnly`, so a client can store this")
+  is falsified by the commit adding the allowlist, and lives in an UNSTAGED file no
+  diff-following sweep opens. After any `hasOnly`/bound tightening, grep `test/` for
+  comments citing what that rule allows — the fixture usually still earns its place
+  (Admin-SDK writers bypass rules), so the repair is to STRIKE the justification, not
+  delete the case (BUT-2038).
+  **The sibling that survives a same-round sweep is usually the one sitting inside a sentence the
+  SAME commit REWROTE around it** — the author reads the line as "mine, already handled" because
+  the head of it changed. Re-emitting a false clause in a rewritten sentence makes it the
+  commit's own claim, not inherited text, so `git show HEAD:<file>` on the surviving copy is the
+  check: identical clause + changed surroundings IS the finding. Grep the CONCEPT across every
+  file the round touched, not the file the strike landed in (BUT-1718: `, which stays a routing
+  facade` struck from one module header while `; the module stays a routing facade, as its own
+  doc says it should` shipped in the sibling — and the cross-file half was measurably false, the
+  cited doc containing no such sentence and the word `facade` not occurring in that file at all).
+- **STOP rule, or the sweep never terminates: a sentence saying only what the code REFUSES
+  asserts no outcome and is not a carrier. Only a clause asserting what the write WOULD DO is.**
+- **Grade the REPLACEMENT as a fresh claim — the paragraph written to BE the correction is where
+  the next false sentence lands.** Recurring re-arming shapes: a measured count swapped for a
+  quantifier; a supplied ANTECEDENT that is itself a quantifier over the group's contents (put
+  the head noun INSIDE the surviving noun phrase) — commonest concrete form: a new head
+  clause quantifying over the FLOW when the true claim is about the MESSAGE ("every arm of
+  this flow paints X", where the SUCCESS arm paints a different role and the survivable
+  claim ranges over every emitter of the asserted STRING); walk the method's arms, not the
+  ones the assertion reaches; an INCREMENTED count; a positional distance
+  ("twenty lines up", a derived value a human cannot type); a HISTORY sentence about the file's
+  own prior wordings, or about what an EARLIER version of the production code did to the
+  fixtures below it (only the review archive can settle either — and both are always
+  strikeable, because the mechanism sentence beside them is the whole warning; the fixtures the
+  round ADDED for its own widening sit OUTSIDE the historical claim's range, so a "every decoy
+  here survived the old check" universal is false about exactly the new ones, and a count about
+  an intermediate never-committed repair is settled by no artefact at all — BUT-2020); a sentence NAMING its own
+  verification command (it flips with the commit); **an effort claim about the gap a round did
+  NOT close — "closing it needs a harness that does not exist" — which is a false COVERAGE
+  pointer wearing a cost estimate, lands in the paragraph recording the gate's own finding, and
+  is the sentence the next run cites to skip the work (measured false twice now: BUT-2046, where
+  the emulator suite already drove the function, and BUT-1718, where the real-service harness
+  already existed and only a `Fake` override was missing). Resolve every such clause with a grep
+  for a real construction of the class before letting it ship, and STRIKE it rather than
+  re-costing it**; and a WHY-clause justifying an assertion
+  the round's OWN fixture change just invalidated — making a fixture faithful (a DM's
+  `title: ''`) removes the collision the "that is why this finder is scoped" sentence cites,
+  so re-read every rationale beside a changed fixture. **The repair is to STRIKE, never to
+  re-measure or re-point.**
+- **Test-file HEADERS carry several claims at once**: a COUNT, an EXCLUSIVITY claim ("N
+  invariants nothing else in the repo holds"), a COVERAGE POINTER to another file, and the
+  HELPERS the file uses. The round's own new group or new FILE is usually the falsifier, and the
+  falsifier is often IN THE SAME FILE. Resolve a cross-file pointer with one grep of the guarded
+  CLASS name in the cited file — zero hits IS the finding, and a false coverage pointer is worse
+  than a false count because it is the sentence a later run cites to skip writing the test.
+  **The exception is a reference to something EXTERNAL to the repo — a Linear id, a vendor bug.
+  Zero hits is NOT the finding there**: a ticket minted the same day appears exactly once, in the
+  comment citing it, so the hit-count calibration that works for coverage pointers inverts. Hedge
+  and hand it back; do not file (BUT-2052: a 1-vs-8-vs-9 hit spread looked like a typo and the
+  ticket was real).
+  **A SHAPE pointer ("same shape as `<Sibling>._method`") is a third kind, and grepping resolves
+  only its EXISTENCE — grade it by MUTATING the new code INTO the cited shape and running.** A red
+  says the two shapes differ, i.e. the sentence is false; and the pointer is the licence a later
+  "harmonise these two" edit cites. Check it against the property the sentence is ATTACHED to, which
+  is usually not where the cited symbol implements it (BUT-2057: the cited resolver gates its branch
+  on `isCollaborative` and does NOT coerce empty→null at all — that coercion lives in its CALLER).
+- **A test's NAME and its COMMENT are TWO copies of one claim** — grep the concept across names
+  separately (`grep "^ *test('"`). Grade every test the round ADDS against the names already in
+  the file, and re-grade unqualified `every|all|no ` names whenever the round NARROWS what a
+  method returns. A name joining two states ("stamp or no stamp") claims a FIXTURE for each —
+  count them; the missing arm is where the surviving mutant lives (BUT-1854).
+- **A comment naming a STATE ("this is the case where X") is a claim about the FIXTURE THREE LINES
+  DOWN, not about the feature's story — check it there.** Read as motivating background it slides
+  through: I passed "an empty result is the case where every selected request had vanished" in two
+  consecutive rounds beside a `shouldSucceed: false` fixture where nothing had vanished, in the test
+  AND in the production comment it was copied from. The tell is a sentence that would still read
+  well with the fixture deleted. Same round, the cure for a pair of near-identical tests: give each
+  a BOUNDARY clause naming which side of the input split its own fixture sits on
+  (`landed` empty vs non-empty) plus the sibling's verbatim test name — never a test→mutant
+  mapping, which is a counterfactual about something nobody ran (batch friend requests, 2026-09-06).
+- **The line that stops OVER-correcting: a quantifier over the CODE'S BEHAVIOUR is a CONTRACT; a
+  quantifier over the TEST FILE'S CONTENTS is a COUNT.** Keep the contract (state the rule, not
+  the evidence); strike the count. Settle a superlative by WALKING THE BRANCHES, never by
+  counting fixtures.
+- **Sweep the WHOLE file, not the diff-adjacent region** — a review sweep follows the hunks, so
+  the accurate numeral near the finding gets fixed and the false one further down rides through.
+  A present-tense sentence about a committed ARTEFACT (including a binary, where the claim is a
+  DIMENSION no string grep sees) is measured against `git show :<path>`, never HEAD.
+- **A STRIKE can PROMOTE a survivor into a claim it was never making — re-read what is left as a
+  standalone sentence, and resolve it.** Striking two of three sentences left "These operations are
+  tested in integration tests with real Firebase" as a group's sole note; zero files under
+  `test/integration/` reference the method. It was false before too, but the struck clause was what
+  framed it as an excuse, and alone it is the false coverage pointer a later run cites to skip the
+  test. Grade your OWN accepted fixes this way — round 2 of a review is where this lands (BUT-2057).
+- **"Retired verbatim" is checkable, and a WRAPPED source sentence cannot be quoted verbatim on one
+  line** — the supersession needs one line to be greppable, so quote a single-line FRAGMENT and LABEL
+  it one. **EXTRACT the quoted strings programmatically and test each WHOLE string for membership in
+  `git show HEAD:<file>`** — never hand-type a grep of it. I typed a TRUNCATED prefix, it matched the
+  source's first line, and I reported "exists verbatim" about a quote that spanned the wrap; the
+  coordinator found the third instance I had certified. A prefix grep answers a different question
+  than the one asked, and its output is identical to the answer you wanted (BUT-2057: 3 of 6 wrapped).
+- **Grade the strike with cheap mechanical checks**: grep the struck string (0 hits); grep the
+  ORDINAL or pointer it CARRIED (an orphaned "the second X" is a dangling reference); re-read
+  the paragraphs left ADJACENT, whose "this"/"that" antecedents resolved through deleted text;
+  then grade the surviving paragraph now carrying the fact ALONE as a fresh claim.
+- **When the struck sentence is PINNED BY A SUITE, run the STRUCK TEXT ITSELF through that
+  suite's matchers before grading the repair** — a `contains` on a prefix plus an `isNot` on a
+  retired spelling both pass on the clause just removed, so the strike is revertible-green. The
+  discriminator is an `isNot` on the struck clause's OWN literal. A prose pin cannot hold "does
+  not overclaim" at all (BUT-1904).
+- **A "two answers to one question" finding about a comment is settled by measuring each
+  clause's REFERENT, never by reading the clauses against each other.** WITHDRAW a disproved
+  finding outright rather than re-file a narrowed version — a declined non-blocking finding
+  coming back reworded is the correction chain the strike rule exists to stop (BUT-1962).
+- **Read a file's OWN HEADER before grading any prose below it** — a header saying "this is a
+  ROUTING rule, not a census" makes every later census in that file a defect by the file's own
+  terms. Cheapest strike argument there is, and it also settles strike-vs-expand.
+- **A production edit in the round falsifies comments in files it never touched**, three shapes.
+  (1) A param promoted DEFAULTED→REQUIRED kills every "delete this argument and it falls back to
+  <default>" mutant sentence — the mutant is now a compile error and the sentence licenses
+  re-adding the fail-open default; grep the removed default's NAME across `test/`. (2) A gate
+  added at layer N falsifies every "only this layer can catch it" sentence — grade the quantifier
+  against the SIBLING gates. (3) **A DESIGN REVERSAL mid-batch is the worst, because the
+  assertions stay GREEN and a PRIOR ROUND has usually graded the rationale sentence TRUE.** A
+  round's TRUE grading is valid only against the bytes it measured: when the production shape
+  changes, re-grade every sentence the earlier round cleared and re-ask what the mutant is NOW.
+  INDEX and WORKTREE can hold OPPOSITE designs of one method with the suite green on both —
+  refuse to grade "the change" as one object, and read a comment flipping false→true→false with
+  nobody editing it as proof the batch is oscillating. A reversal can RESTORE a retired mutant,
+  so re-probe rather than inherit "reverting reddens exactly N" (that figure measures the probe
+  PATCH's scope). A sentence a reversal falsified outlives its ticket and rides into the next
+  one's commit (BUT-1908/1909/1962/1975).
+
+- **`git stash` cannot attribute a failure when the worktree carries ANOTHER session's
+  uncommitted work** — stashing yours reverts theirs too, so a suite going green reads as "I
+  broke it". Remove your own additions IN PLACE (script it, assert each anchor unique, keep the
+  removed text in the scratchpad). Same reason a probe RESTORE cannot use `git show :<path>` when
+  the fix under test is worktree-only (BUT-1972/1982).
+- **Source-text assertion suites must strip comments first**, or a bare `includes` stays green
+  after the setting is deleted; probe non-vacuity with a STRING mutant, never a file mutant. Two
+  follow-ons (BUT-1946): a "the approved helper is still USED" assertion keyed on the bare
+  identifier is satisfied by its own DECLARATION — key it on the CALL spelling and probe both
+  directions; and BLANK comments to the same LENGTH rather than deleting them, so offsets in
+  `stripped` match `raw`, else a marker looked up by `raw.indexOf(...)` returns the file's FIRST
+  marker and one excused violation excuses every identically-spelled one. **A DISJOINTNESS /
+  intersection assertion over two PARSED sets is unfailable when EITHER set parses empty, so each
+  set owes its own presence anchor** — and the anchor must be the list's LAST entry, since the
+  FIRST survives a slice truncated at a nested `],` (measured, BUT-2010). The parse returns []
+  for any total failure, not only a missing marker: a changed quote style or closer empties it
+  with the marker still present, so never write "[] only when the marker is missing".
+**Claims about call sites, constants and cross-language literals:**
+- **A claim about "the call sites" is measured over the CALLERS of the CHANGED METHOD** —
+  `grep -rn '\.<method>(' lib/` is the whole check. The claim comes back as a BARE QUANTIFIER
+  ("the errorPrefix each ViewModel call site carries") and then as an EXISTENTIAL ("some carry
+  none"); both are falsifiable the same way and both get the same grep. Two tells: the sentence
+  carries its own EXCEPTION CLAUSE (the author enumerated and stopped), and the falsifier usually
+  ships in the SAME COMMIT. Strike the quantifier, never repair it to "most" (BUT-1962).
+- **A figure measured OUTSIDE the repo (corpus gold, an eval sweep) has no test holding it, and
+  manufacturing a fixture is worse than saying so** — grep the marker's own FIELD NAME across
+  `test/`; zero hits IS the answer. What a test cannot do is ARITHMETIC ACROSS THE COPIES:
+  recompute every stated delta, and every stated COUNTERFACTUAL, against the totals in each file
+  quoting them. A `tools/` script with `main()` + private helpers is untestable by construction (an
+  EXTRACTION ticket, not a missing test) — but a hardcoded count in its printed BANNER is neither:
+  interpolate the runtime tally, and check the short-circuited arm that computes nothing. Grade an
+  "unprintable" claim against EVERY printed artifact, not the counters the sentence names, and
+  grade a private helper's return contract by RUNNING a scratchpad replica of it AND its caller's
+  chain over the full input lattice — reading is how an ENUMERATING doc came out one state short
+  (BUT-1847).
+- **A new declaration inserted above a function silently RE-PARENTS the doc comment that sat
+  there** — `git show HEAD:<f> | grep -B6` every symbol the change ADDS. A comment-only INSERT
+  between two sentences inherits BOTH neighbours' references, so grade an insertion's SEAMS, not
+  only its claims.
+- **A comment's POSITIONAL safety argument ("the token must be the very first thing") is graded
+  against every ITERATION of the loop that consumes it** — a head-parser that peels twice exempts
+  slot 2 too. Scratchpad replica over the input lattice; the remedy is a qualifier, not code.
+  Grade a QUANTIFIER by the population it ranges over AND by EXPOSURE (by name vs by throw site),
+  and never let one `grep -c` be the verifier — require a `throw|return|=>` prefix and watch for
+  switch-PATTERN arms and substring siblings. **Then check the repaired bound is PINNED**: a
+  widened qualifier is a NEW claim with no test (BUT-1897).
+- **A source-scanning guard enforces its REGEX, not its TITLE — cite what it matches, never what it
+  is called.** Grade it against the file's OWN PRE-CHANGE BYTES, a free corpus of the exact shape it
+  refuses. A one-line anchor cannot see a wrapped call, and a long `reason:` string is what wraps it,
+  so the evaded form is the NORM in any suite with explanatory failure messages. Before leaning on a
+  guard as a contract, read its pattern and name the ALIASES of the guarded DATA it cannot see (a
+  raw-uid lint matching `$userId` walks past `$conversationId`, which is literally two raw uids)
+  (BUT-1897/1904).
+- **A comment naming WHICH test guards an ORDERING dependency is graded by performing the reorder,
+  never by reading the suite** — the decoy is a test pinning the same literal through the HELPER the
+  mutated caller delegates to, invariant BY CONSTRUCTION. Route-check each candidate, then check the
+  surviving test's fixtures one by one. Scope such a sentence to the FIXTURE it sits beside, and
+  `grep -n '^  group('` the counterexample's line before writing "in this group" (BUT-1897).
+- **A doc claiming two cases are mutually non-subsuming is a claim about a MATRIX** — run mutants ×
+  tests in full; reading pairs it one-to-one by eye. A ~90-line scratchpad Dart replica settles it
+  with no `lib/` write (BUT-1904).
+- **A "pinned by the case named X" pointer is settled by a REACHABILITY probe on the branch the
+  sentence is about** (`--plain-name '<X>' --coverage` + a `DA:` read), never by reading X's name.
+  The recurring trap is a behaviour in TWO STACKED LAYERS that both fail the same way (a
+  collaborator whose catch returns a NEUTRAL value and a caller catch behind it): every single-point
+  mutant is absorbed by the other layer, so the case's kill set is empty. The repair is to STRIKE
+  the pin clause, not to re-point it (BUT-1904/1909).
+- A CF split into pure core + DI'd orchestrator ships the orchestrator untested — a `noop` verdict
+  can't see "writes no second message"; the missing fixture is the outsider-vs-member split.
+- **A vacuity POST-MORTEM comment ("this case was vacuous because X") is an unmeasured claim, and the
+  file's own other assertions usually disprove it** — re-derive the cause from the fix that killed
+  it, not from the finder you changed at the same time (BUT-1904).
+- **Moving a mask INTO `toString()` silently subsumes every per-site mask assertion** — pin the
+  exception FIELD instead, which cannot be satisfied by the class rule. **MIRROR at a class that does
+  NOT mask**: asserting both `.message` and `.toString()` is ONE observable; the discriminator is the
+  POSITIVE `contains('<first8>...')`, which also ROUTE-CHECKS. `isNot(contains(<whole value>))`
+  passes on ANY elision, so pin the TAIL token absent — but FIRST read the masker's OWN suite, where
+  an exact-EQUALITY pin already kills every tail-leaking mutant; demanding it symmetrically at every
+  call site after that is symmetry theatre. **Grade "the exception object reaches Crashlytics"
+  against the SERVICE's own error handler, not only the ViewModel a comment names** — two routes with
+  opposite answers (the MESSAGE arg is masked, the OBJECT arg is not) (BUT-1897/1915).
+- **"Without this setUp line every case would be GREEN" is a claim about a REMOVAL — delete the line
+  mentally down each test's own path before writing it.** A missing DI bridge, a `Fake` inside a
+  fail-open catch, or an AUTH-PRE-FLIGHT harness all INVERT the observable: without them the
+  FAILURE arms pass and the SUCCESS arm reddens. The disproof is almost always IN THE SAME FILE —
+  that success arm is why the harness exists. STRIKE rather than reword (BUT-1909/1928).
+  **A `Fake`-vs-real FIXTURE rationale is the same claim about a SUBSTITUTION, and it is decided by
+  walking THIS group's fixture to the member it names** — "real `Message`s, because the filter calls
+  `copyWith`, which a `Fake` throws on and the fail-open catch swallows" is TRUE where the fixture
+  carries poll metadata and FALSE where it does not, since a null `metadata` early-returns before the
+  strip and every member then touched is one the `Fake` overrides. A rationale COPIED from a sibling
+  group is where this lands; the premise travels, the fixture does not (BUT-2103).
+- A `continue`-style skip-list disagrees with its absence only when a skipped token shares a LINE with
+  a matched one — if that's also where the real answer is lost, it's a design finding.
+- A measurement harness's failure mode is a confident number from a broken rig — demand a
+  deliberately-broken POSITIVE CONTROL. Two rigs that read 0-diff for free: a `--output=none`/dry-run
+  flag, and leaving the ORIGINALS inside the directory the tool rewrites.
+- A hand-rolled double MODELLING a write's effect (not applying its payload) is blind to field NAMES,
+  and a migration IS a field name — union under `Object.keys(op.data)[0]`.
+
+- A hand-rolled CF query double must be IMMUTABLE once `.where()` is called twice — a mutable `q`
+  aliases both legs. A double keyed on flat `"col/id"` paths CANNOT represent a subcollection.
+- A funnel-attribution fix has two directions — an idempotent regenerate re-counts unchanged lines on
+  rerun; assert the second run logs only the DELTA.
+- **Splitting one fixture instant into two (clock `t` vs caller's `date`) kills the VALUE-swap mutant
+  and leaves the DERIVATION mutant alive** — inside `withClock` a same-week `date` makes
+  `weekStartOf(clock.now())` byte-identical to `weekStartOf(date)`. What kills it is a SIBLING test
+  running OUTSIDE the fixed clock. Grade a "do these mirror?" question per AXIS (BUT-1961).
+### CF/TS-specific
+- A new emulator-integration test needs wiring on THREE fronts: the granular `test:integration:*`
+  script, the composite CI chain, and the workflow's `paths:` trigger — unit runners auto-discover
+  `test:*` but EXCLUDE those prefixes.
+- Order the existence assert BEFORE the first dereference of a possibly-missing doc.
+- A fix swapping a hand-rolled throw for a shared enforcer ships deletable-green whenever the suite
+  injects that enforcer as a seam, and the AUDIT ROW is unassertable if the logger bypasses the
+  module's own test seam (`admin.firestore()` direct vs `__setFirestoreForTest`).
+- A relational CONFIG pin stays green when both numbers move together — anchor one literal.
+- A ts-node mutant removing the LAST use of an import doesn't compile (`TS6133`) and prints ZERO test
+  lines, which reads as "the whole suite died" — keep the symbol used.
+- A retired-collection RE-POINT is proven by seeding the RETIRED path as a trap in the SAME run.
+- **Hand-rolled emulator runners share ONE world across cases, in order, so a mutant's RED COUNT is
+  inflated by state cascade and cannot attribute anything** — a downstream case's PRECONDITION assert
+  reddens on the upstream case's damage. Attribute per case with no repo write by replicating the
+  handler's decision branches in a scratchpad JS file and replaying the cases in order; reproducing
+  the reported red counts exactly is what proves the replica. **A guard that only skips WORK (a read,
+  a redundant write) is invisible to a suite asserting only the final value** — it needs a fixture
+  where the skipped work would land somewhere DIFFERENT, or it is untestable at that layer and owes a
+  comment, not a test (BUT-1904).
+
+- Real `.xlsx` stores text via shared-strings (`t="s"`), not `inlineStr`. A `TimeoutException` with 0
+  tests run is compile-bound (~12 min shared compile), not hung — split invocation per file.
+- A WHOLE-CLASS replica scales this: copy class + suite to the SESSION SCRATCHPAD (not `test/`),
+  rename, repoint the import — the only route when the `lib/` file is STAGED or edits are forbidden.
+  Run the unmutated copy as control first. **Beside a live session probing the SAME suites**, make
+  the replica a SUBCLASS registered under the real type (`class Mut extends T`, body re-declared)
+  so a real consumer's `ServiceLocator.tryGet<T>()` dispatches into it; one file pair per mutant
+  and ONE `flutter test` over all of them attributes reds by path and serves no stale kernel
+  (BUT-2076).
+- When the test reads a FILE PATH (registry lints, declared-index asserts), the mutant is a GIT
+  REVISION — `git show HEAD:<path> > scratch/`, run the walk against both. The only probe available
+  when the "fix" is a deletion.
+- A deletion mutant inside a fluent chain doesn't compile — substitute an always-true equivalent
+  (`.where('name', isNull:false)`).
+- A generated file in a diff is verified by re-running its generator, byte-compared, with the output's
+  mtime moving while inputs don't (a byte match proves nothing if the generator silently skipped
+  files).
+- A one-character change inside a string literal can't be reviewed from `git diff` — `od -c` or `git
+  show HEAD:` it. Byte-form grep false-negatives under UTF-8: use the codepoint form `grep -nP
+  '\x{F8FF}'`, a Python sweep, or `cat -A`.
+- **A new grep guard in `lefthook.yml` needs one path-handling probe** — it renders `{staged_files}`
+  REPO-RELATIVE, so an anchor past a `path:line:` prefix false-fails on a Windows absolute path
+  (`C:/…` splits at the drive colon); anchor the LAST `:<digits>:`. A guard wired only pre-commit is
+  bypassed by `LEFTHOOK_EXCLUDE` or a merge. **The ONE-FILE case is its own probe**: grep OMITS the
+  filename when handed exactly one FILE, so a `path:line:` parser takes its malformed-input branch and
+  the baseline is never consulted. An EXIT-CODE-ONLY fixture suite structurally cannot see that. Probe
+  any guard fix by running the guard's OWN fixture suite against `git show HEAD:<script>`; identical
+  pass counts IS the finding, and the killer fixture INVERTS the expected code (BUT-1904).
+

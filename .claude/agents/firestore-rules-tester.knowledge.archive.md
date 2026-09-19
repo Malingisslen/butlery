@@ -5867,3 +5867,79 @@ Also verified mechanically: the drift test's census literal 41 -> 40 matches
 `hasOnly(` over the comment-stripped rules text, and no deny in the suite was ever
 attributable to the removed block (both batches' membership writes would have been ALLOWED
 by it — own uid, conforming key set — so removing them moved no attribution).
+
+### 2026-09-19 — moved out of the reviewer knowledge in the three-tier split (BUT-1944, BUT-2074)
+
+Verbatim from `firestore-rules-tester.knowledge.md`, in the original order.
+
+# firestore-rules-tester — accumulated knowledge
+
+Step-0 read for every invocation. **Principles only, edited in place** — a finding
+extends the bullet it matches or earns a new one; it never appends a dated paragraph
+here. The dated raw entry belongs in the append-only
+`firestore-rules-tester.knowledge.archive.md`. Full contract below ("How new learning
+enters this file").
+
+## How new learning enters this file
+
+- **Extends an existing bullet?** Edit it in place — merge aggressively; most findings
+  are a new instance of a pattern already here.
+- **A genuinely new durable rule** (a future run would act differently because of it):
+  add one tight bullet under the right category, AND append the full dated narrative to
+  the archive. It earns its place only if SHARP and FINDABLE — a principle that takes a
+  paragraph to say will not be read.
+- **A new collection→test-file mapping**: add the row to the table below in place — that
+  table is living reference data, not a log, so it grows by row, never by dated entry.
+- **A one-off verified-clean review with no new reusable rule**: archive only.
+- If an edit would grow this file past budget, sharpen or retire a principle first,
+  rather than letting it accumulate as a story-of-the-day log.
+
+If the diff touches a collection not listed above, **create a new test file** named
+`functions/src/__tests__/<collection>-rules.test.ts`, add a matching
+`test:rules:<name>` script, append it to `test:rules:all`, and add the mapping here.
+
+## Test naming convention
+
+Each `test()` name states the behavior in plain English. Comment IDs above each test,
+grouped by collection: `// R1:` for recipes, `// U1:` for users, `// A1:` for
+admin/age-gate, etc.
+
+```ts
+// R1: owner can create their own recipe with a valid tagResult
+test("recipes: owner can create a recipe with valid tagResult", async () => { ... });
+```
+
+Section banners between collections:
+
+```ts
+// ============================================================================
+// RECIPES (8 assertions across 6 tests)
+// ============================================================================
+```
+
+## Coverage requirement
+
+For each rule branch in the diff, prove **both** the allow path **and** the deny path.
+A green `assertSucceeds` without a matching `assertFails` is not coverage.
+
+Standard deny matrix for ownership-checked collections:
+- non-owner authenticated user
+- unauthenticated user
+- (when applicable) admin without the right claim
+
+- **Never cite a rules LINE NUMBER in a comment or report — the file renumbers on every
+  edit.** Cite the `match` pattern or function name instead.
+---
+
+## When to consult the archive
+
+- You need the exact CEL predicate, emulator command, or full multi-round narrative
+  behind a principle above — every principle here has its raw history in the archive,
+  searchable by collection name or ticket.
+- A finding-in-progress feels familiar (a masked conjunct, a vacuous deny pair, a
+  four-state map) — search the archive by symptom before filing it as new; several of
+  these principles were learned more than once before being merged here.
+- You're about to write "the same test as" or a suite total into a comment — grep the
+  archive for the last time that phrasing was disproved before writing it.
+- You're about to append a new dated entry — check first whether it should instead
+  extend a bullet above.
