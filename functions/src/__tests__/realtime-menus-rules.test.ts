@@ -39,6 +39,9 @@ async function setup(): Promise<void> {
     projectId: PROJECT_ID,
     firestore: { rules, host: "127.0.0.1", port: 8080 },
   });
+  // Suites share one long-lived emulator; fixed doc ids left by an earlier
+  // run turn a create-only `set` into a denied update.
+  await env.clearFirestore();
 
   // Seed a realtime menu with owner + participant. The votes subcollection
   // rule reads this parent doc via isRealtimeParticipant('realtime_menus', menuId)

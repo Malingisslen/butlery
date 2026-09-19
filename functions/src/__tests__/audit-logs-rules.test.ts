@@ -42,6 +42,9 @@ async function setup(): Promise<void> {
     projectId: PROJECT_ID,
     firestore: { rules, host: "127.0.0.1", port: 8080 },
   });
+  // Suites share one long-lived emulator; fixed doc ids left by an earlier
+  // run turn a create-only `set` into a denied update.
+  await env.clearFirestore();
 
   // Admin record + a sample audit log seeded server-side. The /admins/
   // collection is rules-locked, and we want a row in audit_logs that
