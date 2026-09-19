@@ -22,7 +22,7 @@ import { mekanismerFor, arDeklarerad } from './control-shape-discovery.mjs';
 import { skorda } from './discovery-harvest.mjs';
 import { forekomstId, familjeId, familjesignatur, tilldelaAgare, slug } from './discovery-identity.mjs';
 
-const mek = o => o.grafikkandidat ? [GRAFIKMEKANISM] : mekanismerFor(o);
+const mek = o => o.grafikkandidat ? [GRAFIKMEKANISM] : o.signalmekanism ? [o.signalmekanism] : mekanismerFor(o);
 const ROT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const fail = m => { throw new Error('FAIL CLOSED: ' + m); };
 const h = x => createHash('sha256').update(JSON.stringify(x)).digest('hex').slice(0, 16);
@@ -50,6 +50,46 @@ export function grafikkandidater(xs, kandidater) {
     const redundansOprovbar = o.grafikroll === 'redundant' && (!forfar || forfar.egenTextLangd === 0);
     return o.grafikroll === 'required' || binding || !!o.hitTarget || redundansOprovbar;
   }).map(o => ({ ...o, grafikkandidat: true }));
+}
+
+/* ── FUNKTIONSSIGNAL UTAN KONTROLLFORM (omgang 9). Detektorns predikat ar formbaserade:
+      ett omalat element som inte ar flex, eller en flexbehallare med en malad inre form,
+      traffas aldrig — oavsett vad kallan sager om funktion. Har tas sadana element med,
+      men BARA nar kallan sjalv bar en positiv funktionssignal:
+        FUNCTIONAL_SIGNAL  data-hit-target · binding (data-action/-bind/-binding/-action-id)
+                           · interaktiv tagg (a, button, input, select, textarea)
+        HANDOFF_STEPPER    komponentarket §04 / handoffen "Portionsvaljare": en synlig etikett
+                           fore gruppen [− · varde · +] dar varde ar ett tal. Minus- och
+                           plustecknet blir kandidater som stegknappar. Ett ensamt −/+ ar
+                           ingen signal.
+      Aldrig: deklarerat element eller element inuti deklarerad kontroll (grafikbarn),
+      element med kallforfattad ARIA-roll (role=, redan deklarerad semantik), svg-inre,
+      element som redan ar kandidat.                                                  */
+export const SIGNALMEKANISM = 'FUNCTIONAL_SIGNAL', STEPPERMEKANISM = 'HANDOFF_STEPPER';
+const INTERAKTIV_TAGG = /^(a|button|input|select|textarea)$/;
+const MINUS = /^[−-]$/, PLUS = /^\+$/, TAL = /^\d+(?:[.,]\d+)?$/;
+export function signalkandidater(xs, redan) {
+  const p = prep(xs), perId = new Map(p.map(o => [o.art + '|' + o.ordinal, o]));
+  const upptagna = new Set(redan.map(k => k.art + '|' + k.ordinal));
+  const barn = new Map(); for (const o of p) { const f = (o.foraldrakedja || [])[0]; if (f != null) { const k = o.art + '|' + f; barn.set(k, (barn.get(k) || []).concat(o)); } }
+  const egen = o => (o.egenDelar || []).join(' ').trim();
+  const stegknapp = o => {
+    if (!MINUS.test(egen(o)) && !PLUS.test(egen(o))) return false;
+    const grupp = perId.get(o.art + '|' + (o.foraldrakedja || [])[0]); if (!grupp) return false;
+    const b = (barn.get(grupp.art + '|' + grupp.ordinal) || []).sort((x, y) => x.ordinal - y.ordinal);
+    if (b.length !== 3 || !MINUS.test(egen(b[0])) || !TAL.test(egen(b[1])) || !PLUS.test(egen(b[2]))) return false;
+    const yttre = perId.get(grupp.art + '|' + (grupp.foraldrakedja || [])[0]); if (!yttre) return false;
+    const fore = (barn.get(yttre.art + '|' + yttre.ordinal) || []).filter(x => x.ordinal < grupp.ordinal && x !== grupp);
+    return fore.some(x => /\p{L}{3}/u.test(egen(x)) && !TAL.test(egen(x)));      // synlig etikett fore gruppen
+  };
+  const ut = [];
+  for (const o of p) {
+    if (o.iSvg || arDeklarerad(o) || o.rawRole || upptagna.has(o.art + '|' + o.ordinal)) continue;
+    const binding = o.attr && Object.keys(o.attr).length > 0;
+    if (binding || o.hitTarget || INTERAKTIV_TAGG.test(o.tagg)) ut.push({ ...o, signalmekanism: SIGNALMEKANISM });
+    else if (stegknapp(o)) ut.push({ ...o, signalmekanism: STEPPERMEKANISM });
+  }
+  return ut;
 }
 
 /* ── registrerade verdikt ─────────────────────────────────────────────── */
@@ -114,7 +154,8 @@ export function kontrollsignal(o, mek) {
 export async function population({ rot, filordning, historisk, historiskPopulation }) {
   const objekt = await skorda(rot, { filordning });
   const tr0 = traffar(objekt);
-  const tr = [...tr0, ...grafikkandidater(objekt, tr0)];
+  const tr1 = [...tr0, ...grafikkandidater(objekt, tr0)];
+  const tr = [...tr1, ...signalkandidater(objekt, tr1)];
   const REG = JSON.parse(readFileSync(join(rot, 'artifacts.json'), 'utf8')).artifacts;
   const iScope = new Set(REG.filter(a => a.viewportProfile).map(a => a.sourceElementId));
   const hitAgare = new Map();
@@ -203,7 +244,7 @@ export async function population({ rot, filordning, historisk, historiskPopulati
   const ut = {
     SKORD_OBJEKT: objekt.length, SKORD_FINGERAVTRYCK: h(objekt), DISCOVERY_TOTAL: tr.length, SUMMA_KLASSER: summa, IMPLICIT_DROPS: tr.length - summa,
     OCCURRENCE_COLLISIONS: 0, OWNER_COLLISIONS: 0, perKlass, perAgarStatus, UNKNOWN_GRANSKADE: medAgare.filter(p => p.klass === 'UNKNOWN_SEMANTICS' && p.granskad).length,
-    DETEKTOR_SCOPE: tr0.length, GRAFIK_SCOPE: tr.length - tr0.length,
+    DETEKTOR_SCOPE: tr0.length, GRAFIK_SCOPE: tr1.length - tr0.length, SIGNAL_SCOPE: tr.length - tr1.length,
     FAMILJER: familjer.length, UNKNOWN_FAMILJER: familjer.filter(f => f.UNKNOWN_COUNT > 0).length, HISTORISK_AVSTAMNING: histAvstamning,
     VERDIKT_OVERFORDA: overforda.size,
     FINGERAVTRYCK: { forekomster: h([...forekomstIds].sort()), klassning: h(medAgare.map(p => [p.forekomst, p.klass]).sort()),
