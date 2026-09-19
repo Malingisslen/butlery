@@ -2159,9 +2159,8 @@ export async function deleteFamilyData(
  *  2. **1:1 conversations** (≤2 participants) are deleted whole, and with them
  *     EVERY message on that `conversationId`, both directions. The read rule
  *     resolves participation through `get(conversations/$(conversationId))`, so
- *     once the conversation doc is gone no client can read those messages and
- *     no later erasure can find them — leaving them would strand unreachable
- *     PII forever. Running after leg 1 also means no `update` can hit a doc
+ *     once the conversation doc is gone no client can read those messages.
+ *     Running after leg 1 also means no `update` can hit a doc
  *     this leg already deleted.
  *  3. **Group conversations** keep running for the remaining members; the user
  *     leaves AND their per-user carriers on the conversation DOCUMENT go with
