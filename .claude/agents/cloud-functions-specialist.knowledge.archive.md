@@ -20515,3 +20515,14 @@ Verbatim from `cloud-functions-specialist.knowledge.md`, in the original order.
   "live"/"unused" claim holds is often decided by the Dart WRITER one file away
   ("maintained by nothing" != "not live"). Open it before calling a referent
   unsettleable.
+
+### 2026-09-19 — BUT-2072 test batch: sequential-call scenario does not pin wiring order [review]
+Reviewed the two staged test files for `scrubRatingRecipeOwner` / step `rating_recipe_owner`.
+`scenario_selfRatingIsDeletedNotScrubbed` calls `deleteCommentsAndRatings` then the scrub
+directly, so moving the runStep into `tier1` (Promise.all) leaves all 503+9 checks green;
+the orchestration fake records `state.queries`, and `deleteCommentsAndRatings` issues its
+`recipe_ratings`/`userId` `where` only after awaiting `recipe_comments`, so an index
+comparison against the first `recipe_ratings`/`recipeOwnerId` query would redden that move.
+Also noted: the failed-chunk scenario injects grpc 5 (NOT_FOUND), the code that in production
+means the row was already deleted (e.g. the rater's concurrent erasure). No at-cap control.
+Both suites re-run green on staged bytes (worktree == index hash). Verdict pass (Medium/Low only).

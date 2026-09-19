@@ -25,6 +25,12 @@
   halves is dead defence, and rule 10's fake shows neither.
 - A step that early-`return false`s on its own cap skips every leg below it —
   put independent legs first.
+- **A scenario that calls two steps in sequence pins that they COMPOSE, never
+  the orchestrator's ORDER** — moving the runStep into (or above) a parallel
+  tier stays green. Pin order in `request-account-deletion.test.ts` via
+  `state.queries` indices (a tier step's `where` after an `await` records
+  AFTER a sibling's synchronous one). A `batchFailures` fixture for "a failed
+  chunk fails the step" uses 13/14, not 5: grpc 5 is the "already gone" code.
 - **Cross-check the identity FIELD and COLLECTION NAME across every leg**
   (deleter, export, probe, rules, Dart constant) — a wrong or pre-rename name
   deletes NOTHING silently, and the VALUE searched for must match what the
