@@ -3001,7 +3001,7 @@
         {
           "from": "cf-request-deletion",
           "to": "ds-users",
-          "payload": "erasure_hold FÖRST (öppet modereringsärende ⇒ underlaget behålls, GDPR 17.3(e), BUT-2046) → Tier 1 parallellt (recept, menyer, listor, taggar, taggkorrigeringar (tag_overrides_log, BUT-1473), snaps, skafferi, familj, delat, notiser, moderationsrader i system_events (BUT-2032), Storage; anmälningar användaren SJÄLV gjort: stängt ärende raderas, öppet behålls utan reporterId men med fritexten, tills ärendet stängs eller senast 180 d — sveps dagligen av sweepRetainedReporterReports, 2026-09-18) → Tier 2/3 sekventiellt → users/{uid} SIST · audit-logg {emailHash, deletedCollections, expireAt +180 d}",
+          "payload": "erasure_hold FÖRST (öppet modereringsärende ⇒ underlaget behålls, GDPR 17.3(e), BUT-2046) → Tier 1 parallellt (recept, menyer, listor, taggar, taggkorrigeringar (tag_overrides_log, BUT-1473), snaps, skafferi, familj, delat, notiser, moderationsrader i system_events (BUT-2032), Storage; anmälningar användaren SJÄLV gjort: stängt ärende raderas, öppet behålls utan reporterId men med fritexten, tills ärendet stängs eller senast 180 d — sveps dagligen av sweepRetainedReporterReports, 2026-09-18) → efter Tier 1: receptägarens uid tas bort från andras betyg, betyget ligger kvar (BUT-2072) → Tier 2/3 sekventiellt → users/{uid} SIST · audit-logg {emailHash, deletedCollections, expireAt +180 d}",
           "transport": "Admin SDK delete + write",
           "verified": true
         },

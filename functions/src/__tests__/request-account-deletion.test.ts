@@ -449,6 +449,8 @@ test("BUT-788: full cascade reports every step + writes audit + calls auth.delet
     // envelope.
     "user_moderation",
     "report_history_as_reporter",
+    // BUT-2072, same reason: the cascade suite requires the scrub directly.
+    "rating_recipe_owner",
     "messages",
     "shared_content",
     "comments_ratings",
@@ -465,6 +467,15 @@ test("BUT-788: full cascade reports every step + writes audit + calls auth.delet
     if (!result.deletedCollections.includes(step)) {
       throw new Error(`expected step '${step}' in deletedCollections, got ${JSON.stringify(result.deletedCollections)}`);
     }
+  }
+
+  // BUT-2072: the owner scrub must query after `comments_ratings` has deleted
+  // the user's self-ratings, which its query also matches.
+  const q = state.queries ?? [];
+  const deleteAt = q.findIndex(([c, f]) => c === "recipe_ratings" && f === "userId");
+  const scrubAt = q.findIndex(([c, f]) => c === "recipe_ratings" && f === "recipeOwnerId");
+  if (deleteAt < 0 || scrubAt < 0 || scrubAt < deleteAt) {
+    throw new Error(`rating_recipe_owner must run after comments_ratings: ${JSON.stringify(q)}`);
   }
 });
 

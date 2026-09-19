@@ -8255,6 +8255,186 @@ async function scenario_retainedReportsSweep(): Promise<void> {
   );
 }
 
+/**
+ * BUT-2072: a rating on the erased user's recipe loses `recipeOwnerId` and
+ * keeps everything else. The rater's row is theirs; only the owner's uid goes.
+ */
+async function scenario_ratingOwnerStampIsRemoved(): Promise<void> {
+  const {
+    scrubRatingRecipeOwner,
+  } = require("../account/account-deletion-cascade");
+  const db = new FakeFirestore();
+  db.set("recipe_ratings/onMine", {
+    userId: OTHER,
+    recipeId: "r1",
+    recipeOwnerId: UID,
+    rating: 4,
+    review: "gott",
+  });
+  db.set("recipe_ratings/onTheirs", {
+    userId: OTHER,
+    recipeId: "r2",
+    recipeOwnerId: THIRD,
+    rating: 3,
+  });
+  db.set("recipe_ratings/legacy", { userId: OTHER, recipeId: "r3", rating: 5 });
+
+  const ok = await scrubRatingRecipeOwner(asDb(db), UID);
+
+  const mine = db.get("recipe_ratings/onMine");
+  check("the scrub reports success", ok === true);
+  check(
+    "the owner stamp is REMOVED, not nulled",
+    mine !== undefined && !("recipeOwnerId" in mine),
+    JSON.stringify(mine),
+  );
+  check(
+    "the rating, review and rater survive",
+    mine?.rating === 4 && mine?.review === "gott" && mine?.userId === OTHER,
+    JSON.stringify(mine),
+  );
+  check(
+    "a rating naming another owner is untouched",
+    db.get("recipe_ratings/onTheirs")?.recipeOwnerId === THIRD,
+  );
+  check(
+    "a pre-BUT-2057 rating without the field is not written to",
+    !db.updatedPaths.includes("recipe_ratings/legacy"),
+    JSON.stringify(db.updatedPaths),
+  );
+}
+
+/**
+ * BUT-2072: the user's rating of their OWN
+ * recipe matches both `deleteCommentsAndRatings` and the scrub; run in that
+ * order, the scrub never stages a write on the row the delete removed — which
+ * in real Firestore would reject its whole chunk with NOT_FOUND.
+ */
+async function scenario_selfRatingIsDeletedNotScrubbed(): Promise<void> {
+  const {
+    deleteCommentsAndRatings,
+    scrubRatingRecipeOwner,
+  } = require("../account/account-deletion-cascade");
+  const db = new FakeFirestore();
+  db.set("recipe_ratings/self", {
+    userId: UID,
+    recipeId: "r1",
+    recipeOwnerId: UID,
+    rating: 5,
+  });
+
+  await deleteCommentsAndRatings(asDb(db), UID);
+  const ok = await scrubRatingRecipeOwner(asDb(db), UID);
+
+  check("the self-rating is deleted", !db.has("recipe_ratings/self"));
+  check(
+    "the scrub staged no write on the deleted row",
+    !db.updatedPaths.includes("recipe_ratings/self"),
+    JSON.stringify(db.updatedPaths),
+  );
+  check("the scrub reports success", ok === true);
+}
+
+/** BUT-2072: over the cap the scrub declines and writes nothing. */
+async function scenario_implausibleRatingOwnerCountDeclines(): Promise<void> {
+  const {
+    scrubRatingRecipeOwner,
+    MAX_RATING_OWNER_SWEEP_ROWS,
+  } = require("../account/account-deletion-cascade");
+  const db = new FakeFirestore();
+  // `<=` seeds exactly one row past the cap the `.limit(MAX + 1)` read can see.
+  for (let i = 0; i <= MAX_RATING_OWNER_SWEEP_ROWS; i++) {
+    db.set(`recipe_ratings/r-${i}`, {
+      userId: `peer-${i}`,
+      recipeOwnerId: UID,
+      rating: 1,
+    });
+  }
+
+  const ok = await scrubRatingRecipeOwner(asDb(db), UID);
+
+  check("the step reports itself INCOMPLETE", ok === false);
+  check(
+    "nothing was written rather than a truncated sweep",
+    db.updatedPaths.length === 0,
+    `updated: ${db.updatedPaths.length}`,
+  );
+}
+
+/** BUT-2072: exactly at the cap the scrub still runs. */
+async function scenario_ratingOwnerScrubRunsAtTheCap(): Promise<void> {
+  const {
+    scrubRatingRecipeOwner,
+    MAX_RATING_OWNER_SWEEP_ROWS,
+  } = require("../account/account-deletion-cascade");
+  const db = new FakeFirestore();
+  for (let i = 0; i < MAX_RATING_OWNER_SWEEP_ROWS; i++) {
+    db.set(`recipe_ratings/r-${i}`, {
+      userId: `peer-${i}`,
+      recipeOwnerId: UID,
+      rating: 1,
+    });
+  }
+
+  const ok = await scrubRatingRecipeOwner(asDb(db), UID);
+
+  check("a sweep of exactly the cap reports success", ok === true);
+  check(
+    "no row at the cap still carries the stamp",
+    db
+      .idsIn("recipe_ratings")
+      .every((id) => !("recipeOwnerId" in (db.get(`recipe_ratings/${id}`) ?? {}))) &&
+      db.idsIn("recipe_ratings").length === MAX_RATING_OWNER_SWEEP_ROWS,
+  );
+}
+
+/** BUT-2072: a failed chunk fails the step rather than being swallowed. */
+async function scenario_failedRatingOwnerChunkFailsTheStep(): Promise<void> {
+  const {
+    scrubRatingRecipeOwner,
+  } = require("../account/account-deletion-cascade");
+  const db = new FakeFirestore();
+  db.set("recipe_ratings/x", { userId: OTHER, recipeOwnerId: UID, rating: 2 });
+  db.batchFailures.set("recipe_ratings/x", 13);
+
+  const ok = await scrubRatingRecipeOwner(asDb(db), UID);
+
+  check("a rejected chunk makes the step report failure", ok === false);
+  check(
+    "the stamp is still there for the probe to find",
+    db.get("recipe_ratings/x")?.recipeOwnerId === UID,
+  );
+}
+
+/**
+ * BUT-2072: the probe sees an owner stamp left behind. The row's `userId` is
+ * someone else, so only a leg keyed on `recipeOwnerId` can see it — a
+ * `recipe_ratings` entry in the `userId`-filtered `probes` list would not.
+ */
+async function scenario_probeSeesLeftoverRatingOwnerStamp(): Promise<void> {
+  const { probeResidualData } = require("../account/account-deletion-cascade");
+
+  const dirty = new FakeFirestore();
+  dirty.set("recipe_ratings/x", { userId: OTHER, recipeOwnerId: UID, rating: 2 });
+  const dirtyResult = emptyResult();
+  await probeResidualData(asDb(dirty), UID, dirtyResult);
+  check(
+    "a surviving owner stamp is reported as residual",
+    sawResidual(dirtyResult),
+    `failed: ${JSON.stringify(dirtyResult.failedCollections)}`,
+  );
+
+  const clean = new FakeFirestore();
+  clean.set("recipe_ratings/x", { userId: OTHER, recipeOwnerId: THIRD, rating: 2 });
+  const cleanResult = emptyResult();
+  await probeResidualData(asDb(clean), UID, cleanResult);
+  check(
+    "a stamp naming someone else does not make the probe fire",
+    !sawResidual(cleanResult),
+    `failed: ${JSON.stringify(cleanResult.failedCollections)}`,
+  );
+}
+
 async function main(): Promise<void> {
   await scenario_directConversationIsErasedWhole();
   await scenario_readsTopLevelNotSubcollection();
@@ -8366,6 +8546,12 @@ async function main(): Promise<void> {
   await scenario_probeSeesAReportStillNamingTheReporter();
   await scenario_bothPartiesErasingLeaveBothFieldsNulled();
   await scenario_retainedReportsSweep();
+  await scenario_ratingOwnerStampIsRemoved();
+  await scenario_selfRatingIsDeletedNotScrubbed();
+  await scenario_implausibleRatingOwnerCountDeclines();
+  await scenario_ratingOwnerScrubRunsAtTheCap();
+  await scenario_failedRatingOwnerChunkFailsTheStep();
+  await scenario_probeSeesLeftoverRatingOwnerStamp();
 
   let failed = 0;
   for (const r of results) {

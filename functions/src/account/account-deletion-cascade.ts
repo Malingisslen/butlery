@@ -370,6 +370,31 @@ export async function probeResidualData(
       },
     );
   }
+  // BUT-2072: the erased uid as the recipe OWNER on other people's ratings. Its
+  // own leg because the `probes` list above filters on `userId`, which is the
+  // rater. Uncapped, so it stays loud when the capped scrub declined.
+  try {
+    const snap = await db
+      .collection("recipe_ratings")
+      .where("recipeOwnerId", "==", uid)
+      .count()
+      .get();
+    const count = snap.data().count ?? 0;
+    if (count > 0) {
+      residual += count;
+      logger.warn("[deletion-cascade] residual rating owner stamps", {
+        uid_prefix: uid.slice(0, 6),
+        count,
+      });
+    }
+  } catch (err) {
+    residual += 1;
+    logger.error("[deletion-cascade] residual probe failed: rating owner", {
+      uid_prefix: uid.slice(0, 6),
+      errCode: (err as { code?: number | string }).code ?? null,
+      errName: err instanceof Error ? err.name : typeof err,
+    });
+  }
   // BUT-1917: the erased uid inside OTHER people's block mirrors. Same shape as
   // the poll-vote leg above, and for the same reason — `deleteBlockMirrors` is
   // a cross-user sweep, so nothing under `users/{uid}` can see whether it
@@ -3210,6 +3235,71 @@ export async function deleteCommentsAndRatings(
     ...cgComments.docs,
     ...cgRatings.docs,
   ]);
+  return true;
+}
+
+/**
+ * Cap on one erasure's sweep of OTHER people's ratings that name this user as
+ * the recipe owner. Declines rather than truncates, like the sibling caps: any
+ * rater can write any uid into `recipeOwnerId` (BUT-2057), so the row count is
+ * not this user's own doing.
+ */
+export const MAX_RATING_OWNER_SWEEP_ROWS = 2000;
+
+/**
+ * BUT-2072: take the erased uid out of `recipeOwnerId` on ratings OTHER people
+ * wrote on this user's recipes. The field is removed, never nulled — the rules'
+ * block gate reads its PRESENCE — and the rating itself stays, because it
+ * belongs to the rater.
+ *
+ * Runs after tier 1, not inside it: `deleteCommentsAndRatings` hard-deletes the
+ * ratings this user wrote on their OWN recipes, which match this query too, and
+ * a `batch.update` on a row deleted underneath it rejects the whole chunk.
+ */
+export async function scrubRatingRecipeOwner(
+  db: admin.firestore.Firestore,
+  uid: string,
+): Promise<boolean> {
+  const snap = await db
+    .collection("recipe_ratings")
+    .where("recipeOwnerId", "==", uid)
+    .limit(MAX_RATING_OWNER_SWEEP_ROWS + 1)
+    .get();
+
+  if (snap.size > MAX_RATING_OWNER_SWEEP_ROWS) {
+    logger.error(
+      "[deletion-cascade] implausible rating owner count; not sweeping",
+      { uid_prefix: uid.slice(0, 6), rows: snap.size },
+    );
+    return false;
+  }
+  if (snap.empty) return true;
+
+  try {
+    await commitInChunks(
+      db,
+      snap.docs,
+      (batch, doc) => {
+        batch.update(doc.ref, {
+          recipeOwnerId: admin.firestore.FieldValue.delete(),
+        });
+      },
+      { label: "scrubRatingRecipeOwner", strict: true },
+    );
+  } catch (err) {
+    logger.error("[deletion-cascade] rating owner scrub failed", {
+      uid_prefix: uid.slice(0, 6),
+      rows: snap.size,
+      errCode: (err as { code?: number | string }).code ?? null,
+      errName: err instanceof Error ? err.name : typeof err,
+    });
+    return false;
+  }
+
+  logger.info("[deletion-cascade] rating owner scrub", {
+    uid_prefix: uid.slice(0, 6),
+    rows: snap.size,
+  });
   return true;
 }
 

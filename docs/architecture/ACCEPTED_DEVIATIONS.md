@@ -5262,3 +5262,29 @@ cut to one line per decision; this file had no entry for it. Full reasoning:
   update deny-list does not name it, so the preview can still be frozen without touching this
   rule. Own ticket; a tighter number here is not a substitute for it. BUT-1903, 2026-08-19
 
+## BUT-2072 — the recipe owner's uid on ratings is erased with the owner (2026-09-19)
+
+- **SUPERSEDES the erasure half of the BUT-2057 "NAMED RESIDUAL" entry (BUT-2072,
+  2026-09-19).** Malin chose alternative A on 2026-09-19. `scrubRatingRecipeOwner` in
+  `functions/src/account/account-deletion-cascade.ts` removes `recipeOwnerId` with
+  `FieldValue.delete()` from every `recipe_ratings` row naming the erased uid and keeps the
+  row. `request-account-deletion.ts` runs it as step `rating_recipe_owner`, after tier 1.
+  Above `MAX_RATING_OWNER_SWEEP_ROWS` it declines and writes nothing. `probeResidualData`
+  counts remaining stamps in its own uncapped leg. The Art. 15 strip (BUT-2062) is untouched.
+  Retired verbatim: "The ERASURE half is open (BUT-2072)."
+  Retired verbatim (fragment; the original wraps): "sitting on other people's rating rows is reached by no cascade leg and no probe leg"
+
+- **A client that read the recipe BEFORE the owner's erasure can write the uid back
+  (BUT-2072, 2026-09-19).** `RecipeRatingSystem` derives `recipeOwnerId` from the `Recipe`
+  the rater's screen holds, so a re-rate from a cached screen re-stamps an erased owner.
+  Accepted, the same shape as BUT-1971's "A client that read the plan BEFORE an erasure can
+  write the uid back." No test pins it: the writer is the Dart client, not the cascade.
+
+- **Each scrubbed row fires the rating UPDATE triggers, and they are not filtered
+  (BUT-2072, 2026-09-19).** `onRatingUpdated` and `onRecipeRatingWrittenForPool` run once
+  per row the scrub updates. Accepted rather than teaching the pool mirror to skip an
+  owner-only change.
+
+- **The comments twin is OPEN (BUT-2112, 2026-09-19).** `recipe_comments` carries
+  `recipeOwnerId` and `sharedWithUserIds`, and no cascade leg reaches either. There the
+  fields drive the READ rule, so it is Malin's own decision, not a copy of this one.

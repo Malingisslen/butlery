@@ -157,3 +157,6 @@ files in the same edit. Each entry below is its current verdict, cut to one line
 - A REPORTER's erasure keeps an OPEN case's report, without their uid and WITH their free text, until the case closes or 180 days pass (ADR-0016, 2026-09-18)
 - the server can now keep TWO kinds of record, and the client folds them … the three new ones say "en eller flera anmälningar" (BUT-2047, 2026-09-18)
 - She approved `GDPR Art. 17(3)(b)` for the reporter side (`REPORTER_RETENTION_BASIS`) … the WHAT line no longer opens with a count (2026-09-19)
+- SUPERSEDES the erasure half of the BUT-2057 "no erasure path reaches it" line: `scrubRatingRecipeOwner` removes `recipeOwnerId` from other people's ratings after tier 1, declines above its cap, and has its own probe leg (BUT-2072, 2026-09-19)
+- A client that read the recipe BEFORE the owner's erasure can re-stamp the erased uid on a re-rate — accepted, BUT-1971's shape (BUT-2072, 2026-09-19)
+- The comments twin (`recipe_comments.recipeOwnerId` / `sharedWithUserIds`) is OPEN and is Malin's decision (BUT-2112, 2026-09-19)

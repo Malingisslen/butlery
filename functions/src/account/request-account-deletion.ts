@@ -58,6 +58,7 @@ import {
   deleteChatGroupMemberships,
   removeFromSharedContent,
   deleteCommentsAndRatings,
+  scrubRatingRecipeOwner,
   deletePingsByUser,
   deleteUserReports,
   deleteModerationSystemEvents,
@@ -375,6 +376,12 @@ export async function runAccountDeletionWithDeps(
   // TTL for exactly that reason.
   await runStep("report_history_as_reporter", result, () =>
     deleteReportHistoryByReporter(database, uid),
+  );
+
+  // BUT-2072: after tier 1, because `comments_ratings` there deletes this
+  // user's ratings of their own recipes, which this query also matches.
+  await runStep("rating_recipe_owner", result, () =>
+    scrubRatingRecipeOwner(database, uid),
   );
 
   // Tier 2 (parallel after T1): subcollections under users/{uid}.
