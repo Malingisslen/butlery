@@ -49,13 +49,16 @@ ${KEDJA_KOD}
       const iSvg = !!el.closest('svg');
       const m = M(el);
       // egen text: textnoder i subtradet vars narmaste malande forfader (upp till el) ar el sjalv
-      let egen = 0;
+      let egen = 0; const egenDelar = [];
       const tw = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
       for (let n = tw.nextNode(); n; n = tw.nextNode()) {
         const t = n.textContent.replace(/\\s+/g, ' ').trim(); if (!t) continue;
         let p = n.parentElement, inuti = false;
         while (p && p !== el) { if (M(p).malar) { inuti = true; break; } p = p.parentElement; }
-        if (!inuti) egen += t.length; }
+        if (!inuti) { egen += t.length;
+          // Identitetsetikett: text som tillhor en deklarerad barnkontroll ar barnets, inte behallarens.
+          const k = n.parentElement && n.parentElement.closest('[data-a11y-role]');
+          if (!(k && k !== el && el.contains(k))) egenDelar.push(t); } }
       const under = [...el.querySelectorAll('*')];
       const inreMalande = under.filter(x => M(x).malar).length;
       const svgAntal = under.filter(x => x.tagName.toLowerCase() === 'svg' || x.hasAttribute('data-icon')).length;
@@ -81,6 +84,7 @@ ${KEDJA_KOD}
       const svgRoller = under.filter(x => x.tagName.toLowerCase() === 'svg').map(x => x.getAttribute('data-graphic-role') || '');
       ut.push({ art: it.id, ordAlla: ordAlla.get(el), ordProd: ordProd.get(el),
         text: (el.textContent || '').replace(/\\s+/g, ' ').trim().slice(0, 80), anker: anker || 'ram',
+        egenDelar: egenDelar.map(t => t.slice(0, 80)),
         ikoner, svgRoller, klass: el.getAttribute('class') || null,
         barDeklareradeKontroller: el.querySelectorAll('[data-a11y-role]').length,
         // kallforfattade ankare och relationer (identitet och familjegranskning, aldrig detektorn)

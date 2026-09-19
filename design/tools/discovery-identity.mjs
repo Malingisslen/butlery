@@ -8,7 +8,9 @@
 //   PERSISTENT_SEMANTIC_OWNER_ID skapas ENDAST nar agarsemantiken ar kand. Prioritet:
 //                                  1 kallforfattad binding/action-id
 //                                  2 explicit kontroll-/komponent-id
-//                                  3 stabil funktionell semantik (kand klass + egen text)
+//                                  3 stabil funktionell semantik: elementets EGEN text utan
+//                                    flyktiga tal, eller dess kallforfattade glyf. Aldrig
+//                                    klassen och aldrig barnens text.
 //                                  4 stabil namngiven behallare + semantisk barnroll
 //                                  5 annat kallforfattat stabilt ankare
 //                                Aldrig DOM-index, syskonposition, radnummer, geometri,
@@ -21,6 +23,8 @@ import { createHash } from 'node:crypto';
 
 const fold = s => String(s == null ? '' : s).normalize('NFD').replace(/[̀-ͯ]/g, '');
 export const slug = s => fold(s).toLowerCase().replace(/&amp;/g, '&').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 48);
+/** Textnyckel utan flyktiga tal (raknare, tider, antal, datum). Blir den tom finns ingen textgrund. */
+export const stabilText = s => slug(String(s == null ? '' : s).replace(/\d+(?:[.,:]\d+)*/g, ' '));
 const h = x => createHash('sha256').update(JSON.stringify(x)).digest('hex').slice(0, 12);
 
 export const KANDA_KLASSER = ['KNOWN_CONTROL', 'KNOWN_NON_CONTROL', 'KNOWN_COMPONENT', 'DECORATIVE_OR_STRUCTURAL',
@@ -52,11 +56,17 @@ export function agarGrund(o, klass) {
   if (o.attrId) return { niva: 2, id: o.art + '::id::' + slug(o.attrId) };
   if (o.occ) return { niva: 2, id: o.art + '::occ::' + slug(o.occ) };
   if (o.hitTarget) return { niva: 2, id: o.art + '::hit-target::' + slug(o.hitTarget) };
-  if (o.egenTextLangd > 0 && slug(o.text)) return { niva: 3, id: o.art + '::' + klass.toLowerCase() + '::' + slug(o.text) };
+  // Kallforfattad komponent (data-component) ar ett explicit komponent-id. Texten far inte
+  // anvandas: vilken del som ar malad (och darmed "egen text") foljer valt lage.
+  if (o.komponent) return { niva: 2, id: o.art + '::' + (o.anker && /^namn:/.test(o.anker) ? slug(o.anker) : 'komponent') + '::' + o.komponent };
+  // Niva 3 beskriver vad objektet ar, aldrig dagens verdikt: klassen ingar inte i id:t.
+  // Textnyckeln ar elementets egen etikett: exakt en egen textnod som inte bara ar ett tal,
+  // med flyktiga tal bortstrukna. Flera textnoder = aggregerat innehall, inte en etikett.
+  const etiketter = (o.egenDelar || []).filter(t => stabilText(t));
+  if (o.egenTextLangd > 0 && etiketter.length === 1) return { niva: 3, id: o.art + '::text::' + stabilText(etiketter[0]) };
   // Fristaende grafik: den kallforfattade glyfen (data-icon) ar funktionellt ankare. Tva lika
   // glyfer i samma ram kolliderar och faller stangt i tilldelaAgare.
-  if (o.tagg === 'svg' && o.ikoner && o.ikoner.length) return { niva: 3, id: o.art + '::' + klass.toLowerCase() + '::glyf-' + slug(o.ikoner[0]) };
-  if (o.anker && /^namn:/.test(o.anker) && o.komponent) return { niva: 4, id: o.art + '::' + slug(o.anker) + '::' + o.komponent };
+  if (o.tagg === 'svg' && o.ikoner && o.ikoner.length) return { niva: 3, id: o.art + '::glyf::' + slug(o.ikoner[0]) };
   return null;
 }
 
