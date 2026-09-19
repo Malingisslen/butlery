@@ -288,8 +288,11 @@ test("app re-rate of an existing row (merge, review null, owner) is ALLOWED", as
  * (`rateLimitStamped`). Each create case commits the row and that stamp
  * together under its own per-run rater; updates carry no stamp.
  */
-function createRating(uid: string, body: Record<string, unknown>): Promise<void> {
-  const ratingId = `${RECIPE}_${uid}`;
+function createRating(
+  uid: string,
+  body: Record<string, unknown>,
+  ratingId = `${RECIPE}_${uid}`
+): Promise<void> {
   const db = env.authenticatedContext(uid, AGE_OK).firestore();
   const batch = db.batch();
   batch.set(db.doc(`recipe_ratings/${ratingId}`), body, { merge: true });
@@ -334,6 +337,21 @@ test("create carrying an undeclared field is DENIED", async () => {
   const uid = `create-extra-${RUN}`;
   await assertFails(
     createRating(uid, { ...appCreateBody(uid, true), featured: true })
+  );
+});
+
+// BUT-2086. Twin: the WITH-recipeOwnerId create above, under another doc id.
+test("create under a doc id other than {recipeId}_{uid} is DENIED", async () => {
+  const uid = `create-otherid-${RUN}`;
+  await assertFails(
+    createRating(uid, appCreateBody(uid, true), `${RECIPE}_${uid}_second`)
+  );
+});
+
+test("create under another recipe's id carrying this recipeId is DENIED", async () => {
+  const uid = `create-otherrecipe-${RUN}`;
+  await assertFails(
+    createRating(uid, appCreateBody(uid, true), `recipe-other_${uid}`)
   );
 });
 

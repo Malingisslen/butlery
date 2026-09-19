@@ -1164,6 +1164,93 @@ test("shared_content: a shopping-list share with its real payload is allowed", a
   );
 });
 
+// ============================================================================
+// BUT-2092 — closing a poll is one-way on the sender limb
+//
+// `MessagePollMutationModule.closePoll` writes `{metadata}` and nothing else.
+// The reopen DENY and the closed-row edit
+// ALLOW differ only in the `isClosed` value.
+// ============================================================================
+
+function updateMessage(
+  uid: string,
+  messageId: string,
+  data: Record<string, unknown>
+): Promise<void> {
+  return env
+    .authenticatedContext(uid)
+    .firestore()
+    .doc(`messages/${messageId}`)
+    .update(data);
+}
+
+test("BUT-2092: the creator who sent the poll can close it", async () => {
+  await assertSucceeds(
+    updateMessage(AUTHOR_UID, POLL_MSG_ID, { metadata: pollBody(true).metadata })
+  );
+});
+
+test("BUT-2092: another participant cannot close the poll", async () => {
+  await assertFails(
+    updateMessage(VOTER_UID, POLL_MSG_ID, { metadata: pollBody(true).metadata })
+  );
+});
+
+test("BUT-2092: the creator cannot close a poll someone else sent", async () => {
+  const msgId = `pv-poll-foreign-sender-${RUN}`;
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    await ctx
+      .firestore()
+      .doc(`messages/${msgId}`)
+      .set({ ...pollBody(false), senderId: OTHER_MEMBER_UID });
+  });
+  await assertFails(
+    updateMessage(AUTHOR_UID, msgId, { metadata: pollBody(true).metadata })
+  );
+});
+
+test("BUT-2092: the sender cannot reopen a closed poll", async () => {
+  await assertFails(
+    updateMessage(AUTHOR_UID, CLOSED_POLL_MSG_ID, {
+      metadata: pollBody(false).metadata,
+    })
+  );
+});
+
+test("BUT-2092: the sender cannot reopen a closed poll by dropping isClosed", async () => {
+  const poll = { ...(pollBody(true).metadata as { poll: Record<string, unknown> }).poll };
+  delete poll.isClosed;
+  await assertFails(
+    updateMessage(AUTHOR_UID, CLOSED_POLL_MSG_ID, { metadata: { poll } })
+  );
+});
+
+test("BUT-2092: the sender cannot reopen a closed poll by nulling metadata", async () => {
+  await assertFails(
+    updateMessage(AUTHOR_UID, CLOSED_POLL_MSG_ID, { metadata: null })
+  );
+});
+
+test("BUT-2092: the sender can still edit a closed poll that stays closed", async () => {
+  await assertSucceeds(
+    updateMessage(AUTHOR_UID, CLOSED_POLL_MSG_ID, {
+      metadata: pollBody(true).metadata,
+    })
+  );
+});
+
+test("BUT-2092: a message with metadata null is still editable by its sender", async () => {
+  await assertSucceeds(
+    updateMessage(AUTHOR_UID, NULL_META_MSG_ID, { content: "hej, rättat" })
+  );
+});
+
+test("BUT-2092: a share message (metadata without poll) is still editable", async () => {
+  await assertSucceeds(
+    updateMessage(AUTHOR_UID, SHARE_META_MSG_ID, { content: "delat, rättat" })
+  );
+});
+
 async function run(): Promise<void> {
   console.log("poll votes + message receipts rules tests (BUT-1832/BUT-1812)\n");
   console.log("========================================\n");

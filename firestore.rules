@@ -2281,9 +2281,22 @@ service cloud.firestore {
       // hand it to the other participants after all. The Admin SDK bypasses
       // rules, so the guard itself is unaffected. Deleting a blocked row stays
       // allowed below.
+      // BUT-2092: closing a poll is one-way. `closePoll` treats `isClosed` as
+      // its idempotency anchor before writing the winner into a weekly plan, so
+      // a sender who could reopen the poll could plant the winner again. Each
+      // `is map` guard keeps a message whose `metadata` is null, or a map
+      // without `poll`, updatable.
+      function pollIsClosed(data) {
+        let meta = data.get('metadata', null);
+        return meta is map
+          && meta.get('poll', null) is map
+          && meta.poll.get('isClosed', false) == true;
+      }
+
       allow update: if isAuthenticated()
         && request.auth.uid == resource.data.senderId
         && resource.data.get('type', 'text') != 'duplicateBlocked'
+        && (!pollIsClosed(resource.data) || pollIsClosed(request.resource.data))
         && request.resource.data.content is string
         && request.resource.data.content.size() <= 5000
         && cannotModify(['senderId', 'conversationId', 'sentAt']);
@@ -2713,6 +2726,10 @@ service cloud.firestore {
         && request.resource.data.rating >= 1
         && request.resource.data.rating <= 5
         && hasRequiredFields(['recipeId', 'userId', 'rating', 'createdAt'])
+        // BUT-2086: one rating per person per recipe. The stats recompute
+        // counts every row `where recipeId ==`, so a second row under another
+        // id would count twice.
+        && ratingId == request.resource.data.recipeId + '_' + request.auth.uid
         // BUT-2079: the key set of the map FirebaseRatingsRepository.rateRecipe
         // writes (lib/repositories/firebase/firebase_ratings_repository.dart),
         // including the conditional recipeOwnerId and the null-valued review.
