@@ -26,7 +26,7 @@ chapter over 20,000.
 | `/user_moderation/{uid}` + its `report_history` subcollection, **and** the `friend_categories` / `public_profiles` admin moderation overrides | `moderation-rules.test.ts` | `test:rules:moderation` |
 | `/shared_content` list/get, `notification_delivery`+`notification_engagement` create, **and the REMOVED `shared_content/{id}/items` block** | `iter102-rules.test.ts` | `test:rules:iter102` |
 | `/household_allergen_shares/{householdId}_{userId}` (member+owner read, consent-bound create/update, path-derived delete) | `household-allergen-shares-rules.test.ts` | `test:rules:household-allergen-shares` |
-| `users/{uid}/counters/{counterId}` (stranger ±1 step, owner absolute) | `shared-content-counters-rules.test.ts` | `test:rules:shared-content-counters` |
+| `users/{uid}/counters/{counterId}` (stranger +1 step, owner absolute) | `shared-content-counters-rules.test.ts` | `test:rules:shared-content-counters` |
 | All of the above                      | (sequence)                 | `test:rules:all`          |
 
 ---

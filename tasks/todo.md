@@ -35,5 +35,6 @@ rules work goes to In Review. Step-0 greps confirmed every premise on current ma
 
 ## Deviation log
 - [discovery] BUT-2050: 20 consecutive runs of blocks-rules.test.ts were green, so no FAIL line was captured and no root cause named. Not built; the measurement is the outcome.
+- [deviation] BUT-2100: the plan said the stranger arm would be bound to `old ± 1` in BOTH directions; the DOWNWARD half was dropped after two reviewers traced every caller and found no shipped stranger decrement (every decrement path passes the signed-in uid, so the owner arm serves it).
 - [deviation] BUT-2100: the ticket's own suggested fix was measured wrong before this run; built the form its review comment specifies instead of re-planning it.
 - [deviation] Panel and gate findings were folded in only where they were one-line pins (zero floor, per-field denies, owner-shape deny); the cross-field desync, the +1 spam, the wildcard path and the Dart-side owner guard went to BUT-2121/2122/2123 instead of widening scope.

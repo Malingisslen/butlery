@@ -135,7 +135,7 @@ Triggers retry on uncaught exception; handlers must be idempotent:
   an existing suite need none), and a `test:*` naming an UNTRACKED file reddens
   the CI unit lane — file + package.json line in ONE commit.
 - `npm run test:rules:all` — a new rules/integration suite is FOUR
-  registrations: its own `test:*` script, an append to the `&&` chain in
+  registrations: its own `test:*` script, an append to
   `test:rules:all`, BOTH `paths:` blocks in `firestore-rules.yml`, and a UNIQUE
   `const PROJECT_ID` whose id is a LITERAL in that assignment —
   `rules-coverage-report.js` discovers ids with a regex that accepts both the bare
