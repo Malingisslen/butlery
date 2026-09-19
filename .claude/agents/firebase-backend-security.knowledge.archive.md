@@ -10999,3 +10999,16 @@ Always include specific code examples and remediation steps.
   description against the generated doc comment whenever an ARB is touched in a review round,
   and fix it by re-running the generator, never by hand-editing the generated file.
 
+
+## 2026-09-19 — BUT-2097 commit-gate review (verified clean, archive only)
+
+Diff: `firebase_shared_shopping_repository.dart` loses its doc-comment "Usage Examples"
+block (it called `createSharedShoppingList` without the required `recipientIds:` argument and
+a `SharedShoppingList.create(... sharedToUserIds: ...)` shape, so it could not compile); the
+executable code is byte-identical. `FirestoreCollections.items` moved from the
+"Shared content subcollections" heading to "Other subcollections", value `'items'` unchanged.
+Grep of `FirestoreCollections.items` found only personal/unified shopping-list readers and
+writers (`shopping_item_operations_module.dart`, `shopping_repository_query_module.dart`,
+`firebase_data_export_repository.dart`) — none under `shared_content` — consistent with the
+BUT-1716 deviation that the shared-list item subcollection API is gone. No Firestore
+behaviour, rules or audit change. Verdict pass. No new principle.

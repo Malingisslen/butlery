@@ -14,6 +14,15 @@
   (DENY). A suite pinning only the null case reads as coverage and leaves a live allow.
   Pin BOTH on every defaulting chain, and state each verdict — "both are empty" is the
   losing intuition.
+- **A chained `is map` guard (`m is map && m.get('poll', null) is map && …`) needs ONE
+  mutant PER GUARD, and each guard's kill set is a different fixture.** Measured on the
+  `messages` sender limb (BUT-2092): dropping both guards together killed three tests and
+  said nothing about which guarded what; separately, the outer guard killed the absent- AND
+  null-`metadata` edits (`.get(k, null)` makes those one state), and the inner guard killed
+  only the map-without-`poll` share edit. A one-way flag on the PRE-state also bypasses
+  through DELETE-then-CREATE at the same id when the create limb does not constrain the
+  field — measured allowed on the same limb; check the create limb before calling any
+  update-limb conjunct "one-way".
 - **The ELSE branch of an `is map` ternary is the security decision, not the guard
   itself.** `x is map ? x.get(k,d) : null` keeps a null-parent deny; `x is map ?
   x.get(k,d) : {}` re-defaults it to ALLOW. Neither closes the ABSENT case on its own.

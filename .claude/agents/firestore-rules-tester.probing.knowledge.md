@@ -163,8 +163,8 @@ const ADMIN_UID = "admin-uid";
   **The FINGERPRINT of this artefact is that the failures land on exactly the client
   CREATE-ALLOW tests**, because a surviving doc turns the create into an UPDATE, and these
   collections commonly carry `allow update: if false`. Measured 2026-09-16 on
-  `audit-logs-rules.test.ts`, which calls `clearFirestore()` NOWHERE: `setup()` only seeds
-  and `teardown()` calls `env.cleanup()`, which disposes the ENV, not the data. Before
+  `audit-logs-rules.test.ts`: `teardown()` calls `env.cleanup()`, which disposes the ENV,
+  not the data. Before
   blaming the diff, probe one create-allow doc id and clear.
 - **A fixture seeded inside `withSecurityRulesDisabled` is evaluated by NO limb, so any
   justification for its SHAPE that cites a future `hasOnly`/`hasRequiredFields` on that

@@ -20568,3 +20568,18 @@ request-account-deletion `expected` additions, and the backfill header strike.
 - INCREMENT shim: dotted-key path (`applyFieldPath`) does not resolve the marker. No
   current caller. Low.
 Verdict pass. Principle folded into the gdpr-erasure chapter (grouped mapping bullet).
+
+### 2026-09-19 — BUT-2086 / BUT-2092 rules-test review: one DENY per "unset" shape [client-guards]
+Reviewed recipe-ratings-rules.test.ts (createRating gains ratingId; DENY for `${RECIPE}_${uid}_second`)
+and poll-votes-rules.test.ts (seven BUT-2092 sender-limb cases). Both suites run green against the
+emulator (34/34, 54/54); tsc clean. Rule `pollIsClosed(request.resource.data)` requires
+`isClosed == true` on the new data, so it already denies a stripped poll / missing key / null.
+Gap: tests pin only `isClosed: false`. `MessagePollMutationModule.closePoll` reads
+`pollMap['isClosed'] == true`, so a missing key reopens the close for its idempotency anchor; a
+`!= false` / `get('isClosed', true)` rewrite of the request half would stay green. Likewise the
+id-pin DENY varies only the suffix, so a mutant dropping the recipeId half survives. Filed Medium,
+non-blocking. Header comment "so each case below is that write" false for the two content-edit
+cases — Info. Principle added to the client-guards chapter.
+
+### 2026-09-19 — setup-level clearFirestore fixes cross-run leftovers, not intra-run ordering [rules-tests]
+BUT-2105 review (acquisition-rules, realtime-menus-rules): `await env.clearFirestore()` added to `setup()`; both suites ran green twice back to back on the local emulator (9/9, 8/8). Read against `firestore.rules` `users/{userId}/acquisition/{acquisitionDoc}` (`allow update: if false`): test 1 creates `users/user-a/acquisition/current`, so tests 2, 3 and the create half of 6/9 are evaluated as UPDATES in every run and pass whatever the create conjuncts say. Pre-existing, outside the diff; reported as a non-blocking follow-up. Principle folded into the client-guards chapter.

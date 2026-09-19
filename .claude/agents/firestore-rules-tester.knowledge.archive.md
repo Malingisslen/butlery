@@ -5943,3 +5943,37 @@ Standard deny matrix for ownership-checked collections:
   archive for the last time that phrasing was disproved before writing it.
 - You're about to append a new dated entry — check first whether it should instead
   extend a bullet above.
+
+## 2026-09-19 — BUT-2086 rating doc-id binding and BUT-2092 one-way poll close (commit-gate review)
+
+- `recipe_ratings` create gained `ratingId == request.resource.data.recipeId + '_' + request.auth.uid`.
+  Writer `FirebaseRatingsRepository.rateRecipe` builds `'${recipeId}_$userId'`, so it conforms.
+  Mutant (conjunct removed, via a throwaway sed copy because this suite has no PROBE seam):
+  33/34, killing only "create under a doc id other than {recipeId}_{uid} is DENIED". Real
+  rules: recipe-ratings 34/34, age-gate 39/39, rate-limit 64/64, recipe-comments 29/29.
+- `messages` sender `allow update` gained `(!pollIsClosed(resource.data) || pollIsClosed(request.resource.data))`.
+  Per-mutant kill sets on poll-votes (54 tests): conjunct removed -> only "the sender cannot
+  reopen a closed poll"; outer `meta is map` guard removed -> "the sender can still edit their
+  own content" (TEXT_MSG_ID, metadata ABSENT) and "a message with metadata null is still
+  editable"; inner `meta.get('poll', null) is map` removed -> only "a share message (metadata
+  without poll) is still editable". cook-snaps-and-message-mod 51/51, conversations 89/89.
+- Measured bypass (throwaway probe, not shipped): the sender DELETEs the closed poll message
+  and CREATEs a new doc at the same id with `isClosed: false` -> both ALLOWED. `poll_votes`
+  rows survive the parent delete. Not blocking: `MessagingService.closePoll`'s plan write runs
+  under the closer's own `group_weekly_menu_plans` permission, so the same actor could write
+  the plan directly.
+- Delta round, same day: three DENY cases added; each is the only thing killing a named mutant.
+  poll-votes 56/56 on real rules. A mutant where only an EXPLICIT `isClosed: false` counts as reopening
+  (default true) -> 54/56, killing "reopen ... by dropping isClosed" and "... by nulling metadata".
+  A mutant defaulting `get('isClosed', true)` -> 55/56, killing only the dropping-isClosed case.
+  recipe-ratings 35/35 on real rules. A suffix-only mutant `ratingId.matches('.*_' + uid)` -> 34/35,
+  killing only "create under another recipe's id carrying this recipeId"; conjunct removed -> 33/35.
+
+## 2026-09-19 — BUT-2105 review: `clearFirestore()` added to audit-logs and menus `setup()`
+
+Retired verbatim from `firestore-rules-tester.probing.knowledge.md` (Emulator gotchas, fingerprint bullet), because the suite now clears in `setup()`:
+
+> `audit-logs-rules.test.ts`, which calls `clearFirestore()` NOWHERE: `setup()` only seeds
+> and `teardown()` calls `env.cleanup()`, which disposes the ENV, not the data.
+
+Measured this review: both suites went 19/19 and 21/21 twice in a row on one long-lived emulator. A copy of the audit-logs suite with the clear line removed, run straight after on the leftover namespace, went 17/19. The two reds were exactly the create-allows (`al-self-create`, `al-precedence-check`), which is the fingerprint described in the probing chapter. Every create-DENY in both suites targets an id that no test writes, so a once-per-run clear leaves no deny test landing on the update limb.
