@@ -152,7 +152,6 @@ abstract final class FirestoreCollections {
 
   static const String members = 'members';
   static const String collaborators = 'collaborators';
-  static const String items = 'items';
   static const String receivedMenus = 'received_menus';
   static const String receivedLists = 'received_lists';
   static const String counters = 'counters';
@@ -161,6 +160,7 @@ abstract final class FirestoreCollections {
   // ── Other subcollections ──
 
   static const String participants = 'participants';
+  static const String items = 'items';
 
   /// BUT-1838: the shared group a group chat hangs off. Named `chat_groups`
   /// because `friend_categories` and `group_invitations` already claim the word

@@ -20,26 +20,6 @@
 /// - **Permission Security**: Comprehensive access validation with audit logging
 /// - **Query Optimization**: Efficient Firestore queries with user-specific filtering
 /// - **Error Handling**: Robust exception handling with meaningful error messages
-/// **Usage Examples:**
-/// ```dart
-/// // Initialize repository
-/// final sharedShoppingRepo = FirebaseSharedShoppingRepository();
-/// // Create shared shopping list
-/// final sharedList = SharedShoppingList.create(
-///   sharedByUserId: currentUserId,
-///   sharedByDisplayName: 'Anna Andersson',
-///   sharedToUserIds: [friend1Id, friend2Id],
-///   shareMessage: 'Min veckohandling',
-///   listName: 'Veckohandling v.45',
-/// );
-/// await sharedShoppingRepo.createSharedShoppingList(sharedList);
-/// // Get shared lists for user
-/// final sharedLists = await sharedShoppingRepo.getSharedShoppingListsForUser(userId);
-/// // Update status
-/// await sharedShoppingRepo.markAsViewed(listId, userId);
-/// await sharedShoppingRepo.markAsJoined(listId, userId);
-/// await sharedShoppingRepo.markAsDismissed(listId, userId);
-/// ```
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
