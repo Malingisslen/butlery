@@ -281,7 +281,7 @@ equal today, measured, rather than claiming the distinction is proven.
   caller — a green suite in an untouched file is the evidence that goes stale silently.
 - **Files**: `lib/services/monitoring/web_error_reporter.dart`, `lib/core/utils/log_sanitizer.dart`
 
-### Seven review rounds, and every block was a sentence I wrote, not code (2026-08-20)
+### [Workflow] Seven review rounds, and every block was a sentence I wrote, not code (2026-08-20)
 - **Date**: 2026-08-20
 - **Trigger**: A four-ticket sprint went through seven specialist rounds. Four rounds blocked.
   Not one block was about behaviour — every single one was a MEASURED or CAUSAL claim in a
@@ -3959,7 +3959,7 @@ att läsa med Bash, medan granskningsliggaren bara registrerar `Read`. Två regl
 emot varandra, och den som förlorar är alltid granskningen. Filad som BUT-2068. En
 konfigurationsmotsägelse, inte ett omdömesfel hos agenten — samma klass som output-styles-buggen.
 
-### Sonden måste träffa det lager provselen faktiskt når
+### Sonden måste träffa det lager provselen faktiskt når (BUT-2022, BUT-2068, 2026-09-10)
 
 Jag muterade `FriendsViewModel.isBlocked` för att bevisa att tre widgettester fångade en
 återställning. Allt grönt. Slutsatsen "redan täckt" hade varit falsk: testerna använder
@@ -3969,7 +3969,7 @@ vägen. Rätt mutant var VAKTENS anropsställe — och då rödnade alla tre.
 Ett grönt svar från fel lager ser exakt ut som ett grönt svar från rätt. Fråga före varje sond:
 vilket lager av den muterade symbolen når provselen?
 
-### Tre tomma provuppsättningar på en dag, två av samma form
+### Tre tomma provuppsättningar på en dag, två av samma form (BUT-2022, BUT-2068, 2026-09-10)
 
 - En rigg uppfylld av en ANDRA sanningskälla: `setBlockedUsers` skrev både blockeringsmängden
   OCH statusen, så båda läsvägarna svarade "blockerad" och tre vakttest kunde inte se
@@ -3981,7 +3981,7 @@ Båda går att hitta genom läsning — men bara om man läser attrappens **seed
 **ovanför** den man testar, inte testkroppen. Repareras med en premissassertion i testet, så
 att det säger VARFÖR det slutade diskriminera i stället för att tyst bli tomt.
 
-### En syskonkopia kan komma in EFTER strykningen
+### En syskonkopia kan komma in EFTER strykningen (BUT-2022, BUT-2068, 2026-09-10)
 
 En falsk mening ströks i runda 1. Tre rundor senare kom en ordagrann kopia in i ändringen, i en
 fil som inte var stagad då — den drogs in av en orelaterad testfix. Ett begreppssvep i runda 1

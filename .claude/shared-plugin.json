@@ -9,6 +9,7 @@
       "**/*.knowledge.archive.md",
       "**/accepted-deviations.archive.md",
       "tasks/lessons.md",
+      "tasks/archive/lessons-digest-long-form.md",
       ".claude/rules/lessons-digest*.md",
       "docs/org/adr/**",
       ".claude/rules/accepted-deviations*.md",
