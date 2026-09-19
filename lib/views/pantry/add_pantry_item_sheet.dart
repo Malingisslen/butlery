@@ -45,10 +45,8 @@ class AddPantryItemSheet extends StatefulWidget {
   /// empty case below does — but shows a blank box) — and it leaked into storage,
   /// because `_submit` writes the selection unconditionally. Widening the list
   /// per item keeps the screen up *and* keeps the value. Same seam as
-  /// `RecipeFormState.mealTypeOptions`, for the same bug class — but keyed on
-  /// the STORED unit rather than the current selection, so the injected row
-  /// survives a pick and can be chosen back. That divergence is deliberate;
-  /// do not harmonise the two.
+  /// `RecipeFormState.mealTypeOptions`, for the same bug class; do not
+  /// harmonise the two.
   ///
   /// An empty stored unit selects nothing rather than inventing one: it matches
   /// no item by design, and `PantryItem.copyWith(unit: null)` then preserves the
@@ -59,7 +57,7 @@ class AddPantryItemSheet extends StatefulWidget {
   /// `standaloneUnits`. That set exists to RECOGNISE what a parser may find in
   /// a recipe — it holds 'pers', 'personer', 'gallons', 'tablespoons' — and a
   /// set you must recognise is not a set you should offer. Malin's call,
-  /// 2026-08-15 — recorded in `.claude/rules/accepted-deviations.md` so it is
+  /// 2026-08-15 — recorded in `.claude/rules/accepted-deviations-pantry.md` so it is
   /// checkable, and so nobody proposes the widening again.
   static ({List<String> values, String? selected}) unitOptions(
     String storedUnit,
