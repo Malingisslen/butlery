@@ -1956,10 +1956,6 @@ void main() {
       setUp(() => production.ServiceLocator.initialize(DIContainer()));
       tearDown(production.ServiceLocator.reset);
 
-      // Real `Message`s throughout: the block filter rebuilds messages with
-      // `copyWith`, which a `Fake` does not implement, and its fail-open catch
-      // would then swallow the throw and serve the list unfiltered — which
-      // looks exactly like this filter never running.
       // `content` is a PARAMETER, and that is load-bearing. No
       // `firestore.rules` limb bounds what `type` is written TO on a create or
       // a sender update (B16/B17 in
