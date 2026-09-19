@@ -5240,3 +5240,25 @@ BUT-1838/BUT-1971/BUT-2028/BUT-1716, 2026-09-17
   HOW LONG lines speak of the handling (`profileDeletionNoticeWhyHandling`,
   `profileDeletionNoticeHowLongHandling`, `…HowLongHandlingUnknown`) rather than of a review of
   the person's content. The review-only notice is unchanged. 2026-09-19
+
+## BUT-1903 — a chat message's `sentAt` at most one hour ahead of the server (2026-08-19)
+
+Copied verbatim from `.claude/rules/accepted-deviations.md` on 2026-09-19, when that file was
+cut to one line per decision; this file had no entry for it. Full reasoning:
+`docs/org/adr/ADR-0008-clock-bound-on-message-timestamps-and-its-error-message.md`.
+
+- **A chat message's `sentAt` may sit at most ONE HOUR ahead of the server, and that number
+  ships together with the client-side error message that explains a refusal.** Malin's explicit
+  call, 2026-08-19 (BUT-1903), shown against the alternative of 24 hours with no app change.
+  Do not propose tightening it to minutes: `Message` stamps the DEVICE clock, there is no field
+  skew data, and a bound too tight silently locks a real user out of chat entirely. Do not
+  propose loosening it either — the residual it buys is a chat-list preview an attacker can
+  freeze, and 24 hours of that on a minor's device is what the panel weighed. The two halves are
+  ONE decision: a later change that loosens the bound must revisit the message, and vice versa.
+  The number lives in THREE languages — `firestore.rules`, `MessageSendErrorMapper.maxSentAtLead`
+  and `clockSkewBucket` — and a tightening that finds only two ships a wrong histogram. Full
+  reasoning and the five-seat panel: `docs/org/adr/ADR-0008-clock-bound-on-message-timestamps-and-its-error-message.md`.
+  **Not closed by it:** `conversations.lastMessage` is a denormalised copy of `sentAt` whose
+  update deny-list does not name it, so the preview can still be frozen without touching this
+  rule. Own ticket; a tighter number here is not a substitute for it. BUT-1903, 2026-08-19
+
