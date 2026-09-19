@@ -576,8 +576,37 @@ service cloud.firestore {
       // Shared content counters — cross-user writes for sharing notifications
       match /counters/{counterId} {
         allow read: if isOwner(userId);
+
+        function countersShapeOk() {
+          return request.resource.data.keys().hasOnly([
+            'unreadSharedRecipes', 'unreadSharedMenus',
+            'unreadSharedShoppingLists',
+            'totalSharedContent', 'lastUpdated'
+          ]) && isServerTimestamp('lastUpdated');
+        }
+
+        // BUT-2100: a counter a stranger writes may step UP by one, or stay
+        // where it is. It needs no way down: every caller of
+        // `_getUserCountersRef` was read on 2026-09-20
+        // (`grep -rn "_getUserCountersRef\|markAsViewed\|recalculateUnreadCount" lib`)
+        // and the decrement and recalculate paths pass the signed-in uid, so
+        // the owner arm below serves them. Absent on create means the field
+        // arrives as 0 or 1; `resource` is null there, which is why the create
+        // and update arms below are separate statements.
+        function counterStepOk(field) {
+          return request.resource.data.get(field, 0) >= 0
+            && (request.resource.data.get(field, 0)
+                   == resource.data.get(field, 0)
+            || request.resource.data.get(field, 0)
+                   == resource.data.get(field, 0) + 1);
+        }
+
+        function counterCreateOk(field) {
+          return request.resource.data.get(field, 0) == 0
+            || request.resource.data.get(field, 0) == 1;
+        }
         // Any authenticated user can increment counters (sharing notifications)
-        allow create, update: if isAuthenticated()
+        allow update: if isAuthenticated()
           // BUT-1482 sprint, 2026-08-12: these used to name the counterTypeKey
           // strings ('shared_recipes'), but the writer sends FIELD names from
           // UserCounterIncrements — `fieldForType()` maps one to the other, and
@@ -585,12 +614,26 @@ service cloud.firestore {
           // fact; the write was denied on every share, swallowed by a
           // best-effort catch, so the recipient's unread badge never moved.
           // Writer: base_shared_content_repository.dart:59-63.
-          && request.resource.data.keys().hasOnly([
-            'unreadSharedRecipes', 'unreadSharedMenus',
-            'unreadSharedShoppingLists',
-            'totalSharedContent', 'lastUpdated'
-          ])
-          && isServerTimestamp('lastUpdated');
+          && countersShapeOk()
+          && counterStepOk('unreadSharedRecipes')
+          && counterStepOk('unreadSharedMenus')
+          && counterStepOk('unreadSharedShoppingLists')
+          && counterStepOk('totalSharedContent');
+
+        // The same grant on a document that does not exist yet: the first
+        // share for a recipient. `resource` is null there, so the step check
+        // above would be an evaluation error rather than a value bound.
+        allow create: if isAuthenticated()
+          && countersShapeOk()
+          && counterCreateOk('unreadSharedRecipes')
+          && counterCreateOk('unreadSharedMenus')
+          && counterCreateOk('unreadSharedShoppingLists')
+          && counterCreateOk('totalSharedContent');
+
+        // BUT-2100: the owner keeps ABSOLUTE writes. `recalculateUnreadCount`
+        // (base_shared_content_repository.dart) is the documented repair path
+        // and sets a recomputed total, which no ±1 step can express.
+        allow create, update: if isOwner(userId) && countersShapeOk();
         allow delete: if isOwner(userId);
       }
 

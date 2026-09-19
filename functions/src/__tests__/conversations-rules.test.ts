@@ -2212,6 +2212,81 @@ test("participants: the subject of an ORPHANED row can still delete it", async (
   );
 });
 
+// ============================================================================
+// BUT-2111 — the REMOVED conversation_memberships path stays denied
+//
+// BUT-1850 deleted `match /conversation_memberships/{conversationId}` under
+// `users/{userId}`. The path now falls to the terminal `match /{document=**}`,
+// which nothing pinned. A future `match /users/{userId}/{document=**}`, or a
+// partial revert, would hand the access back with no suite reddening.
+//
+// Every case is sent by the OWNER — the actor the old block LET IN. A stranger
+// deny passes for free and proves nothing. The control below is a sibling path
+// under the same owner, so the denies are not the whole subtree being shut.
+// ============================================================================
+
+const MEMBERSHIP_OWNER = `conv-membership-owner-${RUN}`;
+const MEMBERSHIP_DOC = `users/${MEMBERSHIP_OWNER}/conversation_memberships/c-${RUN}`;
+
+/** Seeds the row with rules disabled, so the read/update/delete cases are not
+ * denied merely for addressing a document that does not exist. */
+async function seedMembershipRow(): Promise<void> {
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    await ctx.firestore().doc(MEMBERSHIP_DOC).set({
+      conversationId: `c-${RUN}`,
+      userId: MEMBERSHIP_OWNER,
+      joinedAt: new Date(),
+    });
+  });
+}
+
+function ownerDb() {
+  return env.authenticatedContext(MEMBERSHIP_OWNER).firestore();
+}
+
+test("conversation_memberships: the OWNER cannot read the row", async () => {
+  await seedMembershipRow();
+  await assertFails(ownerDb().doc(MEMBERSHIP_DOC).get());
+});
+
+test("conversation_memberships: the OWNER cannot list the collection", async () => {
+  await seedMembershipRow();
+  await assertFails(
+    ownerDb()
+      .collection(`users/${MEMBERSHIP_OWNER}/conversation_memberships`)
+      .get()
+  );
+});
+
+test("conversation_memberships: the OWNER cannot create a row", async () => {
+  await assertFails(
+    ownerDb()
+      .doc(`users/${MEMBERSHIP_OWNER}/conversation_memberships/new-${RUN}`)
+      .set({ conversationId: `c-new-${RUN}`, userId: MEMBERSHIP_OWNER })
+  );
+});
+
+test("conversation_memberships: the OWNER cannot update the row", async () => {
+  await seedMembershipRow();
+  await assertFails(ownerDb().doc(MEMBERSHIP_DOC).update({ userId: "x" }));
+});
+
+test("conversation_memberships: the OWNER cannot delete the row", async () => {
+  await seedMembershipRow();
+  await assertFails(ownerDb().doc(MEMBERSHIP_DOC).delete());
+});
+
+// Fail-closed control: the same actor, a sibling path that IS granted. If this
+// ever denies too, the five denies above are measuring a shut subtree rather
+// than the removed block.
+test("conversation_memberships CONTROL: the same owner can write category_preferences", async () => {
+  await assertSucceeds(
+    ownerDb()
+      .doc(`users/${MEMBERSHIP_OWNER}/category_preferences/p-${RUN}`)
+      .set({ order: 1 })
+  );
+});
+
 async function run(): Promise<void> {
   console.log(
     "conversations rules tests — minor-DM gate (BUT-674), creator binding " +
