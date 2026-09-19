@@ -175,3 +175,7 @@
   OWNER + id, or an ex-member re-creating that id under their own uid is
   handed the victim's object. Do not then exempt that owner from the
   membership check — an owner who left could otherwise empty its roster.
+- A roster/keep-set diff that DELETES user data must refuse to run when the keep-set is empty or
+  implausibly small — an empty denormalized member list must not read as "everyone left"; guard
+  `if (roster.size===0) return docs;` and prefer the authoritative membership list over a
+  denormalized projection built for a different query.
