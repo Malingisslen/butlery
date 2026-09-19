@@ -72,6 +72,28 @@ function isDeleteOp(v: unknown): v is DeleteOp {
   admin.firestore.FieldValue as unknown as { delete: () => DeleteOp }
 ).delete = () => ({ [DELETE_MARKER]: true });
 
+/**
+ * Marker standing in for `FieldValue.increment()` (BUT-2112). Without it the
+ * real SDK's opaque sentinel would be stored in place of a number.
+ */
+const INCREMENT_MARKER = Symbol("increment");
+interface IncrementOp {
+  [INCREMENT_MARKER]: true;
+  by: number;
+}
+function isIncrementOp(v: unknown): v is IncrementOp {
+  return (
+    typeof v === "object" &&
+    v !== null &&
+    (v as IncrementOp)[INCREMENT_MARKER] === true
+  );
+}
+(
+  admin.firestore.FieldValue as unknown as {
+    increment: (by: number) => IncrementOp;
+  }
+).increment = (by: number) => ({ [INCREMENT_MARKER]: true, by });
+
 type DocData = Record<string, unknown>;
 
 /** Write `value` at a dotted field path, cloning each map on the way down. */
@@ -421,6 +443,8 @@ class FakeFirestore {
         next[k] = cur.filter((item) => !v.values.includes(item));
       } else if (isDeleteOp(v)) {
         delete next[k];
+      } else if (isIncrementOp(v)) {
+        next[k] = (typeof next[k] === "number" ? (next[k] as number) : 0) + v.by;
       } else {
         next[k] = v;
       }
@@ -8435,6 +8459,385 @@ async function scenario_probeSeesLeftoverRatingOwnerStamp(): Promise<void> {
   );
 }
 
+/**
+ * BUT-2112: comments on the erased user's recipes lose `recipeOwnerId`, and the
+ * comment itself stays.
+ */
+async function scenario_commentOwnerStampIsRemoved(): Promise<void> {
+  const {
+    scrubCommentRecipeOwner,
+  } = require("../account/account-deletion-cascade");
+  const db = new FakeFirestore();
+  db.set("recipe_comments/onMine", {
+    authorId: OTHER,
+    recipeOwnerId: UID,
+    sharedWithUserIds: [THIRD],
+    text: "gott",
+  });
+  db.set("recipe_comments/onTheirs", {
+    authorId: OTHER,
+    recipeOwnerId: THIRD,
+    sharedWithUserIds: [],
+    text: "ok",
+  });
+  db.set("recipe_comments/legacy", { authorId: OTHER, text: "gammal" });
+
+  const ok = await scrubCommentRecipeOwner(asDb(db), UID);
+
+  const mine = db.get("recipe_comments/onMine");
+  check("the comment owner scrub reports success", ok === true);
+  check(
+    "the owner stamp is REMOVED from the comment, not nulled",
+    mine !== undefined && !("recipeOwnerId" in mine),
+    JSON.stringify(mine),
+  );
+  check(
+    "the comment text, author and share list survive",
+    mine?.text === "gott" &&
+      mine?.authorId === OTHER &&
+      JSON.stringify(mine?.sharedWithUserIds) === JSON.stringify([THIRD]),
+    JSON.stringify(mine),
+  );
+  check(
+    "a comment naming another owner is untouched",
+    db.get("recipe_comments/onTheirs")?.recipeOwnerId === THIRD,
+  );
+  check(
+    "a pre-BUT-458 comment without the field is not written to",
+    !db.updatedPaths.includes("recipe_comments/legacy"),
+    JSON.stringify(db.updatedPaths),
+  );
+}
+
+/**
+ * BUT-2112: the share list loses only the erased uid. The field stays, and so
+ * does every other recipient's read access.
+ */
+async function scenario_commentShareListLosesOnlyTheErasedUid(): Promise<void> {
+  const {
+    scrubCommentSharedWith,
+  } = require("../account/account-deletion-cascade");
+  const db = new FakeFirestore();
+  db.set("recipe_comments/shared", {
+    authorId: OTHER,
+    recipeOwnerId: OTHER,
+    sharedWithUserIds: [UID, THIRD],
+    text: "x",
+  });
+  db.set("recipe_comments/soloShare", {
+    authorId: OTHER,
+    sharedWithUserIds: [UID],
+    text: "y",
+  });
+  db.set("recipe_comments/notShared", {
+    authorId: OTHER,
+    sharedWithUserIds: [THIRD],
+    text: "z",
+  });
+
+  const ok = await scrubCommentSharedWith(asDb(db), UID);
+
+  check("the share-list scrub reports success", ok === true);
+  check(
+    "the erased uid leaves the list and the other recipient stays",
+    JSON.stringify(db.get("recipe_comments/shared")?.sharedWithUserIds) ===
+      JSON.stringify([THIRD]),
+    JSON.stringify(db.get("recipe_comments/shared")),
+  );
+  const solo = db.get("recipe_comments/soloShare");
+  check(
+    "a list holding only the erased uid is left EMPTY, not removed",
+    solo !== undefined &&
+      Array.isArray(solo.sharedWithUserIds) &&
+      (solo.sharedWithUserIds as unknown[]).length === 0,
+    JSON.stringify(solo),
+  );
+  check(
+    "a comment not shared with the erased uid is not written to",
+    !db.updatedPaths.includes("recipe_comments/notShared"),
+    JSON.stringify(db.updatedPaths),
+  );
+}
+
+/**
+ * BUT-2112: the erased user's like goes, and its comment's counter drops by
+ * one. A like on a comment that is already gone is deleted with no write to
+ * the missing parent; a counter already at 0 is not taken below it; a
+ * `likes` row that is not under `recipe_comments` is not this sweep's.
+ */
+async function scenario_commentLikesAreDeleted(): Promise<void> {
+  const {
+    deleteCommentLikes,
+  } = require("../account/account-deletion-cascade");
+  const db = new FakeFirestore();
+  db.set("recipe_comments/c1", { authorId: OTHER, likesCount: 3 });
+  db.set(`recipe_comments/c1/likes/${UID}`, { userId: UID });
+  db.set(`recipe_comments/c1/likes/${THIRD}`, { userId: THIRD });
+  db.set(`recipe_comments/gone/likes/${UID}`, { userId: UID });
+  db.set("recipe_comments/c0", { authorId: OTHER, likesCount: 0 });
+  db.set(`recipe_comments/c0/likes/${UID}`, { userId: UID });
+  db.set(`cook_snaps/s1/likes/${UID}`, { userId: UID });
+
+  const ok = await deleteCommentLikes(asDb(db), UID);
+
+  check("the comment-like sweep reports success", ok === true);
+  check(
+    "the erased user's like is deleted",
+    !db.has(`recipe_comments/c1/likes/${UID}`),
+  );
+  check(
+    "another person's like on the same comment stays",
+    db.has(`recipe_comments/c1/likes/${THIRD}`),
+  );
+  check(
+    "the comment's likesCount drops by one",
+    db.get("recipe_comments/c1")?.likesCount === 2,
+    JSON.stringify(db.get("recipe_comments/c1")),
+  );
+  check(
+    "a like under a deleted comment is deleted",
+    !db.has(`recipe_comments/gone/likes/${UID}`),
+  );
+  check(
+    "no write is staged on the missing parent",
+    !db.updatedPaths.includes("recipe_comments/gone"),
+    JSON.stringify(db.updatedPaths),
+  );
+  check(
+    "a counter already at 0 is not taken below it",
+    db.get("recipe_comments/c0")?.likesCount === 0 &&
+      !db.updatedPaths.includes("recipe_comments/c0"),
+    JSON.stringify(db.get("recipe_comments/c0")),
+  );
+  check(
+    "a likes row outside recipe_comments is not this sweep's",
+    db.has(`cook_snaps/s1/likes/${UID}`),
+  );
+}
+
+/** BUT-2112: over the cap each of the three steps declines and writes nothing. */
+async function scenario_implausibleCommentSweepsDecline(): Promise<void> {
+  const {
+    scrubCommentRecipeOwner,
+    scrubCommentSharedWith,
+    deleteCommentLikes,
+    MAX_COMMENT_OWNER_SWEEP_ROWS,
+    MAX_COMMENT_SHARE_SWEEP_ROWS,
+    MAX_COMMENT_LIKE_SWEEP_ROWS,
+  } = require("../account/account-deletion-cascade");
+
+  const owner = new FakeFirestore();
+  for (let i = 0; i <= MAX_COMMENT_OWNER_SWEEP_ROWS; i++) {
+    owner.set(`recipe_comments/o-${i}`, { authorId: `p-${i}`, recipeOwnerId: UID });
+  }
+  const ownerOk = await scrubCommentRecipeOwner(asDb(owner), UID);
+  check(
+    "the owner scrub declines above its cap and writes nothing",
+    ownerOk === false && owner.updatedPaths.length === 0,
+  );
+
+  const share = new FakeFirestore();
+  for (let i = 0; i <= MAX_COMMENT_SHARE_SWEEP_ROWS; i++) {
+    share.set(`recipe_comments/s-${i}`, { authorId: `p-${i}`, sharedWithUserIds: [UID] });
+  }
+  const shareOk = await scrubCommentSharedWith(asDb(share), UID);
+  check(
+    "the share-list scrub declines above its cap and writes nothing",
+    shareOk === false && share.updatedPaths.length === 0,
+  );
+
+  const likes = new FakeFirestore();
+  for (let i = 0; i <= MAX_COMMENT_LIKE_SWEEP_ROWS; i++) {
+    likes.set(`recipe_comments/l-${i}/likes/${UID}`, { userId: UID });
+  }
+  const likesOk = await deleteCommentLikes(asDb(likes), UID);
+  check(
+    "the like sweep declines above its cap and deletes nothing",
+    likesOk === false && likes.deletedPaths.length === 0,
+  );
+}
+
+/** BUT-2112: exactly at the cap each step still runs. */
+async function scenario_commentSweepsRunAtTheCap(): Promise<void> {
+  const {
+    scrubCommentRecipeOwner,
+    scrubCommentSharedWith,
+    deleteCommentLikes,
+    MAX_COMMENT_OWNER_SWEEP_ROWS,
+    MAX_COMMENT_SHARE_SWEEP_ROWS,
+    MAX_COMMENT_LIKE_SWEEP_ROWS,
+  } = require("../account/account-deletion-cascade");
+
+  const owner = new FakeFirestore();
+  for (let i = 0; i < MAX_COMMENT_OWNER_SWEEP_ROWS; i++) {
+    owner.set(`recipe_comments/o-${i}`, { authorId: `p-${i}`, recipeOwnerId: UID });
+  }
+  check(
+    "the owner scrub runs at exactly its cap",
+    (await scrubCommentRecipeOwner(asDb(owner), UID)) === true &&
+      owner.updatedPaths.length === MAX_COMMENT_OWNER_SWEEP_ROWS,
+  );
+
+  const share = new FakeFirestore();
+  for (let i = 0; i < MAX_COMMENT_SHARE_SWEEP_ROWS; i++) {
+    share.set(`recipe_comments/s-${i}`, { authorId: `p-${i}`, sharedWithUserIds: [UID] });
+  }
+  check(
+    "the share-list scrub runs at exactly its cap",
+    (await scrubCommentSharedWith(asDb(share), UID)) === true &&
+      share.updatedPaths.length === MAX_COMMENT_SHARE_SWEEP_ROWS,
+  );
+
+  const likes = new FakeFirestore();
+  // Parents with distinct counts across more than one read group of the
+  // decrement pass, so a row mapped to the wrong parent shows.
+  for (let i = 0; i < MAX_COMMENT_LIKE_SWEEP_ROWS; i++) {
+    likes.set(`recipe_comments/l-${i}`, { authorId: OTHER, likesCount: i + 1 });
+    likes.set(`recipe_comments/l-${i}/likes/${UID}`, { userId: UID });
+  }
+  check(
+    "the like sweep runs at exactly its cap",
+    (await deleteCommentLikes(asDb(likes), UID)) === true &&
+      likes.deletedPaths.length === MAX_COMMENT_LIKE_SWEEP_ROWS,
+  );
+  const wrong: string[] = [];
+  for (let i = 0; i < MAX_COMMENT_LIKE_SWEEP_ROWS; i++) {
+    if (likes.get(`recipe_comments/l-${i}`)?.likesCount !== i) wrong.push(`l-${i}`);
+  }
+  check(
+    "every parent loses exactly its own like",
+    wrong.length === 0,
+    `wrong: ${wrong.slice(0, 5).join(", ")} (${wrong.length})`,
+  );
+}
+
+/**
+ * BUT-2112: failure posture. A rejected chunk fails the two scrubs and the
+ * like deletes; the decrement pass is logged and does not fail the step,
+ * because the like rows are already gone.
+ */
+async function scenario_commentSweepFailures(): Promise<void> {
+  const {
+    scrubCommentRecipeOwner,
+    scrubCommentSharedWith,
+    deleteCommentLikes,
+  } = require("../account/account-deletion-cascade");
+
+  const owner = new FakeFirestore();
+  owner.set("recipe_comments/x", { authorId: OTHER, recipeOwnerId: UID });
+  owner.batchFailures.set("recipe_comments/x", 13);
+  check(
+    "a rejected owner-scrub chunk fails the step",
+    (await scrubCommentRecipeOwner(asDb(owner), UID)) === false,
+  );
+
+  const share = new FakeFirestore();
+  share.set("recipe_comments/x", { authorId: OTHER, sharedWithUserIds: [UID] });
+  share.batchFailures.set("recipe_comments/x", 13);
+  check(
+    "a rejected share-list chunk fails the step",
+    (await scrubCommentSharedWith(asDb(share), UID)) === false,
+  );
+
+  const deleteFails = new FakeFirestore();
+  deleteFails.set("recipe_comments/c", { authorId: OTHER, likesCount: 1 });
+  deleteFails.set(`recipe_comments/c/likes/${UID}`, { userId: UID });
+  deleteFails.batchFailures.set(`recipe_comments/c/likes/${UID}`, 13);
+  check(
+    "a rejected like-delete chunk fails the step",
+    (await deleteCommentLikes(asDb(deleteFails), UID)) === false,
+  );
+  check(
+    "…and the counter is not decremented for a like still standing",
+    deleteFails.get("recipe_comments/c")?.likesCount === 1,
+  );
+
+  const decrementFails = new FakeFirestore();
+  decrementFails.set("recipe_comments/c", { authorId: OTHER, likesCount: 1 });
+  decrementFails.set(`recipe_comments/c/likes/${UID}`, { userId: UID });
+  decrementFails.batchFailures.set("recipe_comments/c", 13);
+  check(
+    "a rejected decrement chunk does NOT fail the step",
+    (await deleteCommentLikes(asDb(decrementFails), UID)) === true,
+  );
+  check(
+    "…because the like row itself is gone",
+    !decrementFails.has(`recipe_comments/c/likes/${UID}`),
+  );
+}
+
+/**
+ * BUT-2112: each of the three probe legs fires on its own residue and stays
+ * quiet on a neighbour's. Every dirty store holds nothing else of the user's,
+ * so only the leg under test can fire.
+ */
+async function scenario_probeSeesLeftoverCommentTraces(): Promise<void> {
+  const { probeResidualData } = require("../account/account-deletion-cascade");
+  const run = async (db: FakeFirestore) => {
+    const r = emptyResult();
+    await probeResidualData(asDb(db), UID, r);
+    return sawResidual(r);
+  };
+
+  const owner = new FakeFirestore();
+  owner.set("recipe_comments/x", { authorId: OTHER, recipeOwnerId: UID });
+  check("a surviving comment owner stamp is residual", await run(owner));
+
+  const share = new FakeFirestore();
+  share.set("recipe_comments/x", { authorId: OTHER, sharedWithUserIds: [UID] });
+  check("a surviving share-list entry is residual", await run(share));
+
+  const like = new FakeFirestore();
+  like.set(`recipe_comments/x/likes/${UID}`, { userId: UID });
+  check("a surviving comment like is residual", await run(like));
+
+  const clean = new FakeFirestore();
+  clean.set("recipe_comments/x", {
+    authorId: OTHER,
+    recipeOwnerId: THIRD,
+    sharedWithUserIds: [THIRD],
+  });
+  clean.set(`recipe_comments/x/likes/${THIRD}`, { userId: THIRD });
+  clean.set(`cook_snaps/s/likes/${UID}`, { userId: UID });
+  check(
+    "other people's comment traces, and a likes row outside recipe_comments, do not fire",
+    !(await run(clean)),
+  );
+}
+
+/**
+ * BUT-2112: the collection-group index the like sweep and its probe leg need.
+ * Same reasoning as `scenario_pollVoteIndexIsDeclared`.
+ */
+async function scenario_commentLikeIndexIsDeclared(): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const fs = require("fs");
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const path = require("path");
+  const indexes = JSON.parse(
+    fs.readFileSync(
+      path.join(__dirname, "..", "..", "..", "firestore.indexes.json"),
+      "utf8",
+    ),
+  ) as {
+    fieldOverrides?: {
+      collectionGroup: string;
+      fieldPath: string;
+      indexes?: { order?: string; queryScope?: string }[];
+    }[];
+  };
+  const override = (indexes.fieldOverrides ?? []).find(
+    (o) => o.collectionGroup === "likes" && o.fieldPath === "userId",
+  );
+  check(
+    "likes.userId has a COLLECTION_GROUP single-field index declared",
+    (override?.indexes ?? []).some(
+      (i) => i.queryScope === "COLLECTION_GROUP" && i.order === "ASCENDING",
+    ),
+    `override: ${JSON.stringify(override)}`,
+  );
+}
+
 async function main(): Promise<void> {
   await scenario_directConversationIsErasedWhole();
   await scenario_readsTopLevelNotSubcollection();
@@ -8552,6 +8955,14 @@ async function main(): Promise<void> {
   await scenario_ratingOwnerScrubRunsAtTheCap();
   await scenario_failedRatingOwnerChunkFailsTheStep();
   await scenario_probeSeesLeftoverRatingOwnerStamp();
+  await scenario_commentOwnerStampIsRemoved();
+  await scenario_commentShareListLosesOnlyTheErasedUid();
+  await scenario_commentLikesAreDeleted();
+  await scenario_implausibleCommentSweepsDecline();
+  await scenario_commentSweepsRunAtTheCap();
+  await scenario_commentSweepFailures();
+  await scenario_probeSeesLeftoverCommentTraces();
+  await scenario_commentLikeIndexIsDeclared();
 
   let failed = 0;
   for (const r of results) {

@@ -59,6 +59,9 @@ import {
   removeFromSharedContent,
   deleteCommentsAndRatings,
   scrubRatingRecipeOwner,
+  scrubCommentRecipeOwner,
+  scrubCommentSharedWith,
+  deleteCommentLikes,
   deletePingsByUser,
   deleteUserReports,
   deleteModerationSystemEvents,
@@ -382,6 +385,19 @@ export async function runAccountDeletionWithDeps(
   // user's ratings of their own recipes, which this query also matches.
   await runStep("rating_recipe_owner", result, () =>
     scrubRatingRecipeOwner(database, uid),
+  );
+
+  // BUT-2112: the same uid in other people's comments, and the user's own
+  // comment likes. After tier 1 so every erasure sweep of another person's
+  // rows runs in one place.
+  await runStep("comment_recipe_owner", result, () =>
+    scrubCommentRecipeOwner(database, uid),
+  );
+  await runStep("comment_shared_with", result, () =>
+    scrubCommentSharedWith(database, uid),
+  );
+  await runStep("comment_likes", result, () =>
+    deleteCommentLikes(database, uid),
   );
 
   // Tier 2 (parallel after T1): subcollections under users/{uid}.

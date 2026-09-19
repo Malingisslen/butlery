@@ -451,6 +451,10 @@ test("BUT-788: full cascade reports every step + writes audit + calls auth.delet
     "report_history_as_reporter",
     // BUT-2072, same reason: the cascade suite requires the scrub directly.
     "rating_recipe_owner",
+    // BUT-2112, same reason.
+    "comment_recipe_owner",
+    "comment_shared_with",
+    "comment_likes",
     "messages",
     "shared_content",
     "comments_ratings",

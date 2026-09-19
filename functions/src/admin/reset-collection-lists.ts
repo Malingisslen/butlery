@@ -481,6 +481,7 @@ export const KNOWN_SUBCOLLECTION_NAMES = new Set<string>([
   "comments", // menu_comments/{menuId}, and the {path=**} comment group
   "engagements", // shared_recipes/{id}, shared_menus/{id}
   "items", // unified_shopping_lists/{listId}, shared_shopping_lists/{id}
+  "likes", // recipe_comments/{commentId} (BUT-2112)
   "members", // shared_recipes/{id}, shared_menus/{id}
   "participants", // conversations/{conversationId}
   "poll_votes", // messages/{messageId}

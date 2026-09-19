@@ -160,3 +160,8 @@ files in the same edit. Each entry below is its current verdict, cut to one line
 - SUPERSEDES the erasure half of the BUT-2057 "no erasure path reaches it" line: `scrubRatingRecipeOwner` removes `recipeOwnerId` from other people's ratings after tier 1, declines above its cap, and has its own probe leg (BUT-2072, 2026-09-19)
 - A client that read the recipe BEFORE the owner's erasure can re-stamp the erased uid on a re-rate — accepted, BUT-1971's shape (BUT-2072, 2026-09-19)
 - The comments twin (`recipe_comments.recipeOwnerId` / `sharedWithUserIds`) is OPEN and is Malin's decision (BUT-2112, 2026-09-19)
+- SUPERSEDES the "comments twin is OPEN" line: comment `recipeOwnerId`, `sharedWithUserIds` and comment likes are erased by three steps after tier 1, each with its own probe leg (BUT-2112, 2026-09-19)
+- A comment's `likesCount` can end one off either way: a failed decrement pass is logged, not reported, and two concurrent erasures can both decrement (BUT-2112, 2026-09-19)
+- Comment likes are erased but not in the Art. 15 bundle — own ticket BUT-2114 (BUT-2112, 2026-09-19)
+- Re-running `backfillRecipeCommentsDenorm` would undo the comment owner scrub; it is one-shot and says so (BUT-2112, 2026-09-19)
+- A client that read the recipe BEFORE an erasure can re-stamp `recipeOwnerId`/`sharedWithUserIds` on a NEW comment — accepted, BUT-1971's shape (BUT-2112, 2026-09-19)

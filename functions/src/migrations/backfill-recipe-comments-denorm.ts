@@ -35,7 +35,9 @@
  *      `recipeOwnerId = authorId, sharedWithUserIds = []` so the row
  *      stays author-only-readable forever (graceful degradation).
  *
- * **Idempotent:** comments that already have both fields are skipped.
+ * **Do not run again after BUT-2112.** Account erasure removes `recipeOwnerId`
+ * from comments on an erased owner's recipes, and step 1 above reads exactly
+ * those rows as unmigrated.
  *
  * **Region:** europe-west1 (Butlery convention).
  *
@@ -325,8 +327,7 @@ export async function runBackfill(
 }
 
 /**
- * Admin-only callable that triggers the backfill. Idempotent — safe to
- * re-run; already-migrated comments are skipped.
+ * Admin-only callable that triggers the backfill.
  */
 export const backfillRecipeCommentsDenorm = onCall(
   { region: REGION },

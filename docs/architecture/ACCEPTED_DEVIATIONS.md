@@ -5288,3 +5288,34 @@ cut to one line per decision; this file had no entry for it. Full reasoning:
 - **The comments twin is OPEN (BUT-2112, 2026-09-19).** `recipe_comments` carries
   `recipeOwnerId` and `sharedWithUserIds`, and no cascade leg reaches either. There the
   fields drive the READ rule, so it is Malin's own decision, not a copy of this one.
+
+## BUT-2112 — a deleted account's uid on other people's comments, and its comment likes (2026-09-19)
+
+- **SUPERSEDES the BUT-2072 "comments twin is OPEN" entry (BUT-2112, 2026-09-19).** Malin
+  chose alternative A on 2026-09-19 and added comment likes to the same ticket. Three steps
+  in `request-account-deletion.ts`, after tier 1 and after `rating_recipe_owner`:
+  `comment_recipe_owner` (`scrubCommentRecipeOwner`, removes `recipeOwnerId`),
+  `comment_shared_with` (`scrubCommentSharedWith`, `arrayRemove` from `sharedWithUserIds`)
+  and `comment_likes` (`deleteCommentLikes`, deletes `recipe_comments/{id}/likes/{uid}`
+  and decrements the parent's `likesCount`). Each declines above its cap.
+  `probeResidualData` has a leg for each.
+  Retired verbatim: "**The comments twin is OPEN (BUT-2112, 2026-09-19).**"
+
+- **A comment's `likesCount` can end one off, either way (BUT-2112, 2026-09-19).** The like
+  rows are deleted first and the counters decremented in a second pass; a failure in that
+  pass is logged and does not fail the step, leaving a counter one too high. Two erasure
+  calls for the same account running at once can both read the rows before either deletes
+  them, and both decrement, leaving a counter one too low. The personal data is gone after
+  the first pass either way.
+
+- **Comment likes are erased but not exported (BUT-2112, 2026-09-19).** The Art. 15 bundle
+  has no likes section. Malin put the export in its own ticket, BUT-2114.
+
+- **A client that read the recipe BEFORE an erasure can write the uid back on a NEW
+  comment (BUT-2112, 2026-09-19).** `recipeOwnerId` and `sharedWithUserIds` are written by
+  the commenting client from the recipe it holds. BUT-1971's shape, accepted the same way.
+
+- **Running `backfillRecipeCommentsDenorm` again would undo the owner scrub (BUT-2112,
+  2026-09-19).** It reads comments lacking `recipeOwnerId` as unmigrated and, for a deleted
+  recipe, writes `recipeOwnerId = authorId` and `sharedWithUserIds = []`. Accepted because
+  the migration was one-shot (BUT-458); its header now says not to run it again.
