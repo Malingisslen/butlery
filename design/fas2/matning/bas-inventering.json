@@ -1,0 +1,436 @@
+{
+ "$om": "Block 287 — inventering av remedieringskallor och blockerande fragor. Kanonisk kandidatkalla. Enheter harleds INTE har; de harleds av byggaren ur block 282-286 och ur lint vid HEAD. Denna fil bar klassningar, evidens och blockerare.",
+ "block": "287",
+ "input_commit": "a805a1b026e0413b80aced859153a1d8a77fe128",
+ "datum": "2026-09-18",
+ "$regel": "PRODUCT_REMEDIATION_REQUIRED endast om alla tio villkor i order D haller. UNSPECIFIED, NOT_REQUIRED, UNVERIFIABLE, historiskt och redan uppfyllt blir aldrig remediering. Ett oavgjort fall ar HUMAN_DECISION_REQUIRED eller UNVERIFIABLE och fryser inte populationen.",
+ "fryst_baslinje": {
+  "282_POPULATION": "5ede5a7c9ab3dfef",
+  "282_IDENTITY": "d0c7b88913b45f18",
+  "282_MAPPING": "639a14d6afb84664",
+  "283_IDENTITY": "2e7816936df8d602",
+  "283_STATUS": "48182cf827ccfb6b",
+  "284_OCCURRENCE_IDENTITY": "0d9f16c0df964d88",
+  "284_OCCURRENCE_STATUS": "68724affa98ecf30",
+  "285_IDENTITY": "5d9d52d93fc08a37",
+  "285_STATUS": "8128ade072cb6f98",
+  "286_IDENTITY": "a3f2e217e88e21c9",
+  "286_STATUS": "731145bceab33d2c"
+ },
+ "slutna_roller": [
+  "button",
+  "tab",
+  "switch",
+  "radio",
+  "checkbox",
+  "textbox"
+ ],
+ "komponentark_representation": {
+  "$om": "Om kravda interaktionstillstand ar ritade i komponentarket — den yta grafisk manual rad 582 anger for fokuslage. Uppmatt i Block 285 och 287.",
+  "CSR::ROLE::button::FOCUSED": "rad 393",
+  "CSR::ROLE::button::PRESSED": "rad 371, 380, 382",
+  "CSR::ROLE::checkbox::FOCUSED": "rad 153",
+  "CSR::ROLE::radio::FOCUSED": "rad 163",
+  "CSR::ROLE::radio::DISABLED": "rad 164",
+  "CSR::ROLE::switch::FOCUSED": "rad 173",
+  "CSR::ROLE::tab::FOCUSED": "rad 114",
+  "CSR::ROLE::textbox::FOCUSED": "rad 409",
+  "CSR::ROLE::textbox::DISABLED": "rad 423",
+  "CSR::ROLE::menuitem::FOCUSED": "rad 349",
+  "CSR::ROLE::searchbox::FOCUSED": "rad 273",
+  "CSR::ROLE::searchbox::DISABLED": "rad 281",
+  "CSR::ROLE::link::FOCUSED": null,
+  "CSR::ROLE::combobox::EXPANDED": null
+ },
+ "blockerare": [
+  {
+   "BLOCKER_ID": "BL-01",
+   "TYP": "HUMAN_DECISION_REQUIRED",
+   "RUBRIK": "Vilken produktlinje ar baslinjen?",
+   "FRAGA": "fas2-matbaslinje (HEAD) har inte andrat en enda produktfil sedan forgreningen vid 8b3768f. Grenen pf-a har 238 commits som skriver om alla 15 skarmfiler (2 537 rader in, 2 516 ut): kontrastremedieringen (ebec950, 1f05061 — '0 tillampliga kontrastfel'), prototypfidelitet PF-A…E och Dynamic Type till 7351ff0. Ska remedieringspopulationen matas mot HEAD, mot pf-a, eller mot en sammanslagning?",
+   "EVIDENS": "git merge-base fas2-matbaslinje pf-a = 8b3768f; ebec950, 1f05061, 7351ff0 ar inte forfader till HEAD; git diff --name-only 8b3768f HEAD -- produktfiler = tomt.",
+   "PAVERKAR": "all kontrast-, geometri- och Dynamic Type-remediering, varje skrivplats och risken for dubbelremediering (order K)"
+  },
+  {
+   "BLOCKER_ID": "BL-02",
+   "TYP": "HUMAN_DECISION_REQUIRED",
+   "RUBRIK": "Omfattar populationen appens kod?",
+   "FRAGA": "evidensmatris.md bar 132 krav med status 'beslutad' (beslutade men inte genomforda), och 'Butlery blockerande tickets' bar 18 tickets. Nastan alla galler appens kod (MFA, samtycke, angrafonster, synk), som inte finns i detta repo. Deras nuvarande uppfyllelse kan darfor inte matas har. Ska Block 287:s population omfatta appkoden — och i sa fall mot vilket app-repo — eller bara designprodukten i detta repo?",
+   "EVIDENS": "evidensmatris.md statuskolumn: implementerad 211, verifierad 85, beslutad 132, ersatt 1 (429); lib/ i repot innehaller bara theme/.",
+   "PAVERKAR": "132 krav"
+  },
+  {
+   "BLOCKER_ID": "BL-03",
+   "TYP": "HUMAN_DECISION_REQUIRED",
+   "RUBRIK": "Rollvokabularen: utoka eller remediera?",
+   "FRAGA": "19 forekomster behaller rollerna link (14), menuitem (3), searchbox (1) och combobox (1) enligt Block 284, men lint T-08 och tillganglighetshandoffen rad 51 har en stangd vokabular pa sex roller. Block 284 lamnade utokningen som kandidat, inte beslut. Ska vokabularen utokas (spec- och lintsynk) eller ska forekomsterna remedieras till befintliga roller (produktandring)?",
+   "EVIDENS": "fas2/role-vocabulary-reconciliation.json PRODUKTBESLUT.$vokabular; spec-lint vid HEAD: 26 'ogiltig roll'.",
+   "PAVERKAR": "19 forekomster, 26 lintfynd, combobox::EXPANDED"
+  },
+  {
+   "BLOCKER_ID": "BL-04",
+   "TYP": "HUMAN_DECISION_REQUIRED",
+   "RUBRIK": "Var ska ett kravt interaktionstillstand synas?",
+   "FRAGA": "14 kravda kontrolltillstand (9 fran Block 283, 5 fran Block 285) bar noll maskinlasbar representation i skarmkorpusen. Grafisk manual rad 582 sager att fokuslage ska visas i komponentarket — dar ar 12 av 14 ritade. Racker komponentarket som uppfyllelseyta, eller kravs annotering per skarmforekomst?",
+   "EVIDENS": "komponentark_representation ovan; 283 csr REPRESENTATION_OCCURRENCES = 0; 285 REPRESENTATION = ABSENT.",
+   "PAVERKAR": "14 kontrolltillstand; aven saffranens pressed/inactive/focus och 53 fargbararfamiljer"
+  },
+  {
+   "BLOCKER_ID": "BL-05",
+   "TYP": "HUMAN_DECISION_REQUIRED",
+   "RUBRIK": "Ska de 25 frånvarande overgangarna representeras?",
+   "FRAGA": "Block 283 beslutade TRANSITION_REPRESENTATION_ABSENT_IS_NOT_AUTOMATIC_REMEDIATION = YES. Grafisk manual kap 11 specar de 35 overgangarna i text. Ska de 25 ABSENT representeras i skarmkorpusen, eller racker specen? Tva ar dessutom UNVERIFIABLE.",
+   "EVIDENS": "fas2/stateflow-applicability.json PRODUKTBESLUT; 283 TRANSITION.REPRESENTATION = 8/25/2.",
+   "PAVERKAR": "27 overgangar"
+  },
+  {
+   "BLOCKER_ID": "BL-06",
+   "TYP": "HUMAN_DECISION_REQUIRED",
+   "RUBRIK": "R-04 morkt lage ar inte beslutat",
+   "FRAGA": "R-04:s stoppgrind ar rod (r04-stoppgrind.json), 89 beslutsenheter ar obeslutade (r04-slutforande.json), 283 av 295 undergruppsinstanser saknar beslut (r04-closure.json), och implementationen kraver tokendelning som saknar metodprov (r04-implementationsblockering.json). Ingen R-04-remediering kan fryssas fore dessa beslut.",
+   "EVIDENS": "r04-stoppgrind.json slutsats 'STOPPGRINDEN AR ROD'; r04-coverage-planner.json: 231 av 244 gapfamiljer kraver beslut.",
+   "PAVERKAR": "hela morka temat"
+  },
+  {
+   "BLOCKER_ID": "BL-07",
+   "TYP": "HUMAN_DECISION_REQUIRED",
+   "RUBRIK": "Tre tokenpar under kontrastgolvet",
+   "FRAGA": "text.danger mot surface.tint.warning och surface.tint.danger i morkt lage (4,18:1) samt text.accent mot surface.raised i ljust lage (4,30:1) ligger under golvet 4,5. Felen fanns redan 2026-08-08. Det allmanna fargskrivningsstoppet ar aktivt, sa varje fargval kraver ditt visuella val och auktorisation.",
+   "EVIDENS": "spec-lint T-02 vid HEAD; fas0/kontrollstatus.md 2026-08-08 CHK-T-02 failed; nt-atgardskandidater.json H_stopp.GENERAL_PRODUCT_COLOR_WRITE_STOP = AKTIVT.",
+   "PAVERKAR": "3 tokenpar"
+  },
+  {
+   "BLOCKER_ID": "BL-08",
+   "TYP": "UNVERIFIABLE_BLOCKING",
+   "RUBRIK": "Okand tillamplighet som inte ar avgjord",
+   "FRAGA": "997 grafiska delar har UNKNOWN_APPLICABILITY (saffran-stangning.json, 'gammal metodskuld'); lagkontrastpopulationen pa HEAD-linjen har UNKNOWN_APPLICABILITY 1 381 och LT3_UNKNOWN 190 (8b3768f); 72 malade kontrollfyllningar saknas i populationen (blast-radius.json, BLOCKED); 94 odeklarerade komponenter ar semantiskt okanda (prioriterade-kandidater.json). UNKNOWN far aldrig raknas som varken krav eller icke-krav.",
+   "EVIDENS": "se respektive fil.",
+   "PAVERKAR": "icke-text- och lagkontrastpopulationen"
+  },
+  {
+   "BLOCKER_ID": "BL-09",
+   "TYP": "HUMAN_DECISION_REQUIRED",
+   "RUBRIK": "Tre oavgjorda R-03-rotorsaker",
+   "FRAGA": "residual-r03-triage.json har undecided_st = 3 — tre symtomgrupper dar det inte ar avgjort om beteendet ar avsiktligt.",
+   "EVIDENS": "fas2/residual-r03-triage.json sammanfattning.",
+   "PAVERKAR": "3 symtomgrupper"
+  },
+  {
+   "BLOCKER_ID": "BL-10",
+   "TYP": "HUMAN_DECISION_REQUIRED",
+   "RUBRIK": "Galler tillstandsannoteringen nu eller i Fas 3?",
+   "FRAGA": "A11Y-02 faller i dag: 245 tillstandsbarande kontroller (switch 19, tab 101, radio 48, checkbox 77) saknar data-a11y-state. Lintmeddelandet sager att 'kontraktet i Fas 3 gor faltet obligatoriskt'. Ar kravet aktivt nu (produktandring) eller forst i Fas 3?",
+   "EVIDENS": "spec-lint A11Y-02 vid HEAD.",
+   "PAVERKAR": "245 kontroller"
+  },
+  {
+   "BLOCKER_ID": "BL-11",
+   "TYP": "HUMAN_DECISION_REQUIRED",
+   "RUBRIK": "307 avvikelser fran last kontrollgeometri",
+   "FRAGA": "lint-controls rapporterar 307 avvikelser mot tokens.controls (beslut B-37): textstorlekar utanfor rollskalan, radier och pillgeometri. Regeln sager att en avvikelse far finnas om den ar SKRIVEN. For varje avvikelse: ratta ritningen eller skriv undantaget? Dynamic Type-arbetet pa pf-a andrar just textstorlekarna, sa fragan beror aven pa BL-01.",
+   "EVIDENS": "lint-controls vid HEAD: LC-SUMMARY deviations=307.",
+   "PAVERKAR": "307 avvikelser"
+  },
+  {
+   "BLOCKER_ID": "BL-12",
+   "TYP": "HUMAN_DECISION_REQUIRED",
+   "RUBRIK": "Ska uppstartsskarmen vara en normativ vy?",
+   "FRAGA": "VIEW_TAXONOMY_GAP_STARTUP = YES (Block 282): skarmen 'start' ar produkt-UI men saknar rad i testmatrisens vytaxonomi, och har darfor inga tillstandskrav.",
+   "EVIDENS": "fas2/stateflow-mappning.json scope_fynd.",
+   "PAVERKAR": "1 vy"
+  },
+  {
+   "BLOCKER_ID": "BL-13",
+   "TYP": "UNVERIFIABLE_BLOCKING",
+   "RUBRIK": "Oprovade saffranslagen och enkeltillstandsfamiljer",
+   "FRAGA": "Saffransknappens pressed-, inaktiva och fokuslage ar UNTESTED — det finns inget ritat lage att prova. 53 fargbararfamiljer ar ritade i ett enda tillstand och kan inte provas for 'aldrig bara farg'. Losningen beror pa BL-04.",
+   "EVIDENS": "saffran-stangning.json G_status; Block 282 COLOR_ONLY CURRENT_OTESTBARA = 53.",
+   "PAVERKAR": "3 saffranslagen, 53 familjer"
+  },
+  {
+   "BLOCKER_ID": "BL-14",
+   "TYP": "HUMAN_DECISION_REQUIRED",
+   "RUBRIK": "Ratifiera eller byt profilens grupp-id",
+   "FRAGA": "profil-stategroup-beslutspaket.json STOPP-3 kallade grupp-id:t 'integritetsreglage' uttryckligen forbjudet (etikettlikhet mot socintegritet) och listade BESLUT-1 om komponentledet. Commit c4dd269 skrev data-state-group=\"profil-integritetsreglage\" med motiveringen att det ar lokal jamforelsemetadata. Ingen beslutsreferens for att haver STOPP-3 finns i repot. Ratificera namnet eller byt det?",
+   "EVIDENS": "git show c4dd269; fas2/profil-stategroup-beslutspaket.json M_stoppvillkor, N_beslutSomKravsAvManniska.",
+   "PAVERKAR": "2 radtaggar i profil (styrning, inte kontrast)"
+  }
+ ],
+ "kallor": [
+  {
+   "SOURCE_ID": "SRC-282",
+   "FAMILJ": "Vytillstand (Block 282, testmatris §1)",
+   "KLASS": "ACTIVE_REMEDIATION_SOURCE",
+   "ENHETER": "harleds",
+   "EVIDENS": "fas2/stateflow-mappning.json + tools/stateflow-population.mjs; 30 REQUIRED+ABSENT."
+  },
+  {
+   "SOURCE_ID": "SRC-283",
+   "FAMILJ": "Kontrolltillstand och overgangar (Block 283)",
+   "KLASS": "ACTIVE_REMEDIATION_SOURCE",
+   "ENHETER": "harleds",
+   "EVIDENS": "fas2/stateflow-applicability.json."
+  },
+  {
+   "SOURCE_ID": "SRC-284",
+   "FAMILJ": "Slutroller (Block 284)",
+   "KLASS": "ACTIVE_REMEDIATION_SOURCE",
+   "ENHETER": "harleds",
+   "EVIDENS": "fas2/role-vocabulary-reconciliation.json; 7 remap till button."
+  },
+  {
+   "SOURCE_ID": "SRC-285",
+   "FAMILJ": "Rolltillstand (Block 285)",
+   "KLASS": "ACTIVE_REMEDIATION_SOURCE",
+   "ENHETER": "harleds",
+   "EVIDENS": "fas2/role-state-applicability.json."
+  },
+  {
+   "SOURCE_ID": "SRC-286",
+   "FAMILJ": "Tokeniserat sokfalt (Block 286)",
+   "KLASS": "METHOD_ONLY",
+   "ENHETER": 0,
+   "EVIDENS": "COMPOSITE_VISUAL_MODE; ingen state-rad, ingen remediering."
+  },
+  {
+   "SOURCE_ID": "SRC-LINT",
+   "FAMILJ": "Spec-lint och kontrollgeometri vid HEAD",
+   "KLASS": "ACTIVE_REMEDIATION_SOURCE",
+   "ENHETER": "harleds",
+   "EVIDENS": "tools/spec-lint.mjs och tools/lint-controls.mjs korda vid HEAD, lasande."
+  },
+  {
+   "SOURCE_ID": "SRC-R02",
+   "FAMILJ": "Traffytor (R-02, migration-24)",
+   "KLASS": "ALREADY_SATISFIED_SOURCE",
+   "ENHETER": 0,
+   "EVIDENS": "migration24.json/02adcb0: 1375/1375/0; merge-checkbox-family.json 1351/1351/0; r02-fix*-logg bekraftade skrivningar."
+  },
+  {
+   "SOURCE_ID": "SRC-NT-BOX",
+   "FAMILJ": "CSS-box icke-text (BATCH-01…06)",
+   "KLASS": "ALREADY_SATISFIED_SOURCE",
+   "ENHETER": 0,
+   "EVIDENS": "nt-batch05-utford.json 'grafikbaslinje 34/0/1'; offswitch-utford.json kontrastfynd 2 -> 0; c4dd269 NT-baslinjen FALLD -> godkand."
+  },
+  {
+   "SOURCE_ID": "SRC-SAFFRAN",
+   "FAMILJ": "Saffransknappens standardlage",
+   "KLASS": "ALREADY_SATISFIED_SOURCE",
+   "ENHETER": 0,
+   "EVIDENS": "saffran-stangning.json G_status.PRODUCT = CLOSED / VERIFIED; ovriga lagen se BL-13."
+  },
+  {
+   "SOURCE_ID": "SRC-GRANS",
+   "FAMILJ": "Kontrollgranser (remediering-4, remediering-15)",
+   "KLASS": "ALREADY_SATISFIED_SOURCE",
+   "ENHETER": 0,
+   "EVIDENS": "2d53b4f KNOWN_REQUIRED_FAIL 15 -> 0; cd811fe 4 -> 0."
+  },
+  {
+   "SOURCE_ID": "SRC-LAGKONTRAST",
+   "FAMILJ": "Lagkontrast (87 REQUIRED_FAIL, LT3)",
+   "KLASS": "UNKNOWN",
+   "ENHETER": "blockerad",
+   "EVIDENS": "HEAD-linjen: lagkontrast-register-direct147.json 87 REQUIRED_FAIL, 'REMEDIERING STOPPAD'. pf-a-linjen: 1f05061 '0 tillampliga kontrastfel'. Klassningen beror pa BL-01; UNKNOWN_APPLICABILITY se BL-08."
+  },
+  {
+   "SOURCE_ID": "SRC-R01",
+   "FAMILJ": "Textkontrast (R-01)",
+   "KLASS": "UNKNOWN",
+   "ENHETER": "blockerad",
+   "EVIDENS": "r04-scopefix.json: LIGHT_PRODUCT_TEXT_CONTRAST CLOSED / VERIFIED, OVERALL_DARK_PRODUCT_TEXT OPEN (hor till R-04, BL-06)."
+  },
+  {
+   "SOURCE_ID": "SRC-R03",
+   "FAMILJ": "Klippning (R-03)",
+   "KLASS": "UNKNOWN",
+   "ENHETER": "blockerad",
+   "EVIDENS": "residual-r03-triage.json undecided 3 (BL-09)."
+  },
+  {
+   "SOURCE_ID": "SRC-R04",
+   "FAMILJ": "Morkt lage (R-04)",
+   "KLASS": "UNKNOWN",
+   "ENHETER": "blockerad",
+   "EVIDENS": "BL-06."
+  },
+  {
+   "SOURCE_ID": "SRC-EVIDENSMATRIS",
+   "FAMILJ": "Evidensmatrisens beslutade krav (appkod)",
+   "KLASS": "UNKNOWN",
+   "ENHETER": "blockerad",
+   "EVIDENS": "BL-02."
+  },
+  {
+   "SOURCE_ID": "SRC-VERIFIKATION",
+   "FAMILJ": "Verifieringsprotokoll testmatris §4",
+   "KLASS": "METHOD_ONLY",
+   "ENHETER": 0,
+   "EVIDENS": "Alla 13 rader tomma; beslut B-43 accepterar konsekvensen. Ager: utvecklingsteamet."
+  },
+  {
+   "SOURCE_ID": "SRC-UTESTAENDE",
+   "FAMILJ": "Butlery utestaende beslut BS-01…09",
+   "KLASS": "HISTORICAL",
+   "ENHETER": 0,
+   "EVIDENS": "Besvarade som B-42…B-50 i beslutslogg.md (2026-07-30)."
+  },
+  {
+   "SOURCE_ID": "SRC-FRYSTA-MD",
+   "FAMILJ": "arbetsplan, luckor-etapp9, migration-gap, granskning-v12, grundgranskning",
+   "KLASS": "HISTORICAL",
+   "ENHETER": 0,
+   "EVIDENS": "Alla bar 'FRYST 2026-07-31 · historisk … far inte citeras som gallande'."
+  },
+  {
+   "SOURCE_ID": "SRC-BASELINE-SUPERSEDED",
+   "FAMILJ": "fas0/baseline-report-SUPERSEDED.json",
+   "KLASS": "SUPERSEDED",
+   "ENHETER": 0,
+   "EVIDENS": "Egen metadata: ersatt av verify-report.json."
+  },
+  {
+   "SOURCE_ID": "SRC-KONTROLLSTATUS",
+   "FAMILJ": "fas0/kontrollstatus.md (2026-08-08)",
+   "KLASS": "SUPERSEDED",
+   "ENHETER": 0,
+   "EVIDENS": "Aldre an HEAD; ersatt av matningen i Block 287 (spec-lint 1 437 fel mot 719)."
+  }
+ ],
+ "lintregler": [
+  {
+   "REGEL": "T-08",
+   "MONSTER": "har data-hit=\"(self|target:[^\"]+)\" utan matt",
+   "KATEGORI": "LINT_SYNC_REQUIRED",
+   "GRUND": "self och target: ar giltiga former i tools/hit-contract.mjs sedan 02f10b4 (2026-08-08); T-08 skrevs 2026-08-04 och kanner inte igen dem. Renderad matning: R-02 1375/1375/0."
+  },
+  {
+   "REGEL": "T-08",
+   "MONSTER": "deklarerar data-hit=\"target:[^\"]+\" — [0-9/]+ dp",
+   "KATEGORI": "LINT_SYNC_REQUIRED",
+   "GRUND": "T-08 laser siffrorna i target-id:t som dp-matt. Renderad matning: R-02 1375/1375/0."
+  },
+  {
+   "REGEL": "T-08",
+   "MONSTER": "ogiltig roll \"(link|menuitem|searchbox|combobox)\"",
+   "KATEGORI": "HUMAN_DECISION_REQUIRED",
+   "BLOCKER": "BL-03",
+   "GRUND": "Slutroll enligt Block 284; vokabularen ar oavgjord."
+  },
+  {
+   "REGEL": "T-02",
+   "MONSTER": "okand token i contrastPairs",
+   "KATEGORI": "LINT_SYNC_REQUIRED",
+   "GRUND": "dataScale-tokens finns i tokens.json men T-02 kanner inte igen dem."
+  },
+  {
+   "REGEL": "T-02",
+   "MONSTER": "= [0-9.]+:1, golv",
+   "KATEGORI": "HUMAN_DECISION_REQUIRED",
+   "BLOCKER": "BL-07",
+   "GRUND": "Fargval under aktivt skrivstopp."
+  },
+  {
+   "REGEL": "T-11",
+   "MONSTER": "kor node tools/gen-counts.mjs",
+   "KATEGORI": "METHOD_TOOLING_REQUIRED",
+   "GRUND": "Genererade raknare ar inaktuella."
+  },
+  {
+   "REGEL": "T-14",
+   "MONSTER": "star \"(implementerad|verifierad)\" utan bevis",
+   "KATEGORI": "DOCUMENTATION_ONLY",
+   "GRUND": "Evidensmatrisens bevisgrammatik."
+  },
+  {
+   "REGEL": "T-21",
+   "MONSTER": "\\[T21-",
+   "KATEGORI": "METHOD_TOOLING_REQUIRED",
+   "GRUND": "Artefaktklassningen: 316 av 329 draft."
+  },
+  {
+   "REGEL": "A11Y-01",
+   "MONSTER": "tillstand \"[a-z]+\" utan roll",
+   "KATEGORI": "PRODUCT_REMEDIATION_REQUIRED",
+   "BLOCKER": "BL-01",
+   "GRUND": "Tillstand utan roll och namn (handoff rad 30). pf-a har redan tagit bort attributet pa samma element — dubbelremedieringsrisk."
+  },
+  {
+   "REGEL": "A11Y-02",
+   "MONSTER": "saknar data-a11y-state",
+   "KATEGORI": "HUMAN_DECISION_REQUIRED",
+   "BLOCKER": "BL-10",
+   "GRUND": "Aktivering nu eller i Fas 3."
+  },
+  {
+   "REGEL": "LC",
+   "MONSTER": "deviations",
+   "KATEGORI": "HUMAN_DECISION_REQUIRED",
+   "BLOCKER": "BL-11",
+   "GRUND": "Ratta eller skriv undantag; beror aven pa BL-01."
+  }
+ ],
+ "forvantat": {
+  "PER_KATEGORI": {
+   "PRODUCT_REMEDIATION_REQUIRED": 38,
+   "SPEC_SYNC_REQUIRED": 0,
+   "LINT_SYNC_REQUIRED": 0,
+   "METHOD_TOOLING_REQUIRED": 0,
+   "DOCUMENTATION_ONLY": 0,
+   "ALREADY_SATISFIED": 78,
+   "NOT_REQUIRED": 42,
+   "UNSPECIFIED_NO_ACTION": 33,
+   "UNVERIFIABLE": 2,
+   "HUMAN_DECISION_REQUIRED": 59,
+   "HISTORICAL_OR_SUPERSEDED": 0
+  },
+  "KEDJA": {
+   "KANONISKA_KRAVRADER": 252,
+   "GALLANDE_KRAV": 177,
+   "UPPFYLLDA": 78,
+   "EJ_UPPFYLLDA": 38,
+   "YTBEROENDE_ELLER_FRANVARANDE": 59,
+   "OVERIFIERBARA": 2,
+   "PRODUKTREMEDIERING": 38
+  },
+  "DEDUP": {
+   "REQUIREMENT_COUNT": 38,
+   "OCCURRENCE_COUNT": 1463,
+   "REMEDIATION_UNIT_COUNT": 38,
+   "SOURCE_WRITE_COUNT": 38,
+   "KOPPLADE_SKRIVNINGAR": 0
+  },
+  "GRIND": {
+   "HUMAN_DECISION_REQUIRED": 12,
+   "UNVERIFIABLE_BLOCKING": 4,
+   "IDENTITY_COLLISIONS": 0,
+   "UNEXPLAINED_REQUIREMENTS": 5,
+   "UNEXPLAINED_OCCURRENCES": 0,
+   "PRODUKTENHETER_UTAN_PROVENIENS": 0,
+   "PRODUKTENHETER_UTAN_EVIDENS": 0,
+   "PRODUKTENHETER_UTAN_AGARE": 0,
+   "WRITE_READY": 0,
+   "BLOCKED": 38,
+   "FREEZE_READY": false
+  },
+  "LINT": {
+   "T-21 · METHOD_TOOLING_REQUIRED": 4,
+   "T-02 · LINT_SYNC_REQUIRED": 5,
+   "T-02 · HUMAN_DECISION_REQUIRED · BL-07": 3,
+   "T-08 · LINT_SYNC_REQUIRED": 1370,
+   "T-08 · HUMAN_DECISION_REQUIRED · BL-03": 26,
+   "T-11 · METHOD_TOOLING_REQUIRED": 4,
+   "T-14 · DOCUMENTATION_ONLY": 23,
+   "A11Y-01 · PRODUCT_REMEDIATION_REQUIRED · BL-01": 1,
+   "A11Y-02 · HUMAN_DECISION_REQUIRED · BL-10": 245,
+   "LC · HUMAN_DECISION_REQUIRED · BL-11": 307
+  },
+  "FINGERAVTRYCK": {
+   "REMEDIATION_IDENTITY_POPULATION": "b857cf68925e8fb2",
+   "REMEDIATION_CLASSIFICATION_STATUS": "0a801c1e6955eb2d",
+   "REQUIREMENT_SOURCE_SET": "52802f9a569339a1",
+   "PRODUCT_OCCURRENCE_SET": "c38bb802a5603dd8"
+  }
+ }
+}
