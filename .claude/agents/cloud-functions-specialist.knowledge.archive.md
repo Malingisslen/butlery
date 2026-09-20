@@ -20642,3 +20642,42 @@ Two prose questions the caller asked, both settled by reading:
 
 Not verified: whether BUT-1899's own scope was meant to include the `tryClearRoster`
 extraction that the "tracked separately" clause points at. Ticket scope, not code.
+
+
+### 2026-09-20 — BUT-2128: parity block moved to its own suite [ci-wiring]
+
+Reviewed the staged diff: `functions/package.json`,
+`functions/src/__tests__/enforce-group-minor-membership.test.ts`,
+`functions/src/__tests__/log-safe-conversation-id.test.ts` (new).
+
+Verified (index blob == worktree blob for all three, `git hash-object` vs
+`git ls-files -s`):
+- The moved block is byte-identical to the removed one apart from a leading
+  `console.log("")`: `direct_aBcDeFgHiJkLmNoPqRsT_zYxWvUtSrQpOnMlKjIhG`,
+  `direct_#12fc49f947ab`, `kPq7Rw2LmNc4Xy9Zt1Bv` all unchanged (`git diff --cached`
+  plus a python comparison of the two windows).
+- The new file's harness (`run`/`failed`/`check`, `${run - failed}/${run} passed`,
+  `process.exit(1)`) is equivalent to the one it left; the old file still prints its
+  summary from the `rosterTests().then`.
+- Dropping the `logSafeConversationId` import left nothing unused: `npx tsc --noEmit`
+  exits 0, and `noUnusedLocals` would have aborted ts-node with TS6133 otherwise.
+- The old header docstring ("unit tests for `isValidDocId` and `tryClearRoster`") is
+  true of what remains; the parity block was never named there.
+- `test:log-safe-conversation-id` is discovered by `scripts/run-ci-unit-tests.js`
+  (prefix `test:`, not `test:rules`/`test:integration:`), and
+  `.github/workflows/cloud-functions-unit.yml` triggers on `functions/src/**` and
+  `functions/package.json` in BOTH the push and pull_request blocks.
+- MEASURED today: `npm run test:log-safe-conversation-id` 2/2,
+  `npm run test:enforce-group-minor-membership` 26/26,
+  `node scripts/check-test-registration.js` OK (147 files, 4 accepted-debt warnings).
+- No stale pointer left: the Dart twin's "The TS half pins the same literal in ..."
+  line was updated to the new path in the same (staged) commit, and a repo-wide grep
+  for both suite paths found no other reference to the old location.
+
+One non-blocking prose finding: the new header calls the TS pin "one of two pinned
+literals" — the Dart file pins the same masked value in two tests
+(`maskConversationId` and the extension getter). Recommended striking the count
+clause rather than re-counting it.
+
+Verdict: pass (0 blocking). No marker written — this repo is in ledger mode and the
+reviewer never writes its own proof.

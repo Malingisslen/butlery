@@ -119,6 +119,23 @@
   Pinning the FILTER is not pinning the CALL SITE — the durable guard is a source lint in
   `test/architecture/`, which must strip comments first. **Re-check every claim written while a check
   was silenced** (BUT-1931).
+- **A source lint over an unmountable VIEW is the right instrument, and "can its bounded gap match
+  the wrong thing" is SETTLED BY MEASURING OFFSETS, never by eyeballing the bound.** Collapse the
+  file the way the lint does, then print every occurrence of each token as an offset from the
+  anchor: it must be unique, and every DECOY (the same call in a sibling handler) must sit beyond
+  the bound — one BEHIND it is unreachable by a forward lazy gap. That table also bounds safe
+  widening, and the tight direction is the SAFE one (false red). Two traps: the pattern encodes what
+  `dart format` emits, so every joint it may join or break needs ` ?`; and its RESIDUAL is a claim
+  about its own kill set — "a `watch`→`read` swap would pass here" was FALSE because the regex named
+  `\.watch` literally, and such a sentence is STRUCK, not reworded. **Grade the TWIN seam beside
+  it**: a round linting a defaulted `bool` but not the nullable CALLBACK next to it left the
+  ticket's user-visible half revertible, green (BUT-2126/BUT-2124, 2026-09-20).
+- **A `try/catch` around a CALLBACK DISPATCH above an awaited write owes a throwing-callback
+  fixture** — unwrapped the throw escapes the write closure, the write never issues, and the shared
+  error prefix says it was rolled back when nothing was written. Assert the write's call COUNT plus
+  `error isNull` (log-and-rethrow satisfies the count alone). The FAILED-write variant is NOT a
+  second branch: the two catches share no state — unless one starts setting state the other reads
+  (BUT-2124).
 - **A control that DISABLES ITSELF after one tap makes every later negative-tap assertion in the same
   test unfailable** — order the negative tap FIRST and assert zero (BUT-1904).
 - **ONE parameter feeding TWO axes is pinned on the easy axis only** (a grid's `spacing` used between

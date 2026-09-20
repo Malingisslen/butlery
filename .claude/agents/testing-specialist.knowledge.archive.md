@@ -39707,3 +39707,70 @@ nothing else. Grepped the repo for the old path and the old symbol: no live refe
 outside another session's worktree and `tasks/todo.md`'s own AC text.
 
 Verdict: pass (0 blocking).
+
+### 2026-09-20 — BUT-2126/BUT-2125/BUT-2124: grading a source lint by OFFSET, and the twin deletable seam
+
+Trigger: gate review, three rounds, of the weekly-menu-plan viewmodel + veckomeny view.
+Ticket set: BUT-2126 (pin the two "user moved on" restore conditions), BUT-2125 (widen the
+overflow restore from list-identity to membership), BUT-2124 (`onPublished(int placed)` fired at
+publish, before the save is awaited).
+
+**Round 1 — the blocking finding.** The round wrote a source lint
+(`test/architecture/placement_footer_wiring_test.dart`) for `MenuPlacementChoiceFooter.isPlacing`,
+correctly reasoning that the parameter defaults to `false` so deleting the argument leaves every
+suite green. It wrote NO lint for `onPublished`, which is optional AND nullable and carries
+BUT-2124's entire user-visible payoff. Grep: hits only in the VM's declaration, its `?.call`, the
+VM suite's one case, and the view. Nothing named `_onPlaceAutomatically`, `SnackBarUtils.hide` or
+`menuAutoPlacedToast` anywhere in `test/`. Both `onPublished: onPublished` (the forward) and the
+`(placed) { ... }` closure were silently revertible. Blocked on the asymmetry: the cheaper twin
+protected, the costlier one not, in the same change.
+
+**Round 2 — measuring the lint's bounded gaps.** The question "can `.{0,400}?` match something it
+should not" was settled with no probe, by collapsing the source the way the lint does and printing
+offsets relative to the anchor:
+
+| token | occurrences | offset from `_applyGeneratedToCalendar( onPublished: (placed) {` |
+|---|---|---|
+| `_setViewMode(VeckomenyViewMode.kalender)` | 2 | +83 (in-callback), +1678 (`_openPlacement`) |
+| `_showAutoPlacedToast(placed)` | 2 | +287 (in-callback), −2065 (before the anchor) |
+| `applyGeneratedMenu(` | 1 | −961 |
+| `MenuPlacementChoiceFooter(` | 1 | — |
+
+The decoy at +1678 against a 400 bound is what made the lint sound, AND what made it safe to widen
+to 800 in round 3 when the +287 margin looked tight. A decoy at −2065 is unreachable by a forward
+lazy gap. Also filed: the patterns encoded `dart format`'s current line breaking (a literal space
+before `.watch`), fixed with ` ?` joints; and the file's ORIGINAL residual claimed "a change from
+`watch` to `read` would pass here while freezing the button" — FALSE, because the regex names
+`\.watch<WeeklyMenuPlanViewModel>\(\)` literally. code-reviewer blocked on it; it was struck, not
+reworded.
+
+**Round 2 — the two conjuncts with empty kill sets.** `assignFromOverflow` gained four conjuncts;
+every new case left the tray EMPTY, so `if (_overflow.any(...)) return;` and `if (index < 0)
+return;` were both deletable-green. The fixtures added for them got the hard part right: each sits
+on a branch where the OTHER conjuncts cannot rescue the mutant — the duplicate case has the later
+distribution return an ENTRY-FREE plan so `placed` stays false, and the stranger case relies on
+`_publishThenSave` having rolled `_plan` back to an entry-free week. I filed that second dependency
+as an Info (it is the BUT-2067 "a probe has an expiry date" shape: had the rollback not fired,
+`placed` would be true, the mutant would early-return, and the case would go green for the wrong
+reason). Closed with `expect(viewModel.plan, same(initial));` as a premise assertion.
+
+**Round 3 — the reviewer-recommended guard.** code-reviewer's fix wrapped the `onPublished`
+dispatch in `try/catch`. Unpinned: deleting the wrapper left the suite green. Reachable — the real
+callback calls `_setViewMode` (→ `ServiceLocator.get<PersistenceService>()`) and
+`_showAutoPlacedToast` (→ `context.l10n`) — and without it a throwing callback skips the Firestore
+save entirely while `_executeWrite` reports `'Veckan kunde inte sparas – fördelningen ångrades'`:
+data loss reported as a rollback. Exactly the digest's "en vakt du blev TILLSAGD att lägga till är
+lika oprövad som en du hittat på". Closed with one case asserting `verify(save).called(1)` +
+`error isNull`; I checked the fixture issues no other save (no `seedTray`, `loadWeek` only reads),
+so the count is not satisfiable from elsewhere, and the two assertions carry different mutants
+(log-and-rethrow satisfies the count alone).
+
+**The ruling I was asked for.** Coordinator asked whether a callback that throws on the REFUSAL
+path (callback throws, then the save also fails) is a second branch. It is not: the callback's
+catch and the save's catch are sequential and share no state, so the conjunction's kill set is a
+subset of the union of two already-pinned cases, and the ordering mutant (dispatch moved below the
+await) is already killed — strictly better — by the unacked-save case asserting `announced == 1`
+while the save is pending. Total subsumption; a comment at most, and not even that here. It would
+become a real branch only if the callback's catch began setting state the save's catch reads.
+
+Verdicts: fail (1 blocking) → pass (0 blocking) → pass (0 blocking).

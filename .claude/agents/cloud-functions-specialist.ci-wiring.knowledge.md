@@ -13,6 +13,14 @@
   function" claim, rather than trusting a roster written here.
 
 ### CI / test wiring / ops
+- **A cross-language pinned literal has a POINTER on each side, and MOVING one
+  half breaks the other's repair instruction** — the drift comment tells the
+  next reader where the twin lives (`log-safe-conversation-id.test.ts` ⇄
+  `test/unit/core/utils/log_sanitizer_test.dart`), so a suite split updates
+  BOTH files in one commit, and a new hand-rolled suite carries its OWN
+  `run`/`failed`/`check`/exit harness plus its `test:*` line or it runs
+  nowhere. Never write how MANY places pin the value: the Dart side pins the
+  same masked literal in more than one test.
 - Post-deploy smoke: `firebase functions:list --json` + grep stable names.
   `deploy` exiting 0 does not prove callability; a run concluding `failure`
   does not prove the DEPLOY step failed.
