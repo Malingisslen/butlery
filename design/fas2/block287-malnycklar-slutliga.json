@@ -1,0 +1,31 @@
+{
+ "$om": "Fysiska malidentifierare · data-part-occurrence",
+ "TARGET_COUNT": 2,
+ "AMBIGUOUS_TARGETS": 0,
+ "DUPLICATE_TARGETS": 0,
+ "NEW_DATA_PART_OCCURRENCE": 2,
+ "DRY_RUN": false,
+ "VOCABULARY": "data-part-occurrence (fysisk delidentitet, aldrig semantisk agare)",
+ "rader": [
+  {
+   "TARGET": "installningar#66",
+   "FRAME": "installningar",
+   "ORD": 66,
+   "SOURCE_FILE": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "DC_TPL": 1397,
+   "ELEMENT": "<span> \"Svenska\"",
+   "SEMANTIC_ANCHOR_ON_ELEMENT": null,
+   "DATA_PART_OCCURRENCE": "current-value"
+  },
+  {
+   "TARGET": "kontosakerhet#21",
+   "FRAME": "kontosakerhet",
+   "ORD": 21,
+   "SOURCE_FILE": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "DC_TPL": 1892,
+   "ELEMENT": "<span> \"På\"",
+   "SEMANTIC_ANCHOR_ON_ELEMENT": null,
+   "DATA_PART_OCCURRENCE": "current-value"
+  }
+ ]
+}
