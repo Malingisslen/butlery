@@ -6041,3 +6041,82 @@ STORED negative (legacy rows, since the pre-BUT-2100 rule accepted any value) �
 `+1`, so only `>= 0` refuses it. Suite 22/22; the delete-`>= 0` mutant that went 21/21 green in
 round 2 now goes **21/22, killing that case alone**. The sentinel clause in the header was
 struck rather than narrowed a third time.
+
+## 2026-09-20 — comment-only diff on the `participants` roster block (firestore.rules)
+
+The staged change struck `resetUserData` from the roster comment's list of Cloud Functions
+that delete roster rows (no such symbol exists anywhere: `grep -rn resetUserData` over
+`*.ts/*.js/*.dart/*.json` outside `node_modules` returns nothing) and named the admin CLI
+script instead. Every added claim measured and true: `functions/src/admin/reset-user-data.ts`
+exists, has **0** `^export` lines and is absent from `functions/src/index.ts`; the npm script
+`reset-user-data` is `functions/package.json:167`; the `conversations` entry with
+`subcollections: ["participants","userSettings"]` is at `reset-collection-lists.ts:114-116`,
+inside `COLLECTIONS_TO_DELETE` (declared L34, `COLLECTIONS_TO_KEEP` only starts at L307), and
+the script walks that constant at L339/L466 with a recursive subcollection delete (L173).
+
+What the edit RE-ISSUED without measuring: the same sentence's head changed from "Cloud
+Functions only DELETE rows" to "**Deployed** Cloud Functions only DELETE rows", which makes
+the parenthetical enumeration a sharper, checkable claim than it was. It is now falsifiable
+and false: `ensureCategoryChat` (`functions/src/index.ts:137`, added 2026-08-23 by 5c45ba156,
+BUT-1856) calls BOTH `stageMemberAdditions` (creates `conversations/{id}/participants/{uid}`,
+`chat-group-writes.ts:281`) and `stageMemberRemoval` (deletes it, L352), so a deployed
+function both creates and deletes roster rows while being named in neither list. The
+paragraph's own "as of 2026-08-13" dating is the only thing carrying it, and the paragraph
+predates the function by ten days. Filed Info/prose; the fix is to STRIKE both parentheticals,
+not to add a third name that the next callable will falsify.
+
+Emulator sanity: `npm run test:rules:conversations` 95/95 green, so the file still parses and
+no verdict moved.
+
+### 2026-09-20, round 2 — the strike landed, and it exposed the sentence in front of it
+
+Both enumerations are gone; no third function name was written. The new sentence's added
+claims measure true: `admin-init.ts` initialises `firebase-admin` with application-default
+credentials (so the CLI script IS Admin SDK), and every deployed function reaches the roster
+through `firebase-admin` too — including `ensureCategoryChat`, the counter-example from round
+1, which is now covered by the generic wording instead of being missing from a list.
+
+Two things the strike surfaced, both pre-existing and both Info/prose:
+
+1. **"Every other writer … works under the Admin SDK" is universal, and `lib/` holds four
+   more roster writers.** `conversation_participant_module.dart` also has `addParticipant`
+   (`batch.set`, L55), `removeParticipant` (`batch.delete`, L120), `updateLastRead`
+   (`batch.update`, L144) and `migrateToSubcollection` (`batch.set`, L242) — client code, not
+   Admin SDK. Only `addParticipants` has an external caller today
+   (`conversation_mutation_module.dart:126`; the rules block itself records the other two as
+   caller-less), so the sentence is true of LIVE CALL PATHS and false of writers-in-code. The
+   rules two dozen lines below grant exactly those client writes (`allow update` arm u1,
+   `allow delete` on the subject), so the file contradicts itself if read strictly.
+2. **"in the same batch as the memberships mirror" no longer has a referent.**
+   `grep -rn conversation_memberships lib` returns ZERO, and BUT-1850 records the collection
+   as GONE; `addParticipants`' batch (L72–99) writes participant rows and nothing else. The
+   dating ("as of 2026-08-13") is what carries it, and the paragraph is now one sentence
+   shorter, so this clause bears more weight than it did.
+
+Parse check instead of a re-run: `initializeTestEnvironment` loading the file into the running
+emulator on a throwaway project id → OK. No rule word changed, so the 95/95 from round 1 stands.
+
+### 2026-09-20, round 3 — both strikes landed clean; the dating sentence read alone
+
+Final block (rules L1931–1939): quantifier gone, `in the same batch as the memberships
+mirror` gone, no orphan "in the" left, no replacement prose. Diff still comment-only and
+`firestore.rules` still the only staged file.
+
+Surviving dating sentence read ALONE — "as of 2026-08-13 the only client-written roster rows
+are those of DIRECT conversations, written by `ConversationParticipantModule.addParticipants`
+(feature flag `enable_subcollection_participants`, default TRUE)." — is unharmed by the
+strike: the removed clause was an added detail about HOW the write travelled, not a
+qualifier on WHICH rows. Both halves still measure true (module exists, sole external caller
+`conversation_mutation_module.dart:126`, flag default `true` at `feature_flag_service.dart:47`).
+The one residual imprecision is OLD and dated: `allow update` arm u1 and `allow delete` let a
+client write and delete its OWN row under a GROUP roster too, so "only … DIRECT" is exact for
+CREATE and loose for those two limbs. Both client methods are caller-less, the sentence
+carries its own date, and a THIRD edit to the same paragraph costs more than it buys — the
+block has now been rewritten three times in one session, which is itself the risk the
+strike-don't-reword rule exists to bound.
+
+New words "The deployed" carry no new claim: they replace a universal ("Every other writer")
+with a plain subject, so the sentence now asserts that named writers ARE Admin-SDK — measured
+— without asserting that the list is exhaustive. That is strictly weaker and strictly true.
+
+Parse re-verified after the edit (`initializeTestEnvironment`, throwaway project id): OK.
