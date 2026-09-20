@@ -127,3 +127,4 @@ lessons that only matter while writing or running tests.
 - En granskares VERDIKTRAD registreras separat från dess läsningar — be om den som ETT EGET meddelande och verifiera i liggaren, aldrig i rapporten (2026-09-20)
 - Ett upprepat UTFALL är inte en mekanism: öppna hooken/skriptet innan du skriver ned VARFÖR, annars bekräftar varje lyckad körning vanan och ingenting testar förklaringen (2026-09-20)
 - En strykning måste mäta BÅDA satserna i meningen den skär i — den flaggade satsen är inte automatiskt den falska, och sessionens egen utdata har ofta redan mätt det; samma mening fel två gånger = radera hela påståendet (BUT-1890, 2026-09-20)
+- Backticks (och `$(…)`, `&&`, `;`) i en heredoc-KROPP parsas av commit-grinden som ett muterande steg före commiten, oavsett om anropet är en riktig commit — skriv texten till en fil och kör med `-F <fil>` som ensamt anrop (2026-09-20)
