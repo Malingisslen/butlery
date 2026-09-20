@@ -36,6 +36,39 @@ function facettFor(u) {
   utanFacett.push({ REQUIREMENT_ID: u.id, CURRENT_STATUS: u.CURRENT_STATUS || null });
   return null;
 }
+
+/* -- malvardet. Var facett sager var sitt mal star. ------------------------
+   Vissa facetter pekar ut ett literalt varde i ett eget falt eller i sin
+   evidens. Andra har inget enskilt varde alls: malet ar en regel, och da sags
+   det rakt ut vilken regel. Ingenting hittas pa, och en facett utan kontrakt
+   faller stangt. */
+const VARDEKONTRAKT = {
+  SET_ACCESSIBLE_NAME:  { falt: 'REQUIRED', regel: 'handoffens namnmall for kontrollen' },
+  DECLARE_ROLE_AND_NAME: { falt: 'FINAL_ROLE', regel: 'roll ur upptackten, namn ur kallans egen text eller handoffen' },
+  ASSIGN_FINAL_ROLE:    { monster: /slutroll=([a-z]+)/, regel: 'Block 284:s slutroll' },
+  BIND_BORDER_CONTROL:  { falt: 'BORDER_TOKEN', regel: 'border.control' },
+  BIND_BORDER_SUBTLE:   { falt: 'BORDER_TOKEN', regel: 'border.subtle' },
+  APPLY_DARK_TOKEN:     { monster: /"(DARK_[A-Z_]+_TOKEN)":"([a-z.]+)"/, grupp: 2, regel: 'morklagesbeslutets token i evidensen' },
+  RENAME_STATE_GROUP:   { monster: /→\s*([a-z0-9-]+)/, regel: 'det beslutade nya gruppnamnet' },
+  BIND_COMPONENT_TOKENS_BOTH_THEMES: { regel: 'komponentens tokenpar i bada teman, beslut D5' },
+  CONFORM_GEOMETRY_OR_WRITE_EXCEPTION: { regel: 'tokens.json controls/typography, eller en skriven undantagsgrund' },
+  DRAW_VIEW_STATE:      { regel: 'vytillstandet ritas enligt Block 282:s flodesspec' },
+  COMPLETE_A11Y_CONTRACT: { regel: 'roll och namn sa att tillstandet far ett helt kontrakt' }
+};
+const utanKontrakt = [];
+function malvarde(u, facett, fran) {
+  if (fran != null) return { REQUIRED_VALUE: fran, REQUIRED_VALUE_KIND: 'LITERAL', REQUIRED_VALUE_SOURCE: 'gruppexpansionens malrad' };
+  const k = VARDEKONTRAKT[facett];
+  if (!k) { utanKontrakt.push({ REQUIREMENT_ID: u.id, FACET: facett }); return null; }
+  if (k.falt && u[k.falt] != null)
+    return { REQUIRED_VALUE: u[k.falt], REQUIRED_VALUE_KIND: 'LITERAL', REQUIRED_VALUE_SOURCE: 'enhetens ' + k.falt };
+  if (k.monster) {
+    const m = k.monster.exec(String(u.CURRENT_EVIDENCE || ''));
+    if (m) return { REQUIRED_VALUE: m[k.grupp || 1], REQUIRED_VALUE_KIND: 'LITERAL', REQUIRED_VALUE_SOURCE: 'enhetens evidens' };
+  }
+  return { REQUIRED_VALUE: null, REQUIRED_VALUE_KIND: 'RULE_DEFINED', REQUIRED_VALUE_SOURCE: k.regel };
+}
+
 const perKrav = new Map(G.grupper.map(g => [g.GROUP_REQUIREMENT_ID, g]));
 
 const rader = new Map();          // TARGET_SOURCE_KEY -> fysisk skrivning
@@ -81,11 +114,12 @@ for (const u of produkt) {
     // parallella listor gick inte att lasa: ett tillgangligt namn kunde hamna
     // under en kantbindning.
     if (!r.CHANGES.some(c => c.REQUIREMENT_ID === u.id)) {
+      const facett = facettFor(u);
       r.CHANGES.push({
         REQUIREMENT_ID: u.id,
-        FACET: facettFor(u),
+        FACET: facett,
         CURRENT_VALUE: t.CURRENT_VALUE || u.CURRENT_EVIDENCE || null,
-        REQUIRED_VALUE: t.REQUIRED_VALUE || u.REQUIRED || null,
+        ...malvarde(u, facett, t.REQUIRED_VALUE || u.REQUIRED || null),
         BLOCKERS: [u.BLOCKING_REASON, ...(u.BLOCKERS_EXTRA || [])].filter(Boolean)
       });
     }
@@ -103,7 +137,10 @@ const positionellaMal = lista.filter(r => /::del::(forsta|andra|barn-\d+|element
 const mangaTillEtt = lista.filter(r => r.REQUIREMENT_IDS.length > 1);
 const saknarFacettbindning = lista.flatMap(r => r.CHANGES.filter(c => !c.FACET).map(c => ({ NYCKEL: r.TARGET_SOURCE_KEY, ...c })));
 const obundnaNu = lista.flatMap(r => r.CHANGES.filter(c => c.CURRENT_VALUE == null).map(c => c.REQUIREMENT_ID));
-const obundnaKrav = lista.flatMap(r => r.CHANGES.filter(c => c.REQUIRED_VALUE == null).map(c => c.REQUIREMENT_ID));
+// Ett krav ar obundet bara nar varken ett varde eller en namngiven regel finns.
+const obundnaKrav = lista.flatMap(r => r.CHANGES.filter(c => !c.REQUIRED_VALUE_KIND).map(c => c.REQUIREMENT_ID));
+const regelbundna = lista.flatMap(r => r.CHANGES.filter(c => c.REQUIRED_VALUE_KIND === 'RULE_DEFINED'));
+const literala = lista.flatMap(r => r.CHANGES.filter(c => c.REQUIRED_VALUE_KIND === 'LITERAL'));
 const flertydiga = lista.filter(r => r.CHANGES.length !== r.REQUIREMENT_IDS.length);
 const h = x => createHash('sha256').update(JSON.stringify(x)).digest('hex').slice(0, 16);
 
@@ -125,6 +162,9 @@ const ut = {
   AMBIGUOUS_VALUE_TO_REQUIREMENT_BINDINGS: flertydiga.length,
   UNBOUND_CURRENT_VALUES: obundnaNu.length,
   UNBOUND_REQUIRED_VALUES: obundnaKrav.length,
+  REQUIRED_VALUE_LITERAL: literala.length,
+  REQUIRED_VALUE_RULE_DEFINED: regelbundna.length,
+  FACETS_WITHOUT_VALUE_CONTRACT: utanKontrakt.length,
   MISSING_EXISTING_SOURCE_TARGETS: utanMal.length,
   POSITIONAL_WRITE_OWNER_IDS: positionella,
   POSITIONAL_TARGET_KEYS: positionellaMal,
@@ -138,11 +178,13 @@ const ut = {
   UTAN_FACETT: saknarFacettbindning,
   rader: lista
 };
-if (saknarFacettbindning.length || flertydiga.length || obundnaKrav.length) {
+if (saknarFacettbindning.length || flertydiga.length || obundnaKrav.length || utanKontrakt.length) {
   console.error('✖ FAIL CLOSED: skrivplanen ar inte sjalvbeskrivande.');
   console.error('  utan facett: ' + saknarFacettbindning.length
     + ' | flertydiga rader: ' + flertydiga.length
-    + ' | krav utan mal-varde: ' + obundnaKrav.length);
+    + ' | krav utan mal-varde: ' + obundnaKrav.length
+    + ' | facetter utan vardekontrakt: ' + utanKontrakt.length);
+  for (const x of utanKontrakt.slice(0, 5)) console.error('    facett utan kontrakt: ' + x.FACET + ' (' + x.REQUIREMENT_ID + ')');
   for (const x of saknarFacettbindning.slice(0, 5)) console.error('    ' + x.REQUIREMENT_ID + ' status=' + x.CURRENT_STATUS);
   process.exit(1);
 }

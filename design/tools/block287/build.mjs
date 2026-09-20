@@ -491,13 +491,36 @@ export function klassa(snap, inv, M) {
     if (f.klass === 'KNOWN_CONTROL') e.kontroller++;
     perAgare.set(f.agare, e);
   }
+  // M7 igen, denna gang pa agarkartan: en NAMNformad agare som ingen forekomst
+  // gor ansprak pa, och vars namn ar den synliga texten hos en forekomst som ar
+  // klassad kontroll under en ANNAN agare, ar samma kontrolls pensionerade
+  // identitet. Den far inte ge en andra enhet med ett annat rollkrav.
+  const slugT = t => String(t || '').normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  const anspraktagenText = new Map();   // ram|textslug -> agare
+  for (const f of forek) {
+    const o = O.forekomst[f.DISCOVERY_OCCURRENCE_ID];
+    const agareStrang = (o && o.klass === 'KNOWN_CONTROL' && o.agare) ? o.agare
+      : (f.klass === 'KNOWN_CONTROL' ? f.PERSISTENT_SEMANTIC_OWNER_ID : null);
+    if (!agareStrang) continue;
+    const t = slugT((o && o.namn) || f.text || '');
+    if (f.art && t) anspraktagenText.set(f.art + '|' + t, agareStrang);
+  }
   const undertryckta = [];
   for (const [a, v] of Object.entries(O.agare)) {
     if (agarEnheter.has(a)) continue;
     const e = perAgare.get(a);
     if (e && e.alla > 0 && e.kontroller === 0) {
-      undertryckta.push({ AGARE: a, FOREKOMSTER: e.alla, KLASSER: [...e.klasser] });
+      undertryckta.push({ AGARE: a, FOREKOMSTER: e.alla, KLASSER: [...e.klasser], SKAL: 'ingen forekomst ar kontroll' });
       continue;
+    }
+    const nm = /^OWNER::([a-z0-9-]+)::(?:namn|text)::(.+)$/.exec(a);
+    if (!e && nm) {
+      const annan = anspraktagenText.get(nm[1] + '|' + nm[2]);
+      if (annan && annan !== a) {
+        undertryckta.push({ AGARE: a, FOREKOMSTER: 0, KLASSER: [], SKAL: 'pensionerad namnidentitet; samma kontroll ags av ' + annan });
+        continue;
+      }
     }
     agarEnheter.set(a, { fil: v.fil, grund: v.grund, roll: v.roll, radagare: true });
   }

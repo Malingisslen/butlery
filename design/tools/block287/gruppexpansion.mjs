@@ -397,8 +397,20 @@ for (const u of POP) {
       const e = viaSamladText(u.id) || (d.length === 2 ? viaSamladText('::' + d[0] + '::namn::' + d[1]) : null);
       if (e) { kalla = 'samlad texttrad i kallan (GR2)'; mal = [målrad(e, {})]; } }
   } else {
-    let e = agarUppslag(u.PERSISTENT_OWNER_ID, u.id) || agarUppslag(u.OWNER_ID, u.id) || agarUppslag(u.id, u.id);
-    kalla = 'agaruppslag mot kallans nyckelformer';
+    // GR0: bar enheten sina EGNA forekomster ar det den starkaste evidensen.
+    // Ankaret i id:t ar agarobjektet - for en rad med tva knappar pekar det pa
+    // raden, och bada knapparna skulle hamna pa samma mal med olika krav.
+    const egna = u.FOREKOMSTER || u.forekomster;
+    if (Array.isArray(egna) && egna.length) {
+      const el0 = egna.map(x => { const m = /^([a-z0-9-]+)#(\d+)$/.exec(String(x)); return m ? el(m[1], Number(m[2])) : null; }).filter(Boolean);
+      if (el0.length === egna.length) {
+        kalla = 'enhetens egna forekomster (GR0)';
+        mal = el0.map(x => målrad(x, {}));
+      }
+    }
+    let e = mal.length ? null
+      : (agarUppslag(u.PERSISTENT_OWNER_ID, u.id) || agarUppslag(u.OWNER_ID, u.id) || agarUppslag(u.id, u.id));
+    if (!mal.length) kalla = 'agaruppslag mot kallans nyckelformer';
     if (!e) { e = viaSamladText(u.id) || viaSamladText(u.OWNER_ID); if (e) kalla = 'samlad texttrad i kallan (GR2)'; }
     if (!e) { e = viaDeklarerat(u); if (e) kalla = 'kravets egen evidens: deklarerat namn (GR4)'; }
     if (!e) { e = viaGruppbehallare(u.id); if (e) kalla = 'gruppens minsta gemensamma forfader i kallan (GR5)'; }
