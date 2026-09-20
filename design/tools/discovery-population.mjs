@@ -13,7 +13,7 @@
 //
 // Ingen kallskrivning. Ingen egen detektor. Ingen klass ur tystnad.
 import { readFileSync, writeFileSync, readdirSync, mkdtempSync, rmSync, mkdirSync } from 'node:fs';
-import { resolve, join, dirname } from 'node:path';
+import { resolve, join, dirname, relative, isAbsolute } from 'node:path';
 import { tmpdir } from 'node:os';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
@@ -259,7 +259,10 @@ export async function population({ rot, filordning, historisk, historiskPopulati
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const arg = n => (process.argv.find(a => a.startsWith('--' + n + '=')) || '').split('=').slice(1).join('=');
   const UT = arg('ut'); if (!UT) { console.error('✖ ange --ut=<fil utanfor repot>'); process.exit(2); }
-  if (resolve(UT).startsWith(ROT)) { console.error('✖ --ut ligger i reporoten'); process.exit(2); }
+  // Prefixjamforelse pa strangen racker inte: "…/ren" ar prefix till "…/renut"
+  // utan att ligga inuti den. Vi jamfor pa katalogsgrans.
+  const inuti = (bana, rot) => { const r = relative(rot, resolve(bana)); return r === '' || (!r.startsWith('..') && !isAbsolute(r)); };
+  if (inuti(UT, ROT)) { console.error('✖ --ut ligger i reporoten'); process.exit(2); }
   const r = await population({ rot: ROT, filordning: arg('filordning') || 'stigande', historisk: arg('historisk') || null,
     historiskPopulation: arg('historisk-population') || null });
   mkdirSync(dirname(resolve(UT)), { recursive: true });
