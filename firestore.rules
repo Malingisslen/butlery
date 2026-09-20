@@ -1931,12 +1931,12 @@ service cloud.firestore {
       // Dated, because this paragraph will outlive its mechanism: as of
       // 2026-08-13 the only client-written roster rows are those of DIRECT
       // conversations, written by `ConversationParticipantModule.addParticipants`
-      // (feature flag `enable_subcollection_participants`, default TRUE) in the
-      // same batch as the memberships mirror. Cloud Functions only DELETE rows
-      // (`enforceGroupMinorMembership`, `removeChatGroupMember`,
-      // `resetUserData`, and the account-deletion cascade) except for
-      // `createChatGroup`/`addChatGroupMembers`, which create them under the
-      // Admin SDK where rules do not apply.
+      // (feature flag `enable_subcollection_participants`, default TRUE). The
+      // deployed Cloud Functions, and the admin CLI script
+      // `functions/src/admin/reset-user-data.ts` (`npm run reset-user-data`,
+      // which reaches these rows through the `conversations` entry in
+      // `admin/reset-collection-lists.ts`), work under the Admin SDK, where
+      // rules do not apply.
       match /participants/{participantId} {
         // One get(); the engine caches it per request and returns null for a
         // missing document, so this is a single read and never a CEL error
