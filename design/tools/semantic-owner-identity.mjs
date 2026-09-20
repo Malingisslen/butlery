@@ -281,6 +281,10 @@ export function semantiskAgare(k0) {
   const o = k.objekt || null;
   const b = monsterBindning(k);
   if (b) return { nyckel: 'OWNER::' + k.art + '::objekt::' + slug(o.ankare) + '::handling::' + b.handling, regel: 'BINDNING', monster: b.regel };
+  // KORRIGERINGSRUNDA 3 (M7): elementets EGET kallforfattade ankare ar den starkaste identiteten
+  // och gar fore monsterigenkanning. Ett handoffmonster kanns igen pa namnet, och namnet far
+  // aldrig bara identitet: en ren kopieandring skulle annars byta agare.
+  if (o && o.agerSjalv && o.ankare) return { nyckel: 'OWNER::' + k.art + '::objekt::' + slug(o.ankare), regel: 'EGET_ANKARE' };
   const monster = styrandeRegel(k);
   if (monster) {
     // M6 (FINAL FABLE AUDIT): objektankaret anvands nar monstret kraver det, eller nar regeln ar markt
