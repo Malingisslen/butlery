@@ -36,11 +36,10 @@ before the guard that depends on it would make that guard decorative.
   - AC4 (run): the whole directory is green locally before the lane is widened.
 - [x] BUT-2132 [Tier A] build — the message stops asserting an undo that may not have run.
   - AC1 (diff): the prefix passed to `_executeWrite` is the always-true
-    `Veckan kunde inte sparas`; the rollback wording is set only where the rollback ran.
+    `Veckan kunde inte sparas`.
   - AC2 (run) **[panel]**: three tests, one per path, each asserting the exact prefix — a
     pre-publish sync throw, a post-publish refusal with `_plan` unchanged, and a
-    post-publish refusal with `_plan` replaced mid-flight. All three ARE drivable, so the
-    fallback the critique allowed — shipping the plain prefix everywhere — was not needed.
+    post-publish refusal with `_plan` replaced mid-flight. All three ARE drivable.
 - [x] BUT-2129 [Tier A] build — the generate path announces at publish too.
   - AC1 (diff) **[panel]**: `_generateMenu` no longer branches on `applyGeneratedMenu`'s
     return value for the toast; proven by grep.
@@ -135,8 +134,8 @@ must-haves are folded into the criteria below and marked **[panel]**.
     rollback.
   - AC4 (diff) **[panel]**: `placed == 0` still shows no toast.
   - AC5 (diff) **[panel]**: the rollback message no longer says the distribution failed,
-    because the user watched it happen. **This is the detail for Malin**: the new Swedish
-    string is `Veckan kunde inte sparas – fördelningen ångrades`.
+    because the user watched it happen. **Superseded by Malin 2026-09-20**: she chose one
+    short message on every path, so the shipped string is `Veckan kunde inte sparas`.
 - [x] BUT-2125 [Tier B] build-review — an overlapping drag no longer loses the first recipe.
   - AC1 (diff): the restore tests MEMBERSHIP of the current tray, not identity of the list.
   - AC2 (diff) **[panel]**: it also refuses when a later distribution PLACED the recipe —

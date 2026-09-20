@@ -166,3 +166,4 @@ files in the same edit. Each entry below is its current verdict, cut to one line
 - Re-running `backfillRecipeCommentsDenorm` would undo the comment owner scrub; it is one-shot and says so (BUT-2112, 2026-09-19)
 - A client that read the recipe BEFORE an erasure can re-stamp `recipeOwnerId`/`sharedWithUserIds` on a NEW comment — accepted, BUT-1971's shape (BUT-2112, 2026-09-19)
 - `build-validation.yml` keeps the explicit `architecture_test.dart` path; the directory-wide lane is `architecture-validation.yml`. Do not widen it "for consistency" (BUT-2130, 2026-09-20)
+- RESOLVED 2026-09-20 — Malin: the weekly menu's save failure says `Veckan kunde inte sparas` on every path that reaches its error handler. Do not re-propose a second message that names the rollback (BUT-2132, 2026-09-20)

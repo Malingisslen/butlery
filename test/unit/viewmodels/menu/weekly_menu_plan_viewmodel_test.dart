@@ -602,7 +602,7 @@ void main() {
         expect(placed, isNull);
         expect(
           viewModel.error,
-          'Veckan kunde inte sparas – fördelningen ångrades',
+          'Veckan kunde inte sparas',
         );
         expect(viewModel.plan, same(week));
       });
@@ -2337,10 +2337,17 @@ void main() {
         },
       );
 
-      // BUT-2132: the message used to assert an undo unconditionally, but the
-      // undo is conditional and one path never publishes at all. One case per
-      // path, each pinning the exact prefix — a wrong-message guard that only
-      // covers the easy branch is the false green this repo keeps paying for.
+      // BUT-2132: the message used to assert an undo that the code may not have
+      // performed. Malin's call 2026-09-20 was one short message everywhere, so
+      // these cases pin the SAME string on a pre-publish throw, on a refusal
+      // that rolled back, and on a refusal whose rollback was skipped. What
+      // they catch is a future edit that makes one of those paths describe the
+      // undo again.
+      //
+      // The rolled-back case stopped discriminating when the second wording
+      // went: the `applyGeneratedMenu` case in the refused-save group above
+      // stages the same branch. It is kept for the one-case-per-path reading,
+      // not because it guards something alone.
 
       test(
         'BUT-2132: a throw BEFORE the publish does not claim an undo',
@@ -2374,7 +2381,7 @@ void main() {
       );
 
       test(
-        'BUT-2132: a refusal that DID roll back says the week was undone',
+        'BUT-2132: a refusal that DID roll back says only that it failed',
         () async {
           initial = _plan();
           when(
@@ -2402,7 +2409,7 @@ void main() {
 
           expect(
             viewModel.error,
-            'Veckan kunde inte sparas – fördelningen ångrades',
+            'Veckan kunde inte sparas',
           );
           expect(viewModel.plan, same(initial));
         },
@@ -2476,7 +2483,7 @@ void main() {
           expect(
             viewModel.error,
             'Veckan kunde inte sparas',
-            reason: 'nothing was undone — the later edit is still on screen',
+            reason: 'the same string as every other path',
           );
           expect(viewModel.plan, same(laterPlan));
         },
@@ -2506,8 +2513,7 @@ void main() {
 
         // The real callback reaches `PersistenceService` and `context.l10n`,
         // so a throw here is not hypothetical. Unwrapped it escapes the write
-        // closure, the save never issues, and the user is told the week was
-        // rolled back when nothing was written or undone.
+        // closure and the save never issues.
         await viewModel.applyGeneratedMenu(
           const {'middag': <Recipe>[]},
           onPublished: (_) => throw StateError('ui'),

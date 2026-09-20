@@ -5341,3 +5341,20 @@ cut to one line per decision; this file had no entry for it. Full reasoning:
   itself. A deletion of any OTHER file in that directory is still silent, and so is
   deleting the manifest group from inside the host file, because the lane proves the file
   runs rather than what it contains.
+
+- **RESOLVED 2026-09-20 — Malin: one save-failure message on the weekly menu
+  (BUT-2132, 2026-09-20).** `applyGeneratedMenu` sets `Veckan kunde inte sparas` on every
+  path that reaches its error handler, and says nothing about whether the week was rolled
+  back.
+
+  BUT-2132 shipped the richer form first: the plain string normally, upgraded to
+  `Veckan kunde inte sparas – fördelningen ångrades` on the path where the rollback
+  actually ran. That was correct — the rollback is conditional on
+  `identical(_plan, result.plan)`, and a synchronous throw from
+  `distributeFromGeneratedMenu` reaches the same handler having published nothing — and it
+  was built with a test per path. Malin chose the simpler form the same day, when asked
+  which wording she wanted.
+
+  The reasoning for the two-message design survives in git and in the reviewers' knowledge
+  archive, which is why this entry exists: a future session can read that argument and
+  restore it without knowing the question was already put to her and answered.

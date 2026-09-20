@@ -205,8 +205,8 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
       final error = calendarVm.error;
       if (error != null) {
         // The publish-first path may already have put the success toast on
-        // screen, and it carries an ÄNDRA action that opens placement for the
-        // week this refusal just rolled back. A queued error would sit behind
+        // screen, and it carries an ÄNDRA action that opens placement. A
+        // queued error would sit behind
         // it for its full duration; hiding it first is what stops the last
         // thing the user reads from being the one that is no longer true.
         SnackBarUtils.hide(context);

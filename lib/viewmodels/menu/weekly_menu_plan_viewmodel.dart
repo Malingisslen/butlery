@@ -356,11 +356,6 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
     final previousParsedRequest = _lastParsedRequest;
     _applyInFlight = true;
     int? placedCount;
-    // BUT-2132: whether the rollback below actually ran. The message cannot be
-    // decided before the operation, because the undo it would describe is
-    // conditional — and a throw from `distributeFromGeneratedMenu` reaches the
-    // same handler with nothing published and nothing undone.
-    var rolledBack = false;
     final ok = await _executeWrite(
       () async {
         final base = replaceExisting
@@ -393,8 +388,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
         notifyListeners();
         _publishInFlight = false;
         // A caller's callback does UI work, and it sits inside the write
-        // closure: letting it throw would skip the save entirely and then
-        // report the week as rolled back when nothing was written or undone.
+        // closure: letting it throw would skip the save entirely.
         try {
           onPublished?.call(newIds.length);
         } catch (e) {
@@ -413,21 +407,17 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
             _overflow = previousOverflow;
             _recentlyPlacedEntryIds = previousPlacedIds;
             _lastParsedRequest = previousParsedRequest;
-            rolledBack = true;
             notifyListeners();
           }
           rethrow;
         }
       },
-      // True on every path that reaches it, including the ones where nothing
-      // was published and nothing was undone.
+      // BUT-2132, Malin's call 2026-09-20: ONE message on every path. The
+      // rollback this method may or may not have performed is deliberately not
+      // described, because a message that names it is false wherever the undo
+      // was skipped — and that branch is reachable.
       errorPrefix: 'Veckan kunde inte sparas',
     );
-    // BUT-2124/BUT-2132: only here is the week known to have been on screen and
-    // then taken away, which is the part the user needs told.
-    if (rolledBack && !isDisposed) {
-      setError('Veckan kunde inte sparas – fördelningen ångrades');
-    }
     _applyInFlight = false;
     // BUT-1987: the footer reads this through `context.watch`, so the release
     // has to be announced or the button never stops spinning.
