@@ -923,6 +923,33 @@ void main() {
     });
   });
 
+  // BUT-2130: a CI lane names this DIRECTORY, which buys coverage by
+  // construction.
+  //
+  // It cannot see every way a file goes silent — a `main()` registering
+  // nothing, or an outer `skip:`, still collect as zero tests and pass. It
+  // catches the one that has an obvious wrong spelling: a file in here that
+  // the runner will not pick up at all.
+  group('architecture suite manifest (BUT-2130)', () {
+    test('every .dart file in test/architecture is collectable as a test', () {
+      final stray = Directory('test/architecture')
+          .listSync(recursive: true)
+          .whereType<File>()
+          .map((f) => f.uri.pathSegments.last)
+          .where((name) => name.endsWith('.dart'))
+          .where((name) => !name.endsWith('_test.dart'))
+          .toList();
+
+      expect(
+        stray,
+        isEmpty,
+        reason:
+            'the CI lane runs `flutter test test/architecture/`, which collects '
+            'only *_test.dart — anything else here is a guard nobody runs',
+      );
+    });
+  });
+
   group('File Organization', () {
     test('test directory mirrors lib structure', () {
       final testDir = Directory('test');

@@ -5319,3 +5319,25 @@ cut to one line per decision; this file had no entry for it. Full reasoning:
   2026-09-19).** It reads comments lacking `recipeOwnerId` as unmigrated and, for a deleted
   recipe, writes `recipeOwnerId = authorId` and `sharedWithUserIds = []`. Accepted because
   the migration was one-shot (BUT-458); its header now says not to run it again.
+
+- **`build-validation.yml` keeps its narrow architecture-test path (BUT-2130,
+  2026-09-20).** `architecture-validation.yml` now runs the whole `test/architecture/`
+  directory, which is what BUT-2130 was filed for: three guards in there ran in no CI lane
+  at all. The second lane deliberately still names `architecture_test.dart` alone.
+
+  The reason is that no in-suite guard can detect its own deletion — a deleted test file
+  simply stops running, and nothing reddens. Every anchor that lives inside
+  `test/architecture/` is therefore removable by an edit confined to `test/architecture/`,
+  including the manifest guard added in the same ticket. A mutual pair was considered and
+  refused: having a second file assert the first exists catches a rename of either, but
+  deleting the checker leaves no stray for the manifest to find, so it moves the hole one
+  file over rather than closing it.
+
+  The explicit path in `build-validation.yml` is the only anchor outside the guarded set.
+  Other references to `architecture_test.dart` exist in the repo, but all of them are
+  prose — none executes the file, so none fails when it disappears.
+
+  Residual, accepted: this lane catches a rename or deletion of `architecture_test.dart`
+  itself. A deletion of any OTHER file in that directory is still silent, and so is
+  deleting the manifest group from inside the host file, because the lane proves the file
+  runs rather than what it contains.

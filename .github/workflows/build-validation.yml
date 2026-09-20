@@ -57,6 +57,16 @@ jobs:
         echo "🔍 Running Flutter analyze with strict mode..."
         flutter analyze --fatal-infos --fatal-warnings
 
+    # BUT-2130: this path stays NARROW on purpose. No in-suite guard can
+    # detect its own deletion, so every anchor inside test/architecture/ is
+    # removable by an edit confined to that directory. This path is the anchor
+    # outside it, and a rename or deletion of the manifest host fails here.
+    # The lane that runs the whole directory is architecture-validation.yml.
+    #
+    # That this is the only anchor is derivable, not asserted:
+    #   git grep -n "architecture_test.dart" -- .github lefthook.yml
+    # returns this line alone. Every other reference in the repo is prose and
+    # executes nothing.
     - name: Run architecture tests (fail on violations)
       run: |
         echo "🏗️ Running architecture tests - must pass to continue..."

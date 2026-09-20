@@ -1,3 +1,81 @@
+# Sprint 2026-09-20 runda 7 (sprint-execute, /loop, unattended)
+
+Round 6's three loose ends, in the code that round already opened. Step-0 measurements,
+taken against `main` before planning:
+
+- BUT-2130: `.github/workflows/architecture-validation.yml:154` and
+  `build-validation.yml:63` each name `test/architecture/architecture_test.dart` by hand.
+  `ls test/architecture/` shows four files; `flutter test test/architecture/` runs 41 tests,
+  all green locally. No other lane reaches that directory.
+- BUT-2132: `applyGeneratedMenu` passes a fixed `errorPrefix` to `_executeWrite`, which sets
+  it on ANY throw in the closure — including a synchronous throw from
+  `distributeFromGeneratedMenu` before any publish, and a post-publish refusal whose
+  rollback was skipped by `identical(_plan, result.plan)`.
+- BUT-2129: `_generateMenu` still reads `applyGeneratedMenu`'s return value to decide the
+  toast, so offline it never appears.
+- QA's two premises, checked: `stream_subscription_disposal_test.dart` carries
+  `@Tags(['architecture'])` and `dart_test.yaml` does not declare that tag; `skip:` IS
+  declared there with `skip: true`.
+
+Router on the batch's file union: `{"tier": "single"}` — one blind critique, convened
+before the build (QA / Test Engineer, the role the router matched on the workflow files,
+which decide what protects everything else). Its must-haves are folded in below and marked
+**[panel]**. It also set the ORDER, because widening a lane that has never run on ubuntu
+before the guard that depends on it would make that guard decorative.
+
+- [ ] BUT-2130 part 1 [Tier A] build — one lane, plus the two things that keep a directory
+      from hiding a file.
+  - AC1 (diff): `architecture-validation.yml` names the DIRECTORY, not one file.
+  - AC2 (diff) **[panel]**: a manifest assertion in `architecture_test.dart` enumerates
+    `test/architecture/` recursively and fails on a `.dart` file the runner will not
+    collect — the loud failure an explicit path gave and a glob does not. It tests the
+    FILENAME, which is a proxy: a `foo_test.dart` whose `main()` registers nothing still
+    passes, and the guard's own comment says so.
+  - AC3 (diff) **[panel]**: `dart_test.yaml` declares the `architecture` tag with a
+    description and no `skip` key.
+  - AC4 (run): the whole directory is green locally before the lane is widened.
+- [ ] BUT-2132 [Tier A] build — the message stops asserting an undo that may not have run.
+  - AC1 (diff): the prefix passed to `_executeWrite` is the always-true
+    `Veckan kunde inte sparas`; the rollback wording is set only where the rollback ran.
+  - AC2 (run) **[panel]**: three tests, one per path, each asserting the exact prefix — a
+    pre-publish sync throw, a post-publish refusal with `_plan` unchanged, and a
+    post-publish refusal with `_plan` replaced mid-flight. If the third cannot be driven
+    deterministically, ship the plain prefix everywhere and say so rather than claim
+    coverage that does not exist.
+- [ ] BUT-2129 [Tier A] build — the generate path announces at publish too.
+  - AC1 (diff) **[panel]**: `_generateMenu` no longer branches on `applyGeneratedMenu`'s
+    return value for the toast; proven by grep.
+  - AC2 (diff) **[panel]**: `placement_footer_wiring_test.dart` pins the `_generateMenu`
+    callsite the way it pins the footer's — no test mounts `VeckomenyView`, so a source
+    lint is what can guard it.
+  - AC3 (run): the existing publish-time case still proves `onPublished` fires with the
+    right count while the write never acks.
+- [ ] BUT-2130 part 2 [Tier A] build — `build-validation.yml` stays NARROW, on purpose.
+  The reviewer's ruling, taken: no in-suite guard can detect its own deletion, because a
+  deleted test file simply stops running. An anchor inside `test/architecture/` is
+  removable by an edit confined to `test/architecture/`. The explicit path in
+  `build-validation.yml` is the anchor outside that set; the workflow comment carries the
+  grep that derives it.
+  - AC1 (diff): the narrow path carries a comment saying it is the deliberate anchor and
+    why, so the next reader does not "finish the job" by widening it.
+  - AC2 (diff): nothing in the plan or the code claims the class is closed. The residual
+    that stands: a deletion of `architecture_test.dart` itself is caught by this lane, and
+    a deletion of any OTHER file in the directory is still silent.
+
+## Needs you (Tier D)
+- none this run, unless BUT-2130 part 2's lane has not reported by close-out.
+
+## Deviation log
+
+- [deviation] BUT-2130 part 2 inverted during the round. The plan was to widen the second
+  lane after the first reported green on ubuntu; the reviewer showed that doing so removes
+  the last anchor outside the guarded directory, and that the mutual-guard alternative I
+  proposed leaves the same hole one file over — deleting the checker reddens nothing,
+  because a deleted file leaves no stray. The narrow path is now the deliberate anchor,
+  and the `run` criterion that waited on the ubuntu lane is gone with it.
+
+---
+
 # Sprint 2026-09-20 runda 6 (sprint-execute, /loop, unattended)
 
 Step-0 measurements, taken against `main` before planning:

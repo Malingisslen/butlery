@@ -29,6 +29,11 @@ tags:
   network:
     description: Tests that make network requests
     
+  # BUT-2130: carried by `test/architecture/stream_subscription_disposal_test.dart`
+  # and undeclared until that ticket. Deliberately no `skip:` key.
+  architecture:
+    description: Source-level architecture and wiring guards
+
   # Tests that are currently broken
   skip:
     skip: true

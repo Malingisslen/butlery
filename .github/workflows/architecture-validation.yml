@@ -151,7 +151,7 @@ jobs:
     - name: Run architecture tests
       run: |
         echo "🏗️ Running architecture compliance tests..."
-        flutter test test/architecture/architecture_test.dart
+        flutter test test/architecture/
 
     # Single validator run: tee stdout to the report file, fail the job on non-zero exit.
     - name: Run architecture validation tool
