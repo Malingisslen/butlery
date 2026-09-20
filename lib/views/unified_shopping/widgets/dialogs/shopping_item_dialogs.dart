@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/viewmodels/unified_shopping_viewmodel.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
+import 'package:butlery/services/shopping/ingredient_categorizer.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/styled/styled_input.dart';
 import 'package:butlery/core/utils/swedish_decimal_input.dart';
@@ -417,214 +418,17 @@ class _EditItemDialogState extends State<_EditItemDialog> {
   }
 }
 
-/// Category auto-suggestion based on Swedish ingredient names.
+/// Category auto-suggestion for the item-name field, delegating to the
+/// maintained engine in `lib/services/shopping/ingredient_categorizer.dart`
+/// (BUT-1890). The same engine builds the shopping list from the weekly menu,
+/// so a name categorises identically wherever it is typed.
 ///
-/// **This is a DUPLICATE, and `IngredientCategorizer` is the source of truth.**
-/// That one is the maintained engine (`lib/services/shopping/ingredient_categorizer.dart`,
-/// used by `menu_shopping_aggregator.dart` and `shopping_list_generator.dart`).
-/// This map is a second, older implementation of the same job, and it still
-/// carries defects that were fixed centrally and never ported back. Measured by
-/// running this class, not by reading it (BUT-1890, 2026-08-17):
-///
-///     Rostbiff -> dairy        Ostbågar -> dairy       Kokosmjölk -> dairy
-///     Rostat bröd -> dairy     Diskborste -> drinks    Vitlökspulver -> fruit_veg
-///
-/// FIVE of those six ANSWERS CHANGE when routed centrally; only four become
-/// right. `Ostbågar` does NOT change — `IngredientCategorizer` answers `dairy`
-/// too, deliberately: its cheese rule is "at least one word boundary", because
-/// cheese legitimately LEADS a Swedish compound ("ostskiva"). And
-/// `Vitlökspulver` only moves `fruit_veg` -> `veg`; it is a spice in neither
-/// engine. So do not read the table as six bugs.
-///
-/// The cause of the rest is a lowercased unbounded `contains` over ordered
-/// buckets, first match wins: `ost` matches inside "r-ost-biff", and the
-/// two-letter `te` makes a dish brush a beverage. BUT-1666 replaced exactly that
-/// bare `ost` with Swedish-aware lookarounds. BUT-1004 split meat/fish and
-/// fruit/veg into the fine-grained `meat`/`fish`/`fruit`/`veg`; the legacy
-/// `meatFish`/`fruitVeg` constants survive for stored documents and are still
-/// user-selectable, but `IngredientCategorizer` no longer PRODUCES them — while
-/// this class still does.
-///
-/// One trap for whoever routes this (BUT-1890): `IngredientCategorizer.categorize`
-/// returns `ShoppingCategory.other` for no match, never null, and `_suggestCategory`
-/// relies on null to leave the field alone. A naive delegation stamps `other` into
-/// every unrecognised item.
-///
-/// Do NOT extend the map to patch a case. Route this through
-/// `IngredientCategorizer` instead — that is BUT-1890, kept separate because it
-/// changes what the user sees. Until then, `category_suggester_test.dart` pins
-/// what this DOES, not what it should do.
+/// `categorize` returns [ShoppingCategory.other] for no match, never null,
+/// and the caller relies on null to leave the field alone — so `other` is
+/// mapped back to null here rather than stamped into every unknown item.
 class _CategorySuggester {
-  static const Map<String, List<String>> _categoryKeywords = {
-    ShoppingCategory.dairy: [
-      'mjölk',
-      'grädde',
-      'ost',
-      'smör',
-      'yoghurt',
-      'fil',
-      'crème fraiche',
-      'kvarg',
-      'keso',
-      'parmesan',
-      'mozzarella',
-      'cheddar',
-      'brie',
-      'cream cheese',
-      'ricotta',
-      'mascarpone',
-      'feta',
-    ],
-    ShoppingCategory.fruitVeg: [
-      'äpple',
-      'banan',
-      'apelsin',
-      'citron',
-      'lime',
-      'tomat',
-      'gurka',
-      'paprika',
-      'lök',
-      'vitlök',
-      'morot',
-      'potatis',
-      'sallad',
-      'spenat',
-      'broccoli',
-      'blomkål',
-      'zucchini',
-      'aubergine',
-      'avokado',
-      'mango',
-      'ananas',
-      'druvor',
-      'jordgubbar',
-      'blåbär',
-      'hallon',
-      'päron',
-      'persika',
-      'plommon',
-      'kiwi',
-      'champinjon',
-      'svamp',
-      'selleri',
-      'purjolök',
-      'rödbetor',
-      'kål',
-      'vitkål',
-      'rödkål',
-    ],
-    ShoppingCategory.meatFish: [
-      'kyckling',
-      'nötkött',
-      'fläsk',
-      'lamm',
-      'fisk',
-      'lax',
-      'torsk',
-      'räkor',
-      'bacon',
-      'korv',
-      'köttfärs',
-      'biff',
-      'entrecote',
-      'filé',
-      'kotlett',
-      'skinka',
-      'kalkon',
-      'anka',
-      'tonfisk',
-      'sill',
-      'makrill',
-      'musslor',
-      'krabba',
-      'hummer',
-    ],
-    ShoppingCategory.breadGrain: [
-      'bröd',
-      'limpa',
-      'fralla',
-      'bulle',
-      'croissant',
-      'bagel',
-      'knäckebröd',
-      'tortilla',
-      'pitabröd',
-      'hamburger',
-      'korvbröd',
-    ],
-    ShoppingCategory.pantry: [
-      'ris',
-      'pasta',
-      'spaghetti',
-      'nudlar',
-      'mjöl',
-      'socker',
-      'salt',
-      'peppar',
-      'olja',
-      'olivolja',
-      'vinäger',
-      'soja',
-      'ketchup',
-      'senap',
-      'majonnäs',
-      'honung',
-      'sylt',
-      'müsli',
-      'flingor',
-      'havregryn',
-      'linser',
-      'bönor',
-      'kikärtor',
-      'kokosmjölk',
-      'tomatpuré',
-      'krossade tomater',
-      'buljong',
-      'fond',
-    ],
-    ShoppingCategory.drinks: [
-      'juice',
-      'läsk',
-      'vatten',
-      'mineralvatten',
-      'kaffe',
-      'te',
-      'öl',
-      'vin',
-      'cider',
-      'smoothie',
-    ],
-    ShoppingCategory.frozen: [
-      'glass',
-      'frysta',
-      'fryst',
-      'frysvaror',
-      'fryspizza',
-    ],
-    ShoppingCategory.snacks: [
-      'chips',
-      'nötter',
-      'popcorn',
-      'godis',
-      'choklad',
-      'kex',
-      'kakor',
-    ],
-  };
-
-  /// Suggest a category based on the item name
   static String? suggest(String itemName) {
-    final lowerName = itemName.toLowerCase();
-
-    for (final entry in _categoryKeywords.entries) {
-      for (final keyword in entry.value) {
-        if (lowerName.contains(keyword)) {
-          return entry.key;
-        }
-      }
-    }
-
-    return null;
+    final category = IngredientCategorizer.categorize(itemName);
+    return category == ShoppingCategory.other ? null : category;
   }
 }

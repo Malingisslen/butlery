@@ -69,9 +69,9 @@
   {
     "id": "ci-011",
     "input": "rostat bröd",
-    "expected": "dry_goods",
+    "expected": "bread_grain",
     "tolerance": "exact",
-    "notes": "BUT-1666: 'rostat' carries 'ost' mid-word and used to land in dairy."
+    "notes": "BUT-1890: bread is its own aisle now — the head-noun rule claims any name carrying 'bröd' before the dry-goods rule sees it."
   },
   {
     "id": "ci-012",
@@ -83,9 +83,9 @@
   {
     "id": "ci-013",
     "input": "valnötter",
-    "expected": "other",
+    "expected": "snacks",
     "tolerance": "exact",
-    "notes": "BUT-1666: nuts wear 'nöt' as a suffix and used to land in meat."
+    "notes": "BUT-1890: nuts are a snack aisle."
   },
   {
     "id": "ci-014",
@@ -174,30 +174,30 @@
   {
     "id": "ci-026",
     "input": "jordnötter",
-    "expected": "other",
+    "expected": "snacks",
     "tolerance": "exact",
-    "notes": "BUT-1666 AC: nuts wear 'nöt' as a compound TAIL and used to land in meat."
+    "notes": "BUT-1890: nuts are a snack aisle."
   },
   {
     "id": "ci-027",
     "input": "hasselnötter",
-    "expected": "other",
+    "expected": "snacks",
     "tolerance": "exact",
-    "notes": "BUT-1666 AC."
+    "notes": "BUT-1890: nuts are a snack aisle."
   },
   {
     "id": "ci-028",
     "input": "cashewnötter",
-    "expected": "other",
+    "expected": "snacks",
     "tolerance": "exact",
-    "notes": "BUT-1666 AC."
+    "notes": "BUT-1890: nuts are a snack aisle."
   },
   {
     "id": "ci-029",
     "input": "rostade cashewnötter",
-    "expected": "other",
+    "expected": "snacks",
     "tolerance": "exact",
-    "notes": "BUT-1666 AC: carries BOTH collisions at once — 'ost' inside 'rostade' (dairy) and 'nöt' inside 'cashewnötter' (meat). Both must miss."
+    "notes": "BUT-1890: nuts are a snack aisle. This input is the DOUBLE-collision control — 'ost' inside 'rostade' and 'nöt' inside 'cashewnötter' — so reaching snacks at all requires both boundaries to hold."
   },
   {
     "id": "ci-030",

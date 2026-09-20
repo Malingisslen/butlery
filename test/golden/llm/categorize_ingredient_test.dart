@@ -72,6 +72,11 @@ const _expectedPassing = <String>{
   // `grädd` + `fil`, so neither `contains('grädde')` nor any bare-word `fil`
   // rule ever reached it. Fixed in the same change that added the case.
   'ci-037',
+  // BUT-1890 changed no id in this set — it changed what six of them EXPECT,
+  // in cases.json: ci-011 ("rostat bröd") to bread_grain, and ci-013 / ci-026
+  // / ci-027 / ci-028 / ci-029 (the nut family) to snacks. Set equality cannot
+  // show that, so it is named here: a pass-set that still holds 37 ids after a
+  // vocabulary change is not by itself evidence that nothing moved.
 };
 
 void main() {
