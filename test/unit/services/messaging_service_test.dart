@@ -1666,9 +1666,7 @@ void main() {
 
       // A REAL `Message`, not this file's `FakeMessage`. The strip rebuilds the
       // message with `copyWith`, and a `Fake` throws on any member it does not
-      // implement — which `_filterBlocked`'s fail-open catch then swallows,
-      // serving the page unfiltered. With a `Fake` here the strip case measures
-      // the catch rather than the filter.
+      // implement.
       Message pollMessage() => Message(
         id: 'msg-poll',
         conversationId: conversationId,

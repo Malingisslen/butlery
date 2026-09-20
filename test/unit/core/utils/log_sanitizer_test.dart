@@ -149,6 +149,9 @@ void main() {
       // IF THIS FAILS, one of the two sides drifted. Fix the drift. Do NOT
       // re-baseline this literal to whatever Dart now prints — that "fixes"
       // the test and kills the contract in the same commit.
+      //
+      // The TS half pins the same literal in
+      // `functions/src/__tests__/log-safe-conversation-id.test.ts`.
       expect(
         LogSanitizer.maskConversationId(directId),
         'direct_#12fc49f947ab',
