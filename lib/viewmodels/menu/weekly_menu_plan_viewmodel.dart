@@ -327,11 +327,18 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
   /// call was skipped or failed) so the view can render the
   /// "N recept placerade" toast. Newly placed entry ids are tracked for the
   /// "NY" badge via [isRecentlyPlaced].
+  /// [onPublished] fires the moment the distributed week is on screen, with
+  /// the number of entries placed — BEFORE the save is awaited. Offline the
+  /// save never acks, so a caller that waits for the return value shows the
+  /// user nothing at all (BUT-2124). It is the same publish-first contract
+  /// BUT-1975 gave the plan itself. A later refusal rolls the week back and
+  /// surfaces the error, so a caller must be able to undo what it did here.
   Future<int?> applyGeneratedMenu(
     Map<String, List<Recipe>> generated, {
     DateTime? now,
     ParsedMenuRequest? parsedRequest,
     bool replaceExisting = false,
+    void Function(int placed)? onPublished,
   }) async {
     // A refused second tap returns null WITHOUT setting an error: on this
     // surface `LoadingStateBuilder` ranks error above data, so a message here
@@ -380,6 +387,14 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
         placedCount = newIds.length;
         notifyListeners();
         _publishInFlight = false;
+        // A caller's callback does UI work, and it sits inside the write
+        // closure: letting it throw would skip the save entirely and then
+        // report the week as rolled back when nothing was written or undone.
+        try {
+          onPublished?.call(newIds.length);
+        } catch (e) {
+          AppLogger.error('applyGeneratedMenu: onPublished threw', e);
+        }
         try {
           await _service.save(result.plan);
         } catch (_) {
@@ -398,7 +413,9 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
           rethrow;
         }
       },
-      errorPrefix: 'Kunde inte fördela recepten',
+      // BUT-2124: on the SAVE path the user has already watched the week
+      // appear, so the message has to account for the rollback.
+      errorPrefix: 'Veckan kunde inte sparas – fördelningen ångrades',
     );
     _applyInFlight = false;
     // BUT-1987: the footer reads this through `context.watch`, so the release
@@ -600,6 +617,8 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
     // is the recipe's only remaining home — `_fetchWeek` does not repopulate
     // it — so the restore is what keeps a refused save from losing it.
     final before = _overflow;
+    final targetWeek = currentWeekStart;
+    final index = before.indexWhere((r) => r.id == recipe.id);
     final pruned = before.where((r) => r.id != recipe.id).toList();
     if (pruned.length != before.length) {
       _overflow = pruned;
@@ -607,12 +626,25 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
     }
     final saved = await assignRecipe(day: day, slot: slot, recipe: recipe);
     if (isDisposed || saved) return;
-    // Only while the tray is still the one this drop pruned: a later
-    // distribution may have replaced it while the refusal was in flight.
-    if (identical(_overflow, pruned)) {
-      _overflow = before;
-      notifyListeners();
-    }
+    // BUT-2125: restore into whatever tray is resident NOW, not only the one
+    // this drop pruned. The old identity test lost the recipe outright when a
+    // SECOND drop pruned its own chip first: the tray was then that drop's
+    // list, the test failed, and the recipe was in neither the tray nor the
+    // week. The conditions below all have to hold before it goes back:
+    //   - the chip was in the tray to begin with,
+    //   - the user is still on the week this drop targeted,
+    //   - the recipe is not already in the tray (a duplicate chip), and
+    //   - no entry on the resident week carries it, which is what a later
+    //     re-distribution that actually placed it would leave behind.
+    if (index < 0) return;
+    if (currentWeekStart != targetWeek) return;
+    if (_overflow.any((r) => r.id == recipe.id)) return;
+    final placed = _plan?.entries.any((e) => e.recipeId == recipe.id) ?? false;
+    if (placed) return;
+    final restored = List<Recipe>.of(_overflow);
+    restored.insert(index.clamp(0, restored.length), recipe);
+    _overflow = restored;
+    notifyListeners();
   }
 
   /// BUT-1043: copy every entry from the visible week into the following

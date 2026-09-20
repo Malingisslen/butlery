@@ -600,7 +600,10 @@ void main() {
         });
 
         expect(placed, isNull);
-        expect(viewModel.error, 'Kunde inte fördela recepten');
+        expect(
+          viewModel.error,
+          'Veckan kunde inte sparas – fördelningen ångrades',
+        );
         expect(viewModel.plan, same(week));
       });
     });
@@ -1947,6 +1950,473 @@ void main() {
 
         expect(viewModel.overflow, isEmpty);
       });
+    });
+
+    // BUT-2125/BUT-2126: the NEGATIVE branch of the two restore conditions.
+    //
+    // `_publishThenSave` and `assignFromOverflow` both refuse to put state back
+    // when the user has moved on while a refusal was in flight. That the
+    // conditions EXIST was pinned; that they discriminate was not — no case let
+    // a later change replace the plan or the tray first, so an unconditional
+    // restore passed every assertion.
+    group('a refusal that lands after the user moved on', () {
+      late WeeklyMenuPlan initial;
+
+      Future<({Recipe a, Recipe b})> seedTray() async {
+        initial = _plan();
+        when(
+          () => mockService.readWeek(any()),
+        ).thenAnswer((_) async => _read(initial));
+        await viewModel.loadWeek(initial.weekStartDate);
+        final a = _recipe(id: 'o-a', title: 'Först');
+        final b = _recipe(id: 'o-b', title: 'Sedan');
+        when(
+          () => mockService.distributeFromGeneratedMenu(
+            generated: any(named: 'generated'),
+            weekStart: any(named: 'weekStart'),
+            existing: any(named: 'existing'),
+            now: any(named: 'now'),
+            dayPins: any(named: 'dayPins'),
+          ),
+        ).thenReturn(
+          WeeklyMenuDistributionResult(plan: initial, overflow: [a, b]),
+        );
+        await viewModel.applyGeneratedMenu(const {'middag': <Recipe>[]});
+        viewModel.clearError();
+        return (a: a, b: b);
+      }
+
+      WeeklyMenuPlan planWith(String recipeId) => initial.copyWith(
+        entries: [
+          _entry(
+            day: DayOfWeek.wed,
+            slot: MealSlot.middag,
+            id: 'e-$recipeId',
+            recipeId: recipeId,
+          ),
+        ],
+      );
+
+      test(
+        'BUT-2125: the first of two overlapping drags comes back to the tray',
+        () async {
+          final tray = await seedTray();
+          when(
+            () => mockService.addEntry(
+              plan: any(named: 'plan'),
+              day: any(named: 'day'),
+              slot: any(named: 'slot'),
+              recipe: tray.a,
+            ),
+          ).thenReturn(planWith('o-a'));
+          when(
+            () => mockService.addEntry(
+              plan: any(named: 'plan'),
+              day: any(named: 'day'),
+              slot: any(named: 'slot'),
+              recipe: tray.b,
+            ),
+          ).thenReturn(planWith('o-b'));
+
+          final refusalA = Completer<void>();
+          addTearDown(() {
+            if (!refusalA.isCompleted) refusalA.complete();
+          });
+          var saves = 0;
+          when(() => mockService.save(any())).thenAnswer((_) {
+            saves++;
+            return saves == 1 ? refusalA.future : Future<void>.value();
+          });
+
+          final dragA = viewModel.assignFromOverflow(
+            recipe: tray.a,
+            day: DayOfWeek.wed,
+            slot: MealSlot.middag,
+          );
+          await Future<void>.delayed(Duration.zero);
+          // The second drag prunes its own chip, which is what replaces the
+          // list the first drag pruned — the state the old identity test could
+          // not tell apart from "somebody else owns this tray now".
+          await viewModel.assignFromOverflow(
+            recipe: tray.b,
+            day: DayOfWeek.thu,
+            slot: MealSlot.middag,
+          );
+          expect(viewModel.overflow, isEmpty);
+
+          refusalA.completeError(Exception('denied'));
+          await dragA;
+
+          expect(
+            viewModel.overflow.map((r) => r.id),
+            ['o-a'],
+            reason: 'the refused drag owns the only copy of its recipe',
+          );
+        },
+      );
+
+      // Measured 2026-09-20: the OLD identity guard passes this case too — it
+      // is the regression control on the widened test, not a case that
+      // discriminates against what BUT-2125 replaced. The two cases either
+      // side of it are the ones that redden without the fix.
+      test(
+        'BUT-2125: a recipe a later distribution PLACED is not resurrected',
+        () async {
+          final tray = await seedTray();
+          when(
+            () => mockService.addEntry(
+              plan: any(named: 'plan'),
+              day: any(named: 'day'),
+              slot: any(named: 'slot'),
+              recipe: tray.a,
+            ),
+          ).thenReturn(planWith('o-a'));
+
+          final refusal = Completer<void>();
+          addTearDown(() {
+            if (!refusal.isCompleted) refusal.complete();
+          });
+          var saves = 0;
+          when(() => mockService.save(any())).thenAnswer((_) {
+            saves++;
+            return saves == 1 ? refusal.future : Future<void>.value();
+          });
+
+          final drag = viewModel.assignFromOverflow(
+            recipe: tray.a,
+            day: DayOfWeek.wed,
+            slot: MealSlot.middag,
+          );
+          await Future<void>.delayed(Duration.zero);
+
+          when(
+            () => mockService.distributeFromGeneratedMenu(
+              generated: any(named: 'generated'),
+              weekStart: any(named: 'weekStart'),
+              existing: any(named: 'existing'),
+              now: any(named: 'now'),
+              dayPins: any(named: 'dayPins'),
+            ),
+          ).thenReturn(
+            WeeklyMenuDistributionResult(
+              plan: planWith('o-a'),
+              overflow: const [],
+            ),
+          );
+          await viewModel.applyGeneratedMenu(const {'middag': <Recipe>[]});
+
+          refusal.completeError(Exception('denied'));
+          await drag;
+
+          expect(
+            viewModel.overflow,
+            isEmpty,
+            reason:
+                'the week already holds it — a chip here would be a second '
+                'copy of a dish that is planned',
+          );
+        },
+      );
+
+      test('BUT-2125: a refusal does not restore into another week', () async {
+        final tray = await seedTray();
+        when(
+          () => mockService.addEntry(
+            plan: any(named: 'plan'),
+            day: any(named: 'day'),
+            slot: any(named: 'slot'),
+            recipe: tray.a,
+          ),
+        ).thenReturn(planWith('o-a'));
+
+        final refusal = Completer<void>();
+        addTearDown(() {
+          if (!refusal.isCompleted) refusal.complete();
+        });
+        var saves = 0;
+        when(() => mockService.save(any())).thenAnswer((_) {
+          saves++;
+          return saves == 1 ? refusal.future : Future<void>.value();
+        });
+
+        final drag = viewModel.assignFromOverflow(
+          recipe: tray.a,
+          day: DayOfWeek.wed,
+          slot: MealSlot.middag,
+        );
+        await Future<void>.delayed(Duration.zero);
+
+        final next = _plan(
+          weekStart: initial.weekStartDate.add(const Duration(days: 7)),
+        );
+        when(
+          () => mockService.readWeek(any()),
+        ).thenAnswer((_) async => _read(next));
+        await viewModel.nextWeek();
+
+        refusal.completeError(Exception('denied'));
+        await drag;
+
+        expect(
+          viewModel.overflow.map((r) => r.id),
+          isNot(contains('o-a')),
+          reason:
+              'the tray on screen belongs to a week this drop never touched',
+        );
+      });
+
+      // The two conjuncts below had no kill set when they were written: every
+      // case above leaves the tray EMPTY, so deleting either left the suite
+      // green. One fixture each.
+
+      test(
+        'BUT-2125: a refusal does not duplicate a chip a redistribution put back',
+        () async {
+          final tray = await seedTray();
+          when(
+            () => mockService.addEntry(
+              plan: any(named: 'plan'),
+              day: any(named: 'day'),
+              slot: any(named: 'slot'),
+              recipe: tray.a,
+            ),
+          ).thenReturn(planWith('o-a'));
+
+          final refusal = Completer<void>();
+          addTearDown(() {
+            if (!refusal.isCompleted) refusal.complete();
+          });
+          var saves = 0;
+          when(() => mockService.save(any())).thenAnswer((_) {
+            saves++;
+            return saves == 1 ? refusal.future : Future<void>.value();
+          });
+
+          final drag = viewModel.assignFromOverflow(
+            recipe: tray.a,
+            day: DayOfWeek.wed,
+            slot: MealSlot.middag,
+          );
+          await Future<void>.delayed(Duration.zero);
+
+          // A later distribution overflows the SAME recipe again, so it is back
+          // in the tray by the time the refusal lands.
+          when(
+            () => mockService.distributeFromGeneratedMenu(
+              generated: any(named: 'generated'),
+              weekStart: any(named: 'weekStart'),
+              existing: any(named: 'existing'),
+              now: any(named: 'now'),
+              dayPins: any(named: 'dayPins'),
+            ),
+          ).thenReturn(
+            WeeklyMenuDistributionResult(plan: initial, overflow: [tray.a]),
+          );
+          await viewModel.applyGeneratedMenu(const {'middag': <Recipe>[]});
+          expect(viewModel.overflow.map((r) => r.id), ['o-a']);
+
+          refusal.completeError(Exception('denied'));
+          await drag;
+
+          expect(
+            viewModel.overflow.map((r) => r.id),
+            ['o-a'],
+            reason:
+                'one recipe, one chip — a second is a dish that does not '
+                'exist',
+          );
+        },
+      );
+
+      test(
+        'BUT-2125: a refused drop of a recipe the tray never held adds nothing',
+        () async {
+          initial = _plan();
+          when(
+            () => mockService.readWeek(any()),
+          ).thenAnswer((_) async => _read(initial));
+          await viewModel.loadWeek(initial.weekStartDate);
+          viewModel.clearError();
+
+          // Never distributed, so the tray is empty and `indexWhere` answers -1.
+          final stranger = _recipe(id: 'o-stranger');
+          when(
+            () => mockService.addEntry(
+              plan: any(named: 'plan'),
+              day: any(named: 'day'),
+              slot: any(named: 'slot'),
+              recipe: stranger,
+            ),
+          ).thenReturn(planWith('o-stranger'));
+          when(() => mockService.save(any())).thenThrow(Exception('denied'));
+
+          await viewModel.assignFromOverflow(
+            recipe: stranger,
+            day: DayOfWeek.wed,
+            slot: MealSlot.middag,
+          );
+
+          // The `placed` conjunct can only stay out of the way while the
+          // refusal has rolled `_plan` back to an entry-free week. Pinned, so
+          // a change to that rollback reddens this case rather than quietly
+          // making `index < 0` the guard nothing measures.
+          expect(viewModel.plan, same(initial));
+          expect(
+            viewModel.overflow,
+            isEmpty,
+            reason:
+                'a rollback restores what was there; it does not invent a '
+                'chip',
+          );
+        },
+      );
+
+      test(
+        'BUT-2126: a superseded plan is not dragged back by a late refusal',
+        () async {
+          initial = _plan(
+            entries: [_entry(day: DayOfWeek.mon, slot: MealSlot.middag)],
+          );
+          when(
+            () => mockService.readWeek(any()),
+          ).thenAnswer((_) async => _read(initial));
+          await viewModel.loadWeek(initial.weekStartDate);
+          viewModel.clearError();
+
+          final first = _recipe(id: 'o-a');
+          final second = _recipe(id: 'o-b');
+          when(
+            () => mockService.addEntry(
+              plan: any(named: 'plan'),
+              day: any(named: 'day'),
+              slot: any(named: 'slot'),
+              recipe: first,
+            ),
+          ).thenReturn(planWith('o-a'));
+          final laterPlan = planWith('o-b');
+          when(
+            () => mockService.addEntry(
+              plan: any(named: 'plan'),
+              day: any(named: 'day'),
+              slot: any(named: 'slot'),
+              recipe: second,
+            ),
+          ).thenReturn(laterPlan);
+
+          final refusal = Completer<void>();
+          addTearDown(() {
+            if (!refusal.isCompleted) refusal.complete();
+          });
+          var saves = 0;
+          when(() => mockService.save(any())).thenAnswer((_) {
+            saves++;
+            return saves == 1 ? refusal.future : Future<void>.value();
+          });
+
+          final refused = viewModel.assignRecipe(
+            day: DayOfWeek.wed,
+            slot: MealSlot.middag,
+            recipe: first,
+          );
+          await Future<void>.delayed(Duration.zero);
+          await viewModel.assignRecipe(
+            day: DayOfWeek.thu,
+            slot: MealSlot.middag,
+            recipe: second,
+          );
+          expect(viewModel.plan, same(laterPlan));
+
+          refusal.completeError(Exception('denied'));
+          await refused;
+
+          expect(
+            viewModel.plan,
+            same(laterPlan),
+            reason: 'rolling back here would undo an edit that SUCCEEDED',
+          );
+        },
+      );
+
+      test('BUT-2124: a throwing onPublished does not cost the save', () async {
+        initial = _plan();
+        when(
+          () => mockService.readWeek(any()),
+        ).thenAnswer((_) async => _read(initial));
+        await viewModel.loadWeek(initial.weekStartDate);
+        when(
+          () => mockService.distributeFromGeneratedMenu(
+            generated: any(named: 'generated'),
+            weekStart: any(named: 'weekStart'),
+            existing: any(named: 'existing'),
+            now: any(named: 'now'),
+            dayPins: any(named: 'dayPins'),
+          ),
+        ).thenReturn(
+          WeeklyMenuDistributionResult(
+            plan: planWith('o-a'),
+            overflow: const [],
+          ),
+        );
+        when(() => mockService.save(any())).thenAnswer((_) async {});
+
+        // The real callback reaches `PersistenceService` and `context.l10n`,
+        // so a throw here is not hypothetical. Unwrapped it escapes the write
+        // closure, the save never issues, and the user is told the week was
+        // rolled back when nothing was written or undone.
+        await viewModel.applyGeneratedMenu(
+          const {'middag': <Recipe>[]},
+          onPublished: (_) => throw StateError('ui'),
+        );
+
+        verify(() => mockService.save(any())).called(1);
+        expect(viewModel.error, isNull);
+      });
+
+      test(
+        'BUT-2124: the placed count is announced at publish, not at the ack',
+        () async {
+          initial = _plan();
+          when(
+            () => mockService.readWeek(any()),
+          ).thenAnswer((_) async => _read(initial));
+          await viewModel.loadWeek(initial.weekStartDate);
+          when(
+            () => mockService.distributeFromGeneratedMenu(
+              generated: any(named: 'generated'),
+              weekStart: any(named: 'weekStart'),
+              existing: any(named: 'existing'),
+              now: any(named: 'now'),
+              dayPins: any(named: 'dayPins'),
+            ),
+          ).thenReturn(
+            WeeklyMenuDistributionResult(
+              plan: planWith('o-a'),
+              overflow: const [],
+            ),
+          );
+          final unacked = Completer<void>();
+          addTearDown(() {
+            if (!unacked.isCompleted) unacked.complete();
+          });
+          when(() => mockService.save(any())).thenAnswer((_) => unacked.future);
+
+          int? announced;
+          unawaited(
+            viewModel.applyGeneratedMenu(
+              const {'middag': <Recipe>[]},
+              onPublished: (placed) => announced = placed,
+            ),
+          );
+          await Future<void>.delayed(Duration.zero);
+
+          expect(
+            announced,
+            1,
+            reason: 'offline this is the only signal the caller ever gets',
+          );
+          unacked.complete();
+        },
+      );
     });
 
     group('BUT-1241 placement-flow additions', () {

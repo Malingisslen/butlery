@@ -173,7 +173,10 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
   /// entries, threads the parsed day pins, and surfaces failures here
   /// (lista mode never renders the calendar VM's error state). Returns the
   /// placed count, or null when cancelled / failed / nothing to place.
-  Future<int?> _applyGeneratedToCalendar({bool skipConfirm = false}) async {
+  Future<int?> _applyGeneratedToCalendar({
+    bool skipConfirm = false,
+    void Function(int placed)? onPublished,
+  }) async {
     final menuVm = context.read<MenuViewModel>();
     final calendarVm = context.read<WeeklyMenuPlanViewModel>();
     if (!menuVm.hasMenu) return null;
@@ -189,23 +192,38 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
       menuVm.menu,
       replaceExisting: true,
       parsedRequest: parsed,
+      onPublished: onPublished,
     );
     if (placed == null && mounted) {
       final error = calendarVm.error;
-      if (error != null) SnackBarUtils.showError(context, error);
+      if (error != null) {
+        // The publish-first path may already have put the success toast on
+        // screen, and it carries an ÄNDRA action that opens placement for the
+        // week this refusal just rolled back. A queued error would sit behind
+        // it for its full duration; hiding it first is what stops the last
+        // thing the user reads from being the one that is no longer true.
+        SnackBarUtils.hide(context);
+        SnackBarUtils.showError(context, error);
+      }
     }
     return placed;
   }
 
   /// Footer primary action: auto-place, switch to kalender, offer ÄNDRA.
+  ///
+  /// BUT-2124: both happen at PUBLISH, not at the save's ack. Offline the ack
+  /// never comes, so the old order left the user in list mode watching a
+  /// spinner while the week sat finished underneath it.
   Future<void> _onPlaceAutomatically() async {
-    final placed = await _applyGeneratedToCalendar();
-    if (placed == null || !mounted) return;
-    await _setViewMode(VeckomenyViewMode.kalender);
-    if (!mounted) return;
-    // placed == 0 (everything overflowed) skips the toast — the calendar's
-    // overflow tray explains the outcome better than a "0 placed" snackbar.
-    if (placed > 0) _showAutoPlacedToast(placed);
+    await _applyGeneratedToCalendar(
+      onPublished: (placed) {
+        if (!mounted) return;
+        unawaited(_setViewMode(VeckomenyViewMode.kalender));
+        // placed == 0 (everything overflowed) skips the toast — the calendar's
+        // overflow tray explains the outcome better than a "0 placed" snackbar.
+        if (placed > 0) _showAutoPlacedToast(placed);
+      },
+    );
   }
 
   void _showAutoPlacedToast(int placed) {

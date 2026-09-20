@@ -1,3 +1,106 @@
+# Sprint 2026-09-20 runda 6 (sprint-execute, /loop, unattended)
+
+Step-0 measurements, taken against `main` before planning:
+
+- BUT-2124: `_onPlaceAutomatically` (`lib/views/veckomeny_view.dart`) awaits the whole of
+  `applyGeneratedMenu` before `_setViewMode`. Confirmed present on `main`.
+- BUT-2125: `assignFromOverflow` restores on `identical(_overflow, pruned)`. Confirmed.
+- BUT-2126: `_publishThenSave` restores on `identical(_plan, updated)`. Confirmed. The
+  `isPlacing:` argument in the view has a `false` default on
+  `MenuPlacementChoiceFooter`, so deleting it leaves every suite green.
+- BUT-2117: the clause the ticket names is false — `_withoutBlockedBallots` has its own
+  catch (`lib/services/messaging_service.dart`), which returns the author-filtered list.
+- BUT-2128: the parity block still sits in `enforce-group-minor-membership.test.ts`;
+  `run-ci-unit-tests.js` excludes only `test:rules*` and `test:integration:*`, so it runs.
+
+Router on the batch's file union: `{"tier": "single"}` — one blind critique, convened
+before the build (Product Manager, the role the router matched on the viewmodel). Its
+must-haves are folded into the criteria below and marked **[panel]**.
+
+- [x] BUT-2117 [Tier A] build — strike the false clause in the BUT-1909 fixture comment.
+  - AC1 (diff): the clause naming `_filterBlocked`'s fail-open catch is gone, nothing added.
+  - AC2 (diff): the surviving sentence read alone is true.
+- [x] BUT-2128 [Tier A] build — move the cross-language parity block to its own suite.
+  - AC1 (diff): the block lives in `functions/src/__tests__/log-safe-conversation-id.test.ts`
+    with the pinned literal unchanged.
+  - AC2 (run+diff): a `test:log-safe-conversation-id` script exists and
+    `check-test-registration.js` passes.
+  - AC3 (run): `enforce-group-minor-membership.test.ts` still green and its header
+    describes only what is left in it.
+  - AC4 (diff): the Dart half names the new TS file.
+- [x] BUT-2124 [Tier B] build-review — switch to the calendar at PUBLISH, not at the ack.
+  - AC1 (diff): `applyGeneratedMenu` takes an `onPublished` callback fired with the placed
+    count immediately after the publish, before the save is awaited.
+  - AC2 (diff): the view switches mode and toasts from that callback.
+  - AC3 (diff) **[panel]**: on a refusal the success toast — which carries a tappable
+    ÄNDRA — is hidden before the error is shown, so neither it nor its action survives the
+    rollback.
+  - AC4 (diff) **[panel]**: `placed == 0` still shows no toast.
+  - AC5 (diff) **[panel]**: the rollback message no longer says the distribution failed,
+    because the user watched it happen. **This is the detail for Malin**: the new Swedish
+    string is `Veckan kunde inte sparas – fördelningen ångrades`.
+- [x] BUT-2125 [Tier B] build-review — an overlapping drag no longer loses the first recipe.
+  - AC1 (diff): the restore tests MEMBERSHIP of the current tray, not identity of the list.
+  - AC2 (diff) **[panel]**: it also refuses when a later distribution PLACED the recipe —
+    the test is against `plan.entries[].recipeId`.
+  - AC3 (diff) **[panel]**: it refuses when the user has changed week, and the old index is
+    clamped.
+  - AC4 (run): a test drives two overlapping drags and the refused one gets its chip back.
+  - **Detail for Malin**: the ticket called this a product choice. The build keeps the
+    recipe rather than the simpler "don't touch a tray someone else changed".
+- [x] BUT-2126 [Tier A] build — the negative branch of both restore conditions.
+  - AC1 (run): a case per condition where a later change replaces the plan / the tray while
+    a refusal is in flight; the old state must not come back.
+  - AC2 (run): PARTIAL. The `isPlacing:` wiring in `veckomeny_view.dart` has a killer —
+    `test/architecture/placement_footer_wiring_test.dart`, mutation-probed 2026-09-20:
+    deleting the argument turns it red, and the restore was md5-verified. But no CI lane
+    runs `test/architecture/` except the single named `architecture_test.dart`, so the
+    killer only fires locally. Pre-existing — two siblings are equally unrun — and filed
+    as BUT-2130. BUT-2126 parks In Review for this reason.
+
+## Needs you (Tier D)
+- none this run.
+
+## Deviation log
+
+- [discovery] BUT-2125: the tray is NOT cleared when the week changes, so the
+  "another week" case asserts the refused recipe is absent rather than an empty tray.
+- [discovery] BUT-2125: of the three new cases, only two redden against the old identity
+  guard; the third is the regression control, and the test says so.
+- [deviation] BUT-2126 asked for a test driving the footer through a real
+  `WeeklyMenuPlanViewModel`. No test mounts `VeckomenyView` — it reaches a dozen services
+  through `ServiceLocator` — so the wiring is pinned by a source lint instead, with its
+  residual named in the file.
+- [discovery] outcome verifier: three findings, all fixed in-run. The `errorPrefix`
+  comment claimed the week is always on screen before the message can fire — a synchronous
+  throw from `distributeFromGeneratedMenu` precedes the publish, so the sentence is now
+  scoped to the SAVE path. The widened restore would have ADDED a chip that was never in
+  the tray when `index < 0`; that is now refused. And the BUT-2117 strike left "the catch"
+  bound to the wrong antecedent, so that sentence was deleted too.
+- [discovery] commit gate round 1 on the menu batch: code-reviewer failed it on two
+  written claims, both mine. A comment said "Three things still have to hold" above four
+  bullets — the numeral is struck, not recounted, and the exhaustiveness clause beside it
+  went with it, because it did not cover a tray `adoptPlan`/`clearWeek` had emptied. And
+  the source lint's residual said a `watch`-to-`read` swap "would pass here", which the
+  regex makes false; struck.
+- [discovery] same round: a throwing `onPublished` would have skipped the save entirely and
+  then reported the week as rolled back. The dispatch is wrapped so the save always issues.
+- [discovery] testing-specialist failed it on an asymmetry inside this change: BUT-2124's
+  view wiring is the same deletable-green shape the `isPlacing` lint was written for, and
+  it got no lint. Two more cases added to that file, plus fixtures for the two new
+  `assignFromOverflow` conjuncts that had no kill set. Probed 2026-09-20 — deleting the
+  `index < 0` guard, the duplicate-chip guard or `onPublished: onPublished` each turns one
+  red; every restore hash-verified.
+- [discovery] commit gate round 2: the try/catch added in round 1 had an EMPTY kill set —
+  deleting it left the whole suite green. A case now passes a throwing callback and asserts
+  the save still issued; probed 2026-09-20, the mutant reddens it. The guard arrived from a
+  reviewer, which is exactly the shape that feels pre-vetted and is not.
+- [deviation] BUT-2124: `_generateMenu`'s own call to `_applyGeneratedToCalendar` still
+  toasts after the ack, so offline it is silent in the same way. Left alone rather than
+  widened mid-run; filed as a follow-up.
+
+---
+
 # Sprint 2026-09-20 runda 5 (sprint-execute, /loop, unattended)
 
 Two cleanup tickets, both mostly deletions. Step-0 measurements, done before planning
