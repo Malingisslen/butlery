@@ -15,9 +15,9 @@ const h = s => createHash('sha256').update(s).digest('hex').slice(0, 16);
 // sokvagar och ar avsiktligt inte med.
 const KANONISKA = [
   'overlay.json', 'extra-krav.json',
-  'frys/block287k-population.json', 'frys/block287k-status.json',
-  'frys/block287k-forekomster.json', 'frys/block287k-ankarkarta.json',
-  'grupper.json', 'skrivplan.json', 'fynd.json', 'm2.json', 'mork.json'
+  'frys/block287k-population.json', 'frys/block287k-ankarkarta.json',
+  'frys/block287k-avgoranden.json', 'frys/block287k-skrivplan.json',
+  'grupper.json', 'skrivplan.json', 'fynd.json', 'm2.json', 'mork.json', 'medlemmar.json'
 ];
 const rader = [];
 for (const f of KANONISKA) {

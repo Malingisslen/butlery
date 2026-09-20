@@ -61,7 +61,8 @@ if (!flagga('hoppa-skord') || !existsSync(p('skord.json')))
   kor('skord', 'tools/block287/skorda.mjs', ['--root=' + ROT, '--ut=' + p('skord.json'), '--filordning=' + ORDNING]);
 // 7-8 · baslinje och population
 const miljo = { MAT: join(ROT, 'fas2', 'matning'), TMPUT: UT, UPPTACKT_A: p('disc-A.json'), UPPTACKT_B: p('disc-B.json'), OVERLAY: p('overlay.json') };
-kor('baslinje', 'tools/block287/bas-build.mjs', ['--root=' + ROT, '--snapshot-ut=' + p('bas.json')], miljo);
+kor('baslinje', 'tools/block287/bas-build.mjs',
+  ['--root=' + ROT, '--snapshot-ut=' + p('bas.json'), '--medlemsut=' + p('medlemmar.json')], miljo);
 // build.mjs skriver sitt resultat till stdout: en gang for bygget, en gang for enheterna
 writeFileSync(p('ut.json'), kor('population', 'tools/block287/build.mjs',
   ['--root=' + ROT, '--snapshot-ut=' + p('snap.json'), '--skord=' + p('skord.json')], miljo));
