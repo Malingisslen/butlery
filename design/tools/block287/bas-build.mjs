@@ -19,6 +19,7 @@ import { join, resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
+import { lcMedlemskap, medlemsHash } from './lc-medlemmar.mjs';
 
 const arg = n => (process.argv.find(a => a.startsWith('--' + n + '=')) || '').split('=').slice(1).join('=');
 const ROOT = resolve(arg('root') || '.');
@@ -73,10 +74,32 @@ function harled() {
 
   // Lint vid HEAD — lasande verktyg. Hela felutskriften sparas.
   const lint = kortext('tools/spec-lint.mjs').split('\n').filter(l => l.startsWith('\u2716 '));
-  const lcText = kortext('tools/lint-controls.mjs');
+  // Utskriftstaket pa 200 rader far inte bli medlemskapet. Samma okapade korning
+  // som populationsbyggaren gor, sa de tva mater samma mangd.
+  const lcText = kortextOkapad('tools/lint-controls.mjs');
   const lc = Object.fromEntries(((/LC-SUMMARY (.*)/.exec(lcText) || [])[1] || '').split(' ')
     .filter(Boolean).map(kv => kv.split('=')).map(([k, v]) => [k, Number(v)]));
   if (typeof lc.deviations !== 'number') fail('lint-controls gav ingen LC-SUMMARY');
+  // Avatarer vars bakgrund blev en var()-referens efter R-04 ar osynliga for
+  // lint-controls: regeln kraver en beraknad fargdeklaration. De ar uppmatta med
+  // samma avatarregel och star itemiserade i matfilen. Populationsbyggaren raknar
+  // dem redan; baslinjen maste rakna likadant, annars mater de tva olika saker.
+  const avatarFil = join(S, 'avatar.json');
+  const avatarVar = (JSON.parse(readFileSync(avatarFil, 'utf8')).varUtanforSkala || []).map(a => ({
+    fil: 'Butlery Skarmar v12 ' + a.fil, ram: a.ram,
+    storlek: a.storlek,
+    text: 'avatar ' + a.storlek + ' px (farg via var(), osynlig for lint-controls)',
+    KALLA: 'fas2/matning/avatar.json · varUtanforSkala'
+  }));
+  // Lintens egna rader.
+  const lcRader = lcText.split(String.fromCharCode(10)).filter(l => /^  Butlery/.test(l)).map(l => {
+    const m = /^  (.+\.dc\.html):(\d+) \[([^\]]*)\] (.*)$/.exec(l) || fail('ogiltig geometrirad: ' + l);
+    return { fil: m[1], ram: m[3], text: m[4], KALLA: 'tools/lint-controls.mjs' };
+  });
+  const lcMedlemmar = lcMedlemskap(lcRader, avatarVar);
+  lc.lint_deviations = lcRader.length;
+  lc.avatar_var_deviations = lcMedlemmar.length - lcRader.length;
+  lc.deviations = lcMedlemmar.length;
 
   // A11Y-01: agaren ar ram + synlig text, aldrig radnummer.
   const a11y01 = lint.filter(l => /^\u2716 A11Y-01/.test(l)).map(l => {
@@ -93,8 +116,19 @@ function harled() {
     return { fil: m[1], ram, text: text.trim() };
   });
 
-  return { baslinje, fsr, csr, tr, rs, roller, lint, lc, a11y01,
+  return { baslinje, fsr, csr, tr, rs, roller, lint, lc, a11y01, lcMedlemmar, avatarVar,
     scope: B282.SCOPE_FYND ? [{ id: 'start', fynd: 'VIEW_TAXONOMY_GAP_STARTUP' }] : [] };
+}
+
+/** Som kortext, men utan lint-controls utskriftstak. */
+function kortextOkapad(rel) {
+  const src = readFileSync(join(ROOT, rel), 'utf8')
+    .replace('findings.slice(0, 200)', 'findings')
+    .replace("'./lint-core.mjs'", "'file:///" + join(ROOT, 'tools/lint-core.mjs').split('\\').join('/').split(' ').join('%20') + "'");
+  const fil = join(process.env.TMPUT || S, 'lc-okapad.mjs');
+  writeFileSync(fil, src);
+  try { return execFileSync(process.execPath, [fil], { cwd: ROOT, encoding: 'utf8', maxBuffer: 1 << 28 }); }
+  catch (e) { return String(e.stdout || '') + String(e.stderr || ''); }
 }
 
 function kortext(rel) {
@@ -290,6 +324,35 @@ export function klassa(snap, inv) {
     OVERIFIERBARA: enheter.filter(e => e.CURRENT_STATUS === 'UNVERIFIABLE').length,
     PRODUKTREMEDIERING: produkt.length
   };
+  // I · antal ar for svagt. En medlem som byts mot en annan maste falla.
+  const t08Monster = (inv.lintregler || []).filter(r => r.REGEL === 'T-08' && r.KATEGORI === 'LINT_SYNC_REQUIRED')
+    .map(r => new RegExp(fold(r.MONSTER)));
+  const t08Raknare = new Map();
+  const t08Medlemmar = snap.lint.filter(l => /^✖ T-08\s/.test(l) && t08Monster.some(m => m.test(fold(l)))).map(l => {
+    const m = /^✖ T-08\s+(.+?\.dc\.html): "([^"]*)" (har data-hit="self"|har data-hit="target:[^"]+"|deklarerar data-hit="target:[^"]+")/.exec(l);
+    const bas = m ? m[1] + '|' + m[2] + '|' + m[3].replace(/target:[^"]+/, 'target') : 'RAD|' + l;
+    const n = (t08Raknare.get(bas) || 0) + 1; t08Raknare.set(bas, n);
+    return bas + '#' + n;
+  });
+  const avstamningMedlemmar = [
+    ...snap.roller.map(r => 'ROLL::' + r.fil + '|' + (r.artifact || '') + '|' + (r.name || '')),
+    ...snap.lint.map((l, i) => 'LINT::' + i + '::' + l)
+  ];
+  const medlemsmangder = {
+    LC_MEMBER_COUNT: (snap.lcMedlemmar || []).length,
+    LC_MEMBER_SET_HASH: medlemsHash(snap.lcMedlemmar || []),
+    T08_MEMBER_COUNT: t08Medlemmar.length,
+    T08_MEMBER_SET_HASH: medlemsHash(t08Medlemmar),
+    RECONCILIATION_MEMBER_COUNT: avstamningMedlemmar.length,
+    RECONCILIATION_MEMBER_SET_HASH: medlemsHash(avstamningMedlemmar)
+  };
+  // Medlemsmangderna skrivs ut INNAN forvantningsgrinden, sa att en avvikelse
+  // gar att stalla mot exakta medlemmar och inte bara mot ett antal.
+  if (arg('medlemsut')) writeFileSync(arg('medlemsut'), JSON.stringify({
+    MEDLEMSMANGDER: medlemsmangder,
+    LC_MEDLEMMAR: snap.lcMedlemmar || [], T08_MEDLEMMAR: t08Medlemmar,
+    AVSTAMNING_MEDLEMMAR: avstamningMedlemmar
+  }, null, 1) + String.fromCharCode(10));
   const dedup = {
     REQUIREMENT_COUNT: new Set(produkt.map(e => e.REQUIREMENT_ID)).size,
     OCCURRENCE_COUNT: snap.roller.length + snap.lint.length,
@@ -327,7 +390,7 @@ export function klassa(snap, inv) {
   const norm = v => (v && typeof v === 'object' && !Array.isArray(v))
     ? Object.fromEntries(Object.keys(v).sort().map(k => [k, norm(v[k])])) : v;
   const mat = { PER_KATEGORI: perKategori, KEDJA: kedja, DEDUP: { ...dedup, KOPPLADE_SKRIVNINGAR: dedup.KOPPLADE_SKRIVNINGAR.length },
-    GRIND: grind, LINT: lintKlass, FINGERAVTRYCK: fingeravtryck };
+    GRIND: grind, LINT: lintKlass, FINGERAVTRYCK: fingeravtryck, MEDLEMSMANGDER: medlemsmangder };
   for (const k of Object.keys(fv)) {
     if (!(k in mat)) fail('forvantat deklarerar ' + k + ' som byggaren inte mater');
     if (JSON.stringify(norm(mat[k])) !== JSON.stringify(norm(fv[k])))
@@ -336,7 +399,8 @@ export function klassa(snap, inv) {
   if (avvik.length) fail('kallans forvantningar stammer inte:\n  ' + avvik.join('\n  '));
   const sjalvkontroll = { deklarerade: Object.keys(fv).length, avvikelser: 0 };
 
-  return { enheter, perKategori, kedja, dedup, grind, lintKlass, oforklarade, kopplingOk, sjalvkontroll,
+  return { enheter, perKategori, kedja, dedup, grind, lintKlass, medlemsmangder,
+    t08Medlemmar, avstamningMedlemmar, lcMedlemmar: snap.lcMedlemmar || [], oforklarade, kopplingOk, sjalvkontroll,
     okandaKallor, beslutsblockerare, fingeravtryck,
     perKalla: rakna(enheter, e => e.REQUIREMENT_SOURCE.split(' ')[0]) };
 }
