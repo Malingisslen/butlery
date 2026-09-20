@@ -1,43 +1,40 @@
-# Sprint 2026-09-20 runda 3 (sprint-execute, /loop, unattended)
+# Sprint 2026-09-20 runda 4 (sprint-execute, /loop, unattended)
 
-Three weekly-menu bugs opened by BUT-1975's removal of the write lock, all in the same
-viewmodel. Step-0 read confirms each premise on current main, and that `_publishThenSave`
-(the optimistic publish-then-save helper BUT-1975 introduced) already exists and is what the
-first two should use rather than a new lock.
+Two shopping tickets, both written with the fix already specified by the reviewer who
+filed them. Step-0 confirms both premises on current main (the files moved since the
+tickets were written; the code did not).
 
-Router (`lib/viewmodels/menu/weekly_menu_plan_viewmodel.dart
-lib/services/menu/weekly_menu_plan_service.dart lib/widgets/menu/menu_placement_footer.dart`):
-paste the raw output beside the batch before dispatch.
+**Learned last round, applied here:** before dispatching any reviewer, grep the whole
+fileset for sentences that ENUMERATE what this change removes — "ONLY", "the two methods
+above", "this class still does", "until then" — and strike them in the same edit. Six
+review rounds last batch were spent one sentence at a time.
 
-- [ ] BUT-1988 [Tier C] build — two quick "who's home" taps must both survive.
-  Today `setSlotPresence`/`setDayPresence` are read-modify-write in the SERVICE: it re-reads
-  the week, merges one cell and saves the whole plan, so two taps that read the same week
-  lose one. Fix in BUT-1975's shape: expose the service's pure merge, compute the updated
-  plan from `_plan` in the viewmodel, and publish it through `_publishThenSave`, which
-  releases at publish (not at ack) and rolls back on refusal. The merge stays in ONE place —
-  duplicating it in the viewmodel was explicitly out of scope in BUT-1975.
-  - AC1 (diff): two presence writes on different cells, the second starting before the first
-    save completes, leave BOTH selections set.
-  - AC2 (diff): the existing test "a pending PRESENCE save does not refuse a calendar edit"
-    stays green — no new shared lock.
-  - AC3 (diff): a refused presence save restores the previous selection, and only when the
-    plan on screen is still the one that was published.
-- [ ] BUT-1987 [Tier B] build — a second tap on "Placera automatiskt" must not be a silent
-  no-op. Take option 1 from the ticket (disable the button while the distribution is in
-  flight); do NOT call `setError` in the refusal branch — that was tried under BUT-1975 and
-  replaced the whole calendar with an error panel.
-  - AC1 (diff): the viewmodel exposes the in-flight state and notifies when it changes.
-  - AC2 (diff): the footer's action is disabled while it is true; a widget test pins it.
-  - AC3 (diff): the refusal branch still sets no error.
-- [ ] BUT-1986 [Tier A] build — offline, the same overflow chip can be placed twice because
-  the tray is pruned only after the save acks. Prune optimistically and put the chip back if
-  the save is refused, matching how `_plan` itself is treated.
-  - AC1 (diff): a second drop of the same chip while the first save is unacked does not add a
-    second entry.
-  - AC2 (diff): a refused save puts the chip back in the tray (the tray is in-memory only and
-    nothing repopulates it).
+- [!] BUT-1890 [Tier B] WITHDRAWN mid-run — built, then pulled after measurement — the add-item dialog's `_CategorySuggester` is a second,
+  stale copy of `IngredientCategorizer`. Measured wrong answers: Rostbiff → dairy,
+  Ostbågar → dairy, Kokosmjölk → dairy, Diskborste → drinks, Vitlökspulver → fruit_veg.
+  Route it through the maintained engine and delete the private map.
+  - AC1 (diff): the five measured names get the right category, proven by a running test.
+  - AC2 (diff): the private keyword map is gone.
+  - AC3 (diff): `IngredientCategorizer.categorize` returns `other`, never null, and the
+    dialog relies on null to leave the field alone — the delegation must not stamp `other`
+    onto every unrecognised item.
+  - AC4 (diff): the comment and the test-suite header that describe the duplicate are
+    removed in the same change, plus any other sentence this deletion falsifies.
+- [x] BUT-1892 [Tier A] build — a cleared shopping-item note is stored as `''` rather than
+  `null`, and `notes: result.note ?? ''` is sent on EVERY save, so rows drift to `''` over
+  time and "cleared" stops being distinguishable from "never had one".
+  - AC1 (diff): a cleared note is stored as `null`.
+  - AC2 (diff): editing another field on an item with no note leaves `note` untouched.
+  - AC3 (diff): the existing `an empty note CLEARS the stored note` test is rewritten to the
+    new signal and stays mutation-sensitive.
+  - AC4 (diff): `personal_shopping_operations.dart`'s twin `?? item.note` follows, or the
+    fix covers only one of the two list types.
 
 ## Needs you (Tier D)
 - none this run.
 
 ## Deviation log
+- [needs-human] BUT-1890: the plan said route the suggester and delete the duplicate. Built and probed, then WITHDRAWN when the code-reviewer gate ran `IngredientCategorizer.categorize` over the deleted map's vocabulary and found most of those names now answer `other`, i.e. lose their suggestion — in buckets the engine already has, not just the ones I had measured. Replacing behaviour that works with something I picked is Malin's call, so the code is unshipped and BUT-2127 carries the measured table and three options.
+- [deviation] BUT-1892's plan named two write paths as if both were live. Measured: `PersonalShoppingOperations.updateItem` has no `lib/` caller; the twin fix is symmetry. Said so in the commit body rather than letting the claim stand.
+- [discovery] `ShoppingListGenerator` writes `note: ''` on every recipe-generated row (`grep -rn "note: ''" lib`) — a second producer the ticket did not know about. Noted on BUT-1892, not fixed here.
+- [deviation] Five comment clauses this change falsified were struck across four gate rounds. The pre-dispatch grep the round-3 lesson prescribes caught none of them, because they were sentences the REVIEWERS' own findings falsified, not ones the code deletion did.

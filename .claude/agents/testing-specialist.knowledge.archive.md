@@ -39599,3 +39599,43 @@ all passed. `flutter analyze --fatal-infos` over the four test files → no issu
 
 Principle recorded in the state-async chapter: a "redundant notify" removal is a claim about which
 surviving notification carries the flag's TRUE state, and it is settled by a listener recorder.
+
+### 2026-09-20 — BUT-1892 note three-way: the clear+preserve pair is satisfied by "never write"
+
+Commit-gate review of the shared-list module (`updateItemInActiveList`: `note: notes,
+clearNote: notes != null && notes.isEmpty`) and its personal twin
+(`note == null ? item.note : (note.isEmpty ? null : note)`).
+
+Graded before the round's third legs existed. With only the two legs the round first shipped
+(empty→null, null→preserved), these mutants stay GREEN while destroying user data:
+  · module: `note: null` (keep `clearNote`) — clears on '', preserves on null, drops every
+    typed note. `UnifiedShoppingItem.copyWith` is `note: clearNote ? null : (note ?? this.note)`,
+    so a null argument reads as "unchanged" and the pair cannot see it.
+  · personal: `note == null ? item.note : null` — same shape, same silence.
+The author added a third leg on each side ("a real note is stored" / "…on the personal item")
+and both suites went 100 green; every single-line mutant on the two edited expressions is then
+killed by exactly one leg.
+
+Two prose items filed as Info, strike-not-reword:
+  · module test header still reads "Both halves below." with three tests under it.
+  · personal test comment still carries "and '' is never stored" — the same universal that was
+    struck from the production comment the same round, because
+    `shopping_list_generator.dart:341` writes `note: ''` on recipe-generated rows.
+  · same comment's "fixing only one leaves half the app storing an empty string" is a
+    reachability claim a grep does not support: `PersonalShoppingOperations.updateItem` has NO
+    `lib/` caller (the live edit path is dialog → `UnifiedShoppingViewModel.updateItem` →
+    `UnifiedShoppingService.updateItemInActiveList` → module). The twin fix is still right as
+    symmetry; the sentence overstates it.
+
+Harness note (the round's stated question): the personal twins drive `updateItem` through
+`MockUnifiedShoppingService.setShoppingState` rather than a stub. That is sound —
+`personalLists` is a concrete `@override` reading the state the setter assigns, and `updateList`
+is NOT overridden, so `when`/`verify(captureAny())` intercept the real payload. The seed is
+self-proving: a failed `copyWith(note: 'Ekologisk')` would redden the preserve leg. Residual:
+the two personal fixtures duplicate the `setShoppingState` block instead of sharing a builder
+(the module suite uses `seedNoted()`), so a later drift in one copy loses the pair's joint
+non-vacuity silently.
+
+Runs: `flutter test` over the two suites → +100 all passed, no `[E]`.
+`flutter analyze` over the four files → no issues (110s). No `lib/` mutation probe was run:
+a sibling gate was reading the same tree, and the kill sets above are analytic.

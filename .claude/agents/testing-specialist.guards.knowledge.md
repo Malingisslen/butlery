@@ -147,7 +147,10 @@
   live UI passes it on its commonest path (BUT-1988).
 - A flag selecting between two values is pinned by both arms over one fixture with observably
   different values. A nullable override deriving its default from a nullable payload owes a third
-  arm: the EMPTY (non-null) payload.
+  arm: the EMPTY (non-null) payload. **A null/EMPTY/VALUE three-way (null=leave, ''=clear,
+  text=write) owes THREE legs, because the clear+preserve PAIR is satisfied by a mutant that
+  never writes the VALUE** — `note: null` beside a `clearNote` sentinel clears on '', preserves
+  on null, and silently erases every note the user types (BUT-1892).
 - "Declines/falls back" needs `equals([input])`, not `hasLength` — catches truncation. A test named
   after an input must assert that input's VALUE.
 - **A hardcoded/derived fixture value that makes the guarded and unguarded expressions identical** —
