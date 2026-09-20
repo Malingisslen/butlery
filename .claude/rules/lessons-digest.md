@@ -126,3 +126,4 @@ lessons that only matter while writing or running tests.
 - En "är detta aktuellt?"-fråga mäts först mot ärendets EGEN historik (`git log --all --grep=<ID>` + grep på ID:t), sedan mot koden — ett beslut kan vara fattat i ett annat ärendes ändring utan att statusfältet ändrats (BUT-2094, 2026-09-20)
 - En granskares VERDIKTRAD registreras separat från dess läsningar — be om den som ETT EGET meddelande och verifiera i liggaren, aldrig i rapporten (2026-09-20)
 - Ett upprepat UTFALL är inte en mekanism: öppna hooken/skriptet innan du skriver ned VARFÖR, annars bekräftar varje lyckad körning vanan och ingenting testar förklaringen (2026-09-20)
+- En strykning måste mäta BÅDA satserna i meningen den skär i — den flaggade satsen är inte automatiskt den falska, och sessionens egen utdata har ofta redan mätt det; samma mening fel två gånger = radera hela påståendet (BUT-1890, 2026-09-20)
