@@ -136,6 +136,39 @@ const H = 'Butlery tillganglighetshandoff.dc.html';
 if (existsSync(H)) { const m = handoffMatris(readFileSync(H, 'utf8')); const utan = m.filter(r => !POLICY[r.CONTROL_PATTERN]);
   prov('P01', 'alla handoffens regler har en agarpolicy', m.length === 49 && utan.length === 0, m.length + ' regler, utan policy: ' + utan.map(r => r.CONTROL_PATTERN).join(',')); }
 
+
+// == M6 . syskonoberoende (FINAL FABLE AUDIT, korrigeringsrunda 1)
+//    Agarens id far aldrig bero pa hur manga syskon i ramen som delar handlingen.
+const idAv = xs => tilldela(xs).map(x => x.id);
+{
+  const kebabA = f({ art: 'g', namn: 'Fler åtgärder', kedja: inne('occ-rada', []) });
+  const kebabB = f({ art: 'g', namn: 'Fler åtgärder', kedja: inne('occ-radb', []) });
+  const en = idAv([kebabA]);
+  const tva = idAv([kebabA, kebabB]);
+  prov('M6-01', 'en ensam kebab far samma id nar ett syskon med samma handling laggs till', en[0] && en[0] === tva[0], en[0] + ' / ' + tva[0]);
+  prov('M6-02', 'den kvarvarande kebaben far samma id nar syskonet tas bort', tva[0] && tva[0] === idAv([kebabA])[0], tva[0]);
+  const omvand = idAv([kebabB, kebabA]);
+  prov('M6-03', 'omkastad ordning andrar inte nagot id', omvand[1] === tva[0] && omvand[0] === tva[1], omvand.join(' , '));
+  prov('M6-04', 'tva ankrade kebabar far skilda id', tva[0] && tva[1] && tva[0] !== tva[1], tva.join(' , '));
+}
+{
+  const favA = f({ art: 'recept', namn: 'Spara som favorit', kedja: inne('occ-kort1', []) });
+  const favB = f({ art: 'recept', namn: 'Ta bort från favoriter', kedja: inne('occ-kort2', []) });
+  prov('M6-05', 'favorit: ensam kontroll bar redan sitt objektankare', idAv([favA])[0] === idAv([favA, favB])[0], idAv([favA])[0]);
+}
+{
+  const timerA = f({ art: 'laga', namn: 'Starta timer 15 minuter', kedja: inne('occ-steg3', []) });
+  const timerB = f({ art: 'laga', namn: 'Starta timer 20 minuter', kedja: inne('occ-steg5', []) });
+  prov('M6-06', 'timerchip: id oberoende av antal syskon', idAv([timerA])[0] === idAv([timerA, timerB])[0], idAv([timerA])[0]);
+}
+{
+  const utanAnkare = f({ art: 'g', namn: 'Fler åtgärder' });
+  const medAnkare = f({ art: 'g', namn: 'Fler åtgärder', kedja: inne('occ-radc', []) });
+  const r = idAv([utanAnkare, medAnkare]);
+  // U: bada ar stabila och skilda; ingen av dem faller tillbaka pa position eller ordinal.
+  prov('M6-07', 'utan kallforfattat ankare blir nyckeln ramens stabila handling, aldrig ett positionellt index', r[0] === 'OWNER::g::handling::more-actions' && !/[0-9]/.test(String(r[0])) && r[1] !== r[0], String(r[0]) + ' / ' + r[1]);
+}
+
 for (const r of res) console.log((r.ok ? 'GRON ' : 'ROD  ') + r.id + '  ' + r.vad + (r.ok ? '' : '  → ' + r.diag));
 console.log('\nPROV ' + res.filter(r => r.ok).length + '/' + res.length);
 process.exit(res.every(r => r.ok) ? 0 : 1);

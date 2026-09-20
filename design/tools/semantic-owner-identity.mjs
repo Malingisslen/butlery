@@ -283,7 +283,11 @@ export function semantiskAgare(k0) {
   if (b) return { nyckel: 'OWNER::' + k.art + '::objekt::' + slug(o.ankare) + '::handling::' + b.handling, regel: 'BINDNING', monster: b.regel };
   const monster = styrandeRegel(k);
   if (monster) {
-    const behover = kraverObjektankare(monster) || k.anvandAnkare;
+    // M6 (FINAL FABLE AUDIT): objektankaret anvands nar monstret kraver det, eller nar regeln ar markt
+    // ankareVidUpprepning och ett kallforfattat objektankare finns. Valet far ALDRIG bero pa hur manga
+    // syskon i ramen som delar handlingen - annars byter agaren id nar ett orelaterat syskon tas bort.
+    const regelP = POLICY[monster] || {};
+    const behover = kraverObjektankare(monster) || (!!regelP.ankareVidUpprepning && !!(o && (o.ankare || o.skuld)));
     if (behover && o && o.skuld) return { olost: true, regel: 'HANDOFF', monster, skal: 'LEGACY_IDENTITY_DEBT: ankaret ' + o.skuld + ' ar innehallsbaserat och far inte bli agargrund utan granskning' };
     const h = handoffNyckel({ ...k, ankare: behover && o ? o.ankare : null });
     return h.olost ? { olost: true, regel: 'HANDOFF', monster, skal: h.skal } : { nyckel: 'OWNER::' + h.nyckel, regel: 'HANDOFF', monster };
@@ -306,17 +310,17 @@ export function semantiskAgare(k0) {
 }
 
 /**
- * Tilldelar id till en mangd fakta. Handoffstyrda kontroller vars handling upprepas i ramen far
- * sitt objektankare (ankareVidUpprepning); aterstar en kollision far ingen av dem ett id, utom nar
- * alla kolliderande ar alternativ i samma grupp som skiljer sig bara pa sitt varde (OPTION_VALUE).
+ * Tilldelar id till en mangd fakta. Nyckeln ar en ren funktion av varje elements egen semantik och
+ * dess kallforfattade ankare: den beror aldrig pa hur manga syskon som delar handlingen (M6).
+ * En kvarstaende kollision faller stangt, utom nar alla kolliderande ar alternativ i samma grupp
+ * som skiljer sig bara pa sitt varde (OPTION_VALUE).
  */
 export function tilldela(fakta) {
   const rakna = xs => { const m = new Map(); for (const x of xs) if (x.r.nyckel) m.set(x.r.nyckel, (m.get(x.r.nyckel) || 0) + 1); return m; };
-  let bas = fakta.map(f => ({ f, r: semantiskAgare(f) }));
-  let antal = rakna(bas);
-  bas = bas.map(b => (b.r.regel === 'HANDOFF' && b.r.nyckel && antal.get(b.r.nyckel) > 1 && b.f.objekt && !b.f.anvandAnkare)
-    ? { f: { ...b.f, anvandAnkare: true }, r: semantiskAgare({ ...b.f, anvandAnkare: true }) } : b);
-  antal = rakna(bas);
+  // M6: ingen kollisionsbaserad befordran. Agarnyckeln ar en ren funktion av elementets egen semantik
+  // och dess kallforfattade ankare - aldrig av syskonen. Kvarstaende kollision faller stangt.
+  const bas = fakta.map(f => ({ f, r: semantiskAgare(f) }));
+  const antal = rakna(bas);
   return bas.map(({ f, r }) => {
     if (!r.nyckel) return { f, id: null, status: 'OWNER_IDENTITY_UNRESOLVED', regel: r.regel, skal: r.skal };
     if (antal.get(r.nyckel) === 1) return { f, id: r.nyckel, status: 'RESOLVED', regel: r.regel, monster: r.monster };
