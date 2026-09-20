@@ -19,6 +19,7 @@ import { fileURLToPath } from 'node:url';
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { agarNyckel, stabilEtikett } from './identitet8.mjs';
+import { VARDEN } from '../semantic-owner-identity.mjs';
 import { kontrollFakta, omnyckla } from './omnyckla.mjs';
 import { readdirSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
@@ -675,6 +676,48 @@ export function klassa(snap, inv, M) {
     enheter.splice(0, enheter.length, ...R2.enheter); O2.rader = R2.rader;
     const pmap = new Map(R2.rader.filter(r => r.persistentFore).map(r => [r.persistentFore, r.nyAgare]));
     for (const a of M.block284Alias) if (pmap.has(a.PERSISTENT_OWNER_ID)) a.PERSISTENT_OWNER_ID = pmap.get(a.PERSISTENT_OWNER_ID); }
+  /* ── Stabil agare for rader vars namn bar ett barns valda varde ───────────
+     En installningsrad heter "Sprak" + det VALDA VARDET ("SpraakSvenska").
+     Vardet ar lage, inte identitet - se VARDEN i semantic-owner-identity.
+     Raden ar en egen kontroll och far inte tas bort; den ska ha en stabil
+     agare. Den starkaste kallgrunden ar radens EGET ankare, och metoden ger
+     redan den nyckeln (EGET_ANKARE). Vi nycklar om enbart den har klassen:
+     radens namn slutar pa ett valt varde OCH nagot barn i samma ankrade
+     objekt ar en egen lokal handling. Allt annat lamnas orort. */
+  const stabilaRader = [];
+  if (O2) {
+    const vardeord = String(VARDEN.source).replace(/^\^\(|\)\$$/g, '').split('|')
+      .map(x => x.trim()).filter(x => x.length >= 4);
+    const slugV = t => String(t || '').normalize('NFD').replace(/[̀-ͯ]/g, '')
+      .toLowerCase().replace(/[^a-z0-9]+/g, '');
+    const kanonPerFakta = O2.fakta.map(f => f.ny && f.ny.id).filter(Boolean);
+    const perEnhet = new Map(enheter.map(e => [e.OWNER_ID, e]));
+    for (const f of O2.fakta) {
+      const kanon = f.ny && f.ny.id;
+      if (!kanon || !f.agare || f.agare === kanon) continue;
+      if (!/^OWNER::[a-z0-9-]+::namn::/.test(f.agare)) continue;
+      if (!/^OWNER::[a-z0-9-]+::objekt::occ-[a-z]{12}$/.test(kanon)) continue;
+      const namn = slugV(f.namn);
+      if (!vardeord.some(v => namn.endsWith(v) && namn.length > v.length)) continue;
+      // nagot barn i samma ankrade objekt maste vara en egen lokal handling
+      if (!kanonPerFakta.some(k => k.startsWith(kanon + '::handling::'))) continue;
+      const e2 = perEnhet.get(f.agare);
+      if (!e2 || e2.CATEGORY !== 'PRODUCT_REMEDIATION_REQUIRED') continue;
+      const nyId = 'RP::' + String(e2.id).split('::')[1] + '::' + kanon.replace(/^OWNER::/, '');
+      if (enheter.some(x => x.id === nyId)) continue;         // aldrig skriv over en befintlig enhet
+      stabilaRader.push({ OLD_ROW_OWNER: f.agare, NEW_ROW_OWNER: kanon, OLD_UNIT: e2.id, NEW_UNIT: nyId,
+        SOURCE_ANCHOR: (kanon.match(/occ-[a-z]{12}/) || [])[0] || null,
+        SEMANTIC_ACTION_KEY: 'EGET_ANKARE (radens eget kallforfattade ankare)',
+        IDENTITY_EVIDENCE: 'namnet "' + f.namn + '" slutar pa ett valt varde; objektet bar en lokal handling',
+        SOURCE_ELEMENT: f.art + '#' + (f.el ? f.el.ordProd : '?') });
+      e2.IDENTITY_MIGRATION = { FROM: e2.id, REASON: 'STATE_DERIVED_NAME_IDENTITY' };
+      e2.id = nyId;
+      if (e2.WRITE_OWNER) e2.WRITE_OWNER = String(e2.WRITE_OWNER).split(f.agare).join(kanon);
+      e2.OWNER_ID = kanon;
+    }
+  }
+  M.STABILA_RADAGARE = stabilaRader;
+
   enheter.sort(byId);
   for (let i = 1; i < enheter.length; i++) if (enheter[i].id === enheter[i - 1].id) fail('identitetskollision: ' + enheter[i].id);
 
@@ -836,6 +879,7 @@ if (isMain) {
   const Q = arg('gammal') ? identitetskontroll(JSON.parse(readFileSync(arg('gammal'), 'utf8')), R.enheter) : null;
   const { enheter, ...rest } = R;
   console.log(JSON.stringify({ BLOCK: '287-omgang-12',
-    SUPPRESSED_STALE_OWNERS: { ANTAL: (M.UNDERTRYCKTA_AGARE || []).length, rader: M.UNDERTRYCKTA_AGARE || [] }, AGARSTEG: M.omnyckling ? { BEROERDA: M.omnyckling.rader.length, NYA_ID: M.omnyckling.rader.filter(r => r.ny && r.ny !== r.gammal).length, rader: M.omnyckling.rader.map(r => ({ FROM: r.gammal, TO: r.ny, REGEL: r.regel, MONSTER: r.monster, ANKARE: r.ankare })) } : null, ROT: ROOT, BASLINJE: snap.baslinje, ENHETER: enheter.length, ...rest, Q,
+    SUPPRESSED_STALE_OWNERS: { ANTAL: (M.UNDERTRYCKTA_AGARE || []).length, rader: M.UNDERTRYCKTA_AGARE || [] },
+    STABLE_ROW_OWNERS: { ANTAL: (M.STABILA_RADAGARE || []).length, rader: M.STABILA_RADAGARE || [] }, AGARSTEG: M.omnyckling ? { BEROERDA: M.omnyckling.rader.length, NYA_ID: M.omnyckling.rader.filter(r => r.ny && r.ny !== r.gammal).length, rader: M.omnyckling.rader.map(r => ({ FROM: r.gammal, TO: r.ny, REGEL: r.regel, MONSTER: r.monster, ANKARE: r.ankare })) } : null, ROT: ROOT, BASLINJE: snap.baslinje, ENHETER: enheter.length, ...rest, Q,
     PRODUKTENHETER: enheter.filter(e => e.CATEGORY === 'PRODUCT_REMEDIATION_REQUIRED').map(e => e.id) }, null, 1));
 }

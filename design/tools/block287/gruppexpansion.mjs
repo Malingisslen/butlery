@@ -79,16 +79,37 @@ if (!arg('skord')) {
   const { fakta } = kontrollFakta({ skord, overlay: O, etikett: etik });
   for (const f of fakta) { f.objekt = SEM.narmasteAnkare(f.kedja); const r = SEM.semantiskAgare(f);
     if (r.nyckel && f.el) { const e = RAM.get(f.art + '#' + f.el.ordProd); if (e) reg(r.nyckel, e); } }
+  // tilldela() ger den nyckel populationen faktiskt bar - bland annat lokala
+  // handlingar i ett ankrat objekt ("::handling::current-value"). Utan den
+  // faller uppslaget tillbaka pa objektets ankare, och en kontroll med eget
+  // vardefalt hamnar pa behallaren i stallet for pa sig sjalv.
+  if (typeof SEM.tilldela === 'function') {
+    const tilldelat = SEM.tilldela(fakta);
+    tilldelat.forEach((t, i) => {
+      const f = fakta[i];
+      if (!t || !t.id || !f || !f.el) return;
+      const e = RAM.get(f.art + '#' + f.el.ordProd);
+      if (e) reg(t.id, e);
+    });
+  }
 }
 // AGARSTEG: varje ombyggd enhet bar ankaret till sitt agande element
 const enhetAnkare = new Map();
 if (BYGGE && BYGGE.AGARSTEG) for (const r of BYGGE.AGARSTEG.rader) if (r.ANKARE) enhetAnkare.set(r.TO, r.ANKARE);
 const agarUppslag = (id, enhetId) => {
+  // En kontroll med egen kanonisk agarnyckel behaller sitt eget element aven nar
+  // en forfader bar ankaret. Ankartabellen pekar ut agarOBJEKTET, och for en rad
+  // med ett eget vardefalt ar det behallaren - inte kontrollen. Det exakta
+  // uppslaget gar darfor forst.
+  const rent0 = id == null ? null : String(id);
+  if (rent0 && agarEl.has(rent0)) return agarEl.get(rent0);
+  if (rent0 && agarEl.has('OWNER::' + rent0)) return agarEl.get('OWNER::' + rent0);
+  // Ankartabellen ar en reserv, inte ett forstahandsval - och den far inte
+  // anvandas nar anroparen inte ens skickade en agarstrang. Annars svarar
+  // forsta anropet med agarobjektet innan den riktiga nyckeln hunnit provas.
+  if (!rent0) return null;
   if (enhetId && enhetAnkare.has(enhetId)) { const a = byAnchor.get(enhetAnkare.get(enhetId)); if (a) return a; }
-  if (!id) return null;
-  const rent = String(id);
-  if (agarEl.has(rent)) return agarEl.get(rent);
-  if (agarEl.has('OWNER::' + rent)) return agarEl.get('OWNER::' + rent);
+  const rent = rent0;
   const m = rent.match(/occ-[a-z]{12}/);
   if (m && byAnchor.has(m[0])) return byAnchor.get(m[0]);
   return null;
