@@ -53,6 +53,11 @@ without approval (mismatch = silent client-side "not found").
   per billing account), never a new `onSchedule`; a standalone one also needs
   its own `timeoutSeconds` (else the v2 60s default) and must sit BELOW
   `setGlobalOptions` in `index.ts`.
+- **A trigger module snapshots global options at MODULE EVAL, and that order is
+  fixed by the `export … from` position in `index.ts`** — moving a helper
+  between modules re-routes the transitive require but cannot move the eval
+  above `setGlobalOptions`. `deploy-manifest.test.ts` is the instrument that
+  settles region + ceiling after any import-graph change; run it, don't reason.
 
 ## Idempotency rules (the most bug-prone area)
 

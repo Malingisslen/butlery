@@ -20592,3 +20592,53 @@ Also measured: `functions/scripts/rules-coverage-report.js` discovers project id
 Round 2, same day: all five findings taken. Suite is 21 cases; the counters rule dropped the stranger `- 1` disjunct instead of adding a stranger-decrement ALLOW, because `decrementUnreadCounter` runs as the owner. Re-measured that premise by reading every caller: `markAsViewed(contentId, userId)` on the three shared-content repositories is reached from `base_social_coordinator.markAsViewed` and `social_recipe_coordinator` with `currentUserId`, and `SocialRecipeService.markSharedRecipeAsViewed(id, userId)` (uid supplied by the caller) has no production caller — tests only. `recalculateUnreadCount` throws `PermissionDeniedException` unless `userId == requireCurrentUserId()`. So the tightening breaks no shipped path, but `decrementUnreadCounter` itself does not assert ownership, and a future caller passing another uid would be denied into the best-effort catch — badge silently stops clearing. Consequence of the tightening: `counterStepOk`'s `>= 0` floor now has no kill case (equal-or-+1 from a non-negative prior can never go negative), so it only bites from a negative stored value, which only the owner arm — which carries no numeric bound — or the Admin SDK can create.
 Round 3: the floor was pinned rather than left unpinned — a case seeding `unreadSharedRecipes: -3, totalSharedContent: -3` and sending the ordinary stranger `increment(1)` reaches `-2`, which only `>= 0` refuses (without it, `-2 == -3 + 1` satisfies the `+1` disjunct and the write lands). Its single-variable ALLOW control is the existing "a later share steps the existing counter" (same actor, same payload, seed `3`). 22 cases. The header's sentinel sentence was struck and rewritten to name which writer each allow case imitates, and that version is true of all four allow cases.
 BUT-2111 cluster verified against the rules: the terminal `match /{document=**} { allow read, write: if false; }` exists; commit c8cada8b2 removed `match /conversation_memberships/{conversationId}`, whose grants were `read, delete: if isOwner(userId)` and `create, update: if isAuthenticated()`, so "the OWNER — the actor the old block LET IN" holds for all five verbs; the control path `users/{userId}/category_preferences/{prefId}` is `allow read, write: if isOwner(userId)` with no age or shape conjunct, so it is a sound fail-closed control. Worktree note: `firestore.rules` and the counters suite were rewritten mid-review (the `>= 0` floor and its case arrived after the first read) — re-read before judging.
+
+### 2026-09-20 — BUT-1899: logSafeConversationId extracted to functions/src/shared [review]
+
+`logSafeConversationId` moved out of the minor-safety trigger module
+`messaging/enforce-group-minor-membership.ts` into `shared/log-safe-conversation-id.ts`,
+beside `hash-uid.ts`. Function body byte-identical; only the home and the relative
+`hashUid` import changed. Four import sites repointed (`account/account-deletion-cascade.ts`,
+`messaging/sync-conversation-last-message.ts`, `social/duplicate-content-guard.ts`,
+`__tests__/enforce-group-minor-membership.test.ts`).
+
+Measured this run:
+- `grep -rn "logSafeConversationId" functions/` — every reference resolves to
+  `shared/log-safe-conversation-id`; the only surviving imports from the old module are
+  `tryClearRoster` (cascade, `groups/remove-chat-group-member.ts`) and
+  `stageBackstopRemovals` (`__tests__/chat-group-callables.test.ts`), all of which still
+  live there.
+- `npx tsc --noEmit` clean; `npm run build` clean.
+- `enforce-group-minor-membership.test.ts` 28/28 (incl. the BUT-1872 cross-language parity
+  literal `direct_#12fc49f947ab`), `sync-conversation-last-message.test.ts` 5/5,
+  `duplicate-content-guard.test.ts` 29/29, `minor-membership-gate.test.ts` 9/9.
+- `deploy-manifest.test.ts` 8/8: 72 gen2 exports, every one europe-west1, ceilings
+  unchanged (3, with the two ingredient cascades at their registered override). This is
+  what settled the module-eval question: `onDocumentWritten` snapshots `getGlobalOptions()`
+  at module eval, and before the change `index.ts`'s `export … from
+  "./messaging/sync-conversation-last-message"` (line 117) pulled the enforce trigger in
+  transitively, ahead of its own export at line 122. Both positions are below
+  `setGlobalOptions` (line 94), so the region could not move either way — but the manifest
+  test is the measurement, not the reasoning. Folded into the core card.
+- No cycle introduced: the new module's only import is `shared/hash-uid` (leaf, `crypto`).
+  A cycle was REMOVED — `social/duplicate-content-guard` and
+  `messaging/sync-conversation-last-message` no longer transitively require the trigger
+  module and its `groups/*` dependencies.
+
+Two prose questions the caller asked, both settled by reading:
+- The cascade's comment above `import { tryClearRoster } ...` ("Extraction into a neutral
+  module is tracked separately; until then, that function's docstring names this caller")
+  is STILL TRUE. Every clause names `tryClearRoster`, which was not extracted, and
+  `tryClearRoster`'s own docstring does name `deleteMessages` + `deleteChatGroupMemberships`
+  in this file. No strike.
+- The moved docstring reads correctly from a neutral module: "This helper exists because
+  BUT-1822 gave `tryClearRoster` a second caller ... that hands it direct ids for the first
+  time" is an ORIGIN claim, not a scope claim, and does not depend on adjacency. One
+  sentence does not survive the move — "It was described **here** as a client-minted UUIDv4
+  until 2026-08-19" — because "here" now denotes a file created today, whose history cannot
+  carry the claim. Filed Info, strike-only (the sentence carries no rule).
+- `ACCEPTED_DEVIATIONS.md` (BUT-1822 entry) names the SYMBOL `logSafeConversationId`, never
+  its module path, so the move falsifies no decision record and needs no supersession.
+
+Not verified: whether BUT-1899's own scope was meant to include the `tryClearRoster`
+extraction that the "tracked separately" clause points at. Ticket scope, not code.

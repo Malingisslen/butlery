@@ -39639,3 +39639,71 @@ non-vacuity silently.
 Runs: `flutter test` over the two suites → +100 all passed, no `[E]`.
 `flutter analyze` over the four files → no issues (110s). No `lib/` mutation probe was run:
 a sibling gate was reading the same tree, and the kill sets above are analytic.
+
+### 2026-09-20 — BUT-1899: a mint↔masker coupling test whose fixture the sibling net cannot match
+
+Reviewed the staged diff for BUT-1899. One new test in
+`test/unit/repositories/firebase/modules/conversation_mutation_module_test.dart`:
+"a minted direct id is masked, not logged raw". It drives the real
+`ConversationMutationModule.createDirectConversation` against `FakeFirebaseFirestore`,
+takes the id it RETURNS, feeds it to the real `LogSanitizer.maskConversationId`, and
+asserts `isNot(equals(id))` plus `isNot(contains(uid))` per uid. Deliberately not two
+hardcoded literals — that shape would stay green through the rename it exists to catch.
+The author mutation-probed it (`'direct_'` → `'dm_'` at the mint): the new test went red,
+the other 11 stayed green. Suite re-run here: 11 passed + 1 pre-existing skip.
+
+GRADED NON-VACUOUS, and bidirectional: renaming the prefix at the MINT makes
+`maskConversationId` fall through its `startsWith` guard and return the input, so
+`masked == id` reddens; renaming it in the MASKER alone does the same. It is green only
+when both move together, which is the coupling the ticket names.
+
+`isNot(equals(id))` is the right assertion and pinning `direct_#<12 hex>` here would be
+wrong. The format is already pinned by a literal in `test/unit/core/utils/log_sanitizer_test.dart`
+(and in the Cloud Functions parity test), so a pin here is a second place to update; worse,
+a COORDINATED rename of the scheme on both sides — the legitimate change — would redden a
+`startsWith('direct_#')` pin for no defect, re-creating exactly the two-literals coupling
+the test was written to avoid. The two `isNot(contains(uid))` lines are NOT entailed by
+the inequality above them (an inequality pins neither operand, unlike the equality-above-a-
+contains-loop shape in the core card), so they stay.
+
+Home is correct: the subject is the MINT, and the mint lives in this module. The masker's
+own suite is a pure-function suite with no Firestore dependency; importing the module and a
+fake Firestore into it would be the heavier coupling, and the red would land away from the
+file an id-scheme rename is edited in.
+
+THE FINDING (Medium, non-blocking): the fixture `direct_user-a_user-b` is not of the shape
+production mints, and that matters because the SECOND masking net is shape-sensitive.
+`LogSanitizer.maskIdentifiers` — the Crashlytics chokepoint AppLogger routes free text
+through — matches rule 1 as
+`(?<![a-zA-Z0-9_])direct_[a-zA-Z0-9]+_[a-zA-Z0-9]+` and rule 2 as a 20-28 alnum run.
+Measured: against `direct_user-a_user-b` BOTH rules return null (the hyphen is outside the
+character class, so after `direct_` the `[a-zA-Z0-9]+` can never be followed by `_`; the
+alnum runs are all far under 20). Against the live shape
+`direct_<28 alnum>_<28 alnum>` rule 1 matches whole. So the test's own id, if it ever
+reached the chokepoint, would be logged fully raw — and the test is green regardless,
+because it only calls the helper. Not a live bug (real Firebase uids are 28 alnum), but it
+leaves one regression uncaught: changing the JOINER at the mint (`direct_${a}-${b}`,
+`direct_${a}__${b}`) keeps `maskConversationId` hashing (green here) while the chokepoint
+silently stops matching and ships both uids. Cheap close, and it is a move rather than a
+duplication: make the two uids 28-char alnum and add
+`expect(AppLogger.sanitizeForCrashlyticsForTesting(id), LogSanitizer.maskConversationId(id))`
+— the same assertion `log_sanitizer_test.dart`'s minted-shape case makes against HARDCODED
+literals, now made against the id the mint really produced.
+
+Second finding (Info): this commit's rename left a stale pointer. `log_sanitizer_test.dart`
+still names `functions/src/messaging/enforce-group-minor-membership.ts` as the home of
+`logSafeConversationId`, which moved to `functions/src/shared/log-safe-conversation-id.ts`
+in this very diff. A moved path is directly readable from the code, so it is corrected in
+place rather than struck. Not staged; flagged to the caller rather than edited, to avoid
+changing bytes a sibling gate was reading.
+
+No wasteful overlap with the surviving `test/unit/core/utils/log_sanitizer_test.dart`: that
+suite never touches the mint site and this test never pins the hash format.
+
+The two other staged test changes (`test/views/messaging/conversations_list_view_test.dart`,
+`test/widget/messaging/chat_action_handler_group_menu_test.dart`) are the import path and
+type name following `group_detail_view.dart` → `conversation_group_detail_view.dart`, and
+nothing else. Grepped the repo for the old path and the old symbol: no live references left
+outside another session's worktree and `tasks/todo.md`'s own AC text.
+
+Verdict: pass (0 blocking).

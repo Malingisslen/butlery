@@ -115,7 +115,12 @@
   enumerates). **One decision spelled in TWO grammars — a parsed-value EQUALITY and a raw-source
   regex PREFIX — is two decisions, and the doc comment calling them "the same decision spelled
   differently" is what stops the next reader checking**; run BOTH over one lattice, since the
-  suite pinning the strict twin reads as covering the permissive one (BUT-2020). Grade the whole family in ONE cheap run: a scratchpad replica plus a MATRIX of
+  suite pinning the strict twin reads as covering the permissive one (BUT-2020). **A test
+  coupling a MINT SITE to such a pair needs a fixture of the shape production MINTS**:
+  `direct_user-a_user-b` is hashed by the prefix twin and left fully RAW by the regex twin
+  (`[a-zA-Z0-9]+` halves — measured, BUT-1899), so it is green while the only leg that can
+  leak is unexercised. Read the regex's CHARACTER CLASS against the fixture, not the prefix.
+  Grade the whole family in ONE cheap run: a scratchpad replica plus a MATRIX of
   full-regex × one-alternative-deleted over every fixture. Two things only the matrix shows: an
   alternative killed by TWO fixtures (fine) or by NONE (the finding). In a MASK-head/PRESERVE-frames
   splitter only the PRESERVE assertion pins the split. `hasRequiredFields` checks presence+non-null
