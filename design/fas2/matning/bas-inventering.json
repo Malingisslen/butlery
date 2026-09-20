@@ -396,7 +396,7 @@
   },
   "DEDUP": {
    "REQUIREMENT_COUNT": 38,
-   "OCCURRENCE_COUNT": 1463,
+   "OCCURRENCE_COUNT": 1460,
    "REMEDIATION_UNIT_COUNT": 38,
    "SOURCE_WRITE_COUNT": 38,
    "KOPPLADE_SKRIVNINGAR": 0
@@ -418,7 +418,7 @@
    "T-21 · METHOD_TOOLING_REQUIRED": 4,
    "T-02 · LINT_SYNC_REQUIRED": 5,
    "T-02 · HUMAN_DECISION_REQUIRED · BL-07": 3,
-   "T-08 · LINT_SYNC_REQUIRED": 1370,
+   "T-08 · LINT_SYNC_REQUIRED": 1367,
    "T-08 · HUMAN_DECISION_REQUIRED · BL-03": 26,
    "T-11 · METHOD_TOOLING_REQUIRED": 4,
    "T-14 · DOCUMENTATION_ONLY": 23,
@@ -430,7 +430,95 @@
    "REMEDIATION_IDENTITY_POPULATION": "b857cf68925e8fb2",
    "REMEDIATION_CLASSIFICATION_STATUS": "0a801c1e6955eb2d",
    "REQUIREMENT_SOURCE_SET": "52802f9a569339a1",
-   "PRODUCT_OCCURRENCE_SET": "c38bb802a5603dd8"
+   "PRODUCT_OCCURRENCE_SET": "7afa12b2e9a78edc"
+  },
+  "MEDLEMSMANGDER": {
+   "LC_MEMBER_COUNT": 307,
+   "LC_MEMBER_SET_HASH": "b4504e44877f4461",
+   "T08_MEMBER_COUNT": 1367,
+   "T08_MEMBER_SET_HASH": "304aa144733a4bf1",
+   "RECONCILIATION_MEMBER_COUNT": 1460,
+   "RECONCILIATION_MEMBER_SET_HASH": "5c51f65daa0c03b8"
   }
+ },
+ "HISTORISK_STALE_FORVANTAN": {
+  "$om": "Varden som lag i forvantat men aldrig gick att reproducera ur repot. De raderas inte.",
+  "KLASS": "HISTORICAL_STALE_EXPECTATION",
+  "SKAL": "NON_REPRODUCIBLE_EXPECTATION_FROM_NONCANONICAL_CANDIDATE_TREE",
+  "poster": [
+   {
+    "NYCKEL": "LINT[\"T-08 · LINT_SYNC_REQUIRED\"]",
+    "OLD_VALUE": 1370,
+    "NEW_VALUE": 1367
+   },
+   {
+    "NYCKEL": "DEDUP.OCCURRENCE_COUNT",
+    "OLD_VALUE": 1463,
+    "NEW_VALUE": 1460
+   },
+   {
+    "NYCKEL": "FINGERAVTRYCK.PRODUCT_OCCURRENCE_SET",
+    "OLD_VALUE": "c38bb802a5603dd8",
+    "NEW_VALUE": "7afa12b2e9a78edc",
+    "SKAL": "fingeravtrycket ar en funktion av samma lintmangd och foljer med omkalibreringen"
+   }
+  ],
+  "PROVENANCE_GAP": [
+   "1370 ar ingen matning. fas2/batch3-forberedelse.json (K_migration, franCommit bee4b6c) skriver",
+   "forvantadUtvidgadPopulation = 1370 = historiskFrusenBaslinje 1351 + nyaKontroller 19, och samma fil",
+   "sager i steg 3: \"Forvantat FORE traffyteatgard: 19 nya traffytefynd. Det ar en forvantan, ingen",
+   "siffra som far framtvingas.\" fas2/groupb-grannar.json (franCommit 0884b25) klassar den sedan sjalv:",
+   "hypotes1370.giltig = false, \"OGILTIG SOM SLUTSIFFRA\", med regeln \"Skriv inte 1370 final forran",
+   "scopet ar slutligt fryst\". Enheten dar ar dessutom ARTIFACT_CONTROL_OCCURRENCES, inte T-08-rader.",
+   "1463 = 1460 + samma tre: OCCURRENCE_COUNT ar roller + lintrader, och T-08 ar en delmangd av lintraderna."
+  ],
+  "COMMITS_TESTED": [
+   {
+    "COMMIT": "bee4b6c",
+    "ROLL": "batch3-forberedelse franCommit",
+    "T08": 1367
+   },
+   {
+    "COMMIT": "cc7bf23",
+    "ROLL": "batch3-beslutslas franCommit",
+    "T08": 1367
+   },
+   {
+    "COMMIT": "0884b25",
+    "ROLL": "groupb-grannar franCommit",
+    "T08": 1367
+   },
+   {
+    "COMMIT": "a805a1b",
+    "ROLL": "bas-inventering input_commit",
+    "T08": 1367
+   },
+   {
+    "COMMIT": "06c1278",
+    "ROLL": "BL-01-baslinjen",
+    "T08": 1367
+   },
+   {
+    "COMMIT": "4318ef2",
+    "ROLL": "fore de 21 ankarna",
+    "T08": 1367
+   },
+   {
+    "COMMIT": "HEAD",
+    "ROLL": "efter de 21 ankarna",
+    "T08": 1367
+   }
+  ],
+  "SETS_SEARCHED": {
+   "FILER": 563,
+   "OMFATTNING": "alla .json/.md/.mjs/.js/.txt i repot utom .git och node_modules",
+   "RESULTAT": "ingen persisterad radmangd om 1370 eller 1463 finns. De 19 planerade kontrollerna ar itemiserade i fas2/batch3-forberedelse.json C_inventarium och alla 19 ger ett T-08-fynd i dag, sa bristen ligger inte i dem."
+  },
+  "WHY_REBASE_IS_ALLOWED": [
+   "Kallan ger 1367 och 1460 vid sju provade commits, inklusive den forvantan sjalv anger som sin matpunkt.",
+   "Ingen persisterad radmangd pekar ut de tre extra.",
+   "Repots eget beslutsunderlag klassar 1370 som en ogiltig projektion, inte som en matning.",
+   "Detta ar en rattelse av foraldrad valideringsmetadata, inte av produkten. Ingen produktfil har rorts."
+  ]
  }
 }
