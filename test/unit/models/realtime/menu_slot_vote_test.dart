@@ -1,6 +1,6 @@
 /// Unit tests for MenuSlotVote + VoteOption.
 ///
-/// Pure-Dart; targets the 81 unhit lines in lib/models/realtime/menu_slot_vote.dart.
+/// Pure-Dart.
 library;
 
 import 'package:clock/clock.dart';

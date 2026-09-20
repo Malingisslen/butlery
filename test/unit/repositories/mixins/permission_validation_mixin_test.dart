@@ -1,7 +1,7 @@
 /// Unit tests for PermissionValidationMixin.
 ///
-/// Targets the ~54 unhit lines using a test-only class that includes the
-/// mixin. No Firebase needed for most methods.
+/// Uses a test-only class that includes the mixin. No Firebase needed for
+/// most methods.
 library;
 
 import 'package:flutter_test/flutter_test.dart';

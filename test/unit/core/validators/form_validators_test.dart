@@ -1,8 +1,7 @@
 /// Unit tests for FormValidators.
 ///
-/// Pure-Dart, no Flutter test infrastructure. Targets the 153 unhit lines
-/// in lib/core/validators/form_validators.dart by walking each validator
-/// across its happy + error paths.
+/// Pure-Dart, no Flutter test infrastructure. Walks each validator across
+/// its happy + error paths.
 library;
 
 import 'package:flutter_test/flutter_test.dart';

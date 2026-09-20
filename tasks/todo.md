@@ -1,40 +1,43 @@
-# Sprint 2026-09-20 runda 4 (sprint-execute, /loop, unattended)
+# Sprint 2026-09-20 runda 5 (sprint-execute, /loop, unattended)
 
-Two shopping tickets, both written with the fix already specified by the reviewer who
-filed them. Step-0 confirms both premises on current main (the files moved since the
-tickets were written; the code did not).
+Two cleanup tickets, both mostly deletions. Step-0 measurements, done before planning
+rather than taken from the tickets:
 
-**Learned last round, applied here:** before dispatching any reviewer, grep the whole
-fileset for sentences that ENUMERATE what this change removes — "ONLY", "the two methods
-above", "this class still does", "until then" — and strike them in the same edit. Six
-review rounds last batch were spent one sentence at a time.
+- BUT-1976 says "~15 files"; `grep -rln "unhit lines\|Targets ~" test` says **13**. The
+  ticket predicted this and told me to recount — that is what this line records.
+- BUT-1899's `logSafeConversationId` now has THREE importing modules, not the two the
+  ticket names: `enforce-group-minor-membership.ts` (where it lives),
+  `sync-conversation-last-message.ts` and `account-deletion-cascade.ts`.
+- The `direct_` prefix is minted in `createDirectConversation` and consumed by
+  `LogSanitizer.maskConversationId` (Dart) and `logSafeConversationId` (TS).
+- The messaging group-detail view already declares
+  `ConversationGroupDetailView`; four files import it.
 
-- [!] BUT-1890 [Tier B] WITHDRAWN mid-run — built, then pulled after measurement — the add-item dialog's `_CategorySuggester` is a second,
-  stale copy of `IngredientCategorizer`. Measured wrong answers: Rostbiff → dairy,
-  Ostbågar → dairy, Kokosmjölk → dairy, Diskborste → drinks, Vitlökspulver → fruit_veg.
-  Route it through the maintained engine and delete the private map.
-  - AC1 (diff): the five measured names get the right category, proven by a running test.
-  - AC2 (diff): the private keyword map is gone.
-  - AC3 (diff): `IngredientCategorizer.categorize` returns `other`, never null, and the
-    dialog relies on null to leave the field alone — the delegation must not stamp `other`
-    onto every unrecognised item.
-  - AC4 (diff): the comment and the test-suite header that describe the duplicate are
-    removed in the same change, plus any other sentence this deletion falsifies.
-- [x] BUT-1892 [Tier A] build — a cleared shopping-item note is stored as `''` rather than
-  `null`, and `notes: result.note ?? ''` is sent on EVERY save, so rows drift to `''` over
-  time and "cleared" stops being distinguishable from "never had one".
-  - AC1 (diff): a cleared note is stored as `null`.
-  - AC2 (diff): editing another field on an item with no note leaves `note` untouched.
-  - AC3 (diff): the existing `an empty note CLEARS the stored note` test is rewritten to the
-    new signal and stays mutation-sensitive.
-  - AC4 (diff): `personal_shopping_operations.dart`'s twin `?? item.note` follows, or the
-    fix covers only one of the two list types.
+- [x] BUT-1976 [Tier A] build — strike the coverage numbers from the 13 file headers.
+  - AC1 (diff): `grep -rn "unhit lines\|Targets ~" test` returns nothing.
+  - AC2 (diff): deletions only — no recounted number, no replacement sentence, and each
+    surviving header read alone still says what the file is.
+- [x] BUT-1899 [Tier A] build — four cleanups around the log masking.
+  - AC1 (diff): the weaker duplicate `test/unit/utils/log_sanitizer_test.dart` is deleted,
+    and nothing it covered is lost from the sibling under `test/unit/core/utils/`.
+  - AC2 (diff): `logSafeConversationId` lives in `functions/src/shared/` beside
+    `hash-uid.ts`; all three importers updated; the CF suites stay green.
+  - AC3 (diff): a test binds the `direct_` prefix constant to at least one masker, so
+    renaming the id scheme cannot turn every masker into a no-op silently. This is the one
+    part with a silent failure mode; the other three are tidying.
+  - AC4 (diff): `lib/views/messaging/group_detail_view.dart` is renamed to
+    `conversation_group_detail_view.dart` (the class is already
+    `ConversationGroupDetailView`), with its four importers updated.
 
 ## Needs you (Tier D)
 - none this run.
 
 ## Deviation log
-- [needs-human] BUT-1890: the plan said route the suggester and delete the duplicate. Built and probed, then WITHDRAWN when the code-reviewer gate ran `IngredientCategorizer.categorize` over the deleted map's vocabulary and found most of those names now answer `other`, i.e. lose their suggestion — in buckets the engine already has, not just the ones I had measured. Replacing behaviour that works with something I picked is Malin's call, so the code is unshipped and BUT-2127 carries the measured table and three options.
-- [deviation] BUT-1892's plan named two write paths as if both were live. Measured: `PersonalShoppingOperations.updateItem` has no `lib/` caller; the twin fix is symmetry. Said so in the commit body rather than letting the claim stand.
-- [discovery] `ShoppingListGenerator` writes `note: ''` on every recipe-generated row (`grep -rn "note: ''" lib`) — a second producer the ticket did not know about. Noted on BUT-1892, not fixed here.
-- [deviation] Five comment clauses this change falsified were struck across four gate rounds. The pre-dispatch grep the round-3 lesson prescribes caught none of them, because they were sentences the REVIEWERS' own findings falsified, not ones the code deletion did.
+
+- [deviation] BUT-1899: the plan counted THREE importers of `logSafeConversationId`;
+  the CF unit test imports it by path as a fourth. All four repointed.
+- [discovery] BUT-1899: moving the helper falsified two sentences written elsewhere —
+  the Dart mirror docstring in `log_sanitizer.dart` named the old file, and the CF test
+  header claimed its cases sit "with the code they exercise". Both corrected by deletion.
+- [discovery] BUT-1899: the rename needed a SIXTH reference nobody imports —
+  the hardcoded path in `docs/onboarding/workflow-map.html`. Linter re-run clean.

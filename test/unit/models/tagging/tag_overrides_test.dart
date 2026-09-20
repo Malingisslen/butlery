@@ -1,6 +1,6 @@
 /// Unit tests for TagOverrides model.
 ///
-/// Pure-Dart; targets the 76 unhit lines in lib/models/tagging/tag_overrides.dart.
+/// Pure-Dart.
 library;
 
 import 'package:flutter_test/flutter_test.dart';

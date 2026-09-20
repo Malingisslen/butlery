@@ -1,8 +1,7 @@
 /// Unit tests for JsonSerializableMixin + TimestampedMixin + IdentifiableMixin
 /// + OwnedMixin + SerializationUtils (mixin-file variant).
 ///
-/// Pure-Dart; targets the 117 unhit lines in
-/// lib/core/mixins/json_serializable_mixin.dart.
+/// Pure-Dart.
 library;
 
 import 'package:flutter_test/flutter_test.dart';

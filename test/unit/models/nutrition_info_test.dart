@@ -1,6 +1,6 @@
 /// Unit tests for NutritionInfo model.
 ///
-/// Pure-Dart; targets the 57 unhit lines.
+/// Pure-Dart.
 library;
 
 import 'package:flutter_test/flutter_test.dart';

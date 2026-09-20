@@ -1,6 +1,6 @@
 /// Unit tests for ValidationUtils + extension methods.
 ///
-/// Pure-Dart; targets the 58 unhit lines in lib/core/utils/validation_utils.dart.
+/// Pure-Dart.
 library;
 
 import 'package:flutter_test/flutter_test.dart';

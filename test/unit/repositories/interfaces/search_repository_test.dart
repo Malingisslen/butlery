@@ -1,8 +1,7 @@
 /// Unit tests for SearchRepository value types (SearchResult, RecipeSearchHit,
 /// UserSearchHit, UserSearchData, SearchFilters).
 ///
-/// Pure data-class behaviour — no Firebase, no fakes. Targets the 97
-/// unhit lines in lib/repositories/interfaces/search_repository.dart.
+/// Pure data-class behaviour — no Firebase, no fakes.
 library;
 
 import 'package:flutter_test/flutter_test.dart';

@@ -1,7 +1,6 @@
 /// Unit tests for default_value_extensions.
 ///
-/// Pure-Dart; targets the 22 unhit lines in
-/// lib/core/extensions/default_value_extensions.dart.
+/// Pure-Dart.
 library;
 
 import 'package:clock/clock.dart';

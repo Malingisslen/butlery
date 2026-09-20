@@ -1,6 +1,6 @@
 /// Unit tests for UserCounters + UserCounterIncrements.
 ///
-/// Pure-Dart; targets the 92 unhit lines in lib/models/user_counters.dart.
+/// Pure-Dart.
 library;
 
 import 'package:flutter_test/flutter_test.dart';

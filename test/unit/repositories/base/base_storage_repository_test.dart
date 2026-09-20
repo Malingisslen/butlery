@@ -1,6 +1,5 @@
 /// Unit tests for BaseStorageRepository.
 ///
-/// Targets the ~88 unhit lines in lib/repositories/base/base_storage_repository.dart.
 /// Uses a test-only concrete subclass that exposes @protected methods + the
 /// firebase_storage_mocks MockFirebaseStorage to drive the storage operations
 /// without touching real Firebase.

@@ -1,7 +1,6 @@
 /// Unit tests for FirebasePantryRepository.
 ///
-/// Pure-Dart; uses FakeFirebaseFirestore. Targets ~52 unhit lines in
-/// lib/repositories/firebase/firebase_pantry_repository.dart.
+/// Pure-Dart; uses FakeFirebaseFirestore.
 library;
 
 import 'package:clock/clock.dart';

@@ -1,6 +1,6 @@
 /// Unit tests for ParsedRecipe model.
 ///
-/// Pure-Dart; targets the 111 unhit lines in lib/models/parsing/parsed_recipe.dart.
+/// Pure-Dart.
 library;
 
 import 'package:flutter_test/flutter_test.dart';
