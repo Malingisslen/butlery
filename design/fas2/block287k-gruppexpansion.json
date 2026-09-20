@@ -1,6 +1,6 @@
 {
  "$om": "F-N · gruppexpansion till exakta kallelement",
- "GROUP_REQUIREMENTS": 773,
+ "GROUP_REQUIREMENTS": 772,
  "UNRESOLVED_GROUP_REQUIREMENTS": 30,
  "TERMINAL_OUT_OF_SCOPE_ROWS": 17,
  "TERMINAL_PER_CLASS": {
@@ -11,9 +11,9 @@
  "CARDINALITY_MISMATCH": 0,
  "MISSING_MEMBERS": 0,
  "EXTRA_MEMBERS": 0,
- "DUPLICATE_MEMBERS": 30,
+ "DUPLICATE_MEMBERS": 26,
  "OUT_OF_SCOPE_MEMBERS": 11,
- "EXPANDED_TARGET_OCCURRENCES": 969,
+ "EXPANDED_TARGET_OCCURRENCES": 968,
  "MISSING_TARGET_SOURCE_ELEMENTS": 0,
  "perFamilj": {
   "A11Y_NAME": 15,
@@ -26,7 +26,7 @@
   "HANDOFF_IMAGE": 18,
   "HANDOFF_NAME": 29,
   "ROLE": 7,
-  "ROLE_AND_NAME": 420,
+  "ROLE_AND_NAME": 419,
   "STATE_GROUP": 1,
   "STATE_WITHOUT_ROLE": 1
  },
@@ -268,15 +268,15 @@
     {
      "SOURCE_FILE": "del 2 familj och socialt",
      "FRAME": "allergener",
-     "SOURCE_LOCATOR": "EL::del 2 familj och socialt::occ::occ-iiomdcbgckdf",
-     "ELEMENT_SIGNATURE": "<div> \"Ta med omärkta recept i menyn\"",
+     "SOURCE_LOCATOR": "EL::del 2 familj och socialt::objekt::occ-iiomdcbgckdf::del::switch-reglage",
+     "ELEMENT_SIGNATURE": "<span> roll=switch namn=\"Reglage\" \"\"",
      "SEMANTIC_OWNER": "sig sjalv",
-     "WRITE_OWNER_ID": "EL::del 2 familj och socialt::occ::occ-iiomdcbgckdf",
-     "TARGET_SOURCE_KEY": "EL::del 2 familj och socialt::occ::occ-iiomdcbgckdf::del::self",
+     "WRITE_OWNER_ID": "EL::del 2 familj och socialt::objekt::occ-iiomdcbgckdf::del::switch-reglage",
+     "TARGET_SOURCE_KEY": "EL::del 2 familj och socialt::objekt::occ-iiomdcbgckdf::del::switch-reglage::del::self",
      "TARGET_KEY_GRUND": "elementet ar agaren",
-     "TARGET_SOURCE_ELEMENT": "<div> i allergener",
-     "DEBUG_FRAME_ORD": "allergener#47",
-     "DEBUG_DC_TPL": "1171"
+     "TARGET_SOURCE_ELEMENT": "<span> i allergener",
+     "DEBUG_FRAME_ORD": "allergener#49",
+     "DEBUG_DC_TPL": "1173"
     }
    ]
   },
@@ -294,15 +294,15 @@
     {
      "SOURCE_FILE": "del 2 familj och socialt",
      "FRAME": "allergener",
-     "SOURCE_LOCATOR": "EL::del 2 familj och socialt::occ::occ-onayqntglegj",
-     "ELEMENT_SIGNATURE": "<div> \"Visa i receptdetaljer\"",
+     "SOURCE_LOCATOR": "EL::del 2 familj och socialt::objekt::occ-onayqntglegj::del::switch-reglage",
+     "ELEMENT_SIGNATURE": "<span> roll=switch namn=\"Reglage\" \"\"",
      "SEMANTIC_OWNER": "sig sjalv",
-     "WRITE_OWNER_ID": "EL::del 2 familj och socialt::occ::occ-onayqntglegj",
-     "TARGET_SOURCE_KEY": "EL::del 2 familj och socialt::occ::occ-onayqntglegj::del::self",
+     "WRITE_OWNER_ID": "EL::del 2 familj och socialt::objekt::occ-onayqntglegj::del::switch-reglage",
+     "TARGET_SOURCE_KEY": "EL::del 2 familj och socialt::objekt::occ-onayqntglegj::del::switch-reglage::del::self",
      "TARGET_KEY_GRUND": "elementet ar agaren",
-     "TARGET_SOURCE_ELEMENT": "<div> i allergener",
-     "DEBUG_FRAME_ORD": "allergener#42",
-     "DEBUG_DC_TPL": "1166"
+     "TARGET_SOURCE_ELEMENT": "<span> i allergener",
+     "DEBUG_FRAME_ORD": "allergener#44",
+     "DEBUG_DC_TPL": "1168"
     }
    ]
   },
@@ -320,15 +320,15 @@
     {
      "SOURCE_FILE": "del 2 familj och socialt",
      "FRAME": "allergener",
-     "SOURCE_LOCATOR": "EL::del 2 familj och socialt::occ::occ-sqwgjvtaefne",
-     "ELEMENT_SIGNATURE": "<div> \"Visa på receptkort\"",
+     "SOURCE_LOCATOR": "EL::del 2 familj och socialt::objekt::occ-sqwgjvtaefne::del::switch-reglage",
+     "ELEMENT_SIGNATURE": "<span> roll=switch namn=\"Reglage\" \"\"",
      "SEMANTIC_OWNER": "sig sjalv",
-     "WRITE_OWNER_ID": "EL::del 2 familj och socialt::occ::occ-sqwgjvtaefne",
-     "TARGET_SOURCE_KEY": "EL::del 2 familj och socialt::occ::occ-sqwgjvtaefne::del::self",
+     "WRITE_OWNER_ID": "EL::del 2 familj och socialt::objekt::occ-sqwgjvtaefne::del::switch-reglage",
+     "TARGET_SOURCE_KEY": "EL::del 2 familj och socialt::objekt::occ-sqwgjvtaefne::del::switch-reglage::del::self",
      "TARGET_KEY_GRUND": "elementet ar agaren",
-     "TARGET_SOURCE_ELEMENT": "<div> i allergener",
-     "DEBUG_FRAME_ORD": "allergener#37",
-     "DEBUG_DC_TPL": "1161"
+     "TARGET_SOURCE_ELEMENT": "<span> i allergener",
+     "DEBUG_FRAME_ORD": "allergener#39",
+     "DEBUG_DC_TPL": "1163"
     }
    ]
   },
@@ -346,15 +346,15 @@
     {
      "SOURCE_FILE": "del 1 recept och veckomeny",
      "FRAME": "installningar",
-     "SOURCE_LOCATOR": "EL::del 1 recept och veckomeny::occ::occ-eowhvihfuelh",
-     "ELEMENT_SIGNATURE": "<div> \"Köpta varor till skafferietLäggs till au\"",
+     "SOURCE_LOCATOR": "EL::del 1 recept och veckomeny::objekt::occ-eowhvihfuelh::del::switch-reglage",
+     "ELEMENT_SIGNATURE": "<span> roll=switch namn=\"Reglage\" \"\"",
      "SEMANTIC_OWNER": "sig sjalv",
-     "WRITE_OWNER_ID": "EL::del 1 recept och veckomeny::occ::occ-eowhvihfuelh",
-     "TARGET_SOURCE_KEY": "EL::del 1 recept och veckomeny::occ::occ-eowhvihfuelh::del::self",
+     "WRITE_OWNER_ID": "EL::del 1 recept och veckomeny::objekt::occ-eowhvihfuelh::del::switch-reglage",
+     "TARGET_SOURCE_KEY": "EL::del 1 recept och veckomeny::objekt::occ-eowhvihfuelh::del::switch-reglage::del::self",
      "TARGET_KEY_GRUND": "elementet ar agaren",
-     "TARGET_SOURCE_ELEMENT": "<div> i installningar",
-     "DEBUG_FRAME_ORD": "installningar#22",
-     "DEBUG_DC_TPL": "1353"
+     "TARGET_SOURCE_ELEMENT": "<span> i installningar",
+     "DEBUG_FRAME_ORD": "installningar#26",
+     "DEBUG_DC_TPL": "1357"
     }
    ]
   },
@@ -476,15 +476,15 @@
     {
      "SOURCE_FILE": "del 3 sok och skalbevis",
      "FRAME": "notisinstallningar",
-     "SOURCE_LOCATOR": "EL::del 3 sok och skalbevis::occ::occ-aukacbsbrdew",
-     "ELEMENT_SIGNATURE": "<div> \"Recept\"",
+     "SOURCE_LOCATOR": "EL::del 3 sok och skalbevis::objekt::occ-aukacbsbrdew::del::switch-reglage",
+     "ELEMENT_SIGNATURE": "<span> roll=switch namn=\"Reglage\" \"\"",
      "SEMANTIC_OWNER": "sig sjalv",
-     "WRITE_OWNER_ID": "EL::del 3 sok och skalbevis::occ::occ-aukacbsbrdew",
-     "TARGET_SOURCE_KEY": "EL::del 3 sok och skalbevis::occ::occ-aukacbsbrdew::del::self",
+     "WRITE_OWNER_ID": "EL::del 3 sok och skalbevis::objekt::occ-aukacbsbrdew::del::switch-reglage",
+     "TARGET_SOURCE_KEY": "EL::del 3 sok och skalbevis::objekt::occ-aukacbsbrdew::del::switch-reglage::del::self",
      "TARGET_KEY_GRUND": "elementet ar agaren",
-     "TARGET_SOURCE_ELEMENT": "<div> i notisinstallningar",
-     "DEBUG_FRAME_ORD": "notisinstallningar#11",
-     "DEBUG_DC_TPL": "81"
+     "TARGET_SOURCE_ELEMENT": "<span> i notisinstallningar",
+     "DEBUG_FRAME_ORD": "notisinstallningar#13",
+     "DEBUG_DC_TPL": "83"
     }
    ]
   },
@@ -502,15 +502,15 @@
     {
      "SOURCE_FILE": "del 3 sok och skalbevis",
      "FRAME": "notisinstallningar",
-     "SOURCE_LOCATOR": "EL::del 3 sok och skalbevis::occ::occ-durbkqquvyzz",
-     "ELEMENT_SIGNATURE": "<div> \"Meddelanden\"",
+     "SOURCE_LOCATOR": "EL::del 3 sok och skalbevis::objekt::occ-durbkqquvyzz::del::switch-reglage",
+     "ELEMENT_SIGNATURE": "<span> roll=switch namn=\"Reglage\" \"\"",
      "SEMANTIC_OWNER": "sig sjalv",
-     "WRITE_OWNER_ID": "EL::del 3 sok och skalbevis::occ::occ-durbkqquvyzz",
-     "TARGET_SOURCE_KEY": "EL::del 3 sok och skalbevis::occ::occ-durbkqquvyzz::del::self",
+     "WRITE_OWNER_ID": "EL::del 3 sok och skalbevis::objekt::occ-durbkqquvyzz::del::switch-reglage",
+     "TARGET_SOURCE_KEY": "EL::del 3 sok och skalbevis::objekt::occ-durbkqquvyzz::del::switch-reglage::del::self",
      "TARGET_KEY_GRUND": "elementet ar agaren",
-     "TARGET_SOURCE_ELEMENT": "<div> i notisinstallningar",
-     "DEBUG_FRAME_ORD": "notisinstallningar#26",
-     "DEBUG_DC_TPL": "96"
+     "TARGET_SOURCE_ELEMENT": "<span> i notisinstallningar",
+     "DEBUG_FRAME_ORD": "notisinstallningar#28",
+     "DEBUG_DC_TPL": "98"
     }
    ]
   },
@@ -528,15 +528,15 @@
     {
      "SOURCE_FILE": "del 3 sok och skalbevis",
      "FRAME": "notisinstallningar",
-     "SOURCE_LOCATOR": "EL::del 3 sok och skalbevis::occ::occ-dxtzbgmkzywa",
-     "ELEMENT_SIGNATURE": "<div> \"System\"",
+     "SOURCE_LOCATOR": "EL::del 3 sok och skalbevis::objekt::occ-dxtzbgmkzywa::del::switch-reglage",
+     "ELEMENT_SIGNATURE": "<span> roll=switch namn=\"Reglage\" \"\"",
      "SEMANTIC_OWNER": "sig sjalv",
-     "WRITE_OWNER_ID": "EL::del 3 sok och skalbevis::occ::occ-dxtzbgmkzywa",
-     "TARGET_SOURCE_KEY": "EL::del 3 sok och skalbevis::occ::occ-dxtzbgmkzywa::del::self",
+     "WRITE_OWNER_ID": "EL::del 3 sok och skalbevis::objekt::occ-dxtzbgmkzywa::del::switch-reglage",
+     "TARGET_SOURCE_KEY": "EL::del 3 sok och skalbevis::objekt::occ-dxtzbgmkzywa::del::switch-reglage::del::self",
      "TARGET_KEY_GRUND": "elementet ar agaren",
-     "TARGET_SOURCE_ELEMENT": "<div> i notisinstallningar",
-     "DEBUG_FRAME_ORD": "notisinstallningar#36",
-     "DEBUG_DC_TPL": "106"
+     "TARGET_SOURCE_ELEMENT": "<span> i notisinstallningar",
+     "DEBUG_FRAME_ORD": "notisinstallningar#38",
+     "DEBUG_DC_TPL": "108"
     }
    ]
   },
@@ -554,15 +554,15 @@
     {
      "SOURCE_FILE": "del 3 sok och skalbevis",
      "FRAME": "notisinstallningar",
-     "SOURCE_LOCATOR": "EL::del 3 sok och skalbevis::occ::occ-esunrbxqhghe",
-     "ELEMENT_SIGNATURE": "<div> \"Vänner & förfrågningar\"",
+     "SOURCE_LOCATOR": "EL::del 3 sok och skalbevis::objekt::occ-esunrbxqhghe::del::switch-reglage",
+     "ELEMENT_SIGNATURE": "<span> roll=switch namn=\"Reglage\" \"\"",
      "SEMANTIC_OWNER": "sig sjalv",
-     "WRITE_OWNER_ID": "EL::del 3 sok och skalbevis::occ::occ-esunrbxqhghe",
-     "TARGET_SOURCE_KEY": "EL::del 3 sok och skalbevis::occ::occ-esunrbxqhghe::del::self",
+     "WRITE_OWNER_ID": "EL::del 3 sok och skalbevis::objekt::occ-esunrbxqhghe::del::switch-reglage",
+     "TARGET_SOURCE_KEY": "EL::del 3 sok och skalbevis::objekt::occ-esunrbxqhghe::del::switch-reglage::del::self",
      "TARGET_KEY_GRUND": "elementet ar agaren",
-     "TARGET_SOURCE_ELEMENT": "<div> i notisinstallningar",
-     "DEBUG_FRAME_ORD": "notisinstallningar#6",
-     "DEBUG_DC_TPL": "76"
+     "TARGET_SOURCE_ELEMENT": "<span> i notisinstallningar",
+     "DEBUG_FRAME_ORD": "notisinstallningar#8",
+     "DEBUG_DC_TPL": "78"
     }
    ]
   },
@@ -580,15 +580,15 @@
     {
      "SOURCE_FILE": "del 3 sok och skalbevis",
      "FRAME": "notisinstallningar",
-     "SOURCE_LOCATOR": "EL::del 3 sok och skalbevis::occ::occ-irtjvpvvevly",
-     "ELEMENT_SIGNATURE": "<div> \"Samarbete i realtid\"",
+     "SOURCE_LOCATOR": "EL::del 3 sok och skalbevis::objekt::occ-irtjvpvvevly::del::switch-reglage",
+     "ELEMENT_SIGNATURE": "<span> roll=switch namn=\"Reglage\" \"\"",
      "SEMANTIC_OWNER": "sig sjalv",
-     "WRITE_OWNER_ID": "EL::del 3 sok och skalbevis::occ::occ-irtjvpvvevly",
-     "TARGET_SOURCE_KEY": "EL::del 3 sok och skalbevis::occ::occ-irtjvpvvevly::del::self",
+     "WRITE_OWNER_ID": "EL::del 3 sok och skalbevis::objekt::occ-irtjvpvvevly::del::switch-reglage",
+     "TARGET_SOURCE_KEY": "EL::del 3 sok och skalbevis::objekt::occ-irtjvpvvevly::del::switch-reglage::del::self",
      "TARGET_KEY_GRUND": "elementet ar agaren",
-     "TARGET_SOURCE_ELEMENT": "<div> i notisinstallningar",
-     "DEBUG_FRAME_ORD": "notisinstallningar#16",
-     "DEBUG_DC_TPL": "86"
+     "TARGET_SOURCE_ELEMENT": "<span> i notisinstallningar",
+     "DEBUG_FRAME_ORD": "notisinstallningar#18",
+     "DEBUG_DC_TPL": "88"
     }
    ]
   },
@@ -606,15 +606,15 @@
     {
      "SOURCE_FILE": "del 3 sok och skalbevis",
      "FRAME": "notisinstallningar",
-     "SOURCE_LOCATOR": "EL::del 3 sok och skalbevis::occ::occ-ynqewhlxcxvv",
-     "ELEMENT_SIGNATURE": "<div> \"Socialt flöde\"",
+     "SOURCE_LOCATOR": "EL::del 3 sok och skalbevis::objekt::occ-ynqewhlxcxvv::del::switch-reglage",
+     "ELEMENT_SIGNATURE": "<span> roll=switch namn=\"Reglage\" \"\"",
      "SEMANTIC_OWNER": "sig sjalv",
-     "WRITE_OWNER_ID": "EL::del 3 sok och skalbevis::occ::occ-ynqewhlxcxvv",
-     "TARGET_SOURCE_KEY": "EL::del 3 sok och skalbevis::occ::occ-ynqewhlxcxvv::del::self",
+     "WRITE_OWNER_ID": "EL::del 3 sok och skalbevis::objekt::occ-ynqewhlxcxvv::del::switch-reglage",
+     "TARGET_SOURCE_KEY": "EL::del 3 sok och skalbevis::objekt::occ-ynqewhlxcxvv::del::switch-reglage::del::self",
      "TARGET_KEY_GRUND": "elementet ar agaren",
-     "TARGET_SOURCE_ELEMENT": "<div> i notisinstallningar",
-     "DEBUG_FRAME_ORD": "notisinstallningar#31",
-     "DEBUG_DC_TPL": "101"
+     "TARGET_SOURCE_ELEMENT": "<span> i notisinstallningar",
+     "DEBUG_FRAME_ORD": "notisinstallningar#33",
+     "DEBUG_DC_TPL": "103"
     }
    ]
   },
@@ -632,15 +632,15 @@
     {
      "SOURCE_FILE": "del 3 sok och skalbevis",
      "FRAME": "notisinstallningar",
-     "SOURCE_LOCATOR": "EL::del 3 sok och skalbevis::occ::occ-zaqxkctxeiqv",
-     "ELEMENT_SIGNATURE": "<div> \"Inköpslistor\"",
+     "SOURCE_LOCATOR": "EL::del 3 sok och skalbevis::objekt::occ-zaqxkctxeiqv::del::switch-reglage",
+     "ELEMENT_SIGNATURE": "<span> roll=switch namn=\"Reglage\" \"\"",
      "SEMANTIC_OWNER": "sig sjalv",
-     "WRITE_OWNER_ID": "EL::del 3 sok och skalbevis::occ::occ-zaqxkctxeiqv",
-     "TARGET_SOURCE_KEY": "EL::del 3 sok och skalbevis::occ::occ-zaqxkctxeiqv::del::self",
+     "WRITE_OWNER_ID": "EL::del 3 sok och skalbevis::objekt::occ-zaqxkctxeiqv::del::switch-reglage",
+     "TARGET_SOURCE_KEY": "EL::del 3 sok och skalbevis::objekt::occ-zaqxkctxeiqv::del::switch-reglage::del::self",
      "TARGET_KEY_GRUND": "elementet ar agaren",
-     "TARGET_SOURCE_ELEMENT": "<div> i notisinstallningar",
-     "DEBUG_FRAME_ORD": "notisinstallningar#21",
-     "DEBUG_DC_TPL": "91"
+     "TARGET_SOURCE_ELEMENT": "<span> i notisinstallningar",
+     "DEBUG_FRAME_ORD": "notisinstallningar#23",
+     "DEBUG_DC_TPL": "93"
     }
    ]
   },
@@ -11703,7 +11703,7 @@
    "GROUP_FAMILY": "HANDOFF_NAME",
    "TERMINAL_CLASS": null,
    "FRAME": "OWNER",
-   "SOURCE_EVIDENCE_FILE": "agaruppslag mot kallans nyckelformer",
+   "SOURCE_EVIDENCE_FILE": "enhetens egna forekomster (GR0)",
    "EXPECTED_MEMBER_COUNT": 1,
    "RESOLVED_MEMBER_COUNT": 1,
    "OUT_OF_SCOPE_MEMBER_COUNT": 0,
@@ -11729,7 +11729,7 @@
    "GROUP_FAMILY": "HANDOFF_NAME",
    "TERMINAL_CLASS": null,
    "FRAME": "OWNER",
-   "SOURCE_EVIDENCE_FILE": "agaruppslag mot kallans nyckelformer",
+   "SOURCE_EVIDENCE_FILE": "enhetens egna forekomster (GR0)",
    "EXPECTED_MEMBER_COUNT": 1,
    "RESOLVED_MEMBER_COUNT": 1,
    "OUT_OF_SCOPE_MEMBER_COUNT": 0,
@@ -11755,7 +11755,7 @@
    "GROUP_FAMILY": "HANDOFF_NAME",
    "TERMINAL_CLASS": null,
    "FRAME": "OWNER",
-   "SOURCE_EVIDENCE_FILE": "agaruppslag mot kallans nyckelformer",
+   "SOURCE_EVIDENCE_FILE": "enhetens egna forekomster (GR0)",
    "EXPECTED_MEMBER_COUNT": 1,
    "RESOLVED_MEMBER_COUNT": 1,
    "OUT_OF_SCOPE_MEMBER_COUNT": 0,
@@ -11781,7 +11781,7 @@
    "GROUP_FAMILY": "HANDOFF_NAME",
    "TERMINAL_CLASS": null,
    "FRAME": "OWNER",
-   "SOURCE_EVIDENCE_FILE": "agaruppslag mot kallans nyckelformer",
+   "SOURCE_EVIDENCE_FILE": "enhetens egna forekomster (GR0)",
    "EXPECTED_MEMBER_COUNT": 1,
    "RESOLVED_MEMBER_COUNT": 1,
    "OUT_OF_SCOPE_MEMBER_COUNT": 0,
@@ -11807,7 +11807,7 @@
    "GROUP_FAMILY": "HANDOFF_NAME",
    "TERMINAL_CLASS": null,
    "FRAME": "OWNER",
-   "SOURCE_EVIDENCE_FILE": "agaruppslag mot kallans nyckelformer",
+   "SOURCE_EVIDENCE_FILE": "enhetens egna forekomster (GR0)",
    "EXPECTED_MEMBER_COUNT": 1,
    "RESOLVED_MEMBER_COUNT": 1,
    "OUT_OF_SCOPE_MEMBER_COUNT": 0,
@@ -11833,7 +11833,7 @@
    "GROUP_FAMILY": "HANDOFF_NAME",
    "TERMINAL_CLASS": null,
    "FRAME": "OWNER",
-   "SOURCE_EVIDENCE_FILE": "agaruppslag mot kallans nyckelformer",
+   "SOURCE_EVIDENCE_FILE": "enhetens egna forekomster (GR0)",
    "EXPECTED_MEMBER_COUNT": 1,
    "RESOLVED_MEMBER_COUNT": 1,
    "OUT_OF_SCOPE_MEMBER_COUNT": 0,
@@ -11859,7 +11859,7 @@
    "GROUP_FAMILY": "HANDOFF_NAME",
    "TERMINAL_CLASS": null,
    "FRAME": "OWNER",
-   "SOURCE_EVIDENCE_FILE": "agaruppslag mot kallans nyckelformer",
+   "SOURCE_EVIDENCE_FILE": "enhetens egna forekomster (GR0)",
    "EXPECTED_MEMBER_COUNT": 1,
    "RESOLVED_MEMBER_COUNT": 1,
    "OUT_OF_SCOPE_MEMBER_COUNT": 0,
@@ -11885,7 +11885,7 @@
    "GROUP_FAMILY": "HANDOFF_NAME",
    "TERMINAL_CLASS": null,
    "FRAME": "OWNER",
-   "SOURCE_EVIDENCE_FILE": "agaruppslag mot kallans nyckelformer",
+   "SOURCE_EVIDENCE_FILE": "enhetens egna forekomster (GR0)",
    "EXPECTED_MEMBER_COUNT": 1,
    "RESOLVED_MEMBER_COUNT": 1,
    "OUT_OF_SCOPE_MEMBER_COUNT": 0,
@@ -11911,7 +11911,7 @@
    "GROUP_FAMILY": "HANDOFF_NAME",
    "TERMINAL_CLASS": null,
    "FRAME": "OWNER",
-   "SOURCE_EVIDENCE_FILE": "agaruppslag mot kallans nyckelformer",
+   "SOURCE_EVIDENCE_FILE": "enhetens egna forekomster (GR0)",
    "EXPECTED_MEMBER_COUNT": 1,
    "RESOLVED_MEMBER_COUNT": 1,
    "OUT_OF_SCOPE_MEMBER_COUNT": 0,
@@ -11937,7 +11937,7 @@
    "GROUP_FAMILY": "HANDOFF_NAME",
    "TERMINAL_CLASS": null,
    "FRAME": "OWNER",
-   "SOURCE_EVIDENCE_FILE": "agaruppslag mot kallans nyckelformer",
+   "SOURCE_EVIDENCE_FILE": "enhetens egna forekomster (GR0)",
    "EXPECTED_MEMBER_COUNT": 1,
    "RESOLVED_MEMBER_COUNT": 1,
    "OUT_OF_SCOPE_MEMBER_COUNT": 0,
@@ -11963,7 +11963,7 @@
    "GROUP_FAMILY": "HANDOFF_NAME",
    "TERMINAL_CLASS": null,
    "FRAME": "OWNER",
-   "SOURCE_EVIDENCE_FILE": "agaruppslag mot kallans nyckelformer",
+   "SOURCE_EVIDENCE_FILE": "enhetens egna forekomster (GR0)",
    "EXPECTED_MEMBER_COUNT": 1,
    "RESOLVED_MEMBER_COUNT": 1,
    "OUT_OF_SCOPE_MEMBER_COUNT": 0,
@@ -11989,7 +11989,7 @@
    "GROUP_FAMILY": "HANDOFF_NAME",
    "TERMINAL_CLASS": null,
    "FRAME": "OWNER",
-   "SOURCE_EVIDENCE_FILE": "agaruppslag mot kallans nyckelformer",
+   "SOURCE_EVIDENCE_FILE": "enhetens egna forekomster (GR0)",
    "EXPECTED_MEMBER_COUNT": 1,
    "RESOLVED_MEMBER_COUNT": 1,
    "OUT_OF_SCOPE_MEMBER_COUNT": 0,
@@ -12015,7 +12015,7 @@
    "GROUP_FAMILY": "HANDOFF_NAME",
    "TERMINAL_CLASS": null,
    "FRAME": "OWNER",
-   "SOURCE_EVIDENCE_FILE": "agaruppslag mot kallans nyckelformer",
+   "SOURCE_EVIDENCE_FILE": "enhetens egna forekomster (GR0)",
    "EXPECTED_MEMBER_COUNT": 1,
    "RESOLVED_MEMBER_COUNT": 1,
    "OUT_OF_SCOPE_MEMBER_COUNT": 0,
@@ -12041,7 +12041,7 @@
    "GROUP_FAMILY": "HANDOFF_NAME",
    "TERMINAL_CLASS": null,
    "FRAME": "OWNER",
-   "SOURCE_EVIDENCE_FILE": "agaruppslag mot kallans nyckelformer",
+   "SOURCE_EVIDENCE_FILE": "enhetens egna forekomster (GR0)",
    "EXPECTED_MEMBER_COUNT": 1,
    "RESOLVED_MEMBER_COUNT": 1,
    "OUT_OF_SCOPE_MEMBER_COUNT": 0,
@@ -12067,7 +12067,7 @@
    "GROUP_FAMILY": "HANDOFF_NAME",
    "TERMINAL_CLASS": null,
    "FRAME": "OWNER",
-   "SOURCE_EVIDENCE_FILE": "agaruppslag mot kallans nyckelformer",
+   "SOURCE_EVIDENCE_FILE": "enhetens egna forekomster (GR0)",
    "EXPECTED_MEMBER_COUNT": 1,
    "RESOLVED_MEMBER_COUNT": 1,
    "OUT_OF_SCOPE_MEMBER_COUNT": 0,
@@ -12093,7 +12093,7 @@
    "GROUP_FAMILY": "HANDOFF_NAME",
    "TERMINAL_CLASS": null,
    "FRAME": "OWNER",
-   "SOURCE_EVIDENCE_FILE": "agaruppslag mot kallans nyckelformer",
+   "SOURCE_EVIDENCE_FILE": "enhetens egna forekomster (GR0)",
    "EXPECTED_MEMBER_COUNT": 1,
    "RESOLVED_MEMBER_COUNT": 1,
    "OUT_OF_SCOPE_MEMBER_COUNT": 0,
@@ -12119,7 +12119,7 @@
    "GROUP_FAMILY": "HANDOFF_NAME",
    "TERMINAL_CLASS": null,
    "FRAME": "OWNER",
-   "SOURCE_EVIDENCE_FILE": "agaruppslag mot kallans nyckelformer",
+   "SOURCE_EVIDENCE_FILE": "enhetens egna forekomster (GR0)",
    "EXPECTED_MEMBER_COUNT": 1,
    "RESOLVED_MEMBER_COUNT": 1,
    "OUT_OF_SCOPE_MEMBER_COUNT": 0,
@@ -12145,7 +12145,7 @@
    "GROUP_FAMILY": "HANDOFF_NAME",
    "TERMINAL_CLASS": null,
    "FRAME": "OWNER",
-   "SOURCE_EVIDENCE_FILE": "agaruppslag mot kallans nyckelformer",
+   "SOURCE_EVIDENCE_FILE": "enhetens egna forekomster (GR0)",
    "EXPECTED_MEMBER_COUNT": 1,
    "RESOLVED_MEMBER_COUNT": 1,
    "OUT_OF_SCOPE_MEMBER_COUNT": 0,
@@ -12171,7 +12171,7 @@
    "GROUP_FAMILY": "HANDOFF_NAME",
    "TERMINAL_CLASS": null,
    "FRAME": "OWNER",
-   "SOURCE_EVIDENCE_FILE": "agaruppslag mot kallans nyckelformer",
+   "SOURCE_EVIDENCE_FILE": "enhetens egna forekomster (GR0)",
    "EXPECTED_MEMBER_COUNT": 1,
    "RESOLVED_MEMBER_COUNT": 1,
    "OUT_OF_SCOPE_MEMBER_COUNT": 0,
@@ -12197,7 +12197,7 @@
    "GROUP_FAMILY": "HANDOFF_NAME",
    "TERMINAL_CLASS": null,
    "FRAME": "OWNER",
-   "SOURCE_EVIDENCE_FILE": "agaruppslag mot kallans nyckelformer",
+   "SOURCE_EVIDENCE_FILE": "enhetens egna forekomster (GR0)",
    "EXPECTED_MEMBER_COUNT": 1,
    "RESOLVED_MEMBER_COUNT": 1,
    "OUT_OF_SCOPE_MEMBER_COUNT": 0,
@@ -12223,7 +12223,7 @@
    "GROUP_FAMILY": "HANDOFF_NAME",
    "TERMINAL_CLASS": null,
    "FRAME": "OWNER",
-   "SOURCE_EVIDENCE_FILE": "agaruppslag mot kallans nyckelformer",
+   "SOURCE_EVIDENCE_FILE": "enhetens egna forekomster (GR0)",
    "EXPECTED_MEMBER_COUNT": 1,
    "RESOLVED_MEMBER_COUNT": 1,
    "OUT_OF_SCOPE_MEMBER_COUNT": 0,
@@ -12249,7 +12249,7 @@
    "GROUP_FAMILY": "HANDOFF_NAME",
    "TERMINAL_CLASS": null,
    "FRAME": "OWNER",
-   "SOURCE_EVIDENCE_FILE": "agaruppslag mot kallans nyckelformer",
+   "SOURCE_EVIDENCE_FILE": "enhetens egna forekomster (GR0)",
    "EXPECTED_MEMBER_COUNT": 1,
    "RESOLVED_MEMBER_COUNT": 1,
    "OUT_OF_SCOPE_MEMBER_COUNT": 0,
@@ -12275,7 +12275,7 @@
    "GROUP_FAMILY": "HANDOFF_NAME",
    "TERMINAL_CLASS": null,
    "FRAME": "OWNER",
-   "SOURCE_EVIDENCE_FILE": "agaruppslag mot kallans nyckelformer",
+   "SOURCE_EVIDENCE_FILE": "enhetens egna forekomster (GR0)",
    "EXPECTED_MEMBER_COUNT": 1,
    "RESOLVED_MEMBER_COUNT": 1,
    "OUT_OF_SCOPE_MEMBER_COUNT": 0,
@@ -12284,15 +12284,15 @@
     {
      "SOURCE_FILE": "del 2 familj och socialt",
      "FRAME": "skrivsjalv",
-     "SOURCE_LOCATOR": "EL::del 2 familj och socialt::occ::occ-aowlgpqrxbvg",
-     "ELEMENT_SIGNATURE": "<div> \"Bryn köttet i omgångar …\"",
+     "SOURCE_LOCATOR": "EL::del 2 familj och socialt::occ::occ-gdmttlyrxjdi",
+     "ELEMENT_SIGNATURE": "<span> roll=button namn=\"Flytta rad\" \"\"",
      "SEMANTIC_OWNER": "sig sjalv",
-     "WRITE_OWNER_ID": "EL::del 2 familj och socialt::occ::occ-aowlgpqrxbvg",
-     "TARGET_SOURCE_KEY": "EL::del 2 familj och socialt::occ::occ-aowlgpqrxbvg::del::self",
+     "WRITE_OWNER_ID": "EL::del 2 familj och socialt::occ::occ-gdmttlyrxjdi",
+     "TARGET_SOURCE_KEY": "EL::del 2 familj och socialt::occ::occ-gdmttlyrxjdi::del::self",
      "TARGET_KEY_GRUND": "elementet ar agaren",
-     "TARGET_SOURCE_ELEMENT": "<div> i skrivsjalv",
-     "DEBUG_FRAME_ORD": "skrivsjalv#69",
-     "DEBUG_DC_TPL": "981"
+     "TARGET_SOURCE_ELEMENT": "<span> i skrivsjalv",
+     "DEBUG_FRAME_ORD": "skrivsjalv#70",
+     "DEBUG_DC_TPL": "982"
     }
    ]
   },
@@ -12301,7 +12301,7 @@
    "GROUP_FAMILY": "HANDOFF_NAME",
    "TERMINAL_CLASS": null,
    "FRAME": "OWNER",
-   "SOURCE_EVIDENCE_FILE": "agaruppslag mot kallans nyckelformer",
+   "SOURCE_EVIDENCE_FILE": "enhetens egna forekomster (GR0)",
    "EXPECTED_MEMBER_COUNT": 1,
    "RESOLVED_MEMBER_COUNT": 1,
    "OUT_OF_SCOPE_MEMBER_COUNT": 0,
@@ -12310,15 +12310,15 @@
     {
      "SOURCE_FILE": "del 2 familj och socialt",
      "FRAME": "skrivsjalv",
-     "SOURCE_LOCATOR": "EL::del 2 familj och socialt::occ::occ-ihoicxjceanv",
-     "ELEMENT_SIGNATURE": "<div> \"800 g högrev\"",
+     "SOURCE_LOCATOR": "EL::del 2 familj och socialt::occ::occ-ksuudpqchyqe",
+     "ELEMENT_SIGNATURE": "<span> roll=button namn=\"Flytta rad\" \"\"",
      "SEMANTIC_OWNER": "sig sjalv",
-     "WRITE_OWNER_ID": "EL::del 2 familj och socialt::occ::occ-ihoicxjceanv",
-     "TARGET_SOURCE_KEY": "EL::del 2 familj och socialt::occ::occ-ihoicxjceanv::del::self",
+     "WRITE_OWNER_ID": "EL::del 2 familj och socialt::occ::occ-ksuudpqchyqe",
+     "TARGET_SOURCE_KEY": "EL::del 2 familj och socialt::occ::occ-ksuudpqchyqe::del::self",
      "TARGET_KEY_GRUND": "elementet ar agaren",
-     "TARGET_SOURCE_ELEMENT": "<div> i skrivsjalv",
-     "DEBUG_FRAME_ORD": "skrivsjalv#37",
-     "DEBUG_DC_TPL": "949"
+     "TARGET_SOURCE_ELEMENT": "<span> i skrivsjalv",
+     "DEBUG_FRAME_ORD": "skrivsjalv#38",
+     "DEBUG_DC_TPL": "950"
     }
    ]
   },
@@ -12327,7 +12327,7 @@
    "GROUP_FAMILY": "HANDOFF_NAME",
    "TERMINAL_CLASS": null,
    "FRAME": "OWNER",
-   "SOURCE_EVIDENCE_FILE": "agaruppslag mot kallans nyckelformer",
+   "SOURCE_EVIDENCE_FILE": "enhetens egna forekomster (GR0)",
    "EXPECTED_MEMBER_COUNT": 1,
    "RESOLVED_MEMBER_COUNT": 1,
    "OUT_OF_SCOPE_MEMBER_COUNT": 0,
@@ -12336,15 +12336,15 @@
     {
      "SOURCE_FILE": "del 2 familj och socialt",
      "FRAME": "skrivsjalv",
-     "SOURCE_LOCATOR": "EL::del 2 familj och socialt::occ::occ-widjucqlwtik",
-     "ELEMENT_SIGNATURE": "<div> \"2 gula lökar\"",
+     "SOURCE_LOCATOR": "EL::del 2 familj och socialt::occ::occ-dcbkldmofktx",
+     "ELEMENT_SIGNATURE": "<span> roll=button namn=\"Flytta rad\" \"\"",
      "SEMANTIC_OWNER": "sig sjalv",
-     "WRITE_OWNER_ID": "EL::del 2 familj och socialt::occ::occ-widjucqlwtik",
-     "TARGET_SOURCE_KEY": "EL::del 2 familj och socialt::occ::occ-widjucqlwtik::del::self",
+     "WRITE_OWNER_ID": "EL::del 2 familj och socialt::occ::occ-dcbkldmofktx",
+     "TARGET_SOURCE_KEY": "EL::del 2 familj och socialt::occ::occ-dcbkldmofktx::del::self",
      "TARGET_KEY_GRUND": "elementet ar agaren",
-     "TARGET_SOURCE_ELEMENT": "<div> i skrivsjalv",
-     "DEBUG_FRAME_ORD": "skrivsjalv#52",
-     "DEBUG_DC_TPL": "964"
+     "TARGET_SOURCE_ELEMENT": "<span> i skrivsjalv",
+     "DEBUG_FRAME_ORD": "skrivsjalv#53",
+     "DEBUG_DC_TPL": "965"
     }
    ]
   },
@@ -12353,7 +12353,7 @@
    "GROUP_FAMILY": "HANDOFF_NAME",
    "TERMINAL_CLASS": null,
    "FRAME": "OWNER",
-   "SOURCE_EVIDENCE_FILE": "agaruppslag mot kallans nyckelformer",
+   "SOURCE_EVIDENCE_FILE": "enhetens egna forekomster (GR0)",
    "EXPECTED_MEMBER_COUNT": 1,
    "RESOLVED_MEMBER_COUNT": 1,
    "OUT_OF_SCOPE_MEMBER_COUNT": 0,
@@ -12362,15 +12362,15 @@
     {
      "SOURCE_FILE": "del 2 familj och socialt",
      "FRAME": "skrivsjalv",
-     "SOURCE_LOCATOR": "EL::del 2 familj och socialt::occ::occ-ihoicxjceanv",
-     "ELEMENT_SIGNATURE": "<div> \"800 g högrev\"",
+     "SOURCE_LOCATOR": "EL::del 2 familj och socialt::occ::occ-znuwdfmgkhzh",
+     "ELEMENT_SIGNATURE": "<span> roll=button namn=\"Radens åtgärder — flytta upp, flytta ned, ta bort\" \"\"",
      "SEMANTIC_OWNER": "sig sjalv",
-     "WRITE_OWNER_ID": "EL::del 2 familj och socialt::occ::occ-ihoicxjceanv",
-     "TARGET_SOURCE_KEY": "EL::del 2 familj och socialt::occ::occ-ihoicxjceanv::del::self",
+     "WRITE_OWNER_ID": "EL::del 2 familj och socialt::occ::occ-znuwdfmgkhzh",
+     "TARGET_SOURCE_KEY": "EL::del 2 familj och socialt::occ::occ-znuwdfmgkhzh::del::self",
      "TARGET_KEY_GRUND": "elementet ar agaren",
-     "TARGET_SOURCE_ELEMENT": "<div> i skrivsjalv",
-     "DEBUG_FRAME_ORD": "skrivsjalv#37",
-     "DEBUG_DC_TPL": "949"
+     "TARGET_SOURCE_ELEMENT": "<span> i skrivsjalv",
+     "DEBUG_FRAME_ORD": "skrivsjalv#47",
+     "DEBUG_DC_TPL": "959"
     }
    ]
   },
@@ -12379,7 +12379,7 @@
    "GROUP_FAMILY": "HANDOFF_NAME",
    "TERMINAL_CLASS": null,
    "FRAME": "OWNER",
-   "SOURCE_EVIDENCE_FILE": "agaruppslag mot kallans nyckelformer",
+   "SOURCE_EVIDENCE_FILE": "enhetens egna forekomster (GR0)",
    "EXPECTED_MEMBER_COUNT": 1,
    "RESOLVED_MEMBER_COUNT": 1,
    "OUT_OF_SCOPE_MEMBER_COUNT": 0,
@@ -12388,15 +12388,15 @@
     {
      "SOURCE_FILE": "del 2 familj och socialt",
      "FRAME": "skrivsjalv",
-     "SOURCE_LOCATOR": "EL::del 2 familj och socialt::occ::occ-widjucqlwtik",
-     "ELEMENT_SIGNATURE": "<div> \"2 gula lökar\"",
+     "SOURCE_LOCATOR": "EL::del 2 familj och socialt::occ::occ-irucjbirkgjn",
+     "ELEMENT_SIGNATURE": "<span> roll=button namn=\"Radens åtgärder — flytta upp, flytta ned, ta bort\" \"\"",
      "SEMANTIC_OWNER": "sig sjalv",
-     "WRITE_OWNER_ID": "EL::del 2 familj och socialt::occ::occ-widjucqlwtik",
-     "TARGET_SOURCE_KEY": "EL::del 2 familj och socialt::occ::occ-widjucqlwtik::del::self",
+     "WRITE_OWNER_ID": "EL::del 2 familj och socialt::occ::occ-irucjbirkgjn",
+     "TARGET_SOURCE_KEY": "EL::del 2 familj och socialt::occ::occ-irucjbirkgjn::del::self",
      "TARGET_KEY_GRUND": "elementet ar agaren",
-     "TARGET_SOURCE_ELEMENT": "<div> i skrivsjalv",
-     "DEBUG_FRAME_ORD": "skrivsjalv#52",
-     "DEBUG_DC_TPL": "964"
+     "TARGET_SOURCE_ELEMENT": "<span> i skrivsjalv",
+     "DEBUG_FRAME_ORD": "skrivsjalv#62",
+     "DEBUG_DC_TPL": "974"
     }
    ]
   },
@@ -12405,7 +12405,7 @@
    "GROUP_FAMILY": "HANDOFF_NAME",
    "TERMINAL_CLASS": null,
    "FRAME": "OWNER",
-   "SOURCE_EVIDENCE_FILE": "agaruppslag mot kallans nyckelformer",
+   "SOURCE_EVIDENCE_FILE": "enhetens egna forekomster (GR0)",
    "EXPECTED_MEMBER_COUNT": 1,
    "RESOLVED_MEMBER_COUNT": 1,
    "OUT_OF_SCOPE_MEMBER_COUNT": 0,
@@ -12431,7 +12431,7 @@
    "GROUP_FAMILY": "HANDOFF_NAME",
    "TERMINAL_CLASS": null,
    "FRAME": "OWNER",
-   "SOURCE_EVIDENCE_FILE": "agaruppslag mot kallans nyckelformer",
+   "SOURCE_EVIDENCE_FILE": "enhetens egna forekomster (GR0)",
    "EXPECTED_MEMBER_COUNT": 1,
    "RESOLVED_MEMBER_COUNT": 1,
    "OUT_OF_SCOPE_MEMBER_COUNT": 0,
@@ -16795,32 +16795,6 @@
    ]
   },
   {
-   "GROUP_REQUIREMENT_ID": "RP::ROLE_AND_NAME::installningar::namn::spraksvenska",
-   "GROUP_FAMILY": "ROLE_AND_NAME",
-   "TERMINAL_CLASS": null,
-   "FRAME": "OWNER",
-   "SOURCE_EVIDENCE_FILE": "agaruppslag mot kallans nyckelformer",
-   "EXPECTED_MEMBER_COUNT": 1,
-   "RESOLVED_MEMBER_COUNT": 1,
-   "OUT_OF_SCOPE_MEMBER_COUNT": 0,
-   "FACET": "DECLARE_ROLE_AND_NAME",
-   "TARGET_ELEMENTS": [
-    {
-     "SOURCE_FILE": "del 1 recept och veckomeny",
-     "FRAME": "installningar",
-     "SOURCE_LOCATOR": "EL::del 1 recept och veckomeny::occ::occ-jfutxtftwnoa",
-     "ELEMENT_SIGNATURE": "<div> \"SpråkSvenska\"",
-     "SEMANTIC_OWNER": "sig sjalv",
-     "WRITE_OWNER_ID": "EL::del 1 recept och veckomeny::occ::occ-jfutxtftwnoa",
-     "TARGET_SOURCE_KEY": "EL::del 1 recept och veckomeny::occ::occ-jfutxtftwnoa::del::self",
-     "TARGET_KEY_GRUND": "elementet ar agaren",
-     "TARGET_SOURCE_ELEMENT": "<div> i installningar",
-     "DEBUG_FRAME_ORD": "installningar#64",
-     "DEBUG_DC_TPL": "1395"
-    }
-   ]
-  },
-  {
    "GROUP_REQUIREMENT_ID": "RP::ROLE_AND_NAME::installningar::namn::vanliga-fragor",
    "GROUP_FAMILY": "ROLE_AND_NAME",
    "TERMINAL_CLASS": null,
@@ -16847,7 +16821,7 @@
    ]
   },
   {
-   "GROUP_REQUIREMENT_ID": "RP::ROLE_AND_NAME::installningar::objekt::occ-jfutxtftwnoa::handling::current-value",
+   "GROUP_REQUIREMENT_ID": "RP::ROLE_AND_NAME::installningar::objekt::occ-jfutxtftwnoa",
    "GROUP_FAMILY": "ROLE_AND_NAME",
    "TERMINAL_CLASS": null,
    "FRAME": "OWNER",
@@ -16869,6 +16843,32 @@
      "TARGET_SOURCE_ELEMENT": "<div> i installningar",
      "DEBUG_FRAME_ORD": "installningar#64",
      "DEBUG_DC_TPL": "1395"
+    }
+   ]
+  },
+  {
+   "GROUP_REQUIREMENT_ID": "RP::ROLE_AND_NAME::installningar::objekt::occ-jfutxtftwnoa::handling::current-value",
+   "GROUP_FAMILY": "ROLE_AND_NAME",
+   "TERMINAL_CLASS": null,
+   "FRAME": "OWNER",
+   "SOURCE_EVIDENCE_FILE": "agaruppslag mot kallans nyckelformer",
+   "EXPECTED_MEMBER_COUNT": 1,
+   "RESOLVED_MEMBER_COUNT": 1,
+   "OUT_OF_SCOPE_MEMBER_COUNT": 0,
+   "FACET": "DECLARE_ROLE_AND_NAME",
+   "TARGET_ELEMENTS": [
+    {
+     "SOURCE_FILE": "del 1 recept och veckomeny",
+     "FRAME": "installningar",
+     "SOURCE_LOCATOR": "EL::del 1 recept och veckomeny::objekt::occ-jfutxtftwnoa::del::etikett-svenska",
+     "ELEMENT_SIGNATURE": "<span> \"Svenska\"",
+     "SEMANTIC_OWNER": "sig sjalv",
+     "WRITE_OWNER_ID": "EL::del 1 recept och veckomeny::objekt::occ-jfutxtftwnoa::del::etikett-svenska",
+     "TARGET_SOURCE_KEY": "EL::del 1 recept och veckomeny::occ::occ-jfutxtftwnoa::del::current-value",
+     "TARGET_KEY_GRUND": "kallforfattad data-part-occurrence",
+     "TARGET_SOURCE_ELEMENT": "<span> i installningar [del current-value]",
+     "DEBUG_FRAME_ORD": "installningar#66",
+     "DEBUG_DC_TPL": "1397"
     }
    ]
   },
@@ -17523,32 +17523,6 @@
    ]
   },
   {
-   "GROUP_REQUIREMENT_ID": "RP::ROLE_AND_NAME::kontosakerhet::namn::bekrafta-nytt-losenord",
-   "GROUP_FAMILY": "ROLE_AND_NAME",
-   "TERMINAL_CLASS": null,
-   "FRAME": "OWNER",
-   "SOURCE_EVIDENCE_FILE": "samlad texttrad i kallan (GR2)",
-   "EXPECTED_MEMBER_COUNT": 1,
-   "RESOLVED_MEMBER_COUNT": 1,
-   "OUT_OF_SCOPE_MEMBER_COUNT": 0,
-   "FACET": "DECLARE_ROLE_AND_NAME",
-   "TARGET_ELEMENTS": [
-    {
-     "SOURCE_FILE": "del 2 familj och socialt",
-     "FRAME": "kontosakerhet",
-     "SOURCE_LOCATOR": "EL::del 2 familj och socialt::occ::occ-nlifsylrmkvj",
-     "ELEMENT_SIGNATURE": "<div> \"Bekräfta nytt lösenord\"",
-     "SEMANTIC_OWNER": "sig sjalv",
-     "WRITE_OWNER_ID": "EL::del 2 familj och socialt::occ::occ-nlifsylrmkvj",
-     "TARGET_SOURCE_KEY": "EL::del 2 familj och socialt::occ::occ-nlifsylrmkvj::del::self",
-     "TARGET_KEY_GRUND": "elementet ar agaren",
-     "TARGET_SOURCE_ELEMENT": "<div> i kontosakerhet",
-     "DEBUG_FRAME_ORD": "kontosakerhet#12",
-     "DEBUG_DC_TPL": "1883"
-    }
-   ]
-  },
-  {
    "GROUP_REQUIREMENT_ID": "RP::ROLE_AND_NAME::kontosakerhet::namn::communityriktlinjer",
    "GROUP_FAMILY": "ROLE_AND_NAME",
    "TERMINAL_CLASS": null,
@@ -17692,15 +17666,15 @@
     {
      "SOURCE_FILE": "del 2 familj och socialt",
      "FRAME": "kontosakerhet",
-     "SOURCE_LOCATOR": "EL::del 2 familj och socialt::occ::occ-otuieknjrwrw",
-     "ELEMENT_SIGNATURE": "<div> \"Tvåfaktorsinloggning SMS-kod vid inloggn\"",
+     "SOURCE_LOCATOR": "EL::del 2 familj och socialt::objekt::occ-otuieknjrwrw::del::etikett-pa",
+     "ELEMENT_SIGNATURE": "<span> \"På\"",
      "SEMANTIC_OWNER": "sig sjalv",
-     "WRITE_OWNER_ID": "EL::del 2 familj och socialt::occ::occ-otuieknjrwrw",
-     "TARGET_SOURCE_KEY": "EL::del 2 familj och socialt::occ::occ-otuieknjrwrw::del::self",
-     "TARGET_KEY_GRUND": "elementet ar agaren",
-     "TARGET_SOURCE_ELEMENT": "<div> i kontosakerhet",
-     "DEBUG_FRAME_ORD": "kontosakerhet#17",
-     "DEBUG_DC_TPL": "1888"
+     "WRITE_OWNER_ID": "EL::del 2 familj och socialt::objekt::occ-otuieknjrwrw::del::etikett-pa",
+     "TARGET_SOURCE_KEY": "EL::del 2 familj och socialt::occ::occ-otuieknjrwrw::del::current-value",
+     "TARGET_KEY_GRUND": "kallforfattad data-part-occurrence",
+     "TARGET_SOURCE_ELEMENT": "<span> i kontosakerhet [del current-value]",
+     "DEBUG_FRAME_ORD": "kontosakerhet#21",
+     "DEBUG_DC_TPL": "1892"
     }
    ]
   },

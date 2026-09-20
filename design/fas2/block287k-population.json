@@ -16595,22 +16595,6 @@
   "WRITE_READY": false
  },
  {
-  "id": "RP::ROLE_AND_NAME::installningar::namn::spraksvenska",
-  "OWNER_ID": "OWNER::installningar::namn::spraksvenska",
-  "REQUIREMENT_ID": "A11Y-01 (roll och namn)",
-  "REQUIREMENT_SOURCE": "upptackt + kallgrund / mansligt beslut",
-  "PROVENANCE": "SOURCE_GROUNDED",
-  "CATEGORY": "PRODUCT_REMEDIATION_REQUIRED",
-  "CURRENT_STATUS": "UNDECLARED_KNOWN_CONTROL",
-  "OCCURRENCES": 1,
-  "FINAL_ROLE": "button",
-  "BLOCKERS": [],
-  "CURRENT_EVIDENCE": "K: navigerande rad med chevron (komponentark §05 \"Navigerande rad · med chevron\"; alla deklarerade chevronrader i korpusen ar knappar)",
-  "REMEDIATION_FACET": "DECLARE_ROLE_AND_NAME",
-  "WRITE_OWNER": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html::OWNER::installningar::namn::spraksvenska",
-  "WRITE_READY": false
- },
- {
   "id": "RP::ROLE_AND_NAME::installningar::namn::vanliga-fragor",
   "OWNER_ID": "OWNER::installningar::namn::vanliga-fragor",
   "REQUIREMENT_ID": "A11Y-01 (roll och namn)",
@@ -16625,6 +16609,26 @@
   "REMEDIATION_FACET": "DECLARE_ROLE_AND_NAME",
   "WRITE_OWNER": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html::OWNER::installningar::namn::vanliga-fragor",
   "WRITE_READY": false
+ },
+ {
+  "id": "RP::ROLE_AND_NAME::installningar::objekt::occ-jfutxtftwnoa",
+  "OWNER_ID": "OWNER::installningar::objekt::occ-jfutxtftwnoa",
+  "REQUIREMENT_ID": "A11Y-01 (roll och namn)",
+  "REQUIREMENT_SOURCE": "upptackt + kallgrund / mansligt beslut",
+  "PROVENANCE": "SOURCE_GROUNDED",
+  "CATEGORY": "PRODUCT_REMEDIATION_REQUIRED",
+  "CURRENT_STATUS": "UNDECLARED_KNOWN_CONTROL",
+  "OCCURRENCES": 1,
+  "FINAL_ROLE": "button",
+  "BLOCKERS": [],
+  "CURRENT_EVIDENCE": "K: navigerande rad med chevron (komponentark §05 \"Navigerande rad · med chevron\"; alla deklarerade chevronrader i korpusen ar knappar)",
+  "REMEDIATION_FACET": "DECLARE_ROLE_AND_NAME",
+  "WRITE_OWNER": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html::OWNER::installningar::objekt::occ-jfutxtftwnoa",
+  "WRITE_READY": false,
+  "IDENTITY_MIGRATION": {
+   "FROM": "RP::ROLE_AND_NAME::installningar::namn::spraksvenska",
+   "REASON": "STATE_DERIVED_NAME_IDENTITY"
+  }
  },
  {
   "id": "RP::ROLE_AND_NAME::installningar::objekt::occ-jfutxtftwnoa::handling::current-value",
@@ -17044,22 +17048,6 @@
   "CURRENT_EVIDENCE": "K: navigerande rad med chevron (komponentark §05 \"Navigerande rad · med chevron\"; alla deklarerade chevronrader i korpusen ar knappar)",
   "REMEDIATION_FACET": "DECLARE_ROLE_AND_NAME",
   "WRITE_OWNER": "Butlery Skarmar v12 del 2 familj och socialt.dc.html::OWNER::kontosakerhet::namn::anvandarvillkor",
-  "WRITE_READY": false
- },
- {
-  "id": "RP::ROLE_AND_NAME::kontosakerhet::namn::bekrafta-nytt-losenord",
-  "OWNER_ID": "OWNER::kontosakerhet::namn::bekrafta-nytt-losenord",
-  "REQUIREMENT_ID": "A11Y-01 (roll och namn)",
-  "REQUIREMENT_SOURCE": "upptackt + kallgrund / mansligt beslut",
-  "PROVENANCE": "SOURCE_GROUNDED",
-  "CATEGORY": "PRODUCT_REMEDIATION_REQUIRED",
-  "CURRENT_STATUS": "UNDECLARED_KNOWN_CONTROL",
-  "OCCURRENCES": 1,
-  "FINAL_ROLE": "CONTROL_ROLE_HUMAN_OR_DESIGN_UNRESOLVED",
-  "BLOCKERS": [],
-  "CURRENT_EVIDENCE": "radagare (rutan eller pillret ar grafikbarn); HD-UNDECLARED-AFFORDANCE: ACTION_TEXT → CONTROL; roll CONTROL_ROLE_HUMAN_OR_DESIGN_UNRESOLVED (texten ar en instruktion som hanvisar till andra kontroller (\"Bekräfta nytt lösenord…\"); ingen tvilling eller handoffregel ger en roll)",
-  "REMEDIATION_FACET": "DECLARE_ROLE_AND_NAME",
-  "WRITE_OWNER": "Butlery Skarmar v12 del 2 familj och socialt.dc.html::OWNER::kontosakerhet::namn::bekrafta-nytt-losenord",
   "WRITE_READY": false
  },
  {
