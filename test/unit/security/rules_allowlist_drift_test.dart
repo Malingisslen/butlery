@@ -94,6 +94,8 @@ import 'package:butlery/services/account/export/activity_export_manager.dart';
 import 'package:butlery/services/account/export/family_export_manager.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'rules_source.dart';
+
 /// One `hasOnly([...])` list, located by the text that uniquely precedes it.
 class _Allowlist {
   const _Allowlist({
@@ -495,18 +497,6 @@ const _knowinglyUncovered = <_Uncovered>[
 /// leaving the census green while the thing it exists to catch walked past.
 final _allowlistCall = RegExp(r'\.keys\(\)\s*\.hasOnly\(');
 
-/// Removes block and line comments so no assertion can be satisfied by prose.
-///
-/// The `[^:]` guard on the line-comment pattern keeps a `://` inside a URL from
-/// being eaten. `firestore.rules` currently contains no URL, so it is belt and
-/// braces — and cheaper than discovering the exception later.
-String _withoutComments(String source) => source
-    .replaceAll(RegExp(r'/\*[\s\S]*?\*/'), '')
-    .replaceAllMapped(
-      RegExp(r'(^|[^:])//.*$', multiLine: true),
-      (m) => m.group(1)!,
-    );
-
 /// The one key set that lives in THREE languages: this READ gate, the Dart
 /// export projection, and the Cloud Function that writes the document. The
 /// first two are compared mechanically below; the third is named in
@@ -533,7 +523,7 @@ void main() {
     // loosening edit than a deletion, for the same reason a `match` line
     // survives one. Measured: without this strip, commenting out
     // `isValidTagResult`'s allowlist leaves the suite fully green.
-    rules = _withoutComments(File('firestore.rules').readAsStringSync());
+    rules = withoutCStyleComments(File('firestore.rules').readAsStringSync());
   });
 
   test('the user_moderation read gate and the Art. 15 projection agree', () {
@@ -792,12 +782,10 @@ void main() {
       );
 
       // Bounded at the next `match `, so this cannot borrow a neighbour's
-      // allowlist and report health that belongs to a different rule.
-      final nextMatch = rules.indexOf('match ', at + u.anchor.length);
-      final block = rules.substring(
-        at,
-        nextMatch == -1 ? rules.length : nextMatch,
-      );
+      // allowlist and report health that belongs to a different rule. The `!`
+      // is safe: `rulesBlock` returns null on a missing anchor, and the
+      // assertion above already refused that.
+      final block = rulesBlock(rules, u.anchor)!;
       expect(
         // The same regex the census uses, not a literal — an intact constraint
         // written across two lines would otherwise redden here with a

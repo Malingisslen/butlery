@@ -39774,3 +39774,215 @@ while the save is pending. Total subsumption; a comment at most, and not even th
 become a real branch only if the callback's catch began setting state the save's catch reads.
 
 Verdicts: fail (1 blocking) → pass (0 blocking) → pass (0 blocking).
+
+### 2026-09-21 — BUT-2033 review: source-text census tests (trigger: review finding, no production bug)
+
+Reviewed `test/unit/security/ingredient_suggestions_writer_gate_test.dart` and the extracted
+`test/unit/security/rules_source.dart`. Every assertion is vacuously green by design (measured:
+`lib/` has no writer to `ingredient_suggestions`; raw grep of both spellings returns exactly the
+five pinned files, so the comment strip is not currently hiding a sixth).
+
+Four patterns worth the record:
+
+1. **A guard fixture DERIVED from the constant it guards cannot fail when that constant moves.**
+   `'a write far past the window is NOT detected'` builds its distance as `' ' * (_windowChars + 20)`,
+   so bumping `_windowChars` keeps it green — while its own comment says "if this ever starts
+   failing, the window was widened". The claim is only true for a rewrite to a whole-file scan.
+   Pin a distance LITERAL when the test's job is to notice the constant changing.
+
+2. **A census/pin test whose REMEDY TEXT names an edit that does not change the assertion.**
+   `'no pinned reader writes'` computes offenders over every referencing file; the note in
+   `_pinnedReaders` is never read by it. The header and both `reason:` strings tell the future
+   author to update that note — which cannot green the test. A legitimate, correctly stamped
+   writer leaves it red forever. That is the shape that trains someone to delete the file.
+
+3. **A comment stripper written for language A, reused on language B.** `withoutCStyleComments`
+   was written for `firestore.rules`; applied to Dart it can DELETE LIVE CODE — `/*` inside a
+   string or a `///` doc comment (`analytics/**`, `'*/*;q=0.8'`) opens a block match that runs to
+   the next `*/`, and a non-URL `//` inside a string truncates the rest of the line. Measured
+   across `lib/` today: exactly one block match, benign. Latent, not live — but it is a SECOND
+   residual shape beside the bounded window the header names as the only one.
+
+4. **Strip consistently or not at all.** The same file's stamp test reads the writer with
+   `File(path).readAsStringSync()` and no strip, so a commented-out `stampRateLimit(` satisfies it —
+   directly contradicted by the file's own self-test `'a commented-out write cannot satisfy the
+   reader pin'`.
+
+Also verified: the `rules_source.dart` lift is byte-verbatim from both former private copies
+(`git diff`); "14 call sites elsewhere in `lib/`" is right (15 `stampRateLimit(` occurrences minus
+the declaration); the `search_service.dart` justification is wrong in a harmless direction — the
+bare identifier there sits in a `///` doc-comment example the strip removes anyway.
+
+No principle was merged into the core card or the guards chapter: both were at their caps
+(14,639/15,000 and 19,861/20,000) and retiring a principle mid-gate was not in scope. Surfaced to
+the caller instead.
+
+Verdict: pass (0 blocking).
+
+### 2026-09-21 — BUT-2033, round 2 (trigger: re-review after fixes)
+
+All five findings landed. `_Kind{reader,writer}` gives a correct writer a path to green while
+tests 3 and 4 keep holding the rule and stamp halves (coordinator's three-state probe); the stamp
+read is stripped; the residual fixture uses a literal 2000.
+
+What survived both strikes is the recurring shape, twice in one header:
+- The `search_service.dart` clause lost its head ("a bare-identifier scan would pin it") and kept
+  its tail ("uses that word as a local variable name") — which is the part that is false: the
+  identifier sits in a `///` doc-comment example the strip removes anyway.
+- The prose written to REPLACE the struck universal carried a new one: both hazard files are
+  described as carrying `/*` "in a string", but `anomaly_repository.dart:9` is a doc comment.
+
+Re-measured this round: no later `*/` in either file (block matches = 0 in both), so "saved only
+by no later `*/`" is accurate; the five pinned files contain exactly 19 `.set|add|update|delete(`
+calls. Both counts in the header hold.
+
+Declined to ask for a `//`-inside-a-string self-test: it would pin the strip's CURRENT mangling,
+so fixing `withoutCStyleComments` would read as a regression — the same trap the literal-2000
+fixture was just corrected for.
+
+Verdict: pass (0 blocking).
+
+### 2026-09-21 — BUT-2033, round 3 (final bytes)
+
+A, B and C applied as pure deletions. Read both edited paragraphs standing alone: no surviving
+sentence inherited a struck subject or qualifier. "A second false-negative path" still counts
+correctly against the bounded-window paragraph; "on Dart it can delete live code" is carried by
+the block-comment mechanism alone once the `//`-in-a-string clause is gone; the measured sentence
+now says only what I verified (both files carry an opening `/*`, neither has a later `*/`).
+`:83-86` stands with no antecedent problem — the two spellings it names are the two alternatives
+of the regex on the next line.
+
+Three rounds, findings only in PROSE after round 1's two structural ones. Pattern worth keeping:
+on a header this dense, budget one round purely for reading each edited paragraph in isolation —
+two of three rounds' findings were sentences left standing by a strike, never the code.
+
+Verdict: pass (0 blocking).
+
+### 2026-09-21 — BUT-2033, round 4 (the two MODIFIED siblings)
+
+Read `rules_allowlist_drift_test.dart` and `rules_numeric_bound_drift_test.dart` in full. Both
+import and use `withoutCStyleComments`; `grep` finds zero surviving `_withoutComments` references
+anywhere in `test/` or `lib/`, and all three security suites import `rules_source.dart` and use it.
+The lifted body carries the `[^:]` URL guard and `multiLine: true` unchanged.
+
+The deleted function sat between `_allowlistCall` and `_moderationCounterKeys`, and its doc comment
+went with it in the same hunk — so nothing was orphaned and no surviving `///` block now sits above
+a declaration it does not describe (checked every one in the file, not just the neighbours).
+
+The strongest behaviour-preservation argument is not the identical body: the allowlist suite's
+census asserts `'hasOnly('` count == 40 and a guarded+uncovered total, both read out of
+`firestore.rules`, which this commit does not touch. A lift that changed stripping behaviour would
+move those numbers before it moved any per-entry comparison.
+
+LESSON: in round 2 I wrote "took your word, did not re-read" about two MODIFIED files in the same
+commit. That is a ledger hole dressed as efficiency — a reviewer's report can say "behaviour
+preserving" while the gate has no record of the bytes. Read every file in the commit, including the
+one whose diff is two lines, and say so only after reading.
+
+Verdict: pass (0 blocking).
+
+### 2026-09-21 — BUT-2033, round 6/7 (the strike that survived as an anaphor)
+
+`integration-reviewer` struck the header's bold "Every assertion here is vacuously green
+today, and that is the point." as false. It was: measured over the final file, 11 tests, 10 of
+them live against the real tree and exactly ONE dormant (the stamp test, which skips). The
+census compares the real referencing set, the reader-pin scans the real stripped sources, and the
+burst-guard test's else-branch asserts `hasRuleGuard == false` against the real `firestore.rules`
+— adding `rateLimitStamped(` to that block reddens it today.
+
+Two places kept the struck claim alive, and neither was where the strike happened:
+- the SAME sentence's anaphor — "The file exists to flip FROM VACUOUS to red" re-asserted the
+  state that had just been deleted;
+- a comment 280 lines away citing it — "The header says this guard is vacuous today; this says it
+  where it is actually read."
+
+The second could not be half-deleted: removing only the first clause strands "this says IT where
+it is actually read" with no antecedent. The whole sentence had to go, and both edits had to land
+together, because striking the anaphor is what kills the citation's referent.
+
+CORRECTION TO MY OWN ROUND-6 REPORT: I wrote "the six detector self-tests". There are SEVEN
+(`test(` at 343, 353, 362, 374, 390, 397, 408), so the file is 4 + 7 = 11. The strike's premise —
+11 total, 1 dormant — is unchanged and still correct, and the runner totals confirm it
+independently: 11 − 1 skipped = 10 here, plus 16 + 2 from the two sibling suites = 28 passed +
+1 skipped. My numeral was wrong; the measurement was not.
+
+LESSONS:
+1. A struck sentence has TWO afterlives — its own anaphor, and every comment elsewhere in the file
+   that cites it. Grep the struck CONCEPT across the whole file, not just the paragraph.
+2. Two reviewers can split on the same two sentences and both be reasoning correctly about
+   DIFFERENT properties: `integration-reviewer` checked them for dangling antecedents and cleared
+   them; the falsity only appears if you COUNT which assertions are live. Neither pass subsumes
+   the other.
+3. A liveness table in a review report becomes the measurement of record for everyone downstream.
+   Derive its rows by grepping `test(` and reconciling against the runner's pass/skip totals
+   before writing it — I typed a count instead, and it shipped one short.
+
+### 2026-09-21 — BUT-2033, round 8: the correcting measurement was the wrong one
+
+`claim-lint` blocked the commit over line numbers in the comment-strip paragraph. While deriving
+a replacement the coordinator ran a shell one-liner — list every `lib/` Dart file containing an
+opening `/*`, then drop any file in which `grep -q` finds a closing `*/` — got four files, found
+`http_content_fetcher.dart` absent from them, and concluded the earlier sentence was wrong in
+count, membership and mechanism: that the string in its Accept header "contains a closer and
+closes its own block", and that four reviewers had confirmed a false measurement.
+
+RE-MEASURED, per file — offset of the first opener, whether a closer appears ANYWHERE, whether
+one appears AFTER the opener, and the number of matches of the strip's own block regex:
+
+    incoming_share_handler.dart     816   any:no    after:no    matches:0
+    singleton_service_mixin.dart   2436   any:yes   after:yes   matches:1
+    content_type.dart               140   any:no    after:no    matches:0
+    anomaly_repository.dart         434   any:no    after:no    matches:0
+    daily_snapshot_repository.dart  487   any:no    after:no    matches:0
+    http_content_fetcher.dart      4853   any:YES   after:NO    matches:0
+
+The three-character MIME wildcard holds a closer at offset 0 and an opener at offset 1 — the
+closer PRECEDES the opener, so it cannot close the block that opener starts. The block regex
+confirms it: zero matches in that file. The grep asks "does a closer appear ANYWHERE", which is
+ordering-blind; the struck sentence asked "is there a LATER closer", which is the right predicate
+and was TRUE of both files it named. Five files, not four, carry an unclosed first opener — the
+grep's four is a different set answering a different question.
+
+So the struck sentence's mechanism was right, my round-2 confirmation was right, and both other
+reviewers were right. What was genuinely wrong with it is what claim-lint said: hard line numbers
+in prose. The strike was still the correct action — it removes a measurement the file does not
+need — but the REASON recorded for it was false, and a false reason is what a future session acts
+on when it decides the comment strip is safe to point at Dart.
+
+LESSONS:
+1. A CORRECTION arrives with the authority of being second, and nobody re-measures it. Treat the
+   correcting measurement as a claim like any other: run it yourself before conceding, above all
+   when it overturns something several reviewers independently confirmed.
+2. `grep -q` answers PRESENCE, never ORDER. Any claim about a delimiter PAIR — opener before
+   closer, stamp before write, anchor before match — needs an offset comparison, not two presence
+   tests. A shell one-liner is the shape that hides the difference.
+3. Unanimity across reviewers is not corroboration when they all inherited the same brief. Here it
+   happened to be right; the failure mode looks identical when it is wrong.
+
+### 2026-09-21 — BUT-2033, round 9: which counts survive a strike
+
+Three counts came out of the guard file; one stayed. The line that separates them, and it is not
+"is it true today":
+
+STRUCK — a count that DECORATES. "14 call sites elsewhere in lib/" in the helper constant's doc,
+and "its 14 existing call sites" in a failure message. Both were true when written (re-measured at
+14 before removal), and neither carried weight: the sentences say "this is a worn path" and "go
+look at the call sites", and they say it exactly as well without a number. A count with no load is
+pure rot seam — nothing reddens when it drifts.
+
+KEPT — a count a DECISION rests on. "the five pinned files contain 19 unrelated write calls
+between them" is the measurement that justifies rejecting a whole-file scan. Strike it and the
+rejected alternative looks arbitrary, which is how a rejected option gets re-proposed. Verified
+independently: 0 + 5 + 2 + 12 + 0 = 19.
+
+The honest caveat, stated rather than hidden: 19 is no better pinned than the 14s were — add a
+write call to any of those five files and nothing reddens. What makes it safe to keep is that the
+DECISION does not turn on the exact value. At 23 the conclusion is identical; only at ~0 would it
+be worth revisiting, and that direction is the one a reader would notice.
+
+Also this round: a deletion inside a doc comment left its NEIGHBOUR standing — the setUpAll
+comment still says "every consumer descends from it" after "every consumer needs it, and" was
+struck from the function's own doc. Checked rather than assumed: they are different claims. The
+census consumes the KEYS, which do descend from that one read, so "descends from" is true where
+"needs the source" was false. A strike in one place does not automatically condemn the similar
+sentence elsewhere — read it against the code, not against the strike.

@@ -17,12 +17,7 @@ import 'dart:io';
 import 'package:butlery/models/menu/group_weekly_menu_plan.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-String _withoutComments(String source) => source
-    .replaceAll(RegExp(r'/\*[\s\S]*?\*/'), '')
-    .replaceAllMapped(
-      RegExp(r'(^|[^:])//.*$', multiLine: true),
-      (m) => m.group(1)!,
-    );
+import 'rules_source.dart';
 
 void main() {
   /// Both bounds are read the same way: pull the number out of the rules
@@ -68,7 +63,9 @@ void main() {
   test('the contributor cap in firestore.rules matches the Dart constant', () {
     // Nothing in `lib/` reads this constant — unlike `maxEditTrailRows`, which
     // the service prunes to — so raising it denies nothing today.
-    final rules = _withoutComments(File('firestore.rules').readAsStringSync());
+    final rules = withoutCStyleComments(
+      File('firestore.rules').readAsStringSync(),
+    );
 
     expectRulesCapMatches(
       rules: rules,
@@ -82,7 +79,9 @@ void main() {
   });
 
   test('the edit-trail cap in firestore.rules matches the Dart constant', () {
-    final rules = _withoutComments(File('firestore.rules').readAsStringSync());
+    final rules = withoutCStyleComments(
+      File('firestore.rules').readAsStringSync(),
+    );
 
     expectRulesCapMatches(
       rules: rules,
