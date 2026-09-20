@@ -35,7 +35,7 @@ import 'package:butlery/services/unified/operations/realtime_group_menu/realtime
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/views/group_weekly_menu_view.dart';
 import 'package:butlery/views/messaging/chat_view/chat_action_handler.dart';
-import 'package:butlery/views/messaging/group_detail_view.dart';
+import 'package:butlery/views/messaging/conversation_group_detail_view.dart';
 import 'package:butlery/widgets/messaging/chat_app_bar.dart';
 
 import '../../infrastructure/di/test_service_locator.dart';

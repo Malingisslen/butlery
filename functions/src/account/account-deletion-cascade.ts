@@ -40,10 +40,8 @@ import { Collections } from "../shared/collections";
 // it deletes a conversation. A second implementation here would be a second
 // contract to keep in sync on a GDPR path. Extraction into a neutral module is
 // tracked separately; until then, that function's docstring names this caller.
-import {
-  logSafeConversationId,
-  tryClearRoster,
-} from "../messaging/enforce-group-minor-membership";
+import { tryClearRoster } from "../messaging/enforce-group-minor-membership";
+import { logSafeConversationId } from "../shared/log-safe-conversation-id";
 // BUT-1838: the single writer of chat-group membership. Imported rather than
 // re-implemented for the same reason as `tryClearRoster` above — a second
 // spelling of "remove this member" on a GDPR path is a contract to keep in sync,

@@ -22,7 +22,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/views/messaging/chat_view/chat_view_facade.dart';
-import 'package:butlery/views/messaging/group_detail_view.dart';
+import 'package:butlery/views/messaging/conversation_group_detail_view.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 
 /// Conversations list view showing all user's messaging conversations.

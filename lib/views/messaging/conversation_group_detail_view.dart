@@ -1,4 +1,4 @@
-// lib/views/messaging/group_detail_view.dart
+// lib/views/messaging/conversation_group_detail_view.dart
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';

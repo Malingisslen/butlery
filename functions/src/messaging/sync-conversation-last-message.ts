@@ -64,7 +64,7 @@ import { logger } from "firebase-functions/logger";
 import * as admin from "firebase-admin";
 // BUT-1872: a DIRECT conversation id is `direct_<uidA>_<uidB>` — two raw uids.
 // One helper, so every logger on a conversation path hashes it the same way.
-import { logSafeConversationId } from "./enforce-group-minor-membership";
+import { logSafeConversationId } from "../shared/log-safe-conversation-id";
 // BUT-1904: the OTHER trigger on this collection decides what counts as a
 // blocked row and which creates it can rewrite. Importing both from there is
 // what stops the two triggers drifting apart — see `isChatDuplicateCandidate`.

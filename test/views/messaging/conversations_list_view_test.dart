@@ -31,7 +31,7 @@ import 'package:provider/provider.dart';
 import 'package:butlery/views/messaging/conversations_list_view.dart';
 import 'package:butlery/viewmodels/conversations_viewmodel.dart';
 import 'package:butlery/widgets/messaging/conversation_list_item.dart';
-import 'package:butlery/views/messaging/group_detail_view.dart';
+import 'package:butlery/views/messaging/conversation_group_detail_view.dart';
 import 'package:butlery/services/messaging_service.dart';
 import 'package:butlery/repositories/interfaces/chat_group_repository.dart';
 import 'package:butlery/services/offline_service.dart';

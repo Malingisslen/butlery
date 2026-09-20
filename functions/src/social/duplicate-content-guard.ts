@@ -48,7 +48,7 @@ import { logger } from "firebase-functions/logger";
 import * as admin from "firebase-admin";
 import * as crypto from "crypto";
 import { hashUid } from "../shared/hash-uid";
-import { logSafeConversationId } from "../messaging/enforce-group-minor-membership";
+import { logSafeConversationId } from "../shared/log-safe-conversation-id";
 import { isChatDuplicateGuardEnabled } from "./duplicate-message-flag";
 
 // Lazy admin SDK access so this module is import-safe in unit tests that

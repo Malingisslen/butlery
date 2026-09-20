@@ -20,7 +20,7 @@ import 'package:butlery/widgets/common/dialogs/share_selection/menu_week_selecti
 import 'package:butlery/widgets/common/dialogs/share_selection/shopping_list_selection_dialog.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/views/group_weekly_menu_view.dart';
-import 'package:butlery/views/messaging/group_detail_view.dart';
+import 'package:butlery/views/messaging/conversation_group_detail_view.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/models/social/content_type.dart';

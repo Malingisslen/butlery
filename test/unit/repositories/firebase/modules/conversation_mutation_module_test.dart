@@ -14,6 +14,8 @@ import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
+import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/repositories/firebase/modules/conversation_mutation_module.dart';
 
 const _convoCollection = 'conversations';
@@ -36,6 +38,55 @@ void main() {
 
       expect(id, equals('direct_user-a_user-b'));
     });
+
+    // BUT-1899: the masker keys on the `direct_` prefix, and the prefix is
+    // minted above rather than in the masker. If the scheme is ever renamed
+    // here, `maskConversationId` stops matching and silently logs two raw uids
+    // instead of failing — so the id this module MINTS is fed to the real
+    // maskers rather than to a hardcoded literal.
+    //
+    // BOTH maskers, because they read the id through different nets and only
+    // one of them is keyed on the prefix alone. `maskIdentifiers` — the
+    // Crashlytics chokepoint, which sees the id embedded in free text — matches
+    // on the WHOLE `direct_<uid>_<uid>` shape. The two must AGREE, which is why
+    // the last assertion compares them rather than only checking that no raw
+    // uid survived.
+    //
+    // The uids are 28-char alphanumerics because that is what Firebase Auth
+    // mints; a shorter or hyphenated fixture slips through both of
+    // `maskIdentifiers`' rules and would make this test green on an id it
+    // cannot actually protect.
+    test(
+      'a minted direct id is masked by both maskers, not logged raw',
+      () async {
+        const uidA = 'aBcDeFgHiJkLmNoPqRsTuVwXyZ01';
+        const uidB = 'zYxWvUtSrQpOnMlKjIhGfEdCbA98';
+        final firestore = FakeFirebaseFirestore();
+        final module = ConversationMutationModule(
+          firestore: firestore,
+          collectionName: _convoCollection,
+        );
+
+        final id = await module.createDirectConversation(
+          user1Id: uidA,
+          user1DisplayName: 'A',
+          user2Id: uidB,
+          user2DisplayName: 'B',
+        );
+
+        final masked = LogSanitizer.maskConversationId(id);
+        expect(masked, isNot(equals(id)));
+        expect(masked, isNot(contains(uidA)));
+        expect(masked, isNot(contains(uidB)));
+
+        final inFreeText = AppLogger.sanitizeForCrashlyticsForTesting(
+          'kunde inte spara i $id',
+        );
+        expect(inFreeText, isNot(contains(uidA)));
+        expect(inFreeText, isNot(contains(uidB)));
+        expect(inFreeText, contains(masked));
+      },
+    );
 
     test('returns existing conversation id without re-creating', () async {
       final firestore = FakeFirebaseFirestore();

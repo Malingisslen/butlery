@@ -138,7 +138,7 @@ void main() {
       // hold it — neither compiler can see the other side.
       //
       // Produced 2026-08-19 by `logSafeConversationId` in
-      // `functions/src/messaging/enforce-group-minor-membership.ts`, which
+      // `functions/src/shared/log-safe-conversation-id.ts`, which
       // hashes through `hashUid` in `functions/src/shared/hash-uid.ts`
       // (sha256 hex, first 12 chars, over the WHOLE id). Reproduce with:
       //

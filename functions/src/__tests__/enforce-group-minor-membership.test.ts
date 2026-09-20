@@ -4,7 +4,7 @@
  * The decision core these used to live beside moved to
  * `minor-membership-gate.test.ts` when BUT-1838 made the gate the primary
  * control and this trigger the backstop; the uid-safety and roster-clearing
- * cases stayed here, with the code they exercise.
+ * cases stayed here.
  *
  * No emulator: these are the paths the emulator cannot reach — a uid the
  * backend would reject, and a Firestore read or delete that fails.
@@ -14,9 +14,9 @@
 
 import {
   MAX_ROSTER_ROWS,
-  logSafeConversationId,
   tryClearRoster,
 } from "../messaging/enforce-group-minor-membership";
+import { logSafeConversationId } from "../shared/log-safe-conversation-id";
 import { isValidDocId } from "../shared/valid-doc-id";
 
 let run = 0;

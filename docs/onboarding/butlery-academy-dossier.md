@@ -547,7 +547,6 @@ Future<bool> addItemsToList(...) => _shoppingService.addItemsBatch(items);
 - `cooking_mode`, `menu/veckomeny` och import-varianterna är INTE kataloger — förvänta dig inte `lib/views/cooking_mode/`.
 - Meny→inköp-kopplingen är INTE en metod på `MenuViewModel` — bryggan ligger i UI-lagret (`veckomeny_dialogs.showShoppingListSelector`) och går genom `UnifiedShoppingViewModel`.
 - `pantry_view` har ingen egen Scaffold/AppBar — den är en sub-tab och går sönder om den renderas fristående.
-- Två parallella `group_detail_view.dart` finns: `lib/views/social/` (delningsgrupper) och `lib/views/messaging/` (chattgrupper) — samma filnamn, olika feature.
 - Det finns realtids-tvillingar (`realtime_menu_viewmodel`, `collaborative_shopping_viewmodel`) — kollaboration är en separat kodväg, inte en flagga på den personliga vyn.
 
 ### Prova nu

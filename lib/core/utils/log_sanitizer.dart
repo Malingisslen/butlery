@@ -65,7 +65,7 @@ class LogSanitizer {
   /// ids do, and that parity is pinned by a literal in both languages' tests.
   ///
   /// Mirrors `logSafeConversationId` in
-  /// `functions/src/messaging/enforce-group-minor-membership.ts`, deliberately
+  /// `functions/src/shared/log-safe-conversation-id.ts`, deliberately
   /// down to the `direct_#` shape and the 12-char SHA-256 prefix, so one
   /// conversation reads the same in a Crashlytics report and a Cloud Functions
   /// log. Change one and you must change the other, or correlating an incident
