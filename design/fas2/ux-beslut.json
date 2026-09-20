@@ -1,0 +1,130 @@
+{
+ "$om": "Kanonisk beslutskalla for de produktbeslut som avgor motsagelser i UX-underlaget. Ett beslut har ar en MANSKLIG produktdom: den vinner over aldre designtext utan att radera den. Den overstyrda texten star kvar i sin kalla och pekas ut har som superseded provenance.",
+ "block": "288",
+ "version": "1.0",
+ "beslutsdatum": "2026-09-20",
+ "$regel": "Identitet = DECISION_ID. Ett beslut far bara peka pa overgangar och tillstand som finns i modellen. ACTION avgor vad byggaren gor: RESOLVE later raden sta kvar som REQUIRED med en bunden FINAL_RULE; SUPERSEDE satter raden till NOT_REQUIRED och bevarar dess tidigare status; ADD infor en ny rad som beslutet sjalvt ar kalla till. Skalet ar aldrig en del av identiteten.",
+ "beslut": [
+  {
+   "DECISION_ID": "D-01",
+   "QUESTION": "Hur lange lever ett lokalt utkast i recepteditorn?",
+   "OLD_CONFLICTING_RULES": [
+    "produktregler.md 3, tabellraden Livstid: 30 dagar sedan senaste andring",
+    "produktregler.md 15: utkastet ar lokalt, fem platser, 24 timmars livslangd"
+   ],
+   "FINAL_RULE": "Ett paborjat recept ar aterupptagbart i 30 dagar sedan senaste andring.",
+   "SUPERSEDED_RULE": "produktregler.md 15: 24 timmars livslangd",
+   "SOURCE": "HUMAN_PRODUCT_DECISION",
+   "DATE": "2026-09-20",
+   "AFFECTED_FLOWS": ["08"],
+   "AFFECTED_STATES": [],
+   "AFFECTED_TRANSITIONS": [
+    { "TRANSITION_ID": "TR::FLOW::08::utkast::livstid-utgangen", "ACTION": "RESOLVE" }
+   ]
+  },
+  {
+   "DECISION_ID": "D-02",
+   "QUESTION": "Nar sparas ett paborjat recept forsta gangen?",
+   "OLD_CONFLICTING_RULES": [
+    "produktregler.md 3, tabellraden Nar skapas det: vid forsta tecknet eller forsta placeringen",
+    "produktregler.md 15: efter 3 sekunder, 1 sekund for titel och beskrivning, och forst nar minst tva falt ar ifyllda"
+   ],
+   "FINAL_RULE": "Utkastet persisteras fran det forsta tecken anvandaren skriver. Ingen tidsgrans och inget krav pa ifyllda falt far forsena den forsta persisteringen.",
+   "SUPERSEDED_RULE": "produktregler.md 15: 3 sekunder och minst tva ifyllda falt fore forsta sparningen",
+   "SOURCE": "HUMAN_PRODUCT_DECISION",
+   "DATE": "2026-09-20",
+   "$avgransning": "Nar ett sparat utkast ska SYNAS i en utkastlista ar en egen, senare fraga. Den far aldrig forsvaga persisteringsregeln.",
+   "AFFECTED_FLOWS": ["08"],
+   "AFFECTED_STATES": [],
+   "AFFECTED_TRANSITIONS": [
+    { "TRANSITION_ID": "TR::FLOW::08::utkast::skapas", "ACTION": "RESOLVE" }
+   ]
+  },
+  {
+   "DECISION_ID": "D-03",
+   "QUESTION": "Finns tillstandet lang vantan och valet Fortsatt i bakgrunden i veckogenereringen?",
+   "OLD_CONFLICTING_RULES": [
+    "flows-roles-budget.md 01: genererar vid over 10 s till lang vantan, och lang vantan vid Fortsatt i bakgrunden till bakgrund plus notis",
+    "produktregler.md 4: inget nytt lage, ingen ny yta, inget bakgrundsval - det senare fanns bara i specen"
+   ],
+   "FINAL_RULE": "Det finns inget eget produkttillstand LONG_WAIT och ingen handling CONTINUE_IN_BACKGROUND. Genereringen stannar i sitt befintliga genererar-tillstand. Statustexten far andras med tiden enligt tidsreglerna, men det skapar varken nytt tillstand eller ny navigationsvag.",
+   "SUPERSEDED_RULE": "flows-roles-budget.md 01, raderna for lang vantan och bakgrundsval",
+   "SOURCE": "HUMAN_PRODUCT_DECISION",
+   "DATE": "2026-09-20",
+   "$bevarat": "Den tidsdrivna textandringen star kvar som krav i TR::FLOW::01::genererar::6-10-s.",
+   "AFFECTED_FLOWS": ["01"],
+   "AFFECTED_STATES": ["veckogenerering::LOADING"],
+   "AFFECTED_TRANSITIONS": [
+    { "TRANSITION_ID": "TR::FLOW::01::genererar::10-s", "ACTION": "SUPERSEDE" },
+    { "TRANSITION_ID": "TR::FLOW::01::lång-väntan::fortsätt-i-bakgrunden", "ACTION": "SUPERSEDE" }
+   ]
+  },
+  {
+   "DECISION_ID": "D-04",
+   "QUESTION": "Var sitter angravagen efter en generering, och hur lang ar den?",
+   "OLD_CONFLICTING_RULES": [
+    "flows-roles-budget.md 01: resultat med Angra-snackbar i 30 sekunder, darefter Aterstall i 30 dagar",
+    "produktregler.md 4: ett genererat resultat ligger inte i veckan; placering ar ett eget steg och kvittot i 7 sekunder med ANDRA ar flodets enda angravag",
+    "produktregler.md 2: veckomenyns konfliktstrategi bar snackbaren i 30 sekunder och darefter Aterstall i 30 dagar"
+   ],
+   "FINAL_RULE": "Det genererade resultatet har annu inte andrat veckan och har darfor ingen angravag. Angravagen hor till placeringskvittot: 7 sekunder med ANDRA. 30-sekundersregeln tillhor konflikthanteringen och far aldrig ateranvandas som genereringens angratid. De tva mekanismerna slas inte ihop.",
+   "SUPERSEDED_RULE": "flows-roles-budget.md 01, raderna som lagger en 30-sekunders angravag pa resultatet",
+   "SOURCE": "HUMAN_PRODUCT_DECISION",
+   "DATE": "2026-09-20",
+   "AFFECTED_FLOWS": ["01"],
+   "AFFECTED_STATES": ["veckomeny::CONFLICT"],
+   "AFFECTED_TRANSITIONS": [
+    { "TRANSITION_ID": "TR::FLOW::01::resultat::ångra-snackbar-30-s", "ACTION": "SUPERSEDE" },
+    { "TRANSITION_ID": "TR::FLOW::01::resultat::efter-30-s", "ACTION": "SUPERSEDE" }
+   ],
+   "NYA_OVERGANGAR": [
+    {
+     "TRANSITION_ID": "TR::FLOW::01::resultat::placera-i-veckan",
+     "FLOW_ID": "01",
+     "FROM": "resultat",
+     "TRIGGER": "placera i veckan eller jag placerar sjalv",
+     "TO": "veckan andrad",
+     "PRECONDITION": "ett genererat resultat ligger inte i veckan; placering ar ett eget, uttryckligt steg (BUT-1241)",
+     "VISIBLE_USER_EFFECT": "tva vagar under resultatet: automatisk dagsankrad placering eller helskarmslaget jag placerar sjalv",
+     "PRESERVED_DATA": "inga recept pa passerade dagar; manuell placering haller allt i minnet till Klar",
+     "SOURCE": ["produktregler", "HUMAN_PRODUCT_DECISION"],
+     "SOURCE_LOCATION": "produktregler.md 4 samt beslut D-04",
+     "EVIDENCE": "Placering ar ett eget, uttryckligt steg. Ett genererat resultat ligger inte i veckan",
+     "STATUS": "REQUIRED",
+     "FRAME_HINT": "placera"
+    },
+    {
+     "TRANSITION_ID": "TR::FLOW::01::placering::kvitto-7-s-andra",
+     "FLOW_ID": "01",
+     "FROM": "veckan andrad av automatisk placering",
+     "TRIGGER": "placeringen ar utford",
+     "TO": "kvitto i 7 sekunder med ANDRA",
+     "PRECONDITION": "automatiken skriver direkt i veckan",
+     "VISIBLE_USER_EFFECT": "ANDRA oppnar manuell placering med tom arbetsvecka",
+     "PRESERVED_DATA": "den placerade veckan tills anvandaren andrar den",
+     "SOURCE": ["produktregler", "HUMAN_PRODUCT_DECISION"],
+     "SOURCE_LOCATION": "produktregler.md 4 samt beslut D-04",
+     "EVIDENCE": "Efter automatisk placering visas ett kvitto i 7 sekunder med ANDRA. Det ar flodets enda angravag",
+     "STATUS": "REQUIRED",
+     "FRAME_HINT": "placera"
+    },
+    {
+     "TRANSITION_ID": "TR::FLOW::01::vecka-sparad-av-annan::konfliktsnackbar",
+     "FLOW_ID": "01",
+     "FROM": "veckomeny",
+     "TRIGGER": "nagon annan sparade veckan samtidigt",
+     "TO": "konfliktbesked",
+     "PRECONDITION": "strategin for veckomeny ar senaste sparade vinner",
+     "VISIBLE_USER_EFFECT": "snackbar Namn sparade veckan i 30 sekunder, darefter nas den overskrivna versionen i Aterstall i 30 dagar",
+     "PRESERVED_DATA": "den overskrivna versionen sparas i 30 dagar; ingen strategi far tyst kasta data som bara finns lokalt",
+     "ERROR_OFFLINE_CONFLICT": "detta ar konflikthantering enligt produktregler.md 2 och ar en annan mekanism an placeringskvittot",
+     "SOURCE": ["produktregler", "HUMAN_PRODUCT_DECISION"],
+     "SOURCE_LOCATION": "produktregler.md 2, tabellraden Veckomeny, samt beslut D-04",
+     "EVIDENCE": "Veckomeny: senaste sparade vinner, snackbar i 30 s, darefter Aterstall i 30 dagar",
+     "STATUS": "REQUIRED",
+     "FRAME_HINT": "vmbkonflikt"
+    }
+   ]
+  }
+ ]
+}

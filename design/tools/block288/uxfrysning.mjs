@@ -23,7 +23,16 @@ export function bygg(rot) {
   const b283 = j('fas2/stateflow-applicability.json');
   const b285 = j('fas2/role-state-applicability.json');
   const b288 = j('fas2/stateflow-applicability-0608.json');
+  const beslutskalla = j('fas2/ux-beslut.json');
   const pop = j('fas2/block287k-population.json');
+
+  /* ---- produktbeslut: manskliga domar som vinner over aldre designtext ---- */
+  const atgard = new Map();
+  const nyaRader = [];
+  for (const d of beslutskalla.beslut) {
+    for (const t of d.AFFECTED_TRANSITIONS || []) atgard.set(t.TRANSITION_ID, { DECISION_ID: d.DECISION_ID, ACTION: t.ACTION });
+    for (const n of d.NYA_OVERGANGAR || []) nyaRader.push({ ...n, DECISION_ID: d.DECISION_ID });
+  }
 
   /* ---- ramar ur skarmkorpusen; representation far bara komma harifran ---- */
   const korpusfiler = readdirSync(rot).filter(f => /^Butlery .*\.dc\.html$/.test(f)).sort();
@@ -59,7 +68,22 @@ export function bygg(rot) {
     REPRESENTATION: t.FRAME_HINT && ramar.has(t.FRAME_HINT) ? 'PRESENT' : 'ABSENT',
     BLOCK: '288'
   }));
-  const overgangar = [...t0105, ...t0608].sort((a, b) => a.TRANSITION_ID.localeCompare(b.TRANSITION_ID));
+  const tNya = nyaRader.map(t => ({
+    TRANSITION_ID: t.TRANSITION_ID,
+    FLOW_ID: t.FLOW_ID,
+    STATUS: t.STATUS,
+    REPRESENTATION: t.FRAME_HINT && ramar.has(t.FRAME_HINT) ? 'PRESENT' : 'ABSENT',
+    BLOCK: '288',
+    BESLUT: t.DECISION_ID
+  }));
+  const tillampa = t => {
+    const a = atgard.get(t.TRANSITION_ID);
+    if (!a) return t;
+    if (a.ACTION === 'SUPERSEDE') return { ...t, PREVIOUS_STATUS: t.STATUS, STATUS: 'NOT_REQUIRED', BESLUT: a.DECISION_ID };
+    return { ...t, BESLUT: a.DECISION_ID };
+  };
+  const overgangar = [...t0105, ...t0608, ...tNya].map(tillampa)
+    .sort((a, b) => a.TRANSITION_ID.localeCompare(b.TRANSITION_ID));
 
   /* ---- interaktionstillstand: Block 283:s 70 rader, dar Block 285 avgjort 24 ---- */
   const b285status = new Map();
@@ -76,8 +100,12 @@ export function bygg(rot) {
     AVGJORD_I: b285status.has(r.ROW_ID) ? '285' : '283'
   })).sort((a, b) => a.ROW_ID.localeCompare(b.ROW_ID));
 
-  /* ---- beslutsbehov ---- */
-  const beslutsbehov = (b288.beslutsbehov || []).map(d => d.DESIGN_DECISION_REQUIRED).sort();
+  /* ---- beslutsbehov: bara de som inget produktbeslut har avgjort ---- */
+  const avgjorda = new Set(beslutskalla.beslut.map(d => d.DECISION_ID));
+  const beslutsbehov = (b288.beslutsbehov || [])
+    .map(d => d.DESIGN_DECISION_REQUIRED)
+    .filter(id => !avgjorda.has(id)).sort();
+  const beslutade = [...avgjorda].sort();
 
   /* ---- grindar ---- */
   const idn = overgangar.map(t => t.TRANSITION_ID);
@@ -113,6 +141,9 @@ export function bygg(rot) {
     INTERACTION_NOT_REQUIRED: interaktion.filter(r => r.STATUS === 'NOT_REQUIRED').length,
     INTERACTION_UNSPECIFIED: interaktion.filter(r => r.STATUS === 'UNSPECIFIED').length,
     DESIGN_DECISION_REQUIRED: beslutsbehov.length,
+    HUMAN_PRODUCT_DECISIONS: beslutade.length,
+    TRANSITIONS_SUPERSEDED_BY_DECISION: overgangar.filter(t => t.PREVIOUS_STATUS === 'REQUIRED' && t.STATUS === 'NOT_REQUIRED').length,
+    TRANSITIONS_ADDED_BY_DECISION: tNya.length,
     FLOWS_MODELLED: new Set(overgangar.map(t => t.FLOW_ID)).size
   };
 
@@ -143,6 +174,7 @@ export function bygg(rot) {
     },
     BINDNING: bindning,
     BESLUTSBEHOV: beslutsbehov,
+    PRODUKTBESLUT: beslutade,
     BLOCKERANDE: fel,
     vytillstand,
     overgangar,
