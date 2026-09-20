@@ -1,6 +1,6 @@
 // Kor: node tools/block288/uxprov.mjs --root=<kallrot>
 //
-// UX-01..UX-10 · det aktiva provet for Block 288:s UX-frysning. Provet laser
+// UX-01..UX-12 · det aktiva provet for Block 288:s UX-frysning. Provet laser
 // bara kallorna och den ombyggda modellen; det litar aldrig pa ett tal som
 // nagon skrivit in.
 import { readFileSync } from 'node:fs';
@@ -89,6 +89,22 @@ prov('UX-04', 'ingen overgang star olost', b.TRANSITIONS_UNRESOLVED === 0, 'UNRE
   const ok = visuell.STATUS === 'FROZEN' && m.PROVENIENS.VISUAL_REQUIREMENT_FREEZE === 'fas2/block287k-frysning.json'
     && !('BLOCK287_POPULATION_COUNT' in b);
   prov('UX-10', 'UX-frysningen rakner inte om den visuella frysningen', ok, 'visuell STATUS=' + visuell.STATUS);
+}
+
+/* UX-11 · modellen ar ordningsoberoende: varje radmangd ar sorterad pa sin identitet */
+{
+  const sorterad=(arr,nyckel)=>arr.every((x,i)=>i===0||nyckel(arr[i-1]).localeCompare(nyckel(x))<=0);
+  const a=sorterad(m.overgangar,t=>t.TRANSITION_ID);
+  const b2=sorterad(m.interaktion,r=>r.ROW_ID);
+  const c=sorterad(m.vytillstand,r=>r.VIEW+r.STATE);
+  prov("UX-11","alla radmangder ar sorterade pa identitet, sa indataordning inte kan andra utfallet",a&&b2&&c,"overgangar="+a+" interaktion="+b2+" vytillstand="+c);
+}
+
+/* UX-12 · tva ombyggnader ur samma kalla ger samma bindning */
+{
+  const igen=bygg(ROT);
+  prov("UX-12","tva ombyggnader ger samma bindning",
+    JSON.stringify(igen.BINDNING)===JSON.stringify(m.BINDNING),"avtryck="+igen.BINDNING.UX_MODEL_FINGERPRINT);
 }
 
 for (const r of res) console.log((r.ok ? 'GRON ' : 'ROD  ') + r.id.padEnd(8) + r.vad + (r.ok ? '' : '  -> ' + r.diag));
