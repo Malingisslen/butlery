@@ -125,3 +125,4 @@ lessons that only matter while writing or running tests.
 - Ett muteringsprov över HELA testfilen krediterar rött till fel påstående — skopa till det enda testet och skriv ut den fallande raden; ett prov på EN variant bevisar ingen klass, och en granskare som håller med är inte en mätning (BUT-1899, 2026-09-20)
 - En "är detta aktuellt?"-fråga mäts först mot ärendets EGEN historik (`git log --all --grep=<ID>` + grep på ID:t), sedan mot koden — ett beslut kan vara fattat i ett annat ärendes ändring utan att statusfältet ändrats (BUT-2094, 2026-09-20)
 - En granskares VERDIKTRAD registreras separat från dess läsningar — be om den som ETT EGET meddelande och verifiera i liggaren, aldrig i rapporten (2026-09-20)
+- Ett upprepat UTFALL är inte en mekanism: öppna hooken/skriptet innan du skriver ned VARFÖR, annars bekräftar varje lyckad körning vanan och ingenting testar förklaringen (2026-09-20)
