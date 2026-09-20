@@ -15,10 +15,18 @@ class MenuPlacementChoiceFooter extends StatelessWidget {
   final VoidCallback onPlaceAuto;
   final VoidCallback onPlaceManual;
 
+  /// BUT-1987: a distribution is being placed. The viewmodel refuses a second
+  /// tap and says nothing — this surface ranks error above data, so a message
+  /// would replace the calendar the first tap placed — so the button carries
+  /// the state instead. `isLoading` is what disables it; it also draws the
+  /// spinner, which a bare disabled control would not.
+  final bool isPlacing;
+
   const MenuPlacementChoiceFooter({
     super.key,
     required this.onPlaceAuto,
     required this.onPlaceManual,
+    this.isPlacing = false,
   });
 
   @override
@@ -44,6 +52,7 @@ class MenuPlacementChoiceFooter extends StatelessWidget {
             label: context.l10n.menuPlaceAutoButton,
             icon: Icons.calendar_month_outlined,
             onPressed: onPlaceAuto,
+            isLoading: isPlacing,
           ),
           const SizedBox(height: AppDimensions.spacingSm),
           ActionButtons.outlinedButton(

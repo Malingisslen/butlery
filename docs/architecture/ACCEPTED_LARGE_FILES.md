@@ -135,7 +135,7 @@ Already modular services or well-organized modules within service facades. Furth
 | `url_import_strategy.dart` | 507 | Single multi-tier URL extraction strategy; coherent pipeline |
 | `recipe_auto_save_manager.dart` | 506 | Single-concern auto-save + draft management for recipe form |
 | `recipe_member_manager.dart` | 637 | Focused module for collaborative membership only. The grant algebra behind BUT-1797's real group revoke lives in its own file (`recipe_share_grants.dart`) rather than here, so the decided behaviour is testable without this module's five injected seams. |
-| `weekly_menu_plan_service.dart` | 768 | Single-algorithm service: today-anchored menu auto-distribution; coherent domain |
+| `weekly_menu_plan_service.dart` | 740 | Single-algorithm service: today-anchored menu auto-distribution; coherent domain |
 | `analytics_service.dart` | 575 | Explicit facade delegating to 7 specialized tracker modules |
 | `cache_optimization.dart` | 526 | Single-concern LRU + periodic cache cleanup utility |
 | `social_shopping_coordinator.dart` | 528 | Direct-collaboration coordinator extending base; single shopping-list domain |
@@ -191,7 +191,7 @@ UI files that are already extracted or represent cohesive single-screen implemen
 | `recipe_parser_service.dart` | 915 | Multi-tier recipe text parsing pipeline |
 | `recipe_list_viewmodel.dart` | 1,177 | Recipe list with filtering, search, tags |
 | `recipe_detail_view.dart` | 1,273 | Recipe detail screen (source-artefact sheet + stale banner extracted to recipe_detail/recipe_source_artefact_sheet.dart, BUT-1205) |
-| `weekly_menu_plan_viewmodel.dart` | 701 | Weekly-menu VM: the week read, the write paths, the optimistic-publish/rollback pair and the overflow tray. The write paths split cleanly into a manager if it grows further (BUT-1975) |
+| `weekly_menu_plan_viewmodel.dart` | 714 | Weekly-menu VM: the week read, the write paths, the optimistic-publish/rollback pair and the overflow tray. The write paths split cleanly into a manager if it grows further (BUT-1975) |
 | `personal_tag_viewmodel.dart` | 798 | Personal tag management VM |
 | `recipe_detail_content.dart` | 859 | Body content widget for recipe detail |
 | `mina_recept_view.dart` | 697 | Main recipe list screen — facade-extracted to `lib/views/mina_recept/` per BUT-441 |

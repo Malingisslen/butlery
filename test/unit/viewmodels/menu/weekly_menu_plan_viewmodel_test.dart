@@ -513,6 +513,66 @@ void main() {
         );
       });
 
+      // BUT-1986: the tray used to be pruned only once the save acked, so
+      // offline the same chip could be dropped into a second slot.
+      test(
+        'the chip leaves the tray at publish, before the save acks',
+        () async {
+          final week = _plan();
+          final tray = _recipe(id: 'r-tray');
+          when(
+            () => mockService.readWeek(any()),
+          ).thenAnswer((_) async => _read(week));
+          when(
+            () => mockService.distributeFromGeneratedMenu(
+              generated: any(named: 'generated'),
+              weekStart: any(named: 'weekStart'),
+              existing: any(named: 'existing'),
+              now: any(named: 'now'),
+              dayPins: any(named: 'dayPins'),
+            ),
+          ).thenReturn(
+            WeeklyMenuDistributionResult(plan: week, overflow: [tray]),
+          );
+          when(() => mockService.save(any())).thenAnswer((_) async {});
+          await viewModel.loadWeek(week.weekStartDate);
+          await viewModel.applyGeneratedMenu({
+            'middag': [tray],
+          });
+          expect(viewModel.overflow, hasLength(1));
+
+          when(
+            () => mockService.addEntry(
+              plan: any(named: 'plan'),
+              day: any(named: 'day'),
+              slot: any(named: 'slot'),
+              recipe: any(named: 'recipe'),
+            ),
+          ).thenReturn(_plan());
+          final unacked = Completer<void>();
+          addTearDown(() {
+            if (!unacked.isCompleted) unacked.complete();
+          });
+          when(() => mockService.save(any())).thenAnswer((_) => unacked.future);
+
+          unawaited(
+            viewModel.assignFromOverflow(
+              recipe: tray,
+              day: DayOfWeek.wed,
+              slot: MealSlot.middag,
+            ),
+          );
+          await Future<void>.delayed(Duration.zero);
+
+          expect(
+            viewModel.overflow,
+            isEmpty,
+            reason: 'the chip is gone from the tray before the save acks',
+          );
+          unacked.complete();
+        },
+      );
+
       test('applyGeneratedMenu', () async {
         final week = await seed();
         when(
@@ -594,6 +654,11 @@ void main() {
           });
           when(() => mockService.save(any())).thenAnswer((_) => pending.future);
 
+          final seenBusy = <bool>[];
+          void record() => seenBusy.add(viewModel.isPlacingGeneratedMenu);
+          viewModel.addListener(record);
+          addTearDown(() => viewModel.removeListener(record));
+
           unawaited(
             viewModel.applyGeneratedMenu({
               'middag': [_recipe()],
@@ -603,66 +668,41 @@ void main() {
 
           expect(viewModel.plan, same(distributed));
           expect(viewModel.isLoading, isFalse);
+          // BUT-1987: the flag the placement button reads is the same guard
+          // that refuses the second tap, so it must still be true here — the
+          // save has not acked, and a tap now would be refused in silence.
+          expect(viewModel.isPlacingGeneratedMenu, isTrue);
           pending.complete();
+          await Future<void>.delayed(Duration.zero);
+          expect(viewModel.isPlacingGeneratedMenu, isFalse);
+          // The footer reads the flag through `context.watch`, so a flip
+          // nobody is notified about never reaches the screen.
+          expect(seenBusy, contains(true));
+          expect(seenBusy.last, isFalse);
         },
       );
 
-      test('a pending PRESENCE save does not refuse a calendar edit', () async {
-        // The regression this pins: `setSlotPresence` re-reads through the
-        // repository, and its only assignment to `_plan` happens after that
-        // call returns — the ack. Behind the shared publish guard, a single
-        // "vem är hemma" tap therefore wedged every other write for the whole
-        // outage, silently.
-        final week = await seed();
-        final pending = Completer<WeeklyMenuPlan>();
-        addTearDown(() {
-          if (!pending.isCompleted) pending.complete(week);
-        });
+      // BUT-1987: the refusal path releases it too. Without this, a
+      // distribution that never reaches the publish point would leave the
+      // button busy forever.
+      test('the placement flag clears after a refused distribution', () async {
+        await seed();
         when(
-          () => mockService.setSlotPresence(
+          () => mockService.distributeFromGeneratedMenu(
+            generated: any(named: 'generated'),
             weekStart: any(named: 'weekStart'),
-            day: any(named: 'day'),
-            slot: any(named: 'slot'),
-            memberIds: any(named: 'memberIds'),
+            existing: any(named: 'existing'),
+            now: any(named: 'now'),
+            dayPins: any(named: 'dayPins'),
           ),
-        ).thenAnswer((_) => pending.future);
+        ).thenThrow(Exception('denied'));
 
-        unawaited(
-          viewModel.setSlotPresence(DayOfWeek.mon, MealSlot.middag, const [
-            'u-1',
-          ]),
-        );
-        await Future<void>.delayed(Duration.zero);
+        final placed = await viewModel.applyGeneratedMenu({
+          'middag': [_recipe()],
+        });
 
-        final edited = _plan(
-          entries: [
-            _entry(
-              day: DayOfWeek.tue,
-              slot: MealSlot.middag,
-              id: 'e-after',
-              recipeId: 'r-after',
-            ),
-          ],
-        );
-        when(
-          () => mockService.addEntry(
-            plan: any(named: 'plan'),
-            day: any(named: 'day'),
-            slot: any(named: 'slot'),
-            recipe: any(named: 'recipe'),
-          ),
-        ).thenReturn(edited);
-        when(() => mockService.save(any())).thenAnswer((_) async {});
-
-        final ok = await viewModel.assignRecipe(
-          day: DayOfWeek.tue,
-          slot: MealSlot.middag,
-          recipe: _recipe(id: 'r-after'),
-        );
-
-        expect(ok, isTrue, reason: 'the calendar edit must not be refused');
-        expect(viewModel.plan, same(edited));
-        pending.complete(week);
+        expect(placed, isNull);
+        expect(viewModel.isPlacingGeneratedMenu, isFalse);
       });
 
       test('a second edit is accepted while the first is still unacked, and '
@@ -824,21 +864,9 @@ void main() {
           final copied = await viewModel.copyWeekToNext();
 
           expect(copied, isNull);
-          verifyNever(
-            () => mockService.setSlotPresence(
-              weekStart: any(named: 'weekStart'),
-              day: any(named: 'day'),
-              slot: any(named: 'slot'),
-              memberIds: any(named: 'memberIds'),
-            ),
-          );
-          verifyNever(
-            () => mockService.setDayPresence(
-              weekStart: any(named: 'weekStart'),
-              day: any(named: 'day'),
-              memberIds: any(named: 'memberIds'),
-            ),
-          );
+          // BUT-1988: presence publishes from `_plan` and saves, so a refused
+          // week shows as no save at all rather than as an unused service call.
+          verifyNever(() => mockService.save(any()));
           verifyNever(
             () => mockService.copyWeek(
               fromWeekStart: any(named: 'fromWeekStart'),
@@ -2262,23 +2290,9 @@ void main() {
         await viewModel.loadWeek(weekStart);
       }
 
-      test('setSlotPresence delegates and adopts the returned plan', () async {
+      test('setSlotPresence publishes the selection and saves it', () async {
         await loadPlanWith(const {});
-        final updated = _plan(weekStart: weekStart).copyWith(
-          presenceBySlot: {
-            DayOfWeek.mon: {
-              MealSlot.middag: ['m1'],
-            },
-          },
-        );
-        when(
-          () => mockService.setSlotPresence(
-            weekStart: any(named: 'weekStart'),
-            day: DayOfWeek.mon,
-            slot: MealSlot.middag,
-            memberIds: ['m1'],
-          ),
-        ).thenAnswer((_) async => updated);
+        when(() => mockService.save(any())).thenAnswer((_) async {});
 
         await viewModel.setSlotPresence(DayOfWeek.mon, MealSlot.middag, ['m1']);
 
@@ -2286,6 +2300,171 @@ void main() {
           viewModel.presentMemberIdsFor(DayOfWeek.mon, MealSlot.middag),
           ['m1'],
         );
+        final saved =
+            verify(() => mockService.save(captureAny())).captured.single
+                as WeeklyMenuPlan;
+        expect(saved.presentMemberIdsFor(DayOfWeek.mon, MealSlot.middag), [
+          'm1',
+        ]);
+      });
+
+      // BUT-1988. The lost update this pins: both taps re-read the same week in
+      // the service and the second save overwrote the first. Neither save is
+      // acked while they run, which is the offline case.
+      test('two presence taps on different cells both survive', () async {
+        await loadPlanWith(const {});
+        final firstSave = Completer<void>();
+        addTearDown(() {
+          if (!firstSave.isCompleted) firstSave.complete();
+        });
+        var saves = 0;
+        when(() => mockService.save(any())).thenAnswer((_) async {
+          saves++;
+          if (saves == 1) return firstSave.future;
+          return;
+        });
+
+        unawaited(
+          viewModel.setSlotPresence(DayOfWeek.mon, MealSlot.middag, ['m1']),
+        );
+        await Future<void>.delayed(Duration.zero);
+        await viewModel.setSlotPresence(DayOfWeek.tue, MealSlot.lunch, ['m2']);
+
+        expect(
+          viewModel.presentMemberIdsFor(DayOfWeek.mon, MealSlot.middag),
+          ['m1'],
+          reason: 'the first tap must not be overwritten by the second',
+        );
+        expect(viewModel.presentMemberIdsFor(DayOfWeek.tue, MealSlot.lunch), [
+          'm2',
+        ]);
+        firstSave.complete();
+      });
+
+      test('setSlotPresence leaves the day other meal untouched', () async {
+        await loadPlanWith(const {});
+        when(() => mockService.save(any())).thenAnswer((_) async {});
+
+        await viewModel.setSlotPresence(DayOfWeek.mon, MealSlot.middag, ['m1']);
+
+        // The control: without it, "wrote nothing at all" satisfies the
+        // assertion below just as well as "wrote one meal".
+        expect(viewModel.presentMemberIdsFor(DayOfWeek.mon, MealSlot.middag), [
+          'm1',
+        ]);
+        expect(
+          viewModel.presentMemberIdsFor(DayOfWeek.mon, MealSlot.lunch),
+          isNull,
+          reason: 'the slot branch writes ONE meal; "hela dagen" writes both',
+        );
+      });
+
+      // BUT-1988: the NULL branch of the merge — "everyone", which is what the
+      // sheet stores when the whole roster is picked, and therefore the
+      // commonest live value. `_withSlotPresence` survives the deletion and
+      // still has to REMOVE the key rather than store an empty list, which
+      // means "nobody home".
+      test('null clears one meal and leaves the other', () async {
+        await loadPlanWith({
+          DayOfWeek.mon: {
+            MealSlot.lunch: ['m0'],
+            MealSlot.middag: ['m0'],
+          },
+        });
+        when(() => mockService.save(any())).thenAnswer((_) async {});
+
+        await viewModel.setSlotPresence(DayOfWeek.mon, MealSlot.middag, null);
+
+        expect(
+          viewModel.presentMemberIdsFor(DayOfWeek.mon, MealSlot.middag),
+          isNull,
+        );
+        expect(viewModel.presentMemberIdsFor(DayOfWeek.mon, MealSlot.lunch), [
+          'm0',
+        ]);
+        final saved =
+            verify(() => mockService.save(captureAny())).captured.single
+                as WeeklyMenuPlan;
+        expect(
+          saved.presenceBySlot[DayOfWeek.mon]?.keys.toSet(),
+          {MealSlot.lunch},
+          reason: 'the cleared meal is REMOVED, not stored as an empty list',
+        );
+      });
+
+      test('null on the whole day prunes the day entirely', () async {
+        await loadPlanWith({
+          DayOfWeek.mon: {
+            MealSlot.middag: ['m0'],
+          },
+        });
+        when(() => mockService.save(any())).thenAnswer((_) async {});
+
+        await viewModel.setDayPresence(DayOfWeek.mon, null);
+
+        final saved =
+            verify(() => mockService.save(captureAny())).captured.single
+                as WeeklyMenuPlan;
+        expect(saved.presenceBySlot.containsKey(DayOfWeek.mon), isFalse);
+      });
+
+      test('setDayPresence writes both meals of the day', () async {
+        await loadPlanWith(const {});
+        when(() => mockService.save(any())).thenAnswer((_) async {});
+
+        await viewModel.setDayPresence(DayOfWeek.mon, ['m1']);
+
+        expect(viewModel.presentMemberIdsFor(DayOfWeek.mon, MealSlot.lunch), [
+          'm1',
+        ]);
+        expect(viewModel.presentMemberIdsFor(DayOfWeek.mon, MealSlot.middag), [
+          'm1',
+        ]);
+        final saved =
+            verify(() => mockService.save(captureAny())).captured.single
+                as WeeklyMenuPlan;
+        expect(saved.presenceBySlot[DayOfWeek.mon]?.keys.toSet(), {
+          MealSlot.lunch,
+          MealSlot.middag,
+        });
+      });
+
+      test('a refused presence save restores the previous selection', () async {
+        // Seeded with a real previous value: from the empty default, "restored"
+        // and "cleared" are the same observation.
+        await loadPlanWith({
+          DayOfWeek.mon: {
+            MealSlot.middag: ['m0'],
+          },
+        });
+        when(() => mockService.save(any())).thenThrow(Exception('offline'));
+
+        final ok = await viewModel.setSlotPresence(
+          DayOfWeek.mon,
+          MealSlot.middag,
+          ['m1'],
+        );
+
+        expect(ok, isFalse);
+        expect(viewModel.presentMemberIdsFor(DayOfWeek.mon, MealSlot.middag), [
+          'm0',
+        ]);
+      });
+
+      test('presence refuses when no week is loaded', () async {
+        // The service used to fetch-or-create the week; computing the merge in
+        // the viewmodel means there is nothing to merge onto.
+        expect(
+          await viewModel.setSlotPresence(DayOfWeek.mon, MealSlot.middag, [
+            'm1',
+          ]),
+          isFalse,
+        );
+        expect(await viewModel.setDayPresence(DayOfWeek.mon, ['m1']), isFalse);
+        verifyNever(() => mockService.save(any()));
+        // Without the guard the merge throws inside `_executeWrite`, which
+        // also returns false — but it sets the error on the way out.
+        expect(viewModel.error, isNull);
       });
 
       // Note: presence deliberately does NOT scope menu generation (that would

@@ -590,55 +590,21 @@ class WeeklyMenuPlanService extends BaseService {
     return unique.length;
   }
 
-  /// BUT-1611: persist who's home for [day]/[slot] of the week containing
-  /// [weekStart]. [memberIds] are roster memberIds; passing null CLEARS the
-  /// slot's explicit selection (back to the "everyone" default), while an
-  /// empty list is a deliberate "nobody home" selection and is kept.
-  ///
-  /// Returns the updated plan so the caller can adopt it in memory without
-  /// a re-read.
-  Future<WeeklyMenuPlan> setSlotPresence({
-    required DateTime weekStart,
+  /// BUT-1988: the presence merge, applied to a plan the CALLER already holds.
+  /// The viewmodel publishes presence optimistically and
+  /// must not re-implement the merge — two copies of the "no selection =
+  /// everyone" invariant drift apart.
+  static WeeklyMenuPlan withPresence({
+    required WeeklyMenuPlan plan,
     required DayOfWeek day,
-    required MealSlot slot,
+    required List<MealSlot> slots,
     required List<String>? memberIds,
-  }) async {
-    final userId = _currentUserId;
-    if (userId == null) {
-      throw StateError('No authenticated user for setSlotPresence');
-    }
-    final plan = await _loadPlanForWrite(userId: userId, weekStart: weekStart);
-    final updated = plan.copyWith(
-      presenceBySlot: _withSlotPresence(
-        plan.presenceBySlot,
-        day,
-        slot,
-        memberIds,
-      ),
-    );
-    await _repository.save(updated);
-    return updated;
-  }
-
-  /// BUT-1611 "Hela dagen": set the same selection on BOTH real meal slots of
-  /// [day] in one write. Null clears both back to the "everyone" default.
-  Future<WeeklyMenuPlan> setDayPresence({
-    required DateTime weekStart,
-    required DayOfWeek day,
-    required List<String>? memberIds,
-  }) async {
-    final userId = _currentUserId;
-    if (userId == null) {
-      throw StateError('No authenticated user for setDayPresence');
-    }
-    final plan = await _loadPlanForWrite(userId: userId, weekStart: weekStart);
+  }) {
     var presence = plan.presenceBySlot;
-    for (final slot in kPresenceSlots) {
+    for (final slot in slots) {
       presence = _withSlotPresence(presence, day, slot, memberIds);
     }
-    final updated = plan.copyWith(presenceBySlot: presence);
-    await _repository.save(updated);
-    return updated;
+    return plan.copyWith(presenceBySlot: presence);
   }
 
   /// Returns a copy of [presence] with [day]/[slot] set to [memberIds] (null

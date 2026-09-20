@@ -29,26 +29,25 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
   WeeklyMenuPlan? _plan;
   List<Recipe> _overflow = const [];
 
-  /// BUT-1975: an edit computed from `_plan` is being published. Carried ONLY
-  /// by the operations that publish optimistically, and released by each of
-  /// them the moment it has assigned `_plan`.
+  /// BUT-1975: an edit computed from `_plan` is being published.
   ///
   /// Offline a Firestore write applies locally but its Future does not
   /// complete until the server acks (measured 2026-08-28 on the web SDK). A
   /// guard that spans
   /// the save therefore lasts the whole outage, which would allow exactly one
   /// offline edit and silently drop every later one.
-  ///
-  /// The writes that re-read through the repository instead of computing from
-  /// `_plan` do NOT take it: they assign `_plan`, if at all, only after the
-  /// service call has returned — which is the ack, so holding the flag until
-  /// then is that same defect.
   bool _publishInFlight = false;
 
   /// Distribution keeps its own long guard: a double-tap must not distribute
   /// twice, and unlike a single-cell edit there is no sense in which the
   /// second run builds on the first.
   bool _applyInFlight = false;
+
+  /// BUT-1987: what the placement button reads — the same flag, so the control
+  /// is busy exactly while a second tap would be refused. The refusal itself
+  /// stays silent: this surface ranks error above data, so a message here would
+  /// replace the calendar the first tap just placed.
+  bool get isPlacingGeneratedMenu => _applyInFlight;
 
   /// BUT-1939. Whether the last read of the week FAILED, as distinct from
   /// reading a week with nothing in it.
@@ -136,17 +135,18 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
     List<String>? memberIds,
   ) async {
     if (_readFailed) return false;
+    final current = _plan;
+    if (current == null) return false;
     return _executeWrite(
       () async {
-        final updated = await _service.setSlotPresence(
-          weekStart: currentWeekStart,
+        final updated = WeeklyMenuPlanService.withPresence(
+          plan: current,
           day: day,
-          slot: slot,
+          slots: [slot],
           memberIds: memberIds,
         );
         if (isDisposed) return;
-        _plan = updated;
-        notifyListeners();
+        await _publishThenSave(updated, current);
       },
       errorPrefix: 'Kunde inte spara vilka som är hemma',
       guarded: false,
@@ -160,16 +160,18 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
   /// as [setSlotPresence] (BUT-1982).
   Future<bool> setDayPresence(DayOfWeek day, List<String>? memberIds) async {
     if (_readFailed) return false;
+    final current = _plan;
+    if (current == null) return false;
     return _executeWrite(
       () async {
-        final updated = await _service.setDayPresence(
-          weekStart: currentWeekStart,
+        final updated = WeeklyMenuPlanService.withPresence(
+          plan: current,
           day: day,
+          slots: kPresenceSlots,
           memberIds: memberIds,
         );
         if (isDisposed) return;
-        _plan = updated;
-        notifyListeners();
+        await _publishThenSave(updated, current);
       },
       errorPrefix: 'Kunde inte spara vilka som är hemma',
       guarded: false,
@@ -193,10 +195,8 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
   /// otherwise identical, so a refusal still reaches the user as its Swedish
   /// prefix.
   ///
-  /// [guarded] is for the operations that compute an edit from `_plan` and
-  /// publish it: they take [_publishInFlight] here and release it themselves
-  /// once published. The writes that re-read through the repository pass
-  /// false — see that field's doc.
+  /// [guarded] takes [_publishInFlight] here, and the operation releases it
+  /// itself once published.
   Future<bool> _executeWrite(
     Future<void> Function() operation, {
     required String errorPrefix,
@@ -401,6 +401,9 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
       errorPrefix: 'Kunde inte fördela recepten',
     );
     _applyInFlight = false;
+    // BUT-1987: the footer reads this through `context.watch`, so the release
+    // has to be announced or the button never stops spinning.
+    if (!isDisposed) notifyListeners();
     if (!ok) return null;
     return placedCount;
   }
@@ -591,15 +594,25 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
     required DayOfWeek day,
     required MealSlot slot,
   }) async {
-    // Prune only once the write landed. The tray is the recipe's only
-    // remaining home — `_fetchWeek` does not repopulate it — so pruning on a
-    // refused save dropped it for good.
+    // BUT-1986: prune at publish, and put the chip back if the save is
+    // refused. Waiting for the ack left the chip on screen through an offline
+    // outage, so the same recipe could be dropped into a second slot. The tray
+    // is the recipe's only remaining home — `_fetchWeek` does not repopulate
+    // it — so the restore is what keeps a refused save from losing it.
+    final before = _overflow;
+    final pruned = before.where((r) => r.id != recipe.id).toList();
+    if (pruned.length != before.length) {
+      _overflow = pruned;
+      notifyListeners();
+    }
     final saved = await assignRecipe(day: day, slot: slot, recipe: recipe);
-    if (isDisposed || !saved) return;
-    final pruned = _overflow.where((r) => r.id != recipe.id).toList();
-    if (pruned.length == _overflow.length) return;
-    _overflow = pruned;
-    notifyListeners();
+    if (isDisposed || saved) return;
+    // Only while the tray is still the one this drop pruned: a later
+    // distribution may have replaced it while the refusal was in flight.
+    if (identical(_overflow, pruned)) {
+      _overflow = before;
+      notifyListeners();
+    }
   }
 
   /// BUT-1043: copy every entry from the visible week into the following

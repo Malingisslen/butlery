@@ -532,6 +532,11 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
                                   !viewModel.isGenerating &&
                                   !viewModel.hasError)
                                 MenuPlacementChoiceFooter(
+                                  // BUT-1987: the placement state lives on the
+                                  // CALENDAR viewmodel, which owns the write.
+                                  isPlacing: context
+                                      .watch<WeeklyMenuPlanViewModel>()
+                                      .isPlacingGeneratedMenu,
                                   onPlaceAuto: () =>
                                       unawaited(_onPlaceAutomatically()),
                                   onPlaceManual: () => unawaited(

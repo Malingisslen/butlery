@@ -868,8 +868,6 @@ void main() {
     // it. The presence row is the only surface that announces the write, so
     // these drive the real tap -> sheet -> confirm path.
     //
-    // BOTH branches of the gate are driven: `_onTapPresence` picks between
-    // `setDayPresence` and `setSlotPresence` on a ternary, and
     // "denna måltid" and "hela dagen" are separate confirms in the sheet.
     //
     // The presence row only renders for a household roster of MORE THAN ONE,
@@ -996,14 +994,9 @@ void main() {
 
       testWidgets('a REFUSED presence save shows no notice', (tester) async {
         final handle = tester.ensureSemantics();
-        when(
-          () => service.setSlotPresence(
-            weekStart: any(named: 'weekStart'),
-            day: any(named: 'day'),
-            slot: any(named: 'slot'),
-            memberIds: any(named: 'memberIds'),
-          ),
-        ).thenThrow(Exception('denied'));
+        // BUT-1988: presence publishes from the resident plan and SAVES, so
+        // the refusal to stage is the save's.
+        when(() => service.save(any())).thenThrow(Exception('denied'));
 
         await tapPresenceAndConfirm(tester);
 
@@ -1015,14 +1008,7 @@ void main() {
       // that never shows the notice at all.
       testWidgets('a successful presence save does show it', (tester) async {
         final handle = tester.ensureSemantics();
-        when(
-          () => service.setSlotPresence(
-            weekStart: any(named: 'weekStart'),
-            day: any(named: 'day'),
-            slot: any(named: 'slot'),
-            memberIds: any(named: 'memberIds'),
-          ),
-        ).thenAnswer((_) async => presenceWeekPlan);
+        when(() => service.save(any())).thenAnswer((_) async {});
 
         await tapPresenceAndConfirm(tester);
 
@@ -1031,20 +1017,15 @@ void main() {
       });
 
       // The OTHER branch of the ternary. `applyToWholeDay` routes to
-      // `setDayPresence`, and gutting that twin left the whole suite green
-      // while the slot twin reddened — the two hide each other, so each needs
-      // its own case.
+      // `setDayPresence`. Since BUT-1988 both branches end in the same `save`
+      // and these cases assert only the notice, the ternary itself is
+      // unwitnessed here: the fan-out is pinned in the viewmodel suite, and the
+      // widget wiring is BUT-2126.
       testWidgets('a REFUSED "hela dagen" save shows no notice', (
         tester,
       ) async {
         final handle = tester.ensureSemantics();
-        when(
-          () => service.setDayPresence(
-            weekStart: any(named: 'weekStart'),
-            day: any(named: 'day'),
-            memberIds: any(named: 'memberIds'),
-          ),
-        ).thenThrow(Exception('denied'));
+        when(() => service.save(any())).thenThrow(Exception('denied'));
 
         await tapPresenceAndConfirm(tester, confirmLabel: 'hela dagen');
 
@@ -1056,13 +1037,7 @@ void main() {
         tester,
       ) async {
         final handle = tester.ensureSemantics();
-        when(
-          () => service.setDayPresence(
-            weekStart: any(named: 'weekStart'),
-            day: any(named: 'day'),
-            memberIds: any(named: 'memberIds'),
-          ),
-        ).thenAnswer((_) async => presenceWeekPlan);
+        when(() => service.save(any())).thenAnswer((_) async {});
 
         await tapPresenceAndConfirm(tester, confirmLabel: 'hela dagen');
 
