@@ -84,6 +84,16 @@ export function bygg(rot) {
   const utanConst = (typ.match(/=> TextStyle\(/g) || []).length;
   if (utanConst) fel.push('GENERATOR_CONST_DEFEKT:' + utanConst);
   if (Object.keys(flutterFarg).length !== new Set(Object.keys(flutterFarg)).size) fel.push('FARGKOLLISION');
+  let morkPopulation = [];
+  {
+    const morkSrc = las('lib/theme/app_colors_dark.dart');
+    const morkaNamn = [...morkSrc.matchAll(/static const Color (\w+)\s*=/g)].map(m => m[1]);
+    if (morkaNamn.length !== new Set(morkaNamn).size) fel.push('MORK_DUBBLETT');
+    const vantade = new Set([...kontrakt.appColorsDark.members, ...kontrakt.appColorsDark.aliases]);
+    for (const n of morkaNamn) if (!vantade.has(n)) fel.push('MORK_OKONTRAKTERAD:' + n);
+    morkPopulation = morkaNamn.slice().sort();
+    if (/class AppColorsDark/.test(las('lib/theme/app_colors.dart'))) fel.push('LAGEN_HOPBLANDADE');
+  }
 
   const bindning = {
     TOKENS_VERSION: t.version,
@@ -93,6 +103,11 @@ export function bygg(rot) {
     APP_COLORS_HASH: h(las('lib/theme/app_colors.dart')),
     APP_TEXT_STYLES_HASH: h(las('lib/theme/app_text_styles.dart')),
     LEGACY_API_CONTRACT_HASH: h(las('legacy-api-contract.json')),
+    APP_COLORS_DARK_HASH: h(las('lib/theme/app_colors_dark.dart')),
+    DARK_GENERATOR_HASH: h(las('tools/gen-app-theme-dark.mjs')),
+    DARK_CANONICAL_MEMBERS: kontrakt.appColorsDark.members.length,
+    DARK_ALIASES: kontrakt.appColorsDark.aliases.length,
+    DARK_SEMANTIC_TOKENS: kontrakt.appColorsDark.semanticTokens.length,
     APP_COLORS_MEMBERS: kontrakt.appColors.members.length,
     APP_TEXT_STYLE_GETTERS: kontrakt.appTextStyles.getters.length,
     GENERATED_CONST_TEXTSTYLES: (typ.match(/=> const TextStyle\(/g) || []).length,
@@ -102,7 +117,8 @@ export function bygg(rot) {
     SURFACE_BLIND_CONSTANTS: ytblind.length,
     SURFACE_BLIND_MIN_RATIO: Math.min(...ytblind.map(r => r.MIN_KVOT)),
     LEGACY_ALIASES: legacy.length,
-    DELIVERY_FINGERPRINT: kort([kontrast, ytblind, legacy, t.version])
+    DARK_DELIVERY_MEMBERS_EMITTED: morkPopulation.length,
+    DELIVERY_FINGERPRINT: kort([kontrast, ytblind, legacy, morkPopulation, t.version])
   };
 
   return {
