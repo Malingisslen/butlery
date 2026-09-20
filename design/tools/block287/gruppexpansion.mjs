@@ -55,8 +55,25 @@ for (const p of Object.entries(O.forekomst)) {
   const e = el(art, ord); if (e) reg(p[1].agare, e);
 }
 // Kanonisk agarharledning: samma vag som populationen bygger sina agare.
-if (arg('skord')) {
-  const skord = j(arg('skord'));
+// Skorden ar obligatorisk. Utan den hoppades harledningen tidigare tyst over,
+// och farre rader loste sig - ett samre resultat som sag ut som ett resultat.
+if (!arg('skord')) {
+  console.error('✖ FAIL CLOSED: gruppexpansion kraver --skord=<skord.json>.');
+  console.error('  Utan skorden gar den kanoniska agarharledningen inte att kora, och utdata ar inte kanonisk.');
+  process.exit(2);
+}
+{
+  let skord;
+  try { skord = j(arg('skord')); }
+  catch (e) {
+    console.error('✖ FAIL CLOSED: skorden gar inte att lasa: ' + arg('skord'));
+    console.error('  ' + String(e.message));
+    process.exit(2);
+  }
+  if (!Array.isArray(skord) || !skord.length || !skord[0] || typeof skord[0] !== 'object' || !('art' in skord[0])) {
+    console.error('✖ FAIL CLOSED: skorden har fel form. Vantade en lista av skordade objekt med falt "art".');
+    process.exit(2);
+  }
   const etik = {};
   for (const e of IDX) if (!(e.art in etik)) etik[e.art] = '';
   const { fakta } = kontrollFakta({ skord, overlay: O, etikett: etik });

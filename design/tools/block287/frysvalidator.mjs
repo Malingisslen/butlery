@@ -66,23 +66,64 @@ export function bind(rot, bygge) {
   return { ...kallbindning(rot), ...artefaktbindning(bygge), ...KONTRAKT };
 }
 
-/** Jamfor en bindning mot ett fryst manifest. Varje nyckel i manifestet provas. */
-export function validera(bindning, manifest) {
+/** Den exakta nyckelmangd en kanonisk bindning MASTE bara. */
+export const FORVANTADE_NYCKLAR = Object.freeze([
+  'SOURCE_BASELINE_HASH', 'CANONICAL_SEMANTIC_ANCHOR_MAP_HASH', 'SOURCE_TARGET_METADATA_HASH',
+  'ANCHOR_COUNT', 'ANCHOR_UNIQUE', 'PART_KEY_COUNT', 'SOURCE_BYTES',
+  'POPULATION_HASH', 'STATUS_HASH', 'DISCOVERY_OCCURRENCE_HASH',
+  'GROUP_EXPANSION_HASH', 'WRITE_PLAN_HASH',
+  'LC_MEMBER_SET_HASH', 'T08_MEMBER_SET_HASH', 'RECONCILIATION_MEMBER_SET_HASH',
+  'POPULATION_COUNT', 'DISCOVERY_OCCURRENCE_COUNT',
+  'WRITE_KEY_CONTRACT_VERSION', 'TARGET_KEY_CONTRACT_VERSION'
+]);
+
+/**
+ * Jamfor en bindning mot en fryst bindning. Snittjamforelse ar inte nog: en
+ * tom jamforelse ar inget godkannande, och en okand nyckel ar en drift som
+ * ingen har auktoriserat. Darfor kravs exakt samma nyckelmangd.
+ */
+export function validera(bindning, fryst) {
+  const fel = [];
+  if (!fryst || typeof fryst !== 'object' || Array.isArray(fryst))
+    return { PASS: false, JAMFORDA_NYCKLAR: 0, FEL: [{ SLAG: 'SCHEMA', VAD: 'den frysta bindningen ar inget objekt' }], AVVIKELSER: [] };
+  const frysta = Object.keys(fryst).filter(k => !k.startsWith('$'));
+  for (const k of FORVANTADE_NYCKLAR) if (!(k in fryst)) fel.push({ SLAG: 'SAKNAD_NYCKEL', NYCKEL: k });
+  for (const k of frysta) if (!FORVANTADE_NYCKLAR.includes(k)) fel.push({ SLAG: 'OVANTAD_NYCKEL', NYCKEL: k });
+  for (const k of FORVANTADE_NYCKLAR) if (!(k in bindning)) fel.push({ SLAG: 'BINDNINGEN_SAKNAR', NYCKEL: k });
   const avvik = [];
-  for (const k of Object.keys(manifest)) {
-    if (k.startsWith('$') || !(k in bindning)) continue;
-    if (String(bindning[k]) !== String(manifest[k])) avvik.push({ NYCKEL: k, FRYST: manifest[k], NU: bindning[k] });
+  let jamforda = 0;
+  for (const k of FORVANTADE_NYCKLAR) {
+    if (!(k in fryst) || !(k in bindning)) continue;
+    jamforda++;
+    if (String(bindning[k]) !== String(fryst[k])) avvik.push({ NYCKEL: k, FRYST: fryst[k], NU: bindning[k] });
   }
-  return { PASS: avvik.length === 0, AVVIKELSER: avvik };
+  if (jamforda === 0) fel.push({ SLAG: 'TOM_JAMFORELSE', VAD: 'noll nycklar jamfordes - det ar aldrig ett godkannande' });
+  return { PASS: fel.length === 0 && avvik.length === 0, JAMFORDA_NYCKLAR: jamforda, FEL: fel, AVVIKELSER: avvik };
+}
+
+/** Plockar ut den kanoniska bindningen ur ett manifest, oavsett hur det ar packat. */
+export function bindningUrManifest(m) {
+  if (!m || typeof m !== 'object' || Array.isArray(m)) return { FEL: 'manifestet ar inget objekt' };
+  if (m.BINDNING && typeof m.BINDNING === 'object' && !Array.isArray(m.BINDNING)) return { BINDNING: m.BINDNING };
+  // ett manifest som sjalv ar en bindning godtas bara om det bar minst en forvantad nyckel
+  if (FORVANTADE_NYCKLAR.some(k => k in m)) return { BINDNING: m };
+  return { FEL: 'manifestet bar ingen BINDNING och ser inte ut som en bindning' };
 }
 
 const isMain = !!process.argv[1] && process.argv[1].endsWith('frysvalidator.mjs');
 if (isMain) {
   const b = bind(arg('root') || '.', arg('bygge'));
   if (arg('manifest')) {
-    const m = JSON.parse(readFileSync(arg('manifest'), 'utf8'));
-    const r = validera(b, m);
-    console.log(JSON.stringify({ VALIDATOR: r.PASS ? 'PASS' : 'FAIL', ...r }, null, 1));
+    let m;
+    try { m = JSON.parse(readFileSync(arg('manifest'), 'utf8')); }
+    catch (e) { console.log(JSON.stringify({ VALIDATOR: 'FAIL', JAMFORDA_NYCKLAR: 0, FEL: [{ SLAG: 'LASFEL', VAD: String(e.message) }] }, null, 1)); process.exit(1); }
+    const u = bindningUrManifest(m);
+    if (u.FEL) {
+      console.log(JSON.stringify({ VALIDATOR: 'FAIL', JAMFORDA_NYCKLAR: 0, FEL: [{ SLAG: 'SCHEMA', VAD: u.FEL }] }, null, 1));
+      process.exit(1);
+    }
+    const r = validera(b, u.BINDNING);
+    console.log(JSON.stringify({ VALIDATOR: r.PASS ? 'PASS' : 'FAIL', MANIFEST: arg('manifest'), ...r }, null, 1));
     process.exit(r.PASS ? 0 : 1);
   }
   console.log(JSON.stringify(b, null, 1));

@@ -38,7 +38,10 @@ const manifest = {
     AVATAR_BASELINE_FIX_COMMIT: '24a00a8',
     HISTORICAL_EXPECTATION_REBASE_COMMIT: '88ef210',
     BUILDER_FIX_COMMIT: 'e9d1869',
-    FREEZE_COMMIT: gitKort()
+    // En fil kan inte bara hashen for den commit som innehaller den sjalv.
+    // Det har ar det kallhuvud frysningen byggdes UR; vilken commit som bar
+    // artefakten star i git och i fas2/BLOCK287.md.
+    GENERATED_FROM_COMMIT: gitKort()
   },
   KONTRAKT: {
     WRITE_KEY_CONTRACT_VERSION: bindning.WRITE_KEY_CONTRACT_VERSION,

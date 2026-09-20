@@ -17,6 +17,25 @@ const POP = JSON.parse(readFileSync(arg('population'), 'utf8'));
 const G = JSON.parse(readFileSync(arg('grupper'), 'utf8'));
 
 const produkt = POP.filter(u => u.CATEGORY === 'PRODUCT_REMEDIATION_REQUIRED');
+
+/* -- facetten ar vad som ska skrivas. Den far aldrig gissas. ----------------
+   De flesta enheter bar den sjalva. Handoffens enheter gor det inte: deras
+   krav uttrycks i CURRENT_STATUS plus handoffregelns egen text. De tva
+   avbildningarna nedan ar de enda som finns, och bada ar kallgrundade.
+   Allt annat faller stangt. */
+const FACETT_UR_STATUS = {
+  NAME_INCOMPLETE: 'SET_ACCESSIBLE_NAME',
+  NAME_DIVERGES_FROM_HANDOFF: 'SET_ACCESSIBLE_NAME',
+  IMAGE_WITHOUT_NAME: 'DECLARE_ROLE_AND_NAME'
+};
+const utanFacett = [];
+function facettFor(u) {
+  if (u.REMEDIATION_FACET) return u.REMEDIATION_FACET;
+  const f = FACETT_UR_STATUS[u.CURRENT_STATUS];
+  if (f) return f;
+  utanFacett.push({ REQUIREMENT_ID: u.id, CURRENT_STATUS: u.CURRENT_STATUS || null });
+  return null;
+}
 const perKrav = new Map(G.grupper.map(g => [g.GROUP_REQUIREMENT_ID, g]));
 
 const rader = new Map();          // TARGET_SOURCE_KEY -> fysisk skrivning
@@ -56,16 +75,23 @@ for (const u of produkt) {
       TARGET_SOURCE_ELEMENT: t.TARGET_SOURCE_ELEMENT || null,
       SOURCE_FILE: t.SOURCE_FILE || null,
       FRAME: t.FRAME || null,
-      REQUIREMENT_IDS: [], FACETS: [], CURRENT_VALUE: [], REQUIRED_VALUE: [], BLOCKERS: []
+      CHANGES: [], REQUIREMENT_IDS: [], BLOCKERS: []
     };
+    // En andring per krav. Varje varde hor till exakt ett krav och en facett -
+    // parallella listor gick inte att lasa: ett tillgangligt namn kunde hamna
+    // under en kantbindning.
+    if (!r.CHANGES.some(c => c.REQUIREMENT_ID === u.id)) {
+      r.CHANGES.push({
+        REQUIREMENT_ID: u.id,
+        FACET: facettFor(u),
+        CURRENT_VALUE: t.CURRENT_VALUE || u.CURRENT_EVIDENCE || null,
+        REQUIRED_VALUE: t.REQUIRED_VALUE || u.REQUIRED || null,
+        BLOCKERS: [u.BLOCKING_REASON, ...(u.BLOCKERS_EXTRA || [])].filter(Boolean)
+      });
+    }
     if (!r.REQUIREMENT_IDS.includes(u.id)) r.REQUIREMENT_IDS.push(u.id);
-    if (u.REMEDIATION_FACET && !r.FACETS.includes(u.REMEDIATION_FACET)) r.FACETS.push(u.REMEDIATION_FACET);
-    const cur = t.CURRENT_VALUE || u.CURRENT_EVIDENCE || null;
-    const req = t.REQUIRED_VALUE || u.REQUIRED || null;
-    if (cur && !r.CURRENT_VALUE.includes(cur)) r.CURRENT_VALUE.push(cur);
-    if (req && !r.REQUIRED_VALUE.includes(req)) r.REQUIRED_VALUE.push(req);
-    for (const b of (u.BLOCKERS_EXTRA || [])) if (!r.BLOCKERS.includes(b)) r.BLOCKERS.push(b);
-    if (u.BLOCKING_REASON && !r.BLOCKERS.includes(u.BLOCKING_REASON)) r.BLOCKERS.push(u.BLOCKING_REASON);
+    for (const b of [u.BLOCKING_REASON, ...(u.BLOCKERS_EXTRA || [])].filter(Boolean))
+      if (!r.BLOCKERS.includes(b)) r.BLOCKERS.push(b);
     rader.set(k, r);
   }
 }
@@ -75,6 +101,10 @@ const agare = new Set(lista.map(r => r.WRITE_OWNER_ID).filter(Boolean));
 const positionella = lista.filter(r => /tpl\d+|#\d+$|::barn-\d+|::index-\d+/.test(String(r.WRITE_OWNER_ID || ''))).length;
 const positionellaMal = lista.filter(r => /::del::(forsta|andra|barn-\d+|element-\d+|\d+)$/.test(String(r.TARGET_SOURCE_KEY))).length;
 const mangaTillEtt = lista.filter(r => r.REQUIREMENT_IDS.length > 1);
+const saknarFacettbindning = lista.flatMap(r => r.CHANGES.filter(c => !c.FACET).map(c => ({ NYCKEL: r.TARGET_SOURCE_KEY, ...c })));
+const obundnaNu = lista.flatMap(r => r.CHANGES.filter(c => c.CURRENT_VALUE == null).map(c => c.REQUIREMENT_ID));
+const obundnaKrav = lista.flatMap(r => r.CHANGES.filter(c => c.REQUIRED_VALUE == null).map(c => c.REQUIREMENT_ID));
+const flertydiga = lista.filter(r => r.CHANGES.length !== r.REQUIREMENT_IDS.length);
 const h = x => createHash('sha256').update(JSON.stringify(x)).digest('hex').slice(0, 16);
 
 const ut = {
@@ -90,6 +120,11 @@ const ut = {
   WRITE_OWNER_COUNT: agare.size,
   PHYSICAL_WRITE_COUNT: lista.length,
   MANY_TO_ONE_WRITES: mangaTillEtt.length,
+  CHANGE_BINDINGS: lista.reduce((n, r) => n + r.CHANGES.length, 0),
+  MISSING_FACET_BINDINGS: saknarFacettbindning.length,
+  AMBIGUOUS_VALUE_TO_REQUIREMENT_BINDINGS: flertydiga.length,
+  UNBOUND_CURRENT_VALUES: obundnaNu.length,
+  UNBOUND_REQUIRED_VALUES: obundnaKrav.length,
   MISSING_EXISTING_SOURCE_TARGETS: utanMal.length,
   POSITIONAL_WRITE_OWNER_IDS: positionella,
   POSITIONAL_TARGET_KEYS: positionellaMal,
@@ -99,9 +134,18 @@ const ut = {
   UTAN_MAL: utanMal,
   TERMINALA: terminala,
   NYA_RAMAR: nyaRamar,
-  MANGA_TILL_ETT: mangaTillEtt.map(r => ({ TARGET_SOURCE_KEY: r.TARGET_SOURCE_KEY, REQUIREMENT_IDS: r.REQUIREMENT_IDS })),
+  MANGA_TILL_ETT: mangaTillEtt.map(r => ({ TARGET_SOURCE_KEY: r.TARGET_SOURCE_KEY, CHANGES: r.CHANGES })),
+  UTAN_FACETT: saknarFacettbindning,
   rader: lista
 };
+if (saknarFacettbindning.length || flertydiga.length || obundnaKrav.length) {
+  console.error('✖ FAIL CLOSED: skrivplanen ar inte sjalvbeskrivande.');
+  console.error('  utan facett: ' + saknarFacettbindning.length
+    + ' | flertydiga rader: ' + flertydiga.length
+    + ' | krav utan mal-varde: ' + obundnaKrav.length);
+  for (const x of saknarFacettbindning.slice(0, 5)) console.error('    ' + x.REQUIREMENT_ID + ' status=' + x.CURRENT_STATUS);
+  process.exit(1);
+}
 writeFileSync(arg('ut'), JSON.stringify(ut, null, 1) + String.fromCharCode(10));
 const { rader: _r, UTAN_MAL: _u, TERMINALA: _t, NYA_RAMAR: _n, MANGA_TILL_ETT: _m, ...kort } = ut;
 console.log(JSON.stringify(kort, null, 1));
