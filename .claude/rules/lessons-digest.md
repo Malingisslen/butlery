@@ -124,3 +124,4 @@ lessons that only matter while writing or running tests.
 - En mening i en användarvänd JURIDISK artefakt om vad som HÄNDER MED DATA är ett påstående om en SKRIVARE, aldrig om en avvikelsepost (BUT-1838, 2026-09-17, [Workflow])
 - Ett muteringsprov över HELA testfilen krediterar rött till fel påstående — skopa till det enda testet och skriv ut den fallande raden; ett prov på EN variant bevisar ingen klass, och en granskare som håller med är inte en mätning (BUT-1899, 2026-09-20)
 - En "är detta aktuellt?"-fråga mäts först mot ärendets EGEN historik (`git log --all --grep=<ID>` + grep på ID:t), sedan mot koden — ett beslut kan vara fattat i ett annat ärendes ändring utan att statusfältet ändrats (BUT-2094, 2026-09-20)
+- En granskares VERDIKTRAD registreras separat från dess läsningar och bara om inget står efter den — kräv den som sista raden och verifiera i liggaren, inte i rapporten (2026-09-20)
