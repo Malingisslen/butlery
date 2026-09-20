@@ -122,3 +122,4 @@ lessons that only matter while writing or running tests.
 
 - Ett API-svars ORDNING är ett påstående, inte en garanti … en artefakt som SKRIVS OM av sin egen automatik kan inte dateras av `createdAt` (2026-08-28, 2026-09-17)
 - En mening i en användarvänd JURIDISK artefakt om vad som HÄNDER MED DATA är ett påstående om en SKRIVARE, aldrig om en avvikelsepost (BUT-1838, 2026-09-17, [Workflow])
+- Ett muteringsprov över HELA testfilen krediterar rött till fel påstående — skopa till det enda testet och skriv ut den fallande raden; ett prov på EN variant bevisar ingen klass, och en granskare som håller med är inte en mätning (BUT-1899, 2026-09-20)

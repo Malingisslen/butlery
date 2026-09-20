@@ -38,6 +38,6 @@ rather than taken from the tickets:
   the CF unit test imports it by path as a fourth. All four repointed.
 - [discovery] BUT-1899: moving the helper falsified two sentences written elsewhere —
   the Dart mirror docstring in `log_sanitizer.dart` named the old file, and the CF test
-  header claimed its cases sit "with the code they exercise". Both corrected by deletion.
+  header claimed its cases sit "with the code they exercise".
 - [discovery] BUT-1899: the rename needed a SIXTH reference nobody imports —
   the hardcoded path in `docs/onboarding/workflow-map.html`. Linter re-run clean.
