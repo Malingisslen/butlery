@@ -64,6 +64,31 @@ Prefixet `block287k-` betyder *korrigerad*. Filer utan `k` är historiska.
 
 ---
 
+## Tre identitetsnivåer
+
+Underlaget håller isär tre saker som ofta blandas ihop:
+
+| Nivå | Vad det är | Var det står |
+|---|---|---|
+| `REQUIREMENT_ID` | vad som ska vara sant | enhetens `id` i populationen |
+| `WRITE_OWNER_ID` | vilket semantiskt objekt kravet hör till | skrivplanens ägarnyckel |
+| `TARGET_SOURCE_KEY` | vilket fysiskt element som ska ändras | skrivplanens målnyckel |
+
+I källan finns två skilda attribut, och de får aldrig förväxlas:
+
+* `data-occurrence` — det **semantiska ankaret**. Ogenomskinligt, `occ-` plus
+  tolv bokstäver. Det pekar ut ett semantiskt objekt. Ett element som bär ett
+  eget ankare identifieras alltid av det, aldrig av mönster eller namn.
+* `data-part-occurrence` — en **fysisk delnyckel**. Den namnger delens
+  strukturella roll inuti ägaren, till exempel radens värdefält. Den skapar
+  eller ersätter aldrig en semantisk ägare, och den får aldrig vara synlig text,
+  valt värde, index, radnummer, geometri, färg eller tillstånd.
+
+Ett valt värde är alltid **tillstånd**, aldrig identitet. Raden äger kravet på
+roll och namn; värdefältet äger kravet på det aktuella värdet.
+
+---
+
 ## Reproduktion
 
 Ett anrop bygger hela kedjan från noll ur repot:
@@ -188,14 +213,26 @@ skrivas. Saknas den faller skrivplansbygget stängt.
 * Låta ett kvarliggande krav bevisa att ett element är en kontroll. Ordningen är
   alltid: källbevis → semantisk klass → krav.
 * Skriva i produktkällan innan produktskrivningsgrinden öppnats.
+* Kopiera skrivplanen rakt in i applikationsrepot `C:Butleryutlery`. Det är
+  ett separat repo med egen historik. Underlaget här är ritningens, inte appens.
 
 ---
 
 ## Nuvarande status
 
 Alla tolv granskningsfynd (F1, F2, M1–M7, L2, L3, L5) är stängda och verifierade
-av en oberoende slutgranskning. Kedjan reproducerar sig byteidentiskt ur en ren
-utcheckning, även med omvänd filordning.
+av en oberoende slutgranskning, liksom slutgranskningens egna fynd A-01–A-07.
 
-Nästa steg är en separat auktoriserad produktskrivningsplan. Fram till dess:
+Den efterträdande frysningen är den aktuella. Den har reproducerats ur en ren
+utcheckning av sin egen commit: artefakterna blir byteidentiska och manifestets
+samtliga fält återskapas, utom `BASLINJE.GENERATED_FROM_COMMIT`, som per
+konstruktion pekar på det källhuvud frysningen byggdes ur. Kedjan reproducerar
+sig också byteidentiskt med omvänd filordning. Företrädarens manifest validerar
+inte längre som aktuellt.
+
+Ritningens underlag är alltså klart. Applikationen är det inte: `C:Butleryutlery`
+är ett separat repo som ännu inte är granskat mot den här frysningen.
+
+Nästa steg är en läsande granskning tvärs de två repona, följd av en separat
+auktoriserad produktskrivningsplan. Fram till dess:
 **PRODUKTSKRIVNINGSGRINDEN ÄR STÄNGD.**
