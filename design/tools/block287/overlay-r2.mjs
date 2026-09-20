@@ -84,6 +84,9 @@ for (const sek of ['J_ACTION_TEXT_OMPROVAD', 'K_PROTOTYPLANKAR', 'L_UNDANTAG_I_B
 // migrera alla kvarvarande pf-a-ankare i overlaggets agarstrangar
 for (const v of Object.values(F)) if (v && v.agare) { const n = byt(v.agare); if (n !== v.agare) { v.agare = n; migrerade++; } }
 if (ut.agare) { const nytt = {}; for (const [k, v] of Object.entries(ut.agare)) nytt[byt(k)] = v; ut.agare = nytt; }
+// Agarkartan ar historisk data och rensas INTE har: den bar ocksa radagare vars
+// forekomst star under en annan agarstrang. Vilka av dem som fortfarande ar
+// kontroller avgor byggaren, ur klassningen - se tools/block287/build.mjs.
 
 writeFileSync(arg('ut'), JSON.stringify(ut, null, 1) + '\n');
 console.log(JSON.stringify({
@@ -95,5 +98,6 @@ console.log(JSON.stringify({
   MISSING_OCCURRENCES: rapport.SAKNAD_FOREKOMST.length,
   WITHOUT_OWN_ANCHOR: rapport.UTAN_ANKARE.length,
   RETIRED_PF_A_ANCHORS_MIGRATED: migrerade,
+  OWNER_MAP_ENTRIES: Object.keys(ut.agare || {}).length,
   DIAG: { SAKNAD: rapport.SAKNAD_FOREKOMST.slice(0, 5), UTAN_ANKARE: rapport.UTAN_ANKARE.slice(0, 5) }
 }, null, 1));

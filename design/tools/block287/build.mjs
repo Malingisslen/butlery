@@ -475,7 +475,33 @@ export function klassa(snap, inv, M) {
   const agarEnheter = new Map();
   for (const f of forek.filter(f => f.klass === 'KNOWN_CONTROL' && f.PERSISTENT_SEMANTIC_OWNER_ID))
     agarEnheter.set(f.PERSISTENT_SEMANTIC_OWNER_ID, { fil: f.fil, grund: f.grund, roll: f.FINAL_ROLE });
-  for (const [a, v] of Object.entries(O.agare)) if (!agarEnheter.has(a)) agarEnheter.set(a, { fil: v.fil, grund: v.grund, roll: v.roll, radagare: true });
+  // HARD REGEL: ett kvarliggande krav ar INGET bevis for att elementet ar en kontroll.
+  // Klassningen far bara ga kallevidens -> semantisk klass -> krav, aldrig at andra hallet.
+  // Overlaggets agarkarta ar historisk; en agare galler bara sa lange nagon forekomst
+  // med samma agare fortfarande ar klassad KNOWN_CONTROL.
+  // En agare ar bara "dod" nar klassningen sager det. Vi raknar per agarstrang hur
+  // manga forekomster som pekar pa den och hur manga av dem som fortfarande ar
+  // kontroller. Noll forekomster betyder ingen evidens i overlagget - da avgor
+  // upptackten, inte den har grinden.
+  const perAgare = new Map();
+  for (const f of Object.values(O.forekomst)) {
+    if (!f.agare) continue;
+    const e = perAgare.get(f.agare) || { alla: 0, kontroller: 0, klasser: new Set() };
+    e.alla++; e.klasser.add(f.klass);
+    if (f.klass === 'KNOWN_CONTROL') e.kontroller++;
+    perAgare.set(f.agare, e);
+  }
+  const undertryckta = [];
+  for (const [a, v] of Object.entries(O.agare)) {
+    if (agarEnheter.has(a)) continue;
+    const e = perAgare.get(a);
+    if (e && e.alla > 0 && e.kontroller === 0) {
+      undertryckta.push({ AGARE: a, FOREKOMSTER: e.alla, KLASSER: [...e.klasser] });
+      continue;
+    }
+    agarEnheter.set(a, { fil: v.fil, grund: v.grund, roll: v.roll, radagare: true });
+  }
+  M.UNDERTRYCKTA_AGARE = undertryckta;
   // Omgang 8: fasetten heter efter kravet (roll och namn, A11Y-01), inte efter dagens tillstand
   // ("odeklarerad") — samma enhet ar kvar nar kontrollen deklareras.
   for (const [a, v] of agarEnheter) {
@@ -786,6 +812,7 @@ if (isMain) {
   if (arg('detalj') === 'enheter') { console.log(JSON.stringify(R.enheter, null, 1)); process.exit(0); }
   const Q = arg('gammal') ? identitetskontroll(JSON.parse(readFileSync(arg('gammal'), 'utf8')), R.enheter) : null;
   const { enheter, ...rest } = R;
-  console.log(JSON.stringify({ BLOCK: '287-omgang-12', AGARSTEG: M.omnyckling ? { BEROERDA: M.omnyckling.rader.length, NYA_ID: M.omnyckling.rader.filter(r => r.ny && r.ny !== r.gammal).length, rader: M.omnyckling.rader.map(r => ({ FROM: r.gammal, TO: r.ny, REGEL: r.regel, MONSTER: r.monster, ANKARE: r.ankare })) } : null, ROT: ROOT, BASLINJE: snap.baslinje, ENHETER: enheter.length, ...rest, Q,
+  console.log(JSON.stringify({ BLOCK: '287-omgang-12',
+    SUPPRESSED_STALE_OWNERS: { ANTAL: (M.UNDERTRYCKTA_AGARE || []).length, rader: M.UNDERTRYCKTA_AGARE || [] }, AGARSTEG: M.omnyckling ? { BEROERDA: M.omnyckling.rader.length, NYA_ID: M.omnyckling.rader.filter(r => r.ny && r.ny !== r.gammal).length, rader: M.omnyckling.rader.map(r => ({ FROM: r.gammal, TO: r.ny, REGEL: r.regel, MONSTER: r.monster, ANKARE: r.ankare })) } : null, ROT: ROOT, BASLINJE: snap.baslinje, ENHETER: enheter.length, ...rest, Q,
     PRODUKTENHETER: enheter.filter(e => e.CATEGORY === 'PRODUCT_REMEDIATION_REQUIRED').map(e => e.id) }, null, 1));
 }
