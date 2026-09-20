@@ -42,8 +42,8 @@ ${KEDJA_KOD}
           let own=''; for (const n of el.childNodes) if(n.nodeType===3) own+=n.textContent;
           const anc=[]; let p=el.parentElement; while(p&&p!==it){ if(ord.has(p)) anc.push(ord.get(p)); p=p.parentElement; }
           ut.push({art:it.id,ordProd:i,tag:el.tagName.toLowerCase(),
-            occ:el.getAttribute('data-occurrence'), tpl:el.getAttribute('data-dc-tpl'),
-            elId:el.id||null, style:el.getAttribute("style"), bgC:cs2.backgroundColor, fgC:cs2.color, bw:cs2.borderTopWidth, bc:cs2.borderTopColor, mh:cs2.minHeight, hh:cs2.height, fsz:cs2.fontSize, fwt:cs2.fontWeight, brad:cs2.borderTopLeftRadius, pad:cs2.padding, disp:cs2.display, cls:el.getAttribute("class"), role:el.getAttribute('data-a11y-role'), name:el.getAttribute('data-a11y-name'),
+            partOcc:el.getAttribute('data-part-occurrence'), occ:el.getAttribute('data-occurrence'), tpl:el.getAttribute('data-dc-tpl'),
+            elId:el.id||null, style:el.getAttribute("style"), bgC:cs2.backgroundColor, fgC:cs2.color, bw:cs2.borderTopWidth, bT:cs2.borderTopWidth, bR:cs2.borderRightWidth, bB:cs2.borderBottomWidth, bL:cs2.borderLeftWidth, bc:cs2.borderTopColor, mh:cs2.minHeight, hh:cs2.height, fsz:cs2.fontSize, fwt:cs2.fontWeight, brad:cs2.borderTopLeftRadius, pad:cs2.padding, disp:cs2.display, cls:el.getAttribute("class"), role:el.getAttribute('data-a11y-role'), name:el.getAttribute('data-a11y-name'),
             comp:el.getAttribute('data-component'), hit:el.getAttribute('data-hit'),
             icon:el.getAttribute('data-icon'), graphic:el.getAttribute('data-graphic-role'),
             text:(el.textContent||'').replace(/[ \\t\\n\\r]+/g,' ').trim().slice(0,120),
