@@ -38,7 +38,15 @@ const handoffEnh = H.nyaEnheter.map(u => {
   for (const f of ['id', 'OWNER_ID', 'WRITE_OWNER']) if (k[f]) k[f] = byt(k[f]);
   return k;
 });
-const pop = [...ENH, ...handoffEnh, ...X.enheter].sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+// Extrakraven bar samma sorts aldrade pf-a-ankare som handoffenheterna.
+// Rekoncilieringen ar kanonisk for bada, annars hamnar tva id for samma objekt
+// i populationen.
+const extraEnh = X.enheter.map(u => {
+  const k = { ...u };
+  for (const f of ['id', 'OWNER_ID', 'WRITE_OWNER']) if (k[f]) k[f] = byt(k[f]);
+  return k;
+});
+const pop = [...ENH, ...handoffEnh, ...extraEnh].sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
 const ids = pop.map(e => e.id);
 if (ids.length !== new Set(ids).size) throw new Error('FAIL CLOSED: dubbla id i populationen');
 

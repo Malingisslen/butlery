@@ -673,7 +673,11 @@ export function klassa(snap, inv, M) {
   enheter.sort(byId);
   for (let i = 1; i < enheter.length; i++) if (enheter[i].id === enheter[i - 1].id) fail('identitetskollision: ' + enheter[i].id);
 
-  if (snap.geo.length !== snap.lc.deviations) fail('geometrilistan ' + snap.geo.length + ' != LC-SUMMARY ' + snap.lc.deviations);
+  // LC-SUMMARY bar sedan baslinjerattningen bade lintens egna fynd och de
+  // avatarer som bara syns i matfilen. Geometrilistan ar lintens egna, sa den
+  // ska stammas av mot just dem.
+  const lcLint = snap.lc.lint_deviations !== undefined ? snap.lc.lint_deviations : snap.lc.deviations;
+  if (snap.geo.length !== lcLint) fail('geometrilistan ' + snap.geo.length + ' != lintens egna fynd ' + lcLint);
   if (snap.a11y02.length !== lintKlass['A11Y-02 · FUTURE_PHASE_3_IMPLEMENTATION_CONTRACT']) fail('A11Y-02-uppraknaren stammer inte med lint');
   if (lintKlass['T-02 · SPEC_SYNC_REQUIRED'] !== Object.keys(inv.bl07_unik).filter(k => !k.startsWith('$')).length) fail('T-02-paren stammer inte med BL-07');
 

@@ -23,6 +23,14 @@ const slug = s => String(s).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase
 const occId = e => 'OCC::' + slug(e.fil) + '::' + e.art + '::' + e.ordProd;
 const perOcc = new Map(IDX.map(e => [occId(e), e]));
 
+// BL-01 pensionerade pf-a-ankarena. Overlagget bar dem fortfarande i sina
+// agarstrangar, och ett pensionerat ankare pekar inte pa nagot element langre.
+// Rekoncilieringen ar kanonisk: samma karta som frysningen anvander.
+const R1 = JSON.parse(readFileSync(ROT + '/fas2/bl01-ankarrekonciliering.json', 'utf8'));
+const pfaMap = new Map(R1.PF_A_IDENTITY_MAPPING.map(m => [m.OLD_PF_A_ANCHOR, m.CANONICAL_BL01_ANCHOR]));
+const byt = x => (x == null ? x : String(x).replace(/occ-[a-z]{12}/g, m => pfaMap.get(m) || m));
+let migrerade = 0;
+
 const ut = JSON.parse(JSON.stringify(BAS));
 const F = ut.forekomst;
 const rapport = { HI: 0, JKL: 0, SAKNAD_FOREKOMST: [], UTAN_ANKARE: [] };
@@ -73,6 +81,10 @@ for (const sek of ['J_ACTION_TEXT_OMPROVAD', 'K_PROTOTYPLANKAR', 'L_UNDANTAG_I_B
     rapport.JKL++;
   }
 
+// migrera alla kvarvarande pf-a-ankare i overlaggets agarstrangar
+for (const v of Object.values(F)) if (v && v.agare) { const n = byt(v.agare); if (n !== v.agare) { v.agare = n; migrerade++; } }
+if (ut.agare) { const nytt = {}; for (const [k, v] of Object.entries(ut.agare)) nytt[byt(k)] = v; ut.agare = nytt; }
+
 writeFileSync(arg('ut'), JSON.stringify(ut, null, 1) + '\n');
 console.log(JSON.stringify({
   $om: 'Korrigeringsrunda 2:s overlagg, harlett ur repot',
@@ -82,5 +94,6 @@ console.log(JSON.stringify({
   TOTAL_CHANGED: rapport.HI + rapport.JKL,
   MISSING_OCCURRENCES: rapport.SAKNAD_FOREKOMST.length,
   WITHOUT_OWN_ANCHOR: rapport.UTAN_ANKARE.length,
+  RETIRED_PF_A_ANCHORS_MIGRATED: migrerade,
   DIAG: { SAKNAD: rapport.SAKNAD_FOREKOMST.slice(0, 5), UTAN_ANKARE: rapport.UTAN_ANKARE.slice(0, 5) }
 }, null, 1));

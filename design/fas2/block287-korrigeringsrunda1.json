@@ -425,6 +425,13 @@
     "ENHET": "RP::ROLE_VOCABULARY::dialog",
     "ROLL": "dialog",
     "KRAV": "rollen saknas i den slutna listan i spec och lintens T-08; skrivagare vantar pa den"
+   },
+   {
+    "ENHET": "RP::ROLE_VOCABULARY::radiogroup",
+    "ROLL": "radiogroup",
+    "KRAV": "rollen saknas i den slutna listan i spec och lintens T-08; skrivagare vantar pa den",
+    "UPPTACKT": "baslinjeavstamningen: fyra gruppagare (familjebetyg x3, snabbspara maltid) kraver radiogroup och hade ingen forutsattningsenhet",
+    "$regel_tillampad": "ingen produktskrivagare far blockeras av en forutsattning som saknar kanonisk remedieringsenhet"
    }
   ],
   "SAKNAD_HANDOFFENHET": [
