@@ -1,7 +1,7 @@
 // GENERERAD FIL — ändra källan, inte den här.
 // system 2.1 · tokens 1.13
 // generator tools/gen-app-theme.mjs v2.3
-// källfingeravtryck sha256:3ed8bfa7d6ebb81821a81d9543e0a14dfa3149bc34cf968cab9a3d5101545b2e (6 indatafiler, generatorns källa inräknad)
+// källfingeravtryck sha256:279fa8175a893713b2176349a02e5ef5c68135c90219a310a6703c5dc8bac905 (6 indatafiler, generatorns källa inräknad)
 // genererad ur källdatum 2026-08-05 (tokens.date — reproducerbart, inte klockan)
 //
 // Migration (etapp 8.1): varje medlem har samma NAMN som i det FRYSTA
@@ -44,12 +44,12 @@ class AppColors {
   static const Color cardWhite54 = Color(0x8AF5F4ED);
   /// semantic.text.primary
   static const Color textDark = Color(0xFF24382C);
-  /// semantic.text.secondary
-  static const Color textMedium = Color(0xFF627061);
+  /// Lasbar sekundartext. Ytsakert varde: text.secondary #627061 ger 4,27:1 pa surface.raised och underkanns av 4,5-kravet, medan .onRaised klarar alla tillatna ytor. · semantic.text.secondary.onRaised
+  static const Color textMedium = Color(0xFF5B6959);
   /// semantic.border.control
   static const Color placeholderIcon = Color(0xFF7D897C);
-  /// semantic.text.disabled
-  static const Color textLight = Color(0xFF7D897C);
+  /// LEGACY_ALIAS for lasbar sekundartext. Lag tidigare pa text.disabled, vilket var semantiskt fel: appen anvander den till lasbar text, inte till avstangd. Ytsakert varde eftersom en Flutter-konstant inte kan valja per yta. Pensioneras i paket 7. · semantic.text.secondary.onRaised
+  static const Color textLight = Color(0xFF5B6959);
   /// palette.sagePale
   static const Color textTertiary = Color(0xFFB4BFA6);
   /// semantic.control.checked.foreground

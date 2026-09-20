@@ -1,7 +1,7 @@
 // GENERERAD FIL — ändra källan, inte den här.
 // system 2.1 · tokens 1.13
 // generator tools/gen-app-theme.mjs v2.3
-// källfingeravtryck sha256:3ed8bfa7d6ebb81821a81d9543e0a14dfa3149bc34cf968cab9a3d5101545b2e (6 indatafiler, generatorns källa inräknad)
+// källfingeravtryck sha256:279fa8175a893713b2176349a02e5ef5c68135c90219a310a6703c5dc8bac905 (6 indatafiler, generatorns källa inräknad)
 // genererad ur källdatum 2026-08-05 (tokens.date — reproducerbart, inte klockan)
 //
 // Migration (etapp 8.2): samma medlemsnamn som i det frysta kontraktet, värden ur
@@ -27,7 +27,7 @@ class AppTextStyles {
   static const String bodyFont = family;
 
   /// tokens: typography.roles.display.compact — 26/700
-  static TextStyle get displaySmall => TextStyle(
+  static TextStyle get displaySmall => const TextStyle(
     fontFamily: family,
     fontSize: 26,
     fontWeight: FontWeight.w700,
@@ -36,7 +36,7 @@ class AppTextStyles {
   );
 
   /// tokens: typography.roles.display.compact — 26/700
-  static TextStyle get headlineMedium => TextStyle(
+  static TextStyle get headlineMedium => const TextStyle(
     fontFamily: family,
     fontSize: 26,
     fontWeight: FontWeight.w700,
@@ -45,7 +45,7 @@ class AppTextStyles {
   );
 
   /// tokens: typography.roles.title — 22/700
-  static TextStyle get headlineSmall => TextStyle(
+  static TextStyle get headlineSmall => const TextStyle(
     fontFamily: family,
     fontSize: 22,
     fontWeight: FontWeight.w700,
@@ -54,7 +54,7 @@ class AppTextStyles {
   );
 
   /// tokens: typography.roles.display — 32/700
-  static TextStyle get headlineBold => TextStyle(
+  static TextStyle get headlineBold => const TextStyle(
     fontFamily: family,
     fontSize: 32,
     fontWeight: FontWeight.w700,
@@ -63,7 +63,7 @@ class AppTextStyles {
   );
 
   /// tokens: typography.roles.stepper — 17/600
-  static TextStyle get titleLarge => TextStyle(
+  static TextStyle get titleLarge => const TextStyle(
     fontFamily: family,
     fontSize: 17,
     fontWeight: FontWeight.w600,
@@ -71,7 +71,7 @@ class AppTextStyles {
   );
 
   /// tokens: typography.roles.cardTitle — 15/600
-  static TextStyle get titleMedium => TextStyle(
+  static TextStyle get titleMedium => const TextStyle(
     fontFamily: family,
     fontSize: 15,
     fontWeight: FontWeight.w600,
@@ -79,7 +79,7 @@ class AppTextStyles {
   );
 
   /// tokens: typography.roles.body — 16/400
-  static TextStyle get bodyLarge => TextStyle(
+  static TextStyle get bodyLarge => const TextStyle(
     fontFamily: family,
     fontSize: 16,
     fontWeight: FontWeight.w400,
@@ -87,7 +87,7 @@ class AppTextStyles {
   );
 
   /// tokens: typography.roles.bodyMedium — 14/400 · appens vanligaste brödtext — 14/400. Fas 1 (tredje vändan): värdet låg som derivedStyles i tools/app-theme-map.json, dessförinnan som ett dolt medelvärde i generatorn. Steget 14 finns i skalan; ingen 400-vikt under 12 px.
-  static TextStyle get bodyMedium => TextStyle(
+  static TextStyle get bodyMedium => const TextStyle(
     fontFamily: family,
     fontSize: 14,
     fontWeight: FontWeight.w400,
@@ -95,7 +95,7 @@ class AppTextStyles {
   );
 
   /// tokens: typography.roles.listItem — 13/600
-  static TextStyle get bodySmall => TextStyle(
+  static TextStyle get bodySmall => const TextStyle(
     fontFamily: family,
     fontSize: 13,
     fontWeight: FontWeight.w600,
@@ -103,7 +103,7 @@ class AppTextStyles {
   );
 
   /// tokens: typography.roles.label — 14/600 · knappar: 14/600 — inte 700
-  static TextStyle get labelLarge => TextStyle(
+  static TextStyle get labelLarge => const TextStyle(
     fontFamily: family,
     fontSize: 14,
     fontWeight: FontWeight.w600,
@@ -111,7 +111,7 @@ class AppTextStyles {
   );
 
   /// tokens: typography.roles.meta — 12.5/600 · säkerhets- och samtyckestext 12,5–13
-  static TextStyle get labelMedium => TextStyle(
+  static TextStyle get labelMedium => const TextStyle(
     fontFamily: family,
     fontSize: 12.5,
     fontWeight: FontWeight.w600,
@@ -119,7 +119,7 @@ class AppTextStyles {
   );
 
   /// tokens: typography.roles.navLabel — 11/700 · höjd från 10,5 — kökskontext
-  static TextStyle get labelSmall => TextStyle(
+  static TextStyle get labelSmall => const TextStyle(
     fontFamily: family,
     fontSize: 11,
     fontWeight: FontWeight.w700,
@@ -127,7 +127,7 @@ class AppTextStyles {
   );
 
   /// tokens: typography.roles.overline — 10.5/700 · endast kategorier och systemetiketter
-  static TextStyle get overline => TextStyle(
+  static TextStyle get overline => const TextStyle(
     fontFamily: family,
     fontSize: 10.5,
     fontWeight: FontWeight.w700,
@@ -136,7 +136,7 @@ class AppTextStyles {
   );
 
   /// tokens: typography.roles.stat — 38/700 · endast statistikvyn
-  static TextStyle get statNumber => TextStyle(
+  static TextStyle get statNumber => const TextStyle(
     fontFamily: family,
     fontSize: 38,
     fontWeight: FontWeight.w700,
@@ -144,7 +144,7 @@ class AppTextStyles {
   );
 
   /// tokens: typography.roles.cookingStep — 19/600 · matlagningsläget — läsavstånd
-  static TextStyle get cookingStep => TextStyle(
+  static TextStyle get cookingStep => const TextStyle(
     fontFamily: family,
     fontSize: 19,
     fontWeight: FontWeight.w600,
@@ -152,7 +152,7 @@ class AppTextStyles {
   );
 
   /// tokens: typography.roles.caption — 12/400 · minsta 400-storlek
-  static TextStyle get captionBase => TextStyle(
+  static TextStyle get captionBase => const TextStyle(
     fontFamily: family,
     fontSize: 12,
     fontWeight: FontWeight.w400,

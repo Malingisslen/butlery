@@ -1,648 +1,648 @@
 {
-  "$note": "GENERERAD-INDATA · vilken TOKEN varje befintlig AppColors- och AppTextStyles-medlem hämtar sitt värde ur. Filen innehåller INGA designvärden: varje högersida är ett token-id (semantic/palette/member) eller ett rollnamn. Ändra här, kör tools/gen-app-theme.mjs.",
-  "$schema": "tools/app-theme-map.schema.json",
-  "brandExceptionNote": "brand*-färgerna är externa varumärkesidentiteter (YouTube, ICA, Arla …). De får INTE tokeniseras — de är citat, inte design.",
-  "version": "1.4",
-  "colors": {
-    "forestGreen": [
-      "semantic",
-      "surface.ink",
-      "Rubrikyta och primär åtgärd"
-    ],
-    "forestGreenDark": [
-      "palette",
-      "inkDeep",
-      "Nedtryckt / betoning"
-    ],
-    "forestGreenLight": [
-      "palette",
-      "greenLight",
-      "Ljus variant"
-    ],
-    "rust": [
-      "palette",
-      "saffron",
-      "Dekorativ accent"
-    ],
-    "rustLight": [
-      "semantic",
-      "border.statusWarning",
-      "Kortens underkant"
-    ],
-    "cream": [
-      "semantic",
-      "surface.base",
-      ""
-    ],
-    "creamDark": [
-      "semantic",
-      "surface.raised",
-      ""
-    ],
-    "creamDarker": [
-      "semantic",
-      "border.subtle",
-      "Navigering"
-    ],
-    "greenPale": [
-      "semantic",
-      "surface.raised",
-      ""
-    ],
-    "greenMuted": [
-      "semantic",
-      "text.secondary",
-      "Nav ovald"
-    ],
-    "cardWhite": [
-      "semantic",
-      "surface.base",
-      "Systemet har inget rent vitt"
-    ],
-    "cardWhite54": [
-      "semantic",
-      "overlay.paperCard",
-      "Överlägg — värdet ligger i tokens.semantic, inte här"
-    ],
-    "textDark": [
-      "semantic",
-      "text.primary",
-      ""
-    ],
-    "textMedium": [
-      "semantic",
-      "text.secondary",
-      ""
-    ],
-    "placeholderIcon": [
-      "semantic",
-      "border.control",
-      ""
-    ],
-    "textLight": [
-      "semantic",
-      "text.disabled",
-      ""
-    ],
-    "textTertiary": [
-      "palette",
-      "sagePale",
-      ""
-    ],
-    "textOnPrimary": [
-      "semantic",
-      "control.checked.foreground",
-      ""
-    ],
-    "textOnCream": [
-      "semantic",
-      "text.body",
-      ""
-    ],
-    "success": [
-      "semantic",
-      "text.success",
-      ""
-    ],
-    "warning": [
-      "semantic",
-      "border.statusWarning",
-      "Endast ytor och ikoner, aldrig text"
-    ],
-    "error": [
-      "semantic",
-      "text.danger",
-      ""
-    ],
-    "errorContainer": [
-      "semantic",
-      "surface.raised",
-      ""
-    ],
-    "onErrorContainer": [
-      "semantic",
-      "text.danger.onRaised",
-      ""
-    ],
-    "successContainer": [
-      "semantic",
-      "surface.raised",
-      ""
-    ],
-    "onSuccessContainer": [
-      "semantic",
-      "text.success.onRaised",
-      ""
-    ],
-    "warningContainer": [
-      "semantic",
-      "surface.raised",
-      ""
-    ],
-    "onWarningContainer": [
-      "semantic",
-      "text.accent.onRaised",
-      ""
-    ],
-    "infoContainer": [
-      "semantic",
-      "surface.raised",
-      ""
-    ],
-    "onInfoContainer": [
-      "semantic",
-      "text.primary",
-      ""
-    ],
-    "info": [
-      "palette",
-      "saffronLink",
-      "Systemet har ingen blå — info bär saffranslänken"
-    ],
-    "divider": [
-      "semantic",
-      "border.subtle",
-      ""
-    ],
-    "recipeMeta": [
-      "semantic",
-      "text.secondary",
-      ""
-    ],
-    "sectionHeader": [
-      "semantic",
-      "text.body",
-      ""
-    ],
-    "starGold": [
-      "palette",
-      "saffron",
-      ""
-    ],
-    "categoryDairy": [
-      "palette",
-      "wheat",
-      ""
-    ],
-    "categoryVegetables": [
-      "palette",
-      "green",
-      ""
-    ],
-    "categoryFruit": [
-      "palette",
-      "greenLight",
-      ""
-    ],
-    "categoryBreadGrains": [
-      "palette",
-      "saffronPale",
-      ""
-    ],
-    "categoryFrozen": [
-      "palette",
-      "sage",
-      ""
-    ],
-    "categoryDryGoods": [
-      "palette",
-      "saffronDeep",
-      ""
-    ],
-    "categoryOther": [
-      "palette",
-      "sageMuted",
-      ""
-    ],
-    "backgroundTint": [
-      "semantic",
-      "surface.raised",
-      ""
-    ],
-    "illustrationBrown": [
-      "palette",
-      "saffronDeep",
-      ""
-    ],
-    "illustrationOrange": [
-      "palette",
-      "saffron",
-      ""
-    ],
-    "illustrationPurpleRed": [
-      "palette",
-      "clay",
-      ""
-    ],
-    "overlay": [
-      "semantic",
-      "scrim",
-      ""
-    ],
-    "neutralLight": [
-      "semantic",
-      "surface.base",
-      ""
-    ],
-    "neutralMedium": [
-      "palette",
-      "sageMuted",
-      ""
-    ],
-    "neutralDark": [
-      "palette",
-      "inkDeep",
-      ""
-    ],
-    "sharedRecipeText": [
-      "semantic",
-      "text.secondary",
-      ""
-    ],
-    "sharedRecipeIcon": [
-      "palette",
-      "sagePale",
-      ""
-    ],
-    "sharedRecipeBackground": [
-      "semantic",
-      "surface.raised",
-      ""
-    ],
-    "shadowColor": [
-      "semantic",
-      "elevation.shadow",
-      "Överlägg — värdet ligger i tokens.semantic, inte här"
-    ],
-    "secondaryPurple": [
-      "palette",
-      "clay",
-      "Lila fanns inte i systemet — närmaste avsikt är clay"
-    ],
-    "surfaceDark": [
-      "palette",
-      "inkRaised",
-      ""
-    ],
-    "overlayWhite40": [
-      "semantic",
-      "overlay.paperWash",
-      "Överlägg — värdet ligger i tokens.semantic, inte här"
-    ],
-    "overlayBlack10": [
-      "semantic",
-      "overlay.inkSubtle",
-      "Överlägg — värdet ligger i tokens.semantic, inte här"
-    ],
-    "overlayBlack20": [
-      "semantic",
-      "overlay.inkLight",
-      "Överlägg — värdet ligger i tokens.semantic, inte här"
-    ],
-    "overlayBlack40": [
-      "semantic",
-      "overlay.inkMedium",
-      "Överlägg — värdet ligger i tokens.semantic, inte här"
-    ],
-    "overlayBlack60": [
-      "semantic",
-      "overlay.inkStrong",
-      "Överlägg — värdet ligger i tokens.semantic, inte här"
-    ]
-  },
-  "aliases": {
-    "textSecondary": "textMedium",
-    "accent": "rust",
-    "warningText": "onWarningContainer",
-    "sharedRecipeTextColor": "sharedRecipeText",
-    "sharedRecipeIconColor": "sharedRecipeIcon",
-    "sharedRecipeBackgroundColor": "sharedRecipeBackground",
-    "chatBubbleOutgoing": "forestGreen",
-    "chatBubbleIncoming": "creamDark",
-    "chatTextOutgoing": "textOnPrimary",
-    "chatTextIncoming": "textDark",
-    "categoryMeatFish": "illustrationPurpleRed",
-    "backgroundLight": "cream",
-    "backgroundDark": "neutralDark",
-    "primary": "forestGreen",
-    "secondary": "rust",
-    "surface": "cream",
-    "surfaceVariant": "creamDark",
-    "onSurface": "textDark",
-    "primaryContainer": "creamDark",
-    "secondaryContainer": "creamDark",
-    "onPrimaryContainer": "forestGreen",
-    "onPrimary": "textOnPrimary",
-    "outline": "placeholderIcon",
-    "shadow": "shadowColor",
-    "onSuccess": "textOnPrimary",
-    "onError": "textOnPrimary",
-    "onWarning": "textDark",
-    "onInfo": "textOnPrimary",
-    "recipeCardLeftBorder": "forestGreen",
-    "recipeCardBottomBorder": "rustLight",
-    "headerBackground": "forestGreen",
-    "headerAccent": "rust",
-    "headerForeground": "textOnPrimary",
-    "navBackground": "creamDarker",
-    "navSelectedIndicator": "rust",
-    "navSelectedItem": "forestGreenDark",
-    "navUnselectedItem": "greenMuted"
-  },
-  "$aliasNote": "Historiska API-namn som pekar på en annan medlem. De har inget eget värde och ingen egen token — de finns för att den publika ytan i det frysta legacy-api-contract.json ska bevaras. Att ytan motsvarar app-repots faktiska anrop är overifierat till Fas 2. Fas 1: de låg tidigare odeklarerade, vilket gjorde att TG-01 inte kunde skilja ett legitimt alias från en medlem utan källa.",
-  "$schemeNote": "ColorScheme-slottarna låg tidigare som kod i tools/gen-app-theme.mjs, inklusive tre lägesberoende val och en rå rgba-skugga. De är mappningsbeslut, inte implementation, och ligger nu här. Ljusa läget är basen; darkOverrides ersätter enskilda slottar i mörkt läge. Skuggan pekar på medlemmen shadowColor, som i sin tur pekar på tokens.semantic[\"elevation.shadow\"].",
-  "scheme": {
-    "slots": {
-      "primary": [
-        "semantic",
-        "surface.ink"
-      ],
-      "onPrimary": [
-        "semantic",
-        "control.checked.foreground"
-      ],
-      "primaryContainer": [
-        "semantic",
-        "surface.raised"
-      ],
-      "onPrimaryContainer": [
-        "semantic",
-        "text.primary"
-      ],
-      "secondary": [
-        "semantic",
-        "action.primary"
-      ],
-      "onSecondary": [
-        "semantic",
-        "text.onActionPrimary"
-      ],
-      "secondaryContainer": [
-        "semantic",
-        "surface.raised"
-      ],
-      "onSecondaryContainer": [
-        "semantic",
-        "text.accent.onRaised"
-      ],
-      "tertiary": [
-        "semantic",
-        "text.success"
-      ],
-      "onTertiary": [
-        "semantic",
-        "control.checked.foreground"
-      ],
-      "tertiaryContainer": [
-        "semantic",
-        "surface.raised"
-      ],
-      "onTertiaryContainer": [
-        "semantic",
-        "text.success.onRaised"
-      ],
-      "error": [
-        "semantic",
-        "text.danger"
-      ],
-      "onError": [
-        "semantic",
-        "control.checked.foreground"
-      ],
-      "errorContainer": [
-        "semantic",
-        "surface.raised"
-      ],
-      "onErrorContainer": [
-        "semantic",
-        "text.danger.onRaised"
-      ],
-      "surface": [
-        "semantic",
-        "surface.base"
-      ],
-      "onSurface": [
-        "semantic",
-        "text.primary"
-      ],
-      "surfaceContainerHighest": [
-        "semantic",
-        "surface.raised"
-      ],
-      "onSurfaceVariant": [
-        "semantic",
-        "text.secondary"
-      ],
-      "outline": [
-        "semantic",
-        "border.control"
-      ],
-      "outlineVariant": [
-        "semantic",
-        "border.subtle"
-      ],
-      "shadow": [
-        "member",
-        "shadowColor"
-      ],
-      "scrim": [
-        "semantic",
-        "scrim"
-      ],
-      "inverseSurface": [
-        "semantic",
-        "surface.ink"
-      ],
-      "onInverseSurface": [
-        "semantic",
-        "control.checked.foreground"
-      ],
-      "inversePrimary": [
-        "palette",
-        "greenLight"
-      ],
-      "surfaceTint": [
-        "semantic",
-        "surface.ink"
-      ]
-    },
-    "darkOverrides": {
-      "onError": [
-        "palette",
-        "inkDeep"
-      ],
-      "inverseSurface": [
-        "semantic",
-        "surface.base"
-      ],
-      "onInverseSurface": [
-        "semantic",
-        "text.primary"
-      ]
-    }
-  },
-  "$typeNote": "Typrollerna, aliasen, de semantiska varianterna, fetstilsvikten och Material 3-slottarna låg tidigare som fem tabeller i generatorn. De är mappningsbeslut och ligger nu här. Varje värde i högerspalten måste finnas i tokens.typography.roles — inga mått, vikter eller radhöjder skrivs i den här filen.",
-  "fontFamily": "ButlerySans",
-  "boldWeight": 700,
-  "typeRoles": {
-    "displaySmall": "display.compact",
-    "headlineMedium": "display.compact",
-    "headlineSmall": "title",
-    "headlineBold": "display",
-    "titleLarge": "stepper",
-    "titleMedium": "cardTitle",
-    "bodyLarge": "body",
-    "bodyMedium": "bodyMedium",
-    "bodySmall": "listItem",
-    "labelLarge": "label",
-    "labelMedium": "meta",
-    "labelSmall": "navLabel",
-    "overline": "overline",
-    "statNumber": "stat",
-    "cookingStep": "cookingStep",
-    "captionBase": "caption"
-  },
-  "typeAliases": {
-    "titleSmall": "headlineSmall",
-    "buttonText": "labelLarge",
-    "labelText": "labelMedium",
-    "captionText": "captionBase",
-    "buttonPrimary": "labelLarge",
-    "buttonTextStyle": "labelLarge",
-    "tabText": "labelMedium",
-    "navigationText": "labelSmall",
-    "navLabel": "labelSmall",
-    "cardTitle": "titleMedium",
-    "cardTitleStyle": "titleMedium",
-    "listTileTitle": "titleMedium",
-    "listTileSubtitle": "bodyMedium",
-    "dialogTitle": "titleLarge",
-    "dialogContent": "bodyLarge",
-    "appBarTitle": "headlineSmall",
-    "headerTitle": "headlineSmall",
-    "mainViewTitle": "headlineBold",
-    "sectionTitleStyle": "sectionHeader",
-    "emptyStateBody": "bodyMedium",
-    "bodyMediumMuted": "bodyMedium",
-    "titleMediumMuted": "titleMedium",
-    "labelMediumMuted": "labelMedium",
-    "badge": "overline",
-    "badgeLarge": "labelMedium",
-    "badgeText": "labelMedium",
-    "textXs": "overline",
-    "textXsBold": "overline",
-    "textSm": "labelSmall",
-    "filterChip": "labelMedium",
-    "formOption": "bodyMedium",
-    "contentLabel": "labelLarge",
-    "contentTitle": "bodyLarge",
-    "groupTitle": "headlineSmall",
-    "recipeCardTitle": "titleMedium",
-    "recipeCardDescription": "bodySmall",
-    "recipeCardMeta": "labelSmall",
-    "emptyStateTitle": "headlineSmall",
-    "recipeMetaBase": "labelMedium"
-  },
-  "typeSemantic": {
-    "recipeMeta": {
-      "base": "labelMedium",
-      "color": "AppColors.recipeMeta"
-    },
-    "sectionHeader": {
-      "base": "headlineSmall",
-      "color": "AppColors.sectionHeader"
-    },
-    "errorText": {
-      "base": "bodySmall",
-      "color": "AppColors.error"
-    },
-    "successText": {
-      "base": "bodySmall",
-      "color": "AppColors.success"
-    },
-    "warningText": {
-      "base": "bodySmall",
-      "color": "AppColors.warningText"
-    },
-    "infoText": {
-      "base": "bodySmall",
-      "color": "AppColors.info"
-    },
-    "hintText": {
-      "base": "bodyMedium",
-      "color": "AppColors.textLight"
-    },
-    "metadataEmphasized": {
-      "base": "labelMedium",
-      "color": null
-    },
-    "titleBold": {
-      "base": "titleMedium",
-      "color": null,
-      "bold": true
-    },
-    "bodyBold": {
-      "base": "bodyMedium",
-      "color": null,
-      "bold": true
-    },
-    "bodyLargeBold": {
-      "base": "bodyLarge",
-      "color": null,
-      "bold": true
-    },
-    "bodyMediumError": {
-      "base": "bodyMedium",
-      "color": "AppColors.error"
-    },
-    "bodyMediumSuccess": {
-      "base": "bodyMedium",
-      "color": "AppColors.success"
-    },
-    "bodyMediumWarning": {
-      "base": "bodyMedium",
-      "color": "AppColors.warningText"
-    },
-    "labelSmallSuccess": {
-      "base": "labelSmall",
-      "color": "AppColors.onSuccessContainer"
-    },
-    "linkSmall": {
-      "base": "bodySmall",
-      "color": "AppColors.info"
-    },
-    "bodyLargeLight": {
-      "base": "bodyLarge",
-      "color": "AppColors.neutralLight"
-    },
-    "snackbarText": {
-      "base": "bodyMedium",
-      "color": "AppColors.neutralLight"
-    },
-    "buttonTextLight": {
-      "base": "labelLarge",
-      "color": "AppColors.textOnPrimary"
-    },
-    "headerCountBadge": {
-      "base": "labelMedium",
-      "color": "AppColors.rustLight"
-    },
-    "sectionLabel": {
-      "base": "overline",
-      "color": "AppColors.onWarningContainer"
-    }
-  },
-  "textThemeSlots": [
-    "displaySmall",
-    "headlineMedium",
-    "headlineSmall",
-    "titleLarge",
-    "titleMedium",
-    "bodyLarge",
-    "bodyMedium",
-    "bodySmall",
-    "labelLarge",
-    "labelMedium",
-    "labelSmall"
+ "$note": "GENERERAD-INDATA · vilken TOKEN varje befintlig AppColors- och AppTextStyles-medlem hämtar sitt värde ur. Filen innehåller INGA designvärden: varje högersida är ett token-id (semantic/palette/member) eller ett rollnamn. Ändra här, kör tools/gen-app-theme.mjs.",
+ "$schema": "tools/app-theme-map.schema.json",
+ "brandExceptionNote": "brand*-färgerna är externa varumärkesidentiteter (YouTube, ICA, Arla …). De får INTE tokeniseras — de är citat, inte design.",
+ "version": "1.4",
+ "colors": {
+  "forestGreen": [
+   "semantic",
+   "surface.ink",
+   "Rubrikyta och primär åtgärd"
+  ],
+  "forestGreenDark": [
+   "palette",
+   "inkDeep",
+   "Nedtryckt / betoning"
+  ],
+  "forestGreenLight": [
+   "palette",
+   "greenLight",
+   "Ljus variant"
+  ],
+  "rust": [
+   "palette",
+   "saffron",
+   "Dekorativ accent"
+  ],
+  "rustLight": [
+   "semantic",
+   "border.statusWarning",
+   "Kortens underkant"
+  ],
+  "cream": [
+   "semantic",
+   "surface.base",
+   ""
+  ],
+  "creamDark": [
+   "semantic",
+   "surface.raised",
+   ""
+  ],
+  "creamDarker": [
+   "semantic",
+   "border.subtle",
+   "Navigering"
+  ],
+  "greenPale": [
+   "semantic",
+   "surface.raised",
+   ""
+  ],
+  "greenMuted": [
+   "semantic",
+   "text.secondary",
+   "Nav ovald"
+  ],
+  "cardWhite": [
+   "semantic",
+   "surface.base",
+   "Systemet har inget rent vitt"
+  ],
+  "cardWhite54": [
+   "semantic",
+   "overlay.paperCard",
+   "Överlägg — värdet ligger i tokens.semantic, inte här"
+  ],
+  "textDark": [
+   "semantic",
+   "text.primary",
+   ""
+  ],
+  "textMedium": [
+   "semantic",
+   "text.secondary.onRaised",
+   "Lasbar sekundartext. Ytsakert varde: text.secondary #627061 ger 4,27:1 pa surface.raised och underkanns av 4,5-kravet, medan .onRaised klarar alla tillatna ytor."
+  ],
+  "placeholderIcon": [
+   "semantic",
+   "border.control",
+   ""
+  ],
+  "textLight": [
+   "semantic",
+   "text.secondary.onRaised",
+   "LEGACY_ALIAS for lasbar sekundartext. Lag tidigare pa text.disabled, vilket var semantiskt fel: appen anvander den till lasbar text, inte till avstangd. Ytsakert varde eftersom en Flutter-konstant inte kan valja per yta. Pensioneras i paket 7."
+  ],
+  "textTertiary": [
+   "palette",
+   "sagePale",
+   ""
+  ],
+  "textOnPrimary": [
+   "semantic",
+   "control.checked.foreground",
+   ""
+  ],
+  "textOnCream": [
+   "semantic",
+   "text.body",
+   ""
+  ],
+  "success": [
+   "semantic",
+   "text.success",
+   ""
+  ],
+  "warning": [
+   "semantic",
+   "border.statusWarning",
+   "Endast ytor och ikoner, aldrig text"
+  ],
+  "error": [
+   "semantic",
+   "text.danger",
+   ""
+  ],
+  "errorContainer": [
+   "semantic",
+   "surface.raised",
+   ""
+  ],
+  "onErrorContainer": [
+   "semantic",
+   "text.danger.onRaised",
+   ""
+  ],
+  "successContainer": [
+   "semantic",
+   "surface.raised",
+   ""
+  ],
+  "onSuccessContainer": [
+   "semantic",
+   "text.success.onRaised",
+   ""
+  ],
+  "warningContainer": [
+   "semantic",
+   "surface.raised",
+   ""
+  ],
+  "onWarningContainer": [
+   "semantic",
+   "text.accent.onRaised",
+   ""
+  ],
+  "infoContainer": [
+   "semantic",
+   "surface.raised",
+   ""
+  ],
+  "onInfoContainer": [
+   "semantic",
+   "text.primary",
+   ""
+  ],
+  "info": [
+   "palette",
+   "saffronLink",
+   "Systemet har ingen blå — info bär saffranslänken"
+  ],
+  "divider": [
+   "semantic",
+   "border.subtle",
+   ""
+  ],
+  "recipeMeta": [
+   "semantic",
+   "text.secondary",
+   ""
+  ],
+  "sectionHeader": [
+   "semantic",
+   "text.body",
+   ""
+  ],
+  "starGold": [
+   "palette",
+   "saffron",
+   ""
+  ],
+  "categoryDairy": [
+   "palette",
+   "wheat",
+   ""
+  ],
+  "categoryVegetables": [
+   "palette",
+   "green",
+   ""
+  ],
+  "categoryFruit": [
+   "palette",
+   "greenLight",
+   ""
+  ],
+  "categoryBreadGrains": [
+   "palette",
+   "saffronPale",
+   ""
+  ],
+  "categoryFrozen": [
+   "palette",
+   "sage",
+   ""
+  ],
+  "categoryDryGoods": [
+   "palette",
+   "saffronDeep",
+   ""
+  ],
+  "categoryOther": [
+   "palette",
+   "sageMuted",
+   ""
+  ],
+  "backgroundTint": [
+   "semantic",
+   "surface.raised",
+   ""
+  ],
+  "illustrationBrown": [
+   "palette",
+   "saffronDeep",
+   ""
+  ],
+  "illustrationOrange": [
+   "palette",
+   "saffron",
+   ""
+  ],
+  "illustrationPurpleRed": [
+   "palette",
+   "clay",
+   ""
+  ],
+  "overlay": [
+   "semantic",
+   "scrim",
+   ""
+  ],
+  "neutralLight": [
+   "semantic",
+   "surface.base",
+   ""
+  ],
+  "neutralMedium": [
+   "palette",
+   "sageMuted",
+   ""
+  ],
+  "neutralDark": [
+   "palette",
+   "inkDeep",
+   ""
+  ],
+  "sharedRecipeText": [
+   "semantic",
+   "text.secondary",
+   ""
+  ],
+  "sharedRecipeIcon": [
+   "palette",
+   "sagePale",
+   ""
+  ],
+  "sharedRecipeBackground": [
+   "semantic",
+   "surface.raised",
+   ""
+  ],
+  "shadowColor": [
+   "semantic",
+   "elevation.shadow",
+   "Överlägg — värdet ligger i tokens.semantic, inte här"
+  ],
+  "secondaryPurple": [
+   "palette",
+   "clay",
+   "Lila fanns inte i systemet — närmaste avsikt är clay"
+  ],
+  "surfaceDark": [
+   "palette",
+   "inkRaised",
+   ""
+  ],
+  "overlayWhite40": [
+   "semantic",
+   "overlay.paperWash",
+   "Överlägg — värdet ligger i tokens.semantic, inte här"
+  ],
+  "overlayBlack10": [
+   "semantic",
+   "overlay.inkSubtle",
+   "Överlägg — värdet ligger i tokens.semantic, inte här"
+  ],
+  "overlayBlack20": [
+   "semantic",
+   "overlay.inkLight",
+   "Överlägg — värdet ligger i tokens.semantic, inte här"
+  ],
+  "overlayBlack40": [
+   "semantic",
+   "overlay.inkMedium",
+   "Överlägg — värdet ligger i tokens.semantic, inte här"
+  ],
+  "overlayBlack60": [
+   "semantic",
+   "overlay.inkStrong",
+   "Överlägg — värdet ligger i tokens.semantic, inte här"
   ]
+ },
+ "aliases": {
+  "textSecondary": "textMedium",
+  "accent": "rust",
+  "warningText": "onWarningContainer",
+  "sharedRecipeTextColor": "sharedRecipeText",
+  "sharedRecipeIconColor": "sharedRecipeIcon",
+  "sharedRecipeBackgroundColor": "sharedRecipeBackground",
+  "chatBubbleOutgoing": "forestGreen",
+  "chatBubbleIncoming": "creamDark",
+  "chatTextOutgoing": "textOnPrimary",
+  "chatTextIncoming": "textDark",
+  "categoryMeatFish": "illustrationPurpleRed",
+  "backgroundLight": "cream",
+  "backgroundDark": "neutralDark",
+  "primary": "forestGreen",
+  "secondary": "rust",
+  "surface": "cream",
+  "surfaceVariant": "creamDark",
+  "onSurface": "textDark",
+  "primaryContainer": "creamDark",
+  "secondaryContainer": "creamDark",
+  "onPrimaryContainer": "forestGreen",
+  "onPrimary": "textOnPrimary",
+  "outline": "placeholderIcon",
+  "shadow": "shadowColor",
+  "onSuccess": "textOnPrimary",
+  "onError": "textOnPrimary",
+  "onWarning": "textDark",
+  "onInfo": "textOnPrimary",
+  "recipeCardLeftBorder": "forestGreen",
+  "recipeCardBottomBorder": "rustLight",
+  "headerBackground": "forestGreen",
+  "headerAccent": "rust",
+  "headerForeground": "textOnPrimary",
+  "navBackground": "creamDarker",
+  "navSelectedIndicator": "rust",
+  "navSelectedItem": "forestGreenDark",
+  "navUnselectedItem": "greenMuted"
+ },
+ "$aliasNote": "Historiska API-namn som pekar på en annan medlem. De har inget eget värde och ingen egen token — de finns för att den publika ytan i det frysta legacy-api-contract.json ska bevaras. Att ytan motsvarar app-repots faktiska anrop är overifierat till Fas 2. Fas 1: de låg tidigare odeklarerade, vilket gjorde att TG-01 inte kunde skilja ett legitimt alias från en medlem utan källa.",
+ "$schemeNote": "ColorScheme-slottarna låg tidigare som kod i tools/gen-app-theme.mjs, inklusive tre lägesberoende val och en rå rgba-skugga. De är mappningsbeslut, inte implementation, och ligger nu här. Ljusa läget är basen; darkOverrides ersätter enskilda slottar i mörkt läge. Skuggan pekar på medlemmen shadowColor, som i sin tur pekar på tokens.semantic[\"elevation.shadow\"].",
+ "scheme": {
+  "slots": {
+   "primary": [
+    "semantic",
+    "surface.ink"
+   ],
+   "onPrimary": [
+    "semantic",
+    "control.checked.foreground"
+   ],
+   "primaryContainer": [
+    "semantic",
+    "surface.raised"
+   ],
+   "onPrimaryContainer": [
+    "semantic",
+    "text.primary"
+   ],
+   "secondary": [
+    "semantic",
+    "action.primary"
+   ],
+   "onSecondary": [
+    "semantic",
+    "text.onActionPrimary"
+   ],
+   "secondaryContainer": [
+    "semantic",
+    "surface.raised"
+   ],
+   "onSecondaryContainer": [
+    "semantic",
+    "text.accent.onRaised"
+   ],
+   "tertiary": [
+    "semantic",
+    "text.success"
+   ],
+   "onTertiary": [
+    "semantic",
+    "control.checked.foreground"
+   ],
+   "tertiaryContainer": [
+    "semantic",
+    "surface.raised"
+   ],
+   "onTertiaryContainer": [
+    "semantic",
+    "text.success.onRaised"
+   ],
+   "error": [
+    "semantic",
+    "text.danger"
+   ],
+   "onError": [
+    "semantic",
+    "control.checked.foreground"
+   ],
+   "errorContainer": [
+    "semantic",
+    "surface.raised"
+   ],
+   "onErrorContainer": [
+    "semantic",
+    "text.danger.onRaised"
+   ],
+   "surface": [
+    "semantic",
+    "surface.base"
+   ],
+   "onSurface": [
+    "semantic",
+    "text.primary"
+   ],
+   "surfaceContainerHighest": [
+    "semantic",
+    "surface.raised"
+   ],
+   "onSurfaceVariant": [
+    "semantic",
+    "text.secondary"
+   ],
+   "outline": [
+    "semantic",
+    "border.control"
+   ],
+   "outlineVariant": [
+    "semantic",
+    "border.subtle"
+   ],
+   "shadow": [
+    "member",
+    "shadowColor"
+   ],
+   "scrim": [
+    "semantic",
+    "scrim"
+   ],
+   "inverseSurface": [
+    "semantic",
+    "surface.ink"
+   ],
+   "onInverseSurface": [
+    "semantic",
+    "control.checked.foreground"
+   ],
+   "inversePrimary": [
+    "palette",
+    "greenLight"
+   ],
+   "surfaceTint": [
+    "semantic",
+    "surface.ink"
+   ]
+  },
+  "darkOverrides": {
+   "onError": [
+    "palette",
+    "inkDeep"
+   ],
+   "inverseSurface": [
+    "semantic",
+    "surface.base"
+   ],
+   "onInverseSurface": [
+    "semantic",
+    "text.primary"
+   ]
+  }
+ },
+ "$typeNote": "Typrollerna, aliasen, de semantiska varianterna, fetstilsvikten och Material 3-slottarna låg tidigare som fem tabeller i generatorn. De är mappningsbeslut och ligger nu här. Varje värde i högerspalten måste finnas i tokens.typography.roles — inga mått, vikter eller radhöjder skrivs i den här filen.",
+ "fontFamily": "ButlerySans",
+ "boldWeight": 700,
+ "typeRoles": {
+  "displaySmall": "display.compact",
+  "headlineMedium": "display.compact",
+  "headlineSmall": "title",
+  "headlineBold": "display",
+  "titleLarge": "stepper",
+  "titleMedium": "cardTitle",
+  "bodyLarge": "body",
+  "bodyMedium": "bodyMedium",
+  "bodySmall": "listItem",
+  "labelLarge": "label",
+  "labelMedium": "meta",
+  "labelSmall": "navLabel",
+  "overline": "overline",
+  "statNumber": "stat",
+  "cookingStep": "cookingStep",
+  "captionBase": "caption"
+ },
+ "typeAliases": {
+  "titleSmall": "headlineSmall",
+  "buttonText": "labelLarge",
+  "labelText": "labelMedium",
+  "captionText": "captionBase",
+  "buttonPrimary": "labelLarge",
+  "buttonTextStyle": "labelLarge",
+  "tabText": "labelMedium",
+  "navigationText": "labelSmall",
+  "navLabel": "labelSmall",
+  "cardTitle": "titleMedium",
+  "cardTitleStyle": "titleMedium",
+  "listTileTitle": "titleMedium",
+  "listTileSubtitle": "bodyMedium",
+  "dialogTitle": "titleLarge",
+  "dialogContent": "bodyLarge",
+  "appBarTitle": "headlineSmall",
+  "headerTitle": "headlineSmall",
+  "mainViewTitle": "headlineBold",
+  "sectionTitleStyle": "sectionHeader",
+  "emptyStateBody": "bodyMedium",
+  "bodyMediumMuted": "bodyMedium",
+  "titleMediumMuted": "titleMedium",
+  "labelMediumMuted": "labelMedium",
+  "badge": "overline",
+  "badgeLarge": "labelMedium",
+  "badgeText": "labelMedium",
+  "textXs": "overline",
+  "textXsBold": "overline",
+  "textSm": "labelSmall",
+  "filterChip": "labelMedium",
+  "formOption": "bodyMedium",
+  "contentLabel": "labelLarge",
+  "contentTitle": "bodyLarge",
+  "groupTitle": "headlineSmall",
+  "recipeCardTitle": "titleMedium",
+  "recipeCardDescription": "bodySmall",
+  "recipeCardMeta": "labelSmall",
+  "emptyStateTitle": "headlineSmall",
+  "recipeMetaBase": "labelMedium"
+ },
+ "typeSemantic": {
+  "recipeMeta": {
+   "base": "labelMedium",
+   "color": "AppColors.recipeMeta"
+  },
+  "sectionHeader": {
+   "base": "headlineSmall",
+   "color": "AppColors.sectionHeader"
+  },
+  "errorText": {
+   "base": "bodySmall",
+   "color": "AppColors.error"
+  },
+  "successText": {
+   "base": "bodySmall",
+   "color": "AppColors.success"
+  },
+  "warningText": {
+   "base": "bodySmall",
+   "color": "AppColors.warningText"
+  },
+  "infoText": {
+   "base": "bodySmall",
+   "color": "AppColors.info"
+  },
+  "hintText": {
+   "base": "bodyMedium",
+   "color": "AppColors.textLight"
+  },
+  "metadataEmphasized": {
+   "base": "labelMedium",
+   "color": null
+  },
+  "titleBold": {
+   "base": "titleMedium",
+   "color": null,
+   "bold": true
+  },
+  "bodyBold": {
+   "base": "bodyMedium",
+   "color": null,
+   "bold": true
+  },
+  "bodyLargeBold": {
+   "base": "bodyLarge",
+   "color": null,
+   "bold": true
+  },
+  "bodyMediumError": {
+   "base": "bodyMedium",
+   "color": "AppColors.error"
+  },
+  "bodyMediumSuccess": {
+   "base": "bodyMedium",
+   "color": "AppColors.success"
+  },
+  "bodyMediumWarning": {
+   "base": "bodyMedium",
+   "color": "AppColors.warningText"
+  },
+  "labelSmallSuccess": {
+   "base": "labelSmall",
+   "color": "AppColors.onSuccessContainer"
+  },
+  "linkSmall": {
+   "base": "bodySmall",
+   "color": "AppColors.info"
+  },
+  "bodyLargeLight": {
+   "base": "bodyLarge",
+   "color": "AppColors.neutralLight"
+  },
+  "snackbarText": {
+   "base": "bodyMedium",
+   "color": "AppColors.neutralLight"
+  },
+  "buttonTextLight": {
+   "base": "labelLarge",
+   "color": "AppColors.textOnPrimary"
+  },
+  "headerCountBadge": {
+   "base": "labelMedium",
+   "color": "AppColors.rustLight"
+  },
+  "sectionLabel": {
+   "base": "overline",
+   "color": "AppColors.onWarningContainer"
+  }
+ },
+ "textThemeSlots": [
+  "displaySmall",
+  "headlineMedium",
+  "headlineSmall",
+  "titleLarge",
+  "titleMedium",
+  "bodyLarge",
+  "bodyMedium",
+  "bodySmall",
+  "labelLarge",
+  "labelMedium",
+  "labelSmall"
+ ]
 }

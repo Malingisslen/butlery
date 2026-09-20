@@ -1,0 +1,191 @@
+{
+ "$om": "Block 289 · visuell leveransfrysning. Binder tokens, mappning, generator och de genererade Flutter-filerna, plus kontrastkontraktet for textrollerna.",
+ "BLOCK": 289,
+ "STATUS": "FROZEN",
+ "PROVENIENS": {
+  "REQUIREMENT_FREEZE": "fas2/block287k-frysning.json",
+  "$krav": "Block 287 binder skarmkorpusen och dess krav. Korpusen ar oforandrad av den har rattelsen, sa den frysningen raknas inte om och forblir giltig.",
+  "UX_FREEZE": "fas2/block288-uxfrysning.json",
+  "$ux": "Beteendemodellen ar oberord."
+ },
+ "BINDNING": {
+  "TOKENS_VERSION": "1.13",
+  "TOKENS_HASH": "444b332bda5241a5e6450d3ee6a5f7e3b76e9e8af4b06a4616ddec7478ae1f02",
+  "THEME_MAP_HASH": "8dc242703841ffe24aed62f9fc8184a51cdd29dd20d16679450871535537b5e4",
+  "GENERATOR_HASH": "d781008ffd68188e3218074f4c578ef08d475c395578bb040fa575b548607f22",
+  "APP_COLORS_HASH": "11dbb84870da48e1fefb33c695375b784ca72b7831576bea8889f03f66e01ae1",
+  "APP_TEXT_STYLES_HASH": "4c74045ced481aae1f143ab345500c99926477645ac067cc66567401d387b19a",
+  "LEGACY_API_CONTRACT_HASH": "d80c3482657f2698a28d98f76fde20209373e7864d83017021a874fd7c004618",
+  "APP_COLORS_MEMBERS": 120,
+  "APP_TEXT_STYLE_GETTERS": 76,
+  "GENERATED_CONST_TEXTSTYLES": 16,
+  "GENERATED_NONCONST_TEXTSTYLES": 0,
+  "CONTRAST_ROWS": 12,
+  "CONTRAST_FAILURES": 0,
+  "SURFACE_BLIND_CONSTANTS": 2,
+  "SURFACE_BLIND_MIN_RATIO": 4.747102134576532,
+  "LEGACY_ALIASES": 1,
+  "DELIVERY_FINGERPRINT": "f3ae78cd987b8513"
+ },
+ "KONTRASTKONTRAKT": [
+  {
+   "TOKEN": "text.secondary",
+   "LAGE": "light",
+   "VARDE": "#627061",
+   "YTA": "surface.base",
+   "YTVARDE": "#F5F4ED",
+   "KRAV": 4.5,
+   "KVOT": 4.749994785909276,
+   "PASS": true,
+   "SLAG": "READABLE"
+  },
+  {
+   "TOKEN": "text.secondary",
+   "LAGE": "dark",
+   "VARDE": "#93A48D",
+   "YTA": "surface.base",
+   "YTVARDE": "#17251D",
+   "KRAV": 4.5,
+   "KVOT": 6.017142114772841,
+   "PASS": true,
+   "SLAG": "READABLE"
+  },
+  {
+   "TOKEN": "text.secondary.onRaised",
+   "LAGE": "light",
+   "VARDE": "#5B6959",
+   "YTA": "surface.raised",
+   "YTVARDE": "#E6EAD9",
+   "KRAV": 4.5,
+   "KVOT": 4.747102134576532,
+   "PASS": true,
+   "SLAG": "READABLE"
+  },
+  {
+   "TOKEN": "text.secondary.onRaised",
+   "LAGE": "dark",
+   "VARDE": "#A9B2A0",
+   "YTA": "surface.raised",
+   "YTVARDE": "#2F4437",
+   "KRAV": 4.5,
+   "KVOT": 4.7745034458528055,
+   "PASS": true,
+   "SLAG": "READABLE"
+  },
+  {
+   "TOKEN": "text.disabled",
+   "LAGE": "light",
+   "VARDE": "#7D897C",
+   "YTA": "surface.base",
+   "YTVARDE": "#F5F4ED",
+   "KRAV": 3,
+   "KVOT": 3.317303318481678,
+   "PASS": true,
+   "SLAG": "DISABLED"
+  },
+  {
+   "TOKEN": "text.disabled",
+   "LAGE": "dark",
+   "VARDE": "#627061",
+   "YTA": "surface.base",
+   "YTVARDE": "#17251D",
+   "KRAV": 3,
+   "KVOT": 3.0403504656374594,
+   "PASS": true,
+   "SLAG": "DISABLED"
+  },
+  {
+   "TOKEN": "text.disabled.onRaised",
+   "LAGE": "light",
+   "VARDE": "#788477",
+   "YTA": "surface.raised",
+   "YTVARDE": "#E6EAD9",
+   "KRAV": 3,
+   "KVOT": 3.193676712676278,
+   "PASS": true,
+   "SLAG": "DISABLED"
+  },
+  {
+   "TOKEN": "text.disabled.onRaised",
+   "LAGE": "dark",
+   "VARDE": "#93A48D",
+   "YTA": "surface.raised",
+   "YTVARDE": "#2F4437",
+   "KRAV": 3,
+   "KVOT": 3.96199282387224,
+   "PASS": true,
+   "SLAG": "DISABLED"
+  },
+  {
+   "TOKEN": "text.body",
+   "LAGE": "light",
+   "VARDE": "#37453A",
+   "YTA": "surface.base",
+   "YTVARDE": "#F5F4ED",
+   "KRAV": 4.5,
+   "KVOT": 9.179551114690277,
+   "PASS": true,
+   "SLAG": "READABLE"
+  },
+  {
+   "TOKEN": "text.body",
+   "LAGE": "dark",
+   "VARDE": "#F5F4ED",
+   "YTA": "surface.base",
+   "YTVARDE": "#17251D",
+   "KRAV": 4.5,
+   "KVOT": 14.441648859114773,
+   "PASS": true,
+   "SLAG": "READABLE"
+  },
+  {
+   "TOKEN": "text.primary",
+   "LAGE": "light",
+   "VARDE": "#24382C",
+   "YTA": "surface.base",
+   "YTVARDE": "#F5F4ED",
+   "KRAV": 4.5,
+   "KVOT": 11.356621716143172,
+   "PASS": true,
+   "SLAG": "READABLE"
+  },
+  {
+   "TOKEN": "text.primary",
+   "LAGE": "dark",
+   "VARDE": "#F5F4ED",
+   "YTA": "surface.base",
+   "YTVARDE": "#17251D",
+   "KRAV": 4.5,
+   "KVOT": 14.441648859114773,
+   "PASS": true,
+   "SLAG": "READABLE"
+  }
+ ],
+ "YTBLINDA_KONSTANTER": [
+  {
+   "NAMN": "textLight",
+   "VARDE": "#5B6959",
+   "KALLA": "text.secondary.onRaised",
+   "MIN_KVOT": 4.747102134576532,
+   "KRAV": 4.5,
+   "PASS": true
+  },
+  {
+   "NAMN": "textMedium",
+   "VARDE": "#5B6959",
+   "KALLA": "text.secondary.onRaised",
+   "MIN_KVOT": 4.747102134576532,
+   "KRAV": 4.5,
+   "PASS": true
+  }
+ ],
+ "LEGACYALIAS": [
+  {
+   "NAMN": "textLight",
+   "KALLA": "text.secondary.onRaised",
+   "STATUS": "LEGACY_ALIAS",
+   "RETIRE_IN": "PACKAGE_7"
+  }
+ ],
+ "BLOCKERANDE": []
+}

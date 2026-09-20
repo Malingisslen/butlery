@@ -222,7 +222,7 @@ function renderType() {
     const r = R[role];
     if (r.lineHeight === undefined) die('tokens.typography.roles.' + role + ' saknar lineHeight');
     L.push('  /// tokens: typography.roles.' + role + ' — ' + r.size + '/' + r.weight + (r.note ? ' · ' + r.note : ''));
-    L.push('  static TextStyle get ' + name + ' => TextStyle(');
+    L.push('  static TextStyle get ' + name + ' => const TextStyle(');
     L.push('    fontFamily: family,');
     L.push('    fontSize: ' + r.size + ',');
     L.push('    fontWeight: ' + fw(r.weight) + ',');
