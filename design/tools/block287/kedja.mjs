@@ -15,6 +15,9 @@
 //   9 mork matning        den patvingade morklagesmatningen
 //  10 frysning            population, status, skrivplan, ankarkarta
 //  11 gruppexpansion      varje krav till exakta kallelement
+//  12 skrivplan           en rad per fysisk skrivning
+//  13 fyndstangning       M1 och M5 mot faktiska artefakter
+//  14 m2prov              kravet far aldrig vara sitt eget bevis
 import { mkdirSync, writeFileSync, existsSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { join } from 'node:path';
@@ -78,6 +81,19 @@ kor('gruppexpansion', 'tools/block287/gruppexpansion.mjs',
    '--snapshot=' + p('snap.json'), '--overlay=' + p('overlay.json'), '--bygge=' + p('ut.json'),
    '--skord=' + p('skord.json'), '--mork=' + p('mork.json'), '--tokens=' + join(ROT, 'tokens.json'),
    '--ut=' + p('grupper.json')]);
+
+// 12 · slutlig skrivplan
+kor('skrivplan', 'tools/block287/skrivplan.mjs',
+  ['--population=' + p('frys/block287k-population.json'), '--grupper=' + p('grupper.json'),
+   '--index=' + p('bl01/idx-full.json'), '--ut=' + p('skrivplan.json')]);
+// 13 · fyndstangning M1 och M5
+kor('fyndstangning', 'tools/block287/fyndstangning.mjs',
+  ['--population=' + p('frys/block287k-population.json'), '--grupper=' + p('grupper.json'),
+   '--skrivplan=' + p('skrivplan.json'), '--mork=' + p('mork.json'), '--root=' + ROT, '--ut=' + p('fynd.json')]);
+// 14 · M2-regressionen
+kor('m2prov', 'tools/block287/m2prov.mjs',
+  ['--root=' + ROT, '--overlay=' + p('overlay.json'), '--population=' + p('frys/block287k-population.json'),
+   '--index=' + p('bl01/idx-full.json'), '--ut=' + p('m2.json')]);
 
 writeFileSync(p('kedja.json'), JSON.stringify({ $om: 'Block 287 · hela kedjan ur repot', ROT, UT, FILORDNING: ORDNING, steg }, null, 1) + '\n');
 console.log(JSON.stringify({ KEDJA_KLAR: true, FILORDNING: ORDNING, steg }, null, 1));
