@@ -2304,6 +2304,12 @@
       "path": "functions/src/cleanup/cleanup-audit-logs.ts"
     },
     {
+      "id": "cf-cleanup-system-events",
+      "label": "cleanupOldSystemEvents (sön 04:00)",
+      "context": "cloud-function",
+      "path": "functions/src/cleanup/cleanup-system-events.ts"
+    },
+    {
       "id": "cf-cleanup-ingredients",
       "label": "cleanupDeletedIngredients (mån 04:00)",
       "context": "cloud-function",
@@ -2330,6 +2336,12 @@
     {
       "id": "ds-audit-logs",
       "label": "deletion_audit_logs",
+      "context": "datastore",
+      "path": "Firestore"
+    },
+    {
+      "id": "ds-system-events",
+      "label": "system_events (intern ops-logg)",
       "context": "datastore",
       "path": "Firestore"
     },
@@ -7348,6 +7360,13 @@
           "from": "cf-cleanup-audit-logs",
           "to": "ds-audit-logs",
           "payload": "tar bort deletion_audit_logs förbi sitt expireAt (GDPR art. 5), söndagar 03:00 UTC",
+          "transport": "schemalagd funktion (cron)",
+          "verified": true
+        },
+        {
+          "from": "cf-cleanup-system-events",
+          "to": "ds-system-events",
+          "payload": "tar bort rader av typen rate_limit_violation äldre än 90 dagar, söndagar 04:00 UTC. Rör INGEN annan radtyp: modereringsraderna (content_report, moderation_threshold_reached) kan stå under legal hold och körningskvittona visas i admin-fliken Ops-logg. Raden är separerbar för att den bär userIdHash och inget av de tre details.*-uid-fälten som hold-predikatet och raderingssvepet matchar på (2026-09-20).",
           "transport": "schemalagd funktion (cron)",
           "verified": true
         },

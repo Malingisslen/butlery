@@ -5358,3 +5358,38 @@ cut to one line per decision; this file had no entry for it. Full reasoning:
   The reasoning for the two-message design survives in git and in the reviewers' knowledge
   archive, which is why this entry exists: a future session can read that argument and
   restore it without knowing the question was already put to her and answered.
+
+- **`system_events` gets a retention that covers ONE row type, and every other type is
+  kept forever (2026-09-20).** `cleanupOldSystemEvents` deletes rows whose `type` is
+  `rate_limit_violation` and whose `timestamp` is more than 90 days old. It names no other
+  type, and the scope is the decision rather than a first increment.
+
+  What makes that one type separable is its FIELD SHAPE, not a convention: the row carries
+  `userIdHash` and never `details.userId`, `details.reporterId` or
+  `details.contentOwnerId`. Those three fields are the entire surface both the legal-hold
+  predicate in `moderation/erasure-hold.ts` and the cascade's
+  `deleteModerationSystemEvents` sweep match on, so the row is structurally unreachable by
+  either. That is why deleting it on a clock, outside the erasure path, is safe — and why
+  a future reader must not "harmonise" the moderation types into the same job:
+  `content_report` and `moderation_threshold_reached` can sit under an open case's hold,
+  and the run receipts are what the admin ops-log tab displays.
+
+  The window is 90 days because `cleanup-rate-limits.ts` already applies 90 days to
+  `system_rate_limits`. The bucket state and the violation record describe the same event;
+  two windows that agree are one decision to defend.
+
+  A collection-wide TTL was considered and declined on two measurements: the rows have no
+  common timestamp field (`executedAt` on five types, `timestamp` on five — including
+  `cleanup_expired_social_requests`, a RECEIPT that an age-only prune would delete), and a
+  TTL would require `rate_limiter.ts` to start stamping `expireAt`, which works forward
+  only and would leave every existing row in place.
+
+  Panel, 2026-09-20 (GDPR, database, DevOps, security, FinOps, plus a codebase
+  archaeologist): unanimous approve-with-conditions, no conflict, so no ADR. Two findings
+  were filed as their own work rather than folded in — nothing alerts on a repeated
+  `userIdHash` before its rows age out, and `hash-uid.ts` is unsalted `sha256` truncated
+  to 12 hex characters. Neither is created by this change.
+
+  This does not save money. Cloud Scheduler's three free jobs are long since spent, so the
+  job costs a marginal ~1 kr/month; the deletion writes and the index storage are
+  fractions of an öre. The motive is capping unbounded growth.

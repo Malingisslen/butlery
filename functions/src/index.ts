@@ -148,6 +148,7 @@ export { cleanupOldNotifications } from "./cleanup/cleanup-old-notifications";
 export { cleanupOldRateLimits } from "./cleanup/cleanup-rate-limits";
 export { cleanupExpiredSocialRequests } from "./cleanup/cleanup-expired-social-requests";
 export { cleanupSharedContentMetadata } from "./cleanup/cleanup-shared-content-metadata";
+export { cleanupOldSystemEvents } from "./cleanup/cleanup-system-events";
 
 // Social Cleanup - User deletion and moderation
 export { onUserDeleted } from "./cleanup/on-user-deleted";

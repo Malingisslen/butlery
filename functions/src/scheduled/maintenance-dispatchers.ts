@@ -18,7 +18,7 @@
  * SPLIT RULE: if this file passes 400 lines, split the registries from
  * `runTaskChain` into two files. Do not reach for ACCEPTED_LARGE_FILES.md.
  *
- * The nine cleanup/purge jobs are deliberately NOT here. They carry GDPR
+ * The cleanup/purge jobs are deliberately NOT here. They carry GDPR
  * retention guarantees, two currently-inert 8-minute self-budgets that a
  * shared chain would un-cap, and weekday moves that would perturb the `ops`
  * anomaly series — that merge is its own piece of work.
@@ -260,7 +260,7 @@ export async function runTaskChain(
  *      it runs LAST (`cloud-functions-specialist.knowledge.md:826-828` — a
  *      consumer runs strictly after its producer's slowest run and SKIPS on a
  *      missing producer doc, which `runDetectAnomalies` already implements).
- *   2. `opsSnapshot` reads `system_events` for the current UTC day and the five
+ *   2. `opsSnapshot` reads `system_events` for the current UTC day and the
  *      cleanup jobs that write there still hold their own schedules. The
  *      latest on any day is `purgeExpiredAuditLogs` at 05:00 Sunday (the rest
  *      are ≤ 04:00, including `cleanupDeletedIngredients` on Monday) — hence

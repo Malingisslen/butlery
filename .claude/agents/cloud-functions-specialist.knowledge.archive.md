@@ -20681,3 +20681,35 @@ clause rather than re-counting it.
 
 Verdict: pass (0 blocking). No marker written — this repo is in ledger mode and the
 reviewer never writes its own proof.
+
+### 2026-09-20 — system_events retention gate, batch 1 [Review finding]
+
+`functions/src/cleanup/cleanup-system-events.ts` + its unit test. The prune core
+(`pruneRateLimitViolations`) is injectable and well covered: a mutation probe removing
+the `type` equality reddens the moderation-rows case and the `timestamp`-bearing-receipt
+case, so the predicate is load-bearing. Verified this round: `rate_limit_violation` rows
+are written by `middleware/rate_limiter.ts` alone, with `timestamp:
+FieldValue.serverTimestamp()`, so the `(type ==, timestamp <)` query matches real rows;
+the staged composite index `(type ASC, timestamp ASC)` is the collection's first entry;
+`OpsEvent.fromFirestore` and `runOpsSnapshot` both accept `{type, totalDeleted,
+executedAt}`; no reader anywhere in `functions/src` or `lib/` reads a violation row, so
+nothing has a window past 90 days.
+
+The defect: `receiptKeySetIsExact` re-types the receipt payload inside the test and calls
+`db.collection(...).add(...)` itself. The `onSchedule` body is never executed, so renaming
+`totalDeleted` in production leaves the suite green — the exact silent-invisibility
+failure the test's own comment says it prevents. Remedy filed: a `runSystemEventsCleanup(db, now)`
+core that does prune + receipt, wrapper delegating, mirroring `cleanupOldRateLimitsCore`.
+
+Second finding: `timeoutSeconds: 540` is declared (making the 8-minute self-budget real,
+unlike the two siblings the header names) but nothing pins it — `deploy-manifest.test.ts`
+enumerates exports for region and `maxInstances` only, and greps `timeoutSeconds:` for the
+cascades alone.
+
+Prose noted, not blocking: the header carries counts that rot by ADDITION ("Ten writers",
+"nine", "executedAt on five types, timestamp on five"), which `index.ts` explicitly refuses
+to do for the service count; and the `maintenance-dispatchers.ts` edit RE-COUNTED
+"five" -> "six" where the house rule is to strike the numeral (the other edit in the same
+diff struck "nine" correctly). "six" was verified accurate on the day: cleanup-audit-logs,
+cleanup-expired-social-requests, cleanup-deleted-ingredients, cleanup-old-notifications,
+purge-expired, plus this job.

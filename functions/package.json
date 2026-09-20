@@ -105,6 +105,7 @@
     "test:winback-variant": "ts-node src/__tests__/winback-variant.test.ts",
     "test:purge-audit-logs": "ts-node src/__tests__/purge-audit-logs.test.ts",
     "test:cleanup-audit-logs": "ts-node src/__tests__/cleanup-audit-logs.test.ts",
+    "test:cleanup-system-events": "ts-node src/__tests__/cleanup-system-events.test.ts",
     "test:export-audit-logs": "ts-node src/__tests__/export-audit-logs.test.ts",
     "test:export-llm-samples": "ts-node src/__tests__/export-llm-samples.test.ts",
     "test:moderate-upload": "ts-node src/__tests__/moderate-upload.test.ts",
