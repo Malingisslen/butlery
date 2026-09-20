@@ -159,10 +159,17 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
 
     if (_viewMode == VeckomenyViewMode.kalender && menuVm.hasMenu) {
       // Overwrite was already confirmed above.
-      final placed = await _applyGeneratedToCalendar(skipConfirm: true);
-      if (placed != null && placed > 0 && mounted) {
-        _showAutoPlacedToast(placed);
-      }
+      //
+      // BUT-2129: announced at the publish, not at the ack. Reading the return
+      // value left this path silent offline — the save never acks, so the
+      // confirmation never arrived over a week the user could already see.
+      await _applyGeneratedToCalendar(
+        skipConfirm: true,
+        onPublished: (placed) {
+          if (!mounted) return;
+          if (placed > 0) _showAutoPlacedToast(placed);
+        },
+      );
     }
   }
 

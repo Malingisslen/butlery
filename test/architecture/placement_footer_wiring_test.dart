@@ -1,7 +1,7 @@
-/// BUT-2126/BUT-2124: source lints keeping the placement footer's two
+/// BUT-2126/BUT-2124/BUT-2129: source lints keeping the placement footer's
 /// silently-deletable wirings connected.
 ///
-/// Both seams share a shape: an optional argument whose absence still compiles,
+/// These seams share a shape: an optional argument whose absence still compiles,
 /// still builds, and leaves every suite green while the user-visible behaviour
 /// is gone.
 ///
@@ -9,9 +9,8 @@
 /// `isPlacing:` argument in `veckomeny_view.dart` ships the app with the
 /// second-tap guard the viewmodel keeps but the button no longer shows
 /// (BUT-1987). `applyGeneratedMenu`'s `onPublished` is nullable, so dropping
-/// either half of its wiring puts the user back in list mode watching a spinner
-/// over a week that is already finished — the regression BUT-2124 exists to
-/// stop.
+/// a half of its wiring silently takes back what the publish-time announcement
+/// bought.
 ///
 /// The parts either side of each seam are pinned elsewhere: the viewmodel suite
 /// covers `isPlacingGeneratedMenu` and the publish-time callback, and
@@ -69,6 +68,21 @@ void main() {
       reason:
           'the viewmodel would fire a callback nobody passed, and offline the '
           'calendar would wait for an ack that never comes',
+    );
+  });
+
+  test('the generate handler announces from inside the callback', () {
+    expect(
+      source,
+      matches(
+        RegExp(
+          r'_applyGeneratedToCalendar\( ?skipConfirm: true, ?onPublished: '
+          r'\(placed\) \{.{0,400}?_showAutoPlacedToast\(placed\)',
+        ),
+      ),
+      reason:
+          'reading the return value here is what left the kalender path silent '
+          'offline',
     );
   });
 

@@ -356,6 +356,11 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
     final previousParsedRequest = _lastParsedRequest;
     _applyInFlight = true;
     int? placedCount;
+    // BUT-2132: whether the rollback below actually ran. The message cannot be
+    // decided before the operation, because the undo it would describe is
+    // conditional — and a throw from `distributeFromGeneratedMenu` reaches the
+    // same handler with nothing published and nothing undone.
+    var rolledBack = false;
     final ok = await _executeWrite(
       () async {
         final base = replaceExisting
@@ -408,15 +413,21 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
             _overflow = previousOverflow;
             _recentlyPlacedEntryIds = previousPlacedIds;
             _lastParsedRequest = previousParsedRequest;
+            rolledBack = true;
             notifyListeners();
           }
           rethrow;
         }
       },
-      // BUT-2124: on the SAVE path the user has already watched the week
-      // appear, so the message has to account for the rollback.
-      errorPrefix: 'Veckan kunde inte sparas – fördelningen ångrades',
+      // True on every path that reaches it, including the ones where nothing
+      // was published and nothing was undone.
+      errorPrefix: 'Veckan kunde inte sparas',
     );
+    // BUT-2124/BUT-2132: only here is the week known to have been on screen and
+    // then taken away, which is the part the user needs told.
+    if (rolledBack && !isDisposed) {
+      setError('Veckan kunde inte sparas – fördelningen ångrades');
+    }
     _applyInFlight = false;
     // BUT-1987: the footer reads this through `context.watch`, so the release
     // has to be announced or the button never stops spinning.

@@ -2337,6 +2337,151 @@ void main() {
         },
       );
 
+      // BUT-2132: the message used to assert an undo unconditionally, but the
+      // undo is conditional and one path never publishes at all. One case per
+      // path, each pinning the exact prefix — a wrong-message guard that only
+      // covers the easy branch is the false green this repo keeps paying for.
+
+      test(
+        'BUT-2132: a throw BEFORE the publish does not claim an undo',
+        () async {
+          initial = _plan();
+          when(
+            () => mockService.readWeek(any()),
+          ).thenAnswer((_) async => _read(initial));
+          await viewModel.loadWeek(initial.weekStartDate);
+          viewModel.clearError();
+
+          // Synchronous, so it throws before anything reaches the screen.
+          when(
+            () => mockService.distributeFromGeneratedMenu(
+              generated: any(named: 'generated'),
+              weekStart: any(named: 'weekStart'),
+              existing: any(named: 'existing'),
+              now: any(named: 'now'),
+              dayPins: any(named: 'dayPins'),
+            ),
+          ).thenThrow(Exception('distribution failed'));
+
+          final placed = await viewModel.applyGeneratedMenu(
+            const {'middag': <Recipe>[]},
+          );
+
+          expect(placed, isNull);
+          expect(viewModel.error, 'Veckan kunde inte sparas');
+          verifyNever(() => mockService.save(any()));
+        },
+      );
+
+      test(
+        'BUT-2132: a refusal that DID roll back says the week was undone',
+        () async {
+          initial = _plan();
+          when(
+            () => mockService.readWeek(any()),
+          ).thenAnswer((_) async => _read(initial));
+          await viewModel.loadWeek(initial.weekStartDate);
+          viewModel.clearError();
+          when(
+            () => mockService.distributeFromGeneratedMenu(
+              generated: any(named: 'generated'),
+              weekStart: any(named: 'weekStart'),
+              existing: any(named: 'existing'),
+              now: any(named: 'now'),
+              dayPins: any(named: 'dayPins'),
+            ),
+          ).thenReturn(
+            WeeklyMenuDistributionResult(
+              plan: planWith('o-a'),
+              overflow: const [],
+            ),
+          );
+          when(() => mockService.save(any())).thenThrow(Exception('denied'));
+
+          await viewModel.applyGeneratedMenu(const {'middag': <Recipe>[]});
+
+          expect(
+            viewModel.error,
+            'Veckan kunde inte sparas – fördelningen ångrades',
+          );
+          expect(viewModel.plan, same(initial));
+        },
+      );
+
+      test(
+        'BUT-2132: a refusal whose rollback was SKIPPED does not claim one',
+        () async {
+          initial = _plan();
+          when(
+            () => mockService.readWeek(any()),
+          ).thenAnswer((_) async => _read(initial));
+          await viewModel.loadWeek(initial.weekStartDate);
+          viewModel.clearError();
+
+          final distributed = planWith('o-a');
+          when(
+            () => mockService.distributeFromGeneratedMenu(
+              generated: any(named: 'generated'),
+              weekStart: any(named: 'weekStart'),
+              existing: any(named: 'existing'),
+              now: any(named: 'now'),
+              dayPins: any(named: 'dayPins'),
+            ),
+          ).thenReturn(
+            WeeklyMenuDistributionResult(
+              plan: distributed,
+              overflow: const [],
+            ),
+          );
+
+          // The distribution's save is held open, so a later edit can replace
+          // `_plan` before the refusal lands — the state that makes
+          // `identical(_plan, result.plan)` false and skips the rollback.
+          final refusal = Completer<void>();
+          addTearDown(() {
+            if (!refusal.isCompleted) refusal.complete();
+          });
+          var saves = 0;
+          when(() => mockService.save(any())).thenAnswer((_) {
+            saves++;
+            return saves == 1 ? refusal.future : Future<void>.value();
+          });
+
+          final pending = viewModel.applyGeneratedMenu(
+            const {'middag': <Recipe>[]},
+          );
+          await Future<void>.delayed(Duration.zero);
+          expect(viewModel.plan, same(distributed));
+
+          final later = _recipe(id: 'o-later');
+          final laterPlan = planWith('o-later');
+          when(
+            () => mockService.addEntry(
+              plan: any(named: 'plan'),
+              day: any(named: 'day'),
+              slot: any(named: 'slot'),
+              recipe: later,
+            ),
+          ).thenReturn(laterPlan);
+          await viewModel.assignRecipe(
+            day: DayOfWeek.thu,
+            slot: MealSlot.middag,
+            recipe: later,
+          );
+          expect(viewModel.plan, same(laterPlan));
+
+          refusal.completeError(Exception('denied'));
+          await pending;
+
+          expect(
+            viewModel.error,
+            'Veckan kunde inte sparas',
+            reason: 'nothing was undone — the later edit is still on screen',
+          );
+          expect(viewModel.plan, same(laterPlan));
+        },
+      );
+
       test('BUT-2124: a throwing onPublished does not cost the save', () async {
         initial = _plan();
         when(

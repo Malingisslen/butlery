@@ -23,7 +23,7 @@ which decide what protects everything else). Its must-haves are folded in below 
 **[panel]**. It also set the ORDER, because widening a lane that has never run on ubuntu
 before the guard that depends on it would make that guard decorative.
 
-- [ ] BUT-2130 part 1 [Tier A] build — one lane, plus the two things that keep a directory
+- [x] BUT-2130 part 1 [Tier A] build — one lane, plus the two things that keep a directory
       from hiding a file.
   - AC1 (diff): `architecture-validation.yml` names the DIRECTORY, not one file.
   - AC2 (diff) **[panel]**: a manifest assertion in `architecture_test.dart` enumerates
@@ -34,15 +34,14 @@ before the guard that depends on it would make that guard decorative.
   - AC3 (diff) **[panel]**: `dart_test.yaml` declares the `architecture` tag with a
     description and no `skip` key.
   - AC4 (run): the whole directory is green locally before the lane is widened.
-- [ ] BUT-2132 [Tier A] build — the message stops asserting an undo that may not have run.
+- [x] BUT-2132 [Tier A] build — the message stops asserting an undo that may not have run.
   - AC1 (diff): the prefix passed to `_executeWrite` is the always-true
     `Veckan kunde inte sparas`; the rollback wording is set only where the rollback ran.
   - AC2 (run) **[panel]**: three tests, one per path, each asserting the exact prefix — a
     pre-publish sync throw, a post-publish refusal with `_plan` unchanged, and a
-    post-publish refusal with `_plan` replaced mid-flight. If the third cannot be driven
-    deterministically, ship the plain prefix everywhere and say so rather than claim
-    coverage that does not exist.
-- [ ] BUT-2129 [Tier A] build — the generate path announces at publish too.
+    post-publish refusal with `_plan` replaced mid-flight. All three ARE drivable, so the
+    fallback the critique allowed — shipping the plain prefix everywhere — was not needed.
+- [x] BUT-2129 [Tier A] build — the generate path announces at publish too.
   - AC1 (diff) **[panel]**: `_generateMenu` no longer branches on `applyGeneratedMenu`'s
     return value for the toast; proven by grep.
   - AC2 (diff) **[panel]**: `placement_footer_wiring_test.dart` pins the `_generateMenu`
@@ -50,12 +49,12 @@ before the guard that depends on it would make that guard decorative.
     lint is what can guard it.
   - AC3 (run): the existing publish-time case still proves `onPublished` fires with the
     right count while the write never acks.
-- [ ] BUT-2130 part 2 [Tier A] build — `build-validation.yml` stays NARROW, on purpose.
+- [x] BUT-2130 part 2 [Tier A] build — `build-validation.yml` stays NARROW, on purpose.
   The reviewer's ruling, taken: no in-suite guard can detect its own deletion, because a
   deleted test file simply stops running. An anchor inside `test/architecture/` is
   removable by an edit confined to `test/architecture/`. The explicit path in
   `build-validation.yml` is the anchor outside that set; the workflow comment carries the
-  grep that derives it.
+  grep.
   - AC1 (diff): the narrow path carries a comment saying it is the deliberate anchor and
     why, so the next reader does not "finish the job" by widening it.
   - AC2 (diff): nothing in the plan or the code claims the class is closed. The residual
@@ -66,6 +65,27 @@ before the guard that depends on it would make that guard decorative.
 - none this run, unless BUT-2130 part 2's lane has not reported by close-out.
 
 ## Deviation log
+
+- [discovery] the code-reviewer ended five consecutive reports on the verdict line and none
+  was captured; a message that was only the line recorded on the second. I first wrote that
+  the row is written only when the line is the ENTIRE final message, then opened the
+  recorder: `workflow-guards/scripts/review-verdict.mjs` reads `last_assistant_message` and
+  takes the LAST `REVIEW-VERDICT:` match anywhere in that field, so that is not what
+  decides it. The measured practice — ask for the verdict as its own message — stands; the
+  explanation was inference and is struck, here and in this morning's lesson.
+- [discovery] claim-lint rejected "the only anchor" in the workflow comment. The claim is
+  derivable, so remedy 2 applied: the deriving grep ships beside it
+  (`git grep -n "architecture_test.dart" -- .github lefthook.yml` returns that line alone).
+  The same universals in `tasks/todo.md` were struck instead, since scratch carries no
+  command.
+- [deviation] BUT-2130 part 2 inverted mid-round — see the entry below it. The reviewer's
+  four-case walk killed the mutual-guard alternative I proposed: deleting the checker
+  leaves no stray, so the pair moves the hole one file over.
+- [discovery] a Low left unfixed on the reviewer's own costing: striking the framing
+  sentence in `architecture_test.dart` moved the antecedent of the "It" two sentences
+  below, so one binding of that pronoun reads false. Ambiguous rather than wrong, no
+  reader action removes a guard, and the group name two lines down settles it — not worth
+  a seven-file re-read.
 
 - [deviation] BUT-2130 part 2 inverted during the round. The plan was to widen the second
   lane after the first reported green on ubuntu; the reviewer showed that doing so removes
