@@ -30,6 +30,20 @@
   operation would leave, and check the RETRY-after-failure path — a lost re-armed snapshot is
   permanent data loss the failure test cannot see. A `finally` release is pinned only
   incidentally (BUT-1975/1965).
+- **Once every write RELEASES the shared publish guard at publish (before awaiting the save), the
+  guard is true only inside synchronous code and NO single-threaded test can observe it** — so a
+  `guarded:`/single-flight flag on such a path is unobservable, and every "a pending X does not
+  refuse Y" test naming it has an empty kill set: flipping the flag alone stays green, and so does
+  reverting that path's optimistic publish. Grade such a test by asking which SINGLE mutant reddens
+  it; when the answer is "only a two-part mutant", strike the test and its regression comment rather
+  than repointing its stub, and check the surviving pin is the one that observes state while the save
+  is PENDING (BUT-1988).
+- **"This `notifyListeners()` is redundant" is a claim about which SURVIVING notify carries the
+  flag's TRUE state to a `context.watch` listener, and it is settled by a LISTENER RECORDER, not by
+  reasoning.** Record the flag's value at every notification and assert the sequence
+  (`contains(true)` plus `last isFalse`); a state-only assertion after the fact is green even when
+  no listener was ever told. The removal is safe when a notify fires inside the same synchronous run
+  with the flag still up — typically the optimistic publish (BUT-1987).
 - **An OPTIMISTIC publish is pinned only where a test observes state while the write is still
   PENDING — count the `Completer`s, one per COPY of the publish, not one per method.**
   `grep -n "Completer\|unawaited"` on the suite is the whole check. Ask FIRST whether the publish

@@ -39491,3 +39491,111 @@ test/widget/views/pantry/add_pantry_item_sheet_test.dart` → +21, all passed.
 
 Principle recorded in the widgets-ui chapter: the sentence-sweep grep's hits are graded by SCOPE —
 strike only the copy whose subject cannot carry the claim.
+
+### 2026-09-20 — BUT-1988/1987/1986 review gate: the fourth vacuous presence test, and a leaf-only pin
+
+Trigger: gate review of `test/unit/viewmodels/menu/weekly_menu_plan_viewmodel_test.dart`,
+`test/widget/menu/calendar_weekly_menu_widget_test.dart` and the new
+`test/widget/menu/menu_placement_footer_test.dart`. The round rewrote three presence tests off the
+retired `service.setSlotPresence`/`setDayPresence` seams onto `save`; the brief asked whether a
+fourth was left.
+
+It was. `'a pending PRESENCE save does not refuse a calendar edit'` names the shared publish guard,
+but presence runs `_executeWrite(guarded: false)` AND `_publishThenSave` sets `_publishInFlight =
+false` at publish, before awaiting the save. Traced analytically (no `lib/` write during a gate
+review): flipping presence to `guarded: true` still leaves the flag false by the time the test's
+`assignRecipe` runs, so the edit is accepted and the test is green; reverting presence's optimistic
+publish alone is also green, because with `guarded: false` nothing arms the guard. Only the
+two-part mutant (guarded + hold the guard across the save) reddens it — i.e. the shape the sibling
+`'a second edit is accepted while the first is still unacked'` already kills through `assignRecipe`.
+The comment rewritten this round ("BUT-1988 moved presence onto the optimistic path, so the unacked
+write held open here is its SAVE") claims a regression the test can no longer see. The offline
+publish for presence IS carried, by the new `'two presence taps on different cells both survive'`,
+which reads `presentMemberIdsFor` while the first save is pending.
+
+Second defect, same diff: moving the merge into the viewmodel put the "hela dagen" decision in a new
+argument (`slots: kPresenceSlots` vs `slots: [slot]`) that no suite witnesses. The four calendar
+widget twins now both end in `save` and assert only the notice text; the VM's only `setDayPresence`
+cases assert `isFalse` on the two guard paths; and `weekly_menu_plan_service_test.dart`'s
+`'setDayPresence ("Hela dagen") writes both lunch and middag'` still passes because it drives the
+service method, which this diff left with no `lib/` caller. That dead-but-tested twin is the decoy
+that makes the gap read as covered.
+
+Third: BUT-1987's `_placementInFlight`/`isPlacingGeneratedMenu` has zero hits in `test/`. The new
+footer suite passes `isPlacing` by hand, so the flag's raise at tap, release at publish, late
+fallback release, and the `isPlacing:` wiring line in `veckomeny_view.dart` (param defaults to
+false) are all deletable-green — the fake sandwich, with the harness for closing it already in the
+VM suite (`Completer` save + `unawaited(applyGeneratedMenu(...))`).
+
+Runs: `flutter test test/unit/viewmodels/menu/weekly_menu_plan_viewmodel_test.dart
+test/widget/menu/menu_placement_footer_test.dart` → +75 passed;
+`flutter test test/widget/menu/calendar_weekly_menu_widget_test.dart` → +25 passed.
+
+Principle recorded in the state-async chapter: a guard released at publish is unobservable to any
+single-threaded test, so every "a pending X does not refuse Y" test naming it is empty.
+
+### 2026-09-20 — BUT-1988 re-review: the dead method's test group held the live helper's only pin
+
+Trigger: second gate pass after the fix round took all three blocking findings. Round 2 deleted
+`WeeklyMenuPlanService.setSlotPresence`/`setDayPresence` (no production caller after the merge moved
+into the viewmodel) together with their 126-line test group, and added the two discriminating VM
+cases I asked for (`setDayPresence writes both meals of the day`, `setSlotPresence leaves the day
+other meal untouched`).
+
+The new defect is in the deletion. The deleted group's third case, `'null clears one slot, leaving
+the day's other meal intact'`, was the only test in the repo reaching the NULL branch of
+`_withSlotPresence` — the helper that SURVIVES, because the new static `withPresence` calls it. After
+the deletion, `grep -rn "memberIds: null" test/` returns one hit in an unrelated invitation suite, and
+no VM or widget case passes null presence at an asserting layer. Two mutants are therefore green
+suite-wide: `if (memberIds == null) slots.remove(slot)` → `slots[slot] = []`, and dropping
+`if (slots.isEmpty) result.remove(day)`. Both are live: `calendar_weekly_menu_widget._onTapPresence`
+computes `final toStore = everyone ? null : picked`, so confirming the sheet with the whole roster —
+the commonest confirm — passes null, and storing `[]` instead of removing the key means "nobody
+home" where the user said "everyone".
+
+Second, smaller residual carried to BUT-2126: the widget-layer ternary
+(`result.applyToWholeDay ? setDayPresence : setSlotPresence`) has no witness now that both branches
+end in `save` and the VM cases call the two methods directly. My round-1 report accepted the
+author's "the sheet confirms with the whole roster, which clears presence to the default, so I could
+not make the assertion true" — that acceptance was wrong: seeding `presenceWeekPlan` with a prior
+per-day selection makes the whole-roster clear observable (the slot confirm leaves the other meal's
+list, "hela dagen" empties the day), so the pair can be made discriminating with one fixture change
+plus a captured save.
+
+Verified green: `flutter test test/unit/services/menu/ test/unit/viewmodels/menu/ test/widget/menu/`
+→ +728 all passed. `flutter analyze --fatal-infos` on the three test files → no issues.
+
+Principle recorded in the guards chapter: deleting a dead method's test group takes the surviving
+shared helper's only pin with it — list each deleted case against the helper the live path still
+calls before agreeing to the deletion.
+
+### 2026-09-20 — BUT-1988 round 3: closed, and what a "redundant notify" removal owes
+
+Round 3 closed the null-branch finding with two viewmodel cases: `null clears one meal and leaves
+the other` (seeded `{mon: {lunch: ['m0'], middag: ['m0']}}`, asserts the captured save's
+`presenceBySlot[mon].keys` is `{lunch}` — so `slots[slot] = []` instead of `slots.remove(slot)`
+reddens) and `null on the whole day prunes the day entirely` (`containsKey(mon)` false — so dropping
+`if (slots.isEmpty) result.remove(day)` reddens). `WeeklyMenuPlan.copyWith` passes `presenceBySlot`
+through unnormalised, checked, so neither assertion is answered by the model.
+
+The round also collapsed `_placementInFlight` into `_applyInFlight` and removed the entry
+`notifyListeners()` as redundant. Graded analytically: the flag is raised synchronously and the
+first await in the chain is the SAVE, which sits after the publish `notifyListeners()`, so no frame
+can render between the raise and a notification carrying it — the removal is behaviour-neutral for a
+`context.watch` footer. What makes that safe rather than lucky is the new listener recorder in `a
+generated week is RENDERED while its save is still pending`: it records
+`isPlacingGeneratedMenu` at every notification and asserts `contains(true)` plus `last isFalse`, so
+a future edit that leaves the busy state unannounced reddens.
+
+Remaining, filed as BUT-2126 rather than guessed at: the widget-layer ternary
+(`applyToWholeDay ? setDayPresence : setSlotPresence`) is unwitnessed, and the coordinator measured
+three fixtures where the sheet stores back what it was seeded with — my suggested "seed a prior
+selection so the whole-roster clear is observable" did not reproduce, and the experiments were
+reverted rather than left in. The twins' comment now says plainly that the ternary is unwitnessed
+there.
+
+Runs: `flutter test test/unit/services/menu/ test/unit/viewmodels/menu/ test/widget/menu/` → +730
+all passed. `flutter analyze --fatal-infos` over the four test files → no issues.
+
+Principle recorded in the state-async chapter: a "redundant notify" removal is a claim about which
+surviving notification carries the flag's TRUE state, and it is settled by a listener recorder.

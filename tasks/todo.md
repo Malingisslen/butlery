@@ -1,40 +1,43 @@
-# Sprint 2026-09-19 runda 2 (sprint-execute, /loop, unattended)
+# Sprint 2026-09-20 runda 3 (sprint-execute, /loop, unattended)
 
-Router on the fileset (`firestore.rules functions/src/__tests__/conversations-rules.test.ts
-lib/views/pantry/add_pantry_item_sheet.dart`) → **full-panel**; panelPolicy = park, so the
-rules work goes to In Review. Step-0 greps confirmed every premise on current main.
+Three weekly-menu bugs opened by BUT-1975's removal of the write lock, all in the same
+viewmodel. Step-0 read confirms each premise on current main, and that `_publishThenSave`
+(the optimistic publish-then-save helper BUT-1975 introduced) already exists and is what the
+first two should use rather than a new lock.
 
-- [x] BUT-2100 [Tier C] build — bound the shared-content unread counters in `firestore.rules`.
-  The ticket's own "±1 per field" fix is measured WRONG (its Linear comment); build the form
-  that comment specifies: own create arm, owner arm allowing absolute values (the documented
-  repair path `recalculateUnreadCount`), stranger arm bound to `old ± 1` in BOTH directions.
-  - AC1 (diff): a stranger writing an arbitrary value is DENIED; a stranger's +1 via the real
-    `FieldValue.increment` sentinel through the real writer shape is ALLOWED.
-  - AC2 (diff): first share for a user (document absent) is ALLOWED; a badge clear
-    (`decrementUnreadCounter`, -1, no `totalSharedContent`) is ALLOWED.
-  - AC3 (diff): the owner may still write an absolute recomputed value.
-  - AC4 (diff): a new rules suite with its own project id + `clearFirestore()`, mutation-probed
-    per arm.
-- [x] BUT-2111 [Tier A] build — deny cluster pinning the removed `conversation_memberships`
-  path in `conversations-rules.test.ts`.
-  - AC1 (diff): one DENY per verb the old block granted (read/list, create, update, delete),
-    sent by the OWNER, attributable to the catch-all line.
-  - AC2 (diff): a fail-closed control on a sibling path under the same owner is ALLOWED.
-- [x] BUT-1864 [Tier A] build — strike the false "keyed on" clause in
-  `add_pantry_item_sheet.dart`. Correction may only DELETE; the ticket's suggested rewrite is
-  new text and is NOT taken. `.claude/rules/accepted-deviations.md` is a decision record —
-  do not strike it; file it if it is wrong.
-  - AC1 (diff): the false clause is gone; no replacement sentence.
-  - AC2 (diff): the surviving sentences read true alone; no code change.
-- [!] BUT-2050 [Tier A] build — catch the flaky case in `blocks-rules.test.ts`.
-  - AC1 (run): a FAIL line captured, or N consecutive green runs recorded as the measurement.
-  - AC2 (diff): the cause is named and fixed at the root, not by retrying.
+Router (`lib/viewmodels/menu/weekly_menu_plan_viewmodel.dart
+lib/services/menu/weekly_menu_plan_service.dart lib/widgets/menu/menu_placement_footer.dart`):
+paste the raw output beside the batch before dispatch.
+
+- [ ] BUT-1988 [Tier C] build — two quick "who's home" taps must both survive.
+  Today `setSlotPresence`/`setDayPresence` are read-modify-write in the SERVICE: it re-reads
+  the week, merges one cell and saves the whole plan, so two taps that read the same week
+  lose one. Fix in BUT-1975's shape: expose the service's pure merge, compute the updated
+  plan from `_plan` in the viewmodel, and publish it through `_publishThenSave`, which
+  releases at publish (not at ack) and rolls back on refusal. The merge stays in ONE place —
+  duplicating it in the viewmodel was explicitly out of scope in BUT-1975.
+  - AC1 (diff): two presence writes on different cells, the second starting before the first
+    save completes, leave BOTH selections set.
+  - AC2 (diff): the existing test "a pending PRESENCE save does not refuse a calendar edit"
+    stays green — no new shared lock.
+  - AC3 (diff): a refused presence save restores the previous selection, and only when the
+    plan on screen is still the one that was published.
+- [ ] BUT-1987 [Tier B] build — a second tap on "Placera automatiskt" must not be a silent
+  no-op. Take option 1 from the ticket (disable the button while the distribution is in
+  flight); do NOT call `setError` in the refusal branch — that was tried under BUT-1975 and
+  replaced the whole calendar with an error panel.
+  - AC1 (diff): the viewmodel exposes the in-flight state and notifies when it changes.
+  - AC2 (diff): the footer's action is disabled while it is true; a widget test pins it.
+  - AC3 (diff): the refusal branch still sets no error.
+- [ ] BUT-1986 [Tier A] build — offline, the same overflow chip can be placed twice because
+  the tray is pruned only after the save acks. Prune optimistically and put the chip back if
+  the save is refused, matching how `_plan` itself is treated.
+  - AC1 (diff): a second drop of the same chip while the first save is unacked does not add a
+    second entry.
+  - AC2 (diff): a refused save puts the chip back in the tray (the tray is in-memory only and
+    nothing repopulates it).
 
 ## Needs you (Tier D)
 - none this run.
 
 ## Deviation log
-- [discovery] BUT-2050: 20 consecutive runs of blocks-rules.test.ts were green, so no FAIL line was captured and no root cause named. Not built; the measurement is the outcome.
-- [deviation] BUT-2100: the plan said the stranger arm would be bound to `old ± 1` in BOTH directions; the DOWNWARD half was dropped after two reviewers traced every caller and found no shipped stranger decrement (every decrement path passes the signed-in uid, so the owner arm serves it).
-- [deviation] BUT-2100: the ticket's own suggested fix was measured wrong before this run; built the form its review comment specifies instead of re-planning it.
-- [deviation] Panel and gate findings were folded in only where they were one-line pins (zero floor, per-field denies, owner-shape deny); the cross-field desync, the +1 spam, the wildcard path and the Dart-side owner guard went to BUT-2121/2122/2123 instead of widening scope.

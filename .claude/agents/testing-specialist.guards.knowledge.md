@@ -138,6 +138,13 @@
 - **A fix that DELETES dead code is mutation-dead by construction** — only the FORWARD direction is
   pinnable ("the field must not come back"); say that in the name, and never also assert the VALUE
   the deleted code could not produce (BUT-1873).
+  **Deleting the dead method's TEST GROUP takes the surviving HELPER's only pin with it.** The
+  callerless method and the live one share a private merge/format helper, so the group holds cases
+  no other suite has — typically the NULL/empty/prune branch the new call site never passes in its
+  own tests. Before agreeing to such a deletion, list each deleted case against the helper the
+  SURVIVING path still calls, and re-home the ones whose branch is still reachable; the tell is a
+  deleted case whose argument value (`memberIds: null`) appears nowhere else in `test/` while the
+  live UI passes it on its commonest path (BUT-1988).
 - A flag selecting between two values is pinned by both arms over one fixture with observably
   different values. A nullable override deriving its default from a nullable payload owes a third
   arm: the EMPTY (non-null) payload.
