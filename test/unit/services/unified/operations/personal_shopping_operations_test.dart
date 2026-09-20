@@ -422,6 +422,82 @@ void main() {
         verify(() => mockParent.updateList(any())).called(1);
       });
 
+      // BUT-1892: the personal list is the TWIN of the shared-list module's
+      // note path. Same three-way here: null preserves, an empty string clears
+      // to null.
+      test('an empty note clears the personal item note to null', () async {
+        when(() => mockParent.updateList(any())).thenAnswer((_) async => true);
+        mockParent.setShoppingState(
+          activeListId: 'test-list-1',
+          personalLists: [
+            testList.copyWith(items: [testItem.copyWith(note: 'Ekologisk')]),
+          ],
+          lists: [
+            testList.copyWith(items: [testItem.copyWith(note: 'Ekologisk')]),
+          ],
+        );
+
+        final result = await operations.updateItem(
+          listId: 'test-list-1',
+          itemId: 'item-1',
+          note: '',
+        );
+
+        expect(result, isTrue);
+        final saved =
+            verify(() => mockParent.updateList(captureAny())).captured.single
+                as UnifiedShoppingList;
+        expect(
+          saved.items.single.note,
+          isNull,
+          reason: 'storing the empty string is the defect BUT-1892 closes',
+        );
+      });
+
+      // The third leg, same reason as in the shared-list module: without it,
+      // `note == null ? item.note : null` erases every typed note and both
+      // cases around it still pass.
+      test('a real note is stored on the personal item', () async {
+        when(() => mockParent.updateList(any())).thenAnswer((_) async => true);
+
+        final result = await operations.updateItem(
+          listId: 'test-list-1',
+          itemId: 'item-1',
+          note: 'Ny anteckning',
+        );
+
+        expect(result, isTrue);
+        final saved =
+            verify(() => mockParent.updateList(captureAny())).captured.single
+                as UnifiedShoppingList;
+        expect(saved.items.single.note, 'Ny anteckning');
+      });
+
+      test('a null note leaves the personal item note alone', () async {
+        when(() => mockParent.updateList(any())).thenAnswer((_) async => true);
+        mockParent.setShoppingState(
+          activeListId: 'test-list-1',
+          personalLists: [
+            testList.copyWith(items: [testItem.copyWith(note: 'Ekologisk')]),
+          ],
+          lists: [
+            testList.copyWith(items: [testItem.copyWith(note: 'Ekologisk')]),
+          ],
+        );
+
+        final result = await operations.updateItem(
+          listId: 'test-list-1',
+          itemId: 'item-1',
+          name: 'Standardmjölk',
+        );
+
+        expect(result, isTrue);
+        final saved =
+            verify(() => mockParent.updateList(captureAny())).captured.single
+                as UnifiedShoppingList;
+        expect(saved.items.single.note, 'Ekologisk');
+      });
+
       test('should fail to update item in non-existent list', () async {
         // Act
         final result = await operations.updateItem(

@@ -627,22 +627,18 @@ void main() {
 
     /// BUT-1874's fix is a CROSS-LAYER contract, and this is the half of it that
     /// lives here. The dialog can only clear a note by sending an EMPTY STRING,
-    /// because `updateItemInActiveList`'s `note: notes ?? currentItem.note` reads
-    /// a null as "leave alone" — so `''` must survive to the repo untouched while
-    /// `null` must still preserve. Both halves below. (Named by expression, not
-    /// by line number: a line number in a comment rots on the next edit above it.)
-    ///
-    /// BUT-1892 will replace the empty-string signal with a real one. When it
-    /// lands, `an empty note CLEARS the stored note` must be rewritten to the new
-    /// signal and must STAY mutation-sensitive — it is the only control that
-    /// catches the fix being backed out.
+    /// because a null reads as "leave alone" — so `''` must reach this layer
+    /// while `null` still preserves. BUT-1892 then stops the empty string at
+    /// this boundary: it becomes `clearNote`, and what reaches the repository is
+    /// `null`. (Named by expression, not by line
+    /// number: a line number in a comment rots on the next edit above it.)
     ///
     /// Why it is worth its own test rather than trusting the widget test: the
     /// obvious defensive tidy here — `(notes?.isNotEmpty ?? false) ? notes :
     /// currentItem.note` — looks like an improvement, re-opens BUT-1874 exactly,
     /// and leaves every one of the dialog's own tests green. Nothing below the
     /// dialog asserted this before (BUT-1874 review, 2026-08-17).
-    /// The two halves are SEPARATE tests on purpose. Written first as one test
+    /// Written first as one test
     /// with two legs, it failed — the clearing leg mutates the module's own list
     /// state, so the second leg then read the already-cleared note as "current"
     /// and preserving it correctly returned ''. The test was wrong, not the code.
@@ -663,7 +659,7 @@ void main() {
       return item;
     }
 
-    test('an empty note CLEARS the stored note', () async {
+    test('an empty note clears the stored note to null', () async {
       final existing = seedNoted();
 
       final ok = await buildModule().updateItemInActiveList(
@@ -674,11 +670,27 @@ void main() {
       expect(ok, isTrue);
       expect(
         fakeRepo.updatedItems.single.note,
-        isEmpty,
+        isNull,
         reason:
-            'an empty note is the only clearing signal this layer accepts — '
-            'coercing it back to the stored note is BUT-1874, reopened',
+            'an empty note is the clearing signal this layer accepts, and '
+            'BUT-1892 stops it here — coercing it back to the stored note is '
+            'BUT-1874 reopened, storing it verbatim is BUT-1892 reopened',
       );
+    });
+
+    // The third leg. Without it, `clearNote: notes != null` — dropping the
+    // emptiness test — survives the `''` and the null case while erasing every
+    // note the user types.
+    test('a real note is stored', () async {
+      final existing = seedNoted();
+
+      final ok = await buildModule().updateItemInActiveList(
+        itemId: existing.id,
+        notes: 'Ny anteckning',
+      );
+
+      expect(ok, isTrue);
+      expect(fakeRepo.updatedItems.single.note, 'Ny anteckning');
     });
 
     test('a null note leaves the stored note alone', () async {

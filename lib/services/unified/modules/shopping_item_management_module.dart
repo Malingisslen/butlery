@@ -322,7 +322,12 @@ class ShoppingItemManagementModule {
         amount: quantity ?? currentItem.amount,
         unit: unit ?? currentItem.unit,
         category: category ?? currentItem.category,
-        note: notes ?? currentItem.note,
+        // BUT-1892: an empty `notes` is the CLEAR signal, and it stops here
+        // rather than being stored. `note: null` already means "leave it", so
+        // the erase needs `clearNote` — otherwise the row keeps an empty string
+        // and "cleared" becomes indistinguishable from "never had one".
+        note: notes,
+        clearNote: notes != null && notes.isEmpty,
         estimatedPrice: estimatedPrice ?? currentItem.estimatedPrice,
         priority: priority ?? currentItem.priority,
       );

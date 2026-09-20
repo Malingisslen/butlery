@@ -245,7 +245,9 @@ class PersonalShoppingOperations {
       amount: amount ?? item.amount,
       unit: unit ?? item.unit,
       category: category ?? item.category,
-      note: note ?? item.note,
+      // BUT-1892: the same three-way as the shared-list module — null leaves
+      // the note alone, and an empty string erases it.
+      note: note == null ? item.note : (note.isEmpty ? null : note),
       estimatedPrice: estimatedPrice ?? item.estimatedPrice,
       priority: priority ?? item.priority,
       bought: item.bought,
