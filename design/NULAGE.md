@@ -16,7 +16,7 @@ Underlaget är fryst i tre skilda lager. De räknar aldrig om varandra.
 |---|---|---|---|
 | **Krav** (Block 287) | skärmkorpusens element och de 772 produktkraven | `04f7f59` | `fas2/block287k-frysning.json` |
 | **Beteende** (Block 288) | 82 tillämpliga vytillstånd, 81 krävda övergångar i åtta flöden, 33 krävda interaktionstillstånd | `b5fcf5c` | `fas2/block288-uxfrysning.json` |
-| **Leverans** (Block 289) | tokens, mappning, generatorer och de genererade Flutter-filerna, plus kontrastkontraktet | `e378ac4` | `fas2/block289-visuell-leverans.json` |
+| **Leverans** (Block 289) | tokens, mappning, generatorer och de genererade Flutter-filerna, plus kontrastkontraktet | `2c5da67` | `fas2/block289-visuell-leverans.json` |
 
 Alla tre reproducerar byteidentiskt ur en ren utcheckning. Kör proven med:
 
