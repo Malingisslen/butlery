@@ -4,7 +4,7 @@ Den här filen säger var arbetet står **i dag**. Den är kort med avsikt: om d
 läser äldre sessioner, arbetsplaner eller granskningsanteckningar först får du
 en föråldrad bild.
 
-Senast uppdaterad: 2026-09-22.
+Senast uppdaterad: 2026-09-23.
 
 ---
 
@@ -42,8 +42,8 @@ Migrationen är **82 enheter i 8 paket**, mekaniskt härledda.
 | Paket | Innehåll | Status |
 |---|---|---|
 | 1 | grunden: färg, typografi, typsnitt, mått | **klar och på main** (PR #259, `22bb399`) |
-| 2 | komponenter: fel, laddning, sidhuvud, radie, fokus, avstängt, nedtryckt | ej påbörjad |
-| 3 | interaktionsmönster: ångra, offline, konflikt | ej påbörjad |
+| 2 | komponenter: fel, laddning, sidhuvud, radie, fokus, avstängt, nedtryckt | **klar, väntar på merge** (PR #261) |
+| 3 | interaktionsmönster: ångra, offline, konflikt | ångra klar i PR #261; offline och konflikt ej påbörjade |
 | 4 | vyerna tar in det nya | ej påbörjad |
 | 5 | tillstånd: 22 ändrade + 7 nya | ej påbörjad |
 | 6 | flödena | ej påbörjad |
