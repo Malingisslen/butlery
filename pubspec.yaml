@@ -182,14 +182,20 @@ flutter:
     - assets/illustrations/
     - assets/illustrations/arta/
     - assets/seasonal/
+    # OFL 1.1 condition 2: the notices and licence must reach whoever gets the
+    # font. The binaries are bundled through `fonts:` below; these texts are
+    # read by LicensesView (Settings → About Butlery → Licences), and each
+    # legacy file leaves with its family.
+    - assets/fonts/OFL-1.1.txt
+    - assets/fonts/THIRD_PARTY_NOTICES.txt
+    - assets/fonts/JosefinSans-OFL.txt
+    - assets/fonts/SpaceGrotesk-OFL.txt
 
   # Canonical design-system font (design freeze 04f7f59, Butlery Sans 0.626).
   # ButlerySans is the single family: headers and body both use it, with
   # weight and size carrying the hierarchy. See FONT-VERSION.txt in the design
   # system. Licence: SIL OFL 1.1 — assets/fonts/OFL-1.1.txt and
-  # assets/fonts/THIRD_PARTY_NOTICES.txt ship with the binaries, and the OFL
-  # requires them to be reachable from a real route in the app (Settings →
-  # About → Licences). That route is not part of this foundation package.
+  # assets/fonts/THIRD_PARTY_NOTICES.txt ship with the binaries.
   #
   # JosefinSans and SpaceGrotesk are legacy. Nothing in lib/ references them
   # after this package; their declarations and assets are retired by the

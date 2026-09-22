@@ -16561,4 +16561,30 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get shoppingCouldNotLeaveList => 'Could not leave the list';
+
+  @override
+  String get settingsAboutTitle => 'About Butlery';
+
+  @override
+  String get settingsAboutSubtitle => 'Version and licences';
+
+  @override
+  String settingsAboutVersion(String version) {
+    return 'Version $version';
+  }
+
+  @override
+  String get settingsLicensesTitle => 'Licences';
+
+  @override
+  String get settingsLicensesSubtitle => 'Typefaces and open source';
+
+  @override
+  String get licensesNoticesHeading => 'Butlery Sans – copyright and sources';
+
+  @override
+  String get licensesOflHeading => 'SIL Open Font License 1.1';
+
+  @override
+  String get licensesCouldNotLoad => 'The licence texts could not be loaded.';
 }
