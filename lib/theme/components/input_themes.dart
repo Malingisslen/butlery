@@ -24,25 +24,26 @@ class InputThemes {
 
   /// Input decoration theme
   static InputDecorationTheme inputDecorationTheme(ColorScheme cs) {
+    // Fields take the control radius, 8 (tokens.json space.radius.control).
     return InputDecorationTheme(
       filled: true,
       fillColor: cs.surfaceContainerHighest,
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         borderSide: BorderSide(
           color: cs.outlineVariant,
           width: 1,
         ),
       ),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         borderSide: BorderSide(
           color: cs.outlineVariant,
           width: 1,
         ),
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         // BUT-533: rust ring at 3px — visible on cream where the previous
         // 2px primary-color border faded into the surrounding surface.
         borderSide: const BorderSide(
@@ -51,14 +52,14 @@ class InputThemes {
         ),
       ),
       errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         borderSide: BorderSide(
           color: cs.error,
           width: 1,
         ),
       ),
       focusedErrorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         borderSide: BorderSide(
           color: cs.error,
           width: 2,
@@ -76,12 +77,13 @@ class InputThemes {
 
   /// Card theme
   static CardThemeData cardTheme(ColorScheme cs) {
+    // Cards take the card radius, 12 (tokens.json space.radius.card).
     return CardThemeData(
       color: cs.surfaceContainerHighest,
       elevation: 0,
       shadowColor: Colors.transparent,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
         side: BorderSide(
           color: cs.outlineVariant,
           width: 1,
@@ -135,8 +137,11 @@ class InputThemes {
         horizontal: AppDimensions.paddingM,
         vertical: AppDimensions.paddingS,
       ),
+      // Chips are pill-shaped: tokens.json controls.chip.radius = "pill".
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.zero,
+        borderRadius: BorderRadius.all(
+          Radius.circular(AppDimensions.radiusPill),
+        ),
       ),
     );
   }

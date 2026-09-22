@@ -30,14 +30,20 @@ class AppDimensions {
   /// The canonical radius scale.
   /// sharp 0 — editorial surfaces (tables, calendar, step cards)
   /// knob 2 — the wordmark's saffron knob and thin bars/indicators
-  /// control 8 — buttons, fields, chips
+  /// control 8 — buttons, fields, trays
   /// card 12 — cards and sheets
   /// pill 999 — chips, avatars, status pills
+  /// Source: tokens.json space.radius and $radiusNote. The scale is
+  /// exhaustive: "0 · 2 · 8 · 12 · 999 plus kryssrutans 6" (specFrameRadius).
   static const double radiusSharp = 0.0;
   static const double radiusKnob = 2.0;
   static const double radiusControl = 8.0;
   static const double radiusCard = 12.0;
   static const double radiusPill = 999.0;
+
+  /// The checkbox's locked radius. Not a step in the radius scale but
+  /// control geometry: tokens.json controls.checkbox.radius = 6 (B-37).
+  static const double checkboxRadius = 6.0;
 
   // ── App-local values ────────────────────────────────────────────────────
 
@@ -138,6 +144,10 @@ class AppDimensions {
   // this foundation package changes no geometry, and the call sites move to
   // the canonical scale in the component-geometry package. Do not add new
   // `borderRadiusN` members, and do not change these values here.
+  //
+  // The move has started in the theme layer (lib/theme/components): buttons,
+  // fields, cards, chips, sheets and the checkbox now read the canonical
+  // scale. Widgets and views still use these constants.
   static const double borderRadius0 = 0.0;
   static const double borderRadius2 = 0.0;
   static const double borderRadius4 = 0.0;

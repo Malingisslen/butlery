@@ -69,8 +69,10 @@ class FeedbackThemes {
         color: cs.outline,
         width: 1.5,
       ),
+      // The checkbox keeps its own locked radius, 6 (tokens.json
+      // controls.checkbox.radius), outside the five-step scale.
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadius4),
+        borderRadius: BorderRadius.circular(AppDimensions.checkboxRadius),
       ),
     );
   }

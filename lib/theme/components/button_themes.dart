@@ -44,6 +44,11 @@ WidgetStateProperty<Color?> _focusOverlay({double alpha = 0.12}) {
 
 /// Button-specific theme configurations.
 /// All methods accept [ColorScheme] for dark/light mode awareness.
+///
+/// Radius: every button takes the control radius, 8 (tokens.json
+/// space.radius.control; Grafisk manual v6, "8 control knappar/fält"). The
+/// FAB and the extended FAB keep their square shape: no canonical source
+/// names a radius for them.
 class ButtonThemes {
   ButtonThemes._();
 
@@ -60,7 +65,7 @@ class ButtonThemes {
         overlayColor: _focusOverlay(),
         shape: WidgetStatePropertyAll(
           RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
           ),
         ),
         minimumSize: const WidgetStatePropertyAll(
@@ -87,7 +92,7 @@ class ButtonThemes {
         side: _focusSide(unfocused: BorderSide.none),
         shape: WidgetStatePropertyAll(
           RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
           ),
         ),
         minimumSize: const WidgetStatePropertyAll(
@@ -117,7 +122,7 @@ class ButtonThemes {
         ),
         shape: WidgetStatePropertyAll(
           RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
           ),
         ),
         minimumSize: const WidgetStatePropertyAll(
@@ -146,7 +151,7 @@ class ButtonThemes {
         overlayColor: _focusOverlay(),
         shape: WidgetStatePropertyAll(
           RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
           ),
         ),
         minimumSize: const WidgetStatePropertyAll(
@@ -190,7 +195,8 @@ class ButtonThemes {
       foregroundColor: cs.onPrimary,
       elevation: 4,
       highlightElevation: 6,
-      // BUT-964: square design language — FABs are square, not round.
+      // The FAB stays square: no canonical source names its radius, so the
+      // component package leaves it (BUT-964).
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
       iconSize: AppDimensions.iconSizeL,
     );
@@ -207,7 +213,7 @@ class ButtonThemes {
           vertical: AppDimensions.paddingM,
         ),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         ),
       );
 
@@ -219,7 +225,7 @@ class ButtonThemes {
       vertical: AppDimensions.paddingM,
     ),
     shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+      borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
     ),
   );
 
@@ -235,7 +241,7 @@ class ButtonThemes {
           vertical: AppDimensions.paddingM,
         ),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         ),
       );
 
@@ -250,7 +256,7 @@ class ButtonThemes {
           vertical: AppDimensions.paddingM,
         ),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         ),
       );
 
@@ -264,7 +270,7 @@ class ButtonThemes {
           vertical: AppDimensions.paddingM,
         ),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         ),
         side: BorderSide(color: cs.primary, width: 1.5),
       );
@@ -279,7 +285,7 @@ class ButtonThemes {
           vertical: AppDimensions.paddingM,
         ),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         ),
         side: BorderSide(color: cs.error, width: 1.5),
       );
