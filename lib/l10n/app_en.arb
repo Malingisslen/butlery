@@ -1270,6 +1270,15 @@
   "shoppingNoListForRename": "No list selected for renaming",
   "shoppingNoListForDelete": "No list selected for deletion",
   "commonBack": "Back",
+  "commonBackTo": "Back to {destination}",
+  "@commonBackTo": {
+    "description": "Accessible name of the back arrow in the subpage top bar. Names the view the arrow leads to (Komponentark v1 section 01, pattern 2; accessibility handoff, row Back)",
+    "placeholders": {
+      "destination": {
+        "type": "String"
+      }
+    }
+  },
   "commonEnable": "Enable",
   "commonDisable": "Disable",
   "commonName": "Name",
