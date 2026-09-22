@@ -4245,6 +4245,102 @@
   "groupYouLeftGroup": "Du har lämnat gruppen",
   "loadingGeneric": "Laddar...",
   "loadingRecipes": "Laddar recept...",
+  "loadingAdminAccess": "Hämtar din behörighet …",
+  "@loadingAdminAccess": {
+    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
+  },
+  "loadingConsents": "Hämtar dina samtycken …",
+  "@loadingConsents": {
+    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
+  },
+  "loadingFeedbackEntries": "Hämtar återkopplingen …",
+  "@loadingFeedbackEntries": {
+    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
+  },
+  "loadingImage": "Hämtar bilden …",
+  "@loadingImage": {
+    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
+  },
+  "loadingMetrics": "Hämtar mätvärdena …",
+  "@loadingMetrics": {
+    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
+  },
+  "loadingReports": "Hämtar anmälningarna …",
+  "@loadingReports": {
+    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
+  },
+  "loadingOpsLog": "Hämtar driftloggen …",
+  "@loadingOpsLog": {
+    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
+  },
+  "loadingParsingStats": "Hämtar tolkningsstatistiken …",
+  "@loadingParsingStats": {
+    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
+  },
+  "loadingFamily": "Hämtar familjen …",
+  "@loadingFamily": {
+    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
+  },
+  "loadingIngredientSearch": "Söker ingredienser …",
+  "@loadingIngredientSearch": {
+    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
+  },
+  "loadingCommunityGuidelines": "Hämtar riktlinjerna …",
+  "@loadingCommunityGuidelines": {
+    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
+  },
+  "loadingTerms": "Hämtar användarvillkoren …",
+  "@loadingTerms": {
+    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
+  },
+  "loadingWeeklyMenu": "Hämtar veckomenyn …",
+  "@loadingWeeklyMenu": {
+    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
+  },
+  "loadingNotifications": "Hämtar dina notiser …",
+  "@loadingNotifications": {
+    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
+  },
+  "loadingPersonalTags": "Hämtar dina taggar …",
+  "@loadingPersonalTags": {
+    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
+  },
+  "loadingAllergenPreferences": "Hämtar dina allergival …",
+  "@loadingAllergenPreferences": {
+    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
+  },
+  "loadingMfaSettings": "Hämtar tvåstegsverifieringen …",
+  "@loadingMfaSettings": {
+    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
+  },
+  "loadingMyReports": "Hämtar dina anmälningar …",
+  "@loadingMyReports": {
+    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
+  },
+  "loadingNotificationPreferences": "Hämtar dina notisval …",
+  "@loadingNotificationPreferences": {
+    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
+  },
+  "loadingTag": "Hämtar taggen …",
+  "@loadingTag": {
+    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
+  },
+  "loadingShoppingList": "Hämtar inköpslistan …",
+  "@loadingShoppingList": {
+    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
+  },
+  "loadingShoppingLists": "Hämtar dina inköpslistor …",
+  "@loadingShoppingLists": {
+    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
+  },
+  "loadingGroupMembers": "Hämtar gruppens medlemmar …",
+  "@loadingGroupMembers": {
+    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
+  },
+  "loadingProfile": "Hämtar profilen …",
+  "@loadingProfile": {
+    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
+  },
   "menuCategoryCount": "{count} kategorier",
   "@menuCategoryCount": {
     "placeholders": {

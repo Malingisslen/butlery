@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/widgets/common/state/loading_states.dart';
 import 'package:butlery/widgets/common/state/state_enums.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 void main() {
   group('LoadingStates Widget Tests', () {
@@ -30,7 +31,8 @@ void main() {
           ),
         );
 
-        expect(find.byType(CircularProgressIndicator), findsOneWidget);
+        expect(find.byType(PlateLine), findsOneWidget);
+        expect(find.byType(CircularProgressIndicator), findsNothing);
         expect(find.byType(Center), findsOneWidget);
       });
 
@@ -51,7 +53,8 @@ void main() {
           ),
         );
 
-        expect(find.byType(CircularProgressIndicator), findsOneWidget);
+        expect(find.byType(PlateLine), findsOneWidget);
+        expect(find.byType(CircularProgressIndicator), findsNothing);
         expect(find.text('Laddar...'), findsOneWidget);
       });
 
@@ -71,7 +74,8 @@ void main() {
           ),
         );
 
-        expect(find.byType(CircularProgressIndicator), findsOneWidget);
+        expect(find.byType(PlateLine), findsOneWidget);
+        expect(find.byType(CircularProgressIndicator), findsNothing);
       });
 
       testWidgets('should have correct spacing with message', (
@@ -91,8 +95,12 @@ void main() {
           ),
         );
 
-        final sizedBox = tester.widget<SizedBox>(find.byType(SizedBox));
-        expect(sizedBox.height, equals(AppDimensions.spacingM));
+        expect(
+          find.byWidgetPredicate(
+            (w) => w is SizedBox && w.height == AppDimensions.spacingM,
+          ),
+          findsOneWidget,
+        );
       });
 
       testWidgets('should be centered', (WidgetTester tester) async {
@@ -146,6 +154,8 @@ void main() {
             ),
           ),
         );
+        // Skelettet visas först efter 300 ms (produktregler.md:304).
+        await tester.pump(const Duration(milliseconds: 301));
 
         expect(find.byType(ListView), findsOneWidget);
         // Default count is 5
@@ -170,6 +180,8 @@ void main() {
             ),
           ),
         );
+        // Skelettet visas först efter 300 ms (produktregler.md:304).
+        await tester.pump(const Duration(milliseconds: 301));
 
         expect(find.byType(Card), findsNWidgets(customCount));
       });
@@ -189,6 +201,8 @@ void main() {
             ),
           ),
         );
+        // Skelettet visas först efter 300 ms (produktregler.md:304).
+        await tester.pump(const Duration(milliseconds: 301));
 
         final listView = tester.widget<ListView>(find.byType(ListView));
         expect(listView.shrinkWrap, true);
@@ -210,6 +224,8 @@ void main() {
             ),
           ),
         );
+        // Skelettet visas först efter 300 ms (produktregler.md:304).
+        await tester.pump(const Duration(milliseconds: 301));
 
         final listView = tester.widget<ListView>(find.byType(ListView));
         expect(
@@ -235,6 +251,8 @@ void main() {
             ),
           ),
         );
+        // Skelettet visas först efter 300 ms (produktregler.md:304).
+        await tester.pump(const Duration(milliseconds: 301));
 
         expect(find.byType(Card), findsOneWidget);
       });
@@ -254,6 +272,8 @@ void main() {
             ),
           ),
         );
+        // Skelettet visas först efter 300 ms (produktregler.md:304).
+        await tester.pump(const Duration(milliseconds: 301));
 
         final card = tester.widget<Card>(find.byType(Card));
         expect(card.elevation, equals(2));
@@ -280,6 +300,8 @@ void main() {
             ),
           ),
         );
+        // Skelettet visas först efter 300 ms (produktregler.md:304).
+        await tester.pump(const Duration(milliseconds: 301));
 
         // Find the Padding widget inside the Card
         final paddings = tester.widgetList<Padding>(find.byType(Padding));
@@ -299,6 +321,8 @@ void main() {
             ),
           ),
         );
+        // Skelettet visas först efter 300 ms (produktregler.md:304).
+        await tester.pump(const Duration(milliseconds: 301));
 
         expect(find.byType(Row), findsWidgets);
       });
@@ -320,6 +344,8 @@ void main() {
             ),
           ),
         );
+        // Skelettet visas först efter 300 ms (produktregler.md:304).
+        await tester.pump(const Duration(milliseconds: 301));
 
         // Should render something (exact implementation may vary)
         expect(find.byType(Container), findsWidgets);
@@ -340,6 +366,8 @@ void main() {
             ),
           ),
         );
+        // Skelettet visas först efter 300 ms (produktregler.md:304).
+        await tester.pump(const Duration(milliseconds: 301));
 
         // Should render something (exact implementation may vary)
         expect(find.byType(Container), findsWidgets);
@@ -425,6 +453,8 @@ void main() {
             ),
           ),
         );
+        // Skelettet visas först efter 300 ms (produktregler.md:304).
+        await tester.pump(const Duration(milliseconds: 301));
 
         expect(find.byType(ListView), findsOneWidget);
         expect(find.byType(Card), findsNothing);
@@ -450,6 +480,8 @@ void main() {
             ),
           ),
         );
+        // Skelettet visas först efter 300 ms (produktregler.md:304).
+        await tester.pump(const Duration(milliseconds: 301));
 
         expect(find.byType(Card), findsNWidgets(largeCount));
       });
@@ -470,7 +502,8 @@ void main() {
         );
 
         expect(find.text(''), findsOneWidget);
-        expect(find.byType(CircularProgressIndicator), findsOneWidget);
+        expect(find.byType(PlateLine), findsOneWidget);
+        expect(find.byType(CircularProgressIndicator), findsNothing);
       });
 
       testWidgets('should handle very long message', (
@@ -512,7 +545,8 @@ void main() {
           ),
         );
 
-        expect(find.byType(CircularProgressIndicator), findsOneWidget);
+        expect(find.byType(PlateLine), findsOneWidget);
+        expect(find.byType(CircularProgressIndicator), findsNothing);
       });
 
       testWidgets('should work with dark theme', (WidgetTester tester) async {
@@ -530,7 +564,8 @@ void main() {
           ),
         );
 
-        expect(find.byType(CircularProgressIndicator), findsOneWidget);
+        expect(find.byType(PlateLine), findsOneWidget);
+        expect(find.byType(CircularProgressIndicator), findsNothing);
       });
     });
 

@@ -12,7 +12,7 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/widgets/common/input/adaptive_switch.dart';
 
 Widget _wrap(Widget child) => MaterialApp(home: Scaffold(body: child));
@@ -72,7 +72,8 @@ void main() {
     });
 
     testWidgets(
-      'activeColor → activeThumbColor + activeTrackColor at 50% alpha',
+      'activeColor → opaque activeTrackColor, never an alpha state; the knob '
+      'is onPrimary so it stays visible on the filled track',
       (tester) async {
         await tester.pumpWidget(
           _wrap(
@@ -84,13 +85,38 @@ void main() {
           ),
         );
         final sw = tester.widget<Switch>(find.byType(Switch));
-        expect(sw.activeThumbColor, const Color(0xFF112233));
-        expect(
-          sw.activeTrackColor,
-          const Color(0xFF112233).withValues(alpha: AppDimensions.opacityHalf),
-        );
+        expect(sw.activeTrackColor, const Color(0xFF112233));
+        expect(sw.activeTrackColor!.a, 1.0);
+        expect(sw.activeThumbColor, isNot(sw.activeTrackColor));
+        final cs = Theme.of(tester.element(find.byType(Switch))).colorScheme;
+        expect(sw.activeThumbColor, cs.onPrimary);
       },
     );
+
+    testWidgets('the on-knob follows onPrimary in both light and dark mode', (
+      tester,
+    ) async {
+      for (final scheme in [
+        AppColors.lightColorScheme,
+        AppColors.darkColorScheme,
+      ]) {
+        await tester.pumpWidget(
+          MaterialApp(
+            theme: ThemeData(colorScheme: scheme),
+            home: Scaffold(
+              body: AdaptiveSwitch(
+                value: true,
+                onChanged: (_) {},
+                activeColor: scheme.primary,
+              ),
+            ),
+          ),
+        );
+        final sw = tester.widget<Switch>(find.byType(Switch));
+        expect(sw.activeTrackColor, scheme.primary);
+        expect(sw.activeThumbColor, scheme.onPrimary);
+      }
+    });
 
     testWidgets('trackColor → inactiveTrackColor', (tester) async {
       await tester.pumpWidget(
@@ -221,7 +247,7 @@ void main() {
       expect(tile.onChanged, isNull);
     });
 
-    testWidgets('activeColor → activeThumbColor + activeTrackColor 50% alpha', (
+    testWidgets('activeColor → opaque activeTrackColor, onPrimary knob', (
       tester,
     ) async {
       await tester.pumpWidget(
@@ -235,11 +261,11 @@ void main() {
         ),
       );
       final tile = tester.widget<SwitchListTile>(find.byType(SwitchListTile));
-      expect(tile.activeThumbColor, const Color(0xFFAABBCC));
-      expect(
-        tile.activeTrackColor,
-        const Color(0xFFAABBCC).withValues(alpha: AppDimensions.opacityHalf),
-      );
+      expect(tile.activeTrackColor, const Color(0xFFAABBCC));
+      final cs = Theme.of(
+        tester.element(find.byType(SwitchListTile)),
+      ).colorScheme;
+      expect(tile.activeThumbColor, cs.onPrimary);
     });
 
     testWidgets('contentPadding and dense are forwarded', (tester) async {

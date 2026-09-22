@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import '../../../infrastructure/helpers/widget_test_app.dart';
 import '../../../test_support/base_unit_test.dart';
 
@@ -90,7 +91,7 @@ void main() {
           ),
         );
 
-        expect(find.byType(CircularProgressIndicator), findsOneWidget);
+        expect(find.byType(PlateLine), findsOneWidget);
       });
 
       testWidgets('should show custom loading text when provided', (
@@ -304,7 +305,7 @@ void main() {
           ),
         );
 
-        expect(find.byType(CircularProgressIndicator), findsOneWidget);
+        expect(find.byType(PlateLine), findsOneWidget);
         expect(find.text('Laddar upp...'), findsOneWidget);
         expect(
           find.byIcon(Icons.upload),
@@ -447,7 +448,7 @@ void main() {
         );
 
         // The exact loading text comes from l10n
-        expect(find.byType(CircularProgressIndicator), findsOneWidget);
+        expect(find.byType(PlateLine), findsOneWidget);
       });
 
       testWidgets('should handle Swedish labels correctly', (tester) async {
@@ -531,7 +532,7 @@ void main() {
         );
 
         expect(find.byIcon(Icons.save), findsNothing);
-        expect(find.byType(CircularProgressIndicator), findsOneWidget);
+        expect(find.byType(PlateLine), findsOneWidget);
       });
     });
   });

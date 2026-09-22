@@ -13,6 +13,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/widgets/common/dialogs/confirmation_dialogs.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 /// Wraps a child in MaterialApp with the project's l10n delegates so the
 /// dialogs can resolve `context.l10n.commonCancel` etc.
@@ -255,7 +256,7 @@ void main() {
   });
 
   group('showLoadingConfirmationDialog', () {
-    // CircularProgressIndicator runs an infinite animation, so
+    // The indeterminate plate line runs an infinite animation, so
     // pumpAndSettle would never return. Use bounded pumps + small delay
     // to drive the showDialog scale animation past its 150ms barrier.
     Future<void> openAndPump(WidgetTester tester) async {
@@ -264,7 +265,9 @@ void main() {
       await tester.pump(const Duration(milliseconds: 300)); // past anim
     }
 
-    testWidgets('renders title, message, hint, and a spinner', (tester) async {
+    testWidgets('renders title, message, hint, and the plate line', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         _wrap(
           _triggerButton<bool>(
@@ -284,7 +287,7 @@ void main() {
       expect(find.text('Det kan dröja'), findsOneWidget);
       // Swedish locale → dialogMayTakeAWhile = "Detta kan ta en stund..."
       expect(find.text('Detta kan ta en stund...'), findsOneWidget);
-      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      expect(find.byType(PlateLine), findsOneWidget);
     });
 
     testWidgets('default action labels come from l10n', (tester) async {
