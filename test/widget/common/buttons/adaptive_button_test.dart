@@ -89,22 +89,45 @@ void main() {
       );
     });
 
-    testWidgets('disabledColor → disabledForegroundColor', (tester) async {
+    testWidgets(
+      'disabled surface and disabled text are separate: background → '
+      'disabledBackgroundColor, foreground → disabledForegroundColor',
+      (tester) async {
+        await tester.pumpWidget(
+          _wrap(
+            const AdaptiveButton(
+              onPressed: null,
+              disabledBackgroundColor: Colors.amber,
+              disabledForegroundColor: Colors.indigo,
+              child: Text('d'),
+            ),
+          ),
+        );
+        final btn = tester.widget<ElevatedButton>(find.byType(ElevatedButton));
+        const disabled = <WidgetState>{WidgetState.disabled};
+        expect(btn.style!.backgroundColor!.resolve(disabled), Colors.amber);
+        expect(btn.style!.foregroundColor!.resolve(disabled), Colors.indigo);
+      },
+    );
+
+    testWidgets('a disabled surface alone never becomes the text colour', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         _wrap(
           const AdaptiveButton(
             onPressed: null,
-            disabledColor: Colors.amber,
+            disabledBackgroundColor: Colors.amber,
             child: Text('d'),
           ),
         ),
       );
       final btn = tester.widget<ElevatedButton>(find.byType(ElevatedButton));
+      const disabled = <WidgetState>{WidgetState.disabled};
+      expect(btn.style!.backgroundColor!.resolve(disabled), Colors.amber);
       expect(
-        btn.style!.foregroundColor!.resolve(<WidgetState>{
-          WidgetState.disabled,
-        }),
-        Colors.amber,
+        btn.style!.foregroundColor?.resolve(disabled),
+        isNot(Colors.amber),
       );
     });
   });

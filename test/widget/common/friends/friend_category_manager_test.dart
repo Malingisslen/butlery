@@ -11,6 +11,7 @@ import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 import '../../../infrastructure/di/test_service_locator.dart';
 import '../../../infrastructure/mocks/widget_mocks.dart';
@@ -130,7 +131,7 @@ void main() {
         await tester.pumpWidget(createTestWidget());
         await tester.pump();
 
-        expect(find.byType(CircularProgressIndicator), findsOneWidget);
+        expect(find.byType(PlateLine), findsOneWidget);
       });
 
       testWidgets('shows loading when only categories service loading', (
@@ -145,7 +146,7 @@ void main() {
         await tester.pumpWidget(createTestWidget());
         await tester.pump();
 
-        expect(find.byType(CircularProgressIndicator), findsOneWidget);
+        expect(find.byType(PlateLine), findsOneWidget);
       });
 
       testWidgets('shows loading when only friends VM loading', (
@@ -160,7 +161,7 @@ void main() {
         await tester.pumpWidget(createTestWidget());
         await tester.pump();
 
-        expect(find.byType(CircularProgressIndicator), findsOneWidget);
+        expect(find.byType(PlateLine), findsOneWidget);
       });
     });
 

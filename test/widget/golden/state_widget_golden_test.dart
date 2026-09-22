@@ -34,7 +34,9 @@ void main() {
     butleryGolden(
       'loading state matches golden',
       file: 'goldens/state_widget_loading.png',
-      build: () => StateWidget.loading(),
+      // Laddning är tallrikslinje + text som säger vad som hämtas
+      // (produktregler.md:304).
+      build: () => StateWidget.loading(message: 'Hämtar recepten …'),
     );
   });
 }

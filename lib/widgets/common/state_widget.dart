@@ -48,13 +48,13 @@ class StateWidget extends StatelessWidget {
     this.padding,
   });
 
-  /// Loading state with pea pod animation.
+  /// Laddning: tallrikslinje + text (produktregler.md:163 och :304, B-18).
   ///
-  /// UI Redesign: Changed default from spinner to peaAnimation
-  /// for branded loading experience.
+  /// [message] säger vad som hämtas. Förvalet är tallrikslinjen; ärtbaljan
+  /// var förval tidigare och är ingen laddningsindikator.
   factory StateWidget.loading({
     String? message,
-    LoadingVariant variant = LoadingVariant.peaAnimation,
+    LoadingVariant variant = LoadingVariant.spinner,
     int itemCount = 5,
   }) {
     return StateWidget(

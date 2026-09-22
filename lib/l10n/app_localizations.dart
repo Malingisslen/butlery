@@ -10501,6 +10501,150 @@ abstract class AppLocalizations {
   /// **'Laddar recept...'**
   String get loadingRecipes;
 
+  /// Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hämtar din behörighet …'**
+  String get loadingAdminAccess;
+
+  /// Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hämtar dina samtycken …'**
+  String get loadingConsents;
+
+  /// Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hämtar återkopplingen …'**
+  String get loadingFeedbackEntries;
+
+  /// Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hämtar bilden …'**
+  String get loadingImage;
+
+  /// Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hämtar mätvärdena …'**
+  String get loadingMetrics;
+
+  /// Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hämtar anmälningarna …'**
+  String get loadingReports;
+
+  /// Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hämtar driftloggen …'**
+  String get loadingOpsLog;
+
+  /// Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hämtar tolkningsstatistiken …'**
+  String get loadingParsingStats;
+
+  /// Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hämtar familjen …'**
+  String get loadingFamily;
+
+  /// Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4.
+  ///
+  /// In sv, this message translates to:
+  /// **'Söker ingredienser …'**
+  String get loadingIngredientSearch;
+
+  /// Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hämtar riktlinjerna …'**
+  String get loadingCommunityGuidelines;
+
+  /// Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hämtar användarvillkoren …'**
+  String get loadingTerms;
+
+  /// Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hämtar veckomenyn …'**
+  String get loadingWeeklyMenu;
+
+  /// Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hämtar dina notiser …'**
+  String get loadingNotifications;
+
+  /// Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hämtar dina taggar …'**
+  String get loadingPersonalTags;
+
+  /// Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hämtar dina allergival …'**
+  String get loadingAllergenPreferences;
+
+  /// Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hämtar tvåstegsverifieringen …'**
+  String get loadingMfaSettings;
+
+  /// Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hämtar dina anmälningar …'**
+  String get loadingMyReports;
+
+  /// Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hämtar dina notisval …'**
+  String get loadingNotificationPreferences;
+
+  /// Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hämtar taggen …'**
+  String get loadingTag;
+
+  /// Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hämtar inköpslistan …'**
+  String get loadingShoppingList;
+
+  /// Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hämtar dina inköpslistor …'**
+  String get loadingShoppingLists;
+
+  /// Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hämtar gruppens medlemmar …'**
+  String get loadingGroupMembers;
+
+  /// Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hämtar profilen …'**
+  String get loadingProfile;
+
   /// No description provided for @menuCategoryCount.
   ///
   /// In sv, this message translates to:

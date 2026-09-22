@@ -22,7 +22,8 @@ class AdaptiveButton extends StatelessWidget {
     required this.onPressed,
     required this.child,
     this.color,
-    this.disabledColor,
+    this.disabledBackgroundColor,
+    this.disabledForegroundColor,
     this.padding,
     this.minSize = 44.0,
   });
@@ -36,8 +37,17 @@ class AdaptiveButton extends StatelessWidget {
   /// The button's color. Uses theme primary color if not specified.
   final Color? color;
 
-  /// The button's color when disabled.
-  final Color? disabledColor;
+  /// Knappens YTA när den är avstängd.
+  ///
+  /// Yta och text är två skilda begrepp: en avstängd knapp är
+  /// ui-disabled-yta med läsbar inktext, aldrig opacitet (Komponentark
+  /// v1:365, Grafisk manual v6:167 och :423). Samma värde på båda gav
+  /// osynlig text.
+  final Color? disabledBackgroundColor;
+
+  /// Knappens TEXT och ikon när den är avstängd. Se
+  /// [disabledBackgroundColor].
+  final Color? disabledForegroundColor;
 
   /// Padding around the button content.
   final EdgeInsetsGeometry? padding;
@@ -53,7 +63,8 @@ class AdaptiveButton extends StatelessWidget {
     this.padding,
     this.minSize = 44.0,
   }) : color = null,
-       disabledColor = null;
+       disabledBackgroundColor = null,
+       disabledForegroundColor = null;
 
   /// Creates a text-style button for secondary actions.
   factory AdaptiveButton.text({
@@ -94,7 +105,10 @@ class AdaptiveButton extends StatelessWidget {
         onPressed: onPressed,
         padding: padding,
         minimumSize: Size(minSize, minSize),
-        disabledColor: disabledColor ?? CupertinoColors.quaternarySystemFill,
+        // Ytan. Reserven är Cupertinos egen (genomskinlig) och byts mot
+        // token surface.disabled när den levereras till appen.
+        disabledColor:
+            disabledBackgroundColor ?? CupertinoColors.quaternarySystemFill,
         child: child,
       );
     }
@@ -105,7 +119,8 @@ class AdaptiveButton extends StatelessWidget {
         padding: padding,
         minimumSize: Size(minSize, minSize),
         foregroundColor: color,
-        disabledForegroundColor: disabledColor,
+        disabledBackgroundColor: disabledBackgroundColor,
+        disabledForegroundColor: disabledForegroundColor,
       ),
       child: child,
     );

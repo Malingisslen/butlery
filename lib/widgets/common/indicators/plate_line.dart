@@ -15,16 +15,23 @@ import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_colors_dark.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/indicators/loading_semantics.dart';
 
 /// Tallrikslinjen: en vågrät progresslinje i accentorange.
 ///
 /// [value] null ger obestämd progress — använd den när arbetet inte går att
 /// mäta. Har du ett verkligt mått, skicka det: en linje som visar riktig
 /// progress är alltid bättre än en som bara rör sig.
+///
+/// Linjen bär sin egen semantik ([LoadingSemantics]): en live-region med
+/// [semanticLabel] som namn, eller procentvärdet när [value] är satt
+/// (Butlery tillganglighetshandoff.dc.html:179 — etiketten ska vara vad som
+/// laddas).
 class PlateLine extends StatelessWidget {
   const PlateLine({
     this.value,
     this.width,
+    this.semanticLabel,
     super.key,
   });
 
@@ -33,6 +40,9 @@ class PlateLine extends StatelessWidget {
 
   /// Bredd. Null fyller tillgängligt utrymme.
   final double? width;
+
+  /// Vad som laddas, för skärmläsaren. Null ger `a11yLoading`.
+  final String? semanticLabel;
 
   /// Linjens tjocklek. Samma i alla lägen — tallrikslinjen är en linje, inte
   /// en yta, och tjockleken bär ingen betydelse.
@@ -56,6 +66,10 @@ class PlateLine extends StatelessWidget {
       ),
     );
 
-    return width == null ? bar : SizedBox(width: width, child: bar);
+    return LoadingSemantics(
+      value: value,
+      semanticLabel: semanticLabel,
+      child: width == null ? bar : SizedBox(width: width, child: bar),
+    );
   }
 }

@@ -1,33 +1,46 @@
 // lib/widgets/common/indicators/loading_indicator.dart
 
 import 'package:flutter/material.dart';
-import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/widgets/common/indicators/adaptive_activity_indicator.dart';
+import 'package:butlery/widgets/common/indicators/loading_semantics.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
-/// Configurable loading indicator with consistent styling.
-/// Uses platform-adaptive activity indicator (Cupertino on iOS, Material on Android).
+/// Laddningsindikator med oförändrad publik yta som ritar tallrikslinjen.
 ///
-/// BUT-895: wraps the indicator in `Semantics(label:..., liveRegion: true)`
-/// so screen-reader users know when async state changes. Defaults to the
-/// localized `a11yLoading` string ("Loading" / "Laddar"); override
-/// [semanticLabel] for more specific contexts (e.g. "Loading recipes").
+/// Beslut B-18 (beslutslogg.md:25, låst): ingen spinner, ingen shimmer —
+/// tallrikslinje + text. produktregler.md:163: "inga cirkulära
+/// border-spinners". Den här klassen ritade tidigare en plattformsanpassad
+/// cirkulär snurra; nu ritar den [PlateLine] centrerad i samma
+/// `SizedBox(size × size)` som snurran fyllde. Radhöjden och den bundna
+/// bredden på varje anropsställe är därmed desamma som förut — ett naket
+/// `LoadingIndicator()` i en `Row` får fortfarande en bunden bredd.
+///
+/// Anropsställena flyttas till [PlateLine] direkt när vyerna tar in det nya
+/// (paket 4); klassen står kvar till dess.
+///
+/// Semantiken (BUT-895, BUT-1173) är oförändrad ([LoadingSemantics]):
+/// obestämd läser [semanticLabel] eller `a11yLoading` som live-region,
+/// bestämd läser procentvärdet.
 class LoadingIndicator extends StatelessWidget {
+  /// Sidan på den kvadrat linjen ligger centrerad i. Linjen är lika bred.
   final double? size;
+
+  /// Används inte. Tallrikslinjen har en fast tjocklek ([PlateLine.thickness]).
   final double? strokeWidth;
+
   final EdgeInsetsGeometry? padding;
+
+  /// Används inte. Tallrikslinjen tar sina färger ur tokens
+  /// `progressIndicator` och `progressTrack` (tokens.json:161-168), per läge.
   final Color? color;
 
-  /// Optional screen-reader override. Null = use `context.l10n.a11yLoading`.
+  /// Skärmläsarens etikett. Null ger `a11yLoading`.
   final String? semanticLabel;
 
-  /// Determinate progress in `0.0..1.0`. When non-null the indicator renders a
-  /// determinate spinner (a Material `CircularProgressIndicator(value:)` on both
-  /// platforms — Cupertino has no determinate spinner). When null it stays the
-  /// indeterminate platform-adaptive indicator. (BUT-1173)
+  /// Bestämd progress i `0.0..1.0`, annars null. (BUT-1173)
   final double? value;
 
-  /// Track color behind a determinate arc. Only used when [value] is non-null.
+  /// Används inte. Rännan är token `progressTrack` (tokens.json:161-164).
   final Color? backgroundColor;
 
   const LoadingIndicator({
@@ -41,7 +54,7 @@ class LoadingIndicator extends StatelessWidget {
     this.backgroundColor,
   });
 
-  /// Small loading indicator for app bars and buttons
+  /// Liten indikator för appfält och knappar.
   const LoadingIndicator.small({
     super.key,
     this.color,
@@ -55,61 +68,26 @@ class LoadingIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final indicatorSize = size ?? AppDimensions.iconSizeM;
-    // Use Material's CircularProgressIndicator when determinate (value != null)
-    // OR when a track [backgroundColor] is requested — Cupertino's indicator has
-    // neither a determinate mode nor a track ring, so a backgroundColor would be
-    // silently dropped on the adaptive path. Otherwise use the platform-adaptive
-    // indeterminate indicator. (BUT-1173)
-    final useMaterial = value != null || backgroundColor != null;
-    final Widget spinner = useMaterial
-        ? CircularProgressIndicator(
-            value: value,
-            strokeWidth: strokeWidth ?? 3,
-            color: color,
-            backgroundColor: backgroundColor,
-          )
-        : AdaptiveActivityIndicator(
-            radius: indicatorSize / 2,
-            strokeWidth: strokeWidth ?? 3,
-            color: color,
-          );
-    final indicator = SizedBox(
-      width: indicatorSize,
-      height: indicatorSize,
-      child: spinner,
+    // Semantiken ligger ytterst, som förut, så att BUT-1173:s nod är
+    // LoadingIndicators egen. Linjens egen semantik stängs av därunder så
+    // att det finns en enda nod.
+    final Widget indicator = LoadingSemantics(
+      value: value,
+      semanticLabel: semanticLabel,
+      child: SizedBox(
+        width: indicatorSize,
+        height: indicatorSize,
+        child: Center(
+          child: ExcludeSemantics(
+            child: PlateLine(value: value, width: indicatorSize),
+          ),
+        ),
+      ),
     );
 
-    // Use `Localizations.of<AppLocalizations>` directly (not the
-    // throwing-null-check `AppLocalizations.of`) so that widget tests
-    // that pump LoadingIndicator without LocalizationsDelegates (a
-    // common test scaffold) don't crash. Fallback to 'Loading' is the
-    // English a11yLoading string.
-    final l10n = Localizations.of<AppLocalizations>(context, AppLocalizations);
-    // Determinate: expose the percentage as a live region — this matches the
-    // semantics Flutter's native CircularProgressIndicator(value:) emits, which
-    // a static loading label would otherwise mask. ExcludeSemantics drops the
-    // inner indicator's own auto-value so there is a single, correct node.
-    // Indeterminate: announce the loading label. (BUT-1173)
-    final Widget labelled = value != null
-        ? Semantics(
-            value: '${(value! * 100).round()}%',
-            label: semanticLabel,
-            liveRegion: true,
-            child: ExcludeSemantics(child: indicator),
-          )
-        : Semantics(
-            label: semanticLabel ?? l10n?.a11yLoading ?? 'Loading',
-            liveRegion: true,
-            child: indicator,
-          );
-
     if (padding != null) {
-      return Padding(
-        padding: padding!,
-        child: labelled,
-      );
+      return Padding(padding: padding!, child: indicator);
     }
-
-    return labelled;
+    return indicator;
   }
 }
