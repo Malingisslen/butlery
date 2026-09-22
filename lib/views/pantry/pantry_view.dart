@@ -6,6 +6,7 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:provider/provider.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -120,9 +121,8 @@ class _PantryViewContent extends StatelessWidget {
     final ids = selection.selectedIds;
     if (ids.isEmpty) return;
     final removed = viewModel.items.where((i) => ids.contains(i.id)).toList();
-    final messenger = ScaffoldMessenger.maybeOf(context);
+    final undo = UndoSnackBar.capture(context);
     final message = context.l10n.pantryItemsRemovedUndoMessage(removed.length);
-    final undoLabel = context.l10n.commonUndo;
 
     selection.clearSelection();
     await viewModel.bulkRemoveItems(ids);
@@ -130,17 +130,7 @@ class _PantryViewContent extends StatelessWidget {
     // "N removed" undo snackbar that would restore items still present.
     if (viewModel.hasError) return;
 
-    messenger?.showSnackBar(
-      SnackBar(
-        content: Text(message),
-        action: SnackBarAction(
-          label: undoLabel,
-          onPressed: () => viewModel.restoreItems(removed),
-        ),
-        duration: const Duration(seconds: 7),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+    undo.show(message, onUndo: () => viewModel.restoreItems(removed));
   }
 
   Future<void> _showAddSheet(

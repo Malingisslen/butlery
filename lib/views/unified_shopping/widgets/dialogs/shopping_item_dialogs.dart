@@ -57,6 +57,9 @@ class ShoppingItemDialogs {
     }
   }
 
+  /// [onSuccess] is no longer called: editing is class 3 (produktregler.md:133).
+  /// The parameter stays until the legacy-removal package drops it together
+  /// with the unused `shoppingItemUpdated` string.
   static Future<void> showEditItemDialog(
     BuildContext context,
     UnifiedShoppingItem item,
@@ -90,12 +93,11 @@ class ShoppingItemDialogs {
           priority: result.priority,
         );
 
-        if (context.mounted) {
-          if (success) {
-            onSuccess(context.l10n.shoppingItemUpdated(result.name));
-          } else {
-            onError(context.l10n.shoppingCouldNotUpdateItem(result.name));
-          }
+        // update{namn, mängd, enhet, kategori} is class 3: no friction on
+        // success (produktregler.md:133). The row changes on screen, and that
+        // is the confirmation. Failures are still said.
+        if (!success && context.mounted) {
+          onError(context.l10n.shoppingCouldNotUpdateItem(result.name));
         }
       } catch (e) {
         if (context.mounted) {

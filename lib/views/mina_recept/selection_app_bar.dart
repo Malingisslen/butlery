@@ -1,7 +1,7 @@
 /// Selection-mode AppBar extracted from `mina_recept_view.dart` per
 /// BUT-441. Active when the user is in bulk-selection mode; provides
 /// close, select-all, and bulk-delete actions. Bulk-delete confirmation
-/// + undo SnackBar live here (5-7s window via `commonUndo`).
+/// + undo SnackBar live here (the 7 s window of `SnackBarUtils.showUndo`).
 library;
 
 import 'package:flutter/material.dart';
@@ -103,12 +103,11 @@ PreferredSizeWidget buildMinaReceptSelectionAppBar(
             viewModel.deleteSelected();
             viewModel.clearSelection();
             if (context.mounted) {
-              SnackBarUtils.showSuccessWithAction(
+              SnackBarUtils.showUndo(
                 context,
                 context.l10n.bulkDeleteSuccess(count),
-                actionLabel: context.l10n.commonUndo,
-                onAction: () => viewModel.undoBulkDelete(),
-                duration: const Duration(seconds: 7),
+                look: UndoSnackBarLook.confirmation,
+                onUndo: () => viewModel.undoBulkDelete(),
               );
             }
           }
@@ -398,12 +397,11 @@ Future<void> _openBulkTagPicker(
     SnackBarUtils.showInfo(context, context.l10n.bulkTagAllAlreadyTagged);
     return;
   }
-  SnackBarUtils.showSuccessWithAction(
+  SnackBarUtils.showUndo(
     context,
     context.l10n.bulkTagSuccess(modified),
-    actionLabel: context.l10n.commonUndo,
-    onAction: () => viewModel.undoBulkApplyPersonalTag(),
-    duration: const Duration(seconds: 7),
+    look: UndoSnackBarLook.confirmation,
+    onUndo: () => viewModel.undoBulkApplyPersonalTag(),
   );
 }
 

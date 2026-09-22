@@ -537,12 +537,13 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
     final id = recipe.id;
     viewModel.deleteRecipe(id);
     if (mounted) {
-      SnackBarUtils.showSuccessWithAction(
+      // The commit timer in RecipeDeleteManager.deleteRecipe runs on the
+      // same kUndoWindow, so Ångra is never pressable after the commit.
+      SnackBarUtils.showUndo(
         context,
         context.l10n.recipeDeleted,
-        actionLabel: context.l10n.commonUndo,
-        onAction: () => viewModel.undoDeleteById(id),
-        duration: const Duration(seconds: 5),
+        look: UndoSnackBarLook.confirmation,
+        onUndo: () => viewModel.undoDeleteById(id),
       );
     }
   }

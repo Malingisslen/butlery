@@ -5,6 +5,7 @@ import 'dart:async';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/undo_window.dart';
 
 class PendingDelete {
   final String recipeId;
@@ -46,7 +47,8 @@ class RecipeDeleteManager {
 
   bool get hasPendingDeletes => _pendingDeletes.isNotEmpty;
 
-  /// Delete a single recipe with 5-second undo window.
+  /// Delete a single recipe with the [kUndoWindow] (7 s) undo window. The
+  /// Ångra snackbar in mina_recept_view.dart runs on the same constant.
   void deleteRecipe(String recipeId) {
     if (_pendingDeletes.containsKey(recipeId)) return;
 
@@ -57,7 +59,7 @@ class RecipeDeleteManager {
     _invalidateCache();
     _notifyParent();
 
-    final timer = Timer(const Duration(seconds: 5), () {
+    final timer = Timer(kUndoWindow, () {
       _commitDelete(recipeId);
     });
 
@@ -91,7 +93,7 @@ class RecipeDeleteManager {
     undoDeleteById(lastEntry.key);
   }
 
-  /// Bulk delete selected recipes with 7-second undo window.
+  /// Bulk delete selected recipes with the [kUndoWindow] (7 s) undo window.
   void deleteSelected(Set<String> ids) {
     _lastBulkBatchIds = Set.from(ids);
 
@@ -103,7 +105,7 @@ class RecipeDeleteManager {
 
       final index = _recipeService.optimisticRemoveWithIndex(id);
 
-      final timer = Timer(const Duration(seconds: 7), () {
+      final timer = Timer(kUndoWindow, () {
         _commitDelete(id);
       });
 

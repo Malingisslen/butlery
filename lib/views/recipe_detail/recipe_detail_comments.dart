@@ -1,6 +1,7 @@
 // lib/views/recipe_detail/recipe_detail_comments.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/models/recipe_comment.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -505,20 +506,14 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
     // the snackbar closes — undo tap short-circuits, timeout commits the
     // delete. Comment stays visible during the window (no optimistic
     // removal), which doubles as a "deleting…" indicator without extra UI.
-    final messenger = ScaffoldMessenger.of(context);
-    messenger.clearSnackBars();
+    ScaffoldMessenger.of(context).clearSnackBars();
     var undone = false;
-    final controller = messenger.showSnackBar(
-      SnackBar(
-        content: Text(context.l10n.commentDeletedUndoMessage),
-        duration: const Duration(seconds: 7),
-        action: SnackBarAction(
-          label: context.l10n.commonUndo,
-          onPressed: () => undone = true,
-        ),
-      ),
+    final controller = SnackBarUtils.showUndo(
+      context,
+      context.l10n.commentDeletedUndoMessage,
+      onUndo: () => undone = true,
     );
-    await controller.closed;
+    await controller?.closed;
     if (undone || !mounted) return;
 
     try {

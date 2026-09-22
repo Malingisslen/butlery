@@ -1012,20 +1012,14 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
     );
     if (confirmed != true || !mounted) return;
 
-    final messenger = ScaffoldMessenger.of(context);
-    messenger.clearSnackBars();
+    ScaffoldMessenger.of(context).clearSnackBars();
     var undone = false;
-    final controller = messenger.showSnackBar(
-      SnackBar(
-        content: Text(context.l10n.cookSnapDeletedUndoMessage),
-        duration: const Duration(seconds: 7),
-        action: SnackBarAction(
-          label: context.l10n.commonUndo,
-          onPressed: () => undone = true,
-        ),
-      ),
+    final controller = SnackBarUtils.showUndo(
+      context,
+      context.l10n.cookSnapDeletedUndoMessage,
+      onUndo: () => undone = true,
     );
-    await controller.closed;
+    await controller?.closed;
     if (undone || !mounted) return;
 
     await vm.deleteSnap(snapId);

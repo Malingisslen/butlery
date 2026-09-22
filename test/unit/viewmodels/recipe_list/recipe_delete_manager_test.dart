@@ -3,6 +3,7 @@
 import 'package:fake_async/fake_async.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:butlery/core/utils/undo_window.dart';
 import 'package:butlery/viewmodels/recipe_list/recipe_delete_manager.dart';
 import 'package:butlery/models/recipe_unified.dart';
 
@@ -90,8 +91,9 @@ void main() {
       });
     });
 
-    test('should commit deletion to backend after 5-second timer', () {
-      // Behavior: After 5s undo window, the delete is persisted to Firestore
+    test('should commit deletion to backend after the 7 s undo window', () {
+      // Behavior: the commit lands exactly when the Ångra snackbar's window
+      // ends (kUndoWindow, produktregler.md:132), never while it is shown.
       when(
         () => mockRecipeService.optimisticRemoveWithIndex('r1'),
       ).thenReturn(0);
@@ -102,11 +104,12 @@ void main() {
       fakeAsync((async) {
         manager.deleteRecipe('r1');
 
-        // Before 5s: not committed yet
-        async.elapse(const Duration(seconds: 4));
+        // At 6 s the snackbar still offers Ångra: not committed yet. Under
+        // the old 5 s timer this is where the delete had already landed.
+        async.elapse(const Duration(seconds: 6));
         verifyNever(() => mockRecipeService.deleteRecipe('r1'));
 
-        // After 5s: committed
+        // At 7 s: committed
         async.elapse(const Duration(seconds: 1));
         verify(() => mockRecipeService.deleteRecipe('r1')).called(1);
       });
@@ -423,7 +426,7 @@ void main() {
         notifyParentCalls.clear();
 
         // Trigger the timer commit
-        async.elapse(const Duration(seconds: 5));
+        async.elapse(kUndoWindow);
         // Allow the future to complete
         async.flushMicrotasks();
 

@@ -11,6 +11,7 @@ import 'package:butlery/core/utils/common_dialog_actions.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/core/utils/undo_window.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/share_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
@@ -26,9 +27,9 @@ class RecipeManagementHandler {
   ///
   /// BUT-927: matches the bulk-delete UX in `RecipeDeleteManager` —
   /// optimistically remove the recipe from the local list, navigate back,
-  /// show a 5-second snackbar with an Undo action, and only commit the
-  /// Firestore delete + analytics after the timer fires (or skip both if
-  /// the user pressed Undo).
+  /// show the 7 s ([kUndoWindow]) snackbar with an Undo action, and only
+  /// commit the Firestore delete + analytics after the timer fires (or skip
+  /// both if the user pressed Undo).
   static Future<void> deleteRecipe(
     BuildContext context, {
     required VoidCallback onSuccess,
@@ -48,7 +49,7 @@ class RecipeManagementHandler {
     // Capture everything we need before popping the route — once the detail
     // view is gone, `context` is no longer mounted and `viewModel` may be
     // disposed by the time the timer fires.
-    final messenger = ScaffoldMessenger.of(context);
+    final undo = UndoSnackBar.capture(context);
     final l10n = context.l10n;
     final recipeService = ServiceLocator.get<UnifiedRecipeService>();
     final analyticsService = ServiceLocator.get<AnalyticsService>();
@@ -60,7 +61,9 @@ class RecipeManagementHandler {
     onSuccess();
 
     var undone = false;
-    final timer = Timer(const Duration(seconds: 5), () async {
+    // Same kUndoWindow as the snackbar below: the commit never lands while
+    // Ångra is still on screen (produktregler.md:132, 7 s).
+    final timer = Timer(kUndoWindow, () async {
       if (undone) return;
       try {
         // Note: `optimisticRemoveWithIndex` already stripped the recipe
@@ -88,19 +91,13 @@ class RecipeManagementHandler {
       }
     });
 
-    messenger.showSnackBar(
-      SnackBar(
-        content: Text(l10n.recipeDeleted),
-        duration: const Duration(seconds: 5),
-        action: SnackBarAction(
-          label: l10n.commonUndo,
-          onPressed: () {
-            undone = true;
-            timer.cancel();
-            recipeService.optimisticRestoreAt(recipe, originalIndex);
-          },
-        ),
-      ),
+    undo.show(
+      l10n.recipeDeleted,
+      onUndo: () {
+        undone = true;
+        timer.cancel();
+        recipeService.optimisticRestoreAt(recipe, originalIndex);
+      },
     );
   }
 
