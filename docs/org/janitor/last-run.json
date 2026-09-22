@@ -1,13 +1,7 @@
 {
-  "lastRun": "2026-09-15",
-  "dossiersRefreshed": 22,
-  "worldWatchRoles": 0,
-  "retroFired": true,
-  "acceptRate": 0.625,
-  "scratchCleared": 34,
-  "healthChecks": {
-    "tagcheck": "0 scored: 242 predictions written, 119 skipped, no verified tags.gold.json answer keys",
-    "sprint-scratch": "34 stale patch entries removed, 0 tagged stashes"
-  },
-  "notes": "Local run. 27 markers found (cloud janitor cannot see them: gitignored); 5 refreshed by a parallel session (c0f32c636), 22 here. World-watch: none due. Full org-retro fired (docs/org/metrics/retro-2026-09-15-full.md). Accept-rate counted 269 autonomous commits vs 47 in the 09-14 cloud run: window not comparable. Memory curation skipped (live sessions, dirty memory tree). Knowledge distill not run: archives growing (uncommitted edits from another session). 5 shipped plans archived. State backup pushed (was 9 days old)."
+  "lastRun": "2026-09-22",
+  "dossiersRefreshed": 0,
+  "acceptRate": 0.9,
+  "scratchCleared": 0,
+  "notes": "Cloud run (no MCP connectors). Dossier markers: 0 visible — docs/org/dossier-staleness/*.stale is gitignored, so a fresh cloud checkout never sees pending markers (same limitation the 2026-09-15 local run noted); needs an interactive/local session to refresh dossiers. Accept-rate: 0.9 (50 autonomous commits, 5 reworked, 30-day window) — healthy, no flag. Scratch sweep: .claude/state/ does not exist in this checkout (gitignored/session-local) and tasks/ has no shipped plan to archive — nothing to clear. World-watch and Telegram routing skipped: no connectors in this session."
 }
