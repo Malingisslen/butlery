@@ -42,8 +42,8 @@ Migrationen är **82 enheter i 8 paket**, mekaniskt härledda.
 | Paket | Innehåll | Status |
 |---|---|---|
 | 1 | grunden: färg, typografi, typsnitt, mått | **klar och på main** (PR #259, `22bb399`) |
-| 2 | komponenter: fel, laddning, sidhuvud, radie, fokus, avstängt, nedtryckt | **klar, väntar på merge** (PR #261) |
-| 3 | interaktionsmönster: ångra, offline, konflikt | ångra klar i PR #261; offline och konflikt ej påbörjade |
+| 2 | komponenter: fel, laddning, sidhuvud, radie, fokus, avstängt, nedtryckt | **klar och på main** (PR #261) |
+| 3 | interaktionsmönster: ångra, offline, konflikt | ångra klar och på main (PR #261); offline och konflikt ej påbörjade |
 | 4 | vyerna tar in det nya | ej påbörjad |
 | 5 | tillstånd: 22 ändrade + 7 nya | ej påbörjad |
 | 6 | flödena | ej påbörjad |
