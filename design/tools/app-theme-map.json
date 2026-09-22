@@ -318,6 +318,41 @@
    "semantic",
    "progressIndicator",
    "Tallrikslinjen sjalv - appens enda laddningsindikator (beslut B-18)"
+  ],
+  "surfaceDisabled": [
+   "semantic",
+   "surface.disabled",
+   "Avstangd kontrollyta, avstangd kontur och avstangd reglageknopp (Komponentark 164, 174). Aldrig via opacitet. Yta, inte text: contrastPolicy undantar den."
+  ],
+  "textDisabled": [
+   "semantic",
+   "text.disabled.onRaised",
+   "Avstangd text. Ytsakert varde: text.disabled #7D897C ger 2,985:1 pa surface.raised och underkanns av det egna 3:1-golvet, och i morkt 2,0:1. .onRaised klarar papper och upphojd yta i bada lagen."
+  ],
+  "focusRing": [
+   "semantic",
+   "focusRing",
+   "Fokusringen: 2 px med 3 px avstand (tokens focusRing.width/offset). Ink pa ljust, papper pa morkt, aldrig saffran."
+  ],
+  "actionPrimary": [
+   "semantic",
+   "action.primary",
+   "Saffran - vyns enda hjaltehandling, exakt en per vy (Komponentark 843). Aldrig textfarg."
+  ],
+  "actionPrimaryPressed": [
+   "semantic",
+   "action.primaryPressed",
+   "Nedtryckt hjaltehandling. Byts alltid i par med onActionPrimaryPressed."
+  ],
+  "onActionPrimary": [
+   "semantic",
+   "text.onActionPrimary",
+   "Text pa saffran. Star bara pa actionPrimary."
+  ],
+  "onActionPrimaryPressed": [
+   "semantic",
+   "text.onActionPrimaryPressed",
+   "Text pa nedtryckt saffran: papper, aldrig ink (beslut B-14, ink ger 2,97:1). Star bara pa actionPrimaryPressed."
   ]
  },
  "aliases": {
@@ -640,6 +675,11 @@
   "sectionLabel": {
    "base": "overline",
    "color": "AppColors.onWarningContainer"
+  },
+  "subpageTitle": {
+   "base": "labelLarge",
+   "color": null,
+   "bold": true
   }
  },
  "textThemeSlots": [

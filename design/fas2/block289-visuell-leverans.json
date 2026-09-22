@@ -11,27 +11,28 @@
  "BINDNING": {
   "TOKENS_VERSION": "1.13",
   "TOKENS_HASH": "444b332bda5241a5e6450d3ee6a5f7e3b76e9e8af4b06a4616ddec7478ae1f02",
-  "THEME_MAP_HASH": "ea793b56a891e2d4567da1258e365730f3f2a961f25d8ae0c5cf70b4d0a35bb7",
+  "THEME_MAP_HASH": "de88349e481620d1db5fc5e33168f59bbcf2fa7cda846eaa0400c2dbb5c26608",
   "GENERATOR_HASH": "d781008ffd68188e3218074f4c578ef08d475c395578bb040fa575b548607f22",
-  "APP_COLORS_HASH": "bc3890d41702bb62b71949f6a192be82bd2b4e6dc069b5bd6b3c6a8a78dce405",
-  "APP_TEXT_STYLES_HASH": "876723de48b2bbba688d508b01a6851d89e5ea50e507e59c94cff5f4fa962e44",
-  "LEGACY_API_CONTRACT_HASH": "b44e762d83c9b82b87130c240611ef75ad890d90e1a1fff31ff478587affa44d",
-  "APP_COLORS_DARK_HASH": "ad2d9213f45b1568583eedcf8b7f20e708e65fb5359d1aeff2c8a4650f614407",
+  "APP_COLORS_HASH": "fac40b8d41d580b169c4c51182a2d204f48d1b420e09707cf236eeeeaaf5e215",
+  "APP_TEXT_STYLES_HASH": "da753ad0173cdc115bb09af60aabc5447754b8bd878cf326ca881565a7cf2730",
+  "LEGACY_API_CONTRACT_HASH": "db79969ec56fb56792c403dc2924ffd84ff3a2b45780f80bc9caefa22e7248dd",
+  "APP_COLORS_DARK_HASH": "1261e363a07fac05b03eb5d398df26a741537a8d3a87c749b792a23f6a4bae60",
   "DARK_GENERATOR_HASH": "7c5527af5f02ac4154a05f9cf74a3e857394a34625f503e845501f57443cabb6",
-  "DARK_CANONICAL_MEMBERS": 43,
+  "DARK_CANONICAL_MEMBERS": 50,
   "DARK_ALIASES": 29,
-  "DARK_SEMANTIC_TOKENS": 27,
-  "APP_COLORS_MEMBERS": 122,
-  "APP_TEXT_STYLE_GETTERS": 76,
+  "DARK_SEMANTIC_TOKENS": 34,
+  "APP_COLORS_MEMBERS": 129,
+  "APP_TEXT_STYLE_GETTERS": 77,
   "GENERATED_CONST_TEXTSTYLES": 16,
   "GENERATED_NONCONST_TEXTSTYLES": 0,
-  "CONTRAST_ROWS": 34,
+  "CONTRAST_ROWS": 42,
   "CONTRAST_FAILURES": 0,
-  "SURFACE_BLIND_CONSTANTS": 5,
+  "SURFACE_BLIND_CONSTANTS": 6,
   "SURFACE_BLIND_MIN_RATIO": 4.738539508382695,
+  "SURFACE_BLIND_DISABLED_MIN_RATIO": 3.193676712676278,
   "LEGACY_ALIASES": 1,
-  "DARK_DELIVERY_MEMBERS_EMITTED": 72,
-  "DELIVERY_FINGERPRINT": "78ce3a8c61e96765"
+  "DARK_DELIVERY_MEMBERS_EMITTED": 79,
+  "DELIVERY_FINGERPRINT": "93bd15c4ff91a97b"
  },
  "KONTRASTKONTRAKT": [
   {
@@ -407,6 +408,94 @@
    "KVOT": 6.017142114772841,
    "PASS": true,
    "SLAG": "READABLE"
+  },
+  {
+   "TOKEN": "text.onActionPrimary",
+   "LAGE": "light",
+   "VARDE": "#17251D",
+   "YTA": "action.primary",
+   "YTVARDE": "#CE7C1E",
+   "KRAV": 4.5,
+   "KVOT": 4.948565318742158,
+   "PASS": true,
+   "SLAG": "READABLE"
+  },
+  {
+   "TOKEN": "text.onActionPrimary",
+   "LAGE": "dark",
+   "VARDE": "#17251D",
+   "YTA": "action.primary",
+   "YTVARDE": "#CE7C1E",
+   "KRAV": 4.5,
+   "KVOT": 4.948565318742158,
+   "PASS": true,
+   "SLAG": "READABLE"
+  },
+  {
+   "TOKEN": "text.onActionPrimaryPressed",
+   "LAGE": "light",
+   "VARDE": "#F5F4ED",
+   "YTA": "action.primaryPressed",
+   "YTVARDE": "#9A5C14",
+   "KRAV": 4.5,
+   "KVOT": 4.864834042656939,
+   "PASS": true,
+   "SLAG": "READABLE"
+  },
+  {
+   "TOKEN": "text.onActionPrimaryPressed",
+   "LAGE": "dark",
+   "VARDE": "#F5F4ED",
+   "YTA": "action.primaryPressed",
+   "YTVARDE": "#9A5C14",
+   "KRAV": 4.5,
+   "KVOT": 4.864834042656939,
+   "PASS": true,
+   "SLAG": "READABLE"
+  },
+  {
+   "TOKEN": "focusRing",
+   "LAGE": "light",
+   "VARDE": "#24382C",
+   "YTA": "surface.base",
+   "YTVARDE": "#F5F4ED",
+   "KRAV": 3,
+   "KVOT": 11.356621716143172,
+   "PASS": true,
+   "SLAG": "GRAPHIC"
+  },
+  {
+   "TOKEN": "focusRing",
+   "LAGE": "dark",
+   "VARDE": "#F5F4ED",
+   "YTA": "surface.base",
+   "YTVARDE": "#17251D",
+   "KRAV": 3,
+   "KVOT": 14.441648859114773,
+   "PASS": true,
+   "SLAG": "GRAPHIC"
+  },
+  {
+   "TOKEN": "focusRing",
+   "LAGE": "light",
+   "VARDE": "#24382C",
+   "YTA": "surface.raised",
+   "YTVARDE": "#E6EAD9",
+   "KRAV": 3,
+   "KVOT": 10.217732830007348,
+   "PASS": true,
+   "SLAG": "GRAPHIC"
+  },
+  {
+   "TOKEN": "focusRing",
+   "LAGE": "dark",
+   "VARDE": "#F5F4ED",
+   "YTA": "surface.raised",
+   "YTVARDE": "#2F4437",
+   "KRAV": 3,
+   "KVOT": 9.50911712791672,
+   "PASS": true,
+   "SLAG": "GRAPHIC"
   }
  ],
  "YTBLINDA_KONSTANTER": [
@@ -418,6 +507,7 @@
    "KALLA": "text.secondary.onRaised",
    "MIN_KVOT": 4.747102134576532,
    "KRAV": 4.5,
+   "SLAG": "READABLE",
    "PASS": true
   },
   {
@@ -428,6 +518,7 @@
    "KALLA": "text.secondary.onRaised",
    "MIN_KVOT": 4.747102134576532,
    "KRAV": 4.5,
+   "SLAG": "READABLE",
    "PASS": true
   },
   {
@@ -438,6 +529,7 @@
    "KALLA": "text.link",
    "MIN_KVOT": 4.951965906554689,
    "KRAV": 4.5,
+   "SLAG": "READABLE",
    "PASS": true
   },
   {
@@ -448,6 +540,7 @@
    "KALLA": "text.success",
    "MIN_KVOT": 4.738539508382695,
    "KRAV": 4.5,
+   "SLAG": "READABLE",
    "PASS": true
   },
   {
@@ -458,6 +551,18 @@
    "KALLA": "text.accent.onRaised",
    "MIN_KVOT": 4.951965906554689,
    "KRAV": 4.5,
+   "SLAG": "READABLE",
+   "PASS": true
+  },
+  {
+   "NAMN": "textDisabled",
+   "VARDE": "#788477",
+   "VARDE_MORKT": "#93A48D",
+   "HAR_EGET_MORKT": true,
+   "KALLA": "text.disabled.onRaised",
+   "MIN_KVOT": 3.193676712676278,
+   "KRAV": 3,
+   "SLAG": "DISABLED",
    "PASS": true
   }
  ],

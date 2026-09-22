@@ -45,7 +45,17 @@ const YTREGEL = [
   { TOKEN: 'text.accent', YTA: 'surface.base', KRAV: 4.5, SLAG: 'READABLE' },
   { TOKEN: 'text.accent.onRaised', YTA: 'surface.raised', KRAV: 4.5, SLAG: 'READABLE' },
   { TOKEN: 'text.bodyMuted', YTA: 'surface.base', KRAV: 4.5, SLAG: 'READABLE' },
-  { TOKEN: 'text.completed', YTA: 'surface.base', KRAV: 4.5, SLAG: 'READABLE' }
+  { TOKEN: 'text.completed', YTA: 'surface.base', KRAV: 4.5, SLAG: 'READABLE' },
+  // Paket 2. Hjalteknappens text star bara pa sin egen saffransyta och byts i
+  // par med den (beslut B-14): ink pa vilande, papper pa nedtryckt. Paren ar
+  // tokens.json contrastPairs.
+  { TOKEN: 'text.onActionPrimary', YTA: 'action.primary', KRAV: 4.5, SLAG: 'READABLE' },
+  { TOKEN: 'text.onActionPrimaryPressed', YTA: 'action.primaryPressed', KRAV: 4.5, SLAG: 'READABLE' },
+  // Fokusringen ar grafik, inte text: golvet ar graphicAndUi 3:1. contrastPairs
+  // mater den mot papper; en ring runt ett kort star pa upphojd yta, sa den
+  // provas dar ocksa.
+  { TOKEN: 'focusRing', YTA: 'surface.base', KRAV: 3.0, SLAG: 'GRAPHIC' },
+  { TOKEN: 'focusRing', YTA: 'surface.raised', KRAV: 3.0, SLAG: 'GRAPHIC' }
 ];
 
 export function bygg(rot) {
@@ -80,14 +90,24 @@ export function bygg(rot) {
   // Varje Flutter-konstant som bar LASBAR TEXT ar ytblind och maste darfor
   // klara bade base och raised. info las in har efter att den visat sig
   // falla i morkt lage utan att nagot prov sag det.
-  const YTBLINDA = ['textLight', 'textMedium', 'info', 'success', 'onWarningContainer'];
+  // textDisabled ar avstangd text: golvet ar systemets eget 3:1
+  // (contrastPolicy.floors.disabled), inte 4,5. Den ar lika ytblind som de
+  // andra och provas darfor mot samma ytor.
+  const YTBLINDA = [
+    { NAMN: 'textLight', KRAV: 4.5, SLAG: 'READABLE' },
+    { NAMN: 'textMedium', KRAV: 4.5, SLAG: 'READABLE' },
+    { NAMN: 'info', KRAV: 4.5, SLAG: 'READABLE' },
+    { NAMN: 'success', KRAV: 4.5, SLAG: 'READABLE' },
+    { NAMN: 'onWarningContainer', KRAV: 4.5, SLAG: 'READABLE' },
+    { NAMN: 'textDisabled', KRAV: 3.0, SLAG: 'DISABLED' }
+  ];
   const morkFarg = (() => {
     const ut = {};
     const src = las('lib/theme/app_colors_dark.dart');
     for (const m of src.matchAll(/static const Color (\w+)\s*=\s*Color\(0x[0-9A-Fa-f]{2}([0-9A-Fa-f]{6})\)/g)) ut[m[1]] = '#' + m[2].toUpperCase();
     return ut;
   })();
-  const ytblind = YTBLINDA.map(namn => {
+  const ytblind = YTBLINDA.map(({ NAMN: namn, KRAV: krav, SLAG: slag }) => {
     const ljus = flutterFarg[namn];
     if (!ljus) throw new Error('okand Flutter-konstant: ' + namn);
     // Saknas ett morkt varde ar konstanten lagesoberoende och provas mot bada
@@ -103,7 +123,7 @@ export function bygg(rot) {
       NAMN: namn, VARDE: ljus, VARDE_MORKT: mork,
       HAR_EGET_MORKT: Boolean(morkFarg[namn]),
       KALLA: (map.colors[namn] || [])[1] || null,
-      MIN_KVOT: min, KRAV: 4.5, PASS: min >= 4.5
+      MIN_KVOT: min, KRAV: krav, SLAG: slag, PASS: min >= krav
     };
   });
 
@@ -150,7 +170,8 @@ export function bygg(rot) {
     CONTRAST_ROWS: kontrast.length,
     CONTRAST_FAILURES: kontrast.filter(r => !r.PASS).length,
     SURFACE_BLIND_CONSTANTS: ytblind.length,
-    SURFACE_BLIND_MIN_RATIO: Math.min(...ytblind.map(r => r.MIN_KVOT)),
+    SURFACE_BLIND_MIN_RATIO: Math.min(...ytblind.filter(r => r.SLAG === 'READABLE').map(r => r.MIN_KVOT)),
+    SURFACE_BLIND_DISABLED_MIN_RATIO: Math.min(...ytblind.filter(r => r.SLAG === 'DISABLED').map(r => r.MIN_KVOT)),
     LEGACY_ALIASES: legacy.length,
     DARK_DELIVERY_MEMBERS_EMITTED: morkPopulation.length,
     DELIVERY_FINGERPRINT: kort([kontrast, ytblind, legacy, morkPopulation, t.version])

@@ -27,7 +27,7 @@ const map = j('tools/app-theme-map.json');
 /* VF-02 · varje ytblind Flutter-konstant klarar 4,5 pa alla tillatna ytor */
 {
   const fel = m.YTBLINDA_KONSTANTER.filter(x => !x.PASS);
-  prov('VF-02', 'varje ytblind textkonstant klarar 4,5:1 pa bade base och raised',
+  prov('VF-02', 'varje ytblind textkonstant klarar sitt golv (4,5:1 lasbar, 3:1 avstangd) pa bade base och raised',
     fel.length === 0, fel.map(x => x.NAMN + '=' + x.MIN_KVOT.toFixed(6)).join(', '));
 }
 
