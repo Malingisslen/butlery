@@ -3,7 +3,6 @@
 import 'package:fake_async/fake_async.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:butlery/core/utils/undo_window.dart';
 import 'package:butlery/viewmodels/recipe_list/recipe_delete_manager.dart';
 import 'package:butlery/models/recipe_unified.dart';
 
@@ -91,9 +90,11 @@ void main() {
       });
     });
 
-    test('should commit deletion to backend after the 7 s undo window', () {
-      // Behavior: the commit lands exactly when the Ångra snackbar's window
-      // ends (kUndoWindow, produktregler.md:132), never while it is shown.
+    test('commits only when the view commits, never on a timer', () {
+      // Behavior: the commit follows the Ångra snackbar closing
+      // (UndoSnackBar.showDeferred). Flutter starts the snackbar's window
+      // after its entrance animation, so a timer here would land while Ångra
+      // is still on screen.
       when(
         () => mockRecipeService.optimisticRemoveWithIndex('r1'),
       ).thenReturn(0);
@@ -104,14 +105,24 @@ void main() {
       fakeAsync((async) {
         manager.deleteRecipe('r1');
 
-        // At 6 s the snackbar still offers Ångra: not committed yet. Under
-        // the old 5 s timer this is where the delete had already landed.
-        async.elapse(const Duration(seconds: 6));
+        async.elapse(const Duration(minutes: 1));
         verifyNever(() => mockRecipeService.deleteRecipe('r1'));
 
-        // At 7 s: committed
-        async.elapse(const Duration(seconds: 1));
+        manager.commitDeletes(['r1']);
+        async.flushMicrotasks();
         verify(() => mockRecipeService.deleteRecipe('r1')).called(1);
+        expect(manager.hasPendingDeletes, false);
+      });
+    });
+
+    test('a commit after undo does nothing', () {
+      fakeAsync((async) {
+        manager.deleteRecipe('r1');
+        manager.undoDeleteById('r1');
+
+        manager.commitDeletes(['r1']);
+        async.flushMicrotasks();
+        verifyNever(() => mockRecipeService.deleteRecipe(any()));
       });
     });
 
@@ -171,7 +182,7 @@ void main() {
         expect(invalidateCacheCalls.length, 1);
         expect(notifyParentCalls.length, 1);
 
-        // Timer should be cancelled — no commit after 5s
+        // Nothing commits on its own.
         async.elapse(const Duration(seconds: 10));
         verifyNever(() => mockRecipeService.deleteRecipe('r1'));
       });
@@ -260,7 +271,7 @@ void main() {
       });
     });
 
-    test('should commit bulk deletes after 7-second timer', () {
+    test('commits the returned batch when the view commits it', () {
       when(
         () => mockRecipeService.optimisticRemoveWithIndex('r1'),
       ).thenReturn(0);
@@ -275,14 +286,14 @@ void main() {
       ).thenAnswer((_) async => true);
 
       fakeAsync((async) {
-        manager.deleteSelected({'r1', 'r2'});
+        final batch = manager.deleteSelected({'r1', 'r2'});
+        expect(batch, {'r1', 'r2'});
 
-        // Before 7s: not committed
-        async.elapse(const Duration(seconds: 6));
+        async.elapse(const Duration(minutes: 1));
         verifyNever(() => mockRecipeService.deleteRecipe(any()));
 
-        // After 7s: committed
-        async.elapse(const Duration(seconds: 1));
+        manager.commitDeletes(batch);
+        async.flushMicrotasks();
         verify(() => mockRecipeService.deleteRecipe('r1')).called(1);
         verify(() => mockRecipeService.deleteRecipe('r2')).called(1);
       });
@@ -298,7 +309,8 @@ void main() {
 
       fakeAsync((async) {
         manager.deleteRecipe('r1'); // already pending
-        manager.deleteSelected({'r1', 'r2'});
+        final batch = manager.deleteSelected({'r1', 'r2'});
+        expect(batch, {'r2'}, reason: 'r1 belongs to its own snackbar');
 
         // r1 was optimistically removed once (single), not again in bulk
         verify(
@@ -338,7 +350,7 @@ void main() {
         expect(invalidateCacheCalls.length, 1);
         expect(notifyParentCalls.length, 1);
 
-        // Timers should be cancelled
+        // Nothing commits on its own
         async.elapse(const Duration(seconds: 10));
         verifyNever(() => mockRecipeService.deleteRecipe(any()));
       });
@@ -403,7 +415,7 @@ void main() {
           ),
         ).called(1);
 
-        // Timer was cancelled — no commit
+        // Restored, so nothing commits
         async.elapse(const Duration(seconds: 10));
         verifyNever(() => mockRecipeService.deleteRecipe(any()));
       });
@@ -425,9 +437,8 @@ void main() {
         invalidateCacheCalls.clear();
         notifyParentCalls.clear();
 
-        // Trigger the timer commit
-        async.elapse(kUndoWindow);
-        // Allow the future to complete
+        // The snackbar closed without Ångra
+        manager.commitDeletes(['r1']);
         async.flushMicrotasks();
 
         verify(

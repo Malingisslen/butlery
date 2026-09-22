@@ -1,7 +1,7 @@
 /// Selection-mode AppBar extracted from `mina_recept_view.dart` per
 /// BUT-441. Active when the user is in bulk-selection mode; provides
 /// close, select-all, and bulk-delete actions. Bulk-delete confirmation
-/// + undo SnackBar live here (the 7 s window of `SnackBarUtils.showUndo`).
+/// + undo SnackBar live here (`SnackBarUtils.showUndoDeferred`).
 library;
 
 import 'package:flutter/material.dart';
@@ -99,17 +99,17 @@ PreferredSizeWidget buildMinaReceptSelectionAppBar(
             warningMessage: context.l10n.bulkDeleteConfirmMessage,
             icon: Icons.delete_sweep,
           );
-          if (confirmed == true) {
-            viewModel.deleteSelected();
+          if (confirmed == true && context.mounted) {
+            final batch = viewModel.deleteSelected();
             viewModel.clearSelection();
-            if (context.mounted) {
-              SnackBarUtils.showUndo(
-                context,
-                context.l10n.bulkDeleteSuccess(count),
-                look: UndoSnackBarLook.confirmation,
-                onUndo: () => viewModel.undoBulkDelete(),
-              );
-            }
+            // Commits when the snackbar closes, never under a live Ångra.
+            SnackBarUtils.showUndoDeferred(
+              context,
+              context.l10n.bulkDeleteSuccess(count),
+              look: UndoSnackBarLook.confirmation,
+              onUndo: () => viewModel.undoBulkDelete(),
+              onCommit: () => viewModel.commitDeletes(batch),
+            );
           }
         },
       ),
@@ -397,6 +397,10 @@ Future<void> _openBulkTagPicker(
     SnackBarUtils.showInfo(context, context.l10n.bulkTagAllAlreadyTagged);
     return;
   }
+  // Interpretation, not settled: applying a tag is not in the
+  // produktregler.md:129-136 table. It is neither `add` nor `delete`, and it
+  // sits closer to `assign` (class 3, no friction). The undo is kept as it was
+  // until the class is decided.
   SnackBarUtils.showUndo(
     context,
     context.l10n.bulkTagSuccess(modified),

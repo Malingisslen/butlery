@@ -20,9 +20,16 @@ void main() {
     WidgetTester tester, {
     ThemeData? theme,
     Locale locale = const Locale('sv'),
+    bool accessibleNavigation = false,
   }) async {
     await tester.pumpWidget(
       MaterialApp(
+        builder: (context, child) => MediaQuery(
+          data: MediaQuery.of(
+            context,
+          ).copyWith(accessibleNavigation: accessibleNavigation),
+          child: child!,
+        ),
         locale: locale,
         supportedLocales: AppLocalizations.supportedLocales,
         localizationsDelegates: const [
@@ -64,8 +71,8 @@ void main() {
       bar.persist,
       isFalse,
       reason:
-          'A SnackBar with an action persists by default; the window must '
-          'end at 7 s so a deferred commit never lands under a live Ångra.',
+          'A SnackBar with an action persists by default; without assistive '
+          'navigation the window must end at 7 s (produktregler.md:131-132).',
     );
     expect(bar.action?.label, 'Ångra');
     expect(find.text('Mjölk togs bort'), findsOneWidget);
@@ -176,5 +183,157 @@ void main() {
     await tester.tap(find.text('Ångra'));
 
     expect(undone, isTrue);
+  });
+
+  testWidgets('assistive navigation keeps the snackbar until dismissed', (
+    tester,
+  ) async {
+    // Open question, not decided here: no source says whether a
+    // screen-reader user gets exactly 7 s (tillganglighetshandoff:172 is
+    // silent on timing). Until then they keep the pre-P3-U1 behaviour.
+    await pumpApp(tester, accessibleNavigation: true);
+    SnackBarUtils.showUndo(ctx, 'Recept borttaget', onUndo: () {});
+    await tester.pump();
+
+    final bar = shownSnackBar(tester);
+    expect(bar.persist, isTrue);
+    expect(bar.duration, kUndoWindow);
+  });
+
+  group('deferred commit follows the snackbar, not a timer', () {
+    testWidgets('commits only after the snackbar has left the screen', (
+      tester,
+    ) async {
+      await pumpApp(tester);
+      var commits = 0;
+      SnackBarUtils.showUndoDeferred(
+        ctx,
+        'Recept borttaget',
+        onUndo: () {},
+        onCommit: () => commits++,
+      );
+      await tester.pump();
+
+      // Exactly kUndoWindow after the delete, Ångra is still on screen
+      // (its timer started after the entrance animation), so nothing may
+      // have been committed yet.
+      await tester.pump(kUndoWindow);
+      expect(find.text('Ångra'), findsOneWidget);
+      expect(commits, 0);
+
+      // The snackbar's own window runs out, it animates away, and only then
+      // does the delete commit.
+      await tester.pump(kUndoWindow);
+      expect(commits, 0);
+      await tester.pumpAndSettle();
+      expect(find.text('Ångra'), findsNothing);
+      expect(commits, 1);
+    });
+
+    testWidgets('Ångra means no commit', (tester) async {
+      await pumpApp(tester);
+      var commits = 0;
+      var undone = 0;
+      SnackBarUtils.showUndoDeferred(
+        ctx,
+        'Recept borttaget',
+        onUndo: () => undone++,
+        onCommit: () => commits++,
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Ångra'));
+      await tester.pumpAndSettle();
+      await tester.pump(kUndoWindow * 2);
+      await tester.pumpAndSettle();
+
+      expect(undone, 1);
+      expect(commits, 0);
+    });
+
+    testWidgets('a second delete never queues behind the first', (
+      tester,
+    ) async {
+      // Two deletes in a row: the second snackbar must not wait in the queue
+      // with a live Ångra while its window runs out. The first one is closed
+      // (and so committed) when the second is shown.
+      await pumpApp(tester);
+      final commits = <String>[];
+      final undos = <String>[];
+      SnackBarUtils.showUndoDeferred(
+        ctx,
+        'Första borttaget',
+        onUndo: () => undos.add('a'),
+        onCommit: () => commits.add('a'),
+      );
+      await tester.pumpAndSettle();
+      SnackBarUtils.showUndoDeferred(
+        ctx,
+        'Andra borttaget',
+        onUndo: () => undos.add('b'),
+        onCommit: () => commits.add('b'),
+      );
+      await tester.pump();
+      expect(commits, ['a']);
+
+      await tester.pumpAndSettle();
+      expect(find.text('Andra borttaget'), findsOneWidget);
+      expect(find.text('Första borttaget'), findsNothing);
+
+      await tester.tap(find.text('Ångra'));
+      await tester.pumpAndSettle();
+      expect(undos, ['b']);
+      expect(commits, ['a']);
+    });
+
+    testWidgets('a route change closes the snackbar and commits', (
+      tester,
+    ) async {
+      // SnackbarRouteObserver calls clearSnackBars on every push and pop. The
+      // undo snackbar is always the head, so it is closed, not dropped from
+      // the queue with its commit stranded.
+      await pumpApp(tester);
+      SnackBarUtils.showSuccess(ctx, 'Sparat');
+      var commits = 0;
+      SnackBarUtils.showUndoDeferred(
+        ctx,
+        'Recept borttaget',
+        onUndo: () {},
+        onCommit: () => commits++,
+      );
+      await tester.pump();
+      ScaffoldMessenger.of(ctx).clearSnackBars();
+      await tester.pumpAndSettle();
+
+      expect(commits, 1);
+    });
+
+    testWidgets('no messenger rolls back instead of deleting', (tester) async {
+      // No MaterialApp, so there is no ScaffoldMessenger at all.
+      await tester.pumpWidget(
+        Localizations(
+          locale: const Locale('sv'),
+          delegates: AppLocalizations.localizationsDelegates,
+          child: Builder(
+            builder: (c) {
+              ctx = c;
+              return const SizedBox.shrink();
+            },
+          ),
+        ),
+      );
+      await tester.pump();
+      final outside = ctx;
+      var commits = 0;
+      var undone = 0;
+      UndoSnackBar.capture(outside).showDeferred(
+        'Recept borttaget',
+        onUndo: () => undone++,
+        onCommit: () => commits++,
+      );
+      await tester.pumpAndSettle();
+
+      expect(undone, 1);
+      expect(commits, 0);
+    });
   });
 }

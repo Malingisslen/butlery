@@ -46,21 +46,38 @@ void main() {
     );
   });
 
-  test('no deferred commit runs on its own undo timer', () {
-    // A delayed-commit delete must commit exactly when its snackbar's window
-    // ends. Both known timers read kUndoWindow; a literal duration beside an
-    // undo would let the commit land while Ångra is still on screen.
+  test('no deferred commit runs on a timer of its own', () {
+    // A delayed-commit delete must commit when its snackbar closes. Flutter
+    // starts a snackbar's timer after the entrance animation and only at the
+    // head of the queue, so any parallel Timer, even one reading kUndoWindow,
+    // lands while Ångra is still on screen.
     for (final path in [
       'lib/viewmodels/recipe_list/recipe_delete_manager.dart',
       'lib/views/recipe_detail/handlers/recipe_management_handler.dart',
     ]) {
       final source = File(path).readAsStringSync();
       expect(
-        RegExp(r'Timer\(\s*const Duration').hasMatch(source),
+        RegExp(r'Timer\(').hasMatch(source),
         isFalse,
-        reason: '$path must time its commit with kUndoWindow',
+        reason: '$path must commit when the undo snackbar closes',
       );
-      expect(source, contains('Timer(kUndoWindow'), reason: path);
+    }
+    for (final path in [
+      'lib/views/recipe_detail/handlers/recipe_management_handler.dart',
+      'lib/views/mina_recept_view.dart',
+      'lib/views/mina_recept/selection_app_bar.dart',
+    ]) {
+      final source = File(path).readAsStringSync();
+      expect(
+        source,
+        isNot(contains('kUndoWindow')),
+        reason: '$path must not time its own commit',
+      );
+      expect(
+        RegExp(r'show(Undo)?Deferred\(').hasMatch(source),
+        isTrue,
+        reason: '$path commits through UndoSnackBar.showDeferred',
+      );
     }
   });
 }

@@ -6,8 +6,10 @@
 /// and :755 (inbox removal) repeat the same seven seconds, so this is the
 /// class's number, not one list's.
 ///
-/// Pure Dart on purpose: the snackbar primitive (`SnackBarUtils.showUndo`)
-/// and every deferred-commit timer (`RecipeDeleteManager`,
-/// `RecipeManagementHandler`) read this one constant, so the button can never
-/// stay pressable after the delete it offers to undo has been committed.
+/// Pure Dart on purpose, so view models can name the window. It is the
+/// snackbar's `duration` only. No deferred commit may run on a timer of this
+/// length: Flutter starts a snackbar's timer after its entrance animation, and
+/// only once it is at the head of the queue, so a parallel timer would commit
+/// while Ångra is still on screen. Deferred commits run when the snackbar
+/// closes instead (`UndoSnackBar.showDeferred`).
 const Duration kUndoWindow = Duration(seconds: 7);

@@ -1,5 +1,7 @@
 /// Snackbar utilities for standardized user feedback (success, error, warning, info).
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -392,6 +394,25 @@ class SnackBarUtils {
       context,
     ).show(message, onUndo: onUndo, look: look);
   }
+
+  /// [showUndo] for a delete whose commit waits for the undo window.
+  ///
+  /// [onCommit] runs once the snackbar has closed without Ångra, never on a
+  /// timer of its own. See [UndoSnackBar.showDeferred].
+  static void showUndoDeferred(
+    BuildContext context,
+    String message, {
+    required VoidCallback onUndo,
+    required FutureOr<void> Function() onCommit,
+    UndoSnackBarLook look = UndoSnackBarLook.plain,
+  }) {
+    UndoSnackBar.capture(context).showDeferred(
+      message,
+      onUndo: onUndo,
+      onCommit: onCommit,
+      look: look,
+    );
+  }
 }
 
 /// How an undo snackbar looks. Package 3 keeps each call site's current look;
@@ -415,15 +436,22 @@ enum UndoSnackBarLook {
 /// no context, so it is safe from `Dismissible.onDismissed` (which fires after
 /// the row's element is deactivated) or after `Navigator.pop`.
 class UndoSnackBar {
-  UndoSnackBar._(this._messenger, this._undoLabel, this._colorScheme);
+  UndoSnackBar._(
+    this._messenger,
+    this._undoLabel,
+    this._colorScheme,
+    this._persist,
+  );
 
   /// Resolves everything [show] needs from [context]. A missing
-  /// ScaffoldMessenger makes [show] a no-op, as `messenger?.showSnackBar` did.
+  /// ScaffoldMessenger makes [show] a no-op, as `messenger?.showSnackBar` did;
+  /// [showDeferred] then rolls the optimistic change back instead.
   factory UndoSnackBar.capture(BuildContext context) {
     return UndoSnackBar._(
       ScaffoldMessenger.maybeOf(context),
       context.l10n.commonUndo,
       Theme.of(context).colorScheme,
+      MediaQuery.maybeAccessibleNavigationOf(context) ?? false,
     );
   }
 
@@ -431,14 +459,32 @@ class UndoSnackBar {
   final String _undoLabel;
   final ColorScheme _colorScheme;
 
+  /// Whether the snackbar stays until it is dismissed instead of timing out.
+  ///
+  /// Only when assistive technology drives navigation
+  /// (`MediaQuery.accessibleNavigation`). For everyone else the window ends at
+  /// [kUndoWindow] (produktregler.md:131-132). Whether a screen-reader user
+  /// should also get exactly 7 s is not settled by any source: the
+  /// accessibility handoff's Snackbar row (tillganglighetshandoff:172) says
+  /// nothing about timing. Until it is decided they keep what they had before
+  /// P3-U1, Flutter's default for a snackbar with an action: it persists.
+  final bool _persist;
+
   /// Shows [message] with an "Ångra" action for [kUndoWindow]. Returns the
   /// controller so a deferred-commit caller can await `closed`.
   ///
-  /// `persist: false` is load-bearing. Since Flutter 3.35 a SnackBar with an
-  /// action persists by default and never times out, so without it the
-  /// window would be open-ended and a deferred commit (RecipeDeleteManager)
-  /// would land while Ångra is still on screen. produktregler.md:131-132
-  /// says 7 s, and the window ends when the commit does.
+  /// Whatever snackbar is on screen or queued is removed first, so this one
+  /// is always at the head of the messenger's queue. That matters twice.
+  /// A queued snackbar's window only starts once it reaches the head, and
+  /// `ScaffoldMessengerState.clearSnackBars` (called on every route change by
+  /// SnackbarRouteObserver) drops queued snackbars without ever completing
+  /// their `closed`, which would strand a deferred commit. The head is always
+  /// closed properly, and closing it is what commits its delete.
+  ///
+  /// The window is honest only for callers that commit on `closed`
+  /// ([showDeferred]): Flutter starts the `duration` timer after the entrance
+  /// animation, so a separate `Timer(kUndoWindow)` would land while Ångra is
+  /// still on screen.
   ScaffoldFeatureController<SnackBar, SnackBarClosedReason>? show(
     String message, {
     required VoidCallback onUndo,
@@ -447,16 +493,59 @@ class UndoSnackBar {
     final messenger = _messenger;
     if (messenger == null) return null;
     AppLogger.debug('Undo snackbar shown: $message');
+    messenger
+      ..clearSnackBars()
+      ..removeCurrentSnackBar();
     return messenger.showSnackBar(switch (look) {
       UndoSnackBarLook.plain => SnackBar(
         content: Text(message),
         action: SnackBarAction(label: _undoLabel, onPressed: onUndo),
         duration: kUndoWindow,
-        persist: false,
+        persist: _persist,
         behavior: SnackBarBehavior.floating,
       ),
       UndoSnackBarLook.confirmation => _confirmation(message, onUndo),
     });
+  }
+
+  /// Shows the undo snackbar and runs [onCommit] once it has closed, unless
+  /// Ångra was pressed.
+  ///
+  /// The commit is driven by the snackbar's own lifecycle, so Ångra can never
+  /// be pressed after the commit: it lands after the snackbar has left the
+  /// screen (timeout, swipe, or replaced by the next snackbar). When no
+  /// ScaffoldMessenger is found, no undo can be offered, so [onUndo] rolls
+  /// the optimistic change back instead of deleting without one.
+  void showDeferred(
+    String message, {
+    required VoidCallback onUndo,
+    required FutureOr<void> Function() onCommit,
+    UndoSnackBarLook look = UndoSnackBarLook.plain,
+  }) {
+    var undone = false;
+    final controller = show(
+      message,
+      look: look,
+      onUndo: () {
+        if (undone) return;
+        undone = true;
+        onUndo();
+      },
+    );
+    if (controller == null) {
+      AppLogger.error(
+        'Undo snackbar had no ScaffoldMessenger; rolled back: $message',
+      );
+      undone = true;
+      onUndo();
+      return;
+    }
+    unawaited(
+      controller.closed.then((reason) async {
+        if (undone || reason == SnackBarClosedReason.action) return;
+        await onCommit();
+      }),
+    );
   }
 
   /// Byte-for-byte what `SnackBarUtils.showSuccess` builds, with the undo
@@ -482,7 +571,7 @@ class UndoSnackBar {
       ),
       backgroundColor: _colorScheme.primary,
       duration: kUndoWindow,
-      persist: false,
+      persist: _persist,
       behavior: SnackBarBehavior.floating,
       margin: const EdgeInsets.all(AppDimensions.spacingXl),
       // Shape inherits the square global snackBarTheme (BUT-1243).
