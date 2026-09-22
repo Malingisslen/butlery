@@ -1,7 +1,7 @@
 // GENERERAD FIL — ändra källan, inte den här.
 // system 2.1 · tokens 1.13
 // generator tools/gen-app-theme-dark.mjs v1.0
-// källfingeravtryck sha256:1705a121c2dbfefa257551506920d3e669996f2e8538e4a1c86ed41b1e17ffe5 (5 indatafiler, generatorns källa inräknad)
+// källfingeravtryck sha256:5621b157844c7330dbfda0751221cdb4f03d64c7de1490bf38adb0ba2cd7e20f (5 indatafiler, generatorns källa inräknad)
 // genererad ur källdatum 2026-08-05 (tokens.date — reproducerbart, inte klockan)
 //
 // MÖRKA kanoniska färger. Samma medlemsnamn som i AppColors, men det
@@ -95,6 +95,9 @@ class AppColorsDark {
   /// semantic.text.primary (dark)
   static const Color onInfoContainer = Color(0xFFF5F4ED);
 
+  /// Systemet har ingen bla - info bar lankfargen. Lag tidigare pa palette.saffronLink (#A15A0A), vilket ar exakt det varde text.link ersatte: det foll pa upphojd yta. Som palettfarg saknade den dessutom morkt lage och gav 1,99:1 mot surface.raised i morkt. · semantic.text.link (dark)
+  static const Color info = Color(0xFFDCA968);
+
   /// semantic.border.subtle (dark)
   static const Color divider = Color(0x2EF5F4ED);
 
@@ -136,6 +139,12 @@ class AppColorsDark {
 
   /// Överlägg — värdet ligger i tokens.semantic, inte här · semantic.overlay.inkStrong (dark)
   static const Color overlayBlack60 = Color(0x9917251D);
+
+  /// Tallrikslinjens ranna · semantic.progressTrack (dark)
+  static const Color progressTrack = Color(0x2EF5F4ED);
+
+  /// Tallrikslinjen sjalv - appens enda laddningsindikator (beslut B-18) · semantic.progressIndicator (dark)
+  static const Color progressIndicator = Color(0xFFCE7C1E);
 
   // Alias — oförändrade, pekar på medlemmar ovan. Deklarerade i
   // tools/app-theme-map.json.

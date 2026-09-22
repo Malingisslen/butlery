@@ -13650,6 +13650,12 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get errorPreservedLink => 'The link is still in the field.';
+
+  @override
+  String get errorPreservedPhoto => 'The photo is still here.';
+
+  @override
   String get validationTitleMissing => 'Title is missing';
 
   @override

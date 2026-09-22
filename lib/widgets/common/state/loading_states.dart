@@ -5,6 +5,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/common/state/state_enums.dart';
 import 'package:butlery/widgets/common/state/skeleton_components.dart';
 import 'package:butlery/widgets/common/indicators/pea_loading_animation.dart';
@@ -47,6 +48,10 @@ class LoadingStates {
     }
   }
 
+  /// Tallrikslinje + text. Beslut B-18: ingen snurra, ingen shimmer.
+  ///
+  /// Texten ar inte dekor. Regeln ar "tallrikslinje + text", och texten ska
+  /// saga VAD som hamtas - en linje utan ord sager bara att appen ar upptagen.
   static Widget _buildSpinnerLoading(BuildContext context, String? message) {
     return Center(
       child: Padding(
@@ -55,7 +60,10 @@ class LoadingStates {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const CircularProgressIndicator(),
+              const SizedBox(
+                width: 160,
+                child: PlateLine(),
+              ),
               if (message != null) ...[
                 const SizedBox(height: AppDimensions.spacingM),
                 Text(

@@ -13682,6 +13682,12 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
+  String get errorPreservedLink => 'Länken ligger kvar i fältet.';
+
+  @override
+  String get errorPreservedPhoto => 'Bilden ligger kvar.';
+
+  @override
   String get validationTitleMissing => 'Titel saknas';
 
   @override

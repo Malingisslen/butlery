@@ -560,6 +560,7 @@ class _PhotoImportViewContent extends StatelessWidget {
                   if (viewModel.hasError) ...[
                     StateWidget.error(
                       message: viewModel.error!,
+                      preserved: context.l10n.errorPreservedPhoto,
                       onAction: viewModel.canRetryOcr
                           ? null // Don't show clear button when retry is available
                           : () => viewModel.clearError(),

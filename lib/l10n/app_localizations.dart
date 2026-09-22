@@ -22793,6 +22793,18 @@ abstract class AppLocalizations {
     String toCategory,
   );
 
+  /// Del 2 i felmeddelandets struktur: vad bevarades. Visas under felet i importflodena, dar den inklistrade lanken star kvar i faltet.
+  ///
+  /// In sv, this message translates to:
+  /// **'Länken ligger kvar i fältet.'**
+  String get errorPreservedLink;
+
+  /// Del 2 i felmeddelandets struktur: vad bevarades. Visas nar tolkningen av en bild misslyckades men bilden inte kastats.
+  ///
+  /// In sv, this message translates to:
+  /// **'Bilden ligger kvar.'**
+  String get errorPreservedPhoto;
+
   /// No description provided for @validationTitleMissing.
   ///
   /// In sv, this message translates to:

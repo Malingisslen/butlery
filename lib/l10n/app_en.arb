@@ -9488,6 +9488,14 @@
       }
     }
   },
+  "errorPreservedLink": "The link is still in the field.",
+  "@errorPreservedLink": {
+    "description": "Del 2 i felmeddelandets struktur: vad bevarades. Visas under felet i importflodena, dar den inklistrade lanken star kvar i faltet."
+  },
+  "errorPreservedPhoto": "The photo is still here.",
+  "@errorPreservedPhoto": {
+    "description": "Del 2 i felmeddelandets struktur: vad bevarades. Visas nar tolkningen av en bild misslyckades men bilden inte kastats."
+  },
   "validationTitleMissing": "Title is missing",
   "validationIngredientsMissing": "Ingredients are missing",
   "validationInstructionsMissing": "Instructions are missing",
