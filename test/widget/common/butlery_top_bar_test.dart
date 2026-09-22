@@ -436,6 +436,60 @@ void main() {
     });
   });
 
+  group('focus stays visible in the bar', () {
+    for (final theme in {
+      'light': AppTheme.lightTheme,
+      'dark': AppTheme.darkTheme,
+    }.entries) {
+      testWidgets('${theme.key}: the focused back arrow keeps the app ring', (
+        tester,
+      ) async {
+        FocusManager.instance.highlightStrategy =
+            FocusHighlightStrategy.alwaysTraditional;
+        addTearDown(
+          () => FocusManager.instance.highlightStrategy =
+              FocusHighlightStrategy.automatic,
+        );
+        await tester.pumpWidget(
+          _app(
+            ButleryTopBar.undersida(title: 'Receptet', onBack: () {}),
+            theme: theme.value,
+          ),
+        );
+        OutlinedBorder shape() =>
+            tester
+                    .widget<Material>(
+                      find
+                          .descendant(
+                            of: find.byKey(_backKey),
+                            matching: find.byType(Material),
+                          )
+                          .first,
+                    )
+                    .shape!
+                as OutlinedBorder;
+        expect(shape().side, BorderSide.none);
+
+        Focus.of(
+          tester.element(find.byIcon(Icons.chevron_left)),
+        ).requestFocus();
+        await tester.pumpAndSettle();
+
+        // The app's icon button theme resolves the focused side; the bar
+        // only swaps the foreground colour.
+        final themed = theme.value.iconButtonTheme.style!.side!.resolve({
+          WidgetState.focused,
+        });
+        expect(themed, isNotNull);
+        expect(shape().side, themed);
+        // 48 dp minimum from the app theme survives as well.
+        final size = tester.getSize(find.byKey(_backKey));
+        expect(size.width, greaterThanOrEqualTo(48));
+        expect(size.height, greaterThanOrEqualTo(48));
+      });
+    }
+  });
+
   group('large text (200 %)', () {
     for (final theme in {
       'light': AppTheme.lightTheme,
