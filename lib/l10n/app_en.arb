@@ -12097,5 +12097,20 @@
       }
     }
   },
-  "shoppingCouldNotLeaveList": "Could not leave the list"
+  "shoppingCouldNotLeaveList": "Could not leave the list",
+  "settingsAboutTitle": "About Butlery",
+  "settingsAboutSubtitle": "Version and licences",
+  "settingsAboutVersion": "Version {version}",
+  "@settingsAboutVersion": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsLicensesTitle": "Licences",
+  "settingsLicensesSubtitle": "Typefaces and open source",
+  "licensesNoticesHeading": "Butlery Sans – copyright and sources",
+  "licensesOflHeading": "SIL Open Font License 1.1",
+  "licensesCouldNotLoad": "The licence texts could not be loaded."
 }

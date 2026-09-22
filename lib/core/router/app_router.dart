@@ -59,6 +59,8 @@ import 'package:butlery/views/legal/community_guidelines_view.dart';
 
 // Settings — moderation
 import 'package:butlery/views/settings/my_reports_view.dart';
+import 'package:butlery/views/settings/about_butlery_view.dart';
+import 'package:butlery/views/settings/licenses_view.dart';
 
 // Help
 import 'package:butlery/views/faq_view.dart';
@@ -450,6 +452,20 @@ class AppRouter {
         case Routes.myReports:
           return _buildRoute(
             const MyReportsView(),
+            settings,
+            RouteAnimationType.slideFromRight,
+          );
+
+        case Routes.settingsAbout:
+          return _buildRoute(
+            const AboutButleryView(),
+            settings,
+            RouteAnimationType.slideFromRight,
+          );
+
+        case Routes.settingsLicenses:
+          return _buildRoute(
+            const LicensesView(),
             settings,
             RouteAnimationType.slideFromRight,
           );

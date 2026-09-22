@@ -27,6 +27,21 @@ void main() {
     });
   });
 
+  group('Routes — About Butlery and Licences', () {
+    // The licence page is the OFL 1.1 surface for Butlery Sans; like the legal
+    // routes it stays readable without signing in.
+    for (final route in [Routes.settingsAbout, Routes.settingsLicenses]) {
+      test('$route is valid, not auth-gated, and slides from the right', () {
+        expect(Routes.isValidRoute(route), isTrue);
+        expect(Routes.requiresAuth(route), isFalse);
+        expect(
+          Routes.getAnimationType(route),
+          RouteAnimationType.slideFromRight,
+        );
+      });
+    }
+  });
+
   group('Routes — invariants (BUT-1412 regression guard)', () {
     test('every bottom-slide (import-modal) route is auth-gated', () {
       // The bottom-slide set is the import/capture modals; every one of them

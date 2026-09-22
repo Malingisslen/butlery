@@ -16518,4 +16518,30 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get shoppingCouldNotLeaveList => 'Kunde inte lämna listan';
+
+  @override
+  String get settingsAboutTitle => 'Om Butlery';
+
+  @override
+  String get settingsAboutSubtitle => 'Version och licenser';
+
+  @override
+  String settingsAboutVersion(String version) {
+    return 'Version $version';
+  }
+
+  @override
+  String get settingsLicensesTitle => 'Licenser';
+
+  @override
+  String get settingsLicensesSubtitle => 'Typsnitt och öppen källkod';
+
+  @override
+  String get licensesNoticesHeading => 'Butlery Sans – upphovsrätt och källor';
+
+  @override
+  String get licensesOflHeading => 'SIL Open Font License 1.1';
+
+  @override
+  String get licensesCouldNotLoad => 'Licenstexterna kunde inte läsas in.';
 }
