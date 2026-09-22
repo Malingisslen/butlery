@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_shadows.dart';
 
 /// BUT-533: keyboard-focus ring for text fields. Rust accent at 3px gives
@@ -65,6 +66,16 @@ class InputThemes {
           width: 2,
         ),
       ),
+      // Disabled field: 1 px surface.disabled edge on the unchanged
+      // surface.raised fill, never opacity (Grafisk manual v6:423;
+      // Komponentark v1:423 light, :514 dark).
+      disabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
+        borderSide: BorderSide(
+          color: AppModeColors.surfaceDisabled(cs.brightness),
+          width: 1,
+        ),
+      ),
       contentPadding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.spacingMd,
         vertical: AppDimensions.spacingModerate,
@@ -102,7 +113,23 @@ class InputThemes {
       tileColor: cs.surfaceContainerHighest,
       selectedTileColor: cs.primaryContainer,
       iconColor: cs.primary,
-      textColor: cs.onSurface,
+      // A disabled row's label is text.secondary, never opacity: #627061
+      // light, #93A48D dark (Komponentark v1:164 and :174, the disabled
+      // radio and switch rows; tokens.json:62-65). Switch and radio rows
+      // are ListTiles and the theme cannot tell them apart from other rows,
+      // so every disabled list row gets it. Without this, Flutter falls back
+      // to ThemeData.disabledColor, a 38 % black. Selected and enabled rows
+      // keep what they resolved to before (Material's selected primary, and
+      // onSurface).
+      textColor: WidgetStateColor.resolveWith((states) {
+        if (states.contains(WidgetState.disabled)) {
+          return cs.onSurfaceVariant;
+        }
+        if (states.contains(WidgetState.selected)) {
+          return cs.primary;
+        }
+        return cs.onSurface;
+      }),
       titleTextStyle: AppTextStyles.listTileTitle.copyWith(
         color: cs.onSurface,
       ),

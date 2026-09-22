@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
 
@@ -351,19 +352,18 @@ class StyledInput extends StatelessWidget {
             width: AppDimensions.borderWidthThick,
           ),
         ),
+        // Disabled: 1 px surface.disabled edge on the same surface.raised
+        // fill, never opacity (Grafisk manual v6:423; Komponentark v1:423
+        // light, :514 dark).
         disabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
           borderSide: BorderSide(
-            color: cs.outline.withValues(alpha: AppDimensions.opacityHalf),
+            color: AppModeColors.surfaceDisabled(cs.brightness),
             width: AppDimensions.borderWidthStandard,
           ),
         ),
         filled: true,
-        fillColor: enabled
-            ? cs.surfaceContainerHighest
-            : cs.surfaceContainerHighest.withValues(
-                alpha: AppDimensions.opacityDark,
-              ),
+        fillColor: cs.surfaceContainerHighest,
       ),
     );
 

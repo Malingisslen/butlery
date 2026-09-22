@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 
 /// A platform-adaptive text field.
@@ -272,21 +273,18 @@ class AdaptiveTextField extends StatelessWidget {
             width: AppDimensions.borderWidthThick,
           ),
         ),
+        // Disabled: 1 px surface.disabled edge on the same surface.raised
+        // fill, never opacity (Grafisk manual v6:423; Komponentark v1:423
+        // light, :514 dark).
         disabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
           borderSide: BorderSide(
-            color: Theme.of(
-              context,
-            ).colorScheme.outline.withValues(alpha: AppDimensions.opacityHalf),
+            color: AppModeColors.surfaceDisabled(Theme.of(context).brightness),
             width: AppDimensions.borderWidthStandard,
           ),
         ),
         filled: true,
-        fillColor: enabled
-            ? Theme.of(context).colorScheme.surfaceContainerHighest
-            : Theme.of(context).colorScheme.surfaceContainerHighest.withValues(
-                alpha: AppDimensions.opacityDark,
-              ),
+        fillColor: Theme.of(context).colorScheme.surfaceContainerHighest,
       ),
     );
   }
