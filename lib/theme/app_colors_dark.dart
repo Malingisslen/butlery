@@ -1,7 +1,7 @@
 // GENERERAD FIL — ändra källan, inte den här.
 // system 2.1 · tokens 1.13
 // generator tools/gen-app-theme-dark.mjs v1.0
-// källfingeravtryck sha256:5621b157844c7330dbfda0751221cdb4f03d64c7de1490bf38adb0ba2cd7e20f (5 indatafiler, generatorns källa inräknad)
+// källfingeravtryck sha256:1b2d26c901774ae59ef52ee07c15236401068e9b5ecaf1f229725b3ae18ef32e (5 indatafiler, generatorns källa inräknad)
 // genererad ur källdatum 2026-08-05 (tokens.date — reproducerbart, inte klockan)
 //
 // MÖRKA kanoniska färger. Samma medlemsnamn som i AppColors, men det
@@ -145,6 +145,27 @@ class AppColorsDark {
 
   /// Tallrikslinjen sjalv - appens enda laddningsindikator (beslut B-18) · semantic.progressIndicator (dark)
   static const Color progressIndicator = Color(0xFFCE7C1E);
+
+  /// Avstangd kontrollyta, avstangd kontur och avstangd reglageknopp (Komponentark 164, 174). Aldrig via opacitet. Yta, inte text: contrastPolicy undantar den. · semantic.surface.disabled (dark)
+  static const Color surfaceDisabled = Color(0xFF4A5C50);
+
+  /// Avstangd text. Ytsakert varde: text.disabled #7D897C ger 2,985:1 pa surface.raised och underkanns av det egna 3:1-golvet, och i morkt 2,0:1. .onRaised klarar papper och upphojd yta i bada lagen. · semantic.text.disabled.onRaised (dark)
+  static const Color textDisabled = Color(0xFF93A48D);
+
+  /// Fokusringen: 2 px med 3 px avstand (tokens focusRing.width/offset). Ink pa ljust, papper pa morkt, aldrig saffran. · semantic.focusRing (dark)
+  static const Color focusRing = Color(0xFFF5F4ED);
+
+  /// Saffran - vyns enda hjaltehandling, exakt en per vy (Komponentark 843). Aldrig textfarg. · semantic.action.primary (dark)
+  static const Color actionPrimary = Color(0xFFCE7C1E);
+
+  /// Nedtryckt hjaltehandling. Byts alltid i par med onActionPrimaryPressed. · semantic.action.primaryPressed (dark)
+  static const Color actionPrimaryPressed = Color(0xFF9A5C14);
+
+  /// Text pa saffran. Star bara pa actionPrimary. · semantic.text.onActionPrimary (dark)
+  static const Color onActionPrimary = Color(0xFF17251D);
+
+  /// Text pa nedtryckt saffran: papper, aldrig ink (beslut B-14, ink ger 2,97:1). Star bara pa actionPrimaryPressed. · semantic.text.onActionPrimaryPressed (dark)
+  static const Color onActionPrimaryPressed = Color(0xFFF5F4ED);
 
   // Alias — oförändrade, pekar på medlemmar ovan. Deklarerade i
   // tools/app-theme-map.json.
