@@ -8,6 +8,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/theme/app_shadows.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 
 void main() {
   group('AppLogo Widget Tests', () {
@@ -445,7 +446,11 @@ void main() {
         await tester.pumpWidget(createTestWidget(const AppBranding()));
 
         final nameText = tester.widget<Text>(find.text('Butlery'));
-        expect(nameText.style?.fontWeight, equals(FontWeight.w600));
+        // Vikten ägs av den frysta typskalan, inte av provet.
+        expect(
+          nameText.style?.fontWeight,
+          equals(AppTextStyles.headlineMedium.fontWeight),
+        );
       });
     });
 

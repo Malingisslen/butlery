@@ -15,9 +15,9 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/user_profile.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/widgets/social/family_presence_bar.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 
 UserProfile profile(String uid, {String? avatarUrl}) => UserProfile(
   uid: uid,
@@ -56,7 +56,9 @@ Widget wrap(Widget child, {bool disableAnimations = false}) {
 Finder findOnlineDot() {
   return find.byWidgetPredicate(
     (w) =>
-        w is Icon && w.icon == Icons.circle && w.color == AppColors.forestGreen,
+        w is Icon &&
+        w.icon == Icons.circle &&
+        w.color == ButleryColors.light.success,
   );
 }
 

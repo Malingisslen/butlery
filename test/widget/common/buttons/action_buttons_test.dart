@@ -402,8 +402,12 @@ void main() {
           find.byType(FloatingActionButton),
         );
         // FAB uses cs.primary / cs.surfaceContainerHighest from the Butlery theme
-        expect(fab.backgroundColor, equals(AppColors.forestGreen));
-        expect(fab.foregroundColor, equals(AppColors.cardWhite));
+        // Paket 1: FAB:en tar sina färger ur det kanoniska schemat.
+        expect(fab.backgroundColor, equals(AppColors.lightColorScheme.primary));
+        expect(
+          fab.foregroundColor,
+          equals(AppColors.lightColorScheme.surfaceContainerHighest),
+        );
       });
 
       testWidgets('should handle custom colors', (tester) async {

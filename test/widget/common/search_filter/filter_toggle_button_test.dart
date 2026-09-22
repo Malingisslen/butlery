@@ -97,7 +97,8 @@ void main() {
         await tester.pumpAndSettle();
 
         final icon = tester.widget<Icon>(find.byIcon(Icons.tune));
-        expect(icon.color, AppColors.textMedium);
+        // Sloten ägs av det kanoniska schemat, inte av en enskild medlem.
+        expect(icon.color, AppColors.lightColorScheme.onSurfaceVariant);
       });
 
       testWidgets('should show Swedish tooltip for hidden state', (
