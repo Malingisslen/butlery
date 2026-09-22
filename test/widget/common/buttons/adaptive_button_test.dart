@@ -13,6 +13,8 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_colors_dark.dart';
 import 'package:butlery/widgets/common/buttons/adaptive_button.dart';
 
 Widget _wrap(Widget child) => MaterialApp(home: Scaffold(body: child));
@@ -129,6 +131,32 @@ void main() {
         btn.style!.foregroundColor?.resolve(disabled),
         isNot(Colors.amber),
       );
+    });
+  });
+
+  group('AdaptiveButton — iOS disabled surface fallback', () {
+    // The iOS branch itself cannot run on this host (see the library doc),
+    // so the fallback it uses is pinned through its helper.
+    test('is token surface.disabled in the light mode', () {
+      expect(
+        AdaptiveButton.disabledSurfaceFor(Brightness.light),
+        AppColors.surfaceDisabled,
+      );
+      expect(AppColors.surfaceDisabled, const Color(0xFFA9B2A0));
+    });
+
+    test('is token surface.disabled in the dark mode', () {
+      expect(
+        AdaptiveButton.disabledSurfaceFor(Brightness.dark),
+        AppColorsDark.surfaceDisabled,
+      );
+      expect(AppColorsDark.surfaceDisabled, const Color(0xFF4A5C50));
+    });
+
+    test('is opaque in both modes: disabled is never opacity', () {
+      for (final b in Brightness.values) {
+        expect(AdaptiveButton.disabledSurfaceFor(b).a, 1.0);
+      }
     });
   });
 

@@ -6,6 +6,8 @@ import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_colors_dark.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 
@@ -98,6 +100,16 @@ class AdaptiveButton extends StatelessWidget {
     );
   }
 
+  /// Den avstängda ytan när anroparen inte anger någon: token
+  /// surface.disabled i det aktuella läget (tokens.json semantic
+  /// surface.disabled; ljust #A9B2A0, mörkt #4A5C50). Egen metod så att
+  /// iOS-grenens reserv kan provas på en värd där `Platform.isIOS` är falskt.
+  @visibleForTesting
+  static Color disabledSurfaceFor(Brightness brightness) =>
+      brightness == Brightness.dark
+      ? AppColorsDark.surfaceDisabled
+      : AppColors.surfaceDisabled;
+
   @override
   Widget build(BuildContext context) {
     if (!kIsWeb && Platform.isIOS) {
@@ -105,10 +117,14 @@ class AdaptiveButton extends StatelessWidget {
         onPressed: onPressed,
         padding: padding,
         minimumSize: Size(minSize, minSize),
-        // Ytan. Reserven är Cupertinos egen (genomskinlig) och byts mot
-        // token surface.disabled när den levereras till appen.
+        // Ytan. Reserven är token surface.disabled per läge, aldrig en
+        // genomskinlig systemfyllnad: avstängd är en egen yta, inte
+        // opacitet (Komponentark v1:365). Ljust: AppColors.surfaceDisabled
+        // (#A9B2A0), mörkt: AppColorsDark.surfaceDisabled (#4A5C50), båda
+        // semantic.surface.disabled i tokens.json.
         disabledColor:
-            disabledBackgroundColor ?? CupertinoColors.quaternarySystemFill,
+            disabledBackgroundColor ??
+            disabledSurfaceFor(Theme.of(context).brightness),
         child: child,
       );
     }

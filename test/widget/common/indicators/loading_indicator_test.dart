@@ -36,10 +36,13 @@ SizedBox _sizedBoxFor(WidgetTester tester) {
 PlateLine _lineOf(WidgetTester tester) =>
     tester.widget<PlateLine>(find.byType(PlateLine));
 
-LinearProgressIndicator _barOf(WidgetTester tester) =>
-    tester.widget<LinearProgressIndicator>(
-      find.byType(LinearProgressIndicator),
-    );
+ColoredBox _trackOf(WidgetTester tester) =>
+    tester.widget<ColoredBox>(find.byKey(PlateLine.trackKey));
+
+Color? _segmentOf(WidgetTester tester) =>
+    (tester.widget<DecoratedBox>(find.byKey(PlateLine.segmentKey)).decoration
+            as BoxDecoration)
+        .color;
 
 void main() {
   group('LoadingIndicator — default', () {
@@ -109,7 +112,10 @@ void main() {
       tester,
     ) async {
       await tester.pumpWidget(_wrap(const LoadingIndicator(strokeWidth: 6)));
-      expect(_barOf(tester).minHeight, PlateLine.thickness);
+      expect(
+        tester.getSize(find.byKey(PlateLine.trackKey)).height,
+        PlateLine.thickness,
+      );
     });
 
     testWidgets('colours come from the tokens per mode, never from color', (
@@ -124,12 +130,8 @@ void main() {
           theme: ThemeData(colorScheme: AppColors.lightColorScheme),
         ),
       );
-      var bar = _barOf(tester);
-      expect(
-        (bar.valueColor! as AlwaysStoppedAnimation<Color?>).value,
-        AppColors.progressIndicator,
-      );
-      expect(bar.backgroundColor, AppColors.progressTrack);
+      expect(_trackOf(tester).color, AppColors.progressTrack);
+      expect(_segmentOf(tester), AppColors.surfaceDisabled);
 
       await tester.pumpWidget(
         _wrap(
@@ -139,12 +141,8 @@ void main() {
       );
       // MaterialApp animates between themes; let the change land.
       await tester.pump(const Duration(seconds: 1));
-      bar = _barOf(tester);
-      expect(
-        (bar.valueColor! as AlwaysStoppedAnimation<Color?>).value,
-        AppColorsDark.progressIndicator,
-      );
-      expect(bar.backgroundColor, AppColorsDark.progressTrack);
+      expect(_trackOf(tester).color, AppColorsDark.progressTrack);
+      expect(_segmentOf(tester), AppColorsDark.surfaceDisabled);
     });
 
     testWidgets('explicit padding wraps the SizedBox in a Padding', (

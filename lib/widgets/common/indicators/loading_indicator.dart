@@ -68,6 +68,12 @@ class LoadingIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final indicatorSize = size ?? AppDimensions.iconSizeM;
+    // Tolkning, tills vidare: ingen källa ritar tallrikslinjen i den här
+    // positionen. Komponentark v1:307 och :365 lägger den i fullbredd längs
+    // knappens underkant. Här ritas den centrerad i samma ruta som snurran
+    // fyllde, lika bred som rutan, så att raderna inte ändrar mått förrän
+    // placeringen i knapp är avgjord.
+    //
     // Semantiken ligger ytterst, som förut, så att BUT-1173:s nod är
     // LoadingIndicators egen. Linjens egen semantik stängs av därunder så
     // att det finns en enda nod.
