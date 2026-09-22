@@ -92,6 +92,8 @@
    "placeholderIcon",
    "primary",
    "primaryContainer",
+   "progressIndicator",
+   "progressTrack",
    "recipeCardBottomBorder",
    "recipeCardLeftBorder",
    "recipeMeta",
@@ -252,6 +254,8 @@
    "overlayBlack60",
    "overlayWhite40",
    "placeholderIcon",
+   "progressIndicator",
+   "progressTrack",
    "recipeMeta",
    "rustLight",
    "sectionHeader",
@@ -311,6 +315,8 @@
    "overlay.inkSubtle",
    "overlay.paperCard",
    "overlay.paperWash",
+   "progressIndicator",
+   "progressTrack",
    "scrim",
    "surface.base",
    "surface.ink",
@@ -615,6 +621,20 @@
     "KIND": "CANONICAL"
    },
    {
+    "FLUTTER_MEMBER": "progressTrack",
+    "SEMANTIC_TOKEN": "progressTrack",
+    "TOKENS_JSON_PATH": "semantic[\"progressTrack\"].dark",
+    "DARK_VALUE": "rgba(245,244,237,0.18)",
+    "KIND": "CANONICAL"
+   },
+   {
+    "FLUTTER_MEMBER": "progressIndicator",
+    "SEMANTIC_TOKEN": "progressIndicator",
+    "TOKENS_JSON_PATH": "semantic[\"progressIndicator\"].dark",
+    "DARK_VALUE": "#CE7C1E",
+    "KIND": "CANONICAL"
+   },
+   {
     "FLUTTER_MEMBER": "textSecondary",
     "SEMANTIC_TOKEN": "text.secondary.onRaised",
     "TOKENS_JSON_PATH": "semantic[\"text.secondary.onRaised\"].dark",
@@ -818,5 +838,6 @@
     "KIND": "ALIAS"
    }
   ]
- }
+ },
+ "$progressExtension": "2026-09-22: ytan vaxte medvetet med 2 medlemmar (progressTrack, progressIndicator). Tallrikslinjens token fanns i tokens.json men nadde aldrig appen, sa laddningen tvingades anvanda en spinner - precis det beslut B-18 forbjuder."
 }

@@ -308,6 +308,16 @@
    "semantic",
    "overlay.inkStrong",
    "Överlägg — värdet ligger i tokens.semantic, inte här"
+  ],
+  "progressTrack": [
+   "semantic",
+   "progressTrack",
+   "Tallrikslinjens ranna"
+  ],
+  "progressIndicator": [
+   "semantic",
+   "progressIndicator",
+   "Tallrikslinjen sjalv - appens enda laddningsindikator (beslut B-18)"
   ]
  },
  "aliases": {

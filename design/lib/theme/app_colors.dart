@@ -1,7 +1,7 @@
 // GENERERAD FIL — ändra källan, inte den här.
 // system 2.1 · tokens 1.13
 // generator tools/gen-app-theme.mjs v2.3
-// källfingeravtryck sha256:e23da35a7383dd2630fd560e3b7e77cb9a8e3104878c9558aaccd3e4998ba0f6 (6 indatafiler, generatorns källa inräknad)
+// källfingeravtryck sha256:cf6a27d42dd668eb9e6c7eeba8e564180ce9bfdcbbc4411012b4c33715627ec1 (6 indatafiler, generatorns källa inräknad)
 // genererad ur källdatum 2026-08-05 (tokens.date — reproducerbart, inte klockan)
 //
 // Migration (etapp 8.1): varje medlem har samma NAMN som i det FRYSTA
@@ -140,6 +140,10 @@ class AppColors {
   static const Color overlayBlack40 = Color(0x6617251D);
   /// Överlägg — värdet ligger i tokens.semantic, inte här · semantic.overlay.inkStrong
   static const Color overlayBlack60 = Color(0x9917251D);
+  /// Tallrikslinjens ranna · semantic.progressTrack
+  static const Color progressTrack = Color(0xFFE6EAD9);
+  /// Tallrikslinjen sjalv - appens enda laddningsindikator (beslut B-18) · semantic.progressIndicator
+  static const Color progressIndicator = Color(0xFFCE7C1E);
 
   // Alias — oförändrade, pekar på medlemmar ovan. Deklarerade i
   // tools/app-theme-map.json; högersidan mäts mot utdata av TG-01.
