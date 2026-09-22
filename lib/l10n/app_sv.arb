@@ -12167,5 +12167,20 @@
       }
     }
   },
-  "shoppingCouldNotLeaveList": "Kunde inte lämna listan"
+  "shoppingCouldNotLeaveList": "Kunde inte lämna listan",
+  "settingsAboutTitle": "Om Butlery",
+  "settingsAboutSubtitle": "Version och licenser",
+  "settingsAboutVersion": "Version {version}",
+  "@settingsAboutVersion": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsLicensesTitle": "Licenser",
+  "settingsLicensesSubtitle": "Typsnitt och öppen källkod",
+  "licensesNoticesHeading": "Butlery Sans – upphovsrätt och källor",
+  "licensesOflHeading": "SIL Open Font License 1.1",
+  "licensesCouldNotLoad": "Licenstexterna kunde inte läsas in."
 }

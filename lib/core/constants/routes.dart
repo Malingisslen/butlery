@@ -98,6 +98,8 @@ class Routes {
   static const String collectionStats = '/settings/collection-stats';
   static const String moderatorReview = '/admin/moderation';
   static const String myReports = '/settings/my-reports';
+  static const String settingsAbout = '/settings/about';
+  static const String settingsLicenses = '/settings/about/licenses';
 
   // Legal routes
   static const String termsOfService = '/legal/terms';
@@ -203,6 +205,8 @@ class Routes {
     settingsAccountSecurity,
     collectionStats,
     moderatorReview,
+    settingsAbout,
+    settingsLicenses,
     faq,
   };
 
@@ -308,6 +312,8 @@ class Routes {
     settingsAccountSecurity,
     collectionStats,
     moderatorReview,
+    settingsAbout,
+    settingsLicenses,
 
     // Legal
     termsOfService,

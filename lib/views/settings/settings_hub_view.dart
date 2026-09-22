@@ -135,6 +135,13 @@ class SettingsHubView extends StatelessWidget {
                 const SizedBox(height: AppDimensions.spacingMd),
                 _SectionHeader(title: context.l10n.settingsSectionAbout),
                 _SettingsTile(
+                  icon: Icons.info_outline,
+                  title: context.l10n.settingsAboutTitle,
+                  subtitle: context.l10n.settingsAboutSubtitle,
+                  onTap: () =>
+                      Navigator.pushNamed(context, Routes.settingsAbout),
+                ),
+                _SettingsTile(
                   icon: Icons.help_outline,
                   title: context.l10n.profileFaq,
                   onTap: () => Navigator.pushNamed(context, Routes.faq),

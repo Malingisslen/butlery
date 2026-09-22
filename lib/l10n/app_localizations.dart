@@ -27466,6 +27466,54 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Kunde inte lämna listan'**
   String get shoppingCouldNotLeaveList;
+
+  /// No description provided for @settingsAboutTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Om Butlery'**
+  String get settingsAboutTitle;
+
+  /// No description provided for @settingsAboutSubtitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Version och licenser'**
+  String get settingsAboutSubtitle;
+
+  /// No description provided for @settingsAboutVersion.
+  ///
+  /// In sv, this message translates to:
+  /// **'Version {version}'**
+  String settingsAboutVersion(String version);
+
+  /// No description provided for @settingsLicensesTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Licenser'**
+  String get settingsLicensesTitle;
+
+  /// No description provided for @settingsLicensesSubtitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Typsnitt och öppen källkod'**
+  String get settingsLicensesSubtitle;
+
+  /// No description provided for @licensesNoticesHeading.
+  ///
+  /// In sv, this message translates to:
+  /// **'Butlery Sans – upphovsrätt och källor'**
+  String get licensesNoticesHeading;
+
+  /// No description provided for @licensesOflHeading.
+  ///
+  /// In sv, this message translates to:
+  /// **'SIL Open Font License 1.1'**
+  String get licensesOflHeading;
+
+  /// No description provided for @licensesCouldNotLoad.
+  ///
+  /// In sv, this message translates to:
+  /// **'Licenstexterna kunde inte läsas in.'**
+  String get licensesCouldNotLoad;
 }
 
 class _AppLocalizationsDelegate
