@@ -30,6 +30,7 @@ import 'package:flutter/services.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/butlery_focus_ring.dart';
 
 /// Vilket av Komponentarkets toppfältsmönster ett [ButleryTopBar] ritar.
 enum ButleryTopBarPattern {
@@ -367,35 +368,40 @@ class ButleryTopBar extends StatelessWidget implements PreferredSizeWidget {
         surfaceTintColor: Colors.transparent,
         child: SafeArea(
           bottom: false,
-          child: IconTheme.merge(
-            data: IconThemeData(color: foreground),
-            // Bara förgrundsfärgen byts. Resten av appens ikonknappstema —
-            // fokusmarkeringen, 48 dp minsta storlek och ikonstorleken —
-            // ärvs, så att fokus syns i fältet precis som utanför det.
-            child: IconButtonTheme(
-              data: IconButtonThemeData(
-                style: IconButton.styleFrom(
-                  foregroundColor: foreground,
-                ).merge(IconButtonTheme.of(context).style),
-              ),
-              child: DefaultTextStyle.merge(
-                style: TextStyle(color: foreground),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    ConstrainedBox(
-                      constraints: BoxConstraints(
-                        minHeight: _isRoot ? 0 : subpageMinHeight,
+          // Fokusringen följer fältets yta, inte temats läge: på undersidans
+          // ink är ringen papper även i ljust läge (tokens.json:155-160).
+          child: FocusRingSurface(
+            brightness: ThemeData.estimateBrightnessForColor(background),
+            child: IconTheme.merge(
+              data: IconThemeData(color: foreground),
+              // Bara förgrundsfärgen byts. Resten av appens ikonknappstema —
+              // fokusmarkeringen, 48 dp minsta storlek och ikonstorleken —
+              // ärvs, så att fokus syns i fältet precis som utanför det.
+              child: IconButtonTheme(
+                data: IconButtonThemeData(
+                  style: IconButton.styleFrom(
+                    foregroundColor: foreground,
+                  ).merge(IconButtonTheme.of(context).style),
+                ),
+                child: DefaultTextStyle.merge(
+                  style: TextStyle(color: foreground),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      ConstrainedBox(
+                        constraints: BoxConstraints(
+                          minHeight: _isRoot ? 0 : subpageMinHeight,
+                        ),
+                        child: Align(
+                          alignment: AlignmentDirectional.centerStart,
+                          heightFactor: 1,
+                          child: toolbar,
+                        ),
                       ),
-                      child: Align(
-                        alignment: AlignmentDirectional.centerStart,
-                        heightFactor: 1,
-                        child: toolbar,
-                      ),
-                    ),
-                    ?bottom,
-                  ],
+                      ?bottom,
+                    ],
+                  ),
                 ),
               ),
             ),

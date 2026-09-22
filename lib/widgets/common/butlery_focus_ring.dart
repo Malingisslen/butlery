@@ -24,6 +24,36 @@ import 'package:flutter/scheduler.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 
+/// Tells the focus rings below it which kind of surface they stand on.
+///
+/// The ring is ink on light and paper on dark (tokens.json:155-160). That
+/// follows the theme's brightness, except where a component paints its own
+/// surface of the other kind: the subpage top bar stands on surface.ink in
+/// light mode too (Komponentark v1:73), and an ink ring there would vanish.
+/// Such a component wraps its content in a [FocusRingSurface].
+class FocusRingSurface extends InheritedWidget {
+  const FocusRingSurface({
+    required this.brightness,
+    required super.child,
+    super.key,
+  });
+
+  /// The brightness of the surface the rings below stand on.
+  final Brightness brightness;
+
+  /// The surface brightness for rings at [context]: the nearest
+  /// [FocusRingSurface], or the theme's brightness.
+  static Brightness of(BuildContext context) =>
+      context
+          .dependOnInheritedWidgetOfExactType<FocusRingSurface>()
+          ?.brightness ??
+      Theme.of(context).brightness;
+
+  @override
+  bool updateShouldNotify(FocusRingSurface oldWidget) =>
+      oldWidget.brightness != brightness;
+}
+
 /// What the ring goes around.
 enum FocusRingBounds {
   /// The whole child.
@@ -158,7 +188,7 @@ class _ButleryFocusRingState extends State<ButleryFocusRing> {
 
   @override
   Widget build(BuildContext context) {
-    final color = AppModeColors.focusRing(Theme.of(context).brightness);
+    final color = AppModeColors.focusRing(FocusRingSurface.of(context));
     Widget child = widget.child;
     if (widget.focused == null) {
       child = Focus(

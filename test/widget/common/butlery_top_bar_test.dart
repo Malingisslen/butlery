@@ -2,9 +2,12 @@
 /// (Komponentark v1 §01, patterns 1 and 2; decision D2 of package 2).
 library;
 
+import 'dart:ui' as ui;
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -12,11 +15,34 @@ import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_colors_dark.dart';
 import 'package:butlery/theme/app_theme.dart';
+import 'package:butlery/widgets/common/butlery_focus_ring.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 
 const _titleKey = ValueKey('butleryTopBar.title');
 const _secondaryKey = ValueKey('butleryTopBar.secondaryLine');
 const _backKey = ValueKey('butleryTopBar.back');
+const _boundaryKey = ValueKey('boundary');
+
+Future<Color> _pixel(WidgetTester tester, Offset at) async {
+  final boundary = tester.renderObject<RenderRepaintBoundary>(
+    find.byKey(_boundaryKey),
+  );
+  final bytes = await tester.runAsync(() async {
+    final image = await boundary.toImage();
+    final data = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+    final width = image.width;
+    image.dispose();
+    return (data!, width);
+  });
+  final (ByteData data, int width) = bytes!;
+  final i = (at.dy.floor() * width + at.dx.floor()) * 4;
+  return Color.fromARGB(
+    data.getUint8(i + 3),
+    data.getUint8(i),
+    data.getUint8(i + 1),
+    data.getUint8(i + 2),
+  );
+}
 
 Widget _app(
   PreferredSizeWidget bar, {
@@ -475,52 +501,48 @@ void main() {
       'light': AppTheme.lightTheme,
       'dark': AppTheme.darkTheme,
     }.entries) {
-      testWidgets('${theme.key}: the focused back arrow keeps the app ring', (
-        tester,
-      ) async {
-        FocusManager.instance.highlightStrategy =
-            FocusHighlightStrategy.alwaysTraditional;
-        addTearDown(
-          () => FocusManager.instance.highlightStrategy =
-              FocusHighlightStrategy.automatic,
-        );
-        await tester.pumpWidget(
-          _app(
-            ButleryTopBar.undersida(title: 'Receptet', onBack: () {}),
-            theme: theme.value,
-          ),
-        );
-        OutlinedBorder shape() =>
-            tester
-                    .widget<Material>(
-                      find
-                          .descendant(
-                            of: find.byKey(_backKey),
-                            matching: find.byType(Material),
-                          )
-                          .first,
-                    )
-                    .shape!
-                as OutlinedBorder;
-        expect(shape().side, BorderSide.none);
+      testWidgets(
+        '${theme.key}: the focused back arrow gets a paper ring on ink',
+        (
+          tester,
+        ) async {
+          FocusManager.instance.highlightStrategy =
+              FocusHighlightStrategy.alwaysTraditional;
+          addTearDown(
+            () => FocusManager.instance.highlightStrategy =
+                FocusHighlightStrategy.automatic,
+          );
+          await tester.pumpWidget(
+            RepaintBoundary(
+              key: _boundaryKey,
+              child: _app(
+                ButleryTopBar.undersida(title: 'Receptet', onBack: () {}),
+                theme: theme.value,
+              ),
+            ),
+          );
+          Focus.of(
+            tester.element(find.byIcon(Icons.chevron_left)),
+          ).requestFocus();
+          await tester.pumpAndSettle();
 
-        Focus.of(
-          tester.element(find.byIcon(Icons.chevron_left)),
-        ).requestFocus();
-        await tester.pumpAndSettle();
+          // The subpage stands on ink in both modes (Komponentark v1:73), so
+          // the ring is paper there even in light mode (tokens.json:155-160).
+          final r = tester.getRect(find.byKey(_backKey));
+          // The stroke is 2 px wide; sample across it so a half-pixel layout
+          // offset cannot land the probe on the anti-aliased edge.
+          final y = r.bottom + ButleryFocusRing.inflate;
+          final across = [
+            for (final dy in [-1.0, 0.0, 1.0])
+              await _pixel(tester, Offset(r.center.dx, y + dy)),
+          ];
+          expect(across, contains(const Color(0xFFF5F4ED)));
 
-        // The app's icon button theme resolves the focused side; the bar
-        // only swaps the foreground colour.
-        final themed = theme.value.iconButtonTheme.style!.side!.resolve({
-          WidgetState.focused,
-        });
-        expect(themed, isNotNull);
-        expect(shape().side, themed);
-        // 48 dp minimum from the app theme survives as well.
-        final size = tester.getSize(find.byKey(_backKey));
-        expect(size.width, greaterThanOrEqualTo(48));
-        expect(size.height, greaterThanOrEqualTo(48));
-      });
+          // 48 dp minimum from the app theme survives.
+          expect(r.width, greaterThanOrEqualTo(48));
+          expect(r.height, greaterThanOrEqualTo(48));
+        },
+      );
     }
   });
 

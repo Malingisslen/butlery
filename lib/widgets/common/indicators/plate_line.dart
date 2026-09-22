@@ -13,8 +13,7 @@
 // säger vad som hämtas, linjen säger bara att något pågår.
 
 import 'package:flutter/material.dart';
-import 'package:butlery/theme/app_colors.dart';
-import 'package:butlery/theme/app_colors_dark.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/indicators/loading_semantics.dart';
 
@@ -138,19 +137,17 @@ class _PlateLineState extends State<PlateLine>
 
   @override
   Widget build(BuildContext context) {
-    final morkt = Theme.of(context).brightness == Brightness.dark;
+    final colors = context.butleryColors;
     // Rännan: token progressTrack. Ljust #E6EAD9, mörkt
     // rgba(245,244,237,0.18) (tokens.json semantic progressTrack).
-    final ranna = morkt ? AppColorsDark.progressTrack : AppColors.progressTrack;
+    final ranna = colors.progressTrack;
 
     final value = widget.value;
     final Widget bar;
     if (value != null) {
       // Bestämd: token progressIndicator, #CE7C1E i båda lägena
       // (tokens.json semantic progressIndicator).
-      final linje = morkt
-          ? AppColorsDark.progressIndicator
-          : AppColors.progressIndicator;
+      final linje = colors.progressIndicator;
       bar = ClipRRect(
         borderRadius: BorderRadius.circular(AppDimensions.radiusKnob),
         child: LinearProgressIndicator(
@@ -165,9 +162,7 @@ class _PlateLineState extends State<PlateLine>
       // surface.disabled bär det värdet i ljust; i mörkt tar vi samma tokens
       // mörka värde, #4A5C50. Tolkning: ritningen har ingen egen token för
       // segmentet.
-      final segment = morkt
-          ? AppColorsDark.surfaceDisabled
-          : AppColors.surfaceDisabled;
+      final segment = colors.surfaceDisabled;
       bar = SizedBox(
         height: PlateLine.thickness,
         width: double.infinity,

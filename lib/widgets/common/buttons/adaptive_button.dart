@@ -6,8 +6,7 @@ import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
-import 'package:butlery/theme/app_colors.dart';
-import 'package:butlery/theme/app_colors_dark.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 
@@ -107,8 +106,8 @@ class AdaptiveButton extends StatelessWidget {
   @visibleForTesting
   static Color disabledSurfaceFor(Brightness brightness) =>
       brightness == Brightness.dark
-      ? AppColorsDark.surfaceDisabled
-      : AppColors.surfaceDisabled;
+      ? ButleryColors.dark.surfaceDisabled
+      : ButleryColors.light.surfaceDisabled;
 
   @override
   Widget build(BuildContext context) {
@@ -119,8 +118,7 @@ class AdaptiveButton extends StatelessWidget {
         minimumSize: Size(minSize, minSize),
         // Ytan. Reserven är token surface.disabled per läge, aldrig en
         // genomskinlig systemfyllnad: avstängd är en egen yta, inte
-        // opacitet (Komponentark v1:365). Ljust: AppColors.surfaceDisabled
-        // (#A9B2A0), mörkt: AppColorsDark.surfaceDisabled (#4A5C50), båda
+        // opacitet (Komponentark v1:365). Ljust #A9B2A0, mörkt #4A5C50, båda
         // semantic.surface.disabled i tokens.json.
         disabledColor:
             disabledBackgroundColor ??

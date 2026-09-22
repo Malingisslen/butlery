@@ -59,6 +59,9 @@ class ButleryColors extends ThemeExtension<ButleryColors> {
     required this.sharedRecipeIcon,
     required this.sharedRecipeBackground,
     required this.focusRing,
+    required this.progressTrack,
+    required this.progressIndicator,
+    required this.surfaceDisabled,
   });
 
   // Chat
@@ -129,6 +132,17 @@ class ButleryColors extends ThemeExtension<ButleryColors> {
   /// AppDimensions.focusRingWidth and focusRingOffset.
   final Color focusRing;
 
+  /// The plate line's track (tokens.json semantic progressTrack).
+  final Color progressTrack;
+
+  /// The plate line's determinate fill (tokens.json semantic
+  /// progressIndicator).
+  final Color progressIndicator;
+
+  /// The disabled surface, never opacity (tokens.json semantic
+  /// surface.disabled).
+  final Color surfaceDisabled;
+
   /// Light mode values — match current AppColors constants exactly.
   /// Ljust läge. Varje värde ägs av den kanoniska grunden — den här klassen
   /// är en kompatibilitetsyta, inte en palett. Pensioneras i paket 7.
@@ -172,6 +186,9 @@ class ButleryColors extends ThemeExtension<ButleryColors> {
     sharedRecipeIcon: AppColors.sharedRecipeIcon,
     sharedRecipeBackground: AppColors.sharedRecipeBackground,
     focusRing: AppColors.focusRing,
+    progressTrack: AppColors.progressTrack,
+    progressIndicator: AppColors.progressIndicator,
+    surfaceDisabled: AppColors.surfaceDisabled,
   );
 
   /// Dark mode values — adapted for dark surfaces while preserving brand identity.
@@ -217,6 +234,9 @@ class ButleryColors extends ThemeExtension<ButleryColors> {
     sharedRecipeIcon: AppColors.sharedRecipeIcon,
     sharedRecipeBackground: AppColorsDark.sharedRecipeBackground,
     focusRing: AppColorsDark.focusRing,
+    progressTrack: AppColorsDark.progressTrack,
+    progressIndicator: AppColorsDark.progressIndicator,
+    surfaceDisabled: AppColorsDark.surfaceDisabled,
   );
 
   @override
@@ -260,6 +280,9 @@ class ButleryColors extends ThemeExtension<ButleryColors> {
     Color? sharedRecipeIcon,
     Color? sharedRecipeBackground,
     Color? focusRing,
+    Color? progressTrack,
+    Color? progressIndicator,
+    Color? surfaceDisabled,
   }) {
     return ButleryColors(
       chatBubbleOutgoing: chatBubbleOutgoing ?? this.chatBubbleOutgoing,
@@ -303,6 +326,9 @@ class ButleryColors extends ThemeExtension<ButleryColors> {
       sharedRecipeBackground:
           sharedRecipeBackground ?? this.sharedRecipeBackground,
       focusRing: focusRing ?? this.focusRing,
+      progressTrack: progressTrack ?? this.progressTrack,
+      progressIndicator: progressIndicator ?? this.progressIndicator,
+      surfaceDisabled: surfaceDisabled ?? this.surfaceDisabled,
     );
   }
 
@@ -421,6 +447,13 @@ class ButleryColors extends ThemeExtension<ButleryColors> {
         t,
       )!,
       focusRing: Color.lerp(focusRing, other.focusRing, t)!,
+      progressTrack: Color.lerp(progressTrack, other.progressTrack, t)!,
+      progressIndicator: Color.lerp(
+        progressIndicator,
+        other.progressIndicator,
+        t,
+      )!,
+      surfaceDisabled: Color.lerp(surfaceDisabled, other.surfaceDisabled, t)!,
     );
   }
 }
