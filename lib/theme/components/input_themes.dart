@@ -10,12 +10,8 @@ import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_shadows.dart';
-
-/// BUT-533: keyboard-focus ring for text fields. Rust accent at 3px gives
-/// ≥3:1 contrast against cream and against the field's own fill color —
-/// satisfies WCAG 1.4.11 (non-text contrast) and 2.4.7 (focus visible).
-const double _kFocusRingWidth = 3.0;
 
 /// Input, card, and data display component themes.
 /// All methods accept [ColorScheme] for dark/light mode awareness.
@@ -24,44 +20,65 @@ class InputThemes {
 
   /// Input decoration theme
   static InputDecorationTheme inputDecorationTheme(ColorScheme cs) {
+    // Fields take the control radius, 8 (tokens.json space.radius.control).
     return InputDecorationTheme(
       filled: true,
       fillColor: cs.surfaceContainerHighest,
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         borderSide: BorderSide(
           color: cs.outlineVariant,
           width: 1,
         ),
       ),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         borderSide: BorderSide(
           color: cs.outlineVariant,
           width: 1,
         ),
       ),
+      // Focus on a bare TextField (one not wrapped in ButleryFocusRing, as
+      // StyledInput, AdaptiveTextField and ButlerySearchBox are): the
+      // canonical ring colour and width, ink on light and paper on dark,
+      // never saffron (tokens.json:155-160; Komponentark v1:657). A theme's
+      // input border can only draw on the field's own edge, so this is the
+      // ring without its 3 px offset, and the edge goes from 1 to 2 px: the
+      // recorded fallback of decision D3, kept only until package 4 moves
+      // the remaining bare fields onto the ring. It replaces BUT-533's 3 px
+      // saffron edge.
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
-        // BUT-533: rust ring at 3px — visible on cream where the previous
-        // 2px primary-color border faded into the surrounding surface.
-        borderSide: const BorderSide(
-          color: AppColors.rust,
-          width: _kFocusRingWidth,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
+        borderSide: BorderSide(
+          color: AppModeColors.focusRing(cs.brightness),
+          width: AppDimensions.focusRingWidth,
         ),
       ),
       errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         borderSide: BorderSide(
           color: cs.error,
           width: 1,
         ),
       ),
+      // Focused with an error: the same D3 fallback ring on the edge. The
+      // 2 px error edge was a thicker-border focus expression; the error
+      // itself stays told by the error text under the field.
       focusedErrorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         borderSide: BorderSide(
-          color: cs.error,
-          width: 2,
+          color: AppModeColors.focusRing(cs.brightness),
+          width: AppDimensions.focusRingWidth,
+        ),
+      ),
+      // Disabled field: 1 px surface.disabled edge on the unchanged
+      // surface.raised fill, never opacity (Grafisk manual v6:423;
+      // Komponentark v1:423 light, :514 dark).
+      disabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
+        borderSide: BorderSide(
+          color: AppModeColors.surfaceDisabled(cs.brightness),
+          width: 1,
         ),
       ),
       contentPadding: const EdgeInsets.symmetric(
@@ -76,12 +93,13 @@ class InputThemes {
 
   /// Card theme
   static CardThemeData cardTheme(ColorScheme cs) {
+    // Cards take the card radius, 12 (tokens.json space.radius.card).
     return CardThemeData(
       color: cs.surfaceContainerHighest,
       elevation: 0,
       shadowColor: Colors.transparent,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
         side: BorderSide(
           color: cs.outlineVariant,
           width: 1,
@@ -100,7 +118,27 @@ class InputThemes {
       tileColor: cs.surfaceContainerHighest,
       selectedTileColor: cs.primaryContainer,
       iconColor: cs.primary,
-      textColor: cs.onSurface,
+      // A disabled row's label is secondary text, never opacity (decision
+      // D5; Komponentark v1:164 and :174, the disabled radio and switch
+      // rows). Those rows are drawn on paper, but this theme paints every
+      // tile surface.raised (tileColor above), where text.secondary fails
+      // 4.5:1 in both modes. So the row takes the role's on-raised value,
+      // text.secondary.onRaised: #5B6959 light, #A9B2A0 dark
+      // (tokens.json:184-187). Switch and radio rows are ListTiles and the
+      // theme cannot tell them apart from other rows, so every disabled
+      // list row gets it. Without this, Flutter falls back to
+      // ThemeData.disabledColor, a 38 % black. Selected and enabled rows
+      // keep what they resolved to before (Material's selected primary, and
+      // onSurface).
+      textColor: WidgetStateColor.resolveWith((states) {
+        if (states.contains(WidgetState.disabled)) {
+          return AppModeColors.textSecondaryOnRaised(cs.brightness);
+        }
+        if (states.contains(WidgetState.selected)) {
+          return cs.primary;
+        }
+        return cs.onSurface;
+      }),
       titleTextStyle: AppTextStyles.listTileTitle.copyWith(
         color: cs.onSurface,
       ),
@@ -135,8 +173,11 @@ class InputThemes {
         horizontal: AppDimensions.paddingM,
         vertical: AppDimensions.paddingS,
       ),
+      // Chips are pill-shaped: tokens.json controls.chip.radius = "pill".
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.zero,
+        borderRadius: BorderRadius.all(
+          Radius.circular(AppDimensions.radiusPill),
+        ),
       ),
     );
   }
@@ -208,15 +249,8 @@ class InputThemes {
     boxShadow: AppShadows.searchBox,
   );
 
-  /// Search box decoration (focused) — heavier green+rust border
-  static BoxDecoration get searchBoxDecorationFocused => BoxDecoration(
-    color: AppColors.cardWhite,
-    border: const Border(
-      top: BorderSide(color: AppColors.forestGreen, width: 2),
-      left: BorderSide(color: AppColors.forestGreen, width: 2),
-      right: BorderSide(color: AppColors.forestGreen, width: 2),
-      bottom: BorderSide(color: AppColors.rust, width: 4),
-    ),
-    boxShadow: AppShadows.searchBox,
-  );
+  /// Search box decoration while focused: the same edge as at rest. The
+  /// edge never thickens at focus (Grafisk manual v6:423; Komponentark
+  /// v1:657); ButlerySearchBox draws the focus ring outside it instead.
+  static BoxDecoration get searchBoxDecorationFocused => searchBoxDecoration;
 }

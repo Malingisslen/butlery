@@ -58,6 +58,7 @@ class ButleryColors extends ThemeExtension<ButleryColors> {
     required this.sharedRecipeText,
     required this.sharedRecipeIcon,
     required this.sharedRecipeBackground,
+    required this.focusRing,
   });
 
   // Chat
@@ -123,6 +124,11 @@ class ButleryColors extends ThemeExtension<ButleryColors> {
   final Color sharedRecipeIcon;
   final Color sharedRecipeBackground;
 
+  /// The focus ring: ink #24382C on light, paper #F5F4ED on dark, never
+  /// saffron (tokens.json:155-160, semantic.focusRing). Width and offset are
+  /// AppDimensions.focusRingWidth and focusRingOffset.
+  final Color focusRing;
+
   /// Light mode values — match current AppColors constants exactly.
   /// Ljust läge. Varje värde ägs av den kanoniska grunden — den här klassen
   /// är en kompatibilitetsyta, inte en palett. Pensioneras i paket 7.
@@ -165,6 +171,7 @@ class ButleryColors extends ThemeExtension<ButleryColors> {
     sharedRecipeText: AppColors.sharedRecipeText,
     sharedRecipeIcon: AppColors.sharedRecipeIcon,
     sharedRecipeBackground: AppColors.sharedRecipeBackground,
+    focusRing: AppColors.focusRing,
   );
 
   /// Dark mode values — adapted for dark surfaces while preserving brand identity.
@@ -209,6 +216,7 @@ class ButleryColors extends ThemeExtension<ButleryColors> {
     sharedRecipeText: AppColorsDark.sharedRecipeText,
     sharedRecipeIcon: AppColors.sharedRecipeIcon,
     sharedRecipeBackground: AppColorsDark.sharedRecipeBackground,
+    focusRing: AppColorsDark.focusRing,
   );
 
   @override
@@ -251,6 +259,7 @@ class ButleryColors extends ThemeExtension<ButleryColors> {
     Color? sharedRecipeText,
     Color? sharedRecipeIcon,
     Color? sharedRecipeBackground,
+    Color? focusRing,
   }) {
     return ButleryColors(
       chatBubbleOutgoing: chatBubbleOutgoing ?? this.chatBubbleOutgoing,
@@ -293,6 +302,7 @@ class ButleryColors extends ThemeExtension<ButleryColors> {
       sharedRecipeIcon: sharedRecipeIcon ?? this.sharedRecipeIcon,
       sharedRecipeBackground:
           sharedRecipeBackground ?? this.sharedRecipeBackground,
+      focusRing: focusRing ?? this.focusRing,
     );
   }
 
@@ -410,6 +420,7 @@ class ButleryColors extends ThemeExtension<ButleryColors> {
         other.sharedRecipeBackground,
         t,
       )!,
+      focusRing: Color.lerp(focusRing, other.focusRing, t)!,
     );
   }
 }
