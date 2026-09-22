@@ -11,6 +11,7 @@ import 'package:butlery/core/utils/reduced_motion.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/components/input_themes.dart';
+import 'package:butlery/widgets/common/butlery_focus_ring.dart';
 
 /// Custom search box with Butlery styling.
 ///
@@ -126,55 +127,60 @@ class _ButlerySearchBoxState extends State<ButlerySearchBox> {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    return AnimatedContainer(
-      duration: AppDimensions.animationDurationFast.respectingMotion(context),
-      decoration: _isFocused
-          ? InputThemes.searchBoxDecorationFocused
-          : InputThemes.searchBoxDecoration,
-      child: TextField(
-        controller: _controller,
-        focusNode: _focusNode,
-        autofocus: widget.autofocus,
-        enabled: widget.enabled,
-        style: AppTextStyles.bodyMedium.copyWith(
-          color: cs.onSurface,
-        ),
-        decoration: InputDecoration(
-          hintText: widget.hintText ?? context.l10n.searchHint,
-          hintStyle: AppTextStyles.bodyMedium.copyWith(
-            color: cs.outline,
+    // Focus is the canonical ring outside the box; the box's own edge no
+    // longer thickens at focus (Komponentark v1:657). Text entry shows the
+    // ring on every focus, like CSS :focus-visible does for inputs.
+    return ButleryFocusRing(
+      focused: _isFocused,
+      visibility: FocusRingVisibility.always,
+      child: AnimatedContainer(
+        duration: AppDimensions.animationDurationFast.respectingMotion(context),
+        decoration: InputThemes.searchBoxDecoration,
+        child: TextField(
+          controller: _controller,
+          focusNode: _focusNode,
+          autofocus: widget.autofocus,
+          enabled: widget.enabled,
+          style: AppTextStyles.bodyMedium.copyWith(
+            color: cs.onSurface,
           ),
-          prefixIcon:
-              widget.prefixIcon ??
-              Icon(
-                Icons.search,
-                color: _isFocused ? cs.primary : cs.outline,
-                size: AppDimensions.iconSizeM,
-              ),
-          suffixIcon:
-              widget.suffixIcon ??
-              (_hasText
-                  ? IconButton(
-                      icon: Icon(
-                        Icons.close,
-                        color: cs.outline,
-                        size: AppDimensions.iconSizeM,
-                      ),
-                      onPressed: _clearText,
-                      tooltip: context.l10n.commonClear,
-                    )
-                  : null),
-          border: InputBorder.none,
-          enabledBorder: InputBorder.none,
-          focusedBorder: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: AppDimensions.spacingMd,
-            vertical: AppDimensions.spacingSm + AppDimensions.spacingXs,
+          decoration: InputDecoration(
+            hintText: widget.hintText ?? context.l10n.searchHint,
+            hintStyle: AppTextStyles.bodyMedium.copyWith(
+              color: cs.outline,
+            ),
+            prefixIcon:
+                widget.prefixIcon ??
+                Icon(
+                  Icons.search,
+                  color: _isFocused ? cs.primary : cs.outline,
+                  size: AppDimensions.iconSizeM,
+                ),
+            suffixIcon:
+                widget.suffixIcon ??
+                (_hasText
+                    ? IconButton(
+                        icon: Icon(
+                          Icons.close,
+                          color: cs.outline,
+                          size: AppDimensions.iconSizeM,
+                        ),
+                        onPressed: _clearText,
+                        tooltip: context.l10n.commonClear,
+                      )
+                    : null),
+            border: InputBorder.none,
+            enabledBorder: InputBorder.none,
+            focusedBorder: InputBorder.none,
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: AppDimensions.spacingMd,
+              vertical: AppDimensions.spacingSm + AppDimensions.spacingXs,
+            ),
           ),
+          onChanged: widget.onChanged,
+          onSubmitted: widget.onSubmitted,
+          textInputAction: TextInputAction.search,
         ),
-        onChanged: widget.onChanged,
-        onSubmitted: widget.onSubmitted,
-        textInputAction: TextInputAction.search,
       ),
     );
   }

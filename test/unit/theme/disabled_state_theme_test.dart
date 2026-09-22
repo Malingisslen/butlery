@@ -110,11 +110,13 @@ void main() {
         }
       });
 
-      test('the outlined focus ring still shows on an enabled button', () {
+      test('the disabled branch leaves the enabled outline and ring alone', () {
         final style = t.outlinedButtonTheme.style!;
-        final focused = style.side!.resolve({WidgetState.focused})!;
         final rest = style.side!.resolve({})!;
-        expect(focused, isNot(rest));
+        expect(rest.color, t.colorScheme.primary);
+        expect(style.side!.resolve({WidgetState.focused}), rest);
+        // Focus is the ring the theme's background builder draws.
+        expect(style.backgroundBuilder, isNotNull);
       });
 
       test('text buttons: text.disabled.onRaised', () {

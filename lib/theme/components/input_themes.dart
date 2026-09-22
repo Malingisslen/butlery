@@ -13,11 +13,6 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_shadows.dart';
 
-/// BUT-533: keyboard-focus ring for text fields. Rust accent at 3px gives
-/// ≥3:1 contrast against cream and against the field's own fill color —
-/// satisfies WCAG 1.4.11 (non-text contrast) and 2.4.7 (focus visible).
-const double _kFocusRingWidth = 3.0;
-
 /// Input, card, and data display component themes.
 /// All methods accept [ColorScheme] for dark/light mode awareness.
 class InputThemes {
@@ -43,13 +38,16 @@ class InputThemes {
           width: 1,
         ),
       ),
+      // Focus: the canonical ring colour and width, ink on light and paper
+      // on dark, never saffron (tokens.json:155-160; Komponentark v1:657).
+      // A theme's input border can only draw on the field's own edge, so
+      // this is the ring without its 3 px offset: the recorded fallback of
+      // decision D3. It replaces BUT-533's 3 px saffron edge.
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-        // BUT-533: rust ring at 3px — visible on cream where the previous
-        // 2px primary-color border faded into the surrounding surface.
-        borderSide: const BorderSide(
-          color: AppColors.rust,
-          width: _kFocusRingWidth,
+        borderSide: BorderSide(
+          color: AppModeColors.focusRing(cs.brightness),
+          width: AppDimensions.focusRingWidth,
         ),
       ),
       errorBorder: OutlineInputBorder(
@@ -240,15 +238,8 @@ class InputThemes {
     boxShadow: AppShadows.searchBox,
   );
 
-  /// Search box decoration (focused) — heavier green+rust border
-  static BoxDecoration get searchBoxDecorationFocused => BoxDecoration(
-    color: AppColors.cardWhite,
-    border: const Border(
-      top: BorderSide(color: AppColors.forestGreen, width: 2),
-      left: BorderSide(color: AppColors.forestGreen, width: 2),
-      right: BorderSide(color: AppColors.forestGreen, width: 2),
-      bottom: BorderSide(color: AppColors.rust, width: 4),
-    ),
-    boxShadow: AppShadows.searchBox,
-  );
+  /// Search box decoration while focused: the same edge as at rest. The
+  /// edge never thickens at focus (Grafisk manual v6:423; Komponentark
+  /// v1:657); ButlerySearchBox draws the focus ring outside it instead.
+  static BoxDecoration get searchBoxDecorationFocused => searchBoxDecoration;
 }

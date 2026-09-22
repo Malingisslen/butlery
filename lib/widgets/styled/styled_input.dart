@@ -328,14 +328,14 @@ class StyledInput extends StatelessWidget {
             width: AppDimensions.borderWidthStandard,
           ),
         ),
+        // Focus: the ring's colour and width on the field's edge (decision
+        // D3's fallback: an input border cannot draw the 3 px offset). It
+        // replaces BUT-533's 3 px saffron edge; saffron is never focus.
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
-          // BUT-533: rust (secondary) focus ring at 3px — matches global
-          // InputDecoration theme so keyboard navigation is visibly
-          // trackable on cream.
           borderSide: BorderSide(
-            color: cs.secondary,
-            width: AppDimensions.borderWidthThick + 1,
+            color: AppModeColors.focusRing(cs.brightness),
+            width: AppDimensions.focusRingWidth,
           ),
         ),
         errorBorder: OutlineInputBorder(

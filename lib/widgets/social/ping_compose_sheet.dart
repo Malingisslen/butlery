@@ -7,6 +7,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/social/ping.dart';
 import 'package:butlery/services/social/ping_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
 
@@ -327,9 +328,14 @@ class _MessageField extends StatelessWidget {
           borderRadius: BorderRadius.zero,
           borderSide: BorderSide(color: cs.outlineVariant),
         ),
+        // Focus: the ring's colour and width on the field's edge (decision
+        // D3's fallback). Ink on light, paper on dark.
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.zero,
-          borderSide: BorderSide(color: cs.primary, width: 2),
+          borderSide: BorderSide(
+            color: AppModeColors.focusRing(cs.brightness),
+            width: AppDimensions.focusRingWidth,
+          ),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.zero,

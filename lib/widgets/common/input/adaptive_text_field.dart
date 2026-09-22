@@ -252,11 +252,14 @@ class AdaptiveTextField extends StatelessWidget {
             width: AppDimensions.borderWidthStandard,
           ),
         ),
+        // Focus: the ring's colour and width on the field's edge (decision
+        // D3's fallback: an input border cannot draw the 3 px offset). Ink
+        // on light, paper on dark; primary was ink in both modes.
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
           borderSide: BorderSide(
-            color: Theme.of(context).colorScheme.primary,
-            width: AppDimensions.borderWidthThick,
+            color: AppModeColors.focusRing(Theme.of(context).brightness),
+            width: AppDimensions.focusRingWidth,
           ),
         ),
         errorBorder: OutlineInputBorder(

@@ -28,4 +28,9 @@ abstract final class AppModeColors {
   /// (tokens.json:198). The surface-safe disabled text.
   static Color textDisabled(Brightness brightness) =>
       _isDark(brightness) ? AppColorsDark.textDisabled : AppColors.textDisabled;
+
+  /// semantic focusRing: #24382C light, #F5F4ED dark (tokens.json:155-160).
+  /// Never saffron (Grafisk manual v6:209).
+  static Color focusRing(Brightness brightness) =>
+      _isDark(brightness) ? AppColorsDark.focusRing : AppColors.focusRing;
 }

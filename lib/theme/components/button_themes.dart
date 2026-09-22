@@ -7,48 +7,45 @@
 /// - FAB: Forest green
 
 import 'package:flutter/material.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/butlery_focus_ring.dart';
 
-/// BUT-533: shared focus-ring side. Rust at full alpha, 2.5px wide — visible
-/// on cream and on button-fill surfaces. WidgetStateProperty so non-focused
-/// states keep their existing borders (transparent for filled buttons,
-/// primary for outlined).
+/// Focus on every themed button is the canonical ring: 2 px, 3 px outside
+/// the button, ink on light and paper on dark, never saffron, identical on
+/// all variants (Komponentark v1:393, :657; Grafisk manual v6:209, :582;
+/// tokens.json:155-160). The theme inserts it through backgroundBuilder, and
+/// ButleryFocusRing paints it in the Overlay so no clip around the button
+/// cuts it off. It shows for keyboard focus, like CSS :focus-visible.
 ///
-/// [disabled] is the side a disabled button gets. A disabled button cannot
-/// take focus, so the disabled branch never hides the focus ring.
-WidgetStateProperty<BorderSide?> _focusSide({
-  required BorderSide unfocused,
-  BorderSide? disabled,
-}) {
-  return WidgetStateProperty.resolveWith<BorderSide?>((states) {
-    if (disabled != null && states.contains(WidgetState.disabled)) {
-      return disabled;
-    }
-    if (states.contains(WidgetState.focused)) {
-      return const BorderSide(
-        color: AppColors.rust,
-        width: 2.5,
-      );
-    }
-    return unfocused;
-  });
+/// This replaces BUT-533's saffron side (2.5 px on the button's own edge)
+/// and saffron focus tint. Using backgroundBuilder makes Flutter default the
+/// button Material's clipBehavior to antiAlias; the button's content already
+/// sits inside its shape, so nothing visible is cut.
+ButtonLayerBuilder _focusRing(BorderRadius radius) {
+  return (context, states, child) => ButleryFocusRing(
+    focused: states.contains(WidgetState.focused),
+    borderRadius: radius,
+    child: child ?? const SizedBox.shrink(),
+  );
 }
 
-/// BUT-533: rust-tinted overlay shown on the focused state of buttons whose
-/// shape would otherwise hide the side ring (filled / text / icon).
-/// `alpha` defaults to 0.12 — bumped to 0.16 for IconButton because its
-/// circular shape gives the ring less visual weight on its own.
-WidgetStateProperty<Color?> _focusOverlay({double alpha = 0.12}) {
-  return WidgetStateProperty.resolveWith<Color?>((states) {
-    if (states.contains(WidgetState.focused)) {
-      return AppColors.rust.withValues(alpha: alpha);
-    }
-    return null;
-  });
-}
+/// The ring carries focus alone, so the focused state gets no tint: an
+/// opacity tint is a state carried by opacity, which the system forbids
+/// (tokens.json:40-53, opacityLadder). Only the focused state is answered
+/// here. Hover and pressed resolve to null and fall through to Material's
+/// defaults exactly as before (button_style_button.dart resolves the
+/// overlay per state), so no ripple or hover changes.
+final WidgetStateProperty<Color?> _noFocusTint =
+    WidgetStateProperty.resolveWith<Color?>((states) {
+      if (states.contains(WidgetState.focused)) return Colors.transparent;
+      return null;
+    });
+
+const BorderRadius _controlRadius = BorderRadius.all(
+  Radius.circular(AppDimensions.radiusControl),
+);
 
 /// Disabled filled button: surface.disabled with readable ink text, never
 /// opacity (Komponentark v1:365, :373; Grafisk manual v6:167, :423).
@@ -129,9 +126,8 @@ class ButtonThemes {
         foregroundColor: _filledForeground(cs, cs.onPrimary),
         elevation: const WidgetStatePropertyAll(0),
         shadowColor: const WidgetStatePropertyAll(Colors.transparent),
-        // BUT-533: keyboard focus ring on cream surfaces.
-        side: _focusSide(unfocused: BorderSide.none),
-        overlayColor: _focusOverlay(),
+        overlayColor: _noFocusTint,
+        backgroundBuilder: _focusRing(_controlRadius),
         shape: WidgetStatePropertyAll(
           RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
@@ -157,8 +153,8 @@ class ButtonThemes {
       style: ButtonStyle(
         backgroundColor: _filledBackground(cs, cs.primary),
         foregroundColor: _filledForeground(cs, cs.onPrimary),
-        // BUT-533: keyboard focus ring on cream surfaces.
-        side: _focusSide(unfocused: BorderSide.none),
+        overlayColor: _noFocusTint,
+        backgroundBuilder: _focusRing(_controlRadius),
         shape: WidgetStatePropertyAll(
           RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
@@ -187,12 +183,13 @@ class ButtonThemes {
           _outlinedDisabledForeground(cs),
         ),
         backgroundColor: const WidgetStatePropertyAll(Colors.transparent),
-        // BUT-533: focus ring overrides the unfocused outline border for
-        // keyboard navigation visibility.
-        side: _focusSide(
-          unfocused: BorderSide(color: cs.primary, width: 1.5),
-          disabled: _outlinedDisabledSide(cs),
+        // The outline keeps its 1.5 px at focus; the ring sits outside it.
+        side: _outlineWithDisabled(
+          cs,
+          BorderSide(color: cs.primary, width: 1.5),
         ),
+        overlayColor: _noFocusTint,
+        backgroundBuilder: _focusRing(_controlRadius),
         shape: WidgetStatePropertyAll(
           RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
@@ -224,10 +221,8 @@ class ButtonThemes {
           AppModeColors.textDisabled(cs.brightness),
         ),
         backgroundColor: const WidgetStatePropertyAll(Colors.transparent),
-        // BUT-533: text buttons get a focus ring via side (visible because
-        // shape borderRadius is non-zero) plus a rust-tinted overlay.
-        side: _focusSide(unfocused: BorderSide.none),
-        overlayColor: _focusOverlay(),
+        overlayColor: _noFocusTint,
+        backgroundBuilder: _focusRing(_controlRadius),
         shape: WidgetStatePropertyAll(
           RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
@@ -253,10 +248,11 @@ class ButtonThemes {
       style: ButtonStyle(
         foregroundColor: WidgetStatePropertyAll(cs.onSurfaceVariant),
         backgroundColor: const WidgetStatePropertyAll(Colors.transparent),
-        // BUT-533: focus ring + tint. IconButton renders shape as a circle,
-        // so the side is what becomes a visible focus outline.
-        side: _focusSide(unfocused: BorderSide.none),
-        overlayColor: _focusOverlay(alpha: 0.16),
+        overlayColor: _noFocusTint,
+        // The ring goes round the whole 48 dp button, not the glyph.
+        backgroundBuilder: _focusRing(
+          const BorderRadius.all(Radius.circular(AppDimensions.radiusPill)),
+        ),
         minimumSize: const WidgetStatePropertyAll(
           Size(AppDimensions.minTouchTarget, AppDimensions.minTouchTarget),
         ),

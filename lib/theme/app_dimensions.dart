@@ -45,6 +45,12 @@ class AppDimensions {
   /// control geometry: tokens.json controls.checkbox.radius = 6 (B-37).
   static const double checkboxRadius = 6.0;
 
+  /// The focus ring: 2 px wide, drawn 3 px outside the control
+  /// (tokens.json:155-160, semantic.focusRing width/offset). The colour is
+  /// AppModeColors.focusRing: ink on light, paper on dark, never saffron.
+  static const double focusRingWidth = 2.0;
+  static const double focusRingOffset = 3.0;
+
   // ── App-local values ────────────────────────────────────────────────────
 
   /// Extra small spacing (4px) - matches original spacingXs
