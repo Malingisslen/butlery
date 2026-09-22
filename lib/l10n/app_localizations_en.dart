@@ -1758,6 +1758,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonBack => 'Back';
 
   @override
+  String commonBackTo(String destination) {
+    return 'Back to $destination';
+  }
+
+  @override
   String get commonEnable => 'Enable';
 
   @override

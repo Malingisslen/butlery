@@ -1763,6 +1763,11 @@ class AppLocalizationsSv extends AppLocalizations {
   String get commonBack => 'Tillbaka';
 
   @override
+  String commonBackTo(String destination) {
+    return 'Tillbaka till $destination';
+  }
+
+  @override
   String get commonEnable => 'Aktivera';
 
   @override

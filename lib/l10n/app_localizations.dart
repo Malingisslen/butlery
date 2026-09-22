@@ -2954,6 +2954,12 @@ abstract class AppLocalizations {
   /// **'Tillbaka'**
   String get commonBack;
 
+  /// Accessible name of the back arrow in the subpage top bar. Names the view the arrow leads to (Komponentark v1 section 01, pattern 2; accessibility handoff, row Back)
+  ///
+  /// In sv, this message translates to:
+  /// **'Tillbaka till {destination}'**
+  String commonBackTo(String destination);
+
   /// No description provided for @commonEnable.
   ///
   /// In sv, this message translates to:
