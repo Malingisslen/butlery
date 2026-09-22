@@ -238,6 +238,7 @@
    "forestGreen",
    "greenMuted",
    "greenPale",
+   "info",
    "infoContainer",
    "neutralLight",
    "onErrorContainer",
@@ -318,6 +319,7 @@
    "text.body",
    "text.danger",
    "text.danger.onRaised",
+   "text.link",
    "text.primary",
    "text.secondary",
    "text.secondary.onRaised",
@@ -505,6 +507,13 @@
     "SEMANTIC_TOKEN": "text.primary",
     "TOKENS_JSON_PATH": "semantic[\"text.primary\"].dark",
     "DARK_VALUE": "#F5F4ED",
+    "KIND": "CANONICAL"
+   },
+   {
+    "FLUTTER_MEMBER": "info",
+    "SEMANTIC_TOKEN": "text.link",
+    "TOKENS_JSON_PATH": "semantic[\"text.link\"].dark",
+    "DARK_VALUE": "#DCA968",
     "KIND": "CANONICAL"
    },
    {

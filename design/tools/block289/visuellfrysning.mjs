@@ -31,7 +31,21 @@ const YTREGEL = [
   { TOKEN: 'text.disabled', YTA: 'surface.base', KRAV: 3.0, SLAG: 'DISABLED' },
   { TOKEN: 'text.disabled.onRaised', YTA: 'surface.raised', KRAV: 3.0, SLAG: 'DISABLED' },
   { TOKEN: 'text.body', YTA: 'surface.base', KRAV: 4.5, SLAG: 'READABLE' },
-  { TOKEN: 'text.primary', YTA: 'surface.base', KRAV: 4.5, SLAG: 'READABLE' }
+  { TOKEN: 'text.primary', YTA: 'surface.base', KRAV: 4.5, SLAG: 'READABLE' },
+  // Statusrollerna. De var inte med forr, och det doldes att info pekade pa
+  // ett pensionerat varde som gav 1,99:1 pa mork upphojd yta. En textroll som
+  // inte provas ar en textroll som far vara fel.
+  { TOKEN: 'text.link', YTA: 'surface.base', KRAV: 4.5, SLAG: 'READABLE' },
+  { TOKEN: 'text.link', YTA: 'surface.raised', KRAV: 4.5, SLAG: 'READABLE' },
+  { TOKEN: 'text.success', YTA: 'surface.base', KRAV: 4.5, SLAG: 'READABLE' },
+  { TOKEN: 'text.success.onRaised', YTA: 'surface.raised', KRAV: 4.5, SLAG: 'READABLE' },
+  { TOKEN: 'text.danger', YTA: 'surface.base', KRAV: 4.5, SLAG: 'READABLE' },
+  { TOKEN: 'text.danger.onRaised', YTA: 'surface.raised', KRAV: 4.5, SLAG: 'READABLE' },
+  { TOKEN: 'text.warning', YTA: 'surface.base', KRAV: 4.5, SLAG: 'READABLE' },
+  { TOKEN: 'text.accent', YTA: 'surface.base', KRAV: 4.5, SLAG: 'READABLE' },
+  { TOKEN: 'text.accent.onRaised', YTA: 'surface.raised', KRAV: 4.5, SLAG: 'READABLE' },
+  { TOKEN: 'text.bodyMuted', YTA: 'surface.base', KRAV: 4.5, SLAG: 'READABLE' },
+  { TOKEN: 'text.completed', YTA: 'surface.base', KRAV: 4.5, SLAG: 'READABLE' }
 ];
 
 export function bygg(rot) {
@@ -63,13 +77,34 @@ export function bygg(rot) {
     for (const m of src.matchAll(/static const (?:Color )?(\w+)\s*=\s*Color\(0x[0-9A-Fa-f]{2}([0-9A-Fa-f]{6})\)/g)) ut[m[1]] = '#' + m[2].toUpperCase();
     return ut;
   })();
-  const YTBLINDA = ['textLight', 'textMedium'];
+  // Varje Flutter-konstant som bar LASBAR TEXT ar ytblind och maste darfor
+  // klara bade base och raised. info las in har efter att den visat sig
+  // falla i morkt lage utan att nagot prov sag det.
+  const YTBLINDA = ['textLight', 'textMedium', 'info', 'success', 'onWarningContainer'];
+  const morkFarg = (() => {
+    const ut = {};
+    const src = las('lib/theme/app_colors_dark.dart');
+    for (const m of src.matchAll(/static const Color (\w+)\s*=\s*Color\(0x[0-9A-Fa-f]{2}([0-9A-Fa-f]{6})\)/g)) ut[m[1]] = '#' + m[2].toUpperCase();
+    return ut;
+  })();
   const ytblind = YTBLINDA.map(namn => {
-    const varde = flutterFarg[namn];
-    if (!varde) throw new Error('okand Flutter-konstant: ' + namn);
-    const kvoter = ytor('light').map(y => kvot(varde, y)).concat([kvot(varde, '#FFFFFF')]);
+    const ljus = flutterFarg[namn];
+    if (!ljus) throw new Error('okand Flutter-konstant: ' + namn);
+    // Saknas ett morkt varde ar konstanten lagesoberoende och provas mot bada
+    // lagens ytor med samma varde - det ar just sa info foll.
+    const mork = morkFarg[namn] || ljus;
+    const kvoter = [
+      ...ytor('light').map(y => kvot(ljus, y)),
+      kvot(ljus, '#FFFFFF'),
+      ...ytor('dark').map(y => kvot(mork, y))
+    ];
     const min = Math.min(...kvoter);
-    return { NAMN: namn, VARDE: varde, KALLA: (map.colors[namn] || [])[1] || null, MIN_KVOT: min, KRAV: 4.5, PASS: min >= 4.5 };
+    return {
+      NAMN: namn, VARDE: ljus, VARDE_MORKT: mork,
+      HAR_EGET_MORKT: Boolean(morkFarg[namn]),
+      KALLA: (map.colors[namn] || [])[1] || null,
+      MIN_KVOT: min, KRAV: 4.5, PASS: min >= 4.5
+    };
   });
 
   /* ---- legacyalias som ska pensioneras ---- */

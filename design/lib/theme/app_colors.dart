@@ -1,7 +1,7 @@
 // GENERERAD FIL — ändra källan, inte den här.
 // system 2.1 · tokens 1.13
 // generator tools/gen-app-theme.mjs v2.3
-// källfingeravtryck sha256:279fa8175a893713b2176349a02e5ef5c68135c90219a310a6703c5dc8bac905 (6 indatafiler, generatorns källa inräknad)
+// källfingeravtryck sha256:e23da35a7383dd2630fd560e3b7e77cb9a8e3104878c9558aaccd3e4998ba0f6 (6 indatafiler, generatorns källa inräknad)
 // genererad ur källdatum 2026-08-05 (tokens.date — reproducerbart, inte klockan)
 //
 // Migration (etapp 8.1): varje medlem har samma NAMN som i det FRYSTA
@@ -78,8 +78,8 @@ class AppColors {
   static const Color infoContainer = Color(0xFFE6EAD9);
   /// semantic.text.primary
   static const Color onInfoContainer = Color(0xFF24382C);
-  /// Systemet har ingen blå — info bär saffranslänken · palette.saffronLink
-  static const Color info = Color(0xFFA15A0A);
+  /// Systemet har ingen bla - info bar lankfargen. Lag tidigare pa palette.saffronLink (#A15A0A), vilket ar exakt det varde text.link ersatte: det foll pa upphojd yta. Som palettfarg saknade den dessutom morkt lage och gav 1,99:1 mot surface.raised i morkt. · semantic.text.link
+  static const Color info = Color(0xFF8A5212);
   /// semantic.border.subtle
   static const Color divider = Color(0xFFCCD1C2);
   /// semantic.text.secondary
