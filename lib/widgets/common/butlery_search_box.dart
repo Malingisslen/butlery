@@ -128,11 +128,10 @@ class _ButlerySearchBoxState extends State<ButlerySearchBox> {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     // Focus is the canonical ring outside the box; the box's own edge no
-    // longer thickens at focus (Komponentark v1:657). Text entry shows the
-    // ring on every focus, like CSS :focus-visible does for inputs.
+    // longer thickens at focus (Komponentark v1:657). The ring shows for
+    // keyboard focus, like every other control (beslut-paket2 D3).
     return ButleryFocusRing(
       focused: _isFocused,
-      visibility: FocusRingVisibility.always,
       child: AnimatedContainer(
         duration: AppDimensions.animationDurationFast.respectingMotion(context),
         decoration: InputThemes.searchBoxDecoration,

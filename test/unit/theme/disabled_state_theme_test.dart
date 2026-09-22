@@ -4,7 +4,8 @@
 /// Sources: Komponentark v1:164 (radio), :174 (switch), :373 (filled
 /// button), :383 (outlined button), :423 and :514 (field); Grafisk manual
 /// v6:167 and :423; tokens.json surface.disabled, surface.raised,
-/// text.secondary, text.disabled.onRaised.
+/// text.secondary, text.secondary.onRaised (tokens.json:184-187),
+/// text.disabled.onRaised.
 library;
 
 import 'package:flutter/material.dart';
@@ -28,6 +29,7 @@ class _Mode {
     required this.surfaceDisabled,
     required this.surfaceRaised,
     required this.textSecondary,
+    required this.textSecondaryOnRaised,
     required this.textDisabled,
     required this.filledDisabledText,
   });
@@ -37,6 +39,7 @@ class _Mode {
   final Color surfaceDisabled;
   final Color surfaceRaised;
   final Color textSecondary;
+  final Color textSecondaryOnRaised;
   final Color textDisabled;
   final Color filledDisabledText;
 }
@@ -49,6 +52,7 @@ void main() {
       surfaceDisabled: const Color(0xFFA9B2A0),
       surfaceRaised: const Color(0xFFE6EAD9),
       textSecondary: const Color(0xFF627061),
+      textSecondaryOnRaised: const Color(0xFF5B6959),
       textDisabled: const Color(0xFF788477),
       filledDisabledText: const Color(0xFF24382C),
     ),
@@ -58,6 +62,7 @@ void main() {
       surfaceDisabled: const Color(0xFF4A5C50),
       surfaceRaised: const Color(0xFF2F4437),
       textSecondary: const Color(0xFF93A48D),
+      textSecondaryOnRaised: const Color(0xFFA9B2A0),
       textDisabled: const Color(0xFF93A48D),
       // Open decision: the drawn #93A48D has no token pair; paper is kept.
       filledDisabledText: const Color(0xFFF5F4ED),
@@ -69,6 +74,8 @@ void main() {
     expect(modes[1].surfaceDisabled, AppColorsDark.surfaceDisabled);
     expect(modes[0].textDisabled, AppColors.textDisabled);
     expect(modes[1].textDisabled, AppColorsDark.textDisabled);
+    expect(modes[0].textSecondaryOnRaised, AppColors.textMedium);
+    expect(modes[1].textSecondaryOnRaised, AppColorsDark.textMedium);
   });
 
   for (final m in modes) {
@@ -101,13 +108,25 @@ void main() {
           t.outlinedButtonTheme.style!,
           ButtonThemes.outlinedButtonStyleNamed(t.colorScheme),
           ButtonThemes.deleteButtonStyle(t.colorScheme),
-          ButtonThemes.secondaryButtonStyle(t.colorScheme),
         ]) {
           final side = style.side!.resolve(_disabled)!;
           expect(side.color, m.surfaceDisabled);
           expect(side.width, 1.5);
           expect(style.foregroundColor!.resolve(_disabled), m.textSecondary);
         }
+      });
+
+      test('secondary button: raised fill keeps text.secondary.onRaised', () {
+        final style = ButtonThemes.secondaryButtonStyle(t.colorScheme);
+        final side = style.side!.resolve(_disabled)!;
+        expect(side.color, m.surfaceDisabled);
+        expect(side.width, 1.5);
+        expect(style.backgroundColor!.resolve(_disabled), m.surfaceRaised);
+        // text.secondary fails 4.5:1 on surface.raised in both modes.
+        expect(
+          style.foregroundColor!.resolve(_disabled),
+          m.textSecondaryOnRaised,
+        );
       });
 
       test('the disabled branch leaves the enabled outline and ring alone', () {
@@ -165,9 +184,11 @@ void main() {
         }
       });
 
-      test('a disabled list row label is text.secondary', () {
+      test('a disabled list row label is text.secondary.onRaised', () {
+        // Every tile is surface.raised, where text.secondary fails 4.5:1.
+        expect(t.listTileTheme.tileColor, m.surfaceRaised);
         final color = t.listTileTheme.textColor! as WidgetStateColor;
-        expect(color.resolve(_disabled), m.textSecondary);
+        expect(color.resolve(_disabled), m.textSecondaryOnRaised);
         expect(color.resolve({}), t.colorScheme.onSurface);
         expect(color.resolve({WidgetState.selected}), t.colorScheme.primary);
       });

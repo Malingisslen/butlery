@@ -9,6 +9,7 @@ import 'package:flutter/services.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/butlery_focus_ring.dart';
 
 /// A platform-adaptive text field.
 /// Automatically uses CupertinoTextField on iOS and Material TextFormField on Android.
@@ -210,6 +211,37 @@ class AdaptiveTextField extends StatelessWidget {
   }
 
   Widget _buildMaterialTextField(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final restingBorder = OutlineInputBorder(
+      borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
+      borderSide: BorderSide(
+        color: cs.outline,
+        width: AppDimensions.borderWidthStandard,
+      ),
+    );
+    final restingErrorBorder = OutlineInputBorder(
+      borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
+      borderSide: BorderSide(
+        color: cs.error,
+        width: AppDimensions.borderWidthStandard,
+      ),
+    );
+    // Focus is the ring outside the input box, shown for keyboard focus
+    // (decision D3); the edge keeps its resting width and colour: "fokus är
+    // ringen (2 px/3 px offset), kanten byter aldrig tjocklek" (Grafisk
+    // manual v6:423; Komponentark v1:657).
+    return ButleryFocusRing(
+      borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
+      bounds: FocusRingBounds.textFieldBox,
+      child: _materialField(context, restingBorder, restingErrorBorder),
+    );
+  }
+
+  Widget _materialField(
+    BuildContext context,
+    InputBorder restingBorder,
+    InputBorder restingErrorBorder,
+  ) {
     return TextFormField(
       controller: controller,
       onChanged: onChanged,
@@ -245,37 +277,10 @@ class AdaptiveTextField extends StatelessWidget {
           borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
           borderSide: const BorderSide(),
         ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
-          borderSide: BorderSide(
-            color: Theme.of(context).colorScheme.outline,
-            width: AppDimensions.borderWidthStandard,
-          ),
-        ),
-        // Focus: the ring's colour and width on the field's edge (decision
-        // D3's fallback: an input border cannot draw the 3 px offset). Ink
-        // on light, paper on dark; primary was ink in both modes.
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
-          borderSide: BorderSide(
-            color: AppModeColors.focusRing(Theme.of(context).brightness),
-            width: AppDimensions.focusRingWidth,
-          ),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
-          borderSide: BorderSide(
-            color: Theme.of(context).colorScheme.error,
-            width: AppDimensions.borderWidthStandard,
-          ),
-        ),
-        focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
-          borderSide: BorderSide(
-            color: Theme.of(context).colorScheme.error,
-            width: AppDimensions.borderWidthThick,
-          ),
-        ),
+        enabledBorder: restingBorder,
+        focusedBorder: restingBorder,
+        errorBorder: restingErrorBorder,
+        focusedErrorBorder: restingErrorBorder,
         // Disabled: 1 px surface.disabled edge on the same surface.raised
         // fill, never opacity (Grafisk manual v6:423; Komponentark v1:423
         // light, :514 dark).

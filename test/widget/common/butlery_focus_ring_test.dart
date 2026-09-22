@@ -1,7 +1,8 @@
 /// Proves the focus ring renders unclipped 3 px outside the control inside a
 /// Card, a ListView and a ClipRRect (decision D3), in both modes, only for
-/// keyboard focus on buttons, on every focus for text entry, and without
-/// changing focus traversal.
+/// keyboard focus (buttons and text fields alike), around a text field's
+/// input box rather than its helper line, without thickening the field's
+/// edge, and without changing focus traversal.
 ///
 /// The ring is read back from rendered pixels, not from the widget tree.
 library;
@@ -17,7 +18,10 @@ import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_colors_dark.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/widgets/common/butlery_focus_ring.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/components/button_themes.dart';
 import 'package:butlery/widgets/common/butlery_search_box.dart';
+import 'package:butlery/widgets/styled/styled_input.dart';
 
 final _boundaryKey = GlobalKey();
 
@@ -172,7 +176,9 @@ void main() {
     expect(await _pixel(tester, _ringPoints(rect).first), AppColors.focusRing);
   });
 
-  testWidgets('the search box shows the ring on every focus', (tester) async {
+  testWidgets('the search box shows the ring for keyboard focus only', (
+    tester,
+  ) async {
     FocusManager.instance.highlightStrategy =
         FocusHighlightStrategy.alwaysTouch;
     await _pump(
@@ -186,8 +192,89 @@ void main() {
     await tester.pumpAndSettle();
     final rect = tester.getRect(find.byType(ButlerySearchBox));
     for (final p in _ringPoints(rect)) {
-      expect(await _pixel(tester, p), AppColors.focusRing);
+      expect(await _pixel(tester, p), AppColors.cream, reason: 'touch');
     }
+    FocusManager.instance.highlightStrategy =
+        FocusHighlightStrategy.alwaysTraditional;
+    await tester.pumpAndSettle();
+    for (final p in _ringPoints(rect)) {
+      expect(await _pixel(tester, p), AppColors.focusRing, reason: 'keyboard');
+    }
+  });
+
+  group('StyledInput', () {
+    Widget field({String? helper}) => SizedBox(
+      width: 240,
+      child: StyledInput(
+        label: 'Namn',
+        helperText: helper,
+        focusNode: node,
+      ),
+    );
+
+    testWidgets('keeps its edge at focus', (tester) async {
+      await _pump(tester, field());
+      final d = tester.widget<TextField>(find.byType(TextField)).decoration!;
+      expect(d.focusedBorder, d.enabledBorder);
+      expect(d.focusedErrorBorder, d.errorBorder);
+      expect((d.focusedBorder! as OutlineInputBorder).borderSide.width, 1);
+    });
+
+    for (final entry in containers.entries) {
+      testWidgets('ring around the input box, unclipped in ${entry.key}', (
+        tester,
+      ) async {
+        await _pump(tester, entry.value(field(helper: 'Visas för hushållet')));
+        final whole = tester.getRect(find.byType(StyledInput));
+        final text = tester.getRect(find.byType(EditableText));
+        final helper = tester.getRect(find.text('Visas för hushållet'));
+        final left = Offset(
+          whole.left - ButleryFocusRing.inflate,
+          text.center.dy,
+        );
+
+        expect(await _pixel(tester, left), AppColors.cream, reason: 'at rest');
+        node.requestFocus();
+        await tester.pumpAndSettle();
+
+        expect(await _pixel(tester, left), AppColors.focusRing);
+        // The ring's bottom runs between the box and the helper line.
+        var bottom = false;
+        for (var y = text.bottom; y < helper.top; y += 0.5) {
+          if (await _pixel(tester, Offset(whole.center.dx, y)) ==
+              AppColors.focusRing) {
+            bottom = true;
+            break;
+          }
+        }
+        expect(bottom, isTrue, reason: 'ring bottom above the helper line');
+        // The ring does not go round the helper line.
+        expect(
+          await _pixel(
+            tester,
+            Offset(whole.left - ButleryFocusRing.inflate, helper.center.dy),
+          ),
+          AppColors.cream,
+        );
+      });
+    }
+
+    testWidgets('no ring for touch focus', (tester) async {
+      FocusManager.instance.highlightStrategy =
+          FocusHighlightStrategy.alwaysTouch;
+      await _pump(tester, field());
+      node.requestFocus();
+      await tester.pumpAndSettle();
+      final whole = tester.getRect(find.byType(StyledInput));
+      final text = tester.getRect(find.byType(EditableText));
+      expect(
+        await _pixel(
+          tester,
+          Offset(whole.left - ButleryFocusRing.inflate, text.center.dy),
+        ),
+        AppColors.cream,
+      );
+    });
   });
 
   testWidgets('the ring observes focus and adds no focus stop', (
@@ -245,11 +332,47 @@ void main() {
         }
       });
 
-      test('${t.brightness}: fields focus in the ring colour, 2 px', () {
-        final border =
-            t.inputDecorationTheme.focusedBorder! as OutlineInputBorder;
-        expect(border.borderSide.color, ring);
-        expect(border.borderSide.width, 2);
+      test(
+        '${t.brightness}: bare fields fall back to the ring on the edge',
+        () {
+          for (final b in [
+            t.inputDecorationTheme.focusedBorder!,
+            t.inputDecorationTheme.focusedErrorBorder!,
+          ]) {
+            final border = b as OutlineInputBorder;
+            expect(border.borderSide.color, ring);
+            expect(border.borderSide.width, 2);
+          }
+        },
+      );
+
+      test('${t.brightness}: ButleryColors carries the ring colour', () {
+        expect(t.extension<ButleryColors>()!.focusRing, ring);
+      });
+
+      test('${t.brightness}: a focused button still ripples when pressed', () {
+        for (final style in [
+          t.elevatedButtonTheme.style!,
+          t.filledButtonTheme.style!,
+          t.outlinedButtonTheme.style!,
+          t.textButtonTheme.style!,
+          t.iconButtonTheme.style!,
+        ]) {
+          for (final other in [WidgetState.pressed, WidgetState.hovered]) {
+            expect(
+              style.overlayColor!.resolve({WidgetState.focused, other}),
+              isNull,
+            );
+          }
+        }
+        // The hero alone keeps no pressed overlay (decision D4).
+        expect(
+          ButtonThemes.heroButtonStyle(t.colorScheme).overlayColor!.resolve({
+            WidgetState.focused,
+            WidgetState.pressed,
+          }),
+          Colors.transparent,
+        );
       });
     }
   });

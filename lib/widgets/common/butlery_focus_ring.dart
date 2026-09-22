@@ -13,26 +13,34 @@
 // målas framför sin egen route men bakom routes ovanpå (ark, dialoger).
 // Saknas Overlay målas ringen i kontrollens kant i stället, med samma färg
 // och bredd.
+//
+// Ringen visas vid tangentbordsfokus (FocusHighlightMode.traditional), som
+// CSS :focus-visible (beslut D3). Det gäller även textfält.
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
 
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 
-/// When the ring shows.
-enum FocusRingVisibility {
-  /// Only while the focus came from a keyboard or other traditional input
-  /// ([FocusHighlightMode.traditional]), like CSS `:focus-visible` for
-  /// buttons and other controls.
-  keyboard,
+/// What the ring goes around.
+enum FocusRingBounds {
+  /// The whole child.
+  child,
 
-  /// On every focus. For text entry, which CSS `:focus-visible` also marks
-  /// on pointer focus, because the user is about to type.
-  always,
+  /// The input box of the text field inside the child: the decorated box
+  /// the user types in, without the helper, error or counter line under
+  /// it. Falls back to the whole child if no text field box is found.
+  textFieldBox,
 }
 
 /// Draws the canonical focus ring around [child].
+///
+/// The ring shows only for keyboard or other traditional focus
+/// ([FocusHighlightMode.traditional]), like CSS `:focus-visible`
+/// (beslut-paket2 D3, recorded as an interpretation), on buttons and text
+/// fields alike.
 ///
 /// The ring observes focus; it never takes focus itself and does not change
 /// the traversal order. With [focused] null it follows focus anywhere inside
@@ -47,7 +55,7 @@ class ButleryFocusRing extends StatefulWidget {
     required this.child,
     this.focused,
     this.borderRadius = BorderRadius.zero,
-    this.visibility = FocusRingVisibility.keyboard,
+    this.bounds = FocusRingBounds.child,
     super.key,
   });
 
@@ -60,8 +68,8 @@ class ButleryFocusRing extends StatefulWidget {
   /// The control's own corner radius.
   final BorderRadius borderRadius;
 
-  /// When the ring shows.
-  final FocusRingVisibility visibility;
+  /// What the ring goes around.
+  final FocusRingBounds bounds;
 
   /// Distance from the control's edge to the middle of the ring's stroke.
   static const double inflate =
@@ -79,13 +87,18 @@ class _ButleryFocusRingState extends State<ButleryFocusRing> {
 
   bool get _hasFocus => widget.focused ?? _observedFocus;
 
-  bool get _visible {
-    if (!_hasFocus) return false;
-    return switch (widget.visibility) {
-      FocusRingVisibility.always => true,
-      FocusRingVisibility.keyboard =>
-        FocusManager.instance.highlightMode == FocusHighlightMode.traditional,
-    };
+  bool get _visible =>
+      _hasFocus &&
+      FocusManager.instance.highlightMode == FocusHighlightMode.traditional;
+
+  /// The rectangle the ring goes around, in the child's coordinates, read
+  /// at paint time so it always matches the current layout.
+  Rect _target(Size childSize) {
+    final whole = Offset.zero & childSize;
+    if (widget.bounds == FocusRingBounds.child || !mounted) return whole;
+    final root = context.findRenderObject();
+    if (root is! RenderBox) return whole;
+    return _textFieldBox(root) ?? whole;
   }
 
   @override
@@ -165,6 +178,8 @@ class _ButleryFocusRingState extends State<ButleryFocusRing> {
                 color: color,
                 borderRadius: widget.borderRadius,
                 inflate: -AppDimensions.focusRingWidth / 2,
+                target: _target,
+                followsLayout: widget.bounds != FocusRingBounds.child,
               )
             : null,
         child: child,
@@ -186,6 +201,8 @@ class _ButleryFocusRingState extends State<ButleryFocusRing> {
                 color: color,
                 borderRadius: widget.borderRadius,
                 inflate: ButleryFocusRing.inflate,
+                target: _target,
+                followsLayout: widget.bounds != FocusRingBounds.child,
               ),
             ),
           ),
@@ -196,11 +213,57 @@ class _ButleryFocusRingState extends State<ButleryFocusRing> {
   }
 }
 
+/// The input box of the first text field inside [root], in [root]'s
+/// coordinates, or null.
+///
+/// Material's InputDecorator paints its box (fill and border) in a leaf
+/// CustomPaint that sits beside the editable text, in the same decorator.
+/// So: find the RenderEditable, then walk up to the first ancestor that has
+/// such a leaf as a direct child. The helper, error and counter line are
+/// separate children of the decorator, outside the box.
+Rect? _textFieldBox(RenderBox root) {
+  RenderEditable? editable;
+  void findEditable(RenderObject node) {
+    if (editable != null) return;
+    if (node is RenderEditable) {
+      editable = node;
+      return;
+    }
+    node.visitChildren(findEditable);
+  }
+
+  findEditable(root);
+  RenderObject? node = editable?.parent;
+  while (node != null) {
+    RenderCustomPaint? box;
+    node.visitChildren((c) {
+      if (box == null &&
+          c is RenderCustomPaint &&
+          c.child == null &&
+          c.foregroundPainter != null) {
+        box = c;
+      }
+    });
+    final found = box;
+    if (found != null && found.hasSize && found.attached) {
+      return MatrixUtils.transformRect(
+        found.getTransformTo(root),
+        Offset.zero & found.size,
+      );
+    }
+    if (identical(node, root)) break;
+    node = node.parent;
+  }
+  return null;
+}
+
 class _RingPainter extends CustomPainter {
   const _RingPainter({
     required this.color,
     required this.borderRadius,
     required this.inflate,
+    required this.target,
+    required this.followsLayout,
   });
 
   final Color color;
@@ -210,9 +273,16 @@ class _RingPainter extends CustomPainter {
   /// draws inside the edge.
   final double inflate;
 
+  /// The rectangle the ring goes around, for a child of the given size.
+  final Rect Function(Size childSize) target;
+
+  /// True when [target] reads a layout inside the child, which may change
+  /// without this painter changing.
+  final bool followsLayout;
+
   @override
   void paint(Canvas canvas, Size size) {
-    final rect = (Offset.zero & size).inflate(inflate);
+    final rect = target(size).inflate(inflate);
     Radius grow(Radius r) => r == Radius.zero
         ? Radius.zero
         : Radius.elliptical(
@@ -237,6 +307,7 @@ class _RingPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_RingPainter old) =>
+      followsLayout ||
       old.color != color ||
       old.borderRadius != borderRadius ||
       old.inflate != inflate;

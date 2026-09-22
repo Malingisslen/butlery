@@ -7,9 +7,9 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/social/ping.dart';
 import 'package:butlery/services/social/ping_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/widgets/common/butlery_focus_ring.dart';
 
 /// Show the ping compose sheet for [targetUserId] in [groupId].
 ///
@@ -311,41 +311,40 @@ class _MessageField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    return TextField(
-      key: const Key('ping-message-field'),
-      controller: controller,
-      maxLength: kPingMaxMessageLength,
-      maxLines: 2,
-      style: AppTextStyles.bodyMedium,
-      decoration: InputDecoration(
-        hintText: context.l10n.pingComposeMessageHint,
-        hintStyle: AppTextStyles.bodyMedium.copyWith(
-          color: cs.onSurfaceVariant,
-        ),
-        filled: true,
-        fillColor: cs.surfaceContainerHighest,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.zero,
-          borderSide: BorderSide(color: cs.outlineVariant),
-        ),
-        // Focus: the ring's colour and width on the field's edge (decision
-        // D3's fallback). Ink on light, paper on dark.
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.zero,
-          borderSide: BorderSide(
-            color: AppModeColors.focusRing(cs.brightness),
-            width: AppDimensions.focusRingWidth,
+    final restingBorder = OutlineInputBorder(
+      borderRadius: BorderRadius.zero,
+      borderSide: BorderSide(
+        color: cs.primary.withValues(alpha: 0.3),
+      ),
+    );
+    // Focus is the ring outside the input box, shown for keyboard focus
+    // (decision D3); the edge keeps its resting width and colour (Grafisk
+    // manual v6:423; Komponentark v1:657).
+    return ButleryFocusRing(
+      bounds: FocusRingBounds.textFieldBox,
+      child: TextField(
+        key: const Key('ping-message-field'),
+        controller: controller,
+        maxLength: kPingMaxMessageLength,
+        maxLines: 2,
+        style: AppTextStyles.bodyMedium,
+        decoration: InputDecoration(
+          hintText: context.l10n.pingComposeMessageHint,
+          hintStyle: AppTextStyles.bodyMedium.copyWith(
+            color: cs.onSurfaceVariant,
           ),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.zero,
-          borderSide: BorderSide(
-            color: cs.primary.withValues(alpha: 0.3),
+          filled: true,
+          fillColor: cs.surfaceContainerHighest,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.zero,
+            borderSide: BorderSide(color: cs.outlineVariant),
           ),
-        ),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: AppDimensions.spacingMd,
-          vertical: AppDimensions.spacingSm,
+          focusedBorder: restingBorder,
+          enabledBorder: restingBorder,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: AppDimensions.spacingMd,
+            vertical: AppDimensions.spacingSm,
+          ),
         ),
       ),
     );

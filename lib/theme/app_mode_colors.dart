@@ -29,6 +29,12 @@ abstract final class AppModeColors {
   static Color textDisabled(Brightness brightness) =>
       _isDark(brightness) ? AppColorsDark.textDisabled : AppColors.textDisabled;
 
+  /// semantic text.secondary.onRaised: #5B6959 light, #A9B2A0 dark
+  /// (tokens.json:184-187). Secondary text on surface.raised, where plain
+  /// text.secondary (#627061 / #93A48D) fails 4.5:1 in both modes.
+  static Color textSecondaryOnRaised(Brightness brightness) =>
+      _isDark(brightness) ? AppColorsDark.textMedium : AppColors.textMedium;
+
   /// semantic focusRing: #24382C light, #F5F4ED dark (tokens.json:155-160).
   /// Never saffron (Grafisk manual v6:209).
   static Color focusRing(Brightness brightness) =>

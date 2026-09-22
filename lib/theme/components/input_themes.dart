@@ -38,11 +38,15 @@ class InputThemes {
           width: 1,
         ),
       ),
-      // Focus: the canonical ring colour and width, ink on light and paper
-      // on dark, never saffron (tokens.json:155-160; Komponentark v1:657).
-      // A theme's input border can only draw on the field's own edge, so
-      // this is the ring without its 3 px offset: the recorded fallback of
-      // decision D3. It replaces BUT-533's 3 px saffron edge.
+      // Focus on a bare TextField (one not wrapped in ButleryFocusRing, as
+      // StyledInput, AdaptiveTextField and ButlerySearchBox are): the
+      // canonical ring colour and width, ink on light and paper on dark,
+      // never saffron (tokens.json:155-160; Komponentark v1:657). A theme's
+      // input border can only draw on the field's own edge, so this is the
+      // ring without its 3 px offset, and the edge goes from 1 to 2 px: the
+      // recorded fallback of decision D3, kept only until package 4 moves
+      // the remaining bare fields onto the ring. It replaces BUT-533's 3 px
+      // saffron edge.
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         borderSide: BorderSide(
@@ -57,11 +61,14 @@ class InputThemes {
           width: 1,
         ),
       ),
+      // Focused with an error: the same D3 fallback ring on the edge. The
+      // 2 px error edge was a thicker-border focus expression; the error
+      // itself stays told by the error text under the field.
       focusedErrorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         borderSide: BorderSide(
-          color: cs.error,
-          width: 2,
+          color: AppModeColors.focusRing(cs.brightness),
+          width: AppDimensions.focusRingWidth,
         ),
       ),
       // Disabled field: 1 px surface.disabled edge on the unchanged
@@ -111,17 +118,21 @@ class InputThemes {
       tileColor: cs.surfaceContainerHighest,
       selectedTileColor: cs.primaryContainer,
       iconColor: cs.primary,
-      // A disabled row's label is text.secondary, never opacity: #627061
-      // light, #93A48D dark (Komponentark v1:164 and :174, the disabled
-      // radio and switch rows; tokens.json:62-65). Switch and radio rows
-      // are ListTiles and the theme cannot tell them apart from other rows,
-      // so every disabled list row gets it. Without this, Flutter falls back
-      // to ThemeData.disabledColor, a 38 % black. Selected and enabled rows
+      // A disabled row's label is secondary text, never opacity (decision
+      // D5; Komponentark v1:164 and :174, the disabled radio and switch
+      // rows). Those rows are drawn on paper, but this theme paints every
+      // tile surface.raised (tileColor above), where text.secondary fails
+      // 4.5:1 in both modes. So the row takes the role's on-raised value,
+      // text.secondary.onRaised: #5B6959 light, #A9B2A0 dark
+      // (tokens.json:184-187). Switch and radio rows are ListTiles and the
+      // theme cannot tell them apart from other rows, so every disabled
+      // list row gets it. Without this, Flutter falls back to
+      // ThemeData.disabledColor, a 38 % black. Selected and enabled rows
       // keep what they resolved to before (Material's selected primary, and
       // onSurface).
       textColor: WidgetStateColor.resolveWith((states) {
         if (states.contains(WidgetState.disabled)) {
-          return cs.onSurfaceVariant;
+          return AppModeColors.textSecondaryOnRaised(cs.brightness);
         }
         if (states.contains(WidgetState.selected)) {
           return cs.primary;

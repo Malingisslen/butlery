@@ -33,12 +33,17 @@ ButtonLayerBuilder _focusRing(BorderRadius radius) {
 
 /// The ring carries focus alone, so the focused state gets no tint: an
 /// opacity tint is a state carried by opacity, which the system forbids
-/// (tokens.json:40-53, opacityLadder). Only the focused state is answered
-/// here. Hover and pressed resolve to null and fall through to Material's
-/// defaults exactly as before (button_style_button.dart resolves the
-/// overlay per state), so no ripple or hover changes.
+/// (tokens.json:40-53, opacityLadder). Only focus on its own is answered
+/// here. InkWell resolves the splash against the whole state set, so a
+/// focused button that is also pressed (Enter, Space, or a click while
+/// focused) or hovered resolves to null and falls through to Material's
+/// default press and hover overlays, the same as an unfocused button.
 final WidgetStateProperty<Color?> _noFocusTint =
     WidgetStateProperty.resolveWith<Color?>((states) {
+      if (states.contains(WidgetState.pressed) ||
+          states.contains(WidgetState.hovered)) {
+        return null;
+      }
       if (states.contains(WidgetState.focused)) return Colors.transparent;
       return null;
     });
@@ -250,6 +255,11 @@ class ButtonThemes {
         backgroundColor: const WidgetStatePropertyAll(Colors.transparent),
         overlayColor: _noFocusTint,
         // The ring goes round the whole 48 dp button, not the glyph.
+        // Interpretation: Komponentark v1:679-682 draws two icon-button
+        // forms, a bordered one at radius 8 (rest :679, focused :681,
+        // disabled :682) and a round one (:680). This theme's IconButton is borderless with
+        // Flutter's circular ink, the round form, so its ring is round too.
+        // Which form a view's icon buttons take is left to a later unit.
         backgroundBuilder: _focusRing(
           const BorderRadius.all(Radius.circular(AppDimensions.radiusPill)),
         ),
@@ -381,9 +391,16 @@ class ButtonThemes {
         backgroundColor: cs.surfaceContainerHighest,
         foregroundColor: cs.primary,
         // The surface stays surface.raised when disabled; only the text and
-        // the outline change, like the outlined button.
+        // the outline change, like the outlined button. Interpretation: the
+        // secondary button's disabled state is not drawn (Komponentark
+        // v1:383 draws the outlined one, on paper). On surface.raised the
+        // outlined button's text.secondary fails 4.5:1 in both modes, so the
+        // text is the same role's on-raised value, text.secondary.onRaised:
+        // #5B6959 light, #A9B2A0 dark (tokens.json:184-187).
         disabledBackgroundColor: cs.surfaceContainerHighest,
-        disabledForegroundColor: _outlinedDisabledForeground(cs),
+        disabledForegroundColor: AppModeColors.textSecondaryOnRaised(
+          cs.brightness,
+        ),
         elevation: 0,
         padding: const EdgeInsets.symmetric(
           horizontal: AppDimensions.paddingL,
