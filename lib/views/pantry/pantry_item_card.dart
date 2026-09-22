@@ -3,6 +3,7 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:provider/provider.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -29,11 +30,10 @@ class PantryItemCard extends StatelessWidget {
 
     // Captured BEFORE dismissal: onDismissed fires after the row's element
     // is deactivated, so context lookups there would hit a dead element.
-    final messenger = ScaffoldMessenger.maybeOf(context);
+    final undo = UndoSnackBar.capture(context);
     final removedMessage = context.l10n.pantryItemRemovedUndoMessage(
       item.ingredientName,
     );
-    final undoLabel = context.l10n.commonUndo;
 
     // BUT-948: in selection mode tap toggles and long-press is a no-op (already
     // selecting); otherwise tap edits and long-press enters selection.
@@ -71,9 +71,8 @@ class PantryItemCard extends StatelessWidget {
       // "Destructive-action confirmation".)
       onDismissed: (_) => _removeWithUndo(
         viewModel,
-        messenger: messenger,
+        undo: undo,
         message: removedMessage,
-        undoLabel: undoLabel,
       ),
       background: Container(
         color: cs.error,
@@ -150,22 +149,11 @@ class PantryItemCard extends StatelessWidget {
 
   void _removeWithUndo(
     PantryViewModel viewModel, {
-    required ScaffoldMessengerState? messenger,
+    required UndoSnackBar undo,
     required String message,
-    required String undoLabel,
   }) {
     viewModel.removeItem(item.id);
-    messenger?.showSnackBar(
-      SnackBar(
-        content: Text(message),
-        action: SnackBarAction(
-          label: undoLabel,
-          onPressed: () => viewModel.restoreItem(item),
-        ),
-        duration: const Duration(seconds: 7),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+    undo.show(message, onUndo: () => viewModel.restoreItem(item));
   }
 
   void _showEditSheet(BuildContext context, PantryViewModel viewModel) {

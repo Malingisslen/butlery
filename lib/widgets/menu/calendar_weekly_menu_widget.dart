@@ -211,12 +211,11 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
   ) async {
     final cleared = await vm.clearWeek();
     if (!context.mounted || !cleared) return;
-    SnackBarUtils.showSuccessWithAction(
+    SnackBarUtils.showUndo(
       context,
       context.l10n.weeklyMenuClearedUndo,
-      actionLabel: context.l10n.commonUndo,
-      onAction: () => vm.undoClearWeek(),
-      duration: const Duration(seconds: 7),
+      look: UndoSnackBarLook.confirmation,
+      onUndo: () => vm.undoClearWeek(),
     );
   }
 

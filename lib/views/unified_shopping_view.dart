@@ -315,11 +315,11 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView>
 
     if (!mounted) return;
 
-    SnackBarUtils.showSuccessWithAction(
+    SnackBarUtils.showUndo(
       context,
       removedMsg,
-      actionLabel: context.l10n.commonUndo,
-      onAction: () {
+      look: UndoSnackBarLook.confirmation,
+      onUndo: () {
         _viewModel.addItemToActiveList(
           name: item.name,
           amount: item.amount,
@@ -330,7 +330,6 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView>
           priority: item.priority,
         );
       },
-      duration: const Duration(seconds: 4),
     );
   }
 
@@ -350,18 +349,16 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView>
     final removedMsg = context.l10n.shoppingItemsRemovedUndoMessage(
       removed.length,
     );
-    final undoLabel = context.l10n.commonUndo;
 
     selection.clearSelection();
     final ok = await _viewModel.bulkRemoveItems(ids);
     if (!mounted || !ok) return;
 
-    SnackBarUtils.showSuccessWithAction(
+    SnackBarUtils.showUndo(
       context,
       removedMsg,
-      actionLabel: undoLabel,
-      onAction: () => _viewModel.restoreItems(removed),
-      duration: const Duration(seconds: 4),
+      look: UndoSnackBarLook.confirmation,
+      onUndo: () => _viewModel.restoreItems(removed),
     );
   }
 

@@ -534,17 +534,18 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
   }
 
   void _handleDeleteWithUndo(RecipeListViewModel viewModel, Recipe recipe) {
+    if (!mounted) return;
     final id = recipe.id;
     viewModel.deleteRecipe(id);
-    if (mounted) {
-      SnackBarUtils.showSuccessWithAction(
-        context,
-        context.l10n.recipeDeleted,
-        actionLabel: context.l10n.commonUndo,
-        onAction: () => viewModel.undoDeleteById(id),
-        duration: const Duration(seconds: 5),
-      );
-    }
+    // The delete commits when the snackbar closes, so Ångra is gone from the
+    // screen before the commit lands.
+    SnackBarUtils.showUndoDeferred(
+      context,
+      context.l10n.recipeDeleted,
+      look: UndoSnackBarLook.confirmation,
+      onUndo: () => viewModel.undoDeleteById(id),
+      onCommit: () => viewModel.commitDeletes([id]),
+    );
   }
 
   /// The grid toggle on Mina recept.
