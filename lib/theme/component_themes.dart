@@ -73,6 +73,8 @@ class ComponentThemes {
   // Named styles (accept ColorScheme)
   static ButtonStyle primaryButtonStyle(ColorScheme cs) =>
       ButtonThemes.primaryButtonStyle(cs);
+  static ButtonStyle heroButtonStyle(ColorScheme cs) =>
+      ButtonThemes.heroButtonStyle(cs);
   static ButtonStyle textButtonStyle(ColorScheme cs) =>
       ButtonThemes.textButtonStyle(cs);
   static ButtonStyle secondaryButtonStyle(ColorScheme cs) =>

@@ -33,4 +33,30 @@ abstract final class AppModeColors {
   /// Never saffron (Grafisk manual v6:209).
   static Color focusRing(Brightness brightness) =>
       _isDark(brightness) ? AppColorsDark.focusRing : AppColors.focusRing;
+
+  /// semantic action.primary: saffron #CE7C1E in both modes
+  /// (tokens.json:137-140). The view's single hero action, never text.
+  static Color actionPrimary(Brightness brightness) => _isDark(brightness)
+      ? AppColorsDark.actionPrimary
+      : AppColors.actionPrimary;
+
+  /// semantic action.primaryPressed: #9A5C14 in both modes
+  /// (tokens.json:141-144).
+  static Color actionPrimaryPressed(Brightness brightness) =>
+      _isDark(brightness)
+      ? AppColorsDark.actionPrimaryPressed
+      : AppColors.actionPrimaryPressed;
+
+  /// semantic text.onActionPrimary: #17251D in both modes (tokens.json:81-85).
+  /// Only on actionPrimary.
+  static Color onActionPrimary(Brightness brightness) => _isDark(brightness)
+      ? AppColorsDark.onActionPrimary
+      : AppColors.onActionPrimary;
+
+  /// semantic text.onActionPrimaryPressed: paper #F5F4ED in both modes
+  /// (tokens.json:86-91; beslutslogg B-14). Only on actionPrimaryPressed.
+  static Color onActionPrimaryPressed(Brightness brightness) =>
+      _isDark(brightness)
+      ? AppColorsDark.onActionPrimaryPressed
+      : AppColors.onActionPrimaryPressed;
 }

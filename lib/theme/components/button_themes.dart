@@ -294,6 +294,74 @@ class ButtonThemes {
         ),
       );
 
+  /// The hero style: the view's single saffron action, exactly one per view
+  /// (Komponentark v1:843-844, "Saffranshierarki — en hero per vy"). Every
+  /// other primary stays ink. Views choose their hero in package 4; nothing
+  /// uses this style yet.
+  ///
+  /// Rest: action.primary behind text.onActionPrimary, #CE7C1E / #17251D,
+  /// 4.96:1. Pressed: action.primaryPressed behind text.onActionPrimaryPressed,
+  /// #9A5C14 / #F5F4ED, 4.84:1 (Komponentark v1:370-371; tokens.json:81-91,
+  /// :137-144; contrast pairs tokens.json:657-666). Paper on pressed saffron,
+  /// never ink: ink there is 2.97:1 (beslutslogg B-14). The same values in
+  /// both modes (Grafisk manual v6:561).
+  ///
+  /// Background and foreground switch as a pair: both resolve from the same
+  /// state, and animationDuration is zero so the background does not fade
+  /// under text that has already switched. Pressed gets no Material overlay,
+  /// so no ink tint competes with the pressed saffron. ThemeData's
+  /// highlightColor is untouched (D4).
+  ///
+  /// Disabled is the filled button's disabled state, the row drawn in the
+  /// saffron panel itself (Komponentark v1:373). Focus is the shared ring.
+  static ButtonStyle heroButtonStyle(ColorScheme cs) {
+    final b = cs.brightness;
+    return ButtonStyle(
+      backgroundColor: WidgetStateProperty.resolveWith((states) {
+        if (states.contains(WidgetState.disabled)) {
+          return AppModeColors.surfaceDisabled(b);
+        }
+        if (states.contains(WidgetState.pressed)) {
+          return AppModeColors.actionPrimaryPressed(b);
+        }
+        return AppModeColors.actionPrimary(b);
+      }),
+      foregroundColor: WidgetStateProperty.resolveWith((states) {
+        if (states.contains(WidgetState.disabled)) {
+          return _filledDisabledForeground(cs);
+        }
+        if (states.contains(WidgetState.pressed)) {
+          return AppModeColors.onActionPrimaryPressed(b);
+        }
+        return AppModeColors.onActionPrimary(b);
+      }),
+      overlayColor: WidgetStateProperty.resolveWith((states) {
+        if (states.contains(WidgetState.pressed) ||
+            states.contains(WidgetState.focused)) {
+          return Colors.transparent;
+        }
+        return null;
+      }),
+      animationDuration: Duration.zero,
+      elevation: const WidgetStatePropertyAll(0),
+      shadowColor: const WidgetStatePropertyAll(Colors.transparent),
+      backgroundBuilder: _focusRing(_controlRadius),
+      shape: const WidgetStatePropertyAll(
+        RoundedRectangleBorder(borderRadius: _controlRadius),
+      ),
+      minimumSize: const WidgetStatePropertyAll(
+        Size(double.infinity, AppDimensions.minTouchTarget),
+      ),
+      padding: const WidgetStatePropertyAll(
+        EdgeInsets.symmetric(
+          horizontal: AppDimensions.spacingLg,
+          vertical: (AppDimensions.spacingSm + AppDimensions.spacingXs),
+        ),
+      ),
+      textStyle: WidgetStatePropertyAll(AppTextStyles.buttonText),
+    );
+  }
+
   /// Text button style
   static ButtonStyle textButtonStyle(ColorScheme cs) => TextButton.styleFrom(
     foregroundColor: cs.primary,
