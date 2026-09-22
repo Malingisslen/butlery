@@ -5,7 +5,6 @@ import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
-import 'package:butlery/theme/app_dimensions.dart';
 
 /// A platform-adaptive switch widget.
 /// Automatically uses CupertinoSwitch on iOS and Material Switch on Android.
@@ -26,7 +25,12 @@ class AdaptiveSwitch extends StatelessWidget {
   /// Called when the user toggles the switch on or off.
   final ValueChanged<bool>? onChanged;
 
-  /// The color to use when this switch is on.
+  /// Anroparens spårfärg för på-läget, ogenomskinlig.
+  ///
+  /// Null låter temat (`switchTheme`) bestämma på-läget; det är där ink ska
+  /// komma ifrån (Komponentark v1:172, "Ink = på", rad 176). Satt ritas spåret
+  /// i exakt den här färgen — opacitet är aldrig ett tillstånd
+  /// (tokens.json:40-53, opacityLadder).
   final Color? activeColor;
 
   /// The color of the track.
@@ -50,10 +54,14 @@ class AdaptiveSwitch extends StatelessWidget {
     return Switch(
       value: value,
       onChanged: onChanged,
-      activeThumbColor: activeColor,
-      activeTrackColor: activeColor?.withValues(
-        alpha: AppDimensions.opacityHalf,
-      ),
+      // Knoppen på ett helt fyllt spår kan inte ha spårets färg: den skulle
+      // försvinna. Komponentark v1:172 ritar papper på ink; onPrimary är
+      // papper i båda lägena (app_colors.dart lightColorScheme och
+      // darkColorScheme, onPrimary 0xFFF5F4ED).
+      activeThumbColor: activeColor == null
+          ? null
+          : Theme.of(context).colorScheme.onPrimary,
+      activeTrackColor: activeColor,
       inactiveTrackColor: trackColor,
       thumbColor: thumbColor != null
           ? WidgetStateProperty.all(thumbColor)
@@ -93,7 +101,8 @@ class AdaptiveSwitchListTile extends StatelessWidget {
   /// A widget to display on the opposite side of the switch.
   final Widget? secondary;
 
-  /// The color to use when this switch is on.
+  /// Anroparens spårfärg för på-läget, ogenomskinlig. Se
+  /// [AdaptiveSwitch.activeColor].
   final Color? activeColor;
 
   /// The padding for the tile's contents.
@@ -127,10 +136,10 @@ class AdaptiveSwitchListTile extends StatelessWidget {
       title: title,
       subtitle: subtitle,
       secondary: secondary,
-      activeThumbColor: activeColor,
-      activeTrackColor: activeColor?.withValues(
-        alpha: AppDimensions.opacityHalf,
-      ),
+      activeThumbColor: activeColor == null
+          ? null
+          : Theme.of(context).colorScheme.onPrimary,
+      activeTrackColor: activeColor,
       contentPadding: contentPadding,
       dense: dense,
     );

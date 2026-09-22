@@ -15,6 +15,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/input/debounced_button.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 Widget _wrap(Widget child) => MaterialApp(home: Scaffold(body: child));
 
@@ -256,7 +257,7 @@ void main() {
     );
 
     testWidgets(
-      'showLoadingIndicator renders default spinner during processing',
+      'showLoadingIndicator renders the default plate line during processing',
       (tester) async {
         final completer = Completer<void>();
         await tester.pumpWidget(
@@ -268,10 +269,10 @@ void main() {
             ),
           ),
         );
-        expect(find.byType(CircularProgressIndicator), findsNothing);
+        expect(find.byType(PlateLine), findsNothing);
         await tester.tap(find.text('Spara'));
         await tester.pump();
-        expect(find.byType(CircularProgressIndicator), findsOneWidget);
+        expect(find.byType(PlateLine), findsOneWidget);
         // Child text is no longer shown during loading.
         expect(find.text('Spara'), findsNothing);
         completer.complete();
@@ -280,7 +281,7 @@ void main() {
       },
     );
 
-    testWidgets('custom loadingIndicator overrides default spinner', (
+    testWidgets('custom loadingIndicator overrides the default plate line', (
       tester,
     ) async {
       final completer = Completer<void>();
@@ -297,7 +298,7 @@ void main() {
       await tester.tap(find.text('Spara'));
       await tester.pump();
       expect(find.text('Laddar...'), findsOneWidget);
-      expect(find.byType(CircularProgressIndicator), findsNothing);
+      expect(find.byType(PlateLine), findsNothing);
       completer.complete();
       await tester.pump();
       await tester.pump(AppDimensions.animationDurationLong);

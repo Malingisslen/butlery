@@ -357,6 +357,7 @@ class _FranSocialaMedierViewContentState
                     const SizedBox(height: AppDimensions.spacingM),
                     StateWidget.error(
                       message: viewModel.error!,
+                      preserved: context.l10n.errorPreservedLink,
                     ),
                   ],
                 ],

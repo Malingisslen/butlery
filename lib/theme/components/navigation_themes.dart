@@ -100,9 +100,11 @@ class NavigationThemes {
       backgroundColor: cs.surface,
       elevation: 16,
       shadowColor: cs.shadow,
+      // Sheets round only their top edge, 12 (Komponentark: "Ark: 12 px
+      // överkant"). The bottom edge meets the screen edge and stays sharp.
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(
-          top: Radius.circular(AppDimensions.borderRadius16),
+          top: Radius.circular(AppDimensions.radiusCard),
         ),
       ),
       modalBackgroundColor: cs.surface,

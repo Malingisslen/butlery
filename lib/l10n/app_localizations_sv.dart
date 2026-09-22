@@ -1763,6 +1763,11 @@ class AppLocalizationsSv extends AppLocalizations {
   String get commonBack => 'Tillbaka';
 
   @override
+  String commonBackTo(String destination) {
+    return 'Tillbaka till $destination';
+  }
+
+  @override
   String get commonEnable => 'Aktivera';
 
   @override
@@ -6241,6 +6246,78 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get loadingRecipes => 'Laddar recept...';
+
+  @override
+  String get loadingAdminAccess => 'Hämtar din behörighet …';
+
+  @override
+  String get loadingConsents => 'Hämtar dina samtycken …';
+
+  @override
+  String get loadingFeedbackEntries => 'Hämtar återkopplingen …';
+
+  @override
+  String get loadingImage => 'Hämtar bilden …';
+
+  @override
+  String get loadingMetrics => 'Hämtar mätvärdena …';
+
+  @override
+  String get loadingReports => 'Hämtar anmälningarna …';
+
+  @override
+  String get loadingOpsLog => 'Hämtar driftloggen …';
+
+  @override
+  String get loadingParsingStats => 'Hämtar tolkningsstatistiken …';
+
+  @override
+  String get loadingFamily => 'Hämtar familjen …';
+
+  @override
+  String get loadingIngredientSearch => 'Söker ingredienser …';
+
+  @override
+  String get loadingCommunityGuidelines => 'Hämtar riktlinjerna …';
+
+  @override
+  String get loadingTerms => 'Hämtar användarvillkoren …';
+
+  @override
+  String get loadingWeeklyMenu => 'Hämtar veckomenyn …';
+
+  @override
+  String get loadingNotifications => 'Hämtar dina notiser …';
+
+  @override
+  String get loadingPersonalTags => 'Hämtar dina taggar …';
+
+  @override
+  String get loadingAllergenPreferences => 'Hämtar dina allergival …';
+
+  @override
+  String get loadingMfaSettings => 'Hämtar tvåstegsverifieringen …';
+
+  @override
+  String get loadingMyReports => 'Hämtar dina anmälningar …';
+
+  @override
+  String get loadingNotificationPreferences => 'Hämtar dina notisval …';
+
+  @override
+  String get loadingTag => 'Hämtar taggen …';
+
+  @override
+  String get loadingShoppingList => 'Hämtar inköpslistan …';
+
+  @override
+  String get loadingShoppingLists => 'Hämtar dina inköpslistor …';
+
+  @override
+  String get loadingGroupMembers => 'Hämtar gruppens medlemmar …';
+
+  @override
+  String get loadingProfile => 'Hämtar profilen …';
 
   @override
   String menuCategoryCount(int count) {
@@ -13680,6 +13757,12 @@ class AppLocalizationsSv extends AppLocalizations {
   ) {
     return 'Ogiltiga kategorinamn: $fromCategory -> $toCategory';
   }
+
+  @override
+  String get errorPreservedLink => 'Länken ligger kvar i fältet.';
+
+  @override
+  String get errorPreservedPhoto => 'Bilden ligger kvar.';
 
   @override
   String get validationTitleMissing => 'Titel saknas';

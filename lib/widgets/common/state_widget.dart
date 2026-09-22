@@ -15,6 +15,9 @@ class StateWidget extends StatelessWidget {
   final String? title;
   final String? subtitle;
   final String? message;
+
+  /// Vad som bevarades. Bara i fellaget, och bara nar nagot stod pa spel.
+  final String? preserved;
   final IconData? icon;
   final String? actionLabel;
   final VoidCallback? onAction;
@@ -32,6 +35,7 @@ class StateWidget extends StatelessWidget {
     this.title,
     this.subtitle,
     this.message,
+    this.preserved,
     this.icon,
     this.actionLabel,
     this.onAction,
@@ -44,13 +48,13 @@ class StateWidget extends StatelessWidget {
     this.padding,
   });
 
-  /// Loading state with pea pod animation.
+  /// Laddning: tallrikslinje + text (produktregler.md:163 och :304, B-18).
   ///
-  /// UI Redesign: Changed default from spinner to peaAnimation
-  /// for branded loading experience.
+  /// [message] säger vad som hämtas. Förvalet är tallrikslinjen; ärtbaljan
+  /// var förval tidigare och är ingen laddningsindikator.
   factory StateWidget.loading({
     String? message,
-    LoadingVariant variant = LoadingVariant.peaAnimation,
+    LoadingVariant variant = LoadingVariant.spinner,
     int itemCount = 5,
   }) {
     return StateWidget(
@@ -62,9 +66,7 @@ class StateWidget extends StatelessWidget {
   }
 
   /// Skeleton loading for recipe list.
-  factory StateWidget.skeletonRecipeList({
-    int itemCount = 5,
-  }) {
+  factory StateWidget.skeletonRecipeList({int itemCount = 5}) {
     return StateWidget(
       type: StateType.loading,
       loadingVariant: LoadingVariant.skeletonRecipeList,
@@ -81,10 +83,7 @@ class StateWidget extends StatelessWidget {
   }
 
   /// Empty state for "no recipes".
-  factory StateWidget.noRecipes({
-    String? actionLabel,
-    VoidCallback? onAction,
-  }) {
+  factory StateWidget.noRecipes({String? actionLabel, VoidCallback? onAction}) {
     return StateWidget(
       type: StateType.empty,
       emptyVariant: EmptyStateVariant.noRecipes,
@@ -133,10 +132,7 @@ class StateWidget extends StatelessWidget {
   }
 
   /// Empty state for "no menu".
-  factory StateWidget.noMenu({
-    String? actionLabel,
-    VoidCallback? onAction,
-  }) {
+  factory StateWidget.noMenu({String? actionLabel, VoidCallback? onAction}) {
     return StateWidget(
       type: StateType.empty,
       emptyVariant: EmptyStateVariant.noMenu,
@@ -159,10 +155,7 @@ class StateWidget extends StatelessWidget {
   }
 
   /// Empty state for "no friends".
-  factory StateWidget.noFriends({
-    String? actionLabel,
-    VoidCallback? onAction,
-  }) {
+  factory StateWidget.noFriends({String? actionLabel, VoidCallback? onAction}) {
     return StateWidget(
       type: StateType.empty,
       emptyVariant: EmptyStateVariant.noFriends,
@@ -171,15 +164,22 @@ class StateWidget extends StatelessWidget {
     );
   }
 
-  /// Error state with retry button.
+  /// Error state.
+  ///
+  /// Tre delar, i ordning (content-style-guide.md § Felmeddelandets struktur):
+  /// [message] säger **vad som hände**, [preserved] säger **vad som bevarades**
+  /// och lämnas utelämnad när ingenting stod på spel, och [actionLabel] med
+  /// [onAction] säger **vad du kan göra**.
   factory StateWidget.error({
     required String message,
+    String? preserved,
     String? actionLabel,
     VoidCallback? onAction,
   }) {
     return StateWidget(
       type: StateType.error,
       message: message,
+      preserved: preserved,
       actionLabel: actionLabel,
       onAction: onAction,
     );
@@ -336,6 +336,7 @@ class StateWidget extends StatelessWidget {
       context,
       title: title,
       message: message,
+      preserved: preserved,
       icon: icon,
       actionLabel:
           actionLabel ?? (onAction != null ? context.l10n.commonRetry : null),

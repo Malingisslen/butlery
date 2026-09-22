@@ -9,6 +9,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/widgets/common/dialogs/base_dialog.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 Widget _wrap(Widget child) => MaterialApp(
   localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -292,7 +293,7 @@ void main() {
 
       // No error, no progress spinner
       expect(find.byIcon(Icons.error_outline), findsNothing);
-      expect(find.byType(CircularProgressIndicator), findsNothing);
+      expect(find.byType(PlateLine), findsNothing);
     });
   });
 
@@ -506,7 +507,7 @@ void main() {
       await tester.pumpAndSettle();
       // No error displayed, no spinner
       expect(find.byIcon(Icons.error_outline), findsNothing);
-      expect(find.byType(CircularProgressIndicator), findsNothing);
+      expect(find.byType(PlateLine), findsNothing);
     });
   });
 
@@ -572,17 +573,17 @@ void main() {
   });
 
   group('LoadingDialog', () {
-    testWidgets('renders the message + CircularProgressIndicator', (
+    testWidgets('renders the message + the plate line', (
       tester,
     ) async {
       await tester.pumpWidget(_wrap(_trigger(() {})));
       final ctx = tester.element(find.byType(ElevatedButton));
       LoadingDialog.show(ctx, message: 'Sparar...');
-      // CircularProgressIndicator never settles → use pump not pumpAndSettle
+      // The indeterminate plate line never settles → use pump not pumpAndSettle
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 200));
       expect(find.text('Sparar...'), findsOneWidget);
-      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      expect(find.byType(PlateLine), findsOneWidget);
       // Hide so the tree is clean before the test ends
       LoadingDialog.hide(tester.element(find.text('Sparar...')));
       await tester.pump();

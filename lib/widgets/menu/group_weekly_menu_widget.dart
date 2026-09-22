@@ -199,12 +199,11 @@ class _GroupWeeklyMenuWidgetState extends State<GroupWeeklyMenuWidget> {
       SnackBarUtils.showSuccess(context, context.l10n.groupMenuDishRemoved);
       return;
     }
-    SnackBarUtils.showSuccessWithAction(
+    SnackBarUtils.showUndo(
       context,
       context.l10n.groupMenuDishRemoved,
-      actionLabel: context.l10n.commonUndo,
-      onAction: () => unawaited(vm.undoLastRemoval()),
-      duration: const Duration(seconds: 7),
+      look: UndoSnackBarLook.confirmation,
+      onUndo: () => unawaited(vm.undoLastRemoval()),
     );
   }
 

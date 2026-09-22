@@ -1758,6 +1758,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonBack => 'Back';
 
   @override
+  String commonBackTo(String destination) {
+    return 'Back to $destination';
+  }
+
+  @override
   String get commonEnable => 'Enable';
 
   @override
@@ -6234,6 +6239,79 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get loadingRecipes => 'Loading recipes...';
+
+  @override
+  String get loadingAdminAccess => 'Checking your access …';
+
+  @override
+  String get loadingConsents => 'Loading your consents …';
+
+  @override
+  String get loadingFeedbackEntries => 'Loading feedback …';
+
+  @override
+  String get loadingImage => 'Loading the image …';
+
+  @override
+  String get loadingMetrics => 'Loading the metrics …';
+
+  @override
+  String get loadingReports => 'Loading the reports …';
+
+  @override
+  String get loadingOpsLog => 'Loading the operations log …';
+
+  @override
+  String get loadingParsingStats => 'Loading the parsing statistics …';
+
+  @override
+  String get loadingFamily => 'Loading your family …';
+
+  @override
+  String get loadingIngredientSearch => 'Searching ingredients …';
+
+  @override
+  String get loadingCommunityGuidelines => 'Loading the guidelines …';
+
+  @override
+  String get loadingTerms => 'Loading the terms of service …';
+
+  @override
+  String get loadingWeeklyMenu => 'Loading the weekly menu …';
+
+  @override
+  String get loadingNotifications => 'Loading your notifications …';
+
+  @override
+  String get loadingPersonalTags => 'Loading your tags …';
+
+  @override
+  String get loadingAllergenPreferences => 'Loading your allergy settings …';
+
+  @override
+  String get loadingMfaSettings => 'Loading two-step verification …';
+
+  @override
+  String get loadingMyReports => 'Loading your reports …';
+
+  @override
+  String get loadingNotificationPreferences =>
+      'Loading your notification settings …';
+
+  @override
+  String get loadingTag => 'Loading the tag …';
+
+  @override
+  String get loadingShoppingList => 'Loading the shopping list …';
+
+  @override
+  String get loadingShoppingLists => 'Loading your shopping lists …';
+
+  @override
+  String get loadingGroupMembers => 'Loading the group\'s members …';
+
+  @override
+  String get loadingProfile => 'Loading the profile …';
 
   @override
   String menuCategoryCount(int count) {
@@ -13648,6 +13726,12 @@ class AppLocalizationsEn extends AppLocalizations {
   ) {
     return 'Invalid category names: $fromCategory -> $toCategory';
   }
+
+  @override
+  String get errorPreservedLink => 'The link is still in the field.';
+
+  @override
+  String get errorPreservedPhoto => 'The photo is still here.';
 
   @override
   String get validationTitleMissing => 'Title is missing';

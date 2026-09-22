@@ -352,7 +352,36 @@ void main() {
       expect(savedArgs()[#itemId], 'item-1');
       expect(savedArgs()[#name], 'Havredryck');
       expect(savedArgs()[#notes], 'Osötad');
-      expect(successes, hasLength(1));
+      expect(
+        successes,
+        isEmpty,
+        reason:
+            'update{namn, mängd, enhet, kategori} is class 3: no friction on '
+            'success (produktregler.md:133). The row changing is the receipt.',
+      );
+      expect(errors, isEmpty);
+    });
+
+    testWidgets('a failed edit is still said', (tester) async {
+      when(
+        () => viewModel.updateItem(
+          itemId: any(named: 'itemId'),
+          name: any(named: 'name'),
+          quantity: any(named: 'quantity'),
+          unit: any(named: 'unit'),
+          category: any(named: 'category'),
+          notes: any(named: 'notes'),
+          estimatedPrice: any(named: 'estimatedPrice'),
+          priority: any(named: 'priority'),
+        ),
+      ).thenAnswer((_) async => false);
+      await openEditDialog(tester, existing());
+
+      await tester.tap(find.text('Spara'));
+      await tester.pumpAndSettle();
+
+      expect(successes, isEmpty);
+      expect(errors, hasLength(1), reason: 'class 3 silences success only');
     });
 
     // BUT-1874, the discriminating case. Emptying the field used to be

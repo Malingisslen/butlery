@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:butlery/widgets/common/indicators/adaptive_activity_indicator.dart';
 import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
-/// BUT-1173: LoadingIndicator gained a determinate variant (`value:`). These
-/// tests pin the branch contract — determinate renders a Material
-/// CircularProgressIndicator carrying the value; the indeterminate default path
-/// is unchanged (still the platform-adaptive indicator).
+/// BUT-1173: LoadingIndicator has a determinate variant (`value:`). The body is
+/// now the plate line (decision B-18, beslutslogg.md:25: no spinner), so these
+/// tests pin that the value reaches the line and that the screen-reader
+/// contract is unchanged.
 void main() {
   Future<void> pump(WidgetTester tester, Widget child) => tester.pumpWidget(
     MaterialApp(
@@ -15,38 +15,18 @@ void main() {
   );
 
   group('LoadingIndicator determinate variant (BUT-1173)', () {
-    testWidgets(
-      'value != null renders a determinate CircularProgressIndicator',
-      (tester) async {
-        await pump(tester, const LoadingIndicator(value: 0.42));
-
-        final cpi = tester.widget<CircularProgressIndicator>(
-          find.byType(CircularProgressIndicator),
-        );
-        expect(cpi.value, 0.42);
-        // Determinate path bypasses the adaptive (indeterminate) indicator.
-        expect(find.byType(AdaptiveActivityIndicator), findsNothing);
-      },
-    );
-
-    testWidgets('value != null forwards strokeWidth and backgroundColor', (
+    testWidgets('value != null reaches the plate line as measured progress', (
       tester,
     ) async {
-      await pump(
-        tester,
-        const LoadingIndicator(
-          value: 0.7,
-          strokeWidth: 8,
-          backgroundColor: Color(0xFF112233),
-        ),
-      );
+      await pump(tester, const LoadingIndicator(value: 0.42));
 
-      final cpi = tester.widget<CircularProgressIndicator>(
-        find.byType(CircularProgressIndicator),
+      final line = tester.widget<PlateLine>(find.byType(PlateLine));
+      expect(line.value, 0.42);
+      final bar = tester.widget<LinearProgressIndicator>(
+        find.byType(LinearProgressIndicator),
       );
-      expect(cpi.value, 0.7);
-      expect(cpi.strokeWidth, 8);
-      expect(cpi.backgroundColor, const Color(0xFF112233));
+      expect(bar.value, 0.42);
+      expect(find.byType(CircularProgressIndicator), findsNothing);
     });
 
     testWidgets('determinate exposes the percentage to screen readers', (
@@ -59,41 +39,29 @@ void main() {
       expect(node.value, '42%'); // not masked by a static "Loading" label
       handle.dispose();
     });
-
-    testWidgets(
-      'value null but backgroundColor set keeps the Material track (not adaptive)',
-      (tester) async {
-        // Upload site: progress==0 → value null, but the track ring must remain.
-        await pump(
-          tester,
-          const LoadingIndicator(
-            value: null,
-            backgroundColor: Color(0xFF112233),
-          ),
-        );
-
-        final cpi = tester.widget<CircularProgressIndicator>(
-          find.byType(CircularProgressIndicator),
-        );
-        expect(cpi.value, isNull); // indeterminate…
-        expect(cpi.backgroundColor, const Color(0xFF112233)); // …but track kept
-        expect(find.byType(AdaptiveActivityIndicator), findsNothing);
-      },
-    );
   });
 
-  group('LoadingIndicator indeterminate (unchanged)', () {
-    testWidgets(
-      'default (no value) uses the adaptive indeterminate indicator',
-      (tester) async {
-        await pump(tester, const LoadingIndicator());
-        expect(find.byType(AdaptiveActivityIndicator), findsOneWidget);
-      },
-    );
+  group('LoadingIndicator indeterminate', () {
+    testWidgets('default (no value) draws an indeterminate plate line', (
+      tester,
+    ) async {
+      await pump(tester, const LoadingIndicator());
+      expect(tester.widget<PlateLine>(find.byType(PlateLine)).value, isNull);
+      expect(find.byType(CircularProgressIndicator), findsNothing);
+    });
 
     testWidgets('.small stays indeterminate (value is null)', (tester) async {
       await pump(tester, const LoadingIndicator.small());
-      expect(find.byType(AdaptiveActivityIndicator), findsOneWidget);
+      expect(tester.widget<PlateLine>(find.byType(PlateLine)).value, isNull);
+    });
+
+    testWidgets('announces a11yLoading as a live region', (tester) async {
+      final handle = tester.ensureSemantics();
+      await pump(tester, const LoadingIndicator(semanticLabel: 'Hämtar …'));
+      final node = tester.getSemantics(find.byType(LoadingIndicator));
+      expect(node.label, 'Hämtar …');
+      expect(node.flagsCollection.isLiveRegion, isTrue);
+      handle.dispose();
     });
   });
 }

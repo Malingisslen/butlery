@@ -26,6 +26,7 @@ import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/viewmodels/url_import_viewmodel.dart';
 import 'package:butlery/views/import_via_url_view.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 /// Self-contained ChangeNotifier fake exposing only the surface the view reads
 /// for the multi-URL path, plus a retry recorder. The real VM drives a
@@ -263,8 +264,9 @@ void main() {
 
     expect(find.byIcon(Icons.check_circle), findsOneWidget);
     expect(find.byIcon(Icons.error), findsOneWidget);
-    // A loading row shows a spinner instead of an icon.
-    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    // A loading row shows the plate line instead of an icon (B-18).
+    expect(find.byType(PlateLine), findsOneWidget);
+    expect(find.byType(CircularProgressIndicator), findsNothing);
   });
 
   testWidgets('the import CTA counts only the URLs that succeeded', (

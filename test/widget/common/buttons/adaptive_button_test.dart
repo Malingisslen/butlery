@@ -13,6 +13,8 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_colors_dark.dart';
 import 'package:butlery/widgets/common/buttons/adaptive_button.dart';
 
 Widget _wrap(Widget child) => MaterialApp(home: Scaffold(body: child));
@@ -89,23 +91,72 @@ void main() {
       );
     });
 
-    testWidgets('disabledColor → disabledForegroundColor', (tester) async {
+    testWidgets(
+      'disabled surface and disabled text are separate: background → '
+      'disabledBackgroundColor, foreground → disabledForegroundColor',
+      (tester) async {
+        await tester.pumpWidget(
+          _wrap(
+            const AdaptiveButton(
+              onPressed: null,
+              disabledBackgroundColor: Colors.amber,
+              disabledForegroundColor: Colors.indigo,
+              child: Text('d'),
+            ),
+          ),
+        );
+        final btn = tester.widget<ElevatedButton>(find.byType(ElevatedButton));
+        const disabled = <WidgetState>{WidgetState.disabled};
+        expect(btn.style!.backgroundColor!.resolve(disabled), Colors.amber);
+        expect(btn.style!.foregroundColor!.resolve(disabled), Colors.indigo);
+      },
+    );
+
+    testWidgets('a disabled surface alone never becomes the text colour', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         _wrap(
           const AdaptiveButton(
             onPressed: null,
-            disabledColor: Colors.amber,
+            disabledBackgroundColor: Colors.amber,
             child: Text('d'),
           ),
         ),
       );
       final btn = tester.widget<ElevatedButton>(find.byType(ElevatedButton));
+      const disabled = <WidgetState>{WidgetState.disabled};
+      expect(btn.style!.backgroundColor!.resolve(disabled), Colors.amber);
       expect(
-        btn.style!.foregroundColor!.resolve(<WidgetState>{
-          WidgetState.disabled,
-        }),
-        Colors.amber,
+        btn.style!.foregroundColor?.resolve(disabled),
+        isNot(Colors.amber),
       );
+    });
+  });
+
+  group('AdaptiveButton — iOS disabled surface fallback', () {
+    // The iOS branch itself cannot run on this host (see the library doc),
+    // so the fallback it uses is pinned through its helper.
+    test('is token surface.disabled in the light mode', () {
+      expect(
+        AdaptiveButton.disabledSurfaceFor(Brightness.light),
+        AppColors.surfaceDisabled,
+      );
+      expect(AppColors.surfaceDisabled, const Color(0xFFA9B2A0));
+    });
+
+    test('is token surface.disabled in the dark mode', () {
+      expect(
+        AdaptiveButton.disabledSurfaceFor(Brightness.dark),
+        AppColorsDark.surfaceDisabled,
+      );
+      expect(AppColorsDark.surfaceDisabled, const Color(0xFF4A5C50));
+    });
+
+    test('is opaque in both modes: disabled is never opacity', () {
+      for (final b in Brightness.values) {
+        expect(AdaptiveButton.disabledSurfaceFor(b).a, 1.0);
+      }
     });
   });
 

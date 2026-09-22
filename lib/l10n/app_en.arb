@@ -1270,6 +1270,15 @@
   "shoppingNoListForRename": "No list selected for renaming",
   "shoppingNoListForDelete": "No list selected for deletion",
   "commonBack": "Back",
+  "commonBackTo": "Back to {destination}",
+  "@commonBackTo": {
+    "description": "Accessible name of the back arrow in the subpage top bar. Names the view the arrow leads to (Komponentark v1 section 01, pattern 2; accessibility handoff, row Back)",
+    "placeholders": {
+      "destination": {
+        "type": "String"
+      }
+    }
+  },
   "commonEnable": "Enable",
   "commonDisable": "Disable",
   "commonName": "Name",
@@ -4239,6 +4248,102 @@
   "groupYouLeftGroup": "You have left the group",
   "loadingGeneric": "Loading...",
   "loadingRecipes": "Loading recipes...",
+  "loadingAdminAccess": "Checking your access …",
+  "@loadingAdminAccess": {
+    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
+  },
+  "loadingConsents": "Loading your consents …",
+  "@loadingConsents": {
+    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
+  },
+  "loadingFeedbackEntries": "Loading feedback …",
+  "@loadingFeedbackEntries": {
+    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
+  },
+  "loadingImage": "Loading the image …",
+  "@loadingImage": {
+    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
+  },
+  "loadingMetrics": "Loading the metrics …",
+  "@loadingMetrics": {
+    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
+  },
+  "loadingReports": "Loading the reports …",
+  "@loadingReports": {
+    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
+  },
+  "loadingOpsLog": "Loading the operations log …",
+  "@loadingOpsLog": {
+    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
+  },
+  "loadingParsingStats": "Loading the parsing statistics …",
+  "@loadingParsingStats": {
+    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
+  },
+  "loadingFamily": "Loading your family …",
+  "@loadingFamily": {
+    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
+  },
+  "loadingIngredientSearch": "Searching ingredients …",
+  "@loadingIngredientSearch": {
+    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
+  },
+  "loadingCommunityGuidelines": "Loading the guidelines …",
+  "@loadingCommunityGuidelines": {
+    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
+  },
+  "loadingTerms": "Loading the terms of service …",
+  "@loadingTerms": {
+    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
+  },
+  "loadingWeeklyMenu": "Loading the weekly menu …",
+  "@loadingWeeklyMenu": {
+    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
+  },
+  "loadingNotifications": "Loading your notifications …",
+  "@loadingNotifications": {
+    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
+  },
+  "loadingPersonalTags": "Loading your tags …",
+  "@loadingPersonalTags": {
+    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
+  },
+  "loadingAllergenPreferences": "Loading your allergy settings …",
+  "@loadingAllergenPreferences": {
+    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
+  },
+  "loadingMfaSettings": "Loading two-step verification …",
+  "@loadingMfaSettings": {
+    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
+  },
+  "loadingMyReports": "Loading your reports …",
+  "@loadingMyReports": {
+    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
+  },
+  "loadingNotificationPreferences": "Loading your notification settings …",
+  "@loadingNotificationPreferences": {
+    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
+  },
+  "loadingTag": "Loading the tag …",
+  "@loadingTag": {
+    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
+  },
+  "loadingShoppingList": "Loading the shopping list …",
+  "@loadingShoppingList": {
+    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
+  },
+  "loadingShoppingLists": "Loading your shopping lists …",
+  "@loadingShoppingLists": {
+    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
+  },
+  "loadingGroupMembers": "Loading the group's members …",
+  "@loadingGroupMembers": {
+    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
+  },
+  "loadingProfile": "Loading the profile …",
+  "@loadingProfile": {
+    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
+  },
   "menuCategoryCount": "{count} categories",
   "@menuCategoryCount": {
     "placeholders": {
@@ -9487,6 +9592,14 @@
         "type": "String"
       }
     }
+  },
+  "errorPreservedLink": "The link is still in the field.",
+  "@errorPreservedLink": {
+    "description": "Del 2 i felmeddelandets struktur: vad bevarades. Visas under felet i importflodena, dar den inklistrade lanken star kvar i faltet."
+  },
+  "errorPreservedPhoto": "The photo is still here.",
+  "@errorPreservedPhoto": {
+    "description": "Del 2 i felmeddelandets struktur: vad bevarades. Visas nar tolkningen av en bild misslyckades men bilden inte kastats."
   },
   "validationTitleMissing": "Title is missing",
   "validationIngredientsMissing": "Ingredients are missing",

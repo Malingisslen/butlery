@@ -6,6 +6,7 @@ import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 
@@ -22,7 +23,8 @@ class AdaptiveButton extends StatelessWidget {
     required this.onPressed,
     required this.child,
     this.color,
-    this.disabledColor,
+    this.disabledBackgroundColor,
+    this.disabledForegroundColor,
     this.padding,
     this.minSize = 44.0,
   });
@@ -36,8 +38,17 @@ class AdaptiveButton extends StatelessWidget {
   /// The button's color. Uses theme primary color if not specified.
   final Color? color;
 
-  /// The button's color when disabled.
-  final Color? disabledColor;
+  /// Knappens YTA när den är avstängd.
+  ///
+  /// Yta och text är två skilda begrepp: en avstängd knapp är
+  /// ui-disabled-yta med läsbar inktext, aldrig opacitet (Komponentark
+  /// v1:365, Grafisk manual v6:167 och :423). Samma värde på båda gav
+  /// osynlig text.
+  final Color? disabledBackgroundColor;
+
+  /// Knappens TEXT och ikon när den är avstängd. Se
+  /// [disabledBackgroundColor].
+  final Color? disabledForegroundColor;
 
   /// Padding around the button content.
   final EdgeInsetsGeometry? padding;
@@ -53,7 +64,8 @@ class AdaptiveButton extends StatelessWidget {
     this.padding,
     this.minSize = 44.0,
   }) : color = null,
-       disabledColor = null;
+       disabledBackgroundColor = null,
+       disabledForegroundColor = null;
 
   /// Creates a text-style button for secondary actions.
   factory AdaptiveButton.text({
@@ -87,6 +99,16 @@ class AdaptiveButton extends StatelessWidget {
     );
   }
 
+  /// Den avstängda ytan när anroparen inte anger någon: token
+  /// surface.disabled i det aktuella läget (tokens.json semantic
+  /// surface.disabled; ljust #A9B2A0, mörkt #4A5C50). Egen metod så att
+  /// iOS-grenens reserv kan provas på en värd där `Platform.isIOS` är falskt.
+  @visibleForTesting
+  static Color disabledSurfaceFor(Brightness brightness) =>
+      brightness == Brightness.dark
+      ? ButleryColors.dark.surfaceDisabled
+      : ButleryColors.light.surfaceDisabled;
+
   @override
   Widget build(BuildContext context) {
     if (!kIsWeb && Platform.isIOS) {
@@ -94,7 +116,13 @@ class AdaptiveButton extends StatelessWidget {
         onPressed: onPressed,
         padding: padding,
         minimumSize: Size(minSize, minSize),
-        disabledColor: disabledColor ?? CupertinoColors.quaternarySystemFill,
+        // Ytan. Reserven är token surface.disabled per läge, aldrig en
+        // genomskinlig systemfyllnad: avstängd är en egen yta, inte
+        // opacitet (Komponentark v1:365). Ljust #A9B2A0, mörkt #4A5C50, båda
+        // semantic.surface.disabled i tokens.json.
+        disabledColor:
+            disabledBackgroundColor ??
+            disabledSurfaceFor(Theme.of(context).brightness),
         child: child,
       );
     }
@@ -105,7 +133,8 @@ class AdaptiveButton extends StatelessWidget {
         padding: padding,
         minimumSize: Size(minSize, minSize),
         foregroundColor: color,
-        disabledForegroundColor: disabledColor,
+        disabledBackgroundColor: disabledBackgroundColor,
+        disabledForegroundColor: disabledForegroundColor,
       ),
       child: child,
     );

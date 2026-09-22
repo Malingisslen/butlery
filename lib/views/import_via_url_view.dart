@@ -256,6 +256,7 @@ class _ImportViaUrlViewContentState extends State<_ImportViaUrlViewContent> {
                       const SizedBox(height: AppDimensions.spacingXl),
                       StateWidget.error(
                         message: viewModel.error!,
+                        preserved: context.l10n.errorPreservedLink,
                       ),
                     ],
 

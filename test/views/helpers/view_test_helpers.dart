@@ -41,6 +41,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 // Import existing test infrastructure
 import '../../infrastructure/helpers/base_widget_test.dart';
@@ -378,10 +379,12 @@ class ViewTestHelpers extends BaseWidgetTest {
   /// `lib/widgets/common/indicators/` still renders raw CPI internally
   /// and some primitive widget tests legitimately assert on it. Forcing
   /// LoadingIndicator-only would force wholesale migration before this
-  /// helper becomes usable on migrated views.
+  /// helper becomes usable on migrated views. `PlateLine` is the loading
+  /// indicator itself (decision B-18) and is what StateWidget.loading draws.
   static void expectLoadingState(WidgetTester tester) {
     final hasLoading =
         tester.any(find.byType(LoadingIndicator)) ||
+        tester.any(find.byType(PlateLine)) ||
         tester.any(find.byType(CircularProgressIndicator));
     expect(hasLoading, isTrue, reason: 'Loading state not displayed');
   }

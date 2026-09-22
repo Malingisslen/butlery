@@ -762,8 +762,14 @@ class RecipeListViewModel extends BaseViewModel {
   void deleteRecipe(String recipeId) => _deleteManager.deleteRecipe(recipeId);
   void undoDeleteById(String id) => _deleteManager.undoDeleteById(id);
   void undoLastDelete() => _deleteManager.undoLastDelete();
-  void deleteSelected() =>
+
+  /// Returns the ids that became pending, for [commitDeletes].
+  Set<String> deleteSelected() =>
       _deleteManager.deleteSelected(Set.from(_selectionManager.selectedIds));
+
+  /// Commits pending deletes once their Ångra snackbar has closed.
+  Future<void> commitDeletes(Iterable<String> ids) =>
+      _deleteManager.commitDeletes(ids);
   void undoBulkDelete() {
     _deleteManager.undoBulkDelete();
     _selectionManager.clearSelection();

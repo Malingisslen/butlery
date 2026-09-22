@@ -46,7 +46,9 @@ void main() {
         );
       });
 
-      testWidgets('should have shimmer gradient', (WidgetTester tester) async {
+      testWidgets('stands still: a flat surface, no shimmer gradient (B-18)', (
+        WidgetTester tester,
+      ) async {
         late ColorScheme cs;
         await tester.pumpWidget(
           MaterialApp(
@@ -63,17 +65,8 @@ void main() {
 
         final container = tester.widget<Container>(find.byType(Container));
         final decoration = container.decoration as BoxDecoration;
-        expect(decoration.gradient, isA<LinearGradient>());
-
-        final gradient = decoration.gradient as LinearGradient;
-        expect(
-          gradient.colors,
-          equals([
-            cs.onSurfaceVariant,
-            cs.surfaceContainerHighest,
-            cs.onSurfaceVariant,
-          ]),
-        );
+        expect(decoration.gradient, isNull);
+        expect(decoration.color, cs.surfaceContainerHighest);
       });
 
       testWidgets('should have animation controller', (

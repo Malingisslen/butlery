@@ -518,12 +518,11 @@ class _SkrivSjalvReceptViewContentState
                               await viewModel.cancelImageUpload(pathOrUrl);
                               if (!context.mounted) return;
                               if (!viewModel.hasPendingImageDeletion) return;
-                              SnackBarUtils.showSuccessWithAction(
+                              SnackBarUtils.showUndo(
                                 context,
                                 context.l10n.imageRemovedUndoMessage,
-                                actionLabel: context.l10n.commonUndo,
-                                onAction: viewModel.restoreLastImageDeletion,
-                                duration: const Duration(seconds: 5),
+                                look: UndoSnackBarLook.confirmation,
+                                onUndo: viewModel.restoreLastImageDeletion,
                               );
                             },
                             uploadQueueStatus: viewModel.uploadQueueStatusText,
