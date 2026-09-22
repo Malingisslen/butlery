@@ -19,8 +19,9 @@
 // Beslut B-45 (beslutslogg.md rad 52): ingen Cupertino-gren. Plattformskänslan
 // sitter i rörelse och gest, inte i fältets form.
 //
-// Fältet är ljust (beslut D2, paket 2): papper med ink-text, i mörkt läge
-// samma tokens mörka värden. Ingen accentlinje och ingen dekorillustration —
+// Rotnivån är ljus: papper med ink-text, i mörkt läge samma tokens mörka
+// värden (Komponentark v1 rad 62). Undersidan är mörk: surface.ink med
+// papperstext, samma i båda lägena (Komponentark v1 rad 73). Ingen accentlinje och ingen dekorillustration —
 // de fyra mönstren är uttömmande, och det är en tolkning av en tystnad.
 
 import 'package:flutter/material.dart';
@@ -140,7 +141,8 @@ class ButleryTopBar extends StatelessWidget implements PreferredSizeWidget {
   /// Centrera titeln. Båda ritade mönstren är vänsterställda.
   final bool centerTitle;
 
-  /// Ersätter fältets yta. Null ger surface.base i aktuellt läge.
+  /// Ersätter fältets yta. Null ger surface.base på rotnivån och surface.ink
+  /// på undersidan.
   final Color? backgroundColor;
 
   /// Ersätter text- och ikonfärgen, även sekundärradens. Null ger
@@ -260,12 +262,18 @@ class ButleryTopBar extends StatelessWidget implements PreferredSizeWidget {
     //                      (tokens.json rad 54)
     //   onSurfaceVariant = text.secondary #627061 ljust / #93A48D mörkt
     //                      (tokens.json rad 62)
+    //   primary          = surface.ink    #24382C i båda lägena
+    //   onPrimary        = papper         #F5F4ED i båda lägena
+    // Rotnivån ritas på surface och undersidan på primary (Komponentark v1
+    // rad 62 och 73).
     final cs = Theme.of(context).colorScheme;
-    final background = backgroundColor ?? cs.surface;
-    final foreground = foregroundColor ?? cs.onSurface;
+    final background = backgroundColor ?? (_isRoot ? cs.surface : cs.primary);
+    final foreground =
+        foregroundColor ?? (_isRoot ? cs.onSurface : cs.onPrimary);
     // text.secondary är mätt mot surface.base. På en annan yta vet fältet
     // inget om kontrasten, så sekundärraden följer då förgrundsfärgen.
-    final secondary = foregroundColor ?? cs.onSurfaceVariant;
+    final secondary =
+        foregroundColor ?? (_isRoot ? cs.onSurfaceVariant : foreground);
 
     final overlay =
         systemOverlayStyle ??

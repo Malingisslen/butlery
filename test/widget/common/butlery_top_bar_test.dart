@@ -413,6 +413,40 @@ void main() {
       expect(style.color, AppColorsDark.textDark);
     });
 
+    for (final dark in [false, true]) {
+      testWidgets(
+        'subpage: ink surface and paper text in ${dark ? 'dark' : 'light'} mode',
+        (tester) async {
+          await tester.pumpWidget(
+            _app(
+              ButleryTopBar.undersida(title: 'Receptet', onBack: () {}),
+              theme: dark ? AppTheme.darkTheme : AppTheme.lightTheme,
+            ),
+          );
+          // Komponentark v1 rad 73: undersidan står på surface.ink med
+          // papperstext, samma i båda lägena.
+          expect(_barColor(tester), const Color(0xFF24382C));
+          expect(_textColor(tester, _titleKey), const Color(0xFFF5F4ED));
+          final icon = find.descendant(
+            of: find.byKey(_backKey),
+            matching: find.byType(RichText),
+          );
+          expect(
+            tester.widget<RichText>(icon).text.style!.color,
+            const Color(0xFFF5F4ED),
+          );
+          expect(
+            tester
+                .widget<AnnotatedRegion<SystemUiOverlayStyle>>(
+                  find.byType(AnnotatedRegion<SystemUiOverlayStyle>).first,
+                )
+                .value,
+            SystemUiOverlayStyle.light,
+          );
+        },
+      );
+    }
+
     testWidgets('overrides win over the defaults', (tester) async {
       await tester.pumpWidget(
         _app(
