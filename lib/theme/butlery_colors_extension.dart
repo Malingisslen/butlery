@@ -460,6 +460,13 @@ class ButleryColors extends ThemeExtension<ButleryColors> {
 
 /// Convenience accessor for ButleryColors from BuildContext.
 extension ButleryColorsAccess on BuildContext {
-  ButleryColors get butleryColors =>
-      Theme.of(this).extension<ButleryColors>() ?? ButleryColors.light;
+  /// A theme without the extension still gets the values of its own mode,
+  /// never the light ones in dark mode.
+  ButleryColors get butleryColors {
+    final theme = Theme.of(this);
+    return theme.extension<ButleryColors>() ??
+        (theme.brightness == Brightness.dark
+            ? ButleryColors.dark
+            : ButleryColors.light);
+  }
 }
