@@ -183,10 +183,33 @@ flutter:
     - assets/illustrations/arta/
     - assets/seasonal/
 
-  # UI Redesign Fonts
-  # - JosefinSans: Headers, navigation (geometric, elegant, vintage feel)
-  # - SpaceGrotesk: Body text (clean, readable sans-serif)
+  # Canonical design-system font (design freeze 04f7f59, Butlery Sans 0.626).
+  # ButlerySans is the single family: headers and body both use it, with
+  # weight and size carrying the hierarchy. See FONT-VERSION.txt in the design
+  # system. Licence: SIL OFL 1.1 — assets/fonts/OFL-1.1.txt and
+  # assets/fonts/THIRD_PARTY_NOTICES.txt ship with the binaries, and the OFL
+  # requires them to be reachable from a real route in the app (Settings →
+  # About → Licences). That route is not part of this foundation package.
+  #
+  # JosefinSans and SpaceGrotesk are legacy. Nothing in lib/ references them
+  # after this package; their declarations and assets are retired by the
+  # legacy-removal package, not here.
   fonts:
+    - family: ButlerySans
+      fonts:
+        - asset: assets/fonts/ButlerySans-0.626-Regular.ttf
+        - asset: assets/fonts/ButlerySans-0.626-Italic.ttf
+          style: italic
+        - asset: assets/fonts/ButlerySans-0.626-Semibold.ttf
+          weight: 600
+        - asset: assets/fonts/ButlerySans-0.626-SemiboldItalic.ttf
+          weight: 600
+          style: italic
+        - asset: assets/fonts/ButlerySans-0.626-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/ButlerySans-0.626-BoldItalic.ttf
+          weight: 700
+          style: italic
     - family: JosefinSans
       fonts:
         - asset: assets/fonts/JosefinSans-Regular.ttf

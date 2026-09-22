@@ -1,0 +1,28 @@
+FONTLOG for Butlery Sans
+
+Basic Font Information
+Butlery Sans is a modified and renamed OFL 1.1 derivative using source material
+from Mona Sans, Albert Sans and DM Sans. It is maintained for the Butlery
+recipe and meal-planning application.
+
+ChangeLog
+0.626 — 2026-07-30
+- Metadata-only release.
+- Harmonised copyright attribution across all six styles and three formats.
+- Updated internal version identifiers and fontRevision to 0.626.
+- Consolidated the unmodified OFL 1.1 text and upstream copyright notices.
+- Added licensing documents, a version file and an assets manifest to the
+  app-ready bundle.
+- No glyph outlines, metrics, spacing, kerning, substitutions, hinting or
+  visual behavior changed from 0.625.
+
+0.625 — 2026-07-25
+- Added true Italic, Semibold Italic and Bold Italic styles.
+- Preserved the approved Butlery roman styles and numeral system.
+- Included Latin Extended-A and app-ready TTF/WOFF2 assets.
+
+Acknowledgements
+- Mona Sans Project Authors: https://github.com/github/mona-sans
+- Albert Sans Project Authors: https://github.com/usted/Albert-Sans
+- DM Sans Project Authors: https://github.com/googlefonts/dm-fonts
+- Butlery: modifications and maintenance of this renamed derivative.

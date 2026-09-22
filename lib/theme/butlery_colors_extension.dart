@@ -5,6 +5,9 @@
 /// Access via `context.butleryColors` in widgets.
 
 import 'package:flutter/material.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_colors_dark.dart';
+import 'package:butlery/theme/app_specific_colors.dart';
 
 /// Custom color slots for Butlery beyond what ColorScheme provides.
 class ButleryColors extends ThemeExtension<ButleryColors> {
@@ -121,105 +124,91 @@ class ButleryColors extends ThemeExtension<ButleryColors> {
   final Color sharedRecipeBackground;
 
   /// Light mode values — match current AppColors constants exactly.
+  /// Ljust läge. Varje värde ägs av den kanoniska grunden — den här klassen
+  /// är en kompatibilitetsyta, inte en palett. Pensioneras i paket 7.
   static const light = ButleryColors(
-    // Chat
-    chatBubbleOutgoing: Color(0xFF6B9B7A), // forestGreenLight
-    chatBubbleIncoming: Color(0xFFF0EAD6), // creamDark
-    chatTextOutgoing: Color(0xFFFFFFFF), // textOnPrimary
-    chatTextIncoming: Color(0xFF1A1A1A), // textDark
-    // Status: success (alias to forestGreen)
-    success: Color(0xFF4A7C59),
-    onSuccess: Color(0xFFFFFFFF),
-    successContainer: Color(0xFFF0FDF4),
-    onSuccessContainer: Color(0xFF166534),
-    // Status: warning (warm gold per mockup)
-    warning: Color(0xFFD4A03C),
-    onWarning: Color(0xFF1A1A1A),
-    warningContainer: Color(0xFFFFF8E1),
-    onWarningContainer: Color(0xFF7A5B10),
-    // Status: info
-    info: Color(0xFF2563CA),
-    onInfo: Color(0xFFFFFFFF),
-    infoContainer: Color(0xFFF0F9FF),
-    onInfoContainer: Color(0xFF1E40AF),
-    // Status: neutral — matches AppColors.neutralMedium (#9CA3AF)
-    neutral: Color(0xFF9CA3AF),
-    // Brand / decorative
-    starGold: Color(0xFFFBBF24),
-    recipeCardLeftBorder: Color(0xFF4A7C59), // forestGreen
-    recipeCardBottomBorder: Color(0xFFA77B5E), // rustLight per mockup
-    navAccent: Color(0xFF8B5A3C), // rust
-    iconMuted: Color(0xFF526A55), // matches AppColors.greenMuted
-    heroPaleGreen: Color(0xFFE8F0EA), // matches AppColors.greenPale
-    // Categories
-    categoryMeatFish: Color(0xFF8B5A3C), // rust
-    categoryDairy: Color(0xFFD4A03C),
-    categoryVegetables: Color(0xFF4A7C59), // forestGreen
-    categoryFruit: Color(0xFF7CB87C),
-    categoryBreadGrains: Color(0xFFC4A35A),
-    categoryFrozen: Color(0xFF8BA5B5),
-    categoryDryGoods: Color(0xFF9C7A5C),
-    categoryOther: Color(0xFF9CA3AF),
-    categoryDrinks: Color(0xFF5B8FA8),
-    categoryCleaning: Color(0xFF5A9C8F),
-    categorySnacks: Color(0xFFD4903C),
-    categoryCanned: Color(0xFF8B7355),
-    // Shared recipe
-    sharedRecipeText: Color(0xFF9CA3AF),
-    sharedRecipeIcon: Color(0xFFD1D5DB),
-    sharedRecipeBackground: Color(0xFFFAF8F3),
+    chatBubbleOutgoing: AppColors.chatBubbleOutgoing,
+    chatBubbleIncoming: AppColors.chatBubbleIncoming,
+    chatTextOutgoing: AppColors.chatTextOutgoing,
+    chatTextIncoming: AppColors.chatTextIncoming,
+    success: AppColors.success,
+    onSuccess: AppColors.onSuccess,
+    successContainer: AppColors.successContainer,
+    onSuccessContainer: AppColors.onSuccessContainer,
+    warning: AppColors.warning,
+    onWarning: AppColors.onWarning,
+    warningContainer: AppColors.warningContainer,
+    onWarningContainer: AppColors.onWarningContainer,
+    info: AppColors.info,
+    onInfo: AppColors.onInfo,
+    infoContainer: AppColors.infoContainer,
+    onInfoContainer: AppColors.onInfoContainer,
+    neutral: AppColors.neutralMedium,
+    starGold: AppColors.starGold,
+    recipeCardLeftBorder: AppColors.recipeCardLeftBorder,
+    recipeCardBottomBorder: AppColors.recipeCardBottomBorder,
+    navAccent: AppColors.navSelectedIndicator,
+    iconMuted: AppColors.greenMuted,
+    heroPaleGreen: AppColors.greenPale,
+    categoryMeatFish: AppColors.categoryMeatFish,
+    categoryDairy: AppColors.categoryDairy,
+    categoryVegetables: AppColors.categoryVegetables,
+    categoryFruit: AppColors.categoryFruit,
+    categoryBreadGrains: AppColors.categoryBreadGrains,
+    categoryFrozen: AppColors.categoryFrozen,
+    categoryDryGoods: AppColors.categoryDryGoods,
+    categoryOther: AppColors.categoryOther,
+    categoryDrinks: AppSpecificColors.categoryDrinks,
+    categoryCleaning: AppSpecificColors.categoryCleaning,
+    categorySnacks: AppSpecificColors.categorySnacks,
+    categoryCanned: AppSpecificColors.categoryCanned,
+    sharedRecipeText: AppColors.sharedRecipeText,
+    sharedRecipeIcon: AppColors.sharedRecipeIcon,
+    sharedRecipeBackground: AppColors.sharedRecipeBackground,
   );
 
   /// Dark mode values — adapted for dark surfaces while preserving brand identity.
+  /// Mörkt läge. Palettfärger saknar lägesberoende och pekar därför på samma
+  /// kanoniska medlem i båda lägena; det är designsystemets egen modell.
   static const dark = ButleryColors(
-    // Chat: brighter outgoing, darker incoming
-    chatBubbleOutgoing: Color(0xFF3D6849), // forestGreenDark
-    chatBubbleIncoming: Color(0xFF2D271F), // warm dark brown
-    chatTextOutgoing: Color(0xFFFFFFFF),
-    chatTextIncoming: Color(0xFFE0E0E0),
-    // Status: lighter tones on dark (M3 tone 80 pattern)
-    success: Color(0xFF6DD49E),
-    onSuccess: Color(0xFF003919),
-    successContainer: Color(0xFF005229),
-    onSuccessContainer: Color(0xFF8FF7B8),
-    // Warning
-    warning: Color(0xFFE4C56B),
-    onWarning: Color(0xFF3D2E00),
-    warningContainer: Color(0xFF584400),
-    onWarningContainer: Color(0xFFFFE08D),
-    // Info
-    info: Color(0xFFAAC7FF),
-    onInfo: Color(0xFF002F66),
-    infoContainer: Color(0xFF00458F),
-    onInfoContainer: Color(0xFFD6E3FF),
-    // Neutral — tone 60 on dark surfaces (M3 pattern: lighter grey for contrast)
-    neutral: Color(0xFFBDBDBD),
-    // Brand / decorative: slightly desaturated for dark
-    starGold: Color(0xFFFFD54F),
-    recipeCardLeftBorder: Color(0xFF6B9B7A), // forestGreenLight
-    recipeCardBottomBorder: Color(0xFFD4A88A), // rust tone 80
-    navAccent: Color(0xFFD4A88A), // rust tone 80
-    iconMuted: Color(
-      0xFF7A9C7E,
-    ), // muted green tone 80 — readable on dark surfaces
-    heroPaleGreen: Color(0xFF24302A), // low-chroma green on warm-dark surface
-    // Categories: lighter for dark bg contrast
-    categoryMeatFish: Color(0xFFD4A88A),
-    categoryDairy: Color(0xFFE8C76E),
-    categoryVegetables: Color(0xFF6B9B7A),
-    categoryFruit: Color(0xFFA0D6A0),
-    categoryBreadGrains: Color(0xFFDCC47E),
-    categoryFrozen: Color(0xFFB0C8D8),
-    categoryDryGoods: Color(0xFFC4A080),
-    categoryOther: Color(0xFFBDBDBD),
-    categoryDrinks: Color(0xFF82B5CC),
-    categoryCleaning: Color(0xFF7ABCAF),
-    categorySnacks: Color(0xFFE8B56E),
-    categoryCanned: Color(0xFFB09878),
-    // Shared recipe
-    sharedRecipeText: Color(0xFFBDBDBD),
-    sharedRecipeIcon: Color(0xFF757575),
-    sharedRecipeBackground: Color(0xFF2D271F), // warm dark brown
+    chatBubbleOutgoing: AppColorsDark.chatBubbleOutgoing,
+    chatBubbleIncoming: AppColorsDark.chatBubbleIncoming,
+    chatTextOutgoing: AppColorsDark.chatTextOutgoing,
+    chatTextIncoming: AppColorsDark.chatTextIncoming,
+    success: AppColorsDark.success,
+    onSuccess: AppColorsDark.onSuccess,
+    successContainer: AppColorsDark.successContainer,
+    onSuccessContainer: AppColorsDark.onSuccessContainer,
+    warning: AppColorsDark.warning,
+    onWarning: AppColorsDark.onWarning,
+    warningContainer: AppColorsDark.warningContainer,
+    onWarningContainer: AppColorsDark.onWarningContainer,
+    info: AppColors.info,
+    onInfo: AppColorsDark.onInfo,
+    infoContainer: AppColorsDark.infoContainer,
+    onInfoContainer: AppColorsDark.onInfoContainer,
+    neutral: AppColors.neutralMedium,
+    starGold: AppColors.starGold,
+    recipeCardLeftBorder: AppColorsDark.recipeCardLeftBorder,
+    recipeCardBottomBorder: AppColorsDark.recipeCardBottomBorder,
+    navAccent: AppColors.navSelectedIndicator,
+    iconMuted: AppColorsDark.greenMuted,
+    heroPaleGreen: AppColorsDark.greenPale,
+    categoryMeatFish: AppColors.categoryMeatFish,
+    categoryDairy: AppColors.categoryDairy,
+    categoryVegetables: AppColors.categoryVegetables,
+    categoryFruit: AppColors.categoryFruit,
+    categoryBreadGrains: AppColors.categoryBreadGrains,
+    categoryFrozen: AppColors.categoryFrozen,
+    categoryDryGoods: AppColors.categoryDryGoods,
+    categoryOther: AppColors.categoryOther,
+    categoryDrinks: AppSpecificColors.categoryDrinksDark,
+    categoryCleaning: AppSpecificColors.categoryCleaningDark,
+    categorySnacks: AppSpecificColors.categorySnacksDark,
+    categoryCanned: AppSpecificColors.categoryCannedDark,
+    sharedRecipeText: AppColorsDark.sharedRecipeText,
+    sharedRecipeIcon: AppColors.sharedRecipeIcon,
+    sharedRecipeBackground: AppColorsDark.sharedRecipeBackground,
   );
 
   @override

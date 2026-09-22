@@ -162,11 +162,20 @@ class ActionButtons {
               else
                 Icon(icon, size: AppDimensions.iconSizeXl),
               const SizedBox(height: AppDimensions.spacingSm),
-              Text(
-                isLoading ? (loadingText ?? context.l10n.commonLoading) : label,
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
+              // Flexible, not a bare Text: the canonical type scale carries an
+              // explicit line height, so two lines are taller than they were
+              // under the old metrics and a fixed 1:1 square overflowed by 4px.
+              // The label still ellipsises at two lines; only the free growth
+              // is capped.
+              Flexible(
+                child: Text(
+                  isLoading
+                      ? (loadingText ?? context.l10n.commonLoading)
+                      : label,
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
             ],
           ),

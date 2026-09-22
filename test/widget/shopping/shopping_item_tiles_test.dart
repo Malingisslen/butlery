@@ -371,7 +371,10 @@ void main() {
           find.text(completedItem.displayText),
         );
         // Production uses cs.onSurfaceVariant which maps to AppColors.textMedium
-        expect(textWidget.style?.color, AppColors.textMedium);
+        expect(
+          textWidget.style?.color,
+          AppColors.lightColorScheme.onSurfaceVariant,
+        );
         expect(textWidget.style?.decoration, TextDecoration.lineThrough);
       });
 

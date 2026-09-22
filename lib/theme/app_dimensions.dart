@@ -8,6 +8,39 @@ class AppDimensions {
   /// Private constructor to prevent instantiation of utility class
   AppDimensions._();
 
+  // ── Canonical design-system foundation ──────────────────────────────────
+  // Source: the frozen design system's tokens.json (`space`), design freeze
+  // 04f7f59. These are the only spatial values the design system defines.
+  // Everything else in this file is app-local and is either an alias of one
+  // of these or is retired by a later migration package.
+
+  /// The canonical spacing scale: six steps, nothing between them.
+  /// `space20` is deliberately absent — 20 is the layout margin, not a step.
+  static const double space4 = 4.0;
+  static const double space8 = 8.0;
+  static const double space12 = 12.0;
+  static const double space16 = 16.0;
+  static const double space24 = 24.0;
+  static const double space32 = 32.0;
+
+  /// Layout margin, by viewport width. Not part of the spacing scale.
+  static const double layoutMarginNarrow = 20.0; // 320dp
+  static const double layoutMargin = 24.0; // 360-430dp
+
+  /// The canonical radius scale.
+  /// sharp 0 — editorial surfaces (tables, calendar, step cards)
+  /// knob 2 — the wordmark's saffron knob and thin bars/indicators
+  /// control 8 — buttons, fields, chips
+  /// card 12 — cards and sheets
+  /// pill 999 — chips, avatars, status pills
+  static const double radiusSharp = 0.0;
+  static const double radiusKnob = 2.0;
+  static const double radiusControl = 8.0;
+  static const double radiusCard = 12.0;
+  static const double radiusPill = 999.0;
+
+  // ── App-local values ────────────────────────────────────────────────────
+
   /// Extra small spacing (4px) - matches original spacingXs
   static const double spacingXs = 4.0;
 
@@ -98,6 +131,13 @@ class AppDimensions {
   // ("this corner WAS 8px") for the day the design loosens. Until that
   // day, the 0.0 value is load-bearing — do not change without a
   // design-system review.
+  //
+  // That review has now happened. The frozen design system defines five
+  // radii (see `radiusSharp`…`radiusPill` above), not one. These
+  // `borderRadiusN` constants are therefore LEGACY: they stay at 0.0 so
+  // this foundation package changes no geometry, and the call sites move to
+  // the canonical scale in the component-geometry package. Do not add new
+  // `borderRadiusN` members, and do not change these values here.
   static const double borderRadius0 = 0.0;
   static const double borderRadius2 = 0.0;
   static const double borderRadius4 = 0.0;

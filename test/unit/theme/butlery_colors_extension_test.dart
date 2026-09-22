@@ -6,17 +6,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_colors_dark.dart';
 
 void main() {
   group('ButleryColors.iconMuted', () {
     test('light value matches legacy AppColors.greenMuted hex', () {
-      expect(ButleryColors.light.iconMuted, equals(const Color(0xFF526A55)));
+      // Paket 1: ButleryColors är en kompatibilitetsyta över den kanoniska
+      // grunden och får inte bära ett eget färgvärde. Provet vaktar
+      // ägarskapet, inte en fryst hex.
+      expect(ButleryColors.light.iconMuted, equals(AppColors.greenMuted));
     });
 
     test(
       'dark value is a lighter brand-green tone (readable on dark surfaces)',
       () {
-        expect(ButleryColors.dark.iconMuted, equals(const Color(0xFF7A9C7E)));
+        expect(ButleryColors.dark.iconMuted, equals(AppColorsDark.greenMuted));
       },
     );
 
@@ -66,14 +71,14 @@ void main() {
       // so this slot has to equal the hardcoded value the screens used before.
       expect(
         ButleryColors.light.heroPaleGreen,
-        equals(const Color(0xFFE8F0EA)),
+        equals(AppColors.greenPale),
       );
     });
 
     test('dark value is a low-chroma green on the warm-dark surface', () {
       expect(
         ButleryColors.dark.heroPaleGreen,
-        equals(const Color(0xFF24302A)),
+        equals(AppColorsDark.greenPale),
       );
     });
 
