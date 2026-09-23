@@ -355,4 +355,83 @@ void main() {
       verifyNever(() => mockPantryRepository.add(any(), any()));
     });
   });
+
+  // P5-U28: per-field writes and relative quantities
+  // (produktregler.md:105, :142-148).
+  group('PantryService part A (P5-U28)', () {
+    setUp(() {
+      when(
+        () => mockPantryRepository.updateFields(any(), any(), any()),
+      ).thenAnswer((_) async {});
+      when(
+        () => mockPantryRepository.adjustQuantity(any(), any(), any()),
+      ).thenAnswer((_) async {});
+    });
+
+    test(
+      'updateItem sends only the fields that differ from previous',
+      () async {
+        final before = _pantryItem(id: 'p1', ingredientName: 'Mjölk');
+        final after = before.copyWith(note: 'laktosfri');
+
+        await service.updateItem(userId, after, previous: before);
+
+        final changes =
+            verify(
+                  () => mockPantryRepository.updateFields(
+                    userId,
+                    'p1',
+                    captureAny(),
+                  ),
+                ).captured.single
+                as Map<String, Object>;
+        expect(changes, {'note': 'laktosfri'});
+      },
+    );
+
+    test('updateItem with nothing changed writes nothing', () async {
+      final item = _pantryItem(id: 'p1');
+
+      await service.updateItem(userId, item, previous: item);
+
+      verifyNever(() => mockPantryRepository.updateFields(any(), any(), any()));
+    });
+
+    test(
+      'an item without an amount is valid and does not send quantity',
+      () async {
+        final before = _pantryItem(id: 'p1');
+        final after = before.copyWith(clearQuantity: true);
+
+        await service.updateItem(userId, after, previous: before);
+
+        verifyNever(
+          () => mockPantryRepository.updateFields(any(), any(), any()),
+        );
+      },
+    );
+
+    test('adjustQuantity sends the delta, not a new total', () async {
+      final item = _pantryItem(id: 'p1');
+
+      final written = await service.adjustQuantity(userId, item, -2);
+
+      expect(written, isTrue);
+      verify(
+        () => mockPantryRepository.adjustQuantity(userId, 'p1', -2),
+      ).called(1);
+      verifyNever(() => mockPantryRepository.updateFields(any(), any(), any()));
+    });
+
+    test('adjustQuantity leaves an item without an amount as it is', () async {
+      final item = _pantryItem(id: 'p1').copyWith(clearQuantity: true);
+
+      final written = await service.adjustQuantity(userId, item, 3);
+
+      expect(written, isFalse);
+      verifyNever(
+        () => mockPantryRepository.adjustQuantity(any(), any(), any()),
+      );
+    });
+  });
 }

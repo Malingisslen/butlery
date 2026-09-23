@@ -25457,6 +25457,36 @@ abstract class AppLocalizations {
   /// **'Plats'**
   String get pantryLocationLabel;
 
+  /// Pantry row: when the row was last changed (produktregler.md:105).
+  ///
+  /// In sv, this message translates to:
+  /// **'ändrad nu'**
+  String get pantryItemChangedNow;
+
+  /// Pantry row: when the row was last changed (produktregler.md:105).
+  ///
+  /// In sv, this message translates to:
+  /// **'ändrad för {count} min sedan'**
+  String pantryItemChangedMinutesAgo(int count);
+
+  /// Pantry row: when the row was last changed (produktregler.md:105).
+  ///
+  /// In sv, this message translates to:
+  /// **'ändrad i dag {time}'**
+  String pantryItemChangedToday(String time);
+
+  /// Pantry row: when the row was last changed (produktregler.md:105).
+  ///
+  /// In sv, this message translates to:
+  /// **'ändrad i går'**
+  String get pantryItemChangedYesterday;
+
+  /// Pantry row: when the row was last changed (produktregler.md:105).
+  ///
+  /// In sv, this message translates to:
+  /// **'ändrad {date}'**
+  String pantryItemChangedOn(String date);
+
   /// No description provided for @pantryExpiryExpired.
   ///
   /// In sv, this message translates to:

@@ -10,6 +10,8 @@ import 'package:path/path.dart' as p;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:sqlcipher_flutter_libs/sqlcipher_flutter_libs.dart';
 import 'package:sqlite3/open.dart';
+// The generated sync-queue table creates each opId with Uuid (tables/sync_queue.dart).
+import 'package:uuid/uuid.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 import 'package:butlery/core/storage/drift/tables/offline_recipes.dart';
@@ -21,6 +23,9 @@ import 'package:butlery/core/storage/drift/daos/recipe_dao.dart';
 import 'package:butlery/core/storage/drift/daos/sync_queue_dao.dart';
 import 'package:butlery/core/storage/drift/daos/cache_dao.dart';
 import 'package:butlery/core/storage/drift/daos/upload_queue_dao.dart';
+import 'package:butlery/core/storage/drift/queue_counts.dart';
+
+export 'package:butlery/core/storage/drift/queue_counts.dart';
 
 part 'app_database.g.dart';
 
@@ -47,8 +52,10 @@ class AppDatabase extends _$AppDatabase {
   /// For testing: create an in-memory database
   AppDatabase.forTesting(super.e);
 
+  /// 3: the offline queue's schema (produktregler.md:183-193, § 3.1) —
+  /// opId, entity type, dependsOn and a permanent-failure flag.
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration {
@@ -61,12 +68,164 @@ class AppDatabase extends _$AppDatabase {
         if (from < 2) {
           await m.createTable(uploadQueueEntries);
         }
+        if (from < 3) {
+          await _migrateQueuesToV3(m);
+        }
       },
       beforeOpen: (details) async {
         // Enable foreign keys
         await customStatement('PRAGMA foreign_keys = ON');
       },
     );
+  }
+
+  /// Schema 2 → 3. Both queue tables are rebuilt in place with
+  /// [Migrator.alterTable], which copies every row, so no queued change is
+  /// lost (produktregler.md:192: the app never deletes a queue entry without
+  /// a server confirmation or showing it to the user).
+  ///
+  /// Every existing sync entry gets a fresh random opId (128 bits, as hex)
+  /// and the entity type "recipe", the only entity the queue carried before
+  /// schema 3. No entry is marked permanently failed.
+  Future<void> _migrateQueuesToV3(Migrator m) async {
+    await m.alterTable(
+      TableMigration(
+        syncQueueEntries,
+        columnTransformer: {
+          syncQueueEntries.opId: const CustomExpression<String>(
+            'lower(hex(randomblob(16)))',
+          ),
+        },
+        newColumns: [
+          syncQueueEntries.opId,
+          syncQueueEntries.entityType,
+          syncQueueEntries.dependsOn,
+          syncQueueEntries.permanentlyFailed,
+        ],
+      ),
+    );
+    await m.alterTable(
+      TableMigration(
+        uploadQueueEntries,
+        newColumns: [
+          uploadQueueEntries.dependsOn,
+          uploadQueueEntries.permanentlyFailed,
+        ],
+      ),
+    );
+  }
+
+  /// The user's queue counts across both queues, live. See [QueueCounts].
+  ///
+  /// An upload counts while it is pending, uploading, or failed with retries
+  /// left; a completed or cancelled one does not.
+  Stream<QueueCounts> watchQueueCounts(String userId) {
+    return customSelect(
+      _queueCountsSql,
+      variables: [Variable.withString(userId)],
+      readsFrom: {syncQueueEntries, uploadQueueEntries},
+    ).watchSingle().map(
+      (row) => QueueCounts(
+        draining: row.read<int>('draining'),
+        needsUser: row.read<int>('needs_user'),
+      ),
+    );
+  }
+
+  /// The combined number of the user's changes not yet saved, live: one
+  /// number across the sync and upload queues ([QueueCounts.waiting]).
+  Stream<int> watchPendingCount(String userId) =>
+      watchQueueCounts(userId).map((c) => c.waiting).distinct();
+
+  static const String _queueCountsSql = """
+SELECT
+  (SELECT COUNT(*) FROM sync_queue_entries
+     WHERE user_id = ?1 AND permanently_failed = 0)
+  + (SELECT COUNT(*) FROM upload_queue_entries
+     WHERE user_id = ?1 AND permanently_failed = 0
+       AND status IN ('pending', 'uploading', 'failed')) AS draining,
+  (SELECT COUNT(*) FROM sync_queue_entries
+     WHERE user_id = ?1 AND permanently_failed = 1)
+  + (SELECT COUNT(*) FROM upload_queue_entries
+     WHERE user_id = ?1 AND permanently_failed = 1
+       AND status NOT IN ('completed', 'cancelled')) AS needs_user
+""";
+
+  /// Marks the operation [opId] and every entry that depends on it, directly
+  /// or through another entry, as permanently failed — in both queues and
+  /// in one transaction. "Om beroendet permanent misslyckas markeras hela
+  /// kedjan som misslyckad — aldrig halvvägs" (produktregler.md:187).
+  ///
+  /// Nothing is deleted. Returns the opIds that were marked (for an upload,
+  /// its id).
+  Future<Set<String>> markChainPermanentlyFailed(
+    String userId,
+    String opId, {
+    String? reason,
+  }) {
+    return transaction(() async {
+      final syncRows = await (select(
+        syncQueueEntries,
+      )..where((e) => e.userId.equals(userId))).get();
+      final uploadRows = await (select(
+        uploadQueueEntries,
+      )..where((e) => e.userId.equals(userId))).get();
+
+      final dependants = <String, Set<String>>{};
+      void link(String id, String? stored) {
+        for (final dep in decodeDependsOn(stored)) {
+          (dependants[dep] ??= <String>{}).add(id);
+        }
+      }
+
+      for (final row in syncRows) {
+        link(row.opId, row.dependsOn);
+      }
+      for (final row in uploadRows) {
+        link(row.id, row.dependsOn);
+      }
+
+      final failed = <String>{};
+      final toVisit = <String>[opId];
+      while (toVisit.isNotEmpty) {
+        final id = toVisit.removeLast();
+        if (!failed.add(id)) continue;
+        toVisit.addAll(dependants[id] ?? const <String>{});
+      }
+
+      final syncIds = syncRows
+          .map((r) => r.opId)
+          .where(failed.contains)
+          .toList();
+      final uploadIds = uploadRows
+          .map((r) => r.id)
+          .where(failed.contains)
+          .toList();
+      final Value<String?> error = reason == null
+          ? const Value.absent()
+          : Value(reason);
+      if (syncIds.isNotEmpty) {
+        await (update(
+          syncQueueEntries,
+        )..where((e) => e.opId.isIn(syncIds))).write(
+          SyncQueueEntriesCompanion(
+            permanentlyFailed: const Value(true),
+            lastError: error,
+          ),
+        );
+      }
+      if (uploadIds.isNotEmpty) {
+        await (update(
+          uploadQueueEntries,
+        )..where((e) => e.id.isIn(uploadIds))).write(
+          UploadQueueEntriesCompanion(
+            permanentlyFailed: const Value(true),
+            lastError: error,
+          ),
+        );
+      }
+      return {...syncIds, ...uploadIds};
+    });
   }
 
   /// Clear all data (for testing or user logout)

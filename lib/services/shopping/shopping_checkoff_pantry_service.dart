@@ -56,10 +56,11 @@ class ShoppingCheckoffPantryService {
     );
 
     if (match != null) {
-      await _pantryService.updateItem(
-        userId,
-        match.copyWith(quantity: match.quantity + item.amount),
-      );
+      // What was bought is added as a relative change, never as a new total
+      // computed here (produktregler.md:146): a tick on another device in the
+      // meantime is kept. A match without an amount ("har hemma") stays
+      // without one (produktregler.md:148).
+      await _pantryService.adjustQuantity(userId, match, item.amount);
     } else {
       await _pantryService.addFromShoppingItem(userId, item);
     }

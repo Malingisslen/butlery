@@ -61,6 +61,9 @@ void main() {
     );
     when(() => pantry.updateItem(any(), any())).thenAnswer((_) async {});
     when(
+      () => pantry.adjustQuantity(any(), any(), any()),
+    ).thenAnswer((_) async => true);
+    when(
       () => pantry.addFromShoppingItem(any(), any()),
     ).thenAnswer((_) async => _pantryItem(name: 'added', qty: 1));
   });
@@ -82,10 +85,15 @@ void main() {
         wasBought: false,
       );
 
+      // P5-U28: what was bought is sent as a relative change (+3), never as
+      // a total computed on this device (produktregler.md:146).
       final captured =
-          verify(() => pantry.updateItem('u1', captureAny())).captured.single
+          verify(
+                () => pantry.adjustQuantity('u1', captureAny(), 3),
+              ).captured.single
               as PantryItem;
-      expect(captured.quantity, 5); // 2 existing + 3 bought
+      expect(captured.ingredientName, 'Mjölk');
+      verifyNever(() => pantry.updateItem(any(), any()));
       verifyNever(() => pantry.addFromShoppingItem(any(), any()));
     });
 
@@ -98,6 +106,7 @@ void main() {
 
       verify(() => pantry.addFromShoppingItem('u1', item)).called(1);
       verifyNever(() => pantry.updateItem(any(), any()));
+      verifyNever(() => pantry.adjustQuantity(any(), any(), any()));
     });
 
     test('does nothing when the auto-add preference is OFF', () async {
@@ -113,6 +122,7 @@ void main() {
       verifyNever(() => pantry.getAll(any()));
       verifyNever(() => pantry.addFromShoppingItem(any(), any()));
       verifyNever(() => pantry.updateItem(any(), any()));
+      verifyNever(() => pantry.adjustQuantity(any(), any(), any()));
     });
 
     test(
@@ -150,6 +160,7 @@ void main() {
 
       verify(() => pantry.addFromShoppingItem('u1', item)).called(1);
       verifyNever(() => pantry.updateItem(any(), any()));
+      verifyNever(() => pantry.adjustQuantity(any(), any(), any()));
     });
 
     test('does nothing when user profile is null (not yet loaded)', () async {
@@ -167,6 +178,7 @@ void main() {
       verifyNever(() => pantry.getAll(any()));
       verifyNever(() => pantry.addFromShoppingItem(any(), any()));
       verifyNever(() => pantry.updateItem(any(), any()));
+      verifyNever(() => pantry.adjustQuantity(any(), any(), any()));
     });
   });
 }

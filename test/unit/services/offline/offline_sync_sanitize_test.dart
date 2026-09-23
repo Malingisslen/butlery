@@ -96,6 +96,9 @@ void main() {
             queuedAt: DateTime.utc(2026, 1, 1),
             retryCount: 0,
             lastError: null,
+            opId: 'op-1',
+            entityType: 'recipe',
+            permanentlyFailed: false,
           ),
         ],
       );

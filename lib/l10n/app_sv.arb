@@ -10637,6 +10637,43 @@
   "pantryLocationPantry": "Skafferi",
   "pantryLocationSpiceRack": "Kryddhylla",
   "pantryLocationLabel": "Plats",
+  "pantryItemChangedNow": "ändrad nu",
+  "@pantryItemChangedNow": {
+    "description": "Pantry row: when the row was last changed (produktregler.md:105)."
+  },
+  "pantryItemChangedMinutesAgo": "ändrad för {count} min sedan",
+  "@pantryItemChangedMinutesAgo": {
+    "description": "Pantry row: when the row was last changed (produktregler.md:105).",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "pantryItemChangedToday": "ändrad i dag {time}",
+  "@pantryItemChangedToday": {
+    "description": "Pantry row: when the row was last changed (produktregler.md:105).",
+    "placeholders": {
+      "time": {
+        "type": "String",
+        "example": "14:02"
+      }
+    }
+  },
+  "pantryItemChangedYesterday": "ändrad i går",
+  "@pantryItemChangedYesterday": {
+    "description": "Pantry row: when the row was last changed (produktregler.md:105)."
+  },
+  "pantryItemChangedOn": "ändrad {date}",
+  "@pantryItemChangedOn": {
+    "description": "Pantry row: when the row was last changed (produktregler.md:105).",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "example": "9 juli"
+      }
+    }
+  },
   "pantryExpiryExpired": "Utgånget",
   "pantryExpiryToday": "Utgår idag",
   "pantryExpiryInDays": "{days, plural, =1{Utgår om 1 dag} other{Utgår om {days} dagar}}",

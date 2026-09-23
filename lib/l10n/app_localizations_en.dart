@@ -15183,6 +15183,27 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pantryLocationLabel => 'Location';
 
   @override
+  String get pantryItemChangedNow => 'changed just now';
+
+  @override
+  String pantryItemChangedMinutesAgo(int count) {
+    return 'changed $count min ago';
+  }
+
+  @override
+  String pantryItemChangedToday(String time) {
+    return 'changed today at $time';
+  }
+
+  @override
+  String get pantryItemChangedYesterday => 'changed yesterday';
+
+  @override
+  String pantryItemChangedOn(String date) {
+    return 'changed $date';
+  }
+
+  @override
   String get pantryExpiryExpired => 'Expired';
 
   @override

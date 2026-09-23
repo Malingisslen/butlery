@@ -1,6 +1,8 @@
 import 'package:clock/clock.dart';
 import 'package:drift/drift.dart';
 import 'package:butlery/core/storage/drift/app_database.dart';
+import 'package:butlery/core/storage/drift/daos/sync_queue_dao.dart'
+    show encodeDependsOn;
 import 'package:butlery/core/storage/drift/tables/upload_queue.dart';
 
 part 'upload_queue_dao.g.dart';
@@ -24,6 +26,7 @@ class UploadQueueDao extends DatabaseAccessor<AppDatabase>
     String? entityId,
     String? entityType,
     String? metadata,
+    List<String> dependsOn = const [],
   }) {
     return into(uploadQueueEntries).insert(
       UploadQueueEntriesCompanion.insert(
@@ -37,6 +40,7 @@ class UploadQueueDao extends DatabaseAccessor<AppDatabase>
         entityId: Value(entityId),
         entityType: Value(entityType),
         metadata: Value(metadata),
+        dependsOn: Value(encodeDependsOn(dependsOn)),
       ),
     );
   }
@@ -44,7 +48,12 @@ class UploadQueueDao extends DatabaseAccessor<AppDatabase>
   /// Get all pending uploads for a user
   Future<List<UploadQueueEntry>> getPendingUploads(String userId) {
     return (select(uploadQueueEntries)
-          ..where((e) => e.userId.equals(userId) & e.status.equals('pending'))
+          ..where(
+            (e) =>
+                e.userId.equals(userId) &
+                e.status.equals('pending') &
+                e.permanentlyFailed.equals(false),
+          )
           ..orderBy([(e) => OrderingTerm.asc(e.queuedAt)]))
         .get();
   }
@@ -59,6 +68,7 @@ class UploadQueueDao extends DatabaseAccessor<AppDatabase>
             (e) =>
                 e.userId.equals(userId) &
                 e.status.equals('failed') &
+                e.permanentlyFailed.equals(false) &
                 e.retryCount.isSmallerThanValue(maxRetries),
           )
           ..orderBy([(e) => OrderingTerm.asc(e.queuedAt)]))
@@ -72,6 +82,7 @@ class UploadQueueDao extends DatabaseAccessor<AppDatabase>
       ..addColumns([count])
       ..where(
         uploadQueueEntries.userId.equals(userId) &
+            uploadQueueEntries.permanentlyFailed.equals(false) &
             (uploadQueueEntries.status.equals('pending') |
                 uploadQueueEntries.status.equals('failed')),
       );
@@ -86,6 +97,7 @@ class UploadQueueDao extends DatabaseAccessor<AppDatabase>
       ..addColumns([count])
       ..where(
         uploadQueueEntries.userId.equals(userId) &
+            uploadQueueEntries.permanentlyFailed.equals(false) &
             (uploadQueueEntries.status.equals('pending') |
                 uploadQueueEntries.status.equals('failed')),
       );
@@ -124,6 +136,22 @@ class UploadQueueDao extends DatabaseAccessor<AppDatabase>
         ),
       );
     }
+  }
+
+  /// Marks an upload as a permanent failure. It stays in the queue for the
+  /// user to decide on (produktregler.md:189, :192). Returns whether an
+  /// upload was marked.
+  Future<bool> markPermanentlyFailed(String id, {String? reason}) async {
+    final written =
+        await (update(
+          uploadQueueEntries,
+        )..where((e) => e.id.equals(id))).write(
+          UploadQueueEntriesCompanion(
+            permanentlyFailed: const Value(true),
+            lastError: reason == null ? const Value.absent() : Value(reason),
+          ),
+        );
+    return written > 0;
   }
 
   /// Reset failed upload back to pending for retry
@@ -176,6 +204,7 @@ class UploadQueueDao extends DatabaseAccessor<AppDatabase>
       ..addColumns([count])
       ..where(
         uploadQueueEntries.userId.equals(userId) &
+            uploadQueueEntries.permanentlyFailed.equals(false) &
             (uploadQueueEntries.status.equals('pending') |
                 uploadQueueEntries.status.equals('failed')),
       );

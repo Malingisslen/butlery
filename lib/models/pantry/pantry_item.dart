@@ -54,7 +54,10 @@ class PantryItem {
   /// either from the matched ingredient or from the user's raw input.
   final String ingredientName;
 
-  final double quantity;
+  /// The amount on hand, or null for "har hemma, vet inte hur mycket" — a
+  /// value of its own that never overwrites a known amount
+  /// (produktregler.md:148, § 2.2).
+  final double? quantity;
   final String unit;
   final PantryLocation location;
   final DateTime? expiryDate;
@@ -65,6 +68,17 @@ class PantryItem {
   /// Staples are excluded from the menu→shopping list so the generated list
   /// stays focused on what actually needs buying this week.
   final bool isStaple;
+
+  /// When the row was last changed, written by the server on every update
+  /// (produktregler.md:105: "radens tidsstämpel uppdateras"). Null for a row
+  /// that has not been changed since it was added.
+  final DateTime? updatedAt;
+
+  /// Who made the last change. The pantry is owner-only
+  /// (firestore.rules, `match /pantry/{pantryItemId}`), so this is the owner;
+  /// it is stored so a change from another device can be told apart from
+  /// none.
+  final String? updatedBy;
 
   const PantryItem({
     required this.id,
@@ -77,6 +91,8 @@ class PantryItem {
     this.expiryDate,
     this.note,
     this.isStaple = false,
+    this.updatedAt,
+    this.updatedBy,
   });
 
   factory PantryItem.fromFirestore(DocumentSnapshot doc) {
@@ -89,7 +105,7 @@ class PantryItem {
       id: id,
       ingredientId: SerializationUtils.safeNullableString(data, 'ingredientId'),
       ingredientName: SerializationUtils.safeString(data, 'ingredientName'),
-      quantity: SerializationUtils.safeDouble(data, 'quantity'),
+      quantity: SerializationUtils.safeNullableDouble(data, 'quantity'),
       unit: SerializationUtils.safeString(data, 'unit'),
       location: SerializationUtils.safeEnumByName(
         PantryLocation.values,
@@ -104,6 +120,8 @@ class PantryItem {
       addedAt: SerializationUtils.safeRequiredDateTime(data, 'addedAt'),
       note: SerializationUtils.safeNullableString(data, 'note'),
       isStaple: SerializationUtils.safeBool(data, 'isStaple'),
+      updatedAt: SerializationUtils.safeDateTime(data, 'updatedAt'),
+      updatedBy: SerializationUtils.safeNullableString(data, 'updatedBy'),
     );
   }
 
@@ -111,6 +129,7 @@ class PantryItem {
     return {
       if (ingredientId != null) 'ingredientId': ingredientId,
       'ingredientName': ingredientName,
+      // Written even when null: "har hemma" without an amount is a value.
       'quantity': quantity,
       'unit': unit,
       'location': location.name,
@@ -118,6 +137,53 @@ class PantryItem {
       'addedAt': Timestamp.fromDate(addedAt),
       if (note != null) 'note': note,
       if (isStaple) 'isStaple': true,
+    };
+  }
+
+  /// The fields a user edits, as a Firestore update of only what changed
+  /// since [before] (produktregler.md:105, :142: "per fält, senaste ändring
+  /// vinner"). Two devices that change different fields of the same row no
+  /// longer overwrite each other.
+  ///
+  /// A null [quantity] never replaces a known amount (produktregler.md:148):
+  /// when [before] has one, the quantity is left out. A cleared optional
+  /// field is deleted. [updatedAt] and [updatedBy] are the repository's to
+  /// write, so they are never part of the result.
+  Map<String, Object> changesFrom(PantryItem before) {
+    return {
+      if (ingredientId != before.ingredientId)
+        'ingredientId': ingredientId ?? FieldValue.delete(),
+      if (ingredientName != before.ingredientName)
+        'ingredientName': ingredientName,
+      if (quantity != before.quantity &&
+          !(quantity == null && before.quantity != null))
+        'quantity': ?quantity,
+      if (unit != before.unit) 'unit': unit,
+      if (location != before.location) 'location': location.name,
+      if (expiryDate != before.expiryDate)
+        'expiryDate': expiryDate == null
+            ? FieldValue.delete()
+            : Timestamp.fromDate(expiryDate!),
+      if (note != before.note) 'note': note ?? FieldValue.delete(),
+      if (isStaple != before.isStaple) 'isStaple': isStaple,
+    };
+  }
+
+  /// Every field a user edits, for an update where the previous state is not
+  /// known. The same rules as [changesFrom]: a null quantity is left out, so
+  /// it cannot wipe an amount another device wrote.
+  Map<String, Object> editableFields() {
+    return {
+      'ingredientId': ingredientId ?? FieldValue.delete(),
+      'ingredientName': ingredientName,
+      'quantity': ?quantity,
+      'unit': unit,
+      'location': location.name,
+      'expiryDate': expiryDate == null
+          ? FieldValue.delete()
+          : Timestamp.fromDate(expiryDate!),
+      'note': note ?? FieldValue.delete(),
+      'isStaple': isStaple,
     };
   }
 
@@ -132,7 +198,10 @@ class PantryItem {
     DateTime? addedAt,
     String? note,
     bool? isStaple,
+    DateTime? updatedAt,
+    String? updatedBy,
     bool clearIngredientId = false,
+    bool clearQuantity = false,
     bool clearExpiryDate = false,
     bool clearNote = false,
   }) {
@@ -142,13 +211,15 @@ class PantryItem {
           ? null
           : (ingredientId ?? this.ingredientId),
       ingredientName: ingredientName ?? this.ingredientName,
-      quantity: quantity ?? this.quantity,
+      quantity: clearQuantity ? null : (quantity ?? this.quantity),
       unit: unit ?? this.unit,
       location: location ?? this.location,
       expiryDate: clearExpiryDate ? null : (expiryDate ?? this.expiryDate),
       addedAt: addedAt ?? this.addedAt,
       note: clearNote ? null : (note ?? this.note),
       isStaple: isStaple ?? this.isStaple,
+      updatedAt: updatedAt ?? this.updatedAt,
+      updatedBy: updatedBy ?? this.updatedBy,
     );
   }
 
@@ -156,7 +227,12 @@ class PantryItem {
   /// "1,5" and a pantry item "1.5" — one screen apart, for the same kind of
   /// number. It is also what seeds the edit sheet's amount field, and that
   /// field parses both separators.
-  String get formattedQuantity => formatSwedishDecimal(quantity);
+  ///
+  /// Empty when the amount is unknown ("har hemma", [quantity] null).
+  String get formattedQuantity {
+    final q = quantity;
+    return q == null ? '' : formatSwedishDecimal(q);
+  }
 
   bool get isExpired {
     final exp = expiryDate;
