@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/reduced_motion.dart';
@@ -311,7 +312,11 @@ class _TimerControls extends StatelessWidget {
   }) {
     final enabled = onPressed != null;
     final base = Theme.of(context).colorScheme.onPrimaryContainer;
-    final color = enabled ? base : base.withValues(alpha: 0.4);
+    // Disabled is text.disabled.onRaised, never a faded colour
+    // (tokens.json:40-53, :198-201; enhet-3 step_timer_widget.dart:312-314).
+    final color = enabled
+        ? base
+        : AppModeColors.textDisabled(Theme.of(context).brightness);
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [

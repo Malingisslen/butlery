@@ -2,13 +2,13 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/os_permission_helper.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/services/voice/voice_capture_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 
 /// Push-to-talk microphone for text fields ("Tala in veckomenyn").
 ///
@@ -167,9 +167,15 @@ class _VoicePromptButtonState extends State<VoicePromptButton> {
         message: _state == _VoiceState.preparing
             ? context.l10n.voicePromptPreparing
             : context.l10n.voicePromptTranscribing,
-        child: const Padding(
-          padding: EdgeInsets.all(AppDimensions.paddingS),
-          child: LoadingIndicator(size: AppDimensions.iconSizeAction),
+        // The plate line, not a spinner (Grafisk manual v6:209).
+        child: Padding(
+          padding: const EdgeInsets.all(AppDimensions.paddingS),
+          child: PlateLine(
+            width: AppDimensions.iconSizeAction,
+            semanticLabel: _state == _VoiceState.preparing
+                ? context.l10n.voicePromptPreparing
+                : context.l10n.voicePromptTranscribing,
+          ),
         ),
       );
     }
