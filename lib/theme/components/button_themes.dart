@@ -82,6 +82,35 @@ WidgetStateProperty<Color?> _filledForeground(ColorScheme cs, Color enabled) {
 /// the ink filled buttons already show today, 6.5:1 on #4A5C50.
 Color _filledDisabledForeground(ColorScheme cs) => cs.onSurface;
 
+/// Foreground of every unfilled button (outlined, text, secondary): the
+/// text.primary role through cs.onSurface, #24382C light and paper #F5F4ED
+/// dark (tokens.json:54-57). It used to be cs.primary, which is surface.ink
+/// #24382C in BOTH schemes and so read 1.27:1 on the dark base #17251D. The
+/// dark panel draws the outlined button's text in paper (Komponentark
+/// v1:499) and names paper as the text colour of the mode (v1:491). Light
+/// is unchanged: there cs.onSurface == cs.primary.
+///
+/// Interpretation: the screens' dark variable set gives secondary-control
+/// text as --text-kontroll-a #C9D3C4, text.bodyMuted (Skarmar v12 etapp 4
+/// import:28; tokens.json:174-177), which has no generated member. Paper,
+/// the value the Komponentark draws, stands until one is delivered.
+Color _unfilledForeground(ColorScheme cs) => cs.onSurface;
+
+/// The 1.5 px outline of an unfilled button. Light: ink #24382C, as before.
+/// Dark: overlay.paperWash rgba(245,244,237,0.40), the screens' dark
+/// outline of a secondary control, --ram-kontroll-a (Skarmar v12 etapp 4
+/// import:28, etapp 2:37), 3.5:1 on #17251D.
+///
+/// Interpretation: the Komponentark's dark rule says paper 35 % on every
+/// control (v1:491), and its one drawn outlined button, the focused row,
+/// has a full paper edge (v1:499). The screen frames' 40 % is the drawn rest
+/// value, has a generated member, and clears 3:1 where 35 % falls just
+/// short of it (2.98:1); the edge keeps the same colour at focus, as in
+/// light, and the ring outside it carries focus.
+Color _unfilledOutline(ColorScheme cs) => cs.brightness == Brightness.dark
+    ? AppModeColors.paperWash(cs.brightness)
+    : cs.onSurface;
+
 /// Disabled outlined button text: text.secondary, #627061 light
 /// (Komponentark v1:383) and #93A48D dark (tokens.json:62-65), through
 /// onSurfaceVariant, which carries text.secondary in both schemes.
@@ -184,14 +213,14 @@ class ButtonThemes {
     return OutlinedButtonThemeData(
       style: ButtonStyle(
         foregroundColor: _withDisabled(
-          cs.primary,
+          _unfilledForeground(cs),
           _outlinedDisabledForeground(cs),
         ),
         backgroundColor: const WidgetStatePropertyAll(Colors.transparent),
         // The outline keeps its 1.5 px at focus; the ring sits outside it.
         side: _outlineWithDisabled(
           cs,
-          BorderSide(color: cs.primary, width: 1.5),
+          BorderSide(color: _unfilledOutline(cs), width: 1.5),
         ),
         overlayColor: _noFocusTint,
         backgroundBuilder: _focusRing(_controlRadius),
@@ -222,7 +251,7 @@ class ButtonThemes {
         // text (tokens.json:198). Interpretation: the text button's disabled
         // state is not drawn.
         foregroundColor: _withDisabled(
-          cs.primary,
+          _unfilledForeground(cs),
           AppModeColors.textDisabled(cs.brightness),
         ),
         backgroundColor: const WidgetStatePropertyAll(Colors.transparent),
@@ -374,7 +403,7 @@ class ButtonThemes {
 
   /// Text button style
   static ButtonStyle textButtonStyle(ColorScheme cs) => TextButton.styleFrom(
-    foregroundColor: cs.primary,
+    foregroundColor: _unfilledForeground(cs),
     disabledForegroundColor: AppModeColors.textDisabled(cs.brightness),
     padding: const EdgeInsets.symmetric(
       horizontal: AppDimensions.paddingL,
@@ -389,7 +418,7 @@ class ButtonThemes {
   static ButtonStyle secondaryButtonStyle(ColorScheme cs) =>
       ElevatedButton.styleFrom(
         backgroundColor: cs.surfaceContainerHighest,
-        foregroundColor: cs.primary,
+        foregroundColor: _unfilledForeground(cs),
         // The surface stays surface.raised when disabled; only the text and
         // the outline change, like the outlined button. Interpretation: the
         // secondary button's disabled state is not drawn (Komponentark
@@ -412,7 +441,7 @@ class ButtonThemes {
       ).copyWith(
         side: _outlineWithDisabled(
           cs,
-          BorderSide(color: cs.primary, width: 1.5),
+          BorderSide(color: _unfilledOutline(cs), width: 1.5),
         ),
       );
 
@@ -436,7 +465,7 @@ class ButtonThemes {
   /// Outlined button style
   static ButtonStyle outlinedButtonStyleNamed(ColorScheme cs) =>
       OutlinedButton.styleFrom(
-        foregroundColor: cs.primary,
+        foregroundColor: _unfilledForeground(cs),
         disabledForegroundColor: _outlinedDisabledForeground(cs),
         backgroundColor: Colors.transparent,
         padding: const EdgeInsets.symmetric(
@@ -449,7 +478,7 @@ class ButtonThemes {
       ).copyWith(
         side: _outlineWithDisabled(
           cs,
-          BorderSide(color: cs.primary, width: 1.5),
+          BorderSide(color: _unfilledOutline(cs), width: 1.5),
         ),
       );
 

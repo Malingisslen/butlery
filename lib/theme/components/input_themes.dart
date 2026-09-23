@@ -113,11 +113,24 @@ class InputThemes {
   }
 
   /// List tile theme
+  ///
+  /// Icons, and the selected row's icon and label: text.primary through
+  /// cs.onSurface, ink #24382C light and paper #F5F4ED dark (tokens.json:
+  /// 54-57). They used to be cs.primary (and Material's selected default,
+  /// also cs.primary), ink in both schemes: 1.27:1 on the dark base #17251D
+  /// and about 1.5:1 on the dark tile, surface.raised #2F4437. Light is
+  /// unchanged: there cs.onSurface == cs.primary.
+  ///
+  /// Interpretation: the screens' dark variable set draws standalone icons
+  /// as --ikon-fristaende-a #C9D3C4, text.bodyMuted (Skarmar v12 del 4:30;
+  /// tokens.json:174-177), which has no generated member; the dark panel
+  /// draws its list glyphs in paper (Komponentark v1:556), which stands.
   static ListTileThemeData listTileTheme(ColorScheme cs) {
     return ListTileThemeData(
       tileColor: cs.surfaceContainerHighest,
       selectedTileColor: cs.primaryContainer,
-      iconColor: cs.primary,
+      iconColor: cs.onSurface,
+      selectedColor: cs.onSurface,
       // A disabled row's label is secondary text, never opacity (decision
       // D5; Komponentark v1:164 and :174, the disabled radio and switch
       // rows). Those rows are drawn on paper, but this theme paints every
@@ -128,14 +141,10 @@ class InputThemes {
       // theme cannot tell them apart from other rows, so every disabled
       // list row gets it. Without this, Flutter falls back to
       // ThemeData.disabledColor, a 38 % black. Selected and enabled rows
-      // keep what they resolved to before (Material's selected primary, and
-      // onSurface).
+      // are text.primary (onSurface); see the selected colour above.
       textColor: WidgetStateColor.resolveWith((states) {
         if (states.contains(WidgetState.disabled)) {
           return AppModeColors.textSecondaryOnRaised(cs.brightness);
-        }
-        if (states.contains(WidgetState.selected)) {
-          return cs.primary;
         }
         return cs.onSurface;
       }),
@@ -157,10 +166,29 @@ class InputThemes {
   }
 
   /// Chip theme
+  ///
+  /// The chosen chip is an ink fill, control.checked.background #24382C in
+  /// both modes (tokens.json:145-148), drawn so in the dark panel too
+  /// (Komponentark v1:523). On the dark base #17251D that fill is 1.27:1,
+  /// so dark mode edges it the way the panel draws it:
+  ///
+  /// * chosen: a 1 px paper edge and a paper check (v1:523; "Bocken i en
+  ///   bockad kontroll är alltid papper", v1:491);
+  /// * resting: a 1 px paper edge at 40 %, overlay.paperWash, the screens'
+  ///   dark control outline (Skarmar v12 etapp 2:37, --ram-kontroll-a);
+  /// * disabled: a 1 px surface.disabled #4A5C50 edge (v1:525).
+  ///
+  /// Interpretation: the panel draws the resting edge at paper 35 %
+  /// (v1:522), which is 2.98:1 on #17251D; the screens' 40 % clears 3:1 and
+  /// has a generated member, as for the outlined button. Light mode sets no
+  /// side and no check colour, so it resolves exactly as before.
   static ChipThemeData chipTheme(ColorScheme cs) {
+    final dark = cs.brightness == Brightness.dark;
     return ChipThemeData(
       backgroundColor: cs.surfaceContainerHigh,
       selectedColor: cs.primary,
+      checkmarkColor: dark ? cs.onSurface : null,
+      side: dark ? _darkChipSide(cs) : null,
       disabledColor: cs.outlineVariant,
       labelStyle: AppTextStyles.labelMedium.copyWith(
         color: cs.onSurface,
@@ -180,6 +208,18 @@ class InputThemes {
         ),
       ),
     );
+  }
+
+  static BorderSide _darkChipSide(ColorScheme cs) {
+    return WidgetStateBorderSide.resolveWith((states) {
+      if (states.contains(WidgetState.disabled)) {
+        return BorderSide(color: AppModeColors.surfaceDisabled(cs.brightness));
+      }
+      if (states.contains(WidgetState.selected)) {
+        return BorderSide(color: cs.onSurface);
+      }
+      return BorderSide(color: AppModeColors.paperWash(cs.brightness));
+    });
   }
 
   /// Recipe card decoration - Left green border + bottom rust border.

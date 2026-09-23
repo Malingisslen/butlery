@@ -132,7 +132,12 @@ void main() {
       test('the disabled branch leaves the enabled outline and ring alone', () {
         final style = t.outlinedButtonTheme.style!;
         final rest = style.side!.resolve({})!;
-        expect(rest.color, t.colorScheme.primary);
+        // Ink in light; paper 40 % in dark, where ink read 1.27:1
+        // (P5-DARK-THEME, --ram-kontroll-a).
+        expect(
+          rest.color,
+          m.name == 'light' ? t.colorScheme.primary : const Color(0x66F5F4ED),
+        );
         expect(style.side!.resolve({WidgetState.focused}), rest);
         // Focus is the ring the theme's background builder draws.
         expect(style.backgroundBuilder, isNotNull);
@@ -165,14 +170,20 @@ void main() {
         }
       });
 
-      test('switch on: opaque ink track with a paper knob', () {
+      test('switch on: opaque track, ink/paper light, saffron dark', () {
+        // Light: Komponentark v1:176 "Ink = på". Dark: Skarmar v12 del 4:104
+        // draws a saffron track with a #17251D knob (P5-DARK-THEME).
+        final light = m.name == 'light';
         final s = t.switchTheme;
         final track = s.trackColor!.resolve({WidgetState.selected})!;
-        expect(track, const Color(0xFF24382C));
+        expect(
+          track,
+          light ? const Color(0xFF24382C) : const Color(0xFFCE7C1E),
+        );
         expect(track.a, 1.0);
         expect(
           s.thumbColor!.resolve({WidgetState.selected}),
-          const Color(0xFFF5F4ED),
+          light ? const Color(0xFFF5F4ED) : const Color(0xFF17251D),
         );
       });
 
@@ -190,7 +201,8 @@ void main() {
         final color = t.listTileTheme.textColor! as WidgetStateColor;
         expect(color.resolve(_disabled), m.textSecondaryOnRaised);
         expect(color.resolve({}), t.colorScheme.onSurface);
-        expect(color.resolve({WidgetState.selected}), t.colorScheme.primary);
+        // text.primary; ink in light as before, paper in dark.
+        expect(color.resolve({WidgetState.selected}), t.colorScheme.onSurface);
       });
 
       test('no disabled colour is carried by opacity', () {
