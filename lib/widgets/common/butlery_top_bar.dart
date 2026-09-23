@@ -399,24 +399,29 @@ class ButleryTopBar extends StatelessWidget implements PreferredSizeWidget {
                     foregroundColor: foreground,
                   ).merge(IconButtonTheme.of(context).style),
                 ),
-                child: DefaultTextStyle.merge(
-                  style: TextStyle(color: foreground),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      ConstrainedBox(
-                        constraints: BoxConstraints(
-                          minHeight: _isRoot ? 0 : subpageMinHeight,
+                child: TextButtonTheme(
+                  data: TextButtonThemeData(
+                    style: _onBarTextButtonStyle(context, foreground),
+                  ),
+                  child: DefaultTextStyle.merge(
+                    style: TextStyle(color: foreground),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        ConstrainedBox(
+                          constraints: BoxConstraints(
+                            minHeight: _isRoot ? 0 : subpageMinHeight,
+                          ),
+                          child: Align(
+                            alignment: AlignmentDirectional.centerStart,
+                            heightFactor: 1,
+                            child: toolbar,
+                          ),
                         ),
-                        child: Align(
-                          alignment: AlignmentDirectional.centerStart,
-                          heightFactor: 1,
-                          child: toolbar,
-                        ),
-                      ),
-                      ?bottom,
-                    ],
+                        ?bottom,
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -425,6 +430,32 @@ class ButleryTopBar extends StatelessWidget implements PreferredSizeWidget {
         ),
       ),
     );
+  }
+
+  /// Appens textknappsstil med fältets förgrund som textfärg.
+  ///
+  /// Appens textknapp är ink (cs.primary, button_themes.dart). På
+  /// undersidans ink-yta (Komponentark v1 rad 73) blev en textknapp bland
+  /// åtgärderna ink på ink. Här tar den fältets förgrund, papper på
+  /// undersidan och text.primary på rotnivån, precis som ikonknapparna.
+  ///
+  /// Bara det aktiva läget byts. Det inaktiva behåller appens färg
+  /// (text.disabled), eftersom inaktivt på surface.ink inte är ritat (öppen
+  /// fråga i beslut-paket2.md, "disabled on surface.ink"). Fokusringen,
+  /// 48 dp minsta höjd och resten av stilen ärvs.
+  static ButtonStyle _onBarTextButtonStyle(
+    BuildContext context,
+    Color foreground,
+  ) {
+    final base = TextButtonTheme.of(context).style;
+    return ButtonStyle(
+      foregroundColor: WidgetStateProperty.resolveWith((states) {
+        if (states.contains(WidgetState.disabled)) {
+          return base?.foregroundColor?.resolve(states);
+        }
+        return foreground;
+      }),
+    ).merge(base);
   }
 
   /// Bakåtpilen, eller null när fältet inte ska ha någon.

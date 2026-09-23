@@ -456,10 +456,10 @@ void main() {
           ),
         );
 
-        // No busy label: the button keeps its own name, never "Laddar...".
+        // No busy label: the button keeps its own name, never "Laddar …".
         expect(find.byType(ButtonPlateLine), findsOneWidget);
         expect(find.text('Spara'), findsOneWidget);
-        expect(find.text('Laddar...'), findsNothing);
+        expect(find.text('Laddar …'), findsNothing);
       });
 
       testWidgets('should handle Swedish labels correctly', (tester) async {

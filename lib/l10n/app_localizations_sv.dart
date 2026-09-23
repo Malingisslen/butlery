@@ -81,7 +81,7 @@ class AppLocalizationsSv extends AppLocalizations {
       'Vi gör en kort uppdatering. Försök igen om en stund.';
 
   @override
-  String get commonLoading => 'Laddar...';
+  String get commonLoading => 'Laddar …';
 
   @override
   String get commonWorking => 'Arbetar...';
@@ -806,7 +806,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get messagingSearchConversations => 'Sök konversationer...';
 
   @override
-  String get messagingLoadingConversations => 'Laddar konversationer...';
+  String get messagingLoadingConversations => 'Laddar konversationer …';
 
   @override
   String get messagingNoConversationsFound => 'Inga konversationer hittades';
@@ -1130,7 +1130,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get dialogErrorTitle => 'Ett fel uppstod';
 
   @override
-  String get dialogLoading => 'Laddar...';
+  String get dialogLoading => 'Laddar …';
 
   @override
   String get dialogConfirmDeleteTitle => 'Bekräfta borttagning';
@@ -1587,7 +1587,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get menuShared => 'Veckomenyn är delad.';
 
   @override
-  String get menuGeneratingOverlay => 'Genererar din veckomeny...';
+  String get menuGeneratingOverlay => 'Genererar din veckomeny …';
 
   @override
   String get menuGeneratingSubtitle =>
@@ -3612,7 +3612,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get collaborativeListNotFound => 'Lista hittades inte';
 
   @override
-  String get collaborativeLoadingSharedList => 'Laddar gemensam lista...';
+  String get collaborativeLoadingSharedList => 'Laddar gemensam lista …';
 
   @override
   String get allergenCrustacean => 'Kräftdjur';
@@ -5212,7 +5212,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get recipeTitle => 'Titel';
 
   @override
-  String get recipeUpdating => 'Uppdaterar recept...';
+  String get recipeUpdating => 'Uppdaterar recept …';
 
   @override
   String chatAddCount(int count) {
@@ -5406,7 +5406,7 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String get importImportingRecipesProgress => 'Importerar recept...';
+  String get importImportingRecipesProgress => 'Importerar recept …';
 
   @override
   String get importWaitForCompletion => 'Vänta tills importen är klar...';
@@ -5912,7 +5912,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get filterShow => 'Visa filter';
 
   @override
-  String get importAnalyzingContent => 'Analyserar innehåll...';
+  String get importAnalyzingContent => 'Analyserar innehåll …';
 
   @override
   String get importChooseFromGallery => 'Välj från galleri';
@@ -5958,7 +5958,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String importFetchingFromPlatform(String platform) {
-    return 'Hämtar recept från $platform...';
+    return 'Hämtar recept från $platform …';
   }
 
   @override
@@ -6084,7 +6084,7 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String get importProcessingImage => 'Bearbetar bild...';
+  String get importProcessingImage => 'Bearbetar bild …';
 
   @override
   String get importRecipeLinkDetected => 'Receptlänk detekterad';
@@ -6339,6 +6339,15 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get loadingProfile => 'Hämtar profilen …';
+
+  @override
+  String get loadingPantry => 'Hämtar skafferiet …';
+
+  @override
+  String get loadingSharedShoppingLists => 'Hämtar delade inköpslistor …';
+
+  @override
+  String get loadingFeed => 'Hämtar flödet …';
 
   @override
   String menuCategoryCount(int count) {
@@ -6693,7 +6702,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get recipeSave => 'Spara recept';
 
   @override
-  String get recipeSaving => 'Sparar recept...';
+  String get recipeSaving => 'Sparar recept …';
 
   @override
   String get recipeTag => 'Tagg';
@@ -6865,7 +6874,7 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String get socialLoadingComments => 'Laddar kommentarer...';
+  String get socialLoadingComments => 'Laddar kommentarer …';
 
   @override
   String get socialMustBeLoggedInToComment =>
@@ -7221,7 +7230,7 @@ class AppLocalizationsSv extends AppLocalizations {
       'Lägg till vänner för att komma igång med social funktionalitet.';
 
   @override
-  String get socialLoadingFriends => 'Laddar vänner...';
+  String get socialLoadingFriends => 'Laddar vänner …';
 
   @override
   String get socialNoFriendsYet => 'Inga vänner än';

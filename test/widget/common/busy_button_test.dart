@@ -4,7 +4,7 @@
 /// A busy button keeps its surface and its name, or says what it does
 /// ("Sparar …"), and gets the plate line along its bottom edge: 4 px, the
 /// button's own text colour on a track of that colour at 18 %. Never a
-/// spinner, never "Laddar...". It is one semantics node, read once.
+/// spinner, never "Laddar …". It is one semantics node, read once.
 library;
 
 import 'package:flutter/material.dart';
@@ -177,7 +177,7 @@ void main() {
         ) async {
           await _pump(tester, v, theme: theme);
           expect(find.text('Sparar …'), findsOneWidget);
-          expect(find.text('Laddar...'), findsNothing);
+          expect(find.text('Laddar …'), findsNothing);
           expect(find.byType(CircularProgressIndicator), findsNothing);
           // Busy is not disabled: the button is enabled for Flutter, so it
           // keeps its surface and colours (Komponentark v1:365).
@@ -221,7 +221,7 @@ void main() {
     );
     await tester.pump();
     expect(find.text('Spara recept'), findsOneWidget);
-    expect(find.text('Laddar...'), findsNothing);
+    expect(find.text('Laddar …'), findsNothing);
     final data = tester
         .getSemantics(find.bySemanticsLabel('Spara recept'))
         .getSemanticsData();

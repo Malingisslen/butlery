@@ -239,7 +239,7 @@ abstract class AppLocalizations {
   /// No description provided for @commonLoading.
   ///
   /// In sv, this message translates to:
-  /// **'Laddar...'**
+  /// **'Laddar …'**
   String get commonLoading;
 
   /// No description provided for @commonWorking.
@@ -1385,7 +1385,7 @@ abstract class AppLocalizations {
   /// No description provided for @messagingLoadingConversations.
   ///
   /// In sv, this message translates to:
-  /// **'Laddar konversationer...'**
+  /// **'Laddar konversationer …'**
   String get messagingLoadingConversations;
 
   /// No description provided for @messagingNoConversationsFound.
@@ -1967,7 +1967,7 @@ abstract class AppLocalizations {
   /// No description provided for @dialogLoading.
   ///
   /// In sv, this message translates to:
-  /// **'Laddar...'**
+  /// **'Laddar …'**
   String get dialogLoading;
 
   /// No description provided for @dialogConfirmDeleteTitle.
@@ -2651,7 +2651,7 @@ abstract class AppLocalizations {
   /// No description provided for @menuGeneratingOverlay.
   ///
   /// In sv, this message translates to:
-  /// **'Genererar din veckomeny...'**
+  /// **'Genererar din veckomeny …'**
   String get menuGeneratingOverlay;
 
   /// No description provided for @menuGeneratingSubtitle.
@@ -6040,7 +6040,7 @@ abstract class AppLocalizations {
   /// No description provided for @collaborativeLoadingSharedList.
   ///
   /// In sv, this message translates to:
-  /// **'Laddar gemensam lista...'**
+  /// **'Laddar gemensam lista …'**
   String get collaborativeLoadingSharedList;
 
   /// No description provided for @allergenCrustacean.
@@ -8734,7 +8734,7 @@ abstract class AppLocalizations {
   /// No description provided for @recipeUpdating.
   ///
   /// In sv, this message translates to:
-  /// **'Uppdaterar recept...'**
+  /// **'Uppdaterar recept …'**
   String get recipeUpdating;
 
   /// No description provided for @chatAddCount.
@@ -9064,7 +9064,7 @@ abstract class AppLocalizations {
   /// No description provided for @importImportingRecipesProgress.
   ///
   /// In sv, this message translates to:
-  /// **'Importerar recept...'**
+  /// **'Importerar recept …'**
   String get importImportingRecipesProgress;
 
   /// No description provided for @importWaitForCompletion.
@@ -9922,7 +9922,7 @@ abstract class AppLocalizations {
   /// No description provided for @importAnalyzingContent.
   ///
   /// In sv, this message translates to:
-  /// **'Analyserar innehåll...'**
+  /// **'Analyserar innehåll …'**
   String get importAnalyzingContent;
 
   /// No description provided for @importChooseFromGallery.
@@ -10006,7 +10006,7 @@ abstract class AppLocalizations {
   /// No description provided for @importFetchingFromPlatform.
   ///
   /// In sv, this message translates to:
-  /// **'Hämtar recept från {platform}...'**
+  /// **'Hämtar recept från {platform} …'**
   String importFetchingFromPlatform(String platform);
 
   /// No description provided for @importFromPhoto.
@@ -10216,7 +10216,7 @@ abstract class AppLocalizations {
   /// No description provided for @importProcessingImage.
   ///
   /// In sv, this message translates to:
-  /// **'Bearbetar bild...'**
+  /// **'Bearbetar bild …'**
   String get importProcessingImage;
 
   /// No description provided for @importRecipeLinkDetected.
@@ -10668,6 +10668,24 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Hämtar profilen …'**
   String get loadingProfile;
+
+  /// Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). P4-U18: laddningstexten är obligatorisk.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hämtar skafferiet …'**
+  String get loadingPantry;
+
+  /// Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). P4-U18: laddningstexten är obligatorisk.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hämtar delade inköpslistor …'**
+  String get loadingSharedShoppingLists;
+
+  /// Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). P4-U18: laddningstexten är obligatorisk.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hämtar flödet …'**
+  String get loadingFeed;
 
   /// No description provided for @menuCategoryCount.
   ///
@@ -11302,7 +11320,7 @@ abstract class AppLocalizations {
   /// No description provided for @recipeSaving.
   ///
   /// In sv, this message translates to:
-  /// **'Sparar recept...'**
+  /// **'Sparar recept …'**
   String get recipeSaving;
 
   /// No description provided for @recipeTag.
@@ -11548,7 +11566,7 @@ abstract class AppLocalizations {
   /// No description provided for @socialLoadingComments.
   ///
   /// In sv, this message translates to:
-  /// **'Laddar kommentarer...'**
+  /// **'Laddar kommentarer …'**
   String get socialLoadingComments;
 
   /// No description provided for @socialMustBeLoggedInToComment.
@@ -12148,7 +12166,7 @@ abstract class AppLocalizations {
   /// No description provided for @socialLoadingFriends.
   ///
   /// In sv, this message translates to:
-  /// **'Laddar vänner...'**
+  /// **'Laddar vänner …'**
   String get socialLoadingFriends;
 
   /// No description provided for @socialNoFriendsYet.

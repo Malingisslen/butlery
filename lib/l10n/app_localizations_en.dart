@@ -81,7 +81,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'We\'re making a quick update. Please try again shortly.';
 
   @override
-  String get commonLoading => 'Loading...';
+  String get commonLoading => 'Loading …';
 
   @override
   String get commonWorking => 'Working...';
@@ -806,7 +806,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get messagingSearchConversations => 'Search conversations...';
 
   @override
-  String get messagingLoadingConversations => 'Loading conversations...';
+  String get messagingLoadingConversations => 'Loading conversations …';
 
   @override
   String get messagingNoConversationsFound => 'No conversations found';
@@ -1106,7 +1106,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get statusSyncing => 'Syncing...';
 
   @override
-  String get statusSaving => 'Saving…';
+  String get statusSaving => 'Saving …';
 
   @override
   String get statusCreating => 'Creating...';
@@ -1127,7 +1127,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dialogErrorTitle => 'An error occurred';
 
   @override
-  String get dialogLoading => 'Loading...';
+  String get dialogLoading => 'Loading …';
 
   @override
   String get dialogConfirmDeleteTitle => 'Confirm deletion';
@@ -1583,7 +1583,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get menuShared => 'Weekly menu shared.';
 
   @override
-  String get menuGeneratingOverlay => 'Generating your weekly menu...';
+  String get menuGeneratingOverlay => 'Generating your weekly menu …';
 
   @override
   String get menuGeneratingSubtitle =>
@@ -3608,7 +3608,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get collaborativeListNotFound => 'List not found';
 
   @override
-  String get collaborativeLoadingSharedList => 'Loading shared list...';
+  String get collaborativeLoadingSharedList => 'Loading shared list …';
 
   @override
   String get allergenCrustacean => 'Crustacean';
@@ -5205,7 +5205,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get recipeTitle => 'Title';
 
   @override
-  String get recipeUpdating => 'Updating recipe...';
+  String get recipeUpdating => 'Updating recipe …';
 
   @override
   String chatAddCount(int count) {
@@ -5399,7 +5399,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get importImportingRecipesProgress => 'Importing recipes...';
+  String get importImportingRecipesProgress => 'Importing recipes …';
 
   @override
   String get importWaitForCompletion =>
@@ -5904,7 +5904,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get filterShow => 'Show filters';
 
   @override
-  String get importAnalyzingContent => 'Analyzing content...';
+  String get importAnalyzingContent => 'Analyzing content …';
 
   @override
   String get importChooseFromGallery => 'Choose from gallery';
@@ -5950,7 +5950,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String importFetchingFromPlatform(String platform) {
-    return 'Fetching recipe from $platform...';
+    return 'Fetching recipe from $platform …';
   }
 
   @override
@@ -6076,7 +6076,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get importProcessingImage => 'Processing image...';
+  String get importProcessingImage => 'Processing image …';
 
   @override
   String get importRecipeLinkDetected => 'Recipe link detected';
@@ -6333,6 +6333,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get loadingProfile => 'Loading the profile …';
+
+  @override
+  String get loadingPantry => 'Loading the pantry …';
+
+  @override
+  String get loadingSharedShoppingLists => 'Loading shared shopping lists …';
+
+  @override
+  String get loadingFeed => 'Loading the feed …';
 
   @override
   String menuCategoryCount(int count) {
@@ -6689,7 +6698,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get recipeSave => 'Save recipe';
 
   @override
-  String get recipeSaving => 'Saving recipe...';
+  String get recipeSaving => 'Saving recipe …';
 
   @override
   String get recipeTag => 'Tag';
@@ -6861,7 +6870,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get socialLoadingComments => 'Loading comments...';
+  String get socialLoadingComments => 'Loading comments …';
 
   @override
   String get socialMustBeLoggedInToComment =>
@@ -7216,7 +7225,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Add friends to get started with social features.';
 
   @override
-  String get socialLoadingFriends => 'Loading friends...';
+  String get socialLoadingFriends => 'Loading friends …';
 
   @override
   String get socialNoFriendsYet => 'No friends yet';

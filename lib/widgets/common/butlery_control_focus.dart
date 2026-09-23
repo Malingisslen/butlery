@@ -19,6 +19,8 @@
 // komponentteman som lägger en overlay i fokuserat läge). Opacitet är aldrig
 // ett tillstånd (tokens.json:40-53).
 
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 import 'package:butlery/theme/app_dimensions.dart';
@@ -180,8 +182,17 @@ class ButleryTab extends StatelessWidget implements PreferredSizeWidget {
   final Widget? icon;
   final Widget? child;
 
+  /// The height [TabBar] reserves for this tab: Material's own tab height
+  /// (46 dp for a label or an icon alone, 72 dp for an icon above a label),
+  /// but never under the 48 dp target. Reporting 48 for an icon-and-label
+  /// tab made the bar shorter than the 72 dp tab Material draws.
   @override
-  Size get preferredSize => const Size.fromHeight(ButleryControlFocus.minSize);
+  Size get preferredSize {
+    final material = Tab(text: text, icon: icon, child: child).preferredSize;
+    return Size.fromHeight(
+      math.max(material.height, ButleryControlFocus.minSize),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {

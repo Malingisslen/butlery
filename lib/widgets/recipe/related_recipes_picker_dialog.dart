@@ -111,7 +111,7 @@ class _RelatedRecipesPickerDialogState
 
   Widget _buildContent(BuildContext context, RecipeListViewModel vm) {
     if (vm.isLoading) {
-      return StateWidget.loading(message: context.l10n.commonLoading);
+      return StateWidget.loading(message: context.l10n.loadingRecipes);
     }
     if (vm.hasError) {
       return StateWidget.error(

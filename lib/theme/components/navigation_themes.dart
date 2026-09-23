@@ -3,10 +3,12 @@
 /// **UI Redesign:**
 /// - AppBar: Primary background with onPrimary text
 /// - Bottom Nav: Primary background
-/// - Tab Bar: Primary indicator
+/// - Tab Bar: the saffron plate line under the selected word
 /// - Dialogs/Sheets: Surface with proper elevation
 
 import 'package:flutter/material.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_colors_dark.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
@@ -54,22 +56,51 @@ class NavigationThemes {
     );
   }
 
+  /// The selected tab's plate line: 3 px tall, radius 2 (Komponentark
+  /// v1:112, `height:3px;border-radius:2px`).
+  static const double tabPlateLineHeight = 3.0;
+
+  /// The plate line runs 5 px past the word on each side (Komponentark
+  /// v1:106, "tallrikslinje = ordets bredd + 5 px per sida").
+  static const double tabPlateLineOverhang = 5.0;
+
   /// Tab bar theme
+  ///
+  /// The selected tab carries the plate line under its word, saffron in both
+  /// modes: token progressIndicator #CE7C1E (tokens.json:165-168; drawn as
+  /// `background:#ce7c1e` in Komponentark v1:112). It used to be cs.primary,
+  /// which is surface.ink in both schemes and vanished on the dark page
+  /// (#17251D).
+  ///
+  /// Labels: the selected word is text.primary (cs.onSurface: #24382C light,
+  /// #F5F4ED dark), the resting word text.secondary (cs.onSurfaceVariant:
+  /// #627061 light, #93A48D dark), as drawn in Komponentark v1:112-113. The
+  /// selected label was cs.primary, ink on the dark page too.
+  ///
+  /// Interpretation: "the word's width" is the tab's label box. A
+  /// [ButleryTab] label box is at least 48 dp wide, so for a very short word
+  /// the line is 48 dp + 5 px per side.
   static TabBarThemeData tabBarTheme(ColorScheme cs) {
+    final plateLine = cs.brightness == Brightness.dark
+        ? AppColorsDark.progressIndicator
+        : AppColors.progressIndicator;
     return TabBarThemeData(
-      labelColor: cs.primary,
+      labelColor: cs.onSurface,
       unselectedLabelColor: cs.onSurfaceVariant,
       labelStyle: AppTextStyles.tabText.copyWith(
         fontWeight: FontWeight.w600,
       ),
       unselectedLabelStyle: AppTextStyles.tabText,
       indicator: UnderlineTabIndicator(
-        borderSide: BorderSide(
-          color: cs.primary,
-          width: AppDimensions.borderWidthThick,
+        borderSide: BorderSide(color: plateLine, width: tabPlateLineHeight),
+        borderRadius: const BorderRadius.all(
+          Radius.circular(AppDimensions.radiusKnob),
+        ),
+        insets: const EdgeInsets.symmetric(
+          horizontal: -tabPlateLineOverhang,
         ),
       ),
-      indicatorSize: TabBarIndicatorSize.tab,
+      indicatorSize: TabBarIndicatorSize.label,
     );
   }
 
