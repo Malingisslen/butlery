@@ -1,6 +1,8 @@
 import 'dart:async';
 
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/social/content_report.dart';
 import 'package:butlery/models/social/content_type.dart';
 import 'package:butlery/services/moderation/report_service.dart';
@@ -43,9 +45,26 @@ class ModeratorReviewViewModel extends BaseViewModel {
       },
       onError: (Object err) {
         if (isDisposed) return;
-        setError(err.toString());
+        // The error state names what failed; the raw exception belongs to
+        // the log (content-style-guide.md:89-94, P5-U01). Release the
+        // subscription so [retry] can open a fresh one.
+        AppLogger.error('Moderator review stream failed', err);
+        _reportsSub?.cancel();
+        _reportsSub = null;
+        _hasStarted = false;
+        setError(AppLocale.current.moderatorReportsLoadFailed);
       },
     );
+  }
+
+  /// The error state's Försök igen: drop any open subscription and listen
+  /// again from scratch.
+  void retry() {
+    _reportsSub?.cancel();
+    _reportsSub = null;
+    _hasStarted = false;
+    clearError();
+    startListening();
   }
 
   /// Whether the reported content's owner account belongs to a minor.

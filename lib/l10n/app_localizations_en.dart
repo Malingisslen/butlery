@@ -5666,8 +5666,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get menuUnnamed => 'Unnamed menu';
 
   @override
-  String get privacyCouldNotLoad =>
-      'Could not load the privacy policy. Try again later.';
+  String get privacyCouldNotLoad => 'The privacy policy could not be loaded.';
 
   @override
   String get privacyTitle => 'Privacy policy';
@@ -16760,4 +16759,36 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get menuPreviewTitle => 'Shared menu';
+
+  @override
+  String get adminFeedbackLoadFailed => 'The feedback could not be fetched.';
+
+  @override
+  String get moderatorReportsLoadFailed => 'The reports could not be fetched.';
+
+  @override
+  String get legalGuidelinesCouldNotLoad =>
+      'The guidelines could not be loaded.';
+
+  @override
+  String get legalTermsCouldNotLoad =>
+      'The terms of service could not be loaded.';
+
+  @override
+  String get legalLinksNeedConnection =>
+      'The web links open when you are connected again.';
+
+  @override
+  String get imageCouldNotBeShown => 'The image could not be shown';
+
+  @override
+  String get imageRetriesWhenOnline =>
+      'Tries again when the connection is back';
+
+  @override
+  String get ingredientSearchAgain => 'Search again';
+
+  @override
+  String get ingredientSearchSelectionKept =>
+      'Your ingredients are still selected.';
 }

@@ -104,12 +104,9 @@ class _ReportsList extends StatelessWidget {
       return StateWidget.loading(message: context.l10n.loadingReports);
     }
     if (vm.error != null) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(AppDimensions.paddingL),
-          child: Text(vm.error!, textAlign: TextAlign.center),
-        ),
-      );
+      // The standard error state: what failed, then Försök igen
+      // (content-style-guide.md:89-94; state_widget.dart default action).
+      return StateWidget.error(message: vm.error!, onAction: vm.retry);
     }
     if (vm.reports.isEmpty) {
       return Center(

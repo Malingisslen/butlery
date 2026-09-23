@@ -13,6 +13,7 @@ import 'dart:async';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/models/social/content_report.dart';
 import 'package:butlery/models/social/content_type.dart';
 import 'package:butlery/services/moderation/report_service.dart';
@@ -256,6 +257,63 @@ void main() {
         vm.isReversibleAction(_report(contentType: ContentType.message)),
         isFalse,
       );
+    });
+  });
+
+  group('ModeratorReviewViewModel load failure (P5-U01)', () {
+    late _MockReportService mockService;
+    late ModeratorReviewViewModel vm;
+    late StreamController<List<ContentReport>> reports;
+
+    setUpAll(() async {
+      await BaseUnitTest.setupUnit();
+    });
+
+    setUp(() {
+      mockService = _MockReportService();
+      reports = StreamController<List<ContentReport>>.broadcast();
+      when(
+        () => mockService.watchOpenReports(),
+      ).thenAnswer((_) => reports.stream);
+      when(
+        () => mockService.isMinorAccount(any()),
+      ).thenAnswer((_) async => false);
+      vm = ModeratorReviewViewModel(reportService: mockService);
+    });
+
+    tearDown(() async {
+      vm.dispose();
+      await reports.close();
+    });
+
+    test(
+      'a stream error says what failed in words, not the exception',
+      () async {
+        vm.startListening();
+        reports.addError(StateError('permission-denied: boom'));
+        await Future<void>.delayed(Duration.zero);
+
+        expect(vm.error, AppLocale.current.moderatorReportsLoadFailed);
+        expect(vm.error, isNot(contains('boom')));
+        expect(vm.isLoading, isFalse);
+      },
+    );
+
+    test('retry listens again and clears the error', () async {
+      vm.startListening();
+      reports.addError(StateError('boom'));
+      await Future<void>.delayed(Duration.zero);
+      verify(() => mockService.watchOpenReports()).called(1);
+
+      vm.retry();
+      expect(vm.error, isNull);
+      expect(vm.isLoading, isTrue);
+      verify(() => mockService.watchOpenReports()).called(1);
+
+      reports.add(const []);
+      await Future<void>.delayed(Duration.zero);
+      expect(vm.isLoading, isFalse);
+      expect(vm.error, isNull);
     });
   });
 }
