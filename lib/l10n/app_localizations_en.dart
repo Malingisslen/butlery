@@ -17019,10 +17019,10 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get weeklyMenuSaveFailed => 'The week could not be saved';
+  String get weeklyMenuSaveFailed => 'The week could not be saved.';
 
   @override
-  String get pantryItemUpdateFailed => 'Could not update the item';
+  String get pantryItemUpdateFailed => 'The item could not be updated.';
 
   @override
   String get moderatorAdvanceFailed =>

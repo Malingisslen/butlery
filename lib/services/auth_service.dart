@@ -204,6 +204,8 @@ class AuthService extends ChangeNotifier
 
   Future<void> signOut() async {
     await executeAsync(() async {
+      // Read before the sign-out clears it: only this person's tray goes.
+      final userId = (_currentUser ?? _authRepository.currentUser)?.uid;
       await DIContainer().popUserScope();
 
       await _authRepository.signOut();
@@ -213,7 +215,7 @@ class AuthService extends ChangeNotifier
       // user logs out herself (produktregler.md:164-172), never at an
       // automatic logout, so this is not in [logoutDueToInactivity] or
       // [forceSignOut]. Best-effort: it logs and never throws.
-      await WeeklyMenuOverflowTrayStore.clearAll();
+      await WeeklyMenuOverflowTrayStore.clearAll(userId: userId);
       await _analyticsService.logLogout();
     }).catchError((e) {
       setError(AppLocale.current.errorCouldNotLogOut);

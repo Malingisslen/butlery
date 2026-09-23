@@ -12741,8 +12741,8 @@
       }
     }
   },
-  "weeklyMenuSaveFailed": "Veckan kunde inte sparas",
-  "pantryItemUpdateFailed": "Kunde inte uppdatera objektet",
+  "weeklyMenuSaveFailed": "Veckan kunde inte sparas.",
+  "pantryItemUpdateFailed": "Varan kunde inte uppdateras.",
   "moderatorAdvanceFailed": "Anmälan kunde inte flyttas till nästa steg.",
   "moderatorCloseFailed": "Anmälan kunde inte stängas.",
   "moderatorReportUnchanged": "Anmälan är oförändrad.",

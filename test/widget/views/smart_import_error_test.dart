@@ -85,6 +85,35 @@ void main() {
         expect(find.text(_sv.importAddManually), findsOneWidget);
         expect(find.text('OK'), findsNothing);
 
+        // The outlined routes as drawn (Skarmar v12 etapp 4 import:27-28,
+        // --text-kontroll-a / --ram-kontroll-a): #24382C text and outline in
+        // light; in dark a paper outline at 40 % (overlay.paperWash,
+        // tokens.json:263) and paper text (text.primary; the drawn #C9D3C4
+        // has no generated member yet). Never primary on the dark surface,
+        // which is 1.3:1.
+        final dark = theme.brightness == Brightness.dark;
+        for (final route in [ImportRoute.pasteText, ImportRoute.manual]) {
+          final button = tester.widget<ButtonStyleButton>(
+            find.descendant(
+              of: find.byKey(ImportErrorMessage.routeKey(route)),
+              matching: find.byWidgetPredicate(
+                (w) => w is ButtonStyleButton,
+              ),
+            ),
+          );
+          final style = button.style!;
+          expect(
+            style.foregroundColor?.resolve({}),
+            dark ? const Color(0xFFF5F4ED) : const Color(0xFF24382C),
+          );
+          final side = style.side?.resolve({});
+          expect(
+            side?.color,
+            dark ? const Color(0x66F5F4ED) : const Color(0xFF24382C),
+          );
+          expect(side?.width, 1.5);
+        }
+
         for (final route in ImportRoute.values) {
           await tester.tap(find.byKey(ImportErrorMessage.routeKey(route)));
         }

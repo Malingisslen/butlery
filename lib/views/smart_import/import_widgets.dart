@@ -6,6 +6,7 @@ import 'package:butlery/viewmodels/smart_import_viewmodel.dart';
 import 'package:butlery/widgets/common/feedback/inline_error.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 
@@ -127,8 +128,15 @@ class ImportInputSection extends StatelessWidget {
 /// colorScheme.onSurfaceVariant = text.secondary, #627061 light and #93A48D
 /// dark (tokens.json:62-65). The drawing's dark heading is #C9D3C4
 /// (text.bodyMuted); text.secondary is the role the light value names, and
-/// it clears 4.5:1 on the dark surface. The buttons take the app's filled
-/// and outlined button themes.
+/// it clears 4.5:1 on the dark surface. The first route takes the app's
+/// filled button theme. The outlined routes are drawn with --text-kontroll-a
+/// and a 1.5 px --ram-kontroll-a outline (Skarmar v12 etapp 4 import:27-28):
+/// #24382C text and outline in light (colorScheme.primary); in dark a paper
+/// outline at 40 % (overlay.paperWash, tokens.json:263) and text in
+/// colorScheme.onSurface (#F5F4ED, text.primary). The drawn dark text is
+/// #C9D3C4 (text.bodyMuted, tokens.json:174-177), which no generated member
+/// carries yet; the app theme's own outlined foreground (primary) would sit
+/// at 1.3:1 on the dark surface.
 class ImportErrorMessage extends StatelessWidget {
   final String message;
   final String? preserved;
@@ -220,6 +228,20 @@ class _RouteButton extends StatelessWidget {
       ),
     );
     final iconWidget = Icon(icon, size: AppDimensions.iconSize18);
+    final cs = Theme.of(context).colorScheme;
+    final dark = cs.brightness == Brightness.dark;
+    final outlinedStyle = style.copyWith(
+      foregroundColor: WidgetStatePropertyAll(
+        dark ? cs.onSurface : cs.primary,
+      ),
+      iconColor: WidgetStatePropertyAll(dark ? cs.onSurface : cs.primary),
+      side: WidgetStatePropertyAll(
+        BorderSide(
+          color: dark ? AppModeColors.paperWash(cs.brightness) : cs.primary,
+          width: 1.5,
+        ),
+      ),
+    );
     return filled
         ? FilledButton.icon(
             onPressed: onPressed,
@@ -229,7 +251,7 @@ class _RouteButton extends StatelessWidget {
           )
         : OutlinedButton.icon(
             onPressed: onPressed,
-            style: style,
+            style: outlinedStyle,
             icon: iconWidget,
             label: Text(label),
           );

@@ -217,11 +217,13 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
           context,
           what: error,
           weekUnchanged: calendarVm.lastApplyLeftWeekUnchanged,
+          // The retry asks again whenever the week holds entries. The first
+          // confirmation covered the week as it was then; by now the user may
+          // have changed it (the rollback is skipped when they moved on), or
+          // an empty week may have been filled. Overwriting always asks
+          // (content-style-guide.md, "Behåll min vecka / Skriv över").
           onRetry: () => unawaited(
-            _applyGeneratedToCalendar(
-              skipConfirm: true,
-              onPublished: onPublished,
-            ),
+            _applyGeneratedToCalendar(onPublished: onPublished),
           ),
         );
       }

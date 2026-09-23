@@ -135,22 +135,21 @@ class ModeratorReviewViewModel extends BaseViewModel {
   /// confirmation dialog should reflect [isReversibleAction].
   Future<bool> takeDown(ContentReport report) => _act(
     'Moderator takedown failed',
-    () async {
-      if (report.contentType == ContentType.profile) {
-        await _reportService.suspendReportedProfile(report);
-      } else {
-        await _reportService.deleteReportedContent(report);
-      }
-    },
+    () => report.contentType == ContentType.profile
+        ? _reportService.suspendReportedProfile(report)
+        : _reportService.deleteReportedContent(report),
   );
 
-  /// Runs one moderator action. The exception goes to the log only; what the
-  /// user reads is the view's failure snackbar.
-  Future<bool> _act(String logLabel, Future<void> Function() action) async {
+  /// Runs one moderator action. The service reports a refusal as `false`
+  /// (its safeExecute swallows the exception), so that result is the
+  /// failure; a thrown error counts too. The exception goes to the log only;
+  /// what the user reads is the view's failure snackbar.
+  Future<bool> _act(String logLabel, Future<bool> Function() action) async {
     if (isDisposed) return false;
     try {
-      await action();
-      return true;
+      final ok = await action();
+      if (!ok) AppLogger.error(logLabel, 'refused');
+      return ok;
     } catch (e) {
       AppLogger.error(logLabel, e);
       return false;

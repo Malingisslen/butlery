@@ -116,7 +116,7 @@ const _legacyErrorCalls = <String, int>{
 ///
 /// Pinned after the package-5 phase-A merge: ingredient_search moved to
 /// l10n, and the week menu's and the pantry's save messages
-/// ("Veckan kunde inte sparas", "Kunde inte uppdatera objektet") now come
+/// ("Veckan kunde inte sparas.", "Varan kunde inte uppdateras.") now come
 /// from AppLocale.current, which lowered both counts by two. The moderator
 /// queue's and the feedback inbox's actions no longer set an errorPrefix:
 /// their views show the refusal with showFailure.

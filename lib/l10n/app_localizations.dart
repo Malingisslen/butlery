@@ -28364,13 +28364,13 @@ abstract class AppLocalizations {
   /// No description provided for @weeklyMenuSaveFailed.
   ///
   /// In sv, this message translates to:
-  /// **'Veckan kunde inte sparas'**
+  /// **'Veckan kunde inte sparas.'**
   String get weeklyMenuSaveFailed;
 
   /// No description provided for @pantryItemUpdateFailed.
   ///
   /// In sv, this message translates to:
-  /// **'Kunde inte uppdatera objektet'**
+  /// **'Varan kunde inte uppdateras.'**
   String get pantryItemUpdateFailed;
 
   /// No description provided for @moderatorAdvanceFailed.

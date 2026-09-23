@@ -12607,8 +12607,8 @@
       }
     }
   },
-  "weeklyMenuSaveFailed": "The week could not be saved",
-  "pantryItemUpdateFailed": "Could not update the item",
+  "weeklyMenuSaveFailed": "The week could not be saved.",
+  "pantryItemUpdateFailed": "The item could not be updated.",
   "moderatorAdvanceFailed": "The report could not be moved to the next step.",
   "moderatorCloseFailed": "The report could not be closed.",
   "moderatorReportUnchanged": "The report is unchanged.",

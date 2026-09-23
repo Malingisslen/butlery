@@ -602,7 +602,7 @@ void main() {
         expect(placed, isNull);
         expect(
           viewModel.error,
-          'Veckan kunde inte sparas',
+          'Veckan kunde inte sparas.',
         );
         expect(viewModel.plan, same(week));
       });
@@ -2375,7 +2375,7 @@ void main() {
           );
 
           expect(placed, isNull);
-          expect(viewModel.error, 'Veckan kunde inte sparas');
+          expect(viewModel.error, 'Veckan kunde inte sparas.');
           verifyNever(() => mockService.save(any()));
           // P5-U15: nothing reached the week, so it may be called unchanged.
           expect(viewModel.lastApplyLeftWeekUnchanged, isTrue);
@@ -2411,7 +2411,7 @@ void main() {
 
           expect(
             viewModel.error,
-            'Veckan kunde inte sparas',
+            'Veckan kunde inte sparas.',
           );
           expect(viewModel.plan, same(initial));
           // P5-U15: the undo happened, so the week may be called unchanged.
@@ -2486,7 +2486,7 @@ void main() {
 
           expect(
             viewModel.error,
-            'Veckan kunde inte sparas',
+            'Veckan kunde inte sparas.',
             reason: 'the same string as every other path',
           );
           expect(viewModel.plan, same(laterPlan));

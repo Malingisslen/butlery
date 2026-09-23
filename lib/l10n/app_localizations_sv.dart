@@ -17053,10 +17053,10 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String get weeklyMenuSaveFailed => 'Veckan kunde inte sparas';
+  String get weeklyMenuSaveFailed => 'Veckan kunde inte sparas.';
 
   @override
-  String get pantryItemUpdateFailed => 'Kunde inte uppdatera objektet';
+  String get pantryItemUpdateFailed => 'Varan kunde inte uppdateras.';
 
   @override
   String get moderatorAdvanceFailed =>

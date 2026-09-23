@@ -132,6 +132,61 @@ void main() {
       await tester.pump();
       expect(calls, 2);
     });
+
+    // The real ReportService never throws: its safeExecute swallows the
+    // refusal and returns false. That false is the failure the moderator
+    // must see.
+    for (final action in ['advance', 'close']) {
+      testWidgets('a "$action" the service refuses with false (no throw) '
+          'still shows the failure snackbar', (tester) async {
+        final report = ContentReport(
+          id: 'r1',
+          reporterId: 'reporter',
+          contentType: ContentType.comment,
+          contentId: 'c1',
+          contentOwnerId: 'owner',
+          reason: 'spam',
+          createdAt: DateTime(2026, 4, 26),
+        );
+        when(
+          () => reports.isMinorAccount(any()),
+        ).thenAnswer((_) async => false);
+        when(
+          () => reports.advanceReportStatus(report),
+        ).thenAnswer((_) async => false);
+        when(() => reports.closeReport(report)).thenAnswer((_) async => false);
+
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            wrapInScaffold: false,
+            child: const ModeratorReviewView(),
+          ),
+        );
+        await tester.pump();
+        stream.add([report]);
+        await tester.pump();
+
+        await tester.tap(
+          find.text(
+            action == 'advance'
+                ? sv.moderatorActionAdvance
+                : sv.moderatorActionClose,
+          ),
+        );
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 500));
+
+        expect(
+          find.textContaining(
+            action == 'advance'
+                ? sv.moderatorAdvanceFailed
+                : sv.moderatorCloseFailed,
+          ),
+          findsOneWidget,
+        );
+        expect(find.text(sv.commonRetry), findsOneWidget);
+      });
+    }
   });
 
   group('FeedbackInboxView', () {

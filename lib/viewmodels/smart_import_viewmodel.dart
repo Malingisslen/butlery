@@ -435,8 +435,10 @@ class SmartImportViewModel extends BaseViewModel with AsyncOperationMixin {
 
   /// P5-U06: a refused save of an assisted import. The view shows it as a
   /// failure snackbar with Försök igen, which saves the same recipe again, so
-  /// no error line is set here: one failure, one message.
+  /// no error line is set here, and an earlier import's line is cleared:
+  /// one failure, one message.
   SmartImportResult _saveFailed() {
+    clearError();
     _setPhase(ImportPhase.error);
     final failResult = ImportFailed(AppLocale.current.recipeSaveFailed);
     _lastResult = failResult;
