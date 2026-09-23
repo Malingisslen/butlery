@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -174,16 +175,13 @@ class ImagePickerDialogs {
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  LinearProgressIndicator(
+                  // The plate line with the real count (Komponentark
+                  // v1:303-309; P4-U07 test plan: no Material progress bar).
+                  PlateLine(
                     value: progress.total > 0
                         ? progress.completed / progress.total
                         : null,
-                    backgroundColor: Theme.of(
-                      context,
-                    ).colorScheme.surfaceContainerHighest,
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      Theme.of(context).colorScheme.primary,
-                    ),
+                    semanticLabel: context.l10n.imageUploadingImages,
                   ),
                   const SizedBox(height: AppDimensions.spacingL),
                   Text(

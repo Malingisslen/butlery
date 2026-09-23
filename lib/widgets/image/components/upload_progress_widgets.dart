@@ -7,7 +7,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/services/upload/upload_models.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 /// Provides upload progress UI components for image editing.
 class UploadProgressWidgets {
@@ -96,12 +96,14 @@ class UploadProgressWidgets {
     if (hasActiveUploads) {
       return Builder(
         builder: (context) {
-          final cs = Theme.of(context).colorScheme;
-          return LoadingIndicator(
-            size: 16,
-            strokeWidth: 2,
-            color: cs.primary,
-            value: managementSummary['overallProgress'] as double?,
+          // The plate line with the real progress when there is one
+          // (Grafisk manual v6:209; PlateLine).
+          return SizedBox(
+            width: AppDimensions.iconSizeL,
+            child: PlateLine(
+              value: managementSummary['overallProgress'] as double?,
+              semanticLabel: context.l10n.imageUploadingImages,
+            ),
           );
         },
       );
@@ -410,16 +412,14 @@ class UploadProgressWidgets {
 
           case ImageUploadState.uploading:
           case ImageUploadState.retrying:
-            return LoadingIndicator(
-              size: 60,
-              strokeWidth: 4,
-              value: status.progress > 0 ? status.progress : null,
-              backgroundColor: cs.surfaceContainerHighest.withValues(
-                alpha: AppDimensions.opacityMediumLight,
+            // An upload shows a line with its progress, never a spinner
+            // (P4-U07; Grafisk manual v6:209).
+            return SizedBox(
+              width: 60,
+              child: PlateLine(
+                value: status.progress > 0 ? status.progress : null,
+                semanticLabel: context.l10n.imageUploadingImages,
               ),
-              color: status.state == ImageUploadState.retrying
-                  ? cs.onSurfaceVariant
-                  : cs.primary,
             );
 
           case ImageUploadState.completed:

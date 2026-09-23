@@ -3,12 +3,13 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/theme/component_themes.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/viewmodels/recipe_form_viewmodel.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
-import 'package:butlery/widgets/common/adaptive_app_bar.dart';
 import 'package:butlery/widgets/common/first_recipe_celebration_overlay.dart';
 import 'package:butlery/widgets/common/utility_components.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
@@ -361,41 +362,24 @@ class _SkrivSjalvReceptViewContentState
         }
       },
       child: Scaffold(
-        appBar: AdaptiveAppBar(
+        // "Skriv själv" is a subpage under Lägg till recept: back arrow and
+        // title in 14/700 (Komponentark v1:71-78; Skarmar v12 del 2 'Skriv
+        // själv').
+        appBar: ButleryTopBar.undersida(
           title: viewModel.isEditMode
               ? context.l10n.recipeEdit
               : context.l10n.recipeWriteNew,
-          backgroundColor: Theme.of(context).colorScheme.surface,
-          foregroundColor: Theme.of(context).colorScheme.onSurface,
-          iconTheme: IconThemeData(
-            color: Theme.of(context).colorScheme.primary,
-            size: AppDimensions.iconSizeL,
-          ),
-          actionsIconTheme: IconThemeData(
-            color: Theme.of(context).colorScheme.primary,
-            size: AppDimensions.iconSizeL,
-          ),
+          backTo: viewModel.isEditMode ? null : context.l10n.addRecipeTitle,
           actions: [
             if (viewModel.isAutoSaving)
-              const Padding(
-                padding: EdgeInsetsDirectional.only(
-                  end: AppDimensions.paddingM,
-                ),
-                child: LoadingIndicator(
-                  size: AppDimensions.iconSizeS,
-                  strokeWidth: 2,
-                ),
+              SizedBox(
+                width: AppDimensions.iconSizeL,
+                child: PlateLine(semanticLabel: context.l10n.statusSaving),
               )
             else if (viewModel.hasRecentAutoSave)
-              Padding(
-                padding: const EdgeInsetsDirectional.only(
-                  end: AppDimensions.paddingM,
-                ),
-                child: Icon(
-                  Icons.cloud_done_outlined,
-                  size: AppDimensions.iconSizeM,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
+              const Icon(
+                Icons.cloud_done_outlined,
+                size: AppDimensions.iconSizeM,
               ),
           ],
         ),
@@ -722,10 +706,9 @@ class _SkrivSjalvReceptViewContentState
             // CRITICAL FIX: Loading overlay for both local and ViewModel saving states
             // ✅ RESPONSIVE: Constrained loading overlay
             if (_isSaving || viewModel.isSaving)
+              // An opaque surface, never a veil (tokens.json:40-53).
               ColoredBox(
-                color: Theme.of(context).colorScheme.surface.withValues(
-                  alpha: AppDimensions.opacityVeryDark,
-                ),
+                color: Theme.of(context).colorScheme.surface,
                 child: Center(
                   child: ConstrainedBox(
                     constraints: BoxConstraints(
@@ -751,19 +734,27 @@ class _SkrivSjalvReceptViewContentState
             button: true,
             enabled: !(_isSaving || viewModel.isSaving || !viewModel.isValid),
             label: context.l10n.recipeSave,
-            child: Container(
+            child: SizedBox(
               key: const ValueKey('test-skriv-sjalv-save'),
-              child: UtilityComponents.primaryButton(
-                context,
-                label: context.l10n.recipeSave,
-                icon: Icons.save,
+              // The view's one saffron action (Grafisk manual v6:219).
+              // Busy shows the plate line in its place.
+              width: double.infinity,
+              child: FilledButton(
+                style: ComponentThemes.heroButtonStyle(
+                  Theme.of(context).colorScheme,
+                ),
                 onPressed:
                     (_isSaving || viewModel.isSaving || !viewModel.isValid)
                     ? null
                     : _saveRecipe,
-                isLoading: _isSaving || viewModel.isSaving,
-                loadingText: context.l10n.statusSaving,
-                isExpanded: true,
+                child: (_isSaving || viewModel.isSaving)
+                    ? SizedBox(
+                        width: AppDimensions.iconSizeXl * 2,
+                        child: PlateLine(
+                          semanticLabel: context.l10n.statusSaving,
+                        ),
+                      )
+                    : Text(context.l10n.recipeSave),
               ),
             ),
           ),

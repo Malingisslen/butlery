@@ -12311,5 +12311,7 @@
   "uploadingCookSnap": "Uploading the photo …",
   "@uploadingCookSnap": {"description": "What is loading, for the plate line (P4-U05)."},
   "sendingComment": "Sending the comment …",
-  "@sendingComment": {"description": "What is loading, for the plate line (P4-U05)."}
+  "@sendingComment": {"description": "What is loading, for the plate line (P4-U05)."},
+  "recipeEditorClose": "Close the editor",
+  "@recipeEditorClose": {"description": "The X that closes the recipe editor modal (Skarmar v12 etapp 4 #editorutkast)."}
 }

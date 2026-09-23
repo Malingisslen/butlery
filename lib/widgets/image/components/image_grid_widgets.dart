@@ -9,7 +9,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_shadows.dart';
 import 'package:butlery/widgets/image/image_config.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/image/image_components.dart';
 import 'package:butlery/core/utils/logger.dart';
 
@@ -274,10 +274,11 @@ class ImageGridWidgets {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   if (isLoading) ...[
-                    LoadingIndicator(
-                      size: AppDimensions.iconSizeM,
-                      strokeWidth: AppDimensions.borderWidthThin,
-                      color: cs.primary,
+                    SizedBox(
+                      width: AppDimensions.iconSizeL,
+                      child: PlateLine(
+                        semanticLabel: context.l10n.imageAdding,
+                      ),
                     ),
                     const SizedBox(width: AppDimensions.spacingSm),
                     Flexible(

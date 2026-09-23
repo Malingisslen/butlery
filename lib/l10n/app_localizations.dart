@@ -27778,6 +27778,12 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Skickar kommentaren …'**
   String get sendingComment;
+
+  /// The X that closes the recipe editor modal (Skarmar v12 etapp 4 #editorutkast).
+  ///
+  /// In sv, this message translates to:
+  /// **'Stäng editorn'**
+  String get recipeEditorClose;
 }
 
 class _AppLocalizationsDelegate

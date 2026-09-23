@@ -16696,4 +16696,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get sendingComment => 'Skickar kommentaren …';
+
+  @override
+  String get recipeEditorClose => 'Stäng editorn';
 }

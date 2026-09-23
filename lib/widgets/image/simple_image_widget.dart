@@ -6,7 +6,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:butlery/core/utils/firebase_url_utils.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 import 'package:butlery/widgets/image/image_config.dart';
 import 'package:butlery/widgets/image/image_components.dart';
 
@@ -244,13 +243,11 @@ class NetworkImageWidget extends StatelessWidget {
       memCacheHeight: height?.toInt(),
       placeholder: placeholder != null
           ? (_, __) => placeholder!
+          // A still plate while the image loads, never a spinner (P4-U07).
           : (_, __) => Container(
               width: width,
               height: height,
               color: cs.surfaceContainerHighest,
-              child: const Center(
-                child: LoadingIndicator(),
-              ),
             ),
       errorWidget: errorWidget != null
           ? (_, __, ___) => errorWidget!

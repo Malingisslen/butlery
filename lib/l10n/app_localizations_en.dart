@@ -16656,4 +16656,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sendingComment => 'Sending the comment …';
+
+  @override
+  String get recipeEditorClose => 'Close the editor';
 }
