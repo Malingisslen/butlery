@@ -1084,7 +1084,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get feedRecipeRequestSent => 'Förfrågan skickad';
 
   @override
-  String get chatLoadingImage => 'Laddar bild...';
+  String get chatLoadingImage => 'Laddar bild …';
 
   @override
   String get chatImageSent => 'Bilden är skickad.';
@@ -2950,7 +2950,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get friendLoadingFriendsAndCategories =>
-      'Laddar vänner och kategorier...';
+      'Laddar vänner och kategorier …';
 
   @override
   String get friendNoFriendsOrCategories => 'Inga vänner eller kategorier';
@@ -3445,7 +3445,7 @@ class AppLocalizationsSv extends AppLocalizations {
       'Skapa din första vänkategori för att komma igång';
 
   @override
-  String get socialLoadingCategories => 'Laddar kategorier...';
+  String get socialLoadingCategories => 'Laddar kategorier …';
 
   @override
   String get socialInvertLabel => 'Invertera';
@@ -3495,7 +3495,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get invitationInvite => 'Inbjud';
 
   @override
-  String get invitationLoadingTargets => 'Laddar målgrupper...';
+  String get invitationLoadingTargets => 'Laddar målgrupper …';
 
   @override
   String get invitationNetworkError => 'Nätverksfel';
@@ -3572,7 +3572,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get commonFailed => 'Misslyckades';
 
   @override
-  String get commonImporting => 'Importerar...';
+  String get commonImporting => 'Importerar …';
 
   @override
   String get commonLater => 'Senare';
@@ -3593,7 +3593,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get commonSaving => 'Sparar...';
 
   @override
-  String get commonSending => 'Skickar...';
+  String get commonSending => 'Skickar …';
 
   @override
   String get commonUndo => 'Ångra';
@@ -3763,7 +3763,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get dialogLoadingMenus => 'Laddar menyer...';
 
   @override
-  String get dialogLoadingRecipes => 'Laddar recept...';
+  String get dialogLoadingRecipes => 'Laddar recept …';
 
   @override
   String get dialogManualImport => 'Manuell import';
@@ -3857,7 +3857,7 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String get dialogSharing => 'Delar...';
+  String get dialogSharing => 'Delar …';
 
   @override
   String get dialogShoppingListNameHint => 'T.ex. \"Pannkakor - Ingredienser\"';
@@ -4444,7 +4444,7 @@ class AppLocalizationsSv extends AppLocalizations {
       'Enligt GDPR Artikel 20 har du rätt att få en kopia av all din personliga data som lagras i Butlery. Data exporteras i JSON-format som du kan spara eller överföra till en annan tjänst.';
 
   @override
-  String get dataExportExporting => 'Exporterar dina data...';
+  String get dataExportExporting => 'Exporterar dina data …';
 
   @override
   String get dataExportMayTakeSeconds => 'Detta kan ta några sekunder';
@@ -5052,10 +5052,10 @@ class AppLocalizationsSv extends AppLocalizations {
       'Är du säker på att du vill lämna denna grupp? Du kommer inte längre kunna se meddelanden i gruppen.';
 
   @override
-  String get messagingLoadingFriends => 'Laddar vänner...';
+  String get messagingLoadingFriends => 'Laddar vänner …';
 
   @override
-  String get messagingLoadingGroupInfo => 'Laddar gruppinformation...';
+  String get messagingLoadingGroupInfo => 'Laddar gruppinformation …';
 
   @override
   String messagingMembersAdded(int count) {
@@ -5592,7 +5592,7 @@ class AppLocalizationsSv extends AppLocalizations {
       'Välj målgrupper från listan ovan för att fortsätta.';
 
   @override
-  String get invitationSendingInvitations => 'Skickar inbjudningar...';
+  String get invitationSendingInvitations => 'Skickar inbjudningar …';
 
   @override
   String invitationsSentMessage(int count) {
@@ -6222,7 +6222,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get groupInvitationsSentSuccess => 'Inbjudningarna har skickats.';
 
   @override
-  String get groupLoadingInfo => 'Laddar gruppinformation...';
+  String get groupLoadingInfo => 'Laddar gruppinformation …';
 
   @override
   String get groupNoFriendsAvailable => 'Inga vänner tillgängliga';
@@ -6347,7 +6347,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String menuConnectingCollaborative(String title) {
-    return 'Ansluter till \"$title\" för samarbetsredigering...';
+    return 'Ansluter till \"$title\" för samarbetsredigering …';
   }
 
   @override
@@ -6445,7 +6445,7 @@ class AppLocalizationsSv extends AppLocalizations {
       'Denna integritetspolicy uppfyller kraven i GDPR';
 
   @override
-  String get privacyLoading => 'Laddar integritetspolicy...';
+  String get privacyLoading => 'Hämtar integritetspolicyn …';
 
   @override
   String get privacyNotAvailable => 'Integritetspolicyn är inte tillgänglig';
@@ -6551,7 +6551,7 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String get profileLoading => 'Laddar profil...';
+  String get profileLoading => 'Laddar profil …';
 
   @override
   String get profileNewUser => 'Ny användare';
@@ -6607,7 +6607,7 @@ class AppLocalizationsSv extends AppLocalizations {
       'Du har osparade ändringar. Vill du spara innan du lämnar?';
 
   @override
-  String get profileUploadingAvatar => 'Laddar upp avatar...';
+  String get profileUploadingAvatar => 'Laddar upp avatar …';
 
   @override
   String get profileVisibleInSearch => 'Synlig i sökningar';
@@ -6963,7 +6963,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get sharedHideFromList => 'Dölj från min lista';
 
   @override
-  String get sharedLoadingContent => 'Laddar delat innehåll...';
+  String get sharedLoadingContent => 'Laddar delat innehåll …';
 
   @override
   String get sharedNoContentYet => 'Inga delade recept än';
@@ -7102,7 +7102,7 @@ class AppLocalizationsSv extends AppLocalizations {
       'Du har fått inbjudningar att gå med i grupper';
 
   @override
-  String get groupLoadingGroups => 'Laddar grupper...';
+  String get groupLoadingGroups => 'Laddar grupper …';
 
   @override
   String groupMyGroupsCount(int count) {
@@ -7234,7 +7234,7 @@ class AppLocalizationsSv extends AppLocalizations {
       'Skriv ett namn eller användarnamn i sökfältet ovan för att hitta nya vänner.';
 
   @override
-  String get socialSearchingUsers => 'Söker användare...';
+  String get socialSearchingUsers => 'Söker användare …';
 
   @override
   String get socialSearchUnavailable =>
@@ -7332,7 +7332,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get collaborativeAddFirstItem => 'Lägg till den första varan';
 
   @override
-  String get collaborativeAdding => 'Lägger till...';
+  String get collaborativeAdding => 'Lägger till …';
 
   @override
   String get collaborativeAddItemHint => 'Skriv varunamn...';
@@ -8236,10 +8236,10 @@ class AppLocalizationsSv extends AppLocalizations {
   String get socialIncoming => 'Inkommande';
 
   @override
-  String get socialLoadingRequests => 'Laddar förfrågningar...';
+  String get socialLoadingRequests => 'Laddar förfrågningar …';
 
   @override
-  String get socialLoadingSentRequests => 'Laddar skickade förfrågningar...';
+  String get socialLoadingSentRequests => 'Laddar skickade förfrågningar …';
 
   @override
   String get socialNoRequestsSelected => 'Inga förfrågningar valda';
@@ -8587,7 +8587,7 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String get commonAdding => 'Lägger till...';
+  String get commonAdding => 'Lägger till …';
 
   @override
   String get a11yHidePassword => 'Dölj lösenord';
@@ -14362,7 +14362,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get reportDialogTitle => 'Rapportera innehåll';
 
   @override
-  String get reportSubmit => 'Skicka rapport';
+  String get reportSubmit => 'Skicka anmälan';
 
   @override
   String get reportDialogGuidelinesNotePrefix =>
@@ -16770,4 +16770,25 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get importReadingFile => 'Läser filen …';
+
+  @override
+  String get loadingLicenses => 'Hämtar licenserna …';
+
+  @override
+  String get consentSaveMyChoices => 'Spara mina val';
+
+  @override
+  String get loadingBlockedUsers => 'Hämtar blockerade användare …';
+
+  @override
+  String get accountDeletingProgress => 'Raderar kontot …';
+
+  @override
+  String get loadingParseEvents => 'Hämtar tolkningshändelserna …';
+
+  @override
+  String get loadingMoreActivity => 'Hämtar fler händelser …';
+
+  @override
+  String get menuPreviewTitle => 'Delad meny';
 }

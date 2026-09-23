@@ -3,6 +3,7 @@
 // lib/views/social/friends_list_view.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/butlery_control_focus.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
@@ -206,6 +207,11 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
                     ColoredBox(
                       color: Theme.of(context).colorScheme.surface,
                       child: TabBar(
+                        // Tabs carry the canonical ring (ButleryTab), never a focus tint
+                        // (Grafisk manual v6:209; block288 CSR::ROLE::tab::FOCUSED).
+                        overlayColor: ButleryControlFocus.withoutFocusTint(
+                          null,
+                        ),
                         controller: _tabController,
                         isScrollable: false,
                         tabAlignment: TabAlignment.fill,
@@ -216,15 +222,15 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
                         indicatorColor: Theme.of(context).colorScheme.primary,
                         indicatorWeight: AppDimensions.borderWidthThick,
                         tabs: [
-                          Tab(
+                          ButleryTab(
                             icon: const Icon(Icons.dynamic_feed),
                             text: context.l10n.socialFeed,
                           ),
-                          Tab(
+                          ButleryTab(
                             icon: const Icon(Icons.people),
                             text: context.l10n.socialFriends,
                           ),
-                          Tab(
+                          ButleryTab(
                             icon: Badge(
                               isLabelVisible: friendsService
                                   .invitations
@@ -237,7 +243,7 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
                             ),
                             text: context.l10n.socialGroups,
                           ),
-                          Tab(
+                          ButleryTab(
                             icon: Badge(
                               isLabelVisible:
                                   viewModel.incomingRequests.isNotEmpty,

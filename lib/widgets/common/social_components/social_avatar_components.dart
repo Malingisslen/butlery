@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/models/user_profile.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/widgets/user/user_display_widgets.dart' show ImageSize;
 import 'package:butlery/widgets/common/social/social_facade.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -313,7 +313,14 @@ class SocialAvatarComponents {
           color:
               backgroundColor ?? Theme.of(context).colorScheme.outlineVariant,
         ),
-        child: const LoadingIndicator(),
+        // A still plate while the avatar loads, never a spinner
+        // (produktregler.md:163, B-18).
+        child: Semantics(
+          label: Localizations.of<AppLocalizations>(
+            context,
+            AppLocalizations,
+          )?.loadingImage,
+        ),
       ),
     );
   }

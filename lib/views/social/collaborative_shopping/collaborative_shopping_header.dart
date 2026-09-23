@@ -1,6 +1,7 @@
 // lib/views/social/collaborative_shopping/collaborative_shopping_header.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/viewmodels/collaborative_shopping_viewmodel.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -187,17 +188,10 @@ class CollaborativeShoppingHeader extends StatelessWidget {
     double progress,
     Color progressColor,
   ) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
-      child: LinearProgressIndicator(
-        value: progress,
-        backgroundColor: Theme.of(
-          context,
-        ).colorScheme.outline.withValues(alpha: AppDimensions.opacityLight),
-        valueColor: AlwaysStoppedAnimation<Color>(progressColor),
-        minHeight: 8,
-      ),
-    );
+    // The list's progress is the determinate plate line: progressIndicator
+    // on progressTrack, per mode (Komponentark v1:305; B-18). The count next
+    // to it carries the number, so the line is not read twice.
+    return ExcludeSemantics(child: PlateLine(value: progress));
   }
 
   Widget _buildMetadataSection(BuildContext context) {

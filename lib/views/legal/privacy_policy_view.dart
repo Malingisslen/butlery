@@ -4,13 +4,13 @@ import 'package:flutter/services.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
-import 'package:butlery/widgets/common/adaptive_app_bar.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 import 'package:butlery/widgets/legal/legal_contact_footer.dart';
 import 'dart:ui' show PlatformDispatcher;
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/state_widget.dart';
 
 /// GDPR Article 13/14 - Privacy Policy View
 /// Displays the complete privacy policy in Swedish, covering all GDPR
@@ -87,9 +87,8 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AdaptiveAppBar(
+      appBar: ButleryTopBar.undersida(
         title: context.l10n.privacyTitle,
-        centerTitle: true,
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -135,23 +134,8 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
   }
 
   Widget _buildLoadingState() {
-    final cs = Theme.of(context).colorScheme;
-
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const LoadingIndicator(),
-          const SizedBox(height: AppDimensions.spacingMd),
-          Text(
-            context.l10n.privacyLoading,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: cs.onSurfaceVariant,
-            ),
-          ),
-        ],
-      ),
-    );
+    // Plate line + what is being fetched (produktregler.md:163, B-18).
+    return StateWidget.loading(message: context.l10n.privacyLoading);
   }
 
   Widget _buildErrorState() {

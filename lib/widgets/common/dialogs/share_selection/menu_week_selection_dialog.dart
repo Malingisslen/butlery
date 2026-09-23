@@ -1,6 +1,7 @@
 // lib/widgets/common/dialogs/share_selection/menu_week_selection_dialog.dart
 
 import 'package:clock/clock.dart';
+import 'package:butlery/widgets/common/butlery_control_focus.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/iso_week_utils.dart';
@@ -59,9 +60,14 @@ class _MenuWeekSelectionDialogState extends State<MenuWeekSelectionDialog> {
             mainAxisSize: MainAxisSize.min,
             children: _weekStarts
                 .map(
-                  (weekStart) => RadioListTile<DateTime>(
-                    value: weekStart,
-                    title: Text(_label(context, weekStart)),
+                  // Each week is a 48 dp row with the canonical focus ring
+                  // around it, never a saffron tint (Grafisk manual v6:209,
+                  // :381; block288 CSR::ROLE::radio::FOCUSED).
+                  (weekStart) => ButleryControlFocus(
+                    child: RadioListTile<DateTime>(
+                      value: weekStart,
+                      title: Text(_label(context, weekStart)),
+                    ),
                   ),
                 )
                 .toList(),

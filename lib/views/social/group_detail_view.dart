@@ -3,18 +3,17 @@
 // lib/views/social/group_detail_view.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'dart:async';
 import 'package:provider/provider.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/user_profile.dart';
-import 'package:butlery/widgets/common/adaptive_app_bar.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/social_components.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/views/social/add_members_to_group_view.dart';
 import 'package:butlery/services/permission_service.dart';
@@ -153,12 +152,7 @@ class _GroupDetailViewState extends State<GroupDetailView>
     );
 
     if (result == true && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(context.l10n.groupUpdated),
-          backgroundColor: context.butleryColors.success,
-        ),
-      );
+      SnackBarUtils.showSuccess(context, context.l10n.groupUpdated);
       await _viewModel.loadGroupData();
     }
   }
@@ -172,11 +166,9 @@ class _GroupDetailViewState extends State<GroupDetailView>
     );
 
     if (result == true && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(context.l10n.groupInvitationsSentSuccess),
-          backgroundColor: context.butleryColors.success,
-        ),
+      SnackBarUtils.showSuccess(
+        context,
+        context.l10n.groupInvitationsSentSuccess,
       );
       await _viewModel.loadGroupData();
     }
@@ -207,11 +199,9 @@ class _GroupDetailViewState extends State<GroupDetailView>
           return;
         }
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(context.l10n.groupDeleted(group.name)),
-            backgroundColor: context.butleryColors.success,
-          ),
+        SnackBarUtils.showSuccess(
+          context,
+          context.l10n.groupDeleted(group.name),
         );
 
         Navigator.pushReplacementNamed(
@@ -271,12 +261,7 @@ class _GroupDetailViewState extends State<GroupDetailView>
     if (!mounted) return;
 
     if (group.friendUserIds.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(context.l10n.groupNoMembersToShare),
-          backgroundColor: context.butleryColors.warning,
-        ),
-      );
+      SnackBarUtils.showWarning(context, context.l10n.groupNoMembersToShare);
       return;
     }
 
@@ -331,17 +316,13 @@ class _GroupDetailViewState extends State<GroupDetailView>
 
     if (!mounted) return;
     if (conversationId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          // The ViewModel has already mapped the callable's refusal to Swedish
-          // — "the group needs one more member", "some people could not be
-          // added" — and showing the generic line instead threw all of that
-          // away.
-          content: Text(
-            _viewModel.errorMessage ?? context.l10n.errorServiceUnavailable,
-          ),
-          backgroundColor: Theme.of(context).colorScheme.error,
-        ),
+      // The ViewModel has already mapped the callable's refusal to Swedish
+      // — "the group needs one more member", "some people could not be
+      // added" — and showing the generic line instead threw all of that
+      // away.
+      SnackBarUtils.showError(
+        context,
+        _viewModel.errorMessage ?? context.l10n.errorServiceUnavailable,
       );
     }
   }
@@ -392,11 +373,9 @@ class _GroupDetailViewState extends State<GroupDetailView>
       // Transfer ownership via ViewModel
       final transferSuccess = await _viewModel.transferGroupOwnership(newOwner);
       if (!transferSuccess && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(context.l10n.groupCouldNotTransferOwnership),
-            backgroundColor: Theme.of(context).colorScheme.error,
-          ),
+        SnackBarUtils.showError(
+          context,
+          context.l10n.groupCouldNotTransferOwnership,
         );
         return;
       }
@@ -414,15 +393,11 @@ class _GroupDetailViewState extends State<GroupDetailView>
       final success = await _viewModel.leaveGroup();
 
       if (success && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              decision.requiresOwnershipTransfer
-                  ? context.l10n.groupOwnershipTransferredAndLeft
-                  : context.l10n.groupYouLeftGroup,
-            ),
-            backgroundColor: context.butleryColors.success,
-          ),
+        SnackBarUtils.showSuccess(
+          context,
+          decision.requiresOwnershipTransfer
+              ? context.l10n.groupOwnershipTransferredAndLeft
+              : context.l10n.groupYouLeftGroup,
         );
         // Navigate to groups tab
         Navigator.pushReplacementNamed(
@@ -443,24 +418,14 @@ class _GroupDetailViewState extends State<GroupDetailView>
     final memberIds = group.friendUserIds;
 
     if (memberIds.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(context.l10n.groupNoMembersToShare),
-          backgroundColor: context.butleryColors.warning,
-        ),
-      );
+      SnackBarUtils.showWarning(context, context.l10n.groupNoMembersToShare);
       return;
     }
 
     // For group sharing, we'll share with all members at once
     // Use the first member's profile as representative for the dialog UI
     if (_viewModel.members.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(context.l10n.groupCouldNotLoadMembers),
-          backgroundColor: Theme.of(context).colorScheme.error,
-        ),
-      );
+      SnackBarUtils.showError(context, context.l10n.groupCouldNotLoadMembers);
       return;
     }
 
@@ -483,12 +448,7 @@ class _GroupDetailViewState extends State<GroupDetailView>
     if (selectedMenu == null || !mounted) return;
 
     if (group.friendUserIds.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(context.l10n.groupNoMembersToShare),
-          backgroundColor: context.butleryColors.warning,
-        ),
-      );
+      SnackBarUtils.showWarning(context, context.l10n.groupNoMembersToShare);
       return;
     }
 
@@ -526,12 +486,7 @@ class _GroupDetailViewState extends State<GroupDetailView>
     if (selectedList == null || !mounted) return;
 
     if (group.friendUserIds.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(context.l10n.groupNoMembersToShare),
-          backgroundColor: context.butleryColors.warning,
-        ),
-      );
+      SnackBarUtils.showWarning(context, context.l10n.groupNoMembersToShare);
       return;
     }
 
@@ -573,27 +528,20 @@ class _GroupDetailViewState extends State<GroupDetailView>
   Widget build(BuildContext context) {
     // Show loading state while initial data loads
     if (_viewModel.isLoading && _viewModel.group == null) {
+      // The bar names the page, not the loading; the body says what is
+      // fetched under the plate line (produktregler.md:163, B-18).
       return Scaffold(
-        appBar: AdaptiveAppBar(
-          title: context.l10n.commonLoading,
+        appBar: ButleryTopBar.undersida(
+          title: context.l10n.socialGroups,
         ),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const LoadingIndicator(),
-              const SizedBox(height: AppDimensions.spacingMd),
-              Text(context.l10n.groupLoadingInfo),
-            ],
-          ),
-        ),
+        body: StateWidget.loading(message: context.l10n.groupLoadingInfo),
       );
     }
 
     // Show error state if group not found
     if (_viewModel.group == null) {
       return Scaffold(
-        appBar: AdaptiveAppBar(
+        appBar: ButleryTopBar.undersida(
           title: context.l10n.groupNotFound,
         ),
         body: StateWidget.empty(

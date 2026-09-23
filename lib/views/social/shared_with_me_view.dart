@@ -9,12 +9,10 @@ import 'package:timeago/timeago.dart' as timeago;
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart';
-import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 import 'package:butlery/widgets/common/state_widget.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 
@@ -93,44 +91,46 @@ class _SharedWithMeViewContentState extends State<_SharedWithMeViewContent>
 
   @override
   Widget build(BuildContext context) {
-    return LayoutComponents.mainMenu(
-      body: Consumer<SharedContentCoordinatorViewModel>(
-        builder: (context, viewModel, _) {
-          return SafeArea(
-            // Responsive: center and constrain content on large screens
-            child: Center(
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  maxWidth: LayoutComponents.valueFor(
-                    context: context,
-                    mobile: double.infinity,
-                    tablet: 900,
-                    desktop: 1200,
+    return Consumer<SharedContentCoordinatorViewModel>(
+      builder: (context, viewModel, _) => LayoutComponents.mainMenu(
+        appBar: SharedContentAppBar.build(context, viewModel),
+        body: Builder(
+          builder: (context) {
+            return SafeArea(
+              // Responsive: center and constrain content on large screens
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxWidth: LayoutComponents.valueFor(
+                      context: context,
+                      mobile: double.infinity,
+                      tablet: 900,
+                      desktop: 1200,
+                    ),
+                  ),
+                  child: CustomScrollView(
+                    slivers: [
+                      SliverToBoxAdapter(
+                        child: LayoutComponents.offlineIndicator(),
+                      ),
+                      SharedContentSearchBar.build(
+                        context,
+                        viewModel,
+                        _searchController,
+                      ),
+                      SharedContentTabBar.build(
+                        context,
+                        viewModel,
+                        _tabController,
+                      ),
+                      _buildContent(context, viewModel),
+                    ],
                   ),
                 ),
-                child: CustomScrollView(
-                  slivers: [
-                    SliverToBoxAdapter(
-                      child: LayoutComponents.offlineIndicator(),
-                    ),
-                    SharedContentAppBar.build(context, viewModel),
-                    SharedContentSearchBar.build(
-                      context,
-                      viewModel,
-                      _searchController,
-                    ),
-                    SharedContentTabBar.build(
-                      context,
-                      viewModel,
-                      _tabController,
-                    ),
-                    _buildContent(context, viewModel),
-                  ],
-                ),
               ),
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }
@@ -142,17 +142,8 @@ class _SharedWithMeViewContentState extends State<_SharedWithMeViewContent>
     if (viewModel.isGloballyLoading) {
       return SliverFillRemaining(
         child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const LoadingIndicator(size: AppDimensions.iconSizeL),
-              const SizedBox(height: AppDimensions.spacingXl),
-              Text(
-                context.l10n.sharedLoadingContent,
-                style: AppTextStyles.titleMedium,
-              ),
-            ],
-          ),
+          // The plate line with what is fetched (produktregler.md:163).
+          child: PlateLineMessage(message: context.l10n.sharedLoadingContent),
         ),
       );
     }

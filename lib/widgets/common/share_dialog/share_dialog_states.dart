@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/core/constants/routes.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/permission_service.dart';
@@ -52,8 +52,6 @@ class ShareDialogStates {
             icon: const Icon(Icons.person_add),
             label: Text(context.l10n.shareAddFriends),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Theme.of(context).colorScheme.primary,
-              foregroundColor: Theme.of(context).colorScheme.onPrimary,
               padding: const EdgeInsets.symmetric(
                 horizontal: AppDimensions.spacingLg,
                 vertical: AppDimensions.spacingL,
@@ -92,19 +90,8 @@ class ShareDialogStates {
       padding: const EdgeInsets.all(AppDimensions.paddingL),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          LoadingIndicator(
-            color: Theme.of(context).colorScheme.primary,
-          ),
-          const SizedBox(height: AppDimensions.spacingXl),
-          Text(
-            message,
-            style: AppTextStyles.bodyLarge.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
+        // The plate line with what is happening (produktregler.md:163).
+        children: [PlateLineMessage(message: message)],
       ),
     );
   }
@@ -146,9 +133,9 @@ class ShareDialogStates {
               onPressed: onRetry,
               icon: const Icon(Icons.refresh),
               label: Text(context.l10n.commonRetry),
+              // The theme's ink button: danger is a text and icon colour,
+              // never a filled surface (Komponentark v1:300).
               style: ElevatedButton.styleFrom(
-                backgroundColor: Theme.of(context).colorScheme.error,
-                foregroundColor: Theme.of(context).colorScheme.onError,
                 padding: const EdgeInsets.symmetric(
                   horizontal: AppDimensions.spacingLg,
                   vertical: AppDimensions.spacingL,
@@ -196,9 +183,9 @@ class ShareDialogStates {
             const SizedBox(height: AppDimensions.spacingLg),
             ElevatedButton(
               onPressed: onClose,
+              // The theme's ink button: success is a text and icon colour,
+              // never a filled surface (Komponentark v1:300).
               style: ElevatedButton.styleFrom(
-                backgroundColor: context.butleryColors.success,
-                foregroundColor: context.butleryColors.onSuccess,
                 padding: const EdgeInsets.symmetric(
                   horizontal: AppDimensions.spacingLg,
                   vertical: AppDimensions.spacingL,

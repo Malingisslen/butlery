@@ -24,6 +24,8 @@ import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/views/social/friend_profile_view.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/buttons/hero_button.dart';
 
 import '../../infrastructure/di/test_service_locator.dart';
 import '../../infrastructure/helpers/widget_test_app.dart';
@@ -142,5 +144,42 @@ void main() {
       findsOneWidget,
       reason: 'the rest of the menu must survive the conditional item',
     );
+  });
+
+  // PQ-19 = A (produktbeslut 2026-09-23): the profile's one saffron action is
+  // "Dela recept" (Skarmar v12 etapp 5-7 'Vänprofil — delningslagret';
+  // Grafisk manual v6:219). "Skicka meddelande" is not saffron.
+  testWidgets('Dela recept is the one saffron action on the profile', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      createLocalizedTestApp(child: FriendProfileView(friend: _friend)),
+    );
+    await tester.pumpAndSettle();
+
+    final heroes = find.byType(HeroButton);
+    expect(heroes, findsOneWidget);
+    expect(
+      find.descendant(of: heroes, matching: find.text('Dela recept')),
+      findsOneWidget,
+    );
+    expect(
+      find.ancestor(
+        of: find.text('Skicka meddelande'),
+        matching: find.byType(HeroButton),
+      ),
+      findsNothing,
+    );
+    final fill = tester
+        .widget<FilledButton>(
+          find.descendant(
+            of: heroes,
+            matching: find.byWidgetPredicate((w) => w is FilledButton),
+          ),
+        )
+        .style!
+        .backgroundColor!
+        .resolve({});
+    expect(fill, AppModeColors.actionPrimary(Brightness.light));
   });
 }

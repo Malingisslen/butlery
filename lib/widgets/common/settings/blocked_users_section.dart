@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/logger.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
@@ -9,6 +9,7 @@ import 'package:butlery/services/user_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/social_components.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 
 /// Collapsible section showing blocked users with unblock actions.
 /// Used in consent/privacy settings to let users manage their block list.
@@ -150,17 +151,11 @@ class _BlockedUsersSectionState extends State<BlockedUsersSection> {
 
     // The primitive returns a success count, not failed names, so the summary
     // is count-based: a clean count, or "N of M" when some unblocks failed.
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          succeeded == ids.length
-              ? context.l10n.blockedUsersBulkUnblockResult(succeeded)
-              : context.l10n.blockedUsersBulkUnblockPartial(
-                  succeeded,
-                  ids.length,
-                ),
-        ),
-      ),
+    SnackBarUtils.showInfo(
+      context,
+      succeeded == ids.length
+          ? context.l10n.blockedUsersBulkUnblockResult(succeeded)
+          : context.l10n.blockedUsersBulkUnblockPartial(succeeded, ids.length),
     );
     _cancelSelection();
     await _loadBlockedUsers();
@@ -261,12 +256,11 @@ class _BlockedUsersSectionState extends State<BlockedUsersSection> {
           if (_isExpanded) ...[
             Divider(height: 1, color: cs.outlineVariant),
             if (_isLoading)
-              const Padding(
-                padding: EdgeInsets.all(AppDimensions.spacingMd),
+              Padding(
+                padding: const EdgeInsets.all(AppDimensions.spacingMd),
                 child: Center(
-                  child: LoadingIndicator(
-                    size: AppDimensions.spinnerSizeSmall,
-                    strokeWidth: 2,
+                  child: PlateLineMessage(
+                    message: context.l10n.loadingBlockedUsers,
                   ),
                 ),
               )
@@ -304,7 +298,7 @@ class _BlockedUsersSectionState extends State<BlockedUsersSection> {
           if (_selectionMode) ...[
             Icon(
               isSelected ? Icons.check_box : Icons.check_box_outline_blank,
-              color: isSelected ? cs.primary : cs.onSurfaceVariant,
+              color: isSelected ? cs.onSurface : cs.onSurfaceVariant,
             ),
             const SizedBox(width: AppDimensions.spacingSm),
           ],

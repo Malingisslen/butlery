@@ -826,7 +826,7 @@
   },
   "feedRequestRecipeConfirm": "Request recipe",
   "feedRecipeRequestSent": "Request sent",
-  "chatLoadingImage": "Loading image...",
+  "chatLoadingImage": "Loading image …",
   "chatImageSent": "Image sent.",
   "chatNoImageSelected": "No image selected",
   "chatCouldNotSharePhoto": "Couldn't share photo",
@@ -2153,7 +2153,7 @@
     }
   },
   "friendFriendsLabel": "friends",
-  "friendLoadingFriendsAndCategories": "Loading friends and categories...",
+  "friendLoadingFriendsAndCategories": "Loading friends and categories …",
   "friendNoFriendsOrCategories": "No friends or categories",
   "friendAddFriendsAndCategoriesFirst": "Add friends and create categories first",
   "friendManageFriends": "Manage friends",
@@ -2421,7 +2421,7 @@
   "socialAveragePerCategory": "Average/category",
   "socialLargestCategory": "Largest category",
   "socialCreateFirstCategory": "Create your first friend category to get started",
-  "socialLoadingCategories": "Loading categories...",
+  "socialLoadingCategories": "Loading categories …",
   "socialInvertLabel": "Invert",
   "invitationNoTargetsAvailable": "No targets available",
   "invitationSearchTargets": "Search targets...",
@@ -2444,7 +2444,7 @@
   "invitationView": "View",
   "invitationSendInvitation": "Send invitation",
   "invitationInvite": "Invite",
-  "invitationLoadingTargets": "Loading targets...",
+  "invitationLoadingTargets": "Loading targets …",
   "invitationNetworkError": "Network error",
   "invitationCheckConnection": "Check your internet connection.",
   "invitationNoAccessTitle": "No access",
@@ -2482,14 +2482,14 @@
   "commonComingSoon": "Coming soon...",
   "commonDiscard": "Discard",
   "commonFailed": "Failed",
-  "commonImporting": "Importing...",
+  "commonImporting": "Importing …",
   "commonLater": "Later",
   "commonMessage": "Message:",
   "commonPending": "Pending",
   "commonRefresh": "Refresh",
   "commonRemove": "Remove",
   "commonSaving": "Saving...",
-  "commonSending": "Sending...",
+  "commonSending": "Sending …",
   "commonUndo": "Undo",
   "commonUploading": "Uploading...",
   "authLogIn": "Log in",
@@ -2597,7 +2597,7 @@
     }
   },
   "dialogLoadingMenus": "Loading menus...",
-  "dialogLoadingRecipes": "Loading recipes...",
+  "dialogLoadingRecipes": "Loading recipes …",
   "dialogManualImport": "Manual import",
   "dialogMarkIngredientsYourself": "Mark ingredients yourself",
   "dialogMayTakeAWhile": "This may take a while …",
@@ -2672,7 +2672,7 @@
       }
     }
   },
-  "dialogSharing": "Sharing...",
+  "dialogSharing": "Sharing …",
   "dialogShoppingListNameHint": "E.g. \"Pancakes - Ingredients\"",
   "dialogUnknownIngredientDescription": "This ingredient is not in the database. You can define its properties for better tagging.",
   "dialogUnknownIngredientProgress": "Unknown ingredient {current}/{total}",
@@ -3085,7 +3085,7 @@
   "dataExportTitle": "Export my data",
   "dataExportDownloadTitle": "Download your data",
   "dataExportGdprDescription": "Under GDPR Article 20 you have the right to obtain a copy of all your personal data stored in Butlery. Data is exported in JSON format that you can save or transfer to another service.",
-  "dataExportExporting": "Exporting your data...",
+  "dataExportExporting": "Exporting your data …",
   "dataExportMayTakeSeconds": "This may take a few seconds",
   "dataExportFailed": "Export failed",
   "dataExportSuccess": "Data exported",
@@ -3480,8 +3480,8 @@
   "messagingGroupNoLongerExists": "This group no longer exists",
   "messagingGroupNotFound": "Group not found",
   "messagingLeaveGroupConfirm": "Are you sure you want to leave this group? You will no longer be able to see messages in the group.",
-  "messagingLoadingFriends": "Loading friends...",
-  "messagingLoadingGroupInfo": "Loading group info...",
+  "messagingLoadingFriends": "Loading friends …",
+  "messagingLoadingGroupInfo": "Loading group info …",
   "messagingMembersAdded": "{count} member(s) added",
   "@messagingMembersAdded": {
     "placeholders": {
@@ -3839,7 +3839,7 @@
     }
   },
   "invitationSelectTargetsToContinue": "Select targets from the list above to continue.",
-  "invitationSendingInvitations": "Sending invitations...",
+  "invitationSendingInvitations": "Sending invitations …",
   "invitationsSentMessage": "Invitations have been sent to {count} targets.",
   "@invitationsSentMessage": {
     "placeholders": {
@@ -4247,7 +4247,7 @@
     }
   },
   "groupInvitationsSentSuccess": "Invitations have been sent.",
-  "groupLoadingInfo": "Loading group information...",
+  "groupLoadingInfo": "Loading group information …",
   "groupNoFriendsAvailable": "No friends available",
   "groupNoMembersToShare": "The group has no members to share with",
   "groupNotFound": "Group not found",
@@ -4388,7 +4388,7 @@
       }
     }
   },
-  "menuConnectingCollaborative": "Connecting to \"{title}\" for collaborative editing...",
+  "menuConnectingCollaborative": "Connecting to \"{title}\" for collaborative editing …",
   "@menuConnectingCollaborative": {
     "placeholders": {
       "title": {
@@ -4468,7 +4468,7 @@
   "privacyContactUs": "Contact us",
   "privacyCouldNotOpenEmail": "Could not open email client",
   "privacyGdprCompliant": "This privacy policy complies with GDPR requirements",
-  "privacyLoading": "Loading privacy policy...",
+  "privacyLoading": "Loading the privacy policy …",
   "privacyNotAvailable": "Privacy policy is not available",
   "privacyQuestionsTitle": "Questions about privacy?",
   "privacyReload": "Reload",
@@ -4518,7 +4518,7 @@
       }
     }
   },
-  "profileLoading": "Loading profile...",
+  "profileLoading": "Loading profile …",
   "profileNewUser": "New user",
   "profilePrivacySettings": "Privacy settings",
   "profileResetChanges": "Reset changes",
@@ -4542,7 +4542,7 @@
   "profileThemeSystem": "System setting",
   "profileUnsavedChanges": "Unsaved changes",
   "profileUnsavedChangesMessage": "You have unsaved changes. Would you like to save before leaving?",
-  "profileUploadingAvatar": "Uploading avatar...",
+  "profileUploadingAvatar": "Uploading avatar …",
   "profileVisibleInSearch": "Visible in searches",
   "profileVisibleInSearchDescription": "Other users can find you when they search",
   "profileYouHaveUnsavedChanges": "You have unsaved changes",
@@ -4770,7 +4770,7 @@
   },
   "sharedContentWillAppearHere": "When friends share recipes or menus with you, they will appear here.",
   "sharedHideFromList": "Hide from my list",
-  "sharedLoadingContent": "Loading shared content...",
+  "sharedLoadingContent": "Loading shared content …",
   "sharedNoContentYet": "No shared recipes yet",
   "sharedEmptyStateExplanation": "When you or your friends share recipes and menus, they'll appear here. A recipe can be shared to begin.",
   "sharedShareFirstRecipe": "Share a recipe",
@@ -4872,7 +4872,7 @@
     }
   },
   "groupInvitationsDescription": "You have received invitations to join groups",
-  "groupLoadingGroups": "Loading groups...",
+  "groupLoadingGroups": "Loading groups …",
   "groupMyGroupsCount": "My groups ({count})",
   "@groupMyGroupsCount": {
     "placeholders": {
@@ -4958,7 +4958,7 @@
   "socialNoFriendsYet": "No friends yet",
   "socialSearchForNewFriends": "Search for new friends",
   "socialSearchForNewFriendsDescription": "Type a name or username in the search field above to find new friends.",
-  "socialSearchingUsers": "Searching users...",
+  "socialSearchingUsers": "Searching users …",
   "socialSearchUnavailable": "Search is unavailable right now. Please try again in a moment.",
   "socialBlocked": "Blocked",
   "socialCouldNotAcceptFriendRequest": "Could not accept friend request",
@@ -5010,7 +5010,7 @@
   "authTagline": "Your recipes. The rest sorts itself out.",
   "collaborativeAdd": "Add",
   "collaborativeAddFirstItem": "Add the first item",
-  "collaborativeAdding": "Adding...",
+  "collaborativeAdding": "Adding …",
   "collaborativeAddItemHint": "Type item name...",
   "collaborativeClearAll": "Clear all",
   "collaborativeClearCompleted": "Clear completed",
@@ -5721,8 +5721,8 @@
   "socialFriendsAndGroups": "Friends & groups",
   "socialGroups": "Groups",
   "socialIncoming": "Incoming",
-  "socialLoadingRequests": "Loading requests...",
-  "socialLoadingSentRequests": "Loading sent requests...",
+  "socialLoadingRequests": "Loading requests …",
+  "socialLoadingSentRequests": "Loading sent requests …",
   "socialNoRequestsSelected": "No requests selected",
   "socialNoSentRequests": "No sent requests",
   "socialNoSentRequestsDescription": "You have no sent friend requests",
@@ -6039,7 +6039,7 @@
       }
     }
   },
-  "commonAdding": "Adding...",
+  "commonAdding": "Adding …",
   "a11yHidePassword": "Hide password",
   "a11yShowPassword": "Show password",
   "a11yLoading": "Loading",
@@ -10065,7 +10065,7 @@
   "reportSubmitted": "Report submitted",
   "reportSubmitFailed": "Could not submit report",
   "reportDialogTitle": "Report content",
-  "reportSubmit": "Submit report",
+  "reportSubmit": "Send report",
   "reportDialogGuidelinesNotePrefix": "By reporting, you confirm the content violates",
   "reportDialogGuidelinesLink": "our community guidelines",
   "settingsMyReports": "My reports",
@@ -12349,5 +12349,19 @@
   "importFetchingRecipe": "Fetching the recipe …",
   "@importFetchingRecipe": {"description": "What an import says while it fetches and parses (P4-U08; Skarmar v12 etapp 4 #imp2hamtar)."},
   "importReadingFile": "Reading the file …",
-  "@importReadingFile": {"description": "What the file import says while it reads the file (P4-U08)."}
+  "@importReadingFile": {"description": "What the file import says while it reads the file (P4-U08)."},
+  "loadingLicenses": "Loading the licences …",
+  "@loadingLicenses": {"description": "What is loading, for the plate line (P4-U15)."},
+  "consentSaveMyChoices": "Save my choices",
+  "@consentSaveMyChoices": {"description": "The consent view's saffron save (Skarmar v12 etapp 6 'Samtycke — sju ändamål')."},
+  "loadingBlockedUsers": "Loading blocked users …",
+  "@loadingBlockedUsers": {"description": "What is loading, for the plate line (P4-U15)."},
+  "accountDeletingProgress": "Deleting the account …",
+  "@accountDeletingProgress": {"description": "Shown under the plate line while the account is deleted (Skarmar v12 etapp 5-7 'Konto — raderingen pågår')."},
+  "loadingParseEvents": "Loading the parse events …",
+  "@loadingParseEvents": {"description": "What is loading, for the plate line (P4-U17)."},
+  "loadingMoreActivity": "Loading more activity …",
+  "@loadingMoreActivity": {"description": "The next page of the friends feed, under the plate line (P4-U12)."},
+  "menuPreviewTitle": "Shared menu",
+  "@menuPreviewTitle": {"description": "Top bar title of the shared menu preview (Skarmar v12 del 3 #menyforhands)."}
 }

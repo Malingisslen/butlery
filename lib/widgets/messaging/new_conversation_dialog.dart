@@ -1,7 +1,8 @@
 // lib/widgets/messaging/new_conversation_dialog.dart
 
 import 'package:flutter/material.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
@@ -161,9 +162,10 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
         ActionButtons.primaryButton(
           context,
           label: context.l10n.commonCreate,
-          onPressed: _selectedFriendIds.isEmpty || _isCreating
-              ? null
-              : _createConversation,
+          onPressed: _selectedFriendIds.isEmpty ? null : _createConversation,
+          // Creating keeps the name and draws the plate line (Komponentark
+          // v1:372); busy ignores presses rather than disabling.
+          isLoading: _isCreating,
         ),
       ],
     );
@@ -187,8 +189,8 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
   Widget _buildFriendsList() {
     final cs = Theme.of(context).colorScheme;
     if (_isLoading) {
-      return const Center(
-        child: LoadingIndicator(),
+      return Center(
+        child: PlateLineMessage(message: context.l10n.messagingLoadingFriends),
       );
     }
 
@@ -355,11 +357,9 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(context.l10n.conversationCreateError(e.toString())),
-            backgroundColor: Theme.of(context).colorScheme.error,
-          ),
+        SnackBarUtils.showError(
+          context,
+          context.l10n.conversationCreateError(e.toString()),
         );
       }
     } finally {

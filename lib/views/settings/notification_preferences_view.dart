@@ -10,11 +10,12 @@ import 'package:butlery/services/notifications/notification_permission_service.d
 import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/widgets/common/adaptive_app_bar.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/views/settings/notification_category_items.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 
 /// Sentinel value paired with [AnalyticsEvents.notificationPreferenceChanged]
 /// when the master toggle flips. Per-category toggles emit the
@@ -116,13 +117,7 @@ class _NotificationPreferencesViewState
     } catch (e) {
       if (mounted) {
         setState(() => _preferences = previous);
-        final cs = Theme.of(context).colorScheme;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(context.l10n.notificationSaveError),
-            backgroundColor: cs.error,
-          ),
-        );
+        SnackBarUtils.showError(context, context.l10n.notificationSaveError);
       }
     }
   }
@@ -130,13 +125,17 @@ class _NotificationPreferencesViewState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AdaptiveAppBar(title: context.l10n.notificationTitle),
+      appBar: ButleryTopBar.undersida(
+        title: context.l10n.notificationTitle,
+      ),
       body: Column(
         children: [
           LayoutComponents.offlineIndicator(),
           Expanded(
             child: _isLoading
-                ? StateWidget.loading()
+                ? StateWidget.loading(
+                    message: context.l10n.loadingNotificationPreferences,
+                  )
                 : _hasError
                 ? StateWidget.error(
                     message: context.l10n.errorCouldNotLoad(

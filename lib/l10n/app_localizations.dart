@@ -1877,7 +1877,7 @@ abstract class AppLocalizations {
   /// No description provided for @chatLoadingImage.
   ///
   /// In sv, this message translates to:
-  /// **'Laddar bild...'**
+  /// **'Laddar bild …'**
   String get chatLoadingImage;
 
   /// No description provided for @chatImageSent.
@@ -4846,7 +4846,7 @@ abstract class AppLocalizations {
   /// No description provided for @friendLoadingFriendsAndCategories.
   ///
   /// In sv, this message translates to:
-  /// **'Laddar vänner och kategorier...'**
+  /// **'Laddar vänner och kategorier …'**
   String get friendLoadingFriendsAndCategories;
 
   /// No description provided for @friendNoFriendsOrCategories.
@@ -5722,7 +5722,7 @@ abstract class AppLocalizations {
   /// No description provided for @socialLoadingCategories.
   ///
   /// In sv, this message translates to:
-  /// **'Laddar kategorier...'**
+  /// **'Laddar kategorier …'**
   String get socialLoadingCategories;
 
   /// No description provided for @socialInvertLabel.
@@ -5818,7 +5818,7 @@ abstract class AppLocalizations {
   /// No description provided for @invitationLoadingTargets.
   ///
   /// In sv, this message translates to:
-  /// **'Laddar målgrupper...'**
+  /// **'Laddar målgrupper …'**
   String get invitationLoadingTargets;
 
   /// No description provided for @invitationNetworkError.
@@ -5962,7 +5962,7 @@ abstract class AppLocalizations {
   /// No description provided for @commonImporting.
   ///
   /// In sv, this message translates to:
-  /// **'Importerar...'**
+  /// **'Importerar …'**
   String get commonImporting;
 
   /// No description provided for @commonLater.
@@ -6004,7 +6004,7 @@ abstract class AppLocalizations {
   /// No description provided for @commonSending.
   ///
   /// In sv, this message translates to:
-  /// **'Skickar...'**
+  /// **'Skickar …'**
   String get commonSending;
 
   /// No description provided for @commonUndo.
@@ -6286,7 +6286,7 @@ abstract class AppLocalizations {
   /// No description provided for @dialogLoadingRecipes.
   ///
   /// In sv, this message translates to:
-  /// **'Laddar recept...'**
+  /// **'Laddar recept …'**
   String get dialogLoadingRecipes;
 
   /// No description provided for @dialogManualImport.
@@ -6442,7 +6442,7 @@ abstract class AppLocalizations {
   /// No description provided for @dialogSharing.
   ///
   /// In sv, this message translates to:
-  /// **'Delar...'**
+  /// **'Delar …'**
   String get dialogSharing;
 
   /// No description provided for @dialogShoppingListNameHint.
@@ -7420,7 +7420,7 @@ abstract class AppLocalizations {
   /// No description provided for @dataExportExporting.
   ///
   /// In sv, this message translates to:
-  /// **'Exporterar dina data...'**
+  /// **'Exporterar dina data …'**
   String get dataExportExporting;
 
   /// No description provided for @dataExportMayTakeSeconds.
@@ -8452,13 +8452,13 @@ abstract class AppLocalizations {
   /// No description provided for @messagingLoadingFriends.
   ///
   /// In sv, this message translates to:
-  /// **'Laddar vänner...'**
+  /// **'Laddar vänner …'**
   String get messagingLoadingFriends;
 
   /// No description provided for @messagingLoadingGroupInfo.
   ///
   /// In sv, this message translates to:
-  /// **'Laddar gruppinformation...'**
+  /// **'Laddar gruppinformation …'**
   String get messagingLoadingGroupInfo;
 
   /// No description provided for @messagingMembersAdded.
@@ -9358,7 +9358,7 @@ abstract class AppLocalizations {
   /// No description provided for @invitationSendingInvitations.
   ///
   /// In sv, this message translates to:
-  /// **'Skickar inbjudningar...'**
+  /// **'Skickar inbjudningar …'**
   String get invitationSendingInvitations;
 
   /// No description provided for @invitationsSentMessage.
@@ -10450,7 +10450,7 @@ abstract class AppLocalizations {
   /// No description provided for @groupLoadingInfo.
   ///
   /// In sv, this message translates to:
-  /// **'Laddar gruppinformation...'**
+  /// **'Laddar gruppinformation …'**
   String get groupLoadingInfo;
 
   /// No description provided for @groupNoFriendsAvailable.
@@ -10678,7 +10678,7 @@ abstract class AppLocalizations {
   /// No description provided for @menuConnectingCollaborative.
   ///
   /// In sv, this message translates to:
-  /// **'Ansluter till \"{title}\" för samarbetsredigering...'**
+  /// **'Ansluter till \"{title}\" för samarbetsredigering …'**
   String menuConnectingCollaborative(String title);
 
   /// No description provided for @menuCouldNotHide.
@@ -10846,7 +10846,7 @@ abstract class AppLocalizations {
   /// No description provided for @privacyLoading.
   ///
   /// In sv, this message translates to:
-  /// **'Laddar integritetspolicy...'**
+  /// **'Hämtar integritetspolicyn …'**
   String get privacyLoading;
 
   /// No description provided for @privacyNotAvailable.
@@ -11050,7 +11050,7 @@ abstract class AppLocalizations {
   /// No description provided for @profileLoading.
   ///
   /// In sv, this message translates to:
-  /// **'Laddar profil...'**
+  /// **'Laddar profil …'**
   String get profileLoading;
 
   /// No description provided for @profileNewUser.
@@ -11152,7 +11152,7 @@ abstract class AppLocalizations {
   /// No description provided for @profileUploadingAvatar.
   ///
   /// In sv, this message translates to:
-  /// **'Laddar upp avatar...'**
+  /// **'Laddar upp avatar …'**
   String get profileUploadingAvatar;
 
   /// No description provided for @profileVisibleInSearch.
@@ -11710,7 +11710,7 @@ abstract class AppLocalizations {
   /// No description provided for @sharedLoadingContent.
   ///
   /// In sv, this message translates to:
-  /// **'Laddar delat innehåll...'**
+  /// **'Laddar delat innehåll …'**
   String get sharedLoadingContent;
 
   /// No description provided for @sharedNoContentYet.
@@ -11950,7 +11950,7 @@ abstract class AppLocalizations {
   /// No description provided for @groupLoadingGroups.
   ///
   /// In sv, this message translates to:
-  /// **'Laddar grupper...'**
+  /// **'Laddar grupper …'**
   String get groupLoadingGroups;
 
   /// No description provided for @groupMyGroupsCount.
@@ -12172,7 +12172,7 @@ abstract class AppLocalizations {
   /// No description provided for @socialSearchingUsers.
   ///
   /// In sv, this message translates to:
-  /// **'Söker användare...'**
+  /// **'Söker användare …'**
   String get socialSearchingUsers;
 
   /// No description provided for @socialSearchUnavailable.
@@ -12346,7 +12346,7 @@ abstract class AppLocalizations {
   /// No description provided for @collaborativeAdding.
   ///
   /// In sv, this message translates to:
-  /// **'Lägger till...'**
+  /// **'Lägger till …'**
   String get collaborativeAdding;
 
   /// No description provided for @collaborativeAddItemHint.
@@ -13822,13 +13822,13 @@ abstract class AppLocalizations {
   /// No description provided for @socialLoadingRequests.
   ///
   /// In sv, this message translates to:
-  /// **'Laddar förfrågningar...'**
+  /// **'Laddar förfrågningar …'**
   String get socialLoadingRequests;
 
   /// No description provided for @socialLoadingSentRequests.
   ///
   /// In sv, this message translates to:
-  /// **'Laddar skickade förfrågningar...'**
+  /// **'Laddar skickade förfrågningar …'**
   String get socialLoadingSentRequests;
 
   /// No description provided for @socialNoRequestsSelected.
@@ -14386,7 +14386,7 @@ abstract class AppLocalizations {
   /// No description provided for @commonAdding.
   ///
   /// In sv, this message translates to:
-  /// **'Lägger till...'**
+  /// **'Lägger till …'**
   String get commonAdding;
 
   /// No description provided for @a11yHidePassword.
@@ -23996,7 +23996,7 @@ abstract class AppLocalizations {
   /// No description provided for @reportSubmit.
   ///
   /// In sv, this message translates to:
-  /// **'Skicka rapport'**
+  /// **'Skicka anmälan'**
   String get reportSubmit;
 
   /// No description provided for @reportDialogGuidelinesNotePrefix.
@@ -27910,6 +27910,48 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Läser filen …'**
   String get importReadingFile;
+
+  /// What is loading, for the plate line (P4-U15).
+  ///
+  /// In sv, this message translates to:
+  /// **'Hämtar licenserna …'**
+  String get loadingLicenses;
+
+  /// The consent view's saffron save (Skarmar v12 etapp 6 'Samtycke — sju ändamål').
+  ///
+  /// In sv, this message translates to:
+  /// **'Spara mina val'**
+  String get consentSaveMyChoices;
+
+  /// What is loading, for the plate line (P4-U15).
+  ///
+  /// In sv, this message translates to:
+  /// **'Hämtar blockerade användare …'**
+  String get loadingBlockedUsers;
+
+  /// Shown under the plate line while the account is deleted (Skarmar v12 etapp 5-7 'Konto — raderingen pågår').
+  ///
+  /// In sv, this message translates to:
+  /// **'Raderar kontot …'**
+  String get accountDeletingProgress;
+
+  /// What is loading, for the plate line (P4-U17).
+  ///
+  /// In sv, this message translates to:
+  /// **'Hämtar tolkningshändelserna …'**
+  String get loadingParseEvents;
+
+  /// The next page of the friends feed, under the plate line (P4-U12).
+  ///
+  /// In sv, this message translates to:
+  /// **'Hämtar fler händelser …'**
+  String get loadingMoreActivity;
+
+  /// Top bar title of the shared menu preview (Skarmar v12 del 3 #menyforhands).
+  ///
+  /// In sv, this message translates to:
+  /// **'Delad meny'**
+  String get menuPreviewTitle;
 }
 
 class _AppLocalizationsDelegate

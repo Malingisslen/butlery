@@ -216,13 +216,16 @@ class _AllergenToggleCard extends StatelessWidget {
             context,
             const Duration(milliseconds: 200),
           ),
+          // Chosen is a real border, never a tint (Grafisk manual v6:209,
+          // "Vald = riktig border"; tokens.json:40-53). The fill stays
+          // surface.raised (surfaceContainerHighest), which is also
+          // surface.selected (tokens.json:108-119), and the border is
+          // text.primary: ink on light, paper on dark.
           decoration: BoxDecoration(
-            color: isSelected
-                ? cs.primary.withValues(alpha: AppDimensions.opacityLight)
-                : cs.surfaceContainerHighest,
+            color: cs.surfaceContainerHighest,
             border: Border.all(
-              color: isSelected ? cs.primary : cs.outlineVariant,
-              width: isSelected ? 2 : 1,
+              color: isSelected ? cs.onSurface : cs.outlineVariant,
+              width: isSelected ? 1.5 : 1,
             ),
           ),
           padding: const EdgeInsets.symmetric(
@@ -234,14 +237,14 @@ class _AllergenToggleCard extends StatelessWidget {
               Icon(
                 icon,
                 size: AppDimensions.iconSizeL,
-                color: isSelected ? cs.primary : cs.onSurfaceVariant,
+                color: isSelected ? cs.onSurface : cs.onSurfaceVariant,
               ),
               const SizedBox(width: AppDimensions.spacingSm),
               Expanded(
                 child: Text(
                   label,
                   style: AppTextStyles.labelLarge.copyWith(
-                    color: isSelected ? cs.primary : cs.onSurface,
+                    color: cs.onSurface,
                   ),
                 ),
               ),
@@ -249,7 +252,7 @@ class _AllergenToggleCard extends StatelessWidget {
                 Icon(
                   Icons.check,
                   size: AppDimensions.iconSizeM,
-                  color: cs.primary,
+                  color: cs.onSurface,
                 ),
             ],
           ),

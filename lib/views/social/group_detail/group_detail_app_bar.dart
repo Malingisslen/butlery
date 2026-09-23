@@ -1,14 +1,15 @@
 // lib/views/social/group_detail/group_detail_app_bar.dart
 
 import 'package:flutter/material.dart';
-import 'package:butlery/widgets/common/adaptive_app_bar.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/butlery_control_focus.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/social/content_type.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/social/report_content_dialog.dart';
 
 /// GroupDetailAppBar - App bar component
@@ -21,13 +22,17 @@ class GroupDetailAppBar {
     required VoidCallback onRefresh,
     required Function(String action) onMenuAction,
   }) {
-    return AdaptiveAppBar(
+    // A subpage under Vänner & grupper (Skarmar v12 del 2 'Gruppdetalj';
+    // Komponentark v1 §01 pattern 2). The group's name is shown as written.
+    return ButleryTopBar.undersida(
       title: group.name,
       actions: [
+        // Refreshing: the plate line in the refresh button's place, with
+        // what is loading as its name (produktregler.md:163, B-18).
         if (isLoading)
-          const Padding(
-            padding: EdgeInsets.all(AppDimensions.paddingL),
-            child: LoadingIndicator(size: 20, strokeWidth: 2),
+          SizedBox(
+            width: AppDimensions.iconSizeL,
+            child: PlateLine(semanticLabel: context.l10n.groupLoadingInfo),
           )
         else
           IconButton(
@@ -73,7 +78,7 @@ class GroupDetailAppBar {
       itemBuilder: (context) => [
         // Add members - admin only
         if (canAddMembers)
-          PopupMenuItem(
+          ButleryMenuItem(
             value: 'add_members',
             child: Row(
               children: [
@@ -85,7 +90,7 @@ class GroupDetailAppBar {
           ),
         // Edit - admin only
         if (isAdmin)
-          PopupMenuItem(
+          ButleryMenuItem(
             value: 'edit',
             child: Row(
               children: [
@@ -97,7 +102,7 @@ class GroupDetailAppBar {
           ),
         // Delete - admin only
         if (isAdmin)
-          PopupMenuItem(
+          ButleryMenuItem(
             value: 'delete',
             child: Row(
               children: [
@@ -117,27 +122,21 @@ class GroupDetailAppBar {
           ),
         // Leave group - for regular members
         if (!isAdmin)
-          PopupMenuItem(
+          ButleryMenuItem(
             value: 'leave_group',
             child: Row(
               children: [
-                Icon(
-                  Icons.exit_to_app,
-                  color: Theme.of(context).colorScheme.tertiary,
-                ),
+                // The menu's own text colour: saffron belongs to a view's
+                // hero action only (Grafisk manual v6:219).
+                const Icon(Icons.exit_to_app),
                 const SizedBox(width: AppDimensions.spacingSm),
-                Text(
-                  context.l10n.groupLeaveGroup,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.tertiary,
-                  ),
-                ),
+                Text(context.l10n.groupLeaveGroup),
               ],
             ),
           ),
         // Report group - non-owners only (BUT-511, Apple 1.2 / Play UGC)
         if (canReportGroup)
-          PopupMenuItem(
+          ButleryMenuItem(
             value: 'report',
             child: Row(
               children: [

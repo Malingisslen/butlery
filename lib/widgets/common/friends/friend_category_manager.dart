@@ -1,7 +1,7 @@
 // lib/widgets/common/friends/friend_category_manager.dart
 
 import 'package:flutter/material.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/models/friend_category.dart';
@@ -68,20 +68,8 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
         final categoriesService = context.read<UnifiedFriendsService>();
         if (categoriesService.isLoading || friendsVM.isLoading) {
           return Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                LoadingIndicator(
-                  size: AppDimensions.iconSizeM,
-                  strokeWidth: 2,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-                const SizedBox(height: AppDimensions.spacingXl),
-                Text(
-                  context.l10n.friendLoadingFriendsAndCategories,
-                  style: AppTextStyles.contentTitle,
-                ),
-              ],
+            child: PlateLineMessage(
+              message: context.l10n.friendLoadingFriendsAndCategories,
             ),
           );
         }
@@ -278,15 +266,21 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
                 ],
               ),
               onSelected: (selected) => _toggleCategory(category, service),
-              selectedColor: Theme.of(context).colorScheme.primary.withValues(
-                alpha: AppDimensions.opacityLight,
-              ),
-              checkmarkColor: Theme.of(context).colorScheme.primary,
+              // Chosen is surface.selected with a real border, never a tint
+              // (Grafisk manual v6:209 "Vald = riktig border"; tokens.json:40-53,
+              // :108-119). surfaceContainerHighest is surface.raised, which
+              // carries surface.selected's values in both modes; the border is
+              // text.primary (onSurface): ink on light, paper on dark.
+              selectedColor: Theme.of(
+                context,
+              ).colorScheme.surfaceContainerHighest,
+              checkmarkColor: Theme.of(context).colorScheme.onSurface,
               backgroundColor: Theme.of(context).colorScheme.surface,
               side: BorderSide(
                 color: isSelected
-                    ? Theme.of(context).colorScheme.primary
+                    ? Theme.of(context).colorScheme.onSurface
                     : Theme.of(context).colorScheme.outline,
+                width: isSelected ? 1.5 : 1,
               ),
             );
           }).toList(),

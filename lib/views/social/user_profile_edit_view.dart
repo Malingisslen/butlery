@@ -7,6 +7,7 @@
 // ignore_for_file: deprecated_member_use // RadioListTile groupValue/onChanged → RadioGroup migration pending
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/viewmodels/user_profile_viewmodel.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
@@ -16,7 +17,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/validation_utils.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/core/utils/logger.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/core/providers/locale_provider.dart';
 import 'package:butlery/services/theme_service.dart';
@@ -163,14 +164,11 @@ class _UserProfileEditViewContentState
     showDialog(
       context: context,
       barrierDismissible: false,
+      // The plate line with what is happening, never a spinner
+      // (produktregler.md:163, B-18).
       builder: (context) => AlertDialog(
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const LoadingIndicator(),
-            const SizedBox(height: AppDimensions.spacingL),
-            Text(context.l10n.profileUploadingAvatar),
-          ],
+        content: PlateLineMessage(
+          message: context.l10n.profileUploadingAvatar,
         ),
       ),
     );
@@ -317,16 +315,7 @@ class _UserProfileEditViewContentState
   Widget _buildForm(UserProfileViewModel viewModel) {
     // Show loading state for initial profile load
     if (viewModel.isLoading && !viewModel.hasProfile) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const LoadingIndicator(),
-            const SizedBox(height: AppDimensions.spacingMd),
-            Text(context.l10n.profileLoading),
-          ],
-        ),
-      );
+      return StateWidget.loading(message: context.l10n.profileLoading);
     }
 
     return KeyboardSubmittableForm(

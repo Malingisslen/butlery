@@ -7,7 +7,7 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 class OnboardingAgeGateBlockedView extends StatefulWidget {
   const OnboardingAgeGateBlockedView({super.key});
@@ -99,26 +99,25 @@ class _OnboardingAgeGateBlockedViewState
                     SizedBox(
                       width: double.infinity,
                       height: AppDimensions.buttonHeight,
-                      child: ElevatedButton(
-                        key: const Key('onboarding_age_gate_signout_button'),
-                        onPressed: _isSigningOut ? null : _handleSignOut,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: cs.primary,
-                          foregroundColor: cs.surfaceContainerHighest,
-                          shape: const RoundedRectangleBorder(),
+                      // Signing out keeps the name and draws the plate line
+                      // in the button's own text colour (Komponentark
+                      // v1:365, :372), never a spinner in its place.
+                      child: BusyButtonSemantics(
+                        busy: _isSigningOut,
+                        name: context.l10n.onboardingAgeGateSignOut,
+                        child: ElevatedButton(
+                          key: const Key('onboarding_age_gate_signout_button'),
+                          onPressed: _isSigningOut
+                              ? PlateLineButton.ignore
+                              : _handleSignOut,
+                          style: _isSigningOut
+                              ? PlateLineButton.busyStyle(
+                                  null,
+                                  Theme.of(context).elevatedButtonTheme.style,
+                                )
+                              : null,
+                          child: Text(context.l10n.onboardingAgeGateSignOut),
                         ),
-                        child: _isSigningOut
-                            ? LoadingIndicator(
-                                size: AppDimensions.iconSizeM,
-                                strokeWidth: 2,
-                                color: cs.surfaceContainerHighest,
-                              )
-                            : Text(
-                                context.l10n.onboardingAgeGateSignOut,
-                                style: AppTextStyles.labelLarge.copyWith(
-                                  color: cs.surfaceContainerHighest,
-                                ),
-                              ),
                       ),
                     ),
                     const SizedBox(height: AppDimensions.spacingMd),

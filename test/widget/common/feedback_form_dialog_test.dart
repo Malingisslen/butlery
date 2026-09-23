@@ -19,6 +19,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
 
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/feedback_entry.dart';
@@ -132,7 +133,7 @@ void main() {
       );
     });
 
-    testWidgets('close (X) icon button is visible in the AppBar', (
+    testWidgets('close (X) icon button is visible in the top bar', (
       tester,
     ) async {
       await tester.pumpWidget(_wrap(_hostDialog()));
@@ -140,7 +141,7 @@ void main() {
 
       expect(
         find.descendant(
-          of: find.byType(AppBar),
+          of: find.byType(ButleryTopBar),
           matching: find.byIcon(Icons.close),
         ),
         findsOneWidget,

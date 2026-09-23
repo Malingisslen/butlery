@@ -4,13 +4,18 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 class InvitationTargetStates {
   /// Build target list loading state
   static Widget targetListLoading() {
-    return const Center(
-      child: LoadingIndicator(),
+    // The plate line with what is fetched (produktregler.md:163, B-18).
+    return Builder(
+      builder: (context) => Center(
+        child: PlateLineMessage(
+          message: context.l10n.invitationLoadingTargets,
+        ),
+      ),
     );
   }
 
@@ -18,8 +23,11 @@ class InvitationTargetStates {
   static Widget targetCardLoading(BuildContext context) {
     return Card(
       child: ListTile(
-        leading: const LoadingIndicator(),
-        title: Text(context.l10n.commonLoading),
+        leading: SizedBox(
+          width: AppDimensions.iconSizeXl,
+          child: PlateLine(semanticLabel: context.l10n.loadingGeneric),
+        ),
+        title: ExcludeSemantics(child: Text(context.l10n.loadingGeneric)),
       ),
     );
   }

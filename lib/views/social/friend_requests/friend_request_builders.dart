@@ -1,6 +1,9 @@
 // lib/views/social/friend_requests/friend_request_builders.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/butlery_focus_ring.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/butlery_control_focus.dart';
 
 // Theme
 import 'package:butlery/theme/app_dimensions.dart';
@@ -35,39 +38,46 @@ class FriendRequestsHeaderBuilder {
     final totalRequests =
         viewModel.incomingRequests.length + viewModel.sentRequests.length;
 
-    return AppBar(
-      title: Text(context.l10n.socialNotificationsCount(totalRequests)),
-      bottom: TabBar(
-        controller: tabController,
-        onTap: (_) => onClearSelection(),
-        tabs: [
-          Tab(
-            icon: Badge(
-              isLabelVisible: viewModel.incomingRequests.isNotEmpty,
-              label: Text('${viewModel.incomingRequests.length}'),
-              child: const Icon(Icons.inbox),
+    // A subpage under Vänner (Skarmar v12 del 3 #forfragningar draws the back
+    // arrow; Komponentark v1 §01 pattern 2). The tab strip stands on the
+    // page's own surface below the ink bar, as the friends list draws its
+    // tabs, so its colours and focus ring are the light page's.
+    return ButleryTopBar.undersida(
+      title: context.l10n.socialNotificationsCount(totalRequests),
+      bottom: _PageSurfaceStrip(
+        child: TabBar(
+          // Tabs carry the canonical ring (ButleryTab), never a focus tint
+          // (Grafisk manual v6:209; block288 CSR::ROLE::tab::FOCUSED).
+          overlayColor: ButleryControlFocus.withoutFocusTint(null),
+          controller: tabController,
+          onTap: (_) => onClearSelection(),
+          tabs: [
+            ButleryTab(
+              icon: Badge(
+                isLabelVisible: viewModel.incomingRequests.isNotEmpty,
+                label: Text('${viewModel.incomingRequests.length}'),
+                child: const Icon(Icons.inbox),
+              ),
+              text: context.l10n.socialIncoming,
             ),
-            text: context.l10n.socialIncoming,
-          ),
-          Tab(
-            icon: Badge(
-              isLabelVisible: viewModel.sentRequests.isNotEmpty,
-              label: Text('${viewModel.sentRequests.length}'),
-              child: const Icon(Icons.outbox),
+            ButleryTab(
+              icon: Badge(
+                isLabelVisible: viewModel.sentRequests.isNotEmpty,
+                label: Text('${viewModel.sentRequests.length}'),
+                child: const Icon(Icons.outbox),
+              ),
+              text: context.l10n.socialSent,
             ),
-            text: context.l10n.socialSent,
-          ),
-        ],
+          ],
+        ),
       ),
       actions: [
         // Batch actions for current tab
         if (tabController.index == 0 && selectedIncoming.isNotEmpty)
           PopupMenuButton<String>(
             enabled: !batchRunning,
-            icon: Icon(
-              Icons.checklist,
-              color: Theme.of(context).colorScheme.primary,
-            ),
+            // Paper on the ink bar (the bar's icon theme).
+            icon: const Icon(Icons.checklist),
             onSelected: (value) {
               if (value == 'accept_all') {
                 onBatchAccept();
@@ -76,7 +86,7 @@ class FriendRequestsHeaderBuilder {
               }
             },
             itemBuilder: (context) => [
-              PopupMenuItem(
+              ButleryMenuItem(
                 value: 'accept_all',
                 child: Row(
                   children: [
@@ -91,7 +101,7 @@ class FriendRequestsHeaderBuilder {
                   ],
                 ),
               ),
-              PopupMenuItem(
+              ButleryMenuItem(
                 value: 'reject_all',
                 child: Row(
                   children: [
@@ -110,10 +120,7 @@ class FriendRequestsHeaderBuilder {
           ),
         if (tabController.index == 1 && selectedSent.isNotEmpty)
           IconButton(
-            icon: Icon(
-              Icons.cancel,
-              color: Theme.of(context).colorScheme.error,
-            ),
+            icon: const Icon(Icons.cancel),
             onPressed: batchRunning ? null : onCancelSelected,
             tooltip: context.l10n.socialCancelCount(selectedSent.length),
           ),
@@ -154,6 +161,48 @@ class FriendRequestsHeaderBuilder {
             child: Text(context.l10n.commonClose),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// A strip under the subpage bar that stands on the page's own surface
+/// (surface.base) rather than the bar's ink: text, icons and the focus ring
+/// take the page's colours again.
+class _PageSurfaceStrip extends StatelessWidget implements PreferredSizeWidget {
+  const _PageSurfaceStrip({required this.child});
+
+  final PreferredSizeWidget child;
+
+  /// The tabs carry an icon and a label, which Material's Tab draws 72 dp
+  /// tall (its private _kTextAndIconTabHeight), plus the indicator's default
+  /// 2 px. ButleryTab reports 48 whatever it holds, so the strip asks for the
+  /// height its tabs actually take; the bar would clip them otherwise.
+  static const double _iconAndTextTabHeight = 72;
+  static const double _indicatorWeight = 2;
+
+  @override
+  Size get preferredSize => Size.fromHeight(
+    child.preferredSize.height > _iconAndTextTabHeight + _indicatorWeight
+        ? child.preferredSize.height
+        : _iconAndTextTabHeight + _indicatorWeight,
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+    return FocusRingSurface(
+      brightness: theme.brightness,
+      child: ColoredBox(
+        color: cs.surface,
+        child: IconTheme.merge(
+          data: IconThemeData(color: cs.onSurface),
+          child: DefaultTextStyle.merge(
+            style: TextStyle(color: cs.onSurface),
+            child: child,
+          ),
+        ),
       ),
     );
   }

@@ -1,13 +1,13 @@
 // lib/widgets/messaging/fullscreen_image_viewer.dart
 
 import 'package:flutter/material.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:butlery/core/utils/firebase_url_utils.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/widgets/common/adaptive_app_bar.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
 
 /// Fullscreen image viewer with pinch-to-zoom and swipe gestures.
 /// Provides immersive image viewing experience with:
@@ -43,11 +43,13 @@ class FullscreenImageViewer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    // A modal over the photo: X, never a back arrow (Komponentark v1:57,
+    // pattern 4). It stands on surface.ink in both modes (primary is ink in
+    // both schemes), so the photo is framed dark in light and dark mode
+    // alike; onSurface turned paper in dark mode.
     return Scaffold(
-      backgroundColor: cs.onSurface,
-      appBar: AdaptiveAppBar(
-        backgroundColor: cs.onSurface,
-        foregroundColor: cs.surfaceContainerHighest,
+      backgroundColor: cs.primary,
+      appBar: ButleryTopBar.undersida(
         leading: IconButton(
           icon: const Icon(Icons.close),
           onPressed: () => Navigator.of(context).pop(),
@@ -71,9 +73,18 @@ class FullscreenImageViewer extends StatelessWidget {
                       (MediaQuery.sizeOf(context).width *
                               MediaQuery.devicePixelRatioOf(context))
                           .round(),
+                  // The plate line with what is loading, in paper on ink
+                  // (onPrimary is #F5F4ED in both schemes).
                   placeholder: (context, url) => Center(
-                    child: LoadingIndicator(
-                      color: cs.surfaceContainerHighest,
+                    child: Theme(
+                      data: Theme.of(context).copyWith(
+                        textTheme: Theme.of(
+                          context,
+                        ).textTheme.apply(bodyColor: cs.onPrimary),
+                      ),
+                      child: PlateLineMessage(
+                        message: context.l10n.loadingImage,
+                      ),
                     ),
                   ),
                   errorWidget: (context, url, error) => Center(

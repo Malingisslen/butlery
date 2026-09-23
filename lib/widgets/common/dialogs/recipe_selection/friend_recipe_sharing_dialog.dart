@@ -1,9 +1,10 @@
 // lib/widgets/common/dialogs/recipe_selection/friend_recipe_sharing_dialog.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/core/constants/routes.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -55,43 +56,31 @@ class FriendRecipeSharingDialog extends StatelessWidget {
                 ),
               ),
               if (viewModel.hasSelectedRecipes)
-                FilledButton.icon(
-                  onPressed: viewModel.isSharing
-                      ? null
-                      : () => _shareSelectedRecipes(context, viewModel),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Theme.of(context).colorScheme.primary,
-                    foregroundColor: Theme.of(
-                      context,
-                    ).colorScheme.surfaceContainerHighest,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppDimensions.paddingL,
-                      vertical: AppDimensions.paddingM,
+                // The theme's ink filled button (onPrimary on primary in both
+                // schemes); sharing says so and draws the plate line along
+                // its bottom edge, never a spinner (Komponentark v1:365,
+                // :372).
+                BusyButtonSemantics(
+                  busy: viewModel.isSharing,
+                  name:
+                      '${context.l10n.commonShare} (${viewModel.selectedCount})',
+                  busyLabel: context.l10n.dialogSharing,
+                  child: FilledButton.icon(
+                    onPressed: viewModel.isSharing
+                        ? PlateLineButton.ignore
+                        : () => _shareSelectedRecipes(context, viewModel),
+                    style: viewModel.isSharing
+                        ? PlateLineButton.busyStyle(
+                            null,
+                            Theme.of(context).filledButtonTheme.style,
+                          )
+                        : null,
+                    icon: const Icon(Icons.share),
+                    label: Text(
+                      viewModel.isSharing
+                          ? context.l10n.dialogSharing
+                          : '${context.l10n.commonShare} (${viewModel.selectedCount})',
                     ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(
-                        AppDimensions.borderRadiusM,
-                      ),
-                    ),
-                  ),
-                  icon: viewModel.isSharing
-                      ? SizedBox(
-                          width: AppDimensions.iconSizeAction,
-                          height: AppDimensions.iconSizeAction,
-                          child: LoadingIndicator(
-                            size: AppDimensions.iconSizeS,
-                            strokeWidth: 2,
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.surfaceContainerHighest,
-                          ),
-                        )
-                      : const Icon(Icons.share),
-                  label: Text(
-                    viewModel.isSharing
-                        ? context.l10n.dialogSharing
-                        : '${context.l10n.commonShare} (${viewModel.selectedCount})',
-                    style: AppTextStyles.labelLarge,
                   ),
                 ),
             ],
@@ -238,26 +227,16 @@ class FriendRecipeSharingDialog extends StatelessWidget {
 
     if (success && context.mounted) {
       Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            shareMessage,
-            style: AppTextStyles.bodyLargeLight,
-          ),
-          backgroundColor: context.butleryColors.success,
-          duration: const Duration(seconds: 3),
-        ),
+      SnackBarUtils.showSuccess(
+        context,
+        shareMessage,
+        duration: const Duration(seconds: 3),
       );
     } else if (!success && context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            viewModel.error ?? context.l10n.chatCouldNotShareRecipe,
-            style: AppTextStyles.bodyLargeLight,
-          ),
-          backgroundColor: Theme.of(context).colorScheme.error,
-          duration: const Duration(seconds: 3),
-        ),
+      SnackBarUtils.showError(
+        context,
+        viewModel.error ?? context.l10n.chatCouldNotShareRecipe,
+        duration: const Duration(seconds: 3),
       );
     }
   }

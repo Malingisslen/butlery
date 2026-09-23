@@ -22,7 +22,6 @@ import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/views/group_weekly_menu_view.dart';
 import 'package:butlery/views/messaging/conversation_group_detail_view.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/models/social/content_type.dart';
 import 'package:butlery/widgets/social/report_content_dialog.dart';
 import 'package:butlery/widgets/social/block_user_action.dart';
@@ -701,20 +700,14 @@ class ChatActionHandler {
   }
 
   void _showSuccessSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: context.butleryColors.success,
-      ),
-    );
+    SnackBarUtils.showSuccess(context, message);
   }
 
   void _showInfoSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        duration: const Duration(seconds: 2),
-      ),
+    SnackBarUtils.showInfo(
+      context,
+      message,
+      duration: const Duration(seconds: 2),
     );
   }
 

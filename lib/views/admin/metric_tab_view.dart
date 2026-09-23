@@ -9,7 +9,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/viewmodels/admin/metrics_tab_viewmodel.dart';
 import 'package:butlery/views/admin/metrics_csv.dart';
 import 'package:butlery/views/admin/widgets/metric_renderer.dart';
-import 'package:butlery/widgets/common/adaptive_app_bar.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/views/account/data_export_helpers/download_stub.dart'
     if (dart.library.io) 'package:butlery/views/account/data_export_helpers/download_native.dart'
@@ -72,7 +72,7 @@ class _MetricTabContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final vm = context.watch<MetricsTabViewModel>();
     return Scaffold(
-      appBar: AdaptiveAppBar(
+      appBar: ButleryTopBar.undersida(
         title: title(context.l10n),
         actions: [
           IconButton(
@@ -107,7 +107,7 @@ class _MetricTabContent extends StatelessWidget {
 
   Widget _body(BuildContext context, MetricsTabViewModel vm) {
     if (vm.isLoading && vm.values.isEmpty) {
-      return StateWidget.loading();
+      return StateWidget.loading(message: context.l10n.loadingMetrics);
     }
     if (vm.error != null && vm.values.isEmpty) {
       return StateWidget.error(message: vm.error!, onAction: vm.refresh);

@@ -7,10 +7,10 @@ import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/tagging/tagging_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/viewmodels/allergen_preferences_viewmodel.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
-import 'package:butlery/widgets/common/adaptive_app_bar.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/dialogs/retag_progress_dialog.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
@@ -41,18 +41,26 @@ class _AllergenPreferencesContent extends StatelessWidget {
     final viewModel = context.watch<AllergenPreferencesViewModel>();
 
     return Scaffold(
-      appBar: AdaptiveAppBar(
+      appBar: ButleryTopBar.undersida(
         title: context.l10n.allergenSettingsTitle,
         actions: [
           if (viewModel.hasChanges)
+            // The subpage bar is surface.ink in both modes (Komponentark
+            // v1:73), so its text action is paper: onPrimary is #F5F4ED in
+            // both schemes (butlery_top_bar.dart).
             TextButton(
+              style: TextButton.styleFrom(
+                foregroundColor: Theme.of(context).colorScheme.onPrimary,
+              ),
               onPressed: viewModel.isLoading ? null : () => _save(context),
               child: Text(context.l10n.commonSave),
             ),
         ],
       ),
       body: viewModel.isLoading
-          ? StateWidget.loading()
+          ? StateWidget.loading(
+              message: context.l10n.loadingAllergenPreferences,
+            )
           : Center(
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 700),
@@ -132,14 +140,18 @@ class _AllergenPreferencesContent extends StatelessWidget {
                   label: Text(e.value),
                   selected: isSelected,
                   onSelected: (_) => viewModel.toggleAllergen(e.key),
-                  selectedColor: context.butleryColors.success.withValues(
-                    alpha: AppDimensions.opacityLight,
+                  // Chosen is surface.selected with a real border, never a
+                  // tint (Grafisk manual v6:209; tokens.json:40-53,
+                  // :108-119): surfaceContainerHighest (surface.raised, the
+                  // same values) and a text.primary border, in both modes.
+                  selectedColor: cs.surfaceContainerHighest,
+                  checkmarkColor: cs.onSurface,
+                  side: BorderSide(
+                    color: isSelected ? cs.onSurface : cs.outline,
+                    width: isSelected ? 1.5 : 1,
                   ),
-                  checkmarkColor: context.butleryColors.success,
                   labelStyle: AppTextStyles.labelMedium.copyWith(
-                    color: isSelected
-                        ? context.butleryColors.success
-                        : cs.onSurface,
+                    color: cs.onSurface,
                   ),
                 );
               }).toList(),
@@ -193,14 +205,18 @@ class _AllergenPreferencesContent extends StatelessWidget {
                   label: Text(e.value),
                   selected: isSelected,
                   onSelected: (_) => viewModel.toggleDietary(e.key),
-                  selectedColor: context.butleryColors.success.withValues(
-                    alpha: AppDimensions.opacityLight,
+                  // Chosen is surface.selected with a real border, never a
+                  // tint (Grafisk manual v6:209; tokens.json:40-53,
+                  // :108-119): surfaceContainerHighest (surface.raised, the
+                  // same values) and a text.primary border, in both modes.
+                  selectedColor: cs.surfaceContainerHighest,
+                  checkmarkColor: cs.onSurface,
+                  side: BorderSide(
+                    color: isSelected ? cs.onSurface : cs.outline,
+                    width: isSelected ? 1.5 : 1,
                   ),
-                  checkmarkColor: context.butleryColors.success,
                   labelStyle: AppTextStyles.labelMedium.copyWith(
-                    color: isSelected
-                        ? context.butleryColors.success
-                        : cs.onSurface,
+                    color: cs.onSurface,
                   ),
                 );
               }).toList(),
@@ -427,12 +443,7 @@ class _AllergenPreferencesContent extends StatelessWidget {
     final viewModel = context.read<AllergenPreferencesViewModel>();
     final success = await viewModel.save();
     if (success && context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(context.l10n.allergenSettingsSaved),
-          backgroundColor: context.butleryColors.success,
-        ),
-      );
+      SnackBarUtils.showSuccess(context, context.l10n.allergenSettingsSaved);
     }
   }
 

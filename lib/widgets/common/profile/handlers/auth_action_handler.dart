@@ -5,8 +5,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:butlery/services/analytics/analytics_events.dart';
 import 'package:butlery/services/analytics_service.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -16,6 +15,8 @@ import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/moderation/report_service.dart';
 import 'package:butlery/viewmodels/profile/profile_viewmodel.dart';
 import 'package:butlery/widgets/common/profile/dialogs/profile_dialogs.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 
 /// Handler for authentication-related actions (logout, delete account).
 class AuthActionHandler {
@@ -60,11 +61,9 @@ class AuthActionHandler {
     } catch (e) {
       AppLogger.error('Logout failed', e);
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(context.l10n.profileLogoutFailed('$e')),
-            backgroundColor: Theme.of(context).colorScheme.error,
-          ),
+        SnackBarUtils.showError(
+          context,
+          context.l10n.profileLogoutFailed('$e'),
         );
       }
     }
@@ -102,12 +101,20 @@ class AuthActionHandler {
     }
     if (!context.mounted) return;
 
-    // Show loading indicator
+    // The deletion runs: the plate line with what is happening, never a
+    // spinner (produktregler.md:163, B-18). "Raderar kontot" is the heading
+    // of Skarmar v12 etapp 5-7 'Konto — raderingen pågår'; its step list is
+    // not built here.
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => const Center(
-        child: LoadingIndicator(),
+      builder: (context) => Dialog(
+        child: Padding(
+          padding: const EdgeInsets.all(AppDimensions.spacingLg),
+          child: PlateLineMessage(
+            message: context.l10n.accountDeletingProgress,
+          ),
+        ),
       ),
     );
 
@@ -224,11 +231,9 @@ class AuthActionHandler {
           // The ordinary deletion keeps the snackbar it always had; a deletion
           // that kept something has just said more than a snackbar could.
           if (!outcome.hasRetainedRecords) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(context.l10n.profileAccountDeletedPermanently),
-                backgroundColor: context.butleryColors.success,
-              ),
+            SnackBarUtils.showSuccess(
+              context,
+              context.l10n.profileAccountDeletedPermanently,
             );
           }
         } else {
