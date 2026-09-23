@@ -826,7 +826,7 @@
   },
   "feedRequestRecipeConfirm": "Request recipe",
   "feedRecipeRequestSent": "Request sent",
-  "chatLoadingImage": "Loading image...",
+  "chatLoadingImage": "Loading image …",
   "chatImageSent": "Image sent.",
   "chatNoImageSelected": "No image selected",
   "chatCouldNotSharePhoto": "Couldn't share photo",
@@ -3839,7 +3839,7 @@
     }
   },
   "invitationSelectTargetsToContinue": "Select targets from the list above to continue.",
-  "invitationSendingInvitations": "Sending invitations...",
+  "invitationSendingInvitations": "Sending invitations …",
   "invitationsSentMessage": "Invitations have been sent to {count} targets.",
   "@invitationsSentMessage": {
     "placeholders": {
@@ -4388,7 +4388,7 @@
       }
     }
   },
-  "menuConnectingCollaborative": "Connecting to \"{title}\" for collaborative editing...",
+  "menuConnectingCollaborative": "Connecting to \"{title}\" for collaborative editing …",
   "@menuConnectingCollaborative": {
     "placeholders": {
       "title": {
@@ -5010,7 +5010,7 @@
   "authTagline": "Your recipes. The rest sorts itself out.",
   "collaborativeAdd": "Add",
   "collaborativeAddFirstItem": "Add the first item",
-  "collaborativeAdding": "Adding...",
+  "collaborativeAdding": "Adding …",
   "collaborativeAddItemHint": "Type item name...",
   "collaborativeClearAll": "Clear all",
   "collaborativeClearCompleted": "Clear completed",
@@ -5722,7 +5722,7 @@
   "socialGroups": "Groups",
   "socialIncoming": "Incoming",
   "socialLoadingRequests": "Loading requests …",
-  "socialLoadingSentRequests": "Loading sent requests...",
+  "socialLoadingSentRequests": "Loading sent requests …",
   "socialNoRequestsSelected": "No requests selected",
   "socialNoSentRequests": "No sent requests",
   "socialNoSentRequestsDescription": "You have no sent friend requests",
@@ -6039,7 +6039,7 @@
       }
     }
   },
-  "commonAdding": "Adding...",
+  "commonAdding": "Adding …",
   "a11yHidePassword": "Hide password",
   "a11yShowPassword": "Show password",
   "a11yLoading": "Loading",

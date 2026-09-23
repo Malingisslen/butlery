@@ -1877,7 +1877,7 @@ abstract class AppLocalizations {
   /// No description provided for @chatLoadingImage.
   ///
   /// In sv, this message translates to:
-  /// **'Laddar bild...'**
+  /// **'Laddar bild …'**
   String get chatLoadingImage;
 
   /// No description provided for @chatImageSent.
@@ -9358,7 +9358,7 @@ abstract class AppLocalizations {
   /// No description provided for @invitationSendingInvitations.
   ///
   /// In sv, this message translates to:
-  /// **'Skickar inbjudningar...'**
+  /// **'Skickar inbjudningar …'**
   String get invitationSendingInvitations;
 
   /// No description provided for @invitationsSentMessage.
@@ -10678,7 +10678,7 @@ abstract class AppLocalizations {
   /// No description provided for @menuConnectingCollaborative.
   ///
   /// In sv, this message translates to:
-  /// **'Ansluter till \"{title}\" för samarbetsredigering...'**
+  /// **'Ansluter till \"{title}\" för samarbetsredigering …'**
   String menuConnectingCollaborative(String title);
 
   /// No description provided for @menuCouldNotHide.
@@ -12346,7 +12346,7 @@ abstract class AppLocalizations {
   /// No description provided for @collaborativeAdding.
   ///
   /// In sv, this message translates to:
-  /// **'Lägger till...'**
+  /// **'Lägger till …'**
   String get collaborativeAdding;
 
   /// No description provided for @collaborativeAddItemHint.
@@ -13828,7 +13828,7 @@ abstract class AppLocalizations {
   /// No description provided for @socialLoadingSentRequests.
   ///
   /// In sv, this message translates to:
-  /// **'Laddar skickade förfrågningar...'**
+  /// **'Laddar skickade förfrågningar …'**
   String get socialLoadingSentRequests;
 
   /// No description provided for @socialNoRequestsSelected.
@@ -14386,7 +14386,7 @@ abstract class AppLocalizations {
   /// No description provided for @commonAdding.
   ///
   /// In sv, this message translates to:
-  /// **'Lägger till...'**
+  /// **'Lägger till …'**
   String get commonAdding;
 
   /// No description provided for @a11yHidePassword.

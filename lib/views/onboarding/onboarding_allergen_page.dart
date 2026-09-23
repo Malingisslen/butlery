@@ -237,14 +237,14 @@ class _AllergenToggleCard extends StatelessWidget {
               Icon(
                 icon,
                 size: AppDimensions.iconSizeL,
-                color: isSelected ? cs.primary : cs.onSurfaceVariant,
+                color: isSelected ? cs.onSurface : cs.onSurfaceVariant,
               ),
               const SizedBox(width: AppDimensions.spacingSm),
               Expanded(
                 child: Text(
                   label,
                   style: AppTextStyles.labelLarge.copyWith(
-                    color: isSelected ? cs.primary : cs.onSurface,
+                    color: cs.onSurface,
                   ),
                 ),
               ),
@@ -252,7 +252,7 @@ class _AllergenToggleCard extends StatelessWidget {
                 Icon(
                   Icons.check,
                   size: AppDimensions.iconSizeM,
-                  color: cs.primary,
+                  color: cs.onSurface,
                 ),
             ],
           ),

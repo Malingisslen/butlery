@@ -140,8 +140,11 @@ class ReportContentDialog {
                 child: Text(l10n.commonCancel),
               ),
               // The dialog's one saffron action, "Skicka anmälan" (Skarmar
-              // v12 etapp 9 #fbanmal; Komponentark v1:843-844). Sized to its
-              // label: the hero's full width does not fit an action row.
+              // v12 etapp 9 #fbanmal:523; Komponentark v1:843-844).
+              // Interpretation that departs from the drawing: #fbanmal draws
+              // a full-width 48 px block with no Avbryt beside it; here it is
+              // sized to its label in the AlertDialog action row next to
+              // Avbryt. The rapport/anmälan wording is an open copy question.
               FilledButton(
                 key: const ValueKey('reportContent.submit'),
                 style:

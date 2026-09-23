@@ -254,16 +254,20 @@ class _NotificationTile extends StatelessWidget {
       // carries surface.selected's values in both modes; the border is
       // text.primary (onSurface): ink on light, paper on dark.
       selectedTileColor: cs.surfaceContainerHighest,
+      // The chosen row's title and icons stay text.primary; ListTile would
+      // otherwise paint them colorScheme.primary, which is ink in dark mode
+      // too and vanishes on surface.selected (#2F4437).
+      selectedColor: cs.onSurface,
       shape: chosen ? Border.all(color: cs.onSurface, width: 1.5) : null,
       leading: isSelectionMode
           ? Icon(
               isSelected ? Icons.check_circle : Icons.circle_outlined,
-              color: isSelected ? cs.primary : cs.outline,
+              color: isSelected ? cs.onSurface : cs.outline,
               size: AppDimensions.iconSizeAction,
             )
           : Icon(
               _categoryIcon(entry.category),
-              color: entry.opened ? cs.onSurfaceVariant : cs.primary,
+              color: entry.opened ? cs.onSurfaceVariant : cs.onSurface,
               size: AppDimensions.iconSizeAction,
             ),
       title: Text(

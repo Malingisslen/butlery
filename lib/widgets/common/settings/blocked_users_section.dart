@@ -298,7 +298,7 @@ class _BlockedUsersSectionState extends State<BlockedUsersSection> {
           if (_selectionMode) ...[
             Icon(
               isSelected ? Icons.check_box : Icons.check_box_outline_blank,
-              color: isSelected ? cs.primary : cs.onSurfaceVariant,
+              color: isSelected ? cs.onSurface : cs.onSurfaceVariant,
             ),
             const SizedBox(width: AppDimensions.spacingSm),
           ],

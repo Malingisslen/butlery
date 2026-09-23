@@ -832,7 +832,7 @@
   },
   "feedRequestRecipeConfirm": "Be om receptet",
   "feedRecipeRequestSent": "Förfrågan skickad",
-  "chatLoadingImage": "Laddar bild...",
+  "chatLoadingImage": "Laddar bild …",
   "chatImageSent": "Bilden är skickad.",
   "chatNoImageSelected": "Ingen bild vald",
   "chatCouldNotSharePhoto": "Kunde inte dela foto",
@@ -3845,7 +3845,7 @@
     }
   },
   "invitationSelectTargetsToContinue": "Välj målgrupper från listan ovan för att fortsätta.",
-  "invitationSendingInvitations": "Skickar inbjudningar...",
+  "invitationSendingInvitations": "Skickar inbjudningar …",
   "invitationsSentMessage": "Inbjudningar har skickats till {count} målgrupper.",
   "@invitationsSentMessage": {
     "placeholders": {
@@ -4394,7 +4394,7 @@
       }
     }
   },
-  "menuConnectingCollaborative": "Ansluter till \"{title}\" för samarbetsredigering...",
+  "menuConnectingCollaborative": "Ansluter till \"{title}\" för samarbetsredigering …",
   "@menuConnectingCollaborative": {
     "placeholders": {
       "title": {
@@ -5031,7 +5031,7 @@
   "authTagline": "Dina recept. Resten löser sig.",
   "collaborativeAdd": "Lägg till",
   "collaborativeAddFirstItem": "Lägg till den första varan",
-  "collaborativeAdding": "Lägger till...",
+  "collaborativeAdding": "Lägger till …",
   "collaborativeAddItemHint": "Skriv varunamn...",
   "collaborativeClearAll": "Rensa alla",
   "collaborativeClearCompleted": "Rensa avprickade",
@@ -5753,7 +5753,7 @@
   "socialGroups": "Grupper",
   "socialIncoming": "Inkommande",
   "socialLoadingRequests": "Laddar förfrågningar …",
-  "socialLoadingSentRequests": "Laddar skickade förfrågningar...",
+  "socialLoadingSentRequests": "Laddar skickade förfrågningar …",
   "socialNoRequestsSelected": "Inga förfrågningar valda",
   "socialNoSentRequests": "Inga skickade förfrågningar",
   "socialNoSentRequestsDescription": "Du har inga skickade vänskapsförfrågningar",
@@ -6070,7 +6070,7 @@
       }
     }
   },
-  "commonAdding": "Lägger till...",
+  "commonAdding": "Lägger till …",
   "a11yHidePassword": "Dölj lösenord",
   "a11yShowPassword": "Visa lösenord",
   "a11yLoading": "Laddar",

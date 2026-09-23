@@ -166,8 +166,11 @@ class FriendRequestCard {
                 // Actions (not shown during bulk selection)
                 if (!isSelected) ...[
                   const SizedBox(height: AppDimensions.spacingL),
-                  // Acceptera first, then Avböj, as drawn in Skarmar v12
-                  // del 3 #forfragningar.
+                  // Acceptera first, then the decline action, in the order
+                  // drawn in Skarmar v12 del 3 #forfragningar. The drawing
+                  // says "Avböj" and names the person in each button's
+                  // accessible name; the app still says "Avvisa"
+                  // (socialDecline), an open copy question.
                   Row(
                     children: [
                       // PQ-18 = A (produktbeslut 2026-09-23, revised after

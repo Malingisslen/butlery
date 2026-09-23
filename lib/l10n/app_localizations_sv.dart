@@ -1084,7 +1084,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get feedRecipeRequestSent => 'Förfrågan skickad';
 
   @override
-  String get chatLoadingImage => 'Laddar bild...';
+  String get chatLoadingImage => 'Laddar bild …';
 
   @override
   String get chatImageSent => 'Bilden är skickad.';
@@ -5592,7 +5592,7 @@ class AppLocalizationsSv extends AppLocalizations {
       'Välj målgrupper från listan ovan för att fortsätta.';
 
   @override
-  String get invitationSendingInvitations => 'Skickar inbjudningar...';
+  String get invitationSendingInvitations => 'Skickar inbjudningar …';
 
   @override
   String invitationsSentMessage(int count) {
@@ -6347,7 +6347,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String menuConnectingCollaborative(String title) {
-    return 'Ansluter till \"$title\" för samarbetsredigering...';
+    return 'Ansluter till \"$title\" för samarbetsredigering …';
   }
 
   @override
@@ -7332,7 +7332,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get collaborativeAddFirstItem => 'Lägg till den första varan';
 
   @override
-  String get collaborativeAdding => 'Lägger till...';
+  String get collaborativeAdding => 'Lägger till …';
 
   @override
   String get collaborativeAddItemHint => 'Skriv varunamn...';
@@ -8239,7 +8239,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get socialLoadingRequests => 'Laddar förfrågningar …';
 
   @override
-  String get socialLoadingSentRequests => 'Laddar skickade förfrågningar...';
+  String get socialLoadingSentRequests => 'Laddar skickade förfrågningar …';
 
   @override
   String get socialNoRequestsSelected => 'Inga förfrågningar valda';
@@ -8587,7 +8587,7 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String get commonAdding => 'Lägger till...';
+  String get commonAdding => 'Lägger till …';
 
   @override
   String get a11yHidePassword => 'Dölj lösenord';

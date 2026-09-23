@@ -273,7 +273,7 @@ class ShareTargetSelectionEnhanced {
                       .l10n
                       .shareAlreadySharingList, // PHASE 2: Status text for existing collaborators
                   style: AppTextStyles.metadataEmphasized.copyWith(
-                    color: Theme.of(context).colorScheme.primary,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                 ),
               ],

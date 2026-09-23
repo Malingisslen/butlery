@@ -124,9 +124,11 @@ class DataExportView extends StatelessWidget {
       return const SizedBox.shrink(); // Hide button when data is exported
     }
 
-    // Before the export the view's one saffron action is the export itself;
-    // after it, "Spara filen" (Skarmar v12 etapp 6 'Dataexport — allt du
-    // lagt in'; Grafisk manual v6:219). While exporting the button keeps its
+    // After the export the view's one saffron action is "Spara filen", as
+    // drawn (Skarmar v12 etapp 6 'Dataexport — allt du lagt in', :130-156;
+    // Grafisk manual v6:219). The drawing shows only the finished state, so
+    // making the export itself the saffron action before it is an
+    // interpretation, not drawn. While exporting the button keeps its
     // shape and says what it does, with the plate line (Komponentark v1:372).
     return HeroButton(
       key: const ValueKey('dataExport.export'),

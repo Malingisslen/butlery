@@ -143,7 +143,7 @@ class _DietaryToggleCard extends StatelessWidget {
               Icon(
                 icon,
                 size: AppDimensions.iconSizeXl,
-                color: isSelected ? cs.primary : cs.onSurfaceVariant,
+                color: isSelected ? cs.onSurface : cs.onSurfaceVariant,
               ),
               const SizedBox(width: AppDimensions.spacingMd),
               Expanded(
@@ -153,7 +153,7 @@ class _DietaryToggleCard extends StatelessWidget {
                     Text(
                       label,
                       style: AppTextStyles.titleMedium.copyWith(
-                        color: isSelected ? cs.primary : cs.onSurface,
+                        color: cs.onSurface,
                       ),
                     ),
                     const SizedBox(height: AppDimensions.spacingXs),
@@ -170,7 +170,7 @@ class _DietaryToggleCard extends StatelessWidget {
                 Icon(
                   Icons.check_circle,
                   size: AppDimensions.iconSizeL,
-                  color: cs.primary,
+                  color: cs.onSurface,
                 ),
             ],
           ),

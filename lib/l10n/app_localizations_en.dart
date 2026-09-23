@@ -1081,7 +1081,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get feedRecipeRequestSent => 'Request sent';
 
   @override
-  String get chatLoadingImage => 'Loading image...';
+  String get chatLoadingImage => 'Loading image …';
 
   @override
   String get chatImageSent => 'Image sent.';
@@ -5586,7 +5586,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Select targets from the list above to continue.';
 
   @override
-  String get invitationSendingInvitations => 'Sending invitations...';
+  String get invitationSendingInvitations => 'Sending invitations …';
 
   @override
   String invitationsSentMessage(int count) {
@@ -6341,7 +6341,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String menuConnectingCollaborative(String title) {
-    return 'Connecting to \"$title\" for collaborative editing...';
+    return 'Connecting to \"$title\" for collaborative editing …';
   }
 
   @override
@@ -7326,7 +7326,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get collaborativeAddFirstItem => 'Add the first item';
 
   @override
-  String get collaborativeAdding => 'Adding...';
+  String get collaborativeAdding => 'Adding …';
 
   @override
   String get collaborativeAddItemHint => 'Type item name...';
@@ -8228,7 +8228,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get socialLoadingRequests => 'Loading requests …';
 
   @override
-  String get socialLoadingSentRequests => 'Loading sent requests...';
+  String get socialLoadingSentRequests => 'Loading sent requests …';
 
   @override
   String get socialNoRequestsSelected => 'No requests selected';
@@ -8572,7 +8572,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get commonAdding => 'Adding...';
+  String get commonAdding => 'Adding …';
 
   @override
   String get a11yHidePassword => 'Hide password';
