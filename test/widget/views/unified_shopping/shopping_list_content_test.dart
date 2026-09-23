@@ -4,13 +4,16 @@
 // the user's view, so the receipt 'Flyttade till {kategori}' stays, and a
 // snackbar with no possible follow-up action gets `Stäng`
 // (content-style-guide.md:96-97), never `OK`. With an action Flutter keeps a
-// snackbar until tapped, so the receipt must close on its own.
+// snackbar until tapped, so the receipt must close on its own, after the app's
+// normal snackbar time. Under assistive navigation it stays until Stäng: the
+// action is a real focusable target (tillganglighetshandoff:172).
 
 import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:butlery/core/utils/snackbar_utils.dart' show SnackBarConfig;
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/views/unified_shopping/widgets/shopping_list_content.dart';
 
@@ -75,8 +78,29 @@ void main() {
   ) async {
     await _showReceipt(tester, ShoppingCategory.frozen);
 
-    expect(tester.widget<SnackBar>(find.byType(SnackBar)).persist, isFalse);
-    await tester.pump(const Duration(seconds: 3));
+    final snackBar = tester.widget<SnackBar>(find.byType(SnackBar));
+    expect(snackBar.persist, isFalse);
+    expect(snackBar.duration, SnackBarConfig.normalDuration);
+    await tester.pump(SnackBarConfig.normalDuration);
+    await tester.pumpAndSettle();
+    expect(find.byType(SnackBar), findsNothing);
+  });
+
+  testWidgets('under assistive navigation it stays until Stäng', (
+    tester,
+  ) async {
+    tester.platformDispatcher.accessibilityFeaturesTestValue =
+        const FakeAccessibilityFeatures(accessibleNavigation: true);
+    addTearDown(tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
+
+    await _showReceipt(tester, ShoppingCategory.frozen);
+
+    expect(tester.widget<SnackBar>(find.byType(SnackBar)).persist, isTrue);
+    await tester.pump(SnackBarConfig.normalDuration * 3);
+    await tester.pumpAndSettle();
+    expect(find.byType(SnackBar), findsOneWidget);
+
+    await tester.tap(find.text('Stäng'));
     await tester.pumpAndSettle();
     expect(find.byType(SnackBar), findsNothing);
   });
@@ -89,22 +113,28 @@ void main() {
     expect(find.byType(SnackBar), findsNothing);
   });
 
-  test('both move paths show this receipt and nothing else', () {
+  test('both move paths show this receipt once the move went through', () {
     final source = File(_source).readAsStringSync();
 
-    // Drag (_handleItemDrop) and picker (_showCategoryPicker) each call it
-    // once, only after the move went through.
-    expect(
-      RegExp(r'showCategoryMoveReceipt\(context, ').allMatches(source),
-      hasLength(2),
-    );
-    expect(
-      RegExp(r'if \(moved && (context\.)?mounted\)').allMatches(source),
-      hasLength(2),
-    );
-    // The one SnackBar in the file is the receipt, and it is no undo.
-    expect(RegExp(r'\WSnackBar\(').allMatches(source), hasLength(1));
-    expect(source, isNot(contains('commonUndo')));
-    expect(source, isNot(contains('commonOk')));
+    // Only the two move handlers are pinned, not the rest of the file.
+    String body(String name) {
+      final start = source.indexOf('Future<void> $name(');
+      expect(start, isNonNegative, reason: '$name is missing');
+      final end = source.indexOf(RegExp(r'\r?\n  \}\r?\n'), start);
+      return source.substring(start, end);
+    }
+
+    for (final handler in ['_handleItemDrop', '_showCategoryPicker']) {
+      expect(
+        body(handler),
+        matches(
+          RegExp(
+            r'if \(moved && (context\.)?mounted\) \{\s*'
+            r'ShoppingListContentWidget\.showCategoryMoveReceipt\(context, ',
+          ),
+        ),
+        reason: handler,
+      );
+    }
   });
 }
