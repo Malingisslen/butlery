@@ -65,4 +65,12 @@ abstract final class AppModeColors {
       _isDark(brightness)
       ? AppColorsDark.onActionPrimaryPressed
       : AppColors.onActionPrimaryPressed;
+
+  /// semantic text.warning: #8A5212 light, #DCA968 dark (tokens.json:92-95).
+  /// Warning text and warning glyphs on paper, such as the offline banner's
+  /// outline and wifi-off glyph (Komponentark v1:753, dark :571). Not
+  /// warning (border.statusWarning, never text) and not onWarningContainer
+  /// (text.accent.onRaised, a different token).
+  static Color textWarning(Brightness brightness) =>
+      _isDark(brightness) ? AppColorsDark.textWarning : AppColors.textWarning;
 }

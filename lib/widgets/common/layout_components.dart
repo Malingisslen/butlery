@@ -134,14 +134,11 @@ class LayoutComponents {
     );
   }
 
-  /// Offline indicator that shows when the app is offline.
-  static Widget offlineIndicator({
-    String? message,
-    Color? backgroundColor,
-  }) {
+  /// Offline banner; [pendingCount] and [onTap] as on OfflineIndicator.
+  static Widget offlineIndicator({int? pendingCount, VoidCallback? onTap}) {
     return StatusIndicators.offlineIndicator(
-      message: message,
-      backgroundColor: backgroundColor,
+      pendingCount: pendingCount,
+      onTap: onTap,
     );
   }
 

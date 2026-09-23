@@ -3751,7 +3751,43 @@
   "importTipsTitle": "Tips för bästa resultat",
   "importTryAdjustFilters": "Prova att justera sökning eller filter",
   "importViaUrl": "Importera via URL",
-  "indicatorOfflineMode": "Offline-läge - Ändringar sparas lokalt",
+  "indicatorOfflineMode": "Ingen anslutning",
+  "@indicatorOfflineMode": {
+    "description": "Offline banner title (P3-U05). Interpretation of PQ-03: Skarmar v12 del 4 #hemoffline. Changing the wording is this one value."
+  },
+  "offlineBannerPending": "{count, plural, =1{1 ändring väntar} other{{count} ändringar väntar}}",
+  "@offlineBannerPending": {
+    "description": "Offline banner queue count, shown only when count > 0 (flows-roles-budget.md:111).",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "offlineBannerWithPending": "{title} · {pending}",
+  "@offlineBannerWithPending": {
+    "description": "Visible offline banner line: title, middle dot, queue count (Skarmar v12 del 4 #hemoffline).",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "pending": {
+        "type": "String"
+      }
+    }
+  },
+  "offlineBannerWithPendingA11y": "{title}, {pending}",
+  "@offlineBannerWithPendingA11y": {
+    "description": "Screen-reader label for the offline banner with a count: a comma instead of the middle dot (Skarmar v12 del 4 #hemoffline data-a11y-name).",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "pending": {
+        "type": "String"
+      }
+    }
+  },
   "indicatorBackOnline": "Ansluten igen",
   "householdLabel": "Hushåll",
   "householdToggle": "Markera som hushåll",

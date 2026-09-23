@@ -1,7 +1,7 @@
 // GENERERAD FIL — ändra källan, inte den här.
 // system 2.1 · tokens 1.13
 // generator tools/gen-app-theme.mjs v2.3
-// källfingeravtryck sha256:242102edd8d1337b2d1204c71ea77beea5ba1a79162fc8d5c81e5ae6064f6ec7 (6 indatafiler, generatorns källa inräknad)
+// källfingeravtryck sha256:6e683091cd7e4f9f4cf67a87d7cac5609795d898b8ffa1b9e26f5af6cc669687 (6 indatafiler, generatorns källa inräknad)
 // genererad ur källdatum 2026-08-05 (tokens.date — reproducerbart, inte klockan)
 //
 // Migration (etapp 8.1): varje medlem har samma NAMN som i det FRYSTA
@@ -227,6 +227,9 @@ class AppColors {
 
   /// Text pa nedtryckt saffran: papper, aldrig ink (beslut B-14, ink ger 2,97:1). Star bara pa actionPrimaryPressed. · semantic.text.onActionPrimaryPressed
   static const Color onActionPrimaryPressed = Color(0xFFF5F4ED);
+
+  /// Varningstext och varningsglyf pa papper: offlinebannerns kontur och wifi-off (Komponentark 753, morkt 571). Inte warning (border.statusWarning, aldrig text) och inte onWarningContainer (text.accent.onRaised, samma ljusa hex men annat token). · semantic.text.warning
+  static const Color textWarning = Color(0xFF8A5212);
 
   // Alias — oförändrade, pekar på medlemmar ovan. Deklarerade i
   // tools/app-theme-map.json; högersidan mäts mot utdata av TG-01.

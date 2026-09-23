@@ -9181,11 +9181,29 @@ abstract class AppLocalizations {
   /// **'Importera via URL'**
   String get importViaUrl;
 
-  /// No description provided for @indicatorOfflineMode.
+  /// Offline banner title (P3-U05). Interpretation of PQ-03: Skarmar v12 del 4 #hemoffline. Changing the wording is this one value.
   ///
   /// In sv, this message translates to:
-  /// **'Offline-läge - Ändringar sparas lokalt'**
+  /// **'Ingen anslutning'**
   String get indicatorOfflineMode;
+
+  /// Offline banner queue count, shown only when count > 0 (flows-roles-budget.md:111).
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 ändring väntar} other{{count} ändringar väntar}}'**
+  String offlineBannerPending(int count);
+
+  /// Visible offline banner line: title, middle dot, queue count (Skarmar v12 del 4 #hemoffline).
+  ///
+  /// In sv, this message translates to:
+  /// **'{title} · {pending}'**
+  String offlineBannerWithPending(String title, String pending);
+
+  /// Screen-reader label for the offline banner with a count: a comma instead of the middle dot (Skarmar v12 del 4 #hemoffline data-a11y-name).
+  ///
+  /// In sv, this message translates to:
+  /// **'{title}, {pending}'**
+  String offlineBannerWithPendingA11y(String title, String pending);
 
   /// No description provided for @indicatorBackOnline.
   ///
