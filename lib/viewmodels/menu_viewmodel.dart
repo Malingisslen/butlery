@@ -28,6 +28,43 @@ import 'package:butlery/viewmodels/menu/menu_generator.dart';
 import 'package:butlery/viewmodels/menu/menu_storage.dart';
 import 'package:butlery/viewmodels/menu/menu_social_manager.dart';
 
+/// P5-U25: one meal type the generation could not fill.
+@immutable
+class MenuMissingMeal {
+  const MenuMissingMeal({
+    required this.mealType,
+    required this.found,
+    required this.requested,
+  });
+
+  /// The meal type as the menu keys it ("middag").
+  final String mealType;
+  final int found;
+  final int requested;
+
+  int get missing => requested - found;
+}
+
+/// P5-U25: a generation that found fewer dishes than were asked for.
+///
+/// produktregler.md:206: "Delresultat mäts i recept, inte i dagar ... Ett
+/// delresultat är alltså 1 ≤ n < begärt antal recept." produktregler.md:893:
+/// what is missing is named, "ett antal utan namn är ingen upplysning".
+@immutable
+class MenuPartialOutcome {
+  const MenuPartialOutcome({
+    required this.found,
+    required this.requested,
+    required this.missing,
+  });
+
+  final int found;
+  final int requested;
+
+  /// Each meal type that got fewer than asked, in the order it was asked.
+  final List<MenuMissingMeal> missing;
+}
+
 /// Menu ViewModel with focused modules for generation, storage, and social sharing (MVVM).
 class MenuViewModel extends BaseViewModel {
   StreamSubscription? _recipeServiceSubscription;
@@ -42,6 +79,11 @@ class MenuViewModel extends BaseViewModel {
   // becomes true inside super.dispose() at the end, which would be too late for
   // this VM's own guarded callbacks.
   bool _isDisposed = false;
+
+  /// P5-U25: how many dishes the last generated prompt asked for, per meal
+  /// type (lower-cased). Empty for a menu that was not generated here (a
+  /// loaded or shared menu), which then never reads as partial.
+  Map<String, int> _requestedByMealType = const {};
 
   // Modules
   late final MenuStateManager _stateManager;
@@ -115,6 +157,67 @@ class MenuViewModel extends BaseViewModel {
   String get lastPrompt => _stateManager.lastPrompt;
   List<SavedMenuInfo> get savedMenus => _stateManager.savedMenus;
   int get totalRecipeCount => _stateManager.totalRecipeCount;
+
+  /// P5-U25: the generated menu has fewer dishes than the prompt asked for
+  /// (1 ≤ n < requested, produktregler.md:206), or null. Read from the menu
+  /// as it is now, so a re-rolled section that filled the gap clears it.
+  MenuPartialOutcome? get partialOutcome {
+    if (_requestedByMealType.isEmpty || !hasMenu) return null;
+    final foundByType = <String, int>{};
+    for (final entry in menu.entries) {
+      final key = entry.key.toLowerCase();
+      foundByType[key] = (foundByType[key] ?? 0) + entry.value.length;
+    }
+    var requested = 0;
+    var found = 0;
+    final missing = <MenuMissingMeal>[];
+    for (final entry in _requestedByMealType.entries) {
+      final got = foundByType[entry.key] ?? 0;
+      requested += entry.value;
+      found += got < entry.value ? got : entry.value;
+      if (got < entry.value) {
+        missing.add(
+          MenuMissingMeal(
+            mealType: entry.key,
+            found: got,
+            requested: entry.value,
+          ),
+        );
+      }
+    }
+    if (found < 1 || found >= requested) return null;
+    return MenuPartialOutcome(
+      found: found,
+      requested: requested,
+      missing: List.unmodifiable(missing),
+    );
+  }
+
+  /// P5-U25: dishes asked for per meal type, read the same way generation
+  /// read the prompt (MenuService.generateMenuFromParsedRequest: each day
+  /// pin asks for one, each slot request for its count). Empty when the
+  /// prompt cannot be parsed, so a failed parse never invents a gap.
+  Future<Map<String, int>> _requestedCountsFor(String prompt) async {
+    try {
+      final parsed = await _menuService.parsePrompt(prompt);
+      if (parsed == null) return const {};
+      final counts = <String, int>{};
+      for (final pin in parsed.dayPins) {
+        final key = pin.mealType.toLowerCase();
+        counts[key] = (counts[key] ?? 0) + 1;
+      }
+      for (final slot in parsed.slotRequests) {
+        final key = slot.mealType.toLowerCase();
+        counts[key] = (counts[key] ?? 0) + slot.totalCount;
+      }
+      counts.removeWhere((_, count) => count <= 0);
+      return counts;
+    } catch (e) {
+      AppLogger.error('Could not read the requested dish count', e);
+      return const {};
+    }
+  }
+
   List<Recipe> get availableRecipes => _generator.availableRecipes;
   bool get hasAvailableRecipes => _generator.hasAvailableRecipes;
 
@@ -165,6 +268,7 @@ class MenuViewModel extends BaseViewModel {
 
     _stateManager.setGenerating(true);
     _stateManager.setLastPrompt(prompt.trim());
+    _requestedByMealType = const {};
 
     // Track menu generation started
     await _analyticsService.logMenuGenerationStarted(
@@ -177,6 +281,7 @@ class MenuViewModel extends BaseViewModel {
       final generatedMenu = await _generator.generateMenuFromPrompt(
         prompt.trim(),
       );
+      _requestedByMealType = await _requestedCountsFor(prompt.trim());
       _stateManager.setMenu(generatedMenu);
       _stateManager.clearErrorAfterSuccess();
 
@@ -294,7 +399,10 @@ class MenuViewModel extends BaseViewModel {
   /// Clears current menu state for new generation or menu reset operations.
   /// Delegates to MenuStateManager for complete menu state cleanup
   /// enabling fresh menu generation and state reset functionality.
-  void clearMenu() => _stateManager.clearMenu();
+  void clearMenu() {
+    _requestedByMealType = const {};
+    _stateManager.clearMenu();
+  }
 
   /// Clears current error state for error recovery and clean state management.
   /// Delegates to MenuStateManager for error state cleanup enabling
@@ -311,6 +419,7 @@ class MenuViewModel extends BaseViewModel {
   /// Loads menu content from a SharedMenu for viewing/editing.
   /// Used when navigating to VeckomenyView with a shared menu from social features.
   void loadFromSharedMenu(SharedMenu sharedMenu) {
+    _requestedByMealType = const {};
     _stateManager.setMenu(sharedMenu.menuSnapshot);
     AppLogger.info('Loaded shared menu: ${sharedMenu.menuTitle}');
   }
@@ -445,6 +554,7 @@ class MenuViewModel extends BaseViewModel {
       // Try loading from local storage first
       final localMenuData = await _storage.loadMenuByKey(menuKey);
       if (localMenuData != null) {
+        _requestedByMealType = const {};
         _stateManager.loadMenuFromData(
           menu: localMenuData.menu,
           lastPrompt: localMenuData.lastPrompt,
@@ -457,6 +567,7 @@ class MenuViewModel extends BaseViewModel {
         menuKey,
       );
       if (importedMenuData != null) {
+        _requestedByMealType = const {};
         _stateManager.loadMenuFromData(
           menu: importedMenuData.menu,
           lastPrompt: importedMenuData.lastPrompt,

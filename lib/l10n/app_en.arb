@@ -12441,5 +12441,157 @@
   "ingredientSearchAgain": "Search again",
   "@ingredientSearchAgain": {"description": "Action in the ingredient search error state (P5-U13)."},
   "ingredientSearchSelectionKept": "Your ingredients are still selected.",
-  "@ingredientSearchSelectionKept": {"description": "What was kept when the ingredient search failed (content-style-guide.md:91-93, P5-U13)."}
+  "@ingredientSearchSelectionKept": {"description": "What was kept when the ingredient search failed (content-style-guide.md:91-93, P5-U13)."},
+  "importUrlBatchPartialTitle": "We fetched {success} of {total} links",
+  "@importUrlBatchPartialTitle": {
+    "description": "P5-U22: partial outcome of a pasted URL list (produktregler.md:588, :905-909). Counted, never rounded up.",
+    "placeholders": {
+      "success": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "importUrlBatchPartialBody": "We could not fetch the links below. They stay here and in the field above, so you can try again.",
+  "@importUrlBatchPartialBody": {
+    "description": "P5-U22: why the rest did not go and that the failed links are kept (I-29)."
+  },
+  "importUrlBatchReadyHeading": "Ready to import",
+  "@importUrlBatchReadyHeading": {
+    "description": "P5-U22: heading over the links that were fetched in a partial batch. Interpretation: Skarmar v12 etapp 4:231 draws 'Klara att spara' for the file batch; the URL batch says 'importera' to match its 'Importera N recept' button."
+  },
+  "importUrlReasonUnreachable": "The page could not be reached",
+  "@importUrlReasonUnreachable": {
+    "description": "P5-U22: why one link in a batch failed: network error or timeout (produktregler.md:907, I-29 names why)."
+  },
+  "importUrlReasonNoContent": "The page had no recipe text",
+  "@importUrlReasonNoContent": {
+    "description": "P5-U22: why one link in a batch failed: the page loaded but had no text to read (produktregler.md:907)."
+  },
+  "importUrlReasonUnreadable": "The page could not be read",
+  "@importUrlReasonUnreadable": {
+    "description": "P5-U22: why one link in a batch failed: the page could not be parsed, or another error (produktregler.md:907)."
+  },
+  "importUrlBatchRetryA11y": "Try fetching {url} again",
+  "@importUrlBatchRetryA11y": {
+    "description": "P5-U22: accessible name of the retry button on one failed link.",
+    "placeholders": {
+      "url": {
+        "type": "String"
+      }
+    }
+  },
+  "weeklyMenuOverflowPlacedCount": "{placed} of {total} dishes placed",
+  "@weeklyMenuOverflowPlacedCount": {
+    "description": "P5-U23: overflow tray title, counted in dishes (produktregler.md:206).",
+    "placeholders": {
+      "placed": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "weeklyMenuOverflowReason": "Week {week} had no more free places for these.",
+  "@weeklyMenuOverflowReason": {
+    "description": "P5-U23: why the rest did not fit (produktregler.md:1125).",
+    "placeholders": {
+      "week": {
+        "type": "int"
+      }
+    }
+  },
+  "weeklyMenuOverflowPastDays": "Days that have already passed are never filled.",
+  "@weeklyMenuOverflowPastDays": {
+    "description": "P5-U23: part of the reason when the week is the current week (produktregler.md:201)."
+  },
+  "weeklyMenuOverflowKeepOrNextWeek": "They stay here until you place them or put them in week {week}.",
+  "@weeklyMenuOverflowKeepOrNextWeek": {
+    "description": "P5-U23: the tray is a working store, not a notice (produktregler.md:1125, Skarmar v12 etapp 11:235).",
+    "placeholders": {
+      "week": {
+        "type": "int"
+      }
+    }
+  },
+  "weeklyMenuOverflowKeep": "They stay here until you place them.",
+  "@weeklyMenuOverflowKeep": {
+    "description": "P5-U23: as weeklyMenuOverflowKeepOrNextWeek, when no further week is offered (two-week limit, produktregler.md:893)."
+  },
+  "weeklyMenuOverflowNextWeekAction": "Put in week {week}",
+  "@weeklyMenuOverflowNextWeekAction": {
+    "description": "P5-U23: the tray's next-week choice (produktregler.md:1127; Skarmar v12 etapp 11:241 draws 'Lägg i v. 32'; content-style-guide.md:3 and :58 win: 'v.' is not an approved abbreviation, so the week is written out).",
+    "placeholders": {
+      "week": {
+        "type": "int"
+      }
+    }
+  },
+  "weeklyMenuOverflowNextWeekA11y": "{count, plural, =1{Put it in week {week}} other{Put the {count} in week {week}}}",
+  "@weeklyMenuOverflowNextWeekA11y": {
+    "description": "P5-U23: accessible name of the next-week choice (Skarmar v12 etapp 11:241 'Lägg de tre i vecka 32').",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "week": {
+        "type": "int"
+      }
+    }
+  },
+  "weeklyMenuOverflowMovedToNextWeek": "{count, plural, =1{1 dish added to week {week}} other{{count} dishes added to week {week}}}",
+  "@weeklyMenuOverflowMovedToNextWeek": {
+    "description": "P5-U23: receipt after the tray's next-week choice.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "week": {
+        "type": "int"
+      }
+    }
+  },
+  "a11yWeeklyMenuPlacementOrder": "Placed as number {order}",
+  "@a11yWeeklyMenuPlacementOrder": {
+    "description": "P5-U23: screen-reader value of the placement order number in a cell (produktregler.md:1126).",
+    "placeholders": {
+      "order": {
+        "type": "int"
+      }
+    }
+  },
+  "menuPartialTitle": "We found {found} of {requested} dishes",
+  "@menuPartialTitle": {
+    "description": "P5-U25: a generation with fewer dishes than asked (produktregler.md:206; content-style-guide.md:14-15).",
+    "placeholders": {
+      "found": {
+        "type": "int"
+      },
+      "requested": {
+        "type": "int"
+      }
+    }
+  },
+  "menuPartialBody": "There were no more recipes that match.",
+  "@menuPartialBody": {
+    "description": "P5-U25: why the menu is short (produktregler.md:206, :893). Neutral on purpose: the pool is also narrowed by household allergy and diet rules and by untagged recipes, not only by the prompt."
+  },
+  "menuPartialMissing": "{found} of {requested}, {missing} missing",
+  "@menuPartialMissing": {
+    "description": "P5-U25: one short meal type (produktregler.md:893: what is missing is named).",
+    "placeholders": {
+      "found": {
+        "type": "int"
+      },
+      "requested": {
+        "type": "int"
+      },
+      "missing": {
+        "type": "int"
+      }
+    }
+  }
 }

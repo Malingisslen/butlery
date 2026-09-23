@@ -16910,4 +16910,98 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get ingredientSearchSelectionKept => 'Dina ingredienser ligger kvar.';
+
+  @override
+  String importUrlBatchPartialTitle(int success, int total) {
+    return 'Vi hämtade $success av $total länkar';
+  }
+
+  @override
+  String get importUrlBatchPartialBody =>
+      'Vi kunde inte hämta länkarna nedan. De ligger kvar här och i fältet ovan, så att du kan försöka igen.';
+
+  @override
+  String get importUrlBatchReadyHeading => 'Klara att importera';
+
+  @override
+  String get importUrlReasonUnreachable => 'Sidan gick inte att nå';
+
+  @override
+  String get importUrlReasonNoContent => 'Sidan hade ingen recepttext';
+
+  @override
+  String get importUrlReasonUnreadable => 'Sidan gick inte att läsa';
+
+  @override
+  String importUrlBatchRetryA11y(String url) {
+    return 'Försök hämta $url igen';
+  }
+
+  @override
+  String weeklyMenuOverflowPlacedCount(int placed, int total) {
+    return '$placed av $total rätter placerade';
+  }
+
+  @override
+  String weeklyMenuOverflowReason(int week) {
+    return 'Vecka $week hade inga fler lediga platser för de här.';
+  }
+
+  @override
+  String get weeklyMenuOverflowPastDays =>
+      'Dagar som redan har passerat fylls aldrig.';
+
+  @override
+  String weeklyMenuOverflowKeepOrNextWeek(int week) {
+    return 'De ligger kvar här tills du placerar dem eller lägger dem i vecka $week.';
+  }
+
+  @override
+  String get weeklyMenuOverflowKeep =>
+      'De ligger kvar här tills du placerar dem.';
+
+  @override
+  String weeklyMenuOverflowNextWeekAction(int week) {
+    return 'Lägg i vecka $week';
+  }
+
+  @override
+  String weeklyMenuOverflowNextWeekA11y(int count, int week) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Lägg de $count i vecka $week',
+      one: 'Lägg den i vecka $week',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String weeklyMenuOverflowMovedToNextWeek(int count, int week) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count rätter lades i vecka $week',
+      one: '1 rätt lades i vecka $week',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String a11yWeeklyMenuPlacementOrder(int order) {
+    return 'Placerad som nummer $order';
+  }
+
+  @override
+  String menuPartialTitle(int found, int requested) {
+    return 'Vi hittade $found av $requested rätter';
+  }
+
+  @override
+  String get menuPartialBody => 'Det fanns inte fler recept som passar.';
+
+  @override
+  String menuPartialMissing(int found, int requested, int missing) {
+    return '$found av $requested, $missing saknas';
+  }
 }
