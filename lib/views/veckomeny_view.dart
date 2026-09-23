@@ -37,6 +37,8 @@ import 'package:butlery/widgets/menu/menu_content_widgets.dart';
 import 'package:butlery/widgets/menu/menu_placement_footer.dart';
 import 'package:butlery/widgets/menu/menu_view_helpers.dart';
 import 'package:butlery/widgets/realtime/conflict_snackbar.dart';
+import 'package:butlery/widgets/realtime/restore_overwritten_version.dart';
+import 'package:butlery/models/realtime/realtime_resource.dart';
 import 'package:butlery/widgets/menu/veckomeny_dialogs.dart';
 import 'package:butlery/widgets/voice/voice_prompt_button.dart';
 import 'package:butlery/widgets/menu/veckomeny_selection_widgets.dart';
@@ -44,7 +46,7 @@ import 'package:butlery/widgets/social/family_presence_bar.dart';
 
 /// Weekly menu planning view with natural language input and social sharing.
 /// The week menu's root-bar overflow actions.
-enum _VeckomenyRootAction { load, save, clear }
+enum _VeckomenyRootAction { load, save, clear, restore }
 
 class VeckomenyView extends StatelessWidget {
   final SharedMenu? sharedMenu;
@@ -82,9 +84,19 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
 
   VeckomenyViewMode _viewMode = VeckomenyViewMode.lista;
 
+  // P5-U26b: the user's overwritten weeks, kept 30 days behind "Återställ"
+  // (produktregler.md:104). The overflow row shows only while one is kept.
+  late final RestorableVersionsWatcher _restorable;
+
   @override
   void initState() {
     super.initState();
+    _restorable = RestorableVersionsWatcher(
+      entity: ConflictEntity.weekMenu,
+      onChanged: () {
+        if (mounted) setState(() {});
+      },
+    );
     _promptController.addListener(_onPromptChanged);
     _loadViewModePreference();
 
@@ -98,6 +110,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
 
   @override
   void dispose() {
+    _restorable.dispose();
     _promptController.removeListener(_onPromptChanged);
     _promptController.dispose();
     _promptFocusNode.dispose();
@@ -470,6 +483,10 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
               );
             case _VeckomenyRootAction.clear:
               _clearMenu();
+            case _VeckomenyRootAction.restore:
+              unawaited(
+                RestoreOverwrittenVersion.start(context, _restorable.versions),
+              );
           }
         },
         itemBuilder: (menuContext) => [
@@ -489,6 +506,12 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
               _VeckomenyRootAction.clear,
               Icons.clear,
               context.l10n.menuClear,
+            ),
+          if (_restorable.versions.isNotEmpty)
+            _rootItem(
+              _VeckomenyRootAction.restore,
+              Icons.history,
+              context.l10n.overwrittenRestoreAction,
             ),
         ],
       ),

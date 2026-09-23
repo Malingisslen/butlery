@@ -3032,6 +3032,53 @@ service cloud.firestore {
     }
 
     // ========================================
+    // OVERWRITTEN VERSIONS (P5-U26b)
+    // A version of the user's own week menu or recipe that another person's
+    // save overwrote, kept 30 days behind "Återställ" (produktregler.md:104,
+    // :109; PQ-01 = A). It belongs to the user whose version it was: only
+    // they read, keep and forget it, nobody can change it, and it can never
+    // be kept longer than 30 days. `expiresAt` is exactly 30 days after
+    // `overwrittenAt`, is in the future, and is at most 30 days and one hour
+    // from the server's clock (the hour absorbs a device clock that runs
+    // ahead). The TTL policy in firestore.indexes.json deletes on it, and
+    // the account deletion cascade sweeps the collection (USER_SUBCOLLECTIONS).
+    // ========================================
+    match /users/{userId}/overwritten_versions/{versionId} {
+      allow read: if isAuthenticated()
+        && request.auth.uid == userId;
+
+      allow create: if isAuthenticated()
+        && request.auth.uid == userId
+        && request.resource.data.keys().hasOnly([
+          'ownerId', 'entity', 'resourceType', 'resourceId', 'version',
+          'overwrittenBy', 'overwrittenByName', 'overwrittenAt', 'expiresAt'
+        ])
+        && hasRequiredFields([
+          'ownerId', 'entity', 'resourceType', 'resourceId', 'version',
+          'overwrittenAt', 'expiresAt'
+        ])
+        && request.resource.data.ownerId == userId
+        && request.resource.data.entity in ['weekMenu', 'recipeOwn']
+        && request.resource.data.resourceType in ['menu', 'recipe']
+        && request.resource.data.resourceId is string
+        && request.resource.data.resourceId.size() > 0
+        && request.resource.data.version is map
+        && request.resource.data.overwrittenAt is timestamp
+        && request.resource.data.expiresAt is timestamp
+        && request.resource.data.expiresAt
+          == request.resource.data.overwrittenAt + duration.value(30, 'd')
+        && request.resource.data.expiresAt > request.time
+        && request.resource.data.expiresAt
+          <= request.time + duration.value(721, 'h');
+
+      // Immutable: a kept version is restored or forgotten, never edited.
+      allow update: if false;
+
+      allow delete: if isAuthenticated()
+        && request.auth.uid == userId;
+    }
+
+    // ========================================
     // ONBOARDING PROGRESS (BUT-675)
     // Resume-onboarding state: which step the user finished, when, and
     // whether onboarding has been completed. Owner-only read/write.

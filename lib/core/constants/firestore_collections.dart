@@ -135,6 +135,9 @@ abstract final class FirestoreCollections {
   // `firebase_acquisition_repository.dart`), which the guard resolves too.
   static const String userOnboarding = 'onboarding';
   static const String userAcquisition = 'acquisition';
+  // P5-U26b: a user's own versions that another person's save overwrote,
+  // kept 30 days behind "Återställ" (produktregler.md:109). Owner-only.
+  static const String overwrittenVersions = 'overwritten_versions';
   static const String userSharedMenus = 'user_shared_menus';
   static const String userSharedShoppingLists = 'user_shared_shopping_lists';
   static const String categoryPreferences = 'category_preferences';

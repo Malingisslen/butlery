@@ -35,6 +35,8 @@ import 'package:butlery/models/realtime/realtime_resource.dart';
 import 'package:butlery/services/realtime/realtime_types.dart';
 import 'package:butlery/services/realtime_sync_service.dart';
 import 'package:butlery/widgets/realtime/conflict_banner.dart';
+import 'package:butlery/models/realtime/overwritten_version.dart';
+import 'package:butlery/services/realtime/overwritten_version_service.dart';
 
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
@@ -54,6 +56,22 @@ class _FakeCookSnapService extends Fake implements CookSnapService {
 }
 
 class _MockRealtimeSyncService extends Mock implements RealtimeSyncService {}
+
+class _MockOverwrittenVersionService extends Mock
+    implements OverwrittenVersionService {}
+
+OverwrittenVersion _kept(String recipeId) => OverwrittenVersion(
+  id: 'kept-$recipeId',
+  ownerId: _testUserId,
+  entity: ConflictEntity.recipeOwn,
+  resourceType: RealtimeResourceType.recipe,
+  resourceId: recipeId,
+  version: const {},
+  overwrittenBy: _friendUserId,
+  overwrittenByName: 'Per',
+  overwrittenAt: DateTime.now().toUtc(),
+  expiresAt: DateTime.now().toUtc().add(OverwrittenVersion.keptFor),
+);
 
 class _FakeResource extends Fake implements RealtimeResource {
   _FakeResource([this.lastEditedByDisplayName = 'Per']);
@@ -82,10 +100,13 @@ void main() {
   late Recipe ownedRecipe;
   late Recipe friendRecipe;
   late StreamController<ConflictEvent> conflicts;
+  late _MockOverwrittenVersionService overwritten;
+  late List<OverwrittenVersion> keptVersions;
 
   setUpAll(() {
     production.ServiceLocator.initialize(DIContainer());
     registerFallbackValue(RecipeFactory.build(id: 'fallback'));
+    registerFallbackValue(ConflictEntity.recipeOwn);
     // Mocktail requires a fallback value for any() matchers on SocialRequest.
     registerFallbackValue(
       SocialRequest(
@@ -159,6 +180,22 @@ void main() {
     final realtime = _MockRealtimeSyncService();
     when(() => realtime.conflictStream).thenAnswer((_) => conflicts.stream);
     TestServiceLocator.registerMock<RealtimeSyncService>(realtime);
+
+    keptVersions = const [];
+    overwritten = _MockOverwrittenVersionService();
+    when(
+      () => overwritten.watch(
+        entity: any(named: 'entity'),
+        resourceId: any(named: 'resourceId'),
+      ),
+    ).thenAnswer((inv) {
+      final id = inv.namedArguments[#resourceId] as String?;
+      return Stream.value([
+        for (final v in keptVersions)
+          if (v.resourceId == id) v,
+      ]);
+    });
+    TestServiceLocator.registerMock<OverwrittenVersionService>(overwritten);
   });
 
   tearDown(() async {
@@ -196,6 +233,65 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 50));
   }
+
+  // P5-U26b: Återställ in the owner's overflow menu, only while a version of
+  // this recipe is kept (produktregler.md:109; PQ-01 = A).
+  group('RecipeDetailView — Återställ (P5-U26b)', () {
+    const restoreRow = ValueKey('test-recipe-detail-restore-version');
+
+    Future<void> openMore(WidgetTester tester) async {
+      // The menu's existing rows (edit, add to menu, ...) are plain Rows and
+      // overflow under the test font's wide glyphs; that is not this unit's
+      // row, which is Flexible. Only that layout report is set aside here.
+      final previous = FlutterError.onError;
+      FlutterError.onError = (details) {
+        if (details.exceptionAsString().contains('RenderFlex overflowed')) {
+          return;
+        }
+        previous?.call(details);
+      };
+      addTearDown(() => FlutterError.onError = previous);
+      await tester.tap(find.byIcon(Icons.more_horiz));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('a kept version of this recipe adds the row', (tester) async {
+      conflicts = StreamController<ConflictEvent>.broadcast();
+      addTearDown(conflicts.close);
+      keptVersions = [_kept(ownedRecipe.id)];
+      await pumpView(tester, RecipeDetailView(recipe: ownedRecipe));
+      await openMore(tester);
+
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(RecipeDetailView)),
+      );
+      expect(find.byKey(restoreRow), findsOneWidget);
+      expect(find.text(l10n.overwrittenRestoreAction), findsOneWidget);
+    });
+
+    testWidgets('nothing kept, no row', (tester) async {
+      conflicts = StreamController<ConflictEvent>.broadcast();
+      addTearDown(conflicts.close);
+      keptVersions = [_kept(friendRecipe.id)];
+      await pumpView(tester, RecipeDetailView(recipe: ownedRecipe));
+      await openMore(tester);
+
+      expect(find.byKey(restoreRow), findsNothing);
+    });
+
+    testWidgets("someone else's recipe never gets the row", (tester) async {
+      conflicts = StreamController<ConflictEvent>.broadcast();
+      addTearDown(conflicts.close);
+      keptVersions = [_kept(friendRecipe.id)];
+      await pumpView(
+        tester,
+        RecipeDetailView(recipe: friendRecipe, readOnly: true),
+      );
+      await openMore(tester);
+
+      expect(find.byKey(restoreRow), findsNothing);
+    });
+  });
 
   group('RecipeDetailView — conflict (P5-U27)', () {
     testWidgets('a conflict on this recipe shows the conflict banner', (

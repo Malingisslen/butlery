@@ -15265,6 +15265,102 @@ abstract class AppLocalizations {
   /// **'(tomt)'**
   String get conflictDiffEmptyValue;
 
+  /// P5-U26b: overflow row and confirm button that restores a version another person's save overwrote (produktregler.md:104, :109).
+  ///
+  /// In sv, this message translates to:
+  /// **'Återställ min version'**
+  String get overwrittenRestoreAction;
+
+  /// P5-U26b: title of the picker when more than one overwritten version is kept.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vilken version vill du återställa?'**
+  String get overwrittenPickTitle;
+
+  /// P5-U26b: picker row title; when = 'i dag 14:02', 'i går' or '9 juli' (content-style-guide.md:20-36).
+  ///
+  /// In sv, this message translates to:
+  /// **'Din version från {when}'**
+  String overwrittenVersionFrom(String when);
+
+  /// P5-U26b: picker row subtitle; name = who saved over it, until = the date it stops being kept (30 days).
+  ///
+  /// In sv, this message translates to:
+  /// **'{name} sparade över den · kvar till {until}'**
+  String overwrittenVersionBy(String name, String until);
+
+  /// P5-U26b: picker row subtitle when the other person's name is unknown.
+  ///
+  /// In sv, this message translates to:
+  /// **'Någon annan sparade över den · kvar till {until}'**
+  String overwrittenVersionByUnnamed(String until);
+
+  /// P5-U26b: time of an overwritten version kept today (content-style-guide.md:34-36).
+  ///
+  /// In sv, this message translates to:
+  /// **'i dag {time}'**
+  String overwrittenWhenToday(String time);
+
+  /// P5-U26b: an overwritten version kept yesterday (content-style-guide.md:34-36, two words).
+  ///
+  /// In sv, this message translates to:
+  /// **'i går'**
+  String get overwrittenWhenYesterday;
+
+  /// P5-U26b: confirmation title before restoring an overwritten week (BUT-954 class 2).
+  ///
+  /// In sv, this message translates to:
+  /// **'Återställa din vecka?'**
+  String get overwrittenConfirmTitleWeek;
+
+  /// P5-U26b: confirmation title before restoring an overwritten own recipe (BUT-954 class 2).
+  ///
+  /// In sv, this message translates to:
+  /// **'Återställa ditt recept?'**
+  String get overwrittenConfirmTitleRecipe;
+
+  /// P5-U26b: confirmation body for a week; says what is replaced and that Ångra follows.
+  ///
+  /// In sv, this message translates to:
+  /// **'Din version från {when} ersätter veckan som gäller nu. Du kan ångra direkt efteråt.'**
+  String overwrittenConfirmBodyWeek(String when);
+
+  /// P5-U26b: confirmation body for an own recipe; says what is replaced and that Ångra follows.
+  ///
+  /// In sv, this message translates to:
+  /// **'Din version från {when} ersätter receptet som det ser ut nu. Du kan ångra direkt efteråt.'**
+  String overwrittenConfirmBodyRecipe(String when);
+
+  /// P5-U26b: undo snackbar after a restore (7 s, Ångra).
+  ///
+  /// In sv, this message translates to:
+  /// **'Din version är återställd'**
+  String get overwrittenRestored;
+
+  /// P5-U26b: failure, what happened (content-style-guide.md:87-95).
+  ///
+  /// In sv, this message translates to:
+  /// **'Din version kunde inte återställas'**
+  String get overwrittenRestoreFailed;
+
+  /// P5-U26b: failure, what was kept; until = the date the version stops being kept.
+  ///
+  /// In sv, this message translates to:
+  /// **'Den finns kvar till {until}.'**
+  String overwrittenKeptUntil(String until);
+
+  /// P5-U26b: failure when undoing a restore did not reach the server.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ångra kunde inte slutföras'**
+  String get overwrittenUndoFailed;
+
+  /// P5-U26b: failure, what is in place after a failed undo.
+  ///
+  /// In sv, this message translates to:
+  /// **'Din återställda version gäller fortfarande.'**
+  String get overwrittenUndoFailedKept;
+
   /// No description provided for @privacyEmailSubject.
   ///
   /// In sv, this message translates to:

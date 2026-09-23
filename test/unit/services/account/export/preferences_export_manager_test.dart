@@ -143,12 +143,14 @@ class _FakeAccountSubsRepository extends Fake
     this.ingredients = const [],
     this.onboarding = const [],
     this.acquisition = const [],
+    this.overwrittenVersions = const [],
     this.settings = const [],
     this.failing = const <String>{},
   });
   final List<Map<String, dynamic>> ingredients;
   final List<Map<String, dynamic>> onboarding;
   final List<Map<String, dynamic>> acquisition;
+  final List<Map<String, dynamic>> overwrittenVersions;
   final List<Map<String, dynamic>> settings;
 
   /// Leg keys (`ingredients`, `onboarding`, `acquisition`) whose read throws.
@@ -190,6 +192,12 @@ class _FakeAccountSubsRepository extends Fake
     String userId, {
     int maxDocuments = 50,
   }) async => _page('acquisition', acquisition, maxDocuments);
+
+  @override
+  Future<List<Map<String, dynamic>>> exportOverwrittenVersions(
+    String userId, {
+    int maxDocuments = 200,
+  }) async => _page('overwritten_versions', overwrittenVersions, maxDocuments);
 
   // Honours the cap, like the real collection query does. That is what lets a
   // fixture push `preferences` outside the page — the BUT-2003 case.
@@ -1119,6 +1127,27 @@ void main() {
       expect(acquisition['campaign'], 'host-2026');
     });
 
+    // P5-U26b: the cascade erases users/{uid}/overwritten_versions, so the
+    // bundle carries it first (Art. 15 ⊇ Art. 17).
+    test('overwritten versions are exported in the section', () async {
+      final manager = PreferencesExportManager(
+        dataExportRepository: _FakeAccountSubsRepository(
+          overwrittenVersions: [
+            {
+              'id': 'kept-1',
+              'data': <String, dynamic>{'entity': 'weekMenu'},
+            },
+          ],
+        ),
+      );
+
+      final result = await manager.exportAccountSubcollections('user-uid');
+
+      final rows = result['overwritten_versions'] as List;
+      expect((rows.single as Map)['id'], 'kept-1');
+      expect(result.containsKey('error_code'), isFalse);
+    });
+
     // ── BUT-2003: the section may not clip in silence ──
     //
     // The three reads used to go through a plain `.limit(n).get()`, so a user
@@ -1195,6 +1224,11 @@ void main() {
         expect(
           repo.capturedMax['acquisition'],
           ExportPaginationHelper.getLimitForType('user_acquisition') + 1,
+        );
+        expect(
+          repo.capturedMax['overwritten_versions'],
+          ExportPaginationHelper.getLimitForType('user_overwritten_versions') +
+              1,
         );
       });
     });

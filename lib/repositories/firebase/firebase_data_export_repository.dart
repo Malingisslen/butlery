@@ -30,6 +30,8 @@ enum ExportResourceType {
   userIngredients('users/{uid}/ingredients'),
   userOnboarding('users/{uid}/onboarding'),
   userAcquisition('users/{uid}/acquisition'),
+  // P5-U26b: overwritten versions kept 30 days behind "Återställ".
+  userOverwrittenVersions('users/{uid}/overwritten_versions'),
   userNotifications('user_notifications'),
   // BUT-1957. A DIFFERENT collection from `userNotifications` above, one word
   // apart: that one is the TOP-LEVEL `user_notifications`, this one is the
@@ -799,6 +801,26 @@ class FirebaseDataExportRepository extends BaseFirebaseRepository<Object> {
         .collection(FirestoreCollections.userAcquisition),
     userId,
     ExportResourceType.userAcquisition,
+    limit: maxDocuments,
+  );
+
+  /// `users/{uid}/overwritten_versions` — the user's own week menus and
+  /// recipes that another person's save overwrote, kept 30 days behind
+  /// "Återställ" (P5-U26b, produktregler.md:109).
+  ///
+  /// The user's own content, so it is exported (Art. 15 ⊇ Art. 17: the
+  /// deletion cascade erases it). Each row also names who saved over it,
+  /// which the user already saw in the conflict notice.
+  Future<List<Map<String, dynamic>>> exportOverwrittenVersions(
+    String userId, {
+    int maxDocuments = 200,
+  }) => _queryList(
+    firestore
+        .collection(FirestoreCollections.users)
+        .doc(userId)
+        .collection(FirestoreCollections.overwrittenVersions),
+    userId,
+    ExportResourceType.userOverwrittenVersions,
     limit: maxDocuments,
   );
 

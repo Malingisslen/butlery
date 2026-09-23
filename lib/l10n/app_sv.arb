@@ -6503,6 +6503,108 @@
   "@conflictDiffEmptyValue": {
     "description": "BUT-1163: placeholder shown for an empty or missing field value in the diff."
   },
+  "overwrittenRestoreAction": "Återställ min version",
+  "@overwrittenRestoreAction": {
+    "description": "P5-U26b: overflow row and confirm button that restores a version another person's save overwrote (produktregler.md:104, :109)."
+  },
+  "overwrittenPickTitle": "Vilken version vill du återställa?",
+  "@overwrittenPickTitle": {
+    "description": "P5-U26b: title of the picker when more than one overwritten version is kept."
+  },
+  "overwrittenVersionFrom": "Din version från {when}",
+  "@overwrittenVersionFrom": {
+    "description": "P5-U26b: picker row title; when = 'i dag 14:02', 'i går' or '9 juli' (content-style-guide.md:20-36).",
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "overwrittenVersionBy": "{name} sparade över den · kvar till {until}",
+  "@overwrittenVersionBy": {
+    "description": "P5-U26b: picker row subtitle; name = who saved over it, until = the date it stops being kept (30 days).",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "until": {
+        "type": "String"
+      }
+    }
+  },
+  "overwrittenVersionByUnnamed": "Någon annan sparade över den · kvar till {until}",
+  "@overwrittenVersionByUnnamed": {
+    "description": "P5-U26b: picker row subtitle when the other person's name is unknown.",
+    "placeholders": {
+      "until": {
+        "type": "String"
+      }
+    }
+  },
+  "overwrittenWhenToday": "i dag {time}",
+  "@overwrittenWhenToday": {
+    "description": "P5-U26b: time of an overwritten version kept today (content-style-guide.md:34-36).",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "overwrittenWhenYesterday": "i går",
+  "@overwrittenWhenYesterday": {
+    "description": "P5-U26b: an overwritten version kept yesterday (content-style-guide.md:34-36, two words)."
+  },
+  "overwrittenConfirmTitleWeek": "Återställa din vecka?",
+  "@overwrittenConfirmTitleWeek": {
+    "description": "P5-U26b: confirmation title before restoring an overwritten week (BUT-954 class 2)."
+  },
+  "overwrittenConfirmTitleRecipe": "Återställa ditt recept?",
+  "@overwrittenConfirmTitleRecipe": {
+    "description": "P5-U26b: confirmation title before restoring an overwritten own recipe (BUT-954 class 2)."
+  },
+  "overwrittenConfirmBodyWeek": "Din version från {when} ersätter veckan som gäller nu. Du kan ångra direkt efteråt.",
+  "@overwrittenConfirmBodyWeek": {
+    "description": "P5-U26b: confirmation body for a week; says what is replaced and that Ångra follows.",
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "overwrittenConfirmBodyRecipe": "Din version från {when} ersätter receptet som det ser ut nu. Du kan ångra direkt efteråt.",
+  "@overwrittenConfirmBodyRecipe": {
+    "description": "P5-U26b: confirmation body for an own recipe; says what is replaced and that Ångra follows.",
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "overwrittenRestored": "Din version är återställd",
+  "@overwrittenRestored": {
+    "description": "P5-U26b: undo snackbar after a restore (7 s, Ångra)."
+  },
+  "overwrittenRestoreFailed": "Din version kunde inte återställas",
+  "@overwrittenRestoreFailed": {
+    "description": "P5-U26b: failure, what happened (content-style-guide.md:87-95)."
+  },
+  "overwrittenKeptUntil": "Den finns kvar till {until}.",
+  "@overwrittenKeptUntil": {
+    "description": "P5-U26b: failure, what was kept; until = the date the version stops being kept.",
+    "placeholders": {
+      "until": {
+        "type": "String"
+      }
+    }
+  },
+  "overwrittenUndoFailed": "Ångra kunde inte slutföras",
+  "@overwrittenUndoFailed": {
+    "description": "P5-U26b: failure when undoing a restore did not reach the server."
+  },
+  "overwrittenUndoFailedKept": "Din återställda version gäller fortfarande.",
+  "@overwrittenUndoFailedKept": {
+    "description": "P5-U26b: failure, what is in place after a failed undo."
+  },
   "privacyEmailSubject": "Integritetsfråga",
   "unshareRecipeTitle": "Sluta dela recept?",
   "unshareRecipeConfirm": "Receptet \"{title}\" tas bort från alla grupper det delats med.",

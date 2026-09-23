@@ -5831,6 +5831,10 @@ async function scenario_steplessSubcollectionsAreErasedNotJustReported(): Promis
     "ingredients",
     "rate_limits",
     "counters",
+    // P5-U26b: overwritten week menus and own recipes kept 30 days behind
+    // "Återställ". The TTL policy removes them after 30 days; an account
+    // deletion must erase them at once.
+    "overwritten_versions",
     // no live writer found; rows can predate their removal
     "category_memberships",
     "connection_tests",
