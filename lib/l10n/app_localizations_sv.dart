@@ -5472,7 +5472,28 @@ class AppLocalizationsSv extends AppLocalizations {
   String get importViaUrl => 'Importera via URL';
 
   @override
-  String get indicatorOfflineMode => 'Offline-läge - Ändringar sparas lokalt';
+  String get indicatorOfflineMode => 'Ingen anslutning';
+
+  @override
+  String offlineBannerPending(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count ändringar väntar',
+      one: '1 ändring väntar',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String offlineBannerWithPending(String title, String pending) {
+    return '$title · $pending';
+  }
+
+  @override
+  String offlineBannerWithPendingA11y(String title, String pending) {
+    return '$title, $pending';
+  }
 
   @override
   String get indicatorBackOnline => 'Ansluten igen';

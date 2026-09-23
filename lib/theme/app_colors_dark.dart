@@ -1,7 +1,7 @@
 // GENERERAD FIL — ändra källan, inte den här.
 // system 2.1 · tokens 1.13
 // generator tools/gen-app-theme-dark.mjs v1.0
-// källfingeravtryck sha256:1b2d26c901774ae59ef52ee07c15236401068e9b5ecaf1f229725b3ae18ef32e (5 indatafiler, generatorns källa inräknad)
+// källfingeravtryck sha256:e8587a05acee10225eb1d96fa50d5b0f96cd238ebb4fad45e8342176f3d7fc06 (5 indatafiler, generatorns källa inräknad)
 // genererad ur källdatum 2026-08-05 (tokens.date — reproducerbart, inte klockan)
 //
 // MÖRKA kanoniska färger. Samma medlemsnamn som i AppColors, men det
@@ -166,6 +166,9 @@ class AppColorsDark {
 
   /// Text pa nedtryckt saffran: papper, aldrig ink (beslut B-14, ink ger 2,97:1). Star bara pa actionPrimaryPressed. · semantic.text.onActionPrimaryPressed (dark)
   static const Color onActionPrimaryPressed = Color(0xFFF5F4ED);
+
+  /// Varningstext och varningsglyf pa papper: offlinebannerns kontur och wifi-off (Komponentark 753, morkt 571). Inte warning (border.statusWarning, aldrig text) och inte onWarningContainer (text.accent.onRaised, samma ljusa hex men annat token). · semantic.text.warning (dark)
+  static const Color textWarning = Color(0xFFDCA968);
 
   // Alias — oförändrade, pekar på medlemmar ovan. Deklarerade i
   // tools/app-theme-map.json.
