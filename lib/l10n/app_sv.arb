@@ -44,7 +44,7 @@
   "@maintenanceModeDefaultMessage": {
     "description": "Fallback body on the maintenance blocker when the server provides no message (BUT-1430)"
   },
-  "commonLoading": "Laddar...",
+  "commonLoading": "Laddar …",
   "commonWorking": "Arbetar...",
   "commonDeleting": "Tar bort...",
   "commonYou": "Du",
@@ -674,7 +674,7 @@
   "messagingTitle": "Meddelanden",
   "messagingNewConversation": "Ny konversation",
   "messagingSearchConversations": "Sök konversationer...",
-  "messagingLoadingConversations": "Laddar konversationer...",
+  "messagingLoadingConversations": "Laddar konversationer …",
   "messagingNoConversationsFound": "Inga konversationer hittades",
   "messagingTryAnotherSearch": "Försök med ett annat sökord",
   "messagingNoConversationsYet": "Inga konversationer än",
@@ -847,7 +847,7 @@
   "unitMinutesShort": "min",
   "unitHoursShort": "h",
   "dialogErrorTitle": "Ett fel uppstod",
-  "dialogLoading": "Laddar...",
+  "dialogLoading": "Laddar …",
   "dialogConfirmDeleteTitle": "Bekräfta borttagning",
   "dialogConfirmDeleteMessage": "Är du säker på att du vill ta bort {itemName} från {itemType}?",
   "@dialogConfirmDeleteMessage": {
@@ -1156,7 +1156,7 @@
   "menuLoadSaved": "Ladda sparad meny",
   "menuClear": "Rensa meny",
   "menuShared": "Veckomenyn är delad.",
-  "menuGeneratingOverlay": "Genererar din veckomeny...",
+  "menuGeneratingOverlay": "Genererar din veckomeny …",
   "menuGeneratingSubtitle": "Hittar recept som passar dina preferenser",
   "shoppingCountBadge": "{items} varor · {done} klara",
   "@shoppingCountBadge": {
@@ -2501,7 +2501,7 @@
   "authLogIn": "Logga in",
   "collaborativeListNoAccess": "Listan kanske har tagits bort eller så har du inte tillgång längre",
   "collaborativeListNotFound": "Lista hittades inte",
-  "collaborativeLoadingSharedList": "Laddar gemensam lista...",
+  "collaborativeLoadingSharedList": "Laddar gemensam lista …",
   "allergenCrustacean": "Kräftdjur",
   "allergenDairy": "Mjölk",
   "allergenEgg": "Ägg",
@@ -3582,7 +3582,7 @@
   "realtimeOffline": "Offline",
   "recipeMealType": "Måltidstyp",
   "recipeTitle": "Titel",
-  "recipeUpdating": "Uppdaterar recept...",
+  "recipeUpdating": "Uppdaterar recept …",
   "chatAddCount": "Lägg till ({count})",
   "@chatAddCount": {
     "placeholders": {
@@ -3717,7 +3717,7 @@
       }
     }
   },
-  "importImportingRecipesProgress": "Importerar recept...",
+  "importImportingRecipesProgress": "Importerar recept …",
   "importWaitForCompletion": "Vänta tills importen är klar...",
   "importNoFileOrNoRecipes": "Ingen fil vald eller filen innehåller inga recept",
   "importNoRecipesMatchedFilters": "Inga recept matchade filtren",
@@ -4032,7 +4032,7 @@
   "filterPersonalTags": "Personliga taggar",
   "filterRating": "Betyg",
   "filterShow": "Visa filter",
-  "importAnalyzingContent": "Analyserar innehåll...",
+  "importAnalyzingContent": "Analyserar innehåll …",
   "importChooseFromGallery": "Välj från galleri",
   "importChooseFromGallerySubtitle": "Välj en befintlig bild från telefonen",
   "importChooseImage": "Välj bild",
@@ -4056,7 +4056,7 @@
   "importExtraction": "Extraktion",
   "importFetchAutomatically": "Hämta recept automatiskt",
   "importFetchFromWebsite": "Hämta recept från webbsida",
-  "importFetchingFromPlatform": "Hämtar recept från {platform}...",
+  "importFetchingFromPlatform": "Hämtar recept från {platform} …",
   "@importFetchingFromPlatform": {
     "placeholders": {
       "platform": {
@@ -4165,7 +4165,7 @@
       }
     }
   },
-  "importProcessingImage": "Bearbetar bild...",
+  "importProcessingImage": "Bearbetar bild …",
   "importRecipeLinkDetected": "Receptlänk detekterad",
   "importRecipeTextCanImport": "Recepttext är detekterad — den kan importeras.",
   "importRecipeTextDetected": "Recepttext är detekterad.",
@@ -4385,6 +4385,18 @@
   "loadingProfile": "Hämtar profilen …",
   "@loadingProfile": {
     "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
+  },
+  "loadingPantry": "Hämtar skafferiet …",
+  "@loadingPantry": {
+    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). P4-U18: laddningstexten är obligatorisk."
+  },
+  "loadingSharedShoppingLists": "Hämtar delade inköpslistor …",
+  "@loadingSharedShoppingLists": {
+    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). P4-U18: laddningstexten är obligatorisk."
+  },
+  "loadingFeed": "Hämtar flödet …",
+  "@loadingFeed": {
+    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). P4-U18: laddningstexten är obligatorisk."
   },
   "menuCategoryCount": "{count} kategorier",
   "@menuCategoryCount": {
@@ -4619,7 +4631,7 @@
     }
   },
   "recipeSave": "Spara recept",
-  "recipeSaving": "Sparar recept...",
+  "recipeSaving": "Sparar recept …",
   "recipeTag": "Tagg",
   "searchFiltersActive": "{count} filter aktiva",
   "@searchFiltersActive": {
@@ -4730,7 +4742,7 @@
       }
     }
   },
-  "socialLoadingComments": "Laddar kommentarer...",
+  "socialLoadingComments": "Laddar kommentarer …",
   "socialMustBeLoggedInToComment": "Du måste vara inloggad för att kommentera",
   "socialMustBeLoggedInToLike": "Du måste vara inloggad för att gilla",
   "socialNoCommentsYet": "Inga kommentarer än",
@@ -4975,7 +4987,7 @@
     }
   },
   "socialAddFriendsToGetStarted": "Lägg till vänner för att komma igång med social funktionalitet.",
-  "socialLoadingFriends": "Laddar vänner...",
+  "socialLoadingFriends": "Laddar vänner …",
   "socialNoFriendsYet": "Inga vänner än",
   "socialSearchForNewFriends": "Sök efter nya vänner",
   "socialSearchForNewFriendsDescription": "Skriv ett namn eller användarnamn i sökfältet ovan för att hitta nya vänner.",

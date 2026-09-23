@@ -583,7 +583,7 @@ void main() {
         );
 
         // Act & Assert
-        expect(vmWithoutConversation.conversationTitle, equals('Laddar...'));
+        expect(vmWithoutConversation.conversationTitle, equals('Laddar …'));
 
         // Clean up
         vmWithoutConversation.dispose();

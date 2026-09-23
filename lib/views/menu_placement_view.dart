@@ -147,7 +147,9 @@ class _MenuPlacementViewContent extends StatelessWidget {
                       message: vm.error ?? context.l10n.errorUnexpected,
                       onAction: vm.init,
                     )
-                  : StateWidget.loading())
+                  : StateWidget.loading(
+                      message: context.l10n.loadingWeeklyMenu,
+                    ))
             : _buildBody(context, vm),
       ),
     );

@@ -75,6 +75,7 @@ class _PantryViewContent extends StatelessWidget {
       children: [
         LoadingStateBuilder<List<PantryItem>>(
           isLoading: viewModel.isLoading,
+          loadingMessage: context.l10n.loadingPantry,
           error: viewModel.error,
           data: viewModel.items,
           onErrorRetry: () {

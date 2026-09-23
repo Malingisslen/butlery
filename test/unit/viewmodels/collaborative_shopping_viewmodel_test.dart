@@ -180,7 +180,7 @@ void main() {
         );
 
         expect(missingViewModel.hasError, isTrue);
-        expect(missingViewModel.listTitle, equals('Laddar...'));
+        expect(missingViewModel.listTitle, equals('Laddar …'));
 
         missingViewModel.dispose();
       });
@@ -557,7 +557,7 @@ void main() {
         }, (_, __) {});
 
         expect(nullViewModel.hasData, isFalse);
-        expect(nullViewModel.listTitle, equals('Laddar...'));
+        expect(nullViewModel.listTitle, equals('Laddar …'));
         expect(nullViewModel.totalItems, equals(0));
         expect(nullViewModel.completionPercentage, equals(0.0));
         expect(nullViewModel.hasError, isTrue);

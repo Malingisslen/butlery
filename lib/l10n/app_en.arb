@@ -44,7 +44,7 @@
   "@maintenanceModeDefaultMessage": {
     "description": "Fallback body on the maintenance blocker when the server provides no message (BUT-1430)"
   },
-  "commonLoading": "Loading...",
+  "commonLoading": "Loading …",
   "commonWorking": "Working...",
   "commonDeleting": "Deleting...",
   "commonYou": "You",
@@ -668,7 +668,7 @@
   "messagingTitle": "Messages",
   "messagingNewConversation": "New conversation",
   "messagingSearchConversations": "Search conversations...",
-  "messagingLoadingConversations": "Loading conversations...",
+  "messagingLoadingConversations": "Loading conversations …",
   "messagingNoConversationsFound": "No conversations found",
   "messagingTryAnotherSearch": "Try a different search term",
   "messagingNoConversationsYet": "No conversations yet",
@@ -834,14 +834,14 @@
   "chatDeleteMessageConfirm": "Are you sure you want to delete the message?",
   "statusConnecting": "Connecting...",
   "statusSyncing": "Syncing...",
-  "statusSaving": "Saving…",
+  "statusSaving": "Saving …",
   "statusCreating": "Creating...",
   "statusUpdating": "Updating...",
   "accessibilityBackButton": "Back",
   "unitMinutesShort": "min",
   "unitHoursShort": "h",
   "dialogErrorTitle": "An error occurred",
-  "dialogLoading": "Loading...",
+  "dialogLoading": "Loading …",
   "dialogConfirmDeleteTitle": "Confirm deletion",
   "dialogConfirmDeleteMessage": "Are you sure you want to remove {itemName} from {itemType}?",
   "@dialogConfirmDeleteMessage": {
@@ -1150,7 +1150,7 @@
   "menuLoadSaved": "Load saved menu",
   "menuClear": "Clear menu",
   "menuShared": "Weekly menu shared.",
-  "menuGeneratingOverlay": "Generating your weekly menu...",
+  "menuGeneratingOverlay": "Generating your weekly menu …",
   "menuGeneratingSubtitle": "Finding recipes that match your preferences",
   "shoppingCountBadge": "{items} items · {done} done",
   "@shoppingCountBadge": {
@@ -2495,7 +2495,7 @@
   "authLogIn": "Log in",
   "collaborativeListNoAccess": "The list may have been deleted or you no longer have access",
   "collaborativeListNotFound": "List not found",
-  "collaborativeLoadingSharedList": "Loading shared list...",
+  "collaborativeLoadingSharedList": "Loading shared list …",
   "allergenCrustacean": "Crustacean",
   "allergenDairy": "Dairy",
   "allergenEgg": "Egg",
@@ -3576,7 +3576,7 @@
   "realtimeOffline": "Offline",
   "recipeMealType": "Meal type",
   "recipeTitle": "Title",
-  "recipeUpdating": "Updating recipe...",
+  "recipeUpdating": "Updating recipe …",
   "chatAddCount": "Add ({count})",
   "@chatAddCount": {
     "placeholders": {
@@ -3711,7 +3711,7 @@
       }
     }
   },
-  "importImportingRecipesProgress": "Importing recipes...",
+  "importImportingRecipesProgress": "Importing recipes …",
   "importWaitForCompletion": "Please wait until the import is complete...",
   "importNoFileOrNoRecipes": "No file selected or the file contains no recipes",
   "importNoRecipesMatchedFilters": "No recipes matched the filters",
@@ -4026,7 +4026,7 @@
   "filterPersonalTags": "Personal tags",
   "filterRating": "Rating",
   "filterShow": "Show filters",
-  "importAnalyzingContent": "Analyzing content...",
+  "importAnalyzingContent": "Analyzing content …",
   "importChooseFromGallery": "Choose from gallery",
   "importChooseFromGallerySubtitle": "Choose an existing image from your phone",
   "importChooseImage": "Choose image",
@@ -4050,7 +4050,7 @@
   "importExtraction": "Extraction",
   "importFetchAutomatically": "Fetch recipe automatically",
   "importFetchFromWebsite": "Fetch recipe from website",
-  "importFetchingFromPlatform": "Fetching recipe from {platform}...",
+  "importFetchingFromPlatform": "Fetching recipe from {platform} …",
   "@importFetchingFromPlatform": {
     "placeholders": {
       "platform": {
@@ -4159,7 +4159,7 @@
       }
     }
   },
-  "importProcessingImage": "Processing image...",
+  "importProcessingImage": "Processing image …",
   "importRecipeLinkDetected": "Recipe link detected",
   "importRecipeTextCanImport": "Recipe text detected — it can be imported.",
   "importRecipeTextDetected": "Recipe text detected.",
@@ -4380,6 +4380,18 @@
   "@loadingProfile": {
     "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
   },
+  "loadingPantry": "Loading the pantry …",
+  "@loadingPantry": {
+    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). P4-U18: laddningstexten är obligatorisk."
+  },
+  "loadingSharedShoppingLists": "Loading shared shopping lists …",
+  "@loadingSharedShoppingLists": {
+    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). P4-U18: laddningstexten är obligatorisk."
+  },
+  "loadingFeed": "Loading the feed …",
+  "@loadingFeed": {
+    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). P4-U18: laddningstexten är obligatorisk."
+  },
   "menuCategoryCount": "{count} categories",
   "@menuCategoryCount": {
     "placeholders": {
@@ -4598,7 +4610,7 @@
     }
   },
   "recipeSave": "Save recipe",
-  "recipeSaving": "Saving recipe...",
+  "recipeSaving": "Saving recipe …",
   "recipeTag": "Tag",
   "searchFiltersActive": "{count} filters active",
   "@searchFiltersActive": {
@@ -4709,7 +4721,7 @@
       }
     }
   },
-  "socialLoadingComments": "Loading comments...",
+  "socialLoadingComments": "Loading comments …",
   "socialMustBeLoggedInToComment": "You must be logged in to comment",
   "socialMustBeLoggedInToLike": "You must be logged in to like",
   "socialNoCommentsYet": "No comments yet",
@@ -4954,7 +4966,7 @@
     }
   },
   "socialAddFriendsToGetStarted": "Add friends to get started with social features.",
-  "socialLoadingFriends": "Loading friends...",
+  "socialLoadingFriends": "Loading friends …",
   "socialNoFriendsYet": "No friends yet",
   "socialSearchForNewFriends": "Search for new friends",
   "socialSearchForNewFriendsDescription": "Type a name or username in the search field above to find new friends.",

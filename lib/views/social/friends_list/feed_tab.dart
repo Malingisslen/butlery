@@ -39,7 +39,7 @@ class FeedTab {
       data: viewModel.filteredEvents.isEmpty && viewModel.events.isEmpty
           ? null
           : viewModel.filteredEvents,
-      loadingMessage: context.l10n.socialFeed,
+      loadingMessage: context.l10n.loadingFeed,
       emptyTitle: hasFriends
           ? context.l10n.feedEmpty
           : context.l10n.feedEmptyNoFriendsTitle,

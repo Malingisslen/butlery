@@ -46,6 +46,8 @@ class SharedShoppingListsView extends StatelessWidget {
                           onRefresh: viewModel.refreshData,
                           child: LoadingStateBuilder<List<UnifiedShoppingList>>(
                             isLoading: viewModel.isLoading,
+                            loadingMessage:
+                                context.l10n.loadingSharedShoppingLists,
                             error: viewModel.error,
                             data: viewModel.sharedLists,
                             onErrorRetry: viewModel.loadSharedLists,

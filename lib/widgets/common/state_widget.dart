@@ -48,12 +48,17 @@ class StateWidget extends StatelessWidget {
     this.padding,
   });
 
-  /// Laddning: tallrikslinje + text (produktregler.md:163 och :304, B-18).
+  /// Laddning: tallrikslinje + text (produktregler.md:163 och §6.6 :302-304,
+  /// B-18).
   ///
-  /// [message] säger vad som hämtas. Förvalet är tallrikslinjen; ärtbaljan
-  /// var förval tidigare och är ingen laddningsindikator.
+  /// [message] säger vad som hämtas, till exempel "Hämtar veckomenyn …"
+  /// (ellipsen är tecknet … med mellanslag före, content-style-guide.md:63).
+  /// Den är obligatorisk: en linje utan ord säger bara att appen är upptagen,
+  /// och regeln är "tallrikslinje med text som säger vad som hämtas".
+  /// Förvalet är tallrikslinjen; ärtbaljan var förval tidigare och är ingen
+  /// laddningsindikator.
   factory StateWidget.loading({
-    String? message,
+    required String message,
     LoadingVariant variant = LoadingVariant.spinner,
     int itemCount = 5,
   }) {

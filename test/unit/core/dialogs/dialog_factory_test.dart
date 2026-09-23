@@ -622,7 +622,7 @@ void main() {
   });
 
   group('showLoading', () {
-    /// Proves: default message is the localized `dialogLoading` ("Laddar...").
+    /// Proves: default message is the localized `dialogLoading` ("Laddar …").
     /// Catches the regression where the loading text is hardcoded.
     /// Note: cannot use `pumpAndSettle` because the CircularProgressIndicator
     /// animation never settles — use a couple of `pump` cycles instead.
@@ -639,7 +639,7 @@ void main() {
       await tester.pump(); // start the showDialog future
       await tester.pump(const Duration(milliseconds: 300)); // run dialog open
 
-      expect(find.text('Laddar...'), findsOneWidget);
+      expect(find.text('Laddar …'), findsOneWidget);
       // Plate line plus text, never a spinner (produktregler.md:163).
       expect(find.byType(PlateLine), findsOneWidget);
       expect(find.byType(CircularProgressIndicator), findsNothing);
@@ -661,7 +661,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 300));
 
       expect(find.text('Sparar recept...'), findsOneWidget);
-      expect(find.text('Laddar...'), findsNothing);
+      expect(find.text('Laddar …'), findsNothing);
     });
 
     /// Proves: the loading dialog is NOT barrier-dismissible — a user
