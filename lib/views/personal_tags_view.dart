@@ -407,10 +407,19 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
   }
 
   /// P5-U33: a bulk delete where only some tags went (produktregler.md:
-  /// 905-909; the shared surface of Skarmar v12 etapp 9 :390-393). It sits
-  /// above the tags, says how many of how many went, names each tag that is
-  /// still there with its reason, and those stay selected. "Försök igen"
-  /// asks again for the ones left; "Klart" leaves selection mode.
+  /// 905-909; the shared surface of Skarmar v12 etapp 9 :390-393). It says
+  /// how many of how many went, names the tags that went, names each tag
+  /// that is still there with its reason, and those stay selected. "Klart"
+  /// leaves selection mode.
+  ///
+  /// Interpretations (recorded; no drawing shows the tag surface):
+  /// - The box sits above the tags, not below the rows as #flergrupp draws
+  ///   it for members: a tag list can run long, and below it the outcome
+  ///   would land out of sight.
+  /// - "Försök igen" is the way on. #flergrupp's first action fixes the
+  ///   member's cause ("Ändra Saras roll"); a tag delete that was not saved
+  ///   has no cause to fix, only the attempt to repeat. It asks again for
+  ///   the tags selected now, not for the ids the outcome remembers.
   Widget? _buildPartialDelete(
     BuildContext context,
     PersonalTagViewModel viewModel,
@@ -423,6 +432,16 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
         .map(viewModel.getTagById)
         .whereType<PersonalTag>()
         .toList(growable: false);
+    final selectedNow = selection.selectedTagIds
+        .map(viewModel.getTagById)
+        .whereType<PersonalTag>()
+        .toList(growable: false);
+    final went = l.personalTagBulkDeletePartialDeleted(
+      PartialOutcome.joinNames(
+        selection.partialDeletedNames,
+        l.partialOutcomeListAnd,
+      ),
+    );
     return Padding(
       padding: const EdgeInsets.fromLTRB(
         AppDimensions.spacingL,
@@ -436,7 +455,7 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
           result.deletedIds.length,
           result.deletedIds.length + result.failedIds.length,
         ),
-        message: l.personalTagBulkDeletePartialMessage,
+        message: '$went ${l.personalTagBulkDeletePartialMessage}',
         items: [
           for (final tag in remaining)
             PartialOutcomeItem(
@@ -446,11 +465,11 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
             ),
         ],
         actions: [
-          if (remaining.isNotEmpty)
+          if (selectedNow.isNotEmpty)
             TextButton(
               key: const ValueKey('personal-tags-partial-retry'),
               onPressed: () =>
-                  PersonalTagDialogs.showBulkDeleteDialog(context, remaining),
+                  PersonalTagDialogs.showBulkDeleteDialog(context, selectedNow),
               child: Text(l.commonRetry),
             ),
           TextButton(

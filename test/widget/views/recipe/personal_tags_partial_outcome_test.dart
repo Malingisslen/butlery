@@ -135,6 +135,13 @@ void main() {
 
     expect(outcome, findsOneWidget);
     expect(find.text('1 av 3 taggar togs bort'), findsOneWidget);
+    // What went is named by the tag id's name (produktregler.md:906).
+    expect(
+      find.text(
+        'Snabbt togs bort. De som inte kunde tas bort ligger kvar valda.',
+      ),
+      findsOneWidget,
+    );
     for (final tag in [vardag, fest]) {
       final row = find.byKey(PartialOutcome.itemKey(tag.id));
       expect(row, findsOneWidget);
@@ -142,7 +149,7 @@ void main() {
         find.descendant(
           of: row,
           matching: find.text(
-            'Kunde inte tas bort — borttagningen sparades inte',
+            'Kunde inte tas bort – borttagningen sparades inte',
           ),
         ),
         findsOneWidget,
@@ -172,6 +179,42 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(vm.calls.last, unorderedEquals([vardag.id, fest.id]));
+    expect(outcome, findsNothing);
+    expect(find.textContaining('valda'), findsNothing);
+  });
+
+  testWidgets('"Försök igen" asks for the tags selected now, not the ones '
+      'the outcome remembers', (tester) async {
+    vm.deletes = {snabbt.id};
+    await pumpView(tester);
+    await selectAllThreeAndDelete(tester);
+
+    // Untick Fest; Vardag stays selected.
+    await tester.tap(find.widgetWithText(ListTile, 'Fest').first);
+    await tester.pump();
+    expect(find.text('1 valda'), findsOneWidget);
+
+    vm.deletes = {vardag.id};
+    await tester.tap(find.byKey(const ValueKey('personal-tags-partial-retry')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(FilledButton, 'Ta bort'));
+    await tester.pumpAndSettle();
+
+    expect(vm.calls.last, [vardag.id]);
+  });
+
+  testWidgets('taking the last tick off closes the outcome with the mode', (
+    tester,
+  ) async {
+    vm.deletes = {snabbt.id};
+    await pumpView(tester);
+    await selectAllThreeAndDelete(tester);
+
+    for (final name in ['Vardag', 'Fest']) {
+      await tester.tap(find.widgetWithText(ListTile, name).first);
+      await tester.pump();
+    }
+
     expect(outcome, findsNothing);
     expect(find.textContaining('valda'), findsNothing);
   });

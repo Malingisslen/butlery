@@ -9119,8 +9119,16 @@ class AppLocalizationsSv extends AppLocalizations {
       'De som inte kunde tas bort ligger kvar valda ovan.';
 
   @override
+  String groupMembersPartialRemoved(String names, String group) {
+    return '$names är inte längre med i $group.';
+  }
+
+  @override
+  String get partialOutcomeListAnd => ' och ';
+
+  @override
   String get groupMemberRemoveNotSaved =>
-      'Kunde inte tas bort — ändringen sparades inte';
+      'Kunde inte tas bort – ändringen sparades inte';
 
   @override
   String get groupMembersRemoveNone => 'Ingen av de valda kunde tas bort.';
@@ -9138,8 +9146,13 @@ class AppLocalizationsSv extends AppLocalizations {
       'De som inte kunde tas bort ligger kvar valda.';
 
   @override
+  String personalTagBulkDeletePartialDeleted(String names) {
+    return '$names togs bort.';
+  }
+
+  @override
   String get personalTagBulkDeleteNotSaved =>
-      'Kunde inte tas bort — borttagningen sparades inte';
+      'Kunde inte tas bort – borttagningen sparades inte';
 
   @override
   String get personalTagBulkDeleteNone => 'Taggarna kunde inte tas bort.';

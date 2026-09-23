@@ -13,11 +13,21 @@
 /// versions are shown and the user chooses). PQ-02 = A (2026-09-23): someone
 /// else's shared recipe gets the same choice as the owner's until the
 /// suggestion store exists (package 6), so this view does not branch on
-/// [ConflictEvent.entity]. Skarmar v12 del 3 #konflikt (:1163-1199) draws
-/// both exits: "Behåll min version" filled, "Använd Eriks version" as an
-/// outlined button. The label is name-free ("Använd deras version"), matching
-/// the column label "Deras version", because a {name}s genitive breaks on
-/// names ending in s, x or z (app_localizations.dart, BUT-1797 note).
+/// [ConflictEvent.entity].
+///
+/// What is drawn and what is built: Skarmar v12 del 3 #konflikt (:1164,
+/// :1169, :1199) draws only the state where the OTHER version won ("Eriks
+/// version gäller just nu") with three equal exits: "Behåll min version",
+/// "Använd Eriks version" and "Stäng utan att skriva över". Here that state
+/// (remoteWon) offers only "Behåll min version"; the drawn "Använd … version"
+/// and "Stäng utan att skriva över" exits are not built there and stay an
+/// open question. "Använd deras version" is offered in the state where MY
+/// version won (localWon), which is not drawn: it rests on
+/// produktregler.md:102 and PQ-02 = A (an interpretation), styled as the
+/// drawing's outlined button. The label is name-free ("Använd deras
+/// version"), matching the column label "Deras version", because a {name}s
+/// genitive breaks on names ending in s, x or z (app_localizations.dart,
+/// BUT-1797 note).
 ///
 /// It operates directly on the [ConflictEvent] payload — no ViewModel — because
 /// it's a leaf detail screen with no persistent state of its own beyond an
@@ -31,6 +41,7 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/services/realtime/realtime_types.dart';
 import 'package:butlery/services/realtime_sync_service.dart';
+import 'package:butlery/services/user_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
@@ -109,16 +120,32 @@ class _ConflictDiffViewState extends State<ConflictDiffView> {
   /// comparison and nothing is overwritten silently. The user's own version
   /// is only replaced because she chose it here; on failure hers still
   /// applies and she is told so.
+  ///
+  /// The write is hers, so the saved record names her as the editor, uid AND
+  /// display name together: recoverLocalVersion stamps her uid, and the
+  /// snapshot is given her profile name first, so it never says "Erik" next
+  /// to her uid (BUT-1705: the profile name, never the Auth handle).
+  ///
+  /// The failure snackbar's "Försök igen" can outlive this route, so a retry
+  /// after the view has closed does nothing rather than touch a disposed
+  /// state.
   Future<void> _useTheirVersion() async {
-    if (_saving) return;
+    if (_saving || !mounted) return;
     setState(() => _saving = true);
+    final myName =
+        ServiceLocator.tryGet<UserService>()?.profileDisplayName ??
+        context.l10n.displayUnknownUser;
 
     try {
       final svc = ServiceLocator.tryGet<RealtimeSyncService>();
       if (svc == null) {
         throw StateError('RealtimeSyncService is not registered');
       }
-      await svc.recoverLocalVersion(widget.event.remoteValue);
+      await svc.recoverLocalVersion(
+        widget.event.remoteValue.copyWithMetadata(
+          lastEditedByDisplayName: myName,
+        ),
+      );
       if (!mounted) return;
       Navigator.of(context).pop();
       SnackBarUtils.showSuccess(context, context.l10n.conflictDiffUsedTheirs);

@@ -9103,6 +9103,14 @@ class AppLocalizationsEn extends AppLocalizations {
       'The ones that could not be removed stay selected above.';
 
   @override
+  String groupMembersPartialRemoved(String names, String group) {
+    return 'No longer in $group: $names.';
+  }
+
+  @override
+  String get partialOutcomeListAnd => ' and ';
+
+  @override
   String get groupMemberRemoveNotSaved =>
       'Could not be removed — the change was not saved';
 
@@ -9121,6 +9129,11 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get personalTagBulkDeletePartialMessage =>
       'The ones that could not be deleted stay selected.';
+
+  @override
+  String personalTagBulkDeletePartialDeleted(String names) {
+    return 'Deleted: $names.';
+  }
 
   @override
   String get personalTagBulkDeleteNotSaved =>

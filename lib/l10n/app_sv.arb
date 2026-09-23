@@ -6543,7 +6543,23 @@
   "@groupMembersPartialMessage": {
     "description": "P5-U33: partial outcome body after bulk member removal (produktregler.md:908)."
   },
-  "groupMemberRemoveNotSaved": "Kunde inte tas bort — ändringen sparades inte",
+  "groupMembersPartialRemoved": "{names} är inte längre med i {group}.",
+  "@groupMembersPartialRemoved": {
+    "description": "P5-U33: what went in a partial bulk member removal, naming each removed member (produktregler.md:906; Skarmar v12 etapp 9 :391).",
+    "placeholders": {
+      "names": {
+        "type": "String"
+      },
+      "group": {
+        "type": "String"
+      }
+    }
+  },
+  "partialOutcomeListAnd": " och ",
+  "@partialOutcomeListAnd": {
+    "description": "P5-U33: the word before the last name when a partial outcome names several things (A, B och C). Keep the spaces."
+  },
+  "groupMemberRemoveNotSaved": "Kunde inte tas bort – ändringen sparades inte",
   "@groupMemberRemoveNotSaved": {
     "description": "P5-U33: reason on a member row in the partial outcome."
   },
@@ -6571,7 +6587,16 @@
   "@personalTagBulkDeletePartialMessage": {
     "description": "P5-U33: partial outcome body after bulk tag delete (produktregler.md:908)."
   },
-  "personalTagBulkDeleteNotSaved": "Kunde inte tas bort — borttagningen sparades inte",
+  "personalTagBulkDeletePartialDeleted": "{names} togs bort.",
+  "@personalTagBulkDeletePartialDeleted": {
+    "description": "P5-U33: what went in a partial bulk tag delete, naming each deleted tag (produktregler.md:906).",
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "personalTagBulkDeleteNotSaved": "Kunde inte tas bort – borttagningen sparades inte",
   "@personalTagBulkDeleteNotSaved": {
     "description": "P5-U33: reason on a tag row in the partial outcome."
   },

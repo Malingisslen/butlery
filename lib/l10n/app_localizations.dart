@@ -15313,10 +15313,22 @@ abstract class AppLocalizations {
   /// **'De som inte kunde tas bort ligger kvar valda ovan.'**
   String get groupMembersPartialMessage;
 
+  /// P5-U33: what went in a partial bulk member removal, naming each removed member (produktregler.md:906; Skarmar v12 etapp 9 :391).
+  ///
+  /// In sv, this message translates to:
+  /// **'{names} är inte längre med i {group}.'**
+  String groupMembersPartialRemoved(String names, String group);
+
+  /// P5-U33: the word before the last name when a partial outcome names several things (A, B och C). Keep the spaces.
+  ///
+  /// In sv, this message translates to:
+  /// **' och '**
+  String get partialOutcomeListAnd;
+
   /// P5-U33: reason on a member row in the partial outcome.
   ///
   /// In sv, this message translates to:
-  /// **'Kunde inte tas bort — ändringen sparades inte'**
+  /// **'Kunde inte tas bort – ändringen sparades inte'**
   String get groupMemberRemoveNotSaved;
 
   /// P5-U33: failure when no selected member could be removed.
@@ -15343,10 +15355,16 @@ abstract class AppLocalizations {
   /// **'De som inte kunde tas bort ligger kvar valda.'**
   String get personalTagBulkDeletePartialMessage;
 
+  /// P5-U33: what went in a partial bulk tag delete, naming each deleted tag (produktregler.md:906).
+  ///
+  /// In sv, this message translates to:
+  /// **'{names} togs bort.'**
+  String personalTagBulkDeletePartialDeleted(String names);
+
   /// P5-U33: reason on a tag row in the partial outcome.
   ///
   /// In sv, this message translates to:
-  /// **'Kunde inte tas bort — borttagningen sparades inte'**
+  /// **'Kunde inte tas bort – borttagningen sparades inte'**
   String get personalTagBulkDeleteNotSaved;
 
   /// P5-U33: failure when no selected tag could be deleted.

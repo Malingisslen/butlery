@@ -202,7 +202,14 @@ abstract final class PersonalTagBulkDialogs {
                               ),
                             );
                           } else if (result.isPartial) {
-                            selection.showPartialDelete(result);
+                            final deleted = result.deletedIds.toSet();
+                            selection.showPartialDelete(
+                              result,
+                              deletedNames: [
+                                for (final t in selectedTags)
+                                  if (deleted.contains(t.id)) t.name,
+                              ],
+                            );
                           } else {
                             if (!hostContext.mounted) return;
                             SnackBarUtils.showFailure(

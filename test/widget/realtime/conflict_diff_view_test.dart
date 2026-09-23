@@ -27,9 +27,11 @@ import 'package:mocktail/mocktail.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart' as prod;
+import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/models/realtime/realtime_resource.dart';
 import 'package:butlery/services/realtime/realtime_types.dart';
 import 'package:butlery/services/realtime_sync_service.dart';
+import 'package:butlery/services/user_service.dart';
 import 'package:butlery/views/realtime/conflict_diff_view.dart';
 
 import '../../infrastructure/helpers/widget_test_app.dart';
@@ -41,12 +43,35 @@ class _MockRealtimeSyncService extends Mock implements RealtimeSyncService {}
 /// per the Mock-vs-Fake rule a `when()` stub on a method with a real body would
 /// silently no-op.
 class _FakeResource extends Fake implements RealtimeResource {
-  _FakeResource(this._map);
+  _FakeResource(this._map, {this.lastEditedByDisplayName = 'Erik'});
   final Map<String, dynamic> _map;
 
   @override
+  final String lastEditedByDisplayName;
+
+  @override
   Map<String, dynamic> toFirestore() => _map;
+
+  /// Only the display name is read back by these tests; the service stamps
+  /// the rest (uid, editCount, time) and is mocked here.
+  @override
+  RealtimeResource copyWithMetadata({
+    Map<String, ResourcePermission>? participants,
+    List<String>? participantIds,
+    DateTime? lastEditedAt,
+    String? lastEditedBy,
+    String? lastEditedByDisplayName,
+    int? editCount,
+    bool? isActive,
+    Map<String, dynamic>? metadata,
+  }) => _FakeResource(
+    _map,
+    lastEditedByDisplayName:
+        lastEditedByDisplayName ?? this.lastEditedByDisplayName,
+  );
 }
+
+class _MockUserService extends Mock implements UserService {}
 
 ConflictEvent _event({
   required ConflictResolutionStrategy strategy,
@@ -443,6 +468,63 @@ void main() {
         tester.widget<OutlinedButton>(useTheirsKey).onPressed,
         isNotNull,
       );
+    });
+
+    testWidgets('"Använd deras version" saves me as the editor: my uid is '
+        'stamped by the service and my profile name goes with it, never '
+        'the other name', (tester) async {
+      final users = _MockUserService();
+      when(() => users.profileDisplayName).thenReturn('Malin');
+      GetIt.instance.registerSingleton<UserService>(users);
+      when(
+        () => service.recoverLocalVersion<RealtimeResource>(any()),
+      ).thenAnswer((_) async {});
+      await openView(
+        tester,
+        _event(strategy: ConflictResolutionStrategy.localWon),
+      );
+
+      await tester.tap(useTheirsKey);
+      await tester.pumpAndSettle();
+
+      final captured =
+          verify(
+                () => service.recoverLocalVersion<RealtimeResource>(
+                  captureAny(),
+                ),
+              ).captured.single
+              as RealtimeResource;
+      expect(captured.lastEditedByDisplayName, 'Malin');
+      expect(captured.toFirestore()['title'], 'Deras gryta');
+    });
+
+    testWidgets('"Försök igen" after the view has closed does nothing and '
+        'does not throw', (tester) async {
+      when(
+        () => service.recoverLocalVersion<RealtimeResource>(any()),
+      ).thenThrow(SyncError(type: SyncErrorType.firestoreError, message: 'x'));
+      await openView(
+        tester,
+        _event(strategy: ConflictResolutionStrategy.localWon),
+      );
+
+      await tester.tap(useTheirsKey);
+      await tester.pumpAndSettle();
+      expect(find.text('Försök igen'), findsOneWidget);
+
+      // Close the view; the snackbar lives on the app's messenger.
+      tester.state<NavigatorState>(find.byType(Navigator)).pop();
+      await tester.pumpAndSettle();
+      expect(find.text('open'), findsOneWidget);
+      expect(find.text('Försök igen'), findsOneWidget);
+
+      await tester.tap(find.text('Försök igen'));
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+      verify(
+        () => service.recoverLocalVersion<RealtimeResource>(any()),
+      ).called(1);
     });
 
     testWidgets('identical snapshots offer no "Använd deras"', (tester) async {

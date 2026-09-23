@@ -156,8 +156,13 @@ void main() {
     expect(outcome, findsOneWidget);
     expect(find.byType(PartialOutcome), findsOneWidget);
     expect(find.text('1 av 2 togs bort'), findsOneWidget);
+    // What went is named, then what did not (produktregler.md:906;
+    // Skarmar v12 etapp 9 :391). The name comes from the uid lookup.
     expect(
-      find.text('De som inte kunde tas bort ligger kvar valda ovan.'),
+      find.text(
+        'Johan Lind är inte längre med i Matlaget. '
+        'De som inte kunde tas bort ligger kvar valda ovan.',
+      ),
       findsOneWidget,
     );
     // The row is keyed by uid, never by position or name.
@@ -166,7 +171,7 @@ void main() {
     expect(
       find.descendant(
         of: saraRow,
-        matching: find.text('Kunde inte tas bort — ändringen sparades inte'),
+        matching: find.text('Kunde inte tas bort – ändringen sparades inte'),
       ),
       findsOneWidget,
     );
@@ -206,6 +211,28 @@ void main() {
       find.byKey(const ValueKey('group-members-select-enter')),
       findsOneWidget,
     );
+  });
+
+  testWidgets('taking the last tick off closes the outcome with the mode', (
+    tester,
+  ) async {
+    when(
+      () => categories.removeFriendFromCategory('johan', 'g1'),
+    ).thenAnswer((_) async => true);
+    when(
+      () => categories.removeFriendFromCategory('sara', 'g1'),
+    ).thenAnswer((_) async => false);
+
+    await pumpList(tester);
+    await selectBothAndRemove(tester);
+    expect(outcome, findsOneWidget);
+
+    // Sara's member row (the outcome box names her too).
+    await tester.tap(find.widgetWithText(ListTile, 'Sara Ek'));
+    await tester.pump();
+
+    expect(outcome, findsNothing);
+    expect(find.textContaining('valda'), findsNothing);
   });
 
   testWidgets('none went: a failure says so and the selection is kept', (

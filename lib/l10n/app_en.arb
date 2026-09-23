@@ -6509,6 +6509,22 @@
   "@groupMembersPartialMessage": {
     "description": "P5-U33: partial outcome body after bulk member removal (produktregler.md:908)."
   },
+  "groupMembersPartialRemoved": "No longer in {group}: {names}.",
+  "@groupMembersPartialRemoved": {
+    "description": "P5-U33: what went in a partial bulk member removal, naming each removed member (produktregler.md:906; Skarmar v12 etapp 9 :391).",
+    "placeholders": {
+      "names": {
+        "type": "String"
+      },
+      "group": {
+        "type": "String"
+      }
+    }
+  },
+  "partialOutcomeListAnd": " and ",
+  "@partialOutcomeListAnd": {
+    "description": "P5-U33: the word before the last name when a partial outcome names several things (A, B och C). Keep the spaces."
+  },
   "groupMemberRemoveNotSaved": "Could not be removed — the change was not saved",
   "@groupMemberRemoveNotSaved": {
     "description": "P5-U33: reason on a member row in the partial outcome."
@@ -6536,6 +6552,15 @@
   "personalTagBulkDeletePartialMessage": "The ones that could not be deleted stay selected.",
   "@personalTagBulkDeletePartialMessage": {
     "description": "P5-U33: partial outcome body after bulk tag delete (produktregler.md:908)."
+  },
+  "personalTagBulkDeletePartialDeleted": "Deleted: {names}.",
+  "@personalTagBulkDeletePartialDeleted": {
+    "description": "P5-U33: what went in a partial bulk tag delete, naming each deleted tag (produktregler.md:906).",
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
   },
   "personalTagBulkDeleteNotSaved": "Could not be deleted — the deletion was not saved",
   "@personalTagBulkDeleteNotSaved": {
