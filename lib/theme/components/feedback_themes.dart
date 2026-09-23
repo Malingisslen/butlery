@@ -1,9 +1,13 @@
 /// Feedback and interactive component themes.
 ///
 /// **UI Redesign:**
-/// - All interactive elements use primary color
+/// - Filled controls (switch track, checkbox, chosen chip) are ink,
+///   control.checked, in both modes; dark mode adds a paper edge where the
+///   ink fill would vanish on the dark base
+/// - Marks drawn straight on the page (radio, slider, scrollbar) use
+///   text.primary: ink in light, paper in dark
 /// - Snackbar: the ink snackbar (Komponentark v1:745-750)
-/// - Progress indicators: Primary color
+/// - Progress indicators: ink in light, saffron in dark
 
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_colors.dart';
@@ -78,18 +82,19 @@ class FeedbackThemes {
   /// :176 "Ink = på"; tokens.json:145-152 control.checked, carried by
   /// primary/onPrimary).
   ///
-  /// On, dark: a saffron track, action.primary #CE7C1E, with a #17251D knob,
-  /// text.onActionPrimary (tokens.json:81-85, :137-140), as the dark screen
-  /// frame draws it (Skarmar v12 del 4, "Recepteditor — mörkt läge",
-  /// line 104). The dark variable set of the settings screens maps the
-  /// on-track to saffron as well (Skarmar v12 etapp 6:49). The ink track
-  /// read 1.27:1 on the dark base #17251D; saffron reads 4.96:1 there and
-  /// the knob 4.96:1 on the track.
+  /// On, dark: the same ink track #24382C and paper knob, control.checked,
+  /// which tokens.json:145-152 keeps identical in dark ("Toggle: ink = på",
+  /// Grafisk manual v6:403). The ink track reads 1.27:1 on the dark base
+  /// #17251D, so dark mode edges it with 1 px paper, the way the dark panel
+  /// draws the chosen chip (Komponentark v1:523: background #24382c,
+  /// border 1px solid #F5F4ED). The paper edge reads 15.6:1 on the base and
+  /// the paper knob 11.3:1 on the track.
   ///
-  /// Interpretation: tokens.json control.checked.background keeps ink in
-  /// dark too, and the Komponentark's dark panel draws no switch; the screen
-  /// frame is the only drawn dark switch, so it wins. The knob follows that
-  /// frame (#17251D), not the etapp 6 variable set's #24382C.
+  /// Interpretation, pending the product owner: one dark screen frame draws
+  /// the on-switch saffron (Skarmar v12 del 4:104), but saffron is the
+  /// view's single hero action (Grafisk manual v6) and a settings list with
+  /// several switches would break that budget. Until that is decided the
+  /// switch follows the tokens.
   ///
   /// Disabled: surface.raised track with a 1 px surface.disabled edge and a
   /// surface.disabled knob, never opacity (Komponentark v1:174). Light
@@ -107,7 +112,7 @@ class FeedbackThemes {
           return disabled;
         }
         if (states.contains(WidgetState.selected)) {
-          return dark ? AppModeColors.onActionPrimary(b) : cs.onPrimary;
+          return cs.onPrimary;
         }
         return cs.outline;
       }),
@@ -116,7 +121,7 @@ class FeedbackThemes {
           return cs.surfaceContainerHighest;
         }
         if (states.contains(WidgetState.selected)) {
-          return dark ? AppModeColors.actionPrimary(b) : cs.primary;
+          return cs.primary;
         }
         return cs.outlineVariant;
       }),
@@ -124,10 +129,16 @@ class FeedbackThemes {
         if (states.contains(WidgetState.disabled)) {
           return disabled;
         }
+        if (dark && states.contains(WidgetState.selected)) {
+          return cs.onSurface;
+        }
         return null;
       }),
       trackOutlineWidth: WidgetStateProperty.resolveWith((states) {
         if (states.contains(WidgetState.disabled)) {
+          return 1.0;
+        }
+        if (dark && states.contains(WidgetState.selected)) {
           return 1.0;
         }
         return null;

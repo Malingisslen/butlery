@@ -176,7 +176,8 @@ class InputThemes {
   ///   bockad kontroll är alltid papper", v1:491);
   /// * resting: a 1 px paper edge at 40 %, overlay.paperWash, the screens'
   ///   dark control outline (Skarmar v12 etapp 2:37, --ram-kontroll-a);
-  /// * disabled: a 1 px surface.disabled #4A5C50 edge (v1:525).
+  /// * disabled: a 1 px surface.disabled #4A5C50 edge, no fill and a
+  ///   text.secondary #93A48D label (v1:525).
   ///
   /// Interpretation: the panel draws the resting edge at paper 35 %
   /// (v1:522), which is 2.98:1 on #17251D; the screens' 40 % clears 3:1 and
@@ -189,9 +190,15 @@ class InputThemes {
       selectedColor: cs.primary,
       checkmarkColor: dark ? cs.onSurface : null,
       side: dark ? _darkChipSide(cs) : null,
-      disabledColor: cs.outlineVariant,
+      disabledColor: dark ? Colors.transparent : cs.outlineVariant,
       labelStyle: AppTextStyles.labelMedium.copyWith(
-        color: cs.onSurface,
+        color: dark
+            ? WidgetStateColor.resolveWith(
+                (states) => states.contains(WidgetState.disabled)
+                    ? cs.onSurfaceVariant
+                    : cs.onSurface,
+              )
+            : cs.onSurface,
       ),
       secondaryLabelStyle: AppTextStyles.labelMedium.copyWith(
         color: cs.onPrimary,

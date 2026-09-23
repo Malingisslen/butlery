@@ -170,20 +170,21 @@ void main() {
         }
       });
 
-      test('switch on: opaque track, ink/paper light, saffron dark', () {
-        // Light: Komponentark v1:176 "Ink = på". Dark: Skarmar v12 del 4:104
-        // draws a saffron track with a #17251D knob (P5-DARK-THEME).
+      test('switch on: opaque ink track with a paper knob', () {
+        // tokens.json:145-152 control.checked, ink in both modes. Dark adds
+        // a 1 px paper edge (Komponentark v1:523, as the chosen chip).
         final light = m.name == 'light';
         final s = t.switchTheme;
         final track = s.trackColor!.resolve({WidgetState.selected})!;
-        expect(
-          track,
-          light ? const Color(0xFF24382C) : const Color(0xFFCE7C1E),
-        );
+        expect(track, const Color(0xFF24382C));
         expect(track.a, 1.0);
         expect(
           s.thumbColor!.resolve({WidgetState.selected}),
-          light ? const Color(0xFFF5F4ED) : const Color(0xFF17251D),
+          const Color(0xFFF5F4ED),
+        );
+        expect(
+          s.trackOutlineColor!.resolve({WidgetState.selected}),
+          light ? null : const Color(0xFFF5F4ED),
         );
       });
 

@@ -161,7 +161,7 @@ void main() {
       expect(_contrast(fill, _darkBase), greaterThanOrEqualTo(3.0));
     });
 
-    testWidgets('switch on: saffron track, base-coloured knob', (
+    testWidgets('switch on: ink track with a paper edge and knob', (
       tester,
     ) async {
       final ctx = await _pump(
@@ -172,9 +172,14 @@ void main() {
       final s = Theme.of(ctx).switchTheme;
       final track = s.trackColor!.resolve(_selected)!;
       final knob = s.thumbColor!.resolve(_selected)!;
-      expect(track, _saffron);
-      expect(knob, _darkBase);
-      expect(_contrast(track, _darkBase), greaterThanOrEqualTo(3.0));
+      final edge = s.trackOutlineColor!.resolve(_selected)!;
+      // tokens.json:145-152 control.checked: ink in dark too; the paper
+      // edge carries it on the dark base (Komponentark v1:523).
+      expect(track, _ink);
+      expect(knob, _paper);
+      expect(edge, _paper);
+      expect(s.trackOutlineWidth!.resolve(_selected), 1.0);
+      expect(_contrast(edge, _darkBase), greaterThanOrEqualTo(3.0));
       expect(_contrast(knob, track), greaterThanOrEqualTo(3.0));
     });
 
@@ -288,6 +293,20 @@ void main() {
       expect(chip.selectedColor, _ink);
       expect(_contrast(chip.checkmarkColor!, _ink), greaterThan(4.5));
       expect(_contrast(chip.labelStyle!.color!, _ink), greaterThan(4.5));
+    });
+
+    test('chip disabled: no fill, sage label (Komponentark v1:525)', () {
+      final chip = dark.chipTheme;
+      const off = {WidgetState.disabled};
+      expect(chip.disabledColor!.a, 0);
+      expect(
+        WidgetStateProperty.resolveAs<Color?>(chip.labelStyle!.color, off),
+        const Color(0xFF93A48D),
+      );
+      expect(
+        WidgetStateProperty.resolveAs<Color?>(chip.labelStyle!.color, {}),
+        _paper,
+      );
     });
 
     test('filled backgrounds stay ink with paper', () {
