@@ -144,7 +144,7 @@ void main() {
       _app(AppTheme.lightTheme, _tray(onNext: () => taps++)),
     );
 
-    expect(find.text('Lägg i v. 17'), findsOneWidget);
+    expect(find.text('Lägg i vecka 17'), findsOneWidget);
     expect(find.bySemanticsLabel('Lägg de 3 i vecka 17'), findsOneWidget);
     await tester.tap(find.byKey(OverflowTray.nextWeekKey));
     expect(taps, 1);
@@ -278,6 +278,22 @@ void main() {
       expect(find.byType(OverflowTray), findsOneWidget);
       expect(find.text('2 av 3 rätter placerade'), findsOneWidget);
       expect(find.byKey(OverflowTray.nextWeekKey), findsOneWidget);
+    });
+
+    testWidgets('nothing fitting next week gives no success receipt', (
+      tester,
+    ) async {
+      // The same stub answers for next week: the one recipe overflows
+      // there too, so nothing moves (content-style-guide.md:56: a zero is
+      // never reported as a count).
+      final vm = await placed(tester);
+      await tester.tap(find.byKey(OverflowTray.nextWeekKey));
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('lades i vecka'), findsNothing);
+      expect(vm.overflow, hasLength(1));
+      // The tray now says that week was full too and offers no third week.
+      expect(find.byKey(OverflowTray.nextWeekKey), findsNothing);
     });
   });
 }

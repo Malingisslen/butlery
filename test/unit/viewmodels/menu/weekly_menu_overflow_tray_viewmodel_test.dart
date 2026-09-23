@@ -8,6 +8,10 @@
 /// once emptied.
 library;
 
+import 'dart:async';
+
+import 'dart:convert';
+
 import 'package:clock/clock.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -18,6 +22,7 @@ import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
 import 'package:butlery/services/shopping/menu_shopping_list_generator.dart';
+import 'package:butlery/services/unified/types/service_states.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/viewmodels/menu/weekly_menu_plan_viewmodel.dart';
 
@@ -55,6 +60,14 @@ WeeklyMenuPlanEntry _entry(String id, DayOfWeek day, String recipeId) =>
       recipeId: recipeId,
       recipeTitle: 'Rätt $recipeId',
     );
+
+/// The Wednesday of [_monday]'s week: "today" for every test unless one
+/// sets its own clock, so the kept tray's next week is still ahead.
+final _wednesday = DateTime(2026, 4, 15, 12);
+
+/// A test that runs on [_wednesday].
+void wedTest(String name, Future<void> Function() body) =>
+    test(name, () => withClock(Clock.fixed(_wednesday), body));
 
 Recipe _recipe(String id, String title) =>
     RecipeFactory.build(id: id, title: title);
@@ -151,7 +164,7 @@ void main() {
   });
 
   group('P5-U23: count, reason, order', () {
-    test('the tray counts in dishes and keeps its reason', () async {
+    wedTest('the tray counts in dishes and keeps its reason', () async {
       final vm = await generated();
 
       expect(vm.overflow.map((r) => r.title), ['Ugnspannkaka', 'Ärtsoppa']);
@@ -162,7 +175,7 @@ void main() {
       expect(vm.canPlaceOverflowInNextWeek, isTrue);
     });
 
-    test('the cells get the order the placement followed', () async {
+    wedTest('the cells get the order the placement followed', () async {
       final vm = await generated();
 
       // The order of the distribution, not the order of the days.
@@ -172,7 +185,7 @@ void main() {
       expect(vm.placementOrderOf('not-placed'), isNull);
     });
 
-    test('placing a chip counts it as placed', () async {
+    wedTest('placing a chip counts it as placed', () async {
       final vm = await generated();
       when(
         () => service.addEntry(
@@ -220,7 +233,7 @@ void main() {
       );
     }
 
-    test('moves the tray into the following week and saves it', () async {
+    wedTest('moves the tray into the following week and saves it', () async {
       final vm = await generated();
       stubNextWeek();
 
@@ -253,21 +266,24 @@ void main() {
       ).called(1);
     });
 
-    test('what does not fit there stays, with no third week offered', () async {
-      final vm = await generated();
-      stubNextWeek(rest: [soppa]);
+    wedTest(
+      'what does not fit there stays, with no third week offered',
+      () async {
+        final vm = await generated();
+        stubNextWeek(rest: [soppa]);
 
-      final moved = await vm.placeOverflowInNextWeek();
+        final moved = await vm.placeOverflowInNextWeek();
 
-      expect(moved, 1);
-      expect(vm.overflow.map((r) => r.id), ['o2']);
-      expect(vm.overflowReason!.weekStart, _nextMonday);
-      // produktregler.md:893: the two-week limit is visible, not silent.
-      expect(vm.canPlaceOverflowInNextWeek, isFalse);
-      expect(await vm.placeOverflowInNextWeek(), isNull);
-    });
+        expect(moved, 1);
+        expect(vm.overflow.map((r) => r.id), ['o2']);
+        expect(vm.overflowReason!.weekStart, _nextMonday);
+        // produktregler.md:893: the two-week limit is visible, not silent.
+        expect(vm.canPlaceOverflowInNextWeek, isFalse);
+        expect(await vm.placeOverflowInNextWeek(), isNull);
+      },
+    );
 
-    test('a refused save puts the tray back', () async {
+    wedTest('a refused save puts the tray back', () async {
       final vm = await generated();
       stubNextWeek();
       when(() => service.save(any())).thenThrow(Exception('denied'));
@@ -280,7 +296,7 @@ void main() {
       expect(vm.error, isNotNull);
     });
 
-    test('an unreadable next week writes nothing', () async {
+    wedTest('an unreadable next week writes nothing', () async {
       final vm = await generated();
       when(
         () => service.readWeek(_nextMonday),
@@ -299,7 +315,7 @@ void main() {
   });
 
   group('P5-U24: the tray survives a reload on this device', () {
-    test('a new view model brings the tray back', () async {
+    wedTest('a new view model brings the tray back', () async {
       await generated();
 
       final reopened = newVm();
@@ -312,7 +328,7 @@ void main() {
       expect(reopened.canPlaceOverflowInNextWeek, isTrue);
     });
 
-    test('an emptied tray does not come back', () async {
+    wedTest('an emptied tray does not come back', () async {
       final vm = await generated();
       when(
         () => service.addEntry(
@@ -345,7 +361,7 @@ void main() {
       expect(reopened.overflow, isEmpty);
     });
 
-    test('another person on the same device does not get it', () async {
+    wedTest('another person on the same device does not get it', () async {
       await generated();
       when(() => service.overflowTrayOwnerId).thenReturn('johan');
 
@@ -356,7 +372,7 @@ void main() {
       expect(other.overflow, isEmpty);
     });
 
-    test('after 30 days untouched it is gone', () async {
+    wedTest('after 30 days untouched it is gone', () async {
       await withClock(Clock.fixed(DateTime(2026, 4, 15)), generated);
 
       final later = newVm();
@@ -368,18 +384,119 @@ void main() {
       expect(later.overflow, isEmpty);
     });
 
-    test('a recipe deleted since is dropped from the tray', () async {
-      await generated();
-      when(() => recipes.getRecipeById('o1')).thenReturn(null);
+    wedTest(
+      'a recipe list that has not loaded yet never wipes the kept tray',
+      () async {
+        await generated();
+        // Cold start or web: the recipe list answers for nothing yet.
+        final states = StreamController<RecipeServiceState>.broadcast();
+        addTearDown(states.close);
+        when(() => recipes.stateStream).thenAnswer((_) => states.stream);
+        when(() => recipes.getRecipeById(any())).thenReturn(null);
 
-      final reopened = newVm();
-      await reopened.loadWeek(_monday);
-      await pumpEventQueue();
+        final reopened = newVm();
+        await reopened.loadWeek(_monday);
+        await pumpEventQueue();
 
-      expect(reopened.overflow.map((r) => r.id), ['o2']);
+        expect(reopened.overflow, isEmpty);
+        final prefs = await SharedPreferences.getInstance();
+        final kept = WeeklyMenuOverflowTraySnapshot.fromJson(
+          jsonDecode(
+            prefs.getString(WeeklyMenuOverflowTrayStore.keyFor('malin'))!,
+          ),
+        );
+        expect(kept!.recipeIds, ['o1', 'o2']);
+
+        // The list arrives: the chips come back, and nothing was lost.
+        when(() => recipes.getRecipeById('o1')).thenReturn(pannkaka);
+        when(() => recipes.getRecipeById('o2')).thenReturn(soppa);
+        states.add(const RecipeStateLoading());
+        await pumpEventQueue();
+
+        expect(reopened.overflow.map((r) => r.id), ['o1', 'o2']);
+        expect(reopened.overflowTotal, 5);
+      },
+    );
+
+    wedTest(
+      'a chip still waiting for the list is kept when another is placed',
+      () async {
+        await generated();
+        final states = StreamController<RecipeServiceState>.broadcast();
+        addTearDown(states.close);
+        when(() => recipes.stateStream).thenAnswer((_) => states.stream);
+        when(() => recipes.getRecipeById('o2')).thenReturn(null);
+        when(
+          () => service.addEntry(
+            plan: any(named: 'plan'),
+            day: any(named: 'day'),
+            slot: any(named: 'slot'),
+            recipe: any(named: 'recipe'),
+          ),
+        ).thenReturn(_plan(_monday, placed));
+
+        final reopened = newVm();
+        await reopened.loadWeek(_monday);
+        await pumpEventQueue();
+        expect(reopened.overflow.map((r) => r.id), ['o1']);
+
+        // Placing the only visible chip empties the tray the user can see,
+        // and an emptied tray is gone (produktregler.md:171).
+        await reopened.assignFromOverflow(
+          recipe: pannkaka,
+          day: DayOfWeek.sun,
+          slot: MealSlot.middag,
+        );
+        await pumpEventQueue();
+        final prefs = await SharedPreferences.getInstance();
+        expect(
+          prefs.containsKey(WeeklyMenuOverflowTrayStore.keyFor('malin')),
+          isFalse,
+        );
+      },
+    );
+
+    test(
+      'a kept tray whose next week has passed offers no next week',
+      () async {
+        await withClock(Clock.fixed(_wednesday), generated);
+
+        // Three weeks later: the kept tray is still within its 30 days, but
+        // the week it offered (v. 17) lies in the past.
+        final later = newVm();
+        await withClock(Clock.fixed(DateTime(2026, 5, 6, 12)), () async {
+          await later.loadWeek(_monday);
+          await pumpEventQueue();
+          expect(later.overflow.map((r) => r.id), ['o1', 'o2']);
+          expect(later.canPlaceOverflowInNextWeek, isFalse);
+          clearInteractions(service);
+          expect(await later.placeOverflowInNextWeek(), isNull);
+        });
+        verifyNever(() => service.save(any()));
+        verifyNever(
+          () => service.distributeFromGeneratedMenu(
+            generated: any(named: 'generated'),
+            weekStart: any(named: 'weekStart'),
+            existing: any(named: 'existing'),
+            now: any(named: 'now'),
+            dayPins: any(named: 'dayPins'),
+          ),
+        );
+      },
+    );
+
+    test('a kept tray whose next week is this week still offers it', () async {
+      await withClock(Clock.fixed(_wednesday), generated);
+
+      final later = newVm();
+      await withClock(Clock.fixed(DateTime(2026, 4, 22, 12)), () async {
+        await later.loadWeek(_monday);
+        await pumpEventQueue();
+        expect(later.canPlaceOverflowInNextWeek, isTrue);
+      });
     });
 
-    test('a restore never overwrites a newer tray', () async {
+    wedTest('a restore never overwrites a newer tray', () async {
       await generated();
 
       // The reopened view generates again, with a different rest, before
@@ -411,7 +528,7 @@ void main() {
       expect(reopened.overflowTotal, 4);
     });
 
-    test('adopting a manual placement clears the kept tray', () async {
+    wedTest('adopting a manual placement clears the kept tray', () async {
       final vm = await generated();
 
       vm.adoptPlan(_plan(_monday, placed));

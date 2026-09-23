@@ -12467,7 +12467,19 @@
   },
   "importUrlBatchReadyHeading": "Klara att importera",
   "@importUrlBatchReadyHeading": {
-    "description": "P5-U22: heading over the links that were fetched in a partial batch (Skarmar v12 etapp 4:231)."
+    "description": "P5-U22: heading over the links that were fetched in a partial batch. Interpretation: Skarmar v12 etapp 4:231 draws 'Klara att spara' for the file batch; the URL batch says 'importera' to match its 'Importera N recept' button."
+  },
+  "importUrlReasonUnreachable": "Sidan gick inte att nå",
+  "@importUrlReasonUnreachable": {
+    "description": "P5-U22: why one link in a batch failed: network error or timeout (produktregler.md:907, I-29 names why)."
+  },
+  "importUrlReasonNoContent": "Sidan hade ingen recepttext",
+  "@importUrlReasonNoContent": {
+    "description": "P5-U22: why one link in a batch failed: the page loaded but had no text to read (produktregler.md:907)."
+  },
+  "importUrlReasonUnreadable": "Sidan gick inte att läsa",
+  "@importUrlReasonUnreadable": {
+    "description": "P5-U22: why one link in a batch failed: the page could not be parsed, or another error (produktregler.md:907)."
   },
   "importUrlBatchRetryA11y": "Försök hämta {url} igen",
   "@importUrlBatchRetryA11y": {
@@ -12516,9 +12528,9 @@
   "@weeklyMenuOverflowKeep": {
     "description": "P5-U23: as weeklyMenuOverflowKeepOrNextWeek, when no further week is offered (two-week limit, produktregler.md:893)."
   },
-  "weeklyMenuOverflowNextWeekAction": "Lägg i v. {week}",
+  "weeklyMenuOverflowNextWeekAction": "Lägg i vecka {week}",
   "@weeklyMenuOverflowNextWeekAction": {
-    "description": "P5-U23: the tray's next-week choice (produktregler.md:1127; Skarmar v12 etapp 11:241).",
+    "description": "P5-U23: the tray's next-week choice (produktregler.md:1127; Skarmar v12 etapp 11:241 draws 'Lägg i v. 32'; content-style-guide.md:3 and :58 win: 'v.' is not an approved abbreviation, so the week is written out).",
     "placeholders": {
       "week": {
         "type": "int"
@@ -12570,9 +12582,9 @@
       }
     }
   },
-  "menuPartialBody": "Det finns inte fler recept som passar det du skrev.",
+  "menuPartialBody": "Det fanns inte fler recept som passar.",
   "@menuPartialBody": {
-    "description": "P5-U25: why the menu is short."
+    "description": "P5-U25: why the menu is short (produktregler.md:206, :893). Neutral on purpose: the pool is also narrowed by household allergy and diet rules and by untagged recipes, not only by the prompt."
   },
   "menuPartialMissing": "{found} av {requested}, {missing} saknas",
   "@menuPartialMissing": {

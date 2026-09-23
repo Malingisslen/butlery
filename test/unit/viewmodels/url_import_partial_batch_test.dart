@@ -4,10 +4,13 @@
 /// Pins, on the real view model with only the network leaf stubbed:
 /// - a settled batch with successes and failures is partial, and neither a
 ///   loading batch nor an all-failed one is;
-/// - each failed row keeps a readable reason (no "Exception:" prefix);
+/// - each failed row keeps a Swedish reason from l10n, never the
+///   exception's own (English, technical) text;
 /// - rows have their own ids, and a retry by id reaches exactly that row
 ///   however the rows are ordered.
 library;
+
+import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
 
@@ -61,7 +64,10 @@ void main() {
     () async {
       vm.answers
         ..[a] = 'Recept ett'
-        ..[b] = Exception('Sidan svarade inte')
+        ..[b] = const UrlFetchFailure(
+          UrlFetchFailureReason.unreachable,
+          'Timeout: Could not load page within 15 seconds',
+        )
         ..[c] = 'Recept tre';
       vm.updateUrl('$a\n$b\n$c');
 
@@ -71,8 +77,8 @@ void main() {
       expect(vm.successfulUrlCount, 2);
       expect(vm.urlResults, hasLength(3));
       expect(vm.failedUrlResults.map((r) => r.url), [b]);
-      // I-29 names why; Dart's "Exception:" prefix is not a reason.
-      expect(vm.failedUrlResults.single.error, 'Sidan svarade inte');
+      // I-29 names why, in Swedish; the scraper's English text stays out.
+      expect(vm.failedUrlResults.single.error, 'Sidan gick inte att nå');
       // Partial is not an error.
       expect(vm.hasError, isFalse);
     },
@@ -153,12 +159,47 @@ void main() {
     expect(first.intersection(second), isEmpty);
   });
 
-  test('failureReason strips the prefix and falls back when empty', () {
+  test('failureReason is always one of three Swedish reasons', () {
+    String r(Object e) => UrlImportViewModel.failureReason(e);
     expect(
-      UrlImportViewModel.failureReason(Exception('Länken svarade inte')),
-      'Länken svarade inte',
+      r(const UrlFetchFailure(UrlFetchFailureReason.unreachable, 'x')),
+      'Sidan gick inte att nå',
     );
-    expect(UrlImportViewModel.failureReason(StateError('x')), contains('x'));
-    expect(UrlImportViewModel.failureReason(Exception('')), isNotEmpty);
+    expect(
+      r(
+        const UrlFetchFailure(
+          UrlFetchFailureReason.noContent,
+          'No text could be extracted from the page',
+        ),
+      ),
+      'Sidan hade ingen recepttext',
+    );
+    expect(
+      r(const UrlFetchFailure(UrlFetchFailureReason.unreadable, 'boom')),
+      'Sidan gick inte att läsa',
+    );
+    expect(r(TimeoutException('slow')), 'Sidan gick inte att nå');
+    // Unknown errors never leak their text.
+    expect(r(Exception('Technical error: boom')), 'Sidan gick inte att läsa');
+    expect(r(StateError('x')), 'Sidan gick inte att läsa');
+  });
+
+  test('the scraper reason maps to the user reason', () {
+    expect(
+      UrlFetchFailure.reasonFromScraper('network'),
+      UrlFetchFailureReason.unreachable,
+    );
+    expect(
+      UrlFetchFailure.reasonFromScraper('no_content'),
+      UrlFetchFailureReason.noContent,
+    );
+    expect(
+      UrlFetchFailure.reasonFromScraper('parse_failed'),
+      UrlFetchFailureReason.unreadable,
+    );
+    expect(
+      UrlFetchFailure.reasonFromScraper(null),
+      UrlFetchFailureReason.unreadable,
+    );
   });
 }

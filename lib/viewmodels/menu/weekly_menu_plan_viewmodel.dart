@@ -48,6 +48,11 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
   bool _trayTouched = false;
   bool _trayRestoreStarted = false;
 
+  /// P5-U24: listens to the recipe list while a restored tray still holds
+  /// ids the list could not answer for yet (a cold start, or web, where the
+  /// recipes arrive from Firestore after the first week read).
+  StreamSubscription<Object?>? _pendingTraySub;
+
   List<Recipe> get _overflow => _tray.recipes;
 
   /// Replaces the tray's recipes and keeps what the tray knows about them
@@ -153,8 +158,24 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
 
   /// P5-U23: whether the tray offers the following week (produktregler.md:
   /// 1127: "nästa vecka är ett val i brickan").
-  bool get canPlaceOverflowInNextWeek =>
-      _overflow.isNotEmpty && (_tray.reason?.nextWeekOffered ?? false);
+  ///
+  /// A kept tray can outlive its week (P5-U24 keeps it 30 days): once the
+  /// week it offers lies before the current week, the choice is not
+  /// offered, so a past week is never filled.
+  bool get canPlaceOverflowInNextWeek {
+    final reason = _tray.reason;
+    return _overflow.isNotEmpty &&
+        reason != null &&
+        reason.nextWeekOffered &&
+        _nextWeekNotPassed(reason, clock.now());
+  }
+
+  /// Whether [reason]'s next week is the current ISO week or later. The
+  /// current week itself is fine: distribution then starts from today.
+  static bool _nextWeekNotPassed(
+    WeeklyMenuOverflowReason reason,
+    DateTime now,
+  ) => !reason.nextWeekStart.isBefore(IsoWeekUtils.weekStartOf(now));
 
   /// The week this viewmodel is showing, whether or not its plan loaded.
   ///
@@ -725,7 +746,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
     notifyListeners();
   }
 
-  /// P5-U23: the tray's "Lägg i v. N" (produktregler.md:1127: with the tray,
+  /// P5-U23: the tray's "Lägg i vecka N" (produktregler.md:1127: with the tray,
   /// FL-11 is unnecessary; next week is a choice in the tray, not an action
   /// in a snackbar. Skarmar v12 etapp 11 breda vyer:241).
   ///
@@ -743,6 +764,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
     if (_overflow.isEmpty || reason == null || !reason.nextWeekOffered) {
       return null;
     }
+    if (!_nextWeekNotPassed(reason, now ?? clock.now())) return null;
     if (_applyInFlight) return null;
     _applyInFlight = true;
     final target = reason.nextWeekStart;
@@ -776,6 +798,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
               nextWeekOffered: false,
             ),
             total: before.total,
+            unresolvedIds: rest.isEmpty ? const [] : before.unresolvedIds,
           ),
         );
         final showsTarget = _plan?.weekStartDate == target;
@@ -806,25 +829,84 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
   /// P5-U24: brings back the tray this device kept for the signed-in user
   /// (produktregler.md:1125: the tray "överlever omladdning, ligger kvar
   /// tills den töms"). Does nothing when this session already changed the
-  /// tray, so a restore never overwrites a newer tray. Recipes deleted in
-  /// the meantime are dropped.
+  /// tray, so a restore never overwrites a newer tray.
+  ///
+  /// An id the recipe list cannot answer for right now is NOT treated as a
+  /// deleted recipe: the list may simply not have loaded yet (cold start,
+  /// web). The device copy is left exactly as it was, the chip is hidden
+  /// until the list answers, and [_resolvePendingTray] brings it back when
+  /// the recipe list changes.
   Future<void> restoreOverflowTray() async {
     final owner = _service.overflowTrayOwnerId;
     if (owner == null) return;
     final kept = await _trayStore.load(owner);
     if (kept == null || isDisposed || _trayTouched) return;
-    final recipes = <Recipe>[
-      for (final id in kept.recipeIds) ?_recipeService.getRecipeById(id),
-    ];
+    final recipes = <Recipe>[];
+    final unresolved = <String>[];
+    for (final id in kept.recipeIds) {
+      final recipe = _recipeService.getRecipeById(id);
+      if (recipe == null) {
+        unresolved.add(id);
+      } else {
+        recipes.add(recipe);
+      }
+    }
     _tray = _OverflowTray(
       recipes: List.unmodifiable(recipes),
       mealTypes: kept.mealTypes,
       reason: kept.reason,
       total: kept.total,
+      unresolvedIds: List.unmodifiable(unresolved),
     );
-    // A recipe that was deleted since leaves the device copy too.
-    if (recipes.length != kept.recipeIds.length) _persistTray();
+    if (unresolved.isNotEmpty) {
+      _pendingTraySub ??= _recipeService.stateStream.listen(
+        (_) => _resolvePendingTray(),
+      );
+    }
     notifyListeners();
+  }
+
+  /// P5-U24: moves ids the recipe list now answers for from the hidden
+  /// pending set back into the tray. The set of ids kept on the device does
+  /// not change, so nothing is written.
+  void _resolvePendingTray() {
+    if (isDisposed) return;
+    final pending = _tray.unresolvedIds;
+    if (pending.isEmpty) {
+      _stopPendingTray();
+      return;
+    }
+    final found = <Recipe>[];
+    final still = <String>[];
+    for (final id in pending) {
+      final recipe = _recipeService.getRecipeById(id);
+      if (recipe == null) {
+        still.add(id);
+      } else {
+        found.add(recipe);
+      }
+    }
+    if (found.isEmpty) return;
+    _tray = _OverflowTray(
+      recipes: List.unmodifiable([..._tray.recipes, ...found]),
+      mealTypes: _tray.mealTypes,
+      reason: _tray.reason,
+      total: _tray.total,
+      unresolvedIds: List.unmodifiable(still),
+    );
+    if (still.isEmpty) _stopPendingTray();
+    notifyListeners();
+  }
+
+  void _stopPendingTray() {
+    unawaited(_pendingTraySub?.cancel());
+    _pendingTraySub = null;
+  }
+
+  @override
+  void dispose() {
+    _stopPendingTray();
+    super.dispose();
   }
 
   /// Sets the tray and keeps it on this device (P5-U24).
@@ -838,17 +920,20 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
     final owner = _service.overflowTrayOwnerId;
     if (owner == null) return;
     final tray = _tray;
+    // Ids still waiting for the recipe list are kept with the rest; they
+    // go only when the visible tray is emptied (withRecipes drops them).
+    final ids = [for (final r in tray.recipes) r.id, ...tray.unresolvedIds];
+    if (tray.unresolvedIds.isEmpty) _stopPendingTray();
     unawaited(
       _trayStore.save(
         owner,
-        tray.recipes.isEmpty
+        ids.isEmpty
             ? null
             : WeeklyMenuOverflowTraySnapshot(
-                recipeIds: [for (final r in tray.recipes) r.id],
+                recipeIds: ids,
                 mealTypes: {
-                  for (final r in tray.recipes)
-                    if (tray.mealTypes[r.id] != null)
-                      r.id: tray.mealTypes[r.id]!,
+                  for (final id in ids)
+                    if (tray.mealTypes[id] != null) id: tray.mealTypes[id]!,
                 },
                 total: tray.total,
                 savedAt: clock.now(),
@@ -977,19 +1062,26 @@ class _OverflowTray {
     this.mealTypes = const {},
     this.reason,
     this.total = 0,
+    this.unresolvedIds = const [],
   });
 
   static const empty = _OverflowTray(recipes: []);
+
+  /// P5-U24: kept ids the recipe list could not answer for yet. Hidden from
+  /// the tray, never dropped as "deleted" (see restoreOverflowTray).
+  final List<String> unresolvedIds;
 
   final List<Recipe> recipes;
   final Map<String, String> mealTypes;
   final WeeklyMenuOverflowReason? reason;
   final int total;
 
+  /// Emptying the visible tray empties it for good: pending ids go too.
   _OverflowTray withRecipes(List<Recipe> next) => _OverflowTray(
     recipes: List.unmodifiable(next),
     mealTypes: mealTypes,
     reason: reason,
     total: total,
+    unresolvedIds: next.isEmpty ? const [] : unresolvedIds,
   );
 }

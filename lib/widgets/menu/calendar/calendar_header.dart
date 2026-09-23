@@ -196,7 +196,7 @@ class OverflowTray extends StatelessWidget {
   /// Why the rest did not fit. Null for a tray whose reason is unknown.
   final WeeklyMenuOverflowReason? reason;
 
-  /// "Lägg i v. N". Null hides it (no reason, or the two-week limit).
+  /// "Lägg i vecka N". Null hides it (no reason, or the two-week limit).
   final VoidCallback? onPlaceInNextWeek;
 
   const OverflowTray({
@@ -208,7 +208,7 @@ class OverflowTray extends StatelessWidget {
     this.onPlaceInNextWeek,
   });
 
-  /// Key of the "Lägg i v. N" action.
+  /// Key of the "Lägg i vecka N" action.
   static const Key nextWeekKey = ValueKey('overflow-tray-next-week');
 
   /// Key of the chip for the recipe with [recipeId].

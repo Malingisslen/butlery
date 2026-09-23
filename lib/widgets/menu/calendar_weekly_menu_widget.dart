@@ -266,7 +266,7 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
     );
   }
 
-  /// P5-U23: "Lägg i v. N" in the tray. The receipt names the week; a
+  /// P5-U23: "Lägg i vecka N" in the tray. The receipt names the week; a
   /// refusal is already on screen as the calendar's error state.
   Future<void> _onPlaceOverflowInNextWeek(
     BuildContext context,
@@ -274,7 +274,12 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
   ) async {
     final week = vm.overflowReason?.nextWeekStart;
     final moved = await vm.placeOverflowInNextWeek();
-    if (!context.mounted || moved == null || week == null) return;
+    // Nothing fitted there either: no receipt ("0 rätter" is never a
+    // success, content-style-guide.md:56); the tray now says that week had
+    // no free places and offers no further week.
+    if (!context.mounted || moved == null || moved == 0 || week == null) {
+      return;
+    }
     SnackBarUtils.showSuccess(
       context,
       context.l10n.weeklyMenuOverflowMovedToNextWeek(

@@ -16774,6 +16774,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get importUrlBatchReadyHeading => 'Ready to import';
 
   @override
+  String get importUrlReasonUnreachable => 'The page could not be reached';
+
+  @override
+  String get importUrlReasonNoContent => 'The page had no recipe text';
+
+  @override
+  String get importUrlReasonUnreadable => 'The page could not be read';
+
+  @override
   String importUrlBatchRetryA11y(String url) {
     return 'Try fetching $url again';
   }
@@ -16802,7 +16811,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String weeklyMenuOverflowNextWeekAction(int week) {
-    return 'Put in wk $week';
+    return 'Put in week $week';
   }
 
   @override
@@ -16838,8 +16847,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get menuPartialBody =>
-      'There are no more recipes that match what you wrote.';
+  String get menuPartialBody => 'There were no more recipes that match.';
 
   @override
   String menuPartialMissing(int found, int requested, int missing) {

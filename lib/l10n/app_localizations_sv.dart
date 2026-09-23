@@ -16814,6 +16814,15 @@ class AppLocalizationsSv extends AppLocalizations {
   String get importUrlBatchReadyHeading => 'Klara att importera';
 
   @override
+  String get importUrlReasonUnreachable => 'Sidan gick inte att nå';
+
+  @override
+  String get importUrlReasonNoContent => 'Sidan hade ingen recepttext';
+
+  @override
+  String get importUrlReasonUnreadable => 'Sidan gick inte att läsa';
+
+  @override
   String importUrlBatchRetryA11y(String url) {
     return 'Försök hämta $url igen';
   }
@@ -16843,7 +16852,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String weeklyMenuOverflowNextWeekAction(int week) {
-    return 'Lägg i v. $week';
+    return 'Lägg i vecka $week';
   }
 
   @override
@@ -16879,8 +16888,7 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String get menuPartialBody =>
-      'Det finns inte fler recept som passar det du skrev.';
+  String get menuPartialBody => 'Det fanns inte fler recept som passar.';
 
   @override
   String menuPartialMissing(int found, int requested, int missing) {

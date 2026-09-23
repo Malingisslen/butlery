@@ -27983,11 +27983,29 @@ abstract class AppLocalizations {
   /// **'Vi kunde inte hämta länkarna nedan. De ligger kvar här och i fältet ovan, så att du kan försöka igen.'**
   String get importUrlBatchPartialBody;
 
-  /// P5-U22: heading over the links that were fetched in a partial batch (Skarmar v12 etapp 4:231).
+  /// P5-U22: heading over the links that were fetched in a partial batch. Interpretation: Skarmar v12 etapp 4:231 draws 'Klara att spara' for the file batch; the URL batch says 'importera' to match its 'Importera N recept' button.
   ///
   /// In sv, this message translates to:
   /// **'Klara att importera'**
   String get importUrlBatchReadyHeading;
+
+  /// P5-U22: why one link in a batch failed: network error or timeout (produktregler.md:907, I-29 names why).
+  ///
+  /// In sv, this message translates to:
+  /// **'Sidan gick inte att nå'**
+  String get importUrlReasonUnreachable;
+
+  /// P5-U22: why one link in a batch failed: the page loaded but had no text to read (produktregler.md:907).
+  ///
+  /// In sv, this message translates to:
+  /// **'Sidan hade ingen recepttext'**
+  String get importUrlReasonNoContent;
+
+  /// P5-U22: why one link in a batch failed: the page could not be parsed, or another error (produktregler.md:907).
+  ///
+  /// In sv, this message translates to:
+  /// **'Sidan gick inte att läsa'**
+  String get importUrlReasonUnreadable;
 
   /// P5-U22: accessible name of the retry button on one failed link.
   ///
@@ -28025,10 +28043,10 @@ abstract class AppLocalizations {
   /// **'De ligger kvar här tills du placerar dem.'**
   String get weeklyMenuOverflowKeep;
 
-  /// P5-U23: the tray's next-week choice (produktregler.md:1127; Skarmar v12 etapp 11:241).
+  /// P5-U23: the tray's next-week choice (produktregler.md:1127; Skarmar v12 etapp 11:241 draws 'Lägg i v. 32'; content-style-guide.md:3 and :58 win: 'v.' is not an approved abbreviation, so the week is written out).
   ///
   /// In sv, this message translates to:
-  /// **'Lägg i v. {week}'**
+  /// **'Lägg i vecka {week}'**
   String weeklyMenuOverflowNextWeekAction(int week);
 
   /// P5-U23: accessible name of the next-week choice (Skarmar v12 etapp 11:241 'Lägg de tre i vecka 32').
@@ -28055,10 +28073,10 @@ abstract class AppLocalizations {
   /// **'Vi hittade {found} av {requested} rätter'**
   String menuPartialTitle(int found, int requested);
 
-  /// P5-U25: why the menu is short.
+  /// P5-U25: why the menu is short (produktregler.md:206, :893). Neutral on purpose: the pool is also narrowed by household allergy and diet rules and by untagged recipes, not only by the prompt.
   ///
   /// In sv, this message translates to:
-  /// **'Det finns inte fler recept som passar det du skrev.'**
+  /// **'Det fanns inte fler recept som passar.'**
   String get menuPartialBody;
 
   /// P5-U25: one short meal type (produktregler.md:893: what is missing is named).
