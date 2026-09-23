@@ -3462,7 +3462,6 @@
   "messagingCouldNotRemoveMember": "Could not remove member",
   "messagingCouldNotUpdateGroupName": "Could not update group name",
   "messagingCreateGroup": "Create group conversation",
-  "messagingCreateConversation": "Create conversation",
   "messagingEditGroupName": "Edit group name",
   "messagingEnterNewGroupName": "Enter new group name",
   "messagingFriendsCount": "Friends ({count})",
@@ -6469,217 +6468,6 @@
   "conflictDiffEmptyValue": "(empty)",
   "@conflictDiffEmptyValue": {
     "description": "BUT-1163: placeholder shown for an empty or missing field value in the diff."
-  },
-<<<<<<< HEAD
-  "conflictDiffUseTheirs": "Use their version",
-  "@conflictDiffUseTheirs": {
-    "description": "PQ-02 = A (2026-09-23): outlined button in ConflictDiffView when your version won; puts the other person's version back. Skarmar v12 del 3 #konflikt :1199 draws \"Använd Eriks version\"; name-free to avoid the {name}s genitive."
-  },
-  "conflictDiffUsedTheirs": "Their version applies now",
-  "@conflictDiffUsedTheirs": {
-    "description": "Success snackbar after \"Använd deras version\"."
-  },
-  "conflictDiffUseTheirsFailed": "Their version could not be saved.",
-  "@conflictDiffUseTheirsFailed": {
-    "description": "Failure (what happened) when \"Använd deras version\" could not be saved."
-  },
-  "conflictDiffUseTheirsKept": "Your version still applies.",
-  "@conflictDiffUseTheirsKept": {
-    "description": "Failure (what was kept) when \"Använd deras version\" could not be saved."
-  },
-  "conflictWeekKeepMine": "Keep mine",
-  "@conflictWeekKeepMine": {
-    "description": "Action on the 30 s week-menu conflict snackbar. The drawn words: Skarmar v12 etapp 11 breda vyer #vmbkonflikt :221, produktregler.md:1119."
-  },
-  "partialOutcomeDone": "Done",
-  "@partialOutcomeDone": {
-    "description": "P5-U33: closes a partial outcome and leaves multi-select (Skarmar v12 etapp 9 #flergrupp :392)."
-  },
-  "groupMembersPartialTitle": "{removed} of {total} were removed",
-  "@groupMembersPartialTitle": {
-    "description": "P5-U33: partial outcome title after bulk member removal (produktregler.md:907).",
-    "placeholders": {
-      "removed": {
-        "type": "int"
-      },
-      "total": {
-        "type": "int"
-      }
-    }
-  },
-  "groupMembersPartialMessage": "The ones that could not be removed stay selected above.",
-  "@groupMembersPartialMessage": {
-    "description": "P5-U33: partial outcome body after bulk member removal (produktregler.md:908)."
-  },
-  "groupMembersPartialRemoved": "No longer in {group}: {names}.",
-  "@groupMembersPartialRemoved": {
-    "description": "P5-U33: what went in a partial bulk member removal, naming each removed member (produktregler.md:906; Skarmar v12 etapp 9 :391).",
-    "placeholders": {
-      "names": {
-        "type": "String"
-      },
-      "group": {
-=======
-  "overwrittenRestoreAction": "Restore my version",
-  "@overwrittenRestoreAction": {
-    "description": "P5-U26b: overflow row and confirm button that restores a version another person's save overwrote (produktregler.md:104, :109)."
-  },
-  "overwrittenPickTitle": "Which version do you want to restore?",
-  "@overwrittenPickTitle": {
-    "description": "P5-U26b: title of the picker when more than one overwritten version is kept."
-  },
-  "overwrittenVersionFrom": "Your version from {when}",
-  "@overwrittenVersionFrom": {
-    "description": "P5-U26b: picker row title; when = 'i dag 14:02', 'i går' or '9 juli' (content-style-guide.md:20-36).",
-    "placeholders": {
-      "when": {
->>>>>>> p5-b3
-        "type": "String"
-      }
-    }
-  },
-<<<<<<< HEAD
-  "partialOutcomeListAnd": " and ",
-  "@partialOutcomeListAnd": {
-    "description": "P5-U33: the word before the last name when a partial outcome names several things (A, B och C). Keep the spaces."
-  },
-  "groupMemberRemoveNotSaved": "Could not be removed — the change was not saved",
-  "@groupMemberRemoveNotSaved": {
-    "description": "P5-U33: reason on a member row in the partial outcome."
-  },
-  "groupMembersRemoveNone": "None of the selected members could be removed.",
-  "@groupMembersRemoveNone": {
-    "description": "P5-U33: failure when no selected member could be removed."
-  },
-  "selectionFailedKept": "They stay selected.",
-  "@selectionFailedKept": {
-    "description": "P5-U33: what was kept after a bulk action failed for every selected row (produktregler.md:908)."
-  },
-  "personalTagBulkDeletePartialTitle": "{deleted} of {total} tags were deleted",
-  "@personalTagBulkDeletePartialTitle": {
-    "description": "P5-U33: partial outcome title after bulk tag delete (produktregler.md:907).",
-    "placeholders": {
-      "deleted": {
-        "type": "int"
-      },
-      "total": {
-        "type": "int"
-      }
-    }
-  },
-  "personalTagBulkDeletePartialMessage": "The ones that could not be deleted stay selected.",
-  "@personalTagBulkDeletePartialMessage": {
-    "description": "P5-U33: partial outcome body after bulk tag delete (produktregler.md:908)."
-  },
-  "personalTagBulkDeletePartialDeleted": "Deleted: {names}.",
-  "@personalTagBulkDeletePartialDeleted": {
-    "description": "P5-U33: what went in a partial bulk tag delete, naming each deleted tag (produktregler.md:906).",
-    "placeholders": {
-      "names": {
-=======
-  "overwrittenVersionBy": "{name} saved over it · kept until {until}",
-  "@overwrittenVersionBy": {
-    "description": "P5-U26b: picker row subtitle; name = who saved over it, until = the date it stops being kept (30 days).",
-    "placeholders": {
-      "name": {
-        "type": "String"
-      },
-      "until": {
->>>>>>> p5-b3
-        "type": "String"
-      }
-    }
-  },
-<<<<<<< HEAD
-  "personalTagBulkDeleteNotSaved": "Could not be deleted — the deletion was not saved",
-  "@personalTagBulkDeleteNotSaved": {
-    "description": "P5-U33: reason on a tag row in the partial outcome."
-  },
-  "personalTagBulkDeleteNone": "The tags could not be deleted.",
-  "@personalTagBulkDeleteNone": {
-    "description": "P5-U33: failure when no selected tag could be deleted."
-=======
-  "overwrittenVersionByUnnamed": "Someone else saved over it · kept until {until}",
-  "@overwrittenVersionByUnnamed": {
-    "description": "P5-U26b: picker row subtitle when the other person's name is unknown.",
-    "placeholders": {
-      "until": {
-        "type": "String"
-      }
-    }
-  },
-  "overwrittenWhenToday": "today {time}",
-  "@overwrittenWhenToday": {
-    "description": "P5-U26b: time of an overwritten version kept today (content-style-guide.md:34-36).",
-    "placeholders": {
-      "time": {
-        "type": "String"
-      }
-    }
-  },
-  "overwrittenWhenYesterday": "yesterday",
-  "@overwrittenWhenYesterday": {
-    "description": "P5-U26b: an overwritten version kept yesterday (content-style-guide.md:34-36, two words)."
-  },
-  "overwrittenConfirmTitleWeek": "Restore your week?",
-  "@overwrittenConfirmTitleWeek": {
-    "description": "P5-U26b: confirmation title before restoring an overwritten week (BUT-954 class 2)."
-  },
-  "overwrittenConfirmTitleRecipe": "Restore your recipe?",
-  "@overwrittenConfirmTitleRecipe": {
-    "description": "P5-U26b: confirmation title before restoring an overwritten own recipe (BUT-954 class 2)."
-  },
-  "overwrittenConfirmBodyWeek": "Your version from {when} replaces the week as it is now. You can undo right after.",
-  "@overwrittenConfirmBodyWeek": {
-    "description": "P5-U26b: confirmation body for a week; says what is replaced and that Ångra follows.",
-    "placeholders": {
-      "when": {
-        "type": "String"
-      }
-    }
-  },
-  "overwrittenConfirmBodyRecipe": "Your version from {when} replaces the recipe as it is now. You can undo right after.",
-  "@overwrittenConfirmBodyRecipe": {
-    "description": "P5-U26b: confirmation body for an own recipe; says what is replaced and that Ångra follows.",
-    "placeholders": {
-      "when": {
-        "type": "String"
-      }
-    }
-  },
-  "overwrittenRestored": "Your version is restored",
-  "@overwrittenRestored": {
-    "description": "P5-U26b: undo snackbar after a restore (7 s, Ångra)."
-  },
-  "overwrittenRestoreFailed": "Your version couldn't be restored",
-  "@overwrittenRestoreFailed": {
-    "description": "P5-U26b: failure, what happened (content-style-guide.md:87-95)."
-  },
-  "overwrittenRestoreGoneWeek": "The week no longer exists, so your version could not be restored",
-  "@overwrittenRestoreGoneWeek": {
-    "description": "P5-U26b: failure when the week the kept version belongs to no longer exists (content-style-guide.md:87-95)."
-  },
-  "overwrittenRestoreGoneRecipe": "The recipe no longer exists, so your version could not be restored",
-  "@overwrittenRestoreGoneRecipe": {
-    "description": "P5-U26b: failure when the recipe the kept version belongs to no longer exists (content-style-guide.md:87-95)."
-  },
-  "overwrittenKeptUntil": "It's kept until {until}.",
-  "@overwrittenKeptUntil": {
-    "description": "P5-U26b: failure, what was kept; until = the date the version stops being kept.",
-    "placeholders": {
-      "until": {
-        "type": "String"
-      }
-    }
-  },
-  "overwrittenUndoFailed": "Undo couldn't finish",
-  "@overwrittenUndoFailed": {
-    "description": "P5-U26b: failure when undoing a restore did not reach the server."
-  },
-  "overwrittenUndoFailedKept": "Your restored version still applies.",
-  "@overwrittenUndoFailedKept": {
-    "description": "P5-U26b: failure, what is in place after a failed undo."
->>>>>>> p5-b3
   },
   "privacyEmailSubject": "Privacy inquiry",
   "unshareRecipeTitle": "Stop sharing recipe?",
@@ -10297,13 +10085,9 @@
   "reportSubmitted": "Report sent",
   "reportSubmitFailed": "The report could not be sent",
   "reportDialogTitle": "Report content",
-  "reportDialogTitleRecipe": "Report this recipe",
   "reportSubmit": "Send report",
   "reportDialogGuidelinesNotePrefix": "We judge against",
   "reportDialogGuidelinesLink": "our guidelines",
-  "reportDialogGuidelinesNoteSuffix": "— the version you see now is the one we judge by.",
-  "reportDialogIntro": "Tell us what is wrong. A person on the team reads your report.",
-  "reportDescriptionRequiredHelper": "Required when you choose Other.",
   "settingsMyReports": "My reports",
   "myReportsTitle": "My reports",
   "myReportsEmpty": "You haven't submitted any reports yet.",
@@ -12547,130 +12331,287 @@
   "loadingOpeningPage": "Opening the page …",
   "loadingStartingApp": "Starting Butlery …",
   "minaReceptEmptyTitle": "No saved recipes yet",
-  "@minaReceptEmptyTitle": {"description": "Empty recipe library title (Skarmar v12 del 1 #tomtrecept)."},
+  "@minaReceptEmptyTitle": {
+    "description": "Empty recipe library title (Skarmar v12 del 1 #tomtrecept)."
+  },
   "minaReceptEmptyBody": "Your cookbook is set but empty. Save your first recipe: import a link, photograph a card or write it yourself.",
-  "@minaReceptEmptyBody": {"description": "Empty recipe library body (Skarmar v12 del 1 #tomtrecept)."},
+  "@minaReceptEmptyBody": {
+    "description": "Empty recipe library body (Skarmar v12 del 1 #tomtrecept)."
+  },
   "recipeSaveToMyKitchen": "Save to my kitchen",
-  "@recipeSaveToMyKitchen": {"description": "Recipe detail sticky action bar (P4-U05)."},
+  "@recipeSaveToMyKitchen": {
+    "description": "Recipe detail sticky action bar (P4-U05)."
+  },
   "recipeAddToShoppingList": "Add to shopping list",
-  "@recipeAddToShoppingList": {"description": "Recipe detail sticky action bar (P4-U05)."},
+  "@recipeAddToShoppingList": {
+    "description": "Recipe detail sticky action bar (P4-U05)."
+  },
   "loadingCookSnaps": "Loading the photos …",
-  "@loadingCookSnaps": {"description": "What is loading, for the plate line (P4-U05)."},
+  "@loadingCookSnaps": {
+    "description": "What is loading, for the plate line (P4-U05)."
+  },
   "loadingSubstitutions": "Loading substitutes …",
-  "@loadingSubstitutions": {"description": "What is loading, for the plate line (P4-U05)."},
+  "@loadingSubstitutions": {
+    "description": "What is loading, for the plate line (P4-U05)."
+  },
   "uploadingCookSnap": "Uploading the photo …",
-  "@uploadingCookSnap": {"description": "What is loading, for the plate line (P4-U05)."},
+  "@uploadingCookSnap": {
+    "description": "What is loading, for the plate line (P4-U05)."
+  },
   "sendingComment": "Sending the comment …",
-  "@sendingComment": {"description": "What is loading, for the plate line (P4-U05)."},
+  "@sendingComment": {
+    "description": "What is loading, for the plate line (P4-U05)."
+  },
   "recipeEditorClose": "Close the editor",
-  "@recipeEditorClose": {"description": "The X that closes the recipe editor modal (Skarmar v12 etapp 4 #editorutkast)."},
+  "@recipeEditorClose": {
+    "description": "The X that closes the recipe editor modal (Skarmar v12 etapp 4 #editorutkast)."
+  },
   "menuWeekBadgeEmpty": "Week {week} · nothing planned",
-  "@menuWeekBadgeEmpty": {"placeholders": {"week": {"type": "int"}}},
+  "@menuWeekBadgeEmpty": {
+    "placeholders": {
+      "week": {
+        "type": "int"
+      }
+    }
+  },
   "rootBarMoreActions": "More actions",
   "weekMenuPlanningSlow": "This is taking longer than usual",
   "importBatchSaveFailed": "The recipes could not be saved. Try again.",
   "weekMenuPlanningTitle": "Planning the week …",
-  "@weekMenuPlanningTitle": {"description": "What the week menu says while it is planned: the generate button's busy name and the plate line's text (P4-U09, Skarmar v12 del 1 #veckogenererarpanel)."},
+  "@weekMenuPlanningTitle": {
+    "description": "What the week menu says while it is planned: the generate button's busy name and the plate line's text (P4-U09, Skarmar v12 del 1 #veckogenererarpanel)."
+  },
   "menuLoadingSaved": "Fetching saved menus …",
-  "@menuLoadingSaved": {"description": "What the plate line says while saved menus load (P4-U09)."},
+  "@menuLoadingSaved": {
+    "description": "What the plate line says while saved menus load (P4-U09)."
+  },
   "shoppingRootTitle": "Shopping",
-  "@shoppingRootTitle": {"description": "The shopping root bar's title (P4-U10; Skarmar v12 del 2 #inkop; Komponentark v1:62)."},
+  "@shoppingRootTitle": {
+    "description": "The shopping root bar's title (P4-U10; Skarmar v12 del 2 #inkop; Komponentark v1:62)."
+  },
   "shoppingRootLine": "{listName} · {done} of {total} done",
-  "@shoppingRootLine": {"description": "The line under the shopping root bar's title (P4-U10; Komponentark v1:64).", "placeholders": {"listName": {"type": "String"}, "done": {"type": "int"}, "total": {"type": "int"}}},
+  "@shoppingRootLine": {
+    "description": "The line under the shopping root bar's title (P4-U10; Komponentark v1:64).",
+    "placeholders": {
+      "listName": {
+        "type": "String"
+      },
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
   "shoppingRootLineEmpty": "{listName} · no items",
-  "@shoppingRootLineEmpty": {"description": "The line under the root bar's title when the list is empty (Skarmar v12 del 2 #tominkop).", "placeholders": {"listName": {"type": "String"}}},
+  "@shoppingRootLineEmpty": {
+    "description": "The line under the root bar's title when the list is empty (Skarmar v12 del 2 #tominkop).",
+    "placeholders": {
+      "listName": {
+        "type": "String"
+      }
+    }
+  },
   "shoppingEmptyTitle": "Nothing to buy",
-  "@shoppingEmptyTitle": {"description": "An empty shopping list's title (Skarmar v12 del 2 #tominkop)."},
+  "@shoppingEmptyTitle": {
+    "description": "An empty shopping list's title (Skarmar v12 del 2 #tominkop)."
+  },
   "shoppingEmptyBody": "Send the week's dishes here and the ingredients are gathered by category. What you already have in the pantry is left out.",
-  "@shoppingEmptyBody": {"description": "An empty shopping list's body (Skarmar v12 del 2 #tominkop)."},
+  "@shoppingEmptyBody": {
+    "description": "An empty shopping list's body (Skarmar v12 del 2 #tominkop)."
+  },
   "shoppingFromWeekMenu": "From the week menu",
-  "@shoppingFromWeekMenu": {"description": "The empty shopping list's saffron action (Skarmar v12 del 2 #tominkop)."},
+  "@shoppingFromWeekMenu": {
+    "description": "The empty shopping list's saffron action (Skarmar v12 del 2 #tominkop)."
+  },
   "shoppingLoadingTemplates": "Fetching the templates …",
-  "@shoppingLoadingTemplates": {"description": "What the plate line says while shopping templates load (P4-U10)."},
+  "@shoppingLoadingTemplates": {
+    "description": "What the plate line says while shopping templates load (P4-U10)."
+  },
   "importFetchingRecipe": "Fetching the recipe …",
-  "@importFetchingRecipe": {"description": "What an import says while it fetches and parses (P4-U08; Skarmar v12 etapp 4 #imp2hamtar)."},
+  "@importFetchingRecipe": {
+    "description": "What an import says while it fetches and parses (P4-U08; Skarmar v12 etapp 4 #imp2hamtar)."
+  },
   "importReadingFile": "Reading the file …",
-  "@importReadingFile": {"description": "What the file import says while it reads the file (P4-U08)."},
+  "@importReadingFile": {
+    "description": "What the file import says while it reads the file (P4-U08)."
+  },
   "loadingLicenses": "Loading the licences …",
-  "@loadingLicenses": {"description": "What is loading, for the plate line (P4-U15)."},
+  "@loadingLicenses": {
+    "description": "What is loading, for the plate line (P4-U15)."
+  },
   "consentSaveMyChoices": "Save my choices",
-  "@consentSaveMyChoices": {"description": "The consent view's saffron save (Skarmar v12 etapp 6 'Samtycke — sju ändamål')."},
+  "@consentSaveMyChoices": {
+    "description": "The consent view's saffron save (Skarmar v12 etapp 6 'Samtycke — sju ändamål')."
+  },
   "loadingBlockedUsers": "Loading blocked users …",
-  "@loadingBlockedUsers": {"description": "What is loading, for the plate line (P4-U15)."},
+  "@loadingBlockedUsers": {
+    "description": "What is loading, for the plate line (P4-U15)."
+  },
   "accountDeletingProgress": "Deleting the account …",
-  "@accountDeletingProgress": {"description": "Shown under the plate line while the account is deleted (Skarmar v12 etapp 5-7 'Konto — raderingen pågår')."},
+  "@accountDeletingProgress": {
+    "description": "Shown under the plate line while the account is deleted (Skarmar v12 etapp 5-7 'Konto — raderingen pågår')."
+  },
   "loadingParseEvents": "Loading the parse events …",
-  "@loadingParseEvents": {"description": "What is loading, for the plate line (P4-U17)."},
+  "@loadingParseEvents": {
+    "description": "What is loading, for the plate line (P4-U17)."
+  },
   "loadingMoreActivity": "Loading more activity …",
-  "@loadingMoreActivity": {"description": "The next page of the friends feed, under the plate line (P4-U12)."},
+  "@loadingMoreActivity": {
+    "description": "The next page of the friends feed, under the plate line (P4-U12)."
+  },
   "menuPreviewTitle": "Shared menu",
-  "@menuPreviewTitle": {"description": "Top bar title of the shared menu preview (Skarmar v12 del 3 #menyforhands)."},
+  "@menuPreviewTitle": {
+    "description": "Top bar title of the shared menu preview (Skarmar v12 del 3 #menyforhands)."
+  },
   "emailVerificationResendFailed": "The verification email could not be sent.",
-  "@emailVerificationResendFailed": {"description": "P5-T1: Part 1 of the error (content-style-guide.md:90) when the verification email could not be resent (auth-otp ERROR)."},
+  "@emailVerificationResendFailed": {
+    "description": "P5-T1: Part 1 of the error (content-style-guide.md:90) when the verification email could not be resent (auth-otp ERROR)."
+  },
   "emailVerificationResendFailedBecause": "The verification email could not be sent. {cause}",
-  "@emailVerificationResendFailedBecause": {"description": "P5-T1: Part 1 with the cause, a mapped auth message such as the network or too-many-attempts text.", "placeholders": {"cause": {"type": "String"}}},
+  "@emailVerificationResendFailedBecause": {
+    "description": "P5-T1: Part 1 with the cause, a mapped auth message such as the network or too-many-attempts text.",
+    "placeholders": {
+      "cause": {
+        "type": "String"
+      }
+    }
+  },
   "emailVerificationAddressUnchanged": "Your email address is unchanged.",
-  "@emailVerificationAddressUnchanged": {"description": "P5-T1: Part 2 (content-style-guide.md:92): what was kept when a resend failed. Part 3 is the Skicka igen button under it."},
+  "@emailVerificationAddressUnchanged": {
+    "description": "P5-T1: Part 2 (content-style-guide.md:92): what was kept when a resend failed. Part 3 is the Skicka igen button under it."
+  },
   "chatPollCouldNotBeCreated": "The poll could not be created.",
-  "@chatPollCouldNotBeCreated": {"description": "P5-T1: Failure snackbar after creating a poll in a chat failed; the action is Försök igen."},
+  "@chatPollCouldNotBeCreated": {
+    "description": "P5-T1: Failure snackbar after creating a poll in a chat failed; the action is Försök igen."
+  },
   "chatEditCouldNotBeSaved": "Your edit could not be saved.",
-  "@chatEditCouldNotBeSaved": {"description": "P5-T1: Failure snackbar when editing a chat message failed; the action Försök igen saves the same edit again."},
+  "@chatEditCouldNotBeSaved": {
+    "description": "P5-T1: Failure snackbar when editing a chat message failed; the action Försök igen saves the same edit again."
+  },
   "chatEditOriginalKept": "The message is unchanged.",
-  "@chatEditOriginalKept": {"description": "P5-T1: Part 2: what was kept when a chat message edit failed."},
+  "@chatEditOriginalKept": {
+    "description": "P5-T1: Part 2: what was kept when a chat message edit failed."
+  },
   "chatCouldNotSendReply": "The reply could not be sent.",
-  "@chatCouldNotSendReply": {"description": "P5-T1: A reply in a chat could not be sent."},
+  "@chatCouldNotSendReply": {
+    "description": "P5-T1: A reply in a chat could not be sent."
+  },
   "errorPreservedText": "Your text is still in the field.",
-  "@errorPreservedText": {"description": "P5-T1: Part 2 of the error structure: typed text is still in the field (a failed chat send)."},
+  "@errorPreservedText": {
+    "description": "P5-T1: Part 2 of the error structure: typed text is still in the field (a failed chat send)."
+  },
   "errorPreservedForm": "What you filled in is still here.",
-  "@errorPreservedForm": {"description": "P5-T1: Part 2 of the error structure: a form or sheet that stays open with its fields intact."},
+  "@errorPreservedForm": {
+    "description": "P5-T1: Part 2 of the error structure: a form or sheet that stays open with its fields intact."
+  },
   "dialogActionFailed": "The action could not be completed.",
-  "@dialogActionFailed": {"description": "P5-T1: Part 1 in a dialog when the failure has no known cause; a known cause (network, permission) is shown instead."},
+  "@dialogActionFailed": {
+    "description": "P5-T1: Part 1 in a dialog when the failure has no known cause; a known cause (network, permission) is shown instead."
+  },
   "minaReceptRefreshFailed": "Your recipes could not be refreshed.",
-  "@minaReceptRefreshFailed": {"description": "P5-T1: Section error on the start view (produktregler.md:297-298): the refresh failed but recipes already fetched are still shown."},
+  "@minaReceptRefreshFailed": {
+    "description": "P5-T1: Section error on the start view (produktregler.md:297-298): the refresh failed but recipes already fetched are still shown."
+  },
   "minaReceptRefreshPreserved": "Your saved recipes are shown below.",
-  "@minaReceptRefreshPreserved": {"description": "P5-T1: Part 2: what was kept when the recipe refresh failed (produktregler.md:298)."},
+  "@minaReceptRefreshPreserved": {
+    "description": "P5-T1: Part 2: what was kept when the recipe refresh failed (produktregler.md:298)."
+  },
   "shoppingLeaveListStillMember": "You are still a member of the list.",
-  "@shoppingLeaveListStillMember": {"description": "P5-T1: Part 2: what was kept when leaving a shared list failed."},
+  "@shoppingLeaveListStillMember": {
+    "description": "P5-T1: Part 2: what was kept when leaving a shared list failed."
+  },
   "cookingModeRecipeUnchanged": "The recipe is unchanged.",
-  "@cookingModeRecipeUnchanged": {"description": "P5-T1: Part 2: what was kept when an ingredient swap in cooking mode could not be saved."},
+  "@cookingModeRecipeUnchanged": {
+    "description": "P5-T1: Part 2: what was kept when an ingredient swap in cooking mode could not be saved."
+  },
   "accountSecurityPasswordChangeFailed": "The password could not be changed.",
-  "@accountSecurityPasswordChangeFailed": {"description": "P5-T1: Password change failed without a known cause."},
+  "@accountSecurityPasswordChangeFailed": {
+    "description": "P5-T1: Password change failed without a known cause."
+  },
   "accountSecurityPasswordChangeFailedBecause": "The password could not be changed. {cause}",
-  "@accountSecurityPasswordChangeFailedBecause": {"description": "P5-T1: Password change failed; cause is a mapped auth message.", "placeholders": {"cause": {"type": "String"}}},
+  "@accountSecurityPasswordChangeFailedBecause": {
+    "description": "P5-T1: Password change failed; cause is a mapped auth message.",
+    "placeholders": {
+      "cause": {
+        "type": "String"
+      }
+    }
+  },
   "accountSecurityEmailChangeFailed": "The email address could not be changed.",
-  "@accountSecurityEmailChangeFailed": {"description": "P5-T1: Email change failed without a known cause."},
+  "@accountSecurityEmailChangeFailed": {
+    "description": "P5-T1: Email change failed without a known cause."
+  },
   "accountSecurityEmailChangeFailedBecause": "The email address could not be changed. {cause}",
-  "@accountSecurityEmailChangeFailedBecause": {"description": "P5-T1: Email change failed; cause is a mapped auth message.", "placeholders": {"cause": {"type": "String"}}},
+  "@accountSecurityEmailChangeFailedBecause": {
+    "description": "P5-T1: Email change failed; cause is a mapped auth message.",
+    "placeholders": {
+      "cause": {
+        "type": "String"
+      }
+    }
+  },
   "recipeSaveFailed": "The recipe could not be saved.",
-  "@recipeSaveFailed": {"description": "P5-T1: Failure snackbar in the recipe editor; the action Försök igen saves again."},
+  "@recipeSaveFailed": {
+    "description": "P5-T1: Failure snackbar in the recipe editor; the action Försök igen saves again."
+  },
   "recipeCopySaveFailed": "The copy could not be saved.",
-  "@recipeCopySaveFailed": {"description": "P5-T1: Failure snackbar when saving a copy of a recipe failed."},
+  "@recipeCopySaveFailed": {
+    "description": "P5-T1: Failure snackbar when saving a copy of a recipe failed."
+  },
   "recipeSaveIncomplete": "The recipe could not be saved. It needs a title, at least one ingredient and at least one step.",
-  "@recipeSaveIncomplete": {"description": "P5-T1: Part 1 with its cause when the recipe editor refuses to save an incomplete recipe (RecipeFormState.isValid). The action is Close: trying again cannot help."},
+  "@recipeSaveIncomplete": {
+    "description": "P5-T1: Part 1 with its cause when the recipe editor refuses to save an incomplete recipe (RecipeFormState.isValid). The action is Close: trying again cannot help."
+  },
   "recipeSaveNoPermission": "The recipe could not be saved. You do not have permission to edit it.",
-  "@recipeSaveNoPermission": {"description": "P5-T1: Part 1 with its cause when the user may not edit the recipe. The action is Close."},
+  "@recipeSaveNoPermission": {
+    "description": "P5-T1: Part 1 with its cause when the user may not edit the recipe. The action is Close."
+  },
   "errorPreservedRecipeEdits": "Your changes are still in the form.",
-  "@errorPreservedRecipeEdits": {"description": "P5-T1: Part 2: the recipe editor stays open with the edits."},
+  "@errorPreservedRecipeEdits": {
+    "description": "P5-T1: Part 2: the recipe editor stays open with the edits."
+  },
   "groupAddMembersLoadFailed": "Your friends could not be loaded.",
-  "@groupAddMembersLoadFailed": {"description": "P5-T1: Loading the friends that can be added to a group failed; the action is Försök igen."},
+  "@groupAddMembersLoadFailed": {
+    "description": "P5-T1: Loading the friends that can be added to a group failed; the action is Försök igen."
+  },
   "adminFeedbackLoadFailed": "The feedback could not be fetched.",
-  "@adminFeedbackLoadFailed": {"description": "Error state when the admin feedback inbox stream fails; names what failed, never the raw exception (P5-U01, content-style-guide.md:89-94)."},
+  "@adminFeedbackLoadFailed": {
+    "description": "Error state when the admin feedback inbox stream fails; names what failed, never the raw exception (P5-U01, content-style-guide.md:89-94)."
+  },
   "moderatorReportsLoadFailed": "The reports could not be fetched.",
-  "@moderatorReportsLoadFailed": {"description": "Error state when the moderator review stream fails (P5-U01, content-style-guide.md:89-94)."},
+  "@moderatorReportsLoadFailed": {
+    "description": "Error state when the moderator review stream fails (P5-U01, content-style-guide.md:89-94)."
+  },
   "legalGuidelinesCouldNotLoad": "The guidelines could not be loaded.",
-  "@legalGuidelinesCouldNotLoad": {"description": "Error state of the community guidelines; each legal document names itself (P5-U08)."},
+  "@legalGuidelinesCouldNotLoad": {
+    "description": "Error state of the community guidelines; each legal document names itself (P5-U08)."
+  },
   "legalTermsCouldNotLoad": "The terms of service could not be loaded.",
-  "@legalTermsCouldNotLoad": {"description": "Error state of the terms of service; each legal document names itself (P5-U08)."},
+  "@legalTermsCouldNotLoad": {
+    "description": "Error state of the terms of service; each legal document names itself (P5-U08)."
+  },
   "legalLinksNeedConnection": "The web links open when you are connected again.",
-  "@legalLinksNeedConnection": {"description": "Offline, the web links in a legal document are inactive and this line says why (Grafisk manual v6:665, P5-U30)."},
+  "@legalLinksNeedConnection": {
+    "description": "Offline, the web links in a legal document are inactive and this line says why (Grafisk manual v6:665, P5-U30)."
+  },
   "imageCouldNotBeShown": "The image could not be shown",
-  "@imageCouldNotBeShown": {"description": "A photo that exists but failed to load keeps its surface and explains (Komponentark v1:839, tillganglighetshandoff:188)."},
+  "@imageCouldNotBeShown": {
+    "description": "A photo that exists but failed to load keeps its surface and explains (Komponentark v1:839, tillganglighetshandoff:188)."
+  },
   "imageRetriesWhenOnline": "Tries again when the connection is back",
-  "@imageRetriesWhenOnline": {"description": "Second line under a failed photo; the retry is silent (Skarmar v12 del 4 #receptbildfel)."},
+  "@imageRetriesWhenOnline": {
+    "description": "Second line under a failed photo; the retry is silent (Skarmar v12 del 4 #receptbildfel)."
+  },
   "ingredientSearchAgain": "Search again",
-  "@ingredientSearchAgain": {"description": "Action in the ingredient search error state (P5-U13)."},
+  "@ingredientSearchAgain": {
+    "description": "Action in the ingredient search error state (P5-U13)."
+  },
   "ingredientSearchSelectionKept": "Your ingredients are still selected.",
-  "@ingredientSearchSelectionKept": {"description": "What was kept when the ingredient search failed (content-style-guide.md:91-93, P5-U13)."},
+  "@ingredientSearchSelectionKept": {
+    "description": "What was kept when the ingredient search failed (content-style-guide.md:91-93, P5-U13)."
+  },
   "importUrlBatchPartialTitle": "We fetched {success} of {total} links",
   "@importUrlBatchPartialTitle": {
     "description": "P5-U22: partial outcome of a pasted URL list (produktregler.md:588, :905-909). Counted, never rounded up.",
@@ -12843,5 +12784,221 @@
   "importFailureOtherRoutes": "Other ways to the same recipe",
   "importRoutePhoto": "Photograph the screen",
   "importRoutePasteText": "Paste the text",
-  "duplicateMergeFailedPreserved": "The existing recipe is unchanged."
+  "duplicateMergeFailedPreserved": "The existing recipe is unchanged.",
+  "conflictDiffUseTheirs": "Use their version",
+  "@conflictDiffUseTheirs": {
+    "description": "PQ-02 = A (2026-09-23): outlined button in ConflictDiffView when your version won; puts the other person's version back. Skarmar v12 del 3 #konflikt :1199 draws \"Använd Eriks version\"; name-free to avoid the {name}s genitive."
+  },
+  "conflictDiffUsedTheirs": "Their version applies now",
+  "@conflictDiffUsedTheirs": {
+    "description": "Success snackbar after \"Använd deras version\"."
+  },
+  "conflictDiffUseTheirsFailed": "Their version could not be saved.",
+  "@conflictDiffUseTheirsFailed": {
+    "description": "Failure (what happened) when \"Använd deras version\" could not be saved."
+  },
+  "conflictDiffUseTheirsKept": "Your version still applies.",
+  "@conflictDiffUseTheirsKept": {
+    "description": "Failure (what was kept) when \"Använd deras version\" could not be saved."
+  },
+  "conflictWeekKeepMine": "Keep mine",
+  "@conflictWeekKeepMine": {
+    "description": "Action on the 30 s week-menu conflict snackbar. The drawn words: Skarmar v12 etapp 11 breda vyer #vmbkonflikt :221, produktregler.md:1119."
+  },
+  "partialOutcomeDone": "Done",
+  "@partialOutcomeDone": {
+    "description": "P5-U33: closes a partial outcome and leaves multi-select (Skarmar v12 etapp 9 #flergrupp :392)."
+  },
+  "groupMembersPartialTitle": "{removed} of {total} were removed",
+  "@groupMembersPartialTitle": {
+    "description": "P5-U33: partial outcome title after bulk member removal (produktregler.md:907).",
+    "placeholders": {
+      "removed": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "groupMembersPartialMessage": "The ones that could not be removed stay selected above.",
+  "@groupMembersPartialMessage": {
+    "description": "P5-U33: partial outcome body after bulk member removal (produktregler.md:908)."
+  },
+  "groupMembersPartialRemoved": "No longer in {group}: {names}.",
+  "@groupMembersPartialRemoved": {
+    "description": "P5-U33: what went in a partial bulk member removal, naming each removed member (produktregler.md:906; Skarmar v12 etapp 9 :391).",
+    "placeholders": {
+      "names": {
+        "type": "String"
+      },
+      "group": {
+        "type": "String"
+      }
+    }
+  },
+  "partialOutcomeListAnd": " and ",
+  "@partialOutcomeListAnd": {
+    "description": "P5-U33: the word before the last name when a partial outcome names several things (A, B och C). Keep the spaces."
+  },
+  "groupMemberRemoveNotSaved": "Could not be removed — the change was not saved",
+  "@groupMemberRemoveNotSaved": {
+    "description": "P5-U33: reason on a member row in the partial outcome."
+  },
+  "groupMembersRemoveNone": "None of the selected members could be removed.",
+  "@groupMembersRemoveNone": {
+    "description": "P5-U33: failure when no selected member could be removed."
+  },
+  "selectionFailedKept": "They stay selected.",
+  "@selectionFailedKept": {
+    "description": "P5-U33: what was kept after a bulk action failed for every selected row (produktregler.md:908)."
+  },
+  "personalTagBulkDeletePartialTitle": "{deleted} of {total} tags were deleted",
+  "@personalTagBulkDeletePartialTitle": {
+    "description": "P5-U33: partial outcome title after bulk tag delete (produktregler.md:907).",
+    "placeholders": {
+      "deleted": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "personalTagBulkDeletePartialMessage": "The ones that could not be deleted stay selected.",
+  "@personalTagBulkDeletePartialMessage": {
+    "description": "P5-U33: partial outcome body after bulk tag delete (produktregler.md:908)."
+  },
+  "personalTagBulkDeletePartialDeleted": "Deleted: {names}.",
+  "@personalTagBulkDeletePartialDeleted": {
+    "description": "P5-U33: what went in a partial bulk tag delete, naming each deleted tag (produktregler.md:906).",
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "personalTagBulkDeleteNotSaved": "Could not be deleted — the deletion was not saved",
+  "@personalTagBulkDeleteNotSaved": {
+    "description": "P5-U33: reason on a tag row in the partial outcome."
+  },
+  "personalTagBulkDeleteNone": "The tags could not be deleted.",
+  "@personalTagBulkDeleteNone": {
+    "description": "P5-U33: failure when no selected tag could be deleted."
+  },
+  "overwrittenRestoreAction": "Restore my version",
+  "@overwrittenRestoreAction": {
+    "description": "P5-U26b: overflow row and confirm button that restores a version another person's save overwrote (produktregler.md:104, :109)."
+  },
+  "overwrittenPickTitle": "Which version do you want to restore?",
+  "@overwrittenPickTitle": {
+    "description": "P5-U26b: title of the picker when more than one overwritten version is kept."
+  },
+  "overwrittenVersionFrom": "Your version from {when}",
+  "@overwrittenVersionFrom": {
+    "description": "P5-U26b: picker row title; when = 'i dag 14:02', 'i går' or '9 juli' (content-style-guide.md:20-36).",
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "overwrittenVersionBy": "{name} saved over it · kept until {until}",
+  "@overwrittenVersionBy": {
+    "description": "P5-U26b: picker row subtitle; name = who saved over it, until = the date it stops being kept (30 days).",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "until": {
+        "type": "String"
+      }
+    }
+  },
+  "overwrittenVersionByUnnamed": "Someone else saved over it · kept until {until}",
+  "@overwrittenVersionByUnnamed": {
+    "description": "P5-U26b: picker row subtitle when the other person's name is unknown.",
+    "placeholders": {
+      "until": {
+        "type": "String"
+      }
+    }
+  },
+  "overwrittenWhenToday": "today {time}",
+  "@overwrittenWhenToday": {
+    "description": "P5-U26b: time of an overwritten version kept today (content-style-guide.md:34-36).",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "overwrittenWhenYesterday": "yesterday",
+  "@overwrittenWhenYesterday": {
+    "description": "P5-U26b: an overwritten version kept yesterday (content-style-guide.md:34-36, two words)."
+  },
+  "overwrittenConfirmTitleWeek": "Restore your week?",
+  "@overwrittenConfirmTitleWeek": {
+    "description": "P5-U26b: confirmation title before restoring an overwritten week (BUT-954 class 2)."
+  },
+  "overwrittenConfirmTitleRecipe": "Restore your recipe?",
+  "@overwrittenConfirmTitleRecipe": {
+    "description": "P5-U26b: confirmation title before restoring an overwritten own recipe (BUT-954 class 2)."
+  },
+  "overwrittenConfirmBodyWeek": "Your version from {when} replaces the week as it is now. You can undo right after.",
+  "@overwrittenConfirmBodyWeek": {
+    "description": "P5-U26b: confirmation body for a week; says what is replaced and that Ångra follows.",
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "overwrittenConfirmBodyRecipe": "Your version from {when} replaces the recipe as it is now. You can undo right after.",
+  "@overwrittenConfirmBodyRecipe": {
+    "description": "P5-U26b: confirmation body for an own recipe; says what is replaced and that Ångra follows.",
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "overwrittenRestored": "Your version is restored",
+  "@overwrittenRestored": {
+    "description": "P5-U26b: undo snackbar after a restore (7 s, Ångra)."
+  },
+  "overwrittenRestoreFailed": "Your version couldn't be restored",
+  "@overwrittenRestoreFailed": {
+    "description": "P5-U26b: failure, what happened (content-style-guide.md:87-95)."
+  },
+  "overwrittenRestoreGoneWeek": "The week no longer exists, so your version could not be restored",
+  "@overwrittenRestoreGoneWeek": {
+    "description": "P5-U26b: failure when the week the kept version belongs to no longer exists (content-style-guide.md:87-95)."
+  },
+  "overwrittenRestoreGoneRecipe": "The recipe no longer exists, so your version could not be restored",
+  "@overwrittenRestoreGoneRecipe": {
+    "description": "P5-U26b: failure when the recipe the kept version belongs to no longer exists (content-style-guide.md:87-95)."
+  },
+  "overwrittenKeptUntil": "It's kept until {until}.",
+  "@overwrittenKeptUntil": {
+    "description": "P5-U26b: failure, what was kept; until = the date the version stops being kept.",
+    "placeholders": {
+      "until": {
+        "type": "String"
+      }
+    }
+  },
+  "overwrittenUndoFailed": "Undo couldn't finish",
+  "@overwrittenUndoFailed": {
+    "description": "P5-U26b: failure when undoing a restore did not reach the server."
+  },
+  "overwrittenUndoFailedKept": "Your restored version still applies.",
+  "@overwrittenUndoFailedKept": {
+    "description": "P5-U26b: failure, what is in place after a failed undo."
+  },
+  "messagingCreateConversation": "Create conversation",
+  "reportDialogTitleRecipe": "Report this recipe",
+  "reportDialogGuidelinesNoteSuffix": "— the version you see now is the one we judge by.",
+  "reportDialogIntro": "Tell us what is wrong. A person on the team reads your report.",
+  "reportDescriptionRequiredHelper": "Required when you choose Other."
 }

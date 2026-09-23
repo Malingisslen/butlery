@@ -8383,12 +8383,6 @@ abstract class AppLocalizations {
   /// **'Skapa gruppkonversation'**
   String get messagingCreateGroup;
 
-  /// No description provided for @messagingCreateConversation.
-  ///
-  /// In sv, this message translates to:
-  /// **'Skapa konversation'**
-  String get messagingCreateConversation;
-
   /// No description provided for @messagingEditGroupName.
   ///
   /// In sv, this message translates to:
@@ -15270,224 +15264,6 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'(tomt)'**
   String get conflictDiffEmptyValue;
-
-<<<<<<< HEAD
-  /// PQ-02 = A (2026-09-23): outlined button in ConflictDiffView when your version won; puts the other person's version back. Skarmar v12 del 3 #konflikt :1199 draws "Använd Eriks version"; name-free to avoid the {name}s genitive.
-  ///
-  /// In sv, this message translates to:
-  /// **'Använd deras version'**
-  String get conflictDiffUseTheirs;
-
-  /// Success snackbar after "Använd deras version".
-  ///
-  /// In sv, this message translates to:
-  /// **'Deras version gäller nu'**
-  String get conflictDiffUsedTheirs;
-
-  /// Failure (what happened) when "Använd deras version" could not be saved.
-  ///
-  /// In sv, this message translates to:
-  /// **'Deras version kunde inte sparas.'**
-  String get conflictDiffUseTheirsFailed;
-
-  /// Failure (what was kept) when "Använd deras version" could not be saved.
-  ///
-  /// In sv, this message translates to:
-  /// **'Din version gäller fortfarande.'**
-  String get conflictDiffUseTheirsKept;
-
-  /// Action on the 30 s week-menu conflict snackbar. The drawn words: Skarmar v12 etapp 11 breda vyer #vmbkonflikt :221, produktregler.md:1119.
-  ///
-  /// In sv, this message translates to:
-  /// **'Behåll min'**
-  String get conflictWeekKeepMine;
-
-  /// P5-U33: closes a partial outcome and leaves multi-select (Skarmar v12 etapp 9 #flergrupp :392).
-  ///
-  /// In sv, this message translates to:
-  /// **'Klart'**
-  String get partialOutcomeDone;
-
-  /// P5-U33: partial outcome title after bulk member removal (produktregler.md:907).
-  ///
-  /// In sv, this message translates to:
-  /// **'{removed} av {total} togs bort'**
-  String groupMembersPartialTitle(int removed, int total);
-
-  /// P5-U33: partial outcome body after bulk member removal (produktregler.md:908).
-  ///
-  /// In sv, this message translates to:
-  /// **'De som inte kunde tas bort ligger kvar valda ovan.'**
-  String get groupMembersPartialMessage;
-
-  /// P5-U33: what went in a partial bulk member removal, naming each removed member (produktregler.md:906; Skarmar v12 etapp 9 :391).
-  ///
-  /// In sv, this message translates to:
-  /// **'{names} är inte längre med i {group}.'**
-  String groupMembersPartialRemoved(String names, String group);
-
-  /// P5-U33: the word before the last name when a partial outcome names several things (A, B och C). Keep the spaces.
-  ///
-  /// In sv, this message translates to:
-  /// **' och '**
-  String get partialOutcomeListAnd;
-
-  /// P5-U33: reason on a member row in the partial outcome.
-  ///
-  /// In sv, this message translates to:
-  /// **'Kunde inte tas bort – ändringen sparades inte'**
-  String get groupMemberRemoveNotSaved;
-
-  /// P5-U33: failure when no selected member could be removed.
-  ///
-  /// In sv, this message translates to:
-  /// **'Ingen av de valda kunde tas bort.'**
-  String get groupMembersRemoveNone;
-
-  /// P5-U33: what was kept after a bulk action failed for every selected row (produktregler.md:908).
-  ///
-  /// In sv, this message translates to:
-  /// **'De ligger kvar valda.'**
-  String get selectionFailedKept;
-
-  /// P5-U33: partial outcome title after bulk tag delete (produktregler.md:907).
-  ///
-  /// In sv, this message translates to:
-  /// **'{deleted} av {total} taggar togs bort'**
-  String personalTagBulkDeletePartialTitle(int deleted, int total);
-
-  /// P5-U33: partial outcome body after bulk tag delete (produktregler.md:908).
-  ///
-  /// In sv, this message translates to:
-  /// **'De som inte kunde tas bort ligger kvar valda.'**
-  String get personalTagBulkDeletePartialMessage;
-
-  /// P5-U33: what went in a partial bulk tag delete, naming each deleted tag (produktregler.md:906).
-  ///
-  /// In sv, this message translates to:
-  /// **'{names} togs bort.'**
-  String personalTagBulkDeletePartialDeleted(String names);
-
-  /// P5-U33: reason on a tag row in the partial outcome.
-  ///
-  /// In sv, this message translates to:
-  /// **'Kunde inte tas bort – borttagningen sparades inte'**
-  String get personalTagBulkDeleteNotSaved;
-
-  /// P5-U33: failure when no selected tag could be deleted.
-  ///
-  /// In sv, this message translates to:
-  /// **'Taggarna kunde inte tas bort.'**
-  String get personalTagBulkDeleteNone;
-=======
-  /// P5-U26b: overflow row and confirm button that restores a version another person's save overwrote (produktregler.md:104, :109).
-  ///
-  /// In sv, this message translates to:
-  /// **'Återställ min version'**
-  String get overwrittenRestoreAction;
-
-  /// P5-U26b: title of the picker when more than one overwritten version is kept.
-  ///
-  /// In sv, this message translates to:
-  /// **'Vilken version vill du återställa?'**
-  String get overwrittenPickTitle;
-
-  /// P5-U26b: picker row title; when = 'i dag 14:02', 'i går' or '9 juli' (content-style-guide.md:20-36).
-  ///
-  /// In sv, this message translates to:
-  /// **'Din version från {when}'**
-  String overwrittenVersionFrom(String when);
-
-  /// P5-U26b: picker row subtitle; name = who saved over it, until = the date it stops being kept (30 days).
-  ///
-  /// In sv, this message translates to:
-  /// **'{name} sparade över den · kvar till {until}'**
-  String overwrittenVersionBy(String name, String until);
-
-  /// P5-U26b: picker row subtitle when the other person's name is unknown.
-  ///
-  /// In sv, this message translates to:
-  /// **'Någon annan sparade över den · kvar till {until}'**
-  String overwrittenVersionByUnnamed(String until);
-
-  /// P5-U26b: time of an overwritten version kept today (content-style-guide.md:34-36).
-  ///
-  /// In sv, this message translates to:
-  /// **'i dag {time}'**
-  String overwrittenWhenToday(String time);
-
-  /// P5-U26b: an overwritten version kept yesterday (content-style-guide.md:34-36, two words).
-  ///
-  /// In sv, this message translates to:
-  /// **'i går'**
-  String get overwrittenWhenYesterday;
-
-  /// P5-U26b: confirmation title before restoring an overwritten week (BUT-954 class 2).
-  ///
-  /// In sv, this message translates to:
-  /// **'Återställa din vecka?'**
-  String get overwrittenConfirmTitleWeek;
-
-  /// P5-U26b: confirmation title before restoring an overwritten own recipe (BUT-954 class 2).
-  ///
-  /// In sv, this message translates to:
-  /// **'Återställa ditt recept?'**
-  String get overwrittenConfirmTitleRecipe;
-
-  /// P5-U26b: confirmation body for a week; says what is replaced and that Ångra follows.
-  ///
-  /// In sv, this message translates to:
-  /// **'Din version från {when} ersätter veckan som gäller nu. Du kan ångra direkt efteråt.'**
-  String overwrittenConfirmBodyWeek(String when);
-
-  /// P5-U26b: confirmation body for an own recipe; says what is replaced and that Ångra follows.
-  ///
-  /// In sv, this message translates to:
-  /// **'Din version från {when} ersätter receptet som det ser ut nu. Du kan ångra direkt efteråt.'**
-  String overwrittenConfirmBodyRecipe(String when);
-
-  /// P5-U26b: undo snackbar after a restore (7 s, Ångra).
-  ///
-  /// In sv, this message translates to:
-  /// **'Din version är återställd'**
-  String get overwrittenRestored;
-
-  /// P5-U26b: failure, what happened (content-style-guide.md:87-95).
-  ///
-  /// In sv, this message translates to:
-  /// **'Din version kunde inte återställas'**
-  String get overwrittenRestoreFailed;
-
-  /// P5-U26b: failure when the week the kept version belongs to no longer exists (content-style-guide.md:87-95).
-  ///
-  /// In sv, this message translates to:
-  /// **'Veckan finns inte längre, så din version kunde inte återställas'**
-  String get overwrittenRestoreGoneWeek;
-
-  /// P5-U26b: failure when the recipe the kept version belongs to no longer exists (content-style-guide.md:87-95).
-  ///
-  /// In sv, this message translates to:
-  /// **'Receptet finns inte längre, så din version kunde inte återställas'**
-  String get overwrittenRestoreGoneRecipe;
-
-  /// P5-U26b: failure, what was kept; until = the date the version stops being kept.
-  ///
-  /// In sv, this message translates to:
-  /// **'Den finns kvar till {until}.'**
-  String overwrittenKeptUntil(String until);
-
-  /// P5-U26b: failure when undoing a restore did not reach the server.
-  ///
-  /// In sv, this message translates to:
-  /// **'Ångra kunde inte slutföras'**
-  String get overwrittenUndoFailed;
-
-  /// P5-U26b: failure, what is in place after a failed undo.
-  ///
-  /// In sv, this message translates to:
-  /// **'Din återställda version gäller fortfarande.'**
-  String get overwrittenUndoFailedKept;
->>>>>>> p5-b3
 
   /// No description provided for @privacyEmailSubject.
   ///
@@ -24283,12 +24059,6 @@ abstract class AppLocalizations {
   /// **'Anmäl innehåll'**
   String get reportDialogTitle;
 
-  /// No description provided for @reportDialogTitleRecipe.
-  ///
-  /// In sv, this message translates to:
-  /// **'Anmäl det här receptet'**
-  String get reportDialogTitleRecipe;
-
   /// No description provided for @reportSubmit.
   ///
   /// In sv, this message translates to:
@@ -24306,24 +24076,6 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'våra riktlinjer'**
   String get reportDialogGuidelinesLink;
-
-  /// No description provided for @reportDialogGuidelinesNoteSuffix.
-  ///
-  /// In sv, this message translates to:
-  /// **'— den version du ser nu är den vi dömer efter.'**
-  String get reportDialogGuidelinesNoteSuffix;
-
-  /// No description provided for @reportDialogIntro.
-  ///
-  /// In sv, this message translates to:
-  /// **'Berätta vad som är fel. En människa i teamet läser din anmälan.'**
-  String get reportDialogIntro;
-
-  /// No description provided for @reportDescriptionRequiredHelper.
-  ///
-  /// In sv, this message translates to:
-  /// **'Krävs när du väljer Annat.'**
-  String get reportDescriptionRequiredHelper;
 
   /// No description provided for @settingsMyReports.
   ///
@@ -28734,6 +28486,252 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Det befintliga receptet är oförändrat.'**
   String get duplicateMergeFailedPreserved;
+
+  /// PQ-02 = A (2026-09-23): outlined button in ConflictDiffView when your version won; puts the other person's version back. Skarmar v12 del 3 #konflikt :1199 draws "Använd Eriks version"; name-free to avoid the {name}s genitive.
+  ///
+  /// In sv, this message translates to:
+  /// **'Använd deras version'**
+  String get conflictDiffUseTheirs;
+
+  /// Success snackbar after "Använd deras version".
+  ///
+  /// In sv, this message translates to:
+  /// **'Deras version gäller nu'**
+  String get conflictDiffUsedTheirs;
+
+  /// Failure (what happened) when "Använd deras version" could not be saved.
+  ///
+  /// In sv, this message translates to:
+  /// **'Deras version kunde inte sparas.'**
+  String get conflictDiffUseTheirsFailed;
+
+  /// Failure (what was kept) when "Använd deras version" could not be saved.
+  ///
+  /// In sv, this message translates to:
+  /// **'Din version gäller fortfarande.'**
+  String get conflictDiffUseTheirsKept;
+
+  /// Action on the 30 s week-menu conflict snackbar. The drawn words: Skarmar v12 etapp 11 breda vyer #vmbkonflikt :221, produktregler.md:1119.
+  ///
+  /// In sv, this message translates to:
+  /// **'Behåll min'**
+  String get conflictWeekKeepMine;
+
+  /// P5-U33: closes a partial outcome and leaves multi-select (Skarmar v12 etapp 9 #flergrupp :392).
+  ///
+  /// In sv, this message translates to:
+  /// **'Klart'**
+  String get partialOutcomeDone;
+
+  /// P5-U33: partial outcome title after bulk member removal (produktregler.md:907).
+  ///
+  /// In sv, this message translates to:
+  /// **'{removed} av {total} togs bort'**
+  String groupMembersPartialTitle(int removed, int total);
+
+  /// P5-U33: partial outcome body after bulk member removal (produktregler.md:908).
+  ///
+  /// In sv, this message translates to:
+  /// **'De som inte kunde tas bort ligger kvar valda ovan.'**
+  String get groupMembersPartialMessage;
+
+  /// P5-U33: what went in a partial bulk member removal, naming each removed member (produktregler.md:906; Skarmar v12 etapp 9 :391).
+  ///
+  /// In sv, this message translates to:
+  /// **'{names} är inte längre med i {group}.'**
+  String groupMembersPartialRemoved(String names, String group);
+
+  /// P5-U33: the word before the last name when a partial outcome names several things (A, B och C). Keep the spaces.
+  ///
+  /// In sv, this message translates to:
+  /// **' och '**
+  String get partialOutcomeListAnd;
+
+  /// P5-U33: reason on a member row in the partial outcome.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte tas bort – ändringen sparades inte'**
+  String get groupMemberRemoveNotSaved;
+
+  /// P5-U33: failure when no selected member could be removed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingen av de valda kunde tas bort.'**
+  String get groupMembersRemoveNone;
+
+  /// P5-U33: what was kept after a bulk action failed for every selected row (produktregler.md:908).
+  ///
+  /// In sv, this message translates to:
+  /// **'De ligger kvar valda.'**
+  String get selectionFailedKept;
+
+  /// P5-U33: partial outcome title after bulk tag delete (produktregler.md:907).
+  ///
+  /// In sv, this message translates to:
+  /// **'{deleted} av {total} taggar togs bort'**
+  String personalTagBulkDeletePartialTitle(int deleted, int total);
+
+  /// P5-U33: partial outcome body after bulk tag delete (produktregler.md:908).
+  ///
+  /// In sv, this message translates to:
+  /// **'De som inte kunde tas bort ligger kvar valda.'**
+  String get personalTagBulkDeletePartialMessage;
+
+  /// P5-U33: what went in a partial bulk tag delete, naming each deleted tag (produktregler.md:906).
+  ///
+  /// In sv, this message translates to:
+  /// **'{names} togs bort.'**
+  String personalTagBulkDeletePartialDeleted(String names);
+
+  /// P5-U33: reason on a tag row in the partial outcome.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte tas bort – borttagningen sparades inte'**
+  String get personalTagBulkDeleteNotSaved;
+
+  /// P5-U33: failure when no selected tag could be deleted.
+  ///
+  /// In sv, this message translates to:
+  /// **'Taggarna kunde inte tas bort.'**
+  String get personalTagBulkDeleteNone;
+
+  /// P5-U26b: overflow row and confirm button that restores a version another person's save overwrote (produktregler.md:104, :109).
+  ///
+  /// In sv, this message translates to:
+  /// **'Återställ min version'**
+  String get overwrittenRestoreAction;
+
+  /// P5-U26b: title of the picker when more than one overwritten version is kept.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vilken version vill du återställa?'**
+  String get overwrittenPickTitle;
+
+  /// P5-U26b: picker row title; when = 'i dag 14:02', 'i går' or '9 juli' (content-style-guide.md:20-36).
+  ///
+  /// In sv, this message translates to:
+  /// **'Din version från {when}'**
+  String overwrittenVersionFrom(String when);
+
+  /// P5-U26b: picker row subtitle; name = who saved over it, until = the date it stops being kept (30 days).
+  ///
+  /// In sv, this message translates to:
+  /// **'{name} sparade över den · kvar till {until}'**
+  String overwrittenVersionBy(String name, String until);
+
+  /// P5-U26b: picker row subtitle when the other person's name is unknown.
+  ///
+  /// In sv, this message translates to:
+  /// **'Någon annan sparade över den · kvar till {until}'**
+  String overwrittenVersionByUnnamed(String until);
+
+  /// P5-U26b: time of an overwritten version kept today (content-style-guide.md:34-36).
+  ///
+  /// In sv, this message translates to:
+  /// **'i dag {time}'**
+  String overwrittenWhenToday(String time);
+
+  /// P5-U26b: an overwritten version kept yesterday (content-style-guide.md:34-36, two words).
+  ///
+  /// In sv, this message translates to:
+  /// **'i går'**
+  String get overwrittenWhenYesterday;
+
+  /// P5-U26b: confirmation title before restoring an overwritten week (BUT-954 class 2).
+  ///
+  /// In sv, this message translates to:
+  /// **'Återställa din vecka?'**
+  String get overwrittenConfirmTitleWeek;
+
+  /// P5-U26b: confirmation title before restoring an overwritten own recipe (BUT-954 class 2).
+  ///
+  /// In sv, this message translates to:
+  /// **'Återställa ditt recept?'**
+  String get overwrittenConfirmTitleRecipe;
+
+  /// P5-U26b: confirmation body for a week; says what is replaced and that Ångra follows.
+  ///
+  /// In sv, this message translates to:
+  /// **'Din version från {when} ersätter veckan som gäller nu. Du kan ångra direkt efteråt.'**
+  String overwrittenConfirmBodyWeek(String when);
+
+  /// P5-U26b: confirmation body for an own recipe; says what is replaced and that Ångra follows.
+  ///
+  /// In sv, this message translates to:
+  /// **'Din version från {when} ersätter receptet som det ser ut nu. Du kan ångra direkt efteråt.'**
+  String overwrittenConfirmBodyRecipe(String when);
+
+  /// P5-U26b: undo snackbar after a restore (7 s, Ångra).
+  ///
+  /// In sv, this message translates to:
+  /// **'Din version är återställd'**
+  String get overwrittenRestored;
+
+  /// P5-U26b: failure, what happened (content-style-guide.md:87-95).
+  ///
+  /// In sv, this message translates to:
+  /// **'Din version kunde inte återställas'**
+  String get overwrittenRestoreFailed;
+
+  /// P5-U26b: failure when the week the kept version belongs to no longer exists (content-style-guide.md:87-95).
+  ///
+  /// In sv, this message translates to:
+  /// **'Veckan finns inte längre, så din version kunde inte återställas'**
+  String get overwrittenRestoreGoneWeek;
+
+  /// P5-U26b: failure when the recipe the kept version belongs to no longer exists (content-style-guide.md:87-95).
+  ///
+  /// In sv, this message translates to:
+  /// **'Receptet finns inte längre, så din version kunde inte återställas'**
+  String get overwrittenRestoreGoneRecipe;
+
+  /// P5-U26b: failure, what was kept; until = the date the version stops being kept.
+  ///
+  /// In sv, this message translates to:
+  /// **'Den finns kvar till {until}.'**
+  String overwrittenKeptUntil(String until);
+
+  /// P5-U26b: failure when undoing a restore did not reach the server.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ångra kunde inte slutföras'**
+  String get overwrittenUndoFailed;
+
+  /// P5-U26b: failure, what is in place after a failed undo.
+  ///
+  /// In sv, this message translates to:
+  /// **'Din återställda version gäller fortfarande.'**
+  String get overwrittenUndoFailedKept;
+
+  /// No description provided for @messagingCreateConversation.
+  ///
+  /// In sv, this message translates to:
+  /// **'Skapa konversation'**
+  String get messagingCreateConversation;
+
+  /// No description provided for @reportDialogTitleRecipe.
+  ///
+  /// In sv, this message translates to:
+  /// **'Anmäl det här receptet'**
+  String get reportDialogTitleRecipe;
+
+  /// No description provided for @reportDialogGuidelinesNoteSuffix.
+  ///
+  /// In sv, this message translates to:
+  /// **'— den version du ser nu är den vi dömer efter.'**
+  String get reportDialogGuidelinesNoteSuffix;
+
+  /// No description provided for @reportDialogIntro.
+  ///
+  /// In sv, this message translates to:
+  /// **'Berätta vad som är fel. En människa i teamet läser din anmälan.'**
+  String get reportDialogIntro;
+
+  /// No description provided for @reportDescriptionRequiredHelper.
+  ///
+  /// In sv, this message translates to:
+  /// **'Krävs när du väljer Annat.'**
+  String get reportDescriptionRequiredHelper;
 }
 
 class _AppLocalizationsDelegate

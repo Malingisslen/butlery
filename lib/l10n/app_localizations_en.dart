@@ -5009,9 +5009,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get messagingCreateGroup => 'Create group conversation';
 
   @override
-  String get messagingCreateConversation => 'Create conversation';
-
-  @override
   String get messagingEditGroupName => 'Edit group name';
 
   @override
@@ -9083,145 +9080,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get conflictDiffEmptyValue => '(empty)';
-
-  @override
-<<<<<<< HEAD
-  String get conflictDiffUseTheirs => 'Use their version';
-
-  @override
-  String get conflictDiffUsedTheirs => 'Their version applies now';
-
-  @override
-  String get conflictDiffUseTheirsFailed => 'Their version could not be saved.';
-
-  @override
-  String get conflictDiffUseTheirsKept => 'Your version still applies.';
-
-  @override
-  String get conflictWeekKeepMine => 'Keep mine';
-
-  @override
-  String get partialOutcomeDone => 'Done';
-
-  @override
-  String groupMembersPartialTitle(int removed, int total) {
-    return '$removed of $total were removed';
-  }
-
-  @override
-  String get groupMembersPartialMessage =>
-      'The ones that could not be removed stay selected above.';
-
-  @override
-  String groupMembersPartialRemoved(String names, String group) {
-    return 'No longer in $group: $names.';
-  }
-
-  @override
-  String get partialOutcomeListAnd => ' and ';
-
-  @override
-  String get groupMemberRemoveNotSaved =>
-      'Could not be removed — the change was not saved';
-
-  @override
-  String get groupMembersRemoveNone =>
-      'None of the selected members could be removed.';
-
-  @override
-  String get selectionFailedKept => 'They stay selected.';
-
-  @override
-  String personalTagBulkDeletePartialTitle(int deleted, int total) {
-    return '$deleted of $total tags were deleted';
-  }
-
-  @override
-  String get personalTagBulkDeletePartialMessage =>
-      'The ones that could not be deleted stay selected.';
-
-  @override
-  String personalTagBulkDeletePartialDeleted(String names) {
-    return 'Deleted: $names.';
-  }
-
-  @override
-  String get personalTagBulkDeleteNotSaved =>
-      'Could not be deleted — the deletion was not saved';
-
-  @override
-  String get personalTagBulkDeleteNone => 'The tags could not be deleted.';
-=======
-  String get overwrittenRestoreAction => 'Restore my version';
-
-  @override
-  String get overwrittenPickTitle => 'Which version do you want to restore?';
-
-  @override
-  String overwrittenVersionFrom(String when) {
-    return 'Your version from $when';
-  }
-
-  @override
-  String overwrittenVersionBy(String name, String until) {
-    return '$name saved over it · kept until $until';
-  }
-
-  @override
-  String overwrittenVersionByUnnamed(String until) {
-    return 'Someone else saved over it · kept until $until';
-  }
-
-  @override
-  String overwrittenWhenToday(String time) {
-    return 'today $time';
-  }
-
-  @override
-  String get overwrittenWhenYesterday => 'yesterday';
-
-  @override
-  String get overwrittenConfirmTitleWeek => 'Restore your week?';
-
-  @override
-  String get overwrittenConfirmTitleRecipe => 'Restore your recipe?';
-
-  @override
-  String overwrittenConfirmBodyWeek(String when) {
-    return 'Your version from $when replaces the week as it is now. You can undo right after.';
-  }
-
-  @override
-  String overwrittenConfirmBodyRecipe(String when) {
-    return 'Your version from $when replaces the recipe as it is now. You can undo right after.';
-  }
-
-  @override
-  String get overwrittenRestored => 'Your version is restored';
-
-  @override
-  String get overwrittenRestoreFailed => 'Your version couldn\'t be restored';
-
-  @override
-  String get overwrittenRestoreGoneWeek =>
-      'The week no longer exists, so your version could not be restored';
-
-  @override
-  String get overwrittenRestoreGoneRecipe =>
-      'The recipe no longer exists, so your version could not be restored';
-
-  @override
-  String overwrittenKeptUntil(String until) {
-    return 'It\'s kept until $until.';
-  }
-
-  @override
-  String get overwrittenUndoFailed => 'Undo couldn\'t finish';
-
-  @override
-  String get overwrittenUndoFailedKept =>
-      'Your restored version still applies.';
->>>>>>> p5-b3
 
   @override
   String get privacyEmailSubject => 'Privacy inquiry';
@@ -14512,9 +14370,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get reportDialogTitle => 'Report content';
 
   @override
-  String get reportDialogTitleRecipe => 'Report this recipe';
-
-  @override
   String get reportSubmit => 'Send report';
 
   @override
@@ -14522,18 +14377,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get reportDialogGuidelinesLink => 'our guidelines';
-
-  @override
-  String get reportDialogGuidelinesNoteSuffix =>
-      '— the version you see now is the one we judge by.';
-
-  @override
-  String get reportDialogIntro =>
-      'Tell us what is wrong. A person on the team reads your report.';
-
-  @override
-  String get reportDescriptionRequiredHelper =>
-      'Required when you choose Other.';
 
   @override
   String get settingsMyReports => 'My reports';
@@ -17246,4 +17089,160 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get duplicateMergeFailedPreserved =>
       'The existing recipe is unchanged.';
+
+  @override
+  String get conflictDiffUseTheirs => 'Use their version';
+
+  @override
+  String get conflictDiffUsedTheirs => 'Their version applies now';
+
+  @override
+  String get conflictDiffUseTheirsFailed => 'Their version could not be saved.';
+
+  @override
+  String get conflictDiffUseTheirsKept => 'Your version still applies.';
+
+  @override
+  String get conflictWeekKeepMine => 'Keep mine';
+
+  @override
+  String get partialOutcomeDone => 'Done';
+
+  @override
+  String groupMembersPartialTitle(int removed, int total) {
+    return '$removed of $total were removed';
+  }
+
+  @override
+  String get groupMembersPartialMessage =>
+      'The ones that could not be removed stay selected above.';
+
+  @override
+  String groupMembersPartialRemoved(String names, String group) {
+    return 'No longer in $group: $names.';
+  }
+
+  @override
+  String get partialOutcomeListAnd => ' and ';
+
+  @override
+  String get groupMemberRemoveNotSaved =>
+      'Could not be removed — the change was not saved';
+
+  @override
+  String get groupMembersRemoveNone =>
+      'None of the selected members could be removed.';
+
+  @override
+  String get selectionFailedKept => 'They stay selected.';
+
+  @override
+  String personalTagBulkDeletePartialTitle(int deleted, int total) {
+    return '$deleted of $total tags were deleted';
+  }
+
+  @override
+  String get personalTagBulkDeletePartialMessage =>
+      'The ones that could not be deleted stay selected.';
+
+  @override
+  String personalTagBulkDeletePartialDeleted(String names) {
+    return 'Deleted: $names.';
+  }
+
+  @override
+  String get personalTagBulkDeleteNotSaved =>
+      'Could not be deleted — the deletion was not saved';
+
+  @override
+  String get personalTagBulkDeleteNone => 'The tags could not be deleted.';
+
+  @override
+  String get overwrittenRestoreAction => 'Restore my version';
+
+  @override
+  String get overwrittenPickTitle => 'Which version do you want to restore?';
+
+  @override
+  String overwrittenVersionFrom(String when) {
+    return 'Your version from $when';
+  }
+
+  @override
+  String overwrittenVersionBy(String name, String until) {
+    return '$name saved over it · kept until $until';
+  }
+
+  @override
+  String overwrittenVersionByUnnamed(String until) {
+    return 'Someone else saved over it · kept until $until';
+  }
+
+  @override
+  String overwrittenWhenToday(String time) {
+    return 'today $time';
+  }
+
+  @override
+  String get overwrittenWhenYesterday => 'yesterday';
+
+  @override
+  String get overwrittenConfirmTitleWeek => 'Restore your week?';
+
+  @override
+  String get overwrittenConfirmTitleRecipe => 'Restore your recipe?';
+
+  @override
+  String overwrittenConfirmBodyWeek(String when) {
+    return 'Your version from $when replaces the week as it is now. You can undo right after.';
+  }
+
+  @override
+  String overwrittenConfirmBodyRecipe(String when) {
+    return 'Your version from $when replaces the recipe as it is now. You can undo right after.';
+  }
+
+  @override
+  String get overwrittenRestored => 'Your version is restored';
+
+  @override
+  String get overwrittenRestoreFailed => 'Your version couldn\'t be restored';
+
+  @override
+  String get overwrittenRestoreGoneWeek =>
+      'The week no longer exists, so your version could not be restored';
+
+  @override
+  String get overwrittenRestoreGoneRecipe =>
+      'The recipe no longer exists, so your version could not be restored';
+
+  @override
+  String overwrittenKeptUntil(String until) {
+    return 'It\'s kept until $until.';
+  }
+
+  @override
+  String get overwrittenUndoFailed => 'Undo couldn\'t finish';
+
+  @override
+  String get overwrittenUndoFailedKept =>
+      'Your restored version still applies.';
+
+  @override
+  String get messagingCreateConversation => 'Create conversation';
+
+  @override
+  String get reportDialogTitleRecipe => 'Report this recipe';
+
+  @override
+  String get reportDialogGuidelinesNoteSuffix =>
+      '— the version you see now is the one we judge by.';
+
+  @override
+  String get reportDialogIntro =>
+      'Tell us what is wrong. A person on the team reads your report.';
+
+  @override
+  String get reportDescriptionRequiredHelper =>
+      'Required when you choose Other.';
 }

@@ -5015,9 +5015,6 @@ class AppLocalizationsSv extends AppLocalizations {
   String get messagingCreateGroup => 'Skapa gruppkonversation';
 
   @override
-  String get messagingCreateConversation => 'Skapa konversation';
-
-  @override
   String get messagingEditGroupName => 'Redigera gruppnamn';
 
   @override
@@ -9099,144 +9096,6 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get conflictDiffEmptyValue => '(tomt)';
-
-  @override
-<<<<<<< HEAD
-  String get conflictDiffUseTheirs => 'Använd deras version';
-
-  @override
-  String get conflictDiffUsedTheirs => 'Deras version gäller nu';
-
-  @override
-  String get conflictDiffUseTheirsFailed => 'Deras version kunde inte sparas.';
-
-  @override
-  String get conflictDiffUseTheirsKept => 'Din version gäller fortfarande.';
-
-  @override
-  String get conflictWeekKeepMine => 'Behåll min';
-
-  @override
-  String get partialOutcomeDone => 'Klart';
-
-  @override
-  String groupMembersPartialTitle(int removed, int total) {
-    return '$removed av $total togs bort';
-  }
-
-  @override
-  String get groupMembersPartialMessage =>
-      'De som inte kunde tas bort ligger kvar valda ovan.';
-
-  @override
-  String groupMembersPartialRemoved(String names, String group) {
-    return '$names är inte längre med i $group.';
-  }
-
-  @override
-  String get partialOutcomeListAnd => ' och ';
-
-  @override
-  String get groupMemberRemoveNotSaved =>
-      'Kunde inte tas bort – ändringen sparades inte';
-
-  @override
-  String get groupMembersRemoveNone => 'Ingen av de valda kunde tas bort.';
-
-  @override
-  String get selectionFailedKept => 'De ligger kvar valda.';
-
-  @override
-  String personalTagBulkDeletePartialTitle(int deleted, int total) {
-    return '$deleted av $total taggar togs bort';
-  }
-
-  @override
-  String get personalTagBulkDeletePartialMessage =>
-      'De som inte kunde tas bort ligger kvar valda.';
-
-  @override
-  String personalTagBulkDeletePartialDeleted(String names) {
-    return '$names togs bort.';
-  }
-
-  @override
-  String get personalTagBulkDeleteNotSaved =>
-      'Kunde inte tas bort – borttagningen sparades inte';
-
-  @override
-  String get personalTagBulkDeleteNone => 'Taggarna kunde inte tas bort.';
-=======
-  String get overwrittenRestoreAction => 'Återställ min version';
-
-  @override
-  String get overwrittenPickTitle => 'Vilken version vill du återställa?';
-
-  @override
-  String overwrittenVersionFrom(String when) {
-    return 'Din version från $when';
-  }
-
-  @override
-  String overwrittenVersionBy(String name, String until) {
-    return '$name sparade över den · kvar till $until';
-  }
-
-  @override
-  String overwrittenVersionByUnnamed(String until) {
-    return 'Någon annan sparade över den · kvar till $until';
-  }
-
-  @override
-  String overwrittenWhenToday(String time) {
-    return 'i dag $time';
-  }
-
-  @override
-  String get overwrittenWhenYesterday => 'i går';
-
-  @override
-  String get overwrittenConfirmTitleWeek => 'Återställa din vecka?';
-
-  @override
-  String get overwrittenConfirmTitleRecipe => 'Återställa ditt recept?';
-
-  @override
-  String overwrittenConfirmBodyWeek(String when) {
-    return 'Din version från $when ersätter veckan som gäller nu. Du kan ångra direkt efteråt.';
-  }
-
-  @override
-  String overwrittenConfirmBodyRecipe(String when) {
-    return 'Din version från $when ersätter receptet som det ser ut nu. Du kan ångra direkt efteråt.';
-  }
-
-  @override
-  String get overwrittenRestored => 'Din version är återställd';
-
-  @override
-  String get overwrittenRestoreFailed => 'Din version kunde inte återställas';
-
-  @override
-  String get overwrittenRestoreGoneWeek =>
-      'Veckan finns inte längre, så din version kunde inte återställas';
-
-  @override
-  String get overwrittenRestoreGoneRecipe =>
-      'Receptet finns inte längre, så din version kunde inte återställas';
-
-  @override
-  String overwrittenKeptUntil(String until) {
-    return 'Den finns kvar till $until.';
-  }
-
-  @override
-  String get overwrittenUndoFailed => 'Ångra kunde inte slutföras';
-
-  @override
-  String get overwrittenUndoFailedKept =>
-      'Din återställda version gäller fortfarande.';
->>>>>>> p5-b3
 
   @override
   String get privacyEmailSubject => 'Integritetsfråga';
@@ -14543,9 +14402,6 @@ class AppLocalizationsSv extends AppLocalizations {
   String get reportDialogTitle => 'Anmäl innehåll';
 
   @override
-  String get reportDialogTitleRecipe => 'Anmäl det här receptet';
-
-  @override
   String get reportSubmit => 'Skicka anmälan';
 
   @override
@@ -14553,17 +14409,6 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get reportDialogGuidelinesLink => 'våra riktlinjer';
-
-  @override
-  String get reportDialogGuidelinesNoteSuffix =>
-      '— den version du ser nu är den vi dömer efter.';
-
-  @override
-  String get reportDialogIntro =>
-      'Berätta vad som är fel. En människa i teamet läser din anmälan.';
-
-  @override
-  String get reportDescriptionRequiredHelper => 'Krävs när du väljer Annat.';
 
   @override
   String get settingsMyReports => 'Mina rapporter';
@@ -17278,4 +17123,158 @@ class AppLocalizationsSv extends AppLocalizations {
   @override
   String get duplicateMergeFailedPreserved =>
       'Det befintliga receptet är oförändrat.';
+
+  @override
+  String get conflictDiffUseTheirs => 'Använd deras version';
+
+  @override
+  String get conflictDiffUsedTheirs => 'Deras version gäller nu';
+
+  @override
+  String get conflictDiffUseTheirsFailed => 'Deras version kunde inte sparas.';
+
+  @override
+  String get conflictDiffUseTheirsKept => 'Din version gäller fortfarande.';
+
+  @override
+  String get conflictWeekKeepMine => 'Behåll min';
+
+  @override
+  String get partialOutcomeDone => 'Klart';
+
+  @override
+  String groupMembersPartialTitle(int removed, int total) {
+    return '$removed av $total togs bort';
+  }
+
+  @override
+  String get groupMembersPartialMessage =>
+      'De som inte kunde tas bort ligger kvar valda ovan.';
+
+  @override
+  String groupMembersPartialRemoved(String names, String group) {
+    return '$names är inte längre med i $group.';
+  }
+
+  @override
+  String get partialOutcomeListAnd => ' och ';
+
+  @override
+  String get groupMemberRemoveNotSaved =>
+      'Kunde inte tas bort – ändringen sparades inte';
+
+  @override
+  String get groupMembersRemoveNone => 'Ingen av de valda kunde tas bort.';
+
+  @override
+  String get selectionFailedKept => 'De ligger kvar valda.';
+
+  @override
+  String personalTagBulkDeletePartialTitle(int deleted, int total) {
+    return '$deleted av $total taggar togs bort';
+  }
+
+  @override
+  String get personalTagBulkDeletePartialMessage =>
+      'De som inte kunde tas bort ligger kvar valda.';
+
+  @override
+  String personalTagBulkDeletePartialDeleted(String names) {
+    return '$names togs bort.';
+  }
+
+  @override
+  String get personalTagBulkDeleteNotSaved =>
+      'Kunde inte tas bort – borttagningen sparades inte';
+
+  @override
+  String get personalTagBulkDeleteNone => 'Taggarna kunde inte tas bort.';
+
+  @override
+  String get overwrittenRestoreAction => 'Återställ min version';
+
+  @override
+  String get overwrittenPickTitle => 'Vilken version vill du återställa?';
+
+  @override
+  String overwrittenVersionFrom(String when) {
+    return 'Din version från $when';
+  }
+
+  @override
+  String overwrittenVersionBy(String name, String until) {
+    return '$name sparade över den · kvar till $until';
+  }
+
+  @override
+  String overwrittenVersionByUnnamed(String until) {
+    return 'Någon annan sparade över den · kvar till $until';
+  }
+
+  @override
+  String overwrittenWhenToday(String time) {
+    return 'i dag $time';
+  }
+
+  @override
+  String get overwrittenWhenYesterday => 'i går';
+
+  @override
+  String get overwrittenConfirmTitleWeek => 'Återställa din vecka?';
+
+  @override
+  String get overwrittenConfirmTitleRecipe => 'Återställa ditt recept?';
+
+  @override
+  String overwrittenConfirmBodyWeek(String when) {
+    return 'Din version från $when ersätter veckan som gäller nu. Du kan ångra direkt efteråt.';
+  }
+
+  @override
+  String overwrittenConfirmBodyRecipe(String when) {
+    return 'Din version från $when ersätter receptet som det ser ut nu. Du kan ångra direkt efteråt.';
+  }
+
+  @override
+  String get overwrittenRestored => 'Din version är återställd';
+
+  @override
+  String get overwrittenRestoreFailed => 'Din version kunde inte återställas';
+
+  @override
+  String get overwrittenRestoreGoneWeek =>
+      'Veckan finns inte längre, så din version kunde inte återställas';
+
+  @override
+  String get overwrittenRestoreGoneRecipe =>
+      'Receptet finns inte längre, så din version kunde inte återställas';
+
+  @override
+  String overwrittenKeptUntil(String until) {
+    return 'Den finns kvar till $until.';
+  }
+
+  @override
+  String get overwrittenUndoFailed => 'Ångra kunde inte slutföras';
+
+  @override
+  String get overwrittenUndoFailedKept =>
+      'Din återställda version gäller fortfarande.';
+
+  @override
+  String get messagingCreateConversation => 'Skapa konversation';
+
+  @override
+  String get reportDialogTitleRecipe => 'Anmäl det här receptet';
+
+  @override
+  String get reportDialogGuidelinesNoteSuffix =>
+      '— den version du ser nu är den vi dömer efter.';
+
+  @override
+  String get reportDialogIntro =>
+      'Berätta vad som är fel. En människa i teamet läser din anmälan.';
+
+  @override
+  String get reportDescriptionRequiredHelper => 'Krävs när du väljer Annat.';
 }
