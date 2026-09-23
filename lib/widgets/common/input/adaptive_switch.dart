@@ -6,6 +6,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/butlery_control_focus.dart';
+
 /// A platform-adaptive switch widget.
 /// Automatically uses CupertinoSwitch on iOS and Material Switch on Android.
 class AdaptiveSwitch extends StatelessWidget {
@@ -41,6 +44,15 @@ class AdaptiveSwitch extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // The shared grip: a 48 dp box with the focus ring around the whole box
+    // and no saffron focus tint (Grafisk manual v6:209, :381).
+    return ButleryControlFocus(
+      borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
+      child: _buildSwitch(context),
+    );
+  }
+
+  Widget _buildSwitch(BuildContext context) {
     if (!kIsWeb && Platform.isIOS) {
       return CupertinoSwitch(
         value: value,
@@ -113,6 +125,11 @@ class AdaptiveSwitchListTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // The row takes focus, so the ring goes around the whole row.
+    return ButleryControlFocus(child: _buildTile(context));
+  }
+
+  Widget _buildTile(BuildContext context) {
     if (!kIsWeb && Platform.isIOS) {
       // Use CupertinoListTile-style layout with CupertinoSwitch
       return ListTile(
