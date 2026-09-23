@@ -303,11 +303,13 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // The overflow tray header (l10n) should be present.
-      expect(find.text('Recept som inte fick plats'), findsOneWidget);
-      // Each overflow recipe title appears (lowercased) as a chip.
-      expect(find.text('överflöd ett'), findsOneWidget);
-      expect(find.text('överflöd två'), findsOneWidget);
+      // P5-U23: the tray counts in dishes (produktregler.md:206): nothing
+      // was placed and two did not fit.
+      expect(find.text('0 av 2 rätter placerade'), findsOneWidget);
+      // Each overflow recipe is named as written, never lower-cased
+      // (produktregler.md:892).
+      expect(find.text('Överflöd Ett'), findsOneWidget);
+      expect(find.text('Överflöd Två'), findsOneWidget);
     });
 
     testWidgets('today badge renders only when the visible week matches the '

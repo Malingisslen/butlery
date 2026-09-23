@@ -7,6 +7,7 @@ import 'package:butlery/viewmodels/url_import_viewmodel.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
+import 'package:butlery/widgets/common/feedback/partial_outcome.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
@@ -263,7 +264,10 @@ class _ImportViaUrlViewContentState extends State<_ImportViaUrlViewContent> {
                     // the "Importera N recept" action once any URL succeeded.
                     if (viewModel.urlResults.isNotEmpty) ...[
                       const SizedBox(height: AppDimensions.spacingXl),
-                      _UrlBatchResults(viewModel: viewModel),
+                      // P5-U22: the results scroll as one region, so a
+                      // partial outcome with several failed links never
+                      // pushes the import action off a small screen.
+                      Flexible(child: _UrlBatchResults(viewModel: viewModel)),
                       if (viewModel.hasAnyUrlSuccess) ...[
                         const SizedBox(height: AppDimensions.spacingXl),
                         ActionButtons.primaryButton(
@@ -342,6 +346,13 @@ class _ImportViaUrlViewContentState extends State<_ImportViaUrlViewContent> {
 /// BUT-947: renders one progress row per URL in a multi-URL import batch,
 /// with a per-URL retry affordance on failures and a "{n} of {m} fetched"
 /// summary so partial success is visible at a glance.
+///
+/// P5-U22 (produktregler.md:905-909, I-29; :588): once the batch has settled
+/// with some links fetched and some not, that is a third outcome. The failed
+/// links move into a [PartialOutcome] that counts what went ("7 av 9"), names
+/// each failed link with its reason and keeps its retry; the fetched ones
+/// stay listed below as ready to import. The pasted list itself stays in the
+/// field above, so nothing the user gave is dropped.
 class _UrlBatchResults extends StatelessWidget {
   const _UrlBatchResults({required this.viewModel});
 
@@ -351,38 +362,85 @@ class _UrlBatchResults extends StatelessWidget {
   Widget build(BuildContext context) {
     final results = viewModel.urlResults;
     final successCount = results.where((r) => r.isSuccess).length;
+    final partial = viewModel.isPartialBatch;
+    final rows = partial ? results.where((r) => r.isSuccess).toList() : results;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
+    return ListView(
+      shrinkWrap: true,
       children: [
-        Text(
-          context.l10n.importUrlBatchProgress(successCount, results.length),
-          style: AppTextStyles.headlineSmall,
-        ),
-        const SizedBox(height: AppDimensions.spacingS),
-        Flexible(
-          child: ListView.separated(
-            shrinkWrap: true,
-            itemCount: results.length,
-            separatorBuilder: (_, __) =>
-                const SizedBox(height: AppDimensions.spacingS),
-            itemBuilder: (context, index) {
-              final result = results[index];
-              return _UrlResultRow(
-                result: result,
-                onRetry: () => viewModel.retryUrl(index),
-              );
-            },
+        if (partial) ...[
+          PartialOutcome(
+            title: context.l10n.importUrlBatchPartialTitle(
+              successCount,
+              results.length,
+            ),
+            message: context.l10n.importUrlBatchPartialBody,
+            items: [
+              for (final failed in viewModel.failedUrlResults)
+                PartialOutcomeItem(
+                  id: failed.id,
+                  label: failed.url,
+                  reason: failed.error,
+                  action: _RetryButton(
+                    url: failed.url,
+                    onPressed: () => viewModel.retryUrlById(failed.id),
+                  ),
+                ),
+            ],
           ),
-        ),
+          const SizedBox(height: AppDimensions.spacingL),
+          Text(
+            context.l10n.importUrlBatchReadyHeading,
+            style: AppTextStyles.headlineSmall,
+          ),
+        ] else
+          Text(
+            context.l10n.importUrlBatchProgress(successCount, results.length),
+            style: AppTextStyles.headlineSmall,
+          ),
+        for (final result in rows) ...[
+          const SizedBox(height: AppDimensions.spacingS),
+          _UrlResultRow(
+            key: ValueKey('url-result-${result.id}'),
+            result: result,
+            onRetry: () => viewModel.retryUrlById(result.id),
+          ),
+        ],
       ],
     );
   }
 }
 
+/// "Försök igen" on one failed link. The visible label is the same on every
+/// row, so the accessible name says which link it retries.
+class _RetryButton extends StatelessWidget {
+  const _RetryButton({required this.url, required this.onPressed});
+
+  final String url;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      container: true,
+      label: context.l10n.importUrlBatchRetryA11y(url),
+      button: true,
+      onTap: onPressed,
+      excludeSemantics: true,
+      child: TextButton(
+        onPressed: onPressed,
+        child: Text(context.l10n.commonRetry),
+      ),
+    );
+  }
+}
+
 class _UrlResultRow extends StatelessWidget {
-  const _UrlResultRow({required this.result, required this.onRetry});
+  const _UrlResultRow({
+    super.key,
+    required this.result,
+    required this.onRetry,
+  });
 
   final UrlImportResult result;
   final VoidCallback onRetry;
@@ -401,11 +459,7 @@ class _UrlResultRow extends StatelessWidget {
             style: AppTextStyles.bodyMedium,
           ),
         ),
-        if (result.isFailure)
-          TextButton(
-            onPressed: onRetry,
-            child: Text(context.l10n.commonRetry),
-          ),
+        if (result.isFailure) _RetryButton(url: result.url, onPressed: onRetry),
       ],
     );
   }

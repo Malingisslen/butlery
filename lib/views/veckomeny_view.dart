@@ -14,6 +14,8 @@ import 'package:butlery/core/utils/iso_week_utils.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/services/persistence_service.dart';
+import 'package:butlery/services/realtime/realtime_types.dart';
+import 'package:butlery/services/realtime_sync_service.dart';
 import 'package:butlery/services/shopping/menu_shopping_list_generator.dart'
     show MenuShoppingGenerationResult;
 import 'package:butlery/services/unified/unified_friends_service.dart';
@@ -23,6 +25,7 @@ import 'package:butlery/viewmodels/menu/menu_placement_viewmodel.dart'
 import 'package:butlery/viewmodels/menu/weekly_menu_plan_viewmodel.dart';
 import 'package:butlery/viewmodels/menu_viewmodel.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/feedback/partial_outcome.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/butlery_control_focus.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
@@ -32,6 +35,8 @@ import 'package:butlery/widgets/menu/calendar_weekly_menu_widget.dart';
 import 'package:butlery/widgets/menu/group_menu_entry_button.dart';
 import 'package:butlery/widgets/menu/menu_content_widgets.dart';
 import 'package:butlery/widgets/menu/menu_placement_footer.dart';
+import 'package:butlery/widgets/menu/menu_view_helpers.dart';
+import 'package:butlery/widgets/realtime/conflict_snackbar.dart';
 import 'package:butlery/widgets/menu/veckomeny_dialogs.dart';
 import 'package:butlery/widgets/voice/voice_prompt_button.dart';
 import 'package:butlery/widgets/menu/veckomeny_selection_widgets.dart';
@@ -318,6 +323,19 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
     // The root bar (Komponentark v1:60-68; Skarmar v12 del 1 #veckomeny,
     // #tomvecka): "Veckomeny" with the week and the number of dishes on the
     // line under it, and the Lista/Kalender tabs under the bar.
+    //
+    // P5-U26a: the week menu listens for "{namn} sparade veckan".
+    return VeckomenyConflictNotice(
+      child: _buildScaffold(context, viewModel, weekNumber, menuItemCount),
+    );
+  }
+
+  Widget _buildScaffold(
+    BuildContext context,
+    MenuViewModel viewModel,
+    int weekNumber,
+    int menuItemCount,
+  ) {
     return Scaffold(
       appBar: ButleryTopBar.rot(
         title: context.l10n.menuWeek,
@@ -608,6 +626,18 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
                       )
                     : Column(
                         children: [
+                          // P5-U25: fewer dishes than asked is a partial
+                          // outcome, named above the list.
+                          if (viewModel.partialOutcome != null &&
+                              !viewModel.hasError)
+                            Padding(
+                              padding: const EdgeInsets.only(
+                                bottom: AppDimensions.spacingSm,
+                              ),
+                              child: VeckomenyPartialResult(
+                                outcome: viewModel.partialOutcome!,
+                              ),
+                            ),
                           Expanded(
                             child: MenuContentWidgets.buildMenuContent(
                               context,
@@ -643,4 +673,79 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
       ),
     );
   }
+}
+
+/// P5-U25: a generation that found fewer dishes than were asked for
+/// (produktregler.md:206: "1 ≤ n < begärt antal recept"). It says "Vi hittade
+/// n av m rätter" and names each meal type that is short (produktregler.md:
+/// 893: "Ett antal utan namn är ingen upplysning"), in the shared I-29 form
+/// (produktregler.md:905-909). Instead of looking complete, the result says
+/// what it is. The way on is the view's own Generera, which stays.
+class VeckomenyPartialResult extends StatelessWidget {
+  const VeckomenyPartialResult({super.key, required this.outcome});
+
+  final MenuPartialOutcome outcome;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+    return PartialOutcome(
+      title: l.menuPartialTitle(outcome.found, outcome.requested),
+      message: l.menuPartialBody,
+      items: [
+        for (final meal in outcome.missing)
+          PartialOutcomeItem(
+            id: 'meal-${meal.mealType}',
+            label: MenuViewHelpers.capitalizeCategory(meal.mealType),
+            reason: l.menuPartialMissing(
+              meal.found,
+              meal.requested,
+              meal.missing,
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+/// P5-U26a: mounts P3-U08's week conflict snackbar on the week menu.
+///
+/// produktregler.md:104: for the week menu the last save wins and the user
+/// sees "*Namn* sparade veckan" for 30 s; ux-beslut.json D-04 keeps that 30 s
+/// window apart from the 7 s undo. [ConflictSnackBar.showWeekSaved] owns the
+/// text, the window, the action and the filter (only a week-menu conflict the
+/// user's edit lost); this widget only listens to
+/// [RealtimeSyncService.conflictStream] while the week menu is open. Without
+/// a registered sync service it listens to nothing.
+class VeckomenyConflictNotice extends StatefulWidget {
+  const VeckomenyConflictNotice({super.key, required this.child});
+
+  final Widget child;
+
+  @override
+  State<VeckomenyConflictNotice> createState() =>
+      _VeckomenyConflictNoticeState();
+}
+
+class _VeckomenyConflictNoticeState extends State<VeckomenyConflictNotice> {
+  StreamSubscription<ConflictEvent>? _sub;
+
+  @override
+  void initState() {
+    super.initState();
+    final svc = ServiceLocator.tryGet<RealtimeSyncService>();
+    _sub = svc?.conflictStream.listen((event) {
+      if (!mounted) return;
+      ConflictSnackBar.showWeekSaved(context, event);
+    });
+  }
+
+  @override
+  void dispose() {
+    _sub?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
 }

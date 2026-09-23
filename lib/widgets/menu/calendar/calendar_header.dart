@@ -9,11 +9,13 @@ library;
 import 'package:flutter/material.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/core/utils/iso_week_utils.dart';
 import 'package:butlery/models/recipe_unified.dart';
-import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/services/menu/weekly_menu_plan_service.dart'
+    show WeeklyMenuOverflowReason;
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/widgets/common/feedback/partial_outcome.dart';
 import 'package:butlery/widgets/menu/calendar/calendar_drag.dart';
 
 class WeekNavHeader extends StatelessWidget {
@@ -166,81 +168,150 @@ class SelectionActionBar extends StatelessWidget {
   }
 }
 
+/// P5-U23: the tray of recipes that did not fit (produktregler.md:1123-1127,
+/// § 22.6; drawn in Skarmar v12 etapp 11 breda vyer:233-242, #vmbdelvis, and
+/// etapp 2:681-686, #veckooverflow).
+///
+/// It is a partial outcome of a bulk placement, so it takes the shared I-29
+/// form ([PartialOutcome]: surface.raised with a warning edge,
+/// produktregler.md:905-909, which names "massmenyläggning"). It
+/// - counts in recipes: "2 av 5 rätter placerade" (produktregler.md:206);
+/// - says why the rest did not fit (produktregler.md:1125) and that it stays
+///   until placed ("ett arbetsförråd, inte en notis");
+/// - names each recipe as written, never re-cased (produktregler.md:892: "De
+///   recept som inte får plats namnges");
+/// - offers next week as a choice in the tray (produktregler.md:1127), which
+///   makes a snackbar "next week" action unnecessary. The week menu has none.
+///
+/// The chips stay draggable into the week, as before (OverflowPayload).
 class OverflowTray extends StatelessWidget {
   final List<Recipe> overflow;
+
+  /// How many of [totalCount] have a place.
+  final int placedCount;
+
+  /// How many recipes the placement was given.
+  final int totalCount;
+
+  /// Why the rest did not fit. Null for a tray whose reason is unknown.
+  final WeeklyMenuOverflowReason? reason;
+
+  /// "Lägg i v. N". Null hides it (no reason, or the two-week limit).
+  final VoidCallback? onPlaceInNextWeek;
 
   const OverflowTray({
     super.key,
     required this.overflow,
+    required this.placedCount,
+    required this.totalCount,
+    this.reason,
+    this.onPlaceInNextWeek,
   });
+
+  /// Key of the "Lägg i v. N" action.
+  static const Key nextWeekKey = ValueKey('overflow-tray-next-week');
+
+  /// Key of the chip for the recipe with [recipeId].
+  static Key chipKey(String recipeId) => ValueKey('overflow-chip-$recipeId');
 
   @override
   Widget build(BuildContext context) {
-    final butleryColors = context.butleryColors;
-    return Container(
+    final l = context.l10n;
+    final why = reason;
+    final offersNext = onPlaceInNextWeek != null && why != null;
+    final nextWeek = why == null
+        ? null
+        : IsoWeekUtils.isoWeekNumber(why.nextWeekStart);
+    final message = [
+      if (why != null)
+        l.weeklyMenuOverflowReason(IsoWeekUtils.isoWeekNumber(why.weekStart)),
+      if (why != null && why.pastDaysSkipped) l.weeklyMenuOverflowPastDays,
+      if (offersNext)
+        l.weeklyMenuOverflowKeepOrNextWeek(nextWeek!)
+      else
+        l.weeklyMenuOverflowKeep,
+    ].join(' ');
+    return Padding(
       padding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.spacingMd,
         vertical: AppDimensions.spacingSm,
       ),
-      decoration: BoxDecoration(
-        color: butleryColors.warningContainer,
-        border: Border(
-          bottom: BorderSide(color: butleryColors.warning, width: 2),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.info_outline, size: 14, color: butleryColors.warning),
-              const SizedBox(width: AppDimensions.spacingXs),
-              Text(
-                context.l10n.weeklyMenuOverflowTitle,
-                style: AppTextStyles.labelSmall.copyWith(
-                  color: Theme.of(context).colorScheme.onSurface,
-                  letterSpacing: 1,
-                ),
+      child: PartialOutcome(
+        title: l.weeklyMenuOverflowPlacedCount(placedCount, totalCount),
+        message: message,
+        actions: [
+          if (offersNext)
+            Semantics(
+              container: true,
+              label: l.weeklyMenuOverflowNextWeekA11y(
+                overflow.length,
+                nextWeek!,
               ),
-            ],
-          ),
-          const SizedBox(height: AppDimensions.spacingXs),
-          Wrap(
-            spacing: AppDimensions.spacingXs,
-            runSpacing: AppDimensions.spacingXs,
-            children: [
-              for (final recipe in overflow) _OverflowChip(recipe: recipe),
-            ],
-          ),
+              button: true,
+              onTap: onPlaceInNextWeek,
+              excludeSemantics: true,
+              child: OutlinedButton(
+                key: nextWeekKey,
+                onPressed: onPlaceInNextWeek,
+                child: Text(l.weeklyMenuOverflowNextWeekAction(nextWeek)),
+              ),
+            ),
         ],
+        child: Wrap(
+          spacing: AppDimensions.spacingTight,
+          runSpacing: AppDimensions.spacingTight,
+          children: [
+            for (final recipe in overflow)
+              _OverflowChip(key: chipKey(recipe.id), recipe: recipe),
+          ],
+        ),
       ),
     );
   }
 }
 
+/// One recipe in the tray: its title as written, with a drag handle
+/// (Skarmar v12 etapp 11:237-239: 48 px high, 1 px border, 12.5/600).
+///
+/// Colours, both modes from the theme: surface.base (`colorScheme.surface`,
+/// #F5F4ED light, #17251D dark), border.control (`colorScheme.outline`,
+/// #7D897C light, paper 35 % dark), text.primary (`onSurface`) and the handle
+/// in text.secondary (`onSurfaceVariant`). The drawing's dark chip is ink
+/// #24382C; the delivered theme has no surface role for that on
+/// surface.raised, so the chip uses surface.base (interpretation).
 class _OverflowChip extends StatelessWidget {
   final Recipe recipe;
 
-  const _OverflowChip({required this.recipe});
+  const _OverflowChip({super.key, required this.recipe});
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final chip = Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingSm,
-        vertical: 4,
+      constraints: const BoxConstraints(
+        minHeight: AppDimensions.minTouchTarget,
       ),
+      padding: const EdgeInsets.symmetric(horizontal: AppDimensions.paddingMs),
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        border: Border(
-          left: BorderSide(color: context.butleryColors.warning, width: 2),
-          bottom: const BorderSide(color: AppColors.rustLight, width: 2),
-        ),
+        color: cs.surface,
+        border: Border.all(color: cs.outline),
       ),
-      child: Text(
-        recipe.title.toLowerCase(),
-        style: AppTextStyles.labelSmall.copyWith(color: cs.onSurface),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.drag_indicator,
+            size: AppDimensions.iconSizeS,
+            color: cs.onSurfaceVariant,
+          ),
+          const SizedBox(width: AppDimensions.spacingSm),
+          Flexible(
+            child: Text(
+              recipe.title,
+              style: AppTextStyles.labelMedium.copyWith(color: cs.onSurface),
+            ),
+          ),
+        ],
       ),
     );
     return wrapAsDraggable(

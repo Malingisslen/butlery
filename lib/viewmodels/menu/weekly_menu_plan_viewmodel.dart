@@ -1,6 +1,8 @@
 /// ViewModel backing the calendar weekly menu view.
 library;
 
+import 'dart:async';
+
 import 'package:butlery/core/utils/logger.dart';
 import 'package:clock/clock.dart';
 
@@ -18,16 +20,43 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
   final UnifiedRecipeService _recipeService;
   final MenuShoppingListGenerator _shoppingListGenerator;
 
+  /// [overflowTrayStore] keeps the overflow tray on this device (P5-U24). It
+  /// defaults to the SharedPreferences store; tests pass their own.
   WeeklyMenuPlanViewModel({
     required WeeklyMenuPlanService service,
     required UnifiedRecipeService recipeService,
     required MenuShoppingListGenerator shoppingListGenerator,
+    WeeklyMenuOverflowTrayStore? overflowTrayStore,
   }) : _service = service,
        _recipeService = recipeService,
-       _shoppingListGenerator = shoppingListGenerator;
+       _shoppingListGenerator = shoppingListGenerator,
+       _trayStore = overflowTrayStore ?? WeeklyMenuOverflowTrayStore();
+
+  final WeeklyMenuOverflowTrayStore _trayStore;
 
   WeeklyMenuPlan? _plan;
-  List<Recipe> _overflow = const [];
+
+  /// P5-U23/U24: the overflow tray, "ett arbetsförråd, inte en notis"
+  /// (produktregler.md:1123-1127). Its recipes, the meal type each was
+  /// generated for, why they did not fit, and how many recipes the
+  /// distribution was given, so the tray can say "2 av 5 rätter placerade"
+  /// (produktregler.md:206).
+  _OverflowTray _tray = _OverflowTray.empty;
+
+  /// Set once anything has changed the tray in this session, so a slow
+  /// restore from the device never overwrites a newer tray.
+  bool _trayTouched = false;
+  bool _trayRestoreStarted = false;
+
+  List<Recipe> get _overflow => _tray.recipes;
+
+  /// Replaces the tray's recipes and keeps what the tray knows about them
+  /// (reason, total, meal types). Every change is kept on the device.
+  set _overflow(List<Recipe> recipes) => _setTray(_tray.withRecipes(recipes));
+
+  /// P5-U23: the order the latest automatic placement followed, as entry
+  /// ids. Shown as numbers in the cells (produktregler.md:1126, :890).
+  List<String> _placementOrder = const [];
 
   /// BUT-1975: an edit computed from `_plan` is being published.
   ///
@@ -74,7 +103,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
   // full pre-clear state — clearWeek wipes both, so undo must restore both or
   // the overflow recipes are lost permanently.
   List<WeeklyMenuPlanEntry>? _preClearEntries;
-  List<Recipe>? _preClearOverflow;
+  _OverflowTray? _preClearOverflow;
 
   // BUT-1043: long-press multi-select state for bulk-move. When
   // [_selectionMode] is on, calendar cells toggle selection on tap instead
@@ -97,6 +126,35 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
   /// auto-distribution (renders the "NY" badge).
   bool isRecentlyPlaced(String entryId) =>
       _recentlyPlacedEntryIds.contains(entryId);
+
+  /// P5-U23: the 1-based place of [entryId] in the order the latest
+  /// automatic placement followed, or null when it was not part of it.
+  /// "Placeringsordningen visas som siffror i rutorna, så resultatet inte är
+  /// en gissning" (produktregler.md:1126; Skarmar v12 etapp 11:249-254).
+  int? placementOrderOf(String entryId) {
+    final index = _placementOrder.indexOf(entryId);
+    return index < 0 ? null : index + 1;
+  }
+
+  /// P5-U23: why the tray's recipes did not fit. Null without a tray, or for
+  /// a tray whose reason is unknown.
+  WeeklyMenuOverflowReason? get overflowReason =>
+      _overflow.isEmpty ? null : _tray.reason;
+
+  /// P5-U23: how many recipes the distribution behind the tray was given.
+  /// With [overflowPlacedCount] it reads "2 av 5 rätter placerade"
+  /// (produktregler.md:206: a partial result is counted in recipes).
+  int get overflowTotal =>
+      _tray.total < _overflow.length ? _overflow.length : _tray.total;
+
+  /// P5-U23: how many of [overflowTotal] have a place now. Placing a chip
+  /// from the tray counts it as placed.
+  int get overflowPlacedCount => overflowTotal - _overflow.length;
+
+  /// P5-U23: whether the tray offers the following week (produktregler.md:
+  /// 1127: "nästa vecka är ett val i brickan").
+  bool get canPlaceOverflowInNextWeek =>
+      _overflow.isNotEmpty && (_tray.reason?.nextWeekOffered ?? false);
 
   /// The week this viewmodel is showing, whether or not its plan loaded.
   ///
@@ -274,13 +332,20 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
     _readFailed = false;
     // The placement session is the new truth for that week; whatever the
     // tray held that wasn't placed was deliberately left out.
-    _overflow = const [];
+    _setTray(_OverflowTray.empty);
     _recentlyPlacedEntryIds = recentlyPlacedEntryIds;
+    _placementOrder = const [];
     notifyListeners();
   }
 
   Future<void> _fetchWeek(DateTime weekStart) async {
     _requestedWeekStart = weekStart;
+    // P5-U24: the first read of a week in this session also brings back the
+    // tray this device kept. Not awaited: the week never waits for it.
+    if (!_trayRestoreStarted) {
+      _trayRestoreStarted = true;
+      unawaited(restoreOverflowTray());
+    }
     await executeAsyncVoid(
       () async {
         final read = await _service.readWeek(weekStart);
@@ -301,6 +366,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
         final fetched = read.plan;
         _plan = fetched;
         _recentlyPlacedEntryIds = const {};
+        _placementOrder = const [];
         // A week (re)load is a fresh context — drop any in-progress
         // selection so it can't apply to entries from a different week.
         _selectionMode = false;
@@ -351,8 +417,9 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
     // uses its `alreadyRunning` sentinel. BUT-1987.
     if (_readFailed || _applyInFlight) return null;
     final previousPlan = _plan;
-    final previousOverflow = _overflow;
+    final previousTray = _tray;
     final previousPlacedIds = _recentlyPlacedEntryIds;
+    final previousOrder = _placementOrder;
     final previousParsedRequest = _lastParsedRequest;
     _applyInFlight = true;
     int? placedCount;
@@ -382,8 +449,16 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
         // before assigning `_plan`, so offline the generated week was never
         // rendered at all.
         _plan = result.plan;
-        _overflow = result.overflow;
+        _setTray(
+          _OverflowTray(
+            recipes: List.unmodifiable(result.overflow),
+            mealTypes: _mealTypesFor(result, generated),
+            reason: result.overflowReason,
+            total: newIds.length + result.overflow.length,
+          ),
+        );
         _recentlyPlacedEntryIds = newIds;
+        _placementOrder = List.unmodifiable(newIds);
         placedCount = newIds.length;
         notifyListeners();
         _publishInFlight = false;
@@ -404,8 +479,9 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
           // in flight.
           if (!isDisposed && identical(_plan, result.plan)) {
             _plan = previousPlan;
-            _overflow = previousOverflow;
+            _setTray(previousTray);
             _recentlyPlacedEntryIds = previousPlacedIds;
+            _placementOrder = previousOrder;
             _lastParsedRequest = previousParsedRequest;
             notifyListeners();
           }
@@ -427,9 +503,10 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
   }
 
   /// Returns whether the entry was actually persisted. [assignFromOverflow]
-  /// needs that answer: the overflow tray is in-memory only and nothing
-  /// repopulates it, so pruning a chip after a refused save loses the recipe
-  /// until the menu is regenerated.
+  /// needs that answer: nothing but the tray itself repopulates the tray (the
+  /// device copy of P5-U24 mirrors it, it is not a second source), so pruning
+  /// a chip after a refused save loses the recipe until the menu is
+  /// regenerated.
   Future<bool> assignRecipe({
     required DayOfWeek day,
     required MealSlot slot,
@@ -501,7 +578,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
     final current = _plan;
     if (current == null) return false;
     if (current.isEmpty && _overflow.isEmpty) return false;
-    final previousOverflow = _overflow;
+    final previousOverflow = _tray;
     return _executeWrite(
       () async {
         final cleared = _service.clearWeek(current);
@@ -509,9 +586,9 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
         // Snapshots read the PRE-clear values, so they are taken from `current`
         // and `_overflow` before the assignments below.
         _preClearEntries = List.unmodifiable(current.entries);
-        _preClearOverflow = List.unmodifiable(previousOverflow);
+        _preClearOverflow = previousOverflow;
         _plan = cleared;
-        _overflow = const [];
+        _setTray(_OverflowTray.empty);
         notifyListeners();
         _publishInFlight = false;
         if (identical(cleared, current)) return;
@@ -525,7 +602,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
           // the user may have moved on while the refusal was in flight.
           if (!isDisposed && identical(_plan, cleared)) {
             _plan = current;
-            _overflow = previousOverflow;
+            _setTray(previousOverflow);
             _preClearEntries = null;
             _preClearOverflow = null;
             notifyListeners();
@@ -544,7 +621,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
     final overflowSnapshot = _preClearOverflow;
     final current = _plan;
     if (snapshot == null || current == null) return;
-    final previousOverflow = _overflow;
+    final previousOverflow = _tray;
     await _executeWrite(
       () async {
         final restored = _service.restoreWeek(current, snapshot);
@@ -552,7 +629,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
         _plan = restored;
         // Restore the tray too — clearWeek wiped it, so undo must bring it back
         // or the overflow recipes vanish even though the user tapped "Ångra".
-        _overflow = overflowSnapshot ?? const [];
+        _setTray(overflowSnapshot ?? _OverflowTray.empty);
         _preClearEntries = null;
         _preClearOverflow = null;
         notifyListeners();
@@ -565,7 +642,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
           // week nor a second chance at "Ångra".
           if (!isDisposed && identical(_plan, restored)) {
             _plan = current;
-            _overflow = previousOverflow;
+            _setTray(previousOverflow);
             _preClearEntries = snapshot;
             _preClearOverflow = overflowSnapshot;
             notifyListeners();
@@ -646,6 +723,152 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
     restored.insert(index.clamp(0, restored.length), recipe);
     _overflow = restored;
     notifyListeners();
+  }
+
+  /// P5-U23: the tray's "Lägg i v. N" (produktregler.md:1127: with the tray,
+  /// FL-11 is unnecessary; next week is a choice in the tray, not an action
+  /// in a snackbar. Skarmar v12 etapp 11 breda vyer:241).
+  ///
+  /// Distributes the tray's recipes into the week after the one that had no
+  /// room, the same way a generation is distributed (from Monday, occupied
+  /// places are left alone). What does not fit there either stays in the
+  /// tray, and the tray then offers no further week: produktregler.md:893
+  /// makes the two-week limit something the user sees.
+  ///
+  /// Publish first, like every write here (BUT-1975): the tray changes at
+  /// once and a refused save puts it back. Returns how many recipes moved,
+  /// or null when nothing was done or the save was refused.
+  Future<int?> placeOverflowInNextWeek({DateTime? now}) async {
+    final reason = _tray.reason;
+    if (_overflow.isEmpty || reason == null || !reason.nextWeekOffered) {
+      return null;
+    }
+    if (_applyInFlight) return null;
+    _applyInFlight = true;
+    final target = reason.nextWeekStart;
+    final before = _tray;
+    int? moved;
+    final ok = await _executeWrite(
+      () async {
+        final read = await _service.readWeek(target);
+        if (isDisposed) return;
+        if (read.readFailed) throw StateError(weeklyPlanReadFailedMessage);
+        final generated = <String, List<Recipe>>{};
+        for (final recipe in before.recipes) {
+          final mealType = before.mealTypes[recipe.id] ?? recipe.mealType;
+          (generated[mealType] ??= []).add(recipe);
+        }
+        final result = _service.distributeFromGeneratedMenu(
+          generated: generated,
+          weekStart: target,
+          existing: read.plan,
+          now: now,
+        );
+        if (isDisposed) return;
+        final rest = result.overflow;
+        moved = before.recipes.length - rest.length;
+        _setTray(
+          _OverflowTray(
+            recipes: List.unmodifiable(rest),
+            mealTypes: before.mealTypes,
+            reason: WeeklyMenuOverflowReason(
+              weekStart: target,
+              nextWeekOffered: false,
+            ),
+            total: before.total,
+          ),
+        );
+        final showsTarget = _plan?.weekStartDate == target;
+        final previousPlan = _plan;
+        if (showsTarget) _plan = result.plan;
+        notifyListeners();
+        try {
+          await _service.save(result.plan);
+        } catch (_) {
+          if (!isDisposed) {
+            _setTray(before);
+            if (showsTarget && identical(_plan, result.plan)) {
+              _plan = previousPlan;
+            }
+            notifyListeners();
+          }
+          rethrow;
+        }
+      },
+      errorPrefix: 'Veckan kunde inte sparas',
+      guarded: false,
+    );
+    _applyInFlight = false;
+    if (!isDisposed) notifyListeners();
+    return ok ? moved : null;
+  }
+
+  /// P5-U24: brings back the tray this device kept for the signed-in user
+  /// (produktregler.md:1125: the tray "överlever omladdning, ligger kvar
+  /// tills den töms"). Does nothing when this session already changed the
+  /// tray, so a restore never overwrites a newer tray. Recipes deleted in
+  /// the meantime are dropped.
+  Future<void> restoreOverflowTray() async {
+    final owner = _service.overflowTrayOwnerId;
+    if (owner == null) return;
+    final kept = await _trayStore.load(owner);
+    if (kept == null || isDisposed || _trayTouched) return;
+    final recipes = <Recipe>[
+      for (final id in kept.recipeIds) ?_recipeService.getRecipeById(id),
+    ];
+    _tray = _OverflowTray(
+      recipes: List.unmodifiable(recipes),
+      mealTypes: kept.mealTypes,
+      reason: kept.reason,
+      total: kept.total,
+    );
+    // A recipe that was deleted since leaves the device copy too.
+    if (recipes.length != kept.recipeIds.length) _persistTray();
+    notifyListeners();
+  }
+
+  /// Sets the tray and keeps it on this device (P5-U24).
+  void _setTray(_OverflowTray tray) {
+    _trayTouched = true;
+    _tray = tray;
+    _persistTray();
+  }
+
+  void _persistTray() {
+    final owner = _service.overflowTrayOwnerId;
+    if (owner == null) return;
+    final tray = _tray;
+    unawaited(
+      _trayStore.save(
+        owner,
+        tray.recipes.isEmpty
+            ? null
+            : WeeklyMenuOverflowTraySnapshot(
+                recipeIds: [for (final r in tray.recipes) r.id],
+                mealTypes: {
+                  for (final r in tray.recipes)
+                    if (tray.mealTypes[r.id] != null)
+                      r.id: tray.mealTypes[r.id]!,
+                },
+                total: tray.total,
+                savedAt: clock.now(),
+                reason: tray.reason,
+              ),
+      ),
+    );
+  }
+
+  /// The meal type each overflowed recipe was generated for. A result built
+  /// without them (older callers) falls back to the generated map's keys.
+  static Map<String, String> _mealTypesFor(
+    WeeklyMenuDistributionResult result,
+    Map<String, List<Recipe>> generated,
+  ) {
+    if (result.overflowMealTypes.isNotEmpty) return result.overflowMealTypes;
+    return {
+      for (final entry in generated.entries)
+        for (final recipe in entry.value) recipe.id: entry.key,
+    };
   }
 
   /// BUT-1043: copy every entry from the visible week into the following
@@ -744,4 +967,29 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
     if (!ok) return null;
     return moved;
   }
+}
+
+/// P5-U23/U24: the overflow tray's state. Immutable, so a rollback can put
+/// the whole tray back in one assignment.
+class _OverflowTray {
+  const _OverflowTray({
+    required this.recipes,
+    this.mealTypes = const {},
+    this.reason,
+    this.total = 0,
+  });
+
+  static const empty = _OverflowTray(recipes: []);
+
+  final List<Recipe> recipes;
+  final Map<String, String> mealTypes;
+  final WeeklyMenuOverflowReason? reason;
+  final int total;
+
+  _OverflowTray withRecipes(List<Recipe> next) => _OverflowTray(
+    recipes: List.unmodifiable(next),
+    mealTypes: mealTypes,
+    reason: reason,
+    total: total,
+  );
 }

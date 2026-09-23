@@ -12448,5 +12448,145 @@
   "loadingMoreActivity": "Hämtar fler händelser …",
   "@loadingMoreActivity": {"description": "The next page of the friends feed, under the plate line (P4-U12)."},
   "menuPreviewTitle": "Delad meny",
-  "@menuPreviewTitle": {"description": "Top bar title of the shared menu preview (Skarmar v12 del 3 #menyforhands)."}
+  "@menuPreviewTitle": {"description": "Top bar title of the shared menu preview (Skarmar v12 del 3 #menyforhands)."},
+  "importUrlBatchPartialTitle": "Vi hämtade {success} av {total} länkar",
+  "@importUrlBatchPartialTitle": {
+    "description": "P5-U22: partial outcome of a pasted URL list (produktregler.md:588, :905-909). Counted, never rounded up.",
+    "placeholders": {
+      "success": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "importUrlBatchPartialBody": "Vi kunde inte hämta länkarna nedan. De ligger kvar här och i fältet ovan, så att du kan försöka igen.",
+  "@importUrlBatchPartialBody": {
+    "description": "P5-U22: why the rest did not go and that the failed links are kept (I-29)."
+  },
+  "importUrlBatchReadyHeading": "Klara att importera",
+  "@importUrlBatchReadyHeading": {
+    "description": "P5-U22: heading over the links that were fetched in a partial batch (Skarmar v12 etapp 4:231)."
+  },
+  "importUrlBatchRetryA11y": "Försök hämta {url} igen",
+  "@importUrlBatchRetryA11y": {
+    "description": "P5-U22: accessible name of the retry button on one failed link.",
+    "placeholders": {
+      "url": {
+        "type": "String"
+      }
+    }
+  },
+  "weeklyMenuOverflowPlacedCount": "{placed} av {total} rätter placerade",
+  "@weeklyMenuOverflowPlacedCount": {
+    "description": "P5-U23: overflow tray title, counted in dishes (produktregler.md:206).",
+    "placeholders": {
+      "placed": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "weeklyMenuOverflowReason": "Vecka {week} hade inga fler lediga platser för de här.",
+  "@weeklyMenuOverflowReason": {
+    "description": "P5-U23: why the rest did not fit (produktregler.md:1125).",
+    "placeholders": {
+      "week": {
+        "type": "int"
+      }
+    }
+  },
+  "weeklyMenuOverflowPastDays": "Dagar som redan har passerat fylls aldrig.",
+  "@weeklyMenuOverflowPastDays": {
+    "description": "P5-U23: part of the reason when the week is the current week (produktregler.md:201)."
+  },
+  "weeklyMenuOverflowKeepOrNextWeek": "De ligger kvar här tills du placerar dem eller lägger dem i vecka {week}.",
+  "@weeklyMenuOverflowKeepOrNextWeek": {
+    "description": "P5-U23: the tray is a working store, not a notice (produktregler.md:1125, Skarmar v12 etapp 11:235).",
+    "placeholders": {
+      "week": {
+        "type": "int"
+      }
+    }
+  },
+  "weeklyMenuOverflowKeep": "De ligger kvar här tills du placerar dem.",
+  "@weeklyMenuOverflowKeep": {
+    "description": "P5-U23: as weeklyMenuOverflowKeepOrNextWeek, when no further week is offered (two-week limit, produktregler.md:893)."
+  },
+  "weeklyMenuOverflowNextWeekAction": "Lägg i v. {week}",
+  "@weeklyMenuOverflowNextWeekAction": {
+    "description": "P5-U23: the tray's next-week choice (produktregler.md:1127; Skarmar v12 etapp 11:241).",
+    "placeholders": {
+      "week": {
+        "type": "int"
+      }
+    }
+  },
+  "weeklyMenuOverflowNextWeekA11y": "{count, plural, =1{Lägg den i vecka {week}} other{Lägg de {count} i vecka {week}}}",
+  "@weeklyMenuOverflowNextWeekA11y": {
+    "description": "P5-U23: accessible name of the next-week choice (Skarmar v12 etapp 11:241 'Lägg de tre i vecka 32').",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "week": {
+        "type": "int"
+      }
+    }
+  },
+  "weeklyMenuOverflowMovedToNextWeek": "{count, plural, =1{1 rätt lades i vecka {week}} other{{count} rätter lades i vecka {week}}}",
+  "@weeklyMenuOverflowMovedToNextWeek": {
+    "description": "P5-U23: receipt after the tray's next-week choice.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "week": {
+        "type": "int"
+      }
+    }
+  },
+  "a11yWeeklyMenuPlacementOrder": "Placerad som nummer {order}",
+  "@a11yWeeklyMenuPlacementOrder": {
+    "description": "P5-U23: screen-reader value of the placement order number in a cell (produktregler.md:1126).",
+    "placeholders": {
+      "order": {
+        "type": "int"
+      }
+    }
+  },
+  "menuPartialTitle": "Vi hittade {found} av {requested} rätter",
+  "@menuPartialTitle": {
+    "description": "P5-U25: a generation with fewer dishes than asked (produktregler.md:206; content-style-guide.md:14-15).",
+    "placeholders": {
+      "found": {
+        "type": "int"
+      },
+      "requested": {
+        "type": "int"
+      }
+    }
+  },
+  "menuPartialBody": "Det finns inte fler recept som passar det du skrev.",
+  "@menuPartialBody": {
+    "description": "P5-U25: why the menu is short."
+  },
+  "menuPartialMissing": "{found} av {requested}, {missing} saknas",
+  "@menuPartialMissing": {
+    "description": "P5-U25: one short meal type (produktregler.md:893: what is missing is named).",
+    "placeholders": {
+      "found": {
+        "type": "int"
+      },
+      "requested": {
+        "type": "int"
+      },
+      "missing": {
+        "type": "int"
+      }
+    }
+  }
 }

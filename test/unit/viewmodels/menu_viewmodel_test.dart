@@ -9,6 +9,7 @@ import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/analytics/trackers/menu_events_tracker.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/shared_menu.dart';
+import 'package:butlery/models/menu/parsed_menu_request.dart';
 import 'package:butlery/models/tagging/tag_result.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
@@ -544,6 +545,126 @@ void main() {
         vm.dispose();
         expect(() => vm.dispose(), throwsFlutterError);
       });
+    });
+
+    // -- P5-U25: fewer dishes than asked is a partial outcome ------------------
+    //
+    // produktregler.md:206: "Ett delresultat är alltså 1 ≤ n < begärt antal
+    // recept." produktregler.md:893: what is missing is named.
+    group('P5-U25 partial generation', () {
+      ParsedMenuRequest request(Map<String, int> counts, {int pins = 0}) =>
+          ParsedMenuRequest(
+            slotRequests: [
+              for (final e in counts.entries)
+                SlotRequest(
+                  mealType: e.key,
+                  subRequests: [RecipeConstraint(count: e.value)],
+                ),
+            ],
+            globalAllergenAvoid: const {},
+            globalDietaryRequire: const {},
+            dayPins: [
+              for (var i = 0; i < pins; i++)
+                const DayPin(
+                  weekdayIndex: 5,
+                  mealType: 'middag',
+                  constraint: RecipeConstraint(count: 1),
+                ),
+            ],
+            trace: const ExtractionTrace(),
+            rawPrompt: 'p',
+          );
+
+      void answer(Map<String, List<Recipe>> menu, ParsedMenuRequest? parsed) {
+        when(
+          () => mockMenuService.generateMenuFromPrompt(
+            any(),
+            any(),
+            recentlyUsedRecipeIds: any(named: 'recentlyUsedRecipeIds'),
+            scoringContext: any(named: 'scoringContext'),
+          ),
+        ).thenAnswer((_) async => menu);
+        when(
+          () => mockMenuService.parsePrompt(any()),
+        ).thenAnswer((_) async => parsed);
+      }
+
+      test('2 of 5 asked is partial and names the short meal type', () async {
+        answer({
+          'Middag': [testRecipe, testRecipe2],
+        }, request({'middag': 5}));
+
+        await viewModel.generateMenu('5 middagar');
+
+        final partial = viewModel.partialOutcome;
+        expect(partial, isNotNull);
+        expect(partial!.found, 2);
+        expect(partial.requested, 5);
+        expect(partial.missing.single.mealType, 'middag');
+        expect(partial.missing.single.missing, 3);
+      });
+
+      test('a day pin asks for one dish more', () async {
+        answer({
+          'Middag': [testRecipe, testRecipe2],
+        }, request({'middag': 2}, pins: 1));
+
+        await viewModel.generateMenu('2 middagar och tacofredag');
+
+        expect(viewModel.partialOutcome!.requested, 3);
+        expect(viewModel.partialOutcome!.found, 2);
+      });
+
+      test('everything asked for is not partial', () async {
+        answer({
+          'Middag': [testRecipe],
+          'Frukost': [testRecipe2],
+        }, request({'middag': 1, 'frukost': 1}));
+
+        await viewModel.generateMenu('1 middag 1 frukost');
+
+        expect(viewModel.partialOutcome, isNull);
+      });
+
+      test('an unparsable prompt never invents a gap', () async {
+        answer({
+          'Middag': [testRecipe],
+        }, null);
+
+        await viewModel.generateMenu('något');
+
+        expect(viewModel.partialOutcome, isNull);
+      });
+
+      test(
+        'clearing or loading another menu ends the partial outcome',
+        () async {
+          answer({
+            'Middag': [testRecipe],
+          }, request({'middag': 4}));
+          await viewModel.generateMenu('4 middagar');
+          expect(viewModel.partialOutcome, isNotNull);
+
+          viewModel.clearMenu();
+          expect(viewModel.partialOutcome, isNull);
+
+          await viewModel.generateMenu('4 middagar');
+          expect(viewModel.partialOutcome, isNotNull);
+          viewModel.loadFromSharedMenu(
+            SharedMenu.create(
+              sharedByUserId: testUserId,
+              sharedByDisplayName: 'Test',
+              sharedToUserIds: [testFriendId],
+              menuTitle: 'Delad',
+              menuSnapshot: {
+                'Middag': [testRecipe],
+              },
+              shareMessage: '',
+            ),
+          );
+          expect(viewModel.partialOutcome, isNull);
+        },
+      );
     });
 
     // -- BUT-1317: Personal flow allergen/dietary safety -----------------------

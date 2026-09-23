@@ -27970,6 +27970,102 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Delad meny'**
   String get menuPreviewTitle;
+
+  /// P5-U22: partial outcome of a pasted URL list (produktregler.md:588, :905-909). Counted, never rounded up.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vi hämtade {success} av {total} länkar'**
+  String importUrlBatchPartialTitle(int success, int total);
+
+  /// P5-U22: why the rest did not go and that the failed links are kept (I-29).
+  ///
+  /// In sv, this message translates to:
+  /// **'Vi kunde inte hämta länkarna nedan. De ligger kvar här och i fältet ovan, så att du kan försöka igen.'**
+  String get importUrlBatchPartialBody;
+
+  /// P5-U22: heading over the links that were fetched in a partial batch (Skarmar v12 etapp 4:231).
+  ///
+  /// In sv, this message translates to:
+  /// **'Klara att importera'**
+  String get importUrlBatchReadyHeading;
+
+  /// P5-U22: accessible name of the retry button on one failed link.
+  ///
+  /// In sv, this message translates to:
+  /// **'Försök hämta {url} igen'**
+  String importUrlBatchRetryA11y(String url);
+
+  /// P5-U23: overflow tray title, counted in dishes (produktregler.md:206).
+  ///
+  /// In sv, this message translates to:
+  /// **'{placed} av {total} rätter placerade'**
+  String weeklyMenuOverflowPlacedCount(int placed, int total);
+
+  /// P5-U23: why the rest did not fit (produktregler.md:1125).
+  ///
+  /// In sv, this message translates to:
+  /// **'Vecka {week} hade inga fler lediga platser för de här.'**
+  String weeklyMenuOverflowReason(int week);
+
+  /// P5-U23: part of the reason when the week is the current week (produktregler.md:201).
+  ///
+  /// In sv, this message translates to:
+  /// **'Dagar som redan har passerat fylls aldrig.'**
+  String get weeklyMenuOverflowPastDays;
+
+  /// P5-U23: the tray is a working store, not a notice (produktregler.md:1125, Skarmar v12 etapp 11:235).
+  ///
+  /// In sv, this message translates to:
+  /// **'De ligger kvar här tills du placerar dem eller lägger dem i vecka {week}.'**
+  String weeklyMenuOverflowKeepOrNextWeek(int week);
+
+  /// P5-U23: as weeklyMenuOverflowKeepOrNextWeek, when no further week is offered (two-week limit, produktregler.md:893).
+  ///
+  /// In sv, this message translates to:
+  /// **'De ligger kvar här tills du placerar dem.'**
+  String get weeklyMenuOverflowKeep;
+
+  /// P5-U23: the tray's next-week choice (produktregler.md:1127; Skarmar v12 etapp 11:241).
+  ///
+  /// In sv, this message translates to:
+  /// **'Lägg i v. {week}'**
+  String weeklyMenuOverflowNextWeekAction(int week);
+
+  /// P5-U23: accessible name of the next-week choice (Skarmar v12 etapp 11:241 'Lägg de tre i vecka 32').
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{Lägg den i vecka {week}} other{Lägg de {count} i vecka {week}}}'**
+  String weeklyMenuOverflowNextWeekA11y(int count, int week);
+
+  /// P5-U23: receipt after the tray's next-week choice.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 rätt lades i vecka {week}} other{{count} rätter lades i vecka {week}}}'**
+  String weeklyMenuOverflowMovedToNextWeek(int count, int week);
+
+  /// P5-U23: screen-reader value of the placement order number in a cell (produktregler.md:1126).
+  ///
+  /// In sv, this message translates to:
+  /// **'Placerad som nummer {order}'**
+  String a11yWeeklyMenuPlacementOrder(int order);
+
+  /// P5-U25: a generation with fewer dishes than asked (produktregler.md:206; content-style-guide.md:14-15).
+  ///
+  /// In sv, this message translates to:
+  /// **'Vi hittade {found} av {requested} rätter'**
+  String menuPartialTitle(int found, int requested);
+
+  /// P5-U25: why the menu is short.
+  ///
+  /// In sv, this message translates to:
+  /// **'Det finns inte fler recept som passar det du skrev.'**
+  String get menuPartialBody;
+
+  /// P5-U25: one short meal type (produktregler.md:893: what is missing is named).
+  ///
+  /// In sv, this message translates to:
+  /// **'{found} av {requested}, {missing} saknas'**
+  String menuPartialMissing(int found, int requested, int missing);
 }
 
 class _AppLocalizationsDelegate

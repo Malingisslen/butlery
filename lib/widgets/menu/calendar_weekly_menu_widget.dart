@@ -175,7 +175,17 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
             onSelectMode: vm.hasEntries ? () => _onEnterSelection(vm) : null,
           ),
         chipsWidget,
-        if (vm.hasOverflow) OverflowTray(overflow: vm.overflow),
+        // P5-U23: the tray counts, gives the reason and offers next week.
+        if (vm.hasOverflow)
+          OverflowTray(
+            overflow: vm.overflow,
+            placedCount: vm.overflowPlacedCount,
+            totalCount: vm.overflowTotal,
+            reason: vm.overflowReason,
+            onPlaceInNextWeek: vm.canPlaceOverflowInNextWeek
+                ? () => _onPlaceOverflowInNextWeek(context, vm)
+                : null,
+          ),
         // BUT-1611: "vem är hemma?" overview — only for a household with family,
         // and never while multi-select is active (that owns the header row).
         if (_roster.length > 1 && !vm.selectionMode)
@@ -253,6 +263,24 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
     SnackBarUtils.showSuccess(
       context,
       context.l10n.weeklyMenuCopyToNextResult(copied),
+    );
+  }
+
+  /// P5-U23: "Lägg i v. N" in the tray. The receipt names the week; a
+  /// refusal is already on screen as the calendar's error state.
+  Future<void> _onPlaceOverflowInNextWeek(
+    BuildContext context,
+    WeeklyMenuPlanViewModel vm,
+  ) async {
+    final week = vm.overflowReason?.nextWeekStart;
+    final moved = await vm.placeOverflowInNextWeek();
+    if (!context.mounted || moved == null || week == null) return;
+    SnackBarUtils.showSuccess(
+      context,
+      context.l10n.weeklyMenuOverflowMovedToNextWeek(
+        moved,
+        IsoWeekUtils.isoWeekNumber(week),
+      ),
     );
   }
 

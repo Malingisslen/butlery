@@ -16760,4 +16760,89 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get menuPreviewTitle => 'Shared menu';
+
+  @override
+  String importUrlBatchPartialTitle(int success, int total) {
+    return 'We fetched $success of $total links';
+  }
+
+  @override
+  String get importUrlBatchPartialBody =>
+      'We could not fetch the links below. They stay here and in the field above, so you can try again.';
+
+  @override
+  String get importUrlBatchReadyHeading => 'Ready to import';
+
+  @override
+  String importUrlBatchRetryA11y(String url) {
+    return 'Try fetching $url again';
+  }
+
+  @override
+  String weeklyMenuOverflowPlacedCount(int placed, int total) {
+    return '$placed of $total dishes placed';
+  }
+
+  @override
+  String weeklyMenuOverflowReason(int week) {
+    return 'Week $week had no more free places for these.';
+  }
+
+  @override
+  String get weeklyMenuOverflowPastDays =>
+      'Days that have already passed are never filled.';
+
+  @override
+  String weeklyMenuOverflowKeepOrNextWeek(int week) {
+    return 'They stay here until you place them or put them in week $week.';
+  }
+
+  @override
+  String get weeklyMenuOverflowKeep => 'They stay here until you place them.';
+
+  @override
+  String weeklyMenuOverflowNextWeekAction(int week) {
+    return 'Put in wk $week';
+  }
+
+  @override
+  String weeklyMenuOverflowNextWeekA11y(int count, int week) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Put the $count in week $week',
+      one: 'Put it in week $week',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String weeklyMenuOverflowMovedToNextWeek(int count, int week) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count dishes added to week $week',
+      one: '1 dish added to week $week',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String a11yWeeklyMenuPlacementOrder(int order) {
+    return 'Placed as number $order';
+  }
+
+  @override
+  String menuPartialTitle(int found, int requested) {
+    return 'We found $found of $requested dishes';
+  }
+
+  @override
+  String get menuPartialBody =>
+      'There are no more recipes that match what you wrote.';
+
+  @override
+  String menuPartialMissing(int found, int requested, int missing) {
+    return '$found of $requested, $missing missing';
+  }
 }

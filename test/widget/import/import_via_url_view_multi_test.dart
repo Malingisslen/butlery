@@ -26,6 +26,7 @@ import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/viewmodels/url_import_viewmodel.dart';
 import 'package:butlery/views/import_via_url_view.dart';
+import 'package:butlery/widgets/common/feedback/partial_outcome.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 /// Self-contained ChangeNotifier fake exposing only the surface the view reads
@@ -54,6 +55,7 @@ class _FakeUrlImportViewModel extends ChangeNotifier
   bool get isLoading => loading;
 
   int? retriedIndex;
+  String? retriedId;
 
   @override
   List<UrlImportResult> get urlResults => List.unmodifiable(_results);
@@ -71,6 +73,22 @@ class _FakeUrlImportViewModel extends ChangeNotifier
   Future<void> retryUrl(int index) async {
     retriedIndex = index;
   }
+
+  @override
+  Future<void> retryUrlById(String id) async {
+    retriedId = id;
+  }
+
+  // P5-U22: the same derivation as the real view model.
+  @override
+  bool get isPartialBatch =>
+      !_results.any((r) => r.isLoading) &&
+      _results.any((r) => r.isSuccess) &&
+      _results.any((r) => r.isFailure);
+
+  @override
+  List<UrlImportResult> get failedUrlResults =>
+      _results.where((r) => r.isFailure).toList();
 
   // ---- inert surface the view's build() also reads ----
   @override
@@ -199,10 +217,23 @@ void main() {
   const loadingUrl = 'https://koket.se/laddar';
 
   testWidgets('renders one progress row per URL in the batch', (tester) async {
+    // A partial batch puts the failed link in the outcome above the list;
+    // a tall view keeps both rows built.
+    tester.view.physicalSize = const Size(800, 1400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
     fakeVm = _FakeUrlImportViewModel(
       results: const [
-        UrlImportResult(url: okUrl, status: UrlFetchStatus.success),
-        UrlImportResult(url: failUrl, status: UrlFetchStatus.failure),
+        UrlImportResult(
+          id: 'row-1',
+          url: okUrl,
+          status: UrlFetchStatus.success,
+        ),
+        UrlImportResult(
+          id: 'row-2',
+          url: failUrl,
+          status: UrlFetchStatus.failure,
+        ),
       ],
     );
     registerFake(fakeVm);
@@ -218,8 +249,16 @@ void main() {
     (tester) async {
       fakeVm = _FakeUrlImportViewModel(
         results: const [
-          UrlImportResult(url: okUrl, status: UrlFetchStatus.success),
-          UrlImportResult(url: failUrl, status: UrlFetchStatus.failure),
+          UrlImportResult(
+            id: 'row-3',
+            url: okUrl,
+            status: UrlFetchStatus.success,
+          ),
+          UrlImportResult(
+            id: 'row-4',
+            url: failUrl,
+            status: UrlFetchStatus.failure,
+          ),
         ],
       );
       registerFake(fakeVm);
@@ -230,23 +269,34 @@ void main() {
     },
   );
 
-  testWidgets('tapping retry calls retryUrl with the failed row index', (
+  testWidgets('tapping retry retries the failed row by its id', (
     tester,
   ) async {
     fakeVm = _FakeUrlImportViewModel(
       results: const [
-        UrlImportResult(url: okUrl, status: UrlFetchStatus.success),
-        UrlImportResult(url: failUrl, status: UrlFetchStatus.failure),
+        UrlImportResult(
+          id: 'row-5',
+          url: okUrl,
+          status: UrlFetchStatus.success,
+        ),
+        UrlImportResult(
+          id: 'row-6',
+          url: failUrl,
+          status: UrlFetchStatus.failure,
+        ),
       ],
     );
     registerFake(fakeVm);
     await pumpView(tester);
 
-    // The failure is row index 1; its retry must target exactly that row.
+    // P5-U22: the retry targets the failed row by its own id, never by its
+    // position in the list.
+    final failedId = fakeVm.urlResults.firstWhere((r) => r.isFailure).id;
     await tester.tap(find.text('Försök igen'));
     await tester.pump();
 
-    expect(fakeVm.retriedIndex, 1);
+    expect(fakeVm.retriedId, failedId);
+    expect(fakeVm.retriedIndex, isNull);
   });
 
   testWidgets('per-row status icons distinguish success / failure / loading', (
@@ -254,9 +304,21 @@ void main() {
   ) async {
     fakeVm = _FakeUrlImportViewModel(
       results: const [
-        UrlImportResult(url: okUrl, status: UrlFetchStatus.success),
-        UrlImportResult(url: failUrl, status: UrlFetchStatus.failure),
-        UrlImportResult(url: loadingUrl, status: UrlFetchStatus.loading),
+        UrlImportResult(
+          id: 'row-7',
+          url: okUrl,
+          status: UrlFetchStatus.success,
+        ),
+        UrlImportResult(
+          id: 'row-8',
+          url: failUrl,
+          status: UrlFetchStatus.failure,
+        ),
+        UrlImportResult(
+          id: 'row-9',
+          url: loadingUrl,
+          status: UrlFetchStatus.loading,
+        ),
       ],
     );
     registerFake(fakeVm);
@@ -274,12 +336,21 @@ void main() {
   ) async {
     fakeVm = _FakeUrlImportViewModel(
       results: const [
-        UrlImportResult(url: okUrl, status: UrlFetchStatus.success),
         UrlImportResult(
+          id: 'row-10',
+          url: okUrl,
+          status: UrlFetchStatus.success,
+        ),
+        UrlImportResult(
+          id: 'row-11',
           url: 'https://arla.se/recept/tva',
           status: UrlFetchStatus.success,
         ),
-        UrlImportResult(url: failUrl, status: UrlFetchStatus.failure),
+        UrlImportResult(
+          id: 'row-12',
+          url: failUrl,
+          status: UrlFetchStatus.failure,
+        ),
       ],
     );
     registerFake(fakeVm);
@@ -293,8 +364,13 @@ void main() {
   testWidgets('no import CTA until at least one URL succeeds', (tester) async {
     fakeVm = _FakeUrlImportViewModel(
       results: const [
-        UrlImportResult(url: failUrl, status: UrlFetchStatus.failure),
         UrlImportResult(
+          id: 'row-13',
+          url: failUrl,
+          status: UrlFetchStatus.failure,
+        ),
+        UrlImportResult(
+          id: 'row-14',
           url: 'https://example.com/ocksa-trasig',
           status: UrlFetchStatus.failure,
         ),
@@ -319,8 +395,13 @@ void main() {
       final recorder = _RouteRecorder();
       fakeVm = _FakeUrlImportViewModel(
         results: const [
-          UrlImportResult(url: okUrl, status: UrlFetchStatus.success),
           UrlImportResult(
+            id: 'row-15',
+            url: okUrl,
+            status: UrlFetchStatus.success,
+          ),
+          UrlImportResult(
+            id: 'row-16',
             url: 'https://arla.se/recept/tva',
             status: UrlFetchStatus.success,
           ),
@@ -362,19 +443,29 @@ void main() {
     (tester) async {
       fakeVm = _FakeUrlImportViewModel(
         results: const [
-          UrlImportResult(url: okUrl, status: UrlFetchStatus.success),
           UrlImportResult(
+            id: 'row-17',
+            url: okUrl,
+            status: UrlFetchStatus.success,
+          ),
+          UrlImportResult(
+            id: 'row-18',
             url: 'https://arla.se/recept/tva',
             status: UrlFetchStatus.success,
           ),
-          UrlImportResult(url: failUrl, status: UrlFetchStatus.failure),
+          UrlImportResult(
+            id: 'row-19',
+            url: failUrl,
+            status: UrlFetchStatus.failure,
+          ),
         ],
       );
       registerFake(fakeVm);
       await pumpView(tester);
 
-      // 2 succeeded out of 3 pasted → "2 av 3 hämtade" (Swedish copy).
-      expect(find.text('2 av 3 hämtade'), findsOneWidget);
+      // 2 succeeded out of 3 pasted. Settled with a failure, the batch is a
+      // partial outcome (P5-U22), and its count reads "2 av 3", never 2.
+      expect(find.text('Vi hämtade 2 av 3 länkar'), findsOneWidget);
     },
   );
 
@@ -525,5 +616,98 @@ void main() {
       0,
       reason: 'a loading CTA is onPressed:null — taps must not expand',
     );
+  });
+
+  // P5-U22 (produktregler.md:905-909, I-29; :588): a settled batch with some
+  // links fetched and some not is a third outcome. The failed links move
+  // into the partial-outcome surface, each named with its reason and its own
+  // retry; the fetched ones stay listed as ready to import.
+  testWidgets('a partial batch names each failed link with its reason', (
+    tester,
+  ) async {
+    fakeVm = _FakeUrlImportViewModel(
+      results: const [
+        UrlImportResult(id: 'p-1', url: okUrl, status: UrlFetchStatus.success),
+        UrlImportResult(
+          id: 'p-2',
+          url: failUrl,
+          status: UrlFetchStatus.failure,
+          error: 'Sidan svarade inte',
+        ),
+        UrlImportResult(
+          id: 'p-3',
+          url: 'https://arla.se/recept/tre',
+          status: UrlFetchStatus.success,
+        ),
+      ],
+    );
+    registerFake(fakeVm);
+    await pumpView(tester);
+
+    expect(find.byType(PartialOutcome), findsOneWidget);
+    expect(find.text('Vi hämtade 2 av 3 länkar'), findsOneWidget);
+    final failedRow = find.byKey(PartialOutcome.itemKey('p-2'));
+    expect(
+      find.descendant(of: failedRow, matching: find.text(failUrl)),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(
+        of: failedRow,
+        matching: find.text('Sidan svarade inte'),
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('Klara att importera'), findsOneWidget);
+    // The failed link is not listed twice.
+    expect(find.text(failUrl), findsOneWidget);
+
+    await tester.tap(
+      find.descendant(of: failedRow, matching: find.text('Försök igen')),
+    );
+    await tester.pump();
+    expect(fakeVm.retriedId, 'p-2');
+  });
+
+  testWidgets('the retry says which link it retries', (tester) async {
+    final handle = tester.ensureSemantics();
+    fakeVm = _FakeUrlImportViewModel(
+      results: const [
+        UrlImportResult(id: 'q-1', url: okUrl, status: UrlFetchStatus.success),
+        UrlImportResult(
+          id: 'q-2',
+          url: failUrl,
+          status: UrlFetchStatus.failure,
+        ),
+      ],
+    );
+    registerFake(fakeVm);
+    await pumpView(tester);
+
+    expect(find.bySemanticsLabel('Försök hämta $failUrl igen'), findsOneWidget);
+    handle.dispose();
+  });
+
+  testWidgets('a batch still loading is not shown as partial', (tester) async {
+    fakeVm = _FakeUrlImportViewModel(
+      results: const [
+        UrlImportResult(id: 'l-1', url: okUrl, status: UrlFetchStatus.success),
+        UrlImportResult(
+          id: 'l-2',
+          url: failUrl,
+          status: UrlFetchStatus.failure,
+        ),
+        UrlImportResult(
+          id: 'l-3',
+          url: loadingUrl,
+          status: UrlFetchStatus.loading,
+        ),
+      ],
+    );
+    registerFake(fakeVm);
+    await pumpView(tester, settle: false);
+
+    expect(find.byType(PartialOutcome), findsNothing);
+    expect(find.text('1 av 3 hämtade'), findsOneWidget);
   });
 }
