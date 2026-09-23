@@ -7564,7 +7564,7 @@ abstract class AppLocalizations {
   /// No description provided for @friendDecline.
   ///
   /// In sv, this message translates to:
-  /// **'Avvisa'**
+  /// **'Avböj'**
   String get friendDecline;
 
   /// No description provided for @friendRequestTitle.
@@ -8382,6 +8382,12 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Skapa gruppkonversation'**
   String get messagingCreateGroup;
+
+  /// No description provided for @messagingCreateConversation.
+  ///
+  /// In sv, this message translates to:
+  /// **'Skapa konversation'**
+  String get messagingCreateConversation;
 
   /// No description provided for @messagingEditGroupName.
   ///
@@ -10492,7 +10498,7 @@ abstract class AppLocalizations {
   /// No description provided for @groupSendInvitations.
   ///
   /// In sv, this message translates to:
-  /// **'Skicka {count} inbjudningar'**
+  /// **'{count, plural, =1{Bjud in 1 vald} other{Bjud in {count} valda}}'**
   String groupSendInvitations(int count);
 
   /// No description provided for @groupSharedFromGroup.
@@ -10726,7 +10732,7 @@ abstract class AppLocalizations {
   /// No description provided for @menuImportAll.
   ///
   /// In sv, this message translates to:
-  /// **'Importera hela menyn'**
+  /// **'Spara till mina menyer'**
   String get menuImportAll;
 
   /// No description provided for @menuImportDescription.
@@ -13798,7 +13804,7 @@ abstract class AppLocalizations {
   /// No description provided for @socialDecline.
   ///
   /// In sv, this message translates to:
-  /// **'Avvisa'**
+  /// **'Avböj'**
   String get socialDecline;
 
   /// No description provided for @socialDeclined.
@@ -24256,26 +24262,32 @@ abstract class AppLocalizations {
   /// No description provided for @reportDescriptionHint.
   ///
   /// In sv, this message translates to:
-  /// **'Beskriv vad som är fel (valfritt)'**
+  /// **'Berätta vad som är fel …'**
   String get reportDescriptionHint;
 
   /// No description provided for @reportSubmitted.
   ///
   /// In sv, this message translates to:
-  /// **'Rapporten har skickats'**
+  /// **'Anmälan har skickats'**
   String get reportSubmitted;
 
   /// No description provided for @reportSubmitFailed.
   ///
   /// In sv, this message translates to:
-  /// **'Kunde inte skicka rapporten'**
+  /// **'Anmälan kunde inte skickas'**
   String get reportSubmitFailed;
 
   /// No description provided for @reportDialogTitle.
   ///
   /// In sv, this message translates to:
-  /// **'Rapportera innehåll'**
+  /// **'Anmäl innehåll'**
   String get reportDialogTitle;
+
+  /// No description provided for @reportDialogTitleRecipe.
+  ///
+  /// In sv, this message translates to:
+  /// **'Anmäl det här receptet'**
+  String get reportDialogTitleRecipe;
 
   /// No description provided for @reportSubmit.
   ///
@@ -24286,14 +24298,32 @@ abstract class AppLocalizations {
   /// No description provided for @reportDialogGuidelinesNotePrefix.
   ///
   /// In sv, this message translates to:
-  /// **'Genom att rapportera bekräftar du att innehållet bryter mot'**
+  /// **'Vi bedömer mot'**
   String get reportDialogGuidelinesNotePrefix;
 
   /// No description provided for @reportDialogGuidelinesLink.
   ///
   /// In sv, this message translates to:
-  /// **'våra riktlinjer för communityn'**
+  /// **'våra riktlinjer'**
   String get reportDialogGuidelinesLink;
+
+  /// No description provided for @reportDialogGuidelinesNoteSuffix.
+  ///
+  /// In sv, this message translates to:
+  /// **'— den version du ser nu är den vi dömer efter.'**
+  String get reportDialogGuidelinesNoteSuffix;
+
+  /// No description provided for @reportDialogIntro.
+  ///
+  /// In sv, this message translates to:
+  /// **'Berätta vad som är fel. En människa i teamet läser din anmälan.'**
+  String get reportDialogIntro;
+
+  /// No description provided for @reportDescriptionRequiredHelper.
+  ///
+  /// In sv, this message translates to:
+  /// **'Krävs när du väljer Annat.'**
+  String get reportDescriptionRequiredHelper;
 
   /// No description provided for @settingsMyReports.
   ///

@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:butlery/services/auth_service.dart';
+import 'package:butlery/services/auth/auth_mfa_service.dart';
 import 'package:butlery/core/mixins/state_notifier_mixin.dart';
 import 'package:butlery/core/mixins/async_operation_mixin.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
@@ -9,9 +10,41 @@ import 'package:butlery/core/validators/form_validators.dart';
 
 class AccountSecurityViewModel extends ChangeNotifier
     with StateNotifierMixin, AsyncOperationMixin {
+  AccountSecurityViewModel({AuthMfaService? mfaService})
+    : _mfaService = mfaService ?? ServiceLocator.tryGet<AuthMfaService>();
+
   final AuthService _authService = ServiceLocator.get<AuthService>();
+  final AuthMfaService? _mfaService;
 
   String? get currentEmail => _authService.currentUser?.email;
+
+  /// Whether the user has two-step verification on, and so sees the
+  /// "Tvåfaktorsautentisering" row.
+  ///
+  /// Turning it on is hidden (produktbeslut PQ-16 = A, 2026-09-23; Linear
+  /// BUT-2142), so for a user without it the row leads nowhere and is not
+  /// shown. A user with it on keeps the row and can turn it off there.
+  /// False until [loadMfaStatus] has answered, and when the check fails
+  /// (AuthMfaService.hasMfaEnabled answers false on an error).
+  bool get hasMfa => _hasMfa;
+  bool _hasMfa = false;
+
+  /// Asks whether the user has two-step verification on. Called when the
+  /// view opens and again when the user comes back from the MFA settings,
+  /// where they may have turned it off.
+  Future<void> loadMfaStatus() async {
+    final service = _mfaService;
+    if (service == null) return;
+    bool enabled;
+    try {
+      enabled = await service.hasMfaEnabled();
+    } catch (_) {
+      enabled = false;
+    }
+    if (isDisposed || enabled == _hasMfa) return;
+    _hasMfa = enabled;
+    notifyListeners();
+  }
 
   /// Whether trying the same change again can help.
   ///

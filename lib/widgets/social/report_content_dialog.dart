@@ -27,34 +27,67 @@ class ReportContentDialog {
     required String contentId,
     String? contentOwnerId,
   }) async {
-    final outcome = await _showReasonDialog(context);
+    final outcome = await _showReasonDialog(context, contentType);
     if (outcome == null || !context.mounted) return;
 
+    await _submit(
+      context,
+      contentType: contentType,
+      contentId: contentId,
+      contentOwnerId: contentOwnerId,
+      outcome: outcome,
+    );
+  }
+
+  /// Sends the report and says how it went: "Anmälan har skickats", or the
+  /// failure snackbar with what happened and Försök igen, which sends the
+  /// same report again (content-style-guide.md:87-97).
+  static Future<void> _submit(
+    BuildContext context, {
+    required ContentType contentType,
+    required String contentId,
+    required String? contentOwnerId,
+    required _ReportOutcome outcome,
+  }) async {
+    var success = false;
     try {
       final reportService = ServiceLocator.get<ReportService>();
-      final success = await reportService.submitReport(
+      success = await reportService.submitReport(
         contentType: contentType,
         contentId: contentId,
         reason: outcome.reason,
         contentOwnerId: contentOwnerId,
         description: outcome.description,
       );
-
-      if (context.mounted) {
-        if (success) {
-          SnackBarUtils.showSuccess(context, context.l10n.reportSubmitted);
-        } else {
-          SnackBarUtils.showError(context, context.l10n.reportSubmitFailed);
-        }
-      }
-    } catch (e) {
-      if (context.mounted) {
-        SnackBarUtils.showError(context, context.l10n.reportSubmitFailed);
-      }
+    } catch (_) {
+      success = false;
     }
+
+    if (!context.mounted) return;
+    if (success) {
+      SnackBarUtils.showSuccess(context, context.l10n.reportSubmitted);
+      return;
+    }
+    SnackBarUtils.showFailure(
+      context,
+      what: context.l10n.reportSubmitFailed,
+      action: FailureAction.retry(() {
+        if (!context.mounted) return;
+        _submit(
+          context,
+          contentType: contentType,
+          contentId: contentId,
+          contentOwnerId: contentOwnerId,
+          outcome: outcome,
+        );
+      }),
+    );
   }
 
-  static Future<_ReportOutcome?> _showReasonDialog(BuildContext context) async {
+  static Future<_ReportOutcome?> _showReasonDialog(
+    BuildContext context,
+    ContentType contentType,
+  ) async {
     String? selectedReason;
     final descriptionController = TextEditingController();
 
@@ -84,14 +117,32 @@ class ReportContentDialog {
               selectedReason != null && (!isOther || descriptionFilled);
 
           return AlertDialog(
-            title: Text(l10n.reportDialogTitle),
+            // "Anmäl det här receptet" for a recipe, as drawn (Skarmar v12
+            // etapp 9 #fbanmal:507). Interpretation: the other content types
+            // have no drawn title and say "Anmäl innehåll".
+            title: Text(
+              contentType == ContentType.recipe
+                  ? l10n.reportDialogTitleRecipe
+                  : l10n.reportDialogTitle,
+            ),
             // Five 48 dp reasons, the free-text field and the note do not fit
             // a short screen or large text, so the content scrolls rather
             // than clipping (tillganglighetshandoff:85, 200 % text).
             scrollable: true,
             content: Column(
               mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // The drawn intro under the title (Skarmar v12 etapp 9
+                // #fbanmal:508): who reads the report, a person
+                // (produktregler.md:940).
+                Text(
+                  l10n.reportDialogIntro,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(height: 8),
                 RadioGroup<String>(
                   groupValue: selectedReason,
                   onChanged: (value) => setState(() => selectedReason = value),
@@ -123,14 +174,22 @@ class ReportContentDialog {
                     onChanged: (_) => setState(() {}),
                     decoration: InputDecoration(
                       hintText: l10n.reportDescriptionHint,
+                      // "Krävs när du väljer Annat." with the 0 / 500 counter
+                      // beside it, as drawn (#fbanmal:516;
+                      // produktregler.md:938). Interpretation: the drawn bold
+                      // on "Krävs" is left out; the helper is plain text.
+                      helperText: l10n.reportDescriptionRequiredHelper,
                       border: const OutlineInputBorder(),
                     ),
                   ),
                 ],
                 const SizedBox(height: 12),
+                // "Vi bedömer mot våra riktlinjer — den version du ser nu är
+                // den vi dömer efter." (#fbanmal:518; produktregler.md:939).
                 _GuidelinesNote(
                   prefix: l10n.reportDialogGuidelinesNotePrefix,
                   linkText: l10n.reportDialogGuidelinesLink,
+                  suffix: l10n.reportDialogGuidelinesNoteSuffix,
                 ),
               ],
             ),
@@ -144,7 +203,7 @@ class ReportContentDialog {
               // Interpretation that departs from the drawing: #fbanmal draws
               // a full-width 48 px block with no Avbryt beside it; here it is
               // sized to its label in the AlertDialog action row next to
-              // Avbryt. The rapport/anmälan wording is an open copy question.
+              // Avbryt. The dialog says "anmälan" throughout, as drawn.
               FilledButton(
                 key: const ValueKey('reportContent.submit'),
                 style:
@@ -190,10 +249,15 @@ class _ReportOutcome {
 /// Tap on the linked phrase opens the guidelines view; the visible
 /// version is implicitly the version stamped on the resulting report record.
 class _GuidelinesNote extends StatelessWidget {
-  const _GuidelinesNote({required this.prefix, required this.linkText});
+  const _GuidelinesNote({
+    required this.prefix,
+    required this.linkText,
+    required this.suffix,
+  });
 
   final String prefix;
   final String linkText;
+  final String suffix;
 
   @override
   Widget build(BuildContext context) {
@@ -229,6 +293,7 @@ class _GuidelinesNote extends StatelessWidget {
               ),
             ),
           ),
+          TextSpan(text: ' $suffix'),
         ],
       ),
     );

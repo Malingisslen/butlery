@@ -4524,7 +4524,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get friendAccept => 'Acceptera';
 
   @override
-  String get friendDecline => 'Avvisa';
+  String get friendDecline => 'Avböj';
 
   @override
   String get friendRequestTitle => 'Vänförfrågan';
@@ -5013,6 +5013,9 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get messagingCreateGroup => 'Skapa gruppkonversation';
+
+  @override
+  String get messagingCreateConversation => 'Skapa konversation';
 
   @override
   String get messagingEditGroupName => 'Redigera gruppnamn';
@@ -6247,7 +6250,13 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String groupSendInvitations(int count) {
-    return 'Skicka $count inbjudningar';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Bjud in $count valda',
+      one: 'Bjud in 1 vald',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -6375,7 +6384,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get menuHideMenu => 'Dölj meny';
 
   @override
-  String get menuImportAll => 'Importera hela menyn';
+  String get menuImportAll => 'Spara till mina menyer';
 
   @override
   String menuImportDescription(int count) {
@@ -8223,7 +8232,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get socialCouldNotUnblockUser => 'Kunde inte avblockera användare';
 
   @override
-  String get socialDecline => 'Avvisa';
+  String get socialDecline => 'Avböj';
 
   @override
   String get socialDeclined => 'Avvisad';
@@ -14522,26 +14531,39 @@ class AppLocalizationsSv extends AppLocalizations {
   String get reportReasonOther => 'Annat';
 
   @override
-  String get reportDescriptionHint => 'Beskriv vad som är fel (valfritt)';
+  String get reportDescriptionHint => 'Berätta vad som är fel …';
 
   @override
-  String get reportSubmitted => 'Rapporten har skickats';
+  String get reportSubmitted => 'Anmälan har skickats';
 
   @override
-  String get reportSubmitFailed => 'Kunde inte skicka rapporten';
+  String get reportSubmitFailed => 'Anmälan kunde inte skickas';
 
   @override
-  String get reportDialogTitle => 'Rapportera innehåll';
+  String get reportDialogTitle => 'Anmäl innehåll';
+
+  @override
+  String get reportDialogTitleRecipe => 'Anmäl det här receptet';
 
   @override
   String get reportSubmit => 'Skicka anmälan';
 
   @override
-  String get reportDialogGuidelinesNotePrefix =>
-      'Genom att rapportera bekräftar du att innehållet bryter mot';
+  String get reportDialogGuidelinesNotePrefix => 'Vi bedömer mot';
 
   @override
-  String get reportDialogGuidelinesLink => 'våra riktlinjer för communityn';
+  String get reportDialogGuidelinesLink => 'våra riktlinjer';
+
+  @override
+  String get reportDialogGuidelinesNoteSuffix =>
+      '— den version du ser nu är den vi dömer efter.';
+
+  @override
+  String get reportDialogIntro =>
+      'Berätta vad som är fel. En människa i teamet läser din anmälan.';
+
+  @override
+  String get reportDescriptionRequiredHelper => 'Krävs när du väljer Annat.';
 
   @override
   String get settingsMyReports => 'Mina rapporter';
