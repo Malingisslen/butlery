@@ -2,11 +2,11 @@
 
 import 'package:flutter/material.dart';
 
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/cooking/cooking_voice_controller.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 
 /// Köksbutlern's mic control (tasks/koksbutlern-plan.md, Batch D) — the big,
 /// knuckle-friendly button bottom-right of the instructions panel that
@@ -167,9 +167,10 @@ class _VoiceAssistButtonState extends State<VoiceAssistButton>
         label = l10n.voicePromptStop;
       case VoiceAssistState.transcribing:
         background = cs.primary;
-        content = LoadingIndicator(
-          size: AppDimensions.iconSizeL,
-          color: cs.onPrimary,
+        // The plate line, not a spinner (Grafisk manual v6:209). It stands
+        // still under reduced motion (PlateLine).
+        content = PlateLine(
+          width: AppDimensions.iconSizeL,
           semanticLabel: l10n.voicePromptTranscribing,
         );
         label = l10n.voicePromptTranscribing;

@@ -59,9 +59,13 @@ class ActiveTimersStrip extends StatelessWidget {
             vertical: AppDimensions.spacingSm,
           ),
           decoration: BoxDecoration(
-            color: cs.primary.withValues(alpha: 0.5),
+            // The cooking-mode base with a decorative paper line at the
+            // ladder's on-ink step (tokens.json:40-53 opacityLadder.onInk
+            // 0.18): ink in light mode, dark-bg #17251D in dark mode
+            // (Skarmar v12 del 1 #lagamorkt).
+            color: cs.brightness == Brightness.dark ? cs.surface : cs.primary,
             border: Border(
-              bottom: BorderSide(color: cs.surface.withValues(alpha: 0.15)),
+              bottom: BorderSide(color: cs.onPrimary.withValues(alpha: 0.18)),
             ),
           ),
           child: Row(
@@ -135,10 +139,8 @@ class _TimerChip extends StatelessWidget {
               horizontal: AppDimensions.spacingSm,
               vertical: AppDimensions.spacingXs,
             ),
-            decoration: BoxDecoration(
-              color: cs.surface,
-              border: Border.all(color: cs.onPrimary.withValues(alpha: 0.2)),
-            ),
+            // A paper chip on ink: onPrimary is paper in both schemes.
+            decoration: BoxDecoration(color: cs.onPrimary),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [

@@ -651,7 +651,7 @@
   "recipeAdd": "Lägg till recept",
   "recipeEdit": "Redigera recept",
   "recipeDelete": "Ta bort recept",
-  "recipeDeleting": "Tar bort recept...",
+  "recipeDeleting": "Raderar receptet …",
   "recipeFormatPortions": "{count, plural, =1{1 portion} other{{count} portioner}}",
   "@recipeFormatPortions": {
     "placeholders": {
@@ -840,7 +840,7 @@
   "chatDeleteMessageConfirm": "Är du säker på att du vill ta bort meddelandet?",
   "statusConnecting": "Ansluter...",
   "statusSyncing": "Synkroniserar...",
-  "statusSaving": "Sparar...",
+  "statusSaving": "Sparar …",
   "statusCreating": "Skapar...",
   "statusUpdating": "Uppdaterar...",
   "accessibilityBackButton": "Tillbaka",
@@ -9986,6 +9986,10 @@
       }
     }
   },
+  "bulkMoreActions": "Fler åtgärder",
+  "@bulkMoreActions": {
+    "description": "Tooltip for the kebab in the recipe list selection bar (Skarmar v12 etapp 9 #flerbar)"
+  },
   "bulkSelectAll": "Välj alla",
   "bulkCancelSelection": "Avbryt val",
   "bulkDelete": "Ta bort valda",
@@ -12370,5 +12374,23 @@
   "loadingProfileBusy": "Hämtar din profil …",
   "loadingOnboardingResume": "Hämtar var du slutade …",
   "loadingOpeningPage": "Öppnar sidan …",
-  "loadingStartingApp": "Startar Butlery …"
+  "loadingStartingApp": "Startar Butlery …",
+  "minaReceptEmptyTitle": "Inga sparade recept än",
+  "@minaReceptEmptyTitle": {"description": "Empty recipe library title (Skarmar v12 del 1 #tomtrecept)."},
+  "minaReceptEmptyBody": "Din kokbok är dukad men tom. Spara ditt första recept — importera en länk, fota ett kort eller skriv själv.",
+  "@minaReceptEmptyBody": {"description": "Empty recipe library body (Skarmar v12 del 1 #tomtrecept)."},
+  "recipeSaveToMyKitchen": "Spara till mitt kök",
+  "@recipeSaveToMyKitchen": {"description": "Recipe detail sticky action bar (P4-U05)."},
+  "recipeAddToShoppingList": "Lägg i inköpslistan",
+  "@recipeAddToShoppingList": {"description": "Recipe detail sticky action bar (P4-U05)."},
+  "loadingCookSnaps": "Hämtar fotona …",
+  "@loadingCookSnaps": {"description": "What is loading, for the plate line (P4-U05)."},
+  "loadingSubstitutions": "Hämtar ersättningar …",
+  "@loadingSubstitutions": {"description": "What is loading, for the plate line (P4-U05)."},
+  "uploadingCookSnap": "Laddar upp fotot …",
+  "@uploadingCookSnap": {"description": "What is loading, for the plate line (P4-U05)."},
+  "sendingComment": "Skickar kommentaren …",
+  "@sendingComment": {"description": "What is loading, for the plate line (P4-U05)."},
+  "recipeEditorClose": "Stäng editorn",
+  "@recipeEditorClose": {"description": "The X that closes the recipe editor modal (Skarmar v12 etapp 4 #editorutkast)."}
 }

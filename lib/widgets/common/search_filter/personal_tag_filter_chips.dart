@@ -5,6 +5,8 @@ import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/butlery_control_focus.dart';
+import 'package:butlery/widgets/common/state_widget.dart';
 
 /// Filter chips for personal tags with include/exclude support.
 ///
@@ -144,10 +146,14 @@ class PersonalTagFilterChipsWidget extends StatelessWidget {
             ),
           ),
           const SizedBox(height: AppDimensions.spacingXs),
-          TextButton.icon(
-            onPressed: onManageTags,
-            icon: const Icon(Icons.add, size: AppDimensions.iconSize18),
-            label: Text(context.l10n.filterCreatePersonalTags),
+          // The empty state is the shared one, not a hand-built button row
+          // (P4-U03 test plan): it says what is missing and offers the one
+          // way forward.
+          StateWidget.empty(
+            title: context.l10n.taggingNoPersonalTags,
+            icon: Icons.label_outline,
+            actionLabel: context.l10n.filterCreatePersonalTags,
+            onAction: onManageTags,
           ),
         ],
       ),
@@ -178,29 +184,34 @@ class _PersonalTagFilterChip extends StatelessWidget {
       ),
       selected: isSelected,
       button: true,
-      child: FilterChip(
-        label: Text(tag.name),
-        avatar: isSelected
-            ? null
-            : CircleAvatar(
-                radius: 6,
-                backgroundColor: colorScheme.primary,
-              ),
-        selected: isSelected,
-        onSelected: (_) => onSelected(),
-        backgroundColor: colorScheme.surface,
-        selectedColor: colorScheme.primary.withValues(
-          alpha: AppDimensions.opacityLightMedium,
+      // The shared grip: ring around the chip's 48 dp target and no saffron
+      // focus tint (Grafisk manual v6:209, :381).
+      child: ButleryControlFocus(
+        borderRadius: BorderRadius.circular(AppDimensions.chipRadius),
+        child: FilterChip(
+          label: Text(tag.name),
+          avatar: isSelected
+              ? null
+              : CircleAvatar(
+                  radius: 6,
+                  backgroundColor: colorScheme.primary,
+                ),
+          selected: isSelected,
+          onSelected: (_) => onSelected(),
+          backgroundColor: colorScheme.surface,
+          selectedColor: colorScheme.primary.withValues(
+            alpha: AppDimensions.opacityLightMedium,
+          ),
+          checkmarkColor: colorScheme.primary,
+          side: BorderSide(
+            color: isSelected ? colorScheme.primary : colorScheme.outline,
+            width: isSelected ? 2 : 1,
+          ),
+          labelStyle: isSelected
+              ? AppTextStyles.bodyBold.copyWith(color: colorScheme.primary)
+              : AppTextStyles.bodyMedium.copyWith(color: colorScheme.onSurface),
+          showCheckmark: isSelected,
         ),
-        checkmarkColor: colorScheme.primary,
-        side: BorderSide(
-          color: isSelected ? colorScheme.primary : colorScheme.outline,
-          width: isSelected ? 2 : 1,
-        ),
-        labelStyle: isSelected
-            ? AppTextStyles.bodyBold.copyWith(color: colorScheme.primary)
-            : AppTextStyles.bodyMedium.copyWith(color: colorScheme.onSurface),
-        showCheckmark: isSelected,
       ),
     );
   }
@@ -229,32 +240,37 @@ class _PersonalTagExcludeChip extends StatelessWidget {
       ),
       selected: isExcluded,
       button: true,
-      child: FilterChip(
-        label: Text(tag.name),
-        avatar: isExcluded
-            ? null
-            : Icon(
-                Icons.remove_circle_outline,
-                size: AppDimensions.iconSizeS,
-                color: colorScheme.error.withValues(
-                  alpha: AppDimensions.opacityMediumDark,
+      // The shared grip: ring around the chip's 48 dp target and no saffron
+      // focus tint (Grafisk manual v6:209, :381).
+      child: ButleryControlFocus(
+        borderRadius: BorderRadius.circular(AppDimensions.chipRadius),
+        child: FilterChip(
+          label: Text(tag.name),
+          avatar: isExcluded
+              ? null
+              : Icon(
+                  Icons.remove_circle_outline,
+                  size: AppDimensions.iconSizeS,
+                  color: colorScheme.error.withValues(
+                    alpha: AppDimensions.opacityMediumDark,
+                  ),
                 ),
-              ),
-        selected: isExcluded,
-        onSelected: (_) => onSelected(),
-        backgroundColor: colorScheme.surface,
-        selectedColor: colorScheme.error.withValues(
-          alpha: AppDimensions.opacityLightSubtle,
+          selected: isExcluded,
+          onSelected: (_) => onSelected(),
+          backgroundColor: colorScheme.surface,
+          selectedColor: colorScheme.error.withValues(
+            alpha: AppDimensions.opacityLightSubtle,
+          ),
+          checkmarkColor: colorScheme.error,
+          side: BorderSide(
+            color: isExcluded ? colorScheme.error : colorScheme.outline,
+            width: isExcluded ? 2 : 1,
+          ),
+          labelStyle: isExcluded
+              ? AppTextStyles.bodyBold.copyWith(color: colorScheme.error)
+              : AppTextStyles.bodyMedium.copyWith(color: colorScheme.onSurface),
+          showCheckmark: isExcluded,
         ),
-        checkmarkColor: colorScheme.error,
-        side: BorderSide(
-          color: isExcluded ? colorScheme.error : colorScheme.outline,
-          width: isExcluded ? 2 : 1,
-        ),
-        labelStyle: isExcluded
-            ? AppTextStyles.bodyBold.copyWith(color: colorScheme.error)
-            : AppTextStyles.bodyMedium.copyWith(color: colorScheme.onSurface),
-        showCheckmark: isExcluded,
       ),
     );
   }

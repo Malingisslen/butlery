@@ -4,6 +4,9 @@ import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/theme/component_themes.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -12,8 +15,6 @@ import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/widgets/common/adaptive_app_bar.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/viewmodels/recipe_form/recipe_form_state.dart';
 
@@ -59,8 +60,11 @@ class _QuickCaptureViewContentState extends State<_QuickCaptureViewContent> {
     final vm = context.watch<_QuickCaptureViewModel>();
 
     return Scaffold(
-      appBar: AdaptiveAppBar(
+      // A subpage under Lägg till recept (Komponentark v1:71-78; Skarmar
+      // v12 del 1 'Snabbspara').
+      appBar: ButleryTopBar.undersida(
         title: context.l10n.quickCaptureTitle,
+        backTo: context.l10n.addRecipeTitle,
       ),
       body: SafeArea(
         child: Center(
@@ -109,13 +113,20 @@ class _QuickCaptureViewContentState extends State<_QuickCaptureViewContent> {
                       button: true,
                       enabled: !vm.isSaving,
                       label: context.l10n.quickCaptureSave,
+                      // The view's one saffron action (Grafisk manual
+                      // v6:219). Busy shows the plate line in its place.
                       child: FilledButton(
                         key: const ValueKey('test-quick-capture-save'),
+                        style: ComponentThemes.heroButtonStyle(
+                          Theme.of(context).colorScheme,
+                        ),
                         onPressed: vm.isSaving ? null : () => _save(vm),
                         child: vm.isSaving
-                            ? const LoadingIndicator(
-                                size: AppDimensions.iconSizeS,
-                                strokeWidth: 2,
+                            ? SizedBox(
+                                width: AppDimensions.iconSizeXl * 2,
+                                child: PlateLine(
+                                  semanticLabel: context.l10n.statusSaving,
+                                ),
                               )
                             : Text(context.l10n.quickCaptureSave),
                       ),

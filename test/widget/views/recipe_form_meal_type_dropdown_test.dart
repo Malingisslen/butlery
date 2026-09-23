@@ -23,6 +23,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:provider/provider.dart';
 
 import 'package:butlery/core/di/di_container.dart';
@@ -310,6 +312,47 @@ void main() {
 
       expect(tester.takeException(), isNull);
       expect(mealTypeDropdown(tester).initialValue, 'Huvudrätt');
+    });
+
+    // P4-U07: the editor is a modal with X; Skriv själv is a subpage; each
+    // has one saffron save (Komponentark v1:57, :71-78; Skarmar v12 etapp 4
+    // #editorutkast; Grafisk manual v6:219).
+    int heroCount(WidgetTester tester) => tester
+        .widgetList<FilledButton>(find.byType(FilledButton))
+        .where(
+          (b) =>
+              b.style?.backgroundColor?.resolve(const {}) ==
+              AppModeColors.actionPrimary(Brightness.light),
+        )
+        .length;
+
+    testWidgets('the edit screen is a modal with X and one saffron save', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          child: EditRecipeView(recipe: recipeWithMealType('dinner')),
+          wrapInScaffold: false,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(const ValueKey('edit-recipe-close')), findsOneWidget);
+      expect(find.byTooltip('Stäng editorn'), findsOneWidget);
+      expect(find.byKey(const ValueKey('butleryTopBar.back')), findsNothing);
+      expect(find.byType(AppBar), findsNothing);
+      expect(heroCount(tester), 1);
+    });
+
+    testWidgets('Skriv själv is a subpage with one saffron save', (
+      tester,
+    ) async {
+      await pumpSkrivSjalv(tester, 'dinner');
+
+      final bar = tester.widget<ButleryTopBar>(find.byType(ButleryTopBar));
+      expect(bar.pattern, ButleryTopBarPattern.undersida);
+      expect(find.byType(AppBar), findsNothing);
+      expect(heroCount(tester), 1);
     });
   });
 }

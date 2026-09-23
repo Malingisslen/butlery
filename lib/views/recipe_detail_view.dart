@@ -30,10 +30,11 @@ import 'package:butlery/views/recipe_detail/recipe_detail_tablet_content.dart';
 import 'package:butlery/core/responsive/breakpoints.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/providers/application_provider.dart';
-import 'package:butlery/widgets/common/adaptive_app_bar.dart';
+import 'package:butlery/widgets/common/butlery_control_focus.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/theme/component_themes.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/illustrations/vegetable_illustration.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/image/image_config.dart';
 import 'package:butlery/widgets/tagging/tagging_widgets.dart';
@@ -109,6 +110,11 @@ class RecipeDetailView extends StatefulWidget {
   /// entry point into recipe detail.
   final int? presentServings;
 
+  /// The name of the view the back button returns to. It gives the button
+  /// the name "Tillbaka till [backTo]" (Komponentark v1:74-78;
+  /// tillgänglighetshandoff:132). Null keeps "Tillbaka".
+  final String? backTo;
+
   const RecipeDetailView({
     super.key,
     required this.recipe,
@@ -116,6 +122,7 @@ class RecipeDetailView extends StatefulWidget {
     this.readOnly = false,
     this.shareRequest,
     this.presentServings,
+    this.backTo,
   });
 
   @override
@@ -157,6 +164,7 @@ class _RecipeDetailViewState extends State<RecipeDetailView> {
         readOnly: widget.readOnly,
         shareRequest: widget.shareRequest,
         presentServings: widget.presentServings,
+        backTo: widget.backTo,
       ),
     );
   }
@@ -170,6 +178,7 @@ class _RecipeDetailViewContent extends StatefulWidget {
 
   /// BUT-1613: present count forwarded to cooking mode (see RecipeDetailView).
   final int? presentServings;
+  final String? backTo;
 
   const _RecipeDetailViewContent({
     required this.recipe,
@@ -177,6 +186,7 @@ class _RecipeDetailViewContent extends StatefulWidget {
     this.readOnly = false,
     this.shareRequest,
     this.presentServings,
+    this.backTo,
   });
 
   @override
@@ -228,50 +238,68 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
     return Consumer<RecipeDetailViewModel>(
       builder: (context, viewModel, child) {
         // Loading state (if deleting)
+        // The loading line says what is happening: "Raderar receptet …"
+        // (enhet-0 recipeDeleting; content-style-guide.md:63, :84). The bar
+        // keeps the recipe's name so the user still knows where they are.
         if (viewModel.isDeleting) {
           return Scaffold(
-            appBar: AdaptiveAppBar(
-              title: context.l10n.recipeDeleting,
-              backgroundColor: cs.surface,
+            appBar: ButleryTopBar.undersida(
+              title: viewModel.recipe.title,
+              backTo: widget.backTo,
             ),
             backgroundColor: cs.surface,
-            body: StateWidget.loading(),
+            body: StateWidget.loading(message: context.l10n.recipeDeleting),
           );
         }
 
         final recipe = viewModel.recipe;
         final bottomPadding = MediaQuery.of(context).padding.bottom;
+        // Someone else's recipe: "Spara till mitt kök" is the one saffron
+        // action, and "Börja laga" steps down (Skarmar v12 etapp 11
+        // 'Receptet brett — någon annans'; Grafisk manual v6:219).
+        final isOthersRecipe = showForkInAppBar(
+          recipe.createdBy,
+          ServiceLocator.get<PermissionService>().currentUserId,
+        );
+        void startCooking() => Navigator.pushNamed(
+          context,
+          Routes.cookingMode,
+          // BUT-1613: forward the present count (map form) when this detail
+          // view was opened from a planned meal, so cooking mode opens
+          // pre-scaled. Bare Recipe otherwise.
+          arguments: widget.presentServings == null
+              ? recipe
+              : {'recipe': recipe, 'presentServings': widget.presentServings},
+        );
 
         return Scaffold(
           backgroundColor: cs.surface,
-          bottomNavigationBar: ButleryBottomNavigation(
-            currentIndex: 0,
-            items: ButleryAdaptiveNavigation.getNavigationItems(context),
-            onTap: (index) {
-              final route = ButleryAdaptiveNavigation.getNavigationItems(
-                context,
-              )[index].route;
-              Navigator.pushNamed(context, route);
-            },
-          ),
-          // UI Redesign: FAB cart button for quick add to shopping list
-          floatingActionButton: SizedBox(
-            width: 48,
-            height: 48,
-            child: FloatingActionButton(
-              onPressed: () => _actions.showAddToCartConfirmation(context),
-              tooltip: context.l10n.shoppingAddToList,
-              backgroundColor: cs.primary,
-              elevation: 2,
-              shape: const RoundedRectangleBorder(
-                borderRadius: BorderRadius.zero,
+          bottomNavigationBar: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _RecipeActionBar(
+                isOthersRecipe: isOthersRecipe,
+                onStartCooking: startCooking,
+                onSaveToMyKitchen: () => _handleMenuAction(
+                  context,
+                  _MenuAction.fork,
+                  viewModel,
+                  recipe,
+                ),
+                onAddToShoppingList: () =>
+                    _actions.showAddToCartConfirmation(context),
               ),
-              child: Icon(
-                Icons.shopping_cart_outlined,
-                color: cs.onPrimary,
-                size: AppDimensions.iconSizeM,
+              ButleryBottomNavigation(
+                currentIndex: 0,
+                items: ButleryAdaptiveNavigation.getNavigationItems(context),
+                onTap: (index) {
+                  final route = ButleryAdaptiveNavigation.getNavigationItems(
+                    context,
+                  )[index].route;
+                  Navigator.pushNamed(context, route);
+                },
               ),
-            ),
+            ],
           ),
           body: CustomScrollView(
             slivers: [
@@ -297,9 +325,13 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                   child: _HeroButton(
                     icon: Icons.arrow_back,
                     onPressed: () => Navigator.pop(context),
-                    tooltip: context.l10n.accessibilityBackButton,
+                    tooltip: widget.backTo == null
+                        ? context.l10n.accessibilityBackButton
+                        : context.l10n.commonBackTo(widget.backTo!),
                   ),
                 ),
+                // Mönster 3 · Mediehero (Komponentark v1:81-89): the title
+                // stands under the hero, never on top of the food.
                 title: const SizedBox.shrink(),
                 flexibleSpace: FlexibleSpaceBar(
                   background: Hero(
@@ -315,48 +347,33 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                                     recipe.imageUrls,
                                     0,
                                   ),
-                              child: DecoratedBox(
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    begin: Alignment.topCenter,
-                                    end: Alignment.bottomCenter,
-                                    colors: [
-                                      Colors.transparent,
-                                      cs.onSurface.withValues(
-                                        alpha: AppDimensions.opacityMediumLight,
-                                      ),
-                                    ],
-                                  ),
+                              child: CachedNetworkImage(
+                                imageUrl: recipe.imageUrls.first,
+                                cacheKey: FirebaseUrlUtils.stableCacheKey(
+                                  recipe.imageUrls.first,
                                 ),
-                                child: CachedNetworkImage(
-                                  imageUrl: recipe.imageUrls.first,
-                                  cacheKey: FirebaseUrlUtils.stableCacheKey(
-                                    recipe.imageUrls.first,
-                                  ),
-                                  fit: BoxFit.cover,
-                                  memCacheWidth:
-                                      (600 *
-                                              MediaQuery.of(
-                                                context,
-                                              ).devicePixelRatio)
-                                          .round(),
-                                  placeholder: (context, url) => ColoredBox(
+                                fit: BoxFit.cover,
+                                memCacheWidth:
+                                    (600 *
+                                            MediaQuery.of(
+                                              context,
+                                            ).devicePixelRatio)
+                                        .round(),
+                                // A still plate while the photo loads,
+                                // never a spinner (U05 test plan).
+                                placeholder: (context, url) => ColoredBox(
+                                  color: cs.surfaceContainerHighest,
+                                ),
+                                errorWidget: (context, url, error) {
+                                  return ColoredBox(
                                     color: cs.surfaceContainerHighest,
-                                    child: const Center(
-                                      child: LoadingIndicator(),
+                                    child: Icon(
+                                      Icons.restaurant,
+                                      size: AppDimensions.iconSizeHero,
+                                      color: cs.onSurfaceVariant,
                                     ),
-                                  ),
-                                  errorWidget: (context, url, error) {
-                                    return ColoredBox(
-                                      color: cs.surfaceContainerHighest,
-                                      child: Icon(
-                                        Icons.restaurant,
-                                        size: AppDimensions.iconSizeHero,
-                                        color: cs.onSurfaceVariant,
-                                      ),
-                                    );
-                                  },
-                                ),
+                                  );
+                                },
                               ),
                             ),
                           )
@@ -368,7 +385,6 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                                   recipe.id,
                                 ),
                                 size: 120,
-                                opacity: 0.85,
                               ),
                             ),
                           ),
@@ -376,33 +392,6 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                 ),
                 // UI Redesign: Hero action buttons with cream background
                 actions: [
-                  // Start cooking mode
-                  Padding(
-                    key: const ValueKey('test-recipe-detail-start-cooking'),
-                    padding: AppDimensions.paddingVertical8,
-                    child: Semantics(
-                      identifier: 'btn-start-cooking',
-                      button: true,
-                      label: context.l10n.recipeStartCookingTooltip,
-                      child: _HeroButton(
-                        icon: Icons.restaurant,
-                        onPressed: () => Navigator.pushNamed(
-                          context,
-                          Routes.cookingMode,
-                          // BUT-1613: forward the present count (map form) when
-                          // this detail view was opened from a planned meal, so
-                          // cooking mode opens pre-scaled. Bare Recipe otherwise.
-                          arguments: widget.presentServings == null
-                              ? recipe
-                              : {
-                                  'recipe': recipe,
-                                  'presentServings': widget.presentServings,
-                                },
-                        ),
-                        tooltip: context.l10n.recipeStartCookingTooltip,
-                      ),
-                    ),
-                  ),
                   // Favorite toggle — owner-only (hidden for a friend's recipe)
                   if (!widget.readOnly)
                     Padding(
@@ -468,30 +457,18 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                       ),
                     ),
                   ),
-                  // Save a copy (fork) — promoted to a primary app-bar action
-                  // on shared recipes the user doesn't own (BUT-972). Owners
-                  // get it as the "Duplicate" overflow item below instead.
-                  if (showForkInAppBar(
-                    recipe.createdBy,
-                    ServiceLocator.get<PermissionService>().currentUserId,
-                  ))
+                  // "Spara till mitt kök" is the saffron action in the
+                  // bar below on someone else's recipe (BUT-972), so the
+                  // shopping list moves up here as a paper-ring button.
+                  if (isOthersRecipe)
                     Padding(
-                      key: const ValueKey('test-recipe-detail-save-copy'),
+                      key: const ValueKey('test-recipe-detail-add-to-list'),
                       padding: AppDimensions.paddingVertical8,
-                      child: Semantics(
-                        identifier: 'btn-save-copy',
-                        button: true,
-                        label: context.l10n.recipeCreateCopy,
-                        child: _HeroButton(
-                          icon: Icons.content_copy_outlined,
-                          onPressed: () => _handleMenuAction(
-                            context,
-                            _MenuAction.fork,
-                            viewModel,
-                            recipe,
-                          ),
-                          tooltip: context.l10n.recipeCreateCopy,
-                        ),
+                      child: _HeroButton(
+                        icon: Icons.shopping_cart_outlined,
+                        onPressed: () =>
+                            _actions.showAddToCartConfirmation(context),
+                        tooltip: context.l10n.recipeAddToShoppingList,
                       ),
                     ),
                   // More actions menu
@@ -516,7 +493,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                           return [
                             // Edit — owner-only (hidden for a friend's recipe)
                             if (!widget.readOnly)
-                              PopupMenuItem(
+                              ButleryMenuItem(
                                 key: const ValueKey('test-recipe-detail-edit'),
                                 value: _MenuAction.edit,
                                 child: Row(
@@ -541,7 +518,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                               ServiceLocator.get<PermissionService>()
                                   .currentUserId,
                             ))
-                              PopupMenuItem(
+                              ButleryMenuItem(
                                 value: _MenuAction.fork,
                                 child: Row(
                                   children: [
@@ -559,7 +536,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                               ),
                             // BUT-999: add to weekly menu — opens the
                             // multi-select day/slot picker.
-                            PopupMenuItem(
+                            ButleryMenuItem(
                               key: const ValueKey(
                                 'test-recipe-detail-add-to-menu',
                               ),
@@ -576,7 +553,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                                 ],
                               ),
                             ),
-                            PopupMenuItem(
+                            ButleryMenuItem(
                               value: _MenuAction.generateShoppingList,
                               child: Row(
                                 children: [
@@ -592,7 +569,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                             ),
                             // reTag/editTags/delete — owner-only
                             if (!widget.readOnly)
-                              PopupMenuItem(
+                              ButleryMenuItem(
                                 value: _MenuAction.reTag,
                                 child: Row(
                                   children: [
@@ -609,7 +586,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                                 ),
                               ),
                             if (!widget.readOnly)
-                              PopupMenuItem(
+                              ButleryMenuItem(
                                 value: _MenuAction.editTags,
                                 child: Row(
                                   children: [
@@ -626,7 +603,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                                 ),
                               ),
                             if (!widget.readOnly)
-                              PopupMenuItem(
+                              ButleryMenuItem(
                                 key: const ValueKey(
                                   'test-recipe-detail-delete',
                                 ),
@@ -657,7 +634,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                             if (recipe.createdBy ==
                                 ServiceLocator.get<PermissionService>()
                                     .currentUserId)
-                              PopupMenuItem(
+                              ButleryMenuItem(
                                 value: _MenuAction.toggleCollaboration,
                                 child: Row(
                                   children: [
@@ -688,7 +665,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                             // can only produce an error — the same dead
                             // affordance the source ROW just stopped drawing.
                             if (isSafeExternalUrl(recipe.sourceUrl))
-                              PopupMenuItem(
+                              ButleryMenuItem(
                                 value: _MenuAction.source,
                                 child: Row(
                                   children: [
@@ -708,7 +685,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                             // transcript, pasted text) — distinct from the URL
                             // open above.
                             if (recipe.core.sourceArtefact != null)
-                              PopupMenuItem(
+                              ButleryMenuItem(
                                 value: _MenuAction.viewSourceArtefact,
                                 child: Row(
                                   children: [
@@ -725,7 +702,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                                 ),
                               ),
                             if (kIsWeb)
-                              PopupMenuItem(
+                              ButleryMenuItem(
                                 value: _MenuAction.printRecipe,
                                 child: Row(
                                   children: [
@@ -741,7 +718,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                                   ],
                                 ),
                               ),
-                            PopupMenuItem(
+                            ButleryMenuItem(
                               value: _MenuAction.report,
                               child: Row(
                                 children: [
@@ -1153,6 +1130,18 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
 
 /// UI Redesign: Hero button with solid cream background and green icon.
 /// Used for back button and action buttons in recipe detail hero image.
+/// Diameter of the paper ring behind a hero icon button (Komponentark
+/// v1:81-89 draws 40 px). The hitbox around it is 48 dp.
+const double _paperRingSize = 40;
+
+/// An icon button on the media hero: an ink icon in a paper ring, 48 dp
+/// hitbox, the canonical focus ring around the hitbox (Komponentark
+/// v1:81-89 "Ikonknappar i pappersringar"; Grafisk manual v6:381).
+///
+/// Paper and ink are the same in both modes, because the ring stands on a
+/// photo, not on the theme's surface: onPrimary is paper #F5F4ED and
+/// primary is ink #24382C in both schemes (lib/theme/app_colors.dart
+/// lightColorScheme and darkColorScheme).
 class _HeroButton extends StatelessWidget {
   const _HeroButton({
     required this.icon,
@@ -1171,21 +1160,28 @@ class _HeroButton extends StatelessWidget {
     // Tooltip alone gives screen readers a hint, not a "button" role —
     // wrap explicitly so callers without their own Semantics ancestor
     // (e.g. the back button at AppBar.leading) still announce correctly.
-    final tappable = Material(
-      color: cs.surface,
-      borderRadius: BorderRadius.zero,
-      child: InkWell(
-        onTap: () {
-          HapticFeedback.lightImpact();
-          onPressed();
-        },
-        child: SizedBox(
-          width: AppDimensions.minTouchTarget,
-          height: AppDimensions.minTouchTarget,
-          child: Icon(
-            icon,
-            color: cs.primary,
-            size: AppDimensions.iconSizeM,
+    final tappable = ButleryControlFocus(
+      borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
+      child: Material(
+        type: MaterialType.transparency,
+        child: InkWell(
+          customBorder: const CircleBorder(),
+          onTap: () {
+            HapticFeedback.lightImpact();
+            onPressed();
+          },
+          child: SizedBox(
+            width: AppDimensions.minTouchTarget,
+            height: AppDimensions.minTouchTarget,
+            child: Center(
+              child: _PaperRing(
+                child: Icon(
+                  icon,
+                  color: cs.primary,
+                  size: AppDimensions.iconSizeM,
+                ),
+              ),
+            ),
           ),
         ),
       ),
@@ -1200,6 +1196,141 @@ class _HeroButton extends StatelessWidget {
           )
         : tappable;
     return labelled;
+  }
+}
+
+/// The 40 px paper circle behind a hero icon.
+class _PaperRing extends StatelessWidget {
+  const _PaperRing({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      key: const ValueKey('recipe-detail-paper-ring'),
+      width: _paperRingSize,
+      height: _paperRingSize,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.onPrimary,
+        shape: BoxShape.circle,
+      ),
+      child: child,
+    );
+  }
+}
+
+/// The sticky action bar over the bottom navigation (Komponentark v1
+/// "Sticky action bar": "Börja laga" and "Lägg 2 varor", 1 px top edge, the
+/// content's side margin; Skarmar v12 del 1 'Receptdetalj').
+///
+/// It holds the view's one saffron action (Grafisk manual v6:219): "Börja
+/// laga" on your own recipe, "Spara till mitt kök" on someone else's
+/// (Skarmar v12 etapp 11). The other button is ink. Below 360 dp the
+/// buttons stack.
+class _RecipeActionBar extends StatelessWidget {
+  const _RecipeActionBar({
+    required this.isOthersRecipe,
+    required this.onStartCooking,
+    required this.onSaveToMyKitchen,
+    required this.onAddToShoppingList,
+  });
+
+  final bool isOthersRecipe;
+  final VoidCallback onStartCooking;
+  final VoidCallback onSaveToMyKitchen;
+  final VoidCallback onAddToShoppingList;
+
+  static const double _stackBelow = 360;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final l10n = context.l10n;
+
+    final startCooking = Semantics(
+      identifier: 'btn-start-cooking',
+      button: true,
+      child: FilledButton(
+        key: const ValueKey('test-recipe-detail-start-cooking'),
+        style: isOthersRecipe ? null : ComponentThemes.heroButtonStyle(cs),
+        onPressed: onStartCooking,
+        child: Text(l10n.recipeStartCookingTooltip),
+      ),
+    );
+
+    final Widget first;
+    final Widget second;
+    if (isOthersRecipe) {
+      first = Semantics(
+        identifier: 'btn-save-copy',
+        button: true,
+        child: FilledButton(
+          key: const ValueKey('test-recipe-detail-save-copy'),
+          style: ComponentThemes.heroButtonStyle(cs),
+          onPressed: onSaveToMyKitchen,
+          child: Text(l10n.recipeSaveToMyKitchen),
+        ),
+      );
+      second = startCooking;
+    } else {
+      first = startCooking;
+      // Light: the theme's ink fill (Skarmar v12 del 1 'Receptdetalj',
+      // background:#24382c). Dark: no fill, a 1.5 px paper outline and
+      // paper text (Skarmar v12 del 1 'Receptdetalj — mörkt läge',
+      // border:1.5px solid #f5f4ed), since ink on #17251D does not read as
+      // a button. cs.onSurface is paper #F5F4ED in the dark scheme
+      // (app_colors.dart:331).
+      final isDark = cs.brightness == Brightness.dark;
+      second = FilledButton(
+        key: const ValueKey('test-recipe-detail-add-to-list'),
+        style: isDark
+            ? FilledButton.styleFrom(
+                backgroundColor: Colors.transparent,
+                foregroundColor: cs.onSurface,
+                side: BorderSide(color: cs.onSurface, width: 1.5),
+              )
+            : null,
+        onPressed: onAddToShoppingList,
+        child: Text(l10n.recipeAddToShoppingList),
+      );
+    }
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: cs.surface,
+        border: Border(top: BorderSide(color: cs.outlineVariant)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppDimensions.spacingL,
+          vertical: AppDimensions.spacingModerate,
+        ),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            if (constraints.maxWidth < _stackBelow) {
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  first,
+                  const SizedBox(height: AppDimensions.spacingSm),
+                  second,
+                ],
+              );
+            }
+            return Row(
+              children: [
+                Expanded(child: first),
+                const SizedBox(width: AppDimensions.spacingSm),
+                Expanded(child: second),
+              ],
+            );
+          },
+        ),
+      ),
+    );
   }
 }
 
@@ -1288,18 +1419,16 @@ class _HeroMenuButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
 
-    return SizedBox(
-      width: AppDimensions.minTouchTarget,
-      height: AppDimensions.minTouchTarget,
-      child: Material(
-        color: cs.surface,
-        borderRadius: BorderRadius.zero,
+    // The same paper ring as the other hero buttons (Komponentark v1:81-89).
+    return ButleryControlFocus(
+      borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
+      child: SizedBox(
+        width: AppDimensions.minTouchTarget,
+        height: AppDimensions.minTouchTarget,
         child: PopupMenuButton<_MenuAction>(
           padding: EdgeInsets.zero,
-          icon: Icon(
-            icon,
-            color: cs.primary,
-            size: AppDimensions.iconSizeM,
+          icon: _PaperRing(
+            child: Icon(icon, color: cs.primary, size: AppDimensions.iconSizeM),
           ),
           itemBuilder: itemBuilder,
           onSelected: onSelected,

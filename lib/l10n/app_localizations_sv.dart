@@ -753,7 +753,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get recipeDelete => 'Ta bort recept';
 
   @override
-  String get recipeDeleting => 'Tar bort recept...';
+  String get recipeDeleting => 'Raderar receptet …';
 
   @override
   String recipeFormatPortions(int count) {
@@ -1109,7 +1109,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get statusSyncing => 'Synkroniserar...';
 
   @override
-  String get statusSaving => 'Sparar...';
+  String get statusSaving => 'Sparar …';
 
   @override
   String get statusCreating => 'Skapar...';
@@ -14178,6 +14178,9 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
+  String get bulkMoreActions => 'Fler åtgärder';
+
+  @override
   String get bulkSelectAll => 'Välj alla';
 
   @override
@@ -16686,4 +16689,32 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get loadingStartingApp => 'Startar Butlery …';
+
+  @override
+  String get minaReceptEmptyTitle => 'Inga sparade recept än';
+
+  @override
+  String get minaReceptEmptyBody =>
+      'Din kokbok är dukad men tom. Spara ditt första recept — importera en länk, fota ett kort eller skriv själv.';
+
+  @override
+  String get recipeSaveToMyKitchen => 'Spara till mitt kök';
+
+  @override
+  String get recipeAddToShoppingList => 'Lägg i inköpslistan';
+
+  @override
+  String get loadingCookSnaps => 'Hämtar fotona …';
+
+  @override
+  String get loadingSubstitutions => 'Hämtar ersättningar …';
+
+  @override
+  String get uploadingCookSnap => 'Laddar upp fotot …';
+
+  @override
+  String get sendingComment => 'Skickar kommentaren …';
+
+  @override
+  String get recipeEditorClose => 'Stäng editorn';
 }

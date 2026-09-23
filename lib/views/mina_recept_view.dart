@@ -48,7 +48,7 @@ import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/indicators/sync_indicator.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/social_components/recipe_list_avatar_badge.dart';
-import 'package:butlery/widgets/common/main_view_header.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/cooking/cooking_session_card.dart';
 import 'package:butlery/widgets/social/family_presence_bar.dart';
 
@@ -68,7 +68,6 @@ import 'package:butlery/theme/app_dimensions.dart';
 
 // Core services and utilities
 import 'package:butlery/core/providers/application_provider.dart';
-import 'package:butlery/widgets/common/illustrations/vegetable_illustration.dart';
 import 'package:butlery/models/seasonal/seasonal_month.dart';
 import 'package:butlery/services/seasonal/seasonal_hero_service.dart';
 import 'package:butlery/services/persistence_service.dart';
@@ -370,13 +369,20 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
     final personalTags = context.watch<PersonalTagViewModel>().tags;
     final recipeCount = viewModel.recipes.length;
 
-    // Selection mode uses a different app bar
+    // Mönster 1 · Rotnivå (Komponentark v1:60-68): no back arrow, the title
+    // in Display compact, the count as the secondary line, and no decorative
+    // illustration (the four patterns are exhaustive, butlery_top_bar.dart).
+    // Selection mode is the same bar with other content (produktregler.md:873).
+    final countLine = context.l10n.recipeCountBadge(recipeCount);
     final PreferredSizeWidget appBar = viewModel.isSelectionMode
-        ? buildMinaReceptSelectionAppBar(context, viewModel)
-        : MainViewHeader(
+        ? buildMinaReceptSelectionAppBar(
+            context,
+            viewModel,
+            secondaryLine: countLine,
+          )
+        : ButleryTopBar.rot(
             title: context.l10n.minaReceptHeaderTitle,
-            ghostIllustration: VegetableType.broccoli,
-            countBadge: context.l10n.recipeCountBadge(recipeCount),
+            secondaryLine: countLine,
             trailing: const RecipeListAvatarBadge(),
             actions: [
               // BUT-977: surface the pantry-match IngredientSearchView power

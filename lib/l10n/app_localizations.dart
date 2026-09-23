@@ -1295,7 +1295,7 @@ abstract class AppLocalizations {
   /// No description provided for @recipeDeleting.
   ///
   /// In sv, this message translates to:
-  /// **'Tar bort recept...'**
+  /// **'Raderar receptet …'**
   String get recipeDeleting;
 
   /// No description provided for @recipeFormatPortions.
@@ -1925,7 +1925,7 @@ abstract class AppLocalizations {
   /// No description provided for @statusSaving.
   ///
   /// In sv, this message translates to:
-  /// **'Sparar...'**
+  /// **'Sparar …'**
   String get statusSaving;
 
   /// No description provided for @statusCreating.
@@ -23663,6 +23663,12 @@ abstract class AppLocalizations {
   /// **'{count} valda'**
   String bulkSelectedCount(int count);
 
+  /// Tooltip for the kebab in the recipe list selection bar (Skarmar v12 etapp 9 #flerbar)
+  ///
+  /// In sv, this message translates to:
+  /// **'Fler åtgärder'**
+  String get bulkMoreActions;
+
   /// No description provided for @bulkSelectAll.
   ///
   /// In sv, this message translates to:
@@ -27760,6 +27766,60 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Startar Butlery …'**
   String get loadingStartingApp;
+
+  /// Empty recipe library title (Skarmar v12 del 1 #tomtrecept).
+  ///
+  /// In sv, this message translates to:
+  /// **'Inga sparade recept än'**
+  String get minaReceptEmptyTitle;
+
+  /// Empty recipe library body (Skarmar v12 del 1 #tomtrecept).
+  ///
+  /// In sv, this message translates to:
+  /// **'Din kokbok är dukad men tom. Spara ditt första recept — importera en länk, fota ett kort eller skriv själv.'**
+  String get minaReceptEmptyBody;
+
+  /// Recipe detail sticky action bar (P4-U05).
+  ///
+  /// In sv, this message translates to:
+  /// **'Spara till mitt kök'**
+  String get recipeSaveToMyKitchen;
+
+  /// Recipe detail sticky action bar (P4-U05).
+  ///
+  /// In sv, this message translates to:
+  /// **'Lägg i inköpslistan'**
+  String get recipeAddToShoppingList;
+
+  /// What is loading, for the plate line (P4-U05).
+  ///
+  /// In sv, this message translates to:
+  /// **'Hämtar fotona …'**
+  String get loadingCookSnaps;
+
+  /// What is loading, for the plate line (P4-U05).
+  ///
+  /// In sv, this message translates to:
+  /// **'Hämtar ersättningar …'**
+  String get loadingSubstitutions;
+
+  /// What is loading, for the plate line (P4-U05).
+  ///
+  /// In sv, this message translates to:
+  /// **'Laddar upp fotot …'**
+  String get uploadingCookSnap;
+
+  /// What is loading, for the plate line (P4-U05).
+  ///
+  /// In sv, this message translates to:
+  /// **'Skickar kommentaren …'**
+  String get sendingComment;
+
+  /// The X that closes the recipe editor modal (Skarmar v12 etapp 4 #editorutkast).
+  ///
+  /// In sv, this message translates to:
+  /// **'Stäng editorn'**
+  String get recipeEditorClose;
 }
 
 class _AppLocalizationsDelegate

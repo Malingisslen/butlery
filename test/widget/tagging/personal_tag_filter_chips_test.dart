@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/widgets/common/search_filter/personal_tag_filter_chips.dart';
+import 'package:butlery/widgets/common/state_widget.dart';
 
 import '../../infrastructure/helpers/widget_test_app.dart';
 
@@ -135,9 +136,11 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // Should find an add icon button
-      expect(find.byIcon(Icons.add), findsOneWidget);
-      await tester.tap(find.byIcon(Icons.add));
+      // P4-U03: the empty state is the shared StateWidget.empty, with the
+      // one way forward as its action.
+      expect(find.byType(StateWidget), findsOneWidget);
+      expect(find.text('Skapa personliga taggar'), findsOneWidget);
+      await tester.tap(find.text('Skapa personliga taggar'));
       expect(manageTapped, isTrue);
     });
 

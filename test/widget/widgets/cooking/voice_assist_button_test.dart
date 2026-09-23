@@ -22,7 +22,7 @@ import 'package:butlery/services/voice/tts_service.dart';
 import 'package:butlery/services/voice/voice_capture_service.dart';
 import 'package:butlery/viewmodels/cooking/cooking_voice_controller.dart';
 import 'package:butlery/viewmodels/cooking_mode_viewmodel.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/cooking/voice_assist_button.dart';
 import 'package:butlery/widgets/cooking/voice_heard_chip.dart';
 
@@ -207,7 +207,7 @@ void main() {
     },
   );
 
-  testWidgets('transcribing shows the shared LoadingIndicator', (
+  testWidgets('transcribing shows the plate line, not a spinner (P4-U06)', (
     tester,
   ) async {
     await tester.pumpWidget(buttonApp(onEnsurePermission: () async => true));
@@ -220,7 +220,7 @@ void main() {
     await tester.pump();
 
     expect(controller.state, VoiceAssistState.transcribing);
-    expect(find.byType(LoadingIndicator), findsOneWidget);
+    expect(find.byType(PlateLine), findsOneWidget);
 
     // Resolve so the pending Future doesn't leak into the next test.
     capture.releaseHeld(null);

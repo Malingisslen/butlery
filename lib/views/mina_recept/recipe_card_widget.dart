@@ -15,7 +15,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/viewmodels/recipe_list_viewmodel.dart';
-import 'package:butlery/widgets/common/content_card.dart';
+import 'package:butlery/widgets/recipe/recipe_card.dart';
 
 /// Renders one recipe card with selection / swipe behavior intact.
 ///
@@ -43,29 +43,32 @@ class MinaReceptRecipeCard extends StatelessWidget {
     final isSelected = viewModel.selectedIds.contains(recipe.id);
     final cs = Theme.of(context).colorScheme;
 
-    Widget card = ContentCard(
+    final showBadges = allergenPrefs.showOnCards;
+    // RecipeCard directly rather than through ContentCard, so the card can
+    // draw its own selected state (surface.selected with a real border,
+    // #flerbar) instead of a tinted layer on top.
+    Widget card = RecipeCard(
       key: ValueKey(recipe.id),
-      item: recipe,
-      type: ContentCardType.recipe,
+      recipe: recipe,
+      isSelected: isSelected,
+      showTags: true,
       style: viewModel.isGridView
-          ? ContentCardStyle.grid
-          : ContentCardStyle.detailed,
-      userAllergenPrefs: allergenPrefs.showOnCards
-          ? allergenPrefs.trackedAllergens
-          : null,
-      userDietaryPrefs: allergenPrefs.showOnCards
-          ? allergenPrefs.trackedDietary
-          : null,
+          ? RecipeCardStyle.grid
+          : RecipeCardStyle.detailed,
+      userAllergenPrefs: showBadges ? allergenPrefs.trackedAllergens : null,
+      userDietaryPrefs: showBadges ? allergenPrefs.trackedDietary : null,
+      showAllergenBadges: showBadges,
+      showDietaryBadges: showBadges,
       matchPercent: viewModel.pantryOnly
           ? viewModel.pantryMatches[recipe.id]
           : null,
       pooledStats: viewModel.pooledStats[recipe.id],
       onFavoriteToggle: viewModel.isSelectionMode
           ? null
-          : () => viewModel.toggleFavorite(recipe.id),
+          : (_) => viewModel.toggleFavorite(recipe.id),
       onTap: viewModel.isSelectionMode
-          ? () => viewModel.toggleSelection(recipe.id)
-          : () async {
+          ? (_) => viewModel.toggleSelection(recipe.id)
+          : (_) async {
               await Navigator.pushNamed(
                 context,
                 Routes.recipeDetail,
@@ -74,19 +77,13 @@ class MinaReceptRecipeCard extends StatelessWidget {
             },
       onLongPress: viewModel.isSelectionMode
           ? null
-          : () => viewModel.enterSelectionMode(recipe.id),
+          : (_) => viewModel.enterSelectionMode(recipe.id),
     );
 
     if (viewModel.isSelectionMode) {
       card = Stack(
         children: [
           card,
-          if (isSelected)
-            Positioned.fill(
-              child: Container(
-                color: cs.primary.withValues(alpha: 0.15),
-              ),
-            ),
           Positioned(
             top: AppDimensions.spacingSm,
             left: AppDimensions.spacingSm,
@@ -97,7 +94,9 @@ class MinaReceptRecipeCard extends StatelessWidget {
                   : context.l10n.a11yRecipeNotSelected(recipe.title),
               child: Icon(
                 isSelected ? Icons.check_circle : Icons.circle_outlined,
-                color: isSelected ? cs.primary : cs.outline,
+                // text.primary when chosen, border.control when not: ink on
+                // light and paper on dark (#flerbar draws the ink check).
+                color: isSelected ? cs.onSurface : cs.outline,
                 size: AppDimensions.iconSizeM,
               ),
             ),

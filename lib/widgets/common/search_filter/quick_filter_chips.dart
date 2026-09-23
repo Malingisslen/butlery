@@ -9,6 +9,7 @@ import 'package:butlery/services/tagging/config/allergen_config.dart';
 import 'package:butlery/widgets/common/search_filter/filter_models.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/butlery_control_focus.dart';
 
 /// Quick filter chip data model.
 class QuickFilterOption {
@@ -111,7 +112,7 @@ class QuickFilterChips extends StatelessWidget {
       scrollDirection: Axis.horizontal,
       padding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.spacingMd,
-        vertical: AppDimensions.spacingSm,
+        vertical: AppDimensions.spacingXxs,
       ),
       child: Row(
         children: [
@@ -176,57 +177,68 @@ class _QuickChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    return Material(
-      color: Colors.transparent,
-      child: Semantics(
-        label: isSelected
-            ? context.l10n.a11yQuickFilterSelected(label)
-            : context.l10n.a11yQuickFilter(label),
-        button: true,
-        selected: isSelected,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadius20),
-          child: AnimatedContainer(
-            duration: AnimationUtils.getDuration(
-              context,
-              AppDimensions.animationDurationFast,
-            ),
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppDimensions.spacingMd,
-              vertical: AppDimensions.spacingSm,
-            ),
-            decoration: BoxDecoration(
-              color: isSelected ? cs.primary : cs.surfaceContainerHighest,
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadius20),
-              border: Border.all(
-                color: isSelected ? cs.primary : cs.outlineVariant,
-                width: 1.5,
-              ),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (icon != null) ...[
-                  Icon(
-                    icon,
-                    size: AppDimensions.iconSizeS,
-                    color: isSelected
-                        ? cs.surfaceContainerHighest
-                        : cs.onSurfaceVariant,
+    // The shared grip (Grafisk manual v6:381): the InkWell fills a 48 dp box
+    // around the visible chip, and the focus ring goes around that box.
+    return ButleryControlFocus(
+      borderRadius: BorderRadius.circular(AppDimensions.borderRadius20),
+      child: Material(
+        color: Colors.transparent,
+        child: Semantics(
+          label: isSelected
+              ? context.l10n.a11yQuickFilterSelected(label)
+              : context.l10n.a11yQuickFilter(label),
+          button: true,
+          selected: isSelected,
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(AppDimensions.borderRadius20),
+            child: ButleryControlFocus.box(
+              child: AnimatedContainer(
+                duration: AnimationUtils.getDuration(
+                  context,
+                  AppDimensions.animationDurationFast,
+                ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppDimensions.spacingMd,
+                  vertical: AppDimensions.spacingSm,
+                ),
+                decoration: BoxDecoration(
+                  color: isSelected ? cs.primary : cs.surfaceContainerHighest,
+                  borderRadius: BorderRadius.circular(
+                    AppDimensions.borderRadius20,
                   ),
-                  const SizedBox(width: AppDimensions.spacingXs),
-                ],
-                Text(
-                  label,
-                  style: AppTextStyles.labelMedium.copyWith(
-                    color: isSelected
-                        ? cs.surfaceContainerHighest
-                        : cs.onSurface,
-                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                  border: Border.all(
+                    color: isSelected ? cs.primary : cs.outlineVariant,
+                    width: 1.5,
                   ),
                 ),
-              ],
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (icon != null) ...[
+                      Icon(
+                        icon,
+                        size: AppDimensions.iconSizeS,
+                        color: isSelected
+                            ? cs.surfaceContainerHighest
+                            : cs.onSurfaceVariant,
+                      ),
+                      const SizedBox(width: AppDimensions.spacingXs),
+                    ],
+                    Text(
+                      label,
+                      style: AppTextStyles.labelMedium.copyWith(
+                        color: isSelected
+                            ? cs.surfaceContainerHighest
+                            : cs.onSurface,
+                        fontWeight: isSelected
+                            ? FontWeight.w600
+                            : FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
         ),

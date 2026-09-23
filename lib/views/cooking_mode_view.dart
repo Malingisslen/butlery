@@ -6,6 +6,9 @@ import 'package:flutter/services.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
+import 'package:butlery/widgets/common/butlery_focus_ring.dart';
+import 'package:butlery/theme/component_themes.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/os_permission_helper.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
@@ -144,7 +147,7 @@ class _CookingModeContent extends StatelessWidget {
     // show a clear empty state with a way out instead.
     if (vm.instructions.isEmpty) {
       return Scaffold(
-        backgroundColor: cs.primary,
+        backgroundColor: _cookingBase(cs),
         body: SafeArea(
           child: Center(
             child: Padding(
@@ -182,66 +185,72 @@ class _CookingModeContent extends StatelessWidget {
       );
     }
 
+    // Cooking mode stands on surface.ink in light mode and on dark-bg
+    // #17251D in dark mode (_cookingBase), so every focus ring in it is paper
+    // (tokens.json:155-160; Komponentark v1:657).
     return Scaffold(
-      backgroundColor: cs.primary,
-      body: SafeArea(
-        child: Column(
-          children: [
-            // BUT-1360: cooking offline is the marquee scenario — surface a
-            // slim top strip so the cook knows edits/substitutions won't sync.
-            // Self-hides (SizedBox.shrink) when online, so the split layout is
-            // untouched with a connection.
-            LayoutComponents.offlineIndicator(),
-            _buildTopBar(context, vm, voiceController),
-            Expanded(
-              child: Stack(
-                children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Left panel: ingredients (~35%)
-                      Expanded(
-                        flex: 35,
-                        child: _IngredientsPanel(vm: vm),
-                      ),
-                      // Vertical divider
-                      Container(
-                        width: 1,
-                        color: cs.surface.withValues(alpha: 0.2),
-                      ),
-                      // Right panel: instructions (~65%)
-                      Expanded(
-                        flex: 65,
-                        child: _InstructionsPanel(vm: vm),
-                      ),
-                    ],
-                  ),
-                  // Köksbutlern (tasks/koksbutlern-plan.md): mic control +
-                  // heard-chip overlay the instructions panel, bottom-right.
-                  Positioned(
-                    right: AppDimensions.spacingMd,
-                    // Clear the _StepNavigation bar (~56 px row + padding):
-                    // the next-step arrow lives in this exact corner and must
-                    // stay tappable under the overlay (review finding #1).
-                    bottom: 72,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.end,
+      backgroundColor: _cookingBase(cs),
+      body: FocusRingSurface(
+        brightness: Brightness.dark,
+        child: SafeArea(
+          child: Column(
+            children: [
+              // BUT-1360: cooking offline is the marquee scenario — surface a
+              // slim top strip so the cook knows edits/substitutions won't sync.
+              // Self-hides (SizedBox.shrink) when online, so the split layout is
+              // untouched with a connection.
+              LayoutComponents.offlineIndicator(),
+              _buildTopBar(context, vm, voiceController),
+              Expanded(
+                child: Stack(
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        VoiceHeardChip(controller: voiceController),
-                        const SizedBox(height: AppDimensions.spacingXs),
-                        VoiceAssistButton(
-                          controller: voiceController,
-                          onEnsurePermission: () =>
-                              _ensureVoicePermission(context),
+                        // Left panel: ingredients (~35%)
+                        Expanded(
+                          flex: 35,
+                          child: _IngredientsPanel(vm: vm),
+                        ),
+                        // Vertical divider
+                        Container(
+                          width: 1,
+                          color: cs.onPrimary.withValues(alpha: _onInkLine),
+                        ),
+                        // Right panel: instructions (~65%)
+                        Expanded(
+                          flex: 65,
+                          child: _InstructionsPanel(vm: vm),
                         ),
                       ],
                     ),
-                  ),
-                ],
+                    // Köksbutlern (tasks/koksbutlern-plan.md): mic control +
+                    // heard-chip overlay the instructions panel, bottom-right.
+                    Positioned(
+                      right: AppDimensions.spacingMd,
+                      // Clear the _StepNavigation bar (~56 px row + padding):
+                      // the next-step arrow lives in this exact corner and must
+                      // stay tappable under the overlay (review finding #1).
+                      bottom: 72,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          VoiceHeardChip(controller: voiceController),
+                          const SizedBox(height: AppDimensions.spacingXs),
+                          VoiceAssistButton(
+                            controller: voiceController,
+                            onEnsurePermission: () =>
+                                _ensureVoicePermission(context),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -291,11 +300,9 @@ class _CookingModeContent extends StatelessWidget {
         vertical: AppDimensions.spacingSm,
       ),
       decoration: BoxDecoration(
-        color: cs.primary,
+        color: _cookingBase(cs),
         border: Border(
-          bottom: BorderSide(
-            color: cs.surface.withValues(alpha: 0.2),
-          ),
+          bottom: BorderSide(color: cs.onPrimary.withValues(alpha: _onInkLine)),
         ),
       ),
       child: Row(
@@ -303,7 +310,7 @@ class _CookingModeContent extends StatelessWidget {
           // Recipe title
           Expanded(
             child: Text(
-              vm.title.toLowerCase(),
+              vm.title,
               style: AppTextStyles.headerTitle.copyWith(
                 color: cs.onPrimary,
                 letterSpacing: 1,
@@ -318,8 +325,11 @@ class _CookingModeContent extends StatelessWidget {
           _buildSpeakerToggle(context, voiceController),
           const SizedBox(width: AppDimensions.spacingXs),
           // Font size toggle
+          // Paper plates on ink: onPrimary is paper #F5F4ED in both
+          // schemes, where surface would turn dark in dark mode and swallow
+          // the ink glyph.
           ColoredBox(
-            color: cs.surface,
+            color: cs.onPrimary,
             child: TappableWrapper(
               onTap: () => vm.cycleFontScale(),
               semanticLabel: context.l10n.a11yCookingModeFontScale,
@@ -337,9 +347,10 @@ class _CookingModeContent extends StatelessWidget {
             ),
           ),
           const SizedBox(width: AppDimensions.spacingXs),
-          // Close button
+          // Mönster 4 · Modal (Komponentark v1:57, :91-97): cooking mode
+          // closes with X and never shows a back arrow beside it.
           ColoredBox(
-            color: cs.surface,
+            color: cs.onPrimary,
             child: TappableWrapper(
               onTap: () => Navigator.pop(context),
               semanticLabel: context.l10n.a11yCookingModeClose,
@@ -394,7 +405,7 @@ class _IngredientsPanel extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
 
     return ColoredBox(
-      color: cs.primary,
+      color: _cookingBase(cs),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -402,10 +413,10 @@ class _IngredientsPanel extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(AppDimensions.spacingMd),
             decoration: BoxDecoration(
-              color: cs.primary.withValues(alpha: 0.5),
+              color: _cookingBase(cs),
               border: Border(
                 bottom: BorderSide(
-                  color: cs.surface.withValues(alpha: 0.15),
+                  color: cs.onPrimary.withValues(alpha: _onInkLine),
                 ),
               ),
             ),
@@ -633,18 +644,14 @@ class _IngredientsPanel extends StatelessWidget {
             alignment: Alignment.center,
             decoration: BoxDecoration(
               border: Border.all(
-                color: isEnabled
-                    ? cs.onPrimary
-                    : cs.onPrimary.withValues(alpha: 0.3),
+                color: isEnabled ? cs.onPrimary : _disabledOnInk,
                 width: 2,
               ),
             ),
             child: Icon(
               icon,
               size: AppDimensions.iconSizeL,
-              color: isEnabled
-                  ? cs.onPrimary
-                  : cs.onPrimary.withValues(alpha: 0.3),
+              color: isEnabled ? cs.onPrimary : _disabledOnInk,
             ),
           ),
         ),
@@ -763,7 +770,7 @@ class _InstructionsPanelState extends State<_InstructionsPanel> {
     final cs = Theme.of(context).colorScheme;
 
     return ColoredBox(
-      color: cs.primary.withValues(alpha: 0.8),
+      color: _cookingBase(cs),
       child: Column(
         children: [
           // BUT-1242: overview of all concurrently-running step timers.
@@ -810,7 +817,7 @@ class _InstructionsPanelState extends State<_InstructionsPanel> {
                                 ? BoxDecoration(
                                     border: Border(
                                       left: BorderSide(
-                                        color: cs.surface,
+                                        color: cs.onPrimary,
                                         width: 3,
                                       ),
                                     ),
@@ -828,15 +835,23 @@ class _InstructionsPanelState extends State<_InstructionsPanel> {
                                   width: AppDimensions.minTouchTarget,
                                   height: AppDimensions.minTouchTarget,
                                   alignment: Alignment.center,
+                                  // As drawn in Skarmar v12 del 1 #laga: the
+                                  // current step is a paper plate, the others
+                                  // paper at 0.6, an allowed on-ink ladder
+                                  // step (tokens.json:40-53 onInk). The digit
+                                  // is the base colour on both, so it reads
+                                  // on the 0.6 plate in dark mode too.
                                   decoration: BoxDecoration(
                                     color: isActive
-                                        ? cs.surface
-                                        : cs.surface.withValues(alpha: 0.6),
+                                        ? cs.onPrimary
+                                        : cs.onPrimary.withValues(
+                                            alpha: _onInkStepPlate,
+                                          ),
                                   ),
                                   child: Text(
                                     '$stepNumber',
                                     style: AppTextStyles.contentTitle.copyWith(
-                                      color: cs.primary,
+                                      color: _cookingBase(cs),
                                       fontWeight: FontWeight.w700,
                                       fontSize:
                                           AppTextStyles.contentTitle.fontSize! *
@@ -901,17 +916,22 @@ class _InstructionsPanelState extends State<_InstructionsPanel> {
               },
             ),
           ),
-          _StepNavigation(vm: vm),
+          CookingStepNavigation(vm: vm),
         ],
       ),
     );
   }
 }
 
-class _StepNavigation extends StatelessWidget {
+/// The step row at the foot of the instructions: previous step, the step
+/// counter and the view's one saffron action, "Nästa steg".
+///
+/// Public so its states can be proven without the whole view, which locks
+/// the orientation and the screen in initState.
+class CookingStepNavigation extends StatelessWidget {
   final CookingModeViewModel vm;
 
-  const _StepNavigation({required this.vm});
+  const CookingStepNavigation({required this.vm, super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -922,15 +942,15 @@ class _StepNavigation extends StatelessWidget {
         horizontal: AppDimensions.spacingMd,
         vertical: AppDimensions.spacingSm,
       ),
-      color: cs.primary,
+      color: _cookingBase(cs),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           _NavButton(
             icon: Icons.arrow_back,
             label: context.l10n.cookingModePreviousStep,
             onPressed: vm.hasPreviousStep ? vm.previousStep : null,
           ),
+          const SizedBox(width: AppDimensions.spacingSm),
           Text(
             context.l10n.cookingModeStepOf(
               vm.currentStepIndex + 1,
@@ -938,10 +958,33 @@ class _StepNavigation extends StatelessWidget {
             ),
             style: AppTextStyles.titleMedium.copyWith(color: cs.onPrimary),
           ),
-          _NavButton(
-            icon: Icons.arrow_forward,
-            label: context.l10n.cookingModeNextStep,
-            onPressed: vm.hasNextStep ? vm.nextStep : null,
+          const SizedBox(width: AppDimensions.spacingSm),
+          // The view's one saffron action (Komponentark v1 mönster 4;
+          // Skarmar v12 del 1 'Matlagningsläge'; Grafisk manual v6:219).
+          // It fills the rest of the row, as drawn (flex:1 in Skarmar v12
+          // del 1 #lagastaende and #lagamorkt), with the arrow after the
+          // label. The finite minimum keeps it layoutable inside a Row.
+          Expanded(
+            child: FilledButton.icon(
+              key: const ValueKey('cooking-mode-next-step'),
+              iconAlignment: IconAlignment.end,
+              style: ComponentThemes.heroButtonStyle(cs).copyWith(
+                minimumSize: const WidgetStatePropertyAll(
+                  Size(
+                    AppDimensions.minTouchTarget,
+                    AppDimensions.minTouchTarget,
+                  ),
+                ),
+              ),
+              onPressed: vm.hasNextStep
+                  ? () {
+                      HapticFeedback.lightImpact();
+                      vm.nextStep();
+                    }
+                  : null,
+              icon: const Icon(Icons.arrow_forward),
+              label: Text(context.l10n.cookingModeNextStep),
+            ),
           ),
         ],
       ),
@@ -976,11 +1019,32 @@ class _NavButton extends StatelessWidget {
       semanticLabel: label,
       child: Icon(
         icon,
-        color: enabled
-            ? cs.onPrimary
-            : cs.onPrimary.withValues(alpha: AppDimensions.opacityLight),
+        color: enabled ? cs.onPrimary : _disabledOnInk,
         size: AppDimensions.iconSizeL,
       ),
     );
   }
 }
+
+/// Decorative lines on surface.ink: paper at the ladder's lowest on-ink
+/// step (tokens.json:40-53 opacityLadder.onInk 0.18). A divider, never a
+/// state.
+const double _onInkLine = 0.18;
+
+/// The cooking-mode base. Light mode: surface.ink #24382C (cs.primary).
+/// Dark mode: dark-bg #17251D (cs.surface), "så skärmen inte lyser i ett
+/// släckt kök" (Skarmar v12 del 1 #lagamorkt). Paper (cs.onPrimary) reads
+/// on both.
+Color _cookingBase(ColorScheme cs) =>
+    cs.brightness == Brightness.dark ? cs.surface : cs.primary;
+
+/// The plate behind a step number that is not current: paper at 0.6 on the
+/// base, as drawn in Skarmar v12 del 1 #laga (tokens.json:40-53 onInk).
+const double _onInkStepPlate = 0.6;
+
+/// A disabled control on the cooking-mode base, in both modes: #93A48D, the
+/// dark text.disabled.onRaised (tokens.json:198-201), never paper at an
+/// opacity. It measures 4.73:1 on ink #24382C (light base) and 5.9:1 on
+/// #17251D (dark base), above the 4.5:1 the P4-U06 test plan asks for and the
+/// 3:1 disabled floor (tokens.json contrastPolicy).
+final Color _disabledOnInk = AppModeColors.textDisabled(Brightness.dark);

@@ -12,8 +12,8 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/component_themes.dart';
 import 'package:butlery/viewmodels/recipe_list_viewmodel.dart';
-import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/illustrations/vegetable_illustration.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 
@@ -30,13 +30,39 @@ class MinaReceptEmptyState extends StatelessWidget {
     final isNewUser =
         profile != null && clock.now().difference(profile.joinedAt).inDays < 7;
 
+    final cs = Theme.of(context).colorScheme;
+
+    // One hero action and nothing else in saffron (produktregler.md:292;
+    // Grafisk manual v6:219 "max en"). Skarmar v12 del 1 #tomtrecept draws
+    // the empty library as "Inga sparade recept än", the saffron "Lägg till
+    // recept" and an outlined "Importera länk" beside it.
     if (!isNewUser) {
-      return StateWidget.noRecipes(
-        onAction: () => Navigator.pushNamed(context, Routes.addRecipe),
+      return StateWidget(
+        type: StateType.empty,
+        emptyVariant: EmptyStateVariant.noRecipes,
+        title: context.l10n.minaReceptEmptyTitle,
+        subtitle: context.l10n.minaReceptEmptyBody,
+        customAction: Wrap(
+          alignment: WrapAlignment.center,
+          spacing: AppDimensions.spacingSm,
+          runSpacing: AppDimensions.spacingSm,
+          children: [
+            FilledButton(
+              key: const ValueKey('test-mina-recept-empty-add'),
+              style: ComponentThemes.heroButtonStyle(cs),
+              onPressed: () => Navigator.pushNamed(context, Routes.addRecipe),
+              child: Text(context.l10n.addRecipeTitle),
+            ),
+            OutlinedButton(
+              key: const ValueKey('test-mina-recept-empty-import'),
+              onPressed: () => Navigator.pushNamed(context, Routes.smartImport),
+              child: Text(context.l10n.recipeImportLink),
+            ),
+          ],
+        ),
       );
     }
 
-    final cs = Theme.of(context).colorScheme;
     final hasPrefs =
         profile.allergenPreferences != null &&
         (profile.allergenPreferences!.trackedAllergens.isNotEmpty ||
@@ -75,11 +101,12 @@ class MinaReceptEmptyState extends StatelessWidget {
               child: Semantics(
                 identifier: 'btn-import-recipe',
                 button: true,
-                child: ActionButtons.primaryButton(
-                  context,
-                  label: context.l10n.emptyStateImportAction,
+                // The one hero action on this screen.
+                child: FilledButton(
+                  style: ComponentThemes.heroButtonStyle(cs),
                   onPressed: () =>
                       Navigator.pushNamed(context, Routes.smartImport),
+                  child: Text(context.l10n.emptyStateImportAction),
                 ),
               ),
             ),
@@ -120,7 +147,8 @@ class MinaReceptOnboardingBanner extends StatelessWidget {
         padding: const EdgeInsets.all(AppDimensions.paddingM),
         decoration: BoxDecoration(
           color: cs.primaryContainer,
-          border: Border.all(color: cs.primary.withValues(alpha: 0.3)),
+          // border.subtle, never a faded ink (tokens.json:40-53, :124-127).
+          border: Border.all(color: cs.outlineVariant),
         ),
         child: Row(
           children: [
@@ -178,7 +206,8 @@ class MinaReceptWelcomeBanner extends StatelessWidget {
         padding: const EdgeInsets.all(AppDimensions.paddingM),
         decoration: BoxDecoration(
           color: cs.primaryContainer,
-          border: Border.all(color: cs.primary.withValues(alpha: 0.3)),
+          // border.subtle, never a faded ink (tokens.json:40-53, :124-127).
+          border: Border.all(color: cs.outlineVariant),
         ),
         child: Row(
           children: [
