@@ -60,7 +60,8 @@
    ],
    "rekommendation": "A. 'Lägg till' som flik bryter redan mot reglerna, och 'Väntar på synk' behöver en plats.",
    "beslut": "A",
-   "kommentar": "Skillnader och konsekvenser visas som prototyp innan bygget."
+   "kommentar": "Skillnader och konsekvenser visas som prototyp innan bygget.",
+   "bekraftat_efter_prototyp": true
   },
   {
    "id": "PQ-16",
@@ -95,7 +96,8 @@
    ],
    "rekommendation": "A. Byt alla snackbarer i samma enhet i paket 4, så att appen aldrig visar två snackbarutseenden samtidigt. Kontrasten mäts först (ungefär 5,4:1).",
    "beslut": "A",
-   "kommentar": "Skillnaden visas som prototyp."
+   "kommentar": "Skillnaden visas som prototyp.",
+   "bekraftat_efter_prototyp": true
   },
   {
    "id": "PQ-04",
@@ -118,8 +120,13 @@
     "C: Mörka knappar på raderna och ingen saffran i vyn"
    ],
    "rekommendation": "C. Regeln står uttryckligen i två källor, och saffran på varje rad konkurrerar med sig själv.",
-   "beslut": "B",
-   "kommentar": "Avviker från rekommendationen (C). Skillnaderna visas som prototyp."
+   "beslut": "A",
+   "kommentar": "Avviker från rekommendationen (C). Skillnaderna visas som prototyp.",
+   "revision": {
+    "tidigare_beslut": "B",
+    "nytt_beslut": "A",
+    "grund": "Malin såg prototypen (2026-09-23-prototyper.html) och valde A: saffran på varje rad, som ritat. Undantag från regeln om en saffransknapp per vy, avsiktligt för vänförfrågningar."
+   }
   },
   {
    "id": "PQ-19",
