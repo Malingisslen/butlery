@@ -139,6 +139,8 @@ abstract final class RestoreOverwrittenVersion {
     OverwrittenVersionService svc,
     OverwrittenVersion version,
   ) async {
+    // Försök igen lives in a snackbar that can outlast the screen.
+    if (!context.mounted) return;
     final l = context.l10n;
     final undo = UndoSnackBar.capture(context);
     final OverwrittenVersionRestore receipt;
@@ -150,7 +152,12 @@ abstract final class RestoreOverwrittenVersion {
       final missing = e is OverwrittenVersionTargetMissing;
       SnackBarUtils.showFailure(
         context,
-        what: l.overwrittenRestoreFailed,
+        // content-style-guide.md:87-95: say what happened, concretely.
+        what: !missing
+            ? l.overwrittenRestoreFailed
+            : version.entity == ConflictEntity.weekMenu
+            ? l.overwrittenRestoreGoneWeek
+            : l.overwrittenRestoreGoneRecipe,
         preserved: l.overwrittenKeptUntil(
           dateLabel(l, version.expiresAt, clock.now()),
         ),

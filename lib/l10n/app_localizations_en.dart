@@ -9127,6 +9127,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get overwrittenRestoreFailed => 'Your version couldn\'t be restored';
 
   @override
+  String get overwrittenRestoreGoneWeek =>
+      'The week no longer exists, so your version could not be restored';
+
+  @override
+  String get overwrittenRestoreGoneRecipe =>
+      'The recipe no longer exists, so your version could not be restored';
+
+  @override
   String overwrittenKeptUntil(String until) {
     return 'It\'s kept until $until.';
   }

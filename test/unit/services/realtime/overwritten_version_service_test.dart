@@ -246,6 +246,37 @@ void main() {
       });
     });
 
+    test(
+      'my own save from another device overwriting mine keeps nothing',
+      () async {
+        await withClock(Clock.fixed(DateTime(2026, 4, 1, 12)), () async {
+          final first = _recipe(
+            id: 'r4',
+            lastEditedAt: DateTime(2026, 4, 1, 11, 59),
+          );
+          await seed(first);
+          await sync.updateResource(first);
+          await seed(
+            _recipe(
+              id: 'r4',
+              editCount: 9,
+              lastEditedAt: DateTime(2026, 4, 1, 12, 0, 1),
+              title: 'Från min andra enhet',
+            ),
+          );
+          await sync.updateResource(
+            _recipe(
+              id: 'r4',
+              editCount: 2,
+              lastEditedAt: DateTime(2026, 4, 1, 11, 59, 30),
+            ),
+          );
+
+          expect(await keptRows(_owner), isEmpty);
+        });
+      },
+    );
+
     test('a save that wins keeps nothing', () async {
       await withClock(Clock.fixed(DateTime(2026, 4, 1, 12)), () async {
         await conflict(sync, 'r1', remoteEditCount: 1);
@@ -353,6 +384,87 @@ void main() {
           (await fake.collection('realtime_resources').doc('r1').get()).exists,
           isFalse,
         );
+        expect(await keptRows(_owner), hasLength(1));
+      });
+    });
+
+    test('restore and undo bring back the content only, never who the '
+        'recipe is shared with', () async {
+      await withClock(Clock.fixed(DateTime(2026, 4, 1, 12)), () async {
+        await conflict(sync, 'r1', remoteEditCount: 9);
+        // After the conflict the owner removes the editor and adds someone.
+        // (A whole-document set: an update would merge the participants map.)
+        final ref = fake.collection('realtime_resources').doc('r1');
+        await ref.set({
+          ...(await ref.get()).data()!,
+          'participants': {_owner: 'owner', 'new_user': 'editor'},
+          'participantIds': [_owner, 'new_user'],
+        });
+        final service = OverwrittenVersionService(
+          repository: store,
+          syncService: sync,
+        );
+        final version =
+            (await service
+                    .watch(entity: ConflictEntity.recipeOwn, resourceId: 'r1')
+                    .first)
+                .single;
+        expect(
+          version.version['participantIds'],
+          contains(_editor),
+          reason: 'the kept snapshot still lists the removed editor',
+        );
+
+        Future<void> expectSharingKept() async {
+          final doc =
+              (await fake.collection('realtime_resources').doc('r1').get())
+                  .data()!;
+          expect(doc['participantIds'], [_owner, 'new_user']);
+          expect(
+            (doc['participants'] as Map).keys,
+            unorderedEquals([_owner, 'new_user']),
+          );
+        }
+
+        final receipt = await service.restore(version);
+        final live = (await sync.fetchLatestResource<RealtimeRecipe>('r1'))!;
+        expect(live.title, 'Min');
+        await expectSharingKept();
+
+        await service.undo(receipt);
+        expect(
+          (await sync.fetchLatestResource<RealtimeRecipe>('r1'))!.title,
+          'Pers',
+        );
+        await expectSharingKept();
+      });
+    });
+
+    test('a resource that is no longer active is not brought back', () async {
+      await withClock(Clock.fixed(DateTime(2026, 4, 1, 12)), () async {
+        await conflict(sync, 'r1', remoteEditCount: 9);
+        await fake.collection('realtime_resources').doc('r1').update({
+          'isActive': false,
+        });
+        final service = OverwrittenVersionService(
+          repository: store,
+          syncService: sync,
+        );
+        final version =
+            (await service
+                    .watch(entity: ConflictEntity.recipeOwn, resourceId: 'r1')
+                    .first)
+                .single;
+
+        await expectLater(
+          () => service.restore(version),
+          throwsA(isA<OverwrittenVersionTargetMissing>()),
+        );
+        final doc =
+            (await fake.collection('realtime_resources').doc('r1').get())
+                .data()!;
+        expect(doc['isActive'], isFalse);
+        expect(doc['title'] ?? doc['name'], isNot('Min'));
         expect(await keptRows(_owner), hasLength(1));
       });
     });

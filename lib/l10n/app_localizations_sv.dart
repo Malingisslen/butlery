@@ -9143,6 +9143,14 @@ class AppLocalizationsSv extends AppLocalizations {
   String get overwrittenRestoreFailed => 'Din version kunde inte återställas';
 
   @override
+  String get overwrittenRestoreGoneWeek =>
+      'Veckan finns inte längre, så din version kunde inte återställas';
+
+  @override
+  String get overwrittenRestoreGoneRecipe =>
+      'Receptet finns inte längre, så din version kunde inte återställas';
+
+  @override
   String overwrittenKeptUntil(String until) {
     return 'Den finns kvar till $until.';
   }

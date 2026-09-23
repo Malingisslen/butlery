@@ -6588,6 +6588,14 @@
   "@overwrittenRestoreFailed": {
     "description": "P5-U26b: failure, what happened (content-style-guide.md:87-95)."
   },
+  "overwrittenRestoreGoneWeek": "Veckan finns inte längre, så din version kunde inte återställas",
+  "@overwrittenRestoreGoneWeek": {
+    "description": "P5-U26b: failure when the week the kept version belongs to no longer exists (content-style-guide.md:87-95)."
+  },
+  "overwrittenRestoreGoneRecipe": "Receptet finns inte längre, så din version kunde inte återställas",
+  "@overwrittenRestoreGoneRecipe": {
+    "description": "P5-U26b: failure when the recipe the kept version belongs to no longer exists (content-style-guide.md:87-95)."
+  },
   "overwrittenKeptUntil": "Den finns kvar till {until}.",
   "@overwrittenKeptUntil": {
     "description": "P5-U26b: failure, what was kept; until = the date the version stops being kept.",

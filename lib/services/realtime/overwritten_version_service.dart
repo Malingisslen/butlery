@@ -77,23 +77,54 @@ class OverwrittenVersionService {
 
   /// Makes [version] the live one again and returns what it replaced.
   ///
+  /// Only the kept content comes back. Who the resource is shared with, and
+  /// whether it is still active, stay as they are now: a restore must never
+  /// hand access back to someone removed since, or take it from someone added
+  /// since (see [withSharingOf]). A resource that is gone or no longer active
+  /// has nothing to restore into ([OverwrittenVersionTargetMissing]).
+  ///
   /// The restored content is written on top of the current version's edit
   /// counter (RealtimeSyncService.recoverLocalVersion), so it wins the next
   /// comparison instead of losing again. The kept row stays until [settle].
   Future<OverwrittenVersionRestore> restore(OverwrittenVersion version) async {
-    final current = await _sync.fetchLatestResource<RealtimeResource>(
-      version.resourceId,
+    final current = await _live(version.resourceId);
+    await _sync.recoverLocalVersion<RealtimeResource>(
+      withSharingOf(parse(version), current),
     );
-    if (current == null) {
-      throw OverwrittenVersionTargetMissing(version.resourceId);
-    }
-    await _sync.recoverLocalVersion<RealtimeResource>(parse(version));
     return OverwrittenVersionRestore(version: version, replaced: current);
   }
 
-  /// Puts back the version [receipt] replaced. The kept version stays kept.
-  Future<void> undo(OverwrittenVersionRestore receipt) =>
-      _sync.recoverLocalVersion<RealtimeResource>(receipt.replaced);
+  /// Puts back the content [receipt] replaced, on the sharing the resource
+  /// has now. The kept version stays kept.
+  Future<void> undo(OverwrittenVersionRestore receipt) async {
+    final current = await _live(receipt.replaced.id);
+    await _sync.recoverLocalVersion<RealtimeResource>(
+      withSharingOf(receipt.replaced, current),
+    );
+  }
+
+  Future<RealtimeResource> _live(String resourceId) async {
+    final current = await _sync.fetchLatestResource<RealtimeResource>(
+      resourceId,
+    );
+    if (current == null || !current.isActive) {
+      throw OverwrittenVersionTargetMissing(resourceId);
+    }
+    return current;
+  }
+
+  /// [content] with the sharing state of [current]: participants,
+  /// participantIds, isActive and metadata. ownerId and createdAt cannot
+  /// change on a realtime resource, so they are the same in both.
+  static RealtimeResource withSharingOf(
+    RealtimeResource content,
+    RealtimeResource current,
+  ) => content.copyWithMetadata(
+    participants: Map.of(current.participants),
+    participantIds: List.of(current.participantIds),
+    isActive: current.isActive,
+    metadata: Map.of(current.metadata),
+  );
 
   /// The undo window closed without Ångra: the kept version is live, so its
   /// row is no longer needed.

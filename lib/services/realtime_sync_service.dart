@@ -344,6 +344,9 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
     final store = _overwrittenVersions;
     if (store == null) return;
     if (!OverwrittenVersion.keptEntities.contains(entity)) return;
+    // The user's own save from another device is not another person's save
+    // overwriting theirs (produktregler.md:109), so there is nothing to keep.
+    if (winner.lastEditedBy == userId) return;
     try {
       await store.keep(
         OverwrittenVersion.capture(

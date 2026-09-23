@@ -231,6 +231,26 @@ void main() {
       expect(find.text(l.commonRetry), findsOneWidget);
       expect(find.textContaining('offline'), findsNothing);
     });
+
+    testWidgets('a recipe that is gone says so, and offers no retry', (
+      tester,
+    ) async {
+      final v = _version('v1', today, entity: ConflictEntity.recipeOwn);
+      when(
+        () => service.restore(any()),
+      ).thenThrow(const OverwrittenVersionTargetMissing('res-1'));
+      await pumpStart(tester, [v]);
+
+      await tester.tap(find.text(l.overwrittenRestoreAction));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+
+      expect(
+        find.textContaining(l.overwrittenRestoreGoneRecipe),
+        findsOneWidget,
+      );
+      expect(find.text(l.commonRetry), findsNothing);
+    });
   });
 
   group('the time, as content-style-guide.md:20-36 writes it', () {
@@ -272,17 +292,14 @@ void main() {
   group('where the entry is mounted', () {
     String code(String path) => File(path).readAsStringSync();
 
-    test('the week menu offers the row only while a week is kept', () {
+    test('the week menu offers no row until the week it shows can be '
+        'restored', () {
+      // The week Veckomeny shows comes from weekly_menu_plans, which keeps no
+      // overwritten versions; a kept realtime menu is another document, so
+      // offering it here would replace something other than what is shown.
       final week = code('lib/views/veckomeny_view.dart');
-      expect(week, contains('entity: ConflictEntity.weekMenu'));
-      expect(
-        RegExp(
-          r'if \(_restorable\.versions\.isNotEmpty\)\s*_rootItem\(\s*'
-          r'_VeckomenyRootAction\.restore',
-        ).hasMatch(week),
-        isTrue,
-      );
-      expect(week, contains('_restorable.dispose()'));
+      expect(week, isNot(contains('RestorableVersionsWatcher')));
+      expect(week, isNot(contains('_VeckomenyRootAction.restore')));
     });
 
     test("recipe detail offers it only on the owner's recipe, by its id", () {

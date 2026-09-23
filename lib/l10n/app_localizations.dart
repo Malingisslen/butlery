@@ -15343,6 +15343,18 @@ abstract class AppLocalizations {
   /// **'Din version kunde inte återställas'**
   String get overwrittenRestoreFailed;
 
+  /// P5-U26b: failure when the week the kept version belongs to no longer exists (content-style-guide.md:87-95).
+  ///
+  /// In sv, this message translates to:
+  /// **'Veckan finns inte längre, så din version kunde inte återställas'**
+  String get overwrittenRestoreGoneWeek;
+
+  /// P5-U26b: failure when the recipe the kept version belongs to no longer exists (content-style-guide.md:87-95).
+  ///
+  /// In sv, this message translates to:
+  /// **'Receptet finns inte längre, så din version kunde inte återställas'**
+  String get overwrittenRestoreGoneRecipe;
+
   /// P5-U26b: failure, what was kept; until = the date the version stops being kept.
   ///
   /// In sv, this message translates to:
