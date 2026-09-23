@@ -10678,7 +10678,7 @@
   "@pantryItemChangedNow": {
     "description": "Pantry row: when the row was last changed (produktregler.md:105)."
   },
-  "pantryItemChangedMinutesAgo": "ändrad för {count} min sedan",
+  "pantryItemChangedMinutesAgo": "ändrad {count} min sedan",
   "@pantryItemChangedMinutesAgo": {
     "description": "Pantry row: when the row was last changed (produktregler.md:105).",
     "placeholders": {

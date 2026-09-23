@@ -43,7 +43,7 @@ void main() {
     test('under an hour counts minutes', () {
       expect(
         label(now.subtract(const Duration(minutes: 5))),
-        'ändrad för 5 min sedan',
+        'ändrad 5 min sedan',
       );
     });
 
@@ -120,7 +120,16 @@ void main() {
       );
     });
 
-    expect(find.text('ändrad för 3 min sedan'), findsOneWidget);
+    expect(find.text('ändrad 3 min sedan'), findsOneWidget);
     expect(find.text('l'), findsNothing);
+  });
+
+  testWidgets('a row without an amount or a change time shows no lone unit', (
+    tester,
+  ) async {
+    await pumpCard(tester, item());
+
+    expect(find.text('l'), findsNothing);
+    expect(find.textContaining('ändrad'), findsNothing);
   });
 }

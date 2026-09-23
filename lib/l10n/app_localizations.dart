@@ -25514,7 +25514,7 @@ abstract class AppLocalizations {
   /// Pantry row: when the row was last changed (produktregler.md:105).
   ///
   /// In sv, this message translates to:
-  /// **'ändrad för {count} min sedan'**
+  /// **'ändrad {count} min sedan'**
   String pantryItemChangedMinutesAgo(int count);
 
   /// Pantry row: when the row was last changed (produktregler.md:105).

@@ -575,7 +575,10 @@ class ButleryCancelSelectionButton extends StatelessWidget {
 
 ButtonStyle _selectionTextStyle(Color? foregroundColor) => TextButton.styleFrom(
   foregroundColor: foregroundColor,
-  padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingSm),
+  // Ritningen: 12 px sidluft (Skarmar v12 etapp 9 #flervalingang).
+  padding: const EdgeInsets.symmetric(
+    horizontal: AppDimensions.spacingSm + AppDimensions.spacingXs,
+  ),
 );
 
 /// Minst 48 × 48 dp träffyta runt en åtgärd (tokens.json touchTarget).

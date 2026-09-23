@@ -15248,7 +15248,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String pantryItemChangedMinutesAgo(int count) {
-    return 'ändrad för $count min sedan';
+    return 'ändrad $count min sedan';
   }
 
   @override

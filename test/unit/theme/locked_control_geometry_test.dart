@@ -86,6 +86,29 @@ void main() {
           expect(tester.getSize(visibleChip()).height, 34);
         });
 
+        testWidgets('avatar and delete icon keep a 6 px gap to the label', (
+          tester,
+        ) async {
+          const avatarKey = Key('avatar');
+          const deleteKey = Key('delete');
+          await pump(
+            tester,
+            InputChip(
+              avatar: const SizedBox(key: avatarKey, width: 18, height: 18),
+              label: const Text('Anna'),
+              onDeleted: () {},
+              deleteIcon: const SizedBox(key: deleteKey, width: 18, height: 18),
+            ),
+          );
+
+          final avatarEnd = tester.getTopRight(find.byKey(avatarKey)).dx;
+          final labelStart = tester.getTopLeft(find.text('Anna')).dx;
+          expect(labelStart - avatarEnd, 6);
+          final labelEnd = tester.getTopRight(find.text('Anna')).dx;
+          final deleteStart = tester.getTopLeft(find.byKey(deleteKey)).dx;
+          expect(deleteStart - labelEnd, 6);
+        });
+
         test('a pill', () {
           final shape = theme.chipTheme.shape! as RoundedRectangleBorder;
           expect(

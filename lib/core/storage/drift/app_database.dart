@@ -84,8 +84,8 @@ class AppDatabase extends _$AppDatabase {
   /// lost (produktregler.md:192: the app never deletes a queue entry without
   /// a server confirmation or showing it to the user).
   ///
-  /// Every existing sync entry gets a fresh random opId (128 bits, as hex)
-  /// and the entity type "recipe", the only entity the queue carried before
+  /// Every existing sync entry gets a fresh random UUID v4 as its opId, the
+  /// same format new entries get, and the entity type "recipe", the only entity the queue carried before
   /// schema 3. No entry is marked permanently failed.
   Future<void> _migrateQueuesToV3(Migrator m) async {
     await m.alterTable(
@@ -93,7 +93,7 @@ class AppDatabase extends _$AppDatabase {
         syncQueueEntries,
         columnTransformer: {
           syncQueueEntries.opId: const CustomExpression<String>(
-            'lower(hex(randomblob(16)))',
+            _uuidV4Sql,
           ),
         },
         newColumns: [
@@ -115,10 +115,23 @@ class AppDatabase extends _$AppDatabase {
     );
   }
 
+  /// A random UUID v4 per row, in SQL, so migrated opIds have the same
+  /// format as the ones new entries get.
+  static const String _uuidV4Sql =
+      "lower(hex(randomblob(4))) || '-' || lower(hex(randomblob(2))) || '-4' "
+      "|| substr(lower(hex(randomblob(2))), 2) || '-' "
+      "|| substr('89ab', 1 + (abs(random()) % 4), 1) "
+      "|| substr(lower(hex(randomblob(2))), 2) || '-' "
+      '|| lower(hex(randomblob(6)))';
+
   /// The user's queue counts across both queues, live. See [QueueCounts].
   ///
-  /// An upload counts while it is pending, uploading, or failed with retries
-  /// left; a completed or cancelled one does not.
+  /// An upload counts while it is pending, uploading, or failed; a completed
+  /// or cancelled one does not. A failed upload counts as draining until it
+  /// is marked permanently failed: no caller yet passes a retry limit to
+  /// [UploadQueueDao.getRetryableUploads], so the count cannot tell an
+  /// upload with retries left from one that has run out (open question for
+  /// when the count is surfaced, produktregler.md:188-189).
   Stream<QueueCounts> watchQueueCounts(String userId) {
     return customSelect(
       _queueCountsSql,

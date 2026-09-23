@@ -20,8 +20,9 @@ class QueueCounts {
   /// Nothing waiting.
   static const QueueCounts empty = QueueCounts(draining: 0, needsUser: 0);
 
-  /// Entries the queue still sends by itself (queued, uploading, or failed
-  /// with retries left).
+  /// Entries not marked permanently failed (queued, uploading, or failed).
+  /// A failed upload stays here until something marks it permanently
+  /// failed, even when its retries have run out.
   final int draining;
 
   /// Permanent failures that wait for the user ("Väntar på dig",

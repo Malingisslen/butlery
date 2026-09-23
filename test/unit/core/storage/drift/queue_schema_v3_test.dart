@@ -97,7 +97,11 @@ void main() {
 
       final opIds = sync.map((e) => e.opId).toList();
       expect(
-        opIds.every((id) => RegExp(r'^[0-9a-f]{32}$').hasMatch(id)),
+        opIds.every(
+          (id) => RegExp(
+            r'^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$',
+          ).hasMatch(id),
+        ),
         isTrue,
       );
       expect(opIds.toSet(), hasLength(3));
