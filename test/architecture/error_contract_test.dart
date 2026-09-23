@@ -115,6 +115,13 @@ const _legacyErrorCalls = <String, int>{
 };
 
 /// Hard-coded errorPrefix strings per file (Q-E7). Only shrinks.
+///
+/// The counts are pinned to 60b68d37b. Merging the other package-5
+/// phase-A tracks needs one step here: T2 moves
+/// ingredient_search_viewmodel.dart to l10n, so its entry goes; new
+/// literals in weekly_menu_plan_viewmodel.dart (T3) and
+/// pantry_viewmodel.dart (T4) go through AppLocale.current instead of
+/// raising a count.
 const _errorPrefixLiterals = <String, int>{
   'lib/viewmodels/admin/feedback_inbox_viewmodel.dart': 1,
   'lib/viewmodels/admin/metrics_tab_viewmodel.dart': 1,

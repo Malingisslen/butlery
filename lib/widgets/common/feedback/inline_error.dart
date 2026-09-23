@@ -16,7 +16,12 @@
 /// - body: AppModeColors.textBody = text.body, #37453A / #F5F4ED
 ///   (tokens.json:58-60);
 /// - background: colorScheme.surface = surface.base, #F5F4ED / #17251D
-///   (tokens.json:104-106).
+///   (tokens.json:104-106);
+/// - action: ButleryColors.info = text.link, #8A5212 / #DCA968
+///   (tokens.json:228-231). The drawn boundary has no button, so the action
+///   takes the link colour, which clears 4.5:1 on paper in both modes. The
+///   theme's text-button colour (colorScheme.primary) is #24382C in dark
+///   mode and would read at about 1.3:1 on the dark surface.
 ///
 /// Screen readers: the box has the alert role and its text is a live
 /// region, so it is read when it appears without moving focus
@@ -31,6 +36,7 @@ import 'package:flutter/semantics.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 
 /// An error line with what happened, what was kept and one action.
 class InlineError extends StatelessWidget {
@@ -71,6 +77,7 @@ class InlineError extends StatelessWidget {
     final cs = theme.colorScheme;
     final danger = cs.error;
     final bodyColor = AppModeColors.textBody(theme.brightness);
+    final actionColor = context.butleryColors.info;
     final preserved = this.preserved;
     final actionLabel = this.actionLabel;
     final onAction = this.onAction;
@@ -141,6 +148,7 @@ class InlineError extends StatelessWidget {
                 TextButton(
                   key: actionKey,
                   onPressed: onAction,
+                  style: TextButton.styleFrom(foregroundColor: actionColor),
                   child: Text(actionLabel),
                 ),
             ],

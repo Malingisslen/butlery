@@ -6,6 +6,8 @@
 // without a focus move: the snackbar and the inline error both have the
 // alert role (Butlery tillganglighetshandoff.dc.html:172).
 
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -169,6 +171,37 @@ void main() {
     });
   });
 
+  // content-style-guide.md:87-97: the parts are separate sentences, even
+  // when an older cause string has no full stop of its own.
+  group('SnackBarUtils.failureMessage', () {
+    test('adds a full stop between a bare cause and what was kept', () {
+      expect(
+        SnackBarUtils.failureMessage(
+          'Kunde inte lämna listan',
+          'Du är fortfarande med i listan.',
+        ),
+        'Kunde inte lämna listan. Du är fortfarande med i listan.',
+      );
+    });
+
+    test('keeps punctuation that is already there', () {
+      expect(
+        SnackBarUtils.failureMessage(
+          'Receptet kunde inte sparas.',
+          'Dina ändringar ligger kvar i formuläret.',
+        ),
+        'Receptet kunde inte sparas. Dina ändringar ligger kvar i formuläret.',
+      );
+    });
+
+    test('leaves a lone what untouched', () {
+      expect(
+        SnackBarUtils.failureMessage('Kunde inte hämta', null),
+        'Kunde inte hämta',
+      );
+    });
+  });
+
   group('InlineError', () {
     Future<void> pumpInline(
       WidgetTester tester, {
@@ -241,6 +274,43 @@ void main() {
           find.text('Verifieringsmailet kunde inte skickas.'),
         );
         expect(text.style?.color, title);
+      });
+    }
+
+    // The action is text.link in both modes (tokens.json:228-231), on the
+    // surface.base box (tokens.json:104-106), never colorScheme.primary,
+    // which is #24382C on #17251D in dark mode.
+    for (final (name, theme, link, surface) in [
+      (
+        'light',
+        AppTheme.lightTheme,
+        const Color(0xFF8A5212),
+        const Color(0xFFF5F4ED),
+      ),
+      (
+        'dark',
+        AppTheme.darkTheme,
+        const Color(0xFFDCA968),
+        const Color(0xFF17251D),
+      ),
+    ]) {
+      testWidgets('$name mode: the action reads on the box', (tester) async {
+        await pumpInline(tester, theme: theme, onAction: () {});
+
+        final box = tester.widget<Material>(find.byKey(InlineError.boxKey));
+        expect(box.color, surface);
+        final label = tester.widget<RichText>(
+          find.descendant(
+            of: find.byKey(InlineError.actionKey),
+            matching: find.byType(RichText),
+          ),
+        );
+        final fg = label.text.style!.color!;
+        expect(fg, link);
+        final l1 = fg.computeLuminance();
+        final l2 = surface.computeLuminance();
+        final ratio = (math.max(l1, l2) + 0.05) / (math.min(l1, l2) + 0.05);
+        expect(ratio, greaterThanOrEqualTo(4.5));
       });
     }
   });

@@ -1,6 +1,7 @@
 import 'package:clock/clock.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart' show FirebaseAuthException;
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -101,10 +102,10 @@ class _EmailVerificationViewState extends State<EmailVerificationView>
     try {
       await _authService.sendEmailVerification();
       _lastResendTime = clock.now();
-    } catch (_) {
+    } catch (e) {
       if (mounted) {
         setState(
-          () => _errorMessage = _resendFailure(AppLocalizations.of(context)),
+          () => _errorMessage = _resendFailure(AppLocalizations.of(context), e),
         );
       }
     } finally {
@@ -115,15 +116,19 @@ class _EmailVerificationViewState extends State<EmailVerificationView>
   }
 
   /// Part one of the error (content-style-guide.md:90): what happened, with
-  /// the cause when it is one the user can act on. The service's text is
-  /// never shown on its own: only the mapped network and too-many-attempts
-  /// messages (auth_error_mapper.dart) count as a cause.
-  String _resendFailure(AppLocalizations l) {
-    final cause = _authService.errorMessage;
-    final known = cause == l.errorNetwork || cause == l.errorTooManyAttempts;
-    return known
-        ? l.emailVerificationResendFailedBecause(cause!)
-        : l.emailVerificationResendFailed;
+  /// the cause when it is one the user can act on. The cause is read from
+  /// the Firebase code the service rethrows, never from its text: only no
+  /// network and too many attempts count, in the view's own language.
+  String _resendFailure(AppLocalizations l, Object error) {
+    final cause = switch (error) {
+      FirebaseAuthException(code: 'network-request-failed') => l.errorNetwork,
+      FirebaseAuthException(code: 'too-many-requests') =>
+        l.errorTooManyAttempts,
+      _ => null,
+    };
+    return cause == null
+        ? l.emailVerificationResendFailed
+        : l.emailVerificationResendFailedBecause(cause);
   }
 
   @override

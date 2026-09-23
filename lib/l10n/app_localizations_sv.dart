@@ -16870,6 +16870,14 @@ class AppLocalizationsSv extends AppLocalizations {
   String get recipeCopySaveFailed => 'Kopian kunde inte sparas.';
 
   @override
+  String get recipeSaveIncomplete =>
+      'Receptet kunde inte sparas. Det behöver en titel, minst en ingrediens och minst ett steg.';
+
+  @override
+  String get recipeSaveNoPermission =>
+      'Receptet kunde inte sparas. Du har inte behörighet att ändra det.';
+
+  @override
   String get errorPreservedRecipeEdits =>
       'Dina ändringar ligger kvar i formuläret.';
 

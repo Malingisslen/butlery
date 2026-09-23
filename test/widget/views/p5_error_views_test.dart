@@ -6,6 +6,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:provider/provider.dart';
 
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
@@ -22,6 +23,7 @@ import 'package:butlery/services/tagging/personal_tag_service.dart';
 import 'package:butlery/services/upload/image_upload_service.dart';
 import 'package:butlery/viewmodels/collaborative_status_viewmodel.dart';
 import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
+import 'package:butlery/viewmodels/recipe_form_viewmodel.dart';
 import 'package:butlery/views/edit_recipe_view.dart';
 import 'package:butlery/views/settings/account_security_view.dart';
 
@@ -109,10 +111,8 @@ void main() {
       );
     }
 
-    testWidgets('a server failure names the cause and offers Försök igen', (
-      tester,
-    ) async {
-      auth.setAuthState(isAuthenticated: true, error: l10n.errorNetwork);
+    Future<void> failChange(WidgetTester tester, String? cause) async {
+      auth.setAuthState(isAuthenticated: true, error: cause);
       when(
         () => auth.reauthenticateWithPassword(any()),
       ).thenAnswer((_) async => true);
@@ -125,11 +125,15 @@ void main() {
       );
       await tester.tap(find.text(l10n.accountSecurityChangePassword).last);
       await tester.pumpAndSettle();
+    }
+
+    testWidgets('a failure without a cause offers Försök igen', (
+      tester,
+    ) async {
+      await failChange(tester, null);
 
       expect(
-        find.text(
-          l10n.accountSecurityPasswordChangeFailedBecause(l10n.errorNetwork),
-        ),
+        find.text(l10n.accountSecurityPasswordChangeFailed),
         findsOneWidget,
       );
       expect(find.text('OK'), findsNothing);
@@ -137,6 +141,21 @@ void main() {
       await tester.tap(find.text(l10n.commonRetry));
       await tester.pumpAndSettle();
       verify(() => auth.changePassword('newPassword123')).called(2);
+    });
+
+    testWidgets('a named cause is shown with Stäng, not Försök igen', (
+      tester,
+    ) async {
+      await failChange(tester, l10n.errorNetwork);
+
+      expect(
+        find.text(
+          l10n.accountSecurityPasswordChangeFailedBecause(l10n.errorNetwork),
+        ),
+        findsOneWidget,
+      );
+      expect(find.text(l10n.commonClose), findsOneWidget);
+      expect(find.text(l10n.commonRetry), findsNothing);
     });
 
     testWidgets('a form error gets Stäng, not Försök igen', (tester) async {
@@ -208,11 +227,63 @@ void main() {
             l10n.errorPreservedRecipeEdits,
           ),
           SnackBarUtils.failureMessage(
-            l10n.errorNoPermissionToSave,
+            l10n.recipeSaveNoPermission,
             l10n.errorPreservedRecipeEdits,
           ),
         ),
       );
+    });
+
+    testWidgets('a retry after the steps were cleared names what is missing '
+        'and offers Stäng, not a retry that cannot work', (tester) async {
+      final Recipe recipe = RecipeFactory.build(
+        id: 'recipe-p5-u12-empty',
+        title: 'Testrecept',
+        description: 'Beskrivning',
+        ingredients: const ['Mjöl'],
+        instructions: const ['Blanda'],
+      );
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          child: EditRecipeView(recipe: recipe),
+          wrapInScaffold: false,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final save = find.byKey(const ValueKey('edit-recipe-save'));
+      final vm = Provider.of<RecipeFormViewModel>(
+        tester.element(save),
+        listen: false,
+      );
+      await tester.ensureVisible(save);
+      await tester.tap(save);
+      await tester.pumpAndSettle();
+      // The save buttons are off while the recipe is incomplete, so the way
+      // to save one is Försök igen on an earlier failure.
+      expect(vm.lastSaveFailure, RecipeSaveFailure.failed);
+
+      // The only step is cleared. The form's own validators let an empty
+      // step through; the view model refuses it (RecipeFormState.isValid).
+      vm.instructionControllers.first.text = '';
+      vm.updateInstruction(0, '');
+      await tester.pump();
+      await tester.tap(find.text(l10n.commonRetry));
+      await tester.pumpAndSettle();
+
+      expect(vm.lastSaveFailure, RecipeSaveFailure.incomplete);
+      expect(
+        find.text(
+          SnackBarUtils.failureMessage(
+            l10n.recipeSaveIncomplete,
+            l10n.errorPreservedRecipeEdits,
+          ),
+        ),
+        findsOneWidget,
+      );
+      expect(find.text(l10n.commonRetry), findsNothing);
+      expect(find.text(l10n.commonClose), findsOneWidget);
+      expect(find.byType(EditRecipeView), findsOneWidget);
     });
   });
 }

@@ -1058,6 +1058,9 @@ Future<void> persistCookingSubstitution(
     AppLogger.error('Cooking-mode ingredient substitution failed', e);
   }
   if (!context.mounted) return;
+  // A failure stays until tapped; the new outcome replaces it rather than
+  // queueing behind it, so a later success is not hidden by a stale error.
+  ScaffoldMessenger.maybeOf(context)?.hideCurrentSnackBar();
   if (saved) {
     ScaffoldMessenger.maybeOf(context)?.showSnackBar(
       SnackBar(

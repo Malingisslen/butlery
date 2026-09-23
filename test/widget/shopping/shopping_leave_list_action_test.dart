@@ -17,7 +17,6 @@ import 'package:mocktail/mocktail.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
-import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/services/unified/operations/collaborative_shopping_operations.dart';
@@ -128,12 +127,12 @@ void main() {
 
     // P5-U07: the reason, that you are still in the list, and Försök igen
     // (content-style-guide.md:87-97).
+    // The reason has no full stop of its own; the parts are still separate
+    // sentences (content-style-guide.md:87-97).
     expect(
       find.text(
-        SnackBarUtils.failureMessage(
-          'Listan har ändrats på en annan enhet',
-          l10n.shoppingLeaveListStillMember,
-        ),
+        'Listan har ändrats på en annan enhet. '
+        '${l10n.shoppingLeaveListStillMember}',
       ),
       findsOneWidget,
     );
@@ -172,10 +171,7 @@ void main() {
 
     expect(
       find.text(
-        SnackBarUtils.failureMessage(
-          l10n.shoppingCouldNotLeaveList,
-          l10n.shoppingLeaveListStillMember,
-        ),
+        'Kunde inte lämna listan. ${l10n.shoppingLeaveListStillMember}',
       ),
       findsOneWidget,
     );

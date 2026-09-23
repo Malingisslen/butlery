@@ -13,21 +13,32 @@ class AccountSecurityViewModel extends ChangeNotifier
 
   String? get currentEmail => _authService.currentUser?.email;
 
-  /// Whether the last error came from the server, so trying again can help.
-  /// A form error (an empty field, a short password) is fixed in the form,
-  /// not by trying again.
+  /// Whether trying the same change again can help.
+  ///
+  /// Only when the service gave no cause: a named cause is a wrong current
+  /// password, a weak or taken address, too many attempts, an expired
+  /// session or no network, and running the same change again with the same
+  /// fields does not fix any of those (content-style-guide.md:93). Those get
+  /// Stäng; the fields stay filled in, and the form's own button is there
+  /// when the cause is gone. A form error (an empty field, a short password)
+  /// is fixed in the form, so it gets Stäng too.
   bool get canRetry => _canRetry;
   bool _canRetry = false;
 
-  void _setServerFailure(String message) {
-    _canRetry = true;
-    setError(message);
+  void _setAuthFailure(String withoutCause, String Function(String) because) {
+    final cause = _cause;
+    _canRetry = cause == null;
+    setError(cause == null ? withoutCause : because(cause));
   }
 
   /// The cause, when there is one. AuthService maps Firebase's codes to
   /// user text (auth_error_mapper.dart); the causeless fallback
   /// ("Ett oväntat fel uppstod") is not a cause (content-style-guide.md:95),
   /// so it is left out and the sentence says what did not happen.
+  ///
+  /// AuthService exposes only that text, not the Firebase code, so the
+  /// fallback is recognised by comparing it with the same AppLocale string
+  /// the service set it from.
   String? get _cause {
     final message = _authService.errorMessage?.trim();
     if (message == null ||
@@ -38,19 +49,15 @@ class AccountSecurityViewModel extends ChangeNotifier
     return message;
   }
 
-  String _passwordFailure() {
-    final cause = _cause;
-    return cause == null
-        ? AppLocale.current.accountSecurityPasswordChangeFailed
-        : AppLocale.current.accountSecurityPasswordChangeFailedBecause(cause);
-  }
+  void _setPasswordFailure() => _setAuthFailure(
+    AppLocale.current.accountSecurityPasswordChangeFailed,
+    AppLocale.current.accountSecurityPasswordChangeFailedBecause,
+  );
 
-  String _emailFailure() {
-    final cause = _cause;
-    return cause == null
-        ? AppLocale.current.accountSecurityEmailChangeFailed
-        : AppLocale.current.accountSecurityEmailChangeFailedBecause(cause);
-  }
+  void _setEmailFailure() => _setAuthFailure(
+    AppLocale.current.accountSecurityEmailChangeFailed,
+    AppLocale.current.accountSecurityEmailChangeFailedBecause,
+  );
 
   Future<bool> changePassword({
     required String currentPassword,
@@ -88,7 +95,7 @@ class AccountSecurityViewModel extends ChangeNotifier
     );
     if (!reauthed) {
       setLoading(false);
-      _setServerFailure(_passwordFailure());
+      _setPasswordFailure();
       return false;
     }
 
@@ -96,7 +103,7 @@ class AccountSecurityViewModel extends ChangeNotifier
     setLoading(false);
 
     if (!success) {
-      _setServerFailure(_passwordFailure());
+      _setPasswordFailure();
     }
     return success;
   }
@@ -125,7 +132,7 @@ class AccountSecurityViewModel extends ChangeNotifier
     );
     if (!reauthed) {
       setLoading(false);
-      _setServerFailure(_emailFailure());
+      _setEmailFailure();
       return false;
     }
 
@@ -133,7 +140,7 @@ class AccountSecurityViewModel extends ChangeNotifier
     setLoading(false);
 
     if (!success) {
-      _setServerFailure(_emailFailure());
+      _setEmailFailure();
     }
     return success;
   }

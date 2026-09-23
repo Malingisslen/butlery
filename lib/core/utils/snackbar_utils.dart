@@ -115,10 +115,20 @@ class SnackBarUtils {
   }
 
   /// [what] and [preserved] as the one paragraph a failure snackbar shows.
+  ///
+  /// The parts are separate sentences (content-style-guide.md:87-97), so a
+  /// [what] without terminal punctuation gets a full stop before [preserved]
+  /// follows. Many older cause strings ("Kunde inte lämna listan") have none.
   static String failureMessage(String what, String? preserved) {
     final kept = preserved?.trim();
     if (kept == null || kept.isEmpty) return what;
-    return '${what.trim()} $kept';
+    return '${_asSentence(what.trim())} $kept';
+  }
+
+  static String _asSentence(String text) {
+    if (text.isEmpty) return text;
+    const terminal = {'.', '?', '!', '…'};
+    return terminal.contains(text[text.length - 1]) ? text : '$text.';
   }
 
   /// An error. With [showCloseButton] the action is "Stäng", never "OK"

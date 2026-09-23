@@ -495,7 +495,33 @@ void main() {
             AppLocale.current.errorTooManyAttempts,
           ),
         );
-        expect(viewModel.canRetry, isTrue);
+        // Trying again at once cannot help (content-style-guide.md:93).
+        expect(viewModel.canRetry, isFalse);
+      });
+
+      test('a wrong current password cannot be retried as it is', () async {
+        mockAuthService.setAuthState(
+          isAuthenticated: true,
+          currentUser: MockFactory.createMockUser(uid: 'test-user-123'),
+          error: AppLocale.current.errorInvalidCredentials,
+        );
+        when(
+          () => mockAuthService.reauthenticateWithPassword(any()),
+        ).thenAnswer((_) async => false);
+
+        await viewModel.changePassword(
+          currentPassword: 'wrong-current',
+          newPassword: 'newPassword123',
+          confirmPassword: 'newPassword123',
+        );
+
+        expect(
+          viewModel.error,
+          AppLocale.current.accountSecurityPasswordChangeFailedBecause(
+            AppLocale.current.errorInvalidCredentials,
+          ),
+        );
+        expect(viewModel.canRetry, isFalse);
       });
 
       test('the causeless fallback is not passed through', () async {
@@ -505,6 +531,7 @@ void main() {
           viewModel.error,
           AppLocale.current.accountSecurityPasswordChangeFailed,
         );
+        expect(viewModel.canRetry, isTrue);
       });
 
       test('no service text at all still says what did not happen', () async {

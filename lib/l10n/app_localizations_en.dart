@@ -16834,6 +16834,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get recipeCopySaveFailed => 'The copy could not be saved.';
 
   @override
+  String get recipeSaveIncomplete =>
+      'The recipe could not be saved. It needs a title, at least one ingredient and at least one step.';
+
+  @override
+  String get recipeSaveNoPermission =>
+      'The recipe could not be saved. You do not have permission to edit it.';
+
+  @override
   String get errorPreservedRecipeEdits => 'Your changes are still in the form.';
 
   @override

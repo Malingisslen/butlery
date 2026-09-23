@@ -23,6 +23,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:butlery/core/di/di_container.dart';
+import 'package:firebase_auth/firebase_auth.dart' show FirebaseAuthException;
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/l10n/app_localizations_sv.dart';
 import 'package:butlery/services/auth_service.dart';
@@ -179,11 +180,15 @@ void main() {
   // (Butlery tillganglighetshandoff.dc.html:156, :172). The service's own
   // text is never shown on its own.
   group('a failed resend', () {
-    Future<void> failResend(WidgetTester tester, {String? serviceError}) async {
+    Future<void> failResend(
+      WidgetTester tester, {
+      String? serviceError,
+      Object? thrown,
+    }) async {
       authService.setAuthState(isAuthenticated: true, error: serviceError);
       when(
         () => authService.sendEmailVerification(),
-      ).thenThrow(Exception('firebase: internal-error'));
+      ).thenThrow(thrown ?? Exception('firebase: internal-error'));
       await tester.pumpWidget(buildView());
       await tester.pump();
       await tester.tap(find.text(AppLocalizationsSv().emailVerificationResend));
@@ -212,7 +217,12 @@ void main() {
 
     testWidgets('names a cause the user can act on', (tester) async {
       final l10n = AppLocalizationsSv();
-      await failResend(tester, serviceError: l10n.errorTooManyAttempts);
+      // The cause comes from the Firebase code, not from the service text.
+      await failResend(
+        tester,
+        serviceError: 'unrelated text',
+        thrown: FirebaseAuthException(code: 'too-many-requests'),
+      );
 
       expect(
         find.text(

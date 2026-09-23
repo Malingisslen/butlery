@@ -28091,6 +28091,18 @@ abstract class AppLocalizations {
   /// **'Kopian kunde inte sparas.'**
   String get recipeCopySaveFailed;
 
+  /// P5-T1: Part 1 with its cause when the recipe editor refuses to save an incomplete recipe (RecipeFormState.isValid). The action is Stäng: trying again cannot help.
+  ///
+  /// In sv, this message translates to:
+  /// **'Receptet kunde inte sparas. Det behöver en titel, minst en ingrediens och minst ett steg.'**
+  String get recipeSaveIncomplete;
+
+  /// P5-T1: Part 1 with its cause when the user may not edit the recipe. The action is Stäng.
+  ///
+  /// In sv, this message translates to:
+  /// **'Receptet kunde inte sparas. Du har inte behörighet att ändra det.'**
+  String get recipeSaveNoPermission;
+
   /// P5-T1: Part 2: the recipe editor stays open with the edits.
   ///
   /// In sv, this message translates to:
