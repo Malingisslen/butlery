@@ -91,7 +91,7 @@ class DataExportView extends StatelessWidget {
                 Icon(
                   Icons.download_rounded,
                   size: 32,
-                  color: cs.primary,
+                  color: cs.onSurface,
                 ),
                 const SizedBox(width: AppDimensions.spacingL),
                 Expanded(

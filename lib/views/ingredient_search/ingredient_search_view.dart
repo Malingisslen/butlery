@@ -214,7 +214,7 @@ class _IngredientSearchContent extends StatelessWidget {
                     child: Text(
                       l10n.ingredientSearchSharedBadge,
                       style: AppTextStyles.labelSmall.copyWith(
-                        color: Theme.of(context).colorScheme.primary,
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
                   ),

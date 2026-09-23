@@ -131,13 +131,13 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
             Icon(
               Icons.access_time,
               size: AppDimensions.iconSizeS,
-              color: cs.primary,
+              color: cs.onSurface,
             ),
             const SizedBox(width: AppDimensions.spacingXs),
             Text(
               TimeFormatUtils.formatCookingTime(recipe.timeMinutes!),
               style: AppTextStyles.bodySmall.copyWith(
-                color: widget.isScaled ? cs.primary : cs.onSurface,
+                color: widget.isScaled ? cs.onSurface : cs.onSurface,
                 fontWeight: widget.isScaled ? FontWeight.w600 : FontWeight.w400,
               ),
             ),
@@ -155,13 +155,13 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
             Icon(
               Icons.person_outline,
               size: AppDimensions.iconSizeS,
-              color: cs.primary,
+              color: cs.onSurface,
             ),
             const SizedBox(width: AppDimensions.spacingXs),
             Text(
               '${widget.currentPortions} ${widget.currentPortions == 1 ? context.l10n.recipePortionSingular : context.l10n.recipePortionAbbreviation}',
               style: AppTextStyles.bodySmall.copyWith(
-                color: widget.isScaled ? cs.primary : cs.onSurface,
+                color: widget.isScaled ? cs.onSurface : cs.onSurface,
                 fontWeight: widget.isScaled ? FontWeight.w600 : FontWeight.w400,
               ),
             ),

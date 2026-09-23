@@ -63,7 +63,7 @@ class PersonalTagTile extends StatelessWidget {
               ? Icon(
                   isSelected ? Icons.check_box : Icons.check_box_outline_blank,
                   color: isSelected
-                      ? colorScheme.primary
+                      ? colorScheme.onSurface
                       : colorScheme.onSurfaceVariant,
                   size: AppDimensions.iconSizeL,
                 )
@@ -74,14 +74,14 @@ class PersonalTagTile extends StatelessWidget {
                           ? context.butleryColors.success.withValues(
                               alpha: AppDimensions.opacityLight,
                             )
-                          : colorScheme.primary.withValues(
+                          : colorScheme.onSurface.withValues(
                               alpha: AppDimensions.opacityLight,
                             ),
                       child: Icon(
                         Icons.label,
                         color: hasActiveRules
                             ? context.butleryColors.success
-                            : colorScheme.primary,
+                            : colorScheme.onSurface,
                         size: AppDimensions.iconSizeM,
                       ),
                     ),

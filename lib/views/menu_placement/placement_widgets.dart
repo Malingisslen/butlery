@@ -327,7 +327,7 @@ class _OvrigtEntryChip extends StatelessWidget {
         color: cs.surface,
         border: Border(
           left: BorderSide(
-            color: isSession ? cs.primary : cs.secondary,
+            color: isSession ? cs.onSurface : cs.secondary,
             width: 2,
           ),
         ),

@@ -64,7 +64,7 @@ class OnboardingDietaryPage extends StatelessWidget {
           Text(
             context.l10n.onboardingDietaryTitle,
             style: AppTextStyles.headlineMedium.copyWith(
-              color: cs.primary,
+              color: cs.onSurface,
             ),
           ),
           const SizedBox(height: AppDimensions.spacingSm),

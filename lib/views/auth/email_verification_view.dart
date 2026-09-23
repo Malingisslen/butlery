@@ -137,7 +137,7 @@ class _EmailVerificationViewState extends State<EmailVerificationView>
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.check_circle, size: 64, color: cs.primary),
+              Icon(Icons.check_circle, size: 64, color: cs.onSurface),
               const SizedBox(height: AppDimensions.spacingM),
               Text(l.emailVerificationSuccess, style: tt.titleLarge),
             ],
@@ -169,7 +169,7 @@ class _EmailVerificationViewState extends State<EmailVerificationView>
                     Icon(
                       Icons.mark_email_unread_outlined,
                       size: 80,
-                      color: cs.primary,
+                      color: cs.onSurface,
                     ),
                     const SizedBox(height: AppDimensions.spacingXl),
                     Text(

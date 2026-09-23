@@ -102,7 +102,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
                 Icon(
                   Icons.privacy_tip_rounded,
                   size: 32,
-                  color: cs.primary,
+                  color: cs.onSurface,
                 ),
                 const SizedBox(width: AppDimensions.spacingL),
                 Expanded(
@@ -328,7 +328,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
         side: BorderSide(
           color: value
-              ? cs.primary.withValues(alpha: AppDimensions.opacityHalf)
+              ? cs.onSurface.withValues(alpha: AppDimensions.opacityHalf)
               : cs.outlineVariant,
           width: value ? 2 : 1,
         ),
@@ -341,7 +341,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
               padding: AppDimensions.paddingAll8,
               decoration: BoxDecoration(
                 color: value
-                    ? cs.primary.withValues(
+                    ? cs.onSurface.withValues(
                         alpha: AppDimensions.opacityVeryLight,
                       )
                     : cs.surfaceContainerLow,
@@ -352,7 +352,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
               child: Icon(
                 icon,
                 size: AppDimensions.iconSizeL,
-                color: value ? cs.primary : cs.onSurfaceVariant,
+                color: value ? cs.onSurface : cs.onSurfaceVariant,
               ),
             ),
             const SizedBox(width: AppDimensions.spacingL),

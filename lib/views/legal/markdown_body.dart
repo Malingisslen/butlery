@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 
 /// Lightweight renderer for the controlled Markdown subset used by our legal
 /// documents (privacy policy, terms): `#`/`##`/`###` headings, `---` rules,
@@ -140,7 +141,10 @@ class _MarkdownBodyState extends State<MarkdownBody> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final tt = theme.textTheme;
-    final linkColor = theme.colorScheme.primary;
+    // text.link: #8A5212 light, #DCA968 dark (tokens.json:228-232), the
+    // generated info member. Ink was the link colour on light and vanished
+    // on the dark page.
+    final linkColor = context.butleryColors.info;
     final bodyStyle = tt.bodyMedium?.copyWith(height: 1.6) ?? const TextStyle();
 
     final children = <Widget>[];

@@ -34,6 +34,7 @@ import 'package:butlery/services/notifications/notification_permission_service.d
 import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/views/settings/notification_preferences_view.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
+import 'package:butlery/theme/app_theme.dart';
 
 import '../../../infrastructure/helpers/widget_test_app.dart';
 import '../../../infrastructure/mocks/production_mocks.dart';
@@ -97,6 +98,46 @@ void main() {
       // Resolve the async getPreferences() future loaded in initState.
       await tester.pumpAndSettle();
     }
+
+    // P4-T6: in dark mode the section glyphs are text.primary (onSurface),
+    // paper, and the switches take the theme's checked look, not an ink
+    // thumb on a half-ink track (tokens.json:54-57, :145-154).
+    testWidgets('dark mode: glyphs are paper and switches use the theme', (
+      tester,
+    ) async {
+      when(
+        () => notificationService.getPreferences(),
+      ).thenAnswer((_) async => NotificationPreferences.defaults());
+      tester.view.physicalSize = const Size(800, 2400);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          wrapInScaffold: false,
+          child: Theme(
+            data: AppTheme.darkTheme,
+            child: const NotificationPreferencesView(),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final paper = AppTheme.darkTheme.colorScheme.onSurface;
+      final glyphs = tester.widgetList<Icon>(
+        find.byIcon(Icons.do_not_disturb_on_outlined),
+      );
+      expect(glyphs, isNotEmpty);
+      for (final glyph in glyphs) {
+        expect(glyph.color, paper);
+      }
+      for (final tile in tester.widgetList<SwitchListTile>(
+        find.byType(SwitchListTile),
+      )) {
+        expect(tile.thumbColor, isNull);
+        expect(tile.activeTrackColor, isNull);
+      }
+    });
 
     testWidgets('renders the toggle sections once preferences load', (
       tester,

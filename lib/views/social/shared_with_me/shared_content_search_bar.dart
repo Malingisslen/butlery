@@ -38,7 +38,7 @@ class SharedContentSearchBar {
                             ? Icons.tune
                             : Icons.tune_outlined,
                         color: viewModel.showImported
-                            ? Theme.of(context).colorScheme.primary
+                            ? Theme.of(context).colorScheme.onSurface
                             : null,
                       ),
                       tooltip: viewModel.showImported

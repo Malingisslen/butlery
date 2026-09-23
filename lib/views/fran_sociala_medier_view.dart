@@ -393,13 +393,13 @@ class _FranSocialaMedierViewContentState
               Icon(
                 Icons.info_outline,
                 size: AppDimensions.iconSizeM,
-                color: Theme.of(context).colorScheme.primary,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
               const SizedBox(width: AppDimensions.spacingS),
               Text(
                 context.l10n.importTipsTitle,
                 style: AppTextStyles.labelLarge.copyWith(
-                  color: Theme.of(context).colorScheme.primary,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
             ],

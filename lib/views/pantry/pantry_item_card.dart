@@ -113,7 +113,7 @@ class PantryItemCard extends StatelessWidget {
           if (selectionMode) ...[
             Icon(
               selected ? Icons.check_circle : Icons.circle_outlined,
-              color: selected ? cs.primary : cs.onSurfaceVariant,
+              color: selected ? cs.onSurface : cs.onSurfaceVariant,
               size: AppDimensions.iconSizeM,
             ),
             const SizedBox(width: AppDimensions.spacingMd),

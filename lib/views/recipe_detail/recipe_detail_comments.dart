@@ -13,7 +13,6 @@ import 'package:butlery/services/unified/operations/modules/comment_likes_system
 import 'package:butlery/services/unified/operations/modules/comment_reactions_system.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/widgets/common/animations/animated_list_item.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
@@ -128,7 +127,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
             children: [
               Icon(
                 Icons.comment_outlined,
-                color: cs.primary,
+                color: cs.onSurface,
                 size: AppDimensions.iconSizeAction,
               ),
               const SizedBox(width: AppDimensions.spacingM),
@@ -638,12 +637,12 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
 
   void _showMessage(String message, {bool isError = false}) {
     if (!mounted) return;
-    final cs = Theme.of(context).colorScheme;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: isError ? cs.error : context.butleryColors.success,
-      ),
-    );
+    // The ink snackbar for both outcomes (PQ-09 = A; Komponentark
+    // v1:745-750): the message says what happened, not a status fill.
+    if (isError) {
+      SnackBarUtils.showError(context, message);
+    } else {
+      SnackBarUtils.showSuccess(context, message);
+    }
   }
 }

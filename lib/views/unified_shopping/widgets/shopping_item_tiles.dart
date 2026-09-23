@@ -258,7 +258,7 @@ class _ShoppingItemTileState extends State<ShoppingItemTile>
                     if (selectionMode) ...[
                       Icon(
                         selected ? Icons.check_circle : Icons.circle_outlined,
-                        color: selected ? cs.primary : cs.onSurfaceVariant,
+                        color: selected ? cs.onSurface : cs.onSurfaceVariant,
                         size: AppDimensions.iconSizeM,
                       ),
                       const SizedBox(width: AppDimensions.paddingM),
@@ -288,8 +288,11 @@ class _ShoppingItemTileState extends State<ShoppingItemTile>
         height: _checkboxSize,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusXs),
+          // Ticked: control.checked.background, ink in both modes, edge
+          // and fill (tokens.json:145-148). Unticked: a text.primary edge
+          // (onSurface), ink on light, paper on dark, where ink vanished.
           border: Border.all(
-            color: cs.primary,
+            color: widget.isCompleted ? cs.primary : cs.onSurface,
             width: _checkboxBorderWidth,
           ),
           color: widget.isCompleted ? cs.primary : cs.surfaceContainerHighest,
@@ -414,7 +417,7 @@ class _ShoppingItemTileState extends State<ShoppingItemTile>
           decoration: BoxDecoration(
             color: cs.surfaceContainerHighest,
             borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
-            border: Border.all(color: cs.primary, width: 2),
+            border: Border.all(color: cs.onSurface, width: 2),
           ),
           child: Text(
             widget.item.displayText,
@@ -443,7 +446,7 @@ class _ShoppingItemTileState extends State<ShoppingItemTile>
     switch (priority) {
       case 4:
       case 5:
-        return cs.primary;
+        return cs.onSurface;
       default:
         return cs.onSurfaceVariant;
     }

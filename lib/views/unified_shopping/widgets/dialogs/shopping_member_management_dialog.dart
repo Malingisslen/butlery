@@ -511,13 +511,13 @@ class _ShoppingMemberManagementDialogState
     return ListTile(
       leading: CircleAvatar(
         radius: 20,
-        backgroundColor: cs.primary.withValues(
+        backgroundColor: cs.onSurface.withValues(
           alpha: AppDimensions.opacityVeryLight,
         ),
         child: Text(
           userName.isNotEmpty ? userName[0].toUpperCase() : '?',
           style: AppTextStyles.labelLarge.copyWith(
-            color: cs.primary,
+            color: cs.onSurface,
           ),
         ),
       ),
@@ -575,7 +575,7 @@ class _ShoppingMemberManagementDialogState
                       Icon(
                         Icons.admin_panel_settings,
                         size: AppDimensions.iconSizeS,
-                        color: cs.primary,
+                        color: cs.onSurface,
                       ),
                       const SizedBox(width: AppDimensions.spacingXs),
                       Text(context.l10n.shoppingPermissionAdmin),
@@ -603,7 +603,7 @@ class _ShoppingMemberManagementDialogState
     return CheckboxListTile(
       secondary: CircleAvatar(
         radius: 20,
-        backgroundColor: cs.primary.withValues(
+        backgroundColor: cs.onSurface.withValues(
           alpha: AppDimensions.opacityVeryLight,
         ),
         child: Text(
@@ -611,7 +611,7 @@ class _ShoppingMemberManagementDialogState
               ? friend.displayName[0].toUpperCase()
               : '?',
           style: AppTextStyles.labelLarge.copyWith(
-            color: cs.primary,
+            color: cs.onSurface,
           ),
         ),
       ),

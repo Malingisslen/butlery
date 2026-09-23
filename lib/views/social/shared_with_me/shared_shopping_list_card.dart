@@ -52,7 +52,7 @@ class SharedShoppingListCard {
               borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
               border: !isRead
                   ? Border.all(
-                      color: Theme.of(context).colorScheme.primary,
+                      color: Theme.of(context).colorScheme.onSurface,
                       width: 2,
                     )
                   : null,

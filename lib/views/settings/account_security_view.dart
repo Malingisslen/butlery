@@ -148,7 +148,7 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
       children: [
         Row(
           children: [
-            Icon(Icons.lock_outline, color: cs.primary),
+            Icon(Icons.lock_outline, color: cs.onSurface),
             const SizedBox(width: AppDimensions.spacingSm),
             Text(
               context.l10n.accountSecurityChangePassword,
@@ -245,7 +245,7 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
       children: [
         Row(
           children: [
-            Icon(Icons.email_outlined, color: cs.primary),
+            Icon(Icons.email_outlined, color: cs.onSurface),
             const SizedBox(width: AppDimensions.spacingSm),
             Text(
               context.l10n.accountSecurityChangeEmail,
@@ -343,7 +343,7 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
       children: [
         Row(
           children: [
-            Icon(Icons.security, color: cs.primary),
+            Icon(Icons.security, color: cs.onSurface),
             const SizedBox(width: AppDimensions.spacingSm),
             Text(
               context.l10n.accountSecurityMfaSettings,
@@ -353,7 +353,7 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
         ),
         const SizedBox(height: AppDimensions.spacingMd),
         ListTile(
-          leading: Icon(Icons.phone_android, color: cs.primary),
+          leading: Icon(Icons.phone_android, color: cs.onSurface),
           title: Text(
             context.l10n.accountSecurityMfaSettings,
             style: AppTextStyles.titleMedium,
@@ -380,7 +380,7 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
       children: [
         Row(
           children: [
-            Icon(Icons.gavel_outlined, color: cs.primary),
+            Icon(Icons.gavel_outlined, color: cs.onSurface),
             const SizedBox(width: AppDimensions.spacingSm),
             Text(
               context.l10n.legalTermsOfService,

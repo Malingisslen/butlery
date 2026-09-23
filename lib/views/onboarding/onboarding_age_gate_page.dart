@@ -40,7 +40,7 @@ class OnboardingAgeGatePage extends StatelessWidget {
         children: [
           Text(
             context.l10n.onboardingAgeGateTitle,
-            style: AppTextStyles.headlineMedium.copyWith(color: cs.primary),
+            style: AppTextStyles.headlineMedium.copyWith(color: cs.onSurface),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: AppDimensions.spacingMd),

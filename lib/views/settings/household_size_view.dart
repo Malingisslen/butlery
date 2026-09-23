@@ -105,7 +105,7 @@ class _HouseholdSizeContentState extends State<_HouseholdSizeContent> {
                     children: [
                       Icon(
                         Icons.groups,
-                        color: cs.primary,
+                        color: cs.onSurface,
                         size: AppDimensions.iconSizeAction,
                       ),
                       const SizedBox(width: AppDimensions.spacingM),

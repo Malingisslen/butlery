@@ -158,7 +158,7 @@ class GroupsTab {
         children: [
           Icon(
             Icons.groups,
-            color: Theme.of(context).colorScheme.primary,
+            color: Theme.of(context).colorScheme.onSurface,
             size: AppDimensions.iconSizeM,
           ),
           const SizedBox(width: AppDimensions.spacingSm),

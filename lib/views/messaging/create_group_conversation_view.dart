@@ -229,7 +229,7 @@ class _CreateGroupConversationViewState
             Icon(
               Icons.people,
               size: AppDimensions.iconSizeM,
-              color: Theme.of(context).colorScheme.primary,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
             const SizedBox(width: AppDimensions.spacingS),
             Text(
@@ -237,7 +237,7 @@ class _CreateGroupConversationViewState
                 viewModel.selectedMemberCount,
               ),
               style: AppTextStyles.titleMedium.copyWith(
-                color: Theme.of(context).colorScheme.primary,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
           ],
@@ -340,7 +340,7 @@ class _CreateGroupConversationViewState
           if (isSelected)
             Icon(
               Icons.check_circle,
-              color: Theme.of(context).colorScheme.primary,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
         ],
       ),

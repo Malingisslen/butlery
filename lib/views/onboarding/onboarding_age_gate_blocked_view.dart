@@ -80,7 +80,7 @@ class _OnboardingAgeGateBlockedViewState
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.lock_outline, size: 72, color: cs.primary),
+                    Icon(Icons.lock_outline, size: 72, color: cs.onSurface),
                     const SizedBox(height: AppDimensions.spacingXl),
                     Text(
                       context.l10n.onboardingAgeGateTooYoungTitle,

@@ -208,7 +208,7 @@ abstract final class RecipeDetailSharedWidgets {
       padding: const EdgeInsets.all(AppDimensions.paddingM),
       decoration: BoxDecoration(
         color: cs.primaryContainer,
-        border: Border.all(color: cs.primary.withValues(alpha: 0.3)),
+        border: Border.all(color: cs.onSurface.withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -218,7 +218,7 @@ abstract final class RecipeDetailSharedWidgets {
               Icon(
                 Icons.tips_and_updates_outlined,
                 size: 18,
-                color: cs.primary,
+                color: cs.onSurface,
               ),
               const SizedBox(width: AppDimensions.spacingSm),
               // Flexible: the title must wrap at narrow widths (BUT-1230 —

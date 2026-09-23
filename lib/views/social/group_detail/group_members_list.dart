@@ -141,7 +141,7 @@ class _GroupMembersListViewState extends State<_GroupMembersListView> {
           Text(
             context.l10n.groupMembersCount(members.length),
             style: AppTextStyles.titleMedium.copyWith(
-              color: Theme.of(context).colorScheme.primary,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
           const SizedBox(height: AppDimensions.spacingS),
@@ -235,7 +235,7 @@ class _GroupMembersListViewState extends State<_GroupMembersListView> {
       ),
       decoration: BoxDecoration(
         color: cs.primaryContainer,
-        border: Border.all(color: cs.primary.withValues(alpha: 0.3)),
+        border: Border.all(color: cs.onSurface.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [

@@ -215,11 +215,11 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
                         controller: _tabController,
                         isScrollable: false,
                         tabAlignment: TabAlignment.fill,
-                        labelColor: Theme.of(context).colorScheme.primary,
+                        labelColor: Theme.of(context).colorScheme.onSurface,
                         unselectedLabelColor: Theme.of(
                           context,
                         ).colorScheme.onSurfaceVariant,
-                        indicatorColor: Theme.of(context).colorScheme.primary,
+                        indicatorColor: Theme.of(context).colorScheme.onSurface,
                         indicatorWeight: AppDimensions.borderWidthThick,
                         tabs: [
                           ButleryTab(

@@ -292,15 +292,15 @@ class ShoppingAppBar {
   ) {
     final cs = Theme.of(context).colorScheme;
     final activeList = viewModel.activeList;
-    if (activeList == null) return cs.primary;
+    if (activeList == null) return cs.onSurface;
 
     switch (activeList.type) {
       case ListType.personal:
-        return cs.primary;
+        return cs.onSurface;
       case ListType.collaborative:
         final permissionService = ServiceLocator.get<PermissionService>();
         final currentUserId = permissionService.currentUser?.uid;
-        if (currentUserId == null) return cs.primary;
+        if (currentUserId == null) return cs.onSurface;
 
         final userPermission = activeList.memberPermissions[currentUserId];
         switch (userPermission) {
@@ -309,11 +309,11 @@ class ShoppingAppBar {
           case SharedListPermission.edit:
             return cs.secondary; // Trusted access
           case SharedListPermission.admin:
-            return cs.primary; // Blue for admin
+            return cs.onSurface; // Blue for admin
           default:
             // If not in permissions map, check if owner (admin)
             return activeList.ownerId == currentUserId
-                ? cs.primary
+                ? cs.onSurface
                 : cs.secondary;
         }
       case ListType.template:

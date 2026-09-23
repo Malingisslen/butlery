@@ -42,7 +42,7 @@ class FriendsEmptyState extends StatelessWidget {
             const SizedBox(height: AppDimensions.spacingLg),
             Text(
               context.l10n.friendsEmptyHeadline,
-              style: AppTextStyles.headlineMedium.copyWith(color: cs.primary),
+              style: AppTextStyles.headlineMedium.copyWith(color: cs.onSurface),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: AppDimensions.spacingSm),
