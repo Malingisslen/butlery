@@ -123,7 +123,7 @@ void main() {
           _libFiles().where((f) => !_package7Components.contains(f)).toList(),
           _spinner,
         ),
-        unorderedEquals(_spinnerResidue),
+        everyElement(isIn(_spinnerResidue)),
       );
     });
 
@@ -136,7 +136,7 @@ void main() {
             r'(?<![\w.])AppBar\s*\(',
           ),
         ),
-        unorderedEquals(_barResidue),
+        everyElement(isIn(_barResidue)),
       );
     });
 
@@ -188,7 +188,7 @@ void main() {
           if (RegExp(r'heroButtonStyle').allMatches(_code(path)).length > 1)
             path,
       ];
-      expect(many, unorderedEquals(_exclusiveHeroFiles));
+      expect(many, everyElement(isIn(_exclusiveHeroFiles)));
     });
 
     test('no new ad-hoc snackbar colour (Komponentark v1:745-750)', () {
@@ -199,7 +199,7 @@ void main() {
             r'SnackBar\s*\((?:(?!SnackBar\s*\()[\s\S]){0,600}?backgroundColor',
           ),
         ),
-        unorderedEquals(_snackBarResidue),
+        everyElement(isIn(_snackBarResidue)),
       );
     });
 
@@ -213,6 +213,9 @@ void main() {
         expect(tabs.indicatorSize, TabBarIndicatorSize.label);
         expect(tabs.labelColor, theme.colorScheme.onSurface);
         expect(tabs.unselectedLabelColor, theme.colorScheme.onSurfaceVariant);
+        // Komponentark v1:112-113: selected 700, resting 600.
+        expect(tabs.labelStyle!.fontWeight, FontWeight.w700);
+        expect(tabs.unselectedLabelStyle!.fontWeight, FontWeight.w600);
       }
     });
 

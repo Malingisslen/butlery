@@ -73,13 +73,18 @@ class NavigationThemes {
   /// (#17251D).
   ///
   /// Labels: the selected word is text.primary (cs.onSurface: #24382C light,
-  /// #F5F4ED dark), the resting word text.secondary (cs.onSurfaceVariant:
-  /// #627061 light, #93A48D dark), as drawn in Komponentark v1:112-113. The
-  /// selected label was cs.primary, ink on the dark page too.
+  /// #F5F4ED dark) at weight 700, the resting word text.secondary
+  /// (cs.onSurfaceVariant: #627061 light, #93A48D dark) at weight 600, as
+  /// drawn in Komponentark v1:106, :112-113. The size stays the app's
+  /// tabText (12.5); the drawing's 13 is not a token size here. A view that
+  /// sets its own labelColor (friends_list_view.dart,
+  /// group_shared_content_section.dart) still overrides this.
   ///
-  /// Interpretation: "the word's width" is the tab's label box. A
-  /// [ButleryTab] label box is at least 48 dp wide, so for a very short word
-  /// the line is 48 dp + 5 px per side.
+  /// Deviation from the drawing, not an interpretation: the drawing sizes
+  /// the line from the word (Komponentark v1:106, Grafisk manual v6:261).
+  /// [TabBarIndicatorSize.label] measures the whole [ButleryTab], whose
+  /// focus box is at least 48 dp wide, so for a word narrower than 48 dp the
+  /// line is 48 dp + 5 px per side.
   static TabBarThemeData tabBarTheme(ColorScheme cs) {
     final plateLine = cs.brightness == Brightness.dark
         ? AppColorsDark.progressIndicator
@@ -88,7 +93,7 @@ class NavigationThemes {
       labelColor: cs.onSurface,
       unselectedLabelColor: cs.onSurfaceVariant,
       labelStyle: AppTextStyles.tabText.copyWith(
-        fontWeight: FontWeight.w600,
+        fontWeight: FontWeight.w700,
       ),
       unselectedLabelStyle: AppTextStyles.tabText,
       indicator: UnderlineTabIndicator(
