@@ -113,7 +113,7 @@ class GroupCard {
       child: ListTile(
         onTap: () => _navigateToGroupDetail(context, group),
         leading: CircleAvatar(
-          backgroundColor: Theme.of(context).colorScheme.primary.withValues(
+          backgroundColor: Theme.of(context).colorScheme.onSurface.withValues(
             alpha: AppDimensions.opacityVeryLight,
           ),
           child: Text(

@@ -178,6 +178,9 @@ class _NotificationPreferencesViewState
   Widget _buildMasterToggle() {
     final cs = Theme.of(context).colorScheme;
 
+    // The switches take the theme's look: control.checked.background track
+    // with a paper thumb in both modes (tokens.json:145-154). The ink thumb
+    // on a half-ink track they had vanished on the dark page.
     return SwitchListTile(
       title: Text(
         context.l10n.notificationEnableTitle,
@@ -191,13 +194,11 @@ class _NotificationPreferencesViewState
         _preferences.enabled
             ? Icons.notifications_active_outlined
             : Icons.notifications_off_outlined,
-        color: cs.primary,
+        color: cs.onSurface,
         size: AppDimensions.iconSizeL,
       ),
       value: _preferences.enabled,
       onChanged: (value) => _onMasterToggle(value),
-      activeTrackColor: cs.primary.withValues(alpha: AppDimensions.opacityHalf),
-      thumbColor: _primaryThumbColor(cs),
       contentPadding: EdgeInsets.zero,
     );
   }
@@ -229,7 +230,7 @@ class _NotificationPreferencesViewState
         title: Text(item.label, style: AppTextStyles.titleMedium),
         secondary: Icon(
           item.icon,
-          color: cs.primary,
+          color: cs.onSurface,
           size: AppDimensions.iconSizeL,
         ),
         value: isEnabled,
@@ -248,10 +249,6 @@ class _NotificationPreferencesViewState
                 );
               }
             : null,
-        activeTrackColor: cs.primary.withValues(
-          alpha: AppDimensions.opacityHalf,
-        ),
-        thumbColor: _primaryThumbColor(cs),
         contentPadding: EdgeInsets.zero,
       ),
     );
@@ -278,7 +275,7 @@ class _NotificationPreferencesViewState
           decoration: InputDecoration(
             prefixIcon: Icon(
               Icons.summarize_outlined,
-              color: cs.primary,
+              color: cs.onSurface,
               size: AppDimensions.iconSizeL,
             ),
             border: const OutlineInputBorder(),
@@ -352,7 +349,7 @@ class _NotificationPreferencesViewState
           ),
           secondary: Icon(
             Icons.do_not_disturb_on_outlined,
-            color: cs.primary,
+            color: cs.onSurface,
             size: AppDimensions.iconSizeL,
           ),
           value: hasQuietHours,
@@ -372,10 +369,6 @@ class _NotificationPreferencesViewState
               );
             }
           },
-          activeTrackColor: cs.primary.withValues(
-            alpha: AppDimensions.opacityHalf,
-          ),
-          thumbColor: _primaryThumbColor(cs),
           contentPadding: EdgeInsets.zero,
         ),
         if (hasQuietHours) ...[
@@ -450,7 +443,7 @@ class _NotificationPreferencesViewState
               Text(
                 time,
                 style: AppTextStyles.headlineSmall.copyWith(
-                  color: cs.primary,
+                  color: cs.onSurface,
                 ),
               ),
             ],
@@ -481,15 +474,6 @@ class _NotificationPreferencesViewState
         );
       }
     }
-  }
-
-  WidgetStateProperty<Color?> _primaryThumbColor(ColorScheme cs) {
-    return WidgetStateProperty.resolveWith((states) {
-      if (states.contains(WidgetState.selected)) {
-        return cs.primary;
-      }
-      return null;
-    });
   }
 
   /// Manual copyWith since the model doesn't provide one.

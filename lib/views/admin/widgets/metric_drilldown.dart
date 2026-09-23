@@ -131,7 +131,7 @@ class _EventTile extends StatelessWidget {
           Icon(
             ok ? Icons.check_circle_outline : Icons.error_outline,
             size: 18,
-            color: ok ? cs.primary : cs.error,
+            color: ok ? cs.onSurface : cs.error,
           ),
           const SizedBox(width: AppDimensions.spacingSm),
           Expanded(

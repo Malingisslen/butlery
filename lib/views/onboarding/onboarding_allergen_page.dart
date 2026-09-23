@@ -89,7 +89,7 @@ class _OnboardingAllergenPageState extends State<OnboardingAllergenPage> {
           Text(
             context.l10n.onboardingAllergenTitle,
             style: AppTextStyles.headlineMedium.copyWith(
-              color: cs.primary,
+              color: cs.onSurface,
             ),
           ),
           const SizedBox(height: AppDimensions.spacingSm),
@@ -166,7 +166,7 @@ class _ShowAllToggle extends StatelessWidget {
               Icon(
                 showAll ? Icons.expand_less : Icons.expand_more,
                 size: AppDimensions.iconSizeM,
-                color: cs.primary,
+                color: cs.onSurface,
               ),
               const SizedBox(width: AppDimensions.spacingXs),
               Flexible(
@@ -175,7 +175,7 @@ class _ShowAllToggle extends StatelessWidget {
                       ? context.l10n.onboardingShowFewerAllergens
                       : context.l10n.onboardingShowAllAllergens,
                   style: AppTextStyles.labelLarge.copyWith(
-                    color: cs.primary,
+                    color: cs.onSurface,
                   ),
                   overflow: TextOverflow.ellipsis,
                 ),

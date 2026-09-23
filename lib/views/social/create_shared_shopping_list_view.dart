@@ -210,14 +210,14 @@ class _CreateSharedShoppingListViewState
             children: [
               Icon(
                 Icons.group,
-                color: Theme.of(context).colorScheme.primary,
+                color: Theme.of(context).colorScheme.onSurface,
                 size: AppDimensions.iconSizeAction,
               ),
               const SizedBox(width: AppDimensions.spacingM),
               Text(
                 context.l10n.shoppingCreateSharedList,
                 style: AppTextStyles.titleMedium.copyWith(
-                  color: Theme.of(context).colorScheme.primary,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
             ],

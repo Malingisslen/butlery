@@ -113,7 +113,7 @@ class _AllergenPreferencesContent extends StatelessWidget {
               children: [
                 Icon(
                   Icons.shield_outlined,
-                  color: cs.primary,
+                  color: cs.onSurface,
                   size: AppDimensions.iconSizeAction,
                 ),
                 const SizedBox(width: AppDimensions.spacingM),
@@ -178,7 +178,7 @@ class _AllergenPreferencesContent extends StatelessWidget {
               children: [
                 Icon(
                   Icons.restaurant_outlined,
-                  color: cs.primary,
+                  color: cs.onSurface,
                   size: AppDimensions.iconSizeAction,
                 ),
                 const SizedBox(width: AppDimensions.spacingM),
@@ -243,7 +243,7 @@ class _AllergenPreferencesContent extends StatelessWidget {
               children: [
                 Icon(
                   Icons.visibility_outlined,
-                  color: cs.primary,
+                  color: cs.onSurface,
                   size: AppDimensions.iconSizeAction,
                 ),
                 const SizedBox(width: AppDimensions.spacingM),
@@ -303,11 +303,9 @@ class _AllergenPreferencesContent extends StatelessWidget {
       subtitle: Text(subtitle),
       value: value,
       onChanged: onChanged,
-      activeTrackColor: cs.primary.withValues(alpha: AppDimensions.opacityHalf),
-      thumbColor: WidgetStateProperty.resolveWith((states) {
-        if (states.contains(WidgetState.selected)) return cs.primary;
-        return null;
-      }),
+      // The theme's switch: control.checked.background track with a paper
+      // thumb in both modes (tokens.json:145-154, feedback_themes.dart
+      // switchTheme). An ink thumb on a half-ink track vanished on dark.
       contentPadding: EdgeInsets.zero,
     );
   }
@@ -381,7 +379,7 @@ class _AllergenPreferencesContent extends StatelessWidget {
               children: [
                 Icon(
                   Icons.sync,
-                  color: cs.primary,
+                  color: cs.onSurface,
                   size: AppDimensions.iconSizeAction,
                 ),
                 const SizedBox(width: AppDimensions.spacingM),

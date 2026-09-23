@@ -84,7 +84,7 @@ class RequestsTab extends StatelessWidget {
             Icon(
               Icons.inbox,
               size: AppDimensions.iconSizeM,
-              color: Theme.of(context).colorScheme.primary,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
             const SizedBox(width: AppDimensions.spacingS),
             Text(
@@ -322,20 +322,26 @@ class _DiscoverySection extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(AppDimensions.paddingL),
       decoration: BoxDecoration(
-        color: cs.primary.withValues(alpha: AppDimensions.opacityVeryLight),
+        color: cs.onSurface.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
         border: Border.all(
-          color: cs.primary.withValues(alpha: AppDimensions.opacityMediumLight),
+          color: cs.onSurface.withValues(
+            alpha: AppDimensions.opacityMediumLight,
+          ),
           width: AppDimensions.borderWidthThin,
         ),
       ),
       child: Column(
         children: [
-          Icon(Icons.search, size: AppDimensions.iconSizeXl, color: cs.primary),
+          Icon(
+            Icons.search,
+            size: AppDimensions.iconSizeXl,
+            color: cs.onSurface,
+          ),
           const SizedBox(height: AppDimensions.spacingM),
           Text(
             context.l10n.socialFindNewFriends,
-            style: AppTextStyles.headlineSmall.copyWith(color: cs.primary),
+            style: AppTextStyles.headlineSmall.copyWith(color: cs.onSurface),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: AppDimensions.spacingS),

@@ -467,7 +467,7 @@ class _AuthViewState extends State<AuthView> {
                           viewModel.toggleAuthMode();
                         },
                   style: OutlinedButton.styleFrom(
-                    side: BorderSide(color: cs.primary),
+                    side: BorderSide(color: cs.onSurface),
                     shape: const RoundedRectangleBorder(),
                   ),
                   child: Text(

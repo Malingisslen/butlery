@@ -5,7 +5,6 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/family_rating.dart' show HouseholdMemberType;
 import 'package:butlery/models/recipe_unified.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/viewmodels/family/family_rating_breakdown_viewmodel.dart';
@@ -113,7 +112,7 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
               Text(
                 l10n.familyRatingSectionTitle,
                 style: AppTextStyles.titleSmall.copyWith(
-                  color: cs.primary,
+                  color: cs.onSurface,
                 ),
               ),
               const SizedBox(width: 10),
@@ -138,12 +137,12 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.groups_outlined, size: 14, color: cs.surface),
+          Icon(Icons.groups_outlined, size: 14, color: cs.onPrimary),
           const SizedBox(width: 4),
           Text(
             value,
             style: AppTextStyles.labelSmall.copyWith(
-              color: cs.surface,
+              color: cs.onPrimary,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -163,8 +162,11 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
       decoration: BoxDecoration(
         color: context.butleryColors.heroPaleGreen,
         border: Border(
-          left: BorderSide(color: cs.primary, width: 4),
-          bottom: const BorderSide(color: AppColors.rustLight, width: 3),
+          left: BorderSide(color: cs.onSurface, width: 4),
+          bottom: BorderSide(
+            color: context.butleryColors.recipeCardBottomBorder,
+            width: 3,
+          ),
         ),
       ),
       child: Row(
@@ -241,7 +243,7 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
                           Text(
                             l10n.familyRatingYou,
                             style: AppTextStyles.captionText.copyWith(
-                              color: cs.primary,
+                              color: cs.onSurface,
                               fontWeight: FontWeight.w600,
                             ),
                           ),

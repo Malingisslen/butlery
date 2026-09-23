@@ -27,6 +27,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/l10n/app_localizations_sv.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/views/auth/email_verification_view.dart';
+import 'package:butlery/theme/app_theme.dart';
 
 import '../../../infrastructure/helpers/widget_test_app.dart';
 import '../../../infrastructure/mocks/production_mocks.dart';
@@ -146,5 +147,29 @@ void main() {
           'Tapping the continue-anyway button must call onDismiss '
           'exactly once so the caller can decide what to show next.',
     );
+  });
+
+  // P4-T6: the gate's envelope glyph is text.primary (onSurface), paper on
+  // the dark page. cs.primary is ink in both schemes and vanished there
+  // (tokens.json:54-57, :104-115).
+  testWidgets('dark mode: the envelope glyph is paper, not ink', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      createLocalizedTestApp(
+        wrapInScaffold: false,
+        child: Theme(
+          data: AppTheme.darkTheme,
+          child: const EmailVerificationView(email: _testEmail),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    final glyph = tester.widget<Icon>(
+      find.byIcon(Icons.mark_email_unread_outlined),
+    );
+    expect(glyph.color, AppTheme.darkTheme.colorScheme.onSurface);
+    expect(glyph.color, isNot(AppTheme.darkTheme.colorScheme.primary));
   });
 }

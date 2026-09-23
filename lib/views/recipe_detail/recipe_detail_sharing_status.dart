@@ -77,14 +77,14 @@ class _RecipeDetailSharingStatusState extends State<RecipeDetailSharingStatus> {
               Icon(
                 Icons.share_outlined,
                 size: AppDimensions.iconSizeM,
-                color: cs.primary,
+                color: cs.onSurface,
               ),
               const SizedBox(width: AppDimensions.spacingSm),
               Text(
                 context.l10n.recipeSharingStatus,
                 style: Theme.of(
                   context,
-                ).textTheme.titleSmall?.copyWith(color: cs.primary),
+                ).textTheme.titleSmall?.copyWith(color: cs.onSurface),
               ),
               const Spacer(),
               // Stop sharing with all

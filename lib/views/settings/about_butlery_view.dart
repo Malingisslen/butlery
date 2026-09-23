@@ -56,7 +56,7 @@ class AboutButleryView extends StatelessWidget {
                   ),
                 ),
                 ListTile(
-                  leading: Icon(Icons.article_outlined, color: cs.primary),
+                  leading: Icon(Icons.article_outlined, color: cs.onSurface),
                   title: Text(
                     context.l10n.settingsLicensesTitle,
                     style: AppTextStyles.titleMedium,

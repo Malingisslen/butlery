@@ -26,7 +26,7 @@ class GroupDetailStats {
               icon: Icons.people,
               label: context.l10n.groupMembers,
               value: '${members.length}',
-              color: Theme.of(context).colorScheme.primary,
+              color: Theme.of(context).colorScheme.onSurface,
               iconSize: AppDimensions.iconSizeAction,
               valueStyle: AppTextStyles.titleBold,
               labelStyle: AppTextStyles.bodySmall,

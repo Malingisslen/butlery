@@ -81,7 +81,7 @@ class MinaReceptEmptyState extends StatelessWidget {
             const SizedBox(height: AppDimensions.spacingLg),
             Text(
               context.l10n.emptyStateNewUserTitle,
-              style: AppTextStyles.headlineMedium.copyWith(color: cs.primary),
+              style: AppTextStyles.headlineMedium.copyWith(color: cs.onSurface),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: AppDimensions.spacingSm),
@@ -152,7 +152,7 @@ class MinaReceptOnboardingBanner extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Icon(Icons.info_outline, color: cs.primary),
+            Icon(Icons.info_outline, color: cs.onSurface),
             const SizedBox(width: AppDimensions.spacingSm),
             Expanded(
               child: Text(
@@ -175,7 +175,7 @@ class MinaReceptOnboardingBanner extends StatelessWidget {
               icon: const Icon(Icons.close),
               iconSize: AppDimensions.iconSizeM,
               tooltip: context.l10n.commonClose,
-              color: cs.primary,
+              color: cs.onSurface,
             ),
           ],
         ),
@@ -211,7 +211,7 @@ class MinaReceptWelcomeBanner extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Icon(Icons.celebration_outlined, color: cs.primary),
+            Icon(Icons.celebration_outlined, color: cs.onSurface),
             const SizedBox(width: AppDimensions.spacingSm),
             Expanded(
               child: Text(
@@ -234,7 +234,7 @@ class MinaReceptWelcomeBanner extends StatelessWidget {
               icon: const Icon(Icons.close),
               iconSize: AppDimensions.iconSizeM,
               tooltip: context.l10n.commonClose,
-              color: cs.primary,
+              color: cs.onSurface,
             ),
           ],
         ),

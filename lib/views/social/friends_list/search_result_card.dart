@@ -137,7 +137,7 @@ class SearchResultCard {
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: TextButton.styleFrom(
-              foregroundColor: Theme.of(context).colorScheme.primary,
+              foregroundColor: Theme.of(context).colorScheme.onSurface,
             ),
             child: Text(context.l10n.blockedUsersUnblock),
           ),

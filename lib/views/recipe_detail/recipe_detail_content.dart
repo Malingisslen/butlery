@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/reduced_motion.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/models/recipe/ingredient_display_row.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/services/cooking/step_timer_service.dart';
@@ -25,7 +26,6 @@ import 'package:butlery/services/tagging/tag_display_utils.dart';
 import 'package:butlery/services/tagging/personal_tag_service.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/views/recipe_detail/recipe_related_recipes_section.dart';
 
@@ -294,7 +294,7 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
           child: Text(
             label.toUpperCase(),
             style: AppTextStyles.titleSmall.copyWith(
-              color: cs.primary,
+              color: cs.onSurface,
               fontWeight: FontWeight.w700,
               letterSpacing: 1.2,
             ),
@@ -342,7 +342,7 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
                           ? _formatQuantity(parsed.quantity)
                           : '',
                       style: AppTextStyles.bodyMedium.copyWith(
-                        color: cs.primary,
+                        color: cs.onSurface,
                         fontWeight: FontWeight.w600,
                       ),
                       textAlign: TextAlign.end,
@@ -457,7 +457,7 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
                     text: instruction,
                     onTimerTap: (match) =>
                         _openStepTimer(context, instruction, match),
-                    chipColor: cs.primary,
+                    chipColor: cs.onSurface,
                     style: AppTextStyles.bodyLarge.copyWith(
                       color: isCompleted ? cs.onSurfaceVariant : cs.onSurface,
                       decoration: isCompleted
@@ -487,7 +487,6 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
     final l10n = context.l10n;
     final messenger = ScaffoldMessenger.maybeOf(context);
     final cs = Theme.of(context).colorScheme;
-    final starGold = context.butleryColors.starGold;
 
     showModalBottomSheet<void>(
       context: context,
@@ -499,10 +498,13 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
         sourcePhrase: instruction,
         onExpired: () {
           HapticFeedback.mediumImpact();
+          // The ink snackbar, never a gold one (PQ-09 = A; Komponentark
+          // v1:745-750). The messenger is captured before the sheet, so
+          // this builds SnackBarUtils' content directly.
           messenger?.showSnackBar(
             SnackBar(
-              content: Text(l10n.timerExpired),
-              backgroundColor: starGold,
+              content: InkSnackBar(message: l10n.timerExpired),
+              padding: InkSnackBar.padding,
               behavior: SnackBarBehavior.floating,
             ),
           );
@@ -525,8 +527,10 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
       decoration: BoxDecoration(
         color: isCompleted ? cs.primary : cs.surfaceContainerHighest,
         shape: BoxShape.circle,
+        // Done: control.checked.background, ink in both modes (tokens.json:
+        // 145-148). Not done: a text.primary edge, paper on dark.
         border: Border.all(
-          color: cs.primary,
+          color: isCompleted ? cs.primary : cs.onSurface,
           width: 2,
         ),
       ),
@@ -540,7 +544,7 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
             : Text(
                 '$stepNumber',
                 style: AppTextStyles.metadataEmphasized.copyWith(
-                  color: cs.primary,
+                  color: cs.onSurface,
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -642,7 +646,7 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
             children: [
               Icon(
                 Icons.local_offer_outlined,
-                color: cs.primary,
+                color: cs.onSurface,
                 size: AppDimensions.iconSizeAction,
               ),
               const SizedBox(width: AppDimensions.spacingM),
@@ -666,18 +670,18 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
                 ),
                 decoration: BoxDecoration(
                   color: isUserAdded
-                      ? cs.primary.withValues(
+                      ? cs.onSurface.withValues(
                           alpha: AppDimensions.opacityLightSubtle,
                         )
-                      : cs.primary.withValues(
+                      : cs.onSurface.withValues(
                           alpha: AppDimensions.opacityVeryLight,
                         ),
                   border: Border.all(
                     color: isUserAdded
-                        ? cs.primary.withValues(
+                        ? cs.onSurface.withValues(
                             alpha: AppDimensions.opacityHalf,
                           )
-                        : cs.primary.withValues(
+                        : cs.onSurface.withValues(
                             alpha: AppDimensions.opacityMediumLight,
                           ),
                   ),
@@ -685,7 +689,7 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
                 child: Text(
                   displayName,
                   style: AppTextStyles.metadataEmphasized.copyWith(
-                    color: cs.primary,
+                    color: cs.onSurface,
                     fontWeight: isUserAdded ? FontWeight.w600 : FontWeight.w500,
                   ),
                 ),
@@ -716,7 +720,7 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
               children: [
                 Icon(
                   Icons.photo_library_outlined,
-                  color: cs.primary,
+                  color: cs.onSurface,
                   size: AppDimensions.iconSizeAction,
                 ),
                 const SizedBox(width: AppDimensions.spacingM),
@@ -829,7 +833,7 @@ class _PersonalTagsSectionState extends State<_PersonalTagsSection> {
             children: [
               Icon(
                 Icons.label_outline,
-                color: cs.primary,
+                color: cs.onSurface,
                 size: AppDimensions.iconSizeAction,
               ),
               const SizedBox(width: AppDimensions.spacingM),
@@ -887,15 +891,17 @@ class _PersonalTagsSectionState extends State<_PersonalTagsSection> {
         vertical: AppDimensions.spacingXs,
       ),
       decoration: BoxDecoration(
-        color: cs.primary.withValues(alpha: AppDimensions.opacityLightSubtle),
+        color: cs.onSurface.withValues(alpha: AppDimensions.opacityLightSubtle),
         border: Border.all(
-          color: cs.primary.withValues(alpha: AppDimensions.opacityMediumLight),
+          color: cs.onSurface.withValues(
+            alpha: AppDimensions.opacityMediumLight,
+          ),
         ),
       ),
       child: Text(
         name,
         style: AppTextStyles.metadataEmphasized.copyWith(
-          color: cs.primary,
+          color: cs.onSurface,
         ),
       ),
     );
@@ -915,15 +921,17 @@ class _PersonalTagsSectionState extends State<_PersonalTagsSection> {
             vertical: AppDimensions.spacingXs,
           ),
           decoration: BoxDecoration(
-            color: cs.primary.withValues(alpha: AppDimensions.opacityVeryLight),
+            color: cs.onSurface.withValues(
+              alpha: AppDimensions.opacityVeryLight,
+            ),
             border: Border.all(
-              color: cs.primary.withValues(alpha: AppDimensions.opacityLight),
+              color: cs.onSurface.withValues(alpha: AppDimensions.opacityLight),
             ),
           ),
           child: Text(
             context.l10n.commonMoreCount(count),
             style: AppTextStyles.metadataEmphasized.copyWith(
-              color: cs.primary.withValues(alpha: AppDimensions.opacityDark),
+              color: cs.onSurface.withValues(alpha: AppDimensions.opacityDark),
             ),
           ),
         ),

@@ -229,7 +229,7 @@ class _SectionHeader extends StatelessWidget {
         child: Text(
           title,
           style: AppTextStyles.metadataEmphasized.copyWith(
-            color: cs.primary,
+            color: cs.onSurface,
           ),
         ),
       ),

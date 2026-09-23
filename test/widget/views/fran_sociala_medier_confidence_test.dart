@@ -106,4 +106,37 @@ void main() {
           'so showing a badge would be fabricated signal.',
     );
   });
+
+  // P4-T6: the tips heading is text.primary (onSurface), paper on the dark
+  // page; cs.primary is ink in both schemes (tokens.json:54-57, :112-115).
+  testWidgets('dark mode: the tips heading and its glyph are paper', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.darkTheme,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        locale: const Locale('sv'),
+        home: const FranSocialaMedierView(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final paper = AppTheme.darkTheme.colorScheme.onSurface;
+    final heading = tester.widget<Text>(find.text('Tips för bästa resultat'));
+    expect(heading.style?.color, paper);
+    final glyph = tester.widget<Icon>(
+      find
+          .descendant(
+            of: find.ancestor(
+              of: find.text('Tips för bästa resultat'),
+              matching: find.byType(Row),
+            ),
+            matching: find.byIcon(Icons.info_outline),
+          )
+          .first,
+    );
+    expect(glyph.color, paper);
+  });
 }

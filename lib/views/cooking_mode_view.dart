@@ -27,7 +27,6 @@ import 'package:butlery/viewmodels/cooking/cooking_voice_controller.dart';
 import 'package:butlery/viewmodels/cooking_mode_viewmodel.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/tappable_wrapper.dart';
 import 'package:butlery/widgets/cooking/active_timers_strip.dart';
@@ -738,7 +737,6 @@ class _InstructionsPanelState extends State<_InstructionsPanel> {
     final l10n = context.l10n;
     final messenger = ScaffoldMessenger.maybeOf(context);
     final cs = Theme.of(context).colorScheme;
-    final starGold = context.butleryColors.starGold;
     // BUT-1242: one timer per step so several can run at once.
     final timerId = 'step-$stepIndex';
 
@@ -753,10 +751,13 @@ class _InstructionsPanelState extends State<_InstructionsPanel> {
         sourcePhrase: parsed != null ? instruction : null,
         onExpired: () {
           HapticFeedback.mediumImpact();
+          // The ink snackbar, never a gold one (PQ-09 = A; Komponentark
+          // v1:745-750). The messenger is captured before the sheet, so
+          // this builds SnackBarUtils' content directly.
           messenger?.showSnackBar(
             SnackBar(
-              content: Text(l10n.timerExpired),
-              backgroundColor: starGold,
+              content: InkSnackBar(message: l10n.timerExpired),
+              padding: InkSnackBar.padding,
               behavior: SnackBarBehavior.floating,
             ),
           );

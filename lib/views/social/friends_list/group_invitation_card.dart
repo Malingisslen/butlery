@@ -96,7 +96,7 @@ class GroupInvitationCard {
               Container(
                 padding: const EdgeInsets.all(AppDimensions.spacingS),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primary.withValues(
+                  color: Theme.of(context).colorScheme.onSurface.withValues(
                     alpha: AppDimensions.opacityExtraVeryLight,
                   ),
                   borderRadius: BorderRadius.circular(

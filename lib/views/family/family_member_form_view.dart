@@ -297,7 +297,7 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
                         child: Text(
                           ageBandLabel(l10n, band),
                           style: AppTextStyles.captionText.copyWith(
-                            color: _band == band ? Colors.white : cs.outline,
+                            color: _band == band ? cs.onPrimary : cs.outline,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -365,7 +365,7 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
       decoration: BoxDecoration(
         color: cs.surface,
         border: Border(
-          left: BorderSide(color: cs.primary, width: 3),
+          left: BorderSide(color: cs.onSurface, width: 3),
         ),
       ),
       child: Column(
@@ -374,8 +374,8 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
           _consentHeader(
             l10n.familyConsentSectionTitle,
             l10n.familyConsentRequiredBadge,
-            cs.primary,
-            titleColor: cs.primary,
+            cs.onSurface,
+            titleColor: cs.onSurface,
           ),
           CheckboxListTile(
             contentPadding: EdgeInsets.zero,
@@ -602,14 +602,14 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
               Icon(
                 Icons.verified_user_outlined,
                 size: 18,
-                color: cs.primary,
+                color: cs.onSurface,
               ),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   '${l10n.familyConsentGivenPrefix} $date · ${consent.consentVersion}',
                   style: AppTextStyles.captionText.copyWith(
-                    color: cs.primary,
+                    color: cs.onSurface,
                   ),
                 ),
               ),

@@ -501,7 +501,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                                     Icon(
                                       Icons.edit_outlined,
                                       size: AppDimensions.iconSizeM,
-                                      color: menuCs.primary,
+                                      color: menuCs.onSurface,
                                     ),
                                     const SizedBox(
                                       width: AppDimensions.spacingM,
@@ -525,7 +525,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                                     Icon(
                                       Icons.content_copy_outlined,
                                       size: AppDimensions.iconSizeM,
-                                      color: menuCs.primary,
+                                      color: menuCs.onSurface,
                                     ),
                                     const SizedBox(
                                       width: AppDimensions.spacingM,
@@ -546,7 +546,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                                   Icon(
                                     Icons.calendar_month_outlined,
                                     size: AppDimensions.iconSizeM,
-                                    color: menuCs.primary,
+                                    color: menuCs.onSurface,
                                   ),
                                   const SizedBox(width: AppDimensions.spacingM),
                                   Text(context.l10n.bulkAddToMenu),
@@ -560,7 +560,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                                   Icon(
                                     Icons.shopping_cart_outlined,
                                     size: AppDimensions.iconSizeM,
-                                    color: menuCs.primary,
+                                    color: menuCs.onSurface,
                                   ),
                                   const SizedBox(width: AppDimensions.spacingM),
                                   Text(context.l10n.recipeCreateShoppingList),
@@ -576,7 +576,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                                     Icon(
                                       Icons.local_offer_outlined,
                                       size: AppDimensions.iconSizeM,
-                                      color: menuCs.primary,
+                                      color: menuCs.onSurface,
                                     ),
                                     const SizedBox(
                                       width: AppDimensions.spacingM,
@@ -593,7 +593,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                                     Icon(
                                       Icons.edit_note,
                                       size: AppDimensions.iconSizeM,
-                                      color: menuCs.primary,
+                                      color: menuCs.onSurface,
                                     ),
                                     const SizedBox(
                                       width: AppDimensions.spacingM,
@@ -643,7 +643,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                                           ? Icons.group_off_outlined
                                           : Icons.group_add_outlined,
                                       size: AppDimensions.iconSizeM,
-                                      color: menuCs.primary,
+                                      color: menuCs.onSurface,
                                     ),
                                     const SizedBox(
                                       width: AppDimensions.spacingM,
@@ -672,7 +672,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                                     Icon(
                                       Icons.link_outlined,
                                       size: AppDimensions.iconSizeM,
-                                      color: menuCs.primary,
+                                      color: menuCs.onSurface,
                                     ),
                                     const SizedBox(
                                       width: AppDimensions.spacingM,
@@ -692,7 +692,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                                     Icon(
                                       Icons.description_outlined,
                                       size: AppDimensions.iconSizeM,
-                                      color: menuCs.primary,
+                                      color: menuCs.onSurface,
                                     ),
                                     const SizedBox(
                                       width: AppDimensions.spacingM,
@@ -709,7 +709,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                                     Icon(
                                       Icons.print_outlined,
                                       size: AppDimensions.iconSizeM,
-                                      color: menuCs.primary,
+                                      color: menuCs.onSurface,
                                     ),
                                     const SizedBox(
                                       width: AppDimensions.spacingM,

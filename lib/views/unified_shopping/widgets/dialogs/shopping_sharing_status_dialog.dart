@@ -139,7 +139,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
             Text(
               context.l10n.shoppingListInfo,
               style: AppTextStyles.titleMedium.copyWith(
-                color: cs.primary,
+                color: cs.onSurface,
               ),
             ),
             const SizedBox(height: AppDimensions.spacingM),
@@ -175,7 +175,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
       permissionLabel = context.l10n.shoppingAdminOwner;
       permissionDescription = context.l10n.shoppingAdminOwnerDescription;
       permissionIcon = Icons.admin_panel_settings;
-      permissionColor = cs.primary;
+      permissionColor = cs.onSurface;
     } else {
       switch (userPermission) {
         case SharedListPermission.view:
@@ -197,7 +197,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
           permissionDescription =
               context.l10n.shoppingPermissionAdminDescription;
           permissionIcon = Icons.admin_panel_settings;
-          permissionColor = cs.primary;
+          permissionColor = cs.onSurface;
           break;
         default:
           permissionLabel = context.l10n.shoppingPermissionUnspecified;
@@ -226,7 +226,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
                 Text(
                   context.l10n.shoppingYourPermission,
                   style: AppTextStyles.titleMedium.copyWith(
-                    color: cs.primary,
+                    color: cs.onSurface,
                   ),
                 ),
               ],
@@ -258,7 +258,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
     allMembers.addAll(list.memberPermissions);
 
     return Card(
-      color: cs.primary.withValues(alpha: AppDimensions.opacityVeryLight),
+      color: cs.onSurface.withValues(alpha: AppDimensions.opacityVeryLight),
       child: Padding(
         padding: const EdgeInsets.all(AppDimensions.paddingM),
         child: Column(
@@ -268,14 +268,14 @@ class ShoppingShareStatusDialog extends StatelessWidget {
               children: [
                 Icon(
                   Icons.people,
-                  color: cs.primary,
+                  color: cs.onSurface,
                   size: AppDimensions.iconSizeM,
                 ),
                 const SizedBox(width: AppDimensions.spacingS),
                 Text(
                   context.l10n.shoppingMembersCount(allMembers.length),
                   style: AppTextStyles.titleMedium.copyWith(
-                    color: cs.primary,
+                    color: cs.onSurface,
                   ),
                 ),
               ],
@@ -312,7 +312,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
     if (isOwner) {
       permissionLabel = context.l10n.shoppingPermissionOwner;
       permissionIcon = Icons.admin_panel_settings;
-      permissionColor = cs.primary;
+      permissionColor = cs.onSurface;
     } else {
       switch (permission) {
         case SharedListPermission.view:
@@ -328,7 +328,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
         case SharedListPermission.admin:
           permissionLabel = context.l10n.shoppingPermissionAdmin;
           permissionIcon = Icons.admin_panel_settings;
-          permissionColor = cs.primary;
+          permissionColor = cs.onSurface;
           break;
       }
     }
@@ -339,7 +339,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
         children: [
           CircleAvatar(
             radius: 16,
-            backgroundColor: cs.primary.withValues(
+            backgroundColor: cs.onSurface.withValues(
               alpha: AppDimensions.opacityVeryLight,
             ),
             child: Text(
@@ -348,7 +348,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
               // användare") would read as a real person's initial.
               knownName != null ? knownName[0].toUpperCase() : '?',
               style: AppTextStyles.labelLarge.copyWith(
-                color: cs.primary,
+                color: cs.onSurface,
               ),
             ),
           ),
@@ -391,7 +391,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
 
     return Card(
-      color: cs.primary.withValues(alpha: AppDimensions.opacityVeryLight),
+      color: cs.onSurface.withValues(alpha: AppDimensions.opacityVeryLight),
       child: Padding(
         padding: const EdgeInsets.all(AppDimensions.paddingM),
         child: Column(
@@ -401,14 +401,14 @@ class ShoppingShareStatusDialog extends StatelessWidget {
               children: [
                 Icon(
                   Icons.history,
-                  color: cs.primary,
+                  color: cs.onSurface,
                   size: AppDimensions.iconSizeM,
                 ),
                 const SizedBox(width: AppDimensions.spacingS),
                 Text(
                   context.l10n.shoppingRecentActivity,
                   style: AppTextStyles.titleMedium.copyWith(
-                    color: cs.primary,
+                    color: cs.onSurface,
                   ),
                 ),
               ],
@@ -481,9 +481,9 @@ class ShoppingShareStatusDialog extends StatelessWidget {
   Color _getListTypeColor(ColorScheme cs) {
     switch (list.type) {
       case ListType.personal:
-        return cs.primary;
+        return cs.onSurface;
       case ListType.collaborative:
-        return cs.primary;
+        return cs.onSurface;
       case ListType.template:
         return cs.onSurfaceVariant;
     }

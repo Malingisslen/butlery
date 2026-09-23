@@ -166,7 +166,7 @@ class _FileImportViewState extends State<FileImportView> {
                                     Icons.check_circle,
                                     color: Theme.of(
                                       context,
-                                    ).colorScheme.primary,
+                                    ).colorScheme.onSurface,
                                   ),
                                   const SizedBox(width: AppDimensions.spacingS),
                                   Text(

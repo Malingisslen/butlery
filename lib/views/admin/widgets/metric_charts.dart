@@ -10,7 +10,7 @@ const double _chartHeight = 180;
 /// Distinct line/series colours pulled from the theme (no hardcoded hex). The
 /// legend disambiguates, so near-hues are acceptable for an internal tool.
 List<Color> _palette(ColorScheme cs) => [
-  cs.primary,
+  cs.onSurface,
   cs.tertiary,
   cs.error,
   cs.secondary,
@@ -47,7 +47,7 @@ class MetricBarChart extends StatelessWidget {
                   barRods: [
                     BarChartRodData(
                       toY: rows[i].value.toDouble(),
-                      color: cs.primary,
+                      color: cs.onSurface,
                       width: 18,
                       borderRadius: BorderRadius.zero,
                     ),

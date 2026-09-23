@@ -76,7 +76,7 @@ class CollaborativeShoppingHeader extends StatelessWidget {
                 width: 8,
                 height: 8,
                 decoration: BoxDecoration(
-                  color: cs.primary,
+                  color: cs.onSurface,
                   shape: BoxShape.circle,
                 ),
               ),

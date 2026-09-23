@@ -176,8 +176,8 @@ class _OnboardingContentState extends State<_OnboardingContent> {
                   height: 8,
                   decoration: BoxDecoration(
                     color: isActive
-                        ? cs.primary
-                        : cs.primary.withValues(
+                        ? cs.onSurface
+                        : cs.onSurface.withValues(
                             alpha: AppDimensions.opacityLight,
                           ),
                   ),
@@ -206,13 +206,13 @@ class _OnboardingContentState extends State<_OnboardingContent> {
                         );
                       },
                       style: OutlinedButton.styleFrom(
-                        side: BorderSide(color: cs.primary),
+                        side: BorderSide(color: cs.onSurface),
                         shape: const RoundedRectangleBorder(),
                       ),
                       child: Text(
                         context.l10n.onboardingBack,
                         style: AppTextStyles.labelLarge.copyWith(
-                          color: cs.primary,
+                          color: cs.onSurface,
                         ),
                       ),
                     ),

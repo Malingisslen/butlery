@@ -705,7 +705,7 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
         Icon(
           Icons.check_circle,
           size: AppDimensions.iconSizeM,
-          color: cs.primary,
+          color: cs.onSurface,
         ),
         const SizedBox(width: AppDimensions.spacingSm),
         Expanded(
@@ -715,7 +715,7 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
               Text(
                 context.l10n.shoppingPurchased,
                 style: AppTextStyles.bodyLargeBold.copyWith(
-                  color: cs.primary,
+                  color: cs.onSurface,
                 ),
               ),
               Text(
@@ -724,7 +724,7 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
                   viewModel.totalItems,
                 ),
                 style: AppTextStyles.bodySmall.copyWith(
-                  color: cs.primary.withValues(
+                  color: cs.onSurface.withValues(
                     alpha: AppDimensions.opacityVeryDark,
                   ),
                 ),

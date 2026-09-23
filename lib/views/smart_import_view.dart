@@ -366,7 +366,7 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
         icon: Icon(
           Icons.videocam_off,
           size: 48,
-          color: theme.colorScheme.primary,
+          color: theme.colorScheme.onSurface,
         ),
         title: Text(context.l10n.importVideoNoText),
         content: Text(

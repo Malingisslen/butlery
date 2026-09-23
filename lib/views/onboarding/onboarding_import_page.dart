@@ -77,7 +77,7 @@ class _OnboardingImportContentState extends State<_OnboardingImportContent> {
           Text(
             context.l10n.onboardingImportTitle,
             style: AppTextStyles.headlineMedium.copyWith(
-              color: cs.primary,
+              color: cs.onSurface,
             ),
           ),
           const SizedBox(height: AppDimensions.spacingSm),
@@ -294,14 +294,14 @@ class _ImportOptionCard extends StatelessWidget {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: cs.primary.withValues(
+                  color: cs.onSurface.withValues(
                     alpha: AppDimensions.opacityLight,
                   ),
                 ),
                 child: Icon(
                   icon,
                   size: AppDimensions.iconSizeL,
-                  color: cs.primary,
+                  color: cs.onSurface,
                 ),
               ),
               const SizedBox(width: AppDimensions.spacingMd),

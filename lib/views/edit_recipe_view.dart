@@ -611,8 +611,8 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
           horizontal: AppDimensions.paddingL,
           vertical: AppDimensions.paddingM,
         ),
-        side: BorderSide(color: Theme.of(context).colorScheme.primary),
-        foregroundColor: Theme.of(context).colorScheme.primary,
+        side: BorderSide(color: Theme.of(context).colorScheme.onSurface),
+        foregroundColor: Theme.of(context).colorScheme.onSurface,
       ),
     );
   }

@@ -31,7 +31,7 @@ class GroupInvitationCard {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primary.withValues(
+                  color: Theme.of(context).colorScheme.onSurface.withValues(
                     alpha: AppDimensions.opacityVeryLight,
                   ),
                   shape: BoxShape.circle,
@@ -42,7 +42,7 @@ class GroupInvitationCard {
                         ? invitation.fromUserName[0].toUpperCase()
                         : '?',
                     style: AppTextStyles.bodyBold.copyWith(
-                      color: Theme.of(context).colorScheme.primary,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
                 ),
