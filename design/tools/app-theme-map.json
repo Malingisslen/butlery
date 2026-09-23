@@ -353,6 +353,11 @@
    "semantic",
    "text.onActionPrimaryPressed",
    "Text pa nedtryckt saffran: papper, aldrig ink (beslut B-14, ink ger 2,97:1). Star bara pa actionPrimaryPressed."
+  ],
+  "textWarning": [
+   "semantic",
+   "text.warning",
+   "Varningstext och varningsglyf pa papper: offlinebannerns kontur och wifi-off (Komponentark 753, morkt 571). Inte warning (border.statusWarning, aldrig text) och inte onWarningContainer (text.accent.onRaised, samma ljusa hex men annat token)."
   ]
  },
  "aliases": {

@@ -131,6 +131,7 @@
    "textOnPrimary",
    "textSecondary",
    "textTertiary",
+   "textWarning",
    "transparent",
    "warning",
    "warningContainer",
@@ -284,6 +285,7 @@
    "textMedium",
    "textOnCream",
    "textOnPrimary",
+   "textWarning",
    "warning",
    "warningContainer"
   ],
@@ -352,7 +354,8 @@
    "text.secondary",
    "text.secondary.onRaised",
    "text.success",
-   "text.success.onRaised"
+   "text.success.onRaised",
+   "text.warning"
   ],
   "traceability": [
    {
@@ -703,6 +706,13 @@
     "SEMANTIC_TOKEN": "text.onActionPrimaryPressed",
     "TOKENS_JSON_PATH": "semantic[\"text.onActionPrimaryPressed\"].dark",
     "DARK_VALUE": "#F5F4ED",
+    "KIND": "CANONICAL"
+   },
+   {
+    "FLUTTER_MEMBER": "textWarning",
+    "SEMANTIC_TOKEN": "text.warning",
+    "TOKENS_JSON_PATH": "semantic[\"text.warning\"].dark",
+    "DARK_VALUE": "#DCA968",
     "KIND": "CANONICAL"
    },
    {

@@ -99,7 +99,10 @@ export function bygg(rot) {
     { NAMN: 'info', KRAV: 4.5, SLAG: 'READABLE' },
     { NAMN: 'success', KRAV: 4.5, SLAG: 'READABLE' },
     { NAMN: 'onWarningContainer', KRAV: 4.5, SLAG: 'READABLE' },
-    { NAMN: 'textDisabled', KRAV: 3.0, SLAG: 'DISABLED' }
+    { NAMN: 'textDisabled', KRAV: 3.0, SLAG: 'DISABLED' },
+    // Paket 3. textWarning bar offlinebannerns varningsglyf och kontur och ar
+    // lika ytblind som de andra textkonstanterna.
+    { NAMN: 'textWarning', KRAV: 4.5, SLAG: 'READABLE' }
   ];
   const morkFarg = (() => {
     const ut = {};
