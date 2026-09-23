@@ -309,9 +309,12 @@ void main() {
               .first,
         );
         expect(material.color, surface);
-        final shape = material.shape! as Border;
-        expect(shape.top.color, danger);
-        expect(shape.top.width, 1.0);
+        // Komponentark v1:755: 1 px text.danger, border-radius 8 px
+        // (radius.control, tokens.json:479).
+        final shape = material.shape! as RoundedRectangleBorder;
+        expect(shape.side.color, danger);
+        expect(shape.side.width, 1.0);
+        expect(shape.borderRadius, BorderRadius.circular(8));
         expect(
           tester.widget<Icon>(find.byIcon(Icons.warning_amber_rounded)).color,
           danger,

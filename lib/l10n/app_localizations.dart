@@ -15145,13 +15145,13 @@ abstract class AppLocalizations {
   /// **'Stäng konfliktnotis'**
   String get a11yConflictBannerDismiss;
 
-  /// P3-U08: conflict banner title for a recipe (Komponentark v1:755-758; produktregler.md:101-102).
+  /// P3-U08: conflict banner title for a recipe (Komponentark v1:755-758; produktregler.md:102-103).
   ///
   /// In sv, this message translates to:
   /// **'Två versioner av receptet'**
   String get conflictBannerTitleRecipe;
 
-  /// P3-U08: conflict banner title for a week menu (Komponentark v1:755-758; produktregler.md:103).
+  /// P3-U08: conflict banner title for a week menu (Komponentark v1:755-758; produktregler.md:104).
   ///
   /// In sv, this message translates to:
   /// **'Två versioner av veckan'**
@@ -15169,7 +15169,7 @@ abstract class AppLocalizations {
   /// **'Någon annan ändrade samtidigt. Din version finns kvar — välj vilken som gäller.'**
   String get conflictBannerBodyUnnamed;
 
-  /// P3-U08: week-menu conflict snackbar, 30 s (produktregler.md:103, ux-beslut D-04).
+  /// P3-U08: week-menu conflict snackbar, 30 s (produktregler.md:104, ux-beslut D-04).
   ///
   /// In sv, this message translates to:
   /// **'{name} sparade veckan'**
@@ -15180,12 +15180,6 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Någon annan sparade veckan'**
   String get conflictWeekSavedUnnamed;
-
-  /// P3-U08: action that restores the user's overwritten version (Skarmar v12 etapp 11, #vmbkonflikt).
-  ///
-  /// In sv, this message translates to:
-  /// **'Behåll min'**
-  String get conflictKeepMine;
 
   /// BUT-1163: title of the conflict diff view.
   ///

@@ -229,7 +229,10 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
 
   /// Update a resource with conflict resolution
   Future<void> updateResource<T extends RealtimeResource>(T resource) async {
-    if (_currentUserId == null) {
+    // Read once: a sign-out during the awaits below must not turn into a
+    // null-check error halfway through the update.
+    final userId = _currentUserId;
+    if (userId == null) {
       throw SyncError(
         type: SyncErrorType.permissionDenied,
         message: AppLocale.current.errorUserNotLoggedIn,
@@ -244,7 +247,7 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
 
     try {
       // Check permission (from the model, not business logic here)
-      if (!resource.canUserEdit(_currentUserId!)) {
+      if (!resource.canUserEdit(userId)) {
         throw SyncError(
           type: SyncErrorType.permissionDenied,
           message: AppLocale.current.errorNoEditPermission,
@@ -273,9 +276,8 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
           resource,
           remote,
           // The model declares which conflict rule applies to this user's
-          // edit (produktregler.md:97-107); _currentUserId is non-null here,
-          // checked at the top of this method.
-          entity: resource.conflictEntityFor(_currentUserId!),
+          // edit (produktregler.md:97-107), for the user who started it.
+          entity: resource.conflictEntityFor(userId),
         );
         await _conflictModule.performUpdate(docRef, persisted);
       } else {

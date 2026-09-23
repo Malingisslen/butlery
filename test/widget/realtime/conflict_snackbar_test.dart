@@ -1,9 +1,9 @@
-/// P3-U08: the week menu's conflict snackbar (produktregler.md:103,
+/// P3-U08: the week menu's conflict snackbar (produktregler.md:104,
 /// ux-beslut.json D-04, block288-uxfrysning.json
 /// TR::FLOW::01::vecka-sparad-av-annan::konfliktsnackbar).
 ///
 /// Pins: it fires only when the user's week edit lost; it stays exactly
-/// kConflictNoticeWindow (30 s), apart from the 7 s undo window; "Behåll min"
+/// kConflictNoticeWindow (30 s), apart from the 7 s undo window; "Ångra"
 /// re-applies the lost version once; and it persists under assistive
 /// navigation, as the undo primitive does until PQ-05.
 library;
@@ -70,7 +70,6 @@ void main() {
     await GetIt.instance.reset();
   });
 
-  late String keepMine;
   late String saved;
   late String commonUndo;
 
@@ -83,7 +82,6 @@ void main() {
           ).copyWith(accessibleNavigation: accessibleNavigation),
           child: Builder(
             builder: (context) {
-              keepMine = context.l10n.conflictKeepMine;
               saved = context.l10n.conflictWeekSaved('Johan');
               commonUndo = context.l10n.commonUndo;
               return TextButton(
@@ -107,17 +105,17 @@ void main() {
     expect(kConflictNoticeWindow, isNot(kUndoWindow));
   });
 
-  testWidgets('a lost week edit shows "{namn} sparade veckan" + Behåll min', (
+  testWidgets('a lost week edit shows "{namn} sparade veckan" + Ångra', (
     tester,
   ) async {
     await tester.pumpWidget(harness(_event()));
     await show(tester);
 
     expect(saved, 'Johan sparade veckan');
-    expect(keepMine, 'Behåll min');
+    // produktregler.md:99/:104: the 30 s snackbar is the "Ångra" column.
+    expect(commonUndo, 'Ångra');
     expect(find.text(saved), findsOneWidget);
-    expect(find.widgetWithText(SnackBarAction, keepMine), findsOneWidget);
-    expect(find.text(commonUndo), findsNothing);
+    expect(find.widgetWithText(SnackBarAction, commonUndo), findsOneWidget);
   });
 
   testWidgets('a localWon shows nothing', (tester) async {
@@ -171,14 +169,14 @@ void main() {
     expect(find.text(saved), findsNothing);
   });
 
-  testWidgets('Behåll min re-applies the lost version exactly once', (
+  testWidgets('Ångra re-applies the lost version exactly once', (
     tester,
   ) async {
     final local = _FakeResource('Malin');
     await tester.pumpWidget(harness(_event(local: local)));
     await show(tester);
 
-    await tester.tap(find.text(keepMine));
+    await tester.tap(find.text(commonUndo));
     await tester.pumpAndSettle();
 
     final captured = verify(

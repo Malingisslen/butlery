@@ -1,15 +1,16 @@
 /// P3-U08: the week menu's conflict notice.
 ///
-/// produktregler.md:103: for a week menu the last save wins and the user sees
+/// produktregler.md:104: for a week menu the last save wins and the user sees
 /// the snackbar "*Namn* sparade veckan" for 30 s. ux-beslut.json D-04 keeps
 /// that 30 s window apart from the 7 s undo window: it belongs to conflict
 /// handling and is never reused elsewhere, so it has its own constant here and
 /// is not read from `undo_window.dart`.
 ///
 /// The action rescues the overwritten version (produktregler.md:109, :1121:
-/// the other version can be rescued with one tap). Its label is "Behåll min",
-/// the only label drawn for this action (Skarmar v12 etapp 11, #vmbkonflikt).
-/// It is not an undo, so it does not read `commonUndo`.
+/// the other version can be rescued with one tap). Its label is "Ångra":
+/// produktregler.md:99 heads the column the 30 s snackbar sits in "Ångra"
+/// (:104). ux-beslut.json D-04 makes this the one other `commonUndo` reader
+/// besides the undo primitive; the window stays its own, never the 7 s one.
 ///
 /// Built, not mounted: no view shows it until package 4 decides the channel
 /// per surface.
@@ -25,13 +26,13 @@ import 'package:butlery/models/realtime/realtime_resource.dart';
 import 'package:butlery/services/realtime/realtime_types.dart';
 import 'package:butlery/services/realtime_sync_service.dart';
 
-/// How long the week-menu conflict snackbar stays (produktregler.md:103,
+/// How long the week-menu conflict snackbar stays (produktregler.md:104,
 /// ux-beslut.json D-04). Conflict handling only; never an undo window.
 const Duration kConflictNoticeWindow = Duration(seconds: 30);
 
 /// The week-menu conflict snackbar.
 abstract final class ConflictSnackBar {
-  /// Shows "{name} sparade veckan" with "Behåll min" for
+  /// Shows "{name} sparade veckan" with "Ångra" for
   /// [kConflictNoticeWindow] when [event] is a week-menu conflict the user's
   /// edit lost. Returns null, and shows nothing, for any other event: a
   /// localWon changed nothing the user has to rescue, and other entities have
@@ -66,7 +67,7 @@ abstract final class ConflictSnackBar {
       SnackBar(
         content: Text(message),
         action: SnackBarAction(
-          label: l.conflictKeepMine,
+          label: l.commonUndo,
           onPressed: () => _keepMine(context, event),
         ),
         duration: kConflictNoticeWindow,

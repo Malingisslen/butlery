@@ -67,16 +67,16 @@ enum RealtimeResourceType {
 /// chat) have their own mechanisms outside this service.
 enum ConflictEntity {
   /// "Recept (eget)": both versions are shown and the user chooses
-  /// (produktregler.md:101).
+  /// (produktregler.md:102).
   recipeOwn,
 
   /// "Recept (delat, andras)": the owner's version wins and the change becomes
-  /// a suggestion (produktregler.md:102). No suggestion model exists yet, so
+  /// a suggestion (produktregler.md:103). No suggestion model exists yet, so
   /// the notice uses the recipeOwn wording until PQ-02 is answered.
   recipeShared,
 
   /// "Veckomeny": the last save wins, with a 30 s snackbar
-  /// (produktregler.md:103, ux-beslut.json D-04).
+  /// (produktregler.md:104, ux-beslut.json D-04).
   weekMenu,
 }
 

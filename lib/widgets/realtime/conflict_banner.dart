@@ -2,7 +2,7 @@
 /// resolutions to the user.
 ///
 /// P3-U08: the anatomy is the drawn conflict banner (Komponentark v1:755-758):
-/// a 1 px text.danger outline on surface.base, the triangle-alert glyph, a bold
+/// a 1 px text.danger outline with the 8 px control radius on surface.base, the triangle-alert glyph, a bold
 /// title that names what has two versions, and body text saying who changed it
 /// and that the user's version is still there. No channel is chosen here: which
 /// entity gets a banner and which a snackbar is package 4's mounting work.
@@ -154,9 +154,16 @@ class _ConflictBannerState extends State<ConflictBanner> {
           ),
           child: Material(
             color: cs.surface,
-            shape: Border.all(
-              color: danger,
-              width: AppDimensions.borderWidthStandard,
+            // Komponentark v1:755 border-radius:8px = radius.control
+            // (tokens.json:479, :483 'control 8 = knappar, fält, brickor').
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(
+                AppDimensions.radiusControl,
+              ),
+              side: BorderSide(
+                color: danger,
+                width: AppDimensions.borderWidthStandard,
+              ),
             ),
             child: Padding(
               padding: const EdgeInsets.fromLTRB(

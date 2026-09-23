@@ -21,6 +21,12 @@ const _unclassifiedDismiss = {
   'lib/views/social/shared_with_me/shared_content_actions.dart',
 };
 
+/// The week menu's 30 s conflict snackbar (produktregler.md:104, column
+/// "Ångra" at :99). ux-beslut.json D-04 keeps its 30 s window apart from the
+/// 7 s undo window, so it cannot go through the primitive. The only other
+/// reader; a third one still fails.
+const _conflictNotice = 'lib/widgets/realtime/conflict_snackbar.dart';
+
 void main() {
   test('every undo label is read by the primitive alone', () {
     final offenders = <String>[];
@@ -28,7 +34,11 @@ void main() {
       if (entity is! File || !entity.path.endsWith('.dart')) continue;
       final path = entity.path.replaceAll(r'\', '/');
       if (path.startsWith('lib/l10n/')) continue;
-      if (path == _primitive || _unclassifiedDismiss.contains(path)) continue;
+      if (path == _primitive ||
+          path == _conflictNotice ||
+          _unclassifiedDismiss.contains(path)) {
+        continue;
+      }
       final lines = entity.readAsLinesSync();
       for (var i = 0; i < lines.length; i++) {
         if (lines[i].contains('.commonUndo')) {

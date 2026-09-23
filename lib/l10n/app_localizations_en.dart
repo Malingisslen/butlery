@@ -9022,9 +9022,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get conflictWeekSavedUnnamed => 'Someone else saved the week';
 
   @override
-  String get conflictKeepMine => 'Keep mine';
-
-  @override
   String get conflictDiffTitle => 'What changed';
 
   @override

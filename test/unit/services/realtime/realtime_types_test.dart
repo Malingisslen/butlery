@@ -104,7 +104,7 @@ void main() {
     });
 
     test('three entities, one per row the realtime sync reaches', () {
-      // produktregler.md:101-103; the other rows have their own mechanisms.
+      // produktregler.md:102-104; the other rows have their own mechanisms.
       expect(ConflictEntity.values, [
         ConflictEntity.recipeOwn,
         ConflictEntity.recipeShared,

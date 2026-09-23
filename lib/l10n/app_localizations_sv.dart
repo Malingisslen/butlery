@@ -9038,9 +9038,6 @@ class AppLocalizationsSv extends AppLocalizations {
   String get conflictWeekSavedUnnamed => 'Någon annan sparade veckan';
 
   @override
-  String get conflictKeepMine => 'Behåll min';
-
-  @override
   String get conflictDiffTitle => 'Vad ändrades';
 
   @override
