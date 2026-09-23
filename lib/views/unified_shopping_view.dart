@@ -35,6 +35,8 @@ import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 
 // Pantry sub-tab
+import 'package:butlery/viewmodels/pantry/pantry_selection_manager.dart';
+import 'package:butlery/viewmodels/pantry/pantry_viewmodel.dart';
 import 'package:butlery/views/pantry/pantry_view.dart';
 
 /// Shopping list management view using facade pattern architecture.
@@ -55,6 +57,11 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView>
   // Delay instantiating PantryView until the user first visits the tab,
   // so pantry data isn't loaded for users who only use shopping lists.
   bool _pantryTabVisited = false;
+  // P5-U31: the pantry tab's "Välj" and selection counter sit in this
+  // view's own top bar, never in the shell's (produktregler.md:871), so the
+  // view holds the pantry's rows and selection. Created on the first visit.
+  PantryViewModel? _pantryViewModel;
+  final PantrySelectionManager _pantrySelection = PantrySelectionManager();
 
   @override
   void initState() {
@@ -66,7 +73,10 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView>
       if (_currentTabIndex != _tabController.index) {
         setState(() {
           _currentTabIndex = _tabController.index;
-          if (_currentTabIndex == 1) _pantryTabVisited = true;
+          if (_currentTabIndex == 1) {
+            _pantryTabVisited = true;
+            _pantryViewModel ??= ServiceLocator.get<PantryViewModel>();
+          }
         });
       }
     });
@@ -83,104 +93,161 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView>
         ChangeNotifierProvider.value(value: _selection),
       ],
       child: Consumer<UnifiedShoppingViewModel>(
-        builder: (context, viewModel, child) {
-          final itemCount = viewModel.activeList?.items.length ?? 0;
-          final boughtCount =
-              viewModel.activeList?.items.where((item) => item.bought).length ??
-              0;
+        builder: (context, viewModel, child) => ListenableBuilder(
+          listenable: Listenable.merge([
+            _pantrySelection,
+            ?_pantryViewModel,
+          ]),
+          builder: (context, _) => _buildScaffold(context, viewModel),
+        ),
+      ),
+    );
+  }
 
-          final isShoppingTab = _currentTabIndex == 0;
-          final selection = context.watch<ShoppingSelectionManager>();
-          final inSelection = isShoppingTab && selection.isSelectionMode;
-          final cs = Theme.of(context).colorScheme;
+  Widget _buildScaffold(
+    BuildContext context,
+    UnifiedShoppingViewModel viewModel,
+  ) {
+    final itemCount = viewModel.activeList?.items.length ?? 0;
+    final boughtCount =
+        viewModel.activeList?.items.where((item) => item.bought).length ?? 0;
 
-          // The root bar (Komponentark v1:60-68): "Inköp" with the list and
-          // how many of its items are done on the line under it, in tabular
-          // figures (Skarmar v12 del 2 #inkop: "Veckans inköp · 4 av 16
-          // klara"; #tominkop: "Veckans inköp · inga varor").
-          final activeList = viewModel.activeList;
-          final String? countLine = !isShoppingTab || activeList == null
-              ? null
-              : itemCount == 0
-              ? context.l10n.shoppingRootLineEmpty(activeList.name)
-              : context.l10n.shoppingRootLine(
-                  activeList.name,
-                  boughtCount,
-                  itemCount,
-                );
+    final isShoppingTab = _currentTabIndex == 0;
+    final selection = context.watch<ShoppingSelectionManager>();
+    final inSelection = isShoppingTab && selection.isSelectionMode;
+    final cs = Theme.of(context).colorScheme;
 
-          return Scaffold(
-            appBar: ButleryTopBar.rot(
-              title: context.l10n.shoppingRootTitle,
-              secondaryLine: countLine,
-              actions: isShoppingTab
-                  ? ShoppingAppBar.buildHeaderActions(
-                      context,
-                      viewModel,
-                      _showCreateListDialog,
-                      _showShoppingShareDialog,
-                      _shareListExternally,
-                      () => _showSharingStatus(viewModel),
-                      onBrowseTemplates: _showTemplateBrowser,
-                    )
-                  : const <Widget>[],
-            ),
-            // BUT-948: the add FAB gives way to the bulk-action bar while
-            // selecting.
-            // "Lägg till vara" is the list's one saffron action. An empty
-            // list carries its own actions in the body, with "Från
-            // veckomenyn" as the hero, so the button steps aside there
-            // (Skarmar v12 del 2 #inkop, #tominkop; Komponentark v1:843).
-            floatingActionButton:
-                isShoppingTab && !inSelection && viewModel.hasItems
-                ? ShoppingAppBar.buildFloatingActionButton(
+    // P5-U31 (B-46; produktregler.md:870-876; Skarmar v12 etapp 9
+    // #flervalingang): "Välj" in this view's own bar for the tab in
+    // view, shown from two rows. In selection mode the counter
+    // replaces the title and Avbryt stands on the left, and the bar
+    // keeps its height: the line under the title stays, and Avbryt's
+    // 48 dp hitbox takes the place of the 48 dp actions.
+    final pantryInSelection =
+        !isShoppingTab && _pantrySelection.isSelectionMode;
+    final selecting = inSelection || pantryInSelection;
+    final selectedCount = isShoppingTab
+        ? selection.selectedCount
+        : _pantrySelection.selectedCount;
+    final selectableRows = isShoppingTab
+        ? itemCount
+        : (_pantryViewModel?.items.length ?? 0);
+
+    // The root bar (Komponentark v1:60-68): "Inköp" with the list and
+    // how many of its items are done on the line under it, in tabular
+    // figures (Skarmar v12 del 2 #inkop: "Veckans inköp · 4 av 16
+    // klara"; #tominkop: "Veckans inköp · inga varor").
+    final activeList = viewModel.activeList;
+    final String? countLine = !isShoppingTab || activeList == null
+        ? null
+        : itemCount == 0
+        ? context.l10n.shoppingRootLineEmpty(activeList.name)
+        : context.l10n.shoppingRootLine(
+            activeList.name,
+            boughtCount,
+            itemCount,
+          );
+
+    return Scaffold(
+      appBar: ButleryTopBar.rot(
+        title: selecting
+            ? context.l10n.bulkSelectedCount(selectedCount)
+            : context.l10n.shoppingRootTitle,
+        titleStyle: selecting
+            ? const TextStyle(
+                fontFeatures: [FontFeature.tabularFigures()],
+              )
+            : null,
+        secondaryLine: countLine,
+        secondaryLineIsLive: !selecting,
+        leading: selecting
+            ? ButleryCancelSelectionButton(
+                key: const ValueKey('shopping-selection-cancel'),
+                onPressed: isShoppingTab
+                    ? selection.clearSelection
+                    : _pantrySelection.clearSelection,
+              )
+            : null,
+        actions: selecting
+            ? const <Widget>[]
+            : [
+                if (ButlerySelectButton.shownFor(selectableRows))
+                  ButlerySelectButton(
+                    key: const ValueKey('shopping-select-enter'),
+                    semanticLabel: isShoppingTab
+                        ? context.l10n.selectionEnterShoppingItems
+                        : context.l10n.selectionEnterPantryItems,
+                    onPressed: isShoppingTab
+                        ? selection.startSelection
+                        : _pantrySelection.startSelection,
+                  ),
+                if (isShoppingTab)
+                  ...ShoppingAppBar.buildHeaderActions(
                     context,
-                    _showAddItemDialog,
-                  )
-                : null,
-            bottomNavigationBar: inSelection
-                ? SelectionBulkBar(
-                    count: selection.selectedCount,
-                    label: context.l10n.shoppingSelectedCount(
-                      selection.selectedCount,
-                    ),
-                    onClose: selection.clearSelection,
-                    onDelete: () => _deleteSelectedShopping(selection),
-                  )
-                : null,
-            body: Column(
-              children: [
-                ColoredBox(
-                  color: cs.surface,
-                  child: TabBar(
-                    controller: _tabController,
-                    tabs: [
-                      Tab(
-                        icon: const Icon(Icons.shopping_cart_outlined),
-                        text: context.l10n.shoppingTabLists,
-                      ),
-                      Tab(
-                        icon: const Icon(Icons.kitchen_outlined),
-                        text: context.l10n.shoppingTabPantry,
-                      ),
-                    ],
+                    viewModel,
+                    _showCreateListDialog,
+                    _showShoppingShareDialog,
+                    _shareListExternally,
+                    () => _showSharingStatus(viewModel),
+                    onBrowseTemplates: _showTemplateBrowser,
                   ),
+              ],
+      ),
+      // BUT-948: the add FAB gives way to the bulk-action bar while
+      // selecting.
+      // "Lägg till vara" is the list's one saffron action. An empty
+      // list carries its own actions in the body, with "Från
+      // veckomenyn" as the hero, so the button steps aside there
+      // (Skarmar v12 del 2 #inkop, #tominkop; Komponentark v1:843).
+      floatingActionButton: isShoppingTab && !inSelection && viewModel.hasItems
+          ? ShoppingAppBar.buildFloatingActionButton(
+              context,
+              _showAddItemDialog,
+            )
+          : null,
+      bottomNavigationBar: inSelection
+          ? SelectionBulkBar(
+              count: selection.selectedCount,
+              label: context.l10n.bulkSelectedCount(
+                selection.selectedCount,
+              ),
+              onClose: selection.clearSelection,
+              onDelete: () => _deleteSelectedShopping(selection),
+            )
+          : null,
+      body: Column(
+        children: [
+          ColoredBox(
+            color: cs.surface,
+            child: TabBar(
+              controller: _tabController,
+              tabs: [
+                Tab(
+                  icon: const Icon(Icons.shopping_cart_outlined),
+                  text: context.l10n.shoppingTabLists,
                 ),
-                Expanded(
-                  child: TabBarView(
-                    controller: _tabController,
-                    children: [
-                      _buildShoppingTab(context, viewModel),
-                      _pantryTabVisited
-                          ? const PantryView()
-                          : const SizedBox.shrink(),
-                    ],
-                  ),
+                Tab(
+                  icon: const Icon(Icons.kitchen_outlined),
+                  text: context.l10n.shoppingTabPantry,
                 ),
               ],
             ),
-          );
-        },
+          ),
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                _buildShoppingTab(context, viewModel),
+                _pantryTabVisited
+                    ? PantryView(
+                        viewModel: _pantryViewModel,
+                        selection: _pantrySelection,
+                      )
+                    : const SizedBox.shrink(),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -667,6 +734,8 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView>
   @override
   void dispose() {
     _selection.dispose();
+    _pantrySelection.dispose();
+    _pantryViewModel?.dispose();
     _tabController.dispose();
     super.dispose();
   }

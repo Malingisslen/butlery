@@ -14182,6 +14182,32 @@ class AppLocalizationsSv extends AppLocalizations {
       'Lösenord, e-post och tvåfaktorsautentisering';
 
   @override
+  String get selectionEnter => 'Välj';
+
+  @override
+  String get selectionEnterRecipes => 'Välj recept';
+
+  @override
+  String get selectionEnterShoppingItems => 'Välj varor';
+
+  @override
+  String get selectionEnterPantryItems => 'Välj varor i skafferiet';
+
+  @override
+  String get selectionEnterTags => 'Välj taggar';
+
+  @override
+  String get selectionEnterMembers => 'Välj medlemmar';
+
+  @override
+  String get selectionEnterBlockedUsers => 'Välj blockerade personer';
+
+  @override
+  String selectionSelectAllCount(int count) {
+    return 'Markera alla $count';
+  }
+
+  @override
   String bulkSelectedCount(int count) {
     return '$count valda';
   }

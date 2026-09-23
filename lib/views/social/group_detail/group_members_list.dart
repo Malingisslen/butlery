@@ -5,6 +5,7 @@ import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/group_invitation.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/services/permission_service.dart';
@@ -13,6 +14,7 @@ import 'package:butlery/views/social/group_detail/group_member_card.dart';
 import 'package:butlery/views/social/group_detail/group_invitation_card.dart';
 import 'package:butlery/views/social/group_detail/group_detail_actions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
 
 /// GroupMembersList - Members list component.
 ///
@@ -70,6 +72,23 @@ class _GroupMembersListViewState extends State<_GroupMembersListView> {
   bool get _canAddMembers =>
       ServiceLocator.get<PermissionService>().canInviteToGroup(widget.group.id);
 
+  /// The members this user may select: the ones she may remove. Mirrors
+  /// GroupMemberCard's rule — never yourself, never the owner, and only for
+  /// the owner or an admin. Identity is the uid, never the row.
+  int get _selectableCount {
+    final permissions = ServiceLocator.get<PermissionService>();
+    final group = widget.group;
+    if (!permissions.isOwner(group.ownerId) &&
+        !permissions.isGroupAdmin(group.id)) {
+      return 0;
+    }
+    return widget.members
+        .where(
+          (m) => m.uid != permissions.currentUserId && m.uid != group.ownerId,
+        )
+        .length;
+  }
+
   void _enterSelection(String uid) {
     setState(() {
       _selectionMode = true;
@@ -77,9 +96,17 @@ class _GroupMembersListViewState extends State<_GroupMembersListView> {
     });
   }
 
+  /// "Välj" in the section's header row (B-46; Skarmar v12 etapp 9
+  /// #flervalingang: "sektionens rubrikrad").
+  void _startSelection() {
+    setState(() => _selectionMode = true);
+  }
+
+  /// Taking the last tick off leaves selection mode (produktregler.md:878).
   void _toggle(String uid) {
     setState(() {
       if (!_selectedIds.remove(uid)) _selectedIds.add(uid);
+      if (_selectedIds.isEmpty) _selectionMode = false;
     });
   }
 
@@ -131,6 +158,24 @@ class _GroupMembersListViewState extends State<_GroupMembersListView> {
                 onPressed: widget.onAddMembers,
                 icon: const Icon(Icons.person_add),
                 label: Text(context.l10n.commonAdd),
+              ),
+            // P5-U31: the list lives in the group view's scroll, so the
+            // section's header row carries "Välj", and Avbryt takes its
+            // place in selection mode (Skarmar v12 etapp 9 #flervalingang;
+            // produktregler.md:870-874). text.primary on the page surface in
+            // both modes (cs.onSurface; tokens.json:54).
+            if (_selectionMode)
+              ButleryCancelSelectionButton(
+                key: const ValueKey('group-members-selection-cancel'),
+                foregroundColor: Theme.of(context).colorScheme.onSurface,
+                onPressed: _cancelSelection,
+              )
+            else if (ButlerySelectButton.shownFor(_selectableCount))
+              ButlerySelectButton(
+                key: const ValueKey('group-members-select-enter'),
+                semanticLabel: context.l10n.selectionEnterMembers,
+                foregroundColor: Theme.of(context).colorScheme.onSurface,
+                onPressed: _startSelection,
               ),
           ],
         ),
@@ -237,20 +282,40 @@ class _GroupMembersListViewState extends State<_GroupMembersListView> {
         color: cs.primaryContainer,
         border: Border.all(color: cs.onSurface.withValues(alpha: 0.3)),
       ),
+      // The counter, "{n} valda" in tabular figures, and the action; Avbryt
+      // sits in the header row (produktregler.md:873, :876).
       child: Row(
         children: [
-          IconButton(
-            icon: const Icon(Icons.close),
-            tooltip: context.l10n.commonCancel,
-            visualDensity: VisualDensity.compact,
-            onPressed: _cancelSelection,
+          Padding(
+            padding: const EdgeInsetsDirectional.only(
+              start: AppDimensions.spacingSm,
+            ),
+            child: Semantics(
+              liveRegion: true,
+              child: Text(
+                context.l10n.bulkSelectedCount(count),
+                key: const ValueKey('group-members-selection-count'),
+                style: AppTextStyles.titleSmall.copyWith(
+                  color: cs.onSurface,
+                  fontFeatures: const [FontFeature.tabularFigures()],
+                ),
+              ),
+            ),
           ),
           const Spacer(),
           TextButton.icon(
             onPressed: count > 0 ? _removeSelected : null,
             icon: const Icon(Icons.person_remove),
             label: Text(context.l10n.groupRemoveSelectedCount(count)),
-            style: TextButton.styleFrom(foregroundColor: cs.error),
+            style: TextButton.styleFrom(
+              foregroundColor: cs.error,
+              // Off at zero with the name readable (produktregler.md:876), in
+              // the disabled role on surface.raised, never a fade
+              // (tokens.json:71-74, :198).
+              disabledForegroundColor: AppModeColors.textDisabled(
+                cs.brightness,
+              ),
+            ),
           ),
         ],
       ),

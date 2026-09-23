@@ -14150,6 +14150,32 @@ class AppLocalizationsEn extends AppLocalizations {
       'Password, email, and two-factor authentication';
 
   @override
+  String get selectionEnter => 'Select';
+
+  @override
+  String get selectionEnterRecipes => 'Select recipes';
+
+  @override
+  String get selectionEnterShoppingItems => 'Select items';
+
+  @override
+  String get selectionEnterPantryItems => 'Select pantry items';
+
+  @override
+  String get selectionEnterTags => 'Select tags';
+
+  @override
+  String get selectionEnterMembers => 'Select members';
+
+  @override
+  String get selectionEnterBlockedUsers => 'Select blocked people';
+
+  @override
+  String selectionSelectAllCount(int count) {
+    return 'Select all $count';
+  }
+
+  @override
   String bulkSelectedCount(int count) {
     return '$count selected';
   }

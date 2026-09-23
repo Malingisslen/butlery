@@ -180,10 +180,21 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
   }
 
   PreferredSizeWidget _buildAppBar(BuildContext context) {
+    final tagCount = context.watch<PersonalTagViewModel>().tags.length;
     // A subpage (Komponentark v1:71-78; B-45).
     return ButleryTopBar.undersida(
       title: context.l10n.personalTagsViewTitle,
       actions: [
+        // P5-U31: "Välj" in the view's own bar, from two tags (B-46;
+        // produktregler.md:870-874). Long-press stays as a shortcut.
+        if (ButlerySelectButton.shownFor(tagCount))
+          ButlerySelectButton(
+            key: const ValueKey('personal-tags-select-enter'),
+            semanticLabel: context.l10n.selectionEnterTags,
+            onPressed: context
+                .read<PersonalTagSelectionManager>()
+                .startSelection,
+          ),
         IconButton(
           icon: const Icon(Icons.sync),
           tooltip: context.l10n.personalTagApplyRulesToAll,
@@ -219,7 +230,8 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
         onPressed: selection.exitSelection,
         child: Text(context.l10n.commonCancel),
       ),
-      title: context.l10n.personalTagSelectedCount(count),
+      // "{n} valda" in tabular figures (produktregler.md:876).
+      title: context.l10n.bulkSelectedCount(count),
       titleStyle: const TextStyle(
         fontFeatures: [FontFeature.tabularFigures()],
       ),

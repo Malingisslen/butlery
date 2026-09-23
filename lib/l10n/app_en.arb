@@ -9932,6 +9932,14 @@
   "accountSecurityPasswordMismatch": "Passwords do not match",
   "profileAccountSecurity": "Account Security",
   "profileAccountSecuritySubtitle": "Password, email, and two-factor authentication",
+  "selectionEnter": "Select",
+  "selectionEnterRecipes": "Select recipes",
+  "selectionEnterShoppingItems": "Select items",
+  "selectionEnterPantryItems": "Select pantry items",
+  "selectionEnterTags": "Select tags",
+  "selectionEnterMembers": "Select members",
+  "selectionEnterBlockedUsers": "Select blocked people",
+  "selectionSelectAllCount": "Select all {count}",
   "bulkSelectedCount": "{count} selected",
   "@bulkSelectedCount": {
     "placeholders": {

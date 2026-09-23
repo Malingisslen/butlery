@@ -23675,6 +23675,54 @@ abstract class AppLocalizations {
   /// **'Lösenord, e-post och tvåfaktorsautentisering'**
   String get profileAccountSecuritySubtitle;
 
+  /// Multi-select entry in the top bar or section header (B-46; produktregler.md:870-877).
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj'**
+  String get selectionEnter;
+
+  /// Multi-select entry in the top bar or section header (B-46; produktregler.md:870-877).
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj recept'**
+  String get selectionEnterRecipes;
+
+  /// Multi-select entry in the top bar or section header (B-46; produktregler.md:870-877).
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj varor'**
+  String get selectionEnterShoppingItems;
+
+  /// Multi-select entry in the top bar or section header (B-46; produktregler.md:870-877).
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj varor i skafferiet'**
+  String get selectionEnterPantryItems;
+
+  /// Multi-select entry in the top bar or section header (B-46; produktregler.md:870-877).
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj taggar'**
+  String get selectionEnterTags;
+
+  /// Multi-select entry in the top bar or section header (B-46; produktregler.md:870-877).
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj medlemmar'**
+  String get selectionEnterMembers;
+
+  /// Multi-select entry in the top bar or section header (B-46; produktregler.md:870-877).
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj blockerade personer'**
+  String get selectionEnterBlockedUsers;
+
+  /// Multi-select entry in the top bar or section header (B-46; produktregler.md:870-877). Drawn as "Markera alla 24" (Skarmar v12 etapp 9 #flerbar).
+  ///
+  /// In sv, this message translates to:
+  /// **'Markera alla {count}'**
+  String selectionSelectAllCount(int count);
+
   /// No description provided for @bulkSelectedCount.
   ///
   /// In sv, this message translates to:

@@ -9990,6 +9990,43 @@
   "accountSecurityPasswordMismatch": "Lösenorden matchar inte",
   "profileAccountSecurity": "Kontosäkerhet",
   "profileAccountSecuritySubtitle": "Lösenord, e-post och tvåfaktorsautentisering",
+  "selectionEnter": "Välj",
+  "@selectionEnter": {
+    "description": "Multi-select entry in the top bar or section header (B-46; produktregler.md:870-877)."
+  },
+  "selectionEnterRecipes": "Välj recept",
+  "@selectionEnterRecipes": {
+    "description": "Multi-select entry in the top bar or section header (B-46; produktregler.md:870-877)."
+  },
+  "selectionEnterShoppingItems": "Välj varor",
+  "@selectionEnterShoppingItems": {
+    "description": "Multi-select entry in the top bar or section header (B-46; produktregler.md:870-877)."
+  },
+  "selectionEnterPantryItems": "Välj varor i skafferiet",
+  "@selectionEnterPantryItems": {
+    "description": "Multi-select entry in the top bar or section header (B-46; produktregler.md:870-877)."
+  },
+  "selectionEnterTags": "Välj taggar",
+  "@selectionEnterTags": {
+    "description": "Multi-select entry in the top bar or section header (B-46; produktregler.md:870-877)."
+  },
+  "selectionEnterMembers": "Välj medlemmar",
+  "@selectionEnterMembers": {
+    "description": "Multi-select entry in the top bar or section header (B-46; produktregler.md:870-877)."
+  },
+  "selectionEnterBlockedUsers": "Välj blockerade personer",
+  "@selectionEnterBlockedUsers": {
+    "description": "Multi-select entry in the top bar or section header (B-46; produktregler.md:870-877)."
+  },
+  "selectionSelectAllCount": "Markera alla {count}",
+  "@selectionSelectAllCount": {
+    "description": "Multi-select entry in the top bar or section header (B-46; produktregler.md:870-877). Drawn as \"Markera alla 24\" (Skarmar v12 etapp 9 #flerbar).",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "bulkSelectedCount": "{count} valda",
   "@bulkSelectedCount": {
     "placeholders": {

@@ -14,6 +14,7 @@ import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/core/providers/application_provider.dart'
     as prod_locator;
 import 'package:butlery/core/di/di_container.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 
 import '../../../infrastructure/di/test_service_locator.dart';
 import '../../../infrastructure/mocks/production_mocks.dart';
@@ -56,6 +57,78 @@ void main() {
       await tester.tap(find.byType(InkWell).first);
       await tester.pumpAndSettle();
     }
+
+    // P5-U31 / P5-U32: the section lives in a settings view with no top bar
+    // of its own, so its header row carries "Välj" (Skarmar v12 etapp 9
+    // #flervalingang), and Avbryt in the same place.
+    final enter = find.byKey(const ValueKey('blocked-users-select-enter'));
+    final cancel = find.byKey(
+      const ValueKey('blocked-users-selection-cancel'),
+    );
+
+    testWidgets('Välj shows in the header row once the list is open', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        createLocalizedTestApp(child: const BlockedUsersSection()),
+      );
+      await tester.pumpAndSettle();
+      expect(enter, findsNothing);
+
+      await tester.tap(find.byType(InkWell).first);
+      await tester.pumpAndSettle();
+      expect(enter, findsOneWidget);
+      expect(find.bySemanticsLabel('Välj blockerade personer'), findsOneWidget);
+    });
+
+    testWidgets('Välj starts at zero with unblock off in the disabled role; '
+        'Avbryt takes its place and leaves', (tester) async {
+      await pumpExpanded(tester);
+
+      await tester.tap(enter);
+      await tester.pumpAndSettle();
+
+      expect(find.text('0 valda'), findsOneWidget);
+      expect(cancel, findsOneWidget);
+      expect(enter, findsNothing);
+      final unblock = find.ancestor(
+        of: find.byIcon(Icons.lock_open),
+        matching: find.byWidgetPredicate((w) => w is ButtonStyleButton),
+      );
+      expect(tester.widget<ButtonStyleButton>(unblock).onPressed, isNull);
+      final icon = tester.widget<RichText>(
+        find.descendant(
+          of: find.byIcon(Icons.lock_open),
+          matching: find.byType(RichText),
+        ),
+      );
+      expect(
+        icon.text.style?.color,
+        AppModeColors.textDisabled(Brightness.light),
+      );
+      expect(
+        find.ancestor(of: unblock, matching: find.byType(Opacity)),
+        findsNothing,
+      );
+
+      await tester.tap(cancel);
+      await tester.pumpAndSettle();
+      expect(find.byIcon(Icons.lock_open), findsNothing);
+      expect(enter, findsOneWidget);
+    });
+
+    testWidgets('taking the last tick off leaves selection mode', (
+      tester,
+    ) async {
+      await pumpExpanded(tester);
+      await tester.longPress(find.text('u1'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('u1'));
+      await tester.pumpAndSettle();
+
+      expect(find.byIcon(Icons.lock_open), findsNothing);
+    });
 
     testWidgets('lists blocked users; no selection bar until long-press', (
       tester,
@@ -102,7 +175,10 @@ void main() {
       await tester.longPress(find.text('u1'));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.byIcon(Icons.close));
+      // P5-U31: Avbryt in the section's header row replaces the bar's X.
+      await tester.tap(
+        find.byKey(const ValueKey('blocked-users-selection-cancel')),
+      );
       await tester.pumpAndSettle();
 
       expect(find.byIcon(Icons.lock_open), findsNothing);

@@ -29,6 +29,7 @@ import 'package:flutter/services.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/butlery_focus_ring.dart';
 
@@ -291,6 +292,19 @@ class ButleryTopBar extends StatelessWidget implements PreferredSizeWidget {
     final secondary =
         foregroundColor ?? (_isRoot ? cs.onSurfaceVariant : foreground);
 
+    // An action that needs a selection is off at zero with its name still
+    // readable (produktregler.md:876), in the disabled role and never
+    // through opacity (tokens.json:71-74). IconButton.styleFrom would
+    // otherwise fade the foreground to 38 %. text.disabled.onRaised
+    // (#788477 light, #93A48D dark; tokens.json:198) is the surface-safe
+    // disabled text and clears 3:1 on surface.base in both modes. On a
+    // bar with another surface (the subpage's ink, or a caller's colour)
+    // disabled is not drawn, so the fade stays there (beslut-paket2.md,
+    // "disabled on surface.ink").
+    final Color? disabledForeground = _isRoot && backgroundColor == null
+        ? AppModeColors.textDisabled(cs.brightness)
+        : null;
+
     final overlay =
         systemOverlayStyle ??
         (ThemeData.estimateBrightnessForColor(background) == Brightness.dark
@@ -397,6 +411,7 @@ class ButleryTopBar extends StatelessWidget implements PreferredSizeWidget {
                 data: IconButtonThemeData(
                   style: IconButton.styleFrom(
                     foregroundColor: foreground,
+                    disabledForegroundColor: disabledForeground,
                   ).merge(IconButtonTheme.of(context).style),
                 ),
                 child: TextButtonTheme(
@@ -486,6 +501,82 @@ class ButleryTopBar extends StatelessWidget implements PreferredSizeWidget {
     );
   }
 }
+
+/// "Välj" — flervalets synliga ingång (B-46, beslutslogg.md:53;
+/// produktregler.md:870-874; Skarmar v12 etapp 9 #flervalingang).
+///
+/// Samma ord på samma plats på de sex ytorna: i vyns eget toppfält, eller i
+/// sektionens rubrikrad där listan ligger i en inställningsvy. En yta med
+/// färre än två rader visar det inte alls ([shownFor]).
+///
+/// Ritningen: 14,5/600 i text.primary, 48 dp hög, 12 px sidluft. Tolkning:
+/// appens knappstil (14/600, tokens.json controls.button) gäller, eftersom
+/// 14,5 inte finns på typskalan.
+class ButlerySelectButton extends StatelessWidget {
+  const ButlerySelectButton({
+    required this.onPressed,
+    this.semanticLabel,
+    this.foregroundColor,
+    super.key,
+  });
+
+  /// Färre rader än så ger ingen ingång: "ett flerval av ett är ingen
+  /// funktion" (produktregler.md:874).
+  static const int minRows = 2;
+
+  /// Om ingången visas för en lista med [rowCount] valbara rader.
+  static bool shownFor(int rowCount) => rowCount >= minRows;
+
+  final VoidCallback onPressed;
+
+  /// Det tillgängliga namnet, till exempel "Välj recept" (ritningens
+  /// data-a11y-name). Utan det heter knappen det den visar.
+  final String? semanticLabel;
+
+  /// Textfärgen utanför toppfältet. I fältet ger fältet färgen.
+  final Color? foregroundColor;
+
+  @override
+  Widget build(BuildContext context) {
+    return TextButton(
+      key: const ValueKey('butlery-select-enter'),
+      style: _selectionTextStyle(foregroundColor),
+      onPressed: onPressed,
+      child: Text(context.l10n.selectionEnter, semanticsLabel: semanticLabel),
+    );
+  }
+}
+
+/// "Avbryt" — lämnar flervalet. I toppfältet ersätter den bakåtpilen och
+/// står där "Välj" stod i en sektions rubrikrad, så att fältet byter
+/// innehåll men inte höjd (produktregler.md:873).
+class ButleryCancelSelectionButton extends StatelessWidget {
+  const ButleryCancelSelectionButton({
+    required this.onPressed,
+    this.foregroundColor,
+    super.key,
+  });
+
+  final VoidCallback onPressed;
+
+  /// Textfärgen utanför toppfältet. I fältet ger fältet färgen.
+  final Color? foregroundColor;
+
+  @override
+  Widget build(BuildContext context) {
+    return TextButton(
+      key: const ValueKey('butlery-select-cancel'),
+      style: _selectionTextStyle(foregroundColor),
+      onPressed: onPressed,
+      child: Text(context.l10n.commonCancel),
+    );
+  }
+}
+
+ButtonStyle _selectionTextStyle(Color? foregroundColor) => TextButton.styleFrom(
+  foregroundColor: foregroundColor,
+  padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingSm),
+);
 
 /// Minst 48 × 48 dp träffyta runt en åtgärd (tokens.json touchTarget).
 ///
