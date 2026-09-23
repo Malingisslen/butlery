@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
@@ -16,7 +17,18 @@ import 'package:butlery/theme/app_dimensions.dart';
 class MarkdownBody extends StatefulWidget {
   final String data;
 
-  const MarkdownBody({super.key, required this.data});
+  /// False while the device is offline. Web links (http/https) then render
+  /// as plain text without the link role, and one line above the document
+  /// says why (Grafisk manual v6:665: actions that need the network become
+  /// inactive with an explanatory text, not only dimmed). Mail links stay
+  /// active: opening the mail app needs no connection.
+  final bool webLinksEnabled;
+
+  const MarkdownBody({
+    super.key,
+    required this.data,
+    this.webLinksEnabled = true,
+  });
 
   @override
   State<MarkdownBody> createState() => _MarkdownBodyState();
@@ -24,6 +36,7 @@ class MarkdownBody extends StatefulWidget {
 
 class _MarkdownBodyState extends State<MarkdownBody> {
   late List<_Block> _blocks;
+  bool _hasWebLinks = false;
 
   @override
   void initState() {
@@ -61,6 +74,15 @@ class _MarkdownBodyState extends State<MarkdownBody> {
       }
     }
     _blocks = blocks;
+    _hasWebLinks = blocks.any(
+      (b) => b.tokens.any((t) => t.kind == _TokenKind.link && _isWebUrl(t.url)),
+    );
+  }
+
+  static bool _isWebUrl(String? url) {
+    if (url == null) return false;
+    final scheme = Uri.tryParse(url)?.scheme.toLowerCase();
+    return scheme == 'http' || scheme == 'https';
   }
 
   /// Splits a line into inline tokens, creating (and tracking) a tap recognizer
@@ -110,6 +132,10 @@ class _MarkdownBodyState extends State<MarkdownBody> {
             text: t.text,
             style: base.copyWith(fontWeight: FontWeight.bold),
           ),
+          // Offline: an inactive web link is plain text, so it neither looks
+          // nor announces as something to tap (Grafisk manual v6:665).
+          _TokenKind.link when !widget.webLinksEnabled && _isWebUrl(t.url) =>
+            TextSpan(text: t.text, style: base),
           // BUT-1446: WidgetSpan + Semantics(link:) so screen readers
           // announce the legal-doc link with a role and name. Replaces the
           // inline TapGestureRecognizer (no link role, audit-invisible) and
@@ -151,6 +177,22 @@ class _MarkdownBodyState extends State<MarkdownBody> {
     final bodyStyle = tt.bodyMedium?.copyWith(height: 1.6) ?? const TextStyle();
 
     final children = <Widget>[];
+    if (!widget.webLinksEnabled && _hasWebLinks) {
+      // text.secondary (colorScheme.onSurfaceVariant: #627061 light, #93A48D
+      // dark, tokens.json palette sageDeep/sage) on surface.base.
+      children.add(
+        Padding(
+          padding: const EdgeInsets.only(bottom: AppDimensions.spacingM),
+          child: Text(
+            context.l10n.legalLinksNeedConnection,
+            key: const ValueKey('markdownBody.webLinksOffline'),
+            style: tt.bodySmall?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ),
+      );
+    }
     for (final block in _blocks) {
       switch (block.type) {
         case _BlockType.gap:

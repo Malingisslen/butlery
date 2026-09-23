@@ -9490,7 +9490,7 @@ abstract class AppLocalizations {
   /// No description provided for @privacyCouldNotLoad.
   ///
   /// In sv, this message translates to:
-  /// **'Kunde inte ladda integritetspolicyn. Försök igen senare.'**
+  /// **'Integritetspolicyn kunde inte hämtas.'**
   String get privacyCouldNotLoad;
 
   /// No description provided for @privacyTitle.
@@ -28114,6 +28114,60 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Dina vänner kunde inte hämtas.'**
   String get groupAddMembersLoadFailed;
+
+  /// Error state when the admin feedback inbox stream fails; names what failed, never the raw exception (P5-U01, content-style-guide.md:89-94).
+  ///
+  /// In sv, this message translates to:
+  /// **'Återkopplingen kunde inte hämtas.'**
+  String get adminFeedbackLoadFailed;
+
+  /// Error state when the moderator review stream fails (P5-U01, content-style-guide.md:89-94).
+  ///
+  /// In sv, this message translates to:
+  /// **'Anmälningarna kunde inte hämtas.'**
+  String get moderatorReportsLoadFailed;
+
+  /// Error state of the community guidelines; each legal document names itself (P5-U08).
+  ///
+  /// In sv, this message translates to:
+  /// **'Riktlinjerna kunde inte hämtas.'**
+  String get legalGuidelinesCouldNotLoad;
+
+  /// Error state of the terms of service; each legal document names itself (P5-U08).
+  ///
+  /// In sv, this message translates to:
+  /// **'Användarvillkoren kunde inte hämtas.'**
+  String get legalTermsCouldNotLoad;
+
+  /// Offline, the web links in a legal document are inactive and this line says why (Grafisk manual v6:665, P5-U30).
+  ///
+  /// In sv, this message translates to:
+  /// **'Webblänkarna öppnas när du är ansluten igen.'**
+  String get legalLinksNeedConnection;
+
+  /// A photo that exists but failed to load keeps its surface and explains (Komponentark v1:839, tillganglighetshandoff:188).
+  ///
+  /// In sv, this message translates to:
+  /// **'Bilden kunde inte visas'**
+  String get imageCouldNotBeShown;
+
+  /// Second line under a failed photo; the retry is silent (Skarmar v12 del 4 #receptbildfel).
+  ///
+  /// In sv, this message translates to:
+  /// **'Försöker igen när nätet är tillbaka'**
+  String get imageRetriesWhenOnline;
+
+  /// Action in the ingredient search error state (P5-U13).
+  ///
+  /// In sv, this message translates to:
+  /// **'Sök igen'**
+  String get ingredientSearchAgain;
+
+  /// What was kept when the ingredient search failed (content-style-guide.md:91-93, P5-U13).
+  ///
+  /// In sv, this message translates to:
+  /// **'Dina ingredienser ligger kvar.'**
+  String get ingredientSearchSelectionKept;
 }
 
 class _AppLocalizationsDelegate

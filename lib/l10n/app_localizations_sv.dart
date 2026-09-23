@@ -5672,8 +5672,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get menuUnnamed => 'Namnlös meny';
 
   @override
-  String get privacyCouldNotLoad =>
-      'Kunde inte ladda integritetspolicyn. Försök igen senare.';
+  String get privacyCouldNotLoad => 'Integritetspolicyn kunde inte hämtas.';
 
   @override
   String get privacyTitle => 'Integritetspolicy';
@@ -16883,4 +16882,32 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get groupAddMembersLoadFailed => 'Dina vänner kunde inte hämtas.';
+
+  @override
+  String get adminFeedbackLoadFailed => 'Återkopplingen kunde inte hämtas.';
+
+  @override
+  String get moderatorReportsLoadFailed => 'Anmälningarna kunde inte hämtas.';
+
+  @override
+  String get legalGuidelinesCouldNotLoad => 'Riktlinjerna kunde inte hämtas.';
+
+  @override
+  String get legalTermsCouldNotLoad => 'Användarvillkoren kunde inte hämtas.';
+
+  @override
+  String get legalLinksNeedConnection =>
+      'Webblänkarna öppnas när du är ansluten igen.';
+
+  @override
+  String get imageCouldNotBeShown => 'Bilden kunde inte visas';
+
+  @override
+  String get imageRetriesWhenOnline => 'Försöker igen när nätet är tillbaka';
+
+  @override
+  String get ingredientSearchAgain => 'Sök igen';
+
+  @override
+  String get ingredientSearchSelectionKept => 'Dina ingredienser ligger kvar.';
 }

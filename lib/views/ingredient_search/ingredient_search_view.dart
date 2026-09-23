@@ -123,10 +123,13 @@ class _IngredientSearchContent extends StatelessWidget {
     }
 
     if (vm.error != null) {
+      // What happened, what was kept, what you can do
+      // (content-style-guide.md:89-94): the chosen ingredients stay.
       return StateWidget.error(
         message: vm.error!,
+        preserved: l10n.ingredientSearchSelectionKept,
         onAction: vm.performSearch,
-        actionLabel: l10n.ingredientSearchButton,
+        actionLabel: l10n.ingredientSearchAgain,
       );
     }
 

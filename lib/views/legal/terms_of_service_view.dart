@@ -62,7 +62,7 @@ class _TermsOfServiceViewState extends State<TermsOfServiceView> {
 
       if (mounted) {
         setState(() {
-          _errorMessage = context.l10n.privacyCouldNotLoad;
+          _errorMessage = context.l10n.legalTermsCouldNotLoad;
           _isLoading = false;
         });
       }
@@ -77,18 +77,27 @@ class _TermsOfServiceViewState extends State<TermsOfServiceView> {
       ),
       bottomNavigationBar: LayoutScaffolds.detailBottomNav(context),
       body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              maxWidth: LayoutComponents.valueFor(
-                context: context,
-                mobile: double.infinity,
-                tablet: 700,
-                desktop: 800,
+        // The document ships with the app, so it still opens offline, under
+        // the offline banner (produktregler.md:162; P5-U30).
+        child: Column(
+          children: [
+            LayoutComponents.offlineIndicator(),
+            Expanded(
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxWidth: LayoutComponents.valueFor(
+                      context: context,
+                      mobile: double.infinity,
+                      tablet: 700,
+                      desktop: 800,
+                    ),
+                  ),
+                  child: _buildBody(),
+                ),
               ),
             ),
-            child: _buildBody(),
-          ),
+          ],
         ),
       ),
     );
@@ -100,29 +109,9 @@ class _TermsOfServiceViewState extends State<TermsOfServiceView> {
     }
 
     if (_errorMessage != null) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(AppDimensions.spacingLg),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.error_outline,
-                size: 64,
-                color: Theme.of(context).colorScheme.error,
-              ),
-              const SizedBox(height: AppDimensions.spacingMd),
-              Text(_errorMessage!, textAlign: TextAlign.center),
-              const SizedBox(height: AppDimensions.spacingLg),
-              ElevatedButton.icon(
-                onPressed: _loadContent,
-                icon: const Icon(Icons.refresh),
-                label: Text(context.l10n.commonRetry),
-              ),
-            ],
-          ),
-        ),
-      );
+      // The standard error state names the document and offers Försök igen
+      // (content-style-guide.md:87-95; state_widget.dart default action).
+      return StateWidget.error(message: _errorMessage!, onAction: _loadContent);
     }
 
     if (_content == null) return const SizedBox.shrink();

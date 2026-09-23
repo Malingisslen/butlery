@@ -11,6 +11,8 @@ import 'package:butlery/widgets/legal/legal_contact_footer.dart';
 import 'dart:ui' show PlatformDispatcher;
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
+import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/services/offline_service.dart';
 
 /// GDPR Article 13/14 - Privacy Policy View
 /// Displays the complete privacy policy in Swedish, covering all GDPR
@@ -32,10 +34,30 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
   bool _isLoading = true;
   String? _errorMessage;
 
+  /// Null when no offline service is registered; the page then treats the
+  /// device as online.
+  OfflineService? _offlineService;
+  bool _isOnline = true;
+
   @override
   void initState() {
     super.initState();
+    _offlineService = ServiceLocator.tryGet<OfflineService>();
+    _offlineService?.addListener(_onConnectivityChanged);
+    _isOnline = _offlineService?.isOnline ?? true;
     _loadPrivacyPolicy();
+  }
+
+  @override
+  void dispose() {
+    _offlineService?.removeListener(_onConnectivityChanged);
+    super.dispose();
+  }
+
+  void _onConnectivityChanged() {
+    final isOnline = _offlineService?.isOnline ?? true;
+    if (!mounted || isOnline == _isOnline) return;
+    setState(() => _isOnline = isOnline);
   }
 
   Future<void> _loadPrivacyPolicy() async {
@@ -99,19 +121,28 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
       ),
       bottomNavigationBar: LayoutScaffolds.detailBottomNav(context),
       body: SafeArea(
-        // RESPONSIVE: Center and constrain content on large screens
-        child: Center(
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              maxWidth: LayoutComponents.valueFor(
-                context: context,
-                mobile: double.infinity,
-                tablet: 700,
-                desktop: 800,
+        // The policy ships with the app, so it still opens offline, under the
+        // offline banner (produktregler.md:162; P5-U30).
+        child: Column(
+          children: [
+            LayoutComponents.offlineIndicator(),
+            Expanded(
+              // RESPONSIVE: Center and constrain content on large screens
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxWidth: LayoutComponents.valueFor(
+                      context: context,
+                      mobile: double.infinity,
+                      tablet: 700,
+                      desktop: 800,
+                    ),
+                  ),
+                  child: _buildBody(),
+                ),
               ),
             ),
-            child: _buildBody(),
-          ),
+          ],
         ),
       ),
     );
@@ -139,38 +170,11 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
   }
 
   Widget _buildErrorState() {
-    final cs = Theme.of(context).colorScheme;
-
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(AppDimensions.spacingLg),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.error_outline,
-              size: 64,
-              color: cs.error,
-            ),
-            const SizedBox(height: AppDimensions.spacingMd),
-            Text(
-              _errorMessage!,
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyLarge,
-            ),
-            const SizedBox(height: AppDimensions.spacingLg),
-            ElevatedButton.icon(
-              onPressed: _loadPrivacyPolicy,
-              icon: const Icon(Icons.refresh),
-              label: Text(context.l10n.commonRetry),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: cs.primary,
-                foregroundColor: cs.onPrimary,
-              ),
-            ),
-          ],
-        ),
-      ),
+    // The standard error state names the document and offers Försök igen
+    // (content-style-guide.md:87-95; state_widget.dart default action).
+    return StateWidget.error(
+      message: _errorMessage!,
+      onAction: _loadPrivacyPolicy,
     );
   }
 
@@ -194,7 +198,13 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
         Expanded(
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(AppDimensions.paddingXl),
-            child: MarkdownBody(data: _policyContent!),
+            // Offline, web links cannot open, so they turn inactive and
+            // say why (Grafisk manual v6:665 'åtgärder som kräver nät blir
+            // inaktiva med förklarande text').
+            child: MarkdownBody(
+              data: _policyContent!,
+              webLinksEnabled: _isOnline,
+            ),
           ),
         ),
         const LegalContactFooter(),

@@ -34,6 +34,7 @@ import 'package:butlery/widgets/common/butlery_control_focus.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/theme/component_themes.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
+import 'package:butlery/widgets/realtime/conflict_banner.dart';
 import 'package:butlery/widgets/common/illustrations/vegetable_illustration.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/image/image_config.dart';
@@ -305,6 +306,15 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
             slivers: [
               SliverToBoxAdapter(
                 child: LayoutComponents.offlineIndicator(),
+              ),
+              // A conflict on this recipe opens the drawn banner and, from
+              // it, the two-column choice (produktregler.md:102: own
+              // recipe, both versions shown, the choice is the decision),
+              // mounted as edit_recipe_view does. Scoped by the recipe's id,
+              // never by position. A shared recipe gets the same banner until
+              // suggestions exist (PQ-02 = A). Collapses when idle.
+              SliverToBoxAdapter(
+                child: ConflictBanner(filterDocId: recipe.id),
               ),
               // App bar with recipe title and actions
               // UI Redesign: Hero buttons are solid cream squares with green icons
